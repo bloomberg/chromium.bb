@@ -61,6 +61,10 @@ bool IsMaximizedOrFullscreenOrPinnedWindowStateType(
          type == mojom::WindowStateType::TRUSTED_PINNED;
 }
 
+bool IsMinimizedWindowStateType(mojom::WindowStateType type) {
+  return type == mojom::WindowStateType::MINIMIZED;
+}
+
 bool IsValidWindowStateType(int64_t value) {
   return value == int64_t(mojom::WindowStateType::DEFAULT) ||
          value == int64_t(mojom::WindowStateType::NORMAL) ||

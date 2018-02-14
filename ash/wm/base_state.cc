@@ -15,13 +15,6 @@
 
 namespace ash {
 namespace wm {
-namespace {
-
-bool IsMinimizedWindowState(const mojom::WindowStateType state_type) {
-  return state_type == mojom::WindowStateType::MINIMIZED;
-}
-
-}  // namespace
 
 BaseState::BaseState(mojom::WindowStateType initial_state_type)
     : state_type_(initial_state_type) {}
@@ -98,7 +91,7 @@ void BaseState::UpdateMinimizedState(
   if (window_state->IsMinimized()) {
     // Save the previous show state when it is not minimized so that we can
     // correctly restore it after exiting the minimized mode.
-    if (previous_state_type != mojom::WindowStateType::MINIMIZED) {
+    if (!IsMinimizedWindowStateType(previous_state_type)) {
       window->SetProperty(aura::client::kPreMinimizedShowStateKey,
                           ToWindowShowState(previous_state_type));
     }
@@ -109,12 +102,12 @@ void BaseState::UpdateMinimizedState(
     if (window_state->IsActive())
       window_state->Deactivate();
   } else if ((window->layer()->GetTargetVisibility() ||
-              IsMinimizedWindowState(previous_state_type)) &&
+              IsMinimizedWindowStateType(previous_state_type)) &&
              !window->layer()->visible()) {
     // The layer may be hidden if the window was previously minimized. Make
     // sure it's visible.
     window->Show();
-    if (IsMinimizedWindowState(previous_state_type) &&
+    if (IsMinimizedWindowStateType(previous_state_type) &&
         !window_state->IsMaximizedOrFullscreenOrPinned()) {
       window_state->set_unminimize_to_restore_bounds(false);
     }

@@ -163,8 +163,8 @@ void ShellSurface::OnPreWindowStateTypeChange(
     ash::wm::WindowState* window_state,
     ash::mojom::WindowStateType old_type) {
   ash::mojom::WindowStateType new_type = window_state->GetStateType();
-  if (old_type == ash::mojom::WindowStateType::MINIMIZED ||
-      new_type == ash::mojom::WindowStateType::MINIMIZED) {
+  if (ash::IsMinimizedWindowStateType(old_type) ||
+      ash::IsMinimizedWindowStateType(new_type)) {
     return;
   }
 

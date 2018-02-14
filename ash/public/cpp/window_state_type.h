@@ -28,6 +28,9 @@ ASH_PUBLIC_EXPORT ui::WindowShowState ToWindowShowState(
 ASH_PUBLIC_EXPORT bool IsMaximizedOrFullscreenOrPinnedWindowStateType(
     mojom::WindowStateType type);
 
+// Returns true if |type| is MINIMIZED.
+ASH_PUBLIC_EXPORT bool IsMinimizedWindowStateType(mojom::WindowStateType type);
+
 ASH_PUBLIC_EXPORT bool IsValidWindowStateType(int64_t value);
 
 }  // namespace ash
