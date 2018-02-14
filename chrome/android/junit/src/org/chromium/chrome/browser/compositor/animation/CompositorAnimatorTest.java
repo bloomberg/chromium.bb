@@ -73,6 +73,9 @@ public final class CompositorAnimatorTest {
         public void releaseTabLayout(int id) {}
 
         @Override
+        public void releaseResourcesForTab(int tabId) {}
+
+        @Override
         public CompositorAnimationHandler getAnimationHandler() {
             return null;
         }
