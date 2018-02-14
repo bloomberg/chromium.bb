@@ -46,6 +46,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -1133,19 +1134,26 @@ std::unique_ptr<Network::Response> BuildResponse(
     const GURL& url,
     const network::ResourceResponseInfo& info) {
   std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
+  int status = 0;
+  std::string status_text;
   if (info.headers) {
     size_t iterator = 0;
     std::string name;
     std::string value;
     while (info.headers->EnumerateHeaderLines(&iterator, &name, &value))
       headers_dict->setString(name, value);
+    status = info.headers->response_code();
+    status_text = info.headers->GetStatusText();
+  } else if (url.SchemeIs(url::kDataScheme)) {
+    status = net::HTTP_OK;
+    status_text = "OK";
   }
 
   auto response =
       Network::Response::Create()
           .SetUrl(StripFragment(url))
-          .SetStatus(info.headers ? info.headers->response_code() : 0)
-          .SetStatusText(info.headers ? info.headers->GetStatusText() : "")
+          .SetStatus(status)
+          .SetStatusText(status_text)
           .SetHeaders(Object::fromValue(headers_dict.get(), nullptr))
           .SetMimeType(info.mime_type)
           .SetConnectionReused(info.load_timing.socket_reused)
