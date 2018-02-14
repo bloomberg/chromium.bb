@@ -278,15 +278,13 @@ void BlinkTestRunner::PrintMessage(const std::string& message) {
 }
 
 void BlinkTestRunner::PostTask(const base::Closure& task) {
-  Platform::Current()->CurrentThread()->GetSingleThreadTaskRunner()->PostTask(
-      FROM_HERE, task);
+  Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(FROM_HERE,
+                                                                  task);
 }
 
 void BlinkTestRunner::PostDelayedTask(const base::Closure& task, long long ms) {
-  Platform::Current()
-      ->CurrentThread()
-      ->GetSingleThreadTaskRunner()
-      ->PostDelayedTask(FROM_HERE, task, base::TimeDelta::FromMilliseconds(ms));
+  Platform::Current()->CurrentThread()->GetTaskRunner()->PostDelayedTask(
+      FROM_HERE, task, base::TimeDelta::FromMilliseconds(ms));
 }
 
 WebString BlinkTestRunner::RegisterIsolatedFileSystem(

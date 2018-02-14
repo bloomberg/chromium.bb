@@ -100,7 +100,7 @@ void WebThreadBase::PostIdleTask(const base::Location& location,
 }
 
 bool WebThreadBase::IsCurrentThread() const {
-  return GetSingleThreadTaskRunner()->BelongsToCurrentThread();
+  return GetTaskRunner()->BelongsToCurrentThread();
 }
 
 namespace {

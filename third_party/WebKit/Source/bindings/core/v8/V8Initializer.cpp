@@ -645,9 +645,8 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
 #endif  // USE_V8_CONTEXT_SNAPSHOT
 
   v8::Isolate* isolate = V8PerIsolateData::Initialize(
-      scheduler
-          ? scheduler->V8TaskRunner()
-          : Platform::Current()->CurrentThread()->GetSingleThreadTaskRunner(),
+      scheduler ? scheduler->V8TaskRunner()
+                : Platform::Current()->CurrentThread()->GetTaskRunner(),
       v8_context_snapshot_mode);
 
   InitializeV8Common(isolate);

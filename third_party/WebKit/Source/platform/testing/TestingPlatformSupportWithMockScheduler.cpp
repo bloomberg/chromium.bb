@@ -70,7 +70,7 @@ TestingPlatformSupportWithMockScheduler::CreateThread(
                                                    base::Thread::Options());
   thread->Init();
   WaitableEvent event;
-  thread->GetSingleThreadTaskRunner()->PostTask(
+  thread->GetTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(PrepareCurrentThread, base::Unretained(&event),
                                 base::Unretained(thread.get())));
   event.Wait();

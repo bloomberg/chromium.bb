@@ -84,11 +84,10 @@ V8PerIsolateData::V8PerIsolateData(
 // the main thread.
 V8PerIsolateData::V8PerIsolateData()
     : v8_context_snapshot_mode_(V8ContextSnapshotMode::kTakeSnapshot),
-      isolate_holder_(
-          Platform::Current()->MainThread()->GetSingleThreadTaskRunner(),
-          gin::IsolateHolder::kSingleThread,
-          gin::IsolateHolder::kAllowAtomicsWait,
-          gin::IsolateHolder::IsolateCreationMode::kCreateSnapshot),
+      isolate_holder_(Platform::Current()->MainThread()->GetTaskRunner(),
+                      gin::IsolateHolder::kSingleThread,
+                      gin::IsolateHolder::kAllowAtomicsWait,
+                      gin::IsolateHolder::IsolateCreationMode::kCreateSnapshot),
       interface_template_map_for_v8_context_snapshot_(GetIsolate()),
       string_cache_(WTF::WrapUnique(new StringCache(GetIsolate()))),
       private_property_(V8PrivateProperty::Create()),

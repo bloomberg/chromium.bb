@@ -1298,7 +1298,7 @@ void RenderThreadImpl::InitializeCompositorThread() {
   compositor_thread_ =
       blink::scheduler::WebThreadBase::CreateCompositorThread(options);
   blink_platform_impl_->SetCompositorThread(compositor_thread_.get());
-  compositor_task_runner_ = compositor_thread_->GetSingleThreadTaskRunner();
+  compositor_task_runner_ = compositor_thread_->GetTaskRunner();
   compositor_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(base::IgnoreResult(&ThreadRestrictions::SetIOAllowed),

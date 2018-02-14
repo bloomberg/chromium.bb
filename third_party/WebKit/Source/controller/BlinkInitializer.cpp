@@ -128,7 +128,7 @@ void BlinkInitializer::RegisterInterfaces(
 
   registry.AddInterface(
       ConvertToBaseCallback(CrossThreadBind(&OomInterventionImpl::Create)),
-      main_thread->GetSingleThreadTaskRunner());
+      main_thread->GetTaskRunner());
 }
 
 void BlinkInitializer::InitLocalFrame(LocalFrame& frame) const {
