@@ -212,6 +212,7 @@ if (!is_android && !is_mac) {
         ]
         data_deps = [
           "//chrome/app/version_assembly:version_assembly_manifest",
+          "//notification_helper",
         ]
 
         if (win_console_app) {

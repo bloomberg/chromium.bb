@@ -155,6 +155,10 @@ base::Time GetConsoleSessionStartTime();
 // tiles.
 bool OsSupportsDarkTextTiles();
 
+// Returns the toast activator registry path if found, or an empty string in
+// case of error.
+base::string16 GetToastActivatorRegistryPath();
+
 }  // namespace installer
 
 #endif  // CHROME_INSTALLER_SETUP_SETUP_UTIL_H_

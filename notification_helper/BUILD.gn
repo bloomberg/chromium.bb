@@ -1,0 +1,76 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/chrome_build.gni")
+import("//chrome/process_version_rc_template.gni")
+import("//testing/test.gni")
+
+executable("notification_helper") {
+  sources = [
+    "notification_helper.cc",
+    "notification_helper.rc",
+  ]
+
+  configs -= [ "//build/config/win:console" ]
+  configs += [ "//build/config/win:windowed" ]
+
+  deps = [
+    ":lib",
+    ":version_resources",
+    "//base",
+    "//build/win:default_exe_manifest",
+    "//chrome/install_static:primary_module",
+  ]
+
+  libs = [ "runtimeobject.lib" ]
+}
+
+source_set("lib") {
+  visibility = [ ":*" ]
+  sources = [
+    "com_server_module.cc",
+    "com_server_module.h",
+    "notification_activator.cc",
+    "notification_activator.h",
+    "trace_util.cc",
+    "trace_util.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chrome/install_static:install_static_util",
+  ]
+}
+
+process_version_rc_template("version_resources") {
+  sources = [
+    "notification_helper_exe.ver",
+  ]
+  output = "$target_gen_dir/notification_helper_exe.rc"
+}
+
+test("notification_helper_unittests") {
+  sources = [
+    "com_server_module_unittest.cc",
+    "notification_helper_process_unittest.cc",
+    "run_all_unittests.cc",
+  ]
+
+  deps = [
+    ":lib",
+    "//base",
+    "//base/test:test_support",
+    "//chrome/install_static:install_static_util",
+    "//chrome/install_static/test:test_support",
+    "//chrome/installer/setup:lib",
+    "//chrome/installer/util:with_no_strings",
+    "//testing/gtest",
+  ]
+
+  data_deps = [
+    ":notification_helper",
+  ]
+
+  libs = [ "runtimeobject.lib" ]
+}

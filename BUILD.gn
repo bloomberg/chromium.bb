@@ -571,6 +571,7 @@ group("gn_all") {
       "//components/wifi:wifi_test",
       "//net:quic_client",
       "//net:quic_server",
+      "//notification_helper:notification_helper_unittests",
       "//sandbox/win:pocdll",
       "//sandbox/win:sandbox_poc",
       "//sandbox/win:sbox_integration_tests",
