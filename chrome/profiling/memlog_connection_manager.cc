@@ -56,7 +56,7 @@ struct MemlogConnectionManager::DumpProcessesForTracingTracking
   mojom::ProfilingService::DumpProcessesForTracingCallback callback;
 
   // Info about the request.
-  memory_instrumentation::mojom::GlobalMemoryDumpPtr dump;
+  VmRegions vm_regions;
 
   // Collects the results.
   std::vector<profiling::mojom::SharedBufferWithSizePtr> results;
@@ -73,12 +73,14 @@ struct MemlogConnectionManager::Connection {
              mojom::ProfilingClientPtr client,
              scoped_refptr<MemlogReceiverPipe> p,
              mojom::ProcessType process_type,
-             uint32_t sampling_rate)
+             uint32_t sampling_rate,
+             mojom::StackMode stack_mode)
       : thread(base::StringPrintf("Sender %lld thread",
                                   static_cast<long long>(pid))),
         client(std::move(client)),
         pipe(p),
         process_type(process_type),
+        stack_mode(stack_mode),
         tracker(std::move(complete_cb), backtrace_storage),
         sampling_rate(sampling_rate) {}
 
@@ -88,12 +90,18 @@ struct MemlogConnectionManager::Connection {
     parser->DisconnectReceivers();
   }
 
+  bool HeapDumpNeedsVmRegions() {
+    return stack_mode == mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES ||
+           stack_mode == mojom::StackMode::NATIVE_WITH_THREAD_NAMES;
+  }
+
   base::Thread thread;
 
   mojom::ProfilingClientPtr client;
   scoped_refptr<MemlogReceiverPipe> pipe;
   scoped_refptr<MemlogStreamParser> parser;
   mojom::ProcessType process_type;
+  mojom::StackMode stack_mode;
 
   // Danger: This lives on the |thread| member above. The connection manager
   // lives on the I/O thread, so accesses to the variable must be synchronized.
@@ -155,7 +163,7 @@ void MemlogConnectionManager::OnNewConnection(
 
   auto connection = base::MakeUnique<Connection>(
       std::move(complete_cb), &backtrace_storage_, pid, std::move(client),
-      new_pipe, process_type, params->sampling_rate);
+      new_pipe, process_type, params->sampling_rate, params->stack_mode);
 
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
@@ -180,6 +188,18 @@ std::vector<base::ProcessId> MemlogConnectionManager::GetConnectionPids() {
   results.reserve(connections_.size());
   for (const auto& pair : connections_) {
     results.push_back(pair.first);
+  }
+  return results;
+}
+
+std::vector<base::ProcessId>
+MemlogConnectionManager::GetConnectionPidsThatNeedVmRegions() {
+  base::AutoLock lock(connections_lock_);
+  std::vector<base::ProcessId> results;
+  results.reserve(connections_.size());
+  for (const auto& pair : connections_) {
+    if (pair.second->HeapDumpNeedsVmRegions())
+      results.push_back(pair.first);
   }
   return results;
 }
@@ -215,7 +235,7 @@ void MemlogConnectionManager::DumpProcessesForTracing(
     bool keep_small_allocations,
     bool strip_path_from_mapped_files,
     mojom::ProfilingService::DumpProcessesForTracingCallback callback,
-    memory_instrumentation::mojom::GlobalMemoryDumpPtr dump) {
+    VmRegions vm_regions) {
   base::AutoLock lock(connections_lock_);
 
   // Early out if there are no connections.
@@ -230,7 +250,7 @@ void MemlogConnectionManager::DumpProcessesForTracing(
       BacktraceStorage::Lock(&backtrace_storage_);
   tracking->waiting_responses = connections_.size();
   tracking->callback = std::move(callback);
-  tracking->dump = std::move(dump);
+  tracking->vm_regions = std::move(vm_regions);
   tracking->results.reserve(connections_.size());
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
@@ -277,25 +297,15 @@ void MemlogConnectionManager::DoDumpOneProcessForTracing(
     return;
   }
 
-  // Find the memory maps list for the given process.
-  memory_instrumentation::mojom::ProcessMemoryDump* process_dump = nullptr;
-  for (const auto& proc : tracking->dump->process_dumps) {
-    if (proc->pid == pid) {
-      process_dump = &*proc;
-      break;
-    }
-  }
-  if (!process_dump) {
-    DLOG(ERROR) << "Don't have a memory dump for PID " << pid;
-    if (tracking->waiting_responses == 0)
-      std::move(tracking->callback).Run(std::move(tracking->results));
-    return;
-  }
-
   CHECK(tracking->backtrace_storage_lock.IsLocked());
   ExportParams params;
   params.allocs = std::move(counts);
-  params.maps = std::move(process_dump->os_dump->memory_maps_for_heap_profiler);
+
+  auto it = tracking->vm_regions.find(pid);
+  if (it != tracking->vm_regions.end()) {
+    params.maps = std::move(it->second);
+  }
+
   params.context_map = std::move(context);
   params.mapped_strings = std::move(mapped_strings);
   params.process_type = process_type;

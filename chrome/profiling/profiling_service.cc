@@ -61,12 +61,22 @@ void ProfilingService::DumpProcessesForTracing(
         resource_coordinator::mojom::kServiceName, &helper_);
   }
 
-  // Need a memory map to make sense of the dump. The dump will be triggered
-  // in the memory map global dump callback.
-  helper_->GetVmRegionsForHeapProfiler(base::Bind(
-      &ProfilingService::OnGetVmRegionsCompleteForDumpProcessesForTracing,
-      weak_factory_.GetWeakPtr(), keep_small_allocations,
-      strip_path_from_mapped_files, base::Passed(&callback)));
+  std::vector<base::ProcessId> pids =
+      connection_manager_.GetConnectionPidsThatNeedVmRegions();
+  if (pids.empty()) {
+    connection_manager_.DumpProcessesForTracing(
+        keep_small_allocations, strip_path_from_mapped_files,
+        std::move(callback), VmRegions());
+  } else {
+    // Need a memory map to make sense of the dump. The dump will be triggered
+    // in the memory map global dump callback.
+    helper_->GetVmRegionsForHeapProfiler(
+        pids,
+        base::Bind(
+            &ProfilingService::OnGetVmRegionsCompleteForDumpProcessesForTracing,
+            weak_factory_.GetWeakPtr(), keep_small_allocations,
+            strip_path_from_mapped_files, base::Passed(&callback)));
+  }
 }
 
 void ProfilingService::GetProfiledPids(GetProfiledPidsCallback callback) {
@@ -77,19 +87,10 @@ void ProfilingService::OnGetVmRegionsCompleteForDumpProcessesForTracing(
     bool keep_small_allocations,
     bool strip_path_from_mapped_files,
     mojom::ProfilingService::DumpProcessesForTracingCallback callback,
-    bool success,
-    memory_instrumentation::mojom::GlobalMemoryDumpPtr dump) {
-  if (!success) {
-    DLOG(ERROR) << "GetVMRegions failed";
-    std::move(callback).Run(
-        std::vector<profiling::mojom::SharedBufferWithSizePtr>());
-    return;
-  }
-  // TODO(bug 752621) we should be asking and getting the memory map of only
-  // the process we want rather than querying all processes and filtering.
+    VmRegions vm_regions) {
   connection_manager_.DumpProcessesForTracing(
       keep_small_allocations, strip_path_from_mapped_files, std::move(callback),
-      std::move(dump));
+      std::move(vm_regions));
 }
 
 }  // namespace profiling

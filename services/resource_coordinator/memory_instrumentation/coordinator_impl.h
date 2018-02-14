@@ -73,6 +73,7 @@ class CoordinatorImpl : public Coordinator,
 
   // mojom::HeapProfilerHelper implementation.
   void GetVmRegionsForHeapProfiler(
+      const std::vector<base::ProcessId>& pids,
       const GetVmRegionsForHeapProfilerCallback&) override;
 
  protected:
@@ -120,6 +121,14 @@ class CoordinatorImpl : public Coordinator,
                               bool success,
                               OSMemDumpMap);
 
+  // Callback of RequestOSMemoryDumpForVmRegions.
+  void OnOSMemoryDumpForVMRegions(uint64_t dump_guid,
+                                  mojom::ClientProcess* client,
+                                  bool success,
+                                  OSMemDumpMap);
+
+  void FinalizeVmRegionDumpIfAllManagersReplied(uint64_t dump_guid);
+
   void RemovePendingResponse(mojom::ClientProcess*,
                              QueuedRequest::PendingResponse::Type);
 
@@ -139,6 +148,26 @@ class CoordinatorImpl : public Coordinator,
   // Outstanding dump requests, enqueued via RequestGlobalMemoryDump().
   std::list<QueuedRequest> queued_memory_dump_requests_;
 
+  // Outstanding vm region requests, enqueued via GetVmRegionsForHeapProfiler().
+  // This is kept in a separate list from |queued_memory_dump_requests_| for two
+  // reasons:
+  //   1) The profiling service is queried during a memory dump request, but the
+  //   profiling service in turn needs to query for vm regions. Keeping this in
+  //   the same list as |queued_memory_dump_requests_| would require this class
+  //   to support concurrent requests.
+  //
+  //   2) Vm region requests are only ever requested by the profiling service,
+  //   which uses the HeapProfilerHelper interface. Keeping the requests
+  //   separate means we can avoid littering the RequestGlobalMemoryDump
+  //   interface with flags intended for HeapProfilerHelper. This was already
+  //   technically possible before, but required some additional plumbing. Now
+  //   the separation is much cleaner.
+  //
+  // Unlike queued_memory_dump_requests_, all requests are executed in parallel.
+  // The key is a |dump_guid|.
+  std::map<uint64_t, std::unique_ptr<QueuedVmRegionRequest>>
+      in_progress_vm_region_requests_;
+
   // There may be extant callbacks in |queued_memory_dump_requests_|. The
   // bindings_ must be closed before destroying the un-run callbacks.
   mojo::BindingSet<mojom::Coordinator, service_manager::Identity> bindings_;
@@ -150,6 +179,8 @@ class CoordinatorImpl : public Coordinator,
 
   // Maintains a map of service_manager::Identity -> pid for registered clients.
   std::unique_ptr<ProcessMap> process_map_;
+
+  // Dump IDs are unique across both heap dump and memory dump requests.
   uint64_t next_dump_id_;
   std::unique_ptr<TracingObserver> tracing_observer_;
 
