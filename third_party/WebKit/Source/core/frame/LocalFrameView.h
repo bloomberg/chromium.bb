@@ -149,7 +149,7 @@ class CORE_EXPORT LocalFrameView final
   void SetCanHaveScrollbars(bool);
   bool CanHaveScrollbars() const { return can_have_scrollbars_; }
 
-  Scrollbar* CreateScrollbar(ScrollbarOrientation);
+  Scrollbar* CreateScrollbar(ScrollbarOrientation) override;
 
   void SetLayoutOverflowSize(const IntSize&);
 

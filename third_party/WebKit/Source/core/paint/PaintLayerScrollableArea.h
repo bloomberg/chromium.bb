@@ -144,9 +144,9 @@ class CORE_EXPORT PaintLayerScrollableArea final
     void SetHasVerticalScrollbar(bool has_scrollbar) override;
 
     void DestroyDetachedScrollbars();
+    Scrollbar* CreateScrollbar(ScrollbarOrientation) override;
 
    protected:
-    Scrollbar* CreateScrollbar(ScrollbarOrientation) override;
     void DestroyScrollbar(ScrollbarOrientation) override;
 
     PaintLayerScrollableArea* ScrollableArea();
@@ -237,6 +237,12 @@ class CORE_EXPORT PaintLayerScrollableArea final
   Scrollbar* VerticalScrollbar() const override {
     return scrollbar_manager_.VerticalScrollbar();
   }
+  Scrollbar* CreateScrollbar(ScrollbarOrientation orientation) override {
+    return scrollbar_manager_.CreateScrollbar(orientation);
+  }
+
+  void CalculateScrollbarModes(ScrollbarMode& h_mode,
+                               ScrollbarMode& v_mode) const;
 
   PlatformChromeClient* GetChromeClient() const override;
 

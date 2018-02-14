@@ -225,6 +225,23 @@ void PaintLayerScrollableArea::Trace(blink::Visitor* visitor) {
   ScrollableArea::Trace(visitor);
 }
 
+void PaintLayerScrollableArea::CalculateScrollbarModes(
+    ScrollbarMode& h_mode,
+    ScrollbarMode& v_mode) const {
+  DCHECK(GetLayoutBox()->IsLayoutView());
+
+  // FrameViewAutoSizeInfo manually controls the appearance of the main frame's
+  // scrollbars so defer to those if we're in AutoSize mode.
+  if (AutosizeVerticalScrollbarMode() != kScrollbarAuto ||
+      AutosizeHorizontalScrollbarMode() != kScrollbarAuto) {
+    h_mode = AutosizeHorizontalScrollbarMode();
+    v_mode = AutosizeVerticalScrollbarMode();
+    return;
+  }
+
+  ToLayoutView(GetLayoutBox())->CalculateScrollbarModes(h_mode, v_mode);
+}
+
 PlatformChromeClient* PaintLayerScrollableArea::GetChromeClient() const {
   if (Page* page = GetLayoutBox()->GetFrame()->GetPage())
     return &page->GetChromeClient();
@@ -757,7 +774,7 @@ bool PaintLayerScrollableArea::UserInputScrollable(
 
     ScrollbarMode h_mode;
     ScrollbarMode v_mode;
-    ToLayoutView(GetLayoutBox())->CalculateScrollbarModes(h_mode, v_mode);
+    CalculateScrollbarModes(h_mode, v_mode);
     ScrollbarMode mode =
         (orientation == kHorizontalScrollbar) ? h_mode : v_mode;
     return mode == kScrollbarAuto || mode == kScrollbarAlwaysOn;
@@ -1404,7 +1421,7 @@ void PaintLayerScrollableArea::ComputeScrollbarExistence(
   if (GetLayoutBox()->IsLayoutView()) {
     ScrollbarMode h_mode;
     ScrollbarMode v_mode;
-    ToLayoutView(GetLayoutBox())->CalculateScrollbarModes(h_mode, v_mode);
+    CalculateScrollbarModes(h_mode, v_mode);
 
     // Look for the scrollbarModes and reset the needs Horizontal & vertical
     // Scrollbar values based on scrollbarModes, as during force style change
@@ -1436,7 +1453,7 @@ bool PaintLayerScrollableArea::TryRemovingAutoScrollbars(
   if (GetLayoutBox()->IsLayoutView()) {
     ScrollbarMode h_mode;
     ScrollbarMode v_mode;
-    ToLayoutView(GetLayoutBox())->CalculateScrollbarModes(h_mode, v_mode);
+    CalculateScrollbarModes(h_mode, v_mode);
     if (h_mode != kScrollbarAuto || v_mode != kScrollbarAuto)
       return false;
 
@@ -2012,7 +2029,7 @@ void PaintLayerScrollableArea::UpdateScrollableAreaSet() {
   if (GetLayoutBox()->IsLayoutView()) {
     ScrollbarMode h_mode;
     ScrollbarMode v_mode;
-    ToLayoutView(GetLayoutBox())->CalculateScrollbarModes(h_mode, v_mode);
+    CalculateScrollbarModes(h_mode, v_mode);
     if (h_mode == kScrollbarAlwaysOff && v_mode == kScrollbarAlwaysOff)
       has_overflow = false;
   }
