@@ -19,7 +19,6 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/blame_context.h"
-#include "base/trace_event/trace_buffer.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
 #include "platform/scheduler/base/real_time_domain.h"
 #include "platform/scheduler/base/task_queue_impl.h"
@@ -44,6 +43,7 @@ using ::testing::_;
 using blink::scheduler::internal::EnqueueOrder;
 
 namespace blink {
+
 namespace scheduler {
 // To avoid symbol collisions in jumbo builds.
 namespace task_queue_manager_unittest {
@@ -2471,56 +2471,13 @@ TEST_F(TaskQueueManagerTest, CurrentlyExecutingTaskQueue_NestedLoop) {
   EXPECT_EQ(nullptr, manager_->currently_executing_task_queue());
 }
 
-void OnTraceDataCollected(base::Closure quit_closure,
-                          base::trace_event::TraceResultBuffer* buffer,
-                          const scoped_refptr<base::RefCountedString>& json,
-                          bool has_more_events) {
-  buffer->AddFragment(json->data());
-  if (!has_more_events)
-    quit_closure.Run();
-}
-
-class TaskQueueManagerTestWithTracing : public TaskQueueManagerTest {
- public:
-  void StartTracing();
-  void StopTracing();
-  std::unique_ptr<trace_analyzer::TraceAnalyzer> CreateTraceAnalyzer();
-};
-
-void TaskQueueManagerTestWithTracing::StartTracing() {
-  base::trace_event::TraceLog::GetInstance()->SetEnabled(
-      base::trace_event::TraceConfig("*"),
-      base::trace_event::TraceLog::RECORDING_MODE);
-}
-
-void TaskQueueManagerTestWithTracing::StopTracing() {
-  base::trace_event::TraceLog::GetInstance()->SetDisabled();
-}
-
-std::unique_ptr<trace_analyzer::TraceAnalyzer>
-TaskQueueManagerTestWithTracing::CreateTraceAnalyzer() {
-  base::trace_event::TraceResultBuffer buffer;
-  base::trace_event::TraceResultBuffer::SimpleOutput trace_output;
-  buffer.SetOutputCallback(trace_output.GetCallback());
-  base::RunLoop run_loop;
-  buffer.Start();
-  base::trace_event::TraceLog::GetInstance()->Flush(
-      Bind(&OnTraceDataCollected, run_loop.QuitClosure(),
-           base::Unretained(&buffer)));
-  run_loop.Run();
-  buffer.Finish();
-
-  return base::WrapUnique(
-      trace_analyzer::TraceAnalyzer::Create(trace_output.json_output));
-}
-
-TEST_F(TaskQueueManagerTestWithTracing, BlameContextAttribution) {
+TEST_F(TaskQueueManagerTest, BlameContextAttribution) {
   using trace_analyzer::Query;
 
   InitializeWithRealMessageLoop(1u);
   TestTaskQueue* queue = runners_[0].get();
 
-  StartTracing();
+  trace_analyzer::Start("*");
   {
     base::trace_event::BlameContext blame_context("cat", "name", "type",
                                                   "scope", 0, nullptr);
@@ -2529,9 +2486,7 @@ TEST_F(TaskQueueManagerTestWithTracing, BlameContextAttribution) {
     queue->PostTask(FROM_HERE, base::BindRepeating(&NopTask));
     base::RunLoop().RunUntilIdle();
   }
-  StopTracing();
-  std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer =
-      CreateTraceAnalyzer();
+  auto analyzer = trace_analyzer::Stop();
 
   trace_analyzer::TraceEventVector events;
   Query q = Query::EventPhaseIs(TRACE_EVENT_PHASE_ENTER_CONTEXT) ||
