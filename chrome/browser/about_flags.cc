@@ -1217,7 +1217,7 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kShowOverdrawFeedback)},
     {"enable-draw-occlusion", flag_descriptions::kEnableDrawOcclusionName,
      flag_descriptions::kEnableDrawOcclusionDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableDrawOcclusion)},
+     FEATURE_VALUE_TYPE(features::kEnableDrawOcclusion)},
     {"ui-disable-partial-swap", flag_descriptions::kUiPartialSwapName,
      flag_descriptions::kUiPartialSwapDescription, kOsAll,
      SINGLE_DISABLE_VALUE_TYPE(switches::kUIDisablePartialSwap)},

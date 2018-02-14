@@ -9,8 +9,6 @@
 
 namespace features {
 
-const char kUIEnableDrawOcclusion[] = "enable-draw-occlusion";
-
 // Enables running draw occlusion algorithm to remove Draw Quads that are not
 // shown on screen from CompositorFrame.
 const base::Feature kEnableDrawOcclusion{"DrawOcclusion",
@@ -58,9 +56,7 @@ bool IsVizHitTestingSurfaceLayerEnabled() {
 }
 
 bool IsDrawOcclusionEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             kUIEnableDrawOcclusion) ||
-         base::FeatureList::IsEnabled(kEnableDrawOcclusion);
+  return base::FeatureList::IsEnabled(kEnableDrawOcclusion);
 }
 
 }  // namespace features
