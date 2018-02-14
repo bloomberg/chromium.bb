@@ -19,7 +19,7 @@
   async function dumpCompositingReasons(layer) {
     var reasons = await layer.requestCompositingReasons();
     var node = layer.nodeForSelfOrAncestor();
-    var label = Components.DOMPresentationUtils.fullQualifiedSelector(node, false);
+    var label = Elements.DOMPath.fullQualifiedSelector(node, false);
     TestRunner.addResult(`Compositing reasons for ${label}: ` + reasons.sort().join(','));
   }
 
