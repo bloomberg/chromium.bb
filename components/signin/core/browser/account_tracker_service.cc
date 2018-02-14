@@ -8,10 +8,14 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -44,6 +48,44 @@ void RemoveDeprecatedServiceFlags(PrefService* pref_service) {
   }
 }
 
+// Reads a PNG image from disk and decodes it. If the reading/decoding attempt
+// was unsuccessful, an empty image is returned.
+gfx::Image ReadImage(const base::FilePath& image_path) {
+  base::AssertBlockingAllowed();
+
+  if (!base::PathExists(image_path))
+    return gfx::Image();
+  std::string image_data;
+  if (!base::ReadFileToString(image_path, &image_data)) {
+    LOG(ERROR) << "Failed to read image from disk: " << image_path;
+    return gfx::Image();
+  }
+  return gfx::Image::CreateFrom1xPNGBytes(
+      base::RefCountedString::TakeString(&image_data));
+}
+
+// Saves |png_data| to disk at |image_path|.
+void SaveImage(scoped_refptr<base::RefCountedMemory> png_data,
+               const base::FilePath& image_path) {
+  base::AssertBlockingAllowed();
+  // Make sure the destination directory exists.
+  base::FilePath dir = image_path.DirName();
+  if (!base::DirectoryExists(dir) && !base::CreateDirectory(dir)) {
+    LOG(ERROR) << "Failed to create parent directory of: " << image_path;
+    return;
+  }
+  if (base::WriteFile(image_path, png_data->front_as<char>(),
+                      png_data->size()) == -1) {
+    LOG(ERROR) << "Failed to save image to file: " << image_path;
+  }
+}
+
+// Removes the image at path |image_path|.
+void RemoveImage(const base::FilePath& image_path) {
+  if (!base::DeleteFile(image_path, false /* recursive */))
+    LOG(ERROR) << "Failed to delete image.";
+}
+
 }  // namespace
 
 const char AccountTrackerService::kAccountInfoPref[] = "account_info";
@@ -56,7 +98,11 @@ const char AccountTrackerService::kNoHostedDomainFound[] = "NO_HOSTED_DOMAIN";
 // This must be a string which can never be a valid picture URL.
 const char AccountTrackerService::kNoPictureURLFound[] = "NO_PICTURE_URL";
 
-AccountTrackerService::AccountTrackerService() : signin_client_(nullptr) {}
+const char AccountTrackerService::kAccountsFolder[] = "Accounts";
+const char AccountTrackerService::kAvatarImagesFolder[] = "Avatar Images";
+
+AccountTrackerService::AccountTrackerService()
+    : signin_client_(nullptr), weak_factory_(this) {}
 
 AccountTrackerService::~AccountTrackerService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -70,11 +116,21 @@ void AccountTrackerService::RegisterPrefs(
                                 AccountTrackerService::MIGRATION_NOT_STARTED);
 }
 
-void AccountTrackerService::Initialize(SigninClient* signin_client) {
+void AccountTrackerService::Initialize(SigninClient* signin_client,
+                                       const base::FilePath& user_data_dir) {
   DCHECK(signin_client);
   DCHECK(!signin_client_);
   signin_client_ = signin_client;
   LoadFromPrefs();
+  user_data_dir_ = user_data_dir;
+  if (!user_data_dir_.empty()) {
+    // |image_storage_task_runner_| is a sequenced runner because we want to
+    // avoid read and write operations to the same file at the same time.
+    image_storage_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+        {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+    LoadAccountImagesFromDisk();
+  }
 }
 
 void AccountTrackerService::Shutdown() {
@@ -213,6 +269,7 @@ void AccountTrackerService::StopTrackingAccount(const std::string& account_id) {
   if (base::ContainsKey(accounts_, account_id)) {
     AccountState state = std::move(accounts_[account_id]);
     RemoveFromPrefs(state);
+    RemoveAccountImageFromDisk(account_id);
     accounts_.erase(account_id);
 
     if (!state.info.gaia.empty())
@@ -260,6 +317,7 @@ void AccountTrackerService::SetAccountImage(const std::string& account_id,
                                             const gfx::Image& image) {
   DCHECK(base::ContainsKey(accounts_, account_id));
   accounts_[account_id].image = image;
+  SaveAccountImageToDisk(account_id, image);
   NotifyAccountImageUpdated(account_id, image);
 }
 
@@ -315,6 +373,7 @@ void AccountTrackerService::MigrateToGaiaId() {
     if (base::ContainsKey(accounts_, account_id)) {
       AccountState& state = accounts_[account_id];
       RemoveFromPrefs(state);
+      RemoveAccountImageFromDisk(account_id);
       accounts_.erase(account_id);
     }
   }
@@ -324,6 +383,52 @@ void AccountTrackerService::MigrateToGaiaId() {
        it != migrated_accounts.end(); ++it) {
     accounts_.insert(*it);
   }
+}
+
+base::FilePath AccountTrackerService::GetImagePathFor(
+    const std::string& account_id) {
+  return user_data_dir_.AppendASCII(kAccountsFolder)
+      .AppendASCII(kAvatarImagesFolder)
+      .AppendASCII(account_id);
+}
+
+void AccountTrackerService::OnAccountImageLoaded(const std::string& account_id,
+                                                 gfx::Image image) {
+  if (base::ContainsKey(accounts_, account_id) &&
+      accounts_[account_id].image.IsEmpty()) {
+    accounts_[account_id].image = image;
+  }
+}
+
+void AccountTrackerService::LoadAccountImagesFromDisk() {
+  if (!image_storage_task_runner_)
+    return;
+  for (const std::pair<std::string, AccountState>& account : accounts_) {
+    const std::string& account_id = account.second.info.account_id;
+    PostTaskAndReplyWithResult(
+        image_storage_task_runner_.get(), FROM_HERE,
+        base::BindOnce(&ReadImage, GetImagePathFor(account_id)),
+        base::BindOnce(&AccountTrackerService::OnAccountImageLoaded,
+                       weak_factory_.GetWeakPtr(), account_id));
+  }
+}
+
+void AccountTrackerService::SaveAccountImageToDisk(
+    const std::string& account_id,
+    const gfx::Image& image) {
+  if (!image_storage_task_runner_)
+    return;
+  image_storage_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&SaveImage, image.As1xPNGBytes(),
+                                GetImagePathFor(account_id)));
+}
+
+void AccountTrackerService::RemoveAccountImageFromDisk(
+    const std::string& account_id) {
+  if (!image_storage_task_runner_)
+    return;
+  image_storage_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&RemoveImage, GetImagePathFor(account_id)));
 }
 
 void AccountTrackerService::LoadFromPrefs() {
@@ -395,6 +500,7 @@ void AccountTrackerService::LoadFromPrefs() {
     AccountState state;
     state.info.account_id = account_id;
     RemoveFromPrefs(state);
+    RemoveAccountImageFromDisk(account_id);
   }
 
   if (GetMigrationState() != MIGRATION_DONE) {

@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
@@ -52,6 +53,10 @@ class AccountTrackerService : public KeyedService {
   // Child account service flag name.
   static const char kChildAccountServiceFlag[];
 
+  // Account folders used for storing account related data at disk.
+  static const char kAccountsFolder[];
+  static const char kAvatarImagesFolder[];
+
   // Clients of AccountTrackerService can implement this interface and register
   // with AddObserver() to learn about account information changes.
   class Observer {
@@ -88,7 +93,10 @@ class AccountTrackerService : public KeyedService {
   // Take a SigninClient rather than a PrefService and a URLRequestContextGetter
   // since RequestContext cannot be created at startup.
   // (see http://crbug.com/171406)
-  void Initialize(SigninClient* signin_client);
+  // If |user_data_dir| is empty, images will not be saved to or loaded from
+  // disk.
+  void Initialize(SigninClient* signin_client,
+                  const base::FilePath& user_data_dir = base::FilePath());
 
   // Returns the list of known accounts and for which gaia IDs
   // have been fetched.
@@ -162,6 +170,14 @@ class AccountTrackerService : public KeyedService {
   void SaveToPrefs(const AccountState& account);
   void RemoveFromPrefs(const AccountState& account);
 
+  // Used to load/save account images from/to disc.
+  base::FilePath GetImagePathFor(const std::string& account_id);
+  void OnAccountImageLoaded(const std::string& account_id, gfx::Image image);
+  void LoadAccountImagesFromDisk();
+  void SaveAccountImageToDisk(const std::string& account_id,
+                              const gfx::Image& image);
+  void RemoveAccountImageFromDisk(const std::string& account_id);
+
   // Gaia id migration.
   bool IsMigratable() const;
   void MigrateToGaiaId();
@@ -171,7 +187,16 @@ class AccountTrackerService : public KeyedService {
   std::map<std::string, AccountState> accounts_;
   base::ObserverList<Observer> observer_list_;
 
+  base::FilePath user_data_dir_;
+
+  // Task runner used for file operations on avatar images.
+  scoped_refptr<base::SequencedTaskRunner> image_storage_task_runner_;
+
   SEQUENCE_CHECKER(sequence_checker_);
+
+  // Used to pass weak pointers of |this| to tasks created by
+  // |image_storage_task_runner_|.
+  base::WeakPtrFactory<AccountTrackerService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountTrackerService);
 };
