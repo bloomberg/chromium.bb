@@ -218,8 +218,8 @@ FwdTxfm2dFunc fwd_func_sse2_list[TX_SIZES_ALL][2] = {
   { av1_fwd_txfm2d_32x16_c, av1_lowbd_fwd_txfm2d_32x16_sse2 },  // TX_32X16
   { NULL, NULL },                                               // TX_32X64
   { NULL, NULL },                                               // TX_64X32
-  { NULL, NULL },                                               // TX_4X16
-  { NULL, NULL },                                               // TX_16X4
+  { av1_fwd_txfm2d_4x16_c, av1_lowbd_fwd_txfm2d_4x16_sse2 },    // TX_4X16
+  { av1_fwd_txfm2d_16x4_c, av1_lowbd_fwd_txfm2d_16x4_sse2 },    // TX_16X4
   { av1_fwd_txfm2d_8x32_c, av1_lowbd_fwd_txfm2d_8x32_sse2 },    // TX_8X32
   { av1_fwd_txfm2d_32x8_c, av1_lowbd_fwd_txfm2d_32x8_sse2 },    // TX_32X8
   { NULL, NULL },                                               // TX_16X64
