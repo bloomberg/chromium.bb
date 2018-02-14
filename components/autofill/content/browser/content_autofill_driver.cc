@@ -167,9 +167,9 @@ gfx::RectF ContentAutofillDriver::TransformBoundingBoxToViewportCoordinates(
   if (!view)
     return bounding_box;
 
-  gfx::Point orig_point(bounding_box.x(), bounding_box.y());
-  gfx::Point transformed_point =
-      view->TransformPointToRootCoordSpace(orig_point);
+  gfx::PointF orig_point(bounding_box.x(), bounding_box.y());
+  gfx::PointF transformed_point =
+      view->TransformPointToRootCoordSpaceF(orig_point);
   return gfx::RectF(transformed_point.x(), transformed_point.y(),
                     bounding_box.width(), bounding_box.height());
 }
