@@ -173,7 +173,16 @@ void BleSynchronizer::OnErrorUnregisteringAdvertisement(
   ScheduleCommandCompletion();
   UnregisterArgs* unregister_args = current_command_->unregister_args.get();
   DCHECK(unregister_args);
-  unregister_args->error_callback.Run(error_code);
+  if (error_code == device::BluetoothAdvertisement::ErrorCode::
+                        ERROR_ADVERTISEMENT_DOES_NOT_EXIST) {
+    // The error code indicates that the advertisement no longer exists, which
+    // should never happen since unregistration has not succeeded. Work around
+    // this situation by simply invoking the success callback. See
+    // https://crbug.com/738222 for details.
+    unregister_args->callback.Run();
+  } else {
+    unregister_args->error_callback.Run(error_code);
+  }
 }
 
 void BleSynchronizer::OnDiscoverySessionStarted(

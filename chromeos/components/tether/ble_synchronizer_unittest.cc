@@ -298,9 +298,15 @@ class BleSynchronizerTest : public testing::Test {
                    base::Unretained(this)));
   }
 
-  void InvokeUnregisterCallback(bool success,
-                                size_t unreg_arg_index,
-                                size_t expected_unregistration_result_count) {
+  // If |success| is false, the error code defaults to
+  // INVALID_ADVERTISEMENT_ERROR_CODE unless otherwise specified. If |success|
+  // is true, |error_code| is simply ignored.
+  void InvokeUnregisterCallback(
+      bool success,
+      size_t unreg_arg_index,
+      size_t expected_unregistration_result_count,
+      const device::BluetoothAdvertisement::ErrorCode& error_code = device::
+          BluetoothAdvertisement::ErrorCode::INVALID_ADVERTISEMENT_ERROR_CODE) {
     EXPECT_TRUE(unregister_args_list_.size() >= unreg_arg_index);
 
     BleSynchronizer::BluetoothAdvertisementResult expected_result;
@@ -308,11 +314,9 @@ class BleSynchronizerTest : public testing::Test {
       unregister_args_list_[unreg_arg_index]->callback.Run();
       expected_result = BleSynchronizer::BluetoothAdvertisementResult::SUCCESS;
     } else {
-      unregister_args_list_[unreg_arg_index]->error_callback.Run(
-          device::BluetoothAdvertisement::ErrorCode::
-              INVALID_ADVERTISEMENT_ERROR_CODE);
-      expected_result = BleSynchronizer::BluetoothAdvertisementResult::
-          INVALID_ADVERTISEMENT_ERROR_CODE;
+      unregister_args_list_[unreg_arg_index]->error_callback.Run(error_code);
+      expected_result =
+          synchronizer_->BluetoothAdvertisementErrorCodeToResult(error_code);
     }
 
     histogram_tester_.ExpectBucketCount(
@@ -487,6 +491,16 @@ TEST_F(BleSynchronizerTest, TestUnregisterError) {
   InvokeUnregisterCallback(false /* success */, 0u /* reg_arg_index */,
                            1 /* expected_unregistration_result_count */);
   EXPECT_EQ(1, num_unregister_error_);
+}
+
+TEST_F(BleSynchronizerTest, TestUnregisterError_AdvertisementDoesNotExist) {
+  UnregisterAdvertisement();
+  InvokeUnregisterCallback(false /* success */, 0u /* reg_arg_index */,
+                           1 /* expected_unregistration_result_count */,
+                           device::BluetoothAdvertisement::ErrorCode::
+                               ERROR_ADVERTISEMENT_DOES_NOT_EXIST);
+  EXPECT_EQ(1, num_unregister_success_);
+  EXPECT_EQ(0, num_unregister_error_);
 }
 
 TEST_F(BleSynchronizerTest, TestStartSuccess) {
