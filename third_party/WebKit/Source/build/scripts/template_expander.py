@@ -36,26 +36,37 @@ sys.path.insert(1, os.path.join(_current_dir, *([os.pardir] * 4)))
 import jinja2
 
 
-def apply_template(template_path, params, filters=None, tests=None):
-    jinja_env = jinja2.Environment(
-        loader=jinja2.FileSystemLoader(_current_dir),
-        keep_trailing_newline=True,  # newline-terminate generated files
-        lstrip_blocks=True,  # so can indent control flow tags
-        trim_blocks=True)  # so don't need {%- -%} everywhere
-    if filters:
-        jinja_env.filters.update(filters)
-    if tests:
-        jinja_env.tests.update(tests)
-    template = jinja_env.get_template(template_path)
+def apply_template(template_path, params, filters=None, tests=None, template_cache=None):
+    template = None
+
+    if filters is None and tests is None and template_cache is not None:
+        template = template_cache.get(template_path, None)
+
+    if template is None:
+        jinja_env = jinja2.Environment(
+            loader=jinja2.FileSystemLoader(_current_dir),
+            keep_trailing_newline=True,  # newline-terminate generated files
+            lstrip_blocks=True,  # so can indent control flow tags
+            trim_blocks=True)  # so don't need {%- -%} everywhere
+        if filters:
+            jinja_env.filters.update(filters)
+        if tests:
+            jinja_env.tests.update(tests)
+
+        template = jinja_env.get_template(template_path)
+        if filters is None and tests is None and template_cache is not None:
+            template_cache[template_path] = template
+
     params['template_file'] = template_path
     return template.render(params)
 
 
-def use_jinja(template_path, filters=None, tests=None):
+def use_jinja(template_path, filters=None, tests=None, template_cache=None):
     def real_decorator(generator):
         def generator_internal(*args, **kwargs):
             parameters = generator(*args, **kwargs)
-            return apply_template(template_path, parameters, filters=filters, tests=tests)
+            return apply_template(template_path, parameters, filters=filters,
+                                  tests=tests, template_cache=template_cache)
         generator_internal.func_name = generator.func_name
         return generator_internal
     return real_decorator
