@@ -674,7 +674,8 @@ TextRunHarfBuzz::TextRunHarfBuzz(const Font& template_font)
       italic(false),
       weight(Font::Weight::NORMAL),
       strike(false),
-      underline(false) {}
+      underline(false),
+      heavy_underline(false) {}
 
 TextRunHarfBuzz::~TextRunHarfBuzz() {}
 
@@ -1333,7 +1334,9 @@ void RenderTextHarfBuzz::DrawVisualText(internal::SkiaTextRenderer* renderer) {
                 ? (SkFloatToScalar(segment.width()) + preceding_segment_widths +
                    SkIntToScalar(origin.x()))
                 : positions[colored_glyphs.end() - glyphs_range.start()].x());
-        if (run.underline)
+        if (run.heavy_underline)
+          renderer->DrawUnderline(start_x, origin.y(), end_x - start_x, 2.0);
+        else if (run.underline)
           renderer->DrawUnderline(start_x, origin.y(), end_x - start_x);
         if (run.strike)
           renderer->DrawStrike(start_x, origin.y(), end_x - start_x,
@@ -1422,6 +1425,7 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
     run->baseline_type = style.baseline();
     run->strike = style.style(STRIKE);
     run->underline = style.style(UNDERLINE);
+    run->heavy_underline = style.style(HEAVY_UNDERLINE);
     run->weight = style.weight();
     int32_t script_item_break = 0;
     bidi_iterator.GetLogicalRun(run_break, &script_item_break, &run->level);
@@ -1739,7 +1743,7 @@ bool RenderTextHarfBuzz::GetDecoratedTextForRange(
       int style = Font::NORMAL;
       if (run.italic)
         style |= Font::ITALIC;
-      if (run.underline)
+      if (run.underline || run.heavy_underline)
         style |= Font::UNDERLINE;
 
       // Get range relative to the decorated text.

@@ -81,6 +81,7 @@ enum TextStyle {
   ITALIC = 0,
   STRIKE,
   UNDERLINE,
+  HEAVY_UNDERLINE,
   NUM_TEXT_STYLES,
 };
 

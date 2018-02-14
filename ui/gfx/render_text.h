@@ -70,7 +70,7 @@ class GFX_EXPORT SkiaTextRenderer {
   virtual void DrawPosText(const SkPoint* pos,
                            const uint16_t* glyphs,
                            size_t glyph_count);
-  void DrawUnderline(int x, int y, int width);
+  void DrawUnderline(int x, int y, int width, SkScalar thickness_factor = 1.0);
   void DrawStrike(int x, int y, int width, SkScalar thickness_factor);
 
  private:

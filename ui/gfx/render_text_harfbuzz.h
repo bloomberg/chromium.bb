@@ -91,6 +91,7 @@ struct GFX_EXPORT TextRunHarfBuzz {
   Font::Weight weight;
   bool strike;
   bool underline;
+  bool heavy_underline;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TextRunHarfBuzz);
