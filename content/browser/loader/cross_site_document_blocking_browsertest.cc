@@ -439,8 +439,8 @@ class CrossSiteDocumentBlockingServiceWorkerTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(CrossSiteDocumentBlockingServiceWorkerTest);
 };
 
-// TODO(lukasza): https://crbug.com/809735: Flaky on Android.
-#if defined(OS_ANDROID)
+// TODO(lukasza): https://crbug.com/809735: Flaky on Android and Linux CFI.
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_NoNetwork DISABLED_NoNetwork
 #else
 #define MAYBE_NoNetwork NoNetwork
@@ -485,8 +485,8 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingServiceWorkerTest,
                     RESOURCE_TYPE_XHR);
 }
 
-// TODO(lukasza): https://crbug.com/809735: Flaky on Android.
-#if defined(OS_ANDROID)
+// TODO(lukasza): https://crbug.com/809735: Flaky on Android and Linux CFI.
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_NetworkAndOpaqueResponse DISABLED_NetworkAndOpaqueResponse
 #else
 #define MAYBE_NetworkAndOpaqueResponse NetworkAndOpaqueResponse
