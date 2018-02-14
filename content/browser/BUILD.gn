@@ -1035,6 +1035,8 @@ jumbo_source_set("browser") {
     "loader/signed_exchange_parser.h",
     "loader/signed_exchange_signature_verifier.cc",
     "loader/signed_exchange_signature_verifier.h",
+    "loader/signed_exchange_url_loader_factory_for_non_network_service.cc",
+    "loader/signed_exchange_url_loader_factory_for_non_network_service.h",
     "loader/source_stream_to_data_pipe.cc",
     "loader/source_stream_to_data_pipe.h",
     "loader/stream_resource_handler.cc",

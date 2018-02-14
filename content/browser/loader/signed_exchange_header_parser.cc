@@ -199,7 +199,7 @@ SignedExchangeHeaderParser::ParseSignedHeaders(
 }
 
 base::Optional<std::vector<SignedExchangeHeaderParser::Signature>>
-SignedExchangeHeaderParser::ParseSignature(const std::string& signature_str) {
+SignedExchangeHeaderParser::ParseSignature(base::StringPiece signature_str) {
   StructuredHeaderParser parser(signature_str);
   std::vector<ParameterisedLabel> values;
   parser.ParseParameterisedLabelList(&values);

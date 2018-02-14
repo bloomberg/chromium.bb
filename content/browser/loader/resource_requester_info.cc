@@ -4,6 +4,7 @@
 
 #include "content/browser/loader/resource_requester_info.h"
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
@@ -11,6 +12,8 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/content_features.h"
+#include "services/network/public/cpp/features.h"
 #include "storage/browser/fileapi/file_system_context.h"
 
 namespace content {
@@ -123,6 +126,18 @@ ResourceRequesterInfo::CreateForNavigationPreload(
       RequesterType::NAVIGATION_PRELOAD, -1, nullptr /* appcache_service */,
       nullptr /* blob_storage_context */, nullptr /* file_system_context */,
       original_request_info->service_worker_context(), get_contexts_callback));
+}
+
+scoped_refptr<ResourceRequesterInfo>
+ResourceRequesterInfo::CreateForCertificateFetcherForSignedExchange(
+    const GetContextsCallback& get_contexts_callback) {
+  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
+  DCHECK(base::FeatureList::IsEnabled(features::kSignedHTTPExchange));
+  return scoped_refptr<ResourceRequesterInfo>(new ResourceRequesterInfo(
+      RequesterType::CERTIFICATE_FETCHER_FOR_SIGNED_EXCHANGE, -1,
+      nullptr /* appcache_service */, nullptr /* blob_storage_context */,
+      nullptr /* file_system_context */, nullptr /* service_worker_context */,
+      get_contexts_callback));
 }
 
 }  // namespace content

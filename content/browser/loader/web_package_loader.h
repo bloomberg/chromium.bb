@@ -12,6 +12,7 @@
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "url/origin.h"
 
 namespace net {
 class SourceStream;
@@ -19,6 +20,8 @@ class SourceStream;
 
 namespace content {
 
+class SharedURLLoaderFactory;
+class URLLoaderThrottle;
 class SignedExchangeHandler;
 class SourceStreamToDataPipe;
 
@@ -30,9 +33,15 @@ class SourceStreamToDataPipe;
 class WebPackageLoader final : public network::mojom::URLLoaderClient,
                                public network::mojom::URLLoader {
  public:
+  using URLLoaderThrottlesGetter = base::RepeatingCallback<
+      std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;
+
   WebPackageLoader(const network::ResourceResponseHead& original_response,
                    network::mojom::URLLoaderClientPtr forwarding_client,
-                   network::mojom::URLLoaderClientEndpointsPtr endpoints);
+                   network::mojom::URLLoaderClientEndpointsPtr endpoints,
+                   url::Origin request_initiator,
+                   scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
+                   URLLoaderThrottlesGetter url_loader_throttles_getter);
   ~WebPackageLoader() override;
 
   // network::mojom::URLLoaderClient implementation
@@ -102,6 +111,10 @@ class WebPackageLoader final : public network::mojom::URLLoaderClient,
 
   // Kept around until ProceedWithResponse is called.
   mojo::ScopedDataPipeConsumerHandle pending_body_consumer_;
+
+  url::Origin request_initiator_;
+  scoped_refptr<SharedURLLoaderFactory> url_loader_factory_;
+  URLLoaderThrottlesGetter url_loader_throttles_getter_;
 
   base::WeakPtrFactory<WebPackageLoader> weak_factory_;
 

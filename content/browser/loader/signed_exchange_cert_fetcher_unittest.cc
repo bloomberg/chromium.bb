@@ -143,7 +143,9 @@ void ForwardCertificateCallback(bool* called,
 class SignedExchangeCertFetcherTest : public testing::Test {
  public:
   SignedExchangeCertFetcherTest()
-      : url_(GURL("https://www.example.com/cert")) {}
+      : url_(GURL("https://www.example.com/cert")),
+        request_initiator_(
+            url::Origin::Create(GURL("https://htxg.example.com/test.htxg"))) {}
   ~SignedExchangeCertFetcherTest() override {}
 
  protected:
@@ -209,7 +211,8 @@ class SignedExchangeCertFetcherTest : public testing::Test {
     return SignedExchangeCertFetcher::CreateAndStart(
         base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
             &mock_loader_factory_),
-        std::move(throttles_), url_, force_fetch, std::move(callback));
+        std::move(throttles_), url_, request_initiator_, force_fetch,
+        std::move(callback));
   }
 
   void CallOnReceiveResponse() {
@@ -233,6 +236,7 @@ class SignedExchangeCertFetcherTest : public testing::Test {
   void CloseClientPipe() { mock_loader_factory_.CloseClientPipe(); }
 
   const GURL url_;
+  const url::Origin request_initiator_;
   bool callback_called_ = false;
   scoped_refptr<net::X509Certificate> cert_result_;
   URLLoaderFactoryForMockLoader mock_loader_factory_;
@@ -500,6 +504,8 @@ TEST_F(SignedExchangeCertFetcherTest, Simple) {
   EXPECT_EQ(net::LOAD_DO_NOT_SEND_AUTH_DATA | net::LOAD_DO_NOT_SAVE_COOKIES |
                 net::LOAD_DO_NOT_SEND_COOKIES,
             mock_loader_factory_.url_request()->load_flags);
+  EXPECT_EQ(request_initiator_,
+            mock_loader_factory_.url_request()->request_initiator);
 
   CallOnReceiveResponse();
   mock_loader_factory_.client_ptr()->OnStartLoadingResponseBody(
