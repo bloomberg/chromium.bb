@@ -51,8 +51,8 @@ struct gralloc_handle_t {
 	int prime_fd;
 
 	/* api variables */
-	const uint32_t magic; /* differentiate between allocator impls */
-	const uint32_t version; /* api version */
+	uint32_t magic; /* differentiate between allocator impls */
+	uint32_t version; /* api version */
 
 	uint32_t width; /* width of buffer in pixels */
 	uint32_t height; /* height of buffer in pixels */
