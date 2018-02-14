@@ -172,7 +172,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
       QuicStreamId id,
       SpdyHeaderBlock headers,
       bool fin,
-      SpdyPriority priority,
+      int weight,
       QuicStreamId parent_stream_id,
       bool exclusive,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);

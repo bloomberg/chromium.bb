@@ -879,9 +879,9 @@ size_t QuicChromiumClientSession::WriteHeaders(
     priority_dependency_state_.OnStreamCreation(id, priority, &parent_stream_id,
                                                 &exclusive);
   }
-  return WriteHeadersImpl(id, std::move(headers), fin, priority,
-                          parent_stream_id, exclusive,
-                          std::move(ack_notifier_delegate));
+  return WriteHeadersImpl(
+      id, std::move(headers), fin, Spdy3PriorityToHttp2Weight(priority),
+      parent_stream_id, exclusive, std::move(ack_notifier_delegate));
 }
 
 void QuicChromiumClientSession::OnHeadersHeadOfLineBlocking(
