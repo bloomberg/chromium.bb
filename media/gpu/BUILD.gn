@@ -24,6 +24,48 @@ if (is_mac) {
   import("//build/config/mac/mac_sdk.gni")
 }
 
+if (use_vaapi) {
+  action("libva_generate_stubs") {
+    extra_header = "vaapi/va_stub_header.fragment"
+
+    script = "../../tools/generate_stubs/generate_stubs.py"
+    sources = [
+      "vaapi/va.sigs",
+    ]
+    inputs = [
+      extra_header,
+    ]
+    if (use_x11) {
+      sources += [ "vaapi/va_x11.sigs" ]
+    }
+    if (is_linux) {
+      sources += [ "vaapi/va_drm.sigs" ]
+    }
+    stubs_filename_root = "va_stubs"
+
+    outputs = [
+      "$target_gen_dir/vaapi/$stubs_filename_root.cc",
+      "$target_gen_dir/vaapi/$stubs_filename_root.h",
+    ]
+    args = [
+      "-i",
+      rebase_path("$target_gen_dir/vaapi", root_build_dir),
+      "-o",
+      rebase_path("$target_gen_dir/vaapi", root_build_dir),
+      "-t",
+      "posix_stubs",
+      "-e",
+      rebase_path(extra_header, root_build_dir),
+      "-s",
+      stubs_filename_root,
+      "-p",
+      "media/gpu/vaapi",
+    ]
+
+    args += rebase_path(sources, root_build_dir)
+  }
+}
+
 if (is_chromeos && use_v4lplugin) {
   action("libv4l2_generate_stubs") {
     extra_header = "v4l2/v4l2_stub_header.fragment"
@@ -72,7 +114,6 @@ component("gpu") {
     "//content/gpu:*",
     "//content/renderer:*",
     "//media/gpu/ipc/*",
-    "//media/gpu/vaapi/*",
     "//media/mojo/*",
     "//remoting/codec:encoder",
     ":*",
@@ -87,10 +128,13 @@ component("gpu") {
   defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
 
   sources = [
+    "accelerated_video_decoder.h",
     "fake_jpeg_decode_accelerator.cc",
     "fake_jpeg_decode_accelerator.h",
     "fake_video_decode_accelerator.cc",
     "fake_video_decode_accelerator.h",
+    "format_utils.cc",
+    "format_utils.h",
     "gles2_decoder_helper.cc",
     "gles2_decoder_helper.h",
     "gpu_jpeg_decode_accelerator_factory.cc",
@@ -99,12 +143,18 @@ component("gpu") {
     "gpu_video_accelerator_util.h",
     "gpu_video_decode_accelerator_factory.cc",
     "gpu_video_decode_accelerator_factory.h",
+    "gpu_video_decode_accelerator_helpers.h",
     "gpu_video_encode_accelerator_factory.cc",
     "gpu_video_encode_accelerator_factory.h",
+    "h264_decoder.cc",
+    "h264_decoder.h",
+    "h264_dpb.cc",
+    "h264_dpb.h",
+    "shared_memory_region.cc",
+    "shared_memory_region.h",
   ]
 
   public_deps = [
-    ":common",
     ":features",
     "//base",
     "//gpu",
@@ -204,6 +254,19 @@ component("gpu") {
     }
   }
 
+  if (use_v4l2_codec || use_vaapi) {
+    sources += [
+      "vp8_decoder.cc",
+      "vp8_decoder.h",
+      "vp8_picture.cc",
+      "vp8_picture.h",
+      "vp9_decoder.cc",
+      "vp9_decoder.h",
+      "vp9_picture.cc",
+      "vp9_picture.h",
+    ]
+  }
+
   if (use_v4lplugin) {
     sources += get_target_outputs(":libv4l2_generate_stubs")
     deps += [ ":libv4l2_generate_stubs" ]
@@ -243,7 +306,53 @@ component("gpu") {
   }
 
   if (use_vaapi) {
-    public_deps += [ "//media/gpu/vaapi" ]
+    sources += [
+                 "vaapi/va_surface.cc",
+                 "vaapi/va_surface.h",
+                 "vaapi/vaapi_jpeg_decode_accelerator.cc",
+                 "vaapi/vaapi_jpeg_decode_accelerator.h",
+                 "vaapi/vaapi_jpeg_decoder.cc",
+                 "vaapi/vaapi_jpeg_decoder.h",
+                 "vaapi/vaapi_jpeg_encode_accelerator.cc",
+                 "vaapi/vaapi_jpeg_encode_accelerator.h",
+                 "vaapi/vaapi_jpeg_encoder.cc",
+                 "vaapi/vaapi_jpeg_encoder.h",
+                 "vaapi/vaapi_picture.cc",
+                 "vaapi/vaapi_picture.h",
+                 "vaapi/vaapi_picture_factory.cc",
+                 "vaapi/vaapi_picture_factory.h",
+                 "vaapi/vaapi_video_decode_accelerator.cc",
+                 "vaapi/vaapi_video_decode_accelerator.h",
+                 "vaapi/vaapi_video_encode_accelerator.cc",
+                 "vaapi/vaapi_video_encode_accelerator.h",
+                 "vaapi/vaapi_wrapper.cc",
+                 "vaapi/vaapi_wrapper.h",
+               ] + get_target_outputs(":libva_generate_stubs")
+    configs += [ "//third_party/libyuv:libyuv_config" ]
+    deps += [
+      ":libva_generate_stubs",
+      "//media",
+      "//third_party/libyuv",
+    ]
+    if (use_x11) {
+      configs += [ "//build/config/linux:x11" ]
+      deps += [ "//ui/gfx/x" ]
+      sources += [
+        "vaapi/vaapi_tfp_picture.cc",
+        "vaapi/vaapi_tfp_picture.h",
+      ]
+    }
+
+    if (is_linux) {
+      sources += [
+        "vaapi/vaapi_drm_picture.cc",
+        "vaapi/vaapi_drm_picture.h",
+      ]
+    }
+
+    if (use_ozone) {
+      deps += [ "//ui/ozone" ]
+    }
   }
 
   if (is_win) {
@@ -298,42 +407,6 @@ component("gpu") {
   }
 }
 
-source_set("common") {
-  defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
-  sources = [
-    "accelerated_video_decoder.h",
-    "format_utils.cc",
-    "format_utils.h",
-    "gpu_video_decode_accelerator_helpers.h",
-    "h264_decoder.cc",
-    "h264_decoder.h",
-    "h264_dpb.cc",
-    "h264_dpb.h",
-    "shared_memory_region.cc",
-    "shared_memory_region.h",
-  ]
-  if (use_v4l2_codec || use_vaapi) {
-    sources += [
-      "vp8_decoder.cc",
-      "vp8_decoder.h",
-      "vp8_picture.cc",
-      "vp8_picture.h",
-      "vp9_decoder.cc",
-      "vp9_decoder.h",
-      "vp9_picture.cc",
-      "vp9_picture.h",
-    ]
-  }
-
-  deps = [
-    ":features",
-    "//base",
-    "//media",
-    "//ui/gfx:buffer_types",
-    "//ui/gfx/geometry",
-  ]
-}
-
 # TODO(watk): Run this on bots. http://crbug.com/461437
 if (is_win || is_android || use_v4l2_codec || use_vaapi) {
   test("video_decode_accelerator_unittest") {
@@ -346,7 +419,6 @@ if (is_win || is_android || use_v4l2_codec || use_vaapi) {
     ]
 
     deps = [
-      ":common",
       ":gpu",
       "//base",
       "//base/test:test_support",
@@ -434,7 +506,6 @@ source_set("android_video_decode_accelerator_unittests") {
       "android/video_frame_factory_impl_unittest.cc",
     ]
     deps = [
-      ":common",
       ":gpu",
       "//base/test:test_support",
       "//gpu:test_support",
@@ -553,6 +624,13 @@ source_set("unit_tests") {
   ]
 
   if (use_vaapi) {
-    deps += [ "//media/gpu/vaapi:unit_test" ]
+    sources += [ "vaapi/vaapi_video_decode_accelerator_unittest.cc" ]
+    deps += [
+      ":gpu",
+      "//base/test:test_support",
+      "//gpu:test_support",
+      "//ui/gfx:test_support",
+      "//ui/gfx/geometry",
+    ]
   }
 }
