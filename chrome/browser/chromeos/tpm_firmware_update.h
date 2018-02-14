@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/time/time.h"
 
 namespace base {
 class DictionaryValue;
@@ -20,12 +21,18 @@ class TPMFirmwareUpdateSettingsProto;
 namespace chromeos {
 namespace tpm_firmware_update {
 
+// Settings dictionary key constants.
+extern const char kSettingsKeyAllowPowerwash[];
+
 // Decodes the TPM firmware update settings into base::Value representation.
 std::unique_ptr<base::DictionaryValue> DecodeSettingsProto(
     const enterprise_management::TPMFirmwareUpdateSettingsProto& settings);
 
-// Check whether the update should be offered as part of the powerwash flow.
-void ShouldOfferUpdateViaPowerwash(base::OnceCallback<void(bool)> completion);
+// Check whether the update should be offered as part of the powerwash flow. The
+// |timeout| parameter determines how long to wait in case the decision whether
+// an update is available is still pending.
+void ShouldOfferUpdateViaPowerwash(base::OnceCallback<void(bool)> completion,
+                                   base::TimeDelta timeout);
 
 }  // namespace tpm_firmware_update
 }  // namespace chromeos
