@@ -45,7 +45,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.ConversionUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.download.DownloadState;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -63,7 +62,6 @@ import org.chromium.ui.widget.Toast;
 import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.ref.WeakReference;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -121,22 +119,8 @@ public class DownloadUtils {
      * @return Whether the UI was shown.
      */
     public static boolean showDownloadManager(@Nullable Activity activity, @Nullable Tab tab) {
-        return showDownloadManager(activity, tab, false);
-    }
-
-    /**
-     * Displays the download manager UI. Note the UI is different on tablets and on phones.
-     * @param activity The current activity is available.
-     * @param tab The current tab if it exists.
-     * @param fromMenu Whether the manager was triggered from the overflow menu.
-     * @return Whether the UI was shown.
-     */
-    public static boolean showDownloadManager(
-            @Nullable Activity activity, @Nullable Tab tab, boolean fromMenu) {
         // Figure out what tab was last being viewed by the user.
         if (activity == null) activity = ApplicationStatus.getLastTrackedFocusedActivity();
-
-        if (openDownloadsManagerInBottomSheet(activity, fromMenu)) return true;
 
         if (tab == null && activity instanceof ChromeTabbedActivity) {
             tab = ((ChromeTabbedActivity) activity).getActivityTab();
@@ -188,49 +172,6 @@ public class DownloadUtils {
             tracker.notifyEvent(EventConstants.DOWNLOAD_HOME_OPENED);
         }
 
-        return true;
-    }
-
-    /**
-     * @param activity The activity the download manager should be displayed in if applicable or
-     *                 the last tracked focused activity.
-     * @param fromMenu Whether downloads was triggered from the overflow menu.
-     * @return Whether the downloads manager was opened in the Chrome Home bottom sheet.
-     */
-    private static boolean openDownloadsManagerInBottomSheet(Activity activity, boolean fromMenu) {
-        if (!FeatureUtilities.isChromeHomeEnabled()) return false;
-
-        Context appContext = ContextUtils.getApplicationContext();
-
-        ChromeTabbedActivity tabbedActivity = null;
-        if (activity instanceof ChromeTabbedActivity) {
-            tabbedActivity = (ChromeTabbedActivity) activity;
-        } else {
-            // Iterate through all activities looking for an instance of ChromeTabbedActivity.
-            List<WeakReference<Activity>> list = ApplicationStatus.getRunningActivities();
-            for (WeakReference<Activity> ref : list) {
-                Activity currentActivity = ref.get();
-                if (currentActivity instanceof ChromeTabbedActivity) {
-                    tabbedActivity = (ChromeTabbedActivity) currentActivity;
-                }
-            }
-        }
-
-        if (tabbedActivity == null) return false;
-
-        if (fromMenu) {
-            tabbedActivity.getBottomSheetContentController().openBottomSheetForMenuItem(
-                    R.id.action_downloads);
-        } else {
-            tabbedActivity.getBottomSheetContentController().showContentAndOpenSheet(
-                    R.id.action_downloads);
-
-            // Bring the ChromeTabbedActivity to the front.
-            Intent intent = new Intent(appContext, tabbedActivity.getClass());
-            intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            appContext.startActivity(intent);
-        }
         return true;
     }
 
