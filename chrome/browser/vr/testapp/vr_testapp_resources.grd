@@ -8,12 +8,20 @@
   </outputs>
   <release seq="1">
       <includes>
-        <if expr="background_image_available">
-        <include name="IDR_VR_BACKGROUND_IMAGE" file="../../resources/vr/assets/background.png" type="BINDATA" />
-        <include name="IDR_VR_NORMAL_GRADIENT_IMAGE" file="../../resources/vr/assets/normal_gradient.png" type="BINDATA" />
-        <include name="IDR_VR_INCOGNITO_GRADIENT_IMAGE" file="../../resources/vr/assets/incognito_gradient.png" type="BINDATA" />
-        <include name="IDR_VR_FULLSCREEN_GRADIENT_IMAGE" file="../../resources/vr/assets/fullscreen_gradient.png" type="BINDATA" />
-         </if>
+        <if expr="is_chrome_branded">
+          <then>
+            <include name="IDR_VR_BACKGROUND_IMAGE" file="../../resources/vr/assets/google_chrome/background.png" type="BINDATA" />
+            <include name="IDR_VR_NORMAL_GRADIENT_IMAGE" file="../../resources/vr/assets/google_chrome/normal_gradient.png" type="BINDATA" />
+            <include name="IDR_VR_INCOGNITO_GRADIENT_IMAGE" file="../../resources/vr/assets/google_chrome/incognito_gradient.png" type="BINDATA" />
+            <include name="IDR_VR_FULLSCREEN_GRADIENT_IMAGE" file="../../resources/vr/assets/google_chrome/fullscreen_gradient.png" type="BINDATA" />
+          </then>
+          <else>
+            <include name="IDR_VR_BACKGROUND_IMAGE" file="../../resources/vr/assets/chromium/background.png" type="BINDATA" />
+            <include name="IDR_VR_NORMAL_GRADIENT_IMAGE" file="../../resources/vr/assets/chromium/normal_gradient.png" type="BINDATA" />
+            <include name="IDR_VR_INCOGNITO_GRADIENT_IMAGE" file="../../resources/vr/assets/chromium/incognito_gradient.png" type="BINDATA" />
+            <include name="IDR_VR_FULLSCREEN_GRADIENT_IMAGE" file="../../resources/vr/assets/chromium/fullscreen_gradient.png" type="BINDATA" />
+          </else>
+        </if>
       </includes>
   </release>
 </grit>

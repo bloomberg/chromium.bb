@@ -64,7 +64,6 @@ void RotateToward(const gfx::Vector3dF& fwd, gfx::Transform* transform) {
   transform->PreconcatTransform(gfx::Transform(quat));
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
 bool LoadPng(int resource_id, std::unique_ptr<SkBitmap>* out_image) {
   base::StringPiece data =
       ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
@@ -73,7 +72,6 @@ bool LoadPng(int resource_id, std::unique_ptr<SkBitmap>* out_image) {
       reinterpret_cast<const unsigned char*>(data.data()), data.size(),
       out_image->get());
 }
-#endif
 
 }  // namespace
 
@@ -92,9 +90,7 @@ VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
   keyboard_delegate_ = std::make_unique<TestKeyboardDelegate>();
 
   UiInitialState ui_initial_state;
-#if defined(GOOGLE_CHROME_BUILD)
   ui_initial_state.assets_available = true;
-#endif
   ui_ = std::make_unique<Ui>(this, nullptr, keyboard_delegate_.get(),
                              text_input_delegate_.get(), ui_initial_state);
   if (ui_initial_state.assets_available) {
@@ -595,7 +591,6 @@ void VrTestContext::CycleOrigin() {
 
 void VrTestContext::LoadAssets() {
   base::Version assets_component_version(VR_ASSETS_COMPONENT_VERSION);
-#if defined(GOOGLE_CHROME_BUILD)
   auto assets = std::make_unique<Assets>();
   if (!(LoadPng(IDR_VR_BACKGROUND_IMAGE, &assets->background) &&
         LoadPng(IDR_VR_NORMAL_GRADIENT_IMAGE, &assets->normal_gradient) &&
@@ -608,11 +603,6 @@ void VrTestContext::LoadAssets() {
   }
   ui_->OnAssetsLoaded(AssetsLoadStatus::kSuccess, std::move(assets),
                       assets_component_version);
-#else   // defined(GOOGLE_CHROME_BUILD)
-  LOG(ERROR) << "Cannot load assets. Make testapp Chrome branded.";
-  ui_->OnAssetsLoaded(AssetsLoadStatus::kNotFound, nullptr,
-                      assets_component_version);
-#endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
 RenderInfo VrTestContext::GetRenderInfo() const {
