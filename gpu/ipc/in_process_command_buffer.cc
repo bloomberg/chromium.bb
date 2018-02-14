@@ -13,6 +13,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/queue.h"
 #include "base/lazy_instance.h"
@@ -72,11 +73,15 @@ base::AtomicSequenceNumber g_next_command_buffer_id;
 base::AtomicSequenceNumber g_next_image_id;
 
 template <typename T>
-static void RunTaskWithResult(base::Callback<T(void)> task,
-                              T* result,
-                              base::WaitableEvent* completion) {
-  *result = task.Run();
-  completion->Signal();
+base::OnceClosure WrapTaskWithResult(base::OnceCallback<T(void)> task,
+                                     T* result,
+                                     base::WaitableEvent* completion) {
+  auto wrapper = [](base::OnceCallback<T(void)> task, T* result,
+                    base::WaitableEvent* completion) {
+    *result = std::move(task).Run();
+    completion->Signal();
+  };
+  return base::BindOnce(wrapper, std::move(task), result, completion);
 }
 
 class GpuInProcessThreadHolder : public base::Thread {
@@ -273,16 +278,16 @@ gpu::ContextResult InProcessCommandBuffer::Initialize(
   InitializeOnGpuThreadParams params(is_offscreen, window, attribs,
                                      &capabilities, share_group, image_factory);
 
-  base::Callback<gpu::ContextResult(void)> init_task =
-      base::Bind(&InProcessCommandBuffer::InitializeOnGpuThread,
-                 base::Unretained(this), params);
+  base::OnceCallback<gpu::ContextResult(void)> init_task =
+      base::BindOnce(&InProcessCommandBuffer::InitializeOnGpuThread,
+                     base::Unretained(this), params);
 
   base::WaitableEvent completion(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   gpu::ContextResult result = gpu::ContextResult::kSuccess;
-  QueueTask(true, base::Bind(&RunTaskWithResult<gpu::ContextResult>, init_task,
-                             &result, &completion));
+  QueueOnceTask(true,
+                WrapTaskWithResult(std::move(init_task), &result, &completion));
   completion.Wait();
 
   if (result == gpu::ContextResult::kSuccess)
@@ -445,10 +450,10 @@ void InProcessCommandBuffer::Destroy() {
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   bool result = false;
-  base::Callback<bool(void)> destroy_task = base::Bind(
+  base::OnceCallback<bool(void)> destroy_task = base::BindOnce(
       &InProcessCommandBuffer::DestroyOnGpuThread, base::Unretained(this));
-  QueueTask(true, base::Bind(&RunTaskWithResult<bool>, destroy_task, &result,
-                             &completion));
+  QueueOnceTask(
+      true, WrapTaskWithResult(std::move(destroy_task), &result, &completion));
   completion.Wait();
 }
 
@@ -515,10 +520,10 @@ void InProcessCommandBuffer::OnContextLost() {
     gpu_control_client_->OnGpuControlLostContext();
 }
 
-void InProcessCommandBuffer::QueueTask(bool out_of_order,
-                                       const base::Closure& task) {
+void InProcessCommandBuffer::QueueOnceTask(bool out_of_order,
+                                           base::OnceClosure task) {
   if (out_of_order) {
-    service_->ScheduleTask(task);
+    service_->ScheduleTask(std::move(task));
     return;
   }
   // Release the |task_queue_lock_| before calling ScheduleTask because
@@ -526,7 +531,23 @@ void InProcessCommandBuffer::QueueTask(bool out_of_order,
   uint32_t order_num = sync_point_order_data_->GenerateUnprocessedOrderNumber();
   {
     base::AutoLock lock(task_queue_lock_);
-    task_queue_.push(std::make_unique<GpuTask>(task, order_num));
+    std::unique_ptr<GpuTask> gpu_task =
+        std::make_unique<GpuTask>(std::move(task), order_num);
+    task_queue_.push(std::move(gpu_task));
+  }
+  service_->ScheduleTask(base::BindOnce(
+      &InProcessCommandBuffer::ProcessTasksOnGpuThread, gpu_thread_weak_ptr_));
+}
+
+void InProcessCommandBuffer::QueueRepeatableTask(base::RepeatingClosure task) {
+  // Release the |task_queue_lock_| before calling ScheduleTask because
+  // the callback may get called immediately and attempt to acquire the lock.
+  uint32_t order_num = sync_point_order_data_->GenerateUnprocessedOrderNumber();
+  {
+    base::AutoLock lock(task_queue_lock_);
+    std::unique_ptr<GpuTask> gpu_task =
+        std::make_unique<GpuTask>(std::move(task), order_num);
+    task_queue_.push(std::move(gpu_task));
   }
   service_->ScheduleTask(base::Bind(
       &InProcessCommandBuffer::ProcessTasksOnGpuThread, gpu_thread_weak_ptr_));
@@ -541,16 +562,17 @@ void InProcessCommandBuffer::ProcessTasksOnGpuThread() {
     if (task_queue_.empty())
       break;
     GpuTask* task = task_queue_.front().get();
-    sync_point_order_data_->BeginProcessingOrderNumber(task->order_number);
-    task->callback.Run();
+    sync_point_order_data_->BeginProcessingOrderNumber(task->order_number());
+    task->Run();
     if (!command_buffer_->scheduled() &&
         !service_->BlockThreadOnWaitSyncToken()) {
-      sync_point_order_data_->PauseProcessingOrderNumber(task->order_number);
+      sync_point_order_data_->PauseProcessingOrderNumber(task->order_number());
       // Don't pop the task if it was preempted - it may have been preempted, so
       // we need to execute it again later.
+      DCHECK(task->is_repeatable());
       return;
     }
-    sync_point_order_data_->FinishProcessingOrderNumber(task->order_number);
+    sync_point_order_data_->FinishProcessingOrderNumber(task->order_number());
     task_queue_.pop();
   }
 }
@@ -630,11 +652,11 @@ void InProcessCommandBuffer::Flush(int32_t put_offset) {
     return;
 
   last_put_offset_ = put_offset;
-  base::Closure task =
-      base::Bind(&InProcessCommandBuffer::FlushOnGpuThread,
-                 gpu_thread_weak_ptr_, put_offset, snapshot_requested_);
+  base::RepeatingClosure task = base::BindRepeating(
+      &InProcessCommandBuffer::FlushOnGpuThread, gpu_thread_weak_ptr_,
+      put_offset, snapshot_requested_);
   snapshot_requested_ = false;
-  QueueTask(false, task);
+  QueueRepeatableTask(std::move(task));
 
   flushed_fence_sync_release_ = next_fence_sync_release_ - 1;
 }
@@ -678,10 +700,10 @@ void InProcessCommandBuffer::SetGetBuffer(int32_t shm_id) {
   base::WaitableEvent completion(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
-  base::Closure task =
-      base::Bind(&InProcessCommandBuffer::SetGetBufferOnGpuThread,
-                 base::Unretained(this), shm_id, &completion);
-  QueueTask(false, task);
+  base::OnceClosure task =
+      base::BindOnce(&InProcessCommandBuffer::SetGetBufferOnGpuThread,
+                     base::Unretained(this), shm_id, &completion);
+  QueueOnceTask(false, std::move(task));
   completion.Wait();
 
   last_put_offset_ = 0;
@@ -706,11 +728,11 @@ scoped_refptr<Buffer> InProcessCommandBuffer::CreateTransferBuffer(
 
 void InProcessCommandBuffer::DestroyTransferBuffer(int32_t id) {
   CheckSequencedThread();
-  base::Closure task =
-      base::Bind(&InProcessCommandBuffer::DestroyTransferBufferOnGpuThread,
-                 base::Unretained(this), id);
+  base::OnceClosure task =
+      base::BindOnce(&InProcessCommandBuffer::DestroyTransferBufferOnGpuThread,
+                     base::Unretained(this), id);
 
-  QueueTask(false, task);
+  QueueOnceTask(false, std::move(task));
 }
 
 void InProcessCommandBuffer::DestroyTransferBufferOnGpuThread(int32_t id) {
@@ -763,13 +785,14 @@ int32_t InProcessCommandBuffer::CreateImage(ClientBuffer buffer,
     DCHECK_EQ(fence_sync - 1, flushed_fence_sync_release_);
   }
 
-  QueueTask(false, base::Bind(&InProcessCommandBuffer::CreateImageOnGpuThread,
-                              base::Unretained(this), new_id, handle,
-                              gfx::Size(base::checked_cast<int>(width),
-                                        base::checked_cast<int>(height)),
-                              gpu_memory_buffer->GetFormat(),
-                              base::checked_cast<uint32_t>(internalformat),
-                              fence_sync));
+  QueueOnceTask(
+      false,
+      base::BindOnce(&InProcessCommandBuffer::CreateImageOnGpuThread,
+                     base::Unretained(this), new_id, handle,
+                     gfx::Size(base::checked_cast<int>(width),
+                               base::checked_cast<int>(height)),
+                     gpu_memory_buffer->GetFormat(),
+                     base::checked_cast<uint32_t>(internalformat), fence_sync));
 
   if (fence_sync) {
     flushed_fence_sync_release_ = fence_sync;
@@ -840,8 +863,9 @@ void InProcessCommandBuffer::CreateImageOnGpuThread(
 void InProcessCommandBuffer::DestroyImage(int32_t id) {
   CheckSequencedThread();
 
-  QueueTask(false, base::Bind(&InProcessCommandBuffer::DestroyImageOnGpuThread,
-                              base::Unretained(this), id));
+  QueueOnceTask(false,
+                base::BindOnce(&InProcessCommandBuffer::DestroyImageOnGpuThread,
+                               base::Unretained(this), id));
 }
 
 void InProcessCommandBuffer::DestroyImageOnGpuThread(int32_t id) {
@@ -942,30 +966,35 @@ void InProcessCommandBuffer::OnRescheduleAfterFinished() {
 
 void InProcessCommandBuffer::SignalSyncTokenOnGpuThread(
     const SyncToken& sync_token,
-    const base::Closure& callback) {
-  if (!sync_point_client_state_->Wait(sync_token, WrapCallback(callback)))
-    callback.Run();
+    base::OnceClosure callback) {
+  base::RepeatingClosure maybe_pass_callback =
+      base::AdaptCallbackForRepeating(WrapCallback(std::move(callback)));
+  if (!sync_point_client_state_->Wait(sync_token, maybe_pass_callback)) {
+    maybe_pass_callback.Run();
+  }
 }
 
 void InProcessCommandBuffer::SignalQuery(unsigned query_id,
-                                         const base::Closure& callback) {
+                                         base::OnceClosure callback) {
   CheckSequencedThread();
-  QueueTask(false, base::Bind(&InProcessCommandBuffer::SignalQueryOnGpuThread,
-                              base::Unretained(this), query_id,
-                              WrapCallback(callback)));
+  QueueOnceTask(false,
+                base::BindOnce(&InProcessCommandBuffer::SignalQueryOnGpuThread,
+                               base::Unretained(this), query_id,
+                               WrapCallback(std::move(callback))));
 }
 
 void InProcessCommandBuffer::SignalQueryOnGpuThread(
     unsigned query_id,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   gles2::QueryManager* query_manager_ = decoder_->GetQueryManager();
   DCHECK(query_manager_);
 
   gles2::QueryManager::Query* query = query_manager_->GetQuery(query_id);
-  if (!query)
-    callback.Run();
-  else
-    query->AddCallback(callback);
+  if (!query) {
+    std::move(callback).Run();
+  } else {
+    query->AddCallback(base::AdaptCallbackForRepeating(std::move(callback)));
+  }
 }
 
 void InProcessCommandBuffer::CreateGpuFence(uint32_t gpu_fence_id,
@@ -978,11 +1007,9 @@ void InProcessCommandBuffer::CreateGpuFence(uint32_t gpu_fence_id,
   gfx::GpuFenceHandle handle =
       gfx::CloneHandleForIPC(gpu_fence->GetGpuFenceHandle());
 
-  // TODO(crbug.com/789349): Should be base::BindOnce, but QueueTask requires a
-  // RepeatingClosure.
-  QueueTask(false, base::BindRepeating(
-                       &InProcessCommandBuffer::CreateGpuFenceOnGpuThread,
-                       base::Unretained(this), gpu_fence_id, handle));
+  QueueOnceTask(
+      false, base::BindOnce(&InProcessCommandBuffer::CreateGpuFenceOnGpuThread,
+                            base::Unretained(this), gpu_fence_id, handle));
 }
 
 void InProcessCommandBuffer::CreateGpuFenceOnGpuThread(
@@ -1009,17 +1036,13 @@ void InProcessCommandBuffer::GetGpuFence(
     uint32_t gpu_fence_id,
     base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)> callback) {
   CheckSequencedThread();
-  // TODO(crbug.com/789349): QueueTask requires a RepeatingClosure,
-  // but it's actually single use, hence AdaptCallbackForRepeating.
-  // Cf. WrapCallback, which we can't use directly since our callback
-  // still needs an argument, so it's not a Closure.
   auto task_runner = base::ThreadTaskRunnerHandle::IsSet()
                          ? base::ThreadTaskRunnerHandle::Get()
                          : nullptr;
-  QueueTask(false, base::AdaptCallbackForRepeating(base::BindOnce(
-                       &InProcessCommandBuffer::GetGpuFenceOnGpuThread,
-                       base::Unretained(this), gpu_fence_id, task_runner,
-                       std::move(callback))));
+  QueueOnceTask(
+      false, base::BindOnce(&InProcessCommandBuffer::GetGpuFenceOnGpuThread,
+                            base::Unretained(this), gpu_fence_id, task_runner,
+                            std::move(callback)));
 }
 
 void InProcessCommandBuffer::GetGpuFenceOnGpuThread(
@@ -1086,12 +1109,12 @@ bool InProcessCommandBuffer::IsFenceSyncReleased(uint64_t release) {
 }
 
 void InProcessCommandBuffer::SignalSyncToken(const SyncToken& sync_token,
-                                             const base::Closure& callback) {
+                                             base::OnceClosure callback) {
   CheckSequencedThread();
-  QueueTask(
-      false,
-      base::Bind(&InProcessCommandBuffer::SignalSyncTokenOnGpuThread,
-                 base::Unretained(this), sync_token, WrapCallback(callback)));
+  QueueOnceTask(
+      false, base::BindOnce(&InProcessCommandBuffer::SignalSyncTokenOnGpuThread,
+                            base::Unretained(this), sync_token,
+                            WrapCallback(std::move(callback))));
 }
 
 void InProcessCommandBuffer::WaitSyncTokenHint(const SyncToken& sync_token) {}
@@ -1228,42 +1251,55 @@ namespace {
 
 void PostCallback(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   // The task_runner.get() check is to support using InProcessCommandBuffer on
   // a thread without a message loop.
   if (task_runner.get() && !task_runner->BelongsToCurrentThread()) {
-    task_runner->PostTask(FROM_HERE, callback);
+    task_runner->PostTask(FROM_HERE, std::move(callback));
   } else {
-    callback.Run();
+    std::move(callback).Run();
   }
 }
 
-void RunOnTargetThread(std::unique_ptr<base::Closure> callback) {
-  DCHECK(callback.get());
-  callback->Run();
+void RunOnTargetThread(base::OnceClosure callback) {
+  DCHECK(!callback.is_null());
+  std::move(callback).Run();
 }
 
 }  // anonymous namespace
 
-base::Closure InProcessCommandBuffer::WrapCallback(
-    const base::Closure& callback) {
+base::OnceClosure InProcessCommandBuffer::WrapCallback(
+    base::OnceClosure callback) {
   // Make sure the callback gets deleted on the target thread by passing
   // ownership.
-  std::unique_ptr<base::Closure> scoped_callback(new base::Closure(callback));
-  base::Closure callback_on_client_thread =
-      base::Bind(&RunOnTargetThread, base::Passed(&scoped_callback));
-  base::Closure wrapped_callback =
-      base::Bind(&PostCallback, base::ThreadTaskRunnerHandle::IsSet()
-                                    ? base::ThreadTaskRunnerHandle::Get()
-                                    : nullptr,
-                 callback_on_client_thread);
+  base::OnceClosure callback_on_client_thread =
+      base::BindOnce(&RunOnTargetThread, std::move(callback));
+  base::OnceClosure wrapped_callback =
+      base::BindOnce(&PostCallback,
+                     base::ThreadTaskRunnerHandle::IsSet()
+                         ? base::ThreadTaskRunnerHandle::Get()
+                         : nullptr,
+                     std::move(callback_on_client_thread));
   return wrapped_callback;
 }
 
-InProcessCommandBuffer::GpuTask::GpuTask(const base::Closure& callback,
+InProcessCommandBuffer::GpuTask::GpuTask(base::OnceClosure callback,
                                          uint32_t order_number)
-    : callback(callback), order_number(order_number) {}
+    : once_closure_(std::move(callback)), order_number_(order_number) {}
+
+InProcessCommandBuffer::GpuTask::GpuTask(base::RepeatingClosure callback,
+                                         uint32_t order_number)
+    : repeating_closure_(std::move(callback)), order_number_(order_number) {}
 
 InProcessCommandBuffer::GpuTask::~GpuTask() = default;
+
+void InProcessCommandBuffer::GpuTask::Run() {
+  if (once_closure_) {
+    std::move(once_closure_).Run();
+    return;
+  }
+  DCHECK(repeating_closure_) << "Trying to run a OnceClosure more than once.";
+  repeating_closure_.Run();
+}
 
 }  // namespace gpu

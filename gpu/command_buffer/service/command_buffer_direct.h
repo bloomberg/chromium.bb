@@ -65,7 +65,7 @@ class GPU_EXPORT CommandBufferDirect : public CommandBuffer,
 
   void SetCommandsPaused(bool paused);
   void SignalSyncToken(const gpu::SyncToken& sync_token,
-                       const base::Closure& callback);
+                       base::OnceClosure callback);
 
   scoped_refptr<Buffer> CreateTransferBufferWithId(size_t size, int32_t id);
 

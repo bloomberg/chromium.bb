@@ -55,7 +55,7 @@ class GPU_EXPORT GpuControl {
 
   // Runs |callback| when a query created via glCreateQueryEXT() has cleared
   // passed the glEndQueryEXT() point.
-  virtual void SignalQuery(uint32_t query, const base::Closure& callback) = 0;
+  virtual void SignalQuery(uint32_t query, base::OnceClosure callback) = 0;
 
   virtual void CreateGpuFence(uint32_t gpu_fence_id, ClientGpuFence source) = 0;
   virtual void GetGpuFence(
@@ -102,7 +102,7 @@ class GPU_EXPORT GpuControl {
 
   // Runs |callback| when sync token is signaled.
   virtual void SignalSyncToken(const SyncToken& sync_token,
-                               const base::Closure& callback) = 0;
+                               base::OnceClosure callback) = 0;
 
   // This allows the command buffer proxy to mark the next flush with sync token
   // dependencies for the gpu scheduler. This is used in addition to the

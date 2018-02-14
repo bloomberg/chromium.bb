@@ -131,7 +131,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
                       size_t height,
                       unsigned internalformat) override;
   void DestroyImage(int32_t id) override;
-  void SignalQuery(uint32_t query_id, const base::Closure& callback) override;
+  void SignalQuery(uint32_t query_id, base::OnceClosure callback) override;
   void CreateGpuFence(uint32_t gpu_fence_id, ClientGpuFence source) override;
   void GetGpuFence(uint32_t gpu_fence_id,
                    base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)>
@@ -144,7 +144,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   uint64_t GenerateFenceSyncRelease() override;
   bool IsFenceSyncReleased(uint64_t release) override;
   void SignalSyncToken(const SyncToken& sync_token,
-                       const base::Closure& callback) override;
+                       base::OnceClosure callback) override;
   void WaitSyncTokenHint(const SyncToken& sync_token) override;
   bool CanWaitUnverifiedSyncToken(const SyncToken& sync_token) override;
   void SetSnapshotRequested() override;
@@ -231,11 +231,11 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
     virtual void Release() const = 0;
 
     // Queues a task to run as soon as possible.
-    virtual void ScheduleTask(const base::Closure& task) = 0;
+    virtual void ScheduleTask(base::OnceClosure task) = 0;
 
     // Schedules |callback| to run at an appropriate time for performing delayed
     // work.
-    virtual void ScheduleDelayedWork(const base::Closure& task) = 0;
+    virtual void ScheduleDelayedWork(base::OnceClosure task) = 0;
 
     virtual bool UseVirtualizedGLContexts() = 0;
     virtual SyncPointManager* sync_point_manager() = 0;
@@ -305,14 +305,17 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   void UpdateLastStateOnGpuThread();
   void ScheduleDelayedWorkOnGpuThread();
   bool MakeCurrent();
-  base::Closure WrapCallback(const base::Closure& callback);
-  void QueueTask(bool out_of_order, const base::Closure& task);
+  base::OnceClosure WrapCallback(base::OnceClosure callback);
+
+  void QueueOnceTask(bool out_of_order, base::OnceClosure task);
+  void QueueRepeatableTask(base::RepeatingClosure task);
+
   void ProcessTasksOnGpuThread();
   void CheckSequencedThread();
   void OnWaitSyncTokenCompleted(const SyncToken& sync_token);
   void SignalSyncTokenOnGpuThread(const SyncToken& sync_token,
-                                  const base::Closure& callback);
-  void SignalQueryOnGpuThread(unsigned query_id, const base::Closure& callback);
+                                  base::OnceClosure callback);
+  void SignalQueryOnGpuThread(unsigned query_id, base::OnceClosure callback);
   void DestroyTransferBufferOnGpuThread(int32_t id);
   void CreateImageOnGpuThread(int32_t id,
                               const gfx::GpuMemoryBufferHandle& handle,
@@ -388,11 +391,22 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   std::unique_ptr<base::SequenceChecker> sequence_checker_;
 
   base::Lock task_queue_lock_;
-  struct GpuTask {
-    GpuTask(const base::Closure& callback, uint32_t order_number);
+  class GpuTask {
+   public:
+    GpuTask(base::OnceClosure callback, uint32_t order_number);
+    GpuTask(base::RepeatingClosure callback, uint32_t order_number);
     ~GpuTask();
-    base::Closure callback;
-    uint32_t order_number;
+
+    uint32_t order_number() { return order_number_; }
+    bool is_repeatable() { return !!repeating_closure_; }
+    void Run();
+
+   private:
+    base::OnceClosure once_closure_;
+    base::RepeatingClosure repeating_closure_;
+    uint32_t order_number_;
+
+    DISALLOW_COPY_AND_ASSIGN(GpuTask);
   };
   base::queue<std::unique_ptr<GpuTask>> task_queue_;
 

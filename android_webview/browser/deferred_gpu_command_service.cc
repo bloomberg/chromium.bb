@@ -110,10 +110,10 @@ void DeferredGpuCommandService::RequestProcessGL(bool for_idle) {
 }
 
 // Called from different threads!
-void DeferredGpuCommandService::ScheduleTask(const base::Closure& task) {
+void DeferredGpuCommandService::ScheduleTask(base::OnceClosure task) {
   {
     base::AutoLock lock(tasks_lock_);
-    tasks_.push(task);
+    tasks_.push(std::move(task));
   }
   if (ScopedAllowGL::IsAllowed()) {
     RunTasks();
@@ -128,10 +128,10 @@ size_t DeferredGpuCommandService::IdleQueueSize() {
 }
 
 void DeferredGpuCommandService::ScheduleDelayedWork(
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   {
     base::AutoLock lock(tasks_lock_);
-    idle_tasks_.push(std::make_pair(base::Time::Now(), callback));
+    idle_tasks_.push(std::make_pair(base::Time::Now(), std::move(callback)));
   }
   RequestProcessGL(true);
 }
@@ -148,7 +148,7 @@ void DeferredGpuCommandService::PerformIdleWork(bool is_idle) {
   const base::Time now = base::Time::Now();
   size_t queue_size = IdleQueueSize();
   while (queue_size--) {
-    base::Closure task;
+    base::OnceClosure task;
     {
       base::AutoLock lock(tasks_lock_);
       if (!is_idle) {
@@ -157,10 +157,10 @@ void DeferredGpuCommandService::PerformIdleWork(bool is_idle) {
         if (age < kMaxIdleAge)
           break;
       }
-      task = idle_tasks_.front().second;
+      task = std::move(idle_tasks_.front().second);
       idle_tasks_.pop();
     }
-    task.Run();
+    std::move(task).Run();
   }
 }
 
@@ -187,13 +187,13 @@ void DeferredGpuCommandService::RunTasks() {
   }
 
   while (has_more_tasks) {
-    base::Closure task;
+    base::OnceClosure task;
     {
       base::AutoLock lock(tasks_lock_);
-      task = tasks_.front();
+      task = std::move(tasks_.front());
       tasks_.pop();
     }
-    task.Run();
+    std::move(task).Run();
     {
       base::AutoLock lock(tasks_lock_);
       has_more_tasks = tasks_.size() > 0;
