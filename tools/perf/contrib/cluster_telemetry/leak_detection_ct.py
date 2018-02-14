@@ -24,7 +24,10 @@ class LeakDetectionClusterTelemetry(ld._LeakDetectionBase):
         action_runner.PrepareForLeakDetection()
         action_runner.MeasureMemory(True)
         action_runner.Navigate(self.url)
-        py_utils.WaitFor(action_runner.tab.HasReachedQuiescence, timeout=30)
+        try:
+          py_utils.WaitFor(action_runner.tab.HasReachedQuiescence, timeout=30)
+        except py_utils.TimeoutException:
+          action_runner.tab.WaitForDocumentReadyStateToBeComplete()
         action_runner.Navigate('about:blank')
         action_runner.PrepareForLeakDetection()
         action_runner.MeasureMemory(True)
