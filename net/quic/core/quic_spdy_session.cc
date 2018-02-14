@@ -415,15 +415,16 @@ size_t QuicSpdySession::WriteHeaders(
     bool fin,
     SpdyPriority priority,
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
-  return WriteHeadersImpl(id, std::move(headers), fin, priority, 0, false,
-                          std::move(ack_listener));
+  return WriteHeadersImpl(
+      id, std::move(headers), fin, Spdy3PriorityToHttp2Weight(priority),
+      /*parent_stream_id=*/0, /*exclusive=*/false, std::move(ack_listener));
 }
 
 size_t QuicSpdySession::WriteHeadersImpl(
     QuicStreamId id,
     SpdyHeaderBlock headers,
     bool fin,
-    SpdyPriority priority,
+    int weight,
     QuicStreamId parent_stream_id,
     bool exclusive,
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
@@ -431,7 +432,7 @@ size_t QuicSpdySession::WriteHeadersImpl(
   headers_frame.set_fin(fin);
   if (perspective() == Perspective::IS_CLIENT) {
     headers_frame.set_has_priority(true);
-    headers_frame.set_weight(Spdy3PriorityToHttp2Weight(priority));
+    headers_frame.set_weight(weight);
     headers_frame.set_parent_stream_id(parent_stream_id);
     headers_frame.set_exclusive(exclusive);
   }
