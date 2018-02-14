@@ -57,7 +57,10 @@ function pageFillColor(page) {
   const sizeAndFilename = page.size_and_filenames[0];
   if (!sizeAndFilename) return "lightgrey";
 
-  const dominantFilename = sizeAndFilename[1];
+  let dominantFilename = sizeAndFilename[1];
+  if (dominantFilename.startsWith("obj/")) {
+    dominantFilename = dominantFilename.substring(4);
+  }
   for (let i = 0; i < COLOR_MAPPING.length; i++) {
     const prefixes = COLOR_MAPPING[i][0];
     const color = COLOR_MAPPING[i][1];
