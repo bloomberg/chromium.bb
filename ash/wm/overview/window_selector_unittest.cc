@@ -22,6 +22,7 @@
 #include "ash/shell_test_api.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector.h"
@@ -122,6 +123,12 @@ class WindowSelectorTest : public AshTestBase {
         new ShelfViewTestAPI(GetPrimaryShelf()->GetShelfViewForTesting()));
     shelf_view_test_->SetAnimationDuration(1);
     ScopedTransformOverviewWindow::SetImmediateCloseForTests();
+  }
+
+  void TearDown() override {
+    ResetCachedOverviewUiValueForTesting();
+
+    AshTestBase::TearDown();
   }
 
   aura::Window* CreateWindow(const gfx::Rect& bounds) {
@@ -358,6 +365,14 @@ class WindowSelectorTest : public AshTestBase {
   OverviewWindowDragController* window_drag_controller() {
     DCHECK(window_selector());
     return window_selector()->window_drag_controller_.get();
+  }
+
+  views::Widget* item_widget(WindowSelectorItem* item) {
+    return item->item_widget_.get();
+  }
+
+  views::Widget* minimized_widget(WindowSelectorItem* item) {
+    return item->transform_window_.minimized_widget();
   }
 
  private:
@@ -2014,14 +2029,16 @@ TEST_F(WindowSelectorTest, OverviewWhileDragging) {
   resizer->RevertDrag();
 }
 
+// Verify that entering overview mode without windows with the old ui is not
+// possible.
+TEST_F(WindowSelectorTest, OverviewNoWindowsIndicatorOldUi) {
+  ToggleOverview();
+  EXPECT_FALSE(window_selector());
+}
+
 // Verify that the overview no windows indicator appears when entering overview
 // mode with no windows.
 TEST_F(WindowSelectorTest, OverviewNoWindowsIndicator) {
-  // Verify that entering overview mode without windows with the old ui is not
-  // possible.
-  ToggleOverview();
-  EXPECT_FALSE(window_selector());
-
   // Verify that by entering overview mode without windows, the no items
   // indicator appears.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -2161,6 +2178,101 @@ TEST_F(WindowSelectorTest, WindowItemTitleCloseVisibilityOnDrag) {
   EXPECT_EQ(1.f, item1->GetCloseButtonOpacityForTesting());
   EXPECT_EQ(1.f, item2->GetTitlebarOpacityForTesting());
   EXPECT_EQ(1.f, item2->GetCloseButtonOpacityForTesting());
+}
+
+// Tests that overview widgets are stacked in the correct order.
+TEST_F(WindowSelectorTest, OverviewWidgetStackingOrder) {
+  // Helper function to get the index of |child|, give its parent window
+  // |parent|. Given the same |parent|, the children with higher index will be
+  // stacked above (but not neccessarily directly) the children with lower
+  // index.
+  auto index_of = [](aura::Window* child, aura::Window* parent) {
+    DCHECK(parent->Contains(child));
+
+    aura::Window::Windows children = parent->children();
+    auto it = std::find(children.begin(), children.end(), child);
+    DCHECK(it != children.end());
+
+    return static_cast<int>(std::distance(children.begin(), it));
+  };
+
+  // Create three windows, including one minimized.
+  const gfx::Rect bounds(10, 10, 200, 200);
+  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> minimized(CreateWindow(bounds));
+  wm::GetWindowState(minimized.get())->Minimize();
+  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+
+  aura::Window* parent = window->parent();
+  DCHECK_EQ(parent, minimized->parent());
+
+  // Dragging is only allowed in tablet mode.
+  RunAllPendingInMessageLoop();
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
+  ToggleOverview();
+  WindowSelectorItem* item1 = GetWindowItemForWindow(0, window.get());
+  WindowSelectorItem* item2 = GetWindowItemForWindow(0, minimized.get());
+  WindowSelectorItem* item3 = GetWindowItemForWindow(0, window3.get());
+
+  views::Widget* widget1 = item_widget(item1);
+  views::Widget* widget2 = item_widget(item2);
+  views::Widget* widget3 = item_widget(item3);
+  views::Widget* min_widget1 = minimized_widget(item1);
+  views::Widget* min_widget2 = minimized_widget(item2);
+  views::Widget* min_widget3 = minimized_widget(item3);
+
+  // The original order of stacking is determined by the order the associated
+  // window was activated (created in this case). All widgets associated with
+  // minimized windows will be above non minimized windows, because a widget for
+  // the minimized windows is created upon entering overview, and them the
+  // window selector item widget is stacked on top of that.
+  EXPECT_GT(index_of(widget2->GetNativeWindow(), parent),
+            index_of(widget3->GetNativeWindow(), parent));
+  EXPECT_GT(index_of(widget3->GetNativeWindow(), parent),
+            index_of(widget1->GetNativeWindow(), parent));
+
+  // Verify that only minimized windows have minimized widgets in overview.
+  EXPECT_FALSE(min_widget1);
+  ASSERT_TRUE(min_widget2);
+  EXPECT_FALSE(min_widget3);
+
+  // Verify both item widgets and minimized widgets are parented to the parent
+  // of the original windows.
+  EXPECT_EQ(parent, widget1->GetNativeWindow()->parent());
+  EXPECT_EQ(parent, widget2->GetNativeWindow()->parent());
+  EXPECT_EQ(parent, widget3->GetNativeWindow()->parent());
+  EXPECT_EQ(parent, min_widget2->GetNativeWindow()->parent());
+
+  // Verify that the item widget is stacked above the window if not minimized.
+  // Verify that the item widget is stacked above the minimized widget if
+  // minimized.
+  EXPECT_GT(index_of(widget1->GetNativeWindow(), parent),
+            index_of(window.get(), parent));
+  EXPECT_GT(index_of(widget2->GetNativeWindow(), parent),
+            index_of(min_widget2->GetNativeWindow(), parent));
+
+  // Drag the first window. Verify that it's item widget is not stacked above
+  // the other two.
+  const gfx::Point start_drag = item1->target_bounds().CenterPoint();
+  GetEventGenerator().MoveMouseTo(start_drag);
+  GetEventGenerator().PressLeftButton();
+  EXPECT_GT(index_of(widget1->GetNativeWindow(), parent),
+            index_of(widget2->GetNativeWindow(), parent));
+  EXPECT_GT(index_of(widget1->GetNativeWindow(), parent),
+            index_of(widget3->GetNativeWindow(), parent));
+
+  // Drag to origin and then back to the start to avoid activating the window or
+  // entering splitview.
+  GetEventGenerator().MoveMouseTo(gfx::Point());
+  GetEventGenerator().MoveMouseTo(start_drag);
+  GetEventGenerator().ReleaseLeftButton();
+
+  // Verify the stacking order is same as before dragging started.
+  EXPECT_GT(index_of(widget2->GetNativeWindow(), parent),
+            index_of(widget3->GetNativeWindow(), parent));
+  EXPECT_GT(index_of(widget3->GetNativeWindow(), parent),
+            index_of(widget1->GetNativeWindow(), parent));
 }
 
 class SplitViewWindowSelectorTest : public WindowSelectorTest {

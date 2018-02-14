@@ -311,11 +311,9 @@ class WindowSelectorItem::RoundedContainerView
       public ui::ImplicitAnimationObserver {
  public:
   RoundedContainerView(WindowSelectorItem* item,
-                       aura::Window* item_window,
                        int corner_radius,
                        SkColor background)
       : item_(item),
-        item_window_(item_window),
         corner_radius_(corner_radius),
         initial_color_(background),
         target_color_(background),
@@ -329,7 +327,6 @@ class WindowSelectorItem::RoundedContainerView
 
   void OnItemRestored() {
     item_ = nullptr;
-    item_window_ = nullptr;
   }
 
   // Used by tests to set animation state.
@@ -401,9 +398,10 @@ class WindowSelectorItem::RoundedContainerView
     // overview header is fully exposed update stacking to keep the label above
     // the item which prevents input events from reaching the window.
     aura::Window* widget_window = GetWidget()->GetNativeWindow();
-    if (widget_window && item_window_)
-      widget_window->parent()->StackChildAbove(widget_window, item_window_);
-    item_window_ = nullptr;
+    aura::Window* stacking_window =
+        item_ ? item_->GetWindowForStacking() : nullptr;
+    if (widget_window && stacking_window)
+      widget_window->parent()->StackChildAbove(widget_window, stacking_window);
   }
 
   void AnimationProgressed(const gfx::Animation* animation) override {
@@ -412,7 +410,6 @@ class WindowSelectorItem::RoundedContainerView
   }
 
   void AnimationCanceled(const gfx::Animation* animation) override {
-    item_window_ = nullptr;
     initial_color_ = target_color_;
     current_value_ = 255;
     SchedulePaint();
@@ -433,7 +430,6 @@ class WindowSelectorItem::RoundedContainerView
   }
 
   WindowSelectorItem* item_;
-  aura::Window* item_window_;
   int corner_radius_;
   SkColor initial_color_;
   SkColor target_color_;
@@ -533,11 +529,14 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
     label_size.set_height(
         std::max(label_size.height(), kSplitviewLabelPreferredHeightDp));
 
+    const int visible_height = close_button_->GetPreferredSize().height();
+
+    // Center the cannot snap label in the middle of the item, minus the title.
     gfx::Rect cannot_snap_bounds = GetLocalBounds();
+    cannot_snap_bounds.Inset(0, visible_height, 0, 0);
     cannot_snap_bounds.ClampToCenteredSize(label_size);
     cannot_snap_container_->SetBoundsRect(cannot_snap_bounds);
 
-    const int visible_height = close_button_->GetPreferredSize().height();
     gfx::Rect background_bounds(gfx::Rect(bounds.size()));
     background_bounds.set_height(visible_height);
     background_->SetBoundsRect(background_bounds);
@@ -635,6 +634,16 @@ WindowSelectorItem::~WindowSelectorItem() {
 
 aura::Window* WindowSelectorItem::GetWindow() {
   return transform_window_.window();
+}
+
+aura::Window* WindowSelectorItem::GetWindowForStacking() {
+  // If the window is minimized, stack |widget_window| above the minimized
+  // window, otherwise the minimized window will cover |widget_window|. The
+  // minimized is created with the same parent as the original window, just
+  // like |item_widget_|, so there is no need to reparent.
+  return transform_window_.minimized_widget()
+             ? transform_window_.minimized_widget()->GetNativeWindow()
+             : GetWindow();
 }
 
 void WindowSelectorItem::RestoreWindow() {
@@ -886,8 +895,7 @@ void WindowSelectorItem::SetOpacity(float opacity) {
 }
 
 void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
-  background_view_ = new RoundedContainerView(this, transform_window_.window(),
-                                              kLabelBackgroundRadius,
+  background_view_ = new RoundedContainerView(this, kLabelBackgroundRadius,
                                               transform_window_.GetTopColor());
   if (IsNewOverviewUi())
     background_view_->set_color(SK_ColorTRANSPARENT);
@@ -1087,11 +1095,12 @@ void WindowSelectorItem::StartDrag() {
   SetBounds(scaled_bounds, animation_type);
 
   aura::Window* widget_window = item_widget_->GetNativeWindow();
-  if (widget_window && widget_window->parent() == GetWindow()->parent()) {
+  aura::Window* window = GetWindowForStacking();
+  if (widget_window && widget_window->parent() == window->parent()) {
     // TODO(xdai): This might not work if there is an always on top window.
     // See crbug.com/733760.
     widget_window->parent()->StackChildAtTop(widget_window);
-    widget_window->parent()->StackChildBelow(GetWindow(), widget_window);
+    widget_window->parent()->StackChildBelow(window, widget_window);
   }
 }
 
@@ -1100,7 +1109,7 @@ void WindowSelectorItem::EndDrag() {
 
   // First stack this item's window below the snapped window if split view mode
   // is active.
-  aura::Window* dragged_window = GetWindow();
+  aura::Window* dragged_window = GetWindowForStacking();
   aura::Window* dragged_widget_window = item_widget_->GetNativeWindow();
   aura::Window* parent_window = dragged_widget_window->parent();
   if (Shell::Get()->IsSplitViewModeActive()) {
