@@ -54,14 +54,14 @@ PaintInvalidationReason TableCellPaintInvalidator::InvalidatePaint() {
         (row.StyleRef().HasBackground() ||
          (table.HasCollapsedBorders() &&
           LIKELY(!table.ShouldPaintAllCollapsedBorders())))) {
-      InvalidateContainerForCellGeometryChange(row, *context_.parent_context);
+      InvalidateContainerForCellGeometryChange(row, *context_.ParentContext());
     }
 
     if (UNLIKELY(table.ShouldPaintAllCollapsedBorders()) &&
         !IsFullPaintInvalidationReason(table.GetPaintInvalidationReason())) {
       DCHECK(table.HasCollapsedBorders());
       InvalidateContainerForCellGeometryChange(
-          table, *context_.parent_context->parent_context->parent_context);
+          table, *context_.ParentContext()->ParentContext()->ParentContext());
     }
 
     if (!IsFullPaintInvalidationReason(section.GetPaintInvalidationReason())) {
@@ -77,7 +77,7 @@ PaintInvalidationReason TableCellPaintInvalidator::InvalidatePaint() {
       }
       if (section_paints_background) {
         InvalidateContainerForCellGeometryChange(
-            section, *context_.parent_context->parent_context);
+            section, *context_.ParentContext()->ParentContext());
       }
     }
   }

@@ -19,6 +19,7 @@
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerScrollableArea.h"
+#include "core/paint/PrePaintTreeWalk.h"
 #include "core/paint/ng/ng_paint_fragment.h"
 #include "platform/PlatformChromeClient.h"
 #include "platform/graphics/paint/GeometryMapper.h"
@@ -184,6 +185,13 @@ void PaintInvalidatorContext::MapLocalRectToVisualRectInBacking(
   rect = PaintInvalidator::MapLocalRectToVisualRectInBacking<LayoutRect,
                                                              LayoutPoint>(
       object, rect, *this);
+}
+
+const PaintInvalidatorContext*
+PaintInvalidatorContext::ParentContextAccessor::ParentContext() const {
+  return tree_walk_ ? &tree_walk_->ContextAt(parent_context_index_)
+                           .paint_invalidator_context
+                    : nullptr;
 }
 
 LayoutRect PaintInvalidator::ComputeVisualRectInBacking(

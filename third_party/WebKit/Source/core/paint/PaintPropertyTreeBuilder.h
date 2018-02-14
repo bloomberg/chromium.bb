@@ -109,7 +109,7 @@ struct PaintPropertyTreeBuilderFragmentContext {
 };
 
 struct PaintPropertyTreeBuilderContext {
-  USING_FAST_MALLOC(PaintPropertyTreeBuilderContext);
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
   PaintPropertyTreeBuilderContext() = default;
