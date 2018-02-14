@@ -394,6 +394,15 @@ Polymer({
     settings.navigateToPreviousRoute();
     cr.ui.focusWithoutInk(assert(this.$.importDataDialogTrigger));
   },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowSyncAccountControl_: function() {
+    return !!this.diceEnabled_ && !!this.syncStatus.syncSystemEnabled &&
+        !!this.syncStatus.signinAllowed;
+  },
   // </if>
 
   /**

@@ -23,7 +23,6 @@ settings.StoredAccount;
  *            hasError: (boolean|undefined),
  *            hasUnrecoverableError: (boolean|undefined),
  *            managed: (boolean|undefined),
- *            setupCompleted: (boolean|undefined),
  *            setupInProgress: (boolean|undefined),
  *            signedIn: (boolean|undefined),
  *            signedInUsername: (string|undefined),
