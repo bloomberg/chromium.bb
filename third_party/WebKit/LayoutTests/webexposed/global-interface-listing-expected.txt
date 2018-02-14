@@ -1075,6 +1075,8 @@ interface CompositionEvent : UIEvent
     method initCompositionEvent
 interface ComputedAccessibleNode
     attribute @@toStringTag
+    getter atomic
+    getter busy
     getter colCount
     getter colIndex
     getter colSpan
@@ -1082,6 +1084,7 @@ interface ComputedAccessibleNode
     getter keyShortcuts
     getter lastChild
     getter level
+    getter modal
     getter name
     getter nextSibling
     getter parent

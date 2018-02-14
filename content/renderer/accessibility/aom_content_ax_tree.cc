@@ -58,6 +58,20 @@ ax::mojom::StringAttribute GetCorrespondingAXAttribute(
   }
 }
 
+ax::mojom::BoolAttribute GetCorrespondingAXAttribute(
+    blink::WebAOMBoolAttribute attr) {
+  switch (attr) {
+    case blink::WebAOMBoolAttribute::AOM_ATTR_ATOMIC:
+      return ax::mojom::BoolAttribute::kLiveAtomic;
+    case blink::WebAOMBoolAttribute::AOM_ATTR_BUSY:
+      return ax::mojom::BoolAttribute::kBusy;
+    case blink::WebAOMBoolAttribute::AOM_ATTR_MODAL:
+      return ax::mojom::BoolAttribute::kModal;
+    default:
+      return ax::mojom::BoolAttribute::kNone;
+  }
+}
+
 }  // namespace
 
 namespace content {
@@ -185,6 +199,17 @@ bool AomContentAxTree::GetNextSiblingIdForAXNode(int32_t ax_id,
   DCHECK(sibling);
   *out_param = sibling->id();
   return true;
+}
+
+bool AomContentAxTree::GetBoolAttributeForAXNode(
+    int32_t ax_id,
+    blink::WebAOMBoolAttribute attr,
+    bool* out_param) {
+  ui::AXNode* node = tree_.GetFromId(ax_id);
+  if (!node)
+    return false;
+  ax::mojom::BoolAttribute ax_attr = GetCorrespondingAXAttribute(attr);
+  return node->data().GetBoolAttribute(ax_attr, out_param);
 }
 
 }  // namespace content

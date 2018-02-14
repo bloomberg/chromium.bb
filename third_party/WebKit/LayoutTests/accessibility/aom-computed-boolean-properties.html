@@ -1,0 +1,36 @@
+<!DOCTYPE HTML>
+<script src="../resources/gc.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<!--
+
+Accessibility Object Model
+Explainer: https://github.com/WICG/aom/blob/master/explainer.md
+Spec: https://wicg.github.io/aom/spec/
+
+-->
+
+<div id="aria-atomic" aria-atomic="true">POD</div>
+<div id="alert-atomic" role="alert">Achtung!</div>
+
+<script>
+
+test(function(t) {
+    assert_true(internals.runtimeFlags.accessibilityObjectModelEnabled);
+}, "Make sure that Accessibility Object Model is enabled");
+
+test(async function(t) {
+    // atomic attribute is implicitly set for role=alert.
+    var divElement = document.getElementById("aria-atomic");
+    var alertElement = document.getElementById("alert-atomic");
+    var divCaxNode = await window.getComputedAccessibleNode(divElement);
+    var alertCaxNode = await window.getComputedAccessibleNode(alertElement);
+
+    assert_equals(divCaxNode.atomic, true);
+    assert_equals(alertCaxNode.atomic, true);
+}, "ComputedAccessibleNode.atomic.");
+
+// TODO(meredithl): include tests for modal and busy attributes.
+
+</script>

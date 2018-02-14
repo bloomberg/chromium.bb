@@ -30,5 +30,10 @@
     readonly attribute ComputedAccessibleNode? lastChild;
     readonly attribute ComputedAccessibleNode? previousSibling;
     readonly attribute ComputedAccessibleNode? nextSibling;
+
+    readonly attribute boolean? atomic;
+    readonly attribute boolean? busy;
+    readonly attribute boolean? modal;
+
     [CallWith=ScriptState] Promise ensureUpToDate();
 };

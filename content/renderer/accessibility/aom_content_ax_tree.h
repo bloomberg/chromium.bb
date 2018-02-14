@@ -29,6 +29,9 @@ class AomContentAxTree : public blink::WebComputedAXTree {
   bool GetIntAttributeForAXNode(int32_t ax_id,
                                 blink::WebAOMIntAttribute,
                                 int32_t* out_param) override;
+  bool GetBoolAttributeForAXNode(int32_t ax_id,
+                                 blink::WebAOMBoolAttribute,
+                                 bool* out_param) override;
 
   bool GetParentIdForAXNode(int32_t ax_id, int32_t* out_param) override;
   bool GetFirstChildIdForAXNode(int32_t ax_id, int32_t* out_param) override;

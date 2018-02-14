@@ -31,6 +31,13 @@ enum WebAOMStringAttribute {
   AOM_ATTR_VALUE_TEXT,
 };
 
+enum WebAOMBoolAttribute {
+  AOM_BOOL_ATTRIBUTE_NONE,
+  AOM_ATTR_ATOMIC,
+  AOM_ATTR_BUSY,
+  AOM_ATTR_MODAL,
+};
+
 class WebComputedAXTree {
  public:
   virtual ~WebComputedAXTree() {}
@@ -48,8 +55,11 @@ class WebComputedAXTree {
                                         WebAOMIntAttribute,
                                         int32_t* out_param) = 0;
   virtual bool GetStringAttributeForAXNode(int32_t,
-                                           blink::WebAOMStringAttribute,
-                                           blink::WebString* out_param) = 0;
+                                           WebAOMStringAttribute,
+                                           WebString* out_param) = 0;
+  virtual bool GetBoolAttributeForAXNode(int32_t ax_id,
+                                         WebAOMBoolAttribute,
+                                         bool* out_param) = 0;
 
   // The role is stored seperately from other attributes in the AXNode, so we
   // expose a seperate method for retrieving this.
