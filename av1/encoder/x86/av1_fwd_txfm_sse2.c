@@ -1979,118 +1979,232 @@ static INLINE void fidentity8x32_new_sse2(const __m128i *input, __m128i *output,
   }
 }
 
-static const transform_2d_sse2 txfm4x4_arr[] = {
-  { fdct4x4_new_sse2, fdct4x4_new_sse2 },            // DCT_DCT
-  { fadst4x4_new_sse2, fdct4x4_new_sse2 },           // ADST_DCT
-  { fdct4x4_new_sse2, fadst4x4_new_sse2 },           // DCT_ADST
-  { fadst4x4_new_sse2, fadst4x4_new_sse2 },          // ADST_ADST
-  { fadst4x4_new_sse2, fdct4x4_new_sse2 },           // FLIPADST_DCT
-  { fdct4x4_new_sse2, fadst4x4_new_sse2 },           // DCT_FLIPADST
-  { fadst4x4_new_sse2, fadst4x4_new_sse2 },          // FLIPADST_FLIPADST
-  { fadst4x4_new_sse2, fadst4x4_new_sse2 },          // ADST_FLIPADST
-  { fadst4x4_new_sse2, fadst4x4_new_sse2 },          // FLIPADST_ADST
-  { fidentity4x4_new_sse2, fidentity4x4_new_sse2 },  // IDTX
-  { fdct4x4_new_sse2, fidentity4x4_new_sse2 },       // V_DCT
-  { fidentity4x4_new_sse2, fdct4x4_new_sse2 },       // H_DCT
-  { fadst4x4_new_sse2, fidentity4x4_new_sse2 },      // V_ADST
-  { fidentity4x4_new_sse2, fadst4x4_new_sse2 },      // H_ADST
-  { fadst4x4_new_sse2, fidentity4x4_new_sse2 },      // V_FLIPADST
-  { fidentity4x4_new_sse2, fadst4x4_new_sse2 },      // H_FLIPADST
+static const transform_1d_sse2 col_txfm4x4_arr[TX_TYPES] = {
+  fdct4x4_new_sse2,       // DCT_DCT
+  fadst4x4_new_sse2,      // ADST_DCT
+  fdct4x4_new_sse2,       // DCT_ADST
+  fadst4x4_new_sse2,      // ADST_ADST
+  fadst4x4_new_sse2,      // FLIPADST_DCT
+  fdct4x4_new_sse2,       // DCT_FLIPADST
+  fadst4x4_new_sse2,      // FLIPADST_FLIPADST
+  fadst4x4_new_sse2,      // ADST_FLIPADST
+  fadst4x4_new_sse2,      // FLIPADST_ADST
+  fidentity4x4_new_sse2,  // IDTX
+  fdct4x4_new_sse2,       // V_DCT
+  fidentity4x4_new_sse2,  // H_DCT
+  fadst4x4_new_sse2,      // V_ADST
+  fidentity4x4_new_sse2,  // H_ADST
+  fadst4x4_new_sse2,      // V_FLIPADST
+  fidentity4x4_new_sse2   // H_FLIPADST
 };
 
-static const transform_2d_sse2 txfm4x8_arr[16] = {
-  { fdct4x8_new_sse2, fdct8x4_new_sse2 },            // DCT_DCT
-  { fadst4x8_new_sse2, fdct8x4_new_sse2 },           // ADST_DCT
-  { fdct4x8_new_sse2, fadst8x4_new_sse2 },           // DCT_ADST
-  { fadst4x8_new_sse2, fadst8x4_new_sse2 },          // ADST_ADST
-  { fadst4x8_new_sse2, fdct8x4_new_sse2 },           // FLIPADST_DCT
-  { fdct4x8_new_sse2, fadst8x4_new_sse2 },           // DCT_FLIPADST
-  { fadst4x8_new_sse2, fadst8x4_new_sse2 },          // FLIPADST_FLIPADST
-  { fadst4x8_new_sse2, fadst8x4_new_sse2 },          // ADST_FLIPADST
-  { fadst4x8_new_sse2, fadst8x4_new_sse2 },          // FLIPADST_ADST
-  { fidentity8x8_new_sse2, fidentity8x4_new_sse2 },  // IDTX
-  { fdct4x8_new_sse2, fidentity8x4_new_sse2 },       // V_DCT
-  { fidentity8x8_new_sse2, fdct8x4_new_sse2 },       // H_DCT
-  { fadst4x8_new_sse2, fidentity8x4_new_sse2 },      // V_ADST
-  { fidentity8x8_new_sse2, fadst8x4_new_sse2 },      // H_ADST
-  { fadst4x8_new_sse2, fidentity8x4_new_sse2 },      // V_FLIPADST
-  { fidentity8x8_new_sse2, fadst8x4_new_sse2 },      // H_FLIPADST
+static const transform_1d_sse2 row_txfm4x4_arr[TX_TYPES] = {
+  fdct4x4_new_sse2,       // DCT_DCT
+  fdct4x4_new_sse2,       // ADST_DCT
+  fadst4x4_new_sse2,      // DCT_ADST
+  fadst4x4_new_sse2,      // ADST_ADST
+  fdct4x4_new_sse2,       // FLIPADST_DCT
+  fadst4x4_new_sse2,      // DCT_FLIPADST
+  fadst4x4_new_sse2,      // FLIPADST_FLIPADST
+  fadst4x4_new_sse2,      // ADST_FLIPADST
+  fadst4x4_new_sse2,      // FLIPADST_ADST
+  fidentity4x4_new_sse2,  // IDTX
+  fidentity4x4_new_sse2,  // V_DCT
+  fdct4x4_new_sse2,       // H_DCT
+  fidentity4x4_new_sse2,  // V_ADST
+  fadst4x4_new_sse2,      // H_ADST
+  fidentity4x4_new_sse2,  // V_FLIPADST
+  fadst4x4_new_sse2       // H_FLIPADST
 };
 
-static const transform_2d_sse2 txfm8x4_arr[] = {
-  { fdct8x4_new_sse2, fdct4x8_new_sse2 },            // DCT_DCT
-  { fadst8x4_new_sse2, fdct4x8_new_sse2 },           // ADST_DCT
-  { fdct8x4_new_sse2, fadst4x8_new_sse2 },           // DCT_ADST
-  { fadst8x4_new_sse2, fadst4x8_new_sse2 },          // ADST_ADST
-  { fadst8x4_new_sse2, fdct4x8_new_sse2 },           // FLIPADST_DCT
-  { fdct8x4_new_sse2, fadst4x8_new_sse2 },           // DCT_FLIPADST
-  { fadst8x4_new_sse2, fadst4x8_new_sse2 },          // FLIPADST_FLIPADST
-  { fadst8x4_new_sse2, fadst4x8_new_sse2 },          // ADST_FLIPADST
-  { fadst8x4_new_sse2, fadst4x8_new_sse2 },          // FLIPADST_ADST
-  { fidentity8x4_new_sse2, fidentity8x8_new_sse2 },  // IDTX
-  { fdct8x4_new_sse2, fidentity8x8_new_sse2 },       // V_DCT
-  { fidentity8x4_new_sse2, fdct4x8_new_sse2 },       // H_DCT
-  { fadst8x4_new_sse2, fidentity8x8_new_sse2 },      // V_ADST
-  { fidentity8x4_new_sse2, fadst4x8_new_sse2 },      // H_ADST
-  { fadst8x4_new_sse2, fidentity8x8_new_sse2 },      // V_FLIPADST
-  { fidentity8x4_new_sse2, fadst4x8_new_sse2 },      // H_FLIPADST
+static const transform_1d_sse2 col_txfm4x8_arr[TX_TYPES] = {
+  fdct4x8_new_sse2,       // DCT_DCT
+  fadst4x8_new_sse2,      // ADST_DCT
+  fdct4x8_new_sse2,       // DCT_ADST
+  fadst4x8_new_sse2,      // ADST_ADST
+  fadst4x8_new_sse2,      // FLIPADST_DCT
+  fdct4x8_new_sse2,       // DCT_FLIPADST
+  fadst4x8_new_sse2,      // FLIPADST_FLIPADST
+  fadst4x8_new_sse2,      // ADST_FLIPADST
+  fadst4x8_new_sse2,      // FLIPADST_ADST
+  fidentity8x8_new_sse2,  // IDTX
+  fdct4x8_new_sse2,       // V_DCT
+  fidentity8x8_new_sse2,  // H_DCT
+  fadst4x8_new_sse2,      // V_ADST
+  fidentity8x8_new_sse2,  // H_ADST
+  fadst4x8_new_sse2,      // V_FLIPADST
+  fidentity8x8_new_sse2   // H_FLIPADST
 };
 
-static const transform_2d_sse2 txfm8x8_arr[] = {
-  { fdct8x8_new_sse2, fdct8x8_new_sse2 },            // DCT_DCT
-  { fadst8x8_new_sse2, fdct8x8_new_sse2 },           // ADST_DCT
-  { fdct8x8_new_sse2, fadst8x8_new_sse2 },           // DCT_ADST
-  { fadst8x8_new_sse2, fadst8x8_new_sse2 },          // ADST_ADST
-  { fadst8x8_new_sse2, fdct8x8_new_sse2 },           // FLIPADST_DCT
-  { fdct8x8_new_sse2, fadst8x8_new_sse2 },           // DCT_FLIPADST
-  { fadst8x8_new_sse2, fadst8x8_new_sse2 },          // FLIPADST_FLIPADST
-  { fadst8x8_new_sse2, fadst8x8_new_sse2 },          // ADST_FLIPADST
-  { fadst8x8_new_sse2, fadst8x8_new_sse2 },          // FLIPADST_ADST
-  { fidentity8x8_new_sse2, fidentity8x8_new_sse2 },  // IDTX
-  { fdct8x8_new_sse2, fidentity8x8_new_sse2 },       // V_DCT
-  { fidentity8x8_new_sse2, fdct8x8_new_sse2 },       // H_DCT
-  { fadst8x8_new_sse2, fidentity8x8_new_sse2 },      // V_ADST
-  { fidentity8x8_new_sse2, fadst8x8_new_sse2 },      // H_ADST
-  { fadst8x8_new_sse2, fidentity8x8_new_sse2 },      // V_FLIPADST
-  { fidentity8x8_new_sse2, fadst8x8_new_sse2 },      // H_FLIPADST
+static const transform_1d_sse2 row_txfm8x4_arr[TX_TYPES] = {
+  fdct8x4_new_sse2,       // DCT_DCT
+  fdct8x4_new_sse2,       // ADST_DCT
+  fadst8x4_new_sse2,      // DCT_ADST
+  fadst8x4_new_sse2,      // ADST_ADST
+  fdct8x4_new_sse2,       // FLIPADST_DCT
+  fadst8x4_new_sse2,      // DCT_FLIPADST
+  fadst8x4_new_sse2,      // FLIPADST_FLIPADST
+  fadst8x4_new_sse2,      // ADST_FLIPADST
+  fadst8x4_new_sse2,      // FLIPADST_ADST
+  fidentity8x4_new_sse2,  // IDTX
+  fidentity8x4_new_sse2,  // V_DCT
+  fdct8x4_new_sse2,       // H_DCT
+  fidentity8x4_new_sse2,  // V_ADST
+  fadst8x4_new_sse2,      // H_ADST
+  fidentity8x4_new_sse2,  // V_FLIPADST
+  fadst8x4_new_sse2       // H_FLIPADST
 };
 
-static const transform_2d_sse2 txfm8x16_arr[] = {
-  { fdct8x16_new_sse2, fdct8x16_new_sse2 },            // DCT_DCT
-  { fadst8x16_new_sse2, fdct8x16_new_sse2 },           // ADST_DCT
-  { fdct8x16_new_sse2, fadst8x16_new_sse2 },           // DCT_ADST
-  { fadst8x16_new_sse2, fadst8x16_new_sse2 },          // ADST_ADST
-  { fadst8x16_new_sse2, fdct8x16_new_sse2 },           // FLIPADST_DCT
-  { fdct8x16_new_sse2, fadst8x16_new_sse2 },           // DCT_FLIPADST
-  { fadst8x16_new_sse2, fadst8x16_new_sse2 },          // FLIPADST_FLIPADST
-  { fadst8x16_new_sse2, fadst8x16_new_sse2 },          // ADST_FLIPADST
-  { fadst8x16_new_sse2, fadst8x16_new_sse2 },          // FLIPADST_ADST
-  { fidentity8x16_new_sse2, fidentity8x16_new_sse2 },  // IDTX
-  { fdct8x16_new_sse2, fidentity8x16_new_sse2 },       // V_DCT
-  { fidentity8x16_new_sse2, fdct8x16_new_sse2 },       // H_DCT
-  { fadst8x16_new_sse2, fidentity8x16_new_sse2 },      // V_ADST
-  { fidentity8x16_new_sse2, fadst8x16_new_sse2 },      // H_ADST
-  { fadst8x16_new_sse2, fidentity8x16_new_sse2 },      // V_FLIPADST
-  { fidentity8x16_new_sse2, fadst8x16_new_sse2 },      // H_FLIPADST
+static const transform_1d_sse2 col_txfm8x4_arr[TX_TYPES] = {
+  fdct8x4_new_sse2,       // DCT_DCT
+  fadst8x4_new_sse2,      // ADST_DCT
+  fdct8x4_new_sse2,       // DCT_ADST
+  fadst8x4_new_sse2,      // ADST_ADST
+  fadst8x4_new_sse2,      // FLIPADST_DCT
+  fdct8x4_new_sse2,       // DCT_FLIPADST
+  fadst8x4_new_sse2,      // FLIPADST_FLIPADST
+  fadst8x4_new_sse2,      // ADST_FLIPADST
+  fadst8x4_new_sse2,      // FLIPADST_ADST
+  fidentity8x4_new_sse2,  // IDTX
+  fdct8x4_new_sse2,       // V_DCT
+  fidentity8x4_new_sse2,  // H_DCT
+  fadst8x4_new_sse2,      // V_ADST
+  fidentity8x4_new_sse2,  // H_ADST
+  fadst8x4_new_sse2,      // V_FLIPADST
+  fidentity8x4_new_sse2   // H_FLIPADST
 };
 
-static const transform_2d_sse2 txfm8x32_arr[] = {
-  { fdct8x32_new_sse2, fdct8x32_new_sse2 },            // DCT_DCT
-  { NULL, NULL },                                      // ADST_DCT
-  { NULL, NULL },                                      // DCT_ADST
-  { NULL, NULL },                                      // ADST_ADST
-  { NULL, NULL },                                      // FLIPADST_DCT
-  { NULL, NULL },                                      // DCT_FLIPADST
-  { NULL, NULL },                                      // FLIPADST_FLIPADST
-  { NULL, NULL },                                      // ADST_FLIPADST
-  { NULL, NULL },                                      // FLIPADST_ADST
-  { fidentity8x32_new_sse2, fidentity8x32_new_sse2 },  // IDTX
-  { fdct8x32_new_sse2, fidentity8x32_new_sse2 },       // V_DCT
-  { fidentity8x32_new_sse2, fdct8x32_new_sse2 },       // H_DCT
-  { NULL, NULL },                                      // V_ADST
-  { NULL, NULL },                                      // H_ADST
-  { NULL, NULL },                                      // V_FLIPADST
-  { NULL, NULL },                                      // H_FLIPADST
+static const transform_1d_sse2 row_txfm4x8_arr[TX_TYPES] = {
+  fdct4x8_new_sse2,       // DCT_DCT
+  fdct4x8_new_sse2,       // ADST_DCT
+  fadst4x8_new_sse2,      // DCT_ADST
+  fadst4x8_new_sse2,      // ADST_ADST
+  fdct4x8_new_sse2,       // FLIPADST_DCT
+  fadst4x8_new_sse2,      // DCT_FLIPADST
+  fadst4x8_new_sse2,      // FLIPADST_FLIPADST
+  fadst4x8_new_sse2,      // ADST_FLIPADST
+  fadst4x8_new_sse2,      // FLIPADST_ADST
+  fidentity8x8_new_sse2,  // IDTX
+  fidentity8x8_new_sse2,  // V_DCT
+  fdct4x8_new_sse2,       // H_DCT
+  fidentity8x8_new_sse2,  // V_ADST
+  fadst4x8_new_sse2,      // H_ADST
+  fidentity8x8_new_sse2,  // V_FLIPADST
+  fadst4x8_new_sse2       // H_FLIPADST
+};
+
+static const transform_1d_sse2 col_txfm8x8_arr[TX_TYPES] = {
+  fdct8x8_new_sse2,       // DCT_DCT
+  fadst8x8_new_sse2,      // ADST_DCT
+  fdct8x8_new_sse2,       // DCT_ADST
+  fadst8x8_new_sse2,      // ADST_ADST
+  fadst8x8_new_sse2,      // FLIPADST_DCT
+  fdct8x8_new_sse2,       // DCT_FLIPADST
+  fadst8x8_new_sse2,      // FLIPADST_FLIPADST
+  fadst8x8_new_sse2,      // ADST_FLIPADST
+  fadst8x8_new_sse2,      // FLIPADST_ADST
+  fidentity8x8_new_sse2,  // IDTX
+  fdct8x8_new_sse2,       // V_DCT
+  fidentity8x8_new_sse2,  // H_DCT
+  fadst8x8_new_sse2,      // V_ADST
+  fidentity8x8_new_sse2,  // H_ADST
+  fadst8x8_new_sse2,      // V_FLIPADST
+  fidentity8x8_new_sse2,  // H_FLIPADST
+};
+
+static const transform_1d_sse2 row_txfm8x8_arr[TX_TYPES] = {
+  fdct8x8_new_sse2,       // DCT_DCT
+  fdct8x8_new_sse2,       // ADST_DCT
+  fadst8x8_new_sse2,      // DCT_ADST
+  fadst8x8_new_sse2,      // ADST_ADST
+  fdct8x8_new_sse2,       // FLIPADST_DCT
+  fadst8x8_new_sse2,      // DCT_FLIPADST
+  fadst8x8_new_sse2,      // FLIPADST_FLIPADST
+  fadst8x8_new_sse2,      // ADST_FLIPADST
+  fadst8x8_new_sse2,      // FLIPADST_ADST
+  fidentity8x8_new_sse2,  // IDTX
+  fidentity8x8_new_sse2,  // V_DCT
+  fdct8x8_new_sse2,       // H_DCT
+  fidentity8x8_new_sse2,  // V_ADST
+  fadst8x8_new_sse2,      // H_ADST
+  fidentity8x8_new_sse2,  // V_FLIPADST
+  fadst8x8_new_sse2       // H_FLIPADST
+};
+
+static const transform_1d_sse2 col_txfm8x16_arr[TX_TYPES] = {
+  fdct8x16_new_sse2,       // DCT_DCT
+  fadst8x16_new_sse2,      // ADST_DCT
+  fdct8x16_new_sse2,       // DCT_ADST
+  fadst8x16_new_sse2,      // ADST_ADST
+  fadst8x16_new_sse2,      // FLIPADST_DCT
+  fdct8x16_new_sse2,       // DCT_FLIPADST
+  fadst8x16_new_sse2,      // FLIPADST_FLIPADST
+  fadst8x16_new_sse2,      // ADST_FLIPADST
+  fadst8x16_new_sse2,      // FLIPADST_ADST
+  fidentity8x16_new_sse2,  // IDTX
+  fdct8x16_new_sse2,       // V_DCT
+  fidentity8x16_new_sse2,  // H_DCT
+  fadst8x16_new_sse2,      // V_ADST
+  fidentity8x16_new_sse2,  // H_ADST
+  fadst8x16_new_sse2,      // V_FLIPADST
+  fidentity8x16_new_sse2   // H_FLIPADST
+};
+
+static const transform_1d_sse2 row_txfm8x16_arr[TX_TYPES] = {
+  fdct8x16_new_sse2,       // DCT_DCT
+  fdct8x16_new_sse2,       // ADST_DCT
+  fadst8x16_new_sse2,      // DCT_ADST
+  fadst8x16_new_sse2,      // ADST_ADST
+  fdct8x16_new_sse2,       // FLIPADST_DCT
+  fadst8x16_new_sse2,      // DCT_FLIPADST
+  fadst8x16_new_sse2,      // FLIPADST_FLIPADST
+  fadst8x16_new_sse2,      // ADST_FLIPADST
+  fadst8x16_new_sse2,      // FLIPADST_ADST
+  fidentity8x16_new_sse2,  // IDTX
+  fidentity8x16_new_sse2,  // V_DCT
+  fdct8x16_new_sse2,       // H_DCT
+  fidentity8x16_new_sse2,  // V_ADST
+  fadst8x16_new_sse2,      // H_ADST
+  fidentity8x16_new_sse2,  // V_FLIPADST
+  fadst8x16_new_sse2       // H_FLIPADST
+};
+
+static const transform_1d_sse2 col_txfm8x32_arr[TX_TYPES] = {
+  fdct8x32_new_sse2,       // DCT_DCT
+  NULL,                    // ADST_DCT
+  NULL,                    // DCT_ADST
+  NULL,                    // ADST_ADST
+  NULL,                    // FLIPADST_DCT
+  NULL,                    // DCT_FLIPADST
+  NULL,                    // FLIPADST_FLIPADST
+  NULL,                    // ADST_FLIPADST
+  NULL,                    // FLIPADST_ADST
+  fidentity8x32_new_sse2,  // IDTX
+  fdct8x32_new_sse2,       // V_DCT
+  fidentity8x32_new_sse2,  // H_DCT
+  NULL,                    // V_ADST
+  NULL,                    // H_ADST
+  NULL,                    // V_FLIPADST
+  NULL                     // H_FLIPADST
+};
+
+static const transform_1d_sse2 row_txfm8x32_arr[TX_TYPES] = {
+  fdct8x32_new_sse2,       // DCT_DCT
+  NULL,                    // ADST_DCT
+  NULL,                    // DCT_ADST
+  NULL,                    // ADST_ADST
+  NULL,                    // FLIPADST_DCT
+  NULL,                    // DCT_FLIPADST
+  NULL,                    // FLIPADST_FLIPADST
+  NULL,                    // ADST_FLIPADST
+  NULL,                    // FLIPADST_ADST
+  fidentity8x32_new_sse2,  // IDTX
+  fidentity8x32_new_sse2,  // V_DCT
+  fdct8x32_new_sse2,       // H_DCT
+  NULL,                    // V_ADST
+  NULL,                    // H_ADST
+  NULL,                    // V_FLIPADST
+  NULL                     // H_FLIPADST
 };
 
 void av1_lowbd_fwd_txfm2d_4x4_sse2(const int16_t *input, int32_t *output,
@@ -2104,8 +2218,8 @@ void av1_lowbd_fwd_txfm2d_4x4_sse2(const int16_t *input, int32_t *output,
   const int cos_bit_row = fwd_cos_bit_row[txw_idx][txh_idx];
   const int width = 4;
   const int height = 4;
-  const transform_1d_sse2 col_txfm = txfm4x4_arr[tx_type].col;
-  const transform_1d_sse2 row_txfm = txfm4x4_arr[tx_type].row;
+  const transform_1d_sse2 col_txfm = col_txfm4x4_arr[tx_type];
+  const transform_1d_sse2 row_txfm = row_txfm4x4_arr[tx_type];
   int ud_flip, lr_flip;
 
   get_flip_cfg(tx_type, &ud_flip, &lr_flip);
@@ -2143,8 +2257,8 @@ void av1_lowbd_fwd_txfm2d_4x8_sse2(const int16_t *input, int32_t *output,
   const int cos_bit_row = fwd_cos_bit_row[txw_idx][txh_idx];
   const int width = 4;
   const int height = 8;
-  const transform_1d_sse2 col_txfm = txfm4x8_arr[tx_type].col;
-  const transform_1d_sse2 row_txfm = txfm4x8_arr[tx_type].row;
+  const transform_1d_sse2 col_txfm = col_txfm4x8_arr[tx_type];
+  const transform_1d_sse2 row_txfm = row_txfm8x4_arr[tx_type];
   int ud_flip, lr_flip;
 
   get_flip_cfg(tx_type, &ud_flip, &lr_flip);
@@ -2181,8 +2295,8 @@ void av1_lowbd_fwd_txfm2d_4x16_sse2(const int16_t *input, int32_t *output,
   const int cos_bit_row = fwd_cos_bit_row[txw_idx][txh_idx];
   const int width = 4;
   const int height = 16;
-  const transform_1d_sse2 col_txfm = txfm8x16_arr[tx_type].col;
-  const transform_1d_sse2 row_txfm = txfm4x8_arr[tx_type].row;
+  const transform_1d_sse2 col_txfm = col_txfm8x16_arr[tx_type];
+  const transform_1d_sse2 row_txfm = row_txfm8x4_arr[tx_type];
   int ud_flip, lr_flip;
 
   get_flip_cfg(tx_type, &ud_flip, &lr_flip);
@@ -2223,8 +2337,8 @@ void av1_lowbd_fwd_txfm2d_8x4_sse2(const int16_t *input, int32_t *output,
   const int cos_bit_row = fwd_cos_bit_row[txw_idx][txh_idx];
   const int width = 8;
   const int height = 4;
-  const transform_1d_sse2 col_txfm = txfm8x4_arr[tx_type].col;
-  const transform_1d_sse2 row_txfm = txfm8x4_arr[tx_type].row;
+  const transform_1d_sse2 col_txfm = col_txfm8x4_arr[tx_type];
+  const transform_1d_sse2 row_txfm = row_txfm4x8_arr[tx_type];
   int ud_flip, lr_flip;
 
   get_flip_cfg(tx_type, &ud_flip, &lr_flip);
@@ -2260,8 +2374,8 @@ void av1_lowbd_fwd_txfm2d_8x8_sse2(const int16_t *input, int32_t *output,
   const int cos_bit_row = fwd_cos_bit_row[txw_idx][txh_idx];
   const int width = 8;
   const int height = 8;
-  const transform_1d_sse2 col_txfm = txfm8x8_arr[tx_type].col;
-  const transform_1d_sse2 row_txfm = txfm8x8_arr[tx_type].row;
+  const transform_1d_sse2 col_txfm = col_txfm8x8_arr[tx_type];
+  const transform_1d_sse2 row_txfm = row_txfm8x8_arr[tx_type];
   int ud_flip, lr_flip;
 
   get_flip_cfg(tx_type, &ud_flip, &lr_flip);
@@ -2297,8 +2411,8 @@ void av1_lowbd_fwd_txfm2d_8x16_sse2(const int16_t *input, int32_t *output,
   const int cos_bit_row = fwd_cos_bit_row[txw_idx][txh_idx];
   const int width = 8;
   const int height = 16;
-  const transform_1d_sse2 col_txfm = txfm8x16_arr[tx_type].col;
-  const transform_1d_sse2 row_txfm = txfm8x8_arr[tx_type].row;
+  const transform_1d_sse2 col_txfm = col_txfm8x16_arr[tx_type];
+  const transform_1d_sse2 row_txfm = row_txfm8x8_arr[tx_type];
   int ud_flip, lr_flip;
 
   get_flip_cfg(tx_type, &ud_flip, &lr_flip);
@@ -2339,8 +2453,8 @@ void av1_lowbd_fwd_txfm2d_8x32_sse2(const int16_t *input, int32_t *output,
   const int cos_bit_row = fwd_cos_bit_row[txw_idx][txh_idx];
   const int width = 8;
   const int height = 32;
-  const transform_1d_sse2 col_txfm = txfm8x32_arr[tx_type].col;
-  const transform_1d_sse2 row_txfm = txfm8x8_arr[tx_type].row;
+  const transform_1d_sse2 col_txfm = col_txfm8x32_arr[tx_type];
+  const transform_1d_sse2 row_txfm = row_txfm8x8_arr[tx_type];
   int ud_flip, lr_flip;
 
   get_flip_cfg(tx_type, &ud_flip, &lr_flip);
@@ -2383,8 +2497,8 @@ void av1_lowbd_fwd_txfm2d_16x4_sse2(const int16_t *input, int32_t *output,
   const int cos_bit_row = fwd_cos_bit_row[txw_idx][txh_idx];
   const int width = 16;
   const int height = 4;
-  const transform_1d_sse2 col_txfm = txfm8x4_arr[tx_type].col;
-  const transform_1d_sse2 row_txfm = txfm8x16_arr[tx_type].row;
+  const transform_1d_sse2 col_txfm = col_txfm8x4_arr[tx_type];
+  const transform_1d_sse2 row_txfm = row_txfm8x16_arr[tx_type];
   __m128i *buf;
   int ud_flip, lr_flip;
 
@@ -2426,8 +2540,8 @@ void av1_lowbd_fwd_txfm2d_16x8_sse2(const int16_t *input, int32_t *output,
   const int cos_bit_row = fwd_cos_bit_row[txw_idx][txh_idx];
   const int width = 16;
   const int height = 8;
-  const transform_1d_sse2 col_txfm = txfm8x8_arr[tx_type].col;
-  const transform_1d_sse2 row_txfm = txfm8x16_arr[tx_type].row;
+  const transform_1d_sse2 col_txfm = col_txfm8x8_arr[tx_type];
+  const transform_1d_sse2 row_txfm = row_txfm8x16_arr[tx_type];
   __m128i *buf;
   int ud_flip, lr_flip;
 
@@ -2469,8 +2583,8 @@ void av1_lowbd_fwd_txfm2d_16x16_sse2(const int16_t *input, int32_t *output,
   const int cos_bit_row = fwd_cos_bit_row[txw_idx][txh_idx];
   const int width = 16;
   const int height = 16;
-  const transform_1d_sse2 col_txfm = txfm8x16_arr[tx_type].col;
-  const transform_1d_sse2 row_txfm = txfm8x16_arr[tx_type].row;
+  const transform_1d_sse2 col_txfm = col_txfm8x16_arr[tx_type];
+  const transform_1d_sse2 row_txfm = row_txfm8x16_arr[tx_type];
   int ud_flip, lr_flip;
 
   get_flip_cfg(tx_type, &ud_flip, &lr_flip);
@@ -2516,8 +2630,8 @@ void av1_lowbd_fwd_txfm2d_16x32_sse2(const int16_t *input, int32_t *output,
   const int cos_bit_row = fwd_cos_bit_row[txw_idx][txh_idx];
   const int width = 16;
   const int height = 32;
-  const transform_1d_sse2 col_txfm = txfm8x32_arr[tx_type].col;
-  const transform_1d_sse2 row_txfm = txfm8x16_arr[tx_type].row;
+  const transform_1d_sse2 col_txfm = col_txfm8x32_arr[tx_type];
+  const transform_1d_sse2 row_txfm = row_txfm8x16_arr[tx_type];
 
   if (col_txfm != NULL && row_txfm != NULL) {
     int ud_flip, lr_flip;
@@ -2571,8 +2685,8 @@ void av1_lowbd_fwd_txfm2d_32x8_sse2(const int16_t *input, int32_t *output,
   const int cos_bit_row = fwd_cos_bit_row[txw_idx][txh_idx];
   const int width = 32;
   const int height = 8;
-  const transform_1d_sse2 col_txfm = txfm8x8_arr[tx_type].col;
-  const transform_1d_sse2 row_txfm = txfm8x32_arr[tx_type].row;
+  const transform_1d_sse2 col_txfm = col_txfm8x8_arr[tx_type];
+  const transform_1d_sse2 row_txfm = row_txfm8x32_arr[tx_type];
 
   if (col_txfm != NULL && row_txfm != NULL) {
     int ud_flip, lr_flip;
@@ -2629,8 +2743,8 @@ void av1_lowbd_fwd_txfm2d_32x16_sse2(const int16_t *input, int32_t *output,
   const int cos_bit_row = fwd_cos_bit_row[txw_idx][txh_idx];
   const int width = 32;
   const int height = 16;
-  const transform_1d_sse2 col_txfm = txfm8x16_arr[tx_type].col;
-  const transform_1d_sse2 row_txfm = txfm8x32_arr[tx_type].row;
+  const transform_1d_sse2 col_txfm = col_txfm8x16_arr[tx_type];
+  const transform_1d_sse2 row_txfm = row_txfm8x32_arr[tx_type];
 
   if (col_txfm != NULL && row_txfm != NULL) {
     int ud_flip, lr_flip;
@@ -2688,8 +2802,8 @@ void av1_lowbd_fwd_txfm2d_32x32_sse2(const int16_t *input, int32_t *output,
   const int cos_bit_row = fwd_cos_bit_row[txw_idx][txh_idx];
   const int width = 32;
   const int height = 32;
-  const transform_1d_sse2 col_txfm = txfm8x32_arr[tx_type].col;
-  const transform_1d_sse2 row_txfm = txfm8x32_arr[tx_type].row;
+  const transform_1d_sse2 col_txfm = col_txfm8x32_arr[tx_type];
+  const transform_1d_sse2 row_txfm = row_txfm8x32_arr[tx_type];
 
   if (col_txfm != NULL && row_txfm != NULL) {
     int ud_flip, lr_flip;
