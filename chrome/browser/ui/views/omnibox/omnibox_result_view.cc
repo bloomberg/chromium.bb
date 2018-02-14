@@ -171,6 +171,12 @@ TextStyle GetTextStyle(int type) {
   }
 }
 
+// Whether to use the two-line layout.
+bool IsTwoLineLayout() {
+  return base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalLayout) ||
+         ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
+}
+
 }  // namespace
 
 // This class is a utility class for calculations affected by whether the result
@@ -401,7 +407,7 @@ gfx::Size OmniboxResultView::CalculatePreferredSize() const {
   int height = GetTextHeight() + (2 * GetVerticalMargin());
   if (match_.answer)
     height += GetAnswerHeight();
-  else if (base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalLayout))
+  else if (IsTwoLineLayout())
     height += GetTextHeight();
   return gfx::Size(0, height);
 }
@@ -438,8 +444,7 @@ void OmniboxResultView::PaintMatch(const AutocompleteMatch& match,
     description->SetDisplayRect(gfx::Rect(gfx::Size(INT_MAX, 0)));
   int contents_max_width, description_max_width;
   bool description_on_separate_line =
-      match.answer != nullptr ||
-      base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalLayout);
+      match.answer != nullptr || IsTwoLineLayout();
   OmniboxPopupModel::ComputeMatchMaxWidths(
       contents->GetContentWidth(), separator_width_,
       description ? description->GetContentWidth() : 0,
@@ -472,7 +477,7 @@ void OmniboxResultView::PaintMatch(const AutocompleteMatch& match,
   }
 
   // Regular results.
-  if (base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalLayout)) {
+  if (IsTwoLineLayout()) {
     // For no description, shift down halfway to draw contents in middle.
     if (description_max_width == 0)
       y += GetTextHeight() / 2;
@@ -588,10 +593,9 @@ void OmniboxResultView::InitContentsRenderTextIfNecessary() const {
       contents_rendertext_ =
           CreateAnswerText(match_.answer->first_line(), font_list_);
     } else {
-      bool swap_match_text =
-          base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalLayout) &&
-          !AutocompleteMatch::IsSearchType(match_.type) &&
-          !match_.description.empty();
+      bool swap_match_text = IsTwoLineLayout() &&
+                             !AutocompleteMatch::IsSearchType(match_.type) &&
+                             !match_.description.empty();
 
       contents_rendertext_ = CreateClassifiedRenderText(
           swap_match_text ? match_.description : match_.contents,
@@ -758,7 +762,7 @@ void OmniboxResultView::Layout() {
   const gfx::Image icon = GetIcon();
 
   int row_height = GetTextHeight();
-  if (base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalLayout))
+  if (IsTwoLineLayout())
     row_height += match_.answer ? GetAnswerHeight() : GetTextHeight();
 
   const int icon_y = GetVerticalMargin() + (row_height - icon.Height()) / 2;
@@ -809,9 +813,8 @@ void OmniboxResultView::OnPaint(gfx::Canvas* canvas) {
       } else if (!match_.description.empty()) {
         // If the description is empty, we wouldn't swap with the contents --
         // nor would we create the description RenderText object anyways.
-        bool swap_match_text = base::FeatureList::IsEnabled(
-                                   omnibox::kUIExperimentVerticalLayout) &&
-                               !AutocompleteMatch::IsSearchType(match_.type);
+        bool swap_match_text =
+            IsTwoLineLayout() && !AutocompleteMatch::IsSearchType(match_.type);
 
         description_rendertext_ = CreateClassifiedRenderText(
             swap_match_text ? match_.contents : match_.description,
