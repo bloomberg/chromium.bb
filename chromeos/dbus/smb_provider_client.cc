@@ -62,8 +62,7 @@ class SmbProviderClientImpl : public SmbProviderClient {
   void Unmount(int32_t mount_id, StatusCallback callback) override {
     smbprovider::UnmountOptionsProto options;
     options.set_mount_id(mount_id);
-    CallMethod(smbprovider::kUnmountMethod, options,
-               &SmbProviderClientImpl::HandleUnmountCallback, &callback);
+    CallDefaultMethod(smbprovider::kUnmountMethod, options, &callback);
   }
 
   void ReadDirectory(int32_t mount_id,
@@ -108,8 +107,7 @@ class SmbProviderClientImpl : public SmbProviderClient {
     smbprovider::CloseFileOptionsProto options;
     options.set_mount_id(mount_id);
     options.set_file_id(file_id);
-    CallMethod(smbprovider::kCloseFileMethod, options,
-               &SmbProviderClientImpl::HandleCloseFileCallback, &callback);
+    CallDefaultMethod(smbprovider::kCloseFileMethod, options, &callback);
   }
 
   void ReadFile(int32_t mount_id,
@@ -134,8 +132,7 @@ class SmbProviderClientImpl : public SmbProviderClient {
     options.set_mount_id(mount_id);
     options.set_entry_path(entry_path.value());
     options.set_recursive(recursive);
-    CallMethod(smbprovider::kDeleteEntryMethod, options,
-               &SmbProviderClientImpl::HandleDeleteEntryCallback, &callback);
+    CallDefaultMethod(smbprovider::kDeleteEntryMethod, options, &callback);
   }
 
   void CreateFile(int32_t mount_id,
@@ -144,8 +141,7 @@ class SmbProviderClientImpl : public SmbProviderClient {
     smbprovider::CreateFileOptionsProto options;
     options.set_mount_id(mount_id);
     options.set_file_path(file_path.value());
-    CallMethod(smbprovider::kCreateFileMethod, options,
-               &SmbProviderClientImpl::HandleCreateFileCallback, &callback);
+    CallDefaultMethod(smbprovider::kCreateFileMethod, options, &callback);
   }
 
   void Truncate(int32_t mount_id,
@@ -156,8 +152,7 @@ class SmbProviderClientImpl : public SmbProviderClient {
     options.set_mount_id(mount_id);
     options.set_file_path(file_path.value());
     options.set_length(length);
-    CallMethod(smbprovider::kTruncateMethod, options,
-               &SmbProviderClientImpl::HandleTruncateCallback, &callback);
+    CallDefaultMethod(smbprovider::kTruncateMethod, options, &callback);
   }
 
   void WriteFile(int32_t mount_id,
@@ -177,8 +172,7 @@ class SmbProviderClientImpl : public SmbProviderClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendProtoAsArrayOfBytes(options);
     writer.AppendFileDescriptor(temp_fd.release());
-    CallMethod(&method_call, &SmbProviderClientImpl::HandleWriteFileCallback,
-               &callback);
+    CallDefaultMethod(&method_call, &callback);
   }
 
   void CreateDirectory(int32_t mount_id,
@@ -189,9 +183,7 @@ class SmbProviderClientImpl : public SmbProviderClient {
     options.set_mount_id(mount_id);
     options.set_directory_path(directory_path.value());
     options.set_recursive(recursive);
-    CallMethod(smbprovider::kCreateDirectoryMethod, options,
-               &SmbProviderClientImpl::HandleCreateDirectoryCallback,
-               &callback);
+    CallDefaultMethod(smbprovider::kCreateDirectoryMethod, options, &callback);
   }
 
  protected:
@@ -230,10 +222,33 @@ class SmbProviderClientImpl : public SmbProviderClient {
                                       base::Passed(callback)));
   }
 
+  // Calls the D-Bus method |name|, passing the |protobuf| as an argument.
+  // Uses the default callback handler to process |callback|.
+  template <typename Callback>
+  void CallDefaultMethod(const char* name,
+                         const google::protobuf::MessageLite& protobuf,
+                         Callback callback) {
+    dbus::MethodCall method_call(smbprovider::kSmbProviderInterface, name);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(protobuf);
+    CallDefaultMethod(&method_call, callback);
+  }
+
+  // Calls the method specified in |method_call|. Uses the default callback
+  // handler to process |callback|.
+  template <typename Callback>
+  void CallDefaultMethod(dbus::MethodCall* method_call, Callback callback) {
+    proxy_->CallMethod(
+        method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&SmbProviderClientImpl::HandleDefaultCallback,
+                       weak_ptr_factory_.GetWeakPtr(), method_call->GetMember(),
+                       base::Passed(callback)));
+  }
+
   // Handles D-Bus callback for mount.
   void HandleMountCallback(MountCallback callback, dbus::Response* response) {
     if (!response) {
-      DLOG(ERROR) << "Mount: failed to call smbprovider";
+      LOG(ERROR) << "Mount: failed to call smbprovider";
       std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED, -1);
       return;
     }
@@ -245,29 +260,18 @@ class SmbProviderClientImpl : public SmbProviderClient {
     }
     int32_t mount_id = -1;
     if (!reader.PopInt32(&mount_id) || mount_id < 0) {
-      DLOG(ERROR) << "Mount: failed to parse mount id";
+      LOG(ERROR) << "Mount: failed to parse mount id";
       std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED, -1);
       return;
     }
     std::move(callback).Run(smbprovider::ERROR_OK, mount_id);
   }
 
-  // Handles D-Bus callback for unmount.
-  void HandleUnmountCallback(StatusCallback callback,
-                             dbus::Response* response) {
-    if (!response) {
-      DLOG(ERROR) << "Unmount: failed to call smbprovider";
-      std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED);
-    }
-    dbus::MessageReader reader(response);
-    std::move(callback).Run(GetErrorFromReader(&reader));
-  }
-
   // Handles D-Bus callback for OpenFile.
   void HandleOpenFileCallback(OpenFileCallback callback,
                               dbus::Response* response) {
     if (!response) {
-      DLOG(ERROR) << "OpenFile: failed to call smbprovider";
+      LOG(ERROR) << "OpenFile: failed to call smbprovider";
       std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED, -1);
       return;
     }
@@ -284,18 +288,6 @@ class SmbProviderClientImpl : public SmbProviderClient {
       return;
     }
     std::move(callback).Run(smbprovider::ERROR_OK, file_id);
-  }
-
-  // Handles D-Bus callback for CloseFile.
-  void HandleCloseFileCallback(StatusCallback callback,
-                               dbus::Response* response) {
-    if (!response) {
-      DLOG(ERROR) << "CloseFile: failed to call smbprovider";
-      std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED);
-      return;
-    }
-    dbus::MessageReader reader(response);
-    std::move(callback).Run(GetErrorFromReader(&reader));
   }
 
   // Handles D-Bus callback for ReadFile.
@@ -321,56 +313,14 @@ class SmbProviderClientImpl : public SmbProviderClient {
     std::move(callback).Run(smbprovider::ERROR_OK, fd);
   }
 
-  // Handles D-Bus callback for DeleteEntry.
-  void HandleDeleteEntryCallback(StatusCallback callback,
-                                 dbus::Response* response) {
+  // Default callback handler for D-Bus calls.
+  void HandleDefaultCallback(const std::string& method_name,
+                             StatusCallback callback,
+                             dbus::Response* response) {
     if (!response) {
-      DLOG(ERROR) << "DeleteEntry: failed to call smbprovider";
+      LOG(ERROR) << method_name << ": failed to call smbprovider";
       std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED);
-    }
-    dbus::MessageReader reader(response);
-    std::move(callback).Run(GetErrorFromReader(&reader));
-  }
-
-  // Handles D-Bus callback for CreateFile.
-  void HandleCreateFileCallback(StatusCallback callback,
-                                dbus::Response* response) {
-    if (!response) {
-      DLOG(ERROR) << "CreateFile: failed to call smbprovider";
-      std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED);
-    }
-    dbus::MessageReader reader(response);
-    std::move(callback).Run(GetErrorFromReader(&reader));
-  }
-
-  // Handles D-Bus callback for Truncate.
-  void HandleTruncateCallback(StatusCallback callback,
-                              dbus::Response* response) {
-    if (!response) {
-      DLOG(ERROR) << "Truncate: failed to call smbprovider";
-      std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED);
-    }
-    dbus::MessageReader reader(response);
-    std::move(callback).Run(GetErrorFromReader(&reader));
-  }
-
-  // Handles D-Bus callback for WriteFile.
-  void HandleWriteFileCallback(StatusCallback callback,
-                               dbus::Response* response) {
-    if (!response) {
-      DLOG(ERROR) << "WriteFile: failed to call smbprovider";
-      std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED);
-    }
-    dbus::MessageReader reader(response);
-    std::move(callback).Run(GetErrorFromReader(&reader));
-  }
-
-  // Handles D-Bus callback for CreateDirectory.
-  void HandleCreateDirectoryCallback(StatusCallback callback,
-                                     dbus::Response* response) {
-    if (!response) {
-      DLOG(ERROR) << "CreateDirectory: failed to call smbprovider";
-      std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED);
+      return;
     }
     dbus::MessageReader reader(response);
     std::move(callback).Run(GetErrorFromReader(&reader));
