@@ -425,7 +425,7 @@ void VaapiVideoDecodeAccelerator::OutputPicture(
   VLOGF(4) << "Outputting VASurface " << va_surface->id()
            << " into pixmap bound to picture buffer id " << output_id;
   {
-    TRACE_EVENT2("Video Decoder", "VAVDA::DownloadFromSurface", "input_id",
+    TRACE_EVENT2("media.gpu", "VAVDA::DownloadFromSurface", "input_id",
                  input_id, "output_id", output_id);
     RETURN_AND_NOTIFY_ON_FAILURE(picture->DownloadFromSurface(va_surface),
                                  "Failed putting surface into pixmap",
@@ -433,7 +433,7 @@ void VaapiVideoDecodeAccelerator::OutputPicture(
   }
   // Notify the client a picture is ready to be displayed.
   ++num_frames_at_client_;
-  TRACE_COUNTER1("Video Decoder", "Textures at client", num_frames_at_client_);
+  TRACE_COUNTER1("media.gpu", "Textures at client", num_frames_at_client_);
   VLOGF(4) << "Notifying output picture id " << output_id << " for input "
            << input_id
            << " is ready. visible rect: " << visible_rect.ToString();
@@ -472,7 +472,7 @@ void VaapiVideoDecodeAccelerator::QueueInputBuffer(
   VLOGF(4) << "Queueing new input buffer id: " << bitstream_buffer.id()
            << " size: " << (int)bitstream_buffer.size();
   DCHECK(task_runner_->BelongsToCurrentThread());
-  TRACE_EVENT1("Video Decoder", "QueueInputBuffer", "input_id",
+  TRACE_EVENT1("media.gpu", "QueueInputBuffer", "input_id",
                bitstream_buffer.id());
 
   base::AutoLock auto_lock(lock_);
@@ -494,7 +494,7 @@ void VaapiVideoDecodeAccelerator::QueueInputBuffer(
             base::Bind(&Client::NotifyEndOfBitstreamBuffer, client_)));
     input_buffers_.push(std::move(input_buffer));
 
-    TRACE_COUNTER1("Video Decoder", "Input buffers", input_buffers_.size());
+    TRACE_COUNTER1("media.gpu", "Input buffers", input_buffers_.size());
   }
 
   input_ready_.Signal();
@@ -567,7 +567,7 @@ void VaapiVideoDecodeAccelerator::ReturnCurrInputBuffer_Locked() {
   DCHECK(curr_input_buffer_.get());
   curr_input_buffer_.reset();
 
-  TRACE_COUNTER1("Video Decoder", "Input buffers", input_buffers_.size());
+  TRACE_COUNTER1("media.gpu", "Input buffers", input_buffers_.size());
 }
 
 // TODO(posciak): refactor the whole class to remove sleeping in wait for
@@ -612,7 +612,7 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
       // the lock for its duration would be fine, it would defeat the purpose
       // of having a separate decoder thread.
       base::AutoUnlock auto_unlock(lock_);
-      TRACE_EVENT0("Video Decoder", "VAVDA::Decode");
+      TRACE_EVENT0("media.gpu", "VAVDA::Decode");
       res = decoder_->Decode();
     }
 
@@ -723,7 +723,7 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
 void VaapiVideoDecodeAccelerator::Decode(
     const BitstreamBuffer& bitstream_buffer) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  TRACE_EVENT1("Video Decoder", "VAVDA::Decode", "Buffer id",
+  TRACE_EVENT1("media.gpu", "VAVDA::Decode", "Buffer id",
                bitstream_buffer.id());
 
   if (bitstream_buffer.id() < 0) {
@@ -875,7 +875,7 @@ void VaapiVideoDecodeAccelerator::ReusePictureBuffer(
     int32_t picture_buffer_id) {
   VLOGF(4) << "picture id=" << picture_buffer_id;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  TRACE_EVENT1("Video Decoder", "VAVDA::ReusePictureBuffer", "Picture id",
+  TRACE_EVENT1("media.gpu", "VAVDA::ReusePictureBuffer", "Picture id",
                picture_buffer_id);
 
   if (!PictureById(picture_buffer_id)) {
@@ -889,7 +889,7 @@ void VaapiVideoDecodeAccelerator::ReusePictureBuffer(
   }
 
   --num_frames_at_client_;
-  TRACE_COUNTER1("Video Decoder", "Textures at client", num_frames_at_client_);
+  TRACE_COUNTER1("media.gpu", "Textures at client", num_frames_at_client_);
 
   output_buffers_.push(picture_buffer_id);
   TryOutputSurface();
@@ -989,7 +989,7 @@ void VaapiVideoDecodeAccelerator::Reset() {
   // Drop all remaining input buffers, if present.
   while (!input_buffers_.empty())
     input_buffers_.pop();
-  TRACE_COUNTER1("Video Decoder", "Input buffers", input_buffers_.size());
+  TRACE_COUNTER1("media.gpu", "Input buffers", input_buffers_.size());
 
   decoder_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VaapiVideoDecodeAccelerator::ResetTask,
