@@ -32,7 +32,7 @@ interface Frame {
 
   // Samsung Galaxy Note-specific "smart clip" stylus text getter.
   // Extracts the data at the given rect.
-  // TODO(crbug.com/676224): Only enable for OS_ANDROID.
+  [EnableIf=is_android]
   ExtractSmartClipData(gfx.mojom.Rect rect)
       => (mojo_base.mojom.String16 text, mojo_base.mojom.String16 html);
 };

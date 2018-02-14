@@ -512,9 +512,11 @@ class CONTENT_EXPORT RenderFrameImpl
       service_manager::mojom::InterfaceProviderRequest request) override;
   void GetCanonicalUrlForSharing(
       GetCanonicalUrlForSharingCallback callback) override;
+#if defined(OS_ANDROID)
   void ExtractSmartClipData(
       const gfx::Rect& rect,
       const ExtractSmartClipDataCallback callback) override;
+#endif
 
   // mojom::FrameBindingsControl implementation:
   void AllowBindings(int32_t enabled_bindings_flags) override;
