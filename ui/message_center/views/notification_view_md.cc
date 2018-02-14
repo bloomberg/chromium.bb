@@ -124,6 +124,16 @@ constexpr int kTextFontSizeDelta = 1;
 // the ratio of the message width is limited to this value.
 constexpr double kProgressNotificationMessageRatio = 0.7;
 
+// Users on ChromeOS are used to the Settings and Close buttons not being
+// visible at all times, but users on other platforms expect them to be visible.
+constexpr bool AlwaysShowControlButtons() {
+#if defined(OS_CHROMEOS)
+  return false;
+#else
+  return true;
+#endif
+}
+
 // FontList for the texts except for the header.
 gfx::FontList GetTextFontList() {
   gfx::Font default_font;
@@ -1135,8 +1145,27 @@ void NotificationViewMD::CreateOrUpdateInlineSettingsViews(
   settings_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, kSettingsRowPadding, 0));
 
+  int block_notifications_message_id = 0;
+  switch (notification.notifier_id().type) {
+    case NotifierId::APPLICATION:
+    case NotifierId::ARC_APPLICATION:
+      block_notifications_message_id =
+          IDS_MESSAGE_CENTER_BLOCK_ALL_NOTIFICATIONS_APP;
+      break;
+    case NotifierId::WEB_PAGE:
+      block_notifications_message_id =
+          IDS_MESSAGE_CENTER_BLOCK_ALL_NOTIFICATIONS_SITE;
+      break;
+    case NotifierId::SYSTEM_COMPONENT:
+    case NotifierId::SIZE:
+      block_notifications_message_id =
+          IDS_MESSAGE_CENTER_BLOCK_ALL_NOTIFICATIONS;
+      break;
+  }
+  DCHECK_NE(block_notifications_message_id, 0);
+
   block_all_button_ = new InlineSettingsRadioButton(
-      l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_BLOCK_ALL_NOTIFICATIONS));
+      l10n_util::GetStringUTF16(block_notifications_message_id));
   block_all_button_->set_listener(this);
   block_all_button_->SetBorder(
       views::CreateEmptyBorder(kSettingsRadioButtonPadding));
@@ -1268,7 +1297,8 @@ void NotificationViewMD::ToggleInlineSettings(const ui::LocatedEvent& event) {
 // among NotificationView and ArcNotificationView.
 void NotificationViewMD::UpdateControlButtonsVisibility() {
   const bool target_visibility =
-      IsMouseHovered() || control_buttons_view_->IsCloseButtonFocused() ||
+      AlwaysShowControlButtons() || IsMouseHovered() ||
+      control_buttons_view_->IsCloseButtonFocused() ||
       control_buttons_view_->IsSettingsButtonFocused();
 
   control_buttons_view_->SetVisible(target_visibility);
