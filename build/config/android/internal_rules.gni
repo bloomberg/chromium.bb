@@ -1661,12 +1661,13 @@ if (enable_java_templates) {
       }
       if (defined(invoker.png_to_webp) && invoker.png_to_webp) {
         _webp_target = "//third_party/libwebp:cwebp($host_toolchain)"
+        _webp_binary = get_label_info(_webp_target, "root_out_dir") + "/cwebp"
         deps += [ _webp_target ]
+        inputs += [ _webp_binary ]
         args += [
           "--png-to-webp",
           "--webp-binary",
-          rebase_path(get_label_info(_webp_target, "root_out_dir") + "/cwebp",
-                      root_build_dir),
+          rebase_path(_webp_binary, root_build_dir),
         ]
       }
       if (defined(invoker.exclude_xxxhdpi) && invoker.exclude_xxxhdpi) {
