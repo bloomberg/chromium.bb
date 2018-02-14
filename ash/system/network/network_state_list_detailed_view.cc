@@ -96,7 +96,8 @@ class NetworkStateListDetailedView::InfoBubble
   void OnMouseExited(const ui::MouseEvent& event) override {
     // Like the user switching bubble/menu, hide the bubble when the mouse
     // exits.
-    detailed_view_->ResetInfoBubble();
+    if (detailed_view_)
+      detailed_view_->ResetInfoBubble();
   }
 
   // BubbleDialogDelegateView:
