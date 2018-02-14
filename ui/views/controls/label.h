@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_CONTROLS_LABEL_H_
 #define UI_VIEWS_CONTROLS_LABEL_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -365,10 +367,6 @@ class VIEWS_EXPORT Label : public View,
   bool collapse_when_hidden_;
   int fixed_width_;
   int max_width_;
-
-  // TODO(ckocagil): Remove is_first_paint_text_ before crbug.com/441028 is
-  // closed.
-  bool is_first_paint_text_;
 
   std::unique_ptr<SelectionController> selection_controller_;
 
