@@ -25,6 +25,8 @@
 #include "ui/base/theme_provider.h"
 #include "ui/compositor/clip_recorder.h"
 #include "ui/compositor/paint_recorder.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/image/image.h"
@@ -82,6 +84,60 @@ void InitializeWideShadows() {
       gfx::ImageSkiaOperations::CreateHorizontalShadow(bottom_shadows, true);
 }
 
+// Controller for the results Widget that animates size changes when the height
+// is being reduced. Increases in height are not animated, since that adds the
+// perception of latency. This is not used for all popup styles.
+class WidgetShrinkAnimation : public gfx::AnimationDelegate {
+ public:
+  WidgetShrinkAnimation(views::Widget* widget, const gfx::Rect& initial_bounds)
+      : widget_(widget),
+        size_animation_(this),
+        target_bounds_(initial_bounds) {}
+
+  void SetTargetBounds(const gfx::Rect& bounds) {
+    // If we're animating and our target height changes, reset the animation.
+    // NOTE: If we just reset blindly on _every_ update, then when the user
+    // types rapidly we could get "stuck" trying repeatedly to animate shrinking
+    // by the last few pixels to get to one visible result.
+    if (bounds.height() != target_bounds_.height())
+      size_animation_.Reset();
+    target_bounds_ = bounds;
+
+    // Animate the popup shrinking, but don't animate growing larger since
+    // that would make the popup feel less responsive.
+    start_bounds_ = widget_->GetWindowBoundsInScreen();
+    if (target_bounds_.height() < start_bounds_.height())
+      size_animation_.Show();
+    else
+      start_bounds_ = target_bounds_;
+
+    widget_->SetBounds(start_bounds_);
+  }
+
+  // gfx::AnimationDelegate:
+  void AnimationProgressed(const gfx::Animation* animation) override {
+    gfx::Rect current_frame_bounds = start_bounds_;
+    int total_height_delta = target_bounds_.height() - start_bounds_.height();
+    // Round |current_height_delta| away from zero instead of truncating so we
+    // won't leave single white pixels at the bottom of the popup when animating
+    // very small height differences. Note the delta is negative.
+    int current_height_delta = static_cast<int>(
+        size_animation_.GetCurrentValue() * total_height_delta - 0.5);
+    current_frame_bounds.set_height(current_frame_bounds.height() +
+                                    current_height_delta);
+    widget_->SetBounds(current_frame_bounds);
+  }
+
+ private:
+  views::Widget* widget_;  // Weak. Owns |this|.
+
+  gfx::SlideAnimation size_animation_;
+  gfx::Rect start_bounds_;
+  gfx::Rect target_bounds_;
+
+  DISALLOW_COPY_AND_ASSIGN(WidgetShrinkAnimation);
+};
+
 }  // namespace
 
 class OmniboxPopupContentsView::AutocompletePopupWidget
@@ -107,6 +163,9 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
 
     if (IsRounded())
       RoundedOmniboxResultsFrame::OnBeforeWidgetInit(&params);
+    else
+      animator_ = std::make_unique<WidgetShrinkAnimation>(this, bounds);
+
     Init(params);
   }
 
@@ -119,7 +178,16 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
     }
   }
 
+  void SetTargetBounds(const gfx::Rect& bounds) {
+    if (animator_)
+      animator_->SetTargetBounds(bounds);
+    else
+      SetBounds(bounds);
+  }
+
  private:
+  std::unique_ptr<WidgetShrinkAnimation> animator_;
+
   DISALLOW_COPY_AND_ASSIGN(AutocompletePopupWidget);
 };
 
@@ -135,7 +203,6 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
       omnibox_view_(omnibox_view),
       location_bar_view_(location_bar_view),
       font_list_(font_list),
-      size_animation_(this),
       start_margin_(0),
       end_margin_(0) {
   // The contents is owned by the LocationBarView.
@@ -155,22 +222,6 @@ OmniboxPopupContentsView::~OmniboxPopupContentsView() {
   // We don't need to do anything with |popup_| here.  The OS either has already
   // closed the window, in which case it's been deleted, or it will soon, in
   // which case there's nothing we need to do.
-}
-
-gfx::Rect OmniboxPopupContentsView::GetPopupBounds() const {
-  if (!size_animation_.is_animating())
-    return target_bounds_;
-
-  gfx::Rect current_frame_bounds = start_bounds_;
-  int total_height_delta = target_bounds_.height() - start_bounds_.height();
-  // Round |current_height_delta| instead of truncating so we won't leave single
-  // white pixels at the bottom of the popup as long when animating very small
-  // height differences.
-  int current_height_delta = static_cast<int>(
-      size_animation_.GetCurrentValue() * total_height_delta - 0.5);
-  current_frame_bounds.set_height(
-      current_frame_bounds.height() + current_height_delta);
-  return current_frame_bounds;
 }
 
 void OmniboxPopupContentsView::OpenMatch(size_t index,
@@ -225,8 +276,6 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     // the omnibox popup window.  Close any existing popup.
     if (popup_) {
       NotifyAccessibilityEvent(ax::mojom::Event::kExpandedChanged, true);
-      size_animation_.Stop();
-
       // NOTE: Do NOT use CloseNow() here, as we may be deep in a callstack
       // triggered by the popup receiving a message (e.g. LBUTTONUP), and
       // destroying the popup would cause us to read garbage when we unwind back
@@ -272,26 +321,8 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     SetBorder(std::move(border));
   }
 
-  // If we're animating and our target height changes, reset the animation.
-  // NOTE: If we just reset blindly on _every_ update, then when the user types
-  // rapidly we could get "stuck" trying repeatedly to animate shrinking by the
-  // last few pixels to get to one visible result.
-  if (new_target_bounds.height() != target_bounds_.height())
-    size_animation_.Reset();
-  target_bounds_ = new_target_bounds;
-
   if (popup_) {
-    if (!IsRounded()) {
-      // TODO(tapted): Separate this animation logic out into a separate class.
-      // Animate the popup shrinking, but don't animate growing larger since
-      // that would make the popup feel less responsive.
-      start_bounds_ = GetWidget()->GetWindowBoundsInScreen();
-      if (target_bounds_.height() < start_bounds_.height())
-        size_animation_.Show();
-      else
-        start_bounds_ = target_bounds_;
-    }
-    popup_->SetBounds(GetPopupBounds());
+    popup_->SetTargetBounds(new_target_bounds);
     Layout();
     return;
   }
@@ -300,7 +331,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
 
   // If the popup is currently closed, we need to create it.
   popup_ = (new AutocompletePopupWidget(popup_parent))->AsWeakPtr();
-  popup_->InitOmniboxPopup(popup_parent, GetPopupBounds());
+  popup_->InitOmniboxPopup(popup_parent, new_target_bounds);
   // Third-party software such as DigitalPersona identity verification can hook
   // the underlying window creation methods and use SendMessage to synchronously
   // change focus/activation, resulting in the popup being destroyed by the time
@@ -332,27 +363,12 @@ void OmniboxPopupContentsView::OnMatchIconUpdated(size_t match_index) {
   result_view_at(match_index)->OnMatchIconUpdated();
 }
 
-gfx::Rect OmniboxPopupContentsView::GetTargetBounds() {
-  return target_bounds_;
-}
-
 void OmniboxPopupContentsView::PaintUpdatesNow() {
   // TODO(beng): remove this from the interface.
 }
 
 void OmniboxPopupContentsView::OnDragCanceled() {
   SetMouseHandler(nullptr);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// OmniboxPopupContentsView, AnimationDelegate implementation:
-
-void OmniboxPopupContentsView::AnimationProgressed(
-    const gfx::Animation* animation) {
-  DCHECK(!IsRounded());
-  // We should only be running the animation when the popup is already visible.
-  DCHECK(popup_);
-  popup_->SetBounds(GetPopupBounds());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -55,8 +55,7 @@ OmniboxPopupViewMac::OmniboxPopupViewMac(OmniboxView* omnibox_view,
     : omnibox_view_(omnibox_view),
       model_(new OmniboxPopupModel(this, edit_model)),
       field_(field),
-      popup_(nil),
-      target_popup_frame_(NSZeroRect) {
+      popup_(nil) {
   DCHECK(omnibox_view);
   DCHECK(edit_model);
 }
@@ -100,9 +99,6 @@ void OmniboxPopupViewMac::UpdatePopupAppearance() {
     matrix_.reset();
 
     popup_.reset(nil);
-
-    target_popup_frame_ = NSZeroRect;
-
     return;
   }
 
@@ -135,15 +131,6 @@ void OmniboxPopupViewMac::UpdatePopupAppearance() {
 void OmniboxPopupViewMac::OnMatchIconUpdated(size_t match_index) {
   [matrix_ setMatchIcon:ImageForMatch(GetResult().match_at(match_index))
                  forRow:match_index];
-}
-
-gfx::Rect OmniboxPopupViewMac::GetTargetBounds() {
-  // Flip the coordinate system before returning.
-  NSScreen* screen = [[NSScreen screens] firstObject];
-  NSRect monitor_frame = [screen frame];
-  gfx::Rect bounds(NSRectToCGRect(target_popup_frame_));
-  bounds.set_y(monitor_frame.size.height - bounds.y() - bounds.height());
-  return bounds;
 }
 
 // This is only called by model in SetSelectedLine() after updating
@@ -293,7 +280,6 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
   [[[matrix_ tableColumns] objectAtIndex:0] setWidth:table_width];
 
   // Don't play animation games on first display.
-  target_popup_frame_ = popup_frame;
   if (![popup_ parentWindow]) {
     DCHECK(![popup_ isVisible]);
     [popup_ setFrame:popup_frame display:NO];

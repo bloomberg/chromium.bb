@@ -70,10 +70,8 @@ TEST_F(OmniboxPopupViewMacTest, UpdatePopupAppearance) {
   EXPECT_TRUE(popup_view.IsOpen());
   EXPECT_EQ(3, [popup_view.matrix() numberOfRows]);
 
-  int old_height = popup_view.GetTargetBounds().height();
   popup_view.SetResultCount(5);
   popup_view.UpdatePopupAppearance();
-  EXPECT_GT(popup_view.GetTargetBounds().height(), old_height);
   EXPECT_EQ(5, [popup_view.matrix() numberOfRows]);
 
   popup_view.SetResultCount(0);

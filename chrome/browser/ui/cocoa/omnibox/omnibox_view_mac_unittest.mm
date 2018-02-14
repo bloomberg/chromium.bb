@@ -61,7 +61,6 @@ class MockOmniboxPopupView : public OmniboxPopupView {
   void OnLineSelected(size_t line) override {}
   void UpdatePopupAppearance() override {}
   void OnMatchIconUpdated(size_t match_index) override {}
-  gfx::Rect GetTargetBounds() override { return gfx::Rect(); }
   void PaintUpdatesNow() override {}
   void OnDragCanceled() override {}
 
