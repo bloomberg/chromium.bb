@@ -28,6 +28,7 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/file_chooser_file_info.h"
+#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_frame_navigation_observer.h"
@@ -375,11 +376,19 @@ void UpdateResizeParamsMessageFilter::OnUpdateResizeParams(
     const ScreenInfo& screen_info,
     uint64_t sequence_number,
     const viz::SurfaceId& surface_id) {
+  gfx::Rect screen_space_rect_in_dip = screen_space_rect;
+  if (IsUseZoomForDSFEnabled()) {
+    screen_space_rect_in_dip = gfx::Rect(
+        gfx::ScaleToFlooredPoint(screen_space_rect.origin(),
+                                 1.f / screen_info.device_scale_factor),
+        gfx::ScaleToCeiledSize(screen_space_rect.size(),
+                               1.f / screen_info.device_scale_factor));
+  }
   // Track each rect updates.
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::BindOnce(&UpdateResizeParamsMessageFilter::OnUpdatedFrameRectOnUI,
-                     this, screen_space_rect));
+                     this, screen_space_rect_in_dip));
 
   // Record the received value. We cannot check the current state of the child
   // frame, as it can only be processed on the UI thread, and we cannot block

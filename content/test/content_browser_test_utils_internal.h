@@ -209,6 +209,7 @@ class UpdateResizeParamsMessageFilter : public content::BrowserMessageFilter {
                             const ScreenInfo& screen_info,
                             uint64_t sequence_number,
                             const viz::SurfaceId& surface_id);
+  // |rect| is in DIPs.
   void OnUpdatedFrameRectOnUI(const gfx::Rect& rect);
   void OnUpdatedFrameSinkIdOnUI();
 
