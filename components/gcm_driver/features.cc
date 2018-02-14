@@ -18,7 +18,6 @@ const base::Feature kInvalidateTokenFeature{"GCMTokenInvalidAfterDays",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 const char kParamNameTokenInvalidationPeriodDays[] =
     "token_invalidation_period";
-const char kGroupName[] = "token_validity_data";
 // A token invalidation period of 0 means the feature is disabled, and the
 // GCM token never becomes stale.
 const int kDefaultTokenInvalidationPeriod = 7;

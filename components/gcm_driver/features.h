@@ -13,7 +13,6 @@ namespace features {
 
 extern const base::Feature kInvalidateTokenFeature;
 extern const char kParamNameTokenInvalidationPeriodDays[];
-extern const char kGroupName[];
 
 // The period after which the GCM token becomes stale.
 base::TimeDelta GetTokenInvalidationInterval();
