@@ -453,6 +453,24 @@ TEST(SetupUtilTest, GetConsoleSessionStartTime) {
   EXPECT_FALSE(start_time.is_null());
 }
 
+TEST(SetupUtilTest, GetToastActivatorRegistryPath) {
+  base::string16 toast_activator_reg_path =
+      installer::GetToastActivatorRegistryPath();
+  EXPECT_FALSE(toast_activator_reg_path.empty());
+
+  // Confirm that the string is a path followed by a GUID.
+  size_t guid_begin = toast_activator_reg_path.find('{');
+  EXPECT_NE(base::string16::npos, guid_begin);
+  EXPECT_NE(0u, guid_begin);
+  EXPECT_EQ(L'\\', toast_activator_reg_path[guid_begin - 1]);
+
+  // A GUID has the form "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}".
+  constexpr unsigned int kGuidLength = 38;
+  EXPECT_EQ(kGuidLength, toast_activator_reg_path.length() - guid_begin);
+
+  EXPECT_EQ('}', toast_activator_reg_path.back());
+}
+
 namespace installer {
 
 class DeleteRegistryKeyPartialTest : public ::testing::Test {
