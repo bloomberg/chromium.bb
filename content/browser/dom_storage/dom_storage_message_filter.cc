@@ -87,8 +87,8 @@ void DOMStorageMessageFilter::OnOpenStorageArea(int connection_id,
                                                 const std::string& namespace_id,
                                                 const GURL& origin) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
-  base::Optional<bad_message::BadMessageReason>
-      error = host_->OpenStorageArea(connection_id, namespace_id, origin);
+  base::Optional<bad_message::BadMessageReason> error = host_->OpenStorageArea(
+      connection_id, namespace_id, url::Origin::Create(origin));
   if (error)
     bad_message::ReceivedBadMessage(this, error.value());
 }
@@ -194,7 +194,7 @@ void DOMStorageMessageFilter::SendDOMStorageEvent(
   if (originated_in_process ||
       host_->HasAreaOpen(area->namespace_id(), area->origin())) {
     DOMStorageMsg_Event_Params params;
-    params.origin = area->origin();
+    params.origin = area->origin().GetURL();
     params.page_url = page_url;
     params.connection_id = connection_dispatching_message_for_;
     params.key = key;

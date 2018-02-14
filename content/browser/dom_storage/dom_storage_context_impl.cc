@@ -119,29 +119,28 @@ void DOMStorageContextImpl::GetSessionStorageUsage(
     std::vector<SessionStorageUsageInfo>* infos) {
   if (!session_storage_database_.get()) {
     for (const auto& entry : namespaces_) {
-      std::vector<GURL> origins;
+      std::vector<url::Origin> origins;
       entry.second->GetOriginsWithAreas(&origins);
-      for (const GURL& origin : origins) {
+      for (const url::Origin& origin : origins) {
         SessionStorageUsageInfo info;
         info.namespace_id = entry.second->namespace_id();
-        info.origin = origin;
+        info.origin = origin.GetURL();
         infos->push_back(info);
       }
     }
     return;
   }
 
-  std::map<std::string, std::vector<GURL> > namespaces_and_origins;
+  std::map<std::string, std::vector<url::Origin>> namespaces_and_origins;
   session_storage_database_->ReadNamespacesAndOrigins(
       &namespaces_and_origins);
-  for (std::map<std::string, std::vector<GURL> >::const_iterator it =
-           namespaces_and_origins.begin();
-       it != namespaces_and_origins.end(); ++it) {
-    for (std::vector<GURL>::const_iterator origin_it = it->second.begin();
-         origin_it != it->second.end(); ++origin_it) {
+  for (auto it = namespaces_and_origins.cbegin();
+       it != namespaces_and_origins.cend(); ++it) {
+    for (auto origin_it = it->second.cbegin(); origin_it != it->second.cend();
+         ++origin_it) {
       SessionStorageUsageInfo info;
       info.namespace_id = it->first;
-      info.origin = *origin_it;
+      info.origin = origin_it->GetURL();
       infos->push_back(info);
     }
   }
@@ -159,11 +158,12 @@ void DOMStorageContextImpl::DeleteSessionStorage(
     CreateSessionNamespace(usage_info.namespace_id);
     dom_storage_namespace = GetStorageNamespace(usage_info.namespace_id);
   }
-  dom_storage_namespace->DeleteSessionStorageOrigin(usage_info.origin);
+  dom_storage_namespace->DeleteSessionStorageOrigin(
+      url::Origin::Create(usage_info.origin));
   // Synthesize a 'cleared' event if the area is open so CachedAreas in
   // renderers get emptied out too.
-  DOMStorageArea* area =
-      dom_storage_namespace->GetOpenStorageArea(usage_info.origin);
+  DOMStorageArea* area = dom_storage_namespace->GetOpenStorageArea(
+      url::Origin::Create(usage_info.origin));
   if (area)
     NotifyAreaCleared(area, usage_info.origin);
 }
@@ -323,10 +323,10 @@ void DOMStorageContextImpl::ClearSessionOnlyOrigins() {
     std::vector<SessionStorageUsageInfo> infos;
     GetSessionStorageUsage(&infos);
     for (size_t i = 0; i < infos.size(); ++i) {
-      const GURL& origin = infos[i].origin;
-      if (special_storage_policy_->IsStorageProtected(origin))
+      const url::Origin& origin = url::Origin::Create(infos[i].origin);
+      if (special_storage_policy_->IsStorageProtected(origin.GetURL()))
         continue;
-      if (!special_storage_policy_->IsStorageSessionOnly(origin))
+      if (!special_storage_policy_->IsStorageSessionOnly(origin.GetURL()))
         continue;
       session_storage_database_->DeleteArea(infos[i].namespace_id, origin);
     }
@@ -465,11 +465,10 @@ void DOMStorageContextImpl::FindUnusedNamespacesInCommitSequence(
   DCHECK(session_storage_database_.get());
   // Delete all namespaces which don't have an associated DOMStorageNamespace
   // alive.
-  std::map<std::string, std::vector<GURL>> namespaces_and_origins;
+  std::map<std::string, std::vector<url::Origin>> namespaces_and_origins;
   session_storage_database_->ReadNamespacesAndOrigins(&namespaces_and_origins);
-  for (std::map<std::string, std::vector<GURL>>::const_iterator it =
-           namespaces_and_origins.begin();
-       it != namespaces_and_origins.end(); ++it) {
+  for (auto it = namespaces_and_origins.cbegin();
+       it != namespaces_and_origins.cend(); ++it) {
     if (namespace_ids_in_use.find(it->first) == namespace_ids_in_use.end() &&
         protected_session_ids.find(it->first) == protected_session_ids.end()) {
       deletable_namespace_ids_.push_back(it->first);

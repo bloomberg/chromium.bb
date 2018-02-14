@@ -26,7 +26,7 @@
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -52,17 +52,16 @@ class SessionStorageDatabaseTest : public testing::Test {
   void CheckEmptyDatabase() const;
   void DumpData() const;
   void CheckAreaData(const std::string& namespace_id,
-                     const GURL& origin,
+                     const url::Origin& origin,
                      const DOMStorageValuesMap& reference) const;
   void CompareValuesMaps(const DOMStorageValuesMap& map1,
                          const DOMStorageValuesMap& map2) const;
   void CheckNamespaceIds(
       const std::set<std::string>& expected_namespace_ids) const;
-  void CheckOrigins(
-      const std::string& namespace_id,
-      const std::set<GURL>& expected_origins) const;
+  void CheckOrigins(const std::string& namespace_id,
+                    const std::set<url::Origin>& expected_origins) const;
   std::string GetMapForArea(const std::string& namespace_id,
-                            const GURL& origin) const;
+                            const url::Origin& origin) const;
   int64_t GetMapRefCount(const std::string& map_id) const;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -70,8 +69,8 @@ class SessionStorageDatabaseTest : public testing::Test {
   scoped_refptr<SessionStorageDatabase> db_;
 
   // Test data.
-  const GURL kOrigin1;
-  const GURL kOrigin2;
+  const url::Origin kOrigin1;
+  const url::Origin kOrigin2;
   const std::string kNamespace1;
   const std::string kNamespace2;
   const std::string kNamespaceClone;
@@ -88,8 +87,8 @@ class SessionStorageDatabaseTest : public testing::Test {
 };
 
 SessionStorageDatabaseTest::SessionStorageDatabaseTest()
-    : kOrigin1("http://www.origin1.com"),
-      kOrigin2("http://www.origin2.com"),
+    : kOrigin1(url::Origin::Create(GURL("http://www.origin1.com"))),
+      kOrigin2(url::Origin::Create(GURL("http://www.origin2.com"))),
       kNamespace1("namespace1"),
       kNamespace2("namespace2"),
       kNamespaceClone("wascloned"),
@@ -99,7 +98,7 @@ SessionStorageDatabaseTest::SessionStorageDatabaseTest()
       kValue1(base::ASCIIToUTF16("value1"), false),
       kValue2(base::ASCIIToUTF16("value2"), false),
       kValue3(base::ASCIIToUTF16("value3"), false),
-      kValue4(base::ASCIIToUTF16("value4"), false) { }
+      kValue4(base::ASCIIToUTF16("value4"), false) {}
 
 SessionStorageDatabaseTest::~SessionStorageDatabaseTest() { }
 
@@ -323,7 +322,8 @@ void SessionStorageDatabaseTest::DumpData() const {
 }
 
 void SessionStorageDatabaseTest::CheckAreaData(
-    const std::string& namespace_id, const GURL& origin,
+    const std::string& namespace_id,
+    const url::Origin& origin,
     const DOMStorageValuesMap& reference) const {
   DOMStorageValuesMap values;
   db_->ReadAreaValues(namespace_id, std::vector<std::string>(), origin,
@@ -348,12 +348,11 @@ void SessionStorageDatabaseTest::CompareValuesMaps(
 
 void SessionStorageDatabaseTest::CheckNamespaceIds(
     const std::set<std::string>& expected_namespace_ids) const {
-  std::map<std::string, std::vector<GURL> > namespaces_and_origins;
+  std::map<std::string, std::vector<url::Origin>> namespaces_and_origins;
   EXPECT_TRUE(db_->ReadNamespacesAndOrigins(&namespaces_and_origins));
   EXPECT_EQ(expected_namespace_ids.size(), namespaces_and_origins.size());
-  for (std::map<std::string, std::vector<GURL> >::const_iterator it =
-           namespaces_and_origins.begin();
-       it != namespaces_and_origins.end(); ++it) {
+  for (auto it = namespaces_and_origins.cbegin();
+       it != namespaces_and_origins.cend(); ++it) {
     EXPECT_TRUE(expected_namespace_ids.find(it->first) !=
                 expected_namespace_ids.end());
   }
@@ -361,22 +360,31 @@ void SessionStorageDatabaseTest::CheckNamespaceIds(
 
 void SessionStorageDatabaseTest::CheckOrigins(
     const std::string& namespace_id,
-    const std::set<GURL>& expected_origins) const {
-  std::map<std::string, std::vector<GURL> > namespaces_and_origins;
+    const std::set<url::Origin>& expected_origins) const {
+  std::map<std::string, std::vector<url::Origin>> namespaces_and_origins;
   EXPECT_TRUE(db_->ReadNamespacesAndOrigins(&namespaces_and_origins));
-  const std::vector<GURL>& origins = namespaces_and_origins[namespace_id];
+  const std::vector<url::Origin>& origins =
+      namespaces_and_origins[namespace_id];
   EXPECT_EQ(expected_origins.size(), origins.size());
-  for (std::vector<GURL>::const_iterator it = origins.begin();
-       it != origins.end(); ++it) {
+  for (auto it = origins.cbegin(); it != origins.cend(); ++it) {
     EXPECT_TRUE(expected_origins.find(*it) != expected_origins.end());
   }
 }
 
 std::string SessionStorageDatabaseTest::GetMapForArea(
-    const std::string& namespace_id, const GURL& origin) const {
+    const std::string& namespace_id,
+    const url::Origin& origin) const {
   bool exists;
   std::string map_id;
-  EXPECT_TRUE(db_->GetMapForArea(namespace_id, origin.spec(),
+  // GetURL().spec() should used here rather than Serialize() to ensure
+  // backwards compatibility with older data. The serializations are
+  // subtly different, e.g. Origin does not include a trailing "/".
+  // Origin without a  trailing "/" should not exist.
+  EXPECT_TRUE(db_->GetMapForArea(namespace_id, origin.Serialize(),
+                                 leveldb::ReadOptions(), &exists, &map_id));
+  EXPECT_FALSE(exists);
+
+  EXPECT_TRUE(db_->GetMapForArea(namespace_id, origin.GetURL().spec(),
                                  leveldb::ReadOptions(), &exists, &map_id));
   EXPECT_TRUE(exists);
   return map_id;
@@ -780,14 +788,14 @@ TEST_F(SessionStorageDatabaseTest, ReadOriginsInNamespace) {
   data1[kKey2] = kValue2;
   data1[kKey3] = kValue3;
 
-  std::set<GURL> expected_origins1;
+  std::set<url::Origin> expected_origins1;
   ASSERT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin1, false, data1));
   ASSERT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin2, false, data1));
   expected_origins1.insert(kOrigin1);
   expected_origins1.insert(kOrigin2);
   CheckOrigins(kNamespace1, expected_origins1);
 
-  std::set<GURL> expected_origins2;
+  std::set<url::Origin> expected_origins2;
   ASSERT_TRUE(db_->CommitAreaChanges(kNamespace2, kOrigin2, false, data1));
   expected_origins2.insert(kOrigin2);
   CheckOrigins(kNamespace2, expected_origins2);

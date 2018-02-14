@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/dom_storage/dom_storage_database_adapter.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -23,7 +23,7 @@ class SessionStorageDatabaseAdapter : public DOMStorageDatabaseAdapter {
       SessionStorageDatabase* db,
       const std::string& permanent_namespace_id,
       const std::vector<std::string>& original_permanent_namespace_ids,
-      const GURL& origin);
+      const url::Origin& origin);
   ~SessionStorageDatabaseAdapter() override;
   void ReadAllValues(DOMStorageValuesMap* result) override;
   bool CommitChanges(bool clear_all_first,
@@ -34,7 +34,7 @@ class SessionStorageDatabaseAdapter : public DOMStorageDatabaseAdapter {
   std::string permanent_namespace_id_;
   // IDs of original databases in order of ShallowCopy(s).
   std::vector<std::string> original_permanent_namespace_ids_;
-  GURL origin_;
+  url::Origin origin_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStorageDatabaseAdapter);
 };

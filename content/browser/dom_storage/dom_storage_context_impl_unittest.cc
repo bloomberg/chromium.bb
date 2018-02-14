@@ -30,13 +30,13 @@ namespace content {
 class DOMStorageContextImplTest : public testing::Test {
  public:
   DOMStorageContextImplTest()
-      : kOrigin(GURL("http://dom_storage/")),
+      : kOrigin(url::Origin::Create(GURL("http://dom_storage/"))),
         kKey(ASCIIToUTF16("key")),
         kValue(ASCIIToUTF16("value")),
         kDontIncludeFileInfo(false),
         kDoIncludeFileInfo(true) {}
 
-  const GURL kOrigin;
+  const url::Origin kOrigin;
   const base::string16 kKey;
   const base::string16 kValue;
   const bool kDontIncludeFileInfo;
@@ -142,7 +142,7 @@ TEST_F(DOMStorageContextImplTest, DeleteSessionStorage) {
   dom_namespace->CloseStorageArea(area);
 
   SessionStorageUsageInfo info;
-  info.origin = kOrigin;
+  info.origin = kOrigin.GetURL();
   info.namespace_id = kFirstNamespaceId;
   context_->DeleteSessionStorage(info);
 

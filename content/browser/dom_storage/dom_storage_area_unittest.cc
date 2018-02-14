@@ -24,6 +24,7 @@
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 using base::ASCIIToUTF16;
 
@@ -32,14 +33,13 @@ namespace content {
 class DOMStorageAreaTest : public testing::Test {
  public:
   DOMStorageAreaTest()
-    : kOrigin(GURL("http://dom_storage/")),
-      kKey(ASCIIToUTF16("key")),
-      kValue(ASCIIToUTF16("value")),
-      kKey2(ASCIIToUTF16("key2")),
-      kValue2(ASCIIToUTF16("value2")) {
-  }
+      : kOrigin(url::Origin::Create(GURL("http://dom_storage/"))),
+        kKey(ASCIIToUTF16("key")),
+        kValue(ASCIIToUTF16("value")),
+        kKey2(ASCIIToUTF16("key2")),
+        kValue2(ASCIIToUTF16("value2")) {}
 
-  const GURL kOrigin;
+  const url::Origin kOrigin;
   const base::string16 kKey;
   const base::string16 kValue;
   const base::string16 kKey2;
@@ -511,7 +511,8 @@ TEST_F(DOMStorageAreaTest, DatabaseFileNames) {
   };
 
   for (size_t i = 0; i < arraysize(kCases); ++i) {
-    GURL origin = GURL(kCases[i].origin).GetOrigin();
+    url::Origin origin =
+        url::Origin::Create(GURL(kCases[i].origin).GetOrigin());
     base::FilePath file_name =
         base::FilePath().AppendASCII(kCases[i].file_name);
 

@@ -21,7 +21,7 @@
 #include "content/common/content_export.h"
 #include "content/common/dom_storage/dom_storage_map.h"
 #include "content/common/dom_storage/dom_storage_types.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace base {
 namespace trace_event {
@@ -43,8 +43,9 @@ class CONTENT_EXPORT DOMStorageArea
 
  public:
   static const base::FilePath::CharType kDatabaseFileExtension[];
-  static base::FilePath DatabaseFileNameFromOrigin(const GURL& origin);
-  static GURL OriginFromDatabaseFileName(const base::FilePath& file_name);
+  static base::FilePath DatabaseFileNameFromOrigin(const url::Origin& origin);
+  static url::Origin OriginFromDatabaseFileName(
+      const base::FilePath& file_name);
 
   // Commence aggressive flushing. This should be called early in the startup -
   // before any localStorage writing. Currently scheduled writes will not be
@@ -55,11 +56,11 @@ class CONTENT_EXPORT DOMStorageArea
   // Session storage. Backed on disk if |session_storage_backing| is not NULL.
   DOMStorageArea(const std::string& namespace_id,
                  std::vector<std::string> original_namespace_ids,
-                 const GURL& origin,
+                 const url::Origin& origin,
                  SessionStorageDatabase* session_storage_backing,
                  DOMStorageTaskRunner* task_runner);
 
-  const GURL& origin() const { return origin_; }
+  const url::Origin& origin() const { return origin_; }
   const std::string& namespace_id() const { return namespace_id_; }
   size_t map_memory_used() const { return map_ ? map_->memory_used() : 0; }
 
@@ -208,7 +209,7 @@ class CONTENT_EXPORT DOMStorageArea
 
   std::string namespace_id_;
   std::vector<std::string> original_namespace_ids_;
-  GURL origin_;
+  url::Origin origin_;
   scoped_refptr<DOMStorageTaskRunner> task_runner_;
   LoadState desired_load_state_;
   LoadState load_state_;
