@@ -37,14 +37,11 @@ constexpr uint32_t kProcessMallocTriggerKb = 2 * 1024 * 1024;  // 2 Gig
 OSMemDumpPtr GetFakeOSMemDump(uint32_t resident_set_kb,
                               uint32_t private_footprint_kb,
                               uint32_t shared_footprint_kb) {
-  using memory_instrumentation::mojom::VmRegion;
-  std::vector<memory_instrumentation::mojom::VmRegionPtr> vm_regions;
   return memory_instrumentation::mojom::OSMemDump::New(
-      resident_set_kb, private_footprint_kb, shared_footprint_kb,
+      resident_set_kb, private_footprint_kb, shared_footprint_kb
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-      std::move(vm_regions), 0
-#else
-      std::move(vm_regions)
+      ,
+      0
 #endif
       );
 }
