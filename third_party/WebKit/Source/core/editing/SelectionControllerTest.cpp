@@ -163,7 +163,7 @@ TEST_F(SelectionControllerTest,
   blink::WebMouseEvent mouse_event(
       blink::WebInputEvent::kMouseDown,
       blink::WebInputEvent::kIsCompatibilityEventForTouch,
-      blink::WebInputEvent::kTimeStampForTesting);
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   // Frame scale defaults to 0, which would cause a divide-by-zero problem.
   mouse_event.SetFrameScale(1);
   GetFrame().GetEventHandler().GetSelectionController().HandleMousePressEvent(

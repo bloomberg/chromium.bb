@@ -327,7 +327,7 @@ TEST_F(RenderWidgetHostViewChildFrameScrollLatchingDisabledTest,
   blink::WebGestureEvent gesture_scroll(
       blink::WebGestureEvent::kGestureScrollBegin,
       blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::kTimeStampForTesting);
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   view_->GestureEventAck(gesture_scroll, INPUT_EVENT_ACK_STATE_IGNORED);
 
   gesture_scroll.SetType(blink::WebGestureEvent::kGestureScrollUpdate);

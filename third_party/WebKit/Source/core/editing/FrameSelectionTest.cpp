@@ -594,7 +594,7 @@ TEST_F(FrameSelectionTest, FocusingButtonHidesRangeInDisabledTextControl) {
   // been shorter, but currently that doesn't work on a *disabled* text control.
   const IntRect elem_bounds = textarea->BoundsInViewport();
   WebMouseEvent double_click(WebMouseEvent::kMouseDown, 0,
-                             WebInputEvent::kTimeStampForTesting);
+                             WebInputEvent::GetStaticTimeStampForTests());
   double_click.SetPositionInWidget(elem_bounds.X(), elem_bounds.Y());
   double_click.SetPositionInScreen(elem_bounds.X(), elem_bounds.Y());
   double_click.button = WebMouseEvent::Button::kLeft;

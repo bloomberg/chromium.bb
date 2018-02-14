@@ -124,7 +124,7 @@ TEST(TouchEventStreamValidator, InvalidEventType) {
   TouchEventStreamValidator validator;
   WebTouchEvent event(WebInputEvent::kGestureScrollBegin,
                       WebInputEvent::kNoModifiers,
-                      WebInputEvent::kTimeStampForTesting);
+                      WebInputEvent::GetStaticTimeStampForTests());
   std::string error_msg;
 
   event.touches_length = 1;
@@ -156,7 +156,7 @@ TEST(TouchEventStreamValidator, InvalidPointStates) {
     EXPECT_TRUE(error_msg.empty());
 
     WebTouchEvent event(kTouchTypes[i], WebInputEvent::kNoModifiers,
-                        WebInputEvent::kTimeStampForTesting);
+                        WebInputEvent::GetStaticTimeStampForTests());
     event.touches_length = 1;
     for (size_t j = WebTouchPoint::kStateUndefined;
          j <= WebTouchPoint::kStateCancelled; ++j) {

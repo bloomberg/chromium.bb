@@ -185,9 +185,9 @@ TEST_F(RenderWidgetHostInputEventRouterTest,
   // We start the touch in the area for |view_other_|.
   view_root_->SetHittestResult(view_other_.get());
 
-  blink::WebTouchEvent touch_event(blink::WebInputEvent::kTouchStart,
-                                   blink::WebInputEvent::kNoModifiers,
-                                   blink::WebInputEvent::kTimeStampForTesting);
+  blink::WebTouchEvent touch_event(
+      blink::WebInputEvent::kTouchStart, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   touch_event.touches_length = 1;
   touch_event.touches[0].state = blink::WebTouchPoint::kStatePressed;
   touch_event.unique_touch_event_id = 1;
@@ -198,7 +198,7 @@ TEST_F(RenderWidgetHostInputEventRouterTest,
 
   blink::WebGestureEvent gesture_event(
       blink::WebInputEvent::kGestureTapDown, blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::kTimeStampForTesting);
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   gesture_event.source_device = blink::kWebGestureDeviceTouchscreen;
   gesture_event.unique_touch_event_id = touch_event.unique_touch_event_id;
 
@@ -280,7 +280,7 @@ TEST_F(RenderWidgetHostInputEventRouterTest, EnsureDroppedTouchEventsAreAcked) {
   // Send a touch move without a touch start.
   blink::WebTouchEvent touch_move_event(
       blink::WebInputEvent::kTouchMove, blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::kTimeStampForTesting);
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   touch_move_event.touches_length = 1;
   touch_move_event.touches[0].state = blink::WebTouchPoint::kStatePressed;
   touch_move_event.unique_touch_event_id = 1;
@@ -292,7 +292,7 @@ TEST_F(RenderWidgetHostInputEventRouterTest, EnsureDroppedTouchEventsAreAcked) {
   // Send a touch cancel without a touch start.
   blink::WebTouchEvent touch_cancel_event(
       blink::WebInputEvent::kTouchCancel, blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::kTimeStampForTesting);
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   touch_cancel_event.touches_length = 1;
   touch_cancel_event.touches[0].state = blink::WebTouchPoint::kStateCancelled;
   touch_cancel_event.unique_touch_event_id = 2;
@@ -318,9 +318,9 @@ TEST_F(RenderWidgetHostInputEventRouterTest, DoNotCoalesceTouchEvents) {
 
   // Send TouchStart, TouchMove, TouchMove, TouchMove, TouchEnd and make sure
   // the targeter doesn't attempt to coalesce.
-  blink::WebTouchEvent touch_event(blink::WebInputEvent::kTouchStart,
-                                   blink::WebInputEvent::kNoModifiers,
-                                   blink::WebInputEvent::kTimeStampForTesting);
+  blink::WebTouchEvent touch_event(
+      blink::WebInputEvent::kTouchStart, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   touch_event.touches_length = 1;
   touch_event.touches[0].state = blink::WebTouchPoint::kStatePressed;
   touch_event.unique_touch_event_id = 1;
@@ -373,9 +373,9 @@ TEST_F(RenderWidgetHostInputEventRouterTest, DoNotCoalesceGestureEvents) {
   // Send TouchStart, GestureTapDown, TouchEnd, GestureScrollBegin,
   // GestureScrollUpdate (x2), GestureScrollEnd and make sure
   // the targeter doesn't attempt to coalesce.
-  blink::WebTouchEvent touch_event(blink::WebInputEvent::kTouchStart,
-                                   blink::WebInputEvent::kNoModifiers,
-                                   blink::WebInputEvent::kTimeStampForTesting);
+  blink::WebTouchEvent touch_event(
+      blink::WebInputEvent::kTouchStart, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   touch_event.touches_length = 1;
   touch_event.touches[0].state = blink::WebTouchPoint::kStatePressed;
   touch_event.unique_touch_event_id = 1;
@@ -389,7 +389,7 @@ TEST_F(RenderWidgetHostInputEventRouterTest, DoNotCoalesceGestureEvents) {
 
   blink::WebGestureEvent gesture_event(
       blink::WebInputEvent::kGestureTapDown, blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::kTimeStampForTesting);
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   gesture_event.source_device = blink::kWebGestureDeviceTouchscreen;
   gesture_event.unique_touch_event_id = touch_event.unique_touch_event_id;
   rwhier_.RouteGestureEvent(view_root_.get(), &gesture_event,

@@ -121,7 +121,7 @@ class PasswordGenerationInteractiveTest :
     content::NativeWebKeyboardEvent event(
         blink::WebKeyboardEvent::kRawKeyDown,
         blink::WebInputEvent::kNoModifiers,
-        blink::WebInputEvent::kTimeStampForTesting);
+        blink::WebInputEvent::GetStaticTimeStampForTests());
     event.windows_key_code = key;
     RenderViewHost()->GetWidget()->ForwardKeyboardEvent(event);
   }

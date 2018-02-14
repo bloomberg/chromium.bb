@@ -1029,7 +1029,7 @@ TEST_P(VisualViewportTest, TestContextMenuShownInCorrectLocation) {
 
   WebMouseEvent mouse_down_event(WebInputEvent::kMouseDown,
                                  WebInputEvent::kNoModifiers,
-                                 WebInputEvent::kTimeStampForTesting);
+                                 WebInputEvent::GetStaticTimeStampForTests());
   mouse_down_event.SetPositionInWidget(10, 10);
   mouse_down_event.SetPositionInScreen(110, 210);
   mouse_down_event.click_count = 1;
@@ -1745,7 +1745,7 @@ TEST_P(VisualViewportTest, SlowScrollAfterImplScroll) {
   // Send a scroll event on the main thread path.
   WebGestureEvent gsb(WebInputEvent::kGestureScrollBegin,
                       WebInputEvent::kNoModifiers,
-                      WebInputEvent::kTimeStampForTesting);
+                      WebInputEvent::GetStaticTimeStampForTests());
   gsb.SetFrameScale(1);
   gsb.source_device = kWebGestureDeviceTouchpad;
   gsb.data.scroll_begin.delta_x_hint = -50;
@@ -1755,7 +1755,7 @@ TEST_P(VisualViewportTest, SlowScrollAfterImplScroll) {
 
   WebGestureEvent gsu(WebInputEvent::kGestureScrollUpdate,
                       WebInputEvent::kNoModifiers,
-                      WebInputEvent::kTimeStampForTesting);
+                      WebInputEvent::GetStaticTimeStampForTests());
   gsu.SetFrameScale(1);
   gsu.source_device = kWebGestureDeviceTouchpad;
   gsu.data.scroll_update.delta_x = -50;
@@ -1899,7 +1899,7 @@ TEST_P(VisualViewportTest, PinchZoomGestureScrollsVisualViewportOnly) {
 
   WebGestureEvent pinch_update(WebInputEvent::kGesturePinchUpdate,
                                WebInputEvent::kNoModifiers,
-                               WebInputEvent::kTimeStampForTesting);
+                               WebInputEvent::GetStaticTimeStampForTests());
   pinch_update.source_device = kWebGestureDeviceTouchpad;
   pinch_update.x = 100;
   pinch_update.y = 100;

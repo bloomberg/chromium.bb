@@ -194,7 +194,7 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
     if (button != blink::WebMouseEvent::Button::kNoButton) {
       blink::WebMouseEvent mouse_event(
           blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
-          blink::WebInputEvent::kTimeStampForTesting);
+          blink::WebInputEvent::GetStaticTimeStampForTests());
       mouse_event.button = button;
       mouse_event.SetPositionInWidget(15, 15);
       mouse_event.click_count = 1;

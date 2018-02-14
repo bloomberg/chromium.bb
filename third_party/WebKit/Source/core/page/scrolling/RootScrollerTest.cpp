@@ -156,7 +156,7 @@ class RootScrollerTest : public ::testing::Test,
                                               int delta_x,
                                               int delta_y) {
     WebGestureEvent event(type, WebInputEvent::kNoModifiers,
-                          WebInputEvent::kTimeStampForTesting);
+                          WebInputEvent::GetStaticTimeStampForTests());
     event.source_device = device;
     event.x = 100;
     event.y = 100;

@@ -2852,9 +2852,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AltClickDownloadReferrerPolicy) {
   // Click on the link with the alt key pressed. This will download the link
   // target.
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  blink::WebMouseEvent mouse_event(blink::WebInputEvent::kMouseDown,
-                                   blink::WebInputEvent::kAltKey,
-                                   blink::WebInputEvent::kTimeStampForTesting);
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kAltKey,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.button = blink::WebMouseEvent::Button::kLeft;
   mouse_event.SetPositionInWidget(15, 15);
   mouse_event.click_count = 1;
@@ -2908,9 +2908,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SaveLinkAsReferrerPolicyOrigin) {
       IDC_CONTENT_CONTEXT_SAVELINKAS);
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  blink::WebMouseEvent mouse_event(blink::WebInputEvent::kMouseDown,
-                                   blink::WebInputEvent::kNoModifiers,
-                                   blink::WebInputEvent::kTimeStampForTesting);
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.button = blink::WebMouseEvent::Button::kRight;
   mouse_event.SetPositionInWidget(15, 15);
   mouse_event.click_count = 1;
@@ -3020,9 +3020,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadCrossDomainReferrerPolicy) {
   // Click on the link with the alt key pressed. This will download the link
   // target.
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  blink::WebMouseEvent mouse_event(blink::WebInputEvent::kMouseDown,
-                                   blink::WebInputEvent::kAltKey,
-                                   blink::WebInputEvent::kTimeStampForTesting);
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kAltKey,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.button = blink::WebMouseEvent::Button::kLeft;
   mouse_event.SetPositionInWidget(15, 15);
   mouse_event.click_count = 1;

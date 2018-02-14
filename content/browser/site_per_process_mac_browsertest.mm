@@ -167,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMacBrowserTest,
 
   blink::WebMouseWheelEvent scroll_event(
       blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::kTimeStampForTesting);
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   scroll_event.SetPositionInWidget(1, 1);
   scroll_event.has_precise_scrolling_deltas = true;
   scroll_event.delta_x = 0.0f;

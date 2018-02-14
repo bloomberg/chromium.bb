@@ -301,7 +301,7 @@ void MediaControlsImplTest::MouseDownAt(WebFloatPoint pos) {
                                  pos /* client pos */, pos /* screen pos */,
                                  WebPointerProperties::Button::kLeft, 1,
                                  WebInputEvent::Modifiers::kLeftButtonDown,
-                                 WebInputEvent::kTimeStampForTesting);
+                                 WebInputEvent::GetStaticTimeStampForTests());
   mouse_down_event.SetFrameScale(1);
   GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
       mouse_down_event);
@@ -312,7 +312,7 @@ void MediaControlsImplTest::MouseMoveTo(WebFloatPoint pos) {
                                  pos /* client pos */, pos /* screen pos */,
                                  WebPointerProperties::Button::kLeft, 1,
                                  WebInputEvent::Modifiers::kLeftButtonDown,
-                                 WebInputEvent::kTimeStampForTesting);
+                                 WebInputEvent::GetStaticTimeStampForTests());
   mouse_move_event.SetFrameScale(1);
   GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
       mouse_move_event, {});
@@ -322,7 +322,7 @@ void MediaControlsImplTest::MouseUpAt(WebFloatPoint pos) {
   WebMouseEvent mouse_up_event(
       WebMouseEvent::kMouseUp, pos /* client pos */, pos /* screen pos */,
       WebPointerProperties::Button::kLeft, 1, WebInputEvent::kNoModifiers,
-      WebInputEvent::kTimeStampForTesting);
+      WebInputEvent::GetStaticTimeStampForTests());
   mouse_up_event.SetFrameScale(1);
   GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(
       mouse_up_event);

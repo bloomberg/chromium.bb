@@ -51,7 +51,8 @@ class PointerEventFactoryTest : public ::testing::Test {
     web_pointer_event.pointer_type = pointer_type;
     web_pointer_event.id = raw_id;
     web_pointer_event.SetType(type);
-    web_pointer_event.SetTimeStampSeconds(WebInputEvent::kTimeStampForTesting);
+    web_pointer_event.SetTimeStampSeconds(
+        WebInputEvent::GetStaticTimeStampForTests());
     web_pointer_event.force = 1.0;
     web_pointer_event.hovering = hovering;
     Vector<WebPointerEvent> coalesced_events;
@@ -62,7 +63,7 @@ class PointerEventFactoryTest : public ::testing::Test {
         web_pointer_event, coalesced_events, nullptr);
     EXPECT_EQ(unique_id, pointer_event->pointerId());
     EXPECT_EQ(is_primary, pointer_event->isPrimary());
-    EXPECT_EQ(TimeTicksFromSeconds(WebInputEvent::kTimeStampForTesting),
+    EXPECT_EQ(TimeTicksFromSeconds(WebInputEvent::GetStaticTimeStampForTests()),
               pointer_event->PlatformTimeStamp());
     const char* expected_pointer_type =
         PointerTypeNameForWebPointPointerType(pointer_type);
@@ -74,8 +75,9 @@ class PointerEventFactoryTest : public ::testing::Test {
       EXPECT_EQ(is_primary,
                 pointer_event->getCoalescedEvents()[i]->isPrimary());
       EXPECT_EQ(expected_pointer_type, pointer_event->pointerType());
-      EXPECT_EQ(TimeTicksFromSeconds(WebInputEvent::kTimeStampForTesting),
-                pointer_event->PlatformTimeStamp());
+      EXPECT_EQ(
+          TimeTicksFromSeconds(WebInputEvent::GetStaticTimeStampForTests()),
+          pointer_event->PlatformTimeStamp());
     }
     return pointer_event;
   }
@@ -125,13 +127,14 @@ PointerEvent* PointerEventFactoryTest::CreateAndCheckPointerCancel(
     int unique_id,
     bool is_primary) {
   PointerEvent* pointer_event = pointer_event_factory_.CreatePointerCancelEvent(
-      unique_id, TimeTicksFromSeconds(WebInputEvent::kTimeStampForTesting));
+      unique_id,
+      TimeTicksFromSeconds(WebInputEvent::GetStaticTimeStampForTests()));
   EXPECT_EQ("pointercancel", pointer_event->type());
   EXPECT_EQ(unique_id, pointer_event->pointerId());
   EXPECT_EQ(is_primary, pointer_event->isPrimary());
   EXPECT_EQ(PointerTypeNameForWebPointPointerType(pointer_type),
             pointer_event->pointerType());
-  EXPECT_EQ(TimeTicksFromSeconds(WebInputEvent::kTimeStampForTesting),
+  EXPECT_EQ(TimeTicksFromSeconds(WebInputEvent::GetStaticTimeStampForTests()),
             pointer_event->PlatformTimeStamp());
 
   return pointer_event;
@@ -170,17 +173,18 @@ PointerEvent* PointerEventFactoryTest::CreateAndCheckMouseEvent(
   for (size_t i = 0; i < coalesced_event_count; i++) {
     coalesced_events.push_back(PointerEventFactoryTest::WebMouseEventBuilder(
         pointer_type, raw_id, modifiers,
-        WebInputEvent::kTimeStampForTesting + i));
+        WebInputEvent::GetStaticTimeStampForTests() + i));
   }
   PointerEvent* pointer_event = pointer_event_factory_.Create(
       coalesced_event_count ? EventTypeNames::mousemove
                             : EventTypeNames::mousedown,
       PointerEventFactoryTest::WebMouseEventBuilder(
-          pointer_type, raw_id, modifiers, WebInputEvent::kTimeStampForTesting),
+          pointer_type, raw_id, modifiers,
+          WebInputEvent::GetStaticTimeStampForTests()),
       coalesced_events, nullptr);
   EXPECT_EQ(unique_id, pointer_event->pointerId());
   EXPECT_EQ(is_primary, pointer_event->isPrimary());
-  EXPECT_EQ(TimeTicksFromSeconds(WebInputEvent::kTimeStampForTesting),
+  EXPECT_EQ(TimeTicksFromSeconds(WebInputEvent::GetStaticTimeStampForTests()),
             pointer_event->PlatformTimeStamp());
   const char* expected_pointer_type =
       PointerTypeNameForWebPointPointerType(pointer_type);
@@ -190,8 +194,9 @@ PointerEvent* PointerEventFactoryTest::CreateAndCheckMouseEvent(
     EXPECT_EQ(unique_id, pointer_event->getCoalescedEvents()[i]->pointerId());
     EXPECT_EQ(is_primary, pointer_event->getCoalescedEvents()[i]->isPrimary());
     EXPECT_EQ(expected_pointer_type, pointer_event->pointerType());
-    EXPECT_EQ(TimeTicksFromSeconds(WebInputEvent::kTimeStampForTesting + i),
-              pointer_event->getCoalescedEvents()[i]->PlatformTimeStamp());
+    EXPECT_EQ(
+        TimeTicksFromSeconds(WebInputEvent::GetStaticTimeStampForTests() + i),
+        pointer_event->getCoalescedEvents()[i]->PlatformTimeStamp());
   }
   return pointer_event;
 }

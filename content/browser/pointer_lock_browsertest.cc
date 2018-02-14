@@ -199,9 +199,9 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockEventRouting) {
       "var x; var y; var mX; var mY; document.addEventListener('mousemove', "
       "function(e) {x = e.x; y = e.y; mX = e.movementX; mY = e.movementY;});"));
 
-  blink::WebMouseEvent mouse_event(blink::WebInputEvent::kMouseMove,
-                                   blink::WebInputEvent::kNoModifiers,
-                                   blink::WebInputEvent::kTimeStampForTesting);
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::kMouseMove, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.SetPositionInWidget(10, 11);
   mouse_event.movement_x = 12;
   mouse_event.movement_y = 13;
@@ -348,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockWheelEventRouting) {
 
   blink::WebMouseWheelEvent wheel_event(
       blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::kTimeStampForTesting);
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   wheel_event.SetPositionInWidget(10, 11);
   wheel_event.delta_x = -12;
   wheel_event.delta_y = -13;

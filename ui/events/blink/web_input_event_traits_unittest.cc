@@ -26,27 +26,27 @@ using WebInputEventTraitsTest = testing::Test;
 // Very basic smoke test to ensure stringification doesn't explode.
 TEST_F(WebInputEventTraitsTest, ToString) {
   WebKeyboardEvent key(WebInputEvent::kRawKeyDown, WebInputEvent::kNoModifiers,
-                       WebInputEvent::kTimeStampForTesting);
+                       WebInputEvent::GetStaticTimeStampForTests());
   EXPECT_FALSE(WebInputEventTraits::ToString(key).empty());
 
   WebMouseEvent mouse(WebInputEvent::kMouseMove, WebInputEvent::kNoModifiers,
-                      WebInputEvent::kTimeStampForTesting);
+                      WebInputEvent::GetStaticTimeStampForTests());
   EXPECT_FALSE(WebInputEventTraits::ToString(mouse).empty());
 
   WebMouseWheelEvent mouse_wheel(WebInputEvent::kMouseWheel,
                                  WebInputEvent::kNoModifiers,
-                                 WebInputEvent::kTimeStampForTesting);
+                                 WebInputEvent::GetStaticTimeStampForTests());
   EXPECT_FALSE(WebInputEventTraits::ToString(mouse_wheel).empty());
 
   WebGestureEvent gesture(WebInputEvent::kGesturePinchBegin,
                           WebInputEvent::kNoModifiers,
-                          WebInputEvent::kTimeStampForTesting);
+                          WebInputEvent::GetStaticTimeStampForTests());
   gesture.x = 1;
   gesture.y = 1;
   EXPECT_FALSE(WebInputEventTraits::ToString(gesture).empty());
 
   WebTouchEvent touch(WebInputEvent::kTouchStart, WebInputEvent::kNoModifiers,
-                      WebInputEvent::kTimeStampForTesting);
+                      WebInputEvent::GetStaticTimeStampForTests());
   touch.touches_length = 1;
   EXPECT_FALSE(WebInputEventTraits::ToString(touch).empty());
 }

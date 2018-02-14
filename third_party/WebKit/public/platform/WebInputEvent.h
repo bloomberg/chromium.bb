@@ -299,7 +299,7 @@ class WebInputEvent {
   static const int kInputModifiers =
       kShiftKey | kControlKey | kAltKey | kMetaKey;
 
-  static constexpr double kTimeStampForTesting = 123.0;
+  static double GetStaticTimeStampForTests() { return 123.0; }
 
   // Returns true if the WebInputEvent |type| is a mouse event.
   static bool IsMouseEventType(WebInputEvent::Type type) {

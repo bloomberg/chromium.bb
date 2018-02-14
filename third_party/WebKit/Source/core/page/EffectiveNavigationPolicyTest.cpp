@@ -44,7 +44,7 @@ class EffectiveNavigationPolicyTest : public ::testing::Test {
       WebMouseEvent::Button button,
       bool as_popup) {
     WebMouseEvent event(WebInputEvent::kMouseUp, modifiers,
-                        WebInputEvent::kTimeStampForTesting);
+                        WebInputEvent::GetStaticTimeStampForTests());
     event.button = button;
     if (as_popup)
       features.tool_bar_visible = false;

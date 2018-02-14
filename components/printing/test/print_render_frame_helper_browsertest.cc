@@ -356,9 +356,9 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, AllowUserOriginatedPrinting) {
 
   gfx::Rect bounds = GetElementBounds("print");
   EXPECT_FALSE(bounds.IsEmpty());
-  blink::WebMouseEvent mouse_event(blink::WebInputEvent::kMouseDown,
-                                   blink::WebInputEvent::kNoModifiers,
-                                   blink::WebInputEvent::kTimeStampForTesting);
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.button = blink::WebMouseEvent::Button::kLeft;
   mouse_event.SetPositionInWidget(bounds.CenterPoint().x(),
                                   bounds.CenterPoint().y());
@@ -720,9 +720,9 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintWithJavaScript) {
 
   gfx::Rect bounds = GetElementBounds("print");
   EXPECT_FALSE(bounds.IsEmpty());
-  blink::WebMouseEvent mouse_event(blink::WebInputEvent::kMouseDown,
-                                   blink::WebInputEvent::kNoModifiers,
-                                   blink::WebInputEvent::kTimeStampForTesting);
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.button = blink::WebMouseEvent::Button::kLeft;
   mouse_event.SetPositionInWidget(bounds.CenterPoint().x(),
                                   bounds.CenterPoint().y());
