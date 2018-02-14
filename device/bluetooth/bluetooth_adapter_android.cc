@@ -11,7 +11,6 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/bluetooth/android/wrappers.h"
@@ -95,17 +94,6 @@ bool BluetoothAdapterAndroid::IsPowered() const {
                                                j_adapter_);
 }
 
-void BluetoothAdapterAndroid::SetPowered(bool powered,
-                                         const base::Closure& callback,
-                                         const ErrorCallback& error_callback) {
-  if (Java_ChromeBluetoothAdapter_setPowered(AttachCurrentThread(), j_adapter_,
-                                             powered)) {
-    callback.Run();
-  } else {
-    error_callback.Run();
-  }
-}
-
 bool BluetoothAdapterAndroid::IsDiscoverable() const {
   return Java_ChromeBluetoothAdapter_isDiscoverable(AttachCurrentThread(),
                                                     j_adapter_);
@@ -162,6 +150,7 @@ void BluetoothAdapterAndroid::OnAdapterStateChanged(
     JNIEnv* env,
     const JavaParamRef<jobject>& caller,
     const bool powered) {
+  DidChangePoweredState();
   NotifyAdapterPoweredChanged(powered);
 }
 
@@ -282,6 +271,11 @@ void BluetoothAdapterAndroid::PurgeTimedOutDevices() {
                               weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kPassivePollInterval));
   }
+}
+
+bool BluetoothAdapterAndroid::SetPoweredImpl(bool powered) {
+  return Java_ChromeBluetoothAdapter_setPowered(AttachCurrentThread(),
+                                                j_adapter_, powered);
 }
 
 void BluetoothAdapterAndroid::AddDiscoverySession(

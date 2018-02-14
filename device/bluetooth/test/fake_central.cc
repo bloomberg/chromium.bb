@@ -384,6 +384,11 @@ device::BluetoothLocalGattService* FakeCentral::GetGattService(
   return nullptr;
 }
 
+bool FakeCentral::SetPoweredImpl(bool powered) {
+  NOTREACHED();
+  return false;
+}
+
 void FakeCentral::AddDiscoverySession(
     device::BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,

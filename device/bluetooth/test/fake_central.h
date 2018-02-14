@@ -148,6 +148,7 @@ class FakeCentral : public mojom::FakeCentral, public device::BluetoothAdapter {
 #endif
   device::BluetoothLocalGattService* GetGattService(
       const std::string& identifier) const override;
+  bool SetPoweredImpl(bool powered) override;
   void AddDiscoverySession(
       device::BluetoothDiscoveryFilter* discovery_filter,
       const base::Closure& callback,

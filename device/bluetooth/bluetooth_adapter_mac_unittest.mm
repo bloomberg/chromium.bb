@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -20,6 +21,7 @@
 #import "device/bluetooth/bluetooth_low_energy_device_mac.h"
 #import "device/bluetooth/test/mock_bluetooth_cbperipheral_mac.h"
 #import "device/bluetooth/test/mock_bluetooth_central_manager_mac.h"
+#import "device/bluetooth/test/test_bluetooth_adapter_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
@@ -50,6 +52,7 @@ class BluetoothAdapterMacTest : public testing::Test {
       : ui_task_runner_(new base::TestSimpleTaskRunner()),
         adapter_(new BluetoothAdapterMac()),
         adapter_mac_(static_cast<BluetoothAdapterMac*>(adapter_.get())),
+        observer_(adapter_),
         callback_count_(0),
         error_callback_count_(0) {
     adapter_mac_->InitForTest(ui_task_runner_);
@@ -57,6 +60,15 @@ class BluetoothAdapterMacTest : public testing::Test {
 
   // Helper methods for setup and access to BluetoothAdapterMacTest's members.
   void PollAdapter() { adapter_mac_->PollAdapter(); }
+
+  void SetHostControllerPowerFunction(bool powered) {
+    adapter_mac_->SetHostControllerStateFunctionForTesting(
+        base::BindLambdaForTesting([powered] {
+          BluetoothAdapterMac::HostControllerState state;
+          state.classic_powered = powered;
+          return state;
+        }));
+  }
 
   void LowEnergyDeviceUpdated(CBPeripheral* peripheral,
                               NSDictionary* advertisement_data,
@@ -140,6 +152,7 @@ class BluetoothAdapterMacTest : public testing::Test {
   scoped_refptr<base::TestSimpleTaskRunner> ui_task_runner_;
   scoped_refptr<BluetoothAdapter> adapter_;
   BluetoothAdapterMac* adapter_mac_;
+  TestBluetoothAdapterObserver observer_;
 
   // Owned by |adapter_mac_|.
   base::scoped_nsobject<MockCentralManager> mock_central_manager_;
@@ -160,6 +173,29 @@ TEST_F(BluetoothAdapterMacTest, IOBluetoothPrivateAPIs) {
 TEST_F(BluetoothAdapterMacTest, Poll) {
   PollAdapter();
   EXPECT_TRUE(ui_task_runner_->HasPendingTask());
+}
+
+TEST_F(BluetoothAdapterMacTest, PollAndChangePower) {
+  // By default the adapter is powered off, check that this expectation matches
+  // reality.
+  EXPECT_FALSE(adapter_mac_->IsPowered());
+  EXPECT_EQ(0, observer_.powered_changed_count());
+
+  SetHostControllerPowerFunction(true);
+  PollAdapter();
+  EXPECT_TRUE(ui_task_runner_->HasPendingTask());
+  ui_task_runner_->RunPendingTasks();
+  EXPECT_EQ(1, observer_.powered_changed_count());
+  EXPECT_TRUE(observer_.last_powered());
+  EXPECT_TRUE(adapter_mac_->IsPowered());
+
+  SetHostControllerPowerFunction(false);
+  PollAdapter();
+  EXPECT_TRUE(ui_task_runner_->HasPendingTask());
+  ui_task_runner_->RunPendingTasks();
+  EXPECT_EQ(2, observer_.powered_changed_count());
+  EXPECT_FALSE(observer_.last_powered());
+  EXPECT_FALSE(adapter_mac_->IsPowered());
 }
 
 TEST_F(BluetoothAdapterMacTest, AddDiscoverySessionWithLowEnergyFilter) {

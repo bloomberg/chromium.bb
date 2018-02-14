@@ -29,12 +29,6 @@
 @class NSArray;
 @class NSDate;
 
-namespace base {
-
-class SequencedTaskRunner;
-
-}  // namespace base
-
 @class BluetoothLowEnergyCentralManagerDelegate;
 
 namespace device {
@@ -55,7 +49,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   static base::WeakPtr<BluetoothAdapterMac> CreateAdapterForTest(
       std::string name,
       std::string address,
-      scoped_refptr<base::SequencedTaskRunner> ui_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   // Converts CBUUID into BluetoothUUID
   static BluetoothUUID BluetoothUUIDWithCBUUID(CBUUID* UUID);
@@ -72,9 +66,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   bool IsInitialized() const override;
   bool IsPresent() const override;
   bool IsPowered() const override;
-  void SetPowered(bool powered,
-                  const base::Closure& callback,
-                  const ErrorCallback& error_callback) override;
   bool IsDiscoverable() const override;
   void SetDiscoverable(bool discoverable,
                        const base::Closure& callback,
@@ -127,23 +118,29 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
 
  protected:
   // BluetoothAdapter override:
+  bool SetPoweredImpl(bool powered) override;
   void RemovePairingDelegateInternal(
       device::BluetoothDevice::PairingDelegate* pairing_delegate) override;
 
  private:
+  // Struct bundling information about the state of the HostController.
+  struct HostControllerState {
+    bool is_present = false;
+    bool classic_powered = false;
+    std::string address;
+  };
+
+  // Typedef for function returning the state of the HostController.
+  using HostControllerStateFunction =
+      base::RepeatingCallback<HostControllerState()>;
+
   // Type of the underlying implementation of SetPowered(). It takes an int
   // instead of a bool, since the production code calls into a C API that does
   // not know about bool.
   using SetControllerPowerStateFunction = base::RepeatingCallback<void(int)>;
 
-  struct SetPoweredCallbacks {
-    SetPoweredCallbacks();
-    ~SetPoweredCallbacks();
-
-    bool powered = false;
-    base::OnceClosure callback;
-    ErrorCallback error_callback;
-  };
+  // Queries the state of the IOBluetoothHostController.
+  HostControllerState GetHostControllerState();
 
   // Resets |low_energy_central_manager_| to |central_manager| and sets
   // |low_energy_central_manager_delegate_| as the manager's delegate. Should
@@ -152,6 +149,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
 
   // Returns the CBCentralManager instance.
   CBCentralManager* GetCentralManager();
+
+  // Allow the mocking out of getting the HostController state for testing.
+  void SetHostControllerStateFunctionForTesting(
+      HostControllerStateFunction controller_state_function);
 
   // Allow the mocking out of setting the controller power state for testing.
   void SetPowerStateFunctionForTesting(
@@ -188,7 +189,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   bool StartDiscovery(BluetoothDiscoveryFilter* discovery_filter);
 
   void Init();
-  void InitForTest(scoped_refptr<base::SequencedTaskRunner> ui_task_runner);
+  void InitForTest(scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   void PollAdapter();
 
   // Registers that a new |device| has replied to an Inquiry, is paired, or has
@@ -229,6 +230,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   bool classic_powered_;
   int num_discovery_sessions_;
 
+  // Function returning the state of the HostController. Can be overridden for
+  // tests.
+  HostControllerStateFunction controller_state_function_;
+
   // SetPowered() implementation and callbacks.
   SetControllerPowerStateFunction power_state_function_;
   std::unique_ptr<SetPoweredCallbacks> set_powered_callbacks_;
@@ -257,8 +262,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   base::scoped_nsobject<CBCentralManager> low_energy_central_manager_;
   base::scoped_nsobject<BluetoothLowEnergyCentralManagerDelegate>
       low_energy_central_manager_delegate_;
-
-  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
 
   base::WeakPtrFactory<BluetoothAdapterMac> weak_ptr_factory_;
 

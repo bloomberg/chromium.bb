@@ -119,6 +119,7 @@ class MockBluetoothAdapter : public BluetoothAdapter {
   }
 
  protected:
+  bool SetPoweredImpl(bool powered) override;
   void AddDiscoverySession(
       BluetoothDiscoveryFilter* discovery_filter,
       const base::Closure& callback,

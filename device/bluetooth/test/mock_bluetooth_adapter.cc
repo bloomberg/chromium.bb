@@ -36,6 +36,10 @@ void MockBluetoothAdapter::Shutdown() {
 }
 #endif
 
+bool MockBluetoothAdapter::SetPoweredImpl(bool powered) {
+  return false;
+}
+
 void MockBluetoothAdapter::AddDiscoverySession(
     BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,

@@ -289,6 +289,12 @@ void BluetoothAdapterWin::DevicesPolled(
   }
 }
 
+// BluetoothAdapterWin should override SetPowered() instead.
+bool BluetoothAdapterWin::SetPoweredImpl(bool powered) {
+  NOTREACHED();
+  return false;
+}
+
 // If the method is called when |discovery_status_| is DISCOVERY_STOPPING,
 // starting again is handled by BluetoothAdapterWin::DiscoveryStopped().
 void BluetoothAdapterWin::AddDiscoverySession(
@@ -335,7 +341,7 @@ void BluetoothAdapterWin::Init() {
 }
 
 void BluetoothAdapterWin::InitForTest(
-    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     scoped_refptr<base::SequencedTaskRunner> bluetooth_task_runner) {
   ui_task_runner_ = ui_task_runner;
   if (!ui_task_runner_)

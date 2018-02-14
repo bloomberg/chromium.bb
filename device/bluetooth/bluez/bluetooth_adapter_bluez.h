@@ -32,7 +32,6 @@
 #include "device/bluetooth/dbus/bluetooth_profile_service_provider.h"
 
 namespace base {
-class SequencedTaskRunner;
 class TimeDelta;
 }  // namespace base
 
@@ -336,6 +335,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
                                  bool success);
 
   // BluetoothAdapter:
+  bool SetPoweredImpl(bool powered) override;
   void AddDiscoverySession(
       device::BluetoothDiscoveryFilter* discovery_filter,
       const base::Closure& callback,
@@ -469,8 +469,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   // our own class as its delegate.
   std::unique_ptr<bluez::BluetoothAgentServiceProvider> agent_;
 
-  // UI thread task runner and socket thread object used to create sockets.
-  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
+  // Socket thread object used to create sockets.
   scoped_refptr<device::BluetoothSocketThread> socket_thread_;
 
   // The profiles we have registered with the bluetooth daemon.
