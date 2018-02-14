@@ -20,6 +20,8 @@
 #include "content/common/view_messages.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/screen_info.h"
+#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -2725,6 +2727,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest, PopupMenuTest) {
 
   filter->Wait();
   gfx::Rect popup_rect = filter->last_initial_rect();
+  if (IsUseZoomForDSFEnabled()) {
+    ScreenInfo screen_info;
+    shell()->web_contents()->GetRenderWidgetHostView()->GetScreenInfo(
+        &screen_info);
+    popup_rect = gfx::ScaleToRoundedRect(popup_rect,
+                                         1 / screen_info.device_scale_factor);
+  }
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
   // On Mac and Android we receive the coordinates before they are transformed,
   // so they are still relative to the out-of-process iframe origin.
