@@ -73,7 +73,7 @@ struct gralloc_handle_t {
 #define GRALLOC_HANDLE_MAGIC 0x60585350
 #define GRALLOC_HANDLE_NUM_FDS 1
 #define GRALLOC_HANDLE_NUM_INTS (	\
-	((sizeof(struct alloc_handle_t) - sizeof(native_handle_t))/sizeof(int))	\
+	((sizeof(struct gralloc_handle_t) - sizeof(native_handle_t))/sizeof(int))	\
 	 - GRALLOC_HANDLE_NUM_FDS)
 
 /**
