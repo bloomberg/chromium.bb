@@ -1,0 +1,17 @@
+<link rel="match" href="dispose-previous-expected.html"/>
+<img id="apng" src=resources/crbug722072.png />
+<script>
+if (window.testRunner) {
+  window.onload = function() {
+    testRunner.waitUntilDone();
+
+    // Jump to the final frame.
+    for (var i = 0; i < 3; i++)
+      window.internals.advanceImageAnimation(apng);
+
+    requestAnimationFrame(function() {
+      testRunner.notifyDone();
+    });
+  }
+}
+</script>

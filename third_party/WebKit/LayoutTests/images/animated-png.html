@@ -1,0 +1,63 @@
+<html>
+<head>
+<title>APNG reftest: when animation ends, compare its last frame against the reference static PNG.</title>
+<style>
+img { margin: 1px; }
+</style>
+</head>
+<link rel="match" href="animated-png-expected.html">
+<body style="margin: 1px">
+<img id="apng00" src=resources/apng00.png><img id="apng01" src=resources/apng01.png><img id="apng02" src=resources/apng02.png><img id="apng04" src=resources/apng04.png><img id="apng08" src=resources/apng08.png><br>
+<img id="apng10" src=resources/apng10.png><img id="apng11" src=resources/apng11.png><img id="apng12" src=resources/apng12.png><img id="apng14" src=resources/apng14.png><img id="apng18" src=resources/apng18.png><br>
+<!-- These images are slightly different from the reference images. Disable for now.
+<img id="apng24" src=resources/apng24.png><img id="apng26" src=resources/apng26.png>
+-->
+<script>
+if (window.testRunner) {
+  window.onload = function() {
+    testRunner.waitUntilDone();
+
+    // Jump to the final frame for each image.
+    for (var i = 0; i < 9; i++)
+      window.internals.advanceImageAnimation(apng01);
+
+    for (var i = 0; i < 9; i++)
+      window.internals.advanceImageAnimation(apng02);
+
+    for (var i = 0; i < 12; i++)
+      window.internals.advanceImageAnimation(apng04);
+
+    for (var i = 0; i < 12; i++)
+      window.internals.advanceImageAnimation(apng08);
+
+    for (var i = 0; i < 3; i++)
+      window.internals.advanceImageAnimation(apng10);
+
+    for (var i = 0; i < 9; i++)
+      window.internals.advanceImageAnimation(apng11);
+
+    for (var i = 0; i < 9; i++)
+      window.internals.advanceImageAnimation(apng12);
+
+    for (var i = 0; i < 12; i++)
+      window.internals.advanceImageAnimation(apng14);
+
+    for (var i = 0; i < 12; i++)
+      window.internals.advanceImageAnimation(apng18);
+
+    /*
+    for (var i = 0; i < 1; i++)
+      window.internals.advanceImageAnimation(apng24);
+
+    for (var i = 0; i < 1; i++)
+      window.internals.advanceImageAnimation(apng26);
+    */
+
+    requestAnimationFrame(function() {
+      testRunner.notifyDone();
+    });
+  }
+}
+</script>
+</body>
+</html>

@@ -158,11 +158,6 @@ class WebLayerTreeView {
   virtual void CompositeAndReadbackAsync(
       WebCompositeAndReadbackAsyncCallback*) {}
 
-  // Synchronously run all lifecycle phases and compositor update with no
-  // raster. Should only be called by layout tests running in synchronous
-  // single-threaded mode.
-  virtual void SynchronouslyCompositeNoRasterForTesting() {}
-
   // Prevents updates to layer tree from becoming visible.
   virtual void SetDeferCommits(bool defer_commits) {}
 

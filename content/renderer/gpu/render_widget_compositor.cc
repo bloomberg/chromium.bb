@@ -11,7 +11,6 @@
 #include <string>
 #include <utility>
 
-#include "base/auto_reset.h"
 #include "base/base_switches.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -1017,13 +1016,10 @@ void RenderWidgetCompositor::LayoutAndPaintAsync(
   layout_and_paint_async_callback_ = callback;
 
   if (CompositeIsSynchronous()) {
-    // The LayoutAndPaintAsyncCallback is invoked in WillCommit, which is
-    // dispatched after layout and paint for all compositing modes.
-    const bool raster = false;
     layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner()->PostTask(
         FROM_HERE,
-        base::BindOnce(&RenderWidgetCompositor::SynchronouslyComposite,
-                       weak_factory_.GetWeakPtr(), raster, nullptr));
+        base::BindOnce(&RenderWidgetCompositor::LayoutAndUpdateLayers,
+                       weak_factory_.GetWeakPtr()));
   } else {
     layer_tree_host_->SetNeedsCommit();
   }
@@ -1036,6 +1032,12 @@ void RenderWidgetCompositor::SetLayerTreeFrameSink(
     return;
   }
   layer_tree_host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
+}
+
+void RenderWidgetCompositor::LayoutAndUpdateLayers() {
+  DCHECK(CompositeIsSynchronous());
+  layer_tree_host_->LayoutAndUpdateLayers();
+  InvokeLayoutAndPaintCallback();
 }
 
 void RenderWidgetCompositor::InvokeLayoutAndPaintCallback() {
@@ -1065,64 +1067,28 @@ void RenderWidgetCompositor::CompositeAndReadbackAsync(
                         base::Unretained(callback), result->AsSkBitmap()));
               },
               callback, base::Passed(&main_thread_task_runner)));
-  auto swap_promise =
-      delegate_->RequestCopyOfOutputForLayoutTest(std::move(request));
+  // Force a redraw to ensure that the copy swap promise isn't cancelled due to
+  // no damage.
+  SetNeedsForcedRedraw();
+  layer_tree_host_->QueueSwapPromise(
+      delegate_->RequestCopyOfOutputForLayoutTest(std::move(request)));
 
   // Force a commit to happen. The temporary copy output request will
   // be installed after layout which will happen as a part of the commit, for
   // widgets that delay the creation of their output surface.
   if (CompositeIsSynchronous()) {
-    // Since the composite is required for a pixel dump, we need to raster.
-    // Note that we defer queuing the SwapPromise until the requested Composite
-    // with rasterization is done.
-    const bool raster = true;
     layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&RenderWidgetCompositor::SynchronouslyComposite,
-                       weak_factory_.GetWeakPtr(), raster,
-                       std::move(swap_promise)));
+                       weak_factory_.GetWeakPtr()));
   } else {
-    // Force a redraw to ensure that the copy swap promise isn't cancelled due
-    // to no damage.
-    SetNeedsForcedRedraw();
-    layer_tree_host_->QueueSwapPromise(std::move(swap_promise));
     layer_tree_host_->SetNeedsCommit();
   }
 }
 
-void RenderWidgetCompositor::SynchronouslyCompositeNoRasterForTesting() {
-  SynchronouslyComposite(false /* raster */, nullptr /* swap_promise */);
-}
-
-void RenderWidgetCompositor::SynchronouslyComposite(
-    bool raster,
-    std::unique_ptr<cc::SwapPromise> swap_promise) {
+void RenderWidgetCompositor::SynchronouslyComposite() {
   DCHECK(CompositeIsSynchronous());
-  if (!layer_tree_host_->IsVisible())
-    return;
-
-  if (in_synchronous_compositor_update_) {
-    // LayoutTests can use a nested message loop to pump frames while inside a
-    // frame, but the compositor does not support this. In this case, we only
-    // run blink's lifecycle updates.
-    delegate_->BeginMainFrame(
-        (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF());
-    delegate_->UpdateVisualState(
-        cc::LayerTreeHostClient::VisualStateUpdate::kAll);
-    return;
-  }
-
-  if (swap_promise) {
-    // Force a redraw to ensure that the copy swap promise isn't cancelled due
-    // to no damage.
-    SetNeedsForcedRedraw();
-    layer_tree_host_->QueueSwapPromise(std::move(swap_promise));
-  }
-
-  DCHECK(!in_synchronous_compositor_update_);
-  base::AutoReset<bool> inside_composite(&in_synchronous_compositor_update_,
-                                         true);
-  layer_tree_host_->Composite(base::TimeTicks::Now(), raster);
+  layer_tree_host_->Composite(base::TimeTicks::Now());
 }
 
 void RenderWidgetCompositor::SetDeferCommits(bool defer_commits) {
@@ -1192,11 +1158,10 @@ void RenderWidgetCompositor::RequestDecode(
   // in this case we actually need a commit to transfer the decode requests to
   // the impl side. So, force a commit to happen.
   if (CompositeIsSynchronous()) {
-    const bool raster = true;
     layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&RenderWidgetCompositor::SynchronouslyComposite,
-                       weak_factory_.GetWeakPtr(), raster, nullptr));
+                       weak_factory_.GetWeakPtr()));
   }
 }
 
