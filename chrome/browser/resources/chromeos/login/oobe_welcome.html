@@ -326,6 +326,7 @@
       <div class="footer layout vertical">
         <cr-network-select id="networkSelect"
             on-default-network-changed="onDefaultNetworkChanged_"
+            on-network-connect-changed="onNetworkConnectChanged_"
             on-network-item-selected="onNetworkListNetworkItemSelected_"
             on-custom-item-selected="onNetworkListCustomItemSelected_"
             custom-items="[[getNetworkCustomItems_(isConnected_)]]"

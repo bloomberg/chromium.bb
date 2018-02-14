@@ -222,6 +222,13 @@ std::string TranslateONCTypeToShill(const std::string& onc_type) {
   return shill_type;
 }
 
+std::string TranslateONCSecurityToShill(const std::string& onc_security) {
+  std::string shill_security;
+  onc::TranslateStringToShill(onc::kWiFiSecurityTable, onc_security,
+                              &shill_security);
+  return shill_security;
+}
+
 std::string TranslateShillTypeToONC(const std::string& shill_type) {
   if (shill_type == shill::kTypeEthernet)
     return ::onc::network_type::kEthernet;

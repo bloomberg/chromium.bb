@@ -379,7 +379,6 @@ Polymer({
           this.shareNetwork_, propertiesToSet,
           this.createNetworkCallback_.bind(this));
     } else {
-      propertiesToSet.GUID = this.guid;
       this.networkingPrivate.setProperties(
           this.guid, propertiesToSet, this.setPropertiesCallback_.bind(this));
     }
@@ -1092,6 +1091,7 @@ Polymer({
   /** @private */
   getPropertiesToSet_: function() {
     var propertiesToSet = Object.assign({}, this.configProperties_);
+    propertiesToSet.GUID = this.guid;
     var eap = this.getEap_(propertiesToSet);
     if (eap)
       this.setEapProperties_(eap);

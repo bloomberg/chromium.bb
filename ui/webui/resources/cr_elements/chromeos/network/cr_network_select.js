@@ -62,8 +62,8 @@ Polymer({
     cellularDeviceState_: Object,
   },
 
-  /** @type {string} */
-  defaultStateGuid_: '',
+  /** @type {!CrOnc.NetworkStateProperties|undefined} */
+  defaultNetworkState_: undefined,
 
   focus: function() {
     this.$.networkList.focus();
@@ -150,23 +150,30 @@ Polymer({
       return device.Type == CrOnc.Type.CELLULAR;
     });
     this.networkStateList_ = networkStates;
-    var defaultState = (this.networkStateList_.length > 0 &&
-                        this.networkStateList_[0].ConnectionState ==
-                            CrOnc.ConnectionState.CONNECTED) ?
-        this.networkStateList_[0] :
-        null;
-
-    if (!defaultState && !this.defaultStateGuid_)
-      return;
-
-    // defaultState.GUID must never be empty.
-    assert(!defaultState || defaultState.GUID);
-
-    if (defaultState && defaultState.GUID == this.defaultStateGuid_)
-      return;
-
-    this.defaultStateGuid_ = defaultState ? defaultState.GUID : '';
-    this.fire('default-network-changed', defaultState);
+    var defaultNetwork;
+    if (networkStates.length > 0) {
+      // Handle an edge case where Ethernet is connecting.
+      if (networkStates.length > 1 &&
+          networkStates[0].ConnectionState ==
+              CrOnc.ConnectionState.CONNECTING &&
+          networkStates[1].ConnectionState == CrOnc.ConnectionState.CONNECTED) {
+        defaultNetwork = networkStates[1];
+      } else {
+        defaultNetwork = networkStates[0];
+      }
+    } else if (!this.defaultNetworkState_) {
+      return;  // No change
+    }
+    if (defaultNetwork && this.defaultNetworkState_ &&
+        defaultNetwork.GUID == this.defaultNetworkState_.GUID &&
+        defaultNetwork.ConnectionState ==
+            this.defaultNetworkState_.ConnectionState) {
+      return;  // No change to network or ConnectionState
+    }
+    this.defaultNetworkState_ =
+        /** @type {!CrOnc.NetworkStateProperties|undefined} */ (
+            Object.assign({}, defaultNetwork));
+    this.fire('default-network-changed', defaultNetwork);
   },
 
   /**
@@ -203,15 +210,5 @@ Polymer({
       if (lastError && lastError != 'connecting')
         console.error('networkingPrivate.startConnect error: ' + lastError);
     });
-  },
-
-  /**
-   * Event triggered when a cr-network-list-item becomes connected.
-   * @param {!{target: HTMLElement, detail: !CrOnc.NetworkStateProperties}} e
-   * @private
-   */
-  onNetworkConnected_: function(e) {
-    if (e.detail && e.detail.GUID != this.defaultStateGuid_)
-      this.refreshNetworks();
   },
 });
