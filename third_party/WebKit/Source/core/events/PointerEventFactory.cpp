@@ -106,10 +106,13 @@ void UpdateTouchPointerEventInit(const WebPointerEvent& web_pointer_event,
   // and pointerType which is the same among the coalesced events and the
   // dispatched event.
 
+  WebPointerEvent web_pointer_event_in_root_frame =
+      web_pointer_event.WebPointerEventInRootFrame();
+
   if (dom_window && dom_window->GetFrame() && dom_window->GetFrame()->View()) {
     LocalFrame* frame = dom_window->GetFrame();
     FloatPoint page_point = frame->View()->RootFrameToContents(
-        web_pointer_event.PositionInWidget());
+        web_pointer_event_in_root_frame.PositionInWidget());
     float scale_factor = 1.0f / frame->PageZoomFactor();
     FloatPoint scroll_position(frame->View()->GetScrollOffset());
     FloatPoint client_point = page_point.ScaledBy(scale_factor);
@@ -119,13 +122,15 @@ void UpdateTouchPointerEventInit(const WebPointerEvent& web_pointer_event,
     pointer_event_init->setClientY(client_point.Y());
 
     if (web_pointer_event.GetType() == WebInputEvent::kPointerMove) {
-      pointer_event_init->setMovementX(web_pointer_event.movement_x);
-      pointer_event_init->setMovementY(web_pointer_event.movement_y);
+      pointer_event_init->setMovementX(
+          web_pointer_event_in_root_frame.movement_x);
+      pointer_event_init->setMovementY(
+          web_pointer_event_in_root_frame.movement_y);
     }
 
-    FloatSize point_shape =
-        FloatSize(web_pointer_event.width, web_pointer_event.height)
-            .ScaledBy(scale_factor);
+    FloatSize point_shape = FloatSize(web_pointer_event_in_root_frame.width,
+                                      web_pointer_event_in_root_frame.height)
+                                .ScaledBy(scale_factor);
     pointer_event_init->setWidth(point_shape.Width());
     pointer_event_init->setHeight(point_shape.Height());
   }
