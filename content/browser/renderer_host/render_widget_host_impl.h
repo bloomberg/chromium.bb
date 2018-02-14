@@ -1035,6 +1035,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   mojo::Binding<viz::mojom::CompositorFrameSink> compositor_frame_sink_binding_;
   viz::mojom::CompositorFrameSinkClientPtr renderer_compositor_frame_sink_;
 
+  // Stash a request to create a CompositorFrameSink if it arrives before
+  // we have a view. This is only used if |enable_viz_| is true.
+  base::OnceCallback<void(const viz::FrameSinkId&)> create_frame_sink_callback_;
+
   viz::CompositorFrameMetadata last_frame_metadata_;
   cc::RenderFrameMetadata last_render_frame_metadata_;
 
