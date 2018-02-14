@@ -76,6 +76,11 @@ struct gralloc_handle_t {
 	((sizeof(struct gralloc_handle_t) - sizeof(native_handle_t))/sizeof(int))	\
 	 - GRALLOC_HANDLE_NUM_FDS)
 
+static inline struct gralloc_handle_t *gralloc_handle(buffer_handle_t handle)
+{
+	return (struct gralloc_handle_t *)handle;
+}
+
 /**
  * Create a buffer handle.
  */
