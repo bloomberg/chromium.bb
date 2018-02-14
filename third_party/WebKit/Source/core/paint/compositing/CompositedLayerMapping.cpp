@@ -1372,12 +1372,20 @@ void CompositedLayerMapping::UpdateAncestorClippingLayerGeometry(
 
   ClipRectsContext clip_rects_context(
       clip_inheritance_ancestor_, kPaintingClipRectsIgnoringOverflowClip,
-      kIgnorePlatformOverlayScrollbarSize, kIgnoreOverflowClip);
-  // Note: kPaintingClipRectsIgnoringOverflowClip implies SetIgnoreOverflowClip.
+      kIgnorePlatformOverlayScrollbarSize, kIgnoreOverflowClipAndScroll);
 
   ClipRect clip_rect;
   owning_layer_.Clipper(PaintLayer::kDoNotUseGeometryMapper)
       .CalculateBackgroundClipRect(clip_rects_context, clip_rect);
+  // Scroll offset is not included in the clip rect returned above
+  // (see kIgnoreOverflowClipAndScroll), so we need to add it in
+  // now. Scroll offset is excluded so that we do not need to invalidate
+  // the clip rect cache on scroll.
+  if (clip_inheritance_ancestor_->ScrollsOverflow()) {
+    clip_rect.Move(LayoutSize(
+        -clip_inheritance_ancestor_->GetScrollableArea()->GetScrollOffset()));
+  }
+
   DCHECK(clip_rect.Rect() != LayoutRect(LayoutRect::InfiniteIntRect()));
 
   // The accumulated clip rect is in the space of clip_inheritance_ancestor_.
