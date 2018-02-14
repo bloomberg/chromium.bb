@@ -21,6 +21,7 @@
 #include "components/cryptauth/cryptauth_device_manager_impl.h"
 #include "components/cryptauth/cryptauth_enroller.h"
 #include "components/cryptauth/cryptauth_enroller_impl.h"
+#include "components/cryptauth/cryptauth_enrollment_manager_impl.h"
 #include "components/cryptauth/cryptauth_enrollment_utils.h"
 #include "components/cryptauth/cryptauth_gcm_manager_impl.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
@@ -178,7 +179,7 @@ std::unique_ptr<ChromeCryptAuthService> ChromeCryptAuthService::Create(
           profile->GetPrefs());
 
   std::unique_ptr<cryptauth::CryptAuthEnrollmentManager> enrollment_manager =
-      base::MakeUnique<cryptauth::CryptAuthEnrollmentManager>(
+      base::MakeUnique<cryptauth::CryptAuthEnrollmentManagerImpl>(
           base::DefaultClock::GetInstance(),
           base::MakeUnique<CryptAuthEnrollerFactoryImpl>(profile),
           CreateSecureMessageDelegateImpl(), GetGcmDeviceInfo(),
