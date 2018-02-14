@@ -1014,8 +1014,8 @@ def _ElfInfoFromApk(apk_path, apk_so_path, tool_prefix):
     return build_id, section_sizes, elf_overhead_size
 
 
-def AddArguments(parser):
-  parser.add_argument('size_file', help='Path to output .size file.')
+def AddMainPathsArguments(parser):
+  """Add arguments for DeduceMainPaths()."""
   parser.add_argument('--apk-file',
                       help='.apk file to measure. When set, --elf-file will be '
                             'derived (if unset). Providing the .apk allows '
@@ -1027,37 +1027,42 @@ def AddArguments(parser):
                       help='Path to input .map(.gz) file. Defaults to '
                            '{{elf_file}}.map(.gz)?. If given without '
                            '--elf-file, no size metadata will be recorded.')
+  parser.add_argument('--no-source-paths', action='store_true',
+                      help='Do not use .ninja files to map '
+                           'object_path -> source_path')
+  parser.add_argument('--output-directory',
+                      help='Path to the root build directory.')
+  parser.add_argument('--tool-prefix',
+                      help='Path prefix for c++filt, nm, readelf.')
+
+
+def AddArguments(parser):
+  parser.add_argument('size_file', help='Path to output .size file.')
   parser.add_argument('--pak-file', action='append',
                       help='Paths to pak files.')
   parser.add_argument('--pak-info-file',
                       help='This file should contain all ids found in the pak '
                            'files that have been passed in.')
-  parser.add_argument('--no-source-paths', action='store_true',
-                      help='Do not use .ninja files to map '
-                           'object_path -> source_path')
-  parser.add_argument('--tool-prefix',
-                      help='Path prefix for c++filt, nm, readelf.')
-  parser.add_argument('--output-directory',
-                      help='Path to the root build directory.')
   parser.add_argument('--no-string-literals', dest='track_string_literals',
                       default=True, action='store_false',
                       help='Disable breaking down "** merge strings" into more '
                            'granular symbols.')
+  AddMainPathsArguments(parser)
 
 
-def Run(args, parser):
-  if not args.size_file.endswith('.size'):
-    parser.error('size_file must end with .size')
-
+def DeduceMainPaths(args, parser):
+  """Computes main paths based on input, and deduces them if needed."""
+  apk_path = args.apk_file
   elf_path = args.elf_file
   map_path = args.map_file
-  apk_path = args.apk_file
   any_input = apk_path or elf_path or map_path
   if not any_input:
-    parser.error('Most pass at least one of --apk-file, --elf-file, --map-file')
+    parser.error('Must pass at least one of --apk-file, --elf-file, --map-file')
   output_directory_finder = path_util.OutputDirectoryFinder(
       value=args.output_directory,
       any_path_within_output_directory=any_input)
+
+  apk_so_path = None
   if apk_path:
     with zipfile.ZipFile(apk_path) as z:
       lib_infos = [f for f in z.infolist()
@@ -1094,6 +1099,16 @@ def Run(args, parser):
   output_directory = None
   if not args.no_source_paths:
     output_directory = output_directory_finder.Finalized()
+  return (output_directory, tool_prefix, apk_path, apk_so_path, elf_path,
+          map_path)
+
+
+def Run(args, parser):
+  if not args.size_file.endswith('.size'):
+    parser.error('size_file must end with .size')
+
+  (output_directory, tool_prefix, apk_path, apk_so_path, elf_path, map_path) = (
+      DeduceMainPaths(args, parser))
 
   metadata = CreateMetadata(map_path, elf_path, apk_path, tool_prefix,
                             output_directory)
