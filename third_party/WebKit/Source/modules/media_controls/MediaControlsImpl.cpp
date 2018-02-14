@@ -576,12 +576,6 @@ void MediaControlsImpl::InitializeControls() {
   // overflow menu.
   overflow_list_->AppendChild(play_button_->CreateOverflowElement(
       new MediaControlPlayButtonElement(*this)));
-  if (RuntimeEnabledFeatures::PictureInPictureEnabled() && !IsModern() &&
-      MediaElement().IsHTMLVideoElement()) {
-    overflow_list_->AppendChild(
-        picture_in_picture_button_->CreateOverflowElement(
-            new MediaControlPictureInPictureButtonElement(*this)));
-  }
   overflow_list_->AppendChild(fullscreen_button_->CreateOverflowElement(
       new MediaControlFullscreenButtonElement(*this)));
   overflow_list_->AppendChild(download_button_->CreateOverflowElement(
@@ -593,6 +587,12 @@ void MediaControlsImpl::InitializeControls() {
   overflow_list_->AppendChild(
       toggle_closed_captions_button_->CreateOverflowElement(
           new MediaControlToggleClosedCaptionsButtonElement(*this)));
+  if (RuntimeEnabledFeatures::PictureInPictureEnabled() && !IsModern() &&
+      MediaElement().IsHTMLVideoElement()) {
+    overflow_list_->AppendChild(
+        picture_in_picture_button_->CreateOverflowElement(
+            new MediaControlPictureInPictureButtonElement(*this)));
+  }
 
   // Set the default CSS classes.
   UpdateCSSClassFromState();
