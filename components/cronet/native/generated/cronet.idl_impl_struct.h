@@ -20,6 +20,7 @@ struct Cronet_Error {
  public:
   Cronet_Error();
   explicit Cronet_Error(const Cronet_Error& from);
+  explicit Cronet_Error(Cronet_Error&& from);
   ~Cronet_Error();
 
   Cronet_Error_ERROR_CODE error_code = Cronet_Error_ERROR_CODE_ERROR_CALLBACK;
@@ -37,6 +38,7 @@ struct Cronet_QuicHint {
  public:
   Cronet_QuicHint();
   explicit Cronet_QuicHint(const Cronet_QuicHint& from);
+  explicit Cronet_QuicHint(Cronet_QuicHint&& from);
   ~Cronet_QuicHint();
 
   std::string host;
@@ -52,6 +54,7 @@ struct Cronet_PublicKeyPins {
  public:
   Cronet_PublicKeyPins();
   explicit Cronet_PublicKeyPins(const Cronet_PublicKeyPins& from);
+  explicit Cronet_PublicKeyPins(Cronet_PublicKeyPins&& from);
   ~Cronet_PublicKeyPins();
 
   std::string host;
@@ -68,6 +71,7 @@ struct Cronet_EngineParams {
  public:
   Cronet_EngineParams();
   explicit Cronet_EngineParams(const Cronet_EngineParams& from);
+  explicit Cronet_EngineParams(Cronet_EngineParams&& from);
   ~Cronet_EngineParams();
 
   bool enable_check_result = true;
@@ -94,6 +98,7 @@ struct Cronet_HttpHeader {
  public:
   Cronet_HttpHeader();
   explicit Cronet_HttpHeader(const Cronet_HttpHeader& from);
+  explicit Cronet_HttpHeader(Cronet_HttpHeader&& from);
   ~Cronet_HttpHeader();
 
   std::string name;
@@ -108,6 +113,7 @@ struct Cronet_UrlResponseInfo {
  public:
   Cronet_UrlResponseInfo();
   explicit Cronet_UrlResponseInfo(const Cronet_UrlResponseInfo& from);
+  explicit Cronet_UrlResponseInfo(Cronet_UrlResponseInfo&& from);
   ~Cronet_UrlResponseInfo();
 
   std::string url;
@@ -129,6 +135,7 @@ struct Cronet_UrlRequestParams {
  public:
   Cronet_UrlRequestParams();
   explicit Cronet_UrlRequestParams(const Cronet_UrlRequestParams& from);
+  explicit Cronet_UrlRequestParams(Cronet_UrlRequestParams&& from);
   ~Cronet_UrlRequestParams();
 
   std::string http_method;
@@ -150,6 +157,7 @@ struct Cronet_RequestFinishedInfo {
  public:
   Cronet_RequestFinishedInfo();
   explicit Cronet_RequestFinishedInfo(const Cronet_RequestFinishedInfo& from);
+  explicit Cronet_RequestFinishedInfo(Cronet_RequestFinishedInfo&& from);
   ~Cronet_RequestFinishedInfo();
 
  private:

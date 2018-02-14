@@ -51,30 +51,16 @@ source_set("cronet_native_impl") {
     "buffer.cc",
     "engine.cc",
     "engine.h",
+    "io_buffer_with_cronet_buffer.cc",
+    "io_buffer_with_cronet_buffer.h",
     "runnables.cc",
     "runnables.h",
+    "url_request.cc",
+    "url_request.h",
 
     # Generated from cronet.idl.
     "generated/cronet.idl_impl_interface.cc",
     "generated/cronet.idl_impl_struct.cc",
-  ]
-}
-
-source_set("cronet_native_testutil") {
-  visibility = [ ":*" ]
-  testonly = true
-
-  deps = [
-    ":cronet_native_headers",
-    "//base",
-  ]
-
-  configs += [ ":cronet_native_include_config" ]
-  public_configs = [ ":cronet_native_include_config" ]
-
-  sources = [
-    "test_util.cc",
-    "test_util.h",
   ]
 }
 
@@ -85,7 +71,7 @@ source_set("cronet_native_unittests") {
 
   deps = [
     ":cronet_native_impl",
-    ":cronet_native_testutil",
+    "//components/cronet/native/test:cronet_native_testutil",
     "//net:test_support",
   ]
 
@@ -97,29 +83,5 @@ source_set("cronet_native_unittests") {
     # Generated from cronet.idl.
     "generated/cronet.idl_impl_interface_unittest.cc",
     "generated/cronet.idl_impl_struct_unittest.cc",
-  ]
-}
-
-# Tests for publicly exported Cronet Native API. This target does NOT depend on
-# cronet_native_impl to prevent static linking of implementation into test app.
-source_set("cronet_native_tests") {
-  testonly = true
-
-  deps = [
-    ":cronet_native_headers",
-    ":cronet_native_testutil",
-    "//base",
-    "//base/test:test_support",
-    "//components/cronet/test:test_support",
-    "//net:test_support",
-    "//testing/gtest",
-  ]
-
-  configs += [ ":cronet_native_include_config" ]
-
-  sources = [
-    "buffer_test.cc",
-    "engine_test.cc",
-    "executors_test.cc",
   ]
 }

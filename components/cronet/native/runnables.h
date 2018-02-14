@@ -12,6 +12,7 @@
 namespace cronet {
 
 // Implementation of CronetRunnable that runs arbitrary base::OnceClosure.
+// Runnable destroys itself after execution.
 class OnceClosureRunnable : public Cronet_Runnable {
  public:
   explicit OnceClosureRunnable(base::OnceClosure task);

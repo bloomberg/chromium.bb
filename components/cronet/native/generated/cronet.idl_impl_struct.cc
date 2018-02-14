@@ -15,6 +15,8 @@ Cronet_Error::Cronet_Error() = default;
 
 Cronet_Error::Cronet_Error(const Cronet_Error& from) = default;
 
+Cronet_Error::Cronet_Error(Cronet_Error&& from) = default;
+
 Cronet_Error::~Cronet_Error() = default;
 
 Cronet_ErrorPtr Cronet_Error_Create() {
@@ -87,6 +89,8 @@ Cronet_QuicHint::Cronet_QuicHint() = default;
 
 Cronet_QuicHint::Cronet_QuicHint(const Cronet_QuicHint& from) = default;
 
+Cronet_QuicHint::Cronet_QuicHint(Cronet_QuicHint&& from) = default;
+
 Cronet_QuicHint::~Cronet_QuicHint() = default;
 
 Cronet_QuicHintPtr Cronet_QuicHint_Create() {
@@ -134,6 +138,9 @@ int32_t Cronet_QuicHint_alternate_port_get(Cronet_QuicHintPtr self) {
 Cronet_PublicKeyPins::Cronet_PublicKeyPins() = default;
 
 Cronet_PublicKeyPins::Cronet_PublicKeyPins(const Cronet_PublicKeyPins& from) =
+    default;
+
+Cronet_PublicKeyPins::Cronet_PublicKeyPins(Cronet_PublicKeyPins&& from) =
     default;
 
 Cronet_PublicKeyPins::~Cronet_PublicKeyPins() = default;
@@ -207,6 +214,8 @@ Cronet_EngineParams::Cronet_EngineParams() = default;
 
 Cronet_EngineParams::Cronet_EngineParams(const Cronet_EngineParams& from) =
     default;
+
+Cronet_EngineParams::Cronet_EngineParams(Cronet_EngineParams&& from) = default;
 
 Cronet_EngineParams::~Cronet_EngineParams() = default;
 
@@ -400,6 +409,8 @@ Cronet_HttpHeader::Cronet_HttpHeader() = default;
 
 Cronet_HttpHeader::Cronet_HttpHeader(const Cronet_HttpHeader& from) = default;
 
+Cronet_HttpHeader::Cronet_HttpHeader(Cronet_HttpHeader&& from) = default;
+
 Cronet_HttpHeader::~Cronet_HttpHeader() = default;
 
 Cronet_HttpHeaderPtr Cronet_HttpHeader_Create() {
@@ -438,6 +449,9 @@ Cronet_UrlResponseInfo::Cronet_UrlResponseInfo() = default;
 
 Cronet_UrlResponseInfo::Cronet_UrlResponseInfo(
     const Cronet_UrlResponseInfo& from) = default;
+
+Cronet_UrlResponseInfo::Cronet_UrlResponseInfo(Cronet_UrlResponseInfo&& from) =
+    default;
 
 Cronet_UrlResponseInfo::~Cronet_UrlResponseInfo() = default;
 
@@ -588,6 +602,9 @@ Cronet_UrlRequestParams::Cronet_UrlRequestParams() = default;
 Cronet_UrlRequestParams::Cronet_UrlRequestParams(
     const Cronet_UrlRequestParams& from) = default;
 
+Cronet_UrlRequestParams::Cronet_UrlRequestParams(
+    Cronet_UrlRequestParams&& from) = default;
+
 Cronet_UrlRequestParams::~Cronet_UrlRequestParams() = default;
 
 Cronet_UrlRequestParamsPtr Cronet_UrlRequestParams_Create() {
@@ -730,6 +747,9 @@ Cronet_RequestFinishedInfo::Cronet_RequestFinishedInfo() = default;
 
 Cronet_RequestFinishedInfo::Cronet_RequestFinishedInfo(
     const Cronet_RequestFinishedInfo& from) = default;
+
+Cronet_RequestFinishedInfo::Cronet_RequestFinishedInfo(
+    Cronet_RequestFinishedInfo&& from) = default;
 
 Cronet_RequestFinishedInfo::~Cronet_RequestFinishedInfo() = default;
 
