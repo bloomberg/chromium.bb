@@ -290,7 +290,7 @@ TEST_F(WindowTreeTest, BasicInputEventTarget) {
   // embed_client created this window that is receiving the event, so client_id
   // part would be reset to 0 before sending back to clients.
   EXPECT_EQ("InputEvent window=0," + std::to_string(kEmbedTreeWindowId) +
-                " event_action=16",
+                " event_action=" + std::to_string(ui::ET_POINTER_DOWN),
             ChangesToDescription1(*embed_client->tracker()->changes())[0]);
 }
 
@@ -354,7 +354,8 @@ TEST_F(WindowTreeTest, StartPointerWatcher) {
   // Pointer-down events are sent to the client.
   DispatchEventAndAckImmediately(pointer_down);
   ASSERT_EQ(1u, client->tracker()->changes()->size());
-  EXPECT_EQ("PointerWatcherEvent event_action=16 window=null",
+  EXPECT_EQ("PointerWatcherEvent event_action=" +
+                std::to_string(ui::ET_POINTER_DOWN) + " window=null",
             ChangesToDescription1(*client->tracker()->changes())[0]);
   client->tracker()->changes()->clear();
 
@@ -364,7 +365,8 @@ TEST_F(WindowTreeTest, StartPointerWatcher) {
   // Pointer-wheel events are sent to the client.
   DispatchEventAndAckImmediately(pointer_wheel);
   ASSERT_EQ(1u, client->tracker()->changes()->size());
-  EXPECT_EQ("PointerWatcherEvent event_action=22 window=null",
+  EXPECT_EQ("PointerWatcherEvent event_action=" +
+                std::to_string(ui::ET_POINTER_WHEEL_CHANGED) + " window=null",
             ChangesToDescription1(*client->tracker()->changes())[0]);
   client->tracker()->changes()->clear();
 
@@ -381,7 +383,8 @@ TEST_F(WindowTreeTest, StartPointerWatcher) {
   // Pointer-wheel events are sent to the client.
   DispatchEventAndAckImmediately(pointer_wheel);
   ASSERT_EQ(1u, client->tracker()->changes()->size());
-  EXPECT_EQ("PointerWatcherEvent event_action=22 window=null",
+  EXPECT_EQ("PointerWatcherEvent event_action=" +
+                std::to_string(ui::ET_POINTER_WHEEL_CHANGED) + " window=null",
             ChangesToDescription1(*client->tracker()->changes())[0]);
 }
 
@@ -401,7 +404,8 @@ TEST_F(WindowTreeTest, PointerWatcherGetsWindow) {
 
   ASSERT_EQ(1u, wm_client()->tracker()->changes()->size());
   EXPECT_EQ(
-      "PointerWatcherEvent event_action=16 window=" +
+      "PointerWatcherEvent event_action=" +
+          std::to_string(ui::ET_POINTER_DOWN) + " window=" +
           ClientWindowIdToString(ClientWindowIdForWindow(wm_tree(), window)),
       ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
 }
@@ -446,7 +450,8 @@ TEST_F(WindowTreeTest, StartPointerWatcherSendsOnce) {
   // clients that created this window is receiving the event, so client_id part
   // would be reset to 0 before sending back to clients.
   EXPECT_EQ("InputEvent window=0," + std::to_string(kEmbedTreeWindowId) +
-                " event_action=18 matches_pointer_watcher",
+                " event_action=" + std::to_string(ui::ET_POINTER_UP) +
+                " matches_pointer_watcher",
             SingleChangeToDescription(*client->tracker()->changes()));
 }
 
@@ -465,7 +470,8 @@ TEST_F(WindowTreeTest, StartPointerWatcherWrongUser) {
   // An event is watched by the wm tree, but not by the other user's tree.
   DispatchEventAndAckImmediately(CreatePointerUpEvent(5, 5));
   ASSERT_EQ(1u, wm_client()->tracker()->changes()->size());
-  EXPECT_EQ("PointerWatcherEvent event_action=18 window=null",
+  EXPECT_EQ("PointerWatcherEvent event_action=" +
+                std::to_string(ui::ET_POINTER_UP) + " window=null",
             SingleChangeToDescription(*wm_client()->tracker()->changes()));
   ASSERT_EQ(0u, other_binding->client()->tracker()->changes()->size());
 }
@@ -481,7 +487,7 @@ TEST_F(WindowTreeTest, StartPointerWatcherKeyEventsDisallowed) {
   DispatchEventAndAckImmediately(key_pressed);
   EXPECT_EQ(0u, other_binding->client()->tracker()->changes()->size());
   EXPECT_EQ("InputEvent window=" + std::to_string(kWindowServerClientId) +
-                ",3 event_action=7",
+                ",3 event_action=" + std::to_string(ui::ET_KEY_PRESSED),
             SingleChangeToDescription(*wm_client()->tracker()->changes()));
 
   WindowTreeTestApi(wm_tree()).StartPointerWatcher(false);
@@ -494,7 +500,7 @@ TEST_F(WindowTreeTest, KeyEventSentToWindowManagerWhenNothingFocused) {
   ui::KeyEvent key_pressed(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   DispatchEventAndAckImmediately(key_pressed);
   EXPECT_EQ("InputEvent window=" + std::to_string(kWindowServerClientId) +
-                ",3 event_action=7",
+                ",3 event_action=" + std::to_string(ui::ET_KEY_PRESSED),
             SingleChangeToDescription(*wm_client()->tracker()->changes()));
 }
 
@@ -669,7 +675,7 @@ TEST_F(WindowTreeTest, EventAck) {
   DispatchEventWithoutAck(CreateMouseMoveEvent(21, 22));
   ASSERT_EQ(1u, wm_client()->tracker()->changes()->size());
   EXPECT_EQ("InputEvent window=" + std::to_string(kWindowServerClientId) +
-                ",3 event_action=17",
+                ",3 event_action=" + std::to_string(ui::ET_POINTER_MOVED),
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
   wm_client()->tracker()->changes()->clear();
 
@@ -681,7 +687,7 @@ TEST_F(WindowTreeTest, EventAck) {
   AckPreviousEvent();
   ASSERT_EQ(1u, wm_client()->tracker()->changes()->size());
   EXPECT_EQ("InputEvent window=" + std::to_string(kWindowServerClientId) +
-                ",3 event_action=17",
+                ",3 event_action=" + std::to_string(ui::ET_POINTER_MOVED),
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
 }
 
@@ -2230,7 +2236,7 @@ TEST_F(WindowTreeTest, EmbedderInterceptsEventsSeesWindowsInEmbeddedClients) {
   // kEmbedFlagEmbedderInterceptsEvents).
   EXPECT_EQ(1u, embed_binding1->client()->tracker()->changes()->size());
   EXPECT_EQ("InputEvent window=" + ClientWindowIdToString(w4_in_tree1_id) +
-                " event_action=16",
+                " event_action=" + std::to_string(ui::ET_POINTER_DOWN),
             SingleChangeToDescription(
                 *embed_binding1->client()->tracker()->changes()));
 }
