@@ -55,11 +55,12 @@ p, h2, h3, h4 {
 #report {
   font-family: monospace;
 }
-#report i {
+#none {
   color: green;
   margin-left: 2em;
   font-size: x-large;
   font-weight: bold;
+  font-style: italic;
 }
 .fix-width {
   display: inline-block;
@@ -481,7 +482,7 @@ const Report = {
   getDefaultPrinter: () => {
     let val = document.querySelector("#report_format").value;
     window.localStorage.setItem("reportFormat", val);
-    switch(document.querySelector("#report_format").value) {
+    switch(val) {
       case "expectation":
         return {print: Report.printExpectation, render: Report.renderResultList};
       case "crashsite":
@@ -602,7 +603,8 @@ const Report = {
     if (dir != traversal.rebaselineDir) {
       if (traversal.rebaselineDir) {
         let depth = (traversal.rebaselineDir.match(/\//g) || []).length;
-        traversal.html.push(`<div>cd ${'..' + '/..'.repeat(depth)};</div>`);
+        if (depth)
+          traversal.html.push(`<div>cd ${'..' + '/..'.repeat(depth - 1)};</div>`);
       }
       traversal.html.push(`<div>mkdir -p ${dir};</div>`);
       traversal.html.push(`<div>cd ${dir};</div>`);
@@ -610,14 +612,20 @@ const Report = {
     }
     for (let i=0; i<actualNames.length; i++) {
       let url = new URL(parser.resultLink(actualNames[i]), window.location.href);
-      traversal.html.push(`<div>wget ${url.href};</div>`);
-      traversal.html.push(`<div>mv ${parser.basename + actualNames[i]} ${parser.basename + expectedNames[i]};</div>`);
+      if (url.href.startsWith('file://')) {
+        let actualFile = url.href.substring('file://'.length);
+        traversal.html.push(`<div>cp ${actualFile} ${parser.basename + expectedNames[i]};</div>`);
+      } else {
+        traversal.html.push(`<div>wget ${url.href};</div>`);
+        traversal.html.push(`<div>mv ${parser.basename + actualNames[i]} ${parser.basename + expectedNames[i]};</div>`);
+      }
     }
   },
 
   indicateNone: (report) => {
     let pre = document.createElement("div");
-    pre.innerHTML = "<i>None</i>";
+    pre.id = "none";
+    pre.textContent = "None";
     report.appendChild(pre);
   },
 
@@ -1251,9 +1259,9 @@ const GUI = {
   },
 
   updateCopyButtons: function() {
-    let has_result = document.querySelector(".expect");
-    document.querySelector("#copy_report").disabled = !has_result;
-    document.querySelector("#copy_single_line").disabled = !has_result;
+    let noResult = document.querySelector("#none");
+    document.querySelector("#copy_report").disabled = noResult;
+    document.querySelector("#copy_single_line").disabled = noResult;
 
     let flagged_only = document.querySelector("#flagged_only");
     if (document.querySelector(".flagged"))
