@@ -40,21 +40,23 @@ public class ProfilingProcessHostAndroidTest {
     public void testModeBrowser() throws Exception {
         TestAndroidShim profilingProcessHost = new TestAndroidShim();
         Assert.assertTrue(profilingProcessHost.runTestForMode(
-                "browser", false, "native-include-thread-names"));
+                "browser", false, "native-include-thread-names", false, false));
     }
 
     @Test
     @MediumTest
     public void testModeBrowserDynamic() throws Exception {
         TestAndroidShim profilingProcessHost = new TestAndroidShim();
-        Assert.assertTrue(profilingProcessHost.runTestForMode("browser", true, "native"));
+        Assert.assertTrue(
+                profilingProcessHost.runTestForMode("browser", true, "native", false, false));
     }
 
     @Test
     @MediumTest
     public void testModeBrowserDynamicPseudo() throws Exception {
         TestAndroidShim profilingProcessHost = new TestAndroidShim();
-        Assert.assertTrue(profilingProcessHost.runTestForMode("browser", true, "pseudo"));
+        Assert.assertTrue(
+                profilingProcessHost.runTestForMode("browser", true, "pseudo", false, false));
     }
 
     // Non-browser processes must be profiled with a command line flag, since
@@ -65,7 +67,8 @@ public class ProfilingProcessHostAndroidTest {
     @CommandLineFlags.Add({"memlog=all-renderers", "memlog-stack-mode=pseudo"})
     public void testModeRendererPseudo() throws Exception {
         TestAndroidShim profilingProcessHost = new TestAndroidShim();
-        Assert.assertTrue(profilingProcessHost.runTestForMode("all-renderers", false, "pseudo"));
+        Assert.assertTrue(profilingProcessHost.runTestForMode(
+                "all-renderers", false, "pseudo", false, false));
     }
 
     @Test
@@ -73,6 +76,23 @@ public class ProfilingProcessHostAndroidTest {
     @CommandLineFlags.Add({"memlog=gpu", "memlog-stack-mode=pseudo"})
     public void testModeGpuPseudo() throws Exception {
         TestAndroidShim profilingProcessHost = new TestAndroidShim();
-        Assert.assertTrue(profilingProcessHost.runTestForMode("gpu", false, "native"));
+        Assert.assertTrue(
+                profilingProcessHost.runTestForMode("gpu", false, "native", false, false));
+    }
+
+    @Test
+    @MediumTest
+    public void testModeBrowserDynamicPseudoSampleEverything() throws Exception {
+        TestAndroidShim profilingProcessHost = new TestAndroidShim();
+        Assert.assertTrue(
+                profilingProcessHost.runTestForMode("browser", true, "pseudo", true, true));
+    }
+
+    @Test
+    @MediumTest
+    public void testModeBrowserDynamicPseudoSamplePartial() throws Exception {
+        TestAndroidShim profilingProcessHost = new TestAndroidShim();
+        Assert.assertTrue(
+                profilingProcessHost.runTestForMode("browser", true, "pseudo", true, false));
     }
 }

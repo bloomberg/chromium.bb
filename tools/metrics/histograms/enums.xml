@@ -27049,6 +27049,7 @@ from previous Chrome versions.
   <int value="2123567684" label="OptimizeLoadingIPCForSmallResources:enabled"/>
   <int value="2126203058" label="force-show-update-menu-badge"/>
   <int value="2129184006" label="NTPOfflinePageDownloadSuggestions:enabled"/>
+  <int value="2129251171" label="memlog-sampling"/>
   <int value="2129929643" label="enable-use-zoom-for-dsf"/>
   <int value="2137347307" label="enable-drive-apps-in-app-list"/>
   <int value="2137599770" label="enable-win32k-renderer-lockdown"/>

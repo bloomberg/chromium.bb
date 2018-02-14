@@ -22,7 +22,9 @@ class TestAndroidShim {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& mode,
       jboolean dynamically_start_profiling,
-      const base::android::JavaParamRef<jstring>& stack_mode);
+      const base::android::JavaParamRef<jstring>& stack_mode,
+      jboolean should_sample,
+      jboolean sample_everything);
 
  private:
   ~TestAndroidShim();

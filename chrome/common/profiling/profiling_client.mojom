@@ -29,6 +29,12 @@ struct ProfilingParams {
   // |stack_mode| refers to the type of data that should be recorded for each
   // allocation.
   StackMode stack_mode;
+
+  // The sampling rate is used to determined the probability of sampling an
+  // allocation. Probability = min((size of allocation) / (sampling interval),
+  // 1). A sampling rate of |1| is equivalent to sampling all alloations. A
+  // sampling rate of |0| is invalid and will be treated as |1|.
+  uint32 sampling_rate;
 };
 
 // This interface is implemented by "memlog clients" (profiled processes that

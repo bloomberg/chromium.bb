@@ -349,6 +349,8 @@ extern const char kEnableOutOfProcessHeapProfilingModeManual[];
 extern const char kEnableOutOfProcessHeapProfilingModeRendererSampling[];
 extern const char kOutOfProcessHeapProfilingKeepSmallAllocations[];
 extern const char kOutOfProcessHeapProfilingKeepSmallAllocationsDescription[];
+extern const char kOutOfProcessHeapProfilingSampling[];
+extern const char kOutOfProcessHeapProfilingSamplingDescription[];
 
 extern const char kOOPHPStackModeName[];
 extern const char kOOPHPStackModeDescription[];

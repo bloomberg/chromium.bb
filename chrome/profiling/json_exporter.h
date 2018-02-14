@@ -56,6 +56,12 @@ struct ExportParams {
   // parameter, and tells the caller the next unused ID.
   // See https://crbug.com/808066.
   size_t next_id = 1;
+
+  // When sampling is enabled, each allocation is recorded with probability
+  // (size / sampling_rate). The resulting exported JSON needs to be
+  // appropriately updated to reflect de-sampled values.
+  // A |sampling_rate| of 1 is equivalent to recording all allocations.
+  size_t sampling_rate = 1;
 };
 
 // Creates a JSON string representing a JSON dictionary that contains memory

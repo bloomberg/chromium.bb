@@ -45,6 +45,8 @@ void ProfilingService::AddProfilingClient(
     mojo::ScopedHandle memlog_pipe_receiver,
     mojom::ProcessType process_type,
     mojom::ProfilingParamsPtr params) {
+  if (params->sampling_rate == 0)
+    params->sampling_rate = 1;
   connection_manager_.OnNewConnection(pid, std::move(client),
                                       std::move(memlog_pipe_receiver),
                                       process_type, std::move(params));

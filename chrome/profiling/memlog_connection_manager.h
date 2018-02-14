@@ -87,6 +87,7 @@ class MemlogConnectionManager {
       mojom::ProcessType process_type,
       bool keep_small_allocations,
       bool strip_path_from_mapped_files,
+      uint32_t sampling_rate,
       bool success,
       AllocationCountMap counts,
       AllocationTracker::ContextMap context,

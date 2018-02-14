@@ -13,6 +13,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/lazy_instance.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/rand_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_local.h"
@@ -50,6 +51,10 @@ MemlogSenderPipe* g_sender_pipe = nullptr;
 // In NATIVE stack mode, whether to insert stack names into the backtraces.
 bool g_include_thread_names = false;
 
+// Whether to sample allocations.
+bool g_sample_allocations = false;
+uint32_t g_sampling_rate = 0;
+
 // Prime since this is used like a hash table. Numbers of this magnitude seemed
 // to provide sufficient parallelism to avoid lock overhead in ad-hoc testing.
 constexpr int kNumSendBuffers = 17;
@@ -67,6 +72,11 @@ SetGCFreeHookFunction g_hook_gc_free = nullptr;
 // and then performs a heap allocation/free, ignore the allocation. Failing to
 // do so will cause non-deterministic deadlock, depending on whether the
 // allocation is dispatched to the same SendBuffer.
+//
+// On macOS, this flag is also used to prevent double-counting during sampling.
+// The implementation of libmalloc will sometimes call malloc [from
+// one zone to another] - without this flag, the allocation would get two
+// chances of being sampled.
 base::LazyInstance<base::ThreadLocalBoolean>::Leaky g_prevent_reentrancy =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -80,7 +90,29 @@ struct ShimState {
   // thread-local unordered_set of every address that has been sent from the
   // thread in question.
   std::unordered_set<const void*> sent_strings;
+
+  // When we are sampling, each allocation's size is subtracted from
+  // |interval_to_next_sample|. When |interval_to_next_sample| is 0 or lower,
+  // the allocation is sampled, and |interval_to_next_sample| is reset.
+  int32_t interval_to_next_sample = 0;
 };
+
+// This algorithm is copied from "v8/src/profiler/sampling-heap-profiler.cc".
+// We sample with a Poisson process, with constant average sampling interval.
+// This follows the exponential probability distribution with parameter
+// λ = 1/rate where rate is the average number of bytes between samples.
+//
+// Let u be a uniformly distributed random number between 0 and 1, then
+// next_sample = (- ln u) / λ
+int32_t GetNextSampleInterval(uint32_t rate) {
+  double u = base::RandDouble();  // Random value in [0, 1)
+  double v = 1 - u;               // Random value in (0, 1]
+  double next = (-std::log(v)) * rate;
+  int32_t next_int = static_cast<int32_t>(next);
+  if (next_int < 1)
+    return 1;
+  return next_int;
+}
 
 // This function is added to the TLS slot to clean up the instance when the
 // thread exits.
@@ -230,8 +262,19 @@ void DoSend(const void* address,
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
 void* HookAlloc(const AllocatorDispatch* self, size_t size, void* context) {
   const AllocatorDispatch* const next = self->next;
+
+  // If this is our first time passing through, set the reentrancy bit.
+  bool reentering = g_prevent_reentrancy.Pointer()->Get();
+  if (LIKELY(!reentering))
+    g_prevent_reentrancy.Pointer()->Set(true);
+
   void* ptr = next->alloc_function(next, size, context);
-  AllocatorShimLogAlloc(AllocatorType::kMalloc, ptr, size, nullptr);
+
+  if (LIKELY(!reentering)) {
+    AllocatorShimLogAlloc(AllocatorType::kMalloc, ptr, size, nullptr);
+    g_prevent_reentrancy.Pointer()->Set(false);
+  }
+
   return ptr;
 }
 
@@ -240,8 +283,18 @@ void* HookZeroInitAlloc(const AllocatorDispatch* self,
                         size_t size,
                         void* context) {
   const AllocatorDispatch* const next = self->next;
+
+  // If this is our first time passing through, set the reentrancy bit.
+  bool reentering = g_prevent_reentrancy.Pointer()->Get();
+  if (LIKELY(!reentering))
+    g_prevent_reentrancy.Pointer()->Set(true);
+
   void* ptr = next->alloc_zero_initialized_function(next, n, size, context);
-  AllocatorShimLogAlloc(AllocatorType::kMalloc, ptr, n * size, nullptr);
+
+  if (LIKELY(!reentering)) {
+    AllocatorShimLogAlloc(AllocatorType::kMalloc, ptr, n * size, nullptr);
+    g_prevent_reentrancy.Pointer()->Set(false);
+  }
   return ptr;
 }
 
@@ -250,8 +303,18 @@ void* HookAllocAligned(const AllocatorDispatch* self,
                        size_t size,
                        void* context) {
   const AllocatorDispatch* const next = self->next;
+
+  // If this is our first time passing through, set the reentrancy bit.
+  bool reentering = g_prevent_reentrancy.Pointer()->Get();
+  if (LIKELY(!reentering))
+    g_prevent_reentrancy.Pointer()->Set(true);
+
   void* ptr = next->alloc_aligned_function(next, alignment, size, context);
-  AllocatorShimLogAlloc(AllocatorType::kMalloc, ptr, size, nullptr);
+
+  if (LIKELY(!reentering)) {
+    AllocatorShimLogAlloc(AllocatorType::kMalloc, ptr, size, nullptr);
+    g_prevent_reentrancy.Pointer()->Set(false);
+  }
   return ptr;
 }
 
@@ -260,17 +323,38 @@ void* HookRealloc(const AllocatorDispatch* self,
                   size_t size,
                   void* context) {
   const AllocatorDispatch* const next = self->next;
+
+  // If this is our first time passing through, set the reentrancy bit.
+  bool reentering = g_prevent_reentrancy.Pointer()->Get();
+  if (LIKELY(!reentering))
+    g_prevent_reentrancy.Pointer()->Set(true);
+
   void* ptr = next->realloc_function(next, address, size, context);
-  AllocatorShimLogFree(address);
-  if (size > 0)  // realloc(size == 0) means free()
-    AllocatorShimLogAlloc(AllocatorType::kMalloc, ptr, size, nullptr);
+
+  if (LIKELY(!reentering)) {
+    AllocatorShimLogFree(address);
+    if (size > 0)  // realloc(size == 0) means free()
+      AllocatorShimLogAlloc(AllocatorType::kMalloc, ptr, size, nullptr);
+    g_prevent_reentrancy.Pointer()->Set(false);
+  }
+
   return ptr;
 }
 
 void HookFree(const AllocatorDispatch* self, void* address, void* context) {
+  // If this is our first time passing through, set the reentrancy bit.
+  bool reentering = g_prevent_reentrancy.Pointer()->Get();
+  if (LIKELY(!reentering))
+    g_prevent_reentrancy.Pointer()->Set(true);
+
   AllocatorShimLogFree(address);
   const AllocatorDispatch* const next = self->next;
   next->free_function(next, address, context);
+
+  if (LIKELY(!reentering)) {
+    AllocatorShimLogFree(address);
+    g_prevent_reentrancy.Pointer()->Set(false);
+  }
 }
 
 size_t HookGetSizeEstimate(const AllocatorDispatch* self,
@@ -285,11 +369,20 @@ unsigned HookBatchMalloc(const AllocatorDispatch* self,
                          void** results,
                          unsigned num_requested,
                          void* context) {
+  // If this is our first time passing through, set the reentrancy bit.
+  bool reentering = g_prevent_reentrancy.Pointer()->Get();
+  if (LIKELY(!reentering))
+    g_prevent_reentrancy.Pointer()->Set(true);
+
   const AllocatorDispatch* const next = self->next;
   unsigned count =
       next->batch_malloc_function(next, size, results, num_requested, context);
-  for (unsigned i = 0; i < count; ++i)
-    AllocatorShimLogAlloc(AllocatorType::kMalloc, results[i], size, nullptr);
+
+  if (LIKELY(!reentering)) {
+    for (unsigned i = 0; i < count; ++i)
+      AllocatorShimLogAlloc(AllocatorType::kMalloc, results[i], size, nullptr);
+    g_prevent_reentrancy.Pointer()->Set(false);
+  }
   return count;
 }
 
@@ -297,10 +390,19 @@ void HookBatchFree(const AllocatorDispatch* self,
                    void** to_be_freed,
                    unsigned num_to_be_freed,
                    void* context) {
+  // If this is our first time passing through, set the reentrancy bit.
+  bool reentering = g_prevent_reentrancy.Pointer()->Get();
+  if (LIKELY(!reentering))
+    g_prevent_reentrancy.Pointer()->Set(true);
+
   const AllocatorDispatch* const next = self->next;
-  for (unsigned i = 0; i < num_to_be_freed; ++i)
-    AllocatorShimLogFree(to_be_freed[i]);
   next->batch_free_function(next, to_be_freed, num_to_be_freed, context);
+
+  if (LIKELY(!reentering)) {
+    for (unsigned i = 0; i < num_to_be_freed; ++i)
+      AllocatorShimLogFree(to_be_freed[i]);
+    g_prevent_reentrancy.Pointer()->Set(false);
+  }
 }
 
 void HookFreeDefiniteSize(const AllocatorDispatch* self,
@@ -475,6 +577,9 @@ void InitAllocatorShim(MemlogSenderPipe* sender_pipe,
   // Must be done before hooking any functions that make stack traces.
   base::debug::EnableInProcessStackDumping();
 
+  g_sample_allocations = params->sampling_rate > 1;
+  g_sampling_rate = params->sampling_rate;
+
   if (params->stack_mode == mojom::StackMode::NATIVE_WITH_THREAD_NAMES) {
     g_include_thread_names = true;
     base::ThreadIdNameManager::GetInstance()->InstallSetNameCallback(
@@ -581,9 +686,24 @@ void AllocatorShimLogAlloc(AllocatorType type,
   SendBuffer* send_buffers = g_send_buffers.Read();
   if (!send_buffers)
     return;
-  if (UNLIKELY(g_prevent_reentrancy.Pointer()->Get()))
-    return;
-  g_prevent_reentrancy.Pointer()->Set(true);
+
+  if (g_sample_allocations) {
+    ShimState* shim_state = GetShimState();
+
+    // Update the sampling interval, if necessary. This also handles the case
+    // where the sampling interval has not yet been initialized.
+    if (shim_state->interval_to_next_sample <= 0) {
+      shim_state->interval_to_next_sample +=
+          GetNextSampleInterval(g_sampling_rate);
+    }
+
+    shim_state->interval_to_next_sample -= sz;
+
+    // Do not sample the allocation.
+    if (shim_state->interval_to_next_sample > 0) {
+      return;
+    }
+  }
 
   if (address) {
     constexpr size_t max_message_size = sizeof(AllocPacket) +
@@ -627,17 +747,12 @@ void AllocatorShimLogAlloc(AllocatorType type,
     }
     DoSend(address, message, message_end - message, send_buffers);
   }
-
-  g_prevent_reentrancy.Pointer()->Set(false);
 }
 
 void AllocatorShimLogFree(void* address) {
   SendBuffer* send_buffers = g_send_buffers.Read();
   if (!send_buffers)
     return;
-  if (UNLIKELY(g_prevent_reentrancy.Pointer()->Get()))
-    return;
-  g_prevent_reentrancy.Pointer()->Set(true);
 
   if (address) {
     FreePacket free_packet;
@@ -646,8 +761,6 @@ void AllocatorShimLogFree(void* address) {
 
     DoSend(address, &free_packet, sizeof(FreePacket), send_buffers);
   }
-
-  g_prevent_reentrancy.Pointer()->Set(false);
 }
 
 void AllocatorShimFlushPipe(uint32_t barrier_id) {

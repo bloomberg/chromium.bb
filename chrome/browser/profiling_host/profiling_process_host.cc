@@ -104,6 +104,11 @@ const base::Feature kOOPHeapProfilingFeature{"OOPHeapProfiling",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 const char kOOPHeapProfilingFeatureMode[] = "mode";
 const char kOOPHeapProfilingFeatureStackMode[] = "stack-mode";
+const char kOOPHeapProfilingFeatureSampling[] = "sampling";
+const char kOOPHeapProfilingFeatureSamplingRate[] = "sampling-rate";
+
+const uint32_t kDefaultSamplingRate = 1000;
+const bool kDefaultShouldSample = false;
 
 bool ProfilingProcessHost::has_started_ = false;
 
@@ -354,6 +359,7 @@ void ProfilingProcessHost::AddClientToProfilingService(
   // poiner beyond sending this message to start since there are no other
   // messages we need to send.
   mojom::ProfilingParamsPtr params = mojom::ProfilingParams::New();
+  params->sampling_rate = should_sample_ ? sampling_rate_ : 1;
   params->sender_pipe =
       mojo::WrapPlatformFile(pipes.PassSender().release().handle);
   params->stack_mode = stack_mode_;
@@ -454,15 +460,52 @@ mojom::StackMode ProfilingProcessHost::ConvertStringToStackMode(
 }
 
 // static
+bool ProfilingProcessHost::GetShouldSampleForStartup() {
+  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  if (cmdline->HasSwitch(switches::kMemlogSampling))
+    return true;
+
+  return base::GetFieldTrialParamByFeatureAsBool(
+      kOOPHeapProfilingFeature, kOOPHeapProfilingFeatureSampling,
+      kDefaultShouldSample /* default_value */);
+}
+
+// static
+uint32_t ProfilingProcessHost::GetSamplingRateForStartup() {
+  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  if (cmdline->HasSwitch(switches::kMemlogSamplingRate)) {
+    std::string rate_as_string =
+        cmdline->GetSwitchValueASCII(switches::kMemlogSamplingRate);
+    int rate_as_int = 1;
+    if (!base::StringToInt(rate_as_string, &rate_as_int)) {
+      LOG(ERROR) << "Could not parse sampling rate: " << rate_as_string;
+    }
+    if (rate_as_int <= 0) {
+      LOG(ERROR) << "Invalid sampling rate: " << rate_as_string;
+      rate_as_int = 1;
+    }
+    return rate_as_int;
+  }
+
+  return base::GetFieldTrialParamByFeatureAsInt(
+      kOOPHeapProfilingFeature, kOOPHeapProfilingFeatureSamplingRate,
+      kDefaultSamplingRate /* default_value */);
+}
+
+// static
 ProfilingProcessHost* ProfilingProcessHost::Start(
     content::ServiceManagerConnection* connection,
     Mode mode,
-    mojom::StackMode stack_mode) {
+    mojom::StackMode stack_mode,
+    bool should_sample,
+    uint32_t sampling_rate) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   CHECK(!has_started_);
   has_started_ = true;
   ProfilingProcessHost* host = GetInstance();
   host->stack_mode_ = stack_mode;
+  host->should_sample_ = should_sample;
+  host->sampling_rate_ = sampling_rate;
   host->SetMode(mode);
   host->Register();
   host->MakeConnector(connection);
@@ -660,7 +703,8 @@ void ProfilingProcessHost::StartManualProfiling(base::ProcessId pid) {
   if (!has_started_) {
     profiling::ProfilingProcessHost::Start(
         content::ServiceManagerConnection::GetForProcess(), Mode::kManual,
-        GetStackModeForStartup());
+        GetStackModeForStartup(), GetShouldSampleForStartup(),
+        GetSamplingRateForStartup());
   } else {
     SetMode(Mode::kManual);
   }
