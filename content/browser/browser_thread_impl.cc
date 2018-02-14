@@ -20,7 +20,6 @@
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread_delegate.h"
 #include "content/public/browser/content_browser_client.h"
-#include "net/disk_cache/simple/simple_backend_impl.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
