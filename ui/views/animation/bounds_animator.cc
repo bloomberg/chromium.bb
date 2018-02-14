@@ -32,7 +32,7 @@ BoundsAnimator::BoundsAnimator(View* parent)
 BoundsAnimator::~BoundsAnimator() {
   // Reset the delegate so that we don't attempt to notify our observer from
   // the destructor.
-  container_->set_observer(NULL);
+  container_->set_observer(nullptr);
 
   // Delete all the animations, but don't remove any child views. We assume the
   // view owns us and is going to be deleted anyway.
@@ -49,9 +49,7 @@ void BoundsAnimator::AnimateViewTo(View* view, const gfx::Rect& target) {
   if (IsAnimating(view)) {
     // Don't immediatly delete the animation, that might trigger a callback from
     // the animationcontainer.
-    existing_data = data_[view];
-
-    RemoveFromMaps(view);
+    existing_data = RemoveFromMaps(view);
   }
 
   // NOTE: we don't check if the view is already at the target location. Doing
@@ -64,11 +62,11 @@ void BoundsAnimator::AnimateViewTo(View* view, const gfx::Rect& target) {
   data.target_bounds = target;
   data.animation = CreateAnimation();
 
-  animation_to_view_[data.animation] = view;
+  animation_to_view_[data.animation.get()] = view;
 
   data.animation->Show();
 
-  CleanupData(true, &existing_data, NULL);
+  CleanupData(true, &existing_data, nullptr);
 }
 
 void BoundsAnimator::SetTargetBounds(View* view, const gfx::Rect& target) {
@@ -86,29 +84,29 @@ gfx::Rect BoundsAnimator::GetTargetBounds(View* view) {
   return data_[view].target_bounds;
 }
 
-void BoundsAnimator::SetAnimationForView(View* view,
-                                         SlideAnimation* animation) {
+void BoundsAnimator::SetAnimationForView(
+    View* view,
+    std::unique_ptr<SlideAnimation> animation) {
   DCHECK(animation);
-
-  std::unique_ptr<SlideAnimation> animation_wrapper(animation);
 
   if (!IsAnimating(view))
     return;
 
   // We delay deleting the animation until the end so that we don't prematurely
   // send out notification that we're done.
-  std::unique_ptr<Animation> old_animation(ResetAnimationForView(view));
+  std::unique_ptr<Animation> old_animation = ResetAnimationForView(view);
 
-  data_[view].animation = animation_wrapper.release();
-  animation_to_view_[animation] = view;
+  SlideAnimation* animation_ptr = animation.get();
+  data_[view].animation = std::move(animation);
+  animation_to_view_[animation_ptr] = view;
 
-  animation->set_delegate(this);
-  animation->SetContainer(container_.get());
-  animation->Show();
+  animation_ptr->set_delegate(this);
+  animation_ptr->SetContainer(container_.get());
+  animation_ptr->Show();
 }
 
 const SlideAnimation* BoundsAnimator::GetAnimationForView(View* view) {
-  return !IsAnimating(view) ? NULL : data_[view].animation;
+  return !IsAnimating(view) ? nullptr : data_[view].animation.get();
 }
 
 void BoundsAnimator::SetAnimationDelegate(
@@ -116,7 +114,7 @@ void BoundsAnimator::SetAnimationDelegate(
     std::unique_ptr<AnimationDelegate> delegate) {
   DCHECK(IsAnimating(view));
 
-  data_[view].delegate = delegate.release();
+  data_[view].delegate = std::move(delegate);
 }
 
 void BoundsAnimator::StopAnimatingView(View* view) {
@@ -157,46 +155,51 @@ void BoundsAnimator::RemoveObserver(BoundsAnimatorObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-SlideAnimation* BoundsAnimator::CreateAnimation() {
-  SlideAnimation* animation = new SlideAnimation(this);
+std::unique_ptr<gfx::SlideAnimation> BoundsAnimator::CreateAnimation() {
+  std::unique_ptr<gfx::SlideAnimation> animation =
+      std::make_unique<SlideAnimation>(this);
   animation->SetContainer(container_.get());
   animation->SetSlideDuration(animation_duration_ms_);
   animation->SetTweenType(tween_type_);
   return animation;
 }
 
-void BoundsAnimator::RemoveFromMaps(View* view) {
-  DCHECK(data_.count(view) > 0);
-  DCHECK(animation_to_view_.count(data_[view].animation) > 0);
+BoundsAnimator::Data::Data() = default;
+BoundsAnimator::Data::Data(Data&&) = default;
+BoundsAnimator::Data& BoundsAnimator::Data::operator=(Data&&) = default;
+BoundsAnimator::Data::~Data() = default;
 
-  animation_to_view_.erase(data_[view].animation);
+BoundsAnimator::Data BoundsAnimator::RemoveFromMaps(View* view) {
+  DCHECK(data_.count(view) > 0);
+  DCHECK(animation_to_view_.count(data_[view].animation.get()) > 0);
+
+  Data old_data = std::move(data_[view]);
   data_.erase(view);
+  animation_to_view_.erase(old_data.animation.get());
+  return old_data;
 }
 
 void BoundsAnimator::CleanupData(bool send_cancel, Data* data, View* view) {
   if (send_cancel && data->delegate)
-    data->delegate->AnimationCanceled(data->animation);
+    data->delegate->AnimationCanceled(data->animation.get());
 
-  delete data->delegate;
-  data->delegate = NULL;
+  data->delegate.reset();
 
   if (data->animation) {
-    data->animation->set_delegate(NULL);
-    delete data->animation;
-    data->animation = NULL;
+    data->animation->set_delegate(nullptr);
+    data->animation.reset();
   }
 }
 
-Animation* BoundsAnimator::ResetAnimationForView(View* view) {
+std::unique_ptr<Animation> BoundsAnimator::ResetAnimationForView(View* view) {
   if (!IsAnimating(view))
-    return NULL;
+    return nullptr;
 
-  Animation* old_animation = data_[view].animation;
-  animation_to_view_.erase(old_animation);
-  data_[view].animation = NULL;
+  std::unique_ptr<Animation> old_animation = std::move(data_[view].animation);
+  animation_to_view_.erase(old_animation.get());
   // Reset the delegate so that we don't attempt any processing when the
   // animation calls us back.
-  old_animation->set_delegate(NULL);
+  old_animation->set_delegate(nullptr);
   return old_animation;
 }
 
@@ -207,10 +210,8 @@ void BoundsAnimator::AnimationEndedOrCanceled(const Animation* animation,
   View* view = animation_to_view_[animation];
   DCHECK(view);
 
-  // Make a copy of the data as Remove empties out the maps.
-  Data data = data_[view];
-
-  RemoveFromMaps(view);
+  // Save the data for later clean up.
+  Data data = RemoveFromMaps(view);
 
   if (data.delegate) {
     if (type == ANIMATION_ENDED) {
