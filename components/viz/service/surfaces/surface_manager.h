@@ -48,13 +48,24 @@ struct BeginFrameArgs;
 
 class VIZ_SERVICE_EXPORT SurfaceManager {
  public:
-  explicit SurfaceManager(uint32_t number_of_frames_to_activation_deadline);
+  explicit SurfaceManager(
+      base::Optional<uint32_t> activation_deadline_in_frames);
   ~SurfaceManager();
 
 #if DCHECK_IS_ON()
   // Returns a string representation of all reachable surface references.
   std::string SurfaceReferencesToString();
 #endif
+
+  // Sets an alternative system default frame activation deadline for unit
+  // tests. base::nullopt indicates no deadline (in other words, an unlimited
+  // deadline).
+  void SetActivationDeadlineInFramesForTesting(
+      base::Optional<uint32_t> deadline);
+
+  base::Optional<uint32_t> activation_deadline_in_frames() const {
+    return activation_deadline_in_frames_;
+  }
 
   SurfaceDependencyTracker* dependency_tracker() {
     return &dependency_tracker_;
@@ -293,6 +304,8 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   bool IsOwnerAmongFallbackParents(
       const base::flat_set<SurfaceId>& fallback_parents,
       const base::Optional<FrameSinkId>& owner) const;
+
+  base::Optional<uint32_t> activation_deadline_in_frames_;
 
   // SurfaceDependencyTracker needs to be destroyed after Surfaces are destroyed
   // because they will call back into the dependency tracker.

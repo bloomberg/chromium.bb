@@ -24,13 +24,10 @@ namespace viz {
 Surface::Surface(const SurfaceInfo& surface_info,
                  SurfaceManager* surface_manager,
                  base::WeakPtr<SurfaceClient> surface_client,
-                 BeginFrameSource* begin_frame_source,
-                 base::TickClock* tick_clock,
                  bool needs_sync_tokens)
     : surface_info_(surface_info),
       surface_manager_(surface_manager),
       surface_client_(std::move(surface_client)),
-      deadline_(this, begin_frame_source, tick_clock),
       needs_sync_tokens_(needs_sync_tokens) {}
 
 Surface::~Surface() {
@@ -40,7 +37,13 @@ Surface::~Surface() {
   UnrefFrameResourcesAndRunCallbacks(std::move(pending_frame_data_));
   UnrefFrameResourcesAndRunCallbacks(std::move(active_frame_data_));
 
-  deadline_.Cancel();
+  if (deadline_)
+    deadline_->Cancel();
+}
+
+void Surface::SetDependencyDeadline(
+    std::unique_ptr<SurfaceDependencyDeadline> deadline) {
+  deadline_ = std::move(deadline);
 }
 
 void Surface::Reset(base::WeakPtr<SurfaceClient> client) {
@@ -54,11 +57,13 @@ void Surface::Reset(base::WeakPtr<SurfaceClient> client) {
   active_frame_data_.reset();
 }
 
-bool Surface::InheritActivationDeadlineFrom(
-    const SurfaceDependencyDeadline& deadline) {
+bool Surface::InheritActivationDeadlineFrom(Surface* surface) {
   TRACE_EVENT1("viz", "Surface::InheritActivationDeadlineFrom", "FrameSinkId",
                surface_id().frame_sink_id().ToString());
-  return deadline_.InheritFrom(deadline);
+  if (!deadline_ || !surface->deadline_)
+    return false;
+
+  return deadline_->InheritFrom(*surface->deadline_);
 }
 
 void Surface::SetPreviousFrameSurface(Surface* surface) {
@@ -160,7 +165,8 @@ bool Surface::QueueFrame(
   // regardless of whether it's pending or active.
   surface_client_->ReceiveFromChild(frame.resource_list);
 
-  if (activation_dependencies_.empty() || !deadline.deadline_in_frames()) {
+  if (activation_dependencies_.empty() ||
+      (deadline_ && !deadline.deadline_in_frames())) {
     // If there are no blockers, then immediately activate the frame.
     ActivateFrame(
         FrameData(std::move(frame), frame_index, std::move(callback),
@@ -173,7 +179,7 @@ bool Surface::QueueFrame(
     RejectCompositorFramesToFallbackSurfaces();
 
     // If the deadline is in the past, then we will activate immediately.
-    if (deadline_.Set(deadline)) {
+    if (!deadline_ || deadline_->Set(deadline)) {
       // Ask the SurfaceDependencyTracker to inform |this| when its dependencies
       // are resolved.
       surface_manager_->dependency_tracker()->RequestSurfaceResolution(this);
@@ -278,9 +284,9 @@ void Surface::ActivatePendingFrame(base::Optional<base::TimeDelta> duration) {
   FrameData frame_data = std::move(*pending_frame_data_);
   pending_frame_data_.reset();
 
-  DCHECK(!duration || !deadline_.has_deadline());
-  if (!duration)
-    duration = deadline_.Cancel();
+  DCHECK(!duration || !deadline_ || !deadline_->has_deadline());
+  if (!duration && deadline_)
+    duration = deadline_->Cancel();
 
   ActivateFrame(std::move(frame_data), duration);
 }
@@ -328,17 +334,19 @@ void Surface::ActivateFrame(FrameData frame_data,
 
 FrameDeadline Surface::UpdateActivationDependencies(
     const CompositorFrame& current_frame) {
-  const uint32_t default_deadline =
-      surface_manager_->dependency_tracker()->number_of_frames_to_deadline();
+  const base::Optional<uint32_t>& default_deadline =
+      surface_manager_->activation_deadline_in_frames();
   FrameDeadline deadline = current_frame.metadata.deadline;
 
   uint32_t deadline_in_frames = deadline.deadline_in_frames();
-  if (deadline.use_default_lower_bound_deadline())
-    deadline_in_frames = std::max(deadline_in_frames, default_deadline);
+  if (default_deadline && deadline.use_default_lower_bound_deadline())
+    deadline_in_frames = std::max(deadline_in_frames, *default_deadline);
 
   deadline = FrameDeadline(deadline.frame_start_time(), deadline_in_frames,
                            deadline.frame_interval(),
                            false /* use_default_lower_bound_deadline */);
+
+  bool track_dependencies = !default_deadline || deadline_in_frames > 0;
 
   base::flat_map<FrameSinkId, SequenceNumbers> new_frame_sink_id_dependencies;
   base::flat_set<SurfaceId> new_activation_dependencies;
@@ -350,7 +358,7 @@ FrameDeadline Surface::UpdateActivationDependencies(
     // the display compositor, then it blocks this frame.
     if (!dependency || !dependency->HasActiveFrame()) {
       new_activation_dependencies.insert(surface_id);
-      if (!deadline_in_frames)
+      if (!track_dependencies)
         continue;
 
       // Record the latest |parent_sequence_number| this surface is interested
@@ -376,7 +384,7 @@ FrameDeadline Surface::UpdateActivationDependencies(
   // map.
   ComputeChangeInDependencies(new_frame_sink_id_dependencies);
 
-  if (deadline_in_frames > 0) {
+  if (track_dependencies) {
     activation_dependencies_ = std::move(new_activation_dependencies);
   } else {
     // If the deadline is zero, then all dependencies are late.

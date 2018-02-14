@@ -852,8 +852,11 @@ void GpuProcessHost::ConnectFrameSinkManager(
   viz::mojom::FrameSinkManagerParamsPtr params =
       viz::mojom::FrameSinkManagerParams::New();
   params->restart_id = host_id_;
-  params->number_of_frames_to_activation_deadline =
+  base::Optional<uint32_t> activation_deadline_in_frames =
       switches::GetDeadlineToSynchronizeSurfaces();
+  params->use_activation_deadline = activation_deadline_in_frames.has_value();
+  params->activation_deadline_in_frames =
+      activation_deadline_in_frames.value_or(0u);
   params->frame_sink_manager = std::move(request);
   params->frame_sink_manager_client = std::move(client);
   params->compositing_mode_watcher = std::move(mode_watcher);

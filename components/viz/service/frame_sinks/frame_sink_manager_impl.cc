@@ -39,10 +39,10 @@ FrameSinkManagerImpl::FrameSinkSourceMapping::operator=(
     FrameSinkSourceMapping&& other) = default;
 
 FrameSinkManagerImpl::FrameSinkManagerImpl(
-    uint32_t number_of_frames_to_activation_deadline,
+    base::Optional<uint32_t> activation_deadline_in_frames,
     DisplayProvider* display_provider)
     : display_provider_(display_provider),
-      surface_manager_(number_of_frames_to_activation_deadline),
+      surface_manager_(activation_deadline_in_frames),
       hit_test_manager_(surface_manager()),
       binding_(this) {
   surface_manager_.AddObserver(&hit_test_manager_);
