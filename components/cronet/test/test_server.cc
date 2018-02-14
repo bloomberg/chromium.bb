@@ -22,6 +22,7 @@ namespace {
 
 const char kSimplePath[] = "/Simple";
 const char kEchoHeaderPath[] = "/EchoHeader?";
+const char kEchoMethodPath[] = "/EchoMethod";
 const char kSetCookiePath[] = "/SetCookie?";
 const char kBigDataPath[] = "/BigData?";
 const char kUseEncodingPath[] = "/UseEncoding?";
@@ -37,6 +38,15 @@ std::unique_ptr<net::test_server::HttpResponse> SimpleRequest() {
   auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
   http_response->set_code(net::HTTP_OK);
   http_response->set_content(kSimpleResponse);
+  return std::move(http_response);
+}
+
+std::unique_ptr<net::test_server::HttpResponse> EchoMethodInRequest(
+    const net::test_server::HttpRequest& request) {
+  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
+  http_response->set_code(net::HTTP_OK);
+  http_response->set_content(request.method_string);
+  http_response->set_content_type("text/plain");
   return std::move(http_response);
 }
 
@@ -127,6 +137,9 @@ std::unique_ptr<net::test_server::HttpResponse> CronetTestRequestHandler(
                        base::CompareCase::INSENSITIVE_ASCII)) {
     return EchoHeaderInRequest(request);
   }
+  if (request.relative_url == kEchoMethodPath) {
+    return EchoMethodInRequest(request);
+  }
   if (base::StartsWith(request.relative_url, kSetCookiePath,
                        base::CompareCase::INSENSITIVE_ASCII)) {
     return SetAndEchoCookieInResponse(request);
@@ -169,6 +182,11 @@ void TestServer::Shutdown() {
 std::string TestServer::GetSimpleURL() {
   DCHECK(g_test_server);
   return g_test_server->GetURL(kSimplePath).spec();
+}
+
+std::string TestServer::GetEchoMethodURL() {
+  DCHECK(g_test_server);
+  return g_test_server->GetURL(kEchoMethodPath).spec();
 }
 
 std::string TestServer::GetEchoHeaderURL(const std::string& header_name) {

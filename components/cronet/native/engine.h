@@ -35,6 +35,10 @@ class Cronet_EngineImpl : public Cronet_Engine {
   // is true.
   Cronet_RESULT CheckResult(Cronet_RESULT result);
 
+  CronetURLRequestContext* cronet_url_request_context() const {
+    return context_.get();
+  }
+
  private:
   class Callback;
 

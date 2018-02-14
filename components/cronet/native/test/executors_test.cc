@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/cronet/native/test_util.h"
+#include "components/cronet/native/test/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

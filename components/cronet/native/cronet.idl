@@ -241,13 +241,21 @@ enum RESULT {
    */
   ILLEGAL_STATE_REQUEST_NOT_INITIALIZED = -205,
   /**
+   * The request is not started
+   */
+  ILLEGAL_STATE_REQUEST_NOT_STARTED = -206,
+  /**
    * No redirect to follow
    */
-  ILLEGAL_STATE_UNEXPECTED_REDIRECT = -206,
+  ILLEGAL_STATE_UNEXPECTED_REDIRECT = -207,
   /**
    * Unexpected read attempt
    */
-  ILLEGAL_STATE_UNEXPECTED_READ = -207,
+  ILLEGAL_STATE_UNEXPECTED_READ = -208,
+  /**
+   * Unexpected read failure
+   */
+  ILLEGAL_STATE_READ_FAILED = -209,
 
   /**
    * Null pointer or empty data
@@ -293,6 +301,10 @@ enum RESULT {
    * Invalid header value
    */
   NULL_POINTER_HEADER_VALUE = -310,
+  /**
+   * Params is required
+   */
+  NULL_POINTER_PARAMS = -311,
 };
 
 /**
@@ -976,8 +988,8 @@ interface UrlRequest {
    * is read, its UrlRequestCallback.OnSucceeded() method if
    * there's no more data to read, or its UrlRequestCallback.OnFailed()
    * method if there's an error.
-   * This callback transfers ownership of |buffer| Cronet, and app guarantees
-   * not to access it until one of these callbacks is invoked.
+   * This method transfers ownership of |buffer| to Cronet, and app should
+   * not access it until one of these callbacks is invoked.
    *
    * @param buffer to write response body to. The app must not read or
    *        modify buffer's position, limit, or data between its position and

@@ -12,7 +12,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "components/cronet/native/generated/cronet.idl_impl_interface.h"
 #include "components/cronet/native/include/cronet_c.h"
-#include "components/cronet/native/test_util.h"
+#include "components/cronet/native/test/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -60,6 +60,8 @@ class OnRedirectReceived_Runnable : public Cronet_Runnable {
     Cronet_UrlRequestCallback_OnRedirectReceived(
         callback_, /* request = */ nullptr, /* response_info = */ nullptr,
         new_location_url_.c_str());
+    // Self-Destroy after running.
+    delete this;
   }
 
  private:
