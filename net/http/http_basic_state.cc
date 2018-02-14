@@ -38,6 +38,7 @@ void HttpBasicState::Initialize(const HttpRequestInfo* request_info,
                                 const NetLogWithSource& net_log) {
   DCHECK(!parser_.get());
   url_ = request_info->url;
+  traffic_annotation_ = request_info->traffic_annotation;
   request_method_ = request_info->method;
   parser_.reset(new HttpStreamParser(
       connection_.get(), request_info, read_buf_.get(), net_log));

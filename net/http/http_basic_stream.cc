@@ -11,7 +11,6 @@
 #include "net/http/http_response_body_drainer.h"
 #include "net/http/http_stream_parser.h"
 #include "net/socket/client_socket_handle.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 
@@ -29,6 +28,7 @@ int HttpBasicStream::InitializeStream(const HttpRequestInfo* request_info,
                                       RequestPriority priority,
                                       const NetLogWithSource& net_log,
                                       CompletionOnceCallback callback) {
+  DCHECK(request_info->traffic_annotation.is_valid());
   state_.Initialize(request_info, can_send_early, priority, net_log);
   return OK;
 }
@@ -44,10 +44,10 @@ int HttpBasicStream::SendRequest(const HttpRequestHeaders& headers,
       raw_headers.Add(it.name(), it.value());
     request_headers_callback_.Run(std::move(raw_headers));
   }
-  // TODO(crbug.com/656607): Add propoer annotation.
-  return parser()->SendRequest(state_.GenerateRequestLine(), headers,
-                               NO_TRAFFIC_ANNOTATION_BUG_656607, response,
-                               std::move(callback));
+  return parser()->SendRequest(
+      state_.GenerateRequestLine(), headers,
+      NetworkTrafficAnnotationTag(state_.traffic_annotation()), response,
+      std::move(callback));
 }
 
 int HttpBasicStream::ReadResponseHeaders(CompletionOnceCallback callback) {
