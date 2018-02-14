@@ -43,7 +43,8 @@ class UserManagerMacTest : public BrowserWithTestWindowTest {
   DISALLOW_COPY_AND_ASSIGN(UserManagerMacTest);
 };
 
-TEST_F(UserManagerMacTest, ShowUserManager) {
+// Disabled for https://crbug.com/810139
+TEST_F(UserManagerMacTest, DISABLED_ShowUserManager) {
   // Set the ProfileLastUsed pref so that SetActiveProfileToGuestIfLocked() uses
   // a last active profile that's in the ProfileAttributesStorage, not default.
   g_browser_process->local_state()->SetString(
