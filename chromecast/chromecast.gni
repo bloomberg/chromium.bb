@@ -102,8 +102,7 @@ if (chromecast_branding == "public") {
 # in //build/config/locales.gni.
 cast_locales = locales
 
-# Currently extensions require use_dbus=true if it is a linux build.
-enable_chromecast_extensions = enable_extensions && (!is_linux || use_dbus)
+enable_chromecast_extensions = enable_extensions
 
 # These templates are a temporary fix fo link libc++ into shared libraries and
 # executables. These should be removed as soon as crbug.com/746091 is resolved.
