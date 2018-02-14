@@ -64,15 +64,19 @@ class STORAGE_EXPORT FileWriterDelegate : public net::URLRequest::Delegate {
   void OnResponseStarted(net::URLRequest* request, int net_error) override;
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
 
+ protected:
+  // Virtual for tests.
+  virtual void OnDataReceived(int bytes_read);
+
  private:
   void OnGetFileInfoAndStartRequest(std::unique_ptr<net::URLRequest> request,
                                     base::File::Error error,
                                     const base::File::Info& file_info);
   void Read();
-  void OnDataReceived(int bytes_read);
   void Write();
   void OnDataWritten(int write_response);
-  void OnError(base::File::Error error);
+  void OnReadError(base::File::Error error);
+  void OnWriteError(base::File::Error error);
   void OnProgress(int bytes_read, bool done);
   void OnWriteCancelled(int status);
   void MaybeFlushForCompletion(base::File::Error error,
@@ -93,6 +97,8 @@ class STORAGE_EXPORT FileWriterDelegate : public net::URLRequest::Delegate {
   int bytes_written_backlog_;
   int bytes_written_;
   int bytes_read_;
+  bool async_write_in_progress_ = false;
+  base::File::Error saved_read_error_ = base::File::FILE_OK;
   scoped_refptr<net::IOBufferWithSize> io_buffer_;
   scoped_refptr<net::DrainableIOBuffer> cursor_;
   std::unique_ptr<net::URLRequest> request_;
