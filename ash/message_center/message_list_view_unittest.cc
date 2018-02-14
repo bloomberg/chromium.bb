@@ -16,12 +16,12 @@
 #include "ui/message_center/fake_message_center.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/public/cpp/notification.h"
-#include "ui/message_center/views/notification_view.h"
+#include "ui/message_center/views/notification_view_md.h"
 #include "ui/views/test/views_test_base.h"
 
 using ::testing::ElementsAre;
 using message_center::Notification;
-using message_center::NotificationView;
+using message_center::NotificationViewMD;
 using message_center::NotifierId;
 using message_center::NOTIFICATION_TYPE_SIMPLE;
 
@@ -38,7 +38,7 @@ enum CallType { GET_PREFERRED_SIZE, GET_HEIGHT_FOR_WIDTH, LAYOUT };
 
 /* Instrumented/Mock NotificationView subclass ********************************/
 
-class MockNotificationView : public NotificationView {
+class MockNotificationView : public NotificationViewMD {
  public:
   class Test {
    public:
@@ -60,7 +60,7 @@ class MockNotificationView : public NotificationView {
 
 MockNotificationView::MockNotificationView(const Notification& notification,
                                            Test* test)
-    : NotificationView(notification), test_(test) {
+    : NotificationViewMD(notification), test_(test) {
   // Calling SetPaintToLayer() to ensure that this view has its own layer.
   // This layer is needed to enable adding/removal animations.
   SetPaintToLayer();
@@ -71,19 +71,19 @@ MockNotificationView::~MockNotificationView() = default;
 gfx::Size MockNotificationView::CalculatePreferredSize() const {
   test_->RegisterCall(GET_PREFERRED_SIZE);
   DCHECK(child_count() > 0);
-  return NotificationView::CalculatePreferredSize();
+  return NotificationViewMD::CalculatePreferredSize();
 }
 
 int MockNotificationView::GetHeightForWidth(int width) const {
   test_->RegisterCall(GET_HEIGHT_FOR_WIDTH);
   DCHECK(child_count() > 0);
-  return NotificationView::GetHeightForWidth(width);
+  return NotificationViewMD::GetHeightForWidth(width);
 }
 
 void MockNotificationView::Layout() {
   test_->RegisterCall(LAYOUT);
   DCHECK(child_count() > 0);
-  NotificationView::Layout();
+  NotificationViewMD::Layout();
 }
 
 }  // namespace
