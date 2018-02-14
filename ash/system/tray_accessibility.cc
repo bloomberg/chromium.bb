@@ -23,7 +23,9 @@
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
+#include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
+#include "chromeos/chromeos_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -55,6 +57,7 @@ enum AccessibilityState {
   A11Y_HIGHLIGHT_KEYBOARD_FOCUS = 1 << 10,
   A11Y_STICKY_KEYS = 1 << 11,
   A11Y_TAP_DRAGGING = 1 << 12,
+  A11Y_SELECT_TO_SPEAK = 1 << 13,
 };
 
 uint32_t GetAccessibilityState() {
@@ -88,6 +91,9 @@ uint32_t GetAccessibilityState() {
     state |= A11Y_STICKY_KEYS;
   if (delegate->IsTapDraggingEnabled())
     state |= A11Y_TAP_DRAGGING;
+  if (controller->IsSelectToSpeakEnabled()) {
+    state |= A11Y_SELECT_TO_SPEAK;
+  }
   return state;
 }
 
@@ -156,6 +162,10 @@ void AccessibilityDetailedView::OnAccessibilityStatusChanged() {
   TrayPopupUtils::UpdateCheckMarkVisibility(spoken_feedback_view_,
                                             spoken_feedback_enabled_);
 
+  select_to_speak_enabled_ = controller->IsSelectToSpeakEnabled();
+  TrayPopupUtils::UpdateCheckMarkVisibility(select_to_speak_view_,
+                                            select_to_speak_enabled_);
+
   high_contrast_enabled_ = controller->IsHighContrastEnabled();
   TrayPopupUtils::UpdateCheckMarkVisibility(high_contrast_view_,
                                             high_contrast_enabled_);
@@ -216,6 +226,13 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SPOKEN_FEEDBACK),
       spoken_feedback_enabled_);
+
+  select_to_speak_enabled_ = controller->IsSelectToSpeakEnabled();
+  select_to_speak_view_ = AddScrollListCheckableItem(
+      kSystemMenuAccessibilitySelectToSpeakIcon,
+      l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SELECT_TO_SPEAK),
+      select_to_speak_enabled_);
 
   high_contrast_enabled_ = controller->IsHighContrastEnabled();
   high_contrast_view_ = AddScrollListCheckableItem(
@@ -304,6 +321,12 @@ void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
                      ? UserMetricsAction("StatusArea_SpokenFeedbackEnabled")
                      : UserMetricsAction("StatusArea_SpokenFeedbackDisabled"));
     controller->SetSpokenFeedbackEnabled(new_state, A11Y_NOTIFICATION_NONE);
+  } else if (view == select_to_speak_view_) {
+    bool new_state = !controller->IsSelectToSpeakEnabled();
+    RecordAction(new_state
+                     ? UserMetricsAction("StatusArea_SelectToSpeakEnabled")
+                     : UserMetricsAction("StatusArea_SelectToSpeakDisabled"));
+    controller->SetSelectToSpeakEnabled(new_state);
   } else if (view == high_contrast_view_) {
     bool new_state = !controller->IsHighContrastEnabled();
     RecordAction(new_state

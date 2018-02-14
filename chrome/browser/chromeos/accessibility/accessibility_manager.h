@@ -49,6 +49,7 @@ enum AccessibilityNotificationType {
   ACCESSIBILITY_TOGGLE_STICKY_KEYS,
   ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
   ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
+  ACCESSIBILITY_TOGGLE_SELECT_TO_SPEAK,
   ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD,
   ACCESSIBILITY_TOGGLE_MONO_AUDIO,
   ACCESSIBILITY_TOGGLE_CARET_HIGHLIGHT,
@@ -320,7 +321,7 @@ class AccessibilityManager
   void UpdateCursorHighlightFromPref();
   void UpdateFocusHighlightFromPref();
   void UpdateTapDraggingFromPref();
-  void UpdateSelectToSpeakFromPref();
+  void OnSelectToSpeakChanged();
   void UpdateSwitchAccessFromPref();
   void UpdateAccessibilityHighlightingFromPrefs();
 
