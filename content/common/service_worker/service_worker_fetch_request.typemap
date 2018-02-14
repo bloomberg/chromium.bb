@@ -11,9 +11,11 @@ public_headers = [
   "//storage/common/blob_storage/blob_handle.h",
   "//storage/common/storage_common_export.h",
 ]
-traits_headers = [ "//content/common/service_worker/service_worker_fetch_request_struct_traits.h" ]
+traits_headers = [
+  "//content/common/service_worker/service_worker_fetch_request_mojom_traits.h",
+]
 sources = [
-  "//content/common/service_worker/service_worker_fetch_request_struct_traits.cc",
+  "//content/common/service_worker/service_worker_fetch_request_mojom_traits.cc",
 ]
 type_mappings = [
   "blink.mojom.FetchAPIRequest=::content::ServiceWorkerFetchRequest",

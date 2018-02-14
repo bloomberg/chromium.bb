@@ -12,29 +12,33 @@
 
 namespace mojo {
 
-template <typename K, typename V>
-struct MapTraits<std::map<K, V>> {
+template <typename K, typename V, typename Compare>
+struct MapTraits<std::map<K, V, Compare>> {
   using Key = K;
   using Value = V;
-  using Iterator = typename std::map<K, V>::iterator;
-  using ConstIterator = typename std::map<K, V>::const_iterator;
+  using Iterator = typename std::map<K, V, Compare>::iterator;
+  using ConstIterator = typename std::map<K, V, Compare>::const_iterator;
 
-  static bool IsNull(const std::map<K, V>& input) {
+  static bool IsNull(const std::map<K, V, Compare>& input) {
     // std::map<> is always converted to non-null mojom map.
     return false;
   }
 
-  static void SetToNull(std::map<K, V>* output) {
+  static void SetToNull(std::map<K, V, Compare>* output) {
     // std::map<> doesn't support null state. Set it to empty instead.
     output->clear();
   }
 
-  static size_t GetSize(const std::map<K, V>& input) { return input.size(); }
+  static size_t GetSize(const std::map<K, V, Compare>& input) {
+    return input.size();
+  }
 
-  static ConstIterator GetBegin(const std::map<K, V>& input) {
+  static ConstIterator GetBegin(const std::map<K, V, Compare>& input) {
     return input.begin();
   }
-  static Iterator GetBegin(std::map<K, V>& input) { return input.begin(); }
+  static Iterator GetBegin(std::map<K, V, Compare>& input) {
+    return input.begin();
+  }
 
   static void AdvanceIterator(ConstIterator& iterator) { iterator++; }
   static void AdvanceIterator(Iterator& iterator) { iterator++; }
@@ -45,16 +49,18 @@ struct MapTraits<std::map<K, V>> {
   static V& GetValue(Iterator& iterator) { return iterator->second; }
   static const V& GetValue(ConstIterator& iterator) { return iterator->second; }
 
-  static bool Insert(std::map<K, V>& input, const K& key, V&& value) {
+  static bool Insert(std::map<K, V, Compare>& input, const K& key, V&& value) {
     input.insert(std::make_pair(key, std::forward<V>(value)));
     return true;
   }
-  static bool Insert(std::map<K, V>& input, const K& key, const V& value) {
+  static bool Insert(std::map<K, V, Compare>& input,
+                     const K& key,
+                     const V& value) {
     input.insert(std::make_pair(key, value));
     return true;
   }
 
-  static void SetToEmpty(std::map<K, V>* output) { output->clear(); }
+  static void SetToEmpty(std::map<K, V, Compare>* output) { output->clear(); }
 };
 
 template <typename K, typename V>
