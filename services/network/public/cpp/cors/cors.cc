@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/strings/string_util.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_request_headers.h"
 #include "url/gurl.h"
@@ -215,6 +216,46 @@ bool IsCORSSafelistedHeader(const std::string& name, const std::string& value) {
     return IsCORSSafelistedContentType(value);
 
   return false;
+}
+
+bool IsForbiddenHeader(const std::string& name) {
+  // http://fetch.spec.whatwg.org/#forbidden-header-name
+  // "A forbidden header name is a header name that is one of:
+  //   `Accept-Charset`, `Accept-Encoding`, `Access-Control-Request-Headers`,
+  //   `Access-Control-Request-Method`, `Connection`, `Content-Length`,
+  //   `Cookie`, `Cookie2`, `Date`, `DNT`, `Expect`, `Host`, `Keep-Alive`,
+  //   `Origin`, `Referer`, `TE`, `Trailer`, `Transfer-Encoding`, `Upgrade`,
+  //   `User-Agent`, `Via`
+  // or starts with `Proxy-` or `Sec-` (including when it is just `Proxy-` or
+  // `Sec-`)."
+  static const std::set<std::string> forbidden_names = {
+      "accept-charset",
+      "accept-encoding",
+      "access-control-request-headers",
+      "access-control-request-method",
+      "connection",
+      "content-length",
+      "cookie",
+      "cookie2",
+      "date",
+      "dnt",
+      "expect",
+      "host",
+      "keep-alive",
+      "origin",
+      "referer",
+      "te",
+      "trailer",
+      "transfer-encoding",
+      "upgrade",
+      "user-agent",
+      "via"};
+  const std::string lower_name = base::ToLowerASCII(name);
+  if (StartsWith(lower_name, "proxy-", base::CompareCase::SENSITIVE) ||
+      StartsWith(lower_name, "sec-", base::CompareCase::SENSITIVE)) {
+    return true;
+  }
+  return forbidden_names.find(lower_name) != forbidden_names.end();
 }
 
 }  // namespace cors
