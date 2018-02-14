@@ -24,9 +24,12 @@
 namespace blink {
 
 class FlatTreeTraversalTest : public PageTestBase,
-                              private ScopedSlotInFlatTreeForTest {
+                              private ScopedSlotInFlatTreeForTest,
+                              ScopedIncrementalShadowDOMForTest {
  public:
-  FlatTreeTraversalTest() : ScopedSlotInFlatTreeForTest(false) {}
+  FlatTreeTraversalTest()
+      : ScopedSlotInFlatTreeForTest(false),
+        ScopedIncrementalShadowDOMForTest(false) {}
 
  protected:
   // Sets |mainHTML| to BODY element with |innerHTML| property and attaches
