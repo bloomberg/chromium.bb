@@ -4262,6 +4262,12 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   cm->allow_intrabc = cm->allow_screen_content_tools;
   // Reset the flag.
   cpi->intrabc_used = 0;
+#if CONFIG_HORZONLY_FRAME_SUPERRES
+  // Need to disable intrabc when superres is selected
+  if (NO_FILTER_FOR_IBC && !av1_superres_unscaled(cm)) {
+    cm->allow_intrabc = 0;
+  }
+#endif
 #endif  // CONFIG_INTRABC
 
 #if CONFIG_HASH_ME

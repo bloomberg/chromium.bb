@@ -3745,7 +3745,15 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
     write_frame_size(cm, wb);
 #endif
 #if CONFIG_INTRABC
-    if (cm->allow_screen_content_tools) aom_wb_write_bit(wb, cm->allow_intrabc);
+#if CONFIG_HORZONLY_FRAME_SUPERRES
+    assert(av1_superres_unscaled(cm) ||
+           !(cm->allow_intrabc && NO_FILTER_FOR_IBC));
+    if (cm->allow_screen_content_tools &&
+        (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
+#else
+    if (cm->allow_screen_content_tools)
+#endif
+      aom_wb_write_bit(wb, cm->allow_intrabc);
 #endif  // CONFIG_INTRABC
   } else {
 #if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
@@ -3780,7 +3788,14 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
       write_frame_size(cm, wb);
 #endif
 #if CONFIG_INTRABC
+#if CONFIG_HORZONLY_FRAME_SUPERRES
+      assert(av1_superres_unscaled(cm) ||
+             !(cm->allow_intrabc && NO_FILTER_FOR_IBC));
+      if (cm->allow_screen_content_tools &&
+          (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
+#else
       if (cm->allow_screen_content_tools)
+#endif
         aom_wb_write_bit(wb, cm->allow_intrabc);
 #endif  // CONFIG_INTRABC
     } else {
@@ -4081,7 +4096,15 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     write_frame_size(cm, wb);
 #endif
 #if CONFIG_INTRABC
-    if (cm->allow_screen_content_tools) aom_wb_write_bit(wb, cm->allow_intrabc);
+#if CONFIG_HORZONLY_FRAME_SUPERRES
+    assert(av1_superres_unscaled(cm) ||
+           !(cm->allow_intrabc && NO_FILTER_FOR_IBC));
+    if (cm->allow_screen_content_tools &&
+        (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
+#else
+    if (cm->allow_screen_content_tools)
+#endif
+      aom_wb_write_bit(wb, cm->allow_intrabc);
 #endif  // CONFIG_INTRABC
   } else if (cm->frame_type == INTRA_ONLY_FRAME) {
 #if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
@@ -4102,7 +4125,14 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       write_frame_size(cm, wb);
 #endif
 #if CONFIG_INTRABC
+#if CONFIG_HORZONLY_FRAME_SUPERRES
+      assert(av1_superres_unscaled(cm) ||
+             !(cm->allow_intrabc && NO_FILTER_FOR_IBC));
+      if (cm->allow_screen_content_tools &&
+          (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
+#else
       if (cm->allow_screen_content_tools)
+#endif
         aom_wb_write_bit(wb, cm->allow_intrabc);
 #endif  // CONFIG_INTRABC
     }

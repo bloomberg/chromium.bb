@@ -5170,9 +5170,6 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 #endif  // CONFIG_LOOP_RESTORATION
 
   if (is_lossless_requested(&cpi->oxcf)
-#if CONFIG_INTRABC
-      || (cm->allow_intrabc && NO_FILTER_FOR_IBC)
-#endif  // CONFIG_INTRABC
 #if CONFIG_EXT_TILE
       || cm->large_scale_tile
 #endif  // CONFIG_EXT_TILE
@@ -5185,9 +5182,6 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 
   int no_cdef = 0;
   if (is_lossless_requested(&cpi->oxcf) || !cpi->oxcf.using_cdef
-#if CONFIG_INTRABC
-      || (cm->allow_intrabc && NO_FILTER_FOR_IBC)
-#endif  // CONFIG_INTRABC
 #if CONFIG_EXT_TILE
       || cm->large_scale_tile
 #endif
@@ -5274,9 +5268,6 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
     }
   }
 #endif  // CONFIG_LOOP_RESTORATION
-  // TODO(debargha): Fix mv search range on encoder side
-  // aom_extend_frame_inner_borders(cm->frame_to_show, num_planes);
-  aom_extend_frame_borders(cm->frame_to_show, num_planes);
 }
 
 static void encode_without_recode_loop(AV1_COMP *cpi) {
@@ -6098,7 +6089,14 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   // off.
 
   // Pick the loop filter level for the frame.
-  loopfilter_frame(cpi, cm);
+#if CONFIG_INTRABC
+  if (!(cm->allow_intrabc && NO_FILTER_FOR_IBC))
+#endif
+    loopfilter_frame(cpi, cm);
+
+  // TODO(debargha): Fix mv search range on encoder side
+  // aom_extend_frame_inner_borders(cm->frame_to_show, av1_num_planes(cm));
+  aom_extend_frame_borders(cm->frame_to_show, av1_num_planes(cm));
 
 #ifdef OUTPUT_YUV_REC
   aom_write_one_yuv_frame(cm, cm->frame_to_show);
