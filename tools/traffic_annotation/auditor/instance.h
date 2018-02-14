@@ -105,6 +105,9 @@ class AnnotationInstance : public InstanceBase {
       AnnotationInstance& completing_annotation,
       AnnotationInstance* combination) const;
 
+  // Serializes to text for debugging and visualization.
+  std::string Serialize() const;
+
   // Protobuf of the annotation.
   traffic_annotation::NetworkTrafficAnnotation proto;
 
@@ -128,6 +131,8 @@ class AnnotationInstance : public InstanceBase {
   // This annotation is generated from merging two other incomplete annotations.
   bool is_merged;
 };
+
+std::ostream& operator<<(std::ostream& out, const AnnotationInstance& instance);
 
 // Holds an instance of calling a function that might have a network traffic
 // annotation argument.

@@ -98,5 +98,5 @@ disable this test by setting the `TEST_IS_ENABLED` flag to False in
 and cc the people listed in OWNERS; they'll be on the hook to rebuild and
 re-enable the test.
 
-CLANG_REVISION = '321529'
-LASTCHANGE=0e610ff740a0875d44277eda30348c6009c73761-refs/heads/master@{#535445}
+CLANG_REVISION = '324578'
+LASTCHANGE=cd6e9ca2e9c5cda30fac77c70d35d2eb699e5f88-refs/heads/master@{#536659}

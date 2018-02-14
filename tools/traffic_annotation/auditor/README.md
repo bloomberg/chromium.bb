@@ -18,12 +18,5 @@ The binaries of this file and the clang tool are checked out into
 `tools/traffic_annotation/bin/[platform]`. This is only done for Linux platform
 now and will be extended to other platforms later.
 
-## Running on Linux
+## Running
 Before running, you need to build the COMPLETE chromium.
-
-## Running on Windows
-Before running, you need to build the COMPLETE chromium using clang with keeprsp
-switch as follows:
-1. `gn args [build_dir, e.g. out\Debug]`
-2. add `is_clang=true` to the opened text file and save and close it.
-3. `ninja -C [build_dir] -d keeprsp`

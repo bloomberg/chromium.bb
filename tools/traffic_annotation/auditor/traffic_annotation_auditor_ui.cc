@@ -464,7 +464,7 @@ int main(int argc, char* argv[]) {
         break;
     }
   } else {
-    printf("/Completed.");
+    printf("Traffic annotations are all OK.\n");
   }
 
   return static_cast<int>(errors.size());
