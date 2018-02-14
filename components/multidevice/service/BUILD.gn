@@ -12,6 +12,8 @@ if (!is_ios && !is_android) {
     sources = [
       "cryptauth_client_factory_impl.cc",
       "cryptauth_client_factory_impl.h",
+      "cryptauth_enroller_factory_impl.cc",
+      "cryptauth_enroller_factory_impl.h",
       "cryptauth_token_fetcher_impl.cc",
       "cryptauth_token_fetcher_impl.h",
       "device_sync_impl.cc",
