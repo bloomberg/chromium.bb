@@ -111,8 +111,7 @@ std::unique_ptr<JSONObject> ContentLayerClientImpl::LayerAsJSON(
       raster_invalidator_.GetTracking())
     raster_invalidator_.GetTracking()->AsJSON(json.get());
 
-  if (int transform_id = GetTransformId(
-          raster_invalidator_.GetLayerState().Transform(), context))
+  if (int transform_id = GetTransformId(layer_state_.Transform(), context))
     json->SetInteger("transform", transform_id);
 
 #ifndef NDEBUG
@@ -174,6 +173,7 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
 #endif
 
   raster_invalidator_.Generate(layer_bounds, paint_chunks, layer_state);
+  layer_state_ = layer_state;
 
   cc_picture_layer_->SetBounds(layer_bounds.size());
   cc_picture_layer_->SetIsDrawable(true);

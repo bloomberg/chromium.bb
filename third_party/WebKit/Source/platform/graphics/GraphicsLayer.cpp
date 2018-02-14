@@ -328,7 +328,9 @@ void GraphicsLayer::Paint(const IntRect* interest_rect,
     // state escaping this layer's state. See the function for more details.
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
         !client_.ShouldThrottleRendering()) {
-      EnsureRasterInvalidator().GenerateForPropertyChanges(AllChunkPointers());
+      DCHECK(layer_state_.get());
+      EnsureRasterInvalidator().GenerateForPropertyChanges(AllChunkPointers(),
+                                                           layer_state_->state);
     }
     return;
   }

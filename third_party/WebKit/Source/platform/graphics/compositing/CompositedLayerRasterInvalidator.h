@@ -21,8 +21,7 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
 
   CompositedLayerRasterInvalidator(
       RasterInvalidationFunction raster_invalidation_function)
-      : raster_invalidation_function_(raster_invalidation_function),
-        layer_state_(nullptr, nullptr, nullptr) {}
+      : raster_invalidation_function_(raster_invalidation_function) {}
 
   void SetTracksRasterInvalidations(bool);
   RasterInvalidationTracking* GetTracking() const {
@@ -43,14 +42,14 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
   // invalidation even if there is no change in painting of this layer.
   // A test case is
   // paint/invalidation/compositing/fixed-pos-inside-composited-intermediate-layer.html.
-  void GenerateForPropertyChanges(const Vector<const PaintChunk*>&);
+  void GenerateForPropertyChanges(const Vector<const PaintChunk*>&,
+                                  const PropertyTreeState&);
 
   bool Matches(const PaintChunk& paint_chunk) const {
     return paint_chunks_info_.size() && paint_chunks_info_[0].is_cacheable &&
            paint_chunk.Matches(paint_chunks_info_[0].id);
   }
 
-  const PropertyTreeState& GetLayerState() const { return layer_state_; }
   const gfx::Rect& LayerBounds() const { return layer_bounds_; }
 
  private:
@@ -80,15 +79,22 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
     PaintChunkProperties properties;
   };
 
-  IntRect MapRectFromChunkToLayer(const FloatRect&, const PaintChunk&) const;
-  TransformationMatrix ChunkToLayerTransform(const PaintChunk&) const;
-  FloatClipRect ChunkToLayerClip(const PaintChunk&) const;
+  IntRect MapRectFromChunkToLayer(const FloatRect&,
+                                  const PaintChunk&,
+                                  const PropertyTreeState& layer_state) const;
+  TransformationMatrix ChunkToLayerTransform(
+      const PaintChunk&,
+      const PropertyTreeState& layer_state) const;
+  FloatClipRect ChunkToLayerClip(const PaintChunk&,
+                                 const PropertyTreeState& layer_state) const;
 
   void GenerateRasterInvalidations(
       const Vector<const PaintChunk*>& new_chunks,
-      const Vector<PaintChunkInfo>& new_chunks_info);
+      const Vector<PaintChunkInfo>& new_chunks_info,
+      const PropertyTreeState& layer_state);
   size_t MatchNewChunkToOldChunk(const PaintChunk& new_chunk, size_t old_index);
-  void AddDisplayItemRasterInvalidations(const PaintChunk&);
+  void AddDisplayItemRasterInvalidations(const PaintChunk&,
+                                         const PropertyTreeState& layer_state);
   void IncrementallyInvalidateChunk(const PaintChunkInfo& old_chunk,
                                     const PaintChunkInfo& new_chunk);
   void FullyInvalidateChunk(const PaintChunkInfo& old_chunk,
@@ -104,7 +110,8 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
                                            const String* debug_name = nullptr);
   PaintInvalidationReason ChunkPropertiesChanged(
       const PaintChunkInfo& new_chunk,
-      const PaintChunkInfo& old_chunk) const;
+      const PaintChunkInfo& old_chunk,
+      const PropertyTreeState& layer_state) const;
 
   // Clip a rect in the layer space by the layer bounds.
   template <typename Rect>
@@ -115,7 +122,6 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
 
   RasterInvalidationFunction raster_invalidation_function_;
   gfx::Rect layer_bounds_;
-  PropertyTreeState layer_state_;
   Vector<PaintChunkInfo> paint_chunks_info_;
 
   struct RasterInvalidationTrackingInfo {
