@@ -107,6 +107,7 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
                                      CompletionOnceCallback callback) {
   CHECK(callback_.is_null());
   DCHECK(!stream_);
+  DCHECK(request_info->traffic_annotation.is_valid());
 
   // HttpNetworkTransaction will retry any request that fails with
   // ERR_QUIC_HANDSHAKE_FAILED. It will retry any request with
@@ -524,7 +525,8 @@ int QuicHttpStream::DoRequestStream() {
 
   return quic_session()->RequestStream(
       !can_send_early_,
-      base::Bind(&QuicHttpStream::OnIOComplete, weak_factory_.GetWeakPtr()));
+      base::Bind(&QuicHttpStream::OnIOComplete, weak_factory_.GetWeakPtr()),
+      NetworkTrafficAnnotationTag(request_info_->traffic_annotation));
 }
 
 int QuicHttpStream::DoRequestStreamComplete(int rv) {

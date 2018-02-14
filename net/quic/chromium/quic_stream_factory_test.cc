@@ -54,6 +54,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -520,6 +521,8 @@ class QuicStreamFactoryTestBase {
     HttpRequestInfo request_info;
     request_info.method = "GET";
     request_info.url = GURL("https://www.example.org/");
+    request_info.traffic_annotation =
+        MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_EQ(OK,
               stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
                                        net_log_, CompletionOnceCallback()));
@@ -1578,6 +1581,9 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
   HttpRequestInfo request_info;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
   std::vector<std::unique_ptr<HttpStream>> streams;
   // The MockCryptoClientStream sets max_open_streams to be
   // kDefaultMaxStreamsPerConnection / 2.
@@ -1727,6 +1733,8 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   HttpRequestInfo request_info;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -1911,6 +1919,8 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   HttpRequestInfo request_info;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -1966,6 +1976,8 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChangedWithConnectionMigration) {
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   HttpRequestInfo request_info;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -2035,6 +2047,8 @@ void QuicStreamFactoryTestBase::OnNetworkMadeDefault(bool async_write_before) {
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = url_;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -2172,6 +2186,8 @@ void QuicStreamFactoryTestBase::OnNetworkDisconnected(bool async_write_before) {
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = url_;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -2287,6 +2303,8 @@ void QuicStreamFactoryTestBase::OnNetworkDisconnectedWithNetworkList(
 
   // Cause QUIC stream to be created.
   HttpRequestInfo request_info;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -2347,6 +2365,8 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultNonMigratableStream) {
   // Cause QUIC stream to be created, but marked as non-migratable.
   HttpRequestInfo request_info;
   request_info.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -2397,6 +2417,8 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultNonMigratableStreamV2) {
   // Cause QUIC stream to be created, but marked as non-migratable.
   HttpRequestInfo request_info;
   request_info.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -2446,6 +2468,8 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultConnectionMigrationDisabled) {
 
   // Cause QUIC stream to be created.
   HttpRequestInfo request_info;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -2500,6 +2524,8 @@ TEST_P(QuicStreamFactoryTest,
 
   // Cause QUIC stream to be created.
   HttpRequestInfo request_info;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -2554,6 +2580,8 @@ TEST_P(QuicStreamFactoryTest, OnNetworkDisconnectedNonMigratableStream) {
   // Cause QUIC stream to be created, but marked as non-migratable.
   HttpRequestInfo request_info;
   request_info.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -2602,6 +2630,8 @@ TEST_P(QuicStreamFactoryTest, OnNetworkDisconnectedNonMigratableStreamV2) {
   // Cause QUIC stream to be created, but marked as non-migratable.
   HttpRequestInfo request_info;
   request_info.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -2650,6 +2680,8 @@ TEST_P(QuicStreamFactoryTest,
 
   // Cause QUIC stream to be created.
   HttpRequestInfo request_info;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -2702,6 +2734,8 @@ TEST_P(QuicStreamFactoryTest,
 
   // Cause QUIC stream to be created.
   HttpRequestInfo request_info;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -2919,6 +2953,8 @@ TEST_P(QuicStreamFactoryTest, NewNetworkConnectedAfterNoNetwork) {
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = url_;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -3026,6 +3062,8 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeDisconnectedPauseBeforeConnected) {
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = url_;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -3165,6 +3203,8 @@ TEST_P(QuicStreamFactoryTest,
   HttpRequestInfo request_info1;
   request_info1.method = "GET";
   request_info1.url = url_;
+  request_info1.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK,
             stream1->InitializeStream(&request_info1, true, DEFAULT_PRIORITY,
                                       net_log_, CompletionOnceCallback()));
@@ -3178,6 +3218,8 @@ TEST_P(QuicStreamFactoryTest,
   HttpRequestInfo request_info2;
   request_info2.method = "GET";
   request_info2.url = url_;
+  request_info2.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK,
             stream2->InitializeStream(&request_info2, true, DEFAULT_PRIORITY,
                                       net_log_, CompletionOnceCallback()));
@@ -3249,6 +3291,8 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarly) {
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = url_;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -3376,6 +3420,8 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyWithAsyncWrites) {
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = url_;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -3495,6 +3541,8 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNoNewNetwork) {
 
   // Cause QUIC stream to be created.
   HttpRequestInfo request_info;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -3549,6 +3597,8 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNonMigratableStream) {
   // Cause QUIC stream to be created, but marked as non-migratable.
   HttpRequestInfo request_info;
   request_info.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -3601,6 +3651,8 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyConnectionMigrationDisabled) {
 
   // Cause QUIC stream to be created.
   HttpRequestInfo request_info;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -3662,6 +3714,8 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteError(
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = GURL("https://www.example.org/");
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -3752,6 +3806,8 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorNoNewNetwork(
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = GURL("https://www.example.org/");
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -3843,6 +3899,8 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorNonMigratableStream(
   request_info.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION;
   request_info.method = "GET";
   request_info.url = GURL("https://www.example.org/");
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -3907,6 +3965,8 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorMigrationDisabled(
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = GURL("https://www.example.org/");
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -3987,6 +4047,8 @@ void QuicStreamFactoryTestBase::TestMigrationOnMultipleWriteErrors(
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = GURL("https://www.example.org/");
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -4068,6 +4130,8 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorWithNotificationQueued(
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = GURL("https://www.example.org/");
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -4167,6 +4231,8 @@ void QuicStreamFactoryTestBase::TestMigrationOnNotificationWithWriteErrorQueued(
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = GURL("https://www.example.org/");
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -4267,6 +4333,8 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorPauseBeforeConnected(
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = GURL("https://www.example.org/");
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -4402,6 +4470,8 @@ void QuicStreamFactoryTestBase::
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = GURL("https://www.example.org/");
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -4558,6 +4628,8 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyToBadSocket) {
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = url_;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -4622,6 +4694,8 @@ TEST_P(QuicStreamFactoryTest, ServerMigration) {
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = GURL("https://www.example.org/");
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -4766,6 +4840,8 @@ TEST_P(QuicStreamFactoryTest, ServerMigrationIPv4ToIPv6Fails) {
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = GURL("https://www.example.org/");
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -4876,6 +4952,8 @@ TEST_P(QuicStreamFactoryTest, OnCertDBChanged) {
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   HttpRequestInfo request_info;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
@@ -5056,6 +5134,8 @@ TEST_P(QuicStreamFactoryTest, ReducePingTimeoutOnConnectionTimeOutOpenStreams) {
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
   HttpRequestInfo request_info;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 

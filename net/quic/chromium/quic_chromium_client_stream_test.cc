@@ -23,6 +23,7 @@
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/test/gtest_util.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 
@@ -106,8 +107,8 @@ class MockQuicClientSessionBase : public QuicSpdyClientSessionBase {
   MOCK_METHOD1(OnHeadersHeadOfLineBlocking, void(QuicTime::Delta delta));
 
   std::unique_ptr<QuicStream> CreateStream(QuicStreamId id) {
-    return QuicMakeUnique<QuicChromiumClientStream>(id, this,
-                                                    NetLogWithSource());
+    return QuicMakeUnique<QuicChromiumClientStream>(
+        id, this, NetLogWithSource(), TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
   using QuicSession::ActivateStream;
@@ -165,7 +166,8 @@ class QuicChromiumClientStreamTest
                          ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, GetParam()))),
                  &push_promise_index_) {
     stream_ = new QuicChromiumClientStream(kTestStreamId, &session_,
-                                           NetLogWithSource());
+                                           NetLogWithSource(),
+                                           TRAFFIC_ANNOTATION_FOR_TESTS);
     session_.ActivateStream(base::WrapUnique(stream_));
     handle_ = stream_->CreateHandle();
   }
@@ -653,8 +655,8 @@ TEST_P(QuicChromiumClientStreamTest, HeadersBeforeHandle) {
   // We don't use stream_ because we want an incoming server push
   // stream.
   QuicStreamId stream_id = GetNthServerInitiatedStreamId(0);
-  QuicChromiumClientStream* stream2 =
-      new QuicChromiumClientStream(stream_id, &session_, NetLogWithSource());
+  QuicChromiumClientStream* stream2 = new QuicChromiumClientStream(
+      stream_id, &session_, NetLogWithSource(), TRAFFIC_ANNOTATION_FOR_TESTS);
   session_.ActivateStream(base::WrapUnique(stream2));
 
   InitializeHeaders();
@@ -676,8 +678,8 @@ TEST_P(QuicChromiumClientStreamTest, HeadersAndDataBeforeHandle) {
   // We don't use stream_ because we want an incoming server push
   // stream.
   QuicStreamId stream_id = GetNthServerInitiatedStreamId(0);
-  QuicChromiumClientStream* stream2 =
-      new QuicChromiumClientStream(stream_id, &session_, NetLogWithSource());
+  QuicChromiumClientStream* stream2 = new QuicChromiumClientStream(
+      stream_id, &session_, NetLogWithSource(), TRAFFIC_ANNOTATION_FOR_TESTS);
   session_.ActivateStream(base::WrapUnique(stream2));
 
   InitializeHeaders();

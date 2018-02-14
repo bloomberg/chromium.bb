@@ -384,7 +384,8 @@ int QuicChromiumClientSession::Handle::RendezvousWithPromised(
 
 int QuicChromiumClientSession::Handle::RequestStream(
     bool requires_confirmation,
-    const CompletionCallback& callback) {
+    const CompletionCallback& callback,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(!stream_request_);
 
   if (!session_)
@@ -393,7 +394,7 @@ int QuicChromiumClientSession::Handle::RequestStream(
   // std::make_unique does not work because the StreamRequest constructor
   // is private.
   stream_request_ = std::unique_ptr<StreamRequest>(
-      new StreamRequest(this, requires_confirmation));
+      new StreamRequest(this, requires_confirmation, traffic_annotation));
   return stream_request_->StartRequest(callback);
 }
 
@@ -512,10 +513,12 @@ void QuicChromiumClientSession::Handle::OnRendezvousResult(
 
 QuicChromiumClientSession::StreamRequest::StreamRequest(
     QuicChromiumClientSession::Handle* session,
-    bool requires_confirmation)
+    bool requires_confirmation,
+    const NetworkTrafficAnnotationTag& traffic_annotation)
     : session_(session),
       requires_confirmation_(requires_confirmation),
       stream_(nullptr),
+      traffic_annotation_(traffic_annotation),
       weak_factory_(this) {}
 
 QuicChromiumClientSession::StreamRequest::~StreamRequest() {
@@ -990,7 +993,9 @@ int QuicChromiumClientSession::TryCreateStream(StreamRequest* request) {
   }
 
   if (GetNumOpenOutgoingStreams() < max_open_outgoing_streams()) {
-    request->stream_ = CreateOutgoingReliableStreamImpl()->CreateHandle();
+    request->stream_ =
+        CreateOutgoingReliableStreamImpl(request->traffic_annotation())
+            ->CreateHandle();
     return OK;
   }
 
@@ -1043,15 +1048,19 @@ QuicChromiumClientSession::CreateOutgoingDynamicStream() {
   if (!ShouldCreateOutgoingDynamicStream()) {
     return nullptr;
   }
-  QuicChromiumClientStream* stream = CreateOutgoingReliableStreamImpl();
+
+  // TODO(https://crbug.com/656607): Add proper annotation.
+  QuicChromiumClientStream* stream =
+      CreateOutgoingReliableStreamImpl(NO_TRAFFIC_ANNOTATION_BUG_656607);
   return stream;
 }
 
 QuicChromiumClientStream*
-QuicChromiumClientSession::CreateOutgoingReliableStreamImpl() {
+QuicChromiumClientSession::CreateOutgoingReliableStreamImpl(
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(connection()->connected());
-  QuicChromiumClientStream* stream =
-      new QuicChromiumClientStream(GetNextOutgoingStreamId(), this, net_log_);
+  QuicChromiumClientStream* stream = new QuicChromiumClientStream(
+      GetNextOutgoingStreamId(), this, net_log_, traffic_annotation);
   ActivateStream(base::WrapUnique(stream));
   ++num_total_streams_;
   UMA_HISTOGRAM_COUNTS_1M("Net.QuicSession.NumOpenStreams",
@@ -1246,14 +1255,18 @@ QuicChromiumClientSession::CreateIncomingDynamicStream(QuicStreamId id) {
   if (!ShouldCreateIncomingDynamicStream(id)) {
     return nullptr;
   }
-  return CreateIncomingReliableStreamImpl(id);
+  // TODO(https://crbug.com/656607): Add proper annotation.
+  return CreateIncomingReliableStreamImpl(id, NO_TRAFFIC_ANNOTATION_BUG_656607);
 }
 
 QuicChromiumClientStream*
-QuicChromiumClientSession::CreateIncomingReliableStreamImpl(QuicStreamId id) {
+QuicChromiumClientSession::CreateIncomingReliableStreamImpl(
+    QuicStreamId id,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(connection()->connected());
+
   QuicChromiumClientStream* stream =
-      new QuicChromiumClientStream(id, this, net_log_);
+      new QuicChromiumClientStream(id, this, net_log_, traffic_annotation);
   stream->CloseWriteSide();
   ActivateStream(base::WrapUnique(stream));
   ++num_total_streams_;
@@ -1299,7 +1312,8 @@ void QuicChromiumClientSession::OnClosedStream() {
                         base::TimeTicks::Now() - request->pending_start_time_);
     stream_requests_.pop_front();
     request->OnRequestCompleteSuccess(
-        CreateOutgoingReliableStreamImpl()->CreateHandle());
+        CreateOutgoingReliableStreamImpl(request->traffic_annotation())
+            ->CreateHandle());
   }
 
   if (GetNumOpenOutgoingStreams() == 0 && stream_factory_) {

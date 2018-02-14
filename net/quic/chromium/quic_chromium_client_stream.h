@@ -24,6 +24,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/quic/core/quic_spdy_stream.h"
 #include "net/quic/platform/api/quic_string_piece.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 
@@ -195,9 +196,11 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
     DISALLOW_COPY_AND_ASSIGN(Handle);
   };
 
-  QuicChromiumClientStream(QuicStreamId id,
-                           QuicSpdyClientSessionBase* session,
-                           const NetLogWithSource& net_log);
+  QuicChromiumClientStream(
+      QuicStreamId id,
+      QuicSpdyClientSessionBase* session,
+      const NetLogWithSource& net_log,
+      const NetworkTrafficAnnotationTag& traffic_annotation);
 
   ~QuicChromiumClientStream() override;
 

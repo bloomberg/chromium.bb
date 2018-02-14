@@ -223,7 +223,8 @@ class QuicProxyClientSocketTest
     EXPECT_THAT(session_->CryptoConnect(callback.callback()), IsOk());
     EXPECT_TRUE(session_->IsCryptoHandshakeConfirmed());
 
-    EXPECT_THAT(session_handle_->RequestStream(true, callback.callback()),
+    EXPECT_THAT(session_handle_->RequestStream(true, callback.callback(),
+                                               TRAFFIC_ANNOTATION_FOR_TESTS),
                 IsOk());
     std::unique_ptr<QuicChromiumClientStream::Handle> stream_handle =
         session_handle_->ReleaseStream();
