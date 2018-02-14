@@ -25,6 +25,8 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
             ('CSSPropertiesWriter requires 3 input json5 files, ' +
              'got {}.'.format(len(json5_file_paths)))
 
+        self.template_cache = {}
+
         # Map of property method name -> (return_type, parameters)
         self._property_methods = {}
         property_methods = json5_generator.Json5File.load_from_files(
@@ -69,7 +71,8 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
 
     def generate_property_h_builder(self, property_classname, property_):
         @template_expander.use_jinja(
-            'core/css/properties/templates/CSSPropertySubclass.h.tmpl')
+            'core/css/properties/templates/CSSPropertySubclass.h.tmpl',
+            template_cache=self.template_cache)
         def generate_property_h():
             return {
                 'input_files': self._input_files,
@@ -81,7 +84,8 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
 
     def generate_property_cpp_builder(self, property_classname, property_):
         @template_expander.use_jinja(
-            'core/css/properties/templates/CSSPropertySubclass.cpp.tmpl')
+            'core/css/properties/templates/CSSPropertySubclass.cpp.tmpl',
+            template_cache=self.template_cache)
         def generate_property_cpp():
             return {
                 'input_files': self._input_files,
