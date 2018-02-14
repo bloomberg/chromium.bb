@@ -66,6 +66,11 @@
       showcase::kClassForInstantiationKey : @"SCBubbleCoordinator",
       showcase::kUseCaseKey : @"Bubble",
     },
+    @{
+      showcase::kClassForDisplayKey : @"TabGridViewController",
+      showcase::kClassForInstantiationKey : @"SCTabGridCoordinator",
+      showcase::kUseCaseKey : @"Tab grid",
+    },
   ];
 }
 
