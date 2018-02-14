@@ -1848,7 +1848,7 @@ crbug.com/626703 external/wpt/html/browsers/the-window-object/window-open-noopen
 crbug.com/626703 external/wpt/html/browsers/windows/noreferrer-window-name.html [ Timeout ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/utf-16be.html [ Timeout Crash ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/utf-16le.html [ Timeout ]
-crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/utf-8.html [ Timeout ]
+crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/utf-8.html [ Timeout Crash ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/windows-1251.html [ Timeout ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/windows-1252.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/the-embed-element/embed-represent-nothing-02.html [ Failure ]
