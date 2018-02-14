@@ -1042,15 +1042,6 @@ const FeatureEntry::FeatureVariation kOmniboxUIVerticalMarginVariations[] = {
     {"14px vertical margin", kOmniboxUIVerticalMargin14px,
      arraysize(kOmniboxUIVerticalMargin14px), nullptr}};
 
-const FeatureEntry::FeatureParam kClientPlaceholdersForServerLoFiEnabled[] = {
-    {"replace_server_placeholders", "true"}};
-
-const FeatureEntry::FeatureVariation
-    kClientPlaceholdersForServerLoFiFeatureVariations[] = {
-        {"(replace Server Lo-Fi placeholders)",
-         kClientPlaceholdersForServerLoFiEnabled,
-         arraysize(kClientPlaceholdersForServerLoFiEnabled), nullptr}};
-
 const FeatureEntry::Choice kAsyncImageDecodingChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flags_ui::kGenericExperimentChoiceEnabled,
@@ -2100,10 +2091,7 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_ANDROID
     {"enable-client-lo-fi", flag_descriptions::kEnableClientLoFiName,
      flag_descriptions::kEnableClientLoFiDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         previews::features::kClientLoFi,
-         kClientPlaceholdersForServerLoFiFeatureVariations,
-         "PreviewsClientLoFi")},
+     FEATURE_VALUE_TYPE(previews::features::kClientLoFi)},
     {"enable-noscript-previews", flag_descriptions::kEnableNoScriptPreviewsName,
      flag_descriptions::kEnableNoScriptPreviewsDescription, kOsAll,
      FEATURE_VALUE_TYPE(previews::features::kNoScriptPreviews)},
