@@ -368,8 +368,9 @@ class MoblabVm(object):
     tap_mac_addr = '02:00:00:99:99:01'
     self._WriteToMoblabDiskImage('private-network-macaddr.conf', [tap_mac_addr])
     disk_path = self._config[_CONFIG_MOBLAB_DISK]
-    qemu_args = ['-usb', '-drive', 'id=usb_disk,if=none,file=%s' % disk_path,
-                 '-device', 'usb-storage,drive=usb_disk']
+    qemu_args = ['-drive', 'id=hd,if=none,file=%s' % disk_path,
+                 '-device', 'virtio-scsi-pci,id=scsi',
+                 '-device', 'scsi-hd,drive=hd']
     # moblab grabs some extra consecutive ports for forwarding AFE and devserver
     # to the host.
     next_num += 10
