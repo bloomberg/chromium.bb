@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/strings/string_piece.h"
+
 namespace content {
 
 SignedExchangeHeader::SignedExchangeHeader() = default;
@@ -13,7 +15,11 @@ SignedExchangeHeader::~SignedExchangeHeader() = default;
 
 void SignedExchangeHeader::AddResponseHeader(base::StringPiece name,
                                              base::StringPiece value) {
-  response_headers_.insert(std::make_pair(name, value));
+  std::string name_string;
+  std::string value_string;
+  name.CopyToString(&name_string);
+  value.CopyToString(&value_string);
+  response_headers_[name_string] = value_string;
 }
 
 }  // namespace content
