@@ -21,11 +21,13 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GpuInProcessThreadService
       public base::RefCountedThreadSafe<GpuInProcessThreadService> {
  public:
   GpuInProcessThreadService(
+      bool use_virtualized_gl_context,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       gpu::SyncPointManager* sync_point_manager,
       gpu::MailboxManager* mailbox_manager,
       scoped_refptr<gl::GLShareGroup> share_group,
-      const GpuFeatureInfo& gpu_feature_info);
+      const GpuFeatureInfo& gpu_feature_info,
+      const GpuPreferences& gpu_preferences);
 
   // gpu::InProcessCommandBuffer::Service implementation.
   void ScheduleTask(const base::Closure& task) override;
@@ -40,6 +42,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GpuInProcessThreadService
   friend class base::RefCountedThreadSafe<GpuInProcessThreadService>;
 
   ~GpuInProcessThreadService() override;
+
+  const bool use_virtualized_gl_context_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
