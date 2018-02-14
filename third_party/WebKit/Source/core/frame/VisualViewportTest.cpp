@@ -27,7 +27,7 @@
 #include "platform/geometry/DoubleRect.h"
 #include "platform/graphics/CompositorElementId.h"
 #include "platform/graphics/GraphicsLayer.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/PaintTestConfigurations.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
@@ -71,14 +71,10 @@ void configureAndroidCompositing(WebSettings* settings) {
 }
 
 typedef bool TestParamRootLayerScrolling;
-class VisualViewportTest
-    : public ::testing::Test,
-      public ::testing::WithParamInterface<TestParamRootLayerScrolling>,
-      private ScopedRootLayerScrollingForTest {
+class VisualViewportTest : public ::testing::Test,
+                           public PaintTestConfigurations {
  public:
-  VisualViewportTest()
-      : ScopedRootLayerScrollingForTest(GetParam()),
-        base_url_("http://www.test.com/") {}
+  VisualViewportTest() : base_url_("http://www.test.com/") {}
 
   void InitializeWithDesktopSettings(
       void (*override_settings_func)(WebSettings*) = nullptr) {
@@ -147,7 +143,10 @@ class VisualViewportTest
   FrameTestHelpers::WebViewHelper helper_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, VisualViewportTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(
+    All,
+    VisualViewportTest,
+    ::testing::ValuesIn(kAllSlimmingPaintTestConfigurations));
 
 // Test that resizing the VisualViewport works as expected and that resizing the
 // WebView resizes the VisualViewport.
@@ -382,6 +381,9 @@ TEST_P(VisualViewportTest, TestResizeAfterHorizontalScroll) {
 // Test that the container layer gets sized properly if the WebView is resized
 // prior to the VisualViewport being attached to the layer tree.
 TEST_P(VisualViewportTest, TestWebViewResizedBeforeAttachment) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
   InitializeWithDesktopSettings();
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
 
@@ -1516,6 +1518,9 @@ TEST_P(VisualViewportTest,
 // Tests that the layout viewport's scroll layer bounds are updated in a
 // compositing change update. crbug.com/423188.
 TEST_P(VisualViewportTest, TestChangingContentSizeAffectsScrollBounds) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
   InitializeWithAndroidSettings();
   WebView()->Resize(IntSize(100, 150));
 
@@ -1989,6 +1994,9 @@ TEST_P(VisualViewportTest, RotationAnchoringWithRootScroller) {
 // Make sure a composited background-attachment:fixed background gets resized
 // when using inert (non-layout affecting) browser controls.
 TEST_P(VisualViewportTest, ResizeCompositedAndFixedBackground) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl = web_view_helper.Initialize(
       nullptr, nullptr, nullptr, &configureAndroidCompositing);
@@ -2071,6 +2079,9 @@ static void configureAndroidNonCompositing(WebSettings* settings) {
 // Make sure a non-composited background-attachment:fixed background gets
 // resized when using inert (non-layout affecting) browser controls.
 TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl = web_view_helper.Initialize(
       nullptr, nullptr, nullptr, &configureAndroidNonCompositing);
@@ -2125,19 +2136,27 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
   ASSERT_TRUE(invalidation_tracking);
 
   const auto* raster_invalidations = &invalidation_tracking->Invalidations();
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
+      RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    // No raster invalidation is needed because of no change within the root
+    // scrolling layer.
+    EXPECT_EQ(0u, raster_invalidations->size());
+  } else {
+    // Without root-layer-scrolling, the LayoutView is the size of the document
+    // content so invalidating it for background-attachment: fixed
+    // overinvalidates as we should only need to invalidate the viewport size.
+    // With root-layer-scrolling, we should invalidate the entire viewport
+    // height.
+    int expected_height = RuntimeEnabledFeatures::RootLayerScrollingEnabled()
+                              ? page_height
+                              : 1000;
 
-  bool root_layer_scrolling = GetParam();
+    // The entire viewport should have been invalidated.
+    ASSERT_EQ(1u, raster_invalidations->size());
+    EXPECT_EQ(IntRect(0, 0, 640, expected_height),
+              (*raster_invalidations)[0].rect);
+  }
 
-  // Without root-layer-scrolling, the LayoutView is the size of the document
-  // content so invalidating it for background-attachment: fixed
-  // overinvalidates as we should only need to invalidate the viewport size.
-  // With root-layer-scrolling, we should invalidate the entire viewport height.
-  int expectedHeight = root_layer_scrolling ? page_height : 1000;
-
-  // The entire viewport should have been invalidated.
-  EXPECT_EQ(1u, raster_invalidations->size());
-  EXPECT_EQ(IntRect(0, 0, 640, expectedHeight),
-            (*raster_invalidations)[0].rect);
   document->View()->SetTracksPaintInvalidations(false);
 
   invalidation_tracking = document->GetLayoutView()
@@ -2157,11 +2176,19 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
   ASSERT_TRUE(invalidation_tracking);
   raster_invalidations = &invalidation_tracking->Invalidations();
 
-  // Once again, the entire page should have been invalidated.
-  expectedHeight = root_layer_scrolling ? 480 : 1000;
-  EXPECT_EQ(1u, raster_invalidations->size());
-  EXPECT_EQ(IntRect(0, 0, 640, expectedHeight),
-            (*raster_invalidations)[0].rect);
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
+      RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    // No raster invalidation is needed because of no change within the root
+    // scrolling layer.
+    EXPECT_EQ(0u, raster_invalidations->size());
+  } else {
+    // Once again, the entire page should have been invalidated.
+    int expected_height =
+        RuntimeEnabledFeatures::RootLayerScrollingEnabled() ? 480 : 1000;
+    ASSERT_EQ(1u, raster_invalidations->size());
+    EXPECT_EQ(IntRect(0, 0, 640, expected_height),
+              (*raster_invalidations)[0].rect);
+  }
 
   document->View()->SetTracksPaintInvalidations(false);
 }
@@ -2224,21 +2251,24 @@ TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
   ASSERT_EQ(page_width, document->View()->GetLayoutSize().Width());
   ASSERT_EQ(smallest_height, document->View()->GetLayoutSize().Height());
 
-  const RasterInvalidationTracking* invalidation_tracking =
-      document->GetLayoutView()
-          ->Layer()
-          ->GraphicsLayerBacking(document->GetLayoutView())
-          ->GetRasterInvalidationTracking();
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    const RasterInvalidationTracking* invalidation_tracking =
+        document->GetLayoutView()
+            ->Layer()
+            ->GraphicsLayerBacking(document->GetLayoutView())
+            ->GetRasterInvalidationTracking();
 
-  // No invalidations should have occured in LocalFrameView scrolling. If
-  // root-layer-scrolls is on, an invalidation is necessary for now, see the
-  // comment and TODO in LocalFrameView::ViewportSizeChanged.
-  // http://crbug.com/568847.
-  bool root_layer_scrolling = GetParam();
-  if (root_layer_scrolling)
-    EXPECT_TRUE(invalidation_tracking->HasInvalidations());
-  else
-    EXPECT_FALSE(invalidation_tracking->HasInvalidations());
+    // No invalidations should have occured in LocalFrameView scrolling. If
+    // root-layer-scrolls is on, an invalidation is necessary for now, see the
+    // comment and TODO in LocalFrameView::ViewportSizeChanged.
+    // http://crbug.com/568847.
+    if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
+        !RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+      EXPECT_TRUE(invalidation_tracking->HasInvalidations());
+    } else {
+      EXPECT_FALSE(invalidation_tracking->HasInvalidations());
+    }
+  }
 
   document->View()->SetTracksPaintInvalidations(false);
 }
@@ -2271,8 +2301,7 @@ TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
   ASSERT_EQ(page_width, document->View()->GetLayoutSize().Width());
   ASSERT_EQ(page_height, document->View()->GetLayoutSize().Height());
 
-  // The entire viewport should have been invalidated.
-  {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     const RasterInvalidationTracking* invalidation_tracking =
         document->GetLayoutView()
             ->Layer()
@@ -2280,9 +2309,17 @@ TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
             ->GetRasterInvalidationTracking();
     ASSERT_TRUE(invalidation_tracking);
     const auto* raster_invalidations = &invalidation_tracking->Invalidations();
-    ASSERT_EQ(1u, raster_invalidations->size());
-    EXPECT_EQ(IntRect(0, 0, page_width, largest_height),
-              (*raster_invalidations)[0].rect);
+    if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
+        RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+      // No raster invalidation is needed because of no change within the root
+      // scrolling layer.
+      EXPECT_EQ(0u, raster_invalidations->size());
+    } else {
+      // The entire viewport should have been invalidated.
+      ASSERT_EQ(1u, raster_invalidations->size());
+      EXPECT_EQ(IntRect(0, 0, page_width, largest_height),
+                (*raster_invalidations)[0].rect);
+    }
   }
 
   document->View()->SetTracksPaintInvalidations(false);

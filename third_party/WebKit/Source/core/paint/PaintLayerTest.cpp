@@ -8,22 +8,14 @@
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/PaintTestConfigurations.h"
 #include "platform/testing/UnitTestHelpers.h"
 
 namespace blink {
 
-typedef std::pair<bool, bool> SlimmingPaintAndRootLayerScrolling;
-class PaintLayerTest
-    : public ::testing::WithParamInterface<SlimmingPaintAndRootLayerScrolling>,
-      private ScopedSlimmingPaintV2ForTest,
-      private ScopedRootLayerScrollingForTest,
-      public RenderingTest {
+class PaintLayerTest : public PaintTestConfigurations, public RenderingTest {
  public:
-  PaintLayerTest()
-      : ScopedSlimmingPaintV2ForTest(GetParam().first),
-        ScopedRootLayerScrollingForTest(GetParam().second),
-        RenderingTest(SingleChildLocalFrameClient::Create()) {}
+  PaintLayerTest() : RenderingTest(SingleChildLocalFrameClient::Create()) {}
 
  protected:
   PaintLayer* GetPaintLayerByElementId(const char* id) {
@@ -31,13 +23,10 @@ class PaintLayerTest
   }
 };
 
-SlimmingPaintAndRootLayerScrolling g_foo[] = {
-    SlimmingPaintAndRootLayerScrolling(false, false),
-    SlimmingPaintAndRootLayerScrolling(true, false),
-    SlimmingPaintAndRootLayerScrolling(false, true),
-    SlimmingPaintAndRootLayerScrolling(true, true)};
-
-INSTANTIATE_TEST_CASE_P(All, PaintLayerTest, ::testing::ValuesIn(g_foo));
+INSTANTIATE_TEST_CASE_P(
+    All,
+    PaintLayerTest,
+    ::testing::ValuesIn(kAllSlimmingPaintTestConfigurations));
 
 TEST_P(PaintLayerTest, ChildWithoutPaintLayer) {
   SetBodyInnerHTML(
@@ -300,8 +289,11 @@ TEST_P(PaintLayerTest, NonCompositedScrollingNeedsRepaint) {
                                                      kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_EQ(LayoutPoint(-1000, -1000), content_layer->Location());
-  EXPECT_TRUE(content_layer->NeedsRepaint());
   EXPECT_TRUE(scroll_layer->NeedsRepaint());
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    EXPECT_FALSE(content_layer->NeedsRepaint());
+  else
+    EXPECT_TRUE(content_layer->NeedsRepaint());
   GetDocument().View()->UpdateAllLifecyclePhases();
 }
 
@@ -581,9 +573,15 @@ TEST_P(PaintLayerTest, PaintInvalidationOnNonCompositedScroll) {
   scroller->GetScrollableArea()->SetScrollOffset(ScrollOffset(0, 20),
                                                  kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(LayoutRect(0, 10, 50, 10),
-            content_layer->FirstFragment().VisualRect());
-  EXPECT_EQ(LayoutRect(0, 10, 50, 5), content->FirstFragment().VisualRect());
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    EXPECT_EQ(LayoutRect(0, 30, 50, 10),
+              content_layer->FirstFragment().VisualRect());
+    EXPECT_EQ(LayoutRect(0, 30, 50, 5), content->FirstFragment().VisualRect());
+  } else {
+    EXPECT_EQ(LayoutRect(0, 10, 50, 10),
+              content_layer->FirstFragment().VisualRect());
+    EXPECT_EQ(LayoutRect(0, 10, 50, 5), content->FirstFragment().VisualRect());
+  }
 }
 
 TEST_P(PaintLayerTest, PaintInvalidationOnCompositedScroll) {

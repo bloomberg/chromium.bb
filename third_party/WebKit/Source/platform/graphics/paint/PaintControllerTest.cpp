@@ -2188,7 +2188,7 @@ class PaintControllerUnderInvalidationTest
     GetPaintController().CommitNewDisplayItems();
   }
 
-  void TestChangeNonCacheableInSubsequence() {
+  void TestChangeNonDrawingInSubsequence() {
     FakeDisplayItemClient container("container");
     FakeDisplayItemClient content("content");
     GraphicsContext context(GetPaintController());
@@ -2293,8 +2293,9 @@ TEST_F(PaintControllerUnderInvalidationTest, LessDrawingInSubsequence) {
   EXPECT_DEATH(TestLessDrawingInSubsequence(), "");
 }
 
-TEST_F(PaintControllerUnderInvalidationTest, ChangeNonCacheableInSubsequence) {
-  EXPECT_DEATH(TestChangeNonCacheableInSubsequence(), "");
+TEST_F(PaintControllerUnderInvalidationTest, ChangeNonDrawingInSubsequence) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    EXPECT_DEATH(TestChangeNonDrawingInSubsequence(), "");
 }
 
 TEST_F(PaintControllerUnderInvalidationTest, InvalidationInSubsequence) {
