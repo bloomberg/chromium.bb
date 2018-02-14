@@ -13,10 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
-namespace base {
-class SequencedTaskRunner;
-}  // namespace base
-
 using base::android::ScopedJavaLocalRef;
 
 namespace device {
@@ -56,9 +52,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterAndroid final
   bool IsInitialized() const override;
   bool IsPresent() const override;
   bool IsPowered() const override;
-  void SetPowered(bool powered,
-                  const base::Closure& callback,
-                  const ErrorCallback& error_callback) override;
   bool IsDiscoverable() const override;
   void SetDiscoverable(bool discoverable,
                        const base::Closure& callback,
@@ -118,6 +111,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterAndroid final
   ~BluetoothAdapterAndroid() override;
 
   // BluetoothAdapter:
+  bool SetPoweredImpl(bool powered) override;
   void AddDiscoverySession(
       BluetoothDiscoveryFilter* discovery_filter,
       const base::Closure& callback,
@@ -134,8 +128,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterAndroid final
       BluetoothDevice::PairingDelegate* pairing_delegate) override;
 
   void PurgeTimedOutDevices();
-
-  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
 
   // Java object org.chromium.device.bluetooth.ChromeBluetoothAdapter.
   base::android::ScopedJavaGlobalRef<jobject> j_adapter_;

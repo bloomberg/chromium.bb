@@ -18,7 +18,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -1360,6 +1359,12 @@ void BluetoothAdapterBlueZ::OnPropertyChangeCompleted(
   } else {
     error_callback.Run();
   }
+}
+
+// BluetoothAdapterBlueZ should override SetPowered() instead.
+bool BluetoothAdapterBlueZ::SetPoweredImpl(bool powered) {
+  NOTREACHED();
+  return false;
 }
 
 void BluetoothAdapterBlueZ::AddDiscoverySession(

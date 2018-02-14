@@ -140,6 +140,8 @@ class TestBluetoothAdapter : public BluetoothAdapter {
  protected:
   ~TestBluetoothAdapter() override = default;
 
+  bool SetPoweredImpl(bool powered) override { return false; }
+
   void AddDiscoverySession(
       BluetoothDiscoveryFilter* discovery_filter,
       const base::Closure& callback,
@@ -722,12 +724,10 @@ TEST_F(BluetoothTest, MAYBE_TogglePowerFakeAdapter) {
   EXPECT_EQ(2, observer.powered_changed_count());
 }
 
-#if defined(OS_MACOSX)
-// The following tests should be implemented on Android as well once pending
-// SetPowered() callbacks are stored (https://crbug.com/803105). These tests are
-// not relevant for BlueZ and Windows. On these platforms the corresponding
-// system APIs are blocking or use callbacks, so that it is not necessary to
-// store pending callbacks and wait for the appropriate events.
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
+// These tests are not relevant for BlueZ and Windows. On these platforms the
+// corresponding system APIs are blocking or use callbacks, so that it is not
+// necessary to store pending callbacks and wait for the appropriate events.
 TEST_F(BluetoothTest, TogglePowerFakeAdapter_Twice) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
@@ -858,7 +858,7 @@ TEST_F(BluetoothTest, TogglePowerFakeAdapter_DestroyWithPending) {
   scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(error_callback_called);
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
 TEST_F(BluetoothTest, TogglePowerBeforeScan) {
@@ -872,6 +872,7 @@ TEST_F(BluetoothTest, TogglePowerBeforeScan) {
   // Turn off adapter.
   adapter_->SetPowered(false, GetCallback(Call::EXPECTED),
                        GetErrorCallback(Call::NOT_EXPECTED));
+  scoped_task_environment_.RunUntilIdle();
   ASSERT_FALSE(adapter_->IsPowered());
   EXPECT_EQ(1, observer.powered_changed_count());
 
@@ -881,6 +882,7 @@ TEST_F(BluetoothTest, TogglePowerBeforeScan) {
   // Turn on adapter.
   adapter_->SetPowered(true, GetCallback(Call::EXPECTED),
                        GetErrorCallback(Call::NOT_EXPECTED));
+  scoped_task_environment_.RunUntilIdle();
   ASSERT_TRUE(adapter_->IsPowered());
   EXPECT_EQ(2, observer.powered_changed_count());
 

@@ -240,15 +240,29 @@ class Fakes {
 
         @Override
         public boolean disable() {
-            mPowered = false;
-            nativeOnFakeAdapterStateChanged(mNativeBluetoothTestAndroid, false);
+            // android.bluetooth.BluetoothAdapter::disable() is an async call, so we simulate this
+            // by posting a task to the UI thread.
+            nativePostTaskFromJava(mNativeBluetoothTestAndroid, new Runnable() {
+                @Override
+                public void run() {
+                    mPowered = false;
+                    nativeOnFakeAdapterStateChanged(mNativeBluetoothTestAndroid, false);
+                }
+            });
             return true;
         }
 
         @Override
         public boolean enable() {
-            mPowered = true;
-            nativeOnFakeAdapterStateChanged(mNativeBluetoothTestAndroid, true);
+            // android.bluetooth.BluetoothAdapter::enable() is an async call, so we simulate this by
+            // posting a task to the UI thread.
+            nativePostTaskFromJava(mNativeBluetoothTestAndroid, new Runnable() {
+                @Override
+                public void run() {
+                    mPowered = true;
+                    nativeOnFakeAdapterStateChanged(mNativeBluetoothTestAndroid, true);
+                }
+            });
             return true;
         }
 

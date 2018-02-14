@@ -20,7 +20,6 @@
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -81,7 +80,7 @@ base::WeakPtr<BluetoothAdapterMac> BluetoothAdapterMac::CreateAdapter() {
 base::WeakPtr<BluetoothAdapterMac> BluetoothAdapterMac::CreateAdapterForTest(
     std::string name,
     std::string address,
-    scoped_refptr<base::SequencedTaskRunner> ui_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   BluetoothAdapterMac* adapter = new BluetoothAdapterMac();
   adapter->InitForTest(ui_task_runner);
   adapter->name_ = name;
@@ -116,6 +115,9 @@ BluetoothAdapterMac::BluetoothAdapterMac()
     : BluetoothAdapter(),
       classic_powered_(false),
       num_discovery_sessions_(0),
+      controller_state_function_(
+          base::BindRepeating(&BluetoothAdapterMac::GetHostControllerState,
+                              base::Unretained(this))),
       power_state_function_(
           base::BindRepeating(IOBluetoothPreferenceSetControllerPowerState)),
       should_update_name_(true),
@@ -147,11 +149,6 @@ BluetoothAdapterMac::~BluetoothAdapterMac() {
   // while being destroyed after this method. |devices_| is owned by
   // BluetoothAdapter.
   low_energy_central_manager_.reset();
-
-  // If there's a pending powered request, run its error callback.
-  if (set_powered_callbacks_) {
-    set_powered_callbacks_->error_callback.Run();
-  }
 }
 
 std::string BluetoothAdapterMac::GetAddress() const {
@@ -165,14 +162,9 @@ std::string BluetoothAdapterMac::GetName() const {
 
   IOBluetoothHostController* controller =
       [IOBluetoothHostController defaultController];
-  if (controller == nil) {
-    name_ = std::string();
-  } else {
-    name_ = base::SysNSStringToUTF8([controller nameAsString]);
-    if (!name_.empty()) {
-      should_update_name_ = false;
-    }
-  }
+  name_ = controller != nil ? base::SysNSStringToUTF8([controller nameAsString])
+                            : std::string();
+  should_update_name_ = name_.empty();
   return name_;
 }
 
@@ -198,33 +190,6 @@ bool BluetoothAdapterMac::IsPresent() const {
 
 bool BluetoothAdapterMac::IsPowered() const {
   return classic_powered_ || IsLowEnergyPowered();
-}
-
-void BluetoothAdapterMac::SetPowered(bool powered,
-                                     const base::Closure& callback,
-                                     const ErrorCallback& error_callback) {
-  if (!IsLowEnergyAvailable()) {
-    // macOS APIs for this method are only available when BLE is available.
-    ui_task_runner_->PostTask(FROM_HERE, error_callback);
-    return;
-  }
-
-  if (set_powered_callbacks_) {
-    // Only allow one pending callback at a time.
-    ui_task_runner_->PostTask(FROM_HERE, error_callback);
-    return;
-  }
-
-  if (powered == IsLowEnergyPowered()) {
-    ui_task_runner_->PostTask(FROM_HERE, callback);
-    return;
-  }
-
-  set_powered_callbacks_ = std::make_unique<SetPoweredCallbacks>();
-  set_powered_callbacks_->powered = powered;
-  set_powered_callbacks_->callback = callback;
-  set_powered_callbacks_->error_callback = error_callback;
-  power_state_function_.Run(base::strict_cast<int>(powered));
 }
 
 // TODO(krstnmnlsn): If this information is retrievable form IOBluetooth we
@@ -336,11 +301,28 @@ bool BluetoothAdapterMac::IsLowEnergyAvailable() {
   return base::mac::IsAtLeastOS10_10();
 }
 
+bool BluetoothAdapterMac::SetPoweredImpl(bool powered) {
+  power_state_function_.Run(base::strict_cast<int>(powered));
+  return true;
+}
+
 void BluetoothAdapterMac::RemovePairingDelegateInternal(
     BluetoothDevice::PairingDelegate* pairing_delegate) {}
 
-BluetoothAdapterMac::SetPoweredCallbacks::SetPoweredCallbacks() = default;
-BluetoothAdapterMac::SetPoweredCallbacks::~SetPoweredCallbacks() = default;
+BluetoothAdapterMac::HostControllerState
+BluetoothAdapterMac::GetHostControllerState() {
+  HostControllerState state;
+  IOBluetoothHostController* controller =
+      [IOBluetoothHostController defaultController];
+  if (controller != nil) {
+    state.classic_powered =
+        ([controller powerState] == kBluetoothHCIPowerStateON);
+    state.address = BluetoothDevice::CanonicalizeAddress(
+        base::SysNSStringToUTF8([controller addressAsString]));
+    state.is_present = !state.address.empty();
+  }
+  return state;
+}
 
 void BluetoothAdapterMac::SetCentralManagerForTesting(
     CBCentralManager* central_manager) {
@@ -353,6 +335,11 @@ void BluetoothAdapterMac::SetCentralManagerForTesting(
 
 CBCentralManager* BluetoothAdapterMac::GetCentralManager() {
   return low_energy_central_manager_;
+}
+
+void BluetoothAdapterMac::SetHostControllerStateFunctionForTesting(
+    HostControllerStateFunction controller_state_function) {
+  controller_state_function_ = std::move(controller_state_function);
 }
 
 void BluetoothAdapterMac::SetPowerStateFunctionForTesting(
@@ -482,38 +469,27 @@ void BluetoothAdapterMac::Init() {
 }
 
 void BluetoothAdapterMac::InitForTest(
-    scoped_refptr<base::SequencedTaskRunner> ui_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   ui_task_runner_ = ui_task_runner;
 }
 
 void BluetoothAdapterMac::PollAdapter() {
-  bool was_present = IsPresent();
-  std::string address;
-  bool classic_powered = false;
-  IOBluetoothHostController* controller =
-      [IOBluetoothHostController defaultController];
+  const bool was_present = IsPresent();
+  HostControllerState state = controller_state_function_.Run();
 
-  if (controller != nil) {
-    address = BluetoothDevice::CanonicalizeAddress(
-        base::SysNSStringToUTF8([controller addressAsString]));
-    classic_powered = ([controller powerState] == kBluetoothHCIPowerStateON);
+  if (address_ != state.address)
+    should_update_name_ = true;
+  address_ = std::move(state.address);
 
-    if (address != address_)
-      should_update_name_ = true;
+  if (was_present != state.is_present) {
+    for (auto& observer : observers_)
+      observer.AdapterPresentChanged(this, state.is_present);
   }
 
-  bool is_present = !address.empty();
-  address_ = address;
-
-  if (was_present != is_present) {
-    for (auto& observer : observers_)
-      observer.AdapterPresentChanged(this, is_present);
-  }
-
-  if (classic_powered_ != classic_powered) {
-    classic_powered_ = classic_powered;
-    for (auto& observer : observers_)
-      observer.AdapterPoweredChanged(this, classic_powered_);
+  if (classic_powered_ != state.classic_powered) {
+    classic_powered_ = state.classic_powered;
+    DidChangePoweredState();
+    NotifyAdapterPoweredChanged(classic_powered_);
   }
 
   RemoveTimedOutDevices();
@@ -656,17 +632,6 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
 void BluetoothAdapterMac::LowEnergyCentralManagerUpdatedState() {
   VLOG(1) << "Central manager state updated: "
           << [low_energy_central_manager_ state];
-
-  if (set_powered_callbacks_) {
-    // Move into a local variable to clear out both callbacks at the end of the
-    // scope and to allow scheduling another SetPowered() call in either of the
-    // callbacks.
-    std::unique_ptr<SetPoweredCallbacks> callbacks =
-        std::move(set_powered_callbacks_);
-    callbacks->powered == IsLowEnergyPowered()
-        ? std::move(callbacks->callback).Run()
-        : callbacks->error_callback.Run();
-  }
 
   // A state with a value lower than CBCentralManagerStatePoweredOn implies that
   // scanning has stopped and that any connected peripherals have been
