@@ -34,6 +34,12 @@ AccountInfo::AccountInfo()
 AccountInfo::AccountInfo(const AccountInfo& other) = default;
 AccountInfo::~AccountInfo() {}
 
+bool AccountInfo::IsEmpty() const {
+  return account_id.empty() && email.empty() && gaia.empty() &&
+         hosted_domain.empty() && full_name.empty() && given_name.empty() &&
+         locale.empty() && picture_url.empty();
+}
+
 bool AccountInfo::IsValid() const {
   return !account_id.empty() && !email.empty() && !gaia.empty() &&
          !hosted_domain.empty() && !full_name.empty() && !given_name.empty() &&

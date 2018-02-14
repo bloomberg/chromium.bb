@@ -32,6 +32,7 @@ class PasswordFormManager;
 }
 
 class AccountChooserPrompt;
+struct AccountInfo;
 class AutoSigninFirstRunPrompt;
 class ManagePasswordsIconView;
 class PasswordDialogController;
@@ -127,7 +128,7 @@ class ManagePasswordsUIController
   void NavigateToSmartLockHelpPage() override;
   void NavigateToPasswordManagerAccountDashboard() override;
   void NavigateToPasswordManagerSettingsPage() override;
-  void NavigateToChromeSignIn() override;
+  void EnableSync(const AccountInfo& account) override;
   void OnDialogHidden() override;
   bool AuthenticateUser() override;
   bool ArePasswordsRevealedWhenBubbleIsOpened() const override;

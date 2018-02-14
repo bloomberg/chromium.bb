@@ -25,6 +25,7 @@ namespace password_manager {
 class PasswordFormMetricsRecorder;
 }
 
+struct AccountInfo;
 class PasswordsModelDelegate;
 class Profile;
 
@@ -90,9 +91,9 @@ class ManagePasswordsBubbleModel {
   void OnPasswordAction(const autofill::PasswordForm& password_form,
                         PasswordAction action);
 
-  // Called by the view when the "Sign in" button in the promo bubble is
-  // clicked.
-  void OnSignInToChromeClicked();
+  // Called by the view when the "Sign in" button or the "Sync to" button in the
+  // promo bubble is clicked.
+  void OnSignInToChromeClicked(const AccountInfo& account);
 
   // Called by the view when the "No thanks" button in the promo bubble is
   // clicked.

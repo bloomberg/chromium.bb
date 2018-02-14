@@ -3857,6 +3857,7 @@ static_library("test_support") {
     ]
     deps += [
       "//chrome/test:test_support_ui",
+      "//components/signin/core/browser",
       "//components/zoom",
     ]
   }

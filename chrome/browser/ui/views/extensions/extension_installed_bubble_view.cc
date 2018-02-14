@@ -16,6 +16,7 @@
 #include "build/buildflag.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -53,7 +54,6 @@
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/views/sync/dice_bubble_sync_promo_view.h"
 #endif
 
@@ -146,10 +146,7 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
   void Init() override;
 
   // BubbleSyncPromoDelegate:
-  void ShowBrowserSignin() override;
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  void EnableSync(const AccountInfo& account_info) override;
-#endif
+  void OnEnableSync(const AccountInfo& account_info) override;
 
   // views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
@@ -309,21 +306,12 @@ void ExtensionInstalledBubbleView::Init() {
   }
 }
 
-void ExtensionInstalledBubbleView::ShowBrowserSignin() {
-  chrome::ShowBrowserSignin(
-      browser(),
-      signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE);
-  CloseBubble(BUBBLE_CLOSE_NAVIGATED);
-}
-
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-void ExtensionInstalledBubbleView::EnableSync(const AccountInfo& account) {
+void ExtensionInstalledBubbleView::OnEnableSync(const AccountInfo& account) {
   signin_ui_util::EnableSync(
       browser(), account,
       signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE);
   CloseBubble(BUBBLE_CLOSE_NAVIGATED);
 }
-#endif
 
 void ExtensionInstalledBubbleView::LinkClicked(views::Link* source,
                                                int event_flags) {

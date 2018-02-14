@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/cocoa/passwords/passwords_bubble_utils.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/signin/core/browser/account_info.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -107,7 +108,7 @@
 - (void)onSignInClicked:(id)sender {
   ManagePasswordsBubbleModel* model = [self.delegate model];
   if (model)
-    model->OnSignInToChromeClicked();
+    model->OnSignInToChromeClicked(AccountInfo());
   [self.delegate viewShouldDismiss];
 }
 

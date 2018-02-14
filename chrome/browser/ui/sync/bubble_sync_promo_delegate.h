@@ -5,22 +5,16 @@
 #ifndef CHROME_BROWSER_UI_SYNC_BUBBLE_SYNC_PROMO_DELEGATE_H_
 #define CHROME_BROWSER_UI_SYNC_BUBBLE_SYNC_PROMO_DELEGATE_H_
 
-#include "components/signin/core/browser/account_info.h"
+struct AccountInfo;
 
-#include "build/buildflag.h"
-#include "components/signin/core/browser/signin_features.h"
-
+// Delegate for the bubble sync promo view.
 class BubbleSyncPromoDelegate {
  public:
   virtual ~BubbleSyncPromoDelegate() {}
 
-  // Shows the chrome sign-in page.
-  virtual void ShowBrowserSignin() = 0;
-
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  // Enables sync for |account|.
-  virtual void EnableSync(const AccountInfo& account) = 0;
-#endif
+  // Informs the delegate to enable sync for |account| or to present
+  // the browser sign-in page if |account| is empty.
+  virtual void OnEnableSync(const AccountInfo& account) = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_SYNC_BUBBLE_SYNC_PROMO_DELEGATE_H_

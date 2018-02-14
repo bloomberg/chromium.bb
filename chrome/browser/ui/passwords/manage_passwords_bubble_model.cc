@@ -504,13 +504,16 @@ void ManagePasswordsBubbleModel::OnPasswordAction(
     password_store->AddLogin(password_form);
 }
 
-void ManagePasswordsBubbleModel::OnSignInToChromeClicked() {
+void ManagePasswordsBubbleModel::OnSignInToChromeClicked(
+    const AccountInfo& account) {
+  // Enabling sync for an existing account and starting a new sign-in are
+  // triggered by the user interacting with the sign-in promo.
   interaction_keeper_->set_sign_in_promo_dismissal_reason(
       metrics_util::CHROME_SIGNIN_OK);
   GetProfile()->GetPrefs()->SetBoolean(
       password_manager::prefs::kWasSignInPasswordPromoClicked, true);
   if (delegate_)
-    delegate_->NavigateToChromeSignIn();
+    delegate_->EnableSync(account);
 }
 
 void ManagePasswordsBubbleModel::OnSkipSignInClicked() {

@@ -23,7 +23,12 @@ struct AccountInfo {
   std::string picture_url;
   bool is_child_account;
 
+  // Returns true if all fields in the account info are empty.
+  bool IsEmpty() const;
+
+  // Returns true if all fields in this account info are filled.
   bool IsValid() const;
+
   // Updates the empty fields of |this| with |other|. Returns whether at least
   // one field was updated.
   bool UpdateWith(const AccountInfo& other);

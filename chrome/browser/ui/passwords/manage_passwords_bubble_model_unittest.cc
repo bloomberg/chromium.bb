@@ -28,6 +28,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/ukm/ukm_source.h"
 #include "content/public/browser/web_contents.h"
@@ -102,6 +103,11 @@ class TestSyncService : public browser_sync::ProfileSyncServiceMock {
 std::unique_ptr<KeyedService> TestingSyncFactoryFunction(
     content::BrowserContext* context) {
   return std::make_unique<TestSyncService>(static_cast<Profile*>(context));
+}
+
+MATCHER_P(AccountEq, expected, "") {
+  return expected.account_id == arg.account_id && expected.email == arg.email &&
+         expected.gaia == arg.gaia;
 }
 
 }  // namespace
@@ -386,12 +392,17 @@ TEST_F(ManagePasswordsBubbleModelTest, SignInPromoOK) {
   model()->OnSaveClicked();
 
   EXPECT_TRUE(model()->ReplaceToShowPromotionIfNeeded());
-  EXPECT_CALL(*controller(), NavigateToChromeSignIn());
-  model()->OnSignInToChromeClicked();
+
+  AccountInfo account;
+  account.account_id = "foo_account_id";
+  account.gaia = "foo_gaia_id";
+  account.email = "foo@bar.com";
+  EXPECT_CALL(*controller(), EnableSync(AccountEq(account)));
+  model()->OnSignInToChromeClicked(account);
   DestroyModelAndVerifyControllerExpectations();
   histogram_tester.ExpectUniqueSample(
-      kUIDismissalReasonMetric,
-      password_manager::metrics_util::CLICKED_SAVE, 1);
+      kUIDismissalReasonMetric, password_manager::metrics_util::CLICKED_SAVE,
+      1);
   histogram_tester.ExpectUniqueSample(
       kSignInPromoDismissalReasonMetric,
       password_manager::metrics_util::CHROME_SIGNIN_OK, 1);

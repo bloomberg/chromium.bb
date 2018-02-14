@@ -12,16 +12,13 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "components/signin/core/browser/signin_features.h"
-
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/signin_ui_util.h"
-#endif
 
 BookmarkBubbleSignInDelegate::BookmarkBubbleSignInDelegate(Browser* browser)
-    : browser_(browser),
-      profile_(browser->profile()) {
+    : browser_(browser), profile_(browser->profile()->GetOriginalProfile()) {
+  if (profile_ != browser_->profile())
+    browser_ = nullptr;
+
   BrowserList::AddObserver(this);
 }
 
@@ -29,14 +26,7 @@ BookmarkBubbleSignInDelegate::~BookmarkBubbleSignInDelegate() {
   BrowserList::RemoveObserver(this);
 }
 
-void BookmarkBubbleSignInDelegate::ShowBrowserSignin() {
-  EnsureBrowser();
-  chrome::ShowBrowserSignin(
-      browser_, signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE);
-}
-
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-void BookmarkBubbleSignInDelegate::EnableSync(const AccountInfo& account) {
+void BookmarkBubbleSignInDelegate::OnEnableSync(const AccountInfo& account) {
   EnsureBrowser();
   signin_ui_util::EnableSync(
       browser_, account,
@@ -45,7 +35,6 @@ void BookmarkBubbleSignInDelegate::EnableSync(const AccountInfo& account) {
   // TODO(msarda): Close the bookmarks bubble once the enable sync flow has
   // started.
 }
-#endif
 
 void BookmarkBubbleSignInDelegate::OnBrowserRemoved(Browser* browser) {
   if (browser == browser_)
@@ -54,10 +43,8 @@ void BookmarkBubbleSignInDelegate::OnBrowserRemoved(Browser* browser) {
 
 void BookmarkBubbleSignInDelegate::EnsureBrowser() {
   if (!browser_) {
-    Profile* original_profile = profile_->GetOriginalProfile();
-    browser_ = chrome::FindLastActiveWithProfile(original_profile);
-    if (!browser_) {
-      browser_ = new Browser(Browser::CreateParams(original_profile, true));
-    }
+    browser_ = chrome::FindLastActiveWithProfile(profile_);
+    if (!browser_)
+      browser_ = new Browser(Browser::CreateParams(profile_, true));
   }
 }
