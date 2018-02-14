@@ -15,7 +15,9 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "chrome/browser/media/router/discovery/media_sink_discovery_metrics.h"
+#include "chrome/browser/media/router/providers/wired_display/wired_display_presentation_receiver.h"
 #include "chrome/common/media_router/media_route_provider_helper.h"
+#include "chrome/common/media_router/media_status.h"
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/display/display.h"
@@ -36,6 +38,8 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
   static const MediaRouteProviderId kProviderId;
 
   static std::string GetSinkIdForDisplay(const display::Display& display);
+
+  static std::string GetRouteDescription(const std::string& media_source);
 
   WiredDisplayMediaRouteProvider(mojom::MediaRouteProviderRequest request,
                                  mojom::MediaRouterPtr media_router,
@@ -110,17 +114,45 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
   virtual display::Display GetPrimaryDisplay() const;
 
  private:
-  struct Presentation {
+  class Presentation {
    public:
-    Presentation(const MediaRoute& route,
-                 std::unique_ptr<WiredDisplayPresentationReceiver> receiver);
+    explicit Presentation(const MediaRoute& route);
     Presentation(Presentation&& other);
     ~Presentation();
 
-    MediaRoute route;
-    std::unique_ptr<WiredDisplayPresentationReceiver> receiver;
+    // Updates the title for the presentation page, and notifies media status
+    // observers if the title changed.
+    void UpdatePresentationTitle(const std::string& title);
+
+    void SetMojoConnections(mojom::MediaControllerRequest media_controller,
+                            mojom::MediaStatusObserverPtr observer);
+
+    // Resets the Mojo connections to media controller and status observer.
+    void ResetMojoConnections();
+
+    const MediaRoute& route() const { return route_; }
+
+    WiredDisplayPresentationReceiver* receiver() const {
+      return receiver_.get();
+    }
+
+    void set_receiver(
+        std::unique_ptr<WiredDisplayPresentationReceiver> receiver) {
+      receiver_ = std::move(receiver);
+    }
 
    private:
+    MediaRoute route_;
+    std::unique_ptr<WiredDisplayPresentationReceiver> receiver_;
+    MediaStatus status_;
+
+    // |media_controller_request| is retained but not used.
+    mojom::MediaControllerRequest media_controller_request_;
+
+    // |media_status_observer|, when set, gets notified whenever |status|
+    // changes.
+    mojom::MediaStatusObserverPtr media_status_observer_;
+
     DISALLOW_COPY_AND_ASSIGN(Presentation);
   };
 
@@ -137,14 +169,10 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
   // observers.
   void RemovePresentationById(const std::string& presentation_id);
 
-  // Updates the description for the route associated with |presentation_id|,
-  // and notifies route observers if the description changed.
-  void UpdateRouteDescription(const std::string& presentation_id,
-                              const std::string& title);
-
-  Presentation CreatePresentation(const std::string& presentation_id,
-                                  const display::Display& display,
-                                  const MediaRoute& media_route);
+  std::unique_ptr<WiredDisplayPresentationReceiver> CreatePresentationReceiver(
+      const std::string& presentation_id,
+      Presentation* presentation,
+      const display::Display& display);
 
   // Terminates all presentation receivers on |display|.
   void TerminatePresentationsOnDisplay(const display::Display& display);

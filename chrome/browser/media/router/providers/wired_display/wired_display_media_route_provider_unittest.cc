@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/media/router/providers/wired_display/wired_display_presentation_receiver.h"
 #include "chrome/browser/media/router/providers/wired_display/wired_display_presentation_receiver_factory.h"
+#include "chrome/browser/media/router/test/media_router_mojo_test.h"
 #include "chrome/browser/media/router/test/mock_mojo_media_router.h"
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "chrome/test/base/testing_profile.h"
@@ -310,6 +311,7 @@ TEST_F(WiredDisplayMediaRouteProviderTest, CreateAndTerminateRoute) {
           Invoke([&presentation_id](const base::Optional<MediaRoute>& route) {
             EXPECT_TRUE(route.has_value());
             EXPECT_EQ(route->media_route_id(), presentation_id);
+            EXPECT_EQ(route->description(), "Presenting (www.example.com)");
           })));
   EXPECT_CALL(router_,
               OnRoutesUpdated(kProviderId, _, kPresentationSource, IsEmpty()))
@@ -317,6 +319,7 @@ TEST_F(WiredDisplayMediaRouteProviderTest, CreateAndTerminateRoute) {
           Invoke([&presentation_id](const std::vector<MediaRoute>& routes) {
             EXPECT_EQ(routes.size(), 1u);
             EXPECT_EQ(routes[0].media_route_id(), presentation_id);
+            EXPECT_EQ(routes[0].description(), "Presenting (www.example.com)");
           })));
   EXPECT_CALL(*receiver_creator_.receiver(),
               Start(presentation_id, GURL(kPresentationSource)));
@@ -325,16 +328,6 @@ TEST_F(WiredDisplayMediaRouteProviderTest, CreateAndTerminateRoute) {
       url::Origin::Create(GURL(kPresentationSource)), 0,
       base::TimeDelta::FromSeconds(100), false,
       base::BindOnce(&MockCallback::CreateRoute, base::Unretained(&callback)));
-  base::RunLoop().RunUntilIdle();
-
-  const std::string new_description = "New Page Description";
-  EXPECT_CALL(router_, OnRoutesUpdated(kProviderId, _, kPresentationSource, _))
-      .WillOnce(WithArg<1>(
-          Invoke([&new_description](const std::vector<MediaRoute>& routes) {
-            EXPECT_EQ(routes.size(), 1u);
-            EXPECT_EQ(routes[0].description(), new_description);
-          })));
-  receiver_creator_.receiver()->RunTitleChangeCallback(new_description);
   base::RunLoop().RunUntilIdle();
 
   // Terminate the route.
@@ -351,6 +344,39 @@ TEST_F(WiredDisplayMediaRouteProviderTest, CreateAndTerminateRoute) {
   EXPECT_CALL(router_, OnRoutesUpdated(kProviderId, IsEmpty(),
                                        kPresentationSource, IsEmpty()));
   receiver_creator_.receiver()->RunTerminationCallback();
+}
+
+TEST_F(WiredDisplayMediaRouteProviderTest, SendMediaStatusUpdate) {
+  const std::string presentation_id = "presentationId";
+  const std::string page_title = "Presentation Page Title";
+  MockCallback callback;
+
+  provider_->set_all_displays({secondary_display1_, primary_display_});
+  provider_pointer_->StartObservingMediaRoutes(kPresentationSource);
+  base::RunLoop().RunUntilIdle();
+
+  // Create a route for |presentation_id|.
+  provider_pointer_->CreateRoute(
+      kPresentationSource, GetSinkId(secondary_display1_), presentation_id,
+      url::Origin::Create(GURL(kPresentationSource)), 0,
+      base::TimeDelta::FromSeconds(100), false,
+      base::BindOnce(&MockCallback::CreateRoute, base::Unretained(&callback)));
+  base::RunLoop().RunUntilIdle();
+
+  mojom::MediaControllerPtr media_controller_ptr;
+  mojom::MediaStatusObserverPtr status_observer_ptr;
+  MockMediaStatusObserver status_observer(
+      mojo::MakeRequest(&status_observer_ptr));
+  provider_pointer_->CreateMediaRouteController(
+      presentation_id, mojo::MakeRequest(&media_controller_ptr),
+      std::move(status_observer_ptr), base::BindOnce([](bool success) {}));
+
+  EXPECT_CALL(status_observer, OnMediaStatusUpdated(_))
+      .WillOnce(Invoke([&page_title](const MediaStatus& status) {
+        EXPECT_EQ(status.title, page_title);
+      }));
+  receiver_creator_.receiver()->RunTitleChangeCallback(page_title);
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace media_router
