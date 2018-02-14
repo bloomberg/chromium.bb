@@ -128,7 +128,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
 #else  // OS_ANDROID
-#include "ui/message_center/public/cpp/message_center_switches.h"
+#include "ui/message_center/public/cpp/features.h"
 #endif  // OS_ANDROID
 
 #if defined(OS_CHROMEOS)
@@ -1974,10 +1974,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-message-center-new-style-notification",
      flag_descriptions::kMessageCenterNewStyleNotificationName,
      flag_descriptions::kMessageCenterNewStyleNotificationDescription,
-     kOsDesktop,
-     ENABLE_DISABLE_VALUE_TYPE(
-         message_center::switches::kEnableMessageCenterNewStyleNotification,
-         message_center::switches::kDisableMessageCenterNewStyleNotification)},
+     kOsDesktop, FEATURE_VALUE_TYPE(message_center::kNewStyleNotifications)},
     {"enable-policy-tool", flag_descriptions::kEnablePolicyToolName,
      flag_descriptions::kEnablePolicyToolDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kPolicyTool)},

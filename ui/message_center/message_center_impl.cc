@@ -22,7 +22,6 @@
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/popup_timers_controller.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/message_center/public/cpp/message_center_switches.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 

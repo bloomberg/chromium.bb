@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
@@ -51,7 +52,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/message_center/public/cpp/message_center_switches.h"
+#include "ui/message_center/public/cpp/features.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
@@ -481,7 +482,7 @@ PlatformNotificationServiceImpl::CreateNotificationFromData(
   message_center::RichNotificationData optional_fields;
 
   optional_fields.settings_button_handler =
-      message_center::IsNewStyleNotificationEnabled()
+      base::FeatureList::IsEnabled(message_center::kNewStyleNotifications)
           ? message_center::SettingsButtonHandler::INLINE
           : message_center::SettingsButtonHandler::DELEGATE;
 

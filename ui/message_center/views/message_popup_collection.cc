@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -19,8 +20,8 @@
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_list.h"
+#include "ui/message_center/public/cpp/features.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/message_center/public/cpp/message_center_switches.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/ui_controller.h"
 #include "ui/message_center/views/message_view.h"
@@ -61,7 +62,7 @@ MessagePopupCollection::MessagePopupCollection(
   message_center_->AddObserver(this);
   alignment_delegate_->set_collection(this);
 #if !defined(OS_CHROMEOS)
-  if (!message_center::IsNewStyleNotificationEnabled())
+  if (!base::FeatureList::IsEnabled(message_center::kNewStyleNotifications))
     context_menu_controller_.reset(new MessageViewContextMenuController());
 #endif
 }
