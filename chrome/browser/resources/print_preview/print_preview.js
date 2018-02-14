@@ -566,7 +566,8 @@ cr.define('print_preview', function() {
       }
       const destination = assert(this.destinationStore_.selectedDestination);
       const whenPrintDone = this.sendPrintRequest_(destination);
-      if (destination.isLocal) {
+      if (destination.isLocal ||
+          this.uiState_ == PrintPreviewUiState_.OPENING_PDF_PREVIEW) {
         const onError = destination.id ==
                 print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ?
             this.onFileSelectionCancel_.bind(this) :
