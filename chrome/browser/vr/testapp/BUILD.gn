@@ -48,7 +48,7 @@ process_version("assets_component_version_header") {
 
 grit("vr_testapp_resources") {
   source = "vr_testapp_resources.grd"
-  defines = [ "background_image_available=$is_chrome_branded" ]
+  defines = [ "is_chrome_branded=$is_chrome_branded" ]
   outputs = [
     "grit/vr_testapp_resources.h",
     "vr_testapp_resources.pak",

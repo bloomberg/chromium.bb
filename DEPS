@@ -1325,7 +1325,7 @@ hooks = [
                '--bucket', 'chrome-vr-assets',
                '--recursive',
                '--directory',
-               'src/chrome/browser/resources/vr/assets',
+               'src/chrome/browser/resources/vr/assets/google_chrome',
     ],
   },
   {

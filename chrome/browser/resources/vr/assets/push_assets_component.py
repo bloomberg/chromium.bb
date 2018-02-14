@@ -42,8 +42,8 @@ def main():
   assets_dir = os.path.dirname(os.path.abspath(__file__))
 
   files = []
-  with open(
-      os.path.join(assets_dir, 'vr_assets_component_files.json')) as json_file:
+  with open(os.path.join(assets_dir,
+                         'vr_assets_component_files.json')) as json_file:
     files = json.load(json_file)
 
   version = None
@@ -61,16 +61,20 @@ def main():
     zip_path = os.path.join(zip_dir, 'vr-assets.zip')
 
     os.makedirs(zip_dir)
+    zip_files = []
     with zipfile.ZipFile(zip_path, 'w') as zip:
       for file in files:
         file_path = os.path.join(assets_dir, file)
         zip.write(file_path, os.path.basename(file_path), zipfile.ZIP_DEFLATED)
+      for info in zip.infolist():
+        zip_files.append(info.filename)
 
     # Upload component.
     command = ['gsutil', 'cp', '-nR', '.', DEST_BUCKET]
     PrintInfo('Going to run the following command', [' '.join(command)])
     PrintInfo('In directory', [temp_dir])
     PrintInfo('Which pushes the following file', [zip_path])
+    PrintInfo('Which contains the files', zip_files)
 
     if raw_input('\nAre you sure (y/N) ').lower() != 'y':
       print 'aborting'

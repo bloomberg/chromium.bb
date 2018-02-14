@@ -1,6 +1,6 @@
 [
-  "background.png",
-  "fullscreen_gradient.png",
-  "incognito_gradient.png",
-  "normal_gradient.png"
+  "google_chrome/background.png",
+  "google_chrome/fullscreen_gradient.png",
+  "google_chrome/incognito_gradient.png",
+  "google_chrome/normal_gradient.png"
 ]
