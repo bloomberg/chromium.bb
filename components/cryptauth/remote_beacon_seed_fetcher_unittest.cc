@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #include "components/cryptauth/cryptauth_client.h"
-#include "components/cryptauth/cryptauth_device_manager.h"
+#include "components/cryptauth/fake_cryptauth_device_manager.h"
 #include "components/cryptauth/remote_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,14 +38,6 @@ const int64_t fake_beacon_seed4_end_ms = 3000L;
 
 const std::string public_key1 = "publicKey1";
 const std::string public_key2 = "publicKey2";
-
-class MockDeviceManager : public CryptAuthDeviceManager {
- public:
-  MockDeviceManager() {}
-  ~MockDeviceManager() override {}
-
-  MOCK_CONST_METHOD0(GetSyncedDevices, std::vector<ExternalDeviceInfo>());
-};
 
 ExternalDeviceInfo CreateFakeInfo1() {
   BeaconSeed seed1;
@@ -91,13 +83,13 @@ class CryptAuthRemoteBeaconSeedFetcherTest : public testing::Test {
       : fake_info1_(CreateFakeInfo1()), fake_info2_(CreateFakeInfo2()) {}
 
   void SetUp() override {
-    mock_device_manager_ = std::make_unique<MockDeviceManager>();
+    fake_device_manager_ = std::make_unique<FakeCryptAuthDeviceManager>();
     fetcher_ = std::make_unique<StrictMock<RemoteBeaconSeedFetcher>>(
-        mock_device_manager_.get());
+        fake_device_manager_.get());
   }
 
   std::unique_ptr<RemoteBeaconSeedFetcher> fetcher_;
-  std::unique_ptr<MockDeviceManager> mock_device_manager_;
+  std::unique_ptr<FakeCryptAuthDeviceManager> fake_device_manager_;
 
   const ExternalDeviceInfo fake_info1_;
   const ExternalDeviceInfo fake_info2_;
@@ -112,18 +104,14 @@ TEST_F(CryptAuthRemoteBeaconSeedFetcherTest, TestRemoteDeviceWithNoPublicKey) {
 }
 
 TEST_F(CryptAuthRemoteBeaconSeedFetcherTest, TestNoSyncedDevices) {
-  EXPECT_CALL(*mock_device_manager_, GetSyncedDevices())
-      .WillOnce(Return(std::vector<ExternalDeviceInfo>()));
-
   std::vector<BeaconSeed> seeds;
   EXPECT_FALSE(fetcher_->FetchSeedsForDeviceId(
       RemoteDevice::GenerateDeviceId(public_key1), &seeds));
 }
 
 TEST_F(CryptAuthRemoteBeaconSeedFetcherTest, TestDeviceHasDifferentPublicKey) {
-  std::vector<ExternalDeviceInfo> device_infos = {fake_info1_, fake_info2_};
-  EXPECT_CALL(*mock_device_manager_, GetSyncedDevices())
-      .WillOnce(Return(device_infos));
+  fake_device_manager_->set_synced_devices(
+      std::vector<ExternalDeviceInfo>{fake_info1_, fake_info2_});
 
   std::vector<BeaconSeed> seeds;
   EXPECT_FALSE(fetcher_->FetchSeedsForDeviceId(
@@ -131,10 +119,8 @@ TEST_F(CryptAuthRemoteBeaconSeedFetcherTest, TestDeviceHasDifferentPublicKey) {
 }
 
 TEST_F(CryptAuthRemoteBeaconSeedFetcherTest, TestSuccess) {
-  std::vector<ExternalDeviceInfo> device_infos = {fake_info1_, fake_info2_};
-  EXPECT_CALL(*mock_device_manager_, GetSyncedDevices())
-      .Times(2)
-      .WillRepeatedly(Return(device_infos));
+  fake_device_manager_->set_synced_devices(
+      std::vector<ExternalDeviceInfo>{fake_info1_, fake_info2_});
 
   std::vector<BeaconSeed> seeds1;
   ASSERT_TRUE(fetcher_->FetchSeedsForDeviceId(

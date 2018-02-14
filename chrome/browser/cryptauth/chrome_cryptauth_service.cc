@@ -18,7 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/cryptauth/cryptauth_client.h"
 #include "components/cryptauth/cryptauth_client_impl.h"
-#include "components/cryptauth/cryptauth_device_manager.h"
+#include "components/cryptauth/cryptauth_device_manager_impl.h"
 #include "components/cryptauth/cryptauth_enroller.h"
 #include "components/cryptauth/cryptauth_enroller_impl.h"
 #include "components/cryptauth/cryptauth_enrollment_utils.h"
@@ -172,7 +172,7 @@ std::unique_ptr<ChromeCryptAuthService> ChromeCryptAuthService::Create(
           profile->GetPrefs());
 
   std::unique_ptr<cryptauth::CryptAuthDeviceManager> device_manager =
-      base::MakeUnique<cryptauth::CryptAuthDeviceManager>(
+      base::MakeUnique<cryptauth::CryptAuthDeviceManagerImpl>(
           base::DefaultClock::GetInstance(),
           CreateCryptAuthClientFactoryImpl(profile), gcm_manager.get(),
           profile->GetPrefs());

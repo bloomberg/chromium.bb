@@ -8,31 +8,24 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/time/clock.h"
-#include "base/time/time.h"
-#include "components/cryptauth/cryptauth_gcm_manager.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/cryptauth/sync_scheduler.h"
 
-class PrefService;
 class PrefRegistrySimple;
 
 namespace cryptauth {
 
-class CryptAuthClient;
-class CryptAuthClientFactory;
-
-// This class manages syncing and storing the user's phones that are registered
-// with CryptAuth and are capable of unlocking the user's other devices. These
-// phones are called "unlock keys".
-// The manager periodically syncs the user's devices from CryptAuth to keep the
-// list of unlock keys fresh. If a sync attempts fails, the manager will
-// schedule the next sync more aggressively to recover.
-class CryptAuthDeviceManager : public SyncScheduler::Delegate,
-                               public CryptAuthGCMManager::Observer {
+// Manages syncing and storing the user's devices that are registered with
+// CryptAuth.
+//
+// CryptAuthDeviceManager periodically syncs the user's devices from CryptAuth
+// to keep the list of unlock keys fresh. If a sync attempts fails, the manager
+// will schedule the next sync more aggressively to recover.
+class CryptAuthDeviceManager {
  public:
+  // Registers the prefs used by this class to the given |registry|.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
   // Respresents the success result of a sync attempt.
   enum class SyncResult { SUCCESS, FAILURE };
 
@@ -54,77 +47,53 @@ class CryptAuthDeviceManager : public SyncScheduler::Delegate,
     virtual void OnSyncFinished(SyncResult sync_result,
                                 DeviceChangeResult device_change_result) {}
 
-    virtual ~Observer() {}
+    virtual ~Observer() = default;
   };
 
-  // Creates the manager:
-  // |clock|: Used to determine the time between sync attempts.
-  // |client_factory|: Creates CryptAuthClient instances to perform each sync.
-  // |gcm_manager|: Notifies when GCM push messages trigger device syncs.
-  //                Not owned and must outlive this instance.
-  // |pref_service|: Stores syncing metadata and unlock key information to
-  //                 persist across browser restarts. Must already be registered
-  //                 with RegisterPrefs().
-  CryptAuthDeviceManager(base::Clock* clock,
-                         std::unique_ptr<CryptAuthClientFactory> client_factory,
-                         CryptAuthGCMManager* gcm_manager,
-                         PrefService* pref_service);
+  CryptAuthDeviceManager();
+  virtual ~CryptAuthDeviceManager();
 
-  ~CryptAuthDeviceManager() override;
-
-  // Registers the prefs used by this class to the given |registry|.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Starts device manager to begin syncing devices.
-  void Start();
-
-  // Adds an observer.
-  void AddObserver(Observer* observer);
-
-  // Removes an observer.
-  void RemoveObserver(Observer* observer);
+  virtual void Start() = 0;
 
   // Skips the waiting period and forces a sync immediately. If a
   // sync attempt is already in progress, this function does nothing.
   // |invocation_reason| specifies the reason that the sync was triggered,
   // which is upload to the server.
-  void ForceSyncNow(InvocationReason invocation_reason);
+  virtual void ForceSyncNow(InvocationReason invocation_reason) = 0;
 
   // Returns the timestamp of the last successful sync. If no sync
   // has ever been made, then returns a null base::Time object.
-  base::Time GetLastSyncTime() const;
+  virtual base::Time GetLastSyncTime() const = 0;
 
   // Returns the time to the next sync attempt.
-  base::TimeDelta GetTimeToNextAttempt() const;
+  virtual base::TimeDelta GetTimeToNextAttempt() const = 0;
 
   // Returns true if a device sync attempt is currently in progress.
-  bool IsSyncInProgress() const;
+  virtual bool IsSyncInProgress() const = 0;
 
   // Returns true if the last device sync failed and the manager is now
   // scheduling sync attempts more aggressively to recover. If no enrollment
   // has ever been recorded, then this function will also return true.
-  bool IsRecoveringFromFailure() const;
+  virtual bool IsRecoveringFromFailure() const = 0;
 
   // Returns a list of all remote devices that have been synced.
-  virtual std::vector<ExternalDeviceInfo> GetSyncedDevices() const;
+  virtual std::vector<ExternalDeviceInfo> GetSyncedDevices() const = 0;
 
   // Returns a list of remote devices that can unlock the user's other devices.
-  virtual std::vector<ExternalDeviceInfo> GetUnlockKeys() const;
+  virtual std::vector<ExternalDeviceInfo> GetUnlockKeys() const = 0;
   // Like GetUnlockKeys(), but only returns Pixel devices.
-  virtual std::vector<ExternalDeviceInfo> GetPixelUnlockKeys() const;
+  virtual std::vector<ExternalDeviceInfo> GetPixelUnlockKeys() const = 0;
 
   // Returns a list of remote devices that can host tether hotspots.
-  virtual std::vector<ExternalDeviceInfo> GetTetherHosts() const;
+  virtual std::vector<ExternalDeviceInfo> GetTetherHosts() const = 0;
   // Like GetTetherHosts(), but only returns Pixel devices.
-  virtual std::vector<ExternalDeviceInfo> GetPixelTetherHosts() const;
+  virtual std::vector<ExternalDeviceInfo> GetPixelTetherHosts() const = 0;
 
  protected:
-  // Empty constructor, to be used by tests to mock the device manager. Do not
-  // use this constructor outside of tests.
-  CryptAuthDeviceManager();
-
-  void SetSyncSchedulerForTest(std::unique_ptr<SyncScheduler> sync_scheduler);
-
   // Invokes OnSyncStarted() on all observers.
   void NotifySyncStarted();
 
@@ -134,53 +103,7 @@ class CryptAuthDeviceManager : public SyncScheduler::Delegate,
                           DeviceChangeResult device_change_result);
 
  private:
-  // CryptAuthGCMManager::Observer:
-  void OnResyncMessage() override;
-
-  // Updates |unlock_keys_| by fetching the list stored in |pref_service_|.
-  void UpdateUnlockKeysFromPrefs();
-
-  // SyncScheduler::Delegate:
-  void OnSyncRequested(
-      std::unique_ptr<SyncScheduler::SyncRequest> sync_request) override;
-
-  // Callback when |cryptauth_client_| completes with the response.
-  void OnGetMyDevicesSuccess(const GetMyDevicesResponse& response);
-  void OnGetMyDevicesFailure(const std::string& error);
-
-  // Used to determine the time.
-  base::Clock* clock_;
-
-  // Creates CryptAuthClient instances for each sync attempt.
-  std::unique_ptr<CryptAuthClientFactory> client_factory_;
-
-  // Notifies when GCM push messages trigger device sync. Not owned and must
-  // outlive this instance.
-  CryptAuthGCMManager* gcm_manager_;
-
-  // Contains preferences that outlive the lifetime of this object and across
-  // process restarts. |pref_service_| must outlive the lifetime of this
-  // instance.
-  PrefService* const pref_service_;
-
-  // All devices currently synced from CryptAuth.
-  std::vector<ExternalDeviceInfo> synced_devices_;
-
-  // Schedules the time between device sync attempts.
-  std::unique_ptr<SyncScheduler> scheduler_;
-
-  // Contains the SyncRequest that |scheduler_| requests when a device sync
-  // attempt is made.
-  std::unique_ptr<SyncScheduler::SyncRequest> sync_request_;
-
-  // The CryptAuthEnroller instance for the current sync attempt. A new
-  // instance will be created for each individual attempt.
-  std::unique_ptr<CryptAuthClient> cryptauth_client_;
-
-  // List of observers.
   base::ObserverList<Observer> observers_;
-
-  base::WeakPtrFactory<CryptAuthDeviceManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CryptAuthDeviceManager);
 };
