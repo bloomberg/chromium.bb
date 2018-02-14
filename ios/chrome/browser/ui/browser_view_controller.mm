@@ -1449,6 +1449,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_printController dismissAnimated:YES];
   _printController = nil;
   [self.dispatcher dismissToolsMenu];
+  [self.dispatcher dismissHistoryPopup];
   [_contextMenuCoordinator stop];
   [self dismissRateThisAppDialog];
 

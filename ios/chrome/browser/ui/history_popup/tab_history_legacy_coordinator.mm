@@ -88,6 +88,33 @@ using base::UserMetricsAction;
   [self presentTabHistoryPopupWithItems:forwardItems origin:origin];
 }
 
+- (void)dismissHistoryPopup {
+  if (!self.tabHistoryPopupController)
+    return;
+  __block TabHistoryPopupController* tempController =
+      self.tabHistoryPopupController;
+  [tempController containerView].userInteractionEnabled = NO;
+  [tempController dismissAnimatedWithCompletion:^{
+    [self.tabHistoryUIUpdater updateUIForTabHistoryWasDismissed];
+    // Reference tempTHPC so the block retains it.
+    tempController = nil;
+  }];
+  // Reset _tabHistoryPopupController to prevent -applicationDidEnterBackground
+  // from posting another kTabHistoryPopupWillHideNotification.
+  self.tabHistoryPopupController = nil;
+
+  // Stop listening for notifications since these are only used to dismiss the
+  // Tab History Popup.
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:kTabHistoryPopupWillHideNotification
+                    object:nil];
+
+  // Reenable fullscreen since the popup is dismissed.
+  [self didStopFullscreenDisablingUI];
+}
+
 - (void)navigateToHistoryItem:(const web::NavigationItem*)item {
   [[self.tabModel currentTab] goToItem:item];
   [self dismissPopupMenu:nil];
@@ -142,34 +169,6 @@ using base::UserMetricsAction;
                     selector:@selector(applicationDidEnterBackground:)
                         name:UIApplicationDidEnterBackgroundNotification
                       object:nil];
-}
-
-// Dismiss the presented Tab History Popup.
-- (void)dismissHistoryPopup {
-  if (!self.tabHistoryPopupController)
-    return;
-  __block TabHistoryPopupController* tempController =
-      self.tabHistoryPopupController;
-  [tempController containerView].userInteractionEnabled = NO;
-  [tempController dismissAnimatedWithCompletion:^{
-    [self.tabHistoryUIUpdater updateUIForTabHistoryWasDismissed];
-    // Reference tempTHPC so the block retains it.
-    tempController = nil;
-  }];
-  // Reset _tabHistoryPopupController to prevent -applicationDidEnterBackground
-  // from posting another kTabHistoryPopupWillHideNotification.
-  self.tabHistoryPopupController = nil;
-
-  // Stop listening for notifications since these are only used to dismiss the
-  // Tab History Popup.
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kTabHistoryPopupWillHideNotification
-                    object:nil];
-
-  // Reenable fullscreen since the popup is dismissed.
-  [self didStopFullscreenDisablingUI];
 }
 
 #pragma mark - PopupMenuDelegate
