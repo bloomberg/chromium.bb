@@ -53,6 +53,9 @@ bool g_include_thread_names = false;
 
 // Whether to sample allocations.
 bool g_sample_allocations = false;
+
+// Sampling rate describes the probability of sampling small allocations.
+// Probability = MIN((size of allocation) / g_sampling_rate, 1).
 uint32_t g_sampling_rate = 0;
 
 // Prime since this is used like a hash table. Numbers of this magnitude seemed
@@ -687,11 +690,19 @@ void AllocatorShimLogAlloc(AllocatorType type,
   if (!send_buffers)
     return;
 
-  if (g_sample_allocations) {
+  // Sample allocations smaller than g_sampling_rate. Always record larger
+  // allocations. [There's no point in sampling larger allocations since we
+  // want to record them with probability 1. Just do that.]
+  if (g_sample_allocations && LIKELY(sz < g_sampling_rate)) {
     ShimState* shim_state = GetShimState();
 
     // Update the sampling interval, if necessary. This also handles the case
     // where the sampling interval has not yet been initialized.
+    //
+    // interval_to_next_sample is actually an underflowing counter that
+    // triggers a sample. Incrementing by GetNextSampleInterval() provides a
+    // poisson process sampling of allocations with probability = (sz /
+    // g_sampling_rate).
     if (shim_state->interval_to_next_sample <= 0) {
       shim_state->interval_to_next_sample +=
           GetNextSampleInterval(g_sampling_rate);
