@@ -20,22 +20,25 @@ class SkBitmap;
 struct ShortcutInfo;
 
 // AddToHomescreenManager is the C++ counterpart of
-// org.chromium.chrome.browser's AddToHomescreenManager in Java. The object
-// is owned by the Java object. It is created from there via a JNI
-// (InitializeAndStart) call and MUST BE DESTROYED via Destroy().
+// org.chromium.chrome.browser's AddToHomescreenManager in Java. This object
+// fetches the data required to add a URL to home screen. It is owned by the
+// Java counterpart, created from there via a JNI Start() call and MUST BE
+// DESTROYED via Destroy().
 class AddToHomescreenManager : public AddToHomescreenDataFetcher::Observer {
  public:
   AddToHomescreenManager(JNIEnv* env, jobject obj);
 
-  // Called by the Java counterpart to destroy its native half.
+  // Called by the Java counterpart to destroy this object.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
-  // Adds a shortcut to the current URL to the Android home screen.
-  void AddShortcut(JNIEnv* env,
-                   const base::android::JavaParamRef<jobject>& obj,
-                   const base::android::JavaParamRef<jstring>& title);
+  // Adds the current URL to the Android home screen using |title|. Depending on
+  // the site, the shortcut may be in the form of a bookmark shortcut or a
+  // WebAPK (which ignores the provided title).
+  void AddToHomescreen(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& obj,
+                       const base::android::JavaParamRef<jstring>& title);
 
-  // Starts the add-to-homescreen process.
+  // Starts the process of fetching data required for add to home screen.
   void Start(content::WebContents* web_contents);
 
  private:
