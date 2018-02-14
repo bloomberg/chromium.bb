@@ -12,7 +12,7 @@ SessionStorageDatabaseAdapter::SessionStorageDatabaseAdapter(
     SessionStorageDatabase* db,
     const std::string& permanent_namespace_id,
     const std::vector<std::string>& original_permanent_namespace_ids,
-    const GURL& origin)
+    const url::Origin& origin)
     : db_(db),
       permanent_namespace_id_(permanent_namespace_id),
       original_permanent_namespace_ids_(original_permanent_namespace_ids),

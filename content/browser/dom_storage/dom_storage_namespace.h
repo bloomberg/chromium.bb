@@ -21,6 +21,10 @@ class ProcessMemoryDump;
 }
 }
 
+namespace url {
+class Origin;
+}
+
 namespace content {
 
 class DOMStorageArea;
@@ -50,18 +54,18 @@ class CONTENT_EXPORT DOMStorageNamespace
   // Returns the storage area for the given origin,
   // creating instance if needed. Each call to open
   // must be balanced with a call to CloseStorageArea.
-  DOMStorageArea* OpenStorageArea(const GURL& origin);
+  DOMStorageArea* OpenStorageArea(const url::Origin& origin);
   void CloseStorageArea(DOMStorageArea* area);
 
   // Returns the area for |origin| if it's open, otherwise NULL.
-  DOMStorageArea* GetOpenStorageArea(const GURL& origin);
+  DOMStorageArea* GetOpenStorageArea(const url::Origin& origin);
 
   // Creates a clone of |this| namespace including
   // shallow copies of all contained areas.
   // Should only be called for session storage namespaces.
   DOMStorageNamespace* Clone(const std::string& clone_namespace_id);
 
-  void DeleteSessionStorageOrigin(const GURL& origin);
+  void DeleteSessionStorageOrigin(const url::Origin& origin);
   void PurgeMemory(bool aggressively);
   void Shutdown();
   void Flush();
@@ -72,9 +76,9 @@ class CONTENT_EXPORT DOMStorageNamespace
   // Adds memory statistics to |pmd| for chrome://tracing.
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd);
 
-  void GetOriginsWithAreas(std::vector<GURL>* origins) const;
+  void GetOriginsWithAreas(std::vector<url::Origin>* origins) const;
 
-  int GetAreaOpenCount(const GURL& origin) const;
+  int GetAreaOpenCount(const url::Origin& origin) const;
 
  private:
   friend class base::RefCountedThreadSafe<DOMStorageNamespace>;
@@ -91,12 +95,12 @@ class CONTENT_EXPORT DOMStorageNamespace
     ~AreaHolder();
     DISALLOW_COPY_AND_ASSIGN(AreaHolder);
   };
-  typedef std::map<GURL, AreaHolder> AreaMap;
+  typedef std::map<url::Origin, AreaHolder> AreaMap;
 
   ~DOMStorageNamespace();
 
   // Returns a pointer to the area holder in our map or NULL.
-  AreaHolder* GetAreaHolder(const GURL& origin);
+  AreaHolder* GetAreaHolder(const url::Origin& origin);
 
   void OnCloneStorageDone();
 

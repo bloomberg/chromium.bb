@@ -12,6 +12,7 @@
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/browser/dom_storage/session_storage_database.h"
 #include "content/common/dom_storage/dom_storage_types.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -28,7 +29,8 @@ DOMStorageNamespace::DOMStorageNamespace(
 DOMStorageNamespace::~DOMStorageNamespace() {
 }
 
-DOMStorageArea* DOMStorageNamespace::OpenStorageArea(const GURL& origin) {
+DOMStorageArea* DOMStorageNamespace::OpenStorageArea(
+    const url::Origin& origin) {
   if (AreaHolder* holder = GetAreaHolder(origin)) {
     ++(holder->open_count_);
 #if defined(OS_ANDROID)
@@ -54,7 +56,8 @@ void DOMStorageNamespace::CloseStorageArea(DOMStorageArea* area) {
   // crbug.com/743187.
 }
 
-DOMStorageArea* DOMStorageNamespace::GetOpenStorageArea(const GURL& origin) {
+DOMStorageArea* DOMStorageNamespace::GetOpenStorageArea(
+    const url::Origin& origin) {
   AreaHolder* holder = GetAreaHolder(origin);
   if (holder && holder->open_count_)
     return holder->area_.get();
@@ -87,7 +90,8 @@ DOMStorageNamespace* DOMStorageNamespace::Clone(
   return clone;
 }
 
-void DOMStorageNamespace::DeleteSessionStorageOrigin(const GURL& origin) {
+void DOMStorageNamespace::DeleteSessionStorageOrigin(
+    const url::Origin& origin) {
   DOMStorageArea* area = OpenStorageArea(origin);
   area->FastClear();
   CloseStorageArea(area);
@@ -163,21 +167,21 @@ void DOMStorageNamespace::OnMemoryDump(
 }
 
 void DOMStorageNamespace::GetOriginsWithAreas(
-    std::vector<GURL>* origins) const {
+    std::vector<url::Origin>* origins) const {
   origins->clear();
   for (const auto& entry : areas_)
     origins->push_back(entry.first);
 }
 
-int DOMStorageNamespace::GetAreaOpenCount(const GURL& origin) const {
+int DOMStorageNamespace::GetAreaOpenCount(const url::Origin& origin) const {
   const auto& found = areas_.find(origin);
   if (found == areas_.end())
     return 0;
   return found->second.open_count_;
 }
 
-DOMStorageNamespace::AreaHolder*
-DOMStorageNamespace::GetAreaHolder(const GURL& origin) {
+DOMStorageNamespace::AreaHolder* DOMStorageNamespace::GetAreaHolder(
+    const url::Origin& origin) {
   AreaMap::iterator found = areas_.find(origin);
   if (found == areas_.end())
     return nullptr;

@@ -353,7 +353,7 @@ class LocalStorageContextMojo::LevelDBWrapperHolder final
     if (context_->old_localstorage_path_.empty())
       return base::FilePath();
     return context_->old_localstorage_path_.Append(
-        DOMStorageArea::DatabaseFileNameFromOrigin(origin_.GetURL()));
+        DOMStorageArea::DatabaseFileNameFromOrigin(origin_));
   }
 
   LocalStorageContextMojo* context_;

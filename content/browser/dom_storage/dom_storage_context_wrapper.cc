@@ -53,7 +53,7 @@ void GetLegacyLocalStorageUsage(
        path = enumerator.Next()) {
     if (path.MatchesExtension(DOMStorageArea::kDatabaseFileExtension)) {
       LocalStorageUsageInfo info;
-      info.origin = DOMStorageArea::OriginFromDatabaseFileName(path);
+      info.origin = DOMStorageArea::OriginFromDatabaseFileName(path).GetURL();
       base::FileEnumerator::FileInfo find_info = enumerator.GetInfo();
       info.data_size = find_info.GetSize();
       info.last_modified = find_info.GetLastModifiedTime();
@@ -230,10 +230,10 @@ void DOMStorageContextWrapper::DeleteLocalStorage(const GURL& origin,
   if (!legacy_localstorage_path_.empty()) {
     context_->task_runner()->PostShutdownBlockingTask(
         FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
-        base::BindOnce(
-            base::IgnoreResult(&sql::Connection::Delete),
-            legacy_localstorage_path_.Append(
-                DOMStorageArea::DatabaseFileNameFromOrigin(origin))));
+        base::BindOnce(base::IgnoreResult(&sql::Connection::Delete),
+                       legacy_localstorage_path_.Append(
+                           DOMStorageArea::DatabaseFileNameFromOrigin(
+                               url::Origin::Create(origin)))));
   }
   // base::Unretained is safe here, because the mojo_state_ won't be deleted
   // until a ShutdownAndDelete task has been ran on the mojo_task_runner_, and

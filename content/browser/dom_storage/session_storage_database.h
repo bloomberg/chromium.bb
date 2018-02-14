@@ -25,7 +25,9 @@
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
-class GURL;
+namespace url {
+class Origin;
+}
 
 namespace leveldb {
 class DB;
@@ -65,7 +67,7 @@ class CONTENT_EXPORT SessionStorageDatabase
   void ReadAreaValues(
       const std::string& namespace_id,
       const std::vector<std::string>& original_permanent_namespace_ids,
-      const GURL& origin,
+      const url::Origin& origin,
       DOMStorageValuesMap* result);
 
   // Updates the data for |namespace_id| and |origin|. Will remove all keys
@@ -75,7 +77,7 @@ class CONTENT_EXPORT SessionStorageDatabase
   // allowed to write data into a shallow copy created by CloneNamespace, and in
   // that case the copy will be made deep before writing the values.
   bool CommitAreaChanges(const std::string& namespace_id,
-                         const GURL& origin,
+                         const url::Origin& origin,
                          bool clear_all_first,
                          const DOMStorageValuesMap& changes);
 
@@ -85,14 +87,14 @@ class CONTENT_EXPORT SessionStorageDatabase
                       const std::string& new_namespace_id);
 
   // Deletes the data for |namespace_id| and |origin|.
-  bool DeleteArea(const std::string& namespace_id, const GURL& origin);
+  bool DeleteArea(const std::string& namespace_id, const url::Origin& origin);
 
   // Deletes the data for |namespace_id|.
   bool DeleteNamespace(const std::string& namespace_id);
 
   // Reads the namespace IDs and origins present in the database.
   bool ReadNamespacesAndOrigins(
-      std::map<std::string, std::vector<GURL> >* namespaces_and_origins);
+      std::map<std::string, std::vector<url::Origin>>* namespaces_and_origins);
 
   // Adds memory statistics to |pmd| for chrome://tracing.
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd);
@@ -170,7 +172,7 @@ class CONTENT_EXPORT SessionStorageDatabase
   // this just overwrites the map id. The caller is responsible for decreasing
   // the ref count.
   bool CreateMapForArea(const std::string& namespace_id,
-                        const GURL& origin,
+                        const url::Origin& origin,
                         std::string* map_id,
                         leveldb::WriteBatch* batch);
   // Reads the contents of the map |map_id| into |result|. If |only_keys| is
@@ -201,7 +203,7 @@ class CONTENT_EXPORT SessionStorageDatabase
   // creates a new map for (|namespace_id|, |origin|). Copies the data from the
   // old map if |copy_data| is true.
   bool DeepCopyArea(const std::string& namespace_id,
-                    const GURL& origin,
+                    const url::Origin& origin,
                     bool copy_data,
                     std::string* map_id,
                     leveldb::WriteBatch* batch);

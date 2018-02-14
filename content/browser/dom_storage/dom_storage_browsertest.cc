@@ -168,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, FileUrlWithHost) {
 IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, DataMigrates) {
   base::FilePath db_path = legacy_localstorage_path().Append(
       DOMStorageArea::DatabaseFileNameFromOrigin(
-          GetTestUrl("dom_storage", "store_data.html")));
+          url::Origin::Create(GetTestUrl("dom_storage", "store_data.html"))));
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
     EXPECT_TRUE(base::CreateDirectory(legacy_localstorage_path()));

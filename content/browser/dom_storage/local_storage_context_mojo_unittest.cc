@@ -660,8 +660,8 @@ TEST_F(LocalStorageContextMojoTest, Migration) {
   key2.push_back(0xd83d);
   key2.push_back(0xde00);
 
-  base::FilePath old_db_path = TempPath().Append(
-      DOMStorageArea::DatabaseFileNameFromOrigin(origin1.GetURL()));
+  base::FilePath old_db_path =
+      TempPath().Append(DOMStorageArea::DatabaseFileNameFromOrigin(origin1));
   {
     DOMStorageDatabase db(old_db_path);
     DOMStorageValuesMap data;

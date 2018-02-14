@@ -89,8 +89,9 @@ const base::FilePath::CharType DOMStorageArea::kDatabaseFileExtension[] =
     FILE_PATH_LITERAL(".localstorage");
 
 // static
-base::FilePath DOMStorageArea::DatabaseFileNameFromOrigin(const GURL& origin) {
-  std::string filename = storage::GetIdentifierFromOrigin(origin);
+base::FilePath DOMStorageArea::DatabaseFileNameFromOrigin(
+    const url::Origin& origin) {
+  std::string filename = storage::GetIdentifierFromOrigin(origin.GetURL());
   // There is no base::FilePath.AppendExtension() method, so start with just the
   // extension as the filename, and then InsertBeforeExtension the desired
   // name.
@@ -99,11 +100,12 @@ base::FilePath DOMStorageArea::DatabaseFileNameFromOrigin(const GURL& origin) {
 }
 
 // static
-GURL DOMStorageArea::OriginFromDatabaseFileName(const base::FilePath& name) {
+url::Origin DOMStorageArea::OriginFromDatabaseFileName(
+    const base::FilePath& name) {
   DCHECK(name.MatchesExtension(kDatabaseFileExtension));
   std::string origin_id =
       name.BaseName().RemoveExtension().MaybeAsASCII();
-  return storage::GetOriginFromIdentifier(origin_id);
+  return url::Origin::Create(storage::GetOriginFromIdentifier(origin_id));
 }
 
 void DOMStorageArea::EnableAggressiveCommitDelay() {
@@ -113,7 +115,7 @@ void DOMStorageArea::EnableAggressiveCommitDelay() {
 
 DOMStorageArea::DOMStorageArea(const std::string& namespace_id,
                                std::vector<std::string> original_namespace_ids,
-                               const GURL& origin,
+                               const url::Origin& origin,
                                SessionStorageDatabase* session_storage_backing,
                                DOMStorageTaskRunner* task_runner)
     : namespace_id_(namespace_id),
@@ -405,7 +407,7 @@ void DOMStorageArea::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
     return;
 
   // Limit the url length to 50 and strip special characters.
-  std::string url = origin_.spec().substr(0, 50);
+  std::string url = origin_.GetURL().spec().substr(0, 50);
   for (size_t index = 0; index < url.size(); ++index) {
     if (!std::isalnum(url[index]))
       url[index] = '_';

@@ -27,7 +27,7 @@
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 #include "url/gurl.h"
-
+#include "url/origin.h"
 
 namespace {
 
@@ -123,7 +123,7 @@ SessionStorageDatabase::~SessionStorageDatabase() {
 void SessionStorageDatabase::ReadAreaValues(
     const std::string& namespace_id,
     const std::vector<std::string>& original_permanent_namespace_ids,
-    const GURL& origin,
+    const url::Origin& origin,
     DOMStorageValuesMap* result) {
   // We don't create a database if it doesn't exist. In that case, there is
   // nothing to be added to the result.
@@ -140,7 +140,8 @@ void SessionStorageDatabase::ReadAreaValues(
 
   std::string map_id;
   bool exists;
-  if (GetMapForArea(namespace_id, origin.spec(), options, &exists, &map_id) &&
+  if (GetMapForArea(namespace_id, origin.GetURL().spec(), options, &exists,
+                    &map_id) &&
       exists)
     ReadMap(map_id, options, result, false);
 
@@ -155,7 +156,7 @@ void SessionStorageDatabase::ReadAreaValues(
   // run before capturing the snapshot.
   for (const auto& original_db_id : original_permanent_namespace_ids) {
     map_id.clear();
-    if (GetMapForArea(original_db_id, origin.spec(), options, &exists,
+    if (GetMapForArea(original_db_id, origin.GetURL().spec(), options, &exists,
                       &map_id) &&
         exists) {
       ReadMap(map_id, options, result, false);
@@ -168,7 +169,7 @@ void SessionStorageDatabase::ReadAreaValues(
 
 bool SessionStorageDatabase::CommitAreaChanges(
     const std::string& namespace_id,
-    const GURL& origin,
+    const url::Origin& origin,
     bool clear_all_first,
     const DOMStorageValuesMap& changes) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -187,8 +188,8 @@ bool SessionStorageDatabase::CommitAreaChanges(
 
   std::string map_id;
   bool exists;
-  if (!GetMapForArea(namespace_id, origin.spec(), leveldb::ReadOptions(),
-                     &exists, &map_id))
+  if (!GetMapForArea(namespace_id, origin.GetURL().spec(),
+                     leveldb::ReadOptions(), &exists, &map_id))
     return false;
   if (exists) {
     int64_t ref_count;
@@ -268,7 +269,7 @@ bool SessionStorageDatabase::CloneNamespace(
 }
 
 bool SessionStorageDatabase::DeleteArea(const std::string& namespace_id,
-                                        const GURL& origin) {
+                                        const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!LazyOpen(false)) {
     // No need to create the database if it doesn't exist.
@@ -276,7 +277,7 @@ bool SessionStorageDatabase::DeleteArea(const std::string& namespace_id,
   }
   DBOperation operation(this);
   leveldb::WriteBatch batch;
-  if (!DeleteAreaHelper(namespace_id, origin.spec(), &batch))
+  if (!DeleteAreaHelper(namespace_id, origin.GetURL().spec(), &batch))
     return false;
   base::ScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
   leveldb::Status s = db_->Write(leveldb::WriteOptions(), &batch);
@@ -313,7 +314,7 @@ bool SessionStorageDatabase::DeleteNamespace(const std::string& namespace_id) {
 }
 
 bool SessionStorageDatabase::ReadNamespacesAndOrigins(
-    std::map<std::string, std::vector<GURL> >* namespaces_and_origins) {
+    std::map<std::string, std::vector<url::Origin>>* namespaces_and_origins) {
   if (!LazyOpen(true))
     return false;
   DBOperation operation(this);
@@ -364,11 +365,12 @@ bool SessionStorageDatabase::ReadNamespacesAndOrigins(
       // Ensure that we keep track of the namespace even if it doesn't contain
       // any origins.
       namespaces_and_origins->insert(
-          std::make_pair(current_namespace_id, std::vector<GURL>()));
+          std::make_pair(current_namespace_id, std::vector<url::Origin>()));
     } else {
       // The key is of the form "namespace-<namespaceid>-<origin>".
       std::string origin = key.substr(current_namespace_start_key.length());
-      (*namespaces_and_origins)[current_namespace_id].push_back(GURL(origin));
+      (*namespaces_and_origins)[current_namespace_id].push_back(
+          url::Origin::Create(GURL(origin)));
     }
   }
   db_->ReleaseSnapshot(options.snapshot);
@@ -633,7 +635,7 @@ bool SessionStorageDatabase::GetMapForArea(const std::string& namespace_id,
 }
 
 bool SessionStorageDatabase::CreateMapForArea(const std::string& namespace_id,
-                                              const GURL& origin,
+                                              const url::Origin& origin,
                                               std::string* map_id,
                                               leveldb::WriteBatch* batch) {
   leveldb::Slice next_map_id_key = NextMapIdKey();
@@ -649,7 +651,8 @@ bool SessionStorageDatabase::CreateMapForArea(const std::string& namespace_id,
       return false;
   }
   batch->Put(next_map_id_key, base::Int64ToString(++next_map_id));
-  std::string namespace_key = NamespaceKey(namespace_id, origin.spec());
+  std::string namespace_key =
+      NamespaceKey(namespace_id, origin.GetURL().spec());
   batch->Put(namespace_key, *map_id);
   batch->Put(MapRefCountKey(*map_id), "1");
   return true;
@@ -767,9 +770,11 @@ bool SessionStorageDatabase::ClearMap(const std::string& map_id,
   return true;
 }
 
-bool SessionStorageDatabase::DeepCopyArea(
-    const std::string& namespace_id, const GURL& origin, bool copy_data,
-    std::string* map_id, leveldb::WriteBatch* batch) {
+bool SessionStorageDatabase::DeepCopyArea(const std::string& namespace_id,
+                                          const url::Origin& origin,
+                                          bool copy_data,
+                                          std::string* map_id,
+                                          leveldb::WriteBatch* batch) {
   // Example, data before deep copy:
   // | namespace-1- (1 = namespace id)| dummy               |
   // | namespace-1-origin1            | 1 (mapid)           |
