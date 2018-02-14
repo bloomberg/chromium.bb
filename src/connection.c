@@ -710,7 +710,8 @@ wl_connection_demarshal(struct wl_connection *connection,
 		if (arg.type != 'h' && p + 1 > end) {
 			wl_log("message too short, "
 			       "object (%d), message %s(%s)\n",
-			       *p, message->name, message->signature);
+			       closure->sender_id, message->name,
+			       message->signature);
 			errno = EINVAL;
 			goto err;
 		}
