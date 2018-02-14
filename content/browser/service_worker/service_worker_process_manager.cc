@@ -62,8 +62,13 @@ void ServiceWorkerProcessManager::Shutdown() {
   // The refcount decrement can be skipped anyway since there's only one
   // process.
   if (!RenderProcessHost::run_renderer_in_process()) {
-    for (const auto& it : worker_process_map_)
-      it.second->GetProcess()->DecrementKeepAliveRefCount();
+    for (const auto& it : worker_process_map_) {
+      if (it.second->HasProcess()) {
+        RenderProcessHost* process = it.second->GetProcess();
+        if (!process->IsKeepAliveRefCountDisabled())
+          process->DecrementKeepAliveRefCount();
+      }
+    }
   }
   worker_process_map_.clear();
 }
@@ -150,7 +155,8 @@ ServiceWorkerStatusCode ServiceWorkerProcessManager::AllocateWorkerProcess(
   }
 
   worker_process_map_.emplace(embedded_worker_id, std::move(site_instance));
-  rph->IncrementKeepAliveRefCount();
+  if (!rph->IsKeepAliveRefCountDisabled())
+    rph->IncrementKeepAliveRefCount();
   out_info->process_id = rph->GetID();
   out_info->start_situation = start_situation;
   return SERVICE_WORKER_OK;
@@ -177,7 +183,11 @@ void ServiceWorkerProcessManager::ReleaseWorkerProcess(int embedded_worker_id) {
   if (it == worker_process_map_.end())
     return;
 
-  it->second->GetProcess()->DecrementKeepAliveRefCount();
+  if (it->second->HasProcess()) {
+    RenderProcessHost* process = it->second->GetProcess();
+    if (!process->IsKeepAliveRefCountDisabled())
+      process->DecrementKeepAliveRefCount();
+  }
   worker_process_map_.erase(it);
 }
 
