@@ -21,6 +21,7 @@
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/gtest_util.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/websockets/websocket_basic_handshake_stream.h"
 #include "net/websockets/websocket_stream.h"
 #include "net/websockets/websocket_test_util.h"
@@ -123,6 +124,8 @@ class WebSocketHandshakeStreamCreateHelperTest : public ::testing::Test {
     request_info.url = GURL("ws://localhost/");
     request_info.method = "GET";
     request_info.load_flags = LOAD_DISABLE_CACHE;
+    request_info.traffic_annotation =
+        MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
     int rv = handshake->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
                                          NetLogWithSource(),
                                          CompletionOnceCallback());
