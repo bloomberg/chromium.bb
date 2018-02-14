@@ -9,7 +9,7 @@
   await TestRunner.addScriptTag('resources/edit-me-breakpoints.js');
 
   function waitAndDumpDecorations(sourceFrame) {
-    return SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrame)
+    return SourcesTestRunner.waitBreakpointSidebarPane(true)
         .then(() => SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrame));
   }
 
