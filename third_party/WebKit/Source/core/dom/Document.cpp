@@ -1417,48 +1417,11 @@ bool Document::HasValidNamespaceForAttributes(const QualifiedName& q_name) {
 // FIXME: This should really be in a possible ElementFactory class
 Element* Document::CreateElement(const QualifiedName& q_name,
                                  CreateElementFlags flags) {
-  Element* element = nullptr;
-
-  // FIXME: Use registered namespaces and look up in a hash to find the right
-  // factory.
-  const AtomicString& local_name = q_name.LocalName();
-  if (q_name.NamespaceURI() == xhtmlNamespaceURI) {
-    element =
-        HTMLElementFactory::CreateRawHTMLElement(local_name, *this, flags);
-    if (!element) {
-      // TODO(dominicc): When the HTML parser can pass an error
-      // reporting ExceptionState, and "v0" custom elements have been
-      // removed, consolidate custom element creation into one place.
-      if (CustomElement::ShouldCreateCustomElement(local_name)) {
-        element = CustomElement::CreateCustomElement(*this, q_name, flags);
-      } else if (RegistrationContext() &&
-                 V0CustomElement::IsValidName(local_name)) {
-        element = RegistrationContext()->CreateCustomTagElement(*this, q_name);
-      } else {
-        element = HTMLUnknownElement::Create(q_name, *this);
-      }
-    }
-  } else if (q_name.NamespaceURI() == SVGNames::svgNamespaceURI) {
-    element = SVGElementFactory::CreateRawSVGElement(local_name, *this, flags);
-    if (!element) {
-      if (RegistrationContext() && V0CustomElement::IsValidName(local_name)) {
-        element = RegistrationContext()->CreateCustomTagElement(*this, q_name);
-      } else {
-        element = SVGUnknownElement::Create(q_name, *this);
-      }
-    }
-  }
-
-  if (element)
-    saw_elements_in_known_namespaces_ = true;
-  else
-    element = Element::Create(q_name, this);
-
-  if (element->prefix() != q_name.Prefix())
-    element->SetTagNameForCreateElementNS(q_name);
-  DCHECK_EQ(q_name, element->TagQName());
-
-  return element;
+  if (CustomElement::ShouldCreateCustomElement(q_name))
+    return CustomElement::CreateCustomElement(*this, q_name, flags);
+  if (RegistrationContext() && V0CustomElement::IsValidName(q_name.LocalName()))
+    return RegistrationContext()->CreateCustomTagElement(*this, q_name);
+  return CreateRawElement(q_name, flags);
 }
 
 String Document::readyState() const {
