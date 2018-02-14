@@ -85,7 +85,6 @@
 #include "components/tracing/common/tracing_switches.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "extensions/features/features.h"
 #include "printing/features/features.h"
 
@@ -224,8 +223,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   InstallableManager::CreateForWebContents(web_contents);
   metrics::RendererUptimeWebContentsObserver::CreateForWebContents(
       web_contents);
-  if (content::IsBrowserSideNavigationEnabled())
-    MixedContentSettingsTabHelper::CreateForWebContents(web_contents);
+  MixedContentSettingsTabHelper::CreateForWebContents(web_contents);
   NavigationCorrectionTabObserver::CreateForWebContents(web_contents);
   NavigationMetricsRecorder::CreateForWebContents(web_contents);
   OutOfMemoryReporter::CreateForWebContents(web_contents);

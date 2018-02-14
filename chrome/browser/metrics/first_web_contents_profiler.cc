@@ -21,7 +21,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 
 namespace {
 
@@ -139,20 +138,6 @@ void FirstWebContentsProfiler::DidStartNavigation(
     FinishedCollectingMetrics(FinishReason::ABANDON_BLOCKING_UI);
     return;
   }
-
-  if (content::IsBrowserSideNavigationEnabled()) {
-    // With PlzNavigate, DidStartNavigation is called synchronously on
-    // browser-initiated loads instead of through an IPC. This means that we
-    // will miss this signal. Instead we record it when the commit completes.
-    return;
-  }
-
-  // The first navigation has to be the main frame's.
-  DCHECK(navigation_handle->IsInMainFrame());
-
-  collected_main_navigation_start_metric_ = true;
-  startup_metric_utils::RecordFirstWebContentsMainNavigationStart(
-      base::TimeTicks::Now(), workload_);
 }
 
 void FirstWebContentsProfiler::DidFinishNavigation(
@@ -186,11 +171,9 @@ void FirstWebContentsProfiler::DidFinishNavigation(
     return;
   }
 
-  if (content::IsBrowserSideNavigationEnabled()) {
-    startup_metric_utils::RecordFirstWebContentsMainNavigationStart(
-        navigation_handle->NavigationStart(), workload_);
-    collected_main_navigation_start_metric_ = true;
-  }
+  startup_metric_utils::RecordFirstWebContentsMainNavigationStart(
+      navigation_handle->NavigationStart(), workload_);
+  collected_main_navigation_start_metric_ = true;
 
   collected_main_navigation_finished_metric_ = true;
   startup_metric_utils::RecordFirstWebContentsMainNavigationFinished(

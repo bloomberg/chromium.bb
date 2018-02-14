@@ -13,7 +13,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -85,10 +84,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSpecialSubframeNavigationsBrowserTest,
       }));
   ASSERT_NE(target, nullptr);
   EXPECT_TRUE(target->GetLastCommittedOrigin().unique());
-
-  EXPECT_EQ(content::AreAllSitesIsolatedForTesting() &&
-                !content::IsBrowserSideNavigationEnabled(),
-            WasParsedScriptElementLoaded(target));
+  EXPECT_FALSE(WasParsedScriptElementLoaded(target));
 }
 
 }  // namespace subresource_filter

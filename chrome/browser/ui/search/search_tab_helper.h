@@ -81,9 +81,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   explicit SearchTabHelper(content::WebContents* web_contents);
 
   // Overridden from contents::WebContentsObserver:
-  void DidStartNavigationToPendingEntry(
-      const GURL& url,
-      content::ReloadType reload_type) override;
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(

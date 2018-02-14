@@ -17,7 +17,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
@@ -562,12 +561,10 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerInteractiveTest,
 #endif
 IN_PROC_BROWSER_TEST_F(BrowserCommandControllerInteractiveTest,
                        MAYBE_ShortcutsShouldTakeEffectInJsFullscreen) {
-  // This test is flaky when browser side navigation is enabled on Linux. See
-  // http://crbug.com/759704.
-  // TODO(zijiehe): Find out the root cause.
+// This test is flaky. See http://crbug.com/759704.
+// TODO(zijiehe): Find out the root cause.
 #if defined(OS_LINUX)
-  if (content::IsBrowserSideNavigationEnabled())
-    return;
+  return;
 #endif
   ASSERT_NO_FATAL_FAILURE(SendShortcutsAndExpectNotPrevented(true));
 }

@@ -29,7 +29,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_thread.h"
@@ -932,14 +931,11 @@ TEST_F(ClientSideDetectionHostTest, UpdateIPUrlMap) {
 }
 
 TEST_F(ClientSideDetectionHostTest, NavigationCancelsShouldClassifyUrl) {
-  if (content::IsBrowserSideNavigationEnabled()) {
-    // PlzNavigate: this test doesn't work because it makes assumption about how
-    // the message loop is run, and those assumptions are wrong when properly
-    // simulating a navigation with browser-side navigations.
-    // TODO(clamy): Fix the test and re-enable for PlzNavigate. See
-    // crbug.com/753357.
-    return;
-  }
+  // This test doesn't work because it makes assumption about how
+  // the message loop is run, and those assumptions are wrong when properly
+  // simulating a navigation with browser-side navigations.
+  // TODO(clamy): Fix the test and re-enable. See crbug.com/753357.
+  return;
   // Test that canceling pending should classify requests works as expected.
 
   GURL first_url("http://first.phishy.url.com");

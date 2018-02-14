@@ -57,7 +57,6 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/referrer.h"
@@ -440,13 +439,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 
   content::RenderFrameHost* frame = FindFrameByName(kSubframeNames[0]);
   ASSERT_TRUE(frame);
-  if (content::IsBrowserSideNavigationEnabled()) {
-    EXPECT_EQ(disallowed_subdocument_url, frame->GetLastCommittedURL());
-    ExpectFramesIncludedInLayout(kSubframeNames, kExpectOnlySecondSubframe);
-  } else {
-    EXPECT_EQ(allowed_empty_subdocument_url, frame->GetLastCommittedURL());
-    ExpectFramesIncludedInLayout(kSubframeNames, kExpectFirstAndSecondSubframe);
-  }
+  EXPECT_EQ(disallowed_subdocument_url, frame->GetLastCommittedURL());
+  ExpectFramesIncludedInLayout(kSubframeNames, kExpectOnlySecondSubframe);
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,

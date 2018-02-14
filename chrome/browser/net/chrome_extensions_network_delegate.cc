@@ -26,7 +26,6 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
 #include "extensions/browser/info_map.h"
@@ -188,10 +187,6 @@ int ChromeExtensionsNetworkDelegateImpl::OnBeforeURLRequest(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     GURL* new_url) {
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request);
-  const GURL& url(request->url());
-
   // NOTE: A redirected URLRequest results in another invocation of
   // OnBeforeURLRequest for the same URLRequest object but in a different state.
   // Therefore we always replace the mapped WebRequestInfo for that URLRequest
@@ -199,52 +194,6 @@ int ChromeExtensionsNetworkDelegateImpl::OnBeforeURLRequest(
   std::unique_ptr<extensions::WebRequestInfo>* web_request_info =
       &active_requests_[request];
   *web_request_info = std::make_unique<extensions::WebRequestInfo>(request);
-
-  // Block top-level navigations to blob: or filesystem: URLs with extension
-  // origin from non-extension processes.  See https://crbug.com/645028.
-  //
-  // TODO(alexmos): This check is redundant with the one in
-  // ExtensionNavigationThrottle::WillStartRequest, which was introduced in
-  // M56. This check is reintroduced temporarily to tighten this blocking for
-  // apps with a "webview" permission on M55/54 (see https://crbug.com/656752).
-  // It will be removed after it's merged.  Unlike the check in
-  // ExtensionNavigationThrottle, this check is incompatible with PlzNavigate
-  // and is disabled for that mode.
-  bool is_nested_url = url.SchemeIsFileSystem() || url.SchemeIsBlob();
-  bool is_navigation =
-      info && content::IsResourceTypeFrame(info->GetResourceType());
-  if (is_nested_url && is_navigation && info->IsMainFrame()) {
-    // Nested conditional so we don't always pay the GURL -> Origin conversion.
-    url::Origin origin = url::Origin::Create(url);
-    if (origin.scheme() == extensions::kExtensionScheme &&
-        !extension_info_map_->process_map().Contains(info->GetChildID()) &&
-        !content::IsBrowserSideNavigationEnabled()) {
-      // Relax this restriction for apps that use <webview>.  See
-      // https://crbug.com/652077.
-      const extensions::Extension* extension =
-          extension_info_map_->extensions().GetByID(origin.host());
-      bool has_webview_permission =
-          extension &&
-          extension->permissions_data()->HasAPIPermission(
-              extensions::APIPermission::kWebView);
-      // Check whether the request is coming from a <webview> guest process via
-      // ChildProcessSecurityPolicy.  A guest process should have already been
-      // granted permission to request |origin| when its WebContents was
-      // created. See https://crbug.com/656752.
-      auto* policy = content::ChildProcessSecurityPolicy::GetInstance();
-      bool from_guest =
-          policy->HasSpecificPermissionForOrigin(info->GetChildID(), origin);
-      if (!has_webview_permission || !from_guest) {
-        // TODO(alexmos): Temporary instrumentation to find any regressions for
-        // this blocking.  Remove after verifying that this is not breaking any
-        // legitimate use cases.
-        DEBUG_ALIAS_FOR_ORIGIN(origin_copy, origin);
-        base::debug::Alias(&from_guest);
-        base::debug::DumpWithoutCrashing();
-        return net::ERR_ABORTED;
-      }
-    }
-  }
 
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
       profile_, extension_info_map_.get(), web_request_info->get(), callback,

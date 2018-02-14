@@ -14,7 +14,6 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
@@ -127,8 +126,6 @@ class SSLErrorNavigationThrottleTest
 
 // Tests that the throttle ignores a request without SSL info.
 TEST_P(SSLErrorNavigationThrottleTest, NoSSLInfo) {
-  if (!content::IsBrowserSideNavigationEnabled())
-    return;
   SCOPED_TRACE(::testing::Message()
                << "Asynchronous MockHandleSSLError: " << async_);
 
@@ -142,8 +139,6 @@ TEST_P(SSLErrorNavigationThrottleTest, NoSSLInfo) {
 // Tests that the throttle ignores a request with a cert status that is not an
 // cert error.
 TEST_P(SSLErrorNavigationThrottleTest, SSLInfoWithoutCertError) {
-  if (!content::IsBrowserSideNavigationEnabled())
-    return;
   SCOPED_TRACE(::testing::Message()
                << "Asynchronous MockHandleSSLError: " << async_);
 
@@ -159,8 +154,6 @@ TEST_P(SSLErrorNavigationThrottleTest, SSLInfoWithoutCertError) {
 // Tests that the throttle defers and cancels a request with a cert status that
 // is a cert error.
 TEST_P(SSLErrorNavigationThrottleTest, SSLInfoWithCertError) {
-  if (!content::IsBrowserSideNavigationEnabled())
-    return;
   SCOPED_TRACE(::testing::Message()
                << "Asynchronous MockHandleSSLError: " << async_);
 

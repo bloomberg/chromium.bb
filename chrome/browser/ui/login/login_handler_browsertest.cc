@@ -24,7 +24,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/base/auth.h"
@@ -366,11 +365,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth_OnNavigation) {
   LoginPromptBrowserTestObserver observer;
   observer.Register(content::Source<NavigationController>(controller));
 
-  // One LOAD_STOP event for LoginInterstitial, second for kAuthURL and third
-  // for kNoAuthURL, unless PlzNavigate is active, in which case the
-  // interrupted ongoing navigation does not receive LOAD_STOP.
-  const int kLoadStopEvents = content::IsBrowserSideNavigationEnabled() ? 2 : 3;
-  WindowedLoadStopObserver load_stop_waiter(controller, kLoadStopEvents);
+  // One LOAD_STOP event for kAuthURL and second  for kNoAuthURL.
+  WindowedLoadStopObserver load_stop_waiter(controller, 2);
   WindowedAuthNeededObserver auth_needed_waiter(controller);
   browser()->OpenURL(OpenURLParams(kAuthURL, Referrer(),
                                    WindowOpenDisposition::CURRENT_TAB,
@@ -402,11 +398,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth_OnBack) {
   // go back to.
   ui_test_utils::NavigateToURL(browser(), kNoAuthURL);
 
-  // Non-PlzNavigate: one LOAD_STOP event for kAuthURL and one for kNoAuthURL.
-  // PlzNavigate: one LOAD_STOP event for kAuthURL.
-  const int kLoadStopEvents =
-      content::IsBrowserSideNavigationEnabled() ? 1 : 2;
-  WindowedLoadStopObserver load_stop_waiter(controller, kLoadStopEvents);
+  WindowedLoadStopObserver load_stop_waiter(controller, 1);
   WindowedAuthNeededObserver auth_needed_waiter(controller);
   browser()->OpenURL(OpenURLParams(kAuthURL, Referrer(),
                                    WindowOpenDisposition::CURRENT_TAB,
@@ -445,11 +437,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth_OnForward) {
     load_stop_waiter.Wait();
   }
 
-  // Non-PlzNavigate: one LOAD_STOP event for kAuthURL and one for kNoAuthURL.
-  // PlzNavigate: one LOAD_STOP event for kAuthURL.
-  const int kLoadStopEvents =
-      content::IsBrowserSideNavigationEnabled() ? 1 : 2;
-  WindowedLoadStopObserver load_stop_waiter(controller, kLoadStopEvents);
+  WindowedLoadStopObserver load_stop_waiter(controller, 1);
   WindowedAuthNeededObserver auth_needed_waiter(controller);
   browser()->OpenURL(OpenURLParams(kAuthURL, Referrer(),
                                    WindowOpenDisposition::CURRENT_TAB,
