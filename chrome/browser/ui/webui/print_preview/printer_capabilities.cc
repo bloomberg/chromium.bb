@@ -309,7 +309,7 @@ void StartLocalPrint(const std::string& ticket_json,
       dialog_controller ? dialog_controller->GetInitiator(preview_web_contents)
                         : nullptr;
   PrintViewManager* print_view_manager =
-      PrintViewManager::FromWebContents(initiator);
+      initiator ? PrintViewManager::FromWebContents(initiator) : nullptr;
   if (!print_view_manager) {
     std::move(callback).Run(base::Value("Initiator closed"));
     return;
