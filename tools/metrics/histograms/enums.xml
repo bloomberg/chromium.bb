@@ -43799,6 +43799,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="102819690" label="sync_file_system"/>
   <int value="102935425" label="safe_browsing_client_side_malware_detector"/>
   <int value="103133150" label="icon_cacher"/>
+  <int value="103172229" label="cast_channel_send"/>
   <int value="104798869" label="autofill_upload"/>
   <int value="105330607" label="profile_resetter_upload"/>
   <int value="106124561" label="ssl_hmac_channel_authenticator"/>
