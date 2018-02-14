@@ -454,36 +454,61 @@ like `importScripts()`, `navigator.serviceWorker.register()`,
 
 ### How CORB interacts with stylesheets?
 
-TODO.
+CORB should have no observable impact on stylesheets.
 
-* TODO: **Correctly-labeled HTML document**
-  * Non-observable?
-  * Resource used in a `<link rel="stylesheet" href="...">` tag: TODO.
+Examples:
 
-* TODO: **Mislabeled stylesheet (with sniffing)**
-  * Non-observable due to sniffing?
+*  **Anything not labeled as text/css**
+  * Examples of resources used in a `<link rel="stylesheet" href="...">` tag:
+    * Body: an HTML document OR a simple, valid stylesheet OR a polyglot
+      HTML/CSS stylesheet
+    * `Content-Type: text/html`
+    * No `X-Content-Type-Options` header
+  * Expected behavior: **no observable difference** in behavior with and without
+    CORB.  Even without CORB, such stylesheet examples will be rejected, because
+    due to the
+    [relaxed syntax rules](https://scarybeastsecurity.blogspot.dk/2009/12/generic-cross-browser-cross-domain.html)
+    of CSS, cross-origin CSS requires a correct Content-Type header
+    (restrictions vary by browser:
+    [IE](http://msdn.microsoft.com/en-us/library/ie/gg622939%28v=vs.85%29.aspx),
+    [Firefox](http://www.mozilla.org/security/announce/2010/mfsa2010-46.html),
+    [Chrome](https://bugs.chromium.org/p/chromium/issues/detail?id=9877),
+    [Safari](http://support.apple.com/kb/HT4070)
+    (scroll down to CVE-2010-0051) and
+    [Opera](http://www.opera.com/support/kb/view/943/)).
+    This behavior is covered by
+    [the HTML spec](https://html.spec.whatwg.org/#link-type-stylesheet)
+    which 1) asks to only assume `text/css` Content-Type
+    if the document embedding the stylesheet has been set to quirks mode and has
+    the same origin and 2) only asks to run the steps for creating a CSS style
+    sheet if Content-Type of the obtained resource is `text/css`.
 
-* TODO: **Mislabeled stylesheet (nosniff)**
+  * WPT tests:
+    `fetch/corb/style-css-mislabeled-as-html.sub.html`,
+    `fetch/corb/style-html-correctly-labeled.sub.html`
+
+*  **Anything not labeled as text/css (nosniff)**
+  * Resource used in a `<link rel="stylesheet" href="...">` tag:
+    * Body: a simple stylesheet
+    * `Content-Type: text/html`
+    * `X-Content-Type-Options: nosniff`
   * Expected behavior: **no observable difference** in behavior with and without CORB.
     Both with and without CORB, the stylesheet will not load, because the
     `nosniff` response header response will cause the response to be blocked
     when its MIME type (`text/html` in the example) is not `text/css`
     (this behavior is required by the
     [Fetch spec](https://fetch.spec.whatwg.org/#should-response-to-request-be-blocked-due-to-nosniff?)).
+  * WPT test: `fetch/corb/style-css-mislabeled-as-html-nosniff.sub.html`
 
-* TODO: **Correctly-labeled stylesheet with JSON parser breaker**
-  * Non-observable, because JSON-parser-breaking is not performed for text/css
-
-* TODO: **Polyglot HTML/CSS labeled as text/html**.
-  * QUESTION: cross-origin text/html will be rejected even without CORB and
-    without nosniff?
-  * Example:
-```css
-<!DOCTYPE html>
-<style> h2 {}
-h1 { color: blue; }
-</style>
-```
+* **Correctly-labeled stylesheet with JSON parser breaker**
+  * Resource used in a `<link rel="stylesheet" href="...">` tag:
+    * Body: a stylesheet that begins with a JSON parser breaker
+    * `Content-Type: text/css`
+    * No `X-Content-Type-Options` header
+  * Expected behavior: **no difference** in behavior with and without CORB,
+    because CORB sniffing for JSON-parser-breakers is not performed for
+    responses labeled as `Content-Type: text/css`.
+  * WPT test: `fetch/corb/style-css-with-json-parser-breaker.sub.html`
 
 
 ### How CORB interacts with other web platform features?
