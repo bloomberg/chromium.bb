@@ -1660,7 +1660,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   self.viewVisible = NO;
   [self updateDialogPresenterActiveState];
   [self updateBroadcastState];
-  [[_model currentTab] wasHidden];
+  web::WebState* activeWebState = [_model webStateList]->GetActiveWebState();
+  if (activeWebState)
+    activeWebState->WasHidden();
   [_bookmarkInteractionController dismissSnackbar];
   if (IsIPadIdiom() && _infoBarContainer) {
     _infoBarContainer->SuspendInfobars();
@@ -2271,8 +2273,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
   [self updateToolbar];
 
-  // Notify the Tab that it was displayed.
-  [tab wasShown];
+  // Notify the WebState that it was displayed.
+  DCHECK(tab.webState);
+  tab.webState->WasShown();
 }
 
 - (void)initializeBookmarkInteractionController {
@@ -4935,7 +4938,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (void)tabModel:(TabModel*)model didDeselectTab:(Tab*)tab {
-  [tab wasHidden];
+  tab.webState->WasHidden();
   [self dismissPopups];
 }
 

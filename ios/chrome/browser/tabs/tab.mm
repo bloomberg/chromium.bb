@@ -380,16 +380,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
   _lastVisitedTimestamp = [[NSDate date] timeIntervalSince1970];
 }
 
-- (void)wasShown {
-  if (self.webState)
-    self.webState->WasShown();
-}
-
-- (void)wasHidden {
-  if (self.webState)
-    self.webState->WasHidden();
-}
-
 - (void)willUpdateSnapshot {
   [_overscrollActionsController clear];
 }
