@@ -54,9 +54,9 @@ class TestPreviewsDecider : public PreviewsDecider {
 
   bool ShouldAllowPreview(const net::URLRequest& request,
                           PreviewsType type) const override {
-    // Not used for these tests.
-    NOTREACHED();
-    return false;
+    return ShouldAllowPreviewAtECT(request, type,
+                                   params::GetECTThresholdForPreview(type),
+                                   std::vector<std::string>());
   }
 };
 
@@ -137,25 +137,43 @@ TEST_F(PreviewsContentUtilTest,
 
 TEST_F(PreviewsContentUtilTest,
        DetermineCommittedClientPreviewsStateClientLoFi) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(
+      "Previews,ClientLoFi,NoScriptPreviews", std::string());
   // Server bits take precendence over NoScript:
   EXPECT_EQ(content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON |
                 content::CLIENT_LOFI_ON,
             previews::DetermineCommittedClientPreviewsState(
                 *CreateHttpsRequest(),
                 content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON |
-                    content::CLIENT_LOFI_ON | content::NOSCRIPT_ON));
+                    content::CLIENT_LOFI_ON | content::NOSCRIPT_ON,
+                previews_decider()));
 
   // For HTTPS, NoScript has precendence over Client LoFi:
-  EXPECT_EQ(content::NOSCRIPT_ON,
-            previews::DetermineCommittedClientPreviewsState(
-                *CreateHttpsRequest(),
-                content::CLIENT_LOFI_ON | content::NOSCRIPT_ON));
+  EXPECT_EQ(
+      content::NOSCRIPT_ON,
+      previews::DetermineCommittedClientPreviewsState(
+          *CreateHttpsRequest(), content::CLIENT_LOFI_ON | content::NOSCRIPT_ON,
+          previews_decider()));
 
   // HTTP allows Client LoFi:
   EXPECT_EQ(
       content::CLIENT_LOFI_ON,
       previews::DetermineCommittedClientPreviewsState(
-          *CreateRequest(), content::CLIENT_LOFI_ON | content::NOSCRIPT_ON));
+          *CreateRequest(), content::CLIENT_LOFI_ON | content::NOSCRIPT_ON,
+          previews_decider()));
+}
+
+TEST_F(PreviewsContentUtilTest,
+       DetermineCommittedClientPreviewsStateNoScriptCheckIfStillAllowed) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine("Previews,ClientLoFi", std::string());
+  // NoScript not allowed at commit time so Client LoFi chosen:
+  EXPECT_EQ(
+      content::CLIENT_LOFI_ON,
+      previews::DetermineCommittedClientPreviewsState(
+          *CreateHttpsRequest(), content::CLIENT_LOFI_ON | content::NOSCRIPT_ON,
+          previews_decider()));
 }
 
 TEST_F(PreviewsContentUtilTest, GetMainFramePreviewsType) {

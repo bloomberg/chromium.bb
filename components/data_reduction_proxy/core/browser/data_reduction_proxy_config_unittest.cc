@@ -41,8 +41,8 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
-#include "components/previews/core/previews_decider.h"
 #include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/test_previews_decider.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -85,29 +85,6 @@ std::string GetRetryMapKeyFromOrigin(const std::string& origin) {
   // The retry map has the scheme prefix for https but not for http.
   return origin;
 }
-
-class TestPreviewsDecider : public previews::PreviewsDecider {
- public:
-  TestPreviewsDecider(bool allow_previews) : allow_previews_(allow_previews) {}
-  ~TestPreviewsDecider() override {}
-
-  // previews::PreviewsDecider:
-  bool ShouldAllowPreviewAtECT(
-      const net::URLRequest& request,
-      previews::PreviewsType type,
-      net::EffectiveConnectionType effective_connection_type_threshold,
-      const std::vector<std::string>& host_blacklist_from_server)
-      const override {
-    return allow_previews_;
-  }
-  bool ShouldAllowPreview(const net::URLRequest& request,
-                          previews::PreviewsType type) const override {
-    return allow_previews_;
-  }
-
- private:
-  bool allow_previews_;
-};
 
 }  // namespace
 
@@ -960,8 +937,8 @@ TEST_F(DataReductionProxyConfigTest,
       GURL(), net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
   request->SetLoadFlags(request->load_flags() |
                         net::LOAD_MAIN_FRAME_DEPRECATED);
-  std::unique_ptr<TestPreviewsDecider> previews_decider =
-      std::make_unique<TestPreviewsDecider>(true);
+  std::unique_ptr<previews::TestPreviewsDecider> previews_decider =
+      std::make_unique<previews::TestPreviewsDecider>(true);
   EXPECT_FALSE(test_config()->ShouldAcceptServerPreview(
       *request.get(), *previews_decider.get()));
 }
@@ -979,8 +956,8 @@ TEST_F(DataReductionProxyConfigTest,
       GURL(), net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
   request->SetLoadFlags(request->load_flags() |
                         net::LOAD_MAIN_FRAME_DEPRECATED);
-  std::unique_ptr<TestPreviewsDecider> previews_decider =
-      std::make_unique<TestPreviewsDecider>(true);
+  std::unique_ptr<previews::TestPreviewsDecider> previews_decider =
+      std::make_unique<previews::TestPreviewsDecider>(true);
   EXPECT_FALSE(test_config()->ShouldAcceptServerPreview(
       *request.get(), *previews_decider.get()));
 }
@@ -1002,8 +979,8 @@ TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerPreview) {
       GURL(), net::IDLE, &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
   request->SetLoadFlags(request->load_flags() |
                         net::LOAD_MAIN_FRAME_DEPRECATED);
-  std::unique_ptr<TestPreviewsDecider> previews_decider =
-      std::make_unique<TestPreviewsDecider>(true);
+  std::unique_ptr<previews::TestPreviewsDecider> previews_decider =
+      std::make_unique<previews::TestPreviewsDecider>(true);
 
   // Verify true for no flags.
   EXPECT_TRUE(test_config()->ShouldAcceptServerPreview(
@@ -1011,13 +988,13 @@ TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerPreview) {
 
   // Verify PreviewsDecider check.
   base::CommandLine::ForCurrentProcess()->InitFromArgv(0, nullptr);
-  previews_decider = std::make_unique<TestPreviewsDecider>(false);
+  previews_decider = std::make_unique<previews::TestPreviewsDecider>(false);
   EXPECT_FALSE(test_config()->ShouldAcceptServerPreview(
       *request.get(), *previews_decider.get()));
   histogram_tester.ExpectBucketCount(
       "DataReductionProxy.Protocol.NotAcceptingTransform",
       1 /* NOT_ACCEPTING_TRANSFORM_BLACKLISTED */, 1);
-  previews_decider = std::make_unique<TestPreviewsDecider>(true);
+  previews_decider = std::make_unique<previews::TestPreviewsDecider>(true);
 }
 
 TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherResponse) {

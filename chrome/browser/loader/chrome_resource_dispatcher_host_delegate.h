@@ -32,6 +32,10 @@ namespace net {
 class URLRequest;
 }
 
+namespace previews {
+class PreviewsDecider;
+}
+
 namespace safe_browsing {
 class SafeBrowsingService;
 }
@@ -119,6 +123,7 @@ class ChromeResourceDispatcherHostDelegate
   // attached to |request|.
   static content::PreviewsState DetermineCommittedPreviews(
       const net::URLRequest* request,
+      const previews::PreviewsDecider* previews_decider,
       content::PreviewsState initial_state);
 
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;

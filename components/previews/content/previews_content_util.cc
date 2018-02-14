@@ -18,7 +18,7 @@ bool HasEnabledPreviews(content::PreviewsState previews_state) {
 
 content::PreviewsState DetermineEnabledClientPreviewsState(
     const net::URLRequest& url_request,
-    previews::PreviewsDecider* previews_decider) {
+    const previews::PreviewsDecider* previews_decider) {
   content::PreviewsState previews_state = content::PREVIEWS_UNSPECIFIED;
 
   if (!previews::params::ArePreviewsAllowed()) {
@@ -32,11 +32,8 @@ content::PreviewsState DetermineEnabledClientPreviewsState(
   // Check for client-side previews in precendence order.
   // Note: this for for the beginning of navigation so we should not
   // check for https here (since an http request may redirect to https).
-  if (previews_decider->ShouldAllowPreviewAtECT(
-          url_request, previews::PreviewsType::NOSCRIPT,
-          previews::params::GetECTThresholdForPreview(
-              previews::PreviewsType::NOSCRIPT),
-          std::vector<std::string>())) {
+  if (previews_decider->ShouldAllowPreview(url_request,
+                                           previews::PreviewsType::NOSCRIPT)) {
     previews_state |= content::NOSCRIPT_ON;
     return previews_state;
   }
@@ -55,7 +52,8 @@ content::PreviewsState DetermineEnabledClientPreviewsState(
 
 content::PreviewsState DetermineCommittedClientPreviewsState(
     const net::URLRequest& url_request,
-    content::PreviewsState previews_state) {
+    content::PreviewsState previews_state,
+    const previews::PreviewsDecider* previews_decider) {
   bool is_https = url_request.url().SchemeIs(url::kHttpsScheme);
 
   // If a server preview is set, retain only the bits determined for the server.
@@ -85,11 +83,16 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
   // Make priority decision among allow client preview types that can be decided
   // at Commit time.
   if (previews_state & content::NOSCRIPT_ON) {
-    if (is_https) {
+    // Use NoScript if committed URL is HTTPS and NoScript is still allowed
+    // (without reconsidering ECT).
+    if (is_https && previews_decider &&
+        previews_decider->ShouldAllowPreviewAtECT(
+            url_request, previews::PreviewsType::NOSCRIPT,
+            net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST,
+            std::vector<std::string>())) {
       return content::NOSCRIPT_ON;
-    } else {
-      previews_state &= ~(content::NOSCRIPT_ON);
     }
+    previews_state &= ~(content::NOSCRIPT_ON);
   }
   if (previews_state & content::CLIENT_LOFI_ON) {
     return content::CLIENT_LOFI_ON;

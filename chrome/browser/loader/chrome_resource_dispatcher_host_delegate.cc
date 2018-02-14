@@ -60,6 +60,7 @@
 #include "components/policy/core/common/cloud/policy_header_io_helper.h"
 #include "components/previews/content/previews_content_util.h"
 #include "components/previews/content/previews_io_data.h"
+#include "components/previews/core/previews_decider.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_user_data.h"
 #include "components/safe_browsing/features.h"
@@ -842,7 +843,7 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
 
     // Determine effective PreviewsState for this committed main frame response.
     content::PreviewsState committed_state = DetermineCommittedPreviews(
-        request,
+        request, io_data->previews_io_data(),
         static_cast<content::PreviewsState>(response->head.previews_state));
 
     // Update previews state in response to renderer.
@@ -1044,6 +1045,7 @@ ChromeResourceDispatcherHostDelegate::GetNavigationData(
 content::PreviewsState
 ChromeResourceDispatcherHostDelegate::DetermineCommittedPreviews(
     const net::URLRequest* request,
+    const previews::PreviewsDecider* previews_decider,
     content::PreviewsState initial_state) {
   if (!previews::HasEnabledPreviews(initial_state))
     return content::PREVIEWS_OFF;
@@ -1051,6 +1053,6 @@ ChromeResourceDispatcherHostDelegate::DetermineCommittedPreviews(
   content::PreviewsState previews_state =
       data_reduction_proxy::ContentLoFiDecider::
           DetermineCommittedServerPreviewsState(*request, initial_state);
-  return previews::DetermineCommittedClientPreviewsState(*request,
-                                                         previews_state);
+  return previews::DetermineCommittedClientPreviewsState(
+      *request, previews_state, previews_decider);
 }

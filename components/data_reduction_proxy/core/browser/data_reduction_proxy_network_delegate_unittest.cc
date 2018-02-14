@@ -45,9 +45,9 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
-#include "components/previews/core/previews_decider.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
+#include "components/previews/core/test_previews_decider.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -312,28 +312,6 @@ class TestLoFiUIService : public LoFiUIService {
 
  private:
   bool on_lofi_response_;
-};
-
-class TestPreviewsDecider : public previews::PreviewsDecider {
- public:
-  TestPreviewsDecider() {}
-  ~TestPreviewsDecider() override {}
-  // previews::PreviewsDecider:
-  bool ShouldAllowPreviewAtECT(
-      const net::URLRequest& request,
-      previews::PreviewsType type,
-      net::EffectiveConnectionType effective_connection_type_threshold,
-      const std::vector<std::string>& host_blacklist_from_server)
-      const override {
-    return true;
-  }
-
-  // Same as ShouldAllowPreviewAtECT, but uses the previews default
-  // EffectiveConnectionType and no blacklisted hosts from the server.
-  bool ShouldAllowPreview(const net::URLRequest& request,
-                          previews::PreviewsType type) const override {
-    return true;
-  }
 };
 
 enum ProxyTestConfig { USE_SECURE_PROXY, USE_INSECURE_PROXY, BYPASS_PROXY };
@@ -939,7 +917,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
     }
 
     // Needed as a parameter, but functionality is not tested.
-    TestPreviewsDecider test_previews_decider;
+    previews::TestPreviewsDecider test_previews_decider(true);
 
     {
       // Main frame loaded. Lo-Fi should be used.
@@ -1334,7 +1312,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
     }
 
     // Needed as a parameter, but functionality is not tested.
-    TestPreviewsDecider test_previews_decider;
+    previews::TestPreviewsDecider test_previews_decider(true);
     lofi_decider()->SetIsUsingLoFi(config()->ShouldAcceptServerPreview(
         *fake_request.get(), test_previews_decider));
 
