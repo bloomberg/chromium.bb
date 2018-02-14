@@ -6,8 +6,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
-
-#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/class_property.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
