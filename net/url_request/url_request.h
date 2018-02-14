@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/debug/leak_tracker.h"
-#include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -694,12 +693,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // called with a response from the server.
   void SetResponseHeadersCallback(ResponseHeadersCallback callback);
 
-  // Stack trace when the URLRequest was created.
-  // TODO(mmenke): Remove once https://crbug.com/800391 is resolved.
-  const base::debug::StackTrace& creation_stack_trace() const {
-    return creation_stack_trace_;
-  }
-
  protected:
   // Allow the URLRequestJob class to control the is_pending() flag.
   void set_is_pending(bool value) { is_pending_ = value; }
@@ -914,11 +907,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // See Set{Request|Response}HeadersCallback() above for details.
   RequestHeadersCallback request_headers_callback_;
   ResponseHeadersCallback response_headers_callback_;
-
-  // Automatically initialized in constructor to be the stack trace when |this|
-  // is created.
-  // TODO(mmenke): Remove once https://crbug.com/800391 is resolved.
-  const base::debug::StackTrace creation_stack_trace_;
 
   THREAD_CHECKER(thread_checker_);
 
