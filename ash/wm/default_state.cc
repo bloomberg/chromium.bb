@@ -42,10 +42,6 @@ gfx::Size GetWindowMaximumSize(aura::Window* window) {
                             : gfx::Size();
 }
 
-bool IsMinimizedWindowState(const mojom::WindowStateType state_type) {
-  return state_type == mojom::WindowStateType::MINIMIZED;
-}
-
 void MoveToDisplayForRestore(WindowState* window_state) {
   if (!window_state->HasRestoreBounds())
     return;
@@ -599,7 +595,7 @@ void DefaultState::UpdateBoundsFromState(
   }
 
   if (!window_state->IsMinimized()) {
-    if (IsMinimizedWindowState(previous_state_type) ||
+    if (IsMinimizedWindowStateType(previous_state_type) ||
         window_state->IsFullscreen() || window_state->IsPinned()) {
       window_state->SetBoundsDirect(bounds_in_parent);
     } else if (window_state->IsMaximized() ||

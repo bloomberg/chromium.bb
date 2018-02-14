@@ -13,6 +13,7 @@
 
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_state_type.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
@@ -240,10 +241,6 @@ views::Widget* CreateBackgroundWidget(aura::Window* root_window,
   widget->Show();
   widget_window->layer()->SetOpacity(initial_opacity);
   return widget;
-}
-
-bool IsMinimizedStateType(mojom::WindowStateType type) {
-  return type == mojom::WindowStateType::MINIMIZED;
 }
 
 }  // namespace
@@ -757,8 +754,10 @@ void WindowGrid::OnPostWindowStateTypeChange(wm::WindowState* window_state,
     return;
 
   mojom::WindowStateType new_type = window_state->GetStateType();
-  if (IsMinimizedStateType(old_type) == IsMinimizedStateType(new_type))
+  if (IsMinimizedWindowStateType(old_type) ==
+      IsMinimizedWindowStateType(new_type)) {
     return;
+  }
 
   auto iter =
       std::find_if(window_list_.begin(), window_list_.end(),
