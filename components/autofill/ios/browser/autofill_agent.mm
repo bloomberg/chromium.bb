@@ -422,6 +422,9 @@ void GetFormAndField(autofill::FormData* form,
       return NO;
     }
 
+    // main_frame_origin is used for logging UKM.
+    form.main_frame_origin = url::Origin::Create(pageURL);
+
     // Action is optional.
     base::string16 action;
     formData->GetString("action", &action);
