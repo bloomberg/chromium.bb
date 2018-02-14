@@ -1011,16 +1011,9 @@ bool SQLitePersistentCookieStore::Backend::EnsureDatabaseVersion() {
       return false;
     }
 
-#if defined(OS_IOS)
-    // iOS 8.1 and older doesn't support partial indices. iOS 8.2 supports
-    // partial indices.
-    if (!db_->Execute(
-            "CREATE INDEX IF NOT EXISTS is_transient ON cookies(persistent)")) {
-#else
     if (!db_->Execute(
             "CREATE INDEX IF NOT EXISTS is_transient ON cookies(persistent) "
             "where persistent != 1")) {
-#endif
       LOG(WARNING)
           << "Unable to create index is_transient in update to version 9.";
       return false;
