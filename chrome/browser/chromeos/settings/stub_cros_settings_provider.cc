@@ -38,6 +38,8 @@ const base::Value* StubCrosSettingsProvider::Get(
 
 CrosSettingsProvider::TrustedStatus
     StubCrosSettingsProvider::PrepareTrustedValues(const base::Closure& cb) {
+  if (trusted_status_ == TEMPORARILY_UNTRUSTED)
+    callbacks_.push_back(cb);
   return trusted_status_;
 }
 
@@ -47,6 +49,11 @@ bool StubCrosSettingsProvider::HandlesSetting(const std::string& path) const {
 
 void StubCrosSettingsProvider::SetTrustedStatus(TrustedStatus status) {
   trusted_status_ = status;
+  if (trusted_status_ != TEMPORARILY_UNTRUSTED) {
+    std::vector<base::Closure> callbacks_to_invoke = std::move(callbacks_);
+    for (base::Closure cb : callbacks_to_invoke)
+      cb.Run();
+  }
 }
 
 void StubCrosSettingsProvider::SetCurrentUserIsOwner(bool owner) {
