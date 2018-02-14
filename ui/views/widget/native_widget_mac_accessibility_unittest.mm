@@ -871,6 +871,21 @@ TEST_F(NativeWidgetMacAccessibilityTest, Label) {
   // TODO(tapted): Add a test for multiline Labels (currently not supported).
 }
 
+// Labels used as title bars should be exposed as normal static text on Mac.
+TEST_F(NativeWidgetMacAccessibilityTest, LabelUsedAsTitleBar) {
+  Label* label = new Label(base::SysNSStringToUTF16(kTestStringValue),
+                           style::CONTEXT_DIALOG_TITLE, style::STYLE_PRIMARY);
+  label->SetSize(GetWidgetBounds().size());
+  widget()->GetContentsView()->AddChildView(label);
+
+  // Get the Label's accessibility object.
+  id ax_node = A11yElementAtMidpoint();
+  EXPECT_TRUE(ax_node);
+
+  EXPECT_NSEQ(NSAccessibilityStaticTextRole, AXRoleString());
+  EXPECT_NSEQ(kTestStringValue, AXValue());
+}
+
 class TestComboboxModel : public ui::ComboboxModel {
  public:
   TestComboboxModel() = default;

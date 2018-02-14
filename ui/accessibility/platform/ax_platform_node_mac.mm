@@ -143,6 +143,7 @@ RoleMap BuildRoleMap() {
       {ax::mojom::Role::kTextFieldWithComboBox, NSAccessibilityComboBoxRole},
       {ax::mojom::Role::kTime, NSAccessibilityGroupRole},
       {ax::mojom::Role::kTimer, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kTitleBar, NSAccessibilityStaticTextRole},
       {ax::mojom::Role::kToggleButton, NSAccessibilityCheckBoxRole},
       {ax::mojom::Role::kToolbar, NSAccessibilityToolbarRole},
       {ax::mojom::Role::kTooltip, NSAccessibilityGroupRole},
@@ -885,6 +886,7 @@ bool IsNameExposedInAXValueForRole(ax::mojom::Role role) {
     case ax::mojom::Role::kListMarker:
     case ax::mojom::Role::kMenuListOption:
     case ax::mojom::Role::kStaticText:
+    case ax::mojom::Role::kTitleBar:
       return true;
     default:
       return false;
