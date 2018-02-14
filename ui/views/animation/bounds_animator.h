@@ -58,9 +58,9 @@ class VIEWS_EXPORT BoundsAnimator : public gfx::AnimationDelegate,
   // animating its current bounds is returned.
   gfx::Rect GetTargetBounds(View* view);
 
-  // Sets the animation for the specified view. BoundsAnimator takes ownership
-  // of the specified animation.
-  void SetAnimationForView(View* view, gfx::SlideAnimation* animation);
+  // Sets the animation for the specified view.
+  void SetAnimationForView(View* view,
+                           std::unique_ptr<gfx::SlideAnimation> animation);
 
   // Returns the animation for the specified view. BoundsAnimator owns the
   // returned Animation.
@@ -96,10 +96,17 @@ class VIEWS_EXPORT BoundsAnimator : public gfx::AnimationDelegate,
   void AddObserver(BoundsAnimatorObserver* observer);
   void RemoveObserver(BoundsAnimatorObserver* observer);
 
+ protected:
+  // Creates the animation to use for animating views.
+  virtual std::unique_ptr<gfx::SlideAnimation> CreateAnimation();
+
  private:
   // Tracks data about the view being animated.
   struct Data {
-    Data() : animation(NULL), delegate(NULL) {}
+    Data();
+    Data(Data&&);
+    Data& operator=(Data&&);
+    ~Data();
 
     // The initial bounds.
     gfx::Rect start_bounds;
@@ -107,11 +114,11 @@ class VIEWS_EXPORT BoundsAnimator : public gfx::AnimationDelegate,
     // Target bounds.
     gfx::Rect target_bounds;
 
-    // The animation. We own this.
-    gfx::SlideAnimation* animation;
+    // The animation.
+    std::unique_ptr<gfx::SlideAnimation> animation;
 
-    // Delegate for the animation, may be null. We own this.
-    gfx::AnimationDelegate* delegate;
+    // Delegate for the animation, may be nullptr.
+    std::unique_ptr<gfx::AnimationDelegate> delegate;
   };
 
   // Used by AnimationEndedOrCanceled.
@@ -124,12 +131,9 @@ class VIEWS_EXPORT BoundsAnimator : public gfx::AnimationDelegate,
 
   typedef std::map<const gfx::Animation*, View*> AnimationToViewMap;
 
-  // Creates the animation to use for animating views.
-  gfx::SlideAnimation* CreateAnimation();
-
-  // Removes references to |view| and its animation. This does NOT delete the
-  // animation or delegate.
-  void RemoveFromMaps(View* view);
+  // Removes references to |view| and its animation. Returns the data for the
+  // caller to handle cleanup.
+  Data RemoveFromMaps(View* view);
 
   // Does the necessary cleanup for |data|. If |send_cancel| is true and a
   // delegate has been installed on |data| AnimationCanceled is invoked on it.
@@ -138,7 +142,7 @@ class VIEWS_EXPORT BoundsAnimator : public gfx::AnimationDelegate,
   // Used when changing the animation for a view. This resets the maps for
   // the animation used by view and returns the current animation. Ownership
   // of the returned animation passes to the caller.
-  gfx::Animation* ResetAnimationForView(View* view);
+  std::unique_ptr<gfx::Animation> ResetAnimationForView(View* view);
 
   // Invoked from AnimationEnded and AnimationCanceled.
   void AnimationEndedOrCanceled(const gfx::Animation* animation,
