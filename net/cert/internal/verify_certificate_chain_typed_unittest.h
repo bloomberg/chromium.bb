@@ -78,11 +78,13 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, WeakSignature) {
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, WrongSignature) {
   this->RunTest("target-wrong-signature/main.test");
+  this->RunTest("intermediate-and-target-wrong-signature/main.test");
   this->RunTest("incorrect-trust-anchor/main.test");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, LastCertificateNotTrusted) {
   this->RunTest("target-and-intermediate/distrusted-root.test");
+  this->RunTest("target-and-intermediate/distrusted-root-expired.test");
   this->RunTest("target-and-intermediate/unspecified-trust-root.test");
 }
 
