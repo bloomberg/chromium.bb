@@ -265,9 +265,13 @@ void PaintOpReader::Read(PaintImage* image) {
 
   auto serialized_type =
       static_cast<PaintOp::SerializedImageType>(serialized_type_int);
+  if (serialized_type == PaintOp::SerializedImageType::kNoImage)
+    return;
+
   if (enable_security_constraints_) {
     switch (serialized_type) {
       case PaintOp::SerializedImageType::kNoImage:
+        NOTREACHED();
         return;
       case PaintOp::SerializedImageType::kImageData: {
         SkColorType color_type;

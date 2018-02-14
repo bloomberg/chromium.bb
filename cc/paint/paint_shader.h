@@ -101,6 +101,8 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
       const SkMatrix* local_matrix,
       ScalingBehavior scaling_behavior = ScalingBehavior::kRasterAtScale);
 
+  static size_t GetSerializedSize(const PaintShader* shader);
+
   ~PaintShader() override;
 
   SkMatrix GetLocalMatrix() const {

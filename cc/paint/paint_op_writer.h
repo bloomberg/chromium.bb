@@ -33,6 +33,10 @@ class CC_PAINT_EXPORT PaintOpWriter {
   ~PaintOpWriter();
 
   static size_t constexpr HeaderBytes() { return 4u; }
+  static size_t constexpr Alignment() { return 4u; }
+  static size_t GetFlattenableSize(const SkFlattenable* flattenable);
+  static size_t GetImageSize(const PaintImage& image);
+  static size_t GetRecordSize(const PaintRecord* record);
 
   // Write a sequence of arbitrary bytes.
   void WriteData(size_t bytes, const void* input);
@@ -126,19 +130,20 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void Write(const PaintImage& image);
   void Write(const SkRegion& region);
 
+  void EnsureBytes(size_t required_bytes);
+
   char* memory_ = nullptr;
   size_t size_ = 0u;
   size_t remaining_bytes_ = 0u;
-  bool valid_ = true;
   TransferCacheSerializeHelper* transfer_cache_;
   ImageProvider* image_provider_;
+  bool valid_ = true;
 
   // Indicates that the following security constraints must be applied during
   // serialization:
   // 1) PaintRecords and SkDrawLoopers must be ignored.
   // 2) Codec backed images must be decoded and only the bitmap should be
   // serialized.
-
   const bool enable_security_constraints_;
 };
 

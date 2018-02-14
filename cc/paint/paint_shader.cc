@@ -5,6 +5,7 @@
 #include "cc/paint/paint_shader.h"
 
 #include "base/memory/ptr_util.h"
+#include "cc/paint/paint_op_writer.h"
 #include "cc/paint/paint_record.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
@@ -157,6 +158,29 @@ sk_sp<PaintShader> PaintShader::MakePaintRecord(
 
   shader->CreateSkShader();
   return shader;
+}
+
+// static
+size_t PaintShader::GetSerializedSize(const PaintShader* shader) {
+  size_t bool_size = sizeof(bool);
+  if (!shader)
+    return bool_size;
+
+  return bool_size + sizeof(shader->shader_type_) + sizeof(shader->flags_) +
+         sizeof(shader->end_radius_) + sizeof(shader->start_radius_) +
+         sizeof(shader->tx_) + sizeof(shader->ty_) +
+         sizeof(shader->fallback_color_) + sizeof(shader->scaling_behavior_) +
+         bool_size + sizeof(*shader->local_matrix_) + sizeof(shader->center_) +
+         sizeof(shader->tile_) + sizeof(shader->start_point_) +
+         sizeof(shader->end_point_) + sizeof(shader->start_degrees_) +
+         sizeof(shader->end_degrees_) +
+         PaintOpWriter::GetImageSize(shader->image_) +
+         PaintOpWriter::GetImageSize(shader->image_) + bool_size +
+         PaintOpWriter::GetRecordSize(shader->record_.get()) +
+         sizeof(shader->colors_.size()) +
+         shader->colors_.size() * sizeof(SkColor) +
+         sizeof(shader->positions_.size()) +
+         shader->positions_.size() * sizeof(SkScalar);
 }
 
 PaintShader::PaintShader(Type type) : shader_type_(type) {}

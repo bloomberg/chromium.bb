@@ -2894,7 +2894,13 @@ TEST(PaintOpBufferTest, ReplacesImagesFromProvider) {
   buffer.Playback(&canvas, PlaybackParams(&image_provider));
 }
 
-TEST(PaintOpBufferTest, FilterSerialization) {
+class PaintFilterSerializationTest : public ::testing::TestWithParam<bool> {};
+
+INSTANTIATE_TEST_CASE_P(PaintFilterSerializationTests,
+                        PaintFilterSerializationTest,
+                        ::testing::Values(true, false));
+
+TEST_P(PaintFilterSerializationTest, Basic) {
   SkScalar scalars[9] = {1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f};
   std::vector<sk_sp<PaintFilter>> filters = {
       sk_sp<PaintFilter>{new ColorFilterPaintFilter(
@@ -2912,9 +2918,6 @@ TEST(PaintOpBufferTest, FilterSerialization) {
           SkISize::Make(3, 3), scalars, 30.f, 123.f, SkIPoint::Make(0, 0),
           SkMatrixConvolutionImageFilter::kClampToBlack_TileMode, true,
           nullptr)},
-      sk_sp<PaintFilter>{
-          new RecordPaintFilter(sk_sp<PaintRecord>{new PaintRecord},
-                                SkRect::MakeXYWH(10, 15, 20, 25))},
       sk_sp<PaintFilter>{new MorphologyPaintFilter(
           MorphologyPaintFilter::MorphType::kErode, 15, 30, nullptr)},
       sk_sp<PaintFilter>{new OffsetPaintFilter(-1.f, -2.f, nullptr)},
@@ -2950,41 +2953,33 @@ TEST(PaintOpBufferTest, FilterSerialization) {
       SkDisplacementMapEffect::kG_ChannelSelectorType, 10, filters[6],
       filters[7]));
   filters.emplace_back(new MergePaintFilter(filters.data(), filters.size()));
+  filters.emplace_back(new RecordPaintFilter(
+      sk_sp<PaintRecord>{new PaintRecord}, SkRect::MakeXYWH(10, 15, 20, 25)));
 
-  std::unique_ptr<char, base::AlignedFreeDeleter> memory(
-      static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
-                                            PaintOpBuffer::PaintOpAlign)));
   TestOptionsProvider options_provider;
   for (size_t i = 0; i < filters.size(); ++i) {
     SCOPED_TRACE(i);
+
     auto& filter = filters[i];
+    std::vector<uint8_t> memory;
+    size_t buffer_size = filter->type() == PaintFilter::Type::kPaintRecord
+                             ? PaintOpBuffer::kInitialBufferSize
+                             : PaintFilter::GetFilterSize(filter.get());
+    buffer_size += PaintOpWriter::HeaderBytes();
+    memory.resize(buffer_size);
 
-    PaintFlags flags;
-    flags.setImageFilter(filter);
-    PaintOpBuffer buffer;
-    buffer.push<DrawRectOp>(SkRect::MakeXYWH(1, 2, 3, 4), flags);
+    PaintOpWriter writer(memory.data(), memory.size(),
+                         options_provider.transfer_cache_helper(),
+                         options_provider.image_provider(), GetParam());
+    writer.Write(filter.get());
+    ASSERT_GT(writer.size(), 0u) << PaintFilter::TypeToString(filter->type());
 
-    SimpleBufferSerializer serializer(memory.get(),
-                                      PaintOpBuffer::kInitialBufferSize,
-                                      options_provider.image_provider(),
-                                      options_provider.transfer_cache_helper());
-    serializer.Serialize(&buffer);
-    ASSERT_TRUE(serializer.valid());
-    ASSERT_GT(serializer.written(), 0u);
-
-    auto deserialized_buffer =
-        PaintOpBuffer::MakeFromMemory(memory.get(), serializer.written(),
-                                      options_provider.deserialize_options());
-    ASSERT_TRUE(deserialized_buffer);
-    PaintOpBuffer::Iterator it(deserialized_buffer.get());
-    ASSERT_TRUE(it);
-    auto* op = *it;
-    ASSERT_TRUE(op->GetType() == PaintOpType::DrawRect);
-    auto* rect_op = static_cast<DrawRectOp*>(op);
-    EXPECT_FLOAT_RECT_EQ(rect_op->rect, SkRect::MakeXYWH(1, 2, 3, 4));
-    EXPECT_TRUE(*filter == *rect_op->flags.getImageFilter());
-    ++it;
-    EXPECT_FALSE(it);
+    sk_sp<PaintFilter> deserialized_filter;
+    PaintOpReader reader(memory.data(), writer.size(),
+                         options_provider.transfer_cache_helper(), GetParam());
+    reader.Read(&deserialized_filter);
+    ASSERT_TRUE(deserialized_filter);
+    EXPECT_TRUE(*filter == *deserialized_filter);
   }
 }
 
