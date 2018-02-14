@@ -305,7 +305,7 @@ TEST_F(ResourceLoadSchedulerTest, PriotrityIsNotConsidered) {
   EXPECT_TRUE(Release(id1));
 }
 
-TEST_F(RendererSideResourceSchedulerTest, PriotrityIsConsidered) {
+TEST_F(RendererSideResourceSchedulerTest, PriorityIsConsidered) {
   // Push three requests.
   MockClient* client1 = new MockClient;
 
@@ -343,14 +343,14 @@ TEST_F(RendererSideResourceSchedulerTest, PriotrityIsConsidered) {
   EXPECT_FALSE(client3->WasRun());
   EXPECT_TRUE(client4->WasRun());
 
-  Scheduler()->SetOutstandingLimitForTesting(2);
+  Scheduler()->SetOutstandingLimitForTesting(1);
 
   EXPECT_FALSE(client1->WasRun());
   EXPECT_FALSE(client2->WasRun());
   EXPECT_TRUE(client3->WasRun());
   EXPECT_TRUE(client4->WasRun());
 
-  Scheduler()->SetOutstandingLimitForTesting(3);
+  Scheduler()->SetOutstandingLimitForTesting(2);
 
   EXPECT_FALSE(client1->WasRun());
   EXPECT_TRUE(client2->WasRun());
