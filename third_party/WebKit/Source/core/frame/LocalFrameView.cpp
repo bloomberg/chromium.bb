@@ -3322,7 +3322,7 @@ void LocalFrameView::PrePaint() {
   {
     SCOPED_UMA_AND_UKM_TIMER("Blink.PrePaint.UpdateTime",
                              UkmMetricNames::kPrePaint);
-    PrePaintTreeWalk().Walk(*this);
+    PrePaintTreeWalk().WalkTree(*this);
   }
 
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {

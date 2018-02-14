@@ -12,20 +12,34 @@
 
 namespace blink {
 
+class PrePaintTreeWalk;
 struct CORE_EXPORT PaintInvalidatorContext {
-  USING_FAST_MALLOC(PaintInvalidatorContext);
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  PaintInvalidatorContext() : parent_context(nullptr) {}
+  class ParentContextAccessor {
+   public:
+    ParentContextAccessor() = default;
+    ParentContextAccessor(PrePaintTreeWalk* tree_walk,
+                          size_t parent_context_index)
+        : tree_walk_(tree_walk), parent_context_index_(parent_context_index) {}
+    const PaintInvalidatorContext* ParentContext() const;
 
-  PaintInvalidatorContext(const PaintInvalidatorContext& parent_context)
-      : parent_context(&parent_context),
-        subtree_flags(parent_context.subtree_flags),
+   private:
+    PrePaintTreeWalk* tree_walk_ = nullptr;
+    size_t parent_context_index_ = 0u;
+  };
+
+  PaintInvalidatorContext() = default;
+
+  PaintInvalidatorContext(const ParentContextAccessor& parent_context_accessor)
+      : parent_context_accessor_(parent_context_accessor),
+        subtree_flags(ParentContext()->subtree_flags),
         paint_invalidation_container(
-            parent_context.paint_invalidation_container),
+            ParentContext()->paint_invalidation_container),
         paint_invalidation_container_for_stacked_contents(
-            parent_context.paint_invalidation_container_for_stacked_contents),
-        painting_layer(parent_context.painting_layer) {}
+            ParentContext()->paint_invalidation_container_for_stacked_contents),
+        painting_layer(ParentContext()->painting_layer) {}
 
   void MapLocalRectToVisualRectInBacking(const LayoutObject&,
                                          LayoutRect&) const;
@@ -39,8 +53,16 @@ struct CORE_EXPORT PaintInvalidatorContext {
            (subtree_flags & PaintInvalidatorContext::kSubtreeVisualRectUpdate);
   }
 
-  const PaintInvalidatorContext* parent_context;
+  const PaintInvalidatorContext* ParentContext() const {
+    return parent_context_accessor_.ParentContext();
+  }
 
+ private:
+  // Parent context accessor has to be initialized first, so inject the private
+  // access block here for that reason.
+  ParentContextAccessor parent_context_accessor_;
+
+ public:
   enum SubtreeFlag {
     kSubtreeInvalidationChecking = 1 << 0,
     kSubtreeVisualRectUpdate = 1 << 1,
@@ -104,6 +126,7 @@ struct CORE_EXPORT PaintInvalidatorContext {
 
  private:
   friend class PaintInvalidator;
+
   const PaintPropertyTreeBuilderFragmentContext* tree_builder_context_ =
       nullptr;
 

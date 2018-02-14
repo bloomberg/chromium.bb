@@ -395,7 +395,7 @@ void ObjectPaintInvalidatorWithContext::FullyInvalidatePaint(
 }
 
 bool ObjectPaintInvalidatorWithContext::ParentFullyInvalidatedOnSameBacking() {
-  if (!object_.Parent() || !context_.parent_context)
+  if (!object_.Parent() || !context_.ParentContext())
     return false;
 
   if (!IsImmediateFullPaintInvalidationReason(
@@ -403,7 +403,7 @@ bool ObjectPaintInvalidatorWithContext::ParentFullyInvalidatedOnSameBacking() {
     return false;
 
   // Parent and child should have the same paint invalidation container.
-  if (context_.parent_context->paint_invalidation_container !=
+  if (context_.ParentContext()->paint_invalidation_container !=
       context_.paint_invalidation_container)
     return false;
 
@@ -428,7 +428,7 @@ void ObjectPaintInvalidatorWithContext::InvalidatePaintRectangleWithContext(
   // If the parent has fully invalidated and its visual rect covers this object
   // on the same backing, skip the invalidation.
   if (ParentFullyInvalidatedOnSameBacking() &&
-      (context_.parent_context->old_visual_rect.Contains(rect) ||
+      (context_.ParentContext()->old_visual_rect.Contains(rect) ||
        object_.Parent()->FirstFragment().VisualRect().Contains(rect))) {
     if (!object_.GetFrameView()->IsTrackingPaintInvalidations())
       return;
