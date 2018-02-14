@@ -64,7 +64,7 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, ForceSwapOnDifferenteWebUITypes) {
           web_contents->GetMainFrame()->GetProcess()->GetID()));
 }
 
-IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, InPageNavigationsAndReload) {
+IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, SameDocumentNavigationsAndReload) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUITermsURL));
 
   content::WebUIMessageHandler* test_handler = new TestWebUIMessageHandler;
