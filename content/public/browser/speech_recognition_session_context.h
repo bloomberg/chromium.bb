@@ -46,9 +46,10 @@ struct CONTENT_EXPORT SpeechRecognitionSessionContext {
   int embedder_render_process_id;
   int embedder_render_view_id;
 
+  // The request id provided by the originating SpeechRecognitionDispatcher.
   int request_id;
 
-  // A texual description of the context (website, extension name) that is
+  // A textual description of the context (website, extension name) that is
   // requesting recognition, for prompting security notifications to the user.
   std::string context_name;
 

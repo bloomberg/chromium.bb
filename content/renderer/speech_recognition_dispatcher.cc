@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <algorithm>
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
@@ -71,8 +73,7 @@ void SpeechRecognitionDispatcher::Start(
   recognizer_client_ = recognizer_client;
 
   SpeechRecognitionHostMsg_StartRequest_Params msg_params;
-  for (size_t i = 0; i < params.Grammars().size(); ++i) {
-    const WebSpeechGrammar& grammar = params.Grammars()[i];
+  for (const WebSpeechGrammar& grammar : params.Grammars()) {
     msg_params.grammars.push_back(SpeechRecognitionGrammar(
         grammar.Src().GetString().Utf8(), grammar.Weight()));
   }
@@ -175,7 +176,7 @@ void SpeechRecognitionDispatcher::OnRecognitionEnded(int request_id) {
   // TODO(tommi): It is possible that the handle isn't found in the array if
   // the user just refreshed the page. It seems that we then get a notification
   // for the previously loaded instance of the page.
-  HandleMap::iterator iter = handle_map_.find(request_id);
+  auto iter = handle_map_.find(request_id);
   if (iter == handle_map_.end()) {
     DLOG(ERROR) << "OnRecognitionEnded called for a handle that doesn't exist";
   } else {
@@ -190,20 +191,18 @@ void SpeechRecognitionDispatcher::OnRecognitionEnded(int request_id) {
 
 void SpeechRecognitionDispatcher::OnResultsRetrieved(
     int request_id, const SpeechRecognitionResults& results) {
-  size_t provisional_count = 0;
-  SpeechRecognitionResults::const_iterator it = results.begin();
-  for (; it != results.end(); ++it) {
-    if (it->is_provisional)
-      ++provisional_count;
-  }
+  size_t provisional_count =
+      std::count_if(results.begin(), results.end(),
+                    [](const SpeechRecognitionResult& result) {
+                      return result.is_provisional;
+                    });
 
   WebVector<WebSpeechRecognitionResult> provisional(provisional_count);
   WebVector<WebSpeechRecognitionResult> final(
       results.size() - provisional_count);
 
   int provisional_index = 0, final_index = 0;
-  for (it = results.begin(); it != results.end(); ++it) {
-    const SpeechRecognitionResult& result = (*it);
+  for (const SpeechRecognitionResult& result : results) {
     WebSpeechRecognitionResult* webkit_result = result.is_provisional ?
         &provisional[provisional_index++] : &final[final_index++];
 
@@ -224,12 +223,10 @@ void SpeechRecognitionDispatcher::OnResultsRetrieved(
 int SpeechRecognitionDispatcher::GetOrCreateIDForHandle(
     const WebSpeechRecognitionHandle& handle) {
   // Search first for an existing mapping.
-  for (HandleMap::iterator iter = handle_map_.begin();
-      iter != handle_map_.end();
-      ++iter) {
-    if (iter->second.Equals(handle))
-      return iter->first;
-  }
+  auto iter = FindHandleInMap(handle);
+  if (iter != handle_map_.end())
+    return iter->first;
+
   // If no existing mapping found, create a new one.
   const int new_id = next_id_;
   handle_map_[new_id] = handle;
@@ -239,18 +236,23 @@ int SpeechRecognitionDispatcher::GetOrCreateIDForHandle(
 
 bool SpeechRecognitionDispatcher::HandleExists(
     const WebSpeechRecognitionHandle& handle) {
-  for (HandleMap::iterator iter = handle_map_.begin();
-      iter != handle_map_.end();
-      ++iter) {
-    if (iter->second.Equals(handle))
-      return true;
-  }
-  return false;
+  return FindHandleInMap(handle) != handle_map_.end();
+}
+
+SpeechRecognitionDispatcher::HandleMap::iterator
+SpeechRecognitionDispatcher::FindHandleInMap(
+    const blink::WebSpeechRecognitionHandle& handle) {
+  return std::find_if(
+      handle_map_.begin(), handle_map_.end(),
+      [handle](const std::pair<const int, blink::WebSpeechRecognitionHandle>&
+                   mapping_pair) {
+        return mapping_pair.second.Equals(handle);
+      });
 }
 
 const WebSpeechRecognitionHandle& SpeechRecognitionDispatcher::GetHandleFromID(
     int request_id) {
-  HandleMap::iterator iter = handle_map_.find(request_id);
+  auto iter = handle_map_.find(request_id);
   CHECK(iter != handle_map_.end());
   return iter->second;
 }
