@@ -53,14 +53,6 @@ struct EnumTraits<printing::mojom::PdfRenderSettings::Mode,
       case printing::mojom::PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3:
         *output = printing::PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3;
         return true;
-#else
-      case printing::mojom::PdfRenderSettings::Mode::TEXTONLY:
-      case printing::mojom::PdfRenderSettings::Mode::GDI_TEXT:
-      case printing::mojom::PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2:
-      case printing::mojom::PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3:
-        NOTREACHED() << "Unsupported mode " << static_cast<int>(input)
-                     << " on non Windows platform ";
-        return false;
 #endif
     }
     NOTREACHED() << "Unknown mode " << static_cast<int>(input);

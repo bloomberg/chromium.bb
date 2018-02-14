@@ -10,9 +10,13 @@ struct PdfRenderSettings {
   enum Mode {
     NORMAL = 0,
     // Modes below are Windows only.
+    [EnableIf=is_win]
     TEXTONLY,
+    [EnableIf=is_win]
     GDI_TEXT,
+    [EnableIf=is_win]
     POSTSCRIPT_LEVEL2,
+    [EnableIf=is_win]
     POSTSCRIPT_LEVEL3
   };
 
