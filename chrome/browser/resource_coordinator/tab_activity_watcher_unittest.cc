@@ -78,7 +78,6 @@ class TabActivityWatcherTest : public ChromeRenderViewHostTestHarness {
   }
 
   void TearDown() override {
-    EXPECT_EQ(0, ukm_entry_checker_.NumNewEntriesRecorded(kEntryName));
     TabActivityWatcher::GetInstance()->ResetForTesting();
     ChromeRenderViewHostTestHarness::TearDown();
   }

@@ -36,38 +36,39 @@ class TestUkmRecorder : public UkmRecorderImpl {
 
   using UkmRecorderImpl::UpdateSourceURL;
 
-  // Get all recorded UkmSource data.
+  // Gets all recorded UkmSource data.
   const std::map<ukm::SourceId, std::unique_ptr<UkmSource>>& GetSources()
       const {
     return sources();
   }
 
-  // Get UkmSource data for a single SourceId.
+  // Gets UkmSource data for a single SourceId.
   const UkmSource* GetSourceForSourceId(ukm::SourceId source_id) const;
 
-  // Get all of the entries recorded for entry name.
+  // Gets all of the entries recorded for entry name.
   std::vector<const mojom::UkmEntry*> GetEntriesByName(
       base::StringPiece entry_name) const;
 
-  // Get the data for all entries with given entry name, merged to one entry
+  // Gets the data for all entries with given entry name, merged to one entry
   // for each source id. Intended for singular="true" metrics.
   std::map<ukm::SourceId, mojom::UkmEntryPtr> GetMergedEntriesByName(
       base::StringPiece entry_name) const;
 
-  // Check if an entry is associated with a url.
+  // Checks if an entry is associated with a url.
   void ExpectEntrySourceHasUrl(const mojom::UkmEntry* entry,
                                const GURL& url) const;
 
-  // Expect the value of a metric from an entry.
+  // Expects the value of a metric from an entry.
   static void ExpectEntryMetric(const mojom::UkmEntry* entry,
                                 base::StringPiece metric_name,
                                 int64_t expected_value);
 
-  // Check if an entry contains a specific metric.
+  // Checks if an entry contains a specific metric.
   static bool EntryHasMetric(const mojom::UkmEntry* entry,
                              base::StringPiece metric_name);
 
-  // Expect the value of a metric from an entry.
+  // Gets the value of a metric from an entry. Returns nullptr if the metric is
+  // not found.
   static const int64_t* GetEntryMetric(const mojom::UkmEntry* entry,
                                        base::StringPiece metric_name);
 
