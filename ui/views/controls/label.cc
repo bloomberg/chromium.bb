@@ -406,7 +406,11 @@ WordLookupClient* Label::GetWordLookupClient() {
 }
 
 void Label::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kStaticText;
+  if (text_context_ == style::CONTEXT_DIALOG_TITLE)
+    node_data->role = ax::mojom::Role::kTitleBar;
+  else
+    node_data->role = ax::mojom::Role::kStaticText;
+
   node_data->SetName(full_text_->GetDisplayText());
 }
 

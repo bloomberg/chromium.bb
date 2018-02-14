@@ -2689,6 +2689,9 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kTerm:
       return ROLE_SYSTEM_LISTITEM;
 
+    case ax::mojom::Role::kTitleBar:
+      return ROLE_SYSTEM_TITLEBAR;
+
     case ax::mojom::Role::kToggleButton:
       return ROLE_SYSTEM_PUSHBUTTON;
 
@@ -2755,7 +2758,6 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kPresentational:
     case ax::mojom::Role::kSliderThumb:
     case ax::mojom::Role::kSwitch:
-    case ax::mojom::Role::kTitleBar:
     case ax::mojom::Role::kUnknown:
     case ax::mojom::Role::kWebView:
       return ROLE_SYSTEM_CLIENT;
