@@ -26,6 +26,10 @@ TEST(PrefsTest, TestIndex) {
             GetPrefName(ALLOW_DELETING_BROWSER_HISTORY));
   EXPECT_EQ(prefs::kIncognitoModeAvailability,
             GetPrefName(INCOGNITO_MODE_AVAILABILITY));
+  EXPECT_EQ(ntp_snippets::prefs::kEnableSnippets,
+            GetPrefName(NTP_ARTICLES_SECTION_ENABLED));
+  EXPECT_EQ(ntp_snippets::prefs::kArticlesListVisible,
+            GetPrefName(NTP_ARTICLES_LIST_VISIBLE));
   EXPECT_EQ(dom_distiller::prefs::kReaderForAccessibility,
             GetPrefName(READER_FOR_ACCESSIBILITY_ENABLED));
 }

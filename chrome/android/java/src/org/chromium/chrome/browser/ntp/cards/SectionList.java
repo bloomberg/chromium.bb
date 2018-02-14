@@ -14,6 +14,8 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -189,6 +191,12 @@ public class SectionList
     }
 
     @Override
+    public void onSuggestionsVisibilityChanged(@CategoryInt int category) {
+        if (!mSections.containsKey(category)) return;
+        mSections.get(category).updateExpandableHeader();
+    }
+
+    @Override
     public void dismissSection(SuggestionsSection section) {
         mUiDelegate.getSuggestionsSource().dismissCategory(section.getCategory());
         removeSection(section);
@@ -360,7 +368,9 @@ public class SectionList
             return;
         if (category != KnownCategories.ARTICLES) return;
 
-        // TODO(huayinz): check whether preference can be changed by the user.
+        // Don't add a header if the entire articles section is disabled by policy.
+        if (!PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED)) return;
+
         SuggestionsSection section = mSections.get(category);
         if (section != null) return;
 

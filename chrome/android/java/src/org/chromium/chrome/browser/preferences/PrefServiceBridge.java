@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.preferences;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import org.chromium.base.ContextUtils;
@@ -28,7 +29,7 @@ import java.util.List;
  * preferences should be grouped with their relevant functionality but this is a grab-bag for other
  * preferences.
  */
-public final class PrefServiceBridge {
+public class PrefServiceBridge {
     // These values must match the native enum values in
     // SupervisedUserURLFilter::FilteringBehavior
     public static final int SUPERVISED_USER_FILTERING_ALLOW = 0;
@@ -83,9 +84,9 @@ public final class PrefServiceBridge {
         return new AboutVersionStrings(applicationVersion, osVersion);
     }
 
-    private PrefServiceBridge() {
-        TemplateUrlService.getInstance().load();
-    }
+    // Singleton constructor. Do not call directly unless for testing purpose.
+    @VisibleForTesting
+    protected PrefServiceBridge() {}
 
     private static PrefServiceBridge sInstance;
 
@@ -94,7 +95,12 @@ public final class PrefServiceBridge {
      */
     public static PrefServiceBridge getInstance() {
         ThreadUtils.assertOnUiThread();
-        if (sInstance == null) sInstance = new PrefServiceBridge();
+        if (sInstance == null) {
+            sInstance = new PrefServiceBridge();
+
+            // Put initialization here to make instantiation in unit tests easier.
+            TemplateUrlService.getInstance().load();
+        }
         return sInstance;
     }
 
@@ -1079,6 +1085,11 @@ public final class PrefServiceBridge {
      */
     public void setPromptForDownloadAndroid(@DownloadPromptStatus int status) {
         nativeSetPromptForDownloadAndroid(status);
+    }
+
+    @VisibleForTesting
+    public static void setInstanceForTesting(@Nullable PrefServiceBridge instanceForTesting) {
+        sInstance = instanceForTesting;
     }
 
     private native boolean nativeGetBoolean(int preference);

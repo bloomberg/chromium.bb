@@ -23,6 +23,8 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsOfflineModelObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
@@ -95,8 +97,9 @@ public class SuggestionsSection extends InnerNode {
         boolean isExpandable = ChromeFeatureList.isEnabled(
                                        ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER)
                 && getCategory() == KnownCategories.ARTICLES;
-        // TODO(huayinz): use preference instead of hard-coded value for isExpanded.
-        mHeader = isExpandable ? new SectionHeader(info.getTitle(), true,
+        boolean isExpanded =
+                PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE);
+        mHeader = isExpandable ? new SectionHeader(info.getTitle(), isExpanded,
                                          this::updateSuggestionsVisibilityForExpandableHeader)
                                : new SectionHeader(info.getTitle());
         mSuggestionsList = new SuggestionsList(mSuggestionsSource, ranker, info);
@@ -632,18 +635,29 @@ public class SuggestionsSection extends InnerNode {
     }
 
     /**
+     * Update the expandable header state to match the preference value if necessary. This can
+     * happen when the preference is updated by a user click on another new tab page.
+     */
+    void updateExpandableHeader() {
+        if (mHeader.isExpandable()
+                && mHeader.isExpanded()
+                        != PrefServiceBridge.getInstance().getBoolean(
+                                   Pref.NTP_ARTICLES_LIST_VISIBLE)) {
+            mHeader.toggleHeader();
+        }
+    }
+
+    /**
      * Update the visibility of the suggestions based on whether the header is expanded. This is
      * called when the section header is toggled.
      */
     private void updateSuggestionsVisibilityForExpandableHeader() {
         assert mHeader.isExpandable();
+        PrefServiceBridge.getInstance().setBoolean(
+                Pref.NTP_ARTICLES_LIST_VISIBLE, mHeader.isExpanded());
         clearData();
-        if (mHeader.isExpanded()) {
-            updateSuggestions();
-            setStatus(mSuggestionsSource.getCategoryStatus(getCategory()));
-        } else {
-            mMoreButton.updateState(ActionItem.State.HIDDEN);
-        }
+        if (mHeader.isExpanded()) updateSuggestions();
+        setStatus(mSuggestionsSource.getCategoryStatus(getCategory()));
         mStatus.setVisible(shouldShowStatusItem());
     }
 
