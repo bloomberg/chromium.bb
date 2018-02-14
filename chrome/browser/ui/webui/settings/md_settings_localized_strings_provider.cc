@@ -46,6 +46,7 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_dialog_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chromeos/chromeos_switches.h"
@@ -463,15 +464,13 @@ void AddChangePasswordStrings(content::WebUIDataSource* html_source) {
 #endif
 }
 
-void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source) {
+void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source,
+                                 Profile* profile) {
   int clear_cookies_summary_msg_id =
       IDS_SETTINGS_CLEAR_COOKIES_AND_SITE_DATA_SUMMARY_BASIC;
 
 #if defined(OS_CHROMEOS)
-  // Mirror account reconciliation behavior is turned on for child accounts on
-  // Chrome OS.
-  if (user_manager::UserManager::Get()->GetPrimaryUser()->GetType() ==
-      user_manager::USER_TYPE_CHILD) {
+  if (AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile)) {
     clear_cookies_summary_msg_id =
         IDS_SETTINGS_CLEAR_COOKIES_AND_SITE_DATA_MIRROR_SUMMARY_BASIC;
   }
@@ -2267,7 +2266,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 
   AddChangePasswordStrings(html_source);
-  AddClearBrowsingDataStrings(html_source);
+  AddClearBrowsingDataStrings(html_source, profile);
   AddCommonStrings(html_source, profile);
   AddDownloadsStrings(html_source);
   AddLanguagesStrings(html_source);
