@@ -130,6 +130,11 @@ CHROMEOS_EXPORT std::unique_ptr<base::ListValue> TranslateNetworkListToONC(
 // there is no match. Only valid for ethernet, wifi, wimax, cellular, and vpn.
 CHROMEOS_EXPORT std::string TranslateONCTypeToShill(const std::string& type);
 
+// Returns the Shill security type corresponding to ONC |security| or an empty
+// string if there is no match. Only valid for wifi.
+CHROMEOS_EXPORT std::string TranslateONCSecurityToShill(
+    const std::string& security);
+
 // Inverse of TranslateONCTypeToShill.
 CHROMEOS_EXPORT std::string TranslateShillTypeToONC(const std::string& type);
 

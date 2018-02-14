@@ -78,8 +78,7 @@ Polymer({
     if (connectionState == this.connectionState_)
       return;
     this.connectionState_ = connectionState;
-    if (connectionState == CrOnc.ConnectionState.CONNECTED)
-      this.fire('network-connected', this.networkState);
+    this.fire('network-connect-changed', this.networkState);
   },
 
   /**
