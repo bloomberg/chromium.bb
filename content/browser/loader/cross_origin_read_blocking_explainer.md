@@ -2,8 +2,9 @@
 
 This document outlines Cross-Origin Read Blocking, an algorithm by which some
 dubious cross-origin resource loads may be identified and blocked by web
-browsers before they reach the web page. CORB offers a way to maintain same-
-origin protections on user data, even in the presence of side channel attacks.
+browsers before they reach the web page. CORB offers a way to maintain
+same-origin protections on user data, even in the presence of side channel
+attacks.
 
 
 ### The problem
@@ -158,6 +159,15 @@ shown that the following types of content can be CORB-protected:
  * Any response, when prefixed with certain XSSI-defeating patterns (this is
    a common convention for conveying JSON).
 
+> [lukasza@chromium.org] TODO: Rewrite the remainder of this section:
+> - Change *document*-vs-*resource* narrative to
+>   CORB-protected VS CORB-allowed (or non-CORB-eligible).
+> - Plain text = sniffing for HTML or XML or JSON
+> - Exclude PDF/ZIP/other from CORB and cover how web developers can protect
+>   PDF/ZIP/other resources even though the are not CORB-protected
+> - Cover how images/videos are not protected
+>   (mention possibility of an opt-in via header)
+
 CORB decides whether a response is a *document* or a *resource* primarily based
 on the Content-Type header.
 
@@ -258,8 +268,14 @@ is really a *document* by sniffing the response body:
 > all possible types of *documents* like `application/pdf`, `application/zip`,
 > etc.
 
-> [lukasza@chromium.org] Some *document* types are inherently not sniffable
-> (for example `text/plain`).
+> [lukasza@chromium.org] Some MIME types types are inherently not sniffable
+> (for example `application/octet-stream`).
+
+> [lukasza@chromium.org] TODO: Explain how text/plain sniffs for *any* of HTML,
+> XML or JSON.  Also discuss whether text/plain+nosniff should be different
+> from text/html+nosniff (the latter should be CORB-protected, not sure about
+> the former, given the still not understood media blocking that happens with
+> CORB).
 
 CORB should trust the `Content-Type` header in scenarios where sniffing
 shouldn't or cannot be done:
@@ -278,16 +294,146 @@ shouldn't or cannot be done:
 > range requests altogether).  Note that the alternative behavior doesn't help
 > with mislabeled text/plain responses (see also https://crbug.com/801709).
 
-Sniffing is a best-effort heuristic and for best security results, we recommend
-1) marking responses with the correct Content-Type header and 2) opting out of
-sniffing by using the `X-Content-Type-Options: nosniff` header.
+> [lukasza@chromium.org] We believe that mislabeling as HTML, JSON or XML is
+> most common.  TODO: are we able to back this up with some numbers?
+
+> [lukasza@chromium.org] Note that range requests are typically not issued
+> when making requests for scripts and/or stylesheets.
+
+Sniffing is a best-effort heuristic and for best security results, we
+recommend 1) marking responses with the correct Content-Type header and 2)
+opting out of sniffing by using the `X-Content-Type-Options: nosniff` header.
 
 
-### What is CORB compatibility with existing websites?
+### How CORB interacts with images?
+
+CORB should have no observable impact on `<img>` tags unless the image resource
+is both 1) mislabeled with an incorrect, non-image, CORB-protected Content-Type
+and 2) served with the `X-Content-Type-Options: nosniff` response header.
+
+Examples:
+
+* **Correctly-labeled HTML document**
+  * Resource used in an `<img>` tag:
+    * Body: an HTML document
+    * `Content-Type: text/html`
+    * No `X-Content-Type-Options` header
+  * Expected behavior: **no observable difference** in behavior with and without
+    CORB.  The rendered image should be the same broken image when 1) attempting
+    to render an html document as an image (without CORB) and 2) attempting to
+    render an empty response as an image (when CORB blocks the response).
+  * WPT test: `fetch/corb/img-html-correctly-labeled.sub.html`
+
+* **Mislabeled image (with sniffing)**
+  * Resource used in an `<img>` tag:
+    * Body: an image
+    * `Content-Type: text/html`
+    * No `X-Content-Type-Options` header
+  * Expected behavior: **no difference** in behavior with and without CORB.
+    CORB will sniff that the response body is *not* actually a CORB-protected
+    type and therefore will allow the response.
+  * WPT test: `fetch/corb/img-png-mislabeled-as-html.sub.html`
+
+* **Mislabeled image (nosniff)**
+  * Resource used in an `<img>` tag:
+    * Body: an image
+    * `Content-Type: text/html`
+    * `X-Content-Type-Options: nosniff`
+  * Expected behavior: **observable difference** in behavior in presence of CORB.
+    Because of the `nosniff` header, CORB will have to rely on the
+    `Content-Type` header.  Because this response is mislabeled (the body is an
+    image, but the `Content-Type` header says that it is a html document), CORB
+    will incorrectly classify the response as requiring CORB-protection.
+  * WPT test: `fetch/corb/img-png-mislabeled-as-html-nosniff.tentative.sub.html`
+
+In addition to the HTML `<img>` tag, the examples above should apply to other
+web features that consume images: `/favicon.ico`, SVG's `<image>`,
+`background-image` in stylesheets, painting images onto (potentially tainted)
+HTML's `<canvas>`, etc.
+
+> [lukasza@chromium.org] TODO: Figure out if we can measure and share how many
+> of CORB-blocked responses are 1) for `<img>` tag, 2) `nosniff`, 3) 200-or-206
+> status code, 4) non-zero (or non-available) Content-Length.  Cursory manual
+> testing on major websites indicates that most CORB-blocked images are tracking
+> pixels and therefore blocking them won't have any observable effect.
+
+
+### How CORB interacts with other multimedia?
+
+TODO.
+
+* TODO: audio/video - mostly like images, but note that 206 response is more
+  likely (which today CORB treats as a nosniff signal - not sure if this is
+  right: we need to block test/html+206+nosniff, but I am not sure if should
+  block text/html+206 without nosniff - especially since we already recommend
+  against supporting range requests for sensitive documents).
+
+### How CORB interacts with scripts?
+
+TODO.
+
+* TODO: **Correctly-labeled HTML document**
+  * Observable via syntax errors
+    [GlobalEventHandlers.onerror](https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onerror)
+  * Add discussion that some JSON parser breakers result in syntax errors and
+    some don't.
+  * Resource used in a `<script>` tag: TODO.
+
+* TODO: **Mislabeled script (with sniffing)**
+  * Non-observable due to sniffing
+
+* TODO: **Mislabeled script (nosniff)**
+  * QUESTION: Will nosniff prevent non-CORB from working?  (if yes - great: CORB
+    has no observable effects in this scenario).
+
+In addition to the HTML `<script>` tag, the examples above should apply to other
+web features that consume JavaScript including
+[script-like destinations](https://fetch.spec.whatwg.org/#request-destination-script-like)
+like `importScripts()`, `navigator.serviceWorker.register()`,
+`audioWorkler.addModule()`, etc.
+
+
+### How CORB interacts with stylesheets?
+
+TODO.
+
+* TODO: **Correctly-labeled HTML document**
+  * Non-observable?
+  * Resource used in a `<link rel="stylesheet" href="...">` tag: TODO.
+
+* TODO: **Mislabeled stylesheet (with sniffing)**
+  * Non-observable due to sniffing?
+
+* TODO: **Mislabeled stylesheet (nosniff)**
+  * QUESTION: Will nosniff prevent non-CORB from working?  (if yes - great: CORB
+    has no observable effects in this scenario).
+
+* TODO: **Correctly-labeled stylesheet with JSON parser breaker**
+  * Non-observable, because JSON-parser-breaking is not performed for text/css
+
+* TODO: **Polyglot HTML/CSS labeled as text/html**.
+  * QUESTION: text/html will be rejected even without CORB?
+  * Example:
+```css
+<!DOCTYPE html>
+<style> h2 {}
+h1 { color: blue; }
+</style>
+```
+
+
+### How CORB interacts with other web platform features?
 
 CORB has no impact on the following scenarios:
 
-* **Prefetch**
+* **[XHR](https://xhr.spec.whatwg.org/) and
+  [fetch()](https://fetch.spec.whatwg.org/#dom-global-fetch)**
+  * CORB has no observable effect, because [XHR](https://xhr.spec.whatwg.org/)
+    and [fetch()](https://fetch.spec.whatwg.org/#dom-global-fetch) already apply
+    same-origin policy to the responses (e.g. CORB should only block responses
+    that would result in cross-origin XHR errors because of lack of CORS).
+
+* **[Prefetch](https://html.spec.whatwg.org/#link-type-prefetch)**
   * CORB blocks response body from reaching a cross-origin renderer, but
     CORB doesn't prevent the response body from being cached by the browser
     process (and subsequently delivered into another, same-origin renderer
@@ -314,76 +460,8 @@ CORB has no impact on the following scenarios:
     responses without changing the service worker's behavior ('opaque' responses
     have a non-accessible body even without CORB).
 
-If CORB can reliably distinguish *documents* from *resources*, then CORB should
-be mostly non-disruptive and effectively transparent to websites.  For example,
-`<img src="https://example.com/document.html">` should behave the same when
-given an HTML document without CORB and when given an empty response body in
-presence of CORB.  Still, there are some cases where CORB can cause observable
-changes in web behavior, even when sniffing identifies the response as requiring
-protection:
-
-* **HTML response which is also a valid CSS**.
-  Some responses may sniff as valid HTML, but might also parse as valid CSS.
-  When such responses get blocked by CORB, it may break websites using them
-  as stylesheets.  Example of such a polyglot response:
-```css
-<!DOCTYPE html>
-<style> h2 {}
-h1 { color: blue; }
-</style>
-```
-
-* **Javascript syntax errors**.
-  HTML document loaded into a `<script>` element will typically result in syntax
-  errors which can be observed via
-  [GlobalEventHandlers.onerror](https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onerror)
-  event handler.  Since CORB replaces body of HTML documents with an empty body,
-  no syntax error will be reported when CORB is present.
-
-> [lukasza@chromium.org] Maybe CORB should instead replace the response body
-> with something like "Blocked by CORB" (which would still trigger a syntax
-> error).  Not sure if it is really worth 1) the effort and 2) inconsistency
-> with filtered/opaque response from Fetch spec.
-
-CORB can mistakenly treat a *resource* as if it were a *document* when **both**
-of the following conditions take place:
-
-* The Content-Type header incorrectly indicates that the response is a
-  *document* because either
-  - An incorrect Content-Type header is present and is not one of explicitly
-    whitelisted types (not an image/*, application/javascript, multipart/*,
-    etc.).
-  - The Content-Type header is missing
-
-* CORB is not able to confirm that the Content-Type matches response body, when
-  either:
-  - `X-Content-Type-Options: nosniff` header is present.
-  - The Content-Type is not one of types sniffable by CORB (HTML, JSON or XML).
-  - The response is a 206 content range responses with a single-range.
-
-> [lukasza@chromium.org] We believe that mislabeling as HTML, JSON or XML is
-> most common.  TODO: are we able to back this up with some numbers?
-
-> [lukasza@chromium.org] Note that range requests are typically not issued
-> when making requests for scripts and/or stylesheets.
-
-When CORB mistakenly treats a *resource* as if it were a *document*, then it may
-have the following effect observable either by scripts or users (possibly
-breaking the website that depends on the mislabeled *resources*):
-
-* Rendering of blocked images, videos, audio may be broken
-* Scripts may not execute
-* Stylesheets may not apply
-
-> [lukasza@chromium.org] TODO: Try to quantify how many websites might be
-> impacted.  This discussion will probably have to take place (or at least
-> start) in a Chrome-internal document - AFAIK UMA results should not be
-> shared publicly :-/
-
-Note that CORB is inactive in the following scenarios:
-
-* Requests allowed via CORS
-* Requests initiated by content scripts or plugins
+* **Content scripts and plugins**
+  * TODO...
 
 > [lukasza@chromium.org] TODO: Do we need to be more explicit about handling of
 > requests initiated by plugins?
@@ -416,7 +494,7 @@ CORB demo page: https://anforowicz.github.io/xsdb-demo/index.html
   * CORB MAY block cross-origin responses from non-HTTP/HTTPS origins.
 
 > [lukasza@chromium.org] Should the filesystem/blob part be somehow weaved into
-> one of explainer sections above?
+> one of explainer sections above?  WPT tests?
 
 * Initiator origins
     * CORB SHOULD block responses for requests initiated from HTTP/HTTPS origins.
