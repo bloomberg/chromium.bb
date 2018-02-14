@@ -23,6 +23,9 @@ class BASE_EXPORT DiscardableMemoryAllocator {
   // Ownership of |instance| remains with the caller.
   static void SetInstance(DiscardableMemoryAllocator* allocator);
 
+  // Giant WARNING: Discardable[Shared]Memory is only implemented on Android. On
+  // non-Android platforms, it behaves exactly the same as SharedMemory.
+  // See LockPages() in discardable_shared_memory.cc.
   virtual std::unique_ptr<DiscardableMemory> AllocateLockedDiscardableMemory(
       size_t size) = 0;
 
