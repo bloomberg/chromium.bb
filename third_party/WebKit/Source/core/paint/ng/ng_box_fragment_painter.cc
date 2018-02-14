@@ -661,21 +661,19 @@ void NGBoxFragmentPainter::PaintOverflowControlsIfNeeded(
       box_fragment_.Style().Visibility() == EVisibility::kVisible &&
       ShouldPaintSelfBlockBackground(paint_info.phase) &&
       !paint_info.PaintRootBackgroundOnly()) {
-    LayoutObject* layout_object = PhysicalFragment().GetLayoutObject();
-    if (layout_object->IsLayoutBlock()) {
-      LayoutBlock* layout_block = ToLayoutBlock(layout_object);
-      Optional<ClipRecorder> clip_recorder;
-      if (!layout_block->Layer()->IsSelfPaintingLayer()) {
-        LayoutRect clip_rect = layout_block->BorderBoxRect();
-        clip_rect.MoveBy(paint_offset);
-        clip_recorder.emplace(paint_info.context, *layout_block,
-                              DisplayItem::kClipScrollbarsToBoxBounds,
-                              PixelSnappedIntRect(clip_rect));
-      }
-      ScrollableAreaPainter(*layout_block->Layer()->GetScrollableArea())
-          .PaintOverflowControls(paint_info, RoundedIntPoint(paint_offset),
-                                 false /* painting_overlay_controls */);
+    const NGPhysicalBoxFragment& fragment = PhysicalFragment();
+    Optional<ClipRecorder> clip_recorder;
+    if (!fragment.Layer()->IsSelfPaintingLayer()) {
+      LayoutRect clip_rect =
+          LayoutRect(LayoutPoint(), fragment.Size().ToLayoutSize());
+      clip_rect.MoveBy(paint_offset);
+      clip_recorder.emplace(paint_info.context, box_fragment_,
+                            DisplayItem::kClipScrollbarsToBoxBounds,
+                            PixelSnappedIntRect(clip_rect));
     }
+    ScrollableAreaPainter(*fragment.Layer()->GetScrollableArea())
+        .PaintOverflowControls(paint_info, RoundedIntPoint(paint_offset),
+                               false /* painting_overlay_controls */);
   }
 }
 
@@ -785,10 +783,9 @@ bool NGBoxFragmentPainter::NodeAtPoint(
     return true;
   }
 
-  // TODO(eae): Implement once we support clipping in LayoutNG.
-  // if (style.HasBorderRadius() &&
-  //     HitTestClippedOutByBorder(location_in_container, adjusted_location))
-  // return false;
+  if (style.HasBorderRadius() &&
+      HitTestClippedOutByBorder(location_in_container, adjusted_location))
+    return false;
 
   // Now hit test ourselves.
   if (hit_test_self && VisibleToHitTestRequest(result.GetHitTestRequest())) {
@@ -904,6 +901,16 @@ bool NGBoxFragmentPainter::HitTestChildren(
   }
 
   return false;
+}
+
+bool NGBoxFragmentPainter::HitTestClippedOutByBorder(
+    const HitTestLocation& location_in_container,
+    const LayoutPoint& border_box_location) const {
+  const ComputedStyle& style = box_fragment_.Style();
+  LayoutRect rect =
+      LayoutRect(LayoutPoint(), PhysicalFragment().Size().ToLayoutSize());
+  rect.MoveBy(border_box_location);
+  return !location_in_container.Intersects(style.GetRoundedBorderFor(rect));
 }
 
 const NGPhysicalBoxFragment& NGBoxFragmentPainter::PhysicalFragment() const {

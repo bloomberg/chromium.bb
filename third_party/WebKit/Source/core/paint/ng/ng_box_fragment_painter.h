@@ -120,6 +120,8 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                            const NGPhysicalFragment&,
                            const HitTestLocation& location_in_container,
                            const LayoutPoint& accumulated_offset);
+  bool HitTestClippedOutByBorder(const HitTestLocation&,
+                                 const LayoutPoint& border_box_location) const;
 
   const NGPhysicalBoxFragment& PhysicalFragment() const;
 
