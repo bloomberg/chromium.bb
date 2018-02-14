@@ -3695,8 +3695,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
   }
 
-  web::NavigationManager* navManager = self.webState->GetNavigationManager();
-  web::NavigationItem* currentNavItem = navManager->GetLastCommittedItem();
+  web::NavigationManagerImpl& navManager =
+      _webStateImpl->GetNavigationManagerImpl();
+  web::NavigationItem* currentNavItem = navManager.GetLastCommittedItem();
   if (!currentNavItem) {
     return;
   }
@@ -3704,7 +3705,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   if (!_SSLStatusUpdater) {
     _SSLStatusUpdater =
         [[CRWSSLStatusUpdater alloc] initWithDataSource:self
-                                      navigationManager:navManager];
+                                      navigationManager:&navManager];
     [_SSLStatusUpdater setDelegate:self];
   }
   NSString* host = base::SysUTF8ToNSString(_documentURL.host());
@@ -4467,10 +4468,15 @@ registerLoadRequestForURL:(const GURL&)requestURL
   web::NavigationContextImpl* context =
       [_navigationStates contextForNavigation:navigation];
   context->SetUrl(webViewURL);
-  web::NavigationItem* item = web::GetItemWithUniqueID(
+  web::NavigationItemImpl* item = web::GetItemWithUniqueID(
       self.navigationManagerImpl, context->GetNavigationItemUniqueID());
   item->SetVirtualURL(webViewURL);
   item->SetURL(webViewURL);
+  // Redirects (3xx response code), must change POST requests to GETs.
+  item->SetPostData(nil);
+  item->ResetHttpRequestHeaders();
+
+  _lastTransferTimeInSeconds = CFAbsoluteTimeGetCurrent();
 }
 
 - (void)webView:(WKWebView*)webView

@@ -165,6 +165,16 @@ class NavigationManagerImpl : public NavigationManager {
   void Reload(ReloadType reload_type, bool check_for_reposts) final;
   void LoadIfNecessary() final;
 
+  // Implementation for corresponding NavigationManager getters.
+  virtual NavigationItemImpl* GetPendingItemImpl() const = 0;
+  virtual NavigationItemImpl* GetTransientItemImpl() const = 0;
+  virtual NavigationItemImpl* GetLastCommittedItemImpl() const = 0;
+
+  // Identical to GetItemAtIndex() but returns the underlying NavigationItemImpl
+  // instead of the public NavigationItem interface.
+  virtual NavigationItemImpl* GetNavigationItemImplAtIndex(
+      size_t index) const = 0;
+
  protected:
   // The SessionStorageBuilder functions require access to private variables of
   // NavigationManagerImpl.
@@ -201,17 +211,6 @@ class NavigationManagerImpl : public NavigationManager {
   // Returns the most recent NavigationItem that does not have an app-specific
   // URL.
   NavigationItem* GetLastCommittedNonAppSpecificItem() const;
-
-  // Identical to GetItemAtIndex() but returns the underlying NavigationItemImpl
-  // instead of the public NavigationItem interface. This is used by
-  // SessionStorageBuilder to persist session state.
-  virtual NavigationItemImpl* GetNavigationItemImplAtIndex(
-      size_t index) const = 0;
-
-  // Implementation for corresponding NavigationManager getters.
-  virtual NavigationItemImpl* GetPendingItemImpl() const = 0;
-  virtual NavigationItemImpl* GetTransientItemImpl() const = 0;
-  virtual NavigationItemImpl* GetLastCommittedItemImpl() const = 0;
 
   // Subclass specific implementation to update session state.
   virtual void FinishGoToIndex(int index, NavigationInitiationType type) = 0;

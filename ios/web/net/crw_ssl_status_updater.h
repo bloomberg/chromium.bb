@@ -14,7 +14,7 @@
 
 namespace web {
 class NavigationItem;
-class NavigationManager;
+class NavigationManagerImpl;
 }
 
 @protocol CRWSSLStatusUpdaterDataSource;
@@ -30,7 +30,8 @@ class NavigationManager;
 // as a weak pointer and must outlive updater. |dataSource| can not be nil, will
 // be stored as a weak reference and must outlive updater.
 - (instancetype)initWithDataSource:(id<CRWSSLStatusUpdaterDataSource>)dataSource
-                 navigationManager:(web::NavigationManager*)navigationManager
+                 navigationManager:
+                     (web::NavigationManagerImpl*)navigationManager
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
