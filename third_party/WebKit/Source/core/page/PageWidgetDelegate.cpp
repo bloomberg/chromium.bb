@@ -256,31 +256,6 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
   }
 }
 
-// This is called early enough in the pipeline that we don't need to worry about
-// javascript dispatching untrusted input events.
-void PageWidgetDelegate::ReportFirstInputDelay(const WebInputEvent& event,
-                                               LocalFrame* root) {
-  if (event.GetType() != WebInputEvent::kMouseDown &&
-      event.GetType() != WebInputEvent::kKeyDown &&
-      event.GetType() != WebInputEvent::kRawKeyDown &&
-      event.GetType() != WebInputEvent::kGestureTap)
-    return;
-
-  Document* document = root->GetDocument();
-  DCHECK(document);
-
-  InteractiveDetector* interactive_detector(
-      InteractiveDetector::From(*document));
-
-  // interactive_detector is null in the OOPIF case.
-  // TODO(crbug.com/808089): report across OOPIFs.
-  if (!interactive_detector)
-    return;
-
-  interactive_detector->OnFirstInputDelay(TimeDelta::FromSecondsD(
-      CurrentTimeTicksInSeconds() - event.TimeStampSeconds()));
-}
-
 // ----------------------------------------------------------------
 // Default handlers for PageWidgetEventHandler
 
