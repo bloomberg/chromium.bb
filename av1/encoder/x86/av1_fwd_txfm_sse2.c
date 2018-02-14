@@ -2452,7 +2452,7 @@ FwdTxfm2dFuncSSE2 fwd_txfm2d_func_ls[TX_SIZES_ALL] = {
 #if CONFIG_TX64X64
   NULL,                             // 64x64 transform
 #endif                              // CONFIG_TX64X64
-  NULL,                             // 4x8 transform
+  av1_lowbd_fwd_txfm2d_4x8_sse2,    // 4x8 transform
   av1_lowbd_fwd_txfm2d_8x4_sse2,    // 8x4 transform
   av1_lowbd_fwd_txfm2d_8x16_sse2,   // 8x16 transform
   av1_lowbd_fwd_txfm2d_16x8_sse2,   // 16x8 transform
