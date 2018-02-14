@@ -78,8 +78,6 @@
         width: 12px;
       }
     </style>
-    <!-- TODO(scottchen): figure out what to show if sign-in (not just sync)
-        is not even allowed by policy (crbug/807061). -->
     <div class="settings-box first two-line" hidden="[[syncStatus.signedIn]]">
       <div class="start">
         <div>[[promoLabel]]</div>
@@ -115,17 +113,15 @@
               class="icon-arrow-dropdown" hidden="[[syncStatus.signedIn]]">
           </button>
         </div>
-        <!-- TODO(scottchen): Disable if sync not allowed by policy
-            (crbug/807061). -->
         <paper-button class="action-button" on-tap="onSyncButtonTap_"
-            hidden="[[syncStatus.signedIn]]">
+            hidden="[[syncStatus.signedIn]]"
+            disabled="[[syncStatus.setupInProgress]]">
           [[getSubstituteLabel_(
               '$i18nPolymer{syncAsName}', shownAccount_.fullName)]]
         </paper-button>
-        <!-- TODO(scottchen): Find out if there's a policy that forbids
-            turning off sync. If so, disable button (crbug/807061). -->
         <paper-button class="secondary-button" on-tap="onTurnOffButtonTap_"
-            hidden="[[!syncStatus.signedIn]]">
+            hidden="[[!syncStatus.signedIn]]"
+            disabled="[[syncStatus.setupInProgress]]">
           $i18n{turnOffSync}
         </paper-button>
       </div>
@@ -138,7 +134,8 @@
               <span class="email">[[item.email]]</span>
             </button>
           </template>
-          <button class="dropdown-item" on-tap="onSigninTap_" slot="item">
+          <button class="dropdown-item" on-tap="onSigninTap_" slot="item"
+              disabled="[[syncStatus.setupInProgress]]">
             <img class="account-icon small"
                 src="chrome://theme/IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE">
             <span class="email">$i18n{useAnotherAccount}</span>

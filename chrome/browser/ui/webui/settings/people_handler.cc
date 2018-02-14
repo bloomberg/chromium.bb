@@ -858,8 +858,6 @@ PeopleHandler::GetSyncStatusDictionary() {
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
   sync_status->SetBoolean("signinAllowed", signin->IsSigninAllowed());
   sync_status->SetBoolean("syncSystemEnabled", (service != nullptr));
-  sync_status->SetBoolean("setupCompleted",
-                          service && service->IsFirstSetupComplete());
   sync_status->SetBoolean(
       "setupInProgress",
       service && !service->IsManaged() && service->IsFirstSetupInProgress());
