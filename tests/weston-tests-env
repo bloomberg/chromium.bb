@@ -44,7 +44,7 @@ case $TEST_FILE in
 		WESTON_BUILD_DIR=$abs_builddir \
 		WESTON_TEST_REFERENCE_PATH=$abs_top_srcdir/tests/reference \
 		$WESTON --backend=$MODDIR/$BACKEND \
-			--config=$abs_builddir/tests/weston-ivi.ini \
+			--no-config \
 			--shell=$SHELL_PLUGIN \
 			--socket=test-${TEST_NAME} \
 			--modules=$TEST_PLUGIN,$MODDIR/${TEST_FILE/.la/.so}\
@@ -74,7 +74,7 @@ case $TEST_FILE in
 		WESTON_TEST_REFERENCE_PATH=$abs_top_srcdir/tests/reference \
 		WESTON_TEST_CLIENT_PATH=$abs_builddir/$TEST_FILE \
 		$WESTON --backend=$MODDIR/$BACKEND \
-			--config=$abs_builddir/tests/weston-ivi.ini \
+			--no-config \
 			--shell=$SHELL_PLUGIN \
 			--socket=test-${TEST_NAME} \
 			--modules=$TEST_PLUGIN \

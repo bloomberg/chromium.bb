@@ -30,15 +30,6 @@ ivi-shell/weston.ini : $(srcdir)/ivi-shell/weston.ini.in
 		-e 's|@plugin_prefix[@]||g' \
 		$< > $@
 
-tests/weston-ivi.ini : $(srcdir)/ivi-shell/weston.ini.in
-	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(SED) \
-		-e 's|@bindir[@]|$(bindir)|g' \
-		-e 's|@abs_top_builddir[@]|$(abs_top_builddir)|g' \
-		-e 's|@abs_top_srcdir[@]|$(abs_top_srcdir)|g' \
-		-e 's|@libexecdir[@]|$(abs_builddir)|g' \
-		-e 's|@plugin_prefix[@]|$(abs_top_builddir)/.libs/|g' \
-		$< > $@
-
 all-local : weston.ini ivi-shell/weston.ini
 
 AM_CFLAGS = $(GCC_CFLAGS)
@@ -56,7 +47,6 @@ AM_CPPFLAGS = 					\
 
 CLEANFILES = weston.ini				\
 	ivi-shell/weston.ini			\
-	tests/weston-ivi.ini			\
 	internal-screenshot-00.png		\
 	$(BUILT_SOURCES)
 
@@ -1234,10 +1224,6 @@ weston_tests =					\
 	devices.weston				\
 	touch.weston
 
-ivi_tests =
-
-$(ivi_tests) : $(builddir)/tests/weston-ivi.ini
-
 AM_TESTS_ENVIRONMENT = \
 	abs_builddir='$(abs_builddir)'; export abs_builddir; \
 	abs_top_srcdir='$(abs_top_srcdir)'; export abs_top_srcdir;
@@ -1468,7 +1454,7 @@ nodist_ivi_layout_test_la_SOURCES =		\
 	protocol/weston-test-protocol.c		\
 	protocol/weston-test-server-protocol.h
 
-ivi_tests +=					\
+ivi_tests =					\
 	ivi-shell-app.weston
 
 ivi_shell_app_weston_SOURCES = tests/ivi-shell-app-test.c
