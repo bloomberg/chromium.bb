@@ -2527,7 +2527,7 @@ RenderThreadImpl::SharedCompositorWorkerContextProvider() {
   bool support_oop_rasterization =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableOOPRasterization);
-  bool support_gles2_interface = false;
+  bool support_gles2_interface = !support_oop_rasterization;
   bool support_raster_interface = true;
   shared_worker_context_provider_ = CreateOffscreenContext(
       std::move(gpu_channel_host), GetGpuMemoryBufferManager(),

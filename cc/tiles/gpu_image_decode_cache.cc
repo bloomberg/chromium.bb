@@ -24,6 +24,7 @@
 #include "cc/tiles/mipmap_util.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "gpu/command_buffer/client/context_support.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -234,7 +235,7 @@ void DeleteSkImageAndPreventCaching(viz::RasterContextProvider* context,
     // Delete |original_image_owned| as Skia will not clean it up. We are
     // holding the context lock here, so we can delete immediately.
     uint32_t texture_id = GlIdFromSkImage(image_owned.get());
-    context->RasterInterface()->DeleteTextures(1, &texture_id);
+    context->ContextGL()->DeleteTextures(1, &texture_id);
   }
 }
 
@@ -1449,7 +1450,7 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
     if (image_data->mode == DecodedDataMode::kGpu) {
       // Notify the discardable system of this image so it will count against
       // budgets.
-      context_->RasterInterface()->InitializeDiscardableTextureCHROMIUM(
+      context_->ContextGL()->InitializeDiscardableTextureCHROMIUM(
           image_data->upload.gl_id());
     }
   }
@@ -1522,7 +1523,7 @@ void GpuImageDecodeCache::RunPendingContextThreadOperations() {
   images_pending_complete_lock_.clear();
 
   for (auto* image : images_pending_unlock_) {
-    context_->RasterInterface()->UnlockDiscardableTextureCHROMIUM(
+    context_->ContextGL()->UnlockDiscardableTextureCHROMIUM(
         GlIdFromSkImage(image));
   }
   if (images_pending_unlock_.size() > 0) {
@@ -1540,9 +1541,8 @@ void GpuImageDecodeCache::RunPendingContextThreadOperations() {
 
   for (auto& image : images_pending_deletion_) {
     uint32_t texture_id = GlIdFromSkImage(image.get());
-    if (context_->RasterInterface()->LockDiscardableTextureCHROMIUM(
-            texture_id)) {
-      context_->RasterInterface()->DeleteTextures(1, &texture_id);
+    if (context_->ContextGL()->LockDiscardableTextureCHROMIUM(texture_id)) {
+      context_->ContextGL()->DeleteTextures(1, &texture_id);
     }
   }
   images_pending_deletion_.clear();
@@ -1584,7 +1584,7 @@ bool GpuImageDecodeCache::TryLockImage(HaveContextLock have_context_lock,
       return true;
     }
   } else if (have_context_lock == HaveContextLock::kYes &&
-             context_->RasterInterface()->LockDiscardableTextureCHROMIUM(
+             context_->ContextGL()->LockDiscardableTextureCHROMIUM(
                  data->upload.gl_id())) {
     DCHECK(!use_transfer_cache_);
     DCHECK(data->mode == DecodedDataMode::kGpu);
