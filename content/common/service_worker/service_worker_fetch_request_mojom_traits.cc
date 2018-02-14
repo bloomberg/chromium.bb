@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/service_worker/service_worker_fetch_request_struct_traits.h"
+#include "content/common/service_worker/service_worker_fetch_request_mojom_traits.h"
 
 #include "base/logging.h"
 #include "content/public/common/referrer_struct_traits.h"
@@ -225,15 +225,6 @@ bool EnumTraits<ServiceWorkerFetchType, content::ServiceWorkerFetchType>::
   }
 
   return false;
-}
-
-std::map<std::string, std::string>
-StructTraits<blink::mojom::FetchAPIRequestDataView,
-             content::ServiceWorkerFetchRequest>::
-    headers(const content::ServiceWorkerFetchRequest& request) {
-  std::map<std::string, std::string> header_map;
-  header_map.insert(request.headers.begin(), request.headers.end());
-  return header_map;
 }
 
 bool StructTraits<blink::mojom::FetchAPIRequestDataView,

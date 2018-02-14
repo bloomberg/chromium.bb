@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_FETCH_REQUEST_STRUCT_TRAITS_H_
-#define CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_FETCH_REQUEST_STRUCT_TRAITS_H_
+#ifndef CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_FETCH_REQUEST_MOJOM_TRAITS_H_
+#define CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_FETCH_REQUEST_MOJOM_TRAITS_H_
 
 #include "base/numerics/safe_conversions.h"
 #include "content/public/common/referrer.h"
@@ -65,8 +65,12 @@ struct StructTraits<blink::mojom::FetchAPIRequestDataView,
     return request.method;
   }
 
-  static std::map<std::string, std::string> headers(
-      const content::ServiceWorkerFetchRequest& request);
+  static std::map<std::string,
+                  std::string,
+                  content::ServiceWorkerCaseInsensitiveCompare>
+  headers(const content::ServiceWorkerFetchRequest& request) {
+    return request.headers;
+  }
 
   static const std::string& blob_uuid(
       const content::ServiceWorkerFetchRequest& request) {
@@ -133,4 +137,4 @@ struct StructTraits<blink::mojom::FetchAPIRequestDataView,
 
 }  // namespace mojo
 
-#endif  // CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_FETCH_REQUEST_STRUCT_TRAITS_H_
+#endif  // CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_FETCH_REQUEST_MOJOM_TRAITS_H_
