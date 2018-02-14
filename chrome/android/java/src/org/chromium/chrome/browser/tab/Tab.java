@@ -94,9 +94,7 @@ import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
-import org.chromium.chrome.browser.widget.AnchoredPopupWindow;
 import org.chromium.chrome.browser.widget.PulseDrawable;
-import org.chromium.chrome.browser.widget.ViewRectProvider;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -127,6 +125,8 @@ import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.mojom.WindowOpenDisposition;
+import org.chromium.ui.widget.AnchoredPopupWindow;
+import org.chromium.ui.widget.ViewRectProvider;
 
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;

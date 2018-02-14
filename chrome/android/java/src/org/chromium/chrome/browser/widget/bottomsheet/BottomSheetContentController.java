@@ -50,7 +50,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.ViewHighlighter;
-import org.chromium.chrome.browser.widget.ViewRectProvider;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.base.BottomNavigationView;
@@ -58,6 +57,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.base.BottomNavigationView.
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.widget.ViewRectProvider;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

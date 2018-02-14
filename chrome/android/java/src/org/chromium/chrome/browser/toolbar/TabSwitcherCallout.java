@@ -12,8 +12,8 @@ import android.view.View;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.ViewRectProvider;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
+import org.chromium.ui.widget.ViewRectProvider;
 
 /**
  * Draws a bubble pointing upward at the tab switcher button.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.ui.widget;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -21,7 +21,6 @@ import android.widget.PopupWindow.OnDismissListener;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.util.MathUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -484,7 +483,7 @@ public class AnchoredPopupWindow implements OnTouchListener, RectProvider.Observ
 
         // In landscape mode, root view includes the decorations in some devices. So we guard the
         // window dimensions against |windowRect.right| instead.
-        return MathUtils.clamp(x, marginPx, windowRect.right - popupWidth - marginPx);
+        return clamp(x, marginPx, windowRect.right - popupWidth - marginPx);
     }
 
     @VisibleForTesting
@@ -504,5 +503,16 @@ public class AnchoredPopupWindow implements OnTouchListener, RectProvider.Observ
         boolean returnValue = mTouchListener != null && mTouchListener.onTouch(v, event);
         if (mDismissOnTouchInteraction) dismiss();
         return returnValue;
+    }
+
+    private static int clamp(int value, int a, int b) {
+        int min = (a > b) ? b : a;
+        int max = (a > b) ? a : b;
+        if (value < min) {
+            value = min;
+        } else if (value > max) {
+            value = max;
+        }
+        return value;
     }
 }

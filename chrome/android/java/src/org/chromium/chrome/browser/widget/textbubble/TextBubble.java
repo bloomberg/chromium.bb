@@ -23,9 +23,9 @@ import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.MathUtils;
-import org.chromium.chrome.browser.widget.AnchoredPopupWindow;
-import org.chromium.chrome.browser.widget.RectProvider;
-import org.chromium.chrome.browser.widget.ViewRectProvider;
+import org.chromium.ui.widget.AnchoredPopupWindow;
+import org.chromium.ui.widget.RectProvider;
+import org.chromium.ui.widget.ViewRectProvider;
 
 import java.util.HashSet;
 import java.util.Set;
