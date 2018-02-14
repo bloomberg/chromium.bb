@@ -229,16 +229,9 @@ are declared in build/common.gypi.
       <message name="IDS_PERMISSIONS_BUBBLE_PERSIST_TEXT" desc="The label for the checkbox used to allow users to optionally persist a permission request decision">
         Remember my decision
       </message>
-      <if expr="use_titlecase">
-        <message name="IDS_PERMISSIONS_BUBBLE_PROMPT" desc="In Title Case: The label that is used to introduce permission request details to the user in a popup.">
-          <ph name="SITE_NAME">$1<ex>google.com</ex></ph> Wants To
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_PERMISSIONS_BUBBLE_PROMPT" desc="The label that is used to introduce permission request details to the user in a popup.">
-          <ph name="SITE_NAME">$1<ex>google.com</ex></ph> wants to
-        </message>
-      </if>
+      <message name="IDS_PERMISSIONS_BUBBLE_PROMPT" desc="The label that is used to introduce permission request details to the user in a popup.">
+        <ph name="SITE_NAME">$1<ex>google.com</ex></ph> wants to
+      </message>
       <message name="IDS_PERMISSIONS_BUBBLE_ACCESSIBLE_TITLE" desc="The sentence read out by screen readers to describe the permission request popup.">
         <ph name="SITE_NAME">$1<ex>google.com</ex></ph> has a permission request.
       </message>
@@ -1516,34 +1509,18 @@ are declared in build/common.gypi.
           Dangerous download blocked
         </message>
       </if>
-      <if expr="use_titlecase">
-        <message name="IDS_CONFIRM_KEEP_DANGEROUS_DOWNLOAD_TITLE"
-                 desc="In Title Case: Title for the confirmation dialog asking whether the user really meant to keep a dangerous download">
-          Confirm Download
-        </message>
-        <message name="IDS_KEEP_DANGEROUS_DOWNLOAD_TITLE"
-                 desc="In Title Case: Title for the confirmation dialog asking whether the user really meant to keep a dangerous download">
-          Keep Dangerous File?
-        </message>
-        <message name="IDS_KEEP_UNCOMMON_DOWNLOAD_TITLE"
-                 desc="In Title Case: Title for the confirmation dialog asking whether the user really meant to keep an uncommon download">
-          Keep File?
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_CONFIRM_KEEP_DANGEROUS_DOWNLOAD_TITLE"
-                 desc="Title for the confirmation dialog asking whether the user really meant to keep a dangerous download">
-          Confirm download
-        </message>
-        <message name="IDS_KEEP_DANGEROUS_DOWNLOAD_TITLE"
-                 desc="Title for the confirmation dialog asking whether the user really meant to keep a dangerous download">
-          Keep dangerous file?
-        </message>
-        <message name="IDS_KEEP_UNCOMMON_DOWNLOAD_TITLE"
-                 desc="Title for the confirmation dialog asking whether the user really meant to keep an uncommon download">
-          Keep file?
-        </message>
-      </if>
+      <message name="IDS_CONFIRM_KEEP_DANGEROUS_DOWNLOAD_TITLE"
+               desc="Title for the confirmation dialog asking whether the user really meant to keep a dangerous download">
+        Confirm download
+      </message>
+      <message name="IDS_KEEP_DANGEROUS_DOWNLOAD_TITLE"
+               desc="Title for the confirmation dialog asking whether the user really meant to keep a dangerous download">
+        Keep dangerous file?
+      </message>
+      <message name="IDS_KEEP_UNCOMMON_DOWNLOAD_TITLE"
+               desc="Title for the confirmation dialog asking whether the user really meant to keep an uncommon download">
+        Keep file?
+      </message>
       <message name="IDS_PROMPT_CONFIRM_KEEP_DANGEROUS_DOWNLOAD"
                desc="Prompt text for the confirmation dialog asking whether the user really meant to keep a dangerous download">
         This file may be harmful for your computer.
@@ -2110,16 +2087,9 @@ are declared in build/common.gypi.
 
       <!-- "Create application shortcuts" dialog -->
       <if expr="not is_macosx">
-        <if expr="not use_titlecase">
-          <message name="IDS_CREATE_SHORTCUTS_TITLE" desc="Title of the dialog to create application shortcuts for current page.">
-            Create application shortcuts
-          </message>
-        </if>
-        <if expr="use_titlecase">
-          <message name="IDS_CREATE_SHORTCUTS_TITLE" desc="In Title Case: title of the dialog to create application shortcuts for current page.">
-            Create Application Shortcuts
-          </message>
-        </if>
+        <message name="IDS_CREATE_SHORTCUTS_TITLE" desc="Title of the dialog to create application shortcuts for current page.">
+          Create application shortcuts
+        </message>
         <message name="IDS_CREATE_SHORTCUTS_LABEL" desc="Contents of the main label in the create application shortcuts dialog explaining the dialog.">
           Add shortcuts to the following places:
         </message>
@@ -2146,16 +2116,9 @@ are declared in build/common.gypi.
       </if>
 
       <!-- Web Share Target picker dialog -->
-      <if expr="not use_titlecase">
-        <message name="IDS_WEBSHARE_TARGET_PICKER_TITLE" desc="Title of the dialog to choose a target for sharing.">
-          Share via
-        </message>
-      </if>
-      <if expr="use_titlecase">
-        <message name="IDS_WEBSHARE_TARGET_PICKER_TITLE" desc="Title of the dialog to choose a target for sharing.">
-          Share Via
-        </message>
-      </if>
+      <message name="IDS_WEBSHARE_TARGET_PICKER_TITLE" desc="Title of the dialog to choose a target for sharing.">
+        Share via
+      </message>
       <message name="IDS_WEBSHARE_TARGET_PICKER_LABEL" desc="Text of the main label in the dialog to choose a target for sharing.">
         Choose an app to share to:
       </message>
@@ -2185,22 +2148,12 @@ are declared in build/common.gypi.
       <message name="IDS_BLOCKED_DOWNLOADS_LINK" desc="Link to downloads section of content blocking management dialog, displayed in bubble when a page tries to download files automatically.">
         Manage download settings...
       </message>
-      <if expr="use_titlecase">
-        <message name="IDS_ALLOWED_DOWNLOAD_TITLE" desc="In Title Case: Title for the page action when automatic downloads were allowed">
-          This Site Downloaded Multiple Files Automatically
-        </message>
-        <message name="IDS_BLOCKED_DOWNLOAD_TITLE" desc="In Title Case: Title for the page action when an automatic download was blocked">
-          This Site Attempted to Download Multiple Files Automatically
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_ALLOWED_DOWNLOAD_TITLE" desc="Title for the page action when automatic downloads were allowed">
-          This site downloaded multiple files automatically
-        </message>
-        <message name="IDS_BLOCKED_DOWNLOAD_TITLE" desc="Title for the page action when an automatic download was blocked">
-          This site attempted to download multiple files automatically
-        </message>
-      </if>
+      <message name="IDS_ALLOWED_DOWNLOAD_TITLE" desc="Title for the page action when automatic downloads were allowed">
+        This site downloaded multiple files automatically
+      </message>
+      <message name="IDS_BLOCKED_DOWNLOAD_TITLE" desc="Title for the page action when an automatic download was blocked">
+        This site attempted to download multiple files automatically
+      </message>
       <message name="IDS_BLOCKED_DOWNLOADS_EXPLANATION" desc="Explanatory animated text that appears (and then disappears) in the address line when a download is blocked">
         Download blocked
       </message>
@@ -2211,22 +2164,12 @@ are declared in build/common.gypi.
         Always block multiple automatic downloads on <ph name="HOST">$1<ex>example.com</ex></ph>
       </message>
 
-      <if expr="use_titlecase">
-        <message name="IDS_BLOCKED_COOKIES_TITLE" desc="In Title Case: Short title of the bubble showing that a page was blocked from using cookies.">
-          Cookies Blocked
-        </message>
-        <message name="IDS_ACCESSED_COOKIES_TITLE" desc="In Title Case: Short title of the bubble showing that a page wrote cookies or other site data.">
-          Cookies Set
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_BLOCKED_COOKIES_TITLE" desc="Short title of the bubble showing that a page was blocked from using cookies.">
-          Cookies blocked
-        </message>
-        <message name="IDS_ACCESSED_COOKIES_TITLE" desc="Short title of the bubble showing that a page wrote cookies or other site data.">
-          Cookies set
-        </message>
-      </if>
+      <message name="IDS_BLOCKED_COOKIES_TITLE" desc="Short title of the bubble showing that a page was blocked from using cookies.">
+        Cookies blocked
+      </message>
+      <message name="IDS_ACCESSED_COOKIES_TITLE" desc="Short title of the bubble showing that a page wrote cookies or other site data.">
+        Cookies set
+      </message>
       <message name="IDS_BLOCKED_COOKIES_MESSAGE" desc="Tooltip and bubble message text when a page is not allowed to write cookies or other site data.">
         This page was prevented from setting cookies.
       </message>
@@ -2239,16 +2182,9 @@ are declared in build/common.gypi.
       <message name="IDS_BLOCKED_COOKIES_INFO" desc="Info link to a dialog showing the blocked/allowed cookies, displayed in bubble when a page tries to write cookies or other site data.">
         Show cookies and other site data...
       </message>
-      <if expr="use_titlecase">
-        <message name="IDS_BLOCKED_IMAGES_TITLE" desc="In Title Case: Tooltip and bubble info header text when a page is not allowed to display images.">
-          Images Blocked
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_BLOCKED_IMAGES_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to display images.">
-          Images blocked
-        </message>
-      </if>
+      <message name="IDS_BLOCKED_IMAGES_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to display images.">
+        Images blocked
+      </message>
       <message name="IDS_BLOCKED_IMAGES_MESSAGE" desc="Tooltip and bubble info header text when a page is not allowed to display images.">
         Images were blocked on this page.
       </message>
@@ -2276,16 +2212,9 @@ are declared in build/common.gypi.
       <message name="IDS_BLOCKED_POPUPS_TOOLTIP" desc="Tooltip text when a page is not allowed to display popups.">
         Pop-ups were blocked on this page.
       </message>
-      <if expr="use_titlecase">
-        <message name="IDS_BLOCKED_POPUPS_TITLE" desc="In Title Case: Bubble title when a page is not allowed to display popups.">
-          Pop-ups Blocked
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_BLOCKED_POPUPS_TITLE" desc="Bubble title when a page is not allowed to display popups.">
-          Pop-ups blocked
-        </message>
-      </if>
+      <message name="IDS_BLOCKED_POPUPS_TITLE" desc="Bubble title when a page is not allowed to display popups.">
+        Pop-ups blocked
+      </message>
       <message name="IDS_BLOCKED_POPUPS_MESSAGE" desc="Bubble info header text when a page is not allowed to display popups.  This appears above a list of popup titles.">
         The following pop-ups were blocked on this page:
       </message>
@@ -2349,16 +2278,9 @@ are declared in build/common.gypi.
       <message name="IDS_BLOCKED_PLUGIN_EXPLANATORY_TEXT" desc="Explanatory animated text that appears (and then disappears) in the address line when plugin is blocked">
         Plugin blocked
       </message>
-      <if expr="use_titlecase">
-        <message name="IDS_BLOCKED_JAVASCRIPT_TITLE" desc="In Title Case: Title for the bubble shown when a page is not allowed to run JavaScript.">
-          JavaScript Blocked
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_BLOCKED_JAVASCRIPT_TITLE" desc="Title for the bubble shown when a page is not allowed to run JavaScript.">
-          JavaScript blocked
-        </message>
-      </if>
+      <message name="IDS_BLOCKED_JAVASCRIPT_TITLE" desc="Title for the bubble shown when a page is not allowed to run JavaScript.">
+        JavaScript blocked
+      </message>
       <message name="IDS_BLOCKED_JAVASCRIPT_MESSAGE" desc="Tooltip and bubble info header text when a page is not allowed to run JavaScript.">
         JavaScript was blocked on this page.
       </message>
@@ -2371,32 +2293,18 @@ are declared in build/common.gypi.
       <message name="IDS_BLOCKED_JAVASCRIPT_LINK" desc="Link to JavaScript section of content blocking management dialog, displayed in bubble when a page tries to run JavaScript.">
         Manage JavaScript blocking...
       </message>
-      <if expr="use_titlecase">
-        <message name="IDS_BLOCKED_PLUGINS_TITLE" desc="In Title Case: Bubble info header text when a page is not allowed to run Flash. 'Flash' is the name of a plugin and should not be translated.">
-          Flash Was Blocked on This Page
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_BLOCKED_PLUGINS_TITLE" desc="Bubble info header text when a page is not allowed to run Flash. 'Flash' is the name of a plugin and should not be translated.">
-          Flash was blocked on this page
-        </message>
-      </if>
+      <message name="IDS_BLOCKED_PLUGINS_TITLE" desc="Bubble info header text when a page is not allowed to run Flash. 'Flash' is the name of a plugin and should not be translated.">
+        Flash was blocked on this page
+      </message>
       <message name="IDS_BLOCKED_PLUGINS_MESSAGE" desc="Tooltip on the icon when a page is not allowed to run Flash. 'Flash' is the name of a plugin and should not be translated.">
         Flash was blocked on this page.
       </message>
       <message name="IDS_BLOCKED_PLUGINS_LOAD_ALL" desc="Button to load all blocked plugins on a page, displayed in bubble when a page tries to display plugins. 'Flash' is the name of a plugin and should not be translated.">
         Run Flash this time
       </message>
-      <if expr="use_titlecase">
-        <message name="IDS_BLOCKED_SOUND_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to play sound.">
-          Sound Was Muted on This Page
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_BLOCKED_SOUND_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to play sound.">
-          Sound was muted on this page
-        </message>
-      </if>
+      <message name="IDS_BLOCKED_SOUND_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to play sound.">
+        Sound was muted on this page
+      </message>
       <message name="IDS_BLOCKED_SOUND_UNBLOCK" desc="Radio button choice to unblock a site from playing sound, displayed in bubble when a page tries to play sound.">
         Always allow sound on <ph name="HOST">$1<ex>mail.google.com</ex></ph>
       </message>
@@ -3408,22 +3316,12 @@ are declared in build/common.gypi.
       <message name="IDS_EXTENSION_IS_BLACKLISTED" desc="Text displayed in an infobar when an extension is blacklisted and prevented from being installed.">
         Google has flagged "<ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph>" as malicious and installation has been prevented
       </message>
-      <if expr="use_titlecase">
-        <message name="IDS_EXTENSION_DISABLED_REMOTE_INSTALL_ERROR_TITLE" desc="In Title Case: Title of the notification that an extension or app was disabled due to it being installed server side, requiring an explicit permission check from the user.">
-          <ph name="EXTENSION_NAME">$1<ex>Adblock</ex></ph> Was Added Remotely
-        </message>
-        <message name="IDS_EXTENSION_DISABLED_ERROR_TITLE" desc="In Title Case: Title of the notification that an extension or app was disabled due to a new upgrade requiring an explicit permission check from the user.">
-          <ph name="EXTENSION_NAME">$1<ex>Adblock</ex></ph> is Disabled
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_EXTENSION_DISABLED_REMOTE_INSTALL_ERROR_TITLE" desc="Title of the notification that an extension or app was disabled due to it being installed server side, requiring an explicit permission check from the user.">
-          <ph name="EXTENSION_NAME">$1<ex>Adblock</ex></ph> was added remotely
-        </message>
-        <message name="IDS_EXTENSION_DISABLED_ERROR_TITLE" desc="Title of the notification that an extension or app was disabled due to a new upgrade requiring an explicit permission check from the user.">
-          <ph name="EXTENSION_NAME">$1<ex>Adblock</ex></ph> is disabled
-        </message>
-      </if>
+      <message name="IDS_EXTENSION_DISABLED_REMOTE_INSTALL_ERROR_TITLE" desc="Title of the notification that an extension or app was disabled due to it being installed server side, requiring an explicit permission check from the user.">
+        <ph name="EXTENSION_NAME">$1<ex>Adblock</ex></ph> was added remotely
+      </message>
+      <message name="IDS_EXTENSION_DISABLED_ERROR_TITLE" desc="Title of the notification that an extension or app was disabled due to a new upgrade requiring an explicit permission check from the user.">
+        <ph name="EXTENSION_NAME">$1<ex>Adblock</ex></ph> is disabled
+      </message>
 
       <if expr="enable_extensions">
         <!-- Extension blocked action bubble -->
@@ -3501,24 +3399,24 @@ are declared in build/common.gypi.
 <ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>
       </message>
       <if expr="use_titlecase">
-        <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_EXTENSION" desc="Button on the external install prompt to enable an extension installed by a third party (title-case).">
+        <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_EXTENSION" desc="In Title Case: Button on the external install prompt to enable an extension installed by a third party.">
           Enable Extension
         </message>
-        <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_APP" desc="Button on the external install prompt to enable an extension installed by a third party (title-case).">
+        <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_APP" desc="In Title Case: Button on the external install prompt to enable an extension installed by a third party.">
           Enable App
         </message>
-        <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_THEME" desc="Button on the external install prompt to enable an extension installed by a third party (title-case).">
+        <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_THEME" desc="In Title Case: Button on the external install prompt to enable an extension installed by a third party.">
           Enable Theme
         </message>
       </if>
       <if expr="not use_titlecase">
-        <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_EXTENSION" desc="Button on the external install prompt to enable an extension installed by a third party (sentence-case).">
+        <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_EXTENSION" desc="Button on the external install prompt to enable an extension installed by a third party.">
           Enable extension
         </message>
-        <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_APP" desc="Button on the external install prompt to enable an extension installed by a third party (sentence-case).">
+        <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_APP" desc="Button on the external install prompt to enable an extension installed by a third party.">
           Enable app
         </message>
-        <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_THEME" desc="Button on the external install prompt to enable an extension installed by a third party (sentence-case).">
+        <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_THEME" desc="Button on the external install prompt to enable an extension installed by a third party.">
           Enable theme
         </message>
       </if>
@@ -4497,16 +4395,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_THEME" desc="The wrench menu item indicating that a new external extension was installed.">
         New theme added (<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>)
       </message>
-      <if expr="use_titlecase">
-        <message name="IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_BUBBLE_TITLE" desc="In Title Case: The title for the bubble that alerts the user that a new external extension was installed.">
-          "<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>" Added
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_BUBBLE_TITLE" desc="The title for the bubble that alerts the user that a new external extension was installed.">
-          "<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>" added
-        </message>
-      </if>
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_BUBBLE_TITLE" desc="The title for the bubble that alerts the user that a new external extension was installed.">
+        "<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>" added
+      </message>
       <message name="IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_BUBBLE_HEADING_APP" desc="The heading text (below the title) for the bubble that alerts the user that a new external app was installed.">
         Another program on your computer added an app that may change the way Chrome works.
       </message>
@@ -4517,16 +4408,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Another program on your computer added a theme that may change the way Chrome works.
       </message>
 
-      <if expr="use_titlecase">
-        <message name="IDS_EXTENSIONS_UNSUPPORTED_DISABLED_TITLE" desc="In Title Case: Title of the dialog shown when unsupported extensions have been disabled">
-          Unsupported Extensions Disabled
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_EXTENSIONS_UNSUPPORTED_DISABLED_TITLE" desc="Title of the dialog shown when unsupported extensions have been disabled">
-          Unsupported extensions disabled
-        </message>
-      </if>
+      <message name="IDS_EXTENSIONS_UNSUPPORTED_DISABLED_TITLE" desc="Title of the dialog shown when unsupported extensions have been disabled">
+        Unsupported extensions disabled
+      </message>
       <message name="IDS_EXTENSIONS_DISABLED_AND_N_MORE" desc="Used for a count of additional items in the IDS_EXTENSIONS_UNSUPPORTED_DISABLED_BODY dialog shown when unsupported extensions have been disabled, if we could not fit them all in the dialog">
         and <ph name="NUMBER_ADDITIONAL_DISABLED">$1<ex>5</ex></ph> more
       </message>
@@ -4536,16 +4420,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSIONS_ADDED_WITHOUT_KNOWLEDGE" desc="Text shown in the extensions settings for items that might have been forcefully added to Chrome without the user's knowledge">
         This extension is not listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE">$1<ex>Chrome Web Store</ex></ph> and may have been added without your knowledge.
       </message>
-      <if expr="use_titlecase">
-        <message name="IDS_EXTENSIONS_DISABLE_DEVELOPER_MODE_TITLE" desc="In Title Case: Title of a dialog warning users they have development mode extensions running">
-          Disable Developer Mode Extensions
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_EXTENSIONS_DISABLE_DEVELOPER_MODE_TITLE" desc="Title of a dialog warning users they have development mode extensions running">
-          Disable developer mode extensions
-        </message>
-      </if>
+      <message name="IDS_EXTENSIONS_DISABLE_DEVELOPER_MODE_TITLE" desc="Title of a dialog warning users they have development mode extensions running">
+        Disable developer mode extensions
+      </message>
       <message name="IDS_EXTENSIONS_DISABLE_DEVELOPER_MODE_BODY" desc="Body of a dialog warning users they have development mode extensions running">
         Extensions running in developer mode can harm your computer. If you're not a developer, you should disable these extensions running in developer mode to stay safe.
       </message>
@@ -4557,56 +4434,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Settings API bubble -->
-      <if expr="use_titlecase">
-        <message name="IDS_EXTENSIONS_SETTINGS_API_TITLE_HOME_PAGE_BUBBLE" desc="In Title Case: Title of a bubble warning users that an extension has overridden their home page setting">
-         Is This the Home Page You Were Expecting?
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_EXTENSIONS_SETTINGS_API_TITLE_HOME_PAGE_BUBBLE" desc="Title of a bubble warning users that an extension has overridden their home page setting">
-          Is this the home page you were expecting?
-        </message>
-      </if>
-      <if expr="use_titlecase">
-        <message name="IDS_EXTENSIONS_SETTINGS_API_TITLE_STARTUP_PAGES_BUBBLE" desc="In Title Case: Title of a bubble warning users that an extension has overridden their startup pages setting">
-          Is This the Startup Page You Were Expecting?
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_EXTENSIONS_SETTINGS_API_TITLE_STARTUP_PAGES_BUBBLE" desc="Title of a bubble warning users that an extension has overridden their startup pages setting">
-          Is this the startup page you were expecting?
-        </message>
-      </if>
-      <if expr="use_titlecase">
-        <message name="IDS_EXTENSIONS_SETTINGS_API_TITLE_SEARCH_ENGINE_BUBBLE" desc="In Title Case: Title of a bubble warning users that an extension has overridden their default search engine setting">
-          Is This the Search Page You Were Expecting?
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_EXTENSIONS_SETTINGS_API_TITLE_SEARCH_ENGINE_BUBBLE" desc="Title of a bubble warning users that an extension has overridden their default search engine setting">
-          Is this the search page you were expecting?
-        </message>
-      </if>
-      <if expr="use_titlecase">
-        <message name="IDS_EXTENSIONS_NTP_CONTROLLED_TITLE_HOME_PAGE_BUBBLE" desc="In Title Case: Title of a bubble warning users that an extension has overridden their new tab page setting">
-         Is This the New Tab Page You Were Expecting?
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_EXTENSIONS_NTP_CONTROLLED_TITLE_HOME_PAGE_BUBBLE" desc="Title of a bubble warning users that an extension has overridden their new tab page setting">
-          Is this the new tab page you were expecting?
-        </message>
-      </if>
-      <if expr="use_titlecase">
-        <message name="IDS_EXTENSIONS_PROXY_CONTROLLED_TITLE_HOME_PAGE_BUBBLE" desc="In Title Case: Title of a bubble warning users that an extension has overridden their proxy setting">
-        Your Internet Connection is Being Controlled
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_EXTENSIONS_PROXY_CONTROLLED_TITLE_HOME_PAGE_BUBBLE" desc="Title of a bubble warning users that an extension has overridden their proxy setting">
-          Your Internet connection is being controlled
-        </message>
-      </if>
+      <message name="IDS_EXTENSIONS_SETTINGS_API_TITLE_HOME_PAGE_BUBBLE" desc="Title of a bubble warning users that an extension has overridden their home page setting">
+        Is this the home page you were expecting?
+      </message>
+      <message name="IDS_EXTENSIONS_SETTINGS_API_TITLE_STARTUP_PAGES_BUBBLE" desc="Title of a bubble warning users that an extension has overridden their startup pages setting">
+        Is this the startup page you were expecting?
+      </message>
+      <message name="IDS_EXTENSIONS_SETTINGS_API_TITLE_SEARCH_ENGINE_BUBBLE" desc="Title of a bubble warning users that an extension has overridden their default search engine setting">
+        Is this the search page you were expecting?
+      </message>
+      <message name="IDS_EXTENSIONS_NTP_CONTROLLED_TITLE_HOME_PAGE_BUBBLE" desc="Title of a bubble warning users that an extension has overridden their new tab page setting">
+        Is this the new tab page you were expecting?
+      </message>
+      <message name="IDS_EXTENSIONS_PROXY_CONTROLLED_TITLE_HOME_PAGE_BUBBLE" desc="Title of a bubble warning users that an extension has overridden their proxy setting">
+        Your Internet connection is being controlled
+      </message>
 
       <message name="IDS_EXTENSIONS_SETTINGS_API_FIRST_LINE_SEARCH_ENGINE_SPECIFIC" desc="Text displayed as the first line in the Settings API bubble when an extension has changed the search engine, and we are pointing to its icon.">
         This extension has changed what page is shown when you search from the Omnibox.
@@ -5087,22 +4929,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PEPPER_BROKER_DENY_BUTTON" desc="Text for the deny button on the pepper broker launch prompt">
         Deny
       </message>
-      <if expr="use_titlecase">
-        <message name="IDS_BLOCKED_PPAPI_BROKER_TITLE" desc="In Title Case: Title for the page action when Pepper sandbox access was blocked.">
-          Unsandboxed Plugin Blocked
-        </message>
-        <message name="IDS_ALLOWED_PPAPI_BROKER_TITLE" desc="In Title Case: Title for the page action when Pepper sandbox access was allowed.">
-          Unsandboxed Plugin Allowed
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_BLOCKED_PPAPI_BROKER_TITLE" desc="Title for the page action when Pepper sandbox access was blocked.">
-          Unsandboxed plugin blocked
-        </message>
-        <message name="IDS_ALLOWED_PPAPI_BROKER_TITLE" desc="Title for the page action when Pepper sandbox access was allowed.">
-          Unsandboxed plugin allowed
-        </message>
-      </if>
+      <message name="IDS_BLOCKED_PPAPI_BROKER_TITLE" desc="Title for the page action when Pepper sandbox access was blocked.">
+        Unsandboxed plugin blocked
+      </message>
+      <message name="IDS_ALLOWED_PPAPI_BROKER_TITLE" desc="Title for the page action when Pepper sandbox access was allowed.">
+        Unsandboxed plugin allowed
+      </message>
       <message name="IDS_BLOCKED_PPAPI_BROKER_MESSAGE" desc="Message for the page action when Pepper broker access was blocked">
         An unsandboxed plugin was prevented from running on this page.
       </message>
@@ -5126,22 +4958,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Blocked Displaying/Running Insecure Content bubble -->
-      <if expr="use_titlecase">
-        <message name="IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT_TITLE" desc="In Title Case: Title of the bubble shown when a message has asked Chrome to display mixed content.">
-          Insecure Content Blocked
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT_TITLE" desc="Title of the bubble shown when a message has asked Chrome to display mixed content.">
-          Insecure content blocked
-        </message>
-      </if>
+      <message name="IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT_TITLE" desc="Title of the bubble shown when a message has asked Chrome to display mixed content.">
+        Insecure content blocked
+      </message>
       <message name="IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT" desc="Message shown when a website has asked Chrome to display mixed content.  The message is followed by a learn more link and an allow button.">
         This page is trying to load scripts from unauthenticated sources.
       </message>
       <if expr="use_titlecase">
-        <message name="IDS_ALLOW_INSECURE_CONTENT_BUTTON" desc="Button to allow insecure content to be displayed">
-          Load unsafe scripts
+        <message name="IDS_ALLOW_INSECURE_CONTENT_BUTTON" desc="In Title Case: Button to allow insecure content to be displayed">
+          Load Unsafe Scripts
         </message>
       </if>
       <if expr="not use_titlecase">
@@ -5419,22 +5244,12 @@ the Bookmarks menu.">
           <ph name="URL">$1<ex>maps.google.com</ex></ph> wants to see text and images copied to the clipboard
         </message>
       </if>
-      <if expr="use_titlecase">
-        <message name="IDS_ALLOWED_CLIPBOARD_TITLE" desc="In Title Case: Title of the info bubble shown when a site has been allowed access to read the contents of the system clipboard.">
-          Clipboard Read Access Allowed
-        </message>
-        <message name="IDS_BLOCKED_CLIPBOARD_TITLE" desc="In Title Case: Title of the info bubble shown when a site has been denied access to read the contents of the system clipboard.">
-          Clipboard Read Access Denied
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_ALLOWED_CLIPBOARD_TITLE" desc="Title of the info bubble shown when a site has been allowed access to read the contents of the system clipboard.">
-          Clipboard read access allowed
-        </message>
-        <message name="IDS_BLOCKED_CLIPBOARD_TITLE" desc="Title of the info bubble shown when a site has been denied access to read the contents of the system clipboard.">
-          Clipboard read access denied
-        </message>
-      </if>
+      <message name="IDS_ALLOWED_CLIPBOARD_TITLE" desc="Title of the info bubble shown when a site has been allowed access to read the contents of the system clipboard.">
+        Clipboard read access allowed
+      </message>
+      <message name="IDS_BLOCKED_CLIPBOARD_TITLE" desc="Title of the info bubble shown when a site has been denied access to read the contents of the system clipboard.">
+        Clipboard read access denied
+      </message>
       <message name="IDS_ALLOWED_CLIPBOARD_MESSAGE" desc="Info bubble message and location bar icon tooltip text shown when a site has been allowed access to read the contents of the system clipboard.">
         This site can see text and images copied to the clipboard.
       </message>
@@ -5685,21 +5500,18 @@ the Bookmarks menu.">
       </if>
 
       <!-- Importer Lock Dialog -->
+      <message name="IDS_IMPORTER_LOCK_TITLE" desc="Dialog title for importer lock dialog">
+        Close Firefox
+      </message>
       <message name="IDS_IMPORTER_LOCK_TEXT" desc="The message to be displayed in the importer-lock dialog">
         To finish importing, close all Firefox windows.
       </message>
       <if expr="use_titlecase">
-        <message name="IDS_IMPORTER_LOCK_TITLE" desc="Dialog title for importer lock dialog">
-          Close Firefox
-        </message>
-        <message name="IDS_IMPORTER_LOCK_OK" desc="Text for OK button (to try importing again) on importer lock dialog">
+        <message name="IDS_IMPORTER_LOCK_OK" desc="In Title Case: Text for OK button (to try importing again) on importer lock dialog">
           Try Again
         </message>
       </if>
       <if expr="not use_titlecase">
-        <message name="IDS_IMPORTER_LOCK_TITLE" desc="Dialog title for importer lock dialog">
-          Close Firefox
-        </message>
         <message name="IDS_IMPORTER_LOCK_OK" desc="Text for OK button (to try importing again) on importer lock dialog">
           Try again
         </message>
@@ -6029,34 +5841,18 @@ I don't think this site should be blocked!
       </if>
 
       <!-- Settings reset prompt dialog messages -->
-      <if expr="not use_titlecase">
-        <message name="IDS_SETTINGS_RESET_PROMPT_TITLE_SEARCH_ENGINE" desc="The title for the settings reset dialog when the user's search engine setting has been modified. The dialog will ask users if they want to restore their modified setting to its original default value.">
-          Restore default search engine?
-        </message>
-        <message name="IDS_SETTINGS_RESET_PROMPT_TITLE_STARTUP_PAGE" desc="The title for the settings reset dialog when the user's startup page setting has been modified. The dialog will ask users if they want to restore their modified setting to its original default value.">
-          Restore default startup page?
-        </message>
-        <message name="IDS_SETTINGS_RESET_PROMPT_TITLE_HOMEPAGE" desc="The title for the settings reset dialog when the user's homepage setting has been modified by. The dialog will ask users if they want to restore their modified setting to its original default value.">
-          Restore default homepage?
-        </message>
-        <message name="IDS_SETTINGS_RESET_PROMPT_ACCEPT_BUTTON_LABEL" desc="The settings reset dialog asks users if they want to restore a Chrome setting that has been modified by an unwanted software or extension to its original default value. This text is displayed on the main button in the dialog that, when clicked, will restore the setting.">
-          Restore
-        </message>
-      </if>
-      <if expr="use_titlecase">
-        <message name="IDS_SETTINGS_RESET_PROMPT_TITLE_SEARCH_ENGINE" desc="In Title Case: The title for the settings reset dialog when the user's search engine setting has been modified. The dialog will ask users if they want to restore their modified setting to its original default value.">
-          Restore Default Search Engine?
-        </message>
-        <message name="IDS_SETTINGS_RESET_PROMPT_TITLE_STARTUP_PAGE" desc="In Title Case: The title for the settings reset dialog when the user's startup page setting has been modified. The dialog will ask users if they want to restore their modified setting to its original default value.">
-          Restore Default Startup Page?
-        </message>
-        <message name="IDS_SETTINGS_RESET_PROMPT_TITLE_HOMEPAGE" desc="In Title Case: The title for the settings reset dialog when the user's homepage setting has been modified by. The dialog will ask users if they want to restore their modified setting to its original default value.">
-          Restore Default Homepage?
-        </message>
-        <message name="IDS_SETTINGS_RESET_PROMPT_ACCEPT_BUTTON_LABEL" desc="In Title Case: The settings reset dialog asks users if they want to restore a Chrome setting that has been modified by an unwanted software or extension to its original default value. This text is displayed on the main button in the dialog that, when clicked, will restore the setting.">
-          Restore
-        </message>
-      </if>
+      <message name="IDS_SETTINGS_RESET_PROMPT_TITLE_SEARCH_ENGINE" desc="The title for the settings reset dialog when the user's search engine setting has been modified. The dialog will ask users if they want to restore their modified setting to its original default value.">
+        Restore default search engine?
+      </message>
+      <message name="IDS_SETTINGS_RESET_PROMPT_TITLE_STARTUP_PAGE" desc="The title for the settings reset dialog when the user's startup page setting has been modified. The dialog will ask users if they want to restore their modified setting to its original default value.">
+        Restore default startup page?
+      </message>
+      <message name="IDS_SETTINGS_RESET_PROMPT_TITLE_HOMEPAGE" desc="The title for the settings reset dialog when the user's homepage setting has been modified by. The dialog will ask users if they want to restore their modified setting to its original default value.">
+        Restore default homepage?
+      </message>
+      <message name="IDS_SETTINGS_RESET_PROMPT_ACCEPT_BUTTON_LABEL" desc="The settings reset dialog asks users if they want to restore a Chrome setting that has been modified by an unwanted software or extension to its original default value. This text is displayed on the main button in the dialog that, when clicked, will restore the setting.">
+        Restore
+      </message>
 
       <message name="IDS_SETTINGS_RESET_PROMPT_EXPLANATION_FOR_SEARCH_ENGINE_NO_EXTENSIONS" desc="This text is shown in the settings reset dialog to inform the user that their search engine has been modified, for example by unwanted software or extension, to something that they might not want. The value of the setting that is shown in the text is the possibly unwanted setting that will be reset to its original default if the user clicks the Restore button.">
         Your search engine was changed to <ph name="URL">$1<ex>www.some-domain.com</ex></ph>.
@@ -7014,16 +6810,9 @@ I don't think this site should be blocked!
       </message>
 
       <!-- Collected cookies window -->
-      <if expr="use_titlecase">
-        <message name="IDS_COLLECTED_COOKIES_DIALOG_TITLE" desc="The title of the collect cookies dialog">
-          Cookies in Use
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_COLLECTED_COOKIES_DIALOG_TITLE" desc="The title of the collect cookies dialog">
-          Cookies in use
-        </message>
-      </if>
+      <message name="IDS_COLLECTED_COOKIES_DIALOG_TITLE" desc="The title of the collect cookies dialog">
+        Cookies in use
+      </message>
       <message name="IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_LABEL" desc="The label used to describe the cookies that were allowed">
         The following cookies were set when you viewed this page
       </message>
@@ -8248,16 +8037,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_SIGNIN_ERROR_DISPLAY_SOURCE" desc="Context title shown in the notification header of sign-in error notification.">
         Sign In
       </message>
-      <if expr="use_titlecase">
-        <message name="IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE" desc="In Title Case: Title in the sign-in error bubble view/notification.">
-          Sign-in Error
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE" desc="Title in the sign-in error bubble view/notification.">
-          Sign-in error
-        </message>
-      </if>
+      <message name="IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE" desc="Title in the sign-in error bubble view/notification.">
+        Sign-in error
+      </message>
       <message name="IDS_SYNC_ERROR_BUBBLE_VIEW_TITLE" desc="Title in the sync error bubble view/notification.">
         Sync Error
       </message>
@@ -8631,13 +8413,23 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
       <!-- Translate Bubble -->
       <if expr="toolkit_views or is_macosx">
+        <message name="IDS_TRANSLATE_BUBBLE_BEFORE_TRANSLATE_TITLE" desc="Title text for the translate bubble when asking to translate a page.">
+          Do you want to translate this page?
+        </message>
+        <message name="IDS_TRANSLATE_BUBBLE_BEFORE_TRANSLATE_NEW" desc="Text to show for the translate bubble label when that page is in specified language and ask if should translate.">
+          Do you want Google to translate this page from <ph name="source_language">$1<ex>Spanish</ex></ph> to <ph name="target_language">$2<ex>English</ex></ph>?
+        </message>
+        <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_TITLE" desc="Title text for the options panel.">
+          Options
+        </message>
+        <message name="IDS_TRANSLATE_BUBBLE_TRANSLATED_TITLE" desc="Title text for the translate bubble label when the page has been translated from one language to another">
+          Translated
+        </message>
+        <message name="IDS_TRANSLATE_BUBBLE_COULD_NOT_TRANSLATE_TITLE" desc="Title text for the translate bubble label when the page could not be translated.">
+          This page could not be translated
+        </message>
+
         <if expr="not use_titlecase">
-          <message name="IDS_TRANSLATE_BUBBLE_BEFORE_TRANSLATE_TITLE" desc="Title text for the translate bubble when asking to translate a page.">
-            Do you want to translate this page?
-          </message>
-          <message name="IDS_TRANSLATE_BUBBLE_BEFORE_TRANSLATE_NEW" desc="Text to show for the translate bubble label when that page is in specified language and ask if should translate.">
-            Do you want Google to translate this page from <ph name="source_language">$1<ex>Spanish</ex></ph> to <ph name="target_language">$2<ex>English</ex></ph>?
-          </message>
           <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_LINK" desc="Text to show for the translate bubble link label to jump to the advanced panel.">
             Options
           </message>
@@ -8646,9 +8438,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
           </message>
           <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_MENU_BUTTON" desc="Text to show for the translate bubble menu button to jump to the advanced panel, specifically to change which languages are translated between.">
             Change languages
-          </message>
-          <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_TITLE" desc="Title text for the options panel.">
-            Options
           </message>
           <message name="IDS_TRANSLATE_BUBBLE_ACCEPT" desc="Text to show for the translate bubble button to accept translation.">
             Translate
@@ -8671,9 +8460,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
           <message name="IDS_TRANSLATE_BUBBLE_TRANSLATED" desc="Text to show for the translate bubble label when the page has been translated from one language to another">
             This page has been translated.
           </message>
-          <message name="IDS_TRANSLATE_BUBBLE_TRANSLATED_TITLE" desc="Title text for the translate bubble label when the page has been translated from one language to another">
-            Translated
-          </message>
           <message name="IDS_TRANSLATE_BUBBLE_REVERT" desc="Text to show for the translate bubble button to revert translation of translated page">
             Show original
           </message>
@@ -8692,9 +8478,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
           <message name="IDS_TRANSLATE_BUBBLE_COULD_NOT_TRANSLATE" desc="Text to show for the translate bubble label when the page could not be translated.">
             This page could not be translated.
           </message>
-          <message name="IDS_TRANSLATE_BUBBLE_COULD_NOT_TRANSLATE_TITLE" desc="Title text for the translate bubble label when the page could not be translated.">
-            This page could not be translated
-          </message>
           <message name="IDS_TRANSLATE_BUBBLE_PAGE_LANGUAGE" desc="Text to show for the translate bubble label next to the combobox of the page language">
             Page language:
           </message>
@@ -8706,12 +8489,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
           </message>
         </if>
         <if expr="use_titlecase">
-          <message name="IDS_TRANSLATE_BUBBLE_BEFORE_TRANSLATE_TITLE" desc="In Title Case: Title text for the translate bubble when asking to translate a page.">
-            Do You Want To Translate This Page?
-          </message>
-          <message name="IDS_TRANSLATE_BUBBLE_BEFORE_TRANSLATE_NEW" desc="In Title Case: Text to show for the translate bubble label when that page is in specified language and ask if should translate.">
-            Do You Want Google To Translate This Page From <ph name="source_language">$1<ex>Spanish</ex></ph> To <ph name="target_language">$2<ex>English</ex></ph>?
-          </message>
           <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_LINK" desc="In Title Case: Text to show for the translate bubble link label to jump to the advanced panel.">
             Options
           </message>
@@ -8720,9 +8497,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
           </message>
           <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_MENU_BUTTON" desc="In Title Case: Text to show for the translate bubble menu button to jump to the advanced panel, specifically to change which languages are translated between.">
             Change Languages
-          </message>
-          <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_TITLE" desc="In Title Case: Title text for the options panel.">
-            Options
           </message>
           <message name="IDS_TRANSLATE_BUBBLE_ACCEPT" desc="In Title Case: Text to show for the translate bubble button to accept translation.">
             Translate
@@ -8745,9 +8519,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
           <message name="IDS_TRANSLATE_BUBBLE_TRANSLATED" desc="In Title Case: Text to show for the translate bubble label when the page has been translated from one language to another">
             This Page Has Been Translated.
           </message>
-          <message name="IDS_TRANSLATE_BUBBLE_TRANSLATED_TITLE" desc="In Title Case: Title text for the translate bubble label when the page has been translated from one language to another">
-            Translated
-          </message>
           <message name="IDS_TRANSLATE_BUBBLE_REVERT" desc="In Title Case: Text to show for the translate bubble button to revert translation of translated page">
             Show Original
           </message>
@@ -8765,9 +8536,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
           </message>
           <message name="IDS_TRANSLATE_BUBBLE_COULD_NOT_TRANSLATE" desc="In Title Case: Text to show for the translate bubble label when the page could not be translated.">
             This Page Could Not Be Translated.
-          </message>
-          <message name="IDS_TRANSLATE_BUBBLE_COULD_NOT_TRANSLATE_TITLE" desc="In Title Case: Title text for the translate bubble label when the page could not be translated.">
-            This Page Could Not Be Translated
           </message>
           <message name="IDS_TRANSLATE_BUBBLE_PAGE_LANGUAGE" desc="In Title Case: Text to show for the translate bubble label next to the combobox of the page language">
             Page Language:
@@ -9316,46 +9084,24 @@ Please help our engineers fix this problem. Tell us what happened right before y
         This page has been blocked from accessing your camera.
       </message>
 
-      <if expr="use_titlecase">
-        <message name="IDS_MICROPHONE_CAMERA_ALLOWED_TITLE" desc="In Title Case: Title for the media status bubble when a page is allowed to use the camera and microphone.">
-          Camera and Microphone Allowed
-        </message>
-        <message name="IDS_MICROPHONE_CAMERA_BLOCKED_TITLE" desc="In Title Case: Title for the media status bubble when a page is blocked from using the camera and microphone.">
-          Camera and Microphone Blocked
-        </message>
-        <message name="IDS_MICROPHONE_ACCESSED_TITLE" desc="In Title Case: Title for the media status bubble when a page is allowed to use the microphone.">
-          Microphone Allowed
-        </message>
-        <message name="IDS_CAMERA_ACCESSED_TITLE" desc="In Title Case: Title for the media status bubble when a page is allowed to use the camera.">
-          Camera Allowed
-        </message>
-        <message name="IDS_MICROPHONE_BLOCKED_TITLE" desc="In Title Case: Title for the media status bubble when a page is blocked from using the microphone.">
-          Microphone Blocked
-        </message>
-        <message name="IDS_CAMERA_BLOCKED_TITLE" desc="In Title Case: Title for the media status bubble when a page is blocked from using the camera.">
-          Camera Blocked
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_MICROPHONE_CAMERA_ALLOWED_TITLE" desc="Title for the media status bubble when a page is allowed to use the camera and microphone.">
-          Camera and microphone allowed
-        </message>
-        <message name="IDS_MICROPHONE_CAMERA_BLOCKED_TITLE" desc="Title for the media status bubble when a page is blocked from using the camera and microphone.">
-          Camera and microphone blocked
-        </message>
-        <message name="IDS_MICROPHONE_ACCESSED_TITLE" desc="Title for the media status bubble when a page is allowed to use the microphone.">
-          Microphone allowed
-        </message>
-        <message name="IDS_CAMERA_ACCESSED_TITLE" desc="Title for the media status bubble when a page is allowed to use the camera.">
-          Camera allowed
-        </message>
-        <message name="IDS_MICROPHONE_BLOCKED_TITLE" desc="Title for the media status bubble when a page is blocked from using the microphone.">
-          Microphone blocked
-        </message>
-        <message name="IDS_CAMERA_BLOCKED_TITLE" desc="Title for the media status bubble when a page is blocked from using the camera.">
-          Camera blocked
-        </message>
-      </if>
+      <message name="IDS_MICROPHONE_CAMERA_ALLOWED_TITLE" desc="Title for the media status bubble when a page is allowed to use the camera and microphone.">
+        Camera and microphone allowed
+      </message>
+      <message name="IDS_MICROPHONE_CAMERA_BLOCKED_TITLE" desc="Title for the media status bubble when a page is blocked from using the camera and microphone.">
+        Camera and microphone blocked
+      </message>
+      <message name="IDS_MICROPHONE_ACCESSED_TITLE" desc="Title for the media status bubble when a page is allowed to use the microphone.">
+        Microphone allowed
+      </message>
+      <message name="IDS_CAMERA_ACCESSED_TITLE" desc="Title for the media status bubble when a page is allowed to use the camera.">
+        Camera allowed
+      </message>
+      <message name="IDS_MICROPHONE_BLOCKED_TITLE" desc="Title for the media status bubble when a page is blocked from using the microphone.">
+        Microphone blocked
+      </message>
+      <message name="IDS_CAMERA_BLOCKED_TITLE" desc="Title for the media status bubble when a page is blocked from using the camera.">
+        Camera blocked
+      </message>
 
       <message name="IDS_MEDIASTREAM_SETTING_CHANGED_MESSAGE" desc="Message that is used to suggest reloading when media (camera, microphone) settings was changed by the user. These settings are immediately effective, but the web page might not know how to deal with the new settings.">
         This page may need to be reloaded before the new settings take effect.
@@ -9584,22 +9330,13 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_REGISTER_PROTOCOL_HANDLER_WEBCAL_NAME" desc="A more user friendly way of describing webcal: links.">
         web calendar
       </message>
-      <if expr="use_titlecase">
-        <message name="IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM" desc="In Title Case: The message to display when asking a user to confirm the registration of a protocol handler.">
-          Allow <ph name="HANDLER_HOSTNAME">$1<ex>google.com</ex></ph> to Open All <ph name="PROTOCOL">$2<ex>search</ex></ph> Links?
-        </message>
-        <message name="IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_REPLACE" desc="In Title Case: The message to display when asking a user to confirm the registration of a protocol handler.">
-          Allow <ph name="HANDLER_HOSTNAME">$1<ex>google.com</ex></ph> to Open All <ph name="PROTOCOL">$2<ex>search</ex></ph> Links Instead of <ph name="REPLACED_HANDLER_TITLE">$3<ex>Elgoog Search</ex></ph>?
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM" desc="The message to display when asking a user to confirm the registration of a protocol handler.">
-          Allow <ph name="HANDLER_HOSTNAME">$1<ex>google.com</ex></ph> to open all <ph name="PROTOCOL">$2<ex>search</ex></ph> links?
-        </message>
-        <message name="IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_REPLACE" desc="The message to display when asking a user to confirm the registration of a protocol handler.">
-          Allow <ph name="HANDLER_HOSTNAME">$1<ex>google.com</ex></ph> to open all <ph name="PROTOCOL">$2<ex>search</ex></ph> links instead of <ph name="REPLACED_HANDLER_TITLE">$3<ex>Elgoog Search</ex></ph>?
-        </message>
-      </if>
+
+      <message name="IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM" desc="The message to display when asking a user to confirm the registration of a protocol handler.">
+        Allow <ph name="HANDLER_HOSTNAME">$1<ex>google.com</ex></ph> to open all <ph name="PROTOCOL">$2<ex>search</ex></ph> links?
+      </message>
+      <message name="IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_REPLACE" desc="The message to display when asking a user to confirm the registration of a protocol handler.">
+        Allow <ph name="HANDLER_HOSTNAME">$1<ex>google.com</ex></ph> to open all <ph name="PROTOCOL">$2<ex>search</ex></ph> links instead of <ph name="REPLACED_HANDLER_TITLE">$3<ex>Elgoog Search</ex></ph>?
+      </message>
       <message name="IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_FRAGMENT" desc="The permission fragment to display when asking a user to confirm the registration of a protocol handler in a permission bubble. Follows a prompt 'This site would like to:'.">
         Open <ph name="PROTOCOL">$1<ex>search</ex></ph> links
       </message>
@@ -10026,18 +9763,10 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
       </if>
 
       <!-- High-contrast mode. -->
-      <if expr="not use_titlecase">
-        <message name="IDS_HIGH_CONTRAST_TITLE"
-                 desc="Text for the dialog asking if the user may be interested in a High-Contrast extension or a dark theme. Note to translators: this is the name of a feature in Windows, so please try to find the correct name of that feature in your region.">
-          Browse the web in high contrast mode
-        </message>
-      </if>
-      <if expr="use_titlecase">
-        <message name="IDS_HIGH_CONTRAST_TITLE"
-                 desc="Text for the dialog asking if the user may be interested in a High-Contrast extension or a dark theme. Note to translators: this is the name of a feature in Windows, so please try to find the correct name of that feature in your region.">
-          Browse the Web in High Contrast Mode
-        </message>
-      </if>
+      <message name="IDS_HIGH_CONTRAST_TITLE"
+               desc="Text for the dialog asking if the user may be interested in a High-Contrast extension or a dark theme. Note to translators: this is the name of a feature in Windows, so please try to find the correct name of that feature in your region.">
+        Browse the web in high contrast mode
+      </message>
       <message name="IDS_HIGH_CONTRAST_HEADER"
                desc="Section header for list of extensions or themes to try in conjunction with the High Contrast mode">
         Try:
@@ -10299,16 +10028,9 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
       </message>
 
       <!-- Desktop media picker UI for Desktop Capture API -->
-      <if expr="not use_titlecase">
-        <message name="IDS_DESKTOP_MEDIA_PICKER_TITLE" desc="Title for the window picker dialog shown when desktop capture is requested by an app.">
-          Share your screen
-        </message>
-      </if>
-      <if expr="use_titlecase">
-        <message name="IDS_DESKTOP_MEDIA_PICKER_TITLE" desc="Title for the window picker dialog shown when desktop capture is requested by an app.">
-          Share Your Screen
-        </message>
-      </if>
+      <message name="IDS_DESKTOP_MEDIA_PICKER_TITLE" desc="Title for the window picker dialog shown when desktop capture is requested by an app.">
+        Share your screen
+      </message>
       <message name="IDS_DESKTOP_MEDIA_PICKER_TEXT" desc="Text for the window picker dialog shown when desktop capture is requested by an app to be used by the app itself.">
         <ph name="APP_NAME">$1<ex>Google Hangouts</ex></ph> wants to share the contents of your screen. Choose what you'd like to share.
       </message>
@@ -10925,13 +10647,13 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
         <ph name="Origin">$1<ex>www.google.com</ex></ph> wants to pair
       </message>
       <message name="IDS_BLUETOOTH_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME" desc="The label that is used to introduce Bluetooth chooser details to the user in a popup when it is from a Chrome extension.">
-        "<ph name="CHROME_EXTENSION_NAME">$1<ex>Chrome extension name</ex></ph>" wants to pair
+        "<ph name="CHROME_EXTENSION_NAME">$1<ex>Chrome Extension Name</ex></ph>" wants to pair
       </message>
       <message name="IDS_USB_DEVICE_CHOOSER_PROMPT_ORIGIN" desc="The label that is used to introduce USB chooser details to the user in a popup when it is from a website.">
         <ph name="Origin">$1<ex>www.google.com</ex></ph> wants to connect
       </message>
       <message name="IDS_USB_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME" desc="The label that is used to introduce USB chooser details to the user in a popup when it is from a Chrome extension.">
-        "<ph name="CHROME_EXTENSION_NAME">$1<ex>Chrome extension name</ex></ph>" wants to connect
+        "<ph name="CHROME_EXTENSION_NAME">$1<ex>Chrome Extension Name</ex></ph>" wants to connect
       </message>
       <message name="IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT" desc="The label shown to the user to inform them that no USB devices were found matching the requirements that the application provided.">
         No compatible devices found.
@@ -11012,16 +10734,9 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
     <message name="IDS_BLOCKED_ADS_INFOBAR_MESSAGE" desc="The mini infobar message shown to users on Android when Chrome has blocked ads on the site because the site tends to show intrusive ads. Will be presented as a sentence, next to a Details link to expand the infobar.">
       Ads blocked.
     </message>
-    <if expr="use_titlecase">
-      <message name="IDS_BLOCKED_ADS_PROMPT_TITLE" desc="In Title Case: Title of the prompt shown to users in the omnibox or infobar when Chrome has blocked ads on the site because the site tends to show intrusive ads. The title will stand alone next to an icon so there is no need for a period." formatter_data="android_java">
-        Ads Blocked
-      </message>
-    </if>
-    <if expr="not use_titlecase">
-      <message name="IDS_BLOCKED_ADS_PROMPT_TITLE" desc="Title of the prompt shown to users in the omnibox or infobar when Chrome has blocked ads on the site because the site tends to show intrusive ads. The title will stand alone next to an icon so there is no need for a period." formatter_data="android_java">
-        Ads blocked
-      </message>
-    </if>
+    <message name="IDS_BLOCKED_ADS_PROMPT_TITLE" desc="Title of the prompt shown to users in the omnibox or infobar when Chrome has blocked ads on the site because the site tends to show intrusive ads. The title will stand alone next to an icon so there is no need for a period." formatter_data="android_java">
+      Ads blocked
+    </message>
     <message name="IDS_BLOCKED_ADS_PROMPT_EXPLANATION" desc="Longer explanation that Chrome has blocked ads on the site. To be shown in an expanded infobar / bubble">
       Chrome blocked ads on this site because this site tends to show intrusive ads.
     </message>
@@ -11038,18 +10753,15 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
     <!-- Framebust / Blocked Redirection intervention message -->
     <if expr="not is_android">
       <!-- Android strings are declared in android_chrome_strings.grd. -->
+      <message name="IDS_REDIRECT_BLOCKED_MESSAGE" desc="The message stating that a redirect (noun) was blocked on this page. This will be followed on a separate line with the address the user was being redirected to.">
+        Redirect blocked to site
+      </message>
       <if expr="use_titlecase">
-        <message name="IDS_REDIRECT_BLOCKED_MESSAGE" desc="In Title Case: The message stating that a redirect (noun) was blocked on this page. This will be followed on a separate line with the address the user was being redirected to.">
-          Redirect Blocked to Site
-        </message>
         <message name="IDS_REDIRECT_BLOCKED_GOT_IT" desc="In Title Case: The text of the OK button for the blocked redirect dialog.">
           Got It
         </message>
       </if>
       <if expr="not use_titlecase">
-        <message name="IDS_REDIRECT_BLOCKED_MESSAGE" desc="The message stating that a redirect (noun) was blocked on this page. This will be followed on a separate line with the address the user was being redirected to.">
-          Redirect blocked to site
-        </message>
         <message name="IDS_REDIRECT_BLOCKED_GOT_IT" desc="The text of the OK button for the blocked redirect dialog.">
           Got it
         </message>
