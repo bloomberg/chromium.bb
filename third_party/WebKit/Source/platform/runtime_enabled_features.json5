@@ -395,7 +395,8 @@
       status: "stable"
     },
     {
-      name: "FeaturePolicyExperimentalFeatures"
+      name: "FeaturePolicyExperimentalFeatures",
+      status: "experimental"
     },
     {
       name: "FeaturePolicyForPermissions",
@@ -404,6 +405,9 @@
     {
       name: "FeaturePolicyJavaScriptInterface",
       status: "experimental"
+    },
+    {
+      name: "FeaturePolicyVibrateFeature"
     },
     {
       name: "FetchRequestCache",

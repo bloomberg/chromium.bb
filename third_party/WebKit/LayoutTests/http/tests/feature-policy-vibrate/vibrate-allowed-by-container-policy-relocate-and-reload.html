@@ -6,7 +6,7 @@
 <script>
 window.onload = function () {
   var iframe = document.querySelector('iframe');
-  var src = "http://localhost:8000/feature-policy-experimental-features/resources/feature-policy-vibrate.html";
+  var src = "http://localhost:8000/feature-policy-vibrate/resources/feature-policy-vibrate.html";
   iframe.addEventListener('load', sendClick);
   promise_test(function() {
     iframe.src = src;

@@ -680,6 +680,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   if (IsImageOrVideoElement(element)) {
     if (IsSupportedInFeaturePolicy(
             mojom::FeaturePolicyFeature::kUnsizedMedia) &&
+        element->GetDocument().GetFrame() &&
         !element->GetDocument().GetFrame()->IsFeatureEnabled(
             mojom::FeaturePolicyFeature::kUnsizedMedia)) {
       if (!style.Width().IsSpecified())
