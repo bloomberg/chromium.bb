@@ -2079,15 +2079,11 @@ void ObjectPaintPropertyTreeBuilder::UpdateFragments() {
 
     Vector<PaintPropertyTreeBuilderFragmentContext> new_fragment_contexts;
     FragmentData* current_fragment_data = nullptr;
-
-    int fragment_count = 0;
-    for (; !iterator.AtEnd(); iterator.Advance(), fragment_count++) {
-      if (!current_fragment_data) {
-        current_fragment_data =
-            &object_.GetMutableForPainting().FirstFragment();
-      } else {
-        current_fragment_data = &current_fragment_data->EnsureNextFragment();
-      }
+    for (; !iterator.AtEnd(); iterator.Advance()) {
+      current_fragment_data =
+          current_fragment_data
+              ? &current_fragment_data->EnsureNextFragment()
+              : &object_.GetMutableForPainting().FirstFragment();
 
       InitFragmentPaintProperties(*current_fragment_data,
                                   needs_paint_properties);
@@ -2130,7 +2126,7 @@ void ObjectPaintPropertyTreeBuilder::UpdateFragments() {
     }
     if (current_fragment_data) {
       current_fragment_data->ClearNextFragment();
-      context_.fragments = new_fragment_contexts;
+      context_.fragments = std::move(new_fragment_contexts);
     } else {
       // This will be an empty fragment - get rid of it?
       InitSingleFragmentFromParent(needs_paint_properties);
