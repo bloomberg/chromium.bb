@@ -835,7 +835,6 @@
         "dashed", "solid", "double"
       ],
       default_value: "none",
-      typedom_types: ["Image"],
       type_name: "EBorderStyle",
     },
     {
@@ -914,7 +913,6 @@
         "dashed", "solid", "double"
       ],
       default_value: "none",
-      typedom_types: ["Image"],
       type_name: "EBorderStyle",
     },
     {
@@ -953,7 +951,6 @@
         "dashed", "solid", "double"
       ],
       default_value: "none",
-      typedom_types: ["Image"],
       type_name: "EBorderStyle",
     },
     {
@@ -1014,7 +1011,6 @@
         "dashed", "solid", "double"
       ],
       default_value: "none",
-      typedom_types: ["Image"],
       type_name: "EBorderStyle",
     },
     {
@@ -1829,6 +1825,7 @@
       default_value: "LengthPoint(Length(50.0, kPercent), Length(50.0, kPercent))",
       type_name: "LengthPoint",
       converter: "ConvertPosition",
+      typedom_types: ["Position"],
     },
     {
       name: "offset-anchor",
@@ -3908,7 +3905,6 @@
       ],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
       keywords: ["none"],
-      typedom_types: ["Image"],
     },
     {
       name: "border-top",
