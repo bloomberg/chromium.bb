@@ -298,6 +298,8 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
       // origin rather than the origin of the dragged data URL?
       resource_request.SetRequestorOrigin(
           SecurityOrigin::Create(KURL(drag_data->AsURL())));
+      resource_request.SetHasUserGesture(Frame::HasTransientUserActivation(
+          document_under_mouse_ ? document_under_mouse_->GetFrame() : nullptr));
       page_->MainFrame()->Navigate(FrameLoadRequest(nullptr, resource_request));
     }
 
