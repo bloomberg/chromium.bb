@@ -10,8 +10,8 @@
  */
 
 #include "aom_ports/mem.h"
-#include "av1/common/scan.h"
 #include "av1/common/idct.h"
+#include "av1/common/scan.h"
 #include "av1/common/txb_common.h"
 #include "av1/decoder/decodemv.h"
 #include "av1/decoder/decodetxb.h"
@@ -233,16 +233,24 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
     }
     const int level =
         aom_read_symbol(r, cdf, nsymbs, ACCT_STR) + (c == *eob - 1);
+    levels[get_padded_idx(pos, bwl)] = level;
+  }
 
-    // printf("base_cdf: %d %d %2d\n", txs_ctx, plane_type, coeff_ctx);
-    // printf("base_cdf: %d %d %2d : %3d %3d %3d\n", txs_ctx, plane_type,
-    // coeff_ctx,
-    //            ec_ctx->coeff_base_cdf[txs_ctx][plane_type][coeff_ctx][0]>>7,
-    //            ec_ctx->coeff_base_cdf[txs_ctx][plane_type][coeff_ctx][1]>>7,
-    //            ec_ctx->coeff_base_cdf[txs_ctx][plane_type][coeff_ctx][2]>>7);
+  // Loop to decode all signs in the transform block,
+  // starting with the sign of the DC (if applicable)
+  for (c = 0; c < *eob; ++c) {
+    const int pos = scan[c];
+    int8_t *const sign = &signs[pos];
+    const int level = levels[get_padded_idx(pos, bwl)];
     if (level) {
-      levels[get_padded_idx(pos, bwl)] = level;
       *max_scan_line = AOMMAX(*max_scan_line, pos);
+      if (c == 0) {
+        const int dc_sign_ctx = txb_ctx->dc_sign_ctx;
+        *sign = aom_read_symbol(r, ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx],
+                                2, ACCT_STR);
+      } else {
+        *sign = aom_read_bit(r, ACCT_STR);
+      }
       if (level < 3) {
         cul_level += level;
 #if CONFIG_NEW_QUANT
@@ -257,31 +265,19 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
         v = level * get_dqv(dequant, scan[c], iqmatrix);
         v = v >> shift;
 #endif  // CONFIG_NEW_QUANT
-        tcoeffs[pos] = v;
+        if (*sign) {
+          tcoeffs[pos] = -v;
+        } else {
+          tcoeffs[pos] = v;
+        }
       } else {
         update_pos[num_updates++] = pos;
       }
     }
   }
 
-  // Loop to decode all signs in the transform block,
-  // starting with the sign of the DC (if applicable)
-  for (c = 0; c < *eob; ++c) {
-    const int pos = scan[c];
-    int8_t *const sign = &signs[pos];
-    if (levels[get_padded_idx(pos, bwl)] == 0) continue;
-    if (c == 0) {
-      const int dc_sign_ctx = txb_ctx->dc_sign_ctx;
-      *sign = aom_read_symbol(r, ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx],
-                              2, ACCT_STR);
-    } else {
-      *sign = aom_read_bit(r, ACCT_STR);
-    }
-    if (*sign) tcoeffs[pos] = -tcoeffs[pos];
-  }
-
   if (num_updates) {
-    for (c = 0; c < num_updates; ++c) {
+    for (c = num_updates - 1; c >= 0; --c) {
       const int pos = update_pos[c];
       uint8_t *const level = &levels[get_padded_idx(pos, bwl)];
       int idx = 0;
