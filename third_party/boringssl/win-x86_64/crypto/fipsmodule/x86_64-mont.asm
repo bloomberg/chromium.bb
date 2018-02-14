@@ -226,8 +226,7 @@ $L$inner_enter:
 	mov	r15,r9
 	jmp	NEAR $L$sub
 ALIGN	16
-$L$sub:
-	sbb	rax,QWORD[r14*8+rcx]
+$L$sub:	sbb	rax,QWORD[r14*8+rcx]
 	mov	QWORD[r14*8+rdi],rax
 	mov	rax,QWORD[8+r14*8+rsi]
 	lea	r14,[1+r14]

@@ -1072,6 +1072,7 @@ global	bsaes_cbc_encrypt
 
 ALIGN	16
 bsaes_cbc_encrypt:
+
 	mov	r11d,DWORD[48+rsp]
 	cmp	r11d,0
 	jne	NEAR asm_AES_cbc_encrypt
@@ -1081,12 +1082,19 @@ bsaes_cbc_encrypt:
 	mov	rax,rsp
 $L$cbc_dec_prologue:
 	push	rbp
+
 	push	rbx
+
 	push	r12
+
 	push	r13
+
 	push	r14
+
 	push	r15
+
 	lea	rsp,[((-72))+rsp]
+
 	mov	r10,QWORD[160+rsp]
 	lea	rsp,[((-160))+rsp]
 	movaps	XMMWORD[64+rsp],xmm6
@@ -1101,6 +1109,7 @@ $L$cbc_dec_prologue:
 	movaps	XMMWORD[208+rsp],xmm15
 $L$cbc_dec_body:
 	mov	rbp,rsp
+
 	mov	eax,DWORD[240+r9]
 	mov	r12,rcx
 	mov	r13,rdx
@@ -1320,6 +1329,7 @@ $L$cbc_dec_bzero:
 	ja	NEAR $L$cbc_dec_bzero
 
 	lea	rax,[120+rbp]
+
 	movaps	xmm6,XMMWORD[64+rbp]
 	movaps	xmm7,XMMWORD[80+rbp]
 	movaps	xmm8,XMMWORD[96+rbp]
@@ -1333,29 +1343,45 @@ $L$cbc_dec_bzero:
 	lea	rax,[160+rax]
 $L$cbc_dec_tail:
 	mov	r15,QWORD[((-48))+rax]
+
 	mov	r14,QWORD[((-40))+rax]
+
 	mov	r13,QWORD[((-32))+rax]
+
 	mov	r12,QWORD[((-24))+rax]
+
 	mov	rbx,QWORD[((-16))+rax]
+
 	mov	rbp,QWORD[((-8))+rax]
+
 	lea	rsp,[rax]
+
 $L$cbc_dec_epilogue:
 	DB	0F3h,0C3h		;repret
+
 
 
 global	bsaes_ctr32_encrypt_blocks
 
 ALIGN	16
 bsaes_ctr32_encrypt_blocks:
+
 	mov	rax,rsp
 $L$ctr_enc_prologue:
 	push	rbp
+
 	push	rbx
+
 	push	r12
+
 	push	r13
+
 	push	r14
+
 	push	r15
+
 	lea	rsp,[((-72))+rsp]
+
 	mov	r10,QWORD[160+rsp]
 	lea	rsp,[((-160))+rsp]
 	movaps	XMMWORD[64+rsp],xmm6
@@ -1370,6 +1396,7 @@ $L$ctr_enc_prologue:
 	movaps	XMMWORD[208+rsp],xmm15
 $L$ctr_enc_body:
 	mov	rbp,rsp
+
 	movdqu	xmm0,XMMWORD[r10]
 	mov	eax,DWORD[240+r9]
 	mov	r12,rcx
@@ -1544,6 +1571,7 @@ $L$ctr_enc_bzero:
 	ja	NEAR $L$ctr_enc_bzero
 
 	lea	rax,[120+rbp]
+
 	movaps	xmm6,XMMWORD[64+rbp]
 	movaps	xmm7,XMMWORD[80+rbp]
 	movaps	xmm8,XMMWORD[96+rbp]
@@ -1557,28 +1585,44 @@ $L$ctr_enc_bzero:
 	lea	rax,[160+rax]
 $L$ctr_enc_tail:
 	mov	r15,QWORD[((-48))+rax]
+
 	mov	r14,QWORD[((-40))+rax]
+
 	mov	r13,QWORD[((-32))+rax]
+
 	mov	r12,QWORD[((-24))+rax]
+
 	mov	rbx,QWORD[((-16))+rax]
+
 	mov	rbp,QWORD[((-8))+rax]
+
 	lea	rsp,[rax]
+
 $L$ctr_enc_epilogue:
 	DB	0F3h,0C3h		;repret
+
 
 global	bsaes_xts_encrypt
 
 ALIGN	16
 bsaes_xts_encrypt:
+
 	mov	rax,rsp
 $L$xts_enc_prologue:
 	push	rbp
+
 	push	rbx
+
 	push	r12
+
 	push	r13
+
 	push	r14
+
 	push	r15
+
 	lea	rsp,[((-72))+rsp]
+
 	mov	r10,QWORD[160+rsp]
 	mov	r11,QWORD[168+rsp]
 	lea	rsp,[((-160))+rsp]
@@ -1594,6 +1638,7 @@ $L$xts_enc_prologue:
 	movaps	XMMWORD[208+rsp],xmm15
 $L$xts_enc_body:
 	mov	rbp,rsp
+
 	mov	r12,rcx
 	mov	r13,rdx
 	mov	r14,r8
@@ -2020,6 +2065,7 @@ $L$xts_enc_bzero:
 	ja	NEAR $L$xts_enc_bzero
 
 	lea	rax,[120+rbp]
+
 	movaps	xmm6,XMMWORD[64+rbp]
 	movaps	xmm7,XMMWORD[80+rbp]
 	movaps	xmm8,XMMWORD[96+rbp]
@@ -2033,29 +2079,45 @@ $L$xts_enc_bzero:
 	lea	rax,[160+rax]
 $L$xts_enc_tail:
 	mov	r15,QWORD[((-48))+rax]
+
 	mov	r14,QWORD[((-40))+rax]
+
 	mov	r13,QWORD[((-32))+rax]
+
 	mov	r12,QWORD[((-24))+rax]
+
 	mov	rbx,QWORD[((-16))+rax]
+
 	mov	rbp,QWORD[((-8))+rax]
+
 	lea	rsp,[rax]
+
 $L$xts_enc_epilogue:
 	DB	0F3h,0C3h		;repret
+
 
 
 global	bsaes_xts_decrypt
 
 ALIGN	16
 bsaes_xts_decrypt:
+
 	mov	rax,rsp
 $L$xts_dec_prologue:
 	push	rbp
+
 	push	rbx
+
 	push	r12
+
 	push	r13
+
 	push	r14
+
 	push	r15
+
 	lea	rsp,[((-72))+rsp]
+
 	mov	r10,QWORD[160+rsp]
 	mov	r11,QWORD[168+rsp]
 	lea	rsp,[((-160))+rsp]
@@ -2523,6 +2585,7 @@ $L$xts_dec_bzero:
 	ja	NEAR $L$xts_dec_bzero
 
 	lea	rax,[120+rbp]
+
 	movaps	xmm6,XMMWORD[64+rbp]
 	movaps	xmm7,XMMWORD[80+rbp]
 	movaps	xmm8,XMMWORD[96+rbp]
@@ -2536,14 +2599,22 @@ $L$xts_dec_bzero:
 	lea	rax,[160+rax]
 $L$xts_dec_tail:
 	mov	r15,QWORD[((-48))+rax]
+
 	mov	r14,QWORD[((-40))+rax]
+
 	mov	r13,QWORD[((-32))+rax]
+
 	mov	r12,QWORD[((-24))+rax]
+
 	mov	rbx,QWORD[((-16))+rax]
+
 	mov	rbp,QWORD[((-8))+rax]
+
 	lea	rsp,[rax]
+
 $L$xts_dec_epilogue:
 	DB	0F3h,0C3h		;repret
+
 
 
 ALIGN	64

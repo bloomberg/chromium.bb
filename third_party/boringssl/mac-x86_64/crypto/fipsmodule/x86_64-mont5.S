@@ -395,8 +395,7 @@ L$inner_enter:
 	movq	%r9,%r15
 	jmp	L$sub
 .p2align	4
-L$sub:
-	sbbq	(%rcx,%r14,8),%rax
+L$sub:	sbbq	(%rcx,%r14,8),%rax
 	movq	%rax,(%rdi,%r14,8)
 	movq	8(%rsi,%r14,8),%rax
 	leaq	1(%r14),%r14
