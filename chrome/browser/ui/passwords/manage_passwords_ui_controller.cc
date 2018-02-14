@@ -15,6 +15,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -486,11 +487,11 @@ void ManagePasswordsUIController::NavigateToPasswordManagerAccountDashboard() {
   Navigate(&params);
 }
 
-void ManagePasswordsUIController::NavigateToChromeSignIn() {
+void ManagePasswordsUIController::EnableSync(const AccountInfo& account) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-  browser->window()->ShowAvatarBubbleFromAvatarButton(
-      BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN, signin::ManageAccountsParams(),
-      signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE, false);
+  signin_ui_util::EnableSync(
+      browser, account,
+      signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE);
 }
 
 void ManagePasswordsUIController::OnDialogHidden() {

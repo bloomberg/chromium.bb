@@ -24,6 +24,8 @@ namespace metrics_util {
 enum class CredentialSourceType;
 }  // namespace metrics_util
 }  // namespace password_manager
+
+struct AccountInfo;
 class GURL;
 
 // An interface for ManagePasswordsBubbleModel implemented by
@@ -107,8 +109,9 @@ class PasswordsModelDelegate {
   virtual void NavigateToPasswordManagerAccountDashboard() = 0;
   // Open a new tab, pointing to the password manager settings page.
   virtual void NavigateToPasswordManagerSettingsPage() = 0;
-  // Starts the Chrome Sign in flow.
-  virtual void NavigateToChromeSignIn() = 0;
+  // Called by the view when the "Sign in to Chrome" button or the "Sync to"
+  // button in the promo bubble are clicked.
+  virtual void EnableSync(const AccountInfo& account) = 0;
 
   // Called from the dialog controller when the dialog is hidden.
   virtual void OnDialogHidden() = 0;

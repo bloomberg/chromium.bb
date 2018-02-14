@@ -26,14 +26,14 @@ class DiceBubbleSyncPromoView : public views::View,
  public:
   // Creates a personalized sync promo view.
   // |delegate| is not owned by DiceBubbleSyncPromoView.
-  // The promo title message is set to |no_accounts_title_resource_id| when
+  // The promo message is set to |no_accounts_promo_message_resource_id| when
   // Chrome has no accounts.
-  // The promo title message is set to |accounts_title_resource_id| when Chrome
-  // has at least one account.
+  // The promo message is set to |accounts_promo_message_resource_id| when
+  // Chrome has at least one account.
   DiceBubbleSyncPromoView(Profile* profile,
                           BubbleSyncPromoDelegate* delegate,
-                          int no_accounts_title_resource_id,
-                          int accounts_title_resource_id);
+                          int no_accounts_promo_message_resource_id,
+                          int accounts_promo_message_resource_id);
   ~DiceBubbleSyncPromoView() override;
 
   // views::ButtonListener:

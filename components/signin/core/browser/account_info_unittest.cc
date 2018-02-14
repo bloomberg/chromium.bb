@@ -7,6 +7,28 @@
 
 class AccountInfoTest : public testing::Test {};
 
+TEST_F(AccountInfoTest, IsEmpty) {
+  {
+    AccountInfo info_empty;
+    EXPECT_TRUE(info_empty.IsEmpty());
+  }
+  {
+    AccountInfo info_with_account_id;
+    info_with_account_id.account_id = "test_id";
+    EXPECT_FALSE(info_with_account_id.IsEmpty());
+  }
+  {
+    AccountInfo info_with_email;
+    info_with_email.email = "test_email@email.com";
+    EXPECT_FALSE(info_with_email.IsEmpty());
+  }
+  {
+    AccountInfo info_with_gaia;
+    info_with_gaia.gaia = "test_gaia";
+    EXPECT_FALSE(info_with_gaia.IsEmpty());
+  }
+}
+
 // Tests that IsValid() returns true only when all the fields are non-empty.
 TEST_F(AccountInfoTest, IsValid) {
   AccountInfo info;

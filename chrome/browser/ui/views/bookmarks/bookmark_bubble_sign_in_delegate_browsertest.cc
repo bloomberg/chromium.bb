@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/signin/core/browser/account_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "ui/events/event_constants.h"
@@ -59,7 +60,7 @@ void BookmarkBubbleSignInDelegateTest::ReplaceBlank(Browser* browser) {
 void BookmarkBubbleSignInDelegateTest::SignInBrowser(Browser* browser) {
   std::unique_ptr<BubbleSyncPromoDelegate> delegate;
   delegate.reset(new BookmarkBubbleSignInDelegate(browser));
-  delegate->ShowBrowserSignin();
+  delegate->OnEnableSync(AccountInfo());
 }
 
 IN_PROC_BROWSER_TEST_F(BookmarkBubbleSignInDelegateTest, OnSignInLinkClicked) {
@@ -161,7 +162,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBubbleSignInDelegateTest, BrowserRemoved) {
   browser()->tab_strip_model()->CloseAllTabs();
   content::RunAllPendingInMessageLoop();
 
-  delegate->ShowBrowserSignin();
+  delegate->OnEnableSync(AccountInfo());
 
   int tab_count = extra_browser->tab_strip_model()->count();
 #if !defined(OS_CHROMEOS)

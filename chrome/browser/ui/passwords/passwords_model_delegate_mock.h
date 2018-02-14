@@ -46,7 +46,7 @@ class PasswordsModelDelegateMock
   MOCK_METHOD0(NavigateToSmartLockHelpPage, void());
   MOCK_METHOD0(NavigateToPasswordManagerAccountDashboard, void());
   MOCK_METHOD0(NavigateToPasswordManagerSettingsPage, void());
-  MOCK_METHOD0(NavigateToChromeSignIn, void());
+  MOCK_METHOD1(EnableSync, void(const AccountInfo& account));
   MOCK_METHOD0(OnDialogHidden, void());
   MOCK_METHOD0(AuthenticateUser, bool());
   MOCK_CONST_METHOD0(ArePasswordsRevealedWhenBubbleIsOpened, bool());

@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
@@ -87,6 +88,65 @@ std::string GetDisplayEmail(Profile* profile, const std::string& account_id) {
   return email;
 }
 
+void EnableSync(Browser* browser,
+                const AccountInfo& account,
+                signin_metrics::AccessPoint access_point) {
+  DCHECK(browser);
+  DCHECK_NE(signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN, access_point);
+  Profile* profile = browser->profile();
+  DCHECK(!profile->IsOffTheRecord());
+
+#if defined(OS_CHROMEOS)
+  // It looks like on ChromeOS there are tests that expect that the Chrome
+  // sign-in tab is presented even thought the user is signed in to Chrome
+  // (e.g. BookmarkBubbleSignInDelegateTest.*). However signing in to Chrome in
+  // a refular profile is not supported on ChromeOS as the primary account is
+  // set when the profile is created.
+  //
+  // TODO(msarda): Investigate whether this flow needs to be supported on
+  // ChromeOS and remove it if not.
+  DCHECK(account.IsEmpty());
+  chrome::ShowBrowserSignin(browser, access_point);
+  return;
+#endif
+
+  if (SigninManagerFactory::GetForProfile(profile)->IsAuthenticated()) {
+    DVLOG(1) << "There is already a primary account.";
+    return;
+  }
+
+  if (account.IsEmpty()) {
+    chrome::ShowBrowserSignin(browser, access_point);
+    return;
+  }
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  DCHECK(!account.account_id.empty());
+  DCHECK(!account.email.empty());
+  DCHECK(AccountConsistencyModeManager::IsDiceEnabledForProfile(profile));
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+  bool needs_reauth_before_enable_sync =
+      !token_service->RefreshTokenIsAvailable(account.account_id) ||
+      token_service->RefreshTokenHasError(account.account_id);
+  if (needs_reauth_before_enable_sync) {
+    browser->signin_view_controller()->ShowDiceSigninTab(
+        profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser, access_point,
+        account.email);
+    return;
+  }
+
+  // DiceTurnSyncOnHelper is suicidal (it will delete itself once it finishes
+  // enabling sync).
+  new DiceTurnSyncOnHelper(
+      profile, browser, access_point,
+      signin_metrics::Reason::REASON_UNKNOWN_REASON, account.account_id,
+      DiceTurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT);
+#else
+  NOTREACHED();
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+}
+
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // TODO(tangltom): Add a unit test for this function.
 std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
@@ -120,40 +180,6 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
   return accounts;
 }
 
-void EnableSync(Browser* browser,
-                const AccountInfo& account,
-                signin_metrics::AccessPoint access_point) {
-  DCHECK(browser);
-  DCHECK(!account.account_id.empty());
-  DCHECK(!account.email.empty());
-  DCHECK_NE(signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN, access_point);
-
-  Profile* profile = browser->profile();
-  DCHECK(AccountConsistencyModeManager::IsDiceEnabledForProfile(profile));
-  if (SigninManagerFactory::GetForProfile(profile)->IsAuthenticated()) {
-    DVLOG(1) << "There is already a primary account.";
-    return;
-  }
-
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  bool needs_reauth_before_enable_sync =
-      !token_service->RefreshTokenIsAvailable(account.account_id) ||
-      token_service->RefreshTokenHasError(account.account_id);
-  if (needs_reauth_before_enable_sync) {
-    browser->signin_view_controller()->ShowDiceSigninTab(
-        profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser, access_point,
-        account.email);
-    return;
-  }
-
-  // DiceTurnSyncOnHelper is suicidal (it will delete itself once it finishes
-  // enabling sync).
-  new DiceTurnSyncOnHelper(
-      profile, browser, access_point,
-      signin_metrics::Reason::REASON_UNKNOWN_REASON, account.account_id,
-      DiceTurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT);
-}
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 }  // namespace signin_ui_util

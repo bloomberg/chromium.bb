@@ -15,6 +15,7 @@
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/sync/dice_signin_button.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -25,24 +26,26 @@
 DiceBubbleSyncPromoView::DiceBubbleSyncPromoView(
     Profile* profile,
     BubbleSyncPromoDelegate* delegate,
-    int no_accounts_title_resource_id,
-    int accounts_title_resource_id)
+    int no_accounts_promo_message_resource_id,
+    int accounts_promo_message_resource_id)
     : views::View(), delegate_(delegate) {
   DCHECK(AccountConsistencyModeManager::IsDiceEnabledForProfile(profile));
 
   std::vector<AccountInfo> accounts =
       signin_ui_util::GetAccountsForDicePromos(profile);
-  int title_resource_id = accounts.empty() ? no_accounts_title_resource_id
-                                           : accounts_title_resource_id;
+  int title_resource_id = accounts.empty()
+                              ? no_accounts_promo_message_resource_id
+                              : accounts_promo_message_resource_id;
 
   std::unique_ptr<views::BoxLayout> layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(),
-      ChromeLayoutProvider::Get()->GetDistanceMetric(
-          views::DISTANCE_RELATED_CONTROL_VERTICAL));
+      ChromeLayoutProvider::Get()
+          ->GetDialogInsetsForContentType(views::TEXT, views::TEXT)
+          .bottom());
   SetLayoutManager(std::move(layout));
 
   base::string16 title_text = l10n_util::GetStringUTF16(title_resource_id);
-  views::Label* title = new views::Label(title_text);
+  views::Label* title = new views::Label(title_text, CONTEXT_BODY_TEXT_LARGE);
   title->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   title->SetMultiLine(true);
   AddChildView(title);
@@ -68,10 +71,7 @@ void DiceBubbleSyncPromoView::ButtonPressed(views::Button* sender,
                                             const ui::Event& event) {
   if (sender == signin_button_) {
     DVLOG(1) << "Sign In button pressed";
-    if (signin_button_->account())
-      delegate_->EnableSync(signin_button_->account().value());
-    else
-      delegate_->ShowBrowserSignin();
+    delegate_->OnEnableSync(signin_button_->account().value_or(AccountInfo()));
     return;
   }
 

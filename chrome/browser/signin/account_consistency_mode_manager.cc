@@ -144,16 +144,16 @@ AccountConsistencyModeManager::GetMethodForPrefMember(
   return signin::GetAccountConsistencyMethod();
 }
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-void AccountConsistencyModeManager::SetReadyForDiceMigration(bool is_ready) {
-  DCHECK_EQ(Profile::ProfileType::REGULAR_PROFILE, profile_->GetProfileType());
-  SetDiceMigrationOnStartup(profile_->GetPrefs(), is_ready);
-}
-
 // static
 bool AccountConsistencyModeManager::IsDiceEnabledForProfile(Profile* profile) {
   return GetMethodForProfile(profile) ==
          signin::AccountConsistencyMethod::kDice;
+}
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+void AccountConsistencyModeManager::SetReadyForDiceMigration(bool is_ready) {
+  DCHECK_EQ(Profile::ProfileType::REGULAR_PROFILE, profile_->GetProfileType());
+  SetDiceMigrationOnStartup(profile_->GetPrefs(), is_ready);
 }
 
 // static

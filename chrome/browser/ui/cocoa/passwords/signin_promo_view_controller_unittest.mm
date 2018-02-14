@@ -6,6 +6,9 @@
 
 #import "chrome/browser/ui/cocoa/passwords/base_passwords_controller_test.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+using testing::_;
 
 namespace {
 
@@ -45,21 +48,21 @@ void SignInPromoViewControllerTest::SetUpSignInPromoState() {
 
 
 TEST_F(SignInPromoViewControllerTest, ClickSignIn) {
-  EXPECT_CALL(*ui_controller(), NavigateToChromeSignIn());
+  EXPECT_CALL(*ui_controller(), EnableSync(_));
   [controller().signInButton performClick:nil];
 
   EXPECT_TRUE([delegate() dismissed]);
 }
 
 TEST_F(SignInPromoViewControllerTest, ClickNo) {
-  EXPECT_CALL(*ui_controller(), NavigateToChromeSignIn()).Times(0);
+  EXPECT_CALL(*ui_controller(), EnableSync(_)).Times(0);
   [controller().noButton performClick:nil];
 
   EXPECT_TRUE([delegate() dismissed]);
 }
 
 TEST_F(SignInPromoViewControllerTest, ClickClose) {
-  EXPECT_CALL(*ui_controller(), NavigateToChromeSignIn()).Times(0);
+  EXPECT_CALL(*ui_controller(), EnableSync(_)).Times(0);
   [controller().closeButton performClick:nil];
 
   EXPECT_TRUE([delegate() dismissed]);
@@ -68,7 +71,7 @@ TEST_F(SignInPromoViewControllerTest, ClickClose) {
 TEST_F(SignInPromoViewControllerTest, CloseBubbleAndHandleClick) {
   // A user may press mouse down, some navigation closes the bubble, mouse up
   // still sends the action.
-  EXPECT_CALL(*ui_controller(), NavigateToChromeSignIn()).Times(0);
+  EXPECT_CALL(*ui_controller(), EnableSync(_)).Times(0);
   [delegate() setModel:nil];
   [controller().signInButton performClick:nil];
   [controller().noButton performClick:nil];

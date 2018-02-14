@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/signin/core/browser/account_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/range/range.h"
@@ -25,14 +26,15 @@ class BubbleSyncPromoViewTest : public views::ViewsTestBase,
 
  protected:
   // BubbleSyncPromoDelegate:
-  void ShowBrowserSignin() override { ++show_browser_signin_count_; }
-
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  void EnableSync(const AccountInfo& account_info) override { NOTREACHED(); }
-#endif
+  void OnEnableSync(const AccountInfo& account) override {
+    // The bubble sync promo view does not allow the user to enable sync
+    // for an existing account id.
+    DCHECK(account.IsEmpty());
+    ++on_enable_sync_count_;
+  }
 
   // Number of times that OnSignInLinkClicked has been called.
-  int show_browser_signin_count_ = 0;
+  int on_enable_sync_count_ = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BubbleSyncPromoViewTest);
@@ -48,5 +50,5 @@ TEST_F(BubbleSyncPromoViewTest, SignInLink) {
   views::StyledLabelListener* listener = sync_promo.get();
   listener->StyledLabelLinkClicked(&styled_label, gfx::Range(), ui::EF_NONE);
 
-  EXPECT_EQ(1, show_browser_signin_count_);
+  EXPECT_EQ(1, on_enable_sync_count_);
 }
