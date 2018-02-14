@@ -1054,6 +1054,7 @@ bool PrintRenderFrameHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PrintMsg_ClosePrintPreviewDialog,
                         OnClosePrintPreviewDialog)
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+    IPC_MESSAGE_HANDLER(PrintMsg_PrintFrameContent, OnPrintFrameContent)
     IPC_MESSAGE_HANDLER(PrintMsg_SetPrintingEnabled, OnSetPrintingEnabled)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -1412,6 +1413,68 @@ void PrintRenderFrameHelper::OnClosePrintPreviewDialog() {
   print_preview_context_.source_frame()->DispatchAfterPrintEvent();
 }
 #endif
+
+void PrintRenderFrameHelper::OnPrintFrameContent(
+    const PrintMsg_PrintFrame_Params& params) {
+  if (ipc_nesting_level_ > 1)
+    return;
+
+  // If the last request is not finished yet, do not proceed.
+  if (prep_frame_view_) {
+    DLOG(ERROR) << "Previous request is still ongoing";
+    return;
+  }
+
+  auto weak_this = weak_ptr_factory_.GetWeakPtr();
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
+  frame->DispatchBeforePrintEvent();
+  if (!weak_this)
+    return;
+
+  PdfMetafileSkia metafile(SkiaDocumentType::MSKP);
+  gfx::Rect area(params.printable_area.width(), params.printable_area.height());
+  // Since GetVectorCanvasForNewPage() starts a new recording, it will return
+  // a valid canvas.
+  cc::PaintCanvas* canvas = metafile.GetVectorCanvasForNewPage(
+      gfx::Size(area.width(), area.height()), area, 1.0f);
+  DCHECK(canvas);
+
+  MetafileSkiaWrapper::SetMetafileOnCanvas(canvas, &metafile);
+
+  // Use default values for other fields as they are only meaningful for plugin
+  // printing.
+  blink::WebPrintParams web_print_params;
+  web_print_params.print_content_area = area;
+  web_print_params.printable_area = area;
+
+  // Printing embedded pdf plugin has been broken since pdf plugin viewer was
+  // moved out-of-process
+  // (https://bugs.chromium.org/p/chromium/issues/detail?id=464269). So don't
+  // try to handle pdf plugin element until that bug is fixed.
+  if (frame->PrintBegin(web_print_params,
+                        /*constrain_to_node=*/blink::WebElement())) {
+    frame->PrintPage(0, canvas);
+  }
+  frame->PrintEnd();
+
+  // Done printing. Close the canvas to retrieve the compiled metafile.
+  bool ret = metafile.FinishPage();
+  DCHECK(ret);
+
+  metafile.FinishFrameContent();
+
+  // Send the printed result back.
+  PrintHostMsg_DidPrintContent_Params printed_frame_params;
+  if (!CopyMetafileDataToReadOnlySharedMem(metafile, &printed_frame_params)) {
+    DLOG(ERROR) << "CopyMetafileDataToSharedMem failed";
+    return;
+  }
+  Send(new PrintHostMsg_DidPrintFrameContent(
+      routing_id(), params.document_cookie, printed_frame_params));
+
+  if (!render_frame_gone_)
+    frame->DispatchAfterPrintEvent();
+}
 
 bool PrintRenderFrameHelper::IsPrintingEnabled() const {
   return is_printing_enabled_;
@@ -1965,8 +2028,6 @@ bool PrintRenderFrameHelper::CopyMetafileDataToReadOnlySharedMem(
       &params->metafile_data_handle, nullptr, nullptr);
   DCHECK_EQ(MOJO_RESULT_OK, result);
   params->data_size = metafile.GetDataSize();
-  // TODO(weili): Copy the actual subframes' content information here.
-  params->subframe_content_info.clear();
   return true;
 }
 

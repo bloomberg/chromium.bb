@@ -42,8 +42,4 @@ sk_sp<SkDocument> MakePdfDocument(const std::string& creator,
   return SkDocument::MakePDF(stream, metadata);
 }
 
-uint64_t GenFrameGuid(int process_id, int frame_id) {
-  return static_cast<uint64_t>(process_id) << 32 | frame_id;
-}
-
 }  // namespace printing

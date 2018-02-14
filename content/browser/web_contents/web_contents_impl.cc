@@ -4022,6 +4022,18 @@ void WebContentsImpl::SubresourceResponseStarted(const GURL& url,
   SetNotWaitingForResponse();
 }
 
+void WebContentsImpl::PrintCrossProcessSubframe(
+    const gfx::Rect& rect,
+    int document_cookie,
+    RenderFrameHost* subframe_host) {
+  // If there is no delegate such as in tests or during deletion, do nothing.
+  if (!delegate_)
+    return;
+
+  delegate_->PrintCrossProcessSubframe(this, rect, document_cookie,
+                                       subframe_host);
+}
+
 #if defined(OS_ANDROID)
 base::android::ScopedJavaLocalRef<jobject>
 WebContentsImpl::GetJavaRenderFrameHostDelegate() {

@@ -554,6 +554,18 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual void AdjustPreviewsStateForNavigation(PreviewsState* previews_state) {
   }
 
+  // Requests to print an out-of-process subframe for the specified WebContents.
+  // |rect| is the rectangular area where its content resides in its parent
+  // frame. |document_cookie| is a unique id for a printed document associated
+  // with
+  //                   a print job.
+  // |subframe_host| is the render frame host of the subframe to be printed.
+  virtual void PrintCrossProcessSubframe(WebContents* web_contents,
+                                         const gfx::Rect& rect,
+                                         int document_cookie,
+                                         RenderFrameHost* subframe_host) const {
+  }
+
  protected:
   virtual ~WebContentsDelegate();
 

@@ -350,6 +350,11 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
                                           const std::string& ip,
                                           net::CertStatus cert_status) {}
 
+  // Request to print a frame that is in a different process than its parent.
+  virtual void PrintCrossProcessSubframe(const gfx::Rect& rect,
+                                         int document_cookie,
+                                         RenderFrameHost* render_frame_host) {}
+
  protected:
   virtual ~RenderFrameHostDelegate() {}
 };

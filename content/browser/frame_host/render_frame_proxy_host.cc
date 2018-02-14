@@ -155,6 +155,8 @@ bool RenderFrameProxyHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeOpener, OnDidChangeOpener)
     IPC_MESSAGE_HANDLER(FrameHostMsg_AdvanceFocus, OnAdvanceFocus)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FrameFocused, OnFrameFocused)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_PrintCrossProcessSubframe,
+                        OnPrintCrossProcessSubframe)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -392,6 +394,12 @@ void RenderFrameProxyHost::OnAdvanceFocus(blink::WebFocusType type,
 void RenderFrameProxyHost::OnFrameFocused() {
   frame_tree_node_->current_frame_host()->delegate()->SetFocusedFrame(
       frame_tree_node_, GetSiteInstance());
+}
+
+void RenderFrameProxyHost::OnPrintCrossProcessSubframe(const gfx::Rect& rect,
+                                                       int document_cookie) {
+  RenderFrameHostImpl* rfh = frame_tree_node_->current_frame_host();
+  rfh->delegate()->PrintCrossProcessSubframe(rect, document_cookie, rfh);
 }
 
 }  // namespace content

@@ -5,6 +5,7 @@
 #ifndef PRINTING_COMMON_PDF_METAFILE_UTILS_H_
 #define PRINTING_COMMON_PDF_METAFILE_UTILS_H_
 
+#include <map>
 #include <string>
 
 #include "skia/ext/platform_canvas.h"
@@ -13,6 +14,8 @@
 #include "third_party/skia/include/core/SkStream.h"
 
 namespace printing {
+
+using ContentToProxyIdMap = std::map<uint32_t, int>;
 
 enum class SkiaDocumentType {
   PDF,
@@ -23,8 +26,6 @@ enum class SkiaDocumentType {
 
 sk_sp<SkDocument> MakePdfDocument(const std::string& creator,
                                   SkWStream* stream);
-
-uint64_t GenFrameGuid(int process_id, int frame_id);
 
 }  // namespace printing
 

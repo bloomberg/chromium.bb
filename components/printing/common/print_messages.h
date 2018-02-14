@@ -31,8 +31,6 @@
 #ifndef INTERNAL_COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_
 #define INTERNAL_COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_
 
-using ContentToProxyIdMap = std::map<uint32_t, int>;
-
 struct PrintMsg_Print_Params {
   PrintMsg_Print_Params();
   PrintMsg_Print_Params(const PrintMsg_Print_Params& other);
@@ -85,7 +83,6 @@ struct PrintMsg_PrintFrame_Params {
 
   gfx::Rect printable_area;
   int document_cookie;
-  int page_number;
 };
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -249,9 +246,6 @@ IPC_STRUCT_TRAITS_BEGIN(PrintMsg_PrintFrame_Params)
   // Cookie that is unique for each print request.
   // It is used to associate the printed frame with its original print request.
   IPC_STRUCT_TRAITS_MEMBER(document_cookie)
-
-  // |page_number| is zero-based and should not be negative.
-  IPC_STRUCT_TRAITS_MEMBER(page_number)
 IPC_STRUCT_TRAITS_END()
 
 // Holds the printed content information.
@@ -267,7 +261,7 @@ IPC_STRUCT_BEGIN(PrintHostMsg_DidPrintContent_Params)
   IPC_STRUCT_MEMBER(uint32_t, data_size)
 
   // Content id to render frame proxy id mapping for out-of-process subframes.
-  IPC_STRUCT_MEMBER(ContentToProxyIdMap, subframe_content_info)
+  IPC_STRUCT_MEMBER(printing::ContentToProxyIdMap, subframe_content_info)
 IPC_STRUCT_END()
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)

@@ -21,6 +21,7 @@ static_library("browser") {
     "//components/printing/common",
     "//components/printing/service/public/interfaces",
     "//printing",
+    "//printing/common:common",
     "//services/service_manager/public/cpp",
   ]
 }

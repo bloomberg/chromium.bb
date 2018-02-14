@@ -31,7 +31,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "printing/common/pdf_metafile_utils.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
@@ -144,11 +143,9 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
 
     // Use utility process to convert skia metafile to pdf.
     client->DoCompositePageToPdf(
-        params.document_cookie,
-        GenFrameGuid(render_frame_host->GetProcess()->GetID(),
-                     render_frame_host->GetRoutingID()),
-        params.page_number, content.metafile_data_handle, content.data_size,
-        ContentToFrameMap(),
+        params.document_cookie, render_frame_host, params.page_number,
+        content.metafile_data_handle, content.data_size,
+        content.subframe_content_info,
         base::BindOnce(&PrintPreviewMessageHandler::OnCompositePdfPageDone,
                        weak_ptr_factory_.GetWeakPtr(), params.page_number,
                        params.preview_request_id));
@@ -180,10 +177,8 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
     DCHECK(client);
 
     client->DoCompositeDocumentToPdf(
-        params.document_cookie,
-        GenFrameGuid(render_frame_host->GetProcess()->GetID(),
-                     render_frame_host->GetRoutingID()),
-        content.metafile_data_handle, content.data_size, ContentToFrameMap(),
+        params.document_cookie, render_frame_host, content.metafile_data_handle,
+        content.data_size, content.subframe_content_info,
         base::BindOnce(&PrintPreviewMessageHandler::OnCompositePdfDocumentDone,
                        weak_ptr_factory_.GetWeakPtr(),
                        params.expected_pages_count, params.preview_request_id));

@@ -15,6 +15,7 @@
 #include "cc/paint/paint_recorder.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "printing/print_settings.h"
+#include "third_party/skia/include/core/SkSerialProcs.h"
 #include "third_party/skia/include/core/SkStream.h"
 // Note that headers in third_party/skia/src are fragile.  This is
 // an experimental, fragile, and diagnostic-only document type.
@@ -60,6 +61,8 @@ struct Page {
   sk_sp<cc::PaintRecord> content_;
 };
 
+// TODO(weili): Remove pdf from struct name and field names since it is used for
+//              other formats as well.
 struct PdfMetafileSkiaData {
   cc::PaintRecorder recorder_;  // Current recording
 
@@ -182,6 +185,22 @@ bool PdfMetafileSkia::FinishDocument() {
 
   data_->pdf_data_ = stream.detachAsStream();
   return true;
+}
+
+void PdfMetafileSkia::FinishFrameContent() {
+  // Sanity check to make sure we print the entire frame as a single page
+  // content.
+  DCHECK_EQ(data_->pages_.size(), 1u);
+  // Also make sure it is in skia multi-picture document format.
+  DCHECK_EQ(data_->type_, SkiaDocumentType::MSKP);
+  DCHECK(!data_->pdf_data_);
+
+  SkDynamicMemoryWStream stream;
+  sk_sp<SkPicture> pic = ToSkPicture(data_->pages_[0].content_,
+                                     SkRect::MakeSize(data_->pages_[0].size_));
+  SkSerialProcs procs;
+  pic->serialize(&stream, &procs);
+  data_->pdf_data_ = stream.detachAsStream();
 }
 
 uint32_t PdfMetafileSkia::GetDataSize() const {

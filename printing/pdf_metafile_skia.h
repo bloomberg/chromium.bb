@@ -62,6 +62,11 @@ class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
 
   bool SaveTo(base::File* file) const override;
 
+  // Unlike FinishPage() or FinishDocument(), this is for out-of-process
+  // subframe printing. It will just serialize the content into SkPicture
+  // format and store it as final data.
+  void FinishFrameContent();
+
   // Return a new metafile containing just the current page in draft mode.
   std::unique_ptr<PdfMetafileSkia> GetMetafileForCurrentPage(
       SkiaDocumentType type);
