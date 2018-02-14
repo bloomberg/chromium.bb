@@ -58,8 +58,6 @@ class SpdyDeframerVisitorTest : public ::testing::Test {
             decoder_.spdy_framer_error() == Http2DecoderAdapter::SPDY_NO_ERROR);
   }
 
-  //       bool
-
   SpdyFramer encoder_;
   Http2DecoderAdapter decoder_;
   std::vector<CollectedFrame> collected_frames_;
