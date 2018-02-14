@@ -22,6 +22,9 @@
       "app": "net_unittests"
     },
     {
+      "app": "ocmock_support_unittests"
+    },
+    {
       "app": "services_unittests"
     },
     {
