@@ -17,8 +17,13 @@ declare_args() {
     # Absolute directory containing the gomacc.exe binary.
     goma_dir = "C:\src\goma\goma-win64"
   } else {
-    # Absolute directory containing the gomacc binary.
-    goma_dir = getenv("HOME") + "/goma"
+    if (getenv("GOMA_DIR") != "") {
+      # Absolute directory containing the gomacc binary.
+      goma_dir = getenv("GOMA_DIR")
+    } else {
+      # Absolute directory containing the gomacc binary.
+      goma_dir = getenv("HOME") + "/goma"
+    }
   }
 }
 
