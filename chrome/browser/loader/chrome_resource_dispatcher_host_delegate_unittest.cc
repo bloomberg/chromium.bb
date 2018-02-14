@@ -11,6 +11,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
+#include "components/previews/core/test_previews_decider.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/request_priority.h"
@@ -32,9 +33,10 @@ class ChromeResourceDispatcherHostDelegateTest : public testing::Test {
   // Exposes private static method for tests.
   static content::PreviewsState DetermineCommittedPreviews(
       const net::URLRequest* request,
+      const previews::PreviewsDecider* previews_decider,
       content::PreviewsState initial_state) {
     return ChromeResourceDispatcherHostDelegate::DetermineCommittedPreviews(
-        request, initial_state);
+        request, previews_decider, initial_state);
   }
 
  private:
@@ -113,10 +115,12 @@ TEST_F(ChromeResourceDispatcherHostDelegateTest,
   data_reduction_proxy_data->set_lite_page_received(true);
   std::unique_ptr<ChromeResourceDispatcherHostDelegate> delegate =
       std::make_unique<ChromeResourceDispatcherHostDelegate>();
+  std::unique_ptr<previews::TestPreviewsDecider> previews_decider =
+      std::make_unique<previews::TestPreviewsDecider>(true);
   EXPECT_EQ(
       content::SERVER_LITE_PAGE_ON,
       ChromeResourceDispatcherHostDelegateTest::DetermineCommittedPreviews(
-          fake_request.get(), enabled_previews));
+          fake_request.get(), previews_decider.get(), enabled_previews));
 }
 
 TEST_F(ChromeResourceDispatcherHostDelegateTest,
@@ -126,6 +130,10 @@ TEST_F(ChromeResourceDispatcherHostDelegateTest,
       content::CLIENT_LOFI_ON | content::NOSCRIPT_ON;
   std::unique_ptr<net::URLRequestContext> context =
       std::make_unique<net::URLRequestContext>();
+  std::unique_ptr<ChromeResourceDispatcherHostDelegate> delegate =
+      std::make_unique<ChromeResourceDispatcherHostDelegate>();
+  std::unique_ptr<previews::TestPreviewsDecider> previews_decider =
+      std::make_unique<previews::TestPreviewsDecider>(true);
   std::unique_ptr<net::URLRequest> fake_request(context->CreateRequest(
       GURL("https://google.com"), net::RequestPriority::IDLE, nullptr,
       TRAFFIC_ANNOTATION_FOR_TESTS));
@@ -141,14 +149,17 @@ TEST_F(ChromeResourceDispatcherHostDelegateTest,
   EXPECT_EQ(
       content::NOSCRIPT_ON,
       ChromeResourceDispatcherHostDelegateTest::DetermineCommittedPreviews(
-          fake_request.get(), enabled_previews));
+          fake_request.get(), previews_decider.get(), enabled_previews));
 
   // Now ensure that the no transform directive honored for NoScript.
+  std::unique_ptr<previews::TestPreviewsDecider> negative_previews_decider =
+      std::make_unique<previews::TestPreviewsDecider>(false);
   previews::PreviewsUserData::Create(fake_request.get(), 1);
   previews::PreviewsUserData::GetData(*fake_request.get())
       ->SetCacheControlNoTransformDirective();
   EXPECT_EQ(
       content::PREVIEWS_OFF,
       ChromeResourceDispatcherHostDelegateTest::DetermineCommittedPreviews(
-          fake_request.get(), enabled_previews));
+          fake_request.get(), negative_previews_decider.get(),
+          enabled_previews));
 }

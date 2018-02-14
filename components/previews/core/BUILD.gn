@@ -25,6 +25,8 @@ static_library("core") {
     "previews_switches.h",
     "previews_user_data.cc",
     "previews_user_data.h",
+    "test_previews_decider.cc",
+    "test_previews_decider.h",
   ]
 
   deps = [

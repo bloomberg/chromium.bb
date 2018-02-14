@@ -19,7 +19,7 @@ bool HasEnabledPreviews(content::PreviewsState previews_state);
 // definitions for content::PreviewsState.
 content::PreviewsState DetermineEnabledClientPreviewsState(
     const net::URLRequest& url_request,
-    previews::PreviewsDecider* previews_decider);
+    const previews::PreviewsDecider* previews_decider);
 
 // Returns an updated PreviewsState given |previews_state| that has already
 // been updated wrt server previews. This should be called at Navigation Commit
@@ -27,7 +27,8 @@ content::PreviewsState DetermineEnabledClientPreviewsState(
 // client preview bits to retain for processing the main frame response.
 content::PreviewsState DetermineCommittedClientPreviewsState(
     const net::URLRequest& url_request,
-    content::PreviewsState previews_state);
+    content::PreviewsState previews_state,
+    const previews::PreviewsDecider* previews_decider);
 
 // Returns the effective PreviewsType known on a main frame basis given the
 // |previews_state| bitmask for the committed main frame. This uses the same
