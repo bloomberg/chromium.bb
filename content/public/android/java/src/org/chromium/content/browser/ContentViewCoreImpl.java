@@ -423,6 +423,7 @@ public class ContentViewCoreImpl
         mWebContentsObserver.destroy();
         mWebContentsObserver = null;
         getImeAdapter().resetAndHideKeyboard();
+        getGestureListenerManager().reset();
         removeWindowAndroidChangedObserver(getTextSuggestionHost());
         mWindowEventObservers.clear();
         hidePopupsAndPreserveSelection();

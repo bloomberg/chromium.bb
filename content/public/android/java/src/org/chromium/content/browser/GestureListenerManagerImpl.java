@@ -33,6 +33,8 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
     private final ObserverList<GestureStateListener> mListeners;
     private final RewindableIterator<GestureStateListener> mIterator;
 
+    private long mNativeGestureListenerManager;
+
     /**
      * @param webContents {@link WebContents} object.
      * @return {@link GestureListenerManager} object used for the give WebContents.
@@ -47,7 +49,14 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
         mWebContents = (WebContentsImpl) webContents;
         mListeners = new ObserverList<GestureStateListener>();
         mIterator = mListeners.rewindableIterator();
-        nativeInit(mWebContents);
+        mNativeGestureListenerManager = nativeInit(mWebContents);
+    }
+
+    /**
+     * Reset the Java object in the native so this class stops receiving events.
+     */
+    public void reset() {
+        if (mNativeGestureListenerManager != 0) nativeReset(mNativeGestureListenerManager);
     }
 
     @Override
@@ -160,6 +169,7 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
     private void onDestroy() {
         for (mIterator.rewind(); mIterator.hasNext();) mIterator.next().onDestroyed();
         mListeners.clear();
+        mNativeGestureListenerManager = 0;
     }
 
     private int verticalScrollOffset() {
@@ -170,5 +180,6 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
         return mWebContents.getRenderCoordinates().getLastFrameViewportHeightPixInt();
     }
 
-    private native void nativeInit(WebContentsImpl webContents);
+    private native long nativeInit(WebContentsImpl webContents);
+    private native void nativeReset(long nativeGestureListenerManager);
 }

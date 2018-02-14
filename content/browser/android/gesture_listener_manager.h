@@ -27,6 +27,7 @@ class GestureListenerManager {
                          WebContents* web_contents);
   ~GestureListenerManager();
 
+  void Reset(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void GestureEventAck(const blink::WebGestureEvent& event,
                        InputEventAckState ack_result);
 

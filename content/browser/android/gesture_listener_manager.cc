@@ -35,6 +35,11 @@ GestureListenerManager::~GestureListenerManager() {
   Java_GestureListenerManagerImpl_onDestroy(env, j_obj);
 }
 
+void GestureListenerManager::Reset(JNIEnv* env,
+                                   const JavaParamRef<jobject>& obj) {
+  java_ref_.reset();
+}
+
 void GestureListenerManager::GestureEventAck(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
@@ -86,7 +91,7 @@ void GestureListenerManager::GestureEventAck(
   }
 }
 
-void JNI_GestureListenerManagerImpl_Init(
+jlong JNI_GestureListenerManagerImpl_Init(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& jweb_contents) {
@@ -95,8 +100,10 @@ void JNI_GestureListenerManagerImpl_Init(
 
   WebContentsViewAndroid* view = static_cast<WebContentsViewAndroid*>(
       static_cast<WebContentsImpl*>(web_contents)->GetView());
+  auto* manager = new GestureListenerManager(env, obj, web_contents);
   view->SetGestureListenerManager(
-      std::make_unique<GestureListenerManager>(env, obj, web_contents));
+      std::unique_ptr<GestureListenerManager>(manager));
+  return reinterpret_cast<intptr_t>(manager);
 }
 
 }  // namespace content
