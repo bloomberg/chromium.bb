@@ -31,6 +31,8 @@ class SpeechRecognitionDispatcher : public RenderViewObserver,
   void AbortAllRecognitions();
 
  private:
+  using HandleMap = std::map<int, blink::WebSpeechRecognitionHandle>;
+
   // RenderViewObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnDestruct() override;
@@ -56,12 +58,14 @@ class SpeechRecognitionDispatcher : public RenderViewObserver,
 
   int GetOrCreateIDForHandle(const blink::WebSpeechRecognitionHandle& handle);
   bool HandleExists(const blink::WebSpeechRecognitionHandle& handle);
+  HandleMap::iterator FindHandleInMap(
+      const blink::WebSpeechRecognitionHandle& handle);
   const blink::WebSpeechRecognitionHandle& GetHandleFromID(int handle_id);
 
   // The WebKit client class that we use to send events back to the JS world.
   blink::WebSpeechRecognizerClient* recognizer_client_;
 
-  typedef std::map<int, blink::WebSpeechRecognitionHandle> HandleMap;
+  // This maps between request id values and the Blink handle values.
   HandleMap handle_map_;
   int next_id_;
 
