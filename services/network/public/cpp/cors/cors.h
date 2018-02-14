@@ -74,6 +74,10 @@ bool IsCORSSafelistedContentType(const std::string& name);
 COMPONENT_EXPORT(NETWORK_CPP)
 bool IsCORSSafelistedHeader(const std::string& name, const std::string& value);
 
+// Checks forbidden header in the fetch spec.
+// See https://fetch.spec.whatwg.org/#forbidden-header-name.
+COMPONENT_EXPORT(NETWORK_CPP) bool IsForbiddenHeader(const std::string& name);
+
 }  // namespace cors
 
 }  // namespace network

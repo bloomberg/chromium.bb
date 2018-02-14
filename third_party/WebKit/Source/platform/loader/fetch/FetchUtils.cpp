@@ -12,6 +12,7 @@
 #include "platform/wtf/Threading.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/WTFString.h"
+#include "services/network/public/cpp/cors/cors.h"
 
 namespace blink {
 
@@ -19,59 +20,6 @@ namespace {
 
 bool IsHTTPWhitespace(UChar chr) {
   return chr == ' ' || chr == '\n' || chr == '\t' || chr == '\r';
-}
-
-class ForbiddenHeaderNames {
-  WTF_MAKE_NONCOPYABLE(ForbiddenHeaderNames);
-  USING_FAST_MALLOC(ForbiddenHeaderNames);
-
- public:
-  bool Has(const String& name) const {
-    return fixed_names_.Contains(name) ||
-           name.StartsWithIgnoringASCIICase(proxy_header_prefix_) ||
-           name.StartsWithIgnoringASCIICase(sec_header_prefix_);
-  }
-
-  static const ForbiddenHeaderNames& Get();
-
- private:
-  ForbiddenHeaderNames();
-
-  String proxy_header_prefix_;
-  String sec_header_prefix_;
-  HashSet<String, CaseFoldingHash> fixed_names_;
-};
-
-ForbiddenHeaderNames::ForbiddenHeaderNames()
-    : proxy_header_prefix_("proxy-"), sec_header_prefix_("sec-") {
-  fixed_names_ = {
-      "accept-charset",
-      "accept-encoding",
-      "access-control-request-headers",
-      "access-control-request-method",
-      "connection",
-      "content-length",
-      "cookie",
-      "cookie2",
-      "date",
-      "dnt",
-      "expect",
-      "host",
-      "keep-alive",
-      "origin",
-      "referer",
-      "te",
-      "trailer",
-      "transfer-encoding",
-      "upgrade",
-      "user-agent",
-      "via",
-  };
-}
-
-const ForbiddenHeaderNames& ForbiddenHeaderNames::Get() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(const ForbiddenHeaderNames, instance, ());
-  return instance;
 }
 
 }  // namespace
@@ -86,17 +34,9 @@ bool FetchUtils::IsForbiddenMethod(const String& method) {
 }
 
 bool FetchUtils::IsForbiddenHeaderName(const String& name) {
-  // http://fetch.spec.whatwg.org/#forbidden-header-name
-  // "A forbidden header name is a header names that is one of:
-  //   `Accept-Charset`, `Accept-Encoding`, `Access-Control-Request-Headers`,
-  //   `Access-Control-Request-Method`, `Connection`,
-  //   `Content-Length, Cookie`, `Cookie2`, `Date`, `DNT`, `Expect`, `Host`,
-  //   `Keep-Alive`, `Origin`, `Referer`, `TE`, `Trailer`,
-  //   `Transfer-Encoding`, `Upgrade`, `User-Agent`, `Via`
-  // or starts with `Proxy-` or `Sec-` (including when it is just `Proxy-` or
-  // `Sec-`)."
-
-  return ForbiddenHeaderNames::Get().Has(name);
+  const CString utf8_name = name.Utf8();
+  return network::cors::IsForbiddenHeader(
+      std::string(utf8_name.data(), utf8_name.length()));
 }
 
 bool FetchUtils::IsForbiddenResponseHeaderName(const String& name) {
