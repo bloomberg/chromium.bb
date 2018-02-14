@@ -8,6 +8,19 @@ source_set("tab_grid") {
   sources = [
     "tab_grid_coordinator.h",
     "tab_grid_coordinator.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    ":tab_grid_ui",
+    "//base",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+  ]
+}
+
+source_set("tab_grid_ui") {
+  sources = [
     "tab_grid_view_controller.h",
     "tab_grid_view_controller.mm",
   ]
@@ -16,7 +29,6 @@ source_set("tab_grid") {
 
   deps = [
     "//base",
-    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/tab_switcher",
   ]
 }
