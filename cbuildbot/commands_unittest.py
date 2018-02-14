@@ -1062,6 +1062,60 @@ fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
     self.assertCommandContains(['-i', 'my_config/my_version'])
 
 
+class GenerateDebugTarballTests(cros_test_lib.TempDirTestCase):
+  """Tests related to building tarball artifacts."""
+
+  def setUp(self):
+    self._board = 'test-board'
+    self._buildroot = os.path.join(self.tempdir, 'buildroot')
+    self._debug_base = os.path.join(
+        self._buildroot, 'chroot', 'build', self._board, 'usr', 'lib')
+
+    self._files = [
+        'debug/s1',
+        'debug/breakpad/b1',
+        'debug/tests/t1',
+        'debug/stuff/nested/deep',
+        'debug/usr/local/build/autotest/a1',
+    ]
+
+    cros_test_lib.CreateOnDiskHierarchy(self._debug_base, self._files)
+
+    self._tarball_dir = self.tempdir
+
+  def testGenerateDebugTarballGdb(self):
+    """Test the simplest case."""
+    commands.GenerateDebugTarball(
+        self._buildroot, self._board, self._tarball_dir, gdb_symbols=True)
+
+    cros_test_lib.VerifyTarball(
+        os.path.join(self._tarball_dir, 'debug.tgz'),
+        [
+            'debug/',
+            'debug/s1',
+            'debug/breakpad/',
+            'debug/breakpad/b1',
+            'debug/stuff/',
+            'debug/stuff/nested/',
+            'debug/stuff/nested/deep',
+            'debug/usr/',
+            'debug/usr/local/',
+            'debug/usr/local/build/',
+        ])
+
+  def testGenerateDebugTarballNoGdb(self):
+    """Test the simplest case."""
+    commands.GenerateDebugTarball(
+        self._buildroot, self._board, self._tarball_dir, gdb_symbols=False)
+
+    cros_test_lib.VerifyTarball(
+        os.path.join(self._tarball_dir, 'debug.tgz'),
+        [
+            'debug/breakpad/',
+            'debug/breakpad/b1',
+        ])
+
+
 class BuildTarballTests(cros_build_lib_unittest.RunCommandTempDirTestCase):
   """Tests related to building tarball artifacts."""
 
