@@ -21,7 +21,6 @@
 
 namespace cc {
 class FrameSinkManagerImpl;
-class ResourceSettings;
 }
 
 namespace viz {
@@ -88,7 +87,6 @@ class InProcessContextFactory : public ContextFactory,
   void IssueExternalBeginFrame(ui::Compositor* compositor,
                                const viz::BeginFrameArgs& args) override {}
   void SetOutputIsSecure(ui::Compositor* compositor, bool secure) override {}
-  const viz::ResourceSettings& GetResourceSettings() const override;
   void AddObserver(ContextFactoryObserver* observer) override;
   void RemoveObserver(ContextFactoryObserver* observer) override;
   viz::FrameSinkManagerImpl* GetFrameSinkManager() override;

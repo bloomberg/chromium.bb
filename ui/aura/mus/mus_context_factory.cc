@@ -21,9 +21,6 @@ namespace aura {
 
 MusContextFactory::MusContextFactory(ui::Gpu* gpu)
     : gpu_(gpu),
-      resource_settings_(
-          // TODO(sad): http://crbug.com/675431
-          viz::CreateResourceSettings()),
       weak_ptr_factory_(this) {}
 
 MusContextFactory::~MusContextFactory() {}
@@ -87,10 +84,6 @@ gpu::GpuMemoryBufferManager* MusContextFactory::GetGpuMemoryBufferManager() {
 
 cc::TaskGraphRunner* MusContextFactory::GetTaskGraphRunner() {
   return raster_thread_helper_.task_graph_runner();
-}
-
-const viz::ResourceSettings& MusContextFactory::GetResourceSettings() const {
-  return resource_settings_;
 }
 
 }  // namespace aura

@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 
-#include "components/viz/common/resources/resource_settings.h"
 #include "components/viz/common/viz_common_export.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -19,7 +18,6 @@ class VIZ_COMMON_EXPORT RendererSettings {
   RendererSettings(const RendererSettings& other);
   ~RendererSettings();
 
-  ResourceSettings resource_settings;
   bool allow_antialiasing = true;
   bool force_antialiasing = false;
   bool force_blending_with_shaders = false;

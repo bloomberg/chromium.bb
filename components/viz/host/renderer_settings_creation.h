@@ -11,12 +11,10 @@
 
 namespace viz {
 class RendererSettings;
-class ResourceSettings;
 }  // namespace viz
 
 namespace viz {
 
-VIZ_HOST_EXPORT ResourceSettings CreateResourceSettings();
 VIZ_HOST_EXPORT RendererSettings CreateRendererSettings();
 
 }  // namespace viz

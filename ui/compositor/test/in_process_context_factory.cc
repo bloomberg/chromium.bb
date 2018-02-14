@@ -362,11 +362,6 @@ void InProcessContextFactory::SetDisplayColorMatrix(ui::Compositor* compositor,
   iter->second->display->SetColorMatrix(matrix);
 }
 
-const viz::ResourceSettings& InProcessContextFactory::GetResourceSettings()
-    const {
-  return renderer_settings_.resource_settings;
-}
-
 void InProcessContextFactory::AddObserver(ContextFactoryObserver* observer) {
   observer_list_.AddObserver(observer);
 }

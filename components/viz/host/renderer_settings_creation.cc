@@ -40,10 +40,6 @@ bool GetSwitchValueAsInt(const base::CommandLine* command_line,
 
 }  // namespace
 
-ResourceSettings CreateResourceSettings() {
-  return ResourceSettings();
-}
-
 RendererSettings CreateRendererSettings() {
   RendererSettings renderer_settings;
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

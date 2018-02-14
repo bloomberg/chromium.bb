@@ -911,11 +911,6 @@ void GpuProcessTransportFactory::SetOutputIsSecure(ui::Compositor* compositor,
     data->display->SetOutputIsSecure(secure);
 }
 
-const viz::ResourceSettings& GpuProcessTransportFactory::GetResourceSettings()
-    const {
-  return renderer_settings_.resource_settings;
-}
-
 void GpuProcessTransportFactory::AddObserver(
     ui::ContextFactoryObserver* observer) {
   observer_list_.AddObserver(observer);

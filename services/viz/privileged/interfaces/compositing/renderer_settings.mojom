@@ -4,8 +4,6 @@
 
 module viz.mojom;
 
-import "services/viz/public/interfaces/compositing/resource_settings.mojom";
-
 struct RendererSettings {
   bool allow_antialiasing;
   bool finish_rendering_on_resize;
@@ -15,7 +13,6 @@ struct RendererSettings {
   int32 highp_threshold_min;
   bool partial_swap_enabled;
   bool release_overlay_resources_after_gpu_query;
-  ResourceSettings resource_settings;
   bool should_clear_root_render_pass;
   bool show_overdraw_feedback;
   bool enable_draw_occlusion;

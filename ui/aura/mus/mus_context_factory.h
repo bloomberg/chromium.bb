@@ -17,10 +17,6 @@
 #include "ui/aura/aura_export.h"
 #include "ui/compositor/compositor.h"
 
-namespace cc {
-class ResourceSettings;
-}
-
 namespace gpu {
 class GpuChannelHost;
 }
@@ -51,13 +47,11 @@ class AURA_EXPORT MusContextFactory : public ui::ContextFactory {
   double GetRefreshRate() const override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
-  const viz::ResourceSettings& GetResourceSettings() const override;
   void AddObserver(ui::ContextFactoryObserver* observer) override {}
   void RemoveObserver(ui::ContextFactoryObserver* observer) override {}
 
   ui::RasterThreadHelper raster_thread_helper_;
   ui::Gpu* gpu_;
-  const viz::ResourceSettings resource_settings_;
   scoped_refptr<viz::ContextProvider> shared_main_thread_context_provider_;
 
   base::WeakPtrFactory<MusContextFactory> weak_ptr_factory_;
