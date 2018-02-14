@@ -148,6 +148,11 @@ class RenderProcessHostWithKeepAliveOptionEnabledTest
     RenderProcessHostTest::SetUp();
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+  }
+
  private:
   base::test::ScopedFeatureList feature_list_;
 };
