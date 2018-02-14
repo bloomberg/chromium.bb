@@ -15,7 +15,7 @@ const wchar_t kChromeArchivePrefix[] = L"chrome";
 const wchar_t kSetupPrefix[] = L"setup";
 
 // Command line switch names for setup.exe.
-#if defined(COMPONENT_BUILD)
+#if defined(SKIP_ARCHIVE_COMPRESSION)
 const wchar_t kCmdUncompressedArchive[] = L"uncompressed-archive";
 #else
 const wchar_t kCmdInstallArchive[] = L"install-archive";
