@@ -14,6 +14,7 @@ extern const char kTestLauncherBotMode[];
 extern const char kTestLauncherDebugLauncher[];
 extern const char kTestLauncherForceRunBrokenTests[];
 extern const char kTestLauncherFilterFile[];
+extern const char kTestLauncherInteractive[];
 extern const char kTestLauncherJobs[];
 extern const char kTestLauncherListTests[];
 extern const char kTestLauncherOutput[];

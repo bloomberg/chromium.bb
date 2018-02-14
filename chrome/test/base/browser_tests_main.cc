@@ -9,8 +9,8 @@
 #include "chrome/test/base/chrome_test_suite.h"
 
 #if defined(OS_WIN)
+#include "base/test/test_switches.h"
 #include "base/win/win_util.h"
-#include "chrome/browser/ui/test/test_browser_ui.h"
 #endif  // defined(OS_WIN)
 
 int main(int argc, char** argv) {
@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
   // Enable high-DPI for interactive tests where the user is expected to
   // manually verify results.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          internal::kInteractiveSwitch)) {
+          switches::kTestLauncherInteractive)) {
     base::win::EnableHighDPISupport();
   }
 #endif  // defined(OS_WIN)
