@@ -409,6 +409,7 @@ void WindowSelector::OnGridEmpty(WindowGrid* grid) {
   size_t index = 0;
   for (auto iter = grid_list_.begin(); iter != grid_list_.end(); ++iter) {
     if (grid == (*iter).get()) {
+      grid->Shutdown();
       index = iter - grid_list_.begin();
       grid_list_.erase(iter);
       break;
