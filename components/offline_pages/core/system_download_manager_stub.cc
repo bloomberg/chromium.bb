@@ -35,7 +35,7 @@ int64_t SystemDownloadManagerStub::AddCompletedDownload(
 
 int SystemDownloadManagerStub::Remove(
     const std::vector<int64_t>& android_download_manager_ids) {
-  return android_download_manager_ids.size();
+  return static_cast<int>(android_download_manager_ids.size());
 }
 
 }  // namespace offline_pages
