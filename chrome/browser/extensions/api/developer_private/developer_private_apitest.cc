@@ -73,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(DeveloperPrivateApiTest, InspectAppWindowView) {
       base::StringPrintf("[{\"renderViewId\": %d, \"renderProcessId\": %d}]",
                          window_view->render_view_id,
                          window_view->render_process_id),
-      browser(), extension_function_test_utils::NONE);
+      browser(), api_test_utils::NONE);
 
   // Verify that dev tools opened.
   std::list<AppWindow*> app_windows =
@@ -119,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(DeveloperPrivateApiTest, InspectEmbeddedOptionsPage) {
       function.get(),
       base::StringPrintf("[{\"renderViewId\": %d, \"renderProcessId\": %d}]",
                          view.render_view_id, view.render_process_id),
-      browser(), extension_function_test_utils::NONE);
+      browser(), api_test_utils::NONE);
 
   // Verify that dev tools opened.
   content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(

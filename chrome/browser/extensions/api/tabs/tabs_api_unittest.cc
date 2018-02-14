@@ -35,8 +35,7 @@ std::unique_ptr<base::ListValue> RunTabsQueryFunction(
   function->set_extension(extension);
   std::unique_ptr<base::Value> value(
       extension_function_test_utils::RunFunctionAndReturnSingleResult(
-          function.get(), query_info, browser,
-          extension_function_test_utils::NONE));
+          function.get(), query_info, browser, api_test_utils::NONE));
   return base::ListValue::From(std::move(value));
 }
 
@@ -297,7 +296,7 @@ TEST_F(TabsApiUnitTest, ExecuteScriptNoTabIsNonFatalError) {
   std::string error = extension_function_test_utils::RunFunctionAndReturnError(
       function.get(), kArgs,
       browser(),  // browser() doesn't have any tabs.
-      extension_function_test_utils::NONE);
+      api_test_utils::NONE);
   EXPECT_EQ(tabs_constants::kNoTabInBrowserWindowError, error);
 }
 

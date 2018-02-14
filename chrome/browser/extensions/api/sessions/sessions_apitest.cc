@@ -325,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest,
   std::unique_ptr<base::DictionaryValue> restored_window_session(
       utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
           CreateFunction<SessionsRestoreFunction>(true).get(), "[\"tag3.3\"]",
-          browser_, utils::INCLUDE_INCOGNITO)));
+          browser_, api_test_utils::INCLUDE_INCOGNITO)));
   ASSERT_TRUE(restored_window_session);
 
   std::unique_ptr<base::ListValue> result(

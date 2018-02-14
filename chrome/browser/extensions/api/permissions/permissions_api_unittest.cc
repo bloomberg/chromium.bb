@@ -59,8 +59,7 @@ class PermissionsAPIUnitTest : public ExtensionServiceTestWithInstall {
         new PermissionsContainsFunction());
     function->set_extension(extension.get());
     bool run_result = extension_function_test_utils::RunFunction(
-        function.get(), args_string, browser(),
-        extension_function_test_utils::NONE);
+        function.get(), args_string, browser(), api_test_utils::NONE);
     EXPECT_TRUE(run_result) << function->GetError();
 
     bool has_permission;

@@ -205,11 +205,8 @@ bool PlatformAppBrowserTest::RunGetWindowFunctionForExtension(
     const Extension* extension) {
   scoped_refptr<WindowsGetFunction> function = new WindowsGetFunction();
   function->set_extension(extension);
-  utils::RunFunction(
-          function.get(),
-          base::StringPrintf("[%u]", window_id),
-          browser(),
-          utils::NONE);
+  utils::RunFunction(function.get(), base::StringPrintf("[%u]", window_id),
+                     browser(), api_test_utils::NONE);
   return *function->response_type() == ExtensionFunction::SUCCEEDED;
 }
 
