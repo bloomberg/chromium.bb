@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_handle.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/profiling/profiling_service.mojom.h"
@@ -123,6 +124,13 @@ class MemlogConnectionManager {
 
   // Every 24-hours, reports the types of profiled processes.
   base::RepeatingTimer metrics_timer_;
+
+  // To avoid deadlock, synchronous calls to the browser are made on a dedicated
+  // thread that does nothing else. Both the IO thread and connection-specific
+  // threads could potentially be processing messages from the browser process,
+  // which in turn could be blocked on sending more messages over the memlog
+  // pipe.
+  base::Thread blocking_thread_;
 
   // Must be last.
   base::WeakPtrFactory<MemlogConnectionManager> weak_factory_;
