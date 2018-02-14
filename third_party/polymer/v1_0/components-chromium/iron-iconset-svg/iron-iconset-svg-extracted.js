@@ -58,19 +58,29 @@
        * Set to true to enable mirroring of icons where specified when they are
        * stamped. Icons that should be mirrored should be decorated with a
        * `mirror-in-rtl` attribute.
+       *
+       * NOTE: For performance reasons, direction will be resolved once per
+       * document per iconset, so moving icons in and out of RTL subtrees will
+       * not cause their mirrored state to change.
        */
       rtlMirroring: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * Set to true to measure RTL based on the dir attribute on the body or
+       * html elements (measured on document.body or document.documentElement as
+       * available).
+       */
+      useGlobalRtlAttribute: {
         type: Boolean,
         value: false
       }
     },
 
-    _targetIsRTL: function(target) {
-      if (target && target.nodeType !== Node.ELEMENT_NODE) {
-        target = target.host;
-      }
-
-      return target && window.getComputedStyle(target)['direction'] === 'rtl';
+    created: function() {
+      this._meta = new Polymer.IronMeta({type: 'iconset', key: null, value: null});
     },
 
     attached: function() {
@@ -95,21 +105,26 @@
      * An svg icon is prepended to the element's shadowRoot if it exists,
      * otherwise to the element itself.
      *
+     * If RTL mirroring is enabled, and the icon is marked to be mirrored in
+     * RTL, the element will be tested (once and only once ever for each
+     * iconset) to determine the direction of the subtree the element is in.
+     * This direction will apply to all future icon applications, although only
+     * icons marked to be mirrored will be affected.
+     *
      * @method applyIcon
      * @param {Element} element Element to which the icon is applied.
      * @param {string} iconName Name of the icon to apply.
      * @return {?Element} The svg element which renders the icon.
      */
     applyIcon: function(element, iconName) {
-      // insert svg element into shadow root, if it exists
-      element = element.root || element;
       // Remove old svg element
       this.removeIcon(element);
       // install new svg element
       var svg = this._cloneIcon(iconName,
           this.rtlMirroring && this._targetIsRTL(element));
       if (svg) {
-        var pde = Polymer.dom(element);
+        // insert svg element into shadow root, if it exists
+        var pde = Polymer.dom(element.root || element);
         pde.insertBefore(svg, pde.childNodes[0]);
         return element._svgIcon = svg;
       }
@@ -124,11 +139,37 @@
      */
     removeIcon: function(element) {
       // Remove old svg element
-      element = element.root || element;
       if (element._svgIcon) {
-        Polymer.dom(element).removeChild(element._svgIcon);
+        Polymer.dom(element.root || element).removeChild(element._svgIcon);
         element._svgIcon = null;
       }
+    },
+
+    /**
+     * Measures and memoizes the direction of the element. Note that this
+     * measurement is only done once and the result is memoized for future
+     * invocations.
+     */
+    _targetIsRTL: function(target) {
+      if (this.__targetIsRTL == null) {
+        if (this.useGlobalRtlAttribute) {
+          var globalElement =
+              (document.body && document.body.hasAttribute('dir'))
+                  ? document.body
+                  : document.documentElement;
+
+          this.__targetIsRTL = globalElement.getAttribute('dir') === 'rtl';
+        } else {
+          if (target && target.nodeType !== Node.ELEMENT_NODE) {
+            target = target.host;
+          }
+
+          this.__targetIsRTL = target &&
+              window.getComputedStyle(target)['direction'] === 'rtl';
+        }
+      }
+
+      return this.__targetIsRTL;
     },
 
     /**
@@ -137,7 +178,10 @@
      *
      */
     _nameChanged: function() {
-      new Polymer.IronMeta({type: 'iconset', key: this.name, value: this});
+      this._meta.value = null;
+      this._meta.key = this.name;
+      this._meta.value = this;
+
       this.async(function() {
         this.fire('iron-iconset-added', this, {node: window});
       });
@@ -188,11 +232,12 @@
             cssText = 'pointer-events: none; display: block; width: 100%; height: 100%;';
 
         if (mirrorAllowed && content.hasAttribute('mirror-in-rtl')) {
-          cssText += '-webkit-transform:scale(-1,1);transform:scale(-1,1);';
+          cssText += '-webkit-transform:scale(-1,1);transform:scale(-1,1);transform-origin:center;';
         }
 
         svg.setAttribute('viewBox', viewBox);
         svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+        svg.setAttribute('focusable', 'false');
         // TODO(dfreedm): `pointer-events: none` works around https://crbug.com/370136
         // TODO(sjmiles): inline style may not be ideal, but avoids requiring a shadow-root
         svg.style.cssText = cssText;
