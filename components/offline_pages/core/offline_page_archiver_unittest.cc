@@ -113,7 +113,6 @@ TEST_F(OfflinePageArchiverTest, PublishArchive) {
                      get_weak_ptr(), save_page_callback));
   PumpLoop();
 
-  EXPECT_EQ(new_file_path, publish_archive_result().new_file_path);
   EXPECT_EQ(SavePageResult::SUCCESS, publish_archive_result().move_result);
   EXPECT_EQ(kDownloadId, publish_archive_result().download_id);
   // Check there is a file in the new location.

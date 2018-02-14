@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "components/offline_pages/core/model/offline_page_model_taskified.h"
+#include "components/offline_pages/core/model/offline_page_model_utils.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/system_download_manager.h"
 
@@ -23,10 +24,9 @@ void MoveAndRegisterArchive(
     offline_pages::SystemDownloadManager* download_manager,
     offline_pages::PublishArchiveResult* archive_result) {
   // Calcualte the new file name.
-  // TODO(petewil) - We will want to add code to make sure the filename is
-  // unique.
   base::FilePath new_file_path =
-      publish_directory.Append(offline_page.file_path.BaseName());
+      offline_pages::model_utils::GenerateUniqueFilenameForOfflinePage(
+          offline_page.title, offline_page.url, publish_directory);
 
   // Move the file.
   bool moved = base::Move(offline_page.file_path, new_file_path);
