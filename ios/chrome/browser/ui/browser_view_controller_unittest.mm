@@ -217,8 +217,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     [tabModel setBrowserState:chrome_browser_state_.get()];
     id currentTab = [[BVCTestTabMock alloc]
         initWithRepresentedObject:[OCMockObject niceMockForClass:[Tab class]]];
-    id webControllerMock =
-        [OCMockObject niceMockForClass:[CRWWebController class]];
 
     // Stub methods for TabModel.
     NSUInteger tabCount = 1;
@@ -236,13 +234,11 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     // Stub methods for Tab.
     UIView* dummyView = [[UIView alloc] initWithFrame:CGRectZero];
     [[[currentTab stub] andReturn:dummyView] view];
-    [[[currentTab stub] andReturn:webControllerMock] webController];
 
     web::WebState::CreateParams params(chrome_browser_state_.get());
     std::unique_ptr<web::WebState> webState = web::WebState::Create(params);
     webStateImpl_.reset(static_cast<web::WebStateImpl*>(webState.release()));
     [currentTab setWebState:webStateImpl_.get()];
-    webStateImpl_->SetWebController(webControllerMock);
 
     SnapshotTabHelper::CreateForWebState(webStateImpl_.get(),
                                          [[NSUUID UUID] UUIDString]);
@@ -272,7 +268,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
         newPassKitViewControllerForPass:nil];
     [[[factory stub] andReturn:nil] showPassKitErrorInfoBarForManager:nil];
 
-    webController_ = webControllerMock;
     tabModel_ = tabModel;
     tab_ = currentTab;
     dependencyFactory_ = factory;
@@ -307,7 +302,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<WebStateImpl> webStateImpl_;
-  CRWWebController* webController_;
   Tab* tab_;
   TabModel* tabModel_;
   ToolbarModelIOS* toolbarModelIOS_;
@@ -318,11 +312,9 @@ class BrowserViewControllerTest : public BlockCleanupTest {
 };
 
 TEST_F(BrowserViewControllerTest, TestTabSelected) {
-  id tabMock = (id)tab_;
-  [[tabMock expect] wasShown];
   [bvc_ tabSelected:tab_ notifyToolbar:YES];
   EXPECT_EQ([[tab_ view] superview], static_cast<UIView*>([bvc_ contentArea]));
-  EXPECT_OCMOCK_VERIFY(tabMock);
+  EXPECT_TRUE(webStateImpl_->IsVisible());
 }
 
 TEST_F(BrowserViewControllerTest, TestTabSelectedIsNewTab) {
@@ -331,17 +323,14 @@ TEST_F(BrowserViewControllerTest, TestTabSelectedIsNewTab) {
   } copy];
   id tabMock = (id)tab_;
   [tabMock onSelector:@selector(url) callBlockExpectation:block];
-  [[tabMock expect] wasShown];
   [bvc_ tabSelected:tab_ notifyToolbar:YES];
   EXPECT_EQ([[tab_ view] superview], static_cast<UIView*>([bvc_ contentArea]));
-  EXPECT_OCMOCK_VERIFY(tabMock);
+  EXPECT_TRUE(webStateImpl_->IsVisible());
 }
 
 TEST_F(BrowserViewControllerTest, TestTabDeselected) {
-  OCMockObject* tabMock = static_cast<OCMockObject*>(tab_);
-  [[tabMock expect] wasHidden];
   [bvc_ tabModel:nil didDeselectTab:tab_];
-  EXPECT_OCMOCK_VERIFY(tabMock);
+  EXPECT_FALSE(webStateImpl_->IsVisible());
 }
 
 TEST_F(BrowserViewControllerTest, TestNativeContentController) {
@@ -397,12 +386,11 @@ TEST_F(BrowserViewControllerTest,
   // Have the TestToolbarModel indicate that a page load is in progress.
   static_cast<TestToolbarModelIOS*>(toolbarModelIOS_)->set_is_loading(true);
 
-  // The tab should only stop loading on handsets.
-  if (!IsIPadIdiom())
-    [[static_cast<OCMockObject*>(webController_) expect] stopLoading];
+  // The tab should stop loading on iPhones.
   [bvc_ locationBarBeganEdit];
+  if (!IsIPadIdiom())
+    EXPECT_FALSE(webStateImpl_->IsLoading());
 
-  EXPECT_OCMOCK_VERIFY(static_cast<OCMockObject*>(webController_));
   EXPECT_OCMOCK_VERIFY(tabMock);
 }
 
