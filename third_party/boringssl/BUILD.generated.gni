@@ -74,6 +74,7 @@ crypto_sources = [
   "src/crypto/conf/conf.c",
   "src/crypto/conf/conf_def.h",
   "src/crypto/conf/internal.h",
+  "src/crypto/cpu-aarch64-fuchsia.c",
   "src/crypto/cpu-aarch64-linux.c",
   "src/crypto/cpu-arm-linux.c",
   "src/crypto/cpu-arm.c",

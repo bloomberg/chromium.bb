@@ -1069,6 +1069,7 @@ L$key_loop:
 
 .p2align	4
 _bsaes_cbc_encrypt:
+
 	cmpl	$0,%r9d
 	jne	_asm_AES_cbc_encrypt
 	cmpq	$128,%rdx
@@ -1077,13 +1078,21 @@ _bsaes_cbc_encrypt:
 	movq	%rsp,%rax
 L$cbc_dec_prologue:
 	pushq	%rbp
+
 	pushq	%rbx
+
 	pushq	%r12
+
 	pushq	%r13
+
 	pushq	%r14
+
 	pushq	%r15
+
 	leaq	-72(%rsp),%rsp
+
 	movq	%rsp,%rbp
+
 	movl	240(%rcx),%eax
 	movq	%rdi,%r12
 	movq	%rsi,%r13
@@ -1303,15 +1312,24 @@ L$cbc_dec_bzero:
 	ja	L$cbc_dec_bzero
 
 	leaq	120(%rbp),%rax
+
 	movq	-48(%rax),%r15
+
 	movq	-40(%rax),%r14
+
 	movq	-32(%rax),%r13
+
 	movq	-24(%rax),%r12
+
 	movq	-16(%rax),%rbx
+
 	movq	-8(%rax),%rbp
+
 	leaq	(%rax),%rsp
+
 L$cbc_dec_epilogue:
 	.byte	0xf3,0xc3
+
 
 
 .globl	_bsaes_ctr32_encrypt_blocks
@@ -1319,16 +1337,25 @@ L$cbc_dec_epilogue:
 
 .p2align	4
 _bsaes_ctr32_encrypt_blocks:
+
 	movq	%rsp,%rax
 L$ctr_enc_prologue:
 	pushq	%rbp
+
 	pushq	%rbx
+
 	pushq	%r12
+
 	pushq	%r13
+
 	pushq	%r14
+
 	pushq	%r15
+
 	leaq	-72(%rsp),%rsp
+
 	movq	%rsp,%rbp
+
 	movdqu	(%r8),%xmm0
 	movl	240(%rcx),%eax
 	movq	%rdi,%r12
@@ -1503,31 +1530,49 @@ L$ctr_enc_bzero:
 	ja	L$ctr_enc_bzero
 
 	leaq	120(%rbp),%rax
+
 	movq	-48(%rax),%r15
+
 	movq	-40(%rax),%r14
+
 	movq	-32(%rax),%r13
+
 	movq	-24(%rax),%r12
+
 	movq	-16(%rax),%rbx
+
 	movq	-8(%rax),%rbp
+
 	leaq	(%rax),%rsp
+
 L$ctr_enc_epilogue:
 	.byte	0xf3,0xc3
+
 
 .globl	_bsaes_xts_encrypt
 .private_extern _bsaes_xts_encrypt
 
 .p2align	4
 _bsaes_xts_encrypt:
+
 	movq	%rsp,%rax
 L$xts_enc_prologue:
 	pushq	%rbp
+
 	pushq	%rbx
+
 	pushq	%r12
+
 	pushq	%r13
+
 	pushq	%r14
+
 	pushq	%r15
+
 	leaq	-72(%rsp),%rsp
+
 	movq	%rsp,%rbp
+
 	movq	%rdi,%r12
 	movq	%rsi,%r13
 	movq	%rdx,%r14
@@ -1954,15 +1999,24 @@ L$xts_enc_bzero:
 	ja	L$xts_enc_bzero
 
 	leaq	120(%rbp),%rax
+
 	movq	-48(%rax),%r15
+
 	movq	-40(%rax),%r14
+
 	movq	-32(%rax),%r13
+
 	movq	-24(%rax),%r12
+
 	movq	-16(%rax),%rbx
+
 	movq	-8(%rax),%rbp
+
 	leaq	(%rax),%rsp
+
 L$xts_enc_epilogue:
 	.byte	0xf3,0xc3
+
 
 
 .globl	_bsaes_xts_decrypt
@@ -1970,15 +2024,23 @@ L$xts_enc_epilogue:
 
 .p2align	4
 _bsaes_xts_decrypt:
+
 	movq	%rsp,%rax
 L$xts_dec_prologue:
 	pushq	%rbp
+
 	pushq	%rbx
+
 	pushq	%r12
+
 	pushq	%r13
+
 	pushq	%r14
+
 	pushq	%r15
+
 	leaq	-72(%rsp),%rsp
+
 	movq	%rsp,%rbp
 	movq	%rdi,%r12
 	movq	%rsi,%r13
@@ -2432,15 +2494,24 @@ L$xts_dec_bzero:
 	ja	L$xts_dec_bzero
 
 	leaq	120(%rbp),%rax
+
 	movq	-48(%rax),%r15
+
 	movq	-40(%rax),%r14
+
 	movq	-32(%rax),%r13
+
 	movq	-24(%rax),%r12
+
 	movq	-16(%rax),%rbx
+
 	movq	-8(%rax),%rbp
+
 	leaq	(%rax),%rsp
+
 L$xts_dec_epilogue:
 	.byte	0xf3,0xc3
+
 
 
 .p2align	6

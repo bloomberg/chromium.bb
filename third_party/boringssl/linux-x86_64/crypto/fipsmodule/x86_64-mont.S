@@ -212,8 +212,7 @@ bn_mul_mont:
 	movq	%r9,%r15
 	jmp	.Lsub
 .align	16
-.Lsub:
-	sbbq	(%rcx,%r14,8),%rax
+.Lsub:	sbbq	(%rcx,%r14,8),%rax
 	movq	%rax,(%rdi,%r14,8)
 	movq	8(%rsi,%r14,8),%rax
 	leaq	1(%r14),%r14
