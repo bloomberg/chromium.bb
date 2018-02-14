@@ -2653,7 +2653,8 @@ bool LocalFrameView::IsActive() const {
 
 void LocalFrameView::InvalidatePaintForTickmarks() {
   ScrollableArea* scrollable_area = LayoutViewportScrollableArea();
-  DCHECK(scrollable_area);
+  if (!scrollable_area)
+    return;
   if (Scrollbar* scrollbar = scrollable_area->VerticalScrollbar()) {
     scrollbar->SetNeedsPaintInvalidation(
         static_cast<ScrollbarPart>(~kThumbPart));
