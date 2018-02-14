@@ -52,10 +52,34 @@ void StreamMessagePipeAdapter::Start(EventHandler* event_handler) {
 
 void StreamMessagePipeAdapter::Send(google::protobuf::MessageLite* message,
                                     const base::Closure& done) {
-  // TODO(crbug.com/656607): Add proper annotation.
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("stream_message_pipe_adapter", R"(
+        semantics {
+          sender: "Stream Message Pipe Adapter"
+          description: "Chrome Remote Desktop P2P channel."
+          trigger: "Initiating a Chrome Remote Desktop connection."
+          data:
+            "Chrome Remote Desktop session data, including video and input "
+            "events."
+          destination: OTHER
+          destination_other:
+            "The Chrome Remote Desktop client/host that user is connecting to."
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "This request cannot be stopped in settings, but will not be sent "
+            "if user does not use Chrome Remote Desktop."
+          policy_exception_justification:
+            "Not implemented. 'RemoteAccessHostClientDomainList' and "
+            "'RemoteAccessHostDomainList' policies can limit the domains to "
+            "which a connection can be made, but they cannot be used to block "
+            "the request to all domains. Please refer to help desk for other "
+            "approaches to manage this feature."
+        })");
   if (writer_)
     writer_->Write(SerializeAndFrameMessage(*message), done,
-                   NO_TRAFFIC_ANNOTATION_BUG_656607);
+                   traffic_annotation);
 }
 
 void StreamMessagePipeAdapter::CloseOnError(int error) {

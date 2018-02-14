@@ -108,11 +108,33 @@ void SecurityKeySocket::OnDataWritten(int result) {
 void SecurityKeySocket::DoWrite() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(write_buffer_);
-  // TODO(crbug.com/656607:) Add proper annotation.
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("security_key_socket", R"(
+        semantics {
+          sender: "Security Key Socket"
+          description:
+            "This request performs the communication between processes when "
+            "handling security key (gnubby) authentication."
+          trigger:
+            "Performing an action (such as signing into a website with "
+            "two-factor authentication enabled) that requires a security key "
+            "touch."
+          data: "Security key protocol data."
+          destination: LOCAL
+        }
+        policy {
+          cookies_allowed: NO
+          setting: "This feature cannot be disabled in Settings."
+          chrome_policy {
+            RemoteAccessHostAllowGnubbyAuth {
+              RemoteAccessHostAllowGnubbyAuth: false
+            }
+          }
+        })");
   int result = socket_->Write(
       write_buffer_.get(), write_buffer_->BytesRemaining(),
       base::Bind(&SecurityKeySocket::OnDataWritten, base::Unretained(this)),
-      NO_TRAFFIC_ANNOTATION_BUG_656607);
+      traffic_annotation);
   if (result != net::ERR_IO_PENDING) {
     OnDataWritten(result);
   }

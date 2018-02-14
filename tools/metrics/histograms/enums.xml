@@ -43696,6 +43696,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="29188932" label="oauth2_api_call_flow"/>
   <int value="29865866" label="headless_url_request"/>
   <int value="30913825" label="family_info"/>
+  <int value="31074955" label="security_key_socket"/>
   <int value="32030464" label="persist_blob_to_indexed_db"/>
   <int value="32197336" label="http_server_error_response"/>
   <int value="32585152" label="gaia_oauth_client_get_token_info"/>
@@ -43761,6 +43762,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="70796791" label="content_resource_fetcher"/>
   <int value="71251498" label="privet_http_impl"/>
   <int value="71578042" label="cloud_print_backend"/>
+  <int value="71837756" label="stream_message_pipe_adapter"/>
   <int value="72354423" label="invalidation_service"/>
   <int value="73107389" label="omnibox_result_change"/>
   <int value="73309970" label="payment_instrument_icon_fetcher"/>
@@ -43788,6 +43790,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="87775794" label="adb_client_socket"/>
   <int value="88754904" label="captive_portal_service"/>
   <int value="88863520" label="autofill_query"/>
+  <int value="88906454" label="xmpp_signal_strategy"/>
   <int value="89771989" label="asset_links"/>
   <int value="91597383" label="gaia_auth_login"/>
   <int value="93232258" label="mojo_context_state"/>
