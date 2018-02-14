@@ -42,6 +42,7 @@ KeyedService* AccountTrackerServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
   AccountTrackerService* service = new AccountTrackerService();
-  service->Initialize(ChromeSigninClientFactory::GetForProfile(profile));
+  service->Initialize(ChromeSigninClientFactory::GetForProfile(profile),
+                      profile->GetPath());
   return service;
 }
