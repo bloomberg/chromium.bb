@@ -25,10 +25,10 @@
 // is a good example of the implementation of this delegate.
 @protocol TabSwitcherDelegate<NSObject>
 
-// Informs the delegate the stack controller is starting to be dismissed with
-// the given model active.
+// Informs the delegate the stack controller should be dismissed with the given
+// active model.
 - (void)tabSwitcher:(id<TabSwitcher>)tabSwitcher
-    dismissTransitionWillStartWithActiveModel:(TabModel*)tabModel;
+    shouldFinishWithActiveModel:(TabModel*)tabModel;
 
 // Informs the delegate that the stack controller is done and should be
 // dismissed.

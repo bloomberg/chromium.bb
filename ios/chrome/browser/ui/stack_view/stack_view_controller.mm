@@ -466,7 +466,6 @@ NSString* const kTransitionToolbarAnimationKey =
   CardSet* _otrCardSet;
   // The currently active card set; one of _mainCardSet or _otrCardSet.
   __weak CardSet* _activeCardSet;
-  __weak id<TabSwitcherDelegate> _delegate;
   __weak id<StackViewControllerTestDelegate> _testDelegate;
   // Controller for the stack view toolbar.
   StackViewToolbarController* _toolbarController;
@@ -521,12 +520,12 @@ NSString* const kTransitionToolbarAnimationKey =
 @synthesize dummyToolbarBackgroundView = _dummyToolbarBackgroundView;
 @synthesize inActiveDeckChangeAnimation = _inActiveDeckChangeAnimation;
 @synthesize testDelegate = _testDelegate;
+@synthesize toolsMenuCoordinator = _toolsMenuCoordinator;
 @synthesize transitionStyle = _transitionStyle;
 @synthesize transitionTappedCard = _transitionTappedCard;
 @synthesize transitionToolbarOwner = _transitionToolbarOwner;
 @synthesize transitionToolbarSnapshot = _transitionToolbarSnapshot;
 @synthesize transitionWasCancelled = _transitionWasCancelled;
-@synthesize toolsMenuCoordinator = _toolsMenuCoordinator;
 
 - (instancetype)initWithMainCardSet:(CardSet*)mainCardSet
                          otrCardSet:(CardSet*)otrCardSet
@@ -2085,7 +2084,7 @@ NSString* const kTransitionToolbarAnimationKey =
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
 
   [_delegate tabSwitcher:self
-      dismissTransitionWillStartWithActiveModel:_activeCardSet.tabModel];
+      shouldFinishWithActiveModel:_activeCardSet.tabModel];
 
   [self animateTransitionWithStyle:STACK_TRANSITION_STYLE_DISMISSING];
 }
@@ -2200,7 +2199,7 @@ NSString* const kTransitionToolbarAnimationKey =
   [_activeCardSet.tabModel setCurrentTab:tab];
 
   [_delegate tabSwitcher:self
-      dismissTransitionWillStartWithActiveModel:_activeCardSet.tabModel];
+      shouldFinishWithActiveModel:_activeCardSet.tabModel];
 
   CGFloat statusBarHeight = StatusBarHeight();
   CGRect viewBounds, remainder;
