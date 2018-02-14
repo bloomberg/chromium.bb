@@ -36,7 +36,6 @@ import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebChromeClient.CustomViewCallback;
 import android.webkit.WebResourceError;
-import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -265,44 +264,6 @@ class WebViewContentsClientAdapter extends AwContentsClient {
         }
     }
 
-    protected static class WebResourceRequestImpl implements WebResourceRequest {
-        private final AwWebResourceRequest mRequest;
-
-        public WebResourceRequestImpl(AwWebResourceRequest request) {
-            mRequest = request;
-        }
-
-        @Override
-        public Uri getUrl() {
-            return Uri.parse(mRequest.url);
-        }
-
-        @Override
-        public boolean isForMainFrame() {
-            return mRequest.isMainFrame;
-        }
-
-        @Override
-        public boolean hasGesture() {
-            return mRequest.hasUserGesture;
-        }
-
-        @Override
-        public String getMethod() {
-            return mRequest.method;
-        }
-
-        @Override
-        public Map<String, String> getRequestHeaders() {
-            return mRequest.requestHeaders;
-        }
-
-        @Override
-        public boolean isRedirect() {
-            return mRequest.isRedirect;
-        }
-    }
-
     @TargetApi(Build.VERSION_CODES.M)
     private static class WebResourceErrorImpl extends WebResourceError {
         private final AwWebResourceError mError;
@@ -330,8 +291,8 @@ class WebViewContentsClientAdapter extends AwContentsClient {
         try {
             TraceEvent.begin("WebViewContentsClientAdapter.shouldInterceptRequest");
             if (TRACE) Log.i(TAG, "shouldInterceptRequest=" + request.url);
-            WebResourceResponse response = mWebViewClient.shouldInterceptRequest(mWebView,
-                    new WebResourceRequestImpl(request));
+            WebResourceResponse response = mWebViewClient.shouldInterceptRequest(
+                    mWebView, new WebResourceRequestAdapter(request));
             if (response == null) return null;
 
             // AwWebResourceResponse should support null headers. b/16332774.
@@ -362,7 +323,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
             boolean result;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 result = mWebViewClient.shouldOverrideUrlLoading(
-                        mWebView, new WebResourceRequestImpl(request));
+                        mWebView, new WebResourceRequestAdapter(request));
             } else {
                 result = mWebViewClient.shouldOverrideUrlLoading(mWebView, request.url);
             }
@@ -635,7 +596,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
                 error.description = mWebViewDelegate.getErrorString(mContext, error.errorCode);
             }
             if (TRACE) Log.i(TAG, "onReceivedError=" + request.url);
-            mWebViewClient.onReceivedError(mWebView, new WebResourceRequestImpl(request),
+            mWebViewClient.onReceivedError(mWebView, new WebResourceRequestAdapter(request),
                     new WebResourceErrorImpl(error));
         } finally {
             TraceEvent.end("WebViewContentsClientAdapter.onReceivedError");
@@ -657,7 +618,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
         }
         try {
             TraceEvent.begin("WebViewContentsClientAdapter.onSafeBrowsingHit");
-            mWebViewClient.onSafeBrowsingHit(mWebView, new WebResourceRequestImpl(request),
+            mWebViewClient.onSafeBrowsingHit(mWebView, new WebResourceRequestAdapter(request),
                     threatType, new SafeBrowsingResponse() {
                         @Override
                         public void showInterstitial(boolean allowReporting) {
@@ -688,7 +649,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
         try {
             TraceEvent.begin("WebViewContentsClientAdapter.onReceivedHttpError");
             if (TRACE) Log.i(TAG, "onReceivedHttpError=" + request.url);
-            mWebViewClient.onReceivedHttpError(mWebView, new WebResourceRequestImpl(request),
+            mWebViewClient.onReceivedHttpError(mWebView, new WebResourceRequestAdapter(request),
                     new WebResourceResponse(true, response.getMimeType(), response.getCharset(),
                             response.getStatusCode(), response.getReasonPhrase(),
                             response.getResponseHeaders(), response.getData()));
