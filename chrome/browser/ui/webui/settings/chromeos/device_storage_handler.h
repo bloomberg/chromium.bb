@@ -12,8 +12,10 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chrome/browser/browsing_data/site_data_size_collector.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+#include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "components/arc/storage_manager/arc_storage_manager.h"
 #include "components/user_manager/user.h"
 
@@ -76,7 +78,7 @@ class StorageHandler : public ::settings::SettingsPageUIHandler {
   void UpdateOtherUsersSize();
 
   // Callback to save the fetched user sizes and update the UI.
-  void OnGetOtherUserSize(bool success, int64_t size);
+  void OnGetOtherUserSize(base::Optional<cryptohome::BaseReply> reply);
 
   // Requests updating the space size used by Android apps and cache.
   void UpdateAndroidSize();

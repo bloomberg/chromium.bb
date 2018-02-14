@@ -47,9 +47,6 @@ class CHROMEOS_EXPORT MockHomedirMethods : public HomedirMethods {
                     const AuthorizationRequest& auth,
                     const UpdateKeyRequest& request,
                     const Callback& callback));
-  MOCK_METHOD2(GetAccountDiskUsage,
-               void(const Identification& id,
-                    const GetAccountDiskUsageCallback& callback));
 
   void set_add_key_callback(const base::Closure& callback) {
     on_add_key_called_ = callback;

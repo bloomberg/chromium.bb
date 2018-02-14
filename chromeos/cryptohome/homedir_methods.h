@@ -31,8 +31,6 @@ class CHROMEOS_EXPORT HomedirMethods {
       bool success,
       MountError return_code,
       const std::vector<KeyDefinition>& key_definitions)> GetKeyDataCallback;
-  typedef base::Callback<void(bool success, int64_t size)>
-      GetAccountDiskUsageCallback;
 
   virtual ~HomedirMethods() {}
 
@@ -76,12 +74,6 @@ class CHROMEOS_EXPORT HomedirMethods {
                            const AuthorizationRequest& auth,
                            const RemoveKeyRequest& request,
                            const Callback& callback) = 0;
-
-  // Asks cryptohomed to compute the size of cryptohome for user identified by
-  // |id|.
-  virtual void GetAccountDiskUsage(
-      const Identification& id,
-      const GetAccountDiskUsageCallback& callback) = 0;
 
   // Creates the global HomedirMethods instance.
   static void Initialize();

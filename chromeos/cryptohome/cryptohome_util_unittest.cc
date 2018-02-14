@@ -333,4 +333,55 @@ TEST(CryptohomeUtilTest, KeyAuthorizationDataToAuthorizationDataSecret) {
   EXPECT_EQ(auth_data.secrets.back(), expected_secret);
 }
 
+TEST(CryptohomeUtilTest, AccountDiskUsageReplyToUsageSizeNullOptional) {
+  const base::Optional<BaseReply> reply = base::nullopt;
+
+  int64_t size = AccountDiskUsageReplyToUsageSize(reply);
+
+  ASSERT_EQ(size, -1);
+}
+
+TEST(CryptohomeUtilTest, AccountDiskUsageReplyToUsageSizeEmptyReply) {
+  const base::Optional<BaseReply> reply(base::in_place);
+
+  int64_t size = AccountDiskUsageReplyToUsageSize(reply);
+
+  ASSERT_EQ(size, -1);
+}
+
+TEST(CryptohomeUtilTest, AccountDiskUsageReplyToUsageSizeNoExtension) {
+  BaseReply result;
+  result.set_error(CRYPTOHOME_ERROR_NOT_SET);
+  const base::Optional<BaseReply> reply = std::move(result);
+
+  int64_t size = AccountDiskUsageReplyToUsageSize(reply);
+
+  ASSERT_EQ(size, -1);
+}
+
+TEST(CryptohomeUtilTest, AccountDiskUsageReplyToUsageSizeErrorInReply) {
+  BaseReply result;
+  result.set_error(CRYPTOHOME_ERROR_NOT_IMPLEMENTED);
+  result.MutableExtension(GetAccountDiskUsageReply::reply);
+  const base::Optional<BaseReply> reply = std::move(result);
+
+  int64_t size = AccountDiskUsageReplyToUsageSize(reply);
+
+  ASSERT_EQ(size, -1);
+}
+
+TEST(CryptohomeUtilTest, AccountDiskUsageReplyToUsageSizeValidReply) {
+  constexpr int64_t expected_size = 100;
+  BaseReply result;
+  result.set_error(CRYPTOHOME_ERROR_NOT_SET);
+  GetAccountDiskUsageReply* usage_reply =
+      result.MutableExtension(GetAccountDiskUsageReply::reply);
+  usage_reply->set_size(expected_size);
+  const base::Optional<BaseReply> reply = std::move(result);
+
+  int64_t size = AccountDiskUsageReplyToUsageSize(reply);
+
+  ASSERT_EQ(size, expected_size);
+}
+
 }  // namespace cryptohome

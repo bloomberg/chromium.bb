@@ -92,6 +92,24 @@ MountError BaseReplyToMountError(const base::Optional<BaseReply>& reply) {
   return CryptohomeErrorToMountError(reply->error());
 }
 
+int64_t AccountDiskUsageReplyToUsageSize(
+    const base::Optional<BaseReply>& reply) {
+  if (IsEmpty(reply))
+    return -1;
+
+  if (reply->has_error() && reply->error() != CRYPTOHOME_ERROR_NOT_SET) {
+    LOGIN_LOG(ERROR) << "GetAccountDiskUsage failed with error: "
+                     << reply->error();
+    return -1;
+  }
+  if (!reply->HasExtension(GetAccountDiskUsageReply::reply)) {
+    LOGIN_LOG(ERROR) << "GetAccountDiskUsage failed with no "
+                        "GetAccountDiskUsageReply extension in reply.";
+    return -1;
+  }
+  return reply->GetExtension(GetAccountDiskUsageReply::reply).size();
+}
+
 const std::string& MountExReplyToMountHash(const BaseReply& reply) {
   return reply.GetExtension(MountReply::reply).sanitized_username();
 }
