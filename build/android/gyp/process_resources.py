@@ -952,6 +952,9 @@ def main(args):
   input_paths.extend(options.dependencies_res_zips)
   input_paths.extend(options.extra_r_text_files)
 
+  if options.webp_binary:
+    input_paths.append(options.webp_binary)
+
   # Resource files aren't explicitly listed in GN. Listing them in the depfile
   # ensures the target will be marked stale when resource files are removed.
   depfile_deps = []
