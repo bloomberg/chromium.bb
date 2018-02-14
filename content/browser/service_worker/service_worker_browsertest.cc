@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
@@ -968,6 +969,38 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, StartAndStop) {
       base::BindOnce(&self::StopOnIOThread, base::Unretained(this),
                      stop_run_loop.QuitClosure()));
   stop_run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
+                       DropCountsOnBlinkUseCounter) {
+  StartServerAndNavigateToSetup();
+  RunOnIOThread(base::Bind(&self::SetUpRegistrationOnIOThread,
+                           base::Unretained(this),
+                           "/service_worker/worker.js"));
+  // Start a worker.
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+  base::RunLoop start_run_loop;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&self::StartOnIOThread, base::Unretained(this),
+                     start_run_loop.QuitClosure(), &status));
+  start_run_loop.Run();
+  ASSERT_EQ(SERVICE_WORKER_OK, status);
+
+  // Expect no PageVisits count.
+  EXPECT_EQ(nullptr, base::StatisticsRecorder::FindHistogram(
+                         "Blink.UseCounter.Features"));
+
+  // Stop the worker.
+  base::RunLoop stop_run_loop;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&self::StopOnIOThread, base::Unretained(this),
+                     stop_run_loop.QuitClosure()));
+  stop_run_loop.Run();
+  // Expect no PageVisits count.
+  EXPECT_EQ(nullptr, base::StatisticsRecorder::FindHistogram(
+                         "Blink.UseCounter.Features"));
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, StartNotFound) {

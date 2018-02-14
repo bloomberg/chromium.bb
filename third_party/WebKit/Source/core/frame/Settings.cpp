@@ -62,7 +62,8 @@ static const bool kDefaultSelectTrailingWhitespaceEnabled = false;
 #endif
 
 Settings::Settings()
-    : text_autosizing_enabled_(false) SETTINGS_INITIALIZER_LIST {}
+    : text_autosizing_enabled_(false),
+      is_shadow_page_(false) SETTINGS_INITIALIZER_LIST {}
 
 std::unique_ptr<Settings> Settings::Create() {
   return WTF::WrapUnique(new Settings);
@@ -104,6 +105,10 @@ void Settings::SetMockScrollbarsEnabled(bool flag) {
 
 bool Settings::MockScrollbarsEnabled() {
   return ScrollbarTheme::MockScrollbarsEnabled();
+}
+
+void Settings::SetIsShadowPage(bool flag) {
+  is_shadow_page_ = flag;
 }
 
 }  // namespace blink
