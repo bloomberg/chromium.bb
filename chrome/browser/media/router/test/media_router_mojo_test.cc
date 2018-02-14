@@ -130,6 +130,12 @@ void MockEventPageRequestManager::RunOrDefer(
   RunOrDeferInternal(request, wake_reason);
 }
 
+MockMediaStatusObserver::MockMediaStatusObserver(
+    mojom::MediaStatusObserverRequest request)
+    : binding_(this, std::move(request)) {}
+
+MockMediaStatusObserver::~MockMediaStatusObserver() {}
+
 MockMediaController::MockMediaController()
     : binding_(this), hangouts_binding_(this) {}
 

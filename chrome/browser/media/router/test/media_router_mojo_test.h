@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_TEST_MEDIA_ROUTER_MOJO_TEST_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_TEST_MEDIA_ROUTER_MOJO_TEST_H_
 
+#include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -213,11 +216,22 @@ class MockEventPageRequestManager : public EventPageRequestManager {
   DISALLOW_COPY_AND_ASSIGN(MockEventPageRequestManager);
 };
 
+class MockMediaStatusObserver : public mojom::MediaStatusObserver {
+ public:
+  explicit MockMediaStatusObserver(mojom::MediaStatusObserverRequest request);
+  ~MockMediaStatusObserver() override;
+
+  MOCK_METHOD1(OnMediaStatusUpdated, void(const MediaStatus& status));
+
+ private:
+  mojo::Binding<mojom::MediaStatusObserver> binding_;
+};
+
 class MockMediaController : public mojom::MediaController,
                             mojom::HangoutsMediaRouteController {
  public:
   MockMediaController();
-  ~MockMediaController();
+  ~MockMediaController() override;
 
   void Bind(mojom::MediaControllerRequest request);
   mojom::MediaControllerPtr BindInterfacePtr();
