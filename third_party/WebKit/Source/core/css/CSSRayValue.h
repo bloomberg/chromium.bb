@@ -12,6 +12,8 @@ namespace blink {
 class CSSIdentifierValue;
 class CSSPrimitiveValue;
 
+namespace cssvalue {
+
 class CSSRayValue : public CSSValue {
  public:
   static CSSRayValue* Create(const CSSPrimitiveValue& angle,
@@ -40,6 +42,7 @@ class CSSRayValue : public CSSValue {
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSRayValue, IsRayValue());
 
+}  // namespace cssvalue
 }  // namespace blink
 
 #endif  // CSSRayValue_h
