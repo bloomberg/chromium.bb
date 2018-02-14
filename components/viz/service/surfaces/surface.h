@@ -79,10 +79,11 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   Surface(const SurfaceInfo& surface_info,
           SurfaceManager* surface_manager,
           base::WeakPtr<SurfaceClient> surface_client,
-          BeginFrameSource* begin_frame_source,
-          base::TickClock* tick_clock,
           bool needs_sync_tokens);
   ~Surface();
+
+  void SetDependencyDeadline(
+      std::unique_ptr<SurfaceDependencyDeadline> deadline);
 
   // Clears the pending and active frame data as well as the
   // |seen_first_frame_activation_| bit causing a FirstSurfaceActivation to be
@@ -99,10 +100,9 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
   base::WeakPtr<SurfaceClient> client() { return surface_client_; }
 
-  bool has_deadline() const { return deadline_.has_deadline(); }
-  const SurfaceDependencyDeadline& deadline() const { return deadline_; }
+  bool has_deadline() const { return deadline_ && deadline_->has_deadline(); }
 
-  bool InheritActivationDeadlineFrom(const SurfaceDependencyDeadline& deadline);
+  bool InheritActivationDeadlineFrom(Surface* surface);
 
   void SetPreviousFrameSurface(Surface* surface);
 
@@ -251,7 +251,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   SurfaceId previous_frame_surface_id_;
   SurfaceManager* const surface_manager_;
   base::WeakPtr<SurfaceClient> surface_client_;
-  SurfaceDependencyDeadline deadline_;
+  std::unique_ptr<SurfaceDependencyDeadline> deadline_;
 
   base::Optional<FrameData> pending_frame_data_;
   base::Optional<FrameData> active_frame_data_;

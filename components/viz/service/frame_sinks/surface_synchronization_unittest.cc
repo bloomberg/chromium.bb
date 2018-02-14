@@ -534,6 +534,55 @@ TEST_F(SurfaceSynchronizationTest, DeadlineHits) {
   EXPECT_THAT(child_surface1()->activation_dependencies(), IsEmpty());
 }
 
+// This test verifies that unlimited deadline mode works and that surfaces will
+// not activate until dependencies are resolved.
+TEST_F(SurfaceSynchronizationTest, UnlimitedDeadline) {
+  // Turn on unlimited deadline mode.
+  frame_sink_manager()
+      .surface_manager()
+      ->SetActivationDeadlineInFramesForTesting(base::nullopt);
+
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+
+  // The deadline specified by the parent is ignored in unlimited deadline
+  // mode.
+  parent_support().SubmitCompositorFrame(
+      parent_id.local_surface_id(),
+      MakeCompositorFrame({child_id1}, empty_surface_ids(),
+                          std::vector<TransferableResource>(),
+                          MakeDefaultDeadline()));
+
+  // parent_support is blocked on |child_id1|.
+  EXPECT_FALSE(parent_surface()->HasActiveFrame());
+  EXPECT_TRUE(parent_surface()->HasPendingFrame());
+  EXPECT_THAT(parent_surface()->activation_dependencies(),
+              UnorderedElementsAre(child_id1));
+
+  for (int i = 0; i < 4; ++i) {
+    SendNextBeginFrame();
+    // parent_support is still blocked on |child_id1|.
+    EXPECT_FALSE(parent_surface()->HasActiveFrame());
+    EXPECT_TRUE(parent_surface()->HasPendingFrame());
+    EXPECT_THAT(parent_surface()->activation_dependencies(),
+                UnorderedElementsAre(child_id1));
+  }
+
+  // parent_support is STILL blocked on |child_id1|.
+  EXPECT_FALSE(parent_surface()->HasActiveFrame());
+  EXPECT_TRUE(parent_surface()->HasPendingFrame());
+  EXPECT_THAT(parent_surface()->activation_dependencies(),
+              UnorderedElementsAre(child_id1));
+
+  child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+
+  // parent_surface has been activated.
+  EXPECT_TRUE(parent_surface()->HasActiveFrame());
+  EXPECT_FALSE(parent_surface()->HasPendingFrame());
+  EXPECT_THAT(parent_surface()->activation_dependencies(), IsEmpty());
+}
+
 // parent_surface is blocked on |child_id1| until a late BeginFrame arrives and
 // triggers a deadline.
 TEST_F(SurfaceSynchronizationTest, LateBeginFrameTriggersDeadline) {

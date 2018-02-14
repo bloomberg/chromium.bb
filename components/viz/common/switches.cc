@@ -10,7 +10,7 @@
 namespace switches {
 namespace {
 
-constexpr uint32_t kDefaultNumberOfFramesToDeadline = 4;
+constexpr uint32_t kDefaultActivationDeadlineInFrames = 4;
 
 }  // namespace
 
@@ -32,16 +32,19 @@ const char kUseVizHitTestDrawQuad[] = "use-viz-hit-test-draw-quad";
 // hit-test data coming from surface layer.
 const char kUseVizHitTestSurfaceLayer[] = "use-viz-hit-test-surface-layer";
 
-uint32_t GetDeadlineToSynchronizeSurfaces() {
+base::Optional<uint32_t> GetDeadlineToSynchronizeSurfaces() {
   std::string deadline_to_synchronize_surfaces_string =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kDeadlineToSynchronizeSurfaces);
-  uint32_t number_of_frames_to_activation_deadline;
+  if (deadline_to_synchronize_surfaces_string.empty())
+    return kDefaultActivationDeadlineInFrames;
+
+  uint32_t activation_deadline_in_frames;
   if (!base::StringToUint(deadline_to_synchronize_surfaces_string,
-                          &number_of_frames_to_activation_deadline)) {
-    return kDefaultNumberOfFramesToDeadline;
+                          &activation_deadline_in_frames)) {
+    return base::nullopt;
   }
-  return number_of_frames_to_activation_deadline;
+  return activation_deadline_in_frames;
 }
 
 }  // namespace switches

@@ -43,8 +43,10 @@ SurfaceManager::TemporaryReferenceData::TemporaryReferenceData() = default;
 
 SurfaceManager::TemporaryReferenceData::~TemporaryReferenceData() = default;
 
-SurfaceManager::SurfaceManager(uint32_t number_of_frames_to_activation_deadline)
-    : dependency_tracker_(this, number_of_frames_to_activation_deadline),
+SurfaceManager::SurfaceManager(
+    base::Optional<uint32_t> activation_deadline_in_frames)
+    : activation_deadline_in_frames_(activation_deadline_in_frames),
+      dependency_tracker_(this),
       root_surface_id_(FrameSinkId(0u, 0u),
                        LocalSurfaceId(1u, base::UnguessableToken::Create())),
       tick_clock_(base::DefaultTickClock::GetInstance()),
@@ -89,6 +91,11 @@ std::string SurfaceManager::SurfaceReferencesToString() {
 }
 #endif
 
+void SurfaceManager::SetActivationDeadlineInFramesForTesting(
+    base::Optional<uint32_t> activation_deadline_in_frames) {
+  activation_deadline_in_frames_ = activation_deadline_in_frames;
+}
+
 void SurfaceManager::SetTickClockForTesting(base::TickClock* tick_clock) {
   tick_clock_ = tick_clock;
 }
@@ -106,9 +113,15 @@ Surface* SurfaceManager::CreateSurface(
   // and return.
   auto it = surface_map_.find(surface_info.id());
   if (it == surface_map_.end()) {
-    surface_map_[surface_info.id()] = std::make_unique<Surface>(
-        surface_info, this, surface_client, begin_frame_source, tick_clock_,
-        needs_sync_tokens);
+    std::unique_ptr<Surface> surface = std::make_unique<Surface>(
+        surface_info, this, surface_client, needs_sync_tokens);
+    // If no default deadline is specified then don't track deadlines.
+    if (activation_deadline_in_frames_) {
+      surface->SetDependencyDeadline(
+          std::make_unique<SurfaceDependencyDeadline>(
+              surface.get(), begin_frame_source, tick_clock_));
+    }
+    surface_map_[surface_info.id()] = std::move(surface);
     // We can get into a situation where multiple CompositorFrames arrive for a
     // FrameSink before the client can add any references for the frame. When
     // the second frame with a new size arrives, the first will be destroyed in

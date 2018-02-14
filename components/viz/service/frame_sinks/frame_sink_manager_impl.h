@@ -45,8 +45,9 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
       public mojom::FrameSinkManager,
       public HitTestAggregatorDelegate {
  public:
-  FrameSinkManagerImpl(uint32_t number_of_frames_to_activation_deadline = 4u,
-                       DisplayProvider* display_provider = nullptr);
+  FrameSinkManagerImpl(
+      base::Optional<uint32_t> activation_deadline_in_frames = 4u,
+      DisplayProvider* display_provider = nullptr);
   ~FrameSinkManagerImpl() override;
 
   // Binds |this| as a FrameSinkManagerImpl for |request| on |task_runner|. On

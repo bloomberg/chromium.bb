@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <string>
 
+#include "base/optional.h"
 #include "components/viz/common/viz_common_export.h"
 
 namespace switches {
@@ -18,7 +19,7 @@ VIZ_COMMON_EXPORT extern const char kEnableSurfaceSynchronization[];
 VIZ_COMMON_EXPORT extern const char kUseVizHitTestDrawQuad[];
 VIZ_COMMON_EXPORT extern const char kUseVizHitTestSurfaceLayer[];
 
-VIZ_COMMON_EXPORT uint32_t GetDeadlineToSynchronizeSurfaces();
+VIZ_COMMON_EXPORT base::Optional<uint32_t> GetDeadlineToSynchronizeSurfaces();
 
 }  // namespace switches
 

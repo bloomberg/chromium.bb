@@ -831,8 +831,11 @@ void WindowServer::CreateFrameSinkManager() {
   viz::mojom::FrameSinkManagerParamsPtr params =
       viz::mojom::FrameSinkManagerParams::New();
   params->restart_id = viz_restart_id_++;
-  params->number_of_frames_to_activation_deadline =
+  base::Optional<uint32_t> activation_deadline_in_frames =
       switches::GetDeadlineToSynchronizeSurfaces();
+  params->use_activation_deadline = activation_deadline_in_frames.has_value();
+  params->activation_deadline_in_frames =
+      activation_deadline_in_frames.value_or(0u);
   params->frame_sink_manager = std::move(frame_sink_manager_request);
   params->frame_sink_manager_client = frame_sink_manager_client.PassInterface();
   gpu_host_->CreateFrameSinkManager(std::move(params));
