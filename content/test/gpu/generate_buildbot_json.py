@@ -376,7 +376,9 @@ FYI_WATERFALL = {
       # This should match another config name specified in this file.
       'stable_tester_name': 'Win10 Release (NVIDIA)',
     },
-    'Win10 FYI Experimental Release (NVIDIA)': {
+    # TODO(kbr): "Experimental" caused too-long path names pre-LUCI.
+    # crbug.com/812000
+    'Win10 FYI Exp Release (NVIDIA)': {
       'swarming_dimensions': [
         {
           'gpu': WIN10_NVIDIA_QUADRO_P400_EXPERIMENTAL_DRIVER,
@@ -389,7 +391,7 @@ FYI_WATERFALL = {
       'os_type': 'win',
       'type': Types.EXPERIMENTAL,
       # This should match another config name specified in this file.
-      'stable_tester_name': 'Win10 Release (NVIDIA)',
+      'stable_tester_name': 'Win10 FYI Release (NVIDIA)',
     },
     'Win10 Release (NVIDIA)': {
       'swarming_dimensions': [
