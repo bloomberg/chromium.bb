@@ -484,6 +484,8 @@ void HTMLFormElement::ScheduleFormSubmission(FormSubmission* submission) {
   } else {
     FrameLoadRequest frame_load_request =
         submission->CreateFrameLoadRequest(&GetDocument());
+    frame_load_request.GetResourceRequest().SetHasUserGesture(
+        Frame::HasTransientUserActivation(GetDocument().GetFrame()));
     ToRemoteFrame(target_frame)->Navigate(frame_load_request);
   }
 }
