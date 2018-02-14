@@ -153,6 +153,12 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(
         max_virtual_time_task_starvation_count.fromJust();
   }
 
+  if (!virtual_time_setup_) {
+    instrumenting_agents_->addInspectorEmulationAgent(this);
+    web_local_frame_->View()->Scheduler()->AddVirtualTimeObserver(this);
+    virtual_time_setup_ = true;
+  }
+
   if (wait_for_navigation.fromMaybe(false)) {
     *virtual_time_base_ms = 0;
     pending_virtual_time_policy_ = std::move(new_policy);
@@ -172,11 +178,6 @@ WTF::TimeTicks InspectorEmulationAgent::ApplyVirtualTimePolicy(
       new_policy.policy);
   WTF::TimeTicks virtual_time_base_ticks(
       web_local_frame_->View()->Scheduler()->EnableVirtualTime());
-  if (!virtual_time_setup_) {
-    instrumenting_agents_->addInspectorEmulationAgent(this);
-    web_local_frame_->View()->Scheduler()->AddVirtualTimeObserver(this);
-    virtual_time_setup_ = true;
-  }
   if (new_policy.virtual_time_budget_ms) {
     WTF::TimeDelta budget_amount =
         WTF::TimeDelta::FromMillisecondsD(*new_policy.virtual_time_budget_ms);

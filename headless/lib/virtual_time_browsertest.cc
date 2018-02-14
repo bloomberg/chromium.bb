@@ -46,32 +46,25 @@ class VirtualTimeBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
     if (!runtime_enabled)
       return;
 
-    // To avoid race conditions start with virtual time paused.
-    devtools_client_->GetEmulation()->GetExperimental()->SetVirtualTimePolicy(
-        emulation::SetVirtualTimePolicyParams::Builder()
-            .SetPolicy(emulation::VirtualTimePolicy::PAUSE)
-            .Build(),
-        base::BindRepeating(&VirtualTimeBrowserTest::SetVirtualTimePolicyDone,
-                            base::Unretained(this)));
-
-    SetAfterLoadVirtualTimePolicy();
+    SetVirtualTimePolicy();
   }
 
   void SetVirtualTimePolicyDone(
       std::unique_ptr<emulation::SetVirtualTimePolicyResult> result) {
-    EXPECT_LT(0, result->GetVirtualTimeBase());
     // Virtual time is paused, so start navigating.
     devtools_client_->GetPage()->Navigate(initial_url_);
   }
 
-  virtual void SetAfterLoadVirtualTimePolicy() {
+  virtual void SetVirtualTimePolicy() {
     devtools_client_->GetEmulation()->GetExperimental()->SetVirtualTimePolicy(
         emulation::SetVirtualTimePolicyParams::Builder()
             .SetPolicy(
                 emulation::VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING)
             .SetBudget(5000)
             .SetWaitForNavigation(true)
-            .Build());
+            .Build(),
+        base::BindRepeating(&VirtualTimeBrowserTest::SetVirtualTimePolicyDone,
+                            base::Unretained(this)));
   }
 
   // runtime::Observer implementation:
@@ -149,7 +142,7 @@ class MaxVirtualTimeTaskStarvationCountTest : public VirtualTimeBrowserTest {
                       .spec());
   }
 
-  void SetAfterLoadVirtualTimePolicy() override {
+  void SetVirtualTimePolicy() override {
     devtools_client_->GetEmulation()->GetExperimental()->SetVirtualTimePolicy(
         emulation::SetVirtualTimePolicyParams::Builder()
             .SetPolicy(
@@ -157,7 +150,9 @@ class MaxVirtualTimeTaskStarvationCountTest : public VirtualTimeBrowserTest {
             .SetBudget(4001)
             .SetMaxVirtualTimeTaskStarvationCount(100)
             .SetWaitForNavigation(true)
-            .Build());
+            .Build(),
+        base::BindRepeating(&VirtualTimeBrowserTest::SetVirtualTimePolicyDone,
+                            base::Unretained(this)));
   }
 
   // emulation::Observer implementation:
@@ -276,16 +271,6 @@ class VirtualTimeLocalStorageTest : public VirtualTimeBrowserTest {
                       .spec());
   }
 
-  void SetAfterLoadVirtualTimePolicy() override {
-    devtools_client_->GetEmulation()->GetExperimental()->SetVirtualTimePolicy(
-        emulation::SetVirtualTimePolicyParams::Builder()
-            .SetPolicy(
-                emulation::VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING)
-            .SetBudget(5000)
-            .SetWaitForNavigation(true)
-            .Build());
-  }
-
   void OnConsoleAPICalled(
       const runtime::ConsoleAPICalledParams& params) override {
     EXPECT_EQ(runtime::ConsoleAPICalledType::LOG, params.GetType());
@@ -320,16 +305,6 @@ class VirtualTimeSessionStorageTest : public VirtualTimeBrowserTest {
     SetInitialURL(embedded_test_server()
                       ->GetURL("/virtual_time_session_storage.html")
                       .spec());
-  }
-
-  void SetAfterLoadVirtualTimePolicy() override {
-    devtools_client_->GetEmulation()->GetExperimental()->SetVirtualTimePolicy(
-        emulation::SetVirtualTimePolicyParams::Builder()
-            .SetPolicy(
-                emulation::VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING)
-            .SetBudget(5000)
-            .SetWaitForNavigation(true)
-            .Build());
   }
 
   void OnConsoleAPICalled(
@@ -690,7 +665,7 @@ class VirtualTimeAndResourceErrorLoopTest : public VirtualTimeBrowserTest {
     VirtualTimeBrowserTest::RunDevTooledTest();
   }
 
-  void SetAfterLoadVirtualTimePolicy() override {
+  void SetVirtualTimePolicy() override {
     devtools_client_->GetEmulation()->GetExperimental()->SetVirtualTimePolicy(
         emulation::SetVirtualTimePolicyParams::Builder()
             .SetPolicy(
@@ -698,7 +673,9 @@ class VirtualTimeAndResourceErrorLoopTest : public VirtualTimeBrowserTest {
             .SetBudget(5000)
             .SetMaxVirtualTimeTaskStarvationCount(1000000)  // Prevent flakes.
             .SetWaitForNavigation(true)
-            .Build());
+            .Build(),
+        base::BindRepeating(&VirtualTimeBrowserTest::SetVirtualTimePolicyDone,
+                            base::Unretained(this)));
   }
 
   // emulation::Observer implementation:
@@ -775,16 +752,6 @@ class JavascriptTimeAlwaysAdvancesTest : public VirtualTimeBrowserTest,
   void CustomizeHeadlessBrowserContext(
       HeadlessBrowserContext::Builder& builder) override {
     builder.SetInitialVirtualTime(base::Time::FromJsTime(1000000.0));
-  }
-
-  void SetAfterLoadVirtualTimePolicy() override {
-    devtools_client_->GetEmulation()->GetExperimental()->SetVirtualTimePolicy(
-        emulation::SetVirtualTimePolicyParams::Builder()
-            .SetPolicy(
-                emulation::VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING)
-            .SetBudget(5000)
-            .SetWaitForNavigation(true)
-            .Build());
   }
 
   void OnConsoleAPICalled(
