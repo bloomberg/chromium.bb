@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/chromeos/touch_accessibility_enabler.h"
+#include "ash/accessibility/touch_accessibility_enabler.h"
 
 #include <math.h>
 
@@ -18,7 +18,7 @@
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
 
-namespace ui {
+namespace ash {
 
 namespace {
 
@@ -147,7 +147,7 @@ void TouchAccessibilityEnabler::StartTimer() {
     return;
 
   timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kTimerDelayInMS),
-               this, &ui::TouchAccessibilityEnabler::OnTimer);
+               this, &TouchAccessibilityEnabler::OnTimer);
 }
 
 void TouchAccessibilityEnabler::CancelTimer() {
@@ -184,4 +184,4 @@ void TouchAccessibilityEnabler::ResetToNoFingersDown() {
   CancelTimer();
 }
 
-}  // namespace ui
+}  // namespace ash

@@ -10,6 +10,7 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
+#include "ash/accessibility/touch_exploration_controller.h"
 #include "ash/keyboard/keyboard_observer_register.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/root_window_controller.h"
@@ -21,7 +22,6 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/chromeos/touch_exploration_controller.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/wm/public/activation_client.h"
@@ -197,14 +197,14 @@ void AshTouchExplorationManager::UpdateTouchExplorationState() {
 
   if (!touch_accessibility_enabler_) {
     // Always enable gesture to toggle spoken feedback.
-    touch_accessibility_enabler_.reset(new ui::TouchAccessibilityEnabler(
+    touch_accessibility_enabler_.reset(new TouchAccessibilityEnabler(
         root_window_controller_->GetRootWindow(), this));
   }
 
   if (spoken_feedback_enabled) {
     if (!touch_exploration_controller_.get()) {
       touch_exploration_controller_ =
-          std::make_unique<ui::TouchExplorationController>(
+          std::make_unique<TouchExplorationController>(
               root_window_controller_->GetRootWindow(), this,
               touch_accessibility_enabler_->GetWeakPtr());
     }

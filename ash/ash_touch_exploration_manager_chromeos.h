@@ -7,13 +7,13 @@
 
 #include <memory>
 
+#include "ash/accessibility/touch_accessibility_enabler.h"
+#include "ash/accessibility/touch_exploration_controller.h"
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
 #include "ash/system/accessibility_observer.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
-#include "ui/chromeos/touch_accessibility_enabler.h"
-#include "ui/chromeos/touch_exploration_controller.h"
 #include "ui/display/display_observer.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -35,8 +35,8 @@ class RootWindowController;
 // the system.
 class ASH_EXPORT AshTouchExplorationManager
     : public AccessibilityObserver,
-      public ui::TouchExplorationControllerDelegate,
-      public ui::TouchAccessibilityEnablerDelegate,
+      public TouchExplorationControllerDelegate,
+      public TouchAccessibilityEnablerDelegate,
       public display::DisplayObserver,
       public ::wm::ActivationChangeObserver,
       public keyboard::KeyboardControllerObserver,
@@ -92,8 +92,8 @@ class ASH_EXPORT AshTouchExplorationManager
   void UpdateTouchExplorationState();
   bool VolumeAdjustSoundEnabled();
 
-  std::unique_ptr<ui::TouchExplorationController> touch_exploration_controller_;
-  std::unique_ptr<ui::TouchAccessibilityEnabler> touch_accessibility_enabler_;
+  std::unique_ptr<TouchExplorationController> touch_exploration_controller_;
+  std::unique_ptr<TouchAccessibilityEnabler> touch_accessibility_enabler_;
   RootWindowController* root_window_controller_;
   chromeos::CrasAudioHandler* audio_handler_;
   ScopedObserver<keyboard::KeyboardController,

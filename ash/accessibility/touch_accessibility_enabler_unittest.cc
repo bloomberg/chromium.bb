@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/chromeos/touch_accessibility_enabler.h"
+#include "ash/accessibility/touch_accessibility_enabler.h"
 
+#include "ash/accessibility/touch_exploration_controller.h"
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
-#include "ui/chromeos/touch_exploration_controller.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_provider_aura.h"
@@ -17,12 +17,12 @@
 #include "ui/events/test/events_test_utils.h"
 #include "ui/gfx/geometry/point.h"
 
-namespace ui {
+namespace ash {
 
 namespace {
 
 class MockTouchAccessibilityEnablerDelegate
-    : public ui::TouchAccessibilityEnablerDelegate {
+    : public TouchAccessibilityEnablerDelegate {
  public:
   MockTouchAccessibilityEnablerDelegate() {}
   ~MockTouchAccessibilityEnablerDelegate() override {}
@@ -60,7 +60,7 @@ class TouchAccessibilityEnablerTest : public aura::test::AuraTestBase {
   void SetUp() override {
     aura::test::AuraTestBase::SetUp();
 
-    generator_.reset(new test::EventGenerator(root_window()));
+    generator_.reset(new ui::test::EventGenerator(root_window()));
 
     simulated_clock_ = new base::SimpleTestTickClock();
     // Tests fail if time is ever 0.
@@ -85,7 +85,7 @@ class TouchAccessibilityEnablerTest : public aura::test::AuraTestBase {
     return simulated_clock_->NowTicks();
   }
 
-  std::unique_ptr<test::EventGenerator> generator_;
+  std::unique_ptr<ui::test::EventGenerator> generator_;
   // Owned by |ui|.
   base::SimpleTestTickClock* simulated_clock_ = nullptr;
   MockTouchAccessibilityEnablerDelegate delegate_;
@@ -223,4 +223,4 @@ TEST_F(TouchAccessibilityEnablerTest, MovingFingerPastSlopCancelsDetection) {
   EXPECT_TRUE(enabler_->IsInWaitForNoFingersForTesting());
 }
 
-}  // namespace ui
+}  // namespace ash

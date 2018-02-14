@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_CHROMEOS_TOUCH_EXPLORATION_CONTROLLER_H_
-#define UI_CHROMEOS_TOUCH_EXPLORATION_CONTROLLER_H_
+#ifndef ASH_ACCESSIBILITY_TOUCH_EXPLORATION_CONTROLLER_H_
+#define ASH_ACCESSIBILITY_TOUCH_EXPLORATION_CONTROLLER_H_
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "ui/accessibility/ax_enums.mojom.h"
-#include "ui/chromeos/ui_chromeos_export.h"
 #include "ui/events/event.h"
 #include "ui/events/event_rewriter.h"
 #include "ui/events/gesture_detection/gesture_detector.h"
@@ -22,12 +22,15 @@ class Window;
 }
 
 namespace ui {
-
 class Event;
 class GestureEvent;
 class GestureProviderAura;
-class TouchAccessibilityEnabler;
 class TouchEvent;
+}  // namespace ui
+
+namespace ash {
+
+class TouchAccessibilityEnabler;
 
 // A delegate to handle commands in response to detected accessibility gesture
 // events.
@@ -179,14 +182,14 @@ class TouchExplorationControllerDelegate {
 //
 // The caller is expected to retain ownership of instances of this class and
 // destroy them before |root_window| is destroyed.
-class UI_CHROMEOS_EXPORT TouchExplorationController
+class ASH_EXPORT TouchExplorationController
     : public ui::EventRewriter,
       public ui::GestureProviderAuraClient,
       public ui::GestureConsumer {
  public:
   explicit TouchExplorationController(
       aura::Window* root_window,
-      ui::TouchExplorationControllerDelegate* delegate,
+      TouchExplorationControllerDelegate* delegate,
       base::WeakPtr<TouchAccessibilityEnabler> touch_accessibility_enabler);
   ~TouchExplorationController() override;
 
@@ -462,7 +465,7 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   aura::Window* root_window_;
 
   // Handles volume control. Not owned.
-  ui::TouchExplorationControllerDelegate* delegate_;
+  TouchExplorationControllerDelegate* delegate_;
 
   // A set of touch ids for fingers currently touching the screen.
   std::vector<int> current_touch_ids_;
@@ -553,6 +556,6 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   DISALLOW_COPY_AND_ASSIGN(TouchExplorationController);
 };
 
-}  // namespace ui
+}  // namespace ash
 
-#endif  // UI_CHROMEOS_TOUCH_EXPLORATION_CONTROLLER_H_
+#endif  // ASH_ACCESSIBILITY_TOUCH_EXPLORATION_CONTROLLER_H_
