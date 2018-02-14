@@ -11,6 +11,8 @@ aggregate_vector_icons("vr_vector_icons") {
     "file_download_done.icon",
     "reposition.icon",
     "sad_tab.icon",
+    "daydream_controller_home_button.icon",
+    "daydream_controller_app_button.icon",
   ]
 }
 

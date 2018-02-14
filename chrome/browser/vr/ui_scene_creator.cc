@@ -465,7 +465,6 @@ std::unique_ptr<UiElement> CreateControllerModel(Model* model) {
                                       controller.get(), SetOpacity));
 
   auto touchpad_button = Create<Rect>(kNone, kPhaseForeground);
-  touchpad_button->SetVisible(true);
   touchpad_button->SetColor(model->color_scheme().controller_button);
   touchpad_button->SetSize(kControllerWidth, kControllerWidth);
   touchpad_button->SetRotate(1, 0, 0, -base::kPiFloat / 2);
@@ -481,38 +480,32 @@ std::unique_ptr<UiElement> CreateControllerModel(Model* model) {
       Rect, touchpad_button.get(), SetColor));
   controller->AddChild(std::move(touchpad_button));
 
-  auto app_button = Create<Rect>(kNone, kPhaseForeground);
-  app_button->SetVisible(true);
+  auto app_button = Create<VectorIcon>(kNone, kPhaseForeground, 100);
+  app_button->SetIcon(kDaydreamControllerAppButtonIcon);
   app_button->SetColor(model->color_scheme().controller_button);
   app_button->SetSize(kControllerSmallButtonSize, kControllerSmallButtonSize);
   app_button->SetRotate(1, 0, 0, -base::kPiFloat / 2);
   app_button->SetTranslate(0.0f, 0.0f, kControllerAppButtonZ);
-  app_button->SetCornerRadii(
-      {kControllerSmallButtonSize / 2, kControllerSmallButtonSize / 2,
-       kControllerSmallButtonSize / 2, kControllerSmallButtonSize / 2});
   app_button->AddBinding(
       VR_BIND_FUNC(SkColor, Model, model,
                    model->controller.app_button_state == UiInputManager::DOWN
                        ? model->color_scheme().controller_button_down
                        : model->color_scheme().controller_button,
-                   Rect, app_button.get(), SetColor));
+                   VectorIcon, app_button.get(), SetColor));
   controller->AddChild(std::move(app_button));
 
-  auto home_button = Create<Rect>(kNone, kPhaseForeground);
-  home_button->SetVisible(true);
+  auto home_button = Create<VectorIcon>(kNone, kPhaseForeground, 100);
+  home_button->SetIcon(kDaydreamControllerHomeButtonIcon);
   home_button->SetColor(model->color_scheme().controller_button);
   home_button->SetSize(kControllerSmallButtonSize, kControllerSmallButtonSize);
   home_button->SetRotate(1, 0, 0, -base::kPiFloat / 2);
   home_button->SetTranslate(0.0f, 0.0f, kControllerHomeButtonZ);
-  home_button->SetCornerRadii(
-      {kControllerSmallButtonSize / 2, kControllerSmallButtonSize / 2,
-       kControllerSmallButtonSize / 2, kControllerSmallButtonSize / 2});
   home_button->AddBinding(
       VR_BIND_FUNC(SkColor, Model, model,
                    model->controller.home_button_state == UiInputManager::DOWN
                        ? model->color_scheme().controller_button_down
                        : model->color_scheme().controller_button,
-                   Rect, home_button.get(), SetColor));
+                   VectorIcon, home_button.get(), SetColor));
   controller->AddChild(std::move(home_button));
 
   return controller;
