@@ -43,36 +43,37 @@ struct HpackStaticEntry {
 class HpackHuffmanTable;
 class HpackStaticTable;
 
-// Defined in RFC 7540 section 6.5.2.
+// Defined in RFC 7540, 6.5.2.
 const uint32_t kDefaultHeaderTableSizeSetting = 4096;
 
-// 6.2: Flag for a string literal that is stored unmodified (i.e.,
+// RFC 7541, 5.2: Flag for a string literal that is stored unmodified (i.e.,
 // without Huffman encoding).
 const HpackPrefix kStringLiteralIdentityEncoded = {0x0, 1};
 
-// 6.2: Flag for a Huffman-coded string literal.
+// RFC 7541, 5.2: Flag for a Huffman-coded string literal.
 const HpackPrefix kStringLiteralHuffmanEncoded = {0x1, 1};
 
-// 7.1: Opcode for an indexed header field.
-const HpackPrefix kIndexedOpcode = {0x1, 1};
+// RFC 7541, 6.1: Opcode for an indexed header field.
+const HpackPrefix kIndexedOpcode = {0b1, 1};
 
-// 7.2.1: Opcode for a literal header field with incremental indexing.
-const HpackPrefix kLiteralIncrementalIndexOpcode = {0x1, 2};
+// RFC 7541, 6.2.1: Opcode for a literal header field with incremental indexing.
+const HpackPrefix kLiteralIncrementalIndexOpcode = {0b01, 2};
 
-// 7.2.2: Opcode for a literal header field without indexing.
-const HpackPrefix kLiteralNoIndexOpcode = {0x0, 4};
+// RFC 7541, 6.2.2: Opcode for a literal header field without indexing.
+const HpackPrefix kLiteralNoIndexOpcode = {0b0000, 4};
 
-// 7.2.3: Opcode for a literal header field which is never indexed.
-const HpackPrefix kLiteralNeverIndexOpcode = {0x1, 4};
+// RFC 7541, 6.2.3: Opcode for a literal header field which is never indexed.
+// Currently unused.
+// const HpackPrefix kLiteralNeverIndexOpcode = {0b0001, 4};
 
-// 7.3: Opcode for maximum header table size update. Begins a varint-encoded
-// table size with a 5-bit prefix.
-const HpackPrefix kHeaderTableSizeUpdateOpcode = {0x1, 3};
+// RFC 7541, 6.3: Opcode for maximum header table size update. Begins a
+// varint-encoded table size with a 5-bit prefix.
+const HpackPrefix kHeaderTableSizeUpdateOpcode = {0b001, 3};
 
-// Returns symbol code table from "Appendix C. Huffman Code".
+// Returns symbol code table from RFC 7541, "Appendix C. Huffman Code".
 SPDY_EXPORT_PRIVATE std::vector<HpackHuffmanSymbol> HpackHuffmanCode();
 
-// Returns static table from "Appendix B. Static Table Definition".
+// Returns static table from RFC 7541, "Appendix B. Static Table Definition".
 SPDY_EXPORT_PRIVATE std::vector<HpackStaticEntry> HpackStaticTableVector();
 
 // Returns a HpackHuffmanTable instance initialized with |kHpackHuffmanCode|.
