@@ -621,9 +621,14 @@ class ColorTransformToLinear : public ColorTransformPerChannelTransferFn {
                 "  float c1 = 3424.0 / 4096.0;\n"
                 "  float c2 = (2413.0 / 4096.0) * 32.0;\n"
                 "  float c3 = (2392.0 / 4096.0) * 32.0;\n"
-                "  v = pow(max(pow(v, 1.0 / m2) - c1, 0.0) /\n"
-                "              (c2 - c3 * pow(v, 1.0 / m2)), 1.0 / m1);\n"
-                "  v *= 10000.0 / 80.0;\n"
+                "  #ifdef GL_FRAGMENT_PRECISION_HIGH\n"
+                "  highp float v2 = v;\n"
+                "  #else\n"
+                "  float v2 = v;\n"
+                "  #endif\n"
+                "  v2 = pow(max(pow(v2, 1.0 / m2) - c1, 0.0) /\n"
+                "              (c2 - c3 * pow(v2, 1.0 / m2)), 1.0 / m1);\n"
+                "  v = v2 * 10000.0 / 80.0;\n"
                 "  return v;\n";
         return;
       case ColorSpace::TransferID::SMPTEST2084_NON_HDR:
