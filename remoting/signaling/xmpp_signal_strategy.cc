@@ -287,10 +287,35 @@ void XmppSignalStrategy::Core::SendMessage(const std::string& message) {
       new net::IOBufferWithSize(message.size());
   memcpy(buffer->data(), message.data(), message.size());
 
-  // TODO(crbug.com/656607): Add proper annotation.
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("xmpp_signal_strategy", R"(
+        semantics {
+          sender: "Xmpp Signal Strategy"
+           description:
+            "This request is used for setting up the ICE connection between "
+            "the client and the host for Chrome Remote Desktop."
+          trigger:
+            "Initiating a Chrome Remote Desktop connection."
+          data: "No user data."
+          destination: OTHER
+          destination_other:
+            "The Chrome Remote Desktop client/host that user is connecting to."
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "This request cannot be stopped in settings, but will not be sent "
+            "if user does not use Chrome Remote Desktop."
+          policy_exception_justification:
+            "Not implemented. 'RemoteAccessHostClientDomainList' and "
+            "'RemoteAccessHostDomainList' policies can limit the domains to "
+            "which a connection can be made, but they cannot be used to block "
+            "the request to all domains. Please refer to help desk for other "
+            "approaches to manage this feature."
+        })");
   writer_->Write(buffer,
                  base::Bind(&Core::OnMessageSent, base::Unretained(this)),
-                 NO_TRAFFIC_ANNOTATION_BUG_656607);
+                 traffic_annotation);
 }
 
 void XmppSignalStrategy::Core::StartTls() {
