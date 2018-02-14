@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_CHROMEOS_SETTINGS_STUB_CROS_SETTINGS_PROVIDER_H_
 
 #include <string>
+#include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chromeos/settings/cros_settings_provider.h"
 #include "components/prefs/pref_value_map.h"
@@ -45,6 +47,9 @@ class StubCrosSettingsProvider : public CrosSettingsProvider {
   bool current_user_is_owner_ = true;
 
   TrustedStatus trusted_status_ = CrosSettingsProvider::TRUSTED;
+
+  // Pending callbacks to invoke when switching away from TEMPORARILY_UNTRUSTED.
+  std::vector<base::Closure> callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(StubCrosSettingsProvider);
 };
