@@ -68,7 +68,7 @@ class VMTest(object):
     Args:
       build_dir: Build directory.
     """
-    cros_build_lib.RunCommand(['ninja', '-C', build_dir, 'chrome',
+    cros_build_lib.RunCommand(['autoninja', '-C', build_dir, 'chrome',
                                'chrome_sandbox', 'nacl_helper'],
                               log_output=True)
 
