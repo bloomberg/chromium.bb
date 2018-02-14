@@ -11,6 +11,7 @@
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/header_view.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/window_selector_controller.h"
@@ -496,6 +497,45 @@ TEST_F(CustomFrameViewAshTest, FrameVisibility) {
   widget->GetRootView()->Layout();
   EXPECT_EQ(gfx::Size(200, 67), widget->client_view()->GetLocalBounds().size());
   EXPECT_TRUE(widget->non_client_view()->frame_view()->visible());
+}
+
+// Verify that CustomFrameViewAsh updates the active color based on the
+// ash::kFrameActiveColorKey window property.
+TEST_F(CustomFrameViewAshTest, kFrameActiveColorKey) {
+  TestWidgetConstraintsDelegate* delegate = new TestWidgetConstraintsDelegate;
+  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
+
+  SkColor active_color =
+      widget->GetNativeWindow()->GetProperty(ash::kFrameActiveColorKey);
+  constexpr SkColor new_color = SK_ColorWHITE;
+  EXPECT_NE(active_color, new_color);
+
+  widget->GetNativeWindow()->SetProperty(ash::kFrameActiveColorKey, new_color);
+  active_color =
+      widget->GetNativeWindow()->GetProperty(ash::kFrameActiveColorKey);
+  EXPECT_EQ(active_color, new_color);
+  EXPECT_EQ(new_color,
+            delegate->custom_frame_view()->GetActiveFrameColorForTest());
+}
+
+// Verify that CustomFrameViewAsh updates the inactive color based on the
+// ash::kFrameInactiveColorKey window property.
+TEST_F(CustomFrameViewAshTest, KFrameInactiveColor) {
+  TestWidgetConstraintsDelegate* delegate = new TestWidgetConstraintsDelegate;
+  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
+
+  SkColor active_color =
+      widget->GetNativeWindow()->GetProperty(ash::kFrameInactiveColorKey);
+  constexpr SkColor new_color = SK_ColorWHITE;
+  EXPECT_NE(active_color, new_color);
+
+  widget->GetNativeWindow()->SetProperty(ash::kFrameInactiveColorKey,
+                                         new_color);
+  active_color =
+      widget->GetNativeWindow()->GetProperty(ash::kFrameInactiveColorKey);
+  EXPECT_EQ(active_color, new_color);
+  EXPECT_EQ(new_color,
+            delegate->custom_frame_view()->GetInactiveFrameColorForTest());
 }
 
 }  // namespace ash

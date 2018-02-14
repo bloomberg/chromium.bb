@@ -122,6 +122,9 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
 
   const views::View* GetAvatarIconViewForTest() const;
 
+  SkColor GetActiveFrameColorForTest() const;
+  SkColor GetInactiveFrameColorForTest() const;
+
  private:
   class AvatarObserver;
   class OverlayView;
