@@ -95,9 +95,10 @@ class GpuInProcessThreadHolder : public base::Thread {
 
   const scoped_refptr<InProcessCommandBuffer::Service>& GetGpuThreadService() {
     if (!gpu_thread_service_) {
-      gpu_thread_service_ = new GpuInProcessThreadService(
-          task_runner(), sync_point_manager_.get(), nullptr, nullptr,
-          gpu_feature_info_);
+      gpu_thread_service_ = base::MakeRefCounted<GpuInProcessThreadService>(
+          true /* use_virtualized_gl_context */, task_runner(),
+          sync_point_manager_.get(), nullptr, nullptr, gpu_feature_info_,
+          GpuPreferences());
     }
     return gpu_thread_service_;
   }
@@ -316,7 +317,7 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
                 service_->framebuffer_completeness_cache(), feature_info,
                 bind_generates_resource, service_->image_manager(),
                 nullptr /* image_factory */, nullptr /* progress_reporter */,
-                GpuFeatureInfo(), service_->discardable_manager());
+                service_->gpu_feature_info(), service_->discardable_manager());
 
   command_buffer_ = std::make_unique<CommandBufferService>(
       this, transfer_buffer_manager_.get());
@@ -354,6 +355,8 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
           GetNamespaceID(), GetCommandBufferID(),
           sync_point_order_data_->sequence_id());
 
+  // TODO(crbug.com/811979): Unify logic for using virtualized contexts in
+  // InProcessCommandBuffer and GLES2CommandBufferStub.
   use_virtualized_gl_context_ =
       service_->UseVirtualizedGLContexts() || decoder_->GetContextGroup()
                                                   ->feature_info()
