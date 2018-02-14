@@ -678,8 +678,7 @@ ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRefInternal(
   RefImage(draw_image);
 
   // If we already have an image and it is locked (or lock-able), just return
-  // that.
-  // The image must be budgeted before we attempt to lock it.
+  // that. The image must be budgeted before we attempt to lock it.
   DCHECK(image_data->is_budgeted);
   if (image_data->HasUploadedData() &&
       TryLockImage(HaveContextLock::kNo, draw_image, image_data)) {
@@ -1171,16 +1170,14 @@ void GpuImageDecodeCache::OwnershipChanged(const DrawImage& draw_image,
   }
 
   // If we have image that could be budgeted, but isn't, budget it now.
-  if (image_data->upload.ref_count > 0 && !image_data->is_budgeted &&
+  if (has_any_refs && !image_data->is_budgeted &&
       CanFitInWorkingSet(image_data->size)) {
     working_set_bytes_ += image_data->size;
     image_data->is_budgeted = true;
   }
 
-  // If we have no image refs on an image, it should only be budgeted if it has
-  // an uploaded image. If no image exists (upload was cancelled), we should
-  // un-budget the image.
-  if (image_data->upload.ref_count == 0 && image_data->is_budgeted) {
+  // If we have no image refs on an image, we should unbudget it.
+  if (!has_any_refs && image_data->is_budgeted) {
     DCHECK_GE(working_set_bytes_, image_data->size);
     working_set_bytes_ -= image_data->size;
     image_data->is_budgeted = false;
@@ -1207,7 +1204,7 @@ void GpuImageDecodeCache::OwnershipChanged(const DrawImage& draw_image,
     if (image_data->mode == DecodedDataMode::kCpu)
       DCHECK(image_data->decode.is_locked());
   } else {
-    DCHECK(!image_data->is_budgeted || image_data->upload.ref_count > 0);
+    DCHECK(!image_data->is_budgeted || has_any_refs);
   }
 #endif
 }
