@@ -108,7 +108,7 @@ const char kOOPHeapProfilingFeatureStackMode[] = "stack-mode";
 const char kOOPHeapProfilingFeatureSampling[] = "sampling";
 const char kOOPHeapProfilingFeatureSamplingRate[] = "sampling-rate";
 
-const uint32_t kDefaultSamplingRate = 1000;
+const uint32_t kDefaultSamplingRate = 10000;
 const bool kDefaultShouldSample = false;
 
 bool ProfilingProcessHost::has_started_ = false;
