@@ -6,10 +6,9 @@
 [
     RuntimeEnabled=PictureInPictureAPI
 ]
-interface PictureInPictureWindow {
+interface PictureInPictureWindow : EventTarget {
   readonly attribute long width;
   readonly attribute long height;
 
-  // TODO(crbug.com/806249): Implement PiP window resize event.
-  // attribute EventHandler onresize;
+  attribute EventHandler onresize;
 };

@@ -5,7 +5,8 @@
 #ifndef PictureInPictureWindow_h
 #define PictureInPictureWindow_h
 
-#include "platform/bindings/ScriptWrappable.h"
+#include "core/dom/ExecutionContext.h"
+#include "modules/EventTargetModules.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -13,17 +14,29 @@ namespace blink {
 // The PictureInPictureWindow is meant to be used only by
 // PictureInPictureController and is fundamentally just a simple proxy to get
 // information such as dimensions about the current Picture-in-Picture window.
-class PictureInPictureWindow : public ScriptWrappable {
+class PictureInPictureWindow : public EventTargetWithInlineData,
+                               public ContextClient {
+  USING_GARBAGE_COLLECTED_MIXIN(PictureInPictureWindow);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  PictureInPictureWindow(int width, int height);
+  PictureInPictureWindow(ExecutionContext*, int width, int height);
 
   int width() const { return width_; }
   int height() const { return height_; }
 
   // Called when Picture-in-Picture window state is closed.
   void OnClose();
+
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(resize);
+
+  // EventTarget overrides.
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override {
+    return ContextClient::GetExecutionContext();
+  }
+
+  void Trace(blink::Visitor*) override;
 
  private:
   // The Picture-in-Picture window width in pixels.

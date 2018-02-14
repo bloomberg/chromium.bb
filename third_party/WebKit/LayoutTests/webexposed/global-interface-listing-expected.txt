@@ -5105,11 +5105,13 @@ interface PhotoCapabilities
     getter imageWidth
     getter redEyeReduction
     method constructor
-interface PictureInPictureWindow
+interface PictureInPictureWindow : EventTarget
     attribute @@toStringTag
     getter height
+    getter onresize
     getter width
     method constructor
+    setter onresize
 interface Plugin
     attribute @@toStringTag
     getter description
