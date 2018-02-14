@@ -236,7 +236,8 @@
         "libstdc++.so.6(GLIBCXX_3.4.7)(64bit)",
         "libstdc++.so.6(GLIBCXX_3.4.8)(64bit)",
         "libstdc++.so.6(GLIBCXX_3.4.9)(64bit)",
-        "libxcb.so.1()(64bit)"
+        "libxcb.so.1()(64bit)",
+        "rtld(GNU_HASH)"
     ],
     "Fedora 26": [
         "ld-linux-x86-64.so.2()(64bit)",
@@ -481,7 +482,8 @@
         "libstdc++.so.6(GLIBCXX_3.4.7)(64bit)",
         "libstdc++.so.6(GLIBCXX_3.4.8)(64bit)",
         "libstdc++.so.6(GLIBCXX_3.4.9)(64bit)",
-        "libxcb.so.1()(64bit)"
+        "libxcb.so.1()(64bit)",
+        "rtld(GNU_HASH)"
     ],
     "Fedora 27": [
         "ld-linux-x86-64.so.2()(64bit)",
@@ -727,7 +729,8 @@
         "libstdc++.so.6(GLIBCXX_3.4.7)(64bit)",
         "libstdc++.so.6(GLIBCXX_3.4.8)(64bit)",
         "libstdc++.so.6(GLIBCXX_3.4.9)(64bit)",
-        "libxcb.so.1()(64bit)"
+        "libxcb.so.1()(64bit)",
+        "rtld(GNU_HASH)"
     ],
     "openSUSE Leap 42.2": [
         "ld-linux-x86-64.so.2()(64bit)",
@@ -1177,7 +1180,8 @@
         "libstdc++.so.6(GLIBCXX_3.4.9)",
         "libstdc++.so.6(GLIBCXX_3.4.9)(64bit)",
         "libxcb.so.1",
-        "libxcb.so.1()(64bit)"
+        "libxcb.so.1()(64bit)",
+        "rtld(GNU_HASH)"
     ],
     "openSUSE Leap 42.3": [
         "ld-linux-x86-64.so.2()(64bit)",
@@ -1635,6 +1639,7 @@
         "libstdc++.so.6(GLIBCXX_3.4.9)",
         "libstdc++.so.6(GLIBCXX_3.4.9)(64bit)",
         "libxcb.so.1",
-        "libxcb.so.1()(64bit)"
+        "libxcb.so.1()(64bit)",
+        "rtld(GNU_HASH)"
     ]
 }
