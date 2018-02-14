@@ -99,3 +99,7 @@ Current patches:
   libavformat/mov.c
     mov_read_stts(): Fix stts memory allocation (use i + 1 instead of i).
     https://crbug.com/801821
+
+  libavcodec/h264_cabac.c
+    decode_cabac_residual_internal(): Limit the value of |j| to avoid integer
+    overflow. https://crbug.com/806580
