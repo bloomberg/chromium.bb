@@ -64,6 +64,7 @@
 #include "core/layout/HitTestCanvasResult.h"
 #include "core/layout/LayoutHTMLCanvas.h"
 #include "core/layout/LayoutView.h"
+#include "core/origin_trials/origin_trials.h"
 #include "core/page/ChromeClient.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintTiming.h"
@@ -307,7 +308,7 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
   }
 
   if (attributes.low_latency &&
-      RuntimeEnabledFeatures::LowLatencyCanvasEnabled()) {
+      OriginTrials::lowLatencyCanvasEnabled(&GetDocument())) {
     CreateLayer();
     SetNeedsUnbufferedInputEvents(true);
     // TODO: rename to CanvasFrameDispatcherImpl
