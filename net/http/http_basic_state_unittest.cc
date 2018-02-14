@@ -9,6 +9,7 @@
 #include "net/http/http_request_info.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_handle.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -47,6 +48,16 @@ TEST(HttpBasicStateTest, InitializeWorks) {
   const HttpRequestInfo request_info;
   state.Initialize(&request_info, false, LOW, NetLogWithSource());
   EXPECT_TRUE(state.parser());
+}
+
+TEST(HttpBasicStateTest, TrafficAnnotationStored) {
+  HttpBasicState state(std::make_unique<ClientSocketHandle>(), false, false);
+  HttpRequestInfo request_info;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  state.Initialize(&request_info, false, LOW, NetLogWithSource());
+  EXPECT_EQ(TRAFFIC_ANNOTATION_FOR_TESTS,
+            NetworkTrafficAnnotationTag(state.traffic_annotation()));
 }
 
 TEST(HttpBasicStateTest, DeleteParser) {
