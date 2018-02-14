@@ -40,15 +40,18 @@ void AndroidUiGestureTarget::DispatchWebInputEvent(
     case blink::WebGestureEvent::kGestureScrollBegin:
       DCHECK(gesture->data.scroll_begin.delta_hint_units ==
              blink::WebGestureEvent::ScrollUnits::kPrecisePixels);
-      scroll_x_ = (scroll_ratio_ * gesture->data.scroll_begin.delta_x_hint);
-      scroll_y_ = (scroll_ratio_ * gesture->data.scroll_begin.delta_y_hint);
-      SetPointer(0, 0);
+      scroll_x_ = (scroll_ratio_ * gesture->data.scroll_begin.delta_x_hint) +
+                  gesture->x;
+      scroll_y_ = (scroll_ratio_ * gesture->data.scroll_begin.delta_y_hint) +
+                  gesture->y;
+      SetPointer(gesture->x, gesture->y);
       Inject(content::MOTION_EVENT_ACTION_START, event_time_ms);
       SetPointer(scroll_x_, scroll_y_);
       // Send a move immediately so that we can't accidentally trigger a click.
       Inject(content::MOTION_EVENT_ACTION_MOVE, event_time_ms);
       break;
     case blink::WebGestureEvent::kGestureScrollEnd:
+      SetPointer(scroll_x_, scroll_y_);
       Inject(content::MOTION_EVENT_ACTION_END, event_time_ms);
       break;
     case blink::WebGestureEvent::kGestureScrollUpdate:
