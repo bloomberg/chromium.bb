@@ -29,7 +29,9 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/cryptohome/homedir_methods.h"
+#include "chromeos/cryptohome/cryptohome_util.h"
+#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/browsing_data/content/conditional_cache_counting_helper.h"
 #include "components/drive/chromeos/file_system_interface.h"
@@ -300,10 +302,10 @@ void StorageHandler::UpdateOtherUsersSize() {
     if (user->is_active())
       continue;
     other_users_.push_back(user);
-    cryptohome::HomedirMethods::GetInstance()->GetAccountDiskUsage(
+    DBusThreadManager::Get()->GetCryptohomeClient()->GetAccountDiskUsage(
         cryptohome::Identification(user->GetAccountId()),
-        base::Bind(&StorageHandler::OnGetOtherUserSize,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&StorageHandler::OnGetOtherUserSize,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
   // We should show "0 B" if there is no other user.
   if (other_users_.empty()) {
@@ -313,8 +315,9 @@ void StorageHandler::UpdateOtherUsersSize() {
   }
 }
 
-void StorageHandler::OnGetOtherUserSize(bool success, int64_t size) {
-  user_sizes_.push_back(success ? size : -1);
+void StorageHandler::OnGetOtherUserSize(
+    base::Optional<cryptohome::BaseReply> reply) {
+  user_sizes_.push_back(cryptohome::AccountDiskUsageReplyToUsageSize(reply));
   if (user_sizes_.size() == other_users_.size()) {
     base::string16 size_string;
     // If all the requests succeed, shows the total bytes in the UI.

@@ -33,6 +33,12 @@ MountExReplyToMountError(const base::Optional<BaseReply>& reply);
 CHROMEOS_EXPORT const std::string& MountExReplyToMountHash(
     const BaseReply& reply);
 
+// Extracts the account's disk usage size from |reply|.
+// If |reply| is malformed, returns -1.
+CHROMEOS_EXPORT
+int64_t AccountDiskUsageReplyToUsageSize(
+    const base::Optional<BaseReply>& reply);
+
 // Creates an AuthorizationRequest from the given secret and label.
 CHROMEOS_EXPORT AuthorizationRequest
 CreateAuthorizationRequest(const std::string& label, const std::string& secret);

@@ -82,14 +82,6 @@ class HomedirMethodsImpl : public HomedirMethods {
                        weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  void GetAccountDiskUsage(
-      const Identification& id,
-      const GetAccountDiskUsageCallback& callback) override {
-    DBusThreadManager::Get()->GetCryptohomeClient()->GetAccountDiskUsage(
-        id, base::BindOnce(&HomedirMethodsImpl::OnGetAccountDiskUsageCallback,
-                           weak_ptr_factory_.GetWeakPtr(), callback));
-  }
-
  private:
   void OnGetKeyDataExCallback(const GetKeyDataCallback& callback,
                               base::Optional<BaseReply> reply) {
@@ -176,26 +168,6 @@ class HomedirMethodsImpl : public HomedirMethods {
     }
 
     callback.Run(true, MOUNT_ERROR_NONE, key_definitions);
-  }
-
-  void OnGetAccountDiskUsageCallback(
-      const GetAccountDiskUsageCallback& callback,
-      base::Optional<BaseReply> reply) {
-    if (!reply.has_value()) {
-      callback.Run(false, -1);
-      return;
-    }
-    if (reply->has_error() && reply->error() != CRYPTOHOME_ERROR_NOT_SET) {
-      callback.Run(false, -1);
-      return;
-    }
-    if (!reply->HasExtension(GetAccountDiskUsageReply::reply)) {
-      callback.Run(false, -1);
-      return;
-    }
-
-    int64_t size = reply->GetExtension(GetAccountDiskUsageReply::reply).size();
-    callback.Run(true, size);
   }
 
   void OnBaseReplyCallback(const Callback& callback,
