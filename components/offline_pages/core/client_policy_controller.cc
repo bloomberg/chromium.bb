@@ -34,7 +34,6 @@ ClientPolicyController::ClientPolicyController() {
       OfflinePageClientPolicyBuilder(kAsyncNamespace, LifetimeType::PERSISTENT,
                                      kUnlimitedPages, kUnlimitedPages)
           .SetIsSupportedByDownload(true)
-          .SetIsUserRequestedDownload(true)
           .SetIsRemovedOnCacheReset(false)
           .Build()));
   policies_.insert(std::make_pair(
@@ -50,7 +49,6 @@ ClientPolicyController::ClientPolicyController() {
                               kUnlimitedPages, kUnlimitedPages)
                               .SetIsRemovedOnCacheReset(false)
                               .SetIsSupportedByDownload(true)
-                              .SetIsUserRequestedDownload(true)
                               .Build()));
   policies_.insert(std::make_pair(
       kNTPSuggestionsNamespace,
@@ -58,7 +56,6 @@ ClientPolicyController::ClientPolicyController() {
                                      LifetimeType::PERSISTENT, kUnlimitedPages,
                                      kUnlimitedPages)
           .SetIsSupportedByDownload(true)
-          .SetIsUserRequestedDownload(true)
           .SetIsRemovedOnCacheReset(false)
           .Build()));
   policies_.insert(std::make_pair(
@@ -130,11 +127,6 @@ bool ClientPolicyController::IsSupportedByDownload(
   return GetPolicy(name_space).feature_policy.is_supported_by_download;
 }
 
-bool ClientPolicyController::IsUserRequestedDownload(
-    const std::string& name_space) const {
-  return GetPolicy(name_space).feature_policy.is_user_requested_download;
-}
-
 const std::vector<std::string>&
 ClientPolicyController::GetNamespacesRemovedOnCacheReset() const {
   if (cache_reset_namespace_cache_)
@@ -159,20 +151,6 @@ ClientPolicyController::GetNamespacesSupportedByDownload() const {
       download_namespace_cache_->emplace_back(policy_item.first);
   }
   return *download_namespace_cache_;
-}
-
-const std::vector<std::string>&
-ClientPolicyController::GetNamespacesForUserRequestedDownload() const {
-  if (user_requested_download_namespace_cache_)
-    return *user_requested_download_namespace_cache_;
-
-  user_requested_download_namespace_cache_ =
-      std::make_unique<std::vector<std::string>>();
-  for (const auto& policy_item : policies_) {
-    if (policy_item.second.feature_policy.is_user_requested_download)
-      user_requested_download_namespace_cache_->emplace_back(policy_item.first);
-  }
-  return *user_requested_download_namespace_cache_;
 }
 
 bool ClientPolicyController::IsShownAsRecentlyVisitedSite(
