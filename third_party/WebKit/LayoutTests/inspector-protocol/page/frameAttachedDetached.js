@@ -2,6 +2,10 @@
   var {page, session, dp} = await testRunner.startBlank('Tests frame lifetime events.');
 
   dp.Page.enable();
+  dp.Network.enable();
+  dp.Network.onRequestWillBeSent(e => {
+    testRunner.log(`RequestWillBeSent ${testRunner.trimURL(e.params.request.url)}`);
+  });
   session.evaluate(`
     window.frame = document.createElement('iframe');
     frame.src = '${testRunner.url('../resources/blank.html')}';
