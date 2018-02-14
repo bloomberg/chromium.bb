@@ -4,6 +4,8 @@
 
 #include "content/browser/loader/signed_exchange_signature_verifier.h"
 
+#include "content/browser/loader/signed_exchange_header_parser.h"
+#include "net/cert/x509_certificate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -58,6 +60,83 @@ TEST(SignedExchangeSignatureVerifier, EncodeCanonicalExchangeHeaders) {
   };
   EXPECT_THAT(*encoded,
               testing::ElementsAreArray(kExpected, arraysize(kExpected)));
+}
+
+// clang-format off
+constexpr char kSignatureHeader[] =
+    "sig; "
+    "sig=*RhjjWuXi87riQUu90taBHFJgTo8XBhiCe9qTJMP7/XVPu2diRGipo06HoGsyXkidHiiW"
+    "743JgoNmO7CjfeVXLXQgKDxtGidATtPsVadAT4JpBDZJWSUg5qAbWcASXjyO38Uhq9gJkeu4w"
+    "1MRMGkvpgVXNjYhi5/9NUer1xEUuJh5UbIDhGrfMihwj+c30nW+qz0n5lCrYonk+Sc0jGcLgc"
+    "aDLptqRhOG5S+avwKmbQoqtD0JSc/53L5xXjppyvSA2fRmoDlqVQpX4uzRKq9cny7fZ3qgpZ/"
+    "YOCuT7wMj7oVEur175QLe2F8ktKH9arSEiquhFJxBIIIXza8PJnmL5w;"
+    "validityUrl=\"https://example.com/resource.validity.msg\"; "
+    "integrity=\"mi\"; "
+    "certUrl=\"https://example.com/cert.msg\"; "
+    "certSha256=*3wfzkF4oKGUwoQ0rE7U11FIdcA/8biGzlaACeRQQH6k; "
+    "date=1517892341; expires=1517895941";
+// clang-format on
+
+constexpr char kCertPEM[] = R"(
+-----BEGIN CERTIFICATE-----
+MIID9zCCAt+gAwIBAgIUde2ndSB4271TAGDk0Ft+WuCCGnMwDQYJKoZIhvcNAQEL
+BQAwUDELMAkGA1UEBhMCSlAxEjAQBgNVBAgTCU1pbmF0by1rdTEOMAwGA1UEBxMF
+VG9reW8xEDAOBgNVBAoTB1Rlc3QgQ0ExCzAJBgNVBAsTAkNBMB4XDTE4MDIwNTA0
+NDUwMFoXDTE5MDIwNTA0NDUwMFowbzELMAkGA1UEBhMCSlAxEjAQBgNVBAgTCU1p
+bmF0by1rdTEOMAwGA1UEBxMFVG9reW8xFDASBgNVBAoTC2V4YW1wbGUuY29tMRIw
+EAYDVQQLEwl3ZWJzZXJ2ZXIxEjAQBgNVBAMTCWxvY2FsaG9zdDCCASIwDQYJKoZI
+hvcNAQEBBQADggEPADCCAQoCggEBAJv0UV5pK/XMtmHuDHUSvU+mNghsDQsKYSeB
+r/CySBIbLWtkeC7oxuYT2R+Mz4vVs0WQ1f3F/e3HIIQxWmy5VYErER13c53yeCNF
+fcBkwpuCZKEO1BURX+WgjYPnzLYX1xDnpBM++TuEZKdxzUVjs/jQjMNB8sbRYzng
+IIbA4HiRUtPvnGjLmY0HxZyskb52yeTWg40jWPdLaC8GMEZXGKynAnGEMl3c/dVw
+8+nKS1VVe6k32Ubfl1NlaqbOXi0xHHMUhLY/l8Lu49E0ivPS7BWL/0nMR9EAmu+I
+AgK9OD7VRoMA0LEKBzIQUEuK70JxLkV7GNvrtnOX83+EwwdfBdUCAwEAAaOBqTCB
+pjAOBgNVHQ8BAf8EBAMCBaAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMC
+MAwGA1UdEwEB/wQCMAAwHQYDVR0OBBYEFDzp/0BrXKIfDGe3KfJLyBH8azW2MB8G
+A1UdIwQYMBaAFNAPhK4UBktJcx6TIk5QKwZPit4ZMCcGA1UdEQQgMB6CC2V4YW1w
+bGUuY29tgg93d3cuZXhhbXBsZS5jb20wDQYJKoZIhvcNAQELBQADggEBAKSQbsOW
+IX2JDv+Vg1lvbOFx+JqwdhvYTkOF4Z9YbRtlqEIZbc8KWjAOzDB1xVJxhSjD+f8+
+vrj7YN/ggCQk6DzuF4lkztBDO95Fxmx4EeIKdKt83WP09Os/2yIOKToOnHkmauBB
+ijY8oxNs+XxKrPX7DN5QQQhiTsZcL625fcnIwPb0DeeuCT7bJYPv8OojMDTR1uDt
+SQ53HYt0aLun+Br3lCwW8cnpxuezJhg0gNezYp/8gC4kByqoT26atpls08eWUdFD
+U0/55zFz2OzNoAHaoBzMRxn4ZSc3+lxl0K1+cCP8ivhwkxdz/vhz5RfOjpSinxqt
+wYxI2+BLS6X5NpI=
+-----END CERTIFICATE-----)";
+
+TEST(SignedExchangeSignatureVerifier, Verify) {
+  auto signature = SignedExchangeHeaderParser::ParseSignature(kSignatureHeader);
+  ASSERT_TRUE(signature.has_value());
+  ASSERT_EQ(1u, signature->size());
+
+  net::CertificateList certlist =
+      net::X509Certificate::CreateCertificateListFromBytes(
+          kCertPEM, arraysize(kCertPEM), net::X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1u, certlist.size());
+
+  SignedExchangeSignatureVerifier::Input input;
+  input.method = "GET";
+  input.url = "https://example.com/index.html";
+  input.response_code = 200;
+  input.response_headers.insert(
+      std::make_pair("content-type", "text/html; charset=utf-8"));
+  input.response_headers.insert(
+      std::make_pair("content-encoding", "mi-sha256"));
+  input.response_headers.insert(std::make_pair(
+      "mi", "mi-sha256=4ld4G-h-sQSoLBD39ndIO15O_82NXSzq9UMFEYI02JQ"));
+  input.response_headers.insert(std::make_pair(
+      "signed-headers", "\"content-type\", \"content-encoding\", \"mi\""));
+  input.signature = (*signature)[0];
+  input.certificate = certlist[0];
+
+  EXPECT_TRUE(SignedExchangeSignatureVerifier::Verify(input));
+
+  SignedExchangeSignatureVerifier::Input corrupted_input(input);
+  corrupted_input.url = "https://example.com/bad.html";
+  EXPECT_FALSE(SignedExchangeSignatureVerifier::Verify(corrupted_input));
+
+  SignedExchangeSignatureVerifier::Input badsig_input(input);
+  badsig_input.signature.sig[0]++;
+  EXPECT_FALSE(SignedExchangeSignatureVerifier::Verify(badsig_input));
 }
 
 }  // namespace
