@@ -39,7 +39,9 @@ void AccessibilityLayer::Set(aura::Window* root_window,
 }
 
 void AccessibilityLayer::SetOpacity(float opacity) {
-  layer_->SetOpacity(opacity);
+  // Clamp to 0. It's possible for floating-point math to produce opacity
+  // slightly less than 0.
+  layer_->SetOpacity(std::max(0.f, opacity));
 }
 
 void AccessibilityLayer::CreateOrUpdateLayer(aura::Window* root_window,

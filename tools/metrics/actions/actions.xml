@@ -1174,7 +1174,7 @@ should be able to be added at any place in this file.
   <description>A Chrome OS user manually starts Select To Speak.</description>
 </action>
 
-<action name="Accessibility.TwoFingersHeldGeneratedSpokenFeedbackCountdown">
+<action name="Accessibility.TwoFingersHeldDown">
   <owner>dmazzoni@chromium.org</owner>
   <description>
     Metric recorded on Chrome OS when the user holds down two fingers on a touch
@@ -18190,6 +18190,20 @@ should be able to be added at any place in this file.
     Counts the number of times the user stops screen capturing via the Screen
     Capture notification. Note these notifications are managed by the system
     menu and not the general notification center.
+  </description>
+</action>
+
+<action name="StatusArea_SelectToSpeakDisabled">
+  <owner>katie@chromium.org</owner>
+  <description>
+    Ash system menu: Accessibility: Disable Select-to-Speak.
+  </description>
+</action>
+
+<action name="StatusArea_SelectToSpeakEnabled">
+  <owner>katie@chromium.org</owner>
+  <description>
+    Ash system menu: Accessibility: Enable Select-to-Speak.
   </description>
 </action>
 

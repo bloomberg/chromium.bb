@@ -155,8 +155,8 @@ class ASH_EXPORT AccessibilityFocusRingController
 
   std::vector<gfx::Rect> highlight_rects_;
   std::unique_ptr<AccessibilityHighlightLayer> highlight_layer_;
-  SkColor highlight_color_;
-  float highlight_opacity_;
+  SkColor highlight_color_ = SK_ColorBLACK;
+  float highlight_opacity_ = 0.f;
 
   friend struct base::DefaultSingletonTraits<AccessibilityFocusRingController>;
 
