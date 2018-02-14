@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
@@ -36,27 +37,27 @@ constexpr int kHeaderHorizontalSpacing = 2;
 // The padding outer the header and the control buttons.
 constexpr gfx::Insets kHeaderOuterPadding(2, 2, 0, 2);
 
-// Paddings of the views of texts.
-// Top: 9px = 11px (from the mock) - 2px (outer padding)
-// Buttom: 6px from the mock
-constexpr gfx::Insets kTextViewPadding(9, 0, 6, 0);
+// Default paddings of the views of texts. Adjusted on Windows.
+// Top: 9px = 11px (from the mock) - 2px (outer padding).
+// Buttom: 6px from the mock.
+constexpr gfx::Insets kTextViewPaddingDefault(9, 0, 6, 0);
 
 // Paddings of the entire header.
-// Left: 14px = 16px (from the mock) - 2px (outer padding)
-// Right: 2px = minimum padding between the control buttons and the header
+// Left: 14px = 16px (from the mock) - 2px (outer padding).
+// Right: 2px = minimum padding between the control buttons and the header.
 constexpr gfx::Insets kHeaderPadding(0, 14, 0, 2);
 
 // Paddings of the app icon (small image).
-// Top: 8px = 10px (from the mock) - 2px (outer padding)
-// Bottom: 4px from the mock
-// Right: 4px = 6px (from the mock) - kHeaderHorizontalSpacing
+// Top: 8px = 10px (from the mock) - 2px (outer padding).
+// Bottom: 4px from the mock.
+// Right: 4px = 6px (from the mock) - kHeaderHorizontalSpacing.
 constexpr gfx::Insets kAppIconPadding(8, 0, 4, 4);
 
 // Size of the expand icon. 8px = 32px - 15px - 9px (values from the mock).
 constexpr int kExpandIconSize = 8;
 // Paddings of the expand buttons.
-// Top: 13px = 15px (from the mock) - 2px (outer padding)
-// Bottom: 9px from the mock
+// Top: 13px = 15px (from the mock) - 2px (outer padding).
+// Bottom: 9px from the mock.
 constexpr gfx::Insets kExpandIconViewPadding(13, 2, 9, 0);
 
 // Bullet character. The divider symbol between different parts of the header.
@@ -157,6 +158,27 @@ gfx::FontList GetHeaderTextFontList() {
   return gfx::FontList(font);
 }
 
+gfx::Insets CalculateTopPadding(int font_list_height) {
+#if defined(OS_WIN)
+  // On Windows, the fonts can have slightly different metrics reported,
+  // depending on where the code runs. In Chrome, DirectWrite is on, which means
+  // font metrics are reported from Skia, which rounds from float using ceil.
+  // In unit tests, however, GDI is used to report metrics, and the height
+  // reported there is consistent with other platforms. This means there is a
+  // difference of 1px in height between Chrome on Windows and everything else
+  // (where everything else includes unit tests on Windows). This 1px causes the
+  // text and everything else to stop aligning correctly, so we account for it
+  // by shrinking the top padding by 1.
+  if (font_list_height != 15) {
+    DCHECK_EQ(16, font_list_height);
+    return kTextViewPaddingDefault - gfx::Insets(1 /* top */, 0, 0, 0);
+  }
+#endif
+
+  DCHECK_EQ(15, font_list_height);
+  return kTextViewPaddingDefault;
+}
+
 }  // namespace
 
 NotificationHeaderView::NotificationHeaderView(
@@ -188,11 +210,10 @@ NotificationHeaderView::NotificationHeaderView(
   DCHECK_EQ(kInnerHeaderHeight, app_icon_view_->GetPreferredSize().height());
   app_info_container->AddChildView(app_icon_view_);
 
-  // Font list for text views. The height must be 15px to match with the mock.
+  // Font list for text views.
   gfx::FontList font_list = GetHeaderTextFontList();
-  DCHECK_EQ(15, font_list.GetHeight());
-
   const int font_list_height = font_list.GetHeight();
+  gfx::Insets text_view_padding(CalculateTopPadding(font_list_height));
 
   // App name view
   app_name_view_ = new views::Label(base::string16());
@@ -200,7 +221,7 @@ NotificationHeaderView::NotificationHeaderView(
   app_name_view_->SetLineHeight(font_list_height);
   app_name_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   app_name_view_->SetEnabledColor(accent_color_);
-  app_name_view_->SetBorder(views::CreateEmptyBorder(kTextViewPadding));
+  app_name_view_->SetBorder(views::CreateEmptyBorder(text_view_padding));
   DCHECK_EQ(kInnerHeaderHeight, app_name_view_->GetPreferredSize().height());
   app_info_container->AddChildView(app_name_view_);
 
@@ -210,7 +231,7 @@ NotificationHeaderView::NotificationHeaderView(
   summary_text_divider_->SetFontList(font_list);
   summary_text_divider_->SetLineHeight(font_list_height);
   summary_text_divider_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  summary_text_divider_->SetBorder(views::CreateEmptyBorder(kTextViewPadding));
+  summary_text_divider_->SetBorder(views::CreateEmptyBorder(text_view_padding));
   summary_text_divider_->SetVisible(false);
   DCHECK_EQ(kInnerHeaderHeight,
             summary_text_divider_->GetPreferredSize().height());
@@ -221,7 +242,7 @@ NotificationHeaderView::NotificationHeaderView(
   summary_text_view_->SetFontList(font_list);
   summary_text_view_->SetLineHeight(font_list_height);
   summary_text_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  summary_text_view_->SetBorder(views::CreateEmptyBorder(kTextViewPadding));
+  summary_text_view_->SetBorder(views::CreateEmptyBorder(text_view_padding));
   summary_text_view_->SetVisible(false);
   DCHECK_EQ(kInnerHeaderHeight,
             summary_text_view_->GetPreferredSize().height());
@@ -233,7 +254,7 @@ NotificationHeaderView::NotificationHeaderView(
   timestamp_divider_->SetFontList(font_list);
   timestamp_divider_->SetLineHeight(font_list_height);
   timestamp_divider_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  timestamp_divider_->SetBorder(views::CreateEmptyBorder(kTextViewPadding));
+  timestamp_divider_->SetBorder(views::CreateEmptyBorder(text_view_padding));
   timestamp_divider_->SetVisible(false);
   DCHECK_EQ(kInnerHeaderHeight,
             timestamp_divider_->GetPreferredSize().height());
@@ -244,7 +265,7 @@ NotificationHeaderView::NotificationHeaderView(
   timestamp_view_->SetFontList(font_list);
   timestamp_view_->SetLineHeight(font_list_height);
   timestamp_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  timestamp_view_->SetBorder(views::CreateEmptyBorder(kTextViewPadding));
+  timestamp_view_->SetBorder(views::CreateEmptyBorder(text_view_padding));
   timestamp_view_->SetVisible(false);
   DCHECK_EQ(kInnerHeaderHeight, timestamp_view_->GetPreferredSize().height());
   app_info_container->AddChildView(timestamp_view_);
