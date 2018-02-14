@@ -757,8 +757,8 @@ static void add_noise_to_block_hbd(aom_film_grain_t *params, uint16_t *luma,
 
 static void copy_rect(uint8_t *src, int src_stride, uint8_t *dst,
                       int dst_stride, int width, int height,
-                      int high_bit_depth) {
-  int hbd_coeff = high_bit_depth ? 2 : 0;
+                      int use_high_bit_depth) {
+  int hbd_coeff = use_high_bit_depth ? 2 : 1;
   while (height) {
     memcpy(dst, src, width * sizeof(uint8_t) * hbd_coeff);
     src += src_stride;
@@ -781,17 +781,23 @@ void av1_add_film_grain(aom_film_grain_t *params, aom_image_t *src,
   dst->r_w = src->r_w;
   dst->r_h = src->r_h;
 
+  int use_high_bit_depth = 0;
+
+  if (dst->fmt == AOM_IMG_FMT_I42016) {
+    use_high_bit_depth = 1;
+  }
+
   copy_rect(src->planes[AOM_PLANE_Y], src->stride[AOM_PLANE_Y],
             dst->planes[AOM_PLANE_Y], dst->stride[AOM_PLANE_Y], dst->d_w,
-            dst->d_h, src->bit_depth);
+            dst->d_h, use_high_bit_depth);
 
   copy_rect(src->planes[AOM_PLANE_U], src->stride[AOM_PLANE_U],
             dst->planes[AOM_PLANE_U], dst->stride[AOM_PLANE_U], dst->d_w / 2,
-            dst->d_h / 2, src->bit_depth);
+            dst->d_h / 2, use_high_bit_depth);
 
   copy_rect(src->planes[AOM_PLANE_V], src->stride[AOM_PLANE_V],
             dst->planes[AOM_PLANE_V], dst->stride[AOM_PLANE_V], dst->d_w / 2,
-            dst->d_h / 2, src->bit_depth);
+            dst->d_h / 2, use_high_bit_depth);
 
   luma = dst->planes[AOM_PLANE_Y];
   cb = dst->planes[AOM_PLANE_U];
@@ -804,12 +810,6 @@ void av1_add_film_grain(aom_film_grain_t *params, aom_image_t *src,
   width = dst->d_w;
   height = dst->d_h;
   params->bit_depth = dst->bit_depth;
-
-  int use_high_bit_depth = 0;
-
-  if (dst->fmt == AOM_IMG_FMT_I42016) {
-    use_high_bit_depth = 1;
-  }
 
   av1_add_film_grain_run(params, luma, cb, cr, height, width, luma_stride,
                          chroma_stride, use_high_bit_depth);
