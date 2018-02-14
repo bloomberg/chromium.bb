@@ -116,7 +116,7 @@ void IndexedDBActiveBlobRegistry::ReleaseBlobRefThreadSafe(
                                 weak_ptr, database_id, blob_key));
 }
 
-storage::ShareableFileReference::FinalReleaseCallback
+IndexedDBBlobInfo::ReleaseCallback
 IndexedDBActiveBlobRegistry::GetFinalReleaseCallback(int64_t database_id,
                                                      int64_t blob_key) {
   return base::Bind(

@@ -116,11 +116,11 @@ scoped_refptr<ShareableFileReference> ShareableFileReference::GetOrCreate(
 }
 
 void ShareableFileReference::AddFinalReleaseCallback(
-    const FinalReleaseCallback& callback) {
+    FinalReleaseCallback callback) {
 #if DCHECK_IS_ON()
   g_file_map.Get().AssertCalledOnValidSequence();
 #endif  // DCHECK_IS_ON()
-  scoped_file_.AddScopeOutCallback(callback, NULL);
+  scoped_file_.AddScopeOutCallback(std::move(callback), NULL);
 }
 
 ShareableFileReference::ShareableFileReference(ScopedFile scoped_file)

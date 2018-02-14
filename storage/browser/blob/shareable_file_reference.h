@@ -56,7 +56,7 @@ class STORAGE_EXPORT ShareableFileReference : public BlobDataItem::DataHandle {
   // The |callback| is fired when the final reference of this instance
   // is released. If release policy is DELETE_ON_FINAL_RELEASE the
   // callback task(s) is/are posted before the deletion is scheduled.
-  void AddFinalReleaseCallback(const FinalReleaseCallback& callback);
+  void AddFinalReleaseCallback(FinalReleaseCallback callback);
 
  private:
   ShareableFileReference(ScopedFile scoped_file);
