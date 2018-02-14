@@ -185,7 +185,6 @@ void ShowDisplayErrorNotification(const base::string16& message,
           data, new DisplayErrorNotificationDelegate,
           kNotificationMonitorWarningIcon,
           message_center::SystemNotificationWarningLevel::WARNING);
-  notification->set_priority(message_center::SYSTEM_PRIORITY);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
 }
