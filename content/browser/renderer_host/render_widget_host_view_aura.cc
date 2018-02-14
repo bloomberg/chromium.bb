@@ -919,6 +919,16 @@ void RenderWidgetHostViewAura::OnLegacyWindowDestroyed() {
 }
 #endif
 
+void RenderWidgetHostViewAura::CreateCompositorFrameSink(
+    CreateCompositorFrameSinkCallback callback) {
+  // DelegatedFrameHost registers the FrameSinkId, so we need to wait
+  // for that to be created before creating a CompositorFrameSink.
+  if (delegated_frame_host_)
+    std::move(callback).Run(frame_sink_id_);
+  else
+    create_frame_sink_callback_ = std::move(callback);
+}
+
 void RenderWidgetHostViewAura::DidCreateNewRendererCompositorFrameSink(
     viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
   renderer_compositor_frame_sink_ = renderer_compositor_frame_sink;
@@ -1947,6 +1957,8 @@ void RenderWidgetHostViewAura::CreateDelegatedFrameHostClient() {
   delegated_frame_host_ = std::make_unique<DelegatedFrameHost>(
       frame_sink_id_, delegated_frame_host_client_.get(),
       features::IsSurfaceSynchronizationEnabled(), enable_viz);
+  if (!create_frame_sink_callback_.is_null())
+    std::move(create_frame_sink_callback_).Run(frame_sink_id_);
 
   if (renderer_compositor_frame_sink_) {
     delegated_frame_host_->DidCreateNewRendererCompositorFrameSink(

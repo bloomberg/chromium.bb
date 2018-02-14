@@ -468,14 +468,21 @@ RenderWidgetHostImpl* RenderWidgetHostImpl::From(RenderWidgetHost* rwh) {
 void RenderWidgetHostImpl::SetView(RenderWidgetHostViewBase* view) {
   if (view) {
     view_ = view->GetWeakPtr();
-    if (renderer_compositor_frame_sink_.is_bound()) {
-      view->DidCreateNewRendererCompositorFrameSink(
-          renderer_compositor_frame_sink_.get());
+    if (enable_viz_) {
+      if (!create_frame_sink_callback_.is_null()) {
+        view_->CreateCompositorFrameSink(
+            std::move(create_frame_sink_callback_));
+      }
+    } else {
+      if (renderer_compositor_frame_sink_.is_bound()) {
+        view->DidCreateNewRendererCompositorFrameSink(
+            renderer_compositor_frame_sink_.get());
+      }
+      // Views start out not needing begin frames, so only update its state
+      // if the value has changed.
+      if (needs_begin_frames_)
+        view_->SetNeedsBeginFrames(needs_begin_frames_);
     }
-    // Views start out not needing begin frames, so only update its state
-    // if the value has changed.
-    if (needs_begin_frames_)
-      view_->SetNeedsBeginFrames(needs_begin_frames_);
   } else {
     view_.reset();
   }
@@ -2624,16 +2631,26 @@ void RenderWidgetHostImpl::RequestCompositorFrameSink(
     viz::mojom::CompositorFrameSinkRequest request,
     viz::mojom::CompositorFrameSinkClientPtr client) {
   if (enable_viz_) {
-    // TODO(kylechar): Find out why renderer is requesting a CompositorFrameSink
-    // with no view.
-    if (view_) {
       // Connects the viz process end of CompositorFrameSink message pipes. The
       // renderer compositor may request a new CompositorFrameSink on context
       // loss, which will destroy the existing CompositorFrameSink.
-      GetHostFrameSinkManager()->CreateCompositorFrameSink(
-          view_->GetFrameSinkId(), std::move(request), std::move(client));
-    }
-    return;
+      auto callback = base::BindOnce(
+          [](viz::HostFrameSinkManager* manager,
+             viz::mojom::CompositorFrameSinkRequest request,
+             viz::mojom::CompositorFrameSinkClientPtr client,
+             const viz::FrameSinkId& frame_sink_id) {
+            manager->CreateCompositorFrameSink(
+                frame_sink_id, std::move(request), std::move(client));
+          },
+          base::Unretained(GetHostFrameSinkManager()), std::move(request),
+          std::move(client));
+
+      if (view_)
+        view_->CreateCompositorFrameSink(std::move(callback));
+      else
+        create_frame_sink_callback_ = std::move(callback);
+
+      return;
   }
 
   if (compositor_frame_sink_binding_.is_bound())

@@ -90,6 +90,9 @@ struct TextInputState;
 class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
                                                 public IPC::Listener {
  public:
+  using CreateCompositorFrameSinkCallback =
+      base::OnceCallback<void(const viz::FrameSinkId&)>;
+
   ~RenderWidgetHostViewBase() override;
 
   float current_device_scale_factor() const {
@@ -233,6 +236,13 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Informs that the focused DOM node has changed.
   virtual void FocusedNodeChanged(bool is_editable_node,
                                   const gfx::Rect& node_bounds_in_screen) {}
+
+  // This method is called by RenderWidgetHostImpl when the renderer has
+  // requested a CompositorFrameSink. The callback takes a FrameSinkId and
+  // fullfills the request. The default implementation will immediately run the
+  // callback with GetFrameSinkId().
+  virtual void CreateCompositorFrameSink(
+      CreateCompositorFrameSinkCallback callback);
 
   // This method is called by RenderWidgetHostImpl when a new
   // RendererCompositorFrameSink is created in the renderer. The view is
