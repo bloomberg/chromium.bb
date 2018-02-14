@@ -23,7 +23,7 @@ void PrintingContextSystemDialogWin::AskUserForSettings(
     int max_pages,
     bool has_selection,
     bool is_scripted,
-    const PrintSettingsCallback& callback) {
+    PrintSettingsCallback callback) {
   DCHECK(!in_print_job_);
 
   HWND window = GetRootWindow(delegate_->GetParentView());
@@ -66,12 +66,12 @@ void PrintingContextSystemDialogWin::AskUserForSettings(
 
   if (ShowPrintDialog(&dialog_options) != S_OK) {
     ResetSettings();
-    callback.Run(FAILED);
+    std::move(callback).Run(FAILED);
     return;
   }
 
   // TODO(maruel):  Support PD_PRINTTOFILE.
-  callback.Run(ParseDialogResultEx(dialog_options));
+  std::move(callback).Run(ParseDialogResultEx(dialog_options));
 }
 
 HRESULT PrintingContextSystemDialogWin::ShowPrintDialog(PRINTDLGEX* options) {

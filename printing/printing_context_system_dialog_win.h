@@ -23,11 +23,10 @@ class PRINTING_EXPORT PrintingContextSystemDialogWin
   ~PrintingContextSystemDialogWin() override;
 
   // PrintingContext implementation.
-  void AskUserForSettings(
-      int max_pages,
-      bool has_selection,
-      bool is_scripted,
-      const PrintSettingsCallback& callback) override;
+  void AskUserForSettings(int max_pages,
+                          bool has_selection,
+                          bool is_scripted,
+                          PrintSettingsCallback callback) override;
 
  private:
   friend class MockPrintingContextWin;

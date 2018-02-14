@@ -31,7 +31,7 @@ class PrintDialogGtkInterface {
   virtual void ShowDialog(
       gfx::NativeView parent_view,
       bool has_selection,
-      const PrintingContextLinux::PrintSettingsCallback& callback) = 0;
+      PrintingContextLinux::PrintSettingsCallback callback) = 0;
 
   // Prints the document named |document_name| contained in |metafile|.
   // Called from the print worker thread. Once called, the
