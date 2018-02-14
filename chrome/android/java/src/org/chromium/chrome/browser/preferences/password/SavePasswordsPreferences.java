@@ -17,6 +17,7 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
+import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
@@ -652,11 +653,17 @@ public class SavePasswordsPreferences
 
         displayManageAccountLink();
 
-        PreferenceCategory profileCategory = new PreferenceCategory(getActivity());
-        profileCategory.setKey(PREF_KEY_CATEGORY_SAVED_PASSWORDS);
-        profileCategory.setTitle(R.string.section_saved_passwords);
-        profileCategory.setOrder(ORDER_SAVED_PASSWORDS);
-        getPreferenceScreen().addPreference(profileCategory);
+        PreferenceGroup passwordParent;
+        if (mSearchQuery == null) {
+            PreferenceCategory profileCategory = new PreferenceCategory(getActivity());
+            profileCategory.setKey(PREF_KEY_CATEGORY_SAVED_PASSWORDS);
+            profileCategory.setTitle(R.string.section_saved_passwords);
+            profileCategory.setOrder(ORDER_SAVED_PASSWORDS);
+            getPreferenceScreen().addPreference(profileCategory);
+            passwordParent = profileCategory;
+        } else {
+            passwordParent = getPreferenceScreen();
+        }
         for (int i = 0; i < count; i++) {
             SavedPasswordEntry saved = PasswordManagerHandlerProvider.getInstance()
                                                .getPasswordManagerHandler()
@@ -676,12 +683,15 @@ public class SavePasswordsPreferences
             args.putString(PASSWORD_LIST_URL, url);
             args.putString(PASSWORD_LIST_PASSWORD, password);
             args.putInt(PASSWORD_LIST_ID, i);
-            profileCategory.addPreference(screen);
+            passwordParent.addPreference(screen);
         }
-        mNoPasswords = profileCategory.getPreferenceCount() == 0;
+        mNoPasswords = passwordParent.getPreferenceCount() == 0;
         if (mNoPasswords) {
             if (count == 0) displayEmptyScreenMessage(); // Show if the list was already empty.
-            getPreferenceScreen().removePreference(profileCategory);
+            if (mSearchQuery == null) {
+                // If not searching, the category needs to be removed again.
+                getPreferenceScreen().removePreference(passwordParent);
+            }
         }
     }
 
