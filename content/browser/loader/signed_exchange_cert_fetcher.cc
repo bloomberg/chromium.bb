@@ -90,12 +90,13 @@ SignedExchangeCertFetcher::CreateAndStart(
     scoped_refptr<SharedURLLoaderFactory> shared_url_loader_factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
     const GURL& cert_url,
+    url::Origin request_initiator,
     bool force_fetch,
     CertificateCallback callback) {
   std::unique_ptr<SignedExchangeCertFetcher> cert_fetcher(
-      new SignedExchangeCertFetcher(std::move(shared_url_loader_factory),
-                                    std::move(throttles), cert_url, force_fetch,
-                                    std::move(callback)));
+      new SignedExchangeCertFetcher(
+          std::move(shared_url_loader_factory), std::move(throttles), cert_url,
+          std::move(request_initiator), force_fetch, std::move(callback)));
   cert_fetcher->Start();
   return cert_fetcher;
 }
@@ -159,6 +160,7 @@ SignedExchangeCertFetcher::SignedExchangeCertFetcher(
     scoped_refptr<SharedURLLoaderFactory> shared_url_loader_factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
     const GURL& cert_url,
+    url::Origin request_initiator,
     bool force_fetch,
     CertificateCallback callback)
     : shared_url_loader_factory_(std::move(shared_url_loader_factory)),
@@ -167,6 +169,7 @@ SignedExchangeCertFetcher::SignedExchangeCertFetcher(
       callback_(std::move(callback)) {
   // TODO(https://crbug.com/803774): Revisit more ResourceRequest flags.
   resource_request_->url = cert_url;
+  resource_request_->request_initiator = std::move(request_initiator);
   resource_request_->resource_type = RESOURCE_TYPE_SUB_RESOURCE;
   // Cert requests should not send credential informartion, because the default
   // credentials mode of Fetch is "omit".

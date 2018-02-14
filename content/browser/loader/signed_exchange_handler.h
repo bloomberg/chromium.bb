@@ -9,17 +9,24 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
+#include "content/public/common/shared_url_loader_factory.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/completion_callback.h"
 #include "net/ssl/ssl_info.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace net {
 class SourceStream;
 }
 
 namespace content {
+
+class SharedURLLoaderFactory;
+class SignedExchangeCertFetcher;
+class URLLoaderThrottle;
+class MerkleIntegritySourceStream;
 
 // IMPORTANT: Currenly SignedExchangeHandler doesn't implement any verifying
 // logic.
@@ -35,11 +42,20 @@ class SignedExchangeHandler final {
                               std::unique_ptr<net::SourceStream> payload_stream,
                               base::Optional<net::SSLInfo>)>;
 
+  using URLLoaderThrottlesGetter = base::RepeatingCallback<
+      std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;
+
   // Once constructed |this| starts reading the |body| and parses the response
   // as a signed HTTP exchange. The response body of the exchange can be read
-  // from |payload_stream| passed to |headers_callback|.
-  SignedExchangeHandler(std::unique_ptr<net::SourceStream> body,
-                        ExchangeHeadersCallback headers_callback);
+  // from |payload_stream| passed to |headers_callback|. |url_loader_factory|
+  // and |url_loader_throttles_getter| are used to set up a network URLLoader to
+  // actually fetch the certificate.
+  SignedExchangeHandler(
+      std::unique_ptr<net::SourceStream> body,
+      ExchangeHeadersCallback headers_callback,
+      url::Origin request_initiator,
+      scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
+      URLLoaderThrottlesGetter url_loader_throttles_getter);
   ~SignedExchangeHandler();
 
  private:
@@ -48,11 +64,12 @@ class SignedExchangeHandler final {
   bool RunHeadersCallback();
   void RunErrorCallback(net::Error);
 
+  void OnCertReceived(scoped_refptr<net::X509Certificate> cert);
+
   // Signed exchange contents.
   GURL request_url_;
   std::string request_method_;
   network::ResourceResponseHead response_head_;
-  base::Optional<net::SSLInfo> ssl_info_;
 
   ExchangeHeadersCallback headers_callback_;
   std::unique_ptr<net::SourceStream> source_;
@@ -61,6 +78,17 @@ class SignedExchangeHandler final {
   // parser.
   scoped_refptr<net::IOBufferWithSize> read_buf_;
   std::string original_body_string_;
+
+  std::unique_ptr<MerkleIntegritySourceStream> mi_stream_;
+
+  // Used to create |cert_fetcher_|.
+  url::Origin request_initiator_;
+  scoped_refptr<SharedURLLoaderFactory> url_loader_factory_;
+  // This getter is guaranteed to be valid at least until the headers callback
+  // is run.
+  URLLoaderThrottlesGetter url_loader_throttles_getter_;
+
+  std::unique_ptr<SignedExchangeCertFetcher> cert_fetcher_;
 
   base::WeakPtrFactory<SignedExchangeHandler> weak_factory_;
 

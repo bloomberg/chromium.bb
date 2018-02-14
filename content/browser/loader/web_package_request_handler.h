@@ -7,16 +7,26 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/browser/loader/url_loader_request_handler.h"
+#include "content/public/common/resource_type.h"
+#include "url/origin.h"
 
 namespace content {
 
+class SharedURLLoaderFactory;
+class URLLoaderThrottle;
 class WebPackageLoader;
 
 class WebPackageRequestHandler final : public URLLoaderRequestHandler {
  public:
+  using URLLoaderThrottlesGetter = base::RepeatingCallback<
+      std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;
+
   static bool IsSupportedMimeType(const std::string& mime_type);
 
-  WebPackageRequestHandler();
+  WebPackageRequestHandler(
+      url::Origin request_initiator,
+      scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
+      URLLoaderThrottlesGetter url_loader_throttles_getter);
   ~WebPackageRequestHandler() override;
 
   // URLLoaderRequestHandler implementation
@@ -37,6 +47,10 @@ class WebPackageRequestHandler final : public URLLoaderRequestHandler {
   // the loader is re-bound to the new client for the redirected request in
   // StartResponse.
   std::unique_ptr<WebPackageLoader> web_package_loader_;
+
+  url::Origin request_initiator_;
+  scoped_refptr<SharedURLLoaderFactory> url_loader_factory_;
+  URLLoaderThrottlesGetter url_loader_throttles_getter_;
 
   base::WeakPtrFactory<WebPackageRequestHandler> weak_factory_;
 

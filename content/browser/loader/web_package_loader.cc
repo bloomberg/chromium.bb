@@ -12,6 +12,7 @@
 #include "content/browser/loader/signed_exchange_handler.h"
 #include "content/browser/loader/source_stream_to_data_pipe.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/shared_url_loader_factory.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
@@ -70,11 +71,17 @@ class WebPackageLoader::ResponseTimingInfo {
 WebPackageLoader::WebPackageLoader(
     const network::ResourceResponseHead& original_response,
     network::mojom::URLLoaderClientPtr forwarding_client,
-    network::mojom::URLLoaderClientEndpointsPtr endpoints)
+    network::mojom::URLLoaderClientEndpointsPtr endpoints,
+    url::Origin request_initiator,
+    scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
+    URLLoaderThrottlesGetter url_loader_throttles_getter)
     : original_response_timing_info_(
           std::make_unique<ResponseTimingInfo>(original_response)),
       forwarding_client_(std::move(forwarding_client)),
       url_loader_client_binding_(this),
+      request_initiator_(request_initiator),
+      url_loader_factory_(std::move(url_loader_factory)),
+      url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
       weak_factory_(this) {
   DCHECK(base::FeatureList::IsEnabled(features::kSignedHTTPExchange));
   url_loader_.Bind(std::move(endpoints->url_loader));
@@ -145,7 +152,9 @@ void WebPackageLoader::OnStartLoadingResponseBody(
   signed_exchange_handler_ = std::make_unique<SignedExchangeHandler>(
       std::make_unique<DataPipeToSourceStream>(std::move(body)),
       base::BindOnce(&WebPackageLoader::OnHTTPExchangeFound,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr()),
+      std::move(request_initiator_), std::move(url_loader_factory_),
+      std::move(url_loader_throttles_getter_));
 }
 
 void WebPackageLoader::OnComplete(
@@ -198,7 +207,7 @@ void WebPackageLoader::OnHTTPExchangeFound(
     base::Optional<net::SSLInfo> ssl_info) {
   if (error) {
     // This will eventually delete |this|.
-    client_->OnComplete(network::URLLoaderCompletionStatus(error));
+    forwarding_client_->OnComplete(network::URLLoaderCompletionStatus(error));
     return;
   }
 

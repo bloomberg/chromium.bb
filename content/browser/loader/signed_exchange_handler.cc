@@ -7,13 +7,19 @@
 #include "base/feature_list.h"
 #include "components/cbor/cbor_reader.h"
 #include "content/browser/loader/merkle_integrity_source_stream.h"
+#include "content/browser/loader/signed_exchange_cert_fetcher.h"
 #include "content/browser/loader/signed_exchange_consts.h"
+#include "content/browser/loader/signed_exchange_header_parser.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/shared_url_loader_factory.h"
+#include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/system/string_data_pipe_producer.h"
 #include "net/base/io_buffer.h"
+#include "net/cert/x509_certificate.h"
 #include "net/filter/source_stream.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 
@@ -61,9 +67,15 @@ class BufferSourceStream : public net::SourceStream {
 
 SignedExchangeHandler::SignedExchangeHandler(
     std::unique_ptr<net::SourceStream> body,
-    ExchangeHeadersCallback headers_callback)
+    ExchangeHeadersCallback headers_callback,
+    url::Origin request_initiator,
+    scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
+    URLLoaderThrottlesGetter url_loader_throttles_getter)
     : headers_callback_(std::move(headers_callback)),
       source_(std::move(body)),
+      request_initiator_(std::move(request_initiator)),
+      url_loader_factory_(std::move(url_loader_factory)),
+      url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
       weak_factory_(this) {
   DCHECK(base::FeatureList::IsEnabled(features::kSignedHTTPExchange));
 
@@ -196,6 +208,8 @@ bool SignedExchangeHandler::RunHeadersCallback() {
   base::StringPiece status_code_str =
       status_iter->second.GetBytestringAsString();
 
+  base::Optional<std::vector<SignedExchangeHeaderParser::Signature>> signatures;
+
   std::string fake_header_str("HTTP/1.1 ");
   status_code_str.AppendToString(&fake_header_str);
   fake_header_str.append(" OK\r\n");
@@ -213,6 +227,9 @@ bool SignedExchangeHandler::RunHeadersCallback() {
     fake_header_str.append(": ");
     value.AppendToString(&fake_header_str);
     fake_header_str.append("\r\n");
+    if (std::string(name) == "signature") {
+      signatures = SignedExchangeHeaderParser::ParseSignature(value);
+    }
   }
   fake_header_str.append("\r\n");
   response_head_.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
@@ -231,12 +248,21 @@ bool SignedExchangeHandler::RunHeadersCallback() {
     return false;
   }
   auto payload_stream = std::make_unique<BufferSourceStream>(payload_bytes);
-  auto mi_stream = std::make_unique<MerkleIntegritySourceStream>(
+  mi_stream_ = std::make_unique<MerkleIntegritySourceStream>(
       mi_header_value, std::move(payload_stream));
 
-  std::move(headers_callback_)
-      .Run(net::OK, request_url_, request_method_, response_head_,
-           std::move(mi_stream), ssl_info_);
+  if (!signatures || signatures->empty())
+    return false;
+
+  DCHECK(url_loader_factory_);
+  DCHECK(url_loader_throttles_getter_);
+  std::vector<std::unique_ptr<URLLoaderThrottle>> throttles =
+      std::move(url_loader_throttles_getter_).Run();
+  cert_fetcher_ = SignedExchangeCertFetcher::CreateAndStart(
+      std::move(url_loader_factory_), std::move(throttles),
+      GURL((*signatures)[0].cert_url), std::move(request_initiator_), false,
+      base::BindOnce(&SignedExchangeHandler::OnCertReceived,
+                     base::Unretained(this)));
   return true;
 }
 
@@ -245,6 +271,20 @@ void SignedExchangeHandler::RunErrorCallback(net::Error error) {
   std::move(headers_callback_)
       .Run(error, GURL(), std::string(), network::ResourceResponseHead(),
            nullptr, base::nullopt);
+}
+
+void SignedExchangeHandler::OnCertReceived(
+    scoped_refptr<net::X509Certificate> cert) {
+  if (!cert) {
+    DVLOG(1) << "Fetching certificate error";
+    RunErrorCallback(net::ERR_FAILED);
+    return;
+  }
+  // TODO(https://crbug.com/803774): Verify the certificate and generate a
+  // SSLInfo.
+  std::move(headers_callback_)
+      .Run(net::OK, request_url_, request_method_, response_head_,
+           std::move(mi_stream_), base::Optional<net::SSLInfo>());
 }
 
 }  // namespace content

@@ -20,7 +20,8 @@ URLLoaderFactoryImpl::URLLoaderFactoryImpl(
     : requester_info_(std::move(requester_info)) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK((requester_info_->IsRenderer() && requester_info_->filter()) ||
-         requester_info_->IsNavigationPreload());
+         requester_info_->IsNavigationPreload() ||
+         requester_info_->IsCertificateFetcherForSignedExchange());
 }
 
 URLLoaderFactoryImpl::~URLLoaderFactoryImpl() {

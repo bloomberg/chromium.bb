@@ -10,6 +10,7 @@
 #include <vector>
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -42,7 +43,7 @@ class CONTENT_EXPORT SignedExchangeHeaderParser {
   // Parses a value of the Signature header.
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#rfc.section.3.2
   static base::Optional<std::vector<Signature>> ParseSignature(
-      const std::string& signature_str);
+      base::StringPiece signature_str);
 };
 
 }  // namespace content

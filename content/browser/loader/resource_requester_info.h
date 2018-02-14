@@ -74,12 +74,22 @@ class CONTENT_EXPORT ResourceRequesterInfo
   static scoped_refptr<ResourceRequesterInfo> CreateForNavigationPreload(
       ResourceRequesterInfo* original_request_info);
 
+  // Creates a ResourceRequesterInfo for a requester that requests certificates
+  // for signed exchange.
+  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html
+  static scoped_refptr<ResourceRequesterInfo>
+  CreateForCertificateFetcherForSignedExchange(
+      const GetContextsCallback& get_contexts_callback);
+
   bool IsRenderer() const { return type_ == RequesterType::RENDERER; }
   bool IsBrowserSideNavigation() const {
     return type_ == RequesterType::BROWSER_SIDE_NAVIGATION;
   }
   bool IsNavigationPreload() const {
     return type_ == RequesterType::NAVIGATION_PRELOAD;
+  }
+  bool IsCertificateFetcherForSignedExchange() const {
+    return type_ == RequesterType::CERTIFICATE_FETCHER_FOR_SIGNED_EXCHANGE;
   }
 
   // Returns the renderer process ID associated with the requester. Returns -1
@@ -134,7 +144,8 @@ class CONTENT_EXPORT ResourceRequesterInfo
     RENDERER,
     BROWSER_SIDE_NAVIGATION,
     DOWNLOAD_OR_PAGE_SAVE,
-    NAVIGATION_PRELOAD
+    NAVIGATION_PRELOAD,
+    CERTIFICATE_FETCHER_FOR_SIGNED_EXCHANGE
   };
 
   ResourceRequesterInfo(RequesterType type,
