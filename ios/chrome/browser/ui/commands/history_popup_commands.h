@@ -18,6 +18,9 @@ class NavigationItem;
 // Shows the tab history popup containing the tab's forward history.
 - (void)showTabHistoryPopupForForwardHistory;
 
+// Dismiss the presented Tab History Popup.
+- (void)dismissHistoryPopup;
+
 // Navigate back/forward to the selected entry in the tab's history.
 - (void)navigateToHistoryItem:(const web::NavigationItem*)item;
 @end
