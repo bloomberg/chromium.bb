@@ -305,6 +305,44 @@ suite('CrActionMenu', function() {
     menu.close();
   });
 
+
+  test('[auto-reposition] enables repositioning if content changes', function() {
+    menu.autoReposition = true;
+
+    dots.style.marginLeft = '800px';
+
+    let dotsRect = dots.getBoundingClientRect();
+
+    // Anchored at right-top by default.
+    menu.showAt(dots);
+    assertTrue(menu.open);
+    let menuRect = menu.getBoundingClientRect();
+    assertEquals(
+        Math.round(dotsRect.left + dotsRect.width),
+        Math.round(menuRect.left + menuRect.width));
+    assertEquals(dotsRect.top, menuRect.top);
+
+    const lastMenuLeft = menuRect.left;
+    const lastMenuWidth = menuRect.width;
+
+    // Still anchored at the right place after content size changes.
+    items[0].textContent = 'this is a long string to make menu wide';
+    // Flush to wait for resizeObeserver's cycle.
+    return PolymerTest.flushTasks().then(() => {
+      assertTrue(menu.open);
+      menuRect = menu.getBoundingClientRect();
+      // Test that menu width got larger.
+      assertTrue(menuRect.width > lastMenuWidth);
+      // Test that menu upper-left moved further left.
+      assertTrue(menuRect.left < lastMenuLeft);
+      // Test that right and top did not move since it is anchored there.
+      assertEquals(
+          Math.round(dotsRect.left + dotsRect.width),
+          Math.round(menuRect.left + menuRect.width));
+      assertEquals(dotsRect.top, menuRect.top);
+    });
+  });
+
   suite('offscreen scroll positioning', function() {
     const bodyHeight = 10000;
     const bodyWidth = 20000;
