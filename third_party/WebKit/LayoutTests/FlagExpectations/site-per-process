@@ -144,6 +144,7 @@ Bug(none) external/wpt/content-security-policy/frame-ancestors/frame-ancestors-n
 Bug(none) external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-star-allow.html [ Timeout ]
 Bug(none) external/wpt/content-security-policy/securitypolicyviolation/upgrade-insecure-requests-reporting.https.html [ Crash ]
 Bug(none) external/wpt/credential-management/credentialscontainer-create-basics.https.html [ Crash ]
+Bug(none) external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-writing-mode-011.html [ Failure ]
 Bug(none) external/wpt/css-fonts/font-display/font-display.html [ Crash ]
 Bug(none) external/wpt/dom/events/EventListener-incumbent-global-1.sub.html [ Timeout ]
 Bug(none) external/wpt/dom/events/EventListener-incumbent-global-2.sub.html [ Timeout ]
