@@ -110,10 +110,10 @@ void FrameViewAutoSizeInfo::AutoSizeIfNeeded() {
 
     // Bound the dimensions by the max bounds and determine what scrollbars to
     // show.
-    ScrollbarMode horizonal_scrollbar_mode = kScrollbarAlwaysOff;
+    ScrollbarMode horizontal_scrollbar_mode = kScrollbarAlwaysOff;
     if (new_size.Width() > max_auto_size_.Width()) {
       new_size.SetWidth(max_auto_size_.Width());
-      horizonal_scrollbar_mode = kScrollbarAlwaysOn;
+      horizontal_scrollbar_mode = kScrollbarAlwaysOn;
     }
     ScrollbarMode vertical_scrollbar_mode = kScrollbarAlwaysOff;
     if (new_size.Height() > max_auto_size_.Height()) {
@@ -138,10 +138,8 @@ void FrameViewAutoSizeInfo::AutoSizeIfNeeded() {
     // causing them to be needed. For example, a vertical scrollbar may cause
     // text to wrap and thus increase the height (which is the only reason the
     // scollbar is needed).
-    frame_view_->SetVerticalScrollbarLock(false);
-    frame_view_->SetHorizontalScrollbarLock(false);
-    frame_view_->SetScrollbarModes(horizonal_scrollbar_mode,
-                                   vertical_scrollbar_mode, true, true);
+    frame_view_->SetAutosizeScrollbarModes(vertical_scrollbar_mode,
+                                           horizontal_scrollbar_mode);
   }
   did_run_autosize_ = true;
 }

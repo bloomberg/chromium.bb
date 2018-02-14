@@ -172,11 +172,7 @@ void LocalFrame::SetView(LocalFrameView* view) {
 }
 
 void LocalFrame::CreateView(const IntSize& viewport_size,
-                            const Color& background_color,
-                            ScrollbarMode horizontal_scrollbar_mode,
-                            bool horizontal_lock,
-                            ScrollbarMode vertical_scrollbar_mode,
-                            bool vertical_lock) {
+                            const Color& background_color) {
   DCHECK(this);
   DCHECK(GetPage());
 
@@ -196,10 +192,6 @@ void LocalFrame::CreateView(const IntSize& viewport_size,
   } else {
     frame_view = LocalFrameView::Create(*this);
   }
-
-  frame_view->SetScrollbarModes(horizontal_scrollbar_mode,
-                                vertical_scrollbar_mode, horizontal_lock,
-                                vertical_lock);
 
   SetView(frame_view);
 

@@ -552,36 +552,15 @@ class CORE_EXPORT LocalFrameView final
   // advisory. In other words the underlying native widget may choose not to
   // honor the requested modes.
   void SetScrollbarModes(ScrollbarMode horizontal_mode,
-                         ScrollbarMode vertical_mode,
-                         bool horizontal_lock = false,
-                         bool vertical_lock = false);
-  void SetHorizontalScrollbarMode(ScrollbarMode mode, bool lock = false) {
-    SetScrollbarModes(mode, VerticalScrollbarMode(), lock,
-                      VerticalScrollbarLock());
+                         ScrollbarMode vertical_mode);
+  void SetHorizontalScrollbarMode(ScrollbarMode mode) {
+    SetScrollbarModes(mode, vertical_scrollbar_mode_);
   }
-  void SetVerticalScrollbarMode(ScrollbarMode mode, bool lock = false) {
-    SetScrollbarModes(HorizontalScrollbarMode(), mode,
-                      HorizontalScrollbarLock(), lock);
+  void SetVerticalScrollbarMode(ScrollbarMode mode) {
+    SetScrollbarModes(horizontal_scrollbar_mode_, mode);
   }
-  ScrollbarMode HorizontalScrollbarMode() const {
-    return horizontal_scrollbar_mode_;
-  }
-  ScrollbarMode VerticalScrollbarMode() const {
-    return vertical_scrollbar_mode_;
-  }
-
-  void SetHorizontalScrollbarLock(bool lock = true) {
-    horizontal_scrollbar_lock_ = lock;
-  }
-  bool HorizontalScrollbarLock() const { return horizontal_scrollbar_lock_; }
-  void SetVerticalScrollbarLock(bool lock = true) {
-    vertical_scrollbar_lock_ = lock;
-  }
-  bool VerticalScrollbarLock() const { return vertical_scrollbar_lock_; }
-
-  void SetScrollingModesLock(bool lock = true) {
-    horizontal_scrollbar_lock_ = vertical_scrollbar_lock_ = lock;
-  }
+  ScrollbarMode EffectiveHorizontalScrollbarMode() const;
+  ScrollbarMode EffectiveVerticalScrollbarMode() const;
 
   // The visible content rect has a location that is the scrolled offset of
   // the document. The width and height are the layout viewport width and
@@ -1285,9 +1264,6 @@ class CORE_EXPORT LocalFrameView final
 
   ScrollbarMode horizontal_scrollbar_mode_;
   ScrollbarMode vertical_scrollbar_mode_;
-
-  bool horizontal_scrollbar_lock_;
-  bool vertical_scrollbar_lock_;
 
   PluginSet plugins_;
   HeapHashSet<Member<Scrollbar>> scrollbars_;
