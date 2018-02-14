@@ -35,6 +35,7 @@
 #include "core/editing/Editor.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/RevealSelectionScope.h"
 #include "core/editing/SelectionTemplate.h"
 #include "core/editing/SetSelectionOptions.h"
 #include "core/editing/commands/TypingCommand.h"
@@ -464,7 +465,7 @@ bool InputMethodController::FinishComposingText(
     const bool is_handle_visible = GetFrame().Selection().IsHandleVisible();
 
     const PlainTextRange& old_offsets = GetSelectionOffsets();
-    Editor::RevealSelectionScope reveal_selection_scope(&GetEditor());
+    RevealSelectionScope reveal_selection_scope(GetFrame());
 
     if (is_too_long) {
       ignore_result(ReplaceComposition(ComposingText()));
@@ -706,7 +707,7 @@ void InputMethodController::CancelComposition() {
   if (!HasComposition())
     return;
 
-  Editor::RevealSelectionScope reveal_selection_scope(&GetEditor());
+  RevealSelectionScope reveal_selection_scope(GetFrame());
 
   if (GetFrame()
           .Selection()
@@ -748,7 +749,7 @@ void InputMethodController::SetComposition(
     const Vector<ImeTextSpan>& ime_text_spans,
     int selection_start,
     int selection_end) {
-  Editor::RevealSelectionScope reveal_selection_scope(&GetEditor());
+  RevealSelectionScope reveal_selection_scope(GetFrame());
 
   // Updates styles before setting selection for composition to prevent
   // inserting the previous composition text into text nodes oddly.
@@ -794,7 +795,7 @@ void InputMethodController::SetComposition(
     // to the new position.
     EventQueueScope scope;
     if (HasComposition()) {
-      Editor::RevealSelectionScope reveal_selection_scope(&GetEditor());
+      RevealSelectionScope reveal_selection_scope(GetFrame());
       // Do not attempt to apply IME selection offsets if ReplaceComposition()
       // fails (we compute the new range assuming the replacement will succeed).
       if (!ReplaceComposition(g_empty_string))
