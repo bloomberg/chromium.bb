@@ -43686,6 +43686,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="29865866" label="headless_url_request"/>
   <int value="30913825" label="family_info"/>
   <int value="32030464" label="persist_blob_to_indexed_db"/>
+  <int value="32197336" label="http_server_error_response"/>
   <int value="32585152" label="gaia_oauth_client_get_token_info"/>
   <int value="35370363" label="suggestions_service"/>
   <int value="35380758" label="download_manager_resume"/>
