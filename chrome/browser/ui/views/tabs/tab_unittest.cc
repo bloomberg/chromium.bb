@@ -110,7 +110,7 @@ class TabTest : public views::ViewsTestBase {
 
   static void LayoutTab(Tab* tab) { tab->Layout(); }
 
-  static int IconCapacity(const Tab& tab) {
+  static int VisibleIconCount(const Tab& tab) {
     return tab.showing_icon_ + tab.showing_alert_indicator_ +
            tab.showing_close_button_;
   }
@@ -119,7 +119,7 @@ class TabTest : public views::ViewsTestBase {
     // Check whether elements are visible when they are supposed to be, given
     // Tab size and TabRendererData state.
     if (tab.data_.pinned) {
-      EXPECT_EQ(1, IconCapacity(tab));
+      EXPECT_EQ(1, VisibleIconCount(tab));
       if (tab.data_.alert_state != TabAlertState::NONE) {
         EXPECT_FALSE(tab.showing_icon_);
         EXPECT_TRUE(tab.showing_alert_indicator_);
@@ -131,8 +131,7 @@ class TabTest : public views::ViewsTestBase {
       EXPECT_FALSE(tab.showing_close_button_);
     } else if (tab.IsActive()) {
       EXPECT_TRUE(tab.showing_close_button_);
-      switch (IconCapacity(tab)) {
-        case 0:
+      switch (VisibleIconCount(tab)) {
         case 1:
           EXPECT_FALSE(tab.showing_icon_);
           EXPECT_FALSE(tab.showing_alert_indicator_);
@@ -147,39 +146,30 @@ class TabTest : public views::ViewsTestBase {
           }
           break;
         default:
-          EXPECT_LE(3, IconCapacity(tab));
-          EXPECT_TRUE(tab.showing_icon_);
-          if (tab.data_.alert_state != TabAlertState::NONE)
-            EXPECT_TRUE(tab.showing_alert_indicator_);
-          else
-            EXPECT_FALSE(tab.showing_alert_indicator_);
+          EXPECT_EQ(3, VisibleIconCount(tab));
+          EXPECT_TRUE(tab.data_.alert_state != TabAlertState::NONE);
           break;
       }
     } else {  // Tab not active and not pinned tab.
-      switch (IconCapacity(tab)) {
-        case 0:
-          EXPECT_FALSE(tab.showing_close_button_);
-          EXPECT_FALSE(tab.showing_icon_);
-          EXPECT_FALSE(tab.showing_alert_indicator_);
-          break;
+      switch (VisibleIconCount(tab)) {
         case 1:
           EXPECT_FALSE(tab.showing_close_button_);
-          if (tab.data_.alert_state != TabAlertState::NONE) {
-            EXPECT_FALSE(tab.showing_icon_);
-            EXPECT_TRUE(tab.showing_alert_indicator_);
-          } else {
-            EXPECT_TRUE(tab.showing_icon_);
+          if (tab.data_.alert_state == TabAlertState::NONE ||
+              tab.center_favicon_)
             EXPECT_FALSE(tab.showing_alert_indicator_);
-          }
+          if (tab.center_favicon_)
+            EXPECT_TRUE(tab.showing_icon_);
           break;
-        default:
-          EXPECT_LE(2, IconCapacity(tab));
+        case 2:
           EXPECT_TRUE(tab.showing_icon_);
           if (tab.data_.alert_state != TabAlertState::NONE)
             EXPECT_TRUE(tab.showing_alert_indicator_);
           else
             EXPECT_FALSE(tab.showing_alert_indicator_);
           break;
+        default:
+          EXPECT_EQ(3, VisibleIconCount(tab));
+          EXPECT_TRUE(tab.data_.alert_state != TabAlertState::NONE);
       }
     }
 
@@ -187,7 +177,11 @@ class TabTest : public views::ViewsTestBase {
     // are fully within the contents bounds.
     const gfx::Rect contents_bounds = tab.GetContentsBounds();
     if (tab.showing_icon_) {
-      EXPECT_LE(contents_bounds.x(), tab.icon_->x());
+      if (tab.center_favicon_) {
+        EXPECT_LE(tab.icon_->x(), contents_bounds.x());
+      } else {
+        EXPECT_LE(contents_bounds.x(), tab.icon_->x());
+      }
       if (tab.title_->visible())
         EXPECT_LE(tab.icon_->bounds().right(), tab.title_->x());
       EXPECT_LE(contents_bounds.y(), tab.icon_->y());
