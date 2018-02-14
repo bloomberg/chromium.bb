@@ -2361,6 +2361,11 @@ const char kEnableDesktopIosPromotionsDescription[] =
     "Enable Desktop to iOS promotions, and allow users to see them if they are "
     "eligible.";
 
+const char kEnableGpuAppcontainerName[] = "Enable GPU AppContainer Lockdown.";
+const char kEnableGpuAppcontainerDescription[] =
+    "Enables the use of an AppContainer for the GPU sandboxed processes to "
+    "improve security.";
+
 const char kGdiTextPrinting[] = "GDI Text Printing";
 const char kGdiTextPrintingDescription[] =
     "Use GDI to print text as simply text";

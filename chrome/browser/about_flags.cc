@@ -3725,6 +3725,14 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_DISABLE_VALUE_TYPE(ash::switches::kAshDisableTrilinearFiltering)},
 #endif  // OS_CHROMEOS
 
+#if defined(OS_WIN)
+    {"enable-gpu-appcontainer", flag_descriptions::kEnableGpuAppcontainerName,
+     flag_descriptions::kEnableGpuAppcontainerDescription, kOsWin,
+     ENABLE_DISABLE_VALUE_TYPE(
+         service_manager::switches::kEnableGpuAppContainer,
+         service_manager::switches::kDisableGpuAppContainer)},
+#endif  // OS_WIN
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
