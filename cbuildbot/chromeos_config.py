@@ -1324,9 +1324,10 @@ def GeneralTemplates(site_config, ge_build_config):
   site_config.AddTemplate(
       'fuzzer',
       site_config.templates.default_hw_tests_override,
-      site_config.templates.incremental,
+      site_config.templates.full,
       site_config.templates.no_hwtest_builder,
       profile='fuzzer',
+      chrome_sdk=False,
       # Need larger rootfs since fuzzing also enables asan.
       disk_layout='2gb-rootfs',
       vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,

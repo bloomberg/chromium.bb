@@ -543,15 +543,24 @@
         },
         "fuzzer": {
             "_template": "fuzzer",
-            "build_type": "binary",
-            "chroot_replace": false,
-            "description": "Incremental Builds",
+            "archive_build_debug": true,
+            "build_type": "full",
+            "description": "Full Builds",
             "disk_layout": "2gb-rootfs",
-            "display_label": "incremental",
+            "display_label": "full",
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
+            "git_sync": true,
             "hw_tests_override": [],
+            "image_test": true,
+            "images": [
+                "base",
+                "recovery",
+                "test",
+                "factory_install"
+            ],
             "profile": "fuzzer",
-            "uprev": false,
+            "trybot_list": true,
+            "usepkg_build_packages": false,
             "vm_tests": [
                 "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
             ]
@@ -1727,8 +1736,7 @@
         "buildslave_type": "baremetal",
         "description": "Build for fuzzing testing",
         "disk_layout": "4gb-rootfs",
-        "hw_tests_override": null,
-        "trybot_list": true
+        "hw_tests_override": null
     },
     "amd64-generic-goofy-chrome-pfq": {
         "_template": "chrome_pfq",
