@@ -322,10 +322,6 @@ const base::Feature kServiceWorkerScriptStreaming{
 const base::Feature kServiceWorkerScriptFullCodeCache{
     "ServiceWorkerScriptFullCodeCache", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Establish direct connection from clients to the service worker.
-const base::Feature kServiceWorkerServicification{
-    "ServiceWorkerServicification", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // http://tc39.github.io/ecmascript_sharedmem/shmem.html
 const base::Feature kSharedArrayBuffer{"SharedArrayBuffer",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
