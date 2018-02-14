@@ -5,8 +5,10 @@
 #include "ash/message_center/message_center_controller.h"
 
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/command_line.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 
@@ -76,6 +78,24 @@ MessageCenterController::MessageCenterController()
     all_popup_blocker_ =
         std::make_unique<PopupNotificationBlocker>(MessageCenter::Get());
   }
+
+  message_center::RegisterVectorIcon(kNotificationCaptivePortalIcon);
+  message_center::RegisterVectorIcon(kNotificationCellularAlertIcon);
+  message_center::RegisterVectorIcon(kNotificationDownloadIcon);
+  message_center::RegisterVectorIcon(kNotificationEndOfSupportIcon);
+  message_center::RegisterVectorIcon(kNotificationGoogleIcon);
+  message_center::RegisterVectorIcon(kNotificationImageIcon);
+  message_center::RegisterVectorIcon(kNotificationInstalledIcon);
+  message_center::RegisterVectorIcon(kNotificationMobileDataIcon);
+  message_center::RegisterVectorIcon(kNotificationMobileDataOffIcon);
+  message_center::RegisterVectorIcon(kNotificationPlayPrismIcon);
+  message_center::RegisterVectorIcon(kNotificationPrintingDoneIcon);
+  message_center::RegisterVectorIcon(kNotificationPrintingIcon);
+  message_center::RegisterVectorIcon(kNotificationPrintingWarningIcon);
+  message_center::RegisterVectorIcon(kNotificationStorageFullIcon);
+  message_center::RegisterVectorIcon(kNotificationVpnIcon);
+  message_center::RegisterVectorIcon(kNotificationWarningIcon);
+  message_center::RegisterVectorIcon(kNotificationWifiOffIcon);
 }
 
 MessageCenterController::~MessageCenterController() = default;

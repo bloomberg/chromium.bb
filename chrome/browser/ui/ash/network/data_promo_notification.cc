@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/ash/network/data_promo_notification.h"
 
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/mobile_config.h"
@@ -260,7 +260,7 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification() {
           message_center::RichNotificationData(),
           new message_center::HandleNotificationClickDelegate(base::Bind(
               &NotificationClicked, default_network->guid(), info_url)),
-          kNotificationMobileDataIcon,
+          ash::kNotificationMobileDataIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   notification->set_clickable(true);
   NotificationDisplayService::GetForProfile(GetProfileForNotifications())
@@ -300,7 +300,7 @@ bool DataPromoNotification::ShowDataSaverNotification() {
           message_center::RichNotificationData(),
           new message_center::HandleNotificationClickDelegate(
               base::Bind(&NotificationClicked, "", kDataSaverExtensionUrl)),
-          kNotificationMobileDataIcon,
+          ash::kNotificationMobileDataIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   notification->set_clickable(true);
   NotificationDisplayService::GetForProfile(GetProfileForNotifications())

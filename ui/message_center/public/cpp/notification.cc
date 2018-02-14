@@ -4,8 +4,10 @@
 
 #include "ui/message_center/public/cpp/notification.h"
 
+#include <map>
 #include <memory>
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -19,7 +21,10 @@ namespace message_center {
 
 namespace {
 
-unsigned g_next_serial_number_ = 0;
+unsigned g_next_serial_number = 0;
+
+base::LazyInstance<std::map<std::string, const gfx::VectorIcon&>>::Leaky
+    g_vector_icon_registry = LAZY_INSTANCE_INITIALIZER;
 
 const gfx::ImageSkia CreateSolidColorImage(int width,
                                            int height,
@@ -102,7 +107,7 @@ Notification::Notification(NotificationType type,
       display_source_(display_source),
       origin_url_(origin_url),
       notifier_id_(notifier_id),
-      serial_number_(g_next_serial_number_++),
+      serial_number_(g_next_serial_number++),
       optional_fields_(optional_fields),
       shown_as_popup_(false),
       is_read_(false),
@@ -284,6 +289,19 @@ std::unique_ptr<Notification> Notification::CreateSystemNotification(
   if (!small_image.is_empty())
     notification->set_vector_small_image(small_image);
   return notification;
+}
+
+// static
+void RegisterVectorIcon(const gfx::VectorIcon& vector_icon) {
+  g_vector_icon_registry.Get().insert(
+      std::pair<std::string, const gfx::VectorIcon&>(vector_icon.name,
+                                                     vector_icon));
+}
+
+// static
+const gfx::VectorIcon* GetRegisteredVectorIcon(const std::string& id) {
+  auto iter = g_vector_icon_registry.Get().find(id);
+  return iter != g_vector_icon_registry.Get().end() ? &iter->second : nullptr;
 }
 
 }  // namespace message_center

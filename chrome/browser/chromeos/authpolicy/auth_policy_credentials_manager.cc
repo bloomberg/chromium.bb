@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/authpolicy/auth_policy_credentials_manager.h"
 
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/memory/singleton.h"
@@ -11,7 +12,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -331,7 +331,7 @@ void AuthPolicyCredentialsManager::ShowNotification(int message_id) {
           l10n_util::GetStringUTF16(message_id), gfx::Image(),
           l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_DISPLAY_SOURCE),
           GURL(notification_id), notifier_id, data,
-          new SigninNotificationDelegate(), kNotificationWarningIcon,
+          new SigninNotificationDelegate(), ash::kNotificationWarningIcon,
           message_center::SystemNotificationWarningLevel::WARNING);
   notification->SetSystemPriority();
 

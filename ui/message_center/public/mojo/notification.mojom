@@ -28,6 +28,7 @@ struct RichNotificationData {
   bool clickable;
   bool pinned;
   mojo_base.mojom.String16 accessible_name;
+  string vector_small_image_id;
   uint32 accent_color;
 };
 

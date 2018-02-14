@@ -8,10 +8,10 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
@@ -206,18 +206,19 @@ void CupsPrintJobNotification::UpdateNotificationIcon() {
     case CupsPrintJob::State::STATE_RESUMED:
       notification_->set_accent_color(
           message_center::kSystemNotificationColorNormal);
-      notification_->set_vector_small_image(kNotificationPrintingIcon);
+      notification_->set_vector_small_image(ash::kNotificationPrintingIcon);
       break;
     case CupsPrintJob::State::STATE_DOCUMENT_DONE:
       notification_->set_accent_color(
           message_center::kSystemNotificationColorNormal);
-      notification_->set_vector_small_image(kNotificationPrintingDoneIcon);
+      notification_->set_vector_small_image(ash::kNotificationPrintingDoneIcon);
       break;
     case CupsPrintJob::State::STATE_CANCELLED:
     case CupsPrintJob::State::STATE_ERROR:
       notification_->set_accent_color(
           message_center::kSystemNotificationColorWarning);
-      notification_->set_vector_small_image(kNotificationPrintingWarningIcon);
+      notification_->set_vector_small_image(
+          ash::kNotificationPrintingWarningIcon);
       break;
     case CupsPrintJob::State::STATE_NONE:
       break;
