@@ -1,0 +1,30 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("cells") {
+  sources = [
+    "table_view_item.h",
+    "table_view_item.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//ios/chrome/browser/ui/list_model",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "table_view_item_unittest.mm",
+  ]
+
+  deps = [
+    ":cells",
+    "//testing/gtest",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
