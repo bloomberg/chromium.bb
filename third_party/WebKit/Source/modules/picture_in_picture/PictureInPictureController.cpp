@@ -102,7 +102,8 @@ PictureInPictureController::CreatePictureInPictureWindow(int width,
   if (picture_in_picture_window_)
     picture_in_picture_window_->OnClose();
 
-  picture_in_picture_window_ = new PictureInPictureWindow(width, height);
+  picture_in_picture_window_ =
+      new PictureInPictureWindow(GetSupplementable(), width, height);
   return picture_in_picture_window_;
 }
 

@@ -4,14 +4,28 @@
 
 #include "modules/picture_in_picture/PictureInPictureWindow.h"
 
+#include "core/dom/ExecutionContext.h"
+
 namespace blink {
 
-PictureInPictureWindow::PictureInPictureWindow(int width, int height)
-    : width_(width), height_(height) {}
+PictureInPictureWindow::PictureInPictureWindow(
+    ExecutionContext* execution_context,
+    int width,
+    int height)
+    : ContextClient(execution_context), width_(width), height_(height) {}
 
 void PictureInPictureWindow::OnClose() {
   width_ = 0;
   height_ = 0;
+}
+
+const AtomicString& PictureInPictureWindow::InterfaceName() const {
+  return EventTargetNames::PictureInPictureWindow;
+}
+
+void PictureInPictureWindow::Trace(blink::Visitor* visitor) {
+  EventTargetWithInlineData::Trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
 }  // namespace blink
