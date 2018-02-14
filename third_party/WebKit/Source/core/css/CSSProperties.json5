@@ -2030,6 +2030,7 @@
       field_template: "<length>",
       default_value: "Length(kFixed)",
       converter: "ConvertLength",
+      typedom_types: ["Length", "Percent"]
     },
     {
       name: "padding-left",
@@ -2039,6 +2040,7 @@
       field_template: "<length>",
       default_value: "Length(kFixed)",
       converter: "ConvertLength",
+      typedom_types: ["Length", "Percent"]
     },
     {
       name: "padding-right",
@@ -2048,6 +2050,7 @@
       field_template: "<length>",
       default_value: "Length(kFixed)",
       converter: "ConvertLength",
+      typedom_types: ["Length", "Percent"]
     },
     {
       name: "padding-top",
@@ -2057,6 +2060,7 @@
       field_template: "<length>",
       default_value: "Length(kFixed)",
       converter: "ConvertLength",
+      typedom_types: ["Length", "Percent"]
     },
     {
       name: "paint-order",
