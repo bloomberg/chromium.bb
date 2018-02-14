@@ -54,6 +54,11 @@ class ComputedAccessibleNode : public ScriptWrappable {
   ComputedAccessibleNode* nextSibling() const;
   ScriptPromise ensureUpToDate(ScriptState*);
 
+  // TODO(meredithl): add accessors for state and restriction properties.
+  bool atomic(bool& is_null) const;
+  bool busy(bool& is_null) const;
+  bool modal(bool& is_null) const;
+
  private:
   explicit ComputedAccessibleNode(Element*);
 
@@ -62,6 +67,7 @@ class ComputedAccessibleNode : public ScriptWrappable {
   void OnUpdateResponse(ScriptPromiseResolver*);
   int32_t GetIntAttribute(WebAOMIntAttribute, bool& is_null) const;
   const String GetStringAttribute(WebAOMStringAttribute) const;
+  bool GetBoolAttribute(WebAOMBoolAttribute, bool& is_null) const;
   ComputedAccessibleNode* GetRelationFromCache(AXID) const;
 
   Member<Element> element_;
