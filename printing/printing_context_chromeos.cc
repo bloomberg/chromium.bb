@@ -163,7 +163,7 @@ void PrintingContextChromeos::AskUserForSettings(
     int max_pages,
     bool has_selection,
     bool is_scripted,
-    const PrintSettingsCallback& callback) {
+    PrintSettingsCallback callback) {
   // We don't want to bring up a dialog here.  Ever.  This should not be called.
   NOTREACHED();
 }

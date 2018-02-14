@@ -323,8 +323,8 @@ bool PrintDialogGtk2::UpdateSettings(printing::PrintSettings* settings) {
 void PrintDialogGtk2::ShowDialog(
     gfx::NativeView parent_view,
     bool has_selection,
-    const PrintingContextLinux::PrintSettingsCallback& callback) {
-  callback_ = callback;
+    PrintingContextLinux::PrintSettingsCallback callback) {
+  callback_ = std::move(callback);
   DCHECK(!callback_.is_null());
 
   dialog_ = gtk_print_unix_dialog_new(nullptr, nullptr);
@@ -477,14 +477,12 @@ void PrintDialogGtk2::OnResponse(GtkWidget* dialog, int response_id) {
       settings.set_selection_only(print_selection_only);
       InitPrintSettingsGtk(gtk_settings_, page_setup_, &settings);
       context_->InitWithSettings(settings);
-      callback_.Run(PrintingContextLinux::OK);
-      callback_.Reset();
+      std::move(callback_).Run(PrintingContextLinux::OK);
       return;
     }
     case GTK_RESPONSE_DELETE_EVENT:  // Fall through.
     case GTK_RESPONSE_CANCEL: {
-      callback_.Run(PrintingContextLinux::CANCEL);
-      callback_.Reset();
+      std::move(callback_).Run(PrintingContextLinux::CANCEL);
       return;
     }
     case GTK_RESPONSE_APPLY:
@@ -551,8 +549,6 @@ void PrintDialogGtk2::OnWindowDestroying(aura::Window* window) {
 
   libgtkui::ClearAuraTransientParent(dialog_);
   window->RemoveObserver(this);
-  if (!callback_.is_null()) {
-    callback_.Run(PrintingContextLinux::CANCEL);
-    callback_.Reset();
-  }
+  if (!callback_.is_null())
+    std::move(callback_).Run(PrintingContextLinux::CANCEL);
 }

@@ -83,9 +83,10 @@ void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
       ask_user_for_settings == GetSettingsAskParam::ASK_USER;
   worker_->PostTask(
       FROM_HERE,
-      base::Bind(&PrintJobWorker::GetSettings, base::Unretained(worker_.get()),
-                 is_print_dialog_box_shown_, expected_page_count, has_selection,
-                 margin_type, is_scripted, is_modifiable));
+      base::BindOnce(&PrintJobWorker::GetSettings,
+                     base::Unretained(worker_.get()),
+                     is_print_dialog_box_shown_, expected_page_count,
+                     has_selection, margin_type, is_scripted, is_modifiable));
 }
 
 void PrinterQuery::SetSettings(

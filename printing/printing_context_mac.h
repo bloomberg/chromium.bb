@@ -26,7 +26,7 @@ class PRINTING_EXPORT PrintingContextMac : public PrintingContext {
   void AskUserForSettings(int max_pages,
                           bool has_selection,
                           bool is_scripted,
-                          const PrintSettingsCallback& callback) override;
+                          PrintSettingsCallback callback) override;
   Result UseDefaultSettings() override;
   gfx::Size GetPdfPaperSizeDeviceUnits() override;
   Result UpdatePrinterSettings(bool external_preview,

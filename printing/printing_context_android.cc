@@ -84,9 +84,9 @@ void PrintingContextAndroid::AskUserForSettings(
     int max_pages,
     bool has_selection,
     bool is_scripted,
-    const PrintSettingsCallback& callback) {
+    PrintSettingsCallback callback) {
   // This method is always run in the UI thread.
-  callback_ = callback;
+  callback_ = std::move(callback);
 
   JNIEnv* env = base::android::AttachCurrentThread();
   if (j_printing_context_.is_null()) {
@@ -107,9 +107,10 @@ void PrintingContextAndroid::AskUserForSettingsReply(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jboolean success) {
+  DCHECK(callback_);
   if (!success) {
     // TODO(cimamoglu): Differentiate between FAILED And CANCEL.
-    callback_.Run(FAILED);
+    std::move(callback_).Run(FAILED);
     return;
   }
 
@@ -134,14 +135,15 @@ void PrintingContextAndroid::AskUserForSettingsReply(
   height = Round(ConvertUnitDouble(height, kInchToMil, 1.0) * dpi);
   SetSizes(&settings_, dpi, width, height);
 
-  callback_.Run(OK);
+  std::move(callback_).Run(OK);
 }
 
 void PrintingContextAndroid::ShowSystemDialogDone(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
+  DCHECK(callback_);
   // Settings are not updated, callback is called only to unblock javascript.
-  callback_.Run(CANCEL);
+  std::move(callback_).Run(CANCEL);
 }
 
 PrintingContext::Result PrintingContextAndroid::UseDefaultSettings() {

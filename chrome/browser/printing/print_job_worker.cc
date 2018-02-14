@@ -105,8 +105,9 @@ void NotificationCallback(PrintJobWorkerOwner* print_job,
 void PostOnOwnerThread(scoped_refptr<PrintJobWorkerOwner> owner,
                        PrintingContext::PrintSettingsCallback callback,
                        PrintingContext::Result result) {
-  owner->PostTask(FROM_HERE, base::BindOnce(&HoldRefCallback, owner,
-                                            base::BindOnce(callback, result)));
+  owner->PostTask(FROM_HERE,
+                  base::BindOnce(&HoldRefCallback, owner,
+                                 base::BindOnce(std::move(callback), result)));
 }
 
 #if defined(OS_WIN)
@@ -263,9 +264,9 @@ void PrintJobWorker::GetSettingsWithUI(
   // weak_factory_ creates pointers valid only on owner_ thread.
   printing_context_->AskUserForSettings(
       document_page_count, has_selection, is_scripted,
-      base::Bind(&PostOnOwnerThread, base::WrapRefCounted(owner_),
-                 base::Bind(&PrintJobWorker::GetSettingsDone,
-                            weak_factory_.GetWeakPtr())));
+      base::BindOnce(&PostOnOwnerThread, base::WrapRefCounted(owner_),
+                     base::BindOnce(&PrintJobWorker::GetSettingsDone,
+                                    weak_factory_.GetWeakPtr())));
 }
 
 void PrintJobWorker::UseDefaultSettings() {

@@ -40,7 +40,7 @@ class PRINTING_EXPORT PrintingContextLinux : public PrintingContext {
   void AskUserForSettings(int max_pages,
                           bool has_selection,
                           bool is_scripted,
-                          const PrintSettingsCallback& callback) override;
+                          PrintSettingsCallback callback) override;
   gfx::Size GetPdfPaperSizeDeviceUnits() override;
   Result UseDefaultSettings() override;
   Result UpdatePrinterSettings(bool external_preview,
