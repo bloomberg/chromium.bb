@@ -8,6 +8,11 @@
 #include "base/macros.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+namespace base {
+template <typename T>
+struct DefaultSingletonTraits;
+}
+
 namespace prefs {
 class InProcessPrefServiceFactory;
 }
@@ -21,6 +26,9 @@ class InProcessPrefServiceFactoryFactory
       content::BrowserContext* context);
 
  private:
+  friend struct base::DefaultSingletonTraits<
+      InProcessPrefServiceFactoryFactory>;
+
   InProcessPrefServiceFactoryFactory();
   ~InProcessPrefServiceFactoryFactory() override;
 
