@@ -373,24 +373,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                     getControlContainerHeightResource());
         }
 
-        if (mBottomSheet != null) {
-            mBottomSheet.setTabModelSelector(mTabModelSelector);
-            mBottomSheet.setFullscreenManager(mFullscreenManager);
-
-            mFadingBackgroundView = (FadingBackgroundView) findViewById(R.id.fading_focus_target);
-            mBottomSheet.addObserver(new EmptyBottomSheetObserver() {
-                @Override
-                public void onTransitionPeekToHalf(float transitionFraction) {
-                    mFadingBackgroundView.setViewAlpha(transitionFraction);
-                }
-            });
-            mFadingBackgroundView.addObserver(mBottomSheet);
-
-            mBottomSheetContentController =
-                    (BottomSheetContentController) ((ViewStub) findViewById(R.id.bottom_nav_stub))
-                            .inflate();
-            mBottomSheetContentController.init(mBottomSheet, mTabModelSelector, this);
-        }
         ((BottomContainer) findViewById(R.id.bottom_container)).initialize(mFullscreenManager);
 
         mModalDialogManager = createModalDialogManager();
@@ -449,13 +431,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 int toolbarLayoutId = getToolbarLayoutId();
                 if (toolbarLayoutId != NO_TOOLBAR_LAYOUT && controlContainer != null) {
                     controlContainer.initWithToolbar(toolbarLayoutId);
-                }
-
-                // Get a handle to the bottom sheet if using the bottom control container.
-                if (controlContainerLayoutId == R.layout.bottom_control_container) {
-                    View coordinator = findViewById(R.id.coordinator);
-                    mBottomSheet = (BottomSheet) findViewById(R.id.bottom_sheet);
-                    mBottomSheet.init(coordinator, controlContainer.getView(), this);
                 }
             } finally {
                 StrictMode.setThreadPolicy(oldPolicy);
@@ -1252,6 +1227,29 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         }
         VrShellDelegate.onNativeLibraryAvailable();
         super.finishNativeInitialization();
+
+        if (FeatureUtilities.isChromeDuplexEnabled()) {
+            ViewGroup coordinator = (ViewGroup) findViewById(R.id.coordinator);
+            getLayoutInflater().inflate(R.layout.bottom_sheet, coordinator);
+            mBottomSheet = coordinator.findViewById(R.id.bottom_sheet);
+            mBottomSheet.init(coordinator, this);
+            mBottomSheet.setTabModelSelector(mTabModelSelector);
+            mBottomSheet.setFullscreenManager(mFullscreenManager);
+
+            mFadingBackgroundView = (FadingBackgroundView) findViewById(R.id.fading_focus_target);
+            mBottomSheet.addObserver(new EmptyBottomSheetObserver() {
+                @Override
+                public void onTransitionPeekToHalf(float transitionFraction) {
+                    mFadingBackgroundView.setViewAlpha(transitionFraction);
+                }
+            });
+            mFadingBackgroundView.addObserver(mBottomSheet);
+
+            mBottomSheetContentController =
+                    (BottomSheetContentController) ((ViewStub) findViewById(R.id.bottom_nav_stub))
+                            .inflate();
+            mBottomSheetContentController.init(mBottomSheet, mTabModelSelector, this);
+        }
     }
 
     /**
@@ -1368,7 +1366,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * @return The resource id that contains how large the browser controls are.
      */
     public int getControlContainerHeightResource() {
-        if (mBottomSheet != null) return R.dimen.bottom_control_container_height;
         return R.dimen.control_container_height;
     }
 
@@ -1933,7 +1930,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_HISTORY_MANAGER);
             }
             RecordUserAction.record("MobileMenuHistory");
-            HistoryManagerUtils.showHistoryManager(this, currentTab, true);
+            HistoryManagerUtils.showHistoryManager(this, currentTab);
             StartupMetrics.getInstance().recordOpenedHistory();
         } else if (id == R.id.share_menu_id || id == R.id.direct_share_menu_id) {
             onShareMenuItemSelected(id == R.id.direct_share_menu_id,
