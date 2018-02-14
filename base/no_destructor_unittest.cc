@@ -62,6 +62,10 @@ TEST(NoDestructorTest, Accessors) {
   EXPECT_EQ(0, awesome.get()->compare("awesome"));
 }
 
+TEST(NoDestructorTest, InitializerList) {
+  static NoDestructor<std::vector<std::string>> vector({"a", "b", "c"});
+}
+
 }  // namespace
 
 }  // namespace base
