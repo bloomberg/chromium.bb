@@ -4487,15 +4487,19 @@ TEST_F(GLES2ImplementationTest, SignalSyncToken) {
 
   // Request a signal sync token, which gives a callback to the GpuControl to
   // run when the sync token is reached.
-  base::Closure signal_closure;
-  EXPECT_CALL(*gpu_control_, SignalSyncToken(_, _))
-      .WillOnce(SaveArg<1>(&signal_closure));
-  gl_->SignalSyncToken(sync_token, base::Bind(&CountCallback, &signaled_count));
+  base::OnceClosure signal_closure;
+  EXPECT_CALL(*gpu_control_, DoSignalSyncToken(_, _))
+      .WillOnce(Invoke([&signal_closure](const SyncToken& sync_token,
+                                         base::OnceClosure* callback) {
+        signal_closure = std::move(*callback);
+      }));
+  gl_->SignalSyncToken(sync_token,
+                       base::BindOnce(&CountCallback, &signaled_count));
   EXPECT_EQ(0, signaled_count);
 
   // When GpuControl runs the callback, the original callback we gave to
   // GLES2Implementation is run.
-  signal_closure.Run();
+  std::move(signal_closure).Run();
   EXPECT_EQ(1, signaled_count);
 }
 
@@ -4517,10 +4521,14 @@ TEST_F(GLES2ImplementationTest, SignalSyncTokenAfterContextLoss) {
 
   // Request a signal sync token, which gives a callback to the GpuControl to
   // run when the sync token is reached.
-  base::Closure signal_closure;
-  EXPECT_CALL(*gpu_control_, SignalSyncToken(_, _))
-      .WillOnce(SaveArg<1>(&signal_closure));
-  gl_->SignalSyncToken(sync_token, base::Bind(&CountCallback, &signaled_count));
+  base::OnceClosure signal_closure;
+  EXPECT_CALL(*gpu_control_, DoSignalSyncToken(_, _))
+      .WillOnce(Invoke([&signal_closure](const SyncToken& sync_token,
+                                         base::OnceClosure* callback) {
+        signal_closure = std::move(*callback);
+      }));
+  gl_->SignalSyncToken(sync_token,
+                       base::BindOnce(&CountCallback, &signaled_count));
   EXPECT_EQ(0, signaled_count);
 
   // Inform the GLES2Implementation that the context is lost.
@@ -4530,7 +4538,7 @@ TEST_F(GLES2ImplementationTest, SignalSyncTokenAfterContextLoss) {
   // When GpuControl runs the callback, the original callback we gave to
   // GLES2Implementation is *not* run, since the context is lost and we
   // have already run the lost context callback.
-  signal_closure.Run();
+  std::move(signal_closure).Run();
   EXPECT_EQ(0, signaled_count);
 }
 

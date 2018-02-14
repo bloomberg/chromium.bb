@@ -30,8 +30,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GpuInProcessThreadService
       const GpuPreferences& gpu_preferences);
 
   // gpu::InProcessCommandBuffer::Service implementation.
-  void ScheduleTask(const base::Closure& task) override;
-  void ScheduleDelayedWork(const base::Closure& task) override;
+  void ScheduleTask(base::OnceClosure task) override;
+  void ScheduleDelayedWork(base::OnceClosure task) override;
   bool UseVirtualizedGLContexts() override;
   gpu::SyncPointManager* sync_point_manager() override;
   void AddRef() const override;

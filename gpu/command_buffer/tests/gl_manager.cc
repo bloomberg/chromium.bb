@@ -14,6 +14,7 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
@@ -517,7 +518,7 @@ void GLManager::DestroyImage(int32_t id) {
   image_manager_.RemoveImage(id);
 }
 
-void GLManager::SignalQuery(uint32_t query, const base::Closure& callback) {
+void GLManager::SignalQuery(uint32_t query, base::OnceClosure callback) {
   NOTIMPLEMENTED();
 }
 
@@ -560,8 +561,9 @@ bool GLManager::IsFenceSyncReleased(uint64_t release) {
 }
 
 void GLManager::SignalSyncToken(const gpu::SyncToken& sync_token,
-                                const base::Closure& callback) {
-  command_buffer_->SignalSyncToken(sync_token, callback);
+                                base::OnceClosure callback) {
+  command_buffer_->SignalSyncToken(
+      sync_token, base::AdaptCallbackForRepeating(std::move(callback)));
 }
 
 void GLManager::WaitSyncTokenHint(const gpu::SyncToken& sync_token) {}

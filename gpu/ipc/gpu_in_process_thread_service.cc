@@ -25,12 +25,12 @@ GpuInProcessThreadService::GpuInProcessThreadService(
       task_runner_(task_runner),
       sync_point_manager_(sync_point_manager) {}
 
-void GpuInProcessThreadService::ScheduleTask(const base::Closure& task) {
-  task_runner_->PostTask(FROM_HERE, task);
+void GpuInProcessThreadService::ScheduleTask(base::OnceClosure task) {
+  task_runner_->PostTask(FROM_HERE, std::move(task));
 }
 
-void GpuInProcessThreadService::ScheduleDelayedWork(const base::Closure& task) {
-  task_runner_->PostDelayedTask(FROM_HERE, task,
+void GpuInProcessThreadService::ScheduleDelayedWork(base::OnceClosure task) {
+  task_runner_->PostDelayedTask(FROM_HERE, std::move(task),
                                 base::TimeDelta::FromMilliseconds(2));
 }
 bool GpuInProcessThreadService::UseVirtualizedGLContexts() {
