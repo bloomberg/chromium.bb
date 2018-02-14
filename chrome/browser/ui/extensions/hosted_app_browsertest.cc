@@ -71,6 +71,14 @@ constexpr const char kAppDotComManifest[] = R"( { "name": "Hosted App",
   }
 } )";
 
+enum class AppType {
+  HOSTED_APP,
+  BOOKMARK_APP,
+};
+
+const auto kAppTypeValues =
+    ::testing::Values(AppType::HOSTED_APP, AppType::BOOKMARK_APP);
+
 void NavigateToURLAndWait(Browser* browser, const GURL& url) {
   content::TestNavigationObserver observer(
       browser->tab_strip_model()->GetActiveWebContents(),
@@ -93,14 +101,20 @@ void NavigateAndCheckForLocationBar(Browser* browser,
 
 }  // namespace
 
-class HostedAppTest : public ExtensionBrowserTest,
-                      public ::testing::WithParamInterface<bool> {
+// Parameters are {app_type, desktop_pwa_flag}. |app_type| controls whether it
+// is a Hosted or Bookmark app. |desktop_pwa_flag| enables the
+// kDesktopPWAWindowing flag.
+class HostedAppTest
+    : public ExtensionBrowserTest,
+      public ::testing::WithParamInterface<std::tuple<AppType, bool>> {
  public:
   HostedAppTest() : app_browser_(nullptr) {}
   ~HostedAppTest() override {}
 
   void SetUp() override {
-    if (GetParam()) {
+    bool desktop_pwa_flag;
+    std::tie(app_type_, desktop_pwa_flag) = GetParam();
+    if (desktop_pwa_flag) {
       scoped_feature_list_.InitAndEnableFeature(features::kDesktopPWAWindowing);
     } else {
 #if defined(OS_MACOSX)
@@ -112,15 +126,16 @@ class HostedAppTest : public ExtensionBrowserTest,
   }
 
  protected:
-  void SetupApp(const std::string& app_folder, bool is_bookmark_app) {
-    SetupApp(test_data_dir_.AppendASCII(app_folder), is_bookmark_app);
+  void SetupApp(const std::string& app_folder) {
+    SetupApp(test_data_dir_.AppendASCII(app_folder));
   }
 
-  void SetupApp(const base::FilePath& app_folder, bool is_bookmark_app) {
+  void SetupApp(const base::FilePath& app_folder) {
     const Extension* app = InstallExtensionWithSourceAndFlags(
         app_folder, 1, extensions::Manifest::INTERNAL,
-        is_bookmark_app ? extensions::Extension::FROM_BOOKMARK
-                        : extensions::Extension::NO_FLAGS);
+        app_type_ == AppType::BOOKMARK_APP
+            ? extensions::Extension::FROM_BOOKMARK
+            : extensions::Extension::NO_FLAGS);
     ASSERT_TRUE(app);
 
     // Launch it in a window.
@@ -159,8 +174,11 @@ class HostedAppTest : public ExtensionBrowserTest,
 
   Browser* app_browser_;
 
+  AppType app_type() const { return app_type_; }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  AppType app_type_;
 
   DISALLOW_COPY_AND_ASSIGN(HostedAppTest);
 };
@@ -168,7 +186,7 @@ class HostedAppTest : public ExtensionBrowserTest,
 // Tests that "Open link in new tab" opens a link in a foreground tab.
 // Flaky, see https://crbug.com/795055
 IN_PROC_BROWSER_TEST_P(HostedAppTest, DISABLED_OpenLinkInNewTab) {
-  SetupApp("app", true);
+  SetupApp("app");
 
   const GURL url("http://www.foo.com/");
   TestAppActionOpensForegroundTab(
@@ -203,7 +221,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, CtrlClickLink) {
   extensions::TestExtensionDir test_app_dir;
   test_app_dir.WriteManifest(
       base::StringPrintf(kAppDotComManifest, app_url.spec().c_str()));
-  SetupApp(test_app_dir.UnpackedPath(), false);
+  SetupApp(test_app_dir.UnpackedPath());
   // Wait for the URL to load so that we can click on the page.
   url_observer.Wait();
 
@@ -228,9 +246,9 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, CtrlClickLink) {
       url);
 }
 
-// Check that the location bar is shown correctly for bookmark apps.
-IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBarForBookmarkApp) {
-  SetupApp("app", true);
+// Check that the location bar is shown correctly.
+IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBar) {
+  SetupApp("app");
 
   // Navigate to the app's launch page; the location bar should be hidden.
   NavigateAndCheckForLocationBar(
@@ -246,10 +264,10 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBarForBookmarkApp) {
       app_browser_, "http://www.foo.com/blah", true);
 }
 
-// Check that the location bar is shown correctly for HTTP bookmark apps when
-// they navigate to a HTTPS page on the same origin.
-IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBarForHTTPBookmarkApp) {
-  SetupApp("app", true);
+// Check that the location bar is shown correctly for HTTP apps when they
+// navigate to a HTTPS page on the same origin.
+IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBarForHTTPApp) {
+  SetupApp("app");
 
   // Navigate to the app's launch page; the location bar should be hidden.
   NavigateAndCheckForLocationBar(
@@ -261,11 +279,10 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBarForHTTPBookmarkApp) {
       app_browser_, "https://www.example.com/blah", false);
 }
 
-// Check that the location bar is shown correctly for HTTPS bookmark apps when
-// they navigate to a HTTP page on the same origin.
-IN_PROC_BROWSER_TEST_P(HostedAppTest,
-                       ShouldShowLocationBarForHTTPSBookmarkApp) {
-  SetupApp("https_app", true);
+// Check that the location bar is shown correctly for HTTPS apps when they
+// navigate to a HTTP page on the same origin.
+IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBarForHTTPSApp) {
+  SetupApp("https_app");
 
   // Navigate to the app's launch page; the location bar should be hidden.
   NavigateAndCheckForLocationBar(
@@ -278,28 +295,10 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest,
       app_browser_, "http://www.example.com/blah", true);
 }
 
-// Check that the location bar is shown correctly for normal hosted apps.
-IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBarForHostedApp) {
-  SetupApp("app", false);
-
-  // Navigate to the app's launch page; the location bar should be hidden.
-  NavigateAndCheckForLocationBar(
-      app_browser_, "http://www.example.com/empty.html", false);
-
-  // Navigate to another page on the same origin; the location bar should still
-  // hidden.
-  NavigateAndCheckForLocationBar(
-      app_browser_, "http://www.example.com/blah", false);
-
-  // Navigate to different origin; the location bar should now be visible.
-  NavigateAndCheckForLocationBar(
-      app_browser_, "http://www.foo.com/blah", true);
-}
-
-// Check that the location bar is shown correctly for hosted apps that specify
-// start URLs without the 'www.' prefix.
-IN_PROC_BROWSER_TEST_P(HostedAppTest, LocationBarForHostedAppWithoutWWW) {
-  SetupApp("app_no_www", false);
+// Check that the location bar is shown correctly for apps that specify start
+// URLs without the 'www.' prefix.
+IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBarForAppWithoutWWW) {
+  SetupApp("app_no_www");
 
   // Navigate to the app's launch page; the location bar should be hidden.
   NavigateAndCheckForLocationBar(
@@ -318,6 +317,10 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, LocationBarForHostedAppWithoutWWW) {
 // Check that a subframe on a regular web page can navigate to a URL that
 // redirects to a hosted app.  https://crbug.com/721949.
 IN_PROC_BROWSER_TEST_P(HostedAppTest, SubframeRedirectsToHostedApp) {
+  // This test only applies to hosted apps.
+  if (app_type() != AppType::HOSTED_APP)
+    return;
+
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Set up an app which covers app.com URLs.
@@ -325,7 +328,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, SubframeRedirectsToHostedApp) {
   extensions::TestExtensionDir test_app_dir;
   test_app_dir.WriteManifest(
       base::StringPrintf(kAppDotComManifest, app_url.spec().c_str()));
-  SetupApp(test_app_dir.UnpackedPath(), false);
+  SetupApp(test_app_dir.UnpackedPath());
 
   // Navigate a regular tab to a page with a subframe.
   GURL url = embedded_test_server()->GetURL("foo.com", "/iframe.html");
@@ -351,6 +354,9 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, SubframeRedirectsToHostedApp) {
 }
 
 IN_PROC_BROWSER_TEST_P(HostedAppTest, BookmarkAppThemeColor) {
+  if (app_type() != AppType::BOOKMARK_APP)
+    return;
+
   {
     WebApplicationInfo web_app_info;
     web_app_info.app_url = GURL(kExampleURL);
@@ -384,6 +390,9 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, BookmarkAppThemeColor) {
 // Ensure that hosted app windows with blank titles don't display the URL as a
 // default window title.
 IN_PROC_BROWSER_TEST_P(HostedAppTest, Title) {
+  if (app_type() != AppType::BOOKMARK_APP)
+    return;
+
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("app.site.com", "/empty.html");
   WebApplicationInfo web_app_info;
@@ -749,7 +758,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest, IframesInsideHostedApp) {
   extensions::TestExtensionDir test_app_dir;
   test_app_dir.WriteManifest(
       base::StringPrintf(kHostedAppProcessModelManifest, url.spec().c_str()));
-  SetupApp(test_app_dir.UnpackedPath(), false);
+  SetupApp(test_app_dir.UnpackedPath());
 
   content::WebContents* web_contents =
       app_browser_->tab_strip_model()->GetActiveWebContents();
@@ -853,7 +862,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest,
   extensions::TestExtensionDir test_app_dir;
   test_app_dir.WriteManifest(base::StringPrintf(kHostedAppProcessModelManifest,
                                                 app_url.spec().c_str()));
-  SetupApp(test_app_dir.UnpackedPath(), false);
+  SetupApp(test_app_dir.UnpackedPath());
 
   content::WebContents* web_contents =
       app_browser_->tab_strip_model()->GetActiveWebContents();
@@ -921,7 +930,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest, PopupsInsideHostedApp) {
   extensions::TestExtensionDir test_app_dir;
   test_app_dir.WriteManifest(
       base::StringPrintf(kHostedAppProcessModelManifest, url.spec().c_str()));
-  SetupApp(test_app_dir.UnpackedPath(), false);
+  SetupApp(test_app_dir.UnpackedPath());
 
   content::WebContents* web_contents =
       app_browser_->tab_strip_model()->GetActiveWebContents();
@@ -1016,7 +1025,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest, MAYBE_FromOutsideHostedApp) {
   extensions::TestExtensionDir test_app_dir;
   test_app_dir.WriteManifest(base::StringPrintf(kHostedAppProcessModelManifest,
                                                 app_url.spec().c_str()));
-  SetupApp(test_app_dir.UnpackedPath(), false);
+  SetupApp(test_app_dir.UnpackedPath());
 
   content::WebContents* web_contents =
       app_browser_->tab_strip_model()->GetActiveWebContents();
@@ -1131,7 +1140,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppIsolatedOriginTest,
   extensions::TestExtensionDir test_app_dir;
   test_app_dir.WriteManifest(base::StringPrintf(
       kHostedAppWithinIsolatedOriginManifest, app_url.spec().c_str()));
-  SetupApp(test_app_dir.UnpackedPath(), false);
+  SetupApp(test_app_dir.UnpackedPath());
 
   content::WebContents* web_contents =
       app_browser_->tab_strip_model()->GetActiveWebContents();
@@ -1203,7 +1212,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppIsolatedOriginTest,
   extensions::TestExtensionDir test_app_dir;
   test_app_dir.WriteManifest(base::StringPrintf(
       kHostedAppBroaderThanIsolatedOriginManifest, app_url.spec().c_str()));
-  SetupApp(test_app_dir.UnpackedPath(), false);
+  SetupApp(test_app_dir.UnpackedPath());
 
   content::WebContents* web_contents =
       app_browser_->tab_strip_model()->GetActiveWebContents();
@@ -1228,13 +1237,20 @@ IN_PROC_BROWSER_TEST_P(HostedAppIsolatedOriginTest,
       web_contents->GetMainFrame()->GetProcess()->GetID()));
 }
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */, HostedAppTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(/* no prefix */,
+                        HostedAppTest,
+                        ::testing::Combine(kAppTypeValues, ::testing::Bool()));
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         HostedAppPWAOnlyTest,
-                        ::testing::Values(true));
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        HostedAppProcessModelTest,
-                        ::testing::Bool());
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        HostedAppIsolatedOriginTest,
-                        ::testing::Bool());
+                        ::testing::Values(std::tuple<AppType, bool>{
+                            AppType::BOOKMARK_APP, true}));
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    HostedAppProcessModelTest,
+    ::testing::Combine(::testing::Values(AppType::HOSTED_APP),
+                       ::testing::Bool()));
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    HostedAppIsolatedOriginTest,
+    ::testing::Combine(::testing::Values(AppType::HOSTED_APP),
+                       ::testing::Bool()));
