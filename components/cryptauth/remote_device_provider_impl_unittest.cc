@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
+#include "components/cryptauth/fake_cryptauth_device_manager.h"
 #include "components/cryptauth/fake_secure_message_delegate.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/remote_device_loader.h"
@@ -29,21 +30,6 @@ namespace {
 
 const char kTestUserId[] = "testUserId";
 const char kTestUserPrivateKey[] = "kTestUserPrivateKey";
-
-class MockCryptAuthDeviceManager : public cryptauth::CryptAuthDeviceManager {
- public:
-  ~MockCryptAuthDeviceManager() override {}
-
-  void NotifySyncFinished(
-      CryptAuthDeviceManager::SyncResult sync_result,
-      CryptAuthDeviceManager::DeviceChangeResult device_change_result) {
-    cryptauth::CryptAuthDeviceManager::NotifySyncFinished(sync_result,
-                                                          device_change_result);
-  }
-
-  MOCK_CONST_METHOD0(GetSyncedDevices,
-                     std::vector<::cryptauth::ExternalDeviceInfo>());
-};
 
 class FakeSecureMessageDelegateFactory
     : public cryptauth::SecureMessageDelegate::Factory {
@@ -168,12 +154,7 @@ class RemoteDeviceProviderImplTest : public testing::Test {
   RemoteDeviceProviderImplTest() {}
 
   void SetUp() override {
-    mock_device_manager_ =
-        base::WrapUnique(new NiceMock<MockCryptAuthDeviceManager>());
-    ON_CALL(*mock_device_manager_, GetSyncedDevices())
-        .WillByDefault(Invoke(
-            this,
-            &RemoteDeviceProviderImplTest::mock_device_manager_sync_devices));
+    fake_device_manager_ = std::make_unique<FakeCryptAuthDeviceManager>();
     fake_secure_message_delegate_factory_ =
         std::make_unique<FakeSecureMessageDelegateFactory>();
     test_device_loader_factory_ =
@@ -185,35 +166,29 @@ class RemoteDeviceProviderImplTest : public testing::Test {
 
   void CreateRemoteDeviceProvider() {
     remote_device_provider_ = std::make_unique<RemoteDeviceProviderImpl>(
-        mock_device_manager_.get(), kTestUserId, kTestUserPrivateKey,
+        fake_device_manager_.get(), kTestUserId, kTestUserPrivateKey,
         fake_secure_message_delegate_factory_.get());
     remote_device_provider_->AddObserver(test_observer_.get());
     EXPECT_EQ(0u, remote_device_provider_->GetSyncedDevices().size());
     test_device_loader_factory_->InvokeLastCallback(
-        mock_device_manager_synced_device_infos_);
+        fake_device_manager_->GetSyncedDevices());
     VerifySyncedDevicesMatchExpectation(
-        mock_device_manager_synced_device_infos_.size());
+        fake_device_manager_->GetSyncedDevices().size());
   }
 
   void VerifySyncedDevicesMatchExpectation(size_t expected_size) {
     std::vector<cryptauth::RemoteDevice> synced_devices =
         remote_device_provider_->GetSyncedDevices();
     EXPECT_EQ(expected_size, synced_devices.size());
-    EXPECT_EQ(expected_size, mock_device_manager_sync_devices().size());
+    EXPECT_EQ(expected_size, fake_device_manager_->GetSyncedDevices().size());
     std::unordered_set<std::string> public_keys;
-    for (const auto& device_info : mock_device_manager_synced_device_infos_) {
+    for (const auto& device_info : fake_device_manager_->GetSyncedDevices()) {
       public_keys.insert(device_info.public_key());
     }
     for (const auto& remote_device : synced_devices) {
       EXPECT_TRUE(public_keys.find(remote_device.public_key) !=
                   public_keys.end());
     }
-  }
-
-  // This is the mock implementation of mock_device_manager_'s
-  // GetSyncedDevices().
-  std::vector<ExternalDeviceInfo> mock_device_manager_sync_devices() {
-    return mock_device_manager_synced_device_infos_;
   }
 
   std::vector<cryptauth::RemoteDevice> test_devices() {
@@ -224,13 +199,10 @@ class RemoteDeviceProviderImplTest : public testing::Test {
     return test_device_loader_factory_->test_device_infos_[val];
   }
 
-  std::vector<cryptauth::ExternalDeviceInfo>
-      mock_device_manager_synced_device_infos_;
-
   std::unique_ptr<FakeSecureMessageDelegateFactory>
       fake_secure_message_delegate_factory_;
 
-  std::unique_ptr<NiceMock<MockCryptAuthDeviceManager>> mock_device_manager_;
+  std::unique_ptr<FakeCryptAuthDeviceManager> fake_device_manager_;
 
   std::unique_ptr<FakeDeviceLoader::TestRemoteDeviceLoaderFactory>
       test_device_loader_factory_;
@@ -245,78 +217,78 @@ class RemoteDeviceProviderImplTest : public testing::Test {
 
 TEST_F(RemoteDeviceProviderImplTest, TestMultipleSyncs) {
   // Initialize with devices 0 and 1.
-  mock_device_manager_synced_device_infos_ = std::vector<ExternalDeviceInfo>{
-      test_device_infos_(0), test_device_infos_(1)};
+  fake_device_manager_->synced_devices().push_back(test_device_infos_(0));
+  fake_device_manager_->synced_devices().push_back(test_device_infos_(1));
   CreateRemoteDeviceProvider();
   VerifySyncedDevicesMatchExpectation(2u /* expected_size */);
   EXPECT_EQ(1, test_observer_->num_times_device_list_changed());
 
   // Now add device 2 and trigger another sync.
-  mock_device_manager_synced_device_infos_.push_back(test_device_infos_(2));
-  mock_device_manager_->NotifySyncFinished(
+  fake_device_manager_->synced_devices().push_back(test_device_infos_(2));
+  fake_device_manager_->NotifySyncFinished(
       CryptAuthDeviceManager::SyncResult::SUCCESS,
       CryptAuthDeviceManager::DeviceChangeResult::CHANGED);
   test_device_loader_factory_->InvokeLastCallback(
-      mock_device_manager_synced_device_infos_);
+      fake_device_manager_->GetSyncedDevices());
   VerifySyncedDevicesMatchExpectation(3u /* expected_size */);
   EXPECT_EQ(2, test_observer_->num_times_device_list_changed());
 
   // Now, simulate a sync which shows that device 0 was removed.
-  mock_device_manager_synced_device_infos_.erase(
-      mock_device_manager_synced_device_infos_.begin());
-  mock_device_manager_->NotifySyncFinished(
+  fake_device_manager_->synced_devices().erase(
+      fake_device_manager_->synced_devices().begin());
+  fake_device_manager_->NotifySyncFinished(
       CryptAuthDeviceManager::SyncResult::SUCCESS,
       CryptAuthDeviceManager::DeviceChangeResult::CHANGED);
   test_device_loader_factory_->InvokeLastCallback(
-      mock_device_manager_synced_device_infos_);
+      fake_device_manager_->GetSyncedDevices());
   VerifySyncedDevicesMatchExpectation(2u /* expected_size */);
   EXPECT_EQ(3, test_observer_->num_times_device_list_changed());
 }
 
 TEST_F(RemoteDeviceProviderImplTest,
        TestNotifySyncFinishedParameterCombinations) {
-  mock_device_manager_synced_device_infos_.push_back(test_device_infos_(0));
+  fake_device_manager_->synced_devices().push_back(test_device_infos_(0));
   CreateRemoteDeviceProvider();
   VerifySyncedDevicesMatchExpectation(1u /* expected_size */);
-  mock_device_manager_->NotifySyncFinished(
+  fake_device_manager_->NotifySyncFinished(
       CryptAuthDeviceManager::SyncResult::FAILURE,
       CryptAuthDeviceManager::DeviceChangeResult::CHANGED);
   EXPECT_FALSE(test_device_loader_factory_->HasQueuedCallback());
   VerifySyncedDevicesMatchExpectation(1u /* expected_size */);
   EXPECT_EQ(1, test_observer_->num_times_device_list_changed());
 
-  mock_device_manager_->NotifySyncFinished(
+  fake_device_manager_->NotifySyncFinished(
       CryptAuthDeviceManager::SyncResult::SUCCESS,
       CryptAuthDeviceManager::DeviceChangeResult::UNCHANGED);
   EXPECT_FALSE(test_device_loader_factory_->HasQueuedCallback());
   VerifySyncedDevicesMatchExpectation(1u /* expected_size */);
   EXPECT_EQ(1, test_observer_->num_times_device_list_changed());
 
-  mock_device_manager_->NotifySyncFinished(
+  fake_device_manager_->NotifySyncFinished(
       CryptAuthDeviceManager::SyncResult::FAILURE,
       CryptAuthDeviceManager::DeviceChangeResult::UNCHANGED);
   EXPECT_FALSE(test_device_loader_factory_->HasQueuedCallback());
   VerifySyncedDevicesMatchExpectation(1u /* expected_size */);
   EXPECT_EQ(1, test_observer_->num_times_device_list_changed());
 
-  mock_device_manager_synced_device_infos_.push_back(test_device_infos_(1));
-  mock_device_manager_->NotifySyncFinished(
+  fake_device_manager_->synced_devices().push_back(test_device_infos_(1));
+  fake_device_manager_->NotifySyncFinished(
       CryptAuthDeviceManager::SyncResult::SUCCESS,
       CryptAuthDeviceManager::DeviceChangeResult::CHANGED);
   test_device_loader_factory_->InvokeLastCallback(
-      mock_device_manager_synced_device_infos_);
+      fake_device_manager_->GetSyncedDevices());
   VerifySyncedDevicesMatchExpectation(2u /* expected_size */);
   EXPECT_EQ(2, test_observer_->num_times_device_list_changed());
 }
 
 TEST_F(RemoteDeviceProviderImplTest, TestNewSyncDuringDeviceRegeneration) {
-  mock_device_manager_synced_device_infos_.push_back(test_device_infos_(0));
+  fake_device_manager_->synced_devices().push_back(test_device_infos_(0));
   CreateRemoteDeviceProvider();
   VerifySyncedDevicesMatchExpectation(1u /* expected_size */);
 
   // Add device 1 and trigger a sync.
-  mock_device_manager_synced_device_infos_.push_back(test_device_infos_(1));
-  mock_device_manager_->NotifySyncFinished(
+  fake_device_manager_->synced_devices().push_back(test_device_infos_(1));
+  fake_device_manager_->NotifySyncFinished(
       CryptAuthDeviceManager::SyncResult::SUCCESS,
       CryptAuthDeviceManager::DeviceChangeResult::CHANGED);
   EXPECT_EQ(1, test_observer_->num_times_device_list_changed());
@@ -324,12 +296,12 @@ TEST_F(RemoteDeviceProviderImplTest, TestNewSyncDuringDeviceRegeneration) {
   // Do not wait for the new devices to be generated (i.e., don't call
   // test_device_loader_factory_->InvokeLastCallback() yet). Trigger a new
   // sync with device 2 included.
-  mock_device_manager_synced_device_infos_.push_back(test_device_infos_(2));
-  mock_device_manager_->NotifySyncFinished(
+  fake_device_manager_->synced_devices().push_back(test_device_infos_(2));
+  fake_device_manager_->NotifySyncFinished(
       CryptAuthDeviceManager::SyncResult::SUCCESS,
       CryptAuthDeviceManager::DeviceChangeResult::CHANGED);
   test_device_loader_factory_->InvokeLastCallback(
-      mock_device_manager_synced_device_infos_);
+      fake_device_manager_->GetSyncedDevices());
   VerifySyncedDevicesMatchExpectation(3u /* expected_size */);
   EXPECT_EQ(2, test_observer_->num_times_device_list_changed());
 }
@@ -338,7 +310,7 @@ TEST_F(RemoteDeviceProviderImplTest, TestZeroSyncedDevices) {
   CreateRemoteDeviceProvider();
   VerifySyncedDevicesMatchExpectation(0 /* expected_size */);
   EXPECT_EQ(1, test_observer_->num_times_device_list_changed());
-  mock_device_manager_->NotifySyncFinished(
+  fake_device_manager_->NotifySyncFinished(
       CryptAuthDeviceManager::SyncResult::SUCCESS,
       CryptAuthDeviceManager::DeviceChangeResult::UNCHANGED);
   EXPECT_FALSE(test_device_loader_factory_->HasQueuedCallback());
