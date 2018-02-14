@@ -681,7 +681,14 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
                                    base::Unretained(this));
   }
 
-  pending_source_init_ids_.insert(id);
+  // TODO(wolenetz): Change these to DCHECKs or switch to returning
+  // kReachedIdLimit once less verification in release build is needed. See
+  // https://crbug.com/786975.
+  CHECK(pending_source_init_ids_.find(id) == pending_source_init_ids_.end());
+  auto insert_result = pending_source_init_ids_.insert(id);
+  CHECK(insert_result.first != pending_source_init_ids_.end());
+  CHECK(*insert_result.first == id);
+  CHECK(insert_result.second);  // Only true if insertion succeeded.
 
   std::string expected_sbs_codecs = codecs;
   if (codecs == "" && type == "audio/aac")
@@ -1192,10 +1199,11 @@ void ChunkDemuxer::OnSourceInitDone(
 
   // TODO(wolenetz): Change these to DCHECKs once less verification in release
   // build is needed. See https://crbug.com/786975.
-  CHECK_EQ(state_, INITIALIZING);
-  CHECK(!init_cb_.is_null());
-  CHECK(pending_source_init_ids_.find(source_id) !=
-        pending_source_init_ids_.end());
+  const bool is_initializing = state_ == INITIALIZING;
+  const bool init_cb_is_set = !init_cb_.is_null();
+  const bool id_is_pending = pending_source_init_ids_.find(source_id) !=
+                             pending_source_init_ids_.end();
+  CHECK(is_initializing && init_cb_is_set && id_is_pending);
   if (audio_streams_.empty() && video_streams_.empty()) {
     ReportError_Locked(DEMUXER_ERROR_COULD_NOT_OPEN);
     return;
