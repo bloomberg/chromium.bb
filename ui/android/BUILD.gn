@@ -242,10 +242,13 @@ android_library("ui_full_java") {
     "java/src/org/chromium/ui/resources/system/SystemResourceLoader.java",
     "java/src/org/chromium/ui/text/NoUnderlineClickableSpan.java",
     "java/src/org/chromium/ui/text/SpanApplier.java",
+    "java/src/org/chromium/ui/widget/AnchoredPopupWindow.java",
     "java/src/org/chromium/ui/widget/ButtonCompat.java",
+    "java/src/org/chromium/ui/widget/RectProvider.java",
     "java/src/org/chromium/ui/widget/TextViewWithClickableSpans.java",
     "java/src/org/chromium/ui/widget/TextViewWithLeading.java",
     "java/src/org/chromium/ui/widget/Toast.java",
+    "java/src/org/chromium/ui/widget/ViewRectProvider.java",
   ]
   deps = [
     ":ui_java_resources",
@@ -280,6 +283,7 @@ junit_binary("ui_junit_tests") {
     "junit/src/org/chromium/ui/base/ClipboardTest.java",
     "junit/src/org/chromium/ui/base/SelectFileDialogTest.java",
     "junit/src/org/chromium/ui/text/SpanApplierTest.java",
+    "junit/src/org/chromium/ui/widget/AnchoredPopupWindowTest.java",
   ]
   deps = [
     ":ui_java",

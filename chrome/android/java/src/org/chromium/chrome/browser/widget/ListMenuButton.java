@@ -19,6 +19,8 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.ui.widget.AnchoredPopupWindow;
+import org.chromium.ui.widget.ViewRectProvider;
 
 /**
  * A menu button meant to be used with modern lists throughout Chrome.  Will automatically show and
