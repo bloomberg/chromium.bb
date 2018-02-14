@@ -511,15 +511,17 @@ static void init_scaling_function(int scaling_points[][2], int num_points,
 }
 
 // function that extracts samples from a LUT (and interpolates intemediate
-// frames for 10 bit video)
+// frames for 10- and 12-bit video)
 static int scale_LUT(int *scaling_lut, int index, int bit_depth) {
   int x = index >> (bit_depth - 8);
 
-  if (!(bit_depth - 8) || x >= 255)
+  if (!(bit_depth - 8) || x == 255)
     return scaling_lut[x];
   else
-    return scaling_lut[x] +
-           (((scaling_lut[x + 1] - scaling_lut[x]) * (index & 3) + 2) >> 2);
+    return scaling_lut[x] + (((scaling_lut[x + 1] - scaling_lut[x]) *
+                                  (index & ((1 << (bit_depth - 8)) - 1)) +
+                              (1 << (bit_depth - 9))) >>
+                             (bit_depth - 8));
 }
 
 static void add_noise_to_block(aom_film_grain_t *params, uint8_t *luma,
@@ -912,7 +914,8 @@ void av1_add_film_grain_run(aom_film_grain_t *params, uint8_t *luma,
       int chroma_offset_x = left_pad + ar_padding + offset_x;
 
       if (overlap && x) {
-        for (int i = 0; i < AOMMIN(chroma_subblock_size, height / 2 - y); i++) {
+        for (int i = 0; i < AOMMIN(chroma_subblock_size + 1, height / 2 - y);
+             i++) {
           y_col_buf[(i << 1) * 2] =
               clamp((27 * y_col_buf[(i << 1) * 2] +
                      17 * luma_grain_block[(luma_offset_y + (i << 1)) *
@@ -1115,59 +1118,19 @@ void av1_add_film_grain_run(aom_film_grain_t *params, uint8_t *luma,
 
       if (overlap) {
         if (x) {
-          y_line_buf[x << 1] = clamp(
-              (27 * y_line_buf[x << 1] +
-               17 * luma_grain_block[(luma_offset_y + luma_subblock_size) *
-                                         luma_grain_stride +
-                                     luma_offset_x] +
-               16) >>
-                  5,
-              grain_min, grain_max);
-          y_line_buf[(x << 1) + 1] = clamp(
-              (17 * y_line_buf[(x << 1) + 1] +
-               27 * luma_grain_block[(luma_offset_y + luma_subblock_size) *
-                                         luma_grain_stride +
-                                     luma_offset_x + 1] +
-               16) >>
-                  5,
-              grain_min, grain_max);
-          y_line_buf[luma_stride + (x << 1)] = clamp(
-              (27 * y_line_buf[luma_stride + (x << 1)] +
-               17 * luma_grain_block[(luma_offset_y + luma_subblock_size + 1) *
-                                         luma_grain_stride +
-                                     luma_offset_x] +
-               16) >>
-                  5,
-              grain_min, grain_max);
-          y_line_buf[luma_stride + (x << 1) + 1] = clamp(
-              (17 * y_line_buf[luma_stride + (x << 1) + 1] +
-               27 * luma_grain_block[(luma_offset_y + luma_subblock_size + 1) *
-                                         luma_grain_stride +
-                                     luma_offset_x + 1] +
-               16) >>
-                  5,
-              grain_min, grain_max);
+          y_line_buf[x << 1] = y_col_buf[luma_subblock_size * 2];
+          y_line_buf[(x << 1) + 1] = y_col_buf[luma_subblock_size * 2 + 1];
+          y_line_buf[luma_stride + (x << 1)] =
+              y_col_buf[luma_subblock_size * 2 + 2];
+          y_line_buf[luma_stride + (x << 1) + 1] =
+              y_col_buf[luma_subblock_size * 2 + 3];
 
-          cb_line_buf[x] = clamp(
-              (23 * cb_col_buf[x] +
-               22 * cb_grain_block[(chroma_offset_y + chroma_subblock_size) *
-                                       chroma_grain_stride +
-                                   chroma_offset_x] +
-               16) >>
-                  5,
-              grain_min, grain_max);
-          cr_line_buf[x] = clamp(
-              (23 * cr_col_buf[x] +
-               22 * cr_grain_block[(chroma_offset_y + chroma_subblock_size) *
-                                       chroma_grain_stride +
-                                   chroma_offset_x] +
-               16) >>
-                  5,
-              grain_min, grain_max);
+          cb_line_buf[x] = cb_col_buf[chroma_subblock_size];
+          cr_line_buf[x] = cr_col_buf[chroma_subblock_size];
         }
 
-        for (int m = overlap && x ? 1 : 0;
-             m < AOMMIN(chroma_subblock_size + 1, width / 2 - x); m++) {
+        for (int m = x ? 1 : 0; m < AOMMIN(chroma_subblock_size, width / 2 - x);
+             m++) {
           y_line_buf[(x + m) << 1] =
               luma_grain_block[(luma_offset_y + luma_subblock_size) *
                                    luma_grain_stride +
