@@ -14,6 +14,7 @@
 #include "ash/frame/header_view.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/resize_handle_window_targeter.h"
@@ -52,8 +53,9 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
  public:
   CustomFrameViewAshWindowStateDelegate(wm::WindowState* window_state,
                                         CustomFrameViewAsh* custom_frame_view,
+                                        HeaderView* header_view,
                                         bool enable_immersive)
-      : window_state_(nullptr) {
+      : window_state_(nullptr), header_view_(header_view) {
     // Add a window state observer to exit fullscreen properly in case
     // fullscreen is exited without going through
     // WindowState::ToggleFullscreen(). This is the case when exiting
@@ -128,6 +130,26 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
     window_state_ = nullptr;
   }
 
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override {
+    DCHECK_EQ(window_state_->window(), window);
+    if (key != ash::kFrameActiveColorKey &&
+        key != ash::kFrameInactiveColorKey) {
+      return;
+    }
+
+    if (key == ash::kFrameActiveColorKey) {
+      header_view_->SetFrameColors(
+          window->GetProperty(ash::kFrameActiveColorKey),
+          header_view_->GetInactiveFrameColor());
+      return;
+    }
+    header_view_->SetFrameColors(
+        header_view_->GetActiveFrameColor(),
+        window->GetProperty(ash::kFrameInactiveColorKey));
+  }
+
   // wm::WindowStateObserver:
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
                                    mojom::WindowStateType old_type) override {
@@ -157,6 +179,7 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
   }
 
   wm::WindowState* window_state_;
+  HeaderView* const header_view_;
   std::unique_ptr<ImmersiveFullscreenController>
       immersive_fullscreen_controller_;
 
@@ -315,14 +338,17 @@ CustomFrameViewAsh::CustomFrameViewAsh(
   frame->non_client_view()->SetOverlayView(overlay_view_);
   frame_window->SetProperty(aura::client::kTopViewColor,
                             header_view_->GetInactiveFrameColor());
-
+  frame_window->SetProperty(ash::kFrameActiveColorKey,
+                            header_view_->GetActiveFrameColor());
+  frame_window->SetProperty(ash::kFrameInactiveColorKey,
+                            header_view_->GetInactiveFrameColor());
   // A delegate for a more complex way of fullscreening the window may already
   // be set. This is the case for packaged apps.
   wm::WindowState* window_state = wm::GetWindowState(frame_window);
   if (!window_state->HasDelegate()) {
     window_state->SetDelegate(std::unique_ptr<wm::WindowStateDelegate>(
-        new CustomFrameViewAshWindowStateDelegate(window_state, this,
-                                                  enable_immersive)));
+        new CustomFrameViewAshWindowStateDelegate(
+            window_state, this, header_view_, enable_immersive)));
   }
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->split_view_controller()->AddObserver(this);
@@ -345,6 +371,10 @@ void CustomFrameViewAsh::SetFrameColors(SkColor active_frame_color,
   header_view_->SetFrameColors(active_frame_color, inactive_frame_color);
   aura::Window* frame_window = frame_->GetNativeWindow();
   frame_window->SetProperty(aura::client::kTopViewColor,
+                            header_view_->GetInactiveFrameColor());
+  frame_window->SetProperty(ash::kFrameActiveColorKey,
+                            header_view_->GetActiveFrameColor());
+  frame_window->SetProperty(ash::kFrameInactiveColorKey,
                             header_view_->GetInactiveFrameColor());
 }
 
@@ -483,6 +513,14 @@ void CustomFrameViewAsh::SetVisible(bool visible) {
 
 const views::View* CustomFrameViewAsh::GetAvatarIconViewForTest() const {
   return header_view_->avatar_icon();
+}
+
+SkColor CustomFrameViewAsh::GetActiveFrameColorForTest() const {
+  return header_view_->GetActiveFrameColor();
+}
+
+SkColor CustomFrameViewAsh::GetInactiveFrameColorForTest() const {
+  return header_view_->GetInactiveFrameColor();
 }
 
 void CustomFrameViewAsh::MaybePaintHeaderForSplitview(

@@ -216,9 +216,18 @@ void DefaultFrameHeader::SetPaintAsActive(bool paint_as_active) {
 
 void DefaultFrameHeader::SetFrameColors(SkColor active_frame_color,
                                         SkColor inactive_frame_color) {
-  active_frame_color_ = active_frame_color;
-  inactive_frame_color_ = inactive_frame_color;
-  UpdateAllButtonImages();
+  bool updated = false;
+  if (active_frame_color_ != active_frame_color) {
+    active_frame_color_ = active_frame_color;
+    updated = true;
+  }
+  if (inactive_frame_color_ != inactive_frame_color) {
+    inactive_frame_color_ = inactive_frame_color;
+    updated = true;
+  }
+
+  if (updated)
+    UpdateAllButtonImages();
 }
 
 SkColor DefaultFrameHeader::GetActiveFrameColor() const {

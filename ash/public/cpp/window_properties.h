@@ -9,6 +9,7 @@
 #include <string>
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/class_property.h"
 
 namespace aura {
@@ -52,6 +53,13 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<int32_t>* const
 // mode and Alt + Tab.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kShowInOverviewKey;
+
+// A property key to store the active color on the window frame.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<SkColor>* const
+    kFrameActiveColorKey;
+// A property key to store the inactive color on the window frame.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<SkColor>* const
+    kFrameInactiveColorKey;
 
 // A property key to store ash::WindowPinType for a window.
 // When setting this property to PINNED or TRUSTED_PINNED, the window manager
