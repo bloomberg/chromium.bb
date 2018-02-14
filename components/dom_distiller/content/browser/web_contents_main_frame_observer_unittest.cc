@@ -28,7 +28,7 @@ class WebContentsMainFrameObserverTest
     ASSERT_FALSE(main_frame_observer_->is_document_loaded_in_main_frame());
   }
 
-  void Navigate(bool main_frame, bool in_page) {
+  void Navigate(bool main_frame, bool same_document) {
     content::RenderFrameHost* rfh = main_rfh();
     content::RenderFrameHostTester* rfh_tester =
         content::RenderFrameHostTester::For(rfh);
@@ -36,7 +36,7 @@ class WebContentsMainFrameObserverTest
       rfh = rfh_tester->AppendChild("subframe");
     std::unique_ptr<content::NavigationHandle> navigation_handle =
         content::NavigationHandle::CreateNavigationHandleForTesting(
-            GURL(), rfh, true, net::OK, in_page);
+            GURL(), rfh, true, net::OK, same_document);
     // Destructor calls DidFinishNavigation.
   }
 
@@ -59,20 +59,20 @@ TEST_F(WebContentsMainFrameObserverTest, IgnoresChildFrameNavigation) {
   ASSERT_FALSE(main_frame_observer_->is_document_loaded_in_main_frame());
 }
 
-TEST_F(WebContentsMainFrameObserverTest, IgnoresInPageNavigation) {
+TEST_F(WebContentsMainFrameObserverTest, IgnoresSameDocumentNavigation) {
   Navigate(true, true);
   ASSERT_FALSE(main_frame_observer_->is_initialized());
   ASSERT_FALSE(main_frame_observer_->is_document_loaded_in_main_frame());
 }
 
 TEST_F(WebContentsMainFrameObserverTest,
-       IgnoresInPageNavigationUnlessMainFrameLoads) {
+       IgnoresSameDocumentavigationUnlessMainFrameLoads) {
   Navigate(true, true);
   ASSERT_FALSE(main_frame_observer_->is_initialized());
   ASSERT_FALSE(main_frame_observer_->is_document_loaded_in_main_frame());
 
-  // Even if we didn't acknowledge an in_page navigation, if the main frame
-  // loads, consider a load complete.
+  // Even if we didn't acknowledge a same-document navigation, if the main
+  // frame loads, consider a load complete.
   main_frame_observer_->DocumentLoadedInFrame(main_rfh());
   ASSERT_TRUE(main_frame_observer_->is_document_loaded_in_main_frame());
 }
