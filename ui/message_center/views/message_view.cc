@@ -4,6 +4,7 @@
 
 #include "ui/message_center/views/message_view.h"
 
+#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -14,8 +15,8 @@
 #include "ui/gfx/shadow_util.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/public/cpp/features.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/message_center/public/cpp/message_center_switches.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -56,11 +57,7 @@ base::string16 CreateAccessibleName(const Notification& notification) {
 }
 
 bool ShouldRoundMessageViewCorners() {
-#if defined(OS_CHROMEOS)
-  return true;
-#else
-  return IsNewStyleNotificationEnabled();
-#endif
+  return base::FeatureList::IsEnabled(message_center::kNewStyleNotifications);
 }
 
 }  // namespace

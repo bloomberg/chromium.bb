@@ -44,7 +44,6 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/message_center/public/cpp/message_center_switches.h"
 #include "ui/message_center/public/cpp/notification.h"
 
 using base::UserMetricsAction;

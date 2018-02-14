@@ -24,7 +24,6 @@
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_types.h"
-#include "ui/message_center/public/cpp/message_center_switches.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
