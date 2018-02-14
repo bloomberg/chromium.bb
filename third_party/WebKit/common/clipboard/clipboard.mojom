@@ -90,6 +90,6 @@ interface ClipboardHost {
 
   CommitWrite(blink.mojom.ClipboardBuffer buffer);
 
-  // OS_MACOSX only
+  [EnableIf=is_mac]
   WriteStringToFindPboard(mojo_base.mojom.String16 text);
 };

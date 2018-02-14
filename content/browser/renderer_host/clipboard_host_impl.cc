@@ -286,10 +286,4 @@ void ClipboardHostImpl::CommitWrite(ui::ClipboardType) {
       new ui::ScopedClipboardWriter(ui::CLIPBOARD_TYPE_COPY_PASTE));
 }
 
-#if !defined(OS_MACOSX)
-void ClipboardHostImpl::WriteStringToFindPboard(const base::string16& text) {
-  mojo::ReportBadMessage("Unexpected call to WriteStringToFindPboard.");
-}
-#endif
-
 }  // namespace content

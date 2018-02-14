@@ -90,7 +90,9 @@ class CONTENT_EXPORT ClipboardHostImpl : public blink::mojom::ClipboardHost {
                   const gfx::Size& size_in_pixels,
                   mojo::ScopedSharedBufferHandle shared_buffer_handle) override;
   void CommitWrite(ui::ClipboardType clipboard_type) override;
+#if defined(OS_MACOSX)
   void WriteStringToFindPboard(const base::string16& text) override;
+#endif
 
   ui::Clipboard* clipboard_;  // Not owned
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
