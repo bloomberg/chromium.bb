@@ -1704,6 +1704,74 @@ TEST_P(ScrollbarsTest, MouseOverIFrameScrollbar) {
   EXPECT_EQ(document.HoverElement(), iframe);
 }
 
+TEST_P(ScrollbarsTest, AutosizeTest) {
+  // This test requires that scrollbars take up space.
+  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
+
+  WebView().Resize(WebSize(0, 0));
+  SimRequest resource("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body, html {
+      width: 100%;
+      margin: 0;
+    }
+    #container {
+      width: 100.7px;
+      height: 150px;
+    }
+    </style>
+    <div id="container"></div>
+  )HTML");
+
+  DCHECK(!GetScrollbarTheme().UsesOverlayScrollbars());
+
+  // Needs to dispatch the load event so FramViewAutoSizeInfo doesn't prevent
+  // down-sizing.
+  testing::RunPendingTasks();
+
+  LocalFrameView* frame_view = WebView().MainFrameImpl()->GetFrameView();
+  ScrollableArea* layout_viewport = frame_view->LayoutViewportScrollableArea();
+
+  // Enable auto size mode where the frame is resized such that the content
+  // doesn't need scrollbars (up to a maximum).
+  WebView().EnableAutoResizeMode(WebSize(100, 100), WebSize(100, 200));
+
+  // Note, the frame autosizer doesn't work correctly with subpixel sizes so
+  // even though the container is a fraction larger than the frame, we don't
+  // consider that for overflow.
+  {
+    Compositor().BeginFrame();
+    EXPECT_FALSE(layout_viewport->VerticalScrollbar());
+    EXPECT_FALSE(layout_viewport->HorizontalScrollbar());
+    EXPECT_EQ(100, frame_view->FrameRect().Width());
+    EXPECT_EQ(150, frame_view->FrameRect().Height());
+  }
+
+  // Subsequent autosizes should be stable. Specifically checking the condition
+  // from https://crbug.com/811478.
+  {
+    frame_view->SetNeedsLayout();
+    Compositor().BeginFrame();
+    EXPECT_FALSE(layout_viewport->VerticalScrollbar());
+    EXPECT_FALSE(layout_viewport->HorizontalScrollbar());
+    EXPECT_EQ(100, frame_view->FrameRect().Width());
+    EXPECT_EQ(150, frame_view->FrameRect().Height());
+  }
+
+  // Try again.
+  {
+    frame_view->SetNeedsLayout();
+    Compositor().BeginFrame();
+    EXPECT_FALSE(layout_viewport->VerticalScrollbar());
+    EXPECT_FALSE(layout_viewport->HorizontalScrollbar());
+    EXPECT_EQ(100, frame_view->FrameRect().Width());
+    EXPECT_EQ(150, frame_view->FrameRect().Height());
+  }
+}
+
 class ScrollbarTrackMarginsTest : public ScrollbarsTest {
  public:
   void PrepareTest(const String& track_style) {
