@@ -576,11 +576,6 @@
   },
   {
     "prefix": "incremental-shadow-dom",
-    "base": "html/details_summary",
-    "args": ["--enable-blink-features=SlotInFlatTree,IncrementalShadowDOM"]
-  },
-  {
-    "prefix": "incremental-shadow-dom",
     "base": "external/wpt/css/css-scoping",
     "args": ["--enable-blink-features=SlotInFlatTree,IncrementalShadowDOM"]
   },
