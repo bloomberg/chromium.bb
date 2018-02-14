@@ -25,6 +25,7 @@
 
 #include "platform/speech/PlatformSpeechSynthesizer.h"
 
+#include "build/build_config.h"
 #include "platform/exported/WebSpeechSynthesizerClientImpl.h"
 #include "platform/speech/PlatformSpeechSynthesisUtterance.h"
 #include "platform/wtf/PtrUtil.h"
@@ -39,7 +40,15 @@ PlatformSpeechSynthesizer* PlatformSpeechSynthesizer::Create(
     PlatformSpeechSynthesizerClient* client) {
   PlatformSpeechSynthesizer* synthesizer =
       new PlatformSpeechSynthesizer(client);
-  synthesizer->InitializeVoiceList();
+  bool initialize_voices_now = true;
+#if defined(OS_ANDROID)
+  // On low-end Android devices we don't fetch voices until the
+  // object is touched to avoid needlessly binding to TTS service,
+  // see https://crbug.com/811929.
+  initialize_voices_now = !Platform::Current()->IsLowEndDevice();
+#endif
+  if (initialize_voices_now)
+    synthesizer->InitializeVoiceList();
   return synthesizer;
 }
 
@@ -56,23 +65,33 @@ PlatformSpeechSynthesizer::~PlatformSpeechSynthesizer() = default;
 
 void PlatformSpeechSynthesizer::Speak(
     PlatformSpeechSynthesisUtterance* utterance) {
+  MaybeInitializeVoiceList();
   if (web_speech_synthesizer_ && web_speech_synthesizer_client_)
     web_speech_synthesizer_->Speak(WebSpeechSynthesisUtterance(utterance));
 }
 
 void PlatformSpeechSynthesizer::Pause() {
+  MaybeInitializeVoiceList();
   if (web_speech_synthesizer_)
     web_speech_synthesizer_->Pause();
 }
 
 void PlatformSpeechSynthesizer::Resume() {
+  MaybeInitializeVoiceList();
   if (web_speech_synthesizer_)
     web_speech_synthesizer_->Resume();
 }
 
 void PlatformSpeechSynthesizer::Cancel() {
+  MaybeInitializeVoiceList();
   if (web_speech_synthesizer_)
     web_speech_synthesizer_->Cancel();
+}
+
+const Vector<scoped_refptr<PlatformSpeechSynthesisVoice>>&
+PlatformSpeechSynthesizer::GetVoiceList() {
+  MaybeInitializeVoiceList();
+  return voice_list_;
 }
 
 void PlatformSpeechSynthesizer::SetVoiceList(
@@ -80,9 +99,16 @@ void PlatformSpeechSynthesizer::SetVoiceList(
   voice_list_ = voices;
 }
 
+void PlatformSpeechSynthesizer::MaybeInitializeVoiceList() {
+  if (!voices_initialized_)
+    InitializeVoiceList();
+}
+
 void PlatformSpeechSynthesizer::InitializeVoiceList() {
-  if (web_speech_synthesizer_)
+  if (web_speech_synthesizer_) {
+    voices_initialized_ = true;
     web_speech_synthesizer_->UpdateVoiceList();
+  }
 }
 
 void PlatformSpeechSynthesizer::Trace(blink::Visitor* visitor) {

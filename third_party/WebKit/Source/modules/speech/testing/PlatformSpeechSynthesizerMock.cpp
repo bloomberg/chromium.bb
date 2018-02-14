@@ -92,6 +92,7 @@ void PlatformSpeechSynthesizerMock::InitializeVoiceList() {
   voice_list_.push_back(PlatformSpeechSynthesisVoice::Create(
       String("mock.voice.logan"), String("logan"), String("fr-CA"), true,
       true));
+  voices_initialized_ = true;
 }
 
 void PlatformSpeechSynthesizerMock::Speak(
