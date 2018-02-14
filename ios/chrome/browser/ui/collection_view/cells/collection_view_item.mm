@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 
 #import "base/logging.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item+collection_view_controller.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -14,39 +13,17 @@
 
 @implementation CollectionViewItem
 
-@synthesize type = _type;
-@synthesize cellClass = _cellClass;
-@synthesize accessibilityIdentifier = _accessibilityIdentifier;
-
 - (instancetype)initWithType:(NSInteger)type {
-  if ((self = [super init])) {
-    _type = type;
-    _cellClass = [MDCCollectionViewCell class];
+  if ((self = [super initWithType:type])) {
+    self.cellClass = [MDCCollectionViewCell class];
   }
   return self;
-}
-
-- (instancetype)init {
-  return [self initWithType:0];
-}
-
-- (void)setCellClass:(Class)cellClass {
-  DCHECK([cellClass isSubclassOfClass:[MDCCollectionViewCell class]]);
-  _cellClass = cellClass;
 }
 
 - (void)configureCell:(MDCCollectionViewCell*)cell {
   DCHECK([cell class] == self.cellClass);
   cell.accessibilityTraits = self.accessibilityTraits;
   cell.accessibilityIdentifier = self.accessibilityIdentifier;
-}
-
-@end
-
-@implementation CollectionViewItem (CollectionViewController)
-
-- (void)setType:(NSInteger)type {
-  _type = type;
 }
 
 @end

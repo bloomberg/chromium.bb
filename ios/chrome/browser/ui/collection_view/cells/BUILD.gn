@@ -14,7 +14,6 @@ source_set("cells") {
     "collection_view_detail_item.mm",
     "collection_view_footer_item.h",
     "collection_view_footer_item.mm",
-    "collection_view_item+collection_view_controller.h",
     "collection_view_item.h",
     "collection_view_item.mm",
     "collection_view_switch_item.h",
@@ -29,6 +28,7 @@ source_set("cells") {
     "//base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/colors",
+    "//ios/chrome/browser/ui/list_model",
     "//ios/chrome/browser/ui/material_components",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
@@ -68,6 +68,7 @@ source_set("unit_tests") {
   deps = [
     ":cells",
     ":test_support",
+    "//ios/chrome/browser/ui/list_model",
     "//ios/third_party/material_components_ios",
     "//testing/gtest",
   ]

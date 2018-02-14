@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/list_model/list_model.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/string_piece.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
+#import "ios/chrome/browser/ui/list_model/list_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -18,7 +18,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface CollectionViewModel (Testing)
+@interface ListModel (Testing)
 // Adds an item with the given type to the section with the given identifier.
 // It is possible to add multiple items with the same type to the same section.
 // Sharing types across sections is undefined behavior.
@@ -26,19 +26,19 @@
     toSectionWithIdentifier:(NSInteger)sectionIdentifier;
 @end
 
-@implementation CollectionViewModel (Testing)
+@implementation ListModel (Testing)
 
 - (void)addItemWithType:(NSInteger)itemType
     toSectionWithIdentifier:(NSInteger)sectionIdentifier {
-  CollectionViewItem* item = [[CollectionViewItem alloc] initWithType:itemType];
+  ListItem* item = [[ListItem alloc] initWithType:itemType];
   [self addItem:item toSectionWithIdentifier:sectionIdentifier];
 }
 
 @end
 
-@interface TestCollectionViewItemSubclass : CollectionViewItem
+@interface TestListItemSubclass : ListItem
 @end
-@implementation TestCollectionViewItemSubclass
+@implementation TestListItemSubclass
 @end
 
 namespace {
@@ -66,22 +66,22 @@ void LogSink(const char* file,
   // No-op.
 }
 
-using CollectionViewModelTest = PlatformTest;
+using ListModelTest = PlatformTest;
 
 // Test generic model boxing (check done at compilation time).
-TEST_F(CollectionViewModelTest, GenericModelBoxing) {
-  CollectionViewModel<TestCollectionViewItemSubclass*>* specificModel =
-      [[CollectionViewModel alloc] init];
+TEST_F(ListModelTest, GenericModelBoxing) {
+  ListModel<TestListItemSubclass*, ListItem*>* specificModel =
+      [[ListModel alloc] init];
 
   // |generalModel| is a superclass of |specificModel|. So specificModel can be
   // boxed into generalModel, but not the other way around.
   // specificModel = generalModel would not compile.
-  CollectionViewModel<CollectionViewItem*>* generalModel = specificModel;
+  ListModel<ListItem*, ListItem*>* generalModel = specificModel;
   generalModel = nil;
 }
 
-TEST_F(CollectionViewModelTest, EmptyModel) {
-  CollectionViewModel* model = [[CollectionViewModel alloc] init];
+TEST_F(ListModelTest, EmptyModel) {
+  ListModel* model = [[ListModel alloc] init];
 
   // Check there are no items.
   EXPECT_EQ(NO, [model hasItemAtIndexPath:[NSIndexPath indexPathForItem:0
@@ -91,8 +91,8 @@ TEST_F(CollectionViewModelTest, EmptyModel) {
   EXPECT_EQ(0, [model numberOfSections]);
 }
 
-TEST_F(CollectionViewModelTest, SingleSection) {
-  CollectionViewModel* model = [[CollectionViewModel alloc] init];
+TEST_F(ListModelTest, SingleSection) {
+  ListModel* model = [[ListModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
   [model addItemWithType:ItemTypeCheeseCheddar
@@ -133,8 +133,8 @@ TEST_F(CollectionViewModelTest, SingleSection) {
                                                             inSection:0]]);
 }
 
-TEST_F(CollectionViewModelTest, SingleSectionWithMissingItems) {
-  CollectionViewModel* model = [[CollectionViewModel alloc] init];
+TEST_F(ListModelTest, SingleSectionWithMissingItems) {
+  ListModel* model = [[ListModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
   [model addItemWithType:ItemTypeCheeseCheddar
@@ -152,8 +152,8 @@ TEST_F(CollectionViewModelTest, SingleSectionWithMissingItems) {
                                                             inSection:0]]);
 }
 
-TEST_F(CollectionViewModelTest, MultipleSections) {
-  CollectionViewModel* model = [[CollectionViewModel alloc] init];
+TEST_F(ListModelTest, MultipleSections) {
+  ListModel* model = [[ListModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
   // "Cheddar" and "Gouda" are intentionally omitted.
@@ -189,8 +189,8 @@ TEST_F(CollectionViewModelTest, MultipleSections) {
                                                             inSection:1]]);
 }
 
-TEST_F(CollectionViewModelTest, GetIndexPathFromModelCoordinates) {
-  CollectionViewModel* model = [[CollectionViewModel alloc] init];
+TEST_F(ListModelTest, GetIndexPathFromModelCoordinates) {
+  ListModel* model = [[ListModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
   [model addItemWithType:ItemTypeCheesePepperJack
@@ -216,8 +216,8 @@ TEST_F(CollectionViewModelTest, GetIndexPathFromModelCoordinates) {
   EXPECT_EQ(0, indexPath.item);
 }
 
-TEST_F(CollectionViewModelTest, RepeatedItems) {
-  CollectionViewModel* model = [[CollectionViewModel alloc] init];
+TEST_F(ListModelTest, RepeatedItems) {
+  ListModel* model = [[ListModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
   [model addItemWithType:ItemTypeCheesePepperJack
@@ -249,8 +249,8 @@ TEST_F(CollectionViewModelTest, RepeatedItems) {
   EXPECT_EQ(2, indexPath.item);
 }
 
-TEST_F(CollectionViewModelTest, RepeatedItemIndex) {
-  CollectionViewModel* model = [[CollectionViewModel alloc] init];
+TEST_F(ListModelTest, RepeatedItemIndex) {
+  ListModel* model = [[ListModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
   [model addItemWithType:ItemTypeCheesePepperJack
@@ -284,12 +284,11 @@ TEST_F(CollectionViewModelTest, RepeatedItemIndex) {
                                                                  inSection:1]]);
 }
 
-TEST_F(CollectionViewModelTest, RetrieveAddedItem) {
-  CollectionViewModel* model = [[CollectionViewModel alloc] init];
+TEST_F(ListModelTest, RetrieveAddedItem) {
+  ListModel* model = [[ListModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
-  CollectionViewItem* someItem =
-      [[CollectionViewItem alloc] initWithType:ItemTypeCheeseGouda];
+  ListItem* someItem = [[ListItem alloc] initWithType:ItemTypeCheeseGouda];
   [model addItem:someItem toSectionWithIdentifier:SectionIdentifierCheese];
 
   // Check that the item is the same in the model.
@@ -297,17 +296,15 @@ TEST_F(CollectionViewModelTest, RetrieveAddedItem) {
                                                                  inSection:0]]);
 }
 
-TEST_F(CollectionViewModelTest, RetrieveItemsInSection) {
-  CollectionViewModel* model = [[CollectionViewModel alloc] init];
+TEST_F(ListModelTest, RetrieveItemsInSection) {
+  ListModel* model = [[ListModel alloc] init];
   [model addSectionWithIdentifier:SectionIdentifierCheese];
-  CollectionViewItem* cheddar =
-      [[CollectionViewItem alloc] initWithType:ItemTypeCheeseCheddar];
+  ListItem* cheddar = [[ListItem alloc] initWithType:ItemTypeCheeseCheddar];
   [model addItem:cheddar toSectionWithIdentifier:SectionIdentifierCheese];
-  CollectionViewItem* pepperJack =
-      [[CollectionViewItem alloc] initWithType:ItemTypeCheesePepperJack];
+  ListItem* pepperJack =
+      [[ListItem alloc] initWithType:ItemTypeCheesePepperJack];
   [model addItem:pepperJack toSectionWithIdentifier:SectionIdentifierCheese];
-  CollectionViewItem* gouda =
-      [[CollectionViewItem alloc] initWithType:ItemTypeCheeseGouda];
+  ListItem* gouda = [[ListItem alloc] initWithType:ItemTypeCheeseGouda];
   [model addItem:gouda toSectionWithIdentifier:SectionIdentifierCheese];
 
   NSArray* cheeseItems =
@@ -318,8 +315,8 @@ TEST_F(CollectionViewModelTest, RetrieveItemsInSection) {
   EXPECT_NSEQ(gouda, cheeseItems[2]);
 }
 
-TEST_F(CollectionViewModelTest, InvalidIndexPath) {
-  CollectionViewModel* model = [[CollectionViewModel alloc] init];
+TEST_F(ListModelTest, InvalidIndexPath) {
+  ListModel* model = [[ListModel alloc] init];
   [model addSectionWithIdentifier:SectionIdentifierCheese];
 
   logging::ScopedLogAssertHandler scoped_assert_handler(base::Bind(LogSink));
@@ -335,8 +332,8 @@ TEST_F(CollectionViewModelTest, InvalidIndexPath) {
   EXPECT_TRUE(out_of_bounds_exception_thrown);
 }
 
-TEST_F(CollectionViewModelTest, RemoveItems) {
-  CollectionViewModel* model = [[CollectionViewModel alloc] init];
+TEST_F(ListModelTest, RemoveItems) {
+  ListModel* model = [[ListModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
   [model addItemWithType:ItemTypeCheesePepperJack
@@ -387,8 +384,8 @@ TEST_F(CollectionViewModelTest, RemoveItems) {
   EXPECT_EQ(2, indexPath.item);
 }
 
-TEST_F(CollectionViewModelTest, RemoveSections) {
-  CollectionViewModel* model = [[CollectionViewModel alloc] init];
+TEST_F(ListModelTest, RemoveSections) {
+  ListModel* model = [[ListModel alloc] init];
 
   // Empty section.
   [model addSectionWithIdentifier:SectionIdentifierWeasley];
@@ -419,8 +416,8 @@ TEST_F(CollectionViewModelTest, RemoveSections) {
   EXPECT_EQ(0, [model numberOfSections]);
 }
 
-TEST_F(CollectionViewModelTest, QueryItemsFromModelCoordinates) {
-  CollectionViewModel* model = [[CollectionViewModel alloc] init];
+TEST_F(ListModelTest, QueryItemsFromModelCoordinates) {
+  ListModel* model = [[ListModel alloc] init];
 
   EXPECT_FALSE([model hasSectionForSectionIdentifier:SectionIdentifierWeasley]);
   EXPECT_FALSE([model hasItemForItemType:ItemTypeCheeseCheddar
@@ -449,8 +446,8 @@ TEST_F(CollectionViewModelTest, QueryItemsFromModelCoordinates) {
 }
 
 // Tests that inserted sections are added at the correct index.
-TEST_F(CollectionViewModelTest, InsertSections) {
-  CollectionViewModel* model = [[CollectionViewModel alloc] init];
+TEST_F(ListModelTest, InsertSections) {
+  ListModel* model = [[ListModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierWeasley];
   EXPECT_EQ(1, [model numberOfSections]);
@@ -469,16 +466,15 @@ TEST_F(CollectionViewModelTest, InsertSections) {
 }
 
 // Tests that inserted items are added at the correct index.
-TEST_F(CollectionViewModelTest, InsertItemAtIndex) {
-  CollectionViewModel* model = [[CollectionViewModel alloc] init];
+TEST_F(ListModelTest, InsertItemAtIndex) {
+  ListModel* model = [[ListModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
   [model addItemWithType:ItemTypeCheesePepperJack
       toSectionWithIdentifier:SectionIdentifierCheese];
   [model addItemWithType:ItemTypeCheeseGouda
       toSectionWithIdentifier:SectionIdentifierCheese];
-  CollectionViewItem* cheddarItem =
-      [[CollectionViewItem alloc] initWithType:ItemTypeCheeseCheddar];
+  ListItem* cheddarItem = [[ListItem alloc] initWithType:ItemTypeCheeseCheddar];
   [model insertItem:cheddarItem
       inSectionWithIdentifier:SectionIdentifierCheese
                       atIndex:1];
@@ -504,31 +500,28 @@ TEST_F(CollectionViewModelTest, InsertItemAtIndex) {
   EXPECT_EQ(2, goudaIndexPath.item);
 }
 
-TEST_F(CollectionViewModelTest, IndexPathsForItems) {
-  CollectionViewModel* model = [[CollectionViewModel alloc] init];
+TEST_F(ListModelTest, IndexPathsForItems) {
+  ListModel* model = [[ListModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierWeasley];
   [model addItemWithType:ItemTypeWeasleyGinny
       toSectionWithIdentifier:SectionIdentifierWeasley];
   // Added at index 1.
-  CollectionViewItem* item1 =
-      [[CollectionViewItem alloc] initWithType:ItemTypeWeasleyRon];
+  ListItem* item1 = [[ListItem alloc] initWithType:ItemTypeWeasleyRon];
   [model addItem:item1 toSectionWithIdentifier:SectionIdentifierWeasley];
   [model addItemWithType:ItemTypeWeasleyGinny
       toSectionWithIdentifier:SectionIdentifierWeasley];
   [model addItemWithType:ItemTypeWeasleyArthur
       toSectionWithIdentifier:SectionIdentifierWeasley];
   // Repeated item added at index 4.
-  CollectionViewItem* item4 =
-      [[CollectionViewItem alloc] initWithType:ItemTypeWeasleyArthur];
+  ListItem* item4 = [[ListItem alloc] initWithType:ItemTypeWeasleyArthur];
   [model addItem:item4 toSectionWithIdentifier:SectionIdentifierWeasley];
   [model addItemWithType:ItemTypeWeasleyArthur
       toSectionWithIdentifier:SectionIdentifierWeasley];
   [model addItemWithType:ItemTypeWeasleyArthur
       toSectionWithIdentifier:SectionIdentifierWeasley];
   // Item not added.
-  CollectionViewItem* notAddedItem =
-      [[CollectionViewItem alloc] initWithType:ItemTypeCheeseGouda];
+  ListItem* notAddedItem = [[ListItem alloc] initWithType:ItemTypeCheeseGouda];
 
   EXPECT_TRUE([model hasItem:item1]);
   NSIndexPath* indexPath1 = [model indexPathForItem:item1];
@@ -543,12 +536,11 @@ TEST_F(CollectionViewModelTest, IndexPathsForItems) {
   EXPECT_FALSE([model hasItem:notAddedItem]);
 }
 
-TEST_F(CollectionViewModelTest, Headers) {
-  CollectionViewModel* model = [[CollectionViewModel alloc] init];
+TEST_F(ListModelTest, Headers) {
+  ListModel* model = [[ListModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
-  CollectionViewItem* cheeseHeader =
-      [[CollectionViewItem alloc] initWithType:ItemTypeCheeseHeader];
+  ListItem* cheeseHeader = [[ListItem alloc] initWithType:ItemTypeCheeseHeader];
   [model setHeader:cheeseHeader
       forSectionWithIdentifier:SectionIdentifierCheese];
   [model addItemWithType:ItemTypeCheeseGouda
@@ -574,8 +566,8 @@ TEST_F(CollectionViewModelTest, Headers) {
   EXPECT_FALSE([model headerForSection:weasleySection]);
 }
 
-TEST_F(CollectionViewModelTest, Footers) {
-  CollectionViewModel* model = [[CollectionViewModel alloc] init];
+TEST_F(ListModelTest, Footers) {
+  ListModel* model = [[ListModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
   [model addItemWithType:ItemTypeCheeseGouda
@@ -587,8 +579,8 @@ TEST_F(CollectionViewModelTest, Footers) {
       toSectionWithIdentifier:SectionIdentifierWeasley];
   [model addItemWithType:ItemTypeWeasleyGinny
       toSectionWithIdentifier:SectionIdentifierWeasley];
-  CollectionViewItem* weasleyFooter =
-      [[CollectionViewItem alloc] initWithType:ItemTypeWeasleyFooter];
+  ListItem* weasleyFooter =
+      [[ListItem alloc] initWithType:ItemTypeWeasleyFooter];
   [model setFooter:weasleyFooter
       forSectionWithIdentifier:SectionIdentifierWeasley];
 

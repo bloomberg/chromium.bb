@@ -7,18 +7,12 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/list_model/list_item.h"
+
 @class MDCCollectionViewCell;
 
 // CollectionViewItem holds the model data for a given collection view item.
-@interface CollectionViewItem : NSObject<UIAccessibilityIdentification>
-
-// A client-defined value. It should be unique among items of a given collection
-// view model.
-@property(nonatomic, readonly, assign) NSInteger type;
-
-// The cell class to use in conjunction with this item. Must be a subclass of
-// MDCCollectionViewCell. The default is MDCCollectionViewCell.
-@property(nonatomic, assign) Class cellClass;
+@interface CollectionViewItem : ListItem
 
 - (instancetype)initWithType:(NSInteger)type NS_DESIGNATED_INITIALIZER;
 
