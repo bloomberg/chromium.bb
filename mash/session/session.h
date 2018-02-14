@@ -21,7 +21,6 @@ class Session : public service_manager::Service {
   void OnStart() override;
 
   void StartWindowManager();
-  void StartQuickLaunch();
 
   DISALLOW_COPY_AND_ASSIGN(Session);
 };

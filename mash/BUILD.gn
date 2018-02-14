@@ -17,7 +17,6 @@ group("all") {
     "//components/leveldb",
     "//mash/catalog_viewer",
     "//mash/example",
-    "//mash/quick_launch",
     "//mash/runner",
     "//mash/session",
     "//mash/simple_wm",
@@ -28,6 +27,7 @@ group("all") {
   if (is_chromeos) {
     deps += [
       "//ash/autoclick/mus:accessibility_autoclick",
+      "//ash/components/quick_launch",
       "//ash/standalone:ash_standalone",
       "//ash/touch_hud/mus:touch_hud",
       "//mash:mash_unittests",
@@ -43,7 +43,6 @@ catalog("catalog") {
   standalone_services = [
     "//components/leveldb:manifest",
     "//mash/catalog_viewer:manifest",
-    "//mash/quick_launch:manifest",
     "//mash/session:manifest",
     "//mash/task_viewer:manifest",
     "//services/ui:manifest",
@@ -59,6 +58,7 @@ catalog("catalog") {
   if (is_chromeos) {
     standalone_services += [
       "//ash:manifest",
+      "//ash/components/quick_launch:manifest",
       "//ash/standalone:manifest",
     ]
   }

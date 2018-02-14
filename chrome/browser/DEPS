@@ -85,6 +85,7 @@ include_rules = [
   # //ash/README.md.
   "-ash",
   "+ash/public",
+  "+ash/components/quick_launch/public/mojom",
 
   # chrome only needs switches from cc. All usage of the compositor is from
   # content. Definitely don't include generic stuff from cc/base here, if this
@@ -111,8 +112,6 @@ include_rules = [
   # Allows in-process use of NetworkService for URLRequestContext configuration.
   # Should be removed once the actual network service ships.
   "+content/public/network",
-
-  "+mash/quick_launch/public/mojom",
 
   # Other libraries.
   "+libxml",
@@ -204,7 +203,7 @@ specific_include_rules = {
     "+ash/shell.h",
   ],
   "mash_service_registry.cc": [
-    "+mash/quick_launch/quick_launch.h",
+    "+ash/components/quick_launch/quick_launch.h",
   ],
   "display_info_provider_chromeos_unittest.cc": [
     "+ui/events/devices/touch_device_transform.h"

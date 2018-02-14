@@ -2027,11 +2027,11 @@ source_set("mash_unittests") {
     ":ash_service_resources",
     "//ash",
     "//ash:test_support_without_content",
+    "//ash/components/quick_launch/public/mojom:constants",
     "//ash/public/cpp",
     "//base",
     "//base/test:test_config",
     "//base/test:test_support",
-    "//mash/quick_launch/public/mojom:constants",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp:service_test_support",
     "//services/ui/common:mus_common",
@@ -2058,7 +2058,7 @@ source_set("mash_unittests") {
 
   data_deps = [
     ":ash_service",
-    "//mash/quick_launch",
+    "//ash/components/quick_launch",
     "//services/ui/ime/test_ime_driver",
   ]
 }

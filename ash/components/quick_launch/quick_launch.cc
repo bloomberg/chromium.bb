@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mash/quick_launch/quick_launch.h"
+#include "ash/components/quick_launch/quick_launch.h"
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -28,7 +28,6 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "url/gurl.h"
 
-namespace mash {
 namespace quick_launch {
 
 class QuickLaunchUI : public views::WidgetDelegateView,
@@ -47,9 +46,7 @@ class QuickLaunchUI : public views::WidgetDelegateView,
 
     UpdateEntries();
   }
-  ~QuickLaunchUI() override {
-    quick_launch_->RemoveWindow(GetWidget());
-  }
+  ~QuickLaunchUI() override { quick_launch_->RemoveWindow(GetWidget()); }
 
  private:
   // Overridden from views::WidgetDelegate:
@@ -124,8 +121,8 @@ class QuickLaunchUI : public views::WidgetDelegateView,
   void UpdateEntries() {
     catalog_->GetEntriesProvidingCapability(
         "mash:launchable",
-        base::Bind(&QuickLaunchUI::OnGotCatalogEntries,
-                   base::Unretained(this)));
+        base::BindRepeating(&QuickLaunchUI::OnGotCatalogEntries,
+                            base::Unretained(this)));
   }
 
   void OnGotCatalogEntries(std::vector<catalog::mojom::EntryPtr> entries) {
@@ -136,9 +133,9 @@ class QuickLaunchUI : public views::WidgetDelegateView,
   void Launch(const std::string& name, bool new_window) {
     ::mash::mojom::LaunchablePtr launchable;
     connector_->BindInterface(name, &launchable);
-    launchable->Launch(mojom::kWindow,
-                       new_window ? mojom::LaunchMode::MAKE_NEW
-                                  : mojom::LaunchMode::REUSE);
+    launchable->Launch(mash::mojom::kWindow,
+                       new_window ? mash::mojom::LaunchMode::MAKE_NEW
+                                  : mash::mojom::LaunchMode::REUSE);
   }
 
   QuickLaunch* quick_launch_;
@@ -153,7 +150,7 @@ class QuickLaunchUI : public views::WidgetDelegateView,
 
 QuickLaunch::QuickLaunch() {
   registry_.AddInterface<::mash::mojom::Launchable>(
-      base::Bind(&QuickLaunch::Create, base::Unretained(this)));
+      base::BindRepeating(&QuickLaunch::Create, base::Unretained(this)));
 }
 
 QuickLaunch::~QuickLaunch() {
@@ -183,7 +180,7 @@ void QuickLaunch::OnStart() {
     return;
   }
 
-  Launch(mojom::kWindow, mojom::LaunchMode::MAKE_NEW);
+  Launch(mash::mojom::kWindow, mash::mojom::LaunchMode::MAKE_NEW);
 }
 
 void QuickLaunch::OnBindInterface(
@@ -193,9 +190,9 @@ void QuickLaunch::OnBindInterface(
   registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
 
-void QuickLaunch::Launch(uint32_t what, mojom::LaunchMode how) {
-  bool reuse = how == mojom::LaunchMode::REUSE ||
-               how == mojom::LaunchMode::DEFAULT;
+void QuickLaunch::Launch(uint32_t what, mash::mojom::LaunchMode how) {
+  bool reuse = how == mash::mojom::LaunchMode::REUSE ||
+               how == mash::mojom::LaunchMode::DEFAULT;
   if (reuse && !windows_.empty()) {
     windows_.back()->Activate();
     return;
@@ -216,4 +213,3 @@ void QuickLaunch::Create(::mash::mojom::LaunchableRequest request) {
 }
 
 }  // namespace quick_launch
-}  // namespace mash

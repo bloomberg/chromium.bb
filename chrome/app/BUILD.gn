@@ -379,8 +379,8 @@ static_library("test_support") {
 
   if (enable_mus) {
     deps += [
+      "//ash/components/quick_launch/public/mojom:constants",
       "//mash/common",
-      "//mash/quick_launch/public/mojom:constants",
       "//services/ui/public/interfaces:constants",
     ]
   }
@@ -440,7 +440,7 @@ service_manifest("chrome_content_packaged_services_manifest_overlay") {
       "//chrome/browser/chrome_content_packaged_services_manifest_overlay.json"
   packaged_services = chrome_packaged_services
   if (enable_mus) {
-    packaged_services += [ "//mash/quick_launch:manifest" ]
+    packaged_services += [ "//ash/components/quick_launch:manifest" ]
   }
   if (is_chromeos) {
     packaged_services += [

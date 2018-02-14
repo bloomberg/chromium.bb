@@ -149,12 +149,12 @@ static_library("utility") {
     deps += [
       "//ash",
       "//ash/autoclick/mus:lib",
+      "//ash/components/quick_launch:lib",
+      "//ash/components/quick_launch/public/mojom",
       "//ash/touch_hud/mus:lib",
       "//chrome/services/file_util:lib",
       "//components/font_service:lib",
       "//components/font_service/public/interfaces",
-      "//mash/quick_launch:lib",
-      "//mash/quick_launch/public/mojom",
       "//services/ui:lib",
       "//services/ui/public/interfaces",
     ]
