@@ -43,6 +43,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/page_zoom.h"
 #include "extensions/features/features.h"
+#include "printing/features/features.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -677,6 +678,14 @@ class Browser : public TabStripModelObserver,
       const base::Callback<void(bool)>& callback) override;
   gfx::Size GetSizeForNewRenderView(
       content::WebContents* web_contents) const override;
+
+#if BUILDFLAG(ENABLE_PRINTING)
+  void PrintCrossProcessSubframe(
+      content::WebContents* web_contents,
+      const gfx::Rect& rect,
+      int document_cookie,
+      content::RenderFrameHost* subframe_host) const override;
+#endif
 
   // Overridden from CoreTabHelperDelegate:
   // Note that the caller is responsible for deleting |old_contents|.

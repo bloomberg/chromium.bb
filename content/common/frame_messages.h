@@ -1715,6 +1715,16 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_ScrollRectToVisibleInParentFrame,
 // Sent to notify that a frame called |window.focus()|.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_FrameDidCallFocus)
 
+// Ask the frame host to print a cross-process subframe.
+// The printed content of this subframe belongs to the document specified by
+// its document cookie. Document cookie is a unique id for a printed document
+// associated with a print job.
+// The content will be rendered in the specified rectangular area in its parent
+// frame.
+IPC_MESSAGE_ROUTED2(FrameHostMsg_PrintCrossProcessSubframe,
+                    gfx::Rect /* rect area of the frame content */,
+                    int /* rendered document cookie */)
+
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 
 // Message to show/hide a popup menu using native controls.

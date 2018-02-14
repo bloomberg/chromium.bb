@@ -85,6 +85,14 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // frame that is currently rendered in a different process than |process_id|.
   static int GetFrameTreeNodeIdForRoutingId(int process_id, int routing_id);
 
+  // Returns the RenderFrameHost corresponding to the |placeholder_routing_id|
+  // in the given |render_process_id|. The returned RenderFrameHost will always
+  // be in a different process.  It may be null if the placeholder is not found
+  // in the given process, which may happen if the frame was recently deleted
+  // or swapped to |render_process_id| itself.
+  static RenderFrameHost* FromPlaceholderId(int render_process_id,
+                                            int placeholder_routing_id);
+
   ~RenderFrameHost() override {}
 
   // Returns the route id for this frame.
