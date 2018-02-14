@@ -138,8 +138,8 @@ void QuicSpdyStream::ConsumeHeaderList() {
 
 void QuicSpdyStream::SetPriority(SpdyPriority priority) {
   DCHECK_EQ(0u, stream_bytes_written());
-  spdy_session_->UpdateStreamPriority(id(), priority);
   priority_ = priority;
+  spdy_session_->UpdateStreamPriority(id(), priority);
 }
 
 void QuicSpdyStream::OnStreamHeadersPriority(SpdyPriority priority) {

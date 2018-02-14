@@ -67,6 +67,27 @@ class TestStream : public QuicSpdyStream {
   string data_;
 };
 
+class TestMockUpdateStreamSession : public MockQuicSpdySession {
+ public:
+  explicit TestMockUpdateStreamSession(QuicConnection* connection)
+      : MockQuicSpdySession(connection) {}
+
+  void UpdateStreamPriority(QuicStreamId id, SpdyPriority priority) override {
+    EXPECT_EQ(id, expected_stream_->id());
+    EXPECT_EQ(expected_priority_, priority);
+    EXPECT_EQ(expected_priority_, expected_stream_->priority());
+  }
+
+  void SetExpectedStream(QuicSpdyStream* stream) { expected_stream_ = stream; }
+  void SetExpectedPriority(SpdyPriority priority) {
+    expected_priority_ = priority;
+  }
+
+ private:
+  QuicSpdyStream* expected_stream_;
+  SpdyPriority expected_priority_;
+};
+
 class QuicSpdyStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
  public:
   QuicSpdyStreamTest() {
@@ -1035,6 +1056,28 @@ TEST_P(QuicSpdyStreamTest, OnPriorityFrame) {
   Initialize(kShouldProcessData);
   stream_->OnPriorityFrame(kV3HighestPriority);
   EXPECT_EQ(kV3HighestPriority, stream_->priority());
+}
+
+TEST_P(QuicSpdyStreamTest, SetPriorityBeforeUpdateStreamPriority) {
+  MockQuicConnection* connection = new testing::StrictMock<MockQuicConnection>(
+      &helper_, &alarm_factory_, Perspective::IS_SERVER,
+      SupportedVersions(GetParam()));
+  std::unique_ptr<TestMockUpdateStreamSession> session(
+      new testing::StrictMock<TestMockUpdateStreamSession>(connection));
+  TestStream* stream = new TestStream(GetNthClientInitiatedId(0), session.get(),
+                                      /*should_process_data=*/true);
+  session->ActivateStream(QuicWrapUnique(stream));
+
+  // QuicSpdyStream::SetPriority() should eventually call UpdateStreamPriority()
+  // on the session. Make sure stream->priority() returns the updated priority
+  // if called within UpdateStreamPriority(). This expectation is enforced in
+  // TestMockUpdateStreamSession::UpdateStreamPriority().
+  session->SetExpectedStream(stream);
+  session->SetExpectedPriority(kV3HighestPriority);
+  stream->SetPriority(kV3HighestPriority);
+
+  session->SetExpectedPriority(kV3LowestPriority);
+  stream->SetPriority(kV3LowestPriority);
 }
 
 }  // namespace
