@@ -304,6 +304,8 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
                           const blink::WebNode& toNode) override;
   void DidUpdateLayout() override;
 #if defined(OS_ANDROID)
+  // |touch_rect| is in physical pixels if --use-zoom-for-dsf is enabled.
+  // Otherwise, it is in DIPs.
   bool DidTapMultipleTargets(
       const blink::WebSize& inner_viewport_offset,
       const blink::WebRect& touch_rect,
@@ -584,10 +586,6 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   // Update the target url and tell the browser that the target URL has changed.
   // If |url| is empty, show |fallback_url|.
   void UpdateTargetURL(const GURL& url, const GURL& fallback_url);
-
-  // Coordinate conversion -----------------------------------------------------
-
-  gfx::RectF ClientRectToPhysicalWindowRect(const gfx::RectF& rect) const;
 
   // RenderFrameImpl accessible state ------------------------------------------
   // The following section is the set of methods that RenderFrameImpl needs
