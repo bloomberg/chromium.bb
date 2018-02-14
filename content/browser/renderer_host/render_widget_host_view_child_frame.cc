@@ -42,6 +42,7 @@
 #include "services/service_manager/runner/common/client_util.h"
 #include "third_party/WebKit/public/platform/WebTouchEvent.h"
 #include "ui/base/ui_base_switches_util.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/touch_selection/touch_selection_controller.h"
@@ -837,6 +838,12 @@ void RenderWidgetHostViewChildFrame::CopyFromSurface(
     const gfx::Size& output_size,
     const ReadbackRequestCallback& callback,
     const SkColorType preferred_color_type) {
+  // TODO(crbug/759310): Only NavigationEntryScreenshotManager needs grayscale.
+  // Move that transformation to there; and then remove |preferred_color_type|
+  // from this API and the end-to-end code path.
+  DCHECK(preferred_color_type == kN32_SkColorType ||
+         preferred_color_type == kAlpha_8_SkColorType);
+
   if (!IsSurfaceAvailableForCopy()) {
     // Defer submitting the copy request until after a frame is drawn, at which
     // point we should be guaranteed that the surface is available.
@@ -855,16 +862,35 @@ void RenderWidgetHostViewChildFrame::SubmitSurfaceCopyRequest(
     const gfx::Size& output_size,
     const ReadbackRequestCallback& callback,
     const SkColorType preferred_color_type) {
+  // TODO(crbug.com/812059): Need a "copy from surface" VIZ API.
+  if (enable_viz_) {
+    callback.Run(SkBitmap(), content::READBACK_SURFACE_UNAVAILABLE);
+    return;
+  }
+
   DCHECK(IsSurfaceAvailableForCopy());
   DCHECK(support_);
 
   std::unique_ptr<viz::CopyOutputRequest> request =
       std::make_unique<viz::CopyOutputRequest>(
-          viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE,
-          base::BindOnce(&CopyFromCompositingSurfaceHasResult, output_size,
+          viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
+          base::BindOnce(&CopyFromCompositingSurfaceHasResult, gfx::Size(),
                          preferred_color_type, callback));
-  if (!src_subrect.IsEmpty())
-    request->set_area(src_subrect);
+
+  if (src_subrect.IsEmpty()) {
+    request->set_area(gfx::Rect(current_surface_size_));
+  } else {
+    // |src_subrect| is in DIP coordinates; convert to Surface coordinates.
+    request->set_area(
+        gfx::ScaleToRoundedRect(src_subrect, current_surface_scale_factor_));
+  }
+
+  if (!output_size.IsEmpty()) {
+    request->set_result_selection(gfx::Rect(output_size));
+    request->SetScaleRatio(
+        gfx::Vector2d(request->area().width(), request->area().height()),
+        gfx::Vector2d(output_size.width(), output_size.height()));
+  }
 
   support_->RequestCopyOfSurface(std::move(request));
 }
