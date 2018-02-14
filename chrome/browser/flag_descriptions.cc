@@ -1312,13 +1312,6 @@ const char kServiceWorkerScriptStreamingDescription[] =
     "message pipe and data pipes, and that is never be blocked on the main "
     "thread.";
 
-extern const char kServiceWorkerServicificationName[] =
-    "Servicified service workers";
-extern const char kServiceWorkerServicificationDescription[] =
-    "Enable the servicified service workers. A servicified service worker can "
-    "have direct connection from its clients, so that fetch events can be "
-    "dispatched through the connection without hopping to the browser process.";
-
 const char kServiceWorkerScriptFullCodeCacheName[] =
     "Service worker script full code cache.";
 const char kServiceWorkerScriptFullCodeCacheDescription[] =
