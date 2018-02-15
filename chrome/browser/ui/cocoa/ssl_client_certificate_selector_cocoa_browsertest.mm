@@ -290,8 +290,9 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, HideShow) {
 @end
 
 // Test that we can't trigger the crash from https://crbug.com/653093
+// Disabled due to flakiness. http://crbug.com/810909
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest,
-                       WorkaroundCrashySierra) {
+                       DISABLED_WorkaroundCrashySierra) {
   BOOL selector_was_deallocated = false;
 
   @autoreleasepool {
