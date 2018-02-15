@@ -17816,6 +17816,7 @@ Called by update_net_error_codes.py.-->
   <int value="2365" label="AnimationWorkletRegisterAnimator"/>
   <int value="2366" label="WorkletAnimationConstructor"/>
   <int value="2367" label="ScrollTimelineConstructor"/>
+  <int value="2368" label="V8Document_CreateTouchList_Method"/>
 </enum>
 
 <enum name="FeedbackSource">
