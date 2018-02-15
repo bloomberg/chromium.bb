@@ -24,5 +24,52 @@ class EnterpriseDeviceAttributesGetDirectoryDeviceIdFunction
                              ENTERPRISE_DEVICEATTRIBUTES_GETDIRECTORYDEVICEID);
 };
 
+class EnterpriseDeviceAttributesGetDeviceSerialNumberFunction
+    : public UIThreadExtensionFunction {
+ public:
+  EnterpriseDeviceAttributesGetDeviceSerialNumberFunction();
+
+ protected:
+  ~EnterpriseDeviceAttributesGetDeviceSerialNumberFunction() override;
+
+  ResponseAction Run() override;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION(
+      "enterprise.deviceAttributes.getDeviceSerialNumber",
+      ENTERPRISE_DEVICEATTRIBUTES_GETDEVICESERIALNUMBER);
+};
+
+class EnterpriseDeviceAttributesGetDeviceAssetIdFunction
+    : public UIThreadExtensionFunction {
+ public:
+  EnterpriseDeviceAttributesGetDeviceAssetIdFunction();
+
+ protected:
+  ~EnterpriseDeviceAttributesGetDeviceAssetIdFunction() override;
+
+  ResponseAction Run() override;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("enterprise.deviceAttributes.getDeviceAssetId",
+                             ENTERPRISE_DEVICEATTRIBUTES_GETDEVICEASSETID);
+};
+
+class EnterpriseDeviceAttributesGetDeviceAnnotatedLocationFunction
+    : public UIThreadExtensionFunction {
+ public:
+  EnterpriseDeviceAttributesGetDeviceAnnotatedLocationFunction();
+
+ protected:
+  ~EnterpriseDeviceAttributesGetDeviceAnnotatedLocationFunction() override;
+
+  ResponseAction Run() override;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION(
+      "enterprise.deviceAttributes.getDeviceAnnotatedLocation",
+      ENTERPRISE_DEVICEATTRIBUTES_GETDEVICEANNOTATEDLOCATION);
+};
+
 }  //  namespace extensions
 #endif  // CHROME_BROWSER_EXTENSIONS_API_ENTERPRISE_DEVICE_ATTRIBUTES_ENTERPRISE_DEVICE_ATTRIBUTES_API_H_

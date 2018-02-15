@@ -311,7 +311,7 @@ bool ExtensionApiTest::RunExtensionTestImpl(const std::string& extension_name,
   bool use_root_extensions_dir = (flags & kFlagUseRootExtensionsDir) != 0;
 
   if (custom_arg && custom_arg[0])
-    test_config_->SetString(kTestCustomArg, custom_arg);
+    SetCustomArg(custom_arg);
 
   extensions::ResultCatcher catcher;
   DCHECK(!extension_name.empty() || !page_url.empty()) <<
@@ -465,6 +465,10 @@ bool ExtensionApiTest::StartFTPServer(const base::FilePath& root_directory) {
                            ftp_server_->host_port_pair().port());
 
   return true;
+}
+
+void ExtensionApiTest::SetCustomArg(base::StringPiece custom_arg) {
+  test_config_->SetKey(kTestCustomArg, base::Value(custom_arg));
 }
 
 void ExtensionApiTest::SetUpCommandLine(base::CommandLine* command_line) {

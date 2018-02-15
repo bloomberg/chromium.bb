@@ -283,6 +283,16 @@ std::string BrowserPolicyConnectorChromeOS::GetDeviceAssetID() const {
   return std::string();
 }
 
+std::string BrowserPolicyConnectorChromeOS::GetDeviceAnnotatedLocation() const {
+  if (device_cloud_policy_manager_) {
+    const enterprise_management::PolicyData* policy =
+        device_cloud_policy_manager_->device_store()->policy();
+    if (policy && policy->has_annotated_location())
+      return policy->annotated_location();
+  }
+  return std::string();
+}
+
 std::string BrowserPolicyConnectorChromeOS::GetDirectoryApiID() const {
   if (device_cloud_policy_manager_) {
     const enterprise_management::PolicyData* policy =

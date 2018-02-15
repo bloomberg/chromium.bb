@@ -95,6 +95,9 @@ class BrowserPolicyConnectorChromeOS
   // Returns the device asset ID if it is set.
   std::string GetDeviceAssetID() const;
 
+  // Returns the device annotated location if it is set.
+  std::string GetDeviceAnnotatedLocation() const;
+
   // Returns the cloud directory API ID or an empty string if it is not set.
   std::string GetDirectoryApiID() const;
 
