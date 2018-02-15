@@ -197,7 +197,7 @@ static const PREDICTION_MODE fimode_to_intradir[FILTER_INTRA_MODES] = {
 #endif  // CONFIG_FILTER_INTRA
 
 #if CONFIG_RD_DEBUG
-#define TXB_COEFF_COST_MAP_SIZE (2 * MAX_MIB_SIZE)
+#define TXB_COEFF_COST_MAP_SIZE (MAX_MIB_SIZE)
 #endif
 
 typedef struct RD_STATS {
