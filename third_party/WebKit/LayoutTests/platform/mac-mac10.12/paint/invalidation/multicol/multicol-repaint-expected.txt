@@ -18,12 +18,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutInline SPAN id='a'",
-          "rect": [234, 10, 300, 57],
+          "rect": [234, 9, 300, 59],
           "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
-          "rect": [234, 15, 300, 50],
+          "rect": [234, 14, 300, 52],
           "reason": "appeared"
         },
         {
@@ -38,12 +38,12 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [234, 15, 50, 50],
+          "rect": [234, 14, 50, 52],
           "reason": "disappeared"
         },
         {
           "object": "LayoutText #text",
-          "rect": [9, 10, 13, 57],
+          "rect": [9, 9, 13, 59],
           "reason": "geometry"
         }
       ]

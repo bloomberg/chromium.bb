@@ -140,8 +140,9 @@ class CORE_EXPORT LayoutFlowThread : public LayoutBlockFlow {
       TransformState&,
       VisualRectFlags = kDefaultVisualRectFlags) const override;
 
-  LayoutUnit PageLogicalHeightForOffset(LayoutUnit);
-  LayoutUnit PageRemainingLogicalHeightForOffset(LayoutUnit, PageBoundaryRule);
+  LayoutUnit PageLogicalHeightForOffset(LayoutUnit) const;
+  LayoutUnit PageRemainingLogicalHeightForOffset(LayoutUnit,
+                                                 PageBoundaryRule) const;
 
   virtual void ContentWasLaidOut(
       LayoutUnit logical_bottom_in_flow_thread_after_pagination) = 0;

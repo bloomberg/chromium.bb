@@ -1948,8 +1948,6 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipAbsPositionDescendant) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, CSSClipSubpixel) {
-  LOG(ERROR) << "spv175: "
-             << RuntimeEnabledFeatures::SlimmingPaintV175Enabled();
   // This test verifies that clip tree hierarchy being generated correctly for
   // a subpixel-positioned element with CSS clip.
   SetBodyInnerHTML(R"HTML(
@@ -3701,114 +3699,119 @@ TEST_P(PaintPropertyTreeBuilderTest, FragmentsUnderMultiColumn) {
     </div>
   )HTML");
 
-  LayoutObject* relpos = GetLayoutObjectByElementId("relpos");
+  const auto* relpos = GetLayoutObjectByElementId("relpos");
+  const auto* flowthread = relpos->Parent();
   EXPECT_EQ(4u, NumFragments(relpos));
+  EXPECT_EQ(4u, NumFragments(flowthread));
+
   EXPECT_EQ(LayoutPoint(0, 0), FragmentAt(relpos, 0).PaintOffset());
   EXPECT_EQ(LayoutPoint(0, 0), FragmentAt(relpos, 0).PaginationOffset());
   EXPECT_EQ(LayoutUnit(), FragmentAt(relpos, 0).LogicalTopInFlowThread());
+  EXPECT_EQ(nullptr, FragmentAt(relpos, 0).PaintProperties());
+  EXPECT_EQ(LayoutPoint(0, 0), FragmentAt(flowthread, 0).PaintOffset());
+  EXPECT_EQ(LayoutPoint(0, 0), FragmentAt(flowthread, 0).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(), FragmentAt(flowthread, 0).LogicalTopInFlowThread());
+  const auto* fragment_clip =
+      FragmentAt(flowthread, 0).PaintProperties()->FragmentClip();
+  ASSERT_NE(nullptr, fragment_clip);
   EXPECT_EQ(FloatRect(-1000000, -1000000, 1000100, 1000030),
-            FragmentAt(relpos, 0)
-                .PaintProperties()
-                ->FragmentClip()
-                ->ClipRect()
-                .Rect());
+            fragment_clip->ClipRect().Rect());
+  EXPECT_EQ(fragment_clip,
+            FragmentAt(relpos, 0).LocalBorderBoxProperties().Clip());
 
   EXPECT_EQ(LayoutPoint(100, -30), FragmentAt(relpos, 1).PaintOffset());
   EXPECT_EQ(LayoutPoint(100, -30), FragmentAt(relpos, 1).PaginationOffset());
   EXPECT_EQ(LayoutUnit(30), FragmentAt(relpos, 1).LogicalTopInFlowThread());
-  EXPECT_EQ(FloatRect(100, 0, 1000000, 30), FragmentAt(relpos, 1)
-                                                .PaintProperties()
-                                                ->FragmentClip()
-                                                ->ClipRect()
-                                                .Rect());
-
-  EXPECT_EQ(LayoutPoint(0, 20), FragmentAt(relpos, 2).PaintOffset());
-  EXPECT_EQ(LayoutPoint(0, 20), FragmentAt(relpos, 2).PaginationOffset());
-  EXPECT_EQ(LayoutUnit(60), FragmentAt(relpos, 2).LogicalTopInFlowThread());
-  EXPECT_EQ(FloatRect(-1000000, 80, 1000100, 30), FragmentAt(relpos, 2)
-                                                      .PaintProperties()
-                                                      ->FragmentClip()
-                                                      ->ClipRect()
-                                                      .Rect());
-
-  EXPECT_EQ(LayoutPoint(100, -10), FragmentAt(relpos, 3).PaintOffset());
-  EXPECT_EQ(LayoutPoint(100, -10), FragmentAt(relpos, 3).PaginationOffset());
-  EXPECT_EQ(LayoutUnit(90), FragmentAt(relpos, 3).LogicalTopInFlowThread());
-  EXPECT_EQ(FloatRect(100, 80, 1000000, 999910), FragmentAt(relpos, 3)
-                                                     .PaintProperties()
-                                                     ->FragmentClip()
-                                                     ->ClipRect()
-                                                     .Rect());
-
-  LayoutObject* flowthread = GetLayoutObjectByElementId("relpos")->Parent();
-  EXPECT_EQ(4u, NumFragments(flowthread));
-  EXPECT_EQ(LayoutPoint(0, 0), FragmentAt(flowthread, 0).PaintOffset());
-  EXPECT_EQ(LayoutPoint(0, 0), FragmentAt(flowthread, 0).PaginationOffset());
-  EXPECT_EQ(LayoutUnit(), FragmentAt(flowthread, 0).LogicalTopInFlowThread());
-  EXPECT_EQ(
-      FragmentAt(flowthread, 0).PaintProperties()->FragmentClip()->ClipRect(),
-      FragmentAt(relpos, 0).PaintProperties()->FragmentClip()->ClipRect());
-
+  EXPECT_EQ(nullptr, FragmentAt(relpos, 1).PaintProperties());
   EXPECT_EQ(LayoutPoint(100, -30), FragmentAt(flowthread, 1).PaintOffset());
   EXPECT_EQ(LayoutPoint(100, -30),
             FragmentAt(flowthread, 1).PaginationOffset());
   EXPECT_EQ(LayoutUnit(30), FragmentAt(flowthread, 1).LogicalTopInFlowThread());
-  EXPECT_EQ(
-      FragmentAt(flowthread, 1).PaintProperties()->FragmentClip()->ClipRect(),
-      FragmentAt(relpos, 1).PaintProperties()->FragmentClip()->ClipRect());
+  fragment_clip = FragmentAt(flowthread, 1).PaintProperties()->FragmentClip();
+  ASSERT_NE(nullptr, fragment_clip);
+  EXPECT_EQ(FloatRect(100, 0, 1000000, 30), fragment_clip->ClipRect().Rect());
+  EXPECT_EQ(fragment_clip,
+            FragmentAt(relpos, 1).LocalBorderBoxProperties().Clip());
 
+  EXPECT_EQ(LayoutPoint(0, 20), FragmentAt(relpos, 2).PaintOffset());
+  EXPECT_EQ(LayoutPoint(0, 20), FragmentAt(relpos, 2).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(60), FragmentAt(relpos, 2).LogicalTopInFlowThread());
+  EXPECT_EQ(nullptr, FragmentAt(relpos, 2).PaintProperties());
   EXPECT_EQ(LayoutPoint(0, 20), FragmentAt(flowthread, 2).PaintOffset());
   EXPECT_EQ(LayoutPoint(0, 20), FragmentAt(flowthread, 2).PaginationOffset());
   EXPECT_EQ(LayoutUnit(60), FragmentAt(flowthread, 2).LogicalTopInFlowThread());
-  EXPECT_EQ(
-      FragmentAt(flowthread, 2).PaintProperties()->FragmentClip()->ClipRect(),
-      FragmentAt(relpos, 2).PaintProperties()->FragmentClip()->ClipRect());
+  fragment_clip = FragmentAt(flowthread, 2).PaintProperties()->FragmentClip();
+  ASSERT_NE(nullptr, fragment_clip);
+  EXPECT_EQ(FloatRect(-1000000, 80, 1000100, 30),
+            fragment_clip->ClipRect().Rect());
+  EXPECT_EQ(fragment_clip,
+            FragmentAt(relpos, 2).LocalBorderBoxProperties().Clip());
 
+  EXPECT_EQ(LayoutPoint(100, -10), FragmentAt(relpos, 3).PaintOffset());
+  EXPECT_EQ(LayoutPoint(100, -10), FragmentAt(relpos, 3).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(90), FragmentAt(relpos, 3).LogicalTopInFlowThread());
+  EXPECT_EQ(nullptr, FragmentAt(relpos, 3).PaintProperties());
   EXPECT_EQ(LayoutPoint(100, -10), FragmentAt(flowthread, 3).PaintOffset());
   EXPECT_EQ(LayoutPoint(100, -10),
             FragmentAt(flowthread, 3).PaginationOffset());
   EXPECT_EQ(LayoutUnit(90), FragmentAt(flowthread, 3).LogicalTopInFlowThread());
-  EXPECT_EQ(
-      FragmentAt(flowthread, 3).PaintProperties()->FragmentClip()->ClipRect(),
-      FragmentAt(relpos, 3).PaintProperties()->FragmentClip()->ClipRect());
+  fragment_clip = FragmentAt(flowthread, 3).PaintProperties()->FragmentClip();
+  ASSERT_NE(nullptr, fragment_clip);
+  EXPECT_EQ(FloatRect(100, 80, 1000000, 999910),
+            fragment_clip->ClipRect().Rect());
+  EXPECT_EQ(fragment_clip,
+            FragmentAt(relpos, 3).LocalBorderBoxProperties().Clip());
 
   // Above the spanner.
   // Column 1.
-  EXPECT_EQ(
-      LayoutPoint(),
-      GetLayoutObjectByElementId("space1")->FirstFragment().PaintOffset());
-  EXPECT_EQ(
-      LayoutPoint(100, 0),
-      GetLayoutObjectByElementId("space2")->FirstFragment().PaintOffset());
+  const auto* space1 = GetLayoutObjectByElementId("space1");
+  EXPECT_EQ(1u, NumFragments(space1));
+  EXPECT_EQ(nullptr, space1->FirstFragment().PaintProperties());
+  EXPECT_EQ(LayoutPoint(), space1->FirstFragment().PaintOffset());
+  const auto* space2 = GetLayoutObjectByElementId("space2");
+  EXPECT_EQ(1u, NumFragments(space2));
+  EXPECT_EQ(nullptr, space2->FirstFragment().PaintProperties());
+  EXPECT_EQ(LayoutPoint(100, 0), space2->FirstFragment().PaintOffset());
 
   // The spanner's normal flow.
-  EXPECT_EQ(
-      LayoutPoint(0, 30),
-      GetLayoutObjectByElementId("spanner")->FirstFragment().PaintOffset());
-  EXPECT_EQ(
-      LayoutPoint(0, 30),
-      GetLayoutObjectByElementId("normal")->FirstFragment().PaintOffset());
+  LayoutObject* spanner = GetLayoutObjectByElementId("spanner");
+  EXPECT_EQ(1u, NumFragments(spanner));
+  EXPECT_EQ(nullptr, spanner->FirstFragment().PaintProperties());
+  EXPECT_EQ(LayoutPoint(0, 30), spanner->FirstFragment().PaintOffset());
+  LayoutObject* normal = GetLayoutObjectByElementId("normal");
+  EXPECT_EQ(1u, NumFragments(normal));
+  EXPECT_EQ(nullptr, normal->FirstFragment().PaintProperties());
+  EXPECT_EQ(LayoutPoint(0, 30), normal->FirstFragment().PaintOffset());
 
   // Below the spanner.
-  EXPECT_EQ(
-      LayoutPoint(0, 80),
-      GetLayoutObjectByElementId("space3")->FirstFragment().PaintOffset());
-  EXPECT_EQ(
-      LayoutPoint(100, 80),
-      GetLayoutObjectByElementId("space4")->FirstFragment().PaintOffset());
+  const auto* space3 = GetLayoutObjectByElementId("space3");
+  EXPECT_EQ(1u, NumFragments(space3));
+  EXPECT_EQ(nullptr, space3->FirstFragment().PaintProperties());
+  EXPECT_EQ(LayoutPoint(0, 80), space3->FirstFragment().PaintOffset());
+  const auto* space4 = GetLayoutObjectByElementId("space4");
+  EXPECT_EQ(1u, NumFragments(space4));
+  EXPECT_EQ(nullptr, space4->FirstFragment().PaintProperties());
+  EXPECT_EQ(LayoutPoint(100, 80), space4->FirstFragment().PaintOffset());
 
   // Out-of-flow positioned descendants of the spanner. They are laid out in
   // the relative-position container.
 
   // "top-left" should be aligned to the top-left corner of space1.
-  EXPECT_EQ(
-      LayoutPoint(0, 0),
-      GetLayoutObjectByElementId("top-left")->FirstFragment().PaintOffset());
+  const auto* top_left = GetLayoutObjectByElementId("top-left");
+  EXPECT_EQ(1u, NumFragments(top_left));
+  EXPECT_EQ(LayoutPoint(0, 0), top_left->FirstFragment().PaintOffset());
+  fragment_clip = top_left->FirstFragment().PaintProperties()->FragmentClip();
+  EXPECT_EQ(FragmentAt(flowthread, 0).PaintProperties()->FragmentClip(),
+            fragment_clip->Parent());
 
   // "bottom-right" should be aligned to the bottom-right corner of space4.
-  EXPECT_EQ(LayoutPoint(180, 90), GetLayoutObjectByElementId("bottom-right")
-                                      ->FirstFragment()
-                                      .PaintOffset());
+  const auto* bottom_right = GetLayoutObjectByElementId("bottom-right");
+  EXPECT_EQ(1u, NumFragments(bottom_right));
+  EXPECT_EQ(LayoutPoint(180, 90), bottom_right->FirstFragment().PaintOffset());
+  fragment_clip =
+      bottom_right->FirstFragment().PaintProperties()->FragmentClip();
+  EXPECT_EQ(FragmentAt(flowthread, 3).PaintProperties()->FragmentClip(),
+            fragment_clip->Parent());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
@@ -5059,9 +5062,12 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowControlsClipSubpixel) {
 
 TEST_P(PaintPropertyTreeBuilderTest, FragmentPaintOffsetUnderOverflowScroll) {
   SetBodyInnerHTML(R"HTML(
-    <style>::-webkit-scrollbar { width: 20px }</style>
+    <style>
+      body { margin: 0 }
+      ::-webkit-scrollbar { width: 20px }
+    </style>
     <div id='container' style='margin-top: 50px; overflow-y: scroll'>
-      <div style='columns: 2; height: 40px'>
+      <div style='columns: 2; height: 40px; column-gap: 0'>
         <div id='content' style='width: 20px; height: 20px'>TEST</div>
       </div>
     </div>
@@ -5072,11 +5078,19 @@ TEST_P(PaintPropertyTreeBuilderTest, FragmentPaintOffsetUnderOverflowScroll) {
             PaintPropertiesForElement("container")->PaintOffsetTranslation());
 
   const auto* content = GetLayoutObjectByElementId("content");
-  EXPECT_EQ(LayoutPoint(), content->FirstFragment().PaintOffset());
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    EXPECT_EQ(LayoutRect(0, 0, 20, 20), content->FirstFragment().VisualRect());
-  else
-    EXPECT_EQ(LayoutRect(8, 50, 20, 20), content->FirstFragment().VisualRect());
+  const auto& first_fragment = content->FirstFragment();
+  const auto* second_fragment = first_fragment.NextFragment();
+  ASSERT_NE(nullptr, second_fragment);
+
+  EXPECT_EQ(LayoutPoint(), first_fragment.PaintOffset());
+  EXPECT_EQ(LayoutPoint(390, -10), second_fragment->PaintOffset());
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    EXPECT_EQ(LayoutRect(0, 0, 20, 20), first_fragment.VisualRect());
+    EXPECT_EQ(LayoutRect(390, -10, 20, 20), second_fragment->VisualRect());
+  } else {
+    EXPECT_EQ(LayoutRect(0, 50, 20, 10), first_fragment.VisualRect());
+    EXPECT_EQ(LayoutRect(390, 50, 20, 10), second_fragment->VisualRect());
+  }
 }
 
 // The following test tests that we restrict actual column count, to not run

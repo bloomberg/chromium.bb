@@ -479,7 +479,8 @@ static void WritePaintProperties(TextStream& ts,
     WriteIndent(ts, indent);
     if (has_fragments)
       ts << " " << fragment_index << ":";
-    ts << " paint_offset=(" << fragment->PaintOffset().ToString() << ")";
+    ts << " paint_offset=(" << fragment->PaintOffset().ToString()
+       << ") visual_rect=(" << fragment->VisualRect().ToString() << ")";
     if (fragment->HasLocalBorderBoxProperties()) {
       auto local_properties = fragment->LocalBorderBoxProperties();
       // To know where they point into the paint property tree, you can dump
