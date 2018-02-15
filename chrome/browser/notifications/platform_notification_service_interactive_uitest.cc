@@ -138,11 +138,6 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
            RequestAndRespondToPermission(PermissionRequestManager::ACCEPT_ALL);
   }
 
-  bool RequestAndDenyPermission() {
-    return "denied" ==
-           RequestAndRespondToPermission(PermissionRequestManager::DENY_ALL);
-  }
-
   double GetEngagementScore(const GURL& origin) const {
     return SiteEngagementService::Get(browser()->profile())->GetScore(origin);
   }
