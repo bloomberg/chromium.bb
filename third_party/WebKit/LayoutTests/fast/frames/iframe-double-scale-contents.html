@@ -22,6 +22,7 @@
 
       function scalePage(scaleFactor) {
           if (window.internals) {
+            window.internals.setPageScaleFactorLimits(0.5, 4);
             window.internals.setPageScaleFactor(scaleFactor);
           }
       }

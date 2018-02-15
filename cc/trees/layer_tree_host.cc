@@ -1088,6 +1088,8 @@ void LayerTreeHost::SetPageScaleFactorAndLimits(float page_scale_factor,
       min_page_scale_factor_ == min_page_scale_factor &&
       max_page_scale_factor_ == max_page_scale_factor)
     return;
+  DCHECK_GE(page_scale_factor, min_page_scale_factor);
+  DCHECK_LE(page_scale_factor, max_page_scale_factor);
 
   page_scale_factor_ = page_scale_factor;
   min_page_scale_factor_ = min_page_scale_factor;

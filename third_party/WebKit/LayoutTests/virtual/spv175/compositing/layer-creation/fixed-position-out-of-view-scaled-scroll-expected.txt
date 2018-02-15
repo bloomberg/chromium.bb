@@ -3,12 +3,12 @@ Not scaled:
   "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [800, 600],
+      "bounds": [1600, 1200],
       "backgroundColor": "#FFFFFF"
     },
     {
       "name": "Scrolling Layer",
-      "bounds": [800, 600],
+      "bounds": [1600, 1200],
       "drawsContent": false
     },
     {
@@ -77,12 +77,12 @@ Scale=0.5:
   "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [800, 600],
+      "bounds": [1600, 1200],
       "backgroundColor": "#FFFFFF"
     },
     {
       "name": "Scrolling Layer",
-      "bounds": [800, 600],
+      "bounds": [1600, 1200],
       "drawsContent": false
     },
     {
@@ -151,12 +151,12 @@ Scale=1.5:
   "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [800, 600],
+      "bounds": [1600, 1200],
       "backgroundColor": "#FFFFFF"
     },
     {
       "name": "Scrolling Layer",
-      "bounds": [800, 600],
+      "bounds": [1600, 1200],
       "drawsContent": false
     },
     {

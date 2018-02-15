@@ -5,6 +5,7 @@ if (window.internals) {
     internals.settings.setViewportEnabled(true);
     internals.settings.setViewportMetaEnabled(true);
     addEventListener('load', function() {
+        internals.setPageScaleFactorLimits(0.5, 4);
         internals.setPageScaleFactor(0.5);
     });
 }

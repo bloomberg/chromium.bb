@@ -3,8 +3,10 @@
 <head>
 <script>
 // This test ensures we paint the entirety of the root background even when zooming page out
-if (window.internals)
+if (window.internals) {
+    internals.setPageScaleFactorLimits(0.5, 4);
     internals.setPageScaleFactor(0.5);
+}
 </script>
 </head>
 <body>

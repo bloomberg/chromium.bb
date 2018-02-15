@@ -265,11 +265,17 @@ bool VisualViewport::DidSetScaleOrLocation(float scale,
 
   bool values_changed = false;
 
-  if (scale != scale_ && !std::isnan(scale) && !std::isinf(scale)) {
-    scale_ = scale;
-    values_changed = true;
-    GetPage().GetChromeClient().PageScaleFactorChanged();
-    EnqueueResizeEvent();
+  if (!std::isnan(scale) && !std::isinf(scale)) {
+    float clamped_scale = GetPage()
+                              .GetPageScaleConstraintsSet()
+                              .FinalConstraints()
+                              .ClampToConstraints(scale);
+    if (clamped_scale != scale_) {
+      scale_ = clamped_scale;
+      values_changed = true;
+      GetPage().GetChromeClient().PageScaleFactorChanged();
+      EnqueueResizeEvent();
+    }
   }
 
   ScrollOffset clamped_offset = ClampScrollOffset(ToScrollOffset(location));
