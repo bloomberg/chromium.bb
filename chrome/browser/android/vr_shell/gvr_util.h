@@ -13,14 +13,12 @@ namespace gfx {
 class Transform;
 }  // namespace gfx
 
-namespace vr {
-class UiElement;
-}  // namespace vr
-
 // Functions in this file are currently GVR specific functions. If other
 // platforms need the same function here, please move it to
 // chrome/browser/vr/*util.cc|h and remove dependancy to GVR.
-namespace vr_shell {
+namespace vr {
+
+class UiElement;
 
 // This function calculates the minimal FOV (in degrees) which covers all
 // visible |elements| as if it was viewing from fov_recommended. For example, if
@@ -34,7 +32,7 @@ namespace vr_shell {
 // Using a smaller FOV could improve the performance a lot while we are showing
 // UIs on top of WebVR content.
 void GetMinimalFov(const gfx::Transform& view_matrix,
-                   const std::vector<const vr::UiElement*>& elements,
+                   const std::vector<const UiElement*>& elements,
                    const gvr::Rectf& fov_recommended,
                    float z_near,
                    gvr::Rectf* out_fov);
@@ -42,9 +40,9 @@ void GetMinimalFov(const gfx::Transform& view_matrix,
 // Transforms the given gfx::Transform to gvr::Mat4f.
 void TransformToGvrMat(const gfx::Transform& in, gvr::Mat4f* out);
 
-// Transforms the given vr::Mat4f to gfx::Transform.
+// Transforms the given Mat4f to gfx::Transform.
 void GvrMatToTransform(const gvr::Mat4f& in, gfx::Transform* out);
 
-}  // namespace vr_shell
+}  // namespace vr
 
 #endif  // CHROME_BROWSER_ANDROID_VR_SHELL_GVR_UTIL_H_

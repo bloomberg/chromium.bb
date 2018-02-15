@@ -16,7 +16,7 @@
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_controller.h"
 #include "ui/gfx/transform.h"
 
-namespace vr_shell {
+namespace vr {
 
 namespace {
 
@@ -60,14 +60,13 @@ float DeltaTimeSeconds(int64_t last_timestamp_nanos) {
          kNanoSecondsPerSecond;
 }
 
-gvr::ControllerButton PlatformToGvrButton(
-    vr::PlatformController::ButtonType type) {
+gvr::ControllerButton PlatformToGvrButton(PlatformController::ButtonType type) {
   switch (type) {
-    case vr::PlatformController::kButtonHome:
+    case PlatformController::kButtonHome:
       return gvr::kControllerButtonHome;
-    case vr::PlatformController::kButtonMenu:
+    case PlatformController::kButtonMenu:
       return gvr::kControllerButtonApp;
-    case vr::PlatformController::kButtonSelect:
+    case PlatformController::kButtonSelect:
       return gvr::kControllerButtonClick;
     default:
       return gvr::kControllerButtonNone;
@@ -158,7 +157,7 @@ float VrController::TouchPosY() {
   return controller_state_->GetTouchPos().y;
 }
 
-bool VrController::IsButtonDown(vr::PlatformController::ButtonType type) const {
+bool VrController::IsButtonDown(PlatformController::ButtonType type) const {
   return controller_state_->GetButtonState(PlatformToGvrButton(type));
 }
 
@@ -183,10 +182,10 @@ base::TimeTicks VrController::GetLastButtonTimestamp() const {
   return base::TimeTicks::Now();
 }
 
-vr::PlatformController::Handedness VrController::GetHandedness() const {
+PlatformController::Handedness VrController::GetHandedness() const {
   return handedness_ == GVR_CONTROLLER_RIGHT_HANDED
-             ? vr::PlatformController::kRightHanded
-             : vr::PlatformController::kLeftHanded;
+             ? PlatformController::kRightHanded
+             : PlatformController::kLeftHanded;
 }
 
 gfx::Quaternion VrController::Orientation() const {
@@ -268,7 +267,7 @@ void VrController::UpdateTouchInfo() {
         extrapolated_touch_ < kMaxNumOfExtrapolations))) {
     extrapolated_touch_++;
     touch_position_changed_ = true;
-    // vr::Fill the touch_info
+    // Fill the touch_info
     float duration = DeltaTimeSeconds(last_timestamp_nanos_);
     touch_info_->touch_point.position.set_x(cur_touch_point_->position.x() +
                                             overall_velocity_.x() * duration);
@@ -492,4 +491,4 @@ void VrController::UpdateAlpha() {
                                     0.0f, 1.0f);
 }
 
-}  // namespace vr_shell
+}  // namespace vr

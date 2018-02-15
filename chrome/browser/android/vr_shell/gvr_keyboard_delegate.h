@@ -12,24 +12,22 @@
 #include "third_party/gvr-android-keyboard/src/libraries/headers/vr/gvr/capi/include/gvr_keyboard.h"
 
 namespace vr {
+
 struct TextInputInfo;
-}
 
-namespace vr_shell {
-
-class GvrKeyboardDelegate : public vr::KeyboardDelegate {
+class GvrKeyboardDelegate : public KeyboardDelegate {
  public:
   // Constructs a GvrKeyboardDelegate by dynamically loading the GVR keyboard
   // api. A null pointer is returned upon failure.
   static std::unique_ptr<GvrKeyboardDelegate> Create();
   ~GvrKeyboardDelegate() override;
 
-  void SetUiInterface(vr::KeyboardUiInterface* ui);
+  void SetUiInterface(KeyboardUiInterface* ui);
 
   typedef int32_t EventType;
   typedef base::RepeatingCallback<void(EventType)> OnEventCallback;
 
-  // vr::KeyboardDelegate implementation.
+  // KeyboardDelegate implementation.
   void OnBeginFrame() override;
   void ShowKeyboard() override;
   void HideKeyboard() override;
@@ -37,19 +35,19 @@ class GvrKeyboardDelegate : public vr::KeyboardDelegate {
   bool HitTest(const gfx::Point3F& ray_origin,
                const gfx::Point3F& ray_target,
                gfx::Point3F* hit_position) override;
-  void Draw(const vr::CameraModel& model) override;
+  void Draw(const CameraModel& model) override;
   bool SupportsSelection() override;
   void OnButtonDown(const gfx::PointF& position) override;
   void OnButtonUp(const gfx::PointF& position) override;
 
   // Called to update GVR keyboard with the given text input info.
-  void UpdateInput(const vr::TextInputInfo& info);
+  void UpdateInput(const TextInputInfo& info);
 
  private:
   GvrKeyboardDelegate();
   void Init(gvr_keyboard_context* keyboard_context);
   void OnGvrKeyboardEvent(EventType);
-  vr::TextInputInfo GetTextInfo();
+  TextInputInfo GetTextInfo();
   // We pause updates from the keyboard until the previous update has been
   // "acked" using GvrKeyboardDelegate::UpdateInput. This is to prevent weird
   // behavior when editing web input fields. For example, say that the current
@@ -59,15 +57,15 @@ class GvrKeyboardDelegate : public vr::KeyboardDelegate {
   // we'll override the keyboard state with the ack.
   // TODO(ymalik): This is brittle, we should look for a better solution.
   bool pause_keyboard_update_ = false;
-  vr::TextInputInfo cached_text_input_info_;
+  TextInputInfo cached_text_input_info_;
 
-  vr::KeyboardUiInterface* ui_;
+  KeyboardUiInterface* ui_;
   gvr_keyboard_context* gvr_keyboard_ = nullptr;
   OnEventCallback keyboard_event_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GvrKeyboardDelegate);
 };
 
-}  // namespace vr_shell
+}  // namespace vr
 
 #endif  // CHROME_BROWSER_ANDROID_VR_SHELL_GVR_KEYBOARD_DELEGATE_H_

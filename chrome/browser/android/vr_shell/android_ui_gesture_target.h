@@ -14,7 +14,7 @@ namespace blink {
 class WebInputEvent;
 }
 
-namespace vr_shell {
+namespace vr {
 
 // Used to forward events to MotionEventSynthesizer. Owned by VrShell.
 class AndroidUiGestureTarget {
@@ -44,6 +44,6 @@ class AndroidUiGestureTarget {
   DISALLOW_COPY_AND_ASSIGN(AndroidUiGestureTarget);
 };
 
-}  // namespace vr_shell
+}  // namespace vr
 
 #endif  // CHROME_BROWSER_ANDROID_VR_SHELL_ANDROID_UI_GESTURE_TARGET_H_

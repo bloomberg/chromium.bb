@@ -18,18 +18,18 @@ class AutocompleteController;
 class ChromeAutocompleteProviderClient;
 class Profile;
 
-namespace vr_shell {
+namespace vr {
 
 class AutocompleteController : public AutocompleteControllerDelegate {
  public:
-  typedef base::RepeatingCallback<void(std::unique_ptr<vr::OmniboxSuggestions>)>
+  typedef base::RepeatingCallback<void(std::unique_ptr<OmniboxSuggestions>)>
       SuggestionCallback;
 
   explicit AutocompleteController(const SuggestionCallback& callback);
   AutocompleteController();
   ~AutocompleteController() override;
 
-  void Start(const vr::AutocompleteRequest& request);
+  void Start(const AutocompleteRequest& request);
   void Stop();
 
   // If |input| can be classified as URL, this function returns a GURL
@@ -46,7 +46,7 @@ class AutocompleteController : public AutocompleteControllerDelegate {
   ChromeAutocompleteProviderClient* client_;
   std::unique_ptr<::AutocompleteController> autocomplete_controller_;
   SuggestionCallback suggestion_callback_;
-  vr::AutocompleteRequest last_request_;
+  AutocompleteRequest last_request_;
 
   // This is used to throttle the rate at which new suggestions are presented to
   // the user. For example, if a suggestion comes in on frame 1 and frame 2, we
@@ -58,6 +58,6 @@ class AutocompleteController : public AutocompleteControllerDelegate {
   DISALLOW_COPY_AND_ASSIGN(AutocompleteController);
 };
 
-}  // namespace vr_shell
+}  // namespace vr
 
 #endif  // CHROME_BROWSER_ANDROID_VR_SHELL_AUTOCOMPLETE_CONTROLLER_H_

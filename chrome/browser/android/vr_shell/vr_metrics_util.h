@@ -12,7 +12,7 @@
 #include "device/vr/vr_device.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
-namespace vr_shell {
+namespace vr {
 
 class VrMetricsUtil {
  public:
@@ -40,6 +40,6 @@ class VrMetricsUtil {
   DISALLOW_IMPLICIT_CONSTRUCTORS(VrMetricsUtil);
 };
 
-}  // namespace vr_shell
+}  // namespace vr
 
 #endif  // CHROME_BROWSER_ANDROID_VR_SHELL_VR_METRICS_UTIL_H_

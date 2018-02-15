@@ -18,7 +18,7 @@ namespace gl {
 class SurfaceTexture;
 }
 
-namespace vr_shell {
+namespace vr {
 
 // VrShellGl talks to VrShell through this interface. This could be split up if
 // VrShellGl is refactored into components.
@@ -41,6 +41,6 @@ class GlBrowserInterface {
   virtual void ToggleCardboardGamepad(bool enabled) = 0;
 };
 
-}  // namespace vr_shell
+}  // namespace vr
 
 #endif  // CHROME_BROWSER_ANDROID_VR_SHELL_GL_BROWSER_INTERFACE_H_

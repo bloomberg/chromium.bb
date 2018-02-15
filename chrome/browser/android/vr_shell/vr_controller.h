@@ -31,14 +31,14 @@ namespace gvr {
 class ControllerState;
 }
 
-namespace vr_shell {
+namespace vr {
 
 // Angle (radians) the beam down from the controller axis, for wrist comfort.
 constexpr float kErgoAngleOffset = 0.26f;
 
 using GestureList = std::vector<std::unique_ptr<blink::WebGestureEvent>>;
 
-class VrController : public vr::PlatformController {
+class VrController : public PlatformController {
  public:
   // Controller API entry point.
   explicit VrController(gvr_context* gvr_context);
@@ -80,11 +80,11 @@ class VrController : public vr::PlatformController {
   bool IsConnected();
 
   // PlatformController
-  bool IsButtonDown(vr::PlatformController::ButtonType type) const override;
+  bool IsButtonDown(PlatformController::ButtonType type) const override;
   base::TimeTicks GetLastOrientationTimestamp() const override;
   base::TimeTicks GetLastTouchTimestamp() const override;
   base::TimeTicks GetLastButtonTimestamp() const override;
-  vr::PlatformController::Handedness GetHandedness() const override;
+  PlatformController::Handedness GetHandedness() const override;
 
  private:
   enum GestureDetectorState {
@@ -196,6 +196,6 @@ class VrController : public vr::PlatformController {
   DISALLOW_COPY_AND_ASSIGN(VrController);
 };
 
-}  // namespace vr_shell
+}  // namespace vr
 
 #endif  // CHROME_BROWSER_ANDROID_VR_SHELL_VR_CONTROLLER_H_

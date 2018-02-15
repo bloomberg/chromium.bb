@@ -10,13 +10,12 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 
-namespace vr_shell {
+namespace vr {
 
-VrWebContentsObserver::VrWebContentsObserver(
-    content::WebContents* web_contents,
-    VrShell* vr_shell,
-    vr::BrowserUiInterface* ui_interface,
-    vr::ToolbarHelper* toolbar)
+VrWebContentsObserver::VrWebContentsObserver(content::WebContents* web_contents,
+                                             VrShell* vr_shell,
+                                             BrowserUiInterface* ui_interface,
+                                             ToolbarHelper* toolbar)
     : WebContentsObserver(web_contents),
       vr_shell_(vr_shell),
       ui_interface_(ui_interface),
@@ -26,8 +25,7 @@ VrWebContentsObserver::VrWebContentsObserver(
 
 VrWebContentsObserver::~VrWebContentsObserver() {}
 
-void VrWebContentsObserver::SetUiInterface(
-    vr::BrowserUiInterface* ui_interface) {
+void VrWebContentsObserver::SetUiInterface(BrowserUiInterface* ui_interface) {
   ui_interface_ = ui_interface;
 }
 
@@ -74,4 +72,4 @@ void VrWebContentsObserver::RenderViewHostChanged(
   new_host->GetWidget()->GetView()->SetIsInVR(true);
 }
 
-}  // namespace vr_shell
+}  // namespace vr

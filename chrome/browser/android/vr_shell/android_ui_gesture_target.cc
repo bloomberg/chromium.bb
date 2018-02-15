@@ -13,7 +13,7 @@ using base::android::JavaParamRef;
 using base::android::JavaRef;
 using content::MotionEventAction;
 
-namespace vr_shell {
+namespace vr {
 
 AndroidUiGestureTarget::AndroidUiGestureTarget(JNIEnv* env,
                                                const JavaParamRef<jobject>& obj,
@@ -139,4 +139,4 @@ static jlong JNI_AndroidUiGestureTarget_Init(JNIEnv* env,
       new AndroidUiGestureTarget(env, obj, scale_factor, scroll_ratio));
 }
 
-}  // namespace vr_shell
+}  // namespace vr

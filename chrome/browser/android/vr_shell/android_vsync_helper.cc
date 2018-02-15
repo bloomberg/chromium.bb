@@ -12,7 +12,7 @@
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
 
-namespace vr_shell {
+namespace vr {
 
 AndroidVSyncHelper::AndroidVSyncHelper() {
   JNIEnv* env = AttachCurrentThread();
@@ -60,4 +60,4 @@ void AndroidVSyncHelper::CancelVSyncRequest() {
   callback_.Reset();
 }
 
-}  // namespace vr_shell
+}  // namespace vr

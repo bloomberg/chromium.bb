@@ -135,7 +135,7 @@ GLuint ConsumeTexture(gpu::gles2::GLES2Interface* gl,
 
 }  // namespace
 
-namespace vr_shell {
+namespace vr {
 
 MailboxToSurfaceBridge::MailboxToSurfaceBridge() : weak_ptr_factory_(this) {}
 
@@ -369,4 +369,4 @@ void MailboxToSurfaceBridge::DrawQuad(unsigned int texture_handle) {
   gl_->DrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-}  // namespace vr_shell
+}  // namespace vr

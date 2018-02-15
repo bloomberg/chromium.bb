@@ -25,22 +25,22 @@ namespace base {
 class Version;
 }  // namespace base
 
-namespace vr_shell {
+namespace vr {
 
 class VrShell;
 class VrShellGl;
 
 class VrGLThread : public base::android::JavaHandlerThread,
-                   public vr::ContentInputForwarder,
+                   public ContentInputForwarder,
                    public GlBrowserInterface,
-                   public vr::UiBrowserInterface,
-                   public vr::BrowserUiInterface {
+                   public UiBrowserInterface,
+                   public BrowserUiInterface {
  public:
   VrGLThread(
       const base::WeakPtr<VrShell>& weak_vr_shell,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
       gvr_context* gvr_api,
-      const vr::UiInitialState& ui_initial_state,
+      const UiInitialState& ui_initial_state,
       bool reprojected_rendering,
       bool daydream_support);
 
@@ -62,32 +62,32 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void OnContentPaused(bool enabled) override;
   void ToggleCardboardGamepad(bool enabled) override;
 
-  // vr::ContentInputForwarder
+  // ContentInputForwarder
   void ForwardEvent(std::unique_ptr<blink::WebInputEvent> event,
                     int content_id) override;
-  void OnWebInputEdited(const vr::TextInputInfo& info, bool commit) override;
+  void OnWebInputEdited(const TextInputInfo& info, bool commit) override;
   void ForwardDialogEvent(std::unique_ptr<blink::WebInputEvent> event) override;
 
-  // vr::UiBrowserInterface implementation (UI calling to VrShell).
+  // UiBrowserInterface implementation (UI calling to VrShell).
   void ExitPresent() override;
   void ExitFullscreen() override;
   void Navigate(GURL gurl) override;
   void NavigateBack() override;
   void ExitCct() override;
   void CloseHostedDialog() override;
-  void OnUnsupportedMode(vr::UiUnsupportedMode mode) override;
-  void OnExitVrPromptResult(vr::ExitVrPromptChoice choice,
-                            vr::UiUnsupportedMode reason) override;
+  void OnUnsupportedMode(UiUnsupportedMode mode) override;
+  void OnExitVrPromptResult(ExitVrPromptChoice choice,
+                            UiUnsupportedMode reason) override;
   void OnContentScreenBoundsChanged(const gfx::SizeF& bounds) override;
   void SetVoiceSearchActive(bool active) override;
-  void StartAutocomplete(const vr::AutocompleteRequest& request) override;
+  void StartAutocomplete(const AutocompleteRequest& request) override;
   void StopAutocomplete() override;
   void LoadAssets() override;
 
-  // vr::BrowserUiInterface implementation (Browser calling to UI).
+  // BrowserUiInterface implementation (Browser calling to UI).
   void SetWebVrMode(bool enabled, bool show_toast) override;
   void SetFullscreen(bool enabled) override;
-  void SetToolbarState(const vr::ToolbarState& state) override;
+  void SetToolbarState(const ToolbarState& state) override;
   void SetIncognito(bool incognito) override;
   void SetLoading(bool loading) override;
   void SetLoadProgress(float progress) override;
@@ -98,13 +98,12 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void SetAudioCaptureEnabled(bool enabled) override;
   void SetBluetoothConnected(bool enabled) override;
   void SetLocationAccessEnabled(bool enabled) override;
-  void SetExitVrPromptEnabled(bool enabled,
-                              vr::UiUnsupportedMode reason) override;
+  void SetExitVrPromptEnabled(bool enabled, UiUnsupportedMode reason) override;
   void SetSpeechRecognitionEnabled(bool enabled) override;
   void SetRecognitionResult(const base::string16& result) override;
   void OnSpeechRecognitionStateChanged(int new_state) override;
   void SetOmniboxSuggestions(
-      std::unique_ptr<vr::OmniboxSuggestions> result) override;
+      std::unique_ptr<OmniboxSuggestions> result) override;
   void OnAssetsComponentReady() override;
   void ShowSoftInput(bool show) override;
   void UpdateWebInputSelectionIndices(int selection_start,
@@ -121,28 +120,28 @@ class VrGLThread : public base::android::JavaHandlerThread,
   bool OnMainThread() const;
   bool OnGlThread() const;
 
-  void OnAssetsLoaded(vr::AssetsLoadStatus status,
-                      std::unique_ptr<vr::Assets> assets,
+  void OnAssetsLoaded(AssetsLoadStatus status,
+                      std::unique_ptr<Assets> assets,
                       const base::Version& component_version);
 
   // Created on GL thread.
   std::unique_ptr<VrShellGl> vr_shell_gl_;
   std::unique_ptr<GvrKeyboardDelegate> keyboard_delegate_;
-  std::unique_ptr<vr::TextInputDelegate> text_input_delegate_;
+  std::unique_ptr<TextInputDelegate> text_input_delegate_;
 
   base::WeakPtr<VrShell> weak_vr_shell_;
-  base::WeakPtr<vr::BrowserUiInterface> browser_ui_;
+  base::WeakPtr<BrowserUiInterface> browser_ui_;
 
   // This state is used for initializing vr_shell_gl_.
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   gvr_context* gvr_api_;
-  vr::UiInitialState ui_initial_state_;
+  UiInitialState ui_initial_state_;
   bool reprojected_rendering_;
   bool daydream_support_;
 
   DISALLOW_COPY_AND_ASSIGN(VrGLThread);
 };
 
-}  // namespace vr_shell
+}  // namespace vr
 
 #endif  // CHROME_BROWSER_ANDROID_VR_SHELL_VR_GL_THREAD_H_

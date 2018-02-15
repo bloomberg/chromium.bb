@@ -16,7 +16,7 @@
 
 using base::android::JavaParamRef;
 
-namespace vr_shell {
+namespace vr {
 
 VrDialog::VrDialog(int width, int height) {
   width_ = width;
@@ -74,7 +74,7 @@ void VrDialog::SendGestureToDialog(
   dialog_->ForwardDialogEvent(std::move(event));
 }
 
-void VrDialog::SetEventForwarder(vr::ContentInputForwarder* dialog) {
+void VrDialog::SetEventForwarder(ContentInputForwarder* dialog) {
   dialog_ = dialog;
 }
 
@@ -95,4 +95,4 @@ std::unique_ptr<blink::WebMouseEvent> VrDialog::MakeMouseEvent(
   return mouse_event;
 }
 
-}  //  namespace vr_shell
+}  //  namespace vr

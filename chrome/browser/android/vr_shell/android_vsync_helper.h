@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 
-namespace vr_shell {
+namespace vr {
 
 class AndroidVSyncHelper {
  public:
@@ -43,6 +43,6 @@ class AndroidVSyncHelper {
   DISALLOW_COPY_AND_ASSIGN(AndroidVSyncHelper);
 };
 
-}  // namespace vr_shell
+}  // namespace vr
 
 #endif  // CHROME_BROWSER_ANDROID_VR_SHELL_ANDROID_VSYNC_HELPER_H_

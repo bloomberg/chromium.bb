@@ -24,7 +24,7 @@ namespace device {
 class VRDevice;
 }
 
-namespace vr_shell {
+namespace vr {
 
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.vr_shell
 enum class VrSupportLevel : int {
@@ -103,6 +103,6 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   DISALLOW_COPY_AND_ASSIGN(VrShellDelegate);
 };
 
-}  // namespace vr_shell
+}  // namespace vr
 
 #endif  // CHROME_BROWSER_ANDROID_VR_SHELL_VR_SHELL_DELEGATE_H_

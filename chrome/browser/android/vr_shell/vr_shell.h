@@ -46,19 +46,16 @@ class SurfaceTexture;
 }
 
 namespace vr {
+
 class BrowserUiInterface;
-class ToolbarHelper;
-struct AutocompleteRequest;
-}  // namespace vr
-
-namespace vr_shell {
-
 class AndroidUiGestureTarget;
 class AutocompleteController;
+class ToolbarHelper;
 class VrGLThread;
 class VrMetricsHelper;
 class VrShellDelegate;
 class VrWebContentsObserver;
+struct AutocompleteRequest;
 
 enum UiAction {
   HISTORY_BACK = 0,
@@ -73,12 +70,12 @@ enum UiAction {
 // must only be used on the UI thread.
 class VrShell : device::GvrGamepadDataProvider,
                 device::CardboardGamepadDataProvider,
-                vr::VoiceResultDelegate,
+                VoiceResultDelegate,
                 public ChromeToolbarModelDelegate {
  public:
   VrShell(JNIEnv* env,
           const base::android::JavaParamRef<jobject>& obj,
-          const vr::UiInitialState& ui_initial_state,
+          const UiInitialState& ui_initial_state,
           VrShellDelegate* delegate,
           gvr_context* gvr_api,
           bool reprojected_rendering,
@@ -150,7 +147,7 @@ class VrShell : device::GvrGamepadDataProvider,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       int mode);
-  void OnWebInputEdited(vr::TextInputInfo info, bool commit);
+  void OnWebInputEdited(TextInputInfo info, bool commit);
 
   void ContentWebContentsDestroyed();
 
@@ -180,13 +177,13 @@ class VrShell : device::GvrGamepadDataProvider,
   void ForceExitVr();
   void ExitPresent();
   void ExitFullscreen();
-  void LogUnsupportedModeUserMetric(vr::UiUnsupportedMode mode);
-  void OnUnsupportedMode(vr::UiUnsupportedMode mode);
-  void OnExitVrPromptResult(vr::UiUnsupportedMode reason,
-                            vr::ExitVrPromptChoice choice);
+  void LogUnsupportedModeUserMetric(UiUnsupportedMode mode);
+  void OnUnsupportedMode(UiUnsupportedMode mode);
+  void OnExitVrPromptResult(UiUnsupportedMode reason,
+                            ExitVrPromptChoice choice);
   void OnContentScreenBoundsChanged(const gfx::SizeF& bounds);
   void SetVoiceSearchActive(bool active);
-  void StartAutocomplete(const vr::AutocompleteRequest& request);
+  void StartAutocomplete(const AutocompleteRequest& request);
   void StopAutocomplete();
   bool HasAudioPermission();
 
@@ -226,7 +223,7 @@ class VrShell : device::GvrGamepadDataProvider,
 
   void OnVoiceResults(const base::string16& result) override;
 
-  void OnAssetsLoaded(vr::AssetsLoadStatus status,
+  void OnAssetsLoaded(AssetsLoadStatus status,
                       const base::Version& component_version);
 
  private:
@@ -240,7 +237,7 @@ class VrShell : device::GvrGamepadDataProvider,
 
   bool HasDaydreamSupport(JNIEnv* env);
 
-  void ExitVrDueToUnsupportedMode(vr::UiUnsupportedMode mode);
+  void ExitVrDueToUnsupportedMode(UiUnsupportedMode mode);
 
   content::WebContents* GetNonNativePageWebContents() const;
 
@@ -266,13 +263,13 @@ class VrShell : device::GvrGamepadDataProvider,
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<VrGLThread> gl_thread_;
-  vr::BrowserUiInterface* ui_;
+  BrowserUiInterface* ui_;
 
   // These instances make use of ui_ (provided by gl_thread_), and hence must be
   // destroyed before gl_thread_;
-  std::unique_ptr<vr::ToolbarHelper> toolbar_;
-  std::unique_ptr<vr_shell::AutocompleteController> autocomplete_controller_;
-  std::unique_ptr<vr::SpeechRecognizer> speech_recognizer_;
+  std::unique_ptr<ToolbarHelper> toolbar_;
+  std::unique_ptr<vr::AutocompleteController> autocomplete_controller_;
+  std::unique_ptr<SpeechRecognizer> speech_recognizer_;
 
   bool reprojected_rendering_;
 
@@ -315,6 +312,6 @@ class VrShell : device::GvrGamepadDataProvider,
   DISALLOW_COPY_AND_ASSIGN(VrShell);
 };
 
-}  // namespace vr_shell
+}  // namespace vr
 
 #endif  // CHROME_BROWSER_ANDROID_VR_SHELL_VR_SHELL_H_
