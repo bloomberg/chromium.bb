@@ -561,23 +561,24 @@ void WebContentsViewAura::EndDrag(RenderWidgetHost* source_rwh,
 
 void WebContentsViewAura::InstallOverscrollControllerDelegate(
     RenderWidgetHostViewAura* view) {
-  const std::string value = base::CommandLine::ForCurrentProcess()->
-      GetSwitchValueASCII(switches::kOverscrollHistoryNavigation);
-  if (value == "0") {
-    navigation_overlay_.reset();
-    return;
-  }
-  if (value == "2") {
-    navigation_overlay_.reset();
-    if (!gesture_nav_simple_)
-      gesture_nav_simple_.reset(new GestureNavSimple(web_contents_));
-    view->overscroll_controller()->set_delegate(gesture_nav_simple_.get());
-    return;
-  }
-  view->overscroll_controller()->set_delegate(this);
-  if (!navigation_overlay_ && !is_mus_browser_plugin_guest_) {
-    navigation_overlay_.reset(
-        new OverscrollNavigationOverlay(web_contents_, window_.get()));
+  const OverscrollConfig::Mode mode = OverscrollConfig::GetMode();
+  switch (mode) {
+    case OverscrollConfig::Mode::kDisabled:
+      navigation_overlay_.reset();
+      break;
+    case OverscrollConfig::Mode::kParallaxUi:
+      view->overscroll_controller()->set_delegate(this);
+      if (!navigation_overlay_ && !is_mus_browser_plugin_guest_) {
+        navigation_overlay_.reset(
+            new OverscrollNavigationOverlay(web_contents_, window_.get()));
+      }
+      break;
+    case OverscrollConfig::Mode::kSimpleUi:
+      navigation_overlay_.reset();
+      if (!gesture_nav_simple_)
+        gesture_nav_simple_.reset(new GestureNavSimple(web_contents_));
+      view->overscroll_controller()->set_delegate(gesture_nav_simple_.get());
+      break;
   }
 }
 

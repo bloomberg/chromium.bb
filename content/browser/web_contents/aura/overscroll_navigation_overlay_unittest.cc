@@ -491,8 +491,8 @@ TEST_F(OverscrollNavigationOverlayTest, OverlayWindowSwap) {
 
   int overscroll_complete_distance =
       root_window()->bounds().size().width() *
-          content::GetOverscrollConfig(
-              content::OverscrollConfig::THRESHOLD_COMPLETE_TOUCHSCREEN) +
+          OverscrollConfig::GetThreshold(
+              OverscrollConfig::Threshold::kCompleteTouchscreen) +
       ui::GestureConfiguration::GetInstance()
           ->max_touch_move_in_pixels_for_click() +
       1;

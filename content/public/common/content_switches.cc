@@ -627,7 +627,7 @@ const char kOverridePluginPowerSaverForTesting[] =
 // Set the value to '2' to enable the simplified overscroll UI where a
 // navigation arrow slides in from the side of the screen in response to the
 // horizontal overscroll gesture.
-// Defaults to '1'.
+// Defaults to '2'.
 const char kOverscrollHistoryNavigation[] =
     "overscroll-history-navigation";
 

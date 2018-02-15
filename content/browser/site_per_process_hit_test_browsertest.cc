@@ -797,8 +797,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
       blink::WebInputEvent::kGestureScrollEnd);
 
 #if defined(USE_AURA)
-  const float overscroll_threshold =
-      GetOverscrollConfig(OverscrollConfig::THRESHOLD_START_TOUCHSCREEN);
+  const float overscroll_threshold = OverscrollConfig::GetThreshold(
+      OverscrollConfig::Threshold::kStartTouchscreen);
 #elif defined(OS_ANDROID)
   const float overscroll_threshold = 0.f;
 #endif

@@ -86,9 +86,7 @@ NavigationEntryScreenshotManager::~NavigationEntryScreenshotManager() {
 }
 
 void NavigationEntryScreenshotManager::TakeScreenshot() {
-  static bool overscroll_enabled = base::CommandLine::ForCurrentProcess()->
-      GetSwitchValueASCII(switches::kOverscrollHistoryNavigation) != "0";
-  if (!overscroll_enabled)
+  if (OverscrollConfig::GetMode() != OverscrollConfig::Mode::kParallaxUi)
     return;
 
   NavigationEntryImpl* entry = owner_->GetLastCommittedEntry();

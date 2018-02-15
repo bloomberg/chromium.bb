@@ -11,6 +11,10 @@
 
 namespace {
 
+bool g_is_mode_initialized = false;
+content::OverscrollConfig::Mode g_mode =
+    content::OverscrollConfig::Mode::kSimpleUi;
+
 const float kThresholdCompleteTouchpad = 0.3f;
 const float kThresholdCompleteTouchscreen = 0.25f;
 
@@ -37,20 +41,39 @@ float GetStartThresholdMultiplier() {
 
 namespace content {
 
-float GetOverscrollConfig(OverscrollConfig config) {
-  switch (config) {
-    case OverscrollConfig::THRESHOLD_COMPLETE_TOUCHPAD:
+// static
+OverscrollConfig::Mode OverscrollConfig::GetMode() {
+  if (g_is_mode_initialized)
+    return g_mode;
+
+  g_is_mode_initialized = true;
+
+  const std::string mode =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kOverscrollHistoryNavigation);
+  if (mode == "0")
+    g_mode = Mode::kDisabled;
+  else if (mode == "1")
+    g_mode = Mode::kParallaxUi;
+
+  return g_mode;
+}
+
+// static
+float OverscrollConfig::GetThreshold(Threshold threshold) {
+  switch (threshold) {
+    case Threshold::kCompleteTouchpad:
       return kThresholdCompleteTouchpad;
 
-    case OverscrollConfig::THRESHOLD_COMPLETE_TOUCHSCREEN:
+    case Threshold::kCompleteTouchscreen:
       return kThresholdCompleteTouchscreen;
 
-    case OverscrollConfig::THRESHOLD_START_TOUCHPAD:
+    case Threshold::kStartTouchpad:
       static const float threshold_start_touchpad =
           GetStartThresholdMultiplier() * kThresholdStartTouchpad;
       return threshold_start_touchpad;
 
-    case OverscrollConfig::THRESHOLD_START_TOUCHSCREEN:
+    case Threshold::kStartTouchscreen:
       static const float threshold_start_touchscreen =
           GetStartThresholdMultiplier() * kThresholdStartTouchscreen;
       return threshold_start_touchscreen;
@@ -58,6 +81,18 @@ float GetOverscrollConfig(OverscrollConfig config) {
 
   NOTREACHED();
   return -1.f;
+}
+
+// static
+void OverscrollConfig::SetMode(Mode mode) {
+  g_mode = mode;
+  g_is_mode_initialized = true;
+}
+
+// static
+void OverscrollConfig::ResetMode() {
+  g_is_mode_initialized = false;
+  g_mode = OverscrollConfig::Mode::kSimpleUi;
 }
 
 }  // namespace content

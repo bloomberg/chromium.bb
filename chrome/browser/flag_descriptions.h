@@ -682,6 +682,7 @@ extern const char kUseNewAcceptLanguageHeaderDescription[];
 extern const char kOverscrollHistoryNavigationName[];
 extern const char kOverscrollHistoryNavigationDescription[];
 extern const char kOverscrollHistoryNavigationSimpleUi[];
+extern const char kOverscrollHistoryNavigationParallaxUi[];
 
 extern const char kOverscrollStartThresholdName[];
 extern const char kOverscrollStartThresholdDescription[];

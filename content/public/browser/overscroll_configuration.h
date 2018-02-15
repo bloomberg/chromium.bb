@@ -5,28 +5,58 @@
 #ifndef CONTENT_PUBLIC_BROWSER_OVERSCROLL_CONFIGURATION_H_
 #define CONTENT_PUBLIC_BROWSER_OVERSCROLL_CONFIGURATION_H_
 
+#include "base/macros.h"
 #include "content/common/content_export.h"
 
 namespace content {
 
-// Sets and retrieves various overscroll related configuration values.
-enum class OverscrollConfig {
-  // Threshold to complete touchpad overscroll, in terms of the percentage of
-  // the display size.
-  THRESHOLD_COMPLETE_TOUCHPAD,
+class CONTENT_EXPORT OverscrollConfig {
+ public:
+  // Determines overscroll history navigation mode according to its
+  // corresponding flag.
+  enum class Mode {
+    // Overscroll history navigation is disabled.
+    kDisabled,
 
-  // Threshold to complete touchscreen overscroll, in terms of the percentage of
-  // the display size.
-  THRESHOLD_COMPLETE_TOUCHSCREEN,
+    // Overscroll history navigation is enabled and uses the UI with parallax
+    // effect and screenshots.
+    kParallaxUi,
 
-  // Threshold to start touchpad overscroll, in DIPs.
-  THRESHOLD_START_TOUCHPAD,
+    // Overscroll history navigation is enabled and uses the simplified UI.
+    kSimpleUi,
+  };
 
-  // Threshold to start touchscreen overscroll, in DIPs.
-  THRESHOLD_START_TOUCHSCREEN,
+  // Specifies an overscroll controller threshold.
+  enum class Threshold {
+    // Threshold to complete touchpad overscroll, in terms of the percentage of
+    // the display size.
+    kCompleteTouchpad,
+
+    // Threshold to complete touchscreen overscroll, in terms of the percentage
+    // of the display size.
+    kCompleteTouchscreen,
+
+    // Threshold to start touchpad overscroll, in DIPs.
+    kStartTouchpad,
+
+    // Threshold to start touchscreen overscroll, in DIPs.
+    kStartTouchscreen,
+  };
+
+  static Mode GetMode();
+
+  static float GetThreshold(Threshold threshold);
+
+ private:
+  friend class ScopedOverscrollMode;
+
+  // Helper functions used by |ScopedOverscrollMode| to set and reset mode in
+  // tests.
+  static void SetMode(Mode mode);
+  static void ResetMode();
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(OverscrollConfig);
 };
-
-CONTENT_EXPORT float GetOverscrollConfig(OverscrollConfig config);
 
 }  // namespace content
 
