@@ -29,6 +29,7 @@
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_WIN)
+#include "components/viz/service/display_embedder/gl_output_surface_win.h"
 #include "components/viz/service/display_embedder/software_output_device_win.h"
 #endif
 
@@ -148,8 +149,17 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
       NOTREACHED();
 #endif
     } else {
+#if defined(OS_WIN)
+      const auto& capabilities = context_provider->ContextCapabilities();
+      const bool use_overlays =
+          capabilities.dc_layers && capabilities.use_dc_overlays_for_video;
+      output_surface = std::make_unique<GLOutputSurfaceWin>(
+          std::move(context_provider), synthetic_begin_frame_source.get(),
+          use_overlays);
+#else
       output_surface = std::make_unique<GLOutputSurface>(
           std::move(context_provider), synthetic_begin_frame_source.get());
+#endif
     }
   }
 
@@ -159,7 +169,7 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
   auto scheduler = std::make_unique<DisplayScheduler>(
       display_begin_frame_source, task_runner_.get(), max_frames_pending);
 
-  // The ownership of the BeginFrameSource is transfered to the caller.
+  // The ownership of the BeginFrameSource is transferred to the caller.
   *out_begin_frame_source = std::move(synthetic_begin_frame_source);
 
   return std::make_unique<Display>(
@@ -173,8 +183,8 @@ GpuDisplayProvider::CreateSoftwareOutputDeviceForPlatform(
 #if defined(OS_WIN)
   if (!output_device_backing_)
     output_device_backing_ = std::make_unique<OutputDeviceBacking>();
-  auto device = std::make_unique<SoftwareOutputDeviceWin>(
-      output_device_backing_.get(), widget);
+  return std::make_unique<SoftwareOutputDeviceWin>(output_device_backing_.get(),
+                                                   widget);
 #elif defined(OS_MACOSX)
   // TODO(crbug.com/730660): We don't have a widget here, so what do we do to
   // get something we can draw to? Can we use an IO surface? Can we use CA
@@ -184,25 +194,23 @@ GpuDisplayProvider::CreateSoftwareOutputDeviceForPlatform(
   // Part of the SoftwareOutputDeviceMac::EndPaint probably needs to move to
   // the browser process, and we need to set up transport of an IO surface to
   // here?
-  // auto device = std::make_unique<SoftwareOutputDeviceMac>(widget);
-  std::unique_ptr<SoftwareOutputDevice> device;
+  // return std::make_unique<SoftwareOutputDeviceMac>(widget);
   NOTIMPLEMENTED();
+  return nullptr;
 #elif defined(OS_ANDROID)
   // Android does not do software compositing, so we can't get here.
-  std::unique_ptr<SoftwareOutputDevice> device;
   NOTREACHED();
+  return nullptr;
 #elif defined(USE_OZONE)
   ui::SurfaceFactoryOzone* factory =
       ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
   std::unique_ptr<ui::SurfaceOzoneCanvas> surface_ozone =
       factory->CreateCanvasForWidget(widget);
   CHECK(surface_ozone);
-  auto device =
-      std::make_unique<SoftwareOutputDeviceOzone>(std::move(surface_ozone));
+  return std::make_unique<SoftwareOutputDeviceOzone>(std::move(surface_ozone));
 #elif defined(USE_X11)
-  auto device = std::make_unique<SoftwareOutputDeviceX11>(widget);
+  return std::make_unique<SoftwareOutputDeviceX11>(widget);
 #endif
-  return device;
 }
 
 }  // namespace viz
