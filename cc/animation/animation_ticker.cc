@@ -1052,26 +1052,26 @@ void AnimationTicker::GenerateEvent(AnimationEvents* events,
   AnimationEvent event(type, element_id_, animation.group(),
                        animation.target_property_id(), monotonic_time);
   event.is_impl_only = animation.is_impl_only();
-  if (event.is_impl_only) {
-    // Notify delegate directly, do not record the event.
-    switch (type) {
-      case AnimationEvent::FINISHED:
-        animation_player_->NotifyAnimationFinished(event);
-        break;
-      case AnimationEvent::STARTED:
-        animation_player_->NotifyAnimationStarted(event);
-        break;
-      case AnimationEvent::ABORTED:
-        // TODO(majidvp): We do nothing here to match the old logic. Though
-        // there does not seem to be a rationale behind treating ABORT
-        // exceptionally (most likely just an oversight). We should instead
-        // notify the player in this case and all other event types as well.
-        break;
-      default:
-        NOTREACHED();
-    }
-  } else {
+  if (!event.is_impl_only) {
     events->events_.push_back(event);
+    return;
+  }
+  // For impl only animations notify delegate directly, do not record the event.
+  switch (type) {
+    case AnimationEvent::FINISHED:
+      animation_player_->NotifyAnimationFinished(event);
+      break;
+    case AnimationEvent::STARTED:
+      animation_player_->NotifyAnimationStarted(event);
+      break;
+    case AnimationEvent::ABORTED:
+      animation_player_->NotifyAnimationAborted(event);
+      break;
+    case AnimationEvent::TAKEOVER:
+      // We never expect to receive a TAKEOVER notification on impl only
+      // animations.
+      NOTREACHED();
+      break;
   }
 }
 
@@ -1095,5 +1095,4 @@ void AnimationTicker::GenerateTakeoverEventForScrollAnimation(
   // Notify main thread.
   events->events_.push_back(takeover_event);
 }
-
 }  // namespace cc
