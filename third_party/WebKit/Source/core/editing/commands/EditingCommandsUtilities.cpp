@@ -338,8 +338,8 @@ bool LineBreakExistsAtVisiblePosition(const VisiblePosition& visible_position) {
 HTMLElement* CreateHTMLElement(Document& document, const QualifiedName& name) {
   DCHECK_EQ(name.NamespaceURI(), HTMLNames::xhtmlNamespaceURI)
       << "Unexpected namespace: " << name;
-  return ToHTMLElement(
-      document.CreateElement(name, CreateElementFlags::ByCloneNode()));
+  return ToHTMLElement(document.CreateElement(
+      name, CreateElementFlags::ByCloneNode(), g_null_atom));
 }
 
 HTMLElement* EnclosingList(const Node* node) {

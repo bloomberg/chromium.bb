@@ -359,12 +359,6 @@ class CORE_EXPORT Document : public ContainerNode,
   Element* CreateElement(const QualifiedName&,
                          const CreateElementFlags,
                          const AtomicString& is);
-  // Creates an element with autonomous custom element processing. If
-  // LocalName of the specified qualified name doesn't contain '-', this
-  // function is equivalent to CreateRawElement().
-  // This function is equivalent to CreateElement(qname, flags, g_null_atom),
-  // However this is faster.
-  Element* CreateElement(const QualifiedName&, const CreateElementFlags);
   // Creates an element without custom element processing.
   Element* CreateRawElement(const QualifiedName&,
                             const CreateElementFlags = CreateElementFlags());
