@@ -11,7 +11,6 @@ copy("content_shell_fonts") {
     "content_shell_test_fonts/Lohit-Gurmukhi.ttf",
     "content_shell_test_fonts/Lohit-Tamil.ttf",
     "content_shell_test_fonts/MuktiNarrow.ttf",
-    "content_shell_test_fonts/NotoSansCJKjp-Regular.otf",
     "content_shell_test_fonts/NotoSansKhmer-Regular.ttf",
   ]
 
