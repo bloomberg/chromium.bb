@@ -724,8 +724,9 @@ class CORE_EXPORT Node : public EventTarget {
   // Tracing--rename it to something indicative.
   String DebugName() const;
 
-#ifndef NDEBUG
   String ToString() const;
+
+#ifndef NDEBUG
   String ToTreeStringForThis() const;
   String ToFlatTreeStringForThis() const;
   void PrintNodePathTo(std::ostream&) const;
