@@ -8,98 +8,80 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "base/callback.h"
 #include "base/macros.h"
-#include "ui/aura/window_observer.h"
-#include "ui/views/widget/widget_observer.h"
+
+namespace aura {
+class Window;
+}
+
+namespace views {
+class Widget;
+}
 
 namespace ash {
 
-class RootWindowController;
-
-// This class implements a widget-based wallpaper.
+// This class manages widget-based wallpapers.
 // WallpaperWidgetController is owned by RootWindowController.
-// When the animation completes the old WallpaperWidgetController is
-// destroyed. Exported for tests.
-class ASH_EXPORT WallpaperWidgetController : public views::WidgetObserver,
-                                             public aura::WindowObserver {
+// Exported for tests.
+class ASH_EXPORT WallpaperWidgetController {
  public:
-  explicit WallpaperWidgetController(views::Widget* widget);
-  ~WallpaperWidgetController() override;
+  explicit WallpaperWidgetController(base::OnceClosure wallpaper_set_callback);
+  ~WallpaperWidgetController();
 
-  // Overridden from views::WidgetObserver.
-  void OnWidgetDestroying(views::Widget* widget) override;
+  views::Widget* GetWidget();
+  views::Widget* GetAnimatingWidget();
 
-  // Set bounds for the widget that draws the wallpaper.
-  void SetBounds(const gfx::Rect& bounds);
+  // Whether a wallpaper change is in progress - it will be set if
+  // |animating_widget_| exists.
+  bool IsAnimating() const;
+
+  // Sets a new wallpaper widget - this will not change the primary widget
+  // immediately. The primary widget will be switched when |widget|'s showing
+  // animation finishes (during which |widget| will be kept by
+  // |animating_widget_|).
+  // |blur_sigma| - if non-zero, the blur that should be applied to the
+  //     wallpaper widget layer.
+  void SetWallpaperWidget(views::Widget* widget, float blur_sigma);
 
   // Move the wallpaper for |root_window| to the specified |container|.
   // The lock screen moves the wallpaper container to hides the user's windows.
   // Returns true if there was something to reparent.
   bool Reparent(aura::Window* root_window, int container);
 
-  // Starts wallpaper fade in animation. |root_window_controller| is
-  // the root window where the animation will happen. (This is
-  // necessary this as |layer_| doesn't have access to the root window).
-  void StartAnimating(RootWindowController* root_window_controller);
-
   // Blur pixels of the wallpaper layer by 3 * the given amount.
   void SetWallpaperBlur(float blur_sigma);
 
-  views::Widget* widget() { return widget_; }
+  // Reset, and closes both |active_widget_| and |animating_widget_|. Can be
+  // used in tests to reset the wallpaper widget controller state.
+  void ResetWidgetsForTesting();
 
  private:
-  void RemoveObservers();
+  // Wrapper around wallpaper widgets that manages the widget state.
+  class WidgetHandler;
 
-  // aura::WindowObserver:
-  void OnWindowBoundsChanged(aura::Window* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds,
-                             ui::PropertyChangeReason reason) override;
+  // Called when a WidgetHandler for a wallpaper widget is reset - this happens
+  // when the wallpaper widget is being destroyed.
+  void WidgetHandlerReset(WidgetHandler* widget);
 
-  views::Widget* widget_;
+  // Called when WidgetHandler |widget| detects its associated widget is done
+  // animating to shown state.
+  void WidgetFinishedAnimating(WidgetHandler* widget);
 
-  // Parent of |widget_|.
-  aura::Window* widget_parent_;
+  // Moves |animated_widget_| to |active_widget_|.
+  void SetAnimatingWidgetAsActive();
 
-  // True when we request cache on blurring layer.
-  bool has_blur_cache_;
+  // Callback that will be run when |active_widget_| is first set.
+  base::OnceClosure wallpaper_set_callback_;
+
+  // The current wallpaper widget.
+  std::unique_ptr<WidgetHandler> active_widget_;
+
+  // The pending wallpaper widget, which is currently in process of being
+  // shown.
+  std::unique_ptr<WidgetHandler> animating_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperWidgetController);
-};
-
-// This class wraps a WallpaperWidgetController pointer. It is owned
-// by RootWindowController. The instance of WallpaperWidgetController is
-// moved to this RootWindowController when the animation completes.
-// Exported for tests.
-class ASH_EXPORT AnimatingWallpaperWidgetController {
- public:
-  explicit AnimatingWallpaperWidgetController(
-      WallpaperWidgetController* component);
-  ~AnimatingWallpaperWidgetController();
-
-  // Stops animation and makes sure OnImplicitAnimationsCompleted() is called if
-  // current animation is not finished yet.
-  // Note we have to make sure this function is called before we set
-  // AnimatingWallpaperWidgetController to a new controller. If it is not
-  // called, the animating widget/layer is closed immediately and the new one is
-  // animating from the widget/layer before animation. For instance, if a user
-  // quickly switches between red, green and blue wallpapers. The green
-  // wallpaper will first fade in from red wallpaper. And in the middle of the
-  // animation, blue wallpaper also wants to fade in. If the green wallpaper
-  // animation does not finish immediately, the green wallpaper widget will be
-  // removed and the red widget will show again. As a result, the blue wallpaper
-  // fades in from red wallpaper. This is a bad user experience. See bug
-  // http://crbug.com/156542 for more details.
-  void StopAnimating();
-
-  // Gets the wrapped WallpaperWidgetController pointer. Caller should
-  // take ownership of the pointer if |pass_ownership| is true.
-  WallpaperWidgetController* GetController(bool pass_ownership);
-
- private:
-  std::unique_ptr<WallpaperWidgetController> controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(AnimatingWallpaperWidgetController);
 };
 
 }  // namespace ash

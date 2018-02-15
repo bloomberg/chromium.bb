@@ -383,7 +383,7 @@ TEST_F(ShellTest, LockScreenClosesActiveMenu) {
   menu_model->AddItem(0, base::ASCIIToUTF16("Menu item"));
   views::Widget* widget = Shell::GetPrimaryRootWindowController()
                               ->wallpaper_widget_controller()
-                              ->widget();
+                              ->GetWidget();
   std::unique_ptr<views::MenuRunner> menu_runner(
       new views::MenuRunner(menu_model.get(), views::MenuRunner::CONTEXT_MENU));
 

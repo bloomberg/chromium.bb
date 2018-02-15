@@ -252,10 +252,10 @@ class WallpaperControllerTest : public AshTestBase {
     AshTestBase::SetUp();
     // Ash shell initialization creates wallpaper. Reset it so we can manually
     // control wallpaper creation and animation in our tests.
-    RootWindowController* root_window_controller =
-        Shell::Get()->GetPrimaryRootWindowController();
-    root_window_controller->SetWallpaperWidgetController(nullptr);
-    root_window_controller->SetAnimatingWallpaperWidgetController(nullptr);
+    Shell::Get()
+        ->GetPrimaryRootWindowController()
+        ->wallpaper_widget_controller()
+        ->ResetWidgetsForTesting();
     controller_ = Shell::Get()->wallpaper_controller();
     controller_->set_wallpaper_reload_delay_for_test(0);
     controller_->InitializePathsForTesting();
@@ -274,11 +274,11 @@ class WallpaperControllerTest : public AshTestBase {
     WallpaperWidgetController* controller =
         Shell::Get()
             ->GetPrimaryRootWindowController()
-            ->animating_wallpaper_widget_controller()
-            ->GetController(false);
+            ->wallpaper_widget_controller();
     EXPECT_TRUE(controller);
+    EXPECT_TRUE(controller->GetAnimatingWidget());
     return static_cast<WallpaperView*>(
-        controller->widget()->GetContentsView()->child_at(0));
+        controller->GetAnimatingWidget()->GetContentsView()->child_at(0));
   }
 
  protected:
@@ -316,10 +316,11 @@ class WallpaperControllerTest : public AshTestBase {
     WallpaperWidgetController* controller =
         Shell::Get()
             ->GetPrimaryRootWindowController()
-            ->animating_wallpaper_widget_controller()
-            ->GetController(false);
-    EXPECT_TRUE(controller);
-    ASSERT_NO_FATAL_FAILURE(RunAnimationForWidget(controller->widget()));
+            ->wallpaper_widget_controller();
+    ASSERT_TRUE(controller);
+    ASSERT_TRUE(controller->GetAnimatingWidget());
+    ASSERT_NO_FATAL_FAILURE(
+        RunAnimationForWidget(controller->GetAnimatingWidget()));
   }
 
   // Convenience function to ensure ShouldCalculateColors() returns true.
@@ -527,7 +528,7 @@ TEST_F(WallpaperControllerTest, BasicReparenting) {
   EXPECT_EQ(0, ChildCountForContainer(kLockScreenWallpaperId));
 }
 
-TEST_F(WallpaperControllerTest, ControllerOwnership) {
+TEST_F(WallpaperControllerTest, SwitchWallpapersWhenNewWallpaperAnimationEnds) {
   // We cannot short-circuit animations for this test.
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
@@ -537,17 +538,17 @@ TEST_F(WallpaperControllerTest, ControllerOwnership) {
   controller->CreateEmptyWallpaperForTesting();
 
   // The new wallpaper is ready to animate.
-  RootWindowController* root_window_controller =
-      Shell::Get()->GetPrimaryRootWindowController();
-  EXPECT_TRUE(root_window_controller->animating_wallpaper_widget_controller()
-                  ->GetController(false));
-  EXPECT_FALSE(root_window_controller->wallpaper_widget_controller());
+  WallpaperWidgetController* widget_controller =
+      Shell::Get()
+          ->GetPrimaryRootWindowController()
+          ->wallpaper_widget_controller();
+  EXPECT_TRUE(widget_controller->GetAnimatingWidget());
+  EXPECT_FALSE(widget_controller->GetWidget());
 
   // Force the animation to play to completion.
   RunDesktopControllerAnimation();
-  EXPECT_FALSE(root_window_controller->animating_wallpaper_widget_controller()
-                   ->GetController(false));
-  EXPECT_TRUE(root_window_controller->wallpaper_widget_controller());
+  EXPECT_FALSE(widget_controller->GetAnimatingWidget());
+  EXPECT_TRUE(widget_controller->GetWidget());
 }
 
 // Test for crbug.com/149043 "Unlock screen, no launcher appears". Ensure we
@@ -573,11 +574,12 @@ TEST_F(WallpaperControllerTest, WallpaperMovementDuringUnlock) {
 
   // In this state we have two wallpaper views stored in different properties.
   // Both are in the lock screen wallpaper container.
-  RootWindowController* root_window_controller =
-      Shell::Get()->GetPrimaryRootWindowController();
-  EXPECT_TRUE(root_window_controller->animating_wallpaper_widget_controller()
-                  ->GetController(false));
-  EXPECT_TRUE(root_window_controller->wallpaper_widget_controller());
+  WallpaperWidgetController* widget_controller =
+      Shell::Get()
+          ->GetPrimaryRootWindowController()
+          ->wallpaper_widget_controller();
+  EXPECT_TRUE(widget_controller->GetAnimatingWidget());
+  EXPECT_TRUE(widget_controller->GetWidget());
   EXPECT_EQ(0, ChildCountForContainer(kWallpaperId));
   EXPECT_EQ(2, ChildCountForContainer(kLockScreenWallpaperId));
 
@@ -614,38 +616,30 @@ TEST_F(WallpaperControllerTest, ChangeWallpaperQuick) {
   // Change to a new wallpaper.
   controller->CreateEmptyWallpaperForTesting();
 
-  RootWindowController* root_window_controller =
-      Shell::Get()->GetPrimaryRootWindowController();
-  WallpaperWidgetController* animating_controller =
-      root_window_controller->animating_wallpaper_widget_controller()
-          ->GetController(false);
-  EXPECT_TRUE(animating_controller);
-  EXPECT_TRUE(root_window_controller->wallpaper_widget_controller());
+  WallpaperWidgetController* widget_controller =
+      Shell::Get()
+          ->GetPrimaryRootWindowController()
+          ->wallpaper_widget_controller();
+  views::Widget* animating_widget = widget_controller->GetAnimatingWidget();
+  EXPECT_TRUE(animating_widget);
+  EXPECT_TRUE(widget_controller->GetWidget());
 
   // Change to another wallpaper before animation finished.
   controller->CreateEmptyWallpaperForTesting();
 
-  // The animating controller should immediately move to wallpaper controller.
-  EXPECT_EQ(animating_controller,
-            root_window_controller->wallpaper_widget_controller());
+  // The animating widget should become active immediately.
+  EXPECT_EQ(animating_widget, widget_controller->GetWidget());
 
-  // Cache the new animating controller.
-  animating_controller =
-      root_window_controller->animating_wallpaper_widget_controller()
-          ->GetController(false);
+  // Cache the new animating widget.
+  animating_widget = widget_controller->GetAnimatingWidget();
 
   // Run wallpaper show animation to completion.
-  ASSERT_NO_FATAL_FAILURE(RunAnimationForWidget(
-      root_window_controller->animating_wallpaper_widget_controller()
-          ->GetController(false)
-          ->widget()));
+  ASSERT_NO_FATAL_FAILURE(RunAnimationForWidget(animating_widget));
 
-  EXPECT_TRUE(root_window_controller->wallpaper_widget_controller());
-  EXPECT_FALSE(root_window_controller->animating_wallpaper_widget_controller()
-                   ->GetController(false));
-  // The wallpaper controller should be the last created animating controller.
-  EXPECT_EQ(animating_controller,
-            root_window_controller->wallpaper_widget_controller());
+  EXPECT_TRUE(widget_controller->GetWidget());
+  EXPECT_FALSE(widget_controller->GetAnimatingWidget());
+  // The last animating widget should be active at this point.
+  EXPECT_EQ(animating_widget, widget_controller->GetWidget());
 }
 
 TEST_F(WallpaperControllerTest, ResizeCustomWallpaper) {

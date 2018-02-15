@@ -37,7 +37,6 @@ class WindowTreeHost;
 
 namespace views {
 class MenuRunner;
-class Widget;
 }
 
 namespace wm {
@@ -46,7 +45,6 @@ class ScopedCaptureClient;
 
 namespace ash {
 class AlwaysOnTopController;
-class AnimatingWallpaperWidgetController;
 class AshTouchExplorationManager;
 class AshWindowTreeHost;
 class LockScreenActionBackgroundController;
@@ -191,24 +189,11 @@ class ASH_EXPORT RootWindowController {
   WallpaperWidgetController* wallpaper_widget_controller() {
     return wallpaper_widget_controller_.get();
   }
-  void SetWallpaperWidgetController(WallpaperWidgetController* controller);
-
-  AnimatingWallpaperWidgetController* animating_wallpaper_widget_controller() {
-    return animating_wallpaper_widget_controller_.get();
-  }
-  void SetAnimatingWallpaperWidgetController(
-      AnimatingWallpaperWidgetController* controller);
 
   LockScreenActionBackgroundController*
   lock_screen_action_background_controller() {
     return lock_screen_action_background_controller_.get();
   }
-
-  // Called when the wallpaper animation is finished. Updates
-  // |system_wallpaper_| to be black and drops |boot_splash_screen_| and moves
-  // the wallpaper controller into the root window controller. |widget| holds
-  // the wallpaper image, or NULL if the wallpaper is a solid color.
-  void OnWallpaperAnimationFinished(views::Widget* widget);
 
   // Deletes associated objects and clears the state, but doesn't delete
   // the root window yet. This is used to delete a secondary displays'
@@ -285,6 +270,10 @@ class ASH_EXPORT RootWindowController {
   // Callback for MenuRunner.
   void OnMenuClosed(const base::TimeTicks desktop_context_menu_show_time);
 
+  // Passed as callback to |wallpaper_widget_controller_| - run when the
+  // wallpaper widget is first set.
+  void OnFirstWallpaperWidgetSet();
+
   std::unique_ptr<AshWindowTreeHost> ash_host_;
   std::unique_ptr<aura::WindowTreeHost> mus_window_tree_host_;
   // This comes from |ash_host_| or |mus_window_tree_host_|.
@@ -295,8 +284,6 @@ class ASH_EXPORT RootWindowController {
   wm::RootWindowLayoutManager* root_window_layout_manager_ = nullptr;
 
   std::unique_ptr<WallpaperWidgetController> wallpaper_widget_controller_;
-  std::unique_ptr<AnimatingWallpaperWidgetController>
-      animating_wallpaper_widget_controller_;
   std::unique_ptr<WorkspaceController> workspace_controller_;
 
   std::unique_ptr<AlwaysOnTopController> always_on_top_controller_;

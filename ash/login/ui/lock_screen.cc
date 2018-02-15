@@ -30,7 +30,7 @@ namespace {
 ui::Layer* GetWallpaperLayerForWindow(aura::Window* window) {
   return RootWindowController::ForWindow(window)
       ->wallpaper_widget_controller()
-      ->widget()
+      ->GetWidget()
       ->GetLayer();
 }
 
