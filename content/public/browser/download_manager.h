@@ -38,8 +38,9 @@
 #include "base/time/time.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_stream.mojom.h"
 #include "components/download/public/common/download_url_parameters.h"
-#include "content/public/common/download_stream.mojom.h"
+#include "content/common/content_export.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/blob/blob_data_handle.h"
 
@@ -108,13 +109,14 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
   // available at the same time.
   struct CONTENT_EXPORT InputStream {
     explicit InputStream(std::unique_ptr<ByteStreamReader> stream_reader);
-    explicit InputStream(mojom::DownloadStreamHandlePtr stream_handle);
+    explicit InputStream(
+        download::mojom::DownloadStreamHandlePtr stream_handle);
     ~InputStream();
 
     bool IsEmpty() const;
 
     std::unique_ptr<ByteStreamReader> stream_reader_;
-    mojom::DownloadStreamHandlePtr stream_handle_;
+    download::mojom::DownloadStreamHandlePtr stream_handle_;
   };
 
   // Called by a download source (Currently DownloadResourceHandler)

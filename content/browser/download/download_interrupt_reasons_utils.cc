@@ -125,27 +125,27 @@ download::DownloadInterruptReason ConvertNetErrorToInterruptReason(
 
 download::DownloadInterruptReason
 ConvertMojoNetworkRequestStatusToInterruptReason(
-    mojom::NetworkRequestStatus status) {
+    download::mojom::NetworkRequestStatus status) {
   switch (status) {
-    case mojom::NetworkRequestStatus::OK:
+    case download::mojom::NetworkRequestStatus::OK:
       return download::DOWNLOAD_INTERRUPT_REASON_NONE;
-    case mojom::NetworkRequestStatus::NETWORK_TIMEOUT:
+    case download::mojom::NetworkRequestStatus::NETWORK_TIMEOUT:
       return download::DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT;
-    case mojom::NetworkRequestStatus::NETWORK_DISCONNECTED:
+    case download::mojom::NetworkRequestStatus::NETWORK_DISCONNECTED:
       return download::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED;
-    case mojom::NetworkRequestStatus::NETWORK_SERVER_DOWN:
+    case download::mojom::NetworkRequestStatus::NETWORK_SERVER_DOWN:
       return download::DOWNLOAD_INTERRUPT_REASON_NETWORK_SERVER_DOWN;
-    case mojom::NetworkRequestStatus::SERVER_NO_RANGE:
+    case download::mojom::NetworkRequestStatus::SERVER_NO_RANGE:
       return download::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE;
-    case mojom::NetworkRequestStatus::SERVER_CONTENT_LENGTH_MISMATCH:
+    case download::mojom::NetworkRequestStatus::SERVER_CONTENT_LENGTH_MISMATCH:
       return download::DOWNLOAD_INTERRUPT_REASON_SERVER_CONTENT_LENGTH_MISMATCH;
-    case mojom::NetworkRequestStatus::SERVER_UNREACHABLE:
+    case download::mojom::NetworkRequestStatus::SERVER_UNREACHABLE:
       return download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE;
-    case mojom::NetworkRequestStatus::SERVER_CERT_PROBLEM:
+    case download::mojom::NetworkRequestStatus::SERVER_CERT_PROBLEM:
       return download::DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM;
-    case mojom::NetworkRequestStatus::USER_CANCELED:
+    case download::mojom::NetworkRequestStatus::USER_CANCELED:
       return download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;
-    case mojom::NetworkRequestStatus::NETWORK_FAILED:
+    case download::mojom::NetworkRequestStatus::NETWORK_FAILED:
       return download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED;
     default:
       NOTREACHED();

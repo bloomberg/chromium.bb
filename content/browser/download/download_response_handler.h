@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "components/download/public/common/download_source.h"
+#include "components/download/public/common/download_stream.mojom.h"
 #include "content/browser/download/download_create_info.h"
-#include "content/public/common/download_stream.mojom.h"
 #include "content/public/common/referrer.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -31,7 +31,7 @@ class DownloadResponseHandler : public network::mojom::URLLoaderClient {
    public:
     virtual void OnResponseStarted(
         std::unique_ptr<DownloadCreateInfo> download_create_info,
-        mojom::DownloadStreamHandlePtr stream_handle) = 0;
+        download::mojom::DownloadStreamHandlePtr stream_handle) = 0;
     virtual void OnReceiveRedirect() = 0;
   };
 
@@ -68,7 +68,8 @@ class DownloadResponseHandler : public network::mojom::URLLoaderClient {
       const network::ResourceResponseHead& head);
 
   // Helper method that is called when response is received.
-  void OnResponseStarted(mojom::DownloadStreamHandlePtr stream_handle);
+  void OnResponseStarted(
+      download::mojom::DownloadStreamHandlePtr stream_handle);
 
   Delegate* const delegate_;
 
@@ -94,7 +95,7 @@ class DownloadResponseHandler : public network::mojom::URLLoaderClient {
   download::DownloadInterruptReason abort_reason_;
 
   // Mojo interface ptr to send the completion status to the download sink.
-  mojom::DownloadStreamClientPtr client_ptr_;
+  download::mojom::DownloadStreamClientPtr client_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadResponseHandler);
 };

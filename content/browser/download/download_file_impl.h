@@ -24,10 +24,10 @@
 #include "base/timer/timer.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_save_info.h"
+#include "components/download/public/common/download_stream.mojom.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/base_file.h"
 #include "content/browser/download/rate_estimator.h"
-#include "content/public/common/download_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 
@@ -86,7 +86,8 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // is handled.
   //
   // Multiple SourceStreams can concurrently write to the same file sink.
-  class CONTENT_EXPORT SourceStream : public mojom::DownloadStreamClient {
+  class CONTENT_EXPORT SourceStream
+      : public download::mojom::DownloadStreamClient {
    public:
     SourceStream(int64_t offset,
                  int64_t length,
@@ -95,8 +96,9 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
 
     void Initialize();
 
-    // mojom::DownloadStreamClient
-    void OnStreamCompleted(mojom::NetworkRequestStatus status) override;
+    // download::mojom::DownloadStreamClient
+    void OnStreamCompleted(
+        download::mojom::NetworkRequestStatus status) override;
 
     // Called when response is completed.
     void OnResponseCompleted(download::DownloadInterruptReason reason);
@@ -179,9 +181,10 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
     CompletionCallback completion_callback_;
 
     // Objects for consuming a mojo data pipe.
-    mojom::DownloadStreamHandlePtr stream_handle_;
+    download::mojom::DownloadStreamHandlePtr stream_handle_;
     std::unique_ptr<mojo::SimpleWatcher> handle_watcher_;
-    std::unique_ptr<mojo::Binding<mojom::DownloadStreamClient>> binding_;
+    std::unique_ptr<mojo::Binding<download::mojom::DownloadStreamClient>>
+        binding_;
 
     DISALLOW_COPY_AND_ASSIGN(SourceStream);
   };

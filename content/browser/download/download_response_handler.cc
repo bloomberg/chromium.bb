@@ -16,32 +16,34 @@ namespace content {
 
 namespace {
 
-mojom::NetworkRequestStatus ConvertInterruptReasonToMojoNetworkRequestStatus(
+download::mojom::NetworkRequestStatus
+ConvertInterruptReasonToMojoNetworkRequestStatus(
     download::DownloadInterruptReason reason) {
   switch (reason) {
     case download::DOWNLOAD_INTERRUPT_REASON_NONE:
-      return mojom::NetworkRequestStatus::OK;
+      return download::mojom::NetworkRequestStatus::OK;
     case download::DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT:
-      return mojom::NetworkRequestStatus::NETWORK_TIMEOUT;
+      return download::mojom::NetworkRequestStatus::NETWORK_TIMEOUT;
     case download::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED:
-      return mojom::NetworkRequestStatus::NETWORK_DISCONNECTED;
+      return download::mojom::NetworkRequestStatus::NETWORK_DISCONNECTED;
     case download::DOWNLOAD_INTERRUPT_REASON_NETWORK_SERVER_DOWN:
-      return mojom::NetworkRequestStatus::NETWORK_SERVER_DOWN;
+      return download::mojom::NetworkRequestStatus::NETWORK_SERVER_DOWN;
     case download::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE:
-      return mojom::NetworkRequestStatus::SERVER_NO_RANGE;
+      return download::mojom::NetworkRequestStatus::SERVER_NO_RANGE;
     case download::DOWNLOAD_INTERRUPT_REASON_SERVER_CONTENT_LENGTH_MISMATCH:
-      return mojom::NetworkRequestStatus::SERVER_CONTENT_LENGTH_MISMATCH;
+      return download::mojom::NetworkRequestStatus::
+          SERVER_CONTENT_LENGTH_MISMATCH;
     case download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE:
-      return mojom::NetworkRequestStatus::SERVER_UNREACHABLE;
+      return download::mojom::NetworkRequestStatus::SERVER_UNREACHABLE;
     case download::DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM:
-      return mojom::NetworkRequestStatus::SERVER_CERT_PROBLEM;
+      return download::mojom::NetworkRequestStatus::SERVER_CERT_PROBLEM;
     case download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED:
-      return mojom::NetworkRequestStatus::USER_CANCELED;
+      return download::mojom::NetworkRequestStatus::USER_CANCELED;
     case download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED:
-      return mojom::NetworkRequestStatus::NETWORK_FAILED;
+      return download::mojom::NetworkRequestStatus::NETWORK_FAILED;
     default:
       NOTREACHED();
-      return mojom::NetworkRequestStatus::NETWORK_FAILED;
+      return download::mojom::NetworkRequestStatus::NETWORK_FAILED;
   }
 }
 
@@ -108,7 +110,7 @@ void DownloadResponseHandler::OnReceiveResponse(
   }
 
   if (create_info_->result != download::DOWNLOAD_INTERRUPT_REASON_NONE)
-    OnResponseStarted(mojom::DownloadStreamHandlePtr());
+    OnResponseStarted(download::mojom::DownloadStreamHandlePtr());
 }
 
 std::unique_ptr<DownloadCreateInfo>
@@ -181,8 +183,8 @@ void DownloadResponseHandler::OnStartLoadingResponseBody(
   if (started_)
     return;
 
-  mojom::DownloadStreamHandlePtr stream_handle =
-      mojom::DownloadStreamHandle::New();
+  download::mojom::DownloadStreamHandlePtr stream_handle =
+      download::mojom::DownloadStreamHandle::New();
   stream_handle->stream = std::move(body);
   stream_handle->client_request = mojo::MakeRequest(&client_ptr_);
   OnResponseStarted(std::move(stream_handle));
@@ -207,11 +209,11 @@ void DownloadResponseHandler::OnComplete(
   create_info_ = CreateDownloadCreateInfo(network::ResourceResponseHead());
   create_info_->result = reason;
 
-  OnResponseStarted(mojom::DownloadStreamHandlePtr());
+  OnResponseStarted(download::mojom::DownloadStreamHandlePtr());
 }
 
 void DownloadResponseHandler::OnResponseStarted(
-    mojom::DownloadStreamHandlePtr stream_handle) {
+    download::mojom::DownloadStreamHandlePtr stream_handle) {
   started_ = true;
   delegate_->OnResponseStarted(std::move(create_info_),
                                std::move(stream_handle));

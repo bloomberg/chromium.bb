@@ -75,17 +75,19 @@ DownloadFileImpl::SourceStream::~SourceStream() = default;
 void DownloadFileImpl::SourceStream::Initialize() {
   if (stream_handle_.is_null())
     return;
-  binding_ = std::make_unique<mojo::Binding<mojom::DownloadStreamClient>>(
-      this, std::move(stream_handle_->client_request));
-  binding_->set_connection_error_handler(base::Bind(
-      &DownloadFileImpl::SourceStream::OnStreamCompleted,
-      base::Unretained(this), mojom::NetworkRequestStatus::USER_CANCELED));
+  binding_ =
+      std::make_unique<mojo::Binding<download::mojom::DownloadStreamClient>>(
+          this, std::move(stream_handle_->client_request));
+  binding_->set_connection_error_handler(
+      base::Bind(&DownloadFileImpl::SourceStream::OnStreamCompleted,
+                 base::Unretained(this),
+                 download::mojom::NetworkRequestStatus::USER_CANCELED));
   handle_watcher_ = std::make_unique<mojo::SimpleWatcher>(
       FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC);
 }
 
 void DownloadFileImpl::SourceStream::OnStreamCompleted(
-    mojom::NetworkRequestStatus status) {
+    download::mojom::NetworkRequestStatus status) {
   // This can be called before or after data pipe is completely drained. So we
   // need to pass the |completion_status_| to DownloadFileImpl if the data pipe
   // is already drained.
