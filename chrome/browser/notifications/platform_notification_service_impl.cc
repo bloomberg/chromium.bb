@@ -339,6 +339,7 @@ PlatformNotificationServiceImpl::CheckPermissionOnIOThread(
              : blink::mojom::PermissionStatus::DENIED;
 }
 
+// TODO(awdf): Rename to DisplayNonPersistentNotification (Similar for Close)
 void PlatformNotificationServiceImpl::DisplayNotification(
     BrowserContext* browser_context,
     const std::string& notification_id,
