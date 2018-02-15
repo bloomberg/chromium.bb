@@ -178,6 +178,29 @@ class CORE_EXPORT DocumentLifecycle {
     DISALLOW_COPY_AND_ASSIGN(DisallowThrottlingScope);
   };
 
+  // If we hit a devtool break point in the middle of document lifecycle, for
+  // example, https://crbug.com/788219, this scope is triggered and no more
+  // layout or style computation is allowed.
+  // This class should never be used outside of debugging.
+  class PostponeTransitionScope {
+   public:
+    explicit PostponeTransitionScope(DocumentLifecycle& document_lifecycle)
+        : document_lifecycle_(document_lifecycle) {
+      document_lifecycle_.SetLifecyclePostponed();
+    }
+    ~PostponeTransitionScope() {}
+
+    void SetLifecyclePostponed() {
+      document_lifecycle_.SetLifecyclePostponed();
+    }
+    void ResetLifecyclePostponed() {
+      document_lifecycle_.ResetLifecyclePostponed();
+    }
+
+   private:
+    DocumentLifecycle& document_lifecycle_;
+  };
+
   DocumentLifecycle();
   ~DocumentLifecycle();
 
@@ -208,19 +231,25 @@ class CORE_EXPORT DocumentLifecycle {
   }
 
   bool ThrottlingAllowed() const;
+  bool LifecyclePostponed() const { return life_cycle_postponed_; }
 
 #if DCHECK_IS_ON()
   WTF::String ToString() const;
 #endif
  private:
+  friend class PostponeTransitionScope;
 #if DCHECK_IS_ON()
   bool CanAdvanceTo(LifecycleState) const;
   bool CanRewindTo(LifecycleState) const;
 #endif
 
+  void SetLifecyclePostponed() { life_cycle_postponed_ = true; }
+  void ResetLifecyclePostponed() { life_cycle_postponed_ = false; }
+
   LifecycleState state_;
   int detach_count_;
   int disallow_transition_count_;
+  bool life_cycle_postponed_;
   DISALLOW_COPY_AND_ASSIGN(DocumentLifecycle);
 };
 

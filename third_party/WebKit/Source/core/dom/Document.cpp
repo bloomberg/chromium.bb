@@ -2108,6 +2108,8 @@ static void AssertLayoutTreeUpdated(Node& root) {
 
 void Document::UpdateStyleAndLayoutTree() {
   DCHECK(IsMainThread());
+  if (Lifecycle().LifecyclePostponed())
+    return;
 
   HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
   ScriptForbiddenScope forbid_script;
@@ -2434,6 +2436,8 @@ void Document::ClearFocusedElementTimerFired(TimerBase*) {
 // lets us get reasonable answers. The long term solution to this problem is
 // to instead suspend JavaScript execution.
 void Document::UpdateStyleAndLayoutTreeIgnorePendingStylesheets() {
+  if (Lifecycle().LifecyclePostponed())
+    return;
   // See comment for equivalent CHECK in Document::UpdateStyleAndLayoutTree.
   // Updating style and layout can dirty state that must remain clean during
   // lifecycle updates.
