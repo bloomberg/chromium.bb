@@ -11,7 +11,6 @@
 #include "base/debug/debugging_flags.h"
 #include "base/debug/leak_annotations.h"
 #include "base/debug/stack_trace.h"
-#include "base/no_destructor.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/trace_event/heap_profiler_allocation_context.h"
@@ -33,16 +32,12 @@ const size_t kMaxTaskDepth = 16u;
 AllocationContextTracker* const kInitializingSentinel =
     reinterpret_cast<AllocationContextTracker*>(-1);
 
+ThreadLocalStorage::StaticSlot g_tls_alloc_ctx_tracker = TLS_INITIALIZER;
+
 // This function is added to the TLS slot to clean up the instance when the
 // thread exits.
 void DestructAllocationContextTracker(void* alloc_ctx_tracker) {
   delete static_cast<AllocationContextTracker*>(alloc_ctx_tracker);
-}
-
-ThreadLocalStorage::Slot& AllocationContextTrackerTLS() {
-  static NoDestructor<ThreadLocalStorage::Slot> tls_alloc_ctx_tracker(
-      &DestructAllocationContextTracker);
-  return *tls_alloc_ctx_tracker;
 }
 
 // Cannot call ThreadIdNameManager::GetName because it holds a lock and causes
@@ -73,15 +68,15 @@ const char* GetAndLeakThreadName() {
 // static
 AllocationContextTracker*
 AllocationContextTracker::GetInstanceForCurrentThread() {
-  AllocationContextTracker* tracker = static_cast<AllocationContextTracker*>(
-      AllocationContextTrackerTLS().Get());
+  AllocationContextTracker* tracker =
+      static_cast<AllocationContextTracker*>(g_tls_alloc_ctx_tracker.Get());
   if (tracker == kInitializingSentinel)
     return nullptr;  // Re-entrancy case.
 
   if (!tracker) {
-    AllocationContextTrackerTLS().Set(kInitializingSentinel);
+    g_tls_alloc_ctx_tracker.Set(kInitializingSentinel);
     tracker = new AllocationContextTracker();
-    AllocationContextTrackerTLS().Set(tracker);
+    g_tls_alloc_ctx_tracker.Set(tracker);
   }
 
   return tracker;
@@ -103,6 +98,11 @@ void AllocationContextTracker::SetCurrentThreadName(const char* name) {
 
 // static
 void AllocationContextTracker::SetCaptureMode(CaptureMode mode) {
+  // When enabling capturing, also initialize the TLS slot. This does not create
+  // a TLS instance yet.
+  if (mode != CaptureMode::DISABLED && !g_tls_alloc_ctx_tracker.initialized())
+    g_tls_alloc_ctx_tracker.Initialize(DestructAllocationContextTracker);
+
   // Release ordering ensures that when a thread observes |capture_mode_| to
   // be true through an acquire load, the TLS slot has been initialized.
   subtle::Release_Store(&capture_mode_, static_cast<int32_t>(mode));

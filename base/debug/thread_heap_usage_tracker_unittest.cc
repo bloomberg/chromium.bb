@@ -22,6 +22,7 @@ namespace {
 class TestingThreadHeapUsageTracker : public ThreadHeapUsageTracker {
  public:
   using ThreadHeapUsageTracker::DisableHeapTrackingForTesting;
+  using ThreadHeapUsageTracker::EnsureTLSInitialized;
   using ThreadHeapUsageTracker::GetDispatchForTesting;
 };
 
@@ -55,6 +56,8 @@ class ThreadHeapUsageTrackerTest : public testing::Test {
   }
 
   void SetUp() override {
+    TestingThreadHeapUsageTracker::EnsureTLSInitialized();
+
     dispatch_under_test_ =
         TestingThreadHeapUsageTracker::GetDispatchForTesting();
     ASSERT_EQ(nullptr, dispatch_under_test_->next);

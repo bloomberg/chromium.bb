@@ -12,7 +12,6 @@
 #include "base/debug/debugging_flags.h"
 #include "base/debug/stack_trace.h"
 #include "base/lazy_instance.h"
-#include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/synchronization/lock.h"
@@ -124,20 +123,16 @@ void DestructShimState(void* shim_state) {
   delete static_cast<ShimState*>(shim_state);
 }
 
-base::ThreadLocalStorage::Slot& ShimStateTLS() {
-  static base::NoDestructor<base::ThreadLocalStorage::Slot> shim_state_tls(
-      &DestructShimState);
-  return *shim_state_tls;
-}
+base::ThreadLocalStorage::StaticSlot g_tls_shim_state = TLS_INITIALIZER;
 
 // We don't need to worry about re-entrancy because g_prevent_reentrancy
 // already guards against that.
 ShimState* GetShimState() {
-  ShimState* state = static_cast<ShimState*>(ShimStateTLS().Get());
+  ShimState* state = static_cast<ShimState*>(g_tls_shim_state.Get());
 
   if (!state) {
     state = new ShimState();
-    ShimStateTLS().Set(state);
+    g_tls_shim_state.Set(state);
   }
 
   return state;
@@ -554,7 +549,8 @@ class FrameSerializer {
 
 void InitTLSSlot() {
   ignore_result(g_prevent_reentrancy.Pointer()->Get());
-  ignore_result(ShimStateTLS());
+  if (!g_tls_shim_state.initialized())
+    g_tls_shim_state.Initialize(DestructShimState);
 }
 
 // In order for pseudo stacks to work, trace event filtering must be enabled.

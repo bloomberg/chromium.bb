@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/threading/thread_local_storage.h"
-
 #if defined(OS_WIN)
 #include <windows.h>
 #include <process.h>
 #endif
 
 #include "base/macros.h"
-#include "base/no_destructor.h"
 #include "base/threading/simple_thread.h"
+#include "base/threading/thread_local_storage.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,13 +28,7 @@ const int kFinalTlsValue = 0x7777;
 // How many times must a destructor be called before we really are done.
 const int kNumberDestructorCallRepetitions = 3;
 
-void ThreadLocalStorageCleanup(void* value);
-
-ThreadLocalStorage::Slot& TLSSlot() {
-  static NoDestructor<ThreadLocalStorage::Slot> slot(
-      &ThreadLocalStorageCleanup);
-  return *slot;
-}
+static ThreadLocalStorage::StaticSlot tls_slot = TLS_INITIALIZER;
 
 class ThreadLocalStorageRunner : public DelegateSimpleThread::Delegate {
  public:
@@ -47,14 +39,14 @@ class ThreadLocalStorageRunner : public DelegateSimpleThread::Delegate {
 
   void Run() override {
     *tls_value_ptr_ = kInitialTlsValue;
-    TLSSlot().Set(tls_value_ptr_);
+    tls_slot.Set(tls_value_ptr_);
 
-    int* ptr = static_cast<int*>(TLSSlot().Get());
+    int *ptr = static_cast<int*>(tls_slot.Get());
     EXPECT_EQ(ptr, tls_value_ptr_);
     EXPECT_EQ(*ptr, kInitialTlsValue);
     *tls_value_ptr_ = 0;
 
-    ptr = static_cast<int*>(TLSSlot().Get());
+    ptr = static_cast<int*>(tls_slot.Get());
     EXPECT_EQ(ptr, tls_value_ptr_);
     EXPECT_EQ(*ptr, 0);
 
@@ -77,7 +69,7 @@ void ThreadLocalStorageCleanup(void *value) {
   ASSERT_GE(kFinalTlsValue + kNumberDestructorCallRepetitions, *ptr);
   --*ptr;  // Move closer to our target.
   // Tell tls that we're not done with this thread, and still need destruction.
-  TLSSlot().Set(value);
+  tls_slot.Set(value);
 }
 
 }  // namespace
@@ -112,6 +104,8 @@ TEST(ThreadLocalStorageTest, MAYBE_TLSDestructors) {
   ThreadLocalStorageRunner* thread_delegates[kNumThreads];
   DelegateSimpleThread* threads[kNumThreads];
 
+  tls_slot.Initialize(ThreadLocalStorageCleanup);
+
   // Spawn the threads.
   for (int index = 0; index < kNumThreads; index++) {
     values[index] = kInitialTlsValue;
@@ -130,6 +124,7 @@ TEST(ThreadLocalStorageTest, MAYBE_TLSDestructors) {
     // Verify that the destructor was called and that we reset.
     EXPECT_EQ(values[index], kFinalTlsValue);
   }
+  tls_slot.Free();  // Stop doing callbacks to cleanup threads.
 }
 
 TEST(ThreadLocalStorageTest, TLSReclaim) {
