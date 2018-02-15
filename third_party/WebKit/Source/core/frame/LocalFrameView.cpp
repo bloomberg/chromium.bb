@@ -1598,6 +1598,9 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
                                          bool height_changed) {
   DCHECK(width_changed || height_changed);
   DCHECK(frame_->GetPage());
+  if (frame_->GetDocument() &&
+      frame_->GetDocument()->Lifecycle().LifecyclePostponed())
+    return;
 
   bool root_layer_scrolling_enabled =
       RuntimeEnabledFeatures::RootLayerScrollingEnabled();
@@ -2026,6 +2029,9 @@ IntSize LocalFrameView::GetLayoutSize(
 
 void LocalFrameView::SetLayoutSize(const IntSize& size) {
   DCHECK(!LayoutSizeFixedToFrameSize());
+  if (frame_->GetDocument() &&
+      frame_->GetDocument()->Lifecycle().LifecyclePostponed())
+    return;
 
   SetLayoutSizeInternal(size);
 }
@@ -3126,6 +3132,9 @@ void LocalFrameView::ClearPrintContext() {
 // WebPluginContainerImpls.
 bool LocalFrameView::UpdateLifecyclePhasesInternal(
     DocumentLifecycle::LifecycleState target_state) {
+  if (frame_->GetDocument() &&
+      frame_->GetDocument()->Lifecycle().LifecyclePostponed())
+    return false;
   if (current_update_lifecycle_phases_target_state_ !=
       DocumentLifecycle::kUninitialized) {
     NOTREACHED()

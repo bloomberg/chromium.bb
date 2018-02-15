@@ -231,17 +231,39 @@ void MainThreadDebugger::InterruptMainThreadAndRun(
   }
 }
 
+// In the test, we just assume that we hit a devtool's break point during the
+// lifecycle.
+void MainThreadDebugger::SetPostponeTransitionScopeForTesting(
+    Document& document) {
+  if (postponed_transition_scope_) {
+    postponed_transition_scope_->SetLifecyclePostponed();
+  } else {
+    postponed_transition_scope_ =
+        std::make_unique<DocumentLifecycle::PostponeTransitionScope>(
+            document.Lifecycle());
+  }
+}
+
 void MainThreadDebugger::runMessageLoopOnPause(int context_group_id) {
   LocalFrame* paused_frame =
       WeakIdentifierMap<LocalFrame>::Lookup(context_group_id);
   // Do not pause in Context of detached frame.
   if (!paused_frame)
     return;
-  // TODO(crbug.com/788219): this is a temporary hack that disables breakpoint
-  // for paint worklet.
+  // If we hit a break point in the paint() function for CSS paint, then we are
+  // in the middle of document life cycle. In this case, we should not allow
+  // any style update or layout, which could be triggered by resizing the
+  // browser window, or clicking at the element panel on devtool.
   if (paused_frame->GetDocument() &&
-      !paused_frame->GetDocument()->Lifecycle().StateAllowsTreeMutations())
-    return;
+      !paused_frame->GetDocument()->Lifecycle().StateAllowsTreeMutations()) {
+    if (postponed_transition_scope_) {
+      postponed_transition_scope_->SetLifecyclePostponed();
+    } else {
+      postponed_transition_scope_ =
+          std::make_unique<DocumentLifecycle::PostponeTransitionScope>(
+              paused_frame->GetDocument()->Lifecycle());
+    }
+  }
   DCHECK(paused_frame == paused_frame->LocalFrameRoot());
   paused_ = true;
 
@@ -252,8 +274,15 @@ void MainThreadDebugger::runMessageLoopOnPause(int context_group_id) {
     client_message_loop_->Run(paused_frame);
 }
 
+void MainThreadDebugger::ResetPostponeTransitionScopeForTesting() {
+  if (postponed_transition_scope_)
+    postponed_transition_scope_->ResetLifecyclePostponed();
+}
+
 void MainThreadDebugger::quitMessageLoopOnPause() {
   paused_ = false;
+  if (postponed_transition_scope_)
+    postponed_transition_scope_->ResetLifecyclePostponed();
   if (client_message_loop_)
     client_message_loop_->QuitNow();
 }
