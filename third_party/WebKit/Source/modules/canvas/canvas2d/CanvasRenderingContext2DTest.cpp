@@ -528,9 +528,12 @@ TEST_F(CanvasRenderingContext2DTest, ImageResourceLifetime) {
         IntRect(0, 0, canvas->width(), canvas->height());
     ImageBitmap* image_bitmap_from_canvas =
         ImageBitmap::Create(canvas, crop_rect, default_options);
+    ASSERT_TRUE(image_bitmap_from_canvas);
+
     crop_rect = IntRect(0, 0, 20, 20);
     image_bitmap_derived = ImageBitmap::Create(image_bitmap_from_canvas,
                                                crop_rect, default_options);
+    ASSERT_TRUE(image_bitmap_derived);
   }
   CanvasContextCreationAttributesCore attributes;
   CanvasRenderingContext2D* context = static_cast<CanvasRenderingContext2D*>(
@@ -705,6 +708,7 @@ TEST_F(CanvasRenderingContext2DTest, TextureUploadHeuristics) {
         SkSurface::MakeRasterN32Premul(src_size, src_size);
     scoped_refptr<StaticBitmapImage> big_bitmap =
         StaticBitmapImage::Create(sk_surface->makeImageSnapshot());
+    ASSERT_TRUE(big_bitmap);
     ImageBitmap* big_image = ImageBitmap::Create(std::move(big_bitmap));
     NonThrowableExceptionState exception_state;
     V8TestingScope scope;
@@ -897,8 +901,10 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
     ImageBitmapOptions options =
         PrepareBitmapOptionsAndSetRuntimeFlags(color_space_conversion);
     ImageBitmap* image_bitmap = ImageBitmap::Create(canvas, crop_rect, options);
+    ASSERT_TRUE(image_bitmap);
     sk_sp<SkImage> converted_image =
         image_bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSkImage();
+    ASSERT_TRUE(converted_image);
     SkImageInfo image_info =
         SkImageInfo::Make(1, 1, color_type, SkAlphaType::kUnpremul_SkAlphaType,
                           converted_image->refColorSpace());
