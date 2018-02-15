@@ -174,6 +174,12 @@ std::unique_ptr<views::InkDropRipple> BubbleIconView::CreateInkDropRipple()
       ink_drop_visible_opacity());
 }
 
+std::unique_ptr<views::InkDropHighlight>
+BubbleIconView::CreateInkDropHighlight() const {
+  return CreateDefaultInkDropHighlight(
+      gfx::RectF(GetMirroredRect(GetContentsBounds())).CenterPoint(), size());
+}
+
 SkColor BubbleIconView::GetInkDropBaseColor() const {
   return color_utils::DeriveDefaultIconColor(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldDefaultColor));
