@@ -31,9 +31,9 @@ class CheckDepsTest(unittest.TestCase):
 
     problems = self.deps_checker.results_formatter.GetResults()
     if skip_tests:
-      self.failUnlessEqual(3, len(problems))
-    else:
       self.failUnlessEqual(4, len(problems))
+    else:
+      self.failUnlessEqual(5, len(problems))
 
     def VerifySubstringsInProblems(key_path, substrings_in_sequence):
       """Finds the problem in |problems| that contains |key_path|,
@@ -74,6 +74,9 @@ class CheckDepsTest(unittest.TestCase):
                                ['-third_party/explicitly_disallowed',
                                 'Because of no rule applying',
                                 'Because of no rule applying'])
+    VerifySubstringsInProblems('testdata/noparent/test.h',
+                               ['allowed/bad.h',
+                                'Because of no rule applying'])
 
     if not skip_tests:
       VerifySubstringsInProblems('allowed/not_a_test.cc',
@@ -100,10 +103,10 @@ class CheckDepsTest(unittest.TestCase):
     return self.deps_checker.results_formatter.GetResults()
 
   def testCountViolations(self):
-    self.failUnlessEqual('10', self.CountViolations(False))
+    self.failUnlessEqual('11', self.CountViolations(False))
 
   def testCountViolationsIgnoringTempRules(self):
-    self.failUnlessEqual('11', self.CountViolations(True))
+    self.failUnlessEqual('12', self.CountViolations(True))
 
   def testCountViolationsWithRelativePath(self):
     self.deps_checker.results_formatter = results.CountViolationsFormatter()

@@ -30,6 +30,12 @@ SPECIFIC_INCLUDE_RULES_VAR_NAME = 'specific_include_rules'
 # be checked. This allows us to skip third party code, for example.
 SKIP_SUBDIRS_VAR_NAME = 'skip_child_includes'
 
+# Optionally discard rules from parent directories, similar to "noparent" in
+# OWNERS files. For example, if //ash/components has "noparent = True" then
+# it will not inherit rules from //ash/DEPS, forcing each //ash/component/foo
+# to declare all its dependencies.
+NOPARENT_VAR_NAME = 'noparent'
+
 
 class DepsBuilderError(Exception):
     """Base class for exceptions in this module."""
@@ -250,8 +256,13 @@ class DepsBuilder(object):
     specific_include_rules = local_scope.get(SPECIFIC_INCLUDE_RULES_VAR_NAME,
                                              {})
     skip_subdirs = local_scope.get(SKIP_SUBDIRS_VAR_NAME, [])
+    noparent = local_scope.get(NOPARENT_VAR_NAME, False)
+    if noparent:
+      parent_rules = Rules()
+    else:
+      parent_rules = existing_rules
 
-    return (self._ApplyRules(existing_rules, include_rules,
+    return (self._ApplyRules(parent_rules, include_rules,
                              specific_include_rules, dir_path_norm),
             skip_subdirs)
 

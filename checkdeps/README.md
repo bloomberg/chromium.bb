@@ -59,6 +59,15 @@ specific_include_rules = {
 }
 ```
 
+You can optionally ignore the rules inherited from parent directories, similar
+to "set noparent" in OWNERS files. For example, adding `noparent = True` in
+//ash/components/DEPS will cause rules from //ash/DEPS to be ignored, thereby
+forcing each //ash/component/foo to explicitly declare foo's dependencies.
+
+```
+noparent = True
+```
+
 # Directory structure
 
 DEPS files may be placed anywhere in the tree. Each one applies to all
