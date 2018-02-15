@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/values.h"
 #include "components/consent_auditor/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -31,6 +32,12 @@ UserEventSpecifics::UserConsent::Feature FeatureToProtoEnum(
   switch (feature) {
     case consent_auditor::Feature::CHROME_SYNC:
       return UserEventSpecifics::UserConsent::CHROME_SYNC;
+    case consent_auditor::Feature::FEATURE_COUNT:
+      // TODO(crbug.com/645032): There is currently just one supported feature,
+      // but histograms with only one bucket are not supported. Remove this hack
+      // when more features are added, or when crbug.com/645032 is fixed.
+      NOTREACHED();
+      return UserEventSpecifics::UserConsent::FEATURE_UNSPECIFIED;
   }
   NOTREACHED();
   return UserEventSpecifics::UserConsent::FEATURE_UNSPECIFIED;
@@ -80,6 +87,22 @@ void ConsentAuditor::RecordGaiaConsent(
     ConsentStatus status) {
   if (!base::FeatureList::IsEnabled(switches::kSyncUserConsentEvents))
     return;
+
+  DCHECK_NE(consent_auditor::Feature::FEATURE_COUNT, feature);
+
+  switch (status) {
+    case ConsentStatus::GIVEN:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Privacy.ConsentAuditor.ConsentGiven.Feature", feature,
+          static_cast<int>(consent_auditor::Feature::FEATURE_COUNT));
+      break;
+    case ConsentStatus::NOT_GIVEN:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Privacy.ConsentAuditor.ConsentNotGiven.Feature", feature,
+          static_cast<int>(consent_auditor::Feature::FEATURE_COUNT));
+      break;
+  }
+
   std::unique_ptr<sync_pb::UserEventSpecifics> specifics = ConstructUserConsent(
       feature, description_grd_ids, confirmation_grd_id, status);
   // For real usage, UserEventSyncBridge should always be ready to receive

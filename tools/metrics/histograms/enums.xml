@@ -6504,6 +6504,10 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="TEST_NOT_RUN"/>
 </enum>
 
+<enum name="ConsentAuditorFeature">
+  <int value="0" label="CHROME_SYNC"/>
+</enum>
+
 <enum name="ContentResourceType">
   <obsolete>
     Superseded by ContentResourceType in December 2015 when SUB_RESOURCE was
