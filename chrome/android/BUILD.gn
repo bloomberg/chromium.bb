@@ -1088,6 +1088,7 @@ chrome_public_apk_tmpl_shared("chrome_modern_public_apk") {
 android_library("monochrome_java") {
   deps = [
     "//android_webview/glue",
+    "//android_webview/support_library:support_lib_glue_java",
     "//base:base_java",
     "//chrome/android:chrome_java",
     "//content/public/android:content_java",
