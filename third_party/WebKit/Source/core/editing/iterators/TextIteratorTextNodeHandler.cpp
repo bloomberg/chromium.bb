@@ -465,6 +465,12 @@ void TextIteratorTextNodeHandler::HandleTextBox() {
         return;
       }
       // Advance and continue
+      if (run_start == run_end && run_end == end) {
+        // "<p>^ |(1) foo</p>" with ::first-letter reaches here.
+        // Where "^" is start of range and "|" is end of range.
+        offset_ = end_offset_;
+        return;
+      }
       text_box_ = next_text_box;
       if (layout_object->ContainsReversedText())
         ++sorted_text_boxes_position_;

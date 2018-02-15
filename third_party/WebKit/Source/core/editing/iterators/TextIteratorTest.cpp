@@ -514,10 +514,7 @@ TEST_P(ParameterizedTextIteratorTest, RangeLengthWithFirstLetter) {
   InsertStyleElement("p::first-letter {font-size:200%;}");
   // Expectation should be as same as |RangeLengthBasic|
   EXPECT_EQ(0, TestRangeLength("<p>^| (1) abc def</p>"));
-  // TODO(editing-dev): We should fix legacy layout tree version.
-  // See http://crbug.com/810623
-  EXPECT_EQ(LayoutNGEnabled() ? 0 : 8,
-            TestRangeLength("<p>^ |(1) abc def</p>"));
+  EXPECT_EQ(0, TestRangeLength("<p>^ |(1) abc def</p>"));
   EXPECT_EQ(1, TestRangeLength("<p>^ (|1) abc def</p>"));
   EXPECT_EQ(2, TestRangeLength("<p>^ (1|) abc def</p>"));
   EXPECT_EQ(3, TestRangeLength("<p>^ (1)| abc def</p>"));
