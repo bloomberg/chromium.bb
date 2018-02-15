@@ -3,27 +3,27 @@
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutText #text",
-          "rect": [488, 8, 80, 20],
+          "rect": [488, 8, 80, 21],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [328, 28, 80, 20],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [168, 48, 80, 20],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 68, 80, 20],
+          "rect": [328, 27, 80, 1],
           "reason": "style change"
         }
       ]

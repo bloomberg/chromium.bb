@@ -8,8 +8,6 @@ Bug(none) fragmentation/ [ Skip ]
 Bug(none) printing/ [ Skip ]
 Bug(none) virtual/spv175 [ Skip ]
 
-crbug.com/803649 css3/masking/clip-path-columns-shape.html [ Failure ]
-crbug.com/803649 css3/masking/clip-path-columns-svg-clippath-usou.html [ Failure ]
 crbug.com/808325 virtual/gpu/fast/canvas/canvas-css-clip-path.html [ Failure ]
 
 # Rounding differences? Seems odd no matter what and can be rebaselined when we enable SPv175.

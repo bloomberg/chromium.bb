@@ -335,7 +335,7 @@ class FragmentPaintPropertyTreeBuilder {
   ALWAYS_INLINE void UpdateTransformForNonRootSVG();
   ALWAYS_INLINE void UpdateEffect();
   ALWAYS_INLINE void UpdateFilter();
-  ALWAYS_INLINE void UpdateFragmentClip(const PaintLayer&);
+  ALWAYS_INLINE void UpdateFragmentClip();
   ALWAYS_INLINE void UpdateCssClip();
   ALWAYS_INLINE void UpdateClipPathClip(bool spv1_compositing_specific_pass);
   ALWAYS_INLINE void UpdateLocalBorderBoxContext();
@@ -904,25 +904,11 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
   }
 }
 
-static bool NeedsFragmentation(const LayoutObject& object,
-                               const PaintLayer& painting_layer) {
-  return painting_layer.ShouldFragmentCompositedBounds();
-}
-
-static bool NeedsFragmentationClip(const LayoutObject& object,
-                                   const PaintLayer& painting_layer) {
-  return object.HasLayer() && NeedsFragmentation(object, painting_layer);
-}
-
-void FragmentPaintPropertyTreeBuilder::UpdateFragmentClip(
-    const PaintLayer& painting_layer) {
+void FragmentPaintPropertyTreeBuilder::UpdateFragmentClip() {
   DCHECK(properties_);
 
   if (NeedsPaintPropertyUpdate()) {
-    // It's possible to still have no clips even if NeedsFragmentationClip is
-    // true, in the case when the FragmentainerIterator returns none.
-    if (NeedsFragmentationClip(object_, painting_layer) &&
-        context_.fragment_clip) {
+    if (context_.fragment_clip) {
       OnUpdateClip(properties_->UpdateFragmentClip(
           context_.current.clip, context_.current.transform,
           FloatRoundedRect(FloatRect(*context_.fragment_clip))));
@@ -930,6 +916,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateFragmentClip(
       OnClearClip(properties_->ClearFragmentClip());
     }
   }
+
+  if (properties_->FragmentClip())
+    context_.current.clip = properties_->FragmentClip();
 }
 
 static bool NeedsCssClip(const LayoutObject& object) {
@@ -1001,18 +990,16 @@ void FragmentPaintPropertyTreeBuilder::UpdateLocalBorderBoxContext() {
   if (!object_.HasLayer() && !NeedsPaintOffsetTranslation(object_)) {
     fragment_data_.ClearLocalBorderBoxProperties();
   } else {
-    const ClipPaintPropertyNode* clip = context_.current.clip;
-    if (properties_ && properties_->FragmentClip())
-      clip = properties_->FragmentClip();
-
-    PropertyTreeState local_border_box = PropertyTreeState(
-        context_.current.transform, clip, context_.current_effect);
+    PropertyTreeState local_border_box =
+        PropertyTreeState(context_.current.transform, context_.current.clip,
+                          context_.current_effect);
 
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
         (!fragment_data_.HasLocalBorderBoxProperties() ||
          local_border_box != fragment_data_.LocalBorderBoxProperties()))
       property_added_or_removed_ = true;
-    fragment_data_.SetLocalBorderBoxProperties(local_border_box);
+
+    fragment_data_.SetLocalBorderBoxProperties(std::move(local_border_box));
   }
 }
 
@@ -1433,10 +1420,11 @@ static LayoutRect BoundingBoxInPaginationContainer(
   should_repeat_in_fragments = false;
 
   // The special path for layers ensures that the bounding box also covers
-  // overflows, so that the fragments will cover all fragments of contents,
-  // because we initiate fragment painting of contents from the layer.
+  // contents visual overflow, so that the fragments will cover all fragments of
+  // contents except for self-painting layers, because we initiate fragment
+  // painting of contents from the layer.
   // Table section may repeat, and doesn't need the special layer path because
-  // it doesn't have layout overflow.
+  // it doesn't have contents visual overflow.
   if (object.HasLayer() && !object.IsTableSection()) {
     return ToLayoutBoxModelObject(object).Layer()->PhysicalBoundingBox(
         &enclosing_pagination_layer);
@@ -1759,7 +1747,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateForSelf() {
 
   if (properties_) {
     // TODO(wangxianzhu): Put these in FindObjectPropertiesNeedingUpdateScope.
-    UpdateFragmentClip(*full_context_.painting_layer);
+    UpdateFragmentClip();
     UpdatePaintOffsetTranslation(paint_offset_translation);
   }
 
@@ -1799,43 +1787,19 @@ void FragmentPaintPropertyTreeBuilder::UpdateForChildren() {
 
 }  // namespace
 
-// Find from parent contexts with matching |logical_top_in_flow_thread|, if any,
-// to allow for correct transform and effect parenting of fragments.
-static PaintPropertyTreeBuilderFragmentContext ContextForFragment(
-    const LayoutRect& fragment_clip,
-    LayoutUnit logical_top_in_flow_thread,
-    const Vector<PaintPropertyTreeBuilderFragmentContext, 1>&
-        parent_fragments) {
-  if (parent_fragments.IsEmpty())
-    return PaintPropertyTreeBuilderFragmentContext();
-
-  for (auto& fragment_context : parent_fragments) {
-    if (fragment_context.logical_top_in_flow_thread ==
-        logical_top_in_flow_thread) {
-      PaintPropertyTreeBuilderFragmentContext context(fragment_context);
-      context.fragment_clip = fragment_clip;
-      return context;
-    }
-  }
-
-  // Otherwise return a new fragment parented at the first parent fragment.
-  PaintPropertyTreeBuilderFragmentContext context(parent_fragments[0]);
-  context.fragment_clip = fragment_clip;
-  context.logical_top_in_flow_thread = logical_top_in_flow_thread;
-  return context;
-}
-
 void ObjectPaintPropertyTreeBuilder::InitFragmentPaintProperties(
     FragmentData& fragment,
-    bool needs_paint_properties) {
+    bool needs_paint_properties,
+    const LayoutPoint& pagination_offset,
+    LayoutUnit logical_top_in_flow_thread) {
   if (needs_paint_properties) {
     fragment.EnsurePaintProperties();
   } else if (fragment.PaintProperties()) {
     context_.force_subtree_update = true;
     fragment.ClearPaintProperties();
   }
-  fragment.SetPaginationOffset(LayoutPoint());
-  fragment.SetLogicalTopInFlowThread(LayoutUnit());
+  fragment.SetPaginationOffset(pagination_offset);
+  fragment.SetLogicalTopInFlowThread(logical_top_in_flow_thread);
 }
 
 void ObjectPaintPropertyTreeBuilder::InitSingleFragmentFromParent(
@@ -1850,6 +1814,23 @@ void ObjectPaintPropertyTreeBuilder::InitSingleFragmentFromParent(
     context_.fragments.resize(1);
     context_.fragments[0].fragment_clip.reset();
     context_.fragments[0].logical_top_in_flow_thread = LayoutUnit();
+  }
+
+  if (object_.IsColumnSpanAll()) {
+    // Column-span:all skips pagination container in the tree hierarchy, so
+    // it should also skip any fragment clip created by the skipped pagination
+    // container.
+    if (const auto* pagination_layer_in_tree_hierarchy =
+            object_.Parent()->EnclosingLayer()->EnclosingPaginationLayer()) {
+      const auto* properties =
+          pagination_layer_in_tree_hierarchy->GetLayoutObject()
+              .FirstFragment()
+              .PaintProperties();
+      if (properties && properties->FragmentClip()) {
+        context_.fragments[0].current.clip =
+            properties->FragmentClip()->Parent();
+      }
+    }
   }
 }
 
@@ -2026,6 +2007,246 @@ void ObjectPaintPropertyTreeBuilder::
   }
 }
 
+bool ObjectPaintPropertyTreeBuilder::NeedsFragmentation() const {
+  return context_.painting_layer->ShouldFragmentCompositedBounds();
+}
+
+static LayoutUnit FragmentLogicalTopInParentFlowThread(
+    const LayoutFlowThread& flow_thread,
+    LayoutUnit logical_top_in_current_flow_thread) {
+  const auto* parent_pagination_layer =
+      flow_thread.Layer()->Parent()->EnclosingPaginationLayer();
+  if (!parent_pagination_layer)
+    return LayoutUnit();
+
+  const auto* parent_flow_thread =
+      &ToLayoutFlowThread(parent_pagination_layer->GetLayoutObject());
+
+  LayoutPoint location(LayoutUnit(), logical_top_in_current_flow_thread);
+  // TODO(crbug.com/467477): Should we flip for writing-mode? For now regardless
+  // of flipping, fast/multicol/vertical-rl/nested-columns.html fails.
+  if (!flow_thread.IsHorizontalWritingMode())
+    location = location.TransposedPoint();
+
+  // Convert into parent_flow_thread's coordinates.
+  location = LayoutPoint(flow_thread.LocalToAncestorPoint(FloatPoint(location),
+                                                          parent_flow_thread));
+  if (!parent_flow_thread->IsHorizontalWritingMode())
+    location = location.TransposedPoint();
+
+  if (location.X() >= parent_flow_thread->LogicalWidth()) {
+    // TODO(crbug.com/803649): We hit this condition for
+    // external/wpt/css/css-multicol/multicol-height-block-child-001.xht.
+    // The normal path would cause wrong FragmentClip hierarchy.
+    // Return -1 to force standalone FragmentClip in the case.
+    return LayoutUnit(-1);
+  }
+
+  // Return the logical top of the containing fragment in parent_flow_thread.
+  return location.Y() +
+         parent_flow_thread->PageRemainingLogicalHeightForOffset(
+             location.Y(), LayoutBox::kAssociateWithLatterPage) -
+         parent_flow_thread->PageLogicalHeightForOffset(location.Y());
+}
+
+// Find from parent contexts with matching |logical_top_in_flow_thread|, if any,
+// to allow for correct property tree parenting of fragments.
+PaintPropertyTreeBuilderFragmentContext
+ObjectPaintPropertyTreeBuilder::ContextForFragment(
+    const Optional<LayoutRect>& fragment_clip,
+    LayoutUnit logical_top_in_flow_thread) const {
+  const auto& parent_fragments = context_.fragments;
+  if (parent_fragments.IsEmpty())
+    return PaintPropertyTreeBuilderFragmentContext();
+
+  // This will be used in the loop finding matching fragment from ancestor flow
+  // threads after no matching from parent_fragments.
+  LayoutUnit logical_top_in_containing_flow_thread;
+
+  if (object_.IsLayoutFlowThread()) {
+    const auto& flow_thread = ToLayoutFlowThread(object_);
+    // If this flow thread is under another flow thread, find the fragment in
+    // the parent flow thread containing this fragment. Otherwise, the following
+    // code will just match parent_contexts[0].
+    logical_top_in_containing_flow_thread =
+        FragmentLogicalTopInParentFlowThread(flow_thread,
+                                             logical_top_in_flow_thread);
+    for (const auto& parent_context : parent_fragments) {
+      if (logical_top_in_containing_flow_thread ==
+          parent_context.logical_top_in_flow_thread) {
+        auto context = parent_context;
+        context.fragment_clip = fragment_clip;
+        context.logical_top_in_flow_thread = logical_top_in_flow_thread;
+        return context;
+      }
+    }
+  } else {
+    bool parent_is_under_same_flow_thread;
+    auto pagination_layer = context_.painting_layer->EnclosingPaginationLayer();
+    if (object_.IsColumnSpanAll()) {
+      parent_is_under_same_flow_thread = false;
+    } else if (object_.IsOutOfFlowPositioned()) {
+      parent_is_under_same_flow_thread =
+          (object_.Parent()->PaintingLayer()->EnclosingPaginationLayer() ==
+           pagination_layer);
+    } else {
+      parent_is_under_same_flow_thread = true;
+    }
+
+    // Match against parent_fragments if the fragment and parent_fragments are
+    // under the same flow thread.
+    if (parent_is_under_same_flow_thread) {
+      DCHECK(object_.Parent()->PaintingLayer()->EnclosingPaginationLayer() ==
+             pagination_layer);
+      for (const auto& parent_context : parent_fragments) {
+        if (logical_top_in_flow_thread ==
+            parent_context.logical_top_in_flow_thread) {
+          auto context = parent_context;
+          // The context inherits fragment clip from parent so we don't need
+          // to issue fragment clip again.
+          context.fragment_clip = WTF::nullopt;
+          return context;
+        }
+      }
+    }
+
+    logical_top_in_containing_flow_thread = logical_top_in_flow_thread;
+  }
+
+  // Found no matching parent fragment. Use parent_fragments[0] to inherit
+  // transforms and effects from ancestors, and adjust the clip state.
+  // TODO(crbug.com/803649): parent_fragments[0] is not always correct because
+  // some ancestor transform/effect may be missing in the fragment if the
+  // ancestor doesn't intersect with the first fragment of the flow thread.
+  auto context = parent_fragments[0];
+  context.logical_top_in_flow_thread = logical_top_in_flow_thread;
+  context.fragment_clip = fragment_clip;
+
+  // We reach here because of the following reasons:
+  // 1. the parent doesn't have the corresponding fragment because the fragment
+  //    overflows the parent;
+  // 2. the fragment and parent_fragments are not under the same flow thread
+  //    (e.g. column-span:all or some out-of-flow positioned).
+  // For each case, we need to adjust context.current.clip. For now it's the
+  // first parent fragment's FragmentClip which is not the correct clip for
+  // object_.
+  for (const auto* container = object_.Container(); container;
+       container = container->Container()) {
+    if (!container->FirstFragment().HasLocalBorderBoxProperties())
+      continue;
+
+    for (const auto* fragment = &container->FirstFragment(); fragment;
+         fragment = fragment->NextFragment()) {
+      if (fragment->LogicalTopInFlowThread() ==
+          logical_top_in_containing_flow_thread) {
+        // Found a matching fragment in an ancestor container. Use the
+        // container's content clip as the clip state.
+        DCHECK(fragment->PostOverflowClip());
+        context.current.clip = fragment->PostOverflowClip();
+        return context;
+      }
+    }
+
+    if (container->IsLayoutFlowThread()) {
+      logical_top_in_containing_flow_thread =
+          FragmentLogicalTopInParentFlowThread(
+              ToLayoutFlowThread(*container),
+              logical_top_in_containing_flow_thread);
+    }
+  }
+
+  // We should always find a matching ancestor fragment in the above loop
+  // because logical_top_in_containing_flow_thread will be zero when we traverse
+  // across the top-level flow thread and it should match the first fragment of
+  // a non-fragmented ancestor container.
+  NOTREACHED();
+  return context;
+}
+
+void ObjectPaintPropertyTreeBuilder::CreateFragmentContexts(
+    bool needs_paint_properties) {
+  // We need at least the fragments for all fragmented objects, which store
+  // their local border box properties and paint invalidation data (such
+  // as paint offset and visual rect) on each fragment.
+  PaintLayer* paint_layer = context_.painting_layer;
+  PaintLayer* enclosing_pagination_layer =
+      paint_layer->EnclosingPaginationLayer();
+
+  const auto& flow_thread =
+      ToLayoutFlowThread(enclosing_pagination_layer->GetLayoutObject());
+  LayoutRect object_bounding_box_in_flow_thread;
+  if (context_.is_repeating_in_fragments) {
+    // The object is a descendant of a repeating object. It should use the
+    // repeating bounding box to repeat in the same fragments as its
+    // repeating ancestor.
+    object_bounding_box_in_flow_thread =
+        context_.repeating_bounding_box_in_flow_thread;
+  } else {
+    bool should_repeat_in_fragments = false;
+    object_bounding_box_in_flow_thread = BoundingBoxInPaginationContainer(
+        object_, *enclosing_pagination_layer, should_repeat_in_fragments);
+    if (should_repeat_in_fragments) {
+      context_.is_repeating_in_fragments = true;
+      context_.repeating_bounding_box_in_flow_thread =
+          object_bounding_box_in_flow_thread;
+    }
+  }
+
+  FragmentData* current_fragment_data = nullptr;
+  FragmentainerIterator iterator(flow_thread,
+                                 object_bounding_box_in_flow_thread);
+  Vector<PaintPropertyTreeBuilderFragmentContext, 1> new_fragment_contexts;
+  for (; !iterator.AtEnd(); iterator.Advance()) {
+    auto pagination_offset = ToLayoutPoint(iterator.PaginationOffset());
+    auto logical_top_in_flow_thread =
+        iterator.FragmentainerLogicalTopInFlowThread();
+    Optional<LayoutRect> fragment_clip;
+
+    if (object_.HasLayer()) {
+      // 1. Compute clip in flow thread space.
+      fragment_clip = iterator.ClipRectInFlowThread();
+      // 2. Convert #1 to visual coordinates in the space of the flow thread.
+      fragment_clip->MoveBy(pagination_offset);
+      // 3. Adjust #2 to visual coordinates in the containing "paint offset"
+      // space.
+      {
+        DCHECK(context_.fragments[0].current.paint_offset_root);
+        LayoutPoint pagination_visual_offset = VisualOffsetFromPaintOffsetRoot(
+            context_.fragments[0], enclosing_pagination_layer);
+        // Adjust for paint offset of the root, which may have a subpixel
+        // component. The paint offset root never has more than one fragment.
+        pagination_visual_offset.MoveBy(
+            context_.fragments[0]
+                .current.paint_offset_root->FirstFragment()
+                .PaintOffset());
+        fragment_clip->MoveBy(pagination_visual_offset);
+      }
+    }
+
+    // Match to parent fragments from the same containing flow thread.
+    new_fragment_contexts.push_back(
+        ContextForFragment(fragment_clip, logical_top_in_flow_thread));
+
+    current_fragment_data =
+        current_fragment_data
+            ? &current_fragment_data->EnsureNextFragment()
+            : &object_.GetMutableForPainting().FirstFragment();
+
+    InitFragmentPaintProperties(
+        *current_fragment_data,
+        needs_paint_properties || new_fragment_contexts.back().fragment_clip,
+        pagination_offset, logical_top_in_flow_thread);
+  }
+
+  if (!current_fragment_data) {
+    // This will be an empty fragment - get rid of it?
+    InitSingleFragmentFromParent(needs_paint_properties);
+  } else {
+    current_fragment_data->ClearNextFragment();
+    context_.fragments = std::move(new_fragment_contexts);
+  }
+}
+
 void ObjectPaintPropertyTreeBuilder::UpdateFragments() {
   // Note: It is important to short-circuit on object_.StyleRef().ClipPath()
   // because NeedsClipPathClip() and NeedsEffect() requires the clip path
@@ -2039,98 +2260,15 @@ void ObjectPaintPropertyTreeBuilder::UpdateFragments() {
       NeedsInnerBorderRadiusClip(object_) || NeedsOverflowClip(object_) ||
       NeedsPerspective(object_) || NeedsSVGLocalToBorderBoxTransform(object_) ||
       NeedsScrollOrScrollTranslation(object_) ||
-      NeedsFragmentationClip(object_, *context_.painting_layer) ||
       NeedsOverflowControlsClip(object_);
+  // Need of fragmentation clip will be determined in CreateFragmentContexts().
 
-  if (!NeedsFragmentation(object_, *context_.painting_layer)) {
+  if (!NeedsFragmentation()) {
     InitSingleFragmentFromParent(needs_paint_properties);
     UpdateCompositedLayerPaginationOffset();
     context_.is_repeating_in_fragments = false;
   } else {
-    // We need at least the fragments for all fragmented objects, which store
-    // their local border box properties and paint invalidation data (such
-    // as paint offset and visual rect) on each fragment.
-    PaintLayer* paint_layer = context_.painting_layer;
-    PaintLayer* enclosing_pagination_layer =
-        paint_layer->EnclosingPaginationLayer();
-
-    const auto& flow_thread =
-        ToLayoutFlowThread(enclosing_pagination_layer->GetLayoutObject());
-    LayoutRect object_bounding_box_in_flow_thread;
-    if (context_.is_repeating_in_fragments) {
-      // The object is a descendant of a repeating object. It should use the
-      // repeating bounding box to repeat in the same fragments as its
-      // repeating ancestor.
-      object_bounding_box_in_flow_thread =
-          context_.repeating_bounding_box_in_flow_thread;
-    } else {
-      bool should_repeat_in_fragments = false;
-      object_bounding_box_in_flow_thread = BoundingBoxInPaginationContainer(
-          object_, *enclosing_pagination_layer, should_repeat_in_fragments);
-      if (should_repeat_in_fragments) {
-        context_.is_repeating_in_fragments = true;
-        context_.repeating_bounding_box_in_flow_thread =
-            object_bounding_box_in_flow_thread;
-      }
-    }
-
-    FragmentainerIterator iterator(flow_thread,
-                                   object_bounding_box_in_flow_thread);
-
-    Vector<PaintPropertyTreeBuilderFragmentContext> new_fragment_contexts;
-    FragmentData* current_fragment_data = nullptr;
-    for (; !iterator.AtEnd(); iterator.Advance()) {
-      current_fragment_data =
-          current_fragment_data
-              ? &current_fragment_data->EnsureNextFragment()
-              : &object_.GetMutableForPainting().FirstFragment();
-
-      InitFragmentPaintProperties(*current_fragment_data,
-                                  needs_paint_properties);
-
-      auto pagination_offset = ToLayoutPoint(iterator.PaginationOffset());
-      auto logical_top_in_flow_thread =
-          iterator.FragmentainerLogicalTopInFlowThread();
-
-      // 1. Compute clip in flow thread space of the containing flow thread.
-      LayoutRect fragment_clip(iterator.ClipRectInFlowThread());
-      // 2. Convert #1 to visual coordinates in the space of the flow thread.
-      fragment_clip.MoveBy(pagination_offset);
-      // 3. Adjust #2 to visual coordinates in the containing "paint offset"
-      // space.
-      {
-        DCHECK(context_.fragments[0].current.paint_offset_root);
-        LayoutPoint pagination_visual_offset = VisualOffsetFromPaintOffsetRoot(
-            context_.fragments[0], enclosing_pagination_layer);
-
-        // Adjust for paint offset of the root, which may have a subpixel
-        // component.
-        // The paint offset root never has more than one fragment.
-        pagination_visual_offset.MoveBy(
-            context_.fragments[0]
-                .current.paint_offset_root->FirstFragment()
-                .PaintOffset());
-
-        fragment_clip.MoveBy(pagination_visual_offset);
-      }
-      // 4. Match to parent fragments from the same containing flow thread.
-      new_fragment_contexts.push_back(ContextForFragment(
-          fragment_clip, logical_top_in_flow_thread, context_.fragments));
-
-      // 5. Save PaginationOffset (which allows us to adjust logical paint
-      // offsets into the space of the current fragment later) and
-      // LogicalTopInFlowThread.
-      current_fragment_data->SetPaginationOffset(pagination_offset);
-      current_fragment_data->SetLogicalTopInFlowThread(
-          logical_top_in_flow_thread);
-    }
-    if (current_fragment_data) {
-      current_fragment_data->ClearNextFragment();
-      context_.fragments = std::move(new_fragment_contexts);
-    } else {
-      // This will be an empty fragment - get rid of it?
-      InitSingleFragmentFromParent(needs_paint_properties);
-    }
+    CreateFragmentContexts(needs_paint_properties);
   }
 
   if (object_.IsSVGHiddenContainer()) {
@@ -2152,7 +2290,8 @@ void ObjectPaintPropertyTreeBuilder::UpdateFragments() {
   UpdateRepeatingPaintOffsetAdjustment();
 }
 
-bool ObjectPaintPropertyTreeBuilder::ObjectTypeMightNeedPaintProperties() {
+bool ObjectPaintPropertyTreeBuilder::ObjectTypeMightNeedPaintProperties()
+    const {
   return object_.IsBoxModelObject() || object_.IsSVG() ||
          context_.painting_layer->EnclosingPaginationLayer();
 }

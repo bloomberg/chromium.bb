@@ -189,7 +189,8 @@ bool LayoutFlowThread::NodeAtPoint(HitTestResult& result,
                                       accumulated_offset, hit_test_action);
 }
 
-LayoutUnit LayoutFlowThread::PageLogicalHeightForOffset(LayoutUnit offset) {
+LayoutUnit LayoutFlowThread::PageLogicalHeightForOffset(
+    LayoutUnit offset) const {
   DCHECK(IsPageLogicalHeightKnown());
   LayoutMultiColumnSet* column_set =
       ColumnSetAtBlockOffset(offset, kAssociateWithLatterPage);
@@ -201,7 +202,7 @@ LayoutUnit LayoutFlowThread::PageLogicalHeightForOffset(LayoutUnit offset) {
 
 LayoutUnit LayoutFlowThread::PageRemainingLogicalHeightForOffset(
     LayoutUnit offset,
-    PageBoundaryRule page_boundary_rule) {
+    PageBoundaryRule page_boundary_rule) const {
   DCHECK(IsPageLogicalHeightKnown());
   LayoutMultiColumnSet* column_set =
       ColumnSetAtBlockOffset(offset, page_boundary_rule);

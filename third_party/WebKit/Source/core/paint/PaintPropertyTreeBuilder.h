@@ -98,8 +98,12 @@ struct PaintPropertyTreeBuilderFragmentContext {
   // generate the effect tree from a DOM-order traversal.
   const EffectPaintPropertyNode* current_effect;
 
-  // If the object is fragmented, it will have a fragment clip.
+  // If the object is a flow thread, this records the clip rect for this
+  // fragment.
   Optional<LayoutRect> fragment_clip;
+
+  // If the object is fragmented, this records the logical top of this fragment
+  // in the flow thread.
   LayoutUnit logical_top_in_flow_thread;
 
   // A repeating object paints at multiple places in the flow thread, once in
@@ -179,11 +183,19 @@ class ObjectPaintPropertyTreeBuilder {
   void UpdateForChildren();
 
  private:
-  ALWAYS_INLINE void InitFragmentPaintProperties(FragmentData&,
-                                                 bool needs_paint_properties);
+  ALWAYS_INLINE void InitFragmentPaintProperties(
+      FragmentData&,
+      bool needs_paint_properties,
+      const LayoutPoint& pagination_offset = LayoutPoint(),
+      LayoutUnit logical_top_in_flow_thread = LayoutUnit());
   ALWAYS_INLINE void InitSingleFragmentFromParent(bool needs_paint_properties);
-  ALWAYS_INLINE bool ObjectTypeMightNeedPaintProperties();
+  ALWAYS_INLINE bool ObjectTypeMightNeedPaintProperties() const;
   ALWAYS_INLINE void UpdateCompositedLayerPaginationOffset();
+  ALWAYS_INLINE bool NeedsFragmentation() const;
+  ALWAYS_INLINE PaintPropertyTreeBuilderFragmentContext
+  ContextForFragment(const Optional<LayoutRect>& fragment_clip,
+                     LayoutUnit logical_top_in_flow_thread) const;
+  ALWAYS_INLINE void CreateFragmentContexts(bool needs_paint_properties);
   ALWAYS_INLINE void UpdateFragments();
   ALWAYS_INLINE void UpdatePaintingLayer();
   ALWAYS_INLINE void UpdateRepeatingPaintOffsetAdjustment();

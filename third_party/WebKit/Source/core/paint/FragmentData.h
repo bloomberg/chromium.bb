@@ -158,13 +158,13 @@ class CORE_EXPORT FragmentData {
     if (rare_data_)
       rare_data_->local_border_box_properties = nullptr;
   }
-  void SetLocalBorderBoxProperties(PropertyTreeState& state) {
+  void SetLocalBorderBoxProperties(const PropertyTreeState& state) {
     EnsureRareData();
     if (!rare_data_->local_border_box_properties) {
       rare_data_->local_border_box_properties =
           std::make_unique<RefCountedPropertyTreeState>(state);
     } else {
-      *rare_data_->local_border_box_properties = state;
+      *rare_data_->local_border_box_properties = std::move(state);
     }
   }
 

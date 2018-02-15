@@ -43,7 +43,12 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [488, 8, 80, 20],
+          "rect": [488, 8, 80, 21],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [328, 27, 80, 1],
           "reason": "appeared"
         }
       ]
