@@ -644,9 +644,8 @@ class SitePerProcessFeaturePolicyBrowserTest
     SitePerProcessBrowserTest::SetUpCommandLine(command_line);
     // TODO(iclelland): Remove this switch when Feature Policy ships.
     // https://crbug.com/623682
-    command_line->AppendSwitchASCII(
-        switches::kEnableBlinkFeatures,
-        "FeaturePolicyExperimentalFeatures,FeaturePolicyVibrateFeature");
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "FeaturePolicyExperimentalFeatures");
   }
 
   blink::ParsedFeaturePolicy CreateFPHeader(
@@ -7923,16 +7922,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
-  EXPECT_EQ(CreateFPHeader(blink::mojom::FeaturePolicyFeature::kVibrate,
+  EXPECT_EQ(CreateFPHeader(blink::mojom::FeaturePolicyFeature::kGeolocation,
                            {start_url.GetOrigin()}),
             root->current_replication_state().feature_policy_header);
 
   // When the main frame navigates to a page with a new policy, it should
   // overwrite the old one.
   EXPECT_TRUE(NavigateToURL(shell(), first_nav_url));
-  EXPECT_EQ(
-      CreateFPHeaderMatchesAll(blink::mojom::FeaturePolicyFeature::kVibrate),
-      root->current_replication_state().feature_policy_header);
+  EXPECT_EQ(CreateFPHeaderMatchesAll(
+                blink::mojom::FeaturePolicyFeature::kGeolocation),
+            root->current_replication_state().feature_policy_header);
 
   // When the main frame navigates to a page without a policy, the replicated
   // policy header should be cleared.
@@ -7951,16 +7950,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
-  EXPECT_EQ(CreateFPHeader(blink::mojom::FeaturePolicyFeature::kVibrate,
+  EXPECT_EQ(CreateFPHeader(blink::mojom::FeaturePolicyFeature::kGeolocation,
                            {start_url.GetOrigin()}),
             root->current_replication_state().feature_policy_header);
 
   // When the main frame navigates to a page with a new policy, it should
   // overwrite the old one.
   EXPECT_TRUE(NavigateToURL(shell(), first_nav_url));
-  EXPECT_EQ(
-      CreateFPHeaderMatchesAll(blink::mojom::FeaturePolicyFeature::kVibrate),
-      root->current_replication_state().feature_policy_header);
+  EXPECT_EQ(CreateFPHeaderMatchesAll(
+                blink::mojom::FeaturePolicyFeature::kGeolocation),
+            root->current_replication_state().feature_policy_header);
 
   // When the main frame navigates to a page without a policy, the replicated
   // policy header should be cleared.
@@ -7981,19 +7980,20 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
-  EXPECT_EQ(CreateFPHeader(blink::mojom::FeaturePolicyFeature::kVibrate,
+  EXPECT_EQ(CreateFPHeader(blink::mojom::FeaturePolicyFeature::kGeolocation,
                            {main_url.GetOrigin(), GURL("http://example.com/")}),
             root->current_replication_state().feature_policy_header);
   EXPECT_EQ(1UL, root->child_count());
   EXPECT_EQ(
-      CreateFPHeader(blink::mojom::FeaturePolicyFeature::kVibrate,
+      CreateFPHeader(blink::mojom::FeaturePolicyFeature::kGeolocation,
                      {main_url.GetOrigin()}),
       root->child_at(0)->current_replication_state().feature_policy_header);
 
   // Navigate the iframe cross-site.
   NavigateFrameToURL(root->child_at(0), first_nav_url);
   EXPECT_EQ(
-      CreateFPHeaderMatchesAll(blink::mojom::FeaturePolicyFeature::kVibrate),
+      CreateFPHeaderMatchesAll(
+          blink::mojom::FeaturePolicyFeature::kGeolocation),
       root->child_at(0)->current_replication_state().feature_policy_header);
 
   // Navigate the iframe to another location, this one with no policy header
@@ -8005,7 +8005,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
   // Navigate the iframe back to a page with a policy
   NavigateFrameToURL(root->child_at(0), first_nav_url);
   EXPECT_EQ(
-      CreateFPHeaderMatchesAll(blink::mojom::FeaturePolicyFeature::kVibrate),
+      CreateFPHeaderMatchesAll(
+          blink::mojom::FeaturePolicyFeature::kGeolocation),
       root->child_at(0)->current_replication_state().feature_policy_header);
 }
 
