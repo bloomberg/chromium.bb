@@ -16,7 +16,6 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/resources/memory_history.h"
 #include "cc/resources/resource_pool.h"
-#include "cc/resources/scoped_resource.h"
 #include "cc/trees/debug_rect_history.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 

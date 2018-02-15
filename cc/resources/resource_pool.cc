@@ -20,7 +20,6 @@
 #include "cc/base/container_util.h"
 #include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/resources/resource_util.h"
-#include "cc/resources/scoped_resource.h"
 
 using base::trace_event::MemoryAllocatorDump;
 using base::trace_event::MemoryDumpLevelOfDetail;
