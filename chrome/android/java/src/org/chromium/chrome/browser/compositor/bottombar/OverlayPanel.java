@@ -429,18 +429,14 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     public void updateBrowserControlsState() {
         if (mContent == null) return;
 
-        if (isFullWidthSizePanel()) {
-            // Consider the ContentView height to be fullscreen, and inform the system that
-            // the Toolbar is always visible (from the Compositor's perspective), even though
-            // the Toolbar and Base Page might be offset outside the screen. This means the
-            // renderer will consider the ContentView height to be the fullscreen height
-            // minus the Toolbar height.
-            //
-            // This is necessary to fix the bugs: crbug.com/510205 and crbug.com/510206
-            mContent.updateBrowserControlsState(false, true, false);
-        } else {
-            mContent.updateBrowserControlsState(true, false, false);
-        }
+        // Consider the ContentView height to be fullscreen, and inform the system that
+        // the Toolbar is always visible (from the Compositor's perspective), even though
+        // the Toolbar and Base Page might be offset outside the screen. This means the
+        // renderer will consider the ContentView height to be the fullscreen height
+        // minus the Toolbar height.
+        //
+        // This is necessary to fix the bugs: crbug.com/510205 and crbug.com/510206
+        mContent.updateBrowserControlsState(isFullWidthSizePanel());
     }
 
     /**

@@ -66,6 +66,12 @@ class OverlayPanelContent {
       const base::android::JavaParamRef<jobject>& delegate,
       const base::android::JavaParamRef<jobject>& jweb_contents);
 
+  // Update the browser controls for the held web contents.
+  void UpdateBrowserControlsState(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jboolean are_controls_hidden);
+
  private:
   // Our global reference to the Java OverlayPanelContent.
   base::android::ScopedJavaGlobalRef<jobject> java_manager_;
