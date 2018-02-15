@@ -91,6 +91,9 @@ public class DownloadUtils {
 
     private static final String EXTRA_IS_OFF_THE_RECORD =
             "org.chromium.chrome.browser.download.IS_OFF_THE_RECORD";
+    public static final String EXTRA_DOWNLOAD_HOME_URL =
+            "org.chromium.chrome.browser.download.DOWNLOAD_HOME_URL";
+    public static final String SHOW_PREFETCHED_CONTENT = "ShowPrefetchedContent";
 
     @VisibleForTesting
     static final long SECONDS_PER_MINUTE = TimeUnit.MINUTES.toSeconds(1);
@@ -119,6 +122,19 @@ public class DownloadUtils {
      * @return Whether the UI was shown.
      */
     public static boolean showDownloadManager(@Nullable Activity activity, @Nullable Tab tab) {
+        return showDownloadManager(activity, tab, false);
+    }
+
+    /**
+     * Displays the download manager UI. Note the UI is different on tablets and on phones.
+     * @param activity The current activity is available.
+     * @param tab The current tab if it exists.
+     * @param showPrefetchedContent Whether the manager should start with prefetched content section
+     * expanded.
+     * @return Whether the UI was shown.
+     */
+    public static boolean showDownloadManager(
+            @Nullable Activity activity, @Nullable Tab tab, boolean showPrefetchedContent) {
         // Figure out what tab was last being viewed by the user.
         if (activity == null) activity = ApplicationStatus.getLastTrackedFocusedActivity();
 
@@ -127,10 +143,11 @@ public class DownloadUtils {
         }
 
         Context appContext = ContextUtils.getApplicationContext();
+        String downloadHomeUrl = buildDownloadHomeUrl(showPrefetchedContent);
 
         if (DeviceFormFactor.isTablet()) {
             // Download Home shows up as a tab on tablets.
-            LoadUrlParams params = new LoadUrlParams(UrlConstants.DOWNLOADS_URL);
+            LoadUrlParams params = new LoadUrlParams(downloadHomeUrl);
             if (tab == null || !tab.isInitialized()) {
                 // Open a new tab, which pops Chrome into the foreground.
                 TabDelegate delegate = new TabDelegate(false);
@@ -152,6 +169,7 @@ public class DownloadUtils {
             Intent intent = new Intent();
             intent.setClass(appContext, DownloadActivity.class);
             if (tab != null) intent.putExtra(EXTRA_IS_OFF_THE_RECORD, tab.isIncognito());
+            intent.putExtra(EXTRA_DOWNLOAD_HOME_URL, downloadHomeUrl);
             if (activity == null) {
                 // Stands alone in its own task.
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -181,6 +199,18 @@ public class DownloadUtils {
      */
     public static boolean shouldShowOffTheRecordDownloads(Intent intent) {
         return IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_OFF_THE_RECORD, false);
+    }
+
+    /**
+     * Helper method to build the URL for downloads home. The URL can be leveraged for passing extra
+     * parameters to download home.
+     * @return The URL for download home.
+     */
+    private static String buildDownloadHomeUrl(boolean showPrefetchedContent) {
+        Uri.Builder builder = Uri.parse(UrlConstants.DOWNLOADS_URL).buildUpon();
+        builder.appendQueryParameter(
+                SHOW_PREFETCHED_CONTENT, Boolean.toString(showPrefetchedContent));
+        return builder.build().toString();
     }
 
     /**
