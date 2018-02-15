@@ -155,6 +155,7 @@ void ResourceDownloader::Start(
           download_url_parameters->GetSaveInfo()),
       is_parallel_request, download_url_parameters->is_transient(),
       download_url_parameters->fetch_error_body(),
+      download_url_parameters->request_origin(),
       download_url_parameters->download_source(),
       std::vector<GURL>(1, resource_request_->url));
   network::mojom::URLLoaderClientPtr url_loader_client_ptr;
@@ -192,7 +193,8 @@ void ResourceDownloader::InterceptResponse(
     save_info->suggested_name = base::UTF8ToUTF16(suggested_filename.value());
   url_loader_client_ = std::make_unique<DownloadResponseHandler>(
       resource_request_.get(), this, std::move(save_info), false, false, false,
-      download::DownloadSource::NAVIGATION, std::move(url_chain));
+      std::string(), download::DownloadSource::NAVIGATION,
+      std::move(url_chain));
 
   // Simulate on the new URLLoaderClient calls that happened on the old client.
   net::SSLInfo info;

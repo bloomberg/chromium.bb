@@ -489,12 +489,34 @@ void DownloadManagerImpl::Shutdown() {
   delegate_ = nullptr;
 }
 
+bool DownloadManagerImpl::InterceptDownload(const DownloadCreateInfo& info) {
+  WebContents* web_contents =
+      info.request_handle ? info.request_handle->GetWebContents() : nullptr;
+  if (!delegate_ ||
+      !delegate_->InterceptDownloadIfApplicable(
+          info.url(), info.mime_type, info.request_origin, web_contents)) {
+    return false;
+  }
+
+  info.request_handle->CancelRequest(false);
+  return true;
+}
+
 void DownloadManagerImpl::StartDownload(
     std::unique_ptr<DownloadCreateInfo> info,
     std::unique_ptr<DownloadManager::InputStream> stream,
     const download::DownloadUrlParameters::OnStartedCallback& on_started) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(info);
+
+  uint32_t download_id = info->download_id;
+  bool new_download = (download_id == download::DownloadItem::kInvalidId);
+  if (new_download &&
+      info->result == download::DOWNLOAD_INTERRUPT_REASON_NONE &&
+      InterceptDownload(*info)) {
+    GetDownloadTaskRunner()->DeleteSoon(FROM_HERE, stream.release());
+    return;
+  }
 
   // |stream| is only non-nil if the download request was successful.
   DCHECK((info->result == download::DOWNLOAD_INTERRUPT_REASON_NONE &&
@@ -503,8 +525,6 @@ void DownloadManagerImpl::StartDownload(
           stream->IsEmpty()));
   DVLOG(20) << __func__ << "() result="
             << download::DownloadInterruptReasonToString(info->result);
-  uint32_t download_id = info->download_id;
-  const bool new_download = (download_id == download::DownloadItem::kInvalidId);
   if (new_download)
     RecordDownloadConnectionSecurity(info->url(), info->url_chain);
   base::Callback<void(uint32_t)> got_id(base::Bind(
@@ -790,6 +810,7 @@ download::DownloadInterruptReason DownloadManagerImpl::BeginDownloadRequest(
   // Find a better way to create the DownloadResourceHandler instance.
   std::unique_ptr<ResourceHandler> handler(
       DownloadResourceHandler::CreateForNewRequest(url_request.get(),
+                                                   params->request_origin(),
                                                    params->download_source()));
 
   ResourceDispatcherHostImpl::Get()->BeginURLRequest(

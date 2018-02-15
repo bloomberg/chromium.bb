@@ -28,6 +28,7 @@ class UrlDownloader : public net::URLRequest::Delegate,
   UrlDownloader(std::unique_ptr<net::URLRequest> request,
                 base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
                 bool is_parallel_request,
+                const std::string& request_origin,
                 download::DownloadSource download_source);
   ~UrlDownloader() override;
 

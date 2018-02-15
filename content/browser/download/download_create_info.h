@@ -147,6 +147,10 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   // Source ID generated for UKM.
   ukm::SourceId ukm_source_id;
 
+  // For downloads originating from custom tabs, this records the origin
+  // of the custom tab.
+  std::string request_origin;
+
   // Source of the download, used in metrics.
   download::DownloadSource download_source = download::DownloadSource::UNKNOWN;
 

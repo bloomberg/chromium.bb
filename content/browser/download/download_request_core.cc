@@ -145,6 +145,7 @@ DownloadRequestCore::DownloadRequestCore(
     net::URLRequest* request,
     Delegate* delegate,
     bool is_parallel_request,
+    const std::string& request_origin,
     download::DownloadSource download_source)
     : delegate_(delegate),
       request_(request),
@@ -157,6 +158,7 @@ DownloadRequestCore::DownloadRequestCore(
       is_partial_request_(false),
       started_(false),
       abort_reason_(download::DOWNLOAD_INTERRUPT_REASON_NONE),
+      request_origin_(request_origin),
       download_source_(download_source) {
   DCHECK(request_);
   DCHECK(delegate_);
@@ -229,6 +231,7 @@ DownloadRequestCore::CreateDownloadCreateInfo(
   create_info->response_headers = request()->response_headers();
   create_info->offset = create_info->save_info->offset;
   create_info->fetch_error_body = fetch_error_body_;
+  create_info->request_origin = request_origin_;
   create_info->download_source = download_source_;
   return create_info;
 }

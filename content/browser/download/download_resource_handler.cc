@@ -24,6 +24,7 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -114,10 +115,11 @@ void DeleteOnUIThread(
 
 DownloadResourceHandler::DownloadResourceHandler(
     net::URLRequest* request,
+    const std::string& request_origin,
     download::DownloadSource download_source)
     : ResourceHandler(request),
       tab_info_(new DownloadTabInfo()),
-      core_(request, this, false, download_source) {
+      core_(request, this, false, request_origin, download_source) {
   // Do UI thread initialization for tab_info_ asap after
   // DownloadResourceHandler creation since the tab could be navigated
   // before StartOnUIThread gets called.  This is safe because deletion
@@ -146,17 +148,18 @@ std::unique_ptr<ResourceHandler> DownloadResourceHandler::Create(
     net::URLRequest* request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::unique_ptr<ResourceHandler> handler(new DownloadResourceHandler(
-      request, download::DownloadSource::NAVIGATION));
+      request, std::string(), download::DownloadSource::NAVIGATION));
   return handler;
 }
 
 // static
 std::unique_ptr<ResourceHandler> DownloadResourceHandler::CreateForNewRequest(
     net::URLRequest* request,
+    const std::string& request_origin,
     download::DownloadSource download_source) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::unique_ptr<ResourceHandler> handler(
-      new DownloadResourceHandler(request, download_source));
+      new DownloadResourceHandler(request, request_origin, download_source));
   return handler;
 }
 
