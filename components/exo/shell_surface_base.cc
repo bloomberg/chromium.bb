@@ -12,9 +12,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
-#include "ash/screen_util.h"
 #include "ash/wm/drag_window_resizer.h"
-#include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
@@ -1220,14 +1218,6 @@ void ShellSurfaceBase::UpdateWidgetBounds() {
       widget_->non_client_view()->GetWindowBoundsForClientBounds(
           visible_bounds);
   new_widget_bounds.set_origin(GetWidgetOrigin());
-
-  // Adjust window bounds to ensure minimum window visibility.
-  aura::Window* window = widget_->GetNativeWindow();
-  wm::ConvertRectFromScreen(window->GetRootWindow(), &new_widget_bounds);
-  gfx::Rect display_area = ash::screen_util::GetDisplayBoundsInParent(window);
-  ash::wm::AdjustBoundsToEnsureMinimumWindowVisibility(display_area,
-                                                       &new_widget_bounds);
-  wm::ConvertRectToScreen(window->GetRootWindow(), &new_widget_bounds);
 
   // Set |ignore_window_bounds_changes_| as this change to window bounds
   // should not result in a configure request.
