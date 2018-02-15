@@ -385,54 +385,58 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
                                    const blink::WebString& result_name) {}
 
   bool AddStream(const blink::WebMediaStream& web_stream) {
-    bool any_track_added = false;
+    size_t senders_size_before_add = senders_.size();
     blink::WebVector<blink::WebMediaStreamTrack> web_audio_tracks;
     web_stream.AudioTracks(web_audio_tracks);
     for (const auto& web_audio_track : web_audio_tracks) {
-      if (pc_handler_->AddTrack(
-              web_audio_track,
-              std::vector<blink::WebMediaStream>({web_stream}))) {
-        any_track_added = true;
+      auto sender = pc_handler_->AddTrack(
+          web_audio_track, std::vector<blink::WebMediaStream>({web_stream}));
+      if (sender) {
+        senders_.push_back(std::unique_ptr<RTCRtpSender>(
+            static_cast<RTCRtpSender*>(sender.release())));
       }
     }
     blink::WebVector<blink::WebMediaStreamTrack> web_video_tracks;
     web_stream.VideoTracks(web_video_tracks);
     for (const auto& web_video_track : web_video_tracks) {
-      if (pc_handler_->AddTrack(
-              web_video_track,
-              std::vector<blink::WebMediaStream>({web_stream}))) {
-        any_track_added = true;
+      auto sender = pc_handler_->AddTrack(
+          web_video_track, std::vector<blink::WebMediaStream>({web_stream}));
+      if (sender) {
+        senders_.push_back(std::unique_ptr<RTCRtpSender>(
+            static_cast<RTCRtpSender*>(sender.release())));
       }
     }
-    return any_track_added;
+    return senders_size_before_add < senders_.size();
   }
 
-  std::unique_ptr<blink::WebRTCRtpSender> GetSenderForTrack(
+  std::vector<std::unique_ptr<RTCRtpSender>>::iterator FindSenderForTrack(
       const blink::WebMediaStreamTrack& web_track) {
-    for (auto& web_sender : pc_handler_->GetSenders()) {
-      if (web_sender->Track().UniqueId() == web_track.UniqueId())
-        return std::move(web_sender);
+    for (auto it = senders_.begin(); it != senders_.end(); ++it) {
+      if ((*it)->Track().UniqueId() == web_track.UniqueId())
+        return it;
     }
-    return nullptr;
+    return senders_.end();
   }
 
   bool RemoveStream(const blink::WebMediaStream& web_stream) {
-    bool any_track_removed = false;
+    size_t senders_size_before_remove = senders_.size();
     blink::WebVector<blink::WebMediaStreamTrack> web_audio_tracks;
     web_stream.AudioTracks(web_audio_tracks);
+    // TODO(hbos): With Unified Plan senders are not removed.
+    // https://crbug.com/799030
     for (const auto& web_audio_track : web_audio_tracks) {
-      auto web_sender = GetSenderForTrack(web_audio_track);
-      if (web_sender && pc_handler_->RemoveTrack(web_sender.get()))
-        any_track_removed = true;
+      auto it = FindSenderForTrack(web_audio_track);
+      if (it != senders_.end() && pc_handler_->RemoveTrack((*it).get()))
+        senders_.erase(it);
     }
     blink::WebVector<blink::WebMediaStreamTrack> web_video_tracks;
     web_stream.VideoTracks(web_video_tracks);
     for (const auto& web_video_track : web_video_tracks) {
-      auto web_sender = GetSenderForTrack(web_video_track);
-      if (web_sender && pc_handler_->RemoveTrack(web_sender.get()))
-        any_track_removed = true;
+      auto it = FindSenderForTrack(web_video_track);
+      if (it != senders_.end() && pc_handler_->RemoveTrack((*it).get()))
+        senders_.erase(it);
     }
-    return any_track_removed;
+    return senders_size_before_remove > senders_.size();
   }
 
   void InvokeOnAddStream(
@@ -564,6 +568,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
   // Weak reference to the mocked native peer connection implementation.
   MockPeerConnectionImpl* mock_peer_connection_;
 
+  std::vector<std::unique_ptr<RTCRtpSender>> senders_;
   std::map<webrtc::MediaStreamTrackInterface*,
            rtc::scoped_refptr<webrtc::RtpReceiverInterface>>
       receivers_by_track_;

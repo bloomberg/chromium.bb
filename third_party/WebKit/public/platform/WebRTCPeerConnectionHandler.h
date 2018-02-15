@@ -94,10 +94,6 @@ class WebRTCPeerConnectionHandler {
   virtual WebRTCDataChannelHandler* CreateDataChannel(
       const WebString& label,
       const WebRTCDataChannelInit&) = 0;
-  // Gets senders used by the peer connection. These are wrappers referencing
-  // webrtc-layer senders, multiple |WebRTCRtpSender| objects referencing the
-  // same webrtc-layer sender have the same |id|.
-  virtual WebVector<std::unique_ptr<WebRTCRtpSender>> GetSenders() = 0;
   // Adds the track to the peer connection, returning the resulting sender on
   // success and null on failure.
   virtual std::unique_ptr<WebRTCRtpSender> AddTrack(

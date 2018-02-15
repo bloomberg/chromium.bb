@@ -144,8 +144,6 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   void GetStats(const blink::WebRTCStatsRequest& request) override;
   void GetStats(
       std::unique_ptr<blink::WebRTCStatsReportCallback> callback) override;
-  blink::WebVector<std::unique_ptr<blink::WebRTCRtpSender>> GetSenders()
-      override;
   std::unique_ptr<blink::WebRTCRtpSender> AddTrack(
       const blink::WebMediaStreamTrack& web_track,
       const blink::WebVector<blink::WebMediaStream>& web_streams) override;
@@ -241,6 +239,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       const FirstSessionDescription& local,
       const FirstSessionDescription& remote);
 
+  std::vector<std::unique_ptr<RTCRtpSender>>::iterator FindSender(uintptr_t id);
   std::vector<
       std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>::iterator
   FindRemoteStreamAdapter(
@@ -300,10 +299,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // https://crbug.com/741618
   std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
       remote_streams_;
-  // Maps |RTCRtpSender::getId|s of |webrtc::RtpSenderInterface| to the
-  // corresponding content layer sender. This is needed to retain the senders'
-  // associated set of streams for senders created by |AddTrack|.
-  std::map<uintptr_t, std::unique_ptr<RTCRtpSender>> rtp_senders_;
+  // Content layer correspondents of |webrtc::RtpSenderInterface|.
+  std::vector<std::unique_ptr<RTCRtpSender>> rtp_senders_;
   // Maps |RTCRtpReceiver::getId|s of |webrtc::RtpReceiverInterface|s to the
   // corresponding content layer receivers. The set of receivers is needed in
   // order to keep its associated track's and streams' adapters alive.
