@@ -83,15 +83,7 @@ void BrowserFrameMac::InitNativeWidget(
     const views::Widget::InitParams& params) {
   views::NativeWidgetMac::InitNativeWidget(params);
 
-  // Our content view draws on top of the titlebar area, but we want the window
-  // control buttons to draw on top of the content view.
-  // We do this by setting the content view's z-order below the buttons, and
-  // by giving the root view a layer so that the buttons get their own layers.
-  NSView* content_view = [GetNativeWindow() contentView];
-  NSView* root_view = [content_view superview];
-  [content_view removeFromSuperview];
-  [root_view setWantsLayer:YES];
-  [root_view addSubview:content_view positioned:NSWindowBelow relativeTo:nil];
+  [[GetNativeWindow() contentView] setWantsLayer:YES];
 }
 
 NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
@@ -110,6 +102,10 @@ NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
   [ns_window setCommandDispatcherDelegate:command_dispatcher_delegate_];
   [ns_window setCommandHandler:[[[BrowserWindowCommandHandler alloc] init]
                                    autorelease]];
+  // Ensure tabstrip/profile button are visible.
+  if (@available(macOS 10.10, *)) {
+    [ns_window setTitlebarAppearsTransparent:YES];
+  }
   return ns_window.autorelease();
 }
 
