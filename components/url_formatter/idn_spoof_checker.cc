@@ -4,6 +4,7 @@
 
 #include "components/url_formatter/idn_spoof_checker.h"
 
+#include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -20,10 +21,15 @@
 namespace url_formatter {
 
 namespace {
-base::ThreadLocalStorage::StaticSlot tls_index = TLS_INITIALIZER;
 
 void OnThreadTermination(void* regex_matcher) {
   delete reinterpret_cast<icu::RegexMatcher*>(regex_matcher);
+}
+
+base::ThreadLocalStorage::Slot& DangerousPatternTLS() {
+  static base::NoDestructor<base::ThreadLocalStorage::Slot>
+      dangerous_pattern_tls(&OnThreadTermination);
+  return *dangerous_pattern_tls;
 }
 
 #include "components/url_formatter/top_domains/alexa_skeletons-inc.cc"
@@ -249,10 +255,8 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
       !lgc_letters_n_ascii_.containsAll(label_string))
     return false;
 
-  if (!tls_index.initialized())
-    tls_index.Initialize(&OnThreadTermination);
   icu::RegexMatcher* dangerous_pattern =
-      reinterpret_cast<icu::RegexMatcher*>(tls_index.Get());
+      reinterpret_cast<icu::RegexMatcher*>(DangerousPatternTLS().Get());
   if (!dangerous_pattern) {
     // Disallow the katakana no, so, zo, or n, as they may be mistaken for
     // slashes when they're surrounded by non-Japanese scripts (i.e. scripts
@@ -295,7 +299,7 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
             R"([ijl]\u0307)",
             -1, US_INV),
         0, status);
-    tls_index.Set(dangerous_pattern);
+    DangerousPatternTLS().Set(dangerous_pattern);
   }
   dangerous_pattern->reset(label_string);
   return !dangerous_pattern->find();
