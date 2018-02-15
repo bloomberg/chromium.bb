@@ -2271,7 +2271,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   struct macroblock_plane *p = &x->plane[plane];
   struct macroblockd_plane *pd = &xd->plane[plane];
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
-  int eob = p->eobs[block], update_eob = -1;
+  int eob = p->eobs[block];
   const PLANE_TYPE plane_type = pd->plane_type;
   const tran_low_t *qcoeff = BLOCK_OFFSET(p->qcoeff, block);
   tran_low_t *tcoeff = BLOCK_OFFSET(x->mbmi_ext->tcoeff[plane], block);
@@ -2326,11 +2326,11 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
 
   av1_get_nz_map_contexts(levels, scan, eob, tx_size, tx_type, coeff_contexts);
 
-  update_eob = eob - 1;
   for (c = eob - 1; c >= 0; --c) {
     const int pos = scan[c];
     const int coeff_ctx = coeff_contexts[pos];
     const tran_low_t v = qcoeff[pos];
+    const tran_low_t level = abs(v);
     const int is_nz = (v != 0);
 
     (void)is_nz;
@@ -2339,20 +2339,57 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
         assert(coeff_ctx < 4);
         update_cdf(
             ec_ctx->coeff_base_eob_cdf[txsize_ctx][plane_type][coeff_ctx],
-            AOMMIN(abs(v), 3) - 1, 3);
+            AOMMIN(level, 3) - 1, 3);
       } else {
         update_cdf(ec_ctx->coeff_base_cdf[txsize_ctx][plane_type][coeff_ctx],
-                   AOMMIN(abs(v), 3), 4);
+                   AOMMIN(level, 3), 4);
       }
     }
     {
       if (c == eob - 1) {
         assert(coeff_ctx < 4);
         ++td->counts->coeff_base_eob_multi[txsize_ctx][plane_type][coeff_ctx]
-                                          [AOMMIN(abs(v), 3) - 1];
+                                          [AOMMIN(level, 3) - 1];
       } else {
         ++td->counts->coeff_base_multi[txsize_ctx][plane_type][coeff_ctx]
-                                      [AOMMIN(abs(v), 3)];
+                                      [AOMMIN(level, 3)];
+      }
+    }
+    if (level > NUM_BASE_LEVELS) {
+      const int base_range = level - 1 - NUM_BASE_LEVELS;
+#if USE_CAUSAL_BR_CTX
+      const int br_ctx =
+          get_br_ctx(levels, pos, bwl, level_counts[pos], tx_type);
+#else
+      const int br_ctx = get_br_ctx(levels, pos, bwl, level_counts[pos]);
+#endif
+      for (int idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
+        const int k = AOMMIN(base_range - idx, BR_CDF_SIZE - 1);
+        if (allow_update_cdf) {
+          update_cdf(
+#if 0
+         ec_ctx->coeff_br_cdf[AOMMIN(txsize_ctx, TX_16X16)][plane_type][br_ctx],
+#else
+              ec_ctx->coeff_br_cdf[AOMMIN(txsize_ctx, TX_32X32)][plane_type]
+                                  [br_ctx],
+#endif
+              k, BR_CDF_SIZE);
+        }
+        for (int lps = 0; lps < BR_CDF_SIZE - 1; lps++) {
+#if CONFIG_ENTROPY_STATS
+#if 0
+         ++td->counts->coeff_lps[AOMMIN(txsize_ctx, TX_16X16)][plane_type][lps]
+                                 [ctx][lps == k];
+#else
+          ++td->counts->coeff_lps[AOMMIN(txsize_ctx, TX_32X32)][plane_type][lps]
+                                 [br_ctx][lps == k];
+#endif
+#endif  // CONFIG_ENTROPY_STATS
+          if (lps == k) break;
+        }
+        ++td->counts->coeff_lps_multi[AOMMIN(txsize_ctx, TX_32X32)][plane_type]
+                                     [br_ctx][k];
+        if (k < BR_CDF_SIZE - 1) break;
       }
     }
   }
@@ -2367,56 +2404,6 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     if (allow_update_cdf)
       update_cdf(ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], sign, 2);
     x->mbmi_ext->dc_sign_ctx[plane][block] = dc_sign_ctx;
-  }
-
-  if (update_eob >= 0) {
-    for (c = update_eob; c >= 0; --c) {
-      const int pos = scan[c];
-      const tran_low_t level = abs(tcoeff[pos]);
-      int idx;
-      int ctx;
-
-      if (level <= NUM_BASE_LEVELS) continue;
-
-      // level is above 1.
-
-      const int base_range = level - 1 - NUM_BASE_LEVELS;
-#if USE_CAUSAL_BR_CTX
-      ctx = get_br_ctx(levels, pos, bwl, level_counts[pos], tx_type);
-#else
-      ctx = get_br_ctx(levels, pos, bwl, level_counts[pos]);
-#endif
-      for (idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
-        const int k = AOMMIN(base_range - idx, BR_CDF_SIZE - 1);
-        if (allow_update_cdf) {
-          update_cdf(
-#if 0
-            ec_ctx->coeff_br_cdf[AOMMIN(txsize_ctx, TX_16X16)][plane_type][ctx],
-#else
-              ec_ctx
-                  ->coeff_br_cdf[AOMMIN(txsize_ctx, TX_32X32)][plane_type][ctx],
-#endif
-              k, BR_CDF_SIZE);
-        }
-        for (int lps = 0; lps < BR_CDF_SIZE - 1; lps++) {
-#if CONFIG_ENTROPY_STATS
-#if 0
-          ++td->counts->coeff_lps[AOMMIN(txsize_ctx, TX_16X16)][plane_type][lps]
-                                 [ctx][lps == k];
-#else
-          ++td->counts->coeff_lps[AOMMIN(txsize_ctx, TX_32X32)][plane_type][lps]
-                                 [ctx][lps == k];
-#endif
-#endif  // CONFIG_ENTROPY_STATS
-          if (lps == k) break;
-        }
-        ++td->counts->coeff_lps_multi[AOMMIN(txsize_ctx, TX_32X32)][plane_type]
-                                     [ctx][k];
-
-        if (k < BR_CDF_SIZE - 1) break;
-      }
-      // use 0-th order Golomb code to handle the residual level.
-    }
   }
 
   int cul_level = av1_get_txb_entropy_context(tcoeff, scan_order, eob);
