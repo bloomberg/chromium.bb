@@ -73,7 +73,7 @@ void ArcKioskAppService::OnTaskCreated(int32_t task_id,
                                        const std::string& intent) {
   // Store task id of the app to stop it later when needed.
   if (app_info_ && package_name == app_info_->package_name &&
-      activity == app_info_->activity && intent == app_info_->intent_uri) {
+      activity == app_info_->activity) {
     task_id_ = task_id;
     if (delegate_)
       delegate_->OnAppStarted();
