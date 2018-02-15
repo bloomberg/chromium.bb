@@ -102,7 +102,9 @@ void PasswordEventObserver::OnBroadcastEvent(const extensions::Event& event) {
 
 enum class ReauthResult { PASS, FAIL };
 
-bool FakeOsReauthCall(bool* reauth_called, ReauthResult result) {
+bool FakeOsReauthCall(bool* reauth_called,
+                      ReauthResult result,
+                      password_manager::ReauthPurpose purpose) {
   *reauth_called = true;
   return result == ReauthResult::PASS;
 }

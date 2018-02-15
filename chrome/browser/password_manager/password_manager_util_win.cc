@@ -342,7 +342,8 @@ void GetOsPasswordStatus() {
 // Authenticate the user using the old Windows credential prompt.
 // TODO(crbug.com/574581) Remove this feature once this is confirmed to work
 // as expected.
-bool AuthenticateUserOld(gfx::NativeWindow window) {
+bool AuthenticateUserOld(gfx::NativeWindow window,
+                         password_manager::ReauthPurpose purpose) {
   bool retval = false;
   CREDUI_INFO cui = {};
   WCHAR username[CREDUI_MAX_USERNAME_LENGTH+1] = {};
@@ -350,8 +351,17 @@ bool AuthenticateUserOld(gfx::NativeWindow window) {
   WCHAR password[CREDUI_MAX_PASSWORD_LENGTH+1] = {};
   DWORD username_length = CREDUI_MAX_USERNAME_LENGTH;
   base::string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-  base::string16 password_prompt =
-      l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_AUTHENTICATION_PROMPT);
+  base::string16 password_prompt;
+  switch (purpose) {
+    case password_manager::ReauthPurpose::VIEW_PASSWORD:
+      password_prompt =
+          l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_AUTHENTICATION_PROMPT);
+      break;
+    case password_manager::ReauthPurpose::EXPORT:
+      password_prompt = l10n_util::GetStringUTF16(
+          IDS_PASSWORDS_PAGE_EXPORT_AUTHENTICATION_PROMPT);
+      break;
+  }
   HANDLE handle = INVALID_HANDLE_VALUE;
   size_t tries = 0;
   bool use_displayname = false;
@@ -441,7 +451,8 @@ bool AuthenticateUserOld(gfx::NativeWindow window) {
 // allows the user to authenticate with their password.  This old prompt only
 // supported password authentication which is not enough for enterprise
 // environments.
-bool AuthenticateUserNew(gfx::NativeWindow window) {
+bool AuthenticateUserNew(gfx::NativeWindow window,
+                         password_manager::ReauthPurpose purpose) {
   bool retval = false;
   WCHAR cur_username[CREDUI_MAX_USERNAME_LENGTH + 1] = {};
   DWORD cur_username_length = arraysize(cur_username);
@@ -460,8 +471,17 @@ bool AuthenticateUserNew(gfx::NativeWindow window) {
   // left empty on domain joined machines, CredUIPromptForWindowsCredentials()
   // fails to run.
   base::string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-  base::string16 password_prompt =
-      l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_AUTHENTICATION_PROMPT);
+  base::string16 password_prompt;
+  switch (purpose) {
+    case password_manager::ReauthPurpose::VIEW_PASSWORD:
+      password_prompt =
+          l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_AUTHENTICATION_PROMPT);
+      break;
+    case password_manager::ReauthPurpose::EXPORT:
+      password_prompt = l10n_util::GetStringUTF16(
+          IDS_PASSWORDS_PAGE_EXPORT_AUTHENTICATION_PROMPT);
+      break;
+  }
   CREDUI_INFO cui;
   cui.cbSize = sizeof(cui);
   cui.hwndParent = window->GetHost()->GetAcceleratedWidget();
@@ -509,10 +529,11 @@ void DelayReportOsPassword() {
                                           base::TimeDelta::FromSeconds(40));
 }
 
-bool AuthenticateUser(gfx::NativeWindow window) {
+bool AuthenticateUser(gfx::NativeWindow window,
+                      password_manager::ReauthPurpose purpose) {
   return base::FeatureList::IsEnabled(kCredUIPromptForWindowsCredentialsFeature)
-             ? AuthenticateUserNew(window)
-             : AuthenticateUserOld(window);
+             ? AuthenticateUserNew(window, purpose)
+             : AuthenticateUserOld(window, purpose);
 }
 
 }  // namespace password_manager_util_win

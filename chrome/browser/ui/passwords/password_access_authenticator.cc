@@ -11,7 +11,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 
 PasswordAccessAuthenticator::PasswordAccessAuthenticator(
-    base::RepeatingCallback<bool()> os_reauth_call)
+    ReauthCallback os_reauth_call)
     : clock_(base::DefaultClock::GetInstance()),
       os_reauth_call_(std::move(os_reauth_call)) {}
 
@@ -19,7 +19,8 @@ PasswordAccessAuthenticator::~PasswordAccessAuthenticator() = default;
 
 // TODO(crbug.com/327331): Trigger Re-Auth after closing and opening the
 // settings tab.
-bool PasswordAccessAuthenticator::EnsureUserIsAuthenticated() {
+bool PasswordAccessAuthenticator::EnsureUserIsAuthenticated(
+    password_manager::ReauthPurpose purpose) {
   const bool can_skip_reauth =
       last_authentication_time_.has_value() &&
       clock_->Now() - *last_authentication_time_ <=
@@ -32,11 +33,12 @@ bool PasswordAccessAuthenticator::EnsureUserIsAuthenticated() {
     return true;
   }
 
-  return ForceUserReauthentication();
+  return ForceUserReauthentication(purpose);
 }
 
-bool PasswordAccessAuthenticator::ForceUserReauthentication() {
-  bool authenticated = os_reauth_call_.Run();
+bool PasswordAccessAuthenticator::ForceUserReauthentication(
+    password_manager::ReauthPurpose purpose) {
+  bool authenticated = os_reauth_call_.Run(purpose);
   if (authenticated)
     last_authentication_time_ = clock_->Now();
   UMA_HISTOGRAM_ENUMERATION(
@@ -48,7 +50,7 @@ bool PasswordAccessAuthenticator::ForceUserReauthentication() {
 }
 
 void PasswordAccessAuthenticator::SetOsReauthCallForTesting(
-    base::RepeatingCallback<bool()> os_reauth_call) {
+    ReauthCallback os_reauth_call) {
   os_reauth_call_ = std::move(os_reauth_call);
 }
 

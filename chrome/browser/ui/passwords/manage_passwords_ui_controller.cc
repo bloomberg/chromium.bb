@@ -668,9 +668,11 @@ void ManagePasswordsUIController::ReopenBubbleAfterAuth(
 bool ManagePasswordsUIController::ShowAuthenticationDialog() {
 #if defined(OS_WIN)
   return password_manager_util_win::AuthenticateUser(
-      web_contents()->GetNativeView());
+      web_contents()->GetNativeView(),
+      password_manager::ReauthPurpose::VIEW_PASSWORD);
 #elif defined(OS_MACOSX)
-  return password_manager_util_mac::AuthenticateUser();
+  return password_manager_util_mac::AuthenticateUser(
+      password_manager::ReauthPurpose::VIEW_PASSWORD);
 #else
   NOTREACHED();
   return true;
