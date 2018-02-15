@@ -26,7 +26,6 @@
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/ScriptString.h"
 #include "core/dom/DocumentParserClient.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/PausableObject.h"
@@ -35,6 +34,7 @@
 #include "core/xmlhttprequest/XMLHttpRequestProgressEventThrottle.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
+#include "platform/bindings/TraceWrapperV8String.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/network/EncodedFormData.h"
@@ -144,8 +144,8 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   void overrideMimeType(const AtomicString& override, ExceptionState&);
   String getAllResponseHeaders() const;
   const AtomicString& getResponseHeader(const AtomicString&) const;
-  ScriptString responseText(ExceptionState&);
-  ScriptString ResponseJSONSource();
+  v8::Local<v8::String> responseText(ExceptionState&);
+  v8::Local<v8::String> ResponseJSONSource();
   Document* responseXML(ExceptionState&);
   Blob* ResponseBlob();
   DOMArrayBuffer* ResponseArrayBuffer();
@@ -293,7 +293,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   // Report the memory usage associated with this object to V8 so that V8 can
   // schedule GC accordingly.  This function should be called whenever the
   // internal memory usage changes except for the following members.
-  // - response_text_ of type ScriptString
+  // - response_text_ of type TraceWrapperV8String
   //   ScriptString internally creates and holds a v8::String, so V8 is aware of
   //   its memory usage.
   // - response_array_buffer_ of type DOMArrayBuffer
@@ -320,7 +320,9 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
 
   std::unique_ptr<TextResourceDecoder> decoder_;
 
-  ScriptString response_text_;
+  // Avoid using a flat WTF::String here and rather use a traced v8::String
+  // which internally builds a string rope.
+  TraceWrapperV8String response_text_;
   TraceWrapperMember<Document> response_document_;
   Member<DocumentParser> response_document_parser_;
 

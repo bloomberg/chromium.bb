@@ -53,12 +53,12 @@ void V8XMLHttpRequest::responseTextAttributeGetterCustom(
   ExceptionState exception_state(info.GetIsolate(),
                                  ExceptionState::kGetterContext,
                                  "XMLHttpRequest", "responseText");
-  ScriptString text = xml_http_request->responseText(exception_state);
+  v8::Local<v8::String> text = xml_http_request->responseText(exception_state);
   if (text.IsEmpty()) {
     V8SetReturnValueString(info, g_empty_string, info.GetIsolate());
     return;
   }
-  V8SetReturnValue(info, text.V8Value());
+  V8SetReturnValue(info, text);
 }
 
 void V8XMLHttpRequest::responseAttributeGetterCustom(
@@ -77,7 +77,8 @@ void V8XMLHttpRequest::responseAttributeGetterCustom(
     case XMLHttpRequest::kResponseTypeJSON: {
       v8::Isolate* isolate = info.GetIsolate();
 
-      ScriptString json_source = xml_http_request->ResponseJSONSource();
+      v8::Local<v8::String> json_source =
+          xml_http_request->ResponseJSONSource();
       if (json_source.IsEmpty()) {
         V8SetReturnValue(info, v8::Null(isolate));
         return;
@@ -87,7 +88,7 @@ void V8XMLHttpRequest::responseAttributeGetterCustom(
       // spec says. https://xhr.spec.whatwg.org/#response-body
       v8::Local<v8::Value> json =
           FromJSONString(isolate, isolate->GetCurrentContext(),
-                         ToCoreString(json_source.V8Value()), exception_state);
+                         ToCoreString(json_source), exception_state);
       if (exception_state.HadException()) {
         exception_state.ClearException();
         V8SetReturnValue(info, v8::Null(isolate));

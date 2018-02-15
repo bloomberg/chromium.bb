@@ -5,6 +5,7 @@
 #ifndef TraceWrapperBase_h
 #define TraceWrapperBase_h
 
+#include "platform/PlatformExport.h"
 #include "platform/wtf/Noncopyable.h"
 
 namespace blink {
