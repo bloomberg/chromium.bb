@@ -315,7 +315,8 @@ void AccountTrackerService::SetAccountStateFromUserInfo(
 
 void AccountTrackerService::SetAccountImage(const std::string& account_id,
                                             const gfx::Image& image) {
-  DCHECK(base::ContainsKey(accounts_, account_id));
+  if (!base::ContainsKey(accounts_, account_id))
+    return;
   accounts_[account_id].image = image;
   SaveAccountImageToDisk(account_id, image);
   NotifyAccountImageUpdated(account_id, image);

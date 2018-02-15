@@ -1317,3 +1317,18 @@ TEST_F(AccountTrackerServiceTest, ChildAccountGraduation) {
   fetcher.Shutdown();
   tracker.Shutdown();
 }
+
+TEST_F(AccountTrackerServiceTest, RemoveAccountBeforeImageFetchDone) {
+  AccountTrackerObserver observer;
+  account_tracker()->AddObserver(&observer);
+  SimulateTokenAvailable("alpha");
+
+  ReturnAccountInfoFetchSuccess("alpha");
+  ASSERT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, "alpha")));
+
+  SimulateTokenRevoked("alpha");
+  ReturnAccountImageFetchFailure("alpha");
+  ASSERT_TRUE(observer.CheckEvents(TrackingEvent(REMOVED, "alpha")));
+
+  account_tracker()->RemoveObserver(&observer);
+}
