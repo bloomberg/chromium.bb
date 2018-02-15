@@ -425,6 +425,7 @@
 -PDFExtensionTest.PdfAccessibilityEnableLater
 -PDFExtensionTest.PdfAccessibilityInIframe
 -PDFExtensionTest.PdfAccessibilityInOOPIF
+-PDFExtensionTest.PdfAccessibilityWordBoundaries
 -PDFExtensionTest.PdfZoomWithoutBubble
 -PDFExtensionTest.PostMessageForZeroSizedEmbed
 -PDFExtensionTest.RedirectsFailInPlugin

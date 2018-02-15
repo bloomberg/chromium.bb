@@ -766,6 +766,39 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityInOOPIF) {
   ASSERT_MULTILINE_STR_MATCHES(kExpectedPDFAXTreePattern, ax_tree_dump);
 }
 
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityWordBoundaries) {
+  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+
+  GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf"));
+  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  ASSERT_TRUE(guest_contents);
+
+  WaitForAccessibilityTreeToContainNodeWithName(guest_contents,
+                                                "1 First Section\r\n");
+  ui::AXTreeUpdate ax_tree = GetAccessibilityTreeSnapshot(guest_contents);
+
+  bool found = false;
+  for (auto& node : ax_tree.nodes) {
+    std::string name =
+        node.GetStringAttribute(ax::mojom::StringAttribute::kName);
+    if (node.role == ax::mojom::Role::kInlineTextBox &&
+        name == "First Section\r\n") {
+      found = true;
+      std::vector<int32_t> word_starts =
+          node.GetIntListAttribute(ax::mojom::IntListAttribute::kWordStarts);
+      std::vector<int32_t> word_ends =
+          node.GetIntListAttribute(ax::mojom::IntListAttribute::kWordEnds);
+      ASSERT_EQ(2U, word_starts.size());
+      ASSERT_EQ(2U, word_ends.size());
+      EXPECT_EQ(0, word_starts[0]);
+      EXPECT_EQ(5, word_ends[0]);
+      EXPECT_EQ(6, word_starts[1]);
+      EXPECT_EQ(13, word_ends[1]);
+    }
+  }
+  ASSERT_TRUE(found);
+}
+
 #if defined(GOOGLE_CHROME_BUILD)
 // Test a particular PDF encountered in the wild that triggered a crash
 // when accessibility is enabled.  (http://crbug.com/668724)
