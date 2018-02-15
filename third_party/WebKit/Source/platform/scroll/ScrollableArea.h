@@ -443,6 +443,8 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
     return autosize_horizontal_scrollbar_mode_;
   }
 
+  virtual bool HasBeenDisposed() const { return false; }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ScrollableAreaTest,
                            PopupOverlayScrollbarShouldNotFadeOut);
