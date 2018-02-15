@@ -18,6 +18,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
 
@@ -39,6 +40,14 @@ public class AccountSigninActivity extends AppCompatActivity
             SigninAccessPoint.NTP_CONTENT_SUGGESTIONS, SigninAccessPoint.AUTOFILL_DROPDOWN})
     @Retention(RetentionPolicy.SOURCE)
     public @interface AccessPoint {}
+
+    @IntDef({SwitchAccountSource.SIGNOUT_SIGNIN, SwitchAccountSource.SYNC_ACCOUNT_SWITCHER})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SwitchAccountSource {
+        int SIGNOUT_SIGNIN = 0;
+        int SYNC_ACCOUNT_SWITCHER = 1;
+        int MAX = 2;
+    }
 
     private @AccessPoint int mAccessPoint;
     private @AccountSigninView.SigninFlowType int mSigninFlowType;
@@ -116,6 +125,15 @@ public class AccountSigninActivity extends AppCompatActivity
         return intent;
     }
 
+    /**
+     * Records the flow that was used to switch sync accounts.
+     * @param source {@link SwitchAccountSource} that was used for switching accounts.
+     */
+    public static void recordSwitchAccountSourceHistogram(@SwitchAccountSource int source) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Signin.SwitchSyncAccount.Source", source, SwitchAccountSource.MAX);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // The browser process must be started here because this activity may be started from the
@@ -170,6 +188,10 @@ public class AccountSigninActivity extends AppCompatActivity
     @Override
     public void onAccountSelected(
             final String accountName, boolean isDefaultAccount, final boolean settingsClicked) {
+        if (PrefServiceBridge.getInstance().getSyncLastAccountName() != null) {
+            recordSwitchAccountSourceHistogram(SwitchAccountSource.SIGNOUT_SIGNIN);
+        }
+
         final Context context = this;
         SigninManager.get().signIn(accountName, this, new SignInCallback() {
             @Override

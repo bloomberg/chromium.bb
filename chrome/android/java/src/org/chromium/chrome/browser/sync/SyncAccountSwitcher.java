@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.Promise;
 import org.chromium.chrome.browser.preferences.SyncedAccountPreference;
+import org.chromium.chrome.browser.signin.AccountSigninActivity;
 import org.chromium.chrome.browser.signin.ConfirmImportSyncDataDialog;
 import org.chromium.chrome.browser.signin.ConfirmImportSyncDataDialog.ImportSyncType;
 import org.chromium.chrome.browser.signin.ConfirmSyncDataStateMachine;
@@ -86,6 +87,9 @@ public class SyncAccountSwitcher
                                 mNewAccountName, mActivity, SyncAccountSwitcher.this);
                     }
                 });
+
+        AccountSigninActivity.recordSwitchAccountSourceHistogram(
+                AccountSigninActivity.SwitchAccountSource.SYNC_ACCOUNT_SWITCHER);
     }
 
     @Override
