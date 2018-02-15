@@ -15,7 +15,6 @@
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_details_view.h"
-#include "ash/system/tray/tray_popup_header_button.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"

@@ -75,7 +75,6 @@ ASH_EXPORT extern const int kTrayDetailedViewTransitionDelayMs;
 // item. This applies to all labels in the system menu.
 extern const int kTrayPopupLabelRightPadding;
 
-extern const SkColor kTrayPopupHoverBackgroundColor;
 extern const int kTrayRoundedBorderRadius;
 
 // The width of ToggleButton views including any border padding.

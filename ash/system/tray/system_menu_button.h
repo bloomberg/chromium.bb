@@ -17,9 +17,6 @@ namespace ash {
 
 // A 48x48 image button with a material design ripple effect, which can be
 // used across Ash material design native UI menus.
-// TODO(tdanderson): Deprecate TrayPopupHeaderButton in favor of
-// SystemMenuButton once material design is enabled by default. See
-// crbug.com/614453.
 class SystemMenuButton : public views::ImageButton {
  public:
   // Constructs the button with |listener| and a centered icon corresponding to
