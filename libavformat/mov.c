@@ -4723,7 +4723,8 @@ static int mov_read_trun(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     // zero valued entries. This ensures clips which mix boxes with and
     // without ctts entries don't pickup uninitialized data.
     memset(sc->ctts_data + sc->ctts_count, 0,
-           (st->nb_index_entries - sc->ctts_count) * sizeof(*sc->ctts_data));
+           (st->nb_index_entries + entries - sc->ctts_count) *
+               sizeof(*sc->ctts_data));
 
     if (index_entry_pos < st->nb_index_entries) {
         // Make hole in index_entries and ctts_data for new samples

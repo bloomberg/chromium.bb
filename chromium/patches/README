@@ -107,3 +107,6 @@ Current patches:
   libavcodec/h264_cabac.c
     decode_cabac_residual_internal(): Limit the value of |j| to avoid integer
     overflow. https://crbug.com/806580
+
+  libavformat/mov.c
+    mov_read_trun(): Fix memset size on ctts_data. https://crbug.com/812567
