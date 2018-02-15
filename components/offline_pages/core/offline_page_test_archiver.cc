@@ -46,6 +46,18 @@ void OfflinePageTestArchiver::CreateArchive(
     CompleteCreateArchive();
 }
 
+void OfflinePageTestArchiver::PublishArchive(
+    const OfflinePageItem& offline_page,
+    const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
+    const base::FilePath& new_file_path,
+    SystemDownloadManager* download_manager,
+    PublishArchiveDoneCallback publish_done_callback) {
+  publish_archive_result_.move_result = SavePageResult::SUCCESS;
+  publish_archive_result_.new_file_path = offline_page.file_path;
+  publish_archive_result_.download_id = 0;
+  std::move(publish_done_callback).Run(offline_page, &publish_archive_result_);
+}
+
 void OfflinePageTestArchiver::CompleteCreateArchive() {
   DCHECK(!callback_.is_null());
   base::FilePath archive_path;
