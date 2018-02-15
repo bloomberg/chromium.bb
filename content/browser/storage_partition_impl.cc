@@ -250,7 +250,7 @@ void ClearSessionStorageOnUIThread(
                  callback));
 }
 
-base::WeakPtr<storage::BlobStorageContext> BlobStorageContextGetter(
+base::WeakPtr<storage::BlobStorageContext> BlobStorageContextGetterForStorage(
     scoped_refptr<ChromeBlobStorageContext> blob_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return blob_context->context()->AsWeakPtr();
@@ -611,7 +611,7 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     BlobURLLoaderFactory::BlobContextGetter blob_getter =
-        base::BindOnce(&BlobStorageContextGetter, blob_context);
+        base::BindOnce(&BlobStorageContextGetterForStorage, blob_context);
     partition->blob_url_loader_factory_ =
         BlobURLLoaderFactory::Create(std::move(blob_getter));
 
