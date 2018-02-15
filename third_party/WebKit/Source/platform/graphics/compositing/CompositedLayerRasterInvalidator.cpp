@@ -325,43 +325,4 @@ void CompositedLayerRasterInvalidator::Generate(
   }
 }
 
-void CompositedLayerRasterInvalidator::GenerateForPropertyChanges(
-    const Vector<const PaintChunk*>& paint_chunks,
-    const PropertyTreeState& layer_state) {
-  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
-  DCHECK(paint_chunks.size() == paint_chunks_info_.size() ||
-         // The previous painting has raster under-invalidation overlay.
-         paint_chunks.size() == paint_chunks_info_.size() + 1);
-
-  Vector<PaintChunkInfo> new_chunks_info;
-  bool changed = false;
-  for (size_t i = 0; i < paint_chunks_info_.size(); ++i) {
-    const auto* chunk = paint_chunks[i];
-    new_chunks_info.push_back(PaintChunkInfo(
-        MapRectFromChunkToLayer(chunk->bounds, *chunk, layer_state),
-        ChunkToLayerTransform(*chunk, layer_state),
-        ChunkToLayerClip(*chunk, layer_state), *chunk));
-    const auto& new_chunk_info = new_chunks_info.back();
-
-    const auto& old_chunk_info = paint_chunks_info_[i];
-    DCHECK(chunk->id == old_chunk_info.id);
-
-    auto reason =
-        ChunkPropertiesChanged(new_chunk_info, old_chunk_info, layer_state);
-    if (reason == PaintInvalidationReason::kNone)
-      continue;
-
-    changed = true;
-    if (IsFullPaintInvalidationReason(reason))
-      FullyInvalidateChunk(old_chunk_info, new_chunk_info, reason);
-    else
-      IncrementallyInvalidateChunk(old_chunk_info, new_chunk_info);
-  }
-
-  if (changed) {
-    paint_chunks_info_.clear();
-    std::swap(paint_chunks_info_, new_chunks_info);
-  }
-}
-
 }  // namespace blink
