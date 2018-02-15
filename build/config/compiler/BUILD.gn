@@ -113,12 +113,6 @@ declare_args() {
   # clang_sample_profile_path is empty, we'll fall back to the default.
   clang_use_default_sample_profile =
       is_official_build && defined(clang_default_afdo_profile)
-
-  # Whether to assert to the compiler that the AFDO profiles are accurate.
-  # True will cause the compiler to optimize uncovered functions for size
-  # (despite passing -O2 or -O3), which reduces binary size by quite a bit,
-  # potentially at the cost of some performance.
-  clang_sample_profile_is_accurate = true
 }
 
 declare_args() {
@@ -227,31 +221,6 @@ config("compiler") {
     # Common GCC compiler flags setup.
     # --------------------------------
     cflags += [ "-fno-strict-aliasing" ]  # See http://crbug.com/32204
-
-    # AFDO on clang. Clang doesn't seem to suffer from the bug that caused GCC's
-    # AFDO to be split into its own config, so this isn't part of that config.
-    #
-    # Since we only profile the browser, skip it if we're building host tools.
-    if (is_clang && current_toolchain == default_toolchain) {
-      _sample_path = ""
-      if (clang_sample_profile_path != "") {
-        _sample_path = clang_sample_profile_path
-      } else if (clang_use_default_sample_profile) {
-        assert(defined(clang_default_afdo_profile),
-               "This platform has no default sample profiles")
-        _sample_path = clang_default_afdo_profile
-      }
-
-      if (_sample_path != "") {
-        cflags += [ "-fprofile-sample-use=${_sample_path}" ]
-        if (clang_sample_profile_is_accurate) {
-          cflags += [ "-fprofile-sample-accurate" ]
-        }
-        inputs += [ _sample_path ]
-      }
-    } else {
-      not_needed([ "inputs" ])
-    }
 
     # Stack protection.
     if (is_mac) {
@@ -1931,15 +1900,44 @@ config("default_optimization") {
   }
 }
 
-# GCC supports a form of profile-guided optimization called AFDO, which
-# is used by ChromeOS in their official builds. However,
-# //base/allocator:tcmalloc currently doesn't work correctly with AFDO
-# so we provide separate config so that the flag can be disabled per-target.
-# TODO(crbug.com/633719): Remove this config once tcmalloc works with AFDO
-# or we remove tcmalloc or we stop using AFDO.
+_clang_sample_profile = ""
+if (is_clang && current_toolchain == default_toolchain) {
+  if (clang_sample_profile_path != "") {
+    _clang_sample_profile = clang_sample_profile_path
+  } else if (clang_use_default_sample_profile) {
+    assert(defined(clang_default_afdo_profile),
+           "This platform has no default sample profiles")
+    _clang_sample_profile = clang_default_afdo_profile
+  }
+}
+
+# Clang offers a way to assert that AFDO profiles are accurate, which causes it
+# to optimize functions not represented in a profile more aggressively for size.
+# This config can be toggled in cases where shaving off binary size hurts
+# performance too much.
+config("afdo_optimize_size") {
+  if (_clang_sample_profile != "" && sample_profile_is_accurate) {
+    cflags = [ "-fprofile-sample-accurate" ]
+  }
+}
+
+# GCC and clang support a form of profile-guided optimization called AFDO.
+# There are some targeted places that AFDO regresses (and an icky interaction
+# between //base/allocator:tcmalloc and AFDO on GCC), so we provide a separate
+# config to allow AFDO to be disabled per-target.
 config("afdo") {
-  if (auto_profile_path != "" && current_toolchain == default_toolchain) {
+  if (is_clang) {
+    if (_clang_sample_profile != "") {
+      cflags = [ "-fprofile-sample-use=${_clang_sample_profile}" ]
+      inputs = [
+        _clang_sample_profile,
+      ]
+    }
+  } else if (auto_profile_path != "" && current_toolchain == default_toolchain) {
     cflags = [ "-fauto-profile=${auto_profile_path}" ]
+    inputs = [
+      auto_profile_path,
+    ]
   }
 }
 

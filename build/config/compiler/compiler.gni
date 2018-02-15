@@ -70,6 +70,13 @@ declare_args() {
 
   # Whether or not we should use position independent code.
   use_pic = true
+
+  # Whether we're using a sample profile collected on an architecture different
+  # than the one we're compiling for.
+  #
+  # It's currently not possible to collect AFDO profiles on anything but
+  # x86{,_64}.
+  using_mismatched_sample_profile = current_cpu != "x64" && current_cpu != "x86"
 }
 
 assert(!is_cfi || use_thin_lto, "CFI requires ThinLTO")
@@ -88,6 +95,14 @@ exclude_unwind_tables =
 # TODO(brettw) it's weird that Mac and desktop Linux are different. We should
 # explore favoring size over speed in this case as well.
 optimize_for_size = is_android || is_ios
+
+declare_args() {
+  # Whether we should consider the profile we're using to be accurate. Accurate
+  # profiles have the benefit of (potentially substantial) binary size
+  # reductions, by instructing the compiler to optimize cold and uncovered
+  # functions heavily for size. This often comes at the cost of performance.
+  sample_profile_is_accurate = optimize_for_size
+}
 
 # Determine whether to enable or disable frame pointers, based on the platform
 # and build arguments.
