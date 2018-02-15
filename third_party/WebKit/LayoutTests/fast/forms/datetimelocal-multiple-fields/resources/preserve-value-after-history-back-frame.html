@@ -4,7 +4,7 @@
 <input type="datetime-local" id="test2" min="1999-01-01T00:00" max="2000-12-31T23:59">
 <script>
 function fieldsText(input) {
-    return window.internals.oldestShadowRoot(input).textContent;
+    return window.internals.shadowRoot(input).textContent;
 }
 
 // On Linux/Android with a newer ICU, date and time are separated by ','.

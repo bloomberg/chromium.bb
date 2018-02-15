@@ -4,7 +4,7 @@
 <input type="week" id="test2" min="1998-W01" max="1999-W12">
 <script>
 function fieldsText(input) {
-    return window.internals.oldestShadowRoot(input).textContent;
+    return window.internals.shadowRoot(input).textContent;
 }
 
 function back(newState) {

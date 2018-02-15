@@ -28,7 +28,7 @@ document.addEventListener('mouseup', function (evt)
     evt.preventDefault();
 });
 
-var clearButton = getElementByPseudoId(internals.oldestShadowRoot(input),'-webkit-clear-button');
+var clearButton = getElementByPseudoId(internals.shadowRoot(input),'-webkit-clear-button');
 clickElement(clearButton);
 shouldBeEqualToString('input.value', '');
 

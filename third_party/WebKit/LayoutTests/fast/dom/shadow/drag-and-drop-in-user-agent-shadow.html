@@ -12,7 +12,7 @@ sandbox.appendChild(
                                                document.createTextNode('Shadow Root Child')),
                                      createDOM('slot', {'name': 'user-agent-default-slot'}))));
 
-var shadowRootChild = window.internals.youngestShadowRoot(host).getElementById('shadow-root-child');
+var shadowRootChild = window.internals.shadowRoot(host).getElementById('shadow-root-child');
 var dragstartCount = 0;
 
 host.addEventListener('dragstart', function(e) {
