@@ -228,61 +228,6 @@ class MockNetworkChangeNotifier4G : public NetworkChangeNotifier {
   }
 };
 
-// Wait for PageLoadMetrics parse start metrics to be flushed out.
-class ParseStartMetricsWaiter
-    : public page_load_metrics::MetricsWebContentsObserver::TestingObserver {
- public:
-  explicit ParseStartMetricsWaiter(content::WebContents* web_contents)
-      : TestingObserver(web_contents), weak_factory_(this) {}
-
-  ~ParseStartMetricsWaiter() override { CHECK_EQ(nullptr, run_loop_.get()); }
-
-  // MetricsWebContentsObserver::TestingObserver implementation.
-  void OnTrackerCreated(page_load_metrics::PageLoadTracker* tracker) override {
-    tracker->AddObserver(
-        base::MakeUnique<WaiterObserver>(weak_factory_.GetWeakPtr()));
-  }
-
-  void Wait() {
-    if (saw_metrics_)
-      return;
-
-    run_loop_ = base::MakeUnique<base::RunLoop>();
-    run_loop_->Run();
-    run_loop_ = nullptr;
-    EXPECT_TRUE(saw_metrics_);
-  }
-
-  void MarkMetricsSeen() {
-    saw_metrics_ = true;
-    if (run_loop_)
-      run_loop_->Quit();
-  }
-
- private:
-  class WaiterObserver : public page_load_metrics::PageLoadMetricsObserver {
-   public:
-    explicit WaiterObserver(base::WeakPtr<ParseStartMetricsWaiter> waiter)
-        : waiter_(waiter) {}
-
-    void OnTimingUpdate(
-        bool is_subframe,
-        const page_load_metrics::mojom::PageLoadTiming& timing,
-        const page_load_metrics::PageLoadExtraInfo& extra_info) override {
-      if (timing.parse_timing->parse_start && waiter_) {
-        waiter_->MarkMetricsSeen();
-      }
-    }
-
-   private:
-    const base::WeakPtr<ParseStartMetricsWaiter> waiter_;
-  };
-
-  bool saw_metrics_ = false;
-  std::unique_ptr<base::RunLoop> run_loop_;
-  base::WeakPtrFactory<ParseStartMetricsWaiter> weak_factory_;
-};
-
 // Constants used in the test HTML files.
 const char* kReadyTitle = "READY";
 const char* kPassTitle = "PASS";
@@ -1167,8 +1112,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PageLoadMetricsSimple) {
       "Prerender.none_PrefetchTTFCP.Reference.Cacheable.Visible", 1);
   histogram_tester().ExpectTotalCount(
       "PageLoad.DocumentTiming.NavigationToFirstLayout", 1);
-  histogram_tester().ExpectTotalCount(
-      "PageLoad.ParseTiming.NavigationToParseStart", 1);
 
   // Histogram only emitted during a prerender, which should not happen here.
   histogram_tester().ExpectTotalCount(
@@ -1181,21 +1124,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PageLoadMetricsPrerender) {
   test_utils::FirstContentfulPaintManagerWaiter* prerender_fcp_waiter =
       test_utils::FirstContentfulPaintManagerWaiter::Create(
           GetPrerenderManager());
-  std::unique_ptr<ParseStartMetricsWaiter> metrics_waiter =
-      std::make_unique<ParseStartMetricsWaiter>(
-          browser()->tab_strip_model()->GetActiveWebContents());
   PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
   NavigateToDestURL();
   prerender_fcp_waiter->Wait();
-  metrics_waiter->Wait();
 
   histogram_tester().ExpectTotalCount(
       "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Visible", 1);
-
-  // Histogram logged during the prerender_loader.html load, but not during the
-  // prerender.
-  histogram_tester().ExpectTotalCount(
-      "PageLoad.ParseTiming.NavigationToParseStart", 1);
 
   // Histograms only emitted during the simple load which does not happen here
   // (as prefetch_loader.html has an empty body, it does not generate a FCP).
