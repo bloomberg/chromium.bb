@@ -7,17 +7,17 @@
 
 #include <memory>
 
-#include "cc/animation/animation.h"
+#include "cc/animation/keyframe_model.h"
 #include "ui/compositor/compositor_export.h"
 
 namespace ui {
 
-// Attach CC animations using this interface.
+// Attach CC keyframe_models using this interface.
 class COMPOSITOR_EXPORT LayerThreadedAnimationDelegate {
  public:
   virtual void AddThreadedAnimation(
-      std::unique_ptr<cc::Animation> animation) = 0;
-  virtual void RemoveThreadedAnimation(int animation_id) = 0;
+      std::unique_ptr<cc::KeyframeModel> keyframe_model) = 0;
+  virtual void RemoveThreadedAnimation(int keyframe_model_id) = 0;
 
  protected:
   virtual ~LayerThreadedAnimationDelegate() {}

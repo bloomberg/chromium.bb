@@ -10,10 +10,10 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "cc/animation/animation.h"
 #include "cc/animation/animation_host.h"
-#include "cc/animation/animation_ticker.h"
-#include "cc/animation/single_ticker_animation_player.h"
+#include "cc/animation/keyframe_effect.h"
+#include "cc/animation/keyframe_model.h"
+#include "cc/animation/single_keyframe_effect_animation_player.h"
 #include "cc/animation/timing_function.h"
 #include "cc/base/switches.h"
 #include "cc/input/input_handler.h"
@@ -346,7 +346,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     LayerTreeHostImpl::UpdateAnimationState(start_ready_animations);
     bool has_unfinished_animation = false;
     for (const auto& it : animation_host()->ticking_players_for_testing()) {
-      if (it.get()->TickingAnimationsCount()) {
+      if (it.get()->TickingKeyframeModelsCount()) {
         has_unfinished_animation = true;
         break;
       }
@@ -646,7 +646,7 @@ void LayerTreeTest::EndTestAfterDelayMs(int delay_milliseconds) {
 }
 
 void LayerTreeTest::PostAddAnimationToMainThreadPlayer(
-    SingleTickerAnimationPlayer* player_to_receive_animation) {
+    SingleKeyframeEffectAnimationPlayer* player_to_receive_animation) {
   main_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&LayerTreeTest::DispatchAddAnimationToPlayer,
@@ -655,7 +655,7 @@ void LayerTreeTest::PostAddAnimationToMainThreadPlayer(
 }
 
 void LayerTreeTest::PostAddInstantAnimationToMainThreadPlayer(
-    SingleTickerAnimationPlayer* player_to_receive_animation) {
+    SingleKeyframeEffectAnimationPlayer* player_to_receive_animation) {
   main_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&LayerTreeTest::DispatchAddAnimationToPlayer,
@@ -664,7 +664,7 @@ void LayerTreeTest::PostAddInstantAnimationToMainThreadPlayer(
 }
 
 void LayerTreeTest::PostAddLongAnimationToMainThreadPlayer(
-    SingleTickerAnimationPlayer* player_to_receive_animation) {
+    SingleKeyframeEffectAnimationPlayer* player_to_receive_animation) {
   main_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&LayerTreeTest::DispatchAddAnimationToPlayer,
@@ -839,7 +839,7 @@ void LayerTreeTest::RealEndTest() {
 }
 
 void LayerTreeTest::DispatchAddAnimationToPlayer(
-    SingleTickerAnimationPlayer* player_to_receive_animation,
+    SingleKeyframeEffectAnimationPlayer* player_to_receive_animation,
     double animation_duration) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 

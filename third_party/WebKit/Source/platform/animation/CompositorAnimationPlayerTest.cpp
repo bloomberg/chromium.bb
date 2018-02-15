@@ -5,11 +5,11 @@
 #include "platform/animation/CompositorAnimationPlayer.h"
 
 #include "base/time/time.h"
-#include "platform/animation/CompositorAnimation.h"
 #include "platform/animation/CompositorAnimationDelegate.h"
 #include "platform/animation/CompositorAnimationPlayerClient.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
 #include "platform/animation/CompositorFloatAnimationCurve.h"
+#include "platform/animation/CompositorKeyframeModel.h"
 #include "platform/animation/CompositorTargetProperty.h"
 #include "platform/testing/CompositorTest.h"
 
@@ -60,25 +60,27 @@ TEST_F(CompositorAnimationPlayerTest, NullDelegate) {
 
   std::unique_ptr<CompositorAnimationPlayer> player =
       CompositorAnimationPlayer::Create();
-  cc::SingleTickerAnimationPlayer* cc_player = player->CcAnimationPlayer();
+  cc::SingleKeyframeEffectAnimationPlayer* cc_player =
+      player->CcAnimationPlayer();
 
   std::unique_ptr<CompositorAnimationCurve> curve =
       CompositorFloatAnimationCurve::Create();
-  std::unique_ptr<CompositorAnimation> animation = CompositorAnimation::Create(
-      *curve, CompositorTargetProperty::TRANSFORM, 1, 0);
-  player->AddAnimation(std::move(animation));
+  std::unique_ptr<CompositorKeyframeModel> keyframe_model =
+      CompositorKeyframeModel::Create(
+          *curve, CompositorTargetProperty::TRANSFORM, 1, 0);
+  player->AddKeyframeModel(std::move(keyframe_model));
 
   player->SetAnimationDelegate(delegate.get());
   EXPECT_FALSE(delegate->finished_);
 
-  cc_player->NotifyAnimationFinishedForTesting(
+  cc_player->NotifyKeyframeModelFinishedForTesting(
       CompositorTargetProperty::TRANSFORM, 1);
   EXPECT_TRUE(delegate->finished_);
 
   delegate->ResetFlags();
 
   player->SetAnimationDelegate(nullptr);
-  cc_player->NotifyAnimationFinishedForTesting(
+  cc_player->NotifyKeyframeModelFinishedForTesting(
       CompositorTargetProperty::TRANSFORM, 1);
   EXPECT_FALSE(delegate->finished_);
 }
@@ -90,19 +92,20 @@ TEST_F(CompositorAnimationPlayerTest,
 
   std::unique_ptr<CompositorAnimationPlayer> player =
       CompositorAnimationPlayer::Create();
-  scoped_refptr<cc::SingleTickerAnimationPlayer> cc_player =
+  scoped_refptr<cc::SingleKeyframeEffectAnimationPlayer> cc_player =
       player->CcAnimationPlayer();
 
   std::unique_ptr<CompositorAnimationCurve> curve =
       CompositorFloatAnimationCurve::Create();
-  std::unique_ptr<CompositorAnimation> animation = CompositorAnimation::Create(
-      *curve, CompositorTargetProperty::OPACITY, 1, 0);
-  player->AddAnimation(std::move(animation));
+  std::unique_ptr<CompositorKeyframeModel> keyframe_model =
+      CompositorKeyframeModel::Create(*curve, CompositorTargetProperty::OPACITY,
+                                      1, 0);
+  player->AddKeyframeModel(std::move(keyframe_model));
 
   player->SetAnimationDelegate(delegate.get());
   EXPECT_FALSE(delegate->finished_);
 
-  cc_player->NotifyAnimationFinishedForTesting(
+  cc_player->NotifyKeyframeModelFinishedForTesting(
       CompositorTargetProperty::OPACITY, 1);
   EXPECT_TRUE(delegate->finished_);
   delegate->finished_ = false;
@@ -111,7 +114,7 @@ TEST_F(CompositorAnimationPlayerTest,
   player = nullptr;
 
   // No notifications. Doesn't crash.
-  cc_player->NotifyAnimationFinishedForTesting(
+  cc_player->NotifyKeyframeModelFinishedForTesting(
       CompositorTargetProperty::OPACITY, 1);
   EXPECT_FALSE(delegate->finished_);
 }
@@ -125,7 +128,7 @@ TEST_F(CompositorAnimationPlayerTest,
 
   scoped_refptr<cc::AnimationTimeline> cc_timeline =
       timeline->GetAnimationTimeline();
-  scoped_refptr<cc::SingleTickerAnimationPlayer> cc_player =
+  scoped_refptr<cc::SingleKeyframeEffectAnimationPlayer> cc_player =
       client->player_->CcAnimationPlayer();
   EXPECT_FALSE(cc_player->animation_timeline());
 

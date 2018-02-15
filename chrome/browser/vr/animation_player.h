@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "cc/animation/animation.h"
+#include "cc/animation/keyframe_model.h"
 #include "chrome/browser/vr/transition.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -24,16 +24,16 @@ class SizeF;
 
 namespace vr {
 
-// This is a simplified version of the cc::AnimationPlayer. Its sole purpose is
-// the management of its collection of animations. Ticking them, updating their
-// state, and deleting them as required.
+// This is a simplified version of the cc::AnimationPlayer. Its sole purpose
+// is the management of its collection of KeyframeModels. Ticking them, updating
+// their state, and deleting them as required.
 //
-// TODO(vollick): if cc::Animation and friends move into gfx/, then this class
-// should follow suit. As such, it should not absorb any vr-specific
+// TODO(vollick): if cc::KeyframeModel and friends move into gfx/, then this
+// class should follow suit. As such, it should not absorb any vr-specific
 // functionality.
 class AnimationPlayer final {
  public:
-  static int GetNextAnimationId();
+  static int GetNextKeyframeModelId();
   static int GetNextGroupId();
 
   AnimationPlayer();
@@ -42,14 +42,14 @@ class AnimationPlayer final {
   cc::AnimationTarget* target() const { return target_; }
   void set_target(cc::AnimationTarget* target) { target_ = target; }
 
-  void AddAnimation(std::unique_ptr<cc::Animation> animation);
-  void RemoveAnimation(int animation_id);
-  void RemoveAnimations(int target_property);
+  void AddKeyframeModel(std::unique_ptr<cc::KeyframeModel> keyframe_model);
+  void RemoveKeyframeModel(int keyframe_model_id);
+  void RemoveKeyframeModels(int target_property);
 
   void Tick(base::TimeTicks monotonic_time);
 
-  using Animations = std::vector<std::unique_ptr<cc::Animation>>;
-  const Animations& animations() { return animations_; }
+  using KeyframeModels = std::vector<std::unique_ptr<cc::KeyframeModel>>;
+  const KeyframeModels& keyframe_models() { return keyframe_models_; }
 
   // The transition is analogous to CSS transitions. When configured, the
   // transition object will cause subsequent calls the corresponding
@@ -92,20 +92,21 @@ class AnimationPlayer final {
   SkColor GetTargetColorValue(int target_property, SkColor default_value) const;
 
  private:
-  void StartAnimations(base::TimeTicks monotonic_time);
+  void StartKeyframeModels(base::TimeTicks monotonic_time);
   template <typename ValueType>
   void TransitionValueTo(base::TimeTicks monotonic_time,
                          int target_property,
                          const ValueType& current,
                          const ValueType& target);
-  cc::Animation* GetRunningAnimationForProperty(int target_property) const;
-  cc::Animation* GetAnimationForProperty(int target_property) const;
+  cc::KeyframeModel* GetRunningKeyframeModelForProperty(
+      int target_property) const;
+  cc::KeyframeModel* GetKeyframeModelForProperty(int target_property) const;
   template <typename ValueType>
   ValueType GetTargetValue(int target_property,
                            const ValueType& default_value) const;
 
   cc::AnimationTarget* target_ = nullptr;
-  Animations animations_;
+  KeyframeModels keyframe_models_;
   Transition transition_;
 
   DISALLOW_COPY_AND_ASSIGN(AnimationPlayer);

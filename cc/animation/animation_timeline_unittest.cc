@@ -6,7 +6,7 @@
 
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
-#include "cc/animation/single_ticker_animation_player.h"
+#include "cc/animation/single_keyframe_effect_animation_player.h"
 #include "cc/test/animation_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,8 +34,8 @@ TEST(AnimationTimelineTest, SyncPlayersAttachDetach) {
   host_impl->AddAnimationTimeline(timeline_impl.get());
   EXPECT_TRUE(timeline_impl->animation_host());
 
-  scoped_refptr<SingleTickerAnimationPlayer> player(
-      SingleTickerAnimationPlayer::Create(player_id));
+  scoped_refptr<SingleKeyframeEffectAnimationPlayer> player(
+      SingleKeyframeEffectAnimationPlayer::Create(player_id));
   timeline->AttachPlayer(player.get());
   EXPECT_TRUE(player->animation_timeline());
 
@@ -79,11 +79,11 @@ TEST(AnimationTimelineTest, ClearPlayers) {
   host->AddAnimationTimeline(timeline.get());
   host_impl->AddAnimationTimeline(timeline_impl.get());
 
-  scoped_refptr<SingleTickerAnimationPlayer> player1(
-      SingleTickerAnimationPlayer::Create(player_id1));
+  scoped_refptr<SingleKeyframeEffectAnimationPlayer> player1(
+      SingleKeyframeEffectAnimationPlayer::Create(player_id1));
   timeline->AttachPlayer(player1.get());
-  scoped_refptr<SingleTickerAnimationPlayer> player2(
-      SingleTickerAnimationPlayer::Create(player_id2));
+  scoped_refptr<SingleKeyframeEffectAnimationPlayer> player2(
+      SingleKeyframeEffectAnimationPlayer::Create(player_id2));
   timeline->AttachPlayer(player2.get());
 
   timeline->PushPropertiesTo(timeline_impl.get());

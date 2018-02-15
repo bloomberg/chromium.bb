@@ -6,10 +6,10 @@
 
 #include <memory>
 #include "cc/animation/scroll_offset_animation_curve.h"
-#include "platform/animation/CompositorAnimation.h"
 #include "platform/animation/CompositorAnimationHost.h"
 #include "platform/animation/CompositorAnimationPlayer.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
+#include "platform/animation/CompositorKeyframeModel.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/scroll/ScrollableArea.h"
@@ -72,9 +72,9 @@ bool ScrollAnimatorCompositorCoordinator::HasAnimationThatRequiresService()
 }
 
 bool ScrollAnimatorCompositorCoordinator::AddAnimation(
-    std::unique_ptr<CompositorAnimation> animation) {
+    std::unique_ptr<CompositorKeyframeModel> keyframe_model) {
   if (compositor_player_->IsElementAttached()) {
-    compositor_player_->AddAnimation(std::move(animation));
+    compositor_player_->AddKeyframeModel(std::move(keyframe_model));
     return true;
   }
   return false;
@@ -82,12 +82,12 @@ bool ScrollAnimatorCompositorCoordinator::AddAnimation(
 
 void ScrollAnimatorCompositorCoordinator::RemoveAnimation() {
   if (compositor_player_->IsElementAttached())
-    compositor_player_->RemoveAnimation(compositor_animation_id_);
+    compositor_player_->RemoveKeyframeModel(compositor_animation_id_);
 }
 
 void ScrollAnimatorCompositorCoordinator::AbortAnimation() {
   if (compositor_player_->IsElementAttached())
-    compositor_player_->AbortAnimation(compositor_animation_id_);
+    compositor_player_->AbortKeyframeModel(compositor_animation_id_);
 }
 
 void ScrollAnimatorCompositorCoordinator::CancelAnimation() {

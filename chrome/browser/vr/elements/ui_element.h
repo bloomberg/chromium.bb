@@ -40,7 +40,7 @@ class WebGestureEvent;
 
 namespace vr {
 
-class Animation;
+class KeyframeModel;
 class SkiaSurfaceProvider;
 class UiElementRenderer;
 struct CameraModel;
@@ -357,20 +357,20 @@ class UiElement : public cc::AnimationTarget {
   // cc::AnimationTarget
   void NotifyClientFloatAnimated(float value,
                                  int target_property_id,
-                                 cc::Animation* animation) override;
+                                 cc::KeyframeModel* keyframe_model) override;
   void NotifyClientTransformOperationsAnimated(
       const cc::TransformOperations& operations,
       int target_property_id,
-      cc::Animation* animation) override;
+      cc::KeyframeModel* keyframe_model) override;
   void NotifyClientSizeAnimated(const gfx::SizeF& size,
                                 int target_property_id,
-                                cc::Animation* animation) override;
+                                cc::KeyframeModel* keyframe_model) override;
 
   void SetTransitionedProperties(const std::set<TargetProperty>& properties);
   void SetTransitionDuration(base::TimeDelta delta);
 
-  void AddAnimation(std::unique_ptr<cc::Animation> animation);
-  void RemoveAnimation(int animation_id);
+  void AddKeyframeModel(std::unique_ptr<cc::KeyframeModel> keyframe_model);
+  void RemoveKeyframeModel(int keyframe_model_id);
   bool IsAnimatingProperty(TargetProperty property) const;
 
   void DoLayOutChildren();

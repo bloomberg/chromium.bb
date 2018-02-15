@@ -21,7 +21,8 @@ class TestLayerThreadedAnimationDelegate
   ~TestLayerThreadedAnimationDelegate() override;
 
   // Implementation of LayerThreadedAnimationDelegate
-  void AddThreadedAnimation(std::unique_ptr<cc::Animation> animation) override;
+  void AddThreadedAnimation(
+      std::unique_ptr<cc::KeyframeModel> animation) override;
   void RemoveThreadedAnimation(int animation_id) override;
 };
 

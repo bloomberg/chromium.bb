@@ -50,7 +50,7 @@ void Keyboard::HitTest(const HitTestRequest& request,
 
 void Keyboard::NotifyClientFloatAnimated(float value,
                                          int target_property_id,
-                                         cc::Animation* animation) {
+                                         cc::KeyframeModel* animation) {
   DCHECK(target_property_id == OPACITY);
   UiElement::NotifyClientFloatAnimated(value, target_property_id, animation);
   UpdateDelegateVisibility();

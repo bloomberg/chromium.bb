@@ -6,15 +6,15 @@
 
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_timeline.h"
-#include "platform/animation/CompositorAnimation.h"
 #include "platform/animation/CompositorAnimationDelegate.h"
+#include "platform/animation/CompositorKeyframeModel.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
 std::unique_ptr<CompositorAnimationPlayer> CompositorAnimationPlayer::Create() {
   return std::make_unique<CompositorAnimationPlayer>(
-      cc::SingleTickerAnimationPlayer::Create(
+      cc::SingleKeyframeEffectAnimationPlayer::Create(
           cc::AnimationIdProvider::NextPlayerId()));
 }
 
@@ -30,7 +30,7 @@ CompositorAnimationPlayer::CreateWorkletPlayer(
 }
 
 CompositorAnimationPlayer::CompositorAnimationPlayer(
-    scoped_refptr<cc::SingleTickerAnimationPlayer> player)
+    scoped_refptr<cc::SingleKeyframeEffectAnimationPlayer> player)
     : animation_player_(player), delegate_() {}
 
 CompositorAnimationPlayer::~CompositorAnimationPlayer() {
@@ -41,8 +41,8 @@ CompositorAnimationPlayer::~CompositorAnimationPlayer() {
     animation_player_->animation_timeline()->DetachPlayer(animation_player_);
 }
 
-cc::SingleTickerAnimationPlayer* CompositorAnimationPlayer::CcAnimationPlayer()
-    const {
+cc::SingleKeyframeEffectAnimationPlayer*
+CompositorAnimationPlayer::CcAnimationPlayer() const {
   return animation_player_.get();
 }
 
@@ -64,22 +64,22 @@ bool CompositorAnimationPlayer::IsElementAttached() const {
   return !!animation_player_->element_id();
 }
 
-void CompositorAnimationPlayer::AddAnimation(
-    std::unique_ptr<CompositorAnimation> animation) {
-  animation_player_->AddAnimation(animation->ReleaseCcAnimation());
+void CompositorAnimationPlayer::AddKeyframeModel(
+    std::unique_ptr<CompositorKeyframeModel> keyframe_model) {
+  animation_player_->AddKeyframeModel(keyframe_model->ReleaseCcKeyframeModel());
 }
 
-void CompositorAnimationPlayer::RemoveAnimation(int animation_id) {
-  animation_player_->RemoveAnimation(animation_id);
+void CompositorAnimationPlayer::RemoveKeyframeModel(int keyframe_model_id) {
+  animation_player_->RemoveKeyframeModel(keyframe_model_id);
 }
 
-void CompositorAnimationPlayer::PauseAnimation(int animation_id,
-                                               double time_offset) {
-  animation_player_->PauseAnimation(animation_id, time_offset);
+void CompositorAnimationPlayer::PauseKeyframeModel(int keyframe_model_id,
+                                                   double time_offset) {
+  animation_player_->PauseKeyframeModel(keyframe_model_id, time_offset);
 }
 
-void CompositorAnimationPlayer::AbortAnimation(int animation_id) {
-  animation_player_->AbortAnimation(animation_id);
+void CompositorAnimationPlayer::AbortKeyframeModel(int keyframe_model_id) {
+  animation_player_->AbortKeyframeModel(keyframe_model_id);
 }
 
 void CompositorAnimationPlayer::NotifyAnimationStarted(

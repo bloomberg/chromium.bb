@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/null_task_runner.h"
-#include "cc/animation/single_ticker_animation_player.h"
+#include "cc/animation/single_keyframe_effect_animation_player.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
@@ -186,7 +186,7 @@ TEST_F(LayerOwnerTestWithCompositor, DetachTimelineOnAnimatorDeletion) {
   layer->SetOpacity(0.5f);
   root_layer->Add(layer);
 
-  scoped_refptr<cc::SingleTickerAnimationPlayer> player =
+  scoped_refptr<cc::SingleKeyframeEffectAnimationPlayer> player =
       layer->GetAnimator()->GetAnimationPlayerForTesting();
   EXPECT_TRUE(player);
   EXPECT_TRUE(player->animation_timeline());
@@ -209,7 +209,7 @@ TEST_F(LayerOwnerTestWithCompositor,
 
   layer->SetOpacity(0.5f);
 
-  scoped_refptr<cc::SingleTickerAnimationPlayer> player =
+  scoped_refptr<cc::SingleKeyframeEffectAnimationPlayer> player =
       layer->GetAnimator()->GetAnimationPlayerForTesting();
   EXPECT_TRUE(player);
   EXPECT_TRUE(player->animation_timeline());

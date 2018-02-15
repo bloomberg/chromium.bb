@@ -30,7 +30,7 @@ void Rect::SetEdgeColor(SkColor color) {
 
 void Rect::NotifyClientColorAnimated(SkColor color,
                                      int target_property_id,
-                                     cc::Animation* animation) {
+                                     cc::KeyframeModel* animation) {
   if (target_property_id == BACKGROUND_COLOR) {
     center_color_ = color;
   } else if (target_property_id == FOREGROUND_COLOR) {

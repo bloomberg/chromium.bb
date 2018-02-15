@@ -63,7 +63,7 @@ void DiscButton::OnSetName() {
 
 void DiscButton::NotifyClientSizeAnimated(const gfx::SizeF& size,
                                           int target_property_id,
-                                          cc::Animation* animation) {
+                                          cc::KeyframeModel* animation) {
   Button::NotifyClientSizeAnimated(size, target_property_id, animation);
   if (target_property_id == BOUNDS) {
     background()->SetSize(size.width(), size.height());

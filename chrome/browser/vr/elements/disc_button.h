@@ -33,7 +33,7 @@ class DiscButton : public Button {
   void OnSetName() override;
   void NotifyClientSizeAnimated(const gfx::SizeF& size,
                                 int target_property_id,
-                                cc::Animation* animation) override;
+                                cc::KeyframeModel* keyframe_model) override;
 
   VectorIcon* foreground_;
   DISALLOW_COPY_AND_ASSIGN(DiscButton);

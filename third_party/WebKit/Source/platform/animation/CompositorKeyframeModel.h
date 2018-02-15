@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CompositorAnimation_h
-#define CompositorAnimation_h
+#ifndef CompositorKeyframeModel_h
+#define CompositorKeyframeModel_h
 
 #include <memory>
-#include "cc/animation/animation.h"
+#include "cc/animation/keyframe_model.h"
 #include "platform/PlatformExport.h"
 #include "platform/animation/CompositorTargetProperty.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace cc {
-class Animation;
+class KeyframeModel;
 }
 
 namespace blink {
@@ -22,23 +22,23 @@ class CompositorAnimationCurve;
 class CompositorFloatAnimationCurve;
 
 // A compositor driven animation.
-class PLATFORM_EXPORT CompositorAnimation {
-  WTF_MAKE_NONCOPYABLE(CompositorAnimation);
+class PLATFORM_EXPORT CompositorKeyframeModel {
+  WTF_MAKE_NONCOPYABLE(CompositorKeyframeModel);
 
  public:
-  using Direction = cc::Animation::Direction;
-  using FillMode = cc::Animation::FillMode;
+  using Direction = cc::KeyframeModel::Direction;
+  using FillMode = cc::KeyframeModel::FillMode;
 
-  static std::unique_ptr<CompositorAnimation> Create(
+  static std::unique_ptr<CompositorKeyframeModel> Create(
       const blink::CompositorAnimationCurve& curve,
       CompositorTargetProperty::Type target,
       int group_id,
       int animation_id) {
     return WTF::WrapUnique(
-        new CompositorAnimation(curve, target, animation_id, group_id));
+        new CompositorKeyframeModel(curve, target, animation_id, group_id));
   }
 
-  ~CompositorAnimation();
+  ~CompositorKeyframeModel();
 
   // An id must be unique.
   int Id() const;
@@ -70,19 +70,19 @@ class PLATFORM_EXPORT CompositorAnimation {
   double IterationStart() const;
   void SetIterationStart(double);
 
-  std::unique_ptr<cc::Animation> ReleaseCcAnimation();
+  std::unique_ptr<cc::KeyframeModel> ReleaseCcKeyframeModel();
 
   std::unique_ptr<CompositorFloatAnimationCurve> FloatCurveForTesting() const;
 
  private:
-  CompositorAnimation(const CompositorAnimationCurve&,
-                      CompositorTargetProperty::Type,
-                      int animation_id,
-                      int group_id);
+  CompositorKeyframeModel(const CompositorAnimationCurve&,
+                          CompositorTargetProperty::Type,
+                          int animation_id,
+                          int group_id);
 
-  std::unique_ptr<cc::Animation> animation_;
+  std::unique_ptr<cc::KeyframeModel> keyframe_model_;
 };
 
 }  // namespace blink
 
-#endif  // CompositorAnimation_h
+#endif  // CompositorKeyframeModel_h

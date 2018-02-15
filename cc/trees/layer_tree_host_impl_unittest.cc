@@ -12082,7 +12082,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedAborted) {
 
   // The instant scroll should have marked the smooth scroll animation as
   // aborted.
-  EXPECT_FALSE(GetImplAnimationHost()->HasTickingAnimationForTesting(
+  EXPECT_FALSE(GetImplAnimationHost()->HasTickingKeyframeModelForTesting(
       scrolling_layer->element_id()));
 
   EXPECT_VECTOR2DF_EQ(gfx::ScrollOffset(0, y + 50),

@@ -5,7 +5,7 @@
 #include "platform/scroll/ProgrammaticScrollAnimator.h"
 
 #include <memory>
-#include "platform/animation/CompositorAnimation.h"
+#include "platform/animation/CompositorKeyframeModel.h"
 #include "platform/animation/CompositorScrollOffsetAnimationCurve.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -134,8 +134,8 @@ void ProgrammaticScrollAnimator::UpdateCompositorAnimations() {
     // crbug.com/730705
     if (!scrollable_area_->ShouldScrollOnMainThread() &&
         !is_sequenced_scroll_) {
-      std::unique_ptr<CompositorAnimation> animation =
-          CompositorAnimation::Create(
+      std::unique_ptr<CompositorKeyframeModel> animation =
+          CompositorKeyframeModel::Create(
               *animation_curve_, CompositorTargetProperty::SCROLL_OFFSET, 0, 0);
 
       int animation_id = animation->Id();

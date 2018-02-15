@@ -8,9 +8,9 @@
 #include <memory>
 #include <unordered_map>
 
-#include "cc/animation/animation.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_host.h"
+#include "cc/animation/keyframe_model.h"
 #include "cc/trees/mutator_host_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/scroll_offset.h"
@@ -18,8 +18,8 @@
 
 namespace cc {
 
-class AnimationTicker;
-class SingleTickerAnimationPlayer;
+class KeyframeEffect;
+class SingleKeyframeEffectAnimationPlayer;
 
 class TestLayer {
  public:
@@ -252,12 +252,13 @@ class AnimationTimelinesTest : public testing::Test {
   void TickAnimationsTransferEvents(base::TimeTicks time,
                                     unsigned expect_events);
 
-  AnimationTicker* GetTickerForElementId(ElementId element_id);
-  AnimationTicker* GetImplTickerForLayerId(ElementId element_id);
+  KeyframeEffect* GetKeyframeEffectForElementId(ElementId element_id);
+  KeyframeEffect* GetImplKeyframeEffectForLayerId(ElementId element_id);
 
   int NextTestLayerId();
 
-  bool CheckTickerTimelineNeedsPushProperties(bool needs_push_properties) const;
+  bool CheckKeyframeEffectTimelineNeedsPushProperties(
+      bool needs_push_properties) const;
 
   void PushProperties();
 
@@ -274,11 +275,11 @@ class AnimationTimelinesTest : public testing::Test {
   int next_test_layer_id_;
 
   scoped_refptr<AnimationTimeline> timeline_;
-  scoped_refptr<SingleTickerAnimationPlayer> player_;
+  scoped_refptr<SingleKeyframeEffectAnimationPlayer> player_;
   scoped_refptr<ElementAnimations> element_animations_;
 
   scoped_refptr<AnimationTimeline> timeline_impl_;
-  scoped_refptr<SingleTickerAnimationPlayer> player_impl_;
+  scoped_refptr<SingleKeyframeEffectAnimationPlayer> player_impl_;
   scoped_refptr<ElementAnimations> element_animations_impl_;
 };
 

@@ -15,7 +15,7 @@
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/keyframed_animation_curve.h"
-#include "cc/animation/single_ticker_animation_player.h"
+#include "cc/animation/single_keyframe_effect_animation_player.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/base/math_util.h"
 #include "cc/input/main_thread_scrolling_reason.h"
@@ -2194,13 +2194,13 @@ TEST_F(LayerTreeHostCommonTest,
   SetElementIdsForTesting();
 
   // Add a transform animation with a start delay to |grand_child|.
-  std::unique_ptr<Animation> animation = Animation::Create(
+  std::unique_ptr<KeyframeModel> keyframe_model = KeyframeModel::Create(
       std::unique_ptr<AnimationCurve>(new FakeTransformTransition(1.0)), 0, 1,
       TargetProperty::TRANSFORM);
-  animation->set_fill_mode(Animation::FillMode::NONE);
-  animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
-  AddAnimationToElementWithPlayer(grand_child->element_id(), timeline_impl(),
-                                  std::move(animation));
+  keyframe_model->set_fill_mode(KeyframeModel::FillMode::NONE);
+  keyframe_model->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
+  AddKeyframeModelToElementWithPlayer(
+      grand_child->element_id(), timeline_impl(), std::move(keyframe_model));
   ExecuteCalculateDrawProperties(root);
 
   EXPECT_FALSE(root->screen_space_transform_is_animating());
@@ -7328,23 +7328,27 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
 
   host_impl.active_tree()->SetElementIdsForTesting();
 
-  scoped_refptr<SingleTickerAnimationPlayer> grand_parent_player =
-      SingleTickerAnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  scoped_refptr<SingleKeyframeEffectAnimationPlayer> grand_parent_player =
+      SingleKeyframeEffectAnimationPlayer::Create(
+          AnimationIdProvider::NextPlayerId());
   timeline->AttachPlayer(grand_parent_player);
   grand_parent_player->AttachElement(grand_parent_raw->element_id());
 
-  scoped_refptr<SingleTickerAnimationPlayer> parent_player =
-      SingleTickerAnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  scoped_refptr<SingleKeyframeEffectAnimationPlayer> parent_player =
+      SingleKeyframeEffectAnimationPlayer::Create(
+          AnimationIdProvider::NextPlayerId());
   timeline->AttachPlayer(parent_player);
   parent_player->AttachElement(parent_raw->element_id());
 
-  scoped_refptr<SingleTickerAnimationPlayer> child_player =
-      SingleTickerAnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  scoped_refptr<SingleKeyframeEffectAnimationPlayer> child_player =
+      SingleKeyframeEffectAnimationPlayer::Create(
+          AnimationIdProvider::NextPlayerId());
   timeline->AttachPlayer(child_player);
   child_player->AttachElement(child_raw->element_id());
 
-  scoped_refptr<SingleTickerAnimationPlayer> grand_child_player =
-      SingleTickerAnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  scoped_refptr<SingleKeyframeEffectAnimationPlayer> grand_child_player =
+      SingleKeyframeEffectAnimationPlayer::Create(
+          AnimationIdProvider::NextPlayerId());
   timeline->AttachPlayer(grand_child_player);
   grand_child_player->AttachElement(grand_child_raw->element_id());
 
@@ -7415,9 +7419,9 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   EXPECT_EQ(0.f, GetStartingAnimationScale(child_raw));
   EXPECT_EQ(0.f, GetStartingAnimationScale(grand_child_raw));
 
-  grand_parent_player->AbortAnimations(TargetProperty::TRANSFORM, false);
-  parent_player->AbortAnimations(TargetProperty::TRANSFORM, false);
-  child_player->AbortAnimations(TargetProperty::TRANSFORM, false);
+  grand_parent_player->AbortKeyframeModels(TargetProperty::TRANSFORM, false);
+  parent_player->AbortKeyframeModels(TargetProperty::TRANSFORM, false);
+  child_player->AbortKeyframeModels(TargetProperty::TRANSFORM, false);
 
   TransformOperations perspective;
   perspective.AppendPerspective(10.f);
@@ -7439,7 +7443,7 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   EXPECT_EQ(0.f, GetStartingAnimationScale(child_raw));
   EXPECT_EQ(0.f, GetStartingAnimationScale(grand_child_raw));
 
-  child_player->AbortAnimations(TargetProperty::TRANSFORM, false);
+  child_player->AbortKeyframeModels(TargetProperty::TRANSFORM, false);
 
   gfx::Transform scale_matrix;
   scale_matrix.Scale(1.f, 2.f);
@@ -8181,17 +8185,19 @@ TEST_F(LayerTreeHostCommonTest,
       LayerImpl::Create(host_impl()->pending_tree(), 4);
   LayerImpl* surface = surface_ptr.get();
   animated->test_properties()->AddChild(std::move(surface_ptr));
-  std::unique_ptr<LayerImpl> descendant_of_animation_ptr =
+  std::unique_ptr<LayerImpl> descendant_of_keyframe_model_ptr =
       LayerImpl::Create(host_impl()->pending_tree(), 5);
-  LayerImpl* descendant_of_animation = descendant_of_animation_ptr.get();
-  surface->test_properties()->AddChild(std::move(descendant_of_animation_ptr));
+  LayerImpl* descendant_of_keyframe_model =
+      descendant_of_keyframe_model_ptr.get();
+  surface->test_properties()->AddChild(
+      std::move(descendant_of_keyframe_model_ptr));
 
   host_impl()->pending_tree()->SetElementIdsForTesting();
 
   root->SetDrawsContent(true);
   animated->SetDrawsContent(true);
   surface->SetDrawsContent(true);
-  descendant_of_animation->SetDrawsContent(true);
+  descendant_of_keyframe_model->SetDrawsContent(true);
 
   gfx::Transform uninvertible_matrix;
   uninvertible_matrix.Scale3d(6.f, 6.f, 0.f);
@@ -8203,7 +8209,7 @@ TEST_F(LayerTreeHostCommonTest,
   animated->SetBounds(gfx::Size(120, 120));
   surface->SetBounds(gfx::Size(100, 100));
   surface->test_properties()->force_render_surface = true;
-  descendant_of_animation->SetBounds(gfx::Size(200, 200));
+  descendant_of_keyframe_model->SetBounds(gfx::Size(200, 200));
 
   TransformOperations start_transform_operations;
   start_transform_operations.AppendMatrix(uninvertible_matrix);
@@ -8225,7 +8231,8 @@ TEST_F(LayerTreeHostCommonTest,
   // The singular transform on |animated| is flattened when inherited by
   // |surface|, and this happens to make it invertible.
   EXPECT_EQ(gfx::Rect(2, 2), surface->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(2, 2), descendant_of_animation->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(2, 2),
+            descendant_of_keyframe_model->visible_layer_rect());
 
   gfx::Transform zero_matrix;
   zero_matrix.Scale3d(0.f, 0.f, 0.f);
@@ -8241,7 +8248,8 @@ TEST_F(LayerTreeHostCommonTest,
   // means the clip cannot be projected into |surface|'s space, so we treat
   // |surface| and layers that draw into it as having empty visible rect.
   EXPECT_EQ(gfx::Rect(100, 100), surface->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(200, 200), descendant_of_animation->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(200, 200),
+            descendant_of_keyframe_model->visible_layer_rect());
 
   host_impl()->ActivateSyncTree();
   LayerImpl* active_root = host_impl()->active_tree()->LayerById(root->id());
@@ -8345,13 +8353,13 @@ TEST_F(LayerTreeHostCommonTest, DelayedFilterAnimationCreatesRenderSurface) {
       FilterKeyframe::Create(base::TimeDelta(), start_filters, nullptr));
   curve->AddKeyframe(FilterKeyframe::Create(
       base::TimeDelta::FromMilliseconds(100), end_filters, nullptr));
-  std::unique_ptr<Animation> animation =
-      Animation::Create(std::move(curve), 0, 1, TargetProperty::FILTER);
-  animation->set_fill_mode(Animation::FillMode::NONE);
-  animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
+  std::unique_ptr<KeyframeModel> keyframe_model =
+      KeyframeModel::Create(std::move(curve), 0, 1, TargetProperty::FILTER);
+  keyframe_model->set_fill_mode(KeyframeModel::FillMode::NONE);
+  keyframe_model->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
 
-  AddAnimationToElementWithPlayer(child->element_id(), timeline_impl(),
-                                  std::move(animation));
+  AddKeyframeModelToElementWithPlayer(child->element_id(), timeline_impl(),
+                                      std::move(keyframe_model));
   ExecuteCalculateDrawProperties(root);
 
   EXPECT_TRUE(GetRenderSurface(root));
@@ -8644,20 +8652,20 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
 
   // Add a transform animation with a start delay. Now, even though |child| has
   // a singular transform, the subtree should still get processed.
-  int animation_id = 0;
-  std::unique_ptr<Animation> animation = Animation::Create(
+  int keyframe_model_id = 0;
+  std::unique_ptr<KeyframeModel> keyframe_model = KeyframeModel::Create(
       std::unique_ptr<AnimationCurve>(new FakeTransformTransition(1.0)),
-      animation_id, 1, TargetProperty::TRANSFORM);
-  animation->set_fill_mode(Animation::FillMode::NONE);
-  animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
-  AddAnimationToElementWithPlayer(child->element_id(), timeline(),
-                                  std::move(animation));
+      keyframe_model_id, 1, TargetProperty::TRANSFORM);
+  keyframe_model->set_fill_mode(KeyframeModel::FillMode::NONE);
+  keyframe_model->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
+  AddKeyframeModelToElementWithPlayer(child->element_id(), timeline(),
+                                      std::move(keyframe_model));
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
   update_list = GetUpdateLayerList();
   EXPECT_TRUE(VerifyLayerInList(grandchild, update_list));
 
-  RemoveAnimationFromElementWithExistingTicker(child->element_id(), timeline(),
-                                               animation_id);
+  RemoveKeyframeModelFromElementWithExistingKeyframeEffect(
+      child->element_id(), timeline(), keyframe_model_id);
   child->SetTransform(gfx::Transform());
   child->SetOpacity(0.f);
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
@@ -8674,14 +8682,14 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   EXPECT_TRUE(VerifyLayerInList(grandchild, update_list));
 
   // Add an opacity animation with a start delay.
-  animation_id = 1;
-  animation = Animation::Create(
+  keyframe_model_id = 1;
+  keyframe_model = KeyframeModel::Create(
       std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)),
-      animation_id, 1, TargetProperty::OPACITY);
-  animation->set_fill_mode(Animation::FillMode::NONE);
-  animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
-  AddAnimationToElementWithExistingTicker(child->element_id(), timeline(),
-                                          std::move(animation));
+      keyframe_model_id, 1, TargetProperty::OPACITY);
+  keyframe_model->set_fill_mode(KeyframeModel::FillMode::NONE);
+  keyframe_model->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
+  AddKeyframeModelToElementWithExistingKeyframeEffect(
+      child->element_id(), timeline(), std::move(keyframe_model));
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
   update_list = GetUpdateLayerList();
   EXPECT_TRUE(VerifyLayerInList(grandchild, update_list));
@@ -8811,16 +8819,16 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
       TransformKeyframe::Create(base::TimeDelta(), start, nullptr));
   curve->AddKeyframe(TransformKeyframe::Create(
       base::TimeDelta::FromSecondsD(1.0), operation, nullptr));
-  std::unique_ptr<Animation> transform_animation(
-      Animation::Create(std::move(curve), 3, 3, TargetProperty::TRANSFORM));
-  scoped_refptr<SingleTickerAnimationPlayer> player(
-      SingleTickerAnimationPlayer::Create(1));
+  std::unique_ptr<KeyframeModel> transform_animation(
+      KeyframeModel::Create(std::move(curve), 3, 3, TargetProperty::TRANSFORM));
+  scoped_refptr<SingleKeyframeEffectAnimationPlayer> player(
+      SingleKeyframeEffectAnimationPlayer::Create(1));
   timeline()->AttachPlayer(player);
   // TODO(smcgruer): Should attach a timeline and element rather than call this
   // directly. See http://crbug.com/771316
-  host_impl.animation_host()->RegisterTickerForElement(
-      root_ptr->element_id(), player->animation_ticker());
-  player->AddAnimation(std::move(transform_animation));
+  host_impl.animation_host()->RegisterKeyframeEffectForElement(
+      root_ptr->element_id(), player->keyframe_effect());
+  player->AddKeyframeModel(std::move(transform_animation));
   grandchild_ptr->set_visible_layer_rect(gfx::Rect());
   root_ptr->test_properties()->transform = singular;
   child_ptr->test_properties()->transform = singular;
@@ -8828,8 +8836,8 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root_ptr);
   EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
 
-  host_impl.animation_host()->UnregisterTickerForElement(
-      root_ptr->element_id(), player->animation_ticker());
+  host_impl.animation_host()->UnregisterKeyframeEffectForElement(
+      root_ptr->element_id(), player->keyframe_effect());
   host_impl.animation_host()->RemoveFromTicking(player.get());
   timeline()->DetachPlayer(player);
 }
@@ -8864,23 +8872,23 @@ TEST_F(LayerTreeHostCommonTest, LayerSkippingInSubtreeOfSingularTransform) {
       TransformKeyframe::Create(base::TimeDelta(), start, nullptr));
   curve->AddKeyframe(TransformKeyframe::Create(
       base::TimeDelta::FromSecondsD(1.0), operation, nullptr));
-  std::unique_ptr<Animation> transform_animation(
-      Animation::Create(std::move(curve), 3, 3, TargetProperty::TRANSFORM));
-  scoped_refptr<SingleTickerAnimationPlayer> player(
-      SingleTickerAnimationPlayer::Create(1));
+  std::unique_ptr<KeyframeModel> transform_animation(
+      KeyframeModel::Create(std::move(curve), 3, 3, TargetProperty::TRANSFORM));
+  scoped_refptr<SingleKeyframeEffectAnimationPlayer> player(
+      SingleKeyframeEffectAnimationPlayer::Create(1));
   timeline()->AttachPlayer(player);
   // TODO(smcgruer): Should attach a timeline and element rather than call this
   // directly. See http://crbug.com/771316
-  host_impl()->animation_host()->RegisterTickerForElement(
-      grand_child->element_id(), player->animation_ticker());
-  player->AddAnimation(std::move(transform_animation));
+  host_impl()->animation_host()->RegisterKeyframeEffectForElement(
+      grand_child->element_id(), player->keyframe_effect());
+  player->AddKeyframeModel(std::move(transform_animation));
 
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(0, 0), grand_child->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(0, 0), child->visible_layer_rect());
 
-  host_impl()->animation_host()->UnregisterTickerForElement(
-      grand_child->element_id(), player->animation_ticker());
+  host_impl()->animation_host()->UnregisterKeyframeEffectForElement(
+      grand_child->element_id(), player->keyframe_effect());
   host_impl()->animation_host()->RemoveFromTicking(player.get());
   timeline()->DetachPlayer(player);
 }
@@ -8930,24 +8938,24 @@ TEST_F(LayerTreeHostCommonTest, SkippingPendingLayerImpl) {
       FloatKeyframe::Create(base::TimeDelta(), 0.9f, std::move(func)));
   curve->AddKeyframe(
       FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.0), 0.3f, nullptr));
-  std::unique_ptr<Animation> animation(
-      Animation::Create(std::move(curve), 3, 3, TargetProperty::OPACITY));
-  scoped_refptr<SingleTickerAnimationPlayer> player(
-      SingleTickerAnimationPlayer::Create(1));
+  std::unique_ptr<KeyframeModel> keyframe_model(
+      KeyframeModel::Create(std::move(curve), 3, 3, TargetProperty::OPACITY));
+  scoped_refptr<SingleKeyframeEffectAnimationPlayer> player(
+      SingleKeyframeEffectAnimationPlayer::Create(1));
   timeline()->AttachPlayer(player);
   // TODO(smcgruer): Should attach a timeline and element rather than call this
   // directly. See http://crbug.com/771316
-  host_impl.animation_host()->RegisterTickerForElement(
-      root_ptr->element_id(), player->animation_ticker());
-  player->AddAnimation(std::move(animation));
+  host_impl.animation_host()->RegisterKeyframeEffectForElement(
+      root_ptr->element_id(), player->keyframe_effect());
+  player->AddKeyframeModel(std::move(keyframe_model));
   root_ptr->test_properties()->opacity = 0.f;
   grandchild_ptr->set_visible_layer_rect(gfx::Rect());
   root_ptr->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root_ptr);
   EXPECT_EQ(gfx::Rect(10, 10), grandchild_ptr->visible_layer_rect());
 
-  host_impl.animation_host()->UnregisterTickerForElement(
-      root_ptr->element_id(), player->animation_ticker());
+  host_impl.animation_host()->UnregisterKeyframeEffectForElement(
+      root_ptr->element_id(), player->keyframe_effect());
   host_impl.animation_host()->RemoveFromTicking(player.get());
   timeline()->DetachPlayer(player);
 }
@@ -9766,21 +9774,22 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimationsTrackingTest) {
   animated->SetBounds(gfx::Size(20, 20));
   animated->SetOpacity(0.f);
 
-  scoped_refptr<SingleTickerAnimationPlayer> player =
-      SingleTickerAnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  scoped_refptr<SingleKeyframeEffectAnimationPlayer> player =
+      SingleKeyframeEffectAnimationPlayer::Create(
+          AnimationIdProvider::NextPlayerId());
   timeline()->AttachPlayer(player);
 
   player->AttachElement(animated->element_id());
 
-  int animation_id = 0;
-  std::unique_ptr<Animation> animation = Animation::Create(
+  int keyframe_model_id = 0;
+  std::unique_ptr<KeyframeModel> keyframe_model = KeyframeModel::Create(
       std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)),
-      animation_id, 1, TargetProperty::OPACITY);
-  animation->set_fill_mode(Animation::FillMode::NONE);
-  animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
-  Animation* animation_ptr = animation.get();
-  AddAnimationToElementWithExistingTicker(animated->element_id(), timeline(),
-                                          std::move(animation));
+      keyframe_model_id, 1, TargetProperty::OPACITY);
+  keyframe_model->set_fill_mode(KeyframeModel::FillMode::NONE);
+  keyframe_model->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
+  KeyframeModel* keyframe_model_ptr = keyframe_model.get();
+  AddKeyframeModelToElementWithExistingKeyframeEffect(
+      animated->element_id(), timeline(), std::move(keyframe_model));
 
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
 
@@ -9789,13 +9798,14 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimationsTrackingTest) {
   EXPECT_FALSE(node->is_currently_animating_opacity);
   EXPECT_TRUE(node->has_potential_opacity_animation);
 
-  animation_ptr->set_time_offset(base::TimeDelta::FromMilliseconds(0));
+  keyframe_model_ptr->set_time_offset(base::TimeDelta::FromMilliseconds(0));
   host()->AnimateLayers(base::TimeTicks::Max());
   node = tree.Node(animated->effect_tree_index());
   EXPECT_TRUE(node->is_currently_animating_opacity);
   EXPECT_TRUE(node->has_potential_opacity_animation);
 
-  player->AbortAnimations(TargetProperty::OPACITY, false /*needs_completion*/);
+  player->AbortKeyframeModels(TargetProperty::OPACITY,
+                              false /*needs_completion*/);
   node = tree.Node(animated->effect_tree_index());
   EXPECT_FALSE(node->is_currently_animating_opacity);
   EXPECT_FALSE(node->has_potential_opacity_animation);
@@ -9813,8 +9823,9 @@ TEST_F(LayerTreeHostCommonTest, TransformAnimationsTrackingTest) {
   root->SetForceRenderSurfaceForTesting(true);
   animated->SetBounds(gfx::Size(20, 20));
 
-  scoped_refptr<SingleTickerAnimationPlayer> player =
-      SingleTickerAnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  scoped_refptr<SingleKeyframeEffectAnimationPlayer> player =
+      SingleKeyframeEffectAnimationPlayer::Create(
+          AnimationIdProvider::NextPlayerId());
   timeline()->AttachPlayer(player);
   player->AttachElement(animated->element_id());
 
@@ -9830,13 +9841,13 @@ TEST_F(LayerTreeHostCommonTest, TransformAnimationsTrackingTest) {
       TransformKeyframe::Create(base::TimeDelta(), start, nullptr));
   curve->AddKeyframe(TransformKeyframe::Create(
       base::TimeDelta::FromSecondsD(1.0), operation, nullptr));
-  std::unique_ptr<Animation> animation(
-      Animation::Create(std::move(curve), 3, 3, TargetProperty::TRANSFORM));
-  animation->set_fill_mode(Animation::FillMode::NONE);
-  animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
-  Animation* animation_ptr = animation.get();
-  AddAnimationToElementWithExistingTicker(animated->element_id(), timeline(),
-                                          std::move(animation));
+  std::unique_ptr<KeyframeModel> keyframe_model(
+      KeyframeModel::Create(std::move(curve), 3, 3, TargetProperty::TRANSFORM));
+  keyframe_model->set_fill_mode(KeyframeModel::FillMode::NONE);
+  keyframe_model->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
+  KeyframeModel* keyframe_model_ptr = keyframe_model.get();
+  AddKeyframeModelToElementWithExistingKeyframeEffect(
+      animated->element_id(), timeline(), std::move(keyframe_model));
 
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
 
@@ -9846,14 +9857,14 @@ TEST_F(LayerTreeHostCommonTest, TransformAnimationsTrackingTest) {
   EXPECT_FALSE(node->is_currently_animating);
   EXPECT_TRUE(node->has_potential_animation);
 
-  animation_ptr->set_time_offset(base::TimeDelta::FromMilliseconds(0));
+  keyframe_model_ptr->set_time_offset(base::TimeDelta::FromMilliseconds(0));
   host()->AnimateLayers(base::TimeTicks::Max());
   node = tree.Node(animated->transform_tree_index());
   EXPECT_TRUE(node->is_currently_animating);
   EXPECT_TRUE(node->has_potential_animation);
 
-  player->AbortAnimations(TargetProperty::TRANSFORM,
-                          false /*needs_completion*/);
+  player->AbortKeyframeModels(TargetProperty::TRANSFORM,
+                              false /*needs_completion*/);
   node = tree.Node(animated->transform_tree_index());
   EXPECT_FALSE(node->is_currently_animating);
   EXPECT_FALSE(node->has_potential_animation);

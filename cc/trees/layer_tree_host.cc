@@ -370,7 +370,7 @@ void LayerTreeHost::FinishCommitOnImplThread(
     // This must happen after synchronizing property trees and after push
     // properties, which updates property tree indices, but before animation
     // host pushes properties as animation host push properties can change
-    // Animation::InEffect and we want the old InEffect value for updating
+    // KeyframeModel::InEffect and we want the old InEffect value for updating
     // property tree scrolling and animation.
     // TODO(pdr): Enforce this comment with DCHECKS and a lifecycle state.
     sync_tree->UpdatePropertyTreeAnimationFromMainThread();

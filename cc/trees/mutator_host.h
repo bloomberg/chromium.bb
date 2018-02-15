@@ -109,8 +109,9 @@ class MutatorHost {
                                    ElementListType list_type,
                                    float* start_scale) const = 0;
 
-  virtual bool HasAnyAnimation(ElementId element_id) const = 0;
-  virtual bool HasTickingAnimationForTesting(ElementId element_id) const = 0;
+  virtual bool IsElementAnimating(ElementId element_id) const = 0;
+  virtual bool HasTickingKeyframeModelForTesting(
+      ElementId element_id) const = 0;
 
   virtual void ImplOnlyScrollAnimationCreate(
       ElementId element_id,

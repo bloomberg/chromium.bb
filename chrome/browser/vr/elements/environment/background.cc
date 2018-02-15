@@ -224,7 +224,7 @@ void Background::CreateGradientTextures() {
 
 void Background::NotifyClientFloatAnimated(float value,
                                            int target_property_id,
-                                           cc::Animation* animation) {
+                                           cc::KeyframeModel* keyframe_model) {
   switch (target_property_id) {
     case NORMAL_COLOR_FACTOR:
       normal_factor_ = value;
@@ -237,7 +237,7 @@ void Background::NotifyClientFloatAnimated(float value,
       break;
     default:
       UiElement::NotifyClientFloatAnimated(value, target_property_id,
-                                           animation);
+                                           keyframe_model);
   }
 }
 

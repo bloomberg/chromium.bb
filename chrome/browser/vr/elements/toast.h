@@ -46,7 +46,7 @@ class Toast : public UiElement {
   void OnSetCornerRadii(const CornerRadii& radii) override;
   void NotifyClientSizeAnimated(const gfx::SizeF& size,
                                 int target_property_id,
-                                cc::Animation* animation) override;
+                                cc::KeyframeModel* keyframe_model) override;
 
   LinearLayout* container_ = nullptr;
   Rect* background_ = nullptr;

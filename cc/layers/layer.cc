@@ -151,7 +151,7 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
     inputs_.mask_layer->SetLayerTreeHost(host);
 
   if (host && !host->IsUsingLayerLists() &&
-      GetMutatorHost()->HasAnyAnimation(element_id())) {
+      GetMutatorHost()->IsElementAnimating(element_id())) {
     host->SetNeedsCommit();
   }
 }
@@ -1369,7 +1369,7 @@ void Layer::OnTransformAnimated(const gfx::Transform& transform) {
 
 bool Layer::HasTickingAnimationForTesting() const {
   return layer_tree_host_
-             ? GetMutatorHost()->HasTickingAnimationForTesting(element_id())
+             ? GetMutatorHost()->HasTickingKeyframeModelForTesting(element_id())
              : false;
 }
 

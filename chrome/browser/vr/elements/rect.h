@@ -32,7 +32,7 @@ class Rect : public UiElement {
 
   void NotifyClientColorAnimated(SkColor color,
                                  int target_property_id,
-                                 cc::Animation* animation) override;
+                                 cc::KeyframeModel* keyframe_model) override;
 
   void Render(UiElementRenderer* renderer,
               const CameraModel& model) const override;

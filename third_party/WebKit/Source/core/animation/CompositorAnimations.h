@@ -42,7 +42,6 @@
 namespace blink {
 
 class Animation;
-class CompositorAnimation;
 class CompositorAnimationPlayer;
 class Element;
 class KeyframeEffectModelBase;
@@ -141,7 +140,7 @@ class CORE_EXPORT CompositorAnimations {
       double start_time,
       double time_offset,
       const KeyframeEffectModelBase&,
-      Vector<std::unique_ptr<CompositorAnimation>>& animations,
+      Vector<std::unique_ptr<CompositorKeyframeModel>>& animations,
       double animation_playback_rate);
 
  private:

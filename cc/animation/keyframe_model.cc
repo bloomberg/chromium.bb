@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/animation/animation.h"
+#include "cc/animation/keyframe_model.h"
 
 #include <cmath>
 
@@ -24,7 +24,7 @@ static const char* const s_runStateNames[] = {"WAITING_FOR_TARGET_AVAILABILITY",
                                               "ABORTED",
                                               "ABORTED_BUT_NEEDS_COMPLETION"};
 
-static_assert(static_cast<int>(cc::Animation::LAST_RUN_STATE) + 1 ==
+static_assert(static_cast<int>(cc::KeyframeModel::LAST_RUN_STATE) + 1 ==
                   arraysize(s_runStateNames),
               "RunStateEnumSize should equal the number of elements in "
               "s_runStateNames");
@@ -41,25 +41,25 @@ static_assert(static_cast<int>(cc::AnimationCurve::LAST_CURVE_TYPE) + 1 ==
 
 namespace cc {
 
-std::string Animation::ToString(RunState state) {
+std::string KeyframeModel::ToString(RunState state) {
   return s_runStateNames[state];
 }
 
-std::unique_ptr<Animation> Animation::Create(
+std::unique_ptr<KeyframeModel> KeyframeModel::Create(
     std::unique_ptr<AnimationCurve> curve,
-    int animation_id,
+    int keyframe_model_id,
     int group_id,
     int target_property_id) {
-  return base::WrapUnique(new Animation(std::move(curve), animation_id,
-                                        group_id, target_property_id));
+  return base::WrapUnique(new KeyframeModel(std::move(curve), keyframe_model_id,
+                                            group_id, target_property_id));
 }
 
-Animation::Animation(std::unique_ptr<AnimationCurve> curve,
-                     int animation_id,
-                     int group_id,
-                     int target_property_id)
+KeyframeModel::KeyframeModel(std::unique_ptr<AnimationCurve> curve,
+                             int keyframe_model_id,
+                             int group_id,
+                             int target_property_id)
     : curve_(std::move(curve)),
-      id_(animation_id),
+      id_(keyframe_model_id),
       group_(group_id),
       target_property_id_(target_property_id),
       run_state_(WAITING_FOR_TARGET_AVAILABILITY),
@@ -76,13 +76,13 @@ Animation::Animation(std::unique_ptr<AnimationCurve> curve,
       affects_active_elements_(true),
       affects_pending_elements_(true) {}
 
-Animation::~Animation() {
+KeyframeModel::~KeyframeModel() {
   if (run_state_ == RUNNING || run_state_ == PAUSED)
     SetRunState(ABORTED, base::TimeTicks());
 }
 
-void Animation::SetRunState(RunState run_state,
-                            base::TimeTicks monotonic_time) {
+void KeyframeModel::SetRunState(RunState run_state,
+                                base::TimeTicks monotonic_time) {
   if (suspended_)
     return;
 
@@ -94,8 +94,8 @@ void Animation::SetRunState(RunState run_state,
       run_state_ == WAITING_FOR_TARGET_AVAILABILITY || run_state_ == STARTING;
 
   if (is_controlling_instance_ && is_waiting_to_start && run_state == RUNNING) {
-    TRACE_EVENT_ASYNC_BEGIN1(
-        "cc", "Animation", this, "Name", TRACE_STR_COPY(name_buffer));
+    TRACE_EVENT_ASYNC_BEGIN1("cc", "KeyframeModel", this, "Name",
+                             TRACE_STR_COPY(name_buffer));
   }
 
   bool was_finished = is_finished();
@@ -111,31 +111,28 @@ void Animation::SetRunState(RunState run_state,
   const char* new_run_state_name = s_runStateNames[run_state];
 
   if (is_controlling_instance_ && !was_finished && is_finished())
-    TRACE_EVENT_ASYNC_END0("cc", "Animation", this);
+    TRACE_EVENT_ASYNC_END0("cc", "KeyframeModel", this);
 
   char state_buffer[256];
-  base::snprintf(state_buffer,
-                 sizeof(state_buffer),
-                 "%s->%s",
-                 old_run_state_name,
-                 new_run_state_name);
+  base::snprintf(state_buffer, sizeof(state_buffer), "%s->%s",
+                 old_run_state_name, new_run_state_name);
 
   TRACE_EVENT_INSTANT2(
       "cc", "ElementAnimations::SetRunState", TRACE_EVENT_SCOPE_THREAD, "Name",
       TRACE_STR_COPY(name_buffer), "State", TRACE_STR_COPY(state_buffer));
 }
 
-void Animation::Suspend(base::TimeTicks monotonic_time) {
+void KeyframeModel::Suspend(base::TimeTicks monotonic_time) {
   SetRunState(PAUSED, monotonic_time);
   suspended_ = true;
 }
 
-void Animation::Resume(base::TimeTicks monotonic_time) {
+void KeyframeModel::Resume(base::TimeTicks monotonic_time) {
   suspended_ = false;
   SetRunState(RUNNING, monotonic_time);
 }
 
-bool Animation::IsFinishedAt(base::TimeTicks monotonic_time) const {
+bool KeyframeModel::IsFinishedAt(base::TimeTicks monotonic_time) const {
   if (is_finished())
     return true;
 
@@ -150,12 +147,12 @@ bool Animation::IsFinishedAt(base::TimeTicks monotonic_time) const {
              (monotonic_time + time_offset_ - start_time_ - total_paused_time_);
 }
 
-bool Animation::InEffect(base::TimeTicks monotonic_time) const {
+bool KeyframeModel::InEffect(base::TimeTicks monotonic_time) const {
   return ConvertToActiveTime(monotonic_time) >= base::TimeDelta() ||
          (fill_mode_ == FillMode::BOTH || fill_mode_ == FillMode::BACKWARDS);
 }
 
-base::TimeTicks Animation::ConvertFromActiveTime(
+base::TimeTicks KeyframeModel::ConvertFromActiveTime(
     base::TimeDelta active_time) const {
   // When waiting on receiving a start time, then our global clock is 'stuck' at
   // the initial state.
@@ -170,7 +167,7 @@ base::TimeTicks Animation::ConvertFromActiveTime(
   return active_time - time_offset_ + start_time_ + total_paused_time_;
 }
 
-base::TimeDelta Animation::ConvertToActiveTime(
+base::TimeDelta KeyframeModel::ConvertToActiveTime(
     base::TimeTicks monotonic_time) const {
   // If we're just starting or we're waiting on receiving a start time,
   // time is 'stuck' at the initial state.
@@ -188,7 +185,7 @@ base::TimeDelta Animation::ConvertToActiveTime(
   return active_time - start_time_ - total_paused_time_;
 }
 
-base::TimeDelta Animation::TrimTimeToCurrentIteration(
+base::TimeDelta KeyframeModel::TrimTimeToCurrentIteration(
     base::TimeTicks monotonic_time) const {
   // Check for valid parameters
   DCHECK(playback_rate_);
@@ -197,7 +194,7 @@ base::TimeDelta Animation::TrimTimeToCurrentIteration(
   base::TimeDelta active_time = ConvertToActiveTime(monotonic_time);
   base::TimeDelta start_offset = curve_->Duration() * iteration_start_;
 
-  // Return start offset if we are before the start of the animation
+  // Return start offset if we are before the start of the keyframe model
   if (active_time < base::TimeDelta())
     return start_offset;
   // Always return zero if we have no iterations.
@@ -242,24 +239,25 @@ base::TimeDelta Animation::TrimTimeToCurrentIteration(
   else
     iteration = static_cast<int>(scaled_active_time / curve_->Duration());
 
-  // Check if we are running the animation in reverse direction for the current
-  // iteration
+  // Check if we are running the keyframe model in reverse direction for the
+  // current iteration
   bool reverse =
       (direction_ == Direction::REVERSE) ||
       (direction_ == Direction::ALTERNATE_NORMAL && iteration % 2 == 1) ||
       (direction_ == Direction::ALTERNATE_REVERSE && iteration % 2 == 0);
 
-  // If we are running the animation in reverse direction, reverse the result
+  // If we are running the keyframe model in reverse direction, reverse the
+  // result
   if (reverse)
     iteration_time = curve_->Duration() - iteration_time;
 
   return iteration_time;
 }
 
-std::unique_ptr<Animation> Animation::CloneAndInitialize(
+std::unique_ptr<KeyframeModel> KeyframeModel::CloneAndInitialize(
     RunState initial_run_state) const {
-  std::unique_ptr<Animation> to_return(
-      new Animation(curve_->Clone(), id_, group_, target_property_id_));
+  std::unique_ptr<KeyframeModel> to_return(
+      new KeyframeModel(curve_->Clone(), id_, group_, target_property_id_));
   to_return->run_state_ = initial_run_state;
   to_return->iterations_ = iterations_;
   to_return->iteration_start_ = iteration_start_;
@@ -275,23 +273,23 @@ std::unique_ptr<Animation> Animation::CloneAndInitialize(
   return to_return;
 }
 
-void Animation::PushPropertiesTo(Animation* other) const {
-  // Currently, we only push changes due to pausing and resuming animations on
-  // the main thread.
-  if (run_state_ == Animation::PAUSED ||
-      other->run_state_ == Animation::PAUSED) {
+void KeyframeModel::PushPropertiesTo(KeyframeModel* other) const {
+  // Currently, we only push changes due to pausing and resuming KeyframeModels
+  // on the main thread.
+  if (run_state_ == KeyframeModel::PAUSED ||
+      other->run_state_ == KeyframeModel::PAUSED) {
     other->run_state_ = run_state_;
     other->pause_time_ = pause_time_;
     other->total_paused_time_ = total_paused_time_;
   }
 }
 
-std::string Animation::ToString() const {
+std::string KeyframeModel::ToString() const {
   return base::StringPrintf(
-      "Animation{id=%d, group=%d, target_property_id=%d, "
+      "KeyframeModel{id=%d, group=%d, target_property_id=%d, "
       "run_state=%s}",
       id_, group_, target_property_id_,
-      Animation::ToString(run_state_).c_str());
+      KeyframeModel::ToString(run_state_).c_str());
 }
 
 }  // namespace cc

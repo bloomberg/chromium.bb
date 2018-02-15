@@ -8,7 +8,7 @@
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
-#include "cc/animation/single_ticker_animation_player.h"
+#include "cc/animation/single_keyframe_effect_animation_player.h"
 #include "cc/animation/timing_function.h"
 
 namespace cc {
@@ -18,8 +18,9 @@ ScrollOffsetAnimationsImpl::ScrollOffsetAnimationsImpl(
     : animation_host_(animation_host),
       scroll_offset_timeline_(
           AnimationTimeline::Create(AnimationIdProvider::NextTimelineId())),
-      scroll_offset_animation_player_(SingleTickerAnimationPlayer::Create(
-          AnimationIdProvider::NextPlayerId())) {
+      scroll_offset_animation_player_(
+          SingleKeyframeEffectAnimationPlayer::Create(
+              AnimationIdProvider::NextPlayerId())) {
   scroll_offset_timeline_->set_is_impl_only(true);
   scroll_offset_animation_player_->set_animation_delegate(this);
 
@@ -45,18 +46,18 @@ void ScrollOffsetAnimationsImpl::ScrollAnimationCreate(
           ScrollOffsetAnimationCurve::DurationBehavior::INVERSE_DELTA);
   curve->SetInitialValue(current_offset, delayed_by);
 
-  std::unique_ptr<Animation> animation = Animation::Create(
-      std::move(curve), AnimationIdProvider::NextAnimationId(),
+  std::unique_ptr<KeyframeModel> keyframe_model = KeyframeModel::Create(
+      std::move(curve), AnimationIdProvider::NextKeyframeModelId(),
       AnimationIdProvider::NextGroupId(), TargetProperty::SCROLL_OFFSET);
-  animation->set_time_offset(animation_start_offset);
-  animation->set_is_impl_only(true);
+  keyframe_model->set_time_offset(animation_start_offset);
+  keyframe_model->set_is_impl_only(true);
 
   DCHECK(scroll_offset_animation_player_);
   DCHECK(scroll_offset_animation_player_->animation_timeline());
 
   ReattachScrollOffsetPlayerIfNeeded(element_id);
 
-  scroll_offset_animation_player_->AddAnimation(std::move(animation));
+  scroll_offset_animation_player_->AddKeyframeModel(std::move(keyframe_model));
 }
 
 bool ScrollOffsetAnimationsImpl::ScrollAnimationUpdateTarget(
@@ -71,9 +72,10 @@ bool ScrollOffsetAnimationsImpl::ScrollAnimationUpdateTarget(
 
   DCHECK_EQ(element_id, scroll_offset_animation_player_->element_id());
 
-  Animation* animation = scroll_offset_animation_player_->GetAnimation(
-      TargetProperty::SCROLL_OFFSET);
-  if (!animation) {
+  KeyframeModel* keyframe_model =
+      scroll_offset_animation_player_->GetKeyframeModel(
+          TargetProperty::SCROLL_OFFSET);
+  if (!keyframe_model) {
     scroll_offset_animation_player_->DetachElement();
     return false;
   }
@@ -81,19 +83,20 @@ bool ScrollOffsetAnimationsImpl::ScrollAnimationUpdateTarget(
     return true;
 
   ScrollOffsetAnimationCurve* curve =
-      animation->curve()->ToScrollOffsetAnimationCurve();
+      keyframe_model->curve()->ToScrollOffsetAnimationCurve();
 
   gfx::ScrollOffset new_target =
       gfx::ScrollOffsetWithDelta(curve->target_value(), scroll_delta);
   new_target.SetToMax(gfx::ScrollOffset());
   new_target.SetToMin(max_scroll_offset);
 
-  // TODO(ymalik): Animation::TrimTimeToCurrentIteration should probably check
-  // for run_state == Animation::WAITING_FOR_TARGET_AVAILABILITY.
+  // TODO(ymalik): KeyframeModel::TrimTimeToCurrentIteration should probably
+  // check for run_state == KeyframeModel::WAITING_FOR_TARGET_AVAILABILITY.
   base::TimeDelta trimmed =
-      animation->run_state() == Animation::WAITING_FOR_TARGET_AVAILABILITY
+      keyframe_model->run_state() ==
+              KeyframeModel::WAITING_FOR_TARGET_AVAILABILITY
           ? base::TimeDelta()
-          : animation->TrimTimeToCurrentIteration(frame_monotonic_time);
+          : keyframe_model->TrimTimeToCurrentIteration(frame_monotonic_time);
 
   // Re-target taking the delay into account. Note that if the duration of the
   // animation is 0, trimmed will be 0 and UpdateTarget will be called with
@@ -115,34 +118,36 @@ void ScrollOffsetAnimationsImpl::ScrollAnimationApplyAdjustment(
   if (!scroll_offset_animation_player_->has_element_animations())
     return;
 
-  Animation* animation = scroll_offset_animation_player_->GetAnimation(
-      TargetProperty::SCROLL_OFFSET);
-  if (!animation)
+  KeyframeModel* keyframe_model =
+      scroll_offset_animation_player_->GetKeyframeModel(
+          TargetProperty::SCROLL_OFFSET);
+  if (!keyframe_model)
     return;
 
   std::unique_ptr<ScrollOffsetAnimationCurve> new_curve =
-      animation->curve()
+      keyframe_model->curve()
           ->ToScrollOffsetAnimationCurve()
           ->CloneToScrollOffsetAnimationCurve();
   new_curve->ApplyAdjustment(adjustment);
 
-  std::unique_ptr<Animation> new_animation = Animation::Create(
-      std::move(new_curve), AnimationIdProvider::NextAnimationId(),
+  std::unique_ptr<KeyframeModel> new_keyframe_model = KeyframeModel::Create(
+      std::move(new_curve), AnimationIdProvider::NextKeyframeModelId(),
       AnimationIdProvider::NextGroupId(), TargetProperty::SCROLL_OFFSET);
-  new_animation->set_start_time(animation->start_time());
-  new_animation->set_is_impl_only(true);
-  new_animation->set_affects_active_elements(false);
+  new_keyframe_model->set_start_time(keyframe_model->start_time());
+  new_keyframe_model->set_is_impl_only(true);
+  new_keyframe_model->set_affects_active_elements(false);
 
   // Abort the old animation.
   ScrollAnimationAbort(/* needs_completion */ false);
 
   // Start a new one with the adjusment.
-  scroll_offset_animation_player_->AddAnimation(std::move(new_animation));
+  scroll_offset_animation_player_->AddKeyframeModel(
+      std::move(new_keyframe_model));
 }
 
 void ScrollOffsetAnimationsImpl::ScrollAnimationAbort(bool needs_completion) {
   DCHECK(scroll_offset_animation_player_);
-  scroll_offset_animation_player_->AbortAnimations(
+  scroll_offset_animation_player_->AbortKeyframeModels(
       TargetProperty::SCROLL_OFFSET, needs_completion);
 }
 

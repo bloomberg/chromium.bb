@@ -491,7 +491,7 @@ TEST(LayerAnimationElementTest, ToString) {
       base::StringPrintf("LayerAnimationElement{name=ThreadedOpacityTransition,"
                          " id=%d, group=42, "
                          "last_progressed_fraction=0.00}",
-                         element->animation_id()),
+                         element->keyframe_model_id()),
       element->ToString());
 }
 

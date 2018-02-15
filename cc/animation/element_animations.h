@@ -26,15 +26,15 @@ class BoxF;
 namespace cc {
 
 class AnimationHost;
-class AnimationTicker;
 class FilterOperations;
+class KeyframeEffect;
 class TransformOperations;
 enum class ElementListType;
 struct AnimationEvent;
 
 enum class UpdateTickingType { NORMAL, FORCE };
 
-// An ElementAnimations owns a list of all AnimationTickers attached to a single
+// An ElementAnimations owns a list of all KeyframeEffects attached to a single
 // target (represented by an ElementId).
 //
 // This is a CC counterpart for blink::ElementAnimations (in 1:1 relationship).
@@ -59,12 +59,14 @@ class CC_ANIMATION_EXPORT ElementAnimations
   void ElementRegistered(ElementId element_id, ElementListType list_type);
   void ElementUnregistered(ElementId element_id, ElementListType list_type);
 
-  void AddTicker(AnimationTicker* ticker);
-  void RemoveTicker(AnimationTicker* ticker);
+  void AddKeyframeEffect(KeyframeEffect* keyframe_effect);
+  void RemoveKeyframeEffect(KeyframeEffect* keyframe_effect);
   bool IsEmpty() const;
 
-  typedef base::ObserverList<AnimationTicker> TickersList;
-  const TickersList& tickers_list() const { return tickers_list_; }
+  typedef base::ObserverList<KeyframeEffect> KeyframeEffectsList;
+  const KeyframeEffectsList& keyframe_effects_list() const {
+    return keyframe_effects_list_;
+  }
 
   // Ensures that the list of active animations on the main thread and the impl
   // thread are kept in sync. This function does not take ownership of the impl
@@ -72,12 +74,12 @@ class CC_ANIMATION_EXPORT ElementAnimations
   void PushPropertiesTo(
       scoped_refptr<ElementAnimations> element_animations_impl) const;
 
-  // Returns true if there are any animations that have neither finished nor
+  // Returns true if there are any effects that have neither finished nor
   // aborted.
-  bool HasTickingAnimation() const;
+  bool HasTickingKeyframeEffect() const;
 
-  // Returns true if there are any animations at all to process.
-  bool HasAnyAnimation() const;
+  // Returns true if there are any KeyframeModels at all to process.
+  bool HasAnyKeyframeModel() const;
 
   bool HasAnyAnimationTargetingProperty(TargetProperty::Type property) const;
 
@@ -141,17 +143,17 @@ class CC_ANIMATION_EXPORT ElementAnimations
 
   void NotifyClientFloatAnimated(float opacity,
                                  int target_property_id,
-                                 Animation* animation) override;
+                                 KeyframeModel* keyframe_model) override;
   void NotifyClientFilterAnimated(const FilterOperations& filter,
                                   int target_property_id,
-                                  Animation* animation) override;
+                                  KeyframeModel* keyframe_model) override;
   void NotifyClientTransformOperationsAnimated(
       const TransformOperations& operations,
       int target_property_id,
-      Animation* animation) override;
+      KeyframeModel* keyframe_model) override;
   void NotifyClientScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset,
                                         int target_property_id,
-                                        Animation* animation) override;
+                                        KeyframeModel* keyframe_model) override;
 
   gfx::ScrollOffset ScrollOffsetForAnimation() const;
 
@@ -171,13 +173,14 @@ class CC_ANIMATION_EXPORT ElementAnimations
 
   static TargetProperties GetPropertiesMaskForAnimationState();
 
-  void UpdateTickersTickingState(UpdateTickingType update_ticking_type) const;
-  void RemoveTickersFromTicking() const;
+  void UpdateKeyframeEffectsTickingState(
+      UpdateTickingType update_ticking_type) const;
+  void RemoveKeyframeEffectsFromTicking() const;
 
-  bool AnimationAffectsActiveElements(Animation* animation) const;
-  bool AnimationAffectsPendingElements(Animation* animation) const;
+  bool KeyframeModelAffectsActiveElements(KeyframeModel* keyframe_model) const;
+  bool KeyframeModelAffectsPendingElements(KeyframeModel* keyframe_model) const;
 
-  TickersList tickers_list_;
+  KeyframeEffectsList keyframe_effects_list_;
   AnimationHost* animation_host_;
   ElementId element_id_;
 

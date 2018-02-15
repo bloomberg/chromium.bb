@@ -9,9 +9,9 @@
 #include "base/strings/stringprintf.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_host.h"
-#include "cc/animation/animation_ticker.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
+#include "cc/animation/keyframe_effect.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/animation_timelines_test_common.h"
@@ -24,21 +24,21 @@ class AnimationPlayerTest : public AnimationTimelinesTest {
   AnimationPlayerTest()
       : player_(AnimationPlayer::Create(player_id_)),
         group_id_(100),
-        animation_id_(100) {
-    ticker_id_ = player_->NextTickerId();
+        keyframe_model_id_(100) {
+    keyframe_effect_id_ = player_->NextKeyframeEffectId();
   }
   ~AnimationPlayerTest() override = default;
 
   int NextGroupId() { return ++group_id_; }
 
-  int NextAnimationId() { return ++animation_id_; }
+  int NextKeyframeModelId() { return ++keyframe_model_id_; }
 
   int AddOpacityTransition(AnimationPlayer* target,
                            double duration,
                            float start_opacity,
                            float end_opacity,
                            bool use_timing_function,
-                           TickerId ticker_id) {
+                           KeyframeEffectId keyframe_effect_id) {
     std::unique_ptr<KeyframedFloatAnimationCurve> curve(
         KeyframedFloatAnimationCurve::Create());
 
@@ -52,13 +52,14 @@ class AnimationPlayerTest : public AnimationTimelinesTest {
     curve->AddKeyframe(FloatKeyframe::Create(
         base::TimeDelta::FromSecondsD(duration), end_opacity, nullptr));
 
-    int id = NextAnimationId();
+    int id = NextKeyframeModelId();
 
-    std::unique_ptr<Animation> animation(Animation::Create(
+    std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
         std::move(curve), id, NextGroupId(), TargetProperty::OPACITY));
-    animation->set_needs_synchronized_start_time(true);
+    keyframe_model->set_needs_synchronized_start_time(true);
 
-    target->AddAnimationForTicker(std::move(animation), ticker_id);
+    target->AddKeyframeModelForKeyframeEffect(std::move(keyframe_model),
+                                              keyframe_effect_id);
     return id;
   }
 
@@ -66,7 +67,7 @@ class AnimationPlayerTest : public AnimationTimelinesTest {
                            double duration,
                            TransformOperations start_operations,
                            TransformOperations operations,
-                           TickerId ticker_id) {
+                           KeyframeEffectId keyframe_effect_id) {
     std::unique_ptr<KeyframedTransformAnimationCurve> curve(
         KeyframedTransformAnimationCurve::Create());
 
@@ -78,13 +79,14 @@ class AnimationPlayerTest : public AnimationTimelinesTest {
     curve->AddKeyframe(TransformKeyframe::Create(
         base::TimeDelta::FromSecondsD(duration), operations, nullptr));
 
-    int id = NextAnimationId();
+    int id = NextKeyframeModelId();
 
-    std::unique_ptr<Animation> animation(Animation::Create(
+    std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
         std::move(curve), id, NextGroupId(), TargetProperty::TRANSFORM));
-    animation->set_needs_synchronized_start_time(true);
+    keyframe_model->set_needs_synchronized_start_time(true);
 
-    target->AddAnimationForTicker(std::move(animation), ticker_id);
+    target->AddKeyframeModelForKeyframeEffect(std::move(keyframe_model),
+                                              keyframe_effect_id);
     return id;
   }
 
@@ -92,7 +94,7 @@ class AnimationPlayerTest : public AnimationTimelinesTest {
                            double duration,
                            int delta_x,
                            int delta_y,
-                           TickerId ticker_id) {
+                           KeyframeEffectId keyframe_effect_id) {
     TransformOperations start_operations;
     if (duration > 0.0) {
       start_operations.AppendTranslate(0, 0, 0.0);
@@ -101,14 +103,14 @@ class AnimationPlayerTest : public AnimationTimelinesTest {
     TransformOperations operations;
     operations.AppendTranslate(delta_x, delta_y, 0.0);
     return AddAnimatedTransform(target, duration, start_operations, operations,
-                                ticker_id);
+                                keyframe_effect_id);
   }
 
   int AddAnimatedFilter(AnimationPlayer* target,
                         double duration,
                         float start_brightness,
                         float end_brightness,
-                        TickerId ticker_id) {
+                        KeyframeEffectId keyframe_effect_id) {
     std::unique_ptr<KeyframedFilterAnimationCurve> curve(
         KeyframedFilterAnimationCurve::Create());
 
@@ -125,20 +127,23 @@ class AnimationPlayerTest : public AnimationTimelinesTest {
     curve->AddKeyframe(FilterKeyframe::Create(
         base::TimeDelta::FromSecondsD(duration), filters, nullptr));
 
-    int id = NextAnimationId();
+    int id = NextKeyframeModelId();
 
-    std::unique_ptr<Animation> animation(Animation::Create(
+    std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
         std::move(curve), id, NextGroupId(), TargetProperty::FILTER));
-    animation->set_needs_synchronized_start_time(true);
+    keyframe_model->set_needs_synchronized_start_time(true);
 
-    target->AddAnimationForTicker(std::move(animation), ticker_id);
+    target->AddKeyframeModelForKeyframeEffect(std::move(keyframe_model),
+                                              keyframe_effect_id);
     return id;
   }
 
-  void CheckTickerAndTimelineNeedsPushProperties(bool needs_push_properties,
-                                                 TickerId ticker_id) const {
-    AnimationTicker* ticker = player_->GetTickerById(ticker_id);
-    EXPECT_EQ(ticker->needs_push_properties(), needs_push_properties);
+  void CheckKeyframeEffectAndTimelineNeedsPushProperties(
+      bool needs_push_properties,
+      KeyframeEffectId keyframe_effect_id) const {
+    KeyframeEffect* keyframe_effect =
+        player_->GetKeyframeEffectById(keyframe_effect_id);
+    EXPECT_EQ(keyframe_effect->needs_push_properties(), needs_push_properties);
     EXPECT_EQ(timeline_->needs_push_properties(), needs_push_properties);
   }
 
@@ -146,110 +151,132 @@ class AnimationPlayerTest : public AnimationTimelinesTest {
   scoped_refptr<AnimationPlayer> player_;
   scoped_refptr<AnimationPlayer> player_impl_;
   int group_id_;
-  TickerId ticker_id_;
-  int animation_id_;
+  KeyframeEffectId keyframe_effect_id_;
+  int keyframe_model_id_;
 };
 // See element_animations_unittest.cc for active/pending observers tests.
 
 TEST_F(AnimationPlayerTest, AttachDetachLayerIfTimelineAttached) {
-  player_->AddTicker(base::MakeUnique<AnimationTicker>(ticker_id_));
-  ASSERT_TRUE(player_->GetTickerById(ticker_id_));
-  EXPECT_FALSE(player_->GetTickerById(ticker_id_)->needs_push_properties());
-  CheckTickerAndTimelineNeedsPushProperties(false, ticker_id_);
+  player_->AddKeyframeEffect(
+      base::MakeUnique<KeyframeEffect>(keyframe_effect_id_));
+  ASSERT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_));
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+                   ->needs_push_properties());
+  CheckKeyframeEffectAndTimelineNeedsPushProperties(false, keyframe_effect_id_);
 
   host_->AddAnimationTimeline(timeline_);
   EXPECT_TRUE(timeline_->needs_push_properties());
 
   timeline_->AttachPlayer(player_);
-  EXPECT_FALSE(player_->element_animations(ticker_id_));
-  EXPECT_FALSE(player_->element_id_of_ticker(ticker_id_));
+  EXPECT_FALSE(player_->element_animations(keyframe_effect_id_));
+  EXPECT_FALSE(player_->element_id_of_keyframe_effect(keyframe_effect_id_));
   EXPECT_TRUE(timeline_->needs_push_properties());
-  EXPECT_FALSE(player_->GetTickerById(ticker_id_)->needs_push_properties());
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+                   ->needs_push_properties());
 
   host_->PushPropertiesTo(host_impl_);
 
-  EXPECT_FALSE(GetImplTickerForLayerId(element_id_));
+  EXPECT_FALSE(GetImplKeyframeEffectForLayerId(element_id_));
 
   timeline_impl_ = host_impl_->GetTimelineById(timeline_id_);
   EXPECT_TRUE(timeline_impl_);
   player_impl_ = timeline_impl_->GetPlayerById(player_id_);
   EXPECT_TRUE(player_impl_);
 
-  EXPECT_FALSE(player_impl_->element_animations(ticker_id_));
-  EXPECT_FALSE(player_impl_->element_id_of_ticker(ticker_id_));
-  EXPECT_FALSE(player_->GetTickerById(ticker_id_)->needs_push_properties());
+  EXPECT_FALSE(player_impl_->element_animations(keyframe_effect_id_));
+  EXPECT_FALSE(
+      player_impl_->element_id_of_keyframe_effect(keyframe_effect_id_));
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+                   ->needs_push_properties());
   EXPECT_FALSE(timeline_->needs_push_properties());
 
-  player_->AttachElementForTicker(element_id_, ticker_id_);
-  EXPECT_EQ(player_->GetTickerById(ticker_id_),
-            GetTickerForElementId(element_id_));
-  EXPECT_TRUE(player_->element_animations(ticker_id_));
-  EXPECT_EQ(player_->element_id_of_ticker(ticker_id_), element_id_);
-  CheckTickerAndTimelineNeedsPushProperties(true, ticker_id_);
+  player_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id_);
+  EXPECT_EQ(player_->GetKeyframeEffectById(keyframe_effect_id_),
+            GetKeyframeEffectForElementId(element_id_));
+  EXPECT_TRUE(player_->element_animations(keyframe_effect_id_));
+  EXPECT_EQ(player_->element_id_of_keyframe_effect(keyframe_effect_id_),
+            element_id_);
+  CheckKeyframeEffectAndTimelineNeedsPushProperties(true, keyframe_effect_id_);
 
   host_->PushPropertiesTo(host_impl_);
 
-  EXPECT_EQ(player_impl_->GetTickerById(ticker_id_),
-            GetImplTickerForLayerId(element_id_));
-  EXPECT_TRUE(player_impl_->element_animations(ticker_id_));
-  EXPECT_EQ(player_impl_->element_id_of_ticker(ticker_id_), element_id_);
-  CheckTickerAndTimelineNeedsPushProperties(false, ticker_id_);
+  EXPECT_EQ(player_impl_->GetKeyframeEffectById(keyframe_effect_id_),
+            GetImplKeyframeEffectForLayerId(element_id_));
+  EXPECT_TRUE(player_impl_->element_animations(keyframe_effect_id_));
+  EXPECT_EQ(player_impl_->element_id_of_keyframe_effect(keyframe_effect_id_),
+            element_id_);
+  CheckKeyframeEffectAndTimelineNeedsPushProperties(false, keyframe_effect_id_);
 
   player_->DetachElement();
-  EXPECT_FALSE(GetTickerForElementId(element_id_));
-  EXPECT_FALSE(player_->element_animations(ticker_id_));
-  EXPECT_FALSE(player_->element_id_of_ticker(ticker_id_));
-  CheckTickerAndTimelineNeedsPushProperties(true, ticker_id_);
+  EXPECT_FALSE(GetKeyframeEffectForElementId(element_id_));
+  EXPECT_FALSE(player_->element_animations(keyframe_effect_id_));
+  EXPECT_FALSE(player_->element_id_of_keyframe_effect(keyframe_effect_id_));
+  CheckKeyframeEffectAndTimelineNeedsPushProperties(true, keyframe_effect_id_);
 
   host_->PushPropertiesTo(host_impl_);
 
-  EXPECT_FALSE(GetImplTickerForLayerId(element_id_));
-  EXPECT_FALSE(player_impl_->element_animations(ticker_id_));
-  EXPECT_FALSE(player_impl_->element_id_of_ticker(ticker_id_));
-  CheckTickerAndTimelineNeedsPushProperties(false, ticker_id_);
+  EXPECT_FALSE(GetImplKeyframeEffectForLayerId(element_id_));
+  EXPECT_FALSE(player_impl_->element_animations(keyframe_effect_id_));
+  EXPECT_FALSE(
+      player_impl_->element_id_of_keyframe_effect(keyframe_effect_id_));
+  CheckKeyframeEffectAndTimelineNeedsPushProperties(false, keyframe_effect_id_);
 
   timeline_->DetachPlayer(player_);
   EXPECT_FALSE(player_->animation_timeline());
-  EXPECT_FALSE(player_->element_animations(ticker_id_));
-  EXPECT_FALSE(player_->element_id_of_ticker(ticker_id_));
+  EXPECT_FALSE(player_->element_animations(keyframe_effect_id_));
+  EXPECT_FALSE(player_->element_id_of_keyframe_effect(keyframe_effect_id_));
   EXPECT_TRUE(timeline_->needs_push_properties());
-  EXPECT_FALSE(player_->GetTickerById(ticker_id_)->needs_push_properties());
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+                   ->needs_push_properties());
   host_->PushPropertiesTo(host_impl_);
-  CheckTickerAndTimelineNeedsPushProperties(false, ticker_id_);
+  CheckKeyframeEffectAndTimelineNeedsPushProperties(false, keyframe_effect_id_);
 }
 
 TEST_F(AnimationPlayerTest, AttachDetachTimelineIfLayerAttached) {
   host_->AddAnimationTimeline(timeline_);
 
-  player_->AddTicker(base::MakeUnique<AnimationTicker>(ticker_id_));
-  ASSERT_TRUE(player_->GetTickerById(ticker_id_));
+  player_->AddKeyframeEffect(
+      base::MakeUnique<KeyframeEffect>(keyframe_effect_id_));
+  ASSERT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_));
 
-  EXPECT_FALSE(player_->GetTickerById(ticker_id_)->element_animations());
-  EXPECT_FALSE(player_->GetTickerById(ticker_id_)->element_id());
-  EXPECT_FALSE(player_->GetTickerById(ticker_id_)->needs_push_properties());
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+                   ->element_animations());
+  EXPECT_FALSE(
+      player_->GetKeyframeEffectById(keyframe_effect_id_)->element_id());
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+                   ->needs_push_properties());
 
-  player_->AttachElementForTicker(element_id_, ticker_id_);
+  player_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id_);
   EXPECT_FALSE(player_->animation_timeline());
-  EXPECT_FALSE(GetTickerForElementId(element_id_));
-  EXPECT_FALSE(player_->GetTickerById(ticker_id_)->element_animations());
-  EXPECT_EQ(player_->GetTickerById(ticker_id_)->element_id(), element_id_);
-  EXPECT_FALSE(player_->GetTickerById(ticker_id_)->needs_push_properties());
+  EXPECT_FALSE(GetKeyframeEffectForElementId(element_id_));
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+                   ->element_animations());
+  EXPECT_EQ(player_->GetKeyframeEffectById(keyframe_effect_id_)->element_id(),
+            element_id_);
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+                   ->needs_push_properties());
 
   timeline_->AttachPlayer(player_);
   EXPECT_EQ(timeline_, player_->animation_timeline());
-  EXPECT_EQ(player_->GetTickerById(ticker_id_),
-            GetTickerForElementId(element_id_));
-  EXPECT_TRUE(player_->GetTickerById(ticker_id_)->element_animations());
-  EXPECT_EQ(player_->GetTickerById(ticker_id_)->element_id(), element_id_);
-  EXPECT_TRUE(player_->GetTickerById(ticker_id_)->needs_push_properties());
+  EXPECT_EQ(player_->GetKeyframeEffectById(keyframe_effect_id_),
+            GetKeyframeEffectForElementId(element_id_));
+  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+                  ->element_animations());
+  EXPECT_EQ(player_->GetKeyframeEffectById(keyframe_effect_id_)->element_id(),
+            element_id_);
+  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+                  ->needs_push_properties());
 
   // Removing player from timeline detaches layer.
   timeline_->DetachPlayer(player_);
   EXPECT_FALSE(player_->animation_timeline());
-  EXPECT_FALSE(GetTickerForElementId(element_id_));
-  EXPECT_FALSE(player_->GetTickerById(ticker_id_)->element_animations());
-  EXPECT_FALSE(player_->GetTickerById(ticker_id_)->element_id());
-  EXPECT_TRUE(player_->GetTickerById(ticker_id_)->needs_push_properties());
+  EXPECT_FALSE(GetKeyframeEffectForElementId(element_id_));
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+                   ->element_animations());
+  EXPECT_FALSE(
+      player_->GetKeyframeEffectById(keyframe_effect_id_)->element_id());
+  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+                  ->needs_push_properties());
 }
 
 TEST_F(AnimationPlayerTest, PropertiesMutate) {
@@ -259,15 +286,16 @@ TEST_F(AnimationPlayerTest, PropertiesMutate) {
 
   host_->AddAnimationTimeline(timeline_);
 
-  player_->AddTicker(base::MakeUnique<AnimationTicker>(ticker_id_));
-  ASSERT_TRUE(player_->GetTickerById(ticker_id_));
+  player_->AddKeyframeEffect(
+      base::MakeUnique<KeyframeEffect>(keyframe_effect_id_));
+  ASSERT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_));
 
   timeline_->AttachPlayer(player_);
-  player_->AttachElementForTicker(element_id_, ticker_id_);
-  CheckTickerAndTimelineNeedsPushProperties(true, ticker_id_);
+  player_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id_);
+  CheckKeyframeEffectAndTimelineNeedsPushProperties(true, keyframe_effect_id_);
 
   host_->PushPropertiesTo(host_impl_);
-  CheckTickerAndTimelineNeedsPushProperties(false, ticker_id_);
+  CheckKeyframeEffectAndTimelineNeedsPushProperties(false, keyframe_effect_id_);
 
   const float start_opacity = .7f;
   const float end_opacity = .3f;
@@ -281,16 +309,16 @@ TEST_F(AnimationPlayerTest, PropertiesMutate) {
   const double duration = 1.;
 
   AddOpacityTransition(player_.get(), duration, start_opacity, end_opacity,
-                       false, ticker_id_);
+                       false, keyframe_effect_id_);
 
   AddAnimatedTransform(player_.get(), duration, transform_x, transform_y,
-                       ticker_id_);
+                       keyframe_effect_id_);
   AddAnimatedFilter(player_.get(), duration, start_brightness, end_brightness,
-                    ticker_id_);
-  CheckTickerAndTimelineNeedsPushProperties(true, ticker_id_);
+                    keyframe_effect_id_);
+  CheckKeyframeEffectAndTimelineNeedsPushProperties(true, keyframe_effect_id_);
 
   host_->PushPropertiesTo(host_impl_);
-  CheckTickerAndTimelineNeedsPushProperties(false, ticker_id_);
+  CheckKeyframeEffectAndTimelineNeedsPushProperties(false, keyframe_effect_id_);
 
   EXPECT_FALSE(client_.IsPropertyMutated(element_id_, ElementListType::ACTIVE,
                                          TargetProperty::OPACITY));
@@ -311,11 +339,11 @@ TEST_F(AnimationPlayerTest, PropertiesMutate) {
   base::TimeTicks time;
   time += base::TimeDelta::FromSecondsD(0.1);
   TickAnimationsTransferEvents(time, 3u);
-  CheckTickerAndTimelineNeedsPushProperties(false, ticker_id_);
+  CheckKeyframeEffectAndTimelineNeedsPushProperties(false, keyframe_effect_id_);
 
   time += base::TimeDelta::FromSecondsD(duration);
   TickAnimationsTransferEvents(time, 3u);
-  CheckTickerAndTimelineNeedsPushProperties(true, ticker_id_);
+  CheckKeyframeEffectAndTimelineNeedsPushProperties(true, keyframe_effect_id_);
 
   client_.ExpectOpacityPropertyMutated(element_id_, ElementListType::ACTIVE,
                                        end_opacity);
@@ -350,12 +378,14 @@ TEST_F(AnimationPlayerTest, AttachTwoPlayersToOneLayer) {
   scoped_refptr<AnimationPlayer> player1 = AnimationPlayer::Create(100);
   scoped_refptr<AnimationPlayer> player2 = AnimationPlayer::Create(200);
 
-  TickerId ticker_id1 = player1->NextTickerId();
-  player1->AddTicker(base::MakeUnique<AnimationTicker>(ticker_id1));
-  ASSERT_TRUE(player1->GetTickerById(ticker_id1));
-  TickerId ticker_id2 = player2->NextTickerId();
-  player2->AddTicker(base::MakeUnique<AnimationTicker>(ticker_id2));
-  ASSERT_TRUE(player2->GetTickerById(ticker_id2));
+  KeyframeEffectId keyframe_effect_id1 = player1->NextKeyframeEffectId();
+  player1->AddKeyframeEffect(
+      base::MakeUnique<KeyframeEffect>(keyframe_effect_id1));
+  ASSERT_TRUE(player1->GetKeyframeEffectById(keyframe_effect_id1));
+  KeyframeEffectId keyframe_effect_id2 = player2->NextKeyframeEffectId();
+  player2->AddKeyframeEffect(
+      base::MakeUnique<KeyframeEffect>(keyframe_effect_id2));
+  ASSERT_TRUE(player2->GetKeyframeEffectById(keyframe_effect_id2));
 
   host_->AddAnimationTimeline(timeline_);
 
@@ -369,8 +399,8 @@ TEST_F(AnimationPlayerTest, AttachTwoPlayersToOneLayer) {
   player2->set_animation_delegate(&delegate2);
 
   // Attach players to the same layer.
-  player1->AttachElementForTicker(element_id_, ticker_id1);
-  player2->AttachElementForTicker(element_id_, ticker_id2);
+  player1->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id1);
+  player2->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id2);
 
   const float start_opacity = .7f;
   const float end_opacity = .3f;
@@ -381,9 +411,9 @@ TEST_F(AnimationPlayerTest, AttachTwoPlayersToOneLayer) {
   const double duration = 1.;
 
   AddOpacityTransition(player1.get(), duration, start_opacity, end_opacity,
-                       false, ticker_id1);
+                       false, keyframe_effect_id1);
   AddAnimatedTransform(player2.get(), duration, transform_x, transform_y,
-                       ticker_id2);
+                       keyframe_effect_id2);
 
   host_->PushPropertiesTo(host_impl_);
   host_impl_->ActivateAnimations();
@@ -404,8 +434,10 @@ TEST_F(AnimationPlayerTest, AttachTwoPlayersToOneLayer) {
   EXPECT_TRUE(delegate2.started());
   EXPECT_FALSE(delegate2.finished());
 
-  EXPECT_FALSE(player1->GetTickerById(ticker_id1)->needs_push_properties());
-  EXPECT_FALSE(player2->GetTickerById(ticker_id2)->needs_push_properties());
+  EXPECT_FALSE(player1->GetKeyframeEffectById(keyframe_effect_id1)
+                   ->needs_push_properties());
+  EXPECT_FALSE(player2->GetKeyframeEffectById(keyframe_effect_id2)
+                   ->needs_push_properties());
 
   time += base::TimeDelta::FromSecondsD(duration);
   TickAnimationsTransferEvents(time, 2u);
@@ -413,8 +445,10 @@ TEST_F(AnimationPlayerTest, AttachTwoPlayersToOneLayer) {
   EXPECT_TRUE(delegate1.finished());
   EXPECT_TRUE(delegate2.finished());
 
-  EXPECT_TRUE(player1->GetTickerById(ticker_id1)->needs_push_properties());
-  EXPECT_TRUE(player2->GetTickerById(ticker_id2)->needs_push_properties());
+  EXPECT_TRUE(player1->GetKeyframeEffectById(keyframe_effect_id1)
+                  ->needs_push_properties());
+  EXPECT_TRUE(player2->GetKeyframeEffectById(keyframe_effect_id2)
+                  ->needs_push_properties());
 
   client_.ExpectOpacityPropertyMutated(element_id_, ElementListType::ACTIVE,
                                        end_opacity);
@@ -437,38 +471,45 @@ TEST_F(AnimationPlayerTest, AddRemoveAnimationToNonAttachedPlayer) {
   client_impl_.RegisterElement(element_id_, ElementListType::PENDING);
   client_impl_.RegisterElement(element_id_, ElementListType::ACTIVE);
 
-  player_->AddTicker(base::MakeUnique<AnimationTicker>(ticker_id_));
-  ASSERT_TRUE(player_->GetTickerById(ticker_id_));
+  player_->AddKeyframeEffect(
+      base::MakeUnique<KeyframeEffect>(keyframe_effect_id_));
+  ASSERT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_));
 
   const double duration = 1.;
   const float start_opacity = .7f;
   const float end_opacity = .3f;
 
-  const int filter_id =
-      AddAnimatedFilter(player_.get(), duration, 0.1f, 0.9f, ticker_id_);
+  const int filter_id = AddAnimatedFilter(player_.get(), duration, 0.1f, 0.9f,
+                                          keyframe_effect_id_);
   AddOpacityTransition(player_.get(), duration, start_opacity, end_opacity,
-                       false, ticker_id_);
+                       false, keyframe_effect_id_);
 
-  EXPECT_FALSE(player_->GetTickerById(ticker_id_)->needs_push_properties());
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+                   ->needs_push_properties());
 
   host_->AddAnimationTimeline(timeline_);
   timeline_->AttachPlayer(player_);
 
-  EXPECT_FALSE(player_->GetTickerById(ticker_id_)->needs_push_properties());
-  EXPECT_FALSE(player_->GetTickerById(ticker_id_)->element_animations());
-  player_->RemoveAnimationForTicker(filter_id, ticker_id_);
-  EXPECT_FALSE(player_->GetTickerById(ticker_id_)->needs_push_properties());
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+                   ->needs_push_properties());
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+                   ->element_animations());
+  player_->RemoveKeyframeModelForKeyframeEffect(filter_id, keyframe_effect_id_);
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+                   ->needs_push_properties());
 
-  player_->AttachElementForTicker(element_id_, ticker_id_);
+  player_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id_);
 
-  EXPECT_TRUE(player_->GetTickerById(ticker_id_)->element_animations());
-  EXPECT_FALSE(player_->GetTickerById(ticker_id_)
+  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+                  ->element_animations());
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
                    ->element_animations()
                    ->HasAnyAnimationTargetingProperty(TargetProperty::FILTER));
-  EXPECT_TRUE(player_->GetTickerById(ticker_id_)
+  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_)
                   ->element_animations()
                   ->HasAnyAnimationTargetingProperty(TargetProperty::OPACITY));
-  EXPECT_TRUE(player_->GetTickerById(ticker_id_)->needs_push_properties());
+  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+                  ->needs_push_properties());
 
   host_->PushPropertiesTo(host_impl_);
 
@@ -507,25 +548,28 @@ TEST_F(AnimationPlayerTest, AddRemoveAnimationToNonAttachedPlayer) {
 TEST_F(AnimationPlayerTest, AddRemoveAnimationCausesSetNeedsCommit) {
   client_.RegisterElement(element_id_, ElementListType::ACTIVE);
   host_->AddAnimationTimeline(timeline_);
-  player_->AddTicker(base::MakeUnique<AnimationTicker>(ticker_id_));
-  ASSERT_TRUE(player_->GetTickerById(ticker_id_));
+  player_->AddKeyframeEffect(
+      base::MakeUnique<KeyframeEffect>(keyframe_effect_id_));
+  ASSERT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_));
 
   timeline_->AttachPlayer(player_);
-  player_->AttachElementForTicker(element_id_, ticker_id_);
+  player_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id_);
 
   EXPECT_FALSE(client_.mutators_need_commit());
 
-  const int animation_id =
-      AddOpacityTransition(player_.get(), 1., .7f, .3f, false, ticker_id_);
+  const int keyframe_model_id = AddOpacityTransition(
+      player_.get(), 1., .7f, .3f, false, keyframe_effect_id_);
 
   EXPECT_TRUE(client_.mutators_need_commit());
   client_.set_mutators_need_commit(false);
 
-  player_->PauseAnimationForTicker(animation_id, 1., ticker_id_);
+  player_->PauseKeyframeModelForKeyframeEffect(keyframe_model_id, 1.,
+                                               keyframe_effect_id_);
   EXPECT_TRUE(client_.mutators_need_commit());
   client_.set_mutators_need_commit(false);
 
-  player_->RemoveAnimationForTicker(animation_id, ticker_id_);
+  player_->RemoveKeyframeModelForKeyframeEffect(keyframe_model_id,
+                                                keyframe_effect_id_);
   EXPECT_TRUE(client_.mutators_need_commit());
   client_.set_mutators_need_commit(false);
 }
@@ -534,9 +578,10 @@ TEST_F(AnimationPlayerTest, AddRemoveAnimationCausesSetNeedsCommit) {
 // impl-thread player must be switched as well.
 TEST_F(AnimationPlayerTest, SwitchToLayer) {
   host_->AddAnimationTimeline(timeline_);
-  player_->AddTicker(base::MakeUnique<AnimationTicker>(ticker_id_));
+  player_->AddKeyframeEffect(
+      base::MakeUnique<KeyframeEffect>(keyframe_effect_id_));
   timeline_->AttachPlayer(player_);
-  player_->AttachElementForTicker(element_id_, ticker_id_);
+  player_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id_);
 
   host_->PushPropertiesTo(host_impl_);
 
@@ -545,92 +590,104 @@ TEST_F(AnimationPlayerTest, SwitchToLayer) {
   player_impl_ = timeline_impl_->GetPlayerById(player_id_);
   EXPECT_TRUE(player_impl_);
 
-  EXPECT_EQ(player_->GetTickerById(ticker_id_),
-            GetTickerForElementId(element_id_));
-  EXPECT_TRUE(player_->GetTickerById(ticker_id_)->element_animations());
-  EXPECT_EQ(player_->GetTickerById(ticker_id_)->element_id(), element_id_);
+  EXPECT_EQ(player_->GetKeyframeEffectById(keyframe_effect_id_),
+            GetKeyframeEffectForElementId(element_id_));
+  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+                  ->element_animations());
+  EXPECT_EQ(player_->GetKeyframeEffectById(keyframe_effect_id_)->element_id(),
+            element_id_);
 
   timeline_impl_ = host_impl_->GetTimelineById(timeline_id_);
   EXPECT_TRUE(timeline_impl_);
   player_impl_ = timeline_impl_->GetPlayerById(player_id_);
   EXPECT_TRUE(player_impl_);
-  EXPECT_EQ(player_impl_->GetTickerById(ticker_id_),
-            GetImplTickerForLayerId(element_id_));
-  EXPECT_TRUE(player_impl_->GetTickerById(ticker_id_)->element_animations());
-  EXPECT_EQ(player_impl_->GetTickerById(ticker_id_)->element_id(), element_id_);
-  CheckTickerAndTimelineNeedsPushProperties(false, ticker_id_);
+  EXPECT_EQ(player_impl_->GetKeyframeEffectById(keyframe_effect_id_),
+            GetImplKeyframeEffectForLayerId(element_id_));
+  EXPECT_TRUE(player_impl_->GetKeyframeEffectById(keyframe_effect_id_)
+                  ->element_animations());
+  EXPECT_EQ(
+      player_impl_->GetKeyframeEffectById(keyframe_effect_id_)->element_id(),
+      element_id_);
+  CheckKeyframeEffectAndTimelineNeedsPushProperties(false, keyframe_effect_id_);
 
   const ElementId new_element_id(NextTestLayerId());
   player_->DetachElement();
-  player_->AttachElementForTicker(new_element_id, ticker_id_);
+  player_->AttachElementForKeyframeEffect(new_element_id, keyframe_effect_id_);
 
-  EXPECT_EQ(player_->GetTickerById(ticker_id_),
-            GetTickerForElementId(new_element_id));
-  EXPECT_TRUE(player_->GetTickerById(ticker_id_)->element_animations());
-  EXPECT_EQ(player_->GetTickerById(ticker_id_)->element_id(), new_element_id);
-  CheckTickerAndTimelineNeedsPushProperties(true, ticker_id_);
+  EXPECT_EQ(player_->GetKeyframeEffectById(keyframe_effect_id_),
+            GetKeyframeEffectForElementId(new_element_id));
+  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+                  ->element_animations());
+  EXPECT_EQ(player_->GetKeyframeEffectById(keyframe_effect_id_)->element_id(),
+            new_element_id);
+  CheckKeyframeEffectAndTimelineNeedsPushProperties(true, keyframe_effect_id_);
 
   host_->PushPropertiesTo(host_impl_);
 
-  EXPECT_EQ(player_impl_->GetTickerById(ticker_id_),
-            GetImplTickerForLayerId(new_element_id));
-  EXPECT_TRUE(player_impl_->GetTickerById(ticker_id_)->element_animations());
-  EXPECT_EQ(player_impl_->GetTickerById(ticker_id_)->element_id(),
-            new_element_id);
+  EXPECT_EQ(player_impl_->GetKeyframeEffectById(keyframe_effect_id_),
+            GetImplKeyframeEffectForLayerId(new_element_id));
+  EXPECT_TRUE(player_impl_->GetKeyframeEffectById(keyframe_effect_id_)
+                  ->element_animations());
+  EXPECT_EQ(
+      player_impl_->GetKeyframeEffectById(keyframe_effect_id_)->element_id(),
+      new_element_id);
 }
 
 TEST_F(AnimationPlayerTest, ToString) {
-  player_->AddTicker(base::MakeUnique<AnimationTicker>(ticker_id_));
-  player_->AttachElementForTicker(element_id_, ticker_id_);
-  EXPECT_EQ(
-      base::StringPrintf("AnimationPlayer{id=%d, element_id=%s, animations=[]}",
-                         player_->id(), element_id_.ToString().c_str()),
-      player_->ToString());
+  player_->AddKeyframeEffect(
+      base::MakeUnique<KeyframeEffect>(keyframe_effect_id_));
+  player_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id_);
+  EXPECT_EQ(base::StringPrintf(
+                "AnimationPlayer{id=%d, element_id=%s, keyframe_models=[]}",
+                player_->id(), element_id_.ToString().c_str()),
+            player_->ToString());
 
-  player_->AddAnimationForTicker(
-      Animation::Create(std::make_unique<FakeFloatAnimationCurve>(15), 42, 73,
-                        TargetProperty::OPACITY),
-      ticker_id_);
+  player_->AddKeyframeModelForKeyframeEffect(
+      KeyframeModel::Create(std::make_unique<FakeFloatAnimationCurve>(15), 42,
+                            73, TargetProperty::OPACITY),
+      keyframe_effect_id_);
   EXPECT_EQ(base::StringPrintf("AnimationPlayer{id=%d, element_id=%s, "
-                               "animations=[Animation{id=42, "
+                               "keyframe_models=[KeyframeModel{id=42, "
                                "group=73, target_property_id=1, "
                                "run_state=WAITING_FOR_TARGET_AVAILABILITY}]}",
                                player_->id(), element_id_.ToString().c_str()),
             player_->ToString());
 
-  player_->AddAnimationForTicker(
-      Animation::Create(std::make_unique<FakeFloatAnimationCurve>(18), 45, 76,
-                        TargetProperty::BOUNDS),
-      ticker_id_);
+  player_->AddKeyframeModelForKeyframeEffect(
+      KeyframeModel::Create(std::make_unique<FakeFloatAnimationCurve>(18), 45,
+                            76, TargetProperty::BOUNDS),
+      keyframe_effect_id_);
   EXPECT_EQ(
       base::StringPrintf(
           "AnimationPlayer{id=%d, element_id=%s, "
-          "animations=[Animation{id=42, "
+          "keyframe_models=[KeyframeModel{id=42, "
           "group=73, target_property_id=1, "
-          "run_state=WAITING_FOR_TARGET_AVAILABILITY}, Animation{id=45, "
+          "run_state=WAITING_FOR_TARGET_AVAILABILITY}, KeyframeModel{id=45, "
           "group=76, "
           "target_property_id=5, run_state=WAITING_FOR_TARGET_AVAILABILITY}]}",
           player_->id(), element_id_.ToString().c_str()),
       player_->ToString());
 
-  TickerId second_ticker_id = player_->NextTickerId();
+  KeyframeEffectId second_keyframe_effect_id = player_->NextKeyframeEffectId();
   ElementId second_element_id(NextTestLayerId());
-  player_->AddTicker(base::MakeUnique<AnimationTicker>(second_ticker_id));
-  player_->AttachElementForTicker(second_element_id, second_ticker_id);
-  player_->AddAnimationForTicker(
-      Animation::Create(std::make_unique<FakeFloatAnimationCurve>(20), 48, 78,
-                        TargetProperty::OPACITY),
-      second_ticker_id);
+  player_->AddKeyframeEffect(
+      base::MakeUnique<KeyframeEffect>(second_keyframe_effect_id));
+  player_->AttachElementForKeyframeEffect(second_element_id,
+                                          second_keyframe_effect_id);
+  player_->AddKeyframeModelForKeyframeEffect(
+      KeyframeModel::Create(std::make_unique<FakeFloatAnimationCurve>(20), 48,
+                            78, TargetProperty::OPACITY),
+      second_keyframe_effect_id);
   EXPECT_EQ(
       base::StringPrintf(
           "AnimationPlayer{id=%d, element_id=%s, "
-          "animations=[Animation{id=42, "
+          "keyframe_models=[KeyframeModel{id=42, "
           "group=73, target_property_id=1, "
-          "run_state=WAITING_FOR_TARGET_AVAILABILITY}, Animation{id=45, "
+          "run_state=WAITING_FOR_TARGET_AVAILABILITY}, KeyframeModel{id=45, "
           "group=76, "
           "target_property_id=5, run_state=WAITING_FOR_TARGET_AVAILABILITY}]"
           ", element_id=%s, "
-          "animations=[Animation{id=48, "
+          "keyframe_models=[KeyframeModel{id=48, "
           "group=78, target_property_id=1, "
           "run_state=WAITING_FOR_TARGET_AVAILABILITY}]}",
           player_->id(), element_id_.ToString().c_str(),
@@ -638,29 +695,36 @@ TEST_F(AnimationPlayerTest, ToString) {
       player_->ToString());
 }
 
-TEST_F(AnimationPlayerTest, AddTwoTickersFromTheSameElementToOnePlayerTest) {
+TEST_F(AnimationPlayerTest,
+       AddTwoKeyframeEffectsFromTheSameElementToOnePlayerTest) {
   host_->AddAnimationTimeline(timeline_);
   EXPECT_TRUE(timeline_->needs_push_properties());
 
-  TickerId ticker_id1 = player_->NextTickerId();
+  KeyframeEffectId keyframe_effect_id1 = player_->NextKeyframeEffectId();
 
-  player_->AddTicker(base::MakeUnique<AnimationTicker>(ticker_id1));
-  ASSERT_TRUE(player_->GetTickerById(ticker_id1));
-  EXPECT_FALSE(player_->GetTickerById(ticker_id1)->needs_push_properties());
+  player_->AddKeyframeEffect(
+      base::MakeUnique<KeyframeEffect>(keyframe_effect_id1));
+  ASSERT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id1));
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+                   ->needs_push_properties());
 
-  TickerId ticker_id2 = player_->NextTickerId();
-  player_->AddTicker(base::MakeUnique<AnimationTicker>(ticker_id2));
-  ASSERT_TRUE(player_->GetTickerById(ticker_id2));
-  EXPECT_FALSE(player_->GetTickerById(ticker_id2)->needs_push_properties());
+  KeyframeEffectId keyframe_effect_id2 = player_->NextKeyframeEffectId();
+  player_->AddKeyframeEffect(
+      base::MakeUnique<KeyframeEffect>(keyframe_effect_id2));
+  ASSERT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id2));
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+                   ->needs_push_properties());
 
   timeline_->AttachPlayer(player_);
-  EXPECT_FALSE(player_->element_animations(ticker_id1));
-  EXPECT_FALSE(player_->element_animations(ticker_id2));
-  EXPECT_FALSE(player_->element_id_of_ticker(ticker_id1));
-  EXPECT_FALSE(player_->element_id_of_ticker(ticker_id2));
+  EXPECT_FALSE(player_->element_animations(keyframe_effect_id1));
+  EXPECT_FALSE(player_->element_animations(keyframe_effect_id2));
+  EXPECT_FALSE(player_->element_id_of_keyframe_effect(keyframe_effect_id1));
+  EXPECT_FALSE(player_->element_id_of_keyframe_effect(keyframe_effect_id2));
   EXPECT_TRUE(timeline_->needs_push_properties());
-  EXPECT_FALSE(player_->GetTickerById(ticker_id1)->needs_push_properties());
-  EXPECT_FALSE(player_->GetTickerById(ticker_id2)->needs_push_properties());
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+                   ->needs_push_properties());
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+                   ->needs_push_properties());
 
   host_->PushPropertiesTo(host_impl_);
 
@@ -669,176 +733,217 @@ TEST_F(AnimationPlayerTest, AddTwoTickersFromTheSameElementToOnePlayerTest) {
   player_impl_ = timeline_impl_->GetPlayerById(player_id_);
   EXPECT_TRUE(player_impl_);
 
-  player_->AttachElementForTicker(element_id_, ticker_id1);
-  EXPECT_TRUE(player_->element_animations(ticker_id1));
-  EXPECT_EQ(player_->element_id_of_ticker(ticker_id1), element_id_);
-  EXPECT_TRUE(player_->GetTickerById(ticker_id1)->needs_push_properties());
+  player_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id1);
+  EXPECT_TRUE(player_->element_animations(keyframe_effect_id1));
+  EXPECT_EQ(player_->element_id_of_keyframe_effect(keyframe_effect_id1),
+            element_id_);
+  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+                  ->needs_push_properties());
 
-  EXPECT_FALSE(player_->element_animations(ticker_id2));
-  EXPECT_NE(player_->element_id_of_ticker(ticker_id2), element_id_);
-  EXPECT_FALSE(player_->GetTickerById(ticker_id2)->needs_push_properties());
+  EXPECT_FALSE(player_->element_animations(keyframe_effect_id2));
+  EXPECT_NE(player_->element_id_of_keyframe_effect(keyframe_effect_id2),
+            element_id_);
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+                   ->needs_push_properties());
 
   const scoped_refptr<ElementAnimations> element_animations =
       host_->GetElementAnimationsForElementId(element_id_);
-  EXPECT_TRUE(element_animations->tickers_list().HasObserver(
-      player_->GetTickerById(ticker_id1)));
-  EXPECT_FALSE(element_animations->tickers_list().HasObserver(
-      player_->GetTickerById(ticker_id2)));
+  EXPECT_TRUE(element_animations->keyframe_effects_list().HasObserver(
+      player_->GetKeyframeEffectById(keyframe_effect_id1)));
+  EXPECT_FALSE(element_animations->keyframe_effects_list().HasObserver(
+      player_->GetKeyframeEffectById(keyframe_effect_id2)));
 
-  player_->AttachElementForTicker(element_id_, ticker_id2);
-  EXPECT_TRUE(player_->element_animations(ticker_id2));
-  EXPECT_EQ(player_->element_id_of_ticker(ticker_id2), element_id_);
-  EXPECT_TRUE(player_->GetTickerById(ticker_id2)->needs_push_properties());
+  player_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id2);
+  EXPECT_TRUE(player_->element_animations(keyframe_effect_id2));
+  EXPECT_EQ(player_->element_id_of_keyframe_effect(keyframe_effect_id2),
+            element_id_);
+  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+                  ->needs_push_properties());
 
-  EXPECT_TRUE(element_animations->tickers_list().HasObserver(
-      player_->GetTickerById(ticker_id2)));
+  EXPECT_TRUE(element_animations->keyframe_effects_list().HasObserver(
+      player_->GetKeyframeEffectById(keyframe_effect_id2)));
 
   host_->PushPropertiesTo(host_impl_);
 
   const scoped_refptr<ElementAnimations> element_animations_impl =
       host_impl_->GetElementAnimationsForElementId(element_id_);
-  EXPECT_TRUE(element_animations_impl->tickers_list().HasObserver(
-      player_impl_->GetTickerById(ticker_id1)));
-  EXPECT_TRUE(element_animations_impl->tickers_list().HasObserver(
-      player_impl_->GetTickerById(ticker_id2)));
+  EXPECT_TRUE(element_animations_impl->keyframe_effects_list().HasObserver(
+      player_impl_->GetKeyframeEffectById(keyframe_effect_id1)));
+  EXPECT_TRUE(element_animations_impl->keyframe_effects_list().HasObserver(
+      player_impl_->GetKeyframeEffectById(keyframe_effect_id2)));
 
-  EXPECT_TRUE(player_impl_->element_animations(ticker_id1));
-  EXPECT_EQ(player_impl_->element_id_of_ticker(ticker_id1), element_id_);
-  EXPECT_TRUE(player_impl_->element_animations(ticker_id2));
-  EXPECT_EQ(player_impl_->element_id_of_ticker(ticker_id2), element_id_);
+  EXPECT_TRUE(player_impl_->element_animations(keyframe_effect_id1));
+  EXPECT_EQ(player_impl_->element_id_of_keyframe_effect(keyframe_effect_id1),
+            element_id_);
+  EXPECT_TRUE(player_impl_->element_animations(keyframe_effect_id2));
+  EXPECT_EQ(player_impl_->element_id_of_keyframe_effect(keyframe_effect_id2),
+            element_id_);
 
   player_->DetachElement();
-  EXPECT_FALSE(player_->element_animations(ticker_id1));
-  EXPECT_FALSE(player_->element_id_of_ticker(ticker_id1));
-  EXPECT_FALSE(element_animations->tickers_list().HasObserver(
-      player_->GetTickerById(ticker_id1)));
+  EXPECT_FALSE(player_->element_animations(keyframe_effect_id1));
+  EXPECT_FALSE(player_->element_id_of_keyframe_effect(keyframe_effect_id1));
+  EXPECT_FALSE(element_animations->keyframe_effects_list().HasObserver(
+      player_->GetKeyframeEffectById(keyframe_effect_id1)));
 
-  EXPECT_FALSE(player_->element_animations(ticker_id2));
-  EXPECT_FALSE(player_->element_id_of_ticker(ticker_id2));
-  EXPECT_FALSE(element_animations->tickers_list().HasObserver(
-      player_->GetTickerById(ticker_id2)));
+  EXPECT_FALSE(player_->element_animations(keyframe_effect_id2));
+  EXPECT_FALSE(player_->element_id_of_keyframe_effect(keyframe_effect_id2));
+  EXPECT_FALSE(element_animations->keyframe_effects_list().HasObserver(
+      player_->GetKeyframeEffectById(keyframe_effect_id2)));
 
-  EXPECT_TRUE(element_animations_impl->tickers_list().HasObserver(
-      player_impl_->GetTickerById(ticker_id1)));
-  EXPECT_TRUE(element_animations_impl->tickers_list().HasObserver(
-      player_impl_->GetTickerById(ticker_id2)));
+  EXPECT_TRUE(element_animations_impl->keyframe_effects_list().HasObserver(
+      player_impl_->GetKeyframeEffectById(keyframe_effect_id1)));
+  EXPECT_TRUE(element_animations_impl->keyframe_effects_list().HasObserver(
+      player_impl_->GetKeyframeEffectById(keyframe_effect_id2)));
 
   host_->PushPropertiesTo(host_impl_);
 
-  EXPECT_FALSE(player_impl_->element_animations(ticker_id1));
-  EXPECT_FALSE(player_impl_->element_id_of_ticker(ticker_id1));
-  EXPECT_FALSE(element_animations_impl->tickers_list().HasObserver(
-      player_impl_->GetTickerById(ticker_id1)));
-  EXPECT_FALSE(player_impl_->element_animations(ticker_id2));
-  EXPECT_FALSE(player_impl_->element_id_of_ticker(ticker_id2));
-  EXPECT_FALSE(element_animations_impl->tickers_list().HasObserver(
-      player_impl_->GetTickerById(ticker_id2)));
+  EXPECT_FALSE(player_impl_->element_animations(keyframe_effect_id1));
+  EXPECT_FALSE(
+      player_impl_->element_id_of_keyframe_effect(keyframe_effect_id1));
+  EXPECT_FALSE(element_animations_impl->keyframe_effects_list().HasObserver(
+      player_impl_->GetKeyframeEffectById(keyframe_effect_id1)));
+  EXPECT_FALSE(player_impl_->element_animations(keyframe_effect_id2));
+  EXPECT_FALSE(
+      player_impl_->element_id_of_keyframe_effect(keyframe_effect_id2));
+  EXPECT_FALSE(element_animations_impl->keyframe_effects_list().HasObserver(
+      player_impl_->GetKeyframeEffectById(keyframe_effect_id2)));
 
   timeline_->DetachPlayer(player_);
   EXPECT_FALSE(player_->animation_timeline());
 
-  EXPECT_FALSE(player_->element_animations(ticker_id1));
-  EXPECT_FALSE(player_->element_id_of_ticker(ticker_id1));
-  EXPECT_FALSE(player_->element_animations(ticker_id2));
-  EXPECT_FALSE(player_->element_id_of_ticker(ticker_id2));
+  EXPECT_FALSE(player_->element_animations(keyframe_effect_id1));
+  EXPECT_FALSE(player_->element_id_of_keyframe_effect(keyframe_effect_id1));
+  EXPECT_FALSE(player_->element_animations(keyframe_effect_id2));
+  EXPECT_FALSE(player_->element_id_of_keyframe_effect(keyframe_effect_id2));
 
   EXPECT_TRUE(timeline_->needs_push_properties());
-  EXPECT_FALSE(player_->GetTickerById(ticker_id1)->needs_push_properties());
-  EXPECT_FALSE(player_->GetTickerById(ticker_id2)->needs_push_properties());
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+                   ->needs_push_properties());
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+                   ->needs_push_properties());
 }
 
-TEST_F(AnimationPlayerTest, AddTwoTickersFromDifferentElementsToOnePlayerTest) {
+TEST_F(AnimationPlayerTest,
+       AddTwoKeyframeEffectsFromDifferentElementsToOnePlayerTest) {
   host_->AddAnimationTimeline(timeline_);
 
-  TickerId ticker_id1 = player_->NextTickerId();
+  KeyframeEffectId keyframe_effect_id1 = player_->NextKeyframeEffectId();
 
-  player_->AddTicker(base::MakeUnique<AnimationTicker>(ticker_id1));
-  ASSERT_TRUE(player_->GetTickerById(ticker_id1));
-  EXPECT_FALSE(player_->GetTickerById(ticker_id1)->needs_push_properties());
+  player_->AddKeyframeEffect(
+      base::MakeUnique<KeyframeEffect>(keyframe_effect_id1));
+  ASSERT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id1));
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+                   ->needs_push_properties());
 
-  TickerId ticker_id2 = player_->NextTickerId();
-  player_->AddTicker(base::MakeUnique<AnimationTicker>(ticker_id2));
-  ASSERT_TRUE(player_->GetTickerById(ticker_id2));
-  EXPECT_FALSE(player_->GetTickerById(ticker_id2)->needs_push_properties());
+  KeyframeEffectId keyframe_effect_id2 = player_->NextKeyframeEffectId();
+  player_->AddKeyframeEffect(
+      base::MakeUnique<KeyframeEffect>(keyframe_effect_id2));
+  ASSERT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id2));
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+                   ->needs_push_properties());
 
-  EXPECT_FALSE(player_->element_animations(ticker_id1));
-  EXPECT_FALSE(player_->element_animations(ticker_id2));
-  EXPECT_FALSE(player_->element_id_of_ticker(ticker_id1));
-  EXPECT_FALSE(player_->element_id_of_ticker(ticker_id2));
+  EXPECT_FALSE(player_->element_animations(keyframe_effect_id1));
+  EXPECT_FALSE(player_->element_animations(keyframe_effect_id2));
+  EXPECT_FALSE(player_->element_id_of_keyframe_effect(keyframe_effect_id1));
+  EXPECT_FALSE(player_->element_id_of_keyframe_effect(keyframe_effect_id2));
   EXPECT_TRUE(timeline_->needs_push_properties());
-  EXPECT_FALSE(player_->GetTickerById(ticker_id1)->needs_push_properties());
-  EXPECT_FALSE(player_->GetTickerById(ticker_id2)->needs_push_properties());
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+                   ->needs_push_properties());
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+                   ->needs_push_properties());
 
   ElementId element1(NextTestLayerId());
   ElementId element2(NextTestLayerId());
 
-  player_->AttachElementForTicker(element1, ticker_id1);
-  player_->AttachElementForTicker(element2, ticker_id2);
+  player_->AttachElementForKeyframeEffect(element1, keyframe_effect_id1);
+  player_->AttachElementForKeyframeEffect(element2, keyframe_effect_id2);
 
   EXPECT_FALSE(player_->animation_timeline());
 
   scoped_refptr<ElementAnimations> element_animations =
       host_->GetElementAnimationsForElementId(element1);
   EXPECT_FALSE(element_animations);
-  EXPECT_FALSE(player_->GetTickerById(ticker_id1)->element_animations());
-  EXPECT_EQ(player_->GetTickerById(ticker_id1)->element_id(), element1);
-  EXPECT_FALSE(player_->GetTickerById(ticker_id1)->needs_push_properties());
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+                   ->element_animations());
+  EXPECT_EQ(player_->GetKeyframeEffectById(keyframe_effect_id1)->element_id(),
+            element1);
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+                   ->needs_push_properties());
 
   timeline_->AttachPlayer(player_);
   EXPECT_EQ(timeline_, player_->animation_timeline());
-  EXPECT_TRUE(player_->GetTickerById(ticker_id1)->element_animations());
-  EXPECT_EQ(player_->GetTickerById(ticker_id1)->element_id(), element1);
-  EXPECT_TRUE(player_->GetTickerById(ticker_id1)->needs_push_properties());
+  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+                  ->element_animations());
+  EXPECT_EQ(player_->GetKeyframeEffectById(keyframe_effect_id1)->element_id(),
+            element1);
+  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+                  ->needs_push_properties());
 
   element_animations = host_->GetElementAnimationsForElementId(element1);
-  EXPECT_TRUE(element_animations->tickers_list().HasObserver(
-      player_->GetTickerById(ticker_id1)));
-  EXPECT_FALSE(element_animations->tickers_list().HasObserver(
-      player_->GetTickerById(ticker_id2)));
+  EXPECT_TRUE(element_animations->keyframe_effects_list().HasObserver(
+      player_->GetKeyframeEffectById(keyframe_effect_id1)));
+  EXPECT_FALSE(element_animations->keyframe_effects_list().HasObserver(
+      player_->GetKeyframeEffectById(keyframe_effect_id2)));
 
   element_animations = host_->GetElementAnimationsForElementId(element2);
-  EXPECT_TRUE(element_animations->tickers_list().HasObserver(
-      player_->GetTickerById(ticker_id2)));
+  EXPECT_TRUE(element_animations->keyframe_effects_list().HasObserver(
+      player_->GetKeyframeEffectById(keyframe_effect_id2)));
 
   player_->DetachElement();
   EXPECT_TRUE(player_->animation_timeline());
-  EXPECT_FALSE(element_animations->tickers_list().HasObserver(
-      player_->GetTickerById(ticker_id2)));
-  EXPECT_FALSE(player_->GetTickerById(ticker_id1)->element_animations());
-  EXPECT_FALSE(player_->GetTickerById(ticker_id1)->element_id());
-  EXPECT_TRUE(player_->GetTickerById(ticker_id1)->needs_push_properties());
-  EXPECT_FALSE(player_->GetTickerById(ticker_id2)->element_animations());
-  EXPECT_FALSE(player_->GetTickerById(ticker_id2)->element_id());
-  EXPECT_TRUE(player_->GetTickerById(ticker_id2)->needs_push_properties());
+  EXPECT_FALSE(element_animations->keyframe_effects_list().HasObserver(
+      player_->GetKeyframeEffectById(keyframe_effect_id2)));
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+                   ->element_animations());
+  EXPECT_FALSE(
+      player_->GetKeyframeEffectById(keyframe_effect_id1)->element_id());
+  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+                  ->needs_push_properties());
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+                   ->element_animations());
+  EXPECT_FALSE(
+      player_->GetKeyframeEffectById(keyframe_effect_id2)->element_id());
+  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+                  ->needs_push_properties());
 
   // Removing player from timeline detaches layer.
   timeline_->DetachPlayer(player_);
   EXPECT_FALSE(player_->animation_timeline());
-  EXPECT_FALSE(player_->GetTickerById(ticker_id1)->element_animations());
-  EXPECT_FALSE(player_->GetTickerById(ticker_id1)->element_id());
-  EXPECT_TRUE(player_->GetTickerById(ticker_id1)->needs_push_properties());
-  EXPECT_FALSE(player_->GetTickerById(ticker_id2)->element_animations());
-  EXPECT_FALSE(player_->GetTickerById(ticker_id2)->element_id());
-  EXPECT_TRUE(player_->GetTickerById(ticker_id2)->needs_push_properties());
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+                   ->element_animations());
+  EXPECT_FALSE(
+      player_->GetKeyframeEffectById(keyframe_effect_id1)->element_id());
+  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+                  ->needs_push_properties());
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+                   ->element_animations());
+  EXPECT_FALSE(
+      player_->GetKeyframeEffectById(keyframe_effect_id2)->element_id());
+  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+                  ->needs_push_properties());
 }
 
-TEST_F(AnimationPlayerTest, TickingAnimationsFromTwoTickers) {
+TEST_F(AnimationPlayerTest, TickingAnimationsFromTwoKeyframeEffects) {
   TestAnimationDelegate delegate1;
 
   client_.RegisterElement(element_id_, ElementListType::ACTIVE);
   client_impl_.RegisterElement(element_id_, ElementListType::PENDING);
   client_impl_.RegisterElement(element_id_, ElementListType::ACTIVE);
 
-  TickerId ticker_id1 = player_->NextTickerId();
+  KeyframeEffectId keyframe_effect_id1 = player_->NextKeyframeEffectId();
 
-  player_->AddTicker(base::MakeUnique<AnimationTicker>(ticker_id1));
-  ASSERT_TRUE(player_->GetTickerById(ticker_id1));
-  EXPECT_FALSE(player_->GetTickerById(ticker_id1)->needs_push_properties());
+  player_->AddKeyframeEffect(
+      base::MakeUnique<KeyframeEffect>(keyframe_effect_id1));
+  ASSERT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id1));
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+                   ->needs_push_properties());
 
-  TickerId ticker_id2 = player_->NextTickerId();
-  player_->AddTicker(base::MakeUnique<AnimationTicker>(ticker_id2));
-  ASSERT_TRUE(player_->GetTickerById(ticker_id2));
-  EXPECT_FALSE(player_->GetTickerById(ticker_id2)->needs_push_properties());
+  KeyframeEffectId keyframe_effect_id2 = player_->NextKeyframeEffectId();
+  player_->AddKeyframeEffect(
+      base::MakeUnique<KeyframeEffect>(keyframe_effect_id2));
+  ASSERT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id2));
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+                   ->needs_push_properties());
 
   host_->AddAnimationTimeline(timeline_);
 
@@ -847,8 +952,8 @@ TEST_F(AnimationPlayerTest, TickingAnimationsFromTwoTickers) {
 
   player_->set_animation_delegate(&delegate1);
 
-  player_->AttachElementForTicker(element_id_, ticker_id1);
-  player_->AttachElementForTicker(element_id_, ticker_id2);
+  player_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id1);
+  player_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id2);
 
   const float start_opacity = .7f;
   const float end_opacity = .3f;
@@ -859,9 +964,9 @@ TEST_F(AnimationPlayerTest, TickingAnimationsFromTwoTickers) {
   const double duration = 1.;
 
   AddOpacityTransition(player_.get(), duration, start_opacity, end_opacity,
-                       false, ticker_id1);
+                       false, keyframe_effect_id1);
   AddAnimatedTransform(player_.get(), duration, transform_x, transform_y,
-                       ticker_id2);
+                       keyframe_effect_id2);
   host_->PushPropertiesTo(host_impl_);
   host_impl_->ActivateAnimations();
 
@@ -875,16 +980,20 @@ TEST_F(AnimationPlayerTest, TickingAnimationsFromTwoTickers) {
   EXPECT_TRUE(delegate1.started());
   EXPECT_FALSE(delegate1.finished());
 
-  EXPECT_FALSE(player_->GetTickerById(ticker_id1)->needs_push_properties());
-  EXPECT_FALSE(player_->GetTickerById(ticker_id2)->needs_push_properties());
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+                   ->needs_push_properties());
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+                   ->needs_push_properties());
 
   time += base::TimeDelta::FromSecondsD(duration);
   TickAnimationsTransferEvents(time, 2u);
 
   EXPECT_TRUE(delegate1.finished());
 
-  EXPECT_TRUE(player_->GetTickerById(ticker_id1)->needs_push_properties());
-  EXPECT_TRUE(player_->GetTickerById(ticker_id2)->needs_push_properties());
+  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+                  ->needs_push_properties());
+  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+                  ->needs_push_properties());
 
   client_.ExpectOpacityPropertyMutated(element_id_, ElementListType::ACTIVE,
                                        end_opacity);
@@ -902,15 +1011,17 @@ TEST_F(AnimationPlayerTest, TickingAnimationsFromTwoTickers) {
       element_id_, ElementListType::PENDING, transform_x, transform_y);
 }
 
-TEST_F(AnimationPlayerTest, TickerSyncToImplTest) {
+TEST_F(AnimationPlayerTest, KeyframeEffectSyncToImplTest) {
   host_->AddAnimationTimeline(timeline_);
   EXPECT_TRUE(timeline_->needs_push_properties());
   timeline_->AttachPlayer(player_);
 
-  TickerId ticker_id1 = player_->NextTickerId();
-  player_->AddTicker(base::MakeUnique<AnimationTicker>(ticker_id1));
-  EXPECT_TRUE(player_->GetTickerById(ticker_id1));
-  EXPECT_FALSE(player_->GetTickerById(ticker_id1)->needs_push_properties());
+  KeyframeEffectId keyframe_effect_id1 = player_->NextKeyframeEffectId();
+  player_->AddKeyframeEffect(
+      base::MakeUnique<KeyframeEffect>(keyframe_effect_id1));
+  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id1));
+  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+                   ->needs_push_properties());
 
   host_->PushPropertiesTo(host_impl_);
 
@@ -918,17 +1029,18 @@ TEST_F(AnimationPlayerTest, TickerSyncToImplTest) {
   EXPECT_TRUE(timeline_impl_);
   player_impl_ = timeline_impl_->GetPlayerById(player_id_);
   EXPECT_TRUE(player_impl_);
-  EXPECT_TRUE(player_impl_->GetTickerById(ticker_id1));
+  EXPECT_TRUE(player_impl_->GetKeyframeEffectById(keyframe_effect_id1));
 
   EXPECT_FALSE(timeline_->needs_push_properties());
 
-  TickerId ticker_id2 = player_->NextTickerId();
-  player_->AddTicker(base::MakeUnique<AnimationTicker>(ticker_id2));
+  KeyframeEffectId keyframe_effect_id2 = player_->NextKeyframeEffectId();
+  player_->AddKeyframeEffect(
+      base::MakeUnique<KeyframeEffect>(keyframe_effect_id2));
   EXPECT_TRUE(timeline_->needs_push_properties());
 
   host_->PushPropertiesTo(host_impl_);
 
-  EXPECT_TRUE(player_impl_->GetTickerById(ticker_id2));
+  EXPECT_TRUE(player_impl_->GetKeyframeEffectById(keyframe_effect_id2));
 }
 
 }  // namespace

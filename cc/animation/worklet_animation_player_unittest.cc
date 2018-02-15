@@ -60,7 +60,7 @@ TEST_F(WorkletAnimationPlayerTest, LocalTimeIsUsedWithAnimations) {
   host_impl_->ActivateAnimations();
 
   // TODO(majidvp): At the moment the player does not use the local time when
-  // it is starting. This is because Animation::ConvertToActiveTime always
+  // it is starting. This is because KeyframeModel::ConvertToActiveTime always
   // returns the time_offset when starting. We need to change this.
   base::TimeTicks time;
   time += base::TimeDelta::FromSecondsD(0.1);

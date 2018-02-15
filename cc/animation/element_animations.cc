@@ -14,7 +14,7 @@
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_host.h"
-#include "cc/animation/animation_ticker.h"
+#include "cc/animation/keyframe_effect.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/paint/filter_operations.h"
@@ -48,7 +48,7 @@ void ElementAnimations::InitAffectedElementTypes() {
   DCHECK(element_id_);
   DCHECK(animation_host_);
 
-  UpdateTickersTickingState(UpdateTickingType::FORCE);
+  UpdateKeyframeEffectsTickingState(UpdateTickingType::FORCE);
 
   DCHECK(animation_host_->mutator_host_client());
   if (animation_host_->mutator_host_client()->IsElementInList(
@@ -91,7 +91,7 @@ void ElementAnimations::ClearAffectedElementTypes() {
   }
   set_has_element_in_pending_list(false);
 
-  RemoveTickersFromTicking();
+  RemoveKeyframeEffectsFromTicking();
 }
 
 void ElementAnimations::ElementRegistered(ElementId element_id,
@@ -99,7 +99,7 @@ void ElementAnimations::ElementRegistered(ElementId element_id,
   DCHECK_EQ(element_id_, element_id);
 
   if (!has_element_in_any_list())
-    UpdateTickersTickingState(UpdateTickingType::FORCE);
+    UpdateKeyframeEffectsTickingState(UpdateTickingType::FORCE);
 
   if (list_type == ElementListType::ACTIVE)
     set_has_element_in_active_list(true);
@@ -116,21 +116,21 @@ void ElementAnimations::ElementUnregistered(ElementId element_id,
     set_has_element_in_pending_list(false);
 
   if (!has_element_in_any_list())
-    RemoveTickersFromTicking();
+    RemoveKeyframeEffectsFromTicking();
 }
 
-void ElementAnimations::AddTicker(AnimationTicker* ticker) {
-  tickers_list_.AddObserver(ticker);
-  ticker->BindElementAnimations(this);
+void ElementAnimations::AddKeyframeEffect(KeyframeEffect* keyframe_effect) {
+  keyframe_effects_list_.AddObserver(keyframe_effect);
+  keyframe_effect->BindElementAnimations(this);
 }
 
-void ElementAnimations::RemoveTicker(AnimationTicker* ticker) {
-  tickers_list_.RemoveObserver(ticker);
-  ticker->UnbindElementAnimations();
+void ElementAnimations::RemoveKeyframeEffect(KeyframeEffect* keyframe_effect) {
+  keyframe_effects_list_.RemoveObserver(keyframe_effect);
+  keyframe_effect->UnbindElementAnimations();
 }
 
 bool ElementAnimations::IsEmpty() const {
-  return !tickers_list_.might_have_observers();
+  return !keyframe_effects_list_.might_have_observers();
 }
 
 void ElementAnimations::SetNeedsPushProperties() {
@@ -148,29 +148,29 @@ void ElementAnimations::PushPropertiesTo(
   element_animations_impl->UpdateClientAnimationState();
 }
 
-void ElementAnimations::UpdateTickersTickingState(
+void ElementAnimations::UpdateKeyframeEffectsTickingState(
     UpdateTickingType update_ticking_type) const {
-  for (auto& ticker : tickers_list_)
-    ticker.UpdateTickingState(update_ticking_type);
+  for (auto& keyframe_effect : keyframe_effects_list_)
+    keyframe_effect.UpdateTickingState(update_ticking_type);
 }
 
-void ElementAnimations::RemoveTickersFromTicking() const {
-  for (auto& ticker : tickers_list_)
-    ticker.RemoveFromTicking();
+void ElementAnimations::RemoveKeyframeEffectsFromTicking() const {
+  for (auto& keyframe_effect : keyframe_effects_list_)
+    keyframe_effect.RemoveFromTicking();
 }
 
 void ElementAnimations::NotifyAnimationStarted(const AnimationEvent& event) {
   DCHECK(!event.is_impl_only);
-  for (auto& ticker : tickers_list_) {
-    if (ticker.NotifyAnimationStarted(event))
+  for (auto& keyframe_effect : keyframe_effects_list_) {
+    if (keyframe_effect.NotifyKeyframeModelStarted(event))
       break;
   }
 }
 
 void ElementAnimations::NotifyAnimationFinished(const AnimationEvent& event) {
   DCHECK(!event.is_impl_only);
-  for (auto& ticker : tickers_list_) {
-    if (ticker.NotifyAnimationFinished(event))
+  for (auto& keyframe_effect : keyframe_effects_list_) {
+    if (keyframe_effect.NotifyKeyframeModelFinished(event))
       break;
   }
 }
@@ -179,15 +179,15 @@ void ElementAnimations::NotifyAnimationTakeover(const AnimationEvent& event) {
   DCHECK(!event.is_impl_only);
   DCHECK(event.target_property == TargetProperty::SCROLL_OFFSET);
 
-  for (auto& ticker : tickers_list_)
-    ticker.NotifyAnimationTakeover(event);
+  for (auto& keyframe_effect : keyframe_effects_list_)
+    keyframe_effect.NotifyKeyframeModelTakeover(event);
 }
 
 void ElementAnimations::NotifyAnimationAborted(const AnimationEvent& event) {
   DCHECK(!event.is_impl_only);
 
-  for (auto& ticker : tickers_list_) {
-    if (ticker.NotifyAnimationAborted(event))
+  for (auto& keyframe_effect : keyframe_effects_list_) {
+    if (keyframe_effect.NotifyKeyframeModelAborted(event))
       break;
   }
 
@@ -196,16 +196,16 @@ void ElementAnimations::NotifyAnimationAborted(const AnimationEvent& event) {
 
 bool ElementAnimations::HasOnlyTranslationTransforms(
     ElementListType list_type) const {
-  for (auto& ticker : tickers_list_) {
-    if (!ticker.HasOnlyTranslationTransforms(list_type))
+  for (auto& keyframe_effect : keyframe_effects_list_) {
+    if (!keyframe_effect.HasOnlyTranslationTransforms(list_type))
       return false;
   }
   return true;
 }
 
 bool ElementAnimations::AnimationsPreserveAxisAlignment() const {
-  for (auto& ticker : tickers_list_) {
-    if (!ticker.AnimationsPreserveAxisAlignment())
+  for (auto& keyframe_effect : keyframe_effects_list_) {
+    if (!keyframe_effect.AnimationsPreserveAxisAlignment())
       return false;
   }
   return true;
@@ -215,13 +215,14 @@ bool ElementAnimations::AnimationStartScale(ElementListType list_type,
                                             float* start_scale) const {
   *start_scale = 0.f;
 
-  for (auto& ticker : tickers_list_) {
-    float ticker_start_scale = 0.f;
-    bool success = ticker.AnimationStartScale(list_type, &ticker_start_scale);
+  for (auto& keyframe_effect : keyframe_effects_list_) {
+    float keyframe_effect_start_scale = 0.f;
+    bool success = keyframe_effect.AnimationStartScale(
+        list_type, &keyframe_effect_start_scale);
     if (!success)
       return false;
     // Union: a maximum.
-    *start_scale = std::max(*start_scale, ticker_start_scale);
+    *start_scale = std::max(*start_scale, keyframe_effect_start_scale);
   }
 
   return true;
@@ -231,65 +232,67 @@ bool ElementAnimations::MaximumTargetScale(ElementListType list_type,
                                            float* max_scale) const {
   *max_scale = 0.f;
 
-  for (auto& ticker : tickers_list_) {
-    float ticker_max_scale = 0.f;
-    bool success = ticker.MaximumTargetScale(list_type, &ticker_max_scale);
+  for (auto& keyframe_effect : keyframe_effects_list_) {
+    float keyframe_effect_max_scale = 0.f;
+    bool success = keyframe_effect.MaximumTargetScale(
+        list_type, &keyframe_effect_max_scale);
     if (!success)
       return false;
     // Union: a maximum.
-    *max_scale = std::max(*max_scale, ticker_max_scale);
+    *max_scale = std::max(*max_scale, keyframe_effect_max_scale);
   }
 
   return true;
 }
 
 bool ElementAnimations::ScrollOffsetAnimationWasInterrupted() const {
-  for (auto& ticker : tickers_list_) {
-    if (ticker.scroll_offset_animation_was_interrupted())
+  for (auto& keyframe_effect : keyframe_effects_list_) {
+    if (keyframe_effect.scroll_offset_animation_was_interrupted())
       return true;
   }
   return false;
 }
 
-void ElementAnimations::NotifyClientFloatAnimated(float opacity,
-                                                  int target_property_id,
-                                                  Animation* animation) {
-  DCHECK(animation->target_property_id() == TargetProperty::OPACITY);
+void ElementAnimations::NotifyClientFloatAnimated(
+    float opacity,
+    int target_property_id,
+    KeyframeModel* keyframe_model) {
+  DCHECK(keyframe_model->target_property_id() == TargetProperty::OPACITY);
   opacity = base::ClampToRange(opacity, 0.0f, 1.0f);
-  if (AnimationAffectsActiveElements(animation))
+  if (KeyframeModelAffectsActiveElements(keyframe_model))
     OnOpacityAnimated(ElementListType::ACTIVE, opacity);
-  if (AnimationAffectsPendingElements(animation))
+  if (KeyframeModelAffectsPendingElements(keyframe_model))
     OnOpacityAnimated(ElementListType::PENDING, opacity);
 }
 
 void ElementAnimations::NotifyClientFilterAnimated(
     const FilterOperations& filters,
     int target_property_id,
-    Animation* animation) {
-  if (AnimationAffectsActiveElements(animation))
+    KeyframeModel* keyframe_model) {
+  if (KeyframeModelAffectsActiveElements(keyframe_model))
     OnFilterAnimated(ElementListType::ACTIVE, filters);
-  if (AnimationAffectsPendingElements(animation))
+  if (KeyframeModelAffectsPendingElements(keyframe_model))
     OnFilterAnimated(ElementListType::PENDING, filters);
 }
 
 void ElementAnimations::NotifyClientTransformOperationsAnimated(
     const TransformOperations& operations,
     int target_property_id,
-    Animation* animation) {
+    KeyframeModel* keyframe_model) {
   gfx::Transform transform = operations.Apply();
-  if (AnimationAffectsActiveElements(animation))
+  if (KeyframeModelAffectsActiveElements(keyframe_model))
     OnTransformAnimated(ElementListType::ACTIVE, transform);
-  if (AnimationAffectsPendingElements(animation))
+  if (KeyframeModelAffectsPendingElements(keyframe_model))
     OnTransformAnimated(ElementListType::PENDING, transform);
 }
 
 void ElementAnimations::NotifyClientScrollOffsetAnimated(
     const gfx::ScrollOffset& scroll_offset,
     int target_property_id,
-    Animation* animation) {
-  if (AnimationAffectsActiveElements(animation))
+    KeyframeModel* keyframe_model) {
+  if (KeyframeModelAffectsActiveElements(keyframe_model))
     OnScrollOffsetAnimated(ElementListType::ACTIVE, scroll_offset);
-  if (AnimationAffectsPendingElements(animation))
+  if (KeyframeModelAffectsPendingElements(keyframe_model))
     OnScrollOffsetAnimated(ElementListType::PENDING, scroll_offset);
 }
 
@@ -306,12 +309,13 @@ void ElementAnimations::UpdateClientAnimationState() {
   pending_state_.Clear();
   active_state_.Clear();
 
-  for (auto& ticker : tickers_list_) {
-    PropertyAnimationState ticker_pending_state, ticker_active_state;
-    ticker.GetPropertyAnimationState(&ticker_pending_state,
-                                     &ticker_active_state);
-    pending_state_ |= ticker_pending_state;
-    active_state_ |= ticker_active_state;
+  for (auto& keyframe_effect : keyframe_effects_list_) {
+    PropertyAnimationState keyframe_effect_pending_state,
+        keyframe_effect_active_state;
+    keyframe_effect.GetPropertyAnimationState(&keyframe_effect_pending_state,
+                                              &keyframe_effect_active_state);
+    pending_state_ |= keyframe_effect_pending_state;
+    active_state_ |= keyframe_effect_active_state;
   }
 
   TargetProperties allowed_properties = GetPropertiesMaskForAnimationState();
@@ -337,18 +341,18 @@ void ElementAnimations::UpdateClientAnimationState() {
   }
 }
 
-bool ElementAnimations::HasTickingAnimation() const {
-  for (auto& ticker : tickers_list_) {
-    if (ticker.HasTickingAnimation())
+bool ElementAnimations::HasTickingKeyframeEffect() const {
+  for (auto& keyframe_effect : keyframe_effects_list_) {
+    if (keyframe_effect.HasTickingKeyframeModel())
       return true;
   }
 
   return false;
 }
 
-bool ElementAnimations::HasAnyAnimation() const {
-  for (auto& ticker : tickers_list_) {
-    if (ticker.has_any_animation())
+bool ElementAnimations::HasAnyKeyframeModel() const {
+  for (auto& keyframe_effect : keyframe_effects_list_) {
+    if (keyframe_effect.has_any_keyframe_model())
       return true;
   }
 
@@ -357,8 +361,8 @@ bool ElementAnimations::HasAnyAnimation() const {
 
 bool ElementAnimations::HasAnyAnimationTargetingProperty(
     TargetProperty::Type property) const {
-  for (auto& ticker : tickers_list_) {
-    if (ticker.GetAnimation(property))
+  for (auto& keyframe_effect : keyframe_effects_list_) {
+    if (keyframe_effect.GetKeyframeModel(property))
       return true;
   }
   return false;
@@ -367,8 +371,9 @@ bool ElementAnimations::HasAnyAnimationTargetingProperty(
 bool ElementAnimations::IsPotentiallyAnimatingProperty(
     TargetProperty::Type target_property,
     ElementListType list_type) const {
-  for (auto& ticker : tickers_list_) {
-    if (ticker.IsPotentiallyAnimatingProperty(target_property, list_type))
+  for (auto& keyframe_effect : keyframe_effects_list_) {
+    if (keyframe_effect.IsPotentiallyAnimatingProperty(target_property,
+                                                       list_type))
       return true;
   }
 
@@ -378,8 +383,9 @@ bool ElementAnimations::IsPotentiallyAnimatingProperty(
 bool ElementAnimations::IsCurrentlyAnimatingProperty(
     TargetProperty::Type target_property,
     ElementListType list_type) const {
-  for (auto& ticker : tickers_list_) {
-    if (ticker.IsCurrentlyAnimatingProperty(target_property, list_type))
+  for (auto& keyframe_effect : keyframe_effects_list_) {
+    if (keyframe_effect.IsCurrentlyAnimatingProperty(target_property,
+                                                     list_type))
       return true;
   }
 
@@ -433,22 +439,26 @@ gfx::ScrollOffset ElementAnimations::ScrollOffsetForAnimation() const {
   return gfx::ScrollOffset();
 }
 
-bool ElementAnimations::AnimationAffectsActiveElements(
-    Animation* animation) const {
-  // When we force an animation update due to a notification, we do not have an
-  // Animation instance. In this case, we force an update of active elements.
-  if (!animation)
+bool ElementAnimations::KeyframeModelAffectsActiveElements(
+    KeyframeModel* keyframe_model) const {
+  // When we force a keyframe_model update due to a notification, we do not have
+  // a KeyframeModel instance. In this case, we force an update of active
+  // elements.
+  if (!keyframe_model)
     return true;
-  return animation->affects_active_elements() && has_element_in_active_list();
+  return keyframe_model->affects_active_elements() &&
+         has_element_in_active_list();
 }
 
-bool ElementAnimations::AnimationAffectsPendingElements(
-    Animation* animation) const {
-  // When we force an animation update due to a notification, we do not have an
-  // Animation instance. In this case, we force an update of pending elements.
-  if (!animation)
+bool ElementAnimations::KeyframeModelAffectsPendingElements(
+    KeyframeModel* keyframe_model) const {
+  // When we force a keyframe_model update due to a notification, we do not have
+  // a KeyframeModel instance. In this case, we force an update of pending
+  // elements.
+  if (!keyframe_model)
     return true;
-  return animation->affects_pending_elements() && has_element_in_pending_list();
+  return keyframe_model->affects_pending_elements() &&
+         has_element_in_pending_list();
 }
 
 }  // namespace cc
