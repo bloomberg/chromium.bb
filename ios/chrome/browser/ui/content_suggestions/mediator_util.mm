@@ -9,6 +9,7 @@
 #include "components/ntp_snippets/category.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_category_wrapper.h"
@@ -173,4 +174,24 @@ content_suggestions::StatusCode ConvertStatusCode(ntp_snippets::Status status) {
       NOTREACHED();
       return content_suggestions::StatusCodeError;
   }
+}
+
+ContentSuggestionsMostVisitedActionItem* BookmarkActionItem() {
+  return [[ContentSuggestionsMostVisitedActionItem alloc]
+      initWithAction:ContentSuggestionsMostVisitedActionBookmark];
+}
+
+ContentSuggestionsMostVisitedActionItem* ReadingListActionItem() {
+  return [[ContentSuggestionsMostVisitedActionItem alloc]
+      initWithAction:ContentSuggestionsMostVisitedActionReadingList];
+}
+
+ContentSuggestionsMostVisitedActionItem* RecentTabsActionItem() {
+  return [[ContentSuggestionsMostVisitedActionItem alloc]
+      initWithAction:ContentSuggestionsMostVisitedActionRecentTabs];
+}
+
+ContentSuggestionsMostVisitedActionItem* HistoryActionItem() {
+  return [[ContentSuggestionsMostVisitedActionItem alloc]
+      initWithAction:ContentSuggestionsMostVisitedActionHistory];
 }

@@ -46,7 +46,7 @@ initWithWebStateList:(nonnull WebStateList*)webStateList
 
 // Dispatcher.
 @property(nonatomic, weak, nullable)
-    id<BrowserCommands, SnackbarCommands, UrlLoader>
+    id<ApplicationCommands, BrowserCommands, SnackbarCommands, UrlLoader>
         dispatcher;
 // Suggestions service used to get the suggestions.
 @property(nonatomic, assign, nonnull)

@@ -14,10 +14,13 @@
 #include "components/ntp_tiles/metrics.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/ntp_tiles/ntp_tile.h"
+#include "components/reading_list/core/reading_list_model.h"
+#import "components/reading_list/ios/reading_list_model_bridge_observer.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/ntp_tiles/most_visited_sites_observer_bridge.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_learn_more_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_whats_new_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
@@ -32,6 +35,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/mediator_util.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #include "ios/chrome/browser/ui/ntp/ntp_tile_saver.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/images/branded_image_provider.h"
@@ -46,23 +50,28 @@ namespace {
 using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 
 // Maximum number of most visited tiles fetched.
-const NSInteger kMaxNumMostVisitedTiles = 8;
+const NSInteger kMaxNumMostVisitedTilesLegacy = 8;
+const NSInteger kMaxNumMostVisitedTiles = 4;
 
 }  // namespace
 
 @interface ContentSuggestionsMediator ()<ContentSuggestionsItemDelegate,
                                          ContentSuggestionsServiceObserver,
-                                         MostVisitedSitesObserving> {
+                                         MostVisitedSitesObserving,
+                                         ReadingListModelBridgeObserver> {
   // Bridge for this class to become an observer of a ContentSuggestionsService.
   std::unique_ptr<ContentSuggestionsServiceBridge> _suggestionBridge;
   std::unique_ptr<ntp_tiles::MostVisitedSites> _mostVisitedSites;
   std::unique_ptr<ntp_tiles::MostVisitedSitesObserverBridge> _mostVisitedBridge;
   std::unique_ptr<NotificationPromoWhatsNew> _notificationPromo;
+  std::unique_ptr<ReadingListModelBridge> _readingListModelBridge;
 }
 
 // Most visited items from the MostVisitedSites service currently displayed.
 @property(nonatomic, strong)
     NSMutableArray<ContentSuggestionsMostVisitedItem*>* mostVisitedItems;
+@property(nonatomic, strong)
+    NSArray<ContentSuggestionsMostVisitedActionItem*>* actionButtonItems;
 // Most visited items from the MostVisitedSites service (copied upon receiving
 // the callback). Those items are up to date with the model.
 @property(nonatomic, strong)
@@ -94,12 +103,17 @@ const NSInteger kMaxNumMostVisitedTiles = 8;
 @property(nonatomic, strong) ContentSuggestionsFaviconMediator* faviconMediator;
 // Item for the Learn More section, containing the string.
 @property(nonatomic, strong) ContentSuggestionsLearnMoreItem* learnMoreItem;
+// Item for the reading list action item.  Reference is used to update the
+// reading list count.
+@property(nonatomic, strong)
+    ContentSuggestionsMostVisitedActionItem* readingListItem;
 
 @end
 
 @implementation ContentSuggestionsMediator
 
 @synthesize mostVisitedItems = _mostVisitedItems;
+@synthesize actionButtonItems = _actionButtonItems;
 @synthesize freshMostVisitedItems = _freshMostVisitedItems;
 @synthesize logoSectionInfo = _logoSectionInfo;
 @synthesize promoSectionInfo = _promoSectionInfo;
@@ -114,6 +128,7 @@ const NSInteger kMaxNumMostVisitedTiles = 8;
 @synthesize faviconMediator = _faviconMediator;
 @synthesize learnMoreItem = _learnMoreItem;
 @synthesize readingListNeedsReload = _readingListNeedsReload;
+@synthesize readingListItem = _readingListItem;
 
 #pragma mark - Public
 
@@ -122,7 +137,8 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
       largeIconService:(favicon::LargeIconService*)largeIconService
         largeIconCache:(LargeIconCache*)largeIconCache
        mostVisitedSite:
-           (std::unique_ptr<ntp_tiles::MostVisitedSites>)mostVisitedSites {
+           (std::unique_ptr<ntp_tiles::MostVisitedSites>)mostVisitedSites
+      readingListModel:(ReadingListModel*)readingListModel {
   self = [super init];
   if (self) {
     _suggestionBridge =
@@ -149,8 +165,15 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
     _mostVisitedSites = std::move(mostVisitedSites);
     _mostVisitedBridge =
         std::make_unique<ntp_tiles::MostVisitedSitesObserverBridge>(self);
+    NSInteger maxNumMostVisitedTiles = IsUIRefreshPhase1Enabled()
+                                           ? kMaxNumMostVisitedTiles
+                                           : kMaxNumMostVisitedTilesLegacy;
     _mostVisitedSites->SetMostVisitedURLsObserver(_mostVisitedBridge.get(),
-                                                  kMaxNumMostVisitedTiles);
+                                                  maxNumMostVisitedTiles);
+    if (IsUIRefreshPhase1Enabled()) {
+      _readingListModelBridge =
+          std::make_unique<ReadingListModelBridge>(self, readingListModel);
+    }
   }
   return self;
 }
@@ -175,7 +198,8 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
 }
 
 + (NSUInteger)maxSitesShown {
-  return kMaxNumMostVisitedTiles;
+  return IsUIRefreshPhase1Enabled() ? kMaxNumMostVisitedTiles
+                                    : kMaxNumMostVisitedTilesLegacy;
 }
 
 #pragma mark - ContentSuggestionsDataSource
@@ -234,6 +258,9 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
     }
   } else if (sectionInfo == self.mostVisitedSectionInfo) {
     [convertedSuggestions addObjectsFromArray:self.mostVisitedItems];
+    if (IsUIRefreshPhase1Enabled()) {
+      [convertedSuggestions addObjectsFromArray:self.actionButtonItems];
+    }
   } else if (sectionInfo == self.learnMoreSectionInfo) {
     [convertedSuggestions addObject:self.learnMoreItem];
   } else {
@@ -568,6 +595,29 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
 - (void)useFreshMostVisited {
   self.mostVisitedItems = self.freshMostVisitedItems;
   [self.dataSink reloadSection:self.mostVisitedSectionInfo];
+}
+
+#pragma mark - Properties
+
+- (NSArray<ContentSuggestionsMostVisitedActionItem*>*)actionButtonItems {
+  if (!_actionButtonItems) {
+    self.readingListItem = ReadingListActionItem();
+    _actionButtonItems = @[
+      BookmarkActionItem(), self.readingListItem, RecentTabsActionItem(),
+      HistoryActionItem()
+    ];
+  }
+  return _actionButtonItems;
+}
+
+#pragma mark - ReadingListModelBridgeObserver
+
+- (void)readingListModelLoaded:(const ReadingListModel*)model {
+  // TODO(crbug.com/805636) Pass model.size() to self.readingListItem
+}
+
+- (void)readingListModelDidApplyChanges:(const ReadingListModel*)model {
+  // TODO(crbug.com/805636) Pass model.size() to self.readingListItem
 }
 
 @end

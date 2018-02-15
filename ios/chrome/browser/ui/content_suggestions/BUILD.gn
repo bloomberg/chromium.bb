@@ -33,6 +33,7 @@ source_set("content_suggestions") {
     "//components/ntp_snippets",
     "//components/ntp_tiles",
     "//components/reading_list/core",
+    "//components/reading_list/ios:ios",
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",

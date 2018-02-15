@@ -15,11 +15,13 @@
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_alert_factory.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
@@ -248,6 +250,27 @@ const char kRateThisAppCommand[] = "ratethisapp";
 
 - (void)openMostVisitedItem:(CollectionViewItem*)item
                     atIndex:(NSInteger)mostVisitedIndex {
+  if ([item isKindOfClass:[ContentSuggestionsMostVisitedActionItem class]]) {
+    ContentSuggestionsMostVisitedActionItem* mostVisitedItem =
+        base::mac::ObjCCastStrict<ContentSuggestionsMostVisitedActionItem>(
+            item);
+    switch (mostVisitedItem.action) {
+      case ContentSuggestionsMostVisitedActionBookmark:
+        [self.dispatcher showBookmarksManager];
+        break;
+      case ContentSuggestionsMostVisitedActionReadingList:
+        [self.dispatcher showReadingList];
+        break;
+      case ContentSuggestionsMostVisitedActionRecentTabs:
+        [self.dispatcher showRecentTabs];
+        break;
+      case ContentSuggestionsMostVisitedActionHistory:
+        [self.dispatcher showHistory];
+        break;
+    }
+    return;
+  }
+
   ContentSuggestionsMostVisitedItem* mostVisitedItem =
       base::mac::ObjCCastStrict<ContentSuggestionsMostVisitedItem>(item);
 
@@ -287,6 +310,10 @@ const char kRateThisAppCommand[] = "ratethisapp";
 - (void)displayContextMenuForMostVisitedItem:(CollectionViewItem*)item
                                      atPoint:(CGPoint)touchLocation
                                  atIndexPath:(NSIndexPath*)indexPath {
+  // No context menu for action buttons.
+  if ([item isKindOfClass:[ContentSuggestionsMostVisitedActionItem class]]) {
+    return;
+  }
   ContentSuggestionsMostVisitedItem* mostVisitedItem =
       base::mac::ObjCCastStrict<ContentSuggestionsMostVisitedItem>(item);
   self.alertCoordinator = [ContentSuggestionsAlertFactory
