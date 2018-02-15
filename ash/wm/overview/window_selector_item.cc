@@ -15,6 +15,7 @@
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/overview_animation_type.h"
 #include "ash/wm/overview/overview_utils.h"
+#include "ash/wm/overview/overview_window_animation_observer.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
@@ -654,9 +655,7 @@ void WindowSelectorItem::RestoreWindow() {
     background_view_->OnItemRestored();
     background_view_ = nullptr;
   }
-  UpdateHeaderLayout(
-      HeaderFadeInMode::EXIT,
-      OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS);
+  UpdateHeaderLayout(HeaderFadeInMode::EXIT, GetExitOverviewAnimationType());
 }
 
 void WindowSelectorItem::EnsureVisible() {
@@ -851,6 +850,36 @@ void WindowSelectorItem::ResetDraggedWindowGesture() {
   window_selector_->ResetDraggedWindowGesture();
 }
 
+bool WindowSelectorItem::ShouldAnimateWhenEntering() const {
+  if (!IsNewOverviewAnimationsEnabled())
+    return true;
+  return should_animate_when_entering_;
+}
+
+bool WindowSelectorItem::ShouldAnimateWhenExiting() const {
+  if (!IsNewOverviewAnimationsEnabled())
+    return true;
+  return should_animate_when_exiting_;
+}
+
+bool WindowSelectorItem::ShouldBeObservedWhenExiting() const {
+  if (!IsNewOverviewAnimationsEnabled())
+    return false;
+  return should_be_observed_when_exiting_;
+}
+
+OverviewAnimationType WindowSelectorItem::GetExitOverviewAnimationType() {
+  return ShouldAnimateWhenExiting()
+             ? OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS
+             : OverviewAnimationType::OVERVIEW_ANIMATION_NONE;
+}
+
+OverviewAnimationType WindowSelectorItem::GetExitTransformAnimationType() {
+  return ShouldAnimateWhenExiting()
+             ? OverviewAnimationType::OVERVIEW_ANIMATION_RESTORE_WINDOW
+             : OverviewAnimationType::OVERVIEW_ANIMATION_NONE;
+}
+
 float WindowSelectorItem::GetCloseButtonOpacityForTesting() {
   return close_button_->layer()->opacity();
 }
@@ -1004,8 +1033,11 @@ void WindowSelectorItem::UpdateHeaderLayout(
       } else if (mode == HeaderFadeInMode::EXIT) {
         // Make the header visible above the window. It will be faded out when
         // the Shutdown() is called.
-        background_view_->AnimateColor(gfx::Tween::EASE_OUT,
-                                       kExitFadeInMilliseconds);
+        background_view_->AnimateColor(
+            gfx::Tween::EASE_OUT,
+            animation_type == OverviewAnimationType::OVERVIEW_ANIMATION_NONE
+                ? 0
+                : kExitFadeInMilliseconds);
         if (!IsNewOverviewUi())
           background_view_->set_color(kLabelExitColor);
       }

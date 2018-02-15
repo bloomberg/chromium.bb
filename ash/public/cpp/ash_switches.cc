@@ -72,6 +72,12 @@ const char kAshEnableKeyboardShortcutViewer[] =
 const char kAshEnableMagnifierKeyScroller[] =
     "ash-enable-magnifier-key-scroller";
 
+// Enables the new overview animations.
+// TODO(wutao): Remove this once the feature is launched.
+// https://crbug.com/801465.
+const char kAshEnableNewOverviewAnimations[] =
+    "ash-enable-new-overview-animations";
+
 // Enables the new overview ui.
 // TODO(sammiequon): Remove this once the feature is launched. crbug.com/782330.
 const char kAshEnableNewOverviewUi[] = "ash-enable-new-overview-ui";

@@ -23,16 +23,19 @@
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/overview_utils.h"
+#include "ash/wm/overview/overview_window_animation_observer.h"
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "ash/wm/overview/window_selector_item.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/i18n/string_search.h"
 #include "base/strings/string_number_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -332,6 +335,17 @@ WindowGrid::WindowGrid(aura::Window* root_window,
   }
 
   for (auto* window : windows_in_root) {
+    // TODO(https://crbug.com/812496): Investigate why we need to keep target
+    // transform instead of using identity when exiting.
+    // Stop ongoing animations before entering overview mode. Because we are
+    // deferring SetTransform of the windows beneath the window covering the
+    // available workspace, we need to set the correct transforms of these
+    // windows before entering overview mode again in the
+    // OnImplicitAnimationsCompleted() of the observer of the
+    // available-workspace-covering window's animation.
+    auto* animator = window->layer()->GetAnimator();
+    if (animator->is_animating())
+      window->layer()->GetAnimator()->StopAnimating();
     window_observer_.Add(window);
     window_state_observer_.Add(wm::GetWindowState(window));
     window_list_.push_back(
@@ -516,9 +530,11 @@ void WindowGrid::PositionWindows(bool animate,
       --j;
       continue;
     }
+
+    const bool should_animate = window_list_[i]->ShouldAnimateWhenEntering();
     window_list_[i]->SetBounds(
         rects[j] + offset,
-        animate
+        animate && should_animate
             ? OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS
             : OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
   }
@@ -774,6 +790,30 @@ bool WindowGrid::IsNoItemsIndicatorLabelVisibleForTesting() {
   return shield_view_ && shield_view_->IsLabelVisible();
 }
 
+// TODO(https://crbug.com/812497): Handle the correct z-order of always-on-top
+// windows.
+void WindowGrid::SetWindowListAnimationStates(
+    WindowSelectorItem* selected_item,
+    WindowSelector::OverviewTransition transition) {
+  // |selected_item| is nullptr during entering animation.
+  DCHECK(transition == WindowSelector::OverviewTransition::kExit ||
+         selected_item == nullptr);
+
+  bool has_covered_available_workspace = false;
+  // Check the |selected_item| first. The order matters when the |selected_item|
+  // window can cover available workspace.
+  SetWindowSelectorItemAnimationState(selected_item,
+                                      &has_covered_available_workspace,
+                                      /*selected=*/true, transition);
+  for (const auto& item : window_list_) {
+    if (selected_item == item.get())
+      continue;
+    SetWindowSelectorItemAnimationState(item.get(),
+                                        &has_covered_available_workspace,
+                                        /*selected=*/false, transition);
+  }
+}
+
 void WindowGrid::InitShieldWidget() {
   // TODO(varkha): The code assumes that SHELF_BACKGROUND_MAXIMIZED is
   // synonymous with a black shelf background. Update this code if that
@@ -1015,6 +1055,35 @@ bool WindowGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
     *max_bottom = top + height;
   }
   return windows_fit;
+}
+
+void WindowGrid::SetWindowSelectorItemAnimationState(
+    WindowSelectorItem* selector_item,
+    bool* has_covered_available_workspace,
+    bool selected,
+    WindowSelector::OverviewTransition transition) {
+  if (!selector_item)
+    return;
+
+  aura::Window* window = selector_item->GetWindow();
+  // |selector_item| should be contained in the |window_list_|.
+  DCHECK(Contains(window));
+
+  bool can_cover_available_workspace = CanCoverAvailableWorkspace(window);
+  const bool should_animate = selected || !(*has_covered_available_workspace);
+  if (transition == WindowSelector::OverviewTransition::kEnter)
+    selector_item->set_should_animate_when_entering(should_animate);
+  if (transition == WindowSelector::OverviewTransition::kExit)
+    selector_item->set_should_animate_when_exiting(should_animate);
+
+  if (!(*has_covered_available_workspace) && can_cover_available_workspace) {
+    if (transition == WindowSelector::OverviewTransition::kExit) {
+      selector_item->set_should_be_observed_when_exiting(true);
+      auto* observer = new OverviewWindowAnimationObserver();
+      set_window_animation_observer(observer->GetWeakPtr());
+    }
+    *has_covered_available_workspace = true;
+  }
 }
 
 }  // namespace ash

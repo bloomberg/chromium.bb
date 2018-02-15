@@ -301,6 +301,10 @@ void WindowSelector::Init(const WindowList& windows,
     // as we don't want to cause any window updates until all windows in
     // overview are observed. See http://crbug.com/384495.
     for (std::unique_ptr<WindowGrid>& window_grid : grid_list_) {
+      if (IsNewOverviewAnimationsEnabled()) {
+        window_grid->SetWindowListAnimationStates(/*selected_item=*/nullptr,
+                                                  OverviewTransition::kEnter);
+      }
       window_grid->PrepareForOverview();
       window_grid->PositionWindows(/*animate=*/true);
     }
@@ -348,6 +352,10 @@ void WindowSelector::Shutdown() {
 
   size_t remaining_items = 0;
   for (std::unique_ptr<WindowGrid>& window_grid : grid_list_) {
+    if (IsNewOverviewAnimationsEnabled()) {
+      window_grid->SetWindowListAnimationStates(selected_item_,
+                                                OverviewTransition::kExit);
+    }
     for (const auto& window_selector_item : window_grid->window_list())
       window_selector_item->RestoreWindow();
     remaining_items += window_grid->size();
@@ -738,6 +746,7 @@ void WindowSelector::OnWindowActivated(ActivationReason reason,
 
   // Don't restore focus on exit if a window was just activated.
   ResetFocusRestoreWindow(false);
+  selected_item_ = iter->get();
   CancelSelection();
 }
 

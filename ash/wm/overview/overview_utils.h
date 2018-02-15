@@ -7,15 +7,28 @@
 
 #include "ash/ash_export.h"
 
+namespace aura {
+class Window;
+}
+
 namespace ash {
+
+// Returns true if |window| can cover available workspace.
+bool CanCoverAvailableWorkspace(aura::Window* window);
+
+// Returns true if overview mode should use the new animations.
+// TODO(wutao): Remove this function when the old overview mode animations
+// become obsolete. See https://crbug.com/801465.
+bool IsNewOverviewAnimationsEnabled();
 
 // Returns true if overview mode should use the new ui.
 // TODO(sammiequon): Remove this function when the old overview mode ui becomes
 // obsolete. See https://crbug.com/782320.
 bool IsNewOverviewUi();
 
-// Resets the stored value so that the next IsNewOverviewUi call will query the
-// command line arguments again.
+// Resets the stored value so that the next IsNewOverviewAnimations and
+// IsNewOverviewUi call will query the command line arguments again.
+ASH_EXPORT void ResetCachedOverviewAnimationsValueForTesting();
 ASH_EXPORT void ResetCachedOverviewUiValueForTesting();
 
 }  // namespace ash
