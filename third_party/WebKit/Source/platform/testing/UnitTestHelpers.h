@@ -68,6 +68,16 @@ String PlatformTestDataPath(const String& relative_path = String());
 
 scoped_refptr<SharedBuffer> ReadFromFile(const String& path);
 
+class LineReader {
+ public:
+  LineReader(const std::string& text);
+  bool GetNextLine(std::string* line);
+
+ private:
+  std::string text_;
+  size_t index_;
+};
+
 }  // namespace testing
 }  // namespace blink
 
