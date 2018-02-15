@@ -1331,18 +1331,8 @@ config("default_warnings") {
         # TODO(thakis): https://crbug.com/753973
         "-Wno-enum-compare-switch",
 
-        # TODO(hans): https://crbug.com/763392
-        "-Wno-tautological-unsigned-zero-compare",
-
         # TODO(hans): https://crbug.com/766891
         "-Wno-null-pointer-arithmetic",
-
-        # TODO(hans): https://crbug.com/767059
-        # Disable -Wtautological-constant-compare (and implicitly also
-        # -Wtautological-unsigned-enum-zero-compare), but re-enable
-        # useful sub-diagnostics in that group.
-        "-Wno-tautological-constant-compare",
-        "-Wtautological-constant-out-of-range-compare",
       ]
     } else if (use_xcode_clang) {
       cflags += [
