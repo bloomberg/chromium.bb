@@ -22,8 +22,11 @@ class KeyboardShortcutItemListView : public views::View {
   // of KeyboardShortcutItemView to indicate the ShortcutCategory.
   void AddCategoryLabel(const base::string16& text);
 
- private:
+  // Add a horizontal line to separate the KeyboardShortcutItemView. The last
+  // item in the list is not followed by the horizontal line.
+  void AddHorizontalSeparator();
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(KeyboardShortcutItemListView);
 };
 

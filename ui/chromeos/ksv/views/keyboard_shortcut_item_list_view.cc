@@ -7,11 +7,46 @@
 #include "ui/base/default_style.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/ksv/views/keyboard_shortcut_item_view.h"
+#include "ui/gfx/canvas.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace keyboard_shortcut_viewer {
+
+namespace {
+
+// A horizontal line to separate the KeyboardShortcutItemView.
+class HorizontalSeparator : public views::View {
+ public:
+  explicit HorizontalSeparator(int preferred_width)
+      : preferred_width_(preferred_width) {}
+
+  ~HorizontalSeparator() override = default;
+
+  // views::View overrides:
+  const char* GetClassName() const override { return "HorizontalSeparator"; }
+
+  gfx::Size CalculatePreferredSize() const override {
+    constexpr int kSeparatorThickness = 1;
+    return gfx::Size(preferred_width_, kSeparatorThickness);
+  }
+
+  void OnPaint(gfx::Canvas* canvas) override {
+    gfx::Rect contents_bounds(GetContentsBounds());
+    constexpr SkColor kSeparatorColor =
+        SkColorSetARGBMacro(0x0F, 0x00, 0x00, 0x00);
+    canvas->FillRect(contents_bounds, kSeparatorColor);
+    View::OnPaint(canvas);
+  }
+
+ private:
+  const int preferred_width_;
+
+  DISALLOW_COPY_AND_ASSIGN(HorizontalSeparator);
+};
+
+}  // namespace
 
 KeyboardShortcutItemListView::KeyboardShortcutItemListView() {
   constexpr int kHorizontalPadding = 32;
@@ -37,6 +72,10 @@ void KeyboardShortcutItemListView::AddCategoryLabel(
       ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
           ui::kLabelFontSizeDelta, gfx::Font::NORMAL, gfx::Font::Weight::BOLD));
   AddChildView(category_label);
+}
+
+void KeyboardShortcutItemListView::AddHorizontalSeparator() {
+  AddChildView(new HorizontalSeparator(bounds().width()));
 }
 
 }  // namespace keyboard_shortcut_viewer

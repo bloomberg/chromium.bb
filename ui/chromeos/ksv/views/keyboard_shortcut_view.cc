@@ -135,9 +135,10 @@ void KeyboardShortcutView::InitViews() {
 
   // Init views of KeyboardShortcutItemView.
   for (const auto& item : GetKeyboardShortcutItemList()) {
-    for (auto category : item.categories)
+    for (auto category : item.categories) {
       shortcut_views_.emplace_back(
           new KeyboardShortcutItemView(item, category));
+    }
   }
   std::sort(shortcut_views_.begin(), shortcut_views_.end(),
             [](KeyboardShortcutItemView* lhs, KeyboardShortcutItemView* rhs) {
@@ -160,6 +161,8 @@ void KeyboardShortcutView::InitViews() {
       scroller->SetContents(item_list_view);
       tabbed_pane_->AddTab(GetStringForCategory(current_category), scroller);
     }
+    if (item_list_view->has_children())
+      item_list_view->AddHorizontalSeparator();
     item_list_view->AddChildView(item_view);
   }
   AddChildView(tabbed_pane_);
@@ -226,6 +229,7 @@ void KeyboardShortcutView::QueryChanged(search_box::SearchBoxViewBase* sender) {
     base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents finder(
         new_contents);
     ShortcutCategory current_category = ShortcutCategory::kUnknown;
+    bool has_category_item = false;
     for (auto* item_view : shortcut_views_) {
       base::string16 description_text =
           item_view->description_label_view()->text();
@@ -235,9 +239,14 @@ void KeyboardShortcutView::QueryChanged(search_box::SearchBoxViewBase* sender) {
         const ShortcutCategory category = item_view->category();
         if (current_category != category) {
           current_category = category;
+          has_category_item = false;
           found_items_list_view->AddCategoryLabel(
               GetStringForCategory(category));
         }
+        if (has_category_item)
+          found_items_list_view->AddHorizontalSeparator();
+        else
+          has_category_item = true;
         found_items_list_view->AddChildView(new KeyboardShortcutItemView(
             *item_view->shortcut_item(), category));
       }
