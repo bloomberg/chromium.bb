@@ -135,7 +135,7 @@ class TryFlagTest(unittest.TestCase):
 
         def results_url(build):
             return '%s/%s/%s/layout-test-results/results.html' % (
-                'https://storage.googleapis.com/chromium-layout-test-archives',
+                'https://test-results.appspot.com/data/layout_results',
                 build.builder_name,
                 build.build_number
             )

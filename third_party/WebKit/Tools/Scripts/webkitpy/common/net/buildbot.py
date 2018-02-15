@@ -37,7 +37,7 @@ from webkitpy.common.net.network_transaction import NetworkTransaction
 
 _log = logging.getLogger(__name__)
 
-RESULTS_URL_BASE = 'https://storage.googleapis.com/chromium-layout-test-archives'
+RESULTS_URL_BASE = 'https://test-results.appspot.com/data/layout_results'
 
 
 class Build(collections.namedtuple('Build', ('builder_name', 'build_number'))):
@@ -119,7 +119,6 @@ class BuildBot(object):
             lambda: self.fetch_file(results_url, 'LAST_CHANGE'))
         if revision is None:
             _log.debug('Got 404 response from:\n%s/LAST_CHANGE', results_url)
-            return None
         return LayoutTestResults.results_from_string(results_file, revision)
 
     def fetch_file(self, url_base, filename):
