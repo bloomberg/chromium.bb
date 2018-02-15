@@ -1858,6 +1858,7 @@ enum WebFeature {
   kAnimationWorkletRegisterAnimator = 2365,
   kWorkletAnimationConstructor = 2366,
   kScrollTimelineConstructor = 2367,
+  kV8Document_CreateTouchList_Method = 2368,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
