@@ -209,9 +209,11 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
 
   // Document load events ------------------------------------------------------
 
-  // These two methods correspond to the points in time when the spinner of the
-  // tab starts and stops spinning.
+  // These three methods correspond to the points in time when a document starts
+  // loading for the first time (initiates outgoing requests), when incoming
+  // data subsequently starts arriving, and when it finishes loading.
   virtual void DidStartLoading() {}
+  virtual void DidReceiveResponse() {}
   virtual void DidStopLoading() {}
 
   // This method is invoked once the window.document object of the main frame
