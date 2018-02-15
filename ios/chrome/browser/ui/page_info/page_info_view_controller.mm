@@ -235,7 +235,7 @@ void PageInfoModelBubbleBridge::PerformLayout() {
 
     UIInterfaceOrientation orientation =
         [[UIApplication sharedApplication] statusBarOrientation];
-    viewWidth_ = IsCompact() ? kViewWidthCompact : kViewWidthRegular;
+    viewWidth_ = IsCompactWidth() ? kViewWidthCompact : kViewWidthRegular;
     // Special case iPhone landscape.
     if (!IsIPadIdiom() && UIInterfaceOrientationIsLandscape(orientation))
       viewWidth_ = kViewWidthiPhoneLandscape;

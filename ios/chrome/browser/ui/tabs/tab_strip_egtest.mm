@@ -28,7 +28,7 @@
 // Test switching tabs using the tab strip.
 - (void)testTabStripSwitchTabs {
   // Only iPad has a tab strip.
-  if (IsCompact()) {
+  if (IsCompactWidth()) {
     return;
   }
 

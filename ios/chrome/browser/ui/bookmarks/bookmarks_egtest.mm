@@ -200,10 +200,11 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [BookmarksTestCase assertBookmarksWithTitle:bookmarkTitle expectedCount:1];
 
   NSString* const kStarLitLabel =
-      !IsCompact() ? l10n_util::GetNSString(IDS_TOOLTIP_STAR)
-                   : l10n_util::GetNSString(IDS_IOS_BOOKMARK_EDIT_SCREEN_TITLE);
+      !IsCompactWidth()
+          ? l10n_util::GetNSString(IDS_TOOLTIP_STAR)
+          : l10n_util::GetNSString(IDS_IOS_BOOKMARK_EDIT_SCREEN_TITLE);
   // Verify the star is lit.
-  if (IsCompact()) {
+  if (IsCompactWidth()) {
     [ChromeEarlGreyUI openToolsMenu];
   }
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(kStarLitLabel)]
@@ -223,11 +224,11 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [BookmarksTestCase assertBookmarksWithTitle:bookmarkTitle expectedCount:0];
 
   NSString* const kStarUnlitLabel =
-      !IsCompact() ? l10n_util::GetNSString(IDS_TOOLTIP_STAR)
-                   : l10n_util::GetNSString(IDS_BOOKMARK_ADD_EDITOR_TITLE);
+      !IsCompactWidth() ? l10n_util::GetNSString(IDS_TOOLTIP_STAR)
+                        : l10n_util::GetNSString(IDS_BOOKMARK_ADD_EDITOR_TITLE);
 
   // Verify the star is not lit.
-  if (IsCompact()) {
+  if (IsCompactWidth()) {
     [ChromeEarlGreyUI openToolsMenu];
   }
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(kStarUnlitLabel)]
@@ -235,7 +236,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
   // TODO(crbug.com/617652): This code should be removed when a common helper
   // is added to close any menus, which should be run as test setup.
-  if (IsCompact()) {
+  if (IsCompactWidth()) {
     [[EarlGrey selectElementWithMatcher:CloseToolsMenuButton()]
         performAction:grey_tap()];
   }
@@ -547,7 +548,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Edit the bookmark.
-  if (!IsCompact()) {
+  if (!IsCompactWidth()) {
     [[EarlGrey selectElementWithMatcher:StarButton()] performAction:grey_tap()];
   } else {
     [ChromeEarlGreyUI openToolsMenu];
@@ -3061,7 +3062,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Adds a bookmark for the current tab. Must be called when on a tab.
 + (void)starCurrentTab {
-  if (!IsCompact()) {
+  if (!IsCompactWidth()) {
     [[EarlGrey selectElementWithMatcher:StarButton()] performAction:grey_tap()];
   } else {
     [ChromeEarlGreyUI openToolsMenu];

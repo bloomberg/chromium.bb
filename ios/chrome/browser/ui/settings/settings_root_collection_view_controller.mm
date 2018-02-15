@@ -163,7 +163,7 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
   if (!base::ios::IsRunningOnIOS10OrLater()) {
     // TODO(crbug.com/620361): Remove the entire method override when iOS 9 is
     // dropped.
-    if (IsIPadIdiom() && !IsCompact()) {
+    if (IsIPadIdiom() && !IsCompactWidth()) {
       return UIStatusBarStyleLightContent;
     } else {
       return UIStatusBarStyleDefault;

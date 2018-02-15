@@ -112,7 +112,7 @@ const CGFloat kPercentageFromTopForPosition = 0.4;
     NSString* accessibilityInstructionString = @":";
 
     // Add the images inside the string.
-    if (IsCompact() || !IsIPadIdiom()) {
+    if (IsCompactWidth() || !IsIPadIdiom()) {
       // TODO(crbug.com/698726): When the share icon is displayed in the toolbar
       // for landscape iPhone 6+, remove !IsIPadIdiom().
       // If the device has a compact display the share menu is accessed from the

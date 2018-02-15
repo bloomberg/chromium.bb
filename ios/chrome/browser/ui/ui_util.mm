@@ -89,6 +89,10 @@ CGFloat StatusBarHeight() {
   return isCompactHeight ? 0 : 20;
 }
 
+bool IsSplitToolbarMode() {
+  return IsCompactWidth() && !IsCompactHeight();
+}
+
 CGFloat AlignValueToPixel(CGFloat value) {
   static CGFloat scale = [[UIScreen mainScreen] scale];
   return floor(value * scale) / scale;

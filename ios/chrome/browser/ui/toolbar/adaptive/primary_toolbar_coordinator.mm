@@ -109,6 +109,10 @@
 }
 
 - (void)transitionToLocationBarFocusedState:(BOOL)focused {
+  if (!IsSplitToolbarMode()) {
+    // No animation when the toolbar is unsplit.
+    return;
+  }
   [self.orchestrator transitionToStateFocused:focused animated:YES];
 }
 

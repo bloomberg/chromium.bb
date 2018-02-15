@@ -840,7 +840,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
 
   UIView* sourceView = nil;
   CGRect sourceRect = CGRectZero;
-  if (IsIPadIdiom() && !IsCompact()) {
+  if (IsIPadIdiom() && !IsCompactWidth()) {
     NSIndexPath* indexPath = [self.collectionViewModel
         indexPathForItemType:ItemTypeExportPasswordsButton
            sectionIdentifier:SectionIdentifierExportPasswordsButton];
