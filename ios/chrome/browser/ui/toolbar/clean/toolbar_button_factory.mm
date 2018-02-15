@@ -328,6 +328,7 @@ const int styleCount = 2;
   [omniboxButton addTarget:self.dispatcher
                     action:@selector(focusOmnibox)
           forControlEvents:UIControlEventTouchUpInside];
+  omniboxButton.accessibilityIdentifier = kToolbarOmniboxButtonIdentifier;
 
   omniboxButton.visibilityMask =
       self.visibilityConfiguration.omniboxButtonVisibility;

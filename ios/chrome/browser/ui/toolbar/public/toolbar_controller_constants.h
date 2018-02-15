@@ -29,6 +29,8 @@ extern NSString* const kToolbarToolsMenuButtonIdentifier;
 extern NSString* const kToolbarStackButtonIdentifier;
 // Accessibility identifier of the share button.
 extern NSString* const kToolbarShareButtonIdentifier;
+// Accessibility identifier of the omnibox button.
+extern NSString* const kToolbarOmniboxButtonIdentifier;
 
 // The maximum number to display in the tab switcher button.
 extern NSInteger const kStackButtonMaxTabCount;
