@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_UTIL_WIN_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_UTIL_WIN_H_
 
+#include "chrome/browser/password_manager/reauth_purpose.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace password_manager_util_win {
@@ -12,7 +13,8 @@ namespace password_manager_util_win {
 // Attempts to (re-)authenticate the user of the OS account. Returns true if
 // the user was successfully authenticated, or if authentication was not
 // possible.
-bool AuthenticateUser(gfx::NativeWindow window);
+bool AuthenticateUser(gfx::NativeWindow window,
+                      password_manager::ReauthPurpose purpose);
 
 // Query the system to determine whether the current logged on user has a
 // password set on their OS account, and log the result with UMA. It should be

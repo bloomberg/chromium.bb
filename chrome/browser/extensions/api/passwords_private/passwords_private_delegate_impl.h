@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
+#include "chrome/browser/password_manager/reauth_purpose.h"
 #include "chrome/browser/ui/passwords/password_access_authenticator.h"
 #include "chrome/browser/ui/passwords/password_manager_porter.h"
 #include "chrome/browser/ui/passwords/password_manager_presenter.h"
@@ -81,7 +82,8 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
 
   // Use this in tests to mock the OS-level reauthentication.
   void SetOsReauthCallForTesting(
-      base::RepeatingCallback<bool()> os_reauth_call);
+      base::RepeatingCallback<bool(password_manager::ReauthPurpose)>
+          os_reauth_call);
 
  private:
   // Called after the lists are fetched. Once both lists have been set, the
@@ -101,7 +103,7 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
 
   // Triggers an OS-dependent UI to present OS account login challenge and
   // returns true if the user passed that challenge.
-  bool OsReauthCall();
+  bool OsReauthCall(password_manager::ReauthPurpose purpose);
 
   // Not owned by this class.
   Profile* profile_;

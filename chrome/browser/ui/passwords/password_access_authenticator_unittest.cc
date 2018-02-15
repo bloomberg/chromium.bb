@@ -10,20 +10,35 @@
 #include "base/test/simple_test_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::TestWithParam;
+using ::testing::Values;
+
 namespace {
 
 enum class ReauthResult { PASS, FAIL };
-bool FakeOsReauthCall(bool* reauth_called, ReauthResult result) {
+bool FakeOsReauthCall(bool* reauth_called,
+                      ReauthResult result,
+                      password_manager::ReauthPurpose purpose) {
   *reauth_called = true;
   return result == ReauthResult::PASS;
 }
 
 }  // namespace
 
+class PasswordAccessAuthenticatorTest
+    : public TestWithParam<password_manager::ReauthPurpose> {
+ public:
+  PasswordAccessAuthenticatorTest() : purpose_(GetParam()) {}
+  ~PasswordAccessAuthenticatorTest() = default;
+
+ protected:
+  password_manager::ReauthPurpose purpose_;
+};
+
 // Check that a passed authentication does not expire before
 // |kAuthValidityPeriodSeconds| seconds and does expire after
 // |kAuthValidityPeriodSeconds| seconds.
-TEST(PasswordAccessAuthenticatorTest, Expiration) {
+TEST_P(PasswordAccessAuthenticatorTest, Expiration) {
   bool reauth_called = false;
 
   base::SimpleTestClock clock;
@@ -33,25 +48,25 @@ TEST(PasswordAccessAuthenticatorTest, Expiration) {
       &FakeOsReauthCall, &reauth_called, ReauthResult::PASS));
   authenticator.SetClockForTesting(&clock);
 
-  EXPECT_TRUE(authenticator.EnsureUserIsAuthenticated());
+  EXPECT_TRUE(authenticator.EnsureUserIsAuthenticated(purpose_));
   EXPECT_TRUE(reauth_called);
 
   clock.Advance(base::TimeDelta::FromSeconds(
       PasswordAccessAuthenticator::kAuthValidityPeriodSeconds - 1));
   reauth_called = false;
 
-  EXPECT_TRUE(authenticator.EnsureUserIsAuthenticated());
+  EXPECT_TRUE(authenticator.EnsureUserIsAuthenticated(purpose_));
   EXPECT_FALSE(reauth_called);
 
   clock.Advance(base::TimeDelta::FromSeconds(2));
   reauth_called = false;
 
-  EXPECT_TRUE(authenticator.EnsureUserIsAuthenticated());
+  EXPECT_TRUE(authenticator.EnsureUserIsAuthenticated(purpose_));
   EXPECT_TRUE(reauth_called);
 }
 
 // Check that a forced authentication ignores previous successful challenges.
-TEST(PasswordAccessAuthenticatorTest, ForceReauth) {
+TEST_P(PasswordAccessAuthenticatorTest, ForceReauth) {
   bool reauth_called = false;
 
   base::SimpleTestClock clock;
@@ -61,20 +76,20 @@ TEST(PasswordAccessAuthenticatorTest, ForceReauth) {
       &FakeOsReauthCall, &reauth_called, ReauthResult::PASS));
   authenticator.SetClockForTesting(&clock);
 
-  EXPECT_TRUE(authenticator.EnsureUserIsAuthenticated());
+  EXPECT_TRUE(authenticator.EnsureUserIsAuthenticated(purpose_));
   EXPECT_TRUE(reauth_called);
 
   clock.Advance(base::TimeDelta::FromSeconds(
       PasswordAccessAuthenticator::kAuthValidityPeriodSeconds - 1));
   reauth_called = false;
 
-  EXPECT_TRUE(authenticator.ForceUserReauthentication());
+  EXPECT_TRUE(authenticator.ForceUserReauthentication(purpose_));
   EXPECT_TRUE(reauth_called);
 }
 
 // Check that a failed authentication does not start the grace period for
 // skipping authentication.
-TEST(PasswordAccessAuthenticatorTest, Failed) {
+TEST_P(PasswordAccessAuthenticatorTest, Failed) {
   bool reauth_called = false;
 
   base::SimpleTestClock clock;
@@ -84,7 +99,7 @@ TEST(PasswordAccessAuthenticatorTest, Failed) {
       &FakeOsReauthCall, &reauth_called, ReauthResult::FAIL));
   authenticator.SetClockForTesting(&clock);
 
-  EXPECT_FALSE(authenticator.EnsureUserIsAuthenticated());
+  EXPECT_FALSE(authenticator.EnsureUserIsAuthenticated(purpose_));
   EXPECT_TRUE(reauth_called);
 
   // Advance just a little bit, so that if |authenticator| starts the grace
@@ -92,14 +107,14 @@ TEST(PasswordAccessAuthenticatorTest, Failed) {
   clock.Advance(base::TimeDelta::FromSeconds(1));
   reauth_called = false;
 
-  EXPECT_FALSE(authenticator.EnsureUserIsAuthenticated());
+  EXPECT_FALSE(authenticator.EnsureUserIsAuthenticated(purpose_));
   EXPECT_TRUE(reauth_called);
 }
 
 // Test the edge case: for the first authentication, the reauth challenge
 // should always happen, even if the time is less than
 // |kAuthValidityPeriodSeconds| seconds from the beginning.
-TEST(PasswordAccessAuthenticatorTest, TimeZero) {
+TEST_P(PasswordAccessAuthenticatorTest, TimeZero) {
   bool reauth_called = false;
 
   base::SimpleTestClock clock;
@@ -109,6 +124,11 @@ TEST(PasswordAccessAuthenticatorTest, TimeZero) {
       &FakeOsReauthCall, &reauth_called, ReauthResult::PASS));
   authenticator.SetClockForTesting(&clock);
 
-  EXPECT_TRUE(authenticator.EnsureUserIsAuthenticated());
+  EXPECT_TRUE(authenticator.EnsureUserIsAuthenticated(purpose_));
   EXPECT_TRUE(reauth_called);
 }
+
+INSTANTIATE_TEST_CASE_P(,
+                        PasswordAccessAuthenticatorTest,
+                        Values(password_manager::ReauthPurpose::VIEW_PASSWORD,
+                               password_manager::ReauthPurpose::EXPORT));

@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "chrome/browser/password_manager/reauth_purpose.h"
 
 // This class takes care of reauthentication used for accessing passwords
 // through the settings page. It is used on all platforms but iOS and Android
@@ -21,14 +22,16 @@
 // for Android).
 class PasswordAccessAuthenticator {
  public:
+  using ReauthCallback =
+      base::RepeatingCallback<bool(password_manager::ReauthPurpose)>;
+
   // For how long after the last successful authentication a user is considered
   // authenticated without repeating the challenge.
   constexpr static int kAuthValidityPeriodSeconds = 60;
 
   // |os_reauth_call| is passed to |os_reauth_call_|, see the latter for
   // explanation.
-  explicit PasswordAccessAuthenticator(
-      base::RepeatingCallback<bool()> os_reauth_call);
+  explicit PasswordAccessAuthenticator(ReauthCallback os_reauth_call);
 
   ~PasswordAccessAuthenticator();
 
@@ -36,16 +39,15 @@ class PasswordAccessAuthenticator {
   // which is represented by |os_reauth_call_| returning true. A successful
   // result of |os_reauth_call_| is cached for |kAuthValidityPeriodSeconds|
   // seconds.
-  bool EnsureUserIsAuthenticated();
+  bool EnsureUserIsAuthenticated(password_manager::ReauthPurpose purpose);
 
   // Presents the reauthentication challenge to the user and returns whether
   // the user passed the challenge. This call is guaranteed to present the
   // challenge to the user.
-  bool ForceUserReauthentication();
+  bool ForceUserReauthentication(password_manager::ReauthPurpose purpose);
 
   // Use this in tests to mock the OS-level reauthentication.
-  void SetOsReauthCallForTesting(
-      base::RepeatingCallback<bool()> os_reauth_call);
+  void SetOsReauthCallForTesting(ReauthCallback os_reauth_call);
 
   // Use this to manipulate time in tests.
   void SetClockForTesting(base::Clock* clock);
@@ -59,7 +61,7 @@ class PasswordAccessAuthenticator {
 
   // Used to directly present the authentication challenge (such as the login
   // prompt) to the user.
-  base::RepeatingCallback<bool()> os_reauth_call_;
+  ReauthCallback os_reauth_call_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordAccessAuthenticator);
 };

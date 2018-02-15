@@ -174,7 +174,8 @@ void PasswordsPrivateDelegateImpl::RequestShowPasswordInternal(
   // TODO(stevenjb): Pass this directly to RequestShowPassword(); see
   // crbug.com/495290.
   web_contents_ = web_contents;
-  if (!password_access_authenticator_.EnsureUserIsAuthenticated()) {
+  if (!password_access_authenticator_.EnsureUserIsAuthenticated(
+          password_manager::ReauthPurpose::VIEW_PASSWORD)) {
     return;
   }
 
@@ -182,11 +183,13 @@ void PasswordsPrivateDelegateImpl::RequestShowPasswordInternal(
   password_manager_presenter_->RequestShowPassword(index);
 }
 
-bool PasswordsPrivateDelegateImpl::OsReauthCall() {
+bool PasswordsPrivateDelegateImpl::OsReauthCall(
+    password_manager::ReauthPurpose purpose) {
 #if defined(OS_WIN)
-  return password_manager_util_win::AuthenticateUser(GetNativeWindow());
+  return password_manager_util_win::AuthenticateUser(GetNativeWindow(),
+                                                     purpose);
 #elif defined(OS_MACOSX)
-  return password_manager_util_mac::AuthenticateUser();
+  return password_manager_util_mac::AuthenticateUser(purpose);
 #else
   return true;
 #endif
@@ -289,7 +292,8 @@ void PasswordsPrivateDelegateImpl::ExportPasswords(
   // exiting this method. TODO(crbug.com/495290): Pass the native window
   // directly to the reauth-handling code.
   web_contents_ = web_contents;
-  if (!password_access_authenticator_.ForceUserReauthentication()) {
+  if (!password_access_authenticator_.ForceUserReauthentication(
+          password_manager::ReauthPurpose::EXPORT)) {
     std::move(callback).Run(kReauthenticationFailed);
     return;
   }
@@ -327,7 +331,7 @@ void PasswordsPrivateDelegateImpl::Shutdown() {
 }
 
 void PasswordsPrivateDelegateImpl::SetOsReauthCallForTesting(
-    base::RepeatingCallback<bool()> os_reauth_call) {
+    PasswordAccessAuthenticator::ReauthCallback os_reauth_call) {
   password_access_authenticator_.SetOsReauthCallForTesting(
       std::move(os_reauth_call));
 }

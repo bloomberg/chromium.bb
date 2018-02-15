@@ -17,7 +17,7 @@
 
 namespace password_manager_util_mac {
 
-bool AuthenticateUser() {
+bool AuthenticateUser(password_manager::ReauthPurpose purpose) {
   // Use the system-defined "system.login.screensaver" access right rather than
   // creating our own. The screensaver does exactly the same check we need --
   // verifying whether the legitimate session user is present. If we needed to
@@ -28,8 +28,16 @@ bool AuthenticateUser() {
   AuthorizationItem right_items[] = {{"system.login.screensaver", 0, NULL, 0}};
   AuthorizationRights rights = {arraysize(right_items), right_items};
 
-  NSString* prompt =
-      l10n_util::GetNSString(IDS_PASSWORDS_PAGE_AUTHENTICATION_PROMPT);
+  NSString* prompt;
+  switch (purpose) {
+    case password_manager::ReauthPurpose::VIEW_PASSWORD:
+      prompt = l10n_util::GetNSString(IDS_PASSWORDS_PAGE_AUTHENTICATION_PROMPT);
+      break;
+    case password_manager::ReauthPurpose::EXPORT:
+      prompt = l10n_util::GetNSString(
+          IDS_PASSWORDS_PAGE_EXPORT_AUTHENTICATION_PROMPT);
+      break;
+  }
 
   // Pass kAuthorizationFlagDestroyRights to prevent the OS from saving the
   // authorization and not prompting the user when future requests are made.
