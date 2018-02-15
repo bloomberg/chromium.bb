@@ -57,14 +57,27 @@ struct CachedMatchedPropertiesHashTraits
     : HashTraits<Member<CachedMatchedProperties>> {
   static const WTF::WeakHandlingFlag kWeakHandlingFlag = WTF::kWeakHandling;
 
+  static bool IsAlive(Member<CachedMatchedProperties>& cached_properties) {
+    // Semantics see |CachedMatchedPropertiesHashTraits::TraceInCollection|.
+    if (cached_properties) {
+      for (const auto& matched_properties :
+           cached_properties->matched_properties) {
+        if (!ThreadHeap::IsHeapObjectAlive(matched_properties.properties)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
   template <typename VisitorDispatcher>
   static bool TraceInCollection(
       VisitorDispatcher visitor,
       Member<CachedMatchedProperties>& cached_properties,
       WTF::WeakHandlingFlag weakness) {
     // Only honor the cache's weakness semantics if the collection is traced
-    // with WeakPointersActWeak. Otherwise just trace the cachedProperties
-    // strongly, ie. call trace on it.
+    // with |kWeakPointersActWeak|. Otherwise just trace the cachedProperties
+    // strongly, i.e., call trace on it.
     if (cached_properties && weakness == WTF::kWeakHandling) {
       // A given cache entry is only kept alive if none of the MatchedProperties
       // in the CachedMatchedProperties value contain a dead "properties" field.
@@ -81,11 +94,7 @@ struct CachedMatchedPropertiesHashTraits
     }
     // At this point none of the entries in the matchedProperties vector
     // had a dead "properties" field so trace CachedMatchedProperties strongly.
-    // FIXME: traceInCollection is also called from WeakProcessing to check if
-    // the entry is dead.  Avoid calling trace in that case by only calling
-    // trace when cachedProperties is not yet marked.
-    if (!ThreadHeap::IsHeapObjectAlive(cached_properties))
-      visitor->Trace(cached_properties);
+    visitor->Trace(cached_properties);
     return false;
   }
 };

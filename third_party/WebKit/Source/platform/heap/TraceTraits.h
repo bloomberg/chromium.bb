@@ -177,6 +177,9 @@ struct TraceCollectionIfEnabled<weakness,
                                 false,
                                 WTF::kNoWeakHandling> {
   STATIC_ONLY(TraceCollectionIfEnabled);
+
+  static bool IsAlive(T&) { return true; }
+
   template <typename VisitorDispatcher>
   static bool Trace(VisitorDispatcher, T&) {
     static_assert(!WTF::IsTraceableInCollectionTrait<Traits>::value,
@@ -206,6 +209,11 @@ template <WTF::WeakHandlingFlag weakness,
           WTF::WeakHandlingFlag traitWeakHandling>
 struct TraceCollectionIfEnabled {
   STATIC_ONLY(TraceCollectionIfEnabled);
+
+  static bool IsAlive(T& traceable) {
+    return WTF::TraceInCollectionTrait<weakness, T, Traits>::IsAlive(traceable);
+  }
+
   template <typename VisitorDispatcher>
   static bool Trace(VisitorDispatcher visitor, T& t) {
     static_assert(WTF::IsTraceableInCollectionTrait<Traits>::value ||
@@ -527,6 +535,8 @@ struct TraceNoWeakHandlingInCollectionHelper<T, Traits, kNoWeakHandling> {
 // weak elements.
 template <typename T, typename Traits>
 struct TraceInCollectionTrait<kNoWeakHandling, T, Traits> {
+  static bool IsAlive(T& t) { return true; }
+
   template <typename VisitorDispatcher>
   static bool Trace(VisitorDispatcher visitor, T& t) {
     return TraceNoWeakHandlingInCollectionHelper<T, Traits>::Trace(visitor, t);
@@ -536,6 +546,8 @@ struct TraceInCollectionTrait<kNoWeakHandling, T, Traits> {
 // Catch-all for types that have HashTrait support for tracing with weakness.
 template <typename T, typename Traits>
 struct TraceInCollectionTrait<kWeakHandling, T, Traits> {
+  static bool IsAlive(T& value) { return Traits::IsAlive(value); }
+
   template <typename VisitorDispatcher>
   static bool Trace(VisitorDispatcher visitor, T& t) {
     return Traits::TraceInCollection(visitor, t, kWeakHandling);
@@ -715,6 +727,42 @@ struct TraceInCollectionTrait<kNoWeakHandling,
 
 template <typename Key, typename Value, typename Traits>
 struct TraceInCollectionTrait<kWeakHandling, KeyValuePair<Key, Value>, Traits> {
+  static constexpr bool kKeyIsWeak =
+      Traits::KeyTraits::kWeakHandlingFlag == kWeakHandling;
+  static constexpr bool kValueIsWeak =
+      Traits::ValueTraits::kWeakHandlingFlag == kWeakHandling;
+  static const bool kKeyHasStrongRefs =
+      IsTraceableInCollectionTrait<typename Traits::KeyTraits>::value;
+  static const bool kValueHasStrongRefs =
+      IsTraceableInCollectionTrait<typename Traits::ValueTraits>::value;
+
+  static bool IsAlive(KeyValuePair<Key, Value>& self) {
+    static_assert(!kKeyIsWeak || !kValueIsWeak || !kKeyHasStrongRefs ||
+                      !kValueHasStrongRefs,
+                  "this configuration is disallowed to avoid unexpected leaks");
+    if ((kValueIsWeak && !kKeyIsWeak) ||
+        (kValueIsWeak && kKeyIsWeak && !kValueHasStrongRefs)) {
+      // Check value first.
+      bool value_side_alive = blink::TraceCollectionIfEnabled<
+          Traits::ValueTraits::kWeakHandlingFlag, Value,
+          typename Traits::ValueTraits>::IsAlive(self.value);
+      if (!value_side_alive)
+        return false;
+      return blink::TraceCollectionIfEnabled<
+          Traits::KeyTraits::kWeakHandlingFlag, Key,
+          typename Traits::KeyTraits>::IsAlive(self.key);
+    }
+    // Check key first.
+    bool key_side_alive = blink::TraceCollectionIfEnabled<
+        Traits::KeyTraits::kWeakHandlingFlag, Key,
+        typename Traits::KeyTraits>::IsAlive(self.key);
+    if (!key_side_alive)
+      return false;
+    return blink::TraceCollectionIfEnabled<
+        Traits::ValueTraits::kWeakHandlingFlag, Value,
+        typename Traits::ValueTraits>::IsAlive(self.value);
+  }
+
   template <typename VisitorDispatcher>
   static bool Trace(VisitorDispatcher visitor, KeyValuePair<Key, Value>& self) {
     // This is the core of the ephemeron-like functionality.  If there is
@@ -732,14 +780,6 @@ struct TraceInCollectionTrait<kWeakHandling, KeyValuePair<Key, Value>, Traits> {
     // key-value entry is leaked.  To avoid unexpected leaking, we disallow
     // this case, but if you run into this assert, please reach out to Blink
     // reviewers, and we may relax it.
-    constexpr bool kKeyIsWeak =
-        Traits::KeyTraits::kWeakHandlingFlag == kWeakHandling;
-    constexpr bool kValueIsWeak =
-        Traits::ValueTraits::kWeakHandlingFlag == kWeakHandling;
-    const bool kKeyHasStrongRefs =
-        IsTraceableInCollectionTrait<typename Traits::KeyTraits>::value;
-    const bool kValueHasStrongRefs =
-        IsTraceableInCollectionTrait<typename Traits::ValueTraits>::value;
     static_assert(!kKeyIsWeak || !kValueIsWeak || !kKeyHasStrongRefs ||
                       !kValueHasStrongRefs,
                   "this configuration is disallowed to avoid unexpected leaks");
@@ -774,6 +814,12 @@ template <typename Value, typename Allocator, typename Traits>
 struct TraceInCollectionTrait<kNoWeakHandling,
                               LinkedHashSetNode<Value, Allocator>,
                               Traits> {
+  static bool IsAlive(LinkedHashSetNode<Value, Allocator>& self) {
+    return TraceInCollectionTrait<
+        kNoWeakHandling, Value,
+        typename Traits::ValueTraits>::IsAlive(self.value_);
+  }
+
   template <typename VisitorDispatcher>
   static bool Trace(VisitorDispatcher visitor,
                     LinkedHashSetNode<Value, Allocator>& self) {
@@ -790,6 +836,12 @@ template <typename Value, typename Allocator, typename Traits>
 struct TraceInCollectionTrait<kWeakHandling,
                               LinkedHashSetNode<Value, Allocator>,
                               Traits> {
+  static bool IsAlive(LinkedHashSetNode<Value, Allocator>& self) {
+    return TraceInCollectionTrait<
+        kWeakHandling, Value,
+        typename Traits::ValueTraits>::IsAlive(self.value_);
+  }
+
   template <typename VisitorDispatcher>
   static bool Trace(VisitorDispatcher visitor,
                     LinkedHashSetNode<Value, Allocator>& self) {
