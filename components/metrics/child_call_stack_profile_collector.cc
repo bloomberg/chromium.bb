@@ -55,6 +55,8 @@ void ChildCallStackProfileCollector::SetParentProfileCollector(
   DCHECK(retain_profiles_);
   retain_profiles_ = false;
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  // This should only be set one time per child process.
+  DCHECK(!parent_collector_);
   parent_collector_ = std::move(parent_collector);
   if (parent_collector_) {
     for (ProfilesState& state : profiles_) {
