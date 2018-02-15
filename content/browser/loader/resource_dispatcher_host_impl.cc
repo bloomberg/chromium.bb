@@ -277,6 +277,8 @@ void LogBackForwardNavigationFlagsHistogram(int load_flags) {
 
 constexpr int ResourceDispatcherHostImpl::kMaxKeepaliveConnections;
 constexpr int ResourceDispatcherHostImpl::kMaxKeepaliveConnectionsPerProcess;
+constexpr int
+    ResourceDispatcherHostImpl::kMaxKeepaliveConnectionsPerProcessForFetchAPI;
 
 class ResourceDispatcherHostImpl::ScheduledResourceRequestAdapter final
     : public ResourceThrottle {
@@ -1289,8 +1291,12 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
                                     resource_context, std::move(mojo_request),
                                     std::move(url_loader_client));
   }
-  if (handler)
-    BeginRequestInternal(std::move(new_request), std::move(handler));
+  if (handler) {
+    const bool is_initiated_by_fetch_api =
+        request_data.fetch_request_context_type == REQUEST_CONTEXT_TYPE_FETCH;
+    BeginRequestInternal(std::move(new_request), std::move(handler),
+                         is_initiated_by_fetch_api);
+  }
 }
 
 std::unique_ptr<ResourceHandler>
@@ -2042,7 +2048,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       -1,  // route_id
       std::move(handler), loader, std::move(stream_handle));
 
-  BeginRequestInternal(std::move(new_request), std::move(handler));
+  BeginRequestInternal(std::move(new_request), std::move(handler),
+                       false /* is_initiated_by_fetch_api */);
 }
 
 void ResourceDispatcherHostImpl::SetLoaderDelegate(
@@ -2100,7 +2107,8 @@ int ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(
 
 void ResourceDispatcherHostImpl::BeginRequestInternal(
     std::unique_ptr<net::URLRequest> request,
-    std::unique_ptr<ResourceHandler> handler) {
+    std::unique_ptr<ResourceHandler> handler,
+    bool is_initiated_by_fetch_api) {
   DCHECK(!request->is_pending());
   ResourceRequestInfoImpl* info =
       ResourceRequestInfoImpl::ForRequest(request.get());
@@ -2137,6 +2145,11 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
       exhausted = true;
     if (recorder.NumInflightRequestsPerProcess(info->GetChildID()) >=
         kMaxKeepaliveConnectionsPerProcess) {
+      exhausted = true;
+    }
+    if (is_initiated_by_fetch_api &&
+        recorder.NumInflightRequestsPerProcess(info->GetChildID()) >=
+            kMaxKeepaliveConnectionsPerProcessForFetchAPI) {
       exhausted = true;
     }
   }
@@ -2233,7 +2246,8 @@ void ResourceDispatcherHostImpl::BeginURLRequest(
         request.get(), std::move(handler), is_content_initiated,
         true /* force_download */, true /* is_new_request */);
   }
-  BeginRequestInternal(std::move(request), std::move(handler));
+  BeginRequestInternal(std::move(request), std::move(handler),
+                       false /* is_initiated_by_fetch_api */);
 }
 
 int ResourceDispatcherHostImpl::MakeRequestID() {
