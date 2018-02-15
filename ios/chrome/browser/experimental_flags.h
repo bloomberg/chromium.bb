@@ -54,6 +54,9 @@ bool IsNewFeedbackKitEnabled();
 // Whether the 3rd party keyboard omnibox workaround is enabled.
 bool IsThirdPartyKeyboardWorkaroundEnabled();
 
+// Whether RecentTabs UI Reboot is enabled.
+bool IsRecentTabsUIRebootEnabled();
+
 // Whether the application group sandbox must be cleared before starting.
 // Calling this method will reset the flag to false, so the sandbox is cleared
 // only once.
