@@ -21,18 +21,18 @@
 
   <!-- "Before Unload" Dialog Box strings -->
   <message name="IDS_BEFOREUNLOAD_MESSAGEBOX_TITLE" desc="Title for the 'before unload' dialog.">
-    Do you want to leave this site?
-  </message>
-  <message name="IDS_BEFOREUNLOAD_MESSAGEBOX_MESSAGE" desc="Text shown as the message of the 'before unload' dialog.">
-    Changes you made may not be saved.
+    Leave site?
   </message>
   <message name="IDS_BEFOREUNLOAD_MESSAGEBOX_OK_BUTTON_LABEL" desc="The text on the button which navigates the user away from the page.">
     Leave
   </message>
+  <message name="IDS_BEFOREUNLOAD_MESSAGEBOX_MESSAGE" desc="Body text in a dialog asking the user to confirm that they want to leave or reload a website.">
+    Changes you made may not be saved.
+  </message>
 
   <!-- "Before Reload" Dialog Box strings (same as "Before Unload" but when reloading rather than unloading the page -->
   <message name="IDS_BEFORERELOAD_MESSAGEBOX_TITLE" desc="Title for the 'before unload' dialog for reloads.">
-    Do you want to reload this site?
+    Reload site?
   </message>
   <message name="IDS_BEFORERELOAD_MESSAGEBOX_OK_BUTTON_LABEL" desc="The text on the button which reloads the page.">
     Reload
