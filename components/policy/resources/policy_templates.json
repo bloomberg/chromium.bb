@@ -2649,7 +2649,7 @@
 
           All recent versions of Samba and Windows servers support NTLMv2. This should only be disabled for backwards compatibility and reduces the security of authentication.
 
-          The default value when this policy is not defined is currently false for backwards compatibility, but will change to true in the future.''',
+          If this policy is not set, the default is true and NTLMv2 is enabled.''',
     },
     {
       'name': 'ExtensionInstallBlacklist',
