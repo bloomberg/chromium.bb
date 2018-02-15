@@ -106,7 +106,9 @@ gfx::Point ImageView::ComputeImageOrigin(const gfx::Size& image_size) const {
   switch (actual_horiz_alignment) {
     case LEADING:  x = insets.left();                                 break;
     case TRAILING: x = width() - insets.right() - image_size.width(); break;
-    case CENTER:   x = (width() - image_size.width()) / 2;            break;
+    case CENTER:
+      x = (width() - insets.width() - image_size.width()) / 2 + insets.left();
+      break;
     default:       NOTREACHED(); x = 0;                               break;
   }
 
@@ -114,7 +116,9 @@ gfx::Point ImageView::ComputeImageOrigin(const gfx::Size& image_size) const {
   switch (vert_alignment_) {
     case LEADING:  y = insets.top();                                     break;
     case TRAILING: y = height() - insets.bottom() - image_size.height(); break;
-    case CENTER:   y = (height() - image_size.height()) / 2;             break;
+    case CENTER:
+      y = (height() - insets.height() - image_size.height()) / 2 + insets.top();
+      break;
     default:       NOTREACHED(); y = 0;                                  break;
   }
 

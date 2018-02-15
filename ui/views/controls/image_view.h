@@ -82,6 +82,8 @@ class VIEWS_EXPORT ImageView : public View {
   views::PaintInfo::ScaleType GetPaintScaleType() const override;
 
  private:
+  friend class ImageViewTest;
+
   void OnPaintImage(gfx::Canvas* canvas);
 
   // Returns true if |img| is the same as the last image we painted. This is
