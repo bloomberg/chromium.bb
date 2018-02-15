@@ -18,6 +18,9 @@ namespace android {
 // Start and end of .text, respectively.
 BASE_EXPORT extern const size_t kStartOfText;
 BASE_EXPORT extern const size_t kEndOfText;
+// Start and end of the ordered part of .text, respectively.
+BASE_EXPORT extern const size_t kStartOfOrderedText;
+BASE_EXPORT extern const size_t kEndOfOrderedText;
 
 // Returns true if the ordering looks sane.
 BASE_EXPORT bool IsOrderingSane();
