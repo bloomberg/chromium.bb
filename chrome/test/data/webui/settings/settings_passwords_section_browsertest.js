@@ -672,7 +672,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
     });
 
     // Test the export flow. If exporting is slow, Chrome should show the
-    // in-progress dialog for at least 2000ms.
+    // in-progress dialog for at least 1000ms.
     test('exportFlowSlow', function(done) {
       const exportDialog = createExportPasswordsDialog(passwordManager);
       const progressCallback = passwordManager.progressCallback;
@@ -690,7 +690,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       assertTrue(exportDialog.$.dialog_start.open);
 
       // After 100ms of not having completed, the dialog switches to the
-      // progress bar. Chrome will continue to show the progress bar for 2000ms,
+      // progress bar. Chrome will continue to show the progress bar for 1000ms,
       // despite a completion event.
       mockTimer.tick(99);
       assertTrue(exportDialog.$.dialog_start.open);
@@ -700,8 +700,8 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
           {status: chrome.passwordsPrivate.ExportProgressStatus.SUCCEEDED});
       assertTrue(exportDialog.$.dialog_progress.open);
 
-      // After 2000ms, Chrome will display the completion event.
-      mockTimer.tick(1999);
+      // After 1000ms, Chrome will display the completion event.
+      mockTimer.tick(999);
       assertTrue(exportDialog.$.dialog_progress.open);
       mockTimer.tick(1);
       // On SUCCEEDED the dialog closes completely.

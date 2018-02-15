@@ -33,7 +33,7 @@ const progressBarDelayMs = 100;
  * The minimum amount of time (ms) that the progress bar will be visible.
  * @type {number}
  */
-const progressBarBlockMs = 2000;
+const progressBarBlockMs = 1000;
 
 Polymer({
   is: 'passwords-export-dialog',
@@ -67,16 +67,16 @@ Polymer({
 
   /**
    * The task that will display the completion of the export, if any. We display
-   * the progress bar for at least 2000ms, therefore, if export finishes
-   * earlier, we cache the result in |delayedProgress_| and this task will
-   * consume it. This is null, unless the task is currently scheduled.
+   * the progress bar for at least |progressBarBlockMs|, therefore, if export
+   * finishes earlier, we cache the result in |delayedProgress_| and this task
+   * will consume it. This is null, unless the task is currently scheduled.
    * @private {?number}
    */
   delayedCompletionToken_: null,
 
   /**
-   * We display the progress bar for at least 2000ms. If progress is achieved
-   * earlier, we store the update here and consume it later.
+   * We display the progress bar for at least |progressBarBlockMs|. If progress
+   * is achieved earlier, we store the update here and consume it later.
    * @private {?PasswordManager.PasswordExportProgress}
    */
   delayedProgress_: null,
