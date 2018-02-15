@@ -2832,6 +2832,8 @@
       interpolable: true,
       custom_apply_functions_inherit: true,
       custom_apply_functions_value: true,
+      typedom_types: ["Length", "Percent"],
+      keywords: ["baseline", "sub", "super", "text-top", "text-bottom", "middle"],
     },
     {
       name: "visibility",
@@ -3486,6 +3488,7 @@
       type_name: "int",
       computed_style_custom_functions: ["setter"],
       custom_apply_functions_all: true,
+      keywords: ["auto"],
     },
 
     // CSS logical props
