@@ -317,7 +317,7 @@ class WallpaperPrivateGetCollectionsInfoFunction
  protected:
   ~WallpaperPrivateGetCollectionsInfoFunction() override;
 
-  // ExtensionFunction:
+  // UIThreadExtensionFunction:
   ResponseAction Run() override;
 
  private:
@@ -343,7 +343,7 @@ class WallpaperPrivateGetImagesInfoFunction : public UIThreadExtensionFunction {
  protected:
   ~WallpaperPrivateGetImagesInfoFunction() override;
 
-  // ExtensionFunction:
+  // UIThreadExtensionFunction:
   ResponseAction Run() override;
 
  private:
@@ -371,7 +371,7 @@ class WallpaperPrivateGetLocalImagePathsFunction
  protected:
   ~WallpaperPrivateGetLocalImagePathsFunction() override;
 
-  // ExtensionFunction:
+  // UIThreadExtensionFunction:
   ResponseAction Run() override;
 
  private:
@@ -379,6 +379,27 @@ class WallpaperPrivateGetLocalImagePathsFunction
   void OnGetImagePathsComplete(const std::vector<std::string>& image_Pathss);
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperPrivateGetLocalImagePathsFunction);
+};
+
+class WallpaperPrivateGetLocalImageDataFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.getLocalImageData",
+                             WALLPAPERPRIVATE_GETLOCALIMAGEDATA)
+  WallpaperPrivateGetLocalImageDataFunction();
+
+ protected:
+  ~WallpaperPrivateGetLocalImageDataFunction() override;
+
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
+
+ private:
+  // Responds with the image data or an error message.
+  void OnReadImageDataComplete(std::unique_ptr<std::string> image_data,
+                               bool success);
+
+  DISALLOW_COPY_AND_ASSIGN(WallpaperPrivateGetLocalImageDataFunction);
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_WALLPAPER_PRIVATE_API_H_
