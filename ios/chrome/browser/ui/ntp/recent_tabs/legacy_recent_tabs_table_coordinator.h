@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_NTP_RECENT_TABS_RECENT_TABS_TABLE_COORDINATOR_H_
-#define IOS_CHROME_BROWSER_UI_NTP_RECENT_TABS_RECENT_TABS_TABLE_COORDINATOR_H_
+#ifndef IOS_CHROME_BROWSER_UI_NTP_RECENT_TABS_LEGACY_RECENT_TABS_TABLE_COORDINATOR_H_
+#define IOS_CHROME_BROWSER_UI_NTP_RECENT_TABS_LEGACY_RECENT_TABS_TABLE_COORDINATOR_H_
 
 #import <UIKit/UIKit.h>
 
@@ -16,16 +16,16 @@ class ChromeBrowserState;
 
 @protocol ApplicationCommands;
 @protocol RecentTabsHandsetViewControllerCommand;
-@class RecentTabsTableViewController;
+@class LegacyRecentTabsTableViewController;
 @protocol UrlLoader;
 
-// RecentTabsTableCoordinator controls the RecentTabTableViewDataSource, based
-// on the user's signed-in and chrome-sync states.
+// LegacyRecentTabsTableCoordinator controls the RecentTabTableViewDataSource,
+// based on the user's signed-in and chrome-sync states.
 //
-// RecentTabsTableCoordinator listens for notifications about Chrome Sync
+// LegacyRecentTabsTableCoordinator listens for notifications about Chrome Sync
 // and ChromeToDevice and changes/updates the view accordingly.
 //
-@interface RecentTabsTableCoordinator : ChromeCoordinator
+@interface LegacyRecentTabsTableCoordinator : ChromeCoordinator
 
 // Command handler for the command sent when the device is a handset. Nil
 // otherwise.
@@ -38,7 +38,8 @@ class ChromeBrowserState;
                     dispatcher:(id<ApplicationCommands>)dispatcher;
 
 // Private initializer, exposed for testing.
-- (instancetype)initWithController:(RecentTabsTableViewController*)controller
+- (instancetype)initWithController:
+                    (LegacyRecentTabsTableViewController*)controller
                       browserState:(ios::ChromeBrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
 
@@ -54,4 +55,4 @@ class ChromeBrowserState;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_NTP_RECENT_TABS_RECENT_TABS_TABLE_COORDINATOR_H_
+#endif  // IOS_CHROME_BROWSER_UI_NTP_RECENT_TABS_LEGACY_RECENT_TABS_TABLE_COORDINATOR_H_

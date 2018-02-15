@@ -6,8 +6,8 @@
 
 #include "base/ios/block_types.h"
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/ntp/recent_tabs/legacy_recent_tabs_table_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_view_controller.h"
-#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_coordinator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -18,7 +18,7 @@
 
 @property(nonatomic, strong)
     RecentTabsHandsetViewController* recentTabsViewController;
-@property(nonatomic, strong) RecentTabsTableCoordinator* tableCoordinator;
+@property(nonatomic, strong) LegacyRecentTabsTableCoordinator* tableCoordinator;
 // Completion block called once the recentTabsViewController is dismissed.
 @property(nonatomic, copy) ProceduralBlock completion;
 
@@ -37,9 +37,9 @@
   DCHECK(self.browserState);
 
   self.tableCoordinator =
-      [[RecentTabsTableCoordinator alloc] initWithLoader:self.loader
-                                            browserState:self.browserState
-                                              dispatcher:self.dispatcher];
+      [[LegacyRecentTabsTableCoordinator alloc] initWithLoader:self.loader
+                                                  browserState:self.browserState
+                                                    dispatcher:self.dispatcher];
   self.tableCoordinator.handsetCommandHandler = self;
   [self.tableCoordinator start];
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_coordinator.h"
+#import "ios/chrome/browser/ui/ntp/recent_tabs/legacy_recent_tabs_table_coordinator.h"
 
 #include <memory>
 
@@ -17,21 +17,22 @@
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/sync/synced_sessions_bridge.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/closed_tabs_observer_bridge.h"
-#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_view_controller.h"
+#import "ios/chrome/browser/ui/ntp/recent_tabs/legacy_recent_tabs_table_view_controller.h"
+#import "ios/chrome/browser/ui/ntp/recent_tabs/legacy_recent_tabs_table_view_controller_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface RecentTabsTableCoordinator ()<
+@interface LegacyRecentTabsTableCoordinator ()<
     ClosedTabsObserving,
     SyncedSessionsObserver,
-    RecentTabsTableViewControllerDelegate> {
+    LegacyRecentTabsTableViewControllerDelegate> {
   std::unique_ptr<synced_sessions::SyncedSessionsObserverBridge>
       _syncedSessionsObserver;
   std::unique_ptr<recent_tabs::ClosedTabsObserverBridge> _closedTabsObserver;
   SessionsSyncUserState _userState;
-  RecentTabsTableViewController* _tableViewController;
+  LegacyRecentTabsTableViewController* _tableViewController;
   ios::ChromeBrowserState* _browserState;  // Weak.
 }
 
@@ -53,21 +54,22 @@
 // The controller for RecentTabs panel that is added to the NewTabPage
 // Instantiate a UITableView and a UITableViewController, and notifies the
 // UITableViewController of any signed in state change.
-@implementation RecentTabsTableCoordinator
+@implementation LegacyRecentTabsTableCoordinator
 
 @synthesize handsetCommandHandler = _handsetCommandHandler;
 
 - (instancetype)initWithLoader:(id<UrlLoader>)loader
                   browserState:(ios::ChromeBrowserState*)browserState
                     dispatcher:(id<ApplicationCommands>)dispatcher {
-  return [self initWithController:[[RecentTabsTableViewController alloc]
+  return [self initWithController:[[LegacyRecentTabsTableViewController alloc]
                                       initWithBrowserState:browserState
                                                     loader:loader
                                                 dispatcher:dispatcher]
                      browserState:browserState];
 }
 
-- (instancetype)initWithController:(RecentTabsTableViewController*)controller
+- (instancetype)initWithController:
+                    (LegacyRecentTabsTableViewController*)controller
                       browserState:(ios::ChromeBrowserState*)browserState {
   self = [super initWithBaseViewController:nil browserState:browserState];
   if (self) {
@@ -205,7 +207,7 @@
 #pragma mark - RecentTabsTableViewControllerDelegate
 
 - (void)refreshSessionsViewRecentTabsTableViewController:
-    (RecentTabsTableViewController*)controller {
+    (LegacyRecentTabsTableViewController*)controller {
   [self refreshSessionsView];
 }
 

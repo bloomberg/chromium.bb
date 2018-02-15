@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_view_controller.h"
+#import "ios/chrome/browser/ui/ntp/recent_tabs/legacy_recent_tabs_table_view_controller.h"
 
 #include <memory>
 
@@ -26,6 +26,8 @@
 #include "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
+#import "ios/chrome/browser/ui/ntp/recent_tabs/legacy_recent_tabs_table_view_controller_delegate.h"
+#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_constants.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_view_controller.h"
 #include "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/views/generic_section_header_view.h"
@@ -52,12 +54,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-// Key for saving collapsed session state in the UserDefaults.
-NSString* const kCollapsedSectionsKey = @"ChromeRecentTabsCollapsedSections";
-// Accessibility identifier for the main view.
-NSString* const kRecentTabsTableViewControllerAccessibilityIdentifier =
-    @"recent_tabs_view_controller";
 
 namespace {
 
@@ -98,9 +94,9 @@ enum CellType {
 
 }  // namespace
 
-@interface RecentTabsTableViewController ()<SigninPromoViewConsumer,
-                                            SigninPresenter,
-                                            SyncPresenter> {
+@interface LegacyRecentTabsTableViewController ()<SigninPromoViewConsumer,
+                                                  SigninPresenter,
+                                                  SyncPresenter> {
   ios::ChromeBrowserState* _browserState;  // weak
   // The service that manages the recently closed tabs.
   sessions::TabRestoreService* _tabRestoreService;  // weak
@@ -165,7 +161,7 @@ enum CellType {
 
 @end
 
-@implementation RecentTabsTableViewController
+@implementation LegacyRecentTabsTableViewController
 
 @synthesize delegate = delegate_;
 @synthesize dispatcher = _dispatcher;
@@ -388,7 +384,7 @@ enum CellType {
 }
 
 - (void)showFullHistory {
-  __weak RecentTabsTableViewController* weakSelf = self;
+  __weak LegacyRecentTabsTableViewController* weakSelf = self;
   ProceduralBlock openHistory = ^{
     [weakSelf.dispatcher showHistory];
   };
@@ -472,8 +468,8 @@ enum CellType {
 }
 
 - (void)setSection:(NSString*)sectionKey collapsed:(BOOL)collapsed {
-  // TODO(jif): Store in the browser state preference instead of NSUserDefaults.
-  // crbug.com/419346.
+  // TODO(crbug.com/419346): Store in the browser state preference instead of
+  // NSUserDefaults.
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   NSDictionary* collapsedSections =
       [defaults dictionaryForKey:kCollapsedSectionsKey];
@@ -617,7 +613,7 @@ enum CellType {
                                                             params:params];
 
     // Fill the sheet/popover with buttons.
-    __weak RecentTabsTableViewController* weakSelf = self;
+    __weak LegacyRecentTabsTableViewController* weakSelf = self;
 
     // "Open all tabs" button.
     NSString* openAllButtonLabel =
@@ -847,7 +843,7 @@ enum CellType {
   // Sets constraints on the subview.
   [subview setTranslatesAutoresizingMaskIntoConstraints:NO];
 
-  NSDictionary* viewsDictionary = @{ @"view" : subview };
+  NSDictionary* viewsDictionary = @{@"view" : subview};
   // This set of constraints should match the constraints set on the
   // RecentlyClosedSectionFooter.
   // clang-format off
