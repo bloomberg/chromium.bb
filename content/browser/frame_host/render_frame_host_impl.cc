@@ -208,7 +208,7 @@ base::LazyInstance<RoutingIDFrameMap>::DestructorAtExit g_routing_id_frame_map =
     LAZY_INSTANCE_INITIALIZER;
 
 base::LazyInstance<RenderFrameHostImpl::CreateNetworkFactoryCallback>::Leaky
-    g_url_loader_factory_callback_for_test = LAZY_INSTANCE_INITIALIZER;
+    g_create_network_factory_callback_for_test = LAZY_INSTANCE_INITIALIZER;
 
 using TokenFrameMap = base::hash_map<base::UnguessableToken,
                                      RenderFrameHostImpl*,
@@ -460,14 +460,15 @@ RenderFrameHostImpl* RenderFrameHostImpl::FromOverlayRoutingToken(
 
 // static
 void RenderFrameHostImpl::SetNetworkFactoryForTesting(
-    const CreateNetworkFactoryCallback& url_loader_factory_callback) {
+    const CreateNetworkFactoryCallback& create_network_factory_callback) {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(url_loader_factory_callback.is_null() ||
-         g_url_loader_factory_callback_for_test.Get().is_null())
+  DCHECK(create_network_factory_callback.is_null() ||
+         g_create_network_factory_callback_for_test.Get().is_null())
       << "It is not expected that this is called with non-null callback when "
       << "another overriding callback is already set.";
-  g_url_loader_factory_callback_for_test.Get() = url_loader_factory_callback;
+  g_create_network_factory_callback_for_test.Get() =
+      create_network_factory_callback;
 }
 
 RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
@@ -4107,14 +4108,14 @@ void RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
       this, false /* is_navigation */, &default_factory_request);
   StoragePartitionImpl* storage_partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetStoragePartition(context, GetSiteInstance()));
-  if (g_url_loader_factory_callback_for_test.Get().is_null()) {
+  if (g_create_network_factory_callback_for_test.Get().is_null()) {
     storage_partition->GetNetworkContext()->CreateURLLoaderFactory(
         std::move(default_factory_request), GetProcess()->GetID());
   } else {
     network::mojom::URLLoaderFactoryPtr original_factory;
     storage_partition->GetNetworkContext()->CreateURLLoaderFactory(
         mojo::MakeRequest(&original_factory), GetProcess()->GetID());
-    g_url_loader_factory_callback_for_test.Get().Run(
+    g_create_network_factory_callback_for_test.Get().Run(
         std::move(default_factory_request), GetProcess()->GetID(),
         original_factory.PassInterface());
   }
