@@ -1026,7 +1026,13 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
       CreateQualifiedName(namespace_uri, qualified_name, exception_state));
   if (q_name == QualifiedName::Null())
     return nullptr;
-  return CreateElement(q_name, CreateElementFlags::ByCreateElement());
+
+  CreateElementFlags flags = CreateElementFlags::ByCreateElement();
+  if (CustomElement::ShouldCreateCustomElement(q_name))
+    return CustomElement::CreateCustomElement(*this, q_name, flags);
+  if (RegistrationContext() && V0CustomElement::IsValidName(q_name.LocalName()))
+    return RegistrationContext()->CreateCustomTagElement(*this, q_name);
+  return CreateRawElement(q_name, flags);
 }
 
 // https://dom.spec.whatwg.org/#internal-createelementns-steps
@@ -1412,16 +1418,6 @@ bool Document::HasValidNamespaceForElements(const QualifiedName& q_name) {
 
 bool Document::HasValidNamespaceForAttributes(const QualifiedName& q_name) {
   return HasValidNamespaceForElements(q_name);
-}
-
-// FIXME: This should really be in a possible ElementFactory class
-Element* Document::CreateElement(const QualifiedName& q_name,
-                                 CreateElementFlags flags) {
-  if (CustomElement::ShouldCreateCustomElement(q_name))
-    return CustomElement::CreateCustomElement(*this, q_name, flags);
-  if (RegistrationContext() && V0CustomElement::IsValidName(q_name.LocalName()))
-    return RegistrationContext()->CreateCustomTagElement(*this, q_name);
-  return CreateRawElement(q_name, flags);
 }
 
 String Document::readyState() const {
