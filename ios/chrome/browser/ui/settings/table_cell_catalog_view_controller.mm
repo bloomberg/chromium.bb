@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/settings/table_cell_catalog_view_controller.h"
 
+#import "ios/chrome/browser/ui/table_view/table_view_model.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -19,6 +21,12 @@
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.title = @"Table Cell Catalog";
+
+  [self loadModel];
+}
+
+- (void)loadModel {
+  [super loadModel];
 }
 
 @end

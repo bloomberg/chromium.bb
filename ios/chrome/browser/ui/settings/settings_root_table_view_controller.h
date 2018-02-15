@@ -8,12 +8,13 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/material_components/app_bar_presenting.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
 // SettingsRootTableViewController is a base class for integrating UITableViews
 // into the Settings UI.  It handles the configuration and display of the MDC
 // AppBar.
 @interface SettingsRootTableViewController
-    : UITableViewController<AppBarPresenting>
+    : ChromeTableViewController<AppBarPresenting>
 
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithNibName:(NSString*)name
