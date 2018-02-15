@@ -2091,7 +2091,7 @@ void ProfileSyncService::GetAllNodes(
 }
 
 syncer::GlobalIdMapper* ProfileSyncService::GetGlobalIdMapper() const {
-  return sessions_sync_manager_.get();
+  return sessions_sync_manager_->GetGlobalIdMapper();
 }
 
 base::WeakPtr<syncer::JsController> ProfileSyncService::GetJsController() {
