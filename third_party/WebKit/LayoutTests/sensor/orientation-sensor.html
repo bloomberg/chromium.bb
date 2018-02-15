@@ -19,35 +19,12 @@ const kRotationMatrix = [1,  0,  0,  0,
                          0,  0,  0,  1];
 const kRotationDOMMatrix = new DOMMatrix(kRotationMatrix);
 
-function* quaternionGen() {
-  let index = 0;
-  while (true) {
-    let result = [0, 0, 0, 0];
-    result[index] = 1;
-    yield result;
-
-    if (++index > 3)
-      index = 0;
-  }
-}
-
-let gen = quaternionGen();
-let expectedReading;
+// For 'orientation.angle == 270', which is set for tests at
+// at SensorProxy::GetScreenOrientationAngle().
+const kMappedQuaternion = [-0.707107, 0.707107, 0, 0];
 
 function update_sensor_reading(buffer) {
-  expectedReading = gen.next().value;
-  buffer.set(expectedReading, 2);
-}
-
-function verify_sensor_reading(sensor, should_be_null) {
-  if (should_be_null)
-    return sensor.quaternion === null && sensor.timestamp === null;
-
-  if (sensor.timestamp === null ||
-      sensor.quaternion.some((e, i) => {e !== expectedReading[i]}))
-    return false;
-
-  return true;
+  buffer.set(kQuaternion, 2);
 }
 
 async function checkPopulateMatrix(sensor, sensorType) {
@@ -67,7 +44,7 @@ async function checkPopulateMatrix(sensor, sensorType) {
   sensorObject.start();
 
   let mockSensor = await sensor.mockSensorProvider.getCreatedSensor();
-  await mockSensor.setUpdateSensorReadingFunction(buffer => buffer.set(kQuaternion, 2));
+  await mockSensor.setUpdateSensorReadingFunction(update_sensor_reading);
   await new Promise((resolve, reject) => {
     let wrapper = new CallbackWrapper(() => {
       // Works for all supported types.
@@ -99,21 +76,23 @@ async function checkPopulateMatrix(sensor, sensorType) {
   return mockSensor.removeConfigurationCalled();
 }
 
-runGenericSensorTests(AbsoluteOrientationSensor,
-                      update_sensor_reading,
-                      verify_sensor_reading,
-                      null,
-                      ['accelerometer', 'gyroscope', 'magnetometer']);
+runGenericSensorTests(
+    AbsoluteOrientationSensor,
+    update_sensor_reading,
+    verify_quat_sensor_reading.bind(null, kQuaternion),
+    verify_quat_sensor_reading.bind(null, kMappedQuaternion),
+    ['accelerometer', 'gyroscope', 'magnetometer']);
 
 sensor_test(sensor => {
   return checkPopulateMatrix(sensor, AbsoluteOrientationSensor);
 }, 'Test AbsoluteOrientationSensor.populateMatrix() method works correctly.');
 
-runGenericSensorTests(RelativeOrientationSensor,
-                      update_sensor_reading,
-                      verify_sensor_reading,
-                      null,
-                      ['accelerometer', 'gyroscope']);
+runGenericSensorTests(
+    RelativeOrientationSensor,
+    update_sensor_reading,
+    verify_quat_sensor_reading.bind(null, kQuaternion),
+    verify_quat_sensor_reading.bind(null, kMappedQuaternion),
+    ['accelerometer', 'gyroscope']);
 
 sensor_test(sensor => {
   return checkPopulateMatrix(sensor, RelativeOrientationSensor);

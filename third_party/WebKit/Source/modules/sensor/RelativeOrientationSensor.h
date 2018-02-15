@@ -6,6 +6,7 @@
 #define RelativeOrientationSensor_h
 
 #include "modules/sensor/OrientationSensor.h"
+#include "modules/sensor/SpatialSensorOptions.h"
 
 namespace blink {
 
@@ -14,7 +15,7 @@ class RelativeOrientationSensor final : public OrientationSensor {
 
  public:
   static RelativeOrientationSensor* Create(ExecutionContext*,
-                                           const SensorOptions&,
+                                           const SpatialSensorOptions&,
                                            ExceptionState&);
   static RelativeOrientationSensor* Create(ExecutionContext*, ExceptionState&);
 
@@ -22,7 +23,7 @@ class RelativeOrientationSensor final : public OrientationSensor {
 
  private:
   RelativeOrientationSensor(ExecutionContext*,
-                            const SensorOptions&,
+                            const SpatialSensorOptions&,
                             ExceptionState&);
 };
 

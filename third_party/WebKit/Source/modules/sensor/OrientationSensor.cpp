@@ -116,7 +116,7 @@ bool OrientationSensor::isReadingDirty() const {
 
 OrientationSensor::OrientationSensor(
     ExecutionContext* execution_context,
-    const SensorOptions& options,
+    const SpatialSensorOptions& options,
     ExceptionState& exception_state,
     device::mojom::blink::SensorType type,
     const Vector<mojom::FeaturePolicyFeature>& features)
