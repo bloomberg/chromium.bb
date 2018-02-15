@@ -28,7 +28,7 @@
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
-#include "third_party/WebKit/common/sampling_heap_profiler/sampling_heap_profiler.h"
+#include "third_party/WebKit/public/common/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/base/ime/input_method_initializer.h"
 

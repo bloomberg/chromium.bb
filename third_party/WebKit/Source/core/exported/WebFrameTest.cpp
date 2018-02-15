@@ -162,7 +162,7 @@
 #include "public/web/WebViewClient.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/common/page/launching_process_state.h"
+#include "third_party/WebKit/public/common/page/launching_process_state.h"
 #include "v8/include/v8.h"
 
 using blink::URLTestHelpers::ToKURL;

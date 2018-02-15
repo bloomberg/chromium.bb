@@ -10,7 +10,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/scheduler/renderer/main_thread_task_queue.h"
 #include "platform/scheduler/renderer/renderer_metrics_helper.h"
-#include "third_party/WebKit/common/page/launching_process_state.h"
+#include "third_party/WebKit/public/common/page/launching_process_state.h"
 
 #include <array>
 #include <vector>
