@@ -32,6 +32,11 @@
     </family>
     <family>
         <fileset>
+            <file>NotoSansCJKkr-Regular.otf</file>
+        </fileset>
+    </family>
+    <family>
+        <fileset>
             <file>NotoSansKhmer-Regular.ttf</file>
         </fileset>
     </family>
