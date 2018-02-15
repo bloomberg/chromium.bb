@@ -1093,7 +1093,6 @@ mr.ProviderManager = class extends mr.Module {
 
   /**
    * @override
-
    */
   provideSinks(providerName, sinks) {
     const provider = this.getProviderByName(providerName);

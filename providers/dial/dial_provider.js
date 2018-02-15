@@ -10,6 +10,7 @@ const ActivityRecords = goog.require('mr.dial.ActivityRecords');
 const AppDiscoveryService = goog.require('mr.dial.AppDiscoveryService');
 const Assertions = goog.require('mr.Assertions');
 const CancellablePromise = goog.require('mr.CancellablePromise');
+const DeviceCountsProvider = goog.require('mr.DeviceCountsProvider');
 const DialAnalytics = goog.require('mr.DialAnalytics');
 const DialClient = goog.require('mr.dial.Client');
 const DialPresentationUrl = goog.require('mr.dial.PresentationUrl');
@@ -34,6 +35,7 @@ const SinkUtils = goog.require('mr.SinkUtils');
  * DIAL implementation of Media Route Provider.
  * @implements {Provider}
  * @implements {ProviderCallbacks}
+ * @implements {DeviceCountsProvider}
  */
 const DialProvider = class {
   /**
@@ -72,10 +74,14 @@ const DialProvider = class {
   /**
    * @override
    */
-  initialize(config) {
-    const discoveryEnabled = config ? config.enable_dial_discovery : true;
-    this.logger_.info('Dial Discovery enabled: ' + discoveryEnabled + '...');
+  getDeviceCounts() {
+    return this.sinkDiscoveryService_.getDeviceCounts();
+  }
 
+  /**
+   * @override
+   */
+  initialize(config) {
     const sinkQueryEnabled =
         (config && config.enable_dial_sink_query == false) ? false : true;
     this.logger_.info('Dial sink query enabled: ' + sinkQueryEnabled + '...');
@@ -92,13 +98,6 @@ const DialProvider = class {
       this.appDiscoveryService_ = null;
     }
 
-    if (!discoveryEnabled) {
-      // We need to call stop in order to remove event listeners that were
-      // added at startup.
-      this.sinkDiscoveryService_.stop();
-      return;
-    }
-    this.sinkDiscoveryService_.start();
     this.maybeStartAppDiscovery_();
   }
 

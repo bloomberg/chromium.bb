@@ -7,7 +7,7 @@ mr_module_names = [
 ]
 mr_module_specs = [
   "module=common:8",
-  "module=mirroring_common:75:common",
+  "module=mirroring_common:73:common",
   "module=background_script:4:mirroring_common",
 ]
 mr_module_files = [
@@ -74,8 +74,6 @@ mr_module_files = [
   "providers/dial/dial_client.js",
   "providers/dial/dial_activity.js",
   "providers/dial/dial_activity_records.js",
-  "providers/dial/device_description_service.js",
-  "providers/dial/dial_event_listeners.js",
   "providers/dial/dial_sink_discovery_service.js",
   "providers/dial/dial_app_discovery_service.js",
   "providers/dial/presentation_url.js",
@@ -123,7 +121,6 @@ mr_test_files = [
   "persistent_data_test.js",
   "providers/common/id_generator_test.js",
   "providers/common/net_utils_test.js",
-  "providers/dial/device_description_service_test.js",
   "providers/dial/dial_activity_records_test.js",
   "providers/dial/dial_analytics_test.js",
   "providers/dial/dial_app_discovery_service_test.js",

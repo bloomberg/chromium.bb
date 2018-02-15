@@ -14,7 +14,6 @@ goog.require('mr.MediumTiming');
 goog.require('mr.PersistentDataManager');
 goog.require('mr.ProviderManager');
 goog.require('mr.TestProvider');
-goog.require('mr.dial.EventListeners');
 
 
 /** @private {mr.Logger} */
@@ -118,7 +117,6 @@ mr.Init.initProviderManager_ = function() {
  */
 mr.Init.getAllListeners_ = function() {
   return [
-    ...mr.dial.EventListeners.getAllListeners(),
     ...mr.InitHelper.getListeners(),
   ];
 };

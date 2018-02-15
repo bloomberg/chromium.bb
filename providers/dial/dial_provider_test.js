@@ -25,10 +25,8 @@ describe('DialProvider tests', function() {
     'onSinkAvailabilityUpdated'
   ];
   let mockSinkDiscoveryService;
-  const sinkDiscoveryServiceMethods = [
-    'init', 'start', 'stop', 'getSinkCount', 'init', 'getSinksByAppName',
-    'getSinkById'
-  ];
+  const sinkDiscoveryServiceMethods =
+      ['init', 'getSinkCount', 'init', 'getSinksByAppName', 'getSinkById'];
   let mockAppDiscoveryService;
   const appDiscoveryServiceMethods = [
     'init', 'start', 'stop', 'registerApp', 'unregisterApp', 'getAppCount',
@@ -51,7 +49,6 @@ describe('DialProvider tests', function() {
     provider = new DialProvider(
         mockPmCallbacks, mockSinkDiscoveryService, mockAppDiscoveryService);
     provider.initialize({enable_dial_discovery: true});
-    expect(mockSinkDiscoveryService.start).toHaveBeenCalled();
     expect(mockAppDiscoveryService.init).toHaveBeenCalled();
 
     const fakeDialSink = new DialSink('Fake DIAL sink', 'uniqueId');
@@ -67,23 +64,6 @@ describe('DialProvider tests', function() {
 
   afterEach(function() {
     PersistentDataManager.clear();
-  });
-
-  describe('initialize Test', function() {
-    it('initialize starts sink discovery', function() {
-      mockSinkDiscoveryService.getSinkCount.and.returnValue(0);
-      mockAppDiscoveryService.getAppCount.and.returnValue(0);
-      PersistentDataManager.clear();
-      provider.initialize({enable_dial_discovery: true});
-      expect(mockSinkDiscoveryService.start).toHaveBeenCalled();
-      expect(mockAppDiscoveryService.start).not.toHaveBeenCalled();
-    });
-
-    it('initialize stops sink discovery', function() {
-      PersistentDataManager.clear();
-      provider.initialize({enable_dial_discovery: false});
-      expect(mockSinkDiscoveryService.stop).toHaveBeenCalled();
-    });
   });
 
   describe('startObservingMediaSinks Test', function() {
@@ -115,7 +95,6 @@ describe('DialProvider tests', function() {
     it('Handles non-dial sink query', function() {
       provider.stopObservingMediaSinks('urn:not-dial:YouTube');
       expect(mockAppDiscoveryService.unregisterApp).not.toHaveBeenCalled();
-      expect(mockSinkDiscoveryService.stop).not.toHaveBeenCalled();
     });
 
     it('Handles valid dial sink query', function() {
@@ -123,7 +102,6 @@ describe('DialProvider tests', function() {
       provider.stopObservingMediaSinks(youTubeUrl);
       expect(mockAppDiscoveryService.unregisterApp)
           .toHaveBeenCalledWith('YouTube');
-      expect(mockSinkDiscoveryService.stop).not.toHaveBeenCalled();
     });
 
     it('Handles valid dial sink query, app query remains', function() {
@@ -131,7 +109,6 @@ describe('DialProvider tests', function() {
       provider.stopObservingMediaSinks(youTubeUrl);
       expect(mockAppDiscoveryService.unregisterApp)
           .toHaveBeenCalledWith('YouTube');
-      expect(mockSinkDiscoveryService.stop).not.toHaveBeenCalled();
     });
   });
 

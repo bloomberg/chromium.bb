@@ -7,20 +7,14 @@ goog.module.declareLegacyNamespace();
 
 const DeviceCounts = goog.require('mr.DeviceCounts');
 const DeviceCountsProvider = goog.require('mr.DeviceCountsProvider');
-const DeviceDescriptionService = goog.require('mr.dial.DeviceDescriptionService');
 const DialAnalytics = goog.require('mr.DialAnalytics');
 const DialSink = goog.require('mr.dial.Sink');
-const EventListeners = goog.require('mr.dial.EventListeners');
 const Logger = goog.require('mr.Logger');
-const Module = goog.require('mr.Module');
-const ModuleId = goog.require('mr.ModuleId');
 const PersistentData = goog.require('mr.PersistentData');
 const PersistentDataManager = goog.require('mr.PersistentDataManager');
-const PromiseUtils = goog.require('mr.PromiseUtils');
 const SinkAppStatus = goog.require('mr.dial.SinkAppStatus');
 const SinkDiscoveryCallbacks = goog.require('mr.dial.SinkDiscoveryCallbacks');
 const SinkList = goog.require('mr.SinkList');
-const SinkUtils = goog.require('mr.SinkUtils');
 
 
 /**
@@ -30,24 +24,16 @@ const SinkUtils = goog.require('mr.SinkUtils');
  * @implements {PersistentData}
  * @implements {DeviceCountsProvider}
  */
-const SinkDiscoveryService = class extends Module {
+class SinkDiscoveryService {
   /**
    * @param {!SinkDiscoveryCallbacks} sinkCallBacks
-   * @param {!DeviceDescriptionService=} ddService
    * @final
    */
-  constructor(sinkCallBacks, ddService = new DeviceDescriptionService()) {
-    super();
-
+  constructor(sinkCallBacks) {
     /**
      * @private @const {!SinkDiscoveryCallbacks}
      */
     this.sinkCallBacks_ = sinkCallBacks;
-
-    /**
-     * @private @const {!DeviceDescriptionService}
-     */
-    this.deviceDescriptionService_ = ddService;
 
     /**
      * @private @const {?Logger}
@@ -59,15 +45,6 @@ const SinkDiscoveryService = class extends Module {
      * @private @const {!Map<string, !DialSink>}
      */
     this.sinkMap_ = new Map();
-
-    /**
-     * Whether the service is listening.
-     * @private {boolean}
-     */
-    this.listening_ = false;
-
-    /** @private {boolean} */
-    this.networkDisconnected_ = false;
 
     /**
      * The most recent snapshot of device counts.
@@ -90,46 +67,6 @@ const SinkDiscoveryService = class extends Module {
    */
   init() {
     PersistentDataManager.register(this);
-    // Note: we could set listening_ by checking if the event listeners
-    // are already registered during bootstrap.
-    Module.onModuleLoaded(ModuleId.DIAL_SINK_DISCOVERY_SERVICE, this);
-  }
-
-  /**
-   * Starts listening for devices.
-   */
-  start() {
-    if (this.listening_) {
-      return;
-    }
-    this.logger_.info('Starting...');
-    this.listening_ = true;
-    EventListeners.getAllListeners().forEach(
-        listener => listener.addListener());
-    this.refresh();
-  }
-
-  /**
-   * Stops listening for devices.
-   */
-  stop() {
-    this.logger_.info('Stopping...');
-    this.listening_ = false;
-    EventListeners.getAllListeners().forEach(
-        listener => listener.removeListener());
-  }
-
-  /**
-   * Requests that the source refresh its sink list.
-   */
-  refresh() {
-    if (!this.listening_) {
-      this.logger_.info('Not started. Ignoring discover().');
-      return;
-    }
-    chrome.dial.discoverNow(result => {
-      this.logger_.info('chrome.dial.discoverNow = ' + result);
-    });
   }
 
   /**
@@ -168,44 +105,6 @@ const SinkDiscoveryService = class extends Module {
   }
 
   /**
-   * Processes newly reported device list.
-   * @param {!Array<!chrome.dial.DialDevice>} deviceList
-   * @private
-   */
-  onDeviceList_(deviceList) {
-    this.logger_.info(
-        'onDeviceList returned ' + deviceList.length + ' devices');
-    this.logger_.fine(() => '....the list is: ' + JSON.stringify(deviceList));
-    this.networkDisconnected_ = false;
-    let unresolvedDeviceCount = 0;
-    const processingDevices = [];
-    const sinkIds = new Set();
-    deviceList.forEach(device => {
-      processingDevices.push(this.processDiscoveredDevice_(device).then(
-          sink => {
-            sinkIds.add(sink.getId());
-            this.mayAddSink_(sink);
-          },
-          // Ignore error.
-          () => {
-            unresolvedDeviceCount++;
-          }));
-    });
-
-    PromiseUtils.allSettled(processingDevices).then(() => {
-      if (!this.networkDisconnected_) {
-        this.pruneInactive_(sinkIds).then(() => {
-          // # of known devices = sink count + unresolved devices count
-          // # of available devices = sink count
-          const sinkCount = this.getSinkCount();
-          this.recordDeviceCounts_(
-              sinkCount, sinkCount + unresolvedDeviceCount);
-        });
-      }
-    });
-  }
-
-  /**
    * Updates deviceCounts_ with the given counts, and reports to analytics if
    * applicable.
    * @param {number} availableDeviceCount
@@ -231,11 +130,6 @@ const SinkDiscoveryService = class extends Module {
    * @private
    */
   mayAddSink_(sink) {
-    if (this.networkDisconnected_) {
-      // Network just disconnected.
-      // Ignore any device before the next onDeviceList.
-      return;
-    }
     this.logger_.fine('mayAddSink, id = ' + sink.getId());
     const sinkToUpdate = this.sinkMap_.get(sink.getId());
     if (sinkToUpdate) {
@@ -249,89 +143,6 @@ const SinkDiscoveryService = class extends Module {
       this.sinkMap_.set(sink.getId(), sink);
       this.sinkCallBacks_.onSinkAdded(sink);
     }
-  }
-
-  /**
-   * Prunes sinks that are no longer accessible. NOTE: Remove this when cleaning
-   * up extension side discovery after switching to browser side discovery.
-   * @param {!Set<string>} activeSinkIds
-   * @return {!Promise<void>} Resolved when pruning is complete.
-   * @private
-   */
-  pruneInactive_(activeSinkIds) {
-    let removedSinks = [];
-    let promises = [];
-    this.sinkMap_.forEach(sink => {
-      if (activeSinkIds.has(sink.getId())) {
-        return;
-      }
-      promises.push(this.checkAccess_(sink).then(accessible => {
-        if (!accessible) {
-          // Remove sinkMap_ entry before calling onSinksRemoved, since
-          // onSinksRemoved will invoke getSinkCount to check if there are
-          // no more sinks.
-          this.sinkMap_.delete(sink.getId());
-          removedSinks.push(sink);
-        }
-      }));
-    });
-    return PromiseUtils.allSettled(promises).then(() => {
-      if (removedSinks.length > 0) {
-        this.sinkCallBacks_.onSinksRemoved(removedSinks);
-      }
-    });
-  }
-
-  /**
-   * Checks if the sink is accessible.
-   * @param {!DialSink} sink
-   * @return {!Promise<boolean>} A Promise that resolves true if it was
-   *     accessible, false otherwise.
-   * @private
-   */
-  checkAccess_(sink) {
-    if (!sink.getDeviceDescriptionUrl()) {
-      return Promise.resolve(false);
-    }
-    return this.deviceDescriptionService_.checkAccess(
-        /** @type {string} */ (sink.getDeviceDescriptionUrl()));
-  }
-
-  /**
-   * Processes a newly found device.
-   * @param {!chrome.dial.DialDevice} device The device to process.
-   * @return {!Promise<!DialSink>} A Promise that resolves to DIAL sink
-   *     on success.
-   * @private
-   */
-  processDiscoveredDevice_(device) {
-    return this.deviceDescriptionService_.getDeviceDescription(device).then(
-        description => {
-
-          const uniqueId = description.uniqueId ?
-              SinkDiscoveryService.processUniqueId(
-                  /** @type {string} */ (description.uniqueId)) :
-              '';
-          // NOTE: It's an invariant enforced by the DeviceDescriptionService
-          // that these fields are set and valid before the description is
-          // returned.
-          const id = description.uniqueId ?
-              SinkUtils.getInstance().generateId(uniqueId) :
-              device.deviceLabel;
-
-          const isDiscoveryOnly = SinkDiscoveryService.isDiscoveryOnly_(
-              /** @type {string} */ (description.modelName));
-
-          return new DialSink(
-                     (/** @type {string} */ (description.friendlyName)),
-                     uniqueId)
-              .setId(id)
-              .setIpAddress(/** @type {string} */ (description.ipAddress))
-              .setDialAppUrl(/** @type {string} */ (description.appUrl))
-              .setDeviceDescriptionUrl(device.deviceDescriptionUrl)
-              .setModelName(description.modelName)
-              .setSupportsAppAvailability(!isDiscoveryOnly);
-        });
   }
 
   /**
@@ -367,49 +178,6 @@ const SinkDiscoveryService = class extends Module {
    */
   static isDiscoveryOnly_(modelName) {
     return SinkDiscoveryService.DISCOVERY_ONLY_RE_.test(modelName);
-  }
-
-  /**
-   * Returns the device UDN with dashes removed and in lower case.
-   * @param {string} udn
-   * @return {string} The processed UDN.
-   */
-  static processUniqueId(udn) {
-    if (udn.indexOf('uuid:') == 0) {
-      udn = udn.substr(5);
-    }
-    return udn.replace(/-/g, '').toLowerCase();
-  }
-
-  /**
-   * @param {!chrome.dial.DialError} dialError
-   * @private
-   */
-  onServiceError_(dialError) {
-    switch (dialError.code) {
-      case 'no_valid_network_interfaces':
-      case 'network_disconnected':
-        this.logger_.warning(
-            'DIAL error: ' + dialError.code + '. Clear device list now.');
-        // Clear sinkMap_ before calling onSinksRemoved, since onSinksRemoved
-        // will invoke getSinkCount to check if there are no more sinks.
-        const allSinks = Array.from(this.sinkMap_.values());
-        this.sinkMap_.clear();
-        this.sinkCallBacks_.onSinksRemoved(allSinks);
-        this.recordDeviceCounts_(0, 0);
-        this.networkDisconnected_ = true;
-        break;
-      case 'no_listeners':
-      case 'socket_error':
-      case 'cellular_network':
-      case 'unknown':
-        this.logger_.warning(
-            'DIAL error: ' + dialError.code + '. Keep device list.');
-        break;
-      default:
-        this.logger_.warning('Unhandled DIAL error: ' + dialError.code);
-        break;
-    }
   }
 
   /**
@@ -470,19 +238,6 @@ const SinkDiscoveryService = class extends Module {
   /**
    * @override
    */
-  handleEvent(event, ...args) {
-    if (event == chrome.dial.onDeviceList) {
-      this.onDeviceList_(...args);
-    } else if (event == chrome.dial.onError) {
-      this.onServiceError_(...args);
-    } else {
-      throw new Error('Unhandled event');
-    }
-  }
-
-  /**
-   * @override
-   */
   getStorageKey() {
     return 'dial.DialSinkDiscoveryService';
   }
@@ -518,7 +273,7 @@ const SinkDiscoveryService = class extends Module {
           permanentData['deviceCountMetricsRecordTime'];
     }
   }
-};
+}
 
 
 /**
