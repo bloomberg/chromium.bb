@@ -1196,7 +1196,13 @@ TEST_F(NavigationAndLoadCallbacksTest, StopNavigation) {
   }));
 }
 
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_StopFinishedNavigation StopFinishedNavigation
+#else
+#define MAYBE_StopFinishedNavigation DISABLED_StopFinishedNavigation
+#endif
 // Tests stopping a finished navigation. PageLoaded is never called.
+// TODO(crbug.com/812669): Re-enable this test on devices.
 TEST_F(NavigationAndLoadCallbacksTest, StopFinishedNavigation) {
   GURL url = test_server_->GetURL("/exabyte_response");
 
