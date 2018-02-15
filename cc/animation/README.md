@@ -19,7 +19,7 @@ of Chromium interact with cc/animation, most prominently Blink and ui/.
 ## How cc/animation works
 
 The root concept in cc/animation is an
-[animation](https://codesearch.chromium.org/chromium/src/cc/animation/animation.h).
+[keyframe model](https://codesearch.chromium.org/chromium/src/cc/animation/keyframe_model.h).
 Animations contain the state necessary to 'play' (interpolate values from) an
 [animation curve](https://codesearch.chromium.org/chromium/src/cc/animation/animation_curve.h),
 which is a function that returns a value given an input time. Aside from the
@@ -29,10 +29,10 @@ An animation does not know or care what property is being animated, and holds
 only an opaque identifier for the property to allow clients to map output values
 to the correct properties.
 
-Targeting only a single property means that cc animations are distinct from the
+Targeting only a single property means that cc KeyframeModels are distinct from the
 Blink concept of an animation, which wraps the animation of multiple properties.
 To coordinate the playback of multiple cc/animations (e.g. those that are
-animating multiple properties on the same target), animations have the concept
+animating multiple properties on the same target), KeyframeModels have the concept
 of a group identifier. Animations that have the same group identifier and the
 same target are started together, and animation-finished notifications are only
 sent when all animations in the group have finished.
@@ -42,7 +42,7 @@ Animations are grouped together based on their
 (the entity whose property is being animated) and each such group is owned by an
 [animation player](https://codesearch.chromium.org/chromium/src/cc/animation/animation_player.h).
 Note that there may be multiple animation players with the same target (each
-with a set of animations for that target); the
+with a set of KeyframeModels for that target); the
 [ElementAnimations](https://codesearch.chromium.org/chromium/src/cc/animation/element_animations.h)
 class wraps the multiple animation players and has a 1:1 relationship with
 target entities.

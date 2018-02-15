@@ -13,7 +13,7 @@ WorkletAnimationPlayer::WorkletAnimationPlayer(
     int id,
     const std::string& name,
     std::unique_ptr<ScrollTimeline> scroll_timeline)
-    : SingleTickerAnimationPlayer(id),
+    : SingleKeyframeEffectAnimationPlayer(id),
       name_(name),
       scroll_timeline_(std::move(scroll_timeline)) {}
 
@@ -43,7 +43,7 @@ void WorkletAnimationPlayer::SetLocalTime(base::TimeDelta local_time) {
 }
 
 void WorkletAnimationPlayer::Tick(base::TimeTicks monotonic_time) {
-  animation_ticker()->Tick(monotonic_time, this);
+  keyframe_effect()->Tick(monotonic_time, this);
 }
 
 // TODO(crbug.com/780151): The current time returned should be an offset against
@@ -59,16 +59,16 @@ double WorkletAnimationPlayer::CurrentTime(base::TimeTicks monotonic_time,
   return (monotonic_time - base::TimeTicks()).InMillisecondsF();
 }
 
-base::TimeTicks WorkletAnimationPlayer::GetTimeForAnimation(
-    const Animation& animation) const {
+base::TimeTicks WorkletAnimationPlayer::GetTimeForKeyframeModel(
+    const KeyframeModel& keyframe_model) const {
   // Animation player local time is equivalent to animation active time. So
   // we have to convert it from active time to monotonic time.
-  return animation.ConvertFromActiveTime(local_time_);
+  return keyframe_model.ConvertFromActiveTime(local_time_);
 }
 
 void WorkletAnimationPlayer::PushPropertiesTo(
     AnimationPlayer* animation_player_impl) {
-  SingleTickerAnimationPlayer::PushPropertiesTo(animation_player_impl);
+  SingleKeyframeEffectAnimationPlayer::PushPropertiesTo(animation_player_impl);
   static_cast<WorkletAnimationPlayer*>(animation_player_impl)
       ->SetLocalTime(local_time_);
 }

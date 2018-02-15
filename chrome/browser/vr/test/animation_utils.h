@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "cc/animation/animation.h"
+#include "cc/animation/keyframe_model.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "chrome/browser/vr/target_property.h"
 
@@ -15,26 +15,28 @@ namespace vr {
 
 class UiElement;
 
-std::unique_ptr<cc::Animation> CreateTransformAnimation(
+std::unique_ptr<cc::KeyframeModel> CreateTransformAnimation(
     int id,
     int group,
     const cc::TransformOperations& from,
     const cc::TransformOperations& to,
     base::TimeDelta duration);
 
-std::unique_ptr<cc::Animation> CreateBoundsAnimation(int id,
-                                                     int group,
-                                                     const gfx::SizeF& from,
-                                                     const gfx::SizeF& to,
-                                                     base::TimeDelta duration);
+std::unique_ptr<cc::KeyframeModel> CreateBoundsAnimation(
+    int id,
+    int group,
+    const gfx::SizeF& from,
+    const gfx::SizeF& to,
+    base::TimeDelta duration);
 
-std::unique_ptr<cc::Animation> CreateOpacityAnimation(int id,
-                                                      int group,
-                                                      float from,
-                                                      float to,
-                                                      base::TimeDelta duration);
+std::unique_ptr<cc::KeyframeModel> CreateOpacityAnimation(
+    int id,
+    int group,
+    float from,
+    float to,
+    base::TimeDelta duration);
 
-std::unique_ptr<cc::Animation> CreateBackgroundColorAnimation(
+std::unique_ptr<cc::KeyframeModel> CreateBackgroundColorAnimation(
     int id,
     int group,
     SkColor from,

@@ -131,7 +131,7 @@ void Button::OnSetCornerRadii(const CornerRadii& radii) {
 
 void Button::NotifyClientSizeAnimated(const gfx::SizeF& size,
                                       int target_property_id,
-                                      cc::Animation* animation) {
+                                      cc::KeyframeModel* animation) {
   if (target_property_id == BOUNDS) {
     background_->SetSize(size.width(), size.height());
     hit_plane_->SetSize(size.width(), size.height());

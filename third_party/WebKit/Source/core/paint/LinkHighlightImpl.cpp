@@ -38,9 +38,9 @@
 #include "core/paint/PaintLayer.h"
 #include "core/paint/compositing/CompositedLayerMapping.h"
 #include "platform/LayoutTestSupport.h"
-#include "platform/animation/CompositorAnimation.h"
 #include "platform/animation/CompositorAnimationCurve.h"
 #include "platform/animation/CompositorFloatAnimationCurve.h"
+#include "platform/animation/CompositorKeyframeModel.h"
 #include "platform/animation/CompositorTargetProperty.h"
 #include "platform/animation/TimingFunction.h"
 #include "platform/graphics/Color.h"
@@ -326,11 +326,12 @@ void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
       LayoutTestSupport::IsRunningLayoutTest() ? kStartOpacity : 0,
       timing_function));
 
-  std::unique_ptr<CompositorAnimation> animation = CompositorAnimation::Create(
-      *curve, CompositorTargetProperty::OPACITY, 0, 0);
+  std::unique_ptr<CompositorKeyframeModel> keyframe_model =
+      CompositorKeyframeModel::Create(*curve, CompositorTargetProperty::OPACITY,
+                                      0, 0);
 
   content_layer_->Layer()->SetDrawsContent(true);
-  compositor_player_->AddAnimation(std::move(animation));
+  compositor_player_->AddKeyframeModel(std::move(keyframe_model));
 
   Invalidate();
   owning_web_view_->MainFrameImpl()->FrameWidget()->ScheduleAnimation();

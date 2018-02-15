@@ -172,7 +172,7 @@ TEST(UiScene, NoViewportAwareElementWhenNoVisibleChild) {
 TEST(UiScene, InvisibleElementsDoNotCauseAnimationDirtiness) {
   UiScene scene;
   auto element = std::make_unique<UiElement>();
-  element->AddAnimation(CreateBackgroundColorAnimation(
+  element->AddKeyframeModel(CreateBackgroundColorAnimation(
       1, 1, SK_ColorBLACK, SK_ColorWHITE, MsToDelta(1000)));
   UiElement* element_ptr = element.get();
   scene.AddUiElement(kRoot, std::move(element));

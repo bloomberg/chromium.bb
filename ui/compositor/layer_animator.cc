@@ -14,7 +14,7 @@
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
-#include "cc/animation/single_ticker_animation_player.h"
+#include "cc/animation/single_keyframe_effect_animation_player.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
@@ -55,7 +55,7 @@ LayerAnimator::LayerAnimator(base::TimeDelta transition_duration)
       disable_timer_for_test_(false),
       adding_animations_(false),
       animation_metrics_reporter_(nullptr) {
-  animation_player_ = cc::SingleTickerAnimationPlayer::Create(
+  animation_player_ = cc::SingleKeyframeEffectAnimationPlayer::Create(
       cc::AnimationIdProvider::NextPlayerId());
 }
 
@@ -183,16 +183,16 @@ void LayerAnimator::DetachLayerFromAnimationPlayer() {
 }
 
 void LayerAnimator::AddThreadedAnimation(
-    std::unique_ptr<cc::Animation> animation) {
-  animation_player_->AddAnimation(std::move(animation));
+    std::unique_ptr<cc::KeyframeModel> animation) {
+  animation_player_->AddKeyframeModel(std::move(animation));
 }
 
-void LayerAnimator::RemoveThreadedAnimation(int animation_id) {
-  animation_player_->RemoveAnimation(animation_id);
+void LayerAnimator::RemoveThreadedAnimation(int keyframe_model_id) {
+  animation_player_->RemoveKeyframeModel(keyframe_model_id);
 }
 
-cc::SingleTickerAnimationPlayer* LayerAnimator::GetAnimationPlayerForTesting()
-    const {
+cc::SingleKeyframeEffectAnimationPlayer*
+LayerAnimator::GetAnimationPlayerForTesting() const {
   return animation_player_.get();
 }
 

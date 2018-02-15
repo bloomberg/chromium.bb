@@ -26,12 +26,12 @@
 #include "platform/graphics/GraphicsLayer.h"
 
 #include <memory>
-#include "platform/animation/CompositorAnimation.h"
 #include "platform/animation/CompositorAnimationHost.h"
 #include "platform/animation/CompositorAnimationPlayer.h"
 #include "platform/animation/CompositorAnimationPlayerClient.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
 #include "platform/animation/CompositorFloatAnimationCurve.h"
+#include "platform/animation/CompositorKeyframeModel.h"
 #include "platform/animation/CompositorTargetProperty.h"
 #include "platform/graphics/CompositorElementId.h"
 #include "platform/graphics/paint/PropertyTreeState.h"
@@ -131,10 +131,10 @@ TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations) {
       CompositorFloatKeyframe(0.0, 0.0,
                               *CubicBezierTimingFunction::Preset(
                                   CubicBezierTimingFunction::EaseType::EASE)));
-  std::unique_ptr<CompositorAnimation> float_animation(
-      CompositorAnimation::Create(*curve, CompositorTargetProperty::OPACITY, 0,
-                                  0));
-  int animation_id = float_animation->Id();
+  std::unique_ptr<CompositorKeyframeModel> float_keyframe_model(
+      CompositorKeyframeModel::Create(*curve, CompositorTargetProperty::OPACITY,
+                                      0, 0));
+  int keyframe_model_id = float_keyframe_model->Id();
 
   std::unique_ptr<CompositorAnimationTimeline> compositor_timeline =
       CompositorAnimationTimeline::Create();
@@ -150,7 +150,7 @@ TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations) {
   player.CompositorPlayer()->AttachElement(platform_layer_->GetElementId());
   ASSERT_TRUE(player.CompositorPlayer()->IsElementAttached());
 
-  player.CompositorPlayer()->AddAnimation(std::move(float_animation));
+  player.CompositorPlayer()->AddKeyframeModel(std::move(float_keyframe_model));
 
   ASSERT_TRUE(platform_layer_->HasTickingAnimationForTesting());
 
@@ -160,7 +160,7 @@ TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations) {
   ASSERT_TRUE(platform_layer_);
 
   ASSERT_TRUE(platform_layer_->HasTickingAnimationForTesting());
-  player.CompositorPlayer()->RemoveAnimation(animation_id);
+  player.CompositorPlayer()->RemoveKeyframeModel(keyframe_model_id);
   ASSERT_FALSE(platform_layer_->HasTickingAnimationForTesting());
 
   graphics_layer_->SetShouldFlattenTransform(true);

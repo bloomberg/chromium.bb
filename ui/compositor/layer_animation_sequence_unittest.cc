@@ -285,7 +285,7 @@ TEST(LayerAnimationSequenceTest, ToString) {
 
   std::unique_ptr<LayerAnimationElement> brightness =
       LayerAnimationElement::CreateBrightnessElement(1.0f, delta);
-  int brightness_id = brightness->animation_id();
+  int brightness_id = brightness->keyframe_model_id();
   sequence.AddElement(std::move(brightness));
   EXPECT_EQ(
       base::StringPrintf(
@@ -298,7 +298,7 @@ TEST(LayerAnimationSequenceTest, ToString) {
 
   std::unique_ptr<LayerAnimationElement> opacity =
       LayerAnimationElement::CreateOpacityElement(1.0f, delta);
-  int opacity_id = opacity->animation_id();
+  int opacity_id = opacity->keyframe_model_id();
   sequence.AddElement(std::move(opacity));
   sequence.set_is_cyclic(true);
   sequence.set_animation_group_id(1973);

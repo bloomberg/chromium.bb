@@ -172,7 +172,7 @@ void TestLayerAnimationDelegate::CreateCcLayer() {
 }
 
 void TestLayerThreadedAnimationDelegate::AddThreadedAnimation(
-    std::unique_ptr<cc::Animation> animation) {}
+    std::unique_ptr<cc::KeyframeModel> animation) {}
 
 void TestLayerThreadedAnimationDelegate::RemoveThreadedAnimation(
     int animation_id) {}

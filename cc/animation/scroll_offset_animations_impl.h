@@ -17,7 +17,7 @@ namespace cc {
 
 class AnimationHost;
 class AnimationTimeline;
-class SingleTickerAnimationPlayer;
+class SingleKeyframeEffectAnimationPlayer;
 
 // Contains an AnimationTimeline and its AnimationPlayer that owns the impl
 // only scroll offset animations running on a particular CC Layer.
@@ -78,7 +78,8 @@ class CC_ANIMATION_EXPORT ScrollOffsetAnimationsImpl
   // We have just one player for impl-only scroll offset animations.
   // I.e. only one element can have an impl-only scroll offset animation at
   // any given time.
-  scoped_refptr<SingleTickerAnimationPlayer> scroll_offset_animation_player_;
+  scoped_refptr<SingleKeyframeEffectAnimationPlayer>
+      scroll_offset_animation_player_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollOffsetAnimationsImpl);
 };

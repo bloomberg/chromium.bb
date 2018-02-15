@@ -19,7 +19,7 @@ class Throbber : public Rect {
 
   void NotifyClientFloatAnimated(float value,
                                  int target_property_id,
-                                 cc::Animation* animation) override;
+                                 cc::KeyframeModel* keyframe_model) override;
 
   void SetCircleGrowAnimationEnabled(bool enabled);
 

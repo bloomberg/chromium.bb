@@ -7,10 +7,10 @@
 #include "base/memory/ptr_util.h"
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_id_provider.h"
-#include "cc/animation/animation_ticker.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
-#include "cc/animation/single_ticker_animation_player.h"
+#include "cc/animation/keyframe_effect.h"
+#include "cc/animation/single_keyframe_effect_animation_player.h"
 #include "cc/paint/filter_operation.h"
 #include "cc/paint/filter_operations.h"
 #include "cc/trees/property_tree.h"
@@ -400,7 +400,7 @@ void AnimationTimelinesTest::AttachTimelinePlayerLayer() {
   timeline_->AttachPlayer(player_);
   player_->AttachElement(element_id_);
 
-  element_animations_ = player_->animation_ticker()->element_animations();
+  element_animations_ = player_->keyframe_effect()->element_animations();
 }
 
 void AnimationTimelinesTest::CreateImplTimelineAndPlayer() {
@@ -411,12 +411,12 @@ void AnimationTimelinesTest::CreateImplTimelineAndPlayer() {
 void AnimationTimelinesTest::GetImplTimelineAndPlayerByID() {
   timeline_impl_ = host_impl_->GetTimelineById(timeline_id_);
   EXPECT_TRUE(timeline_impl_);
-  player_impl_ = static_cast<SingleTickerAnimationPlayer*>(
+  player_impl_ = static_cast<SingleKeyframeEffectAnimationPlayer*>(
       timeline_impl_->GetPlayerById(player_id_));
   EXPECT_TRUE(player_impl_);
 
   element_animations_impl_ =
-      player_impl_->animation_ticker()->element_animations();
+      player_impl_->keyframe_effect()->element_animations();
 }
 
 void AnimationTimelinesTest::ReleaseRefPtrs() {
@@ -444,20 +444,22 @@ void AnimationTimelinesTest::TickAnimationsTransferEvents(
   host_->SetAnimationEvents(std::move(events));
 }
 
-AnimationTicker* AnimationTimelinesTest::GetTickerForElementId(
+KeyframeEffect* AnimationTimelinesTest::GetKeyframeEffectForElementId(
     ElementId element_id) {
   const scoped_refptr<ElementAnimations> element_animations =
       host_->GetElementAnimationsForElementId(element_id);
-  return element_animations ? &*element_animations->tickers_list().begin()
-                            : nullptr;
+  return element_animations
+             ? &*element_animations->keyframe_effects_list().begin()
+             : nullptr;
 }
 
-AnimationTicker* AnimationTimelinesTest::GetImplTickerForLayerId(
+KeyframeEffect* AnimationTimelinesTest::GetImplKeyframeEffectForLayerId(
     ElementId element_id) {
   const scoped_refptr<ElementAnimations> element_animations =
       host_impl_->GetElementAnimationsForElementId(element_id);
-  return element_animations ? &*element_animations->tickers_list().begin()
-                            : nullptr;
+  return element_animations
+             ? &*element_animations->keyframe_effects_list().begin()
+             : nullptr;
 }
 
 int AnimationTimelinesTest::NextTestLayerId() {
@@ -465,16 +467,16 @@ int AnimationTimelinesTest::NextTestLayerId() {
   return next_test_layer_id_;
 }
 
-bool AnimationTimelinesTest::CheckTickerTimelineNeedsPushProperties(
+bool AnimationTimelinesTest::CheckKeyframeEffectTimelineNeedsPushProperties(
     bool needs_push_properties) const {
   DCHECK(player_);
   DCHECK(timeline_);
 
   bool result = true;
 
-  AnimationTicker* ticker = player_->animation_ticker();
-  if (ticker->needs_push_properties() != needs_push_properties) {
-    ADD_FAILURE() << "ticker->needs_push_properties() expected to be "
+  KeyframeEffect* keyframe_effect = player_->keyframe_effect();
+  if (keyframe_effect->needs_push_properties() != needs_push_properties) {
+    ADD_FAILURE() << "keyframe_effect->needs_push_properties() expected to be "
                   << needs_push_properties;
     result = false;
   }

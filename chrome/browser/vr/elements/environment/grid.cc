@@ -78,11 +78,11 @@ void Grid::SetGridColor(SkColor color) {
 
 void Grid::NotifyClientColorAnimated(SkColor color,
                                      int target_property_id,
-                                     cc::Animation* animation) {
+                                     cc::KeyframeModel* keyframe_model) {
   if (target_property_id == GRID_COLOR) {
     grid_color_ = color;
   } else {
-    Rect::NotifyClientColorAnimated(color, target_property_id, animation);
+    Rect::NotifyClientColorAnimated(color, target_property_id, keyframe_model);
   }
 }
 

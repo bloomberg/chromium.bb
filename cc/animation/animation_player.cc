@@ -28,7 +28,7 @@ AnimationPlayer::AnimationPlayer(int id)
       animation_timeline_(),
       animation_delegate_(),
       id_(id),
-      ticking_tickers_count(0) {
+      ticking_keyframe_effects_count(0) {
   DCHECK(id_);
 }
 
@@ -41,13 +41,14 @@ scoped_refptr<AnimationPlayer> AnimationPlayer::CreateImplInstance() const {
   return player;
 }
 
-ElementId AnimationPlayer::element_id_of_ticker(TickerId ticker_id) const {
-  DCHECK(GetTickerById(ticker_id));
-  return GetTickerById(ticker_id)->element_id();
+ElementId AnimationPlayer::element_id_of_keyframe_effect(
+    KeyframeEffectId keyframe_effect_id) const {
+  DCHECK(GetKeyframeEffectById(keyframe_effect_id));
+  return GetKeyframeEffectById(keyframe_effect_id)->element_id();
 }
 
 bool AnimationPlayer::IsElementAttached(ElementId id) const {
-  return !!element_to_ticker_id_map_.count(id);
+  return !!element_to_keyframe_effect_id_map_.count(id);
 }
 
 void AnimationPlayer::SetAnimationHost(AnimationHost* animation_host) {
@@ -58,226 +59,246 @@ void AnimationPlayer::SetAnimationTimeline(AnimationTimeline* timeline) {
   if (animation_timeline_ == timeline)
     return;
 
-  // We need to unregister ticker to manage ElementAnimations and observers
-  // properly.
-  if (!element_to_ticker_id_map_.empty() && animation_host_) {
+  // We need to unregister keyframe_effect to manage ElementAnimations and
+  // observers properly.
+  if (!element_to_keyframe_effect_id_map_.empty() && animation_host_) {
     // Destroy ElementAnimations or release it if it's still needed.
-    UnregisterTickers();
+    UnregisterKeyframeEffects();
   }
 
   animation_timeline_ = timeline;
 
   // Register player only if layer AND host attached. Unlike the
-  // SingleAnimationPlayer case, all tickers have been attached to their
-  // corresponding elements.
-  if (!element_to_ticker_id_map_.empty() && animation_host_) {
-    RegisterTickers();
+  // SingleAnimationPlayer case, all keyframe_effects have been attached to
+  // their corresponding elements.
+  if (!element_to_keyframe_effect_id_map_.empty() && animation_host_) {
+    RegisterKeyframeEffects();
   }
 }
 
 bool AnimationPlayer::has_element_animations() const {
-  return !element_to_ticker_id_map_.empty();
+  return !element_to_keyframe_effect_id_map_.empty();
 }
 
 scoped_refptr<ElementAnimations> AnimationPlayer::element_animations(
-    TickerId ticker_id) const {
-  return GetTickerById(ticker_id)->element_animations();
+    KeyframeEffectId keyframe_effect_id) const {
+  return GetKeyframeEffectById(keyframe_effect_id)->element_animations();
 }
 
-void AnimationPlayer::AttachElementForTicker(ElementId element_id,
-                                             TickerId ticker_id) {
-  DCHECK(GetTickerById(ticker_id));
-  GetTickerById(ticker_id)->AttachElement(element_id);
-  element_to_ticker_id_map_[element_id].emplace(ticker_id);
+void AnimationPlayer::AttachElementForKeyframeEffect(
+    ElementId element_id,
+    KeyframeEffectId keyframe_effect_id) {
+  DCHECK(GetKeyframeEffectById(keyframe_effect_id));
+  GetKeyframeEffectById(keyframe_effect_id)->AttachElement(element_id);
+  element_to_keyframe_effect_id_map_[element_id].emplace(keyframe_effect_id);
   // Register player only if layer AND host attached.
   if (animation_host_) {
     // Create ElementAnimations or re-use existing.
-    RegisterTicker(element_id, ticker_id);
+    RegisterKeyframeEffect(element_id, keyframe_effect_id);
   }
 }
 
-void AnimationPlayer::DetachElementForTicker(ElementId element_id,
-                                             TickerId ticker_id) {
-  DCHECK(GetTickerById(ticker_id));
-  DCHECK_EQ(GetTickerById(ticker_id)->element_id(), element_id);
+void AnimationPlayer::DetachElementForKeyframeEffect(
+    ElementId element_id,
+    KeyframeEffectId keyframe_effect_id) {
+  DCHECK(GetKeyframeEffectById(keyframe_effect_id));
+  DCHECK_EQ(GetKeyframeEffectById(keyframe_effect_id)->element_id(),
+            element_id);
 
-  UnregisterTicker(element_id, ticker_id);
-  GetTickerById(ticker_id)->DetachElement();
-  element_to_ticker_id_map_[element_id].erase(ticker_id);
+  UnregisterKeyframeEffect(element_id, keyframe_effect_id);
+  GetKeyframeEffectById(keyframe_effect_id)->DetachElement();
+  element_to_keyframe_effect_id_map_[element_id].erase(keyframe_effect_id);
 }
 
 void AnimationPlayer::DetachElement() {
   if (animation_host_) {
     // Destroy ElementAnimations or release it if it's still needed.
-    UnregisterTickers();
+    UnregisterKeyframeEffects();
   }
 
-  for (auto pair = element_to_ticker_id_map_.begin();
-       pair != element_to_ticker_id_map_.end();) {
-    for (auto ticker = pair->second.begin(); ticker != pair->second.end();) {
-      GetTickerById(*ticker)->DetachElement();
-      ticker = pair->second.erase(ticker);
+  for (auto pair = element_to_keyframe_effect_id_map_.begin();
+       pair != element_to_keyframe_effect_id_map_.end();) {
+    for (auto keyframe_effect = pair->second.begin();
+         keyframe_effect != pair->second.end();) {
+      GetKeyframeEffectById(*keyframe_effect)->DetachElement();
+      keyframe_effect = pair->second.erase(keyframe_effect);
     }
-    pair = element_to_ticker_id_map_.erase(pair);
+    pair = element_to_keyframe_effect_id_map_.erase(pair);
   }
-  DCHECK_EQ(element_to_ticker_id_map_.size(), 0u);
+  DCHECK_EQ(element_to_keyframe_effect_id_map_.size(), 0u);
 }
 
-void AnimationPlayer::RegisterTicker(ElementId element_id, TickerId ticker_id) {
+void AnimationPlayer::RegisterKeyframeEffect(
+    ElementId element_id,
+    KeyframeEffectId keyframe_effect_id) {
   DCHECK(animation_host_);
-  AnimationTicker* ticker = GetTickerById(ticker_id);
-  DCHECK(!ticker->has_bound_element_animations());
+  KeyframeEffect* keyframe_effect = GetKeyframeEffectById(keyframe_effect_id);
+  DCHECK(!keyframe_effect->has_bound_element_animations());
 
-  if (!ticker->has_attached_element())
+  if (!keyframe_effect->has_attached_element())
     return;
-  animation_host_->RegisterTickerForElement(element_id, ticker);
+  animation_host_->RegisterKeyframeEffectForElement(element_id,
+                                                    keyframe_effect);
 }
 
-void AnimationPlayer::UnregisterTicker(ElementId element_id,
-                                       TickerId ticker_id) {
+void AnimationPlayer::UnregisterKeyframeEffect(
+    ElementId element_id,
+    KeyframeEffectId keyframe_effect_id) {
   DCHECK(animation_host_);
-  AnimationTicker* ticker = GetTickerById(ticker_id);
-  DCHECK(ticker);
-  if (ticker->has_attached_element() &&
-      ticker->has_bound_element_animations()) {
-    animation_host_->UnregisterTickerForElement(element_id, ticker);
+  KeyframeEffect* keyframe_effect = GetKeyframeEffectById(keyframe_effect_id);
+  DCHECK(keyframe_effect);
+  if (keyframe_effect->has_attached_element() &&
+      keyframe_effect->has_bound_element_animations()) {
+    animation_host_->UnregisterKeyframeEffectForElement(element_id,
+                                                        keyframe_effect);
   }
 }
-void AnimationPlayer::RegisterTickers() {
-  for (auto& element_id_ticker_id : element_to_ticker_id_map_) {
-    const ElementId element_id = element_id_ticker_id.first;
-    const std::unordered_set<TickerId>& ticker_ids =
-        element_id_ticker_id.second;
-    for (auto& ticker_id : ticker_ids)
-      RegisterTicker(element_id, ticker_id);
+void AnimationPlayer::RegisterKeyframeEffects() {
+  for (auto& element_id_keyframe_effect_id :
+       element_to_keyframe_effect_id_map_) {
+    const ElementId element_id = element_id_keyframe_effect_id.first;
+    const std::unordered_set<KeyframeEffectId>& keyframe_effect_ids =
+        element_id_keyframe_effect_id.second;
+    for (auto& keyframe_effect_id : keyframe_effect_ids)
+      RegisterKeyframeEffect(element_id, keyframe_effect_id);
   }
 }
 
-void AnimationPlayer::UnregisterTickers() {
-  for (auto& element_id_ticker_id : element_to_ticker_id_map_) {
-    const ElementId element_id = element_id_ticker_id.first;
-    const std::unordered_set<TickerId>& ticker_ids =
-        element_id_ticker_id.second;
-    for (auto& ticker_id : ticker_ids)
-      UnregisterTicker(element_id, ticker_id);
+void AnimationPlayer::UnregisterKeyframeEffects() {
+  for (auto& element_id_keyframe_effect_id :
+       element_to_keyframe_effect_id_map_) {
+    const ElementId element_id = element_id_keyframe_effect_id.first;
+    const std::unordered_set<KeyframeEffectId>& keyframe_effect_ids =
+        element_id_keyframe_effect_id.second;
+    for (auto& keyframe_effect_id : keyframe_effect_ids)
+      UnregisterKeyframeEffect(element_id, keyframe_effect_id);
   }
   animation_host_->RemoveFromTicking(this);
 }
 
-void AnimationPlayer::PushAttachedTickersToImplThread(
+void AnimationPlayer::PushAttachedKeyframeEffectsToImplThread(
     AnimationPlayer* player_impl) const {
-  for (auto& ticker : tickers_) {
-    AnimationTicker* ticker_impl = player_impl->GetTickerById(ticker->id());
-    if (ticker_impl)
+  for (auto& keyframe_effect : keyframe_effects_) {
+    KeyframeEffect* keyframe_effect_impl =
+        player_impl->GetKeyframeEffectById(keyframe_effect->id());
+    if (keyframe_effect_impl)
       continue;
 
-    std::unique_ptr<AnimationTicker> to_add = ticker->CreateImplInstance();
-    player_impl->AddTicker(std::move(to_add));
+    std::unique_ptr<KeyframeEffect> to_add =
+        keyframe_effect->CreateImplInstance();
+    player_impl->AddKeyframeEffect(std::move(to_add));
   }
 }
 
 void AnimationPlayer::PushPropertiesToImplThread(AnimationPlayer* player_impl) {
-  for (auto& ticker : tickers_) {
-    if (AnimationTicker* ticker_impl =
-            player_impl->GetTickerById(ticker->id())) {
-      ticker->PushPropertiesTo(ticker_impl);
+  for (auto& keyframe_effect : keyframe_effects_) {
+    if (KeyframeEffect* keyframe_effect_impl =
+            player_impl->GetKeyframeEffectById(keyframe_effect->id())) {
+      keyframe_effect->PushPropertiesTo(keyframe_effect_impl);
     }
   }
 }
 
-void AnimationPlayer::AddAnimationForTicker(
-    std::unique_ptr<Animation> animation,
-    TickerId ticker_id) {
-  DCHECK(GetTickerById(ticker_id));
-  GetTickerById(ticker_id)->AddAnimation(std::move(animation));
+void AnimationPlayer::AddKeyframeModelForKeyframeEffect(
+    std::unique_ptr<KeyframeModel> animation,
+    KeyframeEffectId keyframe_effect_id) {
+  DCHECK(GetKeyframeEffectById(keyframe_effect_id));
+  GetKeyframeEffectById(keyframe_effect_id)
+      ->AddKeyframeModel(std::move(animation));
 }
 
-void AnimationPlayer::PauseAnimationForTicker(int animation_id,
-                                              double time_offset,
-                                              TickerId ticker_id) {
-  DCHECK(GetTickerById(ticker_id));
-  GetTickerById(ticker_id)->PauseAnimation(animation_id, time_offset);
+void AnimationPlayer::PauseKeyframeModelForKeyframeEffect(
+    int keyframe_model_id,
+    double time_offset,
+    KeyframeEffectId keyframe_effect_id) {
+  DCHECK(GetKeyframeEffectById(keyframe_effect_id));
+  GetKeyframeEffectById(keyframe_effect_id)
+      ->PauseKeyframeModel(keyframe_model_id, time_offset);
 }
 
-void AnimationPlayer::RemoveAnimationForTicker(int animation_id,
-                                               TickerId ticker_id) {
-  DCHECK(GetTickerById(ticker_id));
-  GetTickerById(ticker_id)->RemoveAnimation(animation_id);
+void AnimationPlayer::RemoveKeyframeModelForKeyframeEffect(
+    int keyframe_model_id,
+    KeyframeEffectId keyframe_effect_id) {
+  DCHECK(GetKeyframeEffectById(keyframe_effect_id));
+  GetKeyframeEffectById(keyframe_effect_id)
+      ->RemoveKeyframeModel(keyframe_model_id);
 }
 
-void AnimationPlayer::AbortAnimationForTicker(int animation_id,
-                                              TickerId ticker_id) {
-  DCHECK(GetTickerById(ticker_id));
-  GetTickerById(ticker_id)->AbortAnimation(animation_id);
+void AnimationPlayer::AbortKeyframeModelForKeyframeEffect(
+    int keyframe_model_id,
+    KeyframeEffectId keyframe_effect_id) {
+  DCHECK(GetKeyframeEffectById(keyframe_effect_id));
+  GetKeyframeEffectById(keyframe_effect_id)
+      ->AbortKeyframeModel(keyframe_model_id);
 }
 
-void AnimationPlayer::AbortAnimations(TargetProperty::Type target_property,
-                                      bool needs_completion) {
-  for (auto& ticker : tickers_)
-    ticker->AbortAnimations(target_property, needs_completion);
+void AnimationPlayer::AbortKeyframeModels(TargetProperty::Type target_property,
+                                          bool needs_completion) {
+  for (auto& keyframe_effect : keyframe_effects_)
+    keyframe_effect->AbortKeyframeModels(target_property, needs_completion);
 }
 
 void AnimationPlayer::PushPropertiesTo(AnimationPlayer* player_impl) {
-  PushAttachedTickersToImplThread(player_impl);
+  PushAttachedKeyframeEffectsToImplThread(player_impl);
   PushPropertiesToImplThread(player_impl);
 }
 
 void AnimationPlayer::Tick(base::TimeTicks monotonic_time) {
   DCHECK(!monotonic_time.is_null());
-  for (auto& ticker : tickers_)
-    ticker->Tick(monotonic_time, nullptr);
+  for (auto& keyframe_effect : keyframe_effects_)
+    keyframe_effect->Tick(monotonic_time, nullptr);
 }
 
 void AnimationPlayer::UpdateState(bool start_ready_animations,
                                   AnimationEvents* events) {
-  for (auto& ticker : tickers_) {
-    ticker->UpdateState(start_ready_animations, events);
-    ticker->UpdateTickingState(UpdateTickingType::NORMAL);
+  for (auto& keyframe_effect : keyframe_effects_) {
+    keyframe_effect->UpdateState(start_ready_animations, events);
+    keyframe_effect->UpdateTickingState(UpdateTickingType::NORMAL);
   }
 }
 
 void AnimationPlayer::AddToTicking() {
-  ++ticking_tickers_count;
-  if (ticking_tickers_count > 1)
+  ++ticking_keyframe_effects_count;
+  if (ticking_keyframe_effects_count > 1)
     return;
   DCHECK(animation_host_);
   animation_host_->AddToTicking(this);
 }
 
-void AnimationPlayer::AnimationRemovedFromTicking() {
-  DCHECK_GE(ticking_tickers_count, 0);
-  if (!ticking_tickers_count)
+void AnimationPlayer::KeyframeModelRemovedFromTicking() {
+  DCHECK_GE(ticking_keyframe_effects_count, 0);
+  if (!ticking_keyframe_effects_count)
     return;
-  --ticking_tickers_count;
+  --ticking_keyframe_effects_count;
   DCHECK(animation_host_);
-  DCHECK_GE(ticking_tickers_count, 0);
-  if (ticking_tickers_count)
+  DCHECK_GE(ticking_keyframe_effects_count, 0);
+  if (ticking_keyframe_effects_count)
     return;
   animation_host_->RemoveFromTicking(this);
 }
 
-void AnimationPlayer::NotifyAnimationStarted(const AnimationEvent& event) {
+void AnimationPlayer::NotifyKeyframeModelStarted(const AnimationEvent& event) {
   if (animation_delegate_) {
     animation_delegate_->NotifyAnimationStarted(
         event.monotonic_time, event.target_property, event.group_id);
   }
 }
 
-void AnimationPlayer::NotifyAnimationFinished(const AnimationEvent& event) {
+void AnimationPlayer::NotifyKeyframeModelFinished(const AnimationEvent& event) {
   if (animation_delegate_) {
     animation_delegate_->NotifyAnimationFinished(
         event.monotonic_time, event.target_property, event.group_id);
   }
 }
 
-void AnimationPlayer::NotifyAnimationAborted(const AnimationEvent& event) {
+void AnimationPlayer::NotifyKeyframeModelAborted(const AnimationEvent& event) {
   if (animation_delegate_) {
     animation_delegate_->NotifyAnimationAborted(
         event.monotonic_time, event.target_property, event.group_id);
   }
 }
 
-void AnimationPlayer::NotifyAnimationTakeover(const AnimationEvent& event) {
+void AnimationPlayer::NotifyKeyframeModelTakeover(const AnimationEvent& event) {
   DCHECK(event.target_property == TargetProperty::SCROLL_OFFSET);
 
   if (animation_delegate_) {
@@ -289,10 +310,10 @@ void AnimationPlayer::NotifyAnimationTakeover(const AnimationEvent& event) {
   }
 }
 
-size_t AnimationPlayer::TickingAnimationsCount() const {
+size_t AnimationPlayer::TickingKeyframeModelsCount() const {
   size_t count = 0;
-  for (auto& ticker : tickers_)
-    count += ticker->TickingAnimationsCount();
+  for (auto& keyframe_effect : keyframe_effects_)
+    count += keyframe_effect->TickingKeyframeModelsCount();
   return count;
 }
 
@@ -307,26 +328,28 @@ void AnimationPlayer::SetNeedsPushProperties() {
   animation_timeline_->SetNeedsPushProperties();
 }
 
-void AnimationPlayer::ActivateAnimations() {
-  for (auto& ticker : tickers_) {
-    ticker->ActivateAnimations();
-    ticker->UpdateTickingState(UpdateTickingType::NORMAL);
+void AnimationPlayer::ActivateKeyframeEffects() {
+  for (auto& keyframe_effect : keyframe_effects_) {
+    keyframe_effect->ActivateKeyframeEffects();
+    keyframe_effect->UpdateTickingState(UpdateTickingType::NORMAL);
   }
 }
 
-Animation* AnimationPlayer::GetAnimationForTicker(
+KeyframeModel* AnimationPlayer::GetKeyframeModelForKeyframeEffect(
     TargetProperty::Type target_property,
-    TickerId ticker_id) const {
-  DCHECK(GetTickerById(ticker_id));
-  return GetTickerById(ticker_id)->GetAnimation(target_property);
+    KeyframeEffectId keyframe_effect_id) const {
+  DCHECK(GetKeyframeEffectById(keyframe_effect_id));
+  return GetKeyframeEffectById(keyframe_effect_id)
+      ->GetKeyframeModel(target_property);
 }
 
 std::string AnimationPlayer::ToString() const {
   std::string output = base::StringPrintf("AnimationPlayer{id=%d", id_);
-  for (const auto& ticker : tickers_) {
-    output += base::StringPrintf(", element_id=%s, animations=[%s]",
-                                 ticker->element_id().ToString().c_str(),
-                                 ticker->AnimationsToString().c_str());
+  for (const auto& keyframe_effect : keyframe_effects_) {
+    output +=
+        base::StringPrintf(", element_id=%s, keyframe_models=[%s]",
+                           keyframe_effect->element_id().ToString().c_str(),
+                           keyframe_effect->KeyframeModelsToString().c_str());
   }
   return output + "}";
 }
@@ -335,16 +358,20 @@ bool AnimationPlayer::IsWorkletAnimationPlayer() const {
   return false;
 }
 
-void AnimationPlayer::AddTicker(std::unique_ptr<AnimationTicker> ticker) {
-  ticker->SetAnimationPlayer(this);
-  tickers_.push_back(std::move(ticker));
+void AnimationPlayer::AddKeyframeEffect(
+    std::unique_ptr<KeyframeEffect> keyframe_effect) {
+  keyframe_effect->SetAnimationPlayer(this);
+  keyframe_effects_.push_back(std::move(keyframe_effect));
 
   SetNeedsPushProperties();
 }
 
-AnimationTicker* AnimationPlayer::GetTickerById(TickerId ticker_id) const {
-  // May return nullptr when syncing tickers_ to impl.
-  return tickers_.size() > ticker_id ? tickers_[ticker_id].get() : nullptr;
+KeyframeEffect* AnimationPlayer::GetKeyframeEffectById(
+    KeyframeEffectId keyframe_effect_id) const {
+  // May return nullptr when syncing keyframe_effects_ to impl.
+  return keyframe_effects_.size() > keyframe_effect_id
+             ? keyframe_effects_[keyframe_effect_id].get()
+             : nullptr;
 }
 
 }  // namespace cc

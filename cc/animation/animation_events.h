@@ -8,9 +8,9 @@
 #include <memory>
 #include <vector>
 
-#include "cc/animation/animation.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_export.h"
+#include "cc/animation/keyframe_model.h"
 #include "cc/paint/filter_operations.h"
 #include "cc/trees/element_id.h"
 #include "cc/trees/mutator_host.h"

@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "cc/animation/animation.h"
+#include "cc/animation/keyframe_model.h"
 #include "cc/trees/target_property.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/compositor_export.h"
@@ -196,10 +196,10 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
     animation_metrics_reporter_ = reporter;
   }
 
-  // Each LayerAnimationElement has a unique animation_id. Elements belonging
-  // to sequences that are supposed to start together have the same
+  // Each LayerAnimationElement has a unique keyframe_model_id. Elements
+  // belonging to sequences that are supposed to start together have the same
   // animation_group_id.
-  int animation_id() const { return animation_id_; }
+  int keyframe_model_id() const { return keyframe_model_id_; }
   int animation_group_id() const { return animation_group_id_; }
   void set_animation_group_id(int id) { animation_group_id_ = id; }
 
@@ -241,7 +241,7 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   const base::TimeDelta duration_;
   gfx::Tween::Type tween_type_;
 
-  const int animation_id_;
+  const int keyframe_model_id_;
   int animation_group_id_;
 
   double last_progressed_fraction_;

@@ -23,7 +23,7 @@ class Keyboard : public UiElement {
                HitTestResult* result) const final;
   void NotifyClientFloatAnimated(float value,
                                  int target_property_id,
-                                 cc::Animation* animation) override;
+                                 cc::KeyframeModel* keyframe_model) override;
 
   void OnHoverEnter(const gfx::PointF& position) override;
   void OnHoverLeave() override;

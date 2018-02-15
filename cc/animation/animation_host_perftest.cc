@@ -6,9 +6,9 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation_id_provider.h"
-#include "cc/animation/animation_ticker.h"
 #include "cc/animation/animation_timeline.h"
-#include "cc/animation/single_ticker_animation_player.h"
+#include "cc/animation/keyframe_effect.h"
+#include "cc/animation/single_keyframe_effect_animation_player.h"
 #include "cc/base/lap_timer.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host.h"
@@ -70,13 +70,13 @@ class AnimationHostPerfTest : public testing::Test {
       root_layer_->AddChild(layer);
       layer->SetElementId(LayerIdToElementIdForTesting(layer->id()));
 
-      scoped_refptr<SingleTickerAnimationPlayer> player =
-          SingleTickerAnimationPlayer::Create(last_player_id_);
+      scoped_refptr<SingleKeyframeEffectAnimationPlayer> player =
+          SingleKeyframeEffectAnimationPlayer::Create(last_player_id_);
       last_player_id_ = AnimationIdProvider::NextPlayerId();
 
       all_players_timeline_->AttachPlayer(player);
       player->AttachElement(layer->element_id());
-      EXPECT_TRUE(player->element_animations(player->animation_ticker()->id()));
+      EXPECT_TRUE(player->element_animations(player->keyframe_effect()->id()));
     }
 
     // Create impl players.

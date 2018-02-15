@@ -10,7 +10,7 @@
 #include "base/stl_util.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_target.h"
-#include "cc/animation/animation_ticker.h"
+#include "cc/animation/keyframe_effect.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 
@@ -20,26 +20,26 @@ namespace {
 
 static constexpr float kTolerance = 1e-5f;
 
-static int s_next_animation_id = 1;
+static int s_next_keyframe_model_id = 1;
 static int s_next_group_id = 1;
 
-void ReverseAnimation(base::TimeTicks monotonic_time,
-                      cc::Animation* animation) {
-  animation->set_direction(animation->direction() ==
-                                   cc::Animation::Direction::NORMAL
-                               ? cc::Animation::Direction::REVERSE
-                               : cc::Animation::Direction::NORMAL);
-  // Our goal here is to reverse the given animation. That is, if
-  // we're 20% of the way through the animation in the forward direction, we'd
-  // like to be 80% of the way of the reversed animation (so it will end
-  // quickly).
+void ReverseKeyframeModel(base::TimeTicks monotonic_time,
+                          cc::KeyframeModel* keyframe_model) {
+  keyframe_model->set_direction(keyframe_model->direction() ==
+                                        cc::KeyframeModel::Direction::NORMAL
+                                    ? cc::KeyframeModel::Direction::REVERSE
+                                    : cc::KeyframeModel::Direction::NORMAL);
+  // Our goal here is to reverse the given keyframe_model. That is, if
+  // we're 20% of the way through the keyframe_model in the forward direction,
+  // we'd like to be 80% of the way of the reversed keyframe model (so it will
+  // end quickly).
   //
   // We can modify our "progress" through an animation by modifying the "time
   // offset", a value added to the current time by the animation system before
   // applying any other adjustments.
   //
   // Let our start time be s, our current time be t, and our final time (or
-  // duration) be d. After reversing the animation, we would like to start
+  // duration) be d. After reversing the keyframe_model, we would like to start
   // sampling from d - t as depicted below.
   //
   //  Forward:
@@ -63,9 +63,9 @@ void ReverseAnimation(base::TimeTicks monotonic_time,
   //
   // Now if there was a previous offset, we must adjust d by that offset before
   // performing this computation, so it becomes d - o_old - 2t:
-  animation->set_time_offset(animation->curve()->Duration() -
-                             animation->time_offset() -
-                             (2 * (monotonic_time - animation->start_time())));
+  keyframe_model->set_time_offset(
+      keyframe_model->curve()->Duration() - keyframe_model->time_offset() -
+      (2 * (monotonic_time - keyframe_model->start_time())));
 }
 
 std::unique_ptr<cc::CubicBezierTimingFunction>
@@ -74,18 +74,18 @@ CreateTransitionTimingFunction() {
       cc::CubicBezierTimingFunction::EaseType::EASE);
 }
 
-base::TimeDelta GetStartTime(cc::Animation* animation) {
-  if (animation->direction() == cc::Animation::Direction::NORMAL) {
+base::TimeDelta GetStartTime(cc::KeyframeModel* keyframe_model) {
+  if (keyframe_model->direction() == cc::KeyframeModel::Direction::NORMAL) {
     return base::TimeDelta();
   }
-  return animation->curve()->Duration();
+  return keyframe_model->curve()->Duration();
 }
 
-base::TimeDelta GetEndTime(cc::Animation* animation) {
-  if (animation->direction() == cc::Animation::Direction::REVERSE) {
+base::TimeDelta GetEndTime(cc::KeyframeModel* keyframe_model) {
+  if (keyframe_model->direction() == cc::KeyframeModel::Direction::REVERSE) {
     return base::TimeDelta();
   }
-  return animation->curve()->Duration();
+  return keyframe_model->curve()->Duration();
 }
 
 bool SufficientlyEqual(float lhs, float rhs) {
@@ -137,8 +137,8 @@ DEFINE_ANIMATION_TRAITS(SkColor, Color, Color);
 
 }  // namespace
 
-int AnimationPlayer::GetNextAnimationId() {
-  return s_next_animation_id++;
+int AnimationPlayer::GetNextKeyframeModelId() {
+  return s_next_keyframe_model_id++;
 }
 
 int AnimationPlayer::GetNextGroupId() {
@@ -148,45 +148,47 @@ int AnimationPlayer::GetNextGroupId() {
 AnimationPlayer::AnimationPlayer() {}
 AnimationPlayer::~AnimationPlayer() {}
 
-void AnimationPlayer::AddAnimation(std::unique_ptr<cc::Animation> animation) {
-  animations_.push_back(std::move(animation));
+void AnimationPlayer::AddKeyframeModel(
+    std::unique_ptr<cc::KeyframeModel> keyframe_model) {
+  keyframe_models_.push_back(std::move(keyframe_model));
 }
 
-void AnimationPlayer::RemoveAnimation(int animation_id) {
-  base::EraseIf(
-      animations_,
-      [animation_id](const std::unique_ptr<cc::Animation>& animation) {
-        return animation->id() == animation_id;
-      });
+void AnimationPlayer::RemoveKeyframeModel(int keyframe_model_id) {
+  base::EraseIf(keyframe_models_,
+                [keyframe_model_id](
+                    const std::unique_ptr<cc::KeyframeModel>& keyframe_model) {
+                  return keyframe_model->id() == keyframe_model_id;
+                });
 }
 
-void AnimationPlayer::RemoveAnimations(int target_property) {
-  base::EraseIf(
-      animations_,
-      [target_property](const std::unique_ptr<cc::Animation>& animation) {
-        return animation->target_property_id() == target_property;
-      });
+void AnimationPlayer::RemoveKeyframeModels(int target_property) {
+  base::EraseIf(keyframe_models_,
+                [target_property](
+                    const std::unique_ptr<cc::KeyframeModel>& keyframe_model) {
+                  return keyframe_model->target_property_id() ==
+                         target_property;
+                });
 }
 
 void AnimationPlayer::Tick(base::TimeTicks monotonic_time) {
   DCHECK(target_);
 
-  StartAnimations(monotonic_time);
+  StartKeyframeModels(monotonic_time);
 
-  for (auto& animation : animations_) {
-    cc::AnimationTicker::TickAnimation(monotonic_time, animation.get(),
-                                       target_);
+  for (auto& keyframe_model : keyframe_models_) {
+    cc::KeyframeEffect::TickKeyframeModel(monotonic_time, keyframe_model.get(),
+                                          target_);
   }
 
-  // Remove finished animations.
-  base::EraseIf(
-      animations_,
-      [monotonic_time](const std::unique_ptr<cc::Animation>& animation) {
-        return !animation->is_finished() &&
-               animation->IsFinishedAt(monotonic_time);
-      });
+  // Remove finished keyframe_models.
+  base::EraseIf(keyframe_models_,
+                [monotonic_time](
+                    const std::unique_ptr<cc::KeyframeModel>& keyframe_model) {
+                  return !keyframe_model->is_finished() &&
+                         keyframe_model->IsFinishedAt(monotonic_time);
+                });
 
-  StartAnimations(monotonic_time);
+  StartKeyframeModels(monotonic_time);
 }
 
 void AnimationPlayer::SetTransitionedProperties(
@@ -230,8 +232,8 @@ void AnimationPlayer::TransitionColorTo(base::TimeTicks monotonic_time,
 }
 
 bool AnimationPlayer::IsAnimatingProperty(int property) const {
-  for (auto& animation : animations_) {
-    if (animation->target_property_id() == property)
+  for (auto& keyframe_model : keyframe_models_) {
+    if (keyframe_model->target_property_id() == property)
       return true;
   }
   return false;
@@ -260,21 +262,21 @@ SkColor AnimationPlayer::GetTargetColorValue(int target_property,
   return GetTargetValue<SkColor>(target_property, default_value);
 }
 
-void AnimationPlayer::StartAnimations(base::TimeTicks monotonic_time) {
+void AnimationPlayer::StartKeyframeModels(base::TimeTicks monotonic_time) {
   cc::TargetProperties animated_properties;
-  for (auto& animation : animations_) {
-    if (animation->run_state() == cc::Animation::RUNNING ||
-        animation->run_state() == cc::Animation::PAUSED) {
-      animated_properties[animation->target_property_id()] = true;
+  for (auto& keyframe_model : keyframe_models_) {
+    if (keyframe_model->run_state() == cc::KeyframeModel::RUNNING ||
+        keyframe_model->run_state() == cc::KeyframeModel::PAUSED) {
+      animated_properties[keyframe_model->target_property_id()] = true;
     }
   }
-  for (auto& animation : animations_) {
-    if (!animated_properties[animation->target_property_id()] &&
-        animation->run_state() ==
-            cc::Animation::WAITING_FOR_TARGET_AVAILABILITY) {
-      animated_properties[animation->target_property_id()] = true;
-      animation->SetRunState(cc::Animation::RUNNING, monotonic_time);
-      animation->set_start_time(monotonic_time);
+  for (auto& keyframe_model : keyframe_models_) {
+    if (!animated_properties[keyframe_model->target_property_id()] &&
+        keyframe_model->run_state() ==
+            cc::KeyframeModel::WAITING_FOR_TARGET_AVAILABILITY) {
+      animated_properties[keyframe_model->target_property_id()] = true;
+      keyframe_model->SetRunState(cc::KeyframeModel::RUNNING, monotonic_time);
+      keyframe_model->set_start_time(monotonic_time);
     }
   }
 }
@@ -293,26 +295,26 @@ void AnimationPlayer::TransitionValueTo(base::TimeTicks monotonic_time,
     return;
   }
 
-  cc::Animation* running_animation =
-      GetRunningAnimationForProperty(target_property);
+  cc::KeyframeModel* running_keyframe_model =
+      GetRunningKeyframeModelForProperty(target_property);
 
-  if (running_animation) {
-    const auto* curve =
-        AnimationTraits<ValueType>::ToDerivedCurve(*running_animation->curve());
-    if (SufficientlyEqual(target,
-                          curve->GetValue(GetEndTime(running_animation)))) {
+  if (running_keyframe_model) {
+    const auto* curve = AnimationTraits<ValueType>::ToDerivedCurve(
+        *running_keyframe_model->curve());
+    if (SufficientlyEqual(
+            target, curve->GetValue(GetEndTime(running_keyframe_model)))) {
       return;
     }
-    if (SufficientlyEqual(target,
-                          curve->GetValue(GetStartTime(running_animation)))) {
-      ReverseAnimation(monotonic_time, running_animation);
+    if (SufficientlyEqual(
+            target, curve->GetValue(GetStartTime(running_keyframe_model)))) {
+      ReverseKeyframeModel(monotonic_time, running_keyframe_model);
       return;
     }
   } else if (SufficientlyEqual(target, current)) {
     return;
   }
 
-  RemoveAnimations(target_property);
+  RemoveKeyframeModels(target_property);
 
   std::unique_ptr<typename AnimationTraits<ValueType>::KeyframedCurveType>
       curve(AnimationTraits<ValueType>::KeyframedCurveType::Create());
@@ -323,27 +325,28 @@ void AnimationPlayer::TransitionValueTo(base::TimeTicks monotonic_time,
   curve->AddKeyframe(AnimationTraits<ValueType>::KeyframeType::Create(
       transition_.duration, target, CreateTransitionTimingFunction()));
 
-  AddAnimation(cc::Animation::Create(std::move(curve), GetNextAnimationId(),
-                                     GetNextGroupId(), target_property));
+  AddKeyframeModel(
+      cc::KeyframeModel::Create(std::move(curve), GetNextKeyframeModelId(),
+                                GetNextGroupId(), target_property));
 }
 
-cc::Animation* AnimationPlayer::GetRunningAnimationForProperty(
+cc::KeyframeModel* AnimationPlayer::GetRunningKeyframeModelForProperty(
     int target_property) const {
-  for (auto& animation : animations_) {
-    if ((animation->run_state() == cc::Animation::RUNNING ||
-         animation->run_state() == cc::Animation::PAUSED) &&
-        animation->target_property_id() == target_property) {
-      return animation.get();
+  for (auto& keyframe_model : keyframe_models_) {
+    if ((keyframe_model->run_state() == cc::KeyframeModel::RUNNING ||
+         keyframe_model->run_state() == cc::KeyframeModel::PAUSED) &&
+        keyframe_model->target_property_id() == target_property) {
+      return keyframe_model.get();
     }
   }
   return nullptr;
 }
 
-cc::Animation* AnimationPlayer::GetAnimationForProperty(
+cc::KeyframeModel* AnimationPlayer::GetKeyframeModelForProperty(
     int target_property) const {
-  for (auto& animation : animations_) {
-    if (animation->target_property_id() == target_property) {
-      return animation.get();
+  for (auto& keyframe_model : keyframe_models_) {
+    if (keyframe_model->target_property_id() == target_property) {
+      return keyframe_model.get();
     }
   }
   return nullptr;
@@ -353,13 +356,14 @@ template <typename ValueType>
 ValueType AnimationPlayer::GetTargetValue(
     int target_property,
     const ValueType& default_value) const {
-  cc::Animation* running_animation = GetAnimationForProperty(target_property);
-  if (!running_animation) {
+  cc::KeyframeModel* running_keyframe_model =
+      GetKeyframeModelForProperty(target_property);
+  if (!running_keyframe_model) {
     return default_value;
   }
-  const auto* curve =
-      AnimationTraits<ValueType>::ToDerivedCurve(*running_animation->curve());
-  return curve->GetValue(GetEndTime(running_animation));
+  const auto* curve = AnimationTraits<ValueType>::ToDerivedCurve(
+      *running_keyframe_model->curve());
+  return curve->GetValue(GetEndTime(running_keyframe_model));
 }
 
 }  // namespace vr

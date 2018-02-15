@@ -13,8 +13,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "cc/animation/animation.h"
 #include "cc/animation/animation_export.h"
+#include "cc/animation/keyframe_model.h"
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/mutator_host_client.h"
 #include "ui/gfx/geometry/box_f.h"
@@ -27,10 +27,10 @@ class ScrollOffset;
 namespace cc {
 
 class AnimationPlayer;
-class AnimationTicker;
 class AnimationTimeline;
 class ElementAnimations;
 class LayerTreeHost;
+class KeyframeEffect;
 class ScrollOffsetAnimations;
 class ScrollOffsetAnimationsImpl;
 
@@ -62,9 +62,10 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   void RemoveAnimationTimeline(scoped_refptr<AnimationTimeline> timeline);
   AnimationTimeline* GetTimelineById(int timeline_id) const;
 
-  void RegisterTickerForElement(ElementId element_id, AnimationTicker* ticker);
-  void UnregisterTickerForElement(ElementId element_id,
-                                  AnimationTicker* ticker);
+  void RegisterKeyframeEffectForElement(ElementId element_id,
+                                        KeyframeEffect* keyframe_effect);
+  void UnregisterKeyframeEffectForElement(ElementId element_id,
+                                          KeyframeEffect* keyframe_effect);
 
   scoped_refptr<ElementAnimations> GetElementAnimationsForElementId(
       ElementId element_id) const;
@@ -145,8 +146,8 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
                            ElementListType list_type,
                            float* start_scale) const override;
 
-  bool HasAnyAnimation(ElementId element_id) const override;
-  bool HasTickingAnimationForTesting(ElementId element_id) const override;
+  bool IsElementAnimating(ElementId element_id) const override;
+  bool HasTickingKeyframeModelForTesting(ElementId element_id) const override;
 
   void ImplOnlyScrollAnimationCreate(
       ElementId element_id,

@@ -28,7 +28,7 @@ class Spinner : public TexturedElement {
  private:
   void NotifyClientFloatAnimated(float value,
                                  int target_property_id,
-                                 cc::Animation* animation) override;
+                                 cc::KeyframeModel* keyframe_model) override;
   std::unique_ptr<SpinnerTexture> texture_;
   DISALLOW_COPY_AND_ASSIGN(Spinner);
 };

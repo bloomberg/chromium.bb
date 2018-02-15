@@ -13,7 +13,7 @@ namespace cc {
 class CC_ANIMATION_EXPORT AnimationIdProvider {
  public:
   // These functions each return monotonically increasing values.
-  static int NextAnimationId();
+  static int NextKeyframeModelId();
   static int NextGroupId();
   static int NextTimelineId();
   static int NextPlayerId();

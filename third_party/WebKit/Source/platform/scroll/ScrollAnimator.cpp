@@ -33,7 +33,7 @@
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
-#include "platform/animation/CompositorAnimation.h"
+#include "platform/animation/CompositorKeyframeModel.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/scroll/MainThreadScrollingReason.h"
@@ -255,8 +255,9 @@ bool ScrollAnimator::SendAnimationToCompositor() {
   if (scrollable_area_->ShouldScrollOnMainThread())
     return false;
 
-  std::unique_ptr<CompositorAnimation> animation = CompositorAnimation::Create(
-      *animation_curve_, CompositorTargetProperty::SCROLL_OFFSET, 0, 0);
+  std::unique_ptr<CompositorKeyframeModel> animation =
+      CompositorKeyframeModel::Create(
+          *animation_curve_, CompositorTargetProperty::SCROLL_OFFSET, 0, 0);
   // Being here means that either there is an animation that needs
   // to be sent to the compositor, or an animation that needs to
   // be updated (a new scroll event before the previous animation

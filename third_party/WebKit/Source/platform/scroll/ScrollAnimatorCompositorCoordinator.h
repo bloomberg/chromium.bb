@@ -21,9 +21,9 @@
 namespace blink {
 
 class ScrollableArea;
-class CompositorAnimation;
 class CompositorAnimationPlayer;
 class CompositorAnimationTimeline;
+class CompositorKeyframeModel;
 
 // ScrollAnimatorCompositorCoordinator is the common base class of user scroll
 // animators and programmatic scroll animators, and holds logic related to
@@ -125,7 +125,7 @@ class PLATFORM_EXPORT ScrollAnimatorCompositorCoordinator
   }
 
   void ResetAnimationIds();
-  bool AddAnimation(std::unique_ptr<CompositorAnimation>);
+  bool AddAnimation(std::unique_ptr<CompositorKeyframeModel>);
   void RemoveAnimation();
   virtual void AbortAnimation();
 

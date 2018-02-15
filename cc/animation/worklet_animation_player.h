@@ -7,8 +7,8 @@
 
 #include "base/time/time.h"
 #include "cc/animation/animation_export.h"
-#include "cc/animation/animation_ticker.h"
-#include "cc/animation/single_ticker_animation_player.h"
+#include "cc/animation/keyframe_effect.h"
+#include "cc/animation/single_keyframe_effect_animation_player.h"
 
 namespace cc {
 
@@ -18,8 +18,8 @@ class ScrollTimeline;
 // timing to be controlled by an animator instance that is running in a
 // AnimationWorkletGlobalScope.
 class CC_ANIMATION_EXPORT WorkletAnimationPlayer final
-    : public SingleTickerAnimationPlayer,
-      AnimationTicker::AnimationTimeProvider {
+    : public SingleKeyframeEffectAnimationPlayer,
+      KeyframeEffect::AnimationTimeProvider {
  public:
   WorkletAnimationPlayer(int id,
                          const std::string& name,
@@ -45,9 +45,9 @@ class CC_ANIMATION_EXPORT WorkletAnimationPlayer final
   double CurrentTime(base::TimeTicks monotonic_time,
                      const ScrollTree& scroll_tree);
 
-  // AnimationTicker::AnimationTimeProvider:
-  base::TimeTicks GetTimeForAnimation(
-      const Animation& animation) const override;
+  // KeyframeEffect::AnimationTimeProvider:
+  base::TimeTicks GetTimeForKeyframeModel(
+      const KeyframeModel& keyframe_model) const override;
 
   void PushPropertiesTo(AnimationPlayer* animation_player_impl) override;
 

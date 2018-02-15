@@ -9,7 +9,7 @@
 
 namespace vr {
 
-std::unique_ptr<cc::Animation> CreateTransformAnimation(
+std::unique_ptr<cc::KeyframeModel> CreateTransformAnimation(
     int id,
     int group,
     const cc::TransformOperations& from,
@@ -20,27 +20,28 @@ std::unique_ptr<cc::Animation> CreateTransformAnimation(
   curve->AddKeyframe(
       cc::TransformKeyframe::Create(base::TimeDelta(), from, nullptr));
   curve->AddKeyframe(cc::TransformKeyframe::Create(duration, to, nullptr));
-  std::unique_ptr<cc::Animation> animation(cc::Animation::Create(
+  std::unique_ptr<cc::KeyframeModel> keyframe_model(cc::KeyframeModel::Create(
       std::move(curve), id, group, TargetProperty::TRANSFORM));
-  return animation;
+  return keyframe_model;
 }
 
-std::unique_ptr<cc::Animation> CreateBoundsAnimation(int id,
-                                                     int group,
-                                                     const gfx::SizeF& from,
-                                                     const gfx::SizeF& to,
-                                                     base::TimeDelta duration) {
+std::unique_ptr<cc::KeyframeModel> CreateBoundsAnimation(
+    int id,
+    int group,
+    const gfx::SizeF& from,
+    const gfx::SizeF& to,
+    base::TimeDelta duration) {
   std::unique_ptr<cc::KeyframedSizeAnimationCurve> curve(
       cc::KeyframedSizeAnimationCurve::Create());
   curve->AddKeyframe(
       cc::SizeKeyframe::Create(base::TimeDelta(), from, nullptr));
   curve->AddKeyframe(cc::SizeKeyframe::Create(duration, to, nullptr));
-  std::unique_ptr<cc::Animation> animation(cc::Animation::Create(
+  std::unique_ptr<cc::KeyframeModel> keyframe_model(cc::KeyframeModel::Create(
       std::move(curve), id, group, TargetProperty::BOUNDS));
-  return animation;
+  return keyframe_model;
 }
 
-std::unique_ptr<cc::Animation> CreateOpacityAnimation(
+std::unique_ptr<cc::KeyframeModel> CreateOpacityAnimation(
     int id,
     int group,
     float from,
@@ -51,12 +52,12 @@ std::unique_ptr<cc::Animation> CreateOpacityAnimation(
   curve->AddKeyframe(
       cc::FloatKeyframe::Create(base::TimeDelta(), from, nullptr));
   curve->AddKeyframe(cc::FloatKeyframe::Create(duration, to, nullptr));
-  std::unique_ptr<cc::Animation> animation(cc::Animation::Create(
+  std::unique_ptr<cc::KeyframeModel> keyframe_model(cc::KeyframeModel::Create(
       std::move(curve), id, group, TargetProperty::OPACITY));
-  return animation;
+  return keyframe_model;
 }
 
-std::unique_ptr<cc::Animation> CreateBackgroundColorAnimation(
+std::unique_ptr<cc::KeyframeModel> CreateBackgroundColorAnimation(
     int id,
     int group,
     SkColor from,
@@ -67,9 +68,9 @@ std::unique_ptr<cc::Animation> CreateBackgroundColorAnimation(
   curve->AddKeyframe(
       cc::ColorKeyframe::Create(base::TimeDelta(), from, nullptr));
   curve->AddKeyframe(cc::ColorKeyframe::Create(duration, to, nullptr));
-  std::unique_ptr<cc::Animation> animation(cc::Animation::Create(
+  std::unique_ptr<cc::KeyframeModel> keyframe_model(cc::KeyframeModel::Create(
       std::move(curve), id, group, TargetProperty::BACKGROUND_COLOR));
-  return animation;
+  return keyframe_model;
 }
 
 base::TimeTicks MicrosecondsToTicks(uint64_t us) {

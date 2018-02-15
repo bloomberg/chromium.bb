@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#include "cc/animation/animation.h"
 #include "cc/animation/animation_id_provider.h"
+#include "cc/animation/keyframe_model.h"
 #include "ui/compositor/float_animation_curve_adapter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_delegate.h"
@@ -300,7 +300,7 @@ class ThreadedLayerAnimationElement : public LayerAnimationElement {
       LayerThreadedAnimationDelegate* threaded =
           delegate->GetThreadedAnimationDelegate();
       DCHECK(threaded);
-      threaded->RemoveThreadedAnimation(animation_id());
+      threaded->RemoveThreadedAnimation(keyframe_model_id());
     }
 
     OnEnd(delegate);
@@ -312,7 +312,7 @@ class ThreadedLayerAnimationElement : public LayerAnimationElement {
       LayerThreadedAnimationDelegate* threaded =
           delegate->GetThreadedAnimationDelegate();
       DCHECK(threaded);
-      threaded->RemoveThreadedAnimation(animation_id());
+      threaded->RemoveThreadedAnimation(keyframe_model_id());
     }
   }
 
@@ -323,18 +323,18 @@ class ThreadedLayerAnimationElement : public LayerAnimationElement {
       return;
     }
     set_effective_start_time(base::TimeTicks());
-    std::unique_ptr<cc::Animation> animation = CreateCCAnimation();
-    animation->set_needs_synchronized_start_time(true);
+    std::unique_ptr<cc::KeyframeModel> keyframe_model = CreateCCKeyframeModel();
+    keyframe_model->set_needs_synchronized_start_time(true);
 
     LayerThreadedAnimationDelegate* threaded =
         delegate->GetThreadedAnimationDelegate();
     DCHECK(threaded);
-    threaded->AddThreadedAnimation(std::move(animation));
+    threaded->AddThreadedAnimation(std::move(keyframe_model));
   }
 
   virtual void OnEnd(LayerAnimationDelegate* delegate) = 0;
 
-  virtual std::unique_ptr<cc::Animation> CreateCCAnimation() = 0;
+  virtual std::unique_ptr<cc::KeyframeModel> CreateCCKeyframeModel() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ThreadedLayerAnimationElement);
@@ -376,14 +376,14 @@ class ThreadedOpacityTransition : public ThreadedLayerAnimationElement {
                                       PropertyChangeReason::FROM_ANIMATION);
   }
 
-  std::unique_ptr<cc::Animation> CreateCCAnimation() override {
+  std::unique_ptr<cc::KeyframeModel> CreateCCKeyframeModel() override {
     std::unique_ptr<cc::AnimationCurve> animation_curve(
         new FloatAnimationCurveAdapter(tween_type(), start_, target_,
                                        duration()));
-    std::unique_ptr<cc::Animation> animation(cc::Animation::Create(
-        std::move(animation_curve), animation_id(), animation_group_id(),
+    std::unique_ptr<cc::KeyframeModel> keyframe_model(cc::KeyframeModel::Create(
+        std::move(animation_curve), keyframe_model_id(), animation_group_id(),
         cc::TargetProperty::OPACITY));
-    return animation;
+    return keyframe_model;
   }
 
   void OnGetTarget(TargetValue* target) const override {
@@ -446,14 +446,14 @@ class ThreadedTransformTransition : public ThreadedLayerAnimationElement {
                                         PropertyChangeReason::FROM_ANIMATION);
   }
 
-  std::unique_ptr<cc::Animation> CreateCCAnimation() override {
+  std::unique_ptr<cc::KeyframeModel> CreateCCKeyframeModel() override {
     std::unique_ptr<cc::AnimationCurve> animation_curve(
         new TransformAnimationCurveAdapter(tween_type(), start_, target_,
                                            duration()));
-    std::unique_ptr<cc::Animation> animation(cc::Animation::Create(
-        std::move(animation_curve), animation_id(), animation_group_id(),
+    std::unique_ptr<cc::KeyframeModel> keyframe_model(cc::KeyframeModel::Create(
+        std::move(animation_curve), keyframe_model_id(), animation_group_id(),
         cc::TargetProperty::TRANSFORM));
-    return animation;
+    return keyframe_model;
   }
 
   void OnGetTarget(TargetValue* target) const override {
@@ -499,7 +499,7 @@ LayerAnimationElement::LayerAnimationElement(AnimatableProperties properties,
       properties_(properties),
       duration_(GetEffectiveDuration(duration)),
       tween_type_(gfx::Tween::LINEAR),
-      animation_id_(cc::AnimationIdProvider::NextAnimationId()),
+      keyframe_model_id_(cc::AnimationIdProvider::NextKeyframeModelId()),
       animation_group_id_(0),
       last_progressed_fraction_(0.0),
       animation_metrics_reporter_(nullptr),
@@ -512,7 +512,7 @@ LayerAnimationElement::LayerAnimationElement(
       properties_(element.properties_),
       duration_(element.duration_),
       tween_type_(element.tween_type_),
-      animation_id_(cc::AnimationIdProvider::NextAnimationId()),
+      keyframe_model_id_(cc::AnimationIdProvider::NextKeyframeModelId()),
       animation_group_id_(element.animation_group_id_),
       last_progressed_fraction_(element.last_progressed_fraction_),
       animation_metrics_reporter_(nullptr),
@@ -566,7 +566,7 @@ bool LayerAnimationElement::Progress(base::TimeTicks now,
 bool LayerAnimationElement::IsFinished(base::TimeTicks time,
                                        base::TimeDelta* total_duration) {
   // If an effective start has been requested but the effective start time
-  // hasn't yet been set, the animation is not finished, regardless of the
+  // hasn't yet been set, the keyframe_model is not finished, regardless of the
   // value of |time|.
   if (!first_frame_ && (effective_start_time_ == base::TimeTicks()))
     return false;
@@ -639,7 +639,7 @@ std::string LayerAnimationElement::ToString() const {
   return base::StringPrintf(
       "LayerAnimationElement{name=%s, id=%d, group=%d, "
       "last_progressed_fraction=%0.2f}",
-      DebugName().c_str(), animation_id_, animation_group_id_,
+      DebugName().c_str(), keyframe_model_id_, animation_group_id_,
       last_progressed_fraction_);
 }
 

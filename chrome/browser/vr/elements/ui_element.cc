@@ -219,17 +219,17 @@ bool UiElement::PrepareToDraw() {
 
 bool UiElement::DoBeginFrame(const base::TimeTicks& time,
                              const gfx::Transform& head_pose) {
-  // TODO(mthiesse): This is overly cautious. We may have animations but not
-  // trigger any updates, so we should refine this logic and have
+  // TODO(mthiesse): This is overly cautious. We may have keyframe_models but
+  // not trigger any updates, so we should refine this logic and have
   // AnimationPlayer::Tick return a boolean.
-  bool animations_updated = animation_player_.animations().size() > 0;
+  bool keyframe_models_updated = animation_player_.keyframe_models().size() > 0;
   animation_player_.Tick(time);
   last_frame_time_ = time;
   set_update_phase(kUpdatedAnimations);
   bool begin_frame_updated = OnBeginFrame(time, head_pose);
   UpdateComputedOpacity();
   bool was_visible_at_any_point = IsVisible() || updated_visibility_this_frame_;
-  return (begin_frame_updated || animations_updated) &&
+  return (begin_frame_updated || keyframe_models_updated) &&
          was_visible_at_any_point;
 }
 
@@ -256,7 +256,7 @@ void UiElement::SetVisible(bool visible) {
 
 void UiElement::SetVisibleImmediately(bool visible) {
   opacity_ = visible ? opacity_when_visible_ : 0.0;
-  animation_player_.RemoveAnimations(OPACITY);
+  animation_player_.RemoveKeyframeModels(OPACITY);
 }
 
 bool UiElement::IsVisible() const {
@@ -613,14 +613,14 @@ bool UiElement::GetRayDistance(const gfx::Point3F& ray_origin,
 
 void UiElement::NotifyClientFloatAnimated(float value,
                                           int target_property_id,
-                                          cc::Animation* animation) {
+                                          cc::KeyframeModel* animation) {
   opacity_ = base::ClampToRange(value, 0.0f, 1.0f);
 }
 
 void UiElement::NotifyClientTransformOperationsAnimated(
     const cc::TransformOperations& operations,
     int target_property_id,
-    cc::Animation* animation) {
+    cc::KeyframeModel* animation) {
   if (target_property_id == TRANSFORM) {
     transform_operations_ = operations;
   } else if (target_property_id == LAYOUT_OFFSET) {
@@ -632,7 +632,7 @@ void UiElement::NotifyClientTransformOperationsAnimated(
 
 void UiElement::NotifyClientSizeAnimated(const gfx::SizeF& size,
                                          int target_property_id,
-                                         cc::Animation* animation) {
+                                         cc::KeyframeModel* animation) {
   size_ = size;
 }
 
@@ -646,12 +646,12 @@ void UiElement::SetTransitionDuration(base::TimeDelta delta) {
   animation_player_.SetTransitionDuration(delta);
 }
 
-void UiElement::AddAnimation(std::unique_ptr<cc::Animation> animation) {
-  animation_player_.AddAnimation(std::move(animation));
+void UiElement::AddKeyframeModel(std::unique_ptr<cc::KeyframeModel> animation) {
+  animation_player_.AddKeyframeModel(std::move(animation));
 }
 
-void UiElement::RemoveAnimation(int animation_id) {
-  animation_player_.RemoveAnimation(animation_id);
+void UiElement::RemoveKeyframeModel(int animation_id) {
+  animation_player_.RemoveKeyframeModel(animation_id);
 }
 
 bool UiElement::IsAnimatingProperty(TargetProperty property) const {

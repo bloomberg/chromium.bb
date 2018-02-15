@@ -9,7 +9,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/scroll_timeline.h"
-#include "cc/animation/single_ticker_animation_player.h"
+#include "cc/animation/single_keyframe_effect_animation_player.h"
 #include "cc/animation/worklet_animation_player.h"
 #include "platform/PlatformExport.h"
 #include "platform/graphics/CompositorElementId.h"
@@ -24,8 +24,8 @@ namespace blink {
 
 using CompositorScrollTimeline = cc::ScrollTimeline;
 
-class CompositorAnimation;
 class CompositorAnimationDelegate;
+class CompositorKeyframeModel;
 
 // A compositor representation for AnimationPlayer.
 class PLATFORM_EXPORT CompositorAnimationPlayer : public cc::AnimationDelegate {
@@ -38,10 +38,10 @@ class PLATFORM_EXPORT CompositorAnimationPlayer : public cc::AnimationDelegate {
       std::unique_ptr<CompositorScrollTimeline>);
 
   explicit CompositorAnimationPlayer(
-      scoped_refptr<cc::SingleTickerAnimationPlayer>);
+      scoped_refptr<cc::SingleKeyframeEffectAnimationPlayer>);
   ~CompositorAnimationPlayer();
 
-  cc::SingleTickerAnimationPlayer* CcAnimationPlayer() const;
+  cc::SingleKeyframeEffectAnimationPlayer* CcAnimationPlayer() const;
 
   // An animation delegate is notified when animations are started and stopped.
   // The CompositorAnimationPlayer does not take ownership of the delegate, and
@@ -53,10 +53,10 @@ class PLATFORM_EXPORT CompositorAnimationPlayer : public cc::AnimationDelegate {
   void DetachElement();
   bool IsElementAttached() const;
 
-  void AddAnimation(std::unique_ptr<CompositorAnimation>);
-  void RemoveAnimation(int animation_id);
-  void PauseAnimation(int animation_id, double time_offset);
-  void AbortAnimation(int animation_id);
+  void AddKeyframeModel(std::unique_ptr<CompositorKeyframeModel>);
+  void RemoveKeyframeModel(int keyframe_model_id);
+  void PauseKeyframeModel(int keyframe_model_id, double time_offset);
+  void AbortKeyframeModel(int keyframe_model_id);
 
  private:
   // cc::AnimationDelegate implementation.
@@ -74,7 +74,7 @@ class PLATFORM_EXPORT CompositorAnimationPlayer : public cc::AnimationDelegate {
                                base::TimeTicks animation_start_time,
                                std::unique_ptr<cc::AnimationCurve>) override;
 
-  scoped_refptr<cc::SingleTickerAnimationPlayer> animation_player_;
+  scoped_refptr<cc::SingleKeyframeEffectAnimationPlayer> animation_player_;
   CompositorAnimationDelegate* delegate_;
 };
 

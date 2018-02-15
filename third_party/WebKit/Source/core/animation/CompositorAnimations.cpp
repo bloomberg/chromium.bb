@@ -48,12 +48,12 @@
 #include "core/paint/PaintLayer.h"
 #include "core/paint/compositing/CompositedLayerMapping.h"
 #include "platform/animation/AnimationTranslationUtil.h"
-#include "platform/animation/CompositorAnimation.h"
 #include "platform/animation/CompositorAnimationPlayer.h"
 #include "platform/animation/CompositorFilterAnimationCurve.h"
 #include "platform/animation/CompositorFilterKeyframe.h"
 #include "platform/animation/CompositorFloatAnimationCurve.h"
 #include "platform/animation/CompositorFloatKeyframe.h"
+#include "platform/animation/CompositorKeyframeModel.h"
 #include "platform/animation/CompositorTransformAnimationCurve.h"
 #include "platform/animation/CompositorTransformKeyframe.h"
 #include "platform/geometry/FloatBox.h"
@@ -393,14 +393,14 @@ void CompositorAnimations::StartAnimationOnCompositor(
   const KeyframeEffectModelBase& keyframe_effect =
       ToKeyframeEffectModelBase(effect);
 
-  Vector<std::unique_ptr<CompositorAnimation>> animations;
+  Vector<std::unique_ptr<CompositorKeyframeModel>> keyframe_models;
   GetAnimationOnCompositor(timing, group, start_time, time_offset,
-                           keyframe_effect, animations,
+                           keyframe_effect, keyframe_models,
                            animation_playback_rate);
-  DCHECK(!animations.IsEmpty());
-  for (auto& compositor_animation : animations) {
-    int id = compositor_animation->Id();
-    compositor_player.AddAnimation(std::move(compositor_animation));
+  DCHECK(!keyframe_models.IsEmpty());
+  for (auto& compositor_keyframe_model : keyframe_models) {
+    int id = compositor_keyframe_model->Id();
+    compositor_player.AddKeyframeModel(std::move(compositor_keyframe_model));
     started_animation_ids.push_back(id);
   }
   DCHECK(!started_animation_ids.IsEmpty());
@@ -420,7 +420,7 @@ void CompositorAnimations::CancelAnimationOnCompositor(
   }
   CompositorAnimationPlayer* compositor_player = animation.CompositorPlayer();
   if (compositor_player)
-    compositor_player->RemoveAnimation(id);
+    compositor_player->RemoveKeyframeModel(id);
 }
 
 void CompositorAnimations::PauseAnimationForTestingOnCompositor(
@@ -436,7 +436,7 @@ void CompositorAnimations::PauseAnimationForTestingOnCompositor(
   DCHECK(CheckCanStartElementOnCompositor(element).Ok());
   CompositorAnimationPlayer* compositor_player = animation.CompositorPlayer();
   DCHECK(compositor_player);
-  compositor_player->PauseAnimation(id, pause_time);
+  compositor_player->PauseKeyframeModel(id, pause_time);
 }
 
 void CompositorAnimations::AttachCompositedLayers(
@@ -572,9 +572,9 @@ void CompositorAnimations::GetAnimationOnCompositor(
     double start_time,
     double time_offset,
     const KeyframeEffectModelBase& effect,
-    Vector<std::unique_ptr<CompositorAnimation>>& animations,
+    Vector<std::unique_ptr<CompositorKeyframeModel>>& keyframe_models,
     double animation_playback_rate) {
-  DCHECK(animations.IsEmpty());
+  DCHECK(keyframe_models.IsEmpty());
   CompositorTiming compositor_timing;
   bool timing_valid = ConvertTimingForCompositor(
       timing, time_offset, compositor_timing, animation_playback_rate);
@@ -637,21 +637,21 @@ void CompositorAnimations::GetAnimationOnCompositor(
     }
     DCHECK(curve.get());
 
-    std::unique_ptr<CompositorAnimation> animation =
-        CompositorAnimation::Create(*curve, target_property, group, 0);
+    std::unique_ptr<CompositorKeyframeModel> keyframe_model =
+        CompositorKeyframeModel::Create(*curve, target_property, group, 0);
 
     if (!std::isnan(start_time))
-      animation->SetStartTime(start_time);
+      keyframe_model->SetStartTime(start_time);
 
-    animation->SetIterations(compositor_timing.adjusted_iteration_count);
-    animation->SetIterationStart(compositor_timing.iteration_start);
-    animation->SetTimeOffset(compositor_timing.scaled_time_offset);
-    animation->SetDirection(compositor_timing.direction);
-    animation->SetPlaybackRate(compositor_timing.playback_rate);
-    animation->SetFillMode(compositor_timing.fill_mode);
-    animations.push_back(std::move(animation));
+    keyframe_model->SetIterations(compositor_timing.adjusted_iteration_count);
+    keyframe_model->SetIterationStart(compositor_timing.iteration_start);
+    keyframe_model->SetTimeOffset(compositor_timing.scaled_time_offset);
+    keyframe_model->SetDirection(compositor_timing.direction);
+    keyframe_model->SetPlaybackRate(compositor_timing.playback_rate);
+    keyframe_model->SetFillMode(compositor_timing.fill_mode);
+    keyframe_models.push_back(std::move(keyframe_model));
   }
-  DCHECK(!animations.IsEmpty());
+  DCHECK(!keyframe_models.IsEmpty());
 }
 
 }  // namespace blink

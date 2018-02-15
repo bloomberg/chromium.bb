@@ -33,7 +33,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "core/style/DataEquivalency.h"
-#include "platform/animation/CompositorAnimation.h"
+#include "platform/animation/CompositorKeyframeModel.h"
 #include "platform/animation/TimingFunction.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/MathExtras.h"
@@ -44,8 +44,8 @@ struct Timing {
   USING_FAST_MALLOC(Timing);
 
  public:
-  using FillMode = CompositorAnimation::FillMode;
-  using PlaybackDirection = CompositorAnimation::Direction;
+  using FillMode = CompositorKeyframeModel::FillMode;
+  using PlaybackDirection = CompositorKeyframeModel::Direction;
 
   static String FillModeString(FillMode);
   static String PlaybackDirectionString(PlaybackDirection);

@@ -110,7 +110,7 @@ void Toast::SetBackgroundColor(SkColor color) {
 
 void Toast::NotifyClientSizeAnimated(const gfx::SizeF& size,
                                      int target_property_id,
-                                     cc::Animation* animation) {
+                                     cc::KeyframeModel* animation) {
   if (target_property_id == BOUNDS)
     background_->SetSize(size.width(), size.height());
   UiElement::NotifyClientSizeAnimated(size, target_property_id, animation);
