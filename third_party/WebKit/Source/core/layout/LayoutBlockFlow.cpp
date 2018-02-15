@@ -4790,7 +4790,7 @@ void LayoutBlockFlow::ShowLineTreeAndMark(const InlineBox* marked_box1,
                                           const char* marked_label2,
                                           const LayoutObject* obj) const {
   StringBuilder string_blockflow;
-  DumpLayoutObject(string_blockflow);
+  DumpLayoutObject(string_blockflow, true, kShowTreeCharacterOffset);
   for (const RootInlineBox* root = FirstRootBox(); root;
        root = root->NextRootBox()) {
     root->DumpLineTreeAndMark(string_blockflow, marked_box1, marked_label1,
