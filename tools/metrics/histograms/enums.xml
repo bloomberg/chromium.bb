@@ -17803,6 +17803,9 @@ Called by update_net_error_codes.py.-->
   <int value="2362" label="ReplaceCharsetInXHRIgnoringCase"/>
   <int value="2363" label="HTMLIFrameElementGestureMedia"/>
   <int value="2364" label="WorkletAddModule"/>
+  <int value="2365" label="AnimationWorkletRegisterAnimator"/>
+  <int value="2366" label="WorkletAnimationConstructor"/>
+  <int value="2367" label="ScrollTimelineConstructor"/>
 </enum>
 
 <enum name="FeedbackSource">
