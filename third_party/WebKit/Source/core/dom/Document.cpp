@@ -864,8 +864,7 @@ Element* Document::CreateRawElement(const QualifiedName& qname,
   Element* element = nullptr;
   if (qname.NamespaceURI() == HTMLNames::xhtmlNamespaceURI) {
     // https://html.spec.whatwg.org/multipage/dom.html#elements-in-the-dom:element-interface
-    element = HTMLElementFactory::CreateRawHTMLElement(qname.LocalName(), *this,
-                                                       flags);
+    element = HTMLElementFactory::Create(qname.LocalName(), *this, flags);
     if (!element) {
       // 6. If name is a valid custom element name, then return
       // HTMLElement.
@@ -877,8 +876,7 @@ Element* Document::CreateRawElement(const QualifiedName& qname,
     }
     saw_elements_in_known_namespaces_ = true;
   } else if (qname.NamespaceURI() == SVGNames::svgNamespaceURI) {
-    element =
-        SVGElementFactory::CreateRawSVGElement(qname.LocalName(), *this, flags);
+    element = SVGElementFactory::Create(qname.LocalName(), *this, flags);
     if (!element)
       element = SVGUnknownElement::Create(qname, *this);
     saw_elements_in_known_namespaces_ = true;
@@ -913,7 +911,7 @@ Element* Document::CreateElementForBinding(const AtomicString& name,
           QualifiedName(g_null_atom, local_name, HTMLNames::xhtmlNamespaceURI),
           CreateElementFlags::ByCreateElement());
     }
-    if (Element* element = HTMLElementFactory::CreateRawHTMLElement(
+    if (auto* element = HTMLElementFactory::Create(
             local_name, *this, CreateElementFlags::ByCreateElement()))
       return element;
     QualifiedName q_name(g_null_atom, local_name, HTMLNames::xhtmlNamespaceURI);

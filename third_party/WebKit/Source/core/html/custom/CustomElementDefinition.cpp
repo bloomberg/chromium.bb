@@ -92,9 +92,9 @@ void CustomElementDefinition::CheckConstructorResult(
 
 HTMLElement* CustomElementDefinition::CreateElementForConstructor(
     Document& document) {
-  HTMLElement* element = HTMLElementFactory::CreateRawHTMLElement(
-      Descriptor().LocalName(), document,
-      CreateElementFlags::ByCreateElement());
+  HTMLElement* element =
+      HTMLElementFactory::Create(Descriptor().LocalName(), document,
+                                 CreateElementFlags::ByCreateElement());
   if (!element) {
     element =
         HTMLElement::Create(QualifiedName(g_null_atom, Descriptor().LocalName(),

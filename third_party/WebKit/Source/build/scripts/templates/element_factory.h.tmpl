@@ -17,7 +17,7 @@ class {{namespace}}Element;
 class {{namespace}}ElementFactory {
  public:
   // If |localName| is unknown, nullptr is returned.
-  static {{namespace}}Element* CreateRaw{{namespace}}Element(
+  static {{namespace}}Element* Create(
       const AtomicString& localName,
       Document&,
       const CreateElementFlags flags);
