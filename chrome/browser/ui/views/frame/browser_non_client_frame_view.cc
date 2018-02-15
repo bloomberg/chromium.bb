@@ -175,6 +175,24 @@ void BrowserNonClientFrameView::UpdateProfileIndicatorIcon() {
   profile_indicator_icon_->SetIcon(icon);
 }
 
+void BrowserNonClientFrameView::LayoutIncognitoButton() {
+  DCHECK(profile_indicator_icon());
+#if !defined(OS_CHROMEOS)
+  // ChromeOS shows avatar on V1 app.
+  DCHECK(browser_view()->IsTabStripVisible());
+#endif
+  gfx::ImageSkia incognito_icon = GetIncognitoAvatarIcon();
+  int avatar_bottom = GetTopInset(false) + browser_view()->GetTabStripHeight() -
+                      kAvatarIconPadding;
+  int avatar_y = avatar_bottom - incognito_icon.height();
+  int avatar_height = incognito_icon.height();
+
+  gfx::Rect avatar_bounds(kAvatarIconPadding, avatar_y, incognito_icon.width(),
+                          avatar_height);
+  profile_indicator_icon()->SetBoundsRect(avatar_bounds);
+  profile_indicator_icon()->SetVisible(true);
+}
+
 void BrowserNonClientFrameView::PaintToolbarBackground(
     gfx::Canvas* canvas) const {
   gfx::Rect toolbar_bounds(browser_view()->GetToolbarBounds());

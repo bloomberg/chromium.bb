@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
@@ -18,7 +19,7 @@ namespace {
 // How far to inset the tabstrip from the sides of the window.
 const int kTabstripTopInset = 8;
 const int kTabstripLeftInset = 70;  // Make room for window control buttons.
-const int kTabstripRightInset = 0;
+constexpr int kTabstripRightInset = 4;  // Margin for profile switcher.
 
 }  // namespace
 
@@ -26,9 +27,9 @@ const int kTabstripRightInset = 0;
 // BrowserNonClientFrameViewMac, public:
 
 BrowserNonClientFrameViewMac::BrowserNonClientFrameViewMac(
-    BrowserFrame* frame, BrowserView* browser_view)
-    : BrowserNonClientFrameView(frame, browser_view) {
-}
+    BrowserFrame* frame,
+    BrowserView* browser_view)
+    : BrowserNonClientFrameView(frame, browser_view), profile_switcher_(this) {}
 
 BrowserNonClientFrameViewMac::~BrowserNonClientFrameViewMac() {
 }
@@ -39,14 +40,24 @@ BrowserNonClientFrameViewMac::~BrowserNonClientFrameViewMac() {
 gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStrip(
     views::View* tabstrip) const {
   DCHECK(tabstrip);
-  gfx::Rect bounds = gfx::Rect(0, kTabstripTopInset,
-                               width(), tabstrip->GetPreferredSize().height());
-  bounds.Inset(kTabstripLeftInset, 0, kTabstripRightInset, 0);
+  gfx::Rect bounds = gfx::Rect(0, kTabstripTopInset, width(),
+                               tabstrip->GetPreferredSize().height());
+  bounds.Inset(kTabstripLeftInset, 0, GetTabStripRightInset(), 0);
   return bounds;
 }
 
 int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
   return browser_view()->IsTabStripVisible() ? kTabstripTopInset : 0;
+}
+
+int BrowserNonClientFrameViewMac::GetTabStripRightInset() const {
+  int inset = kTabstripRightInset;
+  if (profile_switcher_.view()) {
+    inset += profile_switcher_.view()->GetPreferredSize().width();
+  } else if (profile_indicator_icon()) {
+    inset += profile_indicator_icon()->bounds().width() + kAvatarIconPadding;
+  }
+  return inset;
 }
 
 int BrowserNonClientFrameViewMac::GetThemeBackgroundXInset() const {
@@ -69,6 +80,14 @@ gfx::Rect BrowserNonClientFrameViewMac::GetWindowBoundsForClientBounds(
 }
 
 int BrowserNonClientFrameViewMac::NonClientHitTest(const gfx::Point& point) {
+  if (profile_switcher_.view()) {
+    gfx::Point point_in_switcher(point);
+    views::View::ConvertPointToTarget(this, profile_switcher_.view(),
+                                      &point_in_switcher);
+    if (profile_switcher_.view()->HitTestPoint(point_in_switcher)) {
+      return HTCLIENT;
+    }
+  }
   int component = frame()->client_view()->NonClientHitTest(point);
 
   // BrowserView::NonClientHitTest will return HTNOWHERE for points that hit
@@ -120,9 +139,41 @@ void BrowserNonClientFrameViewMac::OnPaint(gfx::Canvas* canvas) {
     PaintToolbarBackground(canvas);
 }
 
+void BrowserNonClientFrameViewMac::Layout() {
+  DCHECK(browser_view());
+  if (profile_indicator_icon() && browser_view()->IsTabStripVisible()) {
+    LayoutIncognitoButton();
+    // Mac lays out the incognito icon on the right, as the stoplight
+    // buttons live in its Windows/Linux location.
+    profile_indicator_icon()->SetX(width() - GetTabStripRightInset());
+  } else if (profile_switcher_.view() != nullptr) {
+    gfx::Size button_size = profile_switcher_.view()->GetPreferredSize();
+    int button_x = width() - GetTabStripRightInset();
+    int button_y = 0;
+    TabStrip* tabstrip = browser_view()->tabstrip();
+    if (tabstrip && browser_view()->IsTabStripVisible()) {
+      int new_tab_button_bottom =
+          tabstrip->bounds().y() + tabstrip->GetNewTabButtonBounds().height();
+      // Align the switcher's bottom to bottom of the new tab button;
+      button_y = new_tab_button_bottom - button_size.height();
+    }
+    profile_switcher_.view()->SetBounds(button_x, button_y, button_size.width(),
+                                        button_size.height());
+  }
+  BrowserNonClientFrameView::Layout();
+}
+
+views::View* BrowserNonClientFrameViewMac::GetProfileSwitcherView() const {
+  return profile_switcher_.view();
+}
+
 // BrowserNonClientFrameView:
 void BrowserNonClientFrameViewMac::UpdateProfileIcons() {
-  NOTIMPLEMENTED();
+  if (browser_view()->IsRegularOrGuestSession()) {
+    profile_switcher_.Update(AvatarButtonStyle::NATIVE);
+  } else {
+    UpdateProfileIndicatorIcon();
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

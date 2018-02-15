@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/ui/avatar_button_error_controller.h"
 #include "chrome/browser/ui/avatar_button_error_controller_delegate.h"
@@ -45,6 +46,9 @@ class AvatarButton : public views::MenuButton,
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
+#if defined(OS_MACOSX)
+  SkColor GetInkDropBaseColor() const override;
+#endif
 
  protected:
   // views::LabelButton:
@@ -82,6 +86,9 @@ class AvatarButton : public views::MenuButton,
   // Returns true when the button can get smaller to accomodate a more crowded
   // browser frame.
   bool IsCondensible() const;
+
+  // Returns true if this button should show an ink drop on hover.
+  bool ShouldApplyInkDrop() const;
 
   AvatarButtonErrorController error_controller_;
   Profile* profile_;

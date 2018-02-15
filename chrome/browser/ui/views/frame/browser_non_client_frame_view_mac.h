@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_MAC_H_
 
 #include "base/macros.h"
+#include "chrome/browser/ui/views/frame/avatar_button_manager.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
+#include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 
 class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
  public:
@@ -30,8 +32,10 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
   void SizeConstraintsChanged() override;
+  views::View* GetProfileSwitcherView() const override;
 
   // views::View:
+  void Layout() override;
   gfx::Size GetMinimumSize() const override;
 
  protected:
@@ -42,7 +46,10 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
   void UpdateProfileIcons() override;
 
  private:
+  // Wrapper around the in-frame avatar switcher.
+  AvatarButtonManager profile_switcher_;
   void PaintThemedFrame(gfx::Canvas* canvas);
+  int GetTabStripRightInset() const;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewMac);
 };

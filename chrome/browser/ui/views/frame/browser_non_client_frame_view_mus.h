@@ -83,9 +83,6 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
   // scheme than browser windows.
   bool UsePackagedAppHeaderStyle() const;
 
-  // Layout the incognito button.
-  void LayoutIncognitoButton();
-
   // Layout the profile switcher (if there is one).
   void LayoutProfileSwitcher();
 

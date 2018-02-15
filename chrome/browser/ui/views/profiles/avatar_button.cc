@@ -74,6 +74,10 @@ std::unique_ptr<views::Border> CreateThemedBorder(
 }
 #endif
 
+#if defined(OS_MACOSX)
+constexpr int kHoverCornerRadius = 2;
+#endif
+
 // This class draws the border (and background) of the avatar button for
 // "themed" browser windows, i.e. OpaqueBrowserFrameView. Currently it's only
 // used on Linux as the shape specifically matches the Linux caption buttons.
@@ -198,8 +202,10 @@ AvatarButton::AvatarButton(views::MenuButtonListener* listener,
   set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
                               ui::EF_RIGHT_MOUSE_BUTTON);
   set_animate_on_state_change(false);
+#if !defined(OS_MACOSX)
   SetEnabledTextColors(SK_ColorWHITE);
   SetTextSubpixelRenderingEnabled(false);
+#endif
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
 
   profile_observer_.Add(
@@ -212,14 +218,7 @@ AvatarButton::AvatarButton(views::MenuButtonListener* listener,
   label()->SetFontList(
       label()->font_list().DeriveWithHeightUpperBound(kDisplayFontHeight));
 
-  bool apply_ink_drop = IsCondensible();
-#if defined(OS_LINUX)
-  DCHECK_EQ(AvatarButtonStyle::THEMED, button_style);
-  apply_ink_drop = true;
-#endif
-  if (render_native_nav_buttons_)
-    apply_ink_drop = false;
-
+  bool apply_ink_drop = ShouldApplyInkDrop();
   if (render_native_nav_buttons_) {
 #if BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
     SetBackground(nav_button_provider->CreateAvatarButtonBackground(this));
@@ -349,6 +348,11 @@ gfx::Size AvatarButton::CalculatePreferredSize() const {
 }
 
 std::unique_ptr<views::InkDropMask> AvatarButton::CreateInkDropMask() const {
+#if defined(OS_MACOSX)
+  // TODO (lgrey): Determine and set the correct insets.
+  return std::make_unique<views::RoundRectInkDropMask>(size(), gfx::Insets(),
+                                                       kHoverCornerRadius);
+#endif
   if (button_style_ == AvatarButtonStyle::THEMED)
     return AvatarButtonThemedBorder::CreateInkDropMask(size());
   return MenuButton::CreateInkDropMask();
@@ -366,6 +370,13 @@ std::unique_ptr<views::InkDropHighlight> AvatarButton::CreateInkDropHighlight()
   ink_drop_highlight->set_visible_opacity(kInkDropHighlightOpacity);
   return ink_drop_highlight;
 }
+
+#if defined(OS_MACOSX)
+SkColor AvatarButton::GetInkDropBaseColor() const {
+  return GetThemeProvider()->GetColor(
+      ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+}
+#endif
 
 bool AvatarButton::ShouldEnterPushedState(const ui::Event& event) {
   if (ProfileChooserView::IsShowing())
@@ -445,13 +456,15 @@ void AvatarButton::Update() {
               ? base::string16()
               : profiles::GetAvatarButtonTextForProfile(profile_));
 
+#if !defined(OS_MACOSX)
   // If the button has no text, clear the text shadows to make sure the
-  // image is centered correctly.
+  // image is centered correctly. macOS doesn't use a shadow.
   SetTextShadows(
       use_generic_button
           ? gfx::ShadowValues()
           : gfx::ShadowValues(
                 10, gfx::ShadowValue(gfx::Vector2d(), 2.0f, SK_ColorDKGRAY)));
+#endif
 
   if (use_generic_button) {
     SetImage(views::Button::STATE_NORMAL, generic_avatar_);
@@ -483,4 +496,15 @@ bool AvatarButton::IsCondensible() const {
 #else
   return false;
 #endif
+}
+bool AvatarButton::ShouldApplyInkDrop() const {
+#if defined(OS_LINUX)
+  DCHECK_EQ(AvatarButtonStyle::THEMED, button_style_);
+  return true;
+#elif defined(OS_MACOSX)
+  return true;
+#endif
+  if (render_native_nav_buttons_)
+    return false;
+  return IsCondensible();
 }
