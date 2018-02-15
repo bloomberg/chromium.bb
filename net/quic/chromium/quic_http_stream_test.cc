@@ -532,6 +532,19 @@ class QuicHttpStreamTest
                                        !kIncludeCongestionFeedback);
   }
 
+  std::unique_ptr<QuicReceivedPacket> ConstructClientPriorityPacket(
+      QuicPacketNumber packet_number,
+      bool should_include_version,
+      QuicStreamId id,
+      QuicStreamId parent_stream_id,
+      RequestPriority request_priority,
+      QuicStreamOffset* header_stream_offset) {
+    return client_maker_.MakePriorityPacket(
+        packet_number, should_include_version, id, parent_stream_id,
+        ConvertRequestPriorityToQuicPriority(request_priority),
+        header_stream_offset);
+  }
+
   std::unique_ptr<QuicReceivedPacket> ConstructInitialSettingsPacket(
       QuicStreamOffset* offset) {
     return client_maker_.MakeInitialSettingsPacket(1, offset);
@@ -2040,12 +2053,22 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckFail) {
   size_t spdy_request_header_frame_length;
   QuicStreamOffset header_stream_offset = 0;
   AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
-  AddWrite(ConstructClientRstStreamVaryMismatchPacket(2));
+
+  QuicPacketNumber client_packet_number = 2;
+  if (client_headers_include_h2_stream_dependency_ &&
+      version_ > QUIC_VERSION_42) {
+    AddWrite(ConstructClientPriorityPacket(
+        client_packet_number++, kIncludeVersion, promise_id_, 0,
+        DEFAULT_PRIORITY, &header_stream_offset));
+  }
+  AddWrite(ConstructClientRstStreamVaryMismatchPacket(client_packet_number++));
   AddWrite(InnerConstructRequestHeadersPacket(
-      3, stream_id_ + 2, !kIncludeVersion, kFin, DEFAULT_PRIORITY,
-      &spdy_request_header_frame_length, &header_stream_offset));
-  AddWrite(ConstructClientAckPacket(4, 3, 1, 1));
-  AddWrite(ConstructClientRstStreamCancelledPacket(5));
+      client_packet_number++, stream_id_ + 2, !kIncludeVersion, kFin,
+      DEFAULT_PRIORITY, promise_id_, &spdy_request_header_frame_length,
+      &header_stream_offset));
+  AddWrite(ConstructClientAckPacket(client_packet_number++, 3, 1, 1));
+  AddWrite(ConstructClientRstStreamCancelledPacket(client_packet_number++));
+
   Initialize();
 
   // Initialize the first stream, for receiving the promise on.
