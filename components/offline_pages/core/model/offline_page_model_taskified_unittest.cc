@@ -15,7 +15,6 @@
 #include "base/test/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/model/clear_storage_task.h"
@@ -29,6 +28,7 @@
 #include "components/offline_pages/core/offline_page_test_archiver.h"
 #include "components/offline_pages/core/offline_page_test_store.h"
 #include "components/offline_pages/core/offline_page_types.h"
+#include "components/offline_pages/core/system_download_manager_stub.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -58,11 +58,13 @@ const GURL kFileUrl("file:///foo");
 const ClientId kTestClientId1(kDefaultNamespace, "1234");
 const ClientId kTestClientId2(kDefaultNamespace, "5678");
 const ClientId kTestUserRequestedClientId(kDownloadNamespace, "714");
+const ClientId kTestBrowserActionsClientId(kBrowserActionsNamespace, "999");
 const int64_t kTestFileSize = 876543LL;
 const base::string16 kTestTitle = base::UTF8ToUTF16("a title");
 const std::string kTestRequestOrigin("abc.xyz");
 const std::string kEmptyRequestOrigin("");
 const std::string kTestDigest("test digest");
+const int64_t kDownloadId = 42LL;
 
 }  // namespace
 
@@ -219,9 +221,12 @@ void OfflinePageModelTaskifiedTest::BuildModel() {
   auto archive_manager = std::make_unique<ArchiveManager>(
       temporary_dir_path(), private_archive_dir_path(),
       public_archive_dir_path(), base::ThreadTaskRunnerHandle::Get());
+  std::unique_ptr<SystemDownloadManager> download_manager(
+      new SystemDownloadManagerStub(kDownloadId, true));
   model_ = std::make_unique<OfflinePageModelTaskified>(
       store_test_util()->ReleaseStore(), std::move(archive_manager),
-      base::ThreadTaskRunnerHandle::Get(), task_runner_->GetMockClock());
+      std::move(download_manager), base::ThreadTaskRunnerHandle::Get(),
+      task_runner_->GetMockClock());
   model_->AddObserver(this);
   histogram_tester_ = std::make_unique<base::HistogramTester>();
   ResetResults();
@@ -1124,19 +1129,62 @@ TEST_F(OfflinePageModelTaskifiedTest, GetPagesSupportedByDownloads) {
 // This test is affected by https://crbug.com/725685, which only affects windows
 // platform.
 #if defined(OS_WIN)
-#define MAYBE_CheckPagesSavedInSeparateDirs \
-  DISABLED_CheckPagesSavedInSeparateDirs
+#define MAYBE_CheckPagesSavedInSeparateDirsPrivate \
+  DISABLED_CheckPagesSavedInSeparateDirsPrivate
 #else
-#define MAYBE_CheckPagesSavedInSeparateDirs CheckPagesSavedInSeparateDirs
+#define MAYBE_CheckPagesSavedInSeparateDirsPrivate \
+  CheckPagesSavedInSeparateDirsPrivate
 #endif
-TEST_F(OfflinePageModelTaskifiedTest, MAYBE_CheckPagesSavedInSeparateDirs) {
+TEST_F(OfflinePageModelTaskifiedTest,
+       MAYBE_CheckPagesSavedInSeparateDirsPrivate) {
   // Save a temporary page.
   auto archiver = BuildArchiver(kTestUrl, ArchiverResult::SUCCESSFULLY_CREATED);
   int64_t temporary_id = SavePageWithExpectedResult(
       kTestUrl, kTestClientId1, GURL(), kEmptyRequestOrigin,
       std::move(archiver), SavePageResult::SUCCESS);
 
-  // Save a persistent page.
+  // Save a persistent page that will not be published
+  archiver = BuildArchiver(kTestUrl2, ArchiverResult::SUCCESSFULLY_CREATED);
+  int64_t persistent_id = SavePageWithExpectedResult(
+      kTestUrl2, kTestBrowserActionsClientId, GURL(), kEmptyRequestOrigin,
+      std::move(archiver), SavePageResult::SUCCESS);
+
+  std::unique_ptr<OfflinePageItem> temporary_page =
+      store_test_util()->GetPageByOfflineId(temporary_id);
+  std::unique_ptr<OfflinePageItem> persistent_page =
+      store_test_util()->GetPageByOfflineId(persistent_id);
+
+  ASSERT_TRUE(temporary_page);
+  ASSERT_TRUE(persistent_page);
+
+  base::FilePath temporary_page_path = temporary_page->file_path;
+  base::FilePath persistent_page_path = persistent_page->file_path;
+
+  EXPECT_TRUE(temporary_dir_path().IsParent(temporary_page_path));
+  // For a page in the prefetch namespace, it gets moved to the
+  // a private internal directory inside chromium.
+  EXPECT_TRUE(private_archive_dir_path().IsParent(persistent_page_path));
+  EXPECT_NE(temporary_page_path.DirName(), persistent_page_path.DirName());
+}
+
+// This test is affected by https://crbug.com/725685, which only affects windows
+// platform.
+#if defined(OS_WIN)
+#define MAYBE_CheckPagesSavedInSeparateDirsPublic \
+  DISABLED_CheckPagesSavedInSeparateDirsPublic
+#else
+#define MAYBE_CheckPagesSavedInSeparateDirsPublic \
+  CheckPagesSavedInSeparateDirsPublic
+#endif
+TEST_F(OfflinePageModelTaskifiedTest,
+       MAYBE_CheckPagesSavedInSeparateDirsPublic) {
+  // Save a temporary page.
+  auto archiver = BuildArchiver(kTestUrl, ArchiverResult::SUCCESSFULLY_CREATED);
+  int64_t temporary_id = SavePageWithExpectedResult(
+      kTestUrl, kTestClientId1, GURL(), kEmptyRequestOrigin,
+      std::move(archiver), SavePageResult::SUCCESS);
+
+  // Save a persistent page that will be published.
   archiver = BuildArchiver(kTestUrl2, ArchiverResult::SUCCESSFULLY_CREATED);
   int64_t persistent_id = SavePageWithExpectedResult(
       kTestUrl2, kTestUserRequestedClientId, GURL(), kEmptyRequestOrigin,
@@ -1154,7 +1202,9 @@ TEST_F(OfflinePageModelTaskifiedTest, MAYBE_CheckPagesSavedInSeparateDirs) {
   base::FilePath persistent_page_path = persistent_page->file_path;
 
   EXPECT_TRUE(temporary_dir_path().IsParent(temporary_page_path));
-  EXPECT_TRUE(private_archive_dir_path().IsParent(persistent_page_path));
+  // TODO(petewil): It might be better to replace the check below with a check
+  // that the file ended up in the correct place instead of just not the wrong
+  // place.
   EXPECT_NE(temporary_page_path.DirName(), persistent_page_path.DirName());
 }
 
