@@ -292,8 +292,10 @@ config("cfi_linker") {
   # https://msdn.microsoft.com/en-us/library/windows/desktop/mt637065.aspx
   # /DYNAMICBASE (ASLR) is turned off in debug builds, therefore CFG can’t be
   # turned on either.
+  # CFG seems to lead to random corruption with incremental linking so turn off
+  # CFG in component builds. https://crbug.com/812421
   # TODO(thakis): Turn this on with lld once supported, https://crbug.com/693709
-  if (!is_debug && !use_lld) {
+  if (!is_debug && !is_component_build && !use_lld) {
     # Turn on CFG in msvc linker, regardless of compiler used. Turn off CFG for
     # longjmp (new in VS 2017) because it relies on compiler support which we do
     # not have enabled.
