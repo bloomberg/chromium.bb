@@ -39,11 +39,19 @@ class ImageIndex {
   // |const Disassembler&| can be used here.
   bool Initialize(Disassembler* disasm);
 
-  // Returns the number of reference types the index holds.
-  size_t TypeCount() const { return reference_sets_.size(); }
+  // Returns the array size needed to accommodate all reference type values.
+  size_t TypeCount() const {
+    if (reference_sets_.empty())
+      return 0U;
+    return reference_sets_.rbegin()->first.value() + 1;
+  }
 
-  // Returns the number of target pools discovered.
-  size_t PoolCount() const { return target_pools_.size(); }
+  // Returns the array size needed to accommodate all pool values.
+  size_t PoolCount() const {
+    if (target_pools_.empty())
+      return 0U;
+    return target_pools_.rbegin()->first.value() + 1;
+  }
 
   // Returns true if |image_[location]| is either:
   // - A raw value.
