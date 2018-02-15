@@ -34347,6 +34347,19 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Default"/>
 </enum>
 
+<enum name="PeerConnectionSdpSemanticNegotiated">
+  <int value="0" label="None"/>
+  <int value="1" label="Plan B"/>
+  <int value="2" label="Unified Plan"/>
+  <int value="3" label="Mixed"/>
+</enum>
+
+<enum name="PeerConnectionSdpSemanticRequested">
+  <int value="0" label="Default"/>
+  <int value="1" label="Plan B"/>
+  <int value="2" label="Unified Plan"/>
+</enum>
+
 <enum name="PepperBrokerAction">
   <int value="0" label="Create"/>
   <int value="1" label="Connect"/>
