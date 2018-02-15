@@ -953,6 +953,7 @@ message DeviceKerberosEncryptionTypesProto {
 
 // Specifies how user policy from device GPOs interacts with user policy from
 // user GPOs. In 'MERGE' mode, device GPOs take preference in case of conflicts.
+// Applies to Active Directory management mode only.
 message DeviceUserPolicyLoopbackProcessingModeProto {
   enum Mode {
     USER_POLICY_MODE_DEFAULT = 0;  // Only take user policy from user GPOs.
@@ -981,6 +982,13 @@ message DeviceLoginScreenSitePerProcessProto {
 // Setting to control if running virtual machines on Chrome OS is allowed.
 message VirtualMachinesAllowedProto {
   optional bool virtual_machines_allowed = 1 [default = true];
+}
+
+// Specifies if and how often Active Directory machine (computer) account
+// passwords are changed in the AuthPolicy daemon in Chrome OS.
+// Applies to Active Directory management mode only.
+message DeviceMachinePasswordChangeRateProto {
+  optional int32 rate_days = 1;
 }
 
 message ChromeDeviceSettingsProto {
@@ -1070,4 +1078,6 @@ message ChromeDeviceSettingsProto {
   optional DeviceLoginScreenSitePerProcessProto
       device_login_screen_site_per_process = 68;
   optional VirtualMachinesAllowedProto virtual_machines_allowed = 69;
+  optional DeviceMachinePasswordChangeRateProto
+      device_machine_password_change_rate = 70;
 }

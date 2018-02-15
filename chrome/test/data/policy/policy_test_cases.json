@@ -3537,6 +3537,11 @@
     "note": "Chrome OS device policy used by authpolicyd only, not used in Chrome"
   },
 
+  "DeviceMachinePasswordChangeRate": {
+    "os": ["chromeos"],
+    "note": "Chrome OS device policy used by authpolicyd only, not used in Chrome"
+  },
+
   "DeviceLoginScreenIsolateOrigins": {
     "os": ["chromeos"],
     "note": "Chrome OS device policy used by session_manager only"
