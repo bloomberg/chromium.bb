@@ -630,6 +630,15 @@
                   '|net/cert/signed_tree_head'\
                   '|net/test/ct_',
     },
+    'chrome_cleaner': {
+      'filepath': 'chrome/browser/component_updater/sw_reporter_'\
+                  '|chrome/browser/resources/settings/chrome_cleanup_page/'\
+                  '|chrome/browser/safe_browsing/chrome_cleaner/'\
+                  '|chrome/browser/ui/views/chrome_cleaner_'\
+                  '|chrome/browser/ui/webui/settings/chrome_cleanup_'\
+                  '|chrome_cleaner/'\
+                  '|components/chrome_cleaner/',
+    },
     'chrome_elf': {
       'filepath': 'chrome_elf',
     },
@@ -1381,10 +1390,6 @@
                   '|chrome/browser/.*managed_user'\
                   '|chrome/browser/.*supervised_user',
     },
-    'swreporter': {
-      'filepath': 'chrome/browser/safe_browsing/chrome_cleaner/'\
-                  '|chrome/browser/component_updater/sw_reporter_',
-    },
     'sync': {
       'filepath': '^chrome/android/sync_shell/'\
                   '|^chrome/browser/ui/sync/'\
@@ -1902,6 +1907,9 @@
                                  'eranm@chromium.org',
                                  'martijn+crwatch@martijnc.be',
                                  'rsleevi+watch@chromium.org'],
+    'chrome_cleaner': ['csharp+watch@chromium.org',
+                       'ftirelo+watch@chromium.org',
+                       'joenotcharles+watch@chromium.org'],
     'chrome_elf': ['caitkp+watch@chromium.org',
                    'pennymac+watch@chromium.org'],
     'chrome_grc': ['chrome-grc-reviews@chromium.org'],
@@ -2225,9 +2233,6 @@
                    'vmpstr+watch@chromium.org'],
     'subresource_filter': ['subresource-filter-reviews@chromium.org'],
     'supervised_users': ['pam+watch@chromium.org'],
-    'swreporter': ['csharp+watch@chromium.org',
-                   'ftirelo+watch@chromium.org',
-                   'joenotcharles+watch@chromium.org'],
     'sync': ['sync-reviews@chromium.org'],
     'syncfs': ['kinuko+fileapi@chromium.org',
                'nhiroki@chromium.org',

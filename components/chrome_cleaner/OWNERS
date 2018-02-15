@@ -1,7 +1,4 @@
-csharp@chromium.org
-joenotcharles@chromium.org
-proberge@chromium.org
-robertshield@chromium.org
+file://chrome_cleaner/OWNERS
 
 # TEAM: security-dev@chromium.org
 # COMPONENT: UI>Browser>Preferences>Protector
