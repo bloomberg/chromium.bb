@@ -102,9 +102,9 @@ bool Intersects(const NGExclusionSpace::NGShelf& shelf,
                 const NGBfcOffset& offset,
                 const LayoutUnit inline_size) {
   return (shelf.line_right == LayoutUnit::Max() ||
-          shelf.line_right > offset.line_offset) &&
+          shelf.line_right >= offset.line_offset) &&
          (shelf.line_left == LayoutUnit::Min() ||
-          shelf.line_left < offset.line_offset + inline_size);
+          shelf.line_left <= offset.line_offset + inline_size);
 }
 
 // Creates a new layout opportunity. The given layout opportunity *must*
@@ -346,10 +346,11 @@ void NGExclusionSpace::Add(scoped_refptr<const NGExclusion> exclusion) {
             (i > 0) && shelf.line_left == shelves_[i - 1].line_left &&
             shelf.line_right == shelves_[i - 1].line_right;
 
-        // The shelf also may now be non-existent.
-        bool shelf_has_zero_size = shelf.line_right <= shelf.line_left;
+        // The shelf also may now be non-existent. Note that zero inline size is
+        // allowed, since subsequent zero-size content may still fit there.
+        bool shelf_disappearing = shelf.line_right < shelf.line_left;
 
-        if (is_same_as_previous || shelf_has_zero_size) {
+        if (is_same_as_previous || shelf_disappearing) {
           shelves_.EraseAt(i);
           removed_shelf = true;
         }
@@ -458,7 +459,7 @@ Vector<NGLayoutOpportunity> NGExclusionSpace::AllLayoutOpportunities(
         continue;
       }
 
-      // We always perfer the closed-off opportunity, instead of the shelf
+      // We always prefer the closed-off opportunity, instead of the shelf
       // opportunity if they exist at the some offset.
       if (opportunity.rect.BlockStartOffset() <= shelf.block_offset) {
         opportunities.push_back(CreateLayoutOpportunity(opportunity, offset,
