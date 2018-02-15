@@ -9,12 +9,13 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include "av1/decoder/decodetxb.h"
+
 #include "aom_ports/mem.h"
 #include "av1/common/idct.h"
 #include "av1/common/scan.h"
 #include "av1/common/txb_common.h"
 #include "av1/decoder/decodemv.h"
-#include "av1/decoder/decodetxb.h"
 
 #define ACCT_STR __func__
 
@@ -83,7 +84,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   const PLANE_TYPE plane_type = get_plane_type(plane);
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const int seg_eob = av1_get_max_eob(tx_size);
-  int c = 0, v = 0;
   int num_updates = 0;
   struct macroblockd_plane *const pd = &xd->plane[plane];
   const int16_t *const dequant = pd->seg_dequant_QTX[mbmi->segment_id];
@@ -103,7 +103,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
   DECLARE_ALIGNED(16, uint8_t, level_counts[MAX_TX_SQUARE]);
-  int8_t signs[MAX_TX_SQUARE] = { 0 };
   uint16_t update_pos[MAX_TX_SQUARE];
 
   const int all_zero = aom_read_symbol(
@@ -218,7 +217,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   // printf("=>[%d, %d], (%d, %d)\n", seg_eob, *eob, eob_pt, eob_extra);
 
   for (int i = 0; i < *eob; ++i) {
-    c = *eob - 1 - i;
+    const int c = *eob - 1 - i;
     const int pos = scan[c];
     const int coeff_ctx = get_nz_map_ctx(levels, pos, bwl, height, c,
                                          c == *eob - 1, tx_size, tx_type);
@@ -231,110 +230,75 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       cdf = ec_ctx->coeff_base_cdf[txs_ctx][plane_type][coeff_ctx];
       nsymbs = 4;
     }
-    const int level =
-        aom_read_symbol(r, cdf, nsymbs, ACCT_STR) + (c == *eob - 1);
+    int level = aom_read_symbol(r, cdf, nsymbs, ACCT_STR) + (c == *eob - 1);
+    if (level > NUM_BASE_LEVELS) {
+#if USE_CAUSAL_BR_CTX
+      const int br_ctx =
+          get_br_ctx(levels, pos, bwl, level_counts[pos], tx_type);
+#else
+      const int br_ctx = get_br_ctx(levels, pos, bwl, level_counts[pos]);
+#endif
+      for (int idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
+        const int k = aom_read_symbol(
+            r,
+            ec_ctx->coeff_br_cdf[AOMMIN(txs_ctx, TX_32X32)][plane_type][br_ctx],
+            BR_CDF_SIZE, ACCT_STR);
+        level += k;
+        if (k < BR_CDF_SIZE - 1) break;
+      }
+      if (level > NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
+        update_pos[num_updates] = pos;
+        ++num_updates;
+      }
+    }
     levels[get_padded_idx(pos, bwl)] = level;
+  }
+
+  for (int i = 0; i < num_updates; ++i) {
+    const int pos = update_pos[i];
+    const int level = levels[get_padded_idx(pos, bwl)];
+    tcoeffs[pos] = level + read_golomb(xd, r);
   }
 
   // Loop to decode all signs in the transform block,
   // starting with the sign of the DC (if applicable)
-  for (c = 0; c < *eob; ++c) {
+  for (int c = 0; c < *eob; ++c) {
     const int pos = scan[c];
-    int8_t *const sign = &signs[pos];
-    const int level = levels[get_padded_idx(pos, bwl)];
+    int8_t sign;
+    tran_low_t level = levels[get_padded_idx(pos, bwl)];
     if (level) {
       *max_scan_line = AOMMAX(*max_scan_line, pos);
       if (c == 0) {
         const int dc_sign_ctx = txb_ctx->dc_sign_ctx;
-        *sign = aom_read_symbol(r, ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx],
-                                2, ACCT_STR);
+        sign = aom_read_symbol(r, ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx],
+                               2, ACCT_STR);
       } else {
-        *sign = aom_read_bit(r, ACCT_STR);
+        sign = aom_read_bit(r, ACCT_STR);
       }
-      if (level < 3) {
-        cul_level += level;
+      if (level > NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
+        // the quantized coeff with golomb residue is stored in tcoeffs because
+        // levels doesn't have enough bits got store the residue
+        level = tcoeffs[pos];
+      }
+      cul_level += level;
+      tran_low_t dq_coeff;
 #if CONFIG_NEW_QUANT
 #if CONFIG_AOM_QM
-        v = av1_dequant_abscoeff_nuq(level, dequant[!!c], dq_profile, !!c,
-                                     nq_shift);
-#else
-        dqv_val = &dq_val[pos != 0][0];
-        v = av1_dequant_abscoeff_nuq(level, dequant[!!c], dqv_val, nq_shift);
-#endif  // CONFIG_AOM_QM
-#else
-        v = level * get_dqv(dequant, scan[c], iqmatrix);
-        v = v >> shift;
-#endif  // CONFIG_NEW_QUANT
-        if (*sign) {
-          tcoeffs[pos] = -v;
-        } else {
-          tcoeffs[pos] = v;
-        }
-      } else {
-        update_pos[num_updates++] = pos;
-      }
-    }
-  }
-
-  if (num_updates) {
-    for (c = num_updates - 1; c >= 0; --c) {
-      const int pos = update_pos[c];
-      uint8_t *const level = &levels[get_padded_idx(pos, bwl)];
-      int idx = 0;
-      int ctx;
-
-      assert(*level > NUM_BASE_LEVELS);
-
-#if USE_CAUSAL_BR_CTX
-      ctx = get_br_ctx(levels, pos, bwl, level_counts[pos], tx_type);
-#else
-      ctx = get_br_ctx(levels, pos, bwl, level_counts[pos]);
-#endif
-      for (idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
-        int k = aom_read_symbol(
-            r, ec_ctx->coeff_br_cdf[AOMMIN(txs_ctx, TX_32X32)][plane_type][ctx],
-            BR_CDF_SIZE, ACCT_STR);
-        *level += k;
-        if (k < BR_CDF_SIZE - 1) break;
-      }
-      if (*level <= NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
-        cul_level += *level;
-        tran_low_t t;
-#if CONFIG_NEW_QUANT
-#if CONFIG_AOM_QM
-        t = av1_dequant_abscoeff_nuq(*level, dequant[!!pos], dq_profile, !!pos,
-                                     nq_shift);
-#else
-        dqv_val = &dq_val[pos != 0][0];
-        t = av1_dequant_abscoeff_nuq(*level, dequant[!!pos], dqv_val, nq_shift);
-#endif  // CONFIG_AOM_QM
-#else
-        t = *level * get_dqv(dequant, pos, iqmatrix);
-        t = t >> shift;
-#endif  // CONFIG_NEW_QUANT
-        if (signs[pos]) t = -t;
-        tcoeffs[pos] = clamp(t, min_value, max_value);
-        continue;
-      }
-      // decode 0-th order Golomb code
-      *level = COEFF_BASE_RANGE + 1 + NUM_BASE_LEVELS;
-      // Save golomb in tcoeffs because adding it to level may incur overflow
-      tran_low_t t = *level + read_golomb(xd, r);
-      cul_level += (int)t;
-#if CONFIG_NEW_QUANT
-#if CONFIG_AOM_QM
-      t = av1_dequant_abscoeff_nuq(t, dequant[!!pos], dq_profile, !!pos,
-                                   nq_shift);
+      dq_coeff = av1_dequant_abscoeff_nuq(level, dequant[!!c], dq_profile, !!c,
+                                          nq_shift);
 #else
       dqv_val = &dq_val[pos != 0][0];
-      t = av1_dequant_abscoeff_nuq(t, dequant[!!pos], dqv_val, nq_shift);
+      dq_coeff =
+          av1_dequant_abscoeff_nuq(level, dequant[!!c], dqv_val, nq_shift);
 #endif  // CONFIG_AOM_QM
 #else
-      t = t * get_dqv(dequant, pos, iqmatrix);
-      t = t >> shift;
+      dq_coeff = level * get_dqv(dequant, scan[c], iqmatrix);
+      dq_coeff = dq_coeff >> shift;
 #endif  // CONFIG_NEW_QUANT
-      if (signs[pos]) t = -t;
-      tcoeffs[pos] = clamp(t, min_value, max_value);
+      if (sign) {
+        dq_coeff = -dq_coeff;
+      }
+      tcoeffs[pos] = clamp(dq_coeff, min_value, max_value);
     }
   }
 

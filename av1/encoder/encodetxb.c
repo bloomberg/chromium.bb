@@ -9,15 +9,16 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include "av1/encoder/encodetxb.h"
+
 #include "aom_ports/mem.h"
-#include "av1/common/scan.h"
 #include "av1/common/blockd.h"
 #include "av1/common/idct.h"
 #include "av1/common/pred_common.h"
+#include "av1/common/scan.h"
 #include "av1/encoder/bitstream.h"
-#include "av1/encoder/encodeframe.h"
 #include "av1/encoder/cost.h"
-#include "av1/encoder/encodetxb.h"
+#include "av1/encoder/encodeframe.h"
 #include "av1/encoder/hash.h"
 #include "av1/encoder/rdopt.h"
 #include "av1/encoder/tokenize.h"
@@ -466,12 +467,13 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   const int bwl = get_txb_bwl(tx_size);
   const int width = get_txb_wide(tx_size);
   const int height = get_txb_high(tx_size);
-  int update_eob = -1;
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
   DECLARE_ALIGNED(16, uint8_t, level_counts[MAX_TX_SQUARE]);
   DECLARE_ALIGNED(16, int8_t, coeff_contexts[MAX_TX_SQUARE]);
+  uint16_t update_pos[MAX_TX_SQUARE];
+  int num_updates = 0;
 
   aom_write_symbol(w, eob == 0,
                    ec_ctx->txb_skip_cdf[txs_ctx][txb_ctx->txb_skip_ctx], 2);
@@ -544,68 +546,63 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     const int pos = scan[c];
     const int coeff_ctx = coeff_contexts[pos];
     const tran_low_t v = tcoeff[pos];
+    const tran_low_t level = abs(v);
 
     if (c == eob - 1) {
       aom_write_symbol(
-          w, AOMMIN(abs(v), 3) - 1,
+          w, AOMMIN(level, 3) - 1,
           ec_ctx->coeff_base_eob_cdf[txs_ctx][plane_type][coeff_ctx], 3);
     } else {
-      aom_write_symbol(w, AOMMIN(abs(v), 3),
+      aom_write_symbol(w, AOMMIN(level, 3),
                        ec_ctx->coeff_base_cdf[txs_ctx][plane_type][coeff_ctx],
                        4);
     }
-  }
-  update_eob = eob - 1;
-
-  // Loop to code all signs in the transform block,
-  // starting with the sign of DC (if applicable)
-  for (c = 0; c < eob; ++c) {
-    const tran_low_t v = tcoeff[scan[c]];
-    const tran_low_t level = abs(v);
-    const int sign = (v < 0) ? 1 : 0;
-    if (level == 0) continue;
-
-    if (c == 0) {
-      aom_write_symbol(
-          w, sign, ec_ctx->dc_sign_cdf[plane_type][txb_ctx->dc_sign_ctx], 2);
-    } else {
-      aom_write_bit(w, sign);
-    }
-  }
-
-  if (update_eob >= 0) {
-    for (c = update_eob; c >= 0; --c) {
-      const int pos = scan[c];
-      const tran_low_t level = abs(tcoeff[pos]);
-      int idx;
-      int ctx;
-
-      if (level <= NUM_BASE_LEVELS) continue;
-
+    if (level > NUM_BASE_LEVELS) {
       // level is above 1.
       const int base_range = level - 1 - NUM_BASE_LEVELS;
 #if USE_CAUSAL_BR_CTX
-      ctx = get_br_ctx(levels, pos, bwl, level_counts[pos], tx_type);
+      const int br_ctx =
+          get_br_ctx(levels, pos, bwl, level_counts[pos], tx_type);
 
 #else
-      ctx = get_br_ctx(levels, pos, bwl, level_counts[pos]);
+      const int br_ctx = get_br_ctx(levels, pos, bwl, level_counts[pos]);
 #endif
-      for (idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
+      for (int idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
         const int k = AOMMIN(base_range - idx, BR_CDF_SIZE - 1);
         aom_write_symbol(w, k,
 #if 0
             ec_ctx->coeff_br_cdf[AOMMIN(txs_ctx, TX_16X16)][plane_type][ctx],
 #else
                          ec_ctx->coeff_br_cdf[AOMMIN(txs_ctx, TX_32X32)]
-                                             [plane_type][ctx],
+                                             [plane_type][br_ctx],
 #endif
                          BR_CDF_SIZE);
         if (k < BR_CDF_SIZE - 1) break;
       }
-      if (base_range < COEFF_BASE_RANGE) continue;
-      // use 0-th order Golomb code to handle the residual level.
-      write_golomb(w,
-                   abs(tcoeff[pos]) - COEFF_BASE_RANGE - 1 - NUM_BASE_LEVELS);
+      if (level > COEFF_BASE_RANGE + NUM_BASE_LEVELS) {
+        update_pos[num_updates] = pos;
+        ++num_updates;
+      }
+    }
+  }
+
+  for (int i = 0; i < num_updates; ++i) {
+    const int pos = update_pos[i];
+    write_golomb(w, abs(tcoeff[pos]) - COEFF_BASE_RANGE - 1 - NUM_BASE_LEVELS);
+  }
+
+  // Loop to code all signs in the transform block,
+  // starting with the sign of DC (if applicable)
+  for (c = 0; c < eob; ++c) {
+    const tran_low_t v = tcoeff[scan[c]];
+    const int sign = (v < 0) ? 1 : 0;
+    if (v != 0) {
+      if (c == 0) {
+        aom_write_symbol(
+            w, sign, ec_ctx->dc_sign_cdf[plane_type][txb_ctx->dc_sign_ctx], 2);
+      } else {
+        aom_write_bit(w, sign);
+      }
     }
   }
 }
