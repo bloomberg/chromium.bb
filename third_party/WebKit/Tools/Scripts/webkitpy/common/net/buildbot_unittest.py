@@ -41,12 +41,12 @@ class BuilderTest(LoggingTestCase):
     def test_results_url_no_build_number(self):
         self.assertEqual(
             BuildBot().results_url('Test Builder'),
-            'https://storage.googleapis.com/chromium-layout-test-archives/Test_Builder/results/layout-test-results')
+            'https://test-results.appspot.com/data/layout_results/Test_Builder/results/layout-test-results')
 
     def test_results_url_with_build_number(self):
         self.assertEqual(
             BuildBot().results_url('Test Builder', 10),
-            'https://storage.googleapis.com/chromium-layout-test-archives/Test_Builder/10/layout-test-results')
+            'https://test-results.appspot.com/data/layout_results/Test_Builder/10/layout-test-results')
 
     def test_results_url_with_non_numeric_build_number(self):
         with self.assertRaisesRegexp(AssertionError, 'expected numeric build number'):
@@ -55,12 +55,12 @@ class BuilderTest(LoggingTestCase):
     def test_builder_results_url_base(self):
         self.assertEqual(
             BuildBot().builder_results_url_base('WebKit Mac10.8 (dbg)'),
-            'https://storage.googleapis.com/chromium-layout-test-archives/WebKit_Mac10_8__dbg_')
+            'https://test-results.appspot.com/data/layout_results/WebKit_Mac10_8__dbg_')
 
     def test_accumulated_results_url(self):
         self.assertEqual(
             BuildBot().accumulated_results_url_base('WebKit Mac10.8 (dbg)'),
-            'https://storage.googleapis.com/chromium-layout-test-archives/WebKit_Mac10_8__dbg_/results/layout-test-results')
+            'https://test-results.appspot.com/data/layout_results/WebKit_Mac10_8__dbg_/results/layout-test-results')
 
     def test_fetch_layout_test_results_with_no_results_fetched(self):
         buildbot = BuildBot()
@@ -73,21 +73,7 @@ class BuilderTest(LoggingTestCase):
         self.assertIsNone(results)
         self.assertLog([
             'DEBUG: Got 404 response from:\n'
-            'https://storage.googleapis.com/chromium-layout-test-archives/B/results/layout-test-results/failing_results.json\n'
-        ])
-
-    def test_fetch_layout_test_results_with_no_last_change_file(self):
-        buildbot = BuildBot()
-
-        def fetch_file(_, filename):
-            return None if filename == 'LAST_CHANGE' else 'contents'
-
-        buildbot.fetch_file = fetch_file
-        results = buildbot.fetch_layout_test_results(buildbot.results_url('B'))
-        self.assertIsNone(results)
-        self.assertLog([
-            'DEBUG: Got 404 response from:\n'
-            'https://storage.googleapis.com/chromium-layout-test-archives/B/results/layout-test-results/LAST_CHANGE\n'
+            'https://test-results.appspot.com/data/layout_results/B/results/layout-test-results/failing_results.json\n'
         ])
 
 

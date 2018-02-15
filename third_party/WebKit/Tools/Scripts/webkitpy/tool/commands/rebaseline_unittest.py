@@ -20,7 +20,7 @@ from webkitpy.tool.mock_tool import MockWebKitPatch
 
 class BaseTestCase(unittest.TestCase):
 
-    WEB_PREFIX = 'https://storage.googleapis.com/chromium-layout-test-archives/MOCK_Mac10_11/results/layout-test-results'
+    WEB_PREFIX = 'https://test-results.appspot.com/data/layout_results/MOCK_Mac10_11/results/layout-test-results'
 
     command_constructor = lambda: None
 
