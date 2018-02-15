@@ -13,8 +13,6 @@
 
 namespace syncer {
 
-using Result = ModelTypeStore::Result;
-
 // static
 std::unique_ptr<ModelTypeStore>
 ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(ModelType type) {
@@ -25,8 +23,9 @@ ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(ModelType type) {
       type,
       base::BindOnce(
           [](base::RunLoop* loop, std::unique_ptr<ModelTypeStore>* out_store,
-             Result result, std::unique_ptr<ModelTypeStore> in_store) {
-            ASSERT_EQ(Result::SUCCESS, result);
+             const base::Optional<ModelError>& error,
+             std::unique_ptr<ModelTypeStore> in_store) {
+            EXPECT_FALSE(error) << error->ToString();
             *out_store = std::move(in_store);
             loop->Quit();
           },
@@ -42,10 +41,11 @@ ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(ModelType type) {
 // static
 RepeatingModelTypeStoreFactory
 ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest() {
-  return base::BindRepeating([](ModelType type,
-                                ModelTypeStore::InitCallback callback) {
-    std::move(callback).Run(Result::SUCCESS, CreateInMemoryStoreForTest(type));
-  });
+  return base::BindRepeating(
+      [](ModelType type, ModelTypeStore::InitCallback callback) {
+        std::move(callback).Run(/*error=*/base::nullopt,
+                                CreateInMemoryStoreForTest(type));
+      });
 }
 
 // static
@@ -54,7 +54,7 @@ void ModelTypeStoreTestUtil::MoveStoreToCallback(
     ModelType type,
     ModelTypeStore::InitCallback callback) {
   ASSERT_TRUE(store);
-  std::move(callback).Run(Result::SUCCESS, std::move(store));
+  std::move(callback).Run(/*error=*/base::nullopt, std::move(store));
 }
 
 }  // namespace syncer

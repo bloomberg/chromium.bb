@@ -26,7 +26,7 @@ void MockModelTypeStore::ReadData(const IdList& id_list,
     read_data_handler_.Run(id_list, std::move(callback));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), Result::SUCCESS,
+        FROM_HERE, base::BindOnce(std::move(callback), /*error=*/base::nullopt,
                                   std::unique_ptr<RecordList>(),
                                   std::unique_ptr<IdList>()));
   }
@@ -37,7 +37,7 @@ void MockModelTypeStore::ReadAllData(ReadAllDataCallback callback) {
     read_all_data_handler_.Run(std::move(callback));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), Result::SUCCESS,
+        FROM_HERE, base::BindOnce(std::move(callback), /*error=*/base::nullopt,
                                   std::unique_ptr<RecordList>()));
   }
 }
@@ -66,7 +66,8 @@ void MockModelTypeStore::CommitWriteBatch(
                                     std::move(callback));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), Result::SUCCESS));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), /*error=*/base::nullopt));
   }
 }
 
