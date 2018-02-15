@@ -2420,12 +2420,9 @@ seat_get_pointer(struct wl_client *client, struct wl_resource *resource,
 	 * This prevents a race between the compositor sending new
 	 * capabilities and the client trying to use the old ones.
 	 */
-	struct weston_pointer *pointer = seat->pointer_state;
+	struct weston_pointer *pointer = seat ? seat->pointer_state : NULL;
 	struct wl_resource *cr;
 	struct weston_pointer_client *pointer_client;
-
-	if (!pointer)
-		return;
 
         cr = wl_resource_create(client, &wl_pointer_interface,
 				wl_resource_get_version(resource), id);
@@ -2433,6 +2430,15 @@ seat_get_pointer(struct wl_client *client, struct wl_resource *resource,
 		wl_client_post_no_memory(client);
 		return;
 	}
+
+	wl_list_init(wl_resource_get_link(cr));
+	wl_resource_set_implementation(cr, &pointer_interface, pointer,
+				       unbind_pointer_client_resource);
+
+	/* If we don't have a pointer_state, the resource is inert, so there
+	 * is nothing more to set up */
+	if (!pointer)
+		return;
 
 	pointer_client = weston_pointer_ensure_pointer_client(pointer, client);
 	if (!pointer_client) {
@@ -2442,8 +2448,6 @@ seat_get_pointer(struct wl_client *client, struct wl_resource *resource,
 
 	wl_list_insert(&pointer_client->pointer_resources,
 		       wl_resource_get_link(cr));
-	wl_resource_set_implementation(cr, &pointer_interface, pointer,
-				       unbind_pointer_client_resource);
 
 	if (pointer->focus && pointer->focus->surface->resource &&
 	    wl_resource_get_client(pointer->focus->surface->resource) == client) {
@@ -2507,11 +2511,8 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 	 * This prevents a race between the compositor sending new
 	 * capabilities and the client trying to use the old ones.
 	 */
-	struct weston_keyboard *keyboard = seat->keyboard_state;
+	struct weston_keyboard *keyboard = seat ? seat->keyboard_state : NULL;
 	struct wl_resource *cr;
-
-	if (!keyboard)
-		return;
 
         cr = wl_resource_create(client, &wl_keyboard_interface,
 				wl_resource_get_version(resource), id);
@@ -2520,12 +2521,19 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 		return;
 	}
 
+	wl_list_init(wl_resource_get_link(cr));
+	wl_resource_set_implementation(cr, &keyboard_interface,
+				       keyboard, unbind_resource);
+
+	/* If we don't have a keyboard_state, the resource is inert, so there
+	 * is nothing more to set up */
+	if (!keyboard)
+		return;
+
 	/* May be moved to focused list later by either
 	 * weston_keyboard_set_focus or directly if this client is already
 	 * focused */
 	wl_list_insert(&keyboard->resource_list, wl_resource_get_link(cr));
-	wl_resource_set_implementation(cr, &keyboard_interface,
-				       keyboard, unbind_resource);
 
 	if (wl_resource_get_version(cr) >= WL_KEYBOARD_REPEAT_INFO_SINCE_VERSION) {
 		wl_keyboard_send_repeat_info(cr,
@@ -2587,11 +2595,8 @@ seat_get_touch(struct wl_client *client, struct wl_resource *resource,
 	 * This prevents a race between the compositor sending new
 	 * capabilities and the client trying to use the old ones.
 	 */
-	struct weston_touch *touch = seat->touch_state;
+	struct weston_touch *touch = seat ? seat->touch_state : NULL;
 	struct wl_resource *cr;
-
-	if (!touch)
-		return;
 
         cr = wl_resource_create(client, &wl_touch_interface,
 				wl_resource_get_version(resource), id);
@@ -2599,6 +2604,15 @@ seat_get_touch(struct wl_client *client, struct wl_resource *resource,
 		wl_client_post_no_memory(client);
 		return;
 	}
+
+	wl_list_init(wl_resource_get_link(cr));
+	wl_resource_set_implementation(cr, &touch_interface,
+				       touch, unbind_resource);
+
+	/* If we don't have a touch_state, the resource is inert, so there
+	 * is nothing more to set up */
+	if (!touch)
+		return;
 
 	if (touch->focus &&
 	    wl_resource_get_client(touch->focus->surface->resource) == client) {
@@ -2608,8 +2622,6 @@ seat_get_touch(struct wl_client *client, struct wl_resource *resource,
 		wl_list_insert(&touch->resource_list,
 			       wl_resource_get_link(cr));
 	}
-	wl_resource_set_implementation(cr, &touch_interface,
-				       touch, unbind_resource);
 }
 
 static void
@@ -3087,6 +3099,19 @@ weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec,
 WL_EXPORT void
 weston_seat_release(struct weston_seat *seat)
 {
+	struct wl_resource *resource;
+
+	wl_resource_for_each(resource, &seat->base_resource_list) {
+		wl_resource_set_user_data(resource, NULL);
+	}
+
+	wl_resource_for_each(resource, &seat->drag_resource_list) {
+		wl_resource_set_user_data(resource, NULL);
+	}
+
+	wl_list_remove(&seat->base_resource_list);
+	wl_list_remove(&seat->drag_resource_list);
+
 	wl_list_remove(&seat->link);
 
 	if (seat->saved_kbd_focus)

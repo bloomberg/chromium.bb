@@ -1167,9 +1167,10 @@ data_device_set_selection(struct wl_client *client,
 			  struct wl_resource *resource,
 			  struct wl_resource *source_resource, uint32_t serial)
 {
+	struct weston_seat *seat = wl_resource_get_user_data(resource);
 	struct weston_data_source *source;
 
-	if (!source_resource)
+	if (!seat || !source_resource)
 		return;
 
 	source = wl_resource_get_user_data(source_resource);
@@ -1182,8 +1183,7 @@ data_device_set_selection(struct wl_client *client,
 	}
 
 	/* FIXME: Store serial and check against incoming serial here. */
-	weston_seat_set_selection(wl_resource_get_user_data(resource),
-				  source, serial);
+	weston_seat_set_selection(seat, source, serial);
 }
 static void
 data_device_release(struct wl_client *client, struct wl_resource *resource)
@@ -1296,8 +1296,13 @@ get_data_device(struct wl_client *client,
 		return;
 	}
 
-	wl_list_insert(&seat->drag_resource_list,
-		       wl_resource_get_link(resource));
+	if (seat) {
+		wl_list_insert(&seat->drag_resource_list,
+			       wl_resource_get_link(resource));
+	} else {
+		wl_list_init(wl_resource_get_link(resource));
+	}
+
 	wl_resource_set_implementation(resource, &data_device_interface,
 				       seat, unbind_data_device);
 }

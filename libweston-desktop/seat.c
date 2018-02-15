@@ -242,6 +242,9 @@ weston_desktop_seat_from_seat(struct weston_seat *wseat)
 	struct wl_listener *listener;
 	struct weston_desktop_seat *seat;
 
+	if (wseat == NULL)
+		return NULL;
+
 	listener = wl_signal_get(&wseat->destroy_signal,
 				 weston_desktop_seat_destroy);
 	if (listener != NULL)
@@ -270,7 +273,7 @@ weston_desktop_seat_from_seat(struct weston_seat *wseat)
 struct weston_desktop_surface *
 weston_desktop_seat_popup_grab_get_topmost_surface(struct weston_desktop_seat *seat)
 {
-	if (wl_list_empty(&seat->popup_grab.surfaces))
+	if (seat == NULL || wl_list_empty(&seat->popup_grab.surfaces))
 		return NULL;
 
 	struct wl_list *grab_link = seat->popup_grab.surfaces.next;
@@ -282,11 +285,14 @@ bool
 weston_desktop_seat_popup_grab_start(struct weston_desktop_seat *seat,
 				     struct wl_client *client, uint32_t serial)
 {
-	assert(seat->popup_grab.client == NULL || seat->popup_grab.client == client);
+	assert(seat == NULL || seat->popup_grab.client == NULL ||
+	       seat->popup_grab.client == client);
 
-	struct weston_keyboard *keyboard = weston_seat_get_keyboard(seat->seat);
-	struct weston_pointer *pointer = weston_seat_get_pointer(seat->seat);
-	struct weston_touch *touch = weston_seat_get_touch(seat->seat);
+	struct weston_seat *wseat = seat != NULL ? seat->seat : NULL;
+	/* weston_seat_get_* functions can properly handle a NULL wseat */
+	struct weston_keyboard *keyboard = weston_seat_get_keyboard(wseat);
+	struct weston_pointer *pointer = weston_seat_get_pointer(wseat);
+	struct weston_touch *touch = weston_seat_get_touch(wseat);
 
 	if ((keyboard == NULL || keyboard->grab_serial != serial) &&
 	    (pointer == NULL || pointer->grab_serial != serial) &&

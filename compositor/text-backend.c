@@ -193,10 +193,14 @@ text_input_activate(struct wl_client *client,
 {
 	struct text_input *text_input = wl_resource_get_user_data(resource);
 	struct weston_seat *weston_seat = wl_resource_get_user_data(seat);
-	struct input_method *input_method = weston_seat->input_method;
+	struct input_method *input_method;
 	struct weston_compositor *ec = text_input->ec;
 	struct text_input *current;
 
+	if (!weston_seat)
+		return;
+
+	input_method = weston_seat->input_method;
 	if (input_method->input == text_input)
 		return;
 
@@ -237,7 +241,7 @@ text_input_deactivate(struct wl_client *client,
 {
 	struct weston_seat *weston_seat = wl_resource_get_user_data(seat);
 
-	if (weston_seat->input_method->input)
+	if (weston_seat && weston_seat->input_method->input)
 		deactivate_input_method(weston_seat->input_method);
 }
 

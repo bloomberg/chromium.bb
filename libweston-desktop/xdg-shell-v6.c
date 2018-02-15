@@ -378,6 +378,9 @@ weston_desktop_xdg_toplevel_protocol_show_window_menu(struct wl_client *wl_clien
 		return;
 	}
 
+	if (seat == NULL)
+		return;
+
 	weston_desktop_api_show_window_menu(toplevel->base.desktop,
 					    dsurface, seat, x, y);
 }
@@ -401,6 +404,9 @@ weston_desktop_xdg_toplevel_protocol_move(struct wl_client *wl_client,
 				       "Surface has not been configured yet");
 		return;
 	}
+
+	if (seat == NULL)
+		return;
 
 	weston_desktop_api_move(toplevel->base.desktop, dsurface, seat, serial);
 }
@@ -427,6 +433,9 @@ weston_desktop_xdg_toplevel_protocol_resize(struct wl_client *wl_client,
 				       "Surface has not been configured yet");
 		return;
 	}
+
+	if (seat == NULL)
+		return;
 
 	weston_desktop_api_resize(toplevel->base.desktop,
 				  dsurface, seat, serial, surf_edges);
@@ -762,12 +771,27 @@ weston_desktop_xdg_popup_protocol_grab(struct wl_client *wl_client,
 	bool parent_is_toplevel =
 		popup->parent->role == WESTON_DESKTOP_XDG_SURFACE_ROLE_TOPLEVEL;
 
+	/* Check that if we have a valid wseat we also got a valid desktop seat */
+	if (wseat != NULL && seat == NULL) {
+		wl_client_post_no_memory(wl_client);
+		return;
+	}
+
 	if (popup->committed) {
 		wl_resource_post_error(popup->resource,
 				       ZXDG_POPUP_V6_ERROR_INVALID_GRAB,
 				       "xdg_popup already is mapped");
 		return;
 	}
+
+	/* If seat is NULL then get_topmost_surface will return NULL. In
+	 * combination with setting parent_is_toplevel to TRUE here we will
+	 * avoid posting an error, and we will instead gracefully fail the
+	 * grab and dismiss the surface.
+	 * FIXME: this is a hack because currently we cannot check the topmost
+	 * parent with a destroyed weston_seat */
+	if (seat == NULL)
+		parent_is_toplevel = true;
 
 	topmost = weston_desktop_seat_popup_grab_get_topmost_surface(seat);
 	if ((topmost == NULL && !parent_is_toplevel) ||
