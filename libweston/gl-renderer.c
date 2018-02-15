@@ -1748,7 +1748,7 @@ gl_renderer_attach_egl(struct weston_surface *es, struct weston_buffer *buffer,
 static void
 gl_renderer_destroy_dmabuf(struct linux_dmabuf_buffer *dmabuf)
 {
-	struct dmabuf_image *image = dmabuf->user_data;
+	struct dmabuf_image *image = linux_dmabuf_buffer_get_user_data(dmabuf);
 
 	dmabuf_image_destroy(image);
 }
