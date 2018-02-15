@@ -164,7 +164,8 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   void AddPlaceholderBreakElementIfNecessary();
   String ValueWithHardLineBreaks() const;
 
-  void CopyNonAttributePropertiesFromElement(const Element&) override;
+  void CopyNonAttributePropertiesFromElement(const Element&,
+                                             CloneChildrenFlag) override;
 
  private:
   unsigned ComputeSelectionStart() const;

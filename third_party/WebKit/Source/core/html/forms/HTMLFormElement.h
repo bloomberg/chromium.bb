@@ -125,7 +125,8 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
     return NamedItemType::kName;
   }
 
-  void CopyNonAttributePropertiesFromElement(const Element&) override;
+  void CopyNonAttributePropertiesFromElement(const Element&,
+                                             CloneChildrenFlag) override;
 
   void SubmitDialog(FormSubmission*);
   void Submit(Event*, HTMLFormControlElement* submit_button);

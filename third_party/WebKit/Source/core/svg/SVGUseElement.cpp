@@ -417,7 +417,8 @@ Element* SVGUseElement::CreateInstanceTree(SVGElement& target_root) const {
         SVGSVGElement::Create(target_root.GetDocument());
     // Transfer all data (attributes, etc.) from the <symbol> to the new
     // <svg> element.
-    svg_element->CloneDataFromElement(*instance_root);
+    svg_element->CloneDataFromElement(*instance_root,
+                                      CloneChildrenFlag::kClone);
     // Move already cloned elements to the new <svg> element.
     MoveChildrenToReplacementElement(*instance_root, *svg_element);
     instance_root = svg_element;
@@ -624,7 +625,7 @@ bool SVGUseElement::ExpandUseElementsInShadowTree() {
     // Setup sub-shadow tree root node
     SVGGElement* clone_parent = SVGGElement::Create(original_use.GetDocument());
     // Transfer all data (attributes, etc.) from <use> to the new <g> element.
-    clone_parent->CloneDataFromElement(*use);
+    clone_parent->CloneDataFromElement(*use, CloneChildrenFlag::kClone);
     clone_parent->SetCorrespondingElement(&original_use);
 
     RemoveAttributesFromReplacementElement(*clone_parent);
