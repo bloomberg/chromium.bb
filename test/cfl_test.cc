@@ -474,4 +474,13 @@ INSTANTIATE_TEST_CASE_P(AVX2, CFLPredictTest,
 INSTANTIATE_TEST_CASE_P(AVX2, CFLPredictHBDTest,
                         ::testing::ValuesIn(predict_sizes_hbd_avx2));
 #endif
+
+#if HAVE_NEON
+const sub_avg_param sub_avg_sizes_neon[] = { ALL_CFL_TX_SIZES(
+    get_subtract_average_fn_neon) };
+
+INSTANTIATE_TEST_CASE_P(NEON, CFLSubAvgTest,
+                        ::testing::ValuesIn(sub_avg_sizes_neon));
+
+#endif
 }  // namespace
