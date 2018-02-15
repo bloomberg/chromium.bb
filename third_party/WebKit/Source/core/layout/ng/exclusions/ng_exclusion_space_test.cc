@@ -83,17 +83,31 @@ TEST(NGExclusionSpaceTest, SingleExclusion) {
                    NGBfcOffset(LayoutUnit(-10), LayoutUnit(90)),
                    NGBfcOffset(LayoutUnit(90), LayoutUnit::Max()));
 
-  // This will only produce two opportunities, as the RHS opportunity will be
-  // outside the search area.
+  // This will still produce three opportunities, with a zero-width RHS
+  // opportunity.
   opportunites = exclusion_space.AllLayoutOpportunities(
       /* offset */ {LayoutUnit(10), LayoutUnit(10)},
       /* available_size */ LayoutUnit(50));
 
-  EXPECT_EQ(2u, opportunites.size());
+  EXPECT_EQ(3u, opportunites.size());
   TEST_OPPORTUNITY(opportunites[0], NGBfcOffset(LayoutUnit(10), LayoutUnit(10)),
                    NGBfcOffset(LayoutUnit(60), LayoutUnit(20)));
-  TEST_OPPORTUNITY(opportunites[1], NGBfcOffset(LayoutUnit(10), LayoutUnit(90)),
+  TEST_OPPORTUNITY(opportunites[1], NGBfcOffset(LayoutUnit(60), LayoutUnit(10)),
                    NGBfcOffset(LayoutUnit(60), LayoutUnit::Max()));
+  TEST_OPPORTUNITY(opportunites[2], NGBfcOffset(LayoutUnit(10), LayoutUnit(90)),
+                   NGBfcOffset(LayoutUnit(60), LayoutUnit::Max()));
+
+  // This will only produce two opportunities, as the RHS opportunity will be
+  // outside the search area.
+  opportunites = exclusion_space.AllLayoutOpportunities(
+      /* offset */ {LayoutUnit(10), LayoutUnit(10)},
+      /* available_size */ LayoutUnit(49));
+
+  EXPECT_EQ(2u, opportunites.size());
+  TEST_OPPORTUNITY(opportunites[0], NGBfcOffset(LayoutUnit(10), LayoutUnit(10)),
+                   NGBfcOffset(LayoutUnit(59), LayoutUnit(20)));
+  TEST_OPPORTUNITY(opportunites[1], NGBfcOffset(LayoutUnit(10), LayoutUnit(90)),
+                   NGBfcOffset(LayoutUnit(59), LayoutUnit::Max()));
 }
 
 TEST(NGExclusionSpaceTest, TwoExclusions) {
