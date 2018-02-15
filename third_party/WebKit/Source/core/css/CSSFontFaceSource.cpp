@@ -60,8 +60,14 @@ scoped_refptr<SimpleFontData> CSSFontFaceSource::GetFontData(
 
   FontCacheKey key = font_description.CacheKey(FontFaceCreationParams());
 
-  scoped_refptr<SimpleFontData>& font_data =
-      font_data_table_.insert(key, nullptr).stored_value->value;
+  scoped_refptr<SimpleFontData>* font_data_ptr;
+  {
+    // Keep the scope of the insertion result small to make sure it's
+    // destructed before the hash table is changed below (crbug.com/812600).
+    font_data_ptr = &font_data_table_.insert(key, nullptr).stored_value->value;
+  }
+  scoped_refptr<SimpleFontData>& font_data = *font_data_ptr;
+
   if (!font_data)
     font_data = CreateFontData(font_description, font_selection_capabilities);
 
