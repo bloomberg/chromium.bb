@@ -127,7 +127,7 @@ id<GREYMatcher> PrintButton() {
   GURL kURL("chrome://version");
   [ChromeEarlGrey loadURL:kURL];
   // Verify that the share button is disabled.
-  if (IsCompact()) {
+  if (IsCompactWidth()) {
     [ChromeEarlGreyUI openToolsMenu];
   }
   id<GREYMatcher> share_button = chrome_test_util::ShareButton();

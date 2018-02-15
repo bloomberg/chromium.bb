@@ -42,7 +42,7 @@ id<GREYMatcher> FindInPageButton() {
 - (void)testOpenAndCloseToolsMenu {
   [ChromeEarlGreyUI openToolsMenu];
 
-  if (!IsCompact()) {
+  if (!IsCompactWidth()) {
     [[EarlGrey
         selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
                                      IDS_IOS_TOOLBAR_CLOSE_MENU))]

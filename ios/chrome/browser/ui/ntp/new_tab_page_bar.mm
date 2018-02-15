@@ -142,7 +142,7 @@ const CGFloat kRegularLayoutButtonWidth = 168;
 }
 
 - (void)calculateButtonWidth {
-  if (IsCompact()) {
+  if (IsCompactWidth()) {
     if ([items_ count] > 0) {
       buttonWidth_ = self.contentView.bounds.size.width / [items_ count];
     } else {

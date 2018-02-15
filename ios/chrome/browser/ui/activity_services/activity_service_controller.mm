@@ -116,7 +116,7 @@ NSString* const kActivityServicesSnackbarCategory =
 
   CGRect fromRect = CGRectZero;
   UIView* inView = nil;
-  if (IsIPadIdiom() && !IsCompact()) {
+  if (IsIPadIdiom() && !IsCompactWidth()) {
     DCHECK(positionProvider);
     inView = [positionProvider shareButtonView];
     fromRect = inView.bounds;

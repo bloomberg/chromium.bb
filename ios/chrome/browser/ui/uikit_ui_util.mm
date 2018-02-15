@@ -527,22 +527,28 @@ UIColor* InterpolateFromColorToColor(UIColor* firstColor,
                          alpha:Lerp(a1, a2, fraction)];
 }
 
-bool IsCompact(id<UITraitEnvironment> environment) {
+bool IsCompactWidth(id<UITraitEnvironment> environment) {
   return environment.traitCollection.horizontalSizeClass ==
          UIUserInterfaceSizeClassCompact;
 }
 
-bool IsCompact() {
+bool IsCompactWidth() {
   UIWindow* keyWindow = [UIApplication sharedApplication].keyWindow;
-  return IsCompact(keyWindow);
+  return IsCompactWidth(keyWindow);
 }
 
 bool IsCompactTablet(id<UITraitEnvironment> environment) {
-  return IsIPadIdiom() && IsCompact(environment);
+  return IsIPadIdiom() && IsCompactWidth(environment);
 }
 
 bool IsCompactTablet() {
-  return IsIPadIdiom() && IsCompact();
+  return IsIPadIdiom() && IsCompactWidth();
+}
+
+bool IsCompactHeight() {
+  return [UIApplication sharedApplication]
+             .keyWindow.traitCollection.verticalSizeClass ==
+         UIUserInterfaceSizeClassCompact;
 }
 
 // Returns the current first responder.

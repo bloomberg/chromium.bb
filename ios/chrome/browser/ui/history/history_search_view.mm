@@ -81,7 +81,7 @@ CGFloat kHorizontalMargin = 16.0f;
     _stackView.translatesAutoresizingMaskIntoConstraints = NO;
     _stackView.layoutMarginsRelativeArrangement = YES;
 
-    CGFloat topAnchorConstant = IsCompact() ? StatusBarHeight() : 0;
+    CGFloat topAnchorConstant = IsCompactWidth() ? StatusBarHeight() : 0;
     _topAnchorConstraint =
         [_stackView.topAnchor constraintEqualToAnchor:self.topAnchor
                                              constant:topAnchorConstant];
@@ -128,7 +128,7 @@ CGFloat kHorizontalMargin = 16.0f;
 #pragma mark - UITraitEnvironment
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
-  self.topAnchorConstraint.constant = IsCompact() ? StatusBarHeight() : 0;
+  self.topAnchorConstraint.constant = IsCompactWidth() ? StatusBarHeight() : 0;
 }
 
 @end

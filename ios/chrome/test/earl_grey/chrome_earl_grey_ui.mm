@@ -129,7 +129,7 @@ id<GREYAction> ScrollDown() {
 
 + (void)reload {
   // On iPhone Reload button is a part of tools menu, so open it.
-  if (IsCompact()) {
+  if (IsCompactWidth()) {
     [self openToolsMenu];
   }
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ReloadButton()]
@@ -137,7 +137,7 @@ id<GREYAction> ScrollDown() {
 }
 
 + (void)openShareMenu {
-  if (IsCompact()) {
+  if (IsCompactWidth()) {
     [ChromeEarlGreyUI openToolsMenu];
   }
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ShareButton()]
