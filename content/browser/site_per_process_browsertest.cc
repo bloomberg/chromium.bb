@@ -518,6 +518,30 @@ void OpenURLBlockUntilNavigationComplete(Shell* shell, const GURL& url) {
   same_tab_observer.Wait();
 }
 
+// Helper function to generate a feature policy for a single feature and a list
+// of origins. (Equivalent to the declared policy "feature origin1 origin2...".)
+blink::ParsedFeaturePolicy CreateFPHeader(
+    blink::mojom::FeaturePolicyFeature feature,
+    const std::vector<GURL>& origins) {
+  blink::ParsedFeaturePolicy result(1);
+  result[0].feature = feature;
+  result[0].matches_all_origins = false;
+  DCHECK(!origins.empty());
+  for (const GURL& origin : origins)
+    result[0].origins.push_back(url::Origin::Create(origin));
+  return result;
+}
+
+// Helper function to generate a feature policy for a single feature which
+// matches every origin. (Equivalent to the declared policy "feature *".)
+blink::ParsedFeaturePolicy CreateFPHeaderMatchesAll(
+    blink::mojom::FeaturePolicyFeature feature) {
+  blink::ParsedFeaturePolicy result(1);
+  result[0].feature = feature;
+  result[0].matches_all_origins = true;
+  return result;
+}
+
 }  // namespace
 
 //
@@ -629,43 +653,6 @@ class SitePerProcessEmbedderCSPEnforcementBrowserTest
     // stable
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                                     "EmbedderCSPEnforcement");
-  }
-};
-
-// SitePerProcessFeaturePolicyBrowserTest
-
-class SitePerProcessFeaturePolicyBrowserTest
-    : public SitePerProcessBrowserTest {
- public:
-  SitePerProcessFeaturePolicyBrowserTest() {}
-
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
-    // TODO(iclelland): Remove this switch when Feature Policy ships.
-    // https://crbug.com/623682
-    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    "FeaturePolicyExperimentalFeatures");
-  }
-
-  blink::ParsedFeaturePolicy CreateFPHeader(
-      blink::mojom::FeaturePolicyFeature feature,
-      const std::vector<GURL>& origins) {
-    blink::ParsedFeaturePolicy result(1);
-    result[0].feature = feature;
-    result[0].matches_all_origins = false;
-    DCHECK(!origins.empty());
-    for (const GURL& origin : origins)
-      result[0].origins.push_back(url::Origin::Create(origin));
-    return result;
-  }
-
-  blink::ParsedFeaturePolicy CreateFPHeaderMatchesAll(
-      blink::mojom::FeaturePolicyFeature feature) {
-    blink::ParsedFeaturePolicy result(1);
-    result[0].feature = feature;
-    result[0].matches_all_origins = true;
-    return result;
   }
 };
 
@@ -7911,7 +7898,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        TestFeaturePolicyReplicationOnSameOriginNavigation) {
   GURL start_url(
       embedded_test_server()->GetURL("a.com", "/feature-policy1.html"));
@@ -7939,7 +7926,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
   EXPECT_TRUE(root->current_replication_state().feature_policy_header.empty());
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        TestFeaturePolicyReplicationOnCrossOriginNavigation) {
   GURL start_url(
       embedded_test_server()->GetURL("a.com", "/feature-policy1.html"));
@@ -7969,7 +7956,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
 
 // Test that the replicated feature policy header is correct in subframes as
 // they navigate.
-IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        TestFeaturePolicyReplicationFromRemoteFrames) {
   GURL main_url(
       embedded_test_server()->GetURL("a.com", "/feature-policy-main.html"));
@@ -8129,8 +8116,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 }
 
 // Test iframe container policy is replicated properly to the browser.
-IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
-                       ContainerPolicy) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ContainerPolicy) {
   GURL url(embedded_test_server()->GetURL("/allowed_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
@@ -8148,8 +8134,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
 }
 
 // Test dynamic updates to iframe "allow" attribute are propagated correctly.
-IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
-                       ContainerPolicyDynamic) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ContainerPolicyDynamic) {
   GURL main_url(embedded_test_server()->GetURL("/allowed_frames.html"));
   GURL nav_url(
       embedded_test_server()->GetURL("b.com", "/feature-policy2.html"));
@@ -8186,12 +8171,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
 // the fullscreen feature. Since there are no HTTP header policies involved,
 // this verifies the presence of the container policy in the iframe.
 // https://crbug.com/703703
-// TODO(loonybear): Currently feature policy is shipped without fullscreen
-// (e.g., the implementation of allowfullscreen does not use feature policy
-// information). Once allowfullscreen is controlled by feature policy, re-enable
-// this test.
-IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
-                       DISABLED_ContainerPolicyCrossOriginNavigation) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       ContainerPolicyCrossOriginNavigation) {
   WebContentsImpl* contents = web_contents();
   FrameTreeNode* root = contents->GetFrameTree()->root();
 
@@ -8229,7 +8210,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
 
 // Test that dynamic updates to iframe sandbox attribute correctly set the
 // replicated container policy.
-IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        ContainerPolicySandboxDynamic) {
   GURL main_url(embedded_test_server()->GetURL("/allowed_frames.html"));
   GURL nav_url(
