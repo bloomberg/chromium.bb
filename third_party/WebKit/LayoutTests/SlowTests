@@ -132,9 +132,7 @@ crbug.com/510337 cssom/cssvalue-comparison.html [ Slow ]
 
 crbug.com/680917 http/tests/devtools/audits2/ [ Slow ]
 
-# These tests are slow since they use throttled loading to affect ready states.
-crbug.com/756897 http/tests/media/media-src-suspend-after-have-metadata.html [ Slow ]
-crbug.com/756897 http/tests/media/media-src-suspend-after-have-future-data.html [ Slow ]
+# This test is intentionally SLOW as we're waiting for a connection timeout.
 crbug.com/73609 http/tests/media/video-play-stall.html [ Slow ]
 
 # Many of the virtual animations tests are slow.
