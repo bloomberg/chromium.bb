@@ -52,7 +52,7 @@
 
   <!-- Generic shortcut strings -->
   <message name="IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY" desc="Human readable version of the keyboard shortcut. This is for all single modifier shortcuts.">
-    <ph name="modifier">$1<ex>CTRL</ex></ph> + <ph name="key">$2<ex>V</ex></ph>
+    <ph name="modifier">$1<ex>Ctrl</ex></ph><ph name="separator">$2<ex>+</ex></ph><ph name="key">$3<ex>V</ex></ph>
   </message>
 
   <message name="IDS_KSV_DESCRIPTION_LOCK_SCREEN" desc="Description of the command in keyboard shortcut viewer.">
@@ -63,6 +63,21 @@
     Change screen resolution
   </message>
   <message name="IDS_KSV_SHORTCUT_CHANGE_SCREEN_RESOLUTION" desc="Human readable version of the keyboard shortcut.">
-    <ph name="ctrl">$1</ph> + <ph name="shift">$2</ph> and + or -
+    <ph name="ctrl">$1</ph><ph name="separator">$2</ph><ph name="shift">$3</ph> and + or -
   </message>
+
+  <message name="IDS_KSV_DESCRIPTION_DRAG_LINK_IN_SAME_TAB" desc="Description of the command in keyboard shortcut viewer.">
+    Open the link in the tab
+  </message>
+  <message name="IDS_KSV_SHORTCUT_DRAG_LINK_IN_SAME_TAB" desc="Human readable version of the keyboard shortcut.">
+    Drag the link to the tab's address bar
+  </message>
+
+  <message name="IDS_KSV_DESCRIPTION_HIGHLIGHT_NEXT_ITEM" desc="Description of the command in keyboard shortcut viewer.">
+    Highlight the next item on your shelf
+  </message>
+  <message name="IDS_KSV_SHORTCUT_HIGHLIGHT_NEXT_ITEM" desc="Human readable version of the keyboard shortcut.">
+    <ph name="shift">$1</ph><ph name="separator1">$2</ph><ph name="alt">$3</ph><ph name="separator2">$4</ph><ph name="l">$5</ph>, then <ph name="tab">$6</ph> or <ph name="right">$7</ph>
+  </message>
+
 </grit-part>

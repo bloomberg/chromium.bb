@@ -27,7 +27,6 @@ KeyboardShortcutItem::KeyboardShortcutItem(
       accelerator_ids(accelerator_ids),
       shortcut_key_codes(shortcut_key_codes) {
   DCHECK(!categories.empty());
-  DCHECK(!accelerator_ids.empty() || !shortcut_key_codes.empty());
 }
 
 KeyboardShortcutItem::KeyboardShortcutItem(const KeyboardShortcutItem& other) =

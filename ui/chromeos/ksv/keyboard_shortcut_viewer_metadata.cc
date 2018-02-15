@@ -62,6 +62,12 @@ base::Optional<base::string16> GetSpecialStringForKeyboardCode(
       msg_id = ui::DeviceUsesKeyboardLayout2() ? IDS_KSV_MODIFIER_LAUNCHER
                                                : IDS_KSV_MODIFIER_SEARCH;
       break;
+    case ui::VKEY_UNKNOWN:
+      // If this is VKEY_UNKNOWN, it indicates to insert a "+" separator. Use
+      // one space to replace the string resourece's placeholder so that the
+      // separator is not searchable. This does not conflict with the
+      // replacement string for "VKEY_SPACE", which is "Space".
+      return base::ASCIIToUTF16(" ");
     default:
       return base::nullopt;
   }
@@ -124,24 +130,43 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
       std::vector<KeyboardShortcutItem>, item_list,
       // TODO(crbug.com/793997): These are two examples how we organize the
       // metadata. Full metadata will be provided.
-      ({{// |categories|
-         {ShortcutCategory::kPopular, ShortcutCategory::kSystemAndDisplay},
-         IDS_KSV_DESCRIPTION_LOCK_SCREEN,
-         IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
-         // |accelerator_ids|
-         {{ui::VKEY_L, ui::EF_COMMAND_DOWN}}},
+      ({
+          {// |categories|
+           {ShortcutCategory::kPopular, ShortcutCategory::kSystemAndDisplay},
+           IDS_KSV_DESCRIPTION_LOCK_SCREEN,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_L, ui::EF_COMMAND_DOWN}}},
 
-        // Some accelerators are grouped into one metadata for the
-        // KeyboardShortcutViewer due to the similarity. E.g. the shortcut for
-        // "Change screen resolution" is "Ctrl + Shift and + or -", which groups
-        // two accelerators.
-        {// |categories|
-         {ShortcutCategory::kSystemAndDisplay},
-         IDS_KSV_DESCRIPTION_CHANGE_SCREEN_RESOLUTION,
-         IDS_KSV_SHORTCUT_CHANGE_SCREEN_RESOLUTION,
-         // |accelerator_ids|
-         {{ui::VKEY_OEM_MINUS, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN},
-          {ui::VKEY_OEM_PLUS, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN}}}}));
+          // Some accelerators are grouped into one metadata for the
+          // KeyboardShortcutViewer due to the similarity. E.g. the shortcut for
+          // "Change screen resolution" is "Ctrl + Shift and + or -", which
+          // groups
+          // two accelerators.
+          {// |categories|
+           {ShortcutCategory::kSystemAndDisplay},
+           IDS_KSV_DESCRIPTION_CHANGE_SCREEN_RESOLUTION,
+           IDS_KSV_SHORTCUT_CHANGE_SCREEN_RESOLUTION,
+           // |accelerator_ids|
+           {{ui::VKEY_OEM_MINUS, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN},
+            {ui::VKEY_OEM_PLUS, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kTabAndWindow},
+           IDS_KSV_DESCRIPTION_DRAG_LINK_IN_SAME_TAB,
+           IDS_KSV_SHORTCUT_DRAG_LINK_IN_SAME_TAB},
+
+          {// |categories|
+           {ShortcutCategory::kAccessibility},
+           IDS_KSV_DESCRIPTION_HIGHLIGHT_NEXT_ITEM,
+           IDS_KSV_SHORTCUT_HIGHLIGHT_NEXT_ITEM,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_SHIFT, ui::VKEY_UNKNOWN, ui::VKEY_LMENU, ui::VKEY_UNKNOWN,
+            ui::VKEY_L, ui::VKEY_TAB, ui::VKEY_RIGHT}},
+
+      }));
 
   CR_DEFINE_STATIC_LOCAL(bool, is_initialized, (false));
   // If the item's |shortcut_key_codes| is empty, we need to dynamically
@@ -150,8 +175,7 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
   if (!is_initialized) {
     is_initialized = true;
     for (auto& item : item_list) {
-      if (item.shortcut_key_codes.empty()) {
-        DCHECK(!item.accelerator_ids.empty());
+      if (item.shortcut_key_codes.empty() && !item.accelerator_ids.empty()) {
         // Only use the first |accelerator_id| because the modifiers are the
         // same even if it is a grouped accelerators.
         const AcceleratorId& accelerator_id = item.accelerator_ids[0];
@@ -161,13 +185,21 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
         for (auto modifier : {ui::EF_CONTROL_DOWN, ui::EF_ALT_DOWN,
                               ui::EF_SHIFT_DOWN, ui::EF_COMMAND_DOWN}) {
           if (accelerator_id.modifiers & modifier) {
+            // ui::VKEY_UNKNOWN is used as a separator and will be shown as a
+            // highlighted "+" sign between the bubble views and the rest of the
+            // text.
+            if (!item.shortcut_key_codes.empty())
+              item.shortcut_key_codes.emplace_back(ui::VKEY_UNKNOWN);
             item.shortcut_key_codes.emplace_back(
                 GetKeyCodeForModifier(modifier));
           }
         }
         // For non grouped accelerators, we need to populate the key as well.
-        if (item.accelerator_ids.size() == 1)
+        if (item.accelerator_ids.size() == 1) {
+          if (!item.shortcut_key_codes.empty())
+            item.shortcut_key_codes.emplace_back(ui::VKEY_UNKNOWN);
           item.shortcut_key_codes.emplace_back(accelerator_id.keycode);
+        }
       }
     }
   }
