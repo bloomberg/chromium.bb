@@ -469,14 +469,14 @@ FAIL Stringification of new RTCDataChannelEvent('channel',
         { channel: new RTCPeerConnection().createDataChannel('') }) Cannot read property 'has_stringifier' of undefined
 PASS RTCDataChannelEvent interface: new RTCDataChannelEvent('channel',
         { channel: new RTCPeerConnection().createDataChannel('') }) must inherit property "channel" with the proper type
-FAIL RTCDTMFSender interface: existence and properties of interface object assert_own_property: self does not have own property "RTCDTMFSender" expected property "RTCDTMFSender" missing
-FAIL RTCDTMFSender interface object length assert_own_property: self does not have own property "RTCDTMFSender" expected property "RTCDTMFSender" missing
-FAIL RTCDTMFSender interface object name assert_own_property: self does not have own property "RTCDTMFSender" expected property "RTCDTMFSender" missing
-FAIL RTCDTMFSender interface: existence and properties of interface prototype object assert_own_property: self does not have own property "RTCDTMFSender" expected property "RTCDTMFSender" missing
-FAIL RTCDTMFSender interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "RTCDTMFSender" expected property "RTCDTMFSender" missing
-FAIL RTCDTMFSender interface: operation insertDTMF(DOMString, unsigned long, unsigned long) assert_own_property: self does not have own property "RTCDTMFSender" expected property "RTCDTMFSender" missing
-FAIL RTCDTMFSender interface: attribute ontonechange assert_own_property: self does not have own property "RTCDTMFSender" expected property "RTCDTMFSender" missing
-FAIL RTCDTMFSender interface: attribute toneBuffer assert_own_property: self does not have own property "RTCDTMFSender" expected property "RTCDTMFSender" missing
+FAIL RTCDTMFSender interface: existence and properties of interface object Cannot read property 'has_extended_attribute' of undefined
+PASS RTCDTMFSender interface object length
+PASS RTCDTMFSender interface object name
+FAIL RTCDTMFSender interface: existence and properties of interface prototype object Cannot read property 'has_extended_attribute' of undefined
+PASS RTCDTMFSender interface: existence and properties of interface prototype object's "constructor" property
+PASS RTCDTMFSender interface: operation insertDTMF(DOMString, unsigned long, unsigned long)
+PASS RTCDTMFSender interface: attribute ontonechange
+PASS RTCDTMFSender interface: attribute toneBuffer
 FAIL RTCDTMFToneChangeEvent interface: existence and properties of interface object assert_own_property: self does not have own property "RTCDTMFToneChangeEvent" expected property "RTCDTMFToneChangeEvent" missing
 FAIL RTCDTMFToneChangeEvent interface object length assert_own_property: self does not have own property "RTCDTMFToneChangeEvent" expected property "RTCDTMFToneChangeEvent" missing
 FAIL RTCDTMFToneChangeEvent interface object name assert_own_property: self does not have own property "RTCDTMFToneChangeEvent" expected property "RTCDTMFToneChangeEvent" missing
