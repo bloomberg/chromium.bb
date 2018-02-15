@@ -56,19 +56,6 @@ gfx::NativeWindow WebContentsViewChildFrame::GetTopLevelNativeWindow() const {
   return GetOuterView()->GetTopLevelNativeWindow();
 }
 
-void WebContentsViewChildFrame::GetScreenInfo(ScreenInfo* screen_info) const {
-  // TODO(wjmaclean): falling back to the default screen info is not what used
-  // to happen in RenderWidgetHostViewChildFrame, but it seems like the right
-  // thing to do. We should keep an eye on this in case the else-clause below
-  // causes problems.
-  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
-  if (!rwhv) {
-    DisplayUtil::GetDefaultScreenInfo(screen_info);
-    return;
-  }
-  rwhv->GetScreenInfo(screen_info);
-}
-
 void WebContentsViewChildFrame::GetContainerBounds(gfx::Rect* out) const {
   RenderWidgetHostView* view = web_contents_->GetRenderWidgetHostView();
   if (view)

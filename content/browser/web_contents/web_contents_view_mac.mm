@@ -136,10 +136,6 @@ gfx::NativeWindow WebContentsViewMac::GetTopLevelNativeWindow() const {
   return window ? window : delegate_->GetNativeWindow();
 }
 
-void WebContentsViewMac::GetScreenInfo(ScreenInfo* results) const {
-  DisplayUtil::GetNativeViewScreenInfo(results, GetNativeView());
-}
-
 void WebContentsViewMac::GetContainerBounds(gfx::Rect* out) const {
   NSWindow* window = [cocoa_view_.get() window];
   NSRect bounds = [cocoa_view_.get() bounds];

@@ -79,9 +79,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
                                      const gfx::Size& new_size,
                                      uint64_t sequence_number) {}
 
-  // Retrieve screen information.
-  virtual void GetScreenInfo(ScreenInfo* screen_info);
-
   // Callback to give the browser a chance to handle the specified keyboard
   // event before sending it to the renderer. See enum for details on return
   // value.

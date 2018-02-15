@@ -685,7 +685,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                              uint64_t sequence_number) override;
   gfx::Size GetAutoResizeSize() override;
   void ResetAutoResizeSize() override;
-  void GetScreenInfo(ScreenInfo* screen_info) override;
   KeyboardEventProcessingResult PreHandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) override;
   void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) override;

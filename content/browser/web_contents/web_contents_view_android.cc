@@ -170,9 +170,6 @@ gfx::NativeWindow WebContentsViewAndroid::GetTopLevelNativeWindow() const {
   return content_view_core_ ? content_view_core_->GetWindowAndroid() : nullptr;
 }
 
-void WebContentsViewAndroid::GetScreenInfo(ScreenInfo* result) const {
-  DisplayUtil::GetNativeViewScreenInfo(result, GetNativeView());
-}
 void WebContentsViewAndroid::GetContainerBounds(gfx::Rect* out) const {
   *out = GetViewBounds();
 }

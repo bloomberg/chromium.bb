@@ -13,6 +13,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_base.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -303,14 +304,8 @@ void RenderWidgetHostViewBase::FocusedNodeTouched(
   DVLOG(1) << "FocusedNodeTouched: " << editable;
 }
 
-bool RenderWidgetHostViewBase::GetScreenInfo(ScreenInfo* screen_info) {
-  RenderWidgetHostImpl* host = GetRenderWidgetHostImpl();
-  if (!host || !host->delegate()) {
-    *screen_info = ScreenInfo();
-    return false;
-  }
-  host->delegate()->GetScreenInfo(screen_info);
-  return true;
+void RenderWidgetHostViewBase::GetScreenInfo(ScreenInfo* screen_info) const {
+  DisplayUtil::GetNativeViewScreenInfo(screen_info, GetNativeView());
 }
 
 uint32_t RenderWidgetHostViewBase::RendererFrameNumber() {

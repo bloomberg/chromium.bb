@@ -43,9 +43,6 @@ class WebContentsView {
   // The following static method is implemented by each platform.
   static void GetDefaultScreenInfo(ScreenInfo* results);
 
-  // Gets screen information for the window associated with this view.
-  virtual void GetScreenInfo(ScreenInfo* screen_info) const = 0;
-
   // Computes the rectangle for the native widget that contains the contents of
   // the tab in the screen coordinate system.
   virtual void GetContainerBounds(gfx::Rect* out) const = 0;

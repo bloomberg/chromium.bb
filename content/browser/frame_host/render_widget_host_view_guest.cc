@@ -718,14 +718,12 @@ InputEventAckState RenderWidgetHostViewGuest::FilterInputEvent(
   return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }
 
-bool RenderWidgetHostViewGuest::GetScreenInfo(ScreenInfo* screen_info) {
+void RenderWidgetHostViewGuest::GetScreenInfo(ScreenInfo* screen_info) const {
   DCHECK(screen_info);
-  if (!guest_) {
-    *screen_info = ScreenInfo();
-    return false;
-  }
-  *screen_info = guest_->screen_info();
-  return true;
+  if (guest_)
+    *screen_info = guest_->screen_info();
+  else
+    RenderWidgetHostViewBase::GetScreenInfo(screen_info);
 }
 
 void RenderWidgetHostViewGuest::ResizeDueToAutoResize(
