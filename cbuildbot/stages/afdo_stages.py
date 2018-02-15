@@ -90,18 +90,24 @@ class AFDOUpdateChromeEbuildStage(generic_stages.BuilderStage):
     # the same for all the boards, so just use the first one.
     # If we don't have any boards, leave the called function to guess.
     board = self._boards[0] if self._boards else None
-    arch_profiles = {}
+    bench_profiles = {}
+    cwp_profiles = {}
     for arch in afdo.AFDO_ARCH_GENERATORS:
-      afdo_file = afdo.GetLatestAFDOFile(cpv, arch, buildroot, gs_context)
+      afdo_file = afdo.GetBenchmarkProfile(cpv, arch, buildroot, gs_context)
       if not afdo_file:
         raise afdo.MissingAFDOData('Could not find appropriate AFDO profile')
       state = 'current' if version_number in afdo_file else 'previous'
       logging.info('Found %s %s AFDO profile %s', state, arch, afdo_file)
-      arch_profiles[arch] = afdo_file
+      bench_profiles[arch] = afdo_file
+
+      cwp_profile = afdo.GetCWPProfile(cpv, arch, buildroot, gs_context)
+      if not cwp_profile:
+        raise afdo.MissingAFDOData('Could not find appropriate cwp profile')
+      cwp_profiles[arch] = cwp_profile
 
     # Now update the Chrome ebuild file with the AFDO profiles we found
     # for each architecture.
-    afdo.UpdateChromeEbuildAFDOFile(board, arch_profiles)
+    afdo.UpdateChromeEbuildAFDOFile(board, bench_profiles, cwp_profiles)
 
 
 class AFDOUpdateKernelEbuildStage(generic_stages.BuilderStage):
