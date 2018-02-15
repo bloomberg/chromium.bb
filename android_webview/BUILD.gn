@@ -1009,6 +1009,7 @@ if (public_android_sdk) {
     deps = [
       ":system_webview_resources",
       "//android_webview/glue",
+      "//android_webview/support_library:support_lib_glue_java",
     ]
     apk_name = "SystemWebView"
   }
