@@ -10,6 +10,8 @@
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
+#include "components/strings/grit/components_strings.h"
+#include "components/toolbar/toolbar_model.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -76,6 +78,15 @@ void LocationIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (location_bar_->GetOmniboxView()->IsEditingOrEmpty()) {
     node_data->role = ax::mojom::Role::kNone;
     return;
+  }
+
+  security_state::SecurityLevel security_level =
+      location_bar_->GetToolbarModel()->GetSecurityLevel(false);
+  if (label()->text().empty() && (security_level == security_state::EV_SECURE ||
+                                  security_level == security_state::SECURE)) {
+    node_data->AddStringAttribute(
+        ax::mojom::StringAttribute::kDescription,
+        l10n_util::GetStringUTF8(IDS_SECURE_VERBOSE_STATE));
   }
 
   IconLabelBubbleView::GetAccessibleNodeData(node_data);
