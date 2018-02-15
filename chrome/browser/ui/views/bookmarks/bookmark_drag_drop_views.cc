@@ -5,8 +5,10 @@
 #include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
 
 #include "base/message_loop/message_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
@@ -24,6 +26,10 @@ void DragBookmarks(Profile* profile,
                    const std::vector<const BookmarkNode*>& nodes,
                    gfx::NativeView view,
                    ui::DragDropTypes::DragEventSource source) {
+#if defined(OS_MACOSX)
+  if (views_mode_controller::IsViewsBrowserCocoa())
+    return DragBookmarksCocoa(profile, nodes, view, source);
+#endif
   DCHECK(!nodes.empty());
 
   // Set up our OLE machinery.

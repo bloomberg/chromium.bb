@@ -20,6 +20,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_features.h"
 #include "ui/gfx/color_palette.h"
 #import "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -166,7 +167,7 @@ class DownloadAnimationWebObserver;
 
 @end
 
-void DownloadStartedAnimation::Show(content::WebContents* web_contents) {
+void DownloadStartedAnimation::ShowCocoa(content::WebContents* web_contents) {
   DCHECK(web_contents);
 
   // There's code above for an MD version of the animation, but the current
@@ -177,3 +178,9 @@ void DownloadStartedAnimation::Show(content::WebContents* web_contents) {
   // Will be deleted when the animation is complete.
   [DownloadStartedAnimationMac startAnimationWithWebContents:web_contents];
 }
+
+#if !BUILDFLAG(MAC_VIEWS_BROWSER)
+void DownloadStartedAnimation::Show(content::WebContents* web_contents) {
+  ShowCocoa(web_contents);
+}
+#endif

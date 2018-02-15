@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_STARTED_ANIMATION_H_
 
 #include "base/macros.h"
+#include "build/build_config.h"
 
 namespace content {
 class WebContents;
@@ -14,6 +15,11 @@ class WebContents;
 class DownloadStartedAnimation {
  public:
   static void Show(content::WebContents* web_contents);
+#if defined(OS_MACOSX)
+  // Temporary shim for Polychrome. See bottom of first comment in
+  // https://crbug.com/804950 for details
+  static void ShowCocoa(content::WebContents* web_contents);
+#endif
 
  private:
   DownloadStartedAnimation() { }

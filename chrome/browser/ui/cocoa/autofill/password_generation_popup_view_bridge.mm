@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #import "chrome/browser/ui/cocoa/autofill/password_generation_popup_view_cocoa.h"
+#include "ui/base/ui_features.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace autofill {
@@ -51,9 +52,16 @@ bool PasswordGenerationPopupViewBridge::IsPointInPasswordBounds(
   return [view_ isPointInPasswordBounds:NSPointFromCGPoint(point.ToCGPoint())];
 }
 
-PasswordGenerationPopupView* PasswordGenerationPopupView::Create(
+PasswordGenerationPopupView* PasswordGenerationPopupView::CreateCocoa(
     PasswordGenerationPopupController* controller) {
   return new PasswordGenerationPopupViewBridge(controller);
 }
+
+#if !BUILDFLAG(MAC_VIEWS_BROWSER)
+PasswordGenerationPopupView* PasswordGenerationPopupView::Create(
+    PasswordGenerationPopupController* controller) {
+  return CreateCocoa(controller);
+}
+#endif
 
 }  // namespace autofill

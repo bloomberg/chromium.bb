@@ -26,6 +26,7 @@
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_features.h"
 
 using InfoBarUtilities::MoveControl;
 using InfoBarUtilities::VerticallyCenterView;
@@ -46,7 +47,7 @@ bool VerifyControlOrderAndSpacing(id before, id after) {
 
 }  // namespace
 
-std::unique_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
+std::unique_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBarCocoa(
     std::unique_ptr<translate::TranslateInfoBarDelegate> delegate) const {
   std::unique_ptr<InfoBarCocoa> infobar(new InfoBarCocoa(std::move(delegate)));
   base::scoped_nsobject<TranslateInfoBarControllerBase> infobar_controller;
@@ -70,6 +71,13 @@ std::unique_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
   infobar->set_controller(infobar_controller);
   return std::move(infobar);
 }
+
+#if !BUILDFLAG(MAC_VIEWS_BROWSER)
+std::unique_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
+    std::unique_ptr<translate::TranslateInfoBarDelegate> delegate) const {
+  return CreateInfoBarCocoa(std::move(delegate));
+}
+#endif
 
 @implementation TranslateInfoBarControllerBase (FrameChangeObserver)
 

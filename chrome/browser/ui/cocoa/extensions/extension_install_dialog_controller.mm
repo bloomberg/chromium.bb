@@ -21,6 +21,7 @@
 #import "chrome/browser/ui/cocoa/extensions/windowed_install_dialog_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/ui_features.h"
 
 using extensions::ExperienceSamplingEvent;
 
@@ -113,8 +114,15 @@ void ExtensionInstallDialogController::OnPromptButtonClicked(
 
 // static
 ExtensionInstallPrompt::ShowDialogCallback
-ExtensionInstallPrompt::GetDefaultShowDialogCallback() {
+ExtensionInstallPrompt::GetDefaultShowDialogCallbackCocoa() {
   if (chrome::ShowAllDialogsWithViewsToolkit())
     return ExtensionInstallPrompt::GetViewsShowDialogCallback();
   return base::Bind(&ShowExtensionInstallDialogImpl);
 }
+
+#if !BUILDFLAG(MAC_VIEWS_BROWSER)
+ExtensionInstallPrompt::ShowDialogCallback
+ExtensionInstallPrompt::GetDefaultShowDialogCallback() {
+  return GetDefaultShowDialogCallbackCocoa();
+}
+#endif

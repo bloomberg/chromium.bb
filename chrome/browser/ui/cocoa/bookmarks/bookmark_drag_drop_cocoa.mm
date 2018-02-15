@@ -21,6 +21,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/ui_features.h"
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
@@ -49,10 +50,10 @@ NSImage* MakeDragImage(BookmarkModel* model,
 
 namespace chrome {
 
-void DragBookmarks(Profile* profile,
-                   const std::vector<const BookmarkNode*>& nodes,
-                   gfx::NativeView view,
-                   ui::DragDropTypes::DragEventSource source) {
+void DragBookmarksCocoa(Profile* profile,
+                        const std::vector<const BookmarkNode*>& nodes,
+                        gfx::NativeView view,
+                        ui::DragDropTypes::DragEventSource source) {
   DCHECK(!nodes.empty());
 
   // Allow nested run loop so we get DnD events as we drag this around.
@@ -92,5 +93,14 @@ void DragBookmarks(Profile* profile,
              source:nil
           slideBack:YES];
 }
+
+#if !BUILDFLAG(MAC_VIEWS_BROWSER)
+void DragBookmarks(Profile* profile,
+                   const std::vector<const BookmarkNode*>& nodes,
+                   gfx::NativeView view,
+                   ui::DragDropTypes::DragEventSource source) {
+  return DragBookmarksCocoa(profile, nodes, view, source);
+}
+#endif
 
 }  // namespace chrome

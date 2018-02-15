@@ -8,6 +8,7 @@
 #import "chrome/browser/ui/cocoa/apps/native_app_window_cocoa.h"
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views_mac.h"
 #include "chrome/common/chrome_switches.h"
+#include "ui/base/ui_features.h"
 
 namespace {
 
@@ -24,7 +25,8 @@ bool UseMacViewsNativeAppWindows() {
 }  // namespace
 
 // static
-extensions::NativeAppWindow* ChromeAppWindowClient::CreateNativeAppWindowImpl(
+extensions::NativeAppWindow*
+ChromeAppWindowClient::CreateNativeAppWindowImplCocoa(
     extensions::AppWindow* app_window,
     const extensions::AppWindow::CreateParams& params) {
   if (UseMacViewsNativeAppWindows()) {
@@ -35,3 +37,11 @@ extensions::NativeAppWindow* ChromeAppWindowClient::CreateNativeAppWindowImpl(
 
   return new NativeAppWindowCocoa(app_window, params);
 }
+
+#if !BUILDFLAG(MAC_VIEWS_BROWSER)
+extensions::NativeAppWindow* ChromeAppWindowClient::CreateNativeAppWindowImpl(
+    extensions::AppWindow* app_window,
+    const extensions::AppWindow::CreateParams& params) {
+  return CreateNativeAppWindowImplCocoa(app_window, params);
+}
+#endif
