@@ -142,3 +142,15 @@ oobe-dialog[animation-in-progress] .section {
   display: block;
 }
 
+.advanced-option-subtitle {
+  color: rgba(0, 0, 0, 0.54);
+  font: 13px Roboto, sans-serif;
+}
+
+iron-icon[icon='warning'] {
+  -webkit-margin-end: 15px;
+  -webkit-margin-start: 0;
+  color: var(--google-yellow-500);
+  margin-bottom: 0;
+  margin-top: 0;
+}

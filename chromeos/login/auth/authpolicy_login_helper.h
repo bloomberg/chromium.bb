@@ -55,6 +55,7 @@ class CHROMEOS_EXPORT AuthPolicyLoginHelper {
   // get) D-BUS response.
   void JoinAdDomain(const std::string& machine_name,
                     const std::string& distinguished_name,
+                    int encryption_types,
                     const std::string& username,
                     const std::string& password,
                     JoinCallback callback);

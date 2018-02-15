@@ -140,6 +140,7 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
       base::RunLoop loop;
       helper.JoinAdDomain(
           kAdMachineName, "" /* distinguished_name */,
+          authpolicy::KerberosEncryptionTypes::ENC_TYPES_STRONG,
           kTestActiveDirectoryUser + ("@" + test_realm_), "" /* password */,
           base::BindOnce(
               [](base::OnceClosure closure, const std::string& expected_domain,

@@ -34,6 +34,9 @@ constexpr char kAdMachineNameInput[] =
 constexpr char kAdMachineOrgUnitInput[] =
     "document.querySelector('#oauth-enroll-ad-join-ui /deep/ "
     "#orgUnitInput')";
+constexpr char kAdEncryptionTypesSelect[] =
+    "document.querySelector('#oauth-enroll-ad-join-ui /deep/ "
+    "#encryptionList')";
 constexpr char kAdUsernameInput[] =
     "document.querySelector('#oauth-enroll-ad-join-ui /deep/ #userInput')";
 constexpr char kAdPasswordInput[] =
@@ -131,7 +134,8 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
 
   // Submits Active Directory domain join credentials.
   void SubmitActiveDirectoryCredentials(const std::string& machine_name,
-                                        const std::string& machine_ou,
+                                        const std::string& machine_dn,
+                                        const std::string& encryption_types,
                                         const std::string& username,
                                         const std::string& password) {
     EXPECT_TRUE(IsStepDisplayed("ad-join"));
@@ -144,22 +148,30 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
         std::string(kAdUsernameInput) + ".value = '" + username + "'";
     const std::string set_password =
         std::string(kAdPasswordInput) + ".value = '" + password + "'";
-    const std::string set_machine_ou =
-        std::string(kAdMachineOrgUnitInput) + ".value = '" + machine_ou + "'";
+    const std::string set_machine_dn =
+        std::string(kAdMachineOrgUnitInput) + ".value = '" + machine_dn + "'";
     js_checker().ExecuteAsync(set_machine_name);
     js_checker().ExecuteAsync(set_username);
     js_checker().ExecuteAsync(set_password);
-    js_checker().ExecuteAsync(set_machine_ou);
+    js_checker().ExecuteAsync(set_machine_dn);
+    if (!encryption_types.empty()) {
+      const std::string set_encryption_types =
+          std::string(kAdEncryptionTypesSelect) + ".value = '" +
+          encryption_types + "'";
+      js_checker().ExecuteAsync(set_encryption_types);
+    }
     js_checker().ExecuteAsync(
         "document.querySelector('#oauth-enroll-ad-join-ui /deep/ "
         "#button').fire('tap')");
     ExecutePendingJavaScript();
   }
 
-  void SetExpectedJoinRequest(const std::string& machine_name,
-                              const std::string& machine_domain,
-                              std::vector<std::string> organizational_unit,
-                              const std::string& username) {
+  void SetExpectedJoinRequest(
+      const std::string& machine_name,
+      const std::string& machine_domain,
+      authpolicy::KerberosEncryptionTypes encryption_types,
+      std::vector<std::string> organizational_unit,
+      const std::string& username) {
     auto request = std::make_unique<authpolicy::JoinDomainRequest>();
     if (!machine_name.empty())
       request->set_machine_name(machine_name);
@@ -169,6 +181,7 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
       request->add_machine_ou()->swap(it);
     if (!username.empty())
       request->set_user_principal_name(username);
+    request->set_kerberos_encryption_types(encryption_types);
     mock_auth_policy_client()->set_expected_request(std::move(request));
   }
 
@@ -401,8 +414,13 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
 
   content::DOMMessageQueue message_queue;
   SetupActiveDirectoryJSNotifications();
-  SetExpectedJoinRequest("machine_name", "", {}, kAdTestUser);
-  SubmitActiveDirectoryCredentials("machine_name", "", kAdTestUser, "password");
+  authpolicy::KerberosEncryptionTypes enc_types =
+      authpolicy::KerberosEncryptionTypes::ENC_TYPES_ALL;
+  SetExpectedJoinRequest("machine_name", "" /* machine_domain */, enc_types,
+                         {} /* machine_ou */, kAdTestUser);
+  SubmitActiveDirectoryCredentials("machine_name", "" /* machine_dn */,
+                                   std::to_string(enc_types), kAdTestUser,
+                                   "password");
   WaitForMessage(&message_queue, "\"ShowSpinnerScreen\"");
   EXPECT_FALSE(IsStepDisplayed("ad-join"));
 
@@ -432,12 +450,14 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
   SetupActiveDirectoryJSNotifications();
   SetExpectedJoinRequest(
       "machine_name", kAdMachineDomain,
+      authpolicy::KerberosEncryptionTypes::ENC_TYPES_STRONG,
       std::vector<std::string>(
           kAdOrganizationlUnit,
           kAdOrganizationlUnit + arraysize(kAdOrganizationlUnit)),
       kAdTestUser);
   SubmitActiveDirectoryCredentials("machine_name", kAdMachineDomainDN,
-                                   kAdTestUser, "password");
+                                   "" /* encryption_types */, kAdTestUser,
+                                   "password");
   WaitForMessage(&message_queue, "\"ShowSpinnerScreen\"");
   EXPECT_FALSE(IsStepDisplayed("ad-join"));
 
@@ -469,15 +489,17 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
   // being checked in the UI. Machine name length is checked after that in the
   // authpolicyd.
   SetupActiveDirectoryJSNotifications();
-  SubmitActiveDirectoryCredentials("too_long_machine_name", "", kAdTestUser,
-                                   "");
+  SubmitActiveDirectoryCredentials("too_long_machine_name", "" /* machine_dn */,
+                                   "" /* encryption_types */, kAdTestUser,
+                                   "" /* password */);
   EXPECT_TRUE(IsStepDisplayed("ad-join"));
   js_checker().ExpectFalse(std::string(kAdMachineNameInput) + ".isInvalid");
   js_checker().ExpectFalse(std::string(kAdUsernameInput) + ".isInvalid");
   js_checker().ExpectTrue(std::string(kAdPasswordInput) + ".isInvalid");
 
   // Checking error in case of too long machine name.
-  SubmitActiveDirectoryCredentials("too_long_machine_name", "", kAdTestUser,
+  SubmitActiveDirectoryCredentials("too_long_machine_name", "" /* machine_dn */,
+                                   "" /* encryption_types */, kAdTestUser,
                                    "password");
   WaitForMessage(&message_queue, "\"ShowJoinDomainError\"");
   EXPECT_TRUE(IsStepDisplayed("ad-join"));
@@ -486,7 +508,9 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
   js_checker().ExpectFalse(std::string(kAdPasswordInput) + ".isInvalid");
 
   // Checking error in case of bad username (without realm).
-  SubmitActiveDirectoryCredentials("machine_name", "", "test_user", "password");
+  SubmitActiveDirectoryCredentials("machine_name", "" /* machine_dn */,
+                                   "" /* encryption_types */, "test_user",
+                                   "password");
   WaitForMessage(&message_queue, "\"ShowJoinDomainError\"");
   EXPECT_TRUE(IsStepDisplayed("ad-join"));
   js_checker().ExpectFalse(std::string(kAdMachineNameInput) + ".isInvalid");
