@@ -504,8 +504,9 @@ void AppListFolderView::ScheduleShowHideAnimation(bool show,
 
 gfx::Size AppListFolderView::CalculatePreferredSize() const {
   gfx::Size size = items_grid_view_->GetTileGridSizeWithoutPadding();
-  size.Enlarge(0, kItemGridsBottomPadding +
-                      folder_header_view_->GetPreferredSize().height());
+  gfx::Size header_size = folder_header_view_->GetPreferredSize();
+  size.set_width(std::max(size.width(), header_size.width()));
+  size.Enlarge(0, kItemGridsBottomPadding + header_size.height());
   size.Enlarge(kFolderPadding * 2, kFolderPadding * 2);
   return size;
 }
