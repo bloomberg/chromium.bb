@@ -54,6 +54,7 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
   // views::WidgetFocusChangeListener implementation.
   void OnNativeFocusChanged(gfx::NativeView focused_now) override;

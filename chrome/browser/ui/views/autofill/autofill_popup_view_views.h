@@ -25,8 +25,6 @@ class AutofillPopupViewViews : public AutofillPopupBaseView,
                          views::Widget* parent_widget);
   ~AutofillPopupViewViews() override;
 
-  static AutofillPopupView* Create(AutofillPopupController* controller);
-
  private:
   FRIEND_TEST_ALL_PREFIXES(AutofillPopupViewViewsTest, OnSelectedRowChanged);
 
