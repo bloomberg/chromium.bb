@@ -385,15 +385,15 @@ if (CONFIG_CFL)
 
   set(AOM_AV1_COMMON_INTRIN_SSE2
       ${AOM_AV1_COMMON_INTRIN_SSE2}
-      "${AOM_ROOT}/av1/common/cfl_sse2.c")
+      "${AOM_ROOT}/av1/common/x86/cfl_sse2.c")
 
   set(AOM_AV1_COMMON_INTRIN_SSSE3
     ${AOM_AV1_COMMON_INTRIN_SSSE3}
-    "${AOM_ROOT}/av1/common/cfl_ssse3.c")
+    "${AOM_ROOT}/av1/common/x86/cfl_ssse3.c")
 
   set(AOM_AV1_COMMON_INTRIN_AVX2
     ${AOM_AV1_COMMON_INTRIN_AVX2}
-    "${AOM_ROOT}/av1/common/cfl_avx2.c")
+    "${AOM_ROOT}/av1/common/x86/cfl_avx2.c")
 endif ()
 
 if (CONFIG_LOOP_RESTORATION)
