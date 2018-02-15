@@ -151,11 +151,16 @@ void FormTracker::DidStartProvisionalLoad(WebDocumentLoader* document_loader) {
   if (!navigation_state)
     return;
 
-  ui::PageTransition type = navigation_state->GetTransitionType();
-  if (ui::PageTransitionIsWebTriggerable(type) &&
-      ui::PageTransitionIsNewNavigation(type) &&
-      !ui::PageTransitionTypeIncludingQualifiersIs(type,
-                                                   ui::PAGE_TRANSITION_LINK)) {
+  // We are interested only in content initiated navigations.  Explicit browser
+  // initiated navigations (e.g. via omnibox) are discarded here.  Similarly
+  // PlzNavigate navigations originating from the browser are discarded because
+  // they were already processed as a content initiated one
+  // (i.e. DidStartProvisionalLoad is called twice in this case).  The check for
+  // kWebNavigationTypeLinkClicked is reliable only for content initiated
+  // navigations.
+  if (navigation_state->IsContentInitiated() &&
+      document_loader->GetNavigationType() !=
+          blink::kWebNavigationTypeLinkClicked) {
     FireProbablyFormSubmitted();
   }
 }
