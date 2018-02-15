@@ -4,8 +4,6 @@
 
 #import "ios/chrome/browser/ui/ntp/recent_tabs/closed_tabs_observer_bridge.h"
 
-#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_view_controller.h"
-
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_coordinator.h"
+#import "ios/chrome/browser/ui/ntp/recent_tabs/legacy_recent_tabs_table_coordinator.h"
 
 #import <UIKit/UIKit.h>
 
@@ -19,8 +19,7 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
-#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_coordinator.h"
-#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_view_controller.h"
+#import "ios/chrome/browser/ui/ntp/recent_tabs/legacy_recent_tabs_table_view_controller.h"
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -124,8 +123,8 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
     EXPECT_CALL(*sync_service, GetOpenTabsUIDelegate())
         .WillRepeatedly(Return(nullptr));
 
-    mock_table_view_controller_ =
-        [OCMockObject niceMockForClass:[RecentTabsTableViewController class]];
+    mock_table_view_controller_ = [OCMockObject
+        niceMockForClass:[LegacyRecentTabsTableViewController class]];
   }
 
   void TearDown() override {
@@ -179,8 +178,8 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
                 chrome_browser_state_.get()));
     EXPECT_CALL(*sync_service, AddObserver(_)).Times(AtLeast(1));
     EXPECT_CALL(*sync_service, RemoveObserver(_)).Times(AtLeast(1));
-    controller_ = [[RecentTabsTableCoordinator alloc]
-        initWithController:(RecentTabsTableViewController*)
+    controller_ = [[LegacyRecentTabsTableCoordinator alloc]
+        initWithController:(LegacyRecentTabsTableViewController*)
                                mock_table_view_controller_
               browserState:chrome_browser_state_.get()];
     [controller_ start];
@@ -196,7 +195,7 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
 
   // Must be declared *after* |chrome_browser_state_| so it can outlive it.
   OCMockObject* mock_table_view_controller_;
-  RecentTabsTableCoordinator* controller_;
+  LegacyRecentTabsTableCoordinator* controller_;
 };
 
 TEST_F(RecentTabsTableCoordinatorTest, TestConstructorDestructor) {
