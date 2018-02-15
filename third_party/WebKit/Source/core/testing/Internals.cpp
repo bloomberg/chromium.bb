@@ -260,6 +260,11 @@ void Internals::ResetToConsistentState(Page* page) {
     g_s_features_backup = new RuntimeEnabledFeatures::Backup;
   g_s_features_backup->Restore();
   page->SetIsCursorVisible(true);
+  // Ensure the PageScaleFactor always stays within limits, if the test changed
+  // the limits. BlinkTestRunner will reset the limits to those set by
+  // LayoutTestDefaultPreferences when preferences are reapplied after this
+  // call.
+  page->SetDefaultPageScaleLimits(1, 4);
   page->SetPageScaleFactor(1);
   LocalFrame* frame = page->DeprecatedLocalMainFrame();
   frame->View()->LayoutViewportScrollableArea()->SetScrollOffset(

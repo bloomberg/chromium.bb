@@ -502,15 +502,21 @@ TEST_P(VisualViewportTest, TestFractionalScrollOffsetIsNotOverwritten) {
 // Test that the viewport's scroll offset is always appropriately bounded such
 // that the visual viewport always stays within the bounds of the main frame.
 TEST_P(VisualViewportTest, TestOffsetClamping) {
-  InitializeWithDesktopSettings();
+  InitializeWithAndroidSettings();
   WebView()->Resize(IntSize(320, 240));
 
-  NavigateTo("about:blank");
+  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  FrameTestHelpers::LoadHTMLString(
+      WebView()->MainFrameImpl(),
+      "<!DOCTYPE html>"
+      "<meta name='viewport' content='width=2000'>",
+      base_url);
   ForceFullCompositingUpdate();
 
   // Visual viewport should be initialized to same size as frame so no scrolling
-  // possible.
+  // possible. At minimum scale, the viewport is 1280x960.
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
+  ASSERT_EQ(0.25, visual_viewport.Scale());
   EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0),
                         visual_viewport.VisibleRect().Location());
 
@@ -526,25 +532,25 @@ TEST_P(VisualViewportTest, TestOffsetClamping) {
   EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0),
                         visual_viewport.VisibleRect().Location());
 
-  // Scale by 2x. The viewport's visible rect should now have a size of 160x120.
+  // Scale to 2x. The viewport's visible rect should now have a size of 160x120.
   visual_viewport.SetScale(2);
   FloatPoint location(10, 50);
   visual_viewport.SetLocation(location);
   EXPECT_FLOAT_POINT_EQ(location, visual_viewport.VisibleRect().Location());
 
-  visual_viewport.SetLocation(FloatPoint(1000, 2000));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(160, 120),
+  visual_viewport.SetLocation(FloatPoint(10000, 10000));
+  EXPECT_FLOAT_POINT_EQ(FloatPoint(1120, 840),
                         visual_viewport.VisibleRect().Location());
 
-  visual_viewport.SetLocation(FloatPoint(-1000, -2000));
+  visual_viewport.SetLocation(FloatPoint(-2000, -2000));
   EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0),
                         visual_viewport.VisibleRect().Location());
 
   // Make sure offset gets clamped on scale out. Scale to 1.25 so the viewport
   // is 256x192.
-  visual_viewport.SetLocation(FloatPoint(160, 120));
+  visual_viewport.SetLocation(FloatPoint(1120, 840));
   visual_viewport.SetScale(1.25);
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(64, 48),
+  EXPECT_FLOAT_POINT_EQ(FloatPoint(1024, 768),
                         visual_viewport.VisibleRect().Location());
 
   // Scale out smaller than 1.

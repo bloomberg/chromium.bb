@@ -8,6 +8,7 @@
   }
   if (window.internals && window.eventSender) {
     window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+    window.internals.setPageScaleFactorLimits(0.5, 4);
 
     addEventListener("load", function() {
       window.internals.setPageScaleFactor(0.5);

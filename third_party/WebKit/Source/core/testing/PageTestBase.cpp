@@ -25,6 +25,9 @@ void PageTestBase::SetUp() {
 
   // Use no-quirks (ake "strict") mode by default.
   GetDocument().SetCompatibilityMode(Document::kNoQuirksMode);
+
+  // Use desktop page scale limits by default.
+  GetPage().SetDefaultPageScaleLimits(1, 4);
 }
 
 void PageTestBase::SetUp(IntSize size) {
@@ -33,6 +36,9 @@ void PageTestBase::SetUp(IntSize size) {
 
   // Use no-quirks (ake "strict") mode by default.
   GetDocument().SetCompatibilityMode(Document::kNoQuirksMode);
+
+  // Use desktop page scale limits by default.
+  GetPage().SetDefaultPageScaleLimits(1, 4);
 }
 
 void PageTestBase::SetupPageWithClients(
@@ -45,6 +51,9 @@ void PageTestBase::SetupPageWithClients(
 
   // Use no-quirks (ake "strict") mode by default.
   GetDocument().SetCompatibilityMode(Document::kNoQuirksMode);
+
+  // Use desktop page scale limits by default.
+  GetPage().SetDefaultPageScaleLimits(1, 4);
 }
 
 void PageTestBase::TearDown() {

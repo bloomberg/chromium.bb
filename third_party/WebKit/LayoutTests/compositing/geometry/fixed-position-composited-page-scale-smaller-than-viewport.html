@@ -24,9 +24,11 @@
   }
 </style>
 <script>
-  if (window.internals && window.eventSender)
+  if (window.internals && window.eventSender) {
     window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+    window.internals.setPageScaleFactorLimits(0.5, 4);
     window.internals.setPageScaleFactor(0.5);
+  }
 </script>
 </head>
 <body style="width: 4000px; height: 4000px">

@@ -157,9 +157,10 @@ TEST_F(TextFinderTest, FindTextAutosizing) {
   bool wrap_within_frame = true;
 
   // Set viewport scale to 20 in order to simulate zoom-in
+  GetDocument().GetPage()->SetDefaultPageScaleLimits(1, 20);
+  GetDocument().GetPage()->SetPageScaleFactor(20);
   VisualViewport& visual_viewport =
       GetDocument().GetPage()->GetVisualViewport();
-  visual_viewport.SetScale(20);
 
   // Enforce autosizing
   GetDocument().GetSettings()->SetTextAutosizingEnabled(true);

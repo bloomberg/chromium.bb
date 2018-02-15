@@ -2,8 +2,10 @@
 <html style="background:green;">
 <head>
 <script>
-if (window.internals)
+if (window.internals) {
+    internals.setPageScaleFactorLimits(0.5, 4);
     internals.setPageScaleFactor(0.5);
+}
 </script>
 </head>
 <body>
