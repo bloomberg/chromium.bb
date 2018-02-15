@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include "base/debug/crash_logging.h"
+#include "base/i18n/break_iterator.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversion_utils.h"
@@ -162,6 +163,7 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
     inline_text_box_node->location = text_run_bounds;
     inline_text_box_node->AddIntListAttribute(
         ax::mojom::IntListAttribute::kCharacterOffsets, char_offsets);
+    AddWordStartsAndEnds(inline_text_box_node);
 
     para_node->location.Union(inline_text_box_node->location);
     static_text_node->location.Union(inline_text_box_node->location);
@@ -336,6 +338,28 @@ gfx::Transform* PdfAccessibilityTree::MakeTransformFromViewInfo() {
   transform->Translate(offset_);
   transform->Translate(-scroll_);
   return transform;
+}
+
+void PdfAccessibilityTree::AddWordStartsAndEnds(
+    ui::AXNodeData* inline_text_box) {
+  base::string16 text =
+      inline_text_box->GetString16Attribute(ax::mojom::StringAttribute::kName);
+  base::i18n::BreakIterator iter(text, base::i18n::BreakIterator::BREAK_WORD);
+  if (!iter.Init())
+    return;
+
+  std::vector<int32_t> word_starts;
+  std::vector<int32_t> word_ends;
+  while (iter.Advance()) {
+    if (iter.IsWord()) {
+      word_starts.push_back(iter.prev());
+      word_ends.push_back(iter.pos());
+    }
+  }
+  inline_text_box->AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
+                                       word_starts);
+  inline_text_box->AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                       word_ends);
 }
 
 //

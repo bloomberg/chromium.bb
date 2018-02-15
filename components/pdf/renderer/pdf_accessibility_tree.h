@@ -80,6 +80,7 @@ class PdfAccessibilityTree
   float GetDeviceScaleFactor() const;
   content::RenderAccessibility* GetRenderAccessibility();
   gfx::Transform* MakeTransformFromViewInfo();
+  void AddWordStartsAndEnds(ui::AXNodeData* inline_text_box);
 
   ui::AXTree tree_;
   content::RendererPpapiHost* host_;
