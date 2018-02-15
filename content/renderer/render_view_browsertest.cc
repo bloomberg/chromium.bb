@@ -91,6 +91,13 @@
 #include "ui/gfx/range/range.h"
 #include "ui/native_theme/native_theme_features.h"
 
+#if defined(OS_ANDROID)
+#include "third_party/WebKit/public/platform/WebCoalescedInputEvent.h"
+#include "third_party/WebKit/public/platform/WebGestureDevice.h"
+#include "third_party/WebKit/public/platform/WebGestureEvent.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#endif
+
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
@@ -474,6 +481,82 @@ class RenderViewImplScaleFactorTest : public RenderViewImplBlinkSettingsTest {
                                   ->device_scale_factor());
   }
 };
+
+#if defined(OS_ANDROID)
+class TapCallbackFilter : public IPC::Listener {
+ public:
+  explicit TapCallbackFilter(
+      base::RepeatingCallback<void(const gfx::Rect&, const gfx::Size&)>
+          callback)
+      : callback_(callback) {}
+
+  bool OnMessageReceived(const IPC::Message& msg) override {
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP(TapCallbackFilter, msg)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_ShowDisambiguationPopup,
+                          OnShowDisambiguationPopup)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+    return handled;
+  }
+
+  void OnShowDisambiguationPopup(const gfx::Rect& rect_pixels,
+                                 const gfx::Size& size,
+                                 base::SharedMemoryHandle handle) {
+    callback_.Run(rect_pixels, size);
+  }
+
+ private:
+  base::RepeatingCallback<void(const gfx::Rect&, const gfx::Size&)> callback_;
+};
+
+static blink::WebCoalescedInputEvent FatTap(int x,
+                                            int y,
+                                            int width,
+                                            int height) {
+  blink::WebGestureEvent event(
+      blink::WebInputEvent::kGestureTap, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  event.source_device = blink::kWebGestureDeviceTouchscreen;
+  event.x = x;
+  event.y = y;
+  event.data.tap.width = width;
+  event.data.tap.height = height;
+  return blink::WebCoalescedInputEvent(event);
+}
+
+TEST_F(RenderViewImplScaleFactorTest, TapDisambiguatorSize) {
+  DoSetUp();
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableUseZoomForDSF);
+  const float device_scale = 2.625f;
+  SetDeviceScaleFactor(device_scale);
+  EXPECT_EQ(device_scale, view()->GetDeviceScaleFactor());
+
+  LoadHTML(
+      "<style type=\"text/css\">"
+      " a {"
+      "  display: block;"
+      "  width: 40px;"
+      "  height: 40px;"
+      "  background-color:#ccccff;"
+      " }"
+      "</style>"
+      "<body style=\"margin: 0px\">"
+      "<a href=\"#\">link </a>"
+      "<a href=\"#\">link </a>"
+      "</body>");
+  std::unique_ptr<TapCallbackFilter> callback_filter(
+      new TapCallbackFilter(base::BindRepeating(
+          [](const gfx::Rect& rect_pixels, const gfx::Size& canvas_size) {
+            EXPECT_EQ(rect_pixels, gfx::Rect(28, 68, 24, 24));
+            EXPECT_EQ(canvas_size, gfx::Size(48, 48));
+          })));
+  render_thread_->sink().AddFilter(callback_filter.get());
+  view()->webview()->HandleInputEvent(FatTap(40, 80, 200, 200));
+  render_thread_->sink().RemoveFilter(callback_filter.get());
+}
+#endif
 
 // Ensure that the main RenderFrame is deleted and cleared from the RenderView
 // after closing it.
