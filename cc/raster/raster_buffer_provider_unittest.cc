@@ -28,7 +28,6 @@
 #include "cc/raster/zero_copy_raster_buffer_provider.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/resource_provider.h"
-#include "cc/resources/scoped_resource.h"
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/test_context_provider.h"

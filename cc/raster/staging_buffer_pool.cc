@@ -13,7 +13,6 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "cc/base/container_util.h"
 #include "cc/resources/resource_util.h"
-#include "cc/resources/scoped_resource.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "ui/gfx/gpu_memory_buffer.h"

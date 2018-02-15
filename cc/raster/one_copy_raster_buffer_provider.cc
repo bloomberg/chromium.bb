@@ -17,7 +17,6 @@
 #include "cc/base/histograms.h"
 #include "cc/base/math_util.h"
 #include "cc/resources/resource_util.h"
-#include "cc/resources/scoped_resource.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "components/viz/common/gpu/texture_allocation.h"

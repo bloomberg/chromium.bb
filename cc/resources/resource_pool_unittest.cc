@@ -10,7 +10,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/resources/resource_util.h"
-#include "cc/resources/scoped_resource.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_shared_bitmap_manager.h"

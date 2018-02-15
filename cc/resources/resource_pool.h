@@ -22,7 +22,6 @@
 #include "base/unguessable_token.h"
 #include "cc/cc_export.h"
 #include "cc/resources/resource.h"
-#include "cc/resources/scoped_resource.h"
 #include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -35,6 +34,7 @@ class SingleThreadTaskRunner;
 }
 
 namespace cc {
+class LayerTreeResourceProvider;
 
 class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
                                public base::MemoryCoordinatorClient {
