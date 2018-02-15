@@ -28,7 +28,8 @@ How to update or add fonts:
     by executing the following command:
      $ git add ./third_party/content_shell_fonts/content_shell_test_fonts.tar.gz.sha1
 7.  (optional) Modify loaded kSystemFontsForFontconfig and
-    kCloudStorageSyncedFonts lists in fontconfig_util_linux.cc
+    kCloudStorageSyncedFonts lists in fontconfig_util_linux.cc . Also update
+    FONT_FILES in third_party/WebKit/Tools/Scripts/webkitpy/layout_tests/port/base.py .
 
 If you need access to the chromium-fonts bucket, contact Chrome infra. For
 details, please refer to
@@ -42,4 +43,5 @@ Lohit-Devanagari.ttf       https://pagure.io/lohit
 Lohit-Gurmukhi.ttf         https://pagure.io/lohit
 Lohit-Tamil.ttf            https://pagure.io/lohit
 MuktiNarrow.ttf            http://www.nongnu.org/freebangfont/downloads.html#mukti
+NotoSansCJKjp-Regular.otf  https://www.google.com/get/noto/#sans-jpan
 NotoSansKhmer-Regular.ttf  https://www.google.com/get/noto/#sans-khmr
