@@ -139,20 +139,20 @@ def _TokenAndLoginIfNeed(service_account_json=None, force_token_renew=False):
       raise e
 
 
-def GetAccessToken(service_account_json=None, force_token_renew=False):
+def GetAccessToken(**kwargs):
   """Returns an OAuth2 access token using luci-auth.
 
   Retry the _TokenAndLoginIfNeed function when the error threw is an
   AccessTokenError.
 
   Args:
-    service_account_json: A optional path to a service account, default to None.
-    force_token_renew: Boolean indicating whether to renew token before getting
-      a token, default to False.
+    kwargs: A list of keyword arguments to pass to _TokenAndLoginIfNeed.
 
   Returns:
     The access token string or None if failed to get access token.
   """
+  service_account_json = kwargs.get('service_account_json')
+  force_token_renew = kwargs.get('force_token_renew', False)
   retry = lambda e: isinstance(e, AccessTokenError)
   try:
     result = retry_util.GenericRetry(
@@ -177,7 +177,7 @@ class AuthorizedHttp(object):
     self.get_access_token = get_access_token
     self.http = http if http is not None else httplib2.Http()
     self.token = self.get_access_token(**kwargs)
-    self.service_account_json = kwargs.get('service_account_json', None)
+    self.kwargs = kwargs
 
   # Adapted from oauth2client.OAuth2Credentials.authorize.
   # We can't use oauthclient2 because the import will fail on slaves due to
@@ -192,9 +192,8 @@ class AuthorizedHttp(object):
       logging.info('Refreshing due to a %s', resp.status)
 
       # Token expired, force token renew
-      self.token = self.get_access_token(
-          service_account_json=self.service_account_json,
-          force_token_renew=True)
+      kwargs_copy = dict(self.kwargs, force_token_renew=True)
+      self.token = self.get_access_token(**kwargs_copy)
 
       # TODO(phobbs): delete the "access_token" key from the token file used.
       headers['Authorization'] = 'Bearer %s' % self.token

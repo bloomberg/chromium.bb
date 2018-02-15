@@ -111,32 +111,39 @@ class AuthorizedHttp(cros_test_lib.MockTestCase):
     self.mock_resp = mock.Mock()
     self.mock_get_token = self.PatchObject(
         auth, 'GetAccessToken', return_value='token')
+    self.account_json = 'service_account_json'
 
   def testAuthorize(self):
     self.mock_resp.status = 200
     self.mock_http.request.return_value = self.mock_resp, 'content'
 
     auth_http = auth.AuthorizedHttp(
-        auth.GetAccessToken, self.mock_http)
+        auth.GetAccessToken, self.mock_http,
+        service_account_json=self.account_json)
     auth_http.request('url', 'GET', body={}, headers={})
     auth_http.request('url', 'PUT', body={}, headers={})
     auth_http.request('url', 'POST', body={}, headers={})
 
     self.assertEqual(1, self.mock_get_token.call_count)
     self.assertEqual(3, self.mock_http.request.call_count)
+    self.mock_get_token.assert_called_with(
+        service_account_json=self.account_json)
 
   def testAuthorize2(self):
     self.mock_resp.status = 401
     self.mock_http.request.return_value = self.mock_resp, 'content'
 
     auth_http = auth.AuthorizedHttp(
-        auth.GetAccessToken, self.mock_http)
+        auth.GetAccessToken, self.mock_http,
+        service_account_json=self.account_json)
     auth_http.request('url', 'GET', body={}, headers={})
     auth_http.request('url', 'PUT', body={}, headers={})
     auth_http.request('url', 'POST', body={}, headers={})
 
     self.assertEqual(4, self.mock_get_token.call_count)
     self.assertEqual(6, self.mock_http.request.call_count)
+    self.mock_get_token.assert_called_with(
+        service_account_json=self.account_json, force_token_renew=True)
 
   def testAuthorize3(self):
     self.mock_resp.status = 500
@@ -149,3 +156,4 @@ class AuthorizedHttp(cros_test_lib.MockTestCase):
     auth_http.request('url', 'POST', body={}, headers={})
 
     self.assertEqual(1, self.mock_get_token.call_count)
+    self.mock_get_token.assert_called_with()
