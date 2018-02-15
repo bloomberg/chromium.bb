@@ -37,7 +37,7 @@ void ToolbarLayer::PushResource(
     float y_offset,
     bool show_debug,
     bool clip_shadow,
-    bool browser_controls_at_bottom) {
+    bool modern_design_enabled) {
   ToolbarResource* resource =
       ToolbarResource::From(resource_manager_->GetResource(
           ui::ANDROID_RESOURCE_TYPE_DYNAMIC, toolbar_resource_id));
@@ -54,17 +54,6 @@ void ToolbarLayer::PushResource(
       gfx::Size(resource->size().width(),
                 resource->size().height() - resource->shadow_height());
   layer_->SetBounds(toolbar_bounds);
-
-  // The toolbar_root_ contains all of the layers that make up the toolbar. The
-  // toolbar_root_ is moved around inside of layer_ to allow appropriate
-  // clipping of the shadow.
-  toolbar_root_->SetBounds(toolbar_bounds);
-  if (browser_controls_at_bottom) {
-    // If the browser controld are at bottom, this means that the shadow is at
-    // top of the container, i.e., at the top of the resource bitmap, move the
-    // toolbar up by the amount of the shadow to allow clipping if necessary.
-    toolbar_root_->SetPosition(gfx::PointF(0, -resource->shadow_height()));
-  }
 
   toolbar_background_layer_->SetBounds(resource->toolbar_rect().size());
   toolbar_background_layer_->SetPosition(
@@ -114,13 +103,7 @@ void ToolbarLayer::PushResource(
   else if (!show_debug && debug_layer_->parent())
     debug_layer_->RemoveFromParent();
 
-  gfx::PointF root_layer_position(0, y_offset);
-  if (browser_controls_at_bottom) {
-    // The toolbar's position as if it were completely shown.
-    float base_toolbar_y = window_height - toolbar_bounds.height();
-    root_layer_position.set_y(base_toolbar_y + y_offset);
-  }
-  layer_->SetPosition(root_layer_position);
+  layer_->SetPosition(gfx::PointF(0, y_offset));
 }
 
 void ToolbarLayer::UpdateProgressBar(int progress_bar_x,
@@ -161,7 +144,6 @@ void ToolbarLayer::UpdateProgressBar(int progress_bar_x,
 ToolbarLayer::ToolbarLayer(ui::ResourceManager* resource_manager)
     : resource_manager_(resource_manager),
       layer_(cc::Layer::Create()),
-      toolbar_root_(cc::Layer::Create()),
       toolbar_background_layer_(cc::SolidColorLayer::Create()),
       url_bar_background_layer_(cc::NinePatchLayer::Create()),
       bitmap_layer_(cc::UIResourceLayer::Create()),
@@ -169,29 +151,27 @@ ToolbarLayer::ToolbarLayer(ui::ResourceManager* resource_manager)
       progress_bar_background_layer_(cc::SolidColorLayer::Create()),
       anonymize_layer_(cc::SolidColorLayer::Create()),
       debug_layer_(cc::SolidColorLayer::Create()) {
-  layer_->AddChild(toolbar_root_);
-
   toolbar_background_layer_->SetIsDrawable(true);
-  toolbar_root_->AddChild(toolbar_background_layer_);
+  layer_->AddChild(toolbar_background_layer_);
 
   url_bar_background_layer_->SetIsDrawable(true);
   url_bar_background_layer_->SetFillCenter(true);
-  toolbar_root_->AddChild(url_bar_background_layer_);
+  layer_->AddChild(url_bar_background_layer_);
 
   bitmap_layer_->SetIsDrawable(true);
-  toolbar_root_->AddChild(bitmap_layer_);
+  layer_->AddChild(bitmap_layer_);
 
   progress_bar_background_layer_->SetIsDrawable(true);
   progress_bar_background_layer_->SetHideLayerAndSubtree(true);
-  toolbar_root_->AddChild(progress_bar_background_layer_);
+  layer_->AddChild(progress_bar_background_layer_);
 
   progress_bar_layer_->SetIsDrawable(true);
   progress_bar_layer_->SetHideLayerAndSubtree(true);
-  toolbar_root_->AddChild(progress_bar_layer_);
+  layer_->AddChild(progress_bar_layer_);
 
   anonymize_layer_->SetIsDrawable(true);
   anonymize_layer_->SetBackgroundColor(SK_ColorWHITE);
-  toolbar_root_->AddChild(anonymize_layer_);
+  layer_->AddChild(anonymize_layer_);
 
   debug_layer_->SetIsDrawable(true);
   debug_layer_->SetBackgroundColor(SK_ColorGREEN);

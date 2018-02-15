@@ -100,7 +100,7 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
         nativeUpdateToolbarLayer(mNativePtr, resourceManager, R.id.control_container,
                 browserControlsBackgroundColor, R.drawable.card_single,
                 browserControlsUrlBarAlpha, controlsOffset, windowHeight, useTexture, showShadow,
-                fullscreenManager.areBrowserControlsAtBottom());
+                FeatureUtilities.isChromeModernDesignEnabled());
 
         if (mProgressBarDrawingInfo == null) return;
         nativeUpdateProgressBar(mNativePtr, mProgressBarDrawingInfo.progressBarRect.left,

@@ -59,7 +59,7 @@ class TabListSceneLayer : public SceneLayer {
       jint border_resource_id,
       jint border_inner_shadow_resource_id,
       jboolean can_use_live_layer,
-      jboolean browser_controls_at_bottom,
+      jboolean modern_design_enabled,
       jint tab_background_color,
       jint back_logo_color,
       jboolean incognito,
