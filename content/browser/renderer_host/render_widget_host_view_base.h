@@ -120,7 +120,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
                        const SkColorType color_type) override;
   void FocusedNodeTouched(const gfx::Point& location_dips_screen,
                           bool editable) override;
-  bool GetScreenInfo(ScreenInfo* screen_info) override;
+  void GetScreenInfo(ScreenInfo* screen_info) const override;
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
 

@@ -26,6 +26,7 @@
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/mus_util.h"
+#include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/frame_connector_delegate.h"
 #include "content/browser/renderer_host/input/touch_selection_controller_client_child_frame.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -1015,13 +1016,12 @@ RenderWidgetHostViewChildFrame::CreateBrowserAccessibilityManager(
       BrowserAccessibilityManager::GetEmptyDocument(), delegate);
 }
 
-bool RenderWidgetHostViewChildFrame::GetScreenInfo(ScreenInfo* screen_info) {
-  if (frame_connector_) {
+void RenderWidgetHostViewChildFrame::GetScreenInfo(
+    ScreenInfo* screen_info) const {
+  if (frame_connector_)
     *screen_info = frame_connector_->screen_info();
-    return true;
-  }
-
-  return false;
+  else
+    DisplayUtil::GetDefaultScreenInfo(screen_info);
 }
 
 void RenderWidgetHostViewChildFrame::ResizeDueToAutoResize(

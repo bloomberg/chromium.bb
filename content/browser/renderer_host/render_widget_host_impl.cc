@@ -45,6 +45,7 @@
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/dip_util.h"
+#include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/frame_metadata_util.h"
 #include "content/browser/renderer_host/input/input_router_config_helper.h"
 #include "content/browser/renderer_host/input/input_router_impl.h"
@@ -1479,10 +1480,10 @@ void RenderWidgetHostImpl::RemoveInputEventObserver(
 
 void RenderWidgetHostImpl::GetScreenInfo(ScreenInfo* result) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::GetScreenInfo");
-  if (!view_ || !view_->GetScreenInfo(result)) {
-    DCHECK(delegate_);
-    delegate_->GetScreenInfo(result);
-  }
+  if (view_)
+    view_->GetScreenInfo(result);
+  else
+    DisplayUtil::GetDefaultScreenInfo(result);
 
   // TODO(sievers): find a way to make this done another way so the method
   // can be const.
@@ -2477,7 +2478,7 @@ void RenderWidgetHostImpl::DidAllocateLocalSurfaceIdForAutoResize(
   viz::LocalSurfaceId local_surface_id(view_->GetLocalSurfaceId());
   if (local_surface_id.is_valid()) {
     ScreenInfo screen_info;
-    GetScreenInfo(&screen_info);
+    view_->GetScreenInfo(&screen_info);
     Send(new ViewMsg_SetLocalSurfaceIdForAutoResize(
         routing_id_, sequence_number, min_size_for_auto_resize_,
         max_size_for_auto_resize_, screen_info, current_content_source_id_,

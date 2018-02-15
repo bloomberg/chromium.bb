@@ -315,6 +315,14 @@ class TestView : public TestRenderWidgetHostView {
     local_surface_id_ = local_surface_id_allocator_.GenerateId();
   }
 
+  void SetScreenInfo(const ScreenInfo& screen_info) {
+    screen_info_ = screen_info;
+  }
+
+  void GetScreenInfo(ScreenInfo* screen_info) const override {
+    *screen_info = screen_info_;
+  }
+
   void set_top_controls_height(float top_controls_height) {
     top_controls_height_ = top_controls_height;
   }
@@ -402,6 +410,7 @@ class TestView : public TestRenderWidgetHostView {
   viz::BeginFrameAck last_did_not_produce_frame_ack_;
   viz::LocalSurfaceId local_surface_id_;
   viz::ParentLocalSurfaceIdAllocator local_surface_id_allocator_;
+  ScreenInfo screen_info_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestView);
@@ -486,15 +495,6 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
     return render_view_host_delegate_view_.get();
   }
 
-  void SetScreenInfo(const ScreenInfo& screen_info) {
-    screen_info_ = screen_info;
-  }
-
-  // RenderWidgetHostDelegate overrides.
-  void GetScreenInfo(ScreenInfo* screen_info) override {
-    *screen_info = screen_info_;
-  }
-
   RenderViewHostDelegateView* GetDelegateView() override {
     return mock_delegate_view();
   }
@@ -547,8 +547,6 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   bool handle_wheel_event_called_;
 
   bool unresponsive_timer_fired_;
-
-  ScreenInfo screen_info_;
 
   std::unique_ptr<MockRenderViewHostDelegateView>
       render_view_host_delegate_view_;
@@ -1055,10 +1053,7 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   screen_info.orientation_angle = 0;
   screen_info.orientation_type = SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
 
-  auto* host_delegate =
-      static_cast<MockRenderWidgetHostDelegate*>(host_->delegate());
-
-  host_delegate->SetScreenInfo(screen_info);
+  view_->SetScreenInfo(screen_info);
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
@@ -1067,7 +1062,7 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   screen_info.orientation_angle = 180;
   screen_info.orientation_type = SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY;
 
-  host_delegate->SetScreenInfo(screen_info);
+  view_->SetScreenInfo(screen_info);
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
@@ -1075,14 +1070,14 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
 
   screen_info.device_scale_factor = 2.f;
 
-  host_delegate->SetScreenInfo(screen_info);
+  view_->SetScreenInfo(screen_info);
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
   process_->sink().ClearMessages();
 
   // No screen change.
-  host_delegate->SetScreenInfo(screen_info);
+  view_->SetScreenInfo(screen_info);
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
@@ -2658,10 +2653,7 @@ TEST_F(RenderWidgetHostTest, ResizeParamsDeviceScale) {
   ScreenInfo screen_info;
   screen_info.device_scale_factor = device_scale;
 
-  auto* host_delegate =
-      static_cast<MockRenderWidgetHostDelegate*>(host_->delegate());
-
-  host_delegate->SetScreenInfo(screen_info);
+  view_->SetScreenInfo(screen_info);
   host_->WasResized();
 
   float top_controls_height = 10.0f;

@@ -167,7 +167,6 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
       const NativeWebKeyboardEvent& event) override;
   void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) override;
   TextInputManager* GetTextInputManager() override;
-  void GetScreenInfo(content::ScreenInfo* screen_info) override;
   RenderWidgetHostInputEventRouter* GetInputEventRouter() override;
   BrowserAccessibilityManager* GetRootBrowserAccessibilityManager() override;
   BrowserAccessibilityManager* GetOrCreateRootBrowserAccessibilityManager()

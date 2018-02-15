@@ -12,8 +12,6 @@
 
 namespace content {
 
-void RenderWidgetHostDelegate::GetScreenInfo(ScreenInfo*) {}
-
 KeyboardEventProcessingResult RenderWidgetHostDelegate::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   return KeyboardEventProcessingResult::NOT_HANDLED;

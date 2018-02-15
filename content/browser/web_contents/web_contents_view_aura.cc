@@ -650,10 +650,6 @@ gfx::NativeWindow WebContentsViewAura::GetTopLevelNativeWindow() const {
       ->GetTopLevelNativeWindow();
 }
 
-void WebContentsViewAura::GetScreenInfo(ScreenInfo* screen_info) const {
-  DisplayUtil::GetNativeViewScreenInfo(screen_info, GetNativeView());
-}
-
 void WebContentsViewAura::GetContainerBounds(gfx::Rect* out) const {
   *out = GetNativeView()->GetBoundsInScreen();
 }

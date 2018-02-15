@@ -27,6 +27,7 @@
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/renderer_host/display_util.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/frame_messages.h"
@@ -1436,7 +1437,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadWithUrlAnchor) {
     WebContentsView* view =
         static_cast<WebContentsImpl*>(shell()->web_contents())->GetView();
     ScreenInfo screen_info;
-    view->GetScreenInfo(&screen_info);
+    DisplayUtil::GetNativeViewScreenInfo(&screen_info, view->GetNativeView());
     expected = floor(screen_info.device_scale_factor * expected) /
                screen_info.device_scale_factor;
   }
@@ -1477,7 +1478,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     WebContentsView* view =
         static_cast<WebContentsImpl*>(shell()->web_contents())->GetView();
     ScreenInfo screen_info;
-    view->GetScreenInfo(&screen_info);
+    DisplayUtil::GetNativeViewScreenInfo(&screen_info, view->GetNativeView());
     expected_div_scroll_top =
         floor(screen_info.device_scale_factor * expected_div_scroll_top) /
         screen_info.device_scale_factor;

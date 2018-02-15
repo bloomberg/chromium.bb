@@ -39,15 +39,6 @@ TEST_F(WebContentsViewAuraTest, EnableDisableOverscroll) {
   EXPECT_TRUE(wcva->navigation_overlay_);
 }
 
-TEST_F(WebContentsViewAuraTest, ScreenInfoColorDepth) {
-  WebContentsView* web_contents_view = view();
-
-  ScreenInfo screen_info;
-  web_contents_view->GetScreenInfo(&screen_info);
-  EXPECT_EQ(24u, screen_info.depth);
-  EXPECT_EQ(8u, screen_info.depth_per_component);
-}
-
 TEST_F(WebContentsViewAuraTest, ShowHideParent) {
   EXPECT_TRUE(web_contents()->IsVisible());
   root_window()->Hide();

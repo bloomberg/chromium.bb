@@ -4,7 +4,6 @@
 
 #include "content/test/mock_render_widget_host_delegate.h"
 
-#include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -22,10 +21,6 @@ void MockRenderWidgetHostDelegate::ResizeDueToAutoResize(
   RenderWidgetHostViewBase* rwhv = rwh_->GetView();
   if (rwhv)
     rwhv->ResizeDueToAutoResize(new_size, sequence_number);
-}
-
-void MockRenderWidgetHostDelegate::GetScreenInfo(ScreenInfo* result) {
-  DisplayUtil::GetDefaultScreenInfo(result);
 }
 
 KeyboardEventProcessingResult

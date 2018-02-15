@@ -152,7 +152,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   bool IsRenderWidgetHostViewGuest() override;
   RenderWidgetHostViewBase* GetOwnerRenderWidgetHostView() const;
 
-  bool GetScreenInfo(ScreenInfo* screen_info) override;
+  void GetScreenInfo(ScreenInfo* screen_info) const override;
 
   void ResizeDueToAutoResize(const gfx::Size& new_size,
                              uint64_t sequence_number) override;

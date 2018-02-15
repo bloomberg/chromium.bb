@@ -36,7 +36,6 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   void ResizeDueToAutoResize(RenderWidgetHostImpl* render_widget_host,
                              const gfx::Size& new_size,
                              uint64_t sequence_number) override;
-  void GetScreenInfo(ScreenInfo* result) override;
   KeyboardEventProcessingResult PreHandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) override;
   void ExecuteEditCommand(const std::string& command,

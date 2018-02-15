@@ -207,8 +207,10 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // animate_only BeginFrames.
   virtual void SetWantsAnimateOnlyBeginFrames() = 0;
 
-  // This method returns the ScreenInfo used by the view to render.
-  virtual bool GetScreenInfo(ScreenInfo* screen_info) = 0;
+  // This method returns the ScreenInfo used by the view to render. If the
+  // information is not knowable (e.g, because the view is not attached to a
+  // screen yet), then a default best-guess will be used.
+  virtual void GetScreenInfo(ScreenInfo* screen_info) const = 0;
 
 #if defined(OS_MACOSX)
   // Set the view's active state (i.e., tint state of controls).

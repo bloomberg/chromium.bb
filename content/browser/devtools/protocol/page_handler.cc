@@ -825,7 +825,7 @@ void PageHandler::InnerSwapCompositorFrame() {
                      1 / metadata.device_scale_factor);
 
   content::ScreenInfo screen_info;
-  GetWebContents()->GetView()->GetScreenInfo(&screen_info);
+  view->GetScreenInfo(&screen_info);
   double device_scale_factor = screen_info.device_scale_factor;
   double scale = 1;
 

@@ -1170,11 +1170,6 @@ void WebContentsImpl::NotifyManifestUrlChanged(
     observer.DidUpdateWebManifestURL(manifest_url);
 }
 
-void WebContentsImpl::GetScreenInfo(ScreenInfo* screen_info) {
-  if (GetView())
-    GetView()->GetScreenInfo(screen_info);
-}
-
 WebUI* WebContentsImpl::GetWebUI() const {
   WebUI* commited_web_ui = GetCommittedWebUI();
   return commited_web_ui ? commited_web_ui
