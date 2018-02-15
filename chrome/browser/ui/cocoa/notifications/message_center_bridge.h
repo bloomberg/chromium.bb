@@ -39,8 +39,6 @@ class MessageCenterBridge : public message_center::UiDelegate {
   void HideMessageCenter() override;
   bool ShowNotifierSettings() override;
 
-  message_center::MessageCenter* message_center() { return message_center_; }
-
  private:
   friend class MessageCenterBridgeTest;
 
