@@ -303,6 +303,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
   }
   bool IsProvisional() const { return is_provisional_; }
 
+  // Returns whether the frame is trying to save network data by showing a
+  // preview.
+  bool IsUsingDataSavingPreview() const;
+
  private:
   friend class FrameNavigationDisabler;
 
