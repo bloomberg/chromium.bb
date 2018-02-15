@@ -52,7 +52,6 @@
   'angle_unittests': {
     'remove_from': [
       # chromium.clang
-      'ToTAndroidCFI',
       'ToTLinuxMSan',
       # chromium.fyi
       'Chromium Mac 10.10 MacViews',
@@ -462,8 +461,6 @@
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x86 Cloud Tester',
-      # chromium.clang
-      'ToTAndroidCFI',
     ],
   },
   'capture_unittests': {
@@ -521,7 +518,6 @@
       'Cast Audio Linux',
       'Cast Linux',
       # chromium.clang
-      'ToTAndroidCFI',
       'ToTLinuxThinLTO',
       # chromium.fyi
       'ThinLTO Linux ToT',
@@ -597,8 +593,6 @@
     'remove_from': [
       # TODO(crbug.com/731759): Enable this once we're confident that it passes.
       'Marshmallow Phone Tester (rel)',
-      # chromium.clang
-      'ToTAndroidCFI',
       # TODO(dpranke): on chromium.swarm, this is probably also an accident.
       'Android N5X Swarm',
     ],
@@ -1408,8 +1402,6 @@
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x86 Cloud Tester',
-      # chromium.clang
-      'ToTAndroidCFI',
       # TODO(kbr): on chromium.linux, it's unclear why these show up on "Cast
       # Audio Linux" at all, since they're supposed to be compiled out for
       # Chromecast.
@@ -1506,8 +1498,6 @@
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x86 Cloud Tester',
-      # chromium.clang
-      'ToTAndroidCFI',
       # chromium.fyi
       'Chromium Mac 10.10 MacViews',
       'Chromium Mac 10.11 Force Mac Toolchain',
@@ -1584,12 +1574,6 @@
       'Linux ChromiumOS MSan Tests',
       'Linux MSan Tests',
       'Linux TSan Tests',
-    ],
-  },
-  'gcm_unit_tests': {
-    'remove_from': [
-      # chromium.clang
-      'ToTAndroidCFI',
     ],
   },
   'gfx_unittests': {
@@ -1825,8 +1809,6 @@
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x86 Cloud Tester',
-      # chromium.clang
-      'ToTAndroidCFI',
       # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
       'Cast Linux',
@@ -2071,8 +2053,6 @@
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x86 Cloud Tester',
-      # chromium.clang
-      'ToTAndroidCFI',
     ],
   },
   'keyboard_unittests': {
@@ -2305,8 +2285,6 @@
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x86 Cloud Tester',
-      # chromium.clang
-      'ToTAndroidCFI',
     ],
   },
   'mojo_common_unittests': {
@@ -2706,8 +2684,6 @@
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x86 Cloud Tester',
-      # chromium.clang
-      'ToTAndroidCFI',
       # On chromium.linux, unclear why these aren't run on 32-bit.
       'Linux Tests (dbg)(1)(32)',
     ],
@@ -2737,7 +2713,6 @@
       'linux-chromeos-rel',
       # chromium.clang
       'ToTAndroid x64',
-      'ToTAndroidCFI',
       # chromium.fyi
       'Out of Process Profiling Android',
       # On chromium.linux, unclear why these aren't run on 32-bit.
@@ -2773,7 +2748,6 @@
       'x86 Cloud Tester',
       # chromium.clang
       'ToTAndroid x64',
-      'ToTAndroidCFI',
       # chromium.fyi
       'Out of Process Profiling Android',
     ],
@@ -2811,7 +2785,6 @@
       'linux-chromeos-rel',
       # chromium.clang
       'ToTAndroid x64',
-      'ToTAndroidCFI',
       # chromium.fyi
       'Out of Process Profiling Android',
       # On chromium.linux, unclear why these aren't run on 32-bit.
@@ -2839,7 +2812,6 @@
       'x86 Cloud Tester',
       # chromium.clang
       'ToTAndroid x64',
-      'ToTAndroidCFI',
       # chromium.fyi
       'Out of Process Profiling Android',
     ],
@@ -3161,8 +3133,6 @@
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x86 Cloud Tester',
-      # chromium.clang
-      'ToTAndroidCFI',
       # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
       'Cast Linux',
@@ -3574,8 +3544,6 @@
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x86 Cloud Tester',
-      # chromium.clang
-      'ToTAndroidCFI',
     ],
   },
   'views_unittests': {
@@ -3988,7 +3956,6 @@
       'CrWinAsan',
       'CrWinAsan(dll)',
       'CrWinAsanCov',
-      'ToTAndroidCFI',
       'ToTLinuxMSan',
       'ToTLinuxThinLTO',
       # chromium.fyi
@@ -4159,7 +4126,6 @@
       'CrWinAsan',
       'CrWinAsan(dll)',
       'CrWinAsanCov',
-      'ToTAndroidCFI',
       'ToTLinuxMSan',
       # chromium.fyi
       'CrWinAsan tester',
