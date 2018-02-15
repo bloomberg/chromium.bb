@@ -28,6 +28,7 @@
 #include "content/public/common/main_function_params.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #include "ui/base/ui_base_paths.h"
 
@@ -42,13 +43,6 @@ ChromeBrowserMainPartsAndroid::~ChromeBrowserMainPartsAndroid() {
 int ChromeBrowserMainPartsAndroid::PreCreateThreads() {
   TRACE_EVENT0("startup", "ChromeBrowserMainPartsAndroid::PreCreateThreads")
 
-  // Auto-detect based on en-US whether secondary locale .pak files exist.
-  ui::SetLoadSecondaryLocalePaks(
-      !ui::GetPathForAndroidLocalePakWithinApk("en-US").empty());
-
-  // |g_browser_process| is created in PreCreateThreads(), this has to be done
-  // before accessing |g_browser_process| below when creating
-  // ChildProcessCrashObserver.
   int result_code = ChromeBrowserMainParts::PreCreateThreads();
 
   // The ChildProcessCrashObserver must be registered before any child
@@ -122,6 +116,13 @@ int ChromeBrowserMainPartsAndroid::PreEarlyInitialization() {
       "ChromeBrowserMainPartsAndroid::PreEarlyInitialization:StartUiMsgLoop");
     base::MessageLoopForUI::current()->Start();
   }
+
+  // In order for SetLoadSecondaryLocalePaks() to work ResourceBundle must
+  // not have been created yet.
+  DCHECK(!ui::ResourceBundle::HasSharedInstance());
+  // Auto-detect based on en-US whether secondary locale .pak files exist.
+  ui::SetLoadSecondaryLocalePaks(
+      !ui::GetPathForAndroidLocalePakWithinApk("en-US").empty());
 
   return ChromeBrowserMainParts::PreEarlyInitialization();
 }
