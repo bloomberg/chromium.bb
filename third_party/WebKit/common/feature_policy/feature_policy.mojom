@@ -54,8 +54,6 @@ enum FeaturePolicyFeature {
   kPayment,
   // Controls access to audio output devices.
   kSpeaker,
-  // Controls access to navigator.vibrate method.
-  kVibrate,
   // Controls access to document.cookie attribute.
   kDocumentCookie,
   // Contols access to document.domain attribute.

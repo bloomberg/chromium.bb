@@ -439,11 +439,6 @@
              "--enable-slimming-paint-v175"]
   },
   {
-    "prefix": "feature-policy-vibrate",
-    "base": "http/tests/feature-policy-vibrate",
-    "args": ["--enable-blink-features=FeaturePolicyVibrateFeature"]
-  },
-  {
     "prefix": "print_browser",
     "base": "print_testharness",
     "args": ["--enable-print-browser"]

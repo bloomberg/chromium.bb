@@ -27,32 +27,32 @@ const char* const kValidPolicies[] = {
     " ; ;",  // Empty policies.
     " , ,",  // Empty policies.
     ",;,",   // Empty policies.
-    "vibrate 'none'",
-    "vibrate 'self'",
-    "vibrate 'src'",  // Only valid for iframe allow attribute.
-    "vibrate",        // Only valid for iframe allow attribute.
-    "vibrate; fullscreen; payment",
-    "vibrate *",
-    "vibrate " ORIGIN_A "",
-    "vibrate " ORIGIN_B "",
-    "vibrate  " ORIGIN_A " " ORIGIN_B "",
-    "vibrate 'none' " ORIGIN_A " " ORIGIN_B "",
-    "vibrate " ORIGIN_A " 'none' " ORIGIN_B "",
-    "vibrate 'none' 'none' 'none'",
-    "vibrate " ORIGIN_A " *",
+    "geolocation 'none'",
+    "geolocation 'self'",
+    "geolocation 'src'",  // Only valid for iframe allow attribute.
+    "geolocation",        // Only valid for iframe allow attribute.
+    "geolocation; fullscreen; payment",
+    "geolocation *",
+    "geolocation " ORIGIN_A "",
+    "geolocation " ORIGIN_B "",
+    "geolocation  " ORIGIN_A " " ORIGIN_B "",
+    "geolocation 'none' " ORIGIN_A " " ORIGIN_B "",
+    "geolocation " ORIGIN_A " 'none' " ORIGIN_B "",
+    "geolocation 'none' 'none' 'none'",
+    "geolocation " ORIGIN_A " *",
     "fullscreen  " ORIGIN_A "; payment 'self'",
-    "fullscreen " ORIGIN_A "; payment *, vibrate 'self'"};
+    "fullscreen " ORIGIN_A "; payment *, geolocation 'self'"};
 
 const char* const kInvalidPolicies[] = {
     "badfeaturename",
     "badfeaturename 'self'",
     "1.0",
-    "vibrate data://badorigin",
-    "vibrate https://bad;origin",
-    "vibrate https:/bad,origin",
-    "vibrate https://example.com, https://a.com",
-    "vibrate *, payment data://badorigin",
-    "vibrate ws://xn--fd\xbcwsw3taaaaaBaa333aBBBBBBJBBJBBBt"};
+    "geolocation data://badorigin",
+    "geolocation https://bad;origin",
+    "geolocation https:/bad,origin",
+    "geolocation https://example.com, https://a.com",
+    "geolocation *, payment data://badorigin",
+    "geolocation ws://xn--fd\xbcwsw3taaaaaBaa333aBBBBBBJBBJBBBt"};
 
 }  // namespace
 
@@ -76,7 +76,7 @@ class FeaturePolicyTest : public ::testing::Test {
   const FeatureNameMap test_feature_name_map = {
       {"fullscreen", blink::mojom::FeaturePolicyFeature::kFullscreen},
       {"payment", blink::mojom::FeaturePolicyFeature::kPayment},
-      {"vibrate", blink::mojom::FeaturePolicyFeature::kVibrate}};
+      {"geolocation", blink::mojom::FeaturePolicyFeature::kGeolocation}};
 };
 
 TEST_F(FeaturePolicyTest, ParseValidPolicy) {
@@ -109,32 +109,35 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
 
   // Simple policy with 'self'.
   parsed_policy =
-      ParseFeaturePolicy("vibrate 'self'", origin_a_.get(), origin_b_.get(),
+      ParseFeaturePolicy("geolocation 'self'", origin_a_.get(), origin_b_.get(),
                          &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kVibrate, parsed_policy[0].feature);
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
+            parsed_policy[0].feature);
   EXPECT_FALSE(parsed_policy[0].matches_all_origins);
   EXPECT_EQ(1UL, parsed_policy[0].origins.size());
   EXPECT_TRUE(
       parsed_policy[0].origins[0].IsSameOriginWith(expected_url_origin_a_));
   // Simple policy with *.
   parsed_policy =
-      ParseFeaturePolicy("vibrate *", origin_a_.get(), origin_b_.get(),
+      ParseFeaturePolicy("geolocation *", origin_a_.get(), origin_b_.get(),
                          &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kVibrate, parsed_policy[0].feature);
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
+            parsed_policy[0].feature);
   EXPECT_TRUE(parsed_policy[0].matches_all_origins);
   EXPECT_EQ(0UL, parsed_policy[0].origins.size());
 
   // Complicated policy.
   parsed_policy = ParseFeaturePolicy(
-      "vibrate *; "
+      "geolocation *; "
       "fullscreen https://example.net https://example.org; "
       "payment 'self'",
       origin_a_.get(), origin_b_.get(), &messages, test_feature_name_map);
   EXPECT_EQ(3UL, parsed_policy.size());
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kVibrate, parsed_policy[0].feature);
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
+            parsed_policy[0].feature);
   EXPECT_TRUE(parsed_policy[0].matches_all_origins);
   EXPECT_EQ(0UL, parsed_policy[0].origins.size());
   EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[1].feature);
@@ -152,12 +155,13 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
 
   // Multiple policies.
   parsed_policy = ParseFeaturePolicy(
-      "vibrate * https://example.net; "
+      "geolocation * https://example.net; "
       "fullscreen https://example.net none https://example.org,"
       "payment 'self' badorigin",
       origin_a_.get(), origin_b_.get(), &messages, test_feature_name_map);
   EXPECT_EQ(3UL, parsed_policy.size());
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kVibrate, parsed_policy[0].feature);
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
+            parsed_policy[0].feature);
   EXPECT_TRUE(parsed_policy[0].matches_all_origins);
   EXPECT_EQ(0UL, parsed_policy[0].origins.size());
   EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[1].feature);
@@ -176,13 +180,14 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
   // Old (to be deprecated) iframe allow syntax.
   messages.clear();
   parsed_policy =
-      ParseFeaturePolicy("vibrate badname fullscreen payment", nullptr,
+      ParseFeaturePolicy("geolocation badname fullscreen payment", nullptr,
                          origin_a_.get(), &messages, test_feature_name_map);
   // Expect 2 messages: one about deprecation warning, one about unrecognized
   // feature name.
   EXPECT_EQ(2UL, messages.size());
   EXPECT_EQ(3UL, parsed_policy.size());
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kVibrate, parsed_policy[0].feature);
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
+            parsed_policy[0].feature);
   EXPECT_FALSE(parsed_policy[0].matches_all_origins);
   EXPECT_EQ(1UL, parsed_policy[0].origins.size());
   EXPECT_TRUE(
@@ -200,10 +205,11 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
 
   // Header policies with no optional origin lists.
   parsed_policy =
-      ParseFeaturePolicy("vibrate;fullscreen;payment", origin_a_.get(), nullptr,
-                         &messages, test_feature_name_map);
+      ParseFeaturePolicy("geolocation;fullscreen;payment", origin_a_.get(),
+                         nullptr, &messages, test_feature_name_map);
   EXPECT_EQ(3UL, parsed_policy.size());
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kVibrate, parsed_policy[0].feature);
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
+            parsed_policy[0].feature);
   EXPECT_FALSE(parsed_policy[0].matches_all_origins);
   EXPECT_EQ(1UL, parsed_policy[0].origins.size());
   EXPECT_TRUE(

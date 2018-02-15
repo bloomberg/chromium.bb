@@ -258,8 +258,6 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
                             FeaturePolicy::FeatureDefault::EnableForSelf},
                            {mojom::FeaturePolicyFeature::kSpeaker,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {mojom::FeaturePolicyFeature::kVibrate,
-                            FeaturePolicy::FeatureDefault::EnableForSelf},
                            {mojom::FeaturePolicyFeature::kDocumentCookie,
                             FeaturePolicy::FeatureDefault::EnableForAll},
                            {mojom::FeaturePolicyFeature::kDocumentDomain,

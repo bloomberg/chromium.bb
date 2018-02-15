@@ -79,15 +79,6 @@ bool NavigatorVibration::vibrate(Navigator& navigator,
   if (!frame->GetPage()->IsPageVisible())
     return false;
 
-  if (IsSupportedInFeaturePolicy(
-          blink::mojom::FeaturePolicyFeature::kVibrate) &&
-      !frame->IsFeatureEnabled(blink::mojom::FeaturePolicyFeature::kVibrate)) {
-    frame->DomWindow()->PrintErrorMessage(
-        "Navigator.vibrate() is not enabled in feature policy for this "
-        "frame.");
-    return false;
-  }
-
   if (!frame->HasBeenActivated()) {
     String message;
     MessageLevel level = kErrorMessageLevel;
