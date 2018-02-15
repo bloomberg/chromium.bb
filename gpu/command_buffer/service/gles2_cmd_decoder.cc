@@ -99,6 +99,7 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence.h"
+#include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -20395,31 +20396,38 @@ void GLES2DecoderImpl::DoBeginRasterCHROMIUM(
     return;
   }
 
-  // texture_info.fFormat must always be a sized internal format.
+  // GetInternalFormat may return a base internal format but Skia requires a
+  // sized internal format. So this may be adjusted below.
+  texture_info.fFormat = GetInternalFormat(&gl_version_info(), internal_format);
   switch (color_type) {
     case kARGB_4444_SkColorType:
-      texture_info.fFormat = GL_RGBA4;
       if (internal_format != GL_RGBA4 && internal_format != GL_RGBA) {
         LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
                            "color type mismatch");
         return;
       }
+      if (texture_info.fFormat == GL_RGBA)
+        texture_info.fFormat = GL_RGBA4;
       break;
     case kRGBA_8888_SkColorType:
-      texture_info.fFormat = GL_RGBA8_OES;
       if (internal_format != GL_RGBA8_OES && internal_format != GL_RGBA) {
         LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
                            "color type mismatch");
         return;
       }
+      if (texture_info.fFormat == GL_RGBA)
+        texture_info.fFormat = GL_RGBA8_OES;
       break;
     case kBGRA_8888_SkColorType:
-      texture_info.fFormat = GL_BGRA8_EXT;
       if (internal_format != GL_BGRA_EXT && internal_format != GL_BGRA8_EXT) {
         LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
                            "color type mismatch");
         return;
       }
+      if (texture_info.fFormat == GL_BGRA_EXT)
+        texture_info.fFormat = GL_BGRA8_EXT;
+      if (texture_info.fFormat == GL_RGBA)
+        texture_info.fFormat = GL_RGBA8_OES;
       break;
     default:
       LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",

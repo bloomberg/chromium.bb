@@ -31,21 +31,8 @@ static bool g_debug_bindings_enabled = false;
 
 namespace {
 
-static inline GLenum GetInternalFormat(const GLVersionInfo* version,
-                                       GLenum internal_format) {
-  if (!version->is_es) {
-    if (internal_format == GL_BGRA_EXT || internal_format == GL_BGRA8_EXT)
-      return GL_RGBA8;
-  }
-  if (version->is_es3 && version->is_mesa) {
-    // Mesa bug workaround: Mipmapping does not work when using GL_BGRA_EXT
-    if (internal_format == GL_BGRA_EXT)
-      return GL_RGBA;
-  }
-  return internal_format;
-}
-
-// TODO(epenner): Could the above function be merged into this and removed?
+// TODO(epenner): Could the above function be merged into GetInternalFormat and
+// removed?
 static inline GLenum GetTexInternalFormat(const GLVersionInfo* version,
                                           GLenum internal_format,
                                           GLenum format,
@@ -243,6 +230,19 @@ static inline GLenum GetPixelType(const GLVersionInfo* version,
 }
 
 }  // anonymous namespace
+
+GLenum GetInternalFormat(const GLVersionInfo* version, GLenum internal_format) {
+  if (!version->is_es) {
+    if (internal_format == GL_BGRA_EXT || internal_format == GL_BGRA8_EXT)
+      return GL_RGBA8;
+  }
+  if (version->is_es3 && version->is_mesa) {
+    // Mesa bug workaround: Mipmapping does not work when using GL_BGRA_EXT
+    if (internal_format == GL_BGRA_EXT)
+      return GL_RGBA;
+  }
+  return internal_format;
+}
 
 void InitializeStaticGLBindingsGL() {
   g_current_gl_context_tls = new base::ThreadLocalPointer<CurrentGL>;

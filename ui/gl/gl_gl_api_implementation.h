@@ -17,6 +17,9 @@ namespace gl {
 
 struct GLVersionInfo;
 
+GL_EXPORT GLenum GetInternalFormat(const GLVersionInfo* version,
+                                   GLenum internal_format);
+
 GL_EXPORT void InitializeStaticGLBindingsGL();
 GL_EXPORT void ClearBindingsGL();
 
