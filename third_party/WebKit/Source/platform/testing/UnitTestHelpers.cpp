@@ -112,5 +112,24 @@ scoped_refptr<SharedBuffer> ReadFromFile(const String& path) {
   return SharedBuffer::Create(buffer.data(), buffer.size());
 }
 
+LineReader::LineReader(const std::string& text) : text_(text), index_(0) {}
+
+bool LineReader::GetNextLine(std::string* line) {
+  line->clear();
+  if (index_ >= text_.length())
+    return false;
+
+  size_t end_of_line_index = text_.find("\r\n", index_);
+  if (end_of_line_index == std::string::npos) {
+    *line = text_.substr(index_);
+    index_ = text_.length();
+    return true;
+  }
+
+  *line = text_.substr(index_, end_of_line_index - index_);
+  index_ = end_of_line_index + 2;
+  return true;
+}
+
 }  // namespace testing
 }  // namespace blink

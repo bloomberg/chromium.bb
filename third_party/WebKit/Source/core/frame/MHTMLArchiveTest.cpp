@@ -20,31 +20,7 @@
 using blink::URLTestHelpers::ToKURL;
 
 namespace blink {
-
-class LineReader {
- public:
-  LineReader(const std::string& text) : text_(text), index_(0) {}
-  bool GetNextLine(std::string* line) {
-    line->clear();
-    if (index_ >= text_.length())
-      return false;
-
-    size_t end_of_line_index = text_.find("\r\n", index_);
-    if (end_of_line_index == std::string::npos) {
-      *line = text_.substr(index_);
-      index_ = text_.length();
-      return true;
-    }
-
-    *line = text_.substr(index_, end_of_line_index - index_);
-    index_ = end_of_line_index + 2;
-    return true;
-  }
-
- private:
-  std::string text_;
-  size_t index_;
-};
+namespace testing {
 
 class MHTMLArchiveTest : public ::testing::Test {
  public:
@@ -303,4 +279,5 @@ TEST_F(MHTMLArchiveTest, MHTMLFromScheme) {
   EXPECT_NE(nullptr, MHTMLArchive::Create(special_scheme_url, data.get()));
 }
 
+}  // namespace testing
 }  // namespace blink
