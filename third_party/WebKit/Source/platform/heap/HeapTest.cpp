@@ -213,6 +213,8 @@ struct PairWithWeakHandling : public StrongWeakPair {
     return first.IsHashTableDeletedValue();
   }
 
+  bool IsAlive() { return ThreadHeap::IsHeapObjectAlive(second); }
+
   // Since we don't allocate independent objects of this type, we don't need
   // a regular trace method. Instead, we use a traceInCollection method. If
   // the entry should be deleted from the collection we return true and don't
@@ -224,12 +226,8 @@ struct PairWithWeakHandling : public StrongWeakPair {
                                                           weakness);
     if (!ThreadHeap::IsHeapObjectAlive(second))
       return true;
-    // FIXME: traceInCollection is also called from WeakProcessing to check if
-    // the entry is dead.
-    // The below if avoids calling trace in that case by only calling trace when
-    // |first| is not yet marked.
-    if (!ThreadHeap::IsHeapObjectAlive(first))
-      visitor->Trace(first);
+
+    visitor->Trace(first);
     return false;
   }
 
@@ -268,6 +266,8 @@ struct WeakHandlingHashTraits : WTF::SimpleClassHashTraits<T> {
                                 WTF::WeakHandlingFlag weakness) {
     return t.TraceInCollection(visitor, weakness);
   }
+
+  static bool IsAlive(T& t) { return t.IsAlive(); }
 };
 
 }  // namespace
@@ -5125,6 +5125,19 @@ typedef HeapHashSet<WeakMember<IntWrapper>> WeakSet;
 // These special traits will remove a set from a map when the set is empty.
 struct EmptyClearingHashSetTraits : HashTraits<WeakSet> {
   static const WTF::WeakHandlingFlag kWeakHandlingFlag = WTF::kWeakHandling;
+
+  static bool IsAlive(WeakSet& set) {
+    bool live_entries_found = false;
+    WeakSet::iterator end = set.end();
+    for (WeakSet::iterator it = set.begin(); it != end; ++it) {
+      if (ThreadHeap::IsHeapObjectAlive(*it)) {
+        live_entries_found = true;
+        break;
+      }
+    }
+    return live_entries_found;
+  }
+
   template <typename VisitorDispatcher>
   static bool TraceInCollection(VisitorDispatcher visitor,
                                 WeakSet& set,
