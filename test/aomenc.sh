@@ -15,8 +15,6 @@
 ##
 . $(dirname $0)/tools_common.sh
 
-readonly TEST_FRAMES=5
-
 # Environment check: Make sure input is available.
 aomenc_verify_environment() {
   if [ ! -e "${YUV_RAW_INPUT}" ]; then
@@ -57,32 +55,6 @@ y4m_input_720p() {
   echo ""${Y4M_720P_INPUT}""
 }
 
-# Echo default aomenc real time encoding params. $1 is the codec, which defaults
-# to av1 if unspecified.
-aomenc_rt_params() {
-  local readonly codec="${1:-av1}"
-  echo "--codec=${codec}
-    --buf-initial-sz=500
-    --buf-optimal-sz=600
-    --buf-sz=1000
-    --cpu-used=-6
-    --end-usage=cbr
-    --error-resilient=1
-    --kf-max-dist=90000
-    --lag-in-frames=0
-    --max-intra-rate=300
-    --max-q=56
-    --min-q=2
-    --noise-sensitivity=0
-    --overshoot-pct=50
-    --passes=1
-    --profile=0
-    --resize-allowed=0
-    --rt
-    --static-thresh=0
-    --undershoot-pct=50"
-}
-
 # Wrapper function for running aomenc with pipe input. Requires that
 # LIBAOM_BIN_PATH points to the directory containing aomenc. $1 is used as the
 # input file path and shifted away. All remaining parameters are passed through
@@ -112,8 +84,8 @@ aomenc_av1_ivf() {
   if [ "$(aomenc_can_encode_av1)" = "yes" ]; then
     local readonly output="${AOM_TEST_OUTPUT_DIR}/av1.ivf"
     aomenc $(yuv_raw_input) \
-      --codec=av1 \
-      --limit="${TEST_FRAMES}" \
+      $(aomenc_encode_test_fast_params) \
+      --passes=1 \
       --ivf \
       --output="${output}"
 
@@ -130,7 +102,8 @@ aomenc_av1_webm() {
     local readonly output="${AOM_TEST_OUTPUT_DIR}/av1.webm"
     aomenc $(yuv_raw_input) \
       --codec=av1 \
-      --limit="${TEST_FRAMES}" \
+      $(aomenc_encode_test_fast_params) \
+      --passes=1 \
       --output="${output}"
 
     if [ ! -e "${output}" ]; then
@@ -145,10 +118,9 @@ aomenc_av1_webm_2pass() {
      [ "$(webm_io_available)" = "yes" ]; then
     local readonly output="${AOM_TEST_OUTPUT_DIR}/av1.webm"
     aomenc $(yuv_raw_input) \
-      --codec=av1 \
-      --limit="${TEST_FRAMES}" \
-      --output="${output}" \
-      --passes=2
+      $(aomenc_encode_test_fast_params) \
+      --passes=2 \
+      --output="${output}"
 
     if [ ! -e "${output}" ]; then
       elog "Output file does not exist."
@@ -161,8 +133,7 @@ aomenc_av1_ivf_lossless() {
   if [ "$(aomenc_can_encode_av1)" = "yes" ]; then
     local readonly output="${AOM_TEST_OUTPUT_DIR}/av1_lossless.ivf"
     aomenc $(yuv_raw_input) \
-      --codec=av1 \
-      --limit="${TEST_FRAMES}" \
+      $(aomenc_encode_test_fast_params) \
       --ivf \
       --output="${output}" \
       --lossless=1
@@ -178,8 +149,7 @@ aomenc_av1_ivf_minq0_maxq0() {
   if [ "$(aomenc_can_encode_av1)" = "yes" ]; then
     local readonly output="${AOM_TEST_OUTPUT_DIR}/av1_lossless_minq0_maxq0.ivf"
     aomenc $(yuv_raw_input) \
-      --codec=av1 \
-      --limit="${TEST_FRAMES}" \
+      $(aomenc_encode_test_fast_params) \
       --ivf \
       --output="${output}" \
       --min-q=0 \
@@ -199,12 +169,11 @@ aomenc_av1_webm_lag5_frames10() {
     local readonly lag_frames=5
     local readonly output="${AOM_TEST_OUTPUT_DIR}/av1_lag5_frames10.webm"
     aomenc $(yuv_raw_input) \
-      --codec=av1 \
-      --limit="${lag_total_frames}" \
-      --lag-in-frames="${lag_frames}" \
+      $(aomenc_encode_test_fast_params) \
+      --limit=${lag_total_frames} \
+      --lag-in-frames=${lag_frames} \
       --output="${output}" \
-      --passes=2 \
-      --auto-alt-ref=1
+      --passes=2
 
     if [ ! -e "${output}" ]; then
       elog "Output file does not exist."
@@ -219,8 +188,7 @@ aomenc_av1_webm_non_square_par() {
      [ "$(webm_io_available)" = "yes" ]; then
     local readonly output="${AOM_TEST_OUTPUT_DIR}/av1_non_square_par.webm"
     aomenc $(y4m_input_non_square_par) \
-      --codec=av1 \
-      --limit="${TEST_FRAMES}" \
+      $(aomenc_encode_test_fast_params) \
       --output="${output}"
 
     if [ ! -e "${output}" ]; then

@@ -17,6 +17,7 @@ AOM_TEST_TOOLS_COMMON_SH=included
 set -e
 devnull='> /dev/null 2>&1'
 AOM_TEST_PREFIX=""
+readonly AOM_ENCODE_TEST_FRAME_LIMIT=5
 
 elog() {
   echo "$@" 1>&2
@@ -210,6 +211,14 @@ av1_decode_available() {
 # CONFIG_AV1_ENCODER.
 av1_encode_available() {
   [ "$(aom_config_option_enabled CONFIG_AV1_ENCODER)" = "yes" ] && echo yes
+}
+
+# Echoes "fast" encode params for use with aomenc.
+aomenc_encode_test_fast_params() {
+  echo "--cpu-used=1
+        --limit=${AOM_ENCODE_TEST_FRAME_LIMIT}
+        --lag-in-frames=0
+        --test-decode=fatal"
 }
 
 # Echoes yes to stdout when aom_config_option_enabled() reports yes for
