@@ -256,6 +256,7 @@
   [nextResponderToCheck setNextResponder:[self nextResponder]];
 
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [overlayWindow_ setDelegate:nil];
   [[self window] setDelegate:nil];
   [nsWindowController_ setTabWindowController:nil];
   [nsWindowController_ setWindow:nil];
@@ -370,6 +371,7 @@
     [window display];
     [window removeChildWindow:overlayWindow_];
 
+    [overlayWindow_ setDelegate:nil];
     [overlayWindow_ orderOut:nil];
     [overlayWindow_ release];
     overlayWindow_ = nil;

@@ -7,6 +7,7 @@
 #include <stddef.h>
 #import "base/mac/mac_util.h"
 
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -17,11 +18,13 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -900,4 +903,34 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   histogram_tester.ExpectBucketCount("OSX.Fullscreen.ToolbarStyle",
                                      (int)FullscreenToolbarStyle::TOOLBAR_NONE,
                                      3);
+}
+
+// Ensure that some steps performed during process shutdown can be performed
+// during a tab drag. Regression test for https://crbug.com/788271.
+IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ShutdownDuringTabDrag) {
+  // Rather than trying to trick TabDragController into calling showOverlay,
+  // call it directly. Retain it (as if by the OS). Then remove the overlay (to
+  // trigger the bug).
+  [controller() showOverlay];
+  base::scoped_nsobject<NSWindow> simulate_os_retain(
+      [[controller() overlayWindow] retain]);
+  [controller() removeOverlay];
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+
+  // To kick things along, close the window rather than waiting for
+  // BrowserCloseManager to do it asynchronously.
+  browser()->tab_strip_model()->CloseAllTabs();
+  [[controller() window] close];
+
+  content::RunAllPendingInMessageLoop();
+  AutoreleasePool()->Recycle();
+  EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
+
+  // All browsers are now closed, so this should immediately invoke
+  // ShutdownIfNoBrowsers() and HandleAppExitingForPlatform(), which invokes
+  // views::Widget::CloseAllSecondaryWidgets(). Must be done via PostTask() to
+  // avoid a DCHECK in BrowserProcessImpl::Unpin(), which checks for a run loop.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&chrome::CloseAllBrowsersAndQuit));
+  content::RunAllPendingInMessageLoop();
 }
