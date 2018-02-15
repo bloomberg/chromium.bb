@@ -22,9 +22,8 @@
 //      * SynchronousMojoCookieWrapper: Takes a network::mojom::CookieManager at
 //        construction; exposes synchronous interfaces that wrap the
 //        network::mojom::CookieManager async interfaces to make testing easier.
-//      * CookieChangeNotification: Test class implementing
-//        the CookieChangeNotification interface and recording
-//        incoming messages on it.
+//      * CookieChangeListener: Test class implementing the CookieChangeListener
+//        interface and recording incoming messages on it.
 //      * CookieManagerTest: Test base class.  Automatically sets up
 //        a cookie store, a cookie service wrapping it, a mojo pipe
 //        connected to the server, and the cookie service implemented
@@ -97,8 +96,8 @@ class SynchronousCookieManager {
     return num_deleted;
   }
 
-  // No need to wrap RequestNotification and CloneInterface, since their use
-  // is pure async.
+  // No need to wrap Add*Listener and CloneInterface, since their use
+  // is purely async.
  private:
   static void GetCookiesCallback(
       base::RunLoop* run_loop,
@@ -119,14 +118,6 @@ class SynchronousCookieManager {
                                     uint32_t* num_deleted_out,
                                     uint32_t num_deleted) {
     *num_deleted_out = num_deleted;
-    run_loop->Quit();
-  }
-
-  static void RequestNotificationCallback(
-      base::RunLoop* run_loop,
-      network::mojom::CookieChangeNotificationRequest* request_out,
-      network::mojom::CookieChangeNotificationRequest request) {
-    *request_out = std::move(request);
     run_loop->Quit();
   }
 
@@ -1460,26 +1451,24 @@ TEST_F(CookieManagerTest, DeleteByAll) {
 namespace {
 
 // Receives and records notifications from the network::mojom::CookieManager.
-class CookieChangeNotification
-    : public network::mojom::CookieChangeNotification {
+class CookieChangeListener : public network::mojom::CookieChangeListener {
  public:
-  struct Notification {
-    Notification(const net::CanonicalCookie& cookie_in,
-                 network::mojom::CookieChangeCause cause_in) {
-      cookie = cookie_in;
-      cause = cause_in;
-    }
+  // Records a cookie change received from CookieManager.
+  struct Change {
+    Change(const net::CanonicalCookie& cookie,
+           network::mojom::CookieChangeCause cause)
+        : cookie(cookie), cause(cause) {}
 
     net::CanonicalCookie cookie;
     network::mojom::CookieChangeCause cause;
   };
 
-  CookieChangeNotification(
-      network::mojom::CookieChangeNotificationRequest request)
+  CookieChangeListener(network::mojom::CookieChangeListenerRequest request)
       : run_loop_(nullptr), binding_(this, std::move(request)) {}
 
-  void WaitForSomeNotification() {
-    if (!notifications_.empty())
+  // Blocks until the listener observes a cookie change.
+  void WaitForChange() {
+    if (!observed_changes_.empty())
       return;
     base::RunLoop loop;
     run_loop_ = &loop;
@@ -1487,143 +1476,134 @@ class CookieChangeNotification
     run_loop_ = nullptr;
   }
 
-  // Adds existing notifications to passed in vector.
-  void GetCurrentNotifications(std::vector<Notification>* notifications) {
-    notifications->insert(notifications->end(), notifications_.begin(),
-                          notifications_.end());
-    notifications_.clear();
+  void ClearObservedChanges() { observed_changes_.clear(); }
+
+  const std::vector<Change>& observed_changes() const {
+    return observed_changes_;
   }
 
-  // network::mojom::CookieChangesNotification
-  void OnCookieChanged(const net::CanonicalCookie& cookie,
-                       network::mojom::CookieChangeCause cause) override {
-    notifications_.push_back(Notification(cookie, cause));
+  // network::mojom::CookieChangeListener
+  void OnCookieChange(const net::CanonicalCookie& cookie,
+                      network::mojom::CookieChangeCause cause) override {
+    observed_changes_.push_back(Change(cookie, cause));
     if (run_loop_)
       run_loop_->Quit();
   }
 
  private:
-  std::vector<Notification> notifications_;
+  std::vector<Change> observed_changes_;
 
   // Loop to signal on receiving a notification if not null.
   base::RunLoop* run_loop_;
 
-  mojo::Binding<network::mojom::CookieChangeNotification> binding_;
+  mojo::Binding<network::mojom::CookieChangeListener> binding_;
 };
 
 }  // anonymous namespace
 
-TEST_F(CookieManagerTest, Notification) {
-  GURL notification_url("http://www.testing.com/pathele");
-  std::string notification_domain("testing.com");
-  std::string notification_name("Cookie_Name");
-  network::mojom::CookieChangeNotificationPtr ptr;
-  network::mojom::CookieChangeNotificationRequest request(
-      mojo::MakeRequest(&ptr));
+TEST_F(CookieManagerTest, AddCookieChangeListener) {
+  const GURL listener_url("http://www.testing.com/pathele");
+  const std::string listener_url_host("www.testing.com");
+  const std::string listener_url_domain("testing.com");
+  const std::string listener_cookie_name("Cookie_Name");
+  ASSERT_EQ(listener_url.host(), listener_url_host);
 
-  CookieChangeNotification notification(std::move(request));
+  network::mojom::CookieChangeListenerPtr listener_ptr;
+  network::mojom::CookieChangeListenerRequest request(
+      mojo::MakeRequest(&listener_ptr));
 
-  cookie_service_client()->RequestNotification(
-      notification_url, notification_name, std::move(ptr));
+  CookieChangeListener listener(std::move(request));
 
-  std::vector<CookieChangeNotification::Notification> notifications;
-  notification.GetCurrentNotifications(&notifications);
-  EXPECT_EQ(0u, notifications.size());
-  notifications.clear();
+  cookie_service_client()->AddCookieChangeListener(
+      listener_url, listener_cookie_name, std::move(listener_ptr));
+
+  EXPECT_EQ(0u, listener.observed_changes().size());
 
   // Set a cookie that doesn't match the above notification request in name
   // and confirm it doesn't produce a notification.
   service_wrapper()->SetCanonicalCookie(
       net::CanonicalCookie(
-          "DifferentName", "val", notification_url.host(), "/", base::Time(),
+          "DifferentName", "val", listener_url_host, "/", base::Time(),
           base::Time(), base::Time(), /*secure=*/false,
           /*httponly=*/false, net::CookieSameSite::NO_RESTRICTION,
           net::COOKIE_PRIORITY_MEDIUM),
       true, true);
   base::RunLoop().RunUntilIdle();
-  notification.GetCurrentNotifications(&notifications);
-  EXPECT_EQ(0u, notifications.size());
-  notifications.clear();
+  EXPECT_EQ(0u, listener.observed_changes().size());
 
   // Set a cookie that doesn't match the above notification request in url
   // and confirm it doesn't produce a notification.
   service_wrapper()->SetCanonicalCookie(
       net::CanonicalCookie(
-          notification_name, "val", "www.other.host", "/", base::Time(),
+          listener_cookie_name, "val", "www.other.host", "/", base::Time(),
           base::Time(), base::Time(), /*secure=*/false,
           /*httponly=*/false, net::CookieSameSite::NO_RESTRICTION,
           net::COOKIE_PRIORITY_MEDIUM),
       true, true);
 
   base::RunLoop().RunUntilIdle();
-  notification.GetCurrentNotifications(&notifications);
-  EXPECT_EQ(0u, notifications.size());
-  notifications.clear();
+  EXPECT_EQ(0u, listener.observed_changes().size());
 
   // Insert a cookie that does match.
   service_wrapper()->SetCanonicalCookie(
       net::CanonicalCookie(
-          notification_name, "val", notification_url.host(), "/", base::Time(),
+          listener_cookie_name, "val", listener_url_host, "/", base::Time(),
           base::Time(), base::Time(), /*secure=*/false,
           /*httponly=*/false, net::CookieSameSite::NO_RESTRICTION,
           net::COOKIE_PRIORITY_MEDIUM),
       true, true);
 
   // Expect asynchrony
-  notification.GetCurrentNotifications(&notifications);
-  EXPECT_EQ(0u, notifications.size());
-  notifications.clear();
+  EXPECT_EQ(0u, listener.observed_changes().size());
 
-  // Expect notification
-  notification.WaitForSomeNotification();
-  notification.GetCurrentNotifications(&notifications);
-  EXPECT_EQ(1u, notifications.size());
-  EXPECT_EQ(notification_name, notifications[0].cookie.Name());
-  EXPECT_EQ(notification_url.host(), notifications[0].cookie.Domain());
+  // Expect to observe a cookie change.
+  listener.WaitForChange();
+  std::vector<CookieChangeListener::Change> observed_changes =
+      listener.observed_changes();
+  ASSERT_EQ(1u, observed_changes.size());
+  EXPECT_EQ(listener_cookie_name, observed_changes[0].cookie.Name());
+  EXPECT_EQ(listener_url_host, observed_changes[0].cookie.Domain());
   EXPECT_EQ(network::mojom::CookieChangeCause::INSERTED,
-            notifications[0].cause);
-  notifications.clear();
+            observed_changes[0].cause);
+  listener.ClearObservedChanges();
 
   // Delete all cookies matching the domain.  This includes one for which
   // a notification will be generated, and one for which a notification
   // will not be generated.
   network::mojom::CookieDeletionFilter filter;
   filter.including_domains = std::vector<std::string>();
-  filter.including_domains->push_back(notification_domain);
+  filter.including_domains->push_back(listener_url_domain);
   // If this test fails, it may indicate a problem which will lead to
   // no notifications being generated and the test hanging, so assert.
   ASSERT_EQ(2u, service_wrapper()->DeleteCookies(filter));
 
   // The notification may already have arrived, or it may arrive in the future.
-  notification.WaitForSomeNotification();
-  notification.GetCurrentNotifications(&notifications);
-  ASSERT_EQ(1u, notifications.size());
-  EXPECT_EQ(notification_name, notifications[0].cookie.Name());
-  EXPECT_EQ(notification_url.host(), notifications[0].cookie.Domain());
+  listener.WaitForChange();
+  observed_changes = listener.observed_changes();
+  ASSERT_EQ(1u, observed_changes.size());
+  EXPECT_EQ(listener_cookie_name, observed_changes[0].cookie.Name());
+  EXPECT_EQ(listener_url_host, observed_changes[0].cookie.Domain());
   EXPECT_EQ(network::mojom::CookieChangeCause::EXPLICIT,
-            notifications[0].cause);
+            observed_changes[0].cause);
 }
 
-TEST_F(CookieManagerTest, GlobalNotifications) {
+TEST_F(CookieManagerTest, AddGlobalChangeListener) {
   const std::string kExampleHost = "www.example.com";
   const std::string kThisHost = "www.this.com";
   const std::string kThisETLDP1 = "this.com";
   const std::string kThatHost = "www.that.com";
 
-  network::mojom::CookieChangeNotificationPtr ptr;
-  network::mojom::CookieChangeNotificationRequest request(
-      mojo::MakeRequest(&ptr));
+  network::mojom::CookieChangeListenerPtr listener_ptr;
+  network::mojom::CookieChangeListenerRequest request(
+      mojo::MakeRequest(&listener_ptr));
 
-  CookieChangeNotification notification(std::move(request));
+  CookieChangeListener listener(std::move(request));
 
-  cookie_service_client()->RequestGlobalNotifications(std::move(ptr));
+  cookie_service_client()->AddGlobalChangeListener(std::move(listener_ptr));
 
-  std::vector<CookieChangeNotification::Notification> notifications;
-  notification.GetCurrentNotifications(&notifications);
-  EXPECT_EQ(0u, notifications.size());
-  notifications.clear();
+  EXPECT_EQ(0u, listener.observed_changes().size());
 
-  // Confirm the right notification is seen from setting a cookie.
+  // Confirm the right change is observed after setting a cookie.
   service_wrapper()->SetCanonicalCookie(
       net::CanonicalCookie("Thing1", "val", kExampleHost, "/", base::Time(),
                            base::Time(), base::Time(), /*secure=*/false,
@@ -1633,20 +1613,19 @@ TEST_F(CookieManagerTest, GlobalNotifications) {
       true, true);
 
   // Expect asynchrony
-  notification.GetCurrentNotifications(&notifications);
-  EXPECT_EQ(0u, notifications.size());
-  notifications.clear();
+  EXPECT_EQ(0u, listener.observed_changes().size());
 
   base::RunLoop().RunUntilIdle();
-  notification.GetCurrentNotifications(&notifications);
-  EXPECT_EQ(1u, notifications.size());
-  EXPECT_EQ("Thing1", notifications[0].cookie.Name());
-  EXPECT_EQ("val", notifications[0].cookie.Value());
-  EXPECT_EQ(kExampleHost, notifications[0].cookie.Domain());
-  EXPECT_EQ("/", notifications[0].cookie.Path());
+  std::vector<CookieChangeListener::Change> observed_changes =
+      listener.observed_changes();
+  ASSERT_EQ(1u, observed_changes.size());
+  EXPECT_EQ("Thing1", observed_changes[0].cookie.Name());
+  EXPECT_EQ("val", observed_changes[0].cookie.Value());
+  EXPECT_EQ(kExampleHost, observed_changes[0].cookie.Domain());
+  EXPECT_EQ("/", observed_changes[0].cookie.Path());
   EXPECT_EQ(network::mojom::CookieChangeCause::INSERTED,
-            notifications[0].cause);
-  notifications.clear();
+            observed_changes[0].cause);
+  listener.ClearObservedChanges();
 
   // Set two cookies in a row on different domains and confirm they are both
   // signalled.
@@ -1666,15 +1645,15 @@ TEST_F(CookieManagerTest, GlobalNotifications) {
       true, true);
 
   base::RunLoop().RunUntilIdle();
-  notification.GetCurrentNotifications(&notifications);
-  EXPECT_EQ(2u, notifications.size());
-  EXPECT_EQ("Thing1", notifications[0].cookie.Name());
+  observed_changes = listener.observed_changes();
+  ASSERT_EQ(2u, observed_changes.size());
+  EXPECT_EQ("Thing1", observed_changes[0].cookie.Name());
   EXPECT_EQ(network::mojom::CookieChangeCause::INSERTED,
-            notifications[0].cause);
-  EXPECT_EQ("Thing2", notifications[1].cookie.Name());
+            observed_changes[0].cause);
+  EXPECT_EQ("Thing2", observed_changes[1].cookie.Name());
   EXPECT_EQ(network::mojom::CookieChangeCause::INSERTED,
-            notifications[1].cause);
-  notifications.clear();
+            observed_changes[1].cause);
+  listener.ClearObservedChanges();
 
   // Delete cookies matching one domain; should produce one notification.
   network::mojom::CookieDeletionFilter filter;
@@ -1685,79 +1664,69 @@ TEST_F(CookieManagerTest, GlobalNotifications) {
   ASSERT_EQ(1u, service_wrapper()->DeleteCookies(filter));
 
   // The notification may already have arrived, or it may arrive in the future.
-  notification.WaitForSomeNotification();
-  notification.GetCurrentNotifications(&notifications);
-  ASSERT_EQ(1u, notifications.size());
-  EXPECT_EQ("Thing1", notifications[0].cookie.Name());
-  EXPECT_EQ(kThisHost, notifications[0].cookie.Domain());
+  listener.WaitForChange();
+  observed_changes = listener.observed_changes();
+  ASSERT_EQ(1u, observed_changes.size());
+  EXPECT_EQ("Thing1", observed_changes[0].cookie.Name());
+  EXPECT_EQ(kThisHost, observed_changes[0].cookie.Domain());
   EXPECT_EQ(network::mojom::CookieChangeCause::EXPLICIT,
-            notifications[0].cause);
+            observed_changes[0].cause);
 }
 
 // Confirm the service operates properly if a returned notification interface
 // is destroyed.
-TEST_F(CookieManagerTest, NotificationRequestDestroyed) {
-  // Create two identical notification interfaces.
-  GURL notification_url("http://www.testing.com/pathele");
-  std::string notification_name("Cookie_Name");
+TEST_F(CookieManagerTest, ListenerDestroyed) {
+  // Create two identical listeners.
+  const GURL listener_url("http://www.testing.com/pathele");
+  const std::string listener_url_host("www.testing.com");
+  ASSERT_EQ(listener_url.host(), listener_url_host);
+  const std::string listener_cookie_name("Cookie_Name");
 
-  network::mojom::CookieChangeNotificationPtr ptr1;
-  network::mojom::CookieChangeNotificationRequest request1(
-      mojo::MakeRequest(&ptr1));
-  std::unique_ptr<CookieChangeNotification> notification1(
-      std::make_unique<CookieChangeNotification>(std::move(request1)));
-  cookie_service_client()->RequestNotification(
-      notification_url, notification_name, std::move(ptr1));
+  network::mojom::CookieChangeListenerPtr listener1_ptr;
+  network::mojom::CookieChangeListenerRequest request1(
+      mojo::MakeRequest(&listener1_ptr));
+  auto listener1 = std::make_unique<CookieChangeListener>(std::move(request1));
+  cookie_service_client()->AddCookieChangeListener(
+      listener_url, listener_cookie_name, std::move(listener1_ptr));
 
-  network::mojom::CookieChangeNotificationPtr ptr2;
-  network::mojom::CookieChangeNotificationRequest request2(
-      mojo::MakeRequest(&ptr2));
-  std::unique_ptr<CookieChangeNotification> notification2(
-      std::make_unique<CookieChangeNotification>(std::move(request2)));
-  cookie_service_client()->RequestNotification(
-      notification_url, notification_name, std::move(ptr2));
+  network::mojom::CookieChangeListenerPtr listener2_ptr;
+  network::mojom::CookieChangeListenerRequest request2(
+      mojo::MakeRequest(&listener2_ptr));
+  auto listener2 = std::make_unique<CookieChangeListener>(std::move(request2));
+  cookie_service_client()->AddCookieChangeListener(
+      listener_url, listener_cookie_name, std::move(listener2_ptr));
 
   // Add a cookie and receive a notification on both interfaces.
   service_wrapper()->SetCanonicalCookie(
       net::CanonicalCookie(
-          notification_name, "val", notification_url.host(), "/", base::Time(),
+          listener_cookie_name, "val", listener_url_host, "/", base::Time(),
           base::Time(), base::Time(), /*secure=*/false,
           /*httponly=*/false, net::CookieSameSite::NO_RESTRICTION,
           net::COOKIE_PRIORITY_MEDIUM),
       true, true);
 
-  std::vector<CookieChangeNotification::Notification> notifications;
-  notification1->GetCurrentNotifications(&notifications);
-  EXPECT_EQ(0u, notifications.size());
-  notifications.clear();
+  EXPECT_EQ(0u, listener1->observed_changes().size());
+  EXPECT_EQ(0u, listener2->observed_changes().size());
 
-  notification2->GetCurrentNotifications(&notifications);
-  EXPECT_EQ(0u, notifications.size());
-  notifications.clear();
+  listener1->WaitForChange();
+  EXPECT_EQ(1u, listener1->observed_changes().size());
+  listener1->ClearObservedChanges();
+  listener2->WaitForChange();
+  EXPECT_EQ(1u, listener2->observed_changes().size());
+  listener2->ClearObservedChanges();
+  EXPECT_EQ(2u, service()->GetListenersRegisteredForTesting());
 
-  notification1->WaitForSomeNotification();
-  notification1->GetCurrentNotifications(&notifications);
-  EXPECT_EQ(1u, notifications.size());
-  notifications.clear();
-
-  notification2->WaitForSomeNotification();
-  notification2->GetCurrentNotifications(&notifications);
-  EXPECT_EQ(1u, notifications.size());
-  notifications.clear();
-  EXPECT_EQ(2u, service()->GetNotificationsBoundForTesting());
-
-  // Destroy the first interface
-  notification1.reset();
+  // Destroy the first listener.
+  listener1.reset();
 
   // Confirm the second interface can still receive notifications.
   network::mojom::CookieDeletionFilter filter;
   EXPECT_EQ(1u, service_wrapper()->DeleteCookies(filter));
 
-  notification2->WaitForSomeNotification();
-  notification2->GetCurrentNotifications(&notifications);
-  EXPECT_EQ(1u, notifications.size());
-  notifications.clear();
-  EXPECT_EQ(1u, service()->GetNotificationsBoundForTesting());
+  listener2->WaitForChange();
+  EXPECT_EQ(1u, listener2->observed_changes().size());
+
+  EXPECT_EQ(1u, service()->GetListenersRegisteredForTesting());
 }
 
 // Confirm we get a connection error notification if the service dies.

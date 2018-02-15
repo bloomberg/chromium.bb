@@ -18,7 +18,7 @@
 #include "net/cookies/canonical_cookie.h"
 
 ExtensionCookieNotifier::ExtensionCookieNotifier(Profile* profile)
-    : profile_(profile) {
+    : profile_(profile), binding_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile);
 
@@ -28,14 +28,12 @@ ExtensionCookieNotifier::ExtensionCookieNotifier(Profile* profile)
       ->GetNetworkContext()
       ->GetCookieManager(mojo::MakeRequest(&manager_ptr));
 
-  network::mojom::CookieChangeNotificationPtr notification_ptr;
-  binding_ =
-      std::make_unique<mojo::Binding<network::mojom::CookieChangeNotification>>(
-          this, mojo::MakeRequest(&notification_ptr));
-  manager_ptr->RequestGlobalNotifications(std::move(notification_ptr));
+  network::mojom::CookieChangeListenerPtr listener_ptr;
+  binding_.Bind(mojo::MakeRequest(&listener_ptr));
+  manager_ptr->AddGlobalChangeListener(std::move(listener_ptr));
 }
 
-void ExtensionCookieNotifier::OnCookieChanged(
+void ExtensionCookieNotifier::OnCookieChange(
     const net::CanonicalCookie& cookie,
     network::mojom::CookieChangeCause cause) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
