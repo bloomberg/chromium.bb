@@ -115,6 +115,8 @@ OffscreenCanvasRenderingContext2D::TransferToStaticBitmapImage() {
     return nullptr;
   scoped_refptr<StaticBitmapImage> image =
       GetCanvasResourceProvider()->Snapshot();
+  if (!image)
+    return nullptr;
 
   image->SetOriginClean(this->OriginClean());
   return image;

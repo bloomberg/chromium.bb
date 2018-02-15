@@ -107,21 +107,25 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency) {
   ImageBitmap* image_bitmap_no_crop =
       ImageBitmap::Create(image_element, crop_rect,
                           &(image_element->GetDocument()), default_options);
+  ASSERT_TRUE(image_bitmap_no_crop);
   crop_rect = IntRect(image_->width() / 2, image_->height() / 2,
                       image_->width() / 2, image_->height() / 2);
   ImageBitmap* image_bitmap_interior_crop =
       ImageBitmap::Create(image_element, crop_rect,
                           &(image_element->GetDocument()), default_options);
+  ASSERT_TRUE(image_bitmap_interior_crop);
   crop_rect = IntRect(-image_->width() / 2, -image_->height() / 2,
                       image_->width(), image_->height());
   ImageBitmap* image_bitmap_exterior_crop =
       ImageBitmap::Create(image_element, crop_rect,
                           &(image_element->GetDocument()), default_options);
+  ASSERT_TRUE(image_bitmap_exterior_crop);
   crop_rect = IntRect(-image_->width(), -image_->height(), image_->width(),
                       image_->height());
   ImageBitmap* image_bitmap_outside_crop =
       ImageBitmap::Create(image_element, crop_rect,
                           &(image_element->GetDocument()), default_options);
+  ASSERT_TRUE(image_bitmap_outside_crop);
 
   ASSERT_EQ(image_bitmap_no_crop->BitmapImage()
                 ->PaintImageForCurrentFrame()
@@ -174,6 +178,7 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
       IntRect(0, 0, image_->width(), image_->height());
   ImageBitmap* image_bitmap = ImageBitmap::Create(
       image, crop_rect, &(image->GetDocument()), default_options);
+  ASSERT_TRUE(image_bitmap);
   ASSERT_EQ(
       image_bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSkImage(),
       original_image_resource->GetImage()
@@ -307,7 +312,7 @@ TEST_F(ImageBitmapTest, MAYBE_ImageBitmapColorSpaceConversionHTMLImageElement) {
         PrepareBitmapOptions(color_space_conversion);
     ImageBitmap* image_bitmap = ImageBitmap::Create(
         image_element, crop_rect, &(image_element->GetDocument()), options);
-
+    ASSERT_TRUE(image_bitmap);
     SkImage* converted_image = image_bitmap->BitmapImage()
                                    ->PaintImageForCurrentFrame()
                                    .GetSkImage()
@@ -412,6 +417,7 @@ TEST_F(ImageBitmapTest, MAYBE_ImageBitmapColorSpaceConversionImageBitmap) {
       PrepareBitmapOptions(ColorSpaceConversion::SRGB);
   ImageBitmap* source_image_bitmap = ImageBitmap::Create(
       image_element, crop_rect, &(image_element->GetDocument()), options);
+  ASSERT_TRUE(source_image_bitmap);
 
   sk_sp<SkColorSpace> color_space = nullptr;
   SkColorType color_type = SkColorType::kN32_SkColorType;
@@ -429,6 +435,7 @@ TEST_F(ImageBitmapTest, MAYBE_ImageBitmapColorSpaceConversionImageBitmap) {
     options = PrepareBitmapOptions(color_space_conversion);
     ImageBitmap* image_bitmap =
         ImageBitmap::Create(source_image_bitmap, crop_rect, options);
+    ASSERT_TRUE(image_bitmap);
     SkImage* converted_image = image_bitmap->BitmapImage()
                                    ->PaintImageForCurrentFrame()
                                    .GetSkImage()
@@ -541,6 +548,7 @@ TEST_F(ImageBitmapTest,
         PrepareBitmapOptions(color_space_conversion);
     ImageBitmap* image_bitmap = ImageBitmap::Create(
         StaticBitmapImage::Create(image), crop_rect, options);
+    ASSERT_TRUE(image_bitmap);
 
     SkImage* converted_image = image_bitmap->BitmapImage()
                                    ->PaintImageForCurrentFrame()
@@ -639,6 +647,7 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageData) {
         PrepareBitmapOptions(color_space_conversion);
     ImageBitmap* image_bitmap =
         ImageBitmap::Create(image_data, crop_rect, options);
+    ASSERT_TRUE(image_bitmap);
 
     SkImage* converted_image = image_bitmap->BitmapImage()
                                    ->PaintImageForCurrentFrame()

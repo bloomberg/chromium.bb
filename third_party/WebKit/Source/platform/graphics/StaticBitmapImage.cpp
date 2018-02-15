@@ -24,6 +24,8 @@ scoped_refptr<StaticBitmapImage> StaticBitmapImage::Create(
     sk_sp<SkImage> image,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper>
         context_provider_wrapper) {
+  if (!image)
+    return nullptr;
   if (image->isTextureBacked()) {
     CHECK(context_provider_wrapper);
     return AcceleratedStaticBitmapImage::CreateFromSkImage(

@@ -963,6 +963,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageBitmap) {
   surface->getCanvas()->clear(SK_ColorRED);
   ImageBitmap* image_bitmap = ImageBitmap::Create(
       StaticBitmapImage::Create(surface->makeImageSnapshot()));
+  ASSERT_TRUE(image_bitmap->BitmapImage());
 
   // Serialize and deserialize it.
   v8::Local<v8::Value> wrapper = ToV8(image_bitmap, scope.GetScriptState());
@@ -970,6 +971,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageBitmap) {
   ASSERT_TRUE(V8ImageBitmap::hasInstance(result, scope.GetIsolate()));
   ImageBitmap* new_image_bitmap =
       V8ImageBitmap::ToImpl(result.As<v8::Object>());
+  ASSERT_TRUE(new_image_bitmap->BitmapImage());
   ASSERT_EQ(IntSize(10, 7), new_image_bitmap->Size());
 
   // Check that the pixel at (3, 3) is red.
@@ -997,6 +999,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageBitmapWithColorSpaceInfo) {
   surface->getCanvas()->clear(SK_ColorRED);
   ImageBitmap* image_bitmap = ImageBitmap::Create(
       StaticBitmapImage::Create(surface->makeImageSnapshot()));
+  ASSERT_TRUE(image_bitmap->BitmapImage());
 
   // Serialize and deserialize it.
   v8::Local<v8::Value> wrapper = ToV8(image_bitmap, scope.GetScriptState());
@@ -1004,6 +1007,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageBitmapWithColorSpaceInfo) {
   ASSERT_TRUE(V8ImageBitmap::hasInstance(result, scope.GetIsolate()));
   ImageBitmap* new_image_bitmap =
       V8ImageBitmap::ToImpl(result.As<v8::Object>());
+  ASSERT_TRUE(new_image_bitmap->BitmapImage());
   ASSERT_EQ(IntSize(10, 7), new_image_bitmap->Size());
 
   // Check the color settings.
@@ -1224,6 +1228,7 @@ TEST(V8ScriptValueSerializerTest, TransferImageBitmap) {
   sk_sp<SkImage> image = surface->makeImageSnapshot();
   ImageBitmap* image_bitmap =
       ImageBitmap::Create(StaticBitmapImage::Create(image));
+  ASSERT_TRUE(image_bitmap->BitmapImage());
 
   v8::Local<v8::Value> wrapper = ToV8(image_bitmap, scope.GetScriptState());
   Transferables transferables;
@@ -1233,6 +1238,7 @@ TEST(V8ScriptValueSerializerTest, TransferImageBitmap) {
   ASSERT_TRUE(V8ImageBitmap::hasInstance(result, scope.GetIsolate()));
   ImageBitmap* new_image_bitmap =
       V8ImageBitmap::ToImpl(result.As<v8::Object>());
+  ASSERT_TRUE(new_image_bitmap->BitmapImage());
   ASSERT_EQ(IntSize(10, 7), new_image_bitmap->Size());
 
   // Check that the pixel at (3, 3) is red.
