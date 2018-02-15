@@ -144,7 +144,6 @@
 #include "core/html/HTMLMetaElement.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLScriptElement.h"
-#include "core/html/HTMLTemplateElement.h"
 #include "core/html/HTMLTitleElement.h"
 #include "core/html/HTMLUnknownElement.h"
 #include "core/html/PluginDocument.h"
@@ -1286,16 +1285,13 @@ Node* Document::importNode(Node* imported_node,
                                            CreateElementFlags::ByImportNode(),
                                            old_element->IsValue());
 
-      new_element->CloneDataFromElement(*old_element);
+      new_element->CloneDataFromElement(
+          *old_element,
+          deep ? CloneChildrenFlag::kClone : CloneChildrenFlag::kSkip);
 
       if (deep) {
         if (!ImportContainerNodeChildren(old_element, new_element,
                                          exception_state))
-          return nullptr;
-        if (IsHTMLTemplateElement(*old_element) &&
-            !EnsureTemplateDocument().ImportContainerNodeChildren(
-                ToHTMLTemplateElement(old_element)->content(),
-                ToHTMLTemplateElement(new_element)->content(), exception_state))
           return nullptr;
       }
 

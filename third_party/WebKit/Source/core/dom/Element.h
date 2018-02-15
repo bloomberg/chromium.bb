@@ -101,6 +101,8 @@ enum ElementFlags {
   kNumberOfElementFlags = 7,  // Size of bitfield used to store the flags.
 };
 
+enum class CloneChildrenFlag { kClone, kSkip };
+
 enum class ShadowRootType;
 
 enum class SelectionBehaviorOnFocus {
@@ -452,12 +454,14 @@ class CORE_EXPORT Element : public ContainerNode {
   void CloneAttributesFromElement(const Element&);
 
   // Clones all attribute-derived data, including subclass specifics (through
-  // copyNonAttributeProperties.)
-  void CloneDataFromElement(const Element&);
+  // CopyNonAttributePropertiesFromElement.)
+  void CloneDataFromElement(const Element&, CloneChildrenFlag);
 
   bool HasEquivalentAttributes(const Element* other) const;
 
-  virtual void CopyNonAttributePropertiesFromElement(const Element&) {}
+  // Step 5 of https://dom.spec.whatwg.org/#concept-node-clone
+  virtual void CopyNonAttributePropertiesFromElement(const Element&,
+                                                     CloneChildrenFlag) {}
 
   void AttachLayoutTree(AttachContext&) override;
   void DetachLayoutTree(const AttachContext& = AttachContext()) override;

@@ -55,7 +55,8 @@ class CORE_EXPORT HTMLTemplateElement final : public HTMLElement {
   virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
-  Node* cloneNode(bool deep, ExceptionState&) override;
+  void CopyNonAttributePropertiesFromElement(const Element&,
+                                             CloneChildrenFlag) override;
   void DidMoveToNewDocument(Document& old_document) override;
 
   explicit HTMLTemplateElement(Document&);

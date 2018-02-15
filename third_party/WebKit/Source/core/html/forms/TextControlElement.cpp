@@ -995,11 +995,12 @@ void TextControlElement::Trace(Visitor* visitor) {
 }
 
 void TextControlElement::CopyNonAttributePropertiesFromElement(
-    const Element& source) {
+    const Element& source,
+    CloneChildrenFlag flag) {
   const TextControlElement& source_element =
       static_cast<const TextControlElement&>(source);
   last_change_was_user_edit_ = source_element.last_change_was_user_edit_;
-  HTMLFormControlElement::CopyNonAttributePropertiesFromElement(source);
+  HTMLFormControlElement::CopyNonAttributePropertiesFromElement(source, flag);
 }
 
 }  // namespace blink

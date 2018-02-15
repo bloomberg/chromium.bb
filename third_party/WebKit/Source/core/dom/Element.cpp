@@ -265,7 +265,12 @@ Node* Element::cloneNode(bool deep, ExceptionState&) {
 }
 
 Element* Element::CloneElementWithChildren() {
-  Element* clone = CloneElementWithoutChildren();
+  Element* clone = CloneElementWithoutAttributesAndChildren();
+  // This will catch HTML elements in the wrong namespace that are not correctly
+  // copied.  This is a sanity check as HTML overloads some of the DOM methods.
+  DCHECK_EQ(IsHTMLElement(), clone->IsHTMLElement());
+
+  clone->CloneDataFromElement(*this, CloneChildrenFlag::kClone);
   CloneChildNodes(clone);
   return clone;
 }
@@ -276,7 +281,7 @@ Element* Element::CloneElementWithoutChildren() {
   // copied.  This is a sanity check as HTML overloads some of the DOM methods.
   DCHECK_EQ(IsHTMLElement(), clone->IsHTMLElement());
 
-  clone->CloneDataFromElement(*this);
+  clone->CloneDataFromElement(*this, CloneChildrenFlag::kSkip);
   return clone;
 }
 
@@ -4384,9 +4389,10 @@ void Element::CloneAttributesFromElement(const Element& other) {
     setNonce(other.nonce());
 }
 
-void Element::CloneDataFromElement(const Element& other) {
+void Element::CloneDataFromElement(const Element& other,
+                                   CloneChildrenFlag flag) {
   CloneAttributesFromElement(other);
-  CopyNonAttributePropertiesFromElement(other);
+  CopyNonAttributePropertiesFromElement(other, flag);
 }
 
 void Element::CreateUniqueElementData() {

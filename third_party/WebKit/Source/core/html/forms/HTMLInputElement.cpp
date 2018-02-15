@@ -1032,7 +1032,8 @@ bool HTMLInputElement::SizeShouldIncludeDecoration(int& preferred_size) const {
 }
 
 void HTMLInputElement::CopyNonAttributePropertiesFromElement(
-    const Element& source) {
+    const Element& source,
+    CloneChildrenFlag flag) {
   const HTMLInputElement& source_element =
       static_cast<const HTMLInputElement&>(source);
 
@@ -1043,7 +1044,7 @@ void HTMLInputElement::CopyNonAttributePropertiesFromElement(
   is_indeterminate_ = source_element.is_indeterminate_;
   input_type_->CopyNonAttributeProperties(source_element);
 
-  TextControlElement::CopyNonAttributePropertiesFromElement(source);
+  TextControlElement::CopyNonAttributePropertiesFromElement(source, flag);
 
   needs_to_update_view_value_ = true;
   input_type_view_->UpdateView();

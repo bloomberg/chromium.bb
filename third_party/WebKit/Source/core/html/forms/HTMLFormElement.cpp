@@ -796,9 +796,10 @@ void HTMLFormElement::FinishParsingChildren() {
 }
 
 void HTMLFormElement::CopyNonAttributePropertiesFromElement(
-    const Element& source) {
+    const Element& source,
+    CloneChildrenFlag flag) {
   was_demoted_ = static_cast<const HTMLFormElement&>(source).was_demoted_;
-  HTMLElement::CopyNonAttributePropertiesFromElement(source);
+  HTMLElement::CopyNonAttributePropertiesFromElement(source, flag);
 }
 
 void HTMLFormElement::AnonymousNamedGetter(

@@ -624,13 +624,14 @@ bool HTMLTextAreaElement::SupportsAutofocus() const {
 }
 
 void HTMLTextAreaElement::CopyNonAttributePropertiesFromElement(
-    const Element& source) {
+    const Element& source,
+    CloneChildrenFlag flag) {
   const HTMLTextAreaElement& source_element =
       static_cast<const HTMLTextAreaElement&>(source);
   SetValueCommon(source_element.value(), kDispatchNoEvent,
                  TextControlSetValueSelection::kSetSelectionToEnd);
   is_dirty_ = source_element.is_dirty_;
-  TextControlElement::CopyNonAttributePropertiesFromElement(source);
+  TextControlElement::CopyNonAttributePropertiesFromElement(source, flag);
 }
 
 }  // namespace blink
