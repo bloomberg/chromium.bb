@@ -40,15 +40,13 @@ PlatformSpeechSynthesizer* PlatformSpeechSynthesizer::Create(
     PlatformSpeechSynthesizerClient* client) {
   PlatformSpeechSynthesizer* synthesizer =
       new PlatformSpeechSynthesizer(client);
-  bool initialize_voices_now = true;
 #if defined(OS_ANDROID)
-  // On low-end Android devices we don't fetch voices until the
-  // object is touched to avoid needlessly binding to TTS service,
-  // see https://crbug.com/811929.
-  initialize_voices_now = !Platform::Current()->IsLowEndDevice();
+// On Android devices we don't fetch voices until the object
+// is touched to avoid needlessly binding to TTS service, see
+// https://crbug.com/811929.
+#else
+  synthesizer->InitializeVoiceList();
 #endif
-  if (initialize_voices_now)
-    synthesizer->InitializeVoiceList();
   return synthesizer;
 }
 
