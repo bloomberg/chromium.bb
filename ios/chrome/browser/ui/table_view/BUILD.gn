@@ -3,18 +3,30 @@
 # found in the LICENSE file.
 
 source_set("table_view") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "chrome_table_view_controller.h",
+    "chrome_table_view_controller.mm",
     "table_view_model.h",
     "table_view_model.mm",
   ]
-
   deps = [
     "//ios/chrome/browser/ui/list_model",
   ]
-
   public_deps = [
     "//ios/chrome/browser/ui/table_view/cells",
   ]
+}
 
+source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "chrome_table_view_controller_unittest.mm",
+  ]
+  deps = [
+    ":table_view",
+    "//ios/chrome/browser/ui/table_view/cells",
+    "//testing/gtest",
+  ]
 }
