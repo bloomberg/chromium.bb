@@ -81,7 +81,6 @@ CORE_EXPORT bool IsRootEditableElement(const Node&);
 CORE_EXPORT Element* RootEditableElement(const Node&);
 Element* RootEditableElementOf(const Position&);
 Element* RootEditableElementOf(const PositionInFlatTree&);
-Element* RootEditableElementOf(const VisiblePosition&);
 ContainerNode* RootEditableElementOrTreeScopeRootNodeOf(const Position&);
 // highestEditableRoot returns the highest editable node. If the
 // rootEditableElement of the speicified Position is <body>, this returns the
