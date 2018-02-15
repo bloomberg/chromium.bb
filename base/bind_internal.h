@@ -10,15 +10,11 @@
 #include <type_traits>
 #include <utility>
 
-#include "base/bind_helpers.h"
 #include "base/callback_internal.h"
 #include "base/memory/raw_scoped_refptr_mismatch_checker.h"
 #include "base/memory/weak_ptr.h"
 #include "base/template_util.h"
 #include "build/build_config.h"
-
-namespace base {
-namespace internal {
 
 // See base/callback.h for user documentation.
 //
@@ -44,6 +40,246 @@ namespace internal {
 //  Invoker<> -- Unwraps the curried parameters and executes the Functor.
 //  BindState<> -- Stores the curried parameters, and is the main entry point
 //                 into the Bind() system.
+
+namespace base {
+
+template <typename T>
+struct IsWeakReceiver;
+
+template <typename>
+struct BindUnwrapTraits;
+
+template <typename Functor, typename BoundArgsTuple, typename SFINAE = void>
+struct CallbackCancellationTraits;
+
+namespace internal {
+
+template <typename Functor, typename SFINAE = void>
+struct FunctorTraits;
+
+template <typename T>
+class UnretainedWrapper {
+ public:
+  explicit UnretainedWrapper(T* o) : ptr_(o) {}
+  T* get() const { return ptr_; }
+
+ private:
+  T* ptr_;
+};
+
+template <typename T>
+class ConstRefWrapper {
+ public:
+  explicit ConstRefWrapper(const T& o) : ptr_(&o) {}
+  const T& get() const { return *ptr_; }
+
+ private:
+  const T* ptr_;
+};
+
+template <typename T>
+class RetainedRefWrapper {
+ public:
+  explicit RetainedRefWrapper(T* o) : ptr_(o) {}
+  explicit RetainedRefWrapper(scoped_refptr<T> o) : ptr_(std::move(o)) {}
+  T* get() const { return ptr_.get(); }
+
+ private:
+  scoped_refptr<T> ptr_;
+};
+
+template <typename T>
+struct IgnoreResultHelper {
+  explicit IgnoreResultHelper(T functor) : functor_(std::move(functor)) {}
+  explicit operator bool() const { return !!functor_; }
+
+  T functor_;
+};
+
+// An alternate implementation is to avoid the destructive copy, and instead
+// specialize ParamTraits<> for OwnedWrapper<> to change the StorageType to
+// a class that is essentially a std::unique_ptr<>.
+//
+// The current implementation has the benefit though of leaving ParamTraits<>
+// fully in callback_internal.h as well as avoiding type conversions during
+// storage.
+template <typename T>
+class OwnedWrapper {
+ public:
+  explicit OwnedWrapper(T* o) : ptr_(o) {}
+  ~OwnedWrapper() { delete ptr_; }
+  T* get() const { return ptr_; }
+  OwnedWrapper(OwnedWrapper&& other) {
+    ptr_ = other.ptr_;
+    other.ptr_ = NULL;
+  }
+
+ private:
+  mutable T* ptr_;
+};
+
+// PassedWrapper is a copyable adapter for a scoper that ignores const.
+//
+// It is needed to get around the fact that Bind() takes a const reference to
+// all its arguments.  Because Bind() takes a const reference to avoid
+// unnecessary copies, it is incompatible with movable-but-not-copyable
+// types; doing a destructive "move" of the type into Bind() would violate
+// the const correctness.
+//
+// This conundrum cannot be solved without either C++11 rvalue references or
+// a O(2^n) blowup of Bind() templates to handle each combination of regular
+// types and movable-but-not-copyable types.  Thus we introduce a wrapper type
+// that is copyable to transmit the correct type information down into
+// BindState<>. Ignoring const in this type makes sense because it is only
+// created when we are explicitly trying to do a destructive move.
+//
+// Two notes:
+//  1) PassedWrapper supports any type that has a move constructor, however
+//     the type will need to be specifically whitelisted in order for it to be
+//     bound to a Callback. We guard this explicitly at the call of Passed()
+//     to make for clear errors. Things not given to Passed() will be forwarded
+//     and stored by value which will not work for general move-only types.
+//  2) is_valid_ is distinct from NULL because it is valid to bind a "NULL"
+//     scoper to a Callback and allow the Callback to execute once.
+template <typename T>
+class PassedWrapper {
+ public:
+  explicit PassedWrapper(T&& scoper)
+      : is_valid_(true), scoper_(std::move(scoper)) {}
+  PassedWrapper(PassedWrapper&& other)
+      : is_valid_(other.is_valid_), scoper_(std::move(other.scoper_)) {}
+  T Take() const {
+    CHECK(is_valid_);
+    is_valid_ = false;
+    return std::move(scoper_);
+  }
+
+ private:
+  mutable bool is_valid_;
+  mutable T scoper_;
+};
+
+template <typename T>
+using Unwrapper = BindUnwrapTraits<std::decay_t<T>>;
+
+template <typename T>
+auto Unwrap(T&& o) -> decltype(Unwrapper<T>::Unwrap(std::forward<T>(o))) {
+  return Unwrapper<T>::Unwrap(std::forward<T>(o));
+}
+
+// IsWeakMethod is a helper that determine if we are binding a WeakPtr<> to a
+// method.  It is used internally by Bind() to select the correct
+// InvokeHelper that will no-op itself in the event the WeakPtr<> for
+// the target object is invalidated.
+//
+// The first argument should be the type of the object that will be received by
+// the method.
+template <bool is_method, typename... Args>
+struct IsWeakMethod : std::false_type {};
+
+template <typename T, typename... Args>
+struct IsWeakMethod<true, T, Args...> : IsWeakReceiver<T> {};
+
+// Packs a list of types to hold them in a single type.
+template <typename... Types>
+struct TypeList {};
+
+// Used for DropTypeListItem implementation.
+template <size_t n, typename List>
+struct DropTypeListItemImpl;
+
+// Do not use enable_if and SFINAE here to avoid MSVC2013 compile failure.
+template <size_t n, typename T, typename... List>
+struct DropTypeListItemImpl<n, TypeList<T, List...>>
+    : DropTypeListItemImpl<n - 1, TypeList<List...>> {};
+
+template <typename T, typename... List>
+struct DropTypeListItemImpl<0, TypeList<T, List...>> {
+  using Type = TypeList<T, List...>;
+};
+
+template <>
+struct DropTypeListItemImpl<0, TypeList<>> {
+  using Type = TypeList<>;
+};
+
+// A type-level function that drops |n| list item from given TypeList.
+template <size_t n, typename List>
+using DropTypeListItem = typename DropTypeListItemImpl<n, List>::Type;
+
+// Used for TakeTypeListItem implementation.
+template <size_t n, typename List, typename... Accum>
+struct TakeTypeListItemImpl;
+
+// Do not use enable_if and SFINAE here to avoid MSVC2013 compile failure.
+template <size_t n, typename T, typename... List, typename... Accum>
+struct TakeTypeListItemImpl<n, TypeList<T, List...>, Accum...>
+    : TakeTypeListItemImpl<n - 1, TypeList<List...>, Accum..., T> {};
+
+template <typename T, typename... List, typename... Accum>
+struct TakeTypeListItemImpl<0, TypeList<T, List...>, Accum...> {
+  using Type = TypeList<Accum...>;
+};
+
+template <typename... Accum>
+struct TakeTypeListItemImpl<0, TypeList<>, Accum...> {
+  using Type = TypeList<Accum...>;
+};
+
+// A type-level function that takes first |n| list item from given TypeList.
+// E.g. TakeTypeListItem<3, TypeList<A, B, C, D>> is evaluated to
+// TypeList<A, B, C>.
+template <size_t n, typename List>
+using TakeTypeListItem = typename TakeTypeListItemImpl<n, List>::Type;
+
+// Used for ConcatTypeLists implementation.
+template <typename List1, typename List2>
+struct ConcatTypeListsImpl;
+
+template <typename... Types1, typename... Types2>
+struct ConcatTypeListsImpl<TypeList<Types1...>, TypeList<Types2...>> {
+  using Type = TypeList<Types1..., Types2...>;
+};
+
+// A type-level function that concats two TypeLists.
+template <typename List1, typename List2>
+using ConcatTypeLists = typename ConcatTypeListsImpl<List1, List2>::Type;
+
+// Used for MakeFunctionType implementation.
+template <typename R, typename ArgList>
+struct MakeFunctionTypeImpl;
+
+template <typename R, typename... Args>
+struct MakeFunctionTypeImpl<R, TypeList<Args...>> {
+  // MSVC 2013 doesn't support Type Alias of function types.
+  // Revisit this after we update it to newer version.
+  typedef R Type(Args...);
+};
+
+// A type-level function that constructs a function type that has |R| as its
+// return type and has TypeLists items as its arguments.
+template <typename R, typename ArgList>
+using MakeFunctionType = typename MakeFunctionTypeImpl<R, ArgList>::Type;
+
+// Used for ExtractArgs and ExtractReturnType.
+template <typename Signature>
+struct ExtractArgsImpl;
+
+template <typename R, typename... Args>
+struct ExtractArgsImpl<R(Args...)> {
+  using ReturnType = R;
+  using ArgsList = TypeList<Args...>;
+};
+
+// A type-level function that extracts function arguments into a TypeList.
+// E.g. ExtractArgs<R(A, B, C)> is evaluated to TypeList<A, B, C>.
+template <typename Signature>
+using ExtractArgs = typename ExtractArgsImpl<Signature>::ArgsList;
+
+// A type-level function that extracts the return type of a function.
+// E.g. ExtractReturnType<R(A, B, C)> is evaluated to R.
+template <typename Signature>
+using ExtractReturnType = typename ExtractArgsImpl<Signature>::ReturnType;
 
 template <typename Callable,
           typename Signature = decltype(&Callable::operator())>
@@ -533,6 +769,114 @@ using MakeBindStateType =
                                    BoundArgs...>::Type;
 
 }  // namespace internal
+
+// An injection point to control |this| pointer behavior on a method invocation.
+// If IsWeakReceiver<> is true_type for |T| and |T| is used for a receiver of a
+// method, base::Bind cancels the method invocation if the receiver is tested as
+// false.
+// E.g. Foo::bar() is not called:
+//   struct Foo : base::SupportsWeakPtr<Foo> {
+//     void bar() {}
+//   };
+//
+//   WeakPtr<Foo> oo = nullptr;
+//   base::Bind(&Foo::bar, oo).Run();
+template <typename T>
+struct IsWeakReceiver : std::false_type {};
+
+template <typename T>
+struct IsWeakReceiver<internal::ConstRefWrapper<T>> : IsWeakReceiver<T> {};
+
+template <typename T>
+struct IsWeakReceiver<WeakPtr<T>> : std::true_type {};
+
+// An injection point to control how bound objects passed to the target
+// function. BindUnwrapTraits<>::Unwrap() is called for each bound objects right
+// before the target function is invoked.
+template <typename>
+struct BindUnwrapTraits {
+  template <typename T>
+  static T&& Unwrap(T&& o) {
+    return std::forward<T>(o);
+  }
+};
+
+template <typename T>
+struct BindUnwrapTraits<internal::UnretainedWrapper<T>> {
+  static T* Unwrap(const internal::UnretainedWrapper<T>& o) { return o.get(); }
+};
+
+template <typename T>
+struct BindUnwrapTraits<internal::ConstRefWrapper<T>> {
+  static const T& Unwrap(const internal::ConstRefWrapper<T>& o) {
+    return o.get();
+  }
+};
+
+template <typename T>
+struct BindUnwrapTraits<internal::RetainedRefWrapper<T>> {
+  static T* Unwrap(const internal::RetainedRefWrapper<T>& o) { return o.get(); }
+};
+
+template <typename T>
+struct BindUnwrapTraits<internal::OwnedWrapper<T>> {
+  static T* Unwrap(const internal::OwnedWrapper<T>& o) { return o.get(); }
+};
+
+template <typename T>
+struct BindUnwrapTraits<internal::PassedWrapper<T>> {
+  static T Unwrap(const internal::PassedWrapper<T>& o) { return o.Take(); }
+};
+
+// CallbackCancellationTraits allows customization of Callback's cancellation
+// semantics. By default, callbacks are not cancellable. A specialization should
+// set is_cancellable = true and implement an IsCancelled() that returns if the
+// callback should be cancelled.
+template <typename Functor, typename BoundArgsTuple, typename SFINAE>
+struct CallbackCancellationTraits {
+  static constexpr bool is_cancellable = false;
+};
+
+// Specialization for method bound to weak pointer receiver.
+template <typename Functor, typename... BoundArgs>
+struct CallbackCancellationTraits<
+    Functor,
+    std::tuple<BoundArgs...>,
+    std::enable_if_t<
+        internal::IsWeakMethod<internal::FunctorTraits<Functor>::is_method,
+                               BoundArgs...>::value>> {
+  static constexpr bool is_cancellable = true;
+
+  template <typename Receiver, typename... Args>
+  static bool IsCancelled(const Functor&,
+                          const Receiver& receiver,
+                          const Args&...) {
+    return !receiver;
+  }
+};
+
+// Specialization for a nested bind.
+template <typename Signature, typename... BoundArgs>
+struct CallbackCancellationTraits<OnceCallback<Signature>,
+                                  std::tuple<BoundArgs...>> {
+  static constexpr bool is_cancellable = true;
+
+  template <typename Functor>
+  static bool IsCancelled(const Functor& functor, const BoundArgs&...) {
+    return functor.IsCancelled();
+  }
+};
+
+template <typename Signature, typename... BoundArgs>
+struct CallbackCancellationTraits<RepeatingCallback<Signature>,
+                                  std::tuple<BoundArgs...>> {
+  static constexpr bool is_cancellable = true;
+
+  template <typename Functor>
+  static bool IsCancelled(const Functor& functor, const BoundArgs&...) {
+    return functor.IsCancelled();
+  }
+};
 
 // Returns a RunType of bound functor.
 // E.g. MakeUnboundRunType<R(A, B, C), A, B> is evaluated to R(C).

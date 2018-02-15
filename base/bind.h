@@ -260,6 +260,176 @@ Callback<Signature> Bind(Callback<Signature> closure) {
   return closure;
 }
 
+// Unretained() allows Bind() to bind a non-refcounted class, and to disable
+// refcounting on arguments that are refcounted objects.
+//
+// EXAMPLE OF Unretained():
+//
+//   class Foo {
+//    public:
+//     void func() { cout << "Foo:f" << endl; }
+//   };
+//
+//   // In some function somewhere.
+//   Foo foo;
+//   Closure foo_callback =
+//       Bind(&Foo::func, Unretained(&foo));
+//   foo_callback.Run();  // Prints "Foo:f".
+//
+// Without the Unretained() wrapper on |&foo|, the above call would fail
+// to compile because Foo does not support the AddRef() and Release() methods.
+template <typename T>
+static inline internal::UnretainedWrapper<T> Unretained(T* o) {
+  return internal::UnretainedWrapper<T>(o);
+}
+
+// RetainedRef() accepts a ref counted object and retains a reference to it.
+// When the callback is called, the object is passed as a raw pointer.
+//
+// EXAMPLE OF RetainedRef():
+//
+//    void foo(RefCountedBytes* bytes) {}
+//
+//    scoped_refptr<RefCountedBytes> bytes = ...;
+//    Closure callback = Bind(&foo, base::RetainedRef(bytes));
+//    callback.Run();
+//
+// Without RetainedRef, the scoped_refptr would try to implicitly convert to
+// a raw pointer and fail compilation:
+//
+//    Closure callback = Bind(&foo, bytes); // ERROR!
+template <typename T>
+static inline internal::RetainedRefWrapper<T> RetainedRef(T* o) {
+  return internal::RetainedRefWrapper<T>(o);
+}
+template <typename T>
+static inline internal::RetainedRefWrapper<T> RetainedRef(scoped_refptr<T> o) {
+  return internal::RetainedRefWrapper<T>(std::move(o));
+}
+
+// ConstRef() allows binding a constant reference to an argument rather
+// than a copy.
+//
+// EXAMPLE OF ConstRef():
+//
+//   void foo(int arg) { cout << arg << endl }
+//
+//   int n = 1;
+//   Closure no_ref = Bind(&foo, n);
+//   Closure has_ref = Bind(&foo, ConstRef(n));
+//
+//   no_ref.Run();  // Prints "1"
+//   has_ref.Run();  // Prints "1"
+//
+//   n = 2;
+//   no_ref.Run();  // Prints "1"
+//   has_ref.Run();  // Prints "2"
+//
+// Note that because ConstRef() takes a reference on |n|, |n| must outlive all
+// its bound callbacks.
+template <typename T>
+static inline internal::ConstRefWrapper<T> ConstRef(const T& o) {
+  return internal::ConstRefWrapper<T>(o);
+}
+
+// Owned() transfers ownership of an object to the Callback resulting from
+// bind; the object will be deleted when the Callback is deleted.
+//
+// EXAMPLE OF Owned():
+//
+//   void foo(int* arg) { cout << *arg << endl }
+//
+//   int* pn = new int(1);
+//   Closure foo_callback = Bind(&foo, Owned(pn));
+//
+//   foo_callback.Run();  // Prints "1"
+//   foo_callback.Run();  // Prints "1"
+//   *n = 2;
+//   foo_callback.Run();  // Prints "2"
+//
+//   foo_callback.Reset();  // |pn| is deleted.  Also will happen when
+//                          // |foo_callback| goes out of scope.
+//
+// Without Owned(), someone would have to know to delete |pn| when the last
+// reference to the Callback is deleted.
+template <typename T>
+static inline internal::OwnedWrapper<T> Owned(T* o) {
+  return internal::OwnedWrapper<T>(o);
+}
+
+// Passed() is for transferring movable-but-not-copyable types (eg. unique_ptr)
+// through a Callback. Logically, this signifies a destructive transfer of
+// the state of the argument into the target function.  Invoking
+// Callback::Run() twice on a Callback that was created with a Passed()
+// argument will CHECK() because the first invocation would have already
+// transferred ownership to the target function.
+//
+// EXAMPLE OF Passed():
+//
+//   void TakesOwnership(std::unique_ptr<Foo> arg) { }
+//   std::unique_ptr<Foo> CreateFoo() { return std::unique_ptr<Foo>(new Foo());
+//   }
+//
+//   std::unique_ptr<Foo> f(new Foo());
+//
+//   // |cb| is given ownership of Foo(). |f| is now NULL.
+//   // You can use std::move(f) in place of &f, but it's more verbose.
+//   Closure cb = Bind(&TakesOwnership, Passed(&f));
+//
+//   // Run was never called so |cb| still owns Foo() and deletes
+//   // it on Reset().
+//   cb.Reset();
+//
+//   // |cb| is given a new Foo created by CreateFoo().
+//   cb = Bind(&TakesOwnership, Passed(CreateFoo()));
+//
+//   // |arg| in TakesOwnership() is given ownership of Foo(). |cb|
+//   // no longer owns Foo() and, if reset, would not delete Foo().
+//   cb.Run();  // Foo() is now transferred to |arg| and deleted.
+//   cb.Run();  // This CHECK()s since Foo() already been used once.
+//
+// Passed() is particularly useful with PostTask() when you are transferring
+// ownership of an argument into a task, but don't necessarily know if the
+// task will always be executed. This can happen if the task is cancellable
+// or if it is posted to a TaskRunner.
+//
+// We offer 2 syntaxes for calling Passed().  The first takes an rvalue and
+// is best suited for use with the return value of a function or other temporary
+// rvalues. The second takes a pointer to the scoper and is just syntactic sugar
+// to avoid having to write Passed(std::move(scoper)).
+//
+// Both versions of Passed() prevent T from being an lvalue reference. The first
+// via use of enable_if, and the second takes a T* which will not bind to T&.
+template <typename T,
+          std::enable_if_t<!std::is_lvalue_reference<T>::value>* = nullptr>
+static inline internal::PassedWrapper<T> Passed(T&& scoper) {
+  return internal::PassedWrapper<T>(std::move(scoper));
+}
+template <typename T>
+static inline internal::PassedWrapper<T> Passed(T* scoper) {
+  return internal::PassedWrapper<T>(std::move(*scoper));
+}
+
+// IgnoreResult() is used to adapt a function or Callback with a return type to
+// one with a void return. This is most useful if you have a function with,
+// say, a pesky ignorable bool return that you want to use with PostTask or
+// something else that expect a Callback with a void return.
+//
+// EXAMPLE OF IgnoreResult():
+//
+//   int DoSomething(int arg) { cout << arg << endl; }
+//
+//   // Assign to a Callback with a void return type.
+//   Callback<void(int)> cb = Bind(IgnoreResult(&DoSomething));
+//   cb->Run(1);  // Prints "1".
+//
+//   // Prints "1" on |ml|.
+//   ml->PostTask(FROM_HERE, Bind(IgnoreResult(&DoSomething), 1);
+template <typename T>
+static inline internal::IgnoreResultHelper<T> IgnoreResult(T data) {
+  return internal::IgnoreResultHelper<T>(std::move(data));
+}
+
 }  // namespace base
 
 #endif  // BASE_BIND_H_
