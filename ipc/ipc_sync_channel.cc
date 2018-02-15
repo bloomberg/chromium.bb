@@ -499,7 +499,7 @@ void SyncChannel::SyncContext::OnChannelOpened() {
       shutdown_event_,
       base::Bind(&SyncChannel::SyncContext::OnShutdownEventSignaled,
                  base::Unretained(this)),
-      ipc_task_runner());
+      base::SequencedTaskRunnerHandle::Get());
   Context::OnChannelOpened();
 }
 
