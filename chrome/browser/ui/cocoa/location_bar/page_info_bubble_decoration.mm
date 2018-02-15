@@ -16,6 +16,8 @@
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/favicon/content/content_favicon_driver.h"
+#include "components/strings/grit/components_strings.h"
+#include "components/toolbar/toolbar_model.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #import "ui/base/cocoa/nsview_additions.h"
@@ -331,10 +333,19 @@ NSString* PageInfoBubbleDecoration::GetToolTip() {
 NSString* PageInfoBubbleDecoration::GetAccessibilityLabel() {
   NSString* tooltip_icon_text =
       l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_LOCATION_ICON);
-  if ([full_label_ length] == 0)
+
+  NSString* full_label = full_label_.get();
+  security_state::SecurityLevel security_level =
+      owner_->GetToolbarModel()->GetSecurityLevel(false);
+  if ([full_label length] == 0 &&
+      (security_level == security_state::EV_SECURE ||
+       security_level == security_state::SECURE)) {
+    full_label = l10n_util::GetNSStringWithFixup(IDS_SECURE_VERBOSE_STATE);
+  }
+
+  if ([full_label length] == 0)
     return tooltip_icon_text;
-  return [NSString
-      stringWithFormat:@"%@. %@", full_label_.get(), tooltip_icon_text];
+  return [NSString stringWithFormat:@"%@. %@", full_label, tooltip_icon_text];
 }
 
 NSRect PageInfoBubbleDecoration::GetRealFocusRingBounds(NSRect bounds) const {
