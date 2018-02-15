@@ -426,24 +426,22 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
       (conv_params->round == CONVOLVE_OPT_NO_ROUND && conv_params->dst);
   int reduce_bits_horiz =
       use_conv_params ? conv_params->round_0 : HORSHEAR_REDUCE_PREC_BITS;
-  if (!use_conv_params &&
-      bd + WARPEDPIXEL_FILTER_BITS + 2 - reduce_bits_horiz > 16)
-    reduce_bits_horiz += bd + WARPEDPIXEL_FILTER_BITS - reduce_bits_horiz - 14;
-  const int reduce_bits_vert =
-      use_conv_params ? conv_params->round_1
-                      : 2 * WARPEDPIXEL_FILTER_BITS - reduce_bits_horiz;
-  const int max_bits_horiz =
-      use_conv_params ? bd + FILTER_BITS + 1 - conv_params->round_0
-                      : bd + WARPEDPIXEL_FILTER_BITS + 1 - reduce_bits_horiz;
+  if (!use_conv_params && bd + FILTER_BITS + 2 - reduce_bits_horiz > 16)
+    reduce_bits_horiz += bd + FILTER_BITS - reduce_bits_horiz - 14;
+  const int reduce_bits_vert = use_conv_params
+                                   ? conv_params->round_1
+                                   : 2 * FILTER_BITS - reduce_bits_horiz;
+  const int max_bits_horiz = use_conv_params
+                                 ? bd + FILTER_BITS + 1 - conv_params->round_0
+                                 : bd + FILTER_BITS + 1 - reduce_bits_horiz;
   const int offset_bits_horiz =
-      use_conv_params ? bd + FILTER_BITS - 1 : bd + WARPEDPIXEL_FILTER_BITS - 1;
-  const int offset_bits_vert =
-      use_conv_params ? bd + 2 * FILTER_BITS - conv_params->round_0
-                      : bd + 2 * WARPEDPIXEL_FILTER_BITS - reduce_bits_horiz;
+      use_conv_params ? bd + FILTER_BITS - 1 : bd + FILTER_BITS - 1;
+  const int offset_bits_vert = use_conv_params
+                                   ? bd + 2 * FILTER_BITS - conv_params->round_0
+                                   : bd + 2 * FILTER_BITS - reduce_bits_horiz;
   if (use_conv_params) {
     conv_params->do_post_rounding = 1;
   }
-  assert(FILTER_BITS == WARPEDPIXEL_FILTER_BITS);
   (void)max_bits_horiz;
 
   for (int i = p_row; i < p_row + p_height; i += 8) {
@@ -685,7 +683,7 @@ static INLINE int error_measure(int err) {
     This allows the derivation of the appropriate bit widths and offsets for
     the various intermediate values: If
 
-    F := WARPEDPIXEL_FILTER_BITS = 7 (or else the above ranges need adjusting)
+    F := FILTER_BITS = 7 (or else the above ranges need adjusting)
          So a *single* filter stage maps a k-bit input to a (k + F + 1)-bit
          intermediate value.
     H := HORSHEAR_REDUCE_PREC_BITS
@@ -728,23 +726,20 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
       (conv_params->round == CONVOLVE_OPT_NO_ROUND && conv_params->dst);
   const int reduce_bits_horiz =
       use_conv_params ? conv_params->round_0 : HORSHEAR_REDUCE_PREC_BITS;
-  const int reduce_bits_vert =
-      use_conv_params ? conv_params->round_1
-                      : 2 * WARPEDPIXEL_FILTER_BITS - reduce_bits_horiz;
+  const int reduce_bits_vert = use_conv_params
+                                   ? conv_params->round_1
+                                   : 2 * FILTER_BITS - reduce_bits_horiz;
   const int max_bits_horiz =
-      use_conv_params
-          ? bd + FILTER_BITS + 1 - conv_params->round_0
-          : bd + WARPEDPIXEL_FILTER_BITS + 1 - HORSHEAR_REDUCE_PREC_BITS;
+      use_conv_params ? bd + FILTER_BITS + 1 - conv_params->round_0
+                      : bd + FILTER_BITS + 1 - HORSHEAR_REDUCE_PREC_BITS;
   const int offset_bits_horiz =
-      use_conv_params ? bd + FILTER_BITS - 1 : bd + WARPEDPIXEL_FILTER_BITS - 1;
+      use_conv_params ? bd + FILTER_BITS - 1 : bd + FILTER_BITS - 1;
   const int offset_bits_vert =
-      use_conv_params
-          ? bd + 2 * FILTER_BITS - conv_params->round_0
-          : bd + 2 * WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS;
+      use_conv_params ? bd + 2 * FILTER_BITS - conv_params->round_0
+                      : bd + 2 * FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS;
   if (use_conv_params) {
     conv_params->do_post_rounding = 1;
   }
-  assert(FILTER_BITS == WARPEDPIXEL_FILTER_BITS);
   (void)max_bits_horiz;
 
   for (int i = p_row; i < p_row + p_height; i += 8) {

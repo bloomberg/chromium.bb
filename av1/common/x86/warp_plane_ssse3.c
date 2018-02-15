@@ -216,14 +216,14 @@ void av1_warp_affine_ssse3(const int32_t *mat, const uint8_t *ref, int width,
   const int reduce_bits_horiz =
       use_conv_params ? conv_params->round_0 : HORSHEAR_REDUCE_PREC_BITS;
   const int offset_bits_horiz =
-      use_conv_params ? bd + FILTER_BITS - 1 : bd + WARPEDPIXEL_FILTER_BITS - 1;
-  const int reduce_bits_vert =
-      use_conv_params ? conv_params->round_1
-                      : 2 * WARPEDPIXEL_FILTER_BITS - reduce_bits_horiz;
+      use_conv_params ? bd + FILTER_BITS - 1 : bd + FILTER_BITS - 1;
+  const int reduce_bits_vert = use_conv_params
+                                   ? conv_params->round_1
+                                   : 2 * FILTER_BITS - reduce_bits_horiz;
   if (use_conv_params) {
     conv_params->do_post_rounding = 1;
   }
-  assert(FILTER_BITS == WARPEDPIXEL_FILTER_BITS);
+  assert(FILTER_BITS == FILTER_BITS);
 
   /* Note: For this code to work, the left/right frame borders need to be
      extended by at least 13 pixels each. By the time we get here, other
@@ -272,9 +272,8 @@ void av1_warp_affine_ssse3(const int32_t *mat, const uint8_t *ref, int width,
           else if (iy > height - 1)
             iy = height - 1;
           tmp[k + 7] = _mm_set1_epi16(
-              (1 << (bd + WARPEDPIXEL_FILTER_BITS - reduce_bits_horiz - 1)) +
-              ref[iy * stride] *
-                  (1 << (WARPEDPIXEL_FILTER_BITS - reduce_bits_horiz)));
+              (1 << (bd + FILTER_BITS - reduce_bits_horiz - 1)) +
+              ref[iy * stride] * (1 << (FILTER_BITS - reduce_bits_horiz)));
         }
       } else if (ix4 >= width + 6) {
         for (k = -7; k < AOMMIN(8, p_height - i); ++k) {
@@ -283,10 +282,10 @@ void av1_warp_affine_ssse3(const int32_t *mat, const uint8_t *ref, int width,
             iy = 0;
           else if (iy > height - 1)
             iy = height - 1;
-          tmp[k + 7] = _mm_set1_epi16(
-              (1 << (bd + WARPEDPIXEL_FILTER_BITS - reduce_bits_horiz - 1)) +
-              ref[iy * stride + (width - 1)] *
-                  (1 << (WARPEDPIXEL_FILTER_BITS - reduce_bits_horiz)));
+          tmp[k + 7] =
+              _mm_set1_epi16((1 << (bd + FILTER_BITS - reduce_bits_horiz - 1)) +
+                             ref[iy * stride + (width - 1)] *
+                                 (1 << (FILTER_BITS - reduce_bits_horiz)));
         }
       } else {
         for (k = -7; k < AOMMIN(8, p_height - i); ++k) {
