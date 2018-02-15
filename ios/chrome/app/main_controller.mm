@@ -381,9 +381,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   StartupTasks* _startupTasks;
 }
 
-// Pointer to the main view controller, always owned by the main window.
-@property(weak, nonatomic, readonly)
-    UIViewController<ViewControllerSwapping>* mainViewController;
+// Pointer to the object that manages view controllers, provided by the main
+// coordinator.
+@property(weak, nonatomic, readonly) id<ViewControllerSwapping>
+    viewControllerSwapper;
 
 // The main coordinator, lazily created the first time it is accessed. Manages
 // the main view controller. This property should not be accessed before the
@@ -888,7 +889,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   return _browserViewWrangler;
 }
 
-- (UIViewController<ViewControllerSwapping>*)mainViewController {
+- (id<ViewControllerSwapping>)viewControllerSwapper {
   return self.mainCoordinator.mainViewController;
 }
 
@@ -1572,7 +1573,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 - (void)showAccountsSettingsFromViewController:
     (UIViewController*)baseViewController {
   if (!baseViewController) {
-    DCHECK_EQ(self.currentBVC, self.mainViewController.activeViewController);
+    DCHECK_EQ(self.currentBVC, self.viewControllerSwapper.activeViewController);
     baseViewController = self.currentBVC;
   }
   DCHECK(![baseViewController presentedViewController]);
@@ -1833,8 +1834,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)displayCurrentBVC {
-  [self.mainViewController showTabViewController:self.currentBVC
-                                      completion:nil];
+  [self.viewControllerSwapper showTabViewController:self.currentBVC
+                                         completion:nil];
 }
 
 - (TabModel*)currentTabModel {
@@ -1897,8 +1898,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
         setUserInteractionEnabled:YES];
   }
 
-  [self.mainViewController showTabSwitcher:_tabSwitcherController
-                                completion:nil];
+  [self.viewControllerSwapper showTabSwitcher:_tabSwitcherController
+                                   completion:nil];
 }
 
 - (BOOL)shouldOpenNTPTabOnActivationOfTabModel:(TabModel*)tabModel {
@@ -1997,13 +1998,13 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     // When the experiment is enabled, the tab switcher dismissal animation runs
     // as part of the BVC presentation process.  The BVC is presented before the
     // animations begin, so it is the current active VC at this point.
-    DCHECK_EQ(self.mainViewController.activeViewController, self.currentBVC);
+    DCHECK_EQ(self.viewControllerSwapper.activeViewController, self.currentBVC);
   } else {
     // Without the experiment, the BVC is added as a child and made visible in
     // the call to |displayCurrentBVC| below, after the tab switcher dismissal
     // animation is complete.  At this point in the process, the tab switcher is
     // still the active VC.
-    DCHECK_EQ(self.mainViewController.activeViewController,
+    DCHECK_EQ(self.viewControllerSwapper.activeViewController,
               [_tabSwitcherController viewController]);
   }
 
@@ -2479,7 +2480,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (UIImage*)currentPageScreenshot {
-  UIView* lastView = self.mainViewController.activeViewController.view;
+  UIView* lastView = self.viewControllerSwapper.activeViewController.view;
   DCHECK(lastView);
   CGFloat scale = 0.0;
   // For screenshots of the Stack View we need to use a scale of 1.0 to avoid
@@ -2555,7 +2556,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // TODO(crbug.com/754642): Implement TopPresentedViewControllerFrom()
   // privately.
   return top_view_controller::TopPresentedViewControllerFrom(
-      self.mainViewController);
+      self.viewControllerSwapper.viewController);
 }
 
 - (void)setTabSwitcherActive:(BOOL)active {

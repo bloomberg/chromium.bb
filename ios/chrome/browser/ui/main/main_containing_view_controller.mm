@@ -17,6 +17,10 @@
   return [self.childViewControllers firstObject];
 }
 
+- (UIViewController*)viewController {
+  return self;
+}
+
 - (void)showTabSwitcher:(id<TabSwitcher>)tabSwitcher
              completion:(ProceduralBlock)completion {
   [self setActiveViewController:[tabSwitcher viewController]
