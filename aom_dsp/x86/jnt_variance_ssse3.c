@@ -43,7 +43,12 @@ void aom_var_filter_block2d_bil_first_pass_ssse3(
     for (i = 0; i < output_height; ++i) {
       for (j = 0; j < output_width; j += 8) {
         // load source
-        __m128i source = xx_loadu_128(a);
+        __m128i source_low = xx_loadl_64(a);
+        __m128i source_hi = _mm_setzero_si128();
+
+        // avoid load undefined memory
+        if (a + 8 != NULL) source_hi = xx_loadl_64(a + 8);
+        __m128i source = _mm_unpacklo_epi64(source_low, source_hi);
 
         // shuffle to:
         // { a[0], a[1], a[1], a[2], a[2], a[3], a[3], a[4],
@@ -67,16 +72,22 @@ void aom_var_filter_block2d_bil_first_pass_ssse3(
   } else {
     // output_width := 4, process two lines
     for (i = 0; i < output_height; i += 2) {
-      // load source, only first 4 values are meaningful:
-      // { a[0], a[1], a[2], a[3], xxxx }
-      __m128i source = xx_loadu_128(a);
+      // load source, only first 5 values are meaningful:
+      // { a[0], a[1], a[2], a[3], a[4], xxxx }
+      __m128i source = xx_loadl_64(a);
 
       // shuffle, up to the first 8 are useful
       // { a[0], a[1], a[1], a[2], a[2], a[3], a[3], a[4],
       //   a[4], a[5], a[5], a[6], a[6], a[7], a[7], a[8] }
       __m128i shuffle_lo = _mm_shuffle_epi8(source, shuffle_mask);
 
-      source = xx_loadu_128(a + src_pixels_per_line);
+      __m128i source_high_0 = xx_loadl_32(a + src_pixels_per_line);
+      __m128i source_high_1 = _mm_setzero_si128();
+      // avoid load undefined memory
+      if (a + src_pixels_per_line + 4 != NULL)
+        source_high_1 = xx_loadl_32(a + src_pixels_per_line + 4);
+      source = _mm_unpacklo_epi32(source_high_0, source_high_1);
+
       __m128i shuffle_hi = _mm_shuffle_epi8(source, shuffle_mask);
 
       __m128i source_shuffle = _mm_unpacklo_epi64(shuffle_lo, shuffle_hi);
@@ -129,7 +140,7 @@ void aom_var_filter_block2d_bil_second_pass_ssse3(
       // shuffle to get each lower 8 bit of every 32 bit
       res = _mm_shuffle_epi8(res, mask);
 
-      xx_storeu_128(b, res);
+      xx_storel_32(b, res);
 
       a += 4;
       b += 4;
