@@ -98,7 +98,7 @@ void TabListSceneLayer::PutTabLayer(
     jint border_resource_id,
     jint border_inner_shadow_resource_id,
     jboolean can_use_live_layer,
-    jboolean browser_controls_at_bottom,
+    jboolean modern_design_enabled,
     jint tab_background_color,
     jint back_logo_color,
     jboolean incognito,
@@ -162,7 +162,7 @@ void TabListSceneLayer::PutTabLayer(
   DCHECK(layer);
   if (layer) {
     layer->SetProperties(
-        id, can_use_live_layer, browser_controls_at_bottom,
+        id, can_use_live_layer, modern_design_enabled,
         toolbar_resource_id, close_button_resource_id,
         shadow_resource_id, contour_resource_id, back_logo_resource_id,
         border_resource_id, border_inner_shadow_resource_id,
