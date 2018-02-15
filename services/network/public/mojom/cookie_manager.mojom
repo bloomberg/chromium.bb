@@ -137,9 +137,9 @@ struct CookieDeletionFilter {
   CookieDeletionSessionControl session_control = IGNORE_CONTROL;
 };
 
-interface CookieChangeNotification {
+interface CookieChangeListener {
   // TODO(rdsmith): Should this be made a batch interface?
-  OnCookieChanged(CanonicalCookie cookie, CookieChangeCause cause);
+  OnCookieChange(CanonicalCookie cookie, CookieChangeCause cause);
 };
 
 interface CookieManager {
@@ -173,31 +173,31 @@ interface CookieManager {
   // Returns the number of cookies deleted.
   DeleteCookies(CookieDeletionFilter filter) => (uint32 num_deleted);
 
-  // Send a CookieChangeNotification over which notification
-  // for cookie changes will be sent.  When the specified cookie
-  // associated with the domain/path specified in the URL changes, a
-  // notification will be posted to the passed pointer.
+  // Subscribes the given listener to changes to a cookie.
+  //
+  // The subscription is canceled by closing the CookieChangeListener's pipe.
   //
   // Note that if the caller may be racing with other uses of the cookie store,
-  // it should follow the notification request with a probe of the relevant
+  // it should follow the subscription request with a probe of the relevant
   // information about the tracked cookie, to make sure that a change to the
-  // cookie did not happen while the notification was being installed.
+  // cookie did not happen right before the listener was registered.
   //
   // TODO(rdsmith): Should this have a filter to register for a lot of
   // notifications at once?  Maybe combine with the deletion filter?
-  RequestNotification(
+  // TODO(rdsmith): Describe the performance implications of using this meethod.
+  // The comments in CookieMonster::AddCallbackForCookie look pretty scary.
+  AddCookieChangeListener(
       url.mojom.Url url,
       string name,
-      CookieChangeNotification notification_pointer);
+      CookieChangeListener listener);
 
-  // Send a CookieChangeNotification over which notification
-  // for all cookie changes will be sent.  When a cookie associated with
-  // the CookieManager changes, a notification will be posted to the
-  // passed pointer.
+  // Subscribes the given listener to changes to this CookieManager's cookies.
+  //
+  // The subscription is canceled by closing the CookieChangeListener's pipe.
   //
   // TODO(rdsmith): Should this have a filter to register for a lot of
   // notifications at once?  Maybe combine with the deletion filter?
-  RequestGlobalNotifications(CookieChangeNotification notification_pointer);
+  AddGlobalChangeListener(CookieChangeListener notification_pointer);
 
   // Clone the interface for use somewhere else.  After this call,
   // requests to the same implementation may be posted to the other side

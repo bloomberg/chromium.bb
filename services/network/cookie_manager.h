@@ -51,46 +51,45 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
                           SetCanonicalCookieCallback callback) override;
   void DeleteCookies(network::mojom::CookieDeletionFilterPtr filter,
                      DeleteCookiesCallback callback) override;
-  void RequestNotification(const GURL& url,
-                           const std::string& name,
-                           network::mojom::CookieChangeNotificationPtr
-                               notification_pointer) override;
-  void RequestGlobalNotifications(network::mojom::CookieChangeNotificationPtr
-                                      notification_pointer) override;
+  void AddCookieChangeListener(
+      const GURL& url,
+      const std::string& name,
+      network::mojom::CookieChangeListenerPtr listener) override;
+  void AddGlobalChangeListener(
+      network::mojom::CookieChangeListenerPtr listener) override;
   void CloneInterface(
       network::mojom::CookieManagerRequest new_interface) override;
 
-  uint32_t GetClientsBoundForTesting() const { return bindings_.size(); }
-  uint32_t GetNotificationsBoundForTesting() const {
-    return notifications_registered_.size();
+  size_t GetClientsBoundForTesting() const { return bindings_.size(); }
+  size_t GetListenersRegisteredForTesting() const {
+    return listener_registrations_.size();
   }
 
  private:
-  struct NotificationRegistration {
-    NotificationRegistration();
-    ~NotificationRegistration();
+  // State associated with a CookieChangeListener.
+  struct ListenerRegistration {
+    ListenerRegistration();
+    ~ListenerRegistration();
+
+    // Translates a CookieStore change callback to a CookieChangeListener call.
+    void DispatchCookieStoreChange(const net::CanonicalCookie& cookie,
+                                   net::CookieStore::ChangeCause cause);
 
     // Owns the callback registration in the store.
     std::unique_ptr<net::CookieStore::CookieChangedSubscription> subscription;
 
-    // Pointer on which to send notifications.
-    network::mojom::CookieChangeNotificationPtr notification_pointer;
+    // The observer receiving change notifications.
+    network::mojom::CookieChangeListenerPtr listener;
 
-    DISALLOW_COPY_AND_ASSIGN(NotificationRegistration);
+    DISALLOW_COPY_AND_ASSIGN(ListenerRegistration);
   };
 
-  // Used to hook callbacks
-  void CookieChanged(NotificationRegistration* registration,
-                     const net::CanonicalCookie& cookie,
-                     net::CookieStore::ChangeCause cause);
-
-  // Handles connection errors on notification pipes.
-  void NotificationPipeBroken(NotificationRegistration* registration);
+  // Handles connection errors on change listener pipes.
+  void RemoveChangeListener(ListenerRegistration* registration);
 
   net::CookieStore* const cookie_store_;
   mojo::BindingSet<network::mojom::CookieManager> bindings_;
-  std::vector<std::unique_ptr<NotificationRegistration>>
-      notifications_registered_;
+  std::vector<std::unique_ptr<ListenerRegistration>> listener_registrations_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieManager);
 };
