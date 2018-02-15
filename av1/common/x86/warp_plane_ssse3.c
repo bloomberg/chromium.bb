@@ -217,6 +217,9 @@ void av1_warp_affine_ssse3(const int32_t *mat, const uint8_t *ref, int width,
       use_conv_params ? conv_params->round_0 : HORSHEAR_REDUCE_PREC_BITS;
   const int offset_bits_horiz =
       use_conv_params ? bd + FILTER_BITS - 1 : bd + WARPEDPIXEL_FILTER_BITS - 1;
+  const int reduce_bits_vert =
+      use_conv_params ? conv_params->round_1
+                      : 2 * WARPEDPIXEL_FILTER_BITS - reduce_bits_horiz;
   if (use_conv_params) {
     conv_params->do_post_rounding = 1;
   }
@@ -491,13 +494,13 @@ void av1_warp_affine_ssse3(const int32_t *mat, const uint8_t *ref, int width,
         } else {
           // Round and pack into 8 bits
           const __m128i round_const =
-              _mm_set1_epi32(-(1 << (bd + VERSHEAR_REDUCE_PREC_BITS - 1)) +
-                             ((1 << VERSHEAR_REDUCE_PREC_BITS) >> 1));
+              _mm_set1_epi32(-(1 << (bd + reduce_bits_vert - 1)) +
+                             ((1 << reduce_bits_vert) >> 1));
 
           const __m128i res_lo_round = _mm_srai_epi32(
-              _mm_add_epi32(res_lo, round_const), VERSHEAR_REDUCE_PREC_BITS);
+              _mm_add_epi32(res_lo, round_const), reduce_bits_vert);
           const __m128i res_hi_round = _mm_srai_epi32(
-              _mm_add_epi32(res_hi, round_const), VERSHEAR_REDUCE_PREC_BITS);
+              _mm_add_epi32(res_hi, round_const), reduce_bits_vert);
 
           const __m128i res_16bit = _mm_packs_epi32(res_lo_round, res_hi_round);
           __m128i res_8bit = _mm_packus_epi16(res_16bit, res_16bit);
