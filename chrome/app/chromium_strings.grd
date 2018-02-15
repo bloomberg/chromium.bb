@@ -290,7 +290,7 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
       </if>
       <if expr="use_titlecase">
         <message name="IDS_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND" desc="In Title Case: The checkbox in the status tray context menu that controls whether chrome keeps running in the background after the last window is closed">
-          Let Chromium Run In The Background
+          Let Chromium Run in the Background
         </message>
       </if>
       <if expr="not use_titlecase">
@@ -561,16 +561,9 @@ Chromium is unable to recover your settings.
 
       <if expr="enable_extensions">
         <!-- Extension installed bubble -->
-        <if expr="use_titlecase">
-          <message name="IDS_EXTENSION_INSTALLED_HEADING" desc="In Title Case: Title of the extension-installed bubble. Instructs that the extension was installed.">
-            <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> Has Been Added to Chromium
-          </message>
-        </if>
-        <if expr="not use_titlecase">
-          <message name="IDS_EXTENSION_INSTALLED_HEADING" desc="Title of the extension-installed bubble. Instructs that the extension was installed.">
-            <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> has been added to Chromium
-          </message>
-        </if>
+        <message name="IDS_EXTENSION_INSTALLED_HEADING" desc="Title of the extension-installed bubble. Instructs that the extension was installed.">
+          <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> has been added to Chromium
+        </message>
         <message name="IDS_EXTENSION_INSTALLED_SYNC_PROMO_LINK_NEW" desc="Text of the link to sign in to Chromium from the extension installed bubble. This will be converted to a link, with additional text around it.">
           sign in to Chromium
         </message>
@@ -714,16 +707,9 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
 
       <!-- Enterprise sign-in dialog -->
       <if expr="toolkit_views or is_macosx">
-        <if expr="use_titlecase">
-          <message name="IDS_ENTERPRISE_SIGNIN_TITLE" desc="In Title Case: The title of the dialog to confirm linking the browser profile with the signed-in enterprise account">
-            Link Your Chromium Data to This Account?
-          </message>
-        </if>
-        <if expr="not use_titlecase">
-          <message name="IDS_ENTERPRISE_SIGNIN_TITLE" desc="The title of the dialog to confirm linking the browser profile with the signed-in enterprise account">
-            Link your Chromium data to this account?
-          </message>
-        </if>
+        <message name="IDS_ENTERPRISE_SIGNIN_TITLE" desc="The title of the dialog to confirm linking the browser profile with the signed-in enterprise account">
+          Link your Chromium data to this account?
+        </message>
         <message name="IDS_ENTERPRISE_SIGNIN_EXPLANATION_WITHOUT_PROFILE_CREATION" desc="The warning message displayed to an enterprise user about to link their profile to their Google account. This message is followed by a 'Learn more' link.">
           You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords, and other settings will become permanently tied to <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. <ph name="LEARN_MORE">$2<ex>Learn more</ex></ph>
         </message>
@@ -1071,20 +1057,17 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
       </if>
 
       <!-- Upgrade recovery bubble -->
+      <message name="IDS_RECOVERY_BUBBLE_TITLE" desc="Text for the title of the chrome recovery bubble view.">
+        Chromium is out of date
+      </message>
       <if expr="use_titlecase">
         <message name="IDS_RUN_RECOVERY" desc="In Title Case: Text for the button the user clicks to recover chromium and its updater.">
           Update Chromium
-        </message>
-        <message name="IDS_RECOVERY_BUBBLE_TITLE" desc="In Title Case: Text for the title of the chrome recovery bubble view.">
-          Chromium is Out of Date
         </message>
       </if>
       <if expr="not use_titlecase">
         <message name="IDS_RUN_RECOVERY" desc="Text for the button the user clicks to recover chromium and its updater.">
           Update Chromium
-        </message>
-        <message name="IDS_RECOVERY_BUBBLE_TITLE" desc="Text for the title of the chrome recovery bubble view.">
-          Chromium is out of date
         </message>
       </if>
       <message name="IDS_RECOVERY_BUBBLE_TEXT" desc="Text for the chrome recovery bubble view full description.">
