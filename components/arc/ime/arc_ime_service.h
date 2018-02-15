@@ -134,6 +134,11 @@ class ArcImeService : public KeyedService,
   }
   const std::string& GetClientSourceInfo() const override;
 
+  // Normally, the default device scale factor is used to convert from DPI to
+  // physical pixels. This method provides a way to override it for testing.
+  static void SetOverrideDefaultDeviceScaleFactorForTesting(
+      base::Optional<double> scale_factor);
+
  private:
   ui::InputMethod* GetInputMethod();
 
