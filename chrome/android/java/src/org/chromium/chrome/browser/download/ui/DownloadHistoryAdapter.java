@@ -34,8 +34,10 @@ import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
 import org.chromium.components.offline_items_collection.OfflineItemState;
+import org.chromium.components.variations.VariationsAssociatedData;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -76,8 +78,10 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
     protected static class SubsectionHeader extends TimedItem {
         private List<DownloadHistoryItemWrapper> mSubsectionItems;
         private long mTotalFileSize;
+        private long mLatestUpdateTime;
         private final Long mStableId;
         private boolean mIsExpanded;
+        private boolean mShouldShowRecentBadge;
 
         public SubsectionHeader() {
             // Generate a stable ID based on timestamp.
@@ -86,7 +90,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
 
         @Override
         public long getTimestamp() {
-            return 0;
+            return mLatestUpdateTime;
         }
 
         /**
@@ -120,6 +124,16 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
             mIsExpanded = isExpanded;
         }
 
+        /** @return Whether the NEW badge should be shown. */
+        public boolean shouldShowRecentBadge() {
+            return mShouldShowRecentBadge;
+        }
+
+        /** @param show Whether the NEW badge should be shown. */
+        public void setShouldShowRecentBadge(boolean show) {
+            mShouldShowRecentBadge = show;
+        }
+
         /**
          * Helper method to set the items for this subsection.
          * @param subsectionItems The items associated with this subsection.
@@ -129,6 +143,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
             mTotalFileSize = 0;
             for (DownloadHistoryItemWrapper item : subsectionItems) {
                 mTotalFileSize += item.getFileSize();
+                mLatestUpdateTime = Math.max(mLatestUpdateTime, item.getTimestamp());
             }
         }
     }
@@ -164,6 +179,13 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
 
     private static final String PREF_SHOW_STORAGE_INFO_HEADER =
             "download_home_show_storage_info_header";
+    public static final String PREF_PREFETCH_BUNDLE_LAST_VISITED_TIME =
+            "download_home_prefetch_bundle_last_visited_time";
+    private static final String VARIATION_TRIAL_DOWNLOAD_HOME_PREFETCH_UI =
+            "DownloadHomePrefetchUI";
+    private static final String VARIATION_PARAM_TIME_THRESHOLD_FOR_RECENT_BADGE =
+            "recent_badge_time_threshold_hours";
+    private static final int DEFAULT_TIME_THRESHOLD_FOR_RECENT_BADGE_HOURS = 48;
 
     private final BackendItems mRegularDownloadItems = new BackendItemsImpl();
     private final BackendItems mIncognitoDownloadItems = new BackendItemsImpl();
@@ -173,7 +195,6 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
             new FilePathsToDownloadItemsMap();
 
     private SubsectionHeader mPrefetchHeader;
-    private boolean mShouldPrefetchSectionExpand;
     private final ComponentName mParentComponent;
     private final boolean mShowOffTheRecord;
     private final LoadingStateDelegate mLoadingDelegate;
@@ -187,6 +208,11 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
     private HeaderItem mSpaceDisplayHeaderItem;
     private boolean mIsSearching;
     private boolean mShouldShowStorageInfoHeader;
+    private boolean mShouldPrefetchSectionExpand;
+    private long mPrefetchBundleLastVisitedTime;
+
+    // Should only be accessed through getRecentBadgeTimeThreshold().
+    private Integer mTimeThresholdForRecentBadgeMs;
 
     @Nullable // This may be null during tests.
     private UiConfig mUiConfig;
@@ -229,6 +255,8 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
         mShouldShowStorageInfoHeader = ContextUtils.getAppSharedPreferences().getBoolean(
                 PREF_SHOW_STORAGE_INFO_HEADER,
                 ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_HOME_SHOW_STORAGE_INFO));
+        mPrefetchBundleLastVisitedTime = ContextUtils.getAppSharedPreferences().getLong(
+                PREF_PREFETCH_BUNDLE_LAST_VISITED_TIME, new Date(0L).getTime());
     }
 
     private OfflineContentProvider getOfflineContentProvider() {
@@ -606,18 +634,33 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
         if (!TextUtils.isEmpty(mSearchQuery)) return;
 
         if (mPrefetchHeader == null) mPrefetchHeader = new SubsectionHeader();
-        mPrefetchHeader.update(prefetchedItems);
         mPrefetchHeader.setIsExpanded(mShouldPrefetchSectionExpand);
+        mPrefetchHeader.update(prefetchedItems);
 
         ItemGroup prefetchItemGroup = new PrefetchItemGroup();
         prefetchItemGroup.addItem(mPrefetchHeader);
         if (mPrefetchHeader.isExpanded()) {
-            for (TimedItem item : prefetchedItems) {
+            for (DownloadHistoryItemWrapper item : prefetchedItems) {
                 prefetchItemGroup.addItem(item);
             }
         }
 
         addGroup(prefetchItemGroup);
+        updateRecentBadges(prefetchedItems);
+    }
+
+    private void updateRecentBadges(List<DownloadHistoryItemWrapper> prefetchedItems) {
+        boolean showBadgeForHeader = false;
+        for (DownloadHistoryItemWrapper item : prefetchedItems) {
+            item.setShouldShowRecentBadge(shouldItemShowRecentBadge(item));
+            showBadgeForHeader |= shouldItemShowRecentBadge(item);
+        }
+
+        mPrefetchHeader.setShouldShowRecentBadge(showBadgeForHeader);
+    }
+
+    private boolean shouldItemShowRecentBadge(DownloadHistoryItemWrapper item) {
+        return item.getTimestamp() > mPrefetchBundleLastVisitedTime;
     }
 
     /**
@@ -652,9 +695,25 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
      * @param expanded Whether the prefetched section should be expanded.
      */
     public void setPrefetchSectionExpanded(boolean expanded) {
+        if (mShouldPrefetchSectionExpand == expanded) return;
         mShouldPrefetchSectionExpand = expanded;
+
+        updatePrefetchBundleLastVisitedTime();
         clear(false);
         filter(mFilter);
+    }
+
+    private void updatePrefetchBundleLastVisitedTime() {
+        // We don't care about marking recent for items updated more than 48 hours ago.
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.HOUR_OF_DAY, -getRecentBadgeTimeThreshold());
+        mPrefetchBundleLastVisitedTime = ContextUtils.getAppSharedPreferences().getLong(
+                PREF_PREFETCH_BUNDLE_LAST_VISITED_TIME, calendar.getTime().getTime());
+
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putLong(PREF_PREFETCH_BUNDLE_LAST_VISITED_TIME, new Date().getTime())
+                .apply();
     }
 
     private BackendItems getDownloadItemList(boolean isOffTheRecord) {
@@ -808,5 +867,20 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
 
     private DownloadHistoryItemWrapper createDownloadHistoryItemWrapper(OfflineItem item) {
         return new OfflineItemWrapper(item, mBackendProvider, mParentComponent);
+    }
+
+    private int getRecentBadgeTimeThreshold() {
+        if (mTimeThresholdForRecentBadgeMs == null) {
+            mTimeThresholdForRecentBadgeMs = DEFAULT_TIME_THRESHOLD_FOR_RECENT_BADGE_HOURS;
+
+            String variationResult = VariationsAssociatedData.getVariationParamValue(
+                    VARIATION_TRIAL_DOWNLOAD_HOME_PREFETCH_UI,
+                    VARIATION_PARAM_TIME_THRESHOLD_FOR_RECENT_BADGE);
+            if (!TextUtils.isEmpty(variationResult)) {
+                mTimeThresholdForRecentBadgeMs = Integer.parseInt(variationResult);
+            }
+        }
+
+        return mTimeThresholdForRecentBadgeMs;
     }
 }

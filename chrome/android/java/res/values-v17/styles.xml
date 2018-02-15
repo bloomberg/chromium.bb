@@ -697,6 +697,21 @@
     <style name="DownloadIconView" parent="@style/ListItemStartIcon">
         <item name="android:background">@color/light_active_color</item>
     </style>
+    <style name="DownloadNewBadgeStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@color/light_active_color</item>
+        <item name="android:layout_marginStart">-8dp</item>
+        <item name="android:layout_marginTop">-2dp</item>
+        <item name="android:paddingStart">6dp</item>
+        <item name="android:paddingEnd">6dp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">@dimen/text_size_small</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:text">@string/prefetch_badge_new</item>
+    </style>
 
     <!-- Data Reduction -->
     <style name="DataReductionPrefSecondaryStyle">
