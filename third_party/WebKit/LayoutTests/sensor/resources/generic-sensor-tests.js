@@ -240,7 +240,7 @@ function runGenericSensorTests(sensorType,
   }, `${sensorType.name}: Test that onreading is called and sensor reading is valid (continuous reporting).`);
 
   sensor_test(async sensor => {
-    let sensorObject = new sensorType;
+    let sensorObject = new sensorType({frequency: 60});
     sensorObject.start();
 
     let mockSensor = await sensor.mockSensorProvider.getCreatedSensor();
@@ -266,7 +266,7 @@ function runGenericSensorTests(sensorType,
  visibility changes.`);
 
   sensor_test(async sensor => {
-    let sensorObject = new sensorType;
+    let sensorObject = new sensorType({frequency: 60});
     sensorObject.start();
 
     // Create a focused editbox inside a cross-origin iframe, sensor notification must suspend.
@@ -334,9 +334,10 @@ function runGenericSensorTests(sensorType,
   }, `${sensorType.name}: Test that sensor reading is correct.`);
 
   async function checkFrequencyHintWorks(sensor) {
-    let fastSensor = new sensorType({frequency: 30});
-    let slowSensor = new sensorType({frequency: 5});
-    slowSensor.start();
+    let fastSensor = new sensorType({frequency: 60});
+    fastSensor.start();
+
+    let slowSensor;  // To be initialized later.
 
     let mockSensor = await sensor.mockSensorProvider.getCreatedSensor();
     await mockSensor.setUpdateSensorReadingFunction(updateReading);
@@ -344,27 +345,37 @@ function runGenericSensorTests(sensorType,
       let fastSensorNotifiedCounter = 0;
       let slowSensorNotifiedCounter = 0;
 
-      let fastSensorWrapper = new CallbackWrapper(() => {
-        fastSensorNotifiedCounter++;
-      }, reject);
-
       let slowSensorWrapper = new CallbackWrapper(() => {
-        slowSensorNotifiedCounter++;
-        if (slowSensorNotifiedCounter == 1) {
-            fastSensor.start();
-        } else if (slowSensorNotifiedCounter == 3) {
+        // Skip the initial notification that always comes immediately.
+        if (slowSensorNotifiedCounter === 1) {
           assert_true(fastSensorNotifiedCounter > 2,
                       "Fast sensor overtakes the slow one");
           fastSensor.stop();
           slowSensor.stop();
           resolve(mockSensor);
         }
+
+        slowSensorNotifiedCounter++;
+      }, reject);
+
+      let fastSensorWrapper = new CallbackWrapper(() => {
+        if (fastSensorNotifiedCounter === 0) {
+          // For Magnetometer and ALS, the maximum frequency is less than 60Hz
+          // we make "slow" sensor 4 times slower than the actual applied
+          // frequency, so that the "fast" sensor will immediately overtake it
+          // despite the notification adjustments.
+          const slowFrequency = mockSensor.getSamplingFrequency() * 0.25;
+          slowSensor = new sensorType({frequency: slowFrequency});
+          slowSensor.onreading = slowSensorWrapper.callback;
+          slowSensor.onerror = reject;
+          slowSensor.start();
+        }
+
+        fastSensorNotifiedCounter++;
       }, reject);
 
       fastSensor.onreading = fastSensorWrapper.callback;
-      slowSensor.onreading = slowSensorWrapper.callback;
       fastSensor.onerror = reject;
-      slowSensor.onerror = reject;
     });
     return mockSensor.removeConfigurationCalled();
   }
@@ -434,7 +445,7 @@ function runGenericSensorTests(sensorType,
   }, `${sensorType.name}: Test that sensor can be constructed within an iframe allowed to use feature policy.`);
 
   sensor_test(async sensor => {
-    let sensorObject = new sensorType();
+    let sensorObject = new sensorType({frequency: 60});
     let timestamp = 0;
     sensorObject.start();
 
@@ -475,8 +486,8 @@ function runGenericSensorTests(sensorType,
       return;
     }
 
-    let sensor1 = new sensorType();
-    let sensor2 = new sensorType({referenceFrame: "screen"});
+    let sensor1 = new sensorType({frequency: 60});
+    let sensor2 = new sensorType({frequency: 60, referenceFrame: "screen"});
 
     sensor1.start();
     sensor2.start();

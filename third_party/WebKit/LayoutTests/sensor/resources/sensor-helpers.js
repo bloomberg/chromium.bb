@@ -377,11 +377,22 @@ function sensor_test(func, name, properties) {
 // TODO(Mikhail): Refactor further to remove code duplication
 // in <concrete sensor>.html files.
 function verify_sensor_reading(pattern, values, timestamp, is_null) {
-  if (is_null)
-    return values.every(r => r === null) && timestamp === null;
-  return values.every((r, i) => r === pattern[i]) && timestamp !== null;
+  function round(val) {
+    return Number.parseFloat(val).toPrecision(6);
+  }
+
+  if (is_null) {
+    return (values === null || values.every(r => r === null)) &&
+           timestamp === null;
+  }
+  return values.every((r, i) => round(r) === round(pattern[i])) &&
+         timestamp !== null;
 }
 
 function verify_xyz_sensor_reading(pattern, {x, y, z, timestamp}, is_null) {
   return verify_sensor_reading(pattern, [x, y, z], timestamp, is_null);
+}
+
+function verify_quat_sensor_reading(pattern, {quaternion, timestamp}, is_null) {
+  return verify_sensor_reading(pattern, quaternion, timestamp, is_null);
 }
