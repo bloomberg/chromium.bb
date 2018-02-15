@@ -16,6 +16,10 @@
   BAD_PASSWORD: 4,
 };
 
+/** @typedef {Iterable<{value: string, title: string, selected: boolean,
+ *                      subtitle: string}>} */
+var EncryptionSelectListType;
+
 Polymer({
   is: 'offline-ad-login',
 
@@ -25,9 +29,9 @@ Polymer({
      */
     disabled: {type: Boolean, value: false, observer: 'disabledChanged_'},
     /**
-     * Whether to show machine name input field.
+     * Whether the screen is for domain join.
      */
-    showMachineInput: {type: Boolean, value: false},
+    isDomainJoin: {type: Boolean, value: false},
     /**
      * The kerberos realm (AD Domain), the machine is part of.
      */
@@ -53,6 +57,22 @@ Polymer({
   /** @private Used for 'More options' dialog. */
   storedOrgUnit: String,
 
+  /** @private Used for 'More options' dialog. */
+  storedEncryptionIndex: Number,
+
+  /**
+   * Maps encryption value to subtitle message.
+   * @private {Object<string,string>}
+   * */
+  encryptionValueToSubtitleMap: Object,
+
+  /**
+   * Contains preselected default encryption. Does not show the warning sign for
+   * that one.
+   * @private
+   * */
+  defaultEncryption: String,
+
   /** @private */
   realmChanged_: function() {
     this.adWelcomeMessage =
@@ -64,8 +84,26 @@ Polymer({
     this.$.gaiaCard.classList.toggle('disabled', this.disabled);
   },
 
+  /** @override */
+  ready: function() {
+    if (!this.isDomainJoin)
+      return;
+    var list = /** @type {!EncryptionSelectListType}>} */
+        (loadTimeData.getValue('encryptionTypesList'));
+    for (var item of list)
+      this.encryptionValueToSubtitleMap[item.value] = item.subtitle;
+    list = /** @type {!SelectListType} */ (list.map(function(item) {
+      delete item.subtitle;
+      return item;
+    }));
+    setupSelect(
+        this.$.encryptionList, list, this.onEncryptionSelected_.bind(this));
+    this.defaultEncryption = /** @type {!string} */ (getSelectedValue(list));
+    this.onEncryptionSelected_(this.defaultEncryption);
+  },
+
   focus: function() {
-    if (this.showMachineInput &&
+    if (this.isDomainJoin &&
         /** @type {string} */ (this.$.machineNameInput.value) == '') {
       this.$.machineNameInput.focus();
     } else if (/** @type {string} */ (this.$.userInput.value) == '') {
@@ -119,7 +157,7 @@ Polymer({
 
   /** @private */
   onSubmit_: function() {
-    if (this.showMachineInput && !this.$.machineNameInput.checkValidity())
+    if (this.isDomainJoin && !this.$.machineNameInput.checkValidity())
       return;
     if (!this.$.userInput.checkValidity())
       return;
@@ -134,6 +172,8 @@ Polymer({
       'username': user,
       'password': this.$.passwordInput.value
     };
+    if (this.isDomainJoin)
+      msg['encryption_types'] = parseInt(this.$.encryptionList.value, 10);
     this.$.passwordInput.value = '';
     this.fire('authCompleted', msg);
   },
@@ -143,6 +183,7 @@ Polymer({
     this.disabled = true;
     this.fire('dialogShown');
     this.storedOrgUnit = this.$.orgUnitInput.value;
+    this.storedEncryptionIndex = this.$.encryptionList.selectedIndex;
     this.$$('#moreOptionsDlg').showModal();
     this.$$('#gaiaCard').classList.add('full-disabled');
   },
@@ -150,6 +191,7 @@ Polymer({
   /** @private */
   onMoreOptionsConfirmTap_: function() {
     this.storedOrgUnit = null;
+    this.storedEncryptionIndex = -1;
     this.$$('#moreOptionsDlg').close();
   },
 
@@ -162,8 +204,20 @@ Polymer({
   onMoreOptionsClosed_: function() {
     if (this.storedOrgUnit)
       this.$.orgUnitInput.value = this.storedOrgUnit;
+    if (this.storedEncryptionIndex != -1)
+      this.$.encryptionList.selectedIndex = this.storedEncryptionIndex;
     this.fire('dialogHidden');
     this.disabled = false;
     this.$$('#gaiaCard').classList.remove('full-disabled');
+  },
+
+  /**
+   * @private
+   * @param {!string} value
+   * */
+  onEncryptionSelected_: function(value) {
+    this.$.encryptionSubtitle.innerHTML =
+        this.encryptionValueToSubtitleMap[value];
+    this.$.encryptionWarningIcon.hidden = (value == this.defaultEncryption);
   },
 });

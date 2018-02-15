@@ -106,6 +106,10 @@ void FakeAuthPolicyClient::JoinAdDomain(
              request.machine_name().find_first_of(
                  kInvalidMachineNameCharacters) != std::string::npos) {
     error = authpolicy::ERROR_INVALID_MACHINE_NAME;
+  } else if (request.kerberos_encryption_types() ==
+             authpolicy::KerberosEncryptionTypes::ENC_TYPES_LEGACY) {
+    // Pretend that server does not support legacy types.
+    error = authpolicy::ERROR_KDC_DOES_NOT_SUPPORT_ENCRYPTION_TYPE;
   } else {
     std::vector<std::string> parts =
         base::SplitString(request.user_principal_name(), "@",

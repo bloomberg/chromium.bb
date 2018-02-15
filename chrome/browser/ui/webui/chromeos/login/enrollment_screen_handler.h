@@ -72,6 +72,7 @@ class EnrollmentScreenHandler
   void Initialize() override;
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
+  void GetAdditionalParameters(base::DictionaryValue* parameters) override;
 
   // Implements NetworkStateInformer::NetworkStateInformerObserver
   void UpdateState(NetworkError::ErrorReason reason) override;
@@ -84,6 +85,7 @@ class EnrollmentScreenHandler
                            const std::string& auth_code);
   void HandleAdCompleteLogin(const std::string& machine_name,
                              const std::string& distinguished_name,
+                             int encryption_types,
                              const std::string& user_name,
                              const std::string& password);
   void HandleRetry();

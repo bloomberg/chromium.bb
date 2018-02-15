@@ -5059,7 +5059,7 @@
         {
           'name': 'All',
           'value': 0,
-          'caption': '''All''',
+          'caption': '''All (insecure)''',
         },
         {
           'name': 'Strong',
@@ -5069,7 +5069,7 @@
         {
           'name': 'Legacy',
           'value': 2,
-          'caption': '''Legacy''',
+          'caption': '''Legacy (insecure)''',
         },
       ],
       'supported_on': ['chrome_os:66-'],
@@ -5084,7 +5084,7 @@
       'tags': ['system-security'],
       'desc': '''Sets encryption types that are allowed when requesting Kerberos tickets from an <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> server.
 
-      If the policy is set to 'All', both the AES encryption types 'aes256-cts-hmac-sha1-96' and 'aes128-cts-hmac-sha1-96' as well as the RC4 encryption type 'rc4-hmac' are allowed. AES encryption takes preference if the server supports both types. Note that RC4 is considered weak and the server should be reconfigured if possible to support AES encryption.
+      If the policy is set to 'All', both the AES encryption types 'aes256-cts-hmac-sha1-96' and 'aes128-cts-hmac-sha1-96' as well as the RC4 encryption type 'rc4-hmac' are allowed. AES encryption takes preference if the server supports both types. Note that RC4 is insecure and the server should be reconfigured if possible to support AES encryption.
 
       If the policy is set to 'Strong' or if it is unset, only the AES encryption types are allowed.
 

@@ -199,6 +199,29 @@ TEST_F(FakeAuthPolicyClientTest, JoinAdDomain_ParseUPN) {
   loop.Run();
 }
 
+// Tests that fake server does not support legacy encryption types.
+TEST_F(FakeAuthPolicyClientTest, JoinAdDomain_NotSupportedEncType) {
+  authpolicy_client()->set_started(true);
+  base::RunLoop loop;
+  authpolicy::JoinDomainRequest request;
+  request.set_machine_name(kCorrectMachineName);
+  request.set_user_principal_name(kCorrectUserName);
+  request.set_kerberos_encryption_types(
+      authpolicy::KerberosEncryptionTypes::ENC_TYPES_LEGACY);
+  authpolicy_client()->JoinAdDomain(
+      request, /* password_fd */ -1,
+      base::BindOnce(
+          [](base::OnceClosure closure, authpolicy::ErrorType error,
+             const std::string& domain) {
+            EXPECT_EQ(authpolicy::ERROR_KDC_DOES_NOT_SUPPORT_ENCRYPTION_TYPE,
+                      error);
+            EXPECT_TRUE(domain.empty());
+            std::move(closure).Run();
+          },
+          loop.QuitClosure()));
+  loop.Run();
+}
+
 // Test AuthenticateUser.
 TEST_F(FakeAuthPolicyClientTest, AuthenticateUser_ByAccountId) {
   authpolicy_client()->set_started(true);

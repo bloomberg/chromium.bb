@@ -3,6 +3,7 @@
      found in the LICENSE file. -->
 
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/html/md_select_css.html">
 
 <!--
   Offline UI for the AD Domain joining and User authentication.
@@ -11,8 +12,8 @@
       <offline-ad-login show-machine-input> </offline-ad-login>
 
   Attributes:
-    'showMachineInput' - Whether the input of the machine name should be shown.
-                         Used for domain joining.
+    'isDomainJoin' - Whether the screen is for domain join. For the join it
+                     contains some specific elements (e.g. machine name input).
     'realm' - The AD realm the device is managed by.
     'userRealm' - Autocomplete realm for the user input.
     'userNameLabel' - Label for the user input.
@@ -26,6 +27,8 @@
                       |credentials| = { 'machineName': <machine name input>,
                                         'distinguished_name': <orgUnitInput>,
                                         (e.g. "OU=Computers,DC=example,DC=com")
+                                        'encryption_types': Number value of
+                                        chosen encryption types
                                         'username': <username> (UPN),
                                         'password': <typed password> }
   Methods:
@@ -38,6 +41,7 @@
   <link rel="stylesheet" href="offline_gaia.css">
   <link rel="stylesheet" href="oobe_flex_layout.css">
   <template>
+    <style include="md-select"></style>
     <gaia-card id="gaiaCard" class="fit">
       <div class="header flex vertical layout end-justified start">
         <h1 id="welcomeMsg" class="welcome-message">[[adWelcomeMessage]]
@@ -48,7 +52,7 @@
             disabled="[[disabled]]"
             i18n-values="button-text:offlineLoginNextBtn">
           <gaia-input id="machineNameInput" required
-              hidden="[[!showMachineInput]]" error="[[machineNameError]]"
+              hidden="[[!isDomainJoin]]" error="[[machineNameError]]"
               i18n-values="label:oauthEnrollAdMachineNameInput">
           </gaia-input>
           <gaia-input id="userInput" type="email" required
@@ -60,7 +64,7 @@
                            label:adLoginPassword">
           </gaia-input>
           <gaia-button id="moreOptionsBtn" type="link"
-              on-tap="onMoreOptionsClicked_" hidden="[[!showMachineInput]]">
+              on-tap="onMoreOptionsClicked_" hidden="[[!isDomainJoin]]">
             $i18n{adJoinMoreOptions}
           </gaia-button>
         </gaia-input-form>
@@ -74,6 +78,25 @@
       <div slot="body">
         <gaia-input id="orgUnitInput" label="$i18n{adJoinOrgUnit}" required>
         </gaia-input>
+      </div>
+      <div slot="body">
+        <div class="flex layout center horizontal justified">
+          <div class="layout vertical center-justified">
+            $i18n{selectEncryption}
+          </div>
+          <div class="md-select-wrapper">
+            <select id="encryptionList" aria-label$="$i18{selectEncryption}"
+                class="md-select">
+            </select>
+            <span class="md-select-underline"></span>
+          </div>
+        </div>
+        <div class="flex layout center horizontal end-justified">
+          <iron-icon id="encryptionWarningIcon" icon="warning" hidden>
+          </iron-icon>
+          <div id="encryptionSubtitle" class="advanced-option-subtitle">
+          </div>
+        </div>
       </div>
       <div slot="button-container">
         <paper-button autofocus on-tap="onMoreOptionsCancelTap_"

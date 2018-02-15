@@ -4236,6 +4236,27 @@
   <message name="IDS_AD_ORG_UNIT_HINT" desc="Admin-facing. Hint for the Active Directory Organizational units input on the 'More options' dialog.">
     Computer OU (e.g. OU=Chromebooks,DC=example,DC=com)
   </message>
+  <message name="IDS_AD_ENCRYPTION_SELECTION_SELECT" desc="Admin-facing. Title for kerberos encryption types selection.">
+    Select encryption types
+  </message>
+  <message name="IDS_AD_ENCRYPTION_STRONG_TITLE" desc="Admin-facing. Title for 'Strong' kerberos types option.">
+    Strong
+  </message>
+  <message name="IDS_AD_ENCRYPTION_STRONG_SUBTITLE" desc="Admin-facing. Subtitle describing 'Strong' option.">
+    Enforce AES encryption (recommended).
+  </message>
+  <message name="IDS_AD_ENCRYPTION_ALL_TITLE" desc="Admin-facing. Title for 'All' kerberos types option.">
+    All (insecure)
+  </message>
+  <message name="IDS_AD_ENCRYPTION_ALL_SUBTITLE" desc="Admin-facing. Subtitle describing 'All' option.">
+    Allow AES and RC4 encryption. Using this option increases your risk, as the RC4 ciphers are insecure.
+  </message>
+  <message name="IDS_AD_ENCRYPTION_LEGACY_TITLE" desc="Admin-facing. Title for 'Legacy' kerberos types option.">
+    Legacy (insecure)
+  </message>
+  <message name="IDS_AD_ENCRYPTION_LEGACY_SUBTITLE" desc="Admin-facing. Subtitle describing 'Legacy' option.">
+    Enforce RC4 encryption. Using this option increases your risk, as the RC4 ciphers are insecure.
+  </message>
   <message name="IDS_AD_DOMAIN_JOIN_UNKNOWN_ERROR" desc="Admin-facing. Default error text on the Active Directory join screen">
     Oops!  Something went wrong when trying to join the domain. Please try again.
   </message>
@@ -4262,6 +4283,9 @@
   </message>
   <message name="IDS_AD_OU_SETTING_FAILED" desc="Admin-facing. Alert message that user could not join the machine to specified organizational unit due to unknown reason.">
     Failed to join the machine to the domain. This might be due to issues with the organizational unit.
+  </message>
+  <message name="IDS_AD_NOT_SUPPORTED_ENCRYPTION" desc="Admin-facing. Alert message that user could not join the machine to due to not supported encryption types.">
+    Can't join the machine to the domain. The server does not support specified Kerberos encryption types. Check "More options" for encryption settings.
   </message>
   <message name="IDS_AD_BOARD_NOT_SUPPORTED" desc="Admin-facing. Alert message that the Chromebook model is not supported for Active Directory">
     Chrome <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> integration is only supported on x86_64 platforms. Chromebooks built on top of an ARM or x86 platform do not support this functionality.

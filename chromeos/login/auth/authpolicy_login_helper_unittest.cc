@@ -59,7 +59,8 @@ TEST(AuthPolicyLoginHelper, JoinFollowedByRefreshDevicePolicy) {
   DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
       std::make_unique<FakeCryptohomeClient>());
   AuthPolicyLoginHelper helper;
-  helper.JoinAdDomain(std::string(), std::string(), std::string(),
+  helper.JoinAdDomain(std::string(), std::string(),
+                      authpolicy::KerberosEncryptionTypes(), std::string(),
                       std::string(),
                       base::BindOnce([](authpolicy::ErrorType error,
                                         const std::string& domain) {
