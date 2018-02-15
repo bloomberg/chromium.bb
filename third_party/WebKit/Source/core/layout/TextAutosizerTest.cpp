@@ -1032,4 +1032,31 @@ TEST_F(TextAutosizerTest, ClusterHasEnoughTextToAutosizeForZoomDSF) {
   EXPECT_FLOAT_EQ(20.0f * device_scale,
                   target->GetLayoutObject()->Style()->ComputedFontSize());
 }
+
+TEST_F(TextAutosizerTest, AfterPrint) {
+  const float device_scale = 3;
+  FloatSize print_size(160, 240);
+  set_device_scale_factor(device_scale);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      html { font-size: 8px; }
+    </style>
+    <body>
+      <div id='target'>
+        Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed
+        do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+        Ut enim ad minim veniam, quis nostrud exercitation ullamco
+        laboris nisi ut aliquip ex ea commodo consequat.
+      </div>
+    </body>
+  )HTML");
+  Element* target = GetDocument().getElementById("target");
+  EXPECT_FLOAT_EQ(20.0f * device_scale,
+                  target->GetLayoutObject()->Style()->ComputedFontSize());
+  GetDocument().GetFrame()->SetPrinting(true, print_size, print_size, 1.0);
+  EXPECT_FLOAT_EQ(8.0f, target->GetLayoutObject()->Style()->ComputedFontSize());
+  GetDocument().GetFrame()->SetPrinting(false, print_size, print_size, 1.0);
+  EXPECT_FLOAT_EQ(20.0f * device_scale,
+                  target->GetLayoutObject()->Style()->ComputedFontSize());
+}
 }  // namespace blink

@@ -66,6 +66,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/TextAutosizer.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/IdlenessDetector.h"
@@ -539,6 +540,9 @@ void LocalFrame::SetPrinting(bool printing,
   GetDocument()->SetPrinting(printing ? Document::kPrinting
                                       : Document::kFinishingPrinting);
   View()->AdjustMediaTypeForPrinting(printing);
+
+  if (TextAutosizer* text_autosizer = GetDocument()->GetTextAutosizer())
+    text_autosizer->UpdatePageInfo();
 
   if (ShouldUsePrintingLayout()) {
     View()->ForceLayoutForPagination(page_size, original_page_size,
