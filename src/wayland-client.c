@@ -71,13 +71,6 @@ struct wl_proxy {
 	uint32_t version;
 };
 
-struct wl_global {
-	uint32_t id;
-	char *interface;
-	uint32_t version;
-	struct wl_list link;
-};
-
 struct wl_event_queue {
 	struct wl_list event_list;
 	struct wl_display *display;
