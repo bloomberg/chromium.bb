@@ -30,6 +30,14 @@
   runs the test URLParser.PathURL. The coverage report is filtered to include
   only files and sub-directories under url/ and crypto/ directories.
 
+  If you want to run tests that try to draw to the screen but don't have a
+  display connected, you can run tests in headless mode with xvfb.
+
+  Sample flow for running a test target with xvfb (e.g. unit_tests):
+
+  python tools/code_coverage/coverage.py unit_tests -b out/coverage \\
+      -o out/report -c 'python testing/xvfb.py out/coverage/unit_tests'
+
   If you are building a fuzz target, you need to add "use_libfuzzer=true" GN
   flag as well.
 
@@ -874,12 +882,29 @@ def _GeneratePerFileCoverageSummary(binary_paths, profdata_file_path, filters):
 def _GetBinaryPath(command):
   """Returns a relative path to the binary to be run by the command.
 
+  Currently, following types of commands are supported (e.g. url_unittests):
+  1. Run test binary direcly: "out/coverage/url_unittests <arguments>"
+  2. Use xvfb.
+    2.1. "python testing/xvfb.py out/coverage/url_unittests <arguments>"
+    2.2. "testing/xvfb.py out/coverage/url_unittests <arguments>"
+
   Args:
     command: A command used to run a target.
 
   Returns:
     A relative path to the binary.
   """
+  xvfb_script_name = os.extsep.join(['xvfb', 'py'])
+
+  command_parts = command.split()
+  if os.path.basename(command_parts[0]) == 'python':
+    assert os.path.basename(command_parts[1]) == xvfb_script_name, (
+        'This tool doesn\'t understand the command: "%s"' % command)
+    return command_parts[2]
+
+  if os.path.basename(command_parts[0]) == xvfb_script_name:
+    return command_parts[1]
+
   return command.split()[0]
 
 
