@@ -115,15 +115,14 @@ void ElementStyleResources::LoadPendingSVGDocuments(
   }
 }
 
-static bool ComputedStyleMayBeCSSSpriteBackgroundImage(
-    const ComputedStyle& style) {
-  // Simple heuristic to guess if CSS background image is used to create CSS
-  // sprites. For a legit background image it's very likely the X and the Y
-  // position will not be explicitly specifed. For CSS sprite image,
+static bool BackgroundLayerMayBeSprite(const FillLayer& background_layer) {
+  // Simple heuristic to guess if a CSS background image layer is used to
+  // create CSS sprites. For a legit background image it's very likely the X
+  // and the Y position will not be explicitly specifed. For CSS sprite image,
   // background X or Y position will probably be specified.
-  const FillLayer& background = style.BackgroundLayers();
-  return style.HasBackgroundImage() &&
-         (background.PositionX().IsFixed() || background.PositionY().IsFixed());
+  DCHECK(background_layer.GetImage());
+  return background_layer.PositionX().IsFixed() ||
+         background_layer.PositionY().IsFixed();
 }
 
 StyleImage* ElementStyleResources::LoadPendingImage(
@@ -186,7 +185,7 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
               background_layer->GetImage()->IsPendingImage()) {
             background_layer->SetImage(LoadPendingImage(
                 style, ToStylePendingImage(background_layer->GetImage()),
-                ComputedStyleMayBeCSSSpriteBackgroundImage(*style)
+                BackgroundLayerMayBeSprite(*background_layer)
                     ? FetchParameters::kDisallowPlaceholder
                     : FetchParameters::kAllowPlaceholder));
           }
