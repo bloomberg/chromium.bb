@@ -130,8 +130,15 @@ def main(argv):
 
   ret = subprocess.call(protoc_cmd)
   if ret != 0:
+    if ret <= -100:
+      # Windows error codes such as 0xC0000005 and 0xC0000409 are much easier to
+      # recognize and differentiate in hex. In order to print them as unsigned
+      # hex we need to add 4 Gig to them.
+      error_number = "0x%08X" % (ret + (1 << 32))
+    else:
+      error_number = "%d" % ret
     raise RuntimeError("Protoc has returned non-zero status: "
-                       "{0} .".format(ret))
+                       "{0}".format(error_number))
 
   if options.include:
     WriteIncludes(headers, options.include)
