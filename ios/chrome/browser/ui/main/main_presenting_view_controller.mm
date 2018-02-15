@@ -123,6 +123,10 @@
   return nil;
 }
 
+- (UIViewController*)viewController {
+  return self;
+}
+
 - (void)showTabSwitcher:(id<TabSwitcher>)tabSwitcher
              completion:(ProceduralBlock)completion {
   DCHECK(tabSwitcher);
