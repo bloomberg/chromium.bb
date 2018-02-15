@@ -151,6 +151,7 @@
       'ToTWin64(dll)': 'clang_tot_shared_release_dcheck',
       'ToTWinCFI': 'clang_tot_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_x86',
       'ToTWinCFI64': 'clang_tot_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on',
+      'ToTWinLibcxx64': 'clang_tot_official_minimal_symbols_static_release_libcxx',
       'ToTWinThinLTO64': 'clang_tot_official_full_symbols_thin_lto_static_use_lld',
       'ToTiOS': 'ios',
       'UBSanVptr Linux': 'ubsan_vptr_release_bot',
@@ -1240,6 +1241,10 @@
       'clang_tot', 'official', 'minimal_symbols', 'static', 'release', 'x86',
     ],
 
+    'clang_tot_official_minimal_symbols_static_release_libcxx': [
+      'clang_tot', 'official', 'minimal_symbols', 'static', 'release', 'libcxx',
+    ],
+
     'clang_tot_release_minimal_symbols_thin_lto_static_use_lld': [
       'clang_tot', 'release', 'minimal_symbols', 'thin_lto', 'static', 'use_lld',
     ],
@@ -1995,6 +2000,10 @@
 
     'jumbo_non_goma_chunks': {
       'gn_args': 'use_jumbo_build=true jumbo_file_merge_limit=50',
+    },
+
+    'libcxx': {
+      'gn_args': 'use_custom_libcxx=true',
     },
 
     'libfuzzer': { 'gn_args': 'use_libfuzzer=true' },
