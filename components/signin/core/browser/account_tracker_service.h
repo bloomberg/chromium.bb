@@ -144,7 +144,7 @@ class AccountTrackerService : public KeyedService {
   void SetAccountStateFromUserInfo(const std::string& account_id,
                                    const base::DictionaryValue* user_info);
 
-  // Assumes that there already exists an account with |account_id| in
+  // Updates the account image. Does nothing if |account_id| does not exist in
   // |accounts_|.
   void SetAccountImage(const std::string& account_id, const gfx::Image& image);
 
