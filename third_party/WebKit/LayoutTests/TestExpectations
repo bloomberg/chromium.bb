@@ -3286,3 +3286,5 @@ crbug.com/802835 external/wpt/fetch/corb/img-png-mislabeled-as-html-nosniff.tent
 crbug.com/802835 virtual/outofblink-cors/external/wpt/fetch/corb/img-png-mislabeled-as-html-nosniff.tentative.sub.html [ Failure ]
 crbug.com/802835 external/wpt/fetch/corb/script-html-correctly-labeled.tentative.sub.html [ Failure ]
 crbug.com/802835 virtual/outofblink-cors/external/wpt/fetch/corb/script-html-correctly-labeled.tentative.sub.html [ Failure ]
+
+crbug.com/812702 fast/layers/scrollable-area-removed-on-scroll-crash.html [ Pass Failure ]
