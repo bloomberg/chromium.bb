@@ -767,12 +767,14 @@ import org.chromium.base.BuildInfo;
 public abstract class java.util.HashSet<T> extends java.util.AbstractSet<E>
       implements java.util.Set<E>, java.lang.Cloneable, java.io.Serializable {
     public void dummy();
-  Signature: ()V
+      Signature: ()V
+    public java.lang.Class<?> getClass();
+      Signature: ()Ljava/lang/Class<*>;
 }
 """
     jni_from_javap = jni_generator.JNIFromJavaP(contents.split('\n'),
                                                 TestOptions())
-    self.assertEquals(1, len(jni_from_javap.called_by_natives))
+    self.assertEquals(2, len(jni_from_javap.called_by_natives))
     self.assertGoldenTextEquals(jni_from_javap.GetContent())
 
   def testSnippnetJavap6_7_8(self):

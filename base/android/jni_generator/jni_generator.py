@@ -127,12 +127,14 @@ def JavaDataTypeToC(java_type):
   java_type_map = {
       'void': 'void',
       'String': 'jstring',
+      'Class': 'jclass',
       'Throwable': 'jthrowable',
       'java/lang/String': 'jstring',
       'java/lang/Class': 'jclass',
       'java/lang/Throwable': 'jthrowable',
   }
 
+  java_type = _StripGenerics(java_type)
   if java_type in java_pod_type_map:
     return java_pod_type_map[java_type]
   elif java_type in java_type_map:
@@ -141,10 +143,6 @@ def JavaDataTypeToC(java_type):
     if java_type[:-2] in java_pod_type_map:
       return java_pod_type_map[java_type[:-2]] + 'Array'
     return 'jobjectArray'
-  elif java_type.startswith('Class'):
-    # Checking just the start of the name, rather than a direct comparison,
-    # in order to handle generics.
-    return 'jclass'
   else:
     return 'jobject'
 
@@ -497,6 +495,8 @@ def GetRegistrationFunctionName(fully_qualified_class):
 def GetStaticCastForReturnType(return_type):
   type_map = { 'String' : 'jstring',
                'java/lang/String' : 'jstring',
+               'Class': 'jclass',
+               'java/lang/Class': 'jclass',
                'Throwable': 'jthrowable',
                'java/lang/Throwable': 'jthrowable',
                'boolean[]': 'jbooleanArray',
@@ -507,6 +507,7 @@ def GetStaticCastForReturnType(return_type):
                'long[]': 'jlongArray',
                'float[]': 'jfloatArray',
                'double[]': 'jdoubleArray' }
+  return_type = _StripGenerics(return_type)
   ret = type_map.get(return_type, None)
   if ret:
     return ret
