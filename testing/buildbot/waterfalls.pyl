@@ -1058,6 +1058,13 @@
         },
       },
       'Linux Xenial': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Ubuntu-16.04',
+            },
+          ],
+        },
         'additional_compile_targets': [
           'all',
         ],
