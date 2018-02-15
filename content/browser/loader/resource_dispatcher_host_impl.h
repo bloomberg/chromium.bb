@@ -425,7 +425,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // Helper function for URL requests.
   void BeginRequestInternal(std::unique_ptr<net::URLRequest> request,
-                            std::unique_ptr<ResourceHandler> handler);
+                            std::unique_ptr<ResourceHandler> handler,
+                            bool is_initiated_by_fetch_api);
 
   void StartLoading(ResourceRequestInfoImpl* info,
                     std::unique_ptr<ResourceLoader> loader);
@@ -813,6 +814,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   static constexpr int kMaxKeepaliveConnections = 256;
   static constexpr int kMaxKeepaliveConnectionsPerProcess = 20;
+  static constexpr int kMaxKeepaliveConnectionsPerProcessForFetchAPI = 10;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHostImpl);
 };
