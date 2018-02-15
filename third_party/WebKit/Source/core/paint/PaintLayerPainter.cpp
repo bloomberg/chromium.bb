@@ -39,11 +39,10 @@ static inline bool ShouldSuppressPaintingLayer(const PaintLayer& layer) {
   // invalidate all painted output via a call to
   // LayoutView::invalidatePaintForViewAndCompositedLayers().  We also avoid
   // caching subsequences in this mode; see shouldCreateSubsequence().
-  if (layer.GetLayoutObject().GetDocument().DidLayoutWithPendingStylesheets() &&
-      !layer.IsRootLayer() && !layer.GetLayoutObject().IsDocumentElement())
-    return true;
-
-  return false;
+  return layer.GetLayoutObject()
+             .GetDocument()
+             .DidLayoutWithPendingStylesheets() &&
+         !layer.IsRootLayer() && !layer.GetLayoutObject().IsDocumentElement();
 }
 
 void PaintLayerPainter::Paint(GraphicsContext& context,
@@ -1186,7 +1185,12 @@ void PaintLayerPainter::PaintFragmentWithPhase(
                        &painting_info.root_layer->GetLayoutObject(),
                        fragment.fragment_data
                            ? fragment.fragment_data->LogicalTopInFlowThread()
-                           : LayoutUnit());
+                           : LayoutUnit(),
+                       // If we had pending stylesheets, we should avoid
+                       // painting descendants of layout view to avoid FOUC.
+                       paint_layer_.GetLayoutObject()
+                           .GetDocument()
+                           .DidLayoutWithPendingStylesheets());
 
   paint_layer_.GetLayoutObject().Paint(paint_info, paint_offset);
 }

@@ -60,7 +60,8 @@ struct CORE_EXPORT PaintInfo {
             GlobalPaintFlags global_paint_flags,
             PaintLayerFlags paint_flags,
             const LayoutBoxModelObject* paint_container = nullptr,
-            LayoutUnit fragment_logical_top_in_flow_thread = LayoutUnit())
+            LayoutUnit fragment_logical_top_in_flow_thread = LayoutUnit(),
+            bool suppress_painting_descendants = false)
       : context(context),
         phase(phase),
         cull_rect_(cull_rect),
@@ -68,7 +69,8 @@ struct CORE_EXPORT PaintInfo {
         fragment_logical_top_in_flow_thread_(
             fragment_logical_top_in_flow_thread),
         paint_flags_(paint_flags),
-        global_paint_flags_(global_paint_flags) {}
+        global_paint_flags_(global_paint_flags),
+        suppress_painting_descendants_(suppress_painting_descendants) {}
 
   PaintInfo(GraphicsContext& new_context,
             const PaintInfo& copy_other_fields_from)
@@ -79,7 +81,9 @@ struct CORE_EXPORT PaintInfo {
         fragment_logical_top_in_flow_thread_(
             copy_other_fields_from.fragment_logical_top_in_flow_thread_),
         paint_flags_(copy_other_fields_from.paint_flags_),
-        global_paint_flags_(copy_other_fields_from.global_paint_flags_) {}
+        global_paint_flags_(copy_other_fields_from.global_paint_flags_),
+        suppress_painting_descendants_(
+            copy_other_fields_from.suppress_painting_descendants_) {}
 
   // Creates a PaintInfo for painting descendants. See comments about the paint
   // phases in PaintPhase.h for details.
@@ -107,6 +111,10 @@ struct CORE_EXPORT PaintInfo {
   }
 
   bool IsPrinting() const { return global_paint_flags_ & kGlobalPaintPrinting; }
+
+  bool SuppressPaintingDescendants() const {
+    return suppress_painting_descendants_;
+  }
 
   DisplayItem::Type DisplayItemTypeForClipping() const {
     return DisplayItem::PaintPhaseToClipBoxType(phase);
@@ -164,6 +172,7 @@ struct CORE_EXPORT PaintInfo {
 
   const PaintLayerFlags paint_flags_;
   const GlobalPaintFlags global_paint_flags_;
+  const bool suppress_painting_descendants_;
 
   // TODO(chrishtr): temporary while we implement CullRect everywhere.
   friend class SVGPaintContext;

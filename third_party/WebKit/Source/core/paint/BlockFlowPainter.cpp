@@ -15,13 +15,10 @@ namespace blink {
 
 void BlockFlowPainter::PaintContents(const PaintInfo& paint_info,
                                      const LayoutPoint& paint_offset) {
-  // Avoid painting descendants of the root element when stylesheets haven't
-  // loaded. This eliminates FOUC.  It's ok not to draw, because later on, when
-  // all the stylesheets do load, styleResolverMayHaveChanged() on Document will
-  // trigger a full paint invalidation.
-  if (layout_block_flow_.GetDocument().DidLayoutWithPendingStylesheets() &&
-      !layout_block_flow_.IsLayoutView())
+  if (paint_info.SuppressPaintingDescendants() &&
+      !layout_block_flow_.IsLayoutView()) {
     return;
+  }
 
   if (!layout_block_flow_.ChildrenInline()) {
     BlockPainter(layout_block_flow_).PaintContents(paint_info, paint_offset);
