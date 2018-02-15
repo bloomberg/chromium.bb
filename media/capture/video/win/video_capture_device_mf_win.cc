@@ -108,11 +108,6 @@ scoped_refptr<IMFCaptureEngineOnSampleCallback> CreateMFPhotoCallback(
 }
 }  // namespace
 
-// Since IMFCaptureEngine performs the video decoding itself, and Chromium uses
-// I420 at the other end of the pipe, video output format is forced to I420.
-static const GUID kSinkMFVideoFormat = MFVideoFormat_I420;
-static const VideoPixelFormat kSinkVideoPixelFormat = PIXEL_FORMAT_I420;
-
 void LogError(const Location& from_here, HRESULT hr) {
   DPLOG(ERROR) << from_here.ToString()
                << " hr = " << logging::SystemErrorCodeToString(hr);
@@ -138,21 +133,22 @@ static bool GetFrameRateFromMediaType(IMFMediaType* type, float* frame_rate) {
   return true;
 }
 
-static bool GetFormatFromMediaType(IMFMediaType* type,
-                                   bool photo,
-                                   VideoCaptureFormat* format) {
+static bool GetFormatFromSourceMediaType(IMFMediaType* source_media_type,
+                                         bool photo,
+                                         VideoCaptureFormat* format) {
   GUID major_type_guid;
-  if (FAILED(type->GetGUID(MF_MT_MAJOR_TYPE, &major_type_guid)) ||
+  if (FAILED(source_media_type->GetGUID(MF_MT_MAJOR_TYPE, &major_type_guid)) ||
       (major_type_guid != MFMediaType_Image &&
-       (photo || !GetFrameRateFromMediaType(type, &format->frame_rate)))) {
+       (photo ||
+        !GetFrameRateFromMediaType(source_media_type, &format->frame_rate)))) {
     return false;
   }
 
   GUID sub_type_guid;
-  if (FAILED(type->GetGUID(MF_MT_SUBTYPE, &sub_type_guid)) ||
-      !GetFrameSizeFromMediaType(type, &format->frame_size) ||
-      !VideoCaptureDeviceMFWin::FormatFromGuid(sub_type_guid,
-                                               &format->pixel_format)) {
+  if (FAILED(source_media_type->GetGUID(MF_MT_SUBTYPE, &sub_type_guid)) ||
+      !GetFrameSizeFromMediaType(source_media_type, &format->frame_size) ||
+      !VideoCaptureDeviceMFWin::GetPixelFormatFromMFSourceMediaSubtype(
+          sub_type_guid, &format->pixel_format)) {
     return false;
   }
 
@@ -173,6 +169,69 @@ static HRESULT CopyAttribute(IMFAttributes* source_attributes,
   return hr;
 }
 
+struct MediaFormatConfiguration {
+  GUID mf_source_media_subtype;
+  GUID mf_sink_media_subtype;
+  VideoPixelFormat pixel_format;
+};
+
+static bool GetMediaFormatConfigurationFromMFSourceMediaSubtype(
+    const GUID& mf_source_media_subtype,
+    MediaFormatConfiguration* media_format_configuration) {
+  static const MediaFormatConfiguration kMediaFormatConfigurationMap[] = {
+      // IMFCaptureEngine inevitably performs the video frame decoding itself.
+      // This means that the sink must always be set to an uncompressed video
+      // format.
+
+      // Since chromium uses I420 at the other end of the pipe, MF known video
+      // output formats are always set to I420.
+      {MFVideoFormat_I420, MFVideoFormat_I420, PIXEL_FORMAT_I420},
+      {MFVideoFormat_YUY2, MFVideoFormat_I420, PIXEL_FORMAT_I420},
+      {MFVideoFormat_UYVY, MFVideoFormat_I420, PIXEL_FORMAT_I420},
+      {MFVideoFormat_RGB24, MFVideoFormat_I420, PIXEL_FORMAT_I420},
+      {MFVideoFormat_RGB32, MFVideoFormat_I420, PIXEL_FORMAT_I420},
+      {MFVideoFormat_ARGB32, MFVideoFormat_I420, PIXEL_FORMAT_I420},
+      {MFVideoFormat_MJPG, MFVideoFormat_I420, PIXEL_FORMAT_I420},
+      {MFVideoFormat_NV12, MFVideoFormat_I420, PIXEL_FORMAT_I420},
+      {MFVideoFormat_YV12, MFVideoFormat_I420, PIXEL_FORMAT_I420},
+
+      // Depth cameras use specific uncompressed video formats unknown to
+      // IMFCaptureEngine.
+      // Therefore, IMFCaptureEngine cannot perform any transcoding on these.
+      // So we ask IMFCaptureEngine to let the frame pass through, without
+      // transcoding.
+      {kMediaSubTypeY16, kMediaSubTypeY16, PIXEL_FORMAT_Y16},
+      {kMediaSubTypeZ16, kMediaSubTypeZ16, PIXEL_FORMAT_Y16},
+      {kMediaSubTypeINVZ, kMediaSubTypeINVZ, PIXEL_FORMAT_Y16},
+
+      // Photo type
+      {GUID_ContainerFormatJpeg, GUID_ContainerFormatJpeg, PIXEL_FORMAT_MJPEG}};
+
+  for (const auto& kMediaFormatConfiguration : kMediaFormatConfigurationMap) {
+    if (kMediaFormatConfiguration.mf_source_media_subtype ==
+        mf_source_media_subtype) {
+      *media_format_configuration = kMediaFormatConfiguration;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+static HRESULT GetMFSinkMediaSubtype(IMFMediaType* source_media_type,
+                                     GUID* mf_sink_media_subtype) {
+  GUID source_subtype;
+  HRESULT hr = source_media_type->GetGUID(MF_MT_SUBTYPE, &source_subtype);
+  if (FAILED(hr))
+    return hr;
+  MediaFormatConfiguration media_format_configuration;
+  if (!GetMediaFormatConfigurationFromMFSourceMediaSubtype(
+          source_subtype, &media_format_configuration))
+    return E_FAIL;
+  *mf_sink_media_subtype = media_format_configuration.mf_sink_media_subtype;
+  return S_OK;
+}
+
 static HRESULT ConvertToPhotoSinkMediaType(
     IMFMediaType* source_media_type,
     IMFMediaType* destination_media_type) {
@@ -181,7 +240,12 @@ static HRESULT ConvertToPhotoSinkMediaType(
   if (FAILED(hr))
     return hr;
 
-  hr = destination_media_type->SetGUID(MF_MT_SUBTYPE, GUID_ContainerFormatJpeg);
+  GUID mf_sink_media_subtype;
+  hr = GetMFSinkMediaSubtype(source_media_type, &mf_sink_media_subtype);
+  if (FAILED(hr))
+    return hr;
+
+  hr = destination_media_type->SetGUID(MF_MT_SUBTYPE, mf_sink_media_subtype);
   if (FAILED(hr))
     return hr;
 
@@ -195,7 +259,12 @@ static HRESULT ConvertToVideoSinkMediaType(IMFMediaType* source_media_type,
   if (FAILED(hr))
     return hr;
 
-  hr = sink_media_type->SetGUID(MF_MT_SUBTYPE, kSinkMFVideoFormat);
+  GUID mf_sink_media_subtype;
+  hr = GetMFSinkMediaSubtype(source_media_type, &mf_sink_media_subtype);
+  if (FAILED(hr))
+    return hr;
+
+  hr = sink_media_type->SetGUID(MF_MT_SUBTYPE, mf_sink_media_subtype);
   if (FAILED(hr))
     return hr;
 
@@ -332,36 +401,16 @@ class MFVideoCallback final
 };
 
 // static
+bool VideoCaptureDeviceMFWin::GetPixelFormatFromMFSourceMediaSubtype(
+    const GUID& mf_source_media_subtype,
+    VideoPixelFormat* pixel_format) {
+  MediaFormatConfiguration media_format_configuration;
+  if (!GetMediaFormatConfigurationFromMFSourceMediaSubtype(
+          mf_source_media_subtype, &media_format_configuration))
+    return false;
 
-bool VideoCaptureDeviceMFWin::FormatFromGuid(const GUID& guid,
-                                             VideoPixelFormat* format) {
-  struct {
-    const GUID& guid;
-    const VideoPixelFormat format;
-  } static const kFormatMap[] = {
-      {MFVideoFormat_I420, kSinkVideoPixelFormat},
-      {MFVideoFormat_YUY2, kSinkVideoPixelFormat},
-      {MFVideoFormat_UYVY, kSinkVideoPixelFormat},
-      {MFVideoFormat_RGB24, kSinkVideoPixelFormat},
-      {MFVideoFormat_RGB32, kSinkVideoPixelFormat},
-      {MFVideoFormat_ARGB32, kSinkVideoPixelFormat},
-      {MFVideoFormat_MJPG, kSinkVideoPixelFormat},
-      {MFVideoFormat_NV12, kSinkVideoPixelFormat},
-      {MFVideoFormat_YV12, kSinkVideoPixelFormat},
-      {kMediaSubTypeY16, kSinkVideoPixelFormat},
-      {kMediaSubTypeZ16, kSinkVideoPixelFormat},
-      {kMediaSubTypeINVZ, kSinkVideoPixelFormat},
-
-      {GUID_ContainerFormatJpeg, PIXEL_FORMAT_MJPEG}};
-
-  for (const auto& kFormat : kFormatMap) {
-    if (kFormat.guid == guid) {
-      *format = kFormat.format;
-      return true;
-    }
-  }
-
-  return false;
+  *pixel_format = media_format_configuration.pixel_format;
+  return true;
 }
 
 HRESULT VideoCaptureDeviceMFWin::ExecuteHresultCallbackWithRetries(
@@ -456,7 +505,7 @@ HRESULT VideoCaptureDeviceMFWin::FillCapabilities(
                                                       media_type_index,
                                                       type.GetAddressOf()))) {
       VideoCaptureFormat format;
-      if (GetFormatFromMediaType(type.Get(), photo, &format))
+      if (GetFormatFromSourceMediaType(type.Get(), photo, &format))
         capabilities->emplace_back(media_type_index, format, stream_index);
       type.Reset();
       ++media_type_index;
@@ -710,8 +759,9 @@ void VideoCaptureDeviceMFWin::TakePhoto(TakePhotoCallback callback) {
   }
 
   VideoCaptureFormat format;
-  hr = GetFormatFromMediaType(sink_media_type.Get(), true, &format) ? S_OK
-                                                                    : E_FAIL;
+  hr = GetFormatFromSourceMediaType(sink_media_type.Get(), true, &format)
+           ? S_OK
+           : E_FAIL;
   if (FAILED(hr)) {
     LogError(FROM_HERE, hr);
     return;

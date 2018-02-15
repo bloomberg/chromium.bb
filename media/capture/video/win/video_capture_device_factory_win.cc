@@ -320,8 +320,8 @@ static void GetDeviceSupportedFormatsMediaFoundation(
       DLOG(ERROR) << "GetGUID failed: " << logging::SystemErrorCodeToString(hr);
       return;
     }
-    VideoCaptureDeviceMFWin::FormatFromGuid(type_guid,
-                                            &capture_format.pixel_format);
+    VideoCaptureDeviceMFWin::GetPixelFormatFromMFSourceMediaSubtype(
+        type_guid, &capture_format.pixel_format);
     type.Reset();
     ++stream_index;
     if (capture_format.pixel_format == PIXEL_FORMAT_UNKNOWN)
