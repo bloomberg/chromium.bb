@@ -2506,9 +2506,6 @@ crbug.com/680407 [ Mac ] fast/forms/select/menulist-appearance-basic.html [ Need
 crbug.com/705490 external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]
 crbug.com/705490 virtual/outofblink-cors/external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]
 
-# This test has device ID strings in failure messages which change on every test run.
-crbug.com/679742 external/wpt/mediacapture-streams/MediaStreamTrack-getSettings.https.html [ Failure ]
-
 crbug.com/765116 external/wpt/xhr/responsexml-document-properties.htm [ Failure ]
 
 # Sheriff failures 2017-02-03
