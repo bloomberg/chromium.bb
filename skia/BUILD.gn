@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
 import("//build/config/freetype/freetype.gni")
 import("//build/config/sanitizers/sanitizers.gni")
@@ -283,9 +284,7 @@ component("skia") {
   }
 
   # The imported Skia gni source paths are made absolute by gn.
-  sources += skia_core_sources
   defines = skia_core_defines
-  sources += skia_effects_sources
   sources += skia_utils_sources
   sources += skia_xps_sources
   sources += [
@@ -478,6 +477,9 @@ component("skia") {
     "//third_party/libwebp",
     "//third_party/libwebp:libwebp_webp",
   ]
+  public_deps = [
+    ":skia_core_and_effects",
+  ]
 
   if (!is_ios) {
     deps += [
@@ -539,25 +541,59 @@ component("skia") {
   }
 }
 
-# Separated out so it can be compiled with different flags for SSE.
-# Each of these opts targets is logically part of :skia, so we opt them out of check_includes.
-if (current_cpu == "arm64") {
-  source_set("skia_opts_crc32") {
+# Template for things that are logically part of :skia, but need to be split out
+# so custom compile flags can be applied.
+#
+# These are all opted out of check_includes, due to (logically) being part of
+# skia.
+template("skia_source_set") {
+  source_set(target_name) {
+    forward_variables_from(invoker, "*")
+
     check_includes = false
-    sources = skia_opts.crc32_sources
-    cflags = [ "-march=armv8-a+crc" ]
-    visibility = [ ":skia_opts" ]
+
+    if (!is_debug) {
+      configs -= [ "//build/config/compiler:default_optimization" ]
+      configs += [ "//build/config/compiler:optimize_max" ]
+    }
+
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [
       ":skia_config",
       ":skia_library_config",
       "//build/config/compiler:no_chromium_code",
     ]
+    public_configs = [ ":skia_config" ]
+
+    # Android, the only user of mismatched sample files (for now), gets a small
+    # binary size decrease by using AFDO to optimize for size in these
+    # source_sets. However, that also comes at a relatively big performance
+    # cost.
+    if (using_mismatched_sample_profile) {
+      configs -= [ "//build/config/compiler:afdo_optimize_size" ]
+    }
+  }
+}
+
+# Split out for targeted removal of the afdo_optimize_size config on Android.
+skia_source_set("skia_core_and_effects") {
+  defines = skia_core_defines
+  sources = skia_core_sources
+  sources += skia_effects_sources
+
+  visibility = [ ":skia" ]
+}
+
+# Bits that involve special vector-y hardware.
+if (current_cpu == "arm64") {
+  skia_source_set("skia_opts_crc32") {
+    sources = skia_opts.crc32_sources
+    cflags = [ "-march=armv8-a+crc" ]
+    visibility = [ ":skia_opts" ]
   }
 }
 if (current_cpu == "x86" || current_cpu == "x64") {
-  source_set("skia_opts_sse3") {
-    check_includes = false
+  skia_source_set("skia_opts_sse3") {
     sources = skia_opts.ssse3_sources
     if (!is_win || is_clang) {
       cflags = [ "-mssse3" ]
@@ -566,15 +602,8 @@ if (current_cpu == "x86" || current_cpu == "x64") {
       defines = [ "SK_CPU_SSE_LEVEL=31" ]
     }
     visibility = [ ":skia_opts" ]
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [
-      ":skia_config",
-      ":skia_library_config",
-      "//build/config/compiler:no_chromium_code",
-    ]
   }
-  source_set("skia_opts_sse41") {
-    check_includes = false
+  skia_source_set("skia_opts_sse41") {
     sources = skia_opts.sse41_sources
     if (!is_win || is_clang) {
       cflags = [ "-msse4.1" ]
@@ -583,15 +612,8 @@ if (current_cpu == "x86" || current_cpu == "x64") {
       defines = [ "SK_CPU_SSE_LEVEL=41" ]
     }
     visibility = [ ":skia_opts" ]
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [
-      ":skia_config",
-      ":skia_library_config",
-      "//build/config/compiler:no_chromium_code",
-    ]
   }
-  source_set("skia_opts_sse42") {
-    check_includes = false
+  skia_source_set("skia_opts_sse42") {
     sources = skia_opts.sse42_sources
     if (!is_win || is_clang) {
       cflags = [ "-msse4.2" ]
@@ -600,15 +622,8 @@ if (current_cpu == "x86" || current_cpu == "x64") {
       defines = [ "SK_CPU_SSE_LEVEL=42" ]
     }
     visibility = [ ":skia_opts" ]
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [
-      ":skia_config",
-      ":skia_library_config",
-      "//build/config/compiler:no_chromium_code",
-    ]
   }
-  source_set("skia_opts_avx") {
-    check_includes = false
+  skia_source_set("skia_opts_avx") {
     sources = skia_opts.avx_sources
     if (!is_win) {
       cflags = [ "-mavx" ]
@@ -617,16 +632,8 @@ if (current_cpu == "x86" || current_cpu == "x64") {
       cflags = [ "/arch:AVX" ]
     }
     visibility = [ ":skia_opts" ]
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [
-      ":skia_config",
-      ":skia_library_config",
-      "//build/config/compiler:no_chromium_code",
-    ]
   }
-  source_set("skia_opts_hsw") {
-    check_includes = false
-
+  skia_source_set("skia_opts_hsw") {
     # SyzyAsan doesn't support the AVX2 and F16C instructions.
     if (!is_syzyasan) {
       sources = skia_opts.hsw_sources
@@ -648,17 +655,10 @@ if (current_cpu == "x86" || current_cpu == "x64") {
       cflags = [ "/arch:AVX2" ]
     }
     visibility = [ ":skia_opts" ]
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [
-      ":skia_config",
-      ":skia_library_config",
-      "//build/config/compiler:no_chromium_code",
-    ]
   }
 }
 
-source_set("skia_opts") {
-  check_includes = false
+skia_source_set("skia_opts") {
   cflags = []
   defines = []
 
@@ -718,18 +718,6 @@ source_set("skia_opts") {
   } else {
     assert(false, "Need to port cpu specific stuff from skia_library_opts.gyp")
   }
-
-  if (!is_debug) {
-    configs -= [ "//build/config/compiler:default_optimization" ]
-    configs += [ "//build/config/compiler:optimize_max" ]
-  }
-
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    ":skia_config",
-    ":skia_library_config",
-    "//build/config/compiler:no_chromium_code",
-  ]
 
   visibility = [ ":skia" ]
 }

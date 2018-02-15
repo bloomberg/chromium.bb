@@ -203,8 +203,10 @@ if (use_allocator == "tcmalloc") {
     configs -= [ "//build/config/compiler:compiler_arm_thumb" ]
     configs += [ "//build/config/compiler:compiler_arm" ]
 
-    # TODO(crbug.com/633719) Make tcmalloc work with AFDO if possible.
-    configs -= [ "//build/config/compiler:afdo" ]
+    # TODO(crbug.com/633719) Make tcmalloc work with AFDO on GCC if possible.
+    if (!is_clang) {
+      configs -= [ "//build/config/compiler:afdo" ]
+    }
 
     deps = []
 
