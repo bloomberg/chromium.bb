@@ -23,6 +23,7 @@
 #include "components/signin/core/browser/signin_switches.h"
 #include "components/variations/variations_associated_data.h"
 #include "ios/chrome/browser/chrome_switches.h"
+#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_feature.h"
 #include "ios/web/public/web_view_creation_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -123,6 +124,10 @@ bool IsThirdPartyKeyboardWorkaroundEnabled() {
 
   // Check if the Finch experiment is turned on.
   return base::FeatureList::IsEnabled(kEnableThirdPartyKeyboardWorkaround);
+}
+
+bool IsRecentTabsUIRebootEnabled() {
+  return base::FeatureList::IsEnabled(kRecentTabsUIReboot);
 }
 
 }  // namespace experimental_flags
