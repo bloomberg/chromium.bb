@@ -793,11 +793,10 @@ class _BuilderRunBase(object):
     if release_tag:
       calc_version = 'R%s-%s' % (verinfo.chrome_branch, release_tag)
     else:
-      # Non-versioned builds need the cidb id to uniquify the image.
-      # Note that this will raise KeyError if called before that id is known.
-      calc_version = 'R%s-%s-c%s' % (verinfo.chrome_branch,
+      # Non-versioned builds need the build number to uniquify the image.
+      calc_version = 'R%s-%s-b%s' % (verinfo.chrome_branch,
                                      verinfo.VersionString(),
-                                     self.attrs.metadata.GetValue('build_id'))
+                                     self.buildnumber)
 
     return calc_version
 
