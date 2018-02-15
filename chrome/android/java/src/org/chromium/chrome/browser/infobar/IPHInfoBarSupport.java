@@ -9,7 +9,6 @@ import android.support.v4.view.ViewCompat;
 import android.view.View;
 import android.widget.PopupWindow.OnDismissListener;
 
-import org.chromium.base.Log;
 import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarContainerObserver;
 import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
@@ -23,8 +22,6 @@ import org.chromium.components.feature_engagement.FeatureConstants;
  */
 class IPHInfoBarSupport implements OnDismissListener, InfoBarContainer.InfoBarAnimationListener,
                                    InfoBarContainerObserver {
-    private static final String TAG = "IPHInfoBar";
-
     /** Helper class to hold all relevant display parameters for an in-product help window. */
     public static class TrackerParameters {
         public TrackerParameters(
@@ -91,9 +88,6 @@ class IPHInfoBarSupport implements OnDismissListener, InfoBarContainer.InfoBarAn
     /** The state of the currently showing in-product window or {@code null} if none is showing. */
     private PopupState mCurrentState;
 
-    /** Helper for tracking invalid calls to {@link #onDismiss()}.  See crbug.com/786916. */
-    private Throwable mLastDismissStack;
-
     /** Creates a new instance of an IPHInfoBarSupport class. */
     IPHInfoBarSupport(IPHBubbleDelegate delegate) {
         mDelegate = delegate;
@@ -155,14 +149,7 @@ class IPHInfoBarSupport implements OnDismissListener, InfoBarContainer.InfoBarAn
     // PopupWindow.OnDismissListener implementation.
     @Override
     public void onDismiss() {
-        // Helper for crbug.com/786916 to catch why we are getting two dismiss calls in a row.
-        if (mCurrentState == null) {
-            Log.e(TAG, "Unexpected call to onDismiss.  Last stack:", mLastDismissStack);
-            throw new IllegalStateException("Second call to onDismiss(), no current state found.");
-        }
-        mLastDismissStack = new Exception();
-
-        assert mCurrentState != null;
+        if (mCurrentState == null) return;
         mDelegate.onPopupDismissed(mCurrentState);
         mCurrentState = null;
     }
