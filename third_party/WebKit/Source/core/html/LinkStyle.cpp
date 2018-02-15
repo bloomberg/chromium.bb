@@ -345,20 +345,24 @@ LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
 
 void LinkStyle::Process() {
   DCHECK(owner_->ShouldProcessStyle());
-  String type = owner_->TypeValue().DeprecatedLower();
-  String as = owner_->AsValue().DeprecatedLower();
-  String media = owner_->Media().DeprecatedLower();
+  const LinkLoadParameters params(
+      owner_->RelAttribute(),
+      GetCrossOriginAttributeValue(owner_->FastGetAttribute(crossoriginAttr)),
+      owner_->TypeValue().DeprecatedLower(),
+      owner_->AsValue().DeprecatedLower(), owner_->Media().DeprecatedLower(),
+      owner_->nonce(), owner_->IntegrityValue(), owner_->GetReferrerPolicy(),
+      owner_->GetNonEmptyURLAttribute(hrefAttr));
 
-  const KURL& href = owner_->GetNonEmptyURLAttribute(hrefAttr);
   WTF::TextEncoding charset = GetCharset();
 
-  if (owner_->RelAttribute().GetIconType() != kInvalidIcon && href.IsValid() &&
-      !href.IsEmpty()) {
+  if (owner_->RelAttribute().GetIconType() != kInvalidIcon &&
+      params.href.IsValid() && !params.href.IsEmpty()) {
     if (!owner_->ShouldLoadLink())
       return;
-    if (!GetDocument().GetSecurityOrigin()->CanDisplay(href))
+    if (!GetDocument().GetSecurityOrigin()->CanDisplay(params.href))
       return;
-    if (!GetDocument().GetContentSecurityPolicy()->AllowImageFromSource(href))
+    if (!GetDocument().GetContentSecurityPolicy()->AllowImageFromSource(
+            params.href))
       return;
     if (GetDocument().GetFrame() && GetDocument().GetFrame()->Client()) {
       GetDocument().GetFrame()->Client()->DispatchDidChangeIcons(
@@ -366,12 +370,11 @@ void LinkStyle::Process() {
     }
   }
 
-  if (!owner_->LoadLink(type, as, media, owner_->nonce(),
-                        owner_->IntegrityValue(), owner_->GetReferrerPolicy(),
-                        href))
+  if (!owner_->LoadLink(params))
     return;
 
-  if (LoadStylesheetIfNeeded(href, charset, type) == kNotNeeded && sheet_) {
+  if (LoadStylesheetIfNeeded(params.href, charset, params.type) == kNotNeeded &&
+      sheet_) {
     // we no longer contain a stylesheet, e.g. perhaps rel or type was changed
     ClearSheet();
     GetDocument().GetStyleEngine().SetNeedsActiveStyleUpdate(
