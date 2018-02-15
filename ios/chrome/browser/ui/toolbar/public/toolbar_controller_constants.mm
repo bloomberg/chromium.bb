@@ -21,6 +21,8 @@ NSString* const kToolbarStackButtonIdentifier =
     @"kToolbarStackButtonIdentifier";
 NSString* const kToolbarShareButtonIdentifier =
     @"kToolbarShareButtonIdentifier";
+NSString* const kToolbarOmniboxButtonIdentifier =
+    @"kToolbarOmniboxButtonIdentifier";
 
 const NSInteger kStackButtonMaxTabCount = 99;
 
