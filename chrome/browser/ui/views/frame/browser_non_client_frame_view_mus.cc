@@ -433,24 +433,6 @@ bool BrowserNonClientFrameViewMus::UsePackagedAppHeaderStyle() const {
          browser->is_app();
 }
 
-void BrowserNonClientFrameViewMus::LayoutIncognitoButton() {
-  DCHECK(profile_indicator_icon());
-#if !defined(OS_CHROMEOS)
-  // ChromeOS shows avatar on V1 app.
-  DCHECK(browser_view()->IsTabStripVisible());
-#endif
-  gfx::ImageSkia incognito_icon = GetIncognitoAvatarIcon();
-  int avatar_bottom = GetTopInset(false) + browser_view()->GetTabStripHeight() -
-                      kAvatarIconPadding;
-  int avatar_y = avatar_bottom - incognito_icon.height();
-  int avatar_height = incognito_icon.height();
-
-  gfx::Rect avatar_bounds(kAvatarIconPadding, avatar_y, incognito_icon.width(),
-                          avatar_height);
-  profile_indicator_icon()->SetBoundsRect(avatar_bounds);
-  profile_indicator_icon()->SetVisible(true);
-}
-
 void BrowserNonClientFrameViewMus::LayoutProfileSwitcher() {
 #if defined(FRAME_AVATAR_BUTTON)
   gfx::Size button_size = profile_switcher_.view()->GetPreferredSize();
