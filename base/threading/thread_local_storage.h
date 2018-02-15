@@ -96,26 +96,23 @@ class BASE_EXPORT ThreadLocalStorage {
   // stored in thread local storage.
   typedef void (*TLSDestructorFunc)(void* value);
 
-  // StaticSlot uses its own struct initializer-list style static
-  // initialization, which does not require a constructor.
-  #define TLS_INITIALIZER {0}
-
-  // A key representing one value stored in TLS.
-  // Initialize like
-  //   ThreadLocalStorage::StaticSlot my_slot = TLS_INITIALIZER;
-  // If you're not using a static variable, use the convenience class
-  // ThreadLocalStorage::Slot (below) instead.
-  struct BASE_EXPORT StaticSlot {
-    // Set up the TLS slot.  Called by the constructor.
-    // 'destructor' is a pointer to a function to perform per-thread cleanup of
-    // this object.  If set to NULL, no cleanup is done for this TLS slot.
-    void Initialize(TLSDestructorFunc destructor);
-
-    // Free a previously allocated TLS 'slot'.
-    // If a destructor was set for this slot, removes
-    // the destructor so that remaining threads exiting
-    // will not free data.
-    void Free();
+  // A key representing one value stored in TLS. Use as a class member or a
+  // local variable. If you need a static storage duration variable, use the
+  // following pattern with a NoDestructor<Slot>:
+  // void MyDestructorFunc(void* value);
+  // ThreadLocalStorage::Slot& ImportantContentTLS() {
+  //   static NoDestructor<ThreadLocalStorage::Slot> important_content_tls(
+  //       &MyDestructorFunc);
+  //   return *important_content_tls;
+  // }
+  class BASE_EXPORT Slot final {
+   public:
+    // |destructor| is a pointer to a function to perform per-thread cleanup of
+    // this object.  If set to nullptr, no cleanup is done for this TLS slot.
+    explicit Slot(TLSDestructorFunc destructor = nullptr);
+    // If a destructor was set for this slot, removes the destructor so that
+    // remaining threads exiting will not free data.
+    ~Slot();
 
     // Get the thread-local value stored in slot 'slot'.
     // Values are guaranteed to initially be zero.
@@ -125,32 +122,13 @@ class BASE_EXPORT ThreadLocalStorage {
     // value 'value'.
     void Set(void* value);
 
-    bool initialized() const {
-      return base::subtle::Acquire_Load(&initialized_) != 0;
-    }
-
-    // The internals of this struct should be considered private.
-    base::subtle::Atomic32 initialized_;
-    int slot_;
-    uint32_t version_;
-  };
-
-  // A convenience wrapper around StaticSlot with a constructor. Can be used
-  // as a member variable.
-  class BASE_EXPORT Slot {
-   public:
-    explicit Slot(TLSDestructorFunc destructor = NULL);
-    ~Slot();
-
-    // Get the thread-local value stored in this slot.
-    // Values are guaranteed to initially be zero.
-    void* Get() const;
-
-    // Set the slot's thread-local value to |value|.
-    void Set(void* value);
-
    private:
-    StaticSlot tls_slot_;
+    void Initialize(TLSDestructorFunc destructor);
+    void Free();
+
+    static constexpr int kInvalidSlotValue = -1;
+    int slot_ = kInvalidSlotValue;
+    uint32_t version_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(Slot);
   };
