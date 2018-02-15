@@ -281,6 +281,8 @@ class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread,
   void AppendNewFragmentainerGroupIfNeeded(LayoutUnit offset_in_flow_thread,
                                            PageBoundaryRule);
 
+  void UpdateFromNG();
+
   // Implementing FragmentationContext:
   bool IsFragmentainerLogicalHeightKnown() final;
   LayoutUnit FragmentainerLogicalHeightAt(LayoutUnit block_offset) final;
