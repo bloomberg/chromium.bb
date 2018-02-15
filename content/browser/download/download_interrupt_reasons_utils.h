@@ -7,7 +7,8 @@
 
 #include "base/files/file.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
-#include "content/public/common/download_stream.mojom.h"
+#include "components/download/public/common/download_stream.mojom.h"
+#include "content/common/content_export.h"
 #include "net/base/net_errors.h"
 
 namespace content {
@@ -32,7 +33,7 @@ ConvertFileErrorToInterruptReason(base::File::Error file_error);
 // Safe to call from any thread.
 download::DownloadInterruptReason CONTENT_EXPORT
 ConvertMojoNetworkRequestStatusToInterruptReason(
-    mojom::NetworkRequestStatus status);
+    download::mojom::NetworkRequestStatus status);
 
 }  // namespace content
 

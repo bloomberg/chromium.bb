@@ -19,7 +19,7 @@ DownloadManager::InputStream::InputStream(
     : stream_reader_(std::move(stream_reader)) {}
 
 DownloadManager::InputStream::InputStream(
-    mojom::DownloadStreamHandlePtr stream_handle)
+    download::mojom::DownloadStreamHandlePtr stream_handle)
     : stream_handle_(std::move(stream_handle)) {}
 
 DownloadManager::InputStream::~InputStream() = default;

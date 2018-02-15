@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
+
 if (is_android) {
   import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")  # For generate_jni().
@@ -25,6 +27,10 @@ component("public") {
   ]
 
   configs += [ ":components_download_implementation" ]
+
+  public_deps = [
+    ":interfaces",
+  ]
 
   deps = [
     "//base",
@@ -53,4 +59,18 @@ if (is_android) {
       "download_item.h",
     ]
   }
+}
+
+mojom("interfaces") {
+  sources = [
+    "download_stream.mojom",
+  ]
+
+  public_deps = [
+    "//mojo/common:common_custom_types",
+  ]
+
+  export_class_attribute = "COMPONENTS_DOWNLOAD_EXPORT"
+  export_define = "COMPONENTS_DOWNLOAD_IMPLEMENTATION=1"
+  export_header = "components/download/public/common/download_export.h"
 }

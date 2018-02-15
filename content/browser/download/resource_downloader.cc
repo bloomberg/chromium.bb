@@ -211,7 +211,7 @@ void ResourceDownloader::InterceptResponse(
 
 void ResourceDownloader::OnResponseStarted(
     std::unique_ptr<DownloadCreateInfo> download_create_info,
-    mojom::DownloadStreamHandlePtr stream_handle) {
+    download::mojom::DownloadStreamHandlePtr stream_handle) {
   download_create_info->download_id = download_id_;
   download_create_info->guid = guid_;
   download_create_info->site_url = site_url_;
