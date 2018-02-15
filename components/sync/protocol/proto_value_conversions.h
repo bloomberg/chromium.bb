@@ -19,7 +19,6 @@ class AppSettingSpecifics;
 class AppSpecifics;
 class ArcPackageSpecifics;
 class ArticleSpecifics;
-class AttachmentIdProto;
 class AutofillProfileSpecifics;
 class AutofillSpecifics;
 class AutofillWalletSpecifics;
@@ -105,9 +104,6 @@ std::unique_ptr<base::DictionaryValue> ArcPackageSpecificsToValue(
 
 std::unique_ptr<base::DictionaryValue> ArticleSpecificsToValue(
     const sync_pb::ArticleSpecifics& article_specifics);
-
-std::unique_ptr<base::DictionaryValue> AttachmentIdProtoToValue(
-    const sync_pb::AttachmentIdProto& proto);
 
 std::unique_ptr<base::DictionaryValue> AutofillProfileSpecificsToValue(
     const sync_pb::AutofillProfileSpecifics& autofill_profile_specifics);

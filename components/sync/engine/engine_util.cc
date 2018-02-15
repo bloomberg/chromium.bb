@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "components/sync/base/cryptographer.h"
-#include "components/sync/protocol/attachments.pb.h"
 #include "components/sync/protocol/password_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -104,14 +103,6 @@ bool AreSpecificsEqual(const Cryptographer* cryptographer,
     right_plaintext = right.SerializeAsString();
   }
   if (left_plaintext == right_plaintext) {
-    return true;
-  }
-  return false;
-}
-
-bool AreAttachmentMetadataEqual(const sync_pb::AttachmentMetadata& left,
-                                const sync_pb::AttachmentMetadata& right) {
-  if (left.SerializeAsString() == right.SerializeAsString()) {
     return true;
   }
   return false;

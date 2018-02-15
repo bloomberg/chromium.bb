@@ -11,7 +11,6 @@
 #include <string>
 
 namespace sync_pb {
-class AttachmentMetadata;
 class EntitySpecifics;
 class PasswordSpecificsData;
 }
@@ -32,10 +31,6 @@ bool IsNameServerIllegalAfterTrimming(const std::string& name);
 bool AreSpecificsEqual(const Cryptographer* cryptographer,
                        const sync_pb::EntitySpecifics& left,
                        const sync_pb::EntitySpecifics& right);
-
-// Return true iff |left| and |right| are equal.
-bool AreAttachmentMetadataEqual(const sync_pb::AttachmentMetadata& left,
-                                const sync_pb::AttachmentMetadata& right);
 
 }  // namespace syncer
 

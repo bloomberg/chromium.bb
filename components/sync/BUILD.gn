@@ -10,8 +10,6 @@ import("//testing/test.gni")
 
 jumbo_static_library("sync") {
   sources = [
-    "base/attachment_id_proto.cc",
-    "base/attachment_id_proto.h",
     "base/bind_to_task_runner.h",
     "base/cancelation_observer.cc",
     "base/cancelation_observer.h",
@@ -798,7 +796,6 @@ static_library("test_support_driver") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "base/attachment_id_proto_unittest.cc",
     "base/bind_to_task_runner_unittest.cc",
     "base/cancelation_signal_unittest.cc",
     "base/cryptographer_unittest.cc",

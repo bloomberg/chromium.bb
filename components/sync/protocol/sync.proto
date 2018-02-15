@@ -19,7 +19,6 @@ import "app_setting_specifics.proto";
 import "app_specifics.proto";
 import "arc_package_specifics.proto";
 import "article_specifics.proto";
-import "attachments.proto";
 import "autofill_specifics.proto";
 import "bookmark_specifics.proto";
 import "client_commands.proto";
@@ -385,8 +384,9 @@ message SyncEntity {
   // its internal representation.
   optional UniquePosition unique_position = 25;
 
-  // Attachment ids of attachments associated with this SyncEntity.
-  repeated AttachmentIdProto attachment_id = 26;
+  // This used to be a list of sync attachment IDs, but it was never launched
+  // and the code has been removed as of M66.
+  repeated DeprecatedMessage attachment_id = 26 [deprecated = true];
 };
 
 // This message contains diagnostic information used to correlate
@@ -705,9 +705,7 @@ message ClearServerDataResponse {
   // ClientToServerResponse.
 };
 
-message DeprecatedMessage1 {};
-
-message DeprecatedMessage2 {};
+message DeprecatedMessage {};
 
 // The client must preserve, store, and resend the chip bag with
 // every request.  The server depends on the chip bag in order
@@ -775,7 +773,7 @@ message ClientToServerMessage {
   optional GetUpdatesMessage get_updates = 5;
   optional AuthenticateMessage authenticate = 6;
 
-  optional DeprecatedMessage1 deprecated_field_9 = 9 [deprecated = true];
+  optional DeprecatedMessage deprecated_field_9 = 9 [deprecated = true];
 
   optional string store_birthday = 7;  // Opaque store ID; if it changes, duck!
   // The client sets this if it detects a sync issue. The server will tell it
@@ -992,7 +990,7 @@ message ClientToServerResponse {
 
   optional ClientCommand client_command = 7;
   optional ProfilingData profiling_data = 8;
-  optional DeprecatedMessage2 deprecated_field_9 = 9 [deprecated = true];
+  optional DeprecatedMessage deprecated_field_9 = 9 [deprecated = true];
   optional GetUpdatesMetadataResponse stream_metadata = 10;
   // If GetUpdatesStreamingResponse is contained in the ClientToServerResponse,
   // none of the other fields (error_code and etc) will be set.
