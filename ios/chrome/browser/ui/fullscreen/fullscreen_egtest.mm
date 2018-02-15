@@ -25,6 +25,7 @@
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
+#import "ios/web/public/web_client.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -293,15 +294,21 @@ void AssertURLIs(const GURL& expectedURL) {
 
   // Close the tab.
   NSError* error = nil;
-  // The effect of clicking the link, closes the tab and invalidates the web
-  // view. This results in |TapWebViewElementWithId| returning false. This
-  // error is represented by code 3.
-  GREYAssertFalse(chrome_test_util::TapWebViewElementWithId("link2", &error),
-                  @"Failed to tap \"link2\"");
-  GREYAssert(error.code == 3,
-             @"Failed to receive WKErrorWebViewInvalidated error");
-  GREYAssert([error.domain isEqualToString:@"WKErrorDomain"],
-             @"Failed to receive WKErrorDomain error");
+  bool success = chrome_test_util::TapWebViewElementWithId("link2", &error);
+
+  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    // The effect of clicking the link, closes the tab and invalidates the web
+    // view. This results in |TapWebViewElementWithId| returning false. This
+    // error is represented by code 3. WKBasedNavigationManager does not trigger
+    // any error.
+    GREYAssertFalse(success, @"Failed to tap \"link2\"");
+    GREYAssert(error.code == 3,
+               @"Failed to receive WKErrorWebViewInvalidated error");
+    GREYAssert([error.domain isEqualToString:@"WKErrorDomain"],
+               @"Failed to receive WKErrorDomain error");
+  } else {
+    GREYAssert(success, @"Failed to tap \"link2\"");
+  }
 
   [ChromeEarlGrey waitForWebViewContainingText:"link1"];
 
