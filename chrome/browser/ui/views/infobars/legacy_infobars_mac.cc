@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/translate/chrome_translate_client.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 #include "components/infobars/core/infobar.h"
+#include "components/translate/core/browser/translate_infobar_delegate.h"
 
 // On Mac, some infobars are still used that have been migrated to a bubble UI
 // on other views platforms. When building the toolkit-views browser window on
@@ -14,6 +16,8 @@
 
 std::unique_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
     std::unique_ptr<translate::TranslateInfoBarDelegate> delegate) const {
+  if (views_mode_controller::IsViewsBrowserCocoa())
+    return CreateInfoBarCocoa(std::move(delegate));
   NOTREACHED();
   return nullptr;
 }

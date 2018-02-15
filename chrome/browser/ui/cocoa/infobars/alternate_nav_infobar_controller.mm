@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
+#include "ui/base/ui_features.h"
 #include "ui/base/window_open_disposition.h"
 
 @implementation AlternateNavInfoBarController
@@ -63,7 +64,8 @@
 @end
 
 // static
-std::unique_ptr<infobars::InfoBar> AlternateNavInfoBarDelegate::CreateInfoBar(
+std::unique_ptr<infobars::InfoBar>
+AlternateNavInfoBarDelegate::CreateInfoBarCocoa(
     std::unique_ptr<AlternateNavInfoBarDelegate> delegate) {
   std::unique_ptr<InfoBarCocoa> infobar(new InfoBarCocoa(std::move(delegate)));
   base::scoped_nsobject<AlternateNavInfoBarController> controller(
@@ -71,3 +73,11 @@ std::unique_ptr<infobars::InfoBar> AlternateNavInfoBarDelegate::CreateInfoBar(
   infobar->set_controller(controller);
   return std::move(infobar);
 }
+
+#if !BUILDFLAG(MAC_VIEWS_BROWSER)
+std::unique_ptr<infobars::InfoBar> AlternateNavInfoBarDelegate::CreateInfoBar(
+    std::unique_ptr<AlternateNavInfoBarDelegate> delegate) {
+  return CreateInfoBarCocoa(std::move(delegate));
+}
+
+#endif

@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/views/task_manager_view.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/intent_picker_bubble_view.h"
@@ -43,6 +44,10 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_window,
 // static
 ExtensionInstallPrompt::ShowDialogCallback
 ExtensionInstallPrompt::GetDefaultShowDialogCallback() {
+#if defined(OS_MACOSX)
+  if (views_mode_controller::IsViewsBrowserCocoa())
+    return GetDefaultShowDialogCallbackCocoa();
+#endif
   return ExtensionInstallPrompt::GetViewsShowDialogCallback();
 }
 

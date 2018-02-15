@@ -10,6 +10,7 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "components/language/core/browser/url_language_histogram.h"
@@ -104,6 +105,13 @@ class ChromeTranslateClient
       std::unique_ptr<translate::TranslateInfoBarDelegate> delegate)
       const override;
 #endif
+#if defined(OS_MACOSX)
+  // Temporary shim for Polychrome. See bottom of first comment in
+  // https://crbug.com/804950 for details
+  std::unique_ptr<infobars::InfoBar> CreateInfoBarCocoa(
+      std::unique_ptr<translate::TranslateInfoBarDelegate> delegate) const;
+#endif
+
   void RecordLanguageDetectionEvent(
       const translate::LanguageDetectionDetails& details) const override;
   void ShowTranslateUI(translate::TranslateStep step,

@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
+#include "build/build_config.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
@@ -261,6 +262,11 @@ class ExtensionInstallPrompt {
   // Callback to show the default extension install dialog.
   // The implementations of this function are platform-specific.
   static ShowDialogCallback GetDefaultShowDialogCallback();
+#if defined(OS_MACOSX)
+  // Temporary shim for Polychrome. See bottom of first comment in
+  // https://crbug.com/804950 for details
+  static ShowDialogCallback GetDefaultShowDialogCallbackCocoa();
+#endif
 
   // Callback to show the Views extension install dialog. Don't use this; it is
   // a temporary hack for MacViews.

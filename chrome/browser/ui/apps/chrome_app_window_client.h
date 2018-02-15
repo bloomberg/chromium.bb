@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "extensions/browser/app_window/app_window_client.h"
 
 namespace base {
@@ -45,6 +46,13 @@ class ChromeAppWindowClient : public extensions::AppWindowClient {
   static extensions::NativeAppWindow* CreateNativeAppWindowImpl(
       extensions::AppWindow* window,
       const extensions::AppWindow::CreateParams& params);
+#if defined(OS_MACOSX)
+  // Temporary shim for Polychrome. See bottom of first comment in
+  // https://crbug.com/804950 for details
+  static extensions::NativeAppWindow* CreateNativeAppWindowImplCocoa(
+      extensions::AppWindow* window,
+      const extensions::AppWindow::CreateParams& params);
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAppWindowClient);
 };
