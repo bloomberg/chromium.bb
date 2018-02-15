@@ -4,6 +4,10 @@
 
 module blink.mojom;
 
+import "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom";
+import "third_party/WebKit/public/platform/modules/fetch/fetch_api_response.mojom";
+import "mojo/public/mojom/base/string16.mojom";
+
 // This enum is used in histograms, so do not change the ordering and always
 // append new types to the end.
 // See "CacheStorageErrorType" in enums.xml.
@@ -19,4 +23,54 @@ enum CacheStorageError {
   kErrorNotImplemented = 7,
   // Add new values here.
   kLast = kErrorNotImplemented
+};
+
+// Controls how requests are matched in the Cache API.
+struct QueryParams {
+  bool ignore_search;
+  bool ignore_method;
+  bool ignore_vary;
+  mojo_base.mojom.String16? cache_name;
+};
+
+// The type of a single batch operation in the Cache API.
+enum OperationType {
+  kUndefined,
+  kPut,
+  kDelete,
+};
+
+// A single batch operation for the Cache API.
+struct BatchOperation {
+  OperationType operation_type;
+  blink.mojom.FetchAPIRequest request;
+  blink.mojom.FetchAPIResponse response;
+  QueryParams match_params;
+};
+
+// Result of Open method. |status| is only set if there is a failure.
+union OpenResult {
+  CacheStorageError status;
+  // TODO(lucmult): Enable attribute below when crrev.com/c/875510 is merged.
+  // associated CacheStorageCache cache;
+};
+
+// Result of Match for both interfaces CacheStorage and CacheStorageCache
+// method. |status| is only set if there is a failure.
+union MatchResult {
+  CacheStorageError status;
+  blink.mojom.FetchAPIResponse response;
+};
+
+// Result of MatchAll method |status| is only set if there is a failure.
+union MatchAllResult {
+  CacheStorageError status;
+  array<blink.mojom.FetchAPIResponse> responses;
+};
+
+// Result of CacheStorageCache's Keys method. |status| is only set if there is a
+// failure.
+union CacheKeysResult {
+  CacheStorageError status;
+  array<blink.mojom.FetchAPIRequest> keys;
 };
