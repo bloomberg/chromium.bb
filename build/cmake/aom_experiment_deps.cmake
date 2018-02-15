@@ -64,6 +64,12 @@ macro (fix_experiment_configs)
       change_config_and_warn(CONFIG_AOM_QM 1 CONFIG_AOM_QM_EXT)
     endif ()
   endif ()
+
+  if (CONFIG_JNT_COMP)
+    if (CONFIG_RD_DEBUG)
+      change_config_and_warn(CONFIG_RD_DEBUG 0 CONFIG_JNT_COMP)
+    endif()
+  endif()
 endmacro ()
 
 endif ()  # AOM_BUILD_CMAKE_AOM_EXPERIMENT_DEPS_CMAKE_
