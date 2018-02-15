@@ -3045,17 +3045,32 @@ class LoadingWebContentsObserver : public WebContentsObserver {
  public:
   explicit LoadingWebContentsObserver(WebContents* contents)
       : WebContentsObserver(contents),
-        is_loading_(false) {
-  }
+        is_loading_(false),
+        did_receive_response_(false) {}
   ~LoadingWebContentsObserver() override {}
 
-  void DidStartLoading() override { is_loading_ = true; }
-  void DidStopLoading() override { is_loading_ = false; }
+  // The assertions on these messages ensure that they are received in order.
+  void DidStartLoading() override {
+    ASSERT_FALSE(did_receive_response_);
+    ASSERT_FALSE(is_loading_);
+    is_loading_ = true;
+  }
+  void DidReceiveResponse() override {
+    ASSERT_TRUE(is_loading_);
+    did_receive_response_ = true;
+  }
+  void DidStopLoading() override {
+    ASSERT_TRUE(is_loading_);
+    is_loading_ = false;
+    did_receive_response_ = false;
+  }
 
   bool is_loading() const { return is_loading_; }
+  bool did_receive_response() const { return did_receive_response_; }
 
  private:
   bool is_loading_;
+  bool did_receive_response_;
 
   DISALLOW_COPY_AND_ASSIGN(LoadingWebContentsObserver);
 };
@@ -3087,7 +3102,7 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
   const GURL bar_url("http://bar.chromium.org");
   TestRenderFrameHost* orig_rfh = main_test_rfh();
 
-  // Use a WebContentsObserver to approximate the behavior of the tab's spinner.
+  // Use a WebContentsObserver to observe the behavior of the tab's spinner.
   LoadingWebContentsObserver observer(contents());
 
   // Navigate the main RenderFrame and commit. The frame should still be
@@ -3102,7 +3117,11 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(orig_rfh, main_test_rfh());
   EXPECT_TRUE(contents()->IsLoading());
+
+  // The Observer callback implementations contain assertions to ensure that the
+  // events arrive in the correct order.
   EXPECT_TRUE(observer.is_loading());
+  EXPECT_TRUE(observer.did_receive_response());
 
   // Create a child frame to navigate multiple times.
   TestRenderFrameHost* subframe = orig_rfh->AppendChild("subframe");
@@ -3126,6 +3145,7 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
   // expected that the WebContents is still in loading state.
   EXPECT_TRUE(contents()->IsLoading());
   EXPECT_TRUE(observer.is_loading());
+  EXPECT_TRUE(observer.did_receive_response());
 
   // Navigate the frame again, this time using LoadURLWithParams. This causes
   // RenderFrameHost to call into WebContents::DidStartLoading, which starts
@@ -3157,6 +3177,7 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
   // hasn't sent the DidstopLoading message yet.
   EXPECT_TRUE(contents()->IsLoading());
   EXPECT_TRUE(observer.is_loading());
+  EXPECT_TRUE(observer.did_receive_response());
 
   // Send the DidStopLoading for the main frame and ensure it isn't loading
   // anymore.
@@ -3164,6 +3185,7 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
       FrameHostMsg_DidStopLoading(orig_rfh->GetRoutingID()));
   EXPECT_FALSE(contents()->IsLoading());
   EXPECT_FALSE(observer.is_loading());
+  EXPECT_FALSE(observer.did_receive_response());
 }
 
 // Tests that WebContentsImpl::IsLoadingToDifferentDocument only reports main

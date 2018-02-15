@@ -2744,6 +2744,8 @@ void WebContentsImpl::SetNotWaitingForResponse() {
   waiting_for_response_ = false;
   if (delegate_)
     delegate_->LoadingStateChanged(this, is_load_to_different_document_);
+  for (auto& observer : observers_)
+    observer.DidReceiveResponse();
 }
 
 void WebContentsImpl::SendScreenRects() {
@@ -5188,10 +5190,6 @@ void WebContentsImpl::UpdateStateForFrame(RenderFrameHost* render_frame_host,
 void WebContentsImpl::UpdateTitle(RenderFrameHost* render_frame_host,
                                   const base::string16& title,
                                   base::i18n::TextDirection title_direction) {
-  // If we have a title, that's a pretty good indication that we've started
-  // getting useful data.
-  SetNotWaitingForResponse();
-
   // Try to find the navigation entry, which might not be the current one.
   // For example, it might be from a recently swapped out RFH.
   NavigationEntryImpl* entry = controller_.GetEntryWithUniqueID(
