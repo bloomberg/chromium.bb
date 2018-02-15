@@ -986,15 +986,17 @@ void InProcessCommandBuffer::SignalQuery(unsigned query_id,
 void InProcessCommandBuffer::SignalQueryOnGpuThread(
     unsigned query_id,
     base::OnceClosure callback) {
-  gles2::QueryManager* query_manager_ = decoder_->GetQueryManager();
-  DCHECK(query_manager_);
-
-  gles2::QueryManager::Query* query = query_manager_->GetQuery(query_id);
-  if (!query) {
-    std::move(callback).Run();
-  } else {
-    query->AddCallback(base::AdaptCallbackForRepeating(std::move(callback)));
+  gles2::QueryManager* query_manager = decoder_->GetQueryManager();
+  if (query_manager) {
+    gles2::QueryManager::Query* query = query_manager->GetQuery(query_id);
+    if (query) {
+      query->AddCallback(base::AdaptCallbackForRepeating(std::move(callback)));
+      return;
+    }
   }
+
+  // Something went wrong, run callback immediately.
+  std::move(callback).Run();
 }
 
 void InProcessCommandBuffer::CreateGpuFence(uint32_t gpu_fence_id,
