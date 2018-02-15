@@ -412,6 +412,32 @@ WallpaperUtil.getOnlineWallpaperHighResolutionSuffix = function() {
 };
 
 /**
+ * Creates a blob of type 'image/png'.
+ * @param {string} data The image data.
+ */
+WallpaperUtil.createPngBlob = function(data) {
+  return new Blob([new Int8Array(data)], {'type': 'image/png'});
+};
+
+/**
+ * Displays the image by creating an image blob.
+ * @param {Object} imageElement The image element.
+ * @param {string} data The image data.
+ * @param {function} opt_callback An optional callback, called after the image
+ *     finishes loading.
+ */
+WallpaperUtil.displayImage = function(imageElement, data, opt_callback) {
+  imageElement.src =
+      window.URL.createObjectURL(WallpaperUtil.createPngBlob(data));
+  imageElement.addEventListener('load', function(e) {
+    if (opt_callback)
+      opt_callback();
+    // Revoke the url since it won't be used anymore after the image is loaded.
+    window.URL.revokeObjectURL(imageElement.src);
+  });
+};
+
+/**
  * Runs chrome.test.sendMessage in test environment. Does nothing if running
  * in production environment.
  *

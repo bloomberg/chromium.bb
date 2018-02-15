@@ -94,79 +94,21 @@ cr.define('wallpapers', function() {
           window.setTimeout(this.callback_.bind(this, this.dataModelId_), 0);
           break;
         case Constants.WallpaperSourceEnum.Custom:
-          var errorHandler = function(e) {
-            self.callback_(self.dataModelId_);
-            console.error('Can not access file system.');
-          };
-          var wallpaperDirectories = WallpaperDirectories.getInstance();
-          var getThumbnail = function(fileName) {
-            var setURL = function(fileEntry) {
-              imageEl.src = fileEntry.toURL();
-              self.callback_(
-                  self.dataModelId_, self.dataItem.wallpaperId, imageEl);
-            };
-            var fallback = function() {
-              wallpaperDirectories.getDirectory(
-                  Constants.WallpaperDirNameEnum.ORIGINAL, function(dirEntry) {
-                    dirEntry.getFile(
-                        fileName, {create: false}, setURL, errorHandler);
-                  }, errorHandler);
-            };
-            var success = function(dirEntry) {
-              dirEntry.getFile(fileName, {create: false}, setURL, fallback);
-            };
-            wallpaperDirectories.getDirectory(
-                Constants.WallpaperDirNameEnum.THUMBNAIL, success,
-                errorHandler);
-          };
-          getThumbnail(self.dataItem.baseURL);
+          if (loadTimeData.getBoolean('useNewWallpaperPicker')) {
+            this.decorateCustomWallpaper_(
+                imageEl, this.dataItem,
+                this.callback_.bind(this, this.dataModelId_));
+          } else {
+            this.decorateCustomWallpaperForOldPicker_(
+                imageEl, this.dataItem,
+                this.callback_.bind(this, this.dataModelId_));
+          }
           break;
         case Constants.WallpaperSourceEnum.OEM:
         case Constants.WallpaperSourceEnum.Online:
-          chrome.wallpaperPrivate.getThumbnail(
-              this.dataItem.baseURL, this.dataItem.source, function(data) {
-                if (data) {
-                  var blob =
-                      new Blob([new Int8Array(data)], {'type': 'image\/png'});
-                  imageEl.src = window.URL.createObjectURL(blob);
-                  imageEl.addEventListener('load', function(e) {
-                    self.callback_(
-                        self.dataModelId_, self.dataItem.wallpaperId, imageEl);
-                    window.URL.revokeObjectURL(this.src);
-                  });
-                } else if (
-                    self.dataItem.source ==
-                    Constants.WallpaperSourceEnum.Online) {
-                  var xhr = new XMLHttpRequest();
-                  xhr.open(
-                      'GET',
-                      self.dataItem.baseURL +
-                          WallpaperUtil.getOnlineWallpaperThumbnailSuffix(),
-                      true);
-                  xhr.responseType = 'arraybuffer';
-                  xhr.send(null);
-                  xhr.addEventListener('load', function(e) {
-                    if (xhr.status === 200) {
-                      chrome.wallpaperPrivate.saveThumbnail(
-                          self.dataItem.baseURL, xhr.response);
-                      var blob = new Blob(
-                          [new Int8Array(xhr.response)],
-                          {'type': 'image\/png'});
-                      imageEl.src = window.URL.createObjectURL(blob);
-                      // TODO(bshe): We currently use empty div to reserve space
-                      // for thumbnail. Use a placeholder like "loading" image
-                      // may better.
-                      imageEl.addEventListener('load', function(e) {
-                        self.callback_(
-                            self.dataModelId_, self.dataItem.wallpaperId, this);
-                        window.URL.revokeObjectURL(this.src);
-                      });
-                    } else {
-                      self.callback_(self.dataModelId_);
-                    }
-                  });
-                }
-              });
+          this.decorateOnlineOrOEMWallpaper_(
+              imageEl, this.dataItem,
+              this.callback_.bind(this, this.dataModelId_));
           break;
         case Constants.WallpaperSourceEnum.Daily:
         case Constants.WallpaperSourceEnum.ThirdParty:
@@ -178,6 +120,134 @@ cr.define('wallpapers', function() {
           // begun loading and are tracked.
           window.setTimeout(this.callback_.bind(this, this.dataModelId_), 0);
       }
+    },
+
+    /**
+     * Initializes the grid item for custom wallpapers. Used by the new
+     * wallpaper picker.
+     * @param {Object} imageElement The image element.
+     * @param {{filePath: string, baseURL: string, layout: string,
+     *          source: string, availableOffline: boolean}
+     *     dataItem The info related to the wallpaper image.
+     * @param {function} callback The callback function.
+     * @private
+     */
+    decorateCustomWallpaper_(imageElement, dataItem, callback) {
+      if (dataItem.source != Constants.WallpaperSourceEnum.Custom) {
+        console.error(
+            '|decorateCustomWallpaper_| is called but the wallpaper source ' +
+            'is not custom.');
+        return;
+      }
+      // Read the image data from |filePath|.
+      chrome.wallpaperPrivate.getLocalImageData(
+          dataItem.filePath, imageData => {
+            if (chrome.runtime.lastError || !imageData) {
+              // TODO(crbug.com/810892): Decide the UI: either hide the grid or
+              // show an error icon.
+              console.error(
+                  'Initialization of custom wallpaper grid failed for path ' +
+                  dataItem.filePath);
+              callback(null /*opt_wallpaperId=*/, imageElement);
+              return;
+            }
+
+            // |opt_wallpaperId| is used as the key to cache the image data, but
+            // we do not want to cache local image data since it may change
+            // frequently.
+            WallpaperUtil.displayImage(
+                imageElement, imageData,
+                callback.bind(null /*opt_wallpaperId=*/, imageElement));
+          });
+    },
+
+    /**
+     * Initializes the grid item for custom wallpapers. Used by the old
+     * wallpaper picker (to be deprecated).
+     * @param {Object} imageElement The image element.
+     * @param {{filePath: string, baseURL: string, layout: string,
+     *          source: string, availableOffline: boolean}
+     *     dataItem The info related to the wallpaper image.
+     * @param {function} callback The callback function.
+     * @private
+     */
+    decorateCustomWallpaperForOldPicker_(imageElement, dataItem, callback) {
+      if (dataItem.source != Constants.WallpaperSourceEnum.Custom) {
+        console.error(
+            '|decorateCustomWallpaperForOldPicker_| is called but the ' +
+            'wallpaper source is not custom.');
+        return;
+      }
+      var errorHandler = function(e) {
+        console.error('Can not access file system.');
+        callback();
+      };
+      var setURL = function(fileEntry) {
+        imageElement.src = fileEntry.toURL();
+        callback(dataItem.wallpaperId, imageElement);
+      };
+      var wallpaperDirectories = WallpaperDirectories.getInstance();
+      var fallback = function() {
+        wallpaperDirectories.getDirectory(
+            Constants.WallpaperDirNameEnum.ORIGINAL, function(dirEntry) {
+              dirEntry.getFile(
+                  dataItem.baseURL, {create: false}, setURL, errorHandler);
+            }, errorHandler);
+      };
+      var success = function(dirEntry) {
+        dirEntry.getFile(dataItem.baseURL, {create: false}, setURL, fallback);
+      };
+      wallpaperDirectories.getDirectory(
+          Constants.WallpaperDirNameEnum.THUMBNAIL, success, errorHandler);
+    },
+
+    /**
+     * Initializes the grid item for online or OEM wallpapers.
+     * @param {Object} imageElement The image element.
+     * @param {{filePath: string, baseURL: string, layout: string,
+     *          source: string, availableOffline: boolean}
+     *     dataItem The info related to the wallpaper image.
+     * @param {function} callback The callback function.
+     * @private
+     */
+    decorateOnlineOrOEMWallpaper_(imageElement, dataItem, callback) {
+      if (dataItem.source != Constants.WallpaperSourceEnum.Online &&
+          dataItem.source != Constants.WallpaperSourceEnum.OEM) {
+        console.error(
+            '|decorateOnlineOrOEMWallpaper_| is called but the wallpaper ' +
+            'source is not online or OEM.');
+        return;
+      }
+      chrome.wallpaperPrivate
+          .getThumbnail(
+              dataItem.baseURL, dataItem.source, data => {
+                if (data) {
+                  WallpaperUtil.displayImage(
+                      imageElement, data,
+                      callback.bind(dataItem.wallpaperId, imageElement));
+                } else if (
+                    dataItem.source == Constants.WallpaperSourceEnum.Online) {
+                  var xhr = new XMLHttpRequest();
+                  xhr.open(
+                      'GET',
+                      dataItem.baseURL +
+                          WallpaperUtil.getOnlineWallpaperThumbnailSuffix(),
+                      true);
+                  xhr.responseType = 'arraybuffer';
+                  xhr.send(null);
+                  xhr.addEventListener('load', function(e) {
+                    if (xhr.status === 200) {
+                      chrome.wallpaperPrivate.saveThumbnail(
+                          dataItem.baseURL, xhr.response);
+                      WallpaperUtil.displayImage(
+                          imageElement, xhr.response,
+                          callback.bind(dataItem.wallpaperId, imageElement));
+                    } else {
+                      callback();
+                    }
+                  });
+                }
+              });
     },
   };
 

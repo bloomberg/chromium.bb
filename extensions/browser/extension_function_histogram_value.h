@@ -1278,6 +1278,7 @@ enum HistogramValue {
   WALLPAPERPRIVATE_GETIMAGESINFO,
   ACCESSIBILITY_PRIVATE_SENDSYNTHETICKEYEVENT,
   WALLPAPERPRIVATE_GETLOCALIMAGEPATHS,
+  WALLPAPERPRIVATE_GETLOCALIMAGEDATA,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

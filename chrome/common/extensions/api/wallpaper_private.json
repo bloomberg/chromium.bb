@@ -366,6 +366,30 @@
             ]
           }
         ]
+      },
+      {
+        "name": "getLocalImageData",
+        "type": "function",
+        "description": "Read the image data from the file path.",
+        "nodoc": true,
+        "parameters": [
+          {
+            "type": "string",
+            "name": "imagePath",
+            "description": "The path of the image."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Function called upon completion.",
+            "parameters": [
+              {
+                "type": "binary",
+                "name": "imageData"
+              }
+            ]
+          }
+        ]
       }
     ],
     "events": [

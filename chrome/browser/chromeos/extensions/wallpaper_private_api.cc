@@ -69,6 +69,7 @@ namespace record_wallpaper_uma = wallpaper_private::RecordWallpaperUMA;
 namespace get_collections_info = wallpaper_private::GetCollectionsInfo;
 namespace get_images_info = wallpaper_private::GetImagesInfo;
 namespace get_local_image_paths = wallpaper_private::GetLocalImagePaths;
+namespace get_local_image_data = wallpaper_private::GetLocalImageData;
 
 namespace {
 
@@ -927,4 +928,42 @@ WallpaperPrivateGetLocalImagePathsFunction::Run() {
 void WallpaperPrivateGetLocalImagePathsFunction::OnGetImagePathsComplete(
     const std::vector<std::string>& image_paths) {
   Respond(ArgumentList(get_local_image_paths::Results::Create(image_paths)));
+}
+
+WallpaperPrivateGetLocalImageDataFunction::
+    WallpaperPrivateGetLocalImageDataFunction() = default;
+
+WallpaperPrivateGetLocalImageDataFunction::
+    ~WallpaperPrivateGetLocalImageDataFunction() = default;
+
+ExtensionFunction::ResponseAction
+WallpaperPrivateGetLocalImageDataFunction::Run() {
+  std::unique_ptr<get_local_image_data::Params> params(
+      get_local_image_data::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  // TODO(crbug.com/811564): Create file backed blob instead.
+  auto image_data = std::make_unique<std::string>();
+  std::string* image_data_ptr = image_data.get();
+  base::PostTaskAndReplyWithResult(
+      WallpaperFunctionBase::GetNonBlockingTaskRunner(), FROM_HERE,
+      base::BindOnce(&base::ReadFileToString,
+                     base::FilePath(params->image_path), image_data_ptr),
+      base::BindOnce(
+          &WallpaperPrivateGetLocalImageDataFunction::OnReadImageDataComplete,
+          this, std::move(image_data)));
+
+  return RespondLater();
+}
+
+void WallpaperPrivateGetLocalImageDataFunction::OnReadImageDataComplete(
+    std::unique_ptr<std::string> image_data,
+    bool success) {
+  if (!success) {
+    Respond(Error("Reading image data failed."));
+    return;
+  }
+
+  Respond(ArgumentList(get_local_image_data::Results::Create(
+      std::vector<char>(image_data->begin(), image_data->end()))));
 }
