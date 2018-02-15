@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
 
+  <message name="IDS_LOGIN_DIALOG_TITLE" desc="In sentence case: String to be displayed in the title bar of the login prompt dialog" formatter_data="android_java">
+    Sign in
+  </message>
   <if expr="use_titlecase">
-    <message name="IDS_LOGIN_DIALOG_TITLE" desc="In title case: String to be displayed in the title bar of the login prompt dialog" formatter_data="android_java">
-      Authentication Required
-    </message>
-    <message name="IDS_LOGIN_DIALOG_OK_BUTTON_LABEL" desc="In title case: The label of the 'Log In' button on the login prompt dialog" formatter_data="android_java">
-      Log In
+    <message name="IDS_LOGIN_DIALOG_OK_BUTTON_LABEL" desc="In Title Case: The label of the 'Log In' button on the login prompt dialog" formatter_data="android_java">
+      Sign In
     </message>
   </if>
   <if expr="not use_titlecase">
-    <message name="IDS_LOGIN_DIALOG_TITLE" desc="In sentence case: String to be displayed in the title bar of the login prompt dialog" formatter_data="android_java">
-      Authentication required
-    </message>
     <message name="IDS_LOGIN_DIALOG_OK_BUTTON_LABEL" desc="In sentence case: The label of the 'Log in' button on the login prompt dialog" formatter_data="android_java">
-      Log in
+      Sign in
     </message>
   </if>
   <message name="IDS_LOGIN_DIALOG_AUTHORITY" desc="String to be displayed in the login prompt dialog to explain that the user needs to log in, and the name of the web site">
