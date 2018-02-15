@@ -32,6 +32,7 @@ class MostVisitedSites;
 class GURL;
 class LargeIconCache;
 class NotificationPromoWhatsNew;
+class ReadingListModel;
 
 // Mediator for ContentSuggestions. Makes the interface between a
 // ntp_snippets::ContentSuggestionsService and the Objective-C services using
@@ -48,6 +49,7 @@ initWithContentService:
         largeIconCache:(nullable LargeIconCache*)largeIconCache
        mostVisitedSite:
            (std::unique_ptr<ntp_tiles::MostVisitedSites>)mostVisitedSites
+      readingListModel:(nonnull ReadingListModel*)readingListModel
     NS_DESIGNATED_INITIALIZER;
 
 - (nullable instancetype)init NS_UNAVAILABLE;

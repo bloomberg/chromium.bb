@@ -162,11 +162,14 @@
       IOSChromeLargeIconCacheFactory::GetForBrowserState(self.browserState);
   std::unique_ptr<ntp_tiles::MostVisitedSites> mostVisitedFactory =
       IOSMostVisitedSitesFactory::NewForBrowserState(self.browserState);
+  ReadingListModel* readingListModel =
+      ReadingListModelFactory::GetForBrowserState(self.browserState);
   self.contentSuggestionsMediator = [[ContentSuggestionsMediator alloc]
       initWithContentService:contentSuggestionsService
             largeIconService:largeIconService
               largeIconCache:cache
-             mostVisitedSite:std::move(mostVisitedFactory)];
+             mostVisitedSite:std::move(mostVisitedFactory)
+            readingListModel:readingListModel];
   self.contentSuggestionsMediator.commandHandler = self.NTPMediator;
   self.contentSuggestionsMediator.headerProvider = self.headerController;
 

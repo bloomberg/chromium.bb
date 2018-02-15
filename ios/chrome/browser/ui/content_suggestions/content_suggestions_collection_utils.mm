@@ -58,7 +58,13 @@ namespace content_suggestions {
 
 const CGFloat kSearchFieldHeight = 50;
 
+const NSUInteger kMostVisitedItemsPerLine = 4;
+
 NSUInteger numberOfTilesForWidth(CGFloat availableWidth) {
+  if (IsUIRefreshPhase1Enabled()) {
+    return kMostVisitedItemsPerLine;
+  }
+
   if (availableWidth > widthForNumberOfItem(4))
     return 4;
   if (availableWidth > widthForNumberOfItem(3))
@@ -79,7 +85,15 @@ CGFloat centeredTilesMarginForWidth(CGFloat width) {
       width - columns * [ContentSuggestionsMostVisitedCell defaultSize].width -
       (columns - 1) * spacingBetweenTiles();
   CGFloat margin = AlignValueToPixel(whitespace / 2);
-  DCHECK(margin >= spacingBetweenTiles());
+  if (IsUIRefreshPhase1Enabled()) {
+    // Allow for less spacing as an edge case on smaller devices.
+    if (margin < spacingBetweenTiles()) {
+      DCHECK(width < 400);  // For now this is only expected on small widths.
+      return fmaxf(margin, 0);
+    }
+  } else {
+    DCHECK(margin >= spacingBetweenTiles());
+  }
   return margin;
 }
 
