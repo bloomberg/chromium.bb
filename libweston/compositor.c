@@ -4649,6 +4649,27 @@ weston_head_is_connected(struct weston_head *head)
 	return head->connected;
 }
 
+/** Is the head currently enabled?
+ *
+ * \param head The head to query.
+ * \return Video status.
+ *
+ * Returns true if the head is currently transmitting a video stream.
+ *
+ * This is independent of the head being connected.
+ *
+ * \sa weston_head_is_connected
+ * \memberof weston_head
+ */
+WL_EXPORT bool
+weston_head_is_enabled(struct weston_head *head)
+{
+	if (!head->output)
+		return false;
+
+	return head->output->enabled;
+}
+
 /* Move other outputs when one is resized so the space remains contiguous. */
 static void
 weston_compositor_reflow_outputs(struct weston_compositor *compositor,

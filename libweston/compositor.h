@@ -1980,6 +1980,9 @@ weston_head_set_internal(struct weston_head *head);
 bool
 weston_head_is_connected(struct weston_head *head);
 
+bool
+weston_head_is_enabled(struct weston_head *head);
+
 void
 weston_output_set_scale(struct weston_output *output,
 			int32_t scale);
