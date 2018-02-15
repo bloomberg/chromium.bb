@@ -1,11 +1,13 @@
 # Using moblabvm for autotest / devserver / moblab development
 
-moblabvm is a virtuam machine (VM) setup that allows launching two VMs -- one moblab VM, which
-must be of the moblab-generic-vm board, and another device-under-test (DUT) VM.
-The DUT VM can be any board that supports running as a VM. At present this
-includes only moblab-generic-vm and betty. A moblabvm setup launches these two
-VMs can creates a private network bridge between them. Additionally, it sets up
-the moblab VM such that the DUT VM is connected to it on the private network.
+moblabvm is a virtual machine (VM) setup that allows launching two VMs -- one
+moblab VM, running an image for the moblab-generic-vm board, and another
+device-under-test (DUT) VM.  The DUT VM can run an image for board that supports
+running as a VM. At present this includes only moblab-generic-vm and betty.
+
+A moblabvm setup launches these two VMs and creates a private network bridge
+between them.  Additionally, it sets up the moblab VM such that the DUT VM is
+connected to it on the private network.
 
 Here is a typical flow for using the setup.
 
@@ -73,7 +75,8 @@ Here is a typical flow for using the setup.
     inflating: id_rsa.pub
   ```
 - Create a new moblabvm using these images. You need to be under a full
-  chromiumos checkout for the following to work smoothly. 
+  chromiumos checkout for the following to work smoothly. All _cros_ commands
+  are run outside the chroot.
   ```
   pprabhu@pprabhu:chromiumos$ cros moblabvm --workspace /work/scratch/moblabvm create --dut-image-dir /work/scratch/dut_image /work/scratch/moblab_image
   11:00:48: NOTICE: Initializing workspace in /work/scratch/moblabvm
@@ -123,16 +126,16 @@ CHROMEOS_AUSERVER=http://build112-m2.golo.chromium.org:8080/update
 The setup so far is sufficient if you want to run
 [moblab_RunSuite](https://chromium.googlesource.com/chromiumos/third_party/autotest/+/master/server/site_tests/moblab_RunSuite/)
 against it. This test bootstraps the moblab setup (independent of whether it's a
-VM setup or a real moblab device connected to other real DUTs).
+VM or a real moblab device connected to other real DUTs).
 
 If you want to use this moblab VM setup for local development, you need to
-bootstrap it yourself. One way to do this to simply run a moblab_RunSuite test
-against the setup before you begin
+bootstrap it yourself. One way to do this is to simply run a moblab_RunSuite
+test against the setup before you begin.
 ```
 cros_sdk -- test_that --no-quickmerge -b moblab-generic-vm localhost:16482 \
     moblab_DummyServerNoSspSuite --args 'services_init_timeout_m=10 \
     target_build="betty-paladin/R66-10406.0.0-rc2" \
-    test_timeout_hint_m=101' \
+    test_timeout_hint_m=101'
 ```
 This test takes a while to run (~30 minutes) because it stages the requested DUT
 VM image from Google Storage onto the moblab's devserver cache, and provisions
@@ -143,10 +146,9 @@ If you do not want to run this test, you need to at a minimum:
   ```
   pprabhu@pprabhu:~$ scp -o StrictHostKeyChecking=no -i ~/.ssh/testing_rsa -P 16482 ~/.boto root@localhost:/home/moblab/.boto
   ```
-- Find and add the DUT to the moblab's autotest instance. You can do this using
-  the deployment scripts that are part of autotest. You can get the IP of the
-  DUT VM on the private network by SSHing into the DUT.
-  The DUT has two network interfaces:
+- Find and add the DUT to the moblab's autotest instance.  You can get the IP of
+  the DUT VM on the private network by SSHing into the DUT. The DUT has two
+  network interfaces:
   ```
   pprabhu@pprabhu:~$ ssh -o StrictHostKeyChecking=no -i ~/.ssh/testing_rsa root@localhost -p 16493
 
@@ -228,8 +230,8 @@ pprabhu@pprabhu:chromiumos$ cros_sdk
 
 Then use the image directory
 (~/chromiumos/src/build/images/moblab-generic-vm/latest) for creating the moblab
-VM. To iterate, simply rebuild the package your changing, and use cros deploy it
-to the moblab VM.
+VM. To iterate, simply rebuild the package your changing, and cros deploy it to
+the moblab VM.
 
 Continuing the example above, if you were working on autotest infrastructure
 code:
