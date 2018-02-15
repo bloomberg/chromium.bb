@@ -103,11 +103,11 @@ static_library("metrics") {
   ]
 
   public_deps = [
+    ":call_stack_profile_params",
     "//third_party/metrics_proto",
   ]
 
   deps = [
-    ":call_stack_profile_params",
     "//base",
     "//base:base_static",
     "//components/prefs",

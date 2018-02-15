@@ -12,9 +12,14 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_switches.h"
+#include "extensions/features/features.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
+#endif
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/common/switches.h"
 #endif
 
 namespace {
@@ -45,6 +50,15 @@ bool IsBrowserProcess() {
   std::string process_type =
       command_line->GetSwitchValueASCII(switches::kProcessType);
   return process_type.empty();
+}
+
+// True if the command line corresponds to an extension renderer process.
+bool IsExtensionRenderer(const base::CommandLine& command_line) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  return command_line.HasSwitch(extensions::switches::kExtensionProcess);
+#else
+  return false;
+#endif
 }
 
 bool ShouldEnableProfilerForNextRendererProcess() {
@@ -131,6 +145,9 @@ void StackSamplingConfiguration::AppendCommandLineSwitchForChildProcess(
     return;
   if (process_type == switches::kGpuProcess ||
       (process_type == switches::kRendererProcess &&
+       // Do not start the profiler for extension processes since profiling the
+       // compositor thread in them is not useful.
+       !IsExtensionRenderer(*command_line) &&
        ShouldEnableProfilerForNextRendererProcess())) {
     command_line->AppendSwitch(switches::kStartStackProfiler);
   }
