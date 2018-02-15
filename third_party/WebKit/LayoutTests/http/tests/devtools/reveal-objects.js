@@ -52,7 +52,7 @@
       }
 
       function firstXhrCallback() {
-        requestWithResource = SDKBrowser.networkLog.requestForURL(resource.url);
+        requestWithResource = BrowserSDK.networkLog.requestForURL(resource.url);
         TestRunner.evaluateInPage('loadResource(\'missing.js\')', secondXhrCallback);
       }
 

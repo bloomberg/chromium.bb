@@ -29,7 +29,7 @@
     if (!/post-target\.cgi/.test(request.url()))
       return;
     TestRunner.addResult(request.url());
-    TestRunner.addObject(await SDKBrowser.HAREntry.build(request), NetworkTestRunner.HARPropertyFormattersWithSize);
+    TestRunner.addObject(await BrowserSDK.HAREntry.build(request), NetworkTestRunner.HARPropertyFormattersWithSize);
     TestRunner.completeTest();
   }
 })();

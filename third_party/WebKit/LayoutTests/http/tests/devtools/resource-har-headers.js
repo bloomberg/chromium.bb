@@ -53,7 +53,7 @@
     '_transferSize': 'formatAsTypeName',
     '_error': 'skip'
   };
-  var har = await SDKBrowser.HAREntry.build(testRequest);
+  var har = await BrowserSDK.HAREntry.build(testRequest);
   TestRunner.addObject(har, stillNondeterministic, '', 'HAR:');
   TestRunner.completeTest();
 })();

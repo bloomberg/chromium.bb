@@ -26,7 +26,7 @@
   async function onRequestFinished(event) {
     var request = event.data;
     TestRunner.addResult(request.url());
-    TestRunner.addObject(await SDKBrowser.HAREntry.build(request), NetworkTestRunner.HARPropertyFormattersWithSize);
+    TestRunner.addObject(await BrowserSDK.HAREntry.build(request), NetworkTestRunner.HARPropertyFormattersWithSize);
     TestRunner.completeTest();
   }
 })();

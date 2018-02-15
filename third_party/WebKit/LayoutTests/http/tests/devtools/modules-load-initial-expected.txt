@@ -2,6 +2,8 @@ This test validates initial set of loaded modules.
 
 Loaded modules:
     bindings
+    browser_components
+    browser_sdk
     common
     components
     console_counters
@@ -17,7 +19,6 @@ Loaded modules:
     product_registry
     protocol
     sdk
-    sdk_browser
     services
     text_utils
     ui
