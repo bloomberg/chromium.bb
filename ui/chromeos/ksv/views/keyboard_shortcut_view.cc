@@ -146,7 +146,8 @@ void KeyboardShortcutView::InitViews() {
 
   // Init views of TabbedPane and KeyboardShortcutItemListView.
   tabbed_pane_ =
-      new views::TabbedPane(views::TabbedPane::Orientation::kVertical);
+      new views::TabbedPane(views::TabbedPane::Orientation::kVertical,
+                            views::TabbedPane::TabStripStyle::kHighlight);
   ShortcutCategory current_category = ShortcutCategory::kUnknown;
   KeyboardShortcutItemListView* item_list_view;
   for (auto* item_view : shortcut_views_) {

@@ -18,6 +18,8 @@ aggregate_vector_icons("ksv_vector_icons") {
     "ksv_search_no_result.icon",
     "ksv_search_start.1x.icon",
     "ksv_search_start.icon",
+    "ksv_separator_plus.1x.icon",
+    "ksv_separator_plus.icon",
   ]
 }
 

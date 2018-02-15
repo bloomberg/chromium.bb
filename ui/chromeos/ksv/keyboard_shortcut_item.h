@@ -57,7 +57,7 @@ struct KSV_EXPORT KeyboardShortcutItem {
       const std::vector<ShortcutCategory>& categories,
       int description_message_id,
       int shortcut_message_id,
-      const std::vector<AcceleratorId>& accelerator_ids,
+      const std::vector<AcceleratorId>& accelerator_ids = {},
       const std::vector<ui::KeyboardCode>& shortcut_key_codes = {});
   explicit KeyboardShortcutItem(const KeyboardShortcutItem& other);
   ~KeyboardShortcutItem();

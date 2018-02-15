@@ -97,17 +97,6 @@ TEST_F(KeyboardShortcutViewerMetadataTest, CheckAcceleratorIdsNoDuplicates) {
   }
 }
 
-// Test that |shortcut_key_codes| and |accelerator_ids| cannot be both empty.
-TEST_F(KeyboardShortcutViewerMetadataTest,
-       CheckShortcutKeyCodesAndAcceleratorIdsNotBothEmpty) {
-  for (const auto& shortcut_item :
-       keyboard_shortcut_viewer::GetKeyboardShortcutItemList()) {
-    EXPECT_TRUE(!shortcut_item.shortcut_key_codes.empty() ||
-                !shortcut_item.accelerator_ids.empty())
-        << "shortcut_key_codes and accelerator_ids cannot be both empty.";
-  }
-}
-
 // Test that metadata with empty |shortcut_key_codes| and grouped AcceleratorIds
 // should have the same modifiers.
 TEST_F(KeyboardShortcutViewerMetadataTest,
