@@ -20,6 +20,7 @@
 #include "ipc/ipc_message.h"
 #include "net/http/http_request_headers.h"
 #include "net/log/net_log_event_type.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -27,6 +28,10 @@ namespace net {
 class HttpResponseHeaders;
 class URLRequest;
 }  // namespace net
+
+namespace network {
+struct ResourceResponseHead;
+}
 
 namespace extensions {
 
@@ -56,9 +61,25 @@ struct WebRequestInfo {
   // extensions WebRequest-related code.
   explicit WebRequestInfo(net::URLRequest* url_request);
 
+  // Initializes a WebRequestInfo from information provided over a
+  // URLLoaderFactory interface, for use with the Network Service.
+  WebRequestInfo(uint64_t request_id,
+                 int render_process_id,
+                 int render_frame_id,
+                 bool is_navigation,
+                 int32_t routing_id,
+                 const network::ResourceRequest& request);
+
   ~WebRequestInfo();
 
+  // Fill in response data for this request. Only used when the Network Service
+  // is disabled.
   void AddResponseInfoFromURLRequest(net::URLRequest* url_request);
+
+  // Fill in response data for this request. Only used when the Network Service
+  // is enabled.
+  void AddResponseInfoFromResourceResponse(
+      const network::ResourceResponseHead& response);
 
   // A unique identifier for this request.
   uint64_t id = 0;

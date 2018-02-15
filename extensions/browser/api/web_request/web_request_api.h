@@ -16,6 +16,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "extensions/browser/api/declarative/rules_registry.h"
@@ -30,6 +32,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/network_delegate.h"
 #include "net/http/http_request_headers.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 class ExtensionWebRequestTimeTracker;
 class GURL;
@@ -40,6 +43,7 @@ class DictionaryValue;
 
 namespace content {
 class BrowserContext;
+class RenderFrameHost;
 }
 
 namespace net {
@@ -57,6 +61,7 @@ class InfoMap;
 class WebRequestEventDetails;
 class WebRequestEventRouterDelegate;
 struct WebRequestInfo;
+class WebRequestProxyingURLLoaderFactory;
 class WebRequestRulesRegistry;
 
 // Support class for the WebRequest API. Lives on the UI thread. Most of the
@@ -74,7 +79,20 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
   void Shutdown() override;
 
   // EventRouter::Observer overrides:
+  void OnListenerAdded(const EventListenerInfo& details) override;
   void OnListenerRemoved(const EventListenerInfo& details) override;
+
+  // If any WebRequest event listeners are currently active for this
+  // BrowserContext, |*factory_request| is swapped out for a new request which
+  // proxies through an internal URLLoaderFactory. This supports lifetime
+  // observation and control on behalf of the WebRequest API.
+  //
+  // Returns |true| if the URLLoaderFactory will be proxied; |false| otherwise.
+  // Only used when the Network Service is enabled.
+  bool MaybeProxyURLLoaderFactory(
+      content::RenderFrameHost* frame,
+      bool is_navigation,
+      network::mojom::URLLoaderFactoryRequest* factory_request);
 
  private:
   friend class BrowserContextKeyedAPIFactory<WebRequestAPI>;
@@ -84,7 +102,25 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
   static const bool kServiceRedirectedInIncognito = true;
   static const bool kServiceIsNULLWhileTesting = true;
 
-  content::BrowserContext* browser_context_;
+  static void RemoveProxyThreadSafe(
+      base::WeakPtr<WebRequestAPI> weak_self,
+      WebRequestProxyingURLLoaderFactory* factory);
+  void RemoveProxy(WebRequestProxyingURLLoaderFactory* factory);
+
+  // A count of active event listeners registered in this BrowserContext. This
+  // is eventually consistent with the state of
+  int listener_count_ = 0;
+
+  content::BrowserContext* const browser_context_;
+  InfoMap* const info_map_;
+
+  // Active proxying URLLoaderFactory instances. Only used when the Network
+  // Service is enabled.
+  std::map<WebRequestProxyingURLLoaderFactory*,
+           scoped_refptr<WebRequestProxyingURLLoaderFactory>>
+      proxies_;
+
+  base::WeakPtrFactory<WebRequestAPI> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestAPI);
 };

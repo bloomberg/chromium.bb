@@ -977,6 +977,21 @@ class CONTENT_EXPORT ContentBrowserClient {
       const GURL& frame_url,
       NonNetworkURLLoaderFactoryMap* factories);
 
+  // Allows the embedder to intercept URLLoaderFactory interfaces used for
+  // navigation or being brokered on behalf of a renderer fetching subresources.
+  // |*factory_request| is always valid upon entry and MUST be valid upon
+  // return. The embedder may swap out the value of |*factory_request| for its
+  // own, in which case it must return |true| to indicate that its proxying
+  // requests for the URLLoaderFactory. Otherwise |*factory_request| is left
+  // unmodified and this must return |false|.
+  //
+  // Always called on the UI thread and only when the Network Service is
+  // enabled.
+  virtual bool WillCreateURLLoaderFactory(
+      RenderFrameHost* frame,
+      bool is_navigation,
+      network::mojom::URLLoaderFactoryRequest* factory_request);
+
   // Creates a NetworkContext for a BrowserContext's StoragePartition. If the
   // network service is enabled, it must return a NetworkContext using the
   // network service. If the network service is disabled, the embedder may

@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
@@ -27,6 +28,8 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
@@ -43,6 +46,7 @@
 #include "extensions/browser/api/web_request/web_request_event_details.h"
 #include "extensions/browser/api/web_request/web_request_event_router_delegate.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
+#include "extensions/browser/api/web_request/web_request_proxying_url_loader_factory.h"
 #include "extensions/browser/api/web_request/web_request_resource_type.h"
 #include "extensions/browser/api/web_request/web_request_time_tracker.h"
 #include "extensions/browser/api_activity_monitor.h"
@@ -71,6 +75,7 @@
 #include "net/base/auth.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -340,7 +345,9 @@ std::unique_ptr<WebRequestEventDetails> CreateEventDetails(
 }  // namespace
 
 WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
-    : browser_context_(context) {
+    : browser_context_(context),
+      info_map_(ExtensionSystem::Get(browser_context_)->info_map()),
+      weak_ptr_factory_(this) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
   for (size_t i = 0; i < arraysize(kWebRequestEvents); ++i) {
     // Observe the webRequest event.
@@ -370,8 +377,16 @@ WebRequestAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
+void WebRequestAPI::OnListenerAdded(const EventListenerInfo& details) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ++listener_count_;
+}
+
 void WebRequestAPI::OnListenerRemoved(const EventListenerInfo& details) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  --listener_count_;
+  DCHECK_GE(listener_count_, 0);
+
   // Note that details.event_name includes the sub-event details (e.g. "/123").
   // TODO(fsamuel): <webview> events will not be removed through this code path.
   // <webview> events will be removed in RemoveWebViewEventListeners. Ideally,
@@ -391,6 +406,57 @@ void WebRequestAPI::OnListenerRemoved(const EventListenerInfo& details) {
           &ExtensionWebRequestEventRouter::RemoveEventListener,
           base::Unretained(ExtensionWebRequestEventRouter::GetInstance()), id,
           false /* not strict */));
+}
+
+bool WebRequestAPI::MaybeProxyURLLoaderFactory(
+    content::RenderFrameHost* frame,
+    bool is_navigation,
+    network::mojom::URLLoaderFactoryRequest* factory_request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+      listener_count_ == 0) {
+    return false;
+  }
+
+  auto proxied_request = std::move(*factory_request);
+  network::mojom::URLLoaderFactoryPtrInfo target_factory_info;
+  *factory_request = mojo::MakeRequest(&target_factory_info);
+
+  auto proxy = base::MakeRefCounted<WebRequestProxyingURLLoaderFactory>(
+      browser_context_, info_map_);
+  proxies_.emplace(proxy.get(), proxy);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&WebRequestProxyingURLLoaderFactory::StartProxying, proxy,
+                     frame->GetProcess()->GetID(), frame->GetRoutingID(),
+                     is_navigation, std::move(proxied_request),
+                     std::move(target_factory_info),
+                     base::BindOnce(&WebRequestAPI::RemoveProxyThreadSafe,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    base::Unretained(proxy.get()))));
+  return true;
+}
+
+// static
+void WebRequestAPI::RemoveProxyThreadSafe(
+    base::WeakPtr<WebRequestAPI> weak_self,
+    WebRequestProxyingURLLoaderFactory* factory) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&WebRequestAPI::RemoveProxyThreadSafe, weak_self,
+                       base::Unretained(factory)));
+    return;
+  }
+  if (!weak_self)
+    return;
+  weak_self->RemoveProxy(factory);
+}
+
+void WebRequestAPI::RemoveProxy(WebRequestProxyingURLLoaderFactory* factory) {
+  auto it = proxies_.find(factory);
+  DCHECK(it != proxies_.end());
+  proxies_.erase(it);
 }
 
 // Represents a single unique listener to an event, along with whatever filter

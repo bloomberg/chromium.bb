@@ -3556,7 +3556,10 @@ void RenderFrameHostImpl::CommitNavigation(
 
     for (auto& factory : non_network_url_loader_factories_) {
       network::mojom::URLLoaderFactoryPtrInfo factory_proxy_info;
-      factory.second->Clone(mojo::MakeRequest(&factory_proxy_info));
+      auto factory_request = mojo::MakeRequest(&factory_proxy_info);
+      GetContentClient()->browser()->WillCreateURLLoaderFactory(
+          this, false /* is_navigation */, &factory_request);
+      factory.second->Clone(std::move(factory_request));
       subresource_loader_factories->factories_info().emplace(
           factory.first, std::move(factory_proxy_info));
     }
@@ -4099,9 +4102,11 @@ void RenderFrameHostImpl::OnNetworkServiceConnectionError() {
 
 void RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
     network::mojom::URLLoaderFactoryRequest default_factory_request) {
-  StoragePartitionImpl* storage_partition =
-      static_cast<StoragePartitionImpl*>(BrowserContext::GetStoragePartition(
-          GetSiteInstance()->GetBrowserContext(), GetSiteInstance()));
+  auto* context = GetSiteInstance()->GetBrowserContext();
+  GetContentClient()->browser()->WillCreateURLLoaderFactory(
+      this, false /* is_navigation */, &default_factory_request);
+  StoragePartitionImpl* storage_partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetStoragePartition(context, GetSiteInstance()));
   if (g_url_loader_factory_callback_for_test.Get().is_null()) {
     storage_partition->GetNetworkContext()->CreateURLLoaderFactory(
         std::move(default_factory_request), GetProcess()->GetID());

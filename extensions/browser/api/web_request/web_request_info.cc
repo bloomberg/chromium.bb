@@ -19,6 +19,7 @@
 #include "net/base/upload_data_stream.h"
 #include "net/log/net_log_with_source.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/resource_response.h"
 
 namespace keys = extension_web_request_api_constants;
 
@@ -62,6 +63,23 @@ class NetLogLogger : public WebRequestInfo::Logger {
   net::URLRequest* const request_;
 
   DISALLOW_COPY_AND_ASSIGN(NetLogLogger);
+};
+
+// TODO(https://crbug.com/721414): Need a real implementation here to support
+// the Network Service case. For now this is only to prevent crashing.
+class NetworkServiceLogger : public WebRequestInfo::Logger {
+ public:
+  NetworkServiceLogger() = default;
+  ~NetworkServiceLogger() override = default;
+
+  // WebRequestInfo::Logger:
+  void LogEvent(net::NetLogEventType event_type,
+                const std::string& extension_id) override {}
+  void LogBlockedBy(const std::string& blocker_info) override {}
+  void LogUnblocked() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NetworkServiceLogger);
 };
 
 std::unique_ptr<base::DictionaryValue> ExtractRequestBodyData(
@@ -181,6 +199,35 @@ WebRequestInfo::WebRequestInfo(net::URLRequest* url_request)
   }
 }
 
+WebRequestInfo::WebRequestInfo(uint64_t request_id,
+                               int render_process_id,
+                               int render_frame_id,
+                               bool is_navigation,
+                               int32_t routing_id,
+                               const network::ResourceRequest& request)
+    : id(request_id),
+      url(request.url),
+      site_for_cookies(request.site_for_cookies),
+      render_process_id(render_process_id),
+      routing_id(routing_id),
+      frame_id(render_frame_id),
+      method(request.method),
+      is_browser_side_navigation(is_navigation),
+      initiator(request.request_initiator),
+      type(static_cast<content::ResourceType>(request.resource_type)),
+      extra_request_headers(request.headers),
+      logger(std::make_unique<NetworkServiceLogger>()) {
+  if (url.SchemeIsWSOrWSS())
+    web_request_type = WebRequestResourceType::WEB_SOCKET;
+  else
+    web_request_type = ToWebRequestResourceType(type.value());
+
+  // TODO(https://crbug.com/721414): For this constructor (i.e. the Network
+  // Service case), we are still missing information for |frame_data|,
+  // |is_async|, |request_body_data|, |is_pac_request|, and all things related
+  // to <webview> requests.
+}
+
 WebRequestInfo::~WebRequestInfo() = default;
 
 void WebRequestInfo::AddResponseInfoFromURLRequest(
@@ -189,6 +236,19 @@ void WebRequestInfo::AddResponseInfoFromURLRequest(
   response_headers = url_request->response_headers();
   response_ip = url_request->GetSocketAddress().host();
   response_from_cache = url_request->was_cached();
+}
+
+void WebRequestInfo::AddResponseInfoFromResourceResponse(
+    const network::ResourceResponseHead& response) {
+  response_headers = response.headers;
+  if (response_headers)
+    response_code = response_headers->response_code();
+  response_ip = response.socket_address.host();
+
+  // TODO(https://crbug.com/721414): We have no apparent source for this
+  // information yet in the Network Service case. Should indicate whether or not
+  // the response data came from cache.
+  response_from_cache = false;
 }
 
 }  // namespace extensions

@@ -360,10 +360,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::unique_ptr<content::MemoryCoordinatorDelegate>
   GetMemoryCoordinatorDelegate() override;
   ::rappor::RapporService* GetRapporService() override;
-  network::mojom::NetworkContextPtr CreateNetworkContext(
-      content::BrowserContext* context,
-      bool in_memory,
-      const base::FilePath& relative_partition_path) override;
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
   void CreateMediaRemoter(content::RenderFrameHost* render_frame_host,
@@ -389,6 +385,15 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::RenderFrameHost* frame_host,
       const GURL& frame_url,
       NonNetworkURLLoaderFactoryMap* factories) override;
+  bool WillCreateURLLoaderFactory(
+      content::RenderFrameHost* frame,
+      bool is_navigation,
+      network::mojom::URLLoaderFactoryRequest* factory_request) override;
+  network::mojom::NetworkContextPtr CreateNetworkContext(
+      content::BrowserContext* context,
+      bool in_memory,
+      const base::FilePath& relative_partition_path) override;
+
   bool AllowRenderingMhtmlOverHttp(
       content::NavigationUIData* navigation_ui_data) override;
   bool ShouldForceDownloadResource(const GURL& url,

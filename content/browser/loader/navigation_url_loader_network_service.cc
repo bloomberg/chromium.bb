@@ -263,6 +263,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       const GURL& url,
       base::Optional<url::Origin> initiator_origin,
       base::Optional<std::string> suggested_filename,
+      network::mojom::URLLoaderFactoryRequest proxied_factory_request,
+      network::mojom::URLLoaderFactoryPtrInfo proxied_factory_info,
       const base::WeakPtr<NavigationURLLoaderNetworkService>& owner)
       : handlers_(std::move(initial_handlers)),
         resource_request_(std::move(resource_request)),
@@ -273,6 +275,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
         suggested_filename_(suggested_filename),
         owner_(owner),
         response_loader_binding_(this),
+        proxied_factory_request_(std::move(proxied_factory_request)),
+        proxied_factory_info_(std::move(proxied_factory_info)),
         weak_factory_(this) {}
 
   ~URLLoaderRequestController() override {
@@ -546,10 +550,14 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       return;
     }
 
-    network::mojom::URLLoaderFactory* factory = nullptr;
+    // TODO(https://crbug.com/796425): We temporarily wrap raw
+    // mojom::URLLoaderFactory pointers into SharedURLLoaderFactory. Need to
+    // further refactor the factory getters to avoid this.
+    scoped_refptr<SharedURLLoaderFactory> factory;
     DCHECK_EQ(handlers_.size(), handler_index_);
     if (resource_request_->url.SchemeIs(url::kBlobScheme)) {
-      factory = default_url_loader_factory_getter_->GetBlobFactory();
+      factory = base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
+          default_url_loader_factory_getter_->GetBlobFactory());
     } else if (!IsURLHandledByNetworkService(resource_request_->url) &&
                !resource_request_->url.SchemeIs(url::kDataScheme)) {
       network::mojom::URLLoaderFactoryPtr& non_network_factory =
@@ -559,24 +567,39 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
             BrowserThread::UI, FROM_HERE,
             base::BindOnce(&NavigationURLLoaderNetworkService ::
                                BindNonNetworkURLLoaderFactoryRequest,
-                           owner_, resource_request_->url,
+                           owner_, frame_tree_node_id_, resource_request_->url,
                            mojo::MakeRequest(&non_network_factory)));
       }
-      factory = non_network_factory.get();
+      factory = base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
+          non_network_factory.get());
     } else {
-      factory = default_url_loader_factory_getter_->GetNetworkFactory();
+      auto* raw_factory =
+          default_url_loader_factory_getter_->GetNetworkFactory();
       default_loader_used_ = true;
+
+      // NOTE: We only support embedders proxying network-service-bound requests
+      // not handled by URLLoaderRequestHandlers above (e.g. Service Worker or
+      // AppCache). Hence this code is only reachable when one of the above
+      // handlers isn't used and the URL is either a data URL or has a scheme
+      // which is handled by the network service. We explicitly avoid proxying
+      // the data URL case here.
+      if (proxied_factory_request_.is_pending() &&
+          !resource_request_->url.SchemeIs(url::kDataScheme)) {
+        DCHECK(proxied_factory_info_.is_valid());
+        raw_factory->Clone(std::move(proxied_factory_request_));
+        factory = base::MakeRefCounted<WrapperSharedURLLoaderFactory>(
+            std::move(proxied_factory_info_));
+      } else {
+        factory = base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
+            raw_factory);
+      }
     }
     url_chain_.push_back(resource_request_->url);
     uint32_t options = GetURLLoaderOptions(resource_request_->resource_type ==
                                            RESOURCE_TYPE_MAIN_FRAME);
-    // TODO(crbug.com/796425): Temporarily wrap the raw mojom::URLLoaderFactory
-    // pointer into SharedURLLoaderFactory. Need to further refactor the factory
-    // getters.
     url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
-        base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(factory),
-        CreateURLLoaderThrottles(), frame_tree_node_id_, 0 /* request_id? */,
-        options, resource_request_.get(), this,
+        factory, CreateURLLoaderThrottles(), frame_tree_node_id_,
+        0 /* request_id? */, options, resource_request_.get(), this,
         kNavigationUrlLoaderTrafficAnnotation,
         base::ThreadTaskRunnerHandle::Get());
   }
@@ -874,6 +897,16 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   // body to download code.
   base::Optional<network::URLLoaderCompletionStatus> status_;
 
+  // Before creating this URLLoaderRequestController on UI thread, the embedder
+  // may have elected to proxy the URLLoaderFactory request, in which case these
+  // fields will contain input (info) and output (request) endpoints for the
+  // proxy. If this controller is handling a request for which proxying is
+  // supported, requests will be plumbed through these endpoints.
+  //
+  // Note that these are only used for requests that go to the Network Service.
+  network::mojom::URLLoaderFactoryRequest proxied_factory_request_;
+  network::mojom::URLLoaderFactoryPtrInfo proxied_factory_info_;
+
   base::WeakPtrFactory<URLLoaderRequestController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderRequestController);
@@ -922,6 +955,8 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
         request_info->common_params.url,
         request_info->begin_params->initiator_origin,
         request_info->common_params.suggested_filename,
+        /* proxied_url_loader_factory_request */ nullptr,
+        /* proxied_url_loader_factory_info */ nullptr,
         weak_factory_.GetWeakPtr());
 
     BrowserThread::PostTask(
@@ -950,6 +985,30 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
             .PassInterface();
   }
 
+  network::mojom::URLLoaderFactoryPtrInfo proxied_factory_info;
+  network::mojom::URLLoaderFactoryRequest proxied_factory_request;
+  if (frame_tree_node) {
+    // |frame_tree_node| may be null in some unit test environments.
+    GetContentClient()
+        ->browser()
+        ->RegisterNonNetworkNavigationURLLoaderFactories(
+            frame_tree_node->current_frame_host(),
+            &non_network_url_loader_factories_);
+
+    // The embedder may want to proxy all network-bound URLLoaderFactory
+    // requests that it can. If it elects to do so, we'll pass its proxy
+    // endpoints off to the URLLoaderRequestController where wthey will be
+    // connected if the request type supports proxying.
+    network::mojom::URLLoaderFactoryPtrInfo factory_info;
+    auto factory_request = mojo::MakeRequest(&factory_info);
+    if (GetContentClient()->browser()->WillCreateURLLoaderFactory(
+            frame_tree_node->current_frame_host(), true /* is_navigation */,
+            &factory_request)) {
+      proxied_factory_request = std::move(factory_request);
+      proxied_factory_info = std::move(factory_info);
+    }
+  }
+
   auto* partition = static_cast<StoragePartitionImpl*>(storage_partition);
   DCHECK(!request_controller_);
   request_controller_ = std::make_unique<URLLoaderRequestController>(
@@ -957,6 +1016,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
       partition->url_loader_factory_getter(), request_info->common_params.url,
       request_info->begin_params->initiator_origin,
       request_info->common_params.suggested_filename,
+      std::move(proxied_factory_request), std::move(proxied_factory_info),
       weak_factory_.GetWeakPtr());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -975,15 +1035,6 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
           base::CreateSequencedTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::BACKGROUND,
                base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
-
-  if (frame_tree_node) {
-    // |frame_tree_node| may be null in some unit test environments.
-    GetContentClient()
-        ->browser()
-        ->RegisterNonNetworkNavigationURLLoaderFactories(
-            frame_tree_node->current_frame_host(),
-            &non_network_url_loader_factories_);
-  }
 }
 
 NavigationURLLoaderNetworkService::~NavigationURLLoaderNetworkService() {
@@ -1053,6 +1104,7 @@ void NavigationURLLoaderNetworkService::OnRequestStarted(
 }
 
 void NavigationURLLoaderNetworkService::BindNonNetworkURLLoaderFactoryRequest(
+    int frame_tree_node_id,
     const GURL& url,
     network::mojom::URLLoaderFactoryRequest factory) {
   auto it = non_network_url_loader_factories_.find(url.scheme());
@@ -1060,6 +1112,11 @@ void NavigationURLLoaderNetworkService::BindNonNetworkURLLoaderFactoryRequest(
     DVLOG(1) << "Ignoring request with unknown scheme: " << url.spec();
     return;
   }
+  FrameTreeNode* frame_tree_node =
+      FrameTreeNode::GloballyFindByID(frame_tree_node_id);
+  GetContentClient()->browser()->WillCreateURLLoaderFactory(
+      frame_tree_node->current_frame_host(), true /* is_navigation */,
+      &factory);
   it->second->Clone(std::move(factory));
 }
 

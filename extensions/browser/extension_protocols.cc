@@ -744,7 +744,8 @@ void LoadExtensionResourceFromFileOnBackgroundSequence(
     const base::FilePath& relative_path,
     network::mojom::URLLoaderRequest loader,
     network::mojom::URLLoaderClientPtrInfo client_info,
-    scoped_refptr<ContentVerifyJob> verify_job) {
+    scoped_refptr<ContentVerifyJob> verify_job,
+    scoped_refptr<net::HttpResponseHeaders> extra_response_headers) {
   // NOTE: ExtensionResource::GetFilePath() must be called on a sequence which
   // tolerates blocking operations.
   ExtensionResource resource(extension_id, directory_path, relative_path);
@@ -757,7 +758,8 @@ void LoadExtensionResourceFromFileOnBackgroundSequence(
   network::ResourceRequest file_request = request;
   file_request.url = net::FilePathToFileURL(resource.GetFilePath());
   content::CreateFileURLLoader(file_request, std::move(loader),
-                               std::move(client), std::move(loader_observer));
+                               std::move(client), std::move(loader_observer),
+                               std::move(extra_response_headers));
 }
 
 void CreateVerifierAndLoadFile(
@@ -767,7 +769,8 @@ void CreateVerifierAndLoadFile(
     const base::FilePath& relative_path,
     network::mojom::URLLoaderRequest loader,
     network::mojom::URLLoaderClientPtr client,
-    scoped_refptr<extensions::InfoMap> extension_info_map) {
+    scoped_refptr<extensions::InfoMap> extension_info_map,
+    scoped_refptr<net::HttpResponseHeaders> extra_response_headers) {
   scoped_refptr<ContentVerifyJob> verify_job;
   ContentVerifier* verifier = extension_info_map->content_verifier();
   if (verifier) {
@@ -784,7 +787,7 @@ void CreateVerifierAndLoadFile(
       base::BindOnce(&LoadExtensionResourceFromFileOnBackgroundSequence,
                      request, extension_id, directory_path, relative_path,
                      std::move(loader), client.PassInterface(),
-                     std::move(verify_job)));
+                     std::move(verify_job), std::move(extra_response_headers)));
 }
 
 class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
@@ -928,7 +931,9 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
         content::BrowserThread::IO, FROM_HERE,
         base::BindOnce(&CreateVerifierAndLoadFile, request, extension_id,
                        directory_path, relative_path, std::move(loader),
-                       std::move(client), extension_info_map_));
+                       std::move(client), extension_info_map_,
+                       BuildHttpHeaders(content_security_policy,
+                                        send_cors_header, base::Time())));
   }
 
   void Clone(network::mojom::URLLoaderFactoryRequest request) override {
