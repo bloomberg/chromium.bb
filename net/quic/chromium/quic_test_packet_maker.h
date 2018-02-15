@@ -260,6 +260,14 @@ class QuicTestPacketMaker {
       QuicStreamOffset* offset,
       std::string* stream_data);
 
+  std::unique_ptr<QuicReceivedPacket> MakePriorityPacket(
+      QuicPacketNumber packet_number,
+      bool should_include_version,
+      QuicStreamId id,
+      QuicStreamId parent_stream_id,
+      SpdyPriority priority,
+      QuicStreamOffset* header_stream_offset);
+
   SpdyHeaderBlock GetRequestHeaders(const std::string& method,
                                     const std::string& scheme,
                                     const std::string& path);
