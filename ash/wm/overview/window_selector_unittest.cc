@@ -126,6 +126,7 @@ class WindowSelectorTest : public AshTestBase {
   }
 
   void TearDown() override {
+    ResetCachedOverviewAnimationsValueForTesting();
     ResetCachedOverviewUiValueForTesting();
 
     AshTestBase::TearDown();
@@ -2136,6 +2137,171 @@ TEST_F(WindowSelectorTest, ExtremeWindowBounds) {
             tall_item->GetWindowDimensionsType());
   EXPECT_EQ(ScopedTransformOverviewWindow::GridWindowFillMode::kNormal,
             normal_item->GetWindowDimensionsType());
+}
+
+// Tests window list animation states are correctly updated.
+TEST_F(WindowSelectorTest, SetWindowListAnimationStates) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshEnableNewOverviewAnimations);
+
+  gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+  wm::ActivateWindow(window3.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
+
+  EXPECT_FALSE(wm::GetWindowState(window1.get())->IsFullscreen());
+  EXPECT_FALSE(wm::GetWindowState(window2.get())->IsFullscreen());
+  EXPECT_FALSE(wm::GetWindowState(window3.get())->IsFullscreen());
+
+  const wm::WMEvent toggle_fullscreen_event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  wm::GetWindowState(window2.get())->OnWMEvent(&toggle_fullscreen_event);
+  wm::GetWindowState(window3.get())->OnWMEvent(&toggle_fullscreen_event);
+  EXPECT_FALSE(wm::GetWindowState(window1.get())->IsFullscreen());
+  EXPECT_TRUE(wm::GetWindowState(window2.get())->IsFullscreen());
+  EXPECT_TRUE(wm::GetWindowState(window3.get())->IsFullscreen());
+
+  // Enter overview.
+  ToggleOverview();
+
+  const int grid_index = 0;
+  WindowSelectorItem* selector_item1 =
+      GetWindowItemForWindow(grid_index, window1.get());
+  WindowSelectorItem* selector_item2 =
+      GetWindowItemForWindow(grid_index, window2.get());
+  WindowSelectorItem* selector_item3 =
+      GetWindowItemForWindow(grid_index, window3.get());
+
+  // All the animation states during entering overview are correctly updated.
+  EXPECT_TRUE(selector_item1->ShouldAnimateWhenEntering());
+  EXPECT_TRUE(selector_item2->ShouldAnimateWhenEntering());
+  EXPECT_FALSE(selector_item3->ShouldAnimateWhenEntering());
+
+  ToggleOverview();
+}
+
+// Tests window list animation states are correctly updated with selected
+// window.
+TEST_F(WindowSelectorTest, SetWindowListAnimationStatesWithSelectedWindow) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshEnableNewOverviewAnimations);
+
+  gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+  wm::ActivateWindow(window3.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
+
+  EXPECT_FALSE(wm::GetWindowState(window1.get())->IsFullscreen());
+  EXPECT_FALSE(wm::GetWindowState(window2.get())->IsFullscreen());
+  EXPECT_FALSE(wm::GetWindowState(window3.get())->IsFullscreen());
+
+  const wm::WMEvent toggle_fullscreen_event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  wm::GetWindowState(window2.get())->OnWMEvent(&toggle_fullscreen_event);
+  wm::GetWindowState(window3.get())->OnWMEvent(&toggle_fullscreen_event);
+  EXPECT_FALSE(wm::GetWindowState(window1.get())->IsFullscreen());
+  EXPECT_TRUE(wm::GetWindowState(window2.get())->IsFullscreen());
+  EXPECT_TRUE(wm::GetWindowState(window3.get())->IsFullscreen());
+
+  // Enter overview.
+  ToggleOverview();
+
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  // Click on |window3| to activate it and exit overview.
+  // Should only set |should_animate_when_exiting_| and
+  // |should_be_observed_when_exiting_| on window 3.
+  ClickWindow(window3.get());
+  EXPECT_FALSE(window1->layer()->GetAnimator()->is_animating());
+  EXPECT_FALSE(window2->layer()->GetAnimator()->is_animating());
+  EXPECT_TRUE(window3->layer()->GetAnimator()->is_animating());
+}
+
+// Tests OverviewWindowAnimationObserver can handle deleted window.
+TEST_F(WindowSelectorTest,
+       OverviewWindowAnimationObserverCanHandleDeletedWindow) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshEnableNewOverviewAnimations);
+
+  gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+  wm::ActivateWindow(window3.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
+
+  EXPECT_FALSE(wm::GetWindowState(window1.get())->IsFullscreen());
+  EXPECT_FALSE(wm::GetWindowState(window2.get())->IsFullscreen());
+  EXPECT_FALSE(wm::GetWindowState(window3.get())->IsFullscreen());
+
+  const wm::WMEvent toggle_fullscreen_event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  wm::GetWindowState(window2.get())->OnWMEvent(&toggle_fullscreen_event);
+  wm::GetWindowState(window3.get())->OnWMEvent(&toggle_fullscreen_event);
+  EXPECT_FALSE(wm::GetWindowState(window1.get())->IsFullscreen());
+  EXPECT_TRUE(wm::GetWindowState(window2.get())->IsFullscreen());
+  EXPECT_TRUE(wm::GetWindowState(window3.get())->IsFullscreen());
+
+  // Enter overview.
+  ToggleOverview();
+
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  // Click on |window3| to activate it and exit overview.
+  // Should only set |should_animate_when_exiting_| and
+  // |should_be_observed_when_exiting_| on window 3.
+  ClickWindow(window3.get());
+  EXPECT_FALSE(window1->layer()->GetAnimator()->is_animating());
+  EXPECT_FALSE(window2->layer()->GetAnimator()->is_animating());
+  EXPECT_TRUE(window3->layer()->GetAnimator()->is_animating());
+
+  // Destroy |window1| and |window2| before |window3| finishes animation can be
+  // handled in OverviewWindowAnimationObserver.
+  window1.reset();
+  window2.reset();
+}
+
+// Tests can handle OverviewWindowAnimationObserver was deleted.
+TEST_F(WindowSelectorTest, HandleOverviewWindowAnimationObserverWasDeleted) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshEnableNewOverviewAnimations);
+
+  gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+  wm::ActivateWindow(window3.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
+
+  EXPECT_FALSE(wm::GetWindowState(window1.get())->IsFullscreen());
+  EXPECT_FALSE(wm::GetWindowState(window2.get())->IsFullscreen());
+  EXPECT_FALSE(wm::GetWindowState(window3.get())->IsFullscreen());
+
+  const wm::WMEvent toggle_fullscreen_event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  wm::GetWindowState(window2.get())->OnWMEvent(&toggle_fullscreen_event);
+  wm::GetWindowState(window3.get())->OnWMEvent(&toggle_fullscreen_event);
+  EXPECT_FALSE(wm::GetWindowState(window1.get())->IsFullscreen());
+  EXPECT_TRUE(wm::GetWindowState(window2.get())->IsFullscreen());
+  EXPECT_TRUE(wm::GetWindowState(window3.get())->IsFullscreen());
+
+  // Enter overview.
+  ToggleOverview();
+
+  // Click on |window2| to activate it and exit overview.
+  // Should only set |should_animate_when_exiting_| and
+  // |should_be_observed_when_exiting_| on window 2.
+  // Because the animation duration is zero in test, the
+  // OverviewWindowAnimationObserver will delete itself immediatelly before
+  // |window3|'s is added to it.
+  ClickWindow(window2.get());
+  EXPECT_FALSE(window1->layer()->GetAnimator()->is_animating());
+  EXPECT_FALSE(window2->layer()->GetAnimator()->is_animating());
+  EXPECT_FALSE(window3->layer()->GetAnimator()->is_animating());
 }
 
 // Verify that the window selector items titlebar and close button change

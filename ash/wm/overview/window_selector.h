@@ -33,6 +33,7 @@ class Widget;
 }  // namespace views
 
 namespace ash {
+
 class OverviewWindowDragController;
 class SplitViewOverviewOverlay;
 class WindowGrid;
@@ -54,6 +55,11 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   static bool IsSelectable(aura::Window* window);
 
   enum Direction { LEFT, UP, RIGHT, DOWN };
+
+  enum class OverviewTransition {
+    kEnter,  // In the entering process of overview.
+    kExit    // In the exiting process of overview.
+  };
 
   using WindowList = std::vector<aura::Window*>;
 
@@ -256,6 +262,10 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   int text_filter_bottom_ = 0;
 
   bool is_shut_down_ = false;
+
+  // The selected item when exiting overview mode. nullptr if no window
+  // selected.
+  WindowSelectorItem* selected_item_ = nullptr;
 
   // The drag controller for a window in the overview mode.
   std::unique_ptr<OverviewWindowDragController> window_drag_controller_;

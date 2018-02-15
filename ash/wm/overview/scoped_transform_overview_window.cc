@@ -10,7 +10,9 @@
 
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/wm/overview/overview_utils.h"
+#include "ash/wm/overview/overview_window_animation_observer.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
+#include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_mirror_view.h"
@@ -297,8 +299,9 @@ void ScopedTransformOverviewWindow::RestoreWindow() {
     minimized_widget_.reset();
     return;
   }
+
   ScopedAnimationSettings animation_settings_list;
-  BeginScopedAnimation(OverviewAnimationType::OVERVIEW_ANIMATION_RESTORE_WINDOW,
+  BeginScopedAnimation(selector_item_->GetExitTransformAnimationType(),
                        &animation_settings_list);
   SetTransform(window()->GetRootWindow(), original_transform_);
   // Add requests to cache render surface and perform trilinear filtering for
@@ -312,14 +315,16 @@ void ScopedTransformOverviewWindow::RestoreWindow() {
   }
 
   ScopedOverviewAnimationSettings animation_settings(
-      OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS,
-      window_);
+      selector_item_->GetExitOverviewAnimationType(), window_);
   SetOpacity(original_opacity_);
 }
 
 void ScopedTransformOverviewWindow::BeginScopedAnimation(
     OverviewAnimationType animation_type,
     ScopedAnimationSettings* animation_settings) {
+  if (animation_type == OverviewAnimationType::OVERVIEW_ANIMATION_NONE)
+    return;
+
   // Remove the mask before animating because masks affect animation
   // performance. Observe the animation and add the mask after animating if the
   // animation type is layouting selector items.
@@ -334,6 +339,19 @@ void ScopedTransformOverviewWindow::BeginScopedAnimation(
     auto settings = std::make_unique<ScopedOverviewAnimationSettings>(
         animation_type, window);
     settings->DeferPaint();
+
+    // If current |window_| is the first MRU window covering the available
+    // workspace, add the |window_animation_observer| to its
+    // ScopedOverviewAnimationSettings in order to monitor the complete of its
+    // exiting animation.
+    if (window == GetOverviewWindow() &&
+        selector_item_->ShouldBeObservedWhenExiting()) {
+      auto window_animation_observer_weak_ptr =
+          selector_item_->window_grid()->window_animation_observer();
+      if (window_animation_observer_weak_ptr)
+        settings->AddObserver(window_animation_observer_weak_ptr.get());
+    }
+
     animation_settings->push_back(std::move(settings));
   }
 
@@ -461,6 +479,8 @@ void ScopedTransformOverviewWindow::SetTransform(
     aura::Window* root_window,
     const gfx::Transform& transform) {
   DCHECK(overview_started_);
+  auto window_animation_observer_weak_ptr =
+      selector_item_->window_grid()->window_animation_observer();
 
   gfx::Point target_origin(GetTargetBoundsInScreen().origin());
   for (auto* window : GetTransientTreeIterator(GetOverviewWindow())) {
@@ -471,7 +491,16 @@ void ScopedTransformOverviewWindow::SetTransform(
         TransformAboutPivot(gfx::Point(target_origin.x() - original_bounds.x(),
                                        target_origin.y() - original_bounds.y()),
                             transform);
-    window->SetTransform(new_transform);
+    // If current |window_| should not animate during exiting process, we defer
+    // set transfrom on the window by adding the layer and transform information
+    // to the |window_animation_observer|.
+    if (!selector_item_->ShouldAnimateWhenExiting() &&
+        window_animation_observer_weak_ptr) {
+      window_animation_observer_weak_ptr->AddLayerTransformPair(window->layer(),
+                                                                new_transform);
+    } else {
+      window->SetTransform(new_transform);
+    }
   }
 }
 

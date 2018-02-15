@@ -161,6 +161,26 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   void ActivateDraggedWindow();
   void ResetDraggedWindowGesture();
 
+  void set_should_animate_when_entering(bool should_animate) {
+    should_animate_when_entering_ = should_animate;
+  }
+  bool ShouldAnimateWhenEntering() const;
+
+  void set_should_animate_when_exiting(bool should_animate) {
+    should_animate_when_exiting_ = should_animate;
+  }
+  bool ShouldAnimateWhenExiting() const;
+
+  void set_should_be_observed_when_exiting(bool should_be_observed) {
+    should_be_observed_when_exiting_ = should_be_observed;
+  }
+  bool ShouldBeObservedWhenExiting() const;
+
+  OverviewAnimationType GetExitOverviewAnimationType();
+  OverviewAnimationType GetExitTransformAnimationType();
+
+  WindowGrid* window_grid() { return window_grid_; }
+
   float GetCloseButtonOpacityForTesting();
   float GetTitlebarOpacityForTesting();
 
@@ -278,6 +298,20 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Pointer to the WindowGrid that contains |this|. Guaranteed to be non-null
   // for the lifetime of |this|.
   WindowGrid* window_grid_;
+
+  // True if the contained window should animate during the entering animation.
+  bool should_animate_when_entering_ = true;
+
+  // True if the contained window should animate during the exiting animation.
+  bool should_animate_when_exiting_ = true;
+
+  // True if the contained window is the first window that covers the available
+  // workspace in the MRU list during the exiting animation. It will create an
+  // OverviewWindowAnimationObserver for |window_grid_| and any other windows
+  // which should not animate will defer SetTranfrom by adding the their
+  // layer-transform pairs to the observer until this contained window completes
+  // its exiting animation.
+  bool should_be_observed_when_exiting_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorItem);
 };
