@@ -48,9 +48,9 @@ Tree link: https://github.com/PolymerElements/iron-collapse/tree/v2.1.0
 
 Name: iron-dropdown
 Repository: https://github.com/PolymerElements/iron-dropdown.git
-Tree: v1.5.2
-Revision: c5dbb9404ee56e00a0e893b95b1253be5181ae2b
-Tree link: https://github.com/PolymerElements/iron-dropdown/tree/v1.5.2
+Tree: v2.1.0
+Revision: ec46c453782484d8fbee7b299a486a389699fdf2
+Tree link: https://github.com/PolymerElements/iron-dropdown/tree/v2.1.0
 
 Name: iron-fit-behavior
 Repository: https://github.com/PolymerElements/iron-fit-behavior.git
@@ -126,9 +126,9 @@ Tree link: https://github.com/PolymerElements/iron-meta/tree/v1.1.2
 
 Name: iron-overlay-behavior
 Repository: https://github.com/PolymerElements/iron-overlay-behavior.git
-Tree: v1.10.2
-Revision: 27558b9ceeba7c670999818fc50eebe7e044ed5c
-Tree link: https://github.com/PolymerElements/iron-overlay-behavior/tree/v1.10.2
+Tree: v2.3.2
+Revision: 7431ea3da852adec26f5d8d58d6f4727c280a1f4
+Tree link: https://github.com/PolymerElements/iron-overlay-behavior/tree/v2.3.2
 
 Name: iron-pages
 Repository: https://github.com/PolymerElements/iron-pages.git

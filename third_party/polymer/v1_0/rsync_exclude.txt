@@ -14,9 +14,11 @@ index.html
 *.md
 metadata.html
 package.json
+package-lock.json
 */test/
 */tests/
 .travis.yml
+*.d.ts
 
 # app-layout specific
 */patterns/

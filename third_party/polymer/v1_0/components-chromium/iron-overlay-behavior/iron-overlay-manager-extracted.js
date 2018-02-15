@@ -6,7 +6,7 @@
   Polymer.IronOverlayManagerClass = function() {
     /**
      * Used to keep track of the opened overlays.
-     * @private {Array<Element>}
+     * @private {!Array<!Element>}
      */
     this._overlays = [];
 
@@ -24,8 +24,14 @@
     this._backdropElement = null;
 
     // Enable document-wide tap recognizer.
-    Polymer.Gestures.add(document, 'tap', this._onCaptureClick.bind(this));
-
+    // NOTE: Use useCapture=true to avoid accidentally prevention of the closing
+    // of an overlay via event.stopPropagation(). The only way to prevent
+    // closing of an overlay should be through its APIs.
+    // NOTE: enable tap on <html> to workaround Polymer/polymer#4459
+    // Pass no-op function because MSEdge 15 doesn't handle null as 2nd argument
+    // https://github.com/Microsoft/ChakraCore/issues/3863
+    Polymer.Gestures.add(document.documentElement, 'tap', function() {});
+    document.addEventListener('tap', this._onCaptureClick.bind(this), true);
     document.addEventListener('focus', this._onCaptureFocus.bind(this), true);
     document.addEventListener('keydown', this._onCaptureKeyDown.bind(this), true);
   };
@@ -36,7 +42,7 @@
 
     /**
      * The shared backdrop element.
-     * @type {!Element} backdropElement
+     * @return {!Element} backdropElement
      */
     get backdropElement() {
       if (!this._backdropElement) {
@@ -47,13 +53,17 @@
 
     /**
      * The deepest active element.
-     * @type {!Element} activeElement the active element
+     * @return {!Element} activeElement the active element
      */
     get deepActiveElement() {
+      var active = document.activeElement;
       // document.activeElement can be null
       // https://developer.mozilla.org/en-US/docs/Web/API/Document/activeElement
-      // In case of null, default it to document.body.
-      var active = document.activeElement || document.body;
+      // In IE 11, it can also be an object when operating in iframes.
+      // In these cases, default it to document.body.
+      if (!active || active instanceof Element === false) {
+        active = document.body;
+      }
       while (active.root && Polymer.dom(active.root).activeElement) {
         active = Polymer.dom(active.root).activeElement;
       }
@@ -158,7 +168,7 @@
 
     /**
      * Returns the current overlay.
-     * @return {Element|undefined}
+     * @return {!Element|undefined}
      */
     currentOverlay: function() {
       var i = this._overlays.length - 1;
@@ -200,10 +210,14 @@
       }
       this.backdropElement.style.zIndex = this._getZ(overlay) - 1;
       this.backdropElement.opened = !!overlay;
+      // Property observers are not fired until element is attached
+      // in Polymer 2.x, so we ensure element is attached if needed.
+      // https://github.com/Polymer/polymer/issues/4526
+      this.backdropElement.prepare();
     },
 
     /**
-     * @return {Array<Element>}
+     * @return {!Array<!Element>}
      */
     getBackdrops: function() {
       var backdrops = [];
@@ -224,12 +238,12 @@
     },
 
     /**
-     * Returns the first opened overlay that has a backdrop.
-     * @return {Element|undefined}
+     * Returns the top opened overlay that has a backdrop.
+     * @return {!Element|undefined}
      * @private
      */
     _overlayWithBackdrop: function() {
-      for (var i = 0; i < this._overlays.length; i++) {
+      for (var i = this._overlays.length - 1; i >= 0; i--) {
         if (this._overlays[i].withBackdrop) {
           return this._overlays[i];
         }
@@ -274,8 +288,8 @@
 
     /**
      * Returns the deepest overlay in the path.
-     * @param {Array<Element>=} path
-     * @return {Element|undefined}
+     * @param {!Array<!Element>=} path
+     * @return {!Element|undefined}
      * @suppress {missingProperties}
      * @private
      */
@@ -294,10 +308,18 @@
      * @private
      */
     _onCaptureClick: function(event) {
-      var overlay = /** @type {?} */ (this.currentOverlay());
-      // Check if clicked outside of top overlay.
-      if (overlay && this._overlayInPath(Polymer.dom(event).path) !== overlay) {
+      var i = this._overlays.length - 1;
+      if (i === -1) return;
+      var path = /** @type {!Array<!EventTarget>} */ (Polymer.dom(event).path);
+      var overlay;
+      // Check if clicked outside of overlay.
+      while ((overlay = /** @type {?} */ (this._overlays[i])) && this._overlayInPath(path) !== overlay) {
         overlay._onCaptureClick(event);
+        if (overlay.allowClickThrough) {
+          i--;
+        } else {
+          break;
+        }
       }
     },
 
