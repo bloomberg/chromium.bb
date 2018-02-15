@@ -1189,4 +1189,16 @@ void LocalFrame::ForceSynchronousDocumentInstall(
     GetPage()->GetUseCounter().DidCommitLoad(this);
 }
 
+bool LocalFrame::IsUsingDataSavingPreview() const {
+  if (!Client())
+    return false;
+
+  WebURLRequest::PreviewsState previews_state =
+      Client()->GetPreviewsStateForFrame();
+  // Check for any data saving type of preview.
+  return previews_state &
+         (WebURLRequest::kServerLoFiOn | WebURLRequest::kClientLoFiOn |
+          WebURLRequest::kNoScriptOn);
+}
+
 }  // namespace blink
