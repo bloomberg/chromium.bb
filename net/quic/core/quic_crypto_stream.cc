@@ -97,6 +97,9 @@ void QuicCryptoStream::WriteCryptoData(const QuicStringPiece& data) {
   WriteOrBufferData(data, /* fin */ false, /* ack_listener */ nullptr);
 }
 
+void QuicCryptoStream::OnSuccessfulVersionNegotiation(
+    const ParsedQuicVersion& version) {}
+
 void QuicCryptoStream::NeuterUnencryptedStreamData() {
   for (const auto& interval : bytes_consumed_[ENCRYPTION_NONE]) {
     QuicByteCount newly_acked_length = 0;

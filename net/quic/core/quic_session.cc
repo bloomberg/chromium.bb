@@ -193,7 +193,9 @@ void QuicSession::OnWriteBlocked() {
 }
 
 void QuicSession::OnSuccessfulVersionNegotiation(
-    const ParsedQuicVersion& /*version*/) {}
+    const ParsedQuicVersion& version) {
+  GetMutableCryptoStream()->OnSuccessfulVersionNegotiation(version);
+}
 
 void QuicSession::OnConnectivityProbeReceived(
     const QuicSocketAddress& self_address,

@@ -501,6 +501,13 @@ bool QuicConnection::OnProtocolVersionMismatch(
       DCHECK(false);
   }
 
+  const bool set_version_early =
+      GetQuicReloadableFlag(quic_store_version_before_signalling);
+  if (set_version_early) {
+    // Store the new version.
+    framer_.set_version(received_version);
+  }
+
   version_negotiation_state_ = NEGOTIATED_VERSION;
   visitor_->OnSuccessfulVersionNegotiation(received_version);
   if (debug_visitor_ != nullptr) {
@@ -510,8 +517,10 @@ bool QuicConnection::OnProtocolVersionMismatch(
   QUIC_DLOG(INFO) << ENDPOINT << "version negotiated "
                   << ParsedQuicVersionToString(received_version);
 
-  // Store the new version.
-  framer_.set_version(received_version);
+  if (!set_version_early) {
+    // Store the new version.
+    framer_.set_version(received_version);
+  }
 
   MaybeEnableSessionDecidesWhatToWrite();
 
@@ -1080,9 +1089,10 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
       } else if (!ack_alarm_->IsSet()) {
         // Wait for the minimum of the ack decimation delay or the delayed ack
         // time before sending an ack.
-        QuicTime::Delta ack_delay = std::min(
-            DelayedAckTime(), sent_packet_manager_.GetRttStats()->min_rtt() *
-                                  ack_decimation_delay_);
+        QuicTime::Delta ack_delay =
+            std::min(sent_packet_manager_.delayed_ack_time(),
+                     sent_packet_manager_.GetRttStats()->min_rtt() *
+                         ack_decimation_delay_);
         ack_alarm_->Set(clock_->ApproximateNow() + ack_delay);
       }
     } else {
@@ -1091,7 +1101,8 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
           kDefaultRetransmittablePacketsBeforeAck) {
         ack_queued_ = true;
       } else if (!ack_alarm_->IsSet()) {
-        ack_alarm_->Set(clock_->ApproximateNow() + DelayedAckTime());
+        ack_alarm_->Set(clock_->ApproximateNow() +
+                        sent_packet_manager_.delayed_ack_time());
       }
     }
 
@@ -2700,25 +2711,6 @@ bool QuicConnection::MaybeConsiderAsMemoryCorruption(
   }
 
   return false;
-}
-
-// Uses a 25ms delayed ack timer. Also helps with better signaling
-// in low-bandwidth (< ~384 kbps), where an ack is sent per packet.
-// Ensures that the Delayed Ack timer is always set to a value lesser
-// than the retransmission timer's minimum value (MinRTO). We want the
-// delayed ack to get back to the QUIC peer before the sender's
-// retransmission timer triggers.  Since we do not know the
-// reverse-path one-way delay, we assume equal delays for forward and
-// reverse paths, and ensure that the timer is set to less than half
-// of the MinRTO.
-// There may be a value in making this delay adaptive with the help of
-// the sender and a signaling mechanism -- if the sender uses a
-// different MinRTO, we may get spurious retransmissions. May not have
-// any benefits, but if the delayed ack becomes a significant source
-// of (likely, tail) latency, then consider such a mechanism.
-const QuicTime::Delta QuicConnection::DelayedAckTime() {
-  return QuicTime::Delta::FromMilliseconds(
-      std::min(kMaxDelayedAckTimeMs, kMinRetransmissionTimeMs / 2));
 }
 
 void QuicConnection::MaybeSendProbingRetransmissions() {

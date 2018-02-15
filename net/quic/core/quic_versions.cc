@@ -162,6 +162,18 @@ ParsedQuicVersionVector FilterSupportedVersions(
           GetQuicReloadableFlag(quic_allow_receiving_overlapping_data)) {
         filtered_versions.push_back(version);
       }
+    } else if (version.transport_version == QUIC_VERSION_41) {
+      if (!GetQuicReloadableFlag(quic_disable_version_41)) {
+        filtered_versions.push_back(version);
+      }
+    } else if (version.transport_version == QUIC_VERSION_38) {
+      if (!GetQuicReloadableFlag(quic_disable_version_38)) {
+        filtered_versions.push_back(version);
+      }
+    } else if (version.transport_version == QUIC_VERSION_37) {
+      if (!GetQuicReloadableFlag(quic_disable_version_37)) {
+        filtered_versions.push_back(version);
+      }
     } else {
       filtered_versions.push_back(version);
     }

@@ -108,21 +108,10 @@ TlsServerHandshaker::PreviousCachedNetworkParams() const {
   return nullptr;
 }
 
-bool TlsServerHandshaker::UseStatelessRejectsIfPeerSupported() const {
-  return false;
-}
-
-bool TlsServerHandshaker::PeerSupportsStatelessRejects() const {
-  return false;
-}
-
 bool TlsServerHandshaker::ZeroRttAttempted() const {
   // TODO(nharper): Support 0-RTT with TLS 1.3 in QUIC.
   return false;
 }
-
-void TlsServerHandshaker::SetPeerSupportsStatelessRejects(
-    bool peer_supports_stateless_rejects) {}
 
 void TlsServerHandshaker::SetPreviousCachedNetworkParams(
     CachedNetworkParameters cached_network_params) {}

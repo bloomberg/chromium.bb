@@ -71,7 +71,6 @@ void RttStats::UpdateRtt(QuicTime::Delta send_delta,
   // send_delta.
   if (rtt_sample > ack_delay) {
     if (GetQuicReloadableFlag(quic_min_rtt_ack_delay)) {
-      QUIC_FLAG_COUNT(quic_reloadable_flag_quic_min_rtt_ack_delay);
       if (rtt_sample - min_rtt_ >= ack_delay) {
         max_ack_delay_ = std::max(max_ack_delay_, ack_delay);
         rtt_sample = rtt_sample - ack_delay;

@@ -125,6 +125,10 @@ const QuicTag kTLPR = TAG('T', 'L', 'P', 'R');   // Tail loss probe delay of
                                                  // 0.5RTT.
 const QuicTag kMAD0 = TAG('M', 'A', 'D', '0');   // Ignore ack delay
 const QuicTag kMAD1 = TAG('M', 'A', 'D', '1');   // 25ms initial max ack delay
+const QuicTag kMAD2 = TAG('M', 'A', 'D', '2');   // No min TLP
+const QuicTag kMAD3 = TAG('M', 'A', 'D', '3');   // No min RTO
+const QuicTag kMAD4 = TAG('M', 'A', 'D', '4');   // IETF style TLP
+const QuicTag kMAD5 = TAG('M', 'A', 'D', '5');   // IETF style TLP with 2x mult
 const QuicTag kACKD = TAG('A', 'C', 'K', 'D');   // Ack decimation style acking.
 const QuicTag kAKD2 = TAG('A', 'K', 'D', '2');   // Ack decimation tolerating
                                                  // out of order packets.

@@ -99,6 +99,9 @@ class QUIC_EXPORT_PRIVATE QuicStream {
   // a stream is reset because of an error).
   bool IsWaitingForAcks() const;
 
+  // Number of bytes available to read.
+  size_t ReadableBytes() const;
+
   QuicStreamId id() const { return id_; }
 
   QuicRstStreamErrorCode stream_error() const { return stream_error_; }

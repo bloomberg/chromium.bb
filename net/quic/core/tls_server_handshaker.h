@@ -42,11 +42,7 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
   uint8_t NumHandshakeMessagesWithServerNonces() const override;
   int NumServerConfigUpdateMessagesSent() const override;
   const CachedNetworkParameters* PreviousCachedNetworkParams() const override;
-  bool UseStatelessRejectsIfPeerSupported() const override;
-  bool PeerSupportsStatelessRejects() const override;
   bool ZeroRttAttempted() const override;
-  void SetPeerSupportsStatelessRejects(
-      bool peer_supports_stateless_rejects) override;
   void SetPreviousCachedNetworkParams(
       CachedNetworkParameters cached_network_params) override;
   bool ShouldSendExpectCTHeader() const override;

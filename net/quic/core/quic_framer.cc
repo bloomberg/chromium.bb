@@ -1402,6 +1402,7 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader,
                                  : kQuicHasMultipleAckBlocksOffset);
   uint8_t num_ack_blocks = 0;
   uint8_t num_received_packets = 0;
+
   if (version_.transport_version == QUIC_VERSION_41) {
     if (has_ack_blocks && !reader->ReadUInt8(&num_ack_blocks)) {
       set_detailed_error("Unable to read num of ack blocks.");

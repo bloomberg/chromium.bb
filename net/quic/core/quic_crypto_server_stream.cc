@@ -52,22 +52,31 @@ QuicCryptoServerStream::QuicCryptoServerStream(
     bool use_stateless_rejects_if_peer_supported,
     QuicSession* session,
     Helper* helper)
-    : QuicCryptoServerStreamBase(session) {
+    : QuicCryptoServerStreamBase(session),
+      use_stateless_rejects_if_peer_supported_(
+          use_stateless_rejects_if_peer_supported),
+      peer_supports_stateless_rejects_(false),
+      delay_handshaker_construction_(
+          GetQuicReloadableFlag(delay_quic_server_handshaker_construction)),
+      crypto_config_(crypto_config),
+      compressed_certs_cache_(compressed_certs_cache),
+      helper_(helper) {
   DCHECK_EQ(Perspective::IS_SERVER, session->connection()->perspective());
-  switch (session->connection()->version().handshake_protocol) {
-    case PROTOCOL_QUIC_CRYPTO:
-      handshaker_ = QuicMakeUnique<QuicCryptoServerHandshaker>(
-          crypto_config, this, compressed_certs_cache,
-          use_stateless_rejects_if_peer_supported, session, helper);
-      break;
-    case PROTOCOL_TLS1_3:
-      handshaker_ = QuicMakeUnique<TlsServerHandshaker>(
-          this, session, crypto_config->ssl_ctx(),
-          crypto_config->proof_source());
-      break;
-    case PROTOCOL_UNSUPPORTED:
-      QUIC_BUG << "Attempting to create QuicCryptoServerStream for unknown "
-                  "handshake protocol";
+  if (!delay_handshaker_construction_) {
+    switch (session->connection()->version().handshake_protocol) {
+      case PROTOCOL_QUIC_CRYPTO:
+        handshaker_ = QuicMakeUnique<QuicCryptoServerHandshaker>(
+            crypto_config_, this, compressed_certs_cache_, session, helper_);
+        break;
+      case PROTOCOL_TLS1_3:
+        handshaker_ = QuicMakeUnique<TlsServerHandshaker>(
+            this, session, crypto_config_->ssl_ctx(),
+            crypto_config_->proof_source());
+        break;
+      case PROTOCOL_UNSUPPORTED:
+        QUIC_BUG << "Attempting to create QuicCryptoServerStream for unknown "
+                    "handshake protocol";
+    }
   }
 }
 
@@ -105,11 +114,11 @@ QuicCryptoServerStream::PreviousCachedNetworkParams() const {
 }
 
 bool QuicCryptoServerStream::UseStatelessRejectsIfPeerSupported() const {
-  return handshaker()->UseStatelessRejectsIfPeerSupported();
+  return use_stateless_rejects_if_peer_supported_;
 }
 
 bool QuicCryptoServerStream::PeerSupportsStatelessRejects() const {
-  return handshaker()->PeerSupportsStatelessRejects();
+  return peer_supports_stateless_rejects_;
 }
 
 bool QuicCryptoServerStream::ZeroRttAttempted() const {
@@ -118,8 +127,7 @@ bool QuicCryptoServerStream::ZeroRttAttempted() const {
 
 void QuicCryptoServerStream::SetPeerSupportsStatelessRejects(
     bool peer_supports_stateless_rejects) {
-  handshaker()->SetPeerSupportsStatelessRejects(
-      peer_supports_stateless_rejects);
+  peer_supports_stateless_rejects_ = peer_supports_stateless_rejects;
 }
 
 void QuicCryptoServerStream::SetPreviousCachedNetworkParams(
@@ -132,10 +140,16 @@ bool QuicCryptoServerStream::ShouldSendExpectCTHeader() const {
 }
 
 bool QuicCryptoServerStream::encryption_established() const {
+  if (!handshaker()) {
+    return false;
+  }
   return handshaker()->encryption_established();
 }
 
 bool QuicCryptoServerStream::handshake_confirmed() const {
+  if (!handshaker()) {
+    return false;
+  }
   return handshaker()->handshake_confirmed();
 }
 
@@ -146,6 +160,32 @@ QuicCryptoServerStream::crypto_negotiated_params() const {
 
 CryptoMessageParser* QuicCryptoServerStream::crypto_message_parser() {
   return handshaker()->crypto_message_parser();
+}
+
+void QuicCryptoServerStream::OnSuccessfulVersionNegotiation(
+    const ParsedQuicVersion& version) {
+  // TODO(nharper): Uncomment this DCHECK once
+  // quic_reloadable_flag_quic_store_version_before_signalling has been flipped
+  // and removed.
+  // DCHECK_EQ(version, session()->connection()->version());
+  if (!delay_handshaker_construction_) {
+    return;
+  }
+  CHECK(!handshaker_);
+  switch (session()->connection()->version().handshake_protocol) {
+    case PROTOCOL_QUIC_CRYPTO:
+      handshaker_ = QuicMakeUnique<QuicCryptoServerHandshaker>(
+          crypto_config_, this, compressed_certs_cache_, session(), helper_);
+      break;
+    case PROTOCOL_TLS1_3:
+      handshaker_ = QuicMakeUnique<TlsServerHandshaker>(
+          this, session(), crypto_config_->ssl_ctx(),
+          crypto_config_->proof_source());
+      break;
+    case PROTOCOL_UNSUPPORTED:
+      QUIC_BUG << "Attempting to create QuicCryptoServerStream for unknown "
+                  "handshake protocol";
+  }
 }
 
 QuicCryptoServerStream::HandshakerDelegate* QuicCryptoServerStream::handshaker()

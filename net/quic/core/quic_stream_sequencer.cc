@@ -32,7 +32,8 @@ QuicStreamSequencer::QuicStreamSequencer(QuicStream* quic_stream,
       num_frames_received_(0),
       num_duplicate_frames_received_(0),
       clock_(clock),
-      ignore_read_data_(false) {}
+      ignore_read_data_(false),
+      level_triggered_(false) {}
 
 QuicStreamSequencer::~QuicStreamSequencer() {}
 
@@ -74,12 +75,20 @@ void QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
     return;
   }
 
-  bool can_continue_read = byte_offset == buffered_frames_.BytesConsumed();
+  if (level_triggered_) {
+    if (buffered_frames_.ReadableBytes() > previous_readable_bytes) {
+      // Readable bytes has changed, let stream decide if to inform application
+      // or not.
+      stream_->OnDataAvailable();
+    }
+    return;
+  }
+  bool stream_unblocked = byte_offset == buffered_frames_.BytesConsumed();
   if (buffered_frames_.allow_overlapping_data()) {
-    can_continue_read =
+    stream_unblocked =
         previous_readable_bytes == 0 && buffered_frames_.ReadableBytes() > 0;
   }
-  if (can_continue_read) {
+  if (stream_unblocked) {
     if (ignore_read_data_) {
       FlushBufferedFrames();
     } else {
@@ -154,6 +163,10 @@ int QuicStreamSequencer::Readv(const struct iovec* iov, size_t iov_len) {
 
 bool QuicStreamSequencer::HasBytesToRead() const {
   return buffered_frames_.HasBytesToRead();
+}
+
+size_t QuicStreamSequencer::ReadableBytes() const {
+  return buffered_frames_.ReadableBytes();
 }
 
 bool QuicStreamSequencer::IsClosed() const {

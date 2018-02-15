@@ -238,7 +238,7 @@ class AsyncTestChannelIDSource : public ChannelIDSource, public CallbackSource {
 
   // CallbackSource implementation.
   void RunPendingCallbacks() override {
-    if (callback_.get()) {
+    if (callback_) {
       callback_->Run(&channel_id_key_);
       callback_.reset();
     }
@@ -404,6 +404,8 @@ int HandshakeWithFakeServer(QuicConfig* server_quic_config,
   TestQuicSpdyServerSession server_session(server_conn, *server_quic_config,
                                            &crypto_config,
                                            &compressed_certs_cache);
+  server_session.OnSuccessfulVersionNegotiation(
+      client_conn->supported_versions().front());
   EXPECT_CALL(*server_session.helper(),
               CanAcceptClientHello(testing::_, testing::_, testing::_))
       .Times(testing::AnyNumber());

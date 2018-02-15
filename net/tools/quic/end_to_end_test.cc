@@ -129,24 +129,30 @@ struct TestParams {
 };
 
 // Constructs various test permutations.
-std::vector<TestParams> GetTestParams() {
+std::vector<TestParams> GetTestParams(bool use_tls_handshake) {
   // Divide the versions into buckets in which the intra-frame format
   // is compatible. When clients encounter QUIC version negotiation
   // they simply retransmit all packets using the new version's
   // QUIC framing. However, they are unable to change the intra-frame
-  // layout (for example to change HTTP/2 headers to SPDY/3). So
-  // these tests need to ensure that clients are never attempting
-  // to do 0-RTT across incompatible versions. Chromium only supports
-  // a single version at a time anyway. :)
+  // layout (for example to change HTTP/2 headers to SPDY/3, or a change in the
+  // handshake protocol). So these tests need to ensure that clients are never
+  // attempting to do 0-RTT across incompatible versions. Chromium only
+  // supports a single version at a time anyway. :)
+  FLAGS_quic_supports_tls_handshake = use_tls_handshake;
   ParsedQuicVersionVector all_supported_versions = AllSupportedVersions();
-  // Even though this currently has one element, it may well get another
-  // with future versions of QUIC, so don't remove it.
-  ParsedQuicVersionVector version_buckets[1];
+  // Buckets are separated by the handshake protocol (QUIC crypto or TLS) in
+  // use, since if the handshake protocol changes, the ClientHello/CHLO must be
+  // reconstructed for the correct protocol.
+  ParsedQuicVersionVector version_buckets[2];
 
   for (const ParsedQuicVersion& version : all_supported_versions) {
     // Versions: 35+
     // QUIC_VERSION_35 allows endpoints to independently set stream limit.
-    version_buckets[0].push_back(version);
+    if (version.handshake_protocol == PROTOCOL_TLS1_3) {
+      version_buckets[1].push_back(version);
+    } else {
+      version_buckets[0].push_back(version);
+    }
   }
 
   // This must be kept in sync with the number of nested for-loops below as it
@@ -189,7 +195,6 @@ std::vector<TestParams> GetTestParams() {
 
             for (const ParsedQuicVersionVector& client_versions :
                  version_buckets) {
-              CHECK(!client_versions.empty());
               if (FilterSupportedVersions(client_versions).empty()) {
                 continue;
               }
@@ -276,6 +281,8 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
         chlo_multiplier_(0),
         stream_factory_(nullptr),
         support_server_push_(false) {
+    FLAGS_quic_supports_tls_handshake = true;
+    FLAGS_quic_reloadable_flag_quic_store_version_before_signalling = true;
     client_supported_versions_ = GetParam().client_supported_versions;
     server_supported_versions_ = GetParam().server_supported_versions;
     negotiated_version_ = GetParam().negotiated_version;
@@ -574,7 +581,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
     // kWaitDuration is a period of time that is long enough for all delayed
     // acks to be sent and received on the other end.
     const QuicTime::Delta kWaitDuration =
-        4 * QuicTime::Delta::FromMilliseconds(kMaxDelayedAckTimeMs);
+        4 * QuicTime::Delta::FromMilliseconds(kDefaultDelayedAckTimeMs);
 
     const QuicClock* clock =
         client_->client()->client_session()->connection()->clock();
@@ -607,14 +614,26 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
   bool support_server_push_;
 };
 
+class EndToEndTestWithTls : public EndToEndTest {
+ protected:
+  EndToEndTestWithTls() : EndToEndTest() {
+    FLAGS_quic_reloadable_flag_delay_quic_server_handshaker_construction = true;
+  }
+};
+
 // Run all end to end tests with all supported versions.
 INSTANTIATE_TEST_CASE_P(EndToEndTests,
                         EndToEndTest,
-                        ::testing::ValuesIn(GetTestParams()));
+                        ::testing::ValuesIn(GetTestParams(false)));
 
-TEST_P(EndToEndTest, HandshakeSuccessful) {
+INSTANTIATE_TEST_CASE_P(EndToEndTestsWithTls,
+                        EndToEndTestWithTls,
+                        ::testing::ValuesIn(GetTestParams(true)));
+
+TEST_P(EndToEndTestWithTls, HandshakeSuccessful) {
   ASSERT_TRUE(Initialize());
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
+  server_thread_->WaitForCryptoHandshakeConfirmed();
   QuicCryptoStream* crypto_stream = QuicSessionPeer::GetMutableCryptoStream(
       client_->client()->client_session());
   QuicStreamSequencer* sequencer = QuicStreamPeer::sequencer(crypto_stream);
@@ -628,7 +647,7 @@ TEST_P(EndToEndTest, HandshakeSuccessful) {
   EXPECT_FALSE(QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
 }
 
-TEST_P(EndToEndTest, SimpleRequestResponsev6) {
+TEST_P(EndToEndTest, SimpleRequestResponse) {
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
@@ -645,9 +664,7 @@ TEST_P(EndToEndTest, SimpleRequestResponseWithLargeReject) {
   EXPECT_EQ(3, client_->client()->GetNumSentClientHellos());
 }
 
-// TODO(rch): figure out how to detect missing v6 support (like on the linux
-// try bots) and selectively disable this test.
-TEST_P(EndToEndTest, DISABLED_SimpleRequestResponsev6) {
+TEST_P(EndToEndTestWithTls, SimpleRequestResponsev6) {
   server_address_ =
       QuicSocketAddress(QuicIpAddress::Loopback6(), server_address_.port());
   ASSERT_TRUE(Initialize());
@@ -656,7 +673,7 @@ TEST_P(EndToEndTest, DISABLED_SimpleRequestResponsev6) {
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 }
 
-TEST_P(EndToEndTest, SeparateFinPacket) {
+TEST_P(EndToEndTestWithTls, SeparateFinPacket) {
   ASSERT_TRUE(Initialize());
 
   // Send a request in two parts: the request and then an empty packet with FIN.
@@ -680,7 +697,7 @@ TEST_P(EndToEndTest, SeparateFinPacket) {
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 }
 
-TEST_P(EndToEndTest, MultipleRequestResponse) {
+TEST_P(EndToEndTestWithTls, MultipleRequestResponse) {
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
@@ -689,7 +706,7 @@ TEST_P(EndToEndTest, MultipleRequestResponse) {
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 }
 
-TEST_P(EndToEndTest, MultipleStreams) {
+TEST_P(EndToEndTestWithTls, MultipleStreams) {
   // Verifies quic_test_client can track responses of all active streams.
   ASSERT_TRUE(Initialize());
 
@@ -714,7 +731,7 @@ TEST_P(EndToEndTest, MultipleStreams) {
   }
 }
 
-TEST_P(EndToEndTest, MultipleClients) {
+TEST_P(EndToEndTestWithTls, MultipleClients) {
   ASSERT_TRUE(Initialize());
   std::unique_ptr<QuicTestClient> client2(CreateQuicClient(nullptr));
 
@@ -739,7 +756,7 @@ TEST_P(EndToEndTest, MultipleClients) {
   EXPECT_EQ("200", client2->response_headers()->find(":status")->second);
 }
 
-TEST_P(EndToEndTest, RequestOverMultiplePackets) {
+TEST_P(EndToEndTestWithTls, RequestOverMultiplePackets) {
   // Send a large enough request to guarantee fragmentation.
   string huge_request = "/some/path?query=" + string(kMaxPacketSize, '.');
   AddToCache(huge_request, 200, kBarResponseBody);
@@ -750,7 +767,7 @@ TEST_P(EndToEndTest, RequestOverMultiplePackets) {
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 }
 
-TEST_P(EndToEndTest, MultiplePacketsRandomOrder) {
+TEST_P(EndToEndTestWithTls, MultiplePacketsRandomOrder) {
   // Send a large enough request to guarantee fragmentation.
   string huge_request = "/some/path?query=" + string(kMaxPacketSize, '.');
   AddToCache(huge_request, 200, kBarResponseBody);
@@ -763,7 +780,7 @@ TEST_P(EndToEndTest, MultiplePacketsRandomOrder) {
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 }
 
-TEST_P(EndToEndTest, PostMissingBytes) {
+TEST_P(EndToEndTestWithTls, PostMissingBytes) {
   ASSERT_TRUE(Initialize());
 
   // Add a content length header with no body.
@@ -1125,7 +1142,8 @@ TEST_P(EndToEndTest, LargePostSmallBandwidthLargeBuffer) {
   VerifyCleanConnection(true);
 }
 
-TEST_P(EndToEndTest, DoNotSetResumeWriteAlarmIfConnectionFlowControlBlocked) {
+TEST_P(EndToEndTestWithTls,
+       DoNotSetResumeWriteAlarmIfConnectionFlowControlBlocked) {
   // Regression test for b/14677858.
   // Test that the resume write alarm is not set in QuicConnection::OnCanWrite
   // if currently connection level flow control blocked. If set, this results in
@@ -1166,6 +1184,8 @@ TEST_P(EndToEndTest, DoNotSetResumeWriteAlarmIfConnectionFlowControlBlocked) {
   EXPECT_FALSE(resume_writes_alarm->IsSet());
 }
 
+// TODO(fkastenholz): this test seems to cause net_unittests timeouts
+// reverted from EndToEndTestWithTls to EndToEndTest
 TEST_P(EndToEndTest, InvalidStream) {
   ASSERT_TRUE(Initialize());
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
@@ -1230,7 +1250,7 @@ TEST_P(EndToEndTest, EarlyResponseWithQuicStreamNoError) {
 }
 
 // TODO(rch): this test seems to cause net_unittests timeouts :|
-TEST_P(EndToEndTest, DISABLED_MultipleTermination) {
+TEST_P(EndToEndTestWithTls, DISABLED_MultipleTermination) {
   ASSERT_TRUE(Initialize());
 
   // Set the offset so we won't frame.  Otherwise when we pick up termination
@@ -1250,6 +1270,8 @@ TEST_P(EndToEndTest, DISABLED_MultipleTermination) {
   EXPECT_QUIC_BUG(client_->SendData("eep", true), "Fin already buffered");
 }
 
+// TODO(fkastenholz): this test seems to cause net_unittests timeouts
+// reverted from EndToEndTestWithTls to EndToEndTest
 TEST_P(EndToEndTest, Timeout) {
   client_config_.SetIdleNetworkTimeout(QuicTime::Delta::FromMicroseconds(500),
                                        QuicTime::Delta::FromMicroseconds(500));
@@ -1261,7 +1283,7 @@ TEST_P(EndToEndTest, Timeout) {
   }
 }
 
-TEST_P(EndToEndTest, MaxIncomingDynamicStreamsLimitRespected) {
+TEST_P(EndToEndTestWithTls, MaxIncomingDynamicStreamsLimitRespected) {
   // Set a limit on maximum number of incoming dynamic streams.
   // Make sure the limit is respected.
   const uint32_t kServerMaxIncomingDynamicStreams = 1;
@@ -1453,7 +1475,7 @@ TEST_P(EndToEndTest, 0ByteConnectionId) {
   EXPECT_EQ(PACKET_0BYTE_CONNECTION_ID, header->connection_id_length);
 }
 
-TEST_P(EndToEndTest, 8ByteConnectionId) {
+TEST_P(EndToEndTestWithTls, 8ByteConnectionId) {
   client_config_.SetBytesForConnectionIdToSend(8);
   ASSERT_TRUE(Initialize());
 
@@ -1464,7 +1486,7 @@ TEST_P(EndToEndTest, 8ByteConnectionId) {
   EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID, header->connection_id_length);
 }
 
-TEST_P(EndToEndTest, 15ByteConnectionId) {
+TEST_P(EndToEndTestWithTls, 15ByteConnectionId) {
   client_config_.SetBytesForConnectionIdToSend(15);
   ASSERT_TRUE(Initialize());
 
@@ -1476,7 +1498,7 @@ TEST_P(EndToEndTest, 15ByteConnectionId) {
   EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID, header->connection_id_length);
 }
 
-TEST_P(EndToEndTest, ResetConnection) {
+TEST_P(EndToEndTestWithTls, ResetConnection) {
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
@@ -1486,6 +1508,8 @@ TEST_P(EndToEndTest, ResetConnection) {
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 }
 
+// TODO(fkastenholz): this test seems to cause net_unittests timeouts
+// reverted from EndToEndTestWithTls to EndToEndTest
 TEST_P(EndToEndTest, MaxStreamsUberTest) {
   if (!BothSidesSupportStatelessRejects()) {
     // Connect with lower fake packet loss than we'd like to test.  Until
@@ -1513,7 +1537,7 @@ TEST_P(EndToEndTest, MaxStreamsUberTest) {
   }
 }
 
-TEST_P(EndToEndTest, StreamCancelErrorTest) {
+TEST_P(EndToEndTestWithTls, StreamCancelErrorTest) {
   ASSERT_TRUE(Initialize());
   string small_body(256, 'a');
 
@@ -1845,7 +1869,7 @@ TEST_P(EndToEndTest, FlowControlsSynced) {
   server_thread_->Resume();
 }
 
-TEST_P(EndToEndTest, RequestWithNoBodyWillNeverSendStreamFrameWithFIN) {
+TEST_P(EndToEndTestWithTls, RequestWithNoBodyWillNeverSendStreamFrameWithFIN) {
   // A stream created on receipt of a simple request with no body will never get
   // a stream frame with a FIN. Verify that we don't keep track of the stream in
   // the locally closed streams map: it will never be removed if so.
@@ -1953,7 +1977,7 @@ TEST_P(EndToEndTest, AckNotifierWithPacketLossAndBlockedSocket) {
 }
 
 // Send a public reset from the server.
-TEST_P(EndToEndTest, ServerSendPublicReset) {
+TEST_P(EndToEndTestWithTls, ServerSendPublicReset) {
   ASSERT_TRUE(Initialize());
 
   // Send the public reset.
@@ -1981,7 +2005,7 @@ TEST_P(EndToEndTest, ServerSendPublicReset) {
 
 // Send a public reset from the server for a different connection ID.
 // It should be ignored.
-TEST_P(EndToEndTest, ServerSendPublicResetWithDifferentConnectionId) {
+TEST_P(EndToEndTestWithTls, ServerSendPublicResetWithDifferentConnectionId) {
   ASSERT_TRUE(Initialize());
 
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
@@ -2017,7 +2041,7 @@ TEST_P(EndToEndTest, ServerSendPublicResetWithDifferentConnectionId) {
 
 // Send a public reset from the client for a different connection ID.
 // It should be ignored.
-TEST_P(EndToEndTest, ClientSendPublicResetWithDifferentConnectionId) {
+TEST_P(EndToEndTestWithTls, ClientSendPublicResetWithDifferentConnectionId) {
   ASSERT_TRUE(Initialize());
 
   // Send the public reset.
@@ -2041,7 +2065,8 @@ TEST_P(EndToEndTest, ClientSendPublicResetWithDifferentConnectionId) {
 
 // Send a version negotiation packet from the server for a different
 // connection ID.  It should be ignored.
-TEST_P(EndToEndTest, ServerSendVersionNegotiationWithDifferentConnectionId) {
+TEST_P(EndToEndTestWithTls,
+       ServerSendVersionNegotiationWithDifferentConnectionId) {
   ASSERT_TRUE(Initialize());
 
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
@@ -2074,7 +2099,7 @@ TEST_P(EndToEndTest, ServerSendVersionNegotiationWithDifferentConnectionId) {
 
 // A bad header shouldn't tear down the connection, because the receiver can't
 // tell the connection ID.
-TEST_P(EndToEndTest, BadPacketHeaderTruncated) {
+TEST_P(EndToEndTestWithTls, BadPacketHeaderTruncated) {
   ASSERT_TRUE(Initialize());
 
   // Start the connection.
@@ -2107,7 +2132,7 @@ TEST_P(EndToEndTest, BadPacketHeaderTruncated) {
 
 // A bad header shouldn't tear down the connection, because the receiver can't
 // tell the connection ID.
-TEST_P(EndToEndTest, BadPacketHeaderFlags) {
+TEST_P(EndToEndTestWithTls, BadPacketHeaderFlags) {
   ASSERT_TRUE(Initialize());
 
   // Start the connection.
@@ -2158,7 +2183,7 @@ TEST_P(EndToEndTest, BadPacketHeaderFlags) {
 
 // Send a packet from the client with bad encrypted data.  The server should not
 // tear down the connection.
-TEST_P(EndToEndTest, BadEncryptedData) {
+TEST_P(EndToEndTestWithTls, BadEncryptedData) {
   ASSERT_TRUE(Initialize());
 
   // Start the connection.
@@ -2194,7 +2219,7 @@ TEST_P(EndToEndTest, BadEncryptedData) {
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 }
 
-TEST_P(EndToEndTest, CanceledStreamDoesNotBecomeZombie) {
+TEST_P(EndToEndTestWithTls, CanceledStreamDoesNotBecomeZombie) {
   ASSERT_TRUE(Initialize());
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
   // Lose the request.
@@ -2516,7 +2541,7 @@ TEST_P(EndToEndTest, EarlyResponseFinRecording) {
   server_thread_->Resume();
 }
 
-TEST_P(EndToEndTest, Trailers) {
+TEST_P(EndToEndTestWithTls, Trailers) {
   // Test sending and receiving HTTP/2 Trailers (trailing HEADERS frames).
   ASSERT_TRUE(Initialize());
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
@@ -2599,7 +2624,7 @@ class EndToEndTestServerPush : public EndToEndTest {
 // Run all server push end to end tests with all supported versions.
 INSTANTIATE_TEST_CASE_P(EndToEndTestsServerPush,
                         EndToEndTestServerPush,
-                        ::testing::ValuesIn(GetTestParams()));
+                        ::testing::ValuesIn(GetTestParams(false)));
 
 TEST_P(EndToEndTestServerPush, ServerPush) {
   ASSERT_TRUE(Initialize());
@@ -3038,7 +3063,7 @@ class EndToEndBufferedPacketsTest : public EndToEndTest {
 
 INSTANTIATE_TEST_CASE_P(EndToEndBufferedPacketsTests,
                         EndToEndBufferedPacketsTest,
-                        testing::ValuesIn(GetTestParams()));
+                        testing::ValuesIn(GetTestParams(false)));
 
 TEST_P(EndToEndBufferedPacketsTest, Buffer0RttRequest) {
   ASSERT_TRUE(Initialize());

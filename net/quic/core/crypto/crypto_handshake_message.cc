@@ -355,7 +355,7 @@ string CryptoHandshakeMessage::DebugStringInternal(
         if (!it->second.empty()) {
           std::unique_ptr<CryptoHandshakeMessage> msg(
               CryptoFramer::ParseMessage(it->second, perspective));
-          if (msg.get()) {
+          if (msg) {
             ret += "\n";
             ret += msg->DebugStringInternal(indent + 1, perspective);
 

@@ -250,6 +250,12 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
     return pending_timer_transmission_count_;
   }
 
+  QuicTime::Delta delayed_ack_time() const { return delayed_ack_time_; }
+
+  void set_delayed_ack_time(QuicTime::Delta delayed_ack_time) {
+    delayed_ack_time_ = delayed_ack_time;
+  }
+
  private:
   friend class test::QuicConnectionPeer;
   friend class test::QuicSentPacketManagerPeer;
@@ -401,6 +407,14 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   bool use_new_rto_;
   // If true, use a more conservative handshake retransmission policy.
   bool conservative_handshake_retransmits_;
+  // The minimum TLP timeout.
+  QuicTime::Delta min_tlp_timeout_;
+  // The minimum RTO.
+  QuicTime::Delta min_rto_timeout_;
+  // Whether to use IETF style TLP that includes the max ack delay.
+  bool ietf_style_tlp_;
+  // IETF style TLP, but with a 2x multiplier instead of 1.5x.
+  bool ietf_style_2x_tlp_;
 
   // Vectors packets acked and lost as a result of the last congestion event.
   AckedPacketVector packets_acked_;
@@ -426,6 +440,10 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   // The largest acked value that was sent in an ack, which has then been acked.
   QuicPacketNumber largest_packet_peer_knows_is_acked_;
+
+  // The maximum amount of time to wait before sending an acknowledgement.
+  // The recovery code assumes the delayed ack time is the same on both sides.
+  QuicTime::Delta delayed_ack_time_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSentPacketManager);
 };

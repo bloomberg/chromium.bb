@@ -9,6 +9,7 @@
 #include "net/quic/core/quic_data_writer.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/platform/api/quic_fallthrough.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 
@@ -28,7 +29,7 @@ class OneShotVisitor : public CryptoFramerVisitorInterface {
   void OnError(CryptoFramer* framer) override { error_ = true; }
 
   void OnHandshakeMessage(const CryptoHandshakeMessage& message) override {
-    out_.reset(new CryptoHandshakeMessage(message));
+    out_ = QuicMakeUnique<CryptoHandshakeMessage>(message);
   }
 
   bool error() const { return error_; }

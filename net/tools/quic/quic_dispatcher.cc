@@ -897,6 +897,11 @@ class StatelessRejectorProcessDoneCallback
 
 void QuicDispatcher::MaybeRejectStatelessly(QuicConnectionId connection_id,
                                             ParsedQuicVersion version) {
+  if (version.handshake_protocol == PROTOCOL_TLS1_3) {
+    ProcessUnauthenticatedHeaderFate(kFateProcess, connection_id);
+    return;
+    // TODO(nharper): Support buffering non-ClientHello packets when using TLS.
+  }
   // TODO(rch): This logic should probably live completely inside the rejector.
   if (!FLAGS_quic_allow_chlo_buffering ||
       !GetQuicReloadableFlag(quic_use_cheap_stateless_rejects) ||

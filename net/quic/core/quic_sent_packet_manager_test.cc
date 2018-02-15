@@ -1950,7 +1950,166 @@ TEST_P(QuicSentPacketManagerTest, NegotiateNConnectionFromOptions) {
   manager_.SetNumOpenStreams(5);
 }
 
-TEST_P(QuicSentPacketManagerTest, NegotiateNoTLPFromOptionsAtServer) {
+TEST_F(QuicSentPacketManagerTest,
+       DISABLED_NegotiateNoMinTLPFromOptionsAtServer) {
+  SetQuicReloadableFlag(quic_max_ack_delay2, true);
+  QuicConfig config;
+  QuicTagVector options;
+
+  options.push_back(kMAD2);
+  QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
+  EXPECT_CALL(*network_change_visitor_, OnCongestionChange());
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  EXPECT_CALL(*send_algorithm_, PacingRate(_))
+      .WillRepeatedly(Return(QuicBandwidth::Zero()));
+  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+      .WillOnce(Return(10 * kDefaultTCPMSS));
+  manager_.SetFromConfig(config);
+  // Set the initial RTT to 1us.
+  QuicSentPacketManagerPeer::GetRttStats(&manager_)->set_initial_rtt(
+      QuicTime::Delta::FromMicroseconds(1));
+  // The TLP with fewer than 2 packets outstanding includes 1/2 min RTO(200ms).
+  EXPECT_EQ(QuicTime::Delta::FromMicroseconds(100002),
+            QuicSentPacketManagerPeer::GetTailLossProbeDelay(&manager_));
+
+  // Send two packets, and the TLP should be 2 us.
+  SendDataPacket(1);
+  SendDataPacket(2);
+  EXPECT_EQ(QuicTime::Delta::FromMicroseconds(2),
+            QuicSentPacketManagerPeer::GetTailLossProbeDelay(&manager_));
+}
+
+TEST_F(QuicSentPacketManagerTest,
+       DISABLED_NegotiateNoMinTLPFromOptionsAtClient) {
+  SetQuicReloadableFlag(quic_max_ack_delay2, true);
+  QuicConfig client_config;
+  QuicTagVector options;
+
+  options.push_back(kMAD2);
+  QuicSentPacketManagerPeer::SetPerspective(&manager_, Perspective::IS_CLIENT);
+  client_config.SetConnectionOptionsToSend(options);
+  EXPECT_CALL(*network_change_visitor_, OnCongestionChange());
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  EXPECT_CALL(*send_algorithm_, PacingRate(_))
+      .WillRepeatedly(Return(QuicBandwidth::Zero()));
+  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+      .WillOnce(Return(10 * kDefaultTCPMSS));
+  manager_.SetFromConfig(client_config);
+  // Set the initial RTT to 1us.
+  QuicSentPacketManagerPeer::GetRttStats(&manager_)->set_initial_rtt(
+      QuicTime::Delta::FromMicroseconds(1));
+  // The TLP with fewer than 2 packets outstanding includes 1/2 min RTO(200ms).
+  EXPECT_EQ(QuicTime::Delta::FromMicroseconds(100002),
+            QuicSentPacketManagerPeer::GetTailLossProbeDelay(&manager_));
+
+  // Send two packets, and the TLP should be 2 us.
+  SendDataPacket(1);
+  SendDataPacket(2);
+  EXPECT_EQ(QuicTime::Delta::FromMicroseconds(2),
+            QuicSentPacketManagerPeer::GetTailLossProbeDelay(&manager_));
+}
+
+TEST_F(QuicSentPacketManagerTest,
+       DISABLED_NegotiateIETFTLPFromOptionsAtServer) {
+  SetQuicReloadableFlag(quic_max_ack_delay2, true);
+  SetQuicReloadableFlag(quic_min_rtt_ack_delay, true);
+  QuicConfig config;
+  QuicTagVector options;
+
+  options.push_back(kMAD4);
+  QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
+  EXPECT_CALL(*network_change_visitor_, OnCongestionChange());
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  manager_.SetFromConfig(config);
+  // Provide an RTT measurement of 100ms.
+  RttStats* rtt_stats = const_cast<RttStats*>(manager_.GetRttStats());
+  rtt_stats->UpdateRtt(QuicTime::Delta::FromMilliseconds(100),
+                       QuicTime::Delta::Zero(), QuicTime::Zero());
+  // Expect 1.5x * SRTT + 0ms MAD
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(150),
+            QuicSentPacketManagerPeer::GetTailLossProbeDelay(&manager_));
+  // Expect 1.5x * SRTT + 50ms MAD
+  rtt_stats->UpdateRtt(QuicTime::Delta::FromMilliseconds(150),
+                       QuicTime::Delta::FromMilliseconds(50), QuicTime::Zero());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(100), rtt_stats->smoothed_rtt());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(200),
+            QuicSentPacketManagerPeer::GetTailLossProbeDelay(&manager_));
+}
+
+TEST_F(QuicSentPacketManagerTest,
+       DISABLED_NegotiateIETFTLPFromOptionsAtClient) {
+  SetQuicReloadableFlag(quic_max_ack_delay2, true);
+  SetQuicReloadableFlag(quic_min_rtt_ack_delay, true);
+  QuicConfig client_config;
+  QuicTagVector options;
+
+  options.push_back(kMAD4);
+  QuicSentPacketManagerPeer::SetPerspective(&manager_, Perspective::IS_CLIENT);
+  client_config.SetConnectionOptionsToSend(options);
+  EXPECT_CALL(*network_change_visitor_, OnCongestionChange());
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  manager_.SetFromConfig(client_config);
+  // Provide an RTT measurement of 100ms.
+  RttStats* rtt_stats = const_cast<RttStats*>(manager_.GetRttStats());
+  rtt_stats->UpdateRtt(QuicTime::Delta::FromMilliseconds(100),
+                       QuicTime::Delta::Zero(), QuicTime::Zero());
+  // Expect 1.5x * SRTT + 0ms MAD
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(150),
+            QuicSentPacketManagerPeer::GetTailLossProbeDelay(&manager_));
+  // Expect 1.5x * SRTT + 50ms MAD
+  rtt_stats->UpdateRtt(QuicTime::Delta::FromMilliseconds(150),
+                       QuicTime::Delta::FromMilliseconds(50), QuicTime::Zero());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(100), rtt_stats->smoothed_rtt());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(200),
+            QuicSentPacketManagerPeer::GetTailLossProbeDelay(&manager_));
+}
+
+TEST_F(QuicSentPacketManagerTest,
+       DISABLED_NegotiateNoMinRTOFromOptionsAtServer) {
+  SetQuicReloadableFlag(quic_max_ack_delay2, true);
+  QuicConfig config;
+  QuicTagVector options;
+
+  options.push_back(kMAD3);
+  QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
+  EXPECT_CALL(*network_change_visitor_, OnCongestionChange());
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  manager_.SetFromConfig(config);
+  // Provide one RTT measurement, because otherwise we use the default of 500ms.
+  RttStats* rtt_stats = const_cast<RttStats*>(manager_.GetRttStats());
+  rtt_stats->UpdateRtt(QuicTime::Delta::FromMicroseconds(1),
+                       QuicTime::Delta::Zero(), QuicTime::Zero());
+  EXPECT_EQ(QuicTime::Delta::FromMicroseconds(1),
+            QuicSentPacketManagerPeer::GetRetransmissionDelay(&manager_));
+  // The TLP with fewer than 2 packets outstanding includes 1/2 min RTO(0ms).
+  EXPECT_EQ(QuicTime::Delta::FromMicroseconds(2),
+            QuicSentPacketManagerPeer::GetTailLossProbeDelay(&manager_));
+}
+
+TEST_F(QuicSentPacketManagerTest,
+       DISABLED_NegotiateNoMinRTOFromOptionsAtClient) {
+  SetQuicReloadableFlag(quic_max_ack_delay2, true);
+  QuicConfig client_config;
+  QuicTagVector options;
+
+  options.push_back(kMAD3);
+  QuicSentPacketManagerPeer::SetPerspective(&manager_, Perspective::IS_CLIENT);
+  client_config.SetConnectionOptionsToSend(options);
+  EXPECT_CALL(*network_change_visitor_, OnCongestionChange());
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  manager_.SetFromConfig(client_config);
+  // Provide one RTT measurement, because otherwise we use the default of 500ms.
+  RttStats* rtt_stats = const_cast<RttStats*>(manager_.GetRttStats());
+  rtt_stats->UpdateRtt(QuicTime::Delta::FromMicroseconds(1),
+                       QuicTime::Delta::Zero(), QuicTime::Zero());
+  EXPECT_EQ(QuicTime::Delta::FromMicroseconds(1),
+            QuicSentPacketManagerPeer::GetRetransmissionDelay(&manager_));
+  // The TLP with fewer than 2 packets outstanding includes 1/2 min RTO(0ms).
+  EXPECT_EQ(QuicTime::Delta::FromMicroseconds(2),
+            QuicSentPacketManagerPeer::GetTailLossProbeDelay(&manager_));
+}
+
+TEST_F(QuicSentPacketManagerTest, DISABLED_NegotiateNoTLPFromOptionsAtServer) {
   QuicConfig config;
   QuicTagVector options;
 
