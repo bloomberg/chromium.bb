@@ -15,11 +15,8 @@
       }
   `);
 
-  ConsoleTestRunner.addConsoleSniffer(step1);
   TestRunner.evaluateInPage('loadScript()');
-
-  function step1() {
-    ConsoleTestRunner.dumpConsoleMessages();
-    TestRunner.completeTest();
-  }
+  await ConsoleTestRunner.waitForConsoleMessagesPromise(1);
+  ConsoleTestRunner.dumpConsoleMessages();
+  TestRunner.completeTest();
 })();

@@ -23,7 +23,7 @@
   TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, 'loadingFinished', loadingFinished, true);
 
   function loadingFinished(requestId) {
-    var request = SDKBrowser.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
+    var request = BrowserSDK.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
     request.requestContent().then(contentReceived.bind(this, request));
   }
   function contentReceived(request, content) {

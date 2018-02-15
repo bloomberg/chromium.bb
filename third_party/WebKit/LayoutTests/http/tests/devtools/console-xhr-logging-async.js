@@ -17,9 +17,10 @@
   function step1() {
     Common.settingForTest('monitoringXHREnabled').set(true);
     makeRequest(() => {
-      TestRunner.deprecatedRunAfterPendingDispatches(() => {
+      TestRunner.deprecatedRunAfterPendingDispatches(async () => {
         TestRunner.addResult('XHR with logging enabled: ');
         // Sorting console messages to prevent flakiness.
+        await ConsoleTestRunner.renderCompleteMessages();
         TestRunner.addResults(ConsoleTestRunner.dumpConsoleMessagesIntoArray().sort());
         Console.ConsoleView.clearConsole();
         step2();

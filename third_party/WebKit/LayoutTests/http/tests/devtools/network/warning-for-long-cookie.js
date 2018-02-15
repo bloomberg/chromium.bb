@@ -13,11 +13,11 @@
 
   function step1() {
     NetworkTestRunner.makeFetch(
-        'http://127.0.0.1:8000/devtools/network/resources/set-cookie.php?length=4097', {}, dumpMessages);
+        'http://127.0.0.1:8000/devtools/network/resources/set-cookie.php?length=4097', {});
   }
 
-  function dumpMessages() {
-    ConsoleTestRunner.dumpConsoleMessages();
-    TestRunner.completeTest();
-  }
+  await ConsoleTestRunner.waitForConsoleMessagesPromise(1);
+
+  ConsoleTestRunner.dumpConsoleMessages();
+  TestRunner.completeTest();
 })();

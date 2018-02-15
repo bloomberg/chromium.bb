@@ -53,23 +53,18 @@
       }
   `);
 
-  step1();
+  TestRunner.addResult('Making requests with monitoring ENABLED');
+  Common.settingForTest('monitoringXHREnabled').set(true);
+  await TestRunner.callFunctionInPageAsync('makeRequests');
+  await ConsoleTestRunner.renderCompleteMessages();
+  ConsoleTestRunner.dumpConsoleMessages();
+  Console.ConsoleView.clearConsole();
 
-  function step1() {
-    Common.settingForTest('monitoringXHREnabled').set(true);
-    TestRunner.callFunctionInPageAsync('makeRequests').then(step2);
-  }
+  TestRunner.addResult('Making requests with monitoring DISABLED');
+  Common.settingForTest('monitoringXHREnabled').set(false);
+  await TestRunner.callFunctionInPageAsync('makeRequests');
+  await ConsoleTestRunner.renderCompleteMessages();
+  ConsoleTestRunner.dumpConsoleMessages();
 
-  function step2() {
-    Common.settingForTest('monitoringXHREnabled').set(false);
-    TestRunner.callFunctionInPageAsync('makeRequests').then(step3);
-  }
-
-  function step3() {
-    function finish() {
-      ConsoleTestRunner.dumpConsoleMessages();
-      TestRunner.completeTest();
-    }
-    TestRunner.deprecatedRunAfterPendingDispatches(finish);
-  }
+  TestRunner.completeTest();
 })();

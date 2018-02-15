@@ -23,7 +23,7 @@
     if (!event.data.url().endsWith('resources/image.png'))
       return;
 
-    var initiatorInfo = SDKBrowser.networkLog.initiatorInfoForRequest(event.data);
+    var initiatorInfo = BrowserSDK.networkLog.initiatorInfoForRequest(event.data);
     var element = new Components.Linkifier().linkifyScriptLocation(
         TestRunner.mainTarget, initiatorInfo.scriptId, initiatorInfo.url, initiatorInfo.lineNumber - 1,
         initiatorInfo.columnNumber - 1);

@@ -29,10 +29,10 @@
   `);
 
   ConsoleTestRunner.addConsoleViewSniffer(addMessage, true);
-
-  function addMessage(uiMessage) {
+  async function addMessage(uiMessage) {
+    var element = await uiMessage.completeElementForTest();
     // There will be only one such message.
-    if (uiMessage.element().deepTextContent().indexOf('non-existent-iframe') !== -1)
+    if (element.deepTextContent().indexOf('non-existent-iframe') !== -1)
       ConsoleTestRunner.expandConsoleMessages(onExpandedMessages);
   }
 
