@@ -118,7 +118,7 @@ PaintLayerScrollableAreaRareData::PaintLayerScrollableAreaRareData() = default;
 const int kResizerControlExpandRatioForTouch = 2;
 
 PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
-    : layer_(layer),
+    : layer_(&layer),
       next_topmost_scroll_child_(nullptr),
       topmost_scroll_child_(nullptr),
       in_resize_mode_(false),
@@ -136,8 +136,7 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
       scroll_corner_(nullptr),
       resizer_(nullptr),
       scroll_anchor_(this),
-      non_composited_main_thread_scrolling_reasons_(0),
-      has_been_disposed_(false) {
+      non_composited_main_thread_scrolling_reasons_(0) {
   Node* node = GetLayoutBox()->GetNode();
   if (node && node->IsElementNode()) {
     // We save and restore only the scrollOffset as the other scroll values are
@@ -152,13 +151,13 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
 }
 
 PaintLayerScrollableArea::~PaintLayerScrollableArea() {
-  DCHECK(has_been_disposed_);
+  DCHECK(HasBeenDisposed());
 }
 
 void PaintLayerScrollableArea::DidScroll(const gfx::ScrollOffset& offset) {
   ScrollableArea::DidScroll(offset);
   // This should be alive if it receives composited scroll callbacks.
-  CHECK(!has_been_disposed_);
+  CHECK(!HasBeenDisposed());
 }
 
 void PaintLayerScrollableArea::Dispose() {
@@ -216,7 +215,11 @@ void PaintLayerScrollableArea::Dispose() {
   if (SmoothScrollSequencer* sequencer = GetSmoothScrollSequencer())
     sequencer->DidDisposeScrollableArea(*this);
 
-  has_been_disposed_ = true;
+  layer_ = nullptr;
+}
+
+bool PaintLayerScrollableArea::HasBeenDisposed() const {
+  return !layer_;
 }
 
 void PaintLayerScrollableArea::Trace(blink::Visitor* visitor) {
@@ -717,10 +720,10 @@ void PaintLayerScrollableArea::ScrollbarVisibilityChanged() {
 
   // Paint properties need to be updated, because clip rects
   // are affected by overlay scrollbars.
-  layer_.GetLayoutObject().SetNeedsPaintPropertyUpdate();
+  layer_->GetLayoutObject().SetNeedsPaintPropertyUpdate();
 
   // TODO(chrishr): this should be able to be removed.
-  layer_.ClearClipRects();
+  layer_->ClearClipRects();
 
   if (LayoutView* view = GetLayoutBox()->View())
     view->ClearHitTestCache();
@@ -744,7 +747,7 @@ IntRect PaintLayerScrollableArea::ScrollableAreaBoundingBox() const {
 }
 
 void PaintLayerScrollableArea::RegisterForAnimation() {
-  if (has_been_disposed_)
+  if (HasBeenDisposed())
     return;
   if (LocalFrame* frame = GetLayoutBox()->GetFrame()) {
     if (LocalFrameView* frame_view = frame->View())
@@ -753,7 +756,7 @@ void PaintLayerScrollableArea::RegisterForAnimation() {
 }
 
 void PaintLayerScrollableArea::DeregisterForAnimation() {
-  if (has_been_disposed_)
+  if (HasBeenDisposed())
     return;
   if (LocalFrame* frame = GetLayoutBox()->GetFrame()) {
     if (LocalFrameView* frame_view = frame->View())
@@ -803,11 +806,11 @@ int PaintLayerScrollableArea::PageStep(ScrollbarOrientation orientation) const {
 }
 
 LayoutBox* PaintLayerScrollableArea::GetLayoutBox() const {
-  return layer_.GetLayoutBox();
+  return layer_->GetLayoutBox();
 }
 
 PaintLayer* PaintLayerScrollableArea::Layer() const {
-  return &layer_;
+  return layer_;
 }
 
 LayoutUnit PaintLayerScrollableArea::ScrollWidth() const {
@@ -1578,7 +1581,7 @@ void PaintLayerScrollableArea::PositionOverflowControls() {
     return;
 
   const IntRect border_box =
-      GetLayoutBox()->PixelSnappedBorderBoxRect(layer_.SubpixelAccumulation());
+      GetLayoutBox()->PixelSnappedBorderBoxRect(layer_->SubpixelAccumulation());
 
   if (Scrollbar* vertical_scrollbar = VerticalScrollbar())
     vertical_scrollbar->SetFrameRect(RectForVerticalScrollbar(border_box));
@@ -2048,7 +2051,7 @@ void PaintLayerScrollableArea::UpdateScrollableAreaSet() {
     frame_view->RemoveScrollableArea(this);
   }
 
-  layer_.DidUpdateScrollsOverflow();
+  layer_->DidUpdateScrollsOverflow();
 }
 
 void PaintLayerScrollableArea::UpdateCompositingLayersAfterScroll() {
@@ -2248,18 +2251,18 @@ void PaintLayerScrollableArea::ResetRebuildScrollbarLayerFlags() {
 
 CompositorAnimationHost* PaintLayerScrollableArea::GetCompositorAnimationHost()
     const {
-  return layer_.GetLayoutObject().GetFrameView()->GetCompositorAnimationHost();
+  return layer_->GetLayoutObject().GetFrameView()->GetCompositorAnimationHost();
 }
 
 CompositorAnimationTimeline*
 PaintLayerScrollableArea::GetCompositorAnimationTimeline() const {
-  return layer_.GetLayoutObject()
+  return layer_->GetLayoutObject()
       .GetFrameView()
       ->GetCompositorAnimationTimeline();
 }
 
 void PaintLayerScrollableArea::GetTickmarks(Vector<IntRect>& tickmarks) const {
-  if (layer_.IsRootLayer()) {
+  if (layer_->IsRootLayer()) {
     tickmarks = GetLayoutBox()
                     ->GetDocument()
                     .Markers()
