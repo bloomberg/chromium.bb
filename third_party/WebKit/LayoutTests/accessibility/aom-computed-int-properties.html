@@ -2,7 +2,6 @@
 <script src="../resources/gc.js"></script>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="./idle-promise-helpers.js"></script>
 
 <!--
 
@@ -24,7 +23,7 @@ test(function(t) {
     assert_true(internals.runtimeFlags.accessibilityObjectModelEnabled);
 }, "Make sure that Accessibility Object Model is enabled");
 
-promise_test(async function(test) {
+test(async function(test) {
     var element = document.getElementById("no-int-props");
     computedAXNode = await window.getComputedAccessibleNode(element);
     assert_equals(computedAXNode.role, "button");
@@ -39,7 +38,7 @@ promise_test(async function(test) {
     assert_equals(computedAXNode.setSize, null);
 }, "computedAccessibleNode has nullable int properties.");
 
-promise_test(async function(test) {
+test(async function(test) {
     var listitem = document.getElementById("listitem");
     computedAXNode = await window.getComputedAccessibleNode(listitem);
     assert_equals(computedAXNode.posInSet, 3);
@@ -54,7 +53,7 @@ promise_test(async function(test) {
 
 <script>
 
-promise_test(async function(test) {
+test(async function(test) {
     var heading1 = document.getElementById("first-heading");
     var heading2 = document.getElementById("second-heading");
     var heading3 = document.getElementById("third-heading");
