@@ -766,13 +766,9 @@ void WallpaperController::PrepareWallpaperForLockScreenChange(bool locking) {
   bool needs_blur = locking && IsBlurEnabled();
   if (needs_blur != is_wallpaper_blurred_) {
     for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
-      WallpaperWidgetController* wallpaper_widget_controller =
-          root_window_controller->wallpaper_widget_controller();
-      if (wallpaper_widget_controller) {
-        wallpaper_widget_controller->SetWallpaperBlur(
-            needs_blur ? login_constants::kBlurSigma
-                       : login_constants::kClearBlurSigma);
-      }
+      root_window_controller->wallpaper_widget_controller()->SetWallpaperBlur(
+          needs_blur ? login_constants::kBlurSigma
+                     : login_constants::kClearBlurSigma);
     }
     is_wallpaper_blurred_ = needs_blur;
     // TODO(crbug.com/776464): Replace the observer with mojo calls so that
@@ -1419,26 +1415,12 @@ void WallpaperController::FlushForTesting() {
 }
 
 void WallpaperController::InstallDesktopController(aura::Window* root_window) {
-  WallpaperWidgetController* component = nullptr;
-  int container_id = GetWallpaperContainerId(locked_);
-
-  switch (wallpaper_mode_) {
-    case WALLPAPER_IMAGE: {
-      component = new WallpaperWidgetController(
-          CreateWallpaper(root_window, container_id));
-      break;
-    }
-    case WALLPAPER_NONE:
-      NOTREACHED();
-      return;
-  }
+  DCHECK_EQ(WALLPAPER_IMAGE, wallpaper_mode_);
 
   bool is_wallpaper_blurred = false;
   auto* session_controller = Shell::Get()->session_controller();
-  if (session_controller->IsUserSessionBlocked() && IsBlurEnabled()) {
-    component->SetWallpaperBlur(login_constants::kBlurSigma);
+  if (session_controller->IsUserSessionBlocked() && IsBlurEnabled())
     is_wallpaper_blurred = true;
-  }
 
   if (is_wallpaper_blurred_ != is_wallpaper_blurred) {
     is_wallpaper_blurred_ = is_wallpaper_blurred;
@@ -1448,11 +1430,13 @@ void WallpaperController::InstallDesktopController(aura::Window* root_window) {
       observer.OnWallpaperBlurChanged();
   }
 
-  RootWindowController* controller =
-      RootWindowController::ForWindow(root_window);
-  controller->SetAnimatingWallpaperWidgetController(
-      new AnimatingWallpaperWidgetController(component));
-  component->StartAnimating(controller);
+  const int container_id = GetWallpaperContainerId(locked_);
+  RootWindowController::ForWindow(root_window)
+      ->wallpaper_widget_controller()
+      ->SetWallpaperWidget(CreateWallpaperWidget(root_window, container_id),
+                           is_wallpaper_blurred
+                               ? login_constants::kBlurSigma
+                               : login_constants::kClearBlurSigma);
 }
 
 void WallpaperController::InstallDesktopControllerForAllWindows() {
@@ -1464,27 +1448,9 @@ void WallpaperController::InstallDesktopControllerForAllWindows() {
 bool WallpaperController::ReparentWallpaper(int container) {
   bool moved = false;
   for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
-    // In the steady state (no animation playing) the wallpaper widget
-    // controller exists in the RootWindowController.
-    WallpaperWidgetController* wallpaper_widget_controller =
-        root_window_controller->wallpaper_widget_controller();
-    if (wallpaper_widget_controller) {
-      moved |= wallpaper_widget_controller->Reparent(
-          root_window_controller->GetRootWindow(), container);
-    }
-    // During wallpaper show animations the controller lives in
-    // AnimatingWallpaperWidgetController owned by RootWindowController.
-    // NOTE: If an image load happens during a wallpaper show animation there
-    // can temporarily be two wallpaper widgets. We must reparent both of them,
-    // one above and one here.
-    WallpaperWidgetController* animating_controller =
-        root_window_controller->animating_wallpaper_widget_controller()
-            ? root_window_controller->animating_wallpaper_widget_controller()
-                  ->GetController(false)
-            : nullptr;
-    if (animating_controller) {
-      moved |= animating_controller->Reparent(
-          root_window_controller->GetRootWindow(), container);
+    if (root_window_controller->wallpaper_widget_controller()->Reparent(
+            root_window_controller->GetRootWindow(), container)) {
+      moved = true;
     }
   }
   return moved;

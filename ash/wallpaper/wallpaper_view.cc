@@ -234,7 +234,8 @@ void WallpaperView::ShowContextMenuForView(views::View* source,
   ShellPort::Get()->ShowContextMenu(point, source_type);
 }
 
-views::Widget* CreateWallpaper(aura::Window* root_window, int container_id) {
+views::Widget* CreateWallpaperWidget(aura::Window* root_window,
+                                     int container_id) {
   WallpaperController* controller = Shell::Get()->wallpaper_controller();
   WallpaperDelegate* wallpaper_delegate = Shell::Get()->wallpaper_delegate();
 
@@ -258,7 +259,8 @@ views::Widget* CreateWallpaper(aura::Window* root_window, int container_id) {
   // 4. From an empty background, guest user logged in.
   if (wallpaper_delegate->ShouldShowInitialAnimation() ||
       RootWindowController::ForWindow(root_window)
-          ->animating_wallpaper_widget_controller() ||
+          ->wallpaper_widget_controller()
+          ->IsAnimating() ||
       Shell::Get()->session_controller()->NumberOfLoggedInUsers()) {
     ::wm::SetWindowVisibilityAnimationTransition(wallpaper_window,
                                                  ::wm::ANIMATE_SHOW);

@@ -39,7 +39,8 @@ class WallpaperView : public views::View, public views::ContextMenuController {
   DISALLOW_COPY_AND_ASSIGN(WallpaperView);
 };
 
-views::Widget* CreateWallpaper(aura::Window* root_window, int container_id);
+views::Widget* CreateWallpaperWidget(aura::Window* root_window,
+                                     int container_id);
 
 }  // namespace ash
 
