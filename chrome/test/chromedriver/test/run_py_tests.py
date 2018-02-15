@@ -1664,9 +1664,11 @@ class ChromeDriverPageLoadTimeoutTest(ChromeDriverBaseTestWithWebServer):
         chrome_switches=['host-resolver-rules=MAP * 127.0.0.1'])
     self._initial_url = self.GetHttpUrlForFile('/chromedriver/empty.html')
     self._driver.Load(self._initial_url)
-    # NB: With a too small timeout chromedriver might not send the
-    # Navigate command at all.
-    self._driver.SetTimeout('page load', 500) # 500 ms
+    # When send_response_event is set, navigating to the hang URL takes only
+    # about 0.1 second on Linux and Windows, but takes about 0.4 to 0.6 second
+    # on Mac. So we use a timeout of 1 second on Mac, 0.5 second on others.
+    timeout = 1000 if util.GetPlatformName() == 'mac' else 500
+    self._driver.SetTimeout('page load', timeout)
 
   def tearDown(self):
     super(ChromeDriverPageLoadTimeoutTest, self).tearDown()
