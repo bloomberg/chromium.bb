@@ -574,6 +574,8 @@ jumbo_component("platform") {
     "bindings/TraceWrapperBase.h",
     "bindings/TraceWrapperMember.h",
     "bindings/TraceWrapperV8Reference.h",
+    "bindings/TraceWrapperV8String.cpp",
+    "bindings/TraceWrapperV8String.h",
     "bindings/V0CustomElementBinding.cpp",
     "bindings/V0CustomElementBinding.h",
     "bindings/V8Binding.cpp",

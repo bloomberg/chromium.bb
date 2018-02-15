@@ -31,7 +31,6 @@
 #ifndef InspectorNetworkAgent_h
 #define InspectorNetworkAgent_h
 
-#include "bindings/core/v8/ScriptString.h"
 #include "core/CoreExport.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorBaseAgent.h"

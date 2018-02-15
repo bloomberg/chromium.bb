@@ -340,7 +340,8 @@ XMLHttpRequest::State XMLHttpRequest::readyState() const {
   return state_;
 }
 
-ScriptString XMLHttpRequest::responseText(ExceptionState& exception_state) {
+v8::Local<v8::String> XMLHttpRequest::responseText(
+    ExceptionState& exception_state) {
   if (response_type_code_ != kResponseTypeDefault &&
       response_type_code_ != kResponseTypeText) {
     exception_state.ThrowDOMException(kInvalidStateError,
@@ -348,19 +349,19 @@ ScriptString XMLHttpRequest::responseText(ExceptionState& exception_state) {
                                       "object's 'responseType' is '' or 'text' "
                                       "(was '" +
                                           responseType() + "').");
-    return ScriptString();
+    return v8::Local<v8::String>();
   }
   if (error_ || (state_ != kLoading && state_ != kDone))
-    return ScriptString();
-  return response_text_;
+    return v8::Local<v8::String>();
+  return response_text_.V8Value(isolate_);
 }
 
-ScriptString XMLHttpRequest::ResponseJSONSource() {
+v8::Local<v8::String> XMLHttpRequest::ResponseJSONSource() {
   DCHECK_EQ(response_type_code_, kResponseTypeJSON);
 
   if (error_ || state_ != kDone)
-    return ScriptString();
-  return response_text_;
+    return v8::Local<v8::String>();
+  return response_text_.V8Value(isolate_);
 }
 
 void XMLHttpRequest::InitResponseDocument() {
@@ -408,7 +409,7 @@ Document* XMLHttpRequest::responseXML(ExceptionState& exception_state) {
     if (!response_document_)
       return nullptr;
 
-    response_document_->SetContent(response_text_.FlattenToString());
+    response_document_->SetContent(response_text_.Flatten(isolate_));
     if (!response_document_->WellFormed())
       response_document_ = nullptr;
 
@@ -1686,7 +1687,7 @@ void XMLHttpRequest::DidFinishLoadingInternal() {
   if (decoder_) {
     auto text = decoder_->Flush();
     if (!text.IsEmpty() && !response_text_overflow_) {
-      response_text_ = response_text_.ConcatenateWith(text);
+      response_text_.Concat(isolate_, text);
       response_text_overflow_ = response_text_.IsEmpty();
     }
   }
@@ -1892,7 +1893,7 @@ void XMLHttpRequest::DidReceiveData(const char* data, unsigned len) {
 
     auto text = decoder_->Decode(data, len);
     if (!text.IsEmpty() && !response_text_overflow_) {
-      response_text_ = response_text_.ConcatenateWith(text);
+      response_text_.Concat(isolate_, text);
       response_text_overflow_ = response_text_.IsEmpty();
     }
   } else if (response_type_code_ == kResponseTypeArrayBuffer ||
@@ -2022,6 +2023,7 @@ void XMLHttpRequest::TraceWrappers(
   visitor->TraceWrappers(response_blob_);
   visitor->TraceWrappers(response_document_);
   visitor->TraceWrappers(response_array_buffer_);
+  visitor->TraceWrappers(response_text_);
   XMLHttpRequestEventTarget::TraceWrappers(visitor);
 }
 
