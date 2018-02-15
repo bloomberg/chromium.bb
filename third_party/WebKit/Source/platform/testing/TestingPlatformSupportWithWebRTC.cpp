@@ -87,11 +87,6 @@ void MockWebRTCPeerConnectionHandler::GetStats(const WebRTCStatsRequest&) {}
 void MockWebRTCPeerConnectionHandler::GetStats(
     std::unique_ptr<WebRTCStatsReportCallback>) {}
 
-WebVector<std::unique_ptr<WebRTCRtpSender>>
-MockWebRTCPeerConnectionHandler::GetSenders() {
-  return WebVector<std::unique_ptr<WebRTCRtpSender>>();
-}
-
 std::unique_ptr<WebRTCRtpSender> MockWebRTCPeerConnectionHandler::AddTrack(
     const WebMediaStreamTrack&,
     const WebVector<WebMediaStream>&) {

@@ -1250,24 +1250,12 @@ ScriptPromise RTCPeerConnection::getStats(ScriptState* script_state) {
   return promise;
 }
 
-HeapVector<Member<RTCRtpSender>> RTCPeerConnection::getSenders() const {
-  HeapVector<Member<RTCRtpSender>> rtp_senders;
-  // |rtp_senders_| and lower layer GetSenders() should match, but we still
-  // invoke GetSenders() to get a predictable list order.
-  // TODO(hbos): Change |rtp_senders_| from a map to a list and stop relying on
-  // GetSenders(). https://crbug.com/803021
-  WebVector<std::unique_ptr<WebRTCRtpSender>> web_rtp_senders =
-      peer_handler_->GetSenders();
-  for (size_t i = 0; i < web_rtp_senders.size(); ++i) {
-    uintptr_t id = web_rtp_senders[i]->Id();
-    const auto it = rtp_senders_.find(id);
-    DCHECK(it != rtp_senders_.end());
-    rtp_senders.push_back(it->value);
-  }
-  return rtp_senders;
+const HeapVector<Member<RTCRtpSender>>& RTCPeerConnection::getSenders() const {
+  return rtp_senders_;
 }
 
-HeapVector<Member<RTCRtpReceiver>> RTCPeerConnection::getReceivers() const {
+const HeapVector<Member<RTCRtpReceiver>>& RTCPeerConnection::getReceivers()
+    const {
   return rtp_receivers_;
 }
 
@@ -1286,8 +1274,7 @@ RTCRtpSender* RTCPeerConnection::addTrack(MediaStreamTrack* track,
         "Adding a track to multiple streams is not supported.");
     return nullptr;
   }
-  for (const auto sender_entry : rtp_senders_) {
-    RTCRtpSender* sender = sender_entry.value;
+  for (const auto& sender : rtp_senders_) {
     if (sender->track() == track) {
       exception_state.ThrowDOMException(
           kInvalidAccessError, "A sender already exists for the track.");
@@ -1307,12 +1294,11 @@ RTCRtpSender* RTCPeerConnection::addTrack(MediaStreamTrack* track,
     return nullptr;
   }
 
-  uintptr_t id = web_rtp_sender->Id();
-  DCHECK(rtp_senders_.find(id) == rtp_senders_.end());
+  DCHECK(FindSender(*web_rtp_sender) == rtp_senders_.end());
   RTCRtpSender* rtp_sender =
       new RTCRtpSender(this, std::move(web_rtp_sender), track, streams);
   tracks_.insert(track->Component(), track);
-  rtp_senders_.insert(id, rtp_sender);
+  rtp_senders_.push_back(rtp_sender);
   return rtp_sender;
 }
 
@@ -1321,7 +1307,8 @@ void RTCPeerConnection::removeTrack(RTCRtpSender* sender,
   DCHECK(sender);
   if (ThrowExceptionIfSignalingStateClosed(signaling_state_, exception_state))
     return;
-  if (rtp_senders_.find(sender->web_sender()->Id()) == rtp_senders_.end()) {
+  auto it = FindSender(*sender->web_sender());
+  if (it == rtp_senders_.end()) {
     exception_state.ThrowDOMException(
         kInvalidAccessError,
         "The sender was not created by this peer connection.");
@@ -1340,7 +1327,7 @@ void RTCPeerConnection::removeTrack(RTCRtpSender* sender,
   // being nulled.
   DCHECK(!sender->web_sender()->Track());
   sender->SetTrack(nullptr);
-  rtp_senders_.erase(sender->web_sender()->Id());
+  rtp_senders_.erase(it);
 }
 
 RTCDataChannel* RTCPeerConnection::createDataChannel(
@@ -1392,7 +1379,7 @@ MediaStreamTrack* RTCPeerConnection::GetTrack(
 RTCRtpSender* RTCPeerConnection::FindSenderForTrackAndStream(
     MediaStreamTrack* track,
     MediaStream* stream) {
-  for (const auto& rtp_sender : rtp_senders_.Values()) {
+  for (const auto& rtp_sender : rtp_senders_) {
     if (rtp_sender->track() == track) {
       auto streams = rtp_sender->streams();
       if (streams.size() == 1u && streams[0] == stream)
@@ -1400,6 +1387,15 @@ RTCRtpSender* RTCPeerConnection::FindSenderForTrackAndStream(
     }
   }
   return nullptr;
+}
+
+HeapVector<Member<RTCRtpSender>>::iterator RTCPeerConnection::FindSender(
+    const WebRTCRtpSender& web_sender) {
+  for (auto it = rtp_senders_.begin(); it != rtp_senders_.end(); ++it) {
+    if ((*it)->web_sender()->Id() == web_sender.Id())
+      return it;
+  }
+  return rtp_senders_.end();
 }
 
 HeapVector<Member<RTCRtpReceiver>>::iterator RTCPeerConnection::FindReceiver(
@@ -1422,7 +1418,7 @@ RTCDTMFSender* RTCPeerConnection::createDTMFSender(
     return nullptr;
   }
   bool is_local_track = false;
-  for (const auto& rtp_sender : rtp_senders_.Values()) {
+  for (const auto& rtp_sender : rtp_senders_) {
     if (rtp_sender->track() == track) {
       is_local_track = true;
       break;

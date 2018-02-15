@@ -159,8 +159,8 @@ class MODULES_EXPORT RTCPeerConnection final
                          MediaStreamTrack* selector = nullptr);
   ScriptPromise getStats(ScriptState*);
 
-  HeapVector<Member<RTCRtpSender>> getSenders() const;
-  HeapVector<Member<RTCRtpReceiver>> getReceivers() const;
+  const HeapVector<Member<RTCRtpSender>>& getSenders() const;
+  const HeapVector<Member<RTCRtpReceiver>>& getReceivers() const;
   RTCRtpSender* addTrack(MediaStreamTrack*, MediaStreamVector, ExceptionState&);
   void removeTrack(RTCRtpSender*, ExceptionState&);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(track);
@@ -261,6 +261,8 @@ class MODULES_EXPORT RTCPeerConnection final
   void MaybeFireNegotiationNeeded();
   MediaStreamTrack* GetTrack(const WebMediaStreamTrack&) const;
   RTCRtpSender* FindSenderForTrackAndStream(MediaStreamTrack*, MediaStream*);
+  HeapVector<Member<RTCRtpSender>>::iterator FindSender(
+      const WebRTCRtpSender& web_sender);
   HeapVector<Member<RTCRtpReceiver>>::iterator FindReceiver(
       const WebRTCRtpReceiver& web_receiver);
 
@@ -308,7 +310,7 @@ class MODULES_EXPORT RTCPeerConnection final
   // includes tracks of |rtp_senders_| and |rtp_receivers_|.
   HeapHashMap<WeakMember<MediaStreamComponent>, WeakMember<MediaStreamTrack>>
       tracks_;
-  HeapHashMap<uintptr_t, Member<RTCRtpSender>> rtp_senders_;
+  HeapVector<Member<RTCRtpSender>> rtp_senders_;
   HeapVector<Member<RTCRtpReceiver>> rtp_receivers_;
 
   std::unique_ptr<WebRTCPeerConnectionHandler> peer_handler_;
