@@ -2,7 +2,7 @@
 <grit-part>
   <!-- Security summary strings -->
   <message name="IDS_PAGE_INFO_SECURE_SUMMARY" desc="A short summary phrase at the top of the Page Info bubble (which shows when you click the lock icon) that indicates that the connection to the current website is secure.">
-    Secure connection
+    Connection is secure
   </message>
   <message name="IDS_PAGE_INFO_MIXED_CONTENT_SUMMARY" desc="A one-line summary at the top of the Page Info bubble (which shows when you click the security indicator) if the connection to the current website is using mainly using a secure connection but has some insecure parts (like insecurely loaded images).">
     Your connection to this site is not fully secure
