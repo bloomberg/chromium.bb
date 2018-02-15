@@ -29,11 +29,13 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/button.h"
@@ -182,7 +184,10 @@ int GetActualDialogWidth() {
 void PopulateSheetHeaderView(bool show_back_arrow,
                              std::unique_ptr<views::View> header_content_view,
                              views::ButtonListener* listener,
-                             views::View* container) {
+                             views::View* container,
+                             std::unique_ptr<views::Background> background) {
+  SkColor background_color = background->get_color();
+  container->SetBackground(std::move(background));
   views::GridLayout* layout = container->SetLayoutManager(
       std::make_unique<views::GridLayout>(container));
 
@@ -211,7 +216,9 @@ void PopulateSheetHeaderView(bool show_back_arrow,
     layout->SkipColumns(1);
   } else {
     views::ImageButton* back_arrow = views::CreateVectorImageButton(listener);
-    views::SetImageFromVectorIcon(back_arrow, vector_icons::kBackArrowIcon);
+    views::SetImageFromVectorIcon(
+        back_arrow, vector_icons::kBackArrowIcon,
+        GetForegroundColorForBackground(background_color));
     constexpr int kBackArrowSize = 16;
     back_arrow->SetSize(gfx::Size(kBackArrowSize, kBackArrowSize));
     back_arrow->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
@@ -399,6 +406,16 @@ std::unique_ptr<views::View> CreateShippingOptionLabel(
   }
 
   return container;
+}
+
+SkColor GetForegroundColorForBackground(SkColor background_color) {
+  constexpr double kLightForegroundRatioThreshold = 3;
+  if (color_utils::GetContrastRatio(background_color, SK_ColorWHITE) >=
+      kLightForegroundRatioThreshold) {
+    return SK_ColorWHITE;
+  }
+  views::Label label;
+  return label.enabled_color();
 }
 
 }  // namespace payments

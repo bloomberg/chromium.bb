@@ -120,6 +120,9 @@ class PaymentRequestSheetController : public views::ButtonListener {
   // header.
   virtual std::unique_ptr<views::View> CreateHeaderContentView();
 
+  // Returns the background to use for the header section of the sheet.
+  virtual std::unique_ptr<views::Background> GetHeaderBackground();
+
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 

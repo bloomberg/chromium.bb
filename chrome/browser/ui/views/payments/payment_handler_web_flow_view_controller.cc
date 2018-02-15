@@ -16,6 +16,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
@@ -25,7 +26,10 @@ namespace payments {
 
 class ReadOnlyOriginView : public views::View {
  public:
-  ReadOnlyOriginView(const base::string16& page_title, const GURL& origin) {
+  ReadOnlyOriginView(const base::string16& page_title,
+                     const GURL& origin,
+                     SkColor background_color) {
+    SkColor foreground = GetForegroundColorForBackground(background_color);
     views::GridLayout* layout =
         SetLayoutManager(std::make_unique<views::GridLayout>(this));
 
@@ -34,14 +38,27 @@ class ReadOnlyOriginView : public views::View {
                        views::GridLayout::USE_PREF, 0, 0);
 
     layout->StartRow(0, 0);
-    std::unique_ptr<views::Label> title_label =
-        std::make_unique<views::Label>(page_title);
+    std::unique_ptr<views::Label> title_label = std::make_unique<views::Label>(
+        page_title, views::style::CONTEXT_DIALOG_TITLE);
     title_label->set_id(static_cast<int>(DialogViewID::SHEET_TITLE));
     title_label->SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
+    // Turn off autoreadability because the computed |foreground| color takes
+    // contrast into account.
+    title_label->SetAutoColorReadabilityEnabled(false);
+    title_label->SetEnabledColor(foreground);
+
     layout->AddView(title_label.release());
 
     layout->StartRow(0, 0);
-    layout->AddView(new views::Label(base::UTF8ToUTF16(origin.spec())));
+    views::Label* origin_label =
+        new views::Label(base::UTF8ToUTF16(origin.spec()));
+    // Turn off autoreadability because the computed |foreground| color takes
+    // contrast into account.
+    origin_label->SetAutoColorReadabilityEnabled(false);
+    origin_label->SetEnabledColor(foreground);
+
+    origin_label->SetBackgroundColor(background_color);
+    layout->AddView(origin_label);
   }
   ~ReadOnlyOriginView() override {}
 
@@ -85,7 +102,7 @@ void PaymentHandlerWebFlowViewController::FillContentView(
   // time of first layout (nothing has loaded yet). Because of this, set it to.
   // total_dialog_height - header_height. On the other hand, the width will be
   // properly set so it can be 0 here.
-  web_view->SetPreferredSize(gfx::Size(0, kDialogHeight - 64));
+  web_view->SetPreferredSize(gfx::Size(0, kDialogHeight - 68));
   content_view->AddChildView(web_view.release());
 }
 
@@ -98,7 +115,16 @@ PaymentHandlerWebFlowViewController::CreateHeaderContentView() {
   const GURL origin = web_contents()
                           ? web_contents()->GetLastCommittedURL().GetOrigin()
                           : GURL();
-  return std::make_unique<ReadOnlyOriginView>(GetSheetTitle(), origin);
+  std::unique_ptr<views::Background> background = GetHeaderBackground();
+  return std::make_unique<ReadOnlyOriginView>(GetSheetTitle(), origin,
+                                              background->get_color());
+}
+
+std::unique_ptr<views::Background>
+PaymentHandlerWebFlowViewController::GetHeaderBackground() {
+  if (!web_contents())
+    return PaymentRequestSheetController::GetHeaderBackground();
+  return views::CreateSolidBackground(web_contents()->GetThemeColor());
 }
 
 void PaymentHandlerWebFlowViewController::DidFinishNavigation(

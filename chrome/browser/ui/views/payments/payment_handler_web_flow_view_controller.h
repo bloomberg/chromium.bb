@@ -44,6 +44,7 @@ class PaymentHandlerWebFlowViewController
   void FillContentView(views::View* content_view) override;
   bool ShouldShowSecondaryButton() override;
   std::unique_ptr<views::View> CreateHeaderContentView() override;
+  std::unique_ptr<views::Background> GetHeaderBackground() override;
 
   // content::WebContentsObserver:
   void DidFinishNavigation(
