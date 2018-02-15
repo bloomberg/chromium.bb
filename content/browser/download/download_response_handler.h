@@ -41,6 +41,7 @@ class DownloadResponseHandler : public network::mojom::URLLoaderClient {
                           bool is_parallel_request,
                           bool is_transient,
                           bool fetch_error_body,
+                          const std::string& request_origin,
                           download::DownloadSource download_source,
                           std::vector<GURL> url_chain);
   ~DownloadResponseHandler() override;
@@ -82,6 +83,7 @@ class DownloadResponseHandler : public network::mojom::URLLoaderClient {
   GURL referrer_;
   bool is_transient_;
   bool fetch_error_body_;
+  std::string request_origin_;
   download::DownloadSource download_source_;
   net::CertStatus cert_status_;
   bool has_strong_validators_;

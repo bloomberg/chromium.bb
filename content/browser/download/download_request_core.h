@@ -54,6 +54,7 @@ class CONTENT_EXPORT DownloadRequestCore
   DownloadRequestCore(net::URLRequest* request,
                       Delegate* delegate,
                       bool is_parallel_request,
+                      const std::string& request_origin,
                       download::DownloadSource download_source);
   ~DownloadRequestCore();
 
@@ -158,6 +159,10 @@ class CONTENT_EXPORT DownloadRequestCore
   // interrupt reason in |abort_reason_| will be used instead of USER_CANCELED
   // which is vague.
   download::DownloadInterruptReason abort_reason_;
+
+  // For downloads originating from custom tabs, this records the origin
+  // of the custom tab.
+  std::string request_origin_;
 
   // Source of the download, used in metrics.
   download::DownloadSource download_source_;

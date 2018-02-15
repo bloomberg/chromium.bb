@@ -183,6 +183,10 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       const DownloadItemImplCreated& on_started,
       uint32_t id);
 
+  // Intercepts the download to another system if applicable. Returns true if
+  // the download was intercepted.
+  bool InterceptDownload(const DownloadCreateInfo& info);
+
   // Create a new active item based on the info.  Separate from
   // StartDownload() for testing.
   DownloadItemImpl* CreateActiveItem(uint32_t id,
