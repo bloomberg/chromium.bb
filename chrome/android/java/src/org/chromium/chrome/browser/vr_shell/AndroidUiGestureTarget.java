@@ -13,7 +13,7 @@ import org.chromium.content.browser.MotionEventSynthesizer;
 /**
  * Forwards events for Java native UI pages to MotionEventSynthesizer.
  */
-@JNINamespace("vr_shell")
+@JNINamespace("vr")
 public class AndroidUiGestureTarget {
     private final MotionEventSynthesizer mMotionEventSynthesizer;
     private final long mNativePointer;

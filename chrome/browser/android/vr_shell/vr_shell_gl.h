@@ -52,19 +52,16 @@ struct MailboxHolder;
 }  // namespace gpu
 
 namespace vr {
+
 class BrowserUiInterface;
 class FPSMeter;
+class GlBrowserInterface;
+class MailboxToSurfaceBridge;
 class SlidingTimeDeltaAverage;
 class Ui;
-struct Assets;
-}  // namespace vr
-
-namespace vr_shell {
-
-class MailboxToSurfaceBridge;
-class GlBrowserInterface;
 class VrController;
 class VrShell;
+struct Assets;
 
 struct WebVrBounds {
   WebVrBounds(const gfx::RectF& left,
@@ -81,7 +78,7 @@ struct WebVrBounds {
 class VrShellGl : public device::mojom::VRPresentationProvider {
  public:
   VrShellGl(GlBrowserInterface* browser_interface,
-            std::unique_ptr<vr::Ui> ui,
+            std::unique_ptr<Ui> ui,
             gvr_context* gvr_api,
             bool reprojected_rendering,
             bool daydream_support,
@@ -96,7 +93,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void OnResume();
   void OnExitPresent();
 
-  base::WeakPtr<vr::BrowserUiInterface> GetBrowserUiWeakPtr();
+  base::WeakPtr<BrowserUiInterface> GetBrowserUiWeakPtr();
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() {
     return task_runner_;
@@ -111,7 +108,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   base::WeakPtr<VrShellGl> GetWeakPtr();
 
-  void SetControllerMesh(std::unique_ptr<vr::ControllerMesh> mesh);
+  void SetControllerMesh(std::unique_ptr<ControllerMesh> mesh);
 
   void ConnectPresentingService(
       device::mojom::VRSubmitFrameClientPtrInfo submit_client_info,
@@ -123,11 +120,11 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   void OnSwapContents(int new_content_id);
 
-  void OnAssetsLoaded(vr::AssetsLoadStatus status,
-                      std::unique_ptr<vr::Assets> assets,
+  void OnAssetsLoaded(AssetsLoadStatus status,
+                      std::unique_ptr<Assets> assets,
                       const base::Version& component_version);
 
-  void EnableAlertDialog(vr::ContentInputForwarder* input_forwarder,
+  void EnableAlertDialog(ContentInputForwarder* input_forwarder,
                          int width,
                          int height);
   void DisableAlertDialog();
@@ -145,7 +142,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void UpdateEyeInfos(const gfx::Transform& head_pose,
                       int viewport_offset,
                       const gfx::Size& render_size,
-                      vr::RenderInfo* out_render_info);
+                      RenderInfo* out_render_info);
   void DrawFrame(int16_t frame_index, base::TimeTicks current_time);
   void DrawIntoAcquiredFrame(int16_t frame_index, base::TimeTicks current_time);
   void DrawFrameSubmitWhenReady(int16_t frame_index,
@@ -156,12 +153,12 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void DrawWebVr();
   bool WebVrPoseByteIsValid(int pose_index_byte);
 
-  void UpdateController(const vr::RenderInfo& render_info,
+  void UpdateController(const RenderInfo& render_info,
                         base::TimeTicks current_time);
 
   void SendImmediateExitRequestIfNecessary();
   void HandleControllerInput(const gfx::Point3F& laser_origin,
-                             const vr::RenderInfo& render_info,
+                             const RenderInfo& render_info,
                              base::TimeTicks current_time);
   void HandleControllerAppButtonActivity(
       const gfx::Vector3dF& controller_direction);
@@ -257,7 +254,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   std::vector<bool> webvr_frame_oustanding_;
   std::vector<gfx::Transform> webvr_head_pose_;
 
-  std::unique_ptr<vr::Ui> ui_;
+  std::unique_ptr<Ui> ui_;
 
   bool web_vr_mode_ = false;
   bool ready_to_draw_ = false;
@@ -296,29 +293,29 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   // Attributes for gesture detection while holding app button.
   gfx::Vector3dF controller_start_direction_;
 
-  vr::FPSMeter vr_ui_fps_meter_;
-  vr::FPSMeter webvr_fps_meter_;
+  FPSMeter vr_ui_fps_meter_;
+  FPSMeter webvr_fps_meter_;
 
   // JS time is from SendVSync (pose time) to incoming JS submitFrame.
-  vr::SlidingTimeDeltaAverage webvr_js_time_;
+  SlidingTimeDeltaAverage webvr_js_time_;
 
   // Render time is from JS submitFrame to estimated render completion.
   // This is an estimate when submitting incomplete frames to GVR.
   // If submitFrame blocks, that means the previous frame wasn't done
   // rendering yet.
-  vr::SlidingTimeDeltaAverage webvr_render_time_;
+  SlidingTimeDeltaAverage webvr_render_time_;
 
   // JS wait time is spent waiting for the previous frame to complete
   // rendering, as reported from the Renderer via mojo.
-  vr::SlidingTimeDeltaAverage webvr_js_wait_time_;
+  SlidingTimeDeltaAverage webvr_js_wait_time_;
 
   // GVR acquire/submit times for scheduling heuristics.
-  vr::SlidingTimeDeltaAverage webvr_acquire_time_;
-  vr::SlidingTimeDeltaAverage webvr_submit_time_;
+  SlidingTimeDeltaAverage webvr_acquire_time_;
+  SlidingTimeDeltaAverage webvr_submit_time_;
 
   gfx::Point3F pointer_start_;
 
-  vr::RenderInfo render_info_primary_;
+  RenderInfo render_info_primary_;
 
   AndroidVSyncHelper vsync_helper_;
 
@@ -333,7 +330,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   bool content_frame_available_ = false;
   gfx::Transform last_used_head_pose_;
 
-  vr::ControllerModel controller_model_;
+  ControllerModel controller_model_;
 
   std::unique_ptr<VrDialog> vr_dialog_;
 
@@ -342,6 +339,6 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   DISALLOW_COPY_AND_ASSIGN(VrShellGl);
 };
 
-}  // namespace vr_shell
+}  // namespace vr
 
 #endif  // CHROME_BROWSER_ANDROID_VR_SHELL_VR_SHELL_GL_H_

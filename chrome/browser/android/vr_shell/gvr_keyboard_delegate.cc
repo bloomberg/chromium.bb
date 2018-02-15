@@ -19,7 +19,7 @@
 // GVR interface.
 bool gvr_keyboard_supports_selection(gvr_keyboard_context* context);
 
-namespace vr_shell {
+namespace vr {
 
 namespace {
 
@@ -61,7 +61,7 @@ GvrKeyboardDelegate::~GvrKeyboardDelegate() {
     gvr_keyboard_destroy(&gvr_keyboard_);
 }
 
-void GvrKeyboardDelegate::SetUiInterface(vr::KeyboardUiInterface* ui) {
+void GvrKeyboardDelegate::SetUiInterface(KeyboardUiInterface* ui) {
   ui_ = ui;
 }
 
@@ -108,7 +108,7 @@ bool GvrKeyboardDelegate::HitTest(const gfx::Point3F& ray_origin,
   return hits;
 }
 
-void GvrKeyboardDelegate::Draw(const vr::CameraModel& model) {
+void GvrKeyboardDelegate::Draw(const CameraModel& model) {
   int eye = model.eye_type;
   gvr::Mat4f view_matrix;
   TransformToGvrMat(model.view_matrix, &view_matrix);
@@ -139,7 +139,7 @@ void GvrKeyboardDelegate::OnButtonUp(const gfx::PointF& position) {
       gvr_keyboard_, gvr::ControllerButton::GVR_CONTROLLER_BUTTON_CLICK, false);
 }
 
-void GvrKeyboardDelegate::UpdateInput(const vr::TextInputInfo& info) {
+void GvrKeyboardDelegate::UpdateInput(const TextInputInfo& info) {
   cached_text_input_info_ = info;
   gvr_keyboard_set_text(gvr_keyboard_, base::UTF16ToUTF8(info.text).c_str());
   gvr_keyboard_set_selection_indices(gvr_keyboard_, info.selection_start,
@@ -173,20 +173,19 @@ void GvrKeyboardDelegate::OnGvrKeyboardEvent(EventType event) {
       auto info = GetTextInfo();
       DCHECK(!pause_keyboard_update_);
       if (info != cached_text_input_info_) {
-        ui_->OnInputEdited(vr::EditedText(info, cached_text_input_info_));
+        ui_->OnInputEdited(EditedText(info, cached_text_input_info_));
         pause_keyboard_update_ = true;
       }
       break;
     }
     case GVR_KEYBOARD_TEXT_COMMITTED:
-      ui_->OnInputCommitted(
-          vr::EditedText(GetTextInfo(), cached_text_input_info_));
+      ui_->OnInputCommitted(EditedText(GetTextInfo(), cached_text_input_info_));
       break;
   }
 }
 
-vr::TextInputInfo GvrKeyboardDelegate::GetTextInfo() {
-  vr::TextInputInfo info;
+TextInputInfo GvrKeyboardDelegate::GetTextInfo() {
+  TextInputInfo info;
   // Get text. Note that we wrap the text in a unique ptr since we're
   // responsible for freeing the memory allocated by gvr_keyboard_get_text.
   std::unique_ptr<char, decltype(std::free)*> scoped_text{
@@ -202,10 +201,10 @@ vr::TextInputInfo GvrKeyboardDelegate::GetTextInfo() {
   info.composition_start = start;
   info.composition_end = end;
   if (info.composition_start == info.composition_end) {
-    info.composition_start = vr::TextInputInfo::kDefaultCompositionIndex;
-    info.composition_end = vr::TextInputInfo::kDefaultCompositionIndex;
+    info.composition_start = TextInputInfo::kDefaultCompositionIndex;
+    info.composition_end = TextInputInfo::kDefaultCompositionIndex;
   }
   return info;
 }
 
-}  // namespace vr_shell
+}  // namespace vr

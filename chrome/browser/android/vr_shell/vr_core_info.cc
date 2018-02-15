@@ -9,7 +9,7 @@
 
 using base::android::JavaParamRef;
 
-namespace vr_shell {
+namespace vr {
 
 VrCoreInfo::VrCoreInfo(int32_t major_version,
                        int32_t minor_version,
@@ -33,4 +33,4 @@ jlong JNI_VrCoreInfo_Init(JNIEnv* env,
                      static_cast<VrCoreCompatibility>(compatibility)));
 }
 
-}  // namespace vr_shell
+}  // namespace vr

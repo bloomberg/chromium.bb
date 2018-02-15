@@ -13,12 +13,9 @@ class NavigationHandle;
 }  // namespace content
 
 namespace vr {
+
 class BrowserUiInterface;
 class ToolbarHelper;
-}  // namespace vr
-
-namespace vr_shell {
-
 class VrShell;
 
 class CONTENT_EXPORT VrWebContentsObserver
@@ -26,11 +23,11 @@ class CONTENT_EXPORT VrWebContentsObserver
  public:
   VrWebContentsObserver(content::WebContents* web_contents,
                         VrShell* vr_shell,
-                        vr::BrowserUiInterface* ui_interface,
-                        vr::ToolbarHelper* toolbar);
+                        BrowserUiInterface* ui_interface,
+                        ToolbarHelper* toolbar);
   ~VrWebContentsObserver() override;
 
-  void SetUiInterface(vr::BrowserUiInterface* ui_interface);
+  void SetUiInterface(BrowserUiInterface* ui_interface);
 
  private:
   // WebContentsObserver implementation.
@@ -51,12 +48,12 @@ class CONTENT_EXPORT VrWebContentsObserver
 
   // This class does not own these pointers.
   VrShell* vr_shell_;
-  vr::BrowserUiInterface* ui_interface_;
-  vr::ToolbarHelper* toolbar_;
+  BrowserUiInterface* ui_interface_;
+  ToolbarHelper* toolbar_;
 
   DISALLOW_COPY_AND_ASSIGN(VrWebContentsObserver);
 };
 
-}  // namespace vr_shell
+}  // namespace vr
 
 #endif  // CHROME_BROWSER_ANDROID_VR_SHELL_VR_WEB_CONTENTS_OBSERVER_H_

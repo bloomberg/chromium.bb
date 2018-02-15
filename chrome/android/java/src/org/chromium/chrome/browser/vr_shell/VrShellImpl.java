@@ -60,7 +60,7 @@ import org.chromium.ui.display.VirtualDisplayAndroid;
 /**
  * This view extends from GvrLayout which wraps a GLSurfaceView that renders VR shell.
  */
-@JNINamespace("vr_shell")
+@JNINamespace("vr")
 public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Callback {
     private static final String TAG = "VrShellImpl";
     private static final float INCHES_TO_METERS = 0.0254f;

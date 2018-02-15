@@ -10,7 +10,7 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/transform.h"
 
-namespace vr_shell {
+namespace vr {
 
 namespace {
 
@@ -23,7 +23,7 @@ constexpr float kMargin = 1.f * M_PI / 180;
 }  // namespace
 
 void GetMinimalFov(const gfx::Transform& view_matrix,
-                   const std::vector<const vr::UiElement*>& elements,
+                   const std::vector<const UiElement*>& elements,
                    const gvr::Rectf& fov_recommended,
                    float z_near,
                    gvr::Rectf* out_fov) {
@@ -128,4 +128,4 @@ void GvrMatToTransform(const gvr::Mat4f& in, gfx::Transform* out) {
   }
 }
 
-}  // namespace vr_shell
+}  // namespace vr

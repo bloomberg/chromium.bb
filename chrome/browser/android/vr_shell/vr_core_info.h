@@ -9,7 +9,7 @@
 
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
-namespace vr_shell {
+namespace vr {
 
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.vr_shell
 enum VrCoreCompatibility {
@@ -31,6 +31,6 @@ struct VrCoreInfo {
              VrCoreCompatibility compatibility);
 };
 
-}  // namespace vr_shell
+}  // namespace vr
 
 #endif  // CHROME_BROWSER_ANDROID_VR_SHELL_VR_CORE_INFO_H_

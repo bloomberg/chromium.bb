@@ -23,19 +23,19 @@
 
 using base::android::JavaParamRef;
 
-namespace vr_shell {
-class VrDialog : public vr::ContentInputDelegate {
+namespace vr {
+class VrDialog : public ContentInputDelegate {
  public:
   VrDialog(int width, int height);
   ~VrDialog() override;
 
-  void SetEventForwarder(vr::ContentInputForwarder* dialog);
+  void SetEventForwarder(ContentInputForwarder* dialog);
   void SetSize(int width, int height);
 
  private:
-  vr::ContentInputForwarder* dialog_ = nullptr;
+  ContentInputForwarder* dialog_ = nullptr;
 
-  // vr::ContentInputDelegate.
+  // ContentInputDelegate.
   void OnContentEnter(const gfx::PointF& normalized_hit_point) override;
   void OnContentLeave() override;
   void OnContentMove(const gfx::PointF& normalized_hit_point) override;
@@ -62,6 +62,6 @@ class VrDialog : public vr::ContentInputDelegate {
   DISALLOW_COPY_AND_ASSIGN(VrDialog);
 };
 
-}  //  namespace vr_shell
+}  //  namespace vr
 
 #endif  // CHROME_BROWSER_ANDROID_VR_SHELL_VR_DIALOG_H_

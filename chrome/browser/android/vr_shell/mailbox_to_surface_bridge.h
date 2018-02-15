@@ -23,7 +23,7 @@ namespace viz {
 class ContextProvider;
 }
 
-namespace vr_shell {
+namespace vr {
 
 class MailboxToSurfaceBridge {
  public:
@@ -60,6 +60,6 @@ class MailboxToSurfaceBridge {
   base::WeakPtrFactory<MailboxToSurfaceBridge> weak_ptr_factory_;
 };
 
-}  // namespace vr_shell
+}  // namespace vr
 
 #endif  // CHROME_BROWSER_ANDROID_VR_SHELL_MAILBOX_TO_SURFACE_BRIDGE_H_

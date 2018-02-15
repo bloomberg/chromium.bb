@@ -71,7 +71,7 @@ import java.util.List;
 /**
  * Manages interactions with the VR Shell.
  */
-@JNINamespace("vr_shell")
+@JNINamespace("vr")
 public class VrShellDelegate
         implements ApplicationStatus.ActivityStateListener, View.OnSystemUiVisibilityChangeListener,
                    ScreenOrientationDelegate {

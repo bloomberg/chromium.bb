@@ -73,7 +73,7 @@ void CloseSdk() {
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
 
-  vr_shell::Java_GvrKeyboardLoaderClient_closeKeyboardSDK(
+  vr::Java_GvrKeyboardLoaderClient_closeKeyboardSDK(
       env, reinterpret_cast<jlong>(sdk_handle));
 
 // Null all the function pointers.
@@ -92,13 +92,13 @@ bool LoadSdk(void* closure, gvr_keyboard_callback callback) {
   CHECK(env);
 
   base::android::ScopedJavaLocalRef<jobject> context_wrapper =
-      vr_shell::Java_GvrKeyboardLoaderClient_getContextWrapper(env);
+      vr::Java_GvrKeyboardLoaderClient_getContextWrapper(env);
 
   base::android::ScopedJavaLocalRef<jobject> remote_class_loader =
-      vr_shell::Java_GvrKeyboardLoaderClient_getRemoteClassLoader(env);
+      vr::Java_GvrKeyboardLoaderClient_getRemoteClassLoader(env);
 
   sdk_handle = reinterpret_cast<void*>(
-      vr_shell::Java_GvrKeyboardLoaderClient_loadKeyboardSDK(env));
+      vr::Java_GvrKeyboardLoaderClient_loadKeyboardSDK(env));
 
   if (!sdk_handle) {
     LOG(ERROR) << "Failed to load GVR keyboard SDK.";

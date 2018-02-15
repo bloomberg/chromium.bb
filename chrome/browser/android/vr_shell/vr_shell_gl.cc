@@ -49,7 +49,7 @@
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/init/gl_factory.h"
 
-namespace vr_shell {
+namespace vr {
 
 namespace {
 static constexpr float kZNear = 0.1f;
@@ -155,7 +155,7 @@ gfx::RectF GfxRectFromUV(gvr::Rectf rect) {
 void LoadControllerMeshTask(
     base::WeakPtr<VrShellGl> weak_vr_shell_gl,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  auto controller_mesh = vr::ControllerMesh::LoadFromResources();
+  auto controller_mesh = ControllerMesh::LoadFromResources();
   if (controller_mesh) {
     task_runner->PostTask(
         FROM_HERE, base::Bind(&VrShellGl::SetControllerMesh, weak_vr_shell_gl,
@@ -166,7 +166,7 @@ void LoadControllerMeshTask(
 }  // namespace
 
 VrShellGl::VrShellGl(GlBrowserInterface* browser_interface,
-                     std::unique_ptr<vr::Ui> ui,
+                     std::unique_ptr<Ui> ui,
                      gvr_context* gvr_api,
                      bool reprojected_rendering,
                      bool daydream_support,
@@ -315,9 +315,9 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
     InitializeRenderer();
 
   ui_->OnGlInitialized(
-      content_texture_id, vr::UiElementRenderer::kTextureLocationExternal,
-      content_overlay_texture_id,
-      vr::UiElementRenderer::kTextureLocationExternal, ui_texture_id, true);
+      content_texture_id, UiElementRenderer::kTextureLocationExternal,
+      content_overlay_texture_id, UiElementRenderer::kTextureLocationExternal,
+      ui_texture_id, true);
 
   webvr_vsync_align_ = base::FeatureList::IsEnabled(features::kWebVrVsyncAlign);
 
@@ -456,13 +456,13 @@ void VrShellGl::OnSwapContents(int new_content_id) {
   ui_->OnSwapContents(new_content_id);
 }
 
-void VrShellGl::OnAssetsLoaded(vr::AssetsLoadStatus status,
-                               std::unique_ptr<vr::Assets> assets,
+void VrShellGl::OnAssetsLoaded(AssetsLoadStatus status,
+                               std::unique_ptr<Assets> assets,
                                const base::Version& component_version) {
   ui_->OnAssetsLoaded(status, std::move(assets), component_version);
 }
 
-void VrShellGl::EnableAlertDialog(vr::ContentInputForwarder* input_forwarder,
+void VrShellGl::EnableAlertDialog(ContentInputForwarder* input_forwarder,
                                   int width,
                                   int height) {
   vr_dialog_.reset(new VrDialog(width, height));
@@ -681,7 +681,7 @@ void VrShellGl::InitializeRenderer() {
                              GetWebVrFrameTransportOptions());
 }
 
-void VrShellGl::UpdateController(const vr::RenderInfo& render_info,
+void VrShellGl::UpdateController(const RenderInfo& render_info,
                                  base::TimeTicks current_time) {
   TRACE_EVENT0("gpu", "VrShellGl::UpdateController");
   gvr::Mat4f gvr_head_pose;
@@ -698,9 +698,9 @@ void VrShellGl::UpdateController(const vr::RenderInfo& render_info,
 }
 
 void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
-                                      const vr::RenderInfo& render_info,
+                                      const RenderInfo& render_info,
                                       base::TimeTicks current_time) {
-  gfx::Vector3dF head_direction = vr::GetForwardVector(render_info.head_pose);
+  gfx::Vector3dF head_direction = GetForwardVector(render_info.head_pose);
   if (is_exiting_) {
     // When we're exiting, we don't show the reticle and the only input
     // processing we do is to handle immediate exits.
@@ -729,33 +729,32 @@ void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
   if (ShouldDrawWebVr())
     return;
 
-  vr::ControllerModel controller_model;
+  ControllerModel controller_model;
   controller_->GetTransform(&controller_model.transform);
   std::unique_ptr<GestureList> gesture_list_ptr = controller_->DetectGestures();
   GestureList& gesture_list = *gesture_list_ptr;
-  controller_model.touchpad_button_state = vr::UiInputManager::ButtonState::UP;
+  controller_model.touchpad_button_state = UiInputManager::ButtonState::UP;
   DCHECK(!(controller_->ButtonUpHappened(gvr::kControllerButtonClick) &&
            controller_->ButtonDownHappened(gvr::kControllerButtonClick)))
       << "Cannot handle a button down and up event within one frame.";
   if (controller_->ButtonState(gvr::kControllerButtonClick)) {
-    controller_model.touchpad_button_state =
-        vr::UiInputManager::ButtonState::DOWN;
+    controller_model.touchpad_button_state = UiInputManager::ButtonState::DOWN;
   }
   controller_model.app_button_state =
       controller_->ButtonState(gvr::kControllerButtonApp)
-          ? vr::UiInputManager::ButtonState::DOWN
-          : vr::UiInputManager::ButtonState::UP;
+          ? UiInputManager::ButtonState::DOWN
+          : UiInputManager::ButtonState::UP;
   controller_model.home_button_state =
       controller_->ButtonState(gvr::kControllerButtonHome)
-          ? vr::UiInputManager::ButtonState::DOWN
-          : vr::UiInputManager::ButtonState::UP;
+          ? UiInputManager::ButtonState::DOWN
+          : UiInputManager::ButtonState::UP;
   controller_model.opacity = controller_->GetOpacity();
   controller_model.laser_direction = controller_direction;
   controller_model.laser_origin = laser_origin;
   controller_model.handedness = controller_->GetHandedness();
   controller_model_ = controller_model;
 
-  vr::ReticleModel reticle_model;
+  ReticleModel reticle_model;
   ui_->input_manager()->HandleInput(current_time, render_info, controller_model,
                                     &reticle_model, &gesture_list);
   ui_->OnControllerUpdated(controller_model, reticle_model);
@@ -790,8 +789,8 @@ void VrShellGl::HandleControllerAppButtonActivity(
     // considered a regular click
     // TODO(asimjour1): We need to refactor the gesture recognition outside of
     // VrShellGl.
-    vr::PlatformController::SwipeDirection direction =
-        vr::PlatformController::kSwipeDirectionNone;
+    PlatformController::SwipeDirection direction =
+        PlatformController::kSwipeDirectionNone;
     gfx::Vector3dF a = controller_start_direction_;
     gfx::Vector3dF b = controller_direction;
     a.set_y(0);
@@ -801,19 +800,19 @@ void VrShellGl::HandleControllerAppButtonActivity(
           acos(gfx::DotProduct(a, b) / a.Length() / b.Length());
       if (fabs(gesture_xz_angle) > kMinAppButtonGestureAngleRad) {
         direction = gesture_xz_angle < 0
-                        ? vr::PlatformController::kSwipeDirectionLeft
-                        : vr::PlatformController::kSwipeDirectionRight;
+                        ? PlatformController::kSwipeDirectionLeft
+                        : PlatformController::kSwipeDirectionRight;
         // Post a task, rather than calling the UI directly, so as not to modify
         // UI state in the midst of frame rendering.
         base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::Bind(&vr::Ui::OnAppButtonGesturePerformed,
+            FROM_HERE, base::Bind(&Ui::OnAppButtonGesturePerformed,
                                   base::Unretained(ui_.get()), direction));
       }
     }
-    if (direction == vr::PlatformController::kSwipeDirectionNone) {
+    if (direction == PlatformController::kSwipeDirectionNone) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&vr::Ui::OnAppButtonClicked, base::Unretained(ui_.get())));
+          base::Bind(&Ui::OnAppButtonClicked, base::Unretained(ui_.get())));
     }
   }
 }
@@ -882,13 +881,12 @@ void VrShellGl::UpdateSamples() {
 void VrShellGl::UpdateEyeInfos(const gfx::Transform& head_pose,
                                int viewport_offset,
                                const gfx::Size& render_size,
-                               vr::RenderInfo* out_render_info) {
+                               RenderInfo* out_render_info) {
   for (auto eye : {GVR_LEFT_EYE, GVR_RIGHT_EYE}) {
-    vr::CameraModel& eye_info = (eye == GVR_LEFT_EYE)
-                                    ? out_render_info->left_eye_model
-                                    : out_render_info->right_eye_model;
-    eye_info.eye_type =
-        GVR_LEFT_EYE ? vr::EyeType::kLeftEye : vr::EyeType::kRightEye;
+    CameraModel& eye_info = (eye == GVR_LEFT_EYE)
+                                ? out_render_info->left_eye_model
+                                : out_render_info->right_eye_model;
+    eye_info.eye_type = GVR_LEFT_EYE ? EyeType::kLeftEye : EyeType::kRightEye;
 
     buffer_viewport_list_->GetBufferViewport(eye + viewport_offset,
                                              buffer_viewport_.get());
@@ -898,7 +896,7 @@ void VrShellGl::UpdateEyeInfos(const gfx::Transform& head_pose,
     eye_info.view_matrix = eye_matrix * head_pose;
 
     const gfx::RectF& rect = GfxRectFromUV(buffer_viewport_->GetSourceUv());
-    eye_info.viewport = vr::CalculatePixelSpaceRect(render_size, rect);
+    eye_info.viewport = CalculatePixelSpaceRect(render_size, rect);
 
     eye_info.proj_matrix = PerspectiveMatrixFromView(
         buffer_viewport_->GetSourceFov(), kZNear, kZFar);
@@ -982,9 +980,9 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
   bool redraw_needed = controller_dirty || scene_changed || textures_changed ||
                        content_frame_available_;
 
-  bool head_moved = vr::HeadMoveExceedsThreshold(last_used_head_pose_,
-                                                 render_info_primary_.head_pose,
-                                                 kRedrawSceneAngleDeltaDegrees);
+  bool head_moved = HeadMoveExceedsThreshold(last_used_head_pose_,
+                                             render_info_primary_.head_pose,
+                                             kRedrawSceneAngleDeltaDegrees);
 
   bool dirty = ShouldDrawWebVr() || head_moved || redraw_needed;
 
@@ -1039,7 +1037,7 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
   content_frame_available_ = false;
   acquired_frame_.Unbind();
 
-  std::vector<const vr::UiElement*> overlay_elements;
+  std::vector<const UiElement*> overlay_elements;
   if (ShouldDrawWebVr()) {
     overlay_elements = ui_->scene()->GetVisibleWebVrOverlayElementsToDraw();
   }
@@ -1059,7 +1057,7 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
 
     // Set render info to recommended setting. It will be used as our base for
     // optimization.
-    vr::RenderInfo render_info_webvr_browser_ui;
+    RenderInfo render_info_webvr_browser_ui;
     render_info_webvr_browser_ui.head_pose = render_info_primary_.head_pose;
     webvr_browser_ui_left_viewport_->SetSourceFov(fov_recommended_left);
     webvr_browser_ui_right_viewport_->SetSourceFov(fov_recommended_right);
@@ -1332,11 +1330,11 @@ base::WeakPtr<VrShellGl> VrShellGl::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-base::WeakPtr<vr::BrowserUiInterface> VrShellGl::GetBrowserUiWeakPtr() {
+base::WeakPtr<BrowserUiInterface> VrShellGl::GetBrowserUiWeakPtr() {
   return ui_->GetBrowserUiWeakPtr();
 }
 
-void VrShellGl::SetControllerMesh(std::unique_ptr<vr::ControllerMesh> mesh) {
+void VrShellGl::SetControllerMesh(std::unique_ptr<ControllerMesh> mesh) {
   ui_->ui_element_renderer()->SetUpController(std::move(mesh));
 }
 
@@ -1564,4 +1562,4 @@ void VrShellGl::ClosePresentationBindings() {
   binding_.Close();
 }
 
-}  // namespace vr_shell
+}  // namespace vr

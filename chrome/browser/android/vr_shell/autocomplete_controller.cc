@@ -14,7 +14,7 @@
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/search_engines/util.h"
 
-namespace vr_shell {
+namespace vr {
 
 namespace {
 constexpr size_t kMaxNumberOfSuggestions = 4;
@@ -34,7 +34,7 @@ AutocompleteController::AutocompleteController(
 
 AutocompleteController::~AutocompleteController() = default;
 
-void AutocompleteController::Start(const vr::AutocompleteRequest& request) {
+void AutocompleteController::Start(const AutocompleteRequest& request) {
   metrics::OmniboxEventProto::PageClassification page_classification =
       metrics::OmniboxEventProto::OTHER;
 
@@ -50,7 +50,7 @@ void AutocompleteController::Start(const vr::AutocompleteRequest& request) {
 
 void AutocompleteController::Stop() {
   autocomplete_controller_->Stop(true);
-  suggestion_callback_.Run(std::make_unique<vr::OmniboxSuggestions>());
+  suggestion_callback_.Run(std::make_unique<OmniboxSuggestions>());
 }
 
 GURL AutocompleteController::GetUrlFromVoiceInput(const base::string16& input) {
@@ -70,9 +70,9 @@ GURL AutocompleteController::GetUrlFromVoiceInput(const base::string16& input) {
 }
 
 void AutocompleteController::OnResultChanged(bool default_match_changed) {
-  auto suggestions = std::make_unique<vr::OmniboxSuggestions>();
+  auto suggestions = std::make_unique<OmniboxSuggestions>();
   for (const auto& match : autocomplete_controller_->result()) {
-    suggestions->suggestions.emplace_back(vr::OmniboxSuggestion(
+    suggestions->suggestions.emplace_back(OmniboxSuggestion(
         match.contents, match.description, match.contents_class,
         match.description_class, match.type, match.destination_url,
         last_request_.text, match.inline_autocompletion));
@@ -98,4 +98,4 @@ void AutocompleteController::OnResultChanged(bool default_match_changed) {
   }
 }
 
-}  // namespace vr_shell
+}  // namespace vr

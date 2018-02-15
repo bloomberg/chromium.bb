@@ -21,7 +21,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
 /** Loads the GVR keyboard SDK dynamically using the Keyboard Service. */
-@JNINamespace("vr_shell")
+@JNINamespace("vr")
 public class GvrKeyboardLoaderClient {
     private static final String TAG = "ChromeGvrKbClient";
     private static final boolean DEBUG_LOGS = false;

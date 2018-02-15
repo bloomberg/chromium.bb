@@ -75,10 +75,10 @@
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
-namespace vr_shell {
+namespace vr {
 
 namespace {
-vr_shell::VrShell* g_vr_shell_instance;
+vr::VrShell* g_vr_shell_instance;
 
 constexpr base::TimeDelta poll_media_access_interval_ =
     base::TimeDelta::FromSecondsD(0.2);
@@ -116,7 +116,7 @@ void SetIsInVR(content::WebContents* contents, bool is_in_vr) {
     // VrTabHelper for details).
     contents->GetRenderWidgetHostView()->SetIsInVR(is_in_vr);
 
-    vr::VrTabHelper* vr_tab_helper = vr::VrTabHelper::FromWebContents(contents);
+    VrTabHelper* vr_tab_helper = VrTabHelper::FromWebContents(contents);
     DCHECK(vr_tab_helper);
     vr_tab_helper->SetIsInVr(is_in_vr);
   }
@@ -126,7 +126,7 @@ void SetIsInVR(content::WebContents* contents, bool is_in_vr) {
 
 VrShell::VrShell(JNIEnv* env,
                  const JavaParamRef<jobject>& obj,
-                 const vr::UiInitialState& ui_initial_state,
+                 const UiInitialState& ui_initial_state,
                  VrShellDelegate* delegate,
                  gvr_context* gvr_api,
                  bool reprojected_rendering,
@@ -152,10 +152,10 @@ VrShell::VrShell(JNIEnv* env,
       weak_ptr_factory_.GetWeakPtr(), main_thread_task_runner_, gvr_api,
       ui_initial_state, reprojected_rendering_, HasDaydreamSupport(env));
   ui_ = gl_thread_.get();
-  toolbar_ = std::make_unique<vr::ToolbarHelper>(ui_, this);
-  autocomplete_controller_ = std::make_unique<AutocompleteController>(
-      base::BindRepeating(&vr::BrowserUiInterface::SetOmniboxSuggestions,
-                          base::Unretained(ui_)));
+  toolbar_ = std::make_unique<ToolbarHelper>(ui_, this);
+  autocomplete_controller_ =
+      std::make_unique<AutocompleteController>(base::BindRepeating(
+          &BrowserUiInterface::SetOmniboxSuggestions, base::Unretained(ui_)));
 
   gl_thread_->Start();
 
@@ -164,10 +164,9 @@ VrShell::VrShell(JNIEnv* env,
     UMA_HISTOGRAM_BOOLEAN("VRAutopresentedWebVR", !ui_initial_state.in_web_vr);
   }
 
-  vr::AssetsLoader::GetInstance()->SetOnComponentReadyCallback(
-      base::BindRepeating(&VrShell::OnAssetsComponentReady,
-                          weak_ptr_factory_.GetWeakPtr()));
-  vr::AssetsLoader::GetInstance()->GetMetricsHelper()->OnEnter(vr::Mode::kVr);
+  AssetsLoader::GetInstance()->SetOnComponentReadyCallback(base::BindRepeating(
+      &VrShell::OnAssetsComponentReady, weak_ptr_factory_.GetWeakPtr()));
+  AssetsLoader::GetInstance()->GetMetricsHelper()->OnEnter(Mode::kVr);
 
   UpdateVrAssetsComponent(g_browser_process->component_updater());
 }
@@ -211,7 +210,7 @@ void VrShell::SwapContents(JNIEnv* env,
   // tabs. crbug.com/684661
   metrics_helper_ = std::make_unique<VrMetricsHelper>(
       GetNonNativePageWebContents(),
-      webvr_mode_ ? vr::Mode::kWebVr : vr::Mode::kVrBrowsingRegular,
+      webvr_mode_ ? Mode::kWebVr : Mode::kVrBrowsingRegular,
       web_vr_autopresentation_expected_);
 }
 
@@ -434,11 +433,9 @@ void VrShell::SetWebVrMode(JNIEnv* env,
   ui_->SetWebVrMode(enabled, show_toast);
 
   if (!webvr_mode_ && !web_vr_autopresentation_expected_) {
-    vr::AssetsLoader::GetInstance()->GetMetricsHelper()->OnEnter(
-        vr::Mode::kVrBrowsing);
+    AssetsLoader::GetInstance()->GetMetricsHelper()->OnEnter(Mode::kVrBrowsing);
   } else {
-    vr::AssetsLoader::GetInstance()->GetMetricsHelper()->OnEnter(
-        vr::Mode::kWebVr);
+    AssetsLoader::GetInstance()->GetMetricsHelper()->OnEnter(Mode::kWebVr);
   }
 }
 
@@ -548,7 +545,7 @@ void VrShell::SetHistoryButtonsEnabled(JNIEnv* env,
 void VrShell::RequestToExitVr(JNIEnv* env,
                               const JavaParamRef<jobject>& obj,
                               int reason) {
-  ui_->SetExitVrPromptEnabled(true, static_cast<vr::UiUnsupportedMode>(reason));
+  ui_->SetExitVrPromptEnabled(true, static_cast<UiUnsupportedMode>(reason));
 }
 
 void VrShell::ContentSurfaceCreated(jobject surface,
@@ -669,17 +666,17 @@ void VrShell::ExitFullscreen() {
 void VrShell::LogUnsupportedModeUserMetric(JNIEnv* env,
                                            const JavaParamRef<jobject>& obj,
                                            int mode) {
-  LogUnsupportedModeUserMetric((vr::UiUnsupportedMode)mode);
+  LogUnsupportedModeUserMetric((UiUnsupportedMode)mode);
 }
 
-void VrShell::OnWebInputEdited(const vr::TextInputInfo info, bool commit) {}
+void VrShell::OnWebInputEdited(const TextInputInfo info, bool commit) {}
 
-void VrShell::LogUnsupportedModeUserMetric(vr::UiUnsupportedMode mode) {
+void VrShell::LogUnsupportedModeUserMetric(UiUnsupportedMode mode) {
   UMA_HISTOGRAM_ENUMERATION("VR.Shell.EncounteredUnsupportedMode", mode,
-                            vr::UiUnsupportedMode::kCount);
+                            UiUnsupportedMode::kCount);
 }
 
-void VrShell::ExitVrDueToUnsupportedMode(vr::UiUnsupportedMode mode) {
+void VrShell::ExitVrDueToUnsupportedMode(UiUnsupportedMode mode) {
   ui_->SetIsExiting();
   PostToGlThread(FROM_HERE, base::Bind(&VrShellGl::set_is_exiting,
                                        gl_thread_->GetVrShellGl(), true));
@@ -694,22 +691,22 @@ content::WebContents* VrShell::GetNonNativePageWebContents() const {
   return !web_contents_is_native_page_ ? web_contents_ : nullptr;
 }
 
-void VrShell::OnUnsupportedMode(vr::UiUnsupportedMode mode) {
+void VrShell::OnUnsupportedMode(UiUnsupportedMode mode) {
   switch (mode) {
-    case vr::UiUnsupportedMode::kUnhandledCodePoint:
+    case UiUnsupportedMode::kUnhandledCodePoint:
       ExitVrDueToUnsupportedMode(mode);
       return;
-    case vr::UiUnsupportedMode::kUnhandledPageInfo: {
+    case UiUnsupportedMode::kUnhandledPageInfo: {
       JNIEnv* env = base::android::AttachCurrentThread();
       Java_VrShellImpl_onUnhandledPageInfo(env, j_vr_shell_);
       return;
     }
-    case vr::UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission: {
+    case UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission: {
       JNIEnv* env = base::android::AttachCurrentThread();
       Java_VrShellImpl_onUnhandledPermissionPrompt(env, j_vr_shell_);
       return;
     }
-    case vr::UiUnsupportedMode::kCount:
+    case UiUnsupportedMode::kCount:
       NOTREACHED();  // Should never be used as a mode.
       return;
   }
@@ -718,29 +715,28 @@ void VrShell::OnUnsupportedMode(vr::UiUnsupportedMode mode) {
   ExitVrDueToUnsupportedMode(mode);
 }
 
-void VrShell::OnExitVrPromptResult(vr::UiUnsupportedMode reason,
-                                   vr::ExitVrPromptChoice choice) {
+void VrShell::OnExitVrPromptResult(UiUnsupportedMode reason,
+                                   ExitVrPromptChoice choice) {
   bool should_exit;
   switch (choice) {
-    case vr::ExitVrPromptChoice::CHOICE_NONE:
-    case vr::ExitVrPromptChoice::CHOICE_STAY:
-      ui_->SetExitVrPromptEnabled(false, vr::UiUnsupportedMode::kCount);
+    case ExitVrPromptChoice::CHOICE_NONE:
+    case ExitVrPromptChoice::CHOICE_STAY:
+      ui_->SetExitVrPromptEnabled(false, UiUnsupportedMode::kCount);
       should_exit = false;
       break;
-    case vr::ExitVrPromptChoice::CHOICE_EXIT:
+    case ExitVrPromptChoice::CHOICE_EXIT:
       should_exit = true;
       break;
   }
 
-  if (reason ==
-      vr::UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission) {
+  if (reason == UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission) {
     // Note that we already measure the number of times the user exits VR
     // because of the record audio permission through
     // VR.Shell.EncounteredUnsupportedMode histogram. This histogram measures
     // whether the user chose to proceed to grant the OS record audio permission
     // through the reported Boolean.
     UMA_HISTOGRAM_BOOLEAN("VR.VoiceSearch.RecordAudioOsPermissionPromptChoice",
-                          choice == vr::ExitVrPromptChoice::CHOICE_EXIT);
+                          choice == ExitVrPromptChoice::CHOICE_EXIT);
   }
 
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -790,14 +786,14 @@ void VrShell::SetVoiceSearchActive(bool active) {
 
   if (!HasAudioPermission()) {
     OnUnsupportedMode(
-        vr::UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission);
+        UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission);
     return;
   }
 
   if (!speech_recognizer_) {
     Profile* profile = ProfileManager::GetActiveUserProfile();
     std::string profile_locale = g_browser_process->GetApplicationLocale();
-    speech_recognizer_.reset(new vr::SpeechRecognizer(
+    speech_recognizer_.reset(new SpeechRecognizer(
         this, ui_, profile->GetRequestContext(), profile_locale));
   }
   if (active) {
@@ -809,7 +805,7 @@ void VrShell::SetVoiceSearchActive(bool active) {
   }
 }
 
-void VrShell::StartAutocomplete(const vr::AutocompleteRequest& request) {
+void VrShell::StartAutocomplete(const AutocompleteRequest& request) {
   autocomplete_controller_->Start(request);
 }
 
@@ -973,15 +969,15 @@ void VrShell::OnVoiceResults(const base::string16& result) {
           env, autocomplete_controller_->GetUrlFromVoiceInput(result).spec()));
 }
 
-void VrShell::OnAssetsLoaded(vr::AssetsLoadStatus status,
+void VrShell::OnAssetsLoaded(AssetsLoadStatus status,
                              const base::Version& component_version) {
-  if (status == vr::AssetsLoadStatus::kSuccess) {
+  if (status == AssetsLoadStatus::kSuccess) {
     VLOG(1) << "Successfully loaded VR assets component";
   } else {
     VLOG(1) << "Failed to load VR assets component";
   }
 
-  vr::AssetsLoader::GetInstance()->GetMetricsHelper()->OnAssetsLoaded(
+  AssetsLoader::GetInstance()->GetMetricsHelper()->OnAssetsLoaded(
       status, component_version);
 }
 
@@ -1007,7 +1003,7 @@ jlong JNI_VrShellImpl_Init(JNIEnv* env,
                            jfloat display_height_meters,
                            jint display_width_pixels,
                            jint display_pixel_height) {
-  vr::UiInitialState ui_initial_state;
+  UiInitialState ui_initial_state;
   ui_initial_state.browsing_disabled = browsing_disabled;
   ui_initial_state.in_cct = in_cct;
   ui_initial_state.in_web_vr = for_web_vr;
@@ -1018,7 +1014,7 @@ jlong JNI_VrShellImpl_Init(JNIEnv* env,
   ui_initial_state.skips_redraw_when_not_dirty =
       base::FeatureList::IsEnabled(features::kVrBrowsingExperimentalRendering);
   ui_initial_state.assets_available =
-      vr::AssetsLoader::GetInstance()->ComponentReady();
+      AssetsLoader::GetInstance()->ComponentReady();
 
   return reinterpret_cast<intptr_t>(new VrShell(
       env, obj, ui_initial_state,
@@ -1028,4 +1024,4 @@ jlong JNI_VrShellImpl_Init(JNIEnv* env,
       display_pixel_height));
 }
 
-}  // namespace vr_shell
+}  // namespace vr

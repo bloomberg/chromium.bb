@@ -12,7 +12,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
-namespace vr_shell {
+namespace vr {
 
 // SessionTimer will monitor the time between calls to StartSession and
 // StopSession.  It will combine multiple segments into a single session if they
@@ -50,7 +50,7 @@ class SessionTimer {
 class VrMetricsHelper : public content::WebContentsObserver {
  public:
   VrMetricsHelper(content::WebContents* contents,
-                  vr::Mode initial_mode,
+                  Mode initial_mode,
                   bool started_with_autopresentation);
   ~VrMetricsHelper() override;
 
@@ -71,7 +71,7 @@ class VrMetricsHelper : public content::WebContentsObserver {
   void DidToggleFullscreenModeForTab(bool entered_fullscreen,
                                      bool will_cause_resize) override;
 
-  void SetVrMode(vr::Mode mode);
+  void SetVrMode(Mode mode);
   void UpdateMode();
 
   std::unique_ptr<SessionTimer> mode_video_timer_;
@@ -79,7 +79,7 @@ class VrMetricsHelper : public content::WebContentsObserver {
   std::unique_ptr<SessionTimer> mode_timer_;
   std::unique_ptr<SessionTimer> session_timer_;
 
-  vr::Mode mode_ = vr::Mode::kNoVr;
+  Mode mode_ = Mode::kNoVr;
 
   // The last collected source id
   ukm::SourceId last_source_id_;
@@ -99,6 +99,6 @@ class VrMetricsHelper : public content::WebContentsObserver {
   GURL origin_;
 };
 
-}  // namespace vr_shell
+}  // namespace vr
 
 #endif  // CHROME_BROWSER_ANDROID_VR_SHELL_VR_USAGE_MONITOR_H_

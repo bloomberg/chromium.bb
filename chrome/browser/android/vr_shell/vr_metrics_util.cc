@@ -12,7 +12,7 @@ static constexpr int kVrNotSupported = -3;
 static constexpr int kGvrNotInstalled = -2;
 static constexpr int kGvrTooOld = -1;
 
-namespace vr_shell {
+namespace vr {
 
 bool VrMetricsUtil::has_logged_vr_runtime_version_ = false;
 
@@ -90,4 +90,4 @@ void VrMetricsUtil::LogXrRenderPathUsed(XRRenderPath path) {
                             XRRenderPath::kCount);
 }
 
-}  // namespace vr_shell
+}  // namespace vr

@@ -27,7 +27,7 @@ using base::android::JavaRef;
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
 
-namespace vr_shell {
+namespace vr {
 
 namespace {
 
@@ -270,7 +270,7 @@ void VrShellDelegate::SetListeningForActivate(bool listening) {
 }
 
 device::VRDevice* VrShellDelegate::GetDevice() {
-  return vr::VRDeviceManager::GetInstance()->GetDevice(device_id_);
+  return VRDeviceManager::GetInstance()->GetDevice(device_id_);
 }
 
 // ----------------------------------------------------------------------------
@@ -295,4 +295,4 @@ static void JNI_VrShellDelegate_RegisterVrAssetsComponent(
       g_browser_process->component_updater());
 }
 
-}  // namespace vr_shell
+}  // namespace vr
