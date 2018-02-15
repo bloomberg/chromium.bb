@@ -18720,6 +18720,12 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="Media View"/>
 </enum>
 
+<enum name="FileManagerZipHandlerType">
+  <int value="0" label="ZIP unpacker"/>
+  <int value="1" label="Zip Archiver (open)"/>
+  <int value="2" label="Zip Archiver (pack)"/>
+</enum>
+
 <enum name="FileMetricsProviderAccessResult">
   <int value="0" label="File was mapped."/>
   <int value="1" label="File doesn't exist."/>
