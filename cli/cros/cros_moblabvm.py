@@ -13,6 +13,8 @@ A typical moblab VM setup involves:
     collection; seeded with some configuration files.
   - [not implemented yet] Special image staging onto the moblab VM, so that it
     can be used to provision the sub-DUT VM.
+
+See README.moblab_vm.md in this folder for usage examples.
 """
 
 from __future__ import print_function
