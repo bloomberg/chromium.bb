@@ -95,8 +95,10 @@ enum ErrorType {
   // the Samba configuration, e.g. if 'kerberos encryption types' is set to
   // 'strong' to enforce AES encryption, but KDC does not support AES.
   ERROR_KDC_DOES_NOT_SUPPORT_ENCRYPTION_TYPE = 36;
+  // Kpasswd exited with unspecified error.
+  ERROR_KPASSWD_FAILED = 37;
   // Should be the last.
-  ERROR_COUNT = 37;
+  ERROR_COUNT = 38;
 }
 
 // Message sent to Chrome by authpolicyd as a response of a successful
