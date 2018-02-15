@@ -111,6 +111,8 @@ static_library("test_support") {
     "../public/test/ppapi_test_utils.h",
     "../public/test/render_view_test.cc",
     "../public/test/render_view_test.h",
+    "../public/test/scoped_overscroll_mode.cc",
+    "../public/test/scoped_overscroll_mode.h",
     "../public/test/service_worker_test_helpers.cc",
     "../public/test/service_worker_test_helpers.h",
     "../public/test/simple_url_loader_test_helper.cc",

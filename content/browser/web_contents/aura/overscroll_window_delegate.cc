@@ -21,15 +21,15 @@ OverscrollWindowDelegate::OverscrollWindowDelegate(
     : delegate_(delegate),
       overscroll_mode_(OVERSCROLL_NONE),
       delta_x_(0.f),
-      complete_threshold_ratio_touchscreen_(content::GetOverscrollConfig(
-          content::OverscrollConfig::THRESHOLD_COMPLETE_TOUCHSCREEN)),
-      complete_threshold_ratio_touchpad_(content::GetOverscrollConfig(
-          content::OverscrollConfig::THRESHOLD_COMPLETE_TOUCHPAD)),
+      complete_threshold_ratio_touchscreen_(OverscrollConfig::GetThreshold(
+          OverscrollConfig::Threshold::kCompleteTouchscreen)),
+      complete_threshold_ratio_touchpad_(OverscrollConfig::GetThreshold(
+          OverscrollConfig::Threshold::kCompleteTouchpad)),
       active_complete_threshold_ratio_(0.f),
-      start_threshold_touchscreen_(content::GetOverscrollConfig(
-          content::OverscrollConfig::THRESHOLD_START_TOUCHSCREEN)),
-      start_threshold_touchpad_(content::GetOverscrollConfig(
-          content::OverscrollConfig::THRESHOLD_START_TOUCHPAD)),
+      start_threshold_touchscreen_(OverscrollConfig::GetThreshold(
+          OverscrollConfig::Threshold::kStartTouchscreen)),
+      start_threshold_touchpad_(OverscrollConfig::GetThreshold(
+          OverscrollConfig::Threshold::kStartTouchpad)),
       active_start_threshold_(0.f) {
   SetImage(image);
 }

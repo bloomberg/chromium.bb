@@ -189,11 +189,11 @@ const FeatureEntry::Choice kTouchEventFeatureDetectionChoices[] = {
 
 #if defined(USE_AURA)
 const FeatureEntry::Choice kOverscrollHistoryNavigationChoices[] = {
-    {flags_ui::kGenericExperimentChoiceEnabled, "", ""},
+    {flag_descriptions::kOverscrollHistoryNavigationSimpleUi, "", ""},
     {flags_ui::kGenericExperimentChoiceDisabled,
      switches::kOverscrollHistoryNavigation, "0"},
-    {flag_descriptions::kOverscrollHistoryNavigationSimpleUi,
-     switches::kOverscrollHistoryNavigation, "2"}};
+    {flag_descriptions::kOverscrollHistoryNavigationParallaxUi,
+     switches::kOverscrollHistoryNavigation, "1"}};
 
 const FeatureEntry::Choice kOverscrollStartThresholdChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},

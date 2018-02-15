@@ -19,6 +19,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/scoped_overscroll_mode.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -853,8 +854,11 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest, HiddenOnScroll) {
 }
 
 // Tests that touch selection gets deactivated after an overscroll completes.
+// This only happens in the gesture nav with parallax effect.
 IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest,
                        HiddenAfterOverscroll) {
+  ScopedOverscrollMode scoped_mode(OverscrollConfig::Mode::kParallaxUi);
+
   // Set the page up.
   ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/touch_selection.html"));
   InitSelectionController();
@@ -897,8 +901,8 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest,
   rwhva->OnGestureEvent(&scroll_begin);
 
   const int window_width = rwhva->GetNativeView()->bounds().width();
-  const float overscroll_threshold =
-      GetOverscrollConfig(OverscrollConfig::THRESHOLD_START_TOUCHSCREEN);
+  const float overscroll_threshold = OverscrollConfig::GetThreshold(
+      OverscrollConfig::Threshold::kStartTouchscreen);
   const float scroll_amount = window_width * overscroll_threshold + 1;
   event_x += scroll_amount;
   ui::GestureEventDetails scroll_update_details(ui::ET_GESTURE_SCROLL_UPDATE,

@@ -1096,8 +1096,9 @@ const char kUseNewAcceptLanguageHeaderDescription[] =
 
 const char kOverscrollHistoryNavigationName[] = "Overscroll history navigation";
 const char kOverscrollHistoryNavigationDescription[] =
-    "Experimental history navigation in response to horizontal overscroll.";
+    "History navigation in response to horizontal overscroll.";
 const char kOverscrollHistoryNavigationSimpleUi[] = "Simple";
+const char kOverscrollHistoryNavigationParallaxUi[] = "Parallax";
 
 const char kOverscrollStartThresholdName[] = "Overscroll start threshold";
 const char kOverscrollStartThresholdDescription[] =

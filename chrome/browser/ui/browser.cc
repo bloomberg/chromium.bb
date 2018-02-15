@@ -183,6 +183,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/overscroll_configuration.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -1207,22 +1208,11 @@ bool Browser::CanOverscrollContent() const {
   if (!allow_overscroll)
     return false;
 
-  const std::string value =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kOverscrollHistoryNavigation);
-  bool overscroll_enabled = value != "0";
-  if (!overscroll_enabled)
-    return false;
   if (is_app() || is_devtools() || !is_type_tabbed())
     return false;
 
-  // The detached bookmark bar has appearance of floating above the
-  // web-contents. This does not play nicely with overscroll navigation
-  // gestures. So disable overscroll navigation when the bookmark bar is in the
-  // detached state and the overscroll effect moves the layers.
-  if (value == "1" && bookmark_bar_state_ == BookmarkBar::DETACHED)
-    return false;
-  return true;
+  return content::OverscrollConfig::GetMode() !=
+         content::OverscrollConfig::Mode::kDisabled;
 }
 
 bool Browser::ShouldPreserveAbortedURLs(WebContents* source) {
