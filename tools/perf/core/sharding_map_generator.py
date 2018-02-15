@@ -46,6 +46,9 @@ def load_benchmark_sharding_map():
     if builder == 'all_benchmarks':
       continue
 
+    # Ignore comment at the top of the builder_map
+    if builder == "comment":
+      continue
     final_builder_map = {}
     for device, device_value in builder_map.items():
       for benchmark_name in device_value['benchmarks']:
