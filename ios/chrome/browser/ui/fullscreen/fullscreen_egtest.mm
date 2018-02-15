@@ -247,6 +247,11 @@ void AssertURLIs(const GURL& expectedURL) {
 // Test to make sure the header is shown when a Tab opened by the current Tab is
 // closed even if the toolbar was not present previously.
 - (void)testShowHeaderWhenChildTabCloses {
+// TODO(crbug.com/812664): Re-enable this test on devices.
+#if !TARGET_IPHONE_SIMULATOR
+  EARL_GREY_TEST_DISABLED(@"Test disabled on device.");
+#endif
+
   std::map<GURL, std::string> responses;
   const GURL URL = web::test::HttpServer::MakeUrl("http://origin");
   const GURL destinationURL =
