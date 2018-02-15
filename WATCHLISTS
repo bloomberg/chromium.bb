@@ -310,12 +310,6 @@
     'blink_fetch': {
       'filepath': 'third_party/WebKit/Source/platform/loader/fetch'
     },
-    'blink_fetch_api': {
-      'filepath': 'third_party/WebKit/Source/core/xmlhttprequest/' \
-                  '|third_party/WebKit/Source/modules/beacon/' \
-                  '|third_party/WebKit/Source/modules/eventsource/' \
-                  '|third_party/WebKit/Source/modules/fetch/'
-    },
     'blink_fileapi': {
       'filepath': 'third_party/WebKit/Source/modules/filesystem/' \
                   '|third_party/WebKit/Source/core/fileapi/' \
@@ -494,9 +488,6 @@
     },
     'blink_spv2_layout_tests': {
       'filepath': 'third_party/WebKit/LayoutTests/virtual/spv2'
-    },
-    'blink_streams': {
-      'filepath': 'third_party/WebKit/Source/core/streams/'
     },
     'blink_style': {
       'filepath': 'third_party/WebKit/.*(style/|Style)',
@@ -735,9 +726,6 @@
     'content_view_core': {
       'filepath': 'content/public/android/java/src/org/chromium/content/browser/ContentViewCore.java|'
                   'content/browser/android/content_view_core.*',
-    },
-    'content_websockets': {
-      'filepath': 'content/browser/websockets/',
     },
     'content_worker': {
       'filepath': 'content/.*worker',
@@ -1132,10 +1120,6 @@
     },
     'net_spdy': {
       'filepath': 'net/spdy/',
-    },
-    'net_websockets': {
-      'filepath': 'net/websockets/' \
-                  '|net/data/websocket/'
     },
     'netinfo': {
       'filepath': '/netinfo/',
@@ -1764,7 +1748,6 @@
     'blink_fetch': ['gavinp+loader@chromium.org',
                     'japhet@chromium.org',
                     'loading-reviews+fetch@chromium.org'],
-    'blink_fetch_api': ['tyoshino+watch@chromium.org'],
     'blink_fileapi': ['kinuko+fileapi@chromium.org',
                       'nhiroki@chromium.org',
                       'tzik@chromium.org'],
@@ -1853,7 +1836,6 @@
                           'timvolodine@chromium.org',
                           'xiaochengh+watch@chromium.org'],
     'blink_spv2_layout_tests': ['pdr+virtualspv2watchlist@chromium.org'],
-    'blink_streams': ['tyoshino+watch@chromium.org'],
     'blink_style': ['blink-reviews-style@chromium.org'],
     'blink_svg': ['dschulze@chromium.org',
                   'fmalita+watch@chromium.org',
@@ -1875,8 +1857,7 @@
     'blink_webp': ['jzern@chromium.org',
                    'skal@google.com',
                    'urvang@chromium.org'],
-    'blink_websockets': ['tyoshino+watch@chromium.org',
-                         'yhirano+watch@chromium.org'],
+    'blink_websockets': ['yhirano+watch@chromium.org'],
     'blink_workers': ['blink-worker-reviews@chromium.org',
                       'falken+watch@chromium.org',
                       'horo+watch@chromium.org',
@@ -1970,7 +1951,6 @@
                       'mlamouri+watch-content@chromium.org',
                       'peter@chromium.org'],
     'content_view_core': ['jinsukkim+watch@chromium.org'],
-    'content_websockets': ['tyoshino+watch@chromium.org'],
     'content_worker': ['blink-worker-reviews@chromium.org',
                        'kinuko+watch@chromium.org'],
     'contextual_search': ['donnd+watch@chromium.org',
@@ -2141,7 +2121,6 @@
     'net_log': ['bnc+watch@chromium.org',
                 'eroman@chromium.org'],
     'net_spdy': ['bnc+watch@chromium.org'],
-    'net_websockets': ['tyoshino+watch@chromium.org'],
     'netinfo': ['jkarlin+watch@chromium.org'],
     'nfc': ['cco3+watch@chromium.org',
             'mattreynolds+watch@chromium.org'],
