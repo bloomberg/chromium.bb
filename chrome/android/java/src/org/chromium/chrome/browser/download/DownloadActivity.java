@@ -10,7 +10,6 @@ import android.os.Bundle;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.SnackbarActivity;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotificationBridgeUiFactory;
 import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
@@ -49,6 +48,8 @@ public class DownloadActivity extends SnackbarActivity {
         // Loads offline pages and prefetch downloads.
         OfflineContentAggregatorNotificationBridgeUiFactory.instance();
         boolean isOffTheRecord = DownloadUtils.shouldShowOffTheRecordDownloads(getIntent());
+        String downloadHomeUrl =
+                IntentUtils.safeGetStringExtra(getIntent(), DownloadUtils.EXTRA_DOWNLOAD_HOME_URL);
         ComponentName parentComponent = IntentUtils.safeGetParcelableExtra(
                 getIntent(), IntentHandler.EXTRA_PARENT_COMPONENT);
         mDownloadManagerUi = new DownloadManagerUi(
@@ -56,8 +57,7 @@ public class DownloadActivity extends SnackbarActivity {
         setContentView(mDownloadManagerUi.getView());
         mIsOffTheRecord = isOffTheRecord;
         mDownloadManagerUi.addObserver(mUiObserver);
-        // Call updateForUrl() to align with how DownloadPage interacts with DownloadManagerUi.
-        mDownloadManagerUi.updateForUrl(UrlConstants.DOWNLOADS_URL);
+        mDownloadManagerUi.updateForUrl(downloadHomeUrl);
     }
 
     @Override

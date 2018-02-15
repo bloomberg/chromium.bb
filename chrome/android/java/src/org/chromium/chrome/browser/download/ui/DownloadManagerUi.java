@@ -7,12 +7,15 @@ package org.chromium.chrome.browser.download.ui;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.annotation.IntDef;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.ViewGroup;
@@ -180,6 +183,8 @@ public class DownloadManagerUi
     private static final int MENU_ACTION_SEARCH = 5;
     private static final int MENU_ACTION_BOUNDARY = 6;
 
+    private static final int PREFETCH_BUNDLE_OPEN_DELAY_MS = 500;
+
     private static BackendProvider sProviderForTests;
 
     private final DownloadHistoryAdapter mHistoryAdapter;
@@ -341,6 +346,16 @@ public class DownloadManagerUi
      * Sets the download manager to the state that the url represents.
      */
     public void updateForUrl(String url) {
+        if (TextUtils.isEmpty(url)) return;
+        Uri uri = Uri.parse(url);
+        boolean showPrefetchedContent =
+                uri.getBooleanQueryParameter(DownloadUtils.SHOW_PREFETCHED_CONTENT, false);
+        if (showPrefetchedContent) {
+            new Handler().postDelayed(() -> {
+                mHistoryAdapter.setPrefetchSectionExpanded(true);
+            }, PREFETCH_BUNDLE_OPEN_DELAY_MS);
+        }
+
         int filter = DownloadFilter.getFilterFromUrl(url);
         onFilterChanged(filter);
     }

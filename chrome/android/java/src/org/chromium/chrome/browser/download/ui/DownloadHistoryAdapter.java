@@ -173,6 +173,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
             new FilePathsToDownloadItemsMap();
 
     private SubsectionHeader mPrefetchHeader;
+    private boolean mShouldPrefetchSectionExpand;
     private final ComponentName mParentComponent;
     private final boolean mShowOffTheRecord;
     private final LoadingStateDelegate mLoadingDelegate;
@@ -606,6 +607,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
 
         if (mPrefetchHeader == null) mPrefetchHeader = new SubsectionHeader();
         mPrefetchHeader.update(prefetchedItems);
+        mPrefetchHeader.setIsExpanded(mShouldPrefetchSectionExpand);
 
         ItemGroup prefetchItemGroup = new PrefetchItemGroup();
         prefetchItemGroup.addItem(mPrefetchHeader);
@@ -650,7 +652,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
      * @param expanded Whether the prefetched section should be expanded.
      */
     public void setPrefetchSectionExpanded(boolean expanded) {
-        mPrefetchHeader.setIsExpanded(expanded);
+        mShouldPrefetchSectionExpand = expanded;
         clear(false);
         filter(mFilter);
     }
