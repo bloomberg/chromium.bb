@@ -128,6 +128,13 @@ mr.mirror.Session = class {
   }
 
   /**
+   * @return {!mr.mirror.Activity}
+   */
+  getActivity() {
+    return this.activity;
+  }
+
+  /**
    * Starts the mirroring session. The |mediaStream| must provide one audio
    * and/or one video track. It is illegal to call start() more than once on the
    * same session, even after stop() has been called. See updateStream(), or

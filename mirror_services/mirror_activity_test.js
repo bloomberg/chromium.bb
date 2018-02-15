@@ -39,7 +39,8 @@ describe('Tests mr.mirror.Activity', () => {
 
   it('creates activity from a presentation route', () => {
     let activity = mr.mirror.Activity.createFromRoute(presentationRoute);
-    expect(activity.getRouteDescription()).toBe('Casting site');
+    expect(activity.getRouteDescription())
+        .toBe('Casting https://www.example.com');
     expect(activity.getRouteMediaStatus()).toBe('');
     expect(activity.getCastRemoteTitle()).toBe('Casting site');
   });

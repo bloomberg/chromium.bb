@@ -60,9 +60,11 @@ const Activity = class {
    */
   static createFromRoute(route) {
     let type;
+    let origin = null;
     const source = /** @type {string} */ (Assertions.assert(route.mediaSource));
     if (MediaSourceUtils.isPresentationSource(source)) {
       type = Type.PRESENTATION;
+      origin = new URL(source).origin;
     } else if (MediaSourceUtils.isTabMirrorSource(source)) {
       // Tab mirroring routes may switch to MEDIA_REMOTING or MIRROR_FILE after
       // they have begun.
@@ -72,7 +74,7 @@ const Activity = class {
     }
     Assertions.assert(type, `Unexpected mediaSource ${source}`);
     return new Activity(
-        /** @type {Type} */ (type), route.offTheRecord);
+        /** @type {Type} */ (type), route.offTheRecord, origin);
   }
 
   /** @param {Type} type Sets the activity type. */

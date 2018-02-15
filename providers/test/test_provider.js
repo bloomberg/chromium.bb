@@ -313,7 +313,7 @@ mr.TestProvider = class {
   /**
    * @override
    */
-  onMirrorActivityUpdated(routeId, mirrorActivity) {}
+  onMirrorActivityUpdated(routeId) {}
 
   /**
    * @override

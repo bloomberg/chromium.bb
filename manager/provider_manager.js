@@ -795,8 +795,10 @@ mr.ProviderManager = class extends mr.Module {
   handleMirrorActivityUpdate(route, mirrorActivity) {
     const provider = this.routeIdToProvider_.get(route.id);
     if (provider) {
-      this.onRouteUpdated(provider, route);
-      provider.onMirrorActivityUpdated(route.id, mirrorActivity);
+      provider.onMirrorActivityUpdated(route.id);
+      // Bypass the throttle, since an update to the route description may have
+      // happened before the throttle interval has elapsed.
+      if (this.routeQueries_.size > 0) this.sendRoutesQueryResultToMr_();
     }
   }
 

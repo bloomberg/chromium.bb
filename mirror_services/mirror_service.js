@@ -136,6 +136,8 @@ mr.mirror.Service = class extends mr.Module {
             }
             this.currentSession =
                 this.createMirrorSession(mirrorSettings, updatedRoute);
+            updatedRoute.mirrorInitData.activity =
+                this.currentSession.getActivity();
             this.currentSession.setOnActivityUpdate(
                 this.mirrorServiceCallbacks_.handleMirrorActivityUpdate.bind(
                     this.mirrorServiceCallbacks_));
@@ -285,6 +287,8 @@ mr.mirror.Service = class extends mr.Module {
             /** @type {number} */ (route.mirrorInitData.tabId));
         this.recordTabMirrorStartSuccess();
       } else if (mr.MediaSourceUtils.isPresentationSource(sourceUrn)) {
+        this.currentSession.setTabId(
+            /** @type {number} */ (route.mirrorInitData.tabId));
         this.recordOffscreenTabMirrorStartSuccess();
       } else {
         this.recordDesktopMirrorStartSuccess();

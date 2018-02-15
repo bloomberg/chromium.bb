@@ -163,6 +163,7 @@ mr.Route = class {
  *   sinkIpAddress: string,
  *   sinkModelName: string,
  *   sinkFriendlyName: (string|undefined),
+ *   activity: (!mr.mirror.Activity|undefined)
  * }}
  */
 mr.Route.MirrorInitData;
