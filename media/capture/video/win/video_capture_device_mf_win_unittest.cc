@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <wincodec.h>
 
+#include "media/capture/video/win/sink_filter_win.h"
 #include "media/capture/video/win/video_capture_device_factory_win.h"
 #include "media/capture/video/win/video_capture_device_mf_win.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -192,8 +193,10 @@ class MockMFCaptureSource
 
   STDMETHOD(SetCurrentDeviceMediaType)
   (DWORD dwSourceStreamIndex, IMFMediaType* pMediaType) override {
-    return S_OK;
+    return DoSetCurrentDeviceMediaType(dwSourceStreamIndex, pMediaType);
   }
+
+  MOCK_METHOD2(DoSetCurrentDeviceMediaType, HRESULT(DWORD, IMFMediaType*));
 
   STDMETHOD(GetCurrentDeviceMediaType)
   (DWORD stream_index, IMFMediaType** media_type) {
@@ -262,12 +265,16 @@ class MockCapturePreviewSink
     return E_NOTIMPL;
   }
   STDMETHOD(AddStream)
-  (DWORD dwSourceStreamIndex,
-   IMFMediaType* pMediaType,
-   IMFAttributes* pAttributes,
-   DWORD* pdwSinkStreamIndex) override {
-    return S_OK;
+  (DWORD stream_index,
+   IMFMediaType* media_type,
+   IMFAttributes* attributes,
+   DWORD* sink_stream_index) override {
+    return DoAddStream(stream_index, media_type, attributes, sink_stream_index);
   }
+
+  MOCK_METHOD4(DoAddStream,
+               HRESULT(DWORD, IMFMediaType*, IMFAttributes*, DWORD*));
+
   STDMETHOD(Prepare)(void) override { return E_NOTIMPL; }
   STDMETHOD(RemoveAllStreams)(void) override { return S_OK; }
   STDMETHOD(SetRenderHandle)(HANDLE handle) override { return E_NOTIMPL; }
@@ -801,6 +808,7 @@ class VideoCaptureDeviceMFWinTest : public ::testing::Test {
         image_capture_client_(new MockImageCaptureClient()),
         device_(new VideoCaptureDeviceMFWin(media_source_, engine_)),
         capture_source_(new MockMFCaptureSource()),
+        capture_preview_sink_(new MockCapturePreviewSink()),
         media_foundation_supported_(
             VideoCaptureDeviceFactoryWin::PlatformSupportsMediaFoundation()) {}
 
@@ -827,7 +835,7 @@ class VideoCaptureDeviceMFWinTest : public ::testing::Test {
     return true;
   }
 
-  void PrepareMFDeviceWithOneVideoStream() {
+  void PrepareMFDeviceWithOneVideoStream(GUID mf_video_subtype) {
     EXPECT_CALL(*capture_source_, DoGetDeviceStreamCount(_))
         .WillRepeatedly(Invoke([](DWORD* stream_count) {
           *stream_count = 1;
@@ -841,14 +849,15 @@ class VideoCaptureDeviceMFWinTest : public ::testing::Test {
         }));
 
     EXPECT_CALL(*capture_source_, DoGetAvailableDeviceMediaType(0, _, _))
-        .WillRepeatedly(Invoke([](DWORD stream_index, DWORD media_type_index,
-                                  IMFMediaType** media_type) {
+        .WillRepeatedly(Invoke([mf_video_subtype](DWORD stream_index,
+                                                  DWORD media_type_index,
+                                                  IMFMediaType** media_type) {
           if (media_type_index != 0)
             return MF_E_NO_MORE_TYPES;
 
-          *media_type = new StubMFMediaType(
-              MFMediaType_Video, MFVideoFormat_MJPG, kArbitraryValidVideoWidth,
-              kArbitraryValidVideoHeight, 30);
+          *media_type = new StubMFMediaType(MFMediaType_Video, mf_video_subtype,
+                                            kArbitraryValidVideoWidth,
+                                            kArbitraryValidVideoHeight, 30);
           (*media_type)->AddRef();
 
           return S_OK;
@@ -856,25 +865,26 @@ class VideoCaptureDeviceMFWinTest : public ::testing::Test {
 
     EXPECT_CALL(*(engine_.Get()),
                 DoGetSink(MF_CAPTURE_ENGINE_SINK_TYPE_PREVIEW, _))
-        .WillRepeatedly(Invoke(
-            [](MF_CAPTURE_ENGINE_SINK_TYPE sink_type, IMFCaptureSink** sink) {
-              *sink = new MockCapturePreviewSink();
-              (*sink)->AddRef();
-              return S_OK;
-            }));
+        .WillRepeatedly(Invoke([this](MF_CAPTURE_ENGINE_SINK_TYPE sink_type,
+                                      IMFCaptureSink** sink) {
+          *sink = this->capture_preview_sink_.get();
+          this->capture_preview_sink_->AddRef();
+          return S_OK;
+        }));
 
     EXPECT_CALL(*capture_source_, DoGetCurrentDeviceMediaType(_, _))
-        .WillRepeatedly(
-            Invoke([](DWORD stream_index, IMFMediaType** media_type) {
-              *media_type = new StubMFMediaType(
-                  MFMediaType_Video, MFVideoFormat_MJPG,
-                  kArbitraryValidVideoWidth, kArbitraryValidVideoHeight, 30);
-              (*media_type)->AddRef();
-              return S_OK;
-            }));
+        .WillRepeatedly(Invoke([mf_video_subtype](DWORD stream_index,
+                                                  IMFMediaType** media_type) {
+          *media_type = new StubMFMediaType(MFMediaType_Video, mf_video_subtype,
+                                            kArbitraryValidVideoWidth,
+                                            kArbitraryValidVideoHeight, 30);
+          (*media_type)->AddRef();
+          return S_OK;
+        }));
   }
 
-  void PrepareMFDeviceWithOneVideoStreamAndOnePhotoStream() {
+  void PrepareMFDeviceWithOneVideoStreamAndOnePhotoStream(
+      GUID mf_video_subtype) {
     EXPECT_CALL(*capture_source_, DoGetDeviceStreamCount(_))
         .WillRepeatedly(Invoke([](DWORD* stream_count) {
           *stream_count = 2;
@@ -893,10 +903,10 @@ class VideoCaptureDeviceMFWinTest : public ::testing::Test {
           return E_FAIL;
         }));
 
-    auto get_device_media_type = [](DWORD stream_index,
-                                    IMFMediaType** media_type) {
+    auto get_device_media_type = [mf_video_subtype](DWORD stream_index,
+                                                    IMFMediaType** media_type) {
       if (stream_index == 0) {
-        *media_type = new StubMFMediaType(MFMediaType_Video, MFVideoFormat_MJPG,
+        *media_type = new StubMFMediaType(MFMediaType_Video, mf_video_subtype,
                                           kArbitraryValidVideoWidth,
                                           kArbitraryValidVideoHeight, 30);
         (*media_type)->AddRef();
@@ -921,19 +931,19 @@ class VideoCaptureDeviceMFWinTest : public ::testing::Test {
             }));
 
     EXPECT_CALL(*(engine_.Get()), DoGetSink(_, _))
-        .WillRepeatedly(Invoke(
-            [](MF_CAPTURE_ENGINE_SINK_TYPE sink_type, IMFCaptureSink** sink) {
-              if (sink_type == MF_CAPTURE_ENGINE_SINK_TYPE_PREVIEW) {
-                *sink = new MockCapturePreviewSink();
-                (*sink)->AddRef();
-                return S_OK;
-              } else if (sink_type == MF_CAPTURE_ENGINE_SINK_TYPE_PHOTO) {
-                *sink = new MockCapturePhotoSink();
-                (*sink)->AddRef();
-                return S_OK;
-              }
-              return E_FAIL;
-            }));
+        .WillRepeatedly(Invoke([this](MF_CAPTURE_ENGINE_SINK_TYPE sink_type,
+                                      IMFCaptureSink** sink) {
+          if (sink_type == MF_CAPTURE_ENGINE_SINK_TYPE_PREVIEW) {
+            *sink = this->capture_preview_sink_.get();
+            this->capture_preview_sink_->AddRef();
+            return S_OK;
+          } else if (sink_type == MF_CAPTURE_ENGINE_SINK_TYPE_PHOTO) {
+            *sink = new MockCapturePhotoSink();
+            (*sink)->AddRef();
+            return S_OK;
+          }
+          return E_FAIL;
+        }));
 
     EXPECT_CALL(*capture_source_, DoGetCurrentDeviceMediaType(_, _))
         .WillRepeatedly(Invoke(get_device_media_type));
@@ -947,6 +957,7 @@ class VideoCaptureDeviceMFWinTest : public ::testing::Test {
   VideoCaptureFormat last_format_;
 
   scoped_refptr<MockMFCaptureSource> capture_source_;
+  scoped_refptr<MockCapturePreviewSink> capture_preview_sink_;
 
  private:
   const bool media_foundation_supported_;
@@ -957,7 +968,7 @@ TEST_F(VideoCaptureDeviceMFWinTest, StartPreviewOnAllocateAndStart) {
   if (ShouldSkipTest())
     return;
 
-  PrepareMFDeviceWithOneVideoStream();
+  PrepareMFDeviceWithOneVideoStream(MFVideoFormat_MJPG);
 
   EXPECT_CALL(*(engine_.Get()), OnStartPreview());
   EXPECT_CALL(*client_, OnStarted());
@@ -973,7 +984,7 @@ TEST_F(VideoCaptureDeviceMFWinTest, CallClientOnErrorMediaEvent) {
   if (ShouldSkipTest())
     return;
 
-  PrepareMFDeviceWithOneVideoStream();
+  PrepareMFDeviceWithOneVideoStream(MFVideoFormat_MJPG);
 
   EXPECT_CALL(*(engine_.Get()), OnStartPreview());
   EXPECT_CALL(*client_, OnStarted());
@@ -1057,7 +1068,7 @@ TEST_F(VideoCaptureDeviceMFWinTest, GetPhotoStateViaVideoStream) {
   if (ShouldSkipTest())
     return;
 
-  PrepareMFDeviceWithOneVideoStream();
+  PrepareMFDeviceWithOneVideoStream(MFVideoFormat_MJPG);
 
   EXPECT_CALL(*(engine_.Get()), OnStartPreview());
   EXPECT_CALL(*client_, OnStarted());
@@ -1086,7 +1097,7 @@ TEST_F(VideoCaptureDeviceMFWinTest, GetPhotoStateViaPhotoStream) {
   if (ShouldSkipTest())
     return;
 
-  PrepareMFDeviceWithOneVideoStreamAndOnePhotoStream();
+  PrepareMFDeviceWithOneVideoStreamAndOnePhotoStream(MFVideoFormat_MJPG);
 
   EXPECT_CALL(*(engine_.Get()), OnStartPreview());
   EXPECT_CALL(*client_, OnStarted());
@@ -1114,7 +1125,7 @@ TEST_F(VideoCaptureDeviceMFWinTest, TakePhotoViaPhotoStream) {
   if (ShouldSkipTest())
     return;
 
-  PrepareMFDeviceWithOneVideoStreamAndOnePhotoStream();
+  PrepareMFDeviceWithOneVideoStreamAndOnePhotoStream(MFVideoFormat_MJPG);
 
   EXPECT_CALL(*(engine_.Get()), OnStartPreview());
   EXPECT_CALL(*client_, OnStarted());
@@ -1125,6 +1136,53 @@ TEST_F(VideoCaptureDeviceMFWinTest, TakePhotoViaPhotoStream) {
   VideoCaptureDevice::TakePhotoCallback take_photo_callback = base::BindOnce(
       &MockImageCaptureClient::DoOnPhotoTaken, image_capture_client_);
   device_->TakePhoto(std::move(take_photo_callback));
+}
+
+class DepthCameraDeviceMFWinTest : public VideoCaptureDeviceMFWinTest,
+                                   public testing::WithParamInterface<GUID> {};
+
+const GUID kDepthCameraOfferedVideoMediaSubtype[] = {
+    kMediaSubTypeY16, kMediaSubTypeZ16, kMediaSubTypeINVZ};
+
+INSTANTIATE_TEST_CASE_P(
+    DepthCameraDeviceMFWinTests,
+    DepthCameraDeviceMFWinTest,
+    testing::ValuesIn(kDepthCameraOfferedVideoMediaSubtype));
+
+// Given an |IMFCaptureSource| offering a video stream with subtype Y16, Z16 or
+// INVZ , when allocating and starting |VideoCaptureDevice| then expect the MF
+// source and the MF sink to be set to the same media subtype
+TEST_P(DepthCameraDeviceMFWinTest, AllocateAndStartDepthCamera) {
+  if (ShouldSkipTest())
+    return;
+
+  GUID offered_video_media_subtype = GetParam();
+  PrepareMFDeviceWithOneVideoStream(offered_video_media_subtype);
+
+  EXPECT_CALL(*(engine_.Get()), OnStartPreview());
+  EXPECT_CALL(*client_, OnStarted());
+
+  EXPECT_CALL(*(capture_source_.get()), DoSetCurrentDeviceMediaType(0, _))
+      .WillOnce(Invoke([offered_video_media_subtype](DWORD stream_index,
+                                                     IMFMediaType* media_type) {
+        GUID source_video_media_subtype;
+        media_type->GetGUID(MF_MT_SUBTYPE, &source_video_media_subtype);
+        EXPECT_EQ(source_video_media_subtype, offered_video_media_subtype);
+        return S_OK;
+      }));
+
+  EXPECT_CALL(*(capture_preview_sink_.get()), DoAddStream(0, _, _, _))
+      .WillOnce(Invoke([offered_video_media_subtype](DWORD stream_index,
+                                                     IMFMediaType* media_type,
+                                                     IMFAttributes* attributes,
+                                                     DWORD* sink_stream_index) {
+        GUID sink_video_media_subtype;
+        media_type->GetGUID(MF_MT_SUBTYPE, &sink_video_media_subtype);
+        EXPECT_EQ(sink_video_media_subtype, offered_video_media_subtype);
+        return S_OK;
+      }));
+
+  device_->AllocateAndStart(VideoCaptureParams(), std::move(client_));
 }
 
 }  // namespace media
