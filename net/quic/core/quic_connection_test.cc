@@ -1064,7 +1064,7 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
   }
 
   QuicTime::Delta DefaultDelayedAckTime() {
-    return QuicTime::Delta::FromMilliseconds(kMaxDelayedAckTimeMs);
+    return QuicTime::Delta::FromMilliseconds(kDefaultDelayedAckTimeMs);
   }
 
   const QuicStopWaitingFrame InitStopWaitingFrame(

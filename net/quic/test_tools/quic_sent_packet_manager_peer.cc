@@ -71,6 +71,12 @@ void QuicSentPacketManagerPeer::SetLossAlgorithm(
 }
 
 // static
+RttStats* QuicSentPacketManagerPeer::GetRttStats(
+    QuicSentPacketManager* sent_packet_manager) {
+  return &sent_packet_manager->rtt_stats_;
+}
+
+// static
 bool QuicSentPacketManagerPeer::HasPendingPackets(
     const QuicSentPacketManager* sent_packet_manager) {
   return sent_packet_manager->unacked_packets_.HasInFlightPackets();
@@ -109,6 +115,12 @@ void QuicSentPacketManagerPeer::MarkForRetransmission(
 QuicTime::Delta QuicSentPacketManagerPeer::GetRetransmissionDelay(
     const QuicSentPacketManager* sent_packet_manager) {
   return sent_packet_manager->GetRetransmissionDelay();
+}
+
+// static
+QuicTime::Delta QuicSentPacketManagerPeer::GetTailLossProbeDelay(
+    const QuicSentPacketManager* sent_packet_manager) {
+  return sent_packet_manager->GetTailLossProbeDelay();
 }
 
 // static

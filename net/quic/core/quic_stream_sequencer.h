@@ -62,6 +62,9 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencer {
   // Returns true if the sequncer has bytes available for reading.
   bool HasBytesToRead() const;
 
+  // Number of bytes available to read.
+  size_t ReadableBytes() const;
+
   // Returns true if the sequencer has delivered the fin.
   bool IsClosed() const;
 
@@ -97,6 +100,12 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencer {
   }
 
   bool ignore_read_data() const { return ignore_read_data_; }
+
+  void set_level_triggered(bool level_triggered) {
+    level_triggered_ = level_triggered;
+  }
+
+  bool level_triggered() const { return level_triggered_; }
 
   // Returns std::string describing internal state.
   const std::string DebugString() const;
@@ -140,6 +149,10 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencer {
 
   // If true, all incoming data will be discarded.
   bool ignore_read_data_;
+
+  // If false, only call OnDataAvailable() when it becomes newly unblocked.
+  // Otherwise, call OnDataAvailable() when number of readable bytes changes.
+  bool level_triggered_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicStreamSequencer);
 };

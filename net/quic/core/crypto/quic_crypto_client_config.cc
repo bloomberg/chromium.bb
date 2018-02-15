@@ -362,7 +362,7 @@ void QuicCryptoClientConfig::CachedState::InitializeFrom(
   server_config_valid_ = other.server_config_valid_;
   server_designated_connection_ids_ = other.server_designated_connection_ids_;
   expiration_time_ = other.expiration_time_;
-  if (other.proof_verify_details_.get() != nullptr) {
+  if (other.proof_verify_details_ != nullptr) {
     proof_verify_details_.reset(other.proof_verify_details_->Clone());
   }
   ++generation_counter_;

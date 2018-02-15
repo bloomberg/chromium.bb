@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "third_party/zlib/zlib.h"
 
 using std::string;
@@ -580,7 +581,7 @@ bool CertCompressor::DecompressChain(QuicStringPiece in,
       return false;
     }
 
-    uncompressed_data.reset(new uint8_t[uncompressed_size]);
+    uncompressed_data = QuicMakeUnique<uint8_t[]>(uncompressed_size);
     z_stream z;
     ScopedZLib scoped_z(ScopedZLib::INFLATE);
 

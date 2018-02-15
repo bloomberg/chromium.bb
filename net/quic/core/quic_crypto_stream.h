@@ -79,6 +79,10 @@ class QUIC_EXPORT_PRIVATE QuicCryptoStream : public QuicStream {
   // Provides the message parser to use when data is received on this stream.
   virtual CryptoMessageParser* crypto_message_parser() = 0;
 
+  // Called when the underlying QuicConnection has agreed upon a QUIC version to
+  // use.
+  virtual void OnSuccessfulVersionNegotiation(const ParsedQuicVersion& version);
+
   // Called to cancel retransmission of unencrypted crypto stream data.
   void NeuterUnencryptedStreamData();
 

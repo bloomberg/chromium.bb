@@ -718,7 +718,7 @@ void QuicTestClient::OnRendezvousResult(QuicSpdyStream* stream) {
   SetLatestCreatedStream(static_cast<QuicSpdyClientStream*>(stream));
   if (stream) {
     stream->OnDataAvailable();
-  } else if (data_to_resend.get()) {
+  } else if (data_to_resend) {
     data_to_resend->Resend();
   }
 }

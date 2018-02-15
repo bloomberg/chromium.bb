@@ -85,9 +85,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_default_to_bbr, false)
 // option.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_rate_recovery, false)
 
-// If true, enable QUIC v42.
-QUIC_FLAG(bool, FLAGS_quic_enable_version_42, false)
-
 // If buffered data in QUIC stream is less than this threshold, buffers all
 // provided data or asks upper layer for more data.
 QUIC_FLAG(uint32_t, FLAGS_quic_buffered_data_threshold, 8192u)
@@ -107,7 +104,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_mem_slices, false)
 QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_enable_accept_random_ipn, false)
 
 // If true, enable QUIC v43.
-QUIC_FLAG(bool, FLAGS_quic_enable_version_43, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_43, false)
 
 // Enables 3 new connection options to make PROBE_RTT more aggressive
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_less_probe_rtt, false)
@@ -148,7 +145,7 @@ QUIC_FLAG(bool,
 
 // If true, inspects CHLO packets for indicator tags to allow early session
 // creation.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_inspect_chlo_tags, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_inspect_chlo_tags, true)
 
 // When true, ignore the specified ack delay if it causes the RTT sample to be
 // less than min_rtt.
@@ -156,9 +153,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_min_rtt_ack_delay, false)
 
 // If true, plugin control frame manager to QuicSession, and let it manage sent
 // control frames.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_use_control_frame_manager,
-          false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_control_frame_manager, true)
 // When true, allows two connection options to run experiments with using max
 // ack delay as described in QUIC IETF.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_max_ack_delay, false)
@@ -178,5 +173,22 @@ QUIC_FLAG(bool, FLAGS_quic_enable_version_99, false)
 // true, enable QUIC version 42.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_42, false)
 
-// If true, enable QUIC v43.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_43, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_37, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_38, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_41, false)
+
+// Delays construction of QuicCryptoServerStream::HandshakerDelegate
+// until QuicCryptoServerStream::OnSuccessfulVersionNegotiation is called
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_delay_quic_server_handshaker_construction,
+          false)
+// Controls whether QuicConnection::OnProtocolVersionMismatch calls
+// QuicFramer::set_version before or after calling
+// OnSuccessfulVersionNegotiation.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_store_version_before_signalling,
+          false)
+
+// When true, enable connection options to have no min TLP and RTO,
+// and also allow IETF style TLP.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_max_ack_delay2, false)

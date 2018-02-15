@@ -197,9 +197,9 @@ class QuicSimpleServerSessionTest
     config_.SetInitialSessionFlowControlWindowToSend(
         kInitialSessionFlowControlWindowForTest);
 
+    ParsedQuicVersionVector supported_versions = SupportedVersions(GetParam());
     connection_ = new StrictMock<MockQuicConnectionWithSendStreamData>(
-        &helper_, &alarm_factory_, Perspective::IS_SERVER,
-        SupportedVersions(GetParam()));
+        &helper_, &alarm_factory_, Perspective::IS_SERVER, supported_versions);
     session_.reset(new MockQuicSimpleServerSession(
         config_, connection_, &owner_, &stream_helper_, &crypto_config_,
         &compressed_certs_cache_, &response_cache_));
@@ -208,6 +208,8 @@ class QuicSimpleServerSessionTest
         QuicRandom::GetInstance(), &clock,
         QuicCryptoServerConfig::ConfigOptions()));
     session_->Initialize();
+    QuicSessionPeer::GetMutableCryptoStream(session_.get())
+        ->OnSuccessfulVersionNegotiation(supported_versions.front());
     visitor_ = QuicConnectionPeer::GetVisitor(connection_);
 
     session_->OnConfigNegotiated();
@@ -470,13 +472,15 @@ class QuicSimpleServerSessionServerPushTest
     copt.push_back(kSPSH);
     QuicConfigPeer::SetReceivedConnectionOptions(&config_, copt);
 
+    ParsedQuicVersionVector supported_versions = SupportedVersions(GetParam());
     connection_ = new StrictMock<MockQuicConnectionWithSendStreamData>(
-        &helper_, &alarm_factory_, Perspective::IS_SERVER,
-        SupportedVersions(GetParam()));
+        &helper_, &alarm_factory_, Perspective::IS_SERVER, supported_versions);
     session_.reset(new MockQuicSimpleServerSession(
         config_, connection_, &owner_, &stream_helper_, &crypto_config_,
         &compressed_certs_cache_, &response_cache_));
     session_->Initialize();
+    QuicSessionPeer::GetMutableCryptoStream(session_.get())
+        ->OnSuccessfulVersionNegotiation(supported_versions.front());
     // Needed to make new session flow control window and server push work.
     session_->OnConfigNegotiated();
 

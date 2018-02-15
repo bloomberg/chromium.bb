@@ -37,9 +37,6 @@ const size_t kMinTimeoutsBeforePathDegrading = 2;
 // This limits the tenth retransmitted packet to 10s after the initial CHLO.
 static const int64_t kMinHandshakeTimeoutMs = 10;
 
-// Ensure the handshake timer isnt't faster than 25ms.
-static const int64_t kConservativeMinHandshakeTimeoutMs = kMaxDelayedAckTimeMs;
-
 // Sends up to two tail loss probes before firing an RTO,
 // per draft RFC draft-dukkipati-tcpm-tcp-loss-probe.
 static const size_t kDefaultMaxTailLossProbes = 2;
@@ -81,10 +78,18 @@ QuicSentPacketManager::QuicSentPacketManager(
       using_pacing_(false),
       use_new_rto_(false),
       conservative_handshake_retransmits_(false),
+      min_tlp_timeout_(
+          QuicTime::Delta::FromMilliseconds(kMinTailLossProbeTimeoutMs)),
+      min_rto_timeout_(
+          QuicTime::Delta::FromMilliseconds(kMinRetransmissionTimeMs)),
+      ietf_style_tlp_(false),
+      ietf_style_2x_tlp_(false),
       largest_newly_acked_(0),
       largest_mtu_acked_(0),
       handshake_confirmed_(false),
-      largest_packet_peer_knows_is_acked_(0) {
+      largest_packet_peer_knows_is_acked_(0),
+      delayed_ack_time_(
+          QuicTime::Delta::FromMilliseconds(kDefaultDelayedAckTimeMs)) {
   SetSendAlgorithm(congestion_control_type);
 }
 
@@ -108,8 +113,29 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   if (GetQuicReloadableFlag(quic_max_ack_delay) &&
       config.HasClientSentConnectionOption(kMAD1, perspective_)) {
     QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_max_ack_delay, 2, 2);
-    rtt_stats_.set_initial_max_ack_delay(
-        QuicTime::Delta::FromMilliseconds(kMaxDelayedAckTimeMs));
+    rtt_stats_.set_initial_max_ack_delay(delayed_ack_time_);
+  }
+  if (GetQuicReloadableFlag(quic_max_ack_delay2) &&
+      config.HasClientSentConnectionOption(kMAD2, perspective_)) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_max_ack_delay2, 1, 4);
+    min_tlp_timeout_ = QuicTime::Delta::Zero();
+  }
+  if (GetQuicReloadableFlag(quic_max_ack_delay2) &&
+      config.HasClientSentConnectionOption(kMAD3, perspective_)) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_max_ack_delay2, 2, 4);
+    min_rto_timeout_ = QuicTime::Delta::Zero();
+  }
+  if (GetQuicReloadableFlag(quic_max_ack_delay2) &&
+      GetQuicReloadableFlag(quic_min_rtt_ack_delay) &&
+      config.HasClientSentConnectionOption(kMAD4, perspective_)) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_max_ack_delay2, 3, 4);
+    ietf_style_tlp_ = true;
+  }
+  if (GetQuicReloadableFlag(quic_max_ack_delay2) &&
+      GetQuicReloadableFlag(quic_min_rtt_ack_delay) &&
+      config.HasClientSentConnectionOption(kMAD5, perspective_)) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_max_ack_delay2, 4, 4);
+    ietf_style_2x_tlp_ = true;
   }
 
   // Configure congestion control.
@@ -786,8 +812,6 @@ bool QuicSentPacketManager::MaybeUpdateRTT(const QuicAckFrame& ack_frame,
                                            QuicTime ack_receive_time) {
   // We rely on ack_delay_time to compute an RTT estimate, so we
   // only update rtt when the largest observed gets acked.
-  // NOTE: If ack is a truncated ack, then the largest observed is in fact
-  // unacked, and may cause an RTT sample to be taken.
   if (!unacked_packets_.IsUnacked(LargestAcked(ack_frame))) {
     return false;
   }
@@ -870,7 +894,9 @@ const QuicTime::Delta QuicSentPacketManager::GetCryptoRetransmissionDelay()
   QuicTime::Delta srtt = rtt_stats_.SmoothedOrInitialRtt();
   int64_t delay_ms;
   if (conservative_handshake_retransmits_) {
-    delay_ms = std::max(kConservativeMinHandshakeTimeoutMs,
+    // Using the delayed ack time directly could cause conservative handshake
+    // retransmissions to actually be more aggressive than the default.
+    delay_ms = std::max(delayed_ack_time_.ToMilliseconds(),
                         static_cast<int64_t>(2 * srtt.ToMilliseconds()));
   } else {
     delay_ms = std::max(kMinHandshakeTimeoutMs,
@@ -883,17 +909,21 @@ const QuicTime::Delta QuicSentPacketManager::GetCryptoRetransmissionDelay()
 const QuicTime::Delta QuicSentPacketManager::GetTailLossProbeDelay() const {
   QuicTime::Delta srtt = rtt_stats_.SmoothedOrInitialRtt();
   if (enable_half_rtt_tail_loss_probe_ && consecutive_tlp_count_ == 0u) {
-    return QuicTime::Delta::FromMilliseconds(
-        std::max(kMinTailLossProbeTimeoutMs,
-                 static_cast<int64_t>(0.5 * srtt.ToMilliseconds())));
+    return std::max(min_tlp_timeout_, srtt * 0.5);
+  }
+  if (ietf_style_tlp_) {
+    return std::max(min_tlp_timeout_, 1.5 * srtt + rtt_stats_.max_ack_delay());
+  }
+  if (ietf_style_2x_tlp_) {
+    return std::max(min_tlp_timeout_, 2 * srtt + rtt_stats_.max_ack_delay());
   }
   if (!unacked_packets_.HasMultipleInFlightPackets()) {
-    return std::max(2 * srtt, 1.5 * srtt + QuicTime::Delta::FromMilliseconds(
-                                               kMinRetransmissionTimeMs / 2));
+    // This expression really should be using the delayed ack time, but in TCP
+    // MinRTO was traditionally set to 2x the delayed ack timer and this
+    // expression assumed QUIC did the same.
+    return std::max(2 * srtt, 1.5 * srtt + (min_rto_timeout_ * 0.5));
   }
-  return QuicTime::Delta::FromMilliseconds(
-      std::max(kMinTailLossProbeTimeoutMs,
-               static_cast<int64_t>(2 * srtt.ToMilliseconds())));
+  return std::max(min_tlp_timeout_, 2 * srtt);
 }
 
 const QuicTime::Delta QuicSentPacketManager::GetRetransmissionDelay() const {
@@ -905,9 +935,8 @@ const QuicTime::Delta QuicSentPacketManager::GetRetransmissionDelay() const {
   } else {
     retransmission_delay =
         rtt_stats_.smoothed_rtt() + 4 * rtt_stats_.mean_deviation();
-    if (retransmission_delay.ToMilliseconds() < kMinRetransmissionTimeMs) {
-      retransmission_delay =
-          QuicTime::Delta::FromMilliseconds(kMinRetransmissionTimeMs);
+    if (retransmission_delay < min_rto_timeout_) {
+      retransmission_delay = min_rto_timeout_;
     }
   }
 

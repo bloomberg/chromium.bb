@@ -29,8 +29,8 @@ TEST_F(P256KeyExchangeTest, SharedKey) {
     std::unique_ptr<P256KeyExchange> alice(P256KeyExchange::New(alice_private));
     std::unique_ptr<P256KeyExchange> bob(P256KeyExchange::New(bob_private));
 
-    ASSERT_TRUE(alice.get() != nullptr);
-    ASSERT_TRUE(bob.get() != nullptr);
+    ASSERT_TRUE(alice != nullptr);
+    ASSERT_TRUE(bob != nullptr);
 
     const QuicStringPiece alice_public(alice->public_value());
     const QuicStringPiece bob_public(bob->public_value());

@@ -943,7 +943,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
   }
 
   string forward_secure_public_value;
-  if (ephemeral_key_source_.get()) {
+  if (ephemeral_key_source_) {
     params->forward_secure_premaster_secret =
         ephemeral_key_source_->CalculateForwardSecureKey(
             key_exchange, rand, clock->ApproximateNow(), public_value,
@@ -1091,7 +1091,7 @@ void QuicCryptoServerConfig::SelectNewPrimaryConfig(
                     << QuicTextUtils::HexEncode(reinterpret_cast<const char*>(
                                                     primary_config_->orbit),
                                                 kOrbitSize);
-    if (primary_config_changed_cb_.get() != nullptr) {
+    if (primary_config_changed_cb_ != nullptr) {
       primary_config_changed_cb_->Run(primary_config_->id);
     }
 
@@ -1112,7 +1112,7 @@ void QuicCryptoServerConfig::SelectNewPrimaryConfig(
                          kOrbitSize)
                   << " scid: " << QuicTextUtils::HexEncode(primary_config_->id);
   next_config_promotion_time_ = QuicWallTime::Zero();
-  if (primary_config_changed_cb_.get() != nullptr) {
+  if (primary_config_changed_cb_ != nullptr) {
     primary_config_changed_cb_->Run(primary_config_->id);
   }
 }

@@ -22,6 +22,7 @@
 #include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_endian.h"
 #include "net/quic/platform/api/quic_flags.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/platform/api/quic_text_utils.h"
@@ -241,8 +242,7 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
     config_.ValidateClientHello(
         message, client_address_.host(), server_address,
         supported_versions_.front(), &clock_, signed_config_,
-        std::unique_ptr<ValidateCallback>(
-            new ValidateCallback(this, true, "", &called)));
+        QuicMakeUnique<ValidateCallback>(this, true, "", &called));
     EXPECT_TRUE(called);
   }
 
@@ -260,8 +260,7 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
     config_.ValidateClientHello(
         message, client_address_.host(), server_address,
         supported_versions_.front(), &clock_, signed_config_,
-        std::unique_ptr<ValidateCallback>(
-            new ValidateCallback(this, false, error_substr, called)));
+        std::make_unique<ValidateCallback>(this, false, error_substr, called));
   }
 
   class ProcessCallback : public ProcessClientHelloResultCallback {
@@ -326,8 +325,8 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
         use_stateless_rejects_, server_designated_connection_id, &clock_, rand_,
         &compressed_certs_cache_, params_, signed_config_,
         /*total_framing_overhead=*/50, chlo_packet_size_,
-        std::unique_ptr<ProcessCallback>(new ProcessCallback(
-            result, should_succeed, error_substr, &called, &out_)));
+        std::make_unique<ProcessCallback>(result, should_succeed, error_substr,
+                                          &called, &out_));
     EXPECT_TRUE(called);
   }
 

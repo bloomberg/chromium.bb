@@ -104,11 +104,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStream
     virtual int NumServerConfigUpdateMessagesSent() const = 0;
     virtual const CachedNetworkParameters* PreviousCachedNetworkParams()
         const = 0;
-    virtual bool UseStatelessRejectsIfPeerSupported() const = 0;
-    virtual bool PeerSupportsStatelessRejects() const = 0;
     virtual bool ZeroRttAttempted() const = 0;
-    virtual void SetPeerSupportsStatelessRejects(
-        bool peer_supports_stateless_rejects) = 0;
     virtual void SetPreviousCachedNetworkParams(
         CachedNetworkParameters cached_network_params) = 0;
 
@@ -191,6 +187,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStream
   const QuicCryptoNegotiatedParameters& crypto_negotiated_params()
       const override;
   CryptoMessageParser* crypto_message_parser() override;
+  void OnSuccessfulVersionNegotiation(
+      const ParsedQuicVersion& version) override;
 
  protected:
   // Provided so that subclasses can provide their own handshaker.
@@ -198,6 +196,28 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStream
 
  private:
   std::unique_ptr<HandshakerDelegate> handshaker_;
+
+  // If true, the server should use stateless rejects, so long as the
+  // client supports them, as indicated by
+  // peer_supports_stateless_rejects_.
+  bool use_stateless_rejects_if_peer_supported_;
+
+  // Set to true, once the server has received information from the
+  // client that it supports stateless reject.
+  //  TODO(jokulik): Remove once client stateless reject support
+  // becomes the default.
+  bool peer_supports_stateless_rejects_;
+
+  // Signifies whether |handshaker_| should be constructed in the
+  // QuicCryptoServerStream constructor, or whether it should be delayed until
+  // OnSuccessfulVersionNegotiation is called.
+  bool delay_handshaker_construction_;
+
+  // Arguments from QuicCryptoServerStream constructor that might need to be
+  // passed to the HandshakerDelegate constructor in its late construction.
+  const QuicCryptoServerConfig* crypto_config_;
+  QuicCompressedCertsCache* compressed_certs_cache_;
+  Helper* helper_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoServerStream);
 };

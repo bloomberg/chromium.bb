@@ -906,8 +906,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Consider receiving crypto frame on non crypto stream as memory corruption.
   bool MaybeConsiderAsMemoryCorruption(const QuicStreamFrame& frame);
 
-  const QuicTime::Delta DelayedAckTime();
-
   // Check if the connection has no outstanding data to send and notify
   // congestion controller if it is the case.
   void CheckIfApplicationLimited();

@@ -138,9 +138,9 @@ class QuicServerSessionBaseTest : public QuicTestWithParam<ParsedQuicVersion> {
     config_.SetInitialSessionFlowControlWindowToSend(
         kInitialSessionFlowControlWindowForTest);
 
+    ParsedQuicVersionVector supported_versions = SupportedVersions(GetParam());
     connection_ = new StrictMock<MockQuicConnection>(
-        &helper_, &alarm_factory_, Perspective::IS_SERVER,
-        SupportedVersions(GetParam()));
+        &helper_, &alarm_factory_, Perspective::IS_SERVER, supported_versions);
     session_.reset(new TestServerSession(
         config_, connection_, &owner_, &stream_helper_, &crypto_config_,
         &compressed_certs_cache_, &response_cache_));
@@ -149,6 +149,8 @@ class QuicServerSessionBaseTest : public QuicTestWithParam<ParsedQuicVersion> {
         QuicRandom::GetInstance(), &clock,
         QuicCryptoServerConfig::ConfigOptions()));
     session_->Initialize();
+    QuicSessionPeer::GetMutableCryptoStream(session_.get())
+        ->OnSuccessfulVersionNegotiation(supported_versions.front());
     visitor_ = QuicConnectionPeer::GetVisitor(connection_);
   }
 

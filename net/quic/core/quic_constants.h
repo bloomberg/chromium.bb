@@ -98,8 +98,10 @@ const QuicStreamId kHeadersStreamId = 3;
 // trailing headers over QUIC.
 QUIC_EXPORT_PRIVATE extern const char* const kFinalOffsetHeaderKey;
 
-// Maximum delayed ack time, in ms.
-const int64_t kMaxDelayedAckTimeMs = 25;
+// Default maximum delayed ack time, in ms.
+// Uses a 25ms delayed ack timer. Helps with better signaling
+// in low-bandwidth (< ~384 kbps), where an ack is sent per packet.
+const int64_t kDefaultDelayedAckTimeMs = 25;
 
 // Minimum tail loss probe time in ms.
 static const int64_t kMinTailLossProbeTimeoutMs = 10;
@@ -161,6 +163,9 @@ const int kMaxPromisedStreamsMultiplier = kMaxAvailableStreamsMultiplier - 1;
 // define the minimum RTO to 200ms, we will use the same until we have data to
 // support a higher or lower value.
 static const int64_t kMinRetransmissionTimeMs = 200;
+// The delayed ack time must not be greater than half the min RTO.
+static_assert(kDefaultDelayedAckTimeMs <= kMinRetransmissionTimeMs / 2,
+              "Delayed ack time must be less than or equal half the MinRTO");
 
 // We define an unsigned 16-bit floating point value, inspired by IEEE floats
 // (http://en.wikipedia.org/wiki/Half_precision_floating-point_format),

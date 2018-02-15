@@ -51,6 +51,8 @@ enum QuicRstStreamErrorCode {
   QUIC_PUSH_STREAM_TIMED_OUT,
   // Received headers were too large.
   QUIC_HEADERS_TOO_LARGE,
+  // The data is not likely arrive in time.
+  QUIC_STREAM_TTL_EXPIRED,
   // No error. Used as bound while iterating.
   QUIC_STREAM_LAST_ERROR,
 };

@@ -425,6 +425,8 @@ class QuicCryptoClientStreamStatelessTest : public QuicTest {
                                &server_connection_, &server_session);
     CHECK(server_session);
     server_session_.reset(server_session);
+    server_session_->OnSuccessfulVersionNegotiation(
+        AllSupportedVersions().front());
     crypto_test_utils::FakeServerOptions options;
     crypto_test_utils::SetupCryptoServerConfigForTest(
         server_connection_->clock(), server_connection_->random_generator(),

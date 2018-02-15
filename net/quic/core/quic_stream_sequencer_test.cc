@@ -631,6 +631,33 @@ TEST_F(QuicStreamSequencerTest, DataAvailableOnOverlappingFrames) {
   EXPECT_EQ(0u, sequencer_->NumBytesBuffered());
 }
 
+TEST_F(QuicStreamSequencerTest, OnDataAvailableWhenReadableBytesIncrease) {
+  sequencer_->set_level_triggered(true);
+  QuicStreamId id =
+      QuicSpdySessionPeer::GetNthClientInitiatedStreamId(session_, 0);
+
+  // Received [0, 5).
+  QuicStreamFrame frame1(id, false, 0, "hello");
+  EXPECT_CALL(stream_, OnDataAvailable());
+  sequencer_->OnStreamFrame(frame1);
+  EXPECT_EQ(5u, sequencer_->NumBytesBuffered());
+
+  // Without consuming the buffer bytes, continue receiving [5, 11).
+  QuicStreamFrame frame2(id, false, 5, " world");
+  // OnDataAvailable should still be called because there are more data to read.
+  EXPECT_CALL(stream_, OnDataAvailable());
+  sequencer_->OnStreamFrame(frame2);
+  EXPECT_EQ(11u, sequencer_->NumBytesBuffered());
+
+  // Without consuming the buffer bytes, continue receiving [12, 13).
+  QuicStreamFrame frame3(id, false, 5, "a");
+  // OnDataAvailable shouldn't be called becasue there are still only 11 bytes
+  // available.
+  EXPECT_CALL(stream_, OnDataAvailable()).Times(0);
+  sequencer_->OnStreamFrame(frame3);
+  EXPECT_EQ(11u, sequencer_->NumBytesBuffered());
+}
+
 TEST_F(QuicStreamSequencerTest, InOrderTimestamps) {
   // This test verifies that timestamps returned by
   // GetReadableRegion() are in the correct sequence when frames

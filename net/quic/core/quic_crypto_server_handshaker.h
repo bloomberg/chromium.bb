@@ -28,7 +28,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerHandshaker
   QuicCryptoServerHandshaker(const QuicCryptoServerConfig* crypto_config,
                              QuicCryptoServerStream* stream,
                              QuicCompressedCertsCache* compressed_certs_cache,
-                             bool use_stateless_rejects_if_peer_supported,
                              QuicSession* session,
                              QuicCryptoServerStream::Helper* helper);
 
@@ -43,11 +42,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerHandshaker
   uint8_t NumHandshakeMessagesWithServerNonces() const override;
   int NumServerConfigUpdateMessagesSent() const override;
   const CachedNetworkParameters* PreviousCachedNetworkParams() const override;
-  bool UseStatelessRejectsIfPeerSupported() const override;
-  bool PeerSupportsStatelessRejects() const override;
   bool ZeroRttAttempted() const override;
-  void SetPeerSupportsStatelessRejects(
-      bool peer_supports_stateless_rejects) override;
   void SetPreviousCachedNetworkParams(
       CachedNetworkParameters cached_network_params) override;
   bool ShouldSendExpectCTHeader() const override;
@@ -199,17 +194,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerHandshaker
 
   // Contains any source address tokens which were present in the CHLO.
   SourceAddressTokens previous_source_address_tokens_;
-
-  // If true, the server should use stateless rejects, so long as the
-  // client supports them, as indicated by
-  // peer_supports_stateless_rejects_.
-  bool use_stateless_rejects_if_peer_supported_;
-
-  // Set to true, once the server has received information from the
-  // client that it supports stateless reject.
-  //  TODO(jokulik): Remove once client stateless reject support
-  // becomes the default.
-  bool peer_supports_stateless_rejects_;
 
   // True if client attempts 0-rtt handshake (which can succeed or fail). If
   // stateless rejects are used, this variable will be false for the stateless
