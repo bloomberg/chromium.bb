@@ -687,6 +687,17 @@ void LayoutMultiColumnFlowThread::AppendNewFragmentainerGroupIfNeeded(
   }
 }
 
+void LayoutMultiColumnFlowThread::UpdateFromNG() {
+  all_columns_have_known_height_ = true;
+  for (LayoutBox* column_box = FirstMultiColumnBox(); column_box;
+       column_box = column_box->NextSiblingMultiColumnBox()) {
+    if (column_box->IsLayoutMultiColumnSet())
+      ToLayoutMultiColumnSet(column_box)->UpdateFromNG();
+    column_box->ClearNeedsLayout();
+    column_box->UpdateAfterLayout();
+  }
+}
+
 bool LayoutMultiColumnFlowThread::IsFragmentainerLogicalHeightKnown() {
   return IsPageLogicalHeightKnown();
 }

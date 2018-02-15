@@ -653,7 +653,6 @@ void LayoutMultiColumnSet::UpdateFromNG() {
   auto& group = fragmentainer_groups_[0];
   group.UpdateFromNG(LogicalHeight());
   ComputeOverflow(LogicalHeight());
-  ClearNeedsLayout();
 }
 
 }  // namespace blink

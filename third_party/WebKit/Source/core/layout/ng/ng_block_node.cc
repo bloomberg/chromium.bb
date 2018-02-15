@@ -104,16 +104,11 @@ void UpdateLegacyMultiColumnFlowThread(
                                 border_scrollbar_padding.InlineSum());
     column_set->SetLogicalHeight(column_block_size);
     column_set->EndFlow(flow_end);
-    column_set->UpdateFromNG();
   }
   // TODO(mstensho): Update all column boxes, not just the first column set
   // (like we do above). This is needed to support column-span:all.
-  for (LayoutBox* column_box = flow_thread->FirstMultiColumnBox(); column_box;
-       column_box = column_box->NextSiblingMultiColumnBox()) {
-    column_box->ClearNeedsLayout();
-    column_box->UpdateAfterLayout();
-  }
 
+  flow_thread->UpdateFromNG();
   flow_thread->ValidateColumnSets();
   flow_thread->SetLogicalHeight(flow_end);
   flow_thread->UpdateAfterLayout();
