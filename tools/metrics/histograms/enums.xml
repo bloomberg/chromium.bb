@@ -12540,6 +12540,7 @@ Called by update_net_error_codes.py.-->
   <int value="422" label="SafeBrowsingWhitelistDomains"/>
   <int value="423" label="PasswordProtectionLoginURLs"/>
   <int value="424" label="PasswordProtectionChangePasswordURL"/>
+  <int value="425" label="DeviceMachinePasswordChangeRate"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

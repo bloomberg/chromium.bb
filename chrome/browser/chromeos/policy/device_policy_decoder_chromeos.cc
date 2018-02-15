@@ -1042,6 +1042,17 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
         std::make_unique<base::Value>(container.virtual_machines_allowed()),
         nullptr);
   }
+
+  if (policy.has_device_machine_password_change_rate()) {
+    const em::DeviceMachinePasswordChangeRateProto& container(
+        policy.device_machine_password_change_rate());
+    if (container.has_rate_days()) {
+      policies->Set(key::kDeviceMachinePasswordChangeRate,
+                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                    POLICY_SOURCE_CLOUD,
+                    DecodeIntegerValue(container.rate_days()), nullptr);
+    }
+  }
 }
 
 }  // namespace
