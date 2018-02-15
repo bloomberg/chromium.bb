@@ -478,6 +478,8 @@ const IDNTestCase idn_cases[] = {
     {"xn--m1a4ne5jry.com", L"\x048f\x043d\x051f\x04ad\x048d.com", false},
     // ҏнԟҭв.com
     {"xn--b1av9v8dry.com", L"\x048f\x043d\x051f\x04ad\x0432.com", false},
+    // wmŋr.com
+    {"xn--wmr-jxa.com", L"wm\x014br.com", false},
     // шмпґ.com
     {"xn--l1agz80a.com", L"\x0448\x043c\x043f\x0491.com", false},
     // щмпґ.com
@@ -498,6 +500,9 @@ const IDNTestCase idn_cases[] = {
     {"xn--91a7osa62a.com", L"\x04ab\x04b1\x04ff\x0454.com", false},
     // ӏԃԍ.com
     {"xn--s5a8h4a.com", L"\x04cf\x0503\x050d.com", false},
+
+    // ငၔဌ၂ဝ.com (entirely made of Myanmar characters)
+    {"xn--ridq5c9hnd.com", L"\x1004\x1054\x100c" L"\x1042\x101d.com", false},
 
     // At one point the skeleton of 'w' was 'vv', ensure that
     // that it's treated as 'w'.
