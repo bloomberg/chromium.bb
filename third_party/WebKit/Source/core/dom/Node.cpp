@@ -1685,38 +1685,21 @@ String Node::DebugNodeName() const {
 
 static void DumpAttributeDesc(const Node& node,
                               const QualifiedName& name,
-                              std::ostream& ostream) {
+                              StringBuilder& builder) {
   if (!node.IsElementNode())
     return;
   const AtomicString& value = ToElement(node).getAttribute(name);
   if (value.IsEmpty())
     return;
-  ostream << ' ' << name.ToString().Utf8().data() << '=' << value;
+  builder.Append(' ');
+  builder.Append(name.ToString());
+  builder.Append("=\"");
+  builder.Append(value);
+  builder.Append("\"");
 }
 
 std::ostream& operator<<(std::ostream& ostream, const Node& node) {
-  if (node.getNodeType() == Node::kProcessingInstructionNode)
-    return ostream << "?" << node.nodeName().Utf8().data();
-  if (node.IsShadowRoot()) {
-    // nodeName of ShadowRoot is #document-fragment.  It's confused with
-    // DocumentFragment.
-    return ostream << "#shadow-root(" << ToShadowRoot(node).GetType() << ")";
-  }
-  if (node.IsDocumentTypeNode())
-    return ostream << "DOCTYPE " << node.nodeName().Utf8().data();
-
-  // We avoid to print "" by utf8().data().
-  ostream << node.nodeName().Utf8().data();
-  if (node.IsTextNode())
-    return ostream << " " << node.nodeValue();
-  DumpAttributeDesc(node, HTMLNames::idAttr, ostream);
-  DumpAttributeDesc(node, HTMLNames::classAttr, ostream);
-  DumpAttributeDesc(node, HTMLNames::styleAttr, ostream);
-  if (HasEditableStyle(node))
-    ostream << " (editable)";
-  if (node.GetDocument().FocusedElement() == &node)
-    ostream << " (focused)";
-  return ostream;
+  return ostream << node.ToString().Utf8().data();
 }
 
 std::ostream& operator<<(std::ostream& ostream, const Node* node) {
@@ -1725,15 +1708,39 @@ std::ostream& operator<<(std::ostream& ostream, const Node* node) {
   return ostream << *node;
 }
 
-#ifndef NDEBUG
-
 String Node::ToString() const {
-  // TODO(tkent): We implemented toString() with operator<<.  We should
-  // implement operator<< with toString() instead.
-  std::stringstream stream;
-  stream << *this;
-  return String(stream.str().c_str());
+  if (getNodeType() == Node::kProcessingInstructionNode)
+    return "?" + nodeName();
+  if (IsShadowRoot()) {
+    // nodeName of ShadowRoot is #document-fragment.  It's confused with
+    // DocumentFragment.
+    std::stringstream shadow_root_type;
+    shadow_root_type << ToShadowRoot(this)->GetType();
+    String shadow_root_type_str(shadow_root_type.str().c_str());
+    return "#shadow-root(" + shadow_root_type_str + ")";
+  }
+  if (IsDocumentTypeNode())
+    return "DOCTYPE " + nodeName();
+
+  StringBuilder builder;
+  builder.Append(nodeName());
+  if (IsTextNode()) {
+    builder.Append(" \"");
+    builder.Append(nodeValue());
+    builder.Append("\"");
+    return builder.ToString();
+  }
+  DumpAttributeDesc(*this, HTMLNames::idAttr, builder);
+  DumpAttributeDesc(*this, HTMLNames::classAttr, builder);
+  DumpAttributeDesc(*this, HTMLNames::styleAttr, builder);
+  if (HasEditableStyle(*this))
+    builder.Append(" (editable)");
+  if (GetDocument().FocusedElement() == this)
+    builder.Append(" (focused)");
+  return builder.ToString();
 }
+
+#ifndef NDEBUG
 
 String Node::ToTreeStringForThis() const {
   return ToMarkedTreeString(this, "*");
