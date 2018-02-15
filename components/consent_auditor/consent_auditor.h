@@ -25,7 +25,17 @@ class PrefRegistrySimple;
 
 namespace consent_auditor {
 
-enum class Feature { CHROME_SYNC };
+// These enum is used in histograms. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class Feature {
+  CHROME_SYNC = 0,
+
+  // TODO(crbug.com/645032): There is currently just one supported feature, but
+  // histograms with only one bucket are not supported. Remove this hack when
+  // more features are added, or when crbug.com/645032 is fixed.
+  FEATURE_COUNT = 2
+};
+
 enum class ConsentStatus { NOT_GIVEN, GIVEN };
 
 class ConsentAuditor : public KeyedService {
