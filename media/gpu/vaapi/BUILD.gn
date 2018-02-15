@@ -1,0 +1,121 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+import("//build/config/ui.gni")
+import("//media/gpu/args.gni")
+
+assert(use_vaapi)
+
+action("libva_generate_stubs") {
+  extra_header = "va_stub_header.fragment"
+
+  script = "//tools/generate_stubs/generate_stubs.py"
+  sources = [
+    "va.sigs",
+  ]
+  inputs = [
+    extra_header,
+  ]
+  if (use_x11) {
+    sources += [ "va_x11.sigs" ]
+  }
+  if (is_linux) {
+    sources += [ "va_drm.sigs" ]
+  }
+  stubs_filename_root = "va_stubs"
+
+  outputs = [
+    "$target_gen_dir/$stubs_filename_root.cc",
+    "$target_gen_dir/$stubs_filename_root.h",
+  ]
+  args = [
+    "-i",
+    rebase_path("$target_gen_dir", root_build_dir),
+    "-o",
+    rebase_path("$target_gen_dir", root_build_dir),
+    "-t",
+    "posix_stubs",
+    "-e",
+    rebase_path(extra_header, root_build_dir),
+    "-s",
+    stubs_filename_root,
+    "-p",
+    "media/gpu/vaapi",
+  ]
+
+  args += rebase_path(sources, root_build_dir)
+}
+
+source_set("vaapi") {
+  defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
+  sources = [
+              "va_surface.cc",
+              "va_surface.h",
+              "vaapi_jpeg_decode_accelerator.cc",
+              "vaapi_jpeg_decode_accelerator.h",
+              "vaapi_jpeg_decoder.cc",
+              "vaapi_jpeg_decoder.h",
+              "vaapi_jpeg_encode_accelerator.cc",
+              "vaapi_jpeg_encode_accelerator.h",
+              "vaapi_jpeg_encoder.cc",
+              "vaapi_jpeg_encoder.h",
+              "vaapi_picture.cc",
+              "vaapi_picture.h",
+              "vaapi_picture_factory.cc",
+              "vaapi_picture_factory.h",
+              "vaapi_video_decode_accelerator.cc",
+              "vaapi_video_decode_accelerator.h",
+              "vaapi_video_encode_accelerator.cc",
+              "vaapi_video_encode_accelerator.h",
+              "vaapi_wrapper.cc",
+              "vaapi_wrapper.h",
+            ] + get_target_outputs(":libva_generate_stubs")
+
+  configs += [ "//third_party/libyuv:libyuv_config" ]
+
+  deps = [
+    ":libva_generate_stubs",
+    "//gpu/ipc/service",
+    "//media",
+    "//media/gpu:common",
+    "//third_party/libyuv",
+  ]
+  if (use_x11) {
+    configs += [ "//build/config/linux:x11" ]
+    deps += [ "//ui/gfx/x" ]
+    sources += [
+      "vaapi_tfp_picture.cc",
+      "vaapi_tfp_picture.h",
+    ]
+  }
+
+  if (is_linux) {
+    sources += [
+      "vaapi_drm_picture.cc",
+      "vaapi_drm_picture.h",
+    ]
+  }
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
+}
+
+source_set("unit_test") {
+  testonly = true
+  sources = [
+    "vaapi_video_decode_accelerator_unittest.cc",
+  ]
+  deps = [
+    ":vaapi",
+    "//base/test:test_support",
+    "//gpu:test_support",
+    "//media/gpu:common",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/gfx:test_support",
+    "//ui/gfx/geometry",
+  ]
+}
