@@ -22,8 +22,14 @@ if (!use_system_libdrm) {
       "src/include",
       "src/include/drm",
     ]
+
+    # libdrm uses macros defined by <sys/types.h> which are being moved to
+    # <sys/sysmacros.h>.  GLIBC headers give a pragma warning in this case.
+    # Suppress this warning for now.  This may be removed once
+    # https://patchwork.kernel.org/patch/9628231/ lands.
+    cflags = [ "-Wno-#pragma-messages" ]
     if (is_clang) {
-      cflags = [ "-Wno-enum-conversion" ]
+      cflags += [ "-Wno-enum-conversion" ]
     }
   }
 
