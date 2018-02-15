@@ -9,7 +9,6 @@
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/shell_test_api.h"
-#include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
@@ -475,31 +474,6 @@ TEST_F(ShellSurfaceTest, ToggleFullscreen) {
   // Check that shell surface is maximized.
   EXPECT_EQ(CurrentContext()->bounds().width(),
             shell_surface->GetWidget()->GetWindowBoundsInScreen().width());
-}
-
-TEST_F(ShellSurfaceTest, EnsureMinimumVisibility) {
-  gfx::Size buffer_size(64, 64);
-  std::unique_ptr<Buffer> buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
-  std::unique_ptr<Surface> surface(new Surface);
-  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
-
-  gfx::Size content_size(100, 100);
-  gfx::Rect original_bounds(gfx::Point(16, 16), content_size);
-  shell_surface->SetGeometry(original_bounds);
-  surface->Attach(buffer.get());
-  surface->Commit();
-
-  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
-  int display_width = display.bounds().width();
-  gfx::Rect new_bounds(gfx::Point(display_width + 100, 10), content_size);
-  shell_surface->GetWidget()->SetBounds(new_bounds);
-  surface->Commit();
-
-  const gfx::Rect expected_bounds(display_width - ash::wm::kMinimumOnScreenArea,
-                                  10, 100, 100);
-  EXPECT_EQ(expected_bounds,
-            shell_surface->GetWidget()->GetWindowBoundsInScreen());
 }
 
 }  // namespace
