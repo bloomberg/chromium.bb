@@ -231,7 +231,8 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
   layout->StartRow(0, 0);
   header_view_ = std::make_unique<views::View>();
   PopulateSheetHeaderView(ShouldShowHeaderBackArrow(),
-                          CreateHeaderContentView(), this, header_view_.get());
+                          CreateHeaderContentView(), this, header_view_.get(),
+                          GetHeaderBackground());
   header_view_->set_owned_by_client();
   layout->AddView(header_view_.get());
 
@@ -284,8 +285,10 @@ void PaymentRequestSheetController::UpdateContentView() {
 void PaymentRequestSheetController::UpdateHeaderView() {
   header_view_->RemoveAllChildViews(true);
   PopulateSheetHeaderView(ShouldShowHeaderBackArrow(),
-                          CreateHeaderContentView(), this, header_view_.get());
+                          CreateHeaderContentView(), this, header_view_.get(),
+                          GetHeaderBackground());
   header_view_->Layout();
+  header_view_->SchedulePaint();
 }
 
 void PaymentRequestSheetController::UpdateFocus(views::View* focused_view) {
@@ -341,6 +344,12 @@ PaymentRequestSheetController::CreateHeaderContentView() {
   title_label->SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
 
   return title_label;
+}
+
+std::unique_ptr<views::Background>
+PaymentRequestSheetController::GetHeaderBackground() {
+  return views::CreateThemedSolidBackground(
+      header_view_.get(), ui::NativeTheme::kColorId_WindowBackground);
 }
 
 void PaymentRequestSheetController::ButtonPressed(views::Button* sender,

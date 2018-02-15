@@ -20,6 +20,7 @@ class AutofillProfile;
 }
 
 namespace views {
+class Background;
 class Border;
 class ButtonListener;
 class ImageView;
@@ -64,14 +65,16 @@ int GetActualDialogWidth();
 // Creates and returns a header for all the sheets in the PaymentRequest dialog.
 // The header contains an optional back arrow button (if |show_back_arrow| is
 // true), a |title| label. |delegate| becomes the delegate for the back and
-// close buttons.
+// close buttons. |background| is applied to |container| and its color is used
+// to decide which color to use to paint the arrow.
 // +---------------------------+
-// | <- | Title                |
+// | <- | header_content_view  |
 // +---------------------------+
 void PopulateSheetHeaderView(bool show_back_arrow,
                              std::unique_ptr<views::View> header_content_view,
                              views::ButtonListener* delegate,
-                             views::View* container);
+                             views::View* container,
+                             std::unique_ptr<views::Background> background);
 
 // Returns an instrument image view for the given |img| or |icon_resource_id|
 // and wanted |opacity|. Includes a rounded rect border. Callers need to set the
@@ -144,6 +147,13 @@ std::unique_ptr<views::View> CreateShippingOptionLabel(
     const base::string16& formatted_amount,
     bool emphasize_label,
     base::string16* accessible_content);
+
+// Computes a readable foreground color given |background_color| and returns it.
+// This reimplements the algorithm specified by Clank's
+// ColorUtils.shouldUseLightForegroundOnBackground rather than use
+// color_utils::GetReadableColor to provide Payment Handlers with a consistent
+// experience across platforms.
+SkColor GetForegroundColorForBackground(SkColor background_color);
 
 }  // namespace payments
 
