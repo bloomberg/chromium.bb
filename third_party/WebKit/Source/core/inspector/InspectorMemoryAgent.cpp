@@ -31,10 +31,10 @@
 #include "core/inspector/InspectorMemoryAgent.h"
 
 #include "base/debug/stack_trace.h"
-#include "common/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/inspector/InspectedFrames.h"
 #include "platform/InstanceCounters.h"
+#include "public/common/sampling_heap_profiler/sampling_heap_profiler.h"
 
 namespace blink {
 

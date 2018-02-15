@@ -7,7 +7,7 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/common/content_features.h"
-#include "third_party/WebKit/common/sampling_heap_profiler/sampling_heap_profiler.h"
+#include "third_party/WebKit/public/common/sampling_heap_profiler/sampling_heap_profiler.h"
 
 namespace content {
 namespace protocol {

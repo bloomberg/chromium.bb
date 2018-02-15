@@ -10,7 +10,7 @@
 #include "platform/testing/HistogramTester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/common/page/launching_process_state.h"
+#include "third_party/WebKit/public/common/page/launching_process_state.h"
 
 #include <map>
 #include <string>

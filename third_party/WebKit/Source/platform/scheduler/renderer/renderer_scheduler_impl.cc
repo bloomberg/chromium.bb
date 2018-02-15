@@ -34,7 +34,7 @@
 #include "platform/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 #include "public/platform/Platform.h"
 #include "public/platform/scheduler/renderer_process_type.h"
-#include "third_party/WebKit/common/page/launching_process_state.h"
+#include "third_party/WebKit/public/common/page/launching_process_state.h"
 
 namespace blink {
 namespace scheduler {
