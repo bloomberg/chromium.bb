@@ -57,7 +57,6 @@ const int kTrayDetailedViewTransitionDelayMs = 100;
 
 const int kTrayPopupLabelRightPadding = 8;
 
-const SkColor kTrayPopupHoverBackgroundColor = SkColorSetRGB(0xe4, 0xe4, 0xe4);
 const int kTrayRoundedBorderRadius = 2;
 
 const int kTrayToggleButtonWidth = 68;

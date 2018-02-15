@@ -7,7 +7,6 @@
 #include "ash/accessibility/focus_ring_layer.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/tray_background_view.h"
-#include "ash/system/tray/tray_popup_header_button.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/views/controls/button/label_button.h"
@@ -67,9 +66,6 @@ void FocusRingController::UpdateFocusRing() {
     view_bounds.Inset(1, 1, 3, 3);
   } else if (view->GetClassName() == TrayBackgroundView::kViewClassName) {
     view_bounds.Inset(1, 1, 3, 3);
-  } else if (view->GetClassName() == TrayPopupHeaderButton::kViewClassName) {
-    view_bounds = view->GetLocalBounds();
-    view_bounds.Inset(2, 1, 2, 2);
   }
 
   // Convert view bounds to widget/window coordinates.
