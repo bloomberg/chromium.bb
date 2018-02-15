@@ -60,7 +60,7 @@ static void create{{namespace}}FunctionMap() {
     g_{{namespace}}_constructors->Set(data[i].tag.LocalName(), data[i].func);
 }
 
-{{namespace}}Element* {{namespace}}ElementFactory::CreateRaw{{namespace}}Element(
+{{namespace}}Element* {{namespace}}ElementFactory::Create(
     const AtomicString& localName,
     Document& document,
     const CreateElementFlags flags) {
