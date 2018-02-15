@@ -60,7 +60,7 @@ class WebVrWprPageSet(story.StorySet):
 
     # View the Pirates: Dock model on Sketchfab
     def SketchfabInteraction(action_runner, _):
-      action_runner.WaitForNetworkQuiescence()
+      action_runner.WaitForNetworkQuiescence(timeout_in_seconds=20)
       action_runner.WaitForElement(selector='a[data-tooltip="View in VR"]')
       action_runner.TapElement(selector='a[data-tooltip="View in VR"]')
     self.AddStory(WebVrWprPage(
@@ -87,24 +87,6 @@ class WebVrWprPageSet(story.StorySet):
         'within_invasion_ep_1',
         WithinInvasionInteraction))
 
-    # Look at "randomly" generated (constant seed) geometry in Mass Migrations
-    def MassMigrationsInteraction(action_runner, _):
-      action_runner.WaitForNetworkQuiescence()
-      # All DOM elements seem to be present on the page from the start, so
-      # instead wait until the button is actually visible
-      action_runner.WaitForJavaScriptCondition(
-          condition='document.querySelector(\'div[id="footer"]\').style.display'
-                    '== "block"')
-      action_runner.TapElement(selector='a[id="vr"]')
-    self.AddStory(WebVrWprPage(
-        self,
-        # The /iaped is necessary to keep the geometry constant, as it acts as
-        # the seed for the generator - just visiting the site randomly generates
-        # geometry
-        'https://massmigrations.com/iaped',
-        'mass_migrations',
-        MassMigrationsInteraction))
-
     # Watch a girl running through a giant forest (I think) in Under Neon Lights
     # Note that this is semi-broken in that it doesn't move away from the
     # opening when you enter VR, but we're still viewing a relatively complex
@@ -123,7 +105,38 @@ class WebVrWprPageSet(story.StorySet):
         'under_neon_lights',
         UnderNeonLightsInteraction))
 
+
+class WebVrLivePageSet(WebVrWprPageSet):
+  """A superset of the  WPR page set.
+
+  Also contains sites that we would like to run with WPR, but that interact
+  badly when replayed. So, access the live version instead.
+  """
+  def __init__(self):
+    super(WebVrLivePageSet, self).__init__()
+
+    # Look at "randomly" generated (constant seed) geometry in Mass Migrations
+    # Not usable via WPR due to it often not submitting frames while using WPR
+    def MassMigrationsInteraction(action_runner, _):
+      action_runner.WaitForNetworkQuiescence()
+      # All DOM elements seem to be present on the page from the start, so
+      # instead wait until the button is actually visible
+      action_runner.WaitForJavaScriptCondition(
+          condition='document.querySelector(\'div[id="footer"]\').style.display'
+                    '== "block"')
+      action_runner.TapElement(selector='a[id="vr"]')
+    self.AddStory(WebVrWprPage(
+        self,
+        # The /iaped is necessary to keep the geometry constant, as it acts as
+        # the seed for the generator - just visiting the site randomly generates
+        # geometry
+        'https://massmigrations.com/iaped',
+        'mass_migrations',
+        MassMigrationsInteraction))
+
     # Watch dancing polyhedrons in Dance Tonite
+    # Not usable via WPR due to weird rendering issues (incorrect colors,
+    # missing geometry, etc.) that are present when using WPR
     def DanceToniteInteraction(action_runner, _):
       action_runner.WaitForNetworkQuiescence()
       action_runner.WaitForElement(selector='div.button-play')

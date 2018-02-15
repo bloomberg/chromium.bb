@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
+
 from benchmarks import memory
 from core import perf_benchmark
 from telemetry import benchmark
@@ -97,6 +99,28 @@ class XrWebVrWprStatic(_BaseWebVRBenchmark):
   @classmethod
   def Name(cls):
     return 'xr.webvr.wpr.static'
+
+
+@benchmark.Owner(emails=['bsheedy@chromium.org', 'tiborg@chromium.org'])
+class XrWebVrLiveStatic(_BaseWebVRBenchmark):
+  """Measures WebVR performance with live websites.
+
+  This is a superset of xr.webvr.wpr.static, containing all the pages that it
+  uses plus some that we would like to test with WPR, but behave differently
+  when using WPR compared to the live version.
+  """
+
+  def CreateStorySet(self, options):
+    if not hasattr(options, 'use_live_sites') or not options.use_live_sites:
+      # We log an error instead of raising an exception here because the
+      # Telemetry presubmit unittests fail if we raise.
+      logging.error('Running the live sites benchmark without using live '
+          'sites. Results will likely be incorrect for some sites.')
+    return webvr_wpr_pages.WebVrLivePageSet()
+
+  @classmethod
+  def Name(cls):
+    return 'xr.webvr.live.static'
 
 
 @benchmark.Owner(emails=['tiborg@chromium.org'])
