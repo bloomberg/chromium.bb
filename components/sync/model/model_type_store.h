@@ -47,13 +47,6 @@ namespace syncer {
 // operations.
 class ModelTypeStore {
  public:
-  // Result of store operations.
-  enum class Result {
-    SUCCESS,
-    UNSPECIFIED_ERROR,
-    SCHEMA_VERSION_TOO_HIGH,
-  };
-
   // Output of read operations is passed back as list of Record structures.
   struct Record {
     Record(const std::string& id, const std::string& value)
@@ -106,18 +99,19 @@ class ModelTypeStore {
   using IdList = std::vector<std::string>;
 
   using InitCallback =
-      base::OnceCallback<void(Result result,
+      base::OnceCallback<void(const base::Optional<ModelError>& error,
                               std::unique_ptr<ModelTypeStore> store)>;
-  using CallbackWithResult = base::OnceCallback<void(Result result)>;
+  using CallbackWithResult =
+      base::OnceCallback<void(const base::Optional<ModelError>& error)>;
   using ReadDataCallback =
-      base::OnceCallback<void(Result result,
+      base::OnceCallback<void(const base::Optional<ModelError>& error,
                               std::unique_ptr<RecordList> data_records,
                               std::unique_ptr<IdList> missing_id_list)>;
   using ReadAllDataCallback =
-      base::OnceCallback<void(Result result,
+      base::OnceCallback<void(const base::Optional<ModelError>& error,
                               std::unique_ptr<RecordList> data_records)>;
   using ReadMetadataCallback =
-      base::OnceCallback<void(base::Optional<ModelError> error,
+      base::OnceCallback<void(const base::Optional<ModelError>& error,
                               std::unique_ptr<MetadataBatch> metadata_batch)>;
 
   // CreateStore takes |path|, and will run blocking calls on a task runner
@@ -132,11 +126,9 @@ class ModelTypeStore {
   virtual ~ModelTypeStore();
 
   // Read operations return records either for all entries or only for ones
-  // identified in |id_list|. Result is SUCCESS if all records were read
-  // successfully. If reading any of records fails result is UNSPECIFIED_ERROR
-  // and RecordList contains some records that were read successfully. There is
-  // no guarantee that RecordList will contain all successfully read records in
-  // this case.
+  // identified in |id_list|. |error| is nullopt if all records were read
+  // successfully, otherwise an empty or partial list of read records is
+  // returned.
   // Callback for ReadData (ReadDataCallback) in addition receives list of ids
   // that were not found in store (missing_id_list).
   virtual void ReadData(const IdList& id_list, ReadDataCallback callback) = 0;

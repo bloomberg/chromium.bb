@@ -47,9 +47,9 @@ class ModelTypeStoreImplTest : public testing::Test {
   ModelTypeStore* store() { return store_.get(); }
 
   static void OnStoreCreated(std::unique_ptr<ModelTypeStore>* store_ref,
-                             ModelTypeStore::Result result,
+                             const base::Optional<ModelError>& error,
                              std::unique_ptr<ModelTypeStore> store) {
-    ASSERT_EQ(ModelTypeStore::Result::SUCCESS, result);
+    ASSERT_FALSE(error) << error->ToString();
     *store_ref = std::move(store);
   }
 
@@ -73,11 +73,11 @@ class ModelTypeStoreImplTest : public testing::Test {
                         const std::string& data) {
     auto write_batch = store->CreateWriteBatch();
     write_batch->WriteData(key, data);
-    ModelTypeStore::Result result;
+    base::Optional<ModelError> error;
     store->CommitWriteBatch(std::move(write_batch),
-                            base::Bind(&CaptureResult, &result));
+                            base::BindOnce(&CaptureError, &error));
     PumpLoop();
-    ASSERT_EQ(ModelTypeStore::Result::SUCCESS, result);
+    ASSERT_FALSE(error) << error->ToString();
   }
 
   static void WriteMetadata(ModelTypeStore* store,
@@ -86,11 +86,11 @@ class ModelTypeStoreImplTest : public testing::Test {
     auto write_batch = store->CreateWriteBatch();
     write_batch->GetMetadataChangeList()->UpdateMetadata(key, metadata);
 
-    ModelTypeStore::Result result;
+    base::Optional<ModelError> error;
     store->CommitWriteBatch(std::move(write_batch),
-                            base::Bind(&CaptureResult, &result));
+                            base::BindOnce(&CaptureError, &error));
     PumpLoop();
-    ASSERT_EQ(ModelTypeStore::Result::SUCCESS, result);
+    ASSERT_FALSE(error) << error->ToString();
   }
 
   static void WriteModelTypeState(ModelTypeStore* store,
@@ -98,11 +98,11 @@ class ModelTypeStoreImplTest : public testing::Test {
     auto write_batch = store->CreateWriteBatch();
     write_batch->GetMetadataChangeList()->UpdateModelTypeState(state);
 
-    ModelTypeStore::Result result;
+    base::Optional<ModelError> error;
     store->CommitWriteBatch(std::move(write_batch),
-                            base::Bind(&CaptureResult, &result));
+                            base::BindOnce(&CaptureError, &error));
     PumpLoop();
-    ASSERT_EQ(ModelTypeStore::Result::SUCCESS, result);
+    ASSERT_FALSE(error) << error->ToString();
   }
 
   static void WriteRawMetadata(ModelTypeStore* store,
@@ -111,11 +111,11 @@ class ModelTypeStoreImplTest : public testing::Test {
     auto write_batch = store->CreateWriteBatch();
     store->WriteMetadata(write_batch.get(), key, raw_metadata);
 
-    ModelTypeStore::Result result;
+    base::Optional<ModelError> error;
     store->CommitWriteBatch(std::move(write_batch),
-                            base::Bind(&CaptureResult, &result));
+                            base::BindOnce(&CaptureError, &error));
     PumpLoop();
-    ASSERT_EQ(ModelTypeStore::Result::SUCCESS, result);
+    ASSERT_FALSE(error) << error->ToString();
   }
 
   static void WriteRawModelTypeState(ModelTypeStore* store,
@@ -123,11 +123,11 @@ class ModelTypeStoreImplTest : public testing::Test {
     auto write_batch = store->CreateWriteBatch();
     store->WriteGlobalMetadata(write_batch.get(), raw_model_type_state);
 
-    ModelTypeStore::Result result;
+    base::Optional<ModelError> error;
     store->CommitWriteBatch(std::move(write_batch),
-                            base::Bind(&CaptureResult, &result));
+                            base::BindOnce(&CaptureError, &error));
     PumpLoop();
-    ASSERT_EQ(ModelTypeStore::Result::SUCCESS, result);
+    ASSERT_FALSE(error) << error->ToString();
   }
 
   void WriteTestData() {
@@ -141,52 +141,51 @@ class ModelTypeStoreImplTest : public testing::Test {
       ModelTypeStore* store,
       std::unique_ptr<ModelTypeStore::RecordList>* data_records,
       std::unique_ptr<MetadataBatch>* metadata_batch) {
-    ModelTypeStore::Result result;
-    store->ReadAllData(
-        base::Bind(&CaptureResultAndRecords, &result, data_records));
-    PumpLoop();
-    ASSERT_EQ(ModelTypeStore::Result::SUCCESS, result);
     base::Optional<ModelError> error;
-    store->ReadAllMetadata(
-        base::Bind(&CaptureErrorAndMetadataBatch, &error, metadata_batch));
+    store->ReadAllData(
+        base::BindOnce(&CaptureErrorAndRecords, &error, data_records));
     PumpLoop();
-    ASSERT_FALSE(error);
+    ASSERT_FALSE(error) << error->ToString();
+    store->ReadAllMetadata(
+        base::BindOnce(&CaptureErrorAndMetadataBatch, &error, metadata_batch));
+    PumpLoop();
+    ASSERT_FALSE(error) << error->ToString();
   }
 
   // Following functions capture parameters passed to callbacks into variables
   // provided by test. They can be passed as callbacks to ModelTypeStore
   // functions.
-  static void CaptureResult(ModelTypeStore::Result* dst,
-                            ModelTypeStore::Result result) {
-    *dst = result;
+  static void CaptureError(base::Optional<ModelError>* dst,
+                           const base::Optional<ModelError>& error) {
+    *dst = error;
   }
 
-  static void CaptureResultAndRecords(
-      ModelTypeStore::Result* dst_result,
+  static void CaptureErrorAndRecords(
+      base::Optional<ModelError>* dst_error,
       std::unique_ptr<ModelTypeStore::RecordList>* dst_records,
-      ModelTypeStore::Result result,
+      const base::Optional<ModelError>& error,
       std::unique_ptr<ModelTypeStore::RecordList> records) {
-    *dst_result = result;
+    *dst_error = error;
     *dst_records = std::move(records);
   }
 
   static void CaptureErrorAndMetadataBatch(
       base::Optional<ModelError>* dst_error,
       std::unique_ptr<MetadataBatch>* dst_batch,
-      base::Optional<ModelError> error,
+      const base::Optional<ModelError>& error,
       std::unique_ptr<MetadataBatch> batch) {
     *dst_error = error;
     *dst_batch = std::move(batch);
   }
 
-  static void CaptureResultRecordsAndIdList(
-      ModelTypeStore::Result* dst_result,
+  static void CaptureErrorRecordsAndIdList(
+      base::Optional<ModelError>* dst_error,
       std::unique_ptr<ModelTypeStore::RecordList>* dst_records,
       std::unique_ptr<ModelTypeStore::IdList>* dst_id_list,
-      ModelTypeStore::Result result,
+      const base::Optional<ModelError>& error,
       std::unique_ptr<ModelTypeStore::RecordList> records,
       std::unique_ptr<ModelTypeStore::IdList> missing_id_list) {
-    *dst_result = result;
+    *dst_error = error;
     *dst_records = std::move(records);
     *dst_id_list = std::move(missing_id_list);
   }
@@ -222,7 +221,8 @@ MATCHER_P2(RecordMatches, id, value, "") {
 TEST_F(ModelTypeStoreImplTest, CreateInMemoryStore) {
   std::unique_ptr<ModelTypeStore> store;
   ModelTypeStore::CreateInMemoryStoreForTest(
-      UNSPECIFIED, base::Bind(&ModelTypeStoreImplTest::OnStoreCreated, &store));
+      UNSPECIFIED,
+      base::BindOnce(&ModelTypeStoreImplTest::OnStoreCreated, &store));
   ASSERT_EQ(nullptr, store);
   PumpLoop();
   ASSERT_NE(nullptr, store);
@@ -261,21 +261,20 @@ TEST_F(ModelTypeStoreImplTest, MissingModelTypeState) {
   CreateStore();
   WriteTestData();
 
-  ModelTypeStore::Result result;
+  base::Optional<ModelError> error;
 
   auto write_batch = store()->CreateWriteBatch();
   write_batch->GetMetadataChangeList()->ClearModelTypeState();
   store()->CommitWriteBatch(std::move(write_batch),
-                            base::Bind(&CaptureResult, &result));
+                            base::BindOnce(&CaptureError, &error));
   PumpLoop();
-  ASSERT_EQ(ModelTypeStore::Result::SUCCESS, result);
+  ASSERT_FALSE(error) << error->ToString();
 
-  base::Optional<ModelError> error;
   std::unique_ptr<MetadataBatch> metadata_batch;
   store()->ReadAllMetadata(
-      base::Bind(&CaptureErrorAndMetadataBatch, &error, &metadata_batch));
+      base::BindOnce(&CaptureErrorAndMetadataBatch, &error, &metadata_batch));
   PumpLoop();
-  ASSERT_FALSE(error);
+  ASSERT_FALSE(error) << error->ToString();
   VerifyMetadata(std::move(metadata_batch), sync_pb::ModelTypeState(),
                  {{"id1", CreateEntityMetadata("metadata1")}});
 }
@@ -291,7 +290,7 @@ TEST_F(ModelTypeStoreImplTest, CorruptModelTypeState) {
   base::Optional<ModelError> error;
   std::unique_ptr<MetadataBatch> metadata_batch;
   store()->ReadAllMetadata(
-      base::Bind(&CaptureErrorAndMetadataBatch, &error, &metadata_batch));
+      base::BindOnce(&CaptureErrorAndMetadataBatch, &error, &metadata_batch));
   PumpLoop();
   ASSERT_TRUE(error);
   VerifyMetadata(std::move(metadata_batch), sync_pb::ModelTypeState(),
@@ -309,7 +308,7 @@ TEST_F(ModelTypeStoreImplTest, CorruptEntityMetadata) {
   base::Optional<ModelError> error;
   std::unique_ptr<MetadataBatch> metadata_batch;
   store()->ReadAllMetadata(
-      base::Bind(&CaptureErrorAndMetadataBatch, &error, &metadata_batch));
+      base::BindOnce(&CaptureErrorAndMetadataBatch, &error, &metadata_batch));
   PumpLoop();
   ASSERT_TRUE(error);
   VerifyMetadata(std::move(metadata_batch), sync_pb::ModelTypeState(),
@@ -322,7 +321,7 @@ TEST_F(ModelTypeStoreImplTest, ReadMissingDataRecords) {
   CreateStore();
   WriteTestData();
 
-  ModelTypeStore::Result result;
+  base::Optional<ModelError> error;
 
   ModelTypeStore::IdList id_list;
   id_list.push_back("id1");
@@ -331,10 +330,11 @@ TEST_F(ModelTypeStoreImplTest, ReadMissingDataRecords) {
   std::unique_ptr<ModelTypeStore::RecordList> records;
   std::unique_ptr<ModelTypeStore::IdList> missing_id_list;
 
-  store()->ReadData(id_list, base::Bind(&CaptureResultRecordsAndIdList, &result,
-                                        &records, &missing_id_list));
+  store()->ReadData(
+      id_list, base::BindOnce(&CaptureErrorRecordsAndIdList, &error, &records,
+                              &missing_id_list));
   PumpLoop();
-  ASSERT_EQ(ModelTypeStore::Result::SUCCESS, result);
+  ASSERT_FALSE(error) << error->ToString();
   ASSERT_THAT(*records,
               testing::UnorderedElementsAre(RecordMatches("id1", "data1")));
   ASSERT_THAT(*missing_id_list, testing::UnorderedElementsAre("id3"));

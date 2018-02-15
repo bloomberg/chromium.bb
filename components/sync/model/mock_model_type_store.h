@@ -16,7 +16,7 @@ namespace syncer {
 // MockModelTypeStore is implementation of ModelTypeStore that does nothing.
 // Use it when testing components that depend on ModelTypeStore.
 //
-// By default all methods return SUCCESS and empty results. It is possible to
+// By default all methods return success and empty results. It is possible to
 // register custom handlers for certain functions to override behavior. It is
 // responsibility of handler to post callback with result.
 // Here is an example:
@@ -29,8 +29,8 @@ namespace syncer {
 //       new ModelTypeStore::RecordList);
 //   record_list->push_back(ModelTypeStore::Record("id1", "value1"));
 //   base::ThreadTaskRunnerHandle::Get()->PostTask(
-//       FROM_HERE, base::Bind(callback, Result::SUCCESS,
-//                             base::Passed(record_list)));
+//       FROM_HERE, base::BindOnce(callback, /*error=*/base::nullopt,
+//                                 base::Passed(record_list)));
 // }
 //
 // MockModelTypeStore mock_model_type_store;

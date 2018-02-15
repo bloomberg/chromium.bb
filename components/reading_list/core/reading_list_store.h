@@ -125,7 +125,7 @@ class ReadingListStore : public ReadingListModelStorage {
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
 
   // Methods used as callbacks given to DataTypeStore.
-  void OnStoreCreated(syncer::ModelTypeStore::Result result,
+  void OnStoreCreated(const base::Optional<syncer::ModelError>& error,
                       std::unique_ptr<syncer::ModelTypeStore> store);
 
   class ScopedBatchUpdate : public ReadingListModelStorage::ScopedBatchUpdate {
@@ -145,10 +145,10 @@ class ReadingListStore : public ReadingListModelStorage {
   void CommitTransaction();
   // Callbacks needed for the database handling.
   void OnDatabaseLoad(
-      syncer::ModelTypeStore::Result result,
+      const base::Optional<syncer::ModelError>& error,
       std::unique_ptr<syncer::ModelTypeStore::RecordList> entries);
-  void OnDatabaseSave(syncer::ModelTypeStore::Result result);
-  void OnReadAllMetadata(base::Optional<syncer::ModelError> error,
+  void OnDatabaseSave(const base::Optional<syncer::ModelError>& error);
+  void OnReadAllMetadata(const base::Optional<syncer::ModelError>& error,
                          std::unique_ptr<syncer::MetadataBatch> metadata_batch);
 
   void AddEntryToBatch(syncer::MutableDataBatch* batch,

@@ -123,12 +123,11 @@ void ReadingListStore::RemoveEntry(const ReadingListEntry& entry) {
 }
 
 void ReadingListStore::OnDatabaseLoad(
-    syncer::ModelTypeStore::Result result,
+    const base::Optional<syncer::ModelError>& error,
     std::unique_ptr<syncer::ModelTypeStore::RecordList> entries) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (result != syncer::ModelTypeStore::Result::SUCCESS) {
-    change_processor()->ReportError(
-        {FROM_HERE, "Cannot load Reading List Database."});
+  if (error) {
+    change_processor()->ReportError(*error);
     return;
   }
   auto loaded_entries =
@@ -159,7 +158,7 @@ void ReadingListStore::OnDatabaseLoad(
 }
 
 void ReadingListStore::OnReadAllMetadata(
-    base::Optional<syncer::ModelError> error,
+    const base::Optional<syncer::ModelError>& error,
     std::unique_ptr<syncer::MetadataBatch> metadata_batch) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error) {
@@ -169,15 +168,16 @@ void ReadingListStore::OnReadAllMetadata(
   }
 }
 
-void ReadingListStore::OnDatabaseSave(syncer::ModelTypeStore::Result result) {
+void ReadingListStore::OnDatabaseSave(
+    const base::Optional<syncer::ModelError>& error) {
   return;
 }
 
 void ReadingListStore::OnStoreCreated(
-    syncer::ModelTypeStore::Result result,
+    const base::Optional<syncer::ModelError>& error,
     std::unique_ptr<syncer::ModelTypeStore> store) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (result != syncer::ModelTypeStore::Result::SUCCESS) {
+  if (error) {
     // TODO(crbug.com/664926): handle store creation error.
     return;
   }

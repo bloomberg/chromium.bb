@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/model/model_type_sync_bridge.h"
 #include "components/sync/user_events/global_id_mapper.h"
@@ -42,20 +43,20 @@ class UserEventSyncBridge : public ModelTypeSyncBridge {
   void RecordUserEvent(std::unique_ptr<sync_pb::UserEventSpecifics> specifics);
 
  private:
-  void OnStoreCreated(ModelTypeStore::Result result,
+  void OnStoreCreated(const base::Optional<ModelError>& error,
                       std::unique_ptr<ModelTypeStore> store);
-  void OnReadAllMetadata(base::Optional<ModelError> error,
+  void OnReadAllMetadata(const base::Optional<ModelError>& error,
                          std::unique_ptr<MetadataBatch> metadata_batch);
-  void OnCommit(ModelTypeStore::Result result);
+  void OnCommit(const base::Optional<ModelError>& error);
   void OnReadData(DataCallback callback,
-                  ModelTypeStore::Result result,
+                  const base::Optional<ModelError>& error,
                   std::unique_ptr<ModelTypeStore::RecordList> data_records,
                   std::unique_ptr<ModelTypeStore::IdList> missing_id_list);
   void OnReadAllData(DataCallback callback,
-                     ModelTypeStore::Result result,
+                     const base::Optional<ModelError>& error,
                      std::unique_ptr<ModelTypeStore::RecordList> data_records);
   void OnReadAllDataToDelete(
-      ModelTypeStore::Result result,
+      const base::Optional<ModelError>& error,
       std::unique_ptr<ModelTypeStore::RecordList> data_records);
 
   void HandleGlobalIdChange(int64_t old_global_id, int64_t new_global_id);

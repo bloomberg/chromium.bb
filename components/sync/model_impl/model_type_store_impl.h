@@ -67,7 +67,7 @@ class ModelTypeStoreImpl : public ModelTypeStore {
 
   static void BackendInitDone(
       const ModelType type,
-      std::unique_ptr<Result> result,
+      std::unique_ptr<base::Optional<ModelError>> result,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
       InitCallback callback,
       scoped_refptr<ModelTypeStoreBackend> backend);
@@ -87,19 +87,20 @@ class ModelTypeStoreImpl : public ModelTypeStore {
   void ReadDataDone(ReadDataCallback callback,
                     std::unique_ptr<RecordList> record_list,
                     std::unique_ptr<IdList> missing_id_list,
-                    Result result);
+                    const base::Optional<ModelError>& error);
   void ReadAllDataDone(ReadAllDataCallback callback,
                        std::unique_ptr<RecordList> record_list,
-                       Result result);
+                       const base::Optional<ModelError>& error);
   void ReadMetadataRecordsDone(ReadMetadataCallback callback,
                                std::unique_ptr<RecordList> metadata_records,
-                               Result result);
+                               const base::Optional<ModelError>& error);
   void ReadAllMetadataDone(ReadMetadataCallback callback,
                            std::unique_ptr<RecordList> metadata_records,
                            std::unique_ptr<RecordList> global_metadata_records,
                            std::unique_ptr<IdList> missing_id_list,
-                           Result result);
-  void WriteModificationsDone(CallbackWithResult callback, Result result);
+                           const base::Optional<ModelError>& error);
+  void WriteModificationsDone(CallbackWithResult callback,
+                              const base::Optional<ModelError>& error);
 
   // Parse the serialized metadata into protos and pass them to |callback|.
   void DeserializeMetadata(ReadMetadataCallback callback,

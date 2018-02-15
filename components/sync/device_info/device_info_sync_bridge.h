@@ -84,13 +84,13 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   void OnProviderInitialized();
 
   // Methods used as callbacks given to DataTypeStore.
-  void OnStoreCreated(ModelTypeStore::Result result,
+  void OnStoreCreated(const base::Optional<syncer::ModelError>& error,
                       std::unique_ptr<ModelTypeStore> store);
-  void OnReadAllData(ModelTypeStore::Result result,
+  void OnReadAllData(const base::Optional<syncer::ModelError>& error,
                      std::unique_ptr<ModelTypeStore::RecordList> record_list);
-  void OnReadAllMetadata(base::Optional<ModelError> error,
+  void OnReadAllMetadata(const base::Optional<syncer::ModelError>& error,
                          std::unique_ptr<MetadataBatch> metadata_batch);
-  void OnCommit(ModelTypeStore::Result result);
+  void OnCommit(const base::Optional<syncer::ModelError>& error);
 
   // Load metadata if the data is loaded and the provider is initialized.
   void LoadMetadataIfReady();

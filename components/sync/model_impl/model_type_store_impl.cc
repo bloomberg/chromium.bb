@@ -131,12 +131,12 @@ void ModelTypeStoreImpl::CreateStore(ModelType type,
   std::unique_ptr<leveldb::Env> env;
   scoped_refptr<base::SequencedTaskRunner> task_runner =
       task_runner_map_singleton.Get().GetOrCreateTaskRunner(path);
-  std::unique_ptr<Result> result(new Result());
+  auto error = std::make_unique<base::Optional<ModelError>>();
   auto task = base::BindOnce(&ModelTypeStoreBackend::GetOrCreateBackend, path,
-                             std::move(env), result.get());
+                             std::move(env), error.get());
   auto reply =
       base::BindOnce(&ModelTypeStoreImpl::BackendInitDone, type,
-                     std::move(result), task_runner, std::move(callback));
+                     std::move(error), task_runner, std::move(callback));
   base::PostTaskAndReplyWithResult(task_runner.get(), FROM_HERE,
                                    std::move(task), std::move(reply));
 }
@@ -157,13 +157,12 @@ void ModelTypeStoreImpl::CreateInMemoryStoreForTest(ModelType type,
   scoped_refptr<base::SequencedTaskRunner> task_runner =
       base::ThreadTaskRunnerHandle::Get();
 
-  std::unique_ptr<Result> result(new Result());
-
+  auto error = std::make_unique<base::Optional<ModelError>>();
   auto task = base::BindOnce(&ModelTypeStoreBackend::GetOrCreateBackend, path,
-                             std::move(env), result.get());
+                             std::move(env), error.get());
   auto reply =
       base::BindOnce(&ModelTypeStoreImpl::BackendInitDone, type,
-                     std::move(result), task_runner, std::move(callback));
+                     std::move(error), task_runner, std::move(callback));
 
   base::PostTaskAndReplyWithResult(task_runner.get(), FROM_HERE,
                                    std::move(task), std::move(reply));
@@ -172,16 +171,16 @@ void ModelTypeStoreImpl::CreateInMemoryStoreForTest(ModelType type,
 // static
 void ModelTypeStoreImpl::BackendInitDone(
     ModelType type,
-    std::unique_ptr<Result> result,
+    std::unique_ptr<base::Optional<ModelError>> error,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     InitCallback callback,
     scoped_refptr<ModelTypeStoreBackend> backend) {
   std::unique_ptr<ModelTypeStoreImpl> store;
-  if (*result == Result::SUCCESS) {
+  if (!error->has_value()) {
     store.reset(new ModelTypeStoreImpl(type, backend, blocking_task_runner));
   }
 
-  std::move(callback).Run(*result, std::move(store));
+  std::move(callback).Run(*error, std::move(store));
 }
 
 // Note on pattern for communicating with backend:
@@ -216,9 +215,9 @@ void ModelTypeStoreImpl::ReadData(const IdList& id_list,
 void ModelTypeStoreImpl::ReadDataDone(ReadDataCallback callback,
                                       std::unique_ptr<RecordList> record_list,
                                       std::unique_ptr<IdList> missing_id_list,
-                                      Result result) {
+                                      const base::Optional<ModelError>& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::move(callback).Run(result, std::move(record_list),
+  std::move(callback).Run(error, std::move(record_list),
                           std::move(missing_id_list));
 }
 
@@ -239,9 +238,9 @@ void ModelTypeStoreImpl::ReadAllData(ReadAllDataCallback callback) {
 void ModelTypeStoreImpl::ReadAllDataDone(
     ReadAllDataCallback callback,
     std::unique_ptr<RecordList> record_list,
-    Result result) {
+    const base::Optional<ModelError>& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::move(callback).Run(result, std::move(record_list));
+  std::move(callback).Run(error, std::move(record_list));
 }
 
 void ModelTypeStoreImpl::ReadAllMetadata(ReadMetadataCallback callback) {
@@ -266,11 +265,10 @@ void ModelTypeStoreImpl::ReadAllMetadata(ReadMetadataCallback callback) {
 void ModelTypeStoreImpl::ReadMetadataRecordsDone(
     ReadMetadataCallback callback,
     std::unique_ptr<RecordList> metadata_records,
-    Result result) {
+    const base::Optional<ModelError>& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (result != Result::SUCCESS) {
-    std::move(callback).Run(ModelError(FROM_HERE, "Reading metadata failed."),
-                            std::make_unique<MetadataBatch>());
+  if (error) {
+    std::move(callback).Run(*error, std::make_unique<MetadataBatch>());
     return;
   }
 
@@ -296,12 +294,11 @@ void ModelTypeStoreImpl::ReadAllMetadataDone(
     std::unique_ptr<RecordList> metadata_records,
     std::unique_ptr<RecordList> global_metadata_records,
     std::unique_ptr<IdList> missing_id_list,
-    Result result) {
+    const base::Optional<ModelError>& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (result != Result::SUCCESS) {
-    std::move(callback).Run(ModelError(FROM_HERE, "Reading metadata failed."),
-                            std::make_unique<MetadataBatch>());
+  if (error) {
+    std::move(callback).Run(*error, std::make_unique<MetadataBatch>());
     return;
   }
 
@@ -373,10 +370,11 @@ void ModelTypeStoreImpl::CommitWriteBatch(
                                    std::move(task), std::move(reply));
 }
 
-void ModelTypeStoreImpl::WriteModificationsDone(CallbackWithResult callback,
-                                                Result result) {
+void ModelTypeStoreImpl::WriteModificationsDone(
+    CallbackWithResult callback,
+    const base::Optional<ModelError>& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::move(callback).Run(result);
+  std::move(callback).Run(error);
 }
 
 void ModelTypeStoreImpl::WriteData(WriteBatch* write_batch,

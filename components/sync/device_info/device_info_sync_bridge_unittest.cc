@@ -36,7 +36,6 @@ using sync_pb::ModelTypeState;
 using DeviceInfoList = std::vector<std::unique_ptr<DeviceInfo>>;
 using StorageKeyList = ModelTypeSyncBridge::StorageKeyList;
 using RecordList = ModelTypeStore::RecordList;
-using Result = ModelTypeStore::Result;
 using StartCallback = ModelTypeChangeProcessor::StartCallback;
 using WriteBatch = ModelTypeStore::WriteBatch;
 
@@ -90,8 +89,8 @@ ModelTypeState StateWithEncryption(const std::string& encryption_key_name) {
   return state;
 }
 
-void VerifyResultIsSuccess(Result result) {
-  EXPECT_EQ(Result::SUCCESS, result);
+void VerifyResultIsSuccess(const base::Optional<ModelError>& result) {
+  EXPECT_FALSE(result.has_value()) << result->ToString();
 }
 
 void VerifyEqual(const DeviceInfoSpecifics& s1, const DeviceInfoSpecifics& s2) {
