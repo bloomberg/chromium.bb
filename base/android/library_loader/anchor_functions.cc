@@ -30,6 +30,18 @@
 // functions are not aliased, in case the toolchain becomes really clever.
 extern "C" {
 
+// These functions have a well-defined ordering in this file, see the comment
+// in |IsOrderingSane()|.
+void dummy_function_end_of_ordered_text() {
+  asm(".word 0x21bad44d");
+  asm(".word 0xb815c5b0");
+}
+
+void dummy_function_start_of_ordered_text() {
+  asm(".word 0xe4a07375");
+  asm(".word 0x66dda6dc");
+}
+
 void dummy_function_to_check_ordering() {
   asm(".word 0xe19c683d");
   asm(".word 0xb3d2b56");
@@ -65,6 +77,10 @@ const size_t kStartOfText =
     reinterpret_cast<size_t>(dummy_function_to_anchor_text);
 const size_t kEndOfText =
     reinterpret_cast<size_t>(dummy_function_at_the_end_of_text);
+const size_t kStartOfOrderedText =
+    reinterpret_cast<size_t>(dummy_function_start_of_ordered_text);
+const size_t kEndOfOrderedText =
+    reinterpret_cast<size_t>(dummy_function_end_of_ordered_text);
 
 bool IsOrderingSane() {
   size_t dummy = reinterpret_cast<size_t>(&dummy_function_to_check_ordering);
@@ -73,8 +89,13 @@ bool IsOrderingSane() {
   // dummy_function_to_anchor_text() should then be after
   // dummy_function_to_check_ordering() without ordering.
   // This check is thus intended to catch the lack of ordering.
+  //
+  // Ordered text can start at the start of text, but should not cover the
+  // entire range. Addresses are distinct nonetheless as the symbols are
+  // different.
   return kStartOfText < dummy && dummy < kEndOfText && kStartOfText < here &&
-         here < kEndOfText;
+         here < kEndOfText && kStartOfOrderedText < kEndOfOrderedText &&
+         kStartOfText < kStartOfOrderedText && kEndOfOrderedText < kEndOfText;
 }
 
 }  // namespace android
