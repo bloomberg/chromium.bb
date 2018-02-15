@@ -36,7 +36,6 @@ import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.ui.UiUtils;
 
 import java.util.List;
-import java.util.Locale;
 
 /**
  * The view for a downloaded item displayed in the Downloads list.
@@ -245,12 +244,17 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         mFilenameCompletedView.setText(item.getDisplayFileName());
         mFilenameInProgressView.setText(item.getDisplayFileName());
 
-        String description = String.format(Locale.getDefault(), "%s - %s",
-                Formatter.formatFileSize(context, item.getFileSize()), item.getDisplayHostname());
+        String description = context.getString(R.string.download_manager_list_item_description,
+                Formatter.formatFileSize(getContext(), item.getFileSize()),
+                item.getDisplayHostname());
         mDescriptionCompletedView.setText(description);
 
         if (item.isComplete()) {
             showLayout(mLayoutCompleted);
+
+            // To ensure that text views have correct width after recycling, we have to request
+            // re-layout.
+            mFilenameCompletedView.requestLayout();
         } else {
             showLayout(mLayoutInProgress);
             mDownloadStatusView.setText(item.getStatusString());

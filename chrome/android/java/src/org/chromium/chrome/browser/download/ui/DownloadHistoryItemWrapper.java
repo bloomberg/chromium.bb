@@ -79,6 +79,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
     protected File mFile;
     private Long mStableId;
     private boolean mIsDeletionPending;
+    private boolean mShouldShowRecentBadge;
 
     private DownloadHistoryItemWrapper(BackendProvider provider, ComponentName component) {
         mBackendProvider = provider;
@@ -218,6 +219,16 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
      * @return Whether the file associated with the download item was deleted.
      */
     abstract boolean removePermanently();
+
+    /** @return Whether this item should be marked as NEW in download home. */
+    public boolean shouldShowRecentBadge() {
+        return mShouldShowRecentBadge;
+    }
+
+    /** Set whether this item should be badged as NEW addition. */
+    public void setShouldShowRecentBadge(boolean shouldShowRecentBadge) {
+        mShouldShowRecentBadge = shouldShowRecentBadge;
+    }
 
     protected void recordOpenSuccess() {
         RecordUserAction.record("Android.DownloadManager.Item.OpenSucceeded");

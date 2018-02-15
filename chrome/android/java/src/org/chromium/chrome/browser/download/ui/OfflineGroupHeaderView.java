@@ -7,8 +7,10 @@ package org.chromium.chrome.browser.download.ui;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.text.format.DateUtils;
 import android.text.format.Formatter;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -22,7 +24,6 @@ import org.chromium.chrome.browser.widget.DateDividedAdapter.TimedItem;
 import org.chromium.chrome.browser.widget.TintedImageView;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 
-import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -43,6 +44,7 @@ public class OfflineGroupHeaderView
     private TextView mDescriptionTextView;
     private ImageView mExpandImage;
     private TintedImageView mIconImageView;
+    private View mNewBadgeView;
 
     public OfflineGroupHeaderView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -67,6 +69,7 @@ public class OfflineGroupHeaderView
         mIconImageView = (TintedImageView) findViewById(R.id.icon_view);
         mDescriptionTextView = (TextView) findViewById(R.id.description);
         mExpandImage = (ImageView) findViewById(R.id.expand_icon);
+        mNewBadgeView = findViewById(R.id.new_badge);
     }
 
     /**
@@ -99,13 +102,17 @@ public class OfflineGroupHeaderView
     public void displayHeader(SubsectionHeader header) {
         this.mHeader = header;
         // TODO(crbug.com/635567): Fix lint properly.
-        String description = String.format(Locale.getDefault(), "%s - %s",
-                Formatter.formatFileSize(getContext(), header.getTotalFileSize()),
-                getContext().getString(R.string.download_manager_offline_header_description));
+        CharSequence timeSinceLastUpdate = DateUtils.getRelativeTimeSpanString(
+                header.getTimestamp(), System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS);
+        String totalFileSize = Formatter.formatFileSize(getContext(), header.getTotalFileSize());
+        String description =
+                getContext().getString(R.string.download_manager_offline_header_description,
+                        totalFileSize, timeSinceLastUpdate);
         mDescriptionTextView.setText(description);
         updateExpandIcon(header.isExpanded());
         setChecked(mSelectionDelegate.isHeaderSelected(header));
         updateCheckIcon(isChecked());
+        mNewBadgeView.setVisibility(header.shouldShowRecentBadge() ? View.VISIBLE : View.GONE);
     }
 
     private void updateExpandIcon(boolean expanded) {
