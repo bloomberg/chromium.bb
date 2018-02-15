@@ -164,20 +164,16 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
     // force loading to start and set the state to loading. This will cause a
     // frame start event to be received, and the frame stop event will not be
     // received until all frames are loaded.  Loading is forced to start by
-    // attaching a temporary iframe.  Forcing loading to start is not
-    // necessary if the main frame is not yet loaded.
+    // attaching a temporary iframe.
     const std::string kStartLoadingIfMainFrameNotLoading = base::StringPrintf(
-       "var isLoaded = document.readyState == 'complete' ||"
-       "    document.readyState == 'interactive';"
-       "if (isLoaded) {"
-       "  var frame = document.createElement('iframe');"
-       "  frame.name = '%s';"
-       "  frame.src = '%s';"
-       "  document.body.appendChild(frame);"
-       "  window.setTimeout(function() {"
-       "    document.body.removeChild(frame);"
-       "  }, 0);"
-       "}", kDummyFrameName, kDummyFrameUrl);
+        "var frame = document.createElement('iframe');"
+        "frame.name = '%s';"
+        "frame.src = '%s';"
+        "document.body.appendChild(frame);"
+        "window.setTimeout(function() {"
+        "  document.body.removeChild(frame);"
+        "}, 0);",
+        kDummyFrameName, kDummyFrameUrl);
     base::DictionaryValue params;
     params.SetString("expression", kStartLoadingIfMainFrameNotLoading);
     status = client_->SendCommandAndGetResultWithTimeout(
