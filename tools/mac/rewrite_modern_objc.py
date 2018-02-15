@@ -101,7 +101,7 @@ def main():
     flags = ['-Xclang', '-mt-migrate-directory', '-Xclang', rewrite_dir]
     flags += ['-Xclang', '-objcmt-migrate-subscripting' ]
     flags += ['-Xclang', '-objcmt-migrate-literals' ]
-    flags += ['-Xclang', '-objcmt-returns-innerpointer-property']
+    #flags += ['-Xclang', '-objcmt-returns-innerpointer-property'] # buggy
     #flags += ['-Xclang', '-objcmt-migrate-property-dot-syntax'] # do not want
     # objcmt-migrate-all is the same as the flags following it here (it does
     # not include the flags listed above it).
@@ -113,10 +113,11 @@ def main():
     flags += ['-Xclang', '-objcmt-migrate-annotation']
     flags += ['-Xclang', '-objcmt-migrate-instancetype']
     flags += ['-Xclang', '-objcmt-migrate-ns-macros']
-    flags += ['-Xclang', '-objcmt-migrate-protocol-conformance']
+    #flags += ['-Xclang', '-objcmt-migrate-protocol-conformance'] # buggy
     #flags += ['-Xclang', '-objcmt-atomic-property']  # not sure if want
     #flags += ['-Xclang', '-objcmt-ns-nonatomic-iosonly']  # not sure if want
-    flags += ['-Xclang', '-objcmt-migrate-designated-init']
+    # Want, but needs careful manual review, and doesn't find everything:
+    #flags += ['-Xclang', '-objcmt-migrate-designated-init']
     clang_cmd += ' ' + ' '.join(flags)
 
     print objc_file
