@@ -132,11 +132,12 @@ TEST_P(LinkLoaderPreloadTest, Preload) {
   LinkLoader* loader = LinkLoader::Create(loader_client.Get());
   KURL href_url = KURL(NullURL(), test_case.href);
   URLTestHelpers::RegisterMockedErrorURLLoad(href_url);
-  loader->LoadLink(LinkRelAttribute("preload"), kCrossOriginAttributeNotSet,
-                   test_case.type, test_case.as, test_case.media,
-                   test_case.nonce, String() /* integrity */,
-                   test_case.referrer_policy, href_url,
-                   dummy_page_holder->GetDocument(), NetworkHintsMock());
+  LinkLoadParameters params(
+      LinkRelAttribute("preload"), kCrossOriginAttributeNotSet, test_case.type,
+      test_case.as, test_case.media, test_case.nonce, String() /* integrity */,
+      test_case.referrer_policy, href_url);
+  loader->LoadLink(params, dummy_page_holder->GetDocument(),
+                   NetworkHintsMock());
   if (test_case.expecting_load &&
       test_case.priority != ResourceLoadPriority::kUnresolved) {
     ASSERT_EQ(1, fetcher->CountPreloads());
@@ -392,11 +393,13 @@ TEST_P(LinkLoaderModulePreloadTest, ModulePreload) {
       MockLinkLoaderClient::Create(true);
   LinkLoader* loader = LinkLoader::Create(loader_client.Get());
   KURL href_url = KURL(NullURL(), test_case.href);
-  loader->LoadLink(LinkRelAttribute("modulepreload"), test_case.cross_origin,
-                   String() /* type */, String() /* as */, String() /* media */,
-                   test_case.nonce, test_case.integrity,
-                   test_case.referrer_policy, href_url,
-                   dummy_page_holder->GetDocument(), NetworkHintsMock());
+  LinkLoadParameters params(LinkRelAttribute("modulepreload"),
+                            test_case.cross_origin, String() /* type */,
+                            String() /* as */, String() /* media */,
+                            test_case.nonce, test_case.integrity,
+                            test_case.referrer_policy, href_url);
+  loader->LoadLink(params, dummy_page_holder->GetDocument(),
+                   NetworkHintsMock());
   ASSERT_EQ(test_case.expecting_load, modulator->fetched());
 }
 
@@ -435,10 +438,12 @@ TEST(LinkLoaderTest, Prefetch) {
     LinkLoader* loader = LinkLoader::Create(loader_client.Get());
     KURL href_url = KURL(NullURL(), test_case.href);
     URLTestHelpers::RegisterMockedErrorURLLoad(href_url);
-    loader->LoadLink(LinkRelAttribute("prefetch"), kCrossOriginAttributeNotSet,
-                     test_case.type, "", test_case.media, "", "",
-                     test_case.referrer_policy, href_url,
-                     dummy_page_holder->GetDocument(), NetworkHintsMock());
+    LinkLoadParameters params(LinkRelAttribute("prefetch"),
+                              kCrossOriginAttributeNotSet, test_case.type, "",
+                              test_case.media, "", "",
+                              test_case.referrer_policy, href_url);
+    loader->LoadLink(params, dummy_page_holder->GetDocument(),
+                     NetworkHintsMock());
     ASSERT_TRUE(dummy_page_holder->GetDocument().Fetcher());
     Resource* resource = loader->GetResourceForTesting();
     if (test_case.expecting_load) {
@@ -480,10 +485,11 @@ TEST(LinkLoaderTest, DNSPrefetch) {
     LinkLoader* loader = LinkLoader::Create(loader_client.Get());
     KURL href_url = KURL(KURL(String("http://example.com")), test_case.href);
     NetworkHintsMock network_hints;
-    loader->LoadLink(LinkRelAttribute("dns-prefetch"),
-                     kCrossOriginAttributeNotSet, String(), String(), String(),
-                     String(), String(), kReferrerPolicyDefault, href_url,
-                     dummy_page_holder->GetDocument(), network_hints);
+    LinkLoadParameters params(LinkRelAttribute("dns-prefetch"),
+                              kCrossOriginAttributeNotSet, String(), String(),
+                              String(), String(), String(),
+                              kReferrerPolicyDefault, href_url);
+    loader->LoadLink(params, dummy_page_holder->GetDocument(), network_hints);
     EXPECT_FALSE(network_hints.DidPreconnect());
     EXPECT_EQ(test_case.should_load, network_hints.DidDnsPrefetch());
   }
@@ -514,10 +520,11 @@ TEST(LinkLoaderTest, Preconnect) {
     LinkLoader* loader = LinkLoader::Create(loader_client.Get());
     KURL href_url = KURL(KURL(String("http://example.com")), test_case.href);
     NetworkHintsMock network_hints;
-    loader->LoadLink(LinkRelAttribute("preconnect"), test_case.cross_origin,
-                     String(), String(), String(), String(), String(),
-                     kReferrerPolicyDefault, href_url,
-                     dummy_page_holder->GetDocument(), network_hints);
+    LinkLoadParameters params(LinkRelAttribute("preconnect"),
+                              test_case.cross_origin, String(), String(),
+                              String(), String(), String(),
+                              kReferrerPolicyDefault, href_url);
+    loader->LoadLink(params, dummy_page_holder->GetDocument(), network_hints);
     EXPECT_EQ(test_case.should_load, network_hints.DidPreconnect());
     EXPECT_EQ(test_case.is_https, network_hints.IsHTTPS());
     EXPECT_EQ(test_case.is_cross_origin, network_hints.IsCrossOrigin());
@@ -535,10 +542,12 @@ TEST(LinkLoaderTest, PreloadAndPrefetch) {
   LinkLoader* loader = LinkLoader::Create(loader_client.Get());
   KURL href_url = KURL(KURL(), "https://www.example.com/");
   URLTestHelpers::RegisterMockedErrorURLLoad(href_url);
-  loader->LoadLink(LinkRelAttribute("preload prefetch"),
-                   kCrossOriginAttributeNotSet, "application/javascript",
-                   "script", "", "", "", kReferrerPolicyDefault, href_url,
-                   dummy_page_holder->GetDocument(), NetworkHintsMock());
+  LinkLoadParameters params(LinkRelAttribute("preload prefetch"),
+                            kCrossOriginAttributeNotSet,
+                            "application/javascript", "script", "", "", "",
+                            kReferrerPolicyDefault, href_url);
+  loader->LoadLink(params, dummy_page_holder->GetDocument(),
+                   NetworkHintsMock());
   ASSERT_EQ(1, fetcher->CountPreloads());
   Resource* resource = loader->GetResourceForTesting();
   ASSERT_NE(resource, nullptr);

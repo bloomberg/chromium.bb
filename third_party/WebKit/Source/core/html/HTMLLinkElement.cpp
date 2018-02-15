@@ -126,19 +126,9 @@ bool HTMLLinkElement::ShouldLoadLink() {
          !href.PotentiallyDanglingMarkup();
 }
 
-bool HTMLLinkElement::LoadLink(const String& type,
-                               const String& as,
-                               const String& media,
-                               const String& nonce,
-                               const String& integrity,
-                               ReferrerPolicy referrer_policy,
-                               const KURL& url) {
-  return link_loader_->LoadLink(
-      rel_attribute_,
-      GetCrossOriginAttributeValue(
-          FastGetAttribute(HTMLNames::crossoriginAttr)),
-      type, as, media, nonce, integrity, referrer_policy, url, GetDocument(),
-      NetworkHintsInterfaceImpl());
+bool HTMLLinkElement::LoadLink(const LinkLoadParameters& params) {
+  return link_loader_->LoadLink(params, GetDocument(),
+                                NetworkHintsInterfaceImpl());
 }
 
 LinkResource* HTMLLinkElement::LinkResourceToProcess() {

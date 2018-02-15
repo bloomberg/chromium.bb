@@ -43,6 +43,7 @@ namespace blink {
 
 class KURL;
 class LinkImport;
+struct LinkLoadParameters;
 
 class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
                                           public LinkLoaderClient {
@@ -98,13 +99,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   bool ShouldLoadLink() override;
 
   // For LinkStyle
-  bool LoadLink(const String& type,
-                const String& as,
-                const String& media,
-                const String& nonce,
-                const String& integrity,
-                ReferrerPolicy,
-                const KURL&);
+  bool LoadLink(const LinkLoadParameters&);
   bool IsAlternate() const {
     return GetLinkStyle()->IsUnset() && rel_attribute_.IsAlternate();
   }
