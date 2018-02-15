@@ -396,16 +396,12 @@ public class OverlayPanelContent {
 
     /**
      * Calls updateBrowserControlsState on the ContentViewCore.
-     * @param enableHiding Enable the toolbar's ability to hide.
-     * @param enableShowing If the toolbar is allowed to show.
-     * @param animate If the toolbar should animate when showing/hiding.
+     * @param areControlsHidden Whether the browser controls are hidden for the web contents. If
+     *                          false, the web contents viewport always accounts for the controls.
+     *                          Otherwise the web contents never accounts for them.
      */
-    public void updateBrowserControlsState(
-            boolean enableHiding, boolean enableShowing, boolean animate) {
-        if (mContentViewCore != null && mContentViewCore.getWebContents() != null) {
-            mContentViewCore.getWebContents().updateBrowserControlsState(
-                    enableHiding, enableShowing, animate);
-        }
+    public void updateBrowserControlsState(boolean areControlsHidden) {
+        nativeUpdateBrowserControlsState(mNativeOverlayPanelContentPtr, areControlsHidden);
     }
 
     /**
@@ -556,4 +552,6 @@ public class OverlayPanelContent {
     private native void nativeDestroyWebContents(long nativeOverlayPanelContent);
     private native void nativeSetInterceptNavigationDelegate(long nativeOverlayPanelContent,
             InterceptNavigationDelegate delegate, WebContents webContents);
+    private native void nativeUpdateBrowserControlsState(
+            long nativeOverlayPanelContent, boolean areControlsHidden);
 }
