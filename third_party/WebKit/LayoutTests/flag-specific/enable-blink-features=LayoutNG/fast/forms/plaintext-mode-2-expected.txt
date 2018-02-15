@@ -25,13 +25,13 @@ layer at (0,0) size 800x122
           text run at (157,0) width 403: " will be pasted into the textfield. All richness should be stripped."
       LayoutNGBlockFlow {OL} at (0,58) size 784x40
         LayoutNGListItem {LI} at (40,0) size 744x20
-          LayoutNGBlockFlow (anonymous) at (-16,0) size 16x20
+          LayoutNGListMarker (anonymous) at (-16,0) size 16x20
             LayoutText (anonymous) at (0,0) size 16x19
               text run at (0,0) width 16: "1. "
           LayoutText {#text} at (0,0) size 328x19
             text run at (0,0) width 328: "Success: document.execCommand(\"Copy\") == true"
         LayoutNGListItem {LI} at (40,20) size 744x20
-          LayoutNGBlockFlow (anonymous) at (-16,0) size 16x20
+          LayoutNGListMarker (anonymous) at (-16,0) size 16x20
             LayoutText (anonymous) at (0,0) size 16x19
               text run at (0,0) width 16: "2. "
           LayoutText {#text} at (0,0) size 326x19

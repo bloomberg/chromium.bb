@@ -47,7 +47,7 @@
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "core/layout/ng/inline/ng_text_fragment.h"
-#include "core/layout/ng/layout_ng_list_item.h"
+#include "core/layout/ng/list/layout_ng_list_item.h"
 #include "core/layout/svg/LayoutSVGImage.h"
 #include "core/layout/svg/LayoutSVGInline.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"

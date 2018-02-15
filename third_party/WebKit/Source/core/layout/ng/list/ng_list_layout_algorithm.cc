@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/inline/ng_list_layout_algorithm.h"
+#include "core/layout/ng/list/ng_list_layout_algorithm.h"
 
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/ng/inline/ng_inline_box_state.h"

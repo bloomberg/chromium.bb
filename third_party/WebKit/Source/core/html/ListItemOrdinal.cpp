@@ -30,7 +30,7 @@
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/html/HTMLOListElement.h"
 #include "core/layout/LayoutListItem.h"
-#include "core/layout/ng/layout_ng_list_item.h"
+#include "core/layout/ng/list/layout_ng_list_item.h"
 
 namespace blink {
 

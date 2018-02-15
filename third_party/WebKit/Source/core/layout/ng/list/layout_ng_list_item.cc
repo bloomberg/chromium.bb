@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/layout_ng_list_item.h"
+#include "core/layout/ng/list/layout_ng_list_item.h"
 
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/ListMarkerText.h"
+#include "core/layout/ng/list/layout_ng_list_marker.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -117,7 +118,7 @@ void LayoutNGListItem::UpdateMarker() {
     if (marker_ && !marker_->IsLayoutBlockFlow())
       DestroyMarker();
     if (!marker_)
-      marker_ = LayoutBlockFlow::CreateAnonymous(&GetDocument());
+      marker_ = LayoutNGListMarker::CreateAnonymous(&GetDocument());
     marker_style = ComputedStyle::CreateAnonymousStyleWithDisplay(
         style, EDisplay::kInlineBlock);
     // Do not break inside the marker, and honor the trailing spaces.

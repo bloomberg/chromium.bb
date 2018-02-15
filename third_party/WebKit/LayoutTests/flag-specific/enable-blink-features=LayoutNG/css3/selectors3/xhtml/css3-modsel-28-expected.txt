@@ -5,74 +5,74 @@ layer at (0,0) size 800x538
     LayoutNGBlockFlow {body} at (8,16) size 784x514
       LayoutNGBlockFlow {ul} at (0,0) size 784x120
         LayoutNGListItem {li} at (40,0) size 744x20 [bgcolor=#00FF00]
-          LayoutNGBlockFlow (anonymous) at (-18,0) size 10x20
+          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
             LayoutText (anonymous) at (0,0) size 10x19
               text run at (0,0) width 10: "\x{2022} "
           LayoutText {#text} at (0,0) size 318x19
             text run at (0,0) width 318: "This first list item should have a green background"
         LayoutNGListItem {li} at (40,20) size 744x20
-          LayoutNGBlockFlow (anonymous) at (-18,0) size 10x20
+          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
             LayoutText (anonymous) at (0,0) size 10x19
               text run at (0,0) width 10: "\x{2022} "
           LayoutText {#text} at (0,0) size 100x19
             text run at (0,0) width 100: "Second list item"
         LayoutNGListItem {li} at (40,40) size 744x20 [bgcolor=#00FF00]
-          LayoutNGBlockFlow (anonymous) at (-18,0) size 10x20
+          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
             LayoutText (anonymous) at (0,0) size 10x19
               text run at (0,0) width 10: "\x{2022} "
           LayoutText {#text} at (0,0) size 323x19
             text run at (0,0) width 323: "This third list item should have a green background"
         LayoutNGListItem {li} at (40,60) size 744x20
-          LayoutNGBlockFlow (anonymous) at (-18,0) size 10x20
+          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
             LayoutText (anonymous) at (0,0) size 10x19
               text run at (0,0) width 10: "\x{2022} "
           LayoutText {#text} at (0,0) size 95x19
             text run at (0,0) width 95: "Fourth list item"
         LayoutNGListItem {li} at (40,80) size 744x20 [bgcolor=#00FF00]
-          LayoutNGBlockFlow (anonymous) at (-18,0) size 10x20
+          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
             LayoutText (anonymous) at (0,0) size 10x19
               text run at (0,0) width 10: "\x{2022} "
           LayoutText {#text} at (0,0) size 320x19
             text run at (0,0) width 320: "This fifth list item should have a green background"
         LayoutNGListItem {li} at (40,100) size 744x20
-          LayoutNGBlockFlow (anonymous) at (-18,0) size 10x20
+          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
             LayoutText (anonymous) at (0,0) size 10x19
               text run at (0,0) width 10: "\x{2022} "
           LayoutText {#text} at (0,0) size 86x19
             text run at (0,0) width 86: "Sixth list item"
       LayoutNGBlockFlow {ol} at (0,136) size 784x120
         LayoutNGListItem {li} at (40,0) size 744x20
-          LayoutNGBlockFlow (anonymous) at (-16,0) size 16x20
+          LayoutNGListMarker (anonymous) at (-16,0) size 16x20
             LayoutText (anonymous) at (0,0) size 16x19
               text run at (0,0) width 16: "1. "
           LayoutText {#text} at (0,0) size 81x19
             text run at (0,0) width 81: "First list item"
         LayoutNGListItem {li} at (40,20) size 744x20 [bgcolor=#00FF00]
-          LayoutNGBlockFlow (anonymous) at (-16,0) size 16x20
+          LayoutNGListMarker (anonymous) at (-16,0) size 16x20
             LayoutText (anonymous) at (0,0) size 16x19
               text run at (0,0) width 16: "2. "
           LayoutText {#text} at (0,0) size 338x19
             text run at (0,0) width 338: "This second list item should have a green background"
         LayoutNGListItem {li} at (40,40) size 744x20
-          LayoutNGBlockFlow (anonymous) at (-16,0) size 16x20
+          LayoutNGListMarker (anonymous) at (-16,0) size 16x20
             LayoutText (anonymous) at (0,0) size 16x19
               text run at (0,0) width 16: "3. "
           LayoutText {#text} at (0,0) size 88x19
             text run at (0,0) width 88: "Third list item"
         LayoutNGListItem {li} at (40,60) size 744x20 [bgcolor=#00FF00]
-          LayoutNGBlockFlow (anonymous) at (-16,0) size 16x20
+          LayoutNGListMarker (anonymous) at (-16,0) size 16x20
             LayoutText (anonymous) at (0,0) size 16x19
               text run at (0,0) width 16: "4. "
           LayoutText {#text} at (0,0) size 332x19
             text run at (0,0) width 332: "This fourth list item should have a green background"
         LayoutNGListItem {li} at (40,80) size 744x20
-          LayoutNGBlockFlow (anonymous) at (-16,0) size 16x20
+          LayoutNGListMarker (anonymous) at (-16,0) size 16x20
             LayoutText (anonymous) at (0,0) size 16x19
               text run at (0,0) width 16: "5. "
           LayoutText {#text} at (0,0) size 83x19
             text run at (0,0) width 83: "Fifth list item"
         LayoutNGListItem {li} at (40,100) size 744x20 [bgcolor=#00FF00]
-          LayoutNGBlockFlow (anonymous) at (-16,0) size 16x20
+          LayoutNGListMarker (anonymous) at (-16,0) size 16x20
             LayoutText (anonymous) at (0,0) size 16x19
               text run at (0,0) width 16: "6. "
           LayoutText {#text} at (0,0) size 324x19

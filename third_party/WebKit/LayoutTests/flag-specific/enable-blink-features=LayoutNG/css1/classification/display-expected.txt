@@ -37,7 +37,7 @@ layer at (0,0) size 785x857 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (398,40) width 109: " is being ignored."
         LayoutText {#text} at (0,0) size 0x0
       LayoutNGListItem {P} at (48,259) size 721x60
-        LayoutNGBlockFlow (anonymous) at (-18,0) size 14x20
+        LayoutNGListMarker (anonymous) at (-18,0) size 14x20
           LayoutText (anonymous) at (0,0) size 14x19
             text run at (0,0) width 14: "\x{25A0} "
         LayoutText {#text} at (0,0) size 715x39
@@ -96,7 +96,7 @@ layer at (0,0) size 785x857 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                     text run at (428,40) width 109: " is being ignored."
                 LayoutText {#text} at (0,0) size 0x0
               LayoutNGListItem {P} at (52,116) size 699x60
-                LayoutNGBlockFlow (anonymous) at (-18,0) size 14x20
+                LayoutNGListMarker (anonymous) at (-18,0) size 14x20
                   LayoutText (anonymous) at (0,0) size 14x19
                     text run at (0,0) width 14: "\x{25A0} "
                 LayoutText {#text} at (0,0) size 678x39
