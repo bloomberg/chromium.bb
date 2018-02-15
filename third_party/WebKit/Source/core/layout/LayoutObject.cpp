@@ -1597,6 +1597,18 @@ bool LayoutObject::MapToVisualRectInAncestorSpaceInternal(
 
 void LayoutObject::DirtyLinesFromChangedChild(LayoutObject*, MarkingBehavior) {}
 
+std::ostream& operator<<(std::ostream& out, const LayoutObject& object) {
+  StringBuilder string_builder;
+  object.DumpLayoutObject(string_builder, false, 0);
+  return out << string_builder.ToString().Utf8().data();
+}
+
+std::ostream& operator<<(std::ostream& out, const LayoutObject* object) {
+  if (!object)
+    return out << "<null>";
+  return out << *object;
+}
+
 #ifndef NDEBUG
 
 void LayoutObject::ShowTreeForThis() const {
@@ -1618,13 +1630,19 @@ void LayoutObject::ShowLineTreeForThis() const {
 
 void LayoutObject::ShowLayoutObject() const {
   StringBuilder string_builder;
-  DumpLayoutObject(string_builder);
+  DumpLayoutObject(string_builder, true, kShowTreeCharacterOffset);
   DLOG(INFO) << "\n" << string_builder.ToString().Utf8().data();
 }
 
-void LayoutObject::DumpLayoutObject(StringBuilder& string_builder) const {
-  string_builder.Append(
-      String::Format("%s %p", DecoratedName().Ascii().data(), this));
+#endif  // NDEBUG
+
+void LayoutObject::DumpLayoutObject(StringBuilder& string_builder,
+                                    bool dump_address,
+                                    unsigned show_tree_character_offset) const {
+  string_builder.Append(DecoratedName());
+
+  if (dump_address)
+    string_builder.Append(String::Format(" %p", this));
 
   if (IsText() && ToLayoutText(this)->IsTextFragment())
     string_builder.Append(String::Format(
@@ -1635,12 +1653,14 @@ void LayoutObject::DumpLayoutObject(StringBuilder& string_builder) const {
         String::Format(" continuation=%p", VirtualContinuation()));
 
   if (GetNode()) {
-    while (string_builder.length() < kShowTreeCharacterOffset)
+    while (string_builder.length() < show_tree_character_offset)
       string_builder.Append(' ');
     string_builder.Append('\t');
     string_builder.Append(GetNode()->ToString().Utf8().data());
   }
 }
+
+#ifndef NDEBUG
 
 void LayoutObject::DumpLayoutTreeAndMark(StringBuilder& string_builder,
                                          const LayoutObject* marked_object1,
@@ -1656,7 +1676,7 @@ void LayoutObject::DumpLayoutTreeAndMark(StringBuilder& string_builder,
   while (object_info.length() < depth * 2)
     object_info.Append(' ');
 
-  DumpLayoutObject(object_info);
+  DumpLayoutObject(object_info, true, kShowTreeCharacterOffset);
   string_builder.Append(object_info);
 
   for (const LayoutObject* child = SlowFirstChild(); child;

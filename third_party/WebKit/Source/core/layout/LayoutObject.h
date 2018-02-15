@@ -447,14 +447,16 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool RequiresAnonymousTableWrappers(const LayoutObject*) const;
 
  public:
+  // Dump this layout object to the specified string builder.
+  void DumpLayoutObject(StringBuilder&,
+                        bool dump_address,
+                        unsigned show_tree_character_offset) const;
+
 #ifndef NDEBUG
   void ShowTreeForThis() const;
   void ShowLayoutTreeForThis() const;
   void ShowLineTreeForThis() const;
   void ShowLayoutObject() const;
-
-  // Dump this layout object to the specified string builder.
-  void DumpLayoutObject(StringBuilder&) const;
 
   // Dump the subtree established by this layout object to the specified string
   // builder. There will be one object per line, and descendants will be
@@ -2774,6 +2776,9 @@ CORE_EXPORT const LayoutObject* AssociatedLayoutObjectOf(
     const Node&,
     int offset_in_node,
     LayoutObjectSide = LayoutObjectSide::kRemainingTextIfOnBoundary);
+
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const LayoutObject*);
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const LayoutObject&);
 
 #define DEFINE_LAYOUT_OBJECT_TYPE_CASTS(thisType, predicate)           \
   DEFINE_TYPE_CASTS(thisType, LayoutObject, object, object->predicate, \
