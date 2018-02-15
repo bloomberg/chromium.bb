@@ -370,6 +370,7 @@
 #include "chrome/services/removable_storage_writer/public/mojom/constants.mojom.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/guest_view/browser/guest_view_manager.h"
+#include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/extension_navigation_throttle.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_registry.h"
@@ -2900,28 +2901,6 @@ void ChromeContentBrowserClient::GetURLRequestAutoMountHandlers(
   return g_browser_process->rappor_service();
 }
 
-network::mojom::NetworkContextPtr
-ChromeContentBrowserClient::CreateNetworkContext(
-    content::BrowserContext* context,
-    bool in_memory,
-    const base::FilePath& relative_partition_path) {
-  // If the relative partition path is empty, this is creating the Profile's
-  // main NetworkContext.
-  if (relative_partition_path.empty()) {
-    // TODO(mmenke): Look into calling ProfileNetworkContextServiceFactory, once
-    // ProfileIOData is removed. Currently, TestProfile (used in unit tests)
-    // needs to be able to bypass ProfileNetworkContextServiceFactory, since
-    // TestProfile bypasses ProfileIOData's URLRequestContext creation logic.
-    Profile* profile = Profile::FromBrowserContext(context);
-    return profile->CreateMainNetworkContext();
-  }
-  // TODO(mmenke):  Implement this once ProfileNetworkContextServiceFactory can
-  // create a fully functional NetworkContext for Apps when the network service
-  // is disabled.
-  return ContentBrowserClient::CreateNetworkContext(context, in_memory,
-                                                    relative_partition_path);
-}
-
 void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
     content::BrowserContext* browser_context,
     const base::FilePath& storage_partition_path,
@@ -3792,6 +3771,49 @@ void ChromeContentBrowserClient::
   if (factory)
     factories->emplace(extensions::kExtensionScheme, std::move(factory));
 #endif
+}
+
+bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
+    content::RenderFrameHost* frame,
+    bool is_navigation,
+    network::mojom::URLLoaderFactoryRequest* factory_request) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  auto* web_request_api =
+      extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
+          frame->GetProcess()->GetBrowserContext());
+
+  // NOTE: Some unit test environments do not initialize
+  // BrowserContextKeyedAPI factories for e.g. WebRequest.
+  if (!web_request_api)
+    return false;
+
+  return web_request_api->MaybeProxyURLLoaderFactory(frame, is_navigation,
+                                                     factory_request);
+#else
+  return false;
+#endif
+}
+
+network::mojom::NetworkContextPtr
+ChromeContentBrowserClient::CreateNetworkContext(
+    content::BrowserContext* context,
+    bool in_memory,
+    const base::FilePath& relative_partition_path) {
+  // If the relative partition path is empty, this is creating the Profile's
+  // main NetworkContext.
+  if (relative_partition_path.empty()) {
+    // TODO(mmenke): Look into calling ProfileNetworkContextServiceFactory, once
+    // ProfileIOData is removed. Currently, TestProfile (used in unit tests)
+    // needs to be able to bypass ProfileNetworkContextServiceFactory, since
+    // TestProfile bypasses ProfileIOData's URLRequestContext creation logic.
+    Profile* profile = Profile::FromBrowserContext(context);
+    return profile->CreateMainNetworkContext();
+  }
+  // TODO(mmenke):  Implement this once ProfileNetworkContextServiceFactory can
+  // create a fully functional NetworkContext for Apps when the network service
+  // is disabled.
+  return ContentBrowserClient::CreateNetworkContext(context, in_memory,
+                                                    relative_partition_path);
 }
 
 bool ChromeContentBrowserClient::AllowRenderingMhtmlOverHttp(

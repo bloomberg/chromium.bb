@@ -588,6 +588,13 @@ void ContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
     const GURL& frame_url,
     NonNetworkURLLoaderFactoryMap* factories) {}
 
+bool ContentBrowserClient::WillCreateURLLoaderFactory(
+    RenderFrameHost* frame,
+    bool is_navigation,
+    network::mojom::URLLoaderFactoryRequest* factory_request) {
+  return false;
+}
+
 network::mojom::NetworkContextPtr ContentBrowserClient::CreateNetworkContext(
     BrowserContext* context,
     bool in_memory,

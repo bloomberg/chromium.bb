@@ -68,6 +68,7 @@ class CONTENT_EXPORT NavigationURLLoaderNetworkService
   void OnRequestStarted(base::TimeTicks timestamp);
 
   void BindNonNetworkURLLoaderFactoryRequest(
+      int frame_tree_node_id,
       const GURL& url,
       network::mojom::URLLoaderFactoryRequest factory);
 
