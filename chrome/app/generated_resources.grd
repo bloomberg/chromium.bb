@@ -8414,7 +8414,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <!-- Translate Bubble -->
       <if expr="toolkit_views or is_macosx">
         <message name="IDS_TRANSLATE_BUBBLE_BEFORE_TRANSLATE_TITLE" desc="Title text for the translate bubble when asking to translate a page.">
-          Do you want to translate this page?
+          Translate this page?
         </message>
         <message name="IDS_TRANSLATE_BUBBLE_BEFORE_TRANSLATE_NEW" desc="Text to show for the translate bubble label when that page is in specified language and ask if should translate.">
           Do you want Google to translate this page from <ph name="source_language">$1<ex>Spanish</ex></ph> to <ph name="target_language">$2<ex>English</ex></ph>?
