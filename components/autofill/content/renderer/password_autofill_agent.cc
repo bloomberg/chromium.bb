@@ -1540,15 +1540,18 @@ std::unique_ptr<PasswordForm> PasswordAutofillAgent::GetPasswordFormFromWebForm(
 
 std::unique_ptr<PasswordForm>
 PasswordAutofillAgent::GetPasswordFormFromUnownedInputElements() {
-  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   // The element's frame might have been detached in the meantime (see
   // http://crbug.com/585363, comments 5 and 6), in which case |frame| will
   // be null. This was hardly caused by form submission (unless the user is
   // supernaturally quick), so it is OK to drop the ball here.
+  content::RenderFrame* frame = render_frame();
   if (!frame)
     return nullptr;
+  blink::WebLocalFrame* web_frame = frame->GetWebFrame();
+  if (!web_frame)
+    return nullptr;
   return CreatePasswordFormFromUnownedInputElements(
-      *frame, &field_value_and_properties_map_, &form_predictions_,
+      *web_frame, &field_value_and_properties_map_, &form_predictions_,
       &username_detector_cache_);
 }
 
