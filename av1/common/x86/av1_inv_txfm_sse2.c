@@ -1993,7 +1993,7 @@ void av1_lowbd_inv_txfm2d_add_64x64_sse2(const int32_t *input, uint8_t *output,
   // Remap 32x32 input into a modified 64x64 by:
   // - Copying over these values in top-left 32x32 locations.
   // - Setting the rest of the locations to 0.
-  int32_t mod_input[64 * 64];
+  DECLARE_ALIGNED(32, int32_t, mod_input[64 * 64]);
   for (int row = 0; row < 32; ++row) {
     memcpy(mod_input + row * 64, input + row * 32, 32 * sizeof(*mod_input));
     memset(mod_input + row * 64 + 32, 0, 32 * sizeof(*mod_input));
