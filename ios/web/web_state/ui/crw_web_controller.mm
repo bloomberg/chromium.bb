@@ -1401,13 +1401,16 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   _loadPhase = web::LOAD_REQUESTED;
 
-  if (!redirect) {
-    if (!self.nativeController) {
-      // Record the state of outgoing web view. Do nothing if native controller
-      // exists, because in that case recordStateInHistory will record the state
-      // of incoming page as native controller is already inserted.
-      [self recordStateInHistory];
-    }
+  // Record the state of outgoing web view. Do nothing if native controller
+  // exists, because in that case recordStateInHistory will record the state
+  // of incoming page as native controller is already inserted.
+  // TODO(crbug.com/811770) Don't record state under WKBasedNavigationManager
+  // because it may incorrectly clobber the incoming page if this is a
+  // back/forward navigation. WKWebView restores page scroll state for web view
+  // pages anyways so this only impacts user if WKWebView is deleted.
+  if (!redirect && !self.nativeController &&
+      !web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    [self recordStateInHistory];
   }
 
   // Add or update pending url.
@@ -3412,7 +3415,16 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (web::PageDisplayState)pageDisplayState {
   web::PageDisplayState displayState;
-  if (_webView) {
+  // If a native controller is present, record its display state instead of that
+  // of the underlying placeholder webview.
+  if (self.nativeController) {
+    if ([self.nativeController respondsToSelector:@selector(scrollOffset)]) {
+      displayState.scroll_state().set_offset_x(
+          [self.nativeController scrollOffset].x);
+      displayState.scroll_state().set_offset_y(
+          [self.nativeController scrollOffset].y);
+    }
+  } else if (_webView) {
     CGPoint scrollOffset = [self scrollPosition];
     displayState.scroll_state().set_offset_x(std::floor(scrollOffset.x));
     displayState.scroll_state().set_offset_y(std::floor(scrollOffset.y));
@@ -3422,13 +3434,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     displayState.zoom_state().set_maximum_zoom_scale(
         scrollView.maximumZoomScale);
     displayState.zoom_state().set_zoom_scale(scrollView.zoomScale);
-  } else if (self.nativeController) {
-    if ([self.nativeController respondsToSelector:@selector(scrollOffset)]) {
-      displayState.scroll_state().set_offset_x(
-          [self.nativeController scrollOffset].x);
-      displayState.scroll_state().set_offset_y(
-          [self.nativeController scrollOffset].y);
-    }
   }
   return displayState;
 }
