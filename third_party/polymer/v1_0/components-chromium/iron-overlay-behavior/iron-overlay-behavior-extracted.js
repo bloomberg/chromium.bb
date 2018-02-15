@@ -80,6 +80,15 @@
       },
 
       /**
+       * Set to true to allow clicks to go through overlays.
+       * When the user clicks outside this overlay, the click may
+       * close the overlay below.
+       */
+      allowClickThrough: {
+        type: Boolean
+      },
+
+      /**
        * Set to true to keep overlay always on top.
        */
       alwaysOnTop: {
@@ -87,9 +96,20 @@
       },
 
       /**
+       * Determines which action to perform when scroll outside an opened overlay happens.
+       * Possible values:
+       * lock - blocks scrolling from happening,
+       * refit - computes the new position on the overlay
+       * cancel - causes the overlay to close
+       */
+      scrollAction: {
+        type: String
+      },
+
+      /**
        * Shortcut to access to the overlay manager.
        * @private
-       * @type {Polymer.IronOverlayManagerClass}
+       * @type {!Polymer.IronOverlayManagerClass}
        */
       _manager: {
         type: Object,
@@ -110,9 +130,13 @@
       'iron-resize': '_onIronResize'
     },
 
+    observers: [
+      '__updateScrollObservers(isAttached, opened, scrollAction)'
+    ],
+
     /**
      * The backdrop element.
-     * @type {Element}
+     * @return {!Element}
      */
     get backdropElement() {
       return this._manager.backdropElement;
@@ -120,7 +144,7 @@
 
     /**
      * Returns the node to give focus to.
-     * @type {Node}
+     * @return {!Node}
      */
     get _focusNode() {
       return this._focusedChild || Polymer.dom(this).querySelector('[autofocus]') || this;
@@ -133,7 +157,7 @@
      *
      * If you know what is your content (specifically the first and last focusable children),
      * you can override this method to return only `[firstFocusable, lastFocusable];`
-     * @type {Array<Node>}
+     * @return {!Array<!Node>}
      * @protected
      */
     get _focusableNodes() {
@@ -148,10 +172,15 @@
       this.__shouldRemoveTabIndex = false;
       // Used for wrapping the focus on TAB / Shift+TAB.
       this.__firstFocusableNode = this.__lastFocusableNode = null;
-      // Used by __onNextAnimationFrame to cancel any previous callback.
-      this.__raf = null;
+      // Used by to keep track of the RAF callbacks.
+      this.__rafs = {};
       // Focused node before overlay gets opened. Can be restored on close.
       this.__restoreFocusNode = null;
+      // Scroll info to be restored.
+      this.__scrollTop = this.__scrollLeft = null;
+      this.__onCaptureScroll = this.__onCaptureScroll.bind(this);
+      // Root nodes hosting the overlay, used to listen for scroll events on them.
+      this.__rootNodes = null;
       this._ensureSetup();
     },
 
@@ -166,11 +195,25 @@
     detached: function() {
       Polymer.dom(this).unobserveNodes(this._observer);
       this._observer = null;
-      if (this.__raf) {
-        window.cancelAnimationFrame(this.__raf);
-        this.__raf = null;
+      for (var cb in this.__rafs) {
+        if (this.__rafs[cb] !== null) {
+          cancelAnimationFrame(this.__rafs[cb]);
+        }
       }
+      this.__rafs = {};
       this._manager.removeOverlay(this);
+
+      // We got detached while animating, ensure we show/hide the overlay
+      // and fire iron-overlay-opened/closed event!
+      if (this.__isAnimating) {
+        if (this.opened) {
+          this._finishRenderOpened();
+        } else {
+          // Restore the focus if necessary.
+          this._applyFocus();
+          this._finishRenderClosed();
+        }
+      }
     },
 
     /**
@@ -248,8 +291,8 @@
 
       this.__isAnimating = true;
 
-      // Use requestAnimationFrame for non-blocking rendering.
-      this.__onNextAnimationFrame(this.__openedChanged);
+      // Deraf for non-blocking rendering.
+      this.__deraf('__openedChanged', this.__openedChanged);
     },
 
     _canceledChanged: function() {
@@ -370,7 +413,16 @@
         this._focusedChild = null;
         // Restore focus.
         if (this.restoreFocusOnClose && this.__restoreFocusNode) {
-          this.__restoreFocusNode.focus();
+          // If the activeElement is `<body>` or inside the overlay,
+          // we are allowed to restore the focus. In all the other
+          // cases focus might have been moved elsewhere by another
+          // component or by an user interaction (e.g. click on a
+          // button outside the overlay).
+          var activeElement = this._manager.deepActiveElement;
+          if (activeElement === document.body ||
+            Polymer.dom(this).deepContains(activeElement)) {
+            this.__restoreFocusNode.focus();
+          }
         }
         this.__restoreFocusNode = null;
         // If many overlays get closed at the same time, one of them would still
@@ -479,7 +531,7 @@
      */
     _onIronResize: function() {
       if (this.opened && !this.__isAnimating) {
-        this.__onNextAnimationFrame(this.refit);
+        this.__deraf('refit', this.refit);
       }
     },
 
@@ -532,23 +584,152 @@
     },
 
     /**
-     * Executes a callback on the next animation frame, overriding any previous
-     * callback awaiting for the next animation frame. e.g.
-     * `__onNextAnimationFrame(callback1) && __onNextAnimationFrame(callback2)`;
-     * `callback1` will never be invoked.
-     * @param {!Function} callback Its `this` parameter is the overlay itself.
+     * Debounces the execution of a callback to the next animation frame.
+     * @param {!string} jobname
+     * @param {!Function} callback Always bound to `this`
      * @private
      */
-    __onNextAnimationFrame: function(callback) {
-      if (this.__raf) {
-        window.cancelAnimationFrame(this.__raf);
+    __deraf: function(jobname, callback) {
+      var rafs = this.__rafs;
+      if (rafs[jobname] !== null) {
+        cancelAnimationFrame(rafs[jobname]);
       }
-      var self = this;
-      this.__raf = window.requestAnimationFrame(function nextAnimationFrame() {
-        self.__raf = null;
-        callback.call(self);
-      });
-    }
+      rafs[jobname] = requestAnimationFrame(function nextAnimationFrame() {
+        rafs[jobname] = null;
+        callback.call(this);
+      }.bind(this));
+    },
+
+    /**
+     * @param {boolean} isAttached
+     * @param {boolean} opened
+     * @param {string=} scrollAction
+     * @private
+     */
+    __updateScrollObservers: function(isAttached, opened, scrollAction) {
+      if (!isAttached || !opened || !this.__isValidScrollAction(scrollAction)) {
+        Polymer.IronScrollManager.removeScrollLock(this);
+        this.__removeScrollListeners();
+      } else {
+        if (scrollAction === 'lock') {
+          this.__saveScrollPosition();
+          Polymer.IronScrollManager.pushScrollLock(this);
+        }
+        this.__addScrollListeners();
+      }
+    },
+
+    /**
+     * @private
+     */
+    __addScrollListeners: function() {
+      if (!this.__rootNodes) {
+        this.__rootNodes = [];
+        // Listen for scroll events in all shadowRoots hosting this overlay only
+        // when in native ShadowDOM.
+        if (Polymer.Settings.useShadow) {
+          var node = this;
+          while (node) {
+            if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE && node.host) {
+              this.__rootNodes.push(node);
+            }
+            node = node.host || node.assignedSlot || node.parentNode;
+          }
+        }
+        this.__rootNodes.push(document);
+      }
+      this.__rootNodes.forEach(function(el) {
+        el.addEventListener('scroll', this.__onCaptureScroll, {
+          capture: true,
+          passive: true,
+        });
+      }, this);
+    },
+
+    /**
+     * @private
+     */
+    __removeScrollListeners: function() {
+      if (this.__rootNodes) {
+        this.__rootNodes.forEach(function(el) {
+          el.removeEventListener('scroll', this.__onCaptureScroll, {
+            capture: true,
+            passive: true,
+          });
+        }, this);
+      }
+      if (!this.isAttached) {
+        this.__rootNodes = null;
+      }
+    },
+
+    /**
+     * @param {string=} scrollAction
+     * @return {boolean}
+     * @private
+     */
+    __isValidScrollAction: function(scrollAction) {
+      return scrollAction === 'lock' ||
+             scrollAction === 'refit' ||
+             scrollAction === 'cancel';
+    },
+
+    /**
+     * @private
+     */
+    __onCaptureScroll: function(event) {
+      if (this.__isAnimating) {
+        return;
+      }
+      // Check if scroll outside the overlay.
+      if (Polymer.dom(event).path.indexOf(this) >= 0) {
+        return;
+      }
+      switch (this.scrollAction) {
+        case 'lock':
+          // NOTE: scrolling might happen if a scroll event is not cancellable, or if
+          // user pressed keys that cause scrolling (they're not prevented in order not to
+          // break a11y features like navigate with arrow keys).
+          this.__restoreScrollPosition();
+          break;
+        case 'refit':
+          this.__deraf('refit', this.refit);
+          break;
+        case 'cancel':
+          this.cancel(event);
+          break;
+      }
+    },
+
+    /**
+     * Memoizes the scroll position of the outside scrolling element.
+     * @private
+     */
+    __saveScrollPosition: function() {
+      if (document.scrollingElement) {
+        this.__scrollTop = document.scrollingElement.scrollTop;
+        this.__scrollLeft = document.scrollingElement.scrollLeft;
+      } else {
+        // Since we don't know if is the body or html, get max.
+        this.__scrollTop = Math.max(document.documentElement.scrollTop, document.body.scrollTop);
+        this.__scrollLeft = Math.max(document.documentElement.scrollLeft, document.body.scrollLeft);
+      }
+    },
+
+    /**
+     * Resets the scroll position of the outside scrolling element.
+     * @private
+     */
+    __restoreScrollPosition: function() {
+      if (document.scrollingElement) {
+        document.scrollingElement.scrollTop = this.__scrollTop;
+        document.scrollingElement.scrollLeft = this.__scrollLeft;
+      } else {
+        // Since we don't know if is the body or html, set both.
+        document.documentElement.scrollTop = document.body.scrollTop = this.__scrollTop;
+        document.documentElement.scrollLeft = document.body.scrollLeft = this.__scrollLeft;
+      }
+    },
 
   };
 

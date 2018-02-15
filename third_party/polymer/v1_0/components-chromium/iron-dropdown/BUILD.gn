@@ -9,14 +9,14 @@ import("//third_party/closure_compiler/compile_js.gni")
 js_library("iron-dropdown-extracted") {
   deps = [
     ":iron-dropdown-scroll-manager-extracted",
-    "../iron-a11y-keys-behavior:iron-a11y-keys-behavior-extracted",
     "../iron-behaviors:iron-control-state-extracted",
     "../iron-overlay-behavior:iron-overlay-behavior-extracted",
-    "../iron-resizable-behavior:iron-resizable-behavior-extracted",
     "../neon-animation:neon-animation-runner-behavior-extracted",
-    "../neon-animation/animations:opaque-animation-extracted",
   ]
 }
 
 js_library("iron-dropdown-scroll-manager-extracted") {
+  deps = [
+    "../iron-overlay-behavior:iron-scroll-manager-extracted",
+  ]
 }

@@ -16,6 +16,7 @@ js_library("iron-overlay-behavior-extracted") {
   deps = [
     ":iron-focusables-helper-extracted",
     ":iron-overlay-manager-extracted",
+    ":iron-scroll-manager-extracted",
     "../iron-fit-behavior:iron-fit-behavior-extracted",
     "../iron-resizable-behavior:iron-resizable-behavior-extracted",
   ]
@@ -26,4 +27,7 @@ js_library("iron-overlay-manager-extracted") {
     ":iron-overlay-backdrop-extracted",
     "../iron-a11y-keys-behavior:iron-a11y-keys-behavior-extracted",
   ]
+}
+
+js_library("iron-scroll-manager-extracted") {
 }

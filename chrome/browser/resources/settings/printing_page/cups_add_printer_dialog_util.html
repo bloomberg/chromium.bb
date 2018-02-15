@@ -43,7 +43,7 @@
         height: 270px;
       }
 
-      iron-dropdown .dropdown-content {
+      iron-dropdown [slot='dropdown-content'] {
         background-color: white;
         box-shadow: 0 2px 6px var(--paper-grey-500);
         min-width: 128px;
@@ -73,7 +73,7 @@
     </paper-input-container>
     <iron-dropdown horizontal-align="left" vertical-align="top"
         vertical-offset="35">
-      <div class="dropdown-content">
+      <div slot="dropdown-content">
         <template is="dom-repeat" items="[[items]]"
             filter="[[filterItems_(searchTerm_)]]">
           <button class="list-item" on-tap="onSelect_">[[item]]</button>

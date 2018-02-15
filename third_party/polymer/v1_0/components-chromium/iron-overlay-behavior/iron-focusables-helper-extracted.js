@@ -12,7 +12,7 @@
        * It searches the tabbable nodes in the light and shadow dom of the chidren,
        * sorting the result by tabindex.
        * @param {!Node} node
-       * @return {Array<HTMLElement>}
+       * @return {!Array<!HTMLElement>}
        */
       getTabbableNodes: function(node) {
         var result = [];
@@ -84,7 +84,7 @@
        * Returns if the `result` array needs to be sorted by tabindex.
        * @param {!Node} node The starting point for the search; added to `result`
        * if tabbable.
-       * @param {!Array<HTMLElement>} result
+       * @param {!Array<!HTMLElement>} result
        * @return {boolean}
        * @private
        */
@@ -93,9 +93,9 @@
         if (node.nodeType !== Node.ELEMENT_NODE || !this._isVisible(node)) {
           return false;
         }
-        var element = /** @type {HTMLElement} */ (node);
+        var element = /** @type {!HTMLElement} */ (node);
         var tabIndex = this._normalizedTabIndex(element);
-        var needsSortByTabIndex = tabIndex > 0;
+        var needsSort = tabIndex > 0;
         if (tabIndex >= 0) {
           result.push(element);
         }
@@ -114,7 +114,7 @@
         //  </div>
         // TODO(valdrin) support ShadowDOM v1 when upgrading to Polymer v2.0.
         var children;
-        if (element.localName === 'content') {
+        if (element.localName === 'content' || element.localName === 'slot') {
           children = Polymer.dom(element).getDistributedNodes();
         } else {
           // Use shadow root if possible, will check for distributed nodes.
@@ -122,10 +122,9 @@
         }
         for (var i = 0; i < children.length; i++) {
           // Ensure method is always invoked to collect tabbable children.
-          var needsSort = this._collectTabbableNodes(children[i], result);
-          needsSortByTabIndex = needsSortByTabIndex || needsSort;
+          needsSort = this._collectTabbableNodes(children[i], result) || needsSort;
         }
-        return needsSortByTabIndex;
+        return needsSort;
       },
 
       /**
@@ -147,8 +146,8 @@
 
       /**
        * Sorts an array of tabbable elements by tabindex. Returns a new array.
-       * @param {!Array<HTMLElement>} tabbables
-       * @return {Array<HTMLElement>}
+       * @param {!Array<!HTMLElement>} tabbables
+       * @return {!Array<!HTMLElement>}
        * @private
        */
       _sortByTabIndex: function(tabbables) {
@@ -166,9 +165,9 @@
 
       /**
        * Merge sort iterator, merges the two arrays into one, sorted by tab index.
-       * @param {!Array<HTMLElement>} left
-       * @param {!Array<HTMLElement>} right
-       * @return {Array<HTMLElement>}
+       * @param {!Array<!HTMLElement>} left
+       * @param {!Array<!HTMLElement>} right
+       * @return {!Array<!HTMLElement>}
        * @private
        */
       _mergeSortByTabIndex: function(left, right) {
