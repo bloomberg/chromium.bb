@@ -35,9 +35,7 @@ namespace base {
 // }
 //
 // NoDestructor<T> stores the object inline, so it also avoids a pointer
-// indirection and a malloc. Also note that since C++11 static local variable
-// initialization is thread-safe and so is this pattern. Code should prefer to
-// use NoDestructor<T> over:
+// indirection and a malloc. Code should prefer to use NoDestructor<T> over:
 // - The CR_DEFINE_STATIC_LOCAL() helper macro.
 // - A function scoped static T* or T& that is dynamically initialized.
 // - A global base::LazyInstance<T>.

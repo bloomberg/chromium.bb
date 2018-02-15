@@ -94,6 +94,9 @@ class BASE_EXPORT ThreadHeapUsageTracker {
   // after calling this function in tests.
   static void DisableHeapTrackingForTesting();
 
+  // Exposed for testing only.
+  static void EnsureTLSInitialized();
+
   // Exposed to allow testing the shim without inserting it in the allocator
   // shim chain.
   static base::allocator::AllocatorDispatch* GetDispatchForTesting();

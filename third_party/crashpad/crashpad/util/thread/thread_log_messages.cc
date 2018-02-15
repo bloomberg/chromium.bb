@@ -46,6 +46,10 @@ class ThreadLogMessagesMaster {
 
  private:
   ThreadLogMessagesMaster() {
+    DCHECK(!tls_.initialized());
+    tls_.Initialize(nullptr);
+    DCHECK(tls_.initialized());
+
     DCHECK(!logging::GetLogMessageHandler());
     logging::SetLogMessageHandler(LogMessageHandler);
   }
@@ -58,7 +62,7 @@ class ThreadLogMessagesMaster {
                                 size_t message_start,
                                 const std::string& string) {
     std::vector<std::string>* log_messages =
-        reinterpret_cast<std::vector<std::string>*>(GetInstance()->tls_.Get());
+        reinterpret_cast<std::vector<std::string>*>(tls_.Get());
     if (log_messages) {
       log_messages->push_back(string);
     }
@@ -68,10 +72,14 @@ class ThreadLogMessagesMaster {
     return false;
   }
 
-  base::ThreadLocalStorage::Slot tls_;
+  static base::ThreadLocalStorage::StaticSlot tls_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadLogMessagesMaster);
 };
+
+// static
+base::ThreadLocalStorage::StaticSlot ThreadLogMessagesMaster::tls_
+    = TLS_INITIALIZER;
 
 }  // namespace
 

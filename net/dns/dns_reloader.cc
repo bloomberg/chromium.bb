@@ -81,21 +81,28 @@ class DnsReloader : public NetworkChangeNotifier::DNSObserver {
   }
 
  private:
-  DnsReloader() { NetworkChangeNotifier::AddDNSObserver(this); }
+  DnsReloader() : resolver_generation_(0) {
+    tls_index_.Initialize(SlotReturnFunction);
+    NetworkChangeNotifier::AddDNSObserver(this);
+  }
 
   ~DnsReloader() override {
     NOTREACHED();  // LeakyLazyInstance is not destructed.
   }
 
   base::Lock lock_;  // Protects resolver_generation_.
-  int resolver_generation_ = 0;
+  int resolver_generation_;
   friend struct base::LazyInstanceTraitsBase<DnsReloader>;
 
   // We use thread local storage to identify which ReloadState to interact with.
-  base::ThreadLocalStorage::Slot tls_index_{&SlotReturnFunction};
+  static base::ThreadLocalStorage::StaticSlot tls_index_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsReloader);
 };
+
+// A TLS slot to the ReloadState for the current thread.
+// static
+base::ThreadLocalStorage::StaticSlot DnsReloader::tls_index_ = TLS_INITIALIZER;
 
 base::LazyInstance<DnsReloader>::Leaky
     g_dns_reloader = LAZY_INSTANCE_INITIALIZER;
