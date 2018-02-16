@@ -79,15 +79,15 @@ class CC_ANIMATION_EXPORT AnimationPlayer
   virtual void DetachElement();
 
   void AddKeyframeModelForKeyframeEffect(
-      std::unique_ptr<KeyframeModel> animation,
+      std::unique_ptr<KeyframeModel> keyframe_model,
       KeyframeEffectId keyframe_effect_id);
-  void PauseKeyframeModelForKeyframeEffect(int animation_id,
+  void PauseKeyframeModelForKeyframeEffect(int keyframe_model_id,
                                            double time_offset,
                                            KeyframeEffectId keyframe_effect_id);
   void RemoveKeyframeModelForKeyframeEffect(
-      int animation_id,
+      int keyframe_model_id,
       KeyframeEffectId keyframe_effect_id);
-  void AbortKeyframeModelForKeyframeEffect(int animation_id,
+  void AbortKeyframeModelForKeyframeEffect(int keyframe_model_id,
                                            KeyframeEffectId keyframe_effect_id);
   void AbortKeyframeModels(TargetProperty::Type target_property,
                            bool needs_completion);

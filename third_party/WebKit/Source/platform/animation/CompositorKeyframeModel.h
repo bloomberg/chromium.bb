@@ -33,9 +33,9 @@ class PLATFORM_EXPORT CompositorKeyframeModel {
       const blink::CompositorAnimationCurve& curve,
       CompositorTargetProperty::Type target,
       int group_id,
-      int animation_id) {
-    return WTF::WrapUnique(
-        new CompositorKeyframeModel(curve, target, animation_id, group_id));
+      int keyframe_model_id) {
+    return WTF::WrapUnique(new CompositorKeyframeModel(
+        curve, target, keyframe_model_id, group_id));
   }
 
   ~CompositorKeyframeModel();
@@ -77,7 +77,7 @@ class PLATFORM_EXPORT CompositorKeyframeModel {
  private:
   CompositorKeyframeModel(const CompositorAnimationCurve&,
                           CompositorTargetProperty::Type,
-                          int animation_id,
+                          int keyframe_model_id,
                           int group_id);
 
   std::unique_ptr<cc::KeyframeModel> keyframe_model_;
