@@ -344,8 +344,43 @@ void ConnectionFactoryImpl::InitHandler() {
     event_tracker_.WriteToLoginRequest(&login_request);
   }
 
-  // TODO(crbug.com/656607): Add Proper annotation
-  connection_handler_->Init(login_request, NO_TRAFFIC_ANNOTATION_BUG_656607,
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("gcm_connection_factory", R"(
+        semantics {
+          sender: "GCM Connection Factory"
+          description:
+            "TCP connection to the Google Cloud Messaging notification "
+            "servers. Supports reliable bi-directional messaging and push "
+            "notifications for multiple consumers."
+          trigger:
+            "The connection is created when an application (e.g. Chrome Sync) "
+            "or a website using Web Push starts the GCM service, and is kept "
+            "alive as long as there are valid applications registered. "
+            "Messaging is application/website controlled."
+          data:
+            "Arbitrary application-specific data."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "Users can stop messages related to Sync by disabling Sync for "
+            "everything in settings. Messages related to Web Push can be "
+            "stopped by revoking the site permissions in settings. Messages "
+            "related to extensions can be stopped by uninstalling the "
+            "extension."
+          chrome_policy {
+            SyncDisabled {
+              SyncDisabled: True
+            }
+          }
+        }
+        comments:
+          "'SyncDisabled' policy disables messages that are based on Sync, "
+          "but does not have any effect on other Google Cloud messages."
+        )");
+
+  connection_handler_->Init(login_request, traffic_annotation,
                             socket_handle_.socket());
 }
 

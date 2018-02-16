@@ -43761,6 +43761,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="27071967" label="chrome_cleaner"/>
   <int value="27915688" label="oauth2_access_token_fetcher"/>
   <int value="28406789" label="undefined-656607"/>
+  <int value="29057242" label="gcm_connection_factory"/>
   <int value="29188932" label="oauth2_api_call_flow"/>
   <int value="29865866" label="headless_url_request"/>
   <int value="30913825" label="family_info"/>
