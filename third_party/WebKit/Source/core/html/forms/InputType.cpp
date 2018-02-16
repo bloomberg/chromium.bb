@@ -38,7 +38,6 @@
 #include "core/dom/events/ScopedEventQueue.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/fileapi/FileList.h"
-#include "core/html/HTMLShadowElement.h"
 #include "core/html/forms/ButtonInputType.h"
 #include "core/html/forms/CheckboxInputType.h"
 #include "core/html/forms/ColorChooser.h"
