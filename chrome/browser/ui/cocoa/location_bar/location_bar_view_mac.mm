@@ -266,6 +266,11 @@ bool LocationBarViewMac::TestContentSettingImagePressed(size_t index) {
   return true;
 }
 
+bool LocationBarViewMac::IsContentSettingBubbleShowing(size_t index) {
+  return index < content_setting_decorations_.size() &&
+         content_setting_decorations_[index]->IsShowingBubble();
+}
+
 void LocationBarViewMac::SetEditable(bool editable) {
   [field_ setEditable:editable ? YES : NO];
   UpdateBookmarkStarVisibility();

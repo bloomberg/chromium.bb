@@ -1019,6 +1019,11 @@ bool LocationBarView::TestContentSettingImagePressed(size_t index) {
   return true;
 }
 
+bool LocationBarView::IsContentSettingBubbleShowing(size_t index) {
+  return index < content_setting_views_.size() &&
+         content_setting_views_[index]->IsBubbleShowing();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, private views::View implementation:
 
