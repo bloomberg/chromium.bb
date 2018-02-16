@@ -9,6 +9,10 @@ traits_headers = [ "//third_party/WebKit/Source/core/messaging/BlinkTransferable
 
 deps = [
   "//mojo/public/cpp/bindings",
+  "//third_party/WebKit/Source/platform/wtf",
   "//third_party/WebKit/common:blink_common",
 ]
-type_mappings = [ "blink.mojom.TransferableMessage=::blink::BlinkTransferableMessage[move_only]" ]
+type_mappings = [
+  "blink.mojom.TransferableMessage=::blink::BlinkTransferableMessage[move_only]",
+  "blink.mojom.SerializedArrayBufferContents=WTF::ArrayBufferContents[move_only]",
+]

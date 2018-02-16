@@ -38,6 +38,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/serialization/Transferables.h"
 #include "core/CoreExport.h"
+#include "core/imagebitmap/ImageBitmap.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/Optional.h"
@@ -53,7 +54,6 @@ class BlobDataHandle;
 class Transferables;
 class ExceptionState;
 class SharedBuffer;
-class StaticBitmapImage;
 class UnpackedSerializedScriptValue;
 class WebBlobInfo;
 class DOMSharedArrayBuffer;
@@ -231,6 +231,18 @@ class CORE_EXPORT SerializedScriptValue
     return shared_array_buffers_contents_;
   }
   BlobDataHandleMap& BlobDataHandles() { return blob_data_handles_; }
+  ArrayBufferContentsArray& GetArrayBufferContentsArray() {
+    return array_buffer_contents_array_;
+  }
+  void SetArrayBufferContentsArray(ArrayBufferContentsArray contents) {
+    array_buffer_contents_array_ = std::move(contents);
+  }
+  ImageBitmapContentsArray& GetImageBitmapContentsArray() {
+    return image_bitmap_contents_array_;
+  }
+  void SetImageBitmapContentsArray(ImageBitmapContentsArray contents) {
+    image_bitmap_contents_array_ = std::move(contents);
+  }
 
  private:
   friend class ScriptValueSerializer;

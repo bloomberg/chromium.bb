@@ -116,6 +116,7 @@ jumbo_source_set("blink_common_unittests_sources") {
 # are typemapped to a type in Source/core.
 mojom("mojo_platform_bindings") {
   sources = [
+    "array_buffer/array_buffer_contents.mojom",
     "blob/blob.mojom",
     "blob/blob_registry.mojom",
     "blob/blob_url_store.mojom",
@@ -167,6 +168,7 @@ mojom("mojo_bindings") {
 
   public_deps = [
     ":mojo_platform_bindings",
+    "//skia/public/interfaces",
   ]
 
   overridden_deps_blink = [ ":mojo_platform_bindings" ]
