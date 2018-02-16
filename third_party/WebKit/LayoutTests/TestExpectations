@@ -277,8 +277,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/replaced-in
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/abspos-007.xht [ Failure ]
 crbug.com/704961 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/positioning/abspos-027.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-relative-035.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/relpos-calcs-004.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/relpos-calcs-005.xht [ Failure ]
 
 ### virtual/layout_ng/fast/block/basic
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/basic/011.html [ Failure ]
@@ -418,7 +416,6 @@ crbug.com/714962 [ Mac ] virtual/layout_ng/fast/block/float/trailing-float-with-
 
 ### virtual/layout_ng/fast/writing-mode/
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/writing-mode/auto-margins-across-boundaries.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/auto-sizing-orthogonal-flows.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/background-vertical-lr.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/background-vertical-rl.html [ Failure ]
