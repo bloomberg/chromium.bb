@@ -146,4 +146,11 @@ TEST(ResourceRequestTest, SetHasUserGesture) {
   EXPECT_TRUE(original.HasUserGesture());
 }
 
+TEST(ResourceRequestTest, SetIsAdResource) {
+  ResourceRequest original;
+  EXPECT_FALSE(original.IsAdResource());
+  original.SetIsAdResource();
+  EXPECT_TRUE(original.IsAdResource());
+}
+
 }  // namespace blink

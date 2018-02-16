@@ -83,6 +83,19 @@ void BaseFetchContext::AddErrorConsoleMessage(const String& message,
       ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
 }
 
+bool BaseFetchContext::IsAdResource(
+    const KURL& resource_url,
+    Resource::Type type,
+    WebURLRequest::RequestContext request_context) const {
+  SubresourceFilter* filter = GetSubresourceFilter();
+
+  // We do not need main document tagging currently so skipping main resources.
+  if (filter && type != Resource::kMainResource) {
+    return filter->IsAdResource(resource_url, request_context);
+  }
+  return false;
+}
+
 void BaseFetchContext::PrintAccessDeniedMessage(const KURL& url) const {
   if (url.IsNull())
     return;

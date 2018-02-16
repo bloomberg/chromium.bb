@@ -359,6 +359,9 @@ class PLATFORM_EXPORT ResourceRequest final {
   }
   bool IsSameDocumentNavigation() const { return is_same_document_navigation_; }
 
+  void SetIsAdResource() { is_ad_resource_ = true; };
+  bool IsAdResource() const { return is_ad_resource_; }
+
  private:
   const CacheControlHeader& GetCacheControlHeader() const;
 
@@ -411,6 +414,8 @@ class PLATFORM_EXPORT ResourceRequest final {
   static double default_timeout_interval_;
 
   double navigation_start_ = 0;
+
+  bool is_ad_resource_ = false;
 };
 
 // This class is needed to copy a ResourceRequest across threads, because it
@@ -466,6 +471,7 @@ struct CrossThreadResourceRequestData {
   InputToLoadPerfMetricReportPolicy input_perf_metric_report_policy_;
   ResourceRequest::RedirectStatus redirect_status_;
   base::Optional<String> suggested_filename_;
+  bool is_ad_resource_;
 };
 
 }  // namespace blink
