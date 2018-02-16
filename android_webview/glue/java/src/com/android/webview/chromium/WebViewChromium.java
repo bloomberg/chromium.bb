@@ -128,7 +128,8 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         mFactory = factory;
         mShouldDisableThreadChecking = shouldDisableThreadChecking;
         factory.getWebViewDelegate().addWebViewAssetPath(mWebView.getContext());
-        mSharedWebViewChromium = new SharedWebViewChromium(mFactory.getRunQueue());
+        mSharedWebViewChromium =
+                new SharedWebViewChromium(mFactory.getRunQueue(), mFactory.getAwInit());
     }
 
     static void completeWindowCreation(WebView parent, WebView child) {
@@ -1353,32 +1354,14 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
 
     @Override
     public WebMessagePort[] createWebMessageChannel() {
-        mFactory.startYourEngines(true);
-        if (checkNeedsPost()) {
-            WebMessagePort[] ret = mFactory.runOnUiThreadBlocking(new Callable<WebMessagePort[]>() {
-                @Override
-                public WebMessagePort[] call() {
-                    return createWebMessageChannel();
-                }
-            });
-            return ret;
-        }
-        return WebMessagePortAdapter.fromMessagePorts(mAwContents.createMessageChannel());
+        return WebMessagePortAdapter.fromMessagePorts(
+                mSharedWebViewChromium.createWebMessageChannel());
     }
 
     @Override
     @TargetApi(Build.VERSION_CODES.M)
     public void postMessageToMainFrame(final WebMessage message, final Uri targetOrigin) {
-        if (checkNeedsPost()) {
-            mFactory.addTask(new Runnable() {
-                @Override
-                public void run() {
-                    postMessageToMainFrame(message, targetOrigin);
-                }
-            });
-            return;
-        }
-        mAwContents.postMessageToFrame(null, message.getData(), targetOrigin.toString(),
+        mSharedWebViewChromium.postMessageToMainFrame(message.getData(), targetOrigin.toString(),
                 WebMessagePortAdapter.toMessagePorts(message.getPorts()));
     }
 

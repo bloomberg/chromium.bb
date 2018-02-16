@@ -7,6 +7,9 @@ package com.android.webview.chromium;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.WebViewChromiumRunQueue;
 import org.chromium.base.ThreadUtils;
+import org.chromium.content_public.browser.MessagePort;
+
+import java.util.concurrent.Callable;
 
 /**
  * This class contains the parts of WebViewChromium that should be shared between the webkit-glue
@@ -14,11 +17,13 @@ import org.chromium.base.ThreadUtils;
  */
 public class SharedWebViewChromium {
     private final WebViewChromiumRunQueue mRunQueue;
+    private final WebViewChromiumAwInit mAwInit;
     // The WebView wrapper for ContentViewCore and required browser compontents.
     private AwContents mAwContents;
 
-    public SharedWebViewChromium(WebViewChromiumRunQueue runQueue) {
+    public SharedWebViewChromium(WebViewChromiumRunQueue runQueue, WebViewChromiumAwInit awInit) {
         mRunQueue = runQueue;
+        mAwInit = awInit;
     }
 
     public void setAwContentsOnUiThread(AwContents awContents) {
@@ -42,6 +47,34 @@ public class SharedWebViewChromium {
             return;
         }
         mAwContents.insertVisualStateCallback(requestId, callback);
+    }
+
+    public MessagePort[] createWebMessageChannel() {
+        mAwInit.startYourEngines(true);
+        if (checkNeedsPost()) {
+            MessagePort[] ret = mRunQueue.runOnUiThreadBlocking(new Callable<MessagePort[]>() {
+                @Override
+                public MessagePort[] call() {
+                    return createWebMessageChannel();
+                }
+            });
+            return ret;
+        }
+        return mAwContents.createMessageChannel();
+    }
+
+    public void postMessageToMainFrame(
+            final String message, final String targetOrigin, final MessagePort[] sentPorts) {
+        if (checkNeedsPost()) {
+            mRunQueue.addTask(new Runnable() {
+                @Override
+                public void run() {
+                    postMessageToMainFrame(message, targetOrigin, sentPorts);
+                }
+            });
+            return;
+        }
+        mAwContents.postMessageToFrame(null, message, targetOrigin, sentPorts);
     }
 
     protected boolean checkNeedsPost() {
