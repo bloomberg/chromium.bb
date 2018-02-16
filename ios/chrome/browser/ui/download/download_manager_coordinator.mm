@@ -8,6 +8,7 @@
 
 #import "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
 #import "ios/chrome/browser/ui/download/download_manager_mediator.h"
 #import "ios/chrome/browser/ui/download/download_manager_view_controller.h"
@@ -15,6 +16,7 @@
 #import "ios/chrome/browser/ui/presenters/contained_presenter_delegate.h"
 #import "ios/web/public/download/download_task.h"
 #include "net/url_request/url_fetcher_response_writer.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -25,6 +27,8 @@
     DownloadManagerViewControllerDelegate> {
   // View controller for presenting Download Manager UI.
   DownloadManagerViewController* _viewController;
+  // A dialog which requests a confirmation from the user.
+  UIAlertController* _confirmationDialog;
   // View controller for presenting "Open In.." dialog.
   UIDocumentInteractionController* _openInController;
   DownloadManagerMediator _mediator;
@@ -59,6 +63,8 @@
     [self.presenter dismissAnimated:YES];
     _viewController = nil;
   }
+  [_confirmationDialog dismissViewControllerAnimated:YES completion:nil];
+  _confirmationDialog = nil;
   _mediator.SetDownloadTask(nullptr);
   _downloadTask = nullptr;
 }
@@ -107,8 +113,20 @@
 
 - (void)downloadManagerViewControllerDidClose:
     (DownloadManagerViewController*)controller {
-  _downloadTask->Cancel();
-  [self stop];
+  if (_downloadTask->GetState() != web::DownloadTask::State::kInProgress) {
+    [self cancelDownload];
+    return;
+  }
+
+  __weak DownloadManagerCoordinator* weakSelf = self;
+  // TODO(crbug.com/805533): Localize this string.
+  [self runConfirmationDialogWithTitle:@"Cancel Download?"
+                               message:nil
+                     completionHandler:^(BOOL confirmed) {
+                       if (confirmed) {
+                         [weakSelf cancelDownload];
+                       }
+                     }];
 }
 
 - (void)downloadManagerViewControllerDidStartDownload:
@@ -129,6 +147,49 @@
                                             inView:layoutGuide.owningView
                                           animated:YES];
   DCHECK(menuShown);
+}
+
+#pragma mark - Private
+
+// Cancels the download task and stops the coordinator.
+- (void)cancelDownload {
+  // |stop| nulls-our _downloadTask and |Cancel| destroys the task. Call |stop|
+  // first to perform all coordinator cleanups, but retain |_downloadTask|
+  // pointer to destroy the task.
+  web::DownloadTask* downloadTask = _downloadTask;
+  [self stop];
+  downloadTask->Cancel();
+}
+
+// Presents UIAlertController with |title|, |message| and two buttons (OK and
+// Cancel). |handler| is called with YES if OK button was tapped and with NO
+// if Cancel button was tapped.
+- (void)runConfirmationDialogWithTitle:(NSString*)title
+                               message:(NSString*)message
+                     completionHandler:(void (^)(BOOL confirmed))handler {
+  _confirmationDialog =
+      [UIAlertController alertControllerWithTitle:title
+                                          message:message
+                                   preferredStyle:UIAlertControllerStyleAlert];
+  UIAlertAction* OKAction =
+      [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_OK)
+                               style:UIAlertActionStyleDefault
+                             handler:^(UIAlertAction*) {
+                               handler(YES);
+                             }];
+  [_confirmationDialog addAction:OKAction];
+
+  UIAlertAction* cancelAction =
+      [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                               style:UIAlertActionStyleCancel
+                             handler:^(UIAlertAction*) {
+                               handler(NO);
+                             }];
+  [_confirmationDialog addAction:cancelAction];
+
+  [self.baseViewController presentViewController:_confirmationDialog
+                                        animated:YES
+                                      completion:nil];
 }
 
 @end
