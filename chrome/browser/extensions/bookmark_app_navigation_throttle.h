@@ -46,6 +46,10 @@ class BookmarkAppNavigationThrottle : public content::NavigationThrottle {
     kDeferOpenAppCloseEmptyWebContents,
     kCancelOpenedApp,
     kDeferOpenNewTabInAppOutOfScope,
+    kProceedDispositionSingletonTab,
+    kProceedDispositionNewBackgroundTab,
+    kProceedDispositionNewPopup,
+    kProceedDispositionSwitchToTab,
     // Add ProcessNavigation results immediately above this line. Also
     // update the enum list in tools/metrics/enums.xml accordingly.
     kCount,

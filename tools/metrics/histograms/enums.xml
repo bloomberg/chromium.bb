@@ -3244,6 +3244,11 @@ uploading your change for review.  These are checked by presubmit scripts.
       label="From app or tab to new app context, close previous context"/>
   <int value="18" label="From app or tab to new app context"/>
   <int value="19" label="From app to new tab: Out of scope navigation"/>
+  <int value="20" label="From app or tab to new or existing singleton tab."/>
+  <int value="21" label="From app or tab to new background tab."/>
+  <int value="22" label="From app or tab to new popup window."/>
+  <int value="23"
+      label="Switching to an existing tab. Triggered from the omnibox."/>
 </enum>
 
 <enum name="BookmarkLaunchLocation">
