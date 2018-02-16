@@ -184,12 +184,11 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   TraceWrapperMember<StyleSheetList> style_sheet_list_;
   Member<SlotAssignment> slot_assignment_;
   unsigned short child_shadow_root_count_;
-  // TODO(kochi): Once kUserAgentTypeV0 is gone, shrink this to 2.
-  unsigned short type_ : 3;
+  unsigned short type_ : 2;
   unsigned short registered_with_parent_shadow_root_ : 1;
   unsigned short descendant_insertion_points_is_valid_ : 1;
   unsigned short delegates_focus_ : 1;
-  unsigned short unused_ : 10;
+  unsigned short unused_ : 11;
 };
 
 inline Element* ShadowRoot::ActiveElement() const {
