@@ -275,7 +275,7 @@ bool TextFieldInputType::ShouldHaveSpinButton() const {
 }
 
 void TextFieldInputType::CreateShadowSubtree() {
-  DCHECK(GetElement().Shadow());
+  DCHECK(IsShadowHost(GetElement()));
   ShadowRoot* shadow_root = GetElement().UserAgentShadowRoot();
   DCHECK(!shadow_root->HasChildren());
 

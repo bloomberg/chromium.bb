@@ -278,7 +278,7 @@ void FileInputType::CountUsage() {
 }
 
 void FileInputType::CreateShadowSubtree() {
-  DCHECK(GetElement().Shadow());
+  DCHECK(IsShadowHost(GetElement()));
   auto* button = HTMLInputElement::Create(GetElement().GetDocument(),
                                           CreateElementFlags());
   button->setType(InputTypeNames::button);
@@ -293,7 +293,7 @@ void FileInputType::CreateShadowSubtree() {
 }
 
 void FileInputType::DisabledAttributeChanged() {
-  DCHECK(GetElement().Shadow());
+  DCHECK(IsShadowHost(GetElement()));
   if (Element* button =
           ToElementOrDie(GetElement().UserAgentShadowRoot()->firstChild()))
     button->SetBooleanAttribute(disabledAttr,
@@ -301,7 +301,7 @@ void FileInputType::DisabledAttributeChanged() {
 }
 
 void FileInputType::MultipleAttributeChanged() {
-  DCHECK(GetElement().Shadow());
+  DCHECK(IsShadowHost(GetElement()));
   if (Element* button =
           ToElementOrDie(GetElement().UserAgentShadowRoot()->firstChild()))
     button->setAttribute(

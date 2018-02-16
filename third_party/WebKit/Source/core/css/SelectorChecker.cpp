@@ -1181,7 +1181,7 @@ bool SelectorChecker::CheckPseudoHost(const SelectorCheckingContext& context,
   const ContainerNode* shadow_host = context.scope->OwnerShadowHost();
   if (!shadow_host || shadow_host != element)
     return false;
-  DCHECK(element.Shadow());
+  DCHECK(IsShadowHost(element));
 
   // For the case with no parameters, i.e. just :host.
   if (!selector.SelectorList())

@@ -1006,7 +1006,7 @@ bool Node::IsShadowIncludingInclusiveAncestorOf(const Node* node) const {
     return false;
 
   bool has_children = IsContainerNode() && ToContainerNode(this)->HasChildren();
-  bool has_shadow = IsElementNode() && ToElement(this)->Shadow();
+  bool has_shadow = IsShadowHost(this);
   if (!has_children && !has_shadow)
     return false;
 

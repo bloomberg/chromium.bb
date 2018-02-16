@@ -163,7 +163,7 @@ void RangeInputType::HandleMouseDownEvent(MouseEvent* event) {
           static_cast<short>(WebPointerProperties::Button::kLeft) ||
       !target_node)
     return;
-  DCHECK(GetElement().Shadow());
+  DCHECK(IsShadowHost(GetElement()));
   if (target_node != GetElement() &&
       !target_node->IsDescendantOf(GetElement().UserAgentShadowRoot()))
     return;
@@ -240,7 +240,7 @@ void RangeInputType::HandleKeydownEvent(KeyboardEvent* event) {
 }
 
 void RangeInputType::CreateShadowSubtree() {
-  DCHECK(GetElement().Shadow());
+  DCHECK(IsShadowHost(GetElement()));
 
   Document& document = GetElement().GetDocument();
   HTMLDivElement* track = HTMLDivElement::Create(document);
