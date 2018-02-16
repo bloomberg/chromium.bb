@@ -121,3 +121,46 @@ TEST_F(BubbleAnchorHelperViewsTest, AnchoringFixed) {
 
   [parent close];  // Takes |child| with it.
 }
+
+// Test that KeepBubbleAnchored(..) actually keeps the bubble anchored upon
+// resizing the child window.
+TEST_F(BubbleAnchorHelperViewsTest, AnchoringChildResize) {
+  // Use MD anchoring since the arithmetic is simpler (no arrows).
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kSecondaryUiMd);
+
+  NSRect parent_frame = NSMakeRect(100, 200, 300, 400);
+  // Released when closed.
+  NSWindow* parent =
+      [[NSWindow alloc] initWithContentRect:parent_frame
+                                  styleMask:NSBorderlessWindowMask
+                                    backing:NSBackingStoreBuffered
+                                      defer:NO];
+  [parent makeKeyAndOrderFront:nil];
+
+  NSWindow* child = ShowAnchoredBubble(parent, views::BubbleBorder::TOP_RIGHT);
+
+  // Anchored TOP_RIGHT, so Max X/Y should be anchored.
+  ASSERT_EQ(kHorizOffset, NSMaxX([child frame]));
+  ASSERT_EQ(kVertOffset, NSMaxY([child frame]));
+
+  // Resize the bubble and maintain the old anchor position.
+  NSRect child_frame = [child frame];
+  child_frame.origin.x -= 20;
+  child_frame.size.width += 20;
+  child_frame.origin.y -= 30;
+  child_frame.size.height += 30;
+  [child setFrame:child_frame display:YES animate:NO];
+
+  // Verify the anchor is still the same.
+  EXPECT_EQ(kHorizOffset, NSMaxX([child frame]));
+  EXPECT_EQ(kVertOffset, NSMaxY([child frame]));
+
+  // Move the parent window and verify the bubble is still anchored.
+  parent_frame = NSOffsetRect(parent_frame, 50, 60);
+  [parent setFrame:parent_frame display:YES animate:NO];
+  EXPECT_EQ(kHorizOffset + 50, NSMaxX([child frame]));
+  EXPECT_EQ(kVertOffset + 60, NSMaxY([child frame]));
+
+  [parent close];  // Takes |child| with it.
+}
