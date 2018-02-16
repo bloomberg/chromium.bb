@@ -119,8 +119,6 @@ ChromeAPIPermissions::GetAllPermissions() const {
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kDial, "dial", APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kDownloadsInternal, "downloadsInternal"},
-      {APIPermission::kExperienceSamplingPrivate, "experienceSamplingPrivate",
-       APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kFileBrowserHandlerInternal, "fileBrowserHandlerInternal",
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kFileManagerPrivate, "fileManagerPrivate",

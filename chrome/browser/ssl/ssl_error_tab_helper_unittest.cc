@@ -27,8 +27,8 @@ std::unique_ptr<ChromeMetricsHelper> CreateTestSslMetricsHelper(
     content::WebContents* web_contents) {
   security_interstitials::MetricsHelper::ReportDetails report_details;
   report_details.metric_prefix = kTestSslMetricsName;
-  return std::make_unique<ChromeMetricsHelper>(
-      web_contents, GURL(), report_details, kTestSslMetricsName);
+  return std::make_unique<ChromeMetricsHelper>(web_contents, GURL(),
+                                               report_details);
 }
 
 class TestSSLBlockingPage : public SSLBlockingPage {

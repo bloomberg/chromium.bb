@@ -39,10 +39,6 @@
 class DownloadShelfView;
 class DownloadShelfContextMenuView;
 
-namespace extensions {
-class ExperienceSamplingEvent;
-}
-
 namespace gfx {
 class Image;
 class ImageSkia;
@@ -341,10 +337,6 @@ class DownloadItemView : public views::InkDropHostView,
   // item.  Store the path used, so that we can detect a change in the path
   // and reload the icon.
   base::FilePath last_download_item_path_;
-
-  // ExperienceSampling: This tracks dangerous/malicious downloads warning UI
-  // and the user's decisions about it.
-  std::unique_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
 
   // Method factory used to delay reenabling of the item when opening the
   // downloaded file.

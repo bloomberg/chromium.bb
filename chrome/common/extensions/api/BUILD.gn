@@ -40,7 +40,6 @@ schema_sources = [
   "downloads.idl",
   "downloads_internal.idl",
   "easy_unlock_private.idl",
-  "experience_sampling_private.json",
   "font_settings.json",
   "gcm.json",
   "history.json",

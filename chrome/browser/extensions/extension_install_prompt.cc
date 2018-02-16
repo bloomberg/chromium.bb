@@ -114,35 +114,6 @@ ExtensionInstallPrompt::PromptType
 ExtensionInstallPrompt::g_last_prompt_type_for_tests =
     ExtensionInstallPrompt::UNSET_PROMPT_TYPE;
 
-// This should match the PromptType enum.
-std::string ExtensionInstallPrompt::PromptTypeToString(PromptType type) {
-  switch (type) {
-    case INSTALL_PROMPT:
-      return "INSTALL_PROMPT";
-    case INLINE_INSTALL_PROMPT:
-      return "INLINE_INSTALL_PROMPT";
-    case RE_ENABLE_PROMPT:
-      return "RE_ENABLE_PROMPT";
-    case PERMISSIONS_PROMPT:
-      return "PERMISSIONS_PROMPT";
-    case EXTERNAL_INSTALL_PROMPT:
-      return "EXTERNAL_INSTALL_PROMPT";
-    case POST_INSTALL_PERMISSIONS_PROMPT:
-      return "POST_INSTALL_PERMISSIONS_PROMPT";
-    case REMOTE_INSTALL_PROMPT:
-      return "REMOTE_INSTALL_PROMPT";
-    case REPAIR_PROMPT:
-      return "REPAIR_PROMPT";
-    case DELEGATED_PERMISSIONS_PROMPT:
-      return "DELEGATED_PERMISSIONS_PROMPT";
-    case UNSET_PROMPT_TYPE:
-    case NUM_PROMPT_TYPES:
-      NOTREACHED();
-      break;
-  }
-  return "OTHER";
-}
-
 ExtensionInstallPrompt::Prompt::Prompt(PromptType type)
     : type_(type),
       is_showing_details_for_retained_files_(false),

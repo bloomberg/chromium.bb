@@ -3768,9 +3768,6 @@ are declared in build/common.gypi.
         <message name="IDS_EXTENSION_PROMPT_WARNING_ACCESSIBILITY_FEATURES_READ_MODIFY" desc="Permission string for reading and modifying acccessibility settings via extension API shown when an extension utilizing the API is installed.">
           Read and change your accessibility settings
         </message>
-        <message name="IDS_EXTENSION_PROMPT_WARNING_EXPERIENCE_SAMPLING_PRIVATE" desc="Permission string for Experience Sampling Private API.">
-          Monitor when you take actions in Chrome
-        </message>
         <message name="IDS_EXTENSION_PROMPT_WARNING_PLATFORMKEYS" desc="Permission string for access to client certificates.">
           Use your client certificates
         </message>

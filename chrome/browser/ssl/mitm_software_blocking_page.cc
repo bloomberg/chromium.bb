@@ -42,8 +42,8 @@ std::unique_ptr<ChromeMetricsHelper> CreateMitmSoftwareMetricsHelper(
   security_interstitials::MetricsHelper::ReportDetails reporting_info;
   reporting_info.metric_prefix = kMitmSoftwareMetricsName;
   std::unique_ptr<ChromeMetricsHelper> metrics_helper =
-      std::make_unique<ChromeMetricsHelper>(
-          web_contents, request_url, reporting_info, kMitmSoftwareMetricsName);
+      std::make_unique<ChromeMetricsHelper>(web_contents, request_url,
+                                            reporting_info);
   metrics_helper.get()->StartRecordingCaptivePortalMetrics(false);
   return metrics_helper;
 }

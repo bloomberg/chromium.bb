@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/extensions/api/experience_sampling_private/experience_sampling.h"
 #include "chrome/browser/extensions/extension_install_prompt_show_params.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -22,8 +21,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/ui_features.h"
-
-using extensions::ExperienceSamplingEvent;
 
 namespace {
 
@@ -49,7 +46,6 @@ ExtensionInstallDialogController::ExtensionInstallDialogController(
     const ExtensionInstallPrompt::DoneCallback& done_callback,
     std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt)
     : done_callback_(done_callback) {
-  ExtensionInstallPrompt::PromptType promptType = prompt->type();
   view_controller_.reset([[ExtensionInstallViewController alloc]
       initWithProfile:show_params->profile()
             navigator:show_params->GetParentWebContents()
@@ -69,29 +65,21 @@ ExtensionInstallDialogController::ExtensionInstallDialogController(
   [sheet setUseSimpleAnimations:YES];
   constrained_window_ = CreateAndShowWebModalDialogMac(
       this, show_params->GetParentWebContents(), sheet);
-
-  std::string event_name = ExperienceSamplingEvent::kExtensionInstallDialog;
-  event_name.append(
-      ExtensionInstallPrompt::PromptTypeToString(promptType));
-  sampling_event_ = ExperienceSamplingEvent::Create(event_name);
 }
 
 ExtensionInstallDialogController::~ExtensionInstallDialogController() {
 }
 
 void ExtensionInstallDialogController::OnOkButtonClicked() {
-  OnPromptButtonClicked(ExtensionInstallPrompt::Result::ACCEPTED,
-                        ExperienceSamplingEvent::kProceed);
+  OnPromptButtonClicked(ExtensionInstallPrompt::Result::ACCEPTED);
 }
 
 void ExtensionInstallDialogController::OnCancelButtonClicked() {
-  OnPromptButtonClicked(ExtensionInstallPrompt::Result::USER_CANCELED,
-                        ExperienceSamplingEvent::kDeny);
+  OnPromptButtonClicked(ExtensionInstallPrompt::Result::USER_CANCELED);
 }
 
 void ExtensionInstallDialogController::OnStoreLinkClicked() {
-  OnPromptButtonClicked(ExtensionInstallPrompt::Result::USER_CANCELED,
-                        ExperienceSamplingEvent::kDeny);
+  OnPromptButtonClicked(ExtensionInstallPrompt::Result::USER_CANCELED);
 }
 
 void ExtensionInstallDialogController::OnConstrainedWindowClosed(
@@ -104,10 +92,7 @@ void ExtensionInstallDialogController::OnConstrainedWindowClosed(
 }
 
 void ExtensionInstallDialogController::OnPromptButtonClicked(
-    ExtensionInstallPrompt::Result result,
-    const char* decision_event) {
-  if (sampling_event_.get())
-    sampling_event_->CreateUserDecisionEvent(decision_event);
+    ExtensionInstallPrompt::Result result) {
   base::ResetAndReturn(&done_callback_).Run(result);
   constrained_window_->CloseWebContentsModalDialog();
 }

@@ -29,10 +29,6 @@ namespace download {
 class DownloadItem;
 }
 
-namespace extensions {
-class ExperienceSamplingEvent;
-}
-
 namespace gfx {
 class FontList;
 }
@@ -112,10 +108,6 @@ class MenuModel;
     kNormal,
     kDangerous
   } state_;
-
-  // ExperienceSampling: This tracks dangerous/malicious downloads warning UI
-  // and the user's decisions about it.
-  std::unique_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
 };
 
 // Weak pointer to the containing shelf. Must be set to nil when the shelf is

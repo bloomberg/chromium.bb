@@ -36,15 +36,7 @@ using security_interstitials::SecurityInterstitialControllerClient;
 namespace safe_browsing {
 
 namespace {
-
-// Constants for the Experience Sampling instrumentation.
-const char kEventNameMalware[] = "safebrowsing_interstitial_";
-const char kEventNameHarmful[] = "harmful_interstitial_";
-const char kEventNamePhishing[] = "phishing_interstitial_";
-const char kEventNameOther[] = "safebrowsing_other_interstitial_";
-
 const char kHelpCenterLink[] = "cpn_safe_browsing";
-
 }  // namespace
 
 // static
@@ -254,21 +246,6 @@ void SafeBrowsingBlockingPage::ShowBlockingPage(
 }
 
 // static
-std::string SafeBrowsingBlockingPage::GetSamplingEventName(
-    BaseSafeBrowsingErrorUI::SBInterstitialReason interstitial_reason) {
-  switch (interstitial_reason) {
-    case BaseSafeBrowsingErrorUI::SB_REASON_MALWARE:
-      return kEventNameMalware;
-    case BaseSafeBrowsingErrorUI::SB_REASON_HARMFUL:
-      return kEventNameHarmful;
-    case BaseSafeBrowsingErrorUI::SB_REASON_PHISHING:
-      return kEventNamePhishing;
-    default:
-      return kEventNameOther;
-  }
-}
-
-// static
 std::unique_ptr<SecurityInterstitialControllerClient>
 SafeBrowsingBlockingPage::CreateControllerClient(
     WebContents* web_contents,
@@ -279,10 +256,9 @@ SafeBrowsingBlockingPage::CreateControllerClient(
   DCHECK(profile);
 
   std::unique_ptr<ChromeMetricsHelper> metrics_helper =
-      std::make_unique<ChromeMetricsHelper>(
-          web_contents, unsafe_resources[0].url,
-          GetReportingInfo(unsafe_resources),
-          GetSamplingEventName(GetInterstitialReason(unsafe_resources)));
+      std::make_unique<ChromeMetricsHelper>(web_contents,
+                                            unsafe_resources[0].url,
+                                            GetReportingInfo(unsafe_resources));
 
   return std::make_unique<SafeBrowsingControllerClient>(
       web_contents, std::move(metrics_helper), profile->GetPrefs(),

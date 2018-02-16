@@ -13091,8 +13091,8 @@ Called by update_net_error_codes.py.-->
   <int value="86" label="DOWNLOADS_ON_ERASED"/>
   <int value="87" label="EASY_UNLOCK_PRIVATE_ON_START_AUTO_PAIRING"/>
   <int value="88" label="EASY_UNLOCK_PRIVATE_ON_USER_INFO_UPDATED"/>
-  <int value="89" label="EXPERIENCE_SAMPLING_PRIVATE_ON_DECISION"/>
-  <int value="90" label="EXPERIENCE_SAMPLING_PRIVATE_ON_DISPLAYED"/>
+  <int value="89" label="DELETED_EXPERIENCE_SAMPLING_PRIVATE_ON_DECISION"/>
+  <int value="90" label="DELETED_EXPERIENCE_SAMPLING_PRIVATE_ON_DISPLAYED"/>
   <int value="91" label="EXPERIMENTAL_DEVTOOLS_CONSOLE_ON_MESSAGE_ADDED"/>
   <int value="92" label="EXTENSION_ON_REQUEST"/>
   <int value="93" label="EXTENSION_ON_REQUEST_EXTERNAL"/>
@@ -14314,7 +14314,7 @@ Called by update_net_error_codes.py.-->
   <int value="848" label="DELETED_LOGPRIVATE_DUMPLOGS"/>
   <int value="849" label="SOCKET_SECURE"/>
   <int value="850" label="SOCKETS_TCP_SECURE"/>
-  <int value="851" label="EXPERIENCESAMPLINGPRIVATE_GETBROWSERINFO"/>
+  <int value="851" label="DELETED_EXPERIENCESAMPLINGPRIVATE_GETBROWSERINFO"/>
   <int value="852" label="EASYUNLOCKPRIVATE_SEEKBLUETOOTHDEVICEBYADDRESS"/>
   <int value="853" label="EASYUNLOCKPRIVATE_GETSTRINGS"/>
   <int value="854" label="NOTIFICATIONPROVIDER_SENDONCLEAR"/>
