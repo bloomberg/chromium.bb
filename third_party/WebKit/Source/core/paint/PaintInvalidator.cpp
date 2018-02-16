@@ -557,8 +557,7 @@ void PaintInvalidator::InvalidatePaint(
 
   UpdatePaintingLayer(object, context);
 
-  if (object.GetDocument().Printing() &&
-      !RuntimeEnabledFeatures::PrintBrowserEnabled())
+  if (document_printing_ && !RuntimeEnabledFeatures::PrintBrowserEnabled())
     return;  // Don't invalidate paints if we're printing.
 
   // TODO(chrishtr): refactor to remove these slow paths by expanding their

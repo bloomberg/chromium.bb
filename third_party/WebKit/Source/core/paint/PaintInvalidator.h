@@ -153,6 +153,7 @@ class PaintInvalidator {
 
  private:
   friend struct PaintInvalidatorContext;
+  friend class PrePaintTreeWalk;
   template <typename Rect, typename Point>
   static LayoutRect MapLocalRectToVisualRectInBacking(
       const LayoutObject&,
@@ -175,6 +176,7 @@ class PaintInvalidator {
                                       PaintInvalidatorContext&);
 
   Vector<const LayoutObject*> pending_delayed_paint_invalidations_;
+  bool document_printing_ = false;
 };
 
 }  // namespace blink
