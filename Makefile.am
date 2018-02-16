@@ -166,7 +166,9 @@ nodist_libweston_@LIBWESTON_MAJOR@_la_SOURCES =				\
 	protocol/relative-pointer-unstable-v1-protocol.c		\
 	protocol/relative-pointer-unstable-v1-server-protocol.h		\
 	protocol/pointer-constraints-unstable-v1-protocol.c		\
-	protocol/pointer-constraints-unstable-v1-server-protocol.h
+	protocol/pointer-constraints-unstable-v1-server-protocol.h      \
+	protocol/input-timestamps-unstable-v1-protocol.c		\
+	protocol/input-timestamps-unstable-v1-server-protocol.h
 
 BUILT_SOURCES += $(nodist_libweston_@LIBWESTON_MAJOR@_la_SOURCES)
 

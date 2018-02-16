@@ -42,6 +42,7 @@
 #include "compositor.h"
 #include "relative-pointer-unstable-v1-server-protocol.h"
 #include "pointer-constraints-unstable-v1-server-protocol.h"
+#include "input-timestamps-unstable-v1-server-protocol.h"
 
 enum pointer_constraint_type {
 	POINTER_CONSTRAINT_TYPE_LOCK,
@@ -4569,6 +4570,67 @@ bind_pointer_constraints(struct wl_client *client, void *data,
 				       NULL, NULL);
 }
 
+static void
+input_timestamps_manager_destroy(struct wl_client *client,
+				 struct wl_resource *resource)
+{
+	wl_resource_destroy(resource);
+}
+
+static void
+input_timestamps_manager_get_keyboard_timestamps(struct wl_client *client,
+						 struct wl_resource *resource,
+						 uint32_t id,
+						 struct wl_resource *keyboard_resource)
+{
+	wl_client_post_no_memory(client);
+}
+
+static void
+input_timestamps_manager_get_pointer_timestamps(struct wl_client *client,
+						struct wl_resource *resource,
+						uint32_t id,
+						struct wl_resource *pointer_resource)
+{
+	wl_client_post_no_memory(client);
+}
+
+static void
+input_timestamps_manager_get_touch_timestamps(struct wl_client *client,
+					      struct wl_resource *resource,
+					      uint32_t id,
+					      struct wl_resource *touch_resource)
+{
+	wl_client_post_no_memory(client);
+}
+
+static const struct zwp_input_timestamps_manager_v1_interface
+				input_timestamps_manager_interface = {
+	input_timestamps_manager_destroy,
+	input_timestamps_manager_get_keyboard_timestamps,
+	input_timestamps_manager_get_pointer_timestamps,
+	input_timestamps_manager_get_touch_timestamps,
+};
+
+static void
+bind_input_timestamps_manager(struct wl_client *client, void *data,
+			      uint32_t version, uint32_t id)
+{
+	struct wl_resource *resource =
+		wl_resource_create(client,
+				   &zwp_input_timestamps_manager_v1_interface,
+				   1, id);
+
+	if (resource == NULL) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
+	wl_resource_set_implementation(resource,
+				       &input_timestamps_manager_interface,
+				       NULL, NULL);
+}
+
 int
 weston_input_init(struct weston_compositor *compositor)
 {
@@ -4580,6 +4642,11 @@ weston_input_init(struct weston_compositor *compositor)
 	if (!wl_global_create(compositor->wl_display,
 			      &zwp_pointer_constraints_v1_interface, 1,
 			      NULL, bind_pointer_constraints))
+		return -1;
+
+	if (!wl_global_create(compositor->wl_display,
+			      &zwp_input_timestamps_manager_v1_interface, 1,
+			      NULL, bind_input_timestamps_manager))
 		return -1;
 
 	return 0;
