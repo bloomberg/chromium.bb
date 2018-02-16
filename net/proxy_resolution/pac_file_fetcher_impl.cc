@@ -330,6 +330,9 @@ void ProxyScriptFetcherImpl::ReadBody(URLRequest* request) {
 
 bool ProxyScriptFetcherImpl::ConsumeBytesRead(URLRequest* request,
                                               int num_bytes) {
+  if (fetch_time_to_first_byte_.is_null())
+    fetch_time_to_first_byte_ = base::TimeTicks::Now();
+
   if (num_bytes <= 0) {
     // Error while reading, or EOF.
     OnResponseCompleted(request, num_bytes);
@@ -342,11 +345,6 @@ bool ProxyScriptFetcherImpl::ConsumeBytesRead(URLRequest* request,
     result_code_ = ERR_FILE_TOO_BIG;
     request->Cancel();
     return false;
-  }
-
-  if (bytes_read_so_far_.empty()) {
-    DCHECK(fetch_time_to_first_byte_.is_null());
-    fetch_time_to_first_byte_ = base::TimeTicks::Now();
   }
 
   bytes_read_so_far_.append(buf_->data(), num_bytes);
