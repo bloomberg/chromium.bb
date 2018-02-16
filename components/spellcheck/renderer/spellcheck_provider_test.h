@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "components/spellcheck/renderer/empty_local_interface_provider.h"
 #include "components/spellcheck/renderer/spellcheck_provider.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,9 +43,10 @@ class FakeTextCheckingCompletion : public blink::WebTextCheckingCompletion {
 class TestingSpellCheckProvider : public SpellCheckProvider,
                                   public spellcheck::mojom::SpellCheckHost {
  public:
-  TestingSpellCheckProvider();
+  explicit TestingSpellCheckProvider(service_manager::LocalInterfaceProvider*);
   // Takes ownership of |spellcheck|.
-  explicit TestingSpellCheckProvider(SpellCheck* spellcheck);
+  TestingSpellCheckProvider(SpellCheck* spellcheck,
+                            service_manager::LocalInterfaceProvider*);
 
   ~TestingSpellCheckProvider() override;
 
@@ -86,6 +88,7 @@ class SpellCheckProviderTest : public testing::Test {
   ~SpellCheckProviderTest() override;
 
  protected:
+  spellcheck::EmptyLocalInterfaceProvider embedder_provider_;
   TestingSpellCheckProvider provider_;
 };
 

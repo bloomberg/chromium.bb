@@ -30,13 +30,18 @@ void FakeTextCheckingCompletion::DidCancelCheckingText() {
   ++cancellation_count_;
 }
 
-TestingSpellCheckProvider::TestingSpellCheckProvider()
-    : SpellCheckProvider(nullptr, new SpellCheck(nullptr, nullptr), nullptr),
+TestingSpellCheckProvider::TestingSpellCheckProvider(
+    service_manager::LocalInterfaceProvider* embedder_provider)
+    : SpellCheckProvider(nullptr,
+                         new SpellCheck(nullptr, embedder_provider),
+                         embedder_provider),
       spelling_service_call_count_(0),
       binding_(this) {}
 
-TestingSpellCheckProvider::TestingSpellCheckProvider(SpellCheck* spellcheck)
-    : SpellCheckProvider(nullptr, spellcheck, nullptr),
+TestingSpellCheckProvider::TestingSpellCheckProvider(
+    SpellCheck* spellcheck,
+    service_manager::LocalInterfaceProvider* embedder_provider)
+    : SpellCheckProvider(nullptr, spellcheck, embedder_provider),
       spelling_service_call_count_(0),
       binding_(this) {}
 
@@ -125,5 +130,6 @@ bool TestingSpellCheckProvider::SatisfyRequestFromCache(
   return SpellCheckProvider::SatisfyRequestFromCache(text, completion);
 }
 
-SpellCheckProviderTest::SpellCheckProviderTest() {}
+SpellCheckProviderTest::SpellCheckProviderTest()
+    : provider_(&embedder_provider_) {}
 SpellCheckProviderTest::~SpellCheckProviderTest() {}

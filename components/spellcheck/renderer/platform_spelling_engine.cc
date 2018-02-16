@@ -11,6 +11,7 @@ using content::RenderThread;
 
 SpellingEngine* CreateNativeSpellingEngine(
     service_manager::LocalInterfaceProvider* embedder_provider) {
+  DCHECK(embedder_provider);
   return new PlatformSpellingEngine();
 }
 

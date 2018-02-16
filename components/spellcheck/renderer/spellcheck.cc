@@ -176,6 +176,7 @@ SpellCheck::SpellCheck(
     : embedder_provider_(embedder_provider),
       spellcheck_enabled_(true),
       weak_factory_(this) {
+  DCHECK(embedder_provider);
   if (!registry)
     return;  // Can be NULL in tests.
   registry->AddInterface(base::BindRepeating(&SpellCheck::SpellCheckerRequest,
