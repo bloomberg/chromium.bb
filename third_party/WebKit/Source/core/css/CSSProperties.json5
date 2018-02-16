@@ -230,7 +230,7 @@
         "Frequency",
         "Length",
         "Number",
-        "Percent",
+        "Percentage",
         "Position",
         "Resolution",
         "Time",
@@ -1035,7 +1035,7 @@
       field_template: "<length>",
       keywords: ["auto"],
       default_value: "Length()",
-      typedom_types: ["Length", "Percent"],
+      typedom_types: ["Length", "Percentage"],
       converter: "ConvertLengthOrAuto",
     },
     {
@@ -1496,7 +1496,7 @@
       field_template: "<length>",
       keywords: ["auto", "fit-content", "min-content", "max-content"],
       default_value: "Length()",
-      typedom_types: ["Length", "Percent"],
+      typedom_types: ["Length", "Percentage"],
       converter: "ConvertLengthSizing",
     },
     {
@@ -1579,7 +1579,7 @@
       field_template: "<length>",
       keywords: ["auto"],
       default_value: "Length()",
-      typedom_types: ["Length", "Percent"],
+      typedom_types: ["Length", "Percentage"],
       converter: "ConvertLengthOrAuto",
     },
     {
@@ -1674,7 +1674,7 @@
       default_value: "Length(kFixed)",
       converter: "ConvertQuirkyLength",
       keywords: ["auto"],
-      typedom_types: ["Length", "Percent"]
+      typedom_types: ["Length", "Percentage"]
     },
     {
       name: "margin-left",
@@ -1685,7 +1685,7 @@
       default_value: "Length(kFixed)",
       converter: "ConvertQuirkyLength",
       keywords: ["auto"],
-      typedom_types: ["Length", "Percent"]
+      typedom_types: ["Length", "Percentage"]
     },
     {
       name: "margin-right",
@@ -1696,7 +1696,7 @@
       default_value: "Length(kFixed)",
       converter: "ConvertQuirkyLength",
       keywords: ["auto"],
-      typedom_types: ["Length", "Percent"]
+      typedom_types: ["Length", "Percentage"]
     },
     {
       name: "margin-top",
@@ -1707,7 +1707,7 @@
       default_value: "Length(kFixed)",
       converter: "ConvertQuirkyLength",
       keywords: ["auto"],
-      typedom_types: ["Length", "Percent"]
+      typedom_types: ["Length", "Percentage"]
     },
     {
       name: "marker-end",
@@ -2030,7 +2030,7 @@
       field_template: "<length>",
       default_value: "Length(kFixed)",
       converter: "ConvertLength",
-      typedom_types: ["Length", "Percent"]
+      typedom_types: ["Length", "Percentage"]
     },
     {
       name: "padding-left",
@@ -2040,7 +2040,7 @@
       field_template: "<length>",
       default_value: "Length(kFixed)",
       converter: "ConvertLength",
-      typedom_types: ["Length", "Percent"]
+      typedom_types: ["Length", "Percentage"]
     },
     {
       name: "padding-right",
@@ -2050,7 +2050,7 @@
       field_template: "<length>",
       default_value: "Length(kFixed)",
       converter: "ConvertLength",
-      typedom_types: ["Length", "Percent"]
+      typedom_types: ["Length", "Percentage"]
     },
     {
       name: "padding-top",
@@ -2060,7 +2060,7 @@
       field_template: "<length>",
       default_value: "Length(kFixed)",
       converter: "ConvertLength",
-      typedom_types: ["Length", "Percent"]
+      typedom_types: ["Length", "Percentage"]
     },
     {
       name: "paint-order",
@@ -2142,7 +2142,7 @@
       field_template: "<length>",
       keywords: ["auto"],
       default_value: "Length()",
-      typedom_types: ["Length", "Percent"],
+      typedom_types: ["Length", "Percentage"],
       converter: "ConvertLengthOrAuto",
     },
     {
@@ -2269,7 +2269,7 @@
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       include_paths: ["platform/Length.h"],
-      typedom_types: ["Length", "Percent"],
+      typedom_types: ["Length", "Percentage"],
       type_name: "Length",
       converter: "ConvertLength",
       direction_aware_options: {
@@ -2282,7 +2282,7 @@
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       include_paths: ["platform/Length.h"],
-      typedom_types: ["Length", "Percent"],
+      typedom_types: ["Length", "Percentage"],
       type_name: "Length",
       converter: "ConvertLength",
       direction_aware_options: {
@@ -2297,7 +2297,7 @@
       field_group: "*",
       field_template: "<length>",
       default_value: "Length()",
-      typedom_types: ["Length", "Percent"],
+      typedom_types: ["Length", "Percentage"],
       converter: "ConvertLength",
     },
     {
@@ -2305,7 +2305,7 @@
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       include_paths: ["platform/Length.h"],
-      typedom_types: ["Length", "Percent"],
+      typedom_types: ["Length", "Percentage"],
       type_name: "Length",
       converter: "ConvertLength",
       direction_aware_options: {
@@ -2318,7 +2318,7 @@
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       include_paths: ["platform/Length.h"],
-      typedom_types: ["Length", "Percent"],
+      typedom_types: ["Length", "Percentage"],
       type_name: "Length",
       converter: "ConvertLength",
       direction_aware_options: {
@@ -2333,7 +2333,7 @@
       field_group: "*",
       field_template: "<length>",
       default_value: "Length()",
-      typedom_types: ["Length", "Percent"],
+      typedom_types: ["Length", "Percentage"],
       converter: "ConvertLength",
     },
     {
@@ -2343,7 +2343,7 @@
       field_group: "*",
       field_template: "<length>",
       default_value: "Length()",
-      typedom_types: ["Length", "Percent"],
+      typedom_types: ["Length", "Percentage"],
       converter: "ConvertLength",
     },
     {
@@ -2353,7 +2353,7 @@
       field_group: "*",
       field_template: "<length>",
       default_value: "Length()",
-      typedom_types: ["Length", "Percent"],
+      typedom_types: ["Length", "Percentage"],
       converter: "ConvertLength",
     },
     {
@@ -2709,7 +2709,7 @@
       field_template: "<length>",
       keywords: ["auto"],
       default_value: "Length()",
-      typedom_types: ["Length", "Percent"],
+      typedom_types: ["Length", "Percentage"],
       converter: "ConvertLengthOrAuto",
     },
     {
@@ -2832,7 +2832,7 @@
       interpolable: true,
       custom_apply_functions_inherit: true,
       custom_apply_functions_value: true,
-      typedom_types: ["Length", "Percent"],
+      typedom_types: ["Length", "Percentage"],
       keywords: ["baseline", "sub", "super", "text-top", "text-bottom", "middle"],
     },
     {
@@ -3445,7 +3445,7 @@
       field_template: "<length>",
       keywords: ["auto", "fit-content", "min-content", "max-content"],
       default_value: "Length()",
-      typedom_types: ["Length", "Percent"],
+      typedom_types: ["Length", "Percentage"],
       converter: "ConvertLengthSizing",
     },
     {

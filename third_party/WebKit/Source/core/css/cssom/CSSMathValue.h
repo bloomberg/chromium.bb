@@ -22,11 +22,6 @@ class CORE_EXPORT CSSMathValue : public CSSNumericValue {
   bool IsUnitValue() const final { return false; }
 
   // From CSSStyleValue.
-  bool ContainsPercent() const final {
-    // TODO(776173): Implement
-    return false;
-  }
-
   const CSSValue* ToCSSValue() const final;
 
  protected:

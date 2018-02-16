@@ -28,28 +28,23 @@ class CORE_EXPORT CSSStyleValue : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  // This enum ordering is significant for CSSStyleValue::IsNumericValue.
   enum StyleValueType {
     kUnknownType,
-    kAngleType,
-    kFlexType,
-    kFrequencyType,
-    kInvertType,
-    kKeywordType,
-    kLengthType,
-    kMaxType,
-    kMinType,
-    kNegateType,
-    kNumberType,
-    kPercentType,
-    kPositionType,
-    kProductType,
-    kResolutionType,
-    kSumType,
-    kTimeType,
-    kTransformType,
     kUnparsedType,
+    kKeywordType,
+    // Start of CSSNumericValue subclasses
+    kUnitType,
+    kSumType,
+    kProductType,
+    kNegateType,
+    kInvertType,
+    kMinType,
+    kMaxType,
+    // End of CSSNumericValue subclasses
+    kTransformType,
+    kPositionType,
     kURLImageType,
-    kInvalidType,
   };
 
   static CSSStyleValue* parse(const ExecutionContext*,
@@ -64,7 +59,9 @@ class CORE_EXPORT CSSStyleValue : public ScriptWrappable {
   virtual ~CSSStyleValue() = default;
 
   virtual StyleValueType GetType() const = 0;
-  virtual bool ContainsPercent() const { return false; }
+  bool IsNumericValue() const {
+    return GetType() >= kUnitType && GetType() <= kMaxType;
+  }
 
   virtual const CSSValue* ToCSSValue() const = 0;
   virtual const CSSValue* ToCSSValueWithProperty(CSSPropertyID) const {
@@ -73,8 +70,6 @@ class CORE_EXPORT CSSStyleValue : public ScriptWrappable {
   virtual String toString() const;
 
  protected:
-  static String StyleValueTypeToString(StyleValueType);
-
   CSSStyleValue() = default;
 
  private:

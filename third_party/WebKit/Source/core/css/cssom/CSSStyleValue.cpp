@@ -79,28 +79,4 @@ String CSSStyleValue::toString() const {
   return result->CssText();
 }
 
-String CSSStyleValue::StyleValueTypeToString(StyleValueType type) {
-  switch (type) {
-    case StyleValueType::kNumberType:
-      return "number";
-    case StyleValueType::kPercentType:
-      return "percent";
-    case StyleValueType::kLengthType:
-      return "length";
-    case StyleValueType::kAngleType:
-      return "angle";
-    case StyleValueType::kTimeType:
-      return "time";
-    case StyleValueType::kFrequencyType:
-      return "frequency";
-    case StyleValueType::kResolutionType:
-      return "resolution";
-    case StyleValueType::kFlexType:
-      return "flex";
-    default:
-      NOTREACHED();
-      return "";
-  }
-}
-
 }  // namespace blink
