@@ -234,7 +234,13 @@ void KeyboardShortcutView::QueryChanged(search_box::SearchBoxViewBase* sender) {
       base::string16 description_text =
           item_view->description_label_view()->text();
       base::string16 shortcut_text = item_view->shortcut_label_view()->text();
-      if (finder.Search(description_text, nullptr, nullptr) ||
+      size_t match_index = -1;
+      size_t match_length = 0;
+      // Only highlight |description_label_view_| in KeyboardShortcutItemView.
+      // |shortcut_label_view_| has customized style ranges for bubble views so
+      // it may have overlappings with the searched ranges. The highlighted
+      // behaviors are not defined so we don't highlight |shortcut_label_view_|.
+      if (finder.Search(description_text, &match_index, &match_length) ||
           finder.Search(shortcut_text, nullptr, nullptr)) {
         const ShortcutCategory category = item_view->category();
         if (current_category != category) {
@@ -247,8 +253,21 @@ void KeyboardShortcutView::QueryChanged(search_box::SearchBoxViewBase* sender) {
           found_items_list_view->AddHorizontalSeparator();
         else
           has_category_item = true;
-        found_items_list_view->AddChildView(new KeyboardShortcutItemView(
-            *item_view->shortcut_item(), category));
+        auto* matched_item_view =
+            new KeyboardShortcutItemView(*item_view->shortcut_item(), category);
+        // Highlight matched query in |description_label_view_|.
+        if (match_length > 0) {
+          views::StyledLabel::RangeStyleInfo style;
+          views::StyledLabel* description_label_view =
+              matched_item_view->description_label_view();
+          style.custom_font =
+              description_label_view->GetDefaultFontList().Derive(
+                  0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::BOLD);
+          description_label_view->AddStyleRange(
+              gfx::Range(match_index, match_index + match_length), style);
+        }
+
+        found_items_list_view->AddChildView(matched_item_view);
       }
     }
 
