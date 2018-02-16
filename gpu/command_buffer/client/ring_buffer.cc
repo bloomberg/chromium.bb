@@ -66,7 +66,7 @@ void* RingBuffer::Alloc(unsigned int size) {
   size = RoundToAlignment(size);
 
   // Wait until there is enough room.
-  while (size > GetLargestFreeSizeNoWaiting()) {
+  while (size > GetLargestFreeSizeNoWaitingInternal()) {
     FreeOldestBlock();
   }
 
@@ -145,6 +145,12 @@ void RingBuffer::DiscardBlock(void* pointer) {
 }
 
 unsigned int RingBuffer::GetLargestFreeSizeNoWaiting() {
+  unsigned int size = GetLargestFreeSizeNoWaitingInternal();
+  DCHECK_EQ(size, RoundToAlignment(size));
+  return size;
+}
+
+unsigned int RingBuffer::GetLargestFreeSizeNoWaitingInternal() {
   while (!blocks_.empty()) {
     Block& block = blocks_.front();
     if (!helper_->HasTokenPassed(block.token) || block.state == IN_USE) break;
@@ -169,7 +175,7 @@ unsigned int RingBuffer::GetLargestFreeSizeNoWaiting() {
 }
 
 unsigned int RingBuffer::GetTotalFreeSizeNoWaiting() {
-  unsigned int largest_free_size = GetLargestFreeSizeNoWaiting();
+  unsigned int largest_free_size = GetLargestFreeSizeNoWaitingInternal();
   if (free_offset_ > in_use_offset_) {
     // It's free from free_offset_ to size_ and from 0 to in_use_offset_.
     return size_ - free_offset_ + in_use_offset_;
@@ -188,6 +194,9 @@ void RingBuffer::ShrinkLastBlock(unsigned int new_size) {
   // Can't shrink to size 0, see comments in Alloc.
   new_size = std::max(new_size, 1u);
 
+  // Allocate rounded to alignment size so that the offsets are always
+  // memory-aligned.
+  new_size = RoundToAlignment(new_size);
   free_offset_ = block.offset + new_size;
   block.size = new_size;
 }

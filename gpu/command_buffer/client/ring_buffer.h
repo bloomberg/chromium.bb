@@ -120,6 +120,7 @@ class GPU_EXPORT RingBuffer {
   using BlockIndex = unsigned int;
 
   void FreeOldestBlock();
+  unsigned int GetLargestFreeSizeNoWaitingInternal();
 
   CommandBufferHelper* helper_;
 
