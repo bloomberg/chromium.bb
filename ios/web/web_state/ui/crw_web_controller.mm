@@ -594,6 +594,9 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // If YES, the page should be closed if it successfully redirects to a native
 // application, for example if a new tab redirects to the App Store.
 - (BOOL)shouldClosePageOnNativeApplicationLoad;
+// Updates URL for navigation context and navigation item.
+- (void)didReceiveRedirectForNavigation:(web::NavigationContextImpl*)context
+                                withURL:(const GURL&)URL;
 // Called following navigation completion to generate final navigation lifecycle
 // events. Navigation is considered complete when the document has finished
 // loading, or when other page load mechanics are completed on a
@@ -1994,6 +1997,20 @@ registerLoadRequestForURL:(const GURL&)requestURL
   const std::string image = "image";
   std::string MIMEType = self.webState->GetContentsMimeType();
   return MIMEType.compare(0, image.length(), image) == 0;
+}
+
+- (void)didReceiveRedirectForNavigation:(web::NavigationContextImpl*)context
+                                withURL:(const GURL&)URL {
+  context->SetUrl(URL);
+  web::NavigationItemImpl* item = web::GetItemWithUniqueID(
+      self.navigationManagerImpl, context->GetNavigationItemUniqueID());
+  item->SetVirtualURL(URL);
+  item->SetURL(URL);
+  // Redirects (3xx response code), must change POST requests to GETs.
+  item->SetPostData(nil);
+  item->ResetHttpRequestHeaders();
+
+  _lastTransferTimeInSeconds = CFAbsoluteTimeGetCurrent();
 }
 
 - (void)didFinishNavigation:(WKNavigation*)navigation {
@@ -4476,19 +4493,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [_navigationStates setState:web::WKNavigationState::REDIRECTED
                 forNavigation:navigation];
 
-  // Update URL for navigation context and navigation item.
   web::NavigationContextImpl* context =
       [_navigationStates contextForNavigation:navigation];
-  context->SetUrl(webViewURL);
-  web::NavigationItemImpl* item = web::GetItemWithUniqueID(
-      self.navigationManagerImpl, context->GetNavigationItemUniqueID());
-  item->SetVirtualURL(webViewURL);
-  item->SetURL(webViewURL);
-  // Redirects (3xx response code), must change POST requests to GETs.
-  item->SetPostData(nil);
-  item->ResetHttpRequestHeaders();
-
-  _lastTransferTimeInSeconds = CFAbsoluteTimeGetCurrent();
+  [self didReceiveRedirectForNavigation:context withURL:webViewURL];
 }
 
 - (void)webView:(WKWebView*)webView
@@ -4581,6 +4588,17 @@ registerLoadRequestForURL:(const GURL&)requestURL
   _webStateImpl->UpdateHttpResponseHeaders(_documentURL);
   web::NavigationContextImpl* context =
       [_navigationStates contextForNavigation:navigation];
+
+  if (@available(iOS 11.3, *)) {
+    // On iOS 11.3 didReceiveServerRedirectForProvisionalNavigation: is not
+    // always called. So if URL was unexpectedly changed then it's probably
+    // because redirect callback was not called.
+    // TODO(crbug.com/810911): Remove this workaround.
+    if (context && context->GetUrl() != webViewURL) {
+      [self didReceiveRedirectForNavigation:context withURL:webViewURL];
+    }
+  }
+
   // |context| will be nil if this navigation has been already committed and
   // finished.
   if (context) {
