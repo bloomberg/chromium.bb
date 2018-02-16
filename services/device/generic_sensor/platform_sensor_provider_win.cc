@@ -4,7 +4,10 @@
 
 #include "services/device/generic_sensor/platform_sensor_provider_win.h"
 
+#include <comdef.h>
 #include <objbase.h>
+
+#include <iomanip>
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
@@ -33,8 +36,19 @@ class PlatformSensorProviderWin::SensorThread final : public base::Thread {
   void Init() override {
     if (sensor_manager_)
       return;
-    ::CoCreateInstance(CLSID_SensorManager, nullptr, CLSCTX_ALL,
-                       IID_PPV_ARGS(&sensor_manager_));
+    HRESULT hr = ::CoCreateInstance(CLSID_SensorManager, nullptr, CLSCTX_ALL,
+                                    IID_PPV_ARGS(&sensor_manager_));
+    if (FAILED(hr)) {
+      // Only log this error the first time.
+      static bool logged_failure = false;
+      if (!logged_failure) {
+        LOG(ERROR) << "Unable to create instance of SensorManager: "
+                   << _com_error(hr).ErrorMessage() << " (0x " << std::hex
+                   << std::uppercase << std::setfill('0') << std::setw(8) << hr
+                   << ")";
+        logged_failure = true;
+      }
+    }
   }
 
   void CleanUp() override { sensor_manager_.Reset(); }
