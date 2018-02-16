@@ -21,6 +21,11 @@ import time
 import subprocess2
 
 
+# Env vars that tempdir can be gotten from; minimally, this
+# needs to match python's tempfile module and match normal
+# unix standards.
+_TEMPDIR_ENV_VARS = ('TMPDIR', 'TEMP', 'TMP')
+
 GSUTIL_DEFAULT_PATH = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), 'gsutil.py')
 # Maps sys.platform to what we actually want to call them.
@@ -81,6 +86,9 @@ class Gsutil(object):
     elif self.boto_path:
       env['AWS_CREDENTIAL_FILE'] = self.boto_path
       env['BOTO_CONFIG'] = self.boto_path
+
+    if PLATFORM_MAPPING[sys.platform] != 'win':
+      env.update((x, "/tmp") for x in _TEMPDIR_ENV_VARS)
 
     return env
 
