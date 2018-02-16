@@ -35,9 +35,6 @@ scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunnerForTesting();
 scoped_refptr<base::SingleThreadTaskRunner>
 GetSingleThreadTaskRunnerForTesting();
 
-// Creates a task runner for testing.
-scoped_refptr<base::SingleThreadTaskRunner> CreateWebTaskRunnerForTesting();
-
 }  // namespace scheduler
 }  // namespace blink
 

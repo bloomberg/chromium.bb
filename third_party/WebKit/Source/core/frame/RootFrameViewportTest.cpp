@@ -91,7 +91,8 @@ class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
         user_input_scrollable_y_(true),
         viewport_size_(viewport_size),
         contents_size_(contents_size),
-        timer_task_runner_(blink::scheduler::CreateWebTaskRunnerForTesting()) {}
+        timer_task_runner_(
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting()) {}
 
   CompositorElementId GetCompositorElementId() const override {
     return CompositorElementId();

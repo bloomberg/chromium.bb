@@ -36,7 +36,7 @@ namespace {
 class ScriptStreamingTest : public ::testing::Test {
  public:
   ScriptStreamingTest()
-      : loading_task_runner_(scheduler::CreateWebTaskRunnerForTesting()),
+      : loading_task_runner_(scheduler::GetSingleThreadTaskRunnerForTesting()),
         dummy_page_holder_(DummyPageHolder::Create(IntSize(800, 600))) {
     dummy_page_holder_->GetPage().GetSettings().SetScriptEnabled(true);
     MockScriptElementBase* element = MockScriptElementBase::Create();
