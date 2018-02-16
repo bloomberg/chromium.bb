@@ -9,15 +9,6 @@
 
 namespace display {
 
-inline bool operator==(const Display& lhs, const Display& rhs) {
-  return lhs.id() == rhs.id() &&
-         lhs.bounds() == rhs.bounds() &&
-         lhs.work_area() == rhs.work_area() &&
-         lhs.device_scale_factor() == rhs.device_scale_factor() &&
-         lhs.rotation() == rhs.rotation() &&
-         lhs.touch_support() == rhs.touch_support();
-}
-
 void PrintTo(const Display& display, ::std::ostream* os) {
   *os << display.ToString();
 }

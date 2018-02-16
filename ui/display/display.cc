@@ -300,4 +300,17 @@ bool Display::HasInternalDisplay() {
   return internal_display_id_ != kInvalidDisplayId;
 }
 
+bool Display::operator==(const Display& rhs) const {
+  return id_ == rhs.id_ && bounds_ == rhs.bounds_ &&
+         size_in_pixels_ == rhs.size_in_pixels_ &&
+         work_area_ == rhs.work_area_ &&
+         device_scale_factor_ == rhs.device_scale_factor_ &&
+         rotation_ == rhs.rotation_ && touch_support_ == rhs.touch_support_ &&
+         accelerometer_support_ == rhs.accelerometer_support_ &&
+         maximum_cursor_size_ == rhs.maximum_cursor_size_ &&
+         color_space_ == rhs.color_space_ && color_depth_ == rhs.color_depth_ &&
+         depth_per_component_ == rhs.depth_per_component_ &&
+         is_monochrome_ == rhs.is_monochrome_;
+}
+
 }  // namespace display

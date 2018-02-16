@@ -726,12 +726,30 @@ RenderWidgetHostViewMac::GetFocusedRenderWidgetHostDelegate() {
   return render_widget_host_->delegate();
 }
 
-void RenderWidgetHostViewMac::UpdateBackingStoreProperties() {
-  UpdateScreenInfo(cocoa_view_);
-  // Update the ui::Compositor's color space here. The other display properties
-  // of the ui::Compositor are updated by frame metadata.
-  if (browser_compositor_)
-    browser_compositor_->SetDisplayColorSpace(current_display_color_space_);
+void RenderWidgetHostViewMac::UpdateNSViewAndDisplayProperties() {
+  if (!render_widget_host_)
+    return;
+
+  // During auto-resize it is the responsibility of the caller to ensure that
+  // the NSView and RenderWidgetHostImpl are kept in sync.
+  if (render_widget_host_->auto_resize_enabled())
+    return;
+
+  if (render_widget_host_->delegate())
+    render_widget_host_->delegate()->SendScreenRects();
+  else
+    render_widget_host_->SendScreenRects();
+
+  // RenderWidgetHostImpl will query BrowserCompositorMac for the dimensions
+  // to send to the renderer, so it is required that BrowserCompositorMac be
+  // updated first. Only notify RenderWidgetHostImpl of the update if any
+  // properties it will query have changed.
+  if (browser_compositor_->UpdateNSViewAndDisplay())
+    render_widget_host_->NotifyScreenInfoChanged();
+}
+
+void RenderWidgetHostViewMac::GetScreenInfo(ScreenInfo* screen_info) const {
+  browser_compositor_->GetRendererScreenInfo(screen_info);
 }
 
 void RenderWidgetHostViewMac::Show() {
@@ -1086,13 +1104,9 @@ void RenderWidgetHostViewMac::SetTooltipText(
   }
 }
 
-void RenderWidgetHostViewMac::OnSynchronizedDisplayPropertiesChanged() {
-  browser_compositor_->OnNSViewWasResized();
-}
-
 void RenderWidgetHostViewMac::ResizeDueToAutoResize(const gfx::Size& new_size,
                                                     uint64_t sequence_number) {
-  browser_compositor_->OnNSViewWillAutoResize(new_size);
+  browser_compositor_->UpdateForAutoResize(new_size);
   RenderWidgetHostViewBase::ResizeDueToAutoResize(new_size, sequence_number);
 }
 
@@ -1725,7 +1739,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   display::Screen* screen = display::Screen::GetScreen();
   if (display.id() != screen->GetDisplayNearestView(cocoa_view_).id())
     return;
-  UpdateBackingStoreProperties();
+  UpdateNSViewAndDisplayProperties();
 }
 
 Class GetRenderWidgetHostViewCocoaClassForTesting() {
@@ -2791,7 +2805,7 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
 }
 
 - (void)updateScreenProperties{
-  renderWidgetHostView_->UpdateBackingStoreProperties();
+  renderWidgetHostView_->UpdateNSViewAndDisplayProperties();
   renderWidgetHostView_->UpdateDisplayLink();
 }
 
@@ -2810,7 +2824,7 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
 }
 
 - (void)windowChangedGlobalFrame:(NSNotification*)notification {
-  renderWidgetHostView_->UpdateBackingStoreProperties();
+  renderWidgetHostView_->UpdateNSViewAndDisplayProperties();
 }
 
 - (void)setFrameSize:(NSSize)newSize {
@@ -2820,24 +2834,7 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
   // -setFrame: isn't neccessary.
   [super setFrameSize:newSize];
 
-  if (!renderWidgetHostView_->render_widget_host_)
-    return;
-
-  // During auto-resize it is the responsibility of the caller to ensure that
-  // the NSView and RenderWidgetHostImpl are kept in sync.
-  if (renderWidgetHostView_->render_widget_host_->auto_resize_enabled())
-    return;
-
-  if (renderWidgetHostView_->render_widget_host_->delegate())
-    renderWidgetHostView_->render_widget_host_->delegate()->SendScreenRects();
-  else
-    renderWidgetHostView_->render_widget_host_->SendScreenRects();
-
-  // RenderWidgetHostImpl will query BrowserCompositorMac for the dimensions
-  // to send to the renderer, so it is required that BrowserCompositorMac be
-  // updated first.
-  renderWidgetHostView_->browser_compositor_->OnNSViewWasResized();
-  renderWidgetHostView_->render_widget_host_->WasResized();
+  renderWidgetHostView_->UpdateNSViewAndDisplayProperties();
 
   // Wait for the frame that WasResize might have requested. If the view is
   // being made visible at a new size, then this call will have no effect

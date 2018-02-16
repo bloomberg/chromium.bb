@@ -296,6 +296,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void SetBackgroundColor(SkColor color) override;
   SkColor background_color() const override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
+  void GetScreenInfo(ScreenInfo* screen_info) const override;
   void SetWantsAnimateOnlyBeginFrames() override;
 
   // Implementation of RenderWidgetHostViewBase.
@@ -335,7 +336,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   bool ShouldContinueToPauseForFrame() override;
   gfx::Rect GetBoundsInRootWindow() override;
-  void OnSynchronizedDisplayPropertiesChanged() override;
   void ResizeDueToAutoResize(const gfx::Size& new_size,
                              uint64_t sequence_number) override;
   void DidNavigate() override;
@@ -476,9 +476,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   int window_number() const;
 
-  // Update properties, such as the scale factor for the backing store
-  // and for any CALayers, and the screen color profile.
-  void UpdateBackingStoreProperties();
+  // Update the size, scale factor, color profile, and any other properties
+  // of the NSView or its NSScreen. Propagate these to the RenderWidgetHostImpl
+  // as well.
+  void UpdateNSViewAndDisplayProperties();
 
   // Ensure that the display link is associated with the correct display.
   void UpdateDisplayLink();
