@@ -87,6 +87,9 @@ extern const char kNavigationMojoResponseDescription[];
 extern const char kBrowserTaskSchedulerName[];
 extern const char kBrowserTaskSchedulerDescription[];
 
+extern const char kBundledConnectionHelpName[];
+extern const char kBundledConnectionHelpDescription[];
+
 extern const char kBypassAppBannerEngagementChecksName[];
 extern const char kBypassAppBannerEngagementChecksDescription[];
 

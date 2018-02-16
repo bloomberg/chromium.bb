@@ -71,6 +71,11 @@ extern const base::Feature kBrowserHangFixesExperiment;
 
 #if defined(OS_MACOSX)
 extern const base::Feature kBrowserTouchBar;
+#endif
+
+extern const base::Feature kBundledConnectionHelpFeature;
+
+#if defined(OS_MACOSX)
 extern const base::Feature kDialogTouchBar;
 extern const base::Feature kTabStripKeyboardFocus;
 #endif  // defined(OS_MACOSX)

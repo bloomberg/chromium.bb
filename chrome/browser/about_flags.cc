@@ -3728,6 +3728,10 @@ const FeatureEntry kFeatureEntries[] = {
          service_manager::switches::kDisableGpuAppContainer)},
 #endif  // OS_WIN
 
+    {"BundledConnectionHelp", flag_descriptions::kBundledConnectionHelpName,
+     flag_descriptions::kBundledConnectionHelpDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kBundledConnectionHelpFeature)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

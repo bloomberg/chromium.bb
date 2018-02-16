@@ -129,7 +129,15 @@ const base::Feature kBrowserHangFixesExperiment{
 // Enables or disables the browser's touch bar.
 const base::Feature kBrowserTouchBar{"BrowserTouchBar",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
 
+// Enables or disables redirecting users who get an interstitial when
+// accessing https://support.google.com/chrome/answer/6098869 to local
+// connection help content.
+const base::Feature kBundledConnectionHelpFeature{
+    "BundledConnectionHelp", base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if defined(OS_MACOSX)
 // Enables or disables touch bar support for dialogs.
 const base::Feature kDialogTouchBar{"DialogTouchBar",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
