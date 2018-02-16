@@ -11,6 +11,13 @@
 
 namespace features {
 
+// Keep sorted!
+UI_BASE_EXPORT extern const base::Feature kEnableFloatingVirtualKeyboard;
+UI_BASE_EXPORT extern const base::Feature kSecondaryUiMd;
+UI_BASE_EXPORT extern const base::Feature kTouchableAppContextMenu;
+
+UI_BASE_EXPORT bool IsTouchableAppContextMenuEnabled();
+
 #if defined(OS_WIN)
 UI_BASE_EXPORT extern const base::Feature kDirectManipulationStylus;
 UI_BASE_EXPORT extern const base::Feature kPointerEventsForTouch;
@@ -19,12 +26,6 @@ UI_BASE_EXPORT extern const base::Feature kPointerEventsForTouch;
 UI_BASE_EXPORT bool IsUsingWMPointerForTouch();
 
 #endif  // defined(OS_WIN)
-
-UI_BASE_EXPORT extern const base::Feature kSecondaryUiMd;
-
-UI_BASE_EXPORT extern const base::Feature kTouchableAppContextMenu;
-
-UI_BASE_EXPORT bool IsTouchableAppContextMenuEnabled();
 
 }  // namespace features
 

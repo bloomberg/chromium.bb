@@ -4,14 +4,6 @@
 
 #include "ui/base/ui_base_switches.h"
 
-namespace features {
-
-// Enables the floating virtual keyboard behavior.
-const base::Feature kEnableFloatingVirtualKeyboard = {
-    "enable-floating-virtual-keyboard", base::FEATURE_DISABLED_BY_DEFAULT};
-
-}  // namespace features
-
 namespace switches {
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

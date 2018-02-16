@@ -55,6 +55,7 @@
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/base/ui_features.h"
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"

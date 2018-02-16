@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/base/ui_features.h"
 
 namespace content {
 
