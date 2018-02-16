@@ -1279,10 +1279,8 @@ crbug.com/467127 [ Mac Win ] external/wpt/css/css-flexbox/ttwf-reftest-flex-wrap
 crbug.com/467127 external/wpt/css/css-flexbox/flex-aspect-ratio-img-column-001.html [ Failure ]
 crbug.com/467127 external/wpt/css/css-flexbox/flex-aspect-ratio-img-column-002.html [ Failure ]
 crbug.com/467127 external/wpt/css/css-flexbox/flex-aspect-ratio-img-row-001.html [ Failure ]
-crbug.com/467127 external/wpt/css/css-flexbox/flex-minimum-height-flex-items-004.xht [ Failure ]
 crbug.com/467127 external/wpt/css/css-flexbox/flex-minimum-height-flex-items-006.xht [ Failure ]
 crbug.com/467127 external/wpt/css/css-flexbox/flex-minimum-height-flex-items-008.xht [ Failure ]
-crbug.com/467127 external/wpt/css/css-flexbox/flex-minimum-width-flex-items-004.xht [ Failure ]
 crbug.com/467127 external/wpt/css/css-flexbox/flex-minimum-width-flex-items-008.xht [ Failure ]
 crbug.com/467127 external/wpt/css/css-flexbox/negative-margins-001.html [ Failure ]
 crbug.com/467127 external/wpt/css/css-flexbox/percentage-heights-003.html [ Failure ]
@@ -1290,16 +1288,10 @@ crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-horiz-001b.xhtml [ Failure ]
 crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-vert-001a.xhtml [ Failure ]
 crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-vert-001b.xhtml [ Failure ]
-crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-vert-001.xhtml [ Failure ]
-crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-vert-rtl-001.xhtml [ Failure ]
 crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-horiz-001a.xhtml [ Failure ]
 crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-horiz-001b.xhtml [ Failure ]
 crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-horiz-003.xhtml [ Failure ]
 crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-horiz-005.xhtml [ Failure ]
-
-# These tests are not following the last version of the CSS Box Alignment spec (https://bugzilla.mozilla.org/show_bug.cgi?id=1432154)
-crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-horiz-001-block.xhtml [ Failure ]
-crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-horiz-001-table.xhtml [ Failure ]
 
 crbug.com/654999 [ Win Linux ] fast/forms/color/color-suggestion-picker-appearance-zoom200.html [ Pass Failure ]
 crbug.com/660185 [ Mac ] fast/forms/datalist/input-appearance-range-with-transform.html [ Pass Failure ]
@@ -1325,9 +1317,6 @@ crbug.com/531199 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/531199 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-005.html [ Failure ]
 crbug.com/531199 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-006.html [ Failure ]
 crbug.com/531199 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-min-height-auto-002b.html [ Failure ]
-
-# Tests vertical padding, which we implement different from Firefox (the spec allows either way)
-crbug.com/229568 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-mbp-horiz-004.xhtml [ Failure ]
 
 # These tests are incorrect, as Firefox has a bug in this area. https://bugzilla.mozilla.org/show_bug.cgi?id=1136312
 crbug.com/553838 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-min-height-auto-002a.html [ Failure ]
