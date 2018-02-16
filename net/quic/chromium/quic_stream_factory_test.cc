@@ -4934,7 +4934,6 @@ TEST_P(QuicStreamFactoryTest, OnCertDBChanged) {
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   socket_data.AddWrite(ConstructInitialSettingsPacket());
-  socket_data.AddWrite(ConstructClientRstPacket(2, QUIC_RST_ACKNOWLEDGEMENT));
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
   MockQuicData socket_data2;
@@ -4951,17 +4950,15 @@ TEST_P(QuicStreamFactoryTest, OnCertDBChanged) {
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
-  HttpRequestInfo request_info;
-  request_info.traffic_annotation =
-      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
-  EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
-                                         net_log_, CompletionOnceCallback()));
+  EXPECT_TRUE(stream);
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
 
   // Change the CA cert and verify that stream saw the event.
   factory_->OnCertDBChanged();
-  EXPECT_EQ(ERR_CERT_DATABASE_CHANGED,
-            stream->ReadResponseHeaders(callback_.callback()));
+
   EXPECT_FALSE(factory_->require_confirmation());
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
 
   // Now attempting to request a stream to the same origin should create
   // a new session.
@@ -4974,8 +4971,16 @@ TEST_P(QuicStreamFactoryTest, OnCertDBChanged) {
                        net_log_, &net_error_details_, callback_.callback()));
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
-  stream = CreateStream(&request2);
-  stream.reset();  // Will reset stream 3.
+  std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
+  EXPECT_TRUE(stream2);
+  QuicChromiumClientSession* session2 = GetActiveSession(host_port_pair_);
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_NE(session, session2);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session2));
+
+  stream2.reset();
+  stream.reset();
 
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());

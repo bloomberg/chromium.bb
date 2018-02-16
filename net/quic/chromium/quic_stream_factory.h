@@ -414,6 +414,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
                     QuicChromiumClientSession** session);
   void ActivateSession(const QuicSessionKey& key,
                        QuicChromiumClientSession* session);
+  void MarkAllActiveSessionsGoingAway();
 
   void ConfigureInitialRttEstimate(const QuicServerId& server_id,
                                    QuicConfig* config);
