@@ -5309,6 +5309,19 @@ registerLoadRequestForURL:(const GURL&)requestURL
   DCHECK_GT(CGRectGetWidth([_webView frame]), 0.0);
   DCHECK_GT(CGRectGetHeight([_webView frame]), 0.0);
 
+  // If the current item uses a different user agent from that is currently used
+  // in the web view, update |customUserAgent| property, which will be used by
+  // the next request sent by this web view.
+  web::UserAgentType itemUserAgentType =
+      self.currentNavItem->GetUserAgentType();
+  if (itemUserAgentType != web::UserAgentType::NONE) {
+    NSString* userAgentString = base::SysUTF8ToNSString(
+        web::GetWebClient()->GetUserAgent(itemUserAgentType));
+    if (![_webView.customUserAgent isEqualToString:userAgentString]) {
+      _webView.customUserAgent = userAgentString;
+    }
+  }
+
   web::WKBackForwardListItemHolder* holder =
       [self currentBackForwardListItemHolder];
   BOOL repostedForm =

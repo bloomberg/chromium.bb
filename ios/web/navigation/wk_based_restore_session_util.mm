@@ -68,6 +68,12 @@ bool IsRestoreSessionUrl(const GURL& url) {
   return url.SchemeIsFile() && url.path() == GetRestoreSessionBaseUrl().path();
 }
 
+GURL CreateRedirectUrl(const GURL& target_url) {
+  return net::AppendQueryParameter(GetRestoreSessionBaseUrl(),
+                                   kRestoreSessionTargetUrlQueryKey,
+                                   target_url.spec());
+}
+
 bool ExtractTargetURL(const GURL& restore_session_url, GURL* target_url) {
   DCHECK(IsRestoreSessionUrl(restore_session_url))
       << restore_session_url.possibly_invalid_spec()

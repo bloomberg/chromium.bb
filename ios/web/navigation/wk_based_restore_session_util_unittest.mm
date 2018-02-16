@@ -56,11 +56,13 @@ TEST_F(WKBasedRestoreSessionUtilTest, IsNotRestoreSessionUrl) {
   EXPECT_FALSE(IsRestoreSessionUrl(GURL("http://www.1.com")));
 }
 
-TEST_F(WKBasedRestoreSessionUtilTest, ExtractTargetURL) {
+// Tests that CreateRedirectUrl and ExtractTargetURL used back-to-back is an
+// identity transformation.
+TEST_F(WKBasedRestoreSessionUtilTest, CreateAndExtractTargetURL) {
   GURL target_url = GURL("http://www.1.com?query=special%26chars");
-  GURL url = net::AppendQueryParameter(GetRestoreSessionBaseUrl(),
-                                       kRestoreSessionTargetUrlQueryKey,
-                                       target_url.spec());
+  GURL url = CreateRedirectUrl(target_url);
+  ASSERT_TRUE(url.SchemeIsFile());
+
   GURL extracted_url;
   ASSERT_TRUE(ExtractTargetURL(url, &extracted_url));
   EXPECT_EQ(target_url, extracted_url);
