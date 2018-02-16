@@ -70,12 +70,6 @@ struct wl_resource {
 	void *data;
 };
 
-struct wl_buffer {
-	struct wl_resource resource;
-	int32_t width, height;
-	uint32_t busy_count;
-} WL_DEPRECATED;
-
 uint32_t
 wl_client_add_resource(struct wl_client *client,
 		       struct wl_resource *resource) WL_DEPRECATED;
