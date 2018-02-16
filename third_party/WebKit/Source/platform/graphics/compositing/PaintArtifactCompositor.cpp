@@ -789,14 +789,9 @@ void PaintArtifactCompositor::Update(
 
   g_s_property_tree_sequence_number++;
 
-  for (const auto& chunk : paint_artifact.PaintChunks()) {
+  // Clear paint property change flags that are for this update only.
+  for (const auto& chunk : paint_artifact.PaintChunks())
     chunk.properties.property_tree_state.ClearChangedToRoot();
-    // TODO(wangxianzhu): This will be unnecessary if we don't call
-    // PaintArtifactCompositor::Update() when paint artifact is unchanged.
-    chunk.client_is_just_created = false;
-    chunk.raster_invalidation_rects.clear();
-    chunk.raster_invalidation_tracking.clear();
-  }
 
 #if DCHECK_IS_ON()
   if (VLOG_IS_ON(2)) {

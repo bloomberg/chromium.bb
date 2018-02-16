@@ -24,10 +24,13 @@ class FakeGraphicsLayerClient : public GraphicsLayerClient {
   bool NeedsRepaint(const GraphicsLayer&) const override {
     return needs_repaint_;
   }
-  void PaintContents(const GraphicsLayer*,
-                     GraphicsContext&,
-                     GraphicsLayerPaintingPhase,
-                     const IntRect&) const override {}
+  void PaintContents(const GraphicsLayer* layer,
+                     GraphicsContext& context,
+                     GraphicsLayerPaintingPhase phase,
+                     const IntRect& rect) const override {
+    if (painter_)
+      painter_(layer, context, phase, rect);
+  }
 
   void SetIsTrackingRasterInvalidations(bool is_tracking_raster_invalidations) {
     is_tracking_raster_invalidations_ = is_tracking_raster_invalidations;
@@ -35,7 +38,14 @@ class FakeGraphicsLayerClient : public GraphicsLayerClient {
 
   void SetNeedsRepaint(bool needs_repaint) { needs_repaint_ = needs_repaint; }
 
+  using Painter = std::function<void(const GraphicsLayer*,
+                                     GraphicsContext&,
+                                     GraphicsLayerPaintingPhase,
+                                     const IntRect&)>;
+  void SetPainter(const Painter& painter) { painter_ = painter; }
+
  private:
+  Painter painter_ = nullptr;
   bool is_tracking_raster_invalidations_ = false;
   bool needs_repaint_ = false;
 };

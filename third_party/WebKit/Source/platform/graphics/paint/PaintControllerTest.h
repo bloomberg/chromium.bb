@@ -18,6 +18,25 @@ class PaintControllerTestBase : public ::testing::Test {
  public:
   PaintControllerTestBase() : paint_controller_(PaintController::Create()) {}
 
+  static void DrawNothing(GraphicsContext& context,
+                          const DisplayItemClient& client,
+                          DisplayItem::Type type) {
+    if (DrawingRecorder::UseCachedDrawingIfPossible(context, client, type))
+      return;
+    DrawingRecorder recorder(context, client, type);
+  }
+
+  template <typename Rect>
+  static void DrawRect(GraphicsContext& context,
+                       const DisplayItemClient& client,
+                       DisplayItem::Type type,
+                       const Rect& bounds) {
+    if (DrawingRecorder::UseCachedDrawingIfPossible(context, client, type))
+      return;
+    DrawingRecorder recorder(context, client, type);
+    context.DrawRect(RoundedIntRect(FloatRect(bounds)));
+  }
+
  protected:
   PaintController& GetPaintController() { return *paint_controller_; }
 
@@ -40,25 +59,6 @@ class PaintControllerTestBase : public ::testing::Test {
   using SubsequenceMarkers = PaintController::SubsequenceMarkers;
   SubsequenceMarkers* GetSubsequenceMarkers(const DisplayItemClient& client) {
     return paint_controller_->GetSubsequenceMarkers(client);
-  }
-
-  static void DrawNothing(GraphicsContext& context,
-                          const DisplayItemClient& client,
-                          DisplayItem::Type type) {
-    if (DrawingRecorder::UseCachedDrawingIfPossible(context, client, type))
-      return;
-    DrawingRecorder recorder(context, client, type);
-  }
-
-  template <typename Rect>
-  static void DrawRect(GraphicsContext& context,
-                       const DisplayItemClient& client,
-                       DisplayItem::Type type,
-                       const Rect& bounds) {
-    if (DrawingRecorder::UseCachedDrawingIfPossible(context, client, type))
-      return;
-    DrawingRecorder recorder(context, client, type);
-    context.DrawRect(RoundedIntRect(FloatRect(bounds)));
   }
 
  private:

@@ -316,12 +316,16 @@ void CompositedLayerRasterInvalidator::Generate(
   if (!layer_bounds_was_empty && !layer_bounds_.IsEmpty())
     GenerateRasterInvalidations(paint_chunks, new_chunks_info, layer_state);
 
-  paint_chunks_info_.clear();
-  std::swap(paint_chunks_info_, new_chunks_info);
+  paint_chunks_info_ = std::move(new_chunks_info);
   if (tracking_info_) {
-    tracking_info_->old_client_debug_names.clear();
-    std::swap(tracking_info_->old_client_debug_names,
-              tracking_info_->new_client_debug_names);
+    tracking_info_->old_client_debug_names =
+        std::move(tracking_info_->new_client_debug_names);
+  }
+
+  for (const auto* chunk : paint_chunks) {
+    chunk->client_is_just_created = false;
+    chunk->raster_invalidation_rects.clear();
+    chunk->raster_invalidation_tracking.clear();
   }
 }
 
