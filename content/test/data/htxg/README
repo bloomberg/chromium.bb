@@ -1,11 +1,14 @@
 The certificate message files (*.msg) and the signed exchange files (*.htxg) in
 this directory are generated using the following commands.
 
-gen-certurl and gen-signedexchange are available in webpackage repository [1].
-But currently, these commands are under review yet [2].
+gen-certurl and gen-signedexchange are available in webpackage repository.
  [1] https://github.com/WICG/webpackage
- [2] https://github.com/WICG/webpackage/pull/119
-TODO(https://crbug.com/803774): Update when the commands are upstreamed.
+
+# Install gen-certurl command
+go get github.com/WICG/webpackage/go/signedexchange/cmd/gen-certurl
+
+# Install gen-signedexchange command
+go get github.com/WICG/webpackage/go/signedexchange/cmd/gen-signedexchange
 
 
 # Get the private key of "*.example.org".
