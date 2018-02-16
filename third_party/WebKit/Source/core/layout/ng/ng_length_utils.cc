@@ -560,19 +560,37 @@ void ApplyAutoMargins(const ComputedStyle& style,
   const LayoutUnit used_space = inline_size + margins->InlineSum();
   const LayoutUnit available_space = available_inline_size - used_space;
   if (available_space > LayoutUnit()) {
-    if ((style.MarginStart().IsAuto() && style.MarginEnd().IsAuto()) ||
-        (!style.MarginStart().IsAuto() && !style.MarginEnd().IsAuto() &&
-         containing_block_style.GetTextAlign() == ETextAlign::kWebkitCenter)) {
-      margins->inline_start += available_space / 2;
-    } else if (style.MarginStart().IsAuto() ||
-               (containing_block_style.IsLeftToRightDirection() &&
-                containing_block_style.GetTextAlign() ==
-                    ETextAlign::kWebkitRight) ||
-               (!containing_block_style.IsLeftToRightDirection() &&
-                containing_block_style.GetTextAlign() ==
-                    ETextAlign::kWebkitLeft)) {
-      margins->inline_start += available_space;
+    bool start_auto = style.MarginStartUsing(containing_block_style).IsAuto();
+    bool end_auto = style.MarginEndUsing(containing_block_style).IsAuto();
+    enum EBlockAlignment { kStart, kCenter, kEnd };
+    EBlockAlignment alignment;
+    if (start_auto || end_auto) {
+      alignment = start_auto ? (end_auto ? kCenter : kEnd) : kStart;
+    } else {
+      // If none of the inline margins are auto, look for -webkit- text-align
+      // values (which are really about block alignment). These are typically
+      // mapped from the legacy "align" HTML attribute.
+      switch (containing_block_style.GetTextAlign()) {
+        case ETextAlign::kWebkitLeft:
+          alignment =
+              containing_block_style.IsLeftToRightDirection() ? kStart : kEnd;
+          break;
+        case ETextAlign::kWebkitRight:
+          alignment =
+              containing_block_style.IsLeftToRightDirection() ? kEnd : kStart;
+          break;
+        case ETextAlign::kWebkitCenter:
+          alignment = kCenter;
+          break;
+        default:
+          alignment = kStart;
+          break;
+      }
     }
+    if (alignment == kCenter)
+      margins->inline_start += available_space / 2;
+    else if (alignment == kEnd)
+      margins->inline_start += available_space;
   }
   margins->inline_end =
       available_inline_size - inline_size - margins->inline_start;
