@@ -17817,6 +17817,10 @@ Called by update_net_error_codes.py.-->
   <int value="2366" label="WorkletAnimationConstructor"/>
   <int value="2367" label="ScrollTimelineConstructor"/>
   <int value="2368" label="V8Document_CreateTouchList_Method"/>
+  <int value="2369" label="AsyncClipboardAPIRead"/>
+  <int value="2370" label="AsyncClipboardAPIWrite"/>
+  <int value="2371" label="AsyncClipboardAPIReadText"/>
+  <int value="2372" label="AsyncClipboardAPIWriteText"/>
 </enum>
 
 <enum name="FeedbackSource">
