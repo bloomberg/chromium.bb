@@ -45,6 +45,8 @@ cast_source_set("base") {
     "android/system_time_change_notifier_android.cc",
     "android/system_time_change_notifier_android.h",
     "bind_to_task_runner.h",
+    "bitstream_audio_codecs.cc",
+    "bitstream_audio_codecs.h",
     "cast_constants.cc",
     "cast_constants.h",
     "cast_features.cc",

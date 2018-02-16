@@ -10,37 +10,12 @@
 namespace chromecast {
 namespace media {
 
-unsigned int MediaCapabilities::g_hdmi_codecs = 0;
 int MediaCapabilities::g_hdcp_version = 0;
 int MediaCapabilities::g_supported_eotfs = 0;
 int MediaCapabilities::g_dolby_vision_flags = 0;
 bool MediaCapabilities::g_cur_mode_supports_hdr = false;
 bool MediaCapabilities::g_cur_mode_supports_dv = false;
 gfx::Size MediaCapabilities::g_screen_resolution(0, 0);
-
-void MediaCapabilities::SetHdmiSinkCodecs(unsigned int codecs_mask) {
-  g_hdmi_codecs = codecs_mask;
-}
-
-bool MediaCapabilities::HdmiSinkSupportsAC3() {
-  return g_hdmi_codecs & HdmiSinkCodec::kSinkCodecAc3;
-}
-
-bool MediaCapabilities::HdmiSinkSupportsDTS() {
-  return g_hdmi_codecs & HdmiSinkCodec::kSinkCodecDts;
-}
-
-bool MediaCapabilities::HdmiSinkSupportsDTSHD() {
-  return g_hdmi_codecs & HdmiSinkCodec::kSinkCodecDtsHd;
-}
-
-bool MediaCapabilities::HdmiSinkSupportsEAC3() {
-  return g_hdmi_codecs & HdmiSinkCodec::kSinkCodecEac3;
-}
-
-bool MediaCapabilities::HdmiSinkSupportsPcmSurroundSound() {
-  return g_hdmi_codecs & HdmiSinkCodec::kSinkCodecPcmSurroundSound;
-}
 
 void MediaCapabilities::ScreenResolutionChanged(const gfx::Size& res) {
   VLOG(1) << __FUNCTION__ << " resolution=" << res.ToString();

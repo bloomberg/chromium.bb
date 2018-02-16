@@ -552,7 +552,9 @@ group("chromecast_locales_pak") {
 
 buildflag_header("chromecast_features") {
   header = "chromecast_features.h"
+  enable_application_media_capabilities = chromecast_branding != "public"
   flags = [
+    "ENABLE_APPLICATION_MEDIA_CAPABILITIES=$enable_application_media_capabilities",
     "ENABLE_ASSISTANT=$enable_assistant",
     "ENABLE_VOLUME_TABLES_ACCESS=$enable_volume_tables_access",
     "IS_ANDROID_THINGS=$is_android_things",

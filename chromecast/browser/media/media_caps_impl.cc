@@ -22,8 +22,7 @@ mojom::CodecProfileLevelPtr ConvertCodecProfileLevelToMojo(
 }
 
 MediaCapsImpl::MediaCapsImpl()
-    : supported_codecs_bitmask_(0),
-      hdcp_version_(0),
+    : hdcp_version_(0),
       supported_eotfs_(0),
       dolby_vision_flags_(0),
       screen_width_mm_(0),
@@ -42,16 +41,6 @@ void MediaCapsImpl::Initialize() {
 void MediaCapsImpl::AddBinding(
     mojom::MediaCapsRequest request) {
   bindings_.AddBinding(this, std::move(request));
-}
-
-void MediaCapsImpl::SetSupportedHdmiSinkCodecs(
-    unsigned int supported_codecs_bitmask) {
-  supported_codecs_bitmask_ = supported_codecs_bitmask;
-
-  observers_.ForAllPtrs(
-      [supported_codecs_bitmask](mojom::MediaCapsObserver* observer) {
-        observer->SupportedHdmiSinkCodecsChanged(supported_codecs_bitmask);
-      });
 }
 
 void MediaCapsImpl::ScreenResolutionChanged(unsigned width, unsigned height) {
@@ -101,7 +90,6 @@ void MediaCapsImpl::AddSupportedCodecProfileLevel(
 }
 
 void MediaCapsImpl::AddObserver(mojom::MediaCapsObserverPtr observer) {
-  observer->SupportedHdmiSinkCodecsChanged(supported_codecs_bitmask_);
   observer->ScreenResolutionChanged(screen_resolution_.width(),
                                     screen_resolution_.height());
   observer->ScreenInfoChanged(hdcp_version_, supported_eotfs_,

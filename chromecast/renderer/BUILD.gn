@@ -28,6 +28,7 @@ cast_source_set("renderer") {
     "//base",
     "//chromecast:chromecast_features",
     "//chromecast/base",
+    "//chromecast/common:interfaces",
     "//chromecast/common/media",
     "//chromecast/media",
     "//components/network_hints/renderer",

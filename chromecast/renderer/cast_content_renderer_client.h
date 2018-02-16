@@ -11,7 +11,10 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chromecast/chromecast_features.h"
+#include "chromecast/common/application_media_capabilities.mojom.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "media/base/audio_codecs.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 #if defined(CHROMECAST_BUILD)
 #include <string>
@@ -36,7 +39,9 @@ class SupportedCodecProfileLevelsMemo;
 
 namespace shell {
 
-class CastContentRendererClient : public content::ContentRendererClient {
+class CastContentRendererClient
+    : public content::ContentRendererClient,
+      public mojom::ApplicationMediaCapabilitiesObserver {
  public:
   // Creates an implementation of CastContentRendererClient. Platform should
   // link in an implementation as needed.
@@ -74,10 +79,15 @@ class CastContentRendererClient : public content::ContentRendererClient {
                                    const base::Closure& closure);
 
  private:
+  // mojom::ApplicationMediaCapabilitiesObserver implementation:
+  void OnSupportedBitstreamAudioCodecsChanged(int codecs) override;
+
   std::unique_ptr<network_hints::PrescientNetworkingDispatcher>
       prescient_networking_dispatcher_;
   std::unique_ptr<media::MediaCapsObserverImpl> media_caps_observer_;
   std::unique_ptr<media::SupportedCodecProfileLevelsMemo> supported_profiles_;
+  mojo::Binding<mojom::ApplicationMediaCapabilitiesObserver>
+      app_media_capabilities_observer_binding_;
 #if !defined(OS_ANDROID)
   std::unique_ptr<MemoryPressureObserverImpl> memory_pressure_observer_;
 #endif
@@ -91,6 +101,7 @@ class CastContentRendererClient : public content::ContentRendererClient {
 #endif
 
   const bool allow_hidden_media_playback_;
+  int supported_bitstream_audio_codecs_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentRendererClient);
 };

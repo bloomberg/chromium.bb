@@ -23,8 +23,6 @@ class MediaCapsObserverImpl : public mojom::MediaCapsObserver {
   ~MediaCapsObserverImpl() override;
 
  private:
-  void SupportedHdmiSinkCodecsChanged(
-      uint32_t supported_codec_bitmask) override;
   void ScreenResolutionChanged(uint32_t width, uint32_t height) override;
   void ScreenInfoChanged(int32_t hdcp_version,
                          int32_t supported_eotfs,

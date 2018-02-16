@@ -46,10 +46,12 @@ cast_source_set("common") {
   }
 }
 
-if (!is_android) {
-  mojom("interfaces") {
-    sources = [
-      "memory_pressure.mojom",
-    ]
+mojom("interfaces") {
+  sources = [
+    "application_media_capabilities.mojom",
+  ]
+
+  if (!is_android) {
+    sources += [ "memory_pressure.mojom" ]
   }
 }

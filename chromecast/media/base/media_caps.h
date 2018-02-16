@@ -16,24 +16,6 @@ namespace media {
 // currently only available in the browser process).
 class MediaCapabilities {
  public:
-  enum HdmiSinkCodec {
-    kSinkCodecAc3 = 1,
-    kSinkCodecDts = 1 << 1,
-    kSinkCodecDtsHd = 1 << 2,
-    kSinkCodecEac3 = 1 << 3,
-    kSinkCodecPcmSurroundSound = 1 << 4,
-  };
-
-  // Records the known supported codecs for the current HDMI sink, as a bit mask
-  // of HdmiSinkCodec values.
-  static void SetHdmiSinkCodecs(unsigned int codecs_mask);
-
-  static bool HdmiSinkSupportsAC3();
-  static bool HdmiSinkSupportsDTS();
-  static bool HdmiSinkSupportsDTSHD();
-  static bool HdmiSinkSupportsEAC3();
-  static bool HdmiSinkSupportsPcmSurroundSound();
-
   static void ScreenResolutionChanged(const gfx::Size& res);
   static void ScreenInfoChanged(int hdcp_version,
                                 int supported_eotfs,
