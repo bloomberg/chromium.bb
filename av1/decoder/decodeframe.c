@@ -422,11 +422,17 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       }
     }
 
-    av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, bsize);
-
+#if CONFIG_OBMC_HIGH_PREC_BLENDING
     if (mbmi->motion_mode == OBMC_CAUSAL) {
       av1_build_obmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
+    } else {
+      av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, bsize);
     }
+#else
+    av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, bsize);
+    if (mbmi->motion_mode == OBMC_CAUSAL)
+      av1_build_obmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
+#endif
 
 #if CONFIG_MISMATCH_DEBUG
     for (int plane = 0; plane < num_planes; ++plane) {

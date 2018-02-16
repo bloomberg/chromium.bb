@@ -527,11 +527,19 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   aom_free(cpi->active_map.map);
   cpi->active_map.map = NULL;
 
+#if CONFIG_OBMC_HIGH_PREC_BLENDING
+  aom_free(cpi->td.mb.above_pred_hp_buf);
+  cpi->td.mb.above_pred_hp_buf = NULL;
+
+  aom_free(cpi->td.mb.left_pred_hp_buf);
+  cpi->td.mb.left_pred_hp_buf = NULL;
+#else
   aom_free(cpi->td.mb.above_pred_buf);
   cpi->td.mb.above_pred_buf = NULL;
 
   aom_free(cpi->td.mb.left_pred_buf);
   cpi->td.mb.left_pred_buf = NULL;
+#endif
 
   aom_free(cpi->td.mb.wsrc_buf);
   cpi->td.mb.wsrc_buf = NULL;
@@ -3419,7 +3427,18 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
     av1_init_second_pass(cpi);
   }
 
-  int buf_scaler = 2;
+  int buf_scaler = 1;
+
+#if CONFIG_OBMC_HIGH_PREC_BLENDING
+  CHECK_MEM_ERROR(cm, cpi->td.mb.above_pred_hp_buf,
+                  (CONV_BUF_TYPE *)aom_memalign(
+                      16, buf_scaler * MAX_MB_PLANE * MAX_SB_SQUARE *
+                              sizeof(*cpi->td.mb.above_pred_hp_buf)));
+  CHECK_MEM_ERROR(cm, cpi->td.mb.left_pred_hp_buf,
+                  (CONV_BUF_TYPE *)aom_memalign(
+                      16, buf_scaler * MAX_MB_PLANE * MAX_SB_SQUARE *
+                              sizeof(*cpi->td.mb.left_pred_hp_buf)));
+#else
   CHECK_MEM_ERROR(
       cm, cpi->td.mb.above_pred_buf,
       (uint8_t *)aom_memalign(16, buf_scaler * MAX_MB_PLANE * MAX_SB_SQUARE *
@@ -3428,6 +3447,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
       cm, cpi->td.mb.left_pred_buf,
       (uint8_t *)aom_memalign(16, buf_scaler * MAX_MB_PLANE * MAX_SB_SQUARE *
                                       sizeof(*cpi->td.mb.left_pred_buf)));
+#endif
 
   CHECK_MEM_ERROR(cm, cpi->td.mb.wsrc_buf,
                   (int32_t *)aom_memalign(
@@ -3945,8 +3965,13 @@ void av1_remove_compressor(AV1_COMP *cpi) {
     // Deallocate allocated thread data.
     if (t < cpi->num_workers - 1) {
       aom_free(thread_data->td->palette_buffer);
+#if CONFIG_OBMC_HIGH_PREC_BLENDING
+      aom_free(thread_data->td->above_pred_hp_buf);
+      aom_free(thread_data->td->left_pred_hp_buf);
+#else
       aom_free(thread_data->td->above_pred_buf);
       aom_free(thread_data->td->left_pred_buf);
+#endif
       aom_free(thread_data->td->wsrc_buf);
       aom_free(thread_data->td->mask_buf);
       aom_free(thread_data->td->counts);

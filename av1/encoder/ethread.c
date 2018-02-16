@@ -86,6 +86,18 @@ void av1_encode_tiles_mt(AV1_COMP *cpi) {
         av1_setup_pc_tree(cm, thread_data->td);
 
         int buf_scaler = 2;
+#if CONFIG_OBMC_HIGH_PREC_BLENDING
+        CHECK_MEM_ERROR(
+            cm, thread_data->td->above_pred_hp_buf,
+            (CONV_BUF_TYPE *)aom_memalign(
+                16, buf_scaler * MAX_MB_PLANE * MAX_SB_SQUARE *
+                        sizeof(*thread_data->td->above_pred_hp_buf)));
+        CHECK_MEM_ERROR(
+            cm, thread_data->td->left_pred_hp_buf,
+            (CONV_BUF_TYPE *)aom_memalign(
+                16, buf_scaler * MAX_MB_PLANE * MAX_SB_SQUARE *
+                        sizeof(*thread_data->td->left_pred_hp_buf)));
+#else
         CHECK_MEM_ERROR(cm, thread_data->td->above_pred_buf,
                         (uint8_t *)aom_memalign(
                             16, buf_scaler * MAX_MB_PLANE * MAX_SB_SQUARE *
@@ -94,6 +106,8 @@ void av1_encode_tiles_mt(AV1_COMP *cpi) {
                         (uint8_t *)aom_memalign(
                             16, buf_scaler * MAX_MB_PLANE * MAX_SB_SQUARE *
                                     sizeof(*thread_data->td->left_pred_buf)));
+#endif
+
         CHECK_MEM_ERROR(
             cm, thread_data->td->wsrc_buf,
             (int32_t *)aom_memalign(
@@ -137,8 +151,14 @@ void av1_encode_tiles_mt(AV1_COMP *cpi) {
     if (thread_data->td != &cpi->td) {
       thread_data->td->mb = cpi->td.mb;
       thread_data->td->rd_counts = cpi->td.rd_counts;
+#if CONFIG_OBMC_HIGH_PREC_BLENDING
+      thread_data->td->mb.above_pred_hp_buf =
+          thread_data->td->above_pred_hp_buf;
+      thread_data->td->mb.left_pred_hp_buf = thread_data->td->left_pred_hp_buf;
+#else
       thread_data->td->mb.above_pred_buf = thread_data->td->above_pred_buf;
       thread_data->td->mb.left_pred_buf = thread_data->td->left_pred_buf;
+#endif
       thread_data->td->mb.wsrc_buf = thread_data->td->wsrc_buf;
       thread_data->td->mb.mask_buf = thread_data->td->mask_buf;
     }

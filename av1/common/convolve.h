@@ -117,7 +117,8 @@ static INLINE ConvolveParams get_conv_params_round(int ref, int do_average,
 }
 
 static INLINE ConvolveParams get_conv_params_no_round(int ref, int do_average,
-                                                      int plane, int32_t *dst,
+                                                      int plane,
+                                                      CONV_BUF_TYPE *dst,
                                                       int dst_stride,
                                                       int is_compound, int bd) {
   ConvolveParams conv_params;

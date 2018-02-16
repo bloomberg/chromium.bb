@@ -417,15 +417,45 @@ static INLINE int av1_is_interp_search_needed(const MACROBLOCKD *const xd) {
   return 0;
 }
 
-const uint8_t *av1_get_obmc_mask(int length);
-void av1_count_overlappable_neighbors(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                      int mi_row, int mi_col);
-void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                     int mi_row, int mi_col,
-                                     uint8_t *above[MAX_MB_PLANE],
-                                     int above_stride[MAX_MB_PLANE],
-                                     uint8_t *left[MAX_MB_PLANE],
-                                     int left_stride[MAX_MB_PLANE]);
+#if CONFIG_OBMC_HIGH_PREC_BLENDING
+static INLINE void setup_pred_plane_hp(int32_t **dst_pt, BLOCK_SIZE bsize,
+                                       int32_t *dst0, int stride0, int mi_row,
+                                       int mi_col,
+                                       const struct scale_factors *scale,
+                                       int subsampling_x, int subsampling_y) {
+  // Offset the buffer pointer
+  if (subsampling_y && (mi_row & 0x01) && (mi_size_high[bsize] == 1))
+    mi_row -= 1;
+  if (subsampling_x && (mi_col & 0x01) && (mi_size_wide[bsize] == 1))
+    mi_col -= 1;
+
+  const int x = (MI_SIZE * mi_col) >> subsampling_x;
+  const int y = (MI_SIZE * mi_row) >> subsampling_y;
+  *dst_pt = dst0 + scaled_buffer_offset(x, y, stride0, scale);
+}
+
+void av1_build_inter_predictor_hp_sr(MACROBLOCKD *xd, int plane,
+                                     const MODE_INFO *mi, int build_for_obmc,
+                                     int bw, int bh, int x, int y, int w, int h,
+                                     int mi_x, int mi_y, int ref,
+                                     int32_t *const ext_dst,
+                                     int ext_dst_stride);
+void av1_build_prediction_by_above_preds_hp(const AV1_COMMON *cm,
+                                            MACROBLOCKD *xd, int mi_row,
+                                            int mi_col,
+                                            int32_t *tmp_buf[MAX_MB_PLANE],
+                                            int tmp_stride[MAX_MB_PLANE]);
+void av1_build_prediction_by_left_preds_hp(const AV1_COMMON *cm,
+                                           MACROBLOCKD *xd, int mi_row,
+                                           int mi_col,
+                                           int32_t *tmp_buf[MAX_MB_PLANE],
+                                           int tmp_stride[MAX_MB_PLANE]);
+void av1_build_obmc_inter_prediction(
+    const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
+    CONV_BUF_TYPE *base[MAX_MB_PLANE], int base_stride[MAX_MB_PLANE],
+    CONV_BUF_TYPE *above[MAX_MB_PLANE], int above_stride[MAX_MB_PLANE],
+    CONV_BUF_TYPE *left[MAX_MB_PLANE], int left_stride[MAX_MB_PLANE]);
+#else
 void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                          int mi_row, int mi_col,
                                          uint8_t *tmp_buf[MAX_MB_PLANE],
@@ -438,6 +468,17 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                         int tmp_width[MAX_MB_PLANE],
                                         int tmp_height[MAX_MB_PLANE],
                                         int tmp_stride[MAX_MB_PLANE]);
+void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
+                                     int mi_row, int mi_col,
+                                     uint8_t *above[MAX_MB_PLANE],
+                                     int above_stride[MAX_MB_PLANE],
+                                     uint8_t *left[MAX_MB_PLANE],
+                                     int left_stride[MAX_MB_PLANE]);
+#endif
+
+const uint8_t *av1_get_obmc_mask(int length);
+void av1_count_overlappable_neighbors(const AV1_COMMON *cm, MACROBLOCKD *xd,
+                                      int mi_row, int mi_col);
 void av1_build_obmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                         int mi_row, int mi_col);
 

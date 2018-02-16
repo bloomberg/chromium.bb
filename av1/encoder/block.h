@@ -224,8 +224,13 @@ struct macroblock {
 
   int32_t *wsrc_buf;
   int32_t *mask_buf;
+#if CONFIG_OBMC_HIGH_PREC_BLENDING
+  CONV_BUF_TYPE *above_pred_hp_buf;
+  CONV_BUF_TYPE *left_pred_hp_buf;
+#else
   uint8_t *above_pred_buf;
   uint8_t *left_pred_buf;
+#endif
 
   PALETTE_BUFFER *palette_buffer;
 

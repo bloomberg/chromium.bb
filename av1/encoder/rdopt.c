@@ -7224,11 +7224,18 @@ static int64_t build_and_cost_compound_type(
 }
 
 typedef struct {
-  // Inter prediction buffers and respective strides
+// OBMC secondary prediction buffers and respective strides
+#if CONFIG_OBMC_HIGH_PREC_BLENDING
+  CONV_BUF_TYPE *above_pred_hp_buf[MAX_MB_PLANE];
+  int above_pred_hp_stride[MAX_MB_PLANE];
+  CONV_BUF_TYPE *left_pred_hp_buf[MAX_MB_PLANE];
+  int left_pred_hp_stride[MAX_MB_PLANE];
+#else
   uint8_t *above_pred_buf[MAX_MB_PLANE];
   int above_pred_stride[MAX_MB_PLANE];
   uint8_t *left_pred_buf[MAX_MB_PLANE];
   int left_pred_stride[MAX_MB_PLANE];
+#endif
   int_mv *single_newmv;
   // Pointer to array of motion vectors to use for each ref and their rates
   // Should point to first of 2 arrays in 2D array
@@ -7582,13 +7589,36 @@ static int64_t motion_mode_rd(
         tmp_rate2 = rate2_nocoeff - rate_mv + tmp_rate_mv;
         mbmi->interp_filters =
             condition_interp_filters_on_mv(mbmi->interp_filters, xd);
-        av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, orig_dst, bsize);
-      } else {
-        av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, orig_dst, bsize);
       }
+#if CONFIG_OBMC_HIGH_PREC_BLENDING
+      DECLARE_ALIGNED(16, CONV_BUF_TYPE, tmp_buf[MAX_MB_PLANE * MAX_SB_SQUARE]);
+      CONV_BUF_TYPE *dst_buf[MAX_MB_PLANE];
+      int dst_stride[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
+      dst_buf[0] = tmp_buf;
+      dst_buf[1] = tmp_buf + MAX_SB_SQUARE;
+      dst_buf[2] = tmp_buf + MAX_SB_SQUARE * 2;
+
+      for (int j = 0; j < num_planes; ++j) {
+        const struct macroblockd_plane *pd = &xd->plane[j];
+        int bw = pd->width;
+        int bh = pd->height;
+        const int mi_x = mi_col * MI_SIZE;
+        const int mi_y = mi_row * MI_SIZE;
+
+        av1_build_inter_predictor_hp_sr(xd, j, xd->mi[0], 0, bw, bh, 0, 0, bw,
+                                        bh, mi_x, mi_y, 0, dst_buf[j],
+                                        dst_stride[j]);
+      }
+      av1_build_obmc_inter_prediction(
+          cm, xd, mi_row, mi_col, dst_buf, dst_stride, args->above_pred_hp_buf,
+          args->above_pred_hp_stride, args->left_pred_hp_buf,
+          args->left_pred_hp_stride);
+#else
+      av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, orig_dst, bsize);
       av1_build_obmc_inter_prediction(
           cm, xd, mi_row, mi_col, args->above_pred_buf, args->above_pred_stride,
           args->left_pred_buf, args->left_pred_stride);
+#endif
     }
 
     // Local warped motion mode
@@ -9005,11 +9035,20 @@ static void restore_uv_color_map(const AV1_COMP *const cpi, MACROBLOCK *x) {
                            plane_block_height);
 }
 
+#if CONFIG_OBMC_HIGH_PREC_BLENDING
+static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
+                                      const MACROBLOCKD *xd, int mi_row,
+                                      int mi_col, const CONV_BUF_TYPE *above,
+                                      int above_stride,
+                                      const CONV_BUF_TYPE *left,
+                                      int left_stride);
+#else
 static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
                                       const MACROBLOCKD *xd, int mi_row,
                                       int mi_col, const uint8_t *above,
                                       int above_stride, const uint8_t *left,
                                       int left_stride);
+#endif
 
 #if CONFIG_EXT_SKIP
 static void estimate_skip_mode_rdcost(
@@ -9212,6 +9251,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   int *mode_map = tile_data->mode_map[bsize];
   const int mode_search_skip_flags = sf->mode_search_skip_flags;
   int skip_intra_modes = 0;
+  const int rows = block_size_high[bsize];
+  const int cols = block_size_wide[bsize];
 
   HandleInterModeArgs args = {
     { NULL },  { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE },
@@ -9221,18 +9262,18 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     { { 0 } },
   };
 
-  const int rows = block_size_high[bsize];
-  const int cols = block_size_wide[bsize];
+#if CONFIG_OBMC_HIGH_PREC_BLENDING
+  args.above_pred_hp_buf[0] = x->above_pred_hp_buf;
+  args.above_pred_hp_buf[1] = x->above_pred_hp_buf + MAX_SB_SQUARE;
+  args.above_pred_hp_buf[2] = x->above_pred_hp_buf + 2 * MAX_SB_SQUARE;
+  args.left_pred_hp_buf[0] = x->left_pred_hp_buf;
+  args.left_pred_hp_buf[1] = x->left_pred_hp_buf + MAX_SB_SQUARE;
+  args.left_pred_hp_buf[2] = x->left_pred_hp_buf + 2 * MAX_SB_SQUARE;
+#else
   int dst_width1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
   int dst_width2[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
   int dst_height1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
   int dst_height2[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
-
-  int64_t dist_refs[TOTAL_REFS_PER_FRAME];
-  int dist_order_refs[TOTAL_REFS_PER_FRAME];
-  int num_available_refs = 0;
-  memset(dist_refs, -1, sizeof(dist_refs));
-  memset(dist_order_refs, -1, sizeof(dist_order_refs));
 
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     int len = sizeof(uint16_t);
@@ -9254,6 +9295,13 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     args.left_pred_buf[1] = x->left_pred_buf + MAX_SB_SQUARE;
     args.left_pred_buf[2] = x->left_pred_buf + 2 * MAX_SB_SQUARE;
   }
+#endif
+
+  int64_t dist_refs[TOTAL_REFS_PER_FRAME];
+  int dist_order_refs[TOTAL_REFS_PER_FRAME];
+  int num_available_refs = 0;
+  memset(dist_refs, -1, sizeof(dist_refs));
+  memset(dist_order_refs, -1, sizeof(dist_order_refs));
 
   av1_zero(best_mbmode);
   av1_zero(pmi_uv);
@@ -9321,6 +9369,20 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
   if (check_num_overlappable_neighbors(mbmi) &&
       is_motion_variation_allowed_bsize(bsize)) {
+#if CONFIG_OBMC_HIGH_PREC_BLENDING
+    av1_build_prediction_by_above_preds_hp(cm, xd, mi_row, mi_col,
+                                           args.above_pred_hp_buf,
+                                           args.above_pred_hp_stride);
+    av1_build_prediction_by_left_preds_hp(cm, xd, mi_row, mi_col,
+                                          args.left_pred_hp_buf,
+                                          args.left_pred_hp_stride);
+    av1_setup_dst_planes(xd->plane, bsize, get_frame_new_buffer(cm), mi_row,
+                         mi_col, num_planes);
+    calc_target_weighted_pred(
+        cm, x, xd, mi_row, mi_col, args.above_pred_hp_buf[0],
+        args.above_pred_hp_stride[0], args.left_pred_hp_buf[0],
+        args.left_pred_hp_stride[0]);
+#else
     av1_build_prediction_by_above_preds(cm, xd, mi_row, mi_col,
                                         args.above_pred_buf, dst_width1,
                                         dst_height1, args.above_pred_stride);
@@ -9332,6 +9394,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     calc_target_weighted_pred(cm, x, xd, mi_row, mi_col, args.above_pred_buf[0],
                               args.above_pred_stride[0], args.left_pred_buf[0],
                               args.left_pred_stride[0]);
+#endif
   }
 
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
@@ -10299,12 +10362,17 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     }
 
     if (is_inter_mode(mbmi->mode)) {
-      av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, bsize);
+#if CONFIG_OBMC_HIGH_PREC_BLENDING
       if (mbmi->motion_mode == OBMC_CAUSAL) {
-        av1_build_obmc_inter_prediction(
-            cm, xd, mi_row, mi_col, args.above_pred_buf, args.above_pred_stride,
-            args.left_pred_buf, args.left_pred_stride);
+        av1_build_obmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
+      } else {
+        av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, bsize);
       }
+#else
+      av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, bsize);
+      if (mbmi->motion_mode == OBMC_CAUSAL)
+        av1_build_obmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
+#endif
       av1_subtract_plane(x, bsize, 0);
       if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
         // av1_rd_pick_inter_mode_sb
@@ -10849,7 +10917,11 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
 
 struct calc_target_weighted_pred_ctxt {
   const MACROBLOCK *x;
+#if CONFIG_OBMC_HIGH_PREC_BLENDING
+  const CONV_BUF_TYPE *tmp;
+#else
   const uint8_t *tmp;
+#endif
   int tmp_stride;
   int overlap;
 };
@@ -10863,16 +10935,21 @@ static INLINE void calc_target_weighted_pred_above(
   struct calc_target_weighted_pred_ctxt *ctxt =
       (struct calc_target_weighted_pred_ctxt *)fun_ctxt;
 
-  const int is_hbd = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? 1 : 0;
-
   const int bw = xd->n8_w << MI_SIZE_LOG2;
   const uint8_t *const mask1d = av1_get_obmc_mask(ctxt->overlap);
 
   int32_t *wsrc = ctxt->x->wsrc_buf + (rel_mi_col * MI_SIZE);
   int32_t *mask = ctxt->x->mask_buf + (rel_mi_col * MI_SIZE);
+#if CONFIG_OBMC_HIGH_PREC_BLENDING
+  const CONV_BUF_TYPE *tmp = ctxt->tmp + rel_mi_col * MI_SIZE;
+#else
   const uint8_t *tmp = ctxt->tmp + rel_mi_col * MI_SIZE;
+  const int is_hbd = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? 1 : 0;
+#endif
 
+#if !CONFIG_OBMC_HIGH_PREC_BLENDING
   if (!is_hbd) {
+#endif
     for (int row = 0; row < ctxt->overlap; ++row) {
       const uint8_t m0 = mask1d[row];
       const uint8_t m1 = AOM_BLEND_A64_MAX_ALPHA - m0;
@@ -10884,6 +10961,7 @@ static INLINE void calc_target_weighted_pred_above(
       mask += bw;
       tmp += ctxt->tmp_stride;
     }
+#if !CONFIG_OBMC_HIGH_PREC_BLENDING
   } else {
     const uint16_t *tmp16 = CONVERT_TO_SHORTPTR(tmp);
 
@@ -10899,6 +10977,7 @@ static INLINE void calc_target_weighted_pred_above(
       tmp16 += ctxt->tmp_stride;
     }
   }
+#endif
 }
 
 static INLINE void calc_target_weighted_pred_left(
@@ -10910,16 +10989,22 @@ static INLINE void calc_target_weighted_pred_left(
   struct calc_target_weighted_pred_ctxt *ctxt =
       (struct calc_target_weighted_pred_ctxt *)fun_ctxt;
 
-  const int is_hbd = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? 1 : 0;
-
   const int bw = xd->n8_w << MI_SIZE_LOG2;
   const uint8_t *const mask1d = av1_get_obmc_mask(ctxt->overlap);
 
   int32_t *wsrc = ctxt->x->wsrc_buf + (rel_mi_row * MI_SIZE * bw);
   int32_t *mask = ctxt->x->mask_buf + (rel_mi_row * MI_SIZE * bw);
+#if CONFIG_OBMC_HIGH_PREC_BLENDING
+  const CONV_BUF_TYPE *tmp =
+      ctxt->tmp + (rel_mi_row * MI_SIZE * ctxt->tmp_stride);
+#else
   const uint8_t *tmp = ctxt->tmp + (rel_mi_row * MI_SIZE * ctxt->tmp_stride);
+  const int is_hbd = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? 1 : 0;
+#endif
 
+#if !CONFIG_OBMC_HIGH_PREC_BLENDING
   if (!is_hbd) {
+#endif
     for (int row = 0; row < nb_mi_height * MI_SIZE; ++row) {
       for (int col = 0; col < ctxt->overlap; ++col) {
         const uint8_t m0 = mask1d[col];
@@ -10932,6 +11017,7 @@ static INLINE void calc_target_weighted_pred_left(
       mask += bw;
       tmp += ctxt->tmp_stride;
     }
+#if !CONFIG_OBMC_HIGH_PREC_BLENDING
   } else {
     const uint16_t *tmp16 = CONVERT_TO_SHORTPTR(tmp);
 
@@ -10948,6 +11034,7 @@ static INLINE void calc_target_weighted_pred_left(
       tmp16 += ctxt->tmp_stride;
     }
   }
+#endif
 }
 
 // This function has a structure similar to av1_build_obmc_inter_prediction
@@ -10988,19 +11075,37 @@ static INLINE void calc_target_weighted_pred_left(
 //  error(x, y) =
 //    wsrc(x, y) - mask(x, y) * P(x, y) / (AOM_BLEND_A64_MAX_ALPHA ** 2)
 //
+#if CONFIG_OBMC_HIGH_PREC_BLENDING
+static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
+                                      const MACROBLOCKD *xd, int mi_row,
+                                      int mi_col, const CONV_BUF_TYPE *above,
+                                      int above_stride,
+                                      const CONV_BUF_TYPE *left,
+                                      int left_stride) {
+#else
 static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
                                       const MACROBLOCKD *xd, int mi_row,
                                       int mi_col, const uint8_t *above,
                                       int above_stride, const uint8_t *left,
                                       int left_stride) {
+#endif
   const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   const int bw = xd->n8_w << MI_SIZE_LOG2;
   const int bh = xd->n8_h << MI_SIZE_LOG2;
   int32_t *mask_buf = x->mask_buf;
   int32_t *wsrc_buf = x->wsrc_buf;
 
-  const int src_scale = AOM_BLEND_A64_MAX_ALPHA * AOM_BLEND_A64_MAX_ALPHA;
   const int is_hbd = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? 1 : 0;
+#if CONFIG_OBMC_HIGH_PREC_BLENDING
+  ConvolveParams conv_params =
+      get_conv_params_no_round(0, 0, 0, NULL, MAX_SB_SIZE, 1, xd->bd);
+  const int convolve_rounding_bits =
+      FILTER_BITS * 2 - conv_params.round_0 - conv_params.round_1;
+  const int src_scale = AOM_BLEND_A64_MAX_ALPHA * AOM_BLEND_A64_MAX_ALPHA *
+                        (1 << convolve_rounding_bits);
+#else
+  const int src_scale = AOM_BLEND_A64_MAX_ALPHA * AOM_BLEND_A64_MAX_ALPHA;
+#endif
 
   // plane 0 should not be subsampled
   assert(xd->plane[0].subsampling_x == 0);
@@ -11041,7 +11146,12 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
 
     for (int row = 0; row < bh; ++row) {
       for (int col = 0; col < bw; ++col) {
+#if CONFIG_OBMC_HIGH_PREC_BLENDING
+        wsrc_buf[col] = ROUND_POWER_OF_TWO_SIGNED(
+            src[col] * src_scale - wsrc_buf[col], convolve_rounding_bits);
+#else
         wsrc_buf[col] = src[col] * src_scale - wsrc_buf[col];
+#endif
       }
       wsrc_buf += bw;
       src += x->plane[0].src.stride;
@@ -11051,7 +11161,12 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
 
     for (int row = 0; row < bh; ++row) {
       for (int col = 0; col < bw; ++col) {
+#if CONFIG_OBMC_HIGH_PREC_BLENDING
+        wsrc_buf[col] = ROUND_POWER_OF_TWO_SIGNED(
+            src[col] * src_scale - wsrc_buf[col], convolve_rounding_bits);
+#else
         wsrc_buf[col] = src[col] * src_scale - wsrc_buf[col];
+#endif
       }
       wsrc_buf += bw;
       src += x->plane[0].src.stride;
