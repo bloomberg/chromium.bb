@@ -5,7 +5,10 @@
 #include "services/device/generic_sensor/platform_sensor_reader_win.h"
 
 #include <Sensors.h>
+#include <comdef.h>
 #include <objbase.h>
+
+#include <iomanip>
 
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -454,21 +457,29 @@ void PlatformSensorReaderWin::ListenSensorEvent() {
 bool PlatformSensorReaderWin::SetReportingInterval(
     const PlatformSensorConfiguration& configuration) {
   Microsoft::WRL::ComPtr<IPortableDeviceValues> props;
-  if (SUCCEEDED(::CoCreateInstance(CLSID_PortableDeviceValues, nullptr,
-                                   CLSCTX_ALL, IID_PPV_ARGS(&props)))) {
-    unsigned interval =
-        (1 / configuration.frequency()) * base::Time::kMillisecondsPerSecond;
-
-    HRESULT hr = props->SetUnsignedIntegerValue(
-        SENSOR_PROPERTY_CURRENT_REPORT_INTERVAL, interval);
-
-    if (SUCCEEDED(hr)) {
-      Microsoft::WRL::ComPtr<IPortableDeviceValues> return_props;
-      hr = sensor_->SetProperties(props.Get(), return_props.GetAddressOf());
-      return SUCCEEDED(hr);
+  HRESULT hr = ::CoCreateInstance(CLSID_PortableDeviceValues, nullptr,
+                                  CLSCTX_ALL, IID_PPV_ARGS(&props));
+  if (FAILED(hr)) {
+    static bool logged_failure = false;
+    if (!logged_failure) {
+      LOG(ERROR) << "Unable to create instance of PortableDeviceValues: "
+                 << _com_error(hr).ErrorMessage() << " (0x " << std::hex
+                 << std::uppercase << std::setfill('0') << std::setw(8) << hr
+                 << ")";
+      logged_failure = true;
     }
   }
-  return false;
+
+  unsigned interval =
+      (1 / configuration.frequency()) * base::Time::kMillisecondsPerSecond;
+  hr = props->SetUnsignedIntegerValue(SENSOR_PROPERTY_CURRENT_REPORT_INTERVAL,
+                                      interval);
+  if (FAILED(hr))
+    return false;
+
+  Microsoft::WRL::ComPtr<IPortableDeviceValues> return_props;
+  hr = sensor_->SetProperties(props.Get(), return_props.GetAddressOf());
+  return SUCCEEDED(hr);
 }
 
 HRESULT PlatformSensorReaderWin::SensorReadingChanged(
