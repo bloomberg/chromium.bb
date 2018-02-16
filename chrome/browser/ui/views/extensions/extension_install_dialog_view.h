@@ -20,10 +20,6 @@ namespace content {
 class PageNavigator;
 }
 
-namespace extensions {
-class ExperienceSamplingEvent;
-}
-
 namespace views {
 class Link;
 }
@@ -90,9 +86,6 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   // The scroll view containing all the details for the dialog (including all
   // collapsible/expandable sections).
   views::ScrollView* scroll_view_;
-
-  // ExperienceSampling: Track this UI event.
-  std::unique_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
 
   // Set to true once the user's selection has been received and the callback
   // has been run.

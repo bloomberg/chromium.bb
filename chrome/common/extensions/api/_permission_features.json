@@ -298,13 +298,6 @@
       "2C18988BCDC297196D5D6893005175DA1BC1E893"   // http://crbug.com/570127
     ]
   },
-  "experienceSamplingPrivate": {
-    "channel": "stable",
-    "extension_types": ["extension"],
-    "whitelist": [
-      "0B5B953E53AC1859AC1DD3F67E115D1A5C2D6123"  // https://crbug.com/384635
-    ]
-  },
   "experimental": {
     "channel": "stable",
     "command_line_switch": "experimental-extension-apis",

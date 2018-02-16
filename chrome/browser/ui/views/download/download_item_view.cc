@@ -27,7 +27,6 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/drag_download_item.h"
-#include "chrome/browser/extensions/api/experience_sampling_private/experience_sampling.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
@@ -72,7 +71,6 @@
 #include "ui/views/widget/widget.h"
 
 using download::DownloadItem;
-using extensions::ExperienceSamplingEvent;
 
 namespace {
 
@@ -210,12 +208,6 @@ DownloadItemView::DownloadItemView(DownloadItem* download_item,
 DownloadItemView::~DownloadItemView() {
   StopDownloadProgress();
   download()->RemoveObserver(this);
-
-  // ExperienceSampling: If the user took no action to remove the warning
-  // before it disappeared, then the user effectively dismissed the download
-  // without keeping it.
-  if (sampling_event_)
-    sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kIgnore);
 }
 
 // Progress animation handlers.
@@ -598,12 +590,6 @@ void DownloadItemView::ButtonPressed(views::Button* sender,
     // The user has confirmed a dangerous download.  We'd record how quickly the
     // user did this to detect whether we're being clickjacked.
     UMA_HISTOGRAM_LONG_TIMES("clickjacking.save_download", warning_duration);
-    // ExperienceSampling: User chose to proceed with a dangerous download.
-    if (sampling_event_) {
-      sampling_event_->CreateUserDecisionEvent(
-          ExperienceSamplingEvent::kProceed);
-      sampling_event_.reset();
-    }
     // This will call ValidateDangerousDownload(), change download state and
     // notify us.
     MaybeSubmitDownloadToFeedbackService(DownloadCommands::KEEP);
@@ -938,11 +924,6 @@ void DownloadItemView::ClearWarningDialog() {
   SetMode(NORMAL_MODE);
   dropdown_state_ = NORMAL;
 
-  // ExperienceSampling: User proceeded through the warning.
-  if (sampling_event_) {
-    sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kProceed);
-    sampling_event_.reset();
-  }
   // Remove the views used by the warning dialog.
   delete save_button_;
   save_button_ = nullptr;
@@ -970,15 +951,6 @@ void DownloadItemView::ShowWarningDialog() {
   }
 #endif
   SetMode(model_.MightBeMalicious() ? MALICIOUS_MODE : DANGEROUS_MODE);
-
-  // ExperienceSampling: Dangerous or malicious download warning is being shown
-  // to the user, so we start a new SamplingEvent and track it.
-  std::string event_name = model_.MightBeMalicious()
-                               ? ExperienceSamplingEvent::kMaliciousDownload
-                               : ExperienceSamplingEvent::kDangerousDownload;
-  sampling_event_.reset(new ExperienceSamplingEvent(
-      event_name, download()->GetURL(), download()->GetReferrerUrl(),
-      content::DownloadItemUtils::GetBrowserContext(download())));
 
   dropdown_state_ = NORMAL;
   if (mode_ == DANGEROUS_MODE) {

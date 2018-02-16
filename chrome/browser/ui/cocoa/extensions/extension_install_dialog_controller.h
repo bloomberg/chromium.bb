@@ -13,10 +13,6 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_install_view_controller.h"
 
-namespace extensions {
-class ExperienceSamplingEvent;
-}
-
 class ExtensionInstallPromptShowParams;
 @class ExtensionInstallViewController;
 
@@ -47,13 +43,11 @@ class ExtensionInstallDialogController :
   }
 
  private:
-  void OnPromptButtonClicked(ExtensionInstallPrompt::Result result,
-                             const char* decision_event);
+  void OnPromptButtonClicked(ExtensionInstallPrompt::Result result);
 
   ExtensionInstallPrompt::DoneCallback done_callback_;
   base::scoped_nsobject<ExtensionInstallViewController> view_controller_;
   std::unique_ptr<ConstrainedWindowMac> constrained_window_;
-  std::unique_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogController);
 };

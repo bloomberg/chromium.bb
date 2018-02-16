@@ -132,7 +132,6 @@ void MetricsHelper::RecordUserDecision(Decision decision) {
   }
 
   MaybeRecordDecisionAsAction(decision, settings_.metric_prefix);
-  RecordExtraUserDecisionMetrics(decision);
 }
 
 void MetricsHelper::RecordUserDecisionToMetrics(
@@ -156,7 +155,6 @@ void MetricsHelper::RecordUserInteraction(Interaction interaction) {
   }
 
   MaybeRecordInteractionAsAction(interaction, settings_.metric_prefix);
-  RecordExtraUserInteractionMetrics(interaction);
 }
 
 void MetricsHelper::RecordShutdownMetrics() {

@@ -54,8 +54,8 @@ std::unique_ptr<ChromeMetricsHelper> CreateCaptivePortalMetricsHelper(
   security_interstitials::MetricsHelper::ReportDetails reporting_info;
   reporting_info.metric_prefix = kCaptivePortalMetricsName;
   std::unique_ptr<ChromeMetricsHelper> metrics_helper =
-      std::make_unique<ChromeMetricsHelper>(
-          web_contents, request_url, reporting_info, kCaptivePortalMetricsName);
+      std::make_unique<ChromeMetricsHelper>(web_contents, request_url,
+                                            reporting_info);
   metrics_helper.get()->StartRecordingCaptivePortalMetrics(false);
   return metrics_helper;
 }

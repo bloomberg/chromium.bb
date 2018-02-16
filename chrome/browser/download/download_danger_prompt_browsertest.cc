@@ -220,7 +220,6 @@ class DownloadDangerPromptTest
 #define MAYBE_TestAll TestAll
 #endif
 IN_PROC_BROWSER_TEST_P(DownloadDangerPromptTest, MAYBE_TestAll) {
-  // ExperienceSampling: Set default actions for DownloadItem methods we need.
   GURL download_url(kTestDownloadUrl);
   ON_CALL(download(), GetURL()).WillByDefault(ReturnRef(download_url));
   ON_CALL(download(), GetReferrerUrl())

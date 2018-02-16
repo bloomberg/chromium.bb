@@ -386,10 +386,6 @@
     "dependencies": ["permission:enterprise.platformKeysPrivate"],
     "contexts": ["blessed_extension"]
   },
-  "experienceSamplingPrivate": {
-    "dependencies": ["permission:experienceSamplingPrivate"],
-    "contexts": ["blessed_extension"]
-  },
   "experimental.devtools.audits": {
     "nocompile": true,
     "dependencies": ["permission:experimental", "manifest:devtools_page"],

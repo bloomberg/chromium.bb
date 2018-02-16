@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/api/experience_sampling_private/experience_sampling.h"
 #include "chrome/browser/extensions/extension_install_prompt_show_params.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -44,7 +43,6 @@
 
 using content::OpenURLParams;
 using content::Referrer;
-using extensions::ExperienceSamplingEvent;
 
 namespace {
 
@@ -251,9 +249,6 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.InstallPrompt.Type", prompt_->type(),
                             ExtensionInstallPrompt::NUM_PROMPT_TYPES);
-  sampling_event_ = ExperienceSamplingEvent::Create(
-      ExperienceSamplingEvent::kExtensionInstallDialog +
-      ExtensionInstallPrompt::PromptTypeToString(prompt_->type()));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTENSION_INSTALL);
 }
 
@@ -381,8 +376,6 @@ bool ExtensionInstallDialogView::Cancel() {
 
   handled_result_ = true;
   UpdateInstallResultHistogram(false);
-  if (sampling_event_)
-    sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kDeny);
   base::ResetAndReturn(&done_callback_)
       .Run(ExtensionInstallPrompt::Result::USER_CANCELED);
   return true;
@@ -393,8 +386,6 @@ bool ExtensionInstallDialogView::Accept() {
 
   handled_result_ = true;
   UpdateInstallResultHistogram(true);
-  if (sampling_event_)
-    sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kProceed);
   base::ResetAndReturn(&done_callback_)
       .Run(ExtensionInstallPrompt::Result::ACCEPTED);
   return true;

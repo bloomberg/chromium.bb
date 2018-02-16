@@ -6,7 +6,6 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/download/download_stats.h"
-#include "chrome/browser/extensions/api/experience_sampling_private/experience_sampling.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/chromium_strings.h"
@@ -27,7 +26,6 @@
 #include "ui/views/window/dialog_delegate.h"
 #include "url/gurl.h"
 
-using extensions::ExperienceSamplingEvent;
 using safe_browsing::ClientSafeBrowsingReportRequest;
 
 namespace {
@@ -71,8 +69,6 @@ class DownloadDangerPromptViews : public DownloadDangerPrompt,
   // download.
   bool show_context_;
   OnDone done_;
-
-  std::unique_ptr<ExperienceSamplingEvent> sampling_event_;
 };
 
 DownloadDangerPromptViews::DownloadDangerPromptViews(
@@ -95,12 +91,6 @@ DownloadDangerPromptViews::DownloadDangerPromptViews(
 
   RecordOpenedDangerousConfirmDialog(download_->GetDangerType());
 
-  // ExperienceSampling: A malicious download warning is being shown to the
-  // user, so we start a new SamplingEvent and track it.
-  sampling_event_.reset(new ExperienceSamplingEvent(
-      ExperienceSamplingEvent::kDownloadDangerPrompt, item->GetURL(),
-      item->GetReferrerUrl(),
-      content::DownloadItemUtils::GetBrowserContext(item)));
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::DOWNLOAD_DANGER_PROMPT);
 }
@@ -171,8 +161,6 @@ ui::ModalType DownloadDangerPromptViews::GetModalType() const {
 
 bool DownloadDangerPromptViews::Accept() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // ExperienceSampling: User did not proceed down the dangerous path.
-  sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kDeny);
   // Note that the presentational concept of "Accept/Cancel" is inverted from
   // the model's concept of ACCEPT/CANCEL. In the UI, the safe path is "Accept"
   // and the dangerous path is "Cancel".
@@ -182,16 +170,12 @@ bool DownloadDangerPromptViews::Accept() {
 
 bool DownloadDangerPromptViews::Cancel() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // ExperienceSampling: User proceeded down the dangerous path.
-  sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kProceed);
   RunDone(ACCEPT);
   return true;
 }
 
 bool DownloadDangerPromptViews::Close() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // ExperienceSampling: User did not proceed down the dangerous path.
-  sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kDeny);
   RunDone(DISMISS);
   return true;
 }

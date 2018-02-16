@@ -129,9 +129,6 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
   // SafeBrowsingBlockingPage.
   static SafeBrowsingBlockingPageFactory* factory_;
  private:
-  static std::string GetSamplingEventName(
-      BaseSafeBrowsingErrorUI::SBInterstitialReason interstitial_reason);
-
   static std::unique_ptr<
       security_interstitials::SecurityInterstitialControllerClient>
   CreateControllerClient(content::WebContents* web_contents,

@@ -3235,7 +3235,6 @@ test("unit_tests") {
       "../browser/extensions/api/device_permissions_manager_unittest.cc",
       "../browser/extensions/api/downloads/downloads_api_unittest.cc",
       "../browser/extensions/api/easy_unlock_private/easy_unlock_private_api_chromeos_unittest.cc",
-      "../browser/extensions/api/experience_sampling_private/experience_sampling_private_api_unittest.cc",
       "../browser/extensions/api/extension_action/browser_action_unittest.cc",
       "../browser/extensions/api/extension_action/extension_action_prefs_unittest.cc",
       "../browser/extensions/api/file_system/file_system_api_unittest.cc",
