@@ -13,8 +13,11 @@
 #include "base/values.h"
 #include "components/language/core/browser/url_language_histogram.h"
 #include "components/ntp_snippets/category.h"
+#include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/user_classifier.h"
+#include "components/variations/variations_associated_data.h"
+#include "net/base/url_util.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -32,10 +35,37 @@ using internal::JsonRequest;
 
 namespace {
 
-const char kSnippetsServerNonAuthorizedFormat[] = "%s?key=%s";
+const char kApiKeyQueryParam[] = "key";
+const char kPriorityQueryParam[] = "priority";
+const char kInteractivePriority[] = "user_action";
+const char kNonInteractivePriority[] = "background_prefetch";
 const char kAuthorizationRequestHeaderFormat[] = "Bearer %s";
 
 const int kFetchTimeHistogramResolution = 5;
+
+// Enables appending request priority as a query parameter to the fetch url,
+// when fetching article suggestions.
+const char kAppendRequestPriorityAsQueryParameterParamName[] =
+    "append_request_priority_as_query_parameter";
+const bool kAppendRequestPriorityAsQueryParameterParamDefault = true;
+
+bool IsAppendingRequestPriorityAsQueryParameterEnabled() {
+  return variations::GetVariationParamByFeatureAsBool(
+      ntp_snippets::kArticleSuggestionsFeature,
+      kAppendRequestPriorityAsQueryParameterParamName,
+      kAppendRequestPriorityAsQueryParameterParamDefault);
+}
+
+GURL AppendPriorityQueryParameterIfEnabled(const GURL& url,
+                                           bool is_interactive_request) {
+  if (IsAppendingRequestPriorityAsQueryParameterEnabled()) {
+    return net::AppendQueryParameter(url, kPriorityQueryParam,
+                                     is_interactive_request
+                                         ? kInteractivePriority
+                                         : kNonInteractivePriority);
+  }
+  return url;
+}
 
 std::string FetchResultToString(FetchResult result) {
   switch (result) {
@@ -202,9 +232,11 @@ void RemoteSuggestionsFetcherImpl::FetchSnippetsNonAuthenticated(
     return;
   }
   // When not providing OAuth token, we need to pass the Google API key.
-  builder.SetUrl(
-      GURL(base::StringPrintf(kSnippetsServerNonAuthorizedFormat,
-                              fetch_url_.spec().c_str(), api_key_.c_str())));
+  GURL url = net::AppendQueryParameter(fetch_url_, kApiKeyQueryParam, api_key_);
+  url = AppendPriorityQueryParameterIfEnabled(url,
+                                              builder.is_interactive_request());
+
+  builder.SetUrl(url);
   StartRequest(std::move(builder), std::move(callback),
                /*is_authenticated=*/false);
 }
@@ -213,10 +245,13 @@ void RemoteSuggestionsFetcherImpl::FetchSnippetsAuthenticated(
     JsonRequest::Builder builder,
     SnippetsAvailableCallback callback,
     const std::string& oauth_access_token) {
-  builder.SetUrl(fetch_url_)
-      .SetAuthentication(identity_manager_->GetPrimaryAccountInfo().account_id,
-                         base::StringPrintf(kAuthorizationRequestHeaderFormat,
-                                            oauth_access_token.c_str()));
+  GURL url = AppendPriorityQueryParameterIfEnabled(
+      fetch_url_, builder.is_interactive_request());
+
+  builder.SetUrl(url).SetAuthentication(
+      identity_manager_->GetPrimaryAccountInfo().account_id,
+      base::StringPrintf(kAuthorizationRequestHeaderFormat,
+                         oauth_access_token.c_str()));
   StartRequest(std::move(builder), std::move(callback),
                /*is_authenticated=*/true);
 }
