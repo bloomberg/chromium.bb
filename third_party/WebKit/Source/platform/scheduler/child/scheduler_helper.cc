@@ -117,11 +117,6 @@ void SchedulerHelper::UnregisterTimeDomain(TimeDomain* time_domain) {
     task_queue_manager_->UnregisterTimeDomain(time_domain);
 }
 
-void SchedulerHelper::OnTriedToExecuteBlockedTask() {
-  if (observer_)
-    observer_->OnTriedToExecuteBlockedTask();
-}
-
 void SchedulerHelper::OnBeginNestedRunLoop() {
   if (observer_)
     observer_->OnBeginNestedRunLoop();

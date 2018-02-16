@@ -1712,47 +1712,6 @@ class MockObserver : public TaskQueueManager::Observer {
 
 }  // namespace
 
-TEST_F(TaskQueueManagerTest, OnTriedToExecuteBlockedTask) {
-  Initialize(0u);
-
-  MockObserver observer;
-  manager_->SetObserver(&observer);
-
-  scoped_refptr<TaskQueue> task_queue = CreateTaskQueueWithSpec(
-      TaskQueue::Spec("test").SetShouldReportWhenExecutionBlocked(true));
-  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
-      task_queue->CreateQueueEnabledVoter();
-
-  voter->SetQueueEnabled(false);
-  task_queue->PostTask(FROM_HERE, base::BindRepeating(&NopTask));
-
-  // Trick |task_queue| into posting a DoWork. By default PostTask with a
-  // disabled queue won't post a DoWork until we enable the queue.
-  voter->SetQueueEnabled(true);
-  voter->SetQueueEnabled(false);
-
-  EXPECT_CALL(observer, OnTriedToExecuteBlockedTask()).Times(1);
-  test_task_runner_->RunPendingTasks();
-
-  manager_->SetObserver(nullptr);
-}
-
-TEST_F(TaskQueueManagerTest, ExecutedNonBlockedTask) {
-  Initialize(0u);
-
-  MockObserver observer;
-  manager_->SetObserver(&observer);
-
-  scoped_refptr<TaskQueue> task_queue = CreateTaskQueueWithSpec(
-      TaskQueue::Spec("test").SetShouldReportWhenExecutionBlocked(true));
-  task_queue->PostTask(FROM_HERE, base::BindRepeating(&NopTask));
-
-  EXPECT_CALL(observer, OnTriedToExecuteBlockedTask()).Times(0);
-  test_task_runner_->RunPendingTasks();
-
-  manager_->SetObserver(nullptr);
-}
-
 TEST_F(TaskQueueManagerTest, ShutdownTaskQueueInNestedLoop) {
   InitializeWithRealMessageLoop(1u);
 

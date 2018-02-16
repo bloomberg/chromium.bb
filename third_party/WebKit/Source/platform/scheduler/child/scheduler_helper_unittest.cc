@@ -173,39 +173,6 @@ TEST_F(SchedulerHelperTest, ObserversNotNotifiedFor_ControlTaskQueue) {
   RunUntilIdle();
 }
 
-namespace {
-
-class MockObserver : public SchedulerHelper::Observer {
- public:
-  MOCK_METHOD0(OnTriedToExecuteBlockedTask, void());
-  MOCK_METHOD0(OnBeginNestedRunLoop, void());
-  MOCK_METHOD0(OnExitNestedRunLoop, void());
-};
-
-}  // namespace
-
-TEST_F(SchedulerHelperTest, OnTriedToExecuteBlockedTask) {
-  MockObserver observer;
-  scheduler_helper_->SetObserver(&observer);
-
-  scoped_refptr<TaskQueue> task_queue = scheduler_helper_->NewTaskQueue(
-      TaskQueue::Spec("test").SetShouldReportWhenExecutionBlocked(true));
-  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
-      task_queue->CreateQueueEnabledVoter();
-  voter->SetQueueEnabled(false);
-  task_queue->PostTask(FROM_HERE, base::Bind(&NopTask));
-
-  // Trick |task_queue| into posting a DoWork. By default PostTask with a
-  // disabled queue won't post a DoWork until we enable the queue.
-  voter->SetQueueEnabled(true);
-  voter->SetQueueEnabled(false);
-
-  EXPECT_CALL(observer, OnTriedToExecuteBlockedTask()).Times(1);
-  RunUntilIdle();
-
-  scheduler_helper_->SetObserver(nullptr);
-  task_queue->ShutdownTaskQueue();
-}
 }  // namespace scheduler_helper_unittest
 }  // namespace scheduler
 }  // namespace blink
