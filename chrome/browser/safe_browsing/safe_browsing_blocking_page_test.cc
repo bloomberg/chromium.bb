@@ -43,6 +43,7 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/browser/threat_details.h"
+#include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/db/test_database_manager.h"
@@ -702,18 +703,18 @@ class SafeBrowsingBlockingPageBrowserTest
       const HTMLElement& actual_element,
       const std::string& expected_tag_name,
       const int expected_child_ids_size,
-      const std::vector<AttributeNameValue>& expected_attributes) {
+      const std::vector<mojom::AttributeNameValuePtr>& expected_attributes) {
     EXPECT_EQ(expected_tag_name, actual_element.tag());
     EXPECT_EQ(expected_child_ids_size, actual_element.child_ids_size());
     ASSERT_EQ(static_cast<int>(expected_attributes.size()),
               actual_element.attribute_size());
     for (size_t i = 0; i < expected_attributes.size(); ++i) {
-      const AttributeNameValue& expected_attribute_pair =
-          expected_attributes[i];
+      const mojom::AttributeNameValue& expected_attribute =
+          *expected_attributes[i];
       const HTMLElement::Attribute& actual_attribute_pb =
           actual_element.attribute(i);
-      EXPECT_EQ(expected_attribute_pair.first, actual_attribute_pb.name());
-      EXPECT_EQ(expected_attribute_pair.second, actual_attribute_pb.value());
+      EXPECT_EQ(expected_attribute.name, actual_attribute_pb.name());
+      EXPECT_EQ(expected_attribute.value, actual_attribute_pb.value());
     }
   }
 
@@ -998,7 +999,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
       if (elem.tag() == "IFRAME") {
         iframe_node_id = elem.id();
         VerifyElement(report, elem, "IFRAME", /*child_size=*/0,
-                      std::vector<AttributeNameValue>());
+                      std::vector<mojom::AttributeNameValuePtr>());
         break;
       }
     }
@@ -1007,9 +1008,10 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
     // Find the parent DIV that is the parent of the iframe.
     for (const HTMLElement& elem : report.dom()) {
       if (elem.id() != iframe_node_id) {
+        std::vector<mojom::AttributeNameValuePtr> attributes;
+        attributes.push_back(mojom::AttributeNameValue::New("foo", "1"));
         // Not the IIFRAME, so this is the parent DIV
-        VerifyElement(report, elem, "DIV", /*child_size=*/1,
-                      {std::make_pair("foo", "1")});
+        VerifyElement(report, elem, "DIV", /*child_size=*/1, attributes);
         // Make sure this DIV has the IFRAME as a child.
         EXPECT_EQ(iframe_node_id, elem.child_ids(0));
       }

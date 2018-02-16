@@ -571,7 +571,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
 #endif
 
 #if defined(FULL_SAFE_BROWSING)
-  safe_browsing::ThreatDOMDetails::Create(render_frame);
+  safe_browsing::ThreatDOMDetails::Create(render_frame, registry);
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)

@@ -65,3 +65,41 @@ interface SafeBrowsingUrlChecker {
 interface UrlCheckNotifier {
   OnCompleteCheck(bool proceed, bool showed_interstitial);
 };
+
+// Used to store the name and value of an HTML Element's attribute.
+struct AttributeNameValue {
+  string name;
+  string value;
+};
+
+// A node is essentially a frame.
+struct ThreatDOMDetailsNode {
+  // A unique ID for this node, unique to the current Render Frame.
+  int32 node_id;
+  // URL of this resource. Can be empty.
+  url.mojom.Url url;
+  // If this resource was in the "src" attribute of a tag, this is the tagname
+  // (eg "IFRAME"). Can be empty.
+  string tag_name;
+  // URL of the parent node. Can be empty.
+  url.mojom.Url parent;
+  // The unique ID of the parent node. Can be 0 if this is the top node.
+  int32 parent_node_id;
+  // Children of this node. Can be empty.
+  array<url.mojom.Url> children;
+  // The unique IDs of the child nodes. Can be empty if there are no children.
+  array<int32> child_node_ids;
+  // The node's attributes as a collection of name-value pairs.
+  array<AttributeNameValue> attributes;
+  // If this node represents a frame or iframe, then this field is set to the
+  // routing ID of the local or remote frame in this renderer process that is
+  // responsible for rendering the contents of this frame (to handle OOPIFs).
+  int32 child_frame_routing_id;
+};
+
+interface ThreatReporter {
+  // Client-side detection message sent from the browser to the renderer.
+  // Request a DOM tree when a safe browsing interstitial is shown.
+  // Renderer returns part of the DOM to be used in a threat report.
+  GetThreatDOMDetails() => (array<ThreatDOMDetailsNode> nodes);
+};
