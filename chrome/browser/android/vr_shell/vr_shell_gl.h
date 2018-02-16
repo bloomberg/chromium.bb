@@ -334,6 +334,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   std::unique_ptr<VrDialog> vr_dialog_;
 
+  bool last_should_send_webvr_vsync_ = false;
+
   base::WeakPtrFactory<VrShellGl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VrShellGl);
