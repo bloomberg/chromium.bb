@@ -491,7 +491,10 @@ typedef struct macroblockd_plane {
   ((x) + (i) * (1 << (tx_size_wide_log2[0] + tx_size_high_log2[0])))
 
 typedef struct RefBuffer {
-  int idx;
+  int idx;  // frame buf idx
+#if CONFIG_FRAME_REFS_SIGNALING
+  int map_idx;  // frame map idx
+#endif          // CONFIG_FRAME_REFS_SIGNALING
   YV12_BUFFER_CONFIG *buf;
   struct scale_factors sf;
 } RefBuffer;

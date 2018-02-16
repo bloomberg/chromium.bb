@@ -2881,6 +2881,10 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   cm->allow_intrabc = 0;
 #endif  // CONFIG_INTRABC
 
+#if CONFIG_FRAME_REFS_SIGNALING
+  cm->frame_refs_short_signaling = 0;
+#endif  // CONFIG_FRAME_REFS_SIGNALING
+
   if (cm->frame_type == KEY_FRAME) {
     cm->current_video_frame = 0;
 #if !CONFIG_OBU
@@ -2995,9 +2999,17 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         cm->is_reference_frame = 0;
       }
 
-      for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
-        const int ref = aom_rb_read_literal(rb, REF_FRAMES_LOG2);
-        const int idx = cm->ref_frame_map[ref];
+#if CONFIG_FRAME_REFS_SIGNALING
+      cm->frame_refs_short_signaling = aom_rb_read_bit(rb);
+
+      if (cm->frame_refs_short_signaling) {
+        // == LAST_FRAME ==
+        const int lst_ref = aom_rb_read_literal(rb, REF_FRAMES_LOG2);
+        const int lst_idx = cm->ref_frame_map[lst_ref];
+
+        // == GOLDEN_FRAME ==
+        const int gld_ref = aom_rb_read_literal(rb, REF_FRAMES_LOG2);
+        const int gld_idx = cm->ref_frame_map[gld_ref];
 
         // Most of the time, streams start with a keyframe. In that case,
         // ref_frame_map will have been filled in at that point and will not
@@ -3005,18 +3017,51 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         // with an intra-only frame, so long as they don't then signal a
         // reference to a slot that hasn't been set yet. That's what we are
         // checking here.
-        if (idx == -1)
+        if (lst_idx == -1)
+          aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                             "Inter frame requests nonexistent reference");
+        if (gld_idx == -1)
           aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                              "Inter frame requests nonexistent reference");
 
-        RefBuffer *const ref_frame = &cm->frame_refs[i];
-        ref_frame->idx = idx;
-        ref_frame->buf = &frame_bufs[idx].buf;
+        av1_set_frame_refs(cm, lst_ref, gld_ref);
+      }
+#endif  // CONFIG_FRAME_REFS_SIGNALING
+
+      for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
+        int ref = 0;
+#if CONFIG_FRAME_REFS_SIGNALING
+        if (!cm->frame_refs_short_signaling) {
+#endif  // CONFIG_FRAME_REFS_SIGNALING
+          ref = aom_rb_read_literal(rb, REF_FRAMES_LOG2);
+          const int idx = cm->ref_frame_map[ref];
+
+          // Most of the time, streams start with a keyframe. In that case,
+          // ref_frame_map will have been filled in at that point and will not
+          // contain any -1's. However, streams are explicitly allowed to start
+          // with an intra-only frame, so long as they don't then signal a
+          // reference to a slot that hasn't been set yet. That's what we are
+          // checking here.
+          if (idx == -1)
+            aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                               "Inter frame requests nonexistent reference");
+
+          RefBuffer *const ref_frame = &cm->frame_refs[i];
+          ref_frame->idx = idx;
+          ref_frame->buf = &frame_bufs[idx].buf;
+#if CONFIG_FRAME_REFS_SIGNALING
+          ref_frame->map_idx = ref;
+        } else {
+          ref = cm->frame_refs[i].map_idx;
+        }
+#endif  // CONFIG_FRAME_REFS_SIGNALING
+
 #if CONFIG_OBU
         // NOTE: For the scenario of (cm->frame_type != S_FRAME),
         // ref_frame_sign_bias will be reset based on frame offsets.
         cm->ref_frame_sign_bias[LAST_FRAME + i] = 0;
 #endif  // CONFIG_OBU
+
 #if CONFIG_REFERENCE_BUFFER
         if (cm->seq_params.frame_id_numbers_present_flag) {
           int frame_id_length = cm->seq_params.frame_id_length;
@@ -3026,8 +3071,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
               ((cm->current_frame_id - (delta_frame_id_minus1 + 1) +
                 (1 << frame_id_length)) %
                (1 << frame_id_length));
-          /* Compare values derived from delta_frame_id_minus1 and
-           * refresh_frame_flags. Also, check valid for referencing */
+          // Compare values derived from delta_frame_id_minus1 and
+          // refresh_frame_flags. Also, check valid for referencing
           if (ref_frame_id != cm->ref_frame_id[ref] ||
               cm->valid_for_referencing[ref] == 0)
             aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,

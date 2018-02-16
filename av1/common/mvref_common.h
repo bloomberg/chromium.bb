@@ -442,6 +442,10 @@ void av1_setup_skip_mode_allowed(AV1_COMMON *cm);
 void av1_setup_motion_field(AV1_COMMON *cm);
 #endif  // CONFIG_MFMV
 
+#if CONFIG_FRAME_REFS_SIGNALING
+void av1_set_frame_refs(AV1_COMMON *const cm, int lst_map_idx, int gld_map_idx);
+#endif  // CONFIG_FRAME_REFS_SIGNALING
+
 static INLINE void av1_collect_neighbors_ref_counts(MACROBLOCKD *const xd) {
   av1_zero(xd->neighbors_ref_counts);
 

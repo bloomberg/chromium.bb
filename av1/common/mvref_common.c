@@ -9,6 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <stdlib.h>
+
 #include "av1/common/mvref_common.h"
 #include "av1/common/warped_motion.h"
 
@@ -2159,3 +2161,192 @@ void av1_setup_skip_mode_allowed(AV1_COMMON *cm) {
   }
 }
 #endif  // CONFIG_EXT_SKIP
+
+#if CONFIG_FRAME_REFS_SIGNALING
+typedef struct {
+  int map_idx;  // frame map index
+  int buf_idx;  // frame buffer index
+  int offset;   // frame offset
+} REF_FRAME_INFO;
+
+static int compare_ref_frame_info(const void *arg_a, const void *arg_b) {
+  const REF_FRAME_INFO *info_a = (REF_FRAME_INFO *)arg_a;
+  const REF_FRAME_INFO *info_b = (REF_FRAME_INFO *)arg_b;
+
+  if (info_a->offset < info_b->offset)
+    return -1;
+  else if (info_a->offset > info_b->offset)
+    return 1;
+
+  return (info_a->map_idx < info_b->map_idx)
+             ? -1
+             : ((info_a->map_idx > info_b->map_idx) ? 1 : 0);
+}
+
+static void set_ref_frame_info(AV1_COMMON *const cm, int frame_idx,
+                               REF_FRAME_INFO *ref_info) {
+  assert(frame_idx >= 0 && frame_idx <= INTER_REFS_PER_FRAME);
+
+  const int buf_idx = ref_info->buf_idx;
+
+  cm->frame_refs[frame_idx].idx = buf_idx;
+  cm->frame_refs[frame_idx].buf = &cm->buffer_pool->frame_bufs[buf_idx].buf;
+  cm->frame_refs[frame_idx].map_idx = ref_info->map_idx;
+}
+
+void av1_set_frame_refs(AV1_COMMON *const cm, int lst_map_idx,
+                        int gld_map_idx) {
+  BufferPool *const pool = cm->buffer_pool;
+  RefCntBuffer *const frame_bufs = pool->frame_bufs;
+
+  int lst_frame_offset = -1;
+  int gld_frame_offset = -1;
+
+  const int cur_frame_offset = (int)cm->cur_frame->cur_frame_offset;
+
+  REF_FRAME_INFO ref_frame_info[REF_FRAMES];
+  int ref_flag_list[INTER_REFS_PER_FRAME] = { 0, 0, 0, 0, 0, 0, 0 };
+
+  for (int i = 0; i < REF_FRAMES; ++i) {
+    const int map_idx = i;
+
+    ref_frame_info[i].map_idx = map_idx;
+    ref_frame_info[i].offset = -1;
+
+    const int buf_idx = cm->ref_frame_map[map_idx];
+    ref_frame_info[i].buf_idx = buf_idx;
+
+    if (buf_idx < 0 || buf_idx >= FRAME_BUFFERS) continue;
+    // TODO(zoeliu@google.com): To verify the checking on ref_count.
+    if (frame_bufs[buf_idx].ref_count <= 0) continue;
+
+    const int offset = (int)frame_bufs[buf_idx].cur_frame_offset;
+    ref_frame_info[i].offset = offset;
+
+    if (map_idx == lst_map_idx) lst_frame_offset = offset;
+    if (map_idx == gld_map_idx) gld_frame_offset = offset;
+  }
+
+  // Confirm both LAST_FRAME and GOLDEN_FRAME are valid forward reference
+  // frames.
+  if (lst_frame_offset < 0 || lst_frame_offset >= cur_frame_offset) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "Inter frame requests a look-ahead frame as LAST");
+  }
+  if (gld_frame_offset < 0 || gld_frame_offset >= cur_frame_offset) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "Inter frame requests a look-ahead frame as GOLDEN");
+  }
+
+  // Sort ref frames based on their frame_offset values.
+  qsort(ref_frame_info, REF_FRAMES, sizeof(REF_FRAME_INFO),
+        compare_ref_frame_info);
+
+  // Identify forward and backward reference frames.
+  // Forward  reference: offset < cur_frame_offset
+  // Backward reference: offset >= cur_frame_offset
+  int fwd_start_idx = 0, fwd_end_idx = REF_FRAMES - 1;
+
+  for (int i = 0; i < REF_FRAMES; i++) {
+    if (ref_frame_info[i].offset == -1) {
+      fwd_start_idx++;
+      continue;
+    }
+
+    if (ref_frame_info[i].offset >= cur_frame_offset) {
+      fwd_end_idx = i - 1;
+      break;
+    }
+  }
+
+  int bwd_start_idx = fwd_end_idx + 1;
+  int bwd_end_idx = REF_FRAMES - 1;
+
+  // === Backward Reference Frames ===
+
+  // == ALTREF_FRAME ==
+  if (bwd_start_idx <= bwd_end_idx) {
+    set_ref_frame_info(cm, ALTREF_FRAME - LAST_FRAME,
+                       &ref_frame_info[bwd_end_idx]);
+    ref_flag_list[ALTREF_FRAME - LAST_FRAME] = 1;
+    bwd_end_idx--;
+  }
+
+  // == BWDREF_FRAME ==
+  if (bwd_start_idx <= bwd_end_idx) {
+    set_ref_frame_info(cm, BWDREF_FRAME - LAST_FRAME,
+                       &ref_frame_info[bwd_start_idx]);
+    ref_flag_list[BWDREF_FRAME - LAST_FRAME] = 1;
+    bwd_start_idx++;
+  }
+
+  // == ALTREF2_FRAME ==
+  if (bwd_start_idx <= bwd_end_idx) {
+    set_ref_frame_info(cm, ALTREF2_FRAME - LAST_FRAME,
+                       &ref_frame_info[bwd_start_idx]);
+    ref_flag_list[ALTREF2_FRAME - LAST_FRAME] = 1;
+  }
+
+  // === Forward Reference Frames ===
+
+  for (int i = fwd_start_idx; i <= fwd_end_idx; ++i) {
+    // == LAST_FRAME ==
+    if (ref_frame_info[i].map_idx == lst_map_idx) {
+      set_ref_frame_info(cm, LAST_FRAME - LAST_FRAME, &ref_frame_info[i]);
+      ref_flag_list[LAST_FRAME - LAST_FRAME] = 1;
+    }
+
+    // == GOLDEN_FRAME ==
+    if (ref_frame_info[i].map_idx == gld_map_idx) {
+      set_ref_frame_info(cm, GOLDEN_FRAME - LAST_FRAME, &ref_frame_info[i]);
+      ref_flag_list[GOLDEN_FRAME - LAST_FRAME] = 1;
+    }
+  }
+
+  assert(ref_flag_list[LAST_FRAME - LAST_FRAME] == 1 &&
+         ref_flag_list[GOLDEN_FRAME - LAST_FRAME] == 1);
+
+  // == LAST2_FRAME ==
+  // == LAST3_FRAME ==
+  // == BWDREF_FRAME ==
+  // == ALTREF2_FRAME ==
+  // == ALTREF_FRAME ==
+
+  // Set up the reference frames in the anti-chronological order.
+  static const MV_REFERENCE_FRAME ref_frame_list[INTER_REFS_PER_FRAME - 2] = {
+    LAST2_FRAME, LAST3_FRAME, BWDREF_FRAME, ALTREF2_FRAME, ALTREF_FRAME
+  };
+
+  int ref_idx;
+  for (ref_idx = 0; ref_idx < (INTER_REFS_PER_FRAME - 2); ref_idx++) {
+    const MV_REFERENCE_FRAME ref_frame = ref_frame_list[ref_idx];
+
+    if (ref_flag_list[ref_frame - LAST_FRAME] == 1) continue;
+
+    while (fwd_start_idx <= fwd_end_idx &&
+           (ref_frame_info[fwd_end_idx].map_idx == lst_map_idx ||
+            ref_frame_info[fwd_end_idx].map_idx == gld_map_idx)) {
+      fwd_end_idx--;
+    }
+    if (fwd_start_idx > fwd_end_idx) break;
+
+    set_ref_frame_info(cm, ref_frame - LAST_FRAME,
+                       &ref_frame_info[fwd_end_idx]);
+    ref_flag_list[ref_frame - LAST_FRAME] = 1;
+
+    fwd_end_idx--;
+  }
+
+  // Assign all the remaining frame(s), if any, to the earliest reference frame.
+  for (; ref_idx < (INTER_REFS_PER_FRAME - 2); ref_idx++) {
+    const MV_REFERENCE_FRAME ref_frame = ref_frame_list[ref_idx];
+    set_ref_frame_info(cm, ref_frame - LAST_FRAME,
+                       &ref_frame_info[fwd_start_idx]);
+    ref_flag_list[ref_frame - LAST_FRAME] = 1;
+  }
+
+  for (int i = 0; i < INTER_REFS_PER_FRAME; i++) {
+    assert(ref_flag_list[i] == 1);
+  }
+}
+#endif  // CONFIG_FRAME_REFS_SIGNALING

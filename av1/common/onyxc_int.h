@@ -614,6 +614,10 @@ typedef struct AV1Common {
   DqType dq_type;
 #endif  // CONFIG_NEW_QUANT
 
+#if CONFIG_FRAME_REFS_SIGNALING
+  int frame_refs_short_signaling;
+#endif  // CONFIG_FRAME_REFS_SIGNALING
+
 #if CONFIG_SCALABILITY
   int temporal_layer_id;
   int enhancement_layer_id;
