@@ -326,8 +326,9 @@ ChildThreadImpl::Options::Builder::AutoStartServiceManagerConnection(
 }
 
 ChildThreadImpl::Options::Builder&
-ChildThreadImpl::Options::Builder::ConnectToBrowser(bool connect_to_browser) {
-  options_.connect_to_browser = connect_to_browser;
+ChildThreadImpl::Options::Builder::ConnectToBrowser(
+    bool connect_to_browser_parms) {
+  options_.connect_to_browser = connect_to_browser_parms;
   return *this;
 }
 
@@ -340,8 +341,8 @@ ChildThreadImpl::Options::Builder::AddStartupFilter(
 
 ChildThreadImpl::Options::Builder&
 ChildThreadImpl::Options::Builder::IPCTaskRunner(
-    scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner) {
-  options_.ipc_task_runner = ipc_task_runner;
+    scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_parms) {
+  options_.ipc_task_runner = ipc_task_runner_parms;
   return *this;
 }
 
