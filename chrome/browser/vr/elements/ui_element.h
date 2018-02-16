@@ -153,8 +153,6 @@ class UiElement : public cc::AnimationTarget {
   virtual void OnMove(const gfx::PointF& position);
   virtual void OnButtonDown(const gfx::PointF& position);
   virtual void OnButtonUp(const gfx::PointF& position);
-  virtual void OnFlingStart(std::unique_ptr<blink::WebGestureEvent> gesture,
-                            const gfx::PointF& position);
   virtual void OnFlingCancel(std::unique_ptr<blink::WebGestureEvent> gesture,
                              const gfx::PointF& position);
   virtual void OnScrollBegin(std::unique_ptr<blink::WebGestureEvent> gesture,

@@ -178,8 +178,6 @@ void UiElement::OnButtonUp(const gfx::PointF& position) {
   }
 }
 
-void UiElement::OnFlingStart(std::unique_ptr<blink::WebGestureEvent> gesture,
-                             const gfx::PointF& position) {}
 void UiElement::OnFlingCancel(std::unique_ptr<blink::WebGestureEvent> gesture,
                               const gfx::PointF& position) {}
 void UiElement::OnScrollBegin(std::unique_ptr<blink::WebGestureEvent> gesture,

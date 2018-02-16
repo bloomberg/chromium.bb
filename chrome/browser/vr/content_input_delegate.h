@@ -55,9 +55,6 @@ class ContentInputDelegate {
 
   // The following functions are virtual so that they may be overridden in the
   // MockContentInputDelegate.
-  VIRTUAL_FOR_MOCKS void OnContentFlingStart(
-      std::unique_ptr<blink::WebGestureEvent> gesture,
-      const gfx::PointF& normalized_hit_point);
   VIRTUAL_FOR_MOCKS void OnContentFlingCancel(
       std::unique_ptr<blink::WebGestureEvent> gesture,
       const gfx::PointF& normalized_hit_point);
