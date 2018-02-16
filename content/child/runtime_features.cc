@@ -231,10 +231,10 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kScrollAnchorSerialization))
     WebRuntimeFeatures::EnableScrollAnchorSerialization(true);
 
-  if (base::FeatureList::IsEnabled(features::kSlimmingPaintV175) ||
-      command_line.HasSwitch(switches::kEnableSlimmingPaintV175)) {
-    WebRuntimeFeatures::EnableFeatureFromString("SlimmingPaintV175", true);
-  }
+  WebRuntimeFeatures::EnableFeatureFromString(
+      "SlimmingPaintV175",
+      base::FeatureList::IsEnabled(features::kSlimmingPaintV175) ||
+          command_line.HasSwitch(switches::kEnableSlimmingPaintV175));
 
   if (command_line.HasSwitch(switches::kEnableSlimmingPaintV2))
     WebRuntimeFeatures::EnableSlimmingPaintV2(true);
