@@ -343,19 +343,18 @@ Polymer({
     this.guid = this.networkProperties.GUID;
     this.type = this.networkProperties.Type;
     if (this.guid) {
-      this.networkingPrivate.getProperties(
-          this.guid, this.getPropertiesCallback_.bind(this));
+      this.networkingPrivate.getProperties(this.guid, (properties) => {
+        this.getPropertiesCallback_(properties);
+        this.focusFirstInput_();
+      });
+    } else {
+      this.async(() => {
+        this.focusFirstInput_();
+      });
     }
     this.onCertificateListsChanged_();
     this.updateIsConfigured_();
     this.setShareNetwork_();
-    requestAnimationFrame(() => {
-      var e = this.$$(
-          'network-config-input:not([disabled]),' +
-          'network-config-select:not([disabled])');
-      if (e)
-        e.focus();
-    });
   },
 
   saveOrConnect: function() {
@@ -382,6 +381,16 @@ Polymer({
       this.networkingPrivate.setProperties(
           this.guid, propertiesToSet, this.setPropertiesCallback_.bind(this));
     }
+  },
+
+  /** @private */
+  focusFirstInput_: function() {
+    Polymer.dom.flush();
+    var e = this.$$(
+        'network-config-input:not([disabled]),' +
+        'network-config-select:not([disabled])');
+    if (e)
+      e.focus();
   },
 
   /** @private */
