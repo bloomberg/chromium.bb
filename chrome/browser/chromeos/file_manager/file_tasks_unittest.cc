@@ -28,6 +28,7 @@
 #include "extensions/browser/entry_info.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension_builder.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -355,6 +356,56 @@ TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_FallbackTextApp) {
 
   // The text editor app should be chosen as default, as it's a fallback file
   // browser handler.
+  ChooseAndSetDefaultTask(pref_service, entries, &tasks);
+  EXPECT_TRUE(tasks[0].is_default());
+}
+
+// Test that Audio Player is chosen as default even if nothing is set in the
+// preferences.
+TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_FallbackAudioPlayer) {
+  TestingPrefServiceSimple pref_service;
+  RegisterDefaultTaskPreferences(&pref_service);
+
+  // The Audio Player app was found for "sound.wav".
+  TaskDescriptor files_app_task(kAudioPlayerAppId, TASK_TYPE_FILE_HANDLER,
+                                "Audio Player");
+  std::vector<FullTaskDescriptor> tasks;
+  tasks.push_back(FullTaskDescriptor(
+      files_app_task, "Audio Player", Verb::VERB_OPEN_WITH,
+      GURL("chrome://extension-icon/cjbfomnbifhcdnihkgipgfcihmgjfhbf/32/1"),
+      false /* is_default */, false /* is_generic_file_handler */));
+  std::vector<extensions::EntryInfo> entries;
+  entries.push_back(extensions::EntryInfo(
+      base::FilePath::FromUTF8Unsafe("sound.wav"), "audio/wav", false));
+
+  // The Audio Player app should be chosen as default, as it's a fallback file
+  // browser handler.
+  ChooseAndSetDefaultTask(pref_service, entries, &tasks);
+  EXPECT_TRUE(tasks[0].is_default());
+}
+
+// Test that Office Editing is chosen as default even if nothing is set in the
+// preferences.
+TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_FallbackOfficeEditing) {
+  TestingPrefServiceSimple pref_service;
+  RegisterDefaultTaskPreferences(&pref_service);
+
+  // The Office Editing app was found for "slides.pptx".
+  TaskDescriptor files_app_task(
+      extension_misc::kQuickOfficeComponentExtensionId, TASK_TYPE_FILE_HANDLER,
+      "Office Editing for Docs, Sheets & Slides");
+  std::vector<FullTaskDescriptor> tasks;
+  tasks.push_back(FullTaskDescriptor(
+      files_app_task, "Office Editing for Docs, Sheets & Slides",
+      Verb::VERB_OPEN_WITH,
+      GURL("chrome://extension-icon/bpmcpldpdmajfigpchkicefoigmkfalc/32/1"),
+      false /* is_default */, false /* is_generic_file_handler */));
+  std::vector<extensions::EntryInfo> entries;
+  entries.push_back(extensions::EntryInfo(
+      base::FilePath::FromUTF8Unsafe("slides.pptx"), "", false));
+
+  // The Office Editing app should be chosen as default, as it's a fallback
+  // file browser handler.
   ChooseAndSetDefaultTask(pref_service, entries, &tasks);
   EXPECT_TRUE(tasks[0].is_default());
 }
