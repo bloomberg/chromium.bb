@@ -26,18 +26,17 @@
 #include "net/tools/quic/test_tools/mock_epoll_server.h"
 #include "net/tools/quic/test_tools/mock_quic_session_visitor.h"
 
+using testing::_;
 using testing::Args;
 using testing::Assign;
 using testing::DoAll;
 using testing::Matcher;
-using testing::MatcherInterface;
 using testing::NiceMock;
 using testing::Return;
 using testing::ReturnPointee;
 using testing::SetArgPointee;
 using testing::StrictMock;
 using testing::Truly;
-using testing::_;
 
 namespace net {
 namespace test {
@@ -137,39 +136,28 @@ class QuicTimeWaitListManagerTest : public QuicTest {
   bool writer_is_blocked_;
 };
 
-class ValidatePublicResetPacketPredicate
-    : public MatcherInterface<const std::tr1::tuple<const char*, int>> {
- public:
-  explicit ValidatePublicResetPacketPredicate(QuicConnectionId connection_id)
-      : connection_id_(connection_id) {}
+bool ValidPublicResetPacketPredicate(
+    QuicConnectionId expected_connection_id,
+    const ::testing::tuple<const char*, int>& packet_buffer) {
+  FramerVisitorCapturingPublicReset visitor;
+  QuicFramer framer(AllSupportedVersions(), QuicTime::Zero(),
+                    Perspective::IS_CLIENT);
+  framer.set_visitor(&visitor);
+  QuicEncryptedPacket encrypted(::testing::get<0>(packet_buffer),
+                                ::testing::get<1>(packet_buffer));
+  framer.ProcessPacket(encrypted);
+  QuicPublicResetPacket packet = visitor.public_reset_packet();
+  return expected_connection_id == packet.connection_id &&
+         TestPeerIPAddress() == packet.client_address.host() &&
+         kTestPort == packet.client_address.port();
+}
 
-  bool MatchAndExplain(
-      const std::tr1::tuple<const char*, int> packet_buffer,
-      testing::MatchResultListener* /* listener */) const override {
-    FramerVisitorCapturingPublicReset visitor;
-    QuicFramer framer(AllSupportedVersions(), QuicTime::Zero(),
-                      Perspective::IS_CLIENT);
-    framer.set_visitor(&visitor);
-    QuicEncryptedPacket encrypted(std::tr1::get<0>(packet_buffer),
-                                  std::tr1::get<1>(packet_buffer));
-    framer.ProcessPacket(encrypted);
-    QuicPublicResetPacket packet = visitor.public_reset_packet();
-    return connection_id_ == packet.connection_id &&
-           net::test::TestPeerIPAddress() == packet.client_address.host() &&
-           kTestPort == packet.client_address.port();
-  }
-
-  void DescribeTo(::std::ostream* os) const override {}
-
-  void DescribeNegationTo(::std::ostream* os) const override {}
-
- private:
-  QuicConnectionId connection_id_;
-};
-
-Matcher<const std::tr1::tuple<const char*, int>> PublicResetPacketEq(
+Matcher<const testing::tuple<const char*, int>> PublicResetPacketEq(
     QuicConnectionId connection_id) {
-  return MakeMatcher(new ValidatePublicResetPacketPredicate(connection_id));
+  return Truly(
+      [connection_id](const ::testing::tuple<const char*, int> packet_buffer) {
+        return ValidPublicResetPacketPredicate(connection_id, packet_buffer);
+      });
 }
 
 TEST_F(QuicTimeWaitListManagerTest, CheckConnectionIdInTimeWait) {

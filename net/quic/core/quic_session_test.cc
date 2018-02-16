@@ -127,21 +127,6 @@ class TestStream : public QuicSpdyStream {
   MOCK_CONST_METHOD0(HasPendingRetransmission, bool());
 };
 
-// Poor man's functor for use as callback in a mock.
-class StreamBlocker {
- public:
-  StreamBlocker(QuicSession* session, QuicStreamId stream_id)
-      : session_(session), stream_id_(stream_id) {}
-
-  void MarkConnectionLevelWriteBlocked() {
-    session_->MarkConnectionLevelWriteBlocked(stream_id_);
-  }
-
- private:
-  QuicSession* const session_;
-  const QuicStreamId stream_id_;
-};
-
 class TestSession : public QuicSpdySession {
  public:
   explicit TestSession(QuicConnection* connection)
@@ -475,24 +460,19 @@ TEST_P(QuicSessionTestServer, OnCanWrite) {
   session_.MarkConnectionLevelWriteBlocked(stream4->id());
 
   InSequence s;
-  StreamBlocker stream2_blocker(&session_, stream2->id());
 
   // Reregister, to test the loop limit.
-  EXPECT_CALL(*stream2, OnCanWrite())
-      .WillOnce(DoAll(testing::IgnoreResult(Invoke(
-                          CreateFunctor(&TestSession::SendStreamData,
-                                        base::Unretained(&session_), stream2))),
-                      Invoke(&stream2_blocker,
-                             &StreamBlocker::MarkConnectionLevelWriteBlocked)));
+  EXPECT_CALL(*stream2, OnCanWrite()).WillOnce(Invoke([this, stream2]() {
+    session_.SendStreamData(stream2);
+    session_.MarkConnectionLevelWriteBlocked(stream2->id());
+  }));
   // 2 will get called a second time as it didn't finish its block
-  EXPECT_CALL(*stream2, OnCanWrite())
-      .WillOnce(testing::IgnoreResult(
-          Invoke(CreateFunctor(&TestSession::SendStreamData,
-                               base::Unretained(&session_), stream2))));
-  EXPECT_CALL(*stream6, OnCanWrite())
-      .WillOnce(testing::IgnoreResult(
-          Invoke(CreateFunctor(&TestSession::SendStreamData,
-                               base::Unretained(&session_), stream6))));
+  EXPECT_CALL(*stream2, OnCanWrite()).WillOnce(Invoke([this, stream2]() {
+    session_.SendStreamData(stream2);
+  }));
+  EXPECT_CALL(*stream6, OnCanWrite()).WillOnce(Invoke([this, stream6]() {
+    session_.SendStreamData(stream6);
+  }));
   // 4 will not get called, as we exceeded the loop limit.
   session_.OnCanWrite();
   EXPECT_TRUE(session_.WillingAndAbleToWrite());
@@ -508,41 +488,30 @@ TEST_P(QuicSessionTestServer, TestBatchedWrites) {
   session_.MarkConnectionLevelWriteBlocked(stream2->id());
   session_.MarkConnectionLevelWriteBlocked(stream4->id());
 
-  StreamBlocker stream2_blocker(&session_, stream2->id());
-  StreamBlocker stream4_blocker(&session_, stream4->id());
-  StreamBlocker stream6_blocker(&session_, stream6->id());
   // With two sessions blocked, we should get two write calls.  They should both
   // go to the first stream as it will only write 6k and mark itself blocked
   // again.
   InSequence s;
-  EXPECT_CALL(*stream2, OnCanWrite())
-      .WillOnce(DoAll(testing::IgnoreResult(Invoke(CreateFunctor(
-                          &TestSession::SendLargeFakeData,
-                          base::Unretained(&session_), stream2, 6000))),
-                      Invoke(&stream2_blocker,
-                             &StreamBlocker::MarkConnectionLevelWriteBlocked)));
-  EXPECT_CALL(*stream2, OnCanWrite())
-      .WillOnce(DoAll(testing::IgnoreResult(Invoke(CreateFunctor(
-                          &TestSession::SendLargeFakeData,
-                          base::Unretained(&session_), stream2, 6000))),
-                      Invoke(&stream2_blocker,
-                             &StreamBlocker::MarkConnectionLevelWriteBlocked)));
+  EXPECT_CALL(*stream2, OnCanWrite()).WillOnce(Invoke([this, stream2]() {
+    session_.SendLargeFakeData(stream2, 6000);
+    session_.MarkConnectionLevelWriteBlocked(stream2->id());
+  }));
+  EXPECT_CALL(*stream2, OnCanWrite()).WillOnce(Invoke([this, stream2]() {
+    session_.SendLargeFakeData(stream2, 6000);
+    session_.MarkConnectionLevelWriteBlocked(stream2->id());
+  }));
   session_.OnCanWrite();
 
   // We should get one more call for stream2, at which point it has used its
   // write quota and we move over to stream 4.
-  EXPECT_CALL(*stream2, OnCanWrite())
-      .WillOnce(DoAll(testing::IgnoreResult(Invoke(CreateFunctor(
-                          &TestSession::SendLargeFakeData,
-                          base::Unretained(&session_), stream2, 6000))),
-                      Invoke(&stream2_blocker,
-                             &StreamBlocker::MarkConnectionLevelWriteBlocked)));
-  EXPECT_CALL(*stream4, OnCanWrite())
-      .WillOnce(DoAll(testing::IgnoreResult(Invoke(CreateFunctor(
-                          &TestSession::SendLargeFakeData,
-                          base::Unretained(&session_), stream4, 6000))),
-                      Invoke(&stream4_blocker,
-                             &StreamBlocker::MarkConnectionLevelWriteBlocked)));
+  EXPECT_CALL(*stream2, OnCanWrite()).WillOnce(Invoke([this, stream2]() {
+    session_.SendLargeFakeData(stream2, 6000);
+    session_.MarkConnectionLevelWriteBlocked(stream2->id());
+  }));
+  EXPECT_CALL(*stream4, OnCanWrite()).WillOnce(Invoke([this, stream4]() {
+    session_.SendLargeFakeData(stream4, 6000);
+    session_.MarkConnectionLevelWriteBlocked(stream4->id());
+  }));
   session_.OnCanWrite();
 
   // Now let stream 4 do the 2nd of its 3 writes, but add a block for a high
@@ -550,36 +519,28 @@ TEST_P(QuicSessionTestServer, TestBatchedWrites) {
   // will cede back to 4.
   stream6->SetPriority(kV3HighestPriority);
   EXPECT_CALL(*stream4, OnCanWrite())
-      .WillOnce(DoAll(testing::IgnoreResult(Invoke(CreateFunctor(
-                          &TestSession::SendLargeFakeData,
-                          base::Unretained(&session_), stream4, 6000))),
-                      Invoke(&stream4_blocker,
-                             &StreamBlocker::MarkConnectionLevelWriteBlocked),
-                      Invoke(&stream6_blocker,
-                             &StreamBlocker::MarkConnectionLevelWriteBlocked)));
+      .WillOnce(Invoke([this, stream4, stream6]() {
+        session_.SendLargeFakeData(stream4, 6000);
+        session_.MarkConnectionLevelWriteBlocked(stream4->id());
+        session_.MarkConnectionLevelWriteBlocked(stream6->id());
+      }));
   EXPECT_CALL(*stream6, OnCanWrite())
-      .WillOnce(DoAll(testing::IgnoreResult(Invoke(
-                          CreateFunctor(&TestSession::SendStreamData,
-                                        base::Unretained(&session_), stream6))),
-                      testing::IgnoreResult(Invoke(CreateFunctor(
-                          &TestSession::SendLargeFakeData,
-                          base::Unretained(&session_), stream4, 6000)))));
+      .WillOnce(Invoke([this, stream4, stream6]() {
+        session_.SendStreamData(stream6);
+        session_.SendLargeFakeData(stream4, 6000);
+      }));
   session_.OnCanWrite();
 
   // Stream4 alread did 6k worth of writes, so after doing another 12k it should
   // cede and 2 should resume.
-  EXPECT_CALL(*stream4, OnCanWrite())
-      .WillOnce(DoAll(testing::IgnoreResult(Invoke(CreateFunctor(
-                          &TestSession::SendLargeFakeData,
-                          base::Unretained(&session_), stream4, 12000))),
-                      Invoke(&stream4_blocker,
-                             &StreamBlocker::MarkConnectionLevelWriteBlocked)));
-  EXPECT_CALL(*stream2, OnCanWrite())
-      .WillOnce(DoAll(testing::IgnoreResult(Invoke(CreateFunctor(
-                          &TestSession::SendLargeFakeData,
-                          base::Unretained(&session_), stream2, 6000))),
-                      Invoke(&stream2_blocker,
-                             &StreamBlocker::MarkConnectionLevelWriteBlocked)));
+  EXPECT_CALL(*stream4, OnCanWrite()).WillOnce(Invoke([this, stream4]() {
+    session_.SendLargeFakeData(stream4, 12000);
+    session_.MarkConnectionLevelWriteBlocked(stream4->id());
+  }));
+  EXPECT_CALL(*stream2, OnCanWrite()).WillOnce(Invoke([this, stream2]() {
+    session_.SendLargeFakeData(stream2, 6000);
+    session_.MarkConnectionLevelWriteBlocked(stream2->id());
+  }));
   session_.OnCanWrite();
 }
 
@@ -610,18 +571,15 @@ TEST_P(QuicSessionTestServer, OnCanWriteBundlesStreams) {
   EXPECT_CALL(*send_algorithm, GetCongestionWindow())
       .WillRepeatedly(Return(kMaxPacketSize * 10));
   EXPECT_CALL(*send_algorithm, InRecovery()).WillRepeatedly(Return(false));
-  EXPECT_CALL(*stream2, OnCanWrite())
-      .WillOnce(testing::IgnoreResult(
-          Invoke(CreateFunctor(&TestSession::SendStreamData,
-                               base::Unretained(&session_), stream2))));
-  EXPECT_CALL(*stream4, OnCanWrite())
-      .WillOnce(testing::IgnoreResult(
-          Invoke(CreateFunctor(&TestSession::SendStreamData,
-                               base::Unretained(&session_), stream4))));
-  EXPECT_CALL(*stream6, OnCanWrite())
-      .WillOnce(testing::IgnoreResult(
-          Invoke(CreateFunctor(&TestSession::SendStreamData,
-                               base::Unretained(&session_), stream6))));
+  EXPECT_CALL(*stream2, OnCanWrite()).WillOnce(Invoke([this, stream2]() {
+    session_.SendStreamData(stream2);
+  }));
+  EXPECT_CALL(*stream4, OnCanWrite()).WillOnce(Invoke([this, stream4]() {
+    session_.SendStreamData(stream4);
+  }));
+  EXPECT_CALL(*stream6, OnCanWrite()).WillOnce(Invoke([this, stream6]() {
+    session_.SendStreamData(stream6);
+  }));
 
   // Expect that we only send one packet, the writes from different streams
   // should be bundled together.
@@ -649,17 +607,14 @@ TEST_P(QuicSessionTestServer, OnCanWriteCongestionControlBlocks) {
   session_.MarkConnectionLevelWriteBlocked(stream6->id());
   session_.MarkConnectionLevelWriteBlocked(stream4->id());
 
-  StreamBlocker stream2_blocker(&session_, stream2->id());
   EXPECT_CALL(*send_algorithm, CanSend(_)).WillOnce(Return(true));
-  EXPECT_CALL(*stream2, OnCanWrite())
-      .WillOnce(testing::IgnoreResult(
-          Invoke(CreateFunctor(&TestSession::SendStreamData,
-                               base::Unretained(&session_), stream2))));
+  EXPECT_CALL(*stream2, OnCanWrite()).WillOnce(Invoke([this, stream2]() {
+    session_.SendStreamData(stream2);
+  }));
   EXPECT_CALL(*send_algorithm, CanSend(_)).WillOnce(Return(true));
-  EXPECT_CALL(*stream6, OnCanWrite())
-      .WillOnce(testing::IgnoreResult(
-          Invoke(CreateFunctor(&TestSession::SendStreamData,
-                               base::Unretained(&session_), stream6))));
+  EXPECT_CALL(*stream6, OnCanWrite()).WillOnce(Invoke([this, stream6]() {
+    session_.SendStreamData(stream6);
+  }));
   EXPECT_CALL(*send_algorithm, CanSend(_)).WillOnce(Return(false));
   // stream4->OnCanWrite is not called.
 
@@ -674,10 +629,9 @@ TEST_P(QuicSessionTestServer, OnCanWriteCongestionControlBlocks) {
   // stream4->OnCanWrite is called once the connection stops being
   // congestion-control blocked.
   EXPECT_CALL(*send_algorithm, CanSend(_)).WillOnce(Return(true));
-  EXPECT_CALL(*stream4, OnCanWrite())
-      .WillOnce(testing::IgnoreResult(
-          Invoke(CreateFunctor(&TestSession::SendStreamData,
-                               base::Unretained(&session_), stream4))));
+  EXPECT_CALL(*stream4, OnCanWrite()).WillOnce(Invoke([this, stream4]() {
+    session_.SendStreamData(stream4);
+  }));
   EXPECT_CALL(*send_algorithm, OnApplicationLimited(_));
   session_.OnCanWrite();
   EXPECT_FALSE(session_.WillingAndAbleToWrite());
@@ -715,13 +669,11 @@ TEST_P(QuicSessionTestServer, BufferedHandshake) {
 
   // Test that blocking other streams does not change our status.
   TestStream* stream2 = session_.CreateOutgoingDynamicStream();
-  StreamBlocker stream2_blocker(&session_, stream2->id());
-  stream2_blocker.MarkConnectionLevelWriteBlocked();
+  session_.MarkConnectionLevelWriteBlocked(stream2->id());
   EXPECT_FALSE(session_.HasPendingHandshake());
 
   TestStream* stream3 = session_.CreateOutgoingDynamicStream();
-  StreamBlocker stream3_blocker(&session_, stream3->id());
-  stream3_blocker.MarkConnectionLevelWriteBlocked();
+  session_.MarkConnectionLevelWriteBlocked(stream3->id());
   EXPECT_FALSE(session_.HasPendingHandshake());
 
   // Blocking (due to buffering of) the Crypto stream is detected.
@@ -729,8 +681,7 @@ TEST_P(QuicSessionTestServer, BufferedHandshake) {
   EXPECT_TRUE(session_.HasPendingHandshake());
 
   TestStream* stream4 = session_.CreateOutgoingDynamicStream();
-  StreamBlocker stream4_blocker(&session_, stream4->id());
-  stream4_blocker.MarkConnectionLevelWriteBlocked();
+  session_.MarkConnectionLevelWriteBlocked(stream4->id());
   EXPECT_TRUE(session_.HasPendingHandshake());
 
   InSequence s;
@@ -743,20 +694,16 @@ TEST_P(QuicSessionTestServer, BufferedHandshake) {
   TestCryptoStream* crypto_stream = session_.GetMutableCryptoStream();
   EXPECT_CALL(*crypto_stream, OnCanWrite());
 
-  EXPECT_CALL(*stream2, OnCanWrite())
-      .WillOnce(testing::IgnoreResult(
-          Invoke(CreateFunctor(&TestSession::SendStreamData,
-                               base::Unretained(&session_), stream2))));
-  EXPECT_CALL(*stream3, OnCanWrite())
-      .WillOnce(testing::IgnoreResult(
-          Invoke(CreateFunctor(&TestSession::SendStreamData,
-                               base::Unretained(&session_), stream3))));
-  EXPECT_CALL(*stream4, OnCanWrite())
-      .WillOnce(DoAll(testing::IgnoreResult(Invoke(
-                          CreateFunctor(&TestSession::SendStreamData,
-                                        base::Unretained(&session_), stream4))),
-                      Invoke(&stream4_blocker,
-                             &StreamBlocker::MarkConnectionLevelWriteBlocked)));
+  EXPECT_CALL(*stream2, OnCanWrite()).WillOnce(Invoke([this, stream2]() {
+    session_.SendStreamData(stream2);
+  }));
+  EXPECT_CALL(*stream3, OnCanWrite()).WillOnce(Invoke([this, stream3]() {
+    session_.SendStreamData(stream3);
+  }));
+  EXPECT_CALL(*stream4, OnCanWrite()).WillOnce(Invoke([this, stream4]() {
+    session_.SendStreamData(stream4);
+    session_.MarkConnectionLevelWriteBlocked(stream4->id());
+  }));
 
   session_.OnCanWrite();
   EXPECT_TRUE(session_.WillingAndAbleToWrite());
@@ -779,14 +726,12 @@ TEST_P(QuicSessionTestServer, OnCanWriteWithClosedStream) {
     EXPECT_CALL(*connection_, SendControlFrame(_))
         .WillRepeatedly(Invoke(&session_, &TestSession::ClearControlFrame));
   }
-  EXPECT_CALL(*stream2, OnCanWrite())
-      .WillOnce(testing::IgnoreResult(
-          Invoke(CreateFunctor(&TestSession::SendStreamData,
-                               base::Unretained(&session_), stream2))));
-  EXPECT_CALL(*stream4, OnCanWrite())
-      .WillOnce(testing::IgnoreResult(
-          Invoke(CreateFunctor(&TestSession::SendStreamData,
-                               base::Unretained(&session_), stream4))));
+  EXPECT_CALL(*stream2, OnCanWrite()).WillOnce(Invoke([this, stream2]() {
+    session_.SendStreamData(stream2);
+  }));
+  EXPECT_CALL(*stream4, OnCanWrite()).WillOnce(Invoke([this, stream4]() {
+    session_.SendStreamData(stream4);
+  }));
   session_.OnCanWrite();
   EXPECT_FALSE(session_.WillingAndAbleToWrite());
 }

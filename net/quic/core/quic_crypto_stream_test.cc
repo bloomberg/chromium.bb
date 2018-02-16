@@ -221,9 +221,11 @@ TEST_F(QuicCryptoStreamTest, RetransmitStreamData) {
 
   // Force crypto stream to send [1350, 2700) and only [1350, 1500) is consumed.
   EXPECT_CALL(session_, WritevData(_, kCryptoStreamId, 650, 1350, _))
-      .WillOnce(InvokeWithoutArgs(
-          testing::CreateFunctor(&(MockQuicSession::ConsumeData), &stream_,
-                                 kCryptoStreamId, 150, 1350, NO_FIN)));
+      .WillOnce(InvokeWithoutArgs([this]() {
+        return MockQuicSession::ConsumeData(&stream_, kCryptoStreamId, 150,
+                                            1350, NO_FIN);
+      }));
+
   EXPECT_FALSE(stream_.RetransmitStreamData(1350, 1350, false));
   // Verify connection's encryption level has restored.
   EXPECT_EQ(ENCRYPTION_FORWARD_SECURE, connection_->encryption_level());
