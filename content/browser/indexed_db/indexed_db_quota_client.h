@@ -15,7 +15,7 @@
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_task.h"
 #include "third_party/WebKit/common/quota/quota_types.mojom.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 class IndexedDBContextImpl;
@@ -32,7 +32,7 @@ class IndexedDBQuotaClient : public storage::QuotaClient {
   // QuotaClient method overrides
   ID id() const override;
   void OnQuotaManagerDestroyed() override;
-  CONTENT_EXPORT void GetOriginUsage(const GURL& origin_url,
+  CONTENT_EXPORT void GetOriginUsage(const url::Origin& origin,
                                      blink::mojom::StorageType type,
                                      const GetUsageCallback& callback) override;
   CONTENT_EXPORT void GetOriginsForType(
@@ -43,7 +43,7 @@ class IndexedDBQuotaClient : public storage::QuotaClient {
       const std::string& host,
       const GetOriginsCallback& callback) override;
   CONTENT_EXPORT void DeleteOriginData(
-      const GURL& origin,
+      const url::Origin& origin,
       blink::mojom::StorageType type,
       const DeletionCallback& callback) override;
   bool DoesSupport(blink::mojom::StorageType type) const override;

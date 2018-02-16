@@ -67,11 +67,11 @@ class MockQuotaClient : public QuotaClient {
 
   void OnQuotaManagerDestroyed() override {}
 
-  void GetOriginUsage(const GURL& origin,
+  void GetOriginUsage(const url::Origin& origin,
                       StorageType type,
                       const GetUsageCallback& callback) override {
     EXPECT_EQ(StorageType::kTemporary, type);
-    int64_t usage = GetUsage(origin);
+    int64_t usage = GetUsage(origin.GetURL());
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   base::Bind(callback, usage));
   }
@@ -79,10 +79,10 @@ class MockQuotaClient : public QuotaClient {
   void GetOriginsForType(StorageType type,
                          const GetOriginsCallback& callback) override {
     EXPECT_EQ(StorageType::kTemporary, type);
-    std::set<GURL> origins;
+    std::set<url::Origin> origins;
     for (UsageMap::const_iterator itr = usage_map_.begin();
          itr != usage_map_.end(); ++itr) {
-      origins.insert(itr->first);
+      origins.insert(url::Origin::Create(itr->first));
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, origins));
@@ -92,21 +92,21 @@ class MockQuotaClient : public QuotaClient {
                          const std::string& host,
                          const GetOriginsCallback& callback) override {
     EXPECT_EQ(StorageType::kTemporary, type);
-    std::set<GURL> origins;
+    std::set<url::Origin> origins;
     for (UsageMap::const_iterator itr = usage_map_.begin();
          itr != usage_map_.end(); ++itr) {
       if (net::GetHostOrSpecFromURL(itr->first) == host)
-        origins.insert(itr->first);
+        origins.insert(url::Origin::Create(itr->first));
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, origins));
   }
 
-  void DeleteOriginData(const GURL& origin,
+  void DeleteOriginData(const url::Origin& origin,
                         StorageType type,
                         const DeletionCallback& callback) override {
     EXPECT_EQ(StorageType::kTemporary, type);
-    usage_map_.erase(origin);
+    usage_map_.erase(origin.GetURL());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, QuotaStatusCode::kOk));
   }

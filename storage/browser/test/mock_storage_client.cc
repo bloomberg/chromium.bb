@@ -14,6 +14,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/url_util.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -33,34 +34,34 @@ void MockStorageClient::Populate(
     const MockOriginData* mock_data,
     size_t mock_data_size) {
   for (size_t i = 0; i < mock_data_size; ++i) {
-    origin_data_[make_pair(GURL(mock_data[i].origin), mock_data[i].type)] =
-        mock_data[i].usage;
+    origin_data_[make_pair(url::Origin::Create(GURL(mock_data[i].origin)),
+                           mock_data[i].type)] = mock_data[i].usage;
   }
 }
 
 MockStorageClient::~MockStorageClient() = default;
 
-void MockStorageClient::AddOriginAndNotify(const GURL& origin_url,
+void MockStorageClient::AddOriginAndNotify(const url::Origin& origin,
                                            StorageType type,
                                            int64_t size) {
-  DCHECK(origin_data_.find(make_pair(origin_url, type)) == origin_data_.end());
+  DCHECK(origin_data_.find(make_pair(origin, type)) == origin_data_.end());
   DCHECK_GE(size, 0);
-  origin_data_[make_pair(origin_url, type)] = size;
+  origin_data_[make_pair(origin, type)] = size;
   quota_manager_proxy_->quota_manager()->NotifyStorageModifiedInternal(
-      id(), origin_url, type, size, IncrementMockTime());
+      id(), origin.GetURL(), type, size, IncrementMockTime());
 }
 
-void MockStorageClient::ModifyOriginAndNotify(const GURL& origin_url,
+void MockStorageClient::ModifyOriginAndNotify(const url::Origin& origin,
                                               StorageType type,
                                               int64_t delta) {
-  OriginDataMap::iterator find = origin_data_.find(make_pair(origin_url, type));
+  OriginDataMap::iterator find = origin_data_.find(make_pair(origin, type));
   DCHECK(find != origin_data_.end());
   find->second += delta;
   DCHECK_GE(find->second, 0);
 
   // TODO(tzik): Check quota to prevent usage exceed
   quota_manager_proxy_->quota_manager()->NotifyStorageModifiedInternal(
-      id(), origin_url, type, delta, IncrementMockTime());
+      id(), origin.GetURL(), type, delta, IncrementMockTime());
 }
 
 void MockStorageClient::TouchAllOriginsAndNotify() {
@@ -68,13 +69,14 @@ void MockStorageClient::TouchAllOriginsAndNotify() {
        itr != origin_data_.end();
        ++itr) {
     quota_manager_proxy_->quota_manager()->NotifyStorageModifiedInternal(
-        id(), itr->first.first, itr->first.second, 0, IncrementMockTime());
+        id(), itr->first.first.GetURL(), itr->first.second, 0,
+        IncrementMockTime());
   }
 }
 
-void MockStorageClient::AddOriginToErrorSet(
-    const GURL& origin_url, StorageType type) {
-  error_origins_.insert(make_pair(origin_url, type));
+void MockStorageClient::AddOriginToErrorSet(const url::Origin& origin,
+                                            StorageType type) {
+  error_origins_.insert(make_pair(origin, type));
 }
 
 base::Time MockStorageClient::IncrementMockTime() {
@@ -90,13 +92,13 @@ void MockStorageClient::OnQuotaManagerDestroyed() {
   delete this;
 }
 
-void MockStorageClient::GetOriginUsage(const GURL& origin_url,
+void MockStorageClient::GetOriginUsage(const url::Origin& origin,
                                        StorageType type,
                                        const GetUsageCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&MockStorageClient::RunGetOriginUsage,
-                 weak_factory_.GetWeakPtr(), origin_url, type, callback));
+                 weak_factory_.GetWeakPtr(), origin, type, callback));
 }
 
 void MockStorageClient::GetOriginsForType(
@@ -114,9 +116,9 @@ void MockStorageClient::GetOriginsForHost(
                             weak_factory_.GetWeakPtr(), type, host, callback));
 }
 
-void MockStorageClient::DeleteOriginData(
-    const GURL& origin, StorageType type,
-    const DeletionCallback& callback) {
+void MockStorageClient::DeleteOriginData(const url::Origin& origin,
+                                         StorageType type,
+                                         const DeletionCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&MockStorageClient::RunDeleteOriginData,
@@ -127,10 +129,10 @@ bool MockStorageClient::DoesSupport(StorageType type) const {
   return true;
 }
 
-void MockStorageClient::RunGetOriginUsage(
-    const GURL& origin_url, StorageType type,
-    const GetUsageCallback& callback) {
-  OriginDataMap::iterator find = origin_data_.find(make_pair(origin_url, type));
+void MockStorageClient::RunGetOriginUsage(const url::Origin& origin,
+                                          StorageType type,
+                                          const GetUsageCallback& callback) {
+  OriginDataMap::iterator find = origin_data_.find(make_pair(origin, type));
   if (find == origin_data_.end()) {
     callback.Run(0);
   } else {
@@ -140,7 +142,7 @@ void MockStorageClient::RunGetOriginUsage(
 
 void MockStorageClient::RunGetOriginsForType(
     StorageType type, const GetOriginsCallback& callback) {
-  std::set<GURL> origins;
+  std::set<url::Origin> origins;
   for (OriginDataMap::iterator iter = origin_data_.begin();
        iter != origin_data_.end(); ++iter) {
     if (type == iter->first.second)
@@ -152,33 +154,32 @@ void MockStorageClient::RunGetOriginsForType(
 void MockStorageClient::RunGetOriginsForHost(
     StorageType type, const std::string& host,
     const GetOriginsCallback& callback) {
-  std::set<GURL> origins;
+  std::set<url::Origin> origins;
   for (OriginDataMap::iterator iter = origin_data_.begin();
        iter != origin_data_.end(); ++iter) {
-    std::string host_or_spec = net::GetHostOrSpecFromURL(iter->first.first);
+    std::string host_or_spec =
+        net::GetHostOrSpecFromURL(iter->first.first.GetURL());
     if (type == iter->first.second && host == host_or_spec)
       origins.insert(iter->first.first);
   }
   callback.Run(origins);
 }
 
-void MockStorageClient::RunDeleteOriginData(
-    const GURL& origin_url,
-    StorageType type,
-    const DeletionCallback& callback) {
+void MockStorageClient::RunDeleteOriginData(const url::Origin& origin,
+                                            StorageType type,
+                                            const DeletionCallback& callback) {
   ErrorOriginSet::iterator itr_error =
-      error_origins_.find(make_pair(origin_url, type));
+      error_origins_.find(make_pair(origin, type));
   if (itr_error != error_origins_.end()) {
     callback.Run(blink::mojom::QuotaStatusCode::kErrorInvalidModification);
     return;
   }
 
-  OriginDataMap::iterator itr =
-      origin_data_.find(make_pair(origin_url, type));
+  OriginDataMap::iterator itr = origin_data_.find(make_pair(origin, type));
   if (itr != origin_data_.end()) {
     int64_t delta = itr->second;
-    quota_manager_proxy_->
-        NotifyStorageModified(id(), origin_url, type, -delta);
+    quota_manager_proxy_->NotifyStorageModified(id(), origin.GetURL(), type,
+                                                -delta);
     origin_data_.erase(itr);
   }
 

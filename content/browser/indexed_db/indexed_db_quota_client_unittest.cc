@@ -37,14 +37,14 @@ namespace content {
 // Base class for our test fixtures.
 class IndexedDBQuotaClientTest : public testing::Test {
  public:
-  const GURL kOriginA;
-  const GURL kOriginB;
-  const GURL kOriginOther;
+  const url::Origin kOriginA;
+  const url::Origin kOriginB;
+  const url::Origin kOriginOther;
 
   IndexedDBQuotaClientTest()
-      : kOriginA("http://host"),
-        kOriginB("http://host:8000"),
-        kOriginOther("http://other"),
+      : kOriginA(url::Origin::Create(GURL("http://host"))),
+        kOriginB(url::Origin::Create(GURL("http://host:8000"))),
+        kOriginOther(url::Origin::Create(GURL("http://other"))),
         usage_(0),
         weak_factory_(this) {
     browser_context_.reset(new TestBrowserContext());
@@ -77,12 +77,11 @@ class IndexedDBQuotaClientTest : public testing::Test {
   }
 
   int64_t GetOriginUsage(storage::QuotaClient* client,
-                         const GURL& origin,
+                         const url::Origin& origin,
                          StorageType type) {
     usage_ = -1;
     client->GetOriginUsage(
-        origin,
-        type,
+        origin, type,
         base::Bind(&IndexedDBQuotaClientTest::OnGetOriginUsageComplete,
                    weak_factory_.GetWeakPtr()));
     RunAllTasksUntilIdle();
@@ -90,8 +89,8 @@ class IndexedDBQuotaClientTest : public testing::Test {
     return usage_;
   }
 
-  const std::set<GURL>& GetOriginsForType(storage::QuotaClient* client,
-                                          StorageType type) {
+  const std::set<url::Origin>& GetOriginsForType(storage::QuotaClient* client,
+                                                 StorageType type) {
     origins_.clear();
     client->GetOriginsForType(
         type,
@@ -101,9 +100,9 @@ class IndexedDBQuotaClientTest : public testing::Test {
     return origins_;
   }
 
-  const std::set<GURL>& GetOriginsForHost(storage::QuotaClient* client,
-                                          StorageType type,
-                                          const std::string& host) {
+  const std::set<url::Origin>& GetOriginsForHost(storage::QuotaClient* client,
+                                                 StorageType type,
+                                                 const std::string& host) {
     origins_.clear();
     client->GetOriginsForHost(
         type,
@@ -115,11 +114,11 @@ class IndexedDBQuotaClientTest : public testing::Test {
   }
 
   blink::mojom::QuotaStatusCode DeleteOrigin(storage::QuotaClient* client,
-                                             const GURL& origin_url,
+                                             const url::Origin& origin,
                                              StorageType type) {
     delete_status_ = blink::mojom::QuotaStatusCode::kUnknown;
     client->DeleteOriginData(
-        origin_url, type,
+        origin, type,
         base::Bind(&IndexedDBQuotaClientTest::OnDeleteOriginComplete,
                    weak_factory_.GetWeakPtr()));
     RunAllTasksUntilIdle();
@@ -133,7 +132,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
     ASSERT_EQ(size, base::WriteFile(path, junk.c_str(), size));
   }
 
-  void AddFakeIndexedDB(const GURL& origin, int size) {
+  void AddFakeIndexedDB(const url::Origin& origin, int size) {
     base::FilePath file_path_origin =
         idb_context()->GetFilePathForTesting(origin);
     if (!base::CreateDirectory(file_path_origin)) {
@@ -148,7 +147,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
  private:
   void OnGetOriginUsageComplete(int64_t usage) { usage_ = usage; }
 
-  void OnGetOriginsComplete(const std::set<GURL>& origins) {
+  void OnGetOriginsComplete(const std::set<url::Origin>& origins) {
     origins_ = origins;
   }
 
@@ -159,7 +158,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
   int64_t usage_;
-  std::set<GURL> origins_;
+  std::set<url::Origin> origins_;
   scoped_refptr<IndexedDBContextImpl> idb_context_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   blink::mojom::QuotaStatusCode delete_status_;
@@ -191,7 +190,8 @@ TEST_F(IndexedDBQuotaClientTest, GetOriginsForHost) {
   EXPECT_EQ(kOriginA.host(), kOriginB.host());
   EXPECT_NE(kOriginA.host(), kOriginOther.host());
 
-  std::set<GURL> origins = GetOriginsForHost(&client, kTemp, kOriginA.host());
+  std::set<url::Origin> origins =
+      GetOriginsForHost(&client, kTemp, kOriginA.host());
   EXPECT_TRUE(origins.empty());
 
   AddFakeIndexedDB(kOriginA, 1000);
@@ -216,7 +216,7 @@ TEST_F(IndexedDBQuotaClientTest, GetOriginsForType) {
   EXPECT_TRUE(GetOriginsForType(&client, kPerm).empty());
 
   AddFakeIndexedDB(kOriginA, 1000);
-  std::set<GURL> origins = GetOriginsForType(&client, kTemp);
+  std::set<url::Origin> origins = GetOriginsForType(&client, kTemp);
   EXPECT_EQ(origins.size(), 1ul);
   EXPECT_TRUE(origins.find(kOriginA) != origins.end());
 

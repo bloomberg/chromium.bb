@@ -23,6 +23,7 @@
 #include "storage/browser/storage_browser_export.h"
 #include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace storage {
 
@@ -79,17 +80,17 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
                                     const UsageCallback& callback,
                                     int64_t usage);
   void DidGetOriginsForGlobalUsage(const GlobalUsageCallback& callback,
-                                   const std::set<GURL>& origins);
+                                   const std::set<url::Origin>& origins);
   void AccumulateHostUsage(AccumulateInfo* info,
                            const GlobalUsageCallback& callback,
                            int64_t limited_usage,
                            int64_t unlimited_usage);
 
   void DidGetOriginsForHostUsage(const std::string& host,
-                                 const std::set<GURL>& origins);
+                                 const std::set<url::Origin>& origins);
 
   void GetUsageForOrigins(const std::string& host,
-                          const std::set<GURL>& origins);
+                          const std::set<url::Origin>& origins);
   void AccumulateOriginUsage(AccumulateInfo* info,
                              const std::string& host,
                              const GURL& origin,

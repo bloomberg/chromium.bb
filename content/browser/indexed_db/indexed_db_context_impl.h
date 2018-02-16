@@ -23,6 +23,7 @@
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace base {
 class ListValue;
@@ -77,10 +78,11 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
   // Disables the exit-time deletion of session-only data.
   void SetForceKeepSessionState() { force_keep_session_state_ = true; }
 
+  int64_t GetOriginDiskUsage(const url::Origin& origin);
+
   // IndexedDBContext implementation:
   base::SequencedTaskRunner* TaskRunner() const override;
   std::vector<IndexedDBInfo> GetAllOriginsInfo() override;
-  int64_t GetOriginDiskUsage(const GURL& origin_url) override;
   void DeleteForOrigin(const GURL& origin_url) override;
   void CopyOriginData(const GURL& origin_url,
                       IndexedDBContext* dest_context) override;
@@ -88,7 +90,6 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
   void ResetCachesForTesting() override;
 
   // TODO(jsbell): Replace IndexedDBContext members with these.
-  int64_t GetOriginDiskUsage(const url::Origin& origin);
   void DeleteForOrigin(const url::Origin& origin);
   void CopyOriginData(const url::Origin& origin,
                       IndexedDBContext* dest_context);

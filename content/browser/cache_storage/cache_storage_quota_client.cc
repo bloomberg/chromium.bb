@@ -28,7 +28,7 @@ void CacheStorageQuotaClient::OnQuotaManagerDestroyed() {
   delete this;
 }
 
-void CacheStorageQuotaClient::GetOriginUsage(const GURL& origin_url,
+void CacheStorageQuotaClient::GetOriginUsage(const url::Origin& origin,
                                              blink::mojom::StorageType type,
                                              const GetUsageCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -38,7 +38,7 @@ void CacheStorageQuotaClient::GetOriginUsage(const GURL& origin_url,
     return;
   }
 
-  cache_manager_->GetOriginUsage(url::Origin::Create(origin_url), callback);
+  cache_manager_->GetOriginUsage(origin, callback);
 }
 
 void CacheStorageQuotaClient::GetOriginsForType(
@@ -47,7 +47,7 @@ void CacheStorageQuotaClient::GetOriginsForType(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!cache_manager_ || !DoesSupport(type)) {
-    callback.Run(std::set<GURL>());
+    callback.Run(std::set<url::Origin>());
     return;
   }
 
@@ -61,7 +61,7 @@ void CacheStorageQuotaClient::GetOriginsForHost(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!cache_manager_ || !DoesSupport(type)) {
-    callback.Run(std::set<GURL>());
+    callback.Run(std::set<url::Origin>());
     return;
   }
 
@@ -69,7 +69,7 @@ void CacheStorageQuotaClient::GetOriginsForHost(
 }
 
 void CacheStorageQuotaClient::DeleteOriginData(
-    const GURL& origin,
+    const url::Origin& origin,
     blink::mojom::StorageType type,
     const DeletionCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -84,7 +84,7 @@ void CacheStorageQuotaClient::DeleteOriginData(
     return;
   }
 
-  cache_manager_->DeleteOriginData(url::Origin::Create(origin), callback);
+  cache_manager_->DeleteOriginData(origin, callback);
 }
 
 bool CacheStorageQuotaClient::DoesSupport(

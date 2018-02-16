@@ -101,13 +101,13 @@ void ListOriginsAndLastModifiedOnTaskRunner(
   }
 }
 
-std::set<GURL> ListOriginsOnTaskRunner(base::FilePath root_path) {
+std::set<url::Origin> ListOriginsOnTaskRunner(base::FilePath root_path) {
   std::vector<CacheStorageUsageInfo> usages;
   ListOriginsAndLastModifiedOnTaskRunner(&usages, root_path);
 
-  std::set<GURL> out_origins;
+  std::set<url::Origin> out_origins;
   for (const CacheStorageUsageInfo& usage : usages)
-    out_origins.insert(usage.origin);
+    out_origins.insert(url::Origin::Create(usage.origin));
 
   return out_origins;
 }
@@ -115,10 +115,10 @@ std::set<GURL> ListOriginsOnTaskRunner(base::FilePath root_path) {
 void GetOriginsForHostDidListOrigins(
     const std::string& host,
     const storage::QuotaClient::GetOriginsCallback& callback,
-    const std::set<GURL>& origins) {
-  std::set<GURL> out_origins;
-  for (const GURL& origin : origins) {
-    if (host == net::GetHostOrSpecFromURL(origin))
+    const std::set<url::Origin>& origins) {
+  std::set<url::Origin> out_origins;
+  for (const url::Origin& origin : origins) {
+    if (host == net::GetHostOrSpecFromURL(origin.GetURL()))
       out_origins.insert(origin);
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -351,9 +351,9 @@ void CacheStorageManager::GetOrigins(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (IsMemoryBacked()) {
-    std::set<GURL> origins;
+    std::set<url::Origin> origins;
     for (const auto& key_value : cache_storage_map_)
-      origins.insert(key_value.first.GetURL());
+      origins.insert(key_value.first);
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(callback, origins));
@@ -371,10 +371,10 @@ void CacheStorageManager::GetOriginsForHost(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (IsMemoryBacked()) {
-    std::set<GURL> origins;
+    std::set<url::Origin> origins;
     for (const auto& key_value : cache_storage_map_) {
       if (host == net::GetHostOrSpecFromURL(key_value.first.GetURL()))
-        origins.insert(key_value.first.GetURL());
+        origins.insert(key_value.first);
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(callback, origins));
