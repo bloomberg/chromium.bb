@@ -633,13 +633,13 @@ void LayerTreeHost::LayoutAndUpdateLayers() {
   UpdateLayers();
 }
 
-void LayerTreeHost::Composite(base::TimeTicks frame_begin_time) {
+void LayerTreeHost::Composite(base::TimeTicks frame_begin_time, bool raster) {
   DCHECK(IsSingleThreaded());
   // This function is only valid when not using the scheduler.
   DCHECK(!settings_.single_thread_proxy_scheduler);
   SingleThreadProxy* proxy = static_cast<SingleThreadProxy*>(proxy_.get());
 
-  proxy->CompositeImmediately(frame_begin_time);
+  proxy->CompositeImmediately(frame_begin_time, raster);
 }
 
 static int GetLayersUpdateTimeHistogramBucket(size_t numLayers) {
@@ -942,6 +942,13 @@ bool LayerTreeHost::SendMessageToMicroBenchmark(
 
 void LayerTreeHost::SetLayerTreeMutator(
     std::unique_ptr<LayerTreeMutator> mutator) {
+  // The animation worklet system assumes that the mutator will never be called
+  // from the main thread, which will not be the case if we're running in
+  // single-threaded mode.
+  if (!task_runner_provider_->HasImplThread()) {
+    LOG(ERROR) << "LayerTreeMutator not supported in single-thread mode";
+    return;
+  }
   proxy_->SetMutator(std::move(mutator));
 }
 

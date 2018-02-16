@@ -116,10 +116,6 @@ crbug.com/713049 images/color-profile-reflection.html [ Failure Pass ]
 crbug.com/713049 virtual/gpu-rasterization/images/color-profile-reflection.html [ Failure Pass Timeout ]
 crbug.com/713049 virtual/exotic-color-space/images/color-profile-reflection.html [ Failure Pass ]
 
-# Reftest with slightly different pixels values.
-# Should make a pixel test to keep coverage.
-crbug.com/713891 virtual/exotic-color-space/images/animated-png.html [ Pass Failure ]
-
 crbug.com/774873 [ Linux Win ] virtual/exotic-color-space/images/color-profile-border-fade.html [ Pass Failure ]
 
 # Flakily timing out or failing.
@@ -1778,6 +1774,7 @@ crbug.com/626703 external/wpt/acid/acid3/test.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-ui/cursor-auto-006.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-ui/cursor-auto-007.html [ Skip ]
 crbug.com/626703 external/wpt/requestidlecallback/callback-timeout-when-busy.html [ Timeout ]
+crbug.com/810669 external/wpt/requestidlecallback/callback-removed-frame.html [ Skip ]
 crbug.com/626703 [ Android Linux Mac ] external/wpt/html/semantics/embedded-content/the-object-element/object-events.html [ Timeout ]
 crbug.com/626703 [ Android Win ] external/wpt/css/css-fonts/font-kerning-02.html [ Failure ]
 crbug.com/626703 external/wpt/2dcontext/building-paths/canvas_complexshapes_arcto_001.htm [ Failure ]
@@ -3273,6 +3270,7 @@ crbug.com/750599 virtual/outofblink-cors/external/wpt/fetch/api/abort/general.an
 crbug.com/750599 virtual/outofblink-cors/external/wpt/fetch/api/abort/general.any.worker.html [ Timeout ]
 
 crbug.com/794338 media/video-rotation.html [ Skip ]
+crbug.com/811605 media/video-poster-after-loadedmetadata.html [ Failure Pass ]
 
 # TODO(lukasza): Remove these once CORB is enabled by default.
 crbug.com/802835 external/wpt/fetch/corb/img-png-mislabeled-as-html-nosniff.tentative.sub.html [ Failure ]
