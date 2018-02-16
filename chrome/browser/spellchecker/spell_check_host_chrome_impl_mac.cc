@@ -4,8 +4,6 @@
 
 #include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
 
-// TODO(xiaochengh): Rename this file to spell_check_host_chrome_impl_mac.cc
-
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
