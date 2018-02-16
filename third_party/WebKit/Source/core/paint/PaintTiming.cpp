@@ -18,7 +18,7 @@
 #include "core/page/Page.h"
 #include "core/probe/CoreProbes.h"
 #include "core/timing/DOMWindowPerformance.h"
-#include "core/timing/Performance.h"
+#include "core/timing/WindowPerformance.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
 #include "platform/WebFrameScheduler.h"
@@ -29,8 +29,8 @@ namespace blink {
 
 namespace {
 
-Performance* GetPerformanceInstance(LocalFrame* frame) {
-  Performance* performance = nullptr;
+WindowPerformance* GetPerformanceInstance(LocalFrame* frame) {
+  WindowPerformance* performance = nullptr;
   if (frame && frame->DomWindow()) {
     performance = DOMWindowPerformance::performance(*frame->DomWindow());
   }
@@ -243,7 +243,7 @@ void PaintTiming::SetFirstPaintSwap(TimeTicks stamp) {
   first_paint_swap_ = stamp;
   probe::paintTiming(GetSupplementable(), "firstPaint",
                      TimeTicksInSeconds(first_paint_swap_));
-  Performance* performance = GetPerformanceInstance(GetFrame());
+  WindowPerformance* performance = GetPerformanceInstance(GetFrame());
   if (performance)
     performance->AddFirstPaintTiming(first_paint_swap_);
   ReportSwapTimeDeltaHistogram(first_paint_, first_paint_swap_);
@@ -255,7 +255,7 @@ void PaintTiming::SetFirstContentfulPaintSwap(TimeTicks stamp) {
   first_contentful_paint_swap_ = stamp;
   probe::paintTiming(GetSupplementable(), "firstContentfulPaint",
                      TimeTicksInSeconds(first_contentful_paint_swap_));
-  Performance* performance = GetPerformanceInstance(GetFrame());
+  WindowPerformance* performance = GetPerformanceInstance(GetFrame());
   if (performance)
     performance->AddFirstContentfulPaintTiming(first_contentful_paint_swap_);
   if (GetFrame())

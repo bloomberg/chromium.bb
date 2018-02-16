@@ -13,7 +13,7 @@
 namespace blink {
 
 class LocalDOMWindow;
-class Performance;
+class WindowPerformance;
 
 class CORE_EXPORT DOMWindowPerformance final
     : public GarbageCollected<DOMWindowPerformance>,
@@ -24,7 +24,7 @@ class CORE_EXPORT DOMWindowPerformance final
   static const char kSupplementName[];
 
   static DOMWindowPerformance& From(LocalDOMWindow&);
-  static Performance* performance(LocalDOMWindow&);
+  static WindowPerformance* performance(LocalDOMWindow&);
 
   void Trace(blink::Visitor*);
   void TraceWrappers(const ScriptWrappableVisitor*) const override;
@@ -32,9 +32,9 @@ class CORE_EXPORT DOMWindowPerformance final
  private:
   explicit DOMWindowPerformance(LocalDOMWindow&);
 
-  Performance* performance();
+  WindowPerformance* performance();
 
-  TraceWrapperMember<Performance> performance_;
+  TraceWrapperMember<WindowPerformance> performance_;
   DISALLOW_COPY_AND_ASSIGN(DOMWindowPerformance);
 };
 

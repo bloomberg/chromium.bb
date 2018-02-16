@@ -31,13 +31,13 @@ class V8Compile;
 class DOMWindow;
 class Document;
 class ExecutionContext;
-class Performance;
+class WindowPerformance;
 class SourceLocation;
 
 // Performance monitor for Web Performance APIs and logging.
 // The monitor is maintained per local root.
-// Long task notifications are delivered to observing Performance* instances
-// (in the local frame tree) in m_webPerformanceObservers.
+// Long task notifications are delivered to observing WindowPerformance*
+// instances (in the local frame tree) in m_webPerformanceObservers.
 class CORE_EXPORT PerformanceMonitor final
     : public GarbageCollectedFinalized<PerformanceMonitor>,
       public scheduler::TaskTimeObserver {
@@ -113,7 +113,7 @@ class CORE_EXPORT PerformanceMonitor final
 
  private:
   friend class PerformanceMonitorTest;
-  friend class PerformanceTest;
+  friend class WindowPerformanceTest;
 
   static PerformanceMonitor* Monitor(const ExecutionContext*);
   static PerformanceMonitor* InstrumentingMonitor(const ExecutionContext*);

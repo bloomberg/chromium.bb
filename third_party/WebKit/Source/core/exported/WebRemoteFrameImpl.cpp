@@ -21,7 +21,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/timing/DOMWindowPerformance.h"
-#include "core/timing/Performance.h"
+#include "core/timing/WindowPerformance.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/feature_policy/FeaturePolicy.h"
 #include "platform/geometry/FloatQuad.h"

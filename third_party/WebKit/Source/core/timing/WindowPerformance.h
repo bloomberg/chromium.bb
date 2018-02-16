@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Performance_h
-#define Performance_h
+#ifndef WindowPerformance_h
+#define WindowPerformance_h
 
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
@@ -42,18 +42,18 @@
 
 namespace blink {
 
-class CORE_EXPORT Performance final : public PerformanceBase,
-                                      public PerformanceMonitor::Client,
-                                      public DOMWindowClient {
+class CORE_EXPORT WindowPerformance final : public PerformanceBase,
+                                            public PerformanceMonitor::Client,
+                                            public DOMWindowClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(Performance);
-  friend class PerformanceTest;
+  USING_GARBAGE_COLLECTED_MIXIN(WindowPerformance);
+  friend class WindowPerformanceTest;
 
  public:
-  static Performance* Create(LocalDOMWindow* window) {
-    return new Performance(window);
+  static WindowPerformance* Create(LocalDOMWindow* window) {
+    return new WindowPerformance(window);
   }
-  ~Performance() override;
+  ~WindowPerformance() override;
 
   ExecutionContext* GetExecutionContext() const override;
 
@@ -67,7 +67,7 @@ class CORE_EXPORT Performance final : public PerformanceBase,
   using PerformanceBase::TraceWrappers;
 
  private:
-  explicit Performance(LocalDOMWindow*);
+  explicit WindowPerformance(LocalDOMWindow*);
 
   PerformanceNavigationTiming* CreateNavigationTimingInstance() override;
 
@@ -92,4 +92,4 @@ class CORE_EXPORT Performance final : public PerformanceBase,
 
 }  // namespace blink
 
-#endif  // Performance_h
+#endif  // WindowPerformance_h

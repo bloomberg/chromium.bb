@@ -6,7 +6,7 @@
 
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
-#include "core/timing/Performance.h"
+#include "core/timing/WindowPerformance.h"
 
 namespace blink {
 
@@ -39,13 +39,13 @@ DOMWindowPerformance& DOMWindowPerformance::From(LocalDOMWindow& window) {
 }
 
 // static
-Performance* DOMWindowPerformance::performance(LocalDOMWindow& window) {
+WindowPerformance* DOMWindowPerformance::performance(LocalDOMWindow& window) {
   return From(window).performance();
 }
 
-Performance* DOMWindowPerformance::performance() {
+WindowPerformance* DOMWindowPerformance::performance() {
   if (!performance_)
-    performance_ = Performance::Create(GetSupplementable());
+    performance_ = WindowPerformance::Create(GetSupplementable());
   return performance_.Get();
 }
 

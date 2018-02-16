@@ -25,7 +25,7 @@
 #include "core/intersection_observer/IntersectionObserverInit.h"
 #include "core/layout/LayoutView.h"
 #include "core/timing/DOMWindowPerformance.h"
-#include "core/timing/Performance.h"
+#include "core/timing/WindowPerformance.h"
 #include "platform/Timer.h"
 
 namespace blink {

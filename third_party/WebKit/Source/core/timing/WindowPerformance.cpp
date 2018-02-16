@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/timing/Performance.h"
+#include "core/timing/WindowPerformance.h"
 
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8ObjectBuilder.h"
@@ -106,39 +106,40 @@ static TimeTicks ToTimeOrigin(LocalDOMWindow* window) {
   return loader->GetTiming().ReferenceMonotonicTime();
 }
 
-Performance::Performance(LocalDOMWindow* window)
+WindowPerformance::WindowPerformance(LocalDOMWindow* window)
     : PerformanceBase(
           ToTimeOrigin(window),
           window->document()->GetTaskRunner(TaskType::kPerformanceTimeline)),
       DOMWindowClient(window) {}
 
-Performance::~Performance() = default;
+WindowPerformance::~WindowPerformance() = default;
 
-ExecutionContext* Performance::GetExecutionContext() const {
+ExecutionContext* WindowPerformance::GetExecutionContext() const {
   if (!GetFrame())
     return nullptr;
   return GetFrame()->GetDocument();
 }
 
-MemoryInfo* Performance::memory() {
+MemoryInfo* WindowPerformance::memory() {
   return MemoryInfo::Create();
 }
 
-PerformanceNavigation* Performance::navigation() const {
+PerformanceNavigation* WindowPerformance::navigation() const {
   if (!navigation_)
     navigation_ = PerformanceNavigation::Create(GetFrame());
 
   return navigation_.Get();
 }
 
-PerformanceTiming* Performance::timing() const {
+PerformanceTiming* WindowPerformance::timing() const {
   if (!timing_)
     timing_ = PerformanceTiming::Create(GetFrame());
 
   return timing_.Get();
 }
 
-PerformanceNavigationTiming* Performance::CreateNavigationTimingInstance() {
+PerformanceNavigationTiming*
+WindowPerformance::CreateNavigationTimingInstance() {
   if (!RuntimeEnabledFeatures::PerformanceNavigationTiming2Enabled())
     return nullptr;
   if (!GetFrame())
@@ -157,7 +158,7 @@ PerformanceNavigationTiming* Performance::CreateNavigationTimingInstance() {
                                          server_timing);
 }
 
-void Performance::UpdateLongTaskInstrumentation() {
+void WindowPerformance::UpdateLongTaskInstrumentation() {
   if (!GetFrame() || !GetFrame()->GetDocument())
     return;
 
@@ -171,14 +172,14 @@ void Performance::UpdateLongTaskInstrumentation() {
   }
 }
 
-void Performance::BuildJSONValue(V8ObjectBuilder& builder) const {
+void WindowPerformance::BuildJSONValue(V8ObjectBuilder& builder) const {
   PerformanceBase::BuildJSONValue(builder);
   builder.Add("timing", timing()->toJSONForBinding(builder.GetScriptState()));
   builder.Add("navigation",
               navigation()->toJSONForBinding(builder.GetScriptState()));
 }
 
-void Performance::Trace(blink::Visitor* visitor) {
+void WindowPerformance::Trace(blink::Visitor* visitor) {
   visitor->Trace(navigation_);
   visitor->Trace(timing_);
   PerformanceBase::Trace(visitor);
@@ -199,7 +200,7 @@ static bool CanAccessOrigin(Frame* frame1, Frame* frame2) {
  * See detailed Security doc here: http://bit.ly/2duD3F7
  */
 // static
-std::pair<String, DOMWindow*> Performance::SanitizedAttribution(
+std::pair<String, DOMWindow*> WindowPerformance::SanitizedAttribution(
     ExecutionContext* task_context,
     bool has_multiple_contexts,
     LocalFrame* observer_frame) {
@@ -246,7 +247,7 @@ std::pair<String, DOMWindow*> Performance::SanitizedAttribution(
   return std::make_pair(kCrossOriginAttribution, nullptr);
 }
 
-void Performance::ReportLongTask(
+void WindowPerformance::ReportLongTask(
     double start_time,
     double end_time,
     ExecutionContext* task_context,
@@ -254,8 +255,9 @@ void Performance::ReportLongTask(
     const SubTaskAttribution::EntriesVector& sub_task_attributions) {
   if (!GetFrame())
     return;
-  std::pair<String, DOMWindow*> attribution = Performance::SanitizedAttribution(
-      task_context, has_multiple_contexts, GetFrame());
+  std::pair<String, DOMWindow*> attribution =
+      WindowPerformance::SanitizedAttribution(
+          task_context, has_multiple_contexts, GetFrame());
   DOMWindow* culprit_dom_window = attribution.second;
   SubTaskAttribution::EntriesVector empty_vector;
   if (!culprit_dom_window || !culprit_dom_window->GetFrame() ||
