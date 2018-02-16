@@ -93,6 +93,12 @@ const char kBrowserTaskSchedulerName[] = "Task Scheduler";
 const char kBrowserTaskSchedulerDescription[] =
     "Enables redirection of some task posting APIs to the task scheduler.";
 
+const char kBundledConnectionHelpName[] = "Bundled Connection Help";
+const char kBundledConnectionHelpDescription[] =
+    "Enables or disables redirecting users who get an interstitial when "
+    "accessing https://support.google.com/chrome/answer/6098869 to local "
+    "connection help content.";
+
 const char kBypassAppBannerEngagementChecksName[] =
     "Bypass user engagement checks";
 const char kBypassAppBannerEngagementChecksDescription[] =
