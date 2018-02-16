@@ -123,6 +123,25 @@ ShellExtensionsBrowserClient::MaybeCreateResourceBundleRequestJob(
   return NULL;
 }
 
+base::FilePath ShellExtensionsBrowserClient::GetBundleResourcePath(
+    const network::ResourceRequest& request,
+    const base::FilePath& extension_resources_path,
+    int* resource_id) const {
+  *resource_id = 0;
+  return base::FilePath();
+}
+
+void ShellExtensionsBrowserClient::LoadResourceFromResourceBundle(
+    const network::ResourceRequest& request,
+    network::mojom::URLLoaderRequest loader,
+    const base::FilePath& resource_relative_path,
+    int resource_id,
+    const std::string& content_security_policy,
+    network::mojom::URLLoaderClientPtr client,
+    bool send_cors_header) {
+  NOTREACHED() << "Load resources from bundles not supported.";
+}
+
 bool ShellExtensionsBrowserClient::AllowCrossRendererResourceLoad(
     const GURL& url,
     content::ResourceType resource_type,
