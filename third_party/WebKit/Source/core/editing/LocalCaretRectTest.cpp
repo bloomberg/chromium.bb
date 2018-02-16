@@ -7,6 +7,7 @@
 #include "core/editing/PositionWithAffinity.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/testing/EditingTestBase.h"
+#include "core/html/forms/TextControlElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
@@ -682,6 +683,92 @@ TEST_P(ParameterizedLocalCaretRectTest, FloatFirstLetter) {
                                          ? LayoutRect(20, 0, 1, 10)
                                          : LayoutRect()),
       LocalCaretRectOfPosition({Position(foo, 3), TextAffinity::kDownstream}));
+}
+
+TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreak) {
+  LoadAhem();
+  SetBodyContent(
+      "<div style='font: 10px/10px Ahem;' contenteditable>foo<br><br></div>");
+  const Node* div = GetDocument().body()->firstChild();
+  const Node* foo = div->firstChild();
+  const Node* first_br = foo->nextSibling();
+  const Node* second_br = first_br->nextSibling();
+  EXPECT_EQ(LocalCaretRect(foo->GetLayoutObject(), LayoutRect(30, 0, 1, 10)),
+            LocalCaretRectOfPosition(
+                {Position::AfterNode(*foo), TextAffinity::kDownstream}));
+  // TODO(yoichio): Following should return valid rect: crbug.com/812535.
+  EXPECT_EQ(LocalCaretRect(first_br->GetLayoutObject(), LayoutRect(0, 0, 0, 0)),
+            LocalCaretRectOfPosition(
+                {Position::AfterNode(*first_br), TextAffinity::kDownstream}));
+  EXPECT_EQ(
+      LocalCaretRect(second_br->GetLayoutObject(), LayoutRect(0, 0, 0, 0)),
+      LocalCaretRectOfPosition(
+          {Position::AfterNode(*second_br), TextAffinity::kDownstream}));
+}
+
+TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakTextArea) {
+  LoadAhem();
+  SetBodyContent("<textarea style='font: 10px/10px Ahem; '>foo\n\n</textarea>");
+  const TextControlElement* textarea =
+      ToTextControlElement(GetDocument().body()->firstChild());
+  const Node* inner_text = textarea->InnerEditorElement()->firstChild();
+  EXPECT_EQ(
+      LocalCaretRect(inner_text->GetLayoutObject(), LayoutRect(30, 0, 1, 10)),
+      LocalCaretRectOfPosition(
+          {Position(inner_text, 3), TextAffinity::kDownstream}));
+  EXPECT_EQ(
+      LocalCaretRect(inner_text->GetLayoutObject(), LayoutRect(0, 10, 1, 10)),
+      LocalCaretRectOfPosition(
+          {Position(inner_text, 4), TextAffinity::kDownstream}));
+  // TODO(yoichio): Following should return valid rect: crbug.com/812535.
+  EXPECT_EQ(
+      LocalCaretRect(inner_text->GetLayoutObject(), LayoutRect(0, 0, 0, 0)),
+      LocalCaretRectOfPosition(
+          {Position(inner_text, 5), TextAffinity::kDownstream}));
+}
+
+TEST_P(ParameterizedLocalCaretRectTest, CollapsedSpace) {
+  LoadAhem();
+  SetBodyContent(
+      "<div style='font: 10px/10px Ahem;'>"
+      "<span>foo</span><span>  </span></div>");
+  const Node* first_span = GetDocument().body()->firstChild()->firstChild();
+  const Node* foo = first_span->firstChild();
+  const Node* second_span = first_span->nextSibling();
+  const Node* white_spaces = second_span->firstChild();
+  EXPECT_EQ(
+      LocalCaretRect(foo->GetLayoutObject(), LayoutRect(30, 0, 1, 10)),
+      LocalCaretRectOfPosition({Position(foo, 3), TextAffinity::kDownstream}));
+  // TODO(yoichio): Following should return valid rect: crbug.com/812535.
+  EXPECT_EQ(
+      LayoutNGEnabled()
+          ? LocalCaretRect(foo->GetLayoutObject(), LayoutRect(0, 0, 0, 0))
+          : LocalCaretRect(foo->GetLayoutObject(), LayoutRect(30, 0, 1, 10)),
+      LocalCaretRectOfPosition(
+          {Position::AfterNode(*foo), TextAffinity::kDownstream}));
+  EXPECT_EQ(
+      LocalCaretRect(first_span->GetLayoutObject(), LayoutRect(0, 0, 0, 0)),
+      LocalCaretRectOfPosition(
+          {Position(first_span, PositionAnchorType::kAfterChildren),
+           TextAffinity::kDownstream}));
+  EXPECT_EQ(LayoutNGEnabled() ? LocalCaretRect(foo->GetLayoutObject(),
+                                               LayoutRect(30, 0, 1, 10))
+                              : LocalCaretRect(white_spaces->GetLayoutObject(),
+                                               LayoutRect(0, 0, 0, 0)),
+            LocalCaretRectOfPosition(
+                {Position(white_spaces, 0), TextAffinity::kDownstream}));
+  EXPECT_EQ(LayoutNGEnabled() ? LocalCaretRect(foo->GetLayoutObject(),
+                                               LayoutRect(30, 0, 1, 10))
+                              : LocalCaretRect(white_spaces->GetLayoutObject(),
+                                               LayoutRect(0, 0, 0, 0)),
+            LocalCaretRectOfPosition(
+                {Position(white_spaces, 1), TextAffinity::kDownstream}));
+  EXPECT_EQ(LayoutNGEnabled() ? LocalCaretRect(foo->GetLayoutObject(),
+                                               LayoutRect(30, 0, 1, 10))
+                              : LocalCaretRect(white_spaces->GetLayoutObject(),
+                                               LayoutRect(0, 0, 0, 0)),
+            LocalCaretRectOfPosition(
+                {Position(white_spaces, 2), TextAffinity::kDownstream}));
 }
 
 }  // namespace blink
