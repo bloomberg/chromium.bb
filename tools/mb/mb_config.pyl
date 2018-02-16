@@ -622,32 +622,23 @@
     },
 
     'tryserver.chromium.linux': {
-      'cast_shell_linux': 'cast_release_trybot',
       'cast_shell_audio_linux': 'cast_audio_release_trybot',
-      'chromeos_amd64-generic_chromium_compile_only_ng': 'cros_chrome_sdk',
-      'chromeos_daisy_chromium_compile_only_ng': 'cros_chrome_sdk',
+      'cast_shell_linux': 'cast_release_trybot',
       'chromium_presubmit': 'presubmit',
       'closure_compilation': 'closure_compilation',
       'fuchsia_arm64': 'release_trybot_fuchsia_arm64',
       'fuchsia_arm64_cast_audio': 'release_trybot_fuchsia_arm64_cast_audio',
       'fuchsia_x64': 'release_trybot_fuchsia',
       'fuchsia_x64_cast_audio': 'release_trybot_fuchsia_cast_audio',
-      # TODO(kjellander): Remove linux_arm after tryserver restart.
+      'layout_test_leak_detection': 'release_trybot',
+      'leak_detection_linux': 'release_trybot',
       'linux_arm': 'release_trybot_arm',
-      'linux_arm_dbg': 'debug_trybot_arm',
-      'linux_arm_rel': 'release_trybot_arm',
-      'linux_arm64_dbg': 'debug_trybot_arm64',
-      'linux_arm64_rel': 'release_trybot_arm64',
       'linux_chromium_archive_rel_ng': 'release_bot',
       'linux_chromium_asan_rel_ng': 'asan_lsan_release_trybot',
       'linux_chromium_browser_side_navigation_rel': 'release_trybot',
       'linux_chromium_cfi_rel_ng': 'cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_goma',
       'linux_chromium_chromeos_asan_rel_ng': 'asan_lsan_chromeos_release_trybot',
-      'linux_chromium_chromeos_compile_dbg_ng': 'chromeos_with_codecs_debug_trybot',
-      'linux_chromium_chromeos_compile_rel_ng': 'chromeos_with_codecs_release_trybot',
-      'linux_chromium_chromeos_dbg_ng': 'chromeos_with_codecs_debug_trybot',
       'linux_chromium_chromeos_msan_rel_ng': 'chromeos_msan_release_bot',
-      'linux_chromium_chromeos_rel_ng': 'chromeos_with_codecs_release_trybot',
       'linux_chromium_clobber_deterministic': 'release_trybot',
       'linux_chromium_clobber_rel_ng': 'release_trybot',
       'linux_chromium_compile_dbg_32_ng': 'debug_trybot_x86',
@@ -657,13 +648,13 @@
       'linux_chromium_dbg_ng': 'debug_trybot',
       'linux_chromium_gn_upload': 'gn_linux_upload',
       'linux_chromium_headless_rel': 'headless_linux_release_trybot',
-      'linux_chromium_ozone_compile_only_ng': 'ozone_linux_release_trybot_compile_only',
 
       # This is intentionally a release_bot and not a release_trybot;
       # enabling DCHECKs seems to cause flaky failures that don't show up
       # on the continuous builder.
       'linux_chromium_msan_rel_ng': 'msan_release_bot',
 
+      'linux_chromium_ozone_compile_only_ng': 'ozone_linux_release_trybot_compile_only',
       'linux_chromium_rel_ng': 'gpu_tests_release_trybot',
       'linux_chromium_tsan_rel_ng': 'tsan_disable_nacl_release_trybot',
       'linux_chromium_ubsan_rel_ng': 'ubsan_vptr_release_trybot',
@@ -672,14 +663,12 @@
       'linux_layout_tests_slimming_paint_v2': 'release_trybot',
       'linux_mojo': 'release_trybot',
       'linux_mojo_chromeos': 'chromeos_with_codecs_release_trybot',
-      'linux_nacl_sdk_build': 'release_bot',
       'linux_nacl_sdk': 'release_bot',
+      'linux_nacl_sdk_build': 'release_bot',
       'linux_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot',
       'linux_site_isolation': 'release_trybot',
-      'linux_vr': 'vr_release_trybot',
       'linux_upload_clang': 'release_bot',
-      'leak_detection_linux': 'release_trybot',
-      'layout_test_leak_detection': 'release_trybot',
+      'linux_vr': 'vr_release_trybot',
     },
 
     'tryserver.chromium.mac': {
@@ -1138,10 +1127,6 @@
       'chromeos_with_codecs', 'debug_bot', 'use_vaapi',
     ],
 
-    'chromeos_with_codecs_debug_trybot': [
-      'chromeos_with_codecs', 'debug_trybot', 'use_vaapi',
-    ],
-
     'chromeos_with_codecs_release_bot': [
       'chromeos_with_codecs', 'release_bot', 'use_vaapi',
     ],
@@ -1313,14 +1298,6 @@
 
     'debug_trybot': [
       'debug_trybot',
-    ],
-
-    'debug_trybot_arm': [
-      'debug_trybot', 'arm',
-    ],
-
-    'debug_trybot_arm64': [
-      'debug_trybot', 'arm64',
     ],
 
     'debug_trybot_x86': [
@@ -1614,10 +1591,6 @@
 
     'release_trybot_arm': [
       'release_trybot', 'arm',
-    ],
-
-    'release_trybot_arm64': [
-      'release_trybot', 'arm64',
     ],
 
     'release_trybot_fuchsia': [
