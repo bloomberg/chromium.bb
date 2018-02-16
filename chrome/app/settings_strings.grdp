@@ -1180,6 +1180,9 @@
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_BUTTON_SELECT_DRIVER" desc="Text for the button which allows user to select a PPD file from the file system.">
       Browse
     </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_INVALID_DRIVER" desc="Error message displayed to the user if they select an invalid PPD file.">
+      Invalid file selected. Try again.
+    </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_DONE_MESSAGE" desc="The message shown when a new printer is set up successfully.">
       Added <ph name="PRINTER_NAME">$1<ex>printer</ex></ph>
     </message>

@@ -16,15 +16,16 @@ const SetManufacturerModelBehavior = {
       notify: true,
     },
 
-    /** @type {?Array<string>} */
-    manufacturerList: {
-      type: Array,
+    invalidPPD: {
+      type: Boolean,
+      value: false,
     },
 
     /** @type {?Array<string>} */
-    modelList: {
-      type: Array,
-    },
+    manufacturerList: Array,
+
+    /** @type {?Array<string>} */
+    modelList: Array,
   },
 
   observers: [
@@ -90,9 +91,8 @@ const SetManufacturerModelBehavior = {
    * @private
    */
   printerPPDPathChanged_: function(path) {
-    // TODO(valleau): Display an error message to users
-    // (https://crbug.com/806915)
     this.set('activePrinter.printerPPDPath', path);
+    this.invalidPPD = !path;
   },
 
   /**

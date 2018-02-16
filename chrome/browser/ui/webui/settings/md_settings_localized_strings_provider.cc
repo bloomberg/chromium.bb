@@ -1648,6 +1648,8 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
     {"selectDriver", IDS_SETTINGS_PRINTING_CUPS_PRINTER_SELECT_DRIVER},
     {"selectDriverButtonText",
      IDS_SETTINGS_PRINTING_CUPS_PRINTER_BUTTON_SELECT_DRIVER},
+    {"selectDriverErrorMessage",
+     IDS_SETTINGS_PRINTING_CUPS_PRINTER_INVALID_DRIVER},
     {"printerAddedSuccessfulMessage",
      IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_DONE_MESSAGE},
     {"noPrinterNearbyMessage",
