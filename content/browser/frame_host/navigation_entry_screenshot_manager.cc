@@ -5,6 +5,7 @@
 #include "content/browser/frame_host/navigation_entry_screenshot_manager.h"
 
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/task_scheduler/post_task.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
@@ -14,6 +15,10 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/content_switches.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkColorFilter.h"
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/effects/SkLumaColorFilter.h"
 #include "ui/gfx/codec/png_codec.h"
 
 namespace {
@@ -31,11 +36,11 @@ class ScreenshotData : public base::RefCountedThreadSafe<ScreenshotData> {
   ScreenshotData() {
   }
 
-  void EncodeScreenshot(const SkBitmap& bitmap, base::Closure callback) {
+  void EncodeScreenshot(const SkBitmap& bitmap, base::OnceClosure callback) {
     base::PostTaskWithTraitsAndReply(
         FROM_HERE, {base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&ScreenshotData::EncodeOnWorker, this, bitmap),
-        callback);
+        std::move(callback));
   }
 
   scoped_refptr<base::RefCountedBytes> data() const { return data_; }
@@ -46,10 +51,27 @@ class ScreenshotData : public base::RefCountedThreadSafe<ScreenshotData> {
   }
 
   void EncodeOnWorker(const SkBitmap& bitmap) {
-    DCHECK_EQ(bitmap.colorType(), kAlpha_8_SkColorType);
+    // Convert |bitmap| to alpha-only |grayscale_bitmap|.
+    SkBitmap grayscale_bitmap;
+    if (grayscale_bitmap.tryAllocPixels(
+            SkImageInfo::MakeA8(bitmap.width(), bitmap.height()))) {
+      SkCanvas canvas(grayscale_bitmap);
+#if defined(MEMORY_SANITIZER)
+      // This is needed because Skia will operate over uninitialized memory
+      // outside the visible region (with non-visible effects).
+      canvas.clear(SK_ColorBLACK);
+#endif
+      SkPaint paint;
+      paint.setColorFilter(SkLumaColorFilter::Make());
+      canvas.drawBitmap(bitmap, SkIntToScalar(0), SkIntToScalar(0), &paint);
+      canvas.flush();
+    }
+    if (!grayscale_bitmap.readyToDraw())
+      return;
+
     // Encode the A8 bitmap to grayscale PNG treating alpha as color intensity.
     std::vector<unsigned char> data;
-    if (gfx::PNGCodec::EncodeA8SkBitmap(bitmap, &data))
+    if (gfx::PNGCodec::EncodeA8SkBitmap(grayscale_bitmap, &data))
       data_ = new base::RefCountedBytes(data);
   }
 
@@ -103,9 +125,12 @@ void NavigationEntryScreenshotManager::TakeScreenshot() {
   const gfx::Size view_size_on_screen = view->GetViewBounds().size();
   view->CopyFromSurface(
       gfx::Rect(), view_size_on_screen,
-      base::Bind(&NavigationEntryScreenshotManager::OnScreenshotTaken,
-                 screenshot_factory_.GetWeakPtr(), entry->GetUniqueID()),
-      kAlpha_8_SkColorType);
+      // TODO(crbug/759310): This should be BindOnce, but requires a public
+      // interface change.
+      base::BindRepeating(&NavigationEntryScreenshotManager::OnScreenshotTaken,
+                          screenshot_factory_.GetWeakPtr(),
+                          entry->GetUniqueID()),
+      kN32_SkColorType);
 }
 
 // Implemented here and not in NavigationEntry because this manager keeps track
@@ -142,11 +167,9 @@ void NavigationEntryScreenshotManager::OnScreenshotTaken(
 
   scoped_refptr<ScreenshotData> screenshot = new ScreenshotData();
   screenshot->EncodeScreenshot(
-      bitmap,
-      base::Bind(&NavigationEntryScreenshotManager::OnScreenshotEncodeComplete,
-                 screenshot_factory_.GetWeakPtr(),
-                 unique_id,
-                 screenshot));
+      bitmap, base::BindOnce(
+                  &NavigationEntryScreenshotManager::OnScreenshotEncodeComplete,
+                  screenshot_factory_.GetWeakPtr(), unique_id, screenshot));
 }
 
 int NavigationEntryScreenshotManager::GetScreenshotCount() const {
@@ -166,7 +189,10 @@ void NavigationEntryScreenshotManager::OnScreenshotEncodeComplete(
   NavigationEntryImpl* entry = owner_->GetEntryWithUniqueID(unique_id);
   if (!entry)
     return;
-  entry->SetScreenshotPNGData(screenshot->data());
+  scoped_refptr<base::RefCountedBytes> data = screenshot->data();
+  if (!data)
+    return;
+  entry->SetScreenshotPNGData(std::move(data));
   OnScreenshotSet(entry);
 }
 
