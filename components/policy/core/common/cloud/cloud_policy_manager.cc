@@ -45,10 +45,11 @@ void CloudPolicyManager::Init(SchemaRegistry* registry) {
 
   store()->AddObserver(this);
 
-  // If the underlying store is already initialized, publish the loaded
-  // policy. Otherwise, request a load now.
+  // If the underlying store is already initialized, pretend it was loaded now.
+  // Note: It is not enough to just copy OnStoreLoaded's contents here because
+  // subclasses can override it.
   if (store()->is_initialized())
-    CheckAndPublishPolicy();
+    OnStoreLoaded(store());
   else
     store()->Load();
 }
