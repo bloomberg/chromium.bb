@@ -324,7 +324,7 @@ scoped_refptr<Sequence> TaskTracker::WillScheduleSequence(
   return nullptr;
 }
 
-scoped_refptr<Sequence> TaskTracker::RunNextTask(
+scoped_refptr<Sequence> TaskTracker::RunAndPopNextTask(
     scoped_refptr<Sequence> sequence,
     CanScheduleSequenceObserver* observer) {
   DCHECK(sequence);

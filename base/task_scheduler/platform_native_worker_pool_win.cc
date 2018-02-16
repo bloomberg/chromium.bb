@@ -72,8 +72,8 @@ void CALLBACK PlatformNativeWorkerPoolWin::RunNextSequence(
   scoped_refptr<Sequence> sequence = worker_pool->GetWork();
   DCHECK(sequence);
 
-  sequence = worker_pool->task_tracker_->RunNextTask(std::move(sequence.get()),
-                                                     worker_pool);
+  sequence = worker_pool->task_tracker_->RunAndPopNextTask(
+      std::move(sequence.get()), worker_pool);
 
   // Re-enqueue sequence and then submit another task to the Windows thread
   // pool.

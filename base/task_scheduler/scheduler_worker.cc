@@ -78,8 +78,8 @@ class SchedulerWorker::Thread : public PlatformThread::Delegate {
         continue;
       }
 
-      sequence = outer_->task_tracker_->RunNextTask(std::move(sequence),
-                                                    outer_->delegate_.get());
+      sequence = outer_->task_tracker_->RunAndPopNextTask(
+          std::move(sequence), outer_->delegate_.get());
 
       outer_->delegate_->DidRunTask();
 

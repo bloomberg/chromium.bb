@@ -133,10 +133,10 @@ class ThreadPostingAndRunningTask : public SimpleThread {
           test::CreateSequenceWithTask(std::move(owned_task_)),
           &never_notified_observer);
       ASSERT_TRUE(sequence);
-      // Expect RunNextTask to return nullptr since |sequence| is empty after
-      // popping a task from it.
-      EXPECT_FALSE(
-          tracker_->RunNextTask(std::move(sequence), &never_notified_observer));
+      // Expect RunAndPopNextTask to return nullptr since |sequence| is empty
+      // after popping a task from it.
+      EXPECT_FALSE(tracker_->RunAndPopNextTask(std::move(sequence),
+                                               &never_notified_observer));
     }
   }
 
@@ -180,7 +180,7 @@ class TaskSchedulerTaskTrackerTest
         test::CreateSequenceWithTask(std::move(task)),
         &never_notified_observer_);
     ASSERT_TRUE(sequence);
-    tracker_.RunNextTask(std::move(sequence), &never_notified_observer_);
+    tracker_.RunAndPopNextTask(std::move(sequence), &never_notified_observer_);
   }
 
   // Calls tracker_->Shutdown() on a new thread. When this returns, Shutdown()
@@ -506,7 +506,7 @@ static void RunTaskRunnerHandleVerificationTask(TaskTracker* tracker,
       test::CreateSequenceWithTask(std::move(verify_task)),
       &never_notified_observer);
   ASSERT_TRUE(sequence);
-  tracker->RunNextTask(std::move(sequence), &never_notified_observer);
+  tracker->RunAndPopNextTask(std::move(sequence), &never_notified_observer);
 
   // TaskRunnerHandle state is reset outside of task's scope.
   EXPECT_FALSE(ThreadTaskRunnerHandle::IsSet());
@@ -889,7 +889,7 @@ TEST_F(TaskSchedulerTaskTrackerTest, CurrentSequenceToken) {
   sequence = tracker_.WillScheduleSequence(std::move(sequence),
                                            &never_notified_observer_);
   ASSERT_TRUE(sequence);
-  tracker_.RunNextTask(std::move(sequence), &never_notified_observer_);
+  tracker_.RunAndPopNextTask(std::move(sequence), &never_notified_observer_);
   EXPECT_FALSE(SequenceToken::GetForCurrentThread().IsValid());
 }
 
@@ -1035,9 +1035,10 @@ TEST_F(TaskSchedulerTaskTrackerTest, LoadWillPostAndRunDuringShutdown) {
   WAIT_FOR_ASYNC_SHUTDOWN_COMPLETED();
 }
 
-// Verify that RunNextTask() returns the sequence from which it ran a task when
-// it can be rescheduled.
-TEST_F(TaskSchedulerTaskTrackerTest, RunNextTaskReturnsSequenceToReschedule) {
+// Verify that RunAndPopNextTask() returns the sequence from which it ran a task
+// when it can be rescheduled.
+TEST_F(TaskSchedulerTaskTrackerTest,
+       RunAndPopNextTaskReturnsSequenceToReschedule) {
   Task task_1(FROM_HERE, BindOnce(&DoNothing), TaskTraits(), TimeDelta());
   EXPECT_TRUE(tracker_.WillPostTask(task_1));
   Task task_2(FROM_HERE, BindOnce(&DoNothing), TaskTraits(), TimeDelta());
@@ -1048,7 +1049,7 @@ TEST_F(TaskSchedulerTaskTrackerTest, RunNextTaskReturnsSequenceToReschedule) {
   sequence->PushTask(std::move(task_2));
   EXPECT_EQ(sequence, tracker_.WillScheduleSequence(sequence, nullptr));
 
-  EXPECT_EQ(sequence, tracker_.RunNextTask(sequence, nullptr));
+  EXPECT_EQ(sequence, tracker_.RunAndPopNextTask(sequence, nullptr));
 }
 
 // Verify that WillScheduleSequence() returns nullptr when it receives a
@@ -1108,16 +1109,16 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   for (int i = 0; i < kMaxNumScheduledBackgroundSequences; ++i) {
     EXPECT_CALL(*extra_observers[i].get(),
                 MockOnCanScheduleSequence(extra_sequences[i].get()));
-    EXPECT_FALSE(
-        tracker.RunNextTask(scheduled_sequences[i], &never_notified_observer));
+    EXPECT_FALSE(tracker.RunAndPopNextTask(scheduled_sequences[i],
+                                           &never_notified_observer));
     testing::Mock::VerifyAndClear(extra_observers[i].get());
   }
 
   // Run the extra sequences.
   for (int i = 0; i < kMaxNumScheduledBackgroundSequences; ++i) {
     EXPECT_FALSE(*extra_tasks_did_run[i]);
-    EXPECT_FALSE(
-        tracker.RunNextTask(extra_sequences[i], &never_notified_observer));
+    EXPECT_FALSE(tracker.RunAndPopNextTask(extra_sequences[i],
+                                           &never_notified_observer));
     EXPECT_TRUE(*extra_tasks_did_run[i]);
   }
 }
@@ -1132,9 +1133,10 @@ void SetBool(bool* arg) {
 
 }  // namespace
 
-// Verify that RunNextTask() doesn't reschedule the background sequence it was
-// assigned if there is a preempted background sequence with an earlier sequence
-// time (compared to the next task in the sequence assigned to RunNextTask()).
+// Verify that RunAndPopNextTask() doesn't reschedule the background sequence it
+// was assigned if there is a preempted background sequence with an earlier
+// sequence time (compared to the next task in the sequence assigned to
+// RunAndPopNextTask()).
 TEST_F(TaskSchedulerTaskTrackerTest,
        RunNextBackgroundTaskWithEarlierPendingBackgroundTask) {
   constexpr int kMaxNumScheduledBackgroundSequences = 1;
@@ -1175,28 +1177,28 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   EXPECT_TRUE(tracker.WillPostTask(task_a_2));
   sequence_a->PushTask(std::move(task_a_2));
 
-  // Run the first task in |sequence_a|. RunNextTask() should return nullptr
-  // since |sequence_a| can't be rescheduled immediately. |task_b_1_observer|
-  // should be notified that |sequence_b| can be scheduled.
+  // Run the first task in |sequence_a|. RunAndPopNextTask() should return
+  // nullptr since |sequence_a| can't be rescheduled immediately.
+  // |task_b_1_observer| should be notified that |sequence_b| can be scheduled.
   testing::StrictMock<MockCanScheduleSequenceObserver> task_a_2_observer;
   EXPECT_CALL(task_b_1_observer, MockOnCanScheduleSequence(sequence_b.get()));
-  EXPECT_FALSE(tracker.RunNextTask(sequence_a, &task_a_2_observer));
+  EXPECT_FALSE(tracker.RunAndPopNextTask(sequence_a, &task_a_2_observer));
   testing::Mock::VerifyAndClear(&task_b_1_observer);
   EXPECT_TRUE(task_a_1_did_run);
 
-  // Run the first task in |sequence_b|. RunNextTask() should return nullptr
-  // since |sequence_b| is empty after popping a task from it.
+  // Run the first task in |sequence_b|. RunAndPopNextTask() should return
+  // nullptr since |sequence_b| is empty after popping a task from it.
   // |task_a_2_observer| should be notified that |sequence_a| can be
   // scheduled.
   EXPECT_CALL(task_a_2_observer, MockOnCanScheduleSequence(sequence_a.get()));
-  EXPECT_FALSE(tracker.RunNextTask(sequence_b, &never_notified_observer));
+  EXPECT_FALSE(tracker.RunAndPopNextTask(sequence_b, &never_notified_observer));
   testing::Mock::VerifyAndClear(&task_a_2_observer);
   EXPECT_TRUE(task_b_1_did_run);
 
-  // Run the first task in |sequence_a|. RunNextTask() should return nullptr
-  // since |sequence_b| is empty after popping a task from it. No observer
-  // should be notified.
-  EXPECT_FALSE(tracker.RunNextTask(sequence_a, &never_notified_observer));
+  // Run the first task in |sequence_a|. RunAndPopNextTask() should return
+  // nullptr since |sequence_b| is empty after popping a task from it. No
+  // observer should be notified.
+  EXPECT_FALSE(tracker.RunAndPopNextTask(sequence_a, &never_notified_observer));
   EXPECT_TRUE(task_a_2_did_run);
 }
 
@@ -1233,7 +1235,7 @@ TEST_F(TaskSchedulerTaskTrackerTest,
       EXPECT_CALL(observer, MockOnCanScheduleSequence(preempted_sequence.get()))
           .WillOnce(testing::Invoke([&tracker](Sequence* sequence) {
             // Run the task to unblock shutdown.
-            tracker.RunNextTask(sequence, nullptr);
+            tracker.RunAndPopNextTask(sequence, nullptr);
           }));
     }
     tracker.Shutdown();
@@ -1265,8 +1267,8 @@ class WaitAllowedTestThread : public SimpleThread {
         test::CreateSequenceWithTask(std::move(task_without_sync_primitives)),
         &never_notified_observer);
     ASSERT_TRUE(sequence_without_sync_primitives);
-    tracker.RunNextTask(std::move(sequence_without_sync_primitives),
-                        &never_notified_observer);
+    tracker.RunAndPopNextTask(std::move(sequence_without_sync_primitives),
+                              &never_notified_observer);
 
     // Disallow waiting. Expect TaskTracker to allow it before running a task
     // with the WithBaseSyncPrimitives() trait.
@@ -1282,8 +1284,8 @@ class WaitAllowedTestThread : public SimpleThread {
         test::CreateSequenceWithTask(std::move(task_with_sync_primitives)),
         &never_notified_observer);
     ASSERT_TRUE(sequence_with_sync_primitives);
-    tracker.RunNextTask(std::move(sequence_with_sync_primitives),
-                        &never_notified_observer);
+    tracker.RunAndPopNextTask(std::move(sequence_with_sync_primitives),
+                              &never_notified_observer);
   }
 
   DISALLOW_COPY_AND_ASSIGN(WaitAllowedTestThread);
@@ -1351,7 +1353,7 @@ TEST(TaskSchedulerTaskTrackerHistogramTest, TaskLatency) {
         test::CreateSequenceWithTask(std::move(task)),
         &never_notified_observer);
     ASSERT_TRUE(sequence);
-    tracker.RunNextTask(std::move(sequence), &never_notified_observer);
+    tracker.RunAndPopNextTask(std::move(sequence), &never_notified_observer);
     tester.ExpectTotalCount(test.expected_histogram, 1);
   }
 }
