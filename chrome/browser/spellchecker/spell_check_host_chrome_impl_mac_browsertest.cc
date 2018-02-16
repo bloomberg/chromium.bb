@@ -4,8 +4,6 @@
 
 #include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
 
-// TODO(xiaochengh): Rename to spell_check_host_chrome_impl_mac_browsertest.cc
-
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
