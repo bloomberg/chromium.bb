@@ -83,6 +83,7 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
              ('GpuProcess_disable_gpu', 'gpu/functional_webgl.html'),
              ('GpuProcess_disable_gpu_and_swiftshader',
               'gpu/functional_webgl.html'),
+             ('GpuProcess_disable_swiftshader', 'gpu/functional_webgl.html'),
              ('GpuProcess_disabling_workarounds_works', 'chrome:gpu'),
              ('GpuProcess_swiftshader_for_webgl', 'gpu/functional_webgl.html'),
              ('GpuProcess_webgl_disabled_extension',
@@ -333,6 +334,14 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     self._NavigateAndWait(test_path)
     if self.tab.EvaluateJavaScript('chrome.gpuBenchmarking.hasGpuProcess()'):
       self.fail('GPU process detected')
+
+  def _GpuProcess_disable_swiftshader(self, test_path):
+    # Disable SwiftShader, GPU process should be able to launch.
+    self.RestartBrowserIfNecessaryWithArgs(['--disable-software-rasterizer'])
+    self._NavigateAndWait(test_path)
+    if not self.tab.EvaluateJavaScript(
+        'chrome.gpuBenchmarking.hasGpuProcess()'):
+      self.fail('GPU process not detected')
 
   def _GpuProcess_disabling_workarounds_works(self, test_path):
     # Hit exception from id 215 from kGpuDriverBugListEntries.

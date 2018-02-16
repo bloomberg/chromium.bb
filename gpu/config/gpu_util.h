@@ -21,6 +21,9 @@ struct GPUInfo;
 GPU_EXPORT GpuFeatureInfo
 ComputeGpuFeatureInfoWithHardwareAccelerationDisabled();
 
+// Set GPU feature status if GPU process is blocked.
+GPU_EXPORT GpuFeatureInfo ComputeGpuFeatureInfoWithNoGpuProcess();
+
 // Set GPU feature status for SwiftShader.
 GPU_EXPORT GpuFeatureInfo ComputeGpuFeatureInfoForSwiftShader();
 
