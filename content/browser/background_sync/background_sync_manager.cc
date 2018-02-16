@@ -1116,12 +1116,12 @@ void BackgroundSyncManager::EventCompleteImpl(
   }
 
   if (registration_completed) {
-    const std::string& tag = registration->options()->tag;
+    const std::string& registration_tag = registration->options()->tag;
     BackgroundSyncRegistration* active_registration =
-        LookupActiveRegistration(service_worker_id, tag);
+        LookupActiveRegistration(service_worker_id, registration_tag);
     if (active_registration &&
         active_registration->id() == registration->id()) {
-      RemoveActiveRegistration(service_worker_id, tag);
+      RemoveActiveRegistration(service_worker_id, registration_tag);
     }
   }
 
