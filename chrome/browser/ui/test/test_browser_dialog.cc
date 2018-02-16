@@ -164,17 +164,19 @@ bool TestBrowserDialog::AlwaysCloseAsynchronously() {
 }
 
 void TestBrowserDialog::UpdateWidgets() {
-#if defined(TOOLKIT_VIEWS)
-  widgets_ = views::test::WidgetTest::GetAllWidgets();
+  widgets_.clear();
 #if defined(OS_CHROMEOS)
-  // GetAllWidgets() uses AuraTestHelper to find the aura root window, but
-  // that's not used on browser_tests, so ask ash. Under mash the MusClient
-  // provides the list of root windows, so this isn't needed.
-  if (chromeos::GetAshConfig() != ash::Config::MASH) {
-    views::Widget::GetAllChildWidgets(ash::Shell::GetPrimaryRootWindow(),
-                                      &widgets_);
+  // Under mash, GetAllWidgets() uses MusClient to get the list of root windows.
+  // Otherwise, GetAllWidgets() relies on AuraTestHelper to get the root window,
+  // but that is not available in browser_tests, so use ash::Shell directly.
+  if (chromeos::GetAshConfig() == ash::Config::MASH) {
+    widgets_ = views::test::WidgetTest::GetAllWidgets();
+  } else {
+    for (aura::Window* root_window : ash::Shell::GetAllRootWindows())
+      views::Widget::GetAllChildWidgets(root_window, &widgets_);
   }
-#endif  // OS_CHROMEOS
+#elif defined(TOOLKIT_VIEWS)
+  widgets_ = views::test::WidgetTest::GetAllWidgets();
 #else
   NOTIMPLEMENTED();
 #endif
