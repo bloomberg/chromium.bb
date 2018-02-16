@@ -174,8 +174,21 @@ message MoveEntryOptionsProto {
   // Source path of the entry to be moved. This can be a file or directory path.
   // Paths are relative to the mount root. (e.g. "/testfolder/dog.jpg")
   optional string source_path = 2;
-  // Destination path for the entry to be moved to. This must be a non-existant
+  // Destination path for the entry to be moved to. This must be a non-existent
   // file or directory path. Paths are relative to the mount
   // root. (e.g. "/testfolder/dog.jpg")
+  optional string target_path = 3;
+}
+
+// Used for passing inputs into SmbProvider.CopyEntry().
+message CopyEntryOptionsProto {
+  // ID of the mount returned from Mount().
+  optional int32 mount_id = 1;
+  // Source path of the entry to be copied. This can be a file or directory
+  // path. Paths are relative to the mount root. (e.g. "/testfolder/dog.jpg")
+  optional string source_path = 2;
+  // Destination path for the entry to be copied to. This must be a non-existent
+  // file or directory path. Paths are relative to the mount root.
+  // (e.g. "/testfolder/dog.jpg")
   optional string target_path = 3;
 }
