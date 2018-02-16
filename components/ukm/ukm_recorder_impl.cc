@@ -31,7 +31,7 @@ namespace {
 const base::Feature kUkmSamplingRateFeature{"UkmSamplingRate",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Gets the list of whitelisted Entries as string. Format is a comma seperated
+// Gets the list of whitelisted Entries as string. Format is a comma separated
 // list of Entry names (as strings).
 std::string GetWhitelistEntries() {
   return base::GetFieldTrialParamValueByFeature(kUkmFeature,
@@ -50,7 +50,7 @@ size_t GetMaxSources() {
       kUkmFeature, "MaxSources", kDefaultMaxSources));
 }
 
-// Gets the maximum number of unferenced Sources kept after purging sources
+// Gets the maximum number of unreferenced Sources kept after purging sources
 // that were added to the log.
 size_t GetMaxKeptSources() {
   constexpr size_t kDefaultMaxKeptSources = 100;
@@ -213,7 +213,7 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
 
   UMA_HISTOGRAM_COUNTS_1000("UKM.Sources.SerializedCount",
                             sources_.size() - unsent_sources.size());
-  UMA_HISTOGRAM_COUNTS_1000("UKM.Entries.SerializedCount", entries_.size());
+  UMA_HISTOGRAM_COUNTS_100000("UKM.Entries.SerializedCount2", entries_.size());
   UMA_HISTOGRAM_COUNTS_1000("UKM.Sources.UnsentSourcesCount",
                             unsent_sources.size());
   sources_.clear();
