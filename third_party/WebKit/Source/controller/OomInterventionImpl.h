@@ -41,7 +41,7 @@ class CONTROLLER_EXPORT OomInterventionImpl
   MemoryWorkloadCaculator workload_calculator_;
   mojom::blink::OomInterventionHostPtr host_;
   bool trigger_intervention_ = false;
-  Timer<OomInterventionImpl> timer_;
+  TaskRunnerTimer<OomInterventionImpl> timer_;
   std::unique_ptr<ScopedPagePauser> pauser_;
 };
 
