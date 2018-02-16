@@ -407,7 +407,8 @@ void OfflinePageModelTaskified::OnCreateArchiveDone(
     offline_page.original_url = save_page_params.original_url;
   }
 
-  if (policy_controller_->IsUserRequestedDownload(
+  if (IsOfflinePagesSharingEnabled() &&
+      policy_controller_->IsUserRequestedDownload(
           offline_page.client_id.name_space)) {
     // If the user intentionally downloaded the page, move it to a public place.
     PublishArchive(offline_page, callback, archiver);
