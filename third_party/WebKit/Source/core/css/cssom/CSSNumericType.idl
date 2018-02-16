@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 [
-  Exposed(Window CSSTypedOM, PaintWorklet CSSTypedOM)
+  RuntimeEnabled=CSSTypedOM,
+  Exposed=(Window,PaintWorklet)
 ] enum CSSNumericBaseType {
     "length",
     "angle",

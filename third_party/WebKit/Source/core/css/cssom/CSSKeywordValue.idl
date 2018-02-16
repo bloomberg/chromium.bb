@@ -7,7 +7,8 @@
 // https://drafts.css-houdini.org/css-typed-om/#keywordvalue-objects
 [
     Constructor(DOMString keyword),
-    Exposed(Window CSSTypedOM, PaintWorklet CSSTypedOM),
+    RuntimeEnabled=CSSTypedOM,
+    Exposed=(Window,PaintWorklet),
     RaisesException=Constructor
 ] interface CSSKeywordValue : CSSStyleValue {
     [RaisesException=Setter] attribute DOMString value;

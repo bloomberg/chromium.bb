@@ -7,8 +7,8 @@
 // Spec: https://drafts.css-houdini.org/css-typed-om-1/#cssskewx
 [
     Constructor(CSSNumericValue ax),
-    Exposed=(Window, Worker, PaintWorklet, LayoutWorklet),
     RuntimeEnabled=CSSTypedOM,
+    Exposed=(Window, Worker, PaintWorklet, LayoutWorklet),
     RaisesException=Constructor]
 interface CSSSkewX : CSSTransformComponent {
     [RaisesException=Setter] attribute CSSNumericValue ax;

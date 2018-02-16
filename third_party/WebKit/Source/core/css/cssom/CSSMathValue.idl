@@ -14,8 +14,8 @@ enum CSSMathOperator {
 };
 
 [
-  Exposed=(Window,PaintWorklet),
-  RuntimeEnabled=CSSTypedOM
+  RuntimeEnabled=CSSTypedOM,
+  Exposed=(Window,PaintWorklet)
 ] interface CSSMathValue : CSSNumericValue {
   [ImplementedAs=getOperator] readonly attribute CSSMathOperator operator;
 };

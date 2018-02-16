@@ -7,8 +7,8 @@
 // Spec: https://drafts.css-houdini.org/css-typed-om/#cssperspective
 [
     Constructor(CSSNumericValue length),
-    Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM,
+    Exposed=(Window,PaintWorklet),
     RaisesException=Constructor
 ] interface CSSPerspective : CSSTransformComponent {
     [RaisesException=Setter] attribute CSSNumericValue length;

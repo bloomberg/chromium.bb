@@ -8,9 +8,9 @@
 [
     Constructor(CSSNumericValue x, CSSNumericValue y,
         optional CSSNumericValue z),
+    RuntimeEnabled=CSSTypedOM,
     Exposed=(Window,PaintWorklet),
-    RaisesException=Constructor,
-    RuntimeEnabled=CSSTypedOM
+    RaisesException=Constructor
 ] interface CSSTranslate : CSSTransformComponent {
     [RaisesException=Setter] attribute CSSNumericValue x;
     [RaisesException=Setter] attribute CSSNumericValue y;
