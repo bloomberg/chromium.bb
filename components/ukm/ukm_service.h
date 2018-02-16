@@ -31,7 +31,7 @@ class UkmEGTestHelper;
 namespace ukm {
 
 namespace debug {
-class DebugPage;
+class UkmDebugDataExtractor;
 }
 
 // The URL-Keyed Metrics (UKM) service is responsible for gathering and
@@ -79,7 +79,7 @@ class UkmService : public UkmRecorderImpl {
  private:
   friend ::metrics::UkmBrowserTest;
   friend ::metrics::UkmEGTestHelper;
-  friend ::ukm::debug::DebugPage;
+  friend ::ukm::debug::UkmDebugDataExtractor;
 
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, AddEntryWithEmptyMetrics);
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, EntryBuilderAndSerialization);

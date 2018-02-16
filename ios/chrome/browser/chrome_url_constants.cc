@@ -45,6 +45,7 @@ const char kChromeUISuggestionsHost[] = "suggestions";
 const char kChromeUISyncInternalsHost[] = "sync-internals";
 const char kChromeUITermsHost[] = "terms";
 const char kChromeUIVersionHost[] = "version";
+const char kChromeUIURLKeyedMetricsHost[] = "ukm";
 
 // Add hosts here to be included in chrome://chrome-urls (about:about).
 // These hosts will also be suggested by BuiltinProvider.

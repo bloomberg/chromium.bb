@@ -57,6 +57,7 @@ extern const char kChromeUISuggestionsHost[];
 extern const char kChromeUISyncInternalsHost[];
 extern const char kChromeUITermsHost[];
 extern const char kChromeUIVersionHost[];
+extern const char kChromeUIURLKeyedMetricsHost[];
 
 // Gets the hosts/domains that are shown in chrome://chrome-urls.
 extern const char* const kChromeHostURLs[];

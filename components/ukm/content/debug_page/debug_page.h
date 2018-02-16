@@ -1,4 +1,4 @@
-// Copyright (c) 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@ namespace debug {
 // Implements the chrome://ukm page for debugging UKM state.
 class DebugPage : public content::URLDataSource {
  public:
-  typedef base::Callback<UkmService*()> ServiceGetter;
+  typedef base::RepeatingCallback<UkmService*()> ServiceGetter;
 
   explicit DebugPage(ServiceGetter service_getter);
 
