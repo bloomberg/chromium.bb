@@ -527,20 +527,20 @@ TEST_F(TransferBufferExpandContractTest, Shrink) {
   EXPECT_EQ(0u, transfer_buffer_->GetFreeSize());
 
   // Shrink once.
-  const unsigned int shrink_size1 = 80;
+  const unsigned int shrink_size1 = 64;
   EXPECT_LT(shrink_size1, alloc_size);
-  transfer_buffer_->ShrinkLastBlock(shrink_size1);
+  transfer_buffer_->ShrinkLastBlock(shrink_size1 - kAlignment + 1);
   EXPECT_EQ(alloc_size - shrink_size1, transfer_buffer_->GetFreeSize());
 
   // Shrink again.
-  const unsigned int shrink_size2 = 30;
+  const unsigned int shrink_size2 = 32;
   EXPECT_LT(shrink_size2, shrink_size1);
   transfer_buffer_->ShrinkLastBlock(shrink_size2);
   EXPECT_EQ(alloc_size - shrink_size2, transfer_buffer_->GetFreeSize());
 
-  // Shrink to zero (minimum size is 1).
+  // Shrink to zero (minimum size is kAlignment).
   transfer_buffer_->ShrinkLastBlock(0);
-  EXPECT_EQ(alloc_size - 1, transfer_buffer_->GetFreeSize());
+  EXPECT_EQ(alloc_size - kAlignment, transfer_buffer_->GetFreeSize());
 
   transfer_buffer_->FreePendingToken(ptr, 1);
 }

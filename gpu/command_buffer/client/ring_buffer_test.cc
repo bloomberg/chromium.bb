@@ -419,4 +419,13 @@ TEST_F(RingBufferTest, DiscardAllPaddingFromBeginningTest) {
   EXPECT_EQ(kAlloc1 + kAlloc2, allocator_->GetLargestFreeSizeNoWaiting());
 }
 
+TEST_F(RingBufferTest, LargestFreeSizeNoWaiting) {
+  // GetLargestFreeSizeNoWaiting should return the largest free aligned size.
+  void* ptr = allocator_->Alloc(kBufferSize);
+  EXPECT_EQ(0u, allocator_->GetLargestFreeSizeNoWaiting());
+  allocator_->ShrinkLastBlock(kBufferSize - 2 * kAlignment - 1);
+  EXPECT_EQ(2 * kAlignment, allocator_->GetLargestFreeSizeNoWaiting());
+  allocator_->FreePendingToken(ptr, helper_.get()->InsertToken());
+}
+
 }  // namespace gpu
