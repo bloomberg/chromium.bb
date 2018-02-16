@@ -1072,12 +1072,6 @@ const char kOmniboxUIVerticalMarginName[] = "Omnibox UI Vertical Margin";
 const char kOmniboxUIVerticalMarginDescription[] =
     "Changes the vertical margin in the Omnibox UI.";
 
-const char kOmniboxVoiceSearchAlwaysVisibleName[] =
-    "Omnibox Voice Search Always Visible";
-const char kOmniboxVoiceSearchAlwaysVisibleDescription[] =
-    "Always displays voice search icon in focused omnibox as long as voice "
-    "search is possible";
-
 const char kOriginTrialsName[] = "Origin Trials";
 const char kOriginTrialsDescription[] =
     "Enables origin trials for controlling access to feature/API experiments.";

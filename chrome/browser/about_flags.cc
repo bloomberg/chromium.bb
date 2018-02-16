@@ -3736,13 +3736,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBundledConnectionHelpDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kBundledConnectionHelpFeature)},
 
-#if defined(OS_ANDROID)
-    {"enable-omnibox-voice-search-always-visible",
-     flag_descriptions::kOmniboxVoiceSearchAlwaysVisibleName,
-     flag_descriptions::kOmniboxVoiceSearchAlwaysVisibleDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kOmniboxVoiceSearchAlwaysVisible)},
-#endif  // OS_ANDROID
-
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
