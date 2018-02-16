@@ -88,7 +88,7 @@
 #include "core/probe/CoreProbes.h"
 #include "core/script/Modulator.h"
 #include "core/timing/DOMWindowPerformance.h"
-#include "core/timing/Performance.h"
+#include "core/timing/WindowPerformance.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
@@ -1466,7 +1466,7 @@ void LocalDOMWindow::DispatchLoadEvent() {
   }
 
   if (GetFrame()) {
-    Performance* performance = DOMWindowPerformance::performance(*this);
+    WindowPerformance* performance = DOMWindowPerformance::performance(*this);
     DCHECK(performance);
     performance->NotifyNavigationTimingToObservers();
   }

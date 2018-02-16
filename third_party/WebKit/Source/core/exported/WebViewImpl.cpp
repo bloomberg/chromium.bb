@@ -113,7 +113,7 @@
 #include "core/paint/PaintLayer.h"
 #include "core/paint/compositing/PaintLayerCompositor.h"
 #include "core/timing/DOMWindowPerformance.h"
-#include "core/timing/Performance.h"
+#include "core/timing/WindowPerformance.h"
 #include "platform/ContextMenu.h"
 #include "platform/ContextMenuItem.h"
 #include "platform/Cursor.h"

@@ -41,7 +41,7 @@
 
 namespace blink {
 
-class Performance;
+class WindowPerformance;
 
 class WebPerformance {
  public:
@@ -106,12 +106,12 @@ class WebPerformance {
   BLINK_EXPORT double UpdateStyleDurationBeforeFCP() const;
 
 #if INSIDE_BLINK
-  BLINK_EXPORT WebPerformance(Performance*);
-  BLINK_EXPORT WebPerformance& operator=(Performance*);
+  BLINK_EXPORT WebPerformance(WindowPerformance*);
+  BLINK_EXPORT WebPerformance& operator=(WindowPerformance*);
 #endif
 
  private:
-  WebPrivatePtr<Performance> private_;
+  WebPrivatePtr<WindowPerformance> private_;
 };
 
 }  // namespace blink

@@ -30,7 +30,7 @@
 
 #include "public/web/WebPerformance.h"
 
-#include "core/timing/Performance.h"
+#include "core/timing/WindowPerformance.h"
 
 namespace blink {
 
@@ -228,10 +228,10 @@ double WebPerformance::UpdateStyleDurationBeforeFCP() const {
       private_->timing()->UpdateStyleDurationBeforeFCP());
 }
 
-WebPerformance::WebPerformance(Performance* performance)
+WebPerformance::WebPerformance(WindowPerformance* performance)
     : private_(performance) {}
 
-WebPerformance& WebPerformance::operator=(Performance* performance) {
+WebPerformance& WebPerformance::operator=(WindowPerformance* performance) {
   private_ = performance;
   return *this;
 }

@@ -67,7 +67,7 @@
 #include "core/page/Page.h"
 #include "core/probe/CoreProbes.h"
 #include "core/timing/DOMWindowPerformance.h"
-#include "core/timing/Performance.h"
+#include "core/timing/WindowPerformance.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/feature_policy/FeaturePolicy.h"
 #include "platform/loader/fetch/FetchParameters.h"

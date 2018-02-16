@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/timing/Performance.h"
+#include "core/timing/WindowPerformance.h"
 
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/v8_performance_observer_callback.h"

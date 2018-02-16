@@ -216,7 +216,7 @@
 #include "core/svg_element_factory.h"
 #include "core/svg_names.h"
 #include "core/timing/DOMWindowPerformance.h"
-#include "core/timing/Performance.h"
+#include "core/timing/WindowPerformance.h"
 #include "core/workers/SharedWorkerRepositoryClient.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "core/xml_names.h"

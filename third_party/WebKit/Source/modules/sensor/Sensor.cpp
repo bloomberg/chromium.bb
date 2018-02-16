@@ -8,7 +8,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/timing/DOMWindowPerformance.h"
-#include "core/timing/Performance.h"
+#include "core/timing/WindowPerformance.h"
 #include "modules/sensor/SensorErrorEvent.h"
 #include "modules/sensor/SensorProviderProxy.h"
 #include "platform/LayoutTestSupport.h"
@@ -124,13 +124,13 @@ DOMHighResTimeStamp Sensor::timestamp(ScriptState* script_state,
     return 0.0;
   }
 
-  Performance* performance = DOMWindowPerformance::performance(*window);
+  WindowPerformance* performance = DOMWindowPerformance::performance(*window);
   DCHECK(performance);
   DCHECK(sensor_proxy_);
   is_null = false;
 
   if (LayoutTestSupport::IsRunningLayoutTest()) {
-    // In layout tests Performance.now() * 0.001 is passed to the shared buffer.
+    // In layout tests performance.now() * 0.001 is passed to the shared buffer.
     return sensor_proxy_->GetReading().timestamp() * 1000;
   }
 

@@ -4,7 +4,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "core/timing/Performance.h"
+#include "core/timing/WindowPerformance.h"
 
 #include "core/frame/PerformanceMonitor.h"
 #include "core/loader/DocumentLoadTiming.h"
@@ -48,12 +48,13 @@ double FakeTimer::g_mock_time = 1000.;
 
 }  // namespace
 
-class PerformanceTest : public ::testing::Test {
+class WindowPerformanceTest : public ::testing::Test {
  protected:
   void SetUp() override {
     page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
     page_holder_->GetDocument().SetURL(KURL("https://example.com"));
-    performance_ = Performance::Create(page_holder_->GetDocument().domWindow());
+    performance_ =
+        WindowPerformance::Create(page_holder_->GetDocument().domWindow());
     performance_->time_origin_ = TimeTicksFromSeconds(kTimeOrigin);
 
     // Create another dummy page holder and pretend this is the iframe.
@@ -96,17 +97,17 @@ class PerformanceTest : public ::testing::Test {
   String SanitizedAttribution(ExecutionContext* context,
                               bool has_multiple_contexts,
                               LocalFrame* observer_frame) {
-    return Performance::SanitizedAttribution(context, has_multiple_contexts,
-                                             observer_frame)
+    return WindowPerformance::SanitizedAttribution(
+               context, has_multiple_contexts, observer_frame)
         .first;
   }
 
-  Persistent<Performance> performance_;
+  Persistent<WindowPerformance> performance_;
   std::unique_ptr<DummyPageHolder> page_holder_;
   std::unique_ptr<DummyPageHolder> another_page_holder_;
 };
 
-TEST_F(PerformanceTest, LongTaskObserverInstrumentation) {
+TEST_F(WindowPerformanceTest, LongTaskObserverInstrumentation) {
   performance_->UpdateLongTaskInstrumentation();
   EXPECT_FALSE(ObservingLongTasks());
 
@@ -121,7 +122,7 @@ TEST_F(PerformanceTest, LongTaskObserverInstrumentation) {
   EXPECT_FALSE(ObservingLongTasks());
 }
 
-TEST_F(PerformanceTest, SanitizedLongTaskName) {
+TEST_F(WindowPerformanceTest, SanitizedLongTaskName) {
   // Unable to attribute, when no execution contents are available.
   EXPECT_EQ("unknown", SanitizedAttribution(nullptr, false, GetFrame()));
 
@@ -133,7 +134,7 @@ TEST_F(PerformanceTest, SanitizedLongTaskName) {
             SanitizedAttribution(GetDocument(), true, GetFrame()));
 }
 
-TEST_F(PerformanceTest, SanitizedLongTaskName_CrossOrigin) {
+TEST_F(WindowPerformanceTest, SanitizedLongTaskName_CrossOrigin) {
   // Unable to attribute, when no execution contents are available.
   EXPECT_EQ("unknown", SanitizedAttribution(nullptr, false, GetFrame()));
 
@@ -143,9 +144,9 @@ TEST_F(PerformanceTest, SanitizedLongTaskName_CrossOrigin) {
 }
 
 // https://crbug.com/706798: Checks that after navigation that have replaced the
-// window object, calls to not garbage collected yet Performance belonging to
-// the old window do not cause a crash.
-TEST_F(PerformanceTest, NavigateAway) {
+// window object, calls to not garbage collected yet WindowPerformance belonging
+// to the old window do not cause a crash.
+TEST_F(WindowPerformanceTest, NavigateAway) {
   AddLongTaskObserver();
   performance_->UpdateLongTaskInstrumentation();
   EXPECT_TRUE(ObservingLongTasks());
@@ -160,7 +161,7 @@ TEST_F(PerformanceTest, NavigateAway) {
   SimulateDidProcessLongTask();
 }
 
-// Checks that Performance object and its fields (like PerformanceTiming)
+// Checks that WindowPerformance object and its fields (like PerformanceTiming)
 // function correctly after transition to another document in the same window.
 // This happens when a page opens a new window and it navigates to a same-origin
 // document.
@@ -168,7 +169,7 @@ TEST(PerformanceLifetimeTest, SurviveContextSwitch) {
   std::unique_ptr<DummyPageHolder> page_holder =
       DummyPageHolder::Create(IntSize(800, 600));
 
-  Performance* perf =
+  WindowPerformance* perf =
       DOMWindowPerformance::performance(*page_holder->GetFrame().DomWindow());
   PerformanceTiming* timing = perf->timing();
 
@@ -197,7 +198,7 @@ TEST(PerformanceLifetimeTest, SurviveContextSwitch) {
 
 // Make sure the output entries with the same timestamps follow the insertion
 // order. (http://crbug.com/767560)
-TEST_F(PerformanceTest, EnsureEntryListOrder) {
+TEST_F(WindowPerformanceTest, EnsureEntryListOrder) {
   V8TestingScope scope;
   FakeTimer timer(kTimeOrigin);
 
@@ -224,7 +225,7 @@ TEST_F(PerformanceTest, EnsureEntryListOrder) {
   }
 }
 
-TEST_F(PerformanceTest, ParameterHistogramForMeasure) {
+TEST_F(WindowPerformanceTest, ParameterHistogramForMeasure) {
   HistogramTester histogram_tester;
   DummyExceptionStateForTesting exception_state;
 

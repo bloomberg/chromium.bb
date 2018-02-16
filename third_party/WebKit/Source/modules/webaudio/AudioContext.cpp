@@ -12,7 +12,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/UseCounter.h"
 #include "core/timing/DOMWindowPerformance.h"
-#include "core/timing/Performance.h"
+#include "core/timing/WindowPerformance.h"
 #include "modules/webaudio/AudioContextOptions.h"
 #include "modules/webaudio/AudioTimestamp.h"
 #include "modules/webaudio/DefaultAudioDestinationNode.h"
@@ -192,7 +192,7 @@ void AudioContext::getOutputTimestamp(ScriptState* script_state,
     return;
   }
 
-  Performance* performance = DOMWindowPerformance::performance(*window);
+  WindowPerformance* performance = DOMWindowPerformance::performance(*window);
   DCHECK(performance);
 
   AudioIOPosition position = OutputPosition();

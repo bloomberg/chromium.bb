@@ -2096,7 +2096,7 @@ jumbo_source_set("unit_tests") {
     "timing/PerformanceNavigationTimingTest.cpp",
     "timing/PerformanceObserverTest.cpp",
     "timing/PerformanceResourceTimingTest.cpp",
-    "timing/PerformanceTest.cpp",
+    "timing/WindowPerformanceTest.cpp",
     "url/URLSearchParamsTest.cpp",
     "workers/DedicatedWorkerTest.cpp",
     "workers/MainThreadWorkletTest.cpp",
