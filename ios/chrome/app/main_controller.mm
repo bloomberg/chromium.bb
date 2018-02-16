@@ -1645,7 +1645,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       [self removeBrowsingDataFromBrowserState:browserState
                                           mask:mask
                                     timePeriod:timePeriod
-                             completionHandler:nil];
+                             completionHandler:[command completionBlock]];
 
       if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)) {
         base::Time beginDeleteTime =

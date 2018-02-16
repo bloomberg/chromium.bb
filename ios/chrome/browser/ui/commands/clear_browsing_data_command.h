@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+#import "base/ios/block_types.h"
 #import "components/browsing_data/core/browsing_data_utils.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
@@ -23,9 +24,11 @@ class ChromeBrowserState;
 
 // Initializes a command intented to clear browsing data for |browserState|
 // that corresponds to removal mask |mask| for the time period |timePeriod|.
+// |completionBlock| will be invoked when the data has been cleared.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                                 mask:(BrowsingDataRemoveMask)mask
                           timePeriod:(browsing_data::TimePeriod)timePeriod
+                     completionBlock:(ProceduralBlock)completionBlock
     NS_DESIGNATED_INITIALIZER;
 
 // When executed this command will remove browsing data for this BrowserState.
@@ -36,6 +39,9 @@ class ChromeBrowserState;
 
 // Time period for which the browsing data will be removed.
 @property(nonatomic, readonly) browsing_data::TimePeriod timePeriod;
+
+// Completion block invoked when the data has been cleared.
+@property(nonatomic, readonly) ProceduralBlock completionBlock;
 
 @end
 

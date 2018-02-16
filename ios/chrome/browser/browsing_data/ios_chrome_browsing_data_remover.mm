@@ -55,9 +55,6 @@
 
 namespace {
 
-using CallbackList = base::CallbackList<void(
-    const IOSChromeBrowsingDataRemover::NotificationDetails&)>;
-
 // A helper enum to report the deletion of cookies and/or cache. Do not
 // reorder the entries, as this enum is passed to UMA.
 enum CookieOrCacheDeletionChoice {
@@ -67,17 +64,6 @@ enum CookieOrCacheDeletionChoice {
   BOTH_COOKIES_AND_CACHE,
   MAX_CHOICE_VALUE
 };
-
-// Contains all registered callbacks for browsing data removed notifications.
-CallbackList* g_on_browsing_data_removed_callbacks = nullptr;
-
-// Accessor for |*g_on_browsing_data_removed_callbacks|. Creates a new object
-// the first time so that it always returns a valid object.
-CallbackList* GetOnBrowsingDataRemovedCallbacks() {
-  if (!g_on_browsing_data_removed_callbacks)
-    g_on_browsing_data_removed_callbacks = new CallbackList();
-  return g_on_browsing_data_removed_callbacks;
-}
 
 bool AllDomainsPredicate(const std::string& domain) {
   return true;
@@ -140,22 +126,6 @@ void ClearChannelIDsOnIOThread(
 }  // namespace
 
 bool IOSChromeBrowsingDataRemover::is_removing_ = false;
-
-IOSChromeBrowsingDataRemover::NotificationDetails::NotificationDetails()
-    : removal_begin(base::Time()),
-      removal_mask(BrowsingDataRemoveMask::REMOVE_NOTHING) {}
-
-IOSChromeBrowsingDataRemover::NotificationDetails::NotificationDetails(
-    const IOSChromeBrowsingDataRemover::NotificationDetails& details)
-    : removal_begin(details.removal_begin),
-      removal_mask(details.removal_mask) {}
-
-IOSChromeBrowsingDataRemover::NotificationDetails::NotificationDetails(
-    base::Time removal_begin,
-    BrowsingDataRemoveMask removal_mask)
-    : removal_begin(removal_begin), removal_mask(removal_mask) {}
-
-IOSChromeBrowsingDataRemover::NotificationDetails::~NotificationDetails() {}
 
 // Static.
 IOSChromeBrowsingDataRemover* IOSChromeBrowsingDataRemover::CreateForPeriod(
@@ -425,25 +395,12 @@ void IOSChromeBrowsingDataRemover::OnKeywordsLoaded(
 void IOSChromeBrowsingDataRemover::NotifyAndDelete() {
   set_removing(false);
 
-  // Notify observers.
-  IOSChromeBrowsingDataRemover::NotificationDetails details(delete_begin_,
-                                                            remove_mask_);
-
-  GetOnBrowsingDataRemovedCallbacks()->Notify(details);
-
   for (auto& observer : observer_list_)
     observer.OnIOSChromeBrowsingDataRemoverDone();
 
   // History requests aren't happy if you delete yourself from the callback.
   // As such, we do a delete later.
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
-}
-
-// static
-IOSChromeBrowsingDataRemover::CallbackSubscription
-IOSChromeBrowsingDataRemover::RegisterOnBrowsingDataRemovedCallback(
-    const IOSChromeBrowsingDataRemover::Callback& callback) {
-  return GetOnBrowsingDataRemovedCallbacks()->Add(callback);
 }
 
 void IOSChromeBrowsingDataRemover::OnTaskComplete() {

@@ -22,47 +22,37 @@
 
 BrowserStateDataRemover::BrowserStateDataRemover(
     ios::ChromeBrowserState* browser_state)
-    : browser_state_(browser_state), forget_last_username_(false) {
-  callback_subscription_ =
-      IOSChromeBrowsingDataRemover::RegisterOnBrowsingDataRemovedCallback(
-          base::Bind(&BrowserStateDataRemover::NotifyWithDetails,
-                     base::Unretained(this)));
-}
+    : browser_state_(browser_state) {}
 
-BrowserStateDataRemover::~BrowserStateDataRemover() {
-}
+BrowserStateDataRemover::~BrowserStateDataRemover() {}
 
 // static
 void BrowserStateDataRemover::ClearData(ios::ChromeBrowserState* browser_state,
                                         ProceduralBlock completion) {
-  // The user just changed the account and chose to clear the previously
-  // existing data. As browsing data is being cleared, it is fine to clear the
-  // last username, as there will be no data to be merged.
   BrowserStateDataRemover* remover = new BrowserStateDataRemover(browser_state);
-  remover->SetForgetLastUsername();
   remover->RemoveBrowserStateData(completion);
-}
-
-void BrowserStateDataRemover::SetForgetLastUsername() {
-  forget_last_username_ = true;
 }
 
 void BrowserStateDataRemover::RemoveBrowserStateData(ProceduralBlock callback) {
   DCHECK(!callback_);
   callback_ = [callback copy];
 
+  // It is safe to use |this| in the block as the object manage its own lifetime
+  // and only call delete once the callback has been invoked.
   ClearBrowsingDataCommand* command = [[ClearBrowsingDataCommand alloc]
       initWithBrowserState:browser_state_
                       mask:BrowsingDataRemoveMask::REMOVE_ALL
-                timePeriod:browsing_data::TimePeriod::ALL_TIME];
+                timePeriod:browsing_data::TimePeriod::ALL_TIME
+           completionBlock:^{
+             this->BrowsingDataCleared();
+           }];
 
   UIWindow* mainWindow = [[UIApplication sharedApplication] keyWindow];
   DCHECK(mainWindow);
   [mainWindow chromeExecuteCommand:command];
 }
 
-void BrowserStateDataRemover::NotifyWithDetails(
-    const IOSChromeBrowsingDataRemover::NotificationDetails& details) {
+void BrowserStateDataRemover::BrowsingDataCleared() {
   // Remove bookmarks and Reading List entriesonce all browsing data was
   // removed.
   // Removal of browsing data waits for the bookmark model to be loaded, so
@@ -71,31 +61,19 @@ void BrowserStateDataRemover::NotifyWithDetails(
       << "Failed to remove all user bookmarks.";
   reading_list_remover_helper_ =
       std::make_unique<reading_list::ReadingListRemoverHelper>(browser_state_);
-  reading_list_remover_helper_->RemoveAllUserReadingListItemsIOS(
-      base::Bind(&BrowserStateDataRemover::ReadingListCleaned,
-                 base::Unretained(this), details));
+  reading_list_remover_helper_->RemoveAllUserReadingListItemsIOS(base::BindOnce(
+      &BrowserStateDataRemover::ReadingListCleaned, base::Unretained(this)));
 }
 
-void BrowserStateDataRemover::ReadingListCleaned(
-    const IOSChromeBrowsingDataRemover::NotificationDetails& details,
-    bool reading_list_cleaned) {
+void BrowserStateDataRemover::ReadingListCleaned(bool reading_list_cleaned) {
   CHECK(reading_list_cleaned)
       << "Failed to remove all user reading list items.";
 
-  if (details.removal_mask != BrowsingDataRemoveMask::REMOVE_ALL) {
-    NOTREACHED()
-        << "Unexpected partial remove browsing data request "
-        << "(removal mask = "
-        << static_cast<std::underlying_type<BrowsingDataRemoveMask>::type>(
-               details.removal_mask)
-        << ")";
-    return;
-  }
-
-  if (forget_last_username_) {
-    browser_state_->GetPrefs()->ClearPref(prefs::kGoogleServicesLastAccountId);
-    browser_state_->GetPrefs()->ClearPref(prefs::kGoogleServicesLastUsername);
-  }
+  // The user just changed the account and chose to clear the previously
+  // existing data. As browsing data is being cleared, it is fine to clear the
+  // last username, as there will be no data to be merged.
+  browser_state_->GetPrefs()->ClearPref(prefs::kGoogleServicesLastAccountId);
+  browser_state_->GetPrefs()->ClearPref(prefs::kGoogleServicesLastUsername);
 
   if (callback_)
     callback_();

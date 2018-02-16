@@ -16,21 +16,19 @@
 @synthesize browserState = _browserState;
 @synthesize mask = _mask;
 @synthesize timePeriod = _timePeriod;
-
-- (instancetype)initWithTag:(NSInteger)tag {
-  NOTREACHED();
-  return nil;
-}
+@synthesize completionBlock = _completionBlock;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                                 mask:(BrowsingDataRemoveMask)mask
-                          timePeriod:(browsing_data::TimePeriod)timePeriod {
+                          timePeriod:(browsing_data::TimePeriod)timePeriod
+                     completionBlock:(ProceduralBlock)completionBlock {
   self = [super initWithTag:IDC_CLEAR_BROWSING_DATA_IOS];
   if (self) {
     DCHECK(browserState);
     _browserState = browserState;
     _mask = mask;
     _timePeriod = timePeriod;
+    _completionBlock = completionBlock;
   }
   return self;
 }
