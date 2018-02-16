@@ -1,7 +1,7 @@
 Name: LevelDB: A Fast Persistent Key-Value Store
 Short Name: leveldb
 URL: https://github.com/google/leveldb.git
-Version: 1.20
+Version: 1.20.git.41172a24016bc29fc795ed504737392587f54e3d
 License: New BSD
 License File: src/LICENSE
 Security Critical: yes
@@ -14,7 +14,7 @@ Currently using (not yet released) manifest reuse feature for all platforms
 except Chrome OS.
 
 Local Additions:
-* gyp file for building in chromium
+* GN file for building in chromium
 * port/port_chromium.{h,cc} and env_chromium.{h,cc} provide chromium
   implementations of primitives used by leveldb.  E.g. threading, file handling,
   etc. env_chromium.h allows re-use of some utility functions.
