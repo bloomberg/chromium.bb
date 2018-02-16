@@ -362,13 +362,13 @@ void DataTransfer::SetDragImageElement(Node* node, const IntPoint& loc) {
   setDragImage(nullptr, node, loc);
 }
 
-FloatRect DataTransfer::ClipByVisualViewport(const FloatRect& rect_in_document,
+FloatRect DataTransfer::ClipByVisualViewport(const FloatRect& absolute_rect,
                                              const LocalFrame& frame) {
   IntRect viewport_in_root_frame =
       IntRect(frame.GetPage()->GetVisualViewport().VisibleRect());
-  FloatRect viewport_in_document =
-      frame.View()->RootFrameToDocument(viewport_in_root_frame);
-  return Intersection(viewport_in_document, rect_in_document);
+  FloatRect absolute_viewport =
+      frame.View()->RootFrameToAbsolute(viewport_in_root_frame);
+  return Intersection(absolute_viewport, absolute_rect);
 }
 
 // static

@@ -3776,6 +3776,13 @@ LayoutPoint LocalFrameView::RootFrameToAbsolute(
   return local_frame + LayoutSize(GetScrollOffset());
 }
 
+IntRect LocalFrameView::RootFrameToAbsolute(
+    const IntRect& rect_in_root_frame) const {
+  IntRect absolute_rect = ConvertFromRootFrame(rect_in_root_frame);
+  absolute_rect.Move(FlooredIntSize(GetScrollOffset()));
+  return absolute_rect;
+}
+
 DoublePoint LocalFrameView::DocumentToAbsolute(
     const DoublePoint& point_in_document) const {
   return point_in_document -
