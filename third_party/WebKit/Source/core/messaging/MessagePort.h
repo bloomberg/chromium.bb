@@ -62,7 +62,7 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
                    scoped_refptr<SerializedScriptValue> message,
                    const MessagePortArray&,
                    ExceptionState&);
-  static bool CanTransferArrayBuffersAndImageBitmaps() { return false; }
+  static bool CanTransferArrayBuffersAndImageBitmaps() { return true; }
 
   void start();
   void close();

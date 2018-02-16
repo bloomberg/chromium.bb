@@ -6,17 +6,20 @@
 #define BlinkTransferableMessageStructTraits_h
 
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
+#include "core/CoreExport.h"
 #include "core/messaging/BlinkCloneableMessageStructTraits.h"
 #include "core/messaging/BlinkTransferableMessage.h"
 #include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
+#include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
 #include "third_party/WebKit/common/message_port/message_port.mojom-blink.h"
 #include "third_party/WebKit/public/common/message_port/message_port_channel.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<blink::mojom::blink::TransferableMessage::DataView,
-                    blink::BlinkTransferableMessage> {
+struct CORE_EXPORT
+    StructTraits<blink::mojom::blink::TransferableMessage::DataView,
+                 blink::BlinkTransferableMessage> {
   static blink::BlinkCloneableMessage& message(
       blink::BlinkTransferableMessage& input) {
     return input;
@@ -31,8 +34,32 @@ struct StructTraits<blink::mojom::blink::TransferableMessage::DataView,
     return result;
   }
 
+  static const blink::SerializedScriptValue::ArrayBufferContentsArray&
+  array_buffer_contents_array(const blink::BlinkCloneableMessage& input) {
+    return input.message->GetArrayBufferContentsArray();
+  }
+
+  static Vector<SkBitmap> image_bitmap_contents_array(
+      const blink::BlinkCloneableMessage& input);
+
   static bool Read(blink::mojom::blink::TransferableMessage::DataView,
                    blink::BlinkTransferableMessage* out);
+};
+
+template <>
+class CORE_EXPORT
+    StructTraits<blink::mojom::blink::SerializedArrayBufferContents::DataView,
+                 WTF::ArrayBufferContents> {
+ public:
+  static base::span<uint8_t> contents(
+      const WTF::ArrayBufferContents& array_buffer_contents) {
+    uint8_t* allocation_start =
+        static_cast<uint8_t*>(array_buffer_contents.Data());
+    return base::make_span(allocation_start,
+                           array_buffer_contents.DataLength());
+  }
+  static bool Read(blink::mojom::blink::SerializedArrayBufferContents::DataView,
+                   WTF::ArrayBufferContents* out);
 };
 
 }  // namespace mojo

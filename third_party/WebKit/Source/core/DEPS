@@ -22,6 +22,7 @@ include_rules = [
     "+services/network/public/mojom",
     "+services/resource_coordinator/public/cpp/resource_coordinator_features.h",
     "+services/service_manager/public",
+    "+skia/public/interfaces/bitmap_skbitmap_struct_traits.h",
     "+third_party/skia/include",
     "+ui/gfx/geometry",
     "-web",

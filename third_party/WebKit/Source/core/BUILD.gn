@@ -1995,6 +1995,7 @@ jumbo_source_set("unit_tests") {
     "loader/resource/MockImageResourceObserver.cpp",
     "loader/resource/MockImageResourceObserver.h",
     "loader/resource/MultipartImageResourceParserTest.cpp",
+    "messaging/BlinkTransferableMessageStructTraitsTest.cpp",
     "origin_trials/OriginTrialContextTest.cpp",
     "page/AutoscrollControllerTest.cpp",
     "page/ChromeClientImplTest.cpp",

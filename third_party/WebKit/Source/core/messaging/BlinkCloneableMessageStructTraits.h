@@ -6,6 +6,7 @@
 #define BlinkCloneableMessageStructTraits_h
 
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
+#include "core/CoreExport.h"
 #include "core/messaging/BlinkCloneableMessage.h"
 #include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
 #include "mojo/public/cpp/bindings/string_traits_wtf.h"
@@ -15,8 +16,8 @@
 namespace mojo {
 
 template <>
-struct StructTraits<blink::mojom::blink::CloneableMessage::DataView,
-                    blink::BlinkCloneableMessage> {
+struct CORE_EXPORT StructTraits<blink::mojom::blink::CloneableMessage::DataView,
+                                blink::BlinkCloneableMessage> {
   static base::span<const uint8_t> encoded_message(
       blink::BlinkCloneableMessage& input) {
     return input.message->GetWireData();
