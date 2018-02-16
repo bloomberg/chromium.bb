@@ -641,7 +641,7 @@
     },
     {
       name: "ModulePreload",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "ModuleScriptsDynamicImport",
