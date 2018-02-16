@@ -227,6 +227,11 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   [passwordManagerEnabled_ setObserver:nil];
 }
 
+- (void)viewDidLoad {
+  [super viewDidLoad];
+  self.collectionView.prefetchingEnabled = NO;
+}
+
 #pragma mark - SettingsRootCollectionViewController
 
 - (void)loadModel {
@@ -497,14 +502,13 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
       self.passwordExporter.exportState == ExportState::IDLE) {
     exportPasswordsItem_.textColor = [[MDCPalette greyPalette] tint900];
     exportPasswordsItem_.accessibilityTraits = UIAccessibilityTraitButton;
-    [self reconfigureCellsForItems:@[ exportPasswordsItem_ ]];
     exportEnabled_ = YES;
   } else {
     exportPasswordsItem_.textColor = [[MDCPalette greyPalette] tint500];
     exportPasswordsItem_.accessibilityTraits = UIAccessibilityTraitNotEnabled;
-    [self reconfigureCellsForItems:@[ exportPasswordsItem_ ]];
     exportEnabled_ = NO;
   }
+  [self reconfigureCellsForItems:@[ exportPasswordsItem_ ]];
 }
 
 - (void)startPasswordsExportFlow {
