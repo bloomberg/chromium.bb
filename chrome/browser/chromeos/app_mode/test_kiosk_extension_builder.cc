@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/app_mode/test_kiosk_extension_builder.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/values.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -23,7 +26,14 @@ TestKioskExtensionBuilder::TestKioskExtensionBuilder(
 TestKioskExtensionBuilder::~TestKioskExtensionBuilder() = default;
 
 void TestKioskExtensionBuilder::AddSecondaryExtension(const std::string& id) {
-  secondary_extensions_.push_back(id);
+  secondary_extensions_.emplace_back(id, base::nullopt);
+}
+
+void TestKioskExtensionBuilder::AddSecondaryExtensionWithEnabledOnLaunch(
+    const std::string& id,
+    bool enabled_on_launch) {
+  secondary_extensions_.emplace_back(id,
+                                     base::Optional<bool>(enabled_on_launch));
 }
 
 scoped_refptr<const extensions::Extension> TestKioskExtensionBuilder::Build()
@@ -60,8 +70,14 @@ scoped_refptr<const extensions::Extension> TestKioskExtensionBuilder::Build()
   if (!secondary_extensions_.empty()) {
     ListBuilder secondary_extension_list_builder;
     for (const auto& secondary_extension : secondary_extensions_) {
+      DictionaryBuilder secondary_extension_builder;
+      secondary_extension_builder.Set("id", secondary_extension.id);
+      if (secondary_extension.enabled_on_launch.has_value()) {
+        secondary_extension_builder.SetBoolean(
+            "enabled_on_launch", secondary_extension.enabled_on_launch.value());
+      }
       secondary_extension_list_builder.Append(
-          DictionaryBuilder().Set("id", secondary_extension).Build());
+          secondary_extension_builder.Build());
     }
     manifest_builder.Set("kiosk_secondary_apps",
                          secondary_extension_list_builder.Build());

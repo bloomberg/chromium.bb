@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/manifest_handlers/kiosk_mode_info.h"
 
 namespace extensions {
 class Extension;
@@ -32,7 +33,9 @@ class TestKioskExtensionBuilder {
   void set_offline_enabled(bool enabled) { offline_enabled_ = enabled; }
   void set_version(const std::string& version) { version_ = version; }
 
-  void AddSecondaryExtension(const std::string& extension_id);
+  void AddSecondaryExtension(const std::string& id);
+  void AddSecondaryExtensionWithEnabledOnLaunch(const std::string& id,
+                                                bool enabled_on_launch);
 
   scoped_refptr<const extensions::Extension> Build() const;
 
@@ -42,7 +45,7 @@ class TestKioskExtensionBuilder {
 
   bool kiosk_enabled_ = true;
   bool offline_enabled_ = true;
-  std::vector<std::string> secondary_extensions_;
+  std::vector<extensions::SecondaryKioskAppInfo> secondary_extensions_;
   std::string version_ = "1.0";
 
   DISALLOW_COPY_AND_ASSIGN(TestKioskExtensionBuilder);

@@ -502,9 +502,11 @@ const char kInvalidKioskRequiredPlatformVersion[] =
 const char kInvalidKioskSecondaryApps[] =
     "Invalid value for 'kiosk_secondary_apps'";
 const char kInvalidKioskSecondaryAppsBadAppEntry[] =
-    "Invalid app id item for 'kiosk_secondary_apps'";
-const char kInvalidKioskSecondaryAppsBadAppId[] =
-    "Invalid app id value for 'kiosk_secondary_apps'";
+    "Invalid app item for 'kiosk_secondary_apps'";
+const char kInvalidKioskSecondaryAppsDuplicateApp[] =
+    "Duplicate app id in 'kiosk_secondary_apps': '*'.";
+const char kInvalidKioskSecondaryAppsPropertyUnavailable[] =
+    "Property '*' not allowed for 'kiosk_secondary_apps' item '*'.";
 const char kInvalidLaunchContainer[] =
     "Invalid value for 'app.launch.container'.";
 const char kInvalidLaunchValue[] =

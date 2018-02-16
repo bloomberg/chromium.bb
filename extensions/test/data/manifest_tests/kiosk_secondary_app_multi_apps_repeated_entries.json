@@ -19,7 +19,8 @@
     {"id": "abcdabcdabcdabcdabcdabcdabcdabcd",
      "enabled_on_launch": false},
     {"id": "fiehokkcgaojmbhfhlpiheggjhaedjoc",
-     "enabled_on_launch": true}
+     "enabled_on_launch": false},
+    {"id": "fiehokkcgaojmbhfhlpiheggjhaedjoc"}
   ],
   "permissions": [
     "power"
