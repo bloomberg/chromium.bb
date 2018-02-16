@@ -56,7 +56,8 @@ class AppCacheDispatcherHost : public mojom::AppCacheBackend {
   void GetResourceList(int32_t host_id,
                        GetResourceListCallback callback) override;
 
-  scoped_refptr<ChromeAppCacheService> appcache_service_;
+  // This object is owned by the |ChromeAppCacheService|, so this is safe.
+  ChromeAppCacheService* appcache_service_;
   AppCacheFrontendProxy frontend_proxy_;
   AppCacheBackendImpl backend_impl_;
 

@@ -511,6 +511,12 @@ StoragePartitionImpl::~StoragePartitionImpl() {
   if (GetPaymentAppContext())
     GetPaymentAppContext()->Shutdown();
 
+  if (GetAppCacheService()) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&ChromeAppCacheService::Shutdown, appcache_service_));
+  }
+
   BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
                             std::move(network_context_owner_));
 }
