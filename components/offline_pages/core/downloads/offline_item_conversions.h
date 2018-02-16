@@ -7,8 +7,6 @@
 
 #include "components/offline_items_collection/core/offline_item.h"
 
-const char kOfflinePageNamespace[] = "LEGACY_OFFLINE_PAGE";
-
 using ContentId = offline_items_collection::ContentId;
 using OfflineItem = offline_items_collection::OfflineItem;
 
@@ -16,6 +14,8 @@ namespace offline_pages {
 
 struct OfflinePageItem;
 class SavePageRequest;
+
+const char kOfflinePageNamespace[] = "LEGACY_OFFLINE_PAGE";
 
 // Allows to convert between internal offline pages types and their offline item
 // collection representation (for displaying in UI).

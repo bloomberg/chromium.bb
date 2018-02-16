@@ -21,6 +21,7 @@ static_library("offline_pages_ui_adapter") {
     "//base",
     "//components/offline_items_collection/core",
     "//components/offline_pages/core",
+    "//components/offline_pages/core:switches",
     "//components/offline_pages/core/background:background_offliner",
     "//url",
   ]
@@ -40,6 +41,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/offline_items_collection/core",
     "//components/offline_pages/core",
+    "//components/offline_pages/core:switches",
     "//components/offline_pages/core:test_support",
     "//components/offline_pages/core/background:background_offliner",
     "//components/offline_pages/core/background:test_support",
