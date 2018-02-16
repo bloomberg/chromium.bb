@@ -251,6 +251,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       requires_high_res_to_draw_(false),
       is_likely_to_require_a_draw_(false),
       has_valid_layer_tree_frame_sink_(false),
+      consecutive_frame_with_damage_count_(settings.damaged_frame_limit),
       scroll_animating_latched_element_id_(kInvalidElementId),
       has_scrolled_by_wheel_(false),
       has_scrolled_by_touch_(false),
@@ -906,11 +907,14 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   DamageTracker::UpdateDamageTracking(active_tree_.get(),
                                       active_tree_->GetRenderSurfaceList());
 
-  if (!HasDamage()) {
+  if (HasDamage()) {
+    consecutive_frame_with_damage_count_++;
+  } else {
     TRACE_EVENT0("cc",
                  "LayerTreeHostImpl::CalculateRenderPasses::EmptyDamageRect");
     frame->has_no_damage = true;
     DCHECK(!resourceless_software_draw_);
+    consecutive_frame_with_damage_count_ = 0;
     return DRAW_SUCCESS;
   }
 
@@ -2198,10 +2202,13 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
 
   impl_thread_phase_ = ImplThreadPhase::INSIDE_IMPL_FRAME;
 
-  // HasDamage() expects the return values of CanDraw and
-  // active_tree()->UpdateDrawProperties() to be true. If we can't check
-  // damage, return true to indicate that there might be damage in this frame.
-  if (settings_.check_damage_early && CanDraw()) {
+  bool recent_frame_had_no_damage =
+      consecutive_frame_with_damage_count_ < settings_.damaged_frame_limit;
+  // Check damage early if the setting is enabled and a recent frame had no
+  // damage. HasDamage() expects CanDraw to be true. If we can't check damage,
+  // return true to indicate that there might be damage in this frame.
+  if (settings_.enable_early_damage_check && recent_frame_had_no_damage &&
+      CanDraw()) {
     bool ok = active_tree()->UpdateDrawProperties();
     DCHECK(ok);
     DamageTracker::UpdateDamageTracking(active_tree_.get(),

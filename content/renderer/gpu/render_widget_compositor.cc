@@ -478,7 +478,6 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(300);
   settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(300);
 
-  settings.check_damage_early = cmd.HasSwitch(cc::switches::kCheckDamageEarly);
 
 #if defined(OS_ANDROID)
   bool using_synchronous_compositor =
@@ -494,6 +493,9 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
     // on sublayers.
     settings.scrollbar_animator = cc::LayerTreeSettings::NO_ANIMATOR;
     settings.solid_color_scrollbar_color = SK_ColorTRANSPARENT;
+
+    settings.enable_early_damage_check =
+        cmd.HasSwitch(cc::switches::kCheckDamageEarly);
   }
   // Android WebView handles root layer flings itself.
   settings.ignore_root_layer_flings = using_synchronous_compositor;
