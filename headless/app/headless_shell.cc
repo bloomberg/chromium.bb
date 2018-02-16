@@ -704,6 +704,9 @@ int HeadlessShellMain(int argc, const char** argv) {
   builder.SetCrashDumpsDir(dumps_path);
 #endif
 
+  if (command_line.HasSwitch(switches::kEnableBeginFrameControl))
+    builder.SetEnableBeginFrameControl(true);
+
   if (command_line.HasSwitch(switches::kEnableCrashReporter))
     builder.SetCrashReporterEnabled(true);
   if (command_line.HasSwitch(switches::kDisableCrashReporter))

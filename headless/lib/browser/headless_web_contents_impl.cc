@@ -272,7 +272,8 @@ std::unique_ptr<HeadlessWebContentsImpl> HeadlessWebContentsImpl::Create(
 
   headless_web_contents->mojo_services_ = std::move(builder->mojo_services_);
   headless_web_contents->begin_frame_control_enabled_ =
-      builder->enable_begin_frame_control_;
+      builder->enable_begin_frame_control_ ||
+      headless_web_contents->browser()->options()->enable_begin_frame_control;
   headless_web_contents->InitializeWindow(gfx::Rect(builder->window_size_));
   if (!headless_web_contents->OpenURL(builder->initial_url_))
     return nullptr;

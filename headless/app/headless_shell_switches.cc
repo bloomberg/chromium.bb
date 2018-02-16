@@ -12,6 +12,10 @@ namespace switches {
 // transparent.
 const char kDefaultBackgroundColor[] = "default-background-color";
 
+// Whether or not begin frames should be issued over DevToolsProtocol
+// (experimental).
+const char kEnableBeginFrameControl[] = "enable-begin-frame-control";
+
 // Enable crash reporter for headless.
 const char kEnableCrashReporter[] = "enable-crash-reporter";
 

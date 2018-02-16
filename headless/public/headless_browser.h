@@ -187,6 +187,10 @@ struct HEADLESS_EXPORT HeadlessBrowser::Options {
   // Whether cookies are allowed. Enabled by default.
   bool allow_cookies = true;
 
+  // Whether or not BeginFrames will be issued over DevTools protocol
+  // (experimental).
+  bool enable_begin_frame_control = false;
+
   // Set a callback that is invoked to override WebPreferences for RenderViews
   // created within the HeadlessBrowser. Called whenever the WebPreferences of a
   // RenderView change. Executed on the browser main thread.
@@ -255,6 +259,7 @@ class HEADLESS_EXPORT HeadlessBrowser::Options::Builder {
   Builder& SetProductNameAndVersion(
       const std::string& product_name_and_version);
   Builder& SetAcceptLanguage(const std::string& accept_language);
+  Builder& SetEnableBeginFrameControl(bool enable_begin_frame_control);
   Builder& SetUserAgent(const std::string& user_agent);
   Builder& SetProxyConfig(std::unique_ptr<net::ProxyConfig> proxy_config);
   Builder& SetHostResolverRules(const std::string& host_resolver_rules);

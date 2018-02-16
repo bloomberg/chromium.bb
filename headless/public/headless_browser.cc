@@ -83,6 +83,11 @@ Builder& Builder::SetAcceptLanguage(const std::string& accept_language) {
   return *this;
 }
 
+Builder& Builder::SetEnableBeginFrameControl(bool enable_begin_frame_control) {
+  options_.enable_begin_frame_control = enable_begin_frame_control;
+  return *this;
+}
+
 Builder& Builder::EnableDevToolsServer(const net::HostPortPair& endpoint) {
   options_.devtools_endpoint = endpoint;
   return *this;
