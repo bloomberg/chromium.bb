@@ -11,6 +11,7 @@
 #include "ash/login/ui/login_bubble.h"
 #include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/login_keyboard_test_base.h"
+#include "ash/login/ui/login_pin_view.h"
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/scrollable_users_list_view.h"
@@ -636,6 +637,32 @@ TEST_F(LockContentsViewUnitTest, EasyUnlockIconUpdatedDuringUserSwap) {
   // Enable primary, icon still hidden.
   enable_icon(primary);
   EXPECT_FALSE(showing_easy_unlock_icon(secondary));
+}
+
+TEST_F(LockContentsViewKeyboardUnitTest, SwitchPinAndVirtualKeyboard) {
+  ASSERT_NO_FATAL_FAILURE(ShowLockScreen());
+  LockContentsView* contents =
+      LockScreen::TestApi(LockScreen::Get()).contents_view();
+  ASSERT_NE(nullptr, contents);
+
+  // Add user with enabled pin method of authentication.
+  const std::string email = "user@domain.com";
+  LoadUser(email);
+  contents->OnPinEnabledForUserChanged(AccountId::FromUserEmail(email), true);
+  LoginAuthUserView* auth_view =
+      LockContentsView::TestApi(contents).primary_auth();
+  ASSERT_NE(nullptr, auth_view);
+
+  // Pin keyboard should only be visible when there is no virtual keyboard
+  // shown.
+  LoginPinView* pin_view = LoginAuthUserView::TestApi(auth_view).pin_view();
+  EXPECT_TRUE(pin_view->visible());
+
+  ASSERT_NO_FATAL_FAILURE(ShowKeyboard());
+  EXPECT_FALSE(pin_view->visible());
+
+  ASSERT_NO_FATAL_FAILURE(HideKeyboard());
+  EXPECT_TRUE(pin_view->visible());
 }
 
 }  // namespace ash

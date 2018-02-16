@@ -11,6 +11,7 @@
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
+#include "base/strings/strcat.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_test_util.h"
@@ -96,8 +97,16 @@ void LoginKeyboardTestBase::ShowLoginScreen() {
 void LoginKeyboardTestBase::LoadUsers(int count) {
   std::vector<mojom::LoginUserInfoPtr> users;
   for (int i = 0; i < count; ++i) {
-    users.push_back(CreateUser("user"));
+    std::string email =
+        base::StrCat({"user", std::to_string(i), "@domain.com "});
+    users.push_back(CreateUser(email));
   }
+  login_controller_->LoadUsers(std::move(users), false);
+}
+
+void LoginKeyboardTestBase::LoadUser(const std::string& email) {
+  std::vector<mojom::LoginUserInfoPtr> users;
+  users.push_back(CreateUser(email));
   login_controller_->LoadUsers(std::move(users), false);
 }
 

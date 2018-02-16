@@ -94,6 +94,10 @@ LoginPasswordView* LoginAuthUserView::TestApi::password_view() const {
   return view_->password_view_;
 }
 
+LoginPinView* LoginAuthUserView::TestApi::pin_view() const {
+  return view_->pin_view_;
+}
+
 LoginAuthUserView::LoginAuthUserView(
     const mojom::LoginUserInfoPtr& user,
     const OnAuthCallback& on_auth,

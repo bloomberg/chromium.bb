@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/login/ui/login_test_utils.h"
+#include "base/strings/string_split.h"
 
 namespace ash {
 
@@ -20,14 +21,13 @@ LoginPasswordView::TestApi MakeLoginPasswordTestApi(LockContentsView* view) {
       MakeLoginPrimaryAuthTestApi(view).password_view());
 }
 
-mojom::LoginUserInfoPtr CreateUser(const std::string& name) {
+mojom::LoginUserInfoPtr CreateUser(const std::string& email) {
   auto user = mojom::LoginUserInfo::New();
   user->basic_user_info = mojom::UserInfo::New();
-  user->basic_user_info->account_id =
-      AccountId::FromUserEmail(name + "@foo.com");
-  user->basic_user_info->display_name = "User " + name;
-  user->basic_user_info->display_email =
-      user->basic_user_info->account_id.GetUserEmail();
+  user->basic_user_info->account_id = AccountId::FromUserEmail(email);
+  user->basic_user_info->display_name = base::SplitString(
+      email, "@", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)[0];
+  user->basic_user_info->display_email = email;
   return user;
 }
 

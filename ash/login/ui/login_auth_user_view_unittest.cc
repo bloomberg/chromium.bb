@@ -22,7 +22,7 @@ class LoginAuthUserViewUnittest : public LoginTestBase {
   void SetUp() override {
     LoginTestBase::SetUp();
 
-    user_ = CreateUser("user");
+    user_ = CreateUser("user@domain.com");
     view_ = new LoginAuthUserView(
         user_, base::Bind([](bool auth_success) {}) /*on_auth*/,
         base::Bind([]() {}) /*on_easy_unlock_icon_hovered*/,

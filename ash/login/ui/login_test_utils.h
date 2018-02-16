@@ -18,7 +18,7 @@ LoginAuthUserView::TestApi MakeLoginPrimaryAuthTestApi(LockContentsView* view);
 LoginPasswordView::TestApi MakeLoginPasswordTestApi(LockContentsView* view);
 
 // Utility method to create a new |mojom::UserInfoPtr| instance.
-mojom::LoginUserInfoPtr CreateUser(const std::string& name);
+mojom::LoginUserInfoPtr CreateUser(const std::string& email);
 
 }  // namespace ash
 

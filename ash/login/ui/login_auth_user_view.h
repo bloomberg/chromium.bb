@@ -38,6 +38,7 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
 
     LoginUserView* user_view() const;
     LoginPasswordView* password_view() const;
+    LoginPinView* pin_view() const;
 
    private:
     LoginAuthUserView* const view_;

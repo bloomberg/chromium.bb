@@ -44,8 +44,11 @@ class LoginKeyboardTestBase : public AshTestBase {
   // of the test on failed assertion use ASSERT_NO_FATAL_FAILURE macro.
   void ShowLoginScreen();
 
-  // Loads the number of test users specified by |count|;
+  // Loads the number of test users specified by |count|.
   void LoadUsers(int count);
+
+  // Loads user with the specified |email|.
+  void LoadUser(const std::string& email);
 
   // AshTestBase:
   void SetUp() override;

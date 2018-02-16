@@ -15,14 +15,20 @@
 #include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/session/session_observer.h"
+#include "ash/shell_observer.h"
 #include "ash/system/system_tray_focus_observer.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
+#include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/view.h"
+
+namespace keyboard {
+class KeyboardController;
+}  // namespace keyboard
 
 namespace views {
 class BoxLayout;
@@ -50,7 +56,9 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
                                     public SystemTrayFocusObserver,
                                     public display::DisplayObserver,
                                     public views::StyledLabelListener,
-                                    public SessionObserver {
+                                    public SessionObserver,
+                                    public keyboard::KeyboardControllerObserver,
+                                    public ShellObserver {
  public:
   // TestApi is used for tests to get internal implementation details.
   class ASH_EXPORT TestApi {
@@ -110,6 +118,13 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
                               int event_flags) override{};
   // SessionObserver:
   void OnLockStateChanged(bool locked) override;
+
+  // ash::ShellObserver:
+  void OnVirtualKeyboardStateChanged(bool activated,
+                                     aura::Window* root_window) override;
+
+  // keyboard::KeyboardControllerObserver:
+  void OnStateChanged(const keyboard::KeyboardControllerState state) override;
 
  private:
   class UserState {
@@ -201,6 +216,11 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
   // Called when the easy unlock icon is tapped.
   void OnEasyUnlockIconTapped();
 
+  // Returns keyboard controller for the view. Returns nullptr if keyboard is
+  // not activated, view has not been added to the widget yet or keyboard is not
+  // displayed in this window.
+  keyboard::KeyboardController* GetKeyboardController() const;
+
   // Helper method to allocate a LoginAuthUserView instance.
   LoginAuthUserView* AllocateLoginAuthUserView(
       const mojom::LoginUserInfoPtr& user,
@@ -248,6 +268,9 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
 
   ScopedObserver<display::Screen, display::DisplayObserver> display_observer_;
   ScopedSessionObserver session_observer_;
+  ScopedObserver<keyboard::KeyboardController,
+                 keyboard::KeyboardControllerObserver>
+      keyboard_observer_;
 
   std::unique_ptr<LoginBubble> error_bubble_;
   std::unique_ptr<LoginBubble> tooltip_bubble_;
