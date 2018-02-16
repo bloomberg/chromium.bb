@@ -19,14 +19,7 @@
     {
       "name": "LayoutBlockFlow DIV id='scroller'",
       "position": [8, 8],
-      "bounds": [200, 200],
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow DIV id='scroller'",
-          "rect": [0, 0, 200, 200],
-          "reason": "style change"
-        }
-      ]
+      "bounds": [200, 200]
     },
     {
       "name": "Scrolling Layer",

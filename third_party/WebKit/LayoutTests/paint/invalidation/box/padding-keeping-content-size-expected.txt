@@ -19,7 +19,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target2' class='outer'",
           "rect": [0, 200, 140, 140],
-          "reason": "style change"
+          "reason": "appeared"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target1' class='outer'",

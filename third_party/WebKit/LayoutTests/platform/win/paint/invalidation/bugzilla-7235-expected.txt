@@ -17,24 +17,19 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (anonymous)",
-          "rect": [8, 156, 784, 20],
-          "reason": "geometry"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) DIV id='t'",
           "rect": [8, 176, 100, 100],
           "reason": "appeared"
         },
         {
-          "object": "LayoutInline (relative positioned) SPAN id='p'",
+          "object": "InlineTextBox '\u00A0'",
           "rect": [8, 156, 4, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox '\u00A0'",
           "rect": [8, 156, 4, 19],
-          "reason": "geometry"
+          "reason": "disappeared"
         }
       ]
     }

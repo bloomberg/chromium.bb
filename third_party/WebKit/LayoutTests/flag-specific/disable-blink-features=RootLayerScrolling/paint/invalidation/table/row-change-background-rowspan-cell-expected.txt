@@ -7,9 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutTableRow TR id='target'",
+          "object": "LayoutTable (relative positioned) TABLE",
           "rect": [8, 298, 110, 106],
-          "reason": "style change"
+          "reason": "appeared"
         }
       ]
     }

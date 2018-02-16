@@ -17,34 +17,17 @@
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='inner'",
           "rect": [0, 0, 100, 100],
-          "reason": "subtree"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='outer'",
           "rect": [0, 0, 100, 100],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='outer'",
-          "rect": [0, 0, 100, 100],
-          "reason": "subtree"
+          "reason": "appeared"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (relative positioned) DIV id='outer'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow (relative positioned) DIV id='inner'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow (relative positioned) DIV id='inner'",
-      "reason": "disappeared"
-    },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV id='outer'",
       "reason": "style change"

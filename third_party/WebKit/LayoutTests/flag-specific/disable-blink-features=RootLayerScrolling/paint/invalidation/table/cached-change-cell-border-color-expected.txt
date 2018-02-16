@@ -10,11 +10,6 @@
           "object": "LayoutTableRow TR",
           "rect": [8, 8, 114, 54],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutTableCell TD id='foo'",
-          "rect": [10, 10, 56, 50],
-          "reason": "style change"
         }
       ]
     }

@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [193, 100, 7, 200],
-          "reason": "scroll control"
+          "reason": "disappeared"
         }
       ]
     }
@@ -18,6 +18,14 @@
     {
       "object": "VerticalScrollbar",
       "reason": "scroll control"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='content'",
+      "reason": "geometry"
     }
   ]
 }

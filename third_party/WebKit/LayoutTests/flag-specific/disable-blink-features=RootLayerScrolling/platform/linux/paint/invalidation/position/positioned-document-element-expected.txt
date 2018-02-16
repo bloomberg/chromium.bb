@@ -12,34 +12,14 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutBlockFlow (positioned) HTML class='changed'",
-          "rect": [0, 0, 800, 52],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow P",
-          "rect": [8, 16, 784, 20],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) HTML class='changed'",
-          "rect": [100, 100, 440, 52],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow P",
-          "rect": [108, 116, 424, 20],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Tests that the entire viewport is painted with a floated html element.'",
           "rect": [108, 116, 424, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Tests that the entire viewport is painted with a floated html element.'",
           "rect": [8, 16, 424, 19],
-          "reason": "geometry"
+          "reason": "disappeared"
         }
       ]
     }

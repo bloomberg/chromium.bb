@@ -7,34 +7,94 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox ' eleifend'",
           "rect": [7, 122, 197, 99],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'convallis.'",
+          "rect": [7, 122, 197, 99],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'lacus, at sagittis eros leo'",
+          "rect": [7, 122, 197, 99],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'pulvinar velit. Integer'",
+          "rect": [7, 122, 197, 99],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'sollicitudin nisi ut urna blandit'",
+          "rect": [7, 122, 197, 99],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox ' eleifend lacus,'",
+          "rect": [8, 142, 195, 79],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'at sagittis eros leo pulvinar'",
+          "rect": [8, 142, 195, 79],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'urna blandit convallis.'",
+          "rect": [8, 142, 195, 79],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'velit. Integer sollicitudin nisi ut'",
+          "rect": [8, 142, 195, 79],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'Cras faucibus. Nunc'",
           "rect": [8, 82, 192, 59],
           "reason": "geometry"
         },
         {
-          "object": "LayoutInline SPAN id='t'",
+          "object": "InlineTextBox 'adipiscing, enim in scelerisque'",
+          "rect": [8, 82, 192, 59],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'augue '",
+          "rect": [8, 82, 192, 59],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'augue'",
+          "rect": [8, 82, 192, 59],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'convallis,\n'",
+          "rect": [8, 82, 192, 59],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'convallis,\n'",
+          "rect": [8, 82, 192, 59],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineFlowBox",
           "rect": [113, 92, 36, 49],
-          "reason": "style change"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'purus'",
           "rect": [113, 122, 36, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutInline SPAN id='t'",
+          "object": "InlineTextBox 'purus'",
           "rect": [37, 142, 36, 19],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [37, 142, 36, 19],
-          "reason": "geometry"
+          "reason": "disappeared"
         }
       ]
     }

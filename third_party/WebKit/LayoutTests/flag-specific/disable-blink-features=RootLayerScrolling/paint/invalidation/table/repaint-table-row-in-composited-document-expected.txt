@@ -15,21 +15,6 @@
           "object": "LayoutTableCell TD",
           "rect": [256, 156, 204, 104],
           "reason": "geometry"
-        },
-        {
-          "object": "LayoutTableCell TD id='target'",
-          "rect": [52, 154, 202, 150],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [52, 306, 202, 104],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [52, 156, 202, 104],
-          "reason": "geometry"
         }
       ]
     }
@@ -38,6 +23,10 @@
     {
       "object": "LayoutTableCell TD id='target'",
       "reason": "incremental"
+    },
+    {
+      "object": "LayoutTableRow TR",
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell TD",

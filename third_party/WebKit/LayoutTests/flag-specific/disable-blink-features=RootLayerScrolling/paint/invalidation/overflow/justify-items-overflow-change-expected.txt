@@ -13,7 +13,7 @@
         },
         {
           "object": "LayoutBlockFlow DIV class='item1'",
-          "rect": [-60, 52, 160, 300],
+          "rect": [0, 52, 100, 300],
           "reason": "geometry"
         }
       ]

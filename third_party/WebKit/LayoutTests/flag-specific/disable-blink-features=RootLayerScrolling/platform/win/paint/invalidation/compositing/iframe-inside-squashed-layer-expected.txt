@@ -23,29 +23,19 @@
       "bounds": [300, 654],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [8, 508, 284, 20],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [8, 508, 269, 142],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'test1'",
           "rect": [8, 508, 29, 19],
-          "reason": "geometry"
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'test1'",
+          "rect": [8, 508, 29, 19],
+          "reason": "disappeared"
         },
         {
           "object": "LayoutView #document",
           "rect": [285, 500, 15, 150],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [285, 500, 15, 150],
-          "reason": "scroll control"
+          "reason": "appeared"
         }
       ]
     }
@@ -73,7 +63,7 @@
     },
     {
       "object": "LayoutView #document",
-      "reason": "incremental"
+      "reason": "style change"
     },
     {
       "object": "LayoutBlockFlow BODY",

@@ -17,44 +17,19 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGContainer g id='g'",
+          "object": "LayoutSVGImage image",
           "rect": [20, 20, 60, 60],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGContainer g id='g'",
-          "rect": [20, 20, 60, 60],
-          "reason": "subtree"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGImage image",
           "rect": [20, 20, 60, 60],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGImage image",
-          "rect": [20, 20, 60, 60],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGContainer g id='g'",
-          "rect": [175, 25, 50, 50],
-          "reason": "subtree"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGImage image",
           "rect": [175, 25, 50, 50],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGContainer g id='g'",
-          "rect": [0, 0, 10, 10],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGImage image",
-          "rect": [0, 0, 10, 10],
-          "reason": "subtree"
+          "reason": "paint property change"
         }
       ]
     }
@@ -62,19 +37,19 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGContainer g id='g'",
-      "reason": "subtree"
+      "reason": "full"
     },
     {
       "object": "LayoutSVGImage image",
-      "reason": "subtree"
+      "reason": "full"
     },
     {
       "object": "LayoutSVGContainer g id='g'",
-      "reason": "subtree"
+      "reason": "full"
     },
     {
       "object": "LayoutSVGImage image",
-      "reason": "subtree"
+      "reason": "full"
     }
   ]
 }

@@ -19,7 +19,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [185, 100, 15, 200],
-          "reason": "scroll control"
+          "reason": "disappeared"
         }
       ]
     }
@@ -31,6 +31,14 @@
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='content'",
       "reason": "geometry"
     }
   ]

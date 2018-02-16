@@ -18,18 +18,8 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGRoot svg id='svg'",
-          "rect": [8, 8, 100, 200],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGRect rect",
           "rect": [8, 108, 100, 100],
           "reason": "appeared"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [8, 8, 100, 100],
-          "reason": "geometry"
         }
       ]
     }
@@ -46,10 +36,6 @@
     {
       "object": "LayoutSVGRoot svg id='svg'",
       "reason": "style change"
-    },
-    {
-      "object": "LayoutSVGRect rect",
-      "reason": "appeared"
     }
   ]
 }

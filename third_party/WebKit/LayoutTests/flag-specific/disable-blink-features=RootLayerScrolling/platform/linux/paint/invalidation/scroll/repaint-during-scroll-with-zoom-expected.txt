@@ -7,32 +7,32 @@
       "backgroundColor": "#C0C0C0",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [3, 65, 235, 235],
+          "object": "LayoutView #document",
+          "rect": [3, 65, 797, 535],
           "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [3, 65, 235, 235],
+          "reason": "paint property change"
         },
         {
           "object": "LayoutView #document",
           "rect": [3, 65, 235, 235],
-          "reason": "subtree"
+          "reason": "paint property change"
         },
         {
-          "object": "LayoutView #document",
+          "object": "HorizontalScrollbar",
           "rect": [3, 300, 235, 15],
           "reason": "scroll control"
         },
         {
           "object": "LayoutBlockFlow HTML",
-          "rect": [3, 65, 225, 235],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutText #text",
           "rect": [3, 65, 55, 17],
-          "reason": "subtree"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutView #document",
+          "object": "VerticalScrollbar",
           "rect": [238, 65, 15, 235],
           "reason": "scroll control"
         }

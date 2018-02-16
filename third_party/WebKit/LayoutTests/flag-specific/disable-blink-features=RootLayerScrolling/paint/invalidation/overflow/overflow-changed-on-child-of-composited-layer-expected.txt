@@ -16,9 +16,9 @@
           "reason": "full"
         },
         {
-          "object": "LayoutBlockFlow DIV id='test'",
+          "object": "LayoutBlockFlow DIV id='parent'",
           "rect": [0, 0, 102, 102],
-          "reason": "style change"
+          "reason": "appeared"
         }
       ],
       "transform": 1

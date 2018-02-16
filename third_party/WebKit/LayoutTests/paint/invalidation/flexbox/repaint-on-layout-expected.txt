@@ -17,12 +17,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (floating) DIV class='state'",
-          "rect": [712, 8, 80, 20],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='badge'",
+          "object": "LayoutBlockFlow HTML",
           "rect": [712, 8, 80, 20],
           "reason": "disappeared"
         }
@@ -30,14 +25,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='badge'",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "disappeared"
-    },
     {
       "object": "LayoutBlockFlow (floating) DIV class='state'",
       "reason": "style change"

@@ -17,9 +17,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGImage image id='image'",
+          "object": "LayoutSVGRoot svg",
           "rect": [0, 0, 75, 75],
-          "reason": "full"
+          "reason": "appeared"
         }
       ]
     }

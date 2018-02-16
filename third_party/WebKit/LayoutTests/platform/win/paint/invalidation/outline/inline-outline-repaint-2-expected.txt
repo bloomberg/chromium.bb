@@ -18,11 +18,11 @@
       "paintInvalidations": [
         {
           "object": "LayoutInline SPAN",
-          "rect": [210, -5, 50, 20],
+          "rect": [210, 0, 50, 15],
           "reason": "outline"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Test'",
           "rect": [215, 0, 40, 10],
           "reason": "style change"
         }

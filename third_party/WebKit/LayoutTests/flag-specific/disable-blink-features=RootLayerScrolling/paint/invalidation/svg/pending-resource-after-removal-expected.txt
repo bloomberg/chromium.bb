@@ -25,14 +25,6 @@
       "reason": "style change"
     },
     {
-      "object": "LayoutSVGRect rect",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutSVGResourcePattern pattern id='pat'",
-      "reason": "disappeared"
-    },
-    {
       "object": "LayoutSVGRect rect id='shape'",
       "reason": "SVG resource change"
     }

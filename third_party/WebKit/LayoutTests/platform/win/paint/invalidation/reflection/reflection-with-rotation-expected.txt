@@ -22,9 +22,14 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'PASS'",
           "rect": [23, 51, 71, 109],
-          "reason": "full"
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'FAIL'",
+          "rect": [23, 51, 67, 108],
+          "reason": "disappeared"
         }
       ]
     }

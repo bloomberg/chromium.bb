@@ -20,6 +20,11 @@
           "object": "LayoutBlockFlow DIV id='target'",
           "rect": [8, 8, 200, 100],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [108, 8, 100, 100],
+          "reason": "incremental"
         }
       ]
     }

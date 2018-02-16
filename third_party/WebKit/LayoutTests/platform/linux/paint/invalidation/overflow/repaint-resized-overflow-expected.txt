@@ -17,13 +17,13 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [8, 212, 784, 52],
-          "reason": "incremental"
+          "object": "LayoutBlockFlow DIV id='s'",
+          "rect": [8, 156, 108, 108],
+          "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow DIV id='s'",
-          "rect": [8, 208, 108, 56],
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 212, 108, 52],
           "reason": "incremental"
         }
       ]
@@ -31,12 +31,8 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "incremental"
-    },
-    {
       "object": "LayoutBlockFlow DIV id='s'",
-      "reason": "incremental"
+      "reason": "geometry"
     }
   ]
 }

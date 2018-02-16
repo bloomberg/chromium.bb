@@ -9,27 +9,22 @@
         {
           "object": "LayoutTextControl TEXTAREA id='editor'",
           "rect": [7, 7, 183, 40],
-          "reason": "subtree"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "LayoutTextControl TEXTAREA id='editor'",
+          "rect": [7, 7, 183, 40],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [8, 8, 181, 38],
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutTextControl TEXTAREA id='editor'",
           "rect": [9, 11, 179, 16],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [11, 11, 175, 16],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutTextControl TEXTAREA id='editor'",
-          "rect": [9, 30, 164, 15],
-          "reason": "scroll control"
-        },
-        {
-          "object": "LayoutTextControl TEXTAREA id='editor'",
-          "rect": [173, 30, 15, 15],
-          "reason": "scroll control"
+          "reason": "appeared"
         }
       ]
     }

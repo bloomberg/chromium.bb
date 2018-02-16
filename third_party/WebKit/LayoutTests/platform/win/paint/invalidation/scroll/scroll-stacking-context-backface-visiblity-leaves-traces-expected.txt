@@ -24,14 +24,14 @@
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='recentlink'",
+          "object": "LayoutBlockFlow (positioned) DIV id='searchbar'",
           "rect": [10, 1822, 150, 150],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
-          "object": "LayoutBlockFlow DIV id='recentlink'",
+          "object": "LayoutBlockFlow (positioned) DIV id='searchbar'",
           "rect": [10, 1422, 150, 150],
-          "reason": "geometry"
+          "reason": "paint property change"
         }
       ],
       "transform": 1
@@ -47,12 +47,6 @@
         [0, -1400, 0, 1]
       ],
       "flattenInheritedTransform": false
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='recentlink'",
-      "reason": "geometry"
     }
   ]
 }

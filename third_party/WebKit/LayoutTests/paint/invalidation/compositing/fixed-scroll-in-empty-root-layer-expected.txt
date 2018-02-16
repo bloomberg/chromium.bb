@@ -21,18 +21,6 @@
     {
       "name": "LayoutBlockFlow HTML",
       "bounds": [785, 2016],
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV",
-          "rect": [0, 250, 100, 100],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV",
-          "rect": [0, 50, 100, 100],
-          "reason": "geometry"
-        }
-      ],
       "transform": 1
     },
     {
@@ -51,12 +39,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [0, 250, 100, 100],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [0, 50, 100, 100],
-          "reason": "geometry"
+          "reason": "paint property change"
         }
       ],
       "transform": 1
@@ -72,12 +60,6 @@
         [0, -200, 0, 1]
       ],
       "flattenInheritedTransform": false
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "geometry"
     }
   ]
 }

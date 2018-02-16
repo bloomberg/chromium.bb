@@ -34,12 +34,6 @@
         [0, -400, 0, 1]
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
-      "reason": "disappeared"
-    }
   ]
 }
 

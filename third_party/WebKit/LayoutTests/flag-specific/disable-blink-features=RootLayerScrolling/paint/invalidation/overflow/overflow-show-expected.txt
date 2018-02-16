@@ -23,10 +23,6 @@
     {
       "object": "LayoutBlockFlow (positioned) DIV id='overflowParent' class='absolute green'",
       "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow (relative positioned) DIV class='relative green'",
-      "reason": "appeared"
     }
   ]
 }

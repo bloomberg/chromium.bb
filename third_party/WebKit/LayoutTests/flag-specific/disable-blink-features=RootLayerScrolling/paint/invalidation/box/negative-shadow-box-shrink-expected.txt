@@ -21,10 +21,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow DIV id='inner2'",
-      "reason": "disappeared"
-    },
-    {
       "object": "LayoutBlockFlow DIV id='outer'",
       "reason": "geometry"
     }

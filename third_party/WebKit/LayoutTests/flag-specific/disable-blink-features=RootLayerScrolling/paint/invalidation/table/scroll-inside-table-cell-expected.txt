@@ -19,10 +19,10 @@
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative red'",
           "rect": [314, 114, 435, 450],
-          "reason": "disappeared"
+          "reason": "paint property change"
         },
         {
-          "object": "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'",
+          "object": "HorizontalScrollbar",
           "rect": [314, 564, 435, 15],
           "reason": "scroll control"
         }
@@ -37,14 +37,6 @@
     {
       "object": "HorizontalScrollbar",
       "reason": "scroll control"
-    },
-    {
-      "object": "LayoutBlockFlow (relative positioned) DIV class='relative red'",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
-      "reason": "appeared"
     }
   ]
 }

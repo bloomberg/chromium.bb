@@ -18,39 +18,30 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV",
-          "rect": [8, 211, 106, 53],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [8, 308, 100, 100],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='target3'",
-          "rect": [8, 388, 100, 20],
-          "reason": "disappeared"
+          "rect": [8, 158, 106, 106],
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV",
-          "rect": [61, 8, 53, 106],
-          "reason": "incremental"
+          "rect": [8, 8, 106, 106],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [8, 308, 100, 100],
+          "reason": "disappeared"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow DIV id='target3'",
-      "reason": "disappeared"
+      "object": "LayoutBlockFlow (positioned) DIV",
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "incremental"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV",

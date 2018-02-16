@@ -17,29 +17,34 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGRect rect id='masker'",
-          "rect": [0, 0, 300, 100],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGRect rect id='masker'",
-          "rect": [100, 0, 200, 300],
-          "reason": "subtree"
-        },
-        {
           "object": "LayoutSVGContainer g",
           "rect": [150, 50, 100, 100],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
-          "object": "LayoutSVGContainer g",
-          "rect": [50, 150, 100, 100],
-          "reason": "geometry"
+          "object": "LayoutSVGRect rect id='masker'",
+          "rect": [150, 50, 100, 100],
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect id='clipper'",
           "rect": [50, 150, 100, 100],
-          "reason": "subtree"
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [150, 50, 100, 50],
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [150, 50, 100, 50],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [100, 150, 50, 100],
+          "reason": "disappeared"
         }
       ]
     }
@@ -51,7 +56,7 @@
     },
     {
       "object": "LayoutSVGRect rect id='masker'",
-      "reason": "subtree"
+      "reason": "full"
     },
     {
       "object": "LayoutSVGContainer g",
@@ -59,7 +64,7 @@
     },
     {
       "object": "LayoutSVGRect rect id='clipper'",
-      "reason": "subtree"
+      "reason": "full"
     }
   ]
 }

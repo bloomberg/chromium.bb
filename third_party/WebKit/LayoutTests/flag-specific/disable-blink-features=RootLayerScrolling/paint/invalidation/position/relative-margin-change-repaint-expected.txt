@@ -21,6 +21,10 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "geometry"
+    },
+    {
       "object": "LayoutBlockFlow (relative positioned) DIV id='container'",
       "reason": "geometry"
     },

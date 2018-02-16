@@ -7,11 +7,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [0, 0, 800, 105],
-          "reason": "geometry"
-        },
-        {
           "object": "LayoutBlockFlow DIV id='target'",
           "rect": [20, 0, 100, 100],
           "reason": "geometry"

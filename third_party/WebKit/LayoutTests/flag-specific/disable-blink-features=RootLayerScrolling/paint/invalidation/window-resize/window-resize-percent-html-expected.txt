@@ -7,14 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
-          "rect": [0, 250, 600, 250],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutBlockFlow DIV",
-          "rect": [0, 62, 300, 63],
-          "reason": "incremental"
+          "rect": [0, 0, 300, 125],
+          "reason": "geometry"
         }
       ]
     }
@@ -26,7 +21,7 @@
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "incremental"
+      "reason": "geometry"
     }
   ]
 }
@@ -39,14 +34,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
-          "rect": [400, 0, 200, 250],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutBlockFlow DIV",
-          "rect": [200, 0, 100, 63],
-          "reason": "incremental"
+          "rect": [0, 0, 300, 63],
+          "reason": "geometry"
         }
       ]
     }
@@ -58,7 +48,7 @@
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "incremental"
+      "reason": "geometry"
     }
   ]
 }
@@ -77,8 +67,8 @@
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [0, 62, 200, 88],
-          "reason": "incremental"
+          "rect": [0, 0, 200, 150],
+          "reason": "geometry"
         }
       ]
     }
@@ -90,7 +80,7 @@
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "incremental"
+      "reason": "geometry"
     }
   ]
 }

@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Some text in vertical mode'",
           "rect": [184, 201, 19, 168],
           "reason": "selection"
         }

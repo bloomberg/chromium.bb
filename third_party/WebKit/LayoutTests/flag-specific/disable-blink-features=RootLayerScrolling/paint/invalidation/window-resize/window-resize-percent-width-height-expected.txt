@@ -7,11 +7,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
-          "rect": [0, 250, 600, 250],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [0, 125, 300, 125],
           "reason": "incremental"
@@ -40,7 +35,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutView #document",
-          "rect": [0, 0, 600, 250],
+          "rect": [0, 0, 400, 250],
           "reason": "background"
         },
         {

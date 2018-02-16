@@ -26,8 +26,8 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
-          "rect": [0, 110, 120, 110],
-          "reason": "incremental"
+          "rect": [0, 0, 120, 220],
+          "reason": "geometry"
         }
       ],
       "transform": 1
@@ -48,7 +48,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
-      "reason": "incremental"
+      "reason": "geometry"
     }
   ]
 }

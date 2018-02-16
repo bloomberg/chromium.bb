@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='border-image'",
           "rect": [10, 10, 200, 200],
-          "reason": "style change"
+          "reason": "disappeared"
         }
       ]
     }

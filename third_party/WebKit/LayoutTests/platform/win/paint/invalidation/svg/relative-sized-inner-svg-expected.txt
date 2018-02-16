@@ -22,34 +22,14 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutSVGPath path",
-          "rect": [27, 69, 364, 364],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [27, 69, 364, 364],
-          "reason": "geometry"
+          "object": "LayoutSVGViewportContainer svg",
+          "rect": [27, 69, 364, 366],
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGViewportContainer svg",
-          "rect": [27, 69, 364, 364],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [13, 207, 92, 91],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [13, 207, 92, 91],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg",
-          "rect": [13, 207, 92, 91],
-          "reason": "geometry"
+          "rect": [13, 207, 92, 92],
+          "reason": "paint property change"
         }
       ]
     }
@@ -65,14 +45,6 @@
     },
     {
       "object": "LayoutSVGRoot svg",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGViewportContainer svg",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGPath path",
       "reason": "geometry"
     }
   ]

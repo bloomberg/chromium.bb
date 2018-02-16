@@ -22,37 +22,74 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox ' '",
           "rect": [39, 79, 146, 99],
           "reason": "disappeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox ' '",
+          "rect": [39, 79, 146, 99],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox ' '",
+          "rect": [39, 79, 146, 99],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox ' '",
+          "rect": [39, 79, 146, 99],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'hello world hello world'",
+          "rect": [39, 79, 146, 99],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'hello world hello world'",
+          "rect": [39, 79, 146, 99],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'hello world hello world'",
+          "rect": [39, 79, 146, 99],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'hello'",
+          "rect": [39, 79, 146, 99],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'world hello world'",
+          "rect": [39, 79, 146, 99],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox ' world'",
           "rect": [67, 158, 39, 20],
-          "reason": "geometry"
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'world'",
           "rect": [71, 79, 35, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'hello '",
           "rect": [39, 79, 32, 19],
-          "reason": "geometry"
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'hello '",
+          "rect": [39, 79, 32, 19],
+          "reason": "disappeared"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutText #text",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutInline SPAN id='removeme'",
-      "reason": "disappeared"
-    },
     {
       "object": "LayoutBlockFlow DIV id='test'",
       "reason": "geometry"

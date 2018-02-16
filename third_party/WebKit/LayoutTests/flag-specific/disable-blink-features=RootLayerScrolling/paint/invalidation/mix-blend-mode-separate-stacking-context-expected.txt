@@ -9,68 +9,62 @@
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [348, 48, 60, 60],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutBlockFlow (floating) DIV",
-          "rect": [348, 48, 60, 60],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutBlockFlow (floating) DIV id='fourth'",
-          "rect": [328, 28, 60, 60],
-          "reason": "subtree"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='fourth'",
           "rect": [328, 28, 60, 60],
-          "reason": "subtree"
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [328, 28, 60, 60],
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV id='third'",
           "rect": [248, 48, 60, 60],
-          "reason": "subtree"
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) (floating) DIV",
+          "rect": [228, 28, 60, 60],
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV id='second'",
           "rect": [148, 48, 60, 60],
-          "reason": "subtree"
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutBlockFlow (floating) DIV id='second'",
+          "object": "LayoutBlockFlow (relative positioned) (floating) DIV",
           "rect": [148, 48, 60, 60],
-          "reason": "subtree"
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) (floating) DIV",
+          "rect": [128, 28, 60, 60],
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV id='first'",
           "rect": [48, 48, 60, 60],
-          "reason": "subtree"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutBlockFlow (floating) DIV id='first'",
+          "object": "LayoutBlockFlow (relative positioned) (floating) DIV",
           "rect": [48, 48, 60, 60],
-          "reason": "subtree"
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) (floating) DIV",
+          "rect": [28, 28, 60, 60],
+          "reason": "paint property change"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (floating) DIV id='fourth'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow (floating) DIV",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow (floating) DIV id='second'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow (floating) DIV id='first'",
-      "reason": "subtree"
-    },
     {
       "object": "LayoutBlockFlow (floating) DIV id='first'",
       "reason": "subtree"
@@ -85,11 +79,11 @@
     },
     {
       "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='fourth'",
-      "reason": "subtree"
+      "reason": "style change"
     },
     {
       "object": "LayoutBlockFlow (floating) DIV",
-      "reason": "subtree"
+      "reason": "style change"
     }
   ]
 }

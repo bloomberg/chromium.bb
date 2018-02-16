@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutView #document",
-          "rect": [0, 0, 600, 500],
+          "rect": [0, 0, 600, 250],
           "reason": "background"
         }
       ]
@@ -41,7 +41,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutView #document",
-          "rect": [0, 0, 600, 250],
+          "rect": [0, 0, 400, 250],
           "reason": "background"
         }
       ]

@@ -12,9 +12,14 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox '\u00A0'",
           "rect": [11, 131, 4, 19],
-          "reason": "geometry"
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox '\u00A0'",
+          "rect": [11, 131, 4, 19],
+          "reason": "disappeared"
         }
       ]
     }

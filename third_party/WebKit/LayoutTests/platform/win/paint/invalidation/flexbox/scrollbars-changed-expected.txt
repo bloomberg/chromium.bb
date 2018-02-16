@@ -17,33 +17,24 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='dynamic' class='content'",
-          "rect": [0, 0, 185, 30],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='scroller'",
+          "object": "VerticalScrollbar",
           "rect": [185, 0, 15, 100],
           "reason": "scroll control"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [0, 5, 15, 15],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'a'",
           "rect": [0, 5, 15, 15],
           "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'z'",
+          "rect": [0, 5, 15, 15],
+          "reason": "appeared"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutText #text",
-      "reason": "disappeared"
-    },
     {
       "object": "VerticalScrollbar",
       "reason": "scroll control"

@@ -3,18 +3,6 @@
     {
       "object": "LayoutView #document",
       "reason": "full"
-    },
-    {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "geometry"
     }
   ]
 }

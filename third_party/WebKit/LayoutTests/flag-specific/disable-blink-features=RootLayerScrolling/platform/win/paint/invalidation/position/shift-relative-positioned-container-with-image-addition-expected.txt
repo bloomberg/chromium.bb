@@ -12,33 +12,8 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
-          "rect": [8, 186, 769, 642],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
-          "rect": [8, 92, 769, 642],
-          "reason": "geometry"
-        },
-        {
           "object": "LayoutIFrame IFRAME id='iframe'",
           "rect": [8, 92, 732, 94],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [10, 94, 728, 90],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [10, 94, 728, 90],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [18, 102, 712, 74],
           "reason": "appeared"
         },
         {
@@ -62,6 +37,10 @@
     {
       "object": "LayoutIFrame IFRAME id='iframe'",
       "reason": "appeared"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV class='relative'",
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",

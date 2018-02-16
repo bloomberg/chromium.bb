@@ -22,27 +22,17 @@
           "reason": "full"
         },
         {
-          "object": "LayoutBlockFlow (anonymous)",
-          "rect": [8, 208, 100, 100],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='root'",
-          "rect": [8, 208, 100, 100],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow (anonymous)",
-          "rect": [8, 108, 100, 100],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'FAIL: Test did'",
           "rect": [8, 48, 97, 119],
           "reason": "disappeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'not run'",
+          "rect": [8, 48, 97, 119],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox '\u00A0'",
           "rect": [8, 48, 8, 19],
           "reason": "appeared"
         }
@@ -50,10 +40,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutText #text",
-      "reason": "disappeared"
-    },
     {
       "object": "LayoutBlockFlow DIV id='root'",
       "reason": "incremental"
@@ -81,14 +67,6 @@
     {
       "object": "RootInlineBox",
       "reason": "geometry"
-    },
-    {
-      "object": "LayoutBR BR",
-      "reason": "selection"
-    },
-    {
-      "object": "InlineTextBox '\n'",
-      "reason": "selection"
     },
     {
       "object": "LayoutBR BR",

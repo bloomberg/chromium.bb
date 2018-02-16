@@ -8,8 +8,8 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV",
-          "rect": [88, 53, 15, 100],
-          "reason": "scroll control"
+          "rect": [0, 50, 106, 106],
+          "reason": "paint property change"
         }
       ]
     }
@@ -20,8 +20,16 @@
       "reason": "geometry"
     },
     {
+      "object": "LayoutBlockFlow (positioned) DIV",
+      "reason": "geometry"
+    },
+    {
       "object": "VerticalScrollbar",
       "reason": "scroll control"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='q'",
+      "reason": "geometry"
     }
   ]
 }

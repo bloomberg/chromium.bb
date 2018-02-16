@@ -17,12 +17,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV",
+          "object": "HorizontalScrollbar",
           "rect": [8, 93, 85, 15],
           "reason": "scroll control"
         },
         {
-          "object": "LayoutBlockFlow DIV",
+          "object": "VerticalScrollbar",
           "rect": [93, 8, 15, 85],
           "reason": "scroll control"
         }

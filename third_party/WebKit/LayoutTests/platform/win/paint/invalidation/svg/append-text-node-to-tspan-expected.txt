@@ -17,54 +17,59 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [10, 62, 307, 377],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [10, 62, 307, 377],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [10, 62, 307, 377],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [10, 62, 307, 377],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [10, 62, 307, 377],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [10, 62, 307, 377],
+          "object": "InlineTextBox ' '",
+          "rect": [10, 60, 310, 380],
           "reason": "appeared"
         },
         {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [10, 62, 307, 377],
-          "reason": "geometry"
+          "object": "InlineTextBox ' '",
+          "rect": [10, 60, 310, 380],
+          "reason": "appeared"
         },
         {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [10, 62, 307, 377],
-          "reason": "geometry"
+          "object": "InlineTextBox ' '",
+          "rect": [10, 60, 310, 380],
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutSVGTSpan tspan id='modify'",
-          "rect": [10, 62, 307, 377],
-          "reason": "geometry"
+          "object": "InlineTextBox ' '",
+          "rect": [10, 60, 310, 380],
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutSVGText text",
-          "rect": [10, 62, 307, 377],
-          "reason": "style change"
+          "object": "InlineTextBox 'PA'",
+          "rect": [10, 60, 310, 380],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'PA'",
+          "rect": [10, 60, 310, 380],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [10, 60, 310, 380],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [10, 60, 310, 380],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [10, 60, 310, 380],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [10, 60, 310, 380],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'SS'",
+          "rect": [10, 60, 310, 380],
+          "reason": "appeared"
         }
       ]
     }

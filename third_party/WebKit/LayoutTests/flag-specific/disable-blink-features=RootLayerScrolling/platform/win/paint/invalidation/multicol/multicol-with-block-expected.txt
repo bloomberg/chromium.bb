@@ -7,14 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='target'",
-          "rect": [488, 8, 150, 20],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
           "rect": [488, 8, 80, 20],
-          "reason": "style change"
+          "reason": "appeared"
         }
       ]
     }

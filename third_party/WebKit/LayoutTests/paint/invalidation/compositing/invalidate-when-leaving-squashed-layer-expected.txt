@@ -35,7 +35,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target'",
           "rect": [0, 0, 200, 200],
-          "reason": "subtree"
+          "reason": "disappeared"
         }
       ]
     },
@@ -49,11 +49,6 @@
           "object": "LayoutBlockFlow (positioned) DIV id='target'",
           "rect": [0, 0, 200, 200],
           "reason": "full"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='target'",
-          "rect": [0, 0, 200, 200],
-          "reason": "subtree"
         }
       ],
       "transform": 2
@@ -83,15 +78,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='target'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='target'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='target'",
-      "reason": "subtree"
+      "reason": "style change"
     }
   ]
 }

@@ -19,7 +19,7 @@
         {
           "object": "LayoutBlockFlow DIV id='target'",
           "rect": [8, 8, 40, 20],
-          "reason": "disappeared"
+          "reason": "incremental"
         }
       ]
     }
@@ -27,7 +27,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV id='target'",
-      "reason": "disappeared"
+      "reason": "incremental"
     }
   ]
 }

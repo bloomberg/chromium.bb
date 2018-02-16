@@ -9,7 +9,22 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target'",
           "rect": [8, 8, 300, 300],
-          "reason": "geometry"
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 8, 300, 300],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='target'",
+          "rect": [8, 8, 300, 200],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 8, 300, 200],
+          "reason": "paint property change"
         }
       ]
     }

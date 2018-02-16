@@ -18,7 +18,7 @@
     },
     {
       "object": "LayoutBlockFlow DIV id='container'",
-      "reason": "geometry"
+      "reason": "incremental"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='overlay'",

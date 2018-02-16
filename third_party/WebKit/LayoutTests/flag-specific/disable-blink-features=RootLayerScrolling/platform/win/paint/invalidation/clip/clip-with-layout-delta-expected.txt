@@ -9,32 +9,32 @@
         {
           "object": "LayoutBlockFlow (relative positioned) DIV",
           "rect": [108, 8, 100, 100],
-          "reason": "background"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutBlockFlow SPAN id='t2' class='blue'",
+          "object": "LayoutBlockFlow (relative positioned) DIV",
           "rect": [108, 8, 100, 100],
-          "reason": "style change"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 8, 100, 100],
-          "reason": "background"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutBlockFlow SPAN id='t1'",
+          "object": "LayoutBlockFlow DIV",
           "rect": [8, 8, 100, 100],
-          "reason": "style change"
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "LayoutBlockFlow (relative positioned) DIV",
           "rect": [108, 8, 4, 19],
-          "reason": "geometry"
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox '\u00A0'",
           "rect": [8, 8, 4, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         }
       ]
     }

@@ -34,6 +34,12 @@
         [18, 8, 0, 1]
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='layer'",
+      "reason": "geometry"
+    }
   ]
 }
 10.2:
@@ -71,6 +77,12 @@
         [0, 0, 1, 0],
         [18, 8, 0, 1]
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='layer'",
+      "reason": "geometry"
     }
   ]
 }
@@ -110,6 +122,12 @@
         [18, 8, 0, 1]
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='layer'",
+      "reason": "geometry"
+    }
   ]
 }
 10.399999999999999:
@@ -147,6 +165,12 @@
         [0, 0, 1, 0],
         [18, 8, 0, 1]
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='layer'",
+      "reason": "geometry"
     }
   ]
 }
@@ -186,6 +210,12 @@
         [19, 8, 0, 1]
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='layer'",
+      "reason": "geometry"
+    }
   ]
 }
 10.599999999999998:
@@ -223,6 +253,12 @@
         [0, 0, 1, 0],
         [19, 8, 0, 1]
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='layer'",
+      "reason": "geometry"
     }
   ]
 }
@@ -262,6 +298,12 @@
         [19, 8, 0, 1]
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='layer'",
+      "reason": "geometry"
+    }
   ]
 }
 10.799999999999997:
@@ -299,6 +341,12 @@
         [0, 0, 1, 0],
         [19, 8, 0, 1]
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='layer'",
+      "reason": "geometry"
     }
   ]
 }
@@ -338,6 +386,12 @@
         [19, 8, 0, 1]
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='layer'",
+      "reason": "geometry"
+    }
   ]
 }
 10.999999999999996:
@@ -375,6 +429,12 @@
         [0, 0, 1, 0],
         [19, 8, 0, 1]
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='layer'",
+      "reason": "geometry"
     }
   ]
 }
@@ -414,6 +474,12 @@
         [19, 8, 0, 1]
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='layer'",
+      "reason": "geometry"
+    }
   ]
 }
 11.199999999999996:
@@ -451,6 +517,12 @@
         [0, 0, 1, 0],
         [19, 8, 0, 1]
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='layer'",
+      "reason": "geometry"
     }
   ]
 }
@@ -490,6 +562,12 @@
         [19, 8, 0, 1]
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='layer'",
+      "reason": "geometry"
+    }
   ]
 }
 11.399999999999995:
@@ -527,6 +605,12 @@
         [0, 0, 1, 0],
         [19, 8, 0, 1]
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='layer'",
+      "reason": "geometry"
     }
   ]
 }
@@ -566,6 +650,12 @@
         [20, 8, 0, 1]
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='layer'",
+      "reason": "geometry"
+    }
   ]
 }
 11.599999999999994:
@@ -603,6 +693,12 @@
         [0, 0, 1, 0],
         [20, 8, 0, 1]
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='layer'",
+      "reason": "geometry"
     }
   ]
 }
@@ -642,6 +738,12 @@
         [20, 8, 0, 1]
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='layer'",
+      "reason": "geometry"
+    }
   ]
 }
 11.799999999999994:
@@ -679,6 +781,12 @@
         [0, 0, 1, 0],
         [20, 8, 0, 1]
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='layer'",
+      "reason": "geometry"
     }
   ]
 }
@@ -718,6 +826,12 @@
         [20, 8, 0, 1]
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='layer'",
+      "reason": "geometry"
+    }
   ]
 }
 11.999999999999993:
@@ -756,6 +870,12 @@
         [20, 8, 0, 1]
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='layer'",
+      "reason": "geometry"
+    }
   ]
 }
 12.099999999999993:
@@ -793,6 +913,12 @@
         [0, 0, 1, 0],
         [20, 8, 0, 1]
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='layer'",
+      "reason": "geometry"
     }
   ]
 }

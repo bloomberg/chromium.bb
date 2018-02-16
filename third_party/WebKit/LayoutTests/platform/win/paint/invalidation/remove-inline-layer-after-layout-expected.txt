@@ -17,17 +17,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (anonymous)",
-          "rect": [8, 108, 784, 105],
-          "reason": "geometry"
-        },
-        {
           "object": "LayoutInline SPAN id='target'",
-          "rect": [112, 108, 171, 104],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutText #text",
           "rect": [112, 193, 171, 19],
           "reason": "disappeared"
         },
@@ -47,26 +37,19 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox '\n'",
           "rect": [108, 193, 4, 19],
-          "reason": "geometry"
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [108, 193, 4, 19],
+          "reason": "disappeared"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutText #text",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutInline SPAN id='target'",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "disappeared"
-    },
     {
       "object": "LayoutBlockFlow (anonymous)",
       "reason": "geometry"

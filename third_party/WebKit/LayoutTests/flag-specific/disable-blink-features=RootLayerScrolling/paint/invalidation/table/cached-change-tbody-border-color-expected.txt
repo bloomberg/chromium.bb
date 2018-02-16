@@ -7,11 +7,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutTableSection TBODY id='tbody'",
-          "rect": [8, 8, 114, 104],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutTableRow TR",
           "rect": [8, 108, 114, 53],
           "reason": "style change"

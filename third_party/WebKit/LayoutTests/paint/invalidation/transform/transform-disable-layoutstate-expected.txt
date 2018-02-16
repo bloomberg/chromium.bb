@@ -18,8 +18,8 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [58, 152, 500, 49],
-          "reason": "incremental"
+          "rect": [58, 138, 500, 63],
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV",
@@ -36,7 +36,7 @@
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "incremental"
+      "reason": "geometry"
     }
   ]
 }

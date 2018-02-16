@@ -12,29 +12,24 @@
           "reason": "full"
         },
         {
-          "object": "LayoutView #document",
-          "rect": [0, 10, 785, 600],
-          "reason": "invalidate paint rectangle"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [100, 110, 100, 100],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [100, 100, 100, 100],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [8, 18, 100, 100],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [8, 8, 100, 100],
-          "reason": "geometry"
+          "reason": "paint property change"
         }
       ],
       "transform": 1
@@ -55,14 +50,6 @@
     {
       "object": "LayoutView #document",
       "reason": "invalidate paint rectangle"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "geometry"
     }
   ]
 }

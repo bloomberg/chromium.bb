@@ -18,27 +18,22 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGRect rect",
-          "rect": [5, 185, 160, 60],
+          "rect": [6, 186, 158, 58],
           "reason": "style change"
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [5, 125, 160, 60],
+          "rect": [6, 126, 158, 58],
           "reason": "style change"
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [5, 65, 160, 60],
+          "rect": [6, 66, 158, 58],
           "reason": "style change"
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [5, 5, 160, 60],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [6, 6, 158, 238],
+          "rect": [6, 6, 158, 58],
           "reason": "style change"
         }
       ]

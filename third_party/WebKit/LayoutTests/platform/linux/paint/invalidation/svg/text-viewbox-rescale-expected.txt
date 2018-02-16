@@ -17,89 +17,29 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [59, 140, 95, 23],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [59, 140, 95, 23],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [59, 140, 95, 23],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [59, 140, 95, 23],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='inner2'",
-          "rect": [59, 140, 95, 23],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [59, 40, 95, 23],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [59, 40, 95, 23],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [59, 40, 95, 23],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [59, 40, 95, 23],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [59, 40, 95, 23],
-          "reason": "full"
-        },
-        {
           "object": "LayoutSVGViewportContainer svg id='inner1'",
-          "rect": [59, 40, 95, 23],
-          "reason": "full"
+          "rect": [0, 0, 200, 200],
+          "reason": "appeared"
         },
         {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 0, 8, 2],
-          "reason": "geometry"
+          "object": "InlineTextBox 'PASS '",
+          "rect": [0, 100, 200, 100],
+          "reason": "appeared"
         },
         {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 0, 8, 2],
-          "reason": "geometry"
+          "object": "InlineTextBox 'PASS '",
+          "rect": [0, 100, 200, 100],
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 0, 8, 2],
-          "reason": "geometry"
+          "object": "InlineTextBox 'PASS'",
+          "rect": [0, 100, 200, 100],
+          "reason": "appeared"
         },
         {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [0, 0, 8, 2],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [0, 0, 8, 2],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='inner1'",
-          "rect": [0, 0, 8, 2],
-          "reason": "full"
+          "object": "InlineTextBox 'PASS'",
+          "rect": [0, 100, 200, 100],
+          "reason": "disappeared"
         }
       ]
     }

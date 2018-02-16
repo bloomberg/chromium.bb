@@ -19,7 +19,7 @@
         {
           "object": "LayoutSVGPath path id='path'",
           "rect": [8, 8, 100, 100],
-          "reason": "full"
+          "reason": "disappeared"
         }
       ]
     }

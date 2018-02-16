@@ -22,34 +22,14 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutSVGContainer use",
+          "object": "LayoutSVGViewportContainer svg id='targetSymbol'",
           "rect": [9, 73, 400, 400],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [9, 73, 400, 400],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGViewportContainer svg id='targetSymbol'",
-          "rect": [9, 73, 400, 400],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [209, 273, 200, 200],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [9, 73, 200, 200],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [59, 273, 50, 50],
-          "reason": "geometry"
+          "rect": [9, 223, 100, 100],
+          "reason": "paint property change"
         }
       ]
     }
@@ -69,18 +49,6 @@
     },
     {
       "object": "LayoutSVGContainer use",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGViewportContainer svg id='targetSymbol'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGRect rect",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGRect rect",
       "reason": "geometry"
     }
   ]

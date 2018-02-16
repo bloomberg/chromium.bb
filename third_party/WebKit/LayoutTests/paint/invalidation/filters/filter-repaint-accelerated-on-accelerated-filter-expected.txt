@@ -29,7 +29,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='resize' class='drop-shadow accelerated'",
-          "rect": [0, 0, 200, 200],
+          "rect": [0, 0, 100, 200],
           "reason": "geometry"
         }
       ],

@@ -7,7 +7,17 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGText text",
+          "object": "InlineTextBox 'X'",
+          "rect": [8, 8, 300, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "InlineTextBox 'Y'",
+          "rect": [8, 8, 300, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "InlineTextBox 'Z'",
           "rect": [8, 8, 300, 100],
           "reason": "SVG resource change"
         }

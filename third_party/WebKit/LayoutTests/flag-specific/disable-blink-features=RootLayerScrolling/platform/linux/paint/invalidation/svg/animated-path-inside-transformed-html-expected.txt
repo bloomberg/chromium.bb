@@ -7,43 +7,33 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [203, 336, 126, 44],
-          "reason": "geometry"
+          "object": "InlineTextBox 'This is some text'",
+          "rect": [246, 89, 127, 46],
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutSVGText text id='text'",
-          "rect": [203, 336, 126, 44],
-          "reason": "full"
+          "object": "InlineTextBox 'This is some text'",
+          "rect": [203, 336, 126, 45],
+          "reason": "appeared"
         },
         {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [247, 90, 125, 44],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGText text id='text'",
-          "rect": [247, 90, 125, 44],
+          "object": "LayoutSVGRect rect id='rect'",
+          "rect": [108, 84, 105, 102],
           "reason": "full"
         },
         {
           "object": "LayoutSVGRect rect id='rect'",
-          "rect": [355, 125, 103, 104],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGRect rect id='rect'",
-          "rect": [109, 84, 103, 101],
+          "rect": [355, 125, 104, 104],
           "reason": "full"
         },
         {
           "object": "LayoutSVGImage image id='image'",
-          "rect": [90, 208, 98, 97],
+          "rect": [352, 398, 99, 98],
           "reason": "full"
         },
         {
           "object": "LayoutSVGImage image id='image'",
-          "rect": [353, 398, 97, 98],
+          "rect": [90, 207, 98, 99],
           "reason": "full"
         }
       ]

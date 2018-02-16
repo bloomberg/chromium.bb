@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutTableCol COL id='col'",
+          "object": "LayoutTableSection TBODY",
           "rect": [8, 108, 106, 104],
           "reason": "style change"
         }

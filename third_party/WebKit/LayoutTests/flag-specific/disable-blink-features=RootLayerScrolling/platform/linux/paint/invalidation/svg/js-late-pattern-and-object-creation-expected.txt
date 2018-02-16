@@ -7,38 +7,8 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGContainer g id='content'",
-          "rect": [0, 15, 681, 364],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 247, 681, 132],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [0, 247, 681, 132],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 130, 519, 132],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [0, 130, 519, 132],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 15, 371, 129],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [0, 15, 371, 129],
+          "object": "LayoutSVGRoot svg id='svg-root'",
+          "rect": [0, 15, 682, 365],
           "reason": "appeared"
         }
       ]

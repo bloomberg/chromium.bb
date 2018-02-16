@@ -17,34 +17,19 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow H2",
+          "object": "InlineTextBox 'Chromium'",
           "rect": [40, 107, 111, 28],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [40, 107, 111, 28],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow H2",
+          "object": "InlineTextBox 'Chromium'",
           "rect": [8, 107, 111, 28],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 107, 111, 28],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (anonymous)",
-          "rect": [8, 88, 32, 67],
           "reason": "geometry"
         },
         {
           "object": "LayoutImage IMG id='foo'",
           "rect": [8, 88, 32, 32],
-          "reason": "geometry"
+          "reason": "appeared"
         }
       ]
     }

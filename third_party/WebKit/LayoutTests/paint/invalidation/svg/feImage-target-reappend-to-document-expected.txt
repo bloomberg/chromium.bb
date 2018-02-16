@@ -31,10 +31,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutSVGResourceFilterPrimitive feImage id='feimage-green'",
-      "reason": "disappeared"
-    },
-    {
       "object": "LayoutSVGRect rect",
       "reason": "full"
     },

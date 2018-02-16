@@ -28,13 +28,8 @@
         },
         {
           "object": "LayoutBlockFlow DIV id='target'",
-          "rect": [0, 0, 100, 100],
-          "reason": "compositing update"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='content'",
           "rect": [0, 30, 50, 50],
-          "reason": "compositing update"
+          "reason": "appeared"
         }
       ]
     },

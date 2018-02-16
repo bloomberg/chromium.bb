@@ -14,12 +14,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
           "rect": [93, 234, 142, 143],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='moveMe' class='fixed clipped'",
-          "rect": [93, 234, 142, 143],
-          "reason": "full"
+          "reason": "paint property change"
         }
       ],
       "transform": 1
@@ -43,11 +38,11 @@
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
-      "reason": "appeared"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
-      "reason": "disappeared"
+      "reason": "geometry"
     }
   ]
 }

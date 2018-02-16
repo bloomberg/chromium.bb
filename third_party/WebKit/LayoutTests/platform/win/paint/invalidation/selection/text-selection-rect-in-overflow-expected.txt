@@ -17,9 +17,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Should have green background'",
           "rect": [8, 8, 187, 19],
-          "reason": "selection"
+          "reason": "geometry"
         }
       ]
     }
@@ -27,11 +27,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutText #text",
-      "reason": "selection"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'Should have green background'",
-      "reason": "selection"
+      "reason": "geometry"
     }
   ]
 }

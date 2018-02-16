@@ -7,9 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='target'",
+          "object": "Caret",
           "rect": [791, 8, 1, 19],
-          "reason": "caret"
+          "reason": "appeared"
         }
       ]
     }

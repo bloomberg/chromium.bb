@@ -7,12 +7,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutInline SPAN id='target'",
+          "object": "InlineFlowBox",
           "rect": [8, 72, 38, 19],
-          "reason": "style change"
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'PASS'",
           "rect": [8, 72, 38, 19],
           "reason": "style change"
         }

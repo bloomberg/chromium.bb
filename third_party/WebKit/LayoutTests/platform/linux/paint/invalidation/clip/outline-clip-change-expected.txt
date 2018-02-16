@@ -19,10 +19,10 @@
         {
           "object": "LayoutBlockFlow (positioned) A id='link' class='updated'",
           "rect": [48, 108, 90, 25],
-          "reason": "subtree"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Lorem Ipsum'",
           "rect": [48, 108, 86, 19],
           "reason": "subtree"
         }
