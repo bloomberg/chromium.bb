@@ -20,6 +20,7 @@
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/mutator_host.h"
+#include "cc/trees/render_frame_metadata_observer.h"
 #include "cc/trees/scoped_abort_remaining_swap_promises.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/gpu/context_provider.h"
@@ -637,6 +638,14 @@ void SingleThreadProxy::ClearHistoryOnNavigation() {
   DCHECK(task_runner_provider_->IsImplThread());
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->ClearHistoryOnNavigation();
+}
+
+void SingleThreadProxy::SetRenderFrameObserver(
+    std::unique_ptr<RenderFrameMetadataObserver> observer) {
+  // TODO(jonross): this is used in some tests. Find a way to not attempt to
+  // create/set the RenderFrameMetadataObserver while in those tests.
+  // The browser does not produce RenderFrameMetadata.
+  NOTIMPLEMENTED();
 }
 
 bool SingleThreadProxy::WillBeginImplFrame(const viz::BeginFrameArgs& args) {

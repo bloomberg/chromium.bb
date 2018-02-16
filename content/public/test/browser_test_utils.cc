@@ -1882,6 +1882,37 @@ void FrameWatcher::DidReceiveCompositorFrame() {
     quit_.Run();
 }
 
+RenderFrameSubmissionObserver::RenderFrameSubmissionObserver(
+    RenderFrameMetadataProvider* render_frame_metadata_provider)
+    : render_frame_metadata_provider_(render_frame_metadata_provider) {
+  render_frame_metadata_provider_->AddObserver(this);
+  render_frame_metadata_provider_->ReportAllFrameSubmissionsForTesting(true);
+}
+
+RenderFrameSubmissionObserver::~RenderFrameSubmissionObserver() {
+  render_frame_metadata_provider_->RemoveObserver(this);
+  render_frame_metadata_provider_->ReportAllFrameSubmissionsForTesting(false);
+}
+
+void RenderFrameSubmissionObserver::Wait() {
+  // TODO(jonross): split Wait into separate APIs for those just interested in
+  // metadata changes, vs tests only caring about frame submission.
+  run_loop_ = std::make_unique<base::RunLoop>();
+  run_loop_->Run();
+  run_loop_.reset();
+}
+
+void RenderFrameSubmissionObserver::Quit() {
+  if (run_loop_)
+    run_loop_->Quit();
+}
+
+void RenderFrameSubmissionObserver::OnRenderFrameMetadataChanged() {}
+
+void RenderFrameSubmissionObserver::OnRenderFrameSubmission() {
+  Quit();
+}
+
 MainThreadFrameObserver::MainThreadFrameObserver(
     RenderWidgetHost* render_widget_host)
     : render_widget_host_(render_widget_host),

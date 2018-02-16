@@ -19,6 +19,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/proxy_impl.h"
+#include "cc/trees/render_frame_metadata_observer.h"
 #include "cc/trees/scoped_abort_remaining_swap_promises.h"
 #include "cc/trees/swap_promise.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -602,6 +603,14 @@ void ProxyMain::ClearHistoryOnNavigation() {
   DCHECK(task_runner_provider_->IsImplThread());
   DCHECK(task_runner_provider_->IsMainThreadBlocked());
   proxy_impl_->ClearHistoryOnNavigation();
+}
+
+void ProxyMain::SetRenderFrameObserver(
+    std::unique_ptr<RenderFrameMetadataObserver> observer) {
+  ImplThreadTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ProxyImpl::SetRenderFrameObserver,
+                     base::Unretained(proxy_impl_.get()), std::move(observer)));
 }
 
 }  // namespace cc

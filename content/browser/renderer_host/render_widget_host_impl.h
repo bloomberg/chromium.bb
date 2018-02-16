@@ -41,6 +41,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/common/input/input_handler.mojom.h"
+#include "content/common/render_frame_metadata.mojom.h"
 #include "content/common/render_widget_surface_properties.h"
 #include "content/common/view_message_enums.h"
 #include "content/common/widget.mojom.h"
@@ -93,6 +94,7 @@ namespace content {
 class BrowserAccessibilityManager;
 class InputRouter;
 class MockRenderWidgetHost;
+class RenderFrameMetadataProvider;
 class RenderWidgetHostOwnerDelegate;
 class SyntheticGestureController;
 class TimeoutMonitor;
@@ -580,8 +582,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void RequestCompositionUpdates(bool immediate_request, bool monitor_updates);
 
   void RequestCompositorFrameSink(
-      viz::mojom::CompositorFrameSinkRequest request,
-      viz::mojom::CompositorFrameSinkClientPtr client);
+      viz::mojom::CompositorFrameSinkRequest compositor_frame_sink_request,
+      viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client,
+      mojom::RenderFrameMetadataObserverClientRequest
+          render_frame_metadata_observer_client_request,
+      mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer);
 
   const viz::CompositorFrameMetadata& last_frame_metadata() {
     return last_frame_metadata_;
@@ -589,6 +594,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   uint64_t last_auto_resize_request_number() const {
     return last_auto_resize_request_number_;
+  }
+
+  RenderFrameMetadataProvider* render_frame_metadata_provider() {
+    return render_frame_metadata_provider_.get();
   }
 
   bool HasGestureStopped() override;
@@ -1076,6 +1085,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   base::Optional<ScreenOrientationValues> screen_orientation_type_for_testing_;
 
   bool next_resize_needs_resize_ack_ = false;
+
+  std::unique_ptr<RenderFrameMetadataProvider> render_frame_metadata_provider_;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 

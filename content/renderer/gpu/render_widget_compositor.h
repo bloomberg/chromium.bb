@@ -20,6 +20,7 @@
 #include "cc/trees/swap_promise.h"
 #include "cc/trees/swap_promise_monitor.h"
 #include "content/common/content_export.h"
+#include "content/common/render_frame_metadata.mojom.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/WebKit/public/platform/WebLayerTreeView.h"
@@ -48,7 +49,6 @@ class LatencyInfo;
 }
 
 namespace content {
-
 class RenderWidgetCompositorDelegate;
 struct ScreenInfo;
 
@@ -223,6 +223,12 @@ class CONTENT_EXPORT RenderWidgetCompositor
   const cc::LayerTreeSettings& GetLayerTreeSettings() const {
     return layer_tree_host_->GetSettings();
   }
+
+  // Creates a cc::RenderFrameMetadataObserver, which is sent to the compositor
+  // thread for binding.
+  void CreateRenderFrameObserver(
+      mojom::RenderFrameMetadataObserverRequest request,
+      mojom::RenderFrameMetadataObserverClientPtrInfo client_info);
 
  protected:
   friend class RenderViewImplScaleFactorTest;

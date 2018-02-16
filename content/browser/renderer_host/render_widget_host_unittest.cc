@@ -34,6 +34,7 @@
 #include "content/common/edit_command.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
+#include "content/common/render_frame_metadata.mojom.h"
 #include "content/common/resize_params.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
@@ -440,6 +441,34 @@ class MockRenderViewHostDelegateView : public RenderViewHostDelegateView {
   DISALLOW_COPY_AND_ASSIGN(MockRenderViewHostDelegateView);
 };
 
+// FakeRenderFrameMetadataObserver -----------------------------------------
+
+// Fake out the renderer side of mojom::RenderFrameMetadataObserver, allowing
+// for RenderWidgetHostImpl to be created.
+//
+// All methods are no-opts, the provided mojo request and info are held, but
+// never bound.
+class FakeRenderFrameMetadataObserver
+    : public mojom::RenderFrameMetadataObserver {
+ public:
+  FakeRenderFrameMetadataObserver(
+      mojom::RenderFrameMetadataObserverRequest request,
+      mojom::RenderFrameMetadataObserverClientPtrInfo client_info);
+  ~FakeRenderFrameMetadataObserver() override {}
+
+  void ReportAllFrameSubmissionsForTesting(bool enabled) override {}
+
+ private:
+  mojom::RenderFrameMetadataObserverRequest request_;
+  mojom::RenderFrameMetadataObserverClientPtrInfo client_info_;
+  DISALLOW_COPY_AND_ASSIGN(FakeRenderFrameMetadataObserver);
+};
+
+FakeRenderFrameMetadataObserver::FakeRenderFrameMetadataObserver(
+    mojom::RenderFrameMetadataObserverRequest request,
+    mojom::RenderFrameMetadataObserverClientPtrInfo client_info)
+    : request_(std::move(request)), client_info_(std::move(client_info)) {}
+
 // MockRenderWidgetHostDelegate --------------------------------------------
 
 class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
@@ -651,9 +680,26 @@ class RenderWidgetHostTest : public testing::Test {
     renderer_compositor_frame_sink_ =
         std::make_unique<FakeRendererCompositorFrameSink>(
             std::move(sink), std::move(client_request));
+
+    mojom::RenderFrameMetadataObserverPtr
+        renderer_render_frame_metadata_observer_ptr;
+    mojom::RenderFrameMetadataObserverRequest
+        render_frame_metadata_observer_request =
+            mojo::MakeRequest(&renderer_render_frame_metadata_observer_ptr);
+    mojom::RenderFrameMetadataObserverClientPtrInfo
+        render_frame_metadata_observer_client_info;
+    mojom::RenderFrameMetadataObserverClientRequest
+        render_frame_metadata_observer_client_request =
+            mojo::MakeRequest(&render_frame_metadata_observer_client_info);
+    renderer_render_frame_metadata_observer_ =
+        std::make_unique<FakeRenderFrameMetadataObserver>(
+            std::move(render_frame_metadata_observer_request),
+            std::move(render_frame_metadata_observer_client_info));
+
     host_->RequestCompositorFrameSink(
-        std::move(sink_request),
-        std::move(renderer_compositor_frame_sink_ptr_));
+        std::move(sink_request), std::move(renderer_compositor_frame_sink_ptr_),
+        std::move(render_frame_metadata_observer_client_request),
+        std::move(renderer_render_frame_metadata_observer_ptr));
   }
 
   void TearDown() override {
@@ -866,6 +912,8 @@ class RenderWidgetHostTest : public testing::Test {
   IPC::TestSink* sink_;
   std::unique_ptr<FakeRendererCompositorFrameSink>
       renderer_compositor_frame_sink_;
+  std::unique_ptr<FakeRenderFrameMetadataObserver>
+      renderer_render_frame_metadata_observer_;
   bool wheel_scroll_latching_enabled_;
 
  private:

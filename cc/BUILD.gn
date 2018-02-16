@@ -323,6 +323,7 @@ cc_component("cc") {
     "trees/proxy_main.h",
     "trees/render_frame_metadata.cc",
     "trees/render_frame_metadata.h",
+    "trees/render_frame_metadata_observer.h",
     "trees/scoped_abort_remaining_swap_promises.h",
     "trees/scroll_node.cc",
     "trees/scroll_node.h",

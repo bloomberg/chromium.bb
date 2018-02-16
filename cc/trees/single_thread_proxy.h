@@ -25,6 +25,7 @@ namespace cc {
 class MutatorEvents;
 class LayerTreeHost;
 class LayerTreeHostSingleThreadClient;
+class RenderFrameMetadataObserver;
 
 class CC_EXPORT SingleThreadProxy : public Proxy,
                                     LayerTreeHostImplClient,
@@ -63,6 +64,8 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
     // need to record UKM in that case.
   }
   void ClearHistoryOnNavigation() override;
+  void SetRenderFrameObserver(
+      std::unique_ptr<RenderFrameMetadataObserver> observer) override;
 
   // Blink layout tests might call into this even though an unthreaded CC
   // doesn't have BrowserControls itself.

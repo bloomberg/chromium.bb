@@ -168,10 +168,16 @@ class NonBlockingEventBrowserTest : public ContentBrowserTest {
             &NonBlockingEventBrowserTest::OnSyntheticGestureCompleted,
             base::Unretained(this)));
 
+    RenderFrameSubmissionObserver observer(
+        GetWidgetHost()->render_frame_metadata_provider());
     // Expect that the compositor scrolled at least one pixel while the
     // main thread was in a busy loop.
-    while (frame_watcher.LastMetadata().root_scroll_offset.y() <= 0)
-      frame_watcher.WaitFrames(1);
+    while (GetWidgetHost()
+               ->render_frame_metadata_provider()
+               ->LastRenderFrameMetadata()
+               .root_scroll_offset.y() <= 0) {
+      observer.Wait();
+    }
   }
 
  private:

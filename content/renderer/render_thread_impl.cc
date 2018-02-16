@@ -2086,7 +2086,10 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     int routing_id,
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
     const GURL& url,
-    const LayerTreeFrameSinkCallback& callback) {
+    const LayerTreeFrameSinkCallback& callback,
+    mojom::RenderFrameMetadataObserverClientRequest
+        render_frame_metadata_observer_client_request,
+    mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer_ptr) {
   // Misconfigured bots (eg. crbug.com/780757) could run layout tests on a
   // machine where gpu compositing doesn't work. Don't crash in that case.
   if (layout_test_mode() && is_gpu_compositing_disabled_) {
@@ -2142,18 +2145,22 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   }
 #endif
 
-  viz::mojom::CompositorFrameSinkRequest sink_request =
+  viz::mojom::CompositorFrameSinkRequest compositor_frame_sink_request =
       mojo::MakeRequest(&params.pipes.compositor_frame_sink_info);
-  viz::mojom::CompositorFrameSinkClientPtr client;
-  params.pipes.client_request = mojo::MakeRequest(&client);
+  viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client;
+  params.pipes.client_request =
+      mojo::MakeRequest(&compositor_frame_sink_client);
 
   if (command_line.HasSwitch(switches::kEnableVulkan)) {
     scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider =
         viz::VulkanInProcessContextProvider::Create();
     if (vulkan_context_provider) {
       DCHECK(!layout_test_mode());
-      frame_sink_provider_->CreateForWidget(routing_id, std::move(sink_request),
-                                            std::move(client));
+      frame_sink_provider_->CreateForWidget(
+          routing_id, std::move(compositor_frame_sink_request),
+          std::move(compositor_frame_sink_client),
+          std::move(render_frame_metadata_observer_client_request),
+          std::move(render_frame_metadata_observer_ptr));
       callback.Run(std::make_unique<viz::ClientLayerTreeFrameSink>(
           std::move(vulkan_context_provider), &params));
       return;
@@ -2162,8 +2169,11 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 
   if (is_gpu_compositing_disabled_) {
     DCHECK(!layout_test_mode());
-    frame_sink_provider_->CreateForWidget(routing_id, std::move(sink_request),
-                                          std::move(client));
+    frame_sink_provider_->CreateForWidget(
+        routing_id, std::move(compositor_frame_sink_request),
+        std::move(compositor_frame_sink_client),
+        std::move(render_frame_metadata_observer_client_request),
+        std::move(render_frame_metadata_observer_ptr));
     params.shared_bitmap_manager = shared_bitmap_manager();
     callback.Run(std::make_unique<viz::ClientLayerTreeFrameSink>(
         nullptr, nullptr, &params));
@@ -2236,8 +2246,11 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     return;
   }
 #endif
-  frame_sink_provider_->CreateForWidget(routing_id, std::move(sink_request),
-                                        std::move(client));
+  frame_sink_provider_->CreateForWidget(
+      routing_id, std::move(compositor_frame_sink_request),
+      std::move(compositor_frame_sink_client),
+      std::move(render_frame_metadata_observer_client_request),
+      std::move(render_frame_metadata_observer_ptr));
   params.gpu_memory_buffer_manager = GetGpuMemoryBufferManager();
   callback.Run(std::make_unique<viz::ClientLayerTreeFrameSink>(
       std::move(context_provider), std::move(worker_context_provider),

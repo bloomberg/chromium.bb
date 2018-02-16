@@ -72,6 +72,7 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/render_frame_metadata.h"
+#include "cc/trees/render_frame_metadata_observer.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/transform_node.h"
@@ -1921,7 +1922,13 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
 
   RenderFrameMetadata render_frame_metadata = MakeRenderFrameMetadata();
 
+  // TODO(jonross): remove passing RenderFrameMetadata to SwapPromises.
   active_tree()->FinishSwapPromises(&metadata, &render_frame_metadata);
+
+  if (render_frame_metadata_observer_) {
+    render_frame_metadata_observer_->OnRenderFrameSubmission(
+        render_frame_metadata);
+  }
 
   metadata.latency_info.emplace_back(ui::SourceEventType::FRAME);
   ui::LatencyInfo& new_latency_info = metadata.latency_info.back();
@@ -3749,6 +3756,12 @@ void LayerTreeHostImpl::UpdateImageDecodingHints(
         decoding_mode_map) {
   tile_manager_.checker_image_tracker().UpdateImageDecodingHints(
       std::move(decoding_mode_map));
+}
+
+void LayerTreeHostImpl::SetRenderFrameObserver(
+    std::unique_ptr<RenderFrameMetadataObserver> observer) {
+  render_frame_metadata_observer_ = std::move(observer);
+  render_frame_metadata_observer_->BindToCurrentThread();
 }
 
 InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
