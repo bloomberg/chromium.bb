@@ -14,6 +14,8 @@ namespace message_center {
 class NotificationBlocker;
 
 // An observer class for the change of notifications in the MessageCenter.
+// WARNING: It is not safe to modify the message center from within these
+// callbacks.
 class MESSAGE_CENTER_EXPORT MessageCenterObserver {
  public:
   virtual ~MessageCenterObserver() {}

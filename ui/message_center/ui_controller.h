@@ -5,7 +5,6 @@
 #ifndef UI_MESSAGE_CENTER_UI_CONTROLLER_H_
 #define UI_MESSAGE_CENTER_UI_CONTROLLER_H_
 
-#include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
@@ -79,10 +78,6 @@ class MESSAGE_CENTER_EXPORT UiController : public MessageCenterObserver {
   bool message_center_visible_ = false;
   bool popups_visible_ = false;
   UiDelegate* delegate_;
-
-#if defined(OS_CHROMEOS)
-  std::unique_ptr<base::CancelableClosure> hide_empty_message_center_callback_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(UiController);
 };
