@@ -316,6 +316,35 @@ TEST_P(ScrollbarsTest, TransparentBackgroundUsesDarkOverlayColorTheme) {
             layout_viewport->GetScrollbarOverlayColorTheme());
 }
 
+TEST_P(ScrollbarsTest, BodyBackgroundChangesOverlayColorTheme) {
+  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <body style='background:white'></body>
+  )HTML");
+  Compositor().BeginFrame();
+
+  // This test is specifically checking the behavior when overlay scrollbars
+  // are enabled.
+  DCHECK(GetScrollbarTheme().UsesOverlayScrollbars());
+
+  ScrollableArea* layout_viewport =
+      GetDocument().View()->LayoutViewportScrollableArea();
+
+  EXPECT_EQ(kScrollbarOverlayColorThemeDark,
+            layout_viewport->GetScrollbarOverlayColorTheme());
+
+  MainFrame().ExecuteScriptAndReturnValue(
+      WebScriptSource("document.body.style.backgroundColor = 'black';"));
+
+  Compositor().BeginFrame();
+  EXPECT_EQ(kScrollbarOverlayColorThemeLight,
+            layout_viewport->GetScrollbarOverlayColorTheme());
+}
+
 // Ensure overlay scrollbar change to display:none correctly.
 TEST_P(ScrollbarsTest, OverlayScrollbarChangeToDisplayNoneDynamically) {
   WebView().Resize(WebSize(200, 200));

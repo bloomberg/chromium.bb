@@ -304,22 +304,6 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
     }
   }
 
-  if (IsDocumentElement() || IsBody()) {
-    GetDocument().View()->RecalculateScrollbarOverlayColorTheme(
-        GetDocument().View()->DocumentBackgroundColor());
-    GetDocument().View()->RecalculateCustomScrollbarStyle();
-    if (LayoutView* layout_view = View()) {
-      if (PaintLayerScrollableArea* scrollable_area =
-              layout_view->GetScrollableArea()) {
-        if (scrollable_area->HorizontalScrollbar() &&
-            scrollable_area->HorizontalScrollbar()->IsCustomScrollbar())
-          scrollable_area->HorizontalScrollbar()->StyleChanged();
-        if (scrollable_area->VerticalScrollbar() &&
-            scrollable_area->VerticalScrollbar()->IsCustomScrollbar())
-          scrollable_area->VerticalScrollbar()->StyleChanged();
-      }
-    }
-  }
   UpdateShapeOutsideInfoAfterStyleChange(*Style(), old_style);
   UpdateGridPositionAfterStyleChange(old_style);
 
