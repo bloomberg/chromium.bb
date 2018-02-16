@@ -2531,14 +2531,9 @@ TEST_F(PersonalDataManagerTest,
   ASSERT_EQ(3U, suggestions.size());
 }
 
-// Tests that server cards will show bank name when bank name is available and
-// feature flag on.
+// Tests that server cards will show bank name when bank name is available.
 TEST_F(PersonalDataManagerTest,
        GetCreditCardSuggestions_ShowBankNameOfServerCards) {
-  // Turn on feature flag.
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(kAutofillCreditCardBankNameDisplay);
-
   EnableWalletCardImport();
 
   // Add a local card.
