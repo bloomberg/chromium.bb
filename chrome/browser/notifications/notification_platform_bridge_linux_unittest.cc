@@ -116,6 +116,47 @@ struct NotificationRequest {
   bool silent = false;
 };
 
+struct TestParams {
+  TestParams()
+      : capabilities{"actions", "body", "body-hyperlinks", "body-images",
+                     "body-markup"},
+        server_name("NPBL_unittest"),
+        expect_init_success(true),
+        expect_shutdown(true),
+        connect_signals(true) {}
+
+  TestParams& SetCapabilities(const std::vector<std::string>& capabilities) {
+    this->capabilities = capabilities;
+    return *this;
+  }
+
+  TestParams& SetServerName(const std::string& server_name) {
+    this->server_name = server_name;
+    return *this;
+  }
+
+  TestParams& SetExpectInitSuccess(bool expect_init_success) {
+    this->expect_init_success = expect_init_success;
+    return *this;
+  }
+
+  TestParams& SetExpectShutdown(bool expect_shutdown) {
+    this->expect_shutdown = expect_shutdown;
+    return *this;
+  }
+
+  TestParams& SetConnectSignals(bool connect_signals) {
+    this->connect_signals = connect_signals;
+    return *this;
+  }
+
+  std::vector<std::string> capabilities;
+  std::string server_name;
+  bool expect_init_success;
+  bool expect_shutdown;
+  bool connect_signals;
+};
+
 const SkBitmap CreateBitmap(int width, int height) {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(width, height);
@@ -251,21 +292,7 @@ class NotificationPlatformBridgeLinuxTest : public testing::Test {
   }
 
  protected:
-  void CreateNotificationBridgeLinux() {
-    CreateNotificationBridgeLinux(
-        std::vector<std::string>{"actions", "body", "body-hyperlinks",
-                                 "body-images", "body-markup"},
-        "NPBL_unittest", true, true, true);
-  }
-
-  // TODO(thomasanderson): Use a parameter builder instead of passing everything
-  // directly.
-  void CreateNotificationBridgeLinux(
-      const std::vector<std::string>& capabilities,
-      const std::string& server_name,
-      bool expect_init_success,
-      bool expect_shutdown,
-      bool connect_signals) {
+  void CreateNotificationBridgeLinux(const TestParams& test_params) {
     EXPECT_CALL(*mock_bus_.get(),
                 GetObjectProxy(kFreedesktopNotificationsName,
                                dbus::ObjectPath(kFreedesktopNotificationsPath)))
@@ -273,18 +300,18 @@ class NotificationPlatformBridgeLinuxTest : public testing::Test {
 
     std::unique_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
     dbus::MessageWriter writer(response.get());
-    writer.AppendArrayOfStrings(capabilities);
+    writer.AppendArrayOfStrings(test_params.capabilities);
     EXPECT_CALL(*mock_notification_proxy_.get(),
                 CallMethodAndBlock(Calls("GetCapabilities"), _))
         .WillOnce(Return(ByMove(std::move(response))));
 
-    if (expect_init_success) {
+    if (test_params.expect_init_success) {
       EXPECT_CALL(*mock_notification_proxy_.get(),
                   CallMethodAndBlock(Calls("GetServerInformation"), _))
-          .WillOnce(OnGetServerInformation(server_name));
+          .WillOnce(OnGetServerInformation(test_params.server_name));
     }
 
-    if (connect_signals) {
+    if (test_params.connect_signals) {
       EXPECT_CALL(*mock_notification_proxy_.get(),
                   DoConnectToSignal(kFreedesktopNotificationsName,
                                     "ActionInvoked", _, _))
@@ -297,9 +324,9 @@ class NotificationPlatformBridgeLinuxTest : public testing::Test {
     }
 
     EXPECT_CALL(*this, MockableNotificationBridgeReadyCallback(_))
-        .WillOnce(OnNotificationBridgeReady(expect_init_success));
+        .WillOnce(OnNotificationBridgeReady(test_params.expect_init_success));
 
-    if (expect_shutdown)
+    if (test_params.expect_shutdown)
       EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock());
 
     notification_bridge_linux_ =
@@ -328,7 +355,7 @@ class NotificationPlatformBridgeLinuxTest : public testing::Test {
 };
 
 TEST_F(NotificationPlatformBridgeLinuxTest, SetUpAndTearDown) {
-  CreateNotificationBridgeLinux();
+  CreateNotificationBridgeLinux(TestParams());
 }
 
 TEST_F(NotificationPlatformBridgeLinuxTest, NotifyAndCloseFormat) {
@@ -339,7 +366,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotifyAndCloseFormat) {
               CallMethodAndBlock(Calls("CloseNotification"), _))
       .WillOnce(OnCloseNotification());
 
-  CreateNotificationBridgeLinux();
+  CreateNotificationBridgeLinux(TestParams());
   notification_bridge_linux_->Display(
       NotificationHandler::Type::WEB_PERSISTENT, "", false,
       NotificationBuilder("").GetResult(), nullptr);
@@ -357,7 +384,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, ProgressPercentageAddedToSummary) {
           },
           1));
 
-  CreateNotificationBridgeLinux();
+  CreateNotificationBridgeLinux(TestParams());
   notification_bridge_linux_->Display(
       NotificationHandler::Type::WEB_PERSISTENT, "", false,
       NotificationBuilder("")
@@ -377,7 +404,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationListItemsInBody) {
           },
           1));
 
-  CreateNotificationBridgeLinux();
+  CreateNotificationBridgeLinux(TestParams());
   notification_bridge_linux_->Display(
       NotificationHandler::Type::WEB_PERSISTENT, "", false,
       NotificationBuilder("")
@@ -405,7 +432,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationTimeoutsNoPersistence) {
           },
           2));
 
-  CreateNotificationBridgeLinux();
+  CreateNotificationBridgeLinux(TestParams());
   notification_bridge_linux_->Display(
       NotificationHandler::Type::WEB_PERSISTENT, "", false,
       NotificationBuilder("1").SetNeverTimeout(false).GetResult(), nullptr);
@@ -425,9 +452,8 @@ TEST_F(NotificationPlatformBridgeLinuxTest,
           },
           1));
 
-  CreateNotificationBridgeLinux(
-      std::vector<std::string>{"actions", "body", "persistence"},
-      "NPBL_unittest", true, true, true);
+  CreateNotificationBridgeLinux(TestParams().SetCapabilities(
+      std::vector<std::string>{"actions", "body", "persistence"}));
   notification_bridge_linux_->Display(
       NotificationHandler::Type::WEB_PERSISTENT, "", false,
       NotificationBuilder("1").GetResult(), nullptr);
@@ -464,7 +490,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationImages) {
           },
           1));
 
-  CreateNotificationBridgeLinux();
+  CreateNotificationBridgeLinux(TestParams());
   notification_bridge_linux_->Display(
       NotificationHandler::Type::WEB_PERSISTENT, "", false,
       NotificationBuilder("")
@@ -486,7 +512,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationAttribution) {
           },
           1));
 
-  CreateNotificationBridgeLinux();
+  CreateNotificationBridgeLinux(TestParams());
   notification_bridge_linux_->Display(
       NotificationHandler::Type::WEB_PERSISTENT, "", false,
       NotificationBuilder("")
@@ -497,13 +523,19 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationAttribution) {
 }
 
 TEST_F(NotificationPlatformBridgeLinuxTest, MissingActionsCapability) {
-  CreateNotificationBridgeLinux(std::vector<std::string>{"body"},
-                                "NPBL_unittest", false, true, false);
+  CreateNotificationBridgeLinux(
+      TestParams()
+          .SetCapabilities(std::vector<std::string>{"body"})
+          .SetExpectInitSuccess(false)
+          .SetConnectSignals(false));
 }
 
 TEST_F(NotificationPlatformBridgeLinuxTest, MissingBodyCapability) {
-  CreateNotificationBridgeLinux(std::vector<std::string>{"actions"},
-                                "NPBL_unittest", false, true, false);
+  CreateNotificationBridgeLinux(
+      TestParams()
+          .SetCapabilities(std::vector<std::string>{"actions"})
+          .SetExpectInitSuccess(false)
+          .SetConnectSignals(false));
 }
 
 TEST_F(NotificationPlatformBridgeLinuxTest, EscapeHtml) {
@@ -516,7 +548,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, EscapeHtml) {
           },
           1));
 
-  CreateNotificationBridgeLinux();
+  CreateNotificationBridgeLinux(TestParams());
   notification_bridge_linux_->Display(
       NotificationHandler::Type::WEB_PERSISTENT, "", false,
       NotificationBuilder("")
@@ -540,7 +572,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, Silent) {
           },
           2));
 
-  CreateNotificationBridgeLinux();
+  CreateNotificationBridgeLinux(TestParams());
   notification_bridge_linux_->Display(
       NotificationHandler::Type::WEB_PERSISTENT, "", false,
       NotificationBuilder("1").SetSilent(false).GetResult(), nullptr);
@@ -578,8 +610,8 @@ TEST_F(NotificationPlatformBridgeLinuxTest, OriginUrlFormat) {
           },
           4));
 
-  CreateNotificationBridgeLinux(std::vector<std::string>{"actions", "body"},
-                                "NPBL_unittest", true, true, true);
+  CreateNotificationBridgeLinux(TestParams().SetCapabilities(
+      std::vector<std::string>{"actions", "body"}));
   notification_bridge_linux_->Display(
       NotificationHandler::Type::WEB_PERSISTENT, "", false,
       NotificationBuilder("1")
@@ -629,8 +661,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest,
           },
           1));
 
-  CreateNotificationBridgeLinux(std::vector<std::string>{"actions", "body"},
-                                "cinnamon", true, true, true);
+  CreateNotificationBridgeLinux(TestParams().SetServerName("cinnamon"));
   notification_bridge_linux_->Display(
       NotificationHandler::Type::WEB_PERSISTENT, "", false,
       NotificationBuilder("").GetResult(), nullptr);
