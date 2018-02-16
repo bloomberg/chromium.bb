@@ -17,6 +17,7 @@
 #include "ios/web/public/load_committed_details.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
+#import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/test/fakes/crw_fake_back_forward_list.h"
 #include "ios/web/test/test_url_constants.h"
 #import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
@@ -1347,7 +1348,7 @@ TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
   mock_wk_list_.currentItem = wk_item1;
   navigation_manager()->CommitPendingItem();
 
-  web::NavigationItem* item1 = navigation_manager()->GetLastCommittedItem();
+  NavigationItem* item1 = navigation_manager()->GetLastCommittedItem();
   ASSERT_EQ(web::UserAgentType::MOBILE, item1->GetUserAgentType());
 
   GURL item2_url = item1->GetURL().ReplaceComponents(native_scheme_replacement);
@@ -1362,8 +1363,7 @@ TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
   mock_wk_list_.backList = @[ wk_item1 ];
   navigation_manager()->CommitPendingItem();
 
-  web::NavigationItem* native_item1 =
-      navigation_manager()->GetLastCommittedItem();
+  NavigationItem* native_item1 = navigation_manager()->GetLastCommittedItem();
   // Having a non-app-specific URL should not change the fact that the native
   // item should be skipped when determining user agent inheritance.
   native_item1->SetVirtualURL(GURL("http://non-app-specific-url"));
@@ -1378,7 +1378,7 @@ TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
   mock_wk_list_.currentItem = wk_item2;
   mock_wk_list_.backList = @[ wk_item1, wk_native_item2 ];
   navigation_manager()->CommitPendingItem();
-  web::NavigationItem* item2 = navigation_manager()->GetLastCommittedItem();
+  NavigationItem* item2 = navigation_manager()->GetLastCommittedItem();
 
   // Verify that |item1|'s UserAgentType is propagated to |item2|.
   EXPECT_EQ(item1->GetUserAgentType(), item2->GetUserAgentType());
@@ -1400,8 +1400,7 @@ TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
   mock_wk_list_.backList = @[ wk_item1, wk_native_item2, wk_item2 ];
   navigation_manager()->CommitPendingItem();
 
-  web::NavigationItem* native_item2 =
-      navigation_manager()->GetLastCommittedItem();
+  NavigationItem* native_item2 = navigation_manager()->GetLastCommittedItem();
   ASSERT_EQ(web::UserAgentType::NONE, native_item2->GetUserAgentType());
   navigation_manager()->AddPendingItem(
       GURL("http://www.3.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -1415,7 +1414,7 @@ TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
       @[ wk_item1, wk_native_item2, wk_item2, wk_native_item3 ];
   navigation_manager()->CommitPendingItem();
 
-  web::NavigationItem* item3 = navigation_manager()->GetLastCommittedItem();
+  NavigationItem* item3 = navigation_manager()->GetLastCommittedItem();
 
   // Verify that |item2|'s UserAgentType is propagated to |item3|.
   EXPECT_EQ(item2->GetUserAgentType(), item3->GetUserAgentType());
@@ -1735,6 +1734,29 @@ TEST_P(NavigationManagerTest,
             navigation_manager()->GetLastCommittedItem()->GetURL());
 }
 
+// Tests that ReloadWithUserAgentType triggers new navigation with the expected
+// user agent override.
+TEST_P(NavigationManagerTest, ReloadWithUserAgentType) {
+  GURL url("http://www.1.com");
+  navigation_manager()->AddPendingItem(
+      url, Referrer(), ui::PAGE_TRANSITION_TYPED,
+      NavigationInitiationType::USER_INITIATED,
+      NavigationManager::UserAgentOverrideOption::MOBILE);
+  [mock_wk_list_ setCurrentURL:@"http://www.1.com"];
+  navigation_manager()->CommitPendingItem();
+
+  EXPECT_CALL(navigation_manager_delegate(), WillChangeUserAgentType());
+  EXPECT_CALL(navigation_manager_delegate(), RecordPageStateInNavigationItem());
+  EXPECT_CALL(navigation_manager_delegate(), ClearTransientContent());
+  EXPECT_CALL(navigation_manager_delegate(), LoadCurrentItem());
+
+  navigation_manager()->ReloadWithUserAgentType(UserAgentType::DESKTOP);
+
+  NavigationItem* pending_item = navigation_manager()->GetPendingItem();
+  EXPECT_EQ(url, pending_item->GetURL());
+  EXPECT_EQ(UserAgentType::DESKTOP, pending_item->GetUserAgentType());
+}
+
 // Tests that app-specific URLs are not rewritten for renderer-initiated loads
 // unless requested by a page with app-specific url.
 TEST_P(NavigationManagerTest, RewritingAppSpecificUrls) {
@@ -1823,7 +1845,7 @@ TEST_P(NavigationManagerTest, GetIndexOfItem) {
   mock_wk_list_.currentItem = wk_item0;
   navigation_manager()->CommitPendingItem();
 
-  web::NavigationItem* item0 = navigation_manager()->GetLastCommittedItem();
+  NavigationItem* item0 = navigation_manager()->GetLastCommittedItem();
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
@@ -1833,10 +1855,9 @@ TEST_P(NavigationManagerTest, GetIndexOfItem) {
   mock_wk_list_.backList = @[ wk_item0 ];
   navigation_manager()->CommitPendingItem();
 
-  web::NavigationItem* item1 = navigation_manager()->GetLastCommittedItem();
+  NavigationItem* item1 = navigation_manager()->GetLastCommittedItem();
   // Create an item that does not exist in the NavigationManagerImpl.
-  std::unique_ptr<web::NavigationItem> item_not_found =
-      web::NavigationItem::Create();
+  std::unique_ptr<NavigationItem> item_not_found = NavigationItem::Create();
   // Verify GetIndexOfItem() results.
   EXPECT_EQ(0, navigation_manager()->GetIndexOfItem(item0));
   EXPECT_EQ(1, navigation_manager()->GetIndexOfItem(item1));
@@ -2410,5 +2431,82 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         NavigationManagerChoice::TEST_LEGACY_NAVIGATION_MANAGER,
         NavigationManagerChoice::TEST_WK_BASED_NAVIGATION_MANAGER));
+
+class NavigationManagerImplUtilTest : public PlatformTest {
+ protected:
+  web::TestNavigationManager nav_manager_;
+};
+
+// Tests that empty navigation manager returns nullptr.
+TEST_F(NavigationManagerImplUtilTest, TestLastNonRedirectedItemEmpty) {
+  EXPECT_FALSE(
+      NavigationManagerImpl::GetLastCommittedNonRedirectedItem(nullptr));
+  EXPECT_FALSE(
+      NavigationManagerImpl::GetLastCommittedNonRedirectedItem(&nav_manager_));
+}
+
+// Tests that typed in URL works correctly.
+TEST_F(NavigationManagerImplUtilTest, TestLastNonRedirectedItemTypedUrl) {
+  nav_manager_.AddItem(GURL("http://foo.com/page0"), ui::PAGE_TRANSITION_TYPED);
+  NavigationItem* item =
+      NavigationManagerImpl::GetLastCommittedNonRedirectedItem(&nav_manager_);
+  ASSERT_TRUE(item);
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      item->GetTransitionType(), ui::PAGE_TRANSITION_TYPED));
+}
+
+// Tests that link click works correctly.
+TEST_F(NavigationManagerImplUtilTest, TestLastNonRedirectedItemLinkClicked) {
+  nav_manager_.AddItem(GURL("http://foo.com/page0"), ui::PAGE_TRANSITION_LINK);
+  NavigationItem* item =
+      NavigationManagerImpl::GetLastCommittedNonRedirectedItem(&nav_manager_);
+  ASSERT_TRUE(item);
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      item->GetTransitionType(), ui::PAGE_TRANSITION_LINK));
+}
+
+// Tests that redirect items are skipped.
+TEST_F(NavigationManagerImplUtilTest,
+       TestLastNonRedirectedItemLinkMultiRedirects) {
+  nav_manager_.AddItem(GURL("http://foo.com/page0"), ui::PAGE_TRANSITION_LINK);
+  nav_manager_.AddItem(GURL("http://bar.com/redir1"),
+                       ui::PAGE_TRANSITION_CLIENT_REDIRECT);
+  nav_manager_.AddItem(GURL("http://bar.com/redir2"),
+                       ui::PAGE_TRANSITION_CLIENT_REDIRECT);
+  NavigationItem* item =
+      NavigationManagerImpl::GetLastCommittedNonRedirectedItem(&nav_manager_);
+  ASSERT_TRUE(item);
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      item->GetTransitionType(), ui::PAGE_TRANSITION_LINK));
+}
+
+// Tests that when all items are redirects, nullptr is returned.
+TEST_F(NavigationManagerImplUtilTest, TestLastNonRedirectedItemAllRedirects) {
+  nav_manager_.AddItem(GURL("http://bar.com/redir0"),
+                       ui::PAGE_TRANSITION_CLIENT_REDIRECT);
+  nav_manager_.AddItem(GURL("http://bar.com/redir1"),
+                       ui::PAGE_TRANSITION_CLIENT_REDIRECT);
+  nav_manager_.AddItem(GURL("http://bar.com/redir2"),
+                       ui::PAGE_TRANSITION_CLIENT_REDIRECT);
+  NavigationItem* item =
+      NavigationManagerImpl::GetLastCommittedNonRedirectedItem(&nav_manager_);
+  EXPECT_FALSE(item);
+}
+
+// Tests that earlier redirects are not found.
+TEST_F(NavigationManagerImplUtilTest, TestLastNonRedirectedItemNotEarliest) {
+  nav_manager_.AddItem(GURL("http://foo.com/bookmark"),
+                       ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+  nav_manager_.AddItem(GURL("http://foo.com/page0"), ui::PAGE_TRANSITION_TYPED);
+  nav_manager_.AddItem(GURL("http://bar.com/redir1"),
+                       ui::PAGE_TRANSITION_CLIENT_REDIRECT);
+  nav_manager_.AddItem(GURL("http://bar.com/redir2"),
+                       ui::PAGE_TRANSITION_CLIENT_REDIRECT);
+  NavigationItem* item =
+      NavigationManagerImpl::GetLastCommittedNonRedirectedItem(&nav_manager_);
+  ASSERT_TRUE(item);
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      item->GetTransitionType(), ui::PAGE_TRANSITION_TYPED));
+}
 
 }  // namespace web

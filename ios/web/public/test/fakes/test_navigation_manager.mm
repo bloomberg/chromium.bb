@@ -148,6 +148,11 @@ void TestNavigationManager::Reload(ReloadType reload_type,
   NOTREACHED();
 }
 
+void TestNavigationManager::ReloadWithUserAgentType(
+    UserAgentType user_agent_type) {
+  NOTREACHED();
+}
+
 NavigationItemList TestNavigationManager::GetBackwardItems() const {
   NOTREACHED();
   return NavigationItemList();

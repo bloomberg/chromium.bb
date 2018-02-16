@@ -255,7 +255,10 @@ int LegacyNavigationManagerImpl::GetIndexForOffset(int offset) const {
       // even aware existed, it is necessary to pass over pages that would
       // immediately result in a redirect (the item *before* the redirected
       // page).
-      while (result > 0 && IsRedirectItemAtIndex(result)) {
+      while (result > 0) {
+        const NavigationItem* item = GetItemAtIndex(result);
+        if (!ui::PageTransitionIsRedirect(item->GetTransitionType()))
+          break;
         --result;
       }
       --result;
@@ -271,7 +274,10 @@ int LegacyNavigationManagerImpl::GetIndexForOffset(int offset) const {
       ++result;
       --offset;
       // As with going back, skip over redirects.
-      while (result + 1 < GetItemCount() && IsRedirectItemAtIndex(result + 1)) {
+      while (result + 1 < GetItemCount()) {
+        const NavigationItem* item = GetItemAtIndex(result + 1);
+        if (!ui::PageTransitionIsRedirect(item->GetTransitionType()))
+          break;
         ++result;
       }
     }
@@ -319,13 +325,6 @@ void LegacyNavigationManagerImpl::FinishGoToIndex(
     [session_controller_ setPendingItemIndex:index];
     delegate_->LoadCurrentItem();
   }
-}
-
-bool LegacyNavigationManagerImpl::IsRedirectItemAtIndex(int index) const {
-  DCHECK_GE(index, 0);
-  DCHECK_LT(index, GetItemCount());
-  ui::PageTransition transition = GetItemAtIndex(index)->GetTransitionType();
-  return transition & ui::PAGE_TRANSITION_IS_REDIRECT_MASK;
 }
 
 int LegacyNavigationManagerImpl::GetPreviousItemIndex() const {

@@ -51,7 +51,12 @@ const char kDownloadMimeType[] = "application/vnd.test";
 // Verifies correctness of |NavigationContext| (|arg1|) for new page navigation
 // passed to |DidStartNavigation|. Stores |NavigationContext| in |context|
 // pointer.
-ACTION_P4(VerifyNewPageStartedContext, web_state, url, context, nav_id) {
+ACTION_P5(VerifyPageStartedContext,
+          web_state,
+          url,
+          transition,
+          context,
+          nav_id) {
   *context = arg1;
   ASSERT_TRUE(*context);
   EXPECT_EQ(web_state, arg0);
@@ -59,9 +64,9 @@ ACTION_P4(VerifyNewPageStartedContext, web_state, url, context, nav_id) {
   *nav_id = (*context)->GetNavigationId();
   EXPECT_NE(0, *nav_id);
   EXPECT_EQ(url, (*context)->GetUrl());
-  EXPECT_TRUE(
-      PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
-                               (*context)->GetPageTransition()));
+  ui::PageTransition actual_transition = (*context)->GetPageTransition();
+  EXPECT_TRUE(PageTransitionCoreTypeIs(transition, actual_transition))
+      << "Got unexpected transition: " << actual_transition;
   EXPECT_FALSE((*context)->IsSameDocument());
   EXPECT_FALSE((*context)->HasCommitted());
   EXPECT_FALSE((*context)->IsDownload());
@@ -522,8 +527,9 @@ TEST_F(NavigationAndLoadCallbacksTest, NewPageNavigation) {
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
-      .WillOnce(
-          VerifyNewPageStartedContext(web_state(), url, &context, &nav_id));
+      .WillOnce(VerifyPageStartedContext(
+          web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
+          &nav_id));
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
@@ -549,8 +555,9 @@ TEST_F(NavigationAndLoadCallbacksTest, EnableWebUsageTwice) {
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
-      .WillOnce(
-          VerifyNewPageStartedContext(web_state(), url, &context, &nav_id));
+      .WillOnce(VerifyPageStartedContext(
+          web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
+          &nav_id));
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
@@ -575,8 +582,9 @@ TEST_F(NavigationAndLoadCallbacksTest, FailedNavigation) {
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
-      .WillOnce(
-          VerifyNewPageStartedContext(web_state(), url, &context, &nav_id));
+      .WillOnce(VerifyPageStartedContext(
+          web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
+          &nav_id));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(
@@ -626,10 +634,48 @@ TEST_F(NavigationAndLoadCallbacksTest, WebPageReloadNavigation) {
   // delegate does not run callback for ShowRepostFormWarningDialog. Clearing
   // the delegate will allow form resubmission. Remove this workaround (clearing
   // the delegate, once |check_for_repost| is supported).
-  web_state()->SetDelegate(nullptr);
+  // web_state()->SetDelegate(nullptr);
   ASSERT_TRUE(ExecuteBlockAndWaitForLoad(url, ^{
     navigation_manager()->Reload(ReloadType::NORMAL,
                                  false /*check_for_repost*/);
+  }));
+}
+
+// Tests web page reload with user agent override.
+TEST_F(NavigationAndLoadCallbacksTest, ReloadWithUserAgentType) {
+  const GURL url = test_server_->GetURL("/echo");
+
+  // Perform new page navigation.
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
+      .WillOnce(Return(true));
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  EXPECT_CALL(observer_,
+              PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
+  ASSERT_TRUE(LoadUrl(url));
+
+  // Reload web page with desktop user agent.
+  NavigationContext* context = nullptr;
+  int32_t nav_id = 0;
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
+      .WillOnce(VerifyPageStartedContext(
+          web_state(), url, ui::PageTransition::PAGE_TRANSITION_RELOAD,
+          &context, &nav_id));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
+      .WillOnce(Return(true));
+  // TODO(crbug.com/798836): verify the correct User-Agent header is sent.
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  EXPECT_CALL(observer_,
+              PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
+  web_state()->SetDelegate(nullptr);
+  ASSERT_TRUE(ExecuteBlockAndWaitForLoad(url, ^{
+    navigation_manager()->ReloadWithUserAgentType(UserAgentType::DESKTOP);
   }));
 }
 
@@ -643,8 +689,9 @@ TEST_F(NavigationAndLoadCallbacksTest, UserInitiatedHashChangeNavigation) {
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
-      .WillOnce(
-          VerifyNewPageStartedContext(web_state(), url, &context, &nav_id));
+      .WillOnce(VerifyPageStartedContext(
+          web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
+          &nav_id));
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
@@ -708,8 +755,9 @@ TEST_F(NavigationAndLoadCallbacksTest, RendererInitiatedHashChangeNavigation) {
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
-      .WillOnce(
-          VerifyNewPageStartedContext(web_state(), url, &context, &nav_id));
+      .WillOnce(VerifyPageStartedContext(
+          web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
+          &nav_id));
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
@@ -751,8 +799,9 @@ TEST_F(NavigationAndLoadCallbacksTest, StateNavigation) {
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
-      .WillOnce(
-          VerifyNewPageStartedContext(web_state(), url, &context, &nav_id));
+      .WillOnce(VerifyPageStartedContext(
+          web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
+          &nav_id));
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
@@ -1075,8 +1124,9 @@ TEST_F(NavigationAndLoadCallbacksTest, RedirectNavigation) {
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
-      .WillOnce(
-          VerifyNewPageStartedContext(web_state(), url, &context, &nav_id));
+      .WillOnce(VerifyPageStartedContext(
+          web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
+          &nav_id));
   // Second ShouldAllowRequest call is for redirect_url.
   EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
@@ -1100,8 +1150,9 @@ TEST_F(NavigationAndLoadCallbacksTest, DownloadNavigation) {
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
-      .WillOnce(
-          VerifyNewPageStartedContext(web_state(), url, &context, &nav_id));
+      .WillOnce(VerifyPageStartedContext(
+          web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
+          &nav_id));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(
           VerifyDownloadFinishedContext(web_state(), url, &context, &nav_id));
@@ -1122,8 +1173,9 @@ TEST_F(NavigationAndLoadCallbacksTest, FailedLoad) {
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
-      .WillOnce(
-          VerifyNewPageStartedContext(web_state(), url, &context, &nav_id));
+      .WillOnce(VerifyPageStartedContext(
+          web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
+          &nav_id));
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
@@ -1171,8 +1223,9 @@ TEST_F(NavigationAndLoadCallbacksTest, DisallowResponse) {
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
-      .WillOnce(
-          VerifyNewPageStartedContext(web_state(), url, &context, &nav_id));
+      .WillOnce(VerifyPageStartedContext(
+          web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
+          &nav_id));
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(false));
   // TODO(crbug.com/809557): DidFinishNavigation should be called.
@@ -1211,8 +1264,9 @@ TEST_F(NavigationAndLoadCallbacksTest, StopFinishedNavigation) {
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
-      .WillOnce(
-          VerifyNewPageStartedContext(web_state(), url, &context, &nav_id));
+      .WillOnce(VerifyPageStartedContext(
+          web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
+          &nav_id));
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))

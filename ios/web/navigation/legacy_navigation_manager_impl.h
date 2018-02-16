@@ -89,10 +89,6 @@ class LegacyNavigationManagerImpl : public NavigationManagerImpl {
   NavigationItemImpl* GetTransientItemImpl() const override;
   void FinishGoToIndex(int index, NavigationInitiationType type) override;
 
-  // Returns true if the PageTransition for the underlying navigation item at
-  // |index| has ui::PAGE_TRANSITION_IS_REDIRECT_MASK.
-  bool IsRedirectItemAtIndex(int index) const;
-
   // CRWSessionController that backs this instance.
   // TODO(stuartmorgan): Fold CRWSessionController into this class.
   CRWSessionController* session_controller_;
