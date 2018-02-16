@@ -29,8 +29,17 @@ class NotificationPlatformBridgeDelegate {
   virtual void HandleNotificationClicked(const std::string& id) = 0;
 
   // To be called when a button in a notification is clicked.
-  virtual void HandleNotificationButtonClicked(const std::string& id,
-                                               int button_index) = 0;
+  virtual void HandleNotificationButtonClicked(
+      const std::string& id,
+      int button_index,
+      const base::Optional<base::string16>& reply) = 0;
+
+  // To be called when the settings button in a notification is clicked.
+  virtual void HandleNotificationSettingsButtonClicked(
+      const std::string& id) = 0;
+
+  // To be called when a notification (source) should be disabled.
+  virtual void DisableNotification(const std::string& id) = 0;
 };
 
 // A platform bridge that uses Ash's message center to display notifications.
@@ -61,8 +70,12 @@ class NotificationPlatformBridgeChromeOs
   // NotificationPlatformBridgeDelegate:
   void HandleNotificationClosed(const std::string& id, bool by_user) override;
   void HandleNotificationClicked(const std::string& id) override;
-  void HandleNotificationButtonClicked(const std::string& id,
-                                       int button_index) override;
+  void HandleNotificationButtonClicked(
+      const std::string& id,
+      int button_index,
+      const base::Optional<base::string16>& reply) override;
+  void HandleNotificationSettingsButtonClicked(const std::string& id) override;
+  void DisableNotification(const std::string& id) override;
 
  private:
   ProfileNotification* GetProfileNotification(
