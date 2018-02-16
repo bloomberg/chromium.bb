@@ -21,6 +21,10 @@ source_set("tab_grid") {
 
 source_set("tab_grid_ui") {
   sources = [
+    "grid_cell.h",
+    "grid_cell.mm",
+    "grid_item.h",
+    "grid_item.mm",
     "tab_grid_view_controller.h",
     "tab_grid_view_controller.mm",
   ]
@@ -30,5 +34,6 @@ source_set("tab_grid_ui") {
   deps = [
     "//base",
     "//ios/chrome/browser/ui/tab_switcher",
+    "//ios/chrome/browser/ui/util:constraints_ui",
   ]
 }

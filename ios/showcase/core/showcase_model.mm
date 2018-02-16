@@ -71,6 +71,11 @@
       showcase::kClassForInstantiationKey : @"SCTabGridCoordinator",
       showcase::kUseCaseKey : @"Tab grid",
     },
+    @{
+      showcase::kClassForDisplayKey : @"GridCell",
+      showcase::kClassForInstantiationKey : @"SCGridCellViewController",
+      showcase::kUseCaseKey : @"Grid cells",
+    },
   ];
 }
 

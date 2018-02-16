@@ -4,6 +4,8 @@
 
 source_set("tab_grid") {
   sources = [
+    "sc_grid_cell_view_controller.h",
+    "sc_grid_cell_view_controller.mm",
     "sc_tab_grid_coordinator.h",
     "sc_tab_grid_coordinator.mm",
   ]
