@@ -7,16 +7,8 @@
 #ifndef UI_BASE_UI_BASE_SWITCHES_H_
 #define UI_BASE_UI_BASE_SWITCHES_H_
 
-#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "ui/base/ui_base_export.h"
-#include "ui/base/ui_features.h"
-
-namespace features {
-
-UI_BASE_EXPORT extern const base::Feature kEnableFloatingVirtualKeyboard;
-
-}  // namespace features
 
 namespace switches {
 

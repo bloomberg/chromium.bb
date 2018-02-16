@@ -18,6 +18,7 @@
 #include "ui/base/ime/input_method_base.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_flags.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event_sink.h"
 #include "ui/events/event_utils.h"
