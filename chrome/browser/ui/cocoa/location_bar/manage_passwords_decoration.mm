@@ -7,10 +7,12 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/cocoa/passwords/passwords_bubble_cocoa.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
+#include "chrome/browser/ui/views/passwords/password_bubble_view_base.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_palette.h"
@@ -61,8 +63,8 @@ AcceptsPress ManagePasswordsDecoration::AcceptsMousePress() {
 }
 
 bool ManagePasswordsDecoration::OnMousePressed(NSRect frame, NSPoint location) {
-  if (ManagePasswordsBubbleCocoa::instance())
-    ManagePasswordsBubbleCocoa::instance()->Close();
+  if (IsBubbleShowing())
+    HideBubble();
   else
     command_updater_->ExecuteCommand(IDC_MANAGE_PASSWORDS_FOR_PAGE);
   return true;
@@ -100,8 +102,12 @@ void ManagePasswordsDecoration::UpdateVisibleUI() {
 }
 
 void ManagePasswordsDecoration::HideBubble() {
-  if (icon()->active() && ManagePasswordsBubbleCocoa::instance())
+  if (chrome::ShowAllDialogsWithViewsToolkit()) {
+    if (IsBubbleShowing())
+      PasswordBubbleViewBase::CloseCurrentBubble();
+  } else if (icon()->active() && ManagePasswordsBubbleCocoa::instance()) {
     ManagePasswordsBubbleCocoa::instance()->Close();
+  }
 }
 
 const gfx::VectorIcon* ManagePasswordsDecoration::GetMaterialVectorIcon()
@@ -109,4 +115,10 @@ const gfx::VectorIcon* ManagePasswordsDecoration::GetMaterialVectorIcon()
   // Note: update unit tests if this vector icon ever changes (it's hard-coded
   // there).
   return &kKeyIcon;
+}
+
+bool ManagePasswordsDecoration::IsBubbleShowing() {
+  if (chrome::ShowAllDialogsWithViewsToolkit())
+    return PasswordBubbleViewBase::manage_password_bubble() != nullptr;
+  return ManagePasswordsBubbleCocoa::instance() != nullptr;
 }

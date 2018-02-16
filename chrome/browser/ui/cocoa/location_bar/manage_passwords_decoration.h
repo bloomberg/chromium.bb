@@ -68,6 +68,10 @@ class ManagePasswordsDecoration : public ImageDecoration {
   // Updates child view states.
   void UpdateUIState();
 
+  // Whether a bubble is already showing. Handles both views and Cocoa
+  // bubbles.
+  bool IsBubbleShowing();
+
   // Shows the manage passwords bubble.
   CommandUpdater* command_updater_;  // Weak, owned by Browser.
 
