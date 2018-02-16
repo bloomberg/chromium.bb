@@ -74,12 +74,8 @@ bool HandleSelectionBoundary<EditingStrategy>(const Node&) {
 
 template <>
 bool HandleSelectionBoundary<EditingInFlatTreeStrategy>(const Node& node) {
-  if (!node.IsElementNode())
-    return false;
-  ElementShadow* shadow = ToElement(node).Shadow();
-  if (!shadow)
-    return false;
-  return shadow->GetShadowRoot().IsUserAgent();
+  ShadowRoot* root = node.GetShadowRoot();
+  return root && root->IsUserAgent();
 }
 
 }  // namespace
