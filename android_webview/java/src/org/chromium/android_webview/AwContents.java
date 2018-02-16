@@ -134,6 +134,10 @@ public class AwContents implements SmartClipProvider {
 
     private static final double MIN_SCREEN_HEIGHT_PERCENTAGE_FOR_INTERSTITIAL = 0.7;
 
+    private static final String SAMSUNG_WORKAROUND_PACKAGE_NAME = "com.android.email";
+    private static final String SAMSUNG_WORKAROUND_BASE_URL = "email://";
+    private static final int SAMSUNG_WORKAROUND_DELAY = 200;
+
     private static class ForceAuxiliaryBitmapRendering {
         private static final boolean sResult = lazyCheck();
         private static boolean lazyCheck() {
@@ -1687,6 +1691,15 @@ public class AwContents implements SmartClipProvider {
                 Log.wtf(TAG, "Unable to load data string %s", data, e);
                 return;
             }
+        }
+
+        // This is a workaround for an issue with PlzNavigate and one of Samsung's OEM mail apps.
+        // See http://crbug.com/781535.
+        if (SAMSUNG_WORKAROUND_PACKAGE_NAME.equals(mContext.getPackageName())
+                && SAMSUNG_WORKAROUND_BASE_URL.equals(loadUrlParams.getBaseUrl())) {
+            ThreadUtils.postOnUiThreadDelayed(
+                    () -> loadUrl(loadUrlParams), SAMSUNG_WORKAROUND_DELAY);
+            return;
         }
         loadUrl(loadUrlParams);
     }
