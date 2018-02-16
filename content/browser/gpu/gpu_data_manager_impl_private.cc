@@ -824,8 +824,7 @@ GpuDataManagerImplPrivate::Are3DAPIsBlockedAtTime(
   // require adjusting the associated unit tests.
   std::string domain = GetDomainFromURL(url);
 
-  DomainBlockMap::const_iterator iter = blocked_domains_.find(domain);
-  if (iter != blocked_domains_.end()) {
+  if (blocked_domains_.find(domain) != blocked_domains_.end()) {
     // Err on the side of caution, and assume that if a particular
     // domain shows up in the block map, it's there for a good
     // reason and don't let its presence there automatically expire.
