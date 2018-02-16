@@ -12,6 +12,10 @@ import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 
+import org.chromium.chrome.browser.vr_shell.TestVrShellDelegate;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -31,6 +35,10 @@ public class NfcSimUtils {
     private static final byte[] PROTO_BYTES = new byte[] {(byte) 0x08, (byte) 0x03};
     private static final int VERSION = 123;
     private static final int RESERVED = 456;
+
+    // VrCore always seems to recover within ~10 seconds, so give it that plus some extra to be safe
+    private static final int NFC_SCAN_TIMEOUT_MS = 15000;
+    private static final int NFC_SCAN_INTERVAL_MS = 2000;
 
     /**
      * Makes an Intent that triggers VrCore as if the Daydream headset's NFC
@@ -52,7 +60,7 @@ public class NfcSimUtils {
 
     /**
      * Simulates the NFC tag of the Daydream headset being scanned.
-     * @param context The Context that the activity will be started from.
+     * @param context The Context that the NFC scan activity will be started from.
      */
     public static void simNfcScan(Context context) {
         Intent nfcIntent = NfcSimUtils.makeNfcIntent();
@@ -61,6 +69,23 @@ public class NfcSimUtils {
         } catch (ActivityNotFoundException e) {
             // On unsupported devices, won't find VrCore -> Do nothing
         }
+    }
+
+    /**
+     * Repeatedly simulates an NFC scan until VR is actually entered. This is a workaround for
+     * https://crbug.com/736527.
+     * @param context The Context that the NFC scan activity will be started from.
+     */
+    public static void simNfcScanUntilVrEntry(final Context context) {
+        final TestVrShellDelegate delegate = VrShellDelegateUtils.getDelegateInstance();
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                if (delegate.isVrEntryComplete()) return true;
+                simNfcScan(context);
+                return false;
+            }
+        }, NFC_SCAN_TIMEOUT_MS, NFC_SCAN_INTERVAL_MS);
     }
 
     private static byte[] intToByteArray(int i) {
