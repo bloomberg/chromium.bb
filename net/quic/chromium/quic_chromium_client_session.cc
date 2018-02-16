@@ -910,9 +910,9 @@ void QuicChromiumClientSession::UpdateStreamPriority(
     for (auto update : updates) {
       QuicSpdyStream* stream = GetSpdyDataStream(update.id);
       DCHECK(stream);
-      int weight = Spdy3PriorityToHttp2Weight(stream->priority());
-      WritePriority(update.id, update.dependent_stream_id, weight,
-                    update.exclusive);
+      SpdyPriority priority = stream->QuicSpdyStream::priority();
+      WritePriority(update.id, update.dependent_stream_id,
+                    Spdy3PriorityToHttp2Weight(priority), update.exclusive);
     }
   }
   QuicSpdySession::UpdateStreamPriority(id, new_priority);

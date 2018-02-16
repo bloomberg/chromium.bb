@@ -175,6 +175,9 @@ int QuicHttpStream::DoHandlePromiseComplete(int rv) {
 
   stream_ = quic_session()->ReleasePromisedStream();
 
+  SpdyPriority spdy_priority = ConvertRequestPriorityToQuicPriority(priority_);
+  stream_->SetPriority(spdy_priority);
+
   next_state_ = STATE_OPEN;
   stream_net_log_.AddEvent(
       NetLogEventType::QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,

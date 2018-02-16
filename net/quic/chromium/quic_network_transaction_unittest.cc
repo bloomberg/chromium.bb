@@ -415,11 +415,26 @@ class QuicNetworkTransactionTest : public PlatformTest,
       QuicStreamId id,
       QuicStreamId parent_stream_id,
       RequestPriority request_priority,
-      QuicStreamOffset* header_stream_offset) {
+      QuicStreamOffset* offset) {
     return client_maker_.MakePriorityPacket(
         packet_number, should_include_version, id, parent_stream_id,
-        ConvertRequestPriorityToQuicPriority(request_priority),
-        header_stream_offset);
+        ConvertRequestPriorityToQuicPriority(request_priority), offset);
+  }
+
+  std::unique_ptr<QuicEncryptedPacket> ConstructClientAckAndPriorityPacket(
+      QuicPacketNumber packet_number,
+      bool should_include_version,
+      QuicPacketNumber largest_received,
+      QuicPacketNumber smallest_received,
+      QuicPacketNumber least_unacked,
+      QuicStreamId stream_id,
+      QuicStreamId parent_stream_id,
+      RequestPriority request_priority,
+      QuicStreamOffset* offset) {
+    return client_maker_.MakeAckAndPriorityPacket(
+        packet_number, should_include_version, largest_received,
+        smallest_received, least_unacked, stream_id, parent_stream_id,
+        ConvertRequestPriorityToQuicPriority(request_priority), offset);
   }
 
   // Uses default QuicTestPacketMaker.
@@ -905,7 +920,7 @@ class QuicNetworkTransactionTest : public PlatformTest,
 };
 
 INSTANTIATE_TEST_CASE_P(
-    VersionIncludeStreamDependencySequnece,
+    VersionIncludeStreamDependencySequence,
     QuicNetworkTransactionTest,
     ::testing::Combine(::testing::ValuesIn(AllSupportedTransportVersions()),
                        ::testing::Bool()));
@@ -6900,6 +6915,165 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyAuth) {
     EXPECT_TRUE(mock_quic_data.AllReadDataConsumed());
     EXPECT_TRUE(mock_quic_data.AllWriteDataConsumed());
   }
+}
+
+TEST_P(QuicNetworkTransactionTest, QuicServerPushUpdatesPriority) {
+  // Only run this test if HTTP/2 stream dependency info is sent by client (sent
+  // in HEADERS frames for requests and PRIORITY frames).
+  if (version_ <= QUIC_VERSION_42 ||
+      !client_headers_include_h2_stream_dependency_) {
+    return;
+  }
+
+  session_params_.origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
+
+  const QuicStreamId client_stream_0 = GetNthClientInitiatedStreamId(0);
+  const QuicStreamId client_stream_1 = GetNthClientInitiatedStreamId(1);
+  const QuicStreamId client_stream_2 = GetNthClientInitiatedStreamId(2);
+  const QuicStreamId push_stream_0 = GetNthServerInitiatedStreamId(0);
+  const QuicStreamId push_stream_1 = GetNthServerInitiatedStreamId(1);
+
+  MockQuicData mock_quic_data;
+  QuicStreamOffset header_stream_offset = 0;
+  QuicStreamOffset server_header_offset = 0;
+  mock_quic_data.AddWrite(
+      ConstructInitialSettingsPacket(1, &header_stream_offset));
+
+  // Client sends "GET" requests for "/0.png", "/1.png", "/2.png".
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
+      2, client_stream_0, true, true, HIGHEST,
+      GetRequestHeaders("GET", "https", "/0.jpg"), 0, &header_stream_offset));
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
+      3, client_stream_1, true, true, MEDIUM,
+      GetRequestHeaders("GET", "https", "/1.jpg"), client_stream_0,
+      &header_stream_offset));
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
+      4, client_stream_2, true, true, MEDIUM,
+      GetRequestHeaders("GET", "https", "/2.jpg"), client_stream_1,
+      &header_stream_offset));
+
+  // Server replies "OK" for the three requests.
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      1, client_stream_0, false, false, GetResponseHeaders("200 OK"),
+      &server_header_offset));
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      2, client_stream_1, false, false, GetResponseHeaders("200 OK"),
+      &server_header_offset));
+  mock_quic_data.AddWrite(ConstructClientAckPacket(5, 2, 1, 1));
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      3, client_stream_2, false, false, GetResponseHeaders("200 OK"),
+      &server_header_offset));
+
+  // Server sends two push promises associated with |client_stream_0|; client
+  // responds with a PRIORITY frame after each to notify server of HTTP/2 stream
+  // dependency info for each push promise stream.
+  mock_quic_data.AddRead(ConstructServerPushPromisePacket(
+      4, client_stream_0, push_stream_0, false,
+      GetRequestHeaders("GET", "https", "/pushed_0.jpg"), &server_header_offset,
+      &server_maker_));
+  mock_quic_data.AddWrite(ConstructClientAckAndPriorityPacket(
+      6, false, 4, 3, 1, push_stream_0, client_stream_2, DEFAULT_PRIORITY,
+      &header_stream_offset));
+  mock_quic_data.AddRead(ConstructServerPushPromisePacket(
+      5, client_stream_0, push_stream_1, false,
+      GetRequestHeaders("GET", "https", "/pushed_1.jpg"), &server_header_offset,
+      &server_maker_));
+  mock_quic_data.AddWrite(
+      ConstructClientPriorityPacket(7, false, push_stream_1, push_stream_0,
+                                    DEFAULT_PRIORITY, &header_stream_offset));
+
+  // Server sends the response headers for the two push promises.
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      6, push_stream_0, false, false, GetResponseHeaders("200 OK"),
+      &server_header_offset));
+  mock_quic_data.AddWrite(ConstructClientAckPacket(8, 6, 5, 1));
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      7, push_stream_1, false, false, GetResponseHeaders("200 OK"),
+      &server_header_offset));
+
+  // Request for "pushed_0.jpg" matches |push_stream_0|. |push_stream_0|'s
+  // priority updates to match the request's priority. Client sends PRIORITY
+  // frames to inform server of new HTTP/2 stream dependencies.
+  mock_quic_data.AddWrite(ConstructClientAckAndPriorityPacket(
+      9, false, 7, 7, 1, push_stream_1, client_stream_2, DEFAULT_PRIORITY,
+      &header_stream_offset));
+  mock_quic_data.AddWrite(
+      ConstructClientPriorityPacket(10, false, push_stream_0, client_stream_0,
+                                    HIGHEST, &header_stream_offset));
+
+  // Server sends data for the three requests and the two push promises.
+  mock_quic_data.AddRead(ConstructServerDataPacket(8, client_stream_0, false,
+                                                   true, 0, "hello 0!"));
+  mock_quic_data.AddSynchronousRead(ConstructServerDataPacket(
+      9, client_stream_1, false, true, 0, "hello 1!"));
+  mock_quic_data.AddWrite(ConstructClientAckPacket(11, 9, 8, 1));
+  mock_quic_data.AddRead(ConstructServerDataPacket(10, client_stream_2, false,
+                                                   true, 0, "hello 2!"));
+  mock_quic_data.AddSynchronousRead(ConstructServerDataPacket(
+      11, push_stream_0, false, true, 0, "and hello 0!"));
+  mock_quic_data.AddWrite(ConstructClientAckPacket(12, 11, 10, 1));
+  mock_quic_data.AddRead(ConstructServerDataPacket(12, push_stream_1, false,
+                                                   true, 0, "and hello 1!"));
+
+  mock_quic_data.AddWrite(ConstructClientAckAndRstPacket(
+      13, push_stream_0, QUIC_RST_ACKNOWLEDGEMENT, 12, 12, 1));
+
+  mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data.AddRead(ASYNC, 0);               // EOF
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  // The non-alternate protocol job needs to hang in order to guarantee that
+  // the alternate-protocol job will "win".
+  AddHangingNonAlternateProtocolSocketData();
+
+  CreateSession();
+
+  request_.url = GURL("https://mail.example.org/0.jpg");
+  HttpNetworkTransaction trans_0(HIGHEST, session_.get());
+  TestCompletionCallback callback_0;
+  EXPECT_EQ(ERR_IO_PENDING,
+            trans_0.Start(&request_, callback_0.callback(), net_log_.bound()));
+  base::RunLoop().RunUntilIdle();
+
+  request_.url = GURL("https://mail.example.org/1.jpg");
+  HttpNetworkTransaction trans_1(MEDIUM, session_.get());
+  TestCompletionCallback callback_1;
+  EXPECT_EQ(ERR_IO_PENDING,
+            trans_1.Start(&request_, callback_1.callback(), net_log_.bound()));
+  base::RunLoop().RunUntilIdle();
+
+  request_.url = GURL("https://mail.example.org/2.jpg");
+  HttpNetworkTransaction trans_2(MEDIUM, session_.get());
+  TestCompletionCallback callback_2;
+  EXPECT_EQ(ERR_IO_PENDING,
+            trans_2.Start(&request_, callback_2.callback(), net_log_.bound()));
+  base::RunLoop().RunUntilIdle();
+
+  // Client makes request that matches resource pushed in |pushed_stream_0|.
+  request_.url = GURL("https://mail.example.org/pushed_0.jpg");
+  HttpNetworkTransaction trans_3(HIGHEST, session_.get());
+  TestCompletionCallback callback_3;
+  EXPECT_EQ(ERR_IO_PENDING,
+            trans_3.Start(&request_, callback_3.callback(), net_log_.bound()));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(callback_0.have_result());
+  EXPECT_EQ(OK, callback_0.WaitForResult());
+  EXPECT_TRUE(callback_1.have_result());
+  EXPECT_EQ(OK, callback_1.WaitForResult());
+  EXPECT_TRUE(callback_2.have_result());
+  EXPECT_EQ(OK, callback_2.WaitForResult());
+
+  CheckResponseData(&trans_0, "hello 0!");      // Closes stream 5
+  CheckResponseData(&trans_1, "hello 1!");      // Closes stream 7
+  CheckResponseData(&trans_2, "hello 2!");      // Closes strema 9
+  CheckResponseData(&trans_3, "and hello 0!");  // Closes stream 2, sends RST
+
+  mock_quic_data.Resume();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(mock_quic_data.AllReadDataConsumed());
+  EXPECT_TRUE(mock_quic_data.AllWriteDataConsumed());
 }
 
 }  // namespace test
