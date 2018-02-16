@@ -9,44 +9,12 @@
 #endif
 
 @implementation TabGridViewController
-@synthesize delegate = _delegate;
-@synthesize animationDelegate = _animationDelegate;
-@synthesize dispatcher = _dispatcher;
-@synthesize transitionContext = _transitionContext;
+
+#pragma mark - UIViewController
 
 - (void)viewDidLoad {
-  [super viewDidLoad];
+  // Set a white background color to avoid flickers of black during startup.
   self.view.backgroundColor = [UIColor whiteColor];
-}
-
-#pragma mark - TabSwitcher
-
-- (void)restoreInternalStateWithMainTabModel:(TabModel*)mainModel
-                                 otrTabModel:(TabModel*)otrModel
-                              activeTabModel:(TabModel*)activeModel {
-}
-
-- (UIViewController*)viewController {
-  return self;
-}
-
-- (void)prepareForDisplayAtSize:(CGSize)size {
-}
-
-- (void)showWithSelectedTabAnimation {
-}
-
-- (Tab*)dismissWithNewTabAnimationToModel:(TabModel*)targetModel
-                                  withURL:(const GURL&)url
-                                  atIndex:(NSUInteger)position
-                               transition:(ui::PageTransition)transition {
-  return nil;
-}
-
-- (void)setOtrTabModel:(TabModel*)otrModel {
-}
-
-- (void)tabSwitcherDismissWithModel:(TabModel*)model animated:(BOOL)animated {
 }
 
 @end

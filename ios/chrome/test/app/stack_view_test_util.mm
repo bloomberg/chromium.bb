@@ -27,7 +27,7 @@ StackViewController* GetStackViewController() {
   MainController* mainController = chrome_test_util::GetMainController();
   DCHECK(mainController);
   return base::mac::ObjCCastStrict<StackViewController>(
-      [mainController tabSwitcherController]);
+      mainController.tabSwitcher);
 }
 
 }  // namespace chrome_test_util

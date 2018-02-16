@@ -8,6 +8,8 @@ source_set("main") {
     "browser_view_information.h",
     "browser_view_wrangler.h",
     "browser_view_wrangler.mm",
+    "bvc_container_view_controller.h",
+    "bvc_container_view_controller.mm",
     "main_containing_view_controller.h",
     "main_containing_view_controller.mm",
     "main_coordinator.h",
@@ -30,7 +32,6 @@ source_set("main") {
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/tabs:tabs_internal",
     "//ios/chrome/browser/ui/main/transitions",
-    "//ios/chrome/browser/ui/tab_grid",
     "//ios/chrome/browser/ui/tab_switcher",
     "//ios/public/provider/chrome/browser",
   ]

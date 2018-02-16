@@ -185,7 +185,7 @@ TEST_F(URLOpenerTest, HandleOpenURLWithNoOpenTab) {
   // Setup main controller.
   MainController* controller = GetMainController();
   controller.browserViewInformation.mainBVC = bvcMock;
-  controller.tabSwitcherController = tabSwitcherController;
+  controller.tabSwitcher = tabSwitcherController;
   controller.tabSwitcherActive = YES;
 
   id mainApplicationDelegate =

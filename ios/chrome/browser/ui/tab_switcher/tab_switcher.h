@@ -86,11 +86,14 @@
 // been presented.
 - (void)showWithSelectedTabAnimation;
 
-// Performs an animation from the selected tab in the tab switcher to the
-// presented tab in the content area. When the animation completes, calls the
-// delegate methods:
-// |-tabSwitcher:dismissTransitionWillStartWithActiveModel:| and
-// |-tabSwitcherDismissTransitionDidEnd:|
+// Create a new tab in |targetModel| with the url |url| at |position|, using
+// page transition |transition|. Implementors are expected to also
+// perform an animation from the selected tab in the tab switcher to the
+// newly created tab in the content area. Objects adopting this protocol should
+// call the following delegate methods:
+//   |-tabSwitcher:dismissTransitionWillStartWithActiveModel:|
+//   |-tabSwitcherDismissTransitionDidEnd:|
+// to inform the delegate when this animation begins and ends.
 - (Tab*)dismissWithNewTabAnimationToModel:(TabModel*)targetModel
                                   withURL:(const GURL&)url
                                   atIndex:(NSUInteger)position

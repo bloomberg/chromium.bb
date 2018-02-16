@@ -6,6 +6,8 @@ import("//ios/public/provider/chrome/browser/build_config.gni")
 
 source_set("tab_grid") {
   sources = [
+    "tab_grid_adaptor.h",
+    "tab_grid_adaptor.mm",
     "tab_grid_coordinator.h",
     "tab_grid_coordinator.mm",
   ]
@@ -16,6 +18,8 @@ source_set("tab_grid") {
     ":tab_grid_ui",
     "//base",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/ui/main",
+    "//ios/chrome/browser/ui/tab_switcher",
   ]
 }
 
@@ -36,7 +40,23 @@ source_set("tab_grid_ui") {
 
   deps = [
     "//base",
-    "//ios/chrome/browser/ui/tab_switcher",
     "//ios/chrome/browser/ui/util:constraints_ui",
+  ]
+}
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "tab_grid_coordinator_unittest.mm",
+  ]
+  deps = [
+    ":tab_grid",
+    "//base",
+    "//base/test:test_support",
+    "//ios/chrome/browser/ui/tab_switcher",
+    "//ios/chrome/test:block_cleanup_test",
+    "//ios/web/public/test",
+    "//testing/gtest",
   ]
 }
