@@ -26,14 +26,14 @@ static const StorageType kPerm = StorageType::kPersistent;
 // Base class for our test fixtures.
 class AppCacheQuotaClientTest : public testing::Test {
  public:
-  const GURL kOriginA;
-  const GURL kOriginB;
-  const GURL kOriginOther;
+  const url::Origin kOriginA;
+  const url::Origin kOriginB;
+  const url::Origin kOriginOther;
 
   AppCacheQuotaClientTest()
-      : kOriginA("http://host"),
-        kOriginB("http://host:8000"),
-        kOriginOther("http://other"),
+      : kOriginA(url::Origin::Create(GURL("http://host"))),
+        kOriginB(url::Origin::Create(GURL("http://host:8000"))),
+        kOriginOther(url::Origin::Create(GURL("http://other"))),
         usage_(0),
         delete_status_(blink::mojom::QuotaStatusCode::kUnknown),
         num_get_origin_usage_completions_(0),
@@ -42,7 +42,7 @@ class AppCacheQuotaClientTest : public testing::Test {
         weak_factory_(this) {}
 
   int64_t GetOriginUsage(storage::QuotaClient* client,
-                         const GURL& origin,
+                         const url::Origin& origin,
                          StorageType type) {
     usage_ = -1;
     AsyncGetOriginUsage(client, origin, type);
@@ -50,17 +50,17 @@ class AppCacheQuotaClientTest : public testing::Test {
     return usage_;
   }
 
-  const std::set<GURL>& GetOriginsForType(storage::QuotaClient* client,
-                                          StorageType type) {
+  const std::set<url::Origin>& GetOriginsForType(storage::QuotaClient* client,
+                                                 StorageType type) {
     origins_.clear();
     AsyncGetOriginsForType(client, type);
     base::RunLoop().RunUntilIdle();
     return origins_;
   }
 
-  const std::set<GURL>& GetOriginsForHost(storage::QuotaClient* client,
-                                          StorageType type,
-                                          const std::string& host) {
+  const std::set<url::Origin>& GetOriginsForHost(storage::QuotaClient* client,
+                                                 StorageType type,
+                                                 const std::string& host) {
     origins_.clear();
     AsyncGetOriginsForHost(client, type, host);
     base::RunLoop().RunUntilIdle();
@@ -69,7 +69,7 @@ class AppCacheQuotaClientTest : public testing::Test {
 
   blink::mojom::QuotaStatusCode DeleteOriginData(storage::QuotaClient* client,
                                                  StorageType type,
-                                                 const GURL& origin) {
+                                                 const url::Origin& origin) {
     delete_status_ = blink::mojom::QuotaStatusCode::kUnknown;
     AsyncDeleteOriginData(client, type, origin);
     base::RunLoop().RunUntilIdle();
@@ -77,7 +77,7 @@ class AppCacheQuotaClientTest : public testing::Test {
   }
 
   void AsyncGetOriginUsage(storage::QuotaClient* client,
-                           const GURL& origin,
+                           const url::Origin& origin,
                            StorageType type) {
     client->GetOriginUsage(
         origin, type,
@@ -103,15 +103,15 @@ class AppCacheQuotaClientTest : public testing::Test {
 
   void AsyncDeleteOriginData(storage::QuotaClient* client,
                              StorageType type,
-                             const GURL& origin) {
+                             const url::Origin& origin) {
     client->DeleteOriginData(
         origin, type,
         base::Bind(&AppCacheQuotaClientTest::OnDeleteOriginDataComplete,
                    weak_factory_.GetWeakPtr()));
   }
 
-  void SetUsageMapEntry(const GURL& origin, int64_t usage) {
-    mock_service_.storage()->usage_map_[origin] = usage;
+  void SetUsageMapEntry(const url::Origin& origin, int64_t usage) {
+    mock_service_.storage()->usage_map_[origin.GetURL()] = usage;
   }
 
   AppCacheQuotaClient* CreateClient() {
@@ -136,7 +136,7 @@ class AppCacheQuotaClientTest : public testing::Test {
     usage_ = usage;
   }
 
-  void OnGetOriginsComplete(const std::set<GURL>& origins) {
+  void OnGetOriginsComplete(const std::set<url::Origin>& origins) {
     ++num_get_origins_completions_;
     origins_ = origins;
   }
@@ -148,7 +148,7 @@ class AppCacheQuotaClientTest : public testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   int64_t usage_;
-  std::set<GURL> origins_;
+  std::set<url::Origin> origins_;
   blink::mojom::QuotaStatusCode delete_status_;
   int num_get_origin_usage_completions_;
   int num_get_origins_completions_;
@@ -222,7 +222,8 @@ TEST_F(AppCacheQuotaClientTest, GetOriginsForHost) {
   EXPECT_EQ(kOriginA.host(), kOriginB.host());
   EXPECT_NE(kOriginA.host(), kOriginOther.host());
 
-  std::set<GURL> origins = GetOriginsForHost(client, kTemp, kOriginA.host());
+  std::set<url::Origin> origins =
+      GetOriginsForHost(client, kTemp, kOriginA.host());
   EXPECT_TRUE(origins.empty());
 
   SetUsageMapEntry(kOriginA, 1000);
@@ -255,7 +256,7 @@ TEST_F(AppCacheQuotaClientTest, GetOriginsForType) {
   SetUsageMapEntry(kOriginA, 1000);
   SetUsageMapEntry(kOriginB, 10);
 
-  std::set<GURL> origins = GetOriginsForType(client, kTemp);
+  std::set<url::Origin> origins = GetOriginsForType(client, kTemp);
   EXPECT_EQ(2ul, origins.size());
   EXPECT_TRUE(origins.find(kOriginA) != origins.end());
   EXPECT_TRUE(origins.find(kOriginB) != origins.end());

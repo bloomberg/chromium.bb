@@ -566,7 +566,7 @@ class QuotaManager::OriginDataDeleter : public QuotaTask {
          iter != manager()->clients_.end(); ++iter) {
       if (quota_client_mask_ & (*iter)->id()) {
         (*iter)->DeleteOriginData(
-            origin_, type_,
+            url::Origin::Create(origin_), type_,
             base::Bind(&OriginDataDeleter::DidDeleteOriginData,
                        weak_factory_.GetWeakPtr()));
       } else {
@@ -679,10 +679,11 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
   }
 
  private:
-  void DidGetOriginsForHost(const std::set<GURL>& origins) {
+  void DidGetOriginsForHost(const std::set<url::Origin>& origins) {
     DCHECK_GT(remaining_clients_, 0);
 
-    origins_.insert(origins.begin(), origins.end());
+    for (const auto& origin : origins)
+      origins_.insert(origin.GetURL());
 
     if (--remaining_clients_ == 0) {
       if (!origins_.empty())

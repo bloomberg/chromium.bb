@@ -292,11 +292,6 @@ int IndexedDBContextImpl::GetOriginBlobFileCount(const Origin& origin) {
   return count;
 }
 
-// TODO(jsbell): Update callers to use url::Origin overload and remove.
-int64_t IndexedDBContextImpl::GetOriginDiskUsage(const GURL& origin_url) {
-  return GetOriginDiskUsage(Origin::Create(origin_url));
-}
-
 int64_t IndexedDBContextImpl::GetOriginDiskUsage(const Origin& origin) {
   DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
   if (data_path_.empty() || !HasOrigin(origin))

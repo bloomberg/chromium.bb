@@ -63,7 +63,7 @@ void AppCacheQuotaClient::OnQuotaManagerDestroyed() {
     delete this;
 }
 
-void AppCacheQuotaClient::GetOriginUsage(const GURL& origin,
+void AppCacheQuotaClient::GetOriginUsage(const url::Origin& origin,
                                          StorageType type,
                                          const GetUsageCallback& callback) {
   DCHECK(!callback.is_null());
@@ -87,7 +87,7 @@ void AppCacheQuotaClient::GetOriginUsage(const GURL& origin,
   }
 
   const AppCacheStorage::UsageMap* map = GetUsageMap();
-  AppCacheStorage::UsageMap::const_iterator found = map->find(origin);
+  AppCacheStorage::UsageMap::const_iterator found = map->find(origin.GetURL());
   if (found == map->end()) {
     callback.Run(0);
     return;
@@ -107,13 +107,13 @@ void AppCacheQuotaClient::GetOriginsForHost(
     const GetOriginsCallback& callback) {
   DCHECK(!callback.is_null());
   if (host.empty()) {
-    callback.Run(std::set<GURL>());
+    callback.Run(std::set<url::Origin>());
     return;
   }
   GetOriginsHelper(type, host, callback);
 }
 
-void AppCacheQuotaClient::DeleteOriginData(const GURL& origin,
+void AppCacheQuotaClient::DeleteOriginData(const url::Origin& origin,
                                            StorageType type,
                                            const DeletionCallback& callback) {
   DCHECK(!quota_manager_is_destroyed_);
@@ -136,8 +136,8 @@ void AppCacheQuotaClient::DeleteOriginData(const GURL& origin,
     return;
   }
 
-  service_->DeleteAppCachesForOrigin(
-      origin, GetServiceDeleteCallback()->callback());
+  service_->DeleteAppCachesForOrigin(origin.GetURL(),
+                                     GetServiceDeleteCallback()->callback());
 }
 
 bool AppCacheQuotaClient::DoesSupport(StorageType type) const {
@@ -166,7 +166,7 @@ void AppCacheQuotaClient::GetOriginsHelper(StorageType type,
   DCHECK(!quota_manager_is_destroyed_);
 
   if (!service_) {
-    callback.Run(std::set<GURL>());
+    callback.Run(std::set<url::Origin>());
     return;
   }
 
@@ -178,16 +178,16 @@ void AppCacheQuotaClient::GetOriginsHelper(StorageType type,
   }
 
   if (type != StorageType::kTemporary) {
-    callback.Run(std::set<GURL>());
+    callback.Run(std::set<url::Origin>());
     return;
   }
 
   const AppCacheStorage::UsageMap* map = GetUsageMap();
-  std::set<GURL> origins;
+  std::set<url::Origin> origins;
   for (AppCacheStorage::UsageMap::const_iterator iter = map->begin();
        iter != map->end(); ++iter) {
     if (opt_host.empty() || iter->first.host_piece() == opt_host)
-      origins.insert(iter->first);
+      origins.insert(url::Origin::Create(iter->first));
   }
   callback.Run(origins);
 }

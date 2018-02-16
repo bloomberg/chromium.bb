@@ -103,7 +103,7 @@ void ClientUsageTracker::GetGlobalLimitedUsage(const UsageCallback& callback) {
 
   for (const auto& host_and_origins : non_cached_limited_origins_by_host_) {
     for (const auto& origin : host_and_origins.second)
-      client_->GetOriginUsage(origin, type_, accumulator);
+      client_->GetOriginUsage(url::Origin::Create(origin), type_, accumulator);
   }
 
   accumulator.Run(global_limited_usage_);
@@ -254,10 +254,12 @@ void ClientUsageTracker::AccumulateLimitedOriginUsage(
 
 void ClientUsageTracker::DidGetOriginsForGlobalUsage(
     const GlobalUsageCallback& callback,
-    const std::set<GURL>& origins) {
+    const std::set<url::Origin>& origins) {
   OriginSetByHost origins_by_host;
-  for (const auto& origin : origins)
-    origins_by_host[net::GetHostOrSpecFromURL(origin)].insert(origin);
+  for (const auto& origin : origins) {
+    GURL origin_url = origin.GetURL();
+    origins_by_host[net::GetHostOrSpecFromURL(origin_url)].insert(origin_url);
+  }
 
   AccumulateInfo* info = new AccumulateInfo;
   // Getting host usage may synchronously return the result if the usage is
@@ -272,7 +274,10 @@ void ClientUsageTracker::DidGetOriginsForGlobalUsage(
 
   for (const auto& host_and_origins : origins_by_host) {
     const std::string& host = host_and_origins.first;
-    const std::set<GURL>& origins = host_and_origins.second;
+    const std::set<GURL>& origin_urls = host_and_origins.second;
+    std::set<url::Origin> origins;
+    for (const auto& origin_url : origin_urls)
+      origins.insert(url::Origin::Create(origin_url));
     if (host_usage_accumulators_.Add(host, accumulator))
       GetUsageForOrigins(host, origins);
   }
@@ -301,13 +306,13 @@ void ClientUsageTracker::AccumulateHostUsage(
 
 void ClientUsageTracker::DidGetOriginsForHostUsage(
     const std::string& host,
-    const std::set<GURL>& origins) {
+    const std::set<url::Origin>& origins) {
   GetUsageForOrigins(host, origins);
 }
 
 void ClientUsageTracker::GetUsageForOrigins(
     const std::string& host,
-    const std::set<GURL>& origins) {
+    const std::set<url::Origin>& origins) {
   AccumulateInfo* info = new AccumulateInfo;
   // Getting origin usage may synchronously return the result if the usage is
   // cached, which may in turn dispatch the completion callback before we finish
@@ -320,13 +325,16 @@ void ClientUsageTracker::GetUsageForOrigins(
                  base::Owned(info), host);
 
   for (const auto& origin : origins) {
-    DCHECK_EQ(host, net::GetHostOrSpecFromURL(origin));
+    GURL origin_url = origin.GetURL();
+    DCHECK_EQ(host, net::GetHostOrSpecFromURL(origin_url));
 
     int64_t origin_usage = 0;
-    if (GetCachedOriginUsage(origin, &origin_usage))
-      accumulator.Run(origin, origin_usage);
-    else
-      client_->GetOriginUsage(origin, type_, base::Bind(accumulator, origin));
+    if (GetCachedOriginUsage(origin_url, &origin_usage)) {
+      accumulator.Run(origin_url, origin_usage);
+    } else {
+      client_->GetOriginUsage(origin, type_,
+                              base::Bind(accumulator, origin_url));
+    }
   }
 
   // Fire the sentinel as we've now called GetOriginUsage for all clients.

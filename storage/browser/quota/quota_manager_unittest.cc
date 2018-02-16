@@ -32,6 +32,7 @@
 #include "storage/browser/test/mock_storage_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 using blink::mojom::QuotaStatusCode;
 using blink::mojom::StorageType;
@@ -69,6 +70,10 @@ std::tuple<int64_t, int64_t> GetVolumeInfoForTests(
   int64_t available = static_cast<uint64_t>(GetAvailableDiskSpaceForTest());
   int64_t total = available * 2;
   return std::make_tuple(total, available);
+}
+
+url::Origin ToOrigin(const std::string& url) {
+  return url::Origin::Create(GURL(url));
 }
 
 }  // namespace
@@ -231,10 +236,9 @@ class QuotaManagerTest : public testing::Test {
                               StorageType type) {
     DCHECK(client);
     quota_status_ = QuotaStatusCode::kUnknown;
-    client->DeleteOriginData(
-        origin, type,
-        base::Bind(&QuotaManagerTest::StatusCallback,
-                   weak_factory_.GetWeakPtr()));
+    client->DeleteOriginData(url::Origin::Create(origin), type,
+                             base::Bind(&QuotaManagerTest::StatusCallback,
+                                        weak_factory_.GetWeakPtr()));
   }
 
   void EvictOriginData(const GURL& origin,
@@ -898,9 +902,9 @@ void QuotaManagerTest::GetUsage_WithModifyTestBody(const StorageType type) {
   EXPECT_EQ(QuotaStatusCode::kOk, status());
   EXPECT_EQ(10 + 20, usage());
 
-  client->ModifyOriginAndNotify(GURL("http://foo.com/"), type, 30);
-  client->ModifyOriginAndNotify(GURL("http://foo.com:1/"), type, -5);
-  client->AddOriginAndNotify(GURL("https://foo.com/"), type, 1);
+  client->ModifyOriginAndNotify(ToOrigin("http://foo.com/"), type, 30);
+  client->ModifyOriginAndNotify(ToOrigin("http://foo.com:1/"), type, -5);
+  client->AddOriginAndNotify(ToOrigin("https://foo.com/"), type, 1);
 
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), type);
   scoped_task_environment_.RunUntilIdle();
@@ -908,7 +912,7 @@ void QuotaManagerTest::GetUsage_WithModifyTestBody(const StorageType type) {
   EXPECT_EQ(10 + 20 + 30 - 5 + 1, usage());
   int foo_usage = usage();
 
-  client->AddOriginAndNotify(GURL("http://bar.com/"), type, 40);
+  client->AddOriginAndNotify(ToOrigin("http://bar.com/"), type, 40);
   GetUsageAndQuotaForWebApps(GURL("http://bar.com/"), type);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(QuotaStatusCode::kOk, status());
@@ -1358,8 +1362,7 @@ TEST_F(QuotaManagerTest, GetUsage_WithModification) {
   EXPECT_EQ(usage(), 1 + 20 + 600000);
   EXPECT_EQ(0, unlimited_usage());
 
-  client->ModifyOriginAndNotify(
-      GURL("http://foo.com/"), kPerm, 80000000);
+  client->ModifyOriginAndNotify(ToOrigin("http://foo.com/"), kPerm, 80000000);
 
   GetGlobalUsage(kPerm);
   scoped_task_environment_.RunUntilIdle();
@@ -1371,8 +1374,7 @@ TEST_F(QuotaManagerTest, GetUsage_WithModification) {
   EXPECT_EQ(usage(), 300 + 4000 + 50000 + 7000000);
   EXPECT_EQ(0, unlimited_usage());
 
-  client->ModifyOriginAndNotify(
-      GURL("http://foo.com/"), kTemp, 1);
+  client->ModifyOriginAndNotify(ToOrigin("http://foo.com/"), kTemp, 1);
 
   GetGlobalUsage(kTemp);
   scoped_task_environment_.RunUntilIdle();
@@ -1383,8 +1385,7 @@ TEST_F(QuotaManagerTest, GetUsage_WithModification) {
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(usage(), 4000 + 50000);
 
-  client->ModifyOriginAndNotify(
-      GURL("http://buz.com/"), kTemp, 900000000);
+  client->ModifyOriginAndNotify(ToOrigin("http://buz.com/"), kTemp, 900000000);
 
   GetHostUsage("buz.com", kTemp);
   scoped_task_environment_.RunUntilIdle();
@@ -1536,7 +1537,7 @@ TEST_F(QuotaManagerTest, EvictOriginDataHistogram) {
   histograms.ExpectTotalCount(
       QuotaManager::kDaysBetweenRepeatedOriginEvictionsHistogram, 0);
 
-  client->AddOriginAndNotify(kOrigin, kTemp, 100);
+  client->AddOriginAndNotify(url::Origin::Create(kOrigin), kTemp, 100);
 
   // Change the used count of the origin.
   quota_manager()->NotifyStorageAccessed(QuotaClient::kUnknown, GURL(kOrigin),
@@ -1561,7 +1562,7 @@ TEST_F(QuotaManagerTest, EvictOriginDataHistogram) {
   histograms.ExpectTotalCount(
       QuotaManager::kDaysBetweenRepeatedOriginEvictionsHistogram, 1);
 
-  client->AddOriginAndNotify(kOrigin, kTemp, 100);
+  client->AddOriginAndNotify(url::Origin::Create(kOrigin), kTemp, 100);
 
   GetGlobalUsage(kTemp);
   scoped_task_environment_.RunUntilIdle();
@@ -1601,7 +1602,7 @@ TEST_F(QuotaManagerTest, EvictOriginDataWithDeletionError) {
     NotifyStorageAccessed(client, GURL(kData[i].origin), kData[i].type);
   scoped_task_environment_.RunUntilIdle();
 
-  client->AddOriginToErrorSet(GURL("http://foo.com/"), kTemp);
+  client->AddOriginToErrorSet(ToOrigin("http://foo.com/"), kTemp);
 
   for (int i = 0;
        i < QuotaManager::kThresholdOfErrorsToBeBlacklisted + 1;
@@ -2073,12 +2074,12 @@ TEST_F(QuotaManagerTest, GetOriginsModifiedSince) {
   EXPECT_EQ(modified_origins_type(), kTemp);
 
   base::Time time1 = client->IncrementMockTime();
-  client->ModifyOriginAndNotify(GURL("http://a.com/"), kTemp, 10);
-  client->ModifyOriginAndNotify(GURL("http://a.com:1/"), kTemp, 10);
-  client->ModifyOriginAndNotify(GURL("http://b.com/"), kPerm, 10);
+  client->ModifyOriginAndNotify(ToOrigin("http://a.com/"), kTemp, 10);
+  client->ModifyOriginAndNotify(ToOrigin("http://a.com:1/"), kTemp, 10);
+  client->ModifyOriginAndNotify(ToOrigin("http://b.com/"), kPerm, 10);
   base::Time time2 = client->IncrementMockTime();
-  client->ModifyOriginAndNotify(GURL("https://a.com/"), kTemp, 10);
-  client->ModifyOriginAndNotify(GURL("http://c.com/"), kTemp, 10);
+  client->ModifyOriginAndNotify(ToOrigin("https://a.com/"), kTemp, 10);
+  client->ModifyOriginAndNotify(ToOrigin("http://c.com/"), kTemp, 10);
   base::Time time3 = client->IncrementMockTime();
 
   GetOriginsModifiedSince(kTemp, time1);
@@ -2099,7 +2100,7 @@ TEST_F(QuotaManagerTest, GetOriginsModifiedSince) {
   EXPECT_TRUE(modified_origins().empty());
   EXPECT_EQ(modified_origins_type(), kTemp);
 
-  client->ModifyOriginAndNotify(GURL("http://a.com/"), kTemp, 10);
+  client->ModifyOriginAndNotify(ToOrigin("http://a.com/"), kTemp, 10);
 
   GetOriginsModifiedSince(kTemp, time3);
   scoped_task_environment_.RunUntilIdle();

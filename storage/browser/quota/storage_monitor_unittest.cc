@@ -19,6 +19,8 @@
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "storage/browser/test/mock_storage_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 using blink::mojom::QuotaStatusCode;
 using blink::mojom::StorageType;
@@ -668,9 +670,8 @@ TEST_F(StorageMonitorIntegrationTest, NotifyUsageEvent) {
   quota_manager_->AddStorageObserver(&mock_observer, params);
 
   // Fire a usage change.
-  client_->AddOriginAndNotify(GURL(kDefaultOrigin),
-                              kTestStorageType,
-                              kTestUsage);
+  client_->AddOriginAndNotify(url::Origin::Create(GURL(kDefaultOrigin)),
+                              kTestStorageType, kTestUsage);
   scoped_task_environment_.RunUntilIdle();
 
   // Verify that the observer receives it.

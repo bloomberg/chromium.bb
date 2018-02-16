@@ -148,8 +148,8 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
   virtual int64_t RequestDiskUsage() {
     PostTaskAndReplyWithResult(
         GetContext()->TaskRunner(), FROM_HERE,
-        base::BindOnce(&IndexedDBContext::GetOriginDiskUsage, GetContext(),
-                       GURL("file:///")),
+        base::BindOnce(&IndexedDBContextImpl::GetOriginDiskUsage, GetContext(),
+                       Origin::Create(GURL("file:///"))),
         base::BindOnce(&IndexedDBBrowserTest::DidGetDiskUsage,
                        base::Unretained(this)));
     scoped_refptr<base::ThreadTestHelper> helper(

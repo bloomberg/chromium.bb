@@ -1701,7 +1701,8 @@ class CacheStorageQuotaClientTest : public CacheStorageManagerTest {
     run_loop->Quit();
   }
 
-  void OriginsCallback(base::RunLoop* run_loop, const std::set<GURL>& origins) {
+  void OriginsCallback(base::RunLoop* run_loop,
+                       const std::set<url::Origin>& origins) {
     callback_origins_ = origins;
     run_loop->Quit();
   }
@@ -1715,7 +1716,7 @@ class CacheStorageQuotaClientTest : public CacheStorageManagerTest {
   int64_t QuotaGetOriginUsage(const url::Origin& origin) {
     base::RunLoop loop;
     quota_client_->GetOriginUsage(
-        origin.GetURL(), StorageType::kTemporary,
+        origin, StorageType::kTemporary,
         base::Bind(&CacheStorageQuotaClientTest::QuotaUsageCallback,
                    base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
@@ -1745,7 +1746,7 @@ class CacheStorageQuotaClientTest : public CacheStorageManagerTest {
   bool QuotaDeleteOriginData(const url::Origin& origin) {
     base::RunLoop loop;
     quota_client_->DeleteOriginData(
-        origin.GetURL(), StorageType::kTemporary,
+        origin, StorageType::kTemporary,
         base::Bind(&CacheStorageQuotaClientTest::DeleteOriginCallback,
                    base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
@@ -1760,7 +1761,7 @@ class CacheStorageQuotaClientTest : public CacheStorageManagerTest {
 
   blink::mojom::QuotaStatusCode callback_status_;
   int64_t callback_quota_usage_ = 0;
-  std::set<GURL> callback_origins_;
+  std::set<url::Origin> callback_origins_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CacheStorageQuotaClientTest);
@@ -1806,8 +1807,9 @@ TEST_P(CacheStorageQuotaClientTestP, QuotaGetOriginsForHost) {
   EXPECT_TRUE(Open(url::Origin::Create(GURL("http://example2.com")), "foo"));
   EXPECT_EQ(3u, QuotaGetOriginsForHost("example.com"));
   EXPECT_EQ(1u, QuotaGetOriginsForHost("example2.com"));
-  EXPECT_TRUE(callback_origins_.find(GURL("http://example2.com")) !=
-              callback_origins_.end());
+  EXPECT_NE(
+      callback_origins_.find(url::Origin::Create(GURL("http://example2.com"))),
+      callback_origins_.end());
   EXPECT_EQ(0u, QuotaGetOriginsForHost("unknown.com"));
 }
 
