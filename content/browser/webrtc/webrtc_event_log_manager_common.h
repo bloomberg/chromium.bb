@@ -65,21 +65,44 @@ CONTENT_EXPORT extern const base::TimeDelta
 // For a given Chrome session, this is a unique key for PeerConnections.
 // It's not, however, unique between sessions (after Chrome is restarted).
 struct WebRtcEventLogPeerConnectionKey {
-  constexpr WebRtcEventLogPeerConnectionKey(int render_process_id, int lid)
-      : render_process_id(render_process_id), lid(lid) {}
+  using BrowserContextId = uintptr_t;
+
+  constexpr WebRtcEventLogPeerConnectionKey(int render_process_id,
+                                            int lid,
+                                            BrowserContextId browser_context_id)
+      : render_process_id(render_process_id),
+        lid(lid),
+        browser_context_id(browser_context_id) {}
 
   bool operator==(const WebRtcEventLogPeerConnectionKey& other) const {
-    return std::tie(render_process_id, lid) ==
-           std::tie(other.render_process_id, other.lid);
+    // Each RPH is associated with exactly one BrowserContext.
+    DCHECK(render_process_id != other.render_process_id ||
+           browser_context_id == other.browser_context_id);
+
+    const bool equal = std::tie(render_process_id, lid) ==
+                       std::tie(other.render_process_id, other.lid);
+    return equal;
   }
 
   bool operator<(const WebRtcEventLogPeerConnectionKey& other) const {
+    // Each RPH is associated with exactly one BrowserContext.
+    DCHECK(render_process_id != other.render_process_id ||
+           browser_context_id == other.browser_context_id);
+
     return std::tie(render_process_id, lid) <
            std::tie(other.render_process_id, other.lid);
   }
 
+  // These two fields are the actual key; any peer connection is uniquely
+  // identifiable by the renderer process in which it lives, and its ID within
+  // that process.
   int render_process_id;
   int lid;  // Renderer-local PeerConnection ID.
+
+  // The BrowserContext is not actually part of the key, but each PeerConnection
+  // is associated with a BrowserContext, and that BrowserContext is almost
+  // always necessary, so it makes sense to remember it along with the key.
+  BrowserContextId browser_context_id;
 };
 
 // An observer for notifications of local log files being started/stopped, and
@@ -133,6 +156,7 @@ struct LogFile {
 class LogFileWriter {
  protected:
   using PeerConnectionKey = WebRtcEventLogPeerConnectionKey;
+  using BrowserContextId = PeerConnectionKey::BrowserContextId;
   using LogFilesMap = std::map<PeerConnectionKey, LogFile>;
 
   virtual ~LogFileWriter() = default;

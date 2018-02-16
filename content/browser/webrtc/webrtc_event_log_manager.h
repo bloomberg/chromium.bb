@@ -14,7 +14,6 @@
 #include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/clock.h"
 #include "content/browser/webrtc/webrtc_event_log_manager_common.h"
@@ -40,7 +39,7 @@ class CONTENT_EXPORT WebRtcEventLogManager final
       public WebRtcLocalEventLogsObserver,
       public WebRtcRemoteEventLogsObserver {
  public:
-  using BrowserContextId = WebRtcRemoteEventLogManager::BrowserContextId;
+  using BrowserContextId = WebRtcEventLogPeerConnectionKey::BrowserContextId;
 
   // To turn WebRTC on and off, we go through PeerConnectionTrackerProxy. In
   // order to make this toggling easily testable, PeerConnectionTrackerProxyImpl
@@ -50,8 +49,9 @@ class CONTENT_EXPORT WebRtcEventLogManager final
   class PeerConnectionTrackerProxy {
    public:
     virtual ~PeerConnectionTrackerProxy() = default;
-    virtual void SetWebRtcEventLoggingState(WebRtcEventLogPeerConnectionKey key,
-                                            bool event_logging_enabled) = 0;
+    virtual void SetWebRtcEventLoggingState(
+        const WebRtcEventLogPeerConnectionKey& key,
+        bool event_logging_enabled) = 0;
   };
 
   // Translate a BrowserContext into an ID, allowing associating PeerConnections
@@ -265,12 +265,9 @@ class CONTENT_EXPORT WebRtcEventLogManager final
   void DisableForBrowserContextInternal(BrowserContextId browser_context_id,
                                         base::OnceClosure reply);
 
-  void PeerConnectionAddedInternal(int render_process_id,
-                                   int lid,
+  void PeerConnectionAddedInternal(PeerConnectionKey key,
                                    base::OnceCallback<void(bool)> reply);
-  void PeerConnectionRemovedInternal(int render_process_id,
-                                     int lid,
-                                     BrowserContextId browser_context_id,
+  void PeerConnectionRemovedInternal(PeerConnectionKey key,
                                      base::OnceCallback<void(bool)> reply);
 
   void EnableLocalLoggingInternal(const base::FilePath& base_path,
@@ -278,18 +275,14 @@ class CONTENT_EXPORT WebRtcEventLogManager final
                                   base::OnceCallback<void(bool)> reply);
   void DisableLocalLoggingInternal(base::OnceCallback<void(bool)> reply);
 
-  void StartRemoteLoggingInternal(
-      int render_process_id,
-      int lid,  // Renderer-local PeerConnection ID.
-      base::Optional<BrowserContextId> browser_context_id,
-      const base::FilePath& browser_context_dir,
-      size_t max_file_size_bytes,
-      const std::string metadata,
-      base::OnceCallback<void(bool)> reply);
+  void StartRemoteLoggingInternal(PeerConnectionKey key,
+                                  const base::FilePath& browser_context_dir,
+                                  size_t max_file_size_bytes,
+                                  const std::string metadata,
+                                  base::OnceCallback<void(bool)> reply);
 
   void OnWebRtcEventLogWriteInternal(
-      int render_process_id,
-      int lid,  // Renderer-local PeerConnection ID.
+      PeerConnectionKey key,
       bool remote_logging_allowed,
       const std::string message,
       base::OnceCallback<void(std::pair<bool, bool>)> reply);
