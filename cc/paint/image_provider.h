@@ -36,6 +36,7 @@ class CC_PAINT_EXPORT ImageProvider {
       return image_.image() || image_.transfer_cache_entry_id();
     }
     const DecodedDrawImage& decoded_image() const { return image_; }
+    bool needs_unlock() const { return !destruction_callback_.is_null(); }
 
    private:
     void DestroyDecode();
