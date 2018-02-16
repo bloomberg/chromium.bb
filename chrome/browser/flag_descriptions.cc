@@ -43,6 +43,10 @@ const char kAppBannersDescription[] =
 const char kAshSidebarName[] = "Sidebar";
 const char kAshSidebarDescription[] = "Enable the experimental sidebar.";
 
+const char kAshNewSystemMenuName[] = "New system menu";
+const char kAshNewSystemMenuDescription[] =
+    "Enable the experimental system menu.";
+
 const char kArrayPrototypeValuesName[] = "Array.prototype.values ES6 method";
 const char kArrayPrototypeValuesDescription[] =
     "Enables Array.prototype.values method";

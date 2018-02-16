@@ -8,6 +8,7 @@
 
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -90,8 +91,10 @@ class VolumeButton : public ButtonListenerActionableView {
             : (level == 1.0 ? volume_levels
                             : std::max(1, static_cast<int>(std::ceil(
                                               level * (volume_levels - 1)))));
-    gfx::ImageSkia image_skia =
-        gfx::CreateVectorIcon(*kVolumeLevelIcons[image_index], kMenuIconColor);
+    gfx::ImageSkia image_skia = gfx::CreateVectorIcon(
+        *kVolumeLevelIcons[image_index], features::IsNewSystemMenuEnabled()
+                                             ? kNewMenuIconColor
+                                             : kMenuIconColor);
     image_->SetImage(&image_skia);
     image_index_ = image_index;
   }
@@ -134,8 +137,10 @@ VolumeView::VolumeView(SystemTrayItem* owner,
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_VOLUME));
   tri_view_->AddView(TriView::Container::CENTER, slider_);
 
-  SetBackground(views::CreateThemedSolidBackground(
-      this, ui::NativeTheme::kColorId_BubbleBackground));
+  SetBackground(features::IsNewSystemMenuEnabled()
+                    ? views::CreateSolidBackground(kNewMenuBackgroundColor)
+                    : views::CreateThemedSolidBackground(
+                          this, ui::NativeTheme::kColorId_BubbleBackground));
 
   Update();
 }
@@ -216,7 +221,9 @@ void VolumeView::UpdateDeviceTypeAndMore() {
   tri_view_->SetContainerVisible(TriView::Container::END, true);
   tri_view_->InvalidateLayout();
   if (device_icon_visibility)
-    device_type_->SetImage(gfx::CreateVectorIcon(device_icon, kMenuIconColor));
+    device_type_->SetImage(gfx::CreateVectorIcon(
+        device_icon, features::IsNewSystemMenuEnabled() ? kNewMenuIconColor
+                                                        : kMenuIconColor));
   if (device_type_->visible() != device_icon_visibility) {
     device_type_->SetVisible(device_icon_visibility);
     device_type_->InvalidateLayout();

@@ -10,6 +10,7 @@
 
 #include "ash/ash_constants.h"
 #include "ash/ash_view_ids.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -211,8 +212,11 @@ views::Label* TrayPopupUtils::CreateDefaultLabel() {
   // Frequently the label will paint to a layer that's non-opaque, so subpixel
   // rendering won't work unless we explicitly set a background. See
   // crbug.com/686363
-  label->SetBackground(views::CreateThemedSolidBackground(
-      label, ui::NativeTheme::kColorId_BubbleBackground));
+  label->SetBackground(
+      features::IsNewSystemMenuEnabled()
+          ? views::CreateSolidBackground(kNewMenuBackgroundColor)
+          : views::CreateThemedSolidBackground(
+                label, ui::NativeTheme::kColorId_BubbleBackground));
   return label;
 }
 
@@ -270,8 +274,11 @@ void TrayPopupUtils::ConfigureTrayPopupButton(views::Button* button) {
 
 void TrayPopupUtils::ConfigureAsStickyHeader(views::View* view) {
   view->set_id(VIEW_ID_STICKY_HEADER);
-  view->SetBackground(views::CreateThemedSolidBackground(
-      view, ui::NativeTheme::kColorId_BubbleBackground));
+  view->SetBackground(
+      features::IsNewSystemMenuEnabled()
+          ? views::CreateSolidBackground(kNewMenuBackgroundColor)
+          : views::CreateThemedSolidBackground(
+                view, ui::NativeTheme::kColorId_BubbleBackground));
   view->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(kMenuSeparatorVerticalPadding, 0)));
   view->SetPaintToLayer();

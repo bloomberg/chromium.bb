@@ -4,6 +4,8 @@
 
 #include "ash/system/tray/tray_popup_item_style.h"
 
+#include "ash/public/cpp/ash_features.h"
+#include "ash/system/tray/tray_constants.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
@@ -21,13 +23,16 @@ constexpr int kDisabledAlpha = 0x61;
 
 // static
 SkColor TrayPopupItemStyle::GetIconColor(ColorStyle color_style) {
+  const SkColor kBaseIconColor = features::IsNewSystemMenuEnabled()
+                                     ? kNewMenuIconColor
+                                     : gfx::kChromeIconGrey;
   switch (color_style) {
     case ColorStyle::ACTIVE:
-      return gfx::kChromeIconGrey;
+      return kBaseIconColor;
     case ColorStyle::INACTIVE:
-      return SkColorSetA(gfx::kChromeIconGrey, kInactiveAlpha);
+      return SkColorSetA(kBaseIconColor, kInactiveAlpha);
     case ColorStyle::DISABLED:
-      return SkColorSetA(gfx::kChromeIconGrey, kDisabledAlpha);
+      return SkColorSetA(kBaseIconColor, kDisabledAlpha);
     case ColorStyle::CONNECTED:
       return gfx::kPlaceholderColor;
   }
@@ -44,7 +49,9 @@ TrayPopupItemStyle::TrayPopupItemStyle(FontStyle font_style)
 TrayPopupItemStyle::~TrayPopupItemStyle() = default;
 
 SkColor TrayPopupItemStyle::GetTextColor() const {
-  const SkColor kBaseTextColor = SkColorSetA(SK_ColorBLACK, 0xDE);
+  const SkColor kBaseTextColor = features::IsNewSystemMenuEnabled()
+                                     ? kNewMenuTextColor
+                                     : SkColorSetA(SK_ColorBLACK, 0xDE);
 
   switch (color_style_) {
     case ColorStyle::ACTIVE:
@@ -66,6 +73,8 @@ SkColor TrayPopupItemStyle::GetIconColor() const {
 
 void TrayPopupItemStyle::SetupLabel(views::Label* label) const {
   label->SetEnabledColor(GetTextColor());
+  if (features::IsNewSystemMenuEnabled())
+    label->SetAutoColorReadabilityEnabled(false);
 
   const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
   switch (font_style_) {

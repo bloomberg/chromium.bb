@@ -132,6 +132,7 @@
 #endif  // OS_ANDROID
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_features.h"
@@ -1970,6 +1971,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshSidebarDescription, kOsCrOS,
      ENABLE_DISABLE_VALUE_TYPE(ash::switches::kAshSidebarEnabled,
                                ash::switches::kAshSidebarDisabled)},
+    {"enable-ash-new-system-menu", flag_descriptions::kAshNewSystemMenuName,
+     flag_descriptions::kAshNewSystemMenuDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kAshNewSystemMenu)},
 #endif  // OS_CHROMEOS
     {"enable-message-center-new-style-notification",
      flag_descriptions::kMessageCenterNewStyleNotificationName,
