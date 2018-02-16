@@ -91,7 +91,6 @@ SyntheticGesture::Result SyntheticSmoothMoveGesture::ForwardInputEvents(
 void SyntheticSmoothMoveGesture::ForwardTouchInputEvents(
     const base::TimeTicks& timestamp,
     SyntheticGestureTarget* target) {
-  base::TimeTicks event_timestamp = timestamp;
   switch (state_) {
     case STARTED:
       if (MoveIsNoOp()) {
@@ -101,11 +100,11 @@ void SyntheticSmoothMoveGesture::ForwardTouchInputEvents(
       if (params_.add_slop)
         AddTouchSlopToFirstDistance(target);
       ComputeNextMoveSegment();
-      PressPoint(target, event_timestamp);
+      PressPoint(target, timestamp);
       state_ = MOVING;
       break;
     case MOVING: {
-      event_timestamp = ClampTimestamp(timestamp);
+      base::TimeTicks event_timestamp = ClampTimestamp(timestamp);
       gfx::Vector2dF delta = GetPositionDeltaAtTime(event_timestamp);
       MovePoint(target, delta, event_timestamp);
 
@@ -125,8 +124,8 @@ void SyntheticSmoothMoveGesture::ForwardTouchInputEvents(
     case STOPPING:
       if (timestamp - current_move_segment_stop_time_ >=
           target->PointerAssumedStoppedTime()) {
-        event_timestamp = current_move_segment_stop_time_ +
-                          target->PointerAssumedStoppedTime();
+        base::TimeTicks event_timestamp = current_move_segment_stop_time_ +
+                                          target->PointerAssumedStoppedTime();
         ReleasePoint(target, event_timestamp);
         state_ = DONE;
       }
@@ -216,7 +215,6 @@ void SyntheticSmoothMoveGesture::ForwardMouseWheelInputEvents(
 void SyntheticSmoothMoveGesture::ForwardMouseClickInputEvents(
     const base::TimeTicks& timestamp,
     SyntheticGestureTarget* target) {
-  base::TimeTicks event_timestamp = timestamp;
   switch (state_) {
     case STARTED:
       if (MoveIsNoOp()) {
@@ -224,7 +222,7 @@ void SyntheticSmoothMoveGesture::ForwardMouseClickInputEvents(
         break;
       }
       ComputeNextMoveSegment();
-      PressPoint(target, event_timestamp);
+      PressPoint(target, timestamp);
       state_ = MOVING;
       break;
     case MOVING: {
