@@ -1126,6 +1126,10 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, FilteredEvents) {
   ASSERT_TRUE(RunExtensionTest("service_worker/filtered_events"));
 }
 
+IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, MimeHandlerView) {
+  ASSERT_TRUE(RunExtensionTest("service_worker/mime_handler_view"));
+}
+
 IN_PROC_BROWSER_TEST_P(ServiceWorkerLazyBackgroundTest,
                        PRE_FilteredEventsAfterRestart) {
   LazyBackgroundObserver lazy_observer;
