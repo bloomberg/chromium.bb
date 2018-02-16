@@ -53,7 +53,8 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
   if (printed_pages.empty())
     return false;
 
-  PdfMetafileSkia metafile(print_params.printed_doc_type);
+  PdfMetafileSkia metafile(print_params.printed_doc_type,
+                           print_params.document_cookie);
   CHECK(metafile.Init());
 
   for (int page_number : printed_pages) {

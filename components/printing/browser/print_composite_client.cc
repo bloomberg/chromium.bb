@@ -30,9 +30,7 @@ uint64_t GenerateFrameGuid(int process_id, int frame_id) {
 namespace printing {
 
 PrintCompositeClient::PrintCompositeClient(content::WebContents* web_contents)
-    : for_preview_(false) {
-  DCHECK(web_contents);
-}
+    : content::WebContentsObserver(web_contents), for_preview_(false) {}
 
 PrintCompositeClient::~PrintCompositeClient() {}
 
@@ -91,7 +89,6 @@ void PrintCompositeClient::DoCompositePageToPdf(
     const ContentToProxyIdMap& subframe_content_info,
     mojom::PdfCompositor::CompositePageToPdfCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
   auto& compositor = GetCompositeRequest(document_cookie);
 
   DCHECK(data_size);

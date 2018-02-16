@@ -179,8 +179,7 @@ mojom::PdfCompositor::Status PdfCompositorImpl::CompositeToPdf(
   }
 
   std::vector<SkDocumentPage> pages(page_count);
-  // TODO(weili): Change the default functions to actual implementation.
-  SkDeserialProcs procs;
+  SkDeserialProcs procs = DeserializationProcs(&subframes);
   if (!SkMultiPictureDocumentRead(&stream, pages.data(), page_count, &procs)) {
     DLOG(ERROR) << "CompositeToPdf: Page reading failed.";
     return mojom::PdfCompositor::Status::CONTENT_FORMAT_ERROR;
@@ -211,6 +210,7 @@ sk_sp<SkPicture> PdfCompositorImpl::CompositeSubframe(uint64_t frame_guid) {
   // The content of this frame should be available.
   auto iter = frame_info_map_.find(frame_guid);
   DCHECK(iter != frame_info_map_.end());
+
   std::unique_ptr<FrameInfo>& frame_info = iter->second;
   frame_info->composited = true;
 
@@ -221,8 +221,7 @@ sk_sp<SkPicture> PdfCompositorImpl::CompositeSubframe(uint64_t frame_guid) {
   // Composite the entire frame.
   SkMemoryStream stream(iter->second->serialized_content->memory(),
                         iter->second->serialized_content->mapped_size());
-  // TODO(weili): Change the default functions to actual implementation.
-  SkDeserialProcs procs;
+  SkDeserialProcs procs = DeserializationProcs(&subframes);
   iter->second->content = SkPicture::MakeFromStream(&stream, &procs);
   return iter->second->content;
 }
