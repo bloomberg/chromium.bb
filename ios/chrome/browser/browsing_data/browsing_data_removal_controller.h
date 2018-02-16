@@ -21,9 +21,9 @@ class ChromeBrowserState;
 // ChromeBrowserState.
 @interface BrowsingDataRemovalController : NSObject
 
-// Removes browsing data from |browserState| for datatypes in |mask|.
-// |mask| is obtained from IOSChromeBrowsingDataRemover::RemoveDataMask.
-// |browserState| cannot be null and must not be off the record.
+// Removes browsing data from |browserState| for datatypes in |mask|. |mask| is
+// obtained from BrowsingDataRemoveMask. |browserState| cannot be null and must
+// not be off the record.
 - (void)removeBrowsingDataFromBrowserState:
             (ios::ChromeBrowserState*)browserState
                                       mask:(BrowsingDataRemoveMask)mask
@@ -31,11 +31,10 @@ class ChromeBrowserState;
                          completionHandler:(ProceduralBlock)completionHandler;
 
 // Removes browsing data that iOS has associated with |browserState| and which
-// is not removed when the |browserState| is destroyed.
-// |mask| is obtained from IOSChromeBrowsingDataRemover::RemoveDataMask
-// |browserState| cannot be  null. |completionHandler| is called when this
-// operation finishes. This method finishes removal of the browsing data even if
-// |browserState| is destroyed after this method call.
+// is not removed when the |browserState| is destroyed. |mask| is obtained from
+// BrowsingDataRemoveMask. |browserState| cannot be null. |completionHandler| is
+// called when this operation finishes. This method finishes removal of the
+// browsing data even if |browserState| is destroyed after this method call.
 - (void)
 removeIOSSpecificIncognitoBrowsingDataFromBrowserState:
     (ios::ChromeBrowserState*)browserState
