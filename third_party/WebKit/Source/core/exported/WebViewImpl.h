@@ -676,7 +676,7 @@ class CORE_EXPORT WebViewImpl final
 
   WebPageImportanceSignals page_importance_signals_;
 
-  const std::unique_ptr<WebViewScheduler> scheduler_;
+  std::unique_ptr<WebViewScheduler> scheduler_;
 
   // TODO(lfg): This is used in order to disable compositor visibility while
   // the page is still visible. This is needed until the WebView and WebWidget
