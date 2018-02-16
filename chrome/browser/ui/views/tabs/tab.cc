@@ -131,16 +131,19 @@ gfx::Path GetInteriorPath(float scale,
   // ClipPath with anti-aliasing enabled it can cause artifacts.
   const float bottom = std::ceil(size.height() * scale);
 
+  const float scaled_horizontal_inset = horizontal_inset * scale;
+
   // Construct the interior path by intersecting paths representing the left
   // and right halves of the tab.  Compared to computing the full path at once,
   // this makes it easier to avoid overdraw in the top center near minimum
   // width, and to implement cases where |horizontal_inset| != 0.
   gfx::Path right_path;
-  right_path.moveTo(right - 1 - horizontal_inset, bottom);
+  right_path.moveTo(right - 1 - scaled_horizontal_inset, bottom);
   right_path.rCubicTo(-0.75 * scale, 0, -1.625 * scale, -0.5 * scale,
                       -2 * scale, -1.5 * scale);
-  right_path.lineTo(right - 1 - horizontal_inset - (endcap_width - 2) * scale,
-                    2.5 * scale);
+  right_path.lineTo(
+      right - 1 - scaled_horizontal_inset - (endcap_width - 2) * scale,
+      2.5 * scale);
   right_path.rCubicTo(-0.375 * scale, -1 * scale, -1.25 * scale, -1.5 * scale,
                       -2 * scale, -1.5 * scale);
   right_path.lineTo(0, scale);
@@ -149,10 +152,11 @@ gfx::Path GetInteriorPath(float scale,
 
   gfx::Path left_path;
   const float scaled_endcap_width = 1 + endcap_width * scale;
-  left_path.moveTo(scaled_endcap_width + horizontal_inset, scale);
+  left_path.moveTo(scaled_endcap_width + scaled_horizontal_inset, scale);
   left_path.rCubicTo(-0.75 * scale, 0, -1.625 * scale, 0.5 * scale, -2 * scale,
                      1.5 * scale);
-  left_path.lineTo(1 + horizontal_inset + 2 * scale, bottom - 1.5 * scale);
+  left_path.lineTo(1 + scaled_horizontal_inset + 2 * scale,
+                   bottom - 1.5 * scale);
   left_path.rCubicTo(-0.375 * scale, scale, -1.25 * scale, 1.5 * scale,
                      -2 * scale, 1.5 * scale);
   left_path.lineTo(right, bottom);
@@ -607,8 +611,9 @@ void Tab::PaintChildren(const views::PaintInfo& info) {
   // except when the tab is too narrow to completely show even one icon, at
   // which point this serves to clip the favicon.
   ui::ClipRecorder clip_recorder(info.context());
-  clip_recorder.ClipPathWithAntiAliasing(GetInteriorPath(
-      1 /* scale */, size(), GetTabEndcapWidth(), 1 /* padding */));
+  clip_recorder.ClipPathWithAntiAliasing(
+      GetInteriorPath(info.context().device_scale_factor(), size(),
+                      GetTabEndcapWidth(), 1 /* padding */));
   View::PaintChildren(info);
 }
 
