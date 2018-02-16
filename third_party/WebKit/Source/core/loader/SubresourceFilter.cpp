@@ -61,6 +61,10 @@ bool SubresourceFilter::AllowLoad(
 
   if (reporting_policy == SecurityViolationReportingPolicy::kReport)
     ReportLoad(resource_url, load_policy);
+
+  last_resource_check_result_ = std::make_pair(
+      std::make_pair(resource_url, request_context), load_policy);
+
   return load_policy != WebDocumentSubresourceFilter::kDisallow;
 }
 
@@ -82,6 +86,20 @@ bool SubresourceFilter::AllowWebSocketConnection(const KURL& url) {
       FROM_HERE, WTF::Bind(&SubresourceFilter::ReportLoad, WrapPersistent(this),
                            url, load_policy));
   return load_policy != WebDocumentSubresourceFilter::kDisallow;
+}
+
+bool SubresourceFilter::IsAdResource(
+    const KURL& resource_url,
+    WebURLRequest::RequestContext request_context) {
+  WebDocumentSubresourceFilter::LoadPolicy load_policy;
+  if (last_resource_check_result_.first ==
+      std::make_pair(resource_url, request_context)) {
+    load_policy = last_resource_check_result_.second;
+  } else {
+    load_policy =
+        subresource_filter_->GetLoadPolicy(resource_url, request_context);
+  }
+  return load_policy != WebDocumentSubresourceFilter::kAllow;
 }
 
 void SubresourceFilter::ReportLoad(

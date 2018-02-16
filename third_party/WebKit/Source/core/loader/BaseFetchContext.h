@@ -55,6 +55,9 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
 
   void AddWarningConsoleMessage(const String&, LogSource) const override;
   void AddErrorConsoleMessage(const String&, LogSource) const override;
+  bool IsAdResource(const KURL&,
+                    Resource::Type,
+                    WebURLRequest::RequestContext) const override;
 
  protected:
   // Used for security checks.

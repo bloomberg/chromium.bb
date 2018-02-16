@@ -606,11 +606,16 @@ ResourceRequestBlockedReason ResourceFetcher::PrepareRequest(
   network_instrumentation::ResourcePrioritySet(identifier,
                                                resource_request.Priority());
 
+  KURL url = MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url());
   ResourceRequestBlockedReason blocked_reason = Context().CanRequest(
-      resource_type, resource_request,
-      MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url()), options,
-      reporting_policy, params.GetOriginRestriction(),
-      resource_request.GetRedirectStatus());
+      resource_type, resource_request, url, options, reporting_policy,
+      params.GetOriginRestriction(), resource_request.GetRedirectStatus());
+
+  if (Context().IsAdResource(url, resource_type,
+                             resource_request.GetRequestContext())) {
+    resource_request.SetIsAdResource();
+  }
+
   if (blocked_reason != ResourceRequestBlockedReason::kNone)
     return blocked_reason;
 
