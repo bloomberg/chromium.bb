@@ -94,6 +94,7 @@
 #import "ios/web/web_state/ui/crw_wk_navigation_states.h"
 #import "ios/web/web_state/ui/crw_wk_script_message_router.h"
 #import "ios/web/web_state/ui/wk_back_forward_list_item_holder.h"
+#import "ios/web/web_state/ui/wk_navigation_action_util.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "ios/web/web_state/web_view_internal_creation_util.h"
@@ -4101,8 +4102,14 @@ registerLoadRequestForURL:(const GURL&)requestURL
   GURL openerURL =
       referrer.length ? GURL(base::SysNSStringToUTF8(referrer)) : _documentURL;
 
+  // TODO(crbug.com/809706): Remove the usage of userIsInteracting and replace
+  // with another boolean that is only true for user java script execution.
+  bool isUserInitiatedNavigationAction =
+      web::GetNavigationActionInitiationType(action) ==
+      web::NavigationActionInitiationType::kUserInitiated;
   WebState* childWebState = _webStateImpl->CreateNewWebState(
-      requestURL, openerURL, [self userIsInteracting]);
+      requestURL, openerURL,
+      isUserInitiatedNavigationAction || [self userIsInteracting]);
   if (!childWebState)
     return nil;
 

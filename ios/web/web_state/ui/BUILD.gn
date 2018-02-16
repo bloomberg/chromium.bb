@@ -51,6 +51,8 @@ source_set("ui") {
     "crw_wk_navigation_states.mm",
     "wk_back_forward_list_item_holder.h",
     "wk_back_forward_list_item_holder.mm",
+    "wk_navigation_action_util.h",
+    "wk_navigation_action_util.mm",
   ]
 
   libs = [ "WebKit.framework" ]
