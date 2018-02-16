@@ -1670,8 +1670,8 @@ void ResourceDispatcherHostImpl::CancelRequestsForRoute(
       if (blocked_loaders.first.child_id == child_id)
         routing_ids.insert(blocked_loaders.first);
     }
-    for (const GlobalFrameRoutingId& route_id : routing_ids) {
-      CancelBlockedRequestsForRoute(route_id);
+    for (const GlobalFrameRoutingId& frame_route_id : routing_ids) {
+      CancelBlockedRequestsForRoute(frame_route_id);
     }
   }
 }

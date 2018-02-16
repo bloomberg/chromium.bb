@@ -70,13 +70,13 @@ base::Optional<cbor::CBORValue> GenerateCanonicalResponseCBOR(
       cbor::CBORValue(response_code_str, cbor::CBORValue::Type::BYTE_STRING));
 
   for (const std::string& name : *signed_headers) {
-    auto it = headers.find(name);
-    if (it == headers.end()) {
+    auto headers_it = headers.find(name);
+    if (headers_it == headers.end()) {
       DVLOG(1) << "Signed header \"" << name
                << "\" expected, but not found in response_headers.";
       return base::nullopt;
     }
-    const std::string& value = it->second;
+    const std::string& value = headers_it->second;
     map.insert_or_assign(
         cbor::CBORValue(name, cbor::CBORValue::Type::BYTE_STRING),
         cbor::CBORValue(value, cbor::CBORValue::Type::BYTE_STRING));
