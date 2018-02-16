@@ -76,7 +76,7 @@ void PWAConfirmationView::WindowClosing() {
 }
 
 bool PWAConfirmationView::Accept() {
-  base::ResetAndReturn(&callback_).Run(true, web_app_info_);
+  std::move(callback_).Run(true, web_app_info_);
   return true;
 }
 
