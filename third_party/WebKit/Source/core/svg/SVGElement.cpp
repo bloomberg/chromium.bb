@@ -34,6 +34,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/events/Event.h"
 #include "core/frame/Settings.h"
@@ -1033,10 +1034,8 @@ scoped_refptr<ComputedStyle> SVGElement::CustomStyleForLayoutObject() {
     return GetDocument().EnsureStyleResolver().StyleForElement(this);
 
   const ComputedStyle* style = nullptr;
-  if (Element* parent = ParentOrShadowHostElement()) {
-    if (LayoutObject* layout_object = parent->GetLayoutObject())
-      style = layout_object->Style();
-  }
+  if (Element* parent = ParentOrShadowHostElement())
+    style = parent->GetComputedStyle();
 
   return GetDocument().EnsureStyleResolver().StyleForElement(
       CorrespondingElement(), style, style);
