@@ -279,11 +279,6 @@ const char kEnableAutofillCreditCardAblationExperimentDisplayName[] =
 const char kEnableAutofillCreditCardAblationExperimentDescription[] =
     "If enabled, credit card autofill suggestions will not display.";
 
-const char kEnableAutofillCreditCardBankNameDisplayName[] =
-    "Display the issuer bank name of a credit card in autofill.";
-const char kEnableAutofillCreditCardBankNameDisplayDescription[] =
-    "If enabled, displays the issuer bank name of a credit card in autofill.";
-
 const char kEnableAutofillCreditCardDropdownGooglePayBrandingName[] =
     "Show the Google Pay logo in the Autofill credit card dropdown";
 const char kEnableAutofillCreditCardDropdownGooglePayBrandingDescription[] =
