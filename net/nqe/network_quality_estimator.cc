@@ -190,7 +190,6 @@ NetworkQualityEstimator::NetworkQualityEstimator(
           params_->weight_multiplier_per_signal_strength_level()),
       effective_connection_type_at_last_main_frame_(
           EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
-      external_estimate_provider_(std::move(external_estimates_provider)),
       effective_connection_type_recomputation_interval_(
           base::TimeDelta::FromSeconds(10)),
       rtt_observations_size_at_last_ect_computation_(0),
@@ -208,15 +207,6 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       weak_ptr_factory_(this) {
   network_quality_store_.reset(new nqe::internal::NetworkQualityStore());
   NetworkChangeNotifier::AddConnectionTypeObserver(this);
-  if (external_estimate_provider_) {
-    RecordExternalEstimateProviderMetrics(
-        EXTERNAL_ESTIMATE_PROVIDER_STATUS_AVAILABLE);
-    external_estimate_provider_->SetUpdatedEstimateDelegate(this);
-  } else {
-    RecordExternalEstimateProviderMetrics(
-        EXTERNAL_ESTIMATE_PROVIDER_STATUS_NOT_AVAILABLE);
-  }
-
   throughput_analyzer_.reset(new nqe::internal::ThroughputAnalyzer(
       this, params_.get(), base::ThreadTaskRunnerHandle::Get(),
       base::Bind(&NetworkQualityEstimator::OnNewThroughputObservationAvailable,
@@ -380,7 +370,6 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
   if (request.load_flags() & LOAD_MAIN_FRAME_DEPRECATED) {
     ComputeEffectiveConnectionType();
     RecordMetricsOnMainFrameRequest();
-    MaybeQueryExternalEstimateProvider();
   }
 
   LoadTimingInfo load_timing_info;
@@ -501,19 +490,6 @@ void NetworkQualityEstimator::RecordAccuracyAfterMainFrame(
         "NQE.Accuracy.EffectiveConnectionType", estimated_observed_diff,
         measuring_duration, recent_effective_connection_type);
   }
-
-  // Add histogram to evaluate the accuracy of the external estimate provider.
-  if (external_estimate_provider_quality_.http_rtt() !=
-          nqe::internal::InvalidRTT() &&
-      recent_http_rtt != nqe::internal::InvalidRTT()) {
-    const int estimated_observed_diff_milliseconds =
-        external_estimate_provider_quality_.http_rtt().InMilliseconds() -
-        recent_http_rtt.InMilliseconds();
-
-    RecordRTTAccuracy("NQE.ExternalEstimateProvider.RTT.Accuracy",
-                      estimated_observed_diff_milliseconds, measuring_duration,
-                      recent_http_rtt);
-  }
 }
 
 void NetworkQualityEstimator::NotifyRequestCompleted(const URLRequest& request,
@@ -633,12 +609,6 @@ bool NetworkQualityEstimator::RequestProvidesRTTObservation(
          request.method() == "GET";
 }
 
-void NetworkQualityEstimator::RecordExternalEstimateProviderMetrics(
-    NQEExternalEstimateProviderStatus status) const {
-  UMA_HISTOGRAM_ENUMERATION("NQE.ExternalEstimateProviderStatus", status,
-                            EXTERNAL_ESTIMATE_PROVIDER_STATUS_BOUNDARY);
-}
-
 void NetworkQualityEstimator::OnConnectionTypeChanged(
     NetworkChangeNotifier::ConnectionType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -654,9 +624,6 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
   http_downstream_throughput_kbps_observations_.Clear();
   http_rtt_ms_observations_.Clear();
   transport_rtt_ms_observations_.Clear();
-
-  if (external_estimate_provider_)
-    external_estimate_provider_->ClearCachedEstimate();
 
 #if defined(OS_ANDROID)
   if (params_->weight_multiplier_per_signal_strength_level() < 1.0 &&
@@ -706,32 +673,7 @@ void NetworkQualityEstimator::GatherEstimatesForNextConnectionType() {
   if (!ReadCachedNetworkQualityEstimate())
     AddDefaultEstimates();
 
-  // Query external estimate later since cached estimate has a higher priority,
-  // and if a cached estimate was available, there is no need to query the
-  // external estimate provider.
-  MaybeQueryExternalEstimateProvider();
   ComputeEffectiveConnectionType();
-}
-
-void NetworkQualityEstimator::MaybeQueryExternalEstimateProvider() const {
-  // Query the external estimate provider on certain connection types. Once the
-  // updated estimates are available, OnUpdatedEstimateAvailable will be called
-  // by |external_estimate_provider_| with updated estimates.
-  if (!external_estimate_provider_ ||
-      current_network_id_.type == NetworkChangeNotifier::CONNECTION_NONE ||
-      current_network_id_.type == NetworkChangeNotifier::CONNECTION_UNKNOWN ||
-      current_network_id_.type == NetworkChangeNotifier::CONNECTION_ETHERNET ||
-      current_network_id_.type == NetworkChangeNotifier::CONNECTION_BLUETOOTH) {
-    return;
-  }
-  if (cached_estimate_applied_) {
-    // Do not use external estimate provider if a local cached value is
-    // available.
-    return;
-  }
-  RecordExternalEstimateProviderMetrics(
-      EXTERNAL_ESTIMATE_PROVIDER_STATUS_QUERIED);
-  external_estimate_provider_->Update();
 }
 
 int32_t NetworkQualityEstimator::GetCurrentSignalStrength() const {
@@ -1505,44 +1447,6 @@ bool NetworkQualityEstimator::ReadCachedNetworkQualityEstimate() {
   return true;
 }
 
-void NetworkQualityEstimator::OnUpdatedEstimateAvailable(
-    const base::TimeDelta& rtt,
-    int32_t downstream_throughput_kbps) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(external_estimate_provider_);
-
-  RecordExternalEstimateProviderMetrics(
-      EXTERNAL_ESTIMATE_PROVIDER_STATUS_CALLBACK);
-
-  external_estimate_provider_quality_ = nqe::internal::NetworkQuality();
-
-  if (rtt > base::TimeDelta()) {
-    RecordExternalEstimateProviderMetrics(
-        EXTERNAL_ESTIMATE_PROVIDER_STATUS_RTT_AVAILABLE);
-    UMA_HISTOGRAM_TIMES("NQE.ExternalEstimateProvider.RTT", rtt);
-    Observation rtt_observation(
-        rtt.InMilliseconds(), tick_clock_->NowTicks(),
-        current_network_id_.signal_strength,
-        NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE);
-    external_estimate_provider_quality_.set_http_rtt(rtt);
-    AddAndNotifyObserversOfRTT(rtt_observation);
-  }
-
-  if (downstream_throughput_kbps > 0) {
-    RecordExternalEstimateProviderMetrics(
-        EXTERNAL_ESTIMATE_PROVIDER_STATUS_DOWNLINK_BANDWIDTH_AVAILABLE);
-    UMA_HISTOGRAM_COUNTS_1M("NQE.ExternalEstimateProvider.DownlinkBandwidth",
-                            downstream_throughput_kbps);
-    Observation throughput_observation(
-        downstream_throughput_kbps, tick_clock_->NowTicks(),
-        current_network_id_.signal_strength,
-        NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE);
-    external_estimate_provider_quality_.set_downstream_throughput_kbps(
-        downstream_throughput_kbps);
-    AddAndNotifyObserversOfThroughput(throughput_observation);
-  }
-}
-
 void NetworkQualityEstimator::SetTickClockForTesting(
     base::TickClock* tick_clock) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -1858,8 +1762,6 @@ void NetworkQualityEstimator::MaybeUpdateCachedEstimateApplied(
   bool deleted_observation_sources[NETWORK_QUALITY_OBSERVATION_SOURCE_MAX] = {
       false};
   deleted_observation_sources
-      [NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE] = true;
-  deleted_observation_sources
       [NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM] = true;
   deleted_observation_sources
       [NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_TRANSPORT_FROM_PLATFORM] =
@@ -1874,8 +1776,6 @@ bool NetworkQualityEstimator::ShouldAddObservation(
 
   if (cached_estimate_applied_ &&
       (observation.source() ==
-           NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE ||
-       observation.source() ==
            NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM ||
        observation.source() ==
            NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_TRANSPORT_FROM_PLATFORM)) {
