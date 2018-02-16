@@ -126,8 +126,7 @@ std::unique_ptr<printing::PdfMetafileSkia> ReadFileOnBlockingTaskRunner(
 
   file.Close();
 
-  auto metafile = std::make_unique<printing::PdfMetafileSkia>(
-      printing::SkiaDocumentType::PDF);
+  auto metafile = std::make_unique<printing::PdfMetafileSkia>();
   if (!metafile->InitFromData(buf.data(), buf.size())) {
     LOG(ERROR) << "Failed to initialize PDF metafile";
     return nullptr;
