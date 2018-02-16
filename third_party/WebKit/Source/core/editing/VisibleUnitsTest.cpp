@@ -13,8 +13,7 @@
 #include "core/layout/LayoutTextFragment.h"
 
 namespace blink {
-
-namespace {
+namespace visible_units_test {
 
 PositionWithAffinity PositionWithAffinityInDOMTree(
     Node& anchor,
@@ -45,8 +44,6 @@ VisiblePositionInFlatTree CreateVisiblePositionInFlatTree(
     TextAffinity affinity = TextAffinity::kDownstream) {
   return CreateVisiblePosition(PositionInFlatTree(&anchor, offset), affinity);
 }
-
-}  // namespace
 
 class VisibleUnitsTest : public EditingTestBase {};
 
@@ -1680,4 +1677,5 @@ TEST_F(VisibleUnitsTest, NextBoundaryOfEditableTableWithLeadingSpaceInOutput) {
             GetCaretTextFromBody(result));
 }
 
+}  // namespace visible_units_test
 }  // namespace blink
