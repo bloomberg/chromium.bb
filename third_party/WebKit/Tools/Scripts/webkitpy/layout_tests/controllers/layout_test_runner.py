@@ -311,6 +311,16 @@ class Worker(object):
         # Be careful about how and when we kill the driver; if driver.stop()
         # raises an exception, this routine may get re-entered via __del__.
         if driver:
+            # When tracing we need to go through the standard shutdown path to
+            # ensure that the trace is recorded properly.
+            if any(i in ['--trace-startup', '--trace-shutdown']
+                   for i in self._options.additional_driver_flag):
+                _log.debug('%s waiting %d seconds for %s driver to shutdown',
+                           self._name, self._port.driver_stop_timeout(), label)
+                driver.stop(timeout_secs=self._port.driver_stop_timeout())
+                return
+
+            # Otherwise, kill the driver immediately to speed up shutdown.
             _log.debug('%s killing %s driver', self._name, label)
             driver.stop()
 
