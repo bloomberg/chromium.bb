@@ -76,8 +76,9 @@ if (use_default_render_theme) {
   feature_defines_list += [ "WTF_USE_DEFAULT_RENDER_THEME=1" ]
 }
 
-assert(blink_symbol_level == -1 || !remove_webcore_debug_symbols,
-       "blink_symbol_level and remove_webcore_debug_symbols cannot both be set.")
+assert(
+    blink_symbol_level == -1 || !remove_webcore_debug_symbols,
+    "blink_symbol_level and remove_webcore_debug_symbols cannot both be set.")
 
 if (remove_webcore_debug_symbols) {
   if (is_win && symbol_level != 0) {
@@ -94,7 +95,7 @@ if (remove_webcore_debug_symbols) {
 }
 
 if (blink_symbol_level == 2) {
-  blink_symbols_config = [ "//build/config/compiler:full_symbols" ]
+  blink_symbols_config = [ "//build/config/compiler:symbols" ]
 } else if (blink_symbol_level == 1) {
   blink_symbols_config = [ "//build/config/compiler:minimal_symbols" ]
 } else if (blink_symbol_level == 0) {
