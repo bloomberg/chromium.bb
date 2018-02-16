@@ -172,6 +172,12 @@ void NGExclusionSpace::Add(scoped_refptr<const NGExclusion> exclusion) {
         std::max(right_float_clear_offset_, exclusion->rect.BlockEndOffset());
   }
 
+  // If the exclusion takes up no inline space, we shouldn't pay any further
+  // attention to it. The only thing it can affect is block-axis positioning of
+  // subsequent floats (dealt with above).
+  if (exclusion->rect.LineEndOffset() <= exclusion->rect.LineStartOffset())
+    return;
+
 #if DCHECK_IS_ON()
   bool inserted = false;
 #endif

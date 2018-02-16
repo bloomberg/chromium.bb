@@ -2362,7 +2362,6 @@ crbug.com/591099 fast/block/basic/quirk-percent-height-grandchild.html [ Failure
 crbug.com/591099 fast/block/basic/quirk-percent-height-table-cell.html [ Failure ]
 crbug.com/591099 fast/block/block-add-child-crash.html [ Crash ]
 crbug.com/591099 fast/block/block-width-recalc-with-relative-height.html [ Failure ]
-crbug.com/591099 fast/block/containing-block-negative-margins.html [ Failure ]
 crbug.com/591099 fast/block/float-avoids-padding-inline-ancestors.html [ Crash ]
 crbug.com/810335 fast/block/float/003.html [ Failure ]
 crbug.com/591099 fast/block/float/br-with-clear-2.html [ Failure ]
