@@ -11,6 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/scoped_child_process_reference.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/common/wrapper_shared_url_loader_factory.h"
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -254,10 +255,20 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
       RenderThreadImpl::current()
           ->blink_platform_impl()
           ->CreateDefaultURLLoaderFactoryBundle();
+
+  auto direct_network_loader_factory =
+      base::MakeRefCounted<PossiblyAssociatedWrapperSharedURLLoaderFactory>(
+          RenderThreadImpl::current()
+              ->blink_platform_impl()
+              ->CreateNetworkURLLoaderFactory());
+
   DCHECK(url_loader_factory_bundle);
+  DCHECK(direct_network_loader_factory);
+
   auto worker_fetch_context = std::make_unique<WorkerFetchContextImpl>(
       std::move(request), std::move(container_host_ptr_info),
       url_loader_factory_bundle->Clone(),
+      direct_network_loader_factory->Clone(),
       GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
           URLLoaderThrottleProviderType::kWorker));
 

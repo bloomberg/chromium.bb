@@ -47,7 +47,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
       network::mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
-      scoped_refptr<SharedURLLoaderFactory> default_loader_factory);
+      scoped_refptr<SharedURLLoaderFactory> network_loader_factory);
 
   ~ServiceWorkerSubresourceLoader() override;
 
@@ -134,7 +134,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   std::unique_ptr<StreamWaiter> stream_waiter_;
 
   // For network fallback.
-  scoped_refptr<SharedURLLoaderFactory> default_loader_factory_;
+  scoped_refptr<SharedURLLoaderFactory> network_loader_factory_;
 
   enum class Status {
     kNotStarted,
@@ -157,11 +157,13 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
  public:
   // |controller_connector_| is used to get a connection to the controller
   // ServiceWorker.
-  // |default_loader_factory| is used to get the associated loading context's
-  // default URLLoaderFactory for network fallback.
+  // |network_loader_factory| is used to get the associated loading context's
+  // default URLLoaderFactory for network fallback. This should be the
+  // URLLoaderFactory that directly goes to network without going through
+  // any custom URLLoader factories.
   ServiceWorkerSubresourceLoaderFactory(
       scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
-      scoped_refptr<SharedURLLoaderFactory> default_loader_factory);
+      scoped_refptr<SharedURLLoaderFactory> network_loader_factory);
 
   ~ServiceWorkerSubresourceLoaderFactory() override;
 
@@ -179,9 +181,9 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
  private:
   scoped_refptr<ControllerServiceWorkerConnector> controller_connector_;
 
-  // Contains a set of default loader factories for the associated loading
-  // context. Used to load a blob, and for network fallback.
-  scoped_refptr<SharedURLLoaderFactory> default_loader_factory_;
+  // A URLLoaderFactory that directly goes to network, used when a request
+  // falls back to network.
+  scoped_refptr<SharedURLLoaderFactory> network_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerSubresourceLoaderFactory);
 };
