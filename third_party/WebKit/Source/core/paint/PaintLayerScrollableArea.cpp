@@ -2063,8 +2063,16 @@ void PaintLayerScrollableArea::UpdateCompositingLayersAfterScroll() {
     DCHECK(Layer()->HasCompositedLayerMapping());
     Layer()->GetCompositedLayerMapping()->SetNeedsGraphicsLayerUpdate(
         kGraphicsLayerUpdateSubtree);
-    compositor->SetNeedsCompositingUpdate(
-        kCompositingUpdateAfterGeometryChange);
+
+    ScrollingCoordinator* scrolling_coordinator = GetScrollingCoordinator();
+    bool handled_scroll =
+        Layer()->IsRootLayer() && scrolling_coordinator &&
+        scrolling_coordinator->ScrollableAreaScrollLayerDidChange(this);
+
+    if (!handled_scroll) {
+      compositor->SetNeedsCompositingUpdate(
+          kCompositingUpdateAfterGeometryChange);
+    }
 
     // If we have fixed elements and we scroll the root layer in RLS we might
     // change compositing since the fixed elements might now overlap a
