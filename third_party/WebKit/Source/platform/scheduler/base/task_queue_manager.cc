@@ -571,14 +571,6 @@ void TaskQueueManager::OnTaskQueueEnabled(internal::TaskQueueImpl* queue) {
     MaybeScheduleImmediateWork(FROM_HERE);
 }
 
-void TaskQueueManager::OnTriedToSelectBlockedWorkQueue(
-    internal::WorkQueue* work_queue) {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
-  DCHECK(!work_queue->Empty());
-  if (main_thread_only().observer)
-    main_thread_only().observer->OnTriedToExecuteBlockedTask();
-}
-
 bool TaskQueueManager::HasImmediateWorkForTesting() const {
   return !main_thread_only().selector.AllEnabledWorkQueuesAreEmpty();
 }

@@ -24,7 +24,6 @@ class PLATFORM_EXPORT SchedulerHelper : public TaskQueueManager::Observer {
   ~SchedulerHelper() override;
 
   // TaskQueueManager::Observer implementation:
-  void OnTriedToExecuteBlockedTask() override;
   void OnBeginNestedRunLoop() override;
   void OnExitNestedRunLoop() override;
 
@@ -63,10 +62,6 @@ class PLATFORM_EXPORT SchedulerHelper : public TaskQueueManager::Observer {
   class PLATFORM_EXPORT Observer {
    public:
     virtual ~Observer() = default;
-
-    // Called when the scheduler tried to execute a task from a disabled
-    // queue. See TaskQueue::Spec::SetShouldReportWhenExecutionBlocked.
-    virtual void OnTriedToExecuteBlockedTask() = 0;
 
     // Called when scheduler executes task with nested run loop.
     virtual void OnBeginNestedRunLoop() = 0;

@@ -78,8 +78,6 @@ class PLATFORM_EXPORT TaskQueueManager
    public:
     virtual ~Observer() {}
 
-    virtual void OnTriedToExecuteBlockedTask() = 0;
-
     virtual void OnBeginNestedRunLoop() = 0;
 
     virtual void OnExitNestedRunLoop() = 0;
@@ -311,8 +309,6 @@ class PLATFORM_EXPORT TaskQueueManager
 
   // TaskQueueSelector::Observer:
   void OnTaskQueueEnabled(internal::TaskQueueImpl* queue) override;
-  void OnTriedToSelectBlockedWorkQueue(
-      internal::WorkQueue* work_queue) override;
 
   // base::RunLoop::NestingObserver:
   void OnBeginNestedRunLoop() override;

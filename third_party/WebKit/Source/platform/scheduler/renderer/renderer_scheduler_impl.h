@@ -176,7 +176,6 @@ class PLATFORM_EXPORT RendererSchedulerImpl
       bool has_visible_render_widget_with_touch_handler) override;
 
   // SchedulerHelper::Observer implementation:
-  void OnTriedToExecuteBlockedTask() override;
   void OnBeginNestedRunLoop() override;
   void OnExitNestedRunLoop() override;
 

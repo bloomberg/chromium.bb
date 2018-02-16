@@ -46,9 +46,7 @@ TaskQueueImpl::TaskQueueImpl(TaskQueueManager* task_queue_manager,
       any_thread_(task_queue_manager, time_domain),
       main_thread_only_(task_queue_manager, this, time_domain),
       should_monitor_quiescence_(spec.should_monitor_quiescence),
-      should_notify_observers_(spec.should_notify_observers),
-      should_report_when_execution_blocked_(
-          spec.should_report_when_execution_blocked) {
+      should_notify_observers_(spec.should_notify_observers) {
   DCHECK(time_domain);
   time_domain->RegisterQueue(this);
 }

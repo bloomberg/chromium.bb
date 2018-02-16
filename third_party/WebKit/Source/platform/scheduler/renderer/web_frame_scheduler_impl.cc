@@ -312,7 +312,6 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::ThrottleableTaskQueue() {
     throttleable_task_queue_ = renderer_scheduler_->NewTaskQueue(
         MainThreadTaskQueue::QueueCreationParams(
             MainThreadTaskQueue::QueueType::kFrameThrottleable)
-            .SetShouldReportWhenExecutionBlocked(true)
             .SetCanBeThrottled(true)
             .SetCanBeStopped(true)
             .SetCanBeDeferred(true)
@@ -344,7 +343,6 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::DeferrableTaskQueue() {
     deferrable_task_queue_ = renderer_scheduler_->NewTaskQueue(
         MainThreadTaskQueue::QueueCreationParams(
             MainThreadTaskQueue::QueueType::kFrameThrottleable)
-            .SetShouldReportWhenExecutionBlocked(true)
             .SetCanBeDeferred(true)
             .SetCanBeStopped(StopNonTimersInBackgroundEnabled())
             .SetCanBePaused(true));
@@ -363,7 +361,6 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::PausableTaskQueue() {
     pausable_task_queue_ = renderer_scheduler_->NewTaskQueue(
         MainThreadTaskQueue::QueueCreationParams(
             MainThreadTaskQueue::QueueType::kFramePausable)
-            .SetShouldReportWhenExecutionBlocked(true)
             .SetCanBeStopped(StopNonTimersInBackgroundEnabled())
             .SetCanBePaused(true));
     pausable_task_queue_->SetBlameContext(blame_context_);

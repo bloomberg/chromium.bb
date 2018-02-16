@@ -120,12 +120,6 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
       return *this;
     }
 
-    QueueCreationParams SetShouldReportWhenExecutionBlocked(
-        bool should_report) {
-      spec = spec.SetShouldReportWhenExecutionBlocked(should_report);
-      return *this;
-    }
-
     QueueType queue_type;
     TaskQueue::Spec spec;
     WebFrameScheduler* frame_;

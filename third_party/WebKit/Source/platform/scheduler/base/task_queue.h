@@ -107,8 +107,7 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
         : name(name),
           should_monitor_quiescence(false),
           time_domain(nullptr),
-          should_notify_observers(true),
-          should_report_when_execution_blocked(false) {}
+          should_notify_observers(true) {}
 
     Spec SetShouldMonitorQuiescence(bool should_monitor) {
       should_monitor_quiescence = should_monitor;
@@ -125,17 +124,10 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
       return *this;
     }
 
-    // See TaskQueueManager::Observer::OnTriedToExecuteBlockedTask.
-    Spec SetShouldReportWhenExecutionBlocked(bool should_report) {
-      should_report_when_execution_blocked = should_report;
-      return *this;
-    }
-
     const char* name;
     bool should_monitor_quiescence;
     TimeDomain* time_domain;
     bool should_notify_observers;
-    bool should_report_when_execution_blocked;
   };
 
   // Interface to pass per-task metadata to RendererScheduler.

@@ -33,7 +33,6 @@ class MockObserver : public TaskQueueSelector::Observer {
   virtual ~MockObserver() = default;
 
   MOCK_METHOD1(OnTaskQueueEnabled, void(internal::TaskQueueImpl*));
-  MOCK_METHOD1(OnTriedToSelectBlockedWorkQueue, void(internal::WorkQueue*));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockObserver);
@@ -43,7 +42,7 @@ class TaskQueueSelectorForTest : public TaskQueueSelector {
  public:
   using TaskQueueSelector::SetImmediateStarvationCountForTest;
   using TaskQueueSelector::PrioritizingSelector;
-  using TaskQueueSelector::enabled_selector_for_test;
+  using TaskQueueSelector::prioritizing_selector_for_test;
 };
 
 class TaskQueueSelectorTest : public ::testing::Test {
@@ -52,15 +51,15 @@ class TaskQueueSelectorTest : public ::testing::Test {
       : test_closure_(base::Bind(&TaskQueueSelectorTest::TestFunction)) {}
   ~TaskQueueSelectorTest() override = default;
 
-  TaskQueueSelectorForTest::PrioritizingSelector* enabled_selector() {
-    return selector_.enabled_selector_for_test();
+  TaskQueueSelectorForTest::PrioritizingSelector* prioritizing_selector() {
+    return selector_.prioritizing_selector_for_test();
   }
 
   WorkQueueSets* delayed_work_queue_sets() {
-    return enabled_selector()->delayed_work_queue_sets();
+    return prioritizing_selector()->delayed_work_queue_sets();
   }
   WorkQueueSets* immediate_work_queue_sets() {
-    return enabled_selector()->immediate_work_queue_sets();
+    return prioritizing_selector()->immediate_work_queue_sets();
   }
 
   void PushTasks(const size_t queue_indices[], size_t num_tasks) {
@@ -129,9 +128,8 @@ class TaskQueueSelectorTest : public ::testing::Test {
   }
 
   std::unique_ptr<TaskQueueImpl> NewTaskQueueWithBlockReporting() {
-    return std::make_unique<TaskQueueImpl>(
-        nullptr, virtual_time_domain_.get(),
-        TaskQueue::Spec("test").SetShouldReportWhenExecutionBlocked(true));
+    return std::make_unique<TaskQueueImpl>(nullptr, virtual_time_domain_.get(),
+                                           TaskQueue::Spec("test"));
   }
 
   const size_t kTaskQueueCount = 5;
@@ -397,7 +395,7 @@ TEST_F(TaskQueueSelectorTest, AllEnabledWorkQueuesAreEmpty_ControlPriority) {
 TEST_F(TaskQueueSelectorTest, ChooseOldestWithPriority_Empty) {
   WorkQueue* chosen_work_queue = nullptr;
   bool chose_delayed_over_immediate = false;
-  EXPECT_FALSE(enabled_selector()->ChooseOldestWithPriority(
+  EXPECT_FALSE(prioritizing_selector()->ChooseOldestWithPriority(
       TaskQueue::kNormalPriority, &chose_delayed_over_immediate,
       &chosen_work_queue));
   EXPECT_FALSE(chose_delayed_over_immediate);
@@ -410,7 +408,7 @@ TEST_F(TaskQueueSelectorTest, ChooseOldestWithPriority_OnlyDelayed) {
 
   WorkQueue* chosen_work_queue = nullptr;
   bool chose_delayed_over_immediate = false;
-  EXPECT_TRUE(enabled_selector()->ChooseOldestWithPriority(
+  EXPECT_TRUE(prioritizing_selector()->ChooseOldestWithPriority(
       TaskQueue::kNormalPriority, &chose_delayed_over_immediate,
       &chosen_work_queue));
   EXPECT_EQ(chosen_work_queue, task_queues_[0]->delayed_work_queue());
@@ -424,7 +422,7 @@ TEST_F(TaskQueueSelectorTest, ChooseOldestWithPriority_OnlyImmediate) {
 
   WorkQueue* chosen_work_queue = nullptr;
   bool chose_delayed_over_immediate = false;
-  EXPECT_TRUE(enabled_selector()->ChooseOldestWithPriority(
+  EXPECT_TRUE(prioritizing_selector()->ChooseOldestWithPriority(
       TaskQueue::kNormalPriority, &chose_delayed_over_immediate,
       &chosen_work_queue));
   EXPECT_EQ(chosen_work_queue, task_queues_[0]->immediate_work_queue());
@@ -450,7 +448,6 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithOneBlockedQueue) {
   task_queue->immediate_work_queue()->Push(std::move(task));
 
   WorkQueue* chosen_work_queue;
-  EXPECT_CALL(mock_observer, OnTriedToSelectBlockedWorkQueue(_)).Times(1);
   EXPECT_FALSE(selector.SelectWorkQueueToService(&chosen_work_queue));
 
   task_queue->SetQueueEnabledForTest(true);
@@ -485,9 +482,7 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithTwoBlockedQueues) {
   task_queue->immediate_work_queue()->Push(std::move(task1));
   task_queue2->immediate_work_queue()->Push(std::move(task2));
 
-  // Should still only see one call to OnTriedToSelectBlockedWorkQueue.
   WorkQueue* chosen_work_queue;
-  EXPECT_CALL(mock_observer, OnTriedToSelectBlockedWorkQueue(_)).Times(1);
   EXPECT_FALSE(selector.SelectWorkQueueToService(&chosen_work_queue));
   ::testing::Mock::VerifyAndClearExpectations(&mock_observer);
 
@@ -496,11 +491,8 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithTwoBlockedQueues) {
   task_queue->SetQueueEnabledForTest(true);
   selector.EnableQueue(task_queue.get());
 
-  // Removing the second queue and selecting again should result in another
-  // notification.
   selector.RemoveQueue(task_queue.get());
   task_queue->UnregisterTaskQueue();
-  EXPECT_CALL(mock_observer, OnTriedToSelectBlockedWorkQueue(_)).Times(1);
   EXPECT_FALSE(selector.SelectWorkQueueToService(&chosen_work_queue));
 
   task_queue2->SetQueueEnabledForTest(true);
@@ -546,7 +538,7 @@ TEST_P(ChooseOldestWithPriorityTest, RoundRobinTest) {
 
   WorkQueue* chosen_work_queue = nullptr;
   bool chose_delayed_over_immediate = false;
-  EXPECT_TRUE(enabled_selector()->ChooseOldestWithPriority(
+  EXPECT_TRUE(prioritizing_selector()->ChooseOldestWithPriority(
       TaskQueue::kNormalPriority, &chose_delayed_over_immediate,
       &chosen_work_queue));
   EXPECT_EQ(chosen_work_queue->task_queue(), task_queues_[0].get());
