@@ -489,12 +489,12 @@ void WindowSelector::SetBoundsForWindowGridsInScreenIgnoringWindow(
     grid->SetBoundsAndUpdatePositionsIgnoringWindow(bounds, ignored_item);
 }
 
-void WindowSelector::SetSplitViewOverviewOverlayIndicatorType(
-    IndicatorType indicator_type,
+void WindowSelector::SetSplitViewOverviewOverlayIndicatorState(
+    IndicatorState indicator_state,
     const gfx::Point& event_location) {
   DCHECK(split_view_overview_overlay_);
-  split_view_overview_overlay_->SetIndicatorType(indicator_type,
-                                                 event_location);
+  split_view_overview_overlay_->SetIndicatorState(indicator_state,
+                                                  event_location);
 }
 
 WindowGrid* WindowSelector::GetGridWithRootWindow(aura::Window* root_window) {
