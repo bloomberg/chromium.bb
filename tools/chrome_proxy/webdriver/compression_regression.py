@@ -125,10 +125,9 @@ class CompressionRegression(IntegrationTest):
     to a number of static resources of different types, like jpg, png, mp4, gif,
     html. Multiple resources of a single type are supported. This function will
     check that each resource was fetched via the Chrome Proxy, and then compute
-    the compression as a percentage from the Content-Length and
-    X-Original-Content-Length headers where compression = 1 - (cl / xocl). The
-    function will then return the average compression for each of the resource
-    types.
+    the compression as a percentage from the Content-Length and OFCL in
+    Chrome-Proxy headers where compression = 1 - (cl / ofcl). The function will
+    then return the average compression for each of the resource types.
 
     Returns:
       a dict object mapping resource type to compression
@@ -152,9 +151,9 @@ class CompressionRegression(IntegrationTest):
         self.assertHasChromeProxyViaHeader(response)
         # Compute compression metrics.
         cl = response.response_headers['content-length']
-        ocl = response.response_headers['x-original-content-length']
+        ofcl = getChromeProxyOFCL(response)
         content_type = response.response_headers['content-type']
-        compression_rate = 1.0 - (float(cl) / float(ocl))
+        compression_rate = 1.0 - (float(cl) / float(ofcl))
         if 'html' in response.response_headers['content-type']:
           AddToCompression(compression, 'html', compression_rate)
         else:
@@ -167,6 +166,14 @@ class CompressionRegression(IntegrationTest):
         compression_average[resource_type] = (sum(compression[resource_type]) /
           float(len(compression[resource_type])))
       return compression_average
+
+    # Returns the ofcl value in chrome-proxy header.
+    def getChromeProxyOFCL(self, response):
+      self.assertIn('chrome-proxy', response.response_headers)
+      chrome_proxy_header = response.response_headers['chrome-proxy']
+      self.assertIn('ofcl=', chrome_proxy_header)
+      return chrome_proxy_header.split('ofcl=', 1)[1].split(',', 1)[0]
+
 
   def updateDataObject(self, compression_average, data,
       today=datetime.date.today()):
@@ -219,7 +226,7 @@ class CompressionRegression(IntegrationTest):
           data_sum_rt[resource_type] = []
         data_sum_rt[resource_type].append(data[date][resource_type])
     # Compute average over ALERT_WINDOW if there is enough data points.
-    # Data average will contain average compression ratios (eg: 1 - cl / xocl).
+    # Data average will contain average compression ratios (eg: 1 - cl / ofcl).
     data_average = {}
     for resource_type in data_sum_rt:
       if len(data_sum_rt[resource_type]) >= ALERT_WINDOW:

@@ -208,13 +208,6 @@ int64_t CalculateOCLFromOFCL(const net::URLRequest& request) {
                                 original_content_length, range_content_length);
     }
   }
-  if (original_content_length < 0) {
-    // Fallback to using XOCL if getting from OFCL header fails.
-    // TODO(rajendrant): Remove the usage of OFCL, after integration tests are
-    // changed.
-    original_content_length =
-        response_headers->GetInt64HeaderValue("x-original-content-length");
-  }
   return original_content_length;
 }
 

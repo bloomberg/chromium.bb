@@ -671,7 +671,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
         "HTTP/1.1 200 OK\r\n"
         "Content-Length: 140\r\n"
         "Via: 1.1 Chrome-Compression-Proxy\r\n"
-        "x-original-content-length: 200\r\n"
+        "Chrome-Proxy: ofcl=200\r\n"
         "Cache-Control: max-age=1200\r\n"
         "Vary: accept-encoding\r\n\r\n";
 
@@ -1240,7 +1240,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
       "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
       "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
-      "x-original-content-length: " +
+      "Chrome-Proxy: ofcl=" +
       base::Int64ToString(kOriginalContentLength) + "\r\n\r\n";
 
   std::unique_ptr<net::URLRequest> fake_request(FetchURLRequest(
@@ -1359,7 +1359,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetVideoHistograms) {
       "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
       "Content-Type: video/mp4\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
-      "x-original-content-length: " +
+      "Chrome-Proxy: ofcl=" +
       base::Int64ToString(kOriginalContentLength) + "\r\n\r\n";
 
   FetchURLRequest(GURL(kTestURL), nullptr, video_response_headers,
@@ -1539,7 +1539,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, DetailedNetHistograms) {
 
     if (test.proxy_config == USE_INSECURE_PROXY) {
       via_header = "Via: 1.1 Chrome-Compression-Proxy\r\n";
-      ocl_header = "x-original-content-length: " +
+      ocl_header = "Chrome-Proxy: ofcl=" +
                    base::Int64ToString(kOriginalContentLength) + "\r\n";
     }
     if (test.is_video) {
@@ -1588,7 +1588,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
       "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
       "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
-      "x-original-content-length: 200\r\n\r\n";
+      "Chrome-Proxy: ofcl=200\r\n\r\n";
 
   auto request =
       FetchURLRequest(GURL(kTestURL), nullptr, response_headers, 140, 0);
@@ -1608,7 +1608,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
       "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
       "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
-      "x-original-content-length: 200\r\n"
+      "Chrome-Proxy: ofcl=200\r\n"
       "Chrome-Proxy-Content-Transform: empty-image\r\n\r\n";
 
   auto request =
@@ -1703,7 +1703,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
       "HTTP/1.1 200 OK\r\n"
       "Content-Length: 140\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
-      "x-original-content-length: 200\r\n"
+      "Chrome-Proxy: ofcl=200\r\n"
       "Cache-Control: max-age=0\r\n"
       "Vary: accept-encoding\r\n\r\n";
 
@@ -1726,7 +1726,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
       "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
       "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
-      "x-original-content-length: 200\r\n";
+      "Chrome-Proxy: ofcl=200\r\n";
 
   response_headers += "\r\n";
   auto request =
@@ -1749,7 +1749,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
       "HTTP/1.1 200 OK\r\n"
       "Content-Length: 140\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
-      "x-original-content-length: 200\r\n"
+      "Chrome-Proxy: ofcl=200\r\n"
       "Cache-Control: max-age=1200\r\n"
       "Vary: accept-encoding\r\n";
   response_headers += "\r\n";
@@ -1768,7 +1768,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
       "HTTP/1.1 200 OK\r\n"
       "Content-Length: 140\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
-      "x-original-content-length: 200\r\n"
+      "Chrome-Proxy: ofcl=200\r\n"
       "Cache-Control: max-age=1200\r\n"
       "Vary: accept-encoding\r\n";
   response_headers += "\r\n";
@@ -1799,7 +1799,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
       "HTTP/1.1 200 OK\r\n"
       "Content-Length: 140\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
-      "x-original-content-length: 200\r\n"
+      "Chrome-Proxy: ofcl=200\r\n"
       "Cache-Control: max-age=1200\r\n"
       "Vary: accept-encoding\r\n";
   response_headers += "\r\n";
@@ -1816,7 +1816,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, BrotliAdvertisement) {
   std::string response_headers =
       "HTTP/1.1 200 OK\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
-      "x-original-content-length: 200\r\n"
+      "Chrome-Proxy: ofcl=200\r\n"
       "Cache-Control: max-age=1200\r\n"
       "Content-Encoding: br\r\n"
       "Vary: accept-encoding\r\n";
@@ -1951,7 +1951,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, ECTHeaderEnabledWithVary) {
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
       "Cache-Control: max-age=1200\r\n"
       "Vary: chrome-proxy-ect\r\n"
-      "x-original-content-length: 200\r\n\r\n";
+      "Chrome-Proxy: ofcl=200\r\n\r\n";
 
   int response_body_size = 140;
   std::string response_body(base::checked_cast<size_t>(response_body_size),
@@ -1992,7 +1992,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, ECTHeaderEnabledWithoutVary) {
       "Content-Length: 140\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
       "Cache-Control: max-age=1200\r\n"
-      "x-original-content-length: 200\r\n\r\n";
+      "Chrome-Proxy: ofcl=200\r\n\r\n";
 
   int response_body_size = 140;
   std::string response_body(base::checked_cast<size_t>(response_body_size),
@@ -2192,7 +2192,7 @@ TEST_F(DataReductionProxyNetworkDelegateClientLoFiTest, DataSavingsThroughDRP) {
       "Content-Range: bytes 0-2047/10000\r\n"
       "Content-Length: 2048\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
-      "X-Original-Content-Length: 3000\r\n\r\n";
+      "Chrome-Proxy: ofcl=3000\r\n\r\n";
 
   std::string response_body(2048, 'a');
   net::MockRead reads[] = {net::MockRead(kHeaders),
@@ -2226,7 +2226,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, TestAcceptTransformHistogram) {
       "HTTP/1.1 200 OK\r\n"
       "Content-Length: 140\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
-      "x-original-content-length: 200\r\n"
+      "Chrome-Proxy: ofcl=200\r\n"
       "Cache-Control: max-age=0\r\n"
       "Vary: accept-encoding\r\n\r\n";
 
@@ -2236,7 +2236,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, TestAcceptTransformHistogram) {
       "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
       "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
-      "x-original-content-length: 200\r\n"
+      "Chrome-Proxy: ofcl=200\r\n"
       "\r\n";
 
   // Verify lite page request.
@@ -2285,7 +2285,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, TestAcceptTransformHistogram) {
       "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
       "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
-      "x-original-content-length: 200\r\n"
+      "Chrome-Proxy: ofcl=200\r\n"
       "\r\n";
   request = FetchURLRequest(GURL(kTestURL), nullptr, response_headers, 140, 0);
   EXPECT_FALSE(DataReductionProxyData::GetData(*request)->lite_page_received());
