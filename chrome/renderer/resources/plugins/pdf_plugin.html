@@ -4,6 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport"
       content="initial-scale=1, minimum-scale=1, width=device-width">
+    <script>
+      window.onkeydown = function(e) {
+        if (e.key == 'Enter' || e.key == ' ') {
+          plugin.openPDF();
+          e.preventDefault();
+        }
+      };
+    </script>
     <link rel="stylesheet" href="../../../../components/security_interstitials/core/common/resources/interstitial_core.css">
     <link rel="stylesheet" href="../../../../components/security_interstitials/core/common/resources/interstitial_common.css">
     <link rel="stylesheet" href="../../../../components/security_interstitials/core/browser/resources/interstitial_webview_quiet.css">
