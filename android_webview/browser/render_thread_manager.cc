@@ -288,7 +288,7 @@ bool RenderThreadManager::ReturnedResourcesEmptyOnUI() const {
 }
 
 void RenderThreadManager::DrawGL(AwDrawGLInfo* draw_info) {
-  TRACE_EVENT0("android_webview", "DrawFunctor");
+  TRACE_EVENT0("android_webview,toplevel", "DrawFunctor");
   if (draw_info->mode == AwDrawGLInfo::kModeSync) {
     TRACE_EVENT_INSTANT0("android_webview", "kModeSync",
                          TRACE_EVENT_SCOPE_THREAD);
