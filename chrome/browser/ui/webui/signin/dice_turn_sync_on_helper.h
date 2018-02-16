@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/sync_startup_tracker.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -30,7 +31,7 @@ class SyncSetupInProgressHandle;
 
 // Handles details of signing the user in with SigninManager and turning on
 // sync for an account that is already present in the token service.
-class DiceTurnSyncOnHelper {
+class DiceTurnSyncOnHelper : public SyncStartupTracker::Observer {
  public:
   // Behavior when the signin is aborted (by an error or cancelled by the user).
   enum class SigninAbortedMode {
@@ -107,6 +108,10 @@ class DiceTurnSyncOnHelper {
                        const std::string& account_id,
                        SigninAbortedMode signin_aborted_mode);
 
+  // SyncStartupTracker::Observer:
+  void SyncStartupCompleted() override;
+  void SyncStartupFailed() override;
+
  private:
   enum class ProfileMode {
     // Attempts to sign the user in |profile_|. Note that if the account to be
@@ -120,7 +125,7 @@ class DiceTurnSyncOnHelper {
   };
 
   // DiceTurnSyncOnHelper deletes itself.
-  ~DiceTurnSyncOnHelper();
+  ~DiceTurnSyncOnHelper() override;
 
   // Handles can offer sign-in errors.  It returns true if there is an error,
   // and false otherwise.
@@ -164,6 +169,11 @@ class DiceTurnSyncOnHelper {
   // UI.
   void SigninAndShowSyncConfirmationUI();
 
+  // Displays the Sync confirmation UI.
+  // Note: If sync fails to start (e.g. sync is disabled by admin), the sync
+  // confirmation dialog will be updated accordingly.
+  void ShowSyncConfirmationUI();
+
   // Handles the user input from the sync confirmation UI and deletes this
   // object.
   void FinishSyncSetupAndDelete(
@@ -192,6 +202,8 @@ class DiceTurnSyncOnHelper {
   // a new profile for an enterprise user or not.
   std::string dm_token_;
   std::string client_id_;
+
+  std::unique_ptr<SyncStartupTracker> sync_startup_tracker_;
 
   base::WeakPtrFactory<DiceTurnSyncOnHelper> weak_pointer_factory_;
   DISALLOW_COPY_AND_ASSIGN(DiceTurnSyncOnHelper);

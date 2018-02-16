@@ -38,6 +38,9 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::AtLeast;
+using ::testing::Return;
+
 class DiceTurnSyncOnHelperTest;
 
 namespace {
@@ -219,6 +222,33 @@ class DiceTurnSyncOnHelperTest : public testing::Test {
     return new DiceTurnSyncOnHelper(
         profile(), kAccessPoint, kSigninReason, account_id_, mode,
         std::make_unique<TestDiceTurnSyncOnHelperDelegate>(this));
+  }
+
+  void SetExpectationsForSyncStartupCompleted() {
+    browser_sync::ProfileSyncServiceMock* sync_service_mock =
+        GetProfileSyncServiceMock();
+    EXPECT_CALL(*sync_service_mock, GetSetupInProgressHandle()).Times(1);
+    EXPECT_CALL(*sync_service_mock, CanSyncStart())
+        .Times(AtLeast(0))
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*sync_service_mock, IsEngineInitialized())
+        .Times(AtLeast(0))
+        .WillRepeatedly(Return(true));
+  }
+
+  void SetExpectationsForSyncStartupPending() {
+    browser_sync::ProfileSyncServiceMock* sync_service_mock =
+        GetProfileSyncServiceMock();
+    EXPECT_CALL(*sync_service_mock, GetSetupInProgressHandle()).Times(1);
+    EXPECT_CALL(*sync_service_mock, CanSyncStart())
+        .Times(AtLeast(0))
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*sync_service_mock, IsEngineInitialized())
+        .Times(AtLeast(0))
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*sync_service_mock, waiting_for_auth())
+        .Times(AtLeast(0))
+        .WillRepeatedly(Return(true));
   }
 
   void CheckDelegateCalls() {
@@ -532,10 +562,9 @@ TEST_F(DiceTurnSyncOnHelperTest, EnterpriseConfirmationNewProfile) {
 TEST_F(DiceTurnSyncOnHelperTest, UndoSync) {
   // Set expectations.
   expected_sync_confirmation_shown_ = true;
-  browser_sync::ProfileSyncServiceMock* sync_service_mock =
-      GetProfileSyncServiceMock();
-  EXPECT_CALL(*sync_service_mock, SetFirstSetupComplete()).Times(0);
-  EXPECT_CALL(*sync_service_mock, GetSetupInProgressHandle()).Times(1);
+  SetExpectationsForSyncStartupCompleted();
+  EXPECT_CALL(*GetProfileSyncServiceMock(), SetFirstSetupComplete()).Times(0);
+
   // Signin flow.
   EXPECT_FALSE(signin_manager()->IsAuthenticated());
   CreateDiceTurnOnSyncHelper(
@@ -551,10 +580,9 @@ TEST_F(DiceTurnSyncOnHelperTest, ConfigureSync) {
   // Set expectations.
   expected_sync_confirmation_shown_ = true;
   expected_sync_settings_shown_ = true;
-  browser_sync::ProfileSyncServiceMock* sync_service_mock =
-      GetProfileSyncServiceMock();
-  EXPECT_CALL(*sync_service_mock, SetFirstSetupComplete()).Times(0);
-  EXPECT_CALL(*sync_service_mock, GetSetupInProgressHandle()).Times(1);
+  SetExpectationsForSyncStartupCompleted();
+  EXPECT_CALL(*GetProfileSyncServiceMock(), SetFirstSetupComplete()).Times(0);
+
   // Configure the test.
   sync_confirmation_result_ =
       LoginUIService::SyncConfirmationUIClosedResult::CONFIGURE_SYNC_FIRST;
@@ -572,10 +600,8 @@ TEST_F(DiceTurnSyncOnHelperTest, ConfigureSync) {
 TEST_F(DiceTurnSyncOnHelperTest, StartSync) {
   // Set expectations.
   expected_sync_confirmation_shown_ = true;
-  browser_sync::ProfileSyncServiceMock* sync_service_mock =
-      GetProfileSyncServiceMock();
-  EXPECT_CALL(*sync_service_mock, SetFirstSetupComplete()).Times(1);
-  EXPECT_CALL(*sync_service_mock, GetSetupInProgressHandle()).Times(1);
+  SetExpectationsForSyncStartupCompleted();
+  EXPECT_CALL(*GetProfileSyncServiceMock(), SetFirstSetupComplete()).Times(1);
   // Configure the test.
   sync_confirmation_result_ = LoginUIService::SyncConfirmationUIClosedResult::
       SYNC_WITH_DEFAULT_SETTINGS;
@@ -586,5 +612,60 @@ TEST_F(DiceTurnSyncOnHelperTest, StartSync) {
   // Check expectations.
   EXPECT_TRUE(token_service()->RefreshTokenIsAvailable(account_id()));
   EXPECT_EQ(account_id(), signin_manager()->GetAuthenticatedAccountId());
+  CheckDelegateCalls();
+}
+
+// Tests that the user is signed in and Sync configuration is complete.
+// Regression test for http://crbug.com/812546
+TEST_F(DiceTurnSyncOnHelperTest,
+       ShowSyncDialogBlockedUntilSyncStartupCompleted) {
+  // Set expectations.
+  expected_sync_confirmation_shown_ = false;
+  SetExpectationsForSyncStartupPending();
+
+  // Signin flow.
+  EXPECT_FALSE(signin_manager()->IsAuthenticated());
+  DiceTurnSyncOnHelper* dice_sync_starter = CreateDiceTurnOnSyncHelper(
+      DiceTurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT);
+
+  // Check that the account was set in the sign-in manager, but the sync
+  // confirmation dialog was not yet shown.
+  EXPECT_TRUE(token_service()->RefreshTokenIsAvailable(account_id()));
+  EXPECT_EQ(account_id(), signin_manager()->GetAuthenticatedAccountId());
+  CheckDelegateCalls();
+
+  // Simulate that sync startup has completed.
+  expected_sync_confirmation_shown_ = true;
+  EXPECT_CALL(*GetProfileSyncServiceMock(), SetFirstSetupComplete()).Times(1);
+  sync_confirmation_result_ = LoginUIService::SyncConfirmationUIClosedResult::
+      SYNC_WITH_DEFAULT_SETTINGS;
+  dice_sync_starter->SyncStartupCompleted();
+  CheckDelegateCalls();
+}
+
+// Tests that the user is signed in and Sync configuration is complete.
+// Regression test for http://crbug.com/812546
+TEST_F(DiceTurnSyncOnHelperTest, ShowSyncDialogBlockedUntilSyncStartupFailed) {
+  // Set expectations.
+  expected_sync_confirmation_shown_ = false;
+  SetExpectationsForSyncStartupPending();
+
+  // Signin flow.
+  EXPECT_FALSE(signin_manager()->IsAuthenticated());
+  DiceTurnSyncOnHelper* dice_sync_starter = CreateDiceTurnOnSyncHelper(
+      DiceTurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT);
+
+  // Check that the primary account was added to the token service and in the
+  // sign-in manager.
+  EXPECT_TRUE(token_service()->RefreshTokenIsAvailable(account_id()));
+  EXPECT_EQ(account_id(), signin_manager()->GetAuthenticatedAccountId());
+  CheckDelegateCalls();
+
+  // Simulate that sync startup has failed.
+  expected_sync_confirmation_shown_ = true;
+  EXPECT_CALL(*GetProfileSyncServiceMock(), SetFirstSetupComplete()).Times(1);
+  sync_confirmation_result_ = LoginUIService::SyncConfirmationUIClosedResult::
+      SYNC_WITH_DEFAULT_SETTINGS;
+  dice_sync_starter->SyncStartupFailed();
   CheckDelegateCalls();
 }
