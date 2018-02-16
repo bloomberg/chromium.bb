@@ -22,7 +22,7 @@ class Array;
 }
 
 // UIElement type.
-enum UIElementType { WINDOW, WIDGET, VIEW };
+enum UIElementType { WINDOW, WIDGET, VIEW, ROOT };
 
 class UIElement {
  public:
