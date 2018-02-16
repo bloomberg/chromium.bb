@@ -7,7 +7,7 @@
 
 #import "ios/showcase/common/navigation_coordinator.h"
 
-@interface SCTabGridCoordinator : NSObject<NavigationCoordinator>
+@interface SCGridCoordinator : NSObject<NavigationCoordinator>
 @end
 
 #endif  // IOS_SHOWCASE_TAB_GRID_SC_TAB_GRID_COORDINATOR_H_
