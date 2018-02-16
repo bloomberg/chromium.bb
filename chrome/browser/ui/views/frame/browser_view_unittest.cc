@@ -251,7 +251,7 @@ TEST_F(BrowserViewTest, AccessibleWindowTitle) {
                 version_info::Channel::BETA, browser()->profile()));
 
   TestingProfile* profile = profile_manager()->CreateTestingProfile("Sadia");
-  EXPECT_EQ(SubBrowserName("Sadia: about:blank - Network error - %s Dev"),
+  EXPECT_EQ(SubBrowserName("about:blank - Network error - %s Dev - Sadia"),
             browser_view()->GetAccessibleWindowTitleForChannelAndProfile(
                 version_info::Channel::DEV, profile));
 
