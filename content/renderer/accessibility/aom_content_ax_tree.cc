@@ -43,6 +43,8 @@ ax::mojom::IntAttribute GetCorrespondingAXAttribute(
 ax::mojom::StringAttribute GetCorrespondingAXAttribute(
     blink::WebAOMStringAttribute attr) {
   switch (attr) {
+    case blink::WebAOMStringAttribute::AOM_ATTR_AUTOCOMPLETE:
+      return ax::mojom::StringAttribute::kAutoComplete;
     case blink::WebAOMStringAttribute::AOM_ATTR_KEY_SHORTCUTS:
       return ax::mojom::StringAttribute::kKeyShortcuts;
     case blink::WebAOMStringAttribute::AOM_ATTR_NAME:

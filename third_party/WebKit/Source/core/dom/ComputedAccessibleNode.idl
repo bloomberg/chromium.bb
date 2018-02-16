@@ -8,6 +8,7 @@
 [
     RuntimeEnabled=AccessibilityObjectModel
 ] interface ComputedAccessibleNode {
+    readonly attribute DOMString? autocomplete;
     readonly attribute DOMString? keyShortcuts;
     readonly attribute DOMString? name;
     readonly attribute DOMString? placeholder;

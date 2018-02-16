@@ -1076,6 +1076,7 @@ interface CompositionEvent : UIEvent
 interface ComputedAccessibleNode
     attribute @@toStringTag
     getter atomic
+    getter autocomplete
     getter busy
     getter colCount
     getter colIndex

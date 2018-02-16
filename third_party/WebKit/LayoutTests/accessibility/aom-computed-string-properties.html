@@ -81,3 +81,19 @@ test(async function(test) {
 }, "ComputedAccessibleNode.roleDescription.");
 
 </script>
+
+<input id="both-autocomplete" role="combobox" aria-autocomplete="both"></input>
+<input id="no-autocomplete" role="combobox" aria-autocomplete="none"></input>
+<script>
+
+test(async function(test) {
+    var bothElement = document.getElementById("both-autocomplete");
+    var noneElement = document.getElementById("no-autocomplete");
+    var bothCAXNode = await window.getComputedAccessibleNode(bothElement);
+    var noneCAXNode = await window.getComputedAccessibleNode(noneElement);
+    assert_equals(bothCAXNode.autocomplete, "both");
+    assert_equals(noneCAXNode.autocomplete, null);
+    test.done();
+}, "ComputedAccessibleNode.autocomplete");
+
+</script>
