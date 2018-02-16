@@ -33,6 +33,13 @@ static const char kEmulatedMedia[] = "emulatedMedia";
 static const char kDefaultBackgroundColorOverrideRGBA[] =
     "defaultBackgroundColorOverrideRGBA";
 static const char kNavigatorPlatform[] = "navigatorPlatform";
+static const char kVirtualTimeBudget[] = "virtualTimeBudget";
+static const char kVirtualTimeBudgetInitalOffset[] =
+    "virtualTimeBudgetInitalOffset";
+static const char kVirtualTimeOffset[] = "virtualTimeOffset";
+static const char kVirtualTimePolicy[] = "virtualTimePolicy";
+static const char kVirtualTimeTaskStarvationCount[] =
+    "virtualTimeTaskStarvationCount";
 }
 
 InspectorEmulationAgent::InspectorEmulationAgent(
@@ -69,6 +76,32 @@ void InspectorEmulationAgent::Restore() {
   state_->getString(EmulationAgentState::kNavigatorPlatform,
                     &navigator_platform);
   setNavigatorOverrides(navigator_platform);
+
+  double virtual_time_base_ms;
+  String virtual_time_policy;
+  if (state_->getString(EmulationAgentState::kVirtualTimePolicy,
+                        &virtual_time_policy)) {
+    // Initially pause virtual time to ensure virtual time budget isn't consumed
+    // while we wait for the IPC to tell the renderer to navigate to arrive.
+    setVirtualTimePolicy(protocol::Emulation::VirtualTimePolicyEnum::Pause, 0,
+                         0, false, &virtual_time_base_ms);
+
+    double budget_remaining =
+        state_->getDouble(EmulationAgentState::kVirtualTimeBudget, 0) +
+        state_->getDouble(EmulationAgentState::kVirtualTimeBudgetInitalOffset,
+                          0) -
+        state_->getDouble(EmulationAgentState::kVirtualTimeOffset, 0);
+    DCHECK_GE(budget_remaining, 0);
+    // Reinstate the stored policy. If it's PauseIfNetworkFetchesPending then
+    // wait until the navigation to load the page has started.
+    setVirtualTimePolicy(
+        virtual_time_policy, budget_remaining,
+        state_->getInteger(EmulationAgentState::kVirtualTimeTaskStarvationCount,
+                           0),
+        virtual_time_policy == protocol::Emulation::VirtualTimePolicyEnum::
+                                   PauseIfNetworkFetchesPending,
+        &virtual_time_base_ms);
+  }
 }
 
 Response InspectorEmulationAgent::disable() {
@@ -135,6 +168,8 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(
     protocol::Maybe<int> max_virtual_time_task_starvation_count,
     protocol::Maybe<bool> wait_for_navigation,
     double* virtual_time_base_ms) {
+  state_->setString(EmulationAgentState::kVirtualTimePolicy, policy);
+
   PendingVirtualTimePolicy new_policy;
   new_policy.policy = WebViewScheduler::VirtualTimePolicy::kPause;
   if (protocol::Emulation::VirtualTimePolicyEnum::Advance == policy) {
@@ -145,12 +180,26 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(
         WebViewScheduler::VirtualTimePolicy::kDeterministicLoading;
   }
 
-  if (virtual_time_budget_ms.isJust())
+  if (virtual_time_budget_ms.isJust()) {
     new_policy.virtual_time_budget_ms = virtual_time_budget_ms.fromJust();
+    state_->setDouble(EmulationAgentState::kVirtualTimeBudget,
+                      *new_policy.virtual_time_budget_ms);
+    // Record the current virtual time offset so Restore can compute how much
+    // budget is left.
+    state_->setDouble(
+        EmulationAgentState::kVirtualTimeBudgetInitalOffset,
+        state_->doubleProperty(EmulationAgentState::kVirtualTimeOffset, 0.0));
+  } else {
+    state_->remove(EmulationAgentState::kVirtualTimeBudget);
+  }
 
   if (max_virtual_time_task_starvation_count.isJust()) {
     new_policy.max_virtual_time_task_starvation_count =
         max_virtual_time_task_starvation_count.fromJust();
+    state_->setDouble(EmulationAgentState::kVirtualTimeTaskStarvationCount,
+                      *new_policy.max_virtual_time_task_starvation_count);
+  } else {
+    state_->remove(EmulationAgentState::kVirtualTimeTaskStarvationCount);
   }
 
   if (!virtual_time_setup_) {
@@ -216,11 +265,15 @@ void InspectorEmulationAgent::VirtualTimeBudgetExpired() {
 
 void InspectorEmulationAgent::OnVirtualTimeAdvanced(
     WTF::TimeDelta virtual_time_offset) {
+  state_->setDouble(EmulationAgentState::kVirtualTimeOffset,
+                    virtual_time_offset.InMillisecondsF());
   GetFrontend()->virtualTimeAdvanced(virtual_time_offset.InMillisecondsF());
 }
 
 void InspectorEmulationAgent::OnVirtualTimePaused(
     WTF::TimeDelta virtual_time_offset) {
+  state_->setDouble(EmulationAgentState::kVirtualTimeOffset,
+                    virtual_time_offset.InMillisecondsF());
   GetFrontend()->virtualTimePaused(virtual_time_offset.InMillisecondsF());
 }
 
