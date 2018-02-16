@@ -68,9 +68,6 @@ void AndroidUiGestureTarget::DispatchWebInputEvent(
     case blink::WebGestureEvent::kGestureFlingCancel:
       Inject(content::MOTION_EVENT_ACTION_CANCEL, event_time_ms);
       break;
-    case blink::WebGestureEvent::kGestureFlingStart:
-      // Flings are automatically generated for android UI. Ignore this input.
-      break;
     case blink::WebMouseEvent::kMouseEnter:
       SetPointer(mouse->PositionInWidget().x, mouse->PositionInWidget().y);
       Inject(content::MOTION_EVENT_ACTION_HOVER_ENTER, event_time_ms);

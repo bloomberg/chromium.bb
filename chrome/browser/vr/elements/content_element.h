@@ -26,8 +26,6 @@ class ContentElement : public UiElement {
   void OnMove(const gfx::PointF& position) override;
   void OnButtonDown(const gfx::PointF& position) override;
   void OnButtonUp(const gfx::PointF& position) override;
-  void OnFlingStart(std::unique_ptr<blink::WebGestureEvent> gesture,
-                    const gfx::PointF& position) override;
   void OnFlingCancel(std::unique_ptr<blink::WebGestureEvent> gesture,
                      const gfx::PointF& position) override;
   void OnScrollBegin(std::unique_ptr<blink::WebGestureEvent> gesture,

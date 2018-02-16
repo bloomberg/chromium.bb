@@ -41,8 +41,6 @@ class VrDialog : public ContentInputDelegate {
   void OnContentMove(const gfx::PointF& normalized_hit_point) override;
   void OnContentDown(const gfx::PointF& normalized_hit_point) override;
   void OnContentUp(const gfx::PointF& normalized_hit_point) override;
-  void OnContentFlingStart(std::unique_ptr<blink::WebGestureEvent> gesture,
-                           const gfx::PointF& normalized_hit_point) override;
   void OnContentFlingCancel(std::unique_ptr<blink::WebGestureEvent> gesture,
                             const gfx::PointF& normalized_hit_point) override;
   void OnContentScrollBegin(std::unique_ptr<blink::WebGestureEvent> gesture,

@@ -51,7 +51,6 @@ bool IsScrollEvent(const GestureList& list) {
   if (type == blink::WebInputEvent::kGestureScrollBegin ||
       type == blink::WebInputEvent::kGestureScrollEnd ||
       type == blink::WebInputEvent::kGestureScrollUpdate ||
-      type == blink::WebInputEvent::kGestureFlingStart ||
       type == blink::WebInputEvent::kGestureFlingCancel) {
     return true;
   }
@@ -201,25 +200,14 @@ void UiInputManager::SendScrollEnd(GestureList* gesture_list,
   if (element) {
     DCHECK(element->scrollable());
   }
-  if (gesture_list->empty() || (gesture_list->front()->GetType() !=
-                                    blink::WebInputEvent::kGestureScrollEnd &&
-                                gesture_list->front()->GetType() !=
-                                    blink::WebInputEvent::kGestureFlingStart)) {
+  if (gesture_list->empty() || gesture_list->front()->GetType() !=
+                                   blink::WebInputEvent::kGestureScrollEnd) {
     return;
   }
-  DCHECK_LE(gesture_list->size(), 2LU);
-  if (gesture_list->front()->GetType() ==
-      blink::WebInputEvent::kGestureScrollEnd) {
-    if (element) {
-      element->OnScrollEnd(std::move(gesture_list->front()), target_point);
-    }
-  } else {
-    DCHECK_EQ(gesture_list->front()->GetType(),
-              blink::WebInputEvent::kGestureFlingStart);
-    fling_target_id_ = input_capture_element_id_;
-    if (element) {
-      element->OnFlingStart(std::move(gesture_list->front()), target_point);
-    }
+  DCHECK_LE(gesture_list->size(), 1LU);
+  fling_target_id_ = input_capture_element_id_;
+  if (element) {
+    element->OnScrollEnd(std::move(gesture_list->front()), target_point);
   }
   gesture_list->erase(gesture_list->begin());
   input_capture_element_id_ = 0;

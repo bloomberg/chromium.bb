@@ -64,12 +64,6 @@ void ContentInputDelegate::OnWebInputEdited(const TextInputInfo& info,
   content_->OnWebInputEdited(info, commit);
 }
 
-void ContentInputDelegate::OnContentFlingStart(
-    std::unique_ptr<blink::WebGestureEvent> gesture,
-    const gfx::PointF& normalized_hit_point) {
-  UpdateGesture(normalized_hit_point, *gesture);
-  SendGestureToContent(std::move(gesture));
-}
 
 void ContentInputDelegate::OnContentFlingCancel(
     std::unique_ptr<blink::WebGestureEvent> gesture,

@@ -102,13 +102,6 @@ void ContentElement::OnButtonUp(const gfx::PointF& position) {
     delegate_->OnContentUp(position);
 }
 
-void ContentElement::OnFlingStart(
-    std::unique_ptr<blink::WebGestureEvent> gesture,
-    const gfx::PointF& position) {
-  if (delegate_)
-    delegate_->OnContentFlingStart(std::move(gesture), position);
-}
-
 void ContentElement::OnFlingCancel(
     std::unique_ptr<blink::WebGestureEvent> gesture,
     const gfx::PointF& position) {

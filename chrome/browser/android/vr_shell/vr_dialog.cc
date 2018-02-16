@@ -50,9 +50,6 @@ void VrDialog::OnContentUp(const gfx::PointF& normalized_hit_point) {
       MakeMouseEvent(blink::WebInputEvent::kMouseUp, normalized_hit_point));
 }
 
-void VrDialog::OnContentFlingStart(
-    std::unique_ptr<blink::WebGestureEvent> gesture,
-    const gfx::PointF& normalized_hit_point) {}
 void VrDialog::OnContentFlingCancel(
     std::unique_ptr<blink::WebGestureEvent> gesture,
     const gfx::PointF& normalized_hit_point) {}

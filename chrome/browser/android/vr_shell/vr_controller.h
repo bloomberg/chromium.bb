@@ -179,7 +179,7 @@ class VrController : public PlatformController {
   // Overall velocity
   gfx::Vector2dF overall_velocity_;
 
-  // Last velocity that is used for fling and direction detection
+  // Last velocity that is used for direction detection
   gfx::Vector2dF last_velocity_;
 
   // Displacement of the touch point from the previews to the current touch

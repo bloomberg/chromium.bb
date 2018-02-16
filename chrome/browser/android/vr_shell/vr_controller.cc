@@ -304,24 +304,6 @@ std::unique_ptr<GestureList> VrController::DetectGestures() {
 
   if (gesture_list->back()->GetType() ==
       blink::WebInputEvent::kGestureScrollEnd) {
-    if (!ButtonDownHappened(gvr::kControllerButtonClick) &&
-        (last_velocity_.x() != 0.0 || last_velocity_.y() != 0.0)) {
-      std::unique_ptr<blink::WebGestureEvent> fling(
-          new blink::WebGestureEvent(blink::WebInputEvent::kGestureFlingStart,
-                                     blink::WebInputEvent::kNoModifiers,
-                                     gesture_list->back()->TimeStampSeconds()));
-      fling->source_device = blink::kWebGestureDeviceTouchpad;
-      if (IsHorizontalGesture()) {
-        fling->data.fling_start.velocity_x =
-            last_velocity_.x() * kDisplacementScaleFactor;
-      } else {
-        fling->data.fling_start.velocity_y =
-            last_velocity_.y() * kDisplacementScaleFactor;
-      }
-      // FlingStart replaces ScrollEnd
-      gesture_list->pop_back();
-      gesture_list->push_back(std::move(fling));
-    }
     Reset();
   }
 
