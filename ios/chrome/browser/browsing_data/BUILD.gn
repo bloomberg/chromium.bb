@@ -51,7 +51,6 @@ source_set("browsing_data") {
     ":browsing_data_remove_mask",
     "//components/search_engines",
   ]
-  allow_circular_includes_from = [ "//ios/chrome/browser/signin" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

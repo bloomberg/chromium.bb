@@ -41,23 +41,6 @@ class IOSChromeBrowsingDataRemover {
   // removed once downstream code has been fixed to use BrowsingDataRemoveMask.
   const BrowsingDataRemoveMask REMOVE_ALL = BrowsingDataRemoveMask::REMOVE_ALL;
 
-  // When IOSChromeBrowsingDataRemover successfully removes data, a
-  // notification of type NOTIFICATION_BROWSING_DATA_REMOVED is triggered with
-  // a Details object of this type.
-  struct NotificationDetails {
-    NotificationDetails();
-    NotificationDetails(const NotificationDetails& details);
-    NotificationDetails(base::Time removal_begin,
-                        BrowsingDataRemoveMask removal_mask);
-    ~NotificationDetails();
-
-    // The beginning of the removal time range.
-    base::Time removal_begin;
-
-    // The removal mask (see the BrowsingDataRemoveMask enum for details).
-    BrowsingDataRemoveMask removal_mask;
-  };
-
   // Observer is notified when the removal is done. Done means keywords have
   // been deleted, cache cleared and all other tasks scheduled.
   class Observer {
@@ -67,10 +50,6 @@ class IOSChromeBrowsingDataRemover {
    protected:
     virtual ~Observer() {}
   };
-
-  using Callback = base::Callback<void(const NotificationDetails&)>;
-  using CallbackSubscription = std::unique_ptr<
-      base::CallbackList<void(const NotificationDetails&)>::Subscription>;
 
   // Creates a IOSChromeBrowsingDataRemover bound to a specific period of time
   // (as defined via a TimePeriod). Returns a raw pointer, as
@@ -83,12 +62,6 @@ class IOSChromeBrowsingDataRemover {
   // Is the IOSChromeBrowsingDataRemover currently in the process of removing
   // data?
   static bool is_removing() { return is_removing_; }
-
-  // Add a callback to the list of callbacks to be called during a browsing data
-  // removal event. Returns a subscription object that can be used to
-  // un-register the callback.
-  static CallbackSubscription RegisterOnBrowsingDataRemovedCallback(
-      const Callback& callback);
 
   // Removes the specified items related to browsing for all origins.
   void Remove(BrowsingDataRemoveMask mask);

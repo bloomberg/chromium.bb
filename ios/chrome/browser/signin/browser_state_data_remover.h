@@ -5,8 +5,10 @@
 #ifndef IOS_CHROME_BROWSER_SIGNIN_BROWSER_STATE_DATA_REMOVER_H_
 #define IOS_CHROME_BROWSER_SIGNIN_BROWSER_STATE_DATA_REMOVER_H_
 
+#include <memory>
+
 #include "base/ios/block_types.h"
-#include "ios/chrome/browser/browsing_data/ios_chrome_browsing_data_remover.h"
+#include "base/macros.h"
 
 namespace ios {
 class ChromeBrowserState;
@@ -29,28 +31,21 @@ class BrowserStateDataRemover {
   static void ClearData(ios::ChromeBrowserState* browser_state,
                         ProceduralBlock completion);
 
-  // If set then the last username will be removed from the browser state prefs
-  // after the data has been wiped.
-  void SetForgetLastUsername();
-
+ private:
   // Wipes all the data in the browser state and invokes |callback| when done.
   // This can be called only once, and this object deletes itself after invoking
   // the callback.
   void RemoveBrowserStateData(ProceduralBlock callback);
 
- private:
-  void NotifyWithDetails(
-      const IOSChromeBrowsingDataRemover::NotificationDetails& details);
-  void ReadingListCleaned(
-      const IOSChromeBrowsingDataRemover::NotificationDetails& details,
-      bool reading_list_cleaned);
+  void BrowsingDataCleared();
+  void ReadingListCleaned(bool reading_list_cleaned);
 
   ios::ChromeBrowserState* browser_state_;
   ProceduralBlock callback_;
-  IOSChromeBrowsingDataRemover::CallbackSubscription callback_subscription_;
   std::unique_ptr<reading_list::ReadingListRemoverHelper>
       reading_list_remover_helper_;
-  bool forget_last_username_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserStateDataRemover);
 };
 
 #endif  // IOS_CHROME_BROWSER_SIGNIN_BROWSER_STATE_DATA_REMOVER_H_
