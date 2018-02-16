@@ -30,9 +30,6 @@ class CreateElementFlags {
     return CreateElementFlags().SetAsyncCustomElements();
   }
 
-  // https://dom.spec.whatwg.org/#dom-document-importnode
-  static CreateElementFlags ByImportNode() { return ByCloneNode(); }
-
   // https://dom.spec.whatwg.org/#dom-document-createelement
   static CreateElementFlags ByCreateElement() { return CreateElementFlags(); }
   static CreateElementFlags ByCreateElementV1() {

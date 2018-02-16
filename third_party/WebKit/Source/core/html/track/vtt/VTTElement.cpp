@@ -74,9 +74,10 @@ VTTElement* VTTElement::Create(VTTNodeType node_type, Document* document) {
   return new VTTElement(node_type, document);
 }
 
-Element* VTTElement::CloneElementWithoutAttributesAndChildren() {
+Element* VTTElement::CloneElementWithoutAttributesAndChildren(
+    Document& factory) {
   VTTElement* clone =
-      Create(static_cast<VTTNodeType>(web_vtt_node_type_), &GetDocument());
+      Create(static_cast<VTTNodeType>(web_vtt_node_type_), &factory);
   clone->SetLanguage(language_);
   return clone;
 }

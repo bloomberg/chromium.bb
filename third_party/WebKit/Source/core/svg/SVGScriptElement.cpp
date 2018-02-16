@@ -146,11 +146,12 @@ Document& SVGScriptElement::GetDocument() const {
   return Node::GetDocument();
 }
 
-Element* SVGScriptElement::CloneElementWithoutAttributesAndChildren() {
+Element* SVGScriptElement::CloneElementWithoutAttributesAndChildren(
+    Document& factory) {
   CreateElementFlags flags =
       CreateElementFlags::ByCloneNode().SetAlreadyStarted(
           loader_->AlreadyStarted());
-  return GetDocument().CreateElement(TagQName(), flags, IsValue());
+  return factory.CreateElement(TagQName(), flags, IsValue());
 }
 
 void SVGScriptElement::DispatchLoadEvent() {

@@ -1255,6 +1255,8 @@ bool Document::ImportContainerNodeChildren(ContainerNode* old_container_node,
 Node* Document::importNode(Node* imported_node,
                            bool deep,
                            ExceptionState& exception_state) {
+  // https://dom.spec.whatwg.org/#dom-document-importnode
+  // TODO(tkent): Share code with cloneNode(). crbug.com/812089
   switch (imported_node->getNodeType()) {
     case kTextNode:
       return createTextNode(imported_node->nodeValue());
@@ -1280,9 +1282,8 @@ Node* Document::importNode(Node* imported_node,
             kNamespaceError, "The imported node has an invalid namespace.");
         return nullptr;
       }
-      Element* new_element = CreateElement(old_element->TagQName(),
-                                           CreateElementFlags::ByImportNode(),
-                                           old_element->IsValue());
+      Element* new_element =
+          old_element->CloneElementWithoutAttributesAndChildren(*this);
 
       new_element->CloneDataFromElement(
           *old_element,

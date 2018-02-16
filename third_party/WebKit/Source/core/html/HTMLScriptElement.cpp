@@ -218,11 +218,12 @@ void HTMLScriptElement::SetScriptElementForBinding(
     element.SetHTMLScriptElement(this);
 }
 
-Element* HTMLScriptElement::CloneElementWithoutAttributesAndChildren() {
+Element* HTMLScriptElement::CloneElementWithoutAttributesAndChildren(
+    Document& factory) {
   CreateElementFlags flags =
       CreateElementFlags::ByCloneNode().SetAlreadyStarted(
           loader_->AlreadyStarted());
-  return GetDocument().CreateElement(TagQName(), flags, IsValue());
+  return factory.CreateElement(TagQName(), flags, IsValue());
 }
 
 void HTMLScriptElement::Trace(blink::Visitor* visitor) {
