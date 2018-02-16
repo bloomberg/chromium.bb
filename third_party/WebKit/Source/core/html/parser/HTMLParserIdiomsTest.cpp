@@ -24,7 +24,9 @@ TEST(HTMLParserIdiomsTest, ParseHTMLInteger) {
   EXPECT_TRUE(ParseHTMLInteger("-2147483647", value));
   EXPECT_EQ(-2147483647, value);
   EXPECT_TRUE(ParseHTMLInteger("-2147483648", value));
-  EXPECT_EQ(0 - 2147483648, value);
+  // The static_cast prevents a sign mismatch warning on Visual Studio, which
+  // automatically promotes the subtraction result to unsigned long.
+  EXPECT_EQ(static_cast<int>(0 - 2147483648), value);
   value = 12345;
   EXPECT_FALSE(ParseHTMLInteger("-2147483649", value));
   EXPECT_EQ(12345, value);

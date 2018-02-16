@@ -1581,7 +1581,11 @@ TEST_P(GLES2DecoderDoCommandsTest, DoCommandsBadArgSize) {
             decoder_->DoCommands(
                 2, &cmds_, entries_per_cmd_ * 2 + 1, &num_processed));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_EQ(entries_per_cmd_ + cmds_[1].header.size, num_processed);
+  // gpu::CommandHeader::size is a 21-bit field, so casting it to int is safe.
+  // Without the explicit cast, Visual Studio ends up promoting the left hand
+  // side to unsigned, and emits a sign mismatch warning.
+  EXPECT_EQ(entries_per_cmd_ + static_cast<int>(cmds_[1].header.size),
+            num_processed);
 }
 
 class GLES2DecoderDescheduleUntilFinishedTest : public GLES2DecoderTest {
