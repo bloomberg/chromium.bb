@@ -90,10 +90,10 @@
   self.view.frame = CGRectMake(0.0, 0.0, viewSize.width, viewSize.height);
 
   // UIScrollViews only scroll vertically if the content size's height is
-  // greater than that of its content rect.
-  if (viewSize.height <= CGRectGetHeight(contentRect)) {
+  // greater than that of its bounds.
+  if (viewSize.height <= _lastLayoutSize.height) {
     CGFloat singlePixel = 1.0f / [[UIScreen mainScreen] scale];
-    viewSize.height = CGRectGetHeight(contentRect) + singlePixel;
+    viewSize.height = _lastLayoutSize.height + singlePixel;
   }
   self.scrollView.contentSize = viewSize;
 }
