@@ -37,6 +37,8 @@ component("public") {
     "//components/download/internal/common:internal",
     "//crypto",
     "//net",
+    "//services/network/public/cpp",
+    "//storage/browser",
     "//ui/base",
   ]
 

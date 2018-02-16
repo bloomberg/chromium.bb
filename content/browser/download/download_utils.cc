@@ -8,13 +8,17 @@
 #include "base/memory/ptr_util.h"
 #include "base/process/process_handle.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/download/downloader/in_progress/download_entry.h"
 #include "components/download/downloader/in_progress/in_progress_cache.h"
 #include "components/download/public/common/download_save_info.h"
 #include "components/download/public/common/download_url_parameters.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_interrupt_reasons_utils.h"
 #include "content/browser/download/download_stats.h"
+#include "content/browser/loader/upload_data_stream_builder.h"
+#include "content/browser/resource_context_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager_delegate.h"
@@ -119,6 +123,14 @@ std::unique_ptr<net::HttpRequestHeaders> GetAdditionalRequestHeaders(
 
 }  // namespace
 
+storage::BlobStorageContext* BlobStorageContextGetter(
+    ResourceContext* resource_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  ChromeBlobStorageContext* blob_context =
+      GetChromeBlobStorageContextForResourceContext(resource_context);
+  return blob_context->context();
+}
+
 download::DownloadInterruptReason HandleRequestCompletionStatus(
     net::Error error_code,
     bool has_strong_validators,
@@ -186,9 +198,8 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
     request->render_frame_id = params->render_frame_host_routing_id();
 
   bool has_upload_data = false;
-  if (!params->post_body().empty()) {
-    request->request_body = network::ResourceRequestBody::CreateFromBytes(
-        params->post_body().data(), params->post_body().size());
+  if (params->post_body()) {
+    request->request_body = params->post_body();
     has_upload_data = true;
   }
 
@@ -230,12 +241,17 @@ std::unique_ptr<net::URLRequest> CreateURLRequestOnIOThread(
                           params->GetNetworkTrafficAnnotation()));
   request->set_method(params->method());
 
-  if (!params->post_body().empty()) {
-    const std::string& body = params->post_body();
-    std::unique_ptr<net::UploadElementReader> reader(
-        net::UploadOwnedBytesElementReader::CreateWithString(body));
-    request->set_upload(
-        net::ElementsUploadDataStream::CreateWithReader(std::move(reader), 0));
+  if (params->post_body()) {
+    storage::BlobStorageContext* blob_context =
+        params->get_blob_storage_context_getter().Run();
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+        base::CreateSingleThreadTaskRunnerWithTraits(
+            {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+    std::unique_ptr<net::UploadDataStream> upload_data_stream =
+        UploadDataStreamBuilder::Build(params->post_body().get(), blob_context,
+                                       nullptr /*FileSystemContext*/,
+                                       task_runner.get());
+    request->set_upload(std::move(upload_data_stream));
   }
 
   if (params->post_id() >= 0) {

@@ -6,11 +6,13 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_stats.h"
+#include "content/browser/download/download_utils.h"
 #include "content/browser/download/parallel_download_utils.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -286,6 +288,11 @@ void ParallelDownloadJob::CreateRequest(int64_t offset, int64_t length) {
   // download request.
   download_params->set_referrer(download_item_->GetReferrerUrl());
   download_params->set_referrer_policy(net::URLRequest::NEVER_CLEAR_REFERRER);
+
+  download_params->set_blob_storage_context_getter(
+      base::BindOnce(&BlobStorageContextGetter,
+                     DownloadItemUtils::GetBrowserContext(download_item_)
+                         ->GetResourceContext()));
 
   // Send the request.
   worker->SendRequest(std::move(download_params),
