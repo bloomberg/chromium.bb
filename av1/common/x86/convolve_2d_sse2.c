@@ -247,7 +247,7 @@ void av1_convolve_2d_sr_sse2(const uint8_t *src, int src_stride, uint8_t *dst,
     const __m128i coeff_67 = _mm_unpackhi_epi64(tmp_1, tmp_1);
 
     const __m128i round_const = _mm_set1_epi32(
-        ((1 << conv_params->round_0) >> 1) + (1 << (bd + FILTER_BITS - 1)));
+        (1 << (bd + FILTER_BITS - 1)) + ((1 << conv_params->round_0) >> 1));
     const __m128i round_shift = _mm_cvtsi32_si128(conv_params->round_0);
 
     for (i = 0; i < im_h; ++i) {
@@ -312,10 +312,14 @@ void av1_convolve_2d_sr_sse2(const uint8_t *src, int src_stride, uint8_t *dst,
     // coeffs 6 7 6 7 6 7 6 7
     const __m128i coeff_67 = _mm_unpackhi_epi64(tmp_1, tmp_1);
 
+    const __m128i sum_round =
+        _mm_set1_epi32((1 << offset_bits) + ((1 << conv_params->round_1) >> 1));
+    const __m128i sum_shift = _mm_cvtsi32_si128(conv_params->round_1);
+
     const __m128i round_const = _mm_set1_epi32(
-        ((((1 << bits) + 1) << conv_params->round_1) - (1 << offset_bits)) >>
-        1);
-    const __m128i round_shift = _mm_cvtsi32_si128(bits + conv_params->round_1);
+        ((1 << bits) >> 1) - (1 << (offset_bits - conv_params->round_1)) -
+        ((1 << (offset_bits - conv_params->round_1)) >> 1));
+    const __m128i round_shift = _mm_cvtsi32_si128(bits);
 
     for (i = 0; i < h; ++i) {
       for (j = 0; j < w; j += 8) {
@@ -368,10 +372,15 @@ void av1_convolve_2d_sr_sse2(const uint8_t *src, int src_stride, uint8_t *dst,
         const __m128i res_lo = _mm_unpacklo_epi32(res_even, res_odd);
         const __m128i res_hi = _mm_unpackhi_epi32(res_even, res_odd);
 
-        const __m128i res_lo_round =
-            _mm_sra_epi32(_mm_add_epi32(res_lo, round_const), round_shift);
-        const __m128i res_hi_round =
-            _mm_sra_epi32(_mm_add_epi32(res_hi, round_const), round_shift);
+        __m128i res_lo_round =
+            _mm_sra_epi32(_mm_add_epi32(res_lo, sum_round), sum_shift);
+        __m128i res_hi_round =
+            _mm_sra_epi32(_mm_add_epi32(res_hi, sum_round), sum_shift);
+
+        res_lo_round = _mm_sra_epi32(_mm_add_epi32(res_lo_round, round_const),
+                                     round_shift);
+        res_hi_round = _mm_sra_epi32(_mm_add_epi32(res_hi_round, round_const),
+                                     round_shift);
 
         const __m128i res16 = _mm_packs_epi32(res_lo_round, res_hi_round);
         const __m128i res = _mm_packus_epi16(res16, res16);
