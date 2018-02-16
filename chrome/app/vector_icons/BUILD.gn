@@ -113,6 +113,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "usb_security_key.icon",
     "user_account_avatar.icon",
     "user_menu_guest.icon",
+    "user_menu_right_arrow.icon",
     "volume_up.icon",
     "warning_badge.icon",
     "web.icon",
