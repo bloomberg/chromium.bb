@@ -93,7 +93,8 @@ class NetworkListView : public NetworkStateListDetailedView,
   std::unique_ptr<std::set<std::string>> UpdateNetworkChildren(
       NetworkInfo::Type type,
       int child_index);
-  void UpdateNetworkChild(int index, const NetworkInfo* info);
+  // Returns true if a new child was added.
+  bool UpdateNetworkChild(int index, const NetworkInfo* info);
 
   // Reorders children of |scroll_content()| as necessary placing |view| at
   // |index|.

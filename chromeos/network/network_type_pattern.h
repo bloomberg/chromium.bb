@@ -26,7 +26,7 @@ class CHROMEOS_EXPORT NetworkTypePattern {
   // Matches Physical networks (i.e. excludes Tether and VPN).
   static NetworkTypePattern Physical();
 
-  // Matches non virtual networks.
+  // Excludes virtual networks and EthernetEAP.
   static NetworkTypePattern NonVirtual();
 
   // Matches ethernet networks.

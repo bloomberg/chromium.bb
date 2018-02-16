@@ -80,7 +80,7 @@ NetworkTypePattern NetworkTypePattern::Physical() {
 
 // static
 NetworkTypePattern NetworkTypePattern::NonVirtual() {
-  return NetworkTypePattern(~(kNetworkTypeVPN));
+  return NetworkTypePattern(~(kNetworkTypeVPN | kNetworkTypeEthernetEap));
 }
 
 // static
