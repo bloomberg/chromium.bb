@@ -209,7 +209,7 @@ void LayoutMenuList::UpdateFromElement() {
 
     if (selected_count == 1) {
       text = selected_option_element->TextIndentedToRespectGroupLabel();
-      option_style_ = selected_option_element->MutableComputedStyle();
+      option_style_ = selected_option_element->GetComputedStyle();
     } else {
       Locale& locale = select->GetLocale();
       String localized_number_string =
@@ -221,7 +221,7 @@ void LayoutMenuList::UpdateFromElement() {
   } else {
     if (option) {
       text = option->TextIndentedToRespectGroupLabel();
-      option_style_ = option->MutableComputedStyle();
+      option_style_ = option->GetComputedStyle();
     }
   }
 
