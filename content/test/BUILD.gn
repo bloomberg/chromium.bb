@@ -7,6 +7,7 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
+import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//media/media_options.gni")
 import("//net/features.gni")
@@ -20,7 +21,7 @@ import("//v8/gni/v8.gni")
 
 # Use a static library here because many test binaries depend on this but don't
 # require many files from it. This makes linking more efficient.
-static_library("test_support") {
+jumbo_static_library("test_support") {
   testonly = true
 
   # See comment at the top of //content/BUILD.gn for why this is disabled in
@@ -488,7 +489,7 @@ static_library("test_support") {
 
 # browsertest_support can be used by targets that run content_shell based
 # browser tests.
-static_library("browsertest_support") {
+jumbo_static_library("browsertest_support") {
   testonly = true
 
   # See comment at the top of //content/BUILD.gn for why this is disabled in
@@ -574,7 +575,7 @@ mojom("test_interfaces") {
   ]
 }
 
-static_library("layouttest_support") {
+jumbo_static_library("layouttest_support") {
   testonly = true
 
   # See comment at the top of //content/BUILD.gn for why this is disabled in
