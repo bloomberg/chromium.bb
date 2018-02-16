@@ -508,7 +508,9 @@ void InputDeviceFactoryEvdev::EnablePalmSuppression(bool enabled) {
   if (enabled == palm_suppression_enabled_)
     return;
   palm_suppression_enabled_ = enabled;
-  ApplyInputDeviceSettings();
+
+  for (const auto& it : converters_)
+    it.second->SetEnabled(IsDeviceEnabled(it.second.get()));
 }
 
 }  // namespace ui
