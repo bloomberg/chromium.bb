@@ -46,6 +46,24 @@ NavigationManager::WebLoadParams& NavigationManager::WebLoadParams::operator=(
 }
 
 /* static */
+NavigationItem* NavigationManagerImpl::GetLastCommittedNonRedirectedItem(
+    const NavigationManager* nav_manager) {
+  if (!nav_manager || !nav_manager->GetItemCount())
+    return nullptr;
+
+  int index = nav_manager->GetLastCommittedItemIndex();
+  while (index >= 0) {
+    NavigationItem* item = nav_manager->GetItemAtIndex(index);
+    // Returns the first non-Redirect item found.
+    if (!ui::PageTransitionIsRedirect(item->GetTransitionType()))
+      return item;
+    --index;
+  }
+
+  return nullptr;
+}
+
+/* static */
 bool NavigationManagerImpl::IsFragmentChangeNavigationBetweenUrls(
     const GURL& existing_url,
     const GURL& new_url) {
@@ -303,6 +321,48 @@ void NavigationManagerImpl::Reload(ReloadType reload_type,
   }
 
   delegate_->Reload();
+}
+
+void NavigationManagerImpl::ReloadWithUserAgentType(
+    UserAgentType user_agent_type) {
+  DCHECK_NE(user_agent_type, UserAgentType::NONE);
+
+  // This removes the web view, which will be recreated at the end of this.
+  delegate_->WillChangeUserAgentType();
+
+  NavigationItem* last_non_redirect_item = GetTransientItem();
+  if (!last_non_redirect_item ||
+      ui::PageTransitionIsRedirect(last_non_redirect_item->GetTransitionType()))
+    last_non_redirect_item = GetVisibleItem();
+  if (!last_non_redirect_item ||
+      ui::PageTransitionIsRedirect(last_non_redirect_item->GetTransitionType()))
+    last_non_redirect_item = GetLastCommittedNonRedirectedItem(this);
+
+  if (!last_non_redirect_item)
+    return;
+
+  // |reloadURL| will be empty if a page was open by DOM.
+  GURL reloadURL(last_non_redirect_item->GetOriginalRequestURL());
+  if (reloadURL.is_empty()) {
+    reloadURL = last_non_redirect_item->GetVirtualURL();
+  }
+
+  WebLoadParams params(reloadURL);
+  params.referrer = last_non_redirect_item->GetReferrer();
+  params.transition_type = ui::PAGE_TRANSITION_RELOAD;
+
+  switch (user_agent_type) {
+    case UserAgentType::DESKTOP:
+      params.user_agent_override_option = UserAgentOverrideOption::DESKTOP;
+      break;
+    case UserAgentType::MOBILE:
+      params.user_agent_override_option = UserAgentOverrideOption::MOBILE;
+      break;
+    case UserAgentType::NONE:
+      NOTREACHED();
+  }
+
+  LoadURLWithParams(params);
 }
 
 void NavigationManagerImpl::LoadIfNecessary() {

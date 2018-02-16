@@ -51,6 +51,13 @@ class NavigationManagerImpl : public NavigationManager {
   NavigationManagerImpl();
   ~NavigationManagerImpl() override;
 
+  // Returns the most recent Committed Item that is not the result of a client
+  // or server-side redirect from the given Navigation Manager. Returns nullptr
+  // if there's an error condition on the input |nav_manager|, such as nullptr
+  // or no non-redirect items.
+  static NavigationItem* GetLastCommittedNonRedirectedItem(
+      const NavigationManager* nav_manager);
+
   // Setters for NavigationManagerDelegate and BrowserState.
   virtual void SetDelegate(NavigationManagerDelegate* delegate);
   virtual void SetBrowserState(BrowserState* browser_state);
@@ -163,6 +170,7 @@ class NavigationManagerImpl : public NavigationManager {
   void AddTransientURLRewriter(BrowserURLRewriter::URLRewriter rewriter) final;
   void GoToIndex(int index) final;
   void Reload(ReloadType reload_type, bool check_for_reposts) final;
+  void ReloadWithUserAgentType(UserAgentType user_agent_type) final;
   void LoadIfNecessary() final;
 
   // Implementation for corresponding NavigationManager getters.

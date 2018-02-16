@@ -78,7 +78,6 @@
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
-#import "ios/chrome/browser/web/navigation_manager_util.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/passkit_dialog_provider.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
@@ -130,18 +129,6 @@ NSString* const kTabClosingCurrentDocumentNotificationForCrashReporting =
     @"kTabClosingCurrentDocumentNotificationForCrashReporting";
 
 NSString* const kTabUrlKey = @"url";
-
-namespace {
-// Returns true if |item| is the result of a HTTP redirect.
-// Returns false if |item| is nullptr;
-bool IsItemRedirectItem(web::NavigationItem* item) {
-  if (!item)
-    return false;
-
-  return (ui::PageTransition::PAGE_TRANSITION_IS_REDIRECT_MASK &
-          item->GetTransitionType()) == 0;
-}
-}  // namespace
 
 @interface Tab ()<CRWWebStateObserver> {
   __weak TabModel* _parentTabModel;
@@ -396,50 +383,9 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
 }
 
 - (void)reloadWithUserAgentType:(web::UserAgentType)userAgentType {
-  // This removes the web view, which will be recreated at the end of this.
-  [self.webController requirePageReconstruction];
-
-  // TODO(crbug.com/228171): A hack in session_controller -addPendingItem
-  // discusses making tab responsible for distinguishing history stack
-  // navigation from new navigations.
   web::NavigationManager* navigationManager = [self navigationManager];
   DCHECK(navigationManager);
-
-  web::NavigationItem* lastNonRedirectItem =
-      navigationManager->GetTransientItem();
-  if (!lastNonRedirectItem || IsItemRedirectItem(lastNonRedirectItem))
-    lastNonRedirectItem = navigationManager->GetVisibleItem();
-  if (!lastNonRedirectItem || IsItemRedirectItem(lastNonRedirectItem))
-    lastNonRedirectItem = GetLastCommittedNonRedirectedItem(navigationManager);
-
-  if (!lastNonRedirectItem)
-    return;
-
-  // |reloadURL| will be empty if a page was open by DOM.
-  GURL reloadURL(lastNonRedirectItem->GetOriginalRequestURL());
-  if (reloadURL.is_empty()) {
-    DCHECK(self.webState && self.webState->HasOpener());
-    reloadURL = lastNonRedirectItem->GetVirtualURL();
-  }
-
-  web::NavigationManager::WebLoadParams params(reloadURL);
-  params.referrer = lastNonRedirectItem->GetReferrer();
-  params.transition_type = ui::PAGE_TRANSITION_RELOAD;
-
-  switch (userAgentType) {
-    case web::UserAgentType::DESKTOP:
-      params.user_agent_override_option =
-          web::NavigationManager::UserAgentOverrideOption::DESKTOP;
-      break;
-    case web::UserAgentType::MOBILE:
-      params.user_agent_override_option =
-          web::NavigationManager::UserAgentOverrideOption::MOBILE;
-      break;
-    case web::UserAgentType::NONE:
-      NOTREACHED();
-  }
-
-  navigationManager->LoadURLWithParams(params);
+  navigationManager->ReloadWithUserAgentType(userAgentType);
 }
 
 #pragma mark - Public API (relating to U2F)

@@ -42,6 +42,7 @@ class TestNavigationManager : public NavigationManager {
   void GoForward() override;
   void GoToIndex(int index) override;
   void Reload(ReloadType reload_type, bool check_for_reposts) override;
+  void ReloadWithUserAgentType(UserAgentType user_agent_type) override;
   NavigationItemList GetBackwardItems() const override;
   NavigationItemList GetForwardItems() const override;
   void Restore(int last_committed_item_index,
