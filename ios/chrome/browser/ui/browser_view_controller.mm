@@ -3829,14 +3829,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
     [self updateHeadersForFullscreenProgress:finalProgress];
     [self updateFootersForFullscreenProgress:finalProgress];
     [self updateContentViewTopPaddingForFullscreenProgress:finalProgress];
-    // Scroll the content to the top.
-    id<CRWWebViewProxy> webViewProxy = self.currentWebState->GetWebViewProxy();
-    CRWWebViewScrollViewProxy* scrollProxy = webViewProxy.scrollViewProxy;
-    CGPoint contentOffset = scrollProxy.contentOffset;
-    contentOffset.y = webViewProxy.shouldUseInsetForTopPadding
-                          ? -webViewProxy.topContentPadding
-                          : 0;
-    scrollProxy.contentOffset = contentOffset;
   }];
 }
 

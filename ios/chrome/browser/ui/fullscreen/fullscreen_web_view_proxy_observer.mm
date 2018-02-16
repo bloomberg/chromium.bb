@@ -56,11 +56,10 @@
 
 - (BOOL)webViewScrollViewShouldScrollToTop:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
-  // The content offset and the toolbar layout needs to be reset simultaneously,
-  // so disallow UIKit's scroll-to-top animation and instead use the mediator to
-  // trigger a custom animation.
+  // Inform FullscreenUIElements that the content is going to be scrolled to the
+  // top.
   self.mediator->ScrollToTop();
-  return NO;
+  return YES;
 }
 
 @end
