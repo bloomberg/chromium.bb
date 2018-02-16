@@ -259,8 +259,7 @@ SkColor OmniboxResultView::GetColor(
 }
 
 void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
-  match_ = match;
-  match_.PossiblySwapContentsAndDescriptionForDisplay();
+  match_ = match.GetMatchWithContentsAndDescriptionPossiblySwapped();
   animation_->Reset();
   answer_image_ = gfx::ImageSkia();
   is_hovered_ = false;
@@ -593,14 +592,8 @@ void OmniboxResultView::InitContentsRenderTextIfNecessary() const {
       contents_rendertext_ =
           CreateAnswerText(match_.answer->first_line(), font_list_);
     } else {
-      bool swap_match_text = IsTwoLineLayout() &&
-                             !AutocompleteMatch::IsSearchType(match_.type) &&
-                             !match_.description.empty();
-
       contents_rendertext_ = CreateClassifiedRenderText(
-          swap_match_text ? match_.description : match_.contents,
-          swap_match_text ? match_.description_class : match_.contents_class,
-          false);
+          match_.contents, match_.contents_class, false);
     }
   }
 }
@@ -811,15 +804,8 @@ void OmniboxResultView::OnPaint(gfx::Canvas* canvas) {
         description_rendertext_ =
             CreateAnswerText(match_.answer->second_line(), GetAnswerFont());
       } else if (!match_.description.empty()) {
-        // If the description is empty, we wouldn't swap with the contents --
-        // nor would we create the description RenderText object anyways.
-        bool swap_match_text =
-            IsTwoLineLayout() && !AutocompleteMatch::IsSearchType(match_.type);
-
         description_rendertext_ = CreateClassifiedRenderText(
-            swap_match_text ? match_.contents : match_.description,
-            swap_match_text ? match_.contents_class : match_.description_class,
-            false);
+            match_.description, match_.description_class, false);
       }
     }
     PaintMatch(match_, contents_rendertext_.get(),

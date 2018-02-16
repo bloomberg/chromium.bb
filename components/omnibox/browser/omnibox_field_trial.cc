@@ -26,6 +26,7 @@
 #include "components/variations/hashing.h"
 #include "components/variations/variations_associated_data.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 #if defined(OS_ANDROID)
 #include "components/omnibox/browser/omnibox_pref_names.h"
@@ -697,10 +698,18 @@ int OmniboxFieldTrial::KeywordScoreForSufficientlyCompleteMatch() {
 OmniboxFieldTrial::EmphasizeTitlesCondition
 OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
     const AutocompleteInput& input) {
-  // Check the feature that always swaps title and URL (assuming the title is
+  // Check the features that always swaps title and URL (assuming the title is
   // non-empty).
-  if (base::FeatureList::IsEnabled(omnibox::kUIExperimentSwapTitleAndUrl))
+  if (base::FeatureList::IsEnabled(omnibox::kUIExperimentSwapTitleAndUrl) ||
+      base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalLayout)) {
     return EMPHASIZE_WHEN_NONEMPTY;
+  }
+
+  // Touch devices also always swap title and URL.
+  if (ui::MaterialDesignController::is_mode_initialized() &&
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled()) {
+    return EMPHASIZE_WHEN_NONEMPTY;
+  }
 
   // Check the feature that swaps the title and URL only for zero suggest
   // suggestions.

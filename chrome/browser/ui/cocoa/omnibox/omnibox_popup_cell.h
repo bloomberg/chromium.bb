@@ -39,7 +39,7 @@ class OmniboxPopupViewMac;
 @property(readonly, nonatomic) AutocompleteMatch::Type matchType;
 @property(readonly, nonatomic) int maxLines;
 
-- (instancetype)initWithMatch:(const AutocompleteMatch&)match
+- (instancetype)initWithMatch:(const AutocompleteMatch&)matchFromModel
                         image:(NSImage*)image
                   answerImage:(NSImage*)answerImage
                  forDarkTheme:(BOOL)isDarkTheme;

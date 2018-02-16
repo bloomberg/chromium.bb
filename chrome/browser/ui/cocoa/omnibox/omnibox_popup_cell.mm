@@ -390,13 +390,16 @@ NSAttributedString* CreateClassifiedAttributedString(
 @synthesize matchType = matchType_;
 @synthesize maxLines = maxLines_;
 
-- (instancetype)initWithMatch:(const AutocompleteMatch&)match
+- (instancetype)initWithMatch:(const AutocompleteMatch&)matchFromModel
                         image:(NSImage*)image
                   answerImage:(NSImage*)answerImage
                  forDarkTheme:(BOOL)isDarkTheme {
   if ((self = [super init])) {
     image_ = [image retain];
     answerImage_ = [answerImage retain];
+
+    AutocompleteMatch match =
+        matchFromModel.GetMatchWithContentsAndDescriptionPossiblySwapped();
 
     isContentsRTL_ =
         (base::i18n::RIGHT_TO_LEFT ==
@@ -425,22 +428,9 @@ NSAttributedString* CreateClassifiedAttributedString(
           match.contents, ContentTextColor(isDarkTheme), match.contents_class,
           isDarkTheme) retain];
       if (!match.description.empty()) {
-        // Swap the contents and description of non-search suggestions in
-        // vertical layouts.
-        BOOL swapMatchText = (base::FeatureList::IsEnabled(
-                                  omnibox::kUIExperimentVerticalLayout) ||
-                              base::FeatureList::IsEnabled(
-                                  omnibox::kUIExperimentSwapTitleAndUrl)) &&
-                             !AutocompleteMatch::IsSearchType(match.type);
-
         description_ = [CreateClassifiedAttributedString(
-            match.description,
-            swapMatchText ? ContentTextColor(isDarkTheme)
-                          : DimTextColor(isDarkTheme),
+            match.description, DimTextColor(isDarkTheme),
             match.description_class, isDarkTheme) retain];
-
-        if (swapMatchText)
-          std::swap(contents_, description_);
       }
     }
   }
