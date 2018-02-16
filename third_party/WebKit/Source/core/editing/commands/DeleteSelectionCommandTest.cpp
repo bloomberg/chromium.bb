@@ -62,4 +62,21 @@ TEST_F(DeleteSelectionCommandTest, deleteListFromTable) {
                                   .ToOffsetInAnchor());
 }
 
+TEST_F(DeleteSelectionCommandTest, ForwardDeleteWithFirstLetter) {
+  InsertStyleElement("p::first-letter {font-size:200%;}");
+  Selection().SetSelectionAndEndTyping(
+      SetSelectionTextToBody("<p contenteditable>a^b|c</p>"));
+
+  const bool kNoSmartDelete = false;
+  const bool kMergeBlocksAfterDelete = true;
+  const bool kNoExpandForSpecialElements = false;
+  const bool kSanitizeMarkup = true;
+  DeleteSelectionCommand& command = *DeleteSelectionCommand::Create(
+      GetDocument(), kNoSmartDelete, kMergeBlocksAfterDelete,
+      kNoExpandForSpecialElements, kSanitizeMarkup);
+  EXPECT_TRUE(command.Apply()) << "the delete command should have succeeded";
+  EXPECT_EQ("<p contenteditable>a|c</p>",
+            GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+}
+
 }  // namespace blink

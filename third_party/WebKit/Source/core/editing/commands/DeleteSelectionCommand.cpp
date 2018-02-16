@@ -677,6 +677,8 @@ void DeleteSelectionCommand::HandleGeneralDelete(EditingState* editing_state) {
           return;
         ending_position_ = upstream_start_;
       }
+      // We should update layout to associate |start_node| to layout object.
+      GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
     }
 
     // The selection to delete is all in one node.
