@@ -45,10 +45,6 @@ class CORE_EXPORT CSSUnitValue final : public CSSNumericValue {
 
   // From CSSStyleValue.
   StyleValueType GetType() const final;
-  bool ContainsPercent() const final {
-    return unit_ == CSSPrimitiveValue::UnitType::kPercentage;
-  }
-
   const CSSPrimitiveValue* ToCSSValue() const final;
   CSSCalcExpressionNode* ToCalcExpressionNode() const final;
 
