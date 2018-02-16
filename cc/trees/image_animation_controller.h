@@ -138,7 +138,7 @@ class CC_EXPORT ImageAnimationController {
       return completion_state_ == PaintImage::CompletionState::DONE;
     }
 
-    PaintImage::Id paint_image_id_ = PaintImage::kNonLazyStableId;
+    PaintImage::Id paint_image_id_ = PaintImage::kInvalidId;
 
     // The frame metadata received from the most updated recording with this
     // PaintImage.

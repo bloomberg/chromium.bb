@@ -49,8 +49,9 @@ void ChildFrameCompositingHelper::ChildFrameGone(
       scoped_refptr<cc::PictureImageLayer> sad_layer =
           cc::PictureImageLayer::Create();
       sad_layer->SetImage(cc::PaintImageBuilder::WithDefault()
-                              .set_id(cc::PaintImage::kNonLazyStableId)
-                              .set_image(SkImage::MakeFromBitmap(*sad_bitmap))
+                              .set_id(cc::PaintImage::GetNextId())
+                              .set_image(SkImage::MakeFromBitmap(*sad_bitmap),
+                                         cc::PaintImage::GetNextContentId())
                               .TakePaintImage(),
                           SkMatrix::I(), false);
       sad_layer->SetBounds(

@@ -112,6 +112,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
 
   base::ThreadChecker thread_checker_;
   bool detach_thread_at_next_check_ = false;
+  PaintImage::ContentId paint_image_content_id_;
 
   // For RetainOriginalSkImageForCopyOnWrite()
   sk_sp<SkImage> original_skia_image_;

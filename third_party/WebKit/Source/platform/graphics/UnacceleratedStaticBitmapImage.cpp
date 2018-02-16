@@ -24,7 +24,9 @@ UnacceleratedStaticBitmapImage::UnacceleratedStaticBitmapImage(
   DCHECK(!image->isLazyGenerated());
 
   paint_image_ =
-      CreatePaintImageBuilder().set_image(std::move(image)).TakePaintImage();
+      CreatePaintImageBuilder()
+          .set_image(std::move(image), cc::PaintImage::GetNextContentId())
+          .TakePaintImage();
 }
 
 scoped_refptr<UnacceleratedStaticBitmapImage>

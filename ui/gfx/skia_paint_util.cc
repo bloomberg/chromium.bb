@@ -40,8 +40,9 @@ sk_sp<cc::PaintShader> CreateImageRepShaderForScale(
 
   return cc::PaintShader::MakeImage(
       cc::PaintImageBuilder::WithDefault()
-          .set_id(cc::PaintImage::kNonLazyStableId)
-          .set_image(SkImage::MakeFromBitmap(image_rep.sk_bitmap()))
+          .set_id(cc::PaintImage::GetNextId())
+          .set_image(SkImage::MakeFromBitmap(image_rep.sk_bitmap()),
+                     cc::PaintImage::GetNextContentId())
           .TakePaintImage(),
       tile_mode, tile_mode, &shader_scale);
 }

@@ -327,7 +327,8 @@ TEST_F(ImageControllerTest, QueueImageDecodeNonLazy) {
   DrawImage image =
       DrawImage(PaintImageBuilder::WithDefault()
                     .set_id(PaintImage::GetNextId())
-                    .set_image(SkImage::MakeFromBitmap(bitmap))
+                    .set_image(SkImage::MakeFromBitmap(bitmap),
+                               PaintImage::GetNextContentId())
                     .TakePaintImage(),
                 SkIRect::MakeWH(1, 1), kNone_SkFilterQuality, SkMatrix::I(),
                 PaintImage::kDefaultFrameIndex, gfx::ColorSpace());

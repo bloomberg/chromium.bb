@@ -451,9 +451,10 @@ void PaintCanvasVideoRenderer::Paint(
   if (canvas->imageInfo().colorType() == kUnknown_SkColorType) {
     sk_sp<SkImage> non_texture_image =
         last_image_.GetSkImage()->makeNonTextureImage();
-    image = cc::PaintImageBuilder::WithProperties(last_image_)
-                .set_image(std::move(non_texture_image))
-                .TakePaintImage();
+    image =
+        cc::PaintImageBuilder::WithProperties(last_image_)
+            .set_image(std::move(non_texture_image), last_image_.content_id())
+            .TakePaintImage();
   }
   canvas->drawImage(image, 0, 0, &video_flags);
 
@@ -1046,10 +1047,12 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
       DCHECK(context_3d.gl);
       if (video_frame->NumTextures() > 1) {
         paint_image_builder.set_image(
-            NewSkImageFromVideoFrameYUVTextures(video_frame.get(), context_3d));
+            NewSkImageFromVideoFrameYUVTextures(video_frame.get(), context_3d),
+            cc::PaintImage::GetNextContentId());
       } else {
         paint_image_builder.set_image(
-            NewSkImageFromVideoFrameNative(video_frame.get(), context_3d));
+            NewSkImageFromVideoFrameNative(video_frame.get(), context_3d),
+            cc::PaintImage::GetNextContentId());
       }
     } else {
       paint_image_builder.set_paint_image_generator(

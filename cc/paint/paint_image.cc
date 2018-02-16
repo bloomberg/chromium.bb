@@ -38,7 +38,7 @@ bool PaintImage::operator==(const PaintImage& other) const {
     return false;
   if (paint_record_rect_ != other.paint_record_rect_)
     return false;
-  if (paint_record_content_id_ != other.paint_record_content_id_)
+  if (content_id_ != other.content_id_)
     return false;
   if (paint_image_generator_ != other.paint_image_generator_)
     return false;
@@ -236,15 +236,14 @@ bool PaintImage::ShouldAnimate() const {
 
 PaintImage::FrameKey PaintImage::GetKeyForFrame(size_t frame_index) const {
   DCHECK_LT(frame_index, FrameCount());
-  DCHECK(paint_image_generator_ || paint_record_);
 
   // Query the content id that uniquely identifies the content for this frame
   // from the content provider.
   ContentId content_id = kInvalidContentId;
   if (paint_image_generator_)
     content_id = paint_image_generator_->GetContentIdForFrame(frame_index);
-  else
-    content_id = paint_record_content_id_;
+  else if (paint_record_ || sk_image_)
+    content_id = content_id_;
 
   DCHECK_NE(content_id, kInvalidContentId);
   return FrameKey(content_id, frame_index, subset_rect_);

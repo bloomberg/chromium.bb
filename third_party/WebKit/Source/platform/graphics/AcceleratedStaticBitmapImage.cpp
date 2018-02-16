@@ -49,7 +49,8 @@ AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
 AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
     sk_sp<SkImage> image,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
-        context_provider_wrapper) {
+        context_provider_wrapper)
+    : paint_image_content_id_(cc::PaintImage::GetNextContentId()) {
   CHECK(image && image->isTextureBacked());
   texture_holder_ = WTF::WrapUnique(new SkiaTextureHolder(
       std::move(image), std::move(context_provider_wrapper)));
@@ -62,7 +63,8 @@ AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
     unsigned texture_id,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
         context_provider_wrapper,
-    IntSize mailbox_size) {
+    IntSize mailbox_size)
+    : paint_image_content_id_(cc::PaintImage::GetNextContentId()) {
   texture_holder_ = WTF::WrapUnique(new MailboxTextureHolder(
       mailbox, sync_token, texture_id, std::move(context_provider_wrapper),
       mailbox_size));
@@ -198,7 +200,7 @@ PaintImage AcceleratedStaticBitmapImage::PaintImageForCurrentFrame() {
   }
 
   return CreatePaintImageBuilder()
-      .set_image(image)
+      .set_image(image, paint_image_content_id_)
       .set_completion_state(PaintImage::CompletionState::DONE)
       .TakePaintImage();
 }

@@ -113,7 +113,8 @@ TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
   mask_display_list->Raster(canvas);
   mask->SetImage(PaintImageBuilder::WithDefault()
                      .set_id(PaintImage::GetNextId())
-                     .set_image(surface->makeImageSnapshot())
+                     .set_image(surface->makeImageSnapshot(),
+                                PaintImage::GetNextContentId())
                      .TakePaintImage(),
                  SkMatrix::I(), false);
 

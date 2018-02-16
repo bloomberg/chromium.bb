@@ -271,9 +271,12 @@ void RecordPaintCanvas::drawBitmap(const SkBitmap& bitmap,
   // TODO(enne): Move into base class?
   if (bitmap.drawsNothing())
     return;
+  // TODO(khushalsagar): Remove this and have callers use PaintImages holding
+  // bitmap-backed images, since they can maintain the PaintImage::Id.
   drawImage(PaintImageBuilder::WithDefault()
-                .set_id(PaintImage::kNonLazyStableId)
-                .set_image(SkImage::MakeFromBitmap(bitmap))
+                .set_id(PaintImage::GetNextId())
+                .set_image(SkImage::MakeFromBitmap(bitmap),
+                           PaintImage::GetNextContentId())
                 .TakePaintImage(),
             left, top, flags);
 }

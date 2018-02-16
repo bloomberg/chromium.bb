@@ -206,6 +206,12 @@ SoftwareImageDecodeCache::GetTaskForImageAndRefInternal(
   if (key.target_size().IsEmpty())
     return TaskResult(false);
 
+  // For non-lazy images a decode isn't necessary.
+  // TODO(khushalsagar): If these images require color conversion, we should
+  // still cache that result.
+  if (!image.paint_image().IsLazyGenerated())
+    return TaskResult(false);
+
   base::AutoLock lock(lock_);
 
   bool new_image_fits_in_memory =
@@ -469,6 +475,14 @@ void SoftwareImageDecodeCache::DecodeImageIfNecessary(
 
 DecodedDrawImage SoftwareImageDecodeCache::GetDecodedImageForDraw(
     const DrawImage& draw_image) {
+  // Non-lazy generated images can be used for raster directly.
+  if (!draw_image.paint_image().GetSkImage()->isLazyGenerated()) {
+    return DecodedDrawImage(draw_image.paint_image().GetSkImage(),
+                            SkSize::Make(0, 0), SkSize::Make(1.f, 1.f),
+                            draw_image.filter_quality(),
+                            true /* is_budgeted */);
+  }
+
   base::AutoLock hold(lock_);
   return GetDecodedImageForDrawInternal(
       CacheKey::FromDrawImage(draw_image, color_type_),
@@ -505,6 +519,10 @@ DecodedDrawImage SoftwareImageDecodeCache::GetDecodedImageForDrawInternal(
 void SoftwareImageDecodeCache::DrawWithImageFinished(
     const DrawImage& image,
     const DecodedDrawImage& decoded_image) {
+  // We don't cache any data for non-lazy images.
+  if (!image.paint_image().IsLazyGenerated())
+    return;
+
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeCache::DrawWithImageFinished", "key",
                CacheKey::FromDrawImage(image, color_type_).ToString());

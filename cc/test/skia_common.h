@@ -55,6 +55,8 @@ PaintImage CreateAnimatedImage(
     size_t frame_index = PaintImage::kDefaultFrameIndex,
     PaintImage::Id id = PaintImage::GetNextId());
 
+PaintImage CreateBitmapImage(const gfx::Size& size);
+
 }  // namespace cc
 
 #endif  // CC_TEST_SKIA_COMMON_H_

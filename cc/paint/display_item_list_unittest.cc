@@ -283,7 +283,8 @@ TEST(DisplayItemListTest, FilterPairedRange) {
   source_canvas->clear(SkColorSetRGB(128, 128, 128));
   PaintImage source_image = PaintImageBuilder::WithDefault()
                                 .set_id(PaintImage::GetNextId())
-                                .set_image(source_surface->makeImageSnapshot())
+                                .set_image(source_surface->makeImageSnapshot(),
+                                           PaintImage::GetNextContentId())
                                 .TakePaintImage();
 
   // For most SkImageFilters, the |dst| bounds computed by computeFastBounds are

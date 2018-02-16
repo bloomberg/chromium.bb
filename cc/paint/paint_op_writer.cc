@@ -208,6 +208,9 @@ void PaintOpWriter::Write(const DrawImage& image) {
   Write(
       static_cast<uint8_t>(PaintOp::SerializedImageType::kTransferCacheEntry));
   auto decoded_image = image_provider_->GetDecodedDrawImage(image);
+  DCHECK(!decoded_image.decoded_image().image())
+      << "Use transfer cache for image serialization";
+
   base::Optional<uint32_t> id =
       decoded_image.decoded_image().transfer_cache_entry_id();
 

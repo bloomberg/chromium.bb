@@ -2210,6 +2210,24 @@ TEST_P(GpuImageDecodeCacheTest,
   cache->UnrefImage(draw_image);
 }
 
+TEST_P(GpuImageDecodeCacheTest, NonLazyImageUpload) {
+  auto cache = CreateCache();
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  PaintImage image = CreateBitmapImage(gfx::Size(10, 10));
+  DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
+                       PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+  DecodedDrawImage decoded_draw_image =
+      EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+  EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
+  cache->DrawWithImageFinished(draw_image, decoded_draw_image);
+}
+
 INSTANTIATE_TEST_CASE_P(
     GpuImageDecodeCacheTests,
     GpuImageDecodeCacheTest,
