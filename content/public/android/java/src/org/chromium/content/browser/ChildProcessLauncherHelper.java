@@ -6,11 +6,14 @@ package org.chromium.content.browser;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.text.TextUtils;
 
+import org.chromium.base.Callback;
+import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.CpuFeatures;
 import org.chromium.base.Log;
@@ -30,8 +33,10 @@ import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.ChildProcessImportance;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -81,6 +86,9 @@ public class ChildProcessLauncherHelper {
 
     // Whether the created process should be sandboxed.
     private final boolean mSandboxed;
+
+    // The type of process as determined by the command line.
+    private final String mProcessType;
 
     private final ChildProcessLauncher.Delegate mLauncherDelegate =
             new ChildProcessLauncher.Delegate() {
@@ -380,6 +388,16 @@ public class ChildProcessLauncherHelper {
         mLauncher = new ChildProcessLauncher(LauncherThread.getHandler(), mLauncherDelegate,
                 commandLine, filesToBeMapped, connectionAllocator,
                 binderCallback == null ? null : Arrays.asList(binderCallback));
+        mProcessType =
+                ContentSwitches.getSwitchValue(commandLine, ContentSwitches.SWITCH_PROCESS_TYPE);
+    }
+
+    /**
+     * @return The type of process as specified in the command line at
+     * {@link ContentSwitches#SWITCH_PROCESS_TYPE}.
+     */
+    public String getProcessType() {
+        return TextUtils.isEmpty(mProcessType) ? "" : mProcessType;
     }
 
     public int getPid() {
@@ -538,6 +556,31 @@ public class ChildProcessLauncherHelper {
 
     public static ChildProcessLauncherHelper getByPid(int pid) {
         return sLauncherByPid.get(pid);
+    }
+
+    /**
+     * Groups all currently tracked processes by type and returns a map of type -> list of PIDs.
+     *
+     * @param callback The callback to notify with the process information.  {@code callback} will
+     *                 run on the same thread this method is called on.  That thread must support a
+     *                 {@link android.os.Looper}.
+     */
+    public static void getProcessIdsByType(Callback < Map < String, List<Integer>>> callback) {
+        final Handler responseHandler = new Handler();
+        LauncherThread.post(() -> {
+            Map<String, List<Integer>> map = new HashMap<>();
+            CollectionUtil.forEach(sLauncherByPid, entry -> {
+                String type = entry.getValue().getProcessType();
+                List<Integer> pids = map.get(type);
+                if (pids == null) {
+                    pids = new ArrayList<>();
+                    map.put(type, pids);
+                }
+                pids.add(entry.getKey());
+            });
+
+            responseHandler.post(() -> callback.onResult(map));
+        });
     }
 
     // Testing only related methods.
