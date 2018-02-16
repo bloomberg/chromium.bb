@@ -2086,8 +2086,8 @@ jumbo_source_set("browser") {
       "android/java/java_method.h",
       "android/java/java_type.cc",
       "android/java/java_type.h",
-      "android/java/jni_helper.cc",
-      "android/java/jni_helper.h",
+      "android/java/jni_reflect.cc",
+      "android/java/jni_reflect.h",
       "android/javascript_injector.cc",
       "android/javascript_injector.h",
       "android/load_url_params.cc",
@@ -2156,6 +2156,7 @@ jumbo_source_set("browser") {
       "tracing/tracing_ui.h",
     ]
     deps += [
+      ":reflection_jni_headers",
       "//content/public/android:jni",
       "//media",
       "//media/capture/content/android",
@@ -2366,6 +2367,19 @@ buildflag_header("accessibility_flags") {
   header = "accessibility_flags.h"
   header_dir = "content/browser/accessibility"
   flags = [ "USE_ATK=$use_atk" ]
+}
+
+if (is_android) {
+  generate_jar_jni("reflection_jni_headers") {
+    jni_package = "content"
+    classes = [
+      "java/lang/Class.class",
+      "java/lang/Object.class",
+      "java/lang/reflect/AccessibleObject.class",
+      "java/lang/reflect/Method.class",
+      "java/lang/reflect/Modifier.class",
+    ]
+  }
 }
 
 # See comment at the top of //content/BUILD.gn for how this works.

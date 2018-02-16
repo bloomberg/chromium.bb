@@ -81,7 +81,6 @@ class GinJavaBoundObject
   // The following fields are accessed on the background thread.
   using JavaMethodMap = std::multimap<std::string, std::unique_ptr<JavaMethod>>;
   JavaMethodMap methods_;
-  jmethodID object_get_class_method_id_;
   bool are_methods_set_up_;
   base::android::ScopedJavaGlobalRef<jclass> safe_annotation_clazz_;
 };

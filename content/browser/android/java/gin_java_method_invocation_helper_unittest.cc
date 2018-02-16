@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
-#include "content/browser/android/java/jni_helper.h"
 #include "content/common/android/gin_java_bridge_value.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -166,15 +165,14 @@ class ObjectIsGoneObjectDelegate : public NullObjectDelegate {
       get_local_ref_called_(false) {
     // We need a Java Method object to create a valid JavaMethod instance.
     JNIEnv* env = base::android::AttachCurrentThread();
+    base::android::ScopedJavaLocalRef<jclass> clazz(
+        base::android::GetClass(env, "java/lang/Object"));
     jmethodID method_id =
-        GetMethodIDFromClassName(env, "java/lang/Object", "hashCode", "()I");
+        base::android::MethodID::Get<base::android::MethodID::TYPE_INSTANCE>(
+            env, clazz.obj(), "hashCode", "()I");
     EXPECT_TRUE(method_id);
     base::android::ScopedJavaLocalRef<jobject> method_obj(
-        env,
-        env->ToReflectedMethod(
-            base::android::GetClass(env, "java/lang/Object").obj(),
-            method_id,
-            false));
+        env, env->ToReflectedMethod(clazz.obj(), method_id, false));
     EXPECT_TRUE(method_obj.obj());
     method_.reset(new JavaMethod(method_obj));
   }
