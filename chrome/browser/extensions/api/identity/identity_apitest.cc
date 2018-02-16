@@ -819,7 +819,7 @@ class GetAuthTokenFunctionTest
       const OAuth2TokenService::ScopeSet& scopes) override {
     if (on_access_token_requested_.is_null())
       return;
-    base::ResetAndReturn(&on_access_token_requested_).Run();
+    std::move(on_access_token_requested_).Run();
   }
 
   std::string extension_id_;

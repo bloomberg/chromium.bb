@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -74,8 +75,8 @@ class TestAppIcon : public ChromeAppIconDelegate {
   void OnIconUpdated(ChromeAppIcon* icon) override {
     ++icon_update_count_;
     if (icon_update_count_ == icon_update_count_expected_ &&
-        !icon_updated_callback_.is_null()) {
-      base::ResetAndReturn(&icon_updated_callback_).Run();
+        icon_updated_callback_) {
+      std::move(icon_updated_callback_).Run();
     }
   }
 
