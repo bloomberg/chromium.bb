@@ -147,7 +147,8 @@ sk_sp<PaintFilter> BuildBoxReflectFilter(const BoxReflection& reflection,
       canvas.drawPicture(mask_record);
       PaintImage image = PaintImageBuilder::WithDefault()
                              .set_id(PaintImage::GetNextId())
-                             .set_image(SkImage::MakeFromBitmap(bitmap))
+                             .set_image(SkImage::MakeFromBitmap(bitmap),
+                                        PaintImage::GetNextContentId())
                              .TakePaintImage();
 
       // SkXfermodeImageFilter can choose an excessively large size if the

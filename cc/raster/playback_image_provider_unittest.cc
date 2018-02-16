@@ -8,6 +8,8 @@
 #include "cc/test/skia_common.h"
 #include "cc/test/stub_decode_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 
 namespace cc {
 namespace {
@@ -61,12 +63,12 @@ TEST(PlaybackImageProviderTest, SkipsAllImages) {
   SkIRect rect = SkIRect::MakeWH(10, 10);
   SkMatrix matrix = SkMatrix::I();
 
-  EXPECT_FALSE(provider.GetDecodedDrawImage(
-      DrawImage(PaintImageBuilder::WithDefault()
-                    .set_id(PaintImage::kNonLazyStableId)
-                    .set_image(CreateRasterImage())
-                    .TakePaintImage(),
-                rect, kMedium_SkFilterQuality, matrix)));
+  EXPECT_FALSE(provider.GetDecodedDrawImage(DrawImage(
+      PaintImageBuilder::WithDefault()
+          .set_id(PaintImage::GetNextId())
+          .set_image(CreateRasterImage(), PaintImage::GetNextContentId())
+          .TakePaintImage(),
+      rect, kMedium_SkFilterQuality, matrix)));
   EXPECT_EQ(cache.images_decoded(), 0);
 
   EXPECT_FALSE(provider.GetDecodedDrawImage(
@@ -134,6 +136,55 @@ TEST(PlaybackImageProviderTest, SwapsGivenFrames) {
   ASSERT_TRUE(cache.last_image().paint_image());
   ASSERT_EQ(cache.last_image().paint_image(), image);
   ASSERT_EQ(cache.last_image().frame_index(), 1u);
+}
+
+TEST(PlaybackImageProviderTest, BitmapImages) {
+  MockDecodeCache cache;
+
+  base::Optional<PlaybackImageProvider::Settings> settings;
+  settings.emplace();
+  PlaybackImageProvider provider(&cache, gfx::ColorSpace(), settings);
+
+  {
+    SkIRect rect = SkIRect::MakeWH(10, 10);
+    SkMatrix matrix = SkMatrix::I();
+    auto draw_image = DrawImage(CreateBitmapImage(gfx::Size(10, 10)), rect,
+                                kMedium_SkFilterQuality, matrix);
+    auto decode = provider.GetDecodedDrawImage(draw_image);
+    EXPECT_TRUE(decode);
+    EXPECT_EQ(cache.refed_image_count(), 1);
+  }
+
+  // Destroying the decode unrefs the image from the cache.
+  EXPECT_EQ(cache.refed_image_count(), 0);
+}
+
+TEST(PlaybackImageProviderTest, TextureImages) {
+  // Texture images should never hit the ImageDecodeCache.
+  sk_sp<const GrGLInterface> gl_interface(GrGLCreateNullInterface());
+  auto context = GrContext::MakeGL(std::move(gl_interface));
+  auto sk_texture_image = CreateBitmapImage(gfx::Size(10, 10))
+                              .GetSkImage()
+                              ->makeTextureImage(context.get(), nullptr);
+  auto image = PaintImageBuilder::WithDefault()
+                   .set_id(PaintImage::GetNextId())
+                   .set_image(sk_texture_image, PaintImage::GetNextContentId())
+                   .TakePaintImage();
+
+  MockDecodeCache cache;
+  base::Optional<PlaybackImageProvider::Settings> settings;
+  settings.emplace();
+  PlaybackImageProvider provider(&cache, gfx::ColorSpace(), settings);
+  {
+    SkIRect rect = SkIRect::MakeWH(10, 10);
+    SkMatrix matrix = SkMatrix::I();
+    auto draw_image = DrawImage(image, rect, kMedium_SkFilterQuality, matrix);
+    auto decode = provider.GetDecodedDrawImage(draw_image);
+    EXPECT_TRUE(decode);
+    EXPECT_EQ(cache.refed_image_count(), 0);
+  }
+
+  EXPECT_EQ(cache.refed_image_count(), 0);
 }
 
 }  // namespace

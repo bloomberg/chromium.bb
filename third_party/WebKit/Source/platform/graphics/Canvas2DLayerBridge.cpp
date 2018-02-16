@@ -321,7 +321,7 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
     cc::PaintFlags copy_paint;
     copy_paint.setBlendMode(SkBlendMode::kSrc);
     PaintImageBuilder builder = PaintImageBuilder::WithDefault();
-    builder.set_image(hibernation_image_);
+    builder.set_image(hibernation_image_, PaintImage::GetNextContentId());
     builder.set_id(PaintImage::GetNextId());
     resource_provider_->Canvas()->drawImage(builder.TakePaintImage(), 0, 0,
                                             &copy_paint);

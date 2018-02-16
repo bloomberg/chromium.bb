@@ -122,7 +122,7 @@ PaintImage DragImage::ResizeAndOrientImage(
   canvas->drawImage(image.GetSkImage(), 0, 0, &paint);
 
   return PaintImageBuilder::WithProperties(std::move(image))
-      .set_image(surface->makeImageSnapshot())
+      .set_image(surface->makeImageSnapshot(), PaintImage::GetNextContentId())
       .TakePaintImage();
 }
 

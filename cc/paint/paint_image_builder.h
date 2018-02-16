@@ -40,8 +40,10 @@ class CC_PAINT_EXPORT PaintImageBuilder {
     return std::move(*this);
   }
 
-  PaintImageBuilder&& set_image(sk_sp<SkImage> sk_image) {
+  PaintImageBuilder&& set_image(sk_sp<SkImage> sk_image,
+                                PaintImage::ContentId content_id) {
     paint_image_.sk_image_ = std::move(sk_image);
+    paint_image_.content_id_ = content_id;
     return std::move(*this);
   }
   PaintImageBuilder&& set_paint_record(sk_sp<PaintRecord> paint_record,
@@ -51,7 +53,7 @@ class CC_PAINT_EXPORT PaintImageBuilder {
 
     paint_image_.paint_record_ = std::move(paint_record);
     paint_image_.paint_record_rect_ = rect;
-    paint_image_.paint_record_content_id_ = content_id;
+    paint_image_.content_id_ = content_id;
     return std::move(*this);
   }
   PaintImageBuilder&& set_paint_image_generator(

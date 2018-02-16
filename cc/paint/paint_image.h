@@ -37,11 +37,6 @@ class CC_PAINT_EXPORT PaintImage {
   // images which can be progressively updated as more encoded data is received.
   using ContentId = int;
 
-  // An id that can be used for all non-lazy images. Note that if an image is
-  // not lazy, it does not mean that this id must be used; one can still use
-  // GetNextId to generate a stable id for such images.
-  static const Id kNonLazyStableId;
-
   // The default frame index to use if no index is provided. For multi-frame
   // images, this would imply the first frame of the animation.
   static const size_t kDefaultFrameIndex;
@@ -141,6 +136,7 @@ class CC_PAINT_EXPORT PaintImage {
     return reset_animation_sequence_id_;
   }
   DecodingMode decoding_mode() const { return decoding_mode_; }
+  PaintImage::ContentId content_id() const { return content_id_; }
 
   // TODO(vmpstr): Don't get the SkImage here if you don't need to.
   uint32_t unique_id() const { return GetSkImage()->uniqueID(); }
@@ -150,8 +146,7 @@ class CC_PAINT_EXPORT PaintImage {
   int height() const { return GetSkImage()->height(); }
   SkColorSpace* color_space() const { return GetSkImage()->colorSpace(); }
 
-  // Returns a unique id for the pixel data for the frame at |frame_index|. Used
-  // only for lazy-generated images.
+  // Returns a unique id for the pixel data for the frame at |frame_index|.
   FrameKey GetKeyForFrame(size_t frame_index) const;
 
   // Returns the metadata for each frame of a multi-frame image. Should only be
@@ -168,6 +163,11 @@ class CC_PAINT_EXPORT PaintImage {
   friend class PaintImageBuilder;
   FRIEND_TEST_ALL_PREFIXES(PaintImageTest, Subsetting);
 
+  // Used internally for PaintImages created at raster.
+  static const Id kNonLazyStableId;
+  friend class ScopedRasterFlags;
+  friend class PaintOpReader;
+
   bool DecodeFromGenerator(void* memory,
                            SkImageInfo* info,
                            sk_sp<SkColorSpace> color_space,
@@ -183,10 +183,10 @@ class CC_PAINT_EXPORT PaintImage {
   sk_sp<SkImage> GetSkImageForFrame(size_t index) const;
 
   sk_sp<SkImage> sk_image_;
-
   sk_sp<PaintRecord> paint_record_;
   gfx::Rect paint_record_rect_;
-  ContentId paint_record_content_id_ = kInvalidContentId;
+
+  ContentId content_id_ = kInvalidContentId;
 
   sk_sp<PaintImageGenerator> paint_image_generator_;
 

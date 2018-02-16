@@ -413,7 +413,8 @@ int GpuImageDecodeCache::ImageDataBase::UsageState() const {
   return state;
 }
 
-GpuImageDecodeCache::DecodedImageData::DecodedImageData() = default;
+GpuImageDecodeCache::DecodedImageData::DecodedImageData(bool is_bitmap_backed)
+    : is_bitmap_backed_(is_bitmap_backed) {}
 GpuImageDecodeCache::DecodedImageData::~DecodedImageData() {
   ResetData();
 }
@@ -440,6 +441,19 @@ void GpuImageDecodeCache::DecodedImageData::SetLockedData(
   data_ = std::move(data);
   image_ = std::move(image);
   OnSetLockedData(out_of_raster);
+}
+
+void GpuImageDecodeCache::DecodedImageData::SetBitmapImage(
+    sk_sp<SkImage> image) {
+  DCHECK(is_bitmap_backed_);
+  image_ = std::move(image);
+  OnLock();
+}
+
+void GpuImageDecodeCache::DecodedImageData::ResetBitmapImage() {
+  DCHECK(is_bitmap_backed_);
+  image_ = nullptr;
+  OnUnlock();
 }
 
 void GpuImageDecodeCache::DecodedImageData::ResetData() {
@@ -516,12 +530,15 @@ GpuImageDecodeCache::ImageData::ImageData(
     size_t size,
     const gfx::ColorSpace& target_color_space,
     SkFilterQuality quality,
-    int mip_level)
+    int mip_level,
+    bool is_bitmap_backed)
     : mode(mode),
       size(size),
       target_color_space(target_color_space),
       quality(quality),
-      mip_level(mip_level) {}
+      mip_level(mip_level),
+      is_bitmap_backed(is_bitmap_backed),
+      decode(is_bitmap_backed) {}
 
 GpuImageDecodeCache::ImageData::~ImageData() {
   // We should never delete ImageData while it is in use or before it has been
@@ -635,6 +652,12 @@ ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRefInternal(
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::GetTaskForImageAndRef");
   if (SkipImage(draw_image))
+    return TaskResult(false);
+
+  // For non-lazy images a decode isn't necessary.
+  // TODO(khushalsagar): We can still have only the upload task to upload ahead
+  // of raster.
+  if (!draw_image.paint_image().IsLazyGenerated())
     return TaskResult(false);
 
   base::AutoLock lock(lock_);
@@ -1144,8 +1167,11 @@ void GpuImageDecodeCache::OwnershipChanged(const DrawImage& draw_image,
 
   // Don't keep around completely empty images. This can happen if an image's
   // decode/upload tasks were both cancelled before completing.
-  if (!has_any_refs && !image_data->HasUploadedData() &&
-      !image_data->decode.data() && !image_data->is_orphaned) {
+  const bool has_cpu_data =
+      image_data->decode.data() ||
+      (image_data->is_bitmap_backed && image_data->decode.image());
+  if (!has_any_refs && !image_data->HasUploadedData() && !has_cpu_data &&
+      !image_data->is_orphaned) {
     auto found_persistent = persistent_cache_.Peek(draw_image.frame_key());
     if (found_persistent != persistent_cache_.end())
       persistent_cache_.Erase(found_persistent);
@@ -1192,8 +1218,13 @@ void GpuImageDecodeCache::OwnershipChanged(const DrawImage& draw_image,
                                                 !image_data->decode.ref_count);
 
   if (should_unlock_decode && image_data->decode.is_locked()) {
-    DCHECK(image_data->decode.data());
-    image_data->decode.Unlock();
+    if (image_data->is_bitmap_backed) {
+      DCHECK(!image_data->decode.data());
+      image_data->decode.ResetBitmapImage();
+    } else {
+      DCHECK(image_data->decode.data());
+      image_data->decode.Unlock();
+    }
   }
 
   // EnsureCapacity to make sure we are under our cache limits.
@@ -1292,6 +1323,12 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
     return;
   }
 
+  if (image_data->is_bitmap_backed) {
+    DCHECK(!draw_image.paint_image().IsLazyGenerated());
+    image_data->decode.SetBitmapImage(draw_image.paint_image().GetSkImage());
+    return;
+  }
+
   if (image_data->decode.data() &&
       (image_data->decode.is_locked() || image_data->decode.Lock())) {
     // We already decoded this, or we just needed to lock, early out.
@@ -1362,7 +1399,7 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
   RunPendingContextThreadOperations();
 
   if (image_data->decode.decode_failure) {
-    // We were unnable to decode this image. Don't try to upload.
+    // We were unable to decode this image. Don't try to upload.
     return;
   }
 
@@ -1479,7 +1516,8 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image) {
   size_t data_size = image_info.computeMinByteSize();
   return base::WrapRefCounted(
       new ImageData(mode, data_size, draw_image.target_color_space(),
-                    CalculateDesiredFilterQuality(draw_image), mip_level));
+                    CalculateDesiredFilterQuality(draw_image), mip_level,
+                    !draw_image.paint_image().IsLazyGenerated()));
 }
 
 void GpuImageDecodeCache::DeleteImage(ImageData* image_data) {

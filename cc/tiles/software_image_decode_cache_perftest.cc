@@ -59,7 +59,8 @@ class SoftwareImageDecodeCachePerfTest : public testing::Test {
           images.emplace_back(
               PaintImageBuilder::WithDefault()
                   .set_id(PaintImage::GetNextId())
-                  .set_image(CreateImage(rect.width(), rect.height()))
+                  .set_image(CreateImage(rect.width(), rect.height()),
+                             PaintImage::GetNextContentId())
                   .TakePaintImage(),
               subrect, quality,
               CreateMatrix(SkSize::Make(scale.first, scale.second)), 0u,

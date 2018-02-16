@@ -42,7 +42,8 @@ TEST(PictureImageLayerTest, PaintContentsToDisplayList) {
 
   layer->SetImage(PaintImageBuilder::WithDefault()
                       .set_id(PaintImage::GetNextId())
-                      .set_image(image_surface->makeImageSnapshot())
+                      .set_image(image_surface->makeImageSnapshot(),
+                                 PaintImage::GetNextContentId())
                       .TakePaintImage(),
                   SkMatrix::I(), false);
   layer->SetBounds(gfx::Size(layer_rect.width(), layer_rect.height()));

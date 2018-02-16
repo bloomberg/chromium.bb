@@ -43,13 +43,12 @@ PlaybackImageProvider::GetDecodedDrawImage(const DrawImage& draw_image) {
     return ScopedDecodedDrawImage();
 
   const PaintImage& paint_image = draw_image.paint_image();
-
   if (settings_->images_to_skip.count(paint_image.stable_id()) != 0) {
     DCHECK(paint_image.GetSkImage()->isLazyGenerated());
     return ScopedDecodedDrawImage();
   }
 
-  if (!paint_image.GetSkImage()->isLazyGenerated()) {
+  if (paint_image.GetSkImage()->isTextureBacked()) {
     return ScopedDecodedDrawImage(DecodedDrawImage(
         paint_image.GetSkImage(), SkSize::Make(0, 0), SkSize::Make(1.f, 1.f),
         draw_image.filter_quality(), true /* is_budgeted */));
