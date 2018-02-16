@@ -30,6 +30,7 @@ class ComputedAccessibleNode : public ScriptWrappable {
   // Starts computation of the accessibility properties of the stored element.
   ScriptPromise ComputeAccessibleProperties(ScriptState*);
 
+  const String autocomplete() const;
   const String keyShortcuts() const;
   const String name() const;
   const String placeholder() const;

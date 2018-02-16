@@ -95,6 +95,10 @@ bool ComputedAccessibleNode::GetBoolAttribute(WebAOMBoolAttribute attr,
   return out;
 }
 
+const String ComputedAccessibleNode::autocomplete() const {
+  return GetStringAttribute(WebAOMStringAttribute::AOM_ATTR_AUTOCOMPLETE);
+}
+
 const String ComputedAccessibleNode::keyShortcuts() const {
   return GetStringAttribute(WebAOMStringAttribute::AOM_ATTR_KEY_SHORTCUTS);
 }
