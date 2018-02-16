@@ -6,10 +6,12 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/background.h"
@@ -94,7 +96,8 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
 HoverButton::HoverButton(views::ButtonListener* button_listener,
                          std::unique_ptr<views::View> icon_view,
                          const base::string16& title,
-                         const base::string16& subtitle)
+                         const base::string16& subtitle,
+                         bool show_submenu_arrow)
     : HoverButton(button_listener, base::string16()) {
   label()->SetHandlesTooltips(false);
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
@@ -183,6 +186,24 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
     subtitle_->SetAutoColorReadabilityEnabled(false);
     grid_layout->SkipColumns(1);
     grid_layout->AddView(subtitle_);
+  }
+
+  if (show_submenu_arrow) {
+    constexpr int kSubmenuArrowSize = 12;
+    columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
+                       kFixed, views::GridLayout::USE_PREF, 0, 0);
+    views::ImageView* arrow = new views::ImageView();
+    arrow->SetImage(gfx::CreateVectorIcon(
+        kUserMenuRightArrowIcon, kSubmenuArrowSize, gfx::kChromeIconGrey));
+    // Make sure hovering over |arrow| also hovers the |HoverButton|.
+    arrow->set_can_process_events_within_subtree(false);
+    // |arrow| needs a layer otherwise it's obscured by the layer used in
+    // drawing ink drops.
+    arrow->SetPaintToLayer();
+    arrow->layer()->SetFillsBoundsOpaquely(false);
+    // Make sure that the arrow is flipped in RTL mode.
+    arrow->EnableCanvasFlippingForRTLUI(true);
+    grid_layout->AddView(arrow, 1, num_labels);
   }
   SetTooltipAndAccessibleName(this, title_, subtitle_, GetLocalBounds(),
                               taken_width_, auto_compute_tooltip_);

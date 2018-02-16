@@ -1101,12 +1101,15 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
   promo_button_container->AddChildView(signin_button_view);
 
   constexpr int kSmallMenuIconSize = 16;
+  std::unique_ptr<views::ImageView> switch_account_icon_view(
+      new views::ImageView());
+  switch_account_icon_view->SetImage(gfx::CreateVectorIcon(
+      kSyncSwitchAccountIcon, kSmallMenuIconSize, gfx::kChromeIconGrey));
   sync_to_another_account_button_ = new HoverButton(
-      this,
-      gfx::CreateVectorIcon(kSyncSwitchAccountIcon, kSmallMenuIconSize,
-                            gfx::kChromeIconGrey),
+      this, std::move(switch_account_icon_view),
       l10n_util::GetStringUTF16(
-          IDS_PROFILES_DICE_SIGNIN_WITH_ANOTHER_ACCOUNT_BUTTON));
+          IDS_PROFILES_DICE_SIGNIN_WITH_ANOTHER_ACCOUNT_BUTTON),
+      base::string16() /* subtitle */, true /* show right arrow */);
   promo_button_container->AddChildView(sync_to_another_account_button_);
 
   view->AddChildView(promo_button_container);
