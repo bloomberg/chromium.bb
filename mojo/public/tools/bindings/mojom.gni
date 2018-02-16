@@ -337,6 +337,28 @@ template("mojom") {
 
   if (defined(invoker.sources)) {
     parser_target_name = "${target_name}__parser"
+    enabled_features = []
+    if (defined(invoker.enabled_features)) {
+      enabled_features += invoker.enabled_features
+    }
+    if (is_posix) {
+      enabled_features += [ "is_posix" ]
+    }
+    if (is_android) {
+      enabled_features += [ "is_android" ]
+    } else if (is_chromeos) {
+      enabled_features += [ "is_chromeos" ]
+    } else if (is_fuchsia) {
+      enabled_features += [ "is_fuschia" ]
+    } else if (is_ios) {
+      enabled_features += [ "is_ios" ]
+    } else if (is_linux) {
+      enabled_features += [ "is_linux" ]
+    } else if (is_mac) {
+      enabled_features += [ "is_mac" ]
+    } else if (is_win) {
+      enabled_features += [ "is_win" ]
+    }
     action_foreach(parser_target_name) {
       script = mojom_generator_script
       inputs = mojom_generator_sources
@@ -352,13 +374,11 @@ template("mojom") {
         "-d",
         rebase_path("//", root_build_dir),
       ]
-      if (defined(invoker.enabled_features)) {
-        foreach(enabled_feature, invoker.enabled_features) {
-          args += [
-            "--enable_feature",
-            enabled_feature,
-          ]
-        }
+      foreach(enabled_feature, enabled_features) {
+        args += [
+          "--enable_feature",
+          enabled_feature,
+        ]
       }
     }
   }
