@@ -100,7 +100,7 @@ Polymer({
   getDialogTitle_: function() {
     const name = this.networkProperties_.Name;
     if (name)
-      return this.i18n('internetConfigName', name);
+      return this.i18n('internetConfigName', HTMLEscape(name));
     const type = this.i18n('OncType' + this.networkProperties_.Type);
     return this.i18n('internetJoinType', type);
   },
