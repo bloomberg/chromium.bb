@@ -15,6 +15,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -1338,7 +1339,7 @@ void ListValue::AppendStrings(const std::vector<string16>& in_values) {
 
 bool ListValue::AppendIfNotPresent(std::unique_ptr<Value> in_value) {
   DCHECK(in_value);
-  if (std::find(list_.begin(), list_.end(), *in_value) != list_.end())
+  if (ContainsValue(list_, *in_value))
     return false;
 
   list_.push_back(std::move(*in_value));

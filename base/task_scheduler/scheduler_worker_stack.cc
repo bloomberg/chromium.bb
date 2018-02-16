@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 
 namespace base {
 namespace internal {
@@ -35,7 +36,7 @@ SchedulerWorker* SchedulerWorkerStack::Peek() const {
 }
 
 bool SchedulerWorkerStack::Contains(const SchedulerWorker* worker) const {
-  return std::find(stack_.begin(), stack_.end(), worker) != stack_.end();
+  return ContainsValue(stack_, worker);
 }
 
 void SchedulerWorkerStack::Remove(const SchedulerWorker* worker) {
