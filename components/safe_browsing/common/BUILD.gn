@@ -13,7 +13,6 @@ source_set("common") {
     "safebrowsing_messages.h",
     "safebrowsing_switches.cc",
     "safebrowsing_switches.h",
-    "safebrowsing_types.h",
     "utils.cc",
     "utils.h",
   ]

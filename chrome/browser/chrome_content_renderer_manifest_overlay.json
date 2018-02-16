@@ -22,6 +22,7 @@
           "chrome::mojom::PrerenderDispatcher",
           "dom_distiller::mojom::DistillerPageNotifierService",
           "extensions::mojom::AppWindow",
+          "safe_browsing::mojom::ThreatReporter",
           "spellcheck::mojom::SpellCheckPanel"
         ]
       }

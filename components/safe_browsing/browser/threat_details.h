@@ -20,7 +20,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/safe_browsing/common/safebrowsing_types.h"
+#include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "content/public/browser/browser_thread.h"
@@ -34,8 +34,6 @@ class HistoryService;
 namespace net {
 class URLRequestContextGetter;
 }  // namespace net
-
-struct SafeBrowsingHostMsg_ThreatDOMDetails_Node;
 
 namespace safe_browsing {
 
@@ -103,10 +101,6 @@ class ThreatDetails : public base::RefCountedThreadSafe<
 
   void OnRedirectionCollectionReady();
 
-  // content::WebContentsObserver implementation.
-  bool OnMessageReceived(const IPC::Message& message,
-                         content::RenderFrameHost* render_frame_host) override;
-
  protected:
   friend class ThreatDetailsFactoryImpl;
   friend class TestThreatDetailsFactory;
@@ -125,10 +119,9 @@ class ThreatDetails : public base::RefCountedThreadSafe<
   ~ThreatDetails() override;
 
   // Called on the IO thread with the DOM details.
-  virtual void AddDOMDetails(
-      const int frame_tree_node_id,
-      const std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node>& params,
-      const KeyToFrameTreeIdMap& child_frame_tree_map);
+  virtual void AddDOMDetails(const int frame_tree_node_id,
+                             std::vector<mojom::ThreatDOMDetailsNodePtr> params,
+                             const KeyToFrameTreeIdMap& child_frame_tree_map);
 
   // The report protocol buffer.
   std::unique_ptr<ClientSafeBrowsingReportRequest> report_;
@@ -166,10 +159,12 @@ class ThreatDetails : public base::RefCountedThreadSafe<
       const std::string& tagname,
       const std::vector<GURL>* children);
 
-  // Message handler.
+  void RequestThreatDOMDetails(content::RenderFrameHost* frame);
+
   void OnReceivedThreatDOMDetails(
+      mojom::ThreatReporterPtr threat_reporter,
       content::RenderFrameHost* sender,
-      const std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node>& params);
+      std::vector<mojom::ThreatDOMDetailsNodePtr> params);
 
   void AddRedirectUrlList(const std::vector<GURL>& urls);
 
@@ -183,7 +178,7 @@ class ThreatDetails : public base::RefCountedThreadSafe<
                      const int element_node_id,
                      const std::string& tag_name,
                      const int parent_element_node_id,
-                     const std::vector<AttributeNameValue>& attributes,
+                     const std::vector<mojom::AttributeNameValuePtr> attributes,
                      const ClientSafeBrowsingReportRequest::Resource* resource);
 
   // Called when the report is complete. Runs |done_callback_|.

@@ -6,7 +6,10 @@
         "browser": [
           "autofill::mojom::AutofillAgent",
           "autofill::mojom::PasswordAutofillAgent",
-          "autofill::mojom::PasswordGenerationAgent"
+          "autofill::mojom::PasswordGenerationAgent",
+          // TODO(crbug.com/811567): Remove this once AwSafeBrowsingBlockingPage
+          // no longer sends a GetThreatDOMDetails IPC.
+          "safe_browsing::mojom::ThreatReporter"
         ]
       }
     }

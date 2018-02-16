@@ -15,8 +15,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
-#include "components/safe_browsing/common/safebrowsing_messages.h"
-#include "components/safe_browsing/common/safebrowsing_types.h"
 #include "components/safe_browsing/features.h"
 #include "content/public/renderer/render_frame.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -112,13 +110,13 @@ void ParseTagAndAttributeParams(
             });
 }
 
-SafeBrowsingHostMsg_ThreatDOMDetails_Node* GetNodeForElement(
+mojom::ThreatDOMDetailsNode* GetNodeForElement(
     const blink::WebNode& element,
     const safe_browsing::ElementToNodeMap& element_to_node_map,
-    std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node>* resources) {
+    std::vector<mojom::ThreatDOMDetailsNodePtr>* resources) {
   DCHECK_GT(element_to_node_map.count(element), 0u);
   size_t resource_index = element_to_node_map.at(element);
-  return &(resources->at(resource_index));
+  return (*resources)[resource_index].get();
 }
 
 std::string TruncateAttributeString(const std::string& input) {
@@ -137,8 +135,8 @@ std::string TruncateAttributeString(const std::string& input) {
 void HandleElement(
     const blink::WebElement& element,
     const std::vector<TagAndAttributesItem>& tag_and_attributes_list,
-    SafeBrowsingHostMsg_ThreatDOMDetails_Node* summary_node,
-    std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node>* resources,
+    mojom::ThreatDOMDetailsNode* summary_node,
+    std::vector<mojom::ThreatDOMDetailsNodePtr>* resources,
     safe_browsing::ElementToNodeMap* element_to_node_map) {
   // Retrieve the link and resolve the link in case it's relative.
   blink::WebURL full_url =
@@ -149,17 +147,18 @@ void HandleElement(
     summary_node->children.push_back(child_url);
   }
 
-  SafeBrowsingHostMsg_ThreatDOMDetails_Node child_node;
-  child_node.url = child_url;
-  child_node.tag_name = element.TagName().Utf8();
-  child_node.parent = summary_node->url;
+  mojom::ThreatDOMDetailsNodePtr child_node =
+      mojom::ThreatDOMDetailsNode::New();
+  child_node->url = child_url;
+  child_node->tag_name = element.TagName().Utf8();
+  child_node->parent = summary_node->url;
 
   // The body of an iframe may be in a different renderer. Look up the routing
   // ID of the local or remote frame and store it with the iframe node. If this
   // element is not a frame then the result of the lookup will be null.
   blink::WebFrame* subframe = blink::WebFrame::FromFrameOwnerElement(element);
   if (subframe) {
-    child_node.child_frame_routing_id =
+    child_node->child_frame_routing_id =
         content::RenderFrame::GetRoutingIdForWebFrame(subframe);
   }
 
@@ -167,7 +166,7 @@ void HandleElement(
   // configured in the finch study.
   const auto& tag_attribute_iter = std::find_if(
       tag_and_attributes_list.begin(), tag_and_attributes_list.end(),
-      TagNameIs(base::ToLowerASCII(child_node.tag_name)));
+      TagNameIs(base::ToLowerASCII(child_node->tag_name)));
   if (tag_attribute_iter != tag_and_attributes_list.end()) {
     const std::vector<std::string> attributes_to_collect =
         tag_attribute_iter->attributes;
@@ -176,10 +175,12 @@ void HandleElement(
       if (!element.HasAttribute(attr_webstring)) {
         continue;
       }
-      child_node.attributes.push_back(std::make_pair(
-          attribute, TruncateAttributeString(
-                         element.GetAttribute(attr_webstring).Ascii())));
-      if (child_node.attributes.size() == ThreatDOMDetails::kMaxAttributes) {
+      mojom::AttributeNameValuePtr attribute_name_value =
+          mojom::AttributeNameValue::New(
+              attribute, TruncateAttributeString(
+                             element.GetAttribute(attr_webstring).Ascii()));
+      child_node->attributes.push_back(std::move(attribute_name_value));
+      if (child_node->attributes.size() == ThreatDOMDetails::kMaxAttributes) {
         break;
       }
     }
@@ -189,14 +190,13 @@ void HandleElement(
   // Then, if its parent is available, set the current node's parent ID, and
   // also update the parent's children with the current node's ID.
   const int child_id = static_cast<int>(element_to_node_map->size()) + 1;
-  child_node.node_id = child_id;
+  child_node->node_id = child_id;
   blink::WebNode cur_parent_element = element.ParentNode();
   while (!cur_parent_element.IsNull()) {
     if (element_to_node_map->count(cur_parent_element) > 0) {
-      SafeBrowsingHostMsg_ThreatDOMDetails_Node* parent_node =
-          GetNodeForElement(cur_parent_element, *element_to_node_map,
-                            resources);
-      child_node.parent_node_id = parent_node->node_id;
+      mojom::ThreatDOMDetailsNode* parent_node = GetNodeForElement(
+          cur_parent_element, *element_to_node_map, resources);
+      child_node->parent_node_id = parent_node->node_id;
       parent_node->child_node_ids.push_back(child_id);
 
       // TODO(lpz): Consider also updating the URL-level parent/child mapping
@@ -211,7 +211,7 @@ void HandleElement(
     }
   }
   // Add the child node to the list of resources.
-  resources->push_back(child_node);
+  resources->push_back(std::move(child_node));
   // .. and remember which index it was inserted at so we can look it up later.
   (*element_to_node_map)[element] = resources->size() - 1;
 }
@@ -263,47 +263,51 @@ uint32_t ThreatDOMDetails::kMaxAttributes = 100;
 uint32_t ThreatDOMDetails::kMaxAttributeStringLength = 100;
 
 // static
-ThreatDOMDetails* ThreatDOMDetails::Create(content::RenderFrame* render_frame) {
+ThreatDOMDetails* ThreatDOMDetails::Create(
+    content::RenderFrame* render_frame,
+    service_manager::BinderRegistry* registry) {
   // Private constructor and public static Create() method to facilitate
   // stubbing out this class for binary-size reduction purposes.
-  return new ThreatDOMDetails(render_frame);
+  return new ThreatDOMDetails(render_frame, registry);
 }
 
-ThreatDOMDetails::ThreatDOMDetails(content::RenderFrame* render_frame)
+void ThreatDOMDetails::OnThreatReporterRequest(
+    mojom::ThreatReporterRequest request) {
+  threat_reporter_bindings_.AddBinding(this, std::move(request));
+}
+
+ThreatDOMDetails::ThreatDOMDetails(content::RenderFrame* render_frame,
+                                   service_manager::BinderRegistry* registry)
     : content::RenderFrameObserver(render_frame) {
   ParseTagAndAttributeParams(&tag_and_attributes_list_);
+  // Base::Unretained() is safe here because both the registry and the
+  // ThreatDOMDetails are scoped to the same render frame.
+  registry->AddInterface(base::BindRepeating(
+      &ThreatDOMDetails::OnThreatReporterRequest, base::Unretained(this)));
 }
 
 ThreatDOMDetails::~ThreatDOMDetails() {}
 
-bool ThreatDOMDetails::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ThreatDOMDetails, message)
-    IPC_MESSAGE_HANDLER(SafeBrowsingMsg_GetThreatDOMDetails,
-                        OnGetThreatDOMDetails)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void ThreatDOMDetails::OnGetThreatDOMDetails() {
-  std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node> resources;
+void ThreatDOMDetails::GetThreatDOMDetails(
+    GetThreatDOMDetailsCallback callback) {
+  std::vector<mojom::ThreatDOMDetailsNodePtr> resources;
   ExtractResources(&resources);
   // Notify the browser.
-  Send(new SafeBrowsingHostMsg_ThreatDOMDetails(routing_id(), resources));
+  std::move(callback).Run(std::move(resources));
 }
 
 void ThreatDOMDetails::ExtractResources(
-    std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node>* resources) {
+    std::vector<mojom::ThreatDOMDetailsNodePtr>* resources) {
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   if (!frame)
     return;
-  SafeBrowsingHostMsg_ThreatDOMDetails_Node details_node;
+  mojom::ThreatDOMDetailsNodePtr details_node =
+      mojom::ThreatDOMDetailsNode::New();
   blink::WebDocument document = frame->GetDocument();
-  details_node.url = GURL(document.Url());
+  details_node->url = GURL(document.Url());
   if (document.IsNull()) {
     // Nothing in this frame. Just report its URL.
-    resources->push_back(details_node);
+    resources->push_back(std::move(details_node));
     return;
   }
 
@@ -313,8 +317,8 @@ void ThreatDOMDetails::ExtractResources(
   bool max_nodes_exceeded = false;
   for (; !element.IsNull(); element = elements.NextItem()) {
     if (ShouldHandleElement(element, tag_and_attributes_list_)) {
-      HandleElement(element, tag_and_attributes_list_, &details_node, resources,
-                    &element_to_node_map);
+      HandleElement(element, tag_and_attributes_list_, details_node.get(),
+                    resources, &element_to_node_map);
       if (resources->size() >= kMaxNodes) {
         // We have reached kMaxNodes, exit early.
         max_nodes_exceeded = true;
@@ -324,7 +328,7 @@ void ThreatDOMDetails::ExtractResources(
   }
   UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.ThreatReport.MaxNodesExceededInFrame",
                         max_nodes_exceeded);
-  resources->push_back(details_node);
+  resources->push_back(std::move(details_node));
 }
 
 void ThreatDOMDetails::OnDestruct() {
