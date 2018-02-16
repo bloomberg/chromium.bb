@@ -647,7 +647,7 @@
         <item name="android:scaleType">center</item>
     </style>
     <!-- 18dp padding is added to each side to limit the image width to 20dp (56dp - 2 * 18dp). -->
-    <style name="HistoryListItemEndIcon" parent="ListItemEndIcon">
+    <style name="ListItemEndIconSmall" parent="ListItemEndIcon">
         <item name="android:paddingStart">18dp</item>
         <item name="android:paddingEnd">18dp</item>
         <item name="android:scaleType">centerInside</item>
