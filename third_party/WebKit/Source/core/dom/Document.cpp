@@ -2042,27 +2042,27 @@ void Document::PropagateStyleToViewport() {
   Length scroll_padding_bottom = overflow_style->ScrollPaddingBottom();
   Length scroll_padding_left = overflow_style->ScrollPaddingLeft();
 
-  scoped_refptr<ComputedStyle> viewport_style = GetLayoutView()->MutableStyle();
-  if (viewport_style->GetWritingMode() != root_writing_mode ||
-      viewport_style->Direction() != root_direction ||
-      viewport_style->VisitedDependentColor(GetCSSPropertyBackgroundColor()) !=
+  const ComputedStyle& viewport_style = GetLayoutView()->StyleRef();
+  if (viewport_style.GetWritingMode() != root_writing_mode ||
+      viewport_style.Direction() != root_direction ||
+      viewport_style.VisitedDependentColor(GetCSSPropertyBackgroundColor()) !=
           background_color ||
-      viewport_style->BackgroundLayers() != background_layers ||
-      viewport_style->ImageRendering() != image_rendering ||
-      viewport_style->OverflowAnchor() != overflow_anchor ||
-      viewport_style->OverflowX() != overflow_x ||
-      viewport_style->OverflowY() != overflow_y ||
-      viewport_style->ColumnGap() != column_gap ||
-      viewport_style->GetScrollSnapType() != snap_type ||
-      viewport_style->GetScrollBehavior() != scroll_behavior ||
-      viewport_style->OverscrollBehaviorX() != overscroll_behavior_x ||
-      viewport_style->OverscrollBehaviorY() != overscroll_behavior_y ||
-      viewport_style->ScrollPaddingTop() != scroll_padding_top ||
-      viewport_style->ScrollPaddingRight() != scroll_padding_right ||
-      viewport_style->ScrollPaddingBottom() != scroll_padding_bottom ||
-      viewport_style->ScrollPaddingLeft() != scroll_padding_left) {
+      viewport_style.BackgroundLayers() != background_layers ||
+      viewport_style.ImageRendering() != image_rendering ||
+      viewport_style.OverflowAnchor() != overflow_anchor ||
+      viewport_style.OverflowX() != overflow_x ||
+      viewport_style.OverflowY() != overflow_y ||
+      viewport_style.ColumnGap() != column_gap ||
+      viewport_style.GetScrollSnapType() != snap_type ||
+      viewport_style.GetScrollBehavior() != scroll_behavior ||
+      viewport_style.OverscrollBehaviorX() != overscroll_behavior_x ||
+      viewport_style.OverscrollBehaviorY() != overscroll_behavior_y ||
+      viewport_style.ScrollPaddingTop() != scroll_padding_top ||
+      viewport_style.ScrollPaddingRight() != scroll_padding_right ||
+      viewport_style.ScrollPaddingBottom() != scroll_padding_bottom ||
+      viewport_style.ScrollPaddingLeft() != scroll_padding_left) {
     scoped_refptr<ComputedStyle> new_style =
-        ComputedStyle::Clone(*viewport_style);
+        ComputedStyle::Clone(viewport_style);
     new_style->SetWritingMode(root_writing_mode);
     new_style->SetDirection(root_direction);
     new_style->SetBackgroundColor(background_color);
