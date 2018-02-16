@@ -90,6 +90,7 @@ if (enable_nocompile_tests) {
         "-Wall",
         "-Werror",
         "-Wfatal-errors",
+        "-Wthread-safety",
         "-I" + rebase_path("//", root_build_dir),
       ]
       if (sysroot != "") {
