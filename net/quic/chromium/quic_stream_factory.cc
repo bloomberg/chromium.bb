@@ -952,6 +952,13 @@ bool QuicStreamFactory::CanUseExistingSession(const QuicServerId& server_id,
   return false;
 }
 
+void QuicStreamFactory::MarkAllActiveSessionsGoingAway() {
+  while (!active_sessions_.empty()) {
+    QuicChromiumClientSession* session = active_sessions_.begin()->second;
+    OnSessionGoingAway(session);
+  }
+}
+
 int QuicStreamFactory::Create(const QuicServerId& server_id,
                               const HostPortPair& destination,
                               QuicTransportVersion quic_version,
@@ -962,11 +969,7 @@ int QuicStreamFactory::Create(const QuicServerId& server_id,
                               QuicStreamRequest* request) {
   if (clock_skew_detector_.ClockSkewDetected(base::TimeTicks::Now(),
                                              base::Time::Now())) {
-    while (!active_sessions_.empty()) {
-      QuicChromiumClientSession* session = active_sessions_.begin()->second;
-      OnSessionGoingAway(session);
-      // TODO(rch): actually close the session?
-    }
+    MarkAllActiveSessionsGoingAway();
   }
   DCHECK(server_id.host_port_pair().Equals(HostPortPair::FromURL(url)));
   // Enforce session affinity for promised streams.
@@ -1342,11 +1345,7 @@ void QuicStreamFactory::OnSSLConfigChanged() {
   // SSLConfigService::Observer when channel ID is deprecated.
   // (See http://crbug.com/809272.)
 
-  // Mark all active sessions as going away.
-  while (!active_sessions_.empty()) {
-    QuicChromiumClientSession* session = active_sessions_.begin()->second;
-    OnSessionGoingAway(session);
-  }
+  MarkAllActiveSessionsGoingAway();
 }
 
 void QuicStreamFactory::OnCertDBChanged() {
@@ -1359,7 +1358,7 @@ void QuicStreamFactory::OnCertDBChanged() {
   // Since the OnCertDBChanged method doesn't tell us what
   // kind of change it is, we have to flush the socket
   // pools to be safe.
-  CloseAllSessions(ERR_CERT_DATABASE_CHANGED, QUIC_CONNECTION_CANCELLED);
+  MarkAllActiveSessionsGoingAway();
 }
 
 bool QuicStreamFactory::HasActiveSession(const QuicServerId& server_id) const {
