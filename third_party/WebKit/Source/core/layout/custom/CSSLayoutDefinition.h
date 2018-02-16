@@ -15,6 +15,7 @@
 
 namespace blink {
 
+class FragmentResultOptions;
 class ScriptState;
 
 // Represents a javascript class registered on the LayoutWorkletGlobalScope by
@@ -35,6 +36,29 @@ class CSSLayoutDefinition final
       const Vector<AtomicString>& child_custom_invalidation_properties);
   virtual ~CSSLayoutDefinition();
 
+  // This class represents an instance of the layout class defined by the
+  // CSSLayoutDefinition.
+  class Instance final : public GarbageCollectedFinalized<Instance>,
+                         public TraceWrapperBase {
+   public:
+    Instance(CSSLayoutDefinition*, v8::Local<v8::Object> instance);
+
+    // Runs the web developer defined layout, returns true if everything
+    // succeeded, and populates the FragmentResultOptions dictionary.
+    bool Layout(FragmentResultOptions*);
+
+    void Trace(blink::Visitor*);
+    void TraceWrappers(const ScriptWrappableVisitor*) const override;
+
+   private:
+    Member<CSSLayoutDefinition> definition_;
+    TraceWrapperV8Reference<v8::Object> instance_;
+  };
+
+  // Creates an instance of the web developer defined class. May return a
+  // nullptr if constructing the instance failed.
+  Instance* CreateInstance();
+
   const Vector<CSSPropertyID>& NativeInvalidationProperties() const {
     return native_invalidation_properties_;
   }
@@ -49,11 +73,6 @@ class CSSLayoutDefinition final
   }
 
   ScriptState* GetScriptState() const { return script_state_.get(); }
-
-  v8::Local<v8::Function> IntrinsicSizesFunctionForTesting(
-      v8::Isolate* isolate) {
-    return intrinsic_sizes_.NewLocal(isolate);
-  }
 
   v8::Local<v8::Function> LayoutFunctionForTesting(v8::Isolate* isolate) {
     return layout_.NewLocal(isolate);
@@ -72,10 +91,9 @@ class CSSLayoutDefinition final
   TraceWrapperV8Reference<v8::Function> intrinsic_sizes_;
   TraceWrapperV8Reference<v8::Function> layout_;
 
-  // TODO(ikilpatrick): Once we have a LayoutObject to use this definition,
-  // we'll need a map of LayoutObject to class instances. We'll also need a
-  // did_call_constructor_ field to ensure that we correctly don't use a class
-  // with a throwing constructor.
+  // If a constructor call ever fails, we'll refuse to create any more
+  // instances of the web developer provided class.
+  bool constructor_has_failed_;
 
   Vector<CSSPropertyID> native_invalidation_properties_;
   Vector<AtomicString> custom_invalidation_properties_;

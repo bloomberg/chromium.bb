@@ -30,11 +30,14 @@ class LayoutCustom final : public LayoutBlockFlow {
   bool CreatesNewFormattingContext() const override { return true; }
 
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
+  void UpdateBlockLayout(bool relayout_children) override;
 
  private:
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectLayoutCustom || LayoutBlockFlow::IsOfType(type);
   }
+
+  bool PerformLayout(bool relayout_children, SubtreeLayoutScope*);
 
   LayoutCustomState state_;
 };

@@ -14,6 +14,7 @@
 namespace blink {
 
 class Node;
+class LayoutWorkletGlobalScopeProxy;
 
 extern DocumentLayoutDefinition* const kInvalidDocumentLayoutDefinition;
 
@@ -44,11 +45,15 @@ class CORE_EXPORT LayoutWorklet : public Worklet,
   }
 
   void AddPendingLayout(const AtomicString& name, Node*);
+  LayoutWorkletGlobalScopeProxy* Proxy();
 
   void Trace(blink::Visitor*) override;
 
  protected:
   explicit LayoutWorklet(LocalFrame*);
+
+  // TODO(ikilpatrick): Make selection of the global scope non-deterministic.
+  size_t SelectGlobalScope() final { return 0u; }
 
  private:
   friend class LayoutWorkletTest;

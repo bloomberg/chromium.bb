@@ -67,6 +67,12 @@ void LayoutWorkletGlobalScopeProxy::TerminateWorkletGlobalScope() {
   reporting_proxy_.reset();
 }
 
+CSSLayoutDefinition* LayoutWorkletGlobalScopeProxy::FindDefinition(
+    const AtomicString& name) {
+  DCHECK(IsMainThread());
+  return global_scope_->FindDefinition(name);
+}
+
 void LayoutWorkletGlobalScopeProxy::Trace(blink::Visitor* visitor) {
   visitor->Trace(global_scope_);
 }
