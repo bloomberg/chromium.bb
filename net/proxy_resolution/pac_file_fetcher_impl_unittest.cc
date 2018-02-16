@@ -400,6 +400,21 @@ TEST_F(ProxyScriptFetcherImplTest, TooLarge) {
   }
 }
 
+// The ProxyScriptFetcher should be able to handle responses with an empty body.
+TEST_F(ProxyScriptFetcherImplTest, Empty) {
+  ASSERT_TRUE(test_server_.Start());
+
+  ProxyScriptFetcherImpl pac_fetcher(&context_);
+
+  GURL url(test_server_.GetURL("/empty"));
+  base::string16 text;
+  TestCompletionCallback callback;
+  int result = pac_fetcher.Fetch(url, &text, callback.callback());
+  EXPECT_THAT(result, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+  EXPECT_EQ(0u, text.size());
+}
+
 TEST_F(ProxyScriptFetcherImplTest, Hang) {
   ASSERT_TRUE(test_server_.Start());
 
