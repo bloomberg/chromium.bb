@@ -158,5 +158,5 @@ class CheckWebKitStyle(object):
         delete_only_file_count = file_reader.delete_only_file_count
 
         _log.info('Total errors found: %d in %d files', error_count, file_count)
-        # We fail when style errors are found or there are no checked files.
-        return error_count > 0 or (file_count == 0 and delete_only_file_count == 0)
+        # We fail when style errors are found.
+        return error_count > 0
