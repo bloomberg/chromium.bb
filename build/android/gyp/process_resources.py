@@ -107,6 +107,16 @@ _DENSITY_SPLITS = {
     ),
 }
 
+# Pngs that we shouldn't convert to webp. Please add rationale when updating.
+_PNG_WEBP_BLACKLIST_PATTERN = re.compile('|'.join([
+    # Crashes on Galaxy S5 running L (https://crbug.com/807059).
+    r'.*star_gray\.png',
+    # Android requires pngs for 9-patch images.
+    r'.*\.9\.png',
+    # Daydream (*.dd) requires pngs for icon files.
+    r'.*\.dd\.png']))
+
+
 class _ResourceWhitelist(object):
   def __init__(self, entries=None):
     self._entries = None
@@ -698,10 +708,9 @@ def _ConvertToWebP(webp_binary, png_files):
         '-lossless', '-o', webp_path]
     subprocess.check_call(args)
     os.remove(png_path)
-  # Android requires pngs for 9-patch images.
-  # Daydream (*.dd) requires pngs for icon files.
-  pool.map(convert_image, [f for f in png_files if not (f.endswith('.9.png') or
-                           f.endswith('.dd.png'))])
+
+  pool.map(convert_image, [f for f in png_files
+                           if not _PNG_WEBP_BLACKLIST_PATTERN.match(f)])
   pool.close()
   pool.join()
 
