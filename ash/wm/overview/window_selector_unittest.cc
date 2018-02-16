@@ -2553,16 +2553,21 @@ class SplitViewWindowSelectorTest : public WindowSelectorTest {
     return window;
   }
 
-  IndicatorType indicator_type() {
+  IndicatorState indicator_state() {
     DCHECK(window_selector());
     return window_selector()
         ->split_view_overview_overlay()
-        ->current_indicator_type();
+        ->current_indicator_state();
   }
 
   int GetEdgeInset(int screen_width) const {
     return screen_width * kHighlightScreenPrimaryAxisRatio +
            kHighlightScreenEdgePaddingDp;
+  }
+
+  bool IsPhantomWindowShowing() {
+    return indicator_state() == IndicatorState::kPhantomLeft ||
+           indicator_state() == IndicatorState::kPhantomRight;
   }
 
  private:
@@ -2688,9 +2693,9 @@ TEST_F(SplitViewWindowSelectorTest, Dragging) {
       left_selector_item->target_bounds().CenterPoint().y()));
   generator.PressLeftButton();
   generator.MoveMouseBy(-drag_offset_snap_region + 1, 0);
-  EXPECT_FALSE(window_drag_controller()->IsPhantomWindowShowing());
+  EXPECT_FALSE(IsPhantomWindowShowing());
   generator.MoveMouseBy(-1, 0);
-  EXPECT_TRUE(window_drag_controller()->IsPhantomWindowShowing());
+  EXPECT_TRUE(IsPhantomWindowShowing());
   // Drag back to the middle before releasing so that we stay in overview mode
   // on release.
   generator.MoveMouseTo(left_original_bounds.CenterPoint());
@@ -2706,9 +2711,9 @@ TEST_F(SplitViewWindowSelectorTest, Dragging) {
                  right_selector_item->target_bounds().CenterPoint().y()));
   generator.PressLeftButton();
   generator.MoveMouseBy(drag_offset_snap_region - 1, 0);
-  EXPECT_FALSE(window_drag_controller()->IsPhantomWindowShowing());
+  EXPECT_FALSE(IsPhantomWindowShowing());
   generator.MoveMouseBy(1, 0);
-  EXPECT_TRUE(window_drag_controller()->IsPhantomWindowShowing());
+  EXPECT_TRUE(IsPhantomWindowShowing());
 }
 
 // Verify the window grid size changes as expected when dragging items around in
@@ -2851,25 +2856,25 @@ TEST_F(SplitViewWindowSelectorTest, PhantomWindowVisibility) {
       GetWindowItemForWindow(grid_index, window.get());
   const gfx::Point start_location(selector_item->target_bounds().CenterPoint());
   window_selector()->InitiateDrag(selector_item, start_location);
-  EXPECT_FALSE(window_drag_controller()->IsPhantomWindowShowing());
+  EXPECT_FALSE(IsPhantomWindowShowing());
   window_selector()->Drag(selector_item, gfx::Point(edge_inset + 1, 1));
-  EXPECT_FALSE(window_drag_controller()->IsPhantomWindowShowing());
+  EXPECT_FALSE(IsPhantomWindowShowing());
   window_selector()->Drag(selector_item, gfx::Point(edge_inset, 1));
-  EXPECT_TRUE(window_drag_controller()->IsPhantomWindowShowing());
+  EXPECT_TRUE(IsPhantomWindowShowing());
 
   window_selector()->Drag(selector_item,
                           gfx::Point(screen_width - edge_inset - 2, 1));
-  EXPECT_FALSE(window_drag_controller()->IsPhantomWindowShowing());
+  EXPECT_FALSE(IsPhantomWindowShowing());
   window_selector()->Drag(selector_item,
                           gfx::Point(screen_width - edge_inset - 1, 1));
-  EXPECT_TRUE(window_drag_controller()->IsPhantomWindowShowing());
+  EXPECT_TRUE(IsPhantomWindowShowing());
 
   // Drag back to |start_location| before compeleting the drag, otherwise
   // |selector_time| will snap to the right and the system will enter splitview,
   // making |window_drag_controller()| nullptr.
   window_selector()->Drag(selector_item, start_location);
   window_selector()->CompleteDrag(selector_item, start_location);
-  EXPECT_FALSE(window_drag_controller()->IsPhantomWindowShowing());
+  EXPECT_FALSE(IsPhantomWindowShowing());
 }
 
 // Verify that the phantom window never shows up when dragging a unsnappable
@@ -2888,18 +2893,18 @@ TEST_F(SplitViewWindowSelectorTest, PhantomWindowVisibilityUnsnappableWindow) {
       GetWindowItemForWindow(grid_index, window.get());
   const gfx::Point start_location(selector_item->target_bounds().CenterPoint());
   window_selector()->InitiateDrag(selector_item, start_location);
-  EXPECT_FALSE(window_drag_controller()->IsPhantomWindowShowing());
+  EXPECT_FALSE(IsPhantomWindowShowing());
   window_selector()->Drag(selector_item, gfx::Point(0, 1));
-  EXPECT_FALSE(window_drag_controller()->IsPhantomWindowShowing());
+  EXPECT_FALSE(IsPhantomWindowShowing());
   window_selector()->Drag(selector_item, gfx::Point(screen_width, 1));
-  EXPECT_FALSE(window_drag_controller()->IsPhantomWindowShowing());
+  EXPECT_FALSE(IsPhantomWindowShowing());
 
   window_selector()->CompleteDrag(selector_item, start_location);
-  EXPECT_FALSE(window_drag_controller()->IsPhantomWindowShowing());
+  EXPECT_FALSE(IsPhantomWindowShowing());
 }
 
-// Verify that the split view overview overlay is shown when expected.
-TEST_F(SplitViewWindowSelectorTest, SplitViewOverviewOverlayVisibility) {
+// Verify that the split view overview overlay has the expected state.
+TEST_F(SplitViewWindowSelectorTest, SplitViewOverviewOverlayState) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -2912,18 +2917,18 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewOverviewOverlayVisibility) {
   const int edge_inset = GetEdgeInset(screen_width);
 
   // Verify that when are no snapped windows, the overlay is visible when a drag
-  // is initiated and disappears when the drag reaches |edge_inset| from the
-  // edge of the screen.
+  // is initiated and the left phantom window appears when the drag reaches
+  // |edge_inset| from the edge of the screen.
   const int grid_index = 0;
   WindowSelectorItem* selector_item =
       GetWindowItemForWindow(grid_index, window1.get());
   gfx::Point start_location(selector_item->target_bounds().CenterPoint());
   window_selector()->InitiateDrag(selector_item, start_location);
-  EXPECT_EQ(IndicatorType::DRAG_AREA, indicator_type());
+  EXPECT_EQ(IndicatorState::kDragArea, indicator_state());
   window_selector()->Drag(selector_item, gfx::Point(edge_inset + 1, 0));
-  EXPECT_EQ(IndicatorType::DRAG_AREA, indicator_type());
+  EXPECT_EQ(IndicatorState::kDragArea, indicator_state());
   window_selector()->Drag(selector_item, gfx::Point(edge_inset, 0));
-  EXPECT_EQ(IndicatorType::NONE, indicator_type());
+  EXPECT_EQ(IndicatorState::kPhantomLeft, indicator_state());
 
   // Snap window to the left.
   window_selector()->CompleteDrag(selector_item, gfx::Point(edge_inset, 0));
@@ -2931,11 +2936,14 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewOverviewOverlayVisibility) {
   ASSERT_EQ(SplitViewController::LEFT_SNAPPED,
             split_view_controller()->state());
 
-  // Verify that when there is a snapped window, the overlay is not visible.
+  // Verify that when there is a left snapped window, dragging an item to the
+  // right will show the right phantom window.
   selector_item = GetWindowItemForWindow(grid_index, window2.get());
   start_location = selector_item->target_bounds().CenterPoint();
   window_selector()->InitiateDrag(selector_item, start_location);
-  EXPECT_EQ(IndicatorType::NONE, indicator_type());
+  EXPECT_EQ(IndicatorState::kDragArea, indicator_state());
+  window_selector()->Drag(selector_item, gfx::Point(screen_width - 1, 0));
+  EXPECT_EQ(IndicatorState::kPhantomRight, indicator_state());
   window_selector()->CompleteDrag(selector_item, start_location);
 }
 
@@ -2953,12 +2961,58 @@ TEST_F(SplitViewWindowSelectorTest,
       GetWindowItemForWindow(grid_index, unsnappable_window.get());
   gfx::Point start_location(selector_item->target_bounds().CenterPoint());
   window_selector()->InitiateDrag(selector_item, start_location);
-  EXPECT_EQ(IndicatorType::CANNOT_SNAP, indicator_type());
+  EXPECT_EQ(IndicatorState::kCannotSnap, indicator_state());
   const gfx::Point end_location1(0, 0);
   window_selector()->Drag(selector_item, end_location1);
-  EXPECT_EQ(IndicatorType::CANNOT_SNAP, indicator_type());
+  EXPECT_EQ(IndicatorState::kCannotSnap, indicator_state());
   window_selector()->CompleteDrag(selector_item, end_location1);
-  EXPECT_EQ(IndicatorType::NONE, indicator_type());
+  EXPECT_EQ(IndicatorState::kNone, indicator_state());
+}
+
+// Verify when the split view overview overlay state changes, the expected
+// indicators will become visible or invisible.
+TEST_F(SplitViewWindowSelectorTest,
+       SplitViewOverviewOverlayIndicatorsVisibility) {
+  auto overlay = std::make_unique<SplitViewOverviewOverlay>();
+
+  auto to_int = [](IndicatorType type) { return static_cast<int>(type); };
+
+  // Helper function to which checks that all indicator types passed in |mask|
+  // are visible, and those that are not are not visible.
+  auto check_helper = [](SplitViewOverviewOverlay* svoo, int mask) {
+    const std::vector<IndicatorType> types = {
+        IndicatorType::kLeftHighlight, IndicatorType::kLeftText,
+        IndicatorType::kRightHighlight, IndicatorType::kRightText};
+    for (auto type : types) {
+      if ((static_cast<int>(type) & mask) > 0)
+        EXPECT_TRUE(svoo->GetIndicatorTypeVisibilityForTesting(type));
+      else
+        EXPECT_FALSE(svoo->GetIndicatorTypeVisibilityForTesting(type));
+    }
+  };
+
+  // Check each state has the correct views displayed. Pass and empty point as
+  // the location since there is no need to reparent the widget. Pass a random
+  // rectangle for the phantom states otherwise a DCHECK will fail.
+  // Verify that nothing is shown in the none state.
+  overlay->SetIndicatorState(IndicatorState::kNone, gfx::Point());
+  check_helper(overlay.get(), 0);
+
+  const int all = to_int(IndicatorType::kLeftHighlight) |
+                  to_int(IndicatorType::kLeftText) |
+                  to_int(IndicatorType::kRightHighlight) |
+                  to_int(IndicatorType::kRightText);
+  // Verify that everything is visible in the dragging and cannot snap states.
+  overlay->SetIndicatorState(IndicatorState::kDragArea, gfx::Point());
+  check_helper(overlay.get(), all);
+  overlay->SetIndicatorState(IndicatorState::kCannotSnap, gfx::Point());
+  check_helper(overlay.get(), all);
+
+  // Verify that only one highlight shows up for the phantom states.
+  overlay->SetIndicatorState(IndicatorState::kPhantomLeft, gfx::Point());
+  check_helper(overlay.get(), to_int(IndicatorType::kLeftHighlight));
+  overlay->SetIndicatorState(IndicatorState::kPhantomRight, gfx::Point());
+  check_helper(overlay.get(), to_int(IndicatorType::kRightHighlight));
 }
 
 // Verify that the split view overview overlays widget reparents when starting a
@@ -2985,7 +3039,7 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewOverviewOverlayWidgetReparenting) {
       GetWindowItemForWindow(0, primary_screen_window.get());
   gfx::Point start_location(selector_item->target_bounds().CenterPoint());
   window_selector()->InitiateDrag(selector_item, start_location);
-  EXPECT_EQ(IndicatorType::DRAG_AREA, indicator_type());
+  EXPECT_EQ(IndicatorState::kDragArea, indicator_state());
   EXPECT_EQ(root_windows[0], window_selector()
                                  ->split_view_overview_overlay()
                                  ->widget_->GetNativeView()
@@ -3003,7 +3057,7 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewOverviewOverlayWidgetReparenting) {
   selector_item = GetWindowItemForWindow(1, secondary_screen_window.get());
   start_location = gfx::Point(selector_item->target_bounds().CenterPoint());
   window_selector()->InitiateDrag(selector_item, start_location);
-  EXPECT_EQ(IndicatorType::DRAG_AREA, indicator_type());
+  EXPECT_EQ(IndicatorState::kDragArea, indicator_state());
   EXPECT_EQ(root_windows[1], window_selector()
                                  ->split_view_overview_overlay()
                                  ->widget_->GetNativeView()

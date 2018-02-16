@@ -36,4 +36,12 @@ void RoundedRectView::SetBackgroundColor(SkColor background_color) {
   SchedulePaint();
 }
 
+void RoundedRectView::SetCornerRadius(int radius) {
+  if (corner_radius_ == radius)
+    return;
+
+  corner_radius_ = radius;
+  SchedulePaint();
+}
+
 }  // namespace ash

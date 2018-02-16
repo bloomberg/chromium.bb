@@ -15,13 +15,15 @@
 
 namespace ash {
 
-class PhantomWindowController;
 class WindowSelector;
 class WindowSelectorItem;
 
 // The drag controller for an overview window item in overview mode. It updates
-// the position of the corresponding window item using transform while dragging
-// and shows/hides the phantom window accordingly.
+// the position of the corresponding window item using transform while dragging.
+// It also updates the split view overview overlay, which handles showing
+// indicators where to drag, and phantom windows showing the bounds of the
+// window about to be snapped.
+// TODO(sammiequon): Find better names for phantom window and overlay.
 class ASH_EXPORT OverviewWindowDragController {
  public:
   // The minimum offset that will be considered as a drag event.
@@ -48,18 +50,14 @@ class ASH_EXPORT OverviewWindowDragController {
 
   WindowSelectorItem* item() { return item_; }
 
-  bool IsPhantomWindowShowing() const {
-    return phantom_window_controller_ != nullptr;
-  }
-
  private:
   // Updates visuals for the user while dragging items around.
-  void UpdatePhantomWindowAndWindowGrid(const gfx::Point& location_in_screen);
+  void UpdateOverlayAndWindowGrid(const gfx::Point& location_in_screen);
 
-  // Dragged items should not attempt to show the phantom window or snap if
+  // Dragged items should not attempt to update the overlay or snap if
   // the drag started in a snap region and has not been dragged pass the
   // threshold.
-  bool ShouldUpdatePhantomWindowOrSnap(const gfx::Point& event_location);
+  bool ShouldUpdateOverlayOrSnap(const gfx::Point& event_location);
 
   SplitViewController::SnapPosition GetSnapPosition(
       const gfx::Point& location_in_screen) const;
@@ -72,9 +70,6 @@ class ASH_EXPORT OverviewWindowDragController {
   WindowSelector* window_selector_;
 
   SplitViewController* split_view_controller_;
-
-  // Shows a highlight of where the dragged window will end up.
-  std::unique_ptr<PhantomWindowController> phantom_window_controller_;
 
   // The drag target window in the overview mode.
   WindowSelectorItem* item_ = nullptr;
