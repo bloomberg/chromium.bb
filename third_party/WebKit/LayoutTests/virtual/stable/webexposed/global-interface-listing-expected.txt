@@ -1825,6 +1825,7 @@ interface HTMLElement : Element
     getter draggable
     getter hidden
     getter innerText
+    getter inputMode
     getter isContentEditable
     getter lang
     getter nonce
@@ -1924,6 +1925,7 @@ interface HTMLElement : Element
     setter draggable
     setter hidden
     setter innerText
+    setter inputMode
     setter lang
     setter nonce
     setter onabort
