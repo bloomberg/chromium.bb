@@ -25,7 +25,7 @@ class UkmSource;
 class Report;
 
 namespace debug {
-class DebugPage;
+class UkmDebugDataExtractor;
 }
 
 class UkmRecorderImpl : public UkmRecorder {
@@ -61,7 +61,7 @@ class UkmRecorderImpl : public UkmRecorder {
  private:
   friend ::metrics::UkmBrowserTest;
   friend ::metrics::UkmEGTestHelper;
-  friend ::ukm::debug::DebugPage;
+  friend ::ukm::debug::UkmDebugDataExtractor;
 
   struct MetricAggregate {
     uint64_t total_count = 0;

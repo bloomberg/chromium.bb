@@ -20,6 +20,7 @@
 #include "ios/chrome/browser/ui/webui/suggestions_ui.h"
 #include "ios/chrome/browser/ui/webui/sync_internals/sync_internals_ui.h"
 #include "ios/chrome/browser/ui/webui/terms_ui.h"
+#include "ios/chrome/browser/ui/webui/url_keyed_metrics_ui.h"
 #include "ios/chrome/browser/ui/webui/version_ui.h"
 #include "url/gurl.h"
 
@@ -89,6 +90,8 @@ WebUIIOSFactoryFunction GetWebUIIOSFactoryFunction(WebUIIOS* web_ui,
     return &NewWebUIIOS<VersionUI>;
   if (url_host == kChromeUIFlagsHost)
     return &NewWebUIIOS<FlagsUI>;
+  if (url_host == kChromeUIURLKeyedMetricsHost)
+    return &NewWebUIIOSWithHost<URLKeyedMetricsUI>;
 
   return nullptr;
 }
