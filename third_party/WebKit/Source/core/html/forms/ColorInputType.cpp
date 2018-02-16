@@ -123,7 +123,7 @@ Color ColorInputType::ValueAsColor() const {
 }
 
 void ColorInputType::CreateShadowSubtree() {
-  DCHECK(GetElement().Shadow());
+  DCHECK(IsShadowHost(GetElement()));
 
   Document& document = GetElement().GetDocument();
   HTMLDivElement* wrapper_element = HTMLDivElement::Create(document);
