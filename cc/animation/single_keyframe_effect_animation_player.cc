@@ -68,8 +68,8 @@ KeyframeEffect* SingleKeyframeEffectAnimationPlayer::keyframe_effect() const {
 }
 
 void SingleKeyframeEffectAnimationPlayer::AddKeyframeModel(
-    std::unique_ptr<KeyframeModel> animation) {
-  AddKeyframeModelForKeyframeEffect(std::move(animation),
+    std::unique_ptr<KeyframeModel> keyframe_model) {
+  AddKeyframeModelForKeyframeEffect(std::move(keyframe_model),
                                     GetKeyframeEffect()->id());
 }
 

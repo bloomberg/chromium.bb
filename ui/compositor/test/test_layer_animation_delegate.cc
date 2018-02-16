@@ -172,9 +172,9 @@ void TestLayerAnimationDelegate::CreateCcLayer() {
 }
 
 void TestLayerThreadedAnimationDelegate::AddThreadedAnimation(
-    std::unique_ptr<cc::KeyframeModel> animation) {}
+    std::unique_ptr<cc::KeyframeModel> keyframe_model) {}
 
 void TestLayerThreadedAnimationDelegate::RemoveThreadedAnimation(
-    int animation_id) {}
+    int keyframe_model_id) {}
 
 }  // namespace ui

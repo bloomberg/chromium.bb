@@ -200,11 +200,11 @@ void AnimationPlayer::PushPropertiesToImplThread(AnimationPlayer* player_impl) {
 }
 
 void AnimationPlayer::AddKeyframeModelForKeyframeEffect(
-    std::unique_ptr<KeyframeModel> animation,
+    std::unique_ptr<KeyframeModel> keyframe_model,
     KeyframeEffectId keyframe_effect_id) {
   DCHECK(GetKeyframeEffectById(keyframe_effect_id));
   GetKeyframeEffectById(keyframe_effect_id)
-      ->AddKeyframeModel(std::move(animation));
+      ->AddKeyframeModel(std::move(keyframe_model));
 }
 
 void AnimationPlayer::PauseKeyframeModelForKeyframeEffect(

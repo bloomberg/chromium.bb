@@ -613,14 +613,14 @@ bool UiElement::GetRayDistance(const gfx::Point3F& ray_origin,
 
 void UiElement::NotifyClientFloatAnimated(float value,
                                           int target_property_id,
-                                          cc::KeyframeModel* animation) {
+                                          cc::KeyframeModel* keyframe_model) {
   opacity_ = base::ClampToRange(value, 0.0f, 1.0f);
 }
 
 void UiElement::NotifyClientTransformOperationsAnimated(
     const cc::TransformOperations& operations,
     int target_property_id,
-    cc::KeyframeModel* animation) {
+    cc::KeyframeModel* keyframe_model) {
   if (target_property_id == TRANSFORM) {
     transform_operations_ = operations;
   } else if (target_property_id == LAYOUT_OFFSET) {
@@ -632,7 +632,7 @@ void UiElement::NotifyClientTransformOperationsAnimated(
 
 void UiElement::NotifyClientSizeAnimated(const gfx::SizeF& size,
                                          int target_property_id,
-                                         cc::KeyframeModel* animation) {
+                                         cc::KeyframeModel* keyframe_model) {
   size_ = size;
 }
 
@@ -646,12 +646,13 @@ void UiElement::SetTransitionDuration(base::TimeDelta delta) {
   animation_player_.SetTransitionDuration(delta);
 }
 
-void UiElement::AddKeyframeModel(std::unique_ptr<cc::KeyframeModel> animation) {
-  animation_player_.AddKeyframeModel(std::move(animation));
+void UiElement::AddKeyframeModel(
+    std::unique_ptr<cc::KeyframeModel> keyframe_model) {
+  animation_player_.AddKeyframeModel(std::move(keyframe_model));
 }
 
-void UiElement::RemoveKeyframeModel(int animation_id) {
-  animation_player_.RemoveKeyframeModel(animation_id);
+void UiElement::RemoveKeyframeModel(int keyframe_model_id) {
+  animation_player_.RemoveKeyframeModel(keyframe_model_id);
 }
 
 bool UiElement::IsAnimatingProperty(TargetProperty property) const {

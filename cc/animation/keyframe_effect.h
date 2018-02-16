@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_ANIMATION_KEYFRAME_EFFECT_H
-#define CC_ANIMATION_KEYFRAME_EFFECT_H
+#ifndef CC_ANIMATION_KEYFRAME_EFFECT_H_
+#define CC_ANIMATION_KEYFRAME_EFFECT_H_
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -90,7 +90,7 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
   void Tick(base::TimeTicks monotonic_time,
             const AnimationTimeProvider* tick_provider);
   static void TickKeyframeModel(base::TimeTicks monotonic_time,
-                                KeyframeModel* animation,
+                                KeyframeModel* keyframe_model,
                                 AnimationTarget* target);
   void RemoveFromTicking();
   bool is_ticking() const { return is_ticking_; }
@@ -98,7 +98,7 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
   void UpdateState(bool start_ready_keyframe_models, AnimationEvents* events);
   void UpdateTickingState(UpdateTickingType type);
 
-  void AddKeyframeModel(std::unique_ptr<KeyframeModel> animation);
+  void AddKeyframeModel(std::unique_ptr<KeyframeModel> keyframe_model);
   void PauseKeyframeModel(int keyframe_model_id, double time_offset);
   void RemoveKeyframeModel(int keyframe_model_id);
   void AbortKeyframeModel(int keyframe_model_id);

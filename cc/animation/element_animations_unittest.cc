@@ -232,24 +232,25 @@ TEST_F(ElementAnimationsTest, SyncNewAnimation) {
   EXPECT_FALSE(player_->GetKeyframeModel(TargetProperty::OPACITY));
   EXPECT_FALSE(player_impl_->GetKeyframeModel(TargetProperty::OPACITY));
 
-  int animation_id =
+  int keyframe_model_id =
       AddOpacityTransitionToPlayer(player_.get(), 1, 0, 1, false);
-  EXPECT_TRUE(player_->keyframe_effect()->GetKeyframeModelById(animation_id));
+  EXPECT_TRUE(
+      player_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
   EXPECT_EQ(KeyframeModel::WAITING_FOR_TARGET_AVAILABILITY,
             player_->keyframe_effect()
-                ->GetKeyframeModelById(animation_id)
+                ->GetKeyframeModelById(keyframe_model_id)
                 ->run_state());
   EXPECT_FALSE(
-      player_impl_->keyframe_effect()->GetKeyframeModelById(animation_id));
+      player_impl_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
 
   PushProperties();
   player_impl_->ActivateKeyframeEffects();
 
   EXPECT_TRUE(
-      player_impl_->keyframe_effect()->GetKeyframeModelById(animation_id));
+      player_impl_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
   EXPECT_EQ(KeyframeModel::WAITING_FOR_TARGET_AVAILABILITY,
             player_impl_->keyframe_effect()
-                ->GetKeyframeModelById(animation_id)
+                ->GetKeyframeModelById(keyframe_model_id)
                 ->run_state());
 }
 
@@ -348,7 +349,7 @@ TEST_F(ElementAnimationsTest, AddedPlayerIsDestroyed) {
   player2->AttachElement(element_id_);
   player2->set_animation_delegate(&delegate);
 
-  int animation_id =
+  int keyframe_model_id =
       AddOpacityTransitionToPlayer(player2.get(), 1.0, 0.f, 1.f, false);
 
   PushProperties();
@@ -360,7 +361,7 @@ TEST_F(ElementAnimationsTest, AddedPlayerIsDestroyed) {
 
   player2_impl->ActivateKeyframeEffects();
   EXPECT_TRUE(
-      player2_impl->keyframe_effect()->GetKeyframeModelById(animation_id));
+      player2_impl->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
 
   player2_impl->Tick(kInitialTickTime);
 
@@ -383,17 +384,17 @@ TEST_F(ElementAnimationsTest, DoNotClobberStartTimes) {
 
   EXPECT_FALSE(player_impl_->GetKeyframeModel(TargetProperty::OPACITY));
 
-  int animation_id =
+  int keyframe_model_id =
       AddOpacityTransitionToPlayer(player_.get(), 1, 0, 1, false);
 
   PushProperties();
   player_impl_->ActivateKeyframeEffects();
 
   EXPECT_TRUE(
-      player_impl_->keyframe_effect()->GetKeyframeModelById(animation_id));
+      player_impl_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
   EXPECT_EQ(KeyframeModel::WAITING_FOR_TARGET_AVAILABILITY,
             player_impl_->keyframe_effect()
-                ->GetKeyframeModelById(animation_id)
+                ->GetKeyframeModelById(keyframe_model_id)
                 ->run_state());
 
   auto events = CreateEventsForTesting();
@@ -404,20 +405,20 @@ TEST_F(ElementAnimationsTest, DoNotClobberStartTimes) {
   EXPECT_EQ(1u, events->events_.size());
   player_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
   EXPECT_EQ(player_->keyframe_effect()
-                ->GetKeyframeModelById(animation_id)
+                ->GetKeyframeModelById(keyframe_model_id)
                 ->start_time(),
             player_impl_->keyframe_effect()
-                ->GetKeyframeModelById(animation_id)
+                ->GetKeyframeModelById(keyframe_model_id)
                 ->start_time());
 
   // Start the animation on the main thread. Should not affect the start time.
   player_impl_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(500));
   player_impl_->UpdateState(true, nullptr);
   EXPECT_EQ(player_->keyframe_effect()
-                ->GetKeyframeModelById(animation_id)
+                ->GetKeyframeModelById(keyframe_model_id)
                 ->start_time(),
             player_impl_->keyframe_effect()
-                ->GetKeyframeModelById(animation_id)
+                ->GetKeyframeModelById(keyframe_model_id)
                 ->start_time());
 }
 
@@ -426,7 +427,7 @@ TEST_F(ElementAnimationsTest, UseSpecifiedStartTimes) {
   AttachTimelinePlayerLayer();
   CreateImplTimelineAndPlayer();
 
-  int animation_id =
+  int keyframe_model_id =
       AddOpacityTransitionToPlayer(player_.get(), 1, 0, 1, false);
 
   const TimeTicks start_time = TicksFromSecondsF(123);
@@ -437,10 +438,10 @@ TEST_F(ElementAnimationsTest, UseSpecifiedStartTimes) {
   player_impl_->ActivateKeyframeEffects();
 
   EXPECT_TRUE(
-      player_impl_->keyframe_effect()->GetKeyframeModelById(animation_id));
+      player_impl_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
   EXPECT_EQ(KeyframeModel::WAITING_FOR_TARGET_AVAILABILITY,
             player_impl_->keyframe_effect()
-                ->GetKeyframeModelById(animation_id)
+                ->GetKeyframeModelById(keyframe_model_id)
                 ->run_state());
 
   auto events = CreateEventsForTesting();
@@ -452,26 +453,26 @@ TEST_F(ElementAnimationsTest, UseSpecifiedStartTimes) {
   player_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
 
   EXPECT_EQ(start_time, player_->keyframe_effect()
-                            ->GetKeyframeModelById(animation_id)
+                            ->GetKeyframeModelById(keyframe_model_id)
                             ->start_time());
   EXPECT_EQ(player_->keyframe_effect()
-                ->GetKeyframeModelById(animation_id)
+                ->GetKeyframeModelById(keyframe_model_id)
                 ->start_time(),
             player_impl_->keyframe_effect()
-                ->GetKeyframeModelById(animation_id)
+                ->GetKeyframeModelById(keyframe_model_id)
                 ->start_time());
 
   // Start the animation on the main thread. Should not affect the start time.
   player_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(500));
   player_->UpdateState(true, nullptr);
   EXPECT_EQ(start_time, player_->keyframe_effect()
-                            ->GetKeyframeModelById(animation_id)
+                            ->GetKeyframeModelById(keyframe_model_id)
                             ->start_time());
   EXPECT_EQ(player_->keyframe_effect()
-                ->GetKeyframeModelById(animation_id)
+                ->GetKeyframeModelById(keyframe_model_id)
                 ->start_time(),
             player_impl_->keyframe_effect()
-                ->GetKeyframeModelById(animation_id)
+                ->GetKeyframeModelById(keyframe_model_id)
                 ->start_time());
 }
 
@@ -559,22 +560,22 @@ TEST_F(ElementAnimationsTest, SyncPause) {
 
   // Two steps, three ranges: [0-1) -> 0.2, [1-2) -> 0.3, [2-3] -> 0.4.
   const double duration = 3.0;
-  const int animation_id =
+  const int keyframe_model_id =
       AddOpacityStepsToPlayer(player_.get(), duration, 0.2f, 0.4f, 2);
 
   // Set start offset to be at the beginning of the second range.
   player_->keyframe_effect()
-      ->GetKeyframeModelById(animation_id)
+      ->GetKeyframeModelById(keyframe_model_id)
       ->set_time_offset(TimeDelta::FromSecondsD(1.01));
 
   PushProperties();
   player_impl_->ActivateKeyframeEffects();
 
   EXPECT_TRUE(
-      player_impl_->keyframe_effect()->GetKeyframeModelById(animation_id));
+      player_impl_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
   EXPECT_EQ(KeyframeModel::WAITING_FOR_TARGET_AVAILABILITY,
             player_impl_->keyframe_effect()
-                ->GetKeyframeModelById(animation_id)
+                ->GetKeyframeModelById(keyframe_model_id)
                 ->run_state());
 
   TimeTicks time = kInitialTickTime;
@@ -589,29 +590,31 @@ TEST_F(ElementAnimationsTest, SyncPause) {
   player_->UpdateState(true, nullptr);
   player_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
 
-  EXPECT_EQ(KeyframeModel::RUNNING, player_impl_->keyframe_effect()
-                                        ->GetKeyframeModelById(animation_id)
-                                        ->run_state());
-  EXPECT_EQ(KeyframeModel::RUNNING, player_->keyframe_effect()
-                                        ->GetKeyframeModelById(animation_id)
-                                        ->run_state());
+  EXPECT_EQ(KeyframeModel::RUNNING,
+            player_impl_->keyframe_effect()
+                ->GetKeyframeModelById(keyframe_model_id)
+                ->run_state());
+  EXPECT_EQ(KeyframeModel::RUNNING,
+            player_->keyframe_effect()
+                ->GetKeyframeModelById(keyframe_model_id)
+                ->run_state());
 
   EXPECT_EQ(0.3f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   EXPECT_EQ(0.3f,
             client_impl_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   EXPECT_EQ(kInitialTickTime, player_->keyframe_effect()
-                                  ->GetKeyframeModelById(animation_id)
+                                  ->GetKeyframeModelById(keyframe_model_id)
                                   ->start_time());
   EXPECT_EQ(kInitialTickTime, player_impl_->keyframe_effect()
-                                  ->GetKeyframeModelById(animation_id)
+                                  ->GetKeyframeModelById(keyframe_model_id)
                                   ->start_time());
 
   // Pause the animation at the middle of the second range so the offset
   // delays animation until the middle of the third range.
-  player_->PauseKeyframeModel(animation_id, 1.5);
+  player_->PauseKeyframeModel(keyframe_model_id, 1.5);
   EXPECT_EQ(KeyframeModel::PAUSED, player_->keyframe_effect()
-                                       ->GetKeyframeModelById(animation_id)
+                                       ->GetKeyframeModelById(keyframe_model_id)
                                        ->run_state());
 
   // The pause run state change should make it to the impl thread animations.
@@ -624,7 +627,7 @@ TEST_F(ElementAnimationsTest, SyncPause) {
   player_impl_->Tick(time);
 
   EXPECT_EQ(KeyframeModel::PAUSED, player_impl_->keyframe_effect()
-                                       ->GetKeyframeModelById(animation_id)
+                                       ->GetKeyframeModelById(keyframe_model_id)
                                        ->run_state());
 
   // Opacity value doesn't depend on time if paused at specified time offset.
@@ -642,17 +645,17 @@ TEST_F(ElementAnimationsTest, DoNotSyncFinishedAnimation) {
 
   EXPECT_FALSE(player_impl_->GetKeyframeModel(TargetProperty::OPACITY));
 
-  int animation_id =
+  int keyframe_model_id =
       AddOpacityTransitionToPlayer(player_.get(), 1, 0, 1, false);
 
   PushProperties();
   player_impl_->ActivateKeyframeEffects();
 
   EXPECT_TRUE(
-      player_impl_->keyframe_effect()->GetKeyframeModelById(animation_id));
+      player_impl_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
   EXPECT_EQ(KeyframeModel::WAITING_FOR_TARGET_AVAILABILITY,
             player_impl_->keyframe_effect()
-                ->GetKeyframeModelById(animation_id)
+                ->GetKeyframeModelById(keyframe_model_id)
                 ->run_state());
 
   events = CreateEventsForTesting();
@@ -678,9 +681,10 @@ TEST_F(ElementAnimationsTest, DoNotSyncFinishedAnimation) {
 
   PushProperties();
   player_impl_->ActivateKeyframeEffects();
-  EXPECT_FALSE(player_->keyframe_effect()->GetKeyframeModelById(animation_id));
   EXPECT_FALSE(
-      player_impl_->keyframe_effect()->GetKeyframeModelById(animation_id));
+      player_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
+  EXPECT_FALSE(
+      player_impl_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
 }
 
 // Ensure that a finished animation is eventually deleted by both the
@@ -767,19 +771,22 @@ TEST_F(ElementAnimationsTest, TrivialTransition) {
   std::unique_ptr<KeyframeModel> to_add(CreateKeyframeModel(
       std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)),
       1, TargetProperty::OPACITY));
-  int animation_id = to_add->id();
+  int keyframe_model_id = to_add->id();
 
-  EXPECT_FALSE(player_->keyframe_effect()->GetKeyframeModelById(animation_id));
+  EXPECT_FALSE(
+      player_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
   player_->AddKeyframeModel(std::move(to_add));
-  EXPECT_TRUE(player_->keyframe_effect()->GetKeyframeModelById(animation_id));
+  EXPECT_TRUE(
+      player_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
   EXPECT_EQ(KeyframeModel::WAITING_FOR_TARGET_AVAILABILITY,
             player_->keyframe_effect()
-                ->GetKeyframeModelById(animation_id)
+                ->GetKeyframeModelById(keyframe_model_id)
                 ->run_state());
   player_->Tick(kInitialTickTime);
-  EXPECT_EQ(KeyframeModel::STARTING, player_->keyframe_effect()
-                                         ->GetKeyframeModelById(animation_id)
-                                         ->run_state());
+  EXPECT_EQ(KeyframeModel::STARTING,
+            player_->keyframe_effect()
+                ->GetKeyframeModelById(keyframe_model_id)
+                ->run_state());
   player_->UpdateState(true, events.get());
   EXPECT_TRUE(player_->keyframe_effect()->HasTickingKeyframeModel());
   EXPECT_EQ(0.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
@@ -1096,9 +1103,9 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
           target_value, CubicBezierTimingFunction::CreatePreset(
                             CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
 
-  int animation_id = 1;
+  int keyframe_model_id = 1;
   std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
-      std::move(curve), animation_id, 0, TargetProperty::SCROLL_OFFSET));
+      std::move(curve), keyframe_model_id, 0, TargetProperty::SCROLL_OFFSET));
   keyframe_model->set_needs_synchronized_start_time(true);
   player_->AddKeyframeModel(std::move(keyframe_model));
   PushProperties();
@@ -1108,7 +1115,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
   EXPECT_FALSE(player_impl_->keyframe_effect()
                    ->scroll_offset_animation_was_interrupted());
 
-  player_->RemoveKeyframeModel(animation_id);
+  player_->RemoveKeyframeModel(keyframe_model_id);
   EXPECT_TRUE(
       player_->keyframe_effect()->scroll_offset_animation_was_interrupted());
 
@@ -1126,7 +1133,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
   curve = ScrollOffsetAnimationCurve::Create(
       target_value, CubicBezierTimingFunction::CreatePreset(
                         CubicBezierTimingFunction::EaseType::EASE_IN_OUT));
-  keyframe_model = KeyframeModel::Create(std::move(curve), animation_id, 0,
+  keyframe_model = KeyframeModel::Create(std::move(curve), keyframe_model_id, 0,
                                          TargetProperty::SCROLL_OFFSET);
   keyframe_model->set_needs_synchronized_start_time(true);
   player_->AddKeyframeModel(std::move(keyframe_model));
@@ -1137,7 +1144,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
   EXPECT_FALSE(player_impl_->keyframe_effect()
                    ->scroll_offset_animation_was_interrupted());
 
-  player_->RemoveKeyframeModel(animation_id);
+  player_->RemoveKeyframeModel(keyframe_model_id);
   EXPECT_TRUE(
       player_->keyframe_effect()->scroll_offset_animation_was_interrupted());
 
@@ -1153,7 +1160,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
 
   // Check that removing non-scroll-offset animations does not cause
   // scroll_offset_animation_was_interrupted() to get set.
-  animation_id = AddAnimatedTransformToPlayer(player_.get(), 1.0, 1, 2);
+  keyframe_model_id = AddAnimatedTransformToPlayer(player_.get(), 1.0, 1, 2);
   PushProperties();
   player_impl_->ActivateKeyframeEffects();
   EXPECT_FALSE(
@@ -1161,7 +1168,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
   EXPECT_FALSE(player_impl_->keyframe_effect()
                    ->scroll_offset_animation_was_interrupted());
 
-  player_->RemoveKeyframeModel(animation_id);
+  player_->RemoveKeyframeModel(keyframe_model_id);
   EXPECT_FALSE(
       player_->keyframe_effect()->scroll_offset_animation_was_interrupted());
 
@@ -1175,7 +1182,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
   EXPECT_FALSE(player_impl_->keyframe_effect()
                    ->scroll_offset_animation_was_interrupted());
 
-  animation_id = AddAnimatedFilterToPlayer(player_.get(), 1.0, 0.1f, 0.2f);
+  keyframe_model_id = AddAnimatedFilterToPlayer(player_.get(), 1.0, 0.1f, 0.2f);
   PushProperties();
   player_impl_->ActivateKeyframeEffects();
   EXPECT_FALSE(
@@ -1183,7 +1190,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
   EXPECT_FALSE(player_impl_->keyframe_effect()
                    ->scroll_offset_animation_was_interrupted());
 
-  player_->RemoveKeyframeModel(animation_id);
+  player_->RemoveKeyframeModel(keyframe_model_id);
   EXPECT_FALSE(
       player_->keyframe_effect()->scroll_offset_animation_was_interrupted());
 
@@ -1254,7 +1261,7 @@ TEST_F(ElementAnimationsTest, SpecifiedStartTimesAreSentToMainThreadDelegate) {
   TestAnimationDelegate delegate;
   player_->set_animation_delegate(&delegate);
 
-  int animation_id =
+  int keyframe_model_id =
       AddOpacityTransitionToPlayer(player_.get(), 1, 0, 1, false);
 
   const TimeTicks start_time = TicksFromSecondsF(123);
@@ -1265,10 +1272,10 @@ TEST_F(ElementAnimationsTest, SpecifiedStartTimesAreSentToMainThreadDelegate) {
   player_impl_->ActivateKeyframeEffects();
 
   EXPECT_TRUE(
-      player_impl_->keyframe_effect()->GetKeyframeModelById(animation_id));
+      player_impl_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
   EXPECT_EQ(KeyframeModel::WAITING_FOR_TARGET_AVAILABILITY,
             player_impl_->keyframe_effect()
-                ->GetKeyframeModelById(animation_id)
+                ->GetKeyframeModelById(keyframe_model_id)
                 ->run_state());
 
   auto events = CreateEventsForTesting();
@@ -1625,13 +1632,13 @@ TEST_F(ElementAnimationsTest, AbortAGroupedAnimation) {
 
   auto events = CreateEventsForTesting();
 
-  const int animation_id = 2;
+  const int keyframe_model_id = 2;
   player_->AddKeyframeModel(KeyframeModel::Create(
       std::unique_ptr<AnimationCurve>(new FakeTransformTransition(1)), 1, 1,
       TargetProperty::TRANSFORM));
   player_->AddKeyframeModel(KeyframeModel::Create(
       std::unique_ptr<AnimationCurve>(new FakeFloatTransition(2.0, 0.f, 1.f)),
-      animation_id, 1, TargetProperty::OPACITY));
+      keyframe_model_id, 1, TargetProperty::OPACITY));
   player_->AddKeyframeModel(KeyframeModel::Create(
       std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 1.f, 0.75f)),
       3, 2, TargetProperty::OPACITY));
@@ -1645,9 +1652,10 @@ TEST_F(ElementAnimationsTest, AbortAGroupedAnimation) {
   EXPECT_TRUE(player_->keyframe_effect()->HasTickingKeyframeModel());
   EXPECT_EQ(0.5f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
-  EXPECT_TRUE(player_->keyframe_effect()->GetKeyframeModelById(animation_id));
+  EXPECT_TRUE(
+      player_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
   player_->keyframe_effect()
-      ->GetKeyframeModelById(animation_id)
+      ->GetKeyframeModelById(keyframe_model_id)
       ->SetRunState(KeyframeModel::ABORTED,
                     kInitialTickTime + TimeDelta::FromMilliseconds(1000));
   player_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
@@ -1868,7 +1876,7 @@ TEST_F(ElementAnimationsTest, MainThreadAbortedAnimationGetsDeleted) {
   AttachTimelinePlayerLayer();
   CreateImplTimelineAndPlayer();
 
-  int animation_id =
+  int keyframe_model_id =
       AddOpacityTransitionToPlayer(player_.get(), 1.0, 0.f, 1.f, false);
   EXPECT_TRUE(host_->needs_push_properties());
 
@@ -1877,7 +1885,7 @@ TEST_F(ElementAnimationsTest, MainThreadAbortedAnimationGetsDeleted) {
   player_impl_->ActivateKeyframeEffects();
 
   EXPECT_TRUE(
-      player_impl_->keyframe_effect()->GetKeyframeModelById(animation_id));
+      player_impl_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
   EXPECT_FALSE(host_->needs_push_properties());
 
   player_->AbortKeyframeModels(TargetProperty::OPACITY, false);
@@ -1897,9 +1905,10 @@ TEST_F(ElementAnimationsTest, MainThreadAbortedAnimationGetsDeleted) {
   EXPECT_FALSE(player_->keyframe_effect()->needs_push_properties());
   EXPECT_FALSE(host_->needs_push_properties());
 
-  EXPECT_FALSE(player_->keyframe_effect()->GetKeyframeModelById(animation_id));
   EXPECT_FALSE(
-      player_impl_->keyframe_effect()->GetKeyframeModelById(animation_id));
+      player_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
+  EXPECT_FALSE(
+      player_impl_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
 }
 
 // An animation aborted on the impl thread should get deleted on both threads.
@@ -1911,7 +1920,7 @@ TEST_F(ElementAnimationsTest, ImplThreadAbortedAnimationGetsDeleted) {
   TestAnimationDelegate delegate;
   player_->set_animation_delegate(&delegate);
 
-  int animation_id =
+  int keyframe_model_id =
       AddOpacityTransitionToPlayer(player_.get(), 1.0, 0.f, 1.f, false);
 
   PushProperties();
@@ -1919,7 +1928,7 @@ TEST_F(ElementAnimationsTest, ImplThreadAbortedAnimationGetsDeleted) {
 
   player_impl_->ActivateKeyframeEffects();
   EXPECT_TRUE(
-      player_impl_->keyframe_effect()->GetKeyframeModelById(animation_id));
+      player_impl_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
 
   player_impl_->AbortKeyframeModels(TargetProperty::OPACITY, false);
   EXPECT_EQ(
@@ -1952,9 +1961,10 @@ TEST_F(ElementAnimationsTest, ImplThreadAbortedAnimationGetsDeleted) {
   PushProperties();
 
   player_impl_->ActivateKeyframeEffects();
-  EXPECT_FALSE(player_->keyframe_effect()->GetKeyframeModelById(animation_id));
   EXPECT_FALSE(
-      player_impl_->keyframe_effect()->GetKeyframeModelById(animation_id));
+      player_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
+  EXPECT_FALSE(
+      player_impl_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
 }
 
 // Test that an impl-only scroll offset animation that needs to be completed on
@@ -1970,7 +1980,7 @@ TEST_F(ElementAnimationsTest, ImplThreadTakeoverAnimationGetsDeleted) {
   player_->set_animation_delegate(&delegate);
 
   // Add impl-only scroll offset animation.
-  const int animation_id = 1;
+  const int keyframe_model_id = 1;
   gfx::ScrollOffset initial_value(100.f, 300.f);
   gfx::ScrollOffset target_value(300.f, 200.f);
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
@@ -1979,7 +1989,7 @@ TEST_F(ElementAnimationsTest, ImplThreadTakeoverAnimationGetsDeleted) {
                             CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
   curve->SetInitialValue(initial_value);
   std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
-      std::move(curve), animation_id, 0, TargetProperty::SCROLL_OFFSET));
+      std::move(curve), keyframe_model_id, 0, TargetProperty::SCROLL_OFFSET));
   keyframe_model->set_start_time(TicksFromSecondsF(123));
   keyframe_model->set_is_impl_only(true);
   player_impl_->AddKeyframeModel(std::move(keyframe_model));
@@ -1989,7 +1999,7 @@ TEST_F(ElementAnimationsTest, ImplThreadTakeoverAnimationGetsDeleted) {
 
   player_impl_->ActivateKeyframeEffects();
   EXPECT_TRUE(
-      player_impl_->keyframe_effect()->GetKeyframeModelById(animation_id));
+      player_impl_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
 
   player_impl_->AbortKeyframeModels(TargetProperty::SCROLL_OFFSET, true);
   EXPECT_TRUE(host_impl_->needs_push_properties());
@@ -2024,9 +2034,10 @@ TEST_F(ElementAnimationsTest, ImplThreadTakeoverAnimationGetsDeleted) {
   PushProperties();
 
   player_impl_->ActivateKeyframeEffects();
-  EXPECT_FALSE(player_->keyframe_effect()->GetKeyframeModelById(animation_id));
   EXPECT_FALSE(
-      player_impl_->keyframe_effect()->GetKeyframeModelById(animation_id));
+      player_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
+  EXPECT_FALSE(
+      player_impl_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
 }
 
 // Ensure that we only generate FINISHED events for animations in a group
@@ -2537,38 +2548,41 @@ TEST_F(ElementAnimationsTest, NewlyPushedAnimationWaitsForActivation) {
 
   auto events = CreateEventsForTesting();
 
-  int animation_id =
+  int keyframe_model_id =
       AddOpacityTransitionToPlayer(player_.get(), 1, 0.5f, 1.f, false);
-  EXPECT_TRUE(player_->keyframe_effect()->GetKeyframeModelById(animation_id));
+  EXPECT_TRUE(
+      player_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
   EXPECT_FALSE(
-      player_impl_->keyframe_effect()->GetKeyframeModelById(animation_id));
+      player_impl_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
 
   PushProperties();
 
   EXPECT_TRUE(
-      player_impl_->keyframe_effect()->GetKeyframeModelById(animation_id));
+      player_impl_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
   EXPECT_EQ(KeyframeModel::WAITING_FOR_TARGET_AVAILABILITY,
             player_impl_->keyframe_effect()
-                ->GetKeyframeModelById(animation_id)
+                ->GetKeyframeModelById(keyframe_model_id)
                 ->run_state());
   EXPECT_TRUE(player_impl_->keyframe_effect()
-                  ->GetKeyframeModelById(animation_id)
+                  ->GetKeyframeModelById(keyframe_model_id)
                   ->affects_pending_elements());
   EXPECT_FALSE(player_impl_->keyframe_effect()
-                   ->GetKeyframeModelById(animation_id)
+                   ->GetKeyframeModelById(keyframe_model_id)
                    ->affects_active_elements());
 
   player_impl_->Tick(kInitialTickTime);
-  EXPECT_EQ(KeyframeModel::STARTING, player_impl_->keyframe_effect()
-                                         ->GetKeyframeModelById(animation_id)
-                                         ->run_state());
+  EXPECT_EQ(KeyframeModel::STARTING,
+            player_impl_->keyframe_effect()
+                ->GetKeyframeModelById(keyframe_model_id)
+                ->run_state());
   player_impl_->UpdateState(true, events.get());
 
   // Since the animation hasn't been activated, it should still be STARTING
   // rather than RUNNING.
-  EXPECT_EQ(KeyframeModel::STARTING, player_impl_->keyframe_effect()
-                                         ->GetKeyframeModelById(animation_id)
-                                         ->run_state());
+  EXPECT_EQ(KeyframeModel::STARTING,
+            player_impl_->keyframe_effect()
+                ->GetKeyframeModelById(keyframe_model_id)
+                ->run_state());
 
   // Since the animation hasn't been activated, only the pending observer
   // should have been ticked.
@@ -2578,10 +2592,10 @@ TEST_F(ElementAnimationsTest, NewlyPushedAnimationWaitsForActivation) {
 
   player_impl_->ActivateKeyframeEffects();
   EXPECT_TRUE(player_impl_->keyframe_effect()
-                  ->GetKeyframeModelById(animation_id)
+                  ->GetKeyframeModelById(keyframe_model_id)
                   ->affects_pending_elements());
   EXPECT_TRUE(player_impl_->keyframe_effect()
-                  ->GetKeyframeModelById(animation_id)
+                  ->GetKeyframeModelById(keyframe_model_id)
                   ->affects_active_elements());
 
   player_impl_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
@@ -2589,9 +2603,10 @@ TEST_F(ElementAnimationsTest, NewlyPushedAnimationWaitsForActivation) {
 
   // Since the animation has been activated, it should have reached the
   // RUNNING state and the active observer should start to get ticked.
-  EXPECT_EQ(KeyframeModel::RUNNING, player_impl_->keyframe_effect()
-                                        ->GetKeyframeModelById(animation_id)
-                                        ->run_state());
+  EXPECT_EQ(KeyframeModel::RUNNING,
+            player_impl_->keyframe_effect()
+                ->GetKeyframeModelById(keyframe_model_id)
+                ->run_state());
   EXPECT_EQ(0.5f,
             client_impl_.GetOpacity(element_id_, ElementListType::PENDING));
   EXPECT_EQ(0.5f,
@@ -2605,22 +2620,22 @@ TEST_F(ElementAnimationsTest, ActivationBetweenAnimateAndUpdateState) {
 
   auto events = CreateEventsForTesting();
 
-  const int animation_id =
+  const int keyframe_model_id =
       AddOpacityTransitionToPlayer(player_.get(), 1, 0.5f, 1.f, true);
 
   PushProperties();
 
   EXPECT_TRUE(
-      player_impl_->keyframe_effect()->GetKeyframeModelById(animation_id));
+      player_impl_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
   EXPECT_EQ(KeyframeModel::WAITING_FOR_TARGET_AVAILABILITY,
             player_impl_->keyframe_effect()
-                ->GetKeyframeModelById(animation_id)
+                ->GetKeyframeModelById(keyframe_model_id)
                 ->run_state());
   EXPECT_TRUE(player_impl_->keyframe_effect()
-                  ->GetKeyframeModelById(animation_id)
+                  ->GetKeyframeModelById(keyframe_model_id)
                   ->affects_pending_elements());
   EXPECT_FALSE(player_impl_->keyframe_effect()
-                   ->GetKeyframeModelById(animation_id)
+                   ->GetKeyframeModelById(keyframe_model_id)
                    ->affects_active_elements());
 
   player_impl_->Tick(kInitialTickTime);
@@ -2633,19 +2648,20 @@ TEST_F(ElementAnimationsTest, ActivationBetweenAnimateAndUpdateState) {
 
   player_impl_->ActivateKeyframeEffects();
   EXPECT_TRUE(player_impl_->keyframe_effect()
-                  ->GetKeyframeModelById(animation_id)
+                  ->GetKeyframeModelById(keyframe_model_id)
                   ->affects_pending_elements());
   EXPECT_TRUE(player_impl_->keyframe_effect()
-                  ->GetKeyframeModelById(animation_id)
+                  ->GetKeyframeModelById(keyframe_model_id)
                   ->affects_active_elements());
 
   player_impl_->UpdateState(true, events.get());
 
   // Since the animation has been activated, it should have reached the
   // RUNNING state.
-  EXPECT_EQ(KeyframeModel::RUNNING, player_impl_->keyframe_effect()
-                                        ->GetKeyframeModelById(animation_id)
-                                        ->run_state());
+  EXPECT_EQ(KeyframeModel::RUNNING,
+            player_impl_->keyframe_effect()
+                ->GetKeyframeModelById(keyframe_model_id)
+                ->run_state());
 
   player_impl_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(500));
 
@@ -2742,7 +2758,8 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenTransformAnimationChanges) {
       element_id_, ElementListType::ACTIVE));
 
   // Case 2: An animation that's removed before it finishes.
-  int animation_id = AddAnimatedTransformToPlayer(player_.get(), 10.0, 2, 2);
+  int keyframe_model_id =
+      AddAnimatedTransformToPlayer(player_.get(), 10.0, 2, 2);
   int animation2_id = AddAnimatedTransformToPlayer(player_.get(), 10.0, 2, 1);
   player_->keyframe_effect()
       ->GetKeyframeModelById(animation2_id)
@@ -2780,7 +2797,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenTransformAnimationChanges) {
   player_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
   events->events_.clear();
 
-  player_->RemoveKeyframeModel(animation_id);
+  player_->RemoveKeyframeModel(keyframe_model_id);
   player_->RemoveKeyframeModel(animation2_id);
   EXPECT_FALSE(client_.GetHasPotentialTransformAnimation(
       element_id_, ElementListType::ACTIVE));
@@ -2804,7 +2821,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenTransformAnimationChanges) {
       element_id_, ElementListType::ACTIVE));
 
   // Case 3: An animation that's aborted before it finishes.
-  animation_id = AddAnimatedTransformToPlayer(player_.get(), 10.0, 3, 3);
+  keyframe_model_id = AddAnimatedTransformToPlayer(player_.get(), 10.0, 3, 3);
   EXPECT_TRUE(client_.GetHasPotentialTransformAnimation(
       element_id_, ElementListType::ACTIVE));
   EXPECT_TRUE(client_.GetTransformIsCurrentlyAnimating(
@@ -2852,12 +2869,12 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenTransformAnimationChanges) {
       element_id_, ElementListType::ACTIVE));
 
   // Case 4 : An animation that's not in effect.
-  animation_id = AddAnimatedTransformToPlayer(player_.get(), 1.0, 1, 6);
+  keyframe_model_id = AddAnimatedTransformToPlayer(player_.get(), 1.0, 1, 6);
   player_->keyframe_effect()
-      ->GetKeyframeModelById(animation_id)
+      ->GetKeyframeModelById(keyframe_model_id)
       ->set_time_offset(base::TimeDelta::FromMilliseconds(-10000));
   player_->keyframe_effect()
-      ->GetKeyframeModelById(animation_id)
+      ->GetKeyframeModelById(keyframe_model_id)
       ->set_fill_mode(KeyframeModel::FillMode::NONE);
 
   PushProperties();
@@ -2964,7 +2981,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenOpacityAnimationChanges) {
       element_id_, ElementListType::ACTIVE));
 
   // Case 2: An animation that's removed before it finishes.
-  int animation_id = AddOpacityTransitionToPlayer(
+  int keyframe_model_id = AddOpacityTransitionToPlayer(
       player_.get(), 10.0, 0.f, 1.f, false /*use_timing_function*/);
   EXPECT_TRUE(client_.GetHasPotentialOpacityAnimation(element_id_,
                                                       ElementListType::ACTIVE));
@@ -2993,7 +3010,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenOpacityAnimationChanges) {
   player_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
   events->events_.clear();
 
-  player_->RemoveKeyframeModel(animation_id);
+  player_->RemoveKeyframeModel(keyframe_model_id);
   EXPECT_FALSE(client_.GetHasPotentialOpacityAnimation(
       element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(client_.GetOpacityIsCurrentlyAnimating(element_id_,
@@ -3016,8 +3033,8 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenOpacityAnimationChanges) {
       element_id_, ElementListType::ACTIVE));
 
   // Case 3: An animation that's aborted before it finishes.
-  animation_id = AddOpacityTransitionToPlayer(player_.get(), 10.0, 0.f, 0.5f,
-                                              false /*use_timing_function*/);
+  keyframe_model_id = AddOpacityTransitionToPlayer(
+      player_.get(), 10.0, 0.f, 0.5f, false /*use_timing_function*/);
   EXPECT_TRUE(client_.GetHasPotentialOpacityAnimation(element_id_,
                                                       ElementListType::ACTIVE));
   EXPECT_TRUE(client_.GetOpacityIsCurrentlyAnimating(element_id_,
@@ -3065,13 +3082,13 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenOpacityAnimationChanges) {
                                                       ElementListType::ACTIVE));
 
   // Case 4 : An animation that's not in effect.
-  animation_id = AddOpacityTransitionToPlayer(player_.get(), 1.0, 0.f, 0.5f,
-                                              false /*use_timing_function*/);
+  keyframe_model_id = AddOpacityTransitionToPlayer(
+      player_.get(), 1.0, 0.f, 0.5f, false /*use_timing_function*/);
   player_->keyframe_effect()
-      ->GetKeyframeModelById(animation_id)
+      ->GetKeyframeModelById(keyframe_model_id)
       ->set_time_offset(base::TimeDelta::FromMilliseconds(-10000));
   player_->keyframe_effect()
-      ->GetKeyframeModelById(animation_id)
+      ->GetKeyframeModelById(keyframe_model_id)
       ->set_fill_mode(KeyframeModel::FillMode::NONE);
 
   PushProperties();
@@ -3177,7 +3194,8 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenFilterAnimationChanges) {
       element_id_, ElementListType::ACTIVE));
 
   // Case 2: An animation that's removed before it finishes.
-  int animation_id = AddAnimatedFilterToPlayer(player_.get(), 10.0, 0.f, 1.f);
+  int keyframe_model_id =
+      AddAnimatedFilterToPlayer(player_.get(), 10.0, 0.f, 1.f);
   EXPECT_TRUE(client_.GetHasPotentialFilterAnimation(element_id_,
                                                      ElementListType::ACTIVE));
   EXPECT_TRUE(client_.GetFilterIsCurrentlyAnimating(element_id_,
@@ -3205,7 +3223,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenFilterAnimationChanges) {
   player_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
   events->events_.clear();
 
-  player_->RemoveKeyframeModel(animation_id);
+  player_->RemoveKeyframeModel(keyframe_model_id);
   EXPECT_FALSE(client_.GetHasPotentialFilterAnimation(element_id_,
                                                       ElementListType::ACTIVE));
   EXPECT_FALSE(client_.GetFilterIsCurrentlyAnimating(element_id_,
@@ -3228,7 +3246,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenFilterAnimationChanges) {
       element_id_, ElementListType::ACTIVE));
 
   // Case 3: An animation that's aborted before it finishes.
-  animation_id = AddAnimatedFilterToPlayer(player_.get(), 10.0, 0.f, 0.5f);
+  keyframe_model_id = AddAnimatedFilterToPlayer(player_.get(), 10.0, 0.f, 0.5f);
   EXPECT_TRUE(client_.GetHasPotentialFilterAnimation(element_id_,
                                                      ElementListType::ACTIVE));
   EXPECT_TRUE(client_.GetFilterIsCurrentlyAnimating(element_id_,
@@ -3276,12 +3294,12 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenFilterAnimationChanges) {
                                                      ElementListType::ACTIVE));
 
   // Case 4 : An animation that's not in effect.
-  animation_id = AddAnimatedFilterToPlayer(player_.get(), 1.0, 0.f, 0.5f);
+  keyframe_model_id = AddAnimatedFilterToPlayer(player_.get(), 1.0, 0.f, 0.5f);
   player_->keyframe_effect()
-      ->GetKeyframeModelById(animation_id)
+      ->GetKeyframeModelById(keyframe_model_id)
       ->set_time_offset(base::TimeDelta::FromMilliseconds(-10000));
   player_->keyframe_effect()
-      ->GetKeyframeModelById(animation_id)
+      ->GetKeyframeModelById(keyframe_model_id)
       ->set_fill_mode(KeyframeModel::FillMode::NONE);
 
   PushProperties();
@@ -3336,25 +3354,26 @@ TEST_F(ElementAnimationsTest, PushedDeletedAnimationWaitsForActivation) {
 
   auto events = CreateEventsForTesting();
 
-  const int animation_id =
+  const int keyframe_model_id =
       AddOpacityTransitionToPlayer(player_.get(), 1, 0.5f, 1.f, true);
   PushProperties();
   player_impl_->ActivateKeyframeEffects();
   player_impl_->Tick(kInitialTickTime);
   player_impl_->UpdateState(true, events.get());
-  EXPECT_EQ(KeyframeModel::RUNNING, player_impl_->keyframe_effect()
-                                        ->GetKeyframeModelById(animation_id)
-                                        ->run_state());
+  EXPECT_EQ(KeyframeModel::RUNNING,
+            player_impl_->keyframe_effect()
+                ->GetKeyframeModelById(keyframe_model_id)
+                ->run_state());
   EXPECT_EQ(0.5f,
             client_impl_.GetOpacity(element_id_, ElementListType::PENDING));
   EXPECT_EQ(0.5f,
             client_impl_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   EXPECT_TRUE(player_impl_->keyframe_effect()
-                  ->GetKeyframeModelById(animation_id)
+                  ->GetKeyframeModelById(keyframe_model_id)
                   ->affects_pending_elements());
   EXPECT_TRUE(player_impl_->keyframe_effect()
-                  ->GetKeyframeModelById(animation_id)
+                  ->GetKeyframeModelById(keyframe_model_id)
                   ->affects_active_elements());
 
   // Delete the animation on the main-thread animations.
@@ -3364,10 +3383,10 @@ TEST_F(ElementAnimationsTest, PushedDeletedAnimationWaitsForActivation) {
 
   // The animation should no longer affect pending elements.
   EXPECT_FALSE(player_impl_->keyframe_effect()
-                   ->GetKeyframeModelById(animation_id)
+                   ->GetKeyframeModelById(keyframe_model_id)
                    ->affects_pending_elements());
   EXPECT_TRUE(player_impl_->keyframe_effect()
-                  ->GetKeyframeModelById(animation_id)
+                  ->GetKeyframeModelById(keyframe_model_id)
                   ->affects_active_elements());
 
   player_impl_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(500));
@@ -3388,7 +3407,7 @@ TEST_F(ElementAnimationsTest, PushedDeletedAnimationWaitsForActivation) {
   // deletion state.
   EXPECT_EQ(KeyframeModel::WAITING_FOR_DELETION,
             player_impl_->keyframe_effect()
-                ->GetKeyframeModelById(animation_id)
+                ->GetKeyframeModelById(keyframe_model_id)
                 ->run_state());
   EXPECT_EQ(1u, events->events_.size());
 
@@ -3408,7 +3427,7 @@ TEST_F(ElementAnimationsTest, StartAnimationsAffectingDifferentObservers) {
 
   auto events = CreateEventsForTesting();
 
-  const int first_animation_id =
+  const int first_keyframe_model_id =
       AddOpacityTransitionToPlayer(player_.get(), 1, 0.f, 1.f, true);
 
   PushProperties();
@@ -3420,23 +3439,23 @@ TEST_F(ElementAnimationsTest, StartAnimationsAffectingDifferentObservers) {
   // new animation affecting the same property.
   player_->RemoveKeyframeModel(
       player_->GetKeyframeModel(TargetProperty::OPACITY)->id());
-  const int second_animation_id =
+  const int second_keyframe_model_id =
       AddOpacityTransitionToPlayer(player_.get(), 1, 1.f, 0.5f, true);
   PushProperties();
 
   // The original animation should only affect active elements, and the new
   // animation should only affect pending elements.
   EXPECT_FALSE(player_impl_->keyframe_effect()
-                   ->GetKeyframeModelById(first_animation_id)
+                   ->GetKeyframeModelById(first_keyframe_model_id)
                    ->affects_pending_elements());
   EXPECT_TRUE(player_impl_->keyframe_effect()
-                  ->GetKeyframeModelById(first_animation_id)
+                  ->GetKeyframeModelById(first_keyframe_model_id)
                   ->affects_active_elements());
   EXPECT_TRUE(player_impl_->keyframe_effect()
-                  ->GetKeyframeModelById(second_animation_id)
+                  ->GetKeyframeModelById(second_keyframe_model_id)
                   ->affects_pending_elements());
   EXPECT_FALSE(player_impl_->keyframe_effect()
-                   ->GetKeyframeModelById(second_animation_id)
+                   ->GetKeyframeModelById(second_keyframe_model_id)
                    ->affects_active_elements());
 
   player_impl_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(500));
@@ -3446,11 +3465,11 @@ TEST_F(ElementAnimationsTest, StartAnimationsAffectingDifferentObservers) {
   // should be starting.
   EXPECT_EQ(KeyframeModel::RUNNING,
             player_impl_->keyframe_effect()
-                ->GetKeyframeModelById(first_animation_id)
+                ->GetKeyframeModelById(first_keyframe_model_id)
                 ->run_state());
   EXPECT_EQ(KeyframeModel::STARTING,
             player_impl_->keyframe_effect()
-                ->GetKeyframeModelById(second_animation_id)
+                ->GetKeyframeModelById(second_keyframe_model_id)
                 ->run_state());
 
   // The active observer should have been ticked by the original animation,
@@ -3465,16 +3484,16 @@ TEST_F(ElementAnimationsTest, StartAnimationsAffectingDifferentObservers) {
   // The original animation no longer affect either elements, and the new
   // animation should now affect both elements.
   EXPECT_FALSE(player_impl_->keyframe_effect()
-                   ->GetKeyframeModelById(first_animation_id)
+                   ->GetKeyframeModelById(first_keyframe_model_id)
                    ->affects_pending_elements());
   EXPECT_FALSE(player_impl_->keyframe_effect()
-                   ->GetKeyframeModelById(first_animation_id)
+                   ->GetKeyframeModelById(first_keyframe_model_id)
                    ->affects_active_elements());
   EXPECT_TRUE(player_impl_->keyframe_effect()
-                  ->GetKeyframeModelById(second_animation_id)
+                  ->GetKeyframeModelById(second_keyframe_model_id)
                   ->affects_pending_elements());
   EXPECT_TRUE(player_impl_->keyframe_effect()
-                  ->GetKeyframeModelById(second_animation_id)
+                  ->GetKeyframeModelById(second_keyframe_model_id)
                   ->affects_active_elements());
 
   player_impl_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
@@ -3483,14 +3502,14 @@ TEST_F(ElementAnimationsTest, StartAnimationsAffectingDifferentObservers) {
   // The original animation should be marked for waiting for deletion.
   EXPECT_EQ(KeyframeModel::WAITING_FOR_DELETION,
             player_impl_->keyframe_effect()
-                ->GetKeyframeModelById(first_animation_id)
+                ->GetKeyframeModelById(first_keyframe_model_id)
                 ->run_state());
 
   // The new animation should be running, and the active observer should have
   // been ticked at the new animation's starting point.
   EXPECT_EQ(KeyframeModel::RUNNING,
             player_impl_->keyframe_effect()
-                ->GetKeyframeModelById(second_animation_id)
+                ->GetKeyframeModelById(second_keyframe_model_id)
                 ->run_state());
   EXPECT_EQ(1.f,
             client_impl_.GetOpacity(element_id_, ElementListType::PENDING));
