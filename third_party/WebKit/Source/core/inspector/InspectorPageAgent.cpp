@@ -1053,7 +1053,8 @@ Response InspectorPageAgent::getLayoutMetrics(
 
   main_frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  IntRect visible_contents = main_frame->View()->VisibleContentRect();
+  IntRect visible_contents =
+      main_frame->View()->LayoutViewportScrollableArea()->VisibleContentRect();
   *out_layout_viewport = protocol::Page::LayoutViewport::create()
                              .setPageX(visible_contents.X())
                              .setPageY(visible_contents.Y())
@@ -1066,8 +1067,12 @@ Response InspectorPageAgent::getLayoutMetrics(
   float page_zoom = main_frame->PageZoomFactor();
   FloatRect visible_rect = visual_viewport.VisibleRect();
   float scale = visual_viewport.Scale();
-  float scrollbar_width = frame_view->VerticalScrollbarWidth() / scale;
-  float scrollbar_height = frame_view->HorizontalScrollbarHeight() / scale;
+  float scrollbar_width =
+      frame_view->LayoutViewportScrollableArea()->VerticalScrollbarWidth() /
+      scale;
+  float scrollbar_height =
+      frame_view->LayoutViewportScrollableArea()->HorizontalScrollbarHeight() /
+      scale;
 
   IntSize content_size = frame_view->GetScrollableArea()->ContentsSize();
   *out_content_size = protocol::DOM::Rect::create()
