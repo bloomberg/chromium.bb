@@ -38,7 +38,7 @@ class CDATASection final : public Text {
 
   String nodeName() const override;
   NodeType getNodeType() const override;
-  Text* CloneWithData(const String&) override;
+  Text* CloneWithData(Document&, const String&) override;
 };
 
 DEFINE_NODE_TYPE_CASTS(CDATASection, getNodeType() == Node::kCdataSectionNode);

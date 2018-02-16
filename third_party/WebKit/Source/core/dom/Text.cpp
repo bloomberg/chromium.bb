@@ -112,7 +112,7 @@ Text* Text::splitText(unsigned offset, ExceptionState& exception_state) {
 
   EventQueueScope scope;
   String old_str = data();
-  Text* new_text = CloneWithData(old_str.Substring(offset));
+  Text* new_text = CloneWithData(GetDocument(), old_str.Substring(offset));
   SetDataWithoutUpdate(old_str.Substring(0, offset));
 
   DidModifyData(old_str, CharacterData::kUpdateFromNonParser);
@@ -238,8 +238,8 @@ Node::NodeType Text::getNodeType() const {
   return kTextNode;
 }
 
-Node* Text::cloneNode(bool /*deep*/, ExceptionState&) {
-  return CloneWithData(data());
+Node* Text::Clone(Document& factory, CloneChildrenFlag) {
+  return CloneWithData(factory, data());
 }
 
 static inline bool EndsWithWhitespace(const String& text) {
@@ -463,8 +463,8 @@ void Text::UpdateTextLayoutObject(unsigned offset_of_replaced_data,
                                         length_of_replaced_data);
 }
 
-Text* Text::CloneWithData(const String& data) {
-  return Create(GetDocument(), data);
+Text* Text::CloneWithData(Document& factory, const String& data) {
+  return Create(factory, data);
 }
 
 void Text::Trace(blink::Visitor* visitor) {

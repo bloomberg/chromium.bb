@@ -260,12 +260,15 @@ bool Element::IsFocusableStyle() const {
          GetLayoutObject()->Style()->Visibility() == EVisibility::kVisible;
 }
 
-Node* Element::cloneNode(bool deep, ExceptionState&) {
-  return deep ? CloneElementWithChildren() : CloneElementWithoutChildren();
+Node* Element::Clone(Document& factory, CloneChildrenFlag flag) {
+  return flag == CloneChildrenFlag::kClone
+             ? CloneElementWithChildren(&factory)
+             : CloneElementWithoutChildren(&factory);
 }
 
-Element* Element::CloneElementWithChildren() {
-  Element* clone = CloneElementWithoutAttributesAndChildren(GetDocument());
+Element* Element::CloneElementWithChildren(Document* nullable_factory) {
+  Element* clone = CloneElementWithoutAttributesAndChildren(
+      nullable_factory ? *nullable_factory : GetDocument());
   // This will catch HTML elements in the wrong namespace that are not correctly
   // copied.  This is a sanity check as HTML overloads some of the DOM methods.
   DCHECK_EQ(IsHTMLElement(), clone->IsHTMLElement());
@@ -275,8 +278,9 @@ Element* Element::CloneElementWithChildren() {
   return clone;
 }
 
-Element* Element::CloneElementWithoutChildren() {
-  Element* clone = CloneElementWithoutAttributesAndChildren(GetDocument());
+Element* Element::CloneElementWithoutChildren(Document* nullable_factory) {
+  Element* clone = CloneElementWithoutAttributesAndChildren(
+      nullable_factory ? *nullable_factory : GetDocument());
   // This will catch HTML elements in the wrong namespace that are not correctly
   // copied.  This is a sanity check as HTML overloads some of the DOM methods.
   DCHECK_EQ(IsHTMLElement(), clone->IsHTMLElement());

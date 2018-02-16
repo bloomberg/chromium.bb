@@ -38,7 +38,7 @@ class Comment final : public CharacterData {
 
   String nodeName() const override;
   NodeType getNodeType() const override;
-  Node* cloneNode(bool deep, ExceptionState&) override;
+  Node* Clone(Document&, CloneChildrenFlag) override;
 };
 
 DEFINE_NODE_TYPE_CASTS(Comment, getNodeType() == Node::kCommentNode);

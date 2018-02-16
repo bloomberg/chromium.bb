@@ -40,8 +40,8 @@ Node::NodeType Comment::getNodeType() const {
   return kCommentNode;
 }
 
-Node* Comment::cloneNode(bool /*deep*/, ExceptionState&) {
-  return Create(GetDocument(), data());
+Node* Comment::Clone(Document& factory, CloneChildrenFlag) {
+  return Create(factory, data());
 }
 
 }  // namespace blink

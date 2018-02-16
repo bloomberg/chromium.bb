@@ -76,7 +76,7 @@ class ProcessingInstruction final : public CharacterData,
 
   String nodeName() const override;
   NodeType getNodeType() const override;
-  Node* cloneNode(bool deep, ExceptionState&) override;
+  Node* Clone(Document&, CloneChildrenFlag) override;
 
   InsertionNotificationRequest InsertedInto(ContainerNode*) override;
   void RemovedFrom(ContainerNode*) override;

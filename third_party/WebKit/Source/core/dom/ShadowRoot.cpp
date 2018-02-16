@@ -93,9 +93,8 @@ void ShadowRoot::DidChangeHostChildSlotName(const AtomicString& old_value,
   slot_assignment_->DidChangeHostChildSlotName(old_value, new_value);
 }
 
-Node* ShadowRoot::cloneNode(bool, ExceptionState& exception_state) {
-  exception_state.ThrowDOMException(kNotSupportedError,
-                                    "ShadowRoot nodes are not clonable.");
+Node* ShadowRoot::Clone(Document&, CloneChildrenFlag) {
+  NOTREACHED() << "ShadowRoot nodes are not clonable.";
   return nullptr;
 }
 

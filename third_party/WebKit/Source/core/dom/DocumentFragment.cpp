@@ -59,9 +59,9 @@ bool DocumentFragment::ChildTypeAllowed(NodeType type) const {
   }
 }
 
-Node* DocumentFragment::cloneNode(bool deep, ExceptionState&) {
-  DocumentFragment* clone = Create(GetDocument());
-  if (deep)
+Node* DocumentFragment::Clone(Document& factory, CloneChildrenFlag flag) {
+  DocumentFragment* clone = Create(factory);
+  if (flag == CloneChildrenFlag::kClone)
     CloneChildNodes(clone);
   return clone;
 }
