@@ -121,7 +121,8 @@ class MockScrollableAreaForAnimatorTest
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner() const final {
     if (!timer_task_runner_) {
-      timer_task_runner_ = blink::scheduler::CreateWebTaskRunnerForTesting();
+      timer_task_runner_ =
+          blink::scheduler::GetSingleThreadTaskRunnerForTesting();
     }
     return timer_task_runner_;
   }
