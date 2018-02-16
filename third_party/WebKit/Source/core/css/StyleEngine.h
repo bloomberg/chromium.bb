@@ -68,6 +68,8 @@ class ViewportStyleResolver;
 
 enum InvalidationScope { kInvalidateCurrentScope, kInvalidateAllScopes };
 
+using StyleSheetKey = AtomicString;
+
 class CORE_EXPORT StyleEngine final
     : public GarbageCollectedFinalized<StyleEngine>,
       public FontSelectorClient,
@@ -98,7 +100,7 @@ class CORE_EXPORT StyleEngine final
   StyleSheetsForStyleSheetList(TreeScope&);
 
   const HeapVector<
-      std::pair<WebStyleSheetId, TraceWrapperMember<CSSStyleSheet>>>&
+      std::pair<StyleSheetKey, TraceWrapperMember<CSSStyleSheet>>>&
   InjectedAuthorStyleSheets() const {
     return injected_author_style_sheets_;
   }
@@ -119,10 +121,12 @@ class CORE_EXPORT StyleEngine final
   void HtmlImportAddedOrRemoved();
   void V0ShadowAddedOnV1Document();
 
-  WebStyleSheetId InjectSheet(StyleSheetContents*,
-                              WebDocument::CSSOrigin =
-                                  WebDocument::kAuthorOrigin);
-  void RemoveInjectedSheet(WebStyleSheetId);
+  void InjectSheet(const StyleSheetKey&, StyleSheetContents*,
+                   WebDocument::CSSOrigin =
+                       WebDocument::kAuthorOrigin);
+  void RemoveInjectedSheet(const StyleSheetKey&,
+                           WebDocument::CSSOrigin =
+                               WebDocument::kAuthorOrigin);
   CSSStyleSheet& EnsureInspectorStyleSheet();
   RuleSet* WatchedSelectorsRuleSet() {
     DCHECK(IsMaster());
@@ -449,14 +453,12 @@ class CORE_EXPORT StyleEngine final
   std::unique_ptr<StyleResolverStats> style_resolver_stats_;
   unsigned style_for_element_count_ = 0;
 
-  HeapVector<std::pair<WebStyleSheetId, TraceWrapperMember<CSSStyleSheet>>>
+  HeapVector<std::pair<StyleSheetKey, TraceWrapperMember<CSSStyleSheet>>>
       injected_user_style_sheets_;
-  HeapVector<std::pair<WebStyleSheetId, TraceWrapperMember<CSSStyleSheet>>>
+  HeapVector<std::pair<StyleSheetKey, TraceWrapperMember<CSSStyleSheet>>>
       injected_author_style_sheets_;
 
   ActiveStyleSheetVector active_user_style_sheets_;
-
-  WebStyleSheetId injected_sheets_id_count_ = 0;
 
   using KeyframesRuleMap =
       HeapHashMap<AtomicString, Member<StyleRuleKeyframes>>;

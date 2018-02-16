@@ -63,6 +63,15 @@
 #include "public/web/WebFormElement.h"
 #include "v8/include/v8.h"
 
+namespace {
+
+static const blink::WebStyleSheetKey GenerateStyleSheetKey() {
+  static unsigned counter = 0;
+  return String::Number(++counter);
+}
+
+}  // namespace
+
 namespace blink {
 
 WebURL WebDocument::Url() const {
@@ -183,18 +192,24 @@ WebElement WebDocument::FocusedElement() const {
   return WebElement(ConstUnwrap<Document>()->FocusedElement());
 }
 
-WebStyleSheetId WebDocument::InsertStyleSheet(const WebString& source_code,
-                                              CSSOrigin origin) {
+WebStyleSheetKey WebDocument::InsertStyleSheet(const WebString& source_code,
+                                               const WebStyleSheetKey* key,
+                                               CSSOrigin origin) {
   Document* document = Unwrap<Document>();
   DCHECK(document);
   StyleSheetContents* parsed_sheet =
       StyleSheetContents::Create(CSSParserContext::Create(*document));
   parsed_sheet->ParseString(source_code);
-  return document->GetStyleEngine().InjectSheet(parsed_sheet, origin);
+  const WebStyleSheetKey& injection_key =
+      key && !key->IsNull() ? *key : GenerateStyleSheetKey();
+  DCHECK(!injection_key.IsEmpty());
+  document->GetStyleEngine().InjectSheet(injection_key, parsed_sheet, origin);
+  return injection_key;
 }
 
-void WebDocument::RemoveInsertedStyleSheet(WebStyleSheetId stylesheet_id) {
-  Unwrap<Document>()->GetStyleEngine().RemoveInjectedSheet(stylesheet_id);
+void WebDocument::RemoveInsertedStyleSheet(const WebStyleSheetKey& key,
+                                           CSSOrigin origin) {
+  Unwrap<Document>()->GetStyleEngine().RemoveInjectedSheet(key, origin);
 }
 
 void WebDocument::WatchCSSSelectors(const WebVector<WebString>& web_selectors) {

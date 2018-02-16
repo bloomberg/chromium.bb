@@ -76,9 +76,9 @@ TEST_F(StyleEngineTest, DocumentDirtyAfterInject) {
   StyleSheetContents* parsed_sheet =
       StyleSheetContents::Create(CSSParserContext::Create(GetDocument()));
   parsed_sheet->ParseString("div {}");
-  GetStyleEngine().InjectSheet(parsed_sheet);
+  GetStyleEngine().InjectSheet("", parsed_sheet);
+  EXPECT_FALSE(IsDocumentStyleSheetCollectionClean());
   GetDocument().View()->UpdateAllLifecyclePhases();
-
   EXPECT_TRUE(IsDocumentStyleSheetCollectionClean());
 }
 
@@ -101,6 +101,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
      #t6 { color: var(--stop-color); }
      #t7 { color: var(--go-color); }
      .red { color: red; }
+     #t11 { color: white; }
     </style>
     <div id='t1'>Green</div>
     <div id='t2'>White</div>
@@ -112,6 +113,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
     <div id='t8' style='color: white !important'>screen: Red; print: Black</div>
     <div id='t9' class='red'>Green</div>
     <div id='t10' style='color: black !important'>Black</div>
+    <div id='t11'>White</div>
     <div></div>
   )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -140,10 +142,9 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       "#t1 { color: green !important }"
       "#t2 { color: white !important }"
       "#t3 { color: white }");
-  WebStyleSheetId green_id =
-      GetStyleEngine().InjectSheet(green_parsed_sheet,
-                                   WebDocument::kUserOrigin);
-  EXPECT_EQ(1u, green_id);
+  StyleSheetKey green_key("green");
+  GetStyleEngine().InjectSheet(green_key, green_parsed_sheet,
+                               WebDocument::kUserOrigin);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_EQ(3u, GetStyleEngine().StyleForElementCount() - initial_count);
@@ -167,9 +168,9 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       "#t1 { color: blue !important }"
       "#t2 { color: silver }"
       "#t3 { color: silver !important }");
-  WebStyleSheetId blue_id =
-      GetStyleEngine().InjectSheet(blue_parsed_sheet, WebDocument::kUserOrigin);
-  EXPECT_EQ(2u, blue_id);
+  StyleSheetKey blue_key("blue");
+  GetStyleEngine().InjectSheet(blue_key, blue_parsed_sheet,
+                               WebDocument::kUserOrigin);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_EQ(6u, GetStyleEngine().StyleForElementCount() - initial_count);
@@ -189,7 +190,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       MakeRGB(192, 192, 192),
       t3->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
 
-  GetStyleEngine().RemoveInjectedSheet(green_id);
+  GetStyleEngine().RemoveInjectedSheet(green_key, WebDocument::kUserOrigin);
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(9u, GetStyleEngine().StyleForElementCount() - initial_count);
   ASSERT_TRUE(t1->GetComputedStyle());
@@ -205,7 +206,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       MakeRGB(192, 192, 192),
       t3->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
 
-  GetStyleEngine().RemoveInjectedSheet(blue_id);
+  GetStyleEngine().RemoveInjectedSheet(blue_key, WebDocument::kUserOrigin);
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(12u, GetStyleEngine().StyleForElementCount() - initial_count);
   ASSERT_TRUE(t1->GetComputedStyle());
@@ -249,9 +250,9 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       " font-style: italic;"
       "}"
     );
-  WebStyleSheetId font_face_id =
-      GetStyleEngine().InjectSheet(font_face_parsed_sheet,
-                                   WebDocument::kUserOrigin);
+  StyleSheetKey font_face_key("font_face");
+  GetStyleEngine().InjectSheet(font_face_key, font_face_parsed_sheet,
+                               WebDocument::kUserOrigin);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // After injecting a more specific font, now there are two and the
@@ -295,7 +296,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   ASSERT_EQ(capabilities.slope,
             FontSelectionRange({ItalicSlopeValue(), ItalicSlopeValue()}));
 
-  GetStyleEngine().RemoveInjectedSheet(font_face_id);
+  GetStyleEngine().RemoveInjectedSheet(font_face_key, WebDocument::kUserOrigin);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // After removing the injected style sheet we're left with a bold-normal and
@@ -325,9 +326,9 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   StyleSheetContents* keyframes_parsed_sheet =
       StyleSheetContents::Create(CSSParserContext::Create(GetDocument()));
   keyframes_parsed_sheet->ParseString("@keyframes dummy-animation { from {} }");
-  WebStyleSheetId keyframes_id =
-      GetStyleEngine().InjectSheet(keyframes_parsed_sheet,
-                                   WebDocument::kUserOrigin);
+  StyleSheetKey keyframes_key("keyframes");
+  GetStyleEngine().InjectSheet(keyframes_key, keyframes_parsed_sheet,
+                               WebDocument::kUserOrigin);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // After injecting the style sheet, a @keyframes rule named dummy-animation
@@ -359,7 +360,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   ASSERT_TRUE(keyframes);
   EXPECT_EQ(1u, keyframes->Keyframes().size());
 
-  GetStyleEngine().RemoveInjectedSheet(keyframes_id);
+  GetStyleEngine().RemoveInjectedSheet(keyframes_key, WebDocument::kUserOrigin);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Injected @keyframes rules are no longer available once removed.
@@ -387,9 +388,10 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       " --stop-color: red !important;"
       " --go-color: green;"
       "}");
-  WebStyleSheetId custom_properties_id =
-      GetStyleEngine().InjectSheet(custom_properties_parsed_sheet,
-                                   WebDocument::kUserOrigin);
+  StyleSheetKey custom_properties_key("custom_properties");
+  GetStyleEngine().InjectSheet(custom_properties_key,
+                               custom_properties_parsed_sheet,
+                               WebDocument::kUserOrigin);
   GetDocument().View()->UpdateAllLifecyclePhases();
   ASSERT_TRUE(t6->GetComputedStyle());
   ASSERT_TRUE(t7->GetComputedStyle());
@@ -399,7 +401,8 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       MakeRGB(255, 255, 255),
       t7->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
 
-  GetStyleEngine().RemoveInjectedSheet(custom_properties_id);
+  GetStyleEngine().RemoveInjectedSheet(custom_properties_key,
+                                       WebDocument::kUserOrigin);
   GetDocument().View()->UpdateAllLifecyclePhases();
   ASSERT_TRUE(t6->GetComputedStyle());
   ASSERT_TRUE(t7->GetComputedStyle());
@@ -431,9 +434,10 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       "  color: black !important;"
       " }"
       "}");
-  WebStyleSheetId media_queries_sheet_id =
-      GetStyleEngine().InjectSheet(media_queries_parsed_sheet,
-                                   WebDocument::kUserOrigin);
+  StyleSheetKey media_queries_sheet_key("media_queries_sheet");
+  GetStyleEngine().InjectSheet(media_queries_sheet_key,
+                               media_queries_parsed_sheet,
+                               WebDocument::kUserOrigin);
   GetDocument().View()->UpdateAllLifecyclePhases();
   ASSERT_TRUE(t8->GetComputedStyle());
   EXPECT_EQ(MakeRGB(255, 0, 0), t8->GetComputedStyle()->VisitedDependentColor(
@@ -450,7 +454,8 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   EXPECT_EQ(MakeRGB(255, 0, 0), t8->GetComputedStyle()->VisitedDependentColor(
                                     GetCSSPropertyColor()));
 
-  GetStyleEngine().RemoveInjectedSheet(media_queries_sheet_id);
+  GetStyleEngine().RemoveInjectedSheet(media_queries_sheet_key,
+                                       WebDocument::kUserOrigin);
   GetDocument().View()->UpdateAllLifecyclePhases();
   ASSERT_TRUE(t8->GetComputedStyle());
   EXPECT_EQ(
@@ -479,9 +484,9 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       "#t10 {"
       " color: white !important;"
       "}");
-  WebStyleSheetId author_sheet_id =
-      GetStyleEngine().InjectSheet(parsed_author_sheet,
-                                   WebDocument::kAuthorOrigin);
+  StyleSheetKey author_sheet_key("author_sheet");
+  GetStyleEngine().InjectSheet(author_sheet_key, parsed_author_sheet,
+                               WebDocument::kAuthorOrigin);
   GetDocument().View()->UpdateAllLifecyclePhases();
   ASSERT_TRUE(t9->GetComputedStyle());
   ASSERT_TRUE(t10->GetComputedStyle());
@@ -493,7 +498,8 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   EXPECT_EQ(MakeRGB(0, 0, 0), t10->GetComputedStyle()->VisitedDependentColor(
                                    GetCSSPropertyColor()));
 
-  GetStyleEngine().RemoveInjectedSheet(author_sheet_id);
+  GetStyleEngine().RemoveInjectedSheet(author_sheet_key,
+                                       WebDocument::kAuthorOrigin);
   GetDocument().View()->UpdateAllLifecyclePhases();
   ASSERT_TRUE(t9->GetComputedStyle());
   ASSERT_TRUE(t10->GetComputedStyle());
@@ -501,6 +507,90 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
                                     GetCSSPropertyColor()));
   EXPECT_EQ(MakeRGB(0, 0, 0), t10->GetComputedStyle()->VisitedDependentColor(
                                    GetCSSPropertyColor()));
+
+  // Style sheet removal
+
+  Element* t11 = GetDocument().getElementById("t11");
+  ASSERT_TRUE(t11);
+  ASSERT_TRUE(t11->GetComputedStyle());
+  EXPECT_EQ(
+      MakeRGB(255, 255, 255),
+      t11->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
+
+  StyleSheetContents* parsed_removable_red_sheet =
+      StyleSheetContents::Create(CSSParserContext::Create(GetDocument()));
+  parsed_removable_red_sheet->ParseString("#t11 { color: red !important; }");
+  StyleSheetKey removable_red_sheet_key("removable_red_sheet");
+  GetStyleEngine().InjectSheet(removable_red_sheet_key,
+                               parsed_removable_red_sheet,
+                               WebDocument::kUserOrigin);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  ASSERT_TRUE(t11->GetComputedStyle());
+
+  EXPECT_EQ(MakeRGB(255, 0, 0), t11->GetComputedStyle()->VisitedDependentColor(
+                                     GetCSSPropertyColor()));
+
+  StyleSheetContents* parsed_removable_green_sheet =
+      StyleSheetContents::Create(CSSParserContext::Create(GetDocument()));
+  parsed_removable_green_sheet->ParseString(
+      "#t11 { color: green !important; }");
+  StyleSheetKey removable_green_sheet_key("removable_green_sheet");
+  GetStyleEngine().InjectSheet(removable_green_sheet_key,
+                               parsed_removable_green_sheet,
+                               WebDocument::kUserOrigin);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  ASSERT_TRUE(t11->GetComputedStyle());
+
+  EXPECT_EQ(MakeRGB(0, 128, 0), t11->GetComputedStyle()->VisitedDependentColor(
+                                     GetCSSPropertyColor()));
+
+  StyleSheetContents* parsed_removable_red_sheet2 =
+      StyleSheetContents::Create(CSSParserContext::Create(GetDocument()));
+  parsed_removable_red_sheet2->ParseString("#t11 { color: red !important; }");
+  GetStyleEngine().InjectSheet(removable_red_sheet_key,
+                               parsed_removable_red_sheet2,
+                               WebDocument::kUserOrigin);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  ASSERT_TRUE(t11->GetComputedStyle());
+
+  EXPECT_EQ(MakeRGB(255, 0, 0), t11->GetComputedStyle()->VisitedDependentColor(
+                                     GetCSSPropertyColor()));
+
+  GetStyleEngine().RemoveInjectedSheet(removable_red_sheet_key,
+                                       WebDocument::kAuthorOrigin);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  ASSERT_TRUE(t11->GetComputedStyle());
+
+  // Removal works only within the same origin.
+  EXPECT_EQ(MakeRGB(255, 0, 0), t11->GetComputedStyle()->VisitedDependentColor(
+                                     GetCSSPropertyColor()));
+
+  GetStyleEngine().RemoveInjectedSheet(removable_red_sheet_key,
+                                       WebDocument::kUserOrigin);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  ASSERT_TRUE(t11->GetComputedStyle());
+
+  // The last sheet with the given key is removed.
+  EXPECT_EQ(MakeRGB(0, 128, 0), t11->GetComputedStyle()->VisitedDependentColor(
+                                     GetCSSPropertyColor()));
+
+  GetStyleEngine().RemoveInjectedSheet(removable_green_sheet_key,
+                                       WebDocument::kUserOrigin);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  ASSERT_TRUE(t11->GetComputedStyle());
+
+  // Only the last sheet with the given key is removed.
+  EXPECT_EQ(MakeRGB(255, 0, 0), t11->GetComputedStyle()->VisitedDependentColor(
+                                     GetCSSPropertyColor()));
+
+  GetStyleEngine().RemoveInjectedSheet(removable_red_sheet_key,
+                                       WebDocument::kUserOrigin);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  ASSERT_TRUE(t11->GetComputedStyle());
+
+  EXPECT_EQ(
+      MakeRGB(255, 255, 255),
+      t11->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
 }
 
 TEST_F(StyleEngineTest, IgnoreInvalidPropertyValue) {
