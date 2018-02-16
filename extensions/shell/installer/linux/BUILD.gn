@@ -60,10 +60,6 @@ action("strip_app_shell_binary") {
 copy("common_packaging_files") {
   visibility = [ ":*" ]
   sources = [
-    "//chrome/installer/linux/common/apt.include",
-    "//chrome/installer/linux/common/repo.cron",
-    "//chrome/installer/linux/common/symlinks.include",
-    "//chrome/installer/linux/common/variables.include",
     "/usr/bin/eu-strip",
     "common/installer.include",
     "common/wrapper",
@@ -86,8 +82,6 @@ copy("deb_packaging_files") {
     "//chrome/installer/linux/debian/changelog.template",
     "//chrome/installer/linux/debian/control.template",
     "debian/build.sh",
-    "debian/postinst",
-    "debian/postrm",
   ]
   outputs = [
     "$root_out_dir/app_shell_installer/debian/{{source_file_part}}",
