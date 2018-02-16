@@ -60,13 +60,7 @@ static void SwapInNodePreservingAttributesAndChildren(
 
   // FIXME: Fix this to send the proper MutationRecords when MutationObservers
   // are present.
-  // TODO(tkent): This should be CloneAttributesFromElement().
-  // Either of new_element or element_to_replace is <span>. If
-  // new_element is one of <form>, <input>, <textarea>, or <template>,
-  // the following code can cause a bad-cast due to implementations of
-  // CopyNonAttributePropertiesFromElement()
-  new_element->CloneDataFromElement(element_to_replace,
-                                    CloneChildrenFlag::kClone);
+  new_element->CloneAttributesFromElement(element_to_replace);
 
   parent_node->RemoveChild(&element_to_replace, ASSERT_NO_EXCEPTION);
 }
