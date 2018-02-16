@@ -50,7 +50,6 @@ base::string16 GetNightLightTooltipText(bool night_light_enabled) {
 
 NightLightToggleButton::NightLightToggleButton(views::ButtonListener* listener)
     : SystemMenuButton(listener,
-                       TrayPopupInkDropStyle::HOST_CENTERED,
                        kSystemMenuNightLightOffIcon,
                        IDS_ASH_STATUS_TRAY_NIGHT_LIGHT) {
   Update();

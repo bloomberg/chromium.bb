@@ -134,8 +134,7 @@ class BorderlessLabelButton : public views::LabelButton {
   // TODO(estade,bruthig): there's a lot in common here with ActionableView.
   // Find a way to share. See related TODO on InkDropHostView::SetInkDropMode().
   std::unique_ptr<views::InkDrop> CreateInkDrop() override {
-    return TrayPopupUtils::CreateInkDrop(TrayPopupInkDropStyle::INSET_BOUNDS,
-                                         this);
+    return TrayPopupUtils::CreateInkDrop(this);
   }
 
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
@@ -321,7 +320,6 @@ views::Separator* TrayPopupUtils::CreateVerticalSeparator() {
 }
 
 std::unique_ptr<views::InkDrop> TrayPopupUtils::CreateInkDrop(
-    TrayPopupInkDropStyle ink_drop_style,
     views::InkDropHostView* host) {
   std::unique_ptr<views::InkDropImpl> ink_drop =
       std::make_unique<views::InkDropImpl>(host, host->size());

@@ -6,7 +6,6 @@
 #define ASH_SYSTEM_TRAY_SYSTEM_MENU_BUTTON_H_
 
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/system/tray/tray_popup_ink_drop_style.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "ui/gfx/image/image_skia.h"
@@ -21,11 +20,9 @@ class SystemMenuButton : public views::ImageButton {
  public:
   // Constructs the button with |listener| and a centered icon corresponding to
   // |normal_icon| when button is enabled and |disabled_icon| when it is
-  // disabled. |ink_drop_style| specifies which flavor of the ink drop should be
-  // used. |accessible_name_id| corresponds to the string in ui::ResourceBundle
-  // to use for the button's accessible and tooltip text.
+  // disabled. |accessible_name_id| corresponds to the string in
+  // ui::ResourceBundle to use for the button's accessible and tooltip text.
   SystemMenuButton(views::ButtonListener* listener,
-                   TrayPopupInkDropStyle ink_drop_style,
                    const gfx::ImageSkia& normal_icon,
                    const gfx::ImageSkia& disabled_icon,
                    int accessible_name_id);
@@ -34,7 +31,6 @@ class SystemMenuButton : public views::ImageButton {
   // creates the normal and disabled icons based on that using default menu icon
   // colors.
   SystemMenuButton(views::ButtonListener* listener,
-                   TrayPopupInkDropStyle ink_drop_style,
                    const gfx::VectorIcon& icon,
                    int accessible_name_id);
   ~SystemMenuButton() override;
@@ -58,9 +54,6 @@ class SystemMenuButton : public views::ImageButton {
  private:
   // Returns the size that the ink drop should be constructed with.
   gfx::Size GetInkDropSize() const;
-
-  // Defines the flavor of ink drop ripple/highlight that should be constructed.
-  TrayPopupInkDropStyle ink_drop_style_;
 
   // The color to use when creating the ink drop. If null the default color is
   // used as defined by TrayPopupUtils::CreateInkDropRipple() and

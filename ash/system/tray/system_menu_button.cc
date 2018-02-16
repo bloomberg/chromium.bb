@@ -7,6 +7,7 @@
 #include "ash/ash_constants.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_popup_ink_drop_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -20,11 +21,10 @@
 namespace ash {
 
 SystemMenuButton::SystemMenuButton(views::ButtonListener* listener,
-                                   TrayPopupInkDropStyle ink_drop_style,
                                    const gfx::ImageSkia& normal_icon,
                                    const gfx::ImageSkia& disabled_icon,
                                    int accessible_name_id)
-    : views::ImageButton(listener), ink_drop_style_(ink_drop_style) {
+    : views::ImageButton(listener) {
   DCHECK_EQ(normal_icon.width(), disabled_icon.width());
   DCHECK_EQ(normal_icon.height(), disabled_icon.height());
 
@@ -40,11 +40,9 @@ SystemMenuButton::SystemMenuButton(views::ButtonListener* listener,
 }
 
 SystemMenuButton::SystemMenuButton(views::ButtonListener* listener,
-                                   TrayPopupInkDropStyle ink_drop_style,
                                    const gfx::VectorIcon& icon,
                                    int accessible_name_id)
     : SystemMenuButton(listener,
-                       ink_drop_style,
                        gfx::ImageSkia(),
                        gfx::ImageSkia(),
                        accessible_name_id) {
@@ -65,30 +63,28 @@ void SystemMenuButton::SetInkDropColor(SkColor color) {
 }
 
 std::unique_ptr<views::InkDrop> SystemMenuButton::CreateInkDrop() {
-  return TrayPopupUtils::CreateInkDrop(ink_drop_style_, this);
+  return TrayPopupUtils::CreateInkDrop(this);
 }
 
 std::unique_ptr<views::InkDropRipple> SystemMenuButton::CreateInkDropRipple()
     const {
-  return ink_drop_color_ == base::nullopt
-             ? TrayPopupUtils::CreateInkDropRipple(
-                   ink_drop_style_, this, GetInkDropCenterBasedOnLastEvent())
-             : TrayPopupUtils::CreateInkDropRipple(
-                   ink_drop_style_, this, GetInkDropCenterBasedOnLastEvent(),
-                   ink_drop_color_.value());
+  return TrayPopupUtils::CreateInkDropRipple(
+      TrayPopupInkDropStyle::HOST_CENTERED, this,
+      GetInkDropCenterBasedOnLastEvent(),
+      ink_drop_color_.value_or(kTrayPopupInkDropBaseColor));
 }
 
 std::unique_ptr<views::InkDropHighlight>
 SystemMenuButton::CreateInkDropHighlight() const {
-  return ink_drop_color_ == base::nullopt
-             ? TrayPopupUtils::CreateInkDropHighlight(ink_drop_style_, this)
-             : TrayPopupUtils::CreateInkDropHighlight(ink_drop_style_, this,
-                                                      ink_drop_color_.value());
+  return TrayPopupUtils::CreateInkDropHighlight(
+      TrayPopupInkDropStyle::HOST_CENTERED, this,
+      ink_drop_color_.value_or(kTrayPopupInkDropBaseColor));
 }
 
 std::unique_ptr<views::InkDropMask> SystemMenuButton::CreateInkDropMask()
     const {
-  return TrayPopupUtils::CreateInkDropMask(ink_drop_style_, this);
+  return TrayPopupUtils::CreateInkDropMask(TrayPopupInkDropStyle::HOST_CENTERED,
+                                           this);
 }
 
 }  // namespace ash

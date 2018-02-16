@@ -410,9 +410,8 @@ void TrayDetailsView::ShowProgress(double value, bool visible) {
 
 views::Button* TrayDetailsView::CreateSettingsButton(
     int setting_accessible_name_id) {
-  SystemMenuButton* button =
-      new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
-                           kSystemMenuSettingsIcon, setting_accessible_name_id);
+  SystemMenuButton* button = new SystemMenuButton(this, kSystemMenuSettingsIcon,
+                                                  setting_accessible_name_id);
   if (!TrayPopupUtils::CanOpenWebUISettings())
     button->SetEnabled(false);
   return button;
@@ -420,8 +419,7 @@ views::Button* TrayDetailsView::CreateSettingsButton(
 
 views::Button* TrayDetailsView::CreateHelpButton() {
   SystemMenuButton* button =
-      new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
-                           kSystemMenuHelpIcon, IDS_ASH_STATUS_TRAY_HELP);
+      new SystemMenuButton(this, kSystemMenuHelpIcon, IDS_ASH_STATUS_TRAY_HELP);
   // Help opens a web page, so treat it like Web UI settings.
   if (!TrayPopupUtils::CanOpenWebUISettings())
     button->SetEnabled(false);
@@ -460,8 +458,7 @@ void TrayDetailsView::DoTransitionToDefaultView() {
 
 views::Button* TrayDetailsView::CreateBackButton() {
   SystemMenuButton* button = new SystemMenuButton(
-      this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuArrowBackIcon,
-      IDS_ASH_STATUS_TRAY_PREVIOUS_MENU);
+      this, kSystemMenuArrowBackIcon, IDS_ASH_STATUS_TRAY_PREVIOUS_MENU);
   return button;
 }
 
