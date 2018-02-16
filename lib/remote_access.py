@@ -393,10 +393,21 @@ class RemoteAccess(object):
     device has rebooted.  May throw exceptions.
 
     Returns:
-       True if the device has successfully rebooted, false otherwise.
+       True if the device has successfully rebooted, False otherwise.
     """
     new_boot_id = self._GetBootId(rebooting=True)
-    return new_boot_id and new_boot_id != old_boot_id
+    if new_boot_id is None:
+      logging.warn('Unable to get new boot_id after reboot from boot_id %s',
+                   old_boot_id)
+      return False
+    elif new_boot_id == old_boot_id:
+      logging.warn('Checking if rebooted from boot_id %s, still running %s',
+                   old_boot_id, new_boot_id)
+      return False
+    else:
+      logging.debug('Checking if rebooted from boot_id %s, now running %s',
+                    old_boot_id, new_boot_id)
+      return True
 
 
   def RemoteReboot(self, timeout_sec=REBOOT_MAX_WAIT):

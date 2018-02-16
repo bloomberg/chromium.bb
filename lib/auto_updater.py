@@ -156,6 +156,10 @@ class DevserverCannotStartError(ChromiumOSUpdateError):
   """Raised when devserver cannot restart after stateful update."""
 
 
+class RebootVerificationError(ChromiumOSUpdateError):
+  """Raised for failing to reboot errors."""
+
+
 class BaseUpdater(object):
   """The base updater class."""
   def __init__(self, device, payload_dir):
@@ -1154,13 +1158,13 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
       rollback_message: string to raise as a RootfsUpdateError if we booted
         with the wrong partition.
       old_boot_id: string of previous boot id.  If specified, will verify
-        that this is a different boot.
+        that this is a different boot or raise RebootVerficationError if not.
     """
     logging.debug('Start verifying boot expectations...')
 
     if old_boot_id and not self.device.CheckIfRebooted(old_boot_id):
-      raise RootfsUpdateError('Device has not rebooted, still boot_id %s' %
-                              old_boot_id)
+      raise RebootVerificationError('Device has not rebooted from %s' %
+                                    old_boot_id)
 
     # Figure out the newly active kernel
     active_kernel_state = self._GetKernelState()[0]
@@ -1400,6 +1404,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
     # Loop in case the initial check happens before the reboot.
     while True:
       try:
+        start_verify_time = time.time()
         self._VerifyBootExpectations(
             self.inactive_kernel, rollback_message=
             'Build %s failed to boot on %s; system rolled back to previous '
@@ -1413,10 +1418,11 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
               '%s instead' % (self.device.hostname,
                               self.update_version,
                               self._GetReleaseVersion()))
-      except (ChromiumOSUpdateError, RootfsUpdateError) as e:
+      except RebootVerificationError as e:
         # If a minimum amount of time since starting the check has not
-        # occurred, wait and retry.
-        if time.time() - start_time < POST_CHECK_SETTLE_SECONDS:
+        # occurred, wait and retry.  Use the start of the verification
+        # time in case an SSH call takes a long time to return/fail.
+        if start_verify_time - start_time < POST_CHECK_SETTLE_SECONDS:
           logging.warning('Delaying for re-check of %s to update to %s (%s)' %
                           (self.device.hostname, self.update_version, e))
           time.sleep(POST_CHECK_RETRY_SECONDS)
