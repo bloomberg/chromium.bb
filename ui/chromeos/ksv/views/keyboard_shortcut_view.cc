@@ -93,6 +93,7 @@ views::Widget* KeyboardShortcutView::Show(gfx::NativeWindow context) {
         new KeyboardShortcutView(), context,
         gfx::Rect(0, 0, kKSVWindowWidth, kKSVWindowHeight));
     g_ksv_view->GetWidget()->Show();
+    g_ksv_view->RequestFocusForActiveTab();
   }
   return g_ksv_view->GetWidget();
 }
@@ -166,6 +167,14 @@ void KeyboardShortcutView::InitViews() {
     item_list_view->AddChildView(item_view);
   }
   AddChildView(tabbed_pane_);
+}
+
+void KeyboardShortcutView::RequestFocusForActiveTab() {
+  // Get the |tab_strip_| of the |tabbed_pane_| in order to set focus on
+  // the selected tab.
+  tabbed_pane_->child_at(0)
+      ->child_at(tabbed_pane_->GetSelectedTabIndex())
+      ->RequestFocus();
 }
 
 bool KeyboardShortcutView::CanMaximize() const {
@@ -288,8 +297,10 @@ void KeyboardShortcutView::ActiveChanged(
   sender->ShowBackOrGoogleIcon(is_active);
   search_results_container_->SetVisible(is_active);
   tabbed_pane_->SetVisible(!is_active);
-  if (!is_active)
+  if (!is_active) {
     search_results_container_->RemoveAllChildViews(true);
+    RequestFocusForActiveTab();
+  }
   Layout();
   SchedulePaint();
 }

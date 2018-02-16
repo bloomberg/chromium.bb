@@ -48,6 +48,8 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
 
   void InitViews();
 
+  void RequestFocusForActiveTab();
+
   static KeyboardShortcutView* GetInstanceForTesting();
   int GetCategoryNumberForTesting() const;
   int GetTabCountForTesting() const;
