@@ -6,10 +6,6 @@
 
 # TODO(michaelpg): Dedupe common functionality with the Chrome installer.
 
-# TODO(mmoss) This currently only works with official builds, since non-official
-# builds don't add the "${BUILDDIR}/app_shell_installer/" files needed for
-# packaging.
-
 set -e
 set -o pipefail
 if [ "$VERBOSE" ]; then
@@ -45,7 +41,6 @@ gen_control() {
 prep_staging_debian() {
   prep_staging_common
   install -m 755 -d "${STAGEDIR}/DEBIAN" \
-    "${STAGEDIR}/etc/cron.daily" \
     "${STAGEDIR}/usr/share/doc/${USR_BIN_SYMLINK_NAME}"
 }
 
@@ -63,20 +58,6 @@ stage_install_debian() {
   fi
   prep_staging_debian
   stage_install_common
-  echo "Staging Debian install files in '${STAGEDIR}'..."
-  install -m 755 -d "${STAGEDIR}/${INSTALLDIR}/cron"
-  process_template "${BUILDDIR}/app_shell_installer/common/repo.cron" \
-      "${STAGEDIR}/${INSTALLDIR}/cron/${PACKAGE}"
-  chmod 755 "${STAGEDIR}/${INSTALLDIR}/cron/${PACKAGE}"
-  pushd "${STAGEDIR}/etc/cron.daily/"
-  ln -snf "${INSTALLDIR}/cron/${PACKAGE}" "${PACKAGE}"
-  popd
-  process_template "${BUILDDIR}/app_shell_installer/debian/postinst" \
-    "${STAGEDIR}/DEBIAN/postinst"
-  chmod 755 "${STAGEDIR}/DEBIAN/postinst"
-  process_template "${BUILDDIR}/app_shell_installer/debian/postrm" \
-    "${STAGEDIR}/DEBIAN/postrm"
-  chmod 755 "${STAGEDIR}/DEBIAN/postrm"
 }
 
 # Actually generate the package file.
@@ -322,15 +303,6 @@ case "$TARGETARCH" in
     exit 1
     ;;
 esac
-# TODO(michaelpg): Get a working repo URL.
-BASEREPOCONFIG="dl.google.com/linux/app-shell/deb/ stable main"
-# Only use the default REPOCONFIG if it's unset (e.g. verify_channel might have
-# set it to an empty string)
-REPOCONFIG="${REPOCONFIG-deb [arch=${ARCHITECTURE}] http://${BASEREPOCONFIG}}"
-# Allowed configs include optional HTTPS support and explicit multiarch
-# platforms.
-REPOCONFIGREGEX="deb (\\\\[arch=[^]]*\\\\b${ARCHITECTURE}\\\\b[^]]*\\\\]"
-REPOCONFIGREGEX+="[[:space:]]*) https?://${BASEREPOCONFIG}"
 stage_install_debian
 
 do_package
