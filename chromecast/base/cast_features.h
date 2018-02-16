@@ -25,6 +25,7 @@ extern const base::Feature kAllowUserMediaAccess;
 extern const base::Feature kEnableQuic;
 extern const base::Feature kTripleBuffer720;
 extern const base::Feature kSingleBuffer;
+extern const base::Feature kDisableIdleSocketsCloseOnMemoryPressure;
 
 // Below are utilities needed by the Cast receiver to persist feature
 // information. Client code which is simply querying the status of a feature

@@ -335,9 +335,17 @@ void URLRequestContextFactory::PopulateNetworkSessionParams(
   LOG(INFO) << "Set HttpNetworkSessionParams.enable_quic = "
             << session_params->enable_quic;
 
-  // Do not close idle sockets on memory pressure, otherwise it will open too
-  // much connections to the server.
-  session_params->disable_idle_sockets_close_on_memory_pressure = true;
+  // Disable idle sockets close on memory pressure, if instructed by DCS. On
+  // memory constrained devices:
+  // 1. if idle sockets are closed when memory pressure happens, cast_shell will
+  // close and re-open lots of connections to server.
+  // 2. if idle sockets are kept alive when memory pressure happens, this may
+  // cause JS engine gc frequently, leading to JS suspending.
+  session_params->disable_idle_sockets_close_on_memory_pressure =
+      base::FeatureList::IsEnabled(kDisableIdleSocketsCloseOnMemoryPressure);
+  LOG(INFO) << "Set HttpNetworkSessionParams."
+            << "disable_idle_sockets_close_on_memory_pressure = "
+            << session_params->disable_idle_sockets_close_on_memory_pressure;
 }
 
 net::URLRequestContext* URLRequestContextFactory::CreateSystemRequestContext() {

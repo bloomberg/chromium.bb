@@ -124,6 +124,11 @@ const base::Feature kTripleBuffer720{"enable_triple_buffer_720",
 // settings and takes precedence over triple-buffer feature).
 const base::Feature kSingleBuffer{"enable_single_buffer",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
+// Disable idle sockets closing on memory pressure. See
+// chromecast/browser/url_request_context_factory.cc for usage.
+const base::Feature kDisableIdleSocketsCloseOnMemoryPressure{
+    "disable_idle_sockets_close_on_memory_pressure",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // End Chromecast Feature definitions.
 
