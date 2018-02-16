@@ -378,11 +378,11 @@ static INLINE uint8_t av1_drl_ctx(const CANDIDATE_MV *ref_mv_stack,
 
   if (ref_mv_stack[ref_idx].weight >= REF_CAT_LEVEL &&
       ref_mv_stack[ref_idx + 1].weight < REF_CAT_LEVEL)
-    return 2;
+    return 1;
 
   if (ref_mv_stack[ref_idx].weight < REF_CAT_LEVEL &&
       ref_mv_stack[ref_idx + 1].weight < REF_CAT_LEVEL)
-    return 3;
+    return 2;
 
   return 0;
 }

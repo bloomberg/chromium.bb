@@ -33,10 +33,8 @@ static const aom_cdf_prob default_refmv_cdf[REFMV_MODE_CONTEXTS][CDF_SIZE(2)] =
     };
 static const aom_cdf_prob default_drl_cdf[DRL_MODE_CONTEXTS][CDF_SIZE(2)] = {
   { AOM_CDF2(128 * 119) },
-  { AOM_CDF2(128 * 128) },
   { AOM_CDF2(128 * 189) },
   { AOM_CDF2(128 * 134) },
-  { AOM_CDF2(128 * 128) }
 };
 
 #if CONFIG_OPT_REF_MV
