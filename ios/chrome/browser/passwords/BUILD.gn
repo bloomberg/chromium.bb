@@ -184,9 +184,7 @@ source_set("eg_tests") {
   ]
 }
 
-# TODO(crbug.com/487804): use js_compile_checked instead once the errors have
-# been fixed.
-js_compile_unchecked("injected_js") {
+js_compile_checked("injected_js") {
   visibility = [ ":passwords" ]
   sources = [
     "resources/password_controller.js",

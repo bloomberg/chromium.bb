@@ -20,7 +20,6 @@
 
 // Only install the password management functions once.
 if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
-
   /**
    * Finds all password forms in the window and returns form data as a JSON
    * string.
@@ -37,6 +36,9 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
   /** Returns true if the supplied window or any frames inside contain an input
    * field of type 'password'.
    * @private
+   * @param {Window} win Whether the supplied window or any frames inside
+   * contain an input field of type 'password'.
+   * @return {boolean}
    */
   var hasPasswordField_ = function(win) {
     var doc = win.document;
@@ -61,7 +63,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
    * @return {Array.<Window>} Array of the same-origin frames found.
    */
   var getSameOriginFrames_ = function(win) {
-    var frames = win.document.getElementsByTagName("iframe");
+    var frames = win.document.getElementsByTagName('iframe');
     var result = [];
     for (var i = 0; i < frames.length; i++) {
       if (!frames[i].src ||
@@ -75,13 +77,13 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
   /**
    * Returns a canonical action for |formElement|. It works the same as upstream
    * function GetCanonicalActionForForm.
-   * @param {Form} formElement.
+   * @param {HTMLFormElement} formElement
    * @return {string} Canonical action.
    */
   var getCanonicalActionForForm_ = function(formElement) {
-    var raw_action = formElement.getAttribute('action') || "";
-    var absolute_url = __gCrWeb.common.absoluteURL(
-          formElement.ownerDocument, raw_action);
+    var raw_action = formElement.getAttribute('action') || '';
+    var absolute_url =
+        __gCrWeb.common.absoluteURL(formElement.ownerDocument, raw_action);
     return __gCrWeb.common.removeQueryAndReferenceFromURL(absolute_url);
   };
 
@@ -93,92 +95,88 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
    * the site JavaScript.
    */
   var addSubmitButtonTouchEndHandler_ = function(form) {
-    if (form.querySelector('input[type=submit]'))
-      return;
+    if (form.querySelector('input[type=submit]')) return;
     // Try to find buttons of type submit at first.
     var buttons = form.querySelectorAll('button[type="submit"]');
     if (buttons.length == 0) {
       // Try to check all buttons. If there is only one button, assume that this
       // is the submit button.
       buttons = form.querySelectorAll('button');
-      if (buttons.length != 1)
-        return;
+      if (buttons.length != 1) return;
     }
     for (var i = 0; i < buttons.length; ++i)
       buttons[0].addEventListener('touchend', onSubmitButtonTouchEnd_);
-   };
+  };
 
-   /**
-    * Click handler for the submit button. It sends to the host
-    * form.submitButtonClick command.
-    */
-   var onSubmitButtonTouchEnd_ = function(evt) {
-       var form = evt.currentTarget.form;
-       var formData = __gCrWeb.getPasswordFormData(form);
-       if (!formData)
-         return;
-       formData["command"] = 'passwordForm.submitButtonClick';
-       __gCrWeb.message.invokeOnHost(formData);
-    };
+  /**
+   * Click handler for the submit button. It sends to the host
+   * form.submitButtonClick command.
+   */
+  var onSubmitButtonTouchEnd_ = function(evt) {
+    var form = evt.currentTarget.form;
+    var formData = __gCrWeb.getPasswordFormData(form);
+    if (!formData) return;
+    formData['command'] = 'passwordForm.submitButtonClick';
+    __gCrWeb.message.invokeOnHost(formData);
+  };
 
   /**
    * Returns the element from |inputs| which has the field identifier equal to
    * |identifier| and null if there is no such element.
-   * @param {Array.<Input>}
-   * @return {Input}
+   * @param {Array.<HTMLInputElement>} inputs
+   * @param {string} identifier
+   * @return {HTMLInputElement}
    */
-   var findInputByFieldIdentifier_ = function(inputs, identifier) {
-     for (var i = 0; i < inputs.length; ++i) {
-       if (identifier == __gCrWeb.common.getFieldIdentifier(inputs[i])) {
-         return inputs[i];
-       }
-     }
-     return null;
-   }
-
-   /**
-    * Returns the password form with the given |identifier| as a JSON string
-    * from the frame |win| and all its same-origin subframes.
-    * @param {Window} The window in which to look for forms.
-    * @param {string} identifier The name of the form to extract.
-    * @return {Element} The password form.
-    */
-   var getPasswordFormElement_ = function(win, identifier) {
-     var el = win.__gCrWeb.common.getFormElementFromIdentifier(identifier);
-     if (el)
-       return el;
-     var frames = getSameOriginFrames_(win);
-     for (var i = 0; i < frames.length; ++i) {
-       el = getPasswordFormElement_(frames[i], identifier);
-       if (el)
-         return el;
-     }
-     return null;
+  var findInputByFieldIdentifier_ = function(inputs, identifier) {
+    for (var i = 0; i < inputs.length; ++i) {
+      if (identifier == __gCrWeb.common.getFieldIdentifier(inputs[i])) {
+        return inputs[i];
+      }
     }
+    return null;
+  };
 
-    /**
-     * Returns an array of input elements in a form.
-     * @param {Element} form A form element for which the input elements are
-     *   returned.
-     * @return {Array<InputElement>}
-     */
-    var getFormInputElements_ = function(form) {
-        return __gCrWeb.common.getFormControlElements(form).
-          filter(function(element) { return element.tagName === "INPUT"; });
+  /**
+   * Returns the password form with the given |identifier| as a JSON string
+   * from the frame |win| and all its same-origin subframes.
+   * @param {Window} win The window in which to look for forms.
+   * @param {string} identifier The name of the form to extract.
+   * @return {HTMLFormElement} The password form.
+   */
+  var getPasswordFormElement_ = function(win, identifier) {
+    var el = win.__gCrWeb.common.getFormElementFromIdentifier(identifier);
+    if (el) return el;
+    var frames = getSameOriginFrames_(win);
+    for (var i = 0; i < frames.length; ++i) {
+      el = getPasswordFormElement_(frames[i], identifier);
+      if (el) return el;
     }
+    return null;
+  };
+
+  /**
+   * Returns an array of input elements in a form.
+   * @param {HTMLFormElement} form A form element for which the input elements
+   *   are returned.
+   * @return {Array<HTMLInputElement>}
+   */
+  var getFormInputElements_ = function(form) {
+    return __gCrWeb.common.getFormControlElements(form).filter(function(
+        element) {
+      return element.tagName === 'INPUT';
+    });
+  };
 
   /**
    * Returns the password form with the given |identifier| as a JSON string.
-   * @param {string} name The name of the form to extract.
+   * @param {string} identifier The identifier of the form to extract.
    * @return {string} The password form.
    */
   __gCrWeb['getPasswordFormDataAsString'] = function(identifier) {
     var el = getPasswordFormElement_(window, identifier);
-    if (!el)
-      return 'noPasswordsFound';
+    if (!el) return 'noPasswordsFound';
     var formData = __gCrWeb.getPasswordFormData(el);
-    if (!formData)
-      return 'noPasswordsFound';
+    if (!formData) return 'noPasswordsFound';
     return __gCrWeb.stringify(formData);
   };
 
@@ -198,15 +196,15 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
    * @param {string=} opt_normalizedOrigin The origin URL to compare to.
    * @return {boolean} Whether a form field has been filled.
    */
-  __gCrWeb['fillPasswordForm'] = function(formData, username, password,
-                                          opt_normalizedOrigin) {
-  var normalizedOrigin = opt_normalizedOrigin ||
-      __gCrWeb.common.removeQueryAndReferenceFromURL(window.location.href);
-  var origin = formData['origin'];
-  if (!__gCrWeb.common.isSameOrigin(origin, normalizedOrigin)) {
-    return false;
-  }
-  return fillPasswordFormWithData_(
+  __gCrWeb['fillPasswordForm'] = function(
+      formData, username, password, opt_normalizedOrigin) {
+    var normalizedOrigin = opt_normalizedOrigin ||
+        __gCrWeb.common.removeQueryAndReferenceFromURL(window.location.href);
+    var origin = /** @type {string} */ (formData['origin']);
+    if (!__gCrWeb.common.isSameOrigin(origin, normalizedOrigin)) {
+      return false;
+    }
+    return fillPasswordFormWithData_(
         formData, username, password, window, opt_normalizedOrigin);
   };
 
@@ -218,7 +216,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
    * @param {Object} formData Form data.
    * @param {string} username The username to fill.
    * @param {string} password The password to fill.
-   * @param {Object} win A window or a frame containing formData.
+   * @param {Window} win A window or a frame containing formData.
    * @param {string=} opt_normalizedOrigin The origin URL to compare to.
    * @return {boolean} Whether a form field has been filled.
    */
@@ -230,20 +228,19 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
 
     for (var i = 0; i < forms.length; i++) {
       var form = forms[i];
-      var normalizedFormAction = opt_normalizedOrigin ||
-          getCanonicalActionForForm_(form);
-      if (formData.action != normalizedFormAction)
-        continue;
+      var normalizedFormAction =
+          opt_normalizedOrigin || getCanonicalActionForForm_(form);
+      if (formData.action != normalizedFormAction) continue;
 
       var inputs = getFormInputElements_(form);
       var usernameInput =
           findInputByFieldIdentifier_(inputs, formData.fields[0].name);
-      if (usernameInput == null || !__gCrWeb.common.isTextField(usernameInput)
-          || usernameInput.disabled)
+      if (usernameInput == null ||
+          !__gCrWeb.common.isTextField(usernameInput) || usernameInput.disabled)
         continue;
       var passwordInput =
           findInputByFieldIdentifier_(inputs, formData.fields[1].name);
-      if (passwordInput == null || passwordInput.type != "password" ||
+      if (passwordInput == null || passwordInput.type != 'password' ||
           passwordInput.readOnly || passwordInput.disabled)
         continue;
 
@@ -272,7 +269,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
     var frames = getSameOriginFrames_(win);
     for (var i = 0; i < frames.length; i++) {
       if (fillPasswordFormWithData_(
-          formData, username, password, frames[i], opt_normalizedOrigin)) {
+              formData, username, password, frames[i], opt_normalizedOrigin)) {
         filled = true;
       }
     }
@@ -308,7 +305,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
 
   /**
    * Returns a JS object containing the data from |formElement|.
-   * @param {Element} formElement An HTML Form element.
+   * @param {HTMLFormElement} formElement An HTML Form element.
    * @return {Object} Object of data from formElement.
    */
   __gCrWeb.getPasswordFormData = function(formElement) {
@@ -336,8 +333,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
       }
     }
 
-    if (passwords.length == 0)
-      return null;
+    if (passwords.length == 0) return null;
 
     var usernameElement = '';
     var usernameValue = '';

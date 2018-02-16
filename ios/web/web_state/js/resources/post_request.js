@@ -48,7 +48,7 @@ __crPostRequestWorkaround.runPostRequest = function(
       byteArrays.push(byteArray);
     }
     return new Blob(byteArrays, {type: contentType});
-  }
+  };
 
   /**
    * Creates and executes a POST request.
@@ -57,6 +57,7 @@ __crPostRequestWorkaround.runPostRequest = function(
    * Each header value must be expressed as a key-value pair in this object.
    * @param {string} body Request body encoded with Base64.
    * @param {string} contentType Content-Type header value.
+   * @return {number | string}
    */
   var createAndSendPostRequest = function(url, headers, body, contentType) {
     var request = new XMLHttpRequest();
@@ -72,14 +73,15 @@ __crPostRequestWorkaround.runPostRequest = function(
       throw request.status;
     }
     return request.responseText;
-  }
+  };
 
   document.open();
   try {
-    document.write(createAndSendPostRequest(url, headers, body, contentType));
-    window.webkit.messageHandlers['POSTSuccessHandler'].postMessage("");
-  } catch(error) {
+    document.write(/** @type {string} */ (
+        createAndSendPostRequest(url, headers, body, contentType)));
+    window.webkit.messageHandlers['POSTSuccessHandler'].postMessage('');
+  } catch (error) {
     window.webkit.messageHandlers['POSTErrorHandler'].postMessage(error);
   }
   document.close();
-}
+};

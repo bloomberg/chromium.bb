@@ -16,4 +16,3 @@ var __gCrWeb = {};
 // Store __gCrWeb global namespace object referenced by a string, so it does not
 // get renamed by closure compiler during the minification.
 window['__gCrWeb'] = __gCrWeb;
-
