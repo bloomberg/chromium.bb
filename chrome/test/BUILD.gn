@@ -183,6 +183,10 @@ static_library("test_support") {
     ]
   } else {
     public_deps += [ "//components/zoom:test_support" ]
+    sources += [
+      "../browser/ui/tabs/pinned_tab_test_utils.cc",
+      "../browser/ui/tabs/pinned_tab_test_utils.h",
+    ]
   }
 
   if (is_linux) {
@@ -687,6 +691,7 @@ test("browser_tests") {
       "../browser/ui/blocked_content/popup_tracker_browsertest.cc",
       "../browser/ui/blocked_content/safe_browsing_triggered_popup_blocker_browsertest.cc",
       "../browser/ui/blocked_content/tab_under_blocker_browsertest.cc",
+      "../browser/ui/tabs/pinned_tab_service_browsertest.cc",
 
       # If this list is used on Android in the future, these browser/speech/*
       # files will probably not be applicable.
@@ -2924,8 +2929,6 @@ test("unit_tests") {
       "../browser/ui/tab_contents/tab_contents_iterator_unittest.cc",
       "../browser/ui/tabs/pinned_tab_codec_unittest.cc",
       "../browser/ui/tabs/pinned_tab_service_unittest.cc",
-      "../browser/ui/tabs/pinned_tab_test_utils.cc",
-      "../browser/ui/tabs/pinned_tab_test_utils.h",
       "../browser/ui/tabs/tab_menu_model_unittest.cc",
       "../browser/ui/tabs/tab_strip_model_stats_recorder_unittest.cc",
       "../browser/ui/tabs/tab_strip_model_unittest.cc",

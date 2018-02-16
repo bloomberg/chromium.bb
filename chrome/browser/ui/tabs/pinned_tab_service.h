@@ -34,6 +34,7 @@ class PinnedTabService : public content::NotificationObserver,
 
   // BrowserListObserver:
   void OnBrowserClosing(Browser* browser) override;
+  void OnBrowserRemoved(Browser* browser) override;
 
   Profile* profile_;
 
