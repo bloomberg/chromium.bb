@@ -10,6 +10,24 @@
 
 namespace blink {
 
+namespace {
+
+VisiblePosition CreateVisiblePositionInDOMTree(
+    Node& anchor,
+    int offset,
+    TextAffinity affinity = TextAffinity::kDownstream) {
+  return CreateVisiblePosition(Position(&anchor, offset), affinity);
+}
+
+VisiblePositionInFlatTree CreateVisiblePositionInFlatTree(
+    Node& anchor,
+    int offset,
+    TextAffinity affinity = TextAffinity::kDownstream) {
+  return CreateVisiblePosition(PositionInFlatTree(&anchor, offset), affinity);
+}
+
+}  // namespace
+
 class VisibleUnitsWordTest : public EditingTestBase {
  protected:
   std::string DoStartOfWord(
@@ -204,6 +222,71 @@ TEST_F(VisibleUnitsWordTest, EndOfWordPreviousWordIfOnBoundaryBasic) {
   EXPECT_EQ("<p> (1) abc def|</p>",
             DoEndOfWord("<p> (1) abc def</p>|",
                         EWordSide::kPreviousWordIfOnBoundary));
+}
+
+TEST_F(VisibleUnitsWordTest, EndOfWordShadowDOM) {
+  const char* body_content =
+      "<a id=host><b id=one>1</b> <b id=two>22</b></a><i id=three>333</i>";
+  const char* shadow_content =
+      "<p><u id=four>44444</u><content select=#two></content><span id=space> "
+      "</span><content select=#one></content><u id=five>55555</u></p>";
+  SetBodyContent(body_content);
+  ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
+
+  Node* one = GetDocument().getElementById("one")->firstChild();
+  Node* two = GetDocument().getElementById("two")->firstChild();
+  Node* three = GetDocument().getElementById("three")->firstChild();
+  Node* four = shadow_root->getElementById("four")->firstChild();
+  Node* five = shadow_root->getElementById("five")->firstChild();
+
+  EXPECT_EQ(
+      Position(three, 3),
+      EndOfWord(CreateVisiblePositionInDOMTree(*one, 0)).DeepEquivalent());
+  EXPECT_EQ(
+      PositionInFlatTree(five, 5),
+      EndOfWord(CreateVisiblePositionInFlatTree(*one, 0)).DeepEquivalent());
+
+  EXPECT_EQ(
+      Position(three, 3),
+      EndOfWord(CreateVisiblePositionInDOMTree(*one, 1)).DeepEquivalent());
+  EXPECT_EQ(
+      PositionInFlatTree(five, 5),
+      EndOfWord(CreateVisiblePositionInFlatTree(*one, 1)).DeepEquivalent());
+
+  EXPECT_EQ(
+      Position(three, 3),
+      EndOfWord(CreateVisiblePositionInDOMTree(*two, 0)).DeepEquivalent());
+  EXPECT_EQ(
+      PositionInFlatTree(two, 2),
+      EndOfWord(CreateVisiblePositionInFlatTree(*two, 0)).DeepEquivalent());
+
+  EXPECT_EQ(
+      Position(three, 3),
+      EndOfWord(CreateVisiblePositionInDOMTree(*two, 1)).DeepEquivalent());
+  EXPECT_EQ(
+      PositionInFlatTree(two, 2),
+      EndOfWord(CreateVisiblePositionInFlatTree(*two, 1)).DeepEquivalent());
+
+  EXPECT_EQ(
+      Position(three, 3),
+      EndOfWord(CreateVisiblePositionInDOMTree(*three, 1)).DeepEquivalent());
+  EXPECT_EQ(
+      PositionInFlatTree(three, 3),
+      EndOfWord(CreateVisiblePositionInFlatTree(*three, 1)).DeepEquivalent());
+
+  EXPECT_EQ(
+      Position(four, 5),
+      EndOfWord(CreateVisiblePositionInDOMTree(*four, 1)).DeepEquivalent());
+  EXPECT_EQ(
+      PositionInFlatTree(two, 2),
+      EndOfWord(CreateVisiblePositionInFlatTree(*four, 1)).DeepEquivalent());
+
+  EXPECT_EQ(
+      Position(five, 5),
+      EndOfWord(CreateVisiblePositionInDOMTree(*five, 1)).DeepEquivalent());
+  EXPECT_EQ(
+      PositionInFlatTree(five, 5),
+      EndOfWord(CreateVisiblePositionInFlatTree(*five, 1)).DeepEquivalent());
 }
 
 TEST_F(VisibleUnitsWordTest, EndOfWordTextSecurity) {
