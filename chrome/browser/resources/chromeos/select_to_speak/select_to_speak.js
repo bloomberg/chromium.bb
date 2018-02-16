@@ -279,6 +279,9 @@ var SelectToSpeak = function() {
         this.readSelectionEnabled_ = result;
       });
 
+  /** @private {Audio} */
+  this.null_selection_tone_ = new Audio('earcons/null_selection.ogg');
+
   this.initPreferences_();
 
   this.setUpEventListeners_();
@@ -477,17 +480,19 @@ SelectToSpeak.prototype = {
    */
   requestSpeakSelectedText_: function(focusedNode) {
     // If nothing is selected, return early.
-    // TODO: Consider playing a tone to let the user know they did the correct
-    // keystroke but nothing was selected.
     if (!focusedNode || !focusedNode.root || !focusedNode.root.anchorObject ||
-        !focusedNode.root.focusObject)
+        !focusedNode.root.focusObject) {
+      this.onNullSelection_();
       return;
+    }
     let anchorObject = focusedNode.root.anchorObject;
     let anchorOffset = focusedNode.root.anchorOffset || 0;
     let focusObject = focusedNode.root.focusObject;
     let focusOffset = focusedNode.root.focusOffset || 0;
-    if (anchorObject === focusObject && anchorOffset == focusOffset)
+    if (anchorObject === focusObject && anchorOffset == focusOffset) {
+      this.onNullSelection_();
       return;
+    }
     let anchorPosition =
         getDeepEquivalentForSelection(anchorObject, anchorOffset);
     let focusPosition = getDeepEquivalentForSelection(focusObject, focusOffset);
@@ -560,6 +565,14 @@ SelectToSpeak.prototype = {
     this.startSpeechQueue_(nodes, firstPosition.offset, lastPosition.offset);
 
     this.recordStartEvent_(START_SPEECH_METHOD_KEYSTROKE);
+  },
+
+  /**
+   * Plays a tone to let the user know they did the correct
+   * keystroke but nothing was selected.
+   */
+  onNullSelection_: function() {
+    this.null_selection_tone_.play();
   },
 
   /**
