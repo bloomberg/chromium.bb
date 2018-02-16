@@ -23,7 +23,7 @@ struct PLATFORM_EXPORT
 
   static WTF::String content_type(
       const scoped_refptr<blink::BlobDataHandle>& input) {
-    return input->GetType();
+    return input->GetType().IsNull() ? g_empty_string : input->GetType();
   }
 
   static uint64_t size(const scoped_refptr<blink::BlobDataHandle>& input) {
