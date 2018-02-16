@@ -41,8 +41,8 @@ void av1_highbd_jnt_convolve_2d_sse4_1(
   const __m128i wt1 = _mm_set1_epi32(w1);
 
   // Check that, even with 12-bit input, the intermediate values will fit
-  // into an unsigned 15-bit intermediate array.
-  assert(conv_params->round_0 >= 5);
+  // into an unsigned 16-bit intermediate array.
+  assert(bd + FILTER_BITS + 2 - conv_params->round_0 <= 16);
 
   /* Horizontal filter */
   {

@@ -35,8 +35,8 @@ void av1_highbd_convolve_2d_ssse3(const uint16_t *src, int src_stride,
   const uint16_t *const src_ptr = src - fo_vert * src_stride - fo_horiz;
 
   // Check that, even with 12-bit input, the intermediate values will fit
-  // into an unsigned 15-bit intermediate array.
-  assert(conv_params->round_0 >= 5);
+  // into an unsigned 16-bit intermediate array.
+  assert(bd + FILTER_BITS + 2 - conv_params->round_0 <= 16);
 
   /* Horizontal filter */
   {

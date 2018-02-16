@@ -1169,7 +1169,8 @@ void av1_highbd_convolve_2d_facade(const uint8_t *src8, int src_stride,
 #endif
 
   const uint16_t *src = CONVERT_TO_SHORTPTR(src8);
-  if (conv_params->dst) {
+  if (conv_params->is_compound) {
+    assert(conv_params->dst != NULL);
     if (filter_params_y.taps < filter_params_x.taps) {
       uint16_t tr_src[(MAX_SB_SIZE + MAX_FILTER_TAP - 1) *
                       (MAX_SB_SIZE + MAX_FILTER_TAP - 1)];
@@ -1262,8 +1263,10 @@ void av1_highbd_convolve_2d_facade(const uint8_t *src8, int src_stride,
                              subpel_y_q4, conv_params, bd);
 #endif  // CONFIG_JNT_COMP
     // 0-bit rounding just to convert from int32 to uint16
+    const int rbits =
+        2 * FILTER_BITS - conv_params->round_0 - conv_params->round_1;
     av1_highbd_convolve_rounding(tmp_dst, tmp_dst_stride, dst, dst_stride, w, h,
-                                 0, bd);
+                                 rbits, bd);
   }
 }
 

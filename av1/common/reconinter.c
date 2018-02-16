@@ -86,13 +86,19 @@ static INLINE void av1_make_inter_predictor(
                    pre_buf->buf0, pre_buf->width, pre_buf->height,
                    pre_buf->stride, dst, p_col, p_row, w, h, dst_stride,
                    pd->subsampling_x, pd->subsampling_y, conv_params);
+    assert(IMPLIES(conv_params->dst != NULL, conv_params->do_post_rounding));
+    assert(IMPLIES(conv_params->dst == NULL, !conv_params->do_post_rounding));
   } else if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     highbd_inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y,
                            sf, w, h, conv_params, interp_filters, xs, ys,
                            xd->bd);
+    assert(IMPLIES(conv_params->is_compound, conv_params->do_post_rounding));
+    assert(!(conv_params->is_compound && conv_params->dst == NULL));
   } else {
     inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y, sf, w,
                     h, conv_params, interp_filters, xs, ys);
+    assert(IMPLIES(conv_params->is_compound, conv_params->do_post_rounding));
+    assert(!(conv_params->is_compound && conv_params->dst == NULL));
   }
 }
 
@@ -974,6 +980,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
     const int b8_w = block_size_wide[plane_bsize] >> ss_x;
     const int b8_h = block_size_high[plane_bsize] >> ss_y;
     int idx, idy;
+    assert(!is_compound);
 
     const int x_base = x;
     const int y_base = y;
@@ -1095,7 +1102,10 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
                 (mi_y >> pd->subsampling_y) + y, plane, ref, mi, build_for_obmc,
                 xs, ys, xd);
         }  // for (ref = 0; ref < 1 + is_compound; ++ref)
+
         if (conv_params.do_post_rounding) {
+          assert(!is_masked_compound_type(mi->mbmi.interinter_compound_type));
+          assert(conv_params.dst != NULL);
           int round_bits = FILTER_BITS * 2 + is_compound - conv_params.round_0 -
                            conv_params.round_1;
 #if CONFIG_JNT_COMP
@@ -1190,7 +1200,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
     }
 
     ConvolveParams conv_params = get_conv_params_no_round(
-        ref, ref, plane, tmp_dst, MAX_SB_SIZE, is_compound, xd->bd);
+        0, 0, plane, tmp_dst, MAX_SB_SIZE, is_compound, xd->bd);
 #if CONFIG_JNT_COMP
     av1_jnt_comp_weight_assign(cm, &mi->mbmi, 0, &conv_params.fwd_offset,
                                &conv_params.bck_offset,
@@ -1234,8 +1244,12 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
             subpel_params[ref].ys, xd);
     }
 
+    // if (!is_masked_compound_type(mi->mbmi.interinter_compound_type))
+    //   assert(conv_params.do_post_rounding);
     // TODO(angiebird): This part needs optimization
     if (conv_params.do_post_rounding) {
+      assert(!is_masked_compound_type(mi->mbmi.interinter_compound_type));
+      assert(conv_params.dst != NULL);
       int round_bits = FILTER_BITS * 2 + is_compound - conv_params.round_0 -
                        conv_params.round_1;
 #if CONFIG_JNT_COMP

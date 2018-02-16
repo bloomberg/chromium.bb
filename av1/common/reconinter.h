@@ -148,7 +148,10 @@ static INLINE void highbd_inter_predictor(const uint8_t *src, int src_stride,
       av1_highbd_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,
                                     interp_filters, subpel_x, xs, subpel_y, ys,
                                     0, conv_params, bd);
-      conv_params->do_post_rounding = 1;
+      if (conv_params->is_compound)
+        conv_params->do_post_rounding = 1;
+      else
+        conv_params->do_post_rounding = 0;
     } else {
       InterpFilterParams filter_params_x, filter_params_y;
 #if CONFIG_SHORT_FILTER

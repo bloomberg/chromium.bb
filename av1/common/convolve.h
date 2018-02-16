@@ -122,6 +122,7 @@ static INLINE ConvolveParams get_conv_params_no_round(int ref, int do_average,
   ConvolveParams conv_params;
   conv_params.ref = ref;
   conv_params.do_average = do_average;
+  assert(IMPLIES(do_average, is_compound));
   conv_params.round = CONVOLVE_OPT_NO_ROUND;
   conv_params.is_compound = is_compound;
   conv_params.round_0 = ROUND0_BITS;
