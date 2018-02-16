@@ -88,8 +88,7 @@ class CC_EXPORT LayerTreeSettings {
   bool use_occlusion_for_tile_prioritization = false;
   bool use_layer_lists = false;
   int max_staging_buffer_usage_in_bytes = 32 * 1024 * 1024;
-  ManagedMemoryPolicy gpu_memory_policy;
-  ManagedMemoryPolicy software_memory_policy;
+  ManagedMemoryPolicy memory_policy;
   size_t decoded_image_working_set_budget_bytes = 128 * 1024 * 1024;
   int max_preraster_distance_in_screen_pixels = 1000;
   viz::ResourceFormat preferred_tile_format;

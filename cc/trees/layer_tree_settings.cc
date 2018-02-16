@@ -13,12 +13,9 @@ LayerTreeSettings::LayerTreeSettings()
     : default_tile_size(gfx::Size(256, 256)),
       max_untiled_layer_size(gfx::Size(512, 512)),
       minimum_occlusion_tracking_size(gfx::Size(160, 160)),
-      gpu_memory_policy(64 * 1024 * 1024,
-                        gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
-                        ManagedMemoryPolicy::kDefaultNumResourcesLimit),
-      software_memory_policy(128 * 1024 * 1024,
-                             gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
-                             ManagedMemoryPolicy::kDefaultNumResourcesLimit),
+      memory_policy(64 * 1024 * 1024,
+                    gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
+                    ManagedMemoryPolicy::kDefaultNumResourcesLimit),
       preferred_tile_format(viz::PlatformColor::BestTextureFormat()) {}
 
 LayerTreeSettings::LayerTreeSettings(const LayerTreeSettings& other) = default;

@@ -171,8 +171,8 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
       settings.use_zero_copy;
 #endif
 
-  settings.gpu_memory_policy.bytes_limit_when_visible = 512 * 1024 * 1024;
-  settings.gpu_memory_policy.priority_cutoff_when_visible =
+  settings.memory_policy.bytes_limit_when_visible = 512 * 1024 * 1024;
+  settings.memory_policy.priority_cutoff_when_visible =
       gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
 
   settings.disallow_non_exact_resource_reuse =
