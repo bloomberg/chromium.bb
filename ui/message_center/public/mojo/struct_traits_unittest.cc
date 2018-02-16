@@ -7,7 +7,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -37,12 +36,6 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     EXPECT_EQ(input.icon().Height(), output.icon().Height());
     EXPECT_EQ(input.display_source(), output.display_source());
     EXPECT_EQ(input.origin_url(), output.origin_url());
-    EXPECT_EQ(input.notifier_id(), output.notifier_id());
-    EXPECT_EQ(input.priority(), output.priority());
-    EXPECT_TRUE(gfx::test::AreImagesEqual(input.image(), output.image()));
-    EXPECT_TRUE(
-        gfx::test::AreImagesEqual(input.small_image(), output.small_image()));
-    EXPECT_EQ(input.timestamp(), output.timestamp());
     EXPECT_EQ(input.progress(), output.progress());
     EXPECT_EQ(input.progress_status(), output.progress_status());
     EXPECT_EQ(input.rich_notification_data()
@@ -52,9 +45,6 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     EXPECT_EQ(input.clickable(), output.clickable());
     EXPECT_EQ(input.accessible_name(), output.accessible_name());
     EXPECT_EQ(input.accent_color(), output.accent_color());
-    EXPECT_EQ(input.should_show_settings_button(),
-              output.should_show_settings_button());
-    EXPECT_EQ(input.fullscreen_visibility(), output.fullscreen_visibility());
   }
 
  private:
@@ -81,11 +71,8 @@ TEST_F(StructTraitsTest, Notification) {
   base::string16 display_source(base::ASCIIToUTF16("display_source"));
   GURL origin_url("www.example.com");
   NotifierId notifier_id(NotifierId::NotifierType::APPLICATION, id);
-  notifier_id.profile_id = "profile_id";
-  RichNotificationData optional_fields;
-  optional_fields.settings_button_handler = SettingsButtonHandler::INLINE;
   Notification input(type, id, title, message, icon, display_source, origin_url,
-                     notifier_id, optional_fields, nullptr);
+                     notifier_id, RichNotificationData(), nullptr);
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   Notification output;
@@ -93,15 +80,11 @@ TEST_F(StructTraitsTest, Notification) {
   Compare(input, output);
 
   // Set some optional fields to non-default values and test again.
-  input.set_never_timeout(true);
   input.set_type(NotificationType::NOTIFICATION_TYPE_PROGRESS);
   input.set_progress(50);
   input.set_progress_status(base::ASCIIToUTF16("progress text"));
   input.set_clickable(!input.clickable());
-  input.set_image(gfx::test::CreateImage(48, 48));
-  input.set_small_image(gfx::test::CreateImage(16, 16));
   input.set_accent_color(SK_ColorMAGENTA);
-  input.set_fullscreen_visibility(FullscreenVisibility::OVER_USER);
   proxy->EchoNotification(input, &output);
   Compare(input, output);
 }

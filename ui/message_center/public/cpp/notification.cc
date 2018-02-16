@@ -44,11 +44,13 @@ gfx::Image DeepCopyImage(const gfx::Image& image) {
 
 }  // namespace
 
+NotificationItem::NotificationItem(const base::string16& title,
+                                   const base::string16& message)
+    : title(title), message(message) {}
+
 ButtonInfo::ButtonInfo(const base::string16& title) : title(title) {}
 
 ButtonInfo::ButtonInfo(const ButtonInfo& other) = default;
-
-ButtonInfo::ButtonInfo() = default;
 
 ButtonInfo::~ButtonInfo() = default;
 
@@ -81,8 +83,8 @@ Notification::Notification(NotificationType type,
       display_source_(display_source),
       origin_url_(origin_url),
       notifier_id_(notifier_id),
-      optional_fields_(optional_fields),
       serial_number_(g_next_serial_number++),
+      optional_fields_(optional_fields),
       shown_as_popup_(false),
       is_read_(false),
       delegate_(std::move(delegate)) {}

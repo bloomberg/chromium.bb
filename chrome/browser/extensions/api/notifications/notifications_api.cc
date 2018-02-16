@@ -352,8 +352,9 @@ bool NotificationsApiFunction::CreateNotification(
   if (has_list_items) {
     using api::notifications::NotificationItem;
     for (const NotificationItem& api_item : *options->items) {
-      optional_fields.items.push_back({base::UTF8ToUTF16(api_item.title),
-                                       base::UTF8ToUTF16(api_item.message)});
+      optional_fields.items.push_back(message_center::NotificationItem(
+          base::UTF8ToUTF16(api_item.title),
+          base::UTF8ToUTF16(api_item.message)));
     }
   }
 
@@ -509,8 +510,9 @@ bool NotificationsApiFunction::UpdateNotification(
     std::vector<message_center::NotificationItem> items;
     using api::notifications::NotificationItem;
     for (const NotificationItem& api_item : *options->items) {
-      items.push_back({base::UTF8ToUTF16(api_item.title),
-                       base::UTF8ToUTF16(api_item.message)});
+      items.push_back(message_center::NotificationItem(
+          base::UTF8ToUTF16(api_item.title),
+          base::UTF8ToUTF16(api_item.message)));
     }
     notification->set_items(items);
   }
