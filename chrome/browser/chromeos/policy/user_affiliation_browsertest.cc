@@ -3,11 +3,20 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <ostream>
 
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/policy/affiliation_test_helper.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
+#include "chrome/browser/net/nss_context.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/chromeos_switches.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -15,8 +24,16 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_launcher.h"
 #include "content/public/test/test_utils.h"
+#include "crypto/scoped_test_system_nss_key_slot.h"
+#include "net/cert/nss_cert_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace content {
+class ResourceContext;
+}
 
 namespace policy {
 
@@ -29,8 +46,56 @@ constexpr char kAnotherAffiliationID[] = "another-affiliation-id";
 
 struct Params {
   explicit Params(bool affiliated) : affiliated_(affiliated) {}
+
+  friend std::ostream& operator<<(std::ostream& os, const Params& p) {
+    os << "{ affiliated: " << p.affiliated_ << " }";
+    return os;
+  }
+
   bool affiliated_;
 };
+
+void CheckIsSystemSlotAvailableOnIOThreadWithCertDb(
+    bool* out_system_slot_available,
+    base::OnceClosure done_closure,
+    net::NSSCertDatabase* cert_db) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  *out_system_slot_available = cert_db->GetSystemSlot() != nullptr;
+  std::move(done_closure).Run();
+}
+
+void CheckIsSystemSlotAvailableOnIOThread(
+    content::ResourceContext* resource_context,
+    bool* out_system_slot_available,
+    base::OnceClosure done_closure) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  auto did_get_cert_db_callback = base::BindRepeating(
+      &CheckIsSystemSlotAvailableOnIOThreadWithCertDb,
+      out_system_slot_available,
+      base::AdaptCallbackForRepeating(std::move(done_closure)));
+
+  net::NSSCertDatabase* cert_db = GetNSSCertDatabaseForResourceContext(
+      resource_context, did_get_cert_db_callback);
+  if (cert_db)
+    did_get_cert_db_callback.Run(cert_db);
+}
+
+// Returns true if the system token is available for |profile|. System token
+// availability is one of the aspects which are tied to user affiliation. It is
+// an interesting one to test because it is evaluated very early (in
+// ProfileIOData::InitializeOnUIThread).
+bool IsSystemSlotAvailable(Profile* profile) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  base::RunLoop run_loop;
+  bool system_slot_available = false;
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(CheckIsSystemSlotAvailableOnIOThread,
+                     profile->GetResourceContext(), &system_slot_available,
+                     run_loop.QuitClosure()));
+  run_loop.Run();
+  return system_slot_available;
+}
 
 }  // namespace
 
@@ -47,8 +112,17 @@ class UserAffiliationBrowserTest
  protected:
   // InProcessBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    affiliation_test_helper::AppendCommandLineSwitchesForLoginManager(
-        command_line);
+    if (content::IsPreTest()) {
+      affiliation_test_helper::AppendCommandLineSwitchesForLoginManager(
+          command_line);
+    } else {
+      const cryptohome::Identification cryptohome_id(account_id_);
+      command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
+                                      cryptohome_id.id());
+      command_line->AppendSwitchASCII(
+          chromeos::switches::kLoginProfile,
+          chromeos::CryptohomeClient::GetStubSanitizedUsername(cryptohome_id));
+    }
   }
 
   // InProcessBrowserTest
@@ -83,19 +157,72 @@ class UserAffiliationBrowserTest
 
   const AccountId account_id_;
 
+  void SetUpTestSystemSlot() {
+    bool system_slot_constructed_successfully = false;
+    base::RunLoop loop;
+    content::BrowserThread::PostTaskAndReply(
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&UserAffiliationBrowserTest::SetUpTestSystemSlotOnIO,
+                       base::Unretained(this),
+                       &system_slot_constructed_successfully),
+        loop.QuitClosure());
+    loop.Run();
+    ASSERT_TRUE(system_slot_constructed_successfully);
+  }
+
  private:
+  void SetUpTestSystemSlotOnIO(bool* out_system_slot_constructed_successfully) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    test_system_slot_ = std::make_unique<crypto::ScopedTestSystemNSSKeySlot>();
+    *out_system_slot_constructed_successfully =
+        test_system_slot_->ConstructedSuccessfully();
+  }
+
+  std::unique_ptr<crypto::ScopedTestSystemNSSKeySlot> test_system_slot_;
+
   DISALLOW_COPY_AND_ASSIGN(UserAffiliationBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_P(UserAffiliationBrowserTest, PRE_Affiliated) {
+IN_PROC_BROWSER_TEST_P(UserAffiliationBrowserTest, PRE_PRE_Affiliated) {
   affiliation_test_helper::PreLoginUser(account_id_);
 }
 
-IN_PROC_BROWSER_TEST_P(UserAffiliationBrowserTest, Affiliated) {
+// This part of the test performs a regular sign-in through the login manager.
+IN_PROC_BROWSER_TEST_P(UserAffiliationBrowserTest, PRE_Affiliated) {
   affiliation_test_helper::LoginUser(account_id_);
+
   EXPECT_EQ(
       GetParam().affiliated_,
       user_manager::UserManager::Get()->FindUser(account_id_)->IsAffiliated());
+
+  // Also test system slot availability, which is tied to user affiliation. This
+  // gives us additional information, because for the system slot to be
+  // available for an affiliated user, IsAffiliated() must already be returning
+  // true in the ProfileIOData constructor.
+  ASSERT_NO_FATAL_FAILURE(SetUpTestSystemSlot());
+  EXPECT_EQ(GetParam().affiliated_,
+            IsSystemSlotAvailable(ProfileManager::GetPrimaryUserProfile()));
+}
+
+// This part of the test performs a direct sign-in into the user profile using
+// the --login-user command-line switch, simulating the restart after crash
+// behavior on Chrome OS.
+// See SetUpCommandLine for details.
+IN_PROC_BROWSER_TEST_P(UserAffiliationBrowserTest, Affiliated) {
+  // Note: We don't log in the user, because the login has implicitly been
+  // performed using a command-line flag (see SetUpCommandLine).
+
+  EXPECT_EQ(
+      GetParam().affiliated_,
+      user_manager::UserManager::Get()->FindUser(account_id_)->IsAffiliated());
+
+  // Also test system slot availability, which is tied to user affiliation. This
+  // gives us additional information, because for the system slot to be
+  // available for an affiliated user, IsAffiliated() must already be returning
+  // true in the ProfileIOData constructor.
+  ASSERT_NO_FATAL_FAILURE(SetUpTestSystemSlot());
+  EXPECT_EQ(GetParam().affiliated_,
+            IsSystemSlotAvailable(ProfileManager::GetPrimaryUserProfile()));
 }
 
 INSTANTIATE_TEST_CASE_P(AffiliationCheck,
