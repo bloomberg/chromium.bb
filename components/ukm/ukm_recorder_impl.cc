@@ -90,6 +90,7 @@ enum class DroppedDataReason {
   MAX_HIT = 2,
   NOT_WHITELISTED = 3,
   UNSUPPORTED_URL_SCHEME = 4,
+  SAMPLED_OUT = 5,
   NUM_DROPPED_DATA_REASONS
 };
 
@@ -317,8 +318,10 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
                           : default_sampling_rate_;
   if (sampling_rate == 0 ||
       (sampling_rate > 1 && base::RandInt(1, sampling_rate) != 1)) {
+    RecordDroppedEntry(DroppedDataReason::SAMPLED_OUT);
+    event_aggregate.dropped_due_to_sampling++;
     for (auto& metric : entry->metrics)
-      event_aggregations_[metric->metric_hash].dropped_due_to_sampling++;
+      event_aggregate.metrics[metric->metric_hash].dropped_due_to_sampling++;
     return;
   }
 
