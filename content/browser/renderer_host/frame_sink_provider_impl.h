@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDER_WIDGET_COMPOSITOR_FRAME_SINK_PROVIDER_H_
 
 #include "content/common/frame_sink_provider.mojom.h"
+#include "content/common/render_frame_metadata.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
@@ -23,8 +24,11 @@ class FrameSinkProviderImpl : public mojom::FrameSinkProvider {
   // mojom::FrameSinkProvider implementation.
   void CreateForWidget(
       int32_t widget_id,
-      viz::mojom::CompositorFrameSinkRequest request,
-      viz::mojom::CompositorFrameSinkClientPtr client) override;
+      viz::mojom::CompositorFrameSinkRequest compositor_frame_sink_request,
+      viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client,
+      mojom::RenderFrameMetadataObserverClientRequest
+          render_frame_metadata_observer_client_request,
+      mojom::RenderFrameMetadataObserverPtr observer) override;
 
  private:
   const int32_t process_id_;

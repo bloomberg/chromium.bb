@@ -24,6 +24,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_frame_metadata_provider.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -712,6 +713,41 @@ class FrameWatcher : public WebContentsObserver {
   base::Closure quit_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameWatcher);
+};
+
+// This class is intended to synchronize upon the submission of compositor
+// frames from the renderer to the display compositor.
+//
+// This class enables observation of the provided
+// RenderFrameMetadataProvider. Which notifies this of every
+// subsequent frame submission. Observation ends upon the destruction of this
+// class.
+//
+// Calling Wait will block the browser ui thread until the next time the
+// renderer submits a frame.
+//
+// Tests interested in the associated RenderFrameMetadata will find it cached
+// in the RenderFrameMetadataProvider.
+class RenderFrameSubmissionObserver
+    : public RenderFrameMetadataProvider::Observer {
+ public:
+  explicit RenderFrameSubmissionObserver(
+      RenderFrameMetadataProvider* render_frame_metadata_provider);
+  ~RenderFrameSubmissionObserver() override;
+
+  // Blocks the browser ui thread until the next OnRenderFrameSubmission.
+  void Wait();
+
+ private:
+  // Exits |run_loop_| unblocking the UI thread. Execution will resume in Wait.
+  void Quit();
+
+  // RenderFrameMetadataProvider::Observer
+  void OnRenderFrameMetadataChanged() override;
+  void OnRenderFrameSubmission() override;
+
+  RenderFrameMetadataProvider* render_frame_metadata_provider_ = nullptr;
+  std::unique_ptr<base::RunLoop> run_loop_;
 };
 
 // This class is intended to synchronize the renderer main thread, renderer impl

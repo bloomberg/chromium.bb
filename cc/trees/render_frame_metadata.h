@@ -19,6 +19,8 @@ class CC_EXPORT RenderFrameMetadata {
 
   RenderFrameMetadata& operator=(const RenderFrameMetadata&);
   RenderFrameMetadata& operator=(RenderFrameMetadata&& other);
+  bool operator==(const RenderFrameMetadata& other);
+  bool operator!=(const RenderFrameMetadata& other);
 
   // Scroll offset and scale of the root layer. This can be used for tasks
   // like positioning windowed plugins.

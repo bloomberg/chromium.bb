@@ -564,6 +564,7 @@ mojom("mojo_bindings") {
     "page_state.mojom",
     "push_messaging.mojom",
     "render_frame_message_filter.mojom",
+    "render_frame_metadata.mojom",
     "render_message_filter.mojom",
     "render_widget_window_tree_client_factory.mojom",
     "renderer.mojom",

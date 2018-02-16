@@ -21,4 +21,12 @@ RenderFrameMetadata& RenderFrameMetadata::operator=(
 RenderFrameMetadata& RenderFrameMetadata::operator=(
     RenderFrameMetadata&& other) = default;
 
+bool RenderFrameMetadata::operator==(const RenderFrameMetadata& other) {
+  return root_scroll_offset == other.root_scroll_offset;
+}
+
+bool RenderFrameMetadata::operator!=(const RenderFrameMetadata& other) {
+  return !operator==(other);
+}
+
 }  // namespace cc

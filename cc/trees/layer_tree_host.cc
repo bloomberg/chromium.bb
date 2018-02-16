@@ -50,6 +50,7 @@
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/property_tree_builder.h"
 #include "cc/trees/proxy_main.h"
+#include "cc/trees/render_frame_metadata_observer.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/swap_promise_manager.h"
@@ -1565,6 +1566,11 @@ void LayerTreeHost::RequestBeginMainFrameNotExpected(bool new_state) {
 
 void LayerTreeHost::SetURLForUkm(const GURL& url) {
   proxy_->SetURLForUkm(url);
+}
+
+void LayerTreeHost::SetRenderFrameObserver(
+    std::unique_ptr<RenderFrameMetadataObserver> observer) {
+  proxy_->SetRenderFrameObserver(std::move(observer));
 }
 
 }  // namespace cc

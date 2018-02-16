@@ -43,6 +43,7 @@
 #include "cc/trees/latency_info_swap_promise_monitor.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_mutator.h"
+#include "cc/trees/render_frame_metadata_observer.h"
 #include "cc/trees/swap_promise.h"
 #include "cc/trees/ukm_manager.h"
 #include "components/viz/common/features.h"
@@ -53,12 +54,14 @@
 #include "components/viz/common/resources/single_release_callback.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/layer_tree_settings_factory.h"
+#include "content/common/render_frame_metadata.mojom.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/screen_info.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/gpu/render_widget_compositor_delegate.h"
 #include "content/renderer/input/input_handler_manager.h"
+#include "content/renderer/render_frame_metadata_observer_impl.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "media/base/media_switches.h"
@@ -1339,6 +1342,16 @@ void RenderWidgetCompositor::NotifySwapTime(ReportTimeCallback callback) {
 
 void RenderWidgetCompositor::RequestBeginMainFrameNotExpected(bool new_state) {
   layer_tree_host_->RequestBeginMainFrameNotExpected(new_state);
+}
+
+void RenderWidgetCompositor::CreateRenderFrameObserver(
+    mojom::RenderFrameMetadataObserverRequest request,
+    mojom::RenderFrameMetadataObserverClientPtrInfo client_info) {
+  auto render_frame_metadata_observer =
+      std::make_unique<RenderFrameMetadataObserverImpl>(std::move(request),
+                                                        std::move(client_info));
+  layer_tree_host_->SetRenderFrameObserver(
+      std::move(render_frame_metadata_observer));
 }
 
 void RenderWidgetCompositor::SetURLForUkm(const GURL& url) {

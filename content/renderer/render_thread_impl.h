@@ -36,6 +36,7 @@
 #include "content/common/frame_replication_state.h"
 #include "content/common/frame_sink_provider.mojom.h"
 #include "content/common/render_frame_message_filter.mojom.h"
+#include "content/common/render_frame_metadata.mojom.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/renderer_host.mojom.h"
@@ -289,7 +290,10 @@ class CONTENT_EXPORT RenderThreadImpl
       int routing_id,
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
       const GURL& url,
-      const LayerTreeFrameSinkCallback& callback);
+      const LayerTreeFrameSinkCallback& callback,
+      mojom::RenderFrameMetadataObserverClientRequest
+          render_frame_metadata_observer_client_request,
+      mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer_ptr);
 
   blink::AssociatedInterfaceRegistry* GetAssociatedInterfaceRegistry();
 

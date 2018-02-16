@@ -59,6 +59,7 @@ class LayerTreeMutator;
 class MutatorEvents;
 class MutatorHost;
 struct PendingPageScaleAnimation;
+class RenderFrameMetadataObserver;
 class RenderingStatsInstrumentation;
 struct OverscrollBehavior;
 class TaskGraphRunner;
@@ -511,6 +512,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   float recording_scale_factor() const { return recording_scale_factor_; }
 
   void SetURLForUkm(const GURL& url);
+
+  void SetRenderFrameObserver(
+      std::unique_ptr<RenderFrameMetadataObserver> observer);
 
  protected:
   LayerTreeHost(InitParams* params, CompositorMode mode);

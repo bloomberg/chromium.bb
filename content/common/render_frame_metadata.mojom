@@ -1,0 +1,31 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module content.mojom;
+
+import "ui/gfx/geometry/mojo/geometry.mojom";
+
+// See components/viz/service/quads/render_frame_metadata.h
+struct RenderFrameMetadata {
+  gfx.mojom.Vector2dF root_scroll_offset;
+};
+
+// This interface is provided by the renderer. It can optionally enable
+// notifications for all frame submissions.
+interface RenderFrameMetadataObserver {
+  // When |enabled| is set to true, this will notify the associated client of
+  // all frame submissions.
+  ReportAllFrameSubmissionsForTesting(bool enabled);
+};
+
+// This interface is provided by the browser. It is notified of all changes to
+// RenderFrameMetadata. It can be notified of all frame submissions, via
+// RenderFrameMetadataObserver::ReportAllFrameSubmissionsForTesting.
+interface RenderFrameMetadataObserverClient {
+  // Notified when RenderFrameMetadata has changed.
+  OnRenderFrameMetadataChanged(RenderFrameMetadata metadata);
+
+  // Notified on all frame submissions.
+  OnFrameSubmissionForTesting();
+};

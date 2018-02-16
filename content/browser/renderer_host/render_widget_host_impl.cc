@@ -55,6 +55,7 @@
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/input/touch_emulator.h"
+#include "content/browser/renderer_host/render_frame_metadata_provider_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
@@ -77,6 +78,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_frame_metadata_provider.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
@@ -2629,8 +2631,15 @@ void RenderWidgetHostImpl::RequestCompositionUpdates(bool immediate_request,
 }
 
 void RenderWidgetHostImpl::RequestCompositorFrameSink(
-    viz::mojom::CompositorFrameSinkRequest request,
-    viz::mojom::CompositorFrameSinkClientPtr client) {
+    viz::mojom::CompositorFrameSinkRequest compositor_frame_sink_request,
+    viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client,
+    mojom::RenderFrameMetadataObserverClientRequest
+        render_frame_metadata_observer_client_request,
+    mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer) {
+  render_frame_metadata_provider_ =
+      std::make_unique<RenderFrameMetadataProviderImpl>(
+          std::move(render_frame_metadata_observer_client_request),
+          std::move(render_frame_metadata_observer));
   if (enable_viz_) {
       // Connects the viz process end of CompositorFrameSink message pipes. The
       // renderer compositor may request a new CompositorFrameSink on context
@@ -2643,8 +2652,9 @@ void RenderWidgetHostImpl::RequestCompositorFrameSink(
             manager->CreateCompositorFrameSink(
                 frame_sink_id, std::move(request), std::move(client));
           },
-          base::Unretained(GetHostFrameSinkManager()), std::move(request),
-          std::move(client));
+          base::Unretained(GetHostFrameSinkManager()),
+          std::move(compositor_frame_sink_request),
+          std::move(compositor_frame_sink_client));
 
       if (view_)
         view_->CreateCompositorFrameSink(std::move(callback));
@@ -2657,11 +2667,12 @@ void RenderWidgetHostImpl::RequestCompositorFrameSink(
   if (compositor_frame_sink_binding_.is_bound())
     compositor_frame_sink_binding_.Close();
   compositor_frame_sink_binding_.Bind(
-      std::move(request),
+      std::move(compositor_frame_sink_request),
       BrowserMainLoop::GetInstance()->GetResizeTaskRunner());
   if (view_)
-    view_->DidCreateNewRendererCompositorFrameSink(client.get());
-  renderer_compositor_frame_sink_ = std::move(client);
+    view_->DidCreateNewRendererCompositorFrameSink(
+        compositor_frame_sink_client.get());
+  renderer_compositor_frame_sink_ = std::move(compositor_frame_sink_client);
 }
 
 bool RenderWidgetHostImpl::HasGestureStopped() {

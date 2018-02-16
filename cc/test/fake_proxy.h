@@ -8,6 +8,7 @@
 #include "base/single_thread_task_runner.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/proxy.h"
+#include "cc/trees/render_frame_metadata_observer.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace cc {
@@ -44,6 +45,8 @@ class FakeProxy : public Proxy {
   void RequestBeginMainFrameNotExpected(bool new_state) override {}
   void SetURLForUkm(const GURL& url) override {}
   void ClearHistoryOnNavigation() override {}
+  void SetRenderFrameObserver(
+      std::unique_ptr<RenderFrameMetadataObserver> observer) override {}
 
  private:
   LayerTreeHost* layer_tree_host_;
