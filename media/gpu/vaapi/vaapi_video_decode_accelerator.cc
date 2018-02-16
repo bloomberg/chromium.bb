@@ -79,51 +79,18 @@ static void ReportToUMA(VAVDADecoderFailure failure) {
     }                                                              \
   } while (0)
 
-class VaapiVideoDecodeAccelerator::VaapiDecodeSurface
-    : public base::RefCountedThreadSafe<VaapiDecodeSurface> {
- public:
-  VaapiDecodeSurface(int32_t bitstream_id,
-                     const scoped_refptr<VASurface>& va_surface);
-
-  int32_t bitstream_id() const { return bitstream_id_; }
-  scoped_refptr<VASurface> va_surface() { return va_surface_; }
-  gfx::Rect visible_rect() const { return visible_rect_; }
-
-  void set_visible_rect(const gfx::Rect& visible_rect) {
-    visible_rect_ = visible_rect;
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<VaapiDecodeSurface>;
-  ~VaapiDecodeSurface();
-
-  const int32_t bitstream_id_;
-  const scoped_refptr<VASurface> va_surface_;
-  gfx::Rect visible_rect_;
-};
-
-VaapiVideoDecodeAccelerator::VaapiDecodeSurface::VaapiDecodeSurface(
-    int32_t bitstream_id,
-    const scoped_refptr<VASurface>& va_surface)
-    : bitstream_id_(bitstream_id), va_surface_(va_surface) {}
-
-VaapiVideoDecodeAccelerator::VaapiDecodeSurface::~VaapiDecodeSurface() {}
-
 class VaapiH264Picture : public H264Picture {
  public:
-  explicit VaapiH264Picture(
-      scoped_refptr<VaapiVideoDecodeAccelerator::VaapiDecodeSurface> surface)
+  explicit VaapiH264Picture(scoped_refptr<VaapiDecodeSurface> surface)
       : dec_surface_(surface) {}
 
   VaapiH264Picture* AsVaapiH264Picture() override { return this; }
-  scoped_refptr<VaapiVideoDecodeAccelerator::VaapiDecodeSurface> dec_surface() {
-    return dec_surface_;
-  }
+  scoped_refptr<VaapiDecodeSurface> dec_surface() { return dec_surface_; }
 
  private:
   ~VaapiH264Picture() override {}
 
-  scoped_refptr<VaapiVideoDecodeAccelerator::VaapiDecodeSurface> dec_surface_;
+  scoped_refptr<VaapiDecodeSurface> dec_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(VaapiH264Picture);
 };
@@ -178,19 +145,16 @@ class VaapiVideoDecodeAccelerator::VaapiH264Accelerator
 
 class VaapiVP8Picture : public VP8Picture {
  public:
-  explicit VaapiVP8Picture(
-      scoped_refptr<VaapiVideoDecodeAccelerator::VaapiDecodeSurface> surface)
+  explicit VaapiVP8Picture(scoped_refptr<VaapiDecodeSurface> surface)
       : dec_surface_(surface) {}
 
   VaapiVP8Picture* AsVaapiVP8Picture() override { return this; }
-  scoped_refptr<VaapiVideoDecodeAccelerator::VaapiDecodeSurface> dec_surface() {
-    return dec_surface_;
-  }
+  scoped_refptr<VaapiDecodeSurface> dec_surface() { return dec_surface_; }
 
  private:
   ~VaapiVP8Picture() override {}
 
-  scoped_refptr<VaapiVideoDecodeAccelerator::VaapiDecodeSurface> dec_surface_;
+  scoped_refptr<VaapiDecodeSurface> dec_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(VaapiVP8Picture);
 };
@@ -227,19 +191,16 @@ class VaapiVideoDecodeAccelerator::VaapiVP8Accelerator
 
 class VaapiVP9Picture : public VP9Picture {
  public:
-  explicit VaapiVP9Picture(
-      scoped_refptr<VaapiVideoDecodeAccelerator::VaapiDecodeSurface> surface)
+  explicit VaapiVP9Picture(scoped_refptr<VaapiDecodeSurface> surface)
       : dec_surface_(surface) {}
 
   VaapiVP9Picture* AsVaapiVP9Picture() override { return this; }
-  scoped_refptr<VaapiVideoDecodeAccelerator::VaapiDecodeSurface> dec_surface() {
-    return dec_surface_;
-  }
+  scoped_refptr<VaapiDecodeSurface> dec_surface() { return dec_surface_; }
 
  private:
   ~VaapiVP9Picture() override {}
 
-  scoped_refptr<VaapiVideoDecodeAccelerator::VaapiDecodeSurface> dec_surface_;
+  scoped_refptr<VaapiDecodeSurface> dec_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(VaapiVP9Picture);
 };
@@ -1118,8 +1079,7 @@ void VaapiVideoDecodeAccelerator::SurfaceReady(
   TryOutputSurface();
 }
 
-scoped_refptr<VaapiVideoDecodeAccelerator::VaapiDecodeSurface>
-VaapiVideoDecodeAccelerator::CreateSurface() {
+scoped_refptr<VaapiDecodeSurface> VaapiVideoDecodeAccelerator::CreateSurface() {
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
 
@@ -1414,9 +1374,9 @@ void VaapiVideoDecodeAccelerator::VaapiH264Accelerator::Reset() {
   vaapi_wrapper_->DestroyPendingBuffers();
 }
 
-scoped_refptr<VaapiVideoDecodeAccelerator::VaapiDecodeSurface>
-VaapiVideoDecodeAccelerator::VaapiH264Accelerator::
-    H264PictureToVaapiDecodeSurface(const scoped_refptr<H264Picture>& pic) {
+scoped_refptr<VaapiDecodeSurface> VaapiVideoDecodeAccelerator::
+    VaapiH264Accelerator::H264PictureToVaapiDecodeSurface(
+        const scoped_refptr<H264Picture>& pic) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VaapiH264Picture* vaapi_pic = pic->AsVaapiH264Picture();
   CHECK(vaapi_pic);
@@ -1706,9 +1666,9 @@ bool VaapiVideoDecodeAccelerator::VaapiVP8Accelerator::OutputPicture(
   return true;
 }
 
-scoped_refptr<VaapiVideoDecodeAccelerator::VaapiDecodeSurface>
-VaapiVideoDecodeAccelerator::VaapiVP8Accelerator::
-    VP8PictureToVaapiDecodeSurface(const scoped_refptr<VP8Picture>& pic) {
+scoped_refptr<VaapiDecodeSurface> VaapiVideoDecodeAccelerator::
+    VaapiVP8Accelerator::VP8PictureToVaapiDecodeSurface(
+        const scoped_refptr<VP8Picture>& pic) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VaapiVP8Picture* vaapi_pic = pic->AsVaapiVP8Picture();
   CHECK(vaapi_pic);
@@ -1884,9 +1844,9 @@ bool VaapiVideoDecodeAccelerator::VaapiVP9Accelerator::GetFrameContext(
   return false;
 }
 
-scoped_refptr<VaapiVideoDecodeAccelerator::VaapiDecodeSurface>
-VaapiVideoDecodeAccelerator::VaapiVP9Accelerator::
-    VP9PictureToVaapiDecodeSurface(const scoped_refptr<VP9Picture>& pic) {
+scoped_refptr<VaapiDecodeSurface> VaapiVideoDecodeAccelerator::
+    VaapiVP9Accelerator::VP9PictureToVaapiDecodeSurface(
+        const scoped_refptr<VP9Picture>& pic) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VaapiVP9Picture* vaapi_pic = pic->AsVaapiVP9Picture();
   CHECK(vaapi_pic);
