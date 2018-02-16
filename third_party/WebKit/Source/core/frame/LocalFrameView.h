@@ -1104,7 +1104,6 @@ class CORE_EXPORT LocalFrameView final
   void DidChangeGlobalRootScroller() override;
 
   void UpdateGeometriesIfNeeded();
-  void UpdateGeometries();
 
   bool WasViewportResized();
   void SendResizeEventIfNeeded();

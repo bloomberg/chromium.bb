@@ -1126,6 +1126,9 @@ void LocalFrameView::UpdateLayout() {
   RUNTIME_CALL_TIMER_SCOPE(V8PerIsolateData::MainThreadIsolate(),
                            RuntimeCallStats::CounterId::kUpdateLayout);
 
+  // The actual call to UpdateGeometries is in PerformPostLayoutTasks.
+  SetNeedsUpdateGeometries();
+
   if (auto_size_info_)
     auto_size_info_->AutoSizeIfNeeded();
 
@@ -1422,21 +1425,6 @@ bool LocalFrameView::GetIntrinsicSizingInfo(
 
 bool LocalFrameView::HasIntrinsicSizingInfo() const {
   return EmbeddedReplacedContent();
-}
-
-void LocalFrameView::UpdateGeometries() {
-  HeapVector<Member<EmbeddedContentView>> views;
-  ForAllChildViewsAndPlugins(
-      [&](EmbeddedContentView& view) { views.push_back(view); });
-
-  for (const auto& view : views) {
-    // Script or plugins could detach the frame so abort processing if that
-    // happens.
-    if (!GetLayoutView())
-      break;
-
-    view->UpdateGeometry();
-  }
 }
 
 void LocalFrameView::UpdateGeometry() {
@@ -2092,6 +2080,7 @@ void LocalFrameView::UpdateLayersAndCompositingAfterScrollIfNeeded() {
       DisableCompositingQueryAsserts disabler;
       layer->UpdateLayerPositionsAfterOverflowScroll();
       layout_object->SetMayNeedPaintInvalidationSubtree();
+      SetNeedsUpdateGeometries();
     }
   }
 
@@ -2099,7 +2088,7 @@ void LocalFrameView::UpdateLayersAndCompositingAfterScrollIfNeeded() {
   // change.  Update LocalFrameView and layer positions after scrolling, but
   // only if we're not inside of layout.
   if (!nested_layout_count_) {
-    UpdateGeometries();
+    UpdateGeometriesIfNeeded();
     if (auto* layout_view = this->GetLayoutView())
       layout_view->Layer()->SetNeedsCompositingInputsUpdate();
   }
@@ -2590,7 +2579,7 @@ void LocalFrameView::PerformPostLayoutTasks() {
     GetFrame().LocalFrameRoot().GetEventHandler().ScheduleCursorUpdate();
   }
 
-  UpdateGeometries();
+  UpdateGeometriesIfNeeded();
 
   // Plugins could have torn down the page inside updateGeometries().
   if (!GetLayoutView())
@@ -2989,10 +2978,19 @@ void LocalFrameView::VisualViewportScrollbarsChanged() {
 void LocalFrameView::UpdateGeometriesIfNeeded() {
   if (!needs_update_geometries_)
     return;
-
   needs_update_geometries_ = false;
+  HeapVector<Member<EmbeddedContentView>> views;
+  ForAllChildViewsAndPlugins(
+      [&](EmbeddedContentView& view) { views.push_back(view); });
 
-  UpdateGeometries();
+  for (const auto& view : views) {
+    // Script or plugins could detach the frame so abort processing if that
+    // happens.
+    if (!GetLayoutView())
+      break;
+
+    view->UpdateGeometry();
+  }
 }
 
 void LocalFrameView::UpdateAllLifecyclePhases() {
