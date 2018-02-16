@@ -42,7 +42,7 @@ issues]].
 - The translation mode ~comp8Dots~ has been removed as it was never
   really implemented anyway
 
-*** The pass1Only flag has now been completely removed. Thanks to Bue Vester-Andersen.
+*** Support for the pass1Only flag has now been removed. Thanks to Bue Vester-Andersen.
 ** New, renamed or removed tables
 *** New
 *** Renamed

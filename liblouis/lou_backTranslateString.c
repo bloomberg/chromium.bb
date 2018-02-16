@@ -90,6 +90,10 @@ doPasses(widechar *outbuf, const TranslationTableHeader *table, int *src, int *s
 
 	if (table->corrections) lastPass -= 1;
 
+	if (mode & pass1Only) {
+		_lou_logMessage(LOG_WARN, "warning: pass1Only mode is no longer supported.");
+	}
+
 	currentPass = firstPass;
 
 	while (1) {
