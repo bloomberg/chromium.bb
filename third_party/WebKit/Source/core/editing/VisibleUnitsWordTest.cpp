@@ -9,7 +9,8 @@
 #include "core/editing/testing/EditingTestBase.h"
 
 namespace blink {
-namespace visible_units_word_test {
+
+namespace {
 
 VisiblePosition CreateVisiblePositionInDOMTree(
     Node& anchor,
@@ -24,6 +25,8 @@ VisiblePositionInFlatTree CreateVisiblePositionInFlatTree(
     TextAffinity affinity = TextAffinity::kDownstream) {
   return CreateVisiblePosition(PositionInFlatTree(&anchor, offset), affinity);
 }
+
+}  // namespace
 
 class VisibleUnitsWordTest : public EditingTestBase {
  protected:
@@ -432,5 +435,4 @@ TEST_F(VisibleUnitsWordTest, NextWordSkipTab) {
   EXPECT_EQ("<p><s>\t</s>foo|</p>", DoNextWord("<p><s>\t|</s>foo</p>"));
 }
 
-}  // namespace visible_units_word_test
 }  // namespace blink
