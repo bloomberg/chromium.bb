@@ -56,11 +56,11 @@
 // Called when a drag event with |panGesture| begins.
 - (void)scrollViewWillBeginDraggingWithGesture:
     (nonnull UIPanGestureRecognizer*)panGesture;
-// Called when a drag event with |panGesture| ends.  |velocity| is the regidual
-// velocity from the scroll event.
+// Called when a drag event with |panGesture| ends.  |target| is the final
+// content offset resulting from the residual velocity of the drag event.
 - (void)scrollViewDidEndDraggingWithGesture:
             (nonnull UIPanGestureRecognizer*)panGesture
-                           residualVelocity:(CGPoint)velocity;
+                        targetContentOffset:(CGPoint)target;
 // Called when the scroll view stops decelerating.
 - (void)scrollViewDidEndDecelerating;
 // Called when the scroll view starts and ends zooming.

@@ -113,15 +113,23 @@
 }
 
 - (void)scrollViewDidEndDraggingWithGesture:(UIPanGestureRecognizer*)panGesture
-                           residualVelocity:(CGPoint)velocity {
+                        targetContentOffset:(CGPoint)target {
   // It's possible during the side-swipe gesture for a drag to end on the scroll
   // view without a corresponding begin dragging call.  Early return if there
   // is no pan gesture from the begin call.
   if (!self.panGesture)
     return;
   DCHECK_EQ(panGesture, self.panGesture);
-  if (!AreCGFloatsEqual(velocity.y, 0.0))
+  // UIScrollView does not sent a |-scrollViewDidEndDecelerating:| signal after
+  // pixel alignments, so the state should not be considered decelerating if the
+  // target content offset is less than a pixel away from the current value.
+  CGFloat singlePixel = 1.0 / [UIScreen mainScreen].scale;
+  CGFloat delta = std::abs(self.state.yContentOffset - target.y);
+  if (delta > singlePixel) {
     self.state.decelerating = YES;
+  } else {
+    self.state.yContentOffset = target.y;
+  }
   self.state.dragging = NO;
   self.panGesture = nil;
 }
