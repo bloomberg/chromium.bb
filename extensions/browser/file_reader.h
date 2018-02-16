@@ -18,17 +18,17 @@
 // back to chrome/browser/net if other subsystems want to use it.
 class FileReader : public base::RefCountedThreadSafe<FileReader> {
  public:
-  // TODO(devlin): Use base::OnceCallback here.
   // Reports success or failure and the data of the file upon success.
-  using DoneCallback = base::Callback<void(bool, std::unique_ptr<std::string>)>;
+  using DoneCallback =
+      base::OnceCallback<void(bool, std::unique_ptr<std::string>)>;
   // Lets the caller accomplish tasks on the file data, after the file content
   // has been read.
   // If the file reading doesn't succeed, this will be ignored.
-  using OptionalFileSequenceTask = base::Callback<void(std::string*)>;
+  using OptionalFileSequenceTask = base::OnceCallback<void(std::string*)>;
 
   FileReader(const extensions::ExtensionResource& resource,
-             const OptionalFileSequenceTask& file_sequence_task,
-             const DoneCallback& done_callback);
+             OptionalFileSequenceTask file_sequence_task,
+             DoneCallback done_callback);
 
   // Called to start reading the file on a background sequence. Upon completion,
   // the callback will be notified of the results.
