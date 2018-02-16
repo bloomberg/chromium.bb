@@ -9270,30 +9270,20 @@ TEST_F(LayerTreeHostImplTest, MemoryLimits) {
   host_impl_ = nullptr;
 
   const size_t kGpuByteLimit = 1234321;
-  const size_t kSoftwareByteLimit = 4321234;
   const size_t kGpuResourceLimit = 2345432;
-  const size_t kSoftwareResourceLimit = 5432345;
   const gpu::MemoryAllocation::PriorityCutoff kGpuCutoff =
       gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING;
-  const gpu::MemoryAllocation::PriorityCutoff kSoftwareCutoff =
-      gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
 
   const TileMemoryLimitPolicy kGpuTileCutoff =
       ManagedMemoryPolicy::PriorityCutoffToTileMemoryLimitPolicy(kGpuCutoff);
-  const TileMemoryLimitPolicy kSoftwareTileCutoff =
-      ManagedMemoryPolicy::PriorityCutoffToTileMemoryLimitPolicy(
-          kSoftwareCutoff);
   const TileMemoryLimitPolicy kNothingTileCutoff =
       ManagedMemoryPolicy::PriorityCutoffToTileMemoryLimitPolicy(
           gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING);
   EXPECT_NE(kGpuTileCutoff, kNothingTileCutoff);
-  EXPECT_NE(kSoftwareTileCutoff, kNothingTileCutoff);
 
   LayerTreeSettings settings = DefaultSettings();
-  settings.gpu_memory_policy =
+  settings.memory_policy =
       ManagedMemoryPolicy(kGpuByteLimit, kGpuCutoff, kGpuResourceLimit);
-  settings.software_memory_policy = ManagedMemoryPolicy(
-      kSoftwareByteLimit, kSoftwareCutoff, kSoftwareResourceLimit);
   host_impl_ = LayerTreeHostImpl::Create(
       settings, this, &task_runner_provider_, &stats_instrumentation_,
       &task_graph_runner_,
@@ -9334,9 +9324,9 @@ TEST_F(LayerTreeHostImplTest, MemoryLimits) {
   host_impl_->InitializeRenderer(layer_tree_frame_sink_.get());
   {
     const auto& state = host_impl_->global_tile_state();
-    EXPECT_EQ(kSoftwareByteLimit, state.hard_memory_limit_in_bytes);
-    EXPECT_EQ(kSoftwareResourceLimit, state.num_resources_limit);
-    EXPECT_EQ(kSoftwareTileCutoff, state.memory_limit_policy);
+    EXPECT_EQ(kGpuByteLimit, state.hard_memory_limit_in_bytes);
+    EXPECT_EQ(kGpuResourceLimit, state.num_resources_limit);
+    EXPECT_EQ(kGpuTileCutoff, state.memory_limit_policy);
   }
 
   // Not visible, drops to 0.
@@ -9344,7 +9334,7 @@ TEST_F(LayerTreeHostImplTest, MemoryLimits) {
   {
     const auto& state = host_impl_->global_tile_state();
     EXPECT_EQ(0u, state.hard_memory_limit_in_bytes);
-    EXPECT_EQ(kSoftwareResourceLimit, state.num_resources_limit);
+    EXPECT_EQ(kGpuResourceLimit, state.num_resources_limit);
     EXPECT_EQ(kNothingTileCutoff, state.memory_limit_policy);
   }
 
@@ -9352,9 +9342,9 @@ TEST_F(LayerTreeHostImplTest, MemoryLimits) {
   host_impl_->SetVisible(true);
   {
     const auto& state = host_impl_->global_tile_state();
-    EXPECT_EQ(kSoftwareByteLimit, state.hard_memory_limit_in_bytes);
-    EXPECT_EQ(kSoftwareResourceLimit, state.num_resources_limit);
-    EXPECT_EQ(kSoftwareTileCutoff, state.memory_limit_policy);
+    EXPECT_EQ(kGpuByteLimit, state.hard_memory_limit_in_bytes);
+    EXPECT_EQ(kGpuResourceLimit, state.num_resources_limit);
+    EXPECT_EQ(kGpuTileCutoff, state.memory_limit_policy);
   }
 }
 

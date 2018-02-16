@@ -223,7 +223,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       tile_priorities_dirty_(false),
       settings_(settings),
       visible_(false),
-      cached_managed_memory_policy_(settings.gpu_memory_policy),
+      cached_managed_memory_policy_(settings.memory_policy),
       is_synchronous_single_threaded_(!task_runner_provider->HasImplThread() &&
                                       !settings.single_thread_proxy_scheduler),
       // Must be initialized after is_synchronous_single_threaded_ and
@@ -2819,12 +2819,6 @@ bool LayerTreeHostImpl::InitializeRenderer(
     // point).
     return false;
   }
-
-  // When using software compositing, change to the limits specified for it.
-  // Since this is a one way trip, we don't need to worry about going back to
-  // GPU compositing.
-  if (!layer_tree_frame_sink->context_provider())
-    SetMemoryPolicy(settings_.software_memory_policy);
 
   layer_tree_frame_sink_ = layer_tree_frame_sink;
   has_valid_layer_tree_frame_sink_ = true;

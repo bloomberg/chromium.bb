@@ -2896,7 +2896,7 @@ class CheckerImagingTileManagerMemoryTest
       TaskRunnerProvider* task_runner_provider,
       TaskGraphRunner* task_graph_runner) override {
     LayerTreeSettings new_settings = settings;
-    new_settings.gpu_memory_policy.num_resources_limit = 4;
+    new_settings.memory_policy.num_resources_limit = 4;
     return CheckerImagingTileManagerTest::CreateHostImpl(
         new_settings, task_runner_provider, task_graph_runner);
   }

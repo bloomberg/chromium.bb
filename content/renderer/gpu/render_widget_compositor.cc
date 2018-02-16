@@ -578,10 +578,8 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   if (base::SysInfo::IsLowEndDevice())
     settings.max_staging_buffer_usage_in_bytes /= 4;
 
-  cc::ManagedMemoryPolicy defaults = settings.gpu_memory_policy;
-  settings.gpu_memory_policy = GetGpuMemoryPolicy(defaults, screen_info);
-  settings.software_memory_policy.num_resources_limit =
-      base::SharedMemory::GetHandleLimit() / 3;
+  cc::ManagedMemoryPolicy defaults = settings.memory_policy;
+  settings.memory_policy = GetGpuMemoryPolicy(defaults, screen_info);
 
   settings.disallow_non_exact_resource_reuse =
       cmd.HasSwitch(switches::kDisallowNonExactResourceReuse);
