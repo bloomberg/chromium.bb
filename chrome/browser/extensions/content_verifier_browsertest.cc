@@ -293,7 +293,6 @@ class TestExternalProvider : public ExternalProviderInterface {
  private:
   VisitorInterface* visitor_;
   ExtensionId extension_id_;
-  base::Closure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(TestExternalProvider);
 };

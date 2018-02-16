@@ -13,7 +13,7 @@
 class ExtensionInstallPromptTestHelper {
  public:
   ExtensionInstallPromptTestHelper();
-  explicit ExtensionInstallPromptTestHelper(const base::Closure& quit_closure);
+  explicit ExtensionInstallPromptTestHelper(base::OnceClosure quit_closure);
   ~ExtensionInstallPromptTestHelper();
 
   // Returns a callback to be used with the ExtensionInstallPrompt.
@@ -31,7 +31,7 @@ class ExtensionInstallPromptTestHelper {
 
   // A closure to run once HandleResult() has been called; used for exiting
   // run loops in tests.
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallPromptTestHelper);
 };

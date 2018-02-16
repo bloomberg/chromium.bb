@@ -82,7 +82,7 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
     EXPECT_EQ(1u, list.size());
     if (!list.empty())
       info_out->reset(new developer::ExtensionInfo(std::move(list[0])));
-    base::ResetAndReturn(&quit_closure_).Run();
+    std::move(quit_closure_).Run();
   }
 
   std::unique_ptr<developer::ExtensionInfo> GenerateExtensionInfo(
@@ -103,7 +103,7 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
   void OnInfosGenerated(ExtensionInfoGenerator::ExtensionInfoList* out,
                         ExtensionInfoGenerator::ExtensionInfoList list) {
     *out = std::move(list);
-    base::ResetAndReturn(&quit_closure_).Run();
+    std::move(quit_closure_).Run();
   }
 
   ExtensionInfoGenerator::ExtensionInfoList GenerateExtensionsInfo() {
@@ -204,7 +204,7 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
   }
 
  private:
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInfoGeneratorUnitTest);
 };

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
@@ -67,8 +69,8 @@ class CallbackHelper {
   // causes unit tests to crash), but rather runs the given |quit_closure| (with
   // the prompt still active|.
   ExtensionInstallPrompt::ShowDialogCallback CreateShowCallback(
-      const base::Closure& quit_closure) {
-    quit_closure_ = quit_closure;
+      base::OnceClosure quit_closure) {
+    quit_closure_ = std::move(quit_closure);
     return base::Bind(&CallbackHelper::OnShow, base::Unretained(this));
   }
 
@@ -82,14 +84,13 @@ class CallbackHelper {
   void OnShow(ExtensionInstallPromptShowParams* show_params,
               const ExtensionInstallPrompt::DoneCallback& done_callback,
               std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt) {
-    DCHECK(!quit_closure_.is_null());
-    quit_closure_.Run();
-    quit_closure_ = base::Closure();
+    DCHECK(quit_closure_);
+    std::move(quit_closure_).Run();
   }
 
   // The closure to quit the currently-running loop; used with test
   // ExtensionInstallPrompts.
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 
   // The result of the reenable process, or null if the process hasn't finished.
   std::unique_ptr<ExtensionReenabler::ReenableResult> result_;
