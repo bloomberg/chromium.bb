@@ -87,13 +87,9 @@ void BleSynchronizer::ProcessQueue() {
           current_command_->start_discovery_args.get();
       DCHECK(start_discovery_args);
 
-      // Note: Ideally, we would use a filter for only LE devices here. However,
-      // using a filter here triggers a bug in some kernel implementations which
-      // causes LE scanning to toggle rapidly on and off. This can cause race
-      // conditions which result in Bluetooth bugs. See crbug.com/759090.
-      // TODO(mcchou): Once these issues have been resolved, add the filter
-      // back. See crbug.com/759091.
-      bluetooth_adapter_->StartDiscoverySession(
+      bluetooth_adapter_->StartDiscoverySessionWithFilter(
+          std::make_unique<device::BluetoothDiscoveryFilter>(
+              device::BLUETOOTH_TRANSPORT_LE),
           base::Bind(&BleSynchronizer::OnDiscoverySessionStarted,
                      weak_ptr_factory_.GetWeakPtr()),
           base::Bind(&BleSynchronizer::OnErrorStartingDiscoverySession,
