@@ -939,13 +939,14 @@ void LocalStorageContextMojo::OnGotMetaData(
       continue;
     }
 
-    LocalStorageOriginMetaData data;
-    if (!data.ParseFromArray(row->value.data(), row->value.size())) {
+    LocalStorageOriginMetaData row_data;
+    if (!row_data.ParseFromArray(row->value.data(), row->value.size())) {
       // TODO(mek): Deal with database corruption.
       continue;
     }
-    info.data_size = data.size_bytes();
-    info.last_modified = base::Time::FromInternalValue(data.last_modified());
+    info.data_size = row_data.size_bytes();
+    info.last_modified =
+        base::Time::FromInternalValue(row_data.last_modified());
     result.push_back(std::move(info));
   }
   // Add any origins for which LevelDBWrappers exist, but which haven't
