@@ -59,7 +59,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
@@ -241,9 +240,6 @@ public class LocationBarLayout extends FrameLayout
     private DeferredOnSelectionRunnable mDeferredOnSelection;
 
     private WebContentsObserver mVoiceSearchWebContentsObserver;
-
-    private boolean mOmniboxVoiceSearchAlwaysVisible;
-    protected float mUrlFocusChangePercent;
 
     private static abstract class DeferredOnSelectionRunnable implements Runnable {
         protected final OmniboxSuggestion mSuggestion;
@@ -894,10 +890,6 @@ public class LocationBarLayout extends FrameLayout
         mDeferredNativeRunnables.clear();
 
         updateVisualsForState();
-
-        mOmniboxVoiceSearchAlwaysVisible =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_VOICE_SEARCH_ALWAYS_VISIBLE);
-        updateMicButtonVisibility(mUrlFocusChangePercent);
     }
 
     /**
@@ -2533,13 +2525,13 @@ public class LocationBarLayout extends FrameLayout
 
     /**
      * Updates the display of the mic button.
-     *
-     * @param urlFocusChangePercent The completion percentage of the URL focus change animation.
+     * @param urlFocusChangePercent The completeion percentage of the URL focus change animation.
      */
     protected void updateMicButtonVisibility(float urlFocusChangePercent) {
-        boolean visible = mOmniboxVoiceSearchAlwaysVisible || !shouldShowDeleteButton();
+        boolean visible = !shouldShowDeleteButton();
         boolean showMicButton = mVoiceSearchEnabled && visible
-                && (mUrlBar.hasFocus() || mUrlFocusChangeInProgress || urlFocusChangePercent > 0f);
+                && (mUrlBar.hasFocus() || mUrlFocusChangeInProgress
+                        || urlFocusChangePercent > 0f);
         mMicButton.setVisibility(showMicButton ? VISIBLE : GONE);
     }
 
