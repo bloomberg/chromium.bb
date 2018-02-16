@@ -995,7 +995,7 @@
     },
     {
       name: "SlimmingPaintV175",
-      status: "experimental",
+      status: "stable",
       implied_by: ["SlimmingPaintV2", "LayoutNG"],
     },
     {

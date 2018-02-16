@@ -343,7 +343,7 @@ const base::Feature kSitePerProcess{"site-per-process",
 
 // Slimming Paint V1.75. See http://crbug.com/771643.
 const base::Feature kSlimmingPaintV175{"SlimmingPaintV175",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Stop scheduler task queues in background after allowed grace time.
 const base::Feature kStopInBackground {
