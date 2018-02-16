@@ -5,7 +5,8 @@
   overflow: scroll
 }
 .inner {
-  width: 2000px
+  width: 2000px;
+  height: 50px;
 }
 </style>
 <p>This tests that an accessibility controller scroll update notification which
@@ -18,8 +19,8 @@ description("Scrollable area removed on scroll");
 
 window.jsTestIsAsync = true;
 
-accessibilityController.addNotificationListener(function () {
-  if (!window.container)
+accessibilityController.addNotificationListener(function (evt, type) {
+  if (type != "ScrollPositionChanged")
     return;
   container.parentNode.removeChild(container);
   setTimeout(function(){

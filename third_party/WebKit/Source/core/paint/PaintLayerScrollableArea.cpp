@@ -253,6 +253,8 @@ PlatformChromeClient* PaintLayerScrollableArea::GetChromeClient() const {
 
 SmoothScrollSequencer* PaintLayerScrollableArea::GetSmoothScrollSequencer()
     const {
+  if (HasBeenDisposed())
+    return nullptr;
   if (Page* page = GetLayoutBox()->GetFrame()->GetPage())
     return page->GetSmoothScrollSequencer();
   return nullptr;
