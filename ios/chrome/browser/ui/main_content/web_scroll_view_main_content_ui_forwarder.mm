@@ -149,7 +149,7 @@ void UpdateStateWithProxy(MainContentUIStateUpdater* updater,
                      targetContentOffset:(inout CGPoint*)targetContentOffset {
   [self.updater
       scrollViewDidEndDraggingWithGesture:self.proxy.panGestureRecognizer
-                         residualVelocity:velocity];
+                      targetContentOffset:*targetContentOffset];
 }
 
 - (void)webViewScrollViewDidEndDecelerating:

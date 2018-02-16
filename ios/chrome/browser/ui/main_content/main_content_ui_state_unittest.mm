@@ -50,10 +50,27 @@ TEST_F(MainContentUIStateUpdaterTest, BroadcastScrollingAndDragging) {
   EXPECT_TRUE(state().scrolling);
   EXPECT_TRUE(state().dragging);
   [updater() scrollViewDidEndDraggingWithGesture:pan
-                                residualVelocity:CGPointMake(0, 5)];
+                             targetContentOffset:CGPointMake(0, 5)];
   EXPECT_TRUE(state().scrolling);
   EXPECT_FALSE(state().dragging);
   [updater() scrollViewDidEndDecelerating];
+  EXPECT_FALSE(state().scrolling);
+  EXPECT_FALSE(state().dragging);
+}
+
+// Tests that pixel alignment don't count as residual deceleration.
+TEST_F(MainContentUIStateUpdaterTest, IgnorePixelAligntment) {
+  UIPanGestureRecognizer* pan = [[UIPanGestureRecognizer alloc] init];
+  const CGFloat kSinglePixel = 1.0 / [UIScreen mainScreen].scale;
+  const CGPoint kUnalignedOffset = CGPointMake(0.0, kSinglePixel / 2.0);
+  ASSERT_FALSE(state().scrolling);
+  ASSERT_FALSE(state().dragging);
+  [updater() scrollViewWillBeginDraggingWithGesture:pan];
+  EXPECT_TRUE(state().scrolling);
+  EXPECT_TRUE(state().dragging);
+  [updater() scrollViewDidScrollToOffset:kUnalignedOffset];
+  [updater() scrollViewDidEndDraggingWithGesture:pan
+                             targetContentOffset:CGPointZero];
   EXPECT_FALSE(state().scrolling);
   EXPECT_FALSE(state().dragging);
 }
