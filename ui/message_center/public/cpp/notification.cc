@@ -58,32 +58,8 @@ ButtonInfo& ButtonInfo::operator=(const ButtonInfo& other) = default;
 
 RichNotificationData::RichNotificationData() : timestamp(base::Time::Now()) {}
 
-RichNotificationData::RichNotificationData(const RichNotificationData& other)
-    : priority(other.priority),
-      never_timeout(other.never_timeout),
-      timestamp(other.timestamp),
-      context_message(other.context_message),
-      image(other.image),
-      small_image(other.small_image),
-      vector_small_image(other.vector_small_image),
-      items(other.items),
-      progress(other.progress),
-      progress_status(other.progress_status),
-      buttons(other.buttons),
-      should_make_spoken_feedback_for_popup_updates(
-          other.should_make_spoken_feedback_for_popup_updates),
-      clickable(other.clickable),
-#if defined(OS_CHROMEOS)
-      pinned(other.pinned),
-#endif  // defined(OS_CHROMEOS)
-      vibration_pattern(other.vibration_pattern),
-      renotify(other.renotify),
-      silent(other.silent),
-      accessible_name(other.accessible_name),
-      accent_color(other.accent_color),
-      settings_button_handler(other.settings_button_handler),
-      fullscreen_visibility(other.fullscreen_visibility) {
-}
+RichNotificationData::RichNotificationData(const RichNotificationData& other) =
+    default;
 
 RichNotificationData::~RichNotificationData() = default;
 
@@ -114,52 +90,13 @@ Notification::Notification(NotificationType type,
       delegate_(std::move(delegate)) {}
 
 Notification::Notification(const std::string& id, const Notification& other)
-    : type_(other.type_),
-      id_(id),
-      title_(other.title_),
-      message_(other.message_),
-      icon_(other.icon_),
-      display_source_(other.display_source_),
-      origin_url_(other.origin_url_),
-      notifier_id_(other.notifier_id_),
-      serial_number_(other.serial_number_),
-      optional_fields_(other.optional_fields_),
-      shown_as_popup_(other.shown_as_popup_),
-      is_read_(other.is_read_),
-      delegate_(other.delegate_) {}
-
-Notification::Notification(const Notification& other)
-    : type_(other.type_),
-      id_(other.id_),
-      title_(other.title_),
-      message_(other.message_),
-      icon_(other.icon_),
-      display_source_(other.display_source_),
-      origin_url_(other.origin_url_),
-      notifier_id_(other.notifier_id_),
-      serial_number_(other.serial_number_),
-      optional_fields_(other.optional_fields_),
-      shown_as_popup_(other.shown_as_popup_),
-      is_read_(other.is_read_),
-      delegate_(other.delegate_) {}
-
-Notification& Notification::operator=(const Notification& other) {
-  type_ = other.type_;
-  id_ = other.id_;
-  title_ = other.title_;
-  message_ = other.message_;
-  icon_ = other.icon_;
-  display_source_ = other.display_source_;
-  origin_url_ = other.origin_url_;
-  notifier_id_ = other.notifier_id_;
-  serial_number_ = other.serial_number_;
-  optional_fields_ = other.optional_fields_;
-  shown_as_popup_ = other.shown_as_popup_;
-  is_read_ = other.is_read_;
-  delegate_ = other.delegate_;
-
-  return *this;
+    : Notification(other) {
+  id_ = id;
 }
+
+Notification::Notification(const Notification& other) = default;
+
+Notification& Notification::operator=(const Notification& other) = default;
 
 Notification::~Notification() = default;
 
