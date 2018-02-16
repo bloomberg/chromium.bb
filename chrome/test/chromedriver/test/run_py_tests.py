@@ -2683,89 +2683,6 @@ class HeadlessInvalidCertificateTest(ChromeDriverBaseTest):
     self._driver.FindElement('id', 'link')
 
 
-def UpdateAndroidApp():
-  '''Update Android Chrome app on the ChromeDriver build bot'''
-
-  # Return unless we're running on the build bot. This function depends on
-  # the environment on a build bot, and wouldn't work on other machines.
-  buildername = os.environ.get('BUILDBOT_BUILDERNAME', '')
-  if buildername != 'Android ChromeDriver Tests (dbg)':
-    return
-
-  if 'stable' in _ANDROID_PACKAGE_KEY:
-    channel = 'stable'
-  elif 'beta' in _ANDROID_PACKAGE_KEY:
-    channel = 'beta'
-  else:
-    return
-
-  # On the build bot, adb is available in the home directory
-  adb_path = os.path.join(os.environ['HOME'], 'adb')
-  if not os.path.exists(adb_path):
-    print 'No adb available'
-    return
-
-  cmd = [adb_path, 'shell', 'dumpsys', 'package',
-         constants.PACKAGE_INFO[_ANDROID_PACKAGE_KEY].package,
-         '|', 'grep', 'versionName']
-  process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-  if process is None:
-    print 'Unable to run adb command to get Android app version'
-    return
-  (stdoutdata, stderrdata) = process.communicate()
-  match = re.search(r'versionName=(\d+\.\d+\.\d+\.\d+)', stdoutdata)
-  if match is None:
-    print 'Unable to fetch Android app version'
-    return
-  device = match.group(1)
-
-  omaha = None
-  try:
-    omaha_list = json.loads(
-        urllib2.urlopen('http://omahaproxy.appspot.com/all.json').read())
-    for os_entry in omaha_list:
-      if os_entry['os'] != 'android':
-        continue
-      for channel_entry in os_entry['versions']:
-        if channel_entry['channel'] == channel:
-          omaha = channel_entry['version']
-          break
-      break
-  except urllib2.URLError as e:
-    print 'Unable to fetch current version info from omahaproxy (%s)' % e
-    return
-
-  if omaha is None:
-    print 'Unable to fetch current version info from omahaproxy'
-    return
-
-  if map(int, omaha.split('.')) > map(int, device.split('.')):
-    print 'Device version %s less than omaha version %s, attempting update' % (
-        device, omaha)
-
-    # Depends on some scripts available on the build bot.
-    SCRIPT_DIR = os.path.join(_THIS_DIR, os.pardir, os.pardir, os.pardir,
-                              os.pardir, os.pardir, os.pardir, os.pardir,
-                              os.pardir, 'scripts')
-    if not os.path.exists(SCRIPT_DIR):
-      print 'Unable to find build script directory'
-      return
-    sys.path.append(SCRIPT_DIR)
-    from slave import slave_utils
-
-    url = 'gs://chrome-signed/android-B0urB0N/%s/arm/Chrome%s.apk' % (
-        omaha, channel.capitalize())
-    (apk_fd, apk_name) = tempfile.mkstemp('.apk')
-    os.close(apk_fd)
-    if slave_utils.GSUtilDownloadFile(url, apk_name) != 0:
-      print 'Unable to download Android package'
-      return
-
-    cmd = [adb_path, 'install', '-r', apk_name]
-    subprocess.Popen(cmd).wait()
-    os.remove(apk_name)
-
-
 if __name__ == '__main__':
   parser = optparse.OptionParser()
   parser.add_option(
@@ -2838,7 +2755,6 @@ if __name__ == '__main__':
 
   if _ANDROID_PACKAGE_KEY:
     devil_chromium.Initialize()
-    UpdateAndroidApp()
 
   if options.filter == '*':
     if _ANDROID_PACKAGE_KEY:
