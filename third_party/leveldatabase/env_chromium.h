@@ -19,6 +19,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
+#include "leveldb/cache.h"
 #include "leveldb/db.h"
 #include "leveldb/env.h"
 #include "leveldb/export.h"
@@ -134,8 +135,6 @@ class LEVELDB_EXPORT RetrierProvider {
       MethodID method) const = 0;
 };
 
-class Semaphore;
-
 class LEVELDB_EXPORT ChromiumEnv : public leveldb::Env,
                                    public UMALogger,
                                    public RetrierProvider {
@@ -240,7 +239,7 @@ class LEVELDB_EXPORT ChromiumEnv : public leveldb::Env,
   using BGQueue = base::circular_deque<BGItem>;
   BGQueue queue_;
   LockTable locks_;
-  std::unique_ptr<Semaphore> file_semaphore_;
+  std::unique_ptr<leveldb::Cache> file_cache_;
 };
 
 // Tracks databases open via OpenDatabase() method and exposes them to
