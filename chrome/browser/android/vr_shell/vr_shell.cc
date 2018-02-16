@@ -161,7 +161,8 @@ VrShell::VrShell(JNIEnv* env,
 
   if (ui_initial_state.in_web_vr ||
       ui_initial_state.web_vr_autopresentation_expected) {
-    UMA_HISTOGRAM_BOOLEAN("VRAutopresentedWebVR", !ui_initial_state.in_web_vr);
+    UMA_HISTOGRAM_BOOLEAN("VRAutopresentedWebVR",
+                          ui_initial_state.web_vr_autopresentation_expected);
   }
 
   AssetsLoader::GetInstance()->SetOnComponentReadyCallback(base::BindRepeating(
