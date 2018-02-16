@@ -195,6 +195,7 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   scoped_refptr<content::DevToolsAgentHost> agent_host_;
   std::list<MojoService> mojo_services_;
   bool inject_mojo_services_into_isolated_world_;
+  bool devtools_target_ready_notification_sent_ = false;
 
   HeadlessBrowserContextImpl* browser_context_;      // Not owned.
   // TODO(alexclarke): With OOPIF there may be more than one renderer, we need
