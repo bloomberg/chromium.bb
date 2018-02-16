@@ -129,8 +129,18 @@ void ChromeAshMessageCenterClient::HandleNotificationClicked(
 
 void ChromeAshMessageCenterClient::HandleNotificationButtonClicked(
     const std::string& id,
-    int button_index) {
-  delegate_->HandleNotificationButtonClicked(id, button_index);
+    int button_index,
+    const base::Optional<base::string16>& reply) {
+  delegate_->HandleNotificationButtonClicked(id, button_index, reply);
+}
+
+void ChromeAshMessageCenterClient::HandleNotificationSettingsButtonClicked(
+    const std::string& id) {
+  delegate_->HandleNotificationSettingsButtonClicked(id);
+}
+
+void ChromeAshMessageCenterClient::DisableNotification(const std::string& id) {
+  delegate_->DisableNotification(id);
 }
 
 void ChromeAshMessageCenterClient::SetNotifierEnabled(

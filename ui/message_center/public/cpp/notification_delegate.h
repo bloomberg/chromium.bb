@@ -34,13 +34,11 @@ class MESSAGE_CENTER_PUBLIC_EXPORT NotificationDelegate
   virtual void ButtonClick(int button_index);
 
   // To be called when the user types a reply to a notification.
-  // TODO(crbug.com/599859) Support this feature in the message center -
-  // currently it is only supported on Android.
   virtual void ButtonClickWithReply(int button_index,
                                     const base::string16& reply);
 
   // To be called when the user clicks the settings button in a notification
-  // which has a CUSTOM settings button action.
+  // which has a DELEGATE settings button action.
   virtual void SettingsClick();
 
   // Called when the user attempts to disable the notification.

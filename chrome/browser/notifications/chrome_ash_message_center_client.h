@@ -43,8 +43,12 @@ class ChromeAshMessageCenterClient : public NotificationPlatformBridge,
   // ash::mojom::AshMessageCenterClient:
   void HandleNotificationClosed(const std::string& id, bool by_user) override;
   void HandleNotificationClicked(const std::string& id) override;
-  void HandleNotificationButtonClicked(const std::string& id,
-                                       int button_index) override;
+  void HandleNotificationButtonClicked(
+      const std::string& id,
+      int button_index,
+      const base::Optional<base::string16>& reply) override;
+  void HandleNotificationSettingsButtonClicked(const std::string& id) override;
+  void DisableNotification(const std::string& id) override;
   void SetNotifierEnabled(const message_center::NotifierId& notifier_id,
                           bool enabled) override;
   void GetNotifierList(GetNotifierListCallback callback) override;

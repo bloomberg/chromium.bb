@@ -56,8 +56,17 @@ interface AshMessageCenterClient {
   HandleNotificationClicked(string id);
 
   // Called when a notification that has buttons (e.g., "Learn more") receives a
-  // click on one of the buttons.
-  HandleNotificationButtonClicked(string id, int32 button_index);
+  // click on one of the buttons. |reply| is a user-provided string for cases
+  // where the button had a text input field attached to it.
+  HandleNotificationButtonClicked(string id, int32 button_index,
+                                  mojo_base.mojom.String16? reply);
+
+  // Called when a notification's settings button has been pressed (and the
+  // handler is SettingsButtonHandler::DELEGATE).
+  HandleNotificationSettingsButtonClicked(string id);
+
+  // Called when a notification has been disabled (via inline settings).
+  DisableNotification(string id);
 
   // Called when a user enables or disables notifications from the given
   // notifier.

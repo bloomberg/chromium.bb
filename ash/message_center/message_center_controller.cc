@@ -54,7 +54,22 @@ class AshClientNotificationDelegate
   }
 
   void ButtonClick(int button_index) override {
-    client_->HandleNotificationButtonClicked(notification_id_, button_index);
+    client_->HandleNotificationButtonClicked(notification_id_, button_index,
+                                             base::nullopt);
+  }
+
+  void ButtonClickWithReply(int button_index,
+                            const base::string16& reply) override {
+    client_->HandleNotificationButtonClicked(notification_id_, button_index,
+                                             reply);
+  }
+
+  void SettingsClick() override {
+    client_->HandleNotificationSettingsButtonClicked(notification_id_);
+  }
+
+  void DisableNotification() override {
+    client_->DisableNotification(notification_id_);
   }
 
  private:
