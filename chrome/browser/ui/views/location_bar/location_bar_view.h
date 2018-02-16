@@ -331,6 +331,7 @@ class LocationBarView : public LocationBar,
   // LocationBarTesting:
   bool GetBookmarkStarVisibility() override;
   bool TestContentSettingImagePressed(size_t index) override;
+  bool IsContentSettingBubbleShowing(size_t index) override;
 
   // views::View:
   const char* GetClassName() const override;

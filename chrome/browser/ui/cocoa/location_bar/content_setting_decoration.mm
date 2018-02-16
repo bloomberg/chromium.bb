@@ -228,6 +228,10 @@ bool ContentSettingDecoration::UpdateFromWebContents(
   return decoration_changed;
 }
 
+bool ContentSettingDecoration::IsShowingBubble() const {
+  return bubbleWindow_ && [bubbleWindow_ isVisible];
+}
+
 CGFloat ContentSettingDecoration::MeasureTextWidth() {
   return [animated_text_ size].width;
 }

@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/views/content_setting_bubble_contents.h"
 
-#include <algorithm>
-
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/permissions/permission_request_manager_test_api.h"
@@ -16,13 +14,13 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
-#include "ui/views/test/widget_test.h"
-#include "ui/views/widget/widget.h"
 
 class ContentSettingBubbleContentsBrowserTest : public InProcessBrowserTest {
- protected:
-  using Widgets = views::Widget::Widgets;
+ public:
+  ContentSettingBubbleContentsBrowserTest() = default;
+  ~ContentSettingBubbleContentsBrowserTest() override {}
 
+ protected:
   GURL GetTestPageUrl(const std::string& name) {
     return ui_test_utils::GetTestUrl(
         base::FilePath().AppendASCII("content_setting_bubble"),
@@ -37,26 +35,13 @@ class ContentSettingBubbleContentsBrowserTest : public InProcessBrowserTest {
     return content::ExecuteScript(GetWebContents(), script);
   }
 
-  Widgets GetWidgetsNotIn(Widgets widgets) {
-    Widgets new_widgets = views::test::WidgetTest::GetAllWidgets();
-    Widgets result;
-    std::set_difference(new_widgets.begin(), new_widgets.end(), widgets.begin(),
-                        widgets.end(), std::inserter(result, result.begin()));
-    return result;
-  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingBubbleContentsBrowserTest);
 };
 
-#if defined(OS_CHROMEOS)
-// https://crbug.com/811940
-#define MAYBE_HidesAtWebContentsClose DISABLED_HidesAtWebContentsClose
-#else
-#define MAYBE_HidesAtWebContentsClose HidesAtWebContentsClose
-#endif
-
 IN_PROC_BROWSER_TEST_F(ContentSettingBubbleContentsBrowserTest,
-                       MAYBE_HidesAtWebContentsClose) {
-  // Create a second tab, so that closing the test tab doesn't close the entire
-  // browser.
+                       HidesAtWebContentsClose) {
+  // Create a second tab, so closing the test tab doesn't close the browser.
   chrome::NewTab(browser());
 
   // Navigate to the test page, and have it request and be denied geolocation
@@ -66,19 +51,18 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleContentsBrowserTest,
       ->set_auto_response_for_test(PermissionRequestManager::DISMISS);
   ExecuteScript("geolocate();");
 
-  // Press the geolocation icon in the location bar, and make sure a new widget
-  // (the content setting bubble) appears.
+  // Press the geolocation icon and make sure its content setting bubble shows.
   LocationBarTesting* bar =
       browser()->window()->GetLocationBar()->GetLocationBarForTesting();
-  Widgets before = GetWidgetsNotIn({});
   EXPECT_TRUE(bar->TestContentSettingImagePressed(
       static_cast<size_t>(ContentSettingImageModel::ImageType::GEOLOCATION)));
-  EXPECT_EQ(1u, GetWidgetsNotIn(before).size());
+  EXPECT_TRUE(bar->IsContentSettingBubbleShowing(
+      static_cast<size_t>(ContentSettingImageModel::ImageType::GEOLOCATION)));
 
-  // Now close the tab, and make sure the content setting bubble's widget is
-  // gone. Note that window closure in Aura is asynchronous, so it's necessary
-  // to spin the runloop here.
+  // Close the tab, and make sure the bubble is gone. Note that window closure
+  // in Aura is asynchronous, so it's necessary to spin the run loop here.
   chrome::CloseTab(browser());
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0u, GetWidgetsNotIn(before).size());
+  EXPECT_FALSE(bar->IsContentSettingBubbleShowing(
+      static_cast<size_t>(ContentSettingImageModel::ImageType::GEOLOCATION)));
 }

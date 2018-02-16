@@ -88,6 +88,7 @@ class LocationBarViewMac : public LocationBar,
   // Overridden from LocationBarTesting:
   bool GetBookmarkStarVisibility() override;
   bool TestContentSettingImagePressed(size_t index) override;
+  bool IsContentSettingBubbleShowing(size_t index) override;
 
   // Set/Get the editable state of the field.
   void SetEditable(bool editable);
