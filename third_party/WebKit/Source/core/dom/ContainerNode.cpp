@@ -974,10 +974,10 @@ void ContainerNode::ChildrenChanged(const ChildrenChange& change) {
 }
 
 void ContainerNode::CloneChildNodes(ContainerNode* clone) {
-  DummyExceptionStateForTesting exception_state;
-  for (Node* n = firstChild(); n && !exception_state.HadException();
-       n = n->nextSibling())
-    clone->AppendChild(n->cloneNode(true), exception_state);
+  for (Node* n = firstChild(); n; n = n->nextSibling()) {
+    clone->AppendChild(
+        n->Clone(clone->GetDocument(), CloneChildrenFlag::kClone));
+  }
 }
 
 LayoutRect ContainerNode::BoundingBox() const {

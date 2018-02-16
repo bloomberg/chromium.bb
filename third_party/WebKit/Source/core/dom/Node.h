@@ -98,6 +98,8 @@ enum class SlotChangeType {
   kSuppressSlotChangeEvent,
 };
 
+enum class CloneChildrenFlag { kClone, kSkip };
+
 class NodeRenderingData {
  public:
   explicit NodeRenderingData(LayoutObject* layout_object,
@@ -256,7 +258,10 @@ class CORE_EXPORT Node : public EventTarget {
   Node* appendChild(Node* new_child);
 
   bool hasChildren() const { return firstChild(); }
-  virtual Node* cloneNode(bool deep, ExceptionState&) = 0;
+  Node* cloneNode(bool deep, ExceptionState&);
+  // https://dom.spec.whatwg.org/#concept-node-clone
+  virtual Node* Clone(Document&, CloneChildrenFlag) = 0;
+  // This is not web-exposed. We should rename it or remove it.
   Node* cloneNode(bool deep);
   void normalize();
 

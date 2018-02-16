@@ -40,8 +40,8 @@ Node::NodeType CDATASection::getNodeType() const {
   return kCdataSectionNode;
 }
 
-Text* CDATASection::CloneWithData(const String& data) {
-  return Create(GetDocument(), data);
+Text* CDATASection::CloneWithData(Document& factory, const String& data) {
+  return Create(factory, data);
 }
 
 }  // namespace blink

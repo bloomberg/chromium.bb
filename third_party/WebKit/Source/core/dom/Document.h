@@ -1485,7 +1485,7 @@ class CORE_EXPORT Document : public ContainerNode,
   String nodeName() const final;
   NodeType getNodeType() const final;
   bool ChildTypeAllowed(NodeType) const final;
-  Node* cloneNode(bool deep, ExceptionState&) final;
+  Node* Clone(Document&, CloneChildrenFlag) override;
   void CloneDataFromDocument(const Document&);
 
   ShadowCascadeOrder shadow_cascade_order_ = kShadowCascadeNone;

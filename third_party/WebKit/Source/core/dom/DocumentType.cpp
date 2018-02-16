@@ -44,8 +44,8 @@ Node::NodeType DocumentType::getNodeType() const {
   return kDocumentTypeNode;
 }
 
-Node* DocumentType::cloneNode(bool /*deep*/, ExceptionState&) {
-  return Create(&GetDocument(), name_, public_id_, system_id_);
+Node* DocumentType::Clone(Document& factory, CloneChildrenFlag) {
+  return Create(&factory, name_, public_id_, system_id_);
 }
 
 Node::InsertionNotificationRequest DocumentType::InsertedInto(

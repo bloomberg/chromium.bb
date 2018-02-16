@@ -101,8 +101,6 @@ enum ElementFlags {
   kNumberOfElementFlags = 7,  // Size of bitfield used to store the flags.
 };
 
-enum class CloneChildrenFlag { kClone, kSkip };
-
 enum class ShadowRootType;
 
 enum class SelectionBehaviorOnFocus {
@@ -356,8 +354,8 @@ class CORE_EXPORT Element : public ContainerNode {
 
   String nodeName() const override;
 
-  Element* CloneElementWithChildren();
-  Element* CloneElementWithoutChildren();
+  Element* CloneElementWithChildren(Document* = nullptr);
+  Element* CloneElementWithoutChildren(Document* = nullptr);
   // This function is public temporarily. You should not need to call
   // this from outside of Element.cpp and Document::importNode().
   virtual Element* CloneElementWithoutAttributesAndChildren(Document& factory);
@@ -1021,9 +1019,9 @@ class CORE_EXPORT Element : public ContainerNode {
   inline void RemoveCallbackSelectors();
   inline void AddCallbackSelectors();
 
-  // cloneNode is private so that non-virtual cloneElementWithChildren and
-  // cloneElementWithoutChildren are used instead.
-  Node* cloneNode(bool deep, ExceptionState&) override;
+  // Clone is private so that non-virtual CloneElementWithChildren and
+  // CloneElementWithoutChildren are used instead.
+  Node* Clone(Document&, CloneChildrenFlag) override;
 
   QualifiedName tag_name_;
 

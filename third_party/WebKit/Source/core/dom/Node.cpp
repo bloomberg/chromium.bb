@@ -606,6 +606,23 @@ void Node::remove() {
   remove(ASSERT_NO_EXCEPTION);
 }
 
+Node* Node::cloneNode(bool deep, ExceptionState& exception_state) {
+  // https://dom.spec.whatwg.org/#dom-node-clonenode
+
+  // 1. If context object is a shadow root, then throw a
+  // "NotSupportedError" DOMException.
+  if (IsShadowRoot()) {
+    exception_state.ThrowDOMException(kNotSupportedError,
+                                      "ShadowRoot nodes are not clonable.");
+    return nullptr;
+  }
+
+  // 2. Return a clone of the context object, with the clone children
+  // flag set if deep is true.
+  return Clone(GetDocument(),
+               deep ? CloneChildrenFlag::kClone : CloneChildrenFlag::kSkip);
+}
+
 Node* Node::cloneNode(bool deep) {
   return cloneNode(deep, ASSERT_NO_EXCEPTION);
 }

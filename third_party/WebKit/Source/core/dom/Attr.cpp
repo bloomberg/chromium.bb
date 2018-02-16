@@ -95,8 +95,8 @@ void Attr::setNodeValue(const String& v) {
   setValue(v.IsNull() ? g_empty_atom : AtomicString(v));
 }
 
-Node* Attr::cloneNode(bool /*deep*/, ExceptionState&) {
-  return new Attr(GetDocument(), name_, value());
+Node* Attr::Clone(Document& factory, CloneChildrenFlag) {
+  return new Attr(factory, name_, value());
 }
 
 void Attr::DetachFromElementWithValue(const AtomicString& value) {

@@ -80,10 +80,10 @@ Node::NodeType ProcessingInstruction::getNodeType() const {
   return kProcessingInstructionNode;
 }
 
-Node* ProcessingInstruction::cloneNode(bool /*deep*/, ExceptionState&) {
+Node* ProcessingInstruction::Clone(Document& factory, CloneChildrenFlag) {
   // FIXME: Is it a problem that this does not copy m_localHref?
   // What about other data members?
-  return Create(GetDocument(), target_, data_);
+  return Create(factory, target_, data_);
 }
 
 void ProcessingInstruction::DidAttributeChanged() {

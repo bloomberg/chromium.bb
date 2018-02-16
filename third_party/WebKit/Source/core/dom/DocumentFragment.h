@@ -52,7 +52,7 @@ class CORE_EXPORT DocumentFragment : public ContainerNode {
 
  private:
   NodeType getNodeType() const final;
-  Node* cloneNode(bool deep, ExceptionState&) override;
+  Node* Clone(Document&, CloneChildrenFlag) override;
   bool ChildTypeAllowed(NodeType) const override;
 
   bool IsDocumentFragment() const =
