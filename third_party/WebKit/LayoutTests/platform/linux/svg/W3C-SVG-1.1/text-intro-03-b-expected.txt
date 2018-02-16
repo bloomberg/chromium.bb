@@ -5,8 +5,8 @@ layer at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGContainer {g} at (61.39,10) size 377.39x428.19
       LayoutSVGContainer {g} at (61.39,10) size 377.39x428.19
-        LayoutSVGText {text} at (61.39,10) size 15.98x288.22 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (61.39,10) size 15.98x288.22
+        LayoutSVGText {text} at (61.39,10) size 16.59x288.22 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (61.39,10) size 16.59x288.22
             chunk 1 (vertical) text run 1 at (65.00,10.00) startOffset 0 endOffset 1 height 15.60: "T"
             chunk 1 (vertical) text run 2 at (65.00,17.91) startOffset 1 endOffset 2 height 15.60: "e"
             chunk 1 (vertical) text run 3 at (65.00,23.42) startOffset 2 endOffset 3 height 15.60: "x"

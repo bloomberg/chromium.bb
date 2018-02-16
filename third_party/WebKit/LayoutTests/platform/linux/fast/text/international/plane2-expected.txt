@@ -13,10 +13,10 @@ layer at (0,0) size 800x600
           text run at (119,0) width 634: ": Two lines below have one character from CJK Ideograph, one from CJK Ext A (both in BMP) and"
           text run at (0,20) width 758: "three characters from CJK Ext B (plane 2). The last group of characters are covered by Japanese fonts on Mac as well as"
           text run at (0,40) width 331: "two Chinese fonts for Ext B shipped with Windows."
-      LayoutBlockFlow {DIV} at (0,76) size 784x75
-        LayoutBlockFlow {DIV} at (0,0) size 784x38
-          LayoutText {#text} at (0,1) size 144x36
-            text run at (0,1) width 144: "\x{4E00} \x{3400} \x{D867}\x{DE8A}\x{D867}\x{DE49}\x{D867}\x{DEDB}"
-        LayoutBlockFlow {DIV} at (0,38) size 784x37
-          LayoutText {#text} at (0,0) size 144x36
-            text run at (0,0) width 144: "\x{4E00} \x{3400} \x{D867}\x{DE8A}\x{D867}\x{DE49}\x{D867}\x{DEDB}"
+      LayoutBlockFlow {DIV} at (0,76) size 784x94
+        LayoutBlockFlow {DIV} at (0,0) size 784x47
+          LayoutText {#text} at (0,9) size 176x36
+            text run at (0,9) width 176: "\x{4E00} \x{3400} \x{D867}\x{DE8A}\x{D867}\x{DE49}\x{D867}\x{DEDB}"
+        LayoutBlockFlow {DIV} at (0,47) size 784x47
+          LayoutText {#text} at (0,9) size 176x36
+            text run at (0,9) width 176: "\x{4E00} \x{3400} \x{D867}\x{DE8A}\x{D867}\x{DE49}\x{D867}\x{DEDB}"

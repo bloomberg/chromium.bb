@@ -62,8 +62,7 @@ const char* const kCloudStorageSyncedFonts[] = {
     "Lohit-Tamil.ttf",
     "Lohit-Gurmukhi.ttf",
     "MuktiNarrow.ttf",
-    // TODO(sergeyu): Uncomment this and update test expectations.
-    // "NotoSansCJKjp-Regular.otf",
+    "NotoSansCJKjp-Regular.otf",
     "NotoSansKhmer-Regular.ttf"};
 
 const size_t kNumCloudStorageSyncedFonts = arraysize(kCloudStorageSyncedFonts);
