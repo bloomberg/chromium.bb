@@ -5,6 +5,7 @@
 #include "ash/system/tray/tray_details_view.h"
 
 #include "ash/ash_view_ids.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_menu_button.h"
@@ -252,8 +253,10 @@ TrayDetailsView::TrayDetailsView(SystemTrayItem* owner)
       back_button_(nullptr) {
   box_layout_ = SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
-  SetBackground(views::CreateThemedSolidBackground(
-      this, ui::NativeTheme::kColorId_BubbleBackground));
+  SetBackground(features::IsNewSystemMenuEnabled()
+                    ? views::CreateSolidBackground(kNewMenuBackgroundColor)
+                    : views::CreateThemedSolidBackground(
+                          this, ui::NativeTheme::kColorId_BubbleBackground));
 }
 
 TrayDetailsView::~TrayDetailsView() = default;
@@ -308,8 +311,12 @@ void TrayDetailsView::CreateScrollableList() {
   scroller_ = new views::ScrollView;
   scroller_->SetContents(scroll_content_);
   // TODO(varkha): Make the sticky rows work with EnableViewPortLayer().
-  scroller_->SetBackgroundThemeColorId(
-      ui::NativeTheme::kColorId_BubbleBackground);
+  if (features::IsNewSystemMenuEnabled()) {
+    scroller_->SetBackgroundColor(kNewMenuBackgroundColor);
+  } else {
+    scroller_->SetBackgroundThemeColorId(
+        ui::NativeTheme::kColorId_BubbleBackground);
+  }
 
   AddChildView(scroller_);
   box_layout_->SetFlexForView(scroller_, 1);

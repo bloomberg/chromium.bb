@@ -5,6 +5,7 @@
 #include "ash/system/tray/system_menu_button.h"
 
 #include "ash/ash_constants.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_ink_drop_style.h"
@@ -51,9 +52,13 @@ SystemMenuButton::SystemMenuButton(views::ButtonListener* listener,
 
 void SystemMenuButton::SetVectorIcon(const gfx::VectorIcon& icon) {
   SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(icon, kMenuIconColor));
+           gfx::CreateVectorIcon(icon, features::IsNewSystemMenuEnabled()
+                                           ? kNewMenuIconColor
+                                           : kMenuIconColor));
   SetImage(views::Button::STATE_DISABLED,
-           gfx::CreateVectorIcon(icon, kMenuIconColorDisabled));
+           gfx::CreateVectorIcon(icon, features::IsNewSystemMenuEnabled()
+                                           ? kNewMenuIconColorDisabled
+                                           : kMenuIconColorDisabled));
 }
 
 SystemMenuButton::~SystemMenuButton() = default;
