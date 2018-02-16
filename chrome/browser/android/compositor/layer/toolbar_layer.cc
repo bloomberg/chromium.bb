@@ -64,9 +64,17 @@ void ToolbarLayer::PushResource(
       (resource->location_bar_content_rect().width() != 0) && url_bar_alpha > 0;
   url_bar_background_layer_->SetHideLayerAndSubtree(!url_bar_visible);
   if (url_bar_visible) {
-    ui::NinePatchResource* url_bar_background_resource =
-        ui::NinePatchResource::From(resource_manager_->GetResource(
-            ui::ANDROID_RESOURCE_TYPE_STATIC, url_bar_background_resource_id));
+    ui::NinePatchResource* url_bar_background_resource;
+    if (!modern_design_enabled) {
+      url_bar_background_resource = ui::NinePatchResource::From(
+          resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
+                                         url_bar_background_resource_id));
+    } else {
+      url_bar_background_resource = ui::NinePatchResource::From(
+          resource_manager_->GetStaticResourceWithTint(
+              url_bar_background_resource_id,
+              toolbar_textbox_background_color));
+    }
 
     gfx::Size draw_size(url_bar_background_resource->DrawSize(
         resource->location_bar_content_rect().size()));
@@ -89,12 +97,34 @@ void ToolbarLayer::PushResource(
 
   layer_->SetMasksToBounds(clip_shadow);
 
-  anonymize_layer_->SetHideLayerAndSubtree(!anonymize);
-  if (anonymize) {
+  // TODO(mdjones): Remove the anonymize layer once modern launches.
+  anonymize_layer_->SetHideLayerAndSubtree(!anonymize || modern_design_enabled);
+  if (!modern_design_enabled && anonymize) {
     anonymize_layer_->SetPosition(
         gfx::PointF(resource->location_bar_content_rect().origin()));
     anonymize_layer_->SetBounds(resource->location_bar_content_rect().size());
     anonymize_layer_->SetBackgroundColor(toolbar_textbox_background_color);
+  }
+
+  // If modern is enabled, the location bar background doubles as the
+  // anonymize layer -- it just needs to be drawn on top of the toolbar
+  // bitmap.
+  if (modern_design_enabled) {
+    int background_layer_index = GetIndexOfLayer(toolbar_background_layer_);
+
+    bool needs_move_to_front =
+        anonymize && layer_->children().back() != url_bar_background_layer_;
+    bool needs_move_to_back =
+        !anonymize &&
+        layer_->child_at(background_layer_index) != url_bar_background_layer_;
+
+    // If the layer needs to move, remove and re-add it.
+    if (needs_move_to_front) {
+      layer_->AddChild(url_bar_background_layer_);
+    } else if (needs_move_to_back) {
+      layer_->InsertChild(url_bar_background_layer_,
+                          background_layer_index + 1);
+    }
   }
 
   debug_layer_->SetBounds(resource->size());
@@ -104,6 +134,14 @@ void ToolbarLayer::PushResource(
     debug_layer_->RemoveFromParent();
 
   layer_->SetPosition(gfx::PointF(0, y_offset));
+}
+
+int ToolbarLayer::GetIndexOfLayer(scoped_refptr<cc::Layer> layer) {
+  for (unsigned int i = 0; i < layer_->children().size(); ++i) {
+    if (layer_->child_at(i) == layer)
+      return i;
+  }
+  return -1;
 }
 
 void ToolbarLayer::UpdateProgressBar(int progress_bar_x,

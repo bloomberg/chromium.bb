@@ -77,7 +77,11 @@ public class ColorUtils {
         boolean usingDefaultThemeColor =
                 ColorUtils.isUsingDefaultToolbarColor(res, useModernDesign, false, color);
         if (usingDefaultThemeColor && useModernDesign) {
-            return ApiCompatibilityUtils.getColor(res, R.color.modern_light_grey);
+            // In modern, the default theme color is white, so the text box uses a darker color
+            // which is different from all other cases. In the case of the NTP, the location bar is
+            // not visible by default, so we make it white to appear as part of the background.
+            return isNtp ? Color.WHITE
+                         : ApiCompatibilityUtils.getColor(res, R.color.modern_light_grey);
         }
 
         if (shouldUseOpaqueTextboxBackground(color)) {

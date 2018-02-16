@@ -239,6 +239,7 @@ public class ToolbarPhone extends ToolbarLayout
     protected final Point mNtpSearchBoxTranslation = new Point();
 
     protected final int mToolbarSidePadding;
+    private final int mModernLocationBarLateralInset;
     protected int mLocationBarBackgroundCornerRadius;
     protected int mLocationBarVerticalMargin;
 
@@ -263,20 +264,6 @@ public class ToolbarPhone extends ToolbarLayout
 
     /** The height of the location bar background when the modern UI is enabled. */
     private float mModernLocationBarBackgroundHeight;
-
-    /**
-     * The float used to inset the rect returned by {@link #getLocationBarContentRect(Rect)} when
-     * the modern UI is enabled. This extra vertical inset is needed to ensure the anonymize layer
-     * doesn't draw outside of the background bounds.
-     */
-    private float mModernLocationBarContentVerticalInset;
-
-    /**
-     * The float used to inset the rect returned by {@link #getLocationBarContentRect(Rect)} when
-     * the modern UI is enabled. This extra lateral inset is needed to ensure the anonymize layer
-     * doesn't draw outside of the background bounds.
-     */
-    private float mModernLocationBarContentLateralInset;
 
     /**
      * The extra margin to apply to the start side of the location bar when it is focused and the
@@ -352,6 +339,8 @@ public class ToolbarPhone extends ToolbarLayout
                 ApiCompatibilityUtils.getColor(getResources(), R.color.light_mode_tint);
         mDarkModeDefaultColor =
                 ApiCompatibilityUtils.getColor(getResources(), R.color.dark_mode_tint);
+        mModernLocationBarLateralInset = getResources().getDimensionPixelOffset(
+                R.dimen.modern_toolbar_background_lateral_inset);
     }
 
     @Override
@@ -398,10 +387,6 @@ public class ToolbarPhone extends ToolbarLayout
                     mLocationBarBackgroundPadding.top, mLocationBarBackgroundPadding.right,
                     mLocationBarBackgroundPadding.bottom);
 
-            mModernLocationBarContentLateralInset = getResources().getDimensionPixelSize(
-                    R.dimen.bottom_location_bar_content_lateral_inset);
-            mModernLocationBarContentVerticalInset = getResources().getDimensionPixelSize(
-                    R.dimen.bottom_location_bar_content_vertical_inset);
             mModernLocationBarExtraFocusedStartMargin = getResources().getDimensionPixelSize(
                     R.dimen.bottom_toolbar_background_focused_left_margin);
             mLocationBarBackgroundCornerRadius = 0;
@@ -1550,7 +1535,7 @@ public class ToolbarPhone extends ToolbarLayout
      */
     protected boolean shouldDrawLocationBarBackground() {
         return (mLocationBar.getAlpha() > 0 || mForceDrawLocationBarBackground)
-                && (mLocationBar.useModernDesign() || !mTextureCaptureMode);
+                && !mTextureCaptureMode;
     }
 
     @Override
@@ -1662,12 +1647,16 @@ public class ToolbarPhone extends ToolbarLayout
     @Override
     public void getLocationBarContentRect(Rect outRect) {
         updateLocationBarBackgroundBounds(outRect, VisualState.NORMAL);
-
         if (mLocationBar.useModernDesign()) {
-            outRect.left += mModernLocationBarContentLateralInset;
-            outRect.top += mModernLocationBarContentVerticalInset;
-            outRect.right -= mModernLocationBarContentLateralInset;
-            outRect.bottom -= mModernLocationBarContentVerticalInset;
+            // Remove the insets for the composited version.
+            // TODO(mdjones): The image asset used to render the location bar in java is different
+            // from the one used in the compositor. The java asset has padding applied to both sides
+            // while the compositor one does not. The value manipulation here is to account for that
+            // difference. Instead we should just remove the padding from the toolbar asset, but
+            // there is much more overhead in updating the animations. Fix this once modern is the
+            // new default.
+            outRect.left -= mModernLocationBarLateralInset;
+            outRect.right += mModernLocationBarLateralInset;
         }
     }
 
