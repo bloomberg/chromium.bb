@@ -47,7 +47,9 @@ void OomInterventionImpl::Create(mojom::blink::OomInterventionRequest request) {
 OomInterventionImpl::OomInterventionImpl(
     MemoryWorkloadCaculator workload_calculator)
     : workload_calculator_(std::move(workload_calculator)),
-      timer_(this, &OomInterventionImpl::Check) {
+      timer_(Platform::Current()->MainThread()->GetTaskRunner(),
+             this,
+             &OomInterventionImpl::Check) {
   DCHECK(workload_calculator_);
 }
 
