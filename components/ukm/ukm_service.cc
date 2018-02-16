@@ -221,6 +221,7 @@ void UkmService::RotateLog() {
   if (!reporting_service_.ukm_log_store()->has_unsent_logs())
     BuildAndStoreLog();
   reporting_service_.Start();
+  scheduler_->RotationFinished();
 }
 
 void UkmService::BuildAndStoreLog() {
