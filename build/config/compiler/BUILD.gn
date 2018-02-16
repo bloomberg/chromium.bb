@@ -541,7 +541,10 @@ config("compiler") {
 
     # Limit the size of the ThinLTO cache to the lesser of 10% of available disk
     # space, 10GB and 100000 files.
-    cache_policy = "cache_size=10%:cache_size_bytes=10g:cache_size_files=100000"
+    if (use_lld) {
+      cache_policy =
+          "cache_size=10%:cache_size_bytes=10g:cache_size_files=100000"
+    }
     if (is_win) {
       # This is a straight translation of the non-Windows flags below.
       ldflags += [
