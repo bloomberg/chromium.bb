@@ -465,7 +465,7 @@ TEST(SetupUtilTest, GetToastActivatorRegistryPath) {
   EXPECT_EQ(L'\\', toast_activator_reg_path[guid_begin - 1]);
 
   // A GUID has the form "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}".
-  constexpr unsigned int kGuidLength = 38;
+  constexpr size_t kGuidLength = 38;
   EXPECT_EQ(kGuidLength, toast_activator_reg_path.length() - guid_begin);
 
   EXPECT_EQ('}', toast_activator_reg_path.back());
