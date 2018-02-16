@@ -12,9 +12,24 @@ source_set("internal") {
   sources = [
     "download_interrupt_reasons_impl.cc",
     "download_utils.cc",
+    "rate_estimator.cc",
   ]
 
   deps = [
     "//base",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "rate_estimator_unittest.cc",
+  ]
+
+  deps = [
+    "//base/test:test_support",
+    "//components/download/public/common:public",
+    "//testing/gtest",
   ]
 }

@@ -1,14 +1,14 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/rate_estimator.h"
+#include "components/download/public/common/rate_estimator.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
 
-namespace content {
+namespace download {
 
 TEST(RateEstimatorTest, RateEstimator) {
   base::TimeTicks now;
@@ -55,4 +55,4 @@ TEST(RateEstimatorTest, RateEstimator) {
   EXPECT_EQ(0u, estimator.GetCountPerSecond(now));
 }
 
-}  // namespace content
+}  // namespace download

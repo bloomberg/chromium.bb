@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_RATE_ESTIMATOR_H_
-#define CONTENT_BROWSER_DOWNLOAD_RATE_ESTIMATOR_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_RATE_ESTIMATOR_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_RATE_ESTIMATOR_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -12,15 +12,15 @@
 #include <vector>
 
 #include "base/time/time.h"
-#include "content/common/content_export.h"
+#include "components/download/public/common/download_export.h"
 
-namespace content {
+namespace download {
 
 // RateEstimator generates rate estimates based on recent activity.
 //
 // Internally it uses a fixed-size ring buffer, and develops estimates
 // based on a small sliding window of activity.
-class CONTENT_EXPORT RateEstimator {
+class COMPONENTS_DOWNLOAD_EXPORT RateEstimator {
  public:
   RateEstimator();
   RateEstimator(base::TimeDelta bucket_time,
@@ -49,6 +49,6 @@ class CONTENT_EXPORT RateEstimator {
   base::TimeTicks oldest_time_;
 };
 
-}  // namespace content
+}  // namespace download
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_RATE_ESTIMATOR_H_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_RATE_ESTIMATOR_H_

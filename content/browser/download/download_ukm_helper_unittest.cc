@@ -54,7 +54,7 @@ class DownloadUkmHelperTest : public testing::Test {
 TEST_F(DownloadUkmHelperTest, TestBasicReporting) {
   // RecordDownloadStarted
   ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
-  DownloadContent file_type = DownloadContent::AUDIO;
+  download::DownloadContent file_type = download::DownloadContent::AUDIO;
   download::DownloadSource download_source = download::DownloadSource::UNKNOWN;
   DownloadUkmHelper::RecordDownloadStarted(download_id_, source_id, file_type,
                                            download_source);
@@ -90,7 +90,7 @@ TEST_F(DownloadUkmHelperTest, TestBasicReporting) {
        time_since_start});
 
   // RecordDownloadResumed.
-  ResumeMode mode = ResumeMode::IMMEDIATE_RESTART;
+  download::ResumeMode mode = download::ResumeMode::IMMEDIATE_RESTART;
   int time_since_start_resume = 300;
   DownloadUkmHelper::RecordDownloadResumed(
       download_id_, mode,

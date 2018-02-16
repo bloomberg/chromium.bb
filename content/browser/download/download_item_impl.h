@@ -19,9 +19,9 @@
 #include "base/time/time.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/resume_mode.h"
 #include "content/browser/download/download_destination_observer.h"
 #include "content/browser/download/download_request_handle.h"
-#include "content/browser/download/resume_mode.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
@@ -600,7 +600,7 @@ class CONTENT_EXPORT DownloadItemImpl : public download::DownloadItem,
   // Determines the resume mode for an interrupted download. Requires
   // last_reason_ to be set, but doesn't require the download to be in
   // INTERRUPTED state.
-  ResumeMode GetResumeMode() const;
+  download::ResumeMode GetResumeMode() const;
 
   // Helper method to attach additional information to the DownloadItem.
   void AttachDownloadItemData();
@@ -616,7 +616,7 @@ class CONTENT_EXPORT DownloadItemImpl : public download::DownloadItem,
 
   // Debugging routines --------------------------------------------------------
   static const char* DebugDownloadStateString(DownloadInternalState state);
-  static const char* DebugResumeModeString(ResumeMode mode);
+  static const char* DebugResumeModeString(download::ResumeMode mode);
   static bool IsValidSavePackageStateTransition(DownloadInternalState from,
                                                 DownloadInternalState to);
   static bool IsValidStateTransition(DownloadInternalState from,

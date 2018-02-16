@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_CONTENT_H_
-#define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_CONTENT_H_
+#ifndef COMPONENTS_DOWNLOAD_DOWNLOAD_CONTENT_H_
+#define COMPONENTS_DOWNLOAD_DOWNLOAD_CONTENT_H_
 
 // The type of download based on mimetype.
 // This is used by UMA and UKM metrics.
-namespace content {
+namespace download {
 
 // NOTE: Keep in sync with DownloadContentType in
 // tools/metrics/histograms/enums.xml.
@@ -33,6 +33,6 @@ enum class DownloadContent {
   MAX = 18,
 };
 
-}  // namespace content
+}  // namespace download
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_CONTENT_H_
+#endif  // COMPONENTS_DOWNLOAD_DOWNLOAD_CONTENT_H_

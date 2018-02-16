@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_RESUME_MODE_H_
-#define CONTENT_BROWSER_DOWNLOAD_RESUME_MODE_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_RESUME_MODE_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_RESUME_MODE_H_
 
 // The means by which the download was resumed.
 // Used by DownloadItemImpl and UKM metrics.
-namespace content {
+namespace download {
 
 enum class ResumeMode {
   INVALID = 0,
@@ -17,6 +17,6 @@ enum class ResumeMode {
   USER_RESTART
 };
 
-}  // namespace content
+}  // namespace download
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_RESUME_MODE_H_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_RESUME_MODE_H_

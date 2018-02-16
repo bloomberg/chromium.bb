@@ -688,11 +688,11 @@ bool DownloadItemImpl::CanResume() const {
       return IsPaused();
 
     case INTERRUPTED_INTERNAL: {
-      ResumeMode resume_mode = GetResumeMode();
+      download::ResumeMode resume_mode = GetResumeMode();
       // Only allow Resume() calls if the resumption mode requires a user
       // action.
-      return resume_mode == ResumeMode::USER_RESTART ||
-             resume_mode == ResumeMode::USER_CONTINUE;
+      return resume_mode == download::ResumeMode::USER_RESTART ||
+             resume_mode == download::ResumeMode::USER_CONTINUE;
     }
 
     case MAX_DOWNLOAD_INTERNAL_STATE:
@@ -984,7 +984,7 @@ void DownloadItemImpl::OnContentCheckCompleted(
   SetDangerType(danger_type);
   if (reason != download::DOWNLOAD_INTERRUPT_REASON_NONE) {
     InterruptAndDiscardPartialState(reason);
-    DCHECK_EQ(ResumeMode::INVALID, GetResumeMode());
+    DCHECK_EQ(download::ResumeMode::INVALID, GetResumeMode());
   }
   UpdateObservers();
 }
@@ -1071,12 +1071,12 @@ void DownloadItemImpl::SimulateErrorForTesting(
   UpdateObservers();
 }
 
-ResumeMode DownloadItemImpl::GetResumeMode() const {
+download::ResumeMode DownloadItemImpl::GetResumeMode() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Only support resumption for HTTP(S).
   if (!GetURL().SchemeIsHTTPOrHTTPS())
-    return ResumeMode::INVALID;
+    return download::ResumeMode::INVALID;
 
   // We can't continue without a handle on the intermediate file.
   // We also can't continue if we don't have some verifier to make sure
@@ -1152,19 +1152,19 @@ ResumeMode DownloadItemImpl::GetResumeMode() const {
     case download::DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM:
     case download::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN:
     case download::DOWNLOAD_INTERRUPT_REASON_FILE_SAME_AS_SOURCE:
-      return ResumeMode::INVALID;
+      return download::ResumeMode::INVALID;
   }
 
   if (user_action_required && restart_required)
-    return ResumeMode::USER_RESTART;
+    return download::ResumeMode::USER_RESTART;
 
   if (restart_required)
-    return ResumeMode::IMMEDIATE_RESTART;
+    return download::ResumeMode::IMMEDIATE_RESTART;
 
   if (user_action_required)
-    return ResumeMode::USER_CONTINUE;
+    return download::ResumeMode::USER_CONTINUE;
 
-  return ResumeMode::IMMEDIATE_CONTINUE;
+  return download::ResumeMode::IMMEDIATE_CONTINUE;
 }
 
 void DownloadItemImpl::AttachDownloadItemData() {
@@ -1478,7 +1478,8 @@ void DownloadItemImpl::Start(
                                         IsParallelDownloadEnabled());
     }
     RecordDownloadMimeType(mime_type_);
-    DownloadContent file_type = DownloadContentFromMimeType(mime_type_, false);
+    download::DownloadContent file_type =
+        DownloadContentFromMimeType(mime_type_, false);
     auto in_progress_entry = GetInProgressEntry(guid_, GetBrowserContext());
     if (in_progress_entry) {
       DownloadUkmHelper::RecordDownloadStarted(
@@ -1935,9 +1936,10 @@ void DownloadItemImpl::InterruptWithPartialState(
       last_reason_ = reason;
 
       if (download_file_) {
-        ResumeMode resume_mode = GetResumeMode();
-        ReleaseDownloadFile(resume_mode != ResumeMode::IMMEDIATE_CONTINUE &&
-                            resume_mode != ResumeMode::USER_CONTINUE);
+        download::ResumeMode resume_mode = GetResumeMode();
+        ReleaseDownloadFile(resume_mode !=
+                                download::ResumeMode::IMMEDIATE_CONTINUE &&
+                            resume_mode != download::ResumeMode::USER_CONTINUE);
       }
       break;
 
@@ -2279,10 +2281,10 @@ void DownloadItemImpl::SetFullPath(const base::FilePath& new_path) {
 void DownloadItemImpl::AutoResumeIfValid() {
   DVLOG(20) << __func__ << "() " << DebugString(true);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  ResumeMode mode = GetResumeMode();
+  download::ResumeMode mode = GetResumeMode();
 
-  if (mode != ResumeMode::IMMEDIATE_RESTART &&
-      mode != ResumeMode::IMMEDIATE_CONTINUE) {
+  if (mode != download::ResumeMode::IMMEDIATE_RESTART &&
+      mode != download::ResumeMode::IMMEDIATE_CONTINUE) {
     return;
   }
 
@@ -2303,9 +2305,9 @@ void DownloadItemImpl::ResumeInterruptedDownload(
   weak_ptr_factory_.InvalidateWeakPtrs();
 
   // Reset the appropriate state if restarting.
-  ResumeMode mode = GetResumeMode();
-  if (mode == ResumeMode::IMMEDIATE_RESTART ||
-      mode == ResumeMode::USER_RESTART) {
+  download::ResumeMode mode = GetResumeMode();
+  if (mode == download::ResumeMode::IMMEDIATE_RESTART ||
+      mode == download::ResumeMode::USER_RESTART) {
     DCHECK(GetFullPath().empty());
     destination_info_.received_bytes = 0;
     last_modified_time_.clear();
@@ -2553,17 +2555,17 @@ const char* DownloadItemImpl::DebugDownloadStateString(
   return "unknown";
 }
 
-const char* DownloadItemImpl::DebugResumeModeString(ResumeMode mode) {
+const char* DownloadItemImpl::DebugResumeModeString(download::ResumeMode mode) {
   switch (mode) {
-    case ResumeMode::INVALID:
+    case download::ResumeMode::INVALID:
       return "INVALID";
-    case ResumeMode::IMMEDIATE_CONTINUE:
+    case download::ResumeMode::IMMEDIATE_CONTINUE:
       return "IMMEDIATE_CONTINUE";
-    case ResumeMode::IMMEDIATE_RESTART:
+    case download::ResumeMode::IMMEDIATE_RESTART:
       return "IMMEDIATE_RESTART";
-    case ResumeMode::USER_CONTINUE:
+    case download::ResumeMode::USER_CONTINUE:
       return "USER_CONTINUE";
-    case ResumeMode::USER_RESTART:
+    case download::ResumeMode::USER_RESTART:
       return "USER_RESTART";
   }
   NOTREACHED() << "Unknown resume mode " << static_cast<int>(mode);

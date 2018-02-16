@@ -14,10 +14,10 @@
 #include <vector>
 
 #include "base/optional.h"
+#include "components/download/public/common/download_content.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_source.h"
-#include "content/browser/download/download_content.h"
 #include "content/common/content_export.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -220,8 +220,9 @@ void RecordDangerousDownloadDiscard(DownloadDiscardReason reason,
                                     const base::FilePath& file_path);
 
 // Returns the type of download.
-DownloadContent DownloadContentFromMimeType(const std::string& mime_type_string,
-                                            bool record_content_subcategory);
+download::DownloadContent DownloadContentFromMimeType(
+    const std::string& mime_type_string,
+    bool record_content_subcategory);
 
 // Records the mime type of the download.
 void RecordDownloadMimeType(const std::string& mime_type);
