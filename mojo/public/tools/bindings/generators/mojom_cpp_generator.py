@@ -389,6 +389,10 @@ class Generator(generator.Generator):
   def _GenerateModuleSharedInternalHeader(self):
     return self._GetJinjaExports()
 
+  @UseJinja("module-shared-message-ids.h.tmpl")
+  def _GenerateModuleSharedMessageIdsHeader(self):
+    return self._GetJinjaExports()
+
   @UseJinja("module-shared.cc.tmpl")
   def _GenerateModuleSharedSource(self):
     return self._GetJinjaExports()
@@ -397,12 +401,16 @@ class Generator(generator.Generator):
     self.module.Stylize(generator.Stylizer())
 
     if self.generate_non_variant_code:
-      self.Write(self._GenerateModuleSharedHeader(),
-                 "%s-shared.h" % self.module.path)
-      self.Write(self._GenerateModuleSharedInternalHeader(),
-                 "%s-shared-internal.h" % self.module.path)
-      self.Write(self._GenerateModuleSharedSource(),
-                 "%s-shared.cc" % self.module.path)
+      if self.generate_message_ids:
+        self.Write(self._GenerateModuleSharedMessageIdsHeader(),
+           "%s-shared-message-ids.h" % self.module.path)
+      else:
+        self.Write(self._GenerateModuleSharedHeader(),
+                   "%s-shared.h" % self.module.path)
+        self.Write(self._GenerateModuleSharedInternalHeader(),
+                   "%s-shared-internal.h" % self.module.path)
+        self.Write(self._GenerateModuleSharedSource(),
+                   "%s-shared.cc" % self.module.path)
     else:
       suffix = "-%s" % self.variant if self.variant else ""
       self.Write(self._GenerateModuleHeader(),
