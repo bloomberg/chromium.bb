@@ -312,14 +312,16 @@ struct AutocompleteMatch {
   // This is used to decide whether we should call DeleteMatch().
   bool SupportsDeletion() const;
 
-  // Swaps the contents and description fields, and their associated
-  // classifications, if this is a match for which we should emphasize the
-  // title (stored in the description field) over the URL (in the contents
-  // field).  Intended to only be used at the UI level before displaying, lest
-  // other omnibox systems get confused about which is which.  See the code
-  // that sets |swap_contents_and_description| for conditions under which
-  // it is true.
-  void PossiblySwapContentsAndDescriptionForDisplay();
+  // Returns a copy of this match with the contents and description fields, and
+  // their associated classifications, possibly swapped.  We swap these if this
+  // is a match for which we should emphasize the title (stored in the
+  // description field) over the URL (in the contents field).
+  //
+  // We specifically return a copy to prevent the UI code from accidentally
+  // mucking with the matches stored in the model, lest other omnibox systems
+  // get confused about which is which.  See the code that sets
+  // |swap_contents_and_description| for conditions they are swapped.
+  AutocompleteMatch GetMatchWithContentsAndDescriptionPossiblySwapped() const;
 
   // If this match is a tail suggestion, prepends the passed |common_prefix|.
   // If not, but the prefix matches the beginning of the suggestion, dims that

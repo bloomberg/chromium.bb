@@ -691,11 +691,16 @@ bool AutocompleteMatch::SupportsDeletion() const {
   return false;
 }
 
-void AutocompleteMatch::PossiblySwapContentsAndDescriptionForDisplay() {
-  if (swap_contents_and_description) {
-    std::swap(contents, description);
-    std::swap(contents_class, description_class);
+AutocompleteMatch
+AutocompleteMatch::GetMatchWithContentsAndDescriptionPossiblySwapped() const {
+  AutocompleteMatch copy(*this);
+  if (copy.swap_contents_and_description) {
+    std::swap(copy.contents, copy.description);
+    std::swap(copy.contents_class, copy.description_class);
+    // Clear bit to prevent accidentally performing the swap again.
+    copy.swap_contents_and_description = false;
   }
+  return copy;
 }
 
 void AutocompleteMatch::InlineTailPrefix(const base::string16& common_prefix) {
