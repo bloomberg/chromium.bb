@@ -4,7 +4,6 @@
 
 module blink.mojom;
 
-import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
 enum WebSocketMessageType {
@@ -105,7 +104,6 @@ interface WebSocket {
   // as described in RFC6455 "Subprotocols Using the WebSocket Protocol".
   AddChannelRequest(url.mojom.Url url,
                     array<string> requested_protocols,
-                    url.mojom.Origin origin,
                     url.mojom.Url first_party_for_cookies,
                     string user_agent_override,
                     WebSocketClient client);

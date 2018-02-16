@@ -87,10 +87,9 @@ class MockWebSocketHandle : public WebSocketHandle {
     DoInitialize(&websocket);
   }
 
-  MOCK_METHOD7(Connect,
+  MOCK_METHOD6(Connect,
                void(const KURL&,
                     const Vector<String>&,
-                    const SecurityOrigin*,
                     const KURL&,
                     const String&,
                     WebSocketHandleClient*,
@@ -164,8 +163,8 @@ class DocumentWebSocketChannelTest : public PageTestBase {
     {
       InSequence s;
       EXPECT_CALL(*Handle(), DoInitialize(_));
-      EXPECT_CALL(*Handle(), Connect(KURL("ws://localhost/"), _, _, _, _,
-                                     HandleClient(), _));
+      EXPECT_CALL(*Handle(),
+                  Connect(KURL("ws://localhost/"), _, _, _, HandleClient(), _));
       EXPECT_CALL(*Handle(), FlowControl(65536));
       EXPECT_CALL(*ChannelClient(), DidConnect(String("a"), String("b")));
     }
@@ -207,16 +206,15 @@ MATCHER_P(KURLEq,
 
 TEST_F(DocumentWebSocketChannelTest, connectSuccess) {
   Vector<String> protocols;
-  scoped_refptr<const SecurityOrigin> origin;
 
   Checkpoint checkpoint;
   {
     InSequence s;
     EXPECT_CALL(*Handle(), DoInitialize(_));
     EXPECT_CALL(*Handle(),
-                Connect(KURLEq("ws://localhost/"), _, _,
+                Connect(KURLEq("ws://localhost/"), _,
                         KURLEq("http://example.com/"), _, HandleClient(), _))
-        .WillOnce(DoAll(SaveArg<1>(&protocols), SaveArg<2>(&origin)));
+        .WillOnce(SaveArg<1>(&protocols));
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*Handle(), FlowControl(65536));
     EXPECT_CALL(*ChannelClient(), DidConnect(String("a"), String("b")));
@@ -235,8 +233,6 @@ TEST_F(DocumentWebSocketChannelTest, connectSuccess) {
 
   EXPECT_EQ(1U, protocols.size());
   EXPECT_STREQ("x", protocols[0].Utf8().data());
-
-  EXPECT_STREQ("http://example.com", origin->ToString().Utf8().data());
 
   checkpoint.Call(1);
   HandleClient()->DidConnect(Handle(), String("a"), String("b"));
@@ -824,7 +820,7 @@ class DocumentWebSocketChannelHandshakeThrottleTest
   // non-null throttle.
   void NormalHandshakeExpectations() {
     EXPECT_CALL(*Handle(), DoInitialize(_));
-    EXPECT_CALL(*Handle(), Connect(_, _, _, _, _, _, _));
+    EXPECT_CALL(*Handle(), Connect(_, _, _, _, _, _));
     EXPECT_CALL(*handshake_throttle_, ThrottleHandshake(_, _, _));
   }
 
@@ -833,7 +829,7 @@ class DocumentWebSocketChannelHandshakeThrottleTest
 
 TEST_F(DocumentWebSocketChannelHandshakeThrottleTest, ThrottleArguments) {
   EXPECT_CALL(*Handle(), DoInitialize(_));
-  EXPECT_CALL(*Handle(), Connect(_, _, _, _, _, _, _));
+  EXPECT_CALL(*Handle(), Connect(_, _, _, _, _, _));
   EXPECT_CALL(*handshake_throttle_,
               ThrottleHandshake(WebURL(url()), _, WebCallbacks()));
   EXPECT_CALL(*handshake_throttle_, Destructor());

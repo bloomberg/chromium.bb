@@ -11,7 +11,6 @@
 #include "platform/network/WebSocketHandshakeResponse.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
@@ -46,15 +45,13 @@ void WebSocketHandleImpl::Initialize(mojom::blink::WebSocketPtr websocket) {
 
 void WebSocketHandleImpl::Connect(const KURL& url,
                                   const Vector<String>& protocols,
-                                  const SecurityOrigin* origin,
                                   const KURL& site_for_cookies,
                                   const String& user_agent_override,
                                   WebSocketHandleClient* client,
                                   base::SingleThreadTaskRunner* task_runner) {
   DCHECK(websocket_);
 
-  NETWORK_DVLOG(1) << this << " connect(" << url.GetString() << ", "
-                   << origin->ToString() << ")";
+  NETWORK_DVLOG(1) << this << " connect(" << url.GetString() << ")";
 
   DCHECK(!client_);
   DCHECK(client);
@@ -62,9 +59,8 @@ void WebSocketHandleImpl::Connect(const KURL& url,
 
   mojom::blink::WebSocketClientPtr client_proxy;
   client_binding_.Bind(mojo::MakeRequest(&client_proxy, task_runner));
-
   websocket_->AddChannelRequest(
-      url, protocols, origin, site_for_cookies,
+      url, protocols, site_for_cookies,
       user_agent_override.IsNull() ? g_empty_string : user_agent_override,
       std::move(client_proxy));
 }

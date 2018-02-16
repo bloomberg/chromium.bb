@@ -128,8 +128,8 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
   parameterized_binder_registry_.AddInterface(
       base::Bind([](blink::mojom::WebSocketRequest request,
                     RenderProcessHost* host, const url::Origin& origin) {
-        WebSocketManager::CreateWebSocket(host->GetID(), MSG_ROUTING_NONE,
-                                          std::move(request));
+        WebSocketManager::CreateWebSocketWithOrigin(
+            host->GetID(), origin, std::move(request), MSG_ROUTING_NONE);
       }));
   parameterized_binder_registry_.AddInterface(
       base::Bind([](payments::mojom::PaymentManagerRequest request,

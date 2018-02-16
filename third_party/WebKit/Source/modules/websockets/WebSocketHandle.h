@@ -40,7 +40,6 @@
 namespace blink {
 
 class KURL;
-class SecurityOrigin;
 class WebSocketHandleClient;
 
 // WebSocketHandle is an interface class designed to be a handle of WebSocket
@@ -64,7 +63,6 @@ class WebSocketHandle {
   virtual void Initialize(mojom::blink::WebSocketPtr) = 0;
   virtual void Connect(const KURL&,
                        const Vector<String>& protocols,
-                       const SecurityOrigin*,
                        const KURL& site_for_cookies,
                        const String& user_agent_override,
                        WebSocketHandleClient*,
