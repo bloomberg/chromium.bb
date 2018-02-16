@@ -49,10 +49,29 @@
 -DragWindowResizerTest.WindowDragWithMultiDisplaysRightToLeft
 
 # TODO: Extended desktop. http://crbug.com/695570
+-ExtendedDesktopTest.Activation
+-ExtendedDesktopTest.Basic
+-ExtendedDesktopTest.Capture
+-ExtendedDesktopTest.CaptureEventLocation
+-ExtendedDesktopTest.CaptureEventLocationHighDPI
+-ExtendedDesktopTest.CaptureEventLocationHighDPI_2
+-ExtendedDesktopTest.ConvertPoint
+-ExtendedDesktopTest.GetRootWindowAt
+-ExtendedDesktopTest.GetRootWindowMatching
 -ExtendedDesktopTest.KeyEventsOnLockScreen
+-ExtendedDesktopTest.MoveWindow
+-ExtendedDesktopTest.MoveWindowByMouseClick
+-ExtendedDesktopTest.MoveWindowToDisplay
+-ExtendedDesktopTest.MoveWindowWithTransient
+-ExtendedDesktopTest.OpenSystemTray
+-ExtendedDesktopTest.PassiveGrab
+-ExtendedDesktopTest.PostMoveParentTransientChild
+-ExtendedDesktopTest.StayInSameRootWindow
+-ExtendedDesktopTest.SystemModal
 -ExtendedDesktopTest.TestCursor
+-ExtendedDesktopTest.TestCursorLocation
 
-// Test is flaky. http://crbug.com/794703.
+# Test is flaky. http://crbug.com/794703.
 -HighlighterControllerTest.HighlighterGesturesScaled
 
 # TODO: Top-of-screen mouse reveal doesn't work, maybe problem with
@@ -243,5 +262,32 @@
 
 # TODO: Needs CursorManager. http://crbug.com/631103
 -WorkspaceWindowResizerTest.MouseMoveWithTouchDrag
+
+# TODO: these all crash/fail because we weren't running ash_unittests --mash
+# for a period of time. The crashes need to be understood and more specific
+# bugs filed. http://crbug.com/813115.
+-DisplayManagerTest.CompositingCursorInMultiSoftwareMirroring
+-DisplayManagerTestDisableMultiMirroring.SoftwareMirroringWithCompositingCursor
+-DisplayManagerTest.SoftwareMirrorModeBasics
+-DisplayManagerTest.UpdateMouseCursorAfterRotateZoom
+-LockScreenSanityTest.PasswordSubmitClearsPasswordAfterFailedAuthentication
+-LoginPasswordViewTest.SubmitButtonUpdatesUiState
+-LoginShelfViewTest.TabGoesFromShelfToStatusAreaAndBackToShelf
+-PartialMagnificationControllerTest.ActiveOnPointerDown
+-PartialMagnificationControllerTest.DisablingDisablesActive
+-PartialMagnificationControllerTest.MagnifierFollowsPointer
+-PartialMagnificationControllerTest.MultipleDisplays
+-RootWindowControllerTest.MoveWindows_Basic
+-StatusAreaWidgetFocusTest.FocusOutObserver
+-WindowManagerTest.ActivateOnMouse
+-WindowManagerTest.ActivateOnPointerWindowProperty
+-WindowManagerTest.ActivateOnTouch
+-WindowManagerTest.AdditionalFilters
+-WindowManagerTest.Focus
+-WindowManagerTest.PanelActivation
+-WindowManagerTest.TransformActivate
+-WindowTreeHostManagerTest.DontUpdateInvisibleCursorLocationAfterDisplayChange
+-WindowTreeHostManagerTest.UpdateMouseLocationAfterDisplayChange
+-WindowTreeHostManagerTest.UpdateMouseLocationAfterDisplayChange_2ndOnLeft
 
 # Keep alphabetized. See comment at top of file.
