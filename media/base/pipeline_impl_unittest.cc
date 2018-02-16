@@ -943,6 +943,43 @@ TEST_F(PipelineImplTest, GetMediaTimeAfterSeek) {
   EXPECT_EQ(kMediaTime, pipeline_->GetMediaTime());
 }
 
+// This test makes sure that, after receiving an error, stopping and starting
+// the pipeline clears all internal error state, and allows errors to be
+// propagated again.
+TEST_F(PipelineImplTest, RendererErrorsReset) {
+  // Basic setup
+  CreateAudioStream();
+  MockDemuxerStreamVector streams;
+  streams.push_back(audio_stream());
+  SetDemuxerExpectations(&streams);
+  SetRendererExpectations();
+  StartPipelineAndExpect(PIPELINE_OK);
+
+  // Trigger two errors. The second error will be ignored.
+  EXPECT_CALL(callbacks_, OnError(PIPELINE_ERROR_READ)).Times(1);
+  renderer_client_->OnError(PIPELINE_ERROR_READ);
+  renderer_client_->OnError(PIPELINE_ERROR_READ);
+
+  base::RunLoop().RunUntilIdle();
+
+  // Stopping the demuxer should clear internal state.
+  EXPECT_CALL(*demuxer_, Stop());
+  pipeline_->Stop();
+
+  base::RunLoop().RunUntilIdle();
+
+  CreateRenderer();
+  SetDemuxerExpectations(&streams);
+  SetRendererExpectations();
+  StartPipelineAndExpect(PIPELINE_OK);
+
+  // New errors should propagate and not be ignored.
+  EXPECT_CALL(callbacks_, OnError(PIPELINE_ERROR_READ)).Times(1);
+  renderer_client_->OnError(PIPELINE_ERROR_READ);
+
+  base::RunLoop().RunUntilIdle();
+}
+
 class PipelineTeardownTest : public PipelineImplTest {
  public:
   enum TeardownState {
