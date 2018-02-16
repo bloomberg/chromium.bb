@@ -115,9 +115,10 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
     boolean mShouldDisableThreadChecking;
 
-    // Initialization guarded by mAdapterLock
+    // Initialization guarded by mAwInit.getLock()
     private Statics mStaticsAdapter;
 
+    // TODO(gsennton) remove this when downstream doesn't depend on it anymore
     // Guards accees to adapters.
     // This member is not private only because the downstream subclass needs to access it,
     // it shouldn't be accessed from anywhere else.
@@ -315,9 +316,9 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
     @Override
     public Statics getStatics() {
-        synchronized (mAdapterLock) {
+        synchronized (mAwInit.getLock()) {
+            SharedStatics sharedStatics = mAwInit.getStatics();
             if (mStaticsAdapter == null) {
-                SharedStatics sharedStatics = mAwInit.getStatics();
                 mStaticsAdapter = new WebViewChromiumFactoryProvider.Statics() {
                     @Override
                     public String findAddress(String addr) {
