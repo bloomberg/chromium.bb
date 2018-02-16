@@ -1496,7 +1496,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadResourceRecords(
     std::unique_ptr<leveldb::Iterator> itr(
         db_->NewIterator(leveldb::ReadOptions()));
     for (itr->Seek(prefix); itr->Valid(); itr->Next()) {
-      Status status = LevelDBStatusToServiceWorkerDBStatus(itr->status());
+      status = LevelDBStatusToServiceWorkerDBStatus(itr->status());
       if (status != STATUS_OK) {
         resources->clear();
         break;
