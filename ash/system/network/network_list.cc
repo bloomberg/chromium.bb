@@ -567,7 +567,7 @@ void NetworkListView::UpdateNetworks(
     if (!NetworkTypePattern::NonVirtual().MatchesType(network->type()))
       continue;
     // If cellular is disabled, skip the default cellular service.
-    if (network->Matches(NetworkTypePattern::Cellular()) && !cellular_enabled)
+    if (network->IsDefaultCellular() && !cellular_enabled)
       continue;
     network_list_.push_back(std::make_unique<NetworkInfo>(network->guid()));
   }
@@ -842,18 +842,21 @@ std::unique_ptr<std::set<std::string>> NetworkListView::UpdateNetworkChildren(
   for (const auto& info : network_list_) {
     if (info->type != type)
       continue;
-    UpdateNetworkChild(index++, info.get());
+    if (UpdateNetworkChild(index, info.get()))
+      ++index;
     new_guids->insert(info->guid);
   }
   return new_guids;
 }
 
-void NetworkListView::UpdateNetworkChild(int index, const NetworkInfo* info) {
+bool NetworkListView::UpdateNetworkChild(int index, const NetworkInfo* info) {
+  bool added = false;
   HoverHighlightView* network_view = nullptr;
   NetworkGuidMap::const_iterator found = network_guid_map_.find(info->guid);
   if (found == network_guid_map_.end()) {
     network_view = new HoverHighlightView(this);
     UpdateViewForNetwork(network_view, *info);
+    added = true;
   } else {
     network_view = found->second;
     if (NeedUpdateViewForNetwork(*info))
@@ -864,6 +867,7 @@ void NetworkListView::UpdateNetworkChild(int index, const NetworkInfo* info) {
     network_view->SetEnabled(false);
   network_map_[network_view] = info->guid;
   network_guid_map_[info->guid] = network_view;
+  return added;
 }
 
 void NetworkListView::PlaceViewAtIndex(views::View* view, int index) {
@@ -871,8 +875,10 @@ void NetworkListView::PlaceViewAtIndex(views::View* view, int index) {
     scroll_content()->AddChildViewAt(view, index);
   } else {
     // No re-order and re-layout is necessary if |view| is already at |index|.
-    if (scroll_content()->child_at(index) == view)
+    if (index < scroll_content()->child_count() &&
+        scroll_content()->child_at(index) == view) {
       return;
+    }
     scroll_content()->ReorderChildView(view, index);
   }
   needs_relayout_ = true;
