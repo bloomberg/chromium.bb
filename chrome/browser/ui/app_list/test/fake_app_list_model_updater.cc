@@ -7,10 +7,19 @@
 #include <utility>
 
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
+#include "extensions/common/constants.h"
 
 FakeAppListModelUpdater::FakeAppListModelUpdater() {}
 
 FakeAppListModelUpdater::~FakeAppListModelUpdater() {}
+
+app_list::AppListModel* FakeAppListModelUpdater::GetModel() {
+  return nullptr;
+}
+
+app_list::SearchModel* FakeAppListModelUpdater::GetSearchModel() {
+  return nullptr;
+}
 
 void FakeAppListModelUpdater::AddItem(std::unique_ptr<ChromeAppListItem> item) {
   items_.push_back(std::move(item));
@@ -22,6 +31,22 @@ void FakeAppListModelUpdater::AddItemToFolder(
   ChromeAppListItem::TestApi test_api(item.get());
   test_api.SetFolderId(folder_id);
   items_.push_back(std::move(item));
+}
+
+void FakeAppListModelUpdater::AddItemToOemFolder(
+    std::unique_ptr<ChromeAppListItem> item,
+    app_list::AppListSyncableService::SyncItem* oem_sync_item,
+    const std::string& oem_folder_id,
+    const std::string& oem_folder_name,
+    const syncer::StringOrdinal& preferred_oem_position) {
+  syncer::StringOrdinal position_to_try = preferred_oem_position;
+  // If we find a valid postion in the sync item, then we'll try it.
+  if (oem_sync_item && oem_sync_item->item_ordinal.IsValid())
+    position_to_try = oem_sync_item->item_ordinal;
+  // In ash:
+  FindOrCreateOemFolder(oem_folder_id, oem_folder_name, position_to_try);
+  // In chrome, after oem folder is created:
+  AddItemToFolder(std::move(item), oem_folder_id);
 }
 
 void FakeAppListModelUpdater::RemoveItem(const std::string& id) {
@@ -40,16 +65,6 @@ void FakeAppListModelUpdater::MoveItemToFolder(const std::string& id,
   if (FindItemIndexForTest(id, &index)) {
     ChromeAppListItem::TestApi test_api(items_[index].get());
     test_api.SetFolderId(folder_id);
-  }
-}
-
-void FakeAppListModelUpdater::SetItemPosition(
-    const std::string& id,
-    const syncer::StringOrdinal& new_position) {
-  size_t index;
-  if (FindItemIndexForTest(id, &index)) {
-    ChromeAppListItem::TestApi test_api(items_[index].get());
-    test_api.SetPosition(new_position);
   }
 }
 
@@ -97,6 +112,14 @@ void FakeAppListModelUpdater::GetIdToAppListIndexMap(
   std::move(callback).Run(id_to_app_list_index);
 }
 
+ui::MenuModel* FakeAppListModelUpdater::GetContextMenuModel(
+    const std::string& id) {
+  return nullptr;
+}
+
+void FakeAppListModelUpdater::ActivateChromeItem(const std::string& id,
+                                                 int event_flags) {}
+
 size_t FakeAppListModelUpdater::BadgedItemCount() {
   return 0u;
 }
@@ -117,4 +140,43 @@ app_list::SearchResult* FakeAppListModelUpdater::FindSearchResult(
 void FakeAppListModelUpdater::PublishSearchResults(
     std::vector<std::unique_ptr<app_list::SearchResult>> results) {
   search_results_ = std::move(results);
+}
+
+ash::mojom::AppListItemMetadataPtr
+FakeAppListModelUpdater::FindOrCreateOemFolder(
+    const std::string& oem_folder_id,
+    const std::string& oem_folder_name,
+    const syncer::StringOrdinal& preferred_oem_position) {
+  ChromeAppListItem* oem_folder = FindFolderItem(oem_folder_id);
+  if (oem_folder) {
+    ash::mojom::AppListItemMetadataPtr folder_data =
+        oem_folder->CloneMetadata();
+    folder_data->name = oem_folder_name;
+    oem_folder->SetMetadata(std::move(folder_data));
+  } else {
+    std::unique_ptr<ChromeAppListItem> new_folder =
+        std::make_unique<ChromeAppListItem>(nullptr, oem_folder_id);
+    oem_folder = new_folder.get();
+    AddItem(std::move(new_folder));
+    ash::mojom::AppListItemMetadataPtr folder_data =
+        oem_folder->CloneMetadata();
+    folder_data->position = preferred_oem_position.IsValid()
+                                ? preferred_oem_position
+                                : GetOemFolderPos();
+    folder_data->name = oem_folder_name;
+    oem_folder->SetMetadata(std::move(folder_data));
+  }
+  return oem_folder->CloneMetadata();
+}
+
+syncer::StringOrdinal FakeAppListModelUpdater::GetOemFolderPos() {
+  // The oem folder's correct position is based on the item order.
+  // We don't have the information in Chrome, so the returned position
+  // here is not guaranteed correct.
+  size_t web_store_app_index;
+  if (!FindItemIndexForTest(extensions::kWebStoreAppId, &web_store_app_index))
+    return items_.back()->position().CreateAfter();
+  const ChromeAppListItem* web_store_app_item =
+      ItemAtForTest(web_store_app_index);
+  return web_store_app_item->position().CreateAfter();
 }

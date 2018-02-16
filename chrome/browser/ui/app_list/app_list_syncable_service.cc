@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/genius_app/app_id.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -192,7 +193,26 @@ bool IsDefaultSyncItem(const AppListSyncableService::SyncItem* sync_item) {
              syncer::StringOrdinal::CreateInitialOrdinal());
 }
 
+AppListSyncableService::ModelUpdaterFactoryCallback*
+    g_model_updater_factory_callback_for_test_ = nullptr;
+
 }  // namespace
+
+// AppListSyncableService::ScopedModelUpdaterFactoryForTest
+
+AppListSyncableService::ScopedModelUpdaterFactoryForTest::
+    ScopedModelUpdaterFactoryForTest(
+        const ModelUpdaterFactoryCallback& factory) {
+  DCHECK(factory);
+  factory_ = factory;
+  g_model_updater_factory_callback_for_test_ = &factory_;
+}
+
+AppListSyncableService::ScopedModelUpdaterFactoryForTest::
+    ~ScopedModelUpdaterFactoryForTest() {
+  DCHECK_EQ(&factory_, g_model_updater_factory_callback_for_test_);
+  g_model_updater_factory_callback_for_test_ = nullptr;
+}
 
 // AppListSyncableService::SyncItem
 
@@ -209,7 +229,7 @@ AppListSyncableService::SyncItem::~SyncItem() {
 // AppListSyncableService::ModelUpdaterDelegate
 
 class AppListSyncableService::ModelUpdaterDelegate
-    : public ChromeAppListModelUpdaterDelegate {
+    : public AppListModelUpdaterDelegate {
  public:
   explicit ModelUpdaterDelegate(AppListSyncableService* owner) : owner_(owner) {
     DVLOG(2) << owner_ << ": ModelUpdaterDelegate Added";
@@ -283,10 +303,14 @@ AppListSyncableService::AppListSyncableService(
     extensions::ExtensionSystem* extension_system)
     : profile_(profile),
       extension_system_(extension_system),
-      model_updater_(std::make_unique<ChromeAppListModelUpdater>(profile)),
       initial_sync_data_processed_(false),
       first_app_list_sync_(true),
       weak_ptr_factory_(this) {
+  if (g_model_updater_factory_callback_for_test_)
+    model_updater_ = g_model_updater_factory_callback_for_test_->Run();
+  else
+    model_updater_ = std::make_unique<ChromeAppListModelUpdater>(profile);
+
   if (!extension_system) {
     LOG(ERROR) << "AppListSyncableService created with no ExtensionSystem";
     return;
@@ -413,19 +437,19 @@ void AppListSyncableService::SetOemFolderName(const std::string& name) {
   model_updater_->SetItemName(kOemFolderId, oem_folder_name_);
 }
 
-ChromeAppListModelUpdater* AppListSyncableService::GetModelUpdater() {
+AppListModelUpdater* AppListSyncableService::GetModelUpdater() {
   DCHECK(IsInitialized());
   return model_updater_.get();
 }
 
 AppListModel* AppListSyncableService::GetModel() {
   DCHECK(IsInitialized());
-  return model_updater_->model_.get();
+  return model_updater_->GetModel();
 }
 
 SearchModel* AppListSyncableService::GetSearchModel() {
   DCHECK(IsInitialized());
-  return model_updater_->search_model_.get();
+  return model_updater_->GetSearchModel();
 }
 
 void AppListSyncableService::HandleUpdateStarted() {

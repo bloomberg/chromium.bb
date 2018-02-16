@@ -16,6 +16,7 @@
 #include "ash/public/interfaces/app_list.mojom.h"
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/app_list/app_list_model_updater_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 
 class ChromeAppListItem;
@@ -37,6 +38,11 @@ class AppListModelUpdater {
    private:
     AppListModelUpdater* const model_updater_;
   };
+
+  virtual ~AppListModelUpdater() {}
+
+  virtual app_list::AppListModel* GetModel() = 0;
+  virtual app_list::SearchModel* GetSearchModel() = 0;
 
   // For AppListModel:
   virtual void AddItem(std::unique_ptr<ChromeAppListItem> item) {}
@@ -74,6 +80,8 @@ class AppListModelUpdater {
   virtual void SetItemPercentDownloaded(const std::string& id,
                                         int32_t percent_downloaded) {}
 
+  virtual void ActivateChromeItem(const std::string& id, int event_flags) {}
+
   // For AppListModel:
   virtual ChromeAppListItem* FindItem(const std::string& id) = 0;
   virtual size_t ItemCount() = 0;
@@ -94,26 +102,26 @@ class AppListModelUpdater {
       app_list::AppListSyncableService::SyncItem* oem_sync_item,
       const std::string& oem_folder_id,
       const std::string& oem_folder_name,
-      const syncer::StringOrdinal& preffered_oem_position) {}
+      const syncer::StringOrdinal& preferred_oem_position) {}
   using ResolveOemFolderPositionCallback =
       base::OnceCallback<void(ChromeAppListItem*)>;
   virtual void ResolveOemFolderPosition(
       const std::string& oem_folder_id,
-      const syncer::StringOrdinal& preffered_oem_position,
+      const syncer::StringOrdinal& preferred_oem_position,
       ResolveOemFolderPositionCallback callback) {}
   virtual void UpdateAppItemFromSyncItem(
       app_list::AppListSyncableService::SyncItem* sync_item,
       bool update_name,
       bool update_folder) {}
 
+  virtual ui::MenuModel* GetContextMenuModel(const std::string& id) = 0;
   virtual size_t BadgedItemCount() = 0;
   // For SearchModel:
   virtual bool SearchEngineIsGoogle() = 0;
   virtual app_list::SearchResult* FindSearchResult(
       const std::string& result_id) = 0;
 
- protected:
-  virtual ~AppListModelUpdater() {}
+  virtual void SetDelegate(AppListModelUpdaterDelegate* delegate) = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_MODEL_UPDATER_H_

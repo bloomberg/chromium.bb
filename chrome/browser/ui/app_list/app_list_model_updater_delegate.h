@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_CHROME_APP_LIST_MODEL_UPDATER_DELEGATE_H_
-#define CHROME_BROWSER_UI_APP_LIST_CHROME_APP_LIST_MODEL_UPDATER_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_APP_LIST_APP_LIST_MODEL_UPDATER_DELEGATE_H_
+#define CHROME_BROWSER_UI_APP_LIST_APP_LIST_MODEL_UPDATER_DELEGATE_H_
 
 class ChromeAppListItem;
 
-// A delegate interface of ChromeAppListModelUpdater to perform
+// A delegate interface of AppListModelUpdater to perform
 // additional work on ChromeAppListItem changes.
-class ChromeAppListModelUpdaterDelegate {
+class AppListModelUpdaterDelegate {
  public:
   // Triggered after an item has been added to the model.
   virtual void OnAppListItemAdded(ChromeAppListItem* item) {}
@@ -21,7 +21,7 @@ class ChromeAppListModelUpdaterDelegate {
   virtual void OnAppListItemUpdated(ChromeAppListItem* item) {}
 
  protected:
-  virtual ~ChromeAppListModelUpdaterDelegate() {}
+  virtual ~AppListModelUpdaterDelegate() {}
 };
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_CHROME_APP_LIST_MODEL_UPDATER_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_MODEL_UPDATER_DELEGATE_H_

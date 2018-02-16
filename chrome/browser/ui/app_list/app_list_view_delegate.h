@@ -17,7 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/ui/app_list/chrome_app_list_model_updater.h"
+#include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "content/public/browser/notification_observer.h"
@@ -111,7 +111,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
 
   // Unowned pointer to the model updater owned by AppListSyncableService.
   // Will change if |profile_| changes.
-  ChromeAppListModelUpdater* model_updater_;
+  AppListModelUpdater* model_updater_;
 
   std::unique_ptr<app_list::SearchResourceManager> search_resource_manager_;
   std::unique_ptr<app_list::SearchController> search_controller_;
