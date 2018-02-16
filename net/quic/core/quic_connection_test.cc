@@ -1859,14 +1859,13 @@ TEST_P(QuicConnectionTest, AckNeedsRetransmittableFrames) {
   // WINDOW_UPDATE.
   if (connection_.use_control_frame_manager()) {
     EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame())
-        .WillOnce(testing::IgnoreResult(Invoke(testing::CreateFunctor(
-            &QuicConnection::SendControlFrame, base::Unretained(&connection_),
-            QuicFrame(new QuicWindowUpdateFrame(1, 0, 0))))));
+        .WillOnce(Invoke([this]() {
+          connection_.SendControlFrame(
+              QuicFrame(new QuicWindowUpdateFrame(1, 0, 0)));
+        }));
   } else {
     EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame())
-        .WillOnce(Invoke(
-            testing::CreateFunctor(&QuicConnection::SendWindowUpdate,
-                                   base::Unretained(&connection_), 0, 0)));
+        .WillOnce(Invoke([this]() { connection_.SendWindowUpdate(0, 0); }));
   }
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
   EXPECT_EQ(0u, writer_->window_update_frames().size());
@@ -1890,9 +1889,9 @@ TEST_P(QuicConnectionTest, AckNeedsRetransmittableFrames) {
   // Session does not add a retransmittable frame.
   if (connection_.use_control_frame_manager()) {
     EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame())
-        .WillOnce(testing::IgnoreResult(Invoke(testing::CreateFunctor(
-            &QuicConnection::SendControlFrame, base::Unretained(&connection_),
-            QuicFrame(QuicPingFrame(1))))));
+        .WillOnce(Invoke([this]() {
+          connection_.SendControlFrame(QuicFrame(QuicPingFrame(1)));
+        }));
   } else {
     EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(1);
   }
@@ -3302,10 +3301,9 @@ TEST_P(QuicConnectionTest, PingAfterSend) {
   writer_->Reset();
   clock_.AdvanceTime(QuicTime::Delta::FromSeconds(15));
   if (connection_.use_control_frame_manager()) {
-    EXPECT_CALL(visitor_, SendPing())
-        .WillOnce(testing::IgnoreResult(Invoke(testing::CreateFunctor(
-            &QuicConnection::SendControlFrame, base::Unretained(&connection_),
-            QuicFrame(QuicPingFrame(1))))));
+    EXPECT_CALL(visitor_, SendPing()).WillOnce(Invoke([this]() {
+      connection_.SendControlFrame(QuicFrame(QuicPingFrame(1)));
+    }));
   }
   connection_.GetPingAlarm()->Fire();
   EXPECT_EQ(1u, writer_->frame_count());
@@ -3353,10 +3351,9 @@ TEST_P(QuicConnectionTest, ReducedPingTimeout) {
   writer_->Reset();
   clock_.AdvanceTime(QuicTime::Delta::FromSeconds(10));
   if (connection_.use_control_frame_manager()) {
-    EXPECT_CALL(visitor_, SendPing())
-        .WillOnce(testing::IgnoreResult(Invoke(testing::CreateFunctor(
-            &QuicConnection::SendControlFrame, base::Unretained(&connection_),
-            QuicFrame(QuicPingFrame(1))))));
+    EXPECT_CALL(visitor_, SendPing()).WillOnce(Invoke([this]() {
+      connection_.SendControlFrame(QuicFrame(QuicPingFrame(1)));
+    }));
   }
   connection_.GetPingAlarm()->Fire();
   EXPECT_EQ(1u, writer_->frame_count());

@@ -21,7 +21,6 @@
 using base::Unretained;
 using testing::_;
 using testing::AnyNumber;
-using testing::CreateFunctor;
 using testing::Invoke;
 using testing::InvokeWithoutArgs;
 using testing::IsEmpty;
@@ -211,9 +210,10 @@ class QuicSentPacketManagerTest : public QuicTestWithParam<bool> {
           transmission_type == RTO_RETRANSMISSION ||
           transmission_type == PROBING_RETRANSMISSION) {
         EXPECT_CALL(notifier_, RetransmitFrames(_, _))
-            .WillOnce(WithArgs<1>(Invoke(
-                CreateFunctor(&QuicSentPacketManagerTest::RetransmitDataPacket,
-                              Unretained(this), new_packet_number))));
+            .WillOnce(WithArgs<1>(
+                Invoke([this, new_packet_number](TransmissionType type) {
+                  RetransmitDataPacket(new_packet_number, type);
+                })));
       } else {
         EXPECT_CALL(notifier_, OnFrameLost(_)).Times(1);
         is_lost = true;
@@ -373,9 +373,9 @@ TEST_P(QuicSentPacketManagerTest, RetransmitThenAckBeforeSend) {
   if (manager_.session_decides_what_to_write()) {
     if (manager_.session_decides_what_to_write()) {
       EXPECT_CALL(notifier_, RetransmitFrames(_, _))
-          .WillOnce(WithArgs<1>(Invoke(
-              CreateFunctor(&QuicSentPacketManagerTest::RetransmitDataPacket,
-                            Unretained(this), 2))));
+          .WillOnce(WithArgs<1>(Invoke([this](TransmissionType type) {
+            RetransmitDataPacket(2, type);
+          })));
     }
   }
   QuicSentPacketManagerPeer::MarkForRetransmission(&manager_, 1,
@@ -755,8 +755,7 @@ TEST_P(QuicSentPacketManagerTest, TailLossProbeTimeout) {
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
         .WillOnce(WithArgs<1>(Invoke(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitDataPacket,
-                          Unretained(this), 2))));
+            [this](TransmissionType type) { RetransmitDataPacket(2, type); })));
   }
   manager_.MaybeRetransmitTailLossProbe();
   if (!manager_.session_decides_what_to_write()) {
@@ -772,8 +771,7 @@ TEST_P(QuicSentPacketManagerTest, TailLossProbeTimeout) {
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
         .WillOnce(WithArgs<1>(Invoke(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitDataPacket,
-                          Unretained(this), 3))));
+            [this](TransmissionType type) { RetransmitDataPacket(3, type); })));
   }
   manager_.MaybeRetransmitTailLossProbe();
   if (!manager_.session_decides_what_to_write()) {
@@ -830,9 +828,9 @@ TEST_P(QuicSentPacketManagerTest, TailLossProbeThenRTO) {
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
-        .WillOnce(WithArgs<1>(Invoke(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitDataPacket,
-                          Unretained(this), 101))));
+        .WillOnce(WithArgs<1>(Invoke([this](TransmissionType type) {
+          RetransmitDataPacket(101, type);
+        })));
   }
   manager_.MaybeRetransmitTailLossProbe();
   if (!manager_.session_decides_what_to_write()) {
@@ -850,9 +848,9 @@ TEST_P(QuicSentPacketManagerTest, TailLossProbeThenRTO) {
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
-        .WillOnce(WithArgs<1>(Invoke(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitDataPacket,
-                          Unretained(this), 102))));
+        .WillOnce(WithArgs<1>(Invoke([this](TransmissionType type) {
+          RetransmitDataPacket(102, type);
+        })));
   }
   EXPECT_TRUE(manager_.MaybeRetransmitTailLossProbe());
   if (!manager_.session_decides_what_to_write()) {
@@ -873,12 +871,12 @@ TEST_P(QuicSentPacketManagerTest, TailLossProbeThenRTO) {
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
         .Times(2)
-        .WillOnce(WithArgs<1>(Invoke(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitDataPacket,
-                          Unretained(this), 103))))
-        .WillOnce(WithArgs<1>(Invoke(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitDataPacket,
-                          Unretained(this), 104))));
+        .WillOnce(WithArgs<1>(Invoke([this](TransmissionType type) {
+          RetransmitDataPacket(103, type);
+        })))
+        .WillOnce(WithArgs<1>(Invoke([this](TransmissionType type) {
+          RetransmitDataPacket(104, type);
+        })));
   }
   manager_.OnRetransmissionTimeout();
   EXPECT_EQ(2u, stats_.tlp_count);
@@ -938,12 +936,8 @@ TEST_P(QuicSentPacketManagerTest, CryptoHandshakeTimeout) {
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
         .Times(2)
-        .WillOnce(InvokeWithoutArgs(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitCryptoPacket,
-                          Unretained(this), 6)))
-        .WillOnce(InvokeWithoutArgs(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitCryptoPacket,
-                          Unretained(this), 7)));
+        .WillOnce(InvokeWithoutArgs([this]() { RetransmitCryptoPacket(6); }))
+        .WillOnce(InvokeWithoutArgs([this]() { RetransmitCryptoPacket(7); }));
   }
   manager_.OnRetransmissionTimeout();
   if (!manager_.session_decides_what_to_write()) {
@@ -958,12 +952,8 @@ TEST_P(QuicSentPacketManagerTest, CryptoHandshakeTimeout) {
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
         .Times(2)
-        .WillOnce(InvokeWithoutArgs(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitCryptoPacket,
-                          Unretained(this), 8)))
-        .WillOnce(InvokeWithoutArgs(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitCryptoPacket,
-                          Unretained(this), 9)));
+        .WillOnce(InvokeWithoutArgs([this]() { RetransmitCryptoPacket(8); }))
+        .WillOnce(InvokeWithoutArgs([this]() { RetransmitCryptoPacket(9); }));
   }
   manager_.OnRetransmissionTimeout();
   if (!manager_.session_decides_what_to_write()) {
@@ -1003,12 +993,8 @@ TEST_P(QuicSentPacketManagerTest, CryptoHandshakeTimeoutVersionNegotiation) {
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
         .Times(2)
-        .WillOnce(InvokeWithoutArgs(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitCryptoPacket,
-                          Unretained(this), 6)))
-        .WillOnce(InvokeWithoutArgs(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitCryptoPacket,
-                          Unretained(this), 7)));
+        .WillOnce(InvokeWithoutArgs([this]() { RetransmitCryptoPacket(6); }))
+        .WillOnce(InvokeWithoutArgs([this]() { RetransmitCryptoPacket(7); }));
   }
   manager_.OnRetransmissionTimeout();
   if (!manager_.session_decides_what_to_write()) {
@@ -1070,9 +1056,7 @@ TEST_P(QuicSentPacketManagerTest, CryptoHandshakeSpuriousRetransmission) {
   // Retransmit the crypto packet as 2.
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
-        .WillOnce(InvokeWithoutArgs(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitCryptoPacket,
-                          Unretained(this), 2)));
+        .WillOnce(InvokeWithoutArgs([this]() { RetransmitCryptoPacket(2); }));
   }
   manager_.OnRetransmissionTimeout();
   if (!manager_.session_decides_what_to_write()) {
@@ -1082,9 +1066,7 @@ TEST_P(QuicSentPacketManagerTest, CryptoHandshakeSpuriousRetransmission) {
   // Retransmit the crypto packet as 3.
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
-        .WillOnce(InvokeWithoutArgs(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitCryptoPacket,
-                          Unretained(this), 3)));
+        .WillOnce(InvokeWithoutArgs([this]() { RetransmitCryptoPacket(3); }));
   }
   manager_.OnRetransmissionTimeout();
   if (!manager_.session_decides_what_to_write()) {
@@ -1120,12 +1102,8 @@ TEST_P(QuicSentPacketManagerTest, CryptoHandshakeTimeoutUnsentDataPacket) {
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
         .Times(2)
-        .WillOnce(InvokeWithoutArgs(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitCryptoPacket,
-                          Unretained(this), 4)))
-        .WillOnce(InvokeWithoutArgs(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitCryptoPacket,
-                          Unretained(this), 5)));
+        .WillOnce(InvokeWithoutArgs([this]() { RetransmitCryptoPacket(4); }))
+        .WillOnce(InvokeWithoutArgs([this]() { RetransmitCryptoPacket(5); }));
   }
   manager_.OnRetransmissionTimeout();
   if (!manager_.session_decides_what_to_write()) {
@@ -1146,9 +1124,7 @@ TEST_P(QuicSentPacketManagerTest,
   // Retransmit the crypto packet as 2.
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
-        .WillOnce(InvokeWithoutArgs(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitCryptoPacket,
-                          Unretained(this), 2)));
+        .WillOnce(InvokeWithoutArgs([this]() { RetransmitCryptoPacket(2); }));
   }
   manager_.OnRetransmissionTimeout();
   if (!manager_.session_decides_what_to_write()) {
@@ -1185,9 +1161,7 @@ TEST_P(QuicSentPacketManagerTest,
   // Retransmit the crypto packet as 2.
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
-        .WillOnce(InvokeWithoutArgs(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitCryptoPacket,
-                          Unretained(this), 2)));
+        .WillOnce(InvokeWithoutArgs([this]() { RetransmitCryptoPacket(2); }));
   }
   manager_.OnRetransmissionTimeout();
   if (!manager_.session_decides_what_to_write()) {
@@ -1198,9 +1172,7 @@ TEST_P(QuicSentPacketManagerTest,
   // Retransmit the crypto packet as 3.
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
-        .WillOnce(InvokeWithoutArgs(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitCryptoPacket,
-                          Unretained(this), 3)));
+        .WillOnce(InvokeWithoutArgs([this]() { RetransmitCryptoPacket(3); }));
   }
   manager_.OnRetransmissionTimeout();
   if (!manager_.session_decides_what_to_write()) {
@@ -1246,12 +1218,12 @@ TEST_P(QuicSentPacketManagerTest, RetransmissionTimeout) {
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
         .Times(2)
-        .WillOnce(WithArgs<1>(Invoke(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitDataPacket,
-                          Unretained(this), 101))))
-        .WillOnce(WithArgs<1>(Invoke(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitDataPacket,
-                          Unretained(this), 102))));
+        .WillOnce(WithArgs<1>(Invoke([this](TransmissionType type) {
+          RetransmitDataPacket(101, type);
+        })))
+        .WillOnce(WithArgs<1>(Invoke([this](TransmissionType type) {
+          RetransmitDataPacket(102, type);
+        })));
   }
   manager_.OnRetransmissionTimeout();
   if (manager_.session_decides_what_to_write()) {
@@ -1322,12 +1294,12 @@ TEST_P(QuicSentPacketManagerTest, NewRetransmissionTimeout) {
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
         .Times(2)
-        .WillOnce(WithArgs<1>(Invoke(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitDataPacket,
-                          Unretained(this), 101))))
-        .WillOnce(WithArgs<1>(Invoke(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitDataPacket,
-                          Unretained(this), 102))));
+        .WillOnce(WithArgs<1>(Invoke([this](TransmissionType type) {
+          RetransmitDataPacket(101, type);
+        })))
+        .WillOnce(WithArgs<1>(Invoke([this](TransmissionType type) {
+          RetransmitDataPacket(102, type);
+        })));
   }
   manager_.OnRetransmissionTimeout();
   if (manager_.session_decides_what_to_write()) {
@@ -1374,8 +1346,7 @@ TEST_P(QuicSentPacketManagerTest, TwoRetransmissionTimeoutsAckSecond) {
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
         .WillOnce(WithArgs<1>(Invoke(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitDataPacket,
-                          Unretained(this), 2))));
+            [this](TransmissionType type) { RetransmitDataPacket(2, type); })));
   }
   manager_.OnRetransmissionTimeout();
   if (manager_.session_decides_what_to_write()) {
@@ -1394,8 +1365,7 @@ TEST_P(QuicSentPacketManagerTest, TwoRetransmissionTimeoutsAckSecond) {
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
         .WillOnce(WithArgs<1>(Invoke(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitDataPacket,
-                          Unretained(this), 3))));
+            [this](TransmissionType type) { RetransmitDataPacket(3, type); })));
   }
   manager_.OnRetransmissionTimeout();
   if (manager_.session_decides_what_to_write()) {
@@ -1428,8 +1398,7 @@ TEST_P(QuicSentPacketManagerTest, TwoRetransmissionTimeoutsAckFirst) {
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
         .WillOnce(WithArgs<1>(Invoke(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitDataPacket,
-                          Unretained(this), 2))));
+            [this](TransmissionType type) { RetransmitDataPacket(2, type); })));
   }
   manager_.OnRetransmissionTimeout();
   if (manager_.session_decides_what_to_write()) {
@@ -1448,8 +1417,7 @@ TEST_P(QuicSentPacketManagerTest, TwoRetransmissionTimeoutsAckFirst) {
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
         .WillOnce(WithArgs<1>(Invoke(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitDataPacket,
-                          Unretained(this), 3))));
+            [this](TransmissionType type) { RetransmitDataPacket(3, type); })));
   }
   manager_.OnRetransmissionTimeout();
   if (manager_.session_decides_what_to_write()) {
@@ -1480,9 +1448,9 @@ TEST_P(QuicSentPacketManagerTest, OnPathDegrading) {
   for (size_t i = 1; i < kMinTimeoutsBeforePathDegrading; ++i) {
     if (manager_.session_decides_what_to_write()) {
       EXPECT_CALL(notifier_, RetransmitFrames(_, _))
-          .WillOnce(WithArgs<1>(Invoke(
-              CreateFunctor(&QuicSentPacketManagerTest::RetransmitDataPacket,
-                            Unretained(this), i + 2))));
+          .WillOnce(WithArgs<1>(Invoke([this, i](TransmissionType type) {
+            RetransmitDataPacket(i + 2, type);
+          })));
     }
     manager_.OnRetransmissionTimeout();
     if (!manager_.session_decides_what_to_write()) {
@@ -1522,9 +1490,7 @@ TEST_P(QuicSentPacketManagerTest, GetTransmissionTimeCryptoHandshake) {
   clock_.AdvanceTime(1.5 * srtt);
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
-        .WillOnce(InvokeWithoutArgs(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitCryptoPacket,
-                          Unretained(this), 2)));
+        .WillOnce(InvokeWithoutArgs([this]() { RetransmitCryptoPacket(2); }));
   }
   manager_.OnRetransmissionTimeout();
   if (!manager_.session_decides_what_to_write()) {
@@ -1570,9 +1536,7 @@ TEST_P(QuicSentPacketManagerTest,
   clock_.AdvanceTime(2 * srtt);
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
-        .WillOnce(InvokeWithoutArgs(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitCryptoPacket,
-                          Unretained(this), 2)));
+        .WillOnce(InvokeWithoutArgs([this]() { RetransmitCryptoPacket(2); }));
   }
   manager_.OnRetransmissionTimeout();
   if (!manager_.session_decides_what_to_write()) {
@@ -1610,8 +1574,7 @@ TEST_P(QuicSentPacketManagerTest, GetTransmissionTimeTailLossProbe) {
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
         .WillOnce(WithArgs<1>(Invoke(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitDataPacket,
-                          Unretained(this), 3))));
+            [this](TransmissionType type) { RetransmitDataPacket(3, type); })));
   }
   EXPECT_TRUE(manager_.MaybeRetransmitTailLossProbe());
   if (!manager_.session_decides_what_to_write()) {
@@ -1647,11 +1610,9 @@ TEST_P(QuicSentPacketManagerTest, GetTransmissionTimeSpuriousRTO) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
         .Times(2)
         .WillOnce(WithArgs<1>(Invoke(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitDataPacket,
-                          Unretained(this), 5))))
+            [this](TransmissionType type) { RetransmitDataPacket(5, type); })))
         .WillOnce(WithArgs<1>(Invoke(
-            CreateFunctor(&QuicSentPacketManagerTest::RetransmitDataPacket,
-                          Unretained(this), 6))));
+            [this](TransmissionType type) { RetransmitDataPacket(6, type); })));
   }
   manager_.OnRetransmissionTimeout();
   if (!manager_.session_decides_what_to_write()) {
@@ -1708,9 +1669,9 @@ TEST_P(QuicSentPacketManagerTest, GetTransmissionDelayMin) {
     delay = delay + delay;
     if (manager_.session_decides_what_to_write()) {
       EXPECT_CALL(notifier_, RetransmitFrames(_, _))
-          .WillOnce(WithArgs<1>(Invoke(
-              CreateFunctor(&QuicSentPacketManagerTest::RetransmitDataPacket,
-                            Unretained(this), i + 2))));
+          .WillOnce(WithArgs<1>(Invoke([this, i](TransmissionType type) {
+            RetransmitDataPacket(i + 2, type);
+          })));
     }
     manager_.OnRetransmissionTimeout();
     if (!manager_.session_decides_what_to_write()) {
@@ -1742,9 +1703,9 @@ TEST_P(QuicSentPacketManagerTest, GetTransmissionDelayExponentialBackoff) {
     delay = delay + delay;
     if (manager_.session_decides_what_to_write()) {
       EXPECT_CALL(notifier_, RetransmitFrames(_, _))
-          .WillOnce(WithArgs<1>(Invoke(
-              CreateFunctor(&QuicSentPacketManagerTest::RetransmitDataPacket,
-                            Unretained(this), i + 2))));
+          .WillOnce(WithArgs<1>(Invoke([this, i](TransmissionType type) {
+            RetransmitDataPacket(i + 2, type);
+          })));
     }
     manager_.OnRetransmissionTimeout();
     if (!manager_.session_decides_what_to_write()) {
