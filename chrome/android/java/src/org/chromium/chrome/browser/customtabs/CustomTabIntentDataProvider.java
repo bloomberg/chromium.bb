@@ -92,8 +92,8 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
 
     /**
      * Indicates the source where the Custom Tab is launched. This is only used for
-     * WebApp/WebAPK/TrustedWebActivity. The value is defined as {@link
-     * ActivityType#WebappActivity}.
+     * WebApp/WebAPK/TrustedWebActivity. The value is defined as
+     * {@link WebappActivity.ActivityType#WebappActivity}.
      */
     public static final String EXTRA_BROWSER_LAUNCH_SOURCE =
             "org.chromium.chrome.browser.customtabs.EXTRA_BROWSER_LAUNCH_SOURCE";
@@ -251,13 +251,16 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
      * {@link #mBottombarButtons} and {@link #mToolbarButtons}.
      */
     private void retrieveCustomButtons(Intent intent, Context context) {
-        mCustomButtonParams = CustomButtonParams.fromIntent(context, intent);
+        mCustomButtonParams = CustomButtonParams.fromIntent(context, intent, isTrustedIntent());
         if (mCustomButtonParams != null) {
             for (CustomButtonParams params : mCustomButtonParams) {
-                if (params.showOnToolbar() && mToolbarButtons.size() < MAX_CUSTOM_TOOLBAR_ITEMS) {
+                if (!params.showOnToolbar()) {
+                    mBottombarButtons.add(params);
+                } else if (mToolbarButtons.size() < MAX_CUSTOM_TOOLBAR_ITEMS) {
                     mToolbarButtons.add(params);
                 } else {
-                    mBottombarButtons.add(params);
+                    Log.w(TAG, "Only %d items are allowed in the toolbar",
+                            MAX_CUSTOM_TOOLBAR_ITEMS);
                 }
             }
         }
