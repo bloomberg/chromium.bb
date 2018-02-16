@@ -156,15 +156,11 @@ class _TargetHost(object):
         self._target.RunCommand(['mkdir', '/system/fonts'])
 
         self._target.PutFile(
-            os.path.join(build_path,
-                         '../../content/shell/test_runner/resources/fonts',
-                         'android_main_fonts.xml'),
+            os.path.join(build_path, 'content_shell_test_fonts', 'android_main_fonts.xml'),
             FONTS_DEVICE_PATH + '/fonts.xml')
 
         self._target.PutFile(
-            os.path.join(build_path,
-                         '../../content/shell/test_runner/resources/fonts',
-                         'android_fallback_fonts.xml'),
+            os.path.join(build_path, 'content_shell_test_fonts', 'android_fallback_fonts.xml'),
             FONTS_DEVICE_PATH + '/fonts_fallback.xml')
 
         self._target.PutFiles(fonts, FONTS_DEVICE_PATH)

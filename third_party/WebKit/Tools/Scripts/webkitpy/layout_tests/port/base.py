@@ -68,7 +68,8 @@ _log = logging.getLogger(__name__)
 MS_TRUETYPE_FONTS_DIR = '/usr/share/fonts/truetype/msttcorefonts/'
 MS_TRUETYPE_FONTS_PACKAGE = 'ttf-mscorefonts-installer'
 
-CONTENT_SHELL_FONTS_DIR = "third_party/content_shell_fonts/content_shell_test_fonts"
+# Path relative to the build directory.
+CONTENT_SHELL_FONTS_DIR = "content_shell_test_fonts"
 
 FONT_FILES = [
     [[MS_TRUETYPE_FONTS_DIR], 'Arial.ttf', MS_TRUETYPE_FONTS_PACKAGE],
@@ -1869,7 +1870,7 @@ class Port(object):
             for font_dir in font_dirs:
                 font_path = os.path.join(font_dir, font_file)
                 if not os.path.isabs(font_path):
-                    font_path = self._path_from_chromium_base(font_path)
+                    font_path = self._build_path(font_path)
                 if self._check_file_exists(font_path, '', more_logging=False):
                     result.append(font_path)
                     exists = True
