@@ -73,6 +73,8 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
   bool HasFocusableNonOptionChild() const;
   bool HasNonEmptyValue() const;
 
+  bool HasCharacterLocations() const;
+
   const char* GetClassName() const;
   base::string16 GetText() const override;
   base::string16 GetHint() const;

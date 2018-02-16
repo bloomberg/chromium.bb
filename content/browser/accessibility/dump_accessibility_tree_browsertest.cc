@@ -246,6 +246,7 @@ void DumpAccessibilityTreeTest::AddDefaultFilters(
 
   AddFilter(filters, "hint=*");
   AddFilter(filters, "interesting", Filter::DENY);
+  AddFilter(filters, "has_character_locations", Filter::DENY);
 
   //
   // General
@@ -998,6 +999,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityCanvas) {
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityCaption) {
   RunHtmlTest(FILE_PATH_LITERAL("caption.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityCharacterLocations) {
+  RunHtmlTest(FILE_PATH_LITERAL("character-locations.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,

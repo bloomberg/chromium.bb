@@ -717,9 +717,7 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
       node->IsDismissable(), node->IsMultiLine(), node->AndroidInputType(),
       node->AndroidLiveRegionType());
 
-  bool has_character_locations =
-      node->GetRole() == ax::mojom::Role::kStaticText ||
-      node->IsInterestingOnAndroid();
+  bool has_character_locations = node->HasCharacterLocations();
   Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoOAttributes(
       env, obj, info, has_character_locations);
 

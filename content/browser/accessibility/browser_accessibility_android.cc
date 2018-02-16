@@ -1377,6 +1377,19 @@ bool BrowserAccessibilityAndroid::HasNonEmptyValue() const {
   return IsEditableText() && !GetValue().empty();
 }
 
+bool BrowserAccessibilityAndroid::HasCharacterLocations() const {
+  if (GetRole() == ax::mojom::Role::kStaticText)
+    return true;
+
+  for (uint32_t i = 0; i < InternalChildCount(); i++) {
+    BrowserAccessibility* child = InternalGetChild(i);
+    if (static_cast<BrowserAccessibilityAndroid*>(child)
+            ->HasCharacterLocations())
+      return true;
+  }
+  return false;
+}
+
 bool BrowserAccessibilityAndroid::HasOnlyTextChildren() const {
   // This is called from PlatformIsLeaf, so don't call PlatformChildCount
   // from within this!
