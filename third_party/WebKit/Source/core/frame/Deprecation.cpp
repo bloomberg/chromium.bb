@@ -470,13 +470,13 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
 
     case WebFeature::kHTMLImportsHasStyleSheets:
       return {
-          "HTMLImportsHasStyleSheets", M65,
+          "HTMLImportsHasStyleSheets", M67,
           String::Format("Styling master document from stylesheets defined in "
                          "HTML Imports "
                          "is deprecated, and is planned to be removed in %s. "
                          "Please refer to "
                          "https://goo.gl/EGXzpw for possible migration paths.",
-                         milestoneString(M65))};
+                         milestoneString(M67))};
 
     case WebFeature::
         kEncryptedMediaDisallowedByFeaturePolicyInCrossOriginIframe:
