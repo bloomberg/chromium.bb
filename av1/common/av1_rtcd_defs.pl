@@ -564,7 +564,7 @@ add_proto qw/cfl_subtract_average_fn get_subtract_average_fn/, "TX_SIZE tx_size"
 specialize qw/get_subtract_average_fn sse2 avx2 neon/;
 
 add_proto qw/cfl_subsample_lbd_fn cfl_get_luma_subsampling_420_lbd/, "TX_SIZE tx_size";
-specialize qw/cfl_get_luma_subsampling_420_lbd ssse3 avx2/;
+specialize qw/cfl_get_luma_subsampling_420_lbd ssse3 avx2 neon/;
 
 add_proto qw/cfl_predict_lbd_fn get_predict_lbd_fn/, "TX_SIZE tx_size";
 specialize qw/get_predict_lbd_fn ssse3 avx2/;
