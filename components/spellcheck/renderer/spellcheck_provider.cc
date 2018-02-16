@@ -49,6 +49,7 @@ SpellCheckProvider::SpellCheckProvider(
       embedder_provider_(embedder_provider),
       weak_factory_(this) {
   DCHECK(spellcheck_);
+  DCHECK(embedder_provider);
   if (render_frame)  // NULL in unit tests.
     render_frame->GetWebFrame()->SetTextCheckClient(this);
 }
@@ -60,9 +61,7 @@ spellcheck::mojom::SpellCheckHost& SpellCheckProvider::GetSpellCheckHost() {
   if (spell_check_host_)
     return *spell_check_host_;
 
-  // nullptr in tests.
-  if (embedder_provider_)
-    embedder_provider_->GetInterface(&spell_check_host_);
+  embedder_provider_->GetInterface(&spell_check_host_);
   return *spell_check_host_;
 }
 
@@ -93,8 +92,6 @@ void SpellCheckProvider::RequestTextChecking(
   Send(new SpellCheckHostMsg_RequestTextCheck(routing_id(), last_identifier_,
                                               text));
 #else
-  if (!spell_check_host_ && !content::RenderThread::Get())
-    return;  // NULL in tests that do not provide a spell_check_host_.
   GetSpellCheckHost().CallSpellingService(
       text, base::BindOnce(&SpellCheckProvider::OnRespondSpellingService,
                            weak_factory_.GetWeakPtr(), last_identifier_, text));
@@ -155,8 +152,6 @@ void SpellCheckProvider::CheckSpelling(
     UMA_HISTOGRAM_COUNTS("SpellCheck.api.check", word.size());
     // If optional_suggestions is not requested, the API is called
     // for marking.  So we use this for counting markable words.
-    if (!spell_check_host_ && !content::RenderThread::Get())
-      return;  // NULL in tests that do not provide a spell_check_host_.
     GetSpellCheckHost().NotifyChecked(word, 0 < length);
   }
 }

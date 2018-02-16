@@ -21,6 +21,7 @@ SpellCheckPanel::SpellCheckPanel(
       spelling_panel_visible_(false),
       embedder_provider_(embedder_provider) {
   DCHECK(render_frame);
+  DCHECK(embedder_provider);
   registry->AddInterface(base::BindRepeating(
       &SpellCheckPanel::SpellCheckPanelRequest, base::Unretained(this)));
   render_frame->GetWebFrame()->SetSpellCheckPanelHostClient(this);

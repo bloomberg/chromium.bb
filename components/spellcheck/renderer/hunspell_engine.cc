@@ -39,6 +39,7 @@ namespace {
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 SpellingEngine* CreateNativeSpellingEngine(
     service_manager::LocalInterfaceProvider* embedder_provider) {
+  DCHECK(embedder_provider);
   return new HunspellEngine(embedder_provider);
 }
 #endif
@@ -123,12 +124,9 @@ void HunspellEngine::FillSuggestionList(
 
 bool HunspellEngine::InitializeIfNeeded() {
   if (!initialized_ && !dictionary_requested_) {
-    // |embedder_provider_| will be nullptr in tests.
-    if (embedder_provider_) {
-      spellcheck::mojom::SpellCheckHostPtr spell_check_host;
-      embedder_provider_->GetInterface(&spell_check_host);
-      spell_check_host->RequestDictionary();
-    }
+    spellcheck::mojom::SpellCheckHostPtr spell_check_host;
+    embedder_provider_->GetInterface(&spell_check_host);
+    spell_check_host->RequestDictionary();
     dictionary_requested_ = true;
     return true;
   }
