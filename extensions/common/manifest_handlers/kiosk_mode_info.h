@@ -9,11 +9,24 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handler.h"
 
 namespace extensions {
+
+struct SecondaryKioskAppInfo {
+  SecondaryKioskAppInfo() = delete;
+  SecondaryKioskAppInfo(const extensions::ExtensionId& id,
+                        const base::Optional<bool>& enabled_on_launch);
+  SecondaryKioskAppInfo(const SecondaryKioskAppInfo& other);
+  ~SecondaryKioskAppInfo();
+
+  const extensions::ExtensionId id;
+  const base::Optional<bool> enabled_on_launch;
+};
 
 struct KioskModeInfo : public Extension::ManifestData {
  public:
@@ -24,7 +37,7 @@ struct KioskModeInfo : public Extension::ManifestData {
   };
 
   KioskModeInfo(KioskStatus kiosk_status,
-                const std::vector<std::string>& secondary_app_ids,
+                std::vector<SecondaryKioskAppInfo>&& secondary_apps,
                 const std::string& required_platform_version,
                 bool always_update);
   ~KioskModeInfo() override;
@@ -49,7 +62,7 @@ struct KioskModeInfo : public Extension::ManifestData {
   KioskStatus kiosk_status;
 
   // The IDs of the kiosk secondary apps.
-  const std::vector<std::string> secondary_app_ids;
+  const std::vector<SecondaryKioskAppInfo> secondary_apps;
 
   const std::string required_platform_version;
   const bool always_update;

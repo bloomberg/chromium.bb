@@ -216,10 +216,15 @@
             "id": {
               "description": "ID of secondary kiosk app",
               "type": "string"
+            },
+            "enabled_on_launch": {
+              "description": "Whether the secondary app should be enabled when kiosk app is launched. If true, the app will be enabled before the kiosk app launch; if false the app will be disabled before the kiosk app launch; if not set, the app's enabled state will not be changed during the kiosk app launch. The ${ref:management} API can be used to later change the secondary app state.",
+              "type": "boolean",
+              "optional": true
             }
           }
         }
-      }      
+      }
     ]
   }
 ]

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_APP_MODE_STARTUP_APP_LAUNCHER_H_
 #define CHROME_BROWSER_CHROMEOS_APP_MODE_STARTUP_APP_LAUNCHER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -88,6 +89,7 @@ class StartupAppLauncher : public extensions::InstallObserver,
 
   void MaybeInitializeNetwork();
   void MaybeInstallSecondaryApps();
+  void SetSecondaryAppsEnabledState(const extensions::Extension* primary_app);
   void MaybeLaunchApp();
 
   void MaybeCheckExtensionUpdate();

@@ -103,5 +103,9 @@
       "4AC2B6C63C6480D150DFDA13E4A5956EB1D0DDBB",  // http://crbug.com/407693
       "81986D4F846CEDDDB962643FA501D1780DD441BB"   // http://crbug.com/407693
     ]
+  },
+  "allow_secondary_kiosk_app_enabled_on_launch": {
+    "channel": "dev",
+    "extension_types": ["platform_app"]
   }
 }
