@@ -358,6 +358,9 @@ class CORE_EXPORT Element : public ContainerNode {
 
   Element* CloneElementWithChildren();
   Element* CloneElementWithoutChildren();
+  // This function is public temporarily. You should not need to call
+  // this from outside of Element.cpp and Document::importNode().
+  virtual Element* CloneElementWithoutAttributesAndChildren(Document& factory);
 
   void SetBooleanAttribute(const QualifiedName&, bool);
 
@@ -1021,7 +1024,6 @@ class CORE_EXPORT Element : public ContainerNode {
   // cloneNode is private so that non-virtual cloneElementWithChildren and
   // cloneElementWithoutChildren are used instead.
   Node* cloneNode(bool deep, ExceptionState&) override;
-  virtual Element* CloneElementWithoutAttributesAndChildren();
 
   QualifiedName tag_name_;
 

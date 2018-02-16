@@ -265,7 +265,7 @@ Node* Element::cloneNode(bool deep, ExceptionState&) {
 }
 
 Element* Element::CloneElementWithChildren() {
-  Element* clone = CloneElementWithoutAttributesAndChildren();
+  Element* clone = CloneElementWithoutAttributesAndChildren(GetDocument());
   // This will catch HTML elements in the wrong namespace that are not correctly
   // copied.  This is a sanity check as HTML overloads some of the DOM methods.
   DCHECK_EQ(IsHTMLElement(), clone->IsHTMLElement());
@@ -276,7 +276,7 @@ Element* Element::CloneElementWithChildren() {
 }
 
 Element* Element::CloneElementWithoutChildren() {
-  Element* clone = CloneElementWithoutAttributesAndChildren();
+  Element* clone = CloneElementWithoutAttributesAndChildren(GetDocument());
   // This will catch HTML elements in the wrong namespace that are not correctly
   // copied.  This is a sanity check as HTML overloads some of the DOM methods.
   DCHECK_EQ(IsHTMLElement(), clone->IsHTMLElement());
@@ -285,9 +285,9 @@ Element* Element::CloneElementWithoutChildren() {
   return clone;
 }
 
-Element* Element::CloneElementWithoutAttributesAndChildren() {
-  return GetDocument().CreateElement(
-      TagQName(), CreateElementFlags::ByCloneNode(), IsValue());
+Element* Element::CloneElementWithoutAttributesAndChildren(Document& factory) {
+  return factory.CreateElement(TagQName(), CreateElementFlags::ByCloneNode(),
+                               IsValue());
 }
 
 Attr* Element::DetachAttribute(size_t index) {
