@@ -25,3 +25,11 @@ uint32_t ZLIB_INTERNAL crc32_sse42_simd_(
  */
 #define Z_CRC32_SSE42_MINIMUM_LENGTH 64
 #define Z_CRC32_SSE42_CHUNKSIZE_MASK 15
+
+/*
+ * CRC32 checksums using ARMv8-a crypto instructions.
+ */
+uint32_t ZLIB_INTERNAL armv8_crc32_little(unsigned long crc,
+                                          const unsigned char* buf,
+                                          z_size_t len);
+

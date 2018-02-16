@@ -154,4 +154,52 @@ uint32_t ZLIB_INTERNAL crc32_sse42_simd_(  /* SSE4.2+PCLMUL */
     return _mm_extract_epi32(x1, 1);
 }
 
-#endif  /* CRC32_SIMD_SSE42_PCLMUL */
+#elif defined(CRC32_ARMV8_CRC32)
+
+/* CRC32 checksums using ARMv8-a crypto instructions.
+ *
+ * TODO: implement a version using the PMULL instruction.
+ */
+#include <arm_acle.h>
+
+uint32_t ZLIB_INTERNAL armv8_crc32_little(unsigned long crc,
+                                          const unsigned char *buf,
+                                          z_size_t len)
+{
+    uint32_t c = (uint32_t) ~crc;
+
+    while (len && ((uintptr_t)buf & 7)) {
+        c = __crc32b(c, *buf++);
+        --len;
+    }
+
+    const uint64_t *buf8 = (const uint64_t *)buf;
+
+    while (len >= 64) {
+        c = __crc32d(c, *buf8++);
+        c = __crc32d(c, *buf8++);
+        c = __crc32d(c, *buf8++);
+        c = __crc32d(c, *buf8++);
+
+        c = __crc32d(c, *buf8++);
+        c = __crc32d(c, *buf8++);
+        c = __crc32d(c, *buf8++);
+        c = __crc32d(c, *buf8++);
+        len -= 64;
+    }
+
+    while (len >= 8) {
+        c = __crc32d(c, *buf8++);
+        len -= 8;
+    }
+
+    buf = (const unsigned char *)buf8;
+
+    while (len--) {
+        c = __crc32b(c, *buf++);
+    }
+
+    return ~c;
+}
+
+#endif

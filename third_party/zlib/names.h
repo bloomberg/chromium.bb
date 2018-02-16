@@ -174,4 +174,10 @@
 /* Symbols added by crc32_simd.c */
 #define crc32_sse42_simd_ Cr_z_crc32_sse42_simd_
 
+/* Symbols added by armv8_crc32 */
+#define arm_cpu_enable_crc32 Cr_z_arm_cpu_enable_crc32
+#define arm_cpu_enable_pmull Cr_z_arm_cpu_enable_pmull
+#define arm_check_features Cr_z_arm_check_features
+#define armv8_crc32_little Cr_z_armv8_crc32_little
+
 #endif  /* THIRD_PARTY_ZLIB_NAMES_H_ */
