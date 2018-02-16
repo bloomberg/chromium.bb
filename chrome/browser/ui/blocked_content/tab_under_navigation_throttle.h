@@ -26,10 +26,9 @@ constexpr char kBlockTabUnderFormatMessage[] =
 //
 // Currently, navigations are considered tab-unders if:
 // 1. It is a navigation that is "suspicious"
-//    a. It starts when the tab is in the background.
-//    b. It has no user gesture.
-//    c. It is renderer-initiated.
-//    d. It is cross origin to the last committed URL in the tab.
+//    a. It has no user gesture.
+//    b. It is renderer-initiated.
+//    c. It is cross origin to the last committed URL in the tab.
 // 2. The tab has opened a popup and hasn't received a user gesture since then.
 //    This information is tracked by the PopupOpenerTabHelper.
 class TabUnderNavigationThrottle : public content::NavigationThrottle {
