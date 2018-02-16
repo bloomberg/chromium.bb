@@ -45,7 +45,10 @@ void StackFrameDepth::EnableStackLimit() {
     return;
   }
 
-  static const int kStackRoomSize = 1024;
+  // Adjust the following when running out of stack space in between turns of
+  // checking |IsSafeToRecurse()|. The required room size depends on the actions
+  // performed between turns and how well compiler optimizations apply.
+  static const int kStackRoomSize = 4096;
 
   Address stack_base = reinterpret_cast<Address>(WTF::GetStackStart());
   CHECK_GT(stack_size, static_cast<const size_t>(kStackRoomSize));
