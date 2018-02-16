@@ -23,7 +23,7 @@ function FileTableList() {
  */
 FileTableList.decorate = function(self) {
   self.__proto__ = FileTableList.prototype;
-}
+};
 
 FileTableList.prototype.__proto__ = cr.ui.table.TableList.prototype;
 
@@ -271,10 +271,12 @@ filelist.handleTap = function(e, index, eventType) {
   }
   var isTap = eventType == FileTapHandler.TapEvent.TAP ||
       eventType == FileTapHandler.TapEvent.LONG_TAP;
-  if (eventType == FileTapHandler.TapEvent.TAP &&
-      e.target.classList.contains('detail-checkmark')) {
-    // Single tap on the checkbox in the list view mode should toggle select,
-    // just like a mouse click on it.
+  // Revert to click handling for single tap on checkbox or tap during rename.
+  // Single tap on the checkbox in the list view mode should toggle select.
+  // Single tap on input for rename should focus on input.
+  var isCheckbox = e.target.classList.contains('detail-checkmark');
+  var isRename = e.target.localName == 'input';
+  if (eventType == FileTapHandler.TapEvent.TAP && (isCheckbox || isRename)) {
     return false;
   }
   if (sm.multiple && sm.getCheckSelectMode() && isTap && !e.shiftKey) {
