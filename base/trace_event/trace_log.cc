@@ -1217,9 +1217,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
         std::vector<StringPiece> existing_names = base::SplitStringPiece(
             existing_name->second, ",", base::KEEP_WHITESPACE,
             base::SPLIT_WANT_NONEMPTY);
-        bool found = std::find(existing_names.begin(), existing_names.end(),
-                               new_name) != existing_names.end();
-        if (!found) {
+        if (!ContainsValue(existing_names, new_name)) {
           if (!existing_names.empty())
             existing_name->second.push_back(',');
           existing_name->second.append(new_name);
