@@ -66,10 +66,6 @@ static bool check_msgtable() {
   exemptions.push_back(WebRtcLoggingMsgStart);
 #endif
 
-#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  exemptions.push_back(SpellCheckMsgStart);
-#endif
-
 #if !defined(OS_ANDROID)
   exemptions.push_back(JavaBridgeMsgStart);
   exemptions.push_back(MediaPlayerMsgStart);

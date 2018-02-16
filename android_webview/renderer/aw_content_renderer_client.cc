@@ -347,7 +347,14 @@ AwContentRendererClient::CreateURLLoaderThrottleProvider(
 
 void AwContentRendererClient::GetInterface(
     const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {}
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  // A dirty hack to make SpellCheckHost requests work on WebView.
+  // TODO(crbug.com/806394): Use a WebView-specific service for SpellCheckHost
+  // and SafeBrowsing, instead of |content_browser|.
+  RenderThread::Get()->GetConnector()->BindInterface(
+      service_manager::Identity(content::mojom::kBrowserServiceName),
+      interface_name, std::move(interface_pipe));
+}
 
 bool AwContentRendererClient::UsingSafeBrowsingMojoService() {
   if (safe_browsing_)

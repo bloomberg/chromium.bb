@@ -21,10 +21,6 @@ namespace base {
 class MessageLoop;
 }
 
-namespace IPC {
-class Message;
-}
-
 // A fake completion object for verification.
 class FakeTextCheckingCompletion : public blink::WebTextCheckingCompletion {
  public:
@@ -53,7 +49,6 @@ class TestingSpellCheckProvider : public SpellCheckProvider,
   void RequestTextChecking(const base::string16& text,
                            blink::WebTextCheckingCompletion* completion);
 
-  bool Send(IPC::Message* message) override;
   void OnCallSpellingService(const base::string16& text);
   void ResetResult();
 
@@ -63,16 +58,31 @@ class TestingSpellCheckProvider : public SpellCheckProvider,
   bool SatisfyRequestFromCache(const base::string16& text,
                                blink::WebTextCheckingCompletion* completion);
 
+  // Variables logging CallSpellingService() mojo calls.
   base::string16 text_;
-  std::vector<std::unique_ptr<IPC::Message>> messages_;
   size_t spelling_service_call_count_;
 
+  // Variables logging RequestTextCheck() mojo calls.
+  using RequestTextCheckParams =
+      std::pair<base::string16, RequestTextCheckCallback>;
+  std::vector<RequestTextCheckParams> text_check_requests_;
+
  private:
-  // spellcheck::mojom::SpellCheckerHost:
+  // spellcheck::mojom::SpellCheckHost:
   void RequestDictionary() override;
   void NotifyChecked(const base::string16& word, bool misspelled) override;
   void CallSpellingService(const base::string16& text,
                            CallSpellingServiceCallback callback) override;
+  void RequestTextCheck(const base::string16&,
+                        int,
+                        RequestTextCheckCallback) override;
+  void ToggleSpellCheck(bool, bool) override;
+  using SpellCheckProvider::CheckSpelling;
+  void CheckSpelling(const base::string16&,
+                     int,
+                     CheckSpellingCallback) override;
+  void FillSuggestionList(const base::string16&,
+                          FillSuggestionListCallback) override;
 
   // Message loop (if needed) to deliver the SpellCheckHost request flow.
   std::unique_ptr<base::MessageLoop> loop_;

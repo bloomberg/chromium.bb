@@ -16,11 +16,9 @@
 #include "base/time/time.h"
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/spellcheck/common/spellcheck_result.h"
-#include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 
 using base::TimeTicks;
-using content::BrowserMessageFilter;
 using content::BrowserThread;
 
 namespace {
