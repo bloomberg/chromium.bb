@@ -21,7 +21,6 @@
 #include "platform/loader/fetch/ResourceLoader.h"
 #include "platform/loader/fetch/ScriptFetchOptions.h"
 #include "platform/scheduler/child/web_scheduler.h"
-#include "platform/scheduler/child/web_task_runner_impl.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/text/TextEncoding.h"
 #include "public/platform/Platform.h"

@@ -4,7 +4,7 @@
 
 #include "platform/scheduler/child/worker_global_scope_scheduler.h"
 
-#include "platform/scheduler/child/web_task_runner_impl.h"
+#include "platform/scheduler/child/task_runner_impl.h"
 #include "platform/scheduler/child/worker_scheduler.h"
 
 namespace blink {
@@ -65,7 +65,7 @@ WorkerGlobalScopeScheduler::GetTaskRunner(TaskType type) const {
       // TODO(nhiroki): Identify which tasks can be throttled / suspendable and
       // move them into other task runners. See also comments in
       // Get(LocalFrame). (https://crbug.com/670534)
-      return WebTaskRunnerImpl::Create(task_queue_, type);
+      return TaskRunnerImpl::Create(task_queue_, type);
     case TaskType::kCount:
       NOTREACHED();
       break;

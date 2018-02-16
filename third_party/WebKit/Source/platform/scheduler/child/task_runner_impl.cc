@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/child/web_task_runner_impl.h"
+#include "platform/scheduler/child/task_runner_impl.h"
 
 #include <utility>
 
@@ -14,34 +14,33 @@
 namespace blink {
 namespace scheduler {
 
-scoped_refptr<WebTaskRunnerImpl> WebTaskRunnerImpl::Create(
+scoped_refptr<TaskRunnerImpl> TaskRunnerImpl::Create(
     scoped_refptr<TaskQueue> task_queue,
     base::Optional<TaskType> task_type) {
   return base::WrapRefCounted(
-      new WebTaskRunnerImpl(std::move(task_queue), task_type));
+      new TaskRunnerImpl(std::move(task_queue), task_type));
 }
 
-bool WebTaskRunnerImpl::RunsTasksInCurrentSequence() const {
+bool TaskRunnerImpl::RunsTasksInCurrentSequence() const {
   return task_queue_->RunsTasksInCurrentSequence();
 }
 
-WebTaskRunnerImpl::WebTaskRunnerImpl(scoped_refptr<TaskQueue> task_queue,
-                                     base::Optional<TaskType> task_type)
+TaskRunnerImpl::TaskRunnerImpl(scoped_refptr<TaskQueue> task_queue,
+                               base::Optional<TaskType> task_type)
     : task_queue_(std::move(task_queue)), task_type_(task_type) {}
 
-WebTaskRunnerImpl::~WebTaskRunnerImpl() = default;
+TaskRunnerImpl::~TaskRunnerImpl() = default;
 
-bool WebTaskRunnerImpl::PostDelayedTask(const base::Location& location,
-                                        base::OnceClosure task,
-                                        base::TimeDelta delay) {
+bool TaskRunnerImpl::PostDelayedTask(const base::Location& location,
+                                     base::OnceClosure task,
+                                     base::TimeDelta delay) {
   return task_queue_->PostTaskWithMetadata(TaskQueue::PostedTask(
       std::move(task), location, delay, base::Nestable::kNestable, task_type_));
 }
 
-bool WebTaskRunnerImpl::PostNonNestableDelayedTask(
-    const base::Location& location,
-    base::OnceClosure task,
-    base::TimeDelta delay) {
+bool TaskRunnerImpl::PostNonNestableDelayedTask(const base::Location& location,
+                                                base::OnceClosure task,
+                                                base::TimeDelta delay) {
   return task_queue_->PostTaskWithMetadata(
       TaskQueue::PostedTask(std::move(task), location, delay,
                             base::Nestable::kNonNestable, task_type_));

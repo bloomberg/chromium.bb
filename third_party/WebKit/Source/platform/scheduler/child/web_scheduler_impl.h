@@ -20,7 +20,7 @@ namespace scheduler {
 
 class ChildScheduler;
 class SingleThreadIdleTaskRunner;
-class WebTaskRunnerImpl;
+class TaskRunnerImpl;
 
 class PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {
  public:
@@ -59,8 +59,8 @@ class PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {
 
   ChildScheduler* child_scheduler_;  // NOT OWNED
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
-  scoped_refptr<WebTaskRunnerImpl> timer_web_task_runner_;
-  scoped_refptr<WebTaskRunnerImpl> v8_web_task_runner_;
+  scoped_refptr<TaskRunnerImpl> timer_task_runner_;
+  scoped_refptr<TaskRunnerImpl> v8_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSchedulerImpl);
 };
