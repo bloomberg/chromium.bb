@@ -288,9 +288,8 @@
     [self.locationBarCoordinator focusOmniboxFromFakebox];
   } else {
     [self expandOmniboxAnimated:NO];
+    [self.locationBarCoordinator focusOmnibox];
   }
-
-  [self.locationBarCoordinator focusOmnibox];
 
   if ([self.locationBarCoordinator omniboxPopupHasAutocompleteResults]) {
     [self onFakeboxAnimationComplete];
