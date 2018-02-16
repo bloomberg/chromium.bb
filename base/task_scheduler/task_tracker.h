@@ -34,9 +34,9 @@ namespace internal {
 // TaskTracker enforces policies that determines whether:
 // - A task can be added to a sequence (WillPostTask).
 // - A sequence can be scheduled (WillScheduleSequence).
-// - The next task in a scheduled sequence can run (RunNextTask).
-// TaskTracker also sets up the environment to run a task (RunNextTask) and
-// records metrics and trace events. This class is thread-safe.
+// - The next task in a scheduled sequence can run (RunAndPopNextTask).
+// TaskTracker also sets up the environment to run a task (RunAndPopNextTask)
+// and records metrics and trace events. This class is thread-safe.
 //
 // Life of a sequence:
 // (possible states: IDLE, PREEMPTED, SCHEDULED, RUNNING)
@@ -66,7 +66,7 @@ namespace internal {
 //  |                A thread is ready to run the next                     |
 //  |                      task in the sequence                            |
 //  |                               |                                      |
-//  |                   TaskTracker::RunNextTask                           |
+//  |                TaskTracker::RunAndPopNextTask                        |
 //  |                A task from the sequence is run                       |
 //  |                      Sequence is RUNNING                             |
 //  |                               |                                      |
@@ -123,14 +123,14 @@ class BASE_EXPORT TaskTracker {
   bool WillPostTask(const Task& task);
 
   // Informs this TaskTracker that |sequence| is about to be scheduled. If this
-  // returns |sequence|, it is expected that RunNextTask() will soon be called
-  // with |sequence| as argument. Otherwise, RunNextTask() must not be called
-  // with |sequence| as argument until |observer| is notified that |sequence|
-  // can be scheduled (the caller doesn't need to keep a pointer to |sequence|;
-  // it will be included in the notification to |observer|). WillPostTask() must
-  // have allowed the task in front of |sequence| to be posted before this is
-  // called. |observer| is only required if the priority of |sequence| is
-  // TaskPriority::BACKGROUND
+  // returns |sequence|, it is expected that RunAndPopNextTask() will soon be
+  // called with |sequence| as argument. Otherwise, RunAndPopNextTask() must not
+  // be called with |sequence| as argument until |observer| is notified that
+  // |sequence| can be scheduled (the caller doesn't need to keep a pointer to
+  // |sequence|; it will be included in the notification to |observer|).
+  // WillPostTask() must have allowed the task in front of |sequence| to be
+  // posted before this is called. |observer| is only required if the priority
+  // of |sequence| is TaskPriority::BACKGROUND
   scoped_refptr<Sequence> WillScheduleSequence(
       scoped_refptr<Sequence> sequence,
       CanScheduleSequenceObserver* observer);
@@ -141,11 +141,12 @@ class BASE_EXPORT TaskTracker {
   // after popping a task from it but it can't be rescheduled immediately, it
   // will be handed back to |observer| when it can be rescheduled.
   // WillPostTask() must have allowed the task in front of |sequence| to be
-  // posted before this is called. Also, WillScheduleSequence(), RunNextTask()
-  // or CanScheduleSequenceObserver::OnCanScheduleSequence() must have allowed
-  // |sequence| to be (re)scheduled.
-  scoped_refptr<Sequence> RunNextTask(scoped_refptr<Sequence> sequence,
-                                      CanScheduleSequenceObserver* observer);
+  // posted before this is called. Also, WillScheduleSequence(),
+  // RunAndPopNextTask() or CanScheduleSequenceObserver::OnCanScheduleSequence()
+  // must have allowed |sequence| to be (re)scheduled.
+  scoped_refptr<Sequence> RunAndPopNextTask(
+      scoped_refptr<Sequence> sequence,
+      CanScheduleSequenceObserver* observer);
 
   // Returns true once shutdown has started (Shutdown() has been called but
   // might not have returned). Note: sequential consistency with the thread
@@ -233,14 +234,14 @@ class BASE_EXPORT TaskTracker {
   // To be called after running a background task from |just_ran_sequence|.
   // Performs the following actions:
   //  - If |just_ran_sequence| is non-null:
-  //    - returns it if it should be rescheduled by the caller of RunNextTask(),
-  //      i.e. its next task is set to run earlier than the earliest currently
-  //      preempted sequence.
+  //    - returns it if it should be rescheduled by the caller of
+  //      RunAndPopNextTask(), i.e. its next task is set to run earlier than the
+  //      earliest currently preempted sequence.
   //    - Otherwise |just_ran_sequence| is preempted and the next preempted
   //      sequence is scheduled (|observer| will be notified when
   //      |just_ran_sequence| should be scheduled again).
-  //  - If |just_ran_sequence| is null (RunNextTask() just popped the last task
-  //    from it):
+  //  - If |just_ran_sequence| is null (RunAndPopNextTask() just popped the last
+  //    task from it):
   //    - the next preempeted sequence (if any) is scheduled.
   //  - In all cases: adjusts the number of scheduled background sequences
   //    accordingly.
