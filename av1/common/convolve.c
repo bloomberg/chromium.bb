@@ -916,6 +916,31 @@ void av1_convolve_2d_scale_c(const uint8_t *src, int src_stride,
   }
 }
 
+static void av1_convolve_2d_scale_wrapper(
+    const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride, int w,
+    int h, InterpFilterParams *filter_params_x,
+    InterpFilterParams *filter_params_y, const int subpel_x_qn,
+    const int x_step_qn, const int subpel_y_qn, const int y_step_qn,
+    ConvolveParams *conv_params) {
+  if (conv_params->is_compound) {
+    assert(conv_params->dst != NULL);
+    av1_convolve_2d_scale(src, src_stride, conv_params->dst,
+                          conv_params->dst_stride, w, h, filter_params_x,
+                          filter_params_y, subpel_x_qn, x_step_qn, subpel_y_qn,
+                          y_step_qn, conv_params);
+  } else {
+    CONV_BUF_TYPE tmp_dst[MAX_SB_SIZE * MAX_SB_SIZE];
+    int tmp_dst_stride = MAX_SB_SIZE;
+    av1_convolve_2d_scale(src, src_stride, tmp_dst, tmp_dst_stride, w, h,
+                          filter_params_x, filter_params_y, subpel_x_qn,
+                          x_step_qn, subpel_y_qn, y_step_qn, conv_params);
+    const int rbits =
+        2 * FILTER_BITS - conv_params->round_0 - conv_params->round_1;
+    av1_convolve_rounding(tmp_dst, tmp_dst_stride, dst, dst_stride, w, h,
+                          rbits);
+  }
+}
+
 void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
                             int dst_stride, int w, int h,
                             InterpFilters interp_filters, const int subpel_x_q4,
@@ -937,10 +962,10 @@ void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
 #endif
 
   if (scaled)
-    av1_convolve_2d_scale(src, src_stride, conv_params->dst,
-                          conv_params->dst_stride, w, h, &filter_params_x,
-                          &filter_params_y, subpel_x_q4, x_step_q4, subpel_y_q4,
-                          y_step_q4, conv_params);
+    av1_convolve_2d_scale_wrapper(src, src_stride, dst, dst_stride, w, h,
+                                  &filter_params_x, &filter_params_y,
+                                  subpel_x_q4, x_step_q4, subpel_y_q4,
+                                  y_step_q4, conv_params);
   else
     sf->convolve[subpel_x_q4 != 0][subpel_y_q4 != 0][conv_params->is_compound](
         src, src_stride, dst, dst_stride, w, h, &filter_params_x,
