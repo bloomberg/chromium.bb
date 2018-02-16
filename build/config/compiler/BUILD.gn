@@ -1367,10 +1367,7 @@ config("chromium_code") {
     }
     if (is_clang) {
       # Enable extra warnings for chromium_code when we control the compiler.
-      cflags += [
-        "-Wextra",
-        "-Wthread-safety",
-      ]
+      cflags += [ "-Wextra" ]
     }
 
     # In Chromium code, we define __STDC_foo_MACROS in order to get the
@@ -1402,10 +1399,17 @@ config("chromium_code") {
     }
   }
 
-  # Warn on missing break statements at the end of switch cases.
-  # For intentional fallthrough, use FALLTHROUGH; from base/compiler_specific.h
   if (is_clang) {
-    cflags += [ "-Wimplicit-fallthrough" ]
+    cflags += [
+      # Warn on missing break statements at the end of switch cases.
+      # For intentional fallthrough, use FALLTHROUGH; from
+      # base/compiler_specific.h
+      "-Wimplicit-fallthrough",
+
+      # Thread safety analysis. See base/thread_annotations.h and
+      # https://clang.llvm.org/docs/ThreadSafetyAnalysis.html
+      "-Wthread-safety",
+    ]
   }
 
   configs = [ ":default_warnings" ]
