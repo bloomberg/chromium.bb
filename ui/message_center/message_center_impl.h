@@ -16,7 +16,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "ui/message_center/change_queue.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/message_center_stats_collector.h"
@@ -26,10 +25,6 @@
 #include "ui/message_center/public/cpp/notifier_id.h"
 
 namespace message_center {
-
-namespace internal {
-class ScopedNotificationsIterationLock;
-};
 
 // The default implementation of MessageCenter.
 class MESSAGE_CENTER_EXPORT MessageCenterImpl
@@ -88,23 +83,10 @@ class MESSAGE_CENTER_EXPORT MessageCenterImpl
   // NotificationBlocker::Observer overrides:
   void OnBlockingStateChanged(NotificationBlocker* blocker) override;
 
-  // Unexposed methods:
-  void AddNotificationImmediately(std::unique_ptr<Notification> notification);
-  void UpdateNotificationImmediately(
-      const std::string& old_id,
-      std::unique_ptr<Notification> new_notification);
-  void RemoveNotificationImmediately(const std::string& id, bool by_user);
-
  protected:
   void DisableTimersForTest() override;
 
  private:
-  friend internal::ScopedNotificationsIterationLock;
-  class ScopedNotificationsLock;
-
-  Notification* GetLatestNotificationIncludingQueued(
-      const std::string& id) const;
-
   THREAD_CHECKER(thread_checker_);
 
   std::unique_ptr<NotificationList> notification_list_;
@@ -113,12 +95,8 @@ class MESSAGE_CENTER_EXPORT MessageCenterImpl
   std::unique_ptr<PopupTimersController> popup_timers_controller_;
   std::unique_ptr<base::OneShotTimer> quiet_mode_timer_;
   std::vector<NotificationBlocker*> blockers_;
-  std::unique_ptr<ChangeQueue> notification_change_queue_;
 
   bool visible_ = false;
-
-  // modified by ScopedNotificationsIterationLock.
-  bool iterating_ = false;
 
   base::string16 system_notification_app_name_;
 
