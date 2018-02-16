@@ -49,7 +49,6 @@ import java.io.File;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Entry point to the WebView. The system framework talks to this class to get instances of the
@@ -72,32 +71,15 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         return mRunQueue;
     }
 
-    private <T> T runBlockingFuture(FutureTask<T> task) {
-        if (!mAwInit.hasStarted()) throw new RuntimeException("Must be started before we block!");
-        if (ThreadUtils.runningOnUiThread()) {
-            throw new IllegalStateException("This method should only be called off the UI thread");
-        }
-        mRunQueue.addTask(task);
-        try {
-            return task.get(4, TimeUnit.SECONDS);
-        } catch (java.util.concurrent.TimeoutException e) {
-            throw new RuntimeException("Probable deadlock detected due to WebView API being called "
-                            + "on incorrect thread while the UI thread is blocked.", e);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     // We have a 4 second timeout to try to detect deadlocks to detect and aid in debuggin
     // deadlocks.
     // Do not call this method while on the UI thread!
     /* package */ void runVoidTaskOnUiThreadBlocking(Runnable r) {
-        FutureTask<Void> task = new FutureTask<Void>(r, null);
-        runBlockingFuture(task);
+        mRunQueue.runVoidTaskOnUiThreadBlocking(r);
     }
 
     /* package */ <T> T runOnUiThreadBlocking(Callable<T> c) {
-        return runBlockingFuture(new FutureTask<T>(c));
+        return mRunQueue.runBlockingFuture(new FutureTask<T>(c));
     }
 
     /* package */ void addTask(Runnable task) {
