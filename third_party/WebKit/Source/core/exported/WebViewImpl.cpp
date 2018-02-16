@@ -1607,6 +1607,8 @@ void WebViewImpl::Close() {
     page_.Clear();
   }
 
+  scheduler_.reset();
+
   // Reset the delegate to prevent notifications being sent as we're being
   // deleted.
   client_ = nullptr;
