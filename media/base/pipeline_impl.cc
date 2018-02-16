@@ -297,6 +297,10 @@ void PipelineImpl::RendererWrapper::Stop(const base::Closure& stop_cb) {
 
   SetState(kStopped);
 
+  // Reset the status. Otherwise, if we encountered an error, new erros will
+  // never be propagated. See https://crbug.com/812465.
+  status_ = PIPELINE_OK;
+
   // Post the stop callback to enqueue it after the tasks that may have been
   // posted by Demuxer and Renderer during stopping. Note that in theory the
   // tasks posted by Demuxer/Renderer may post even more tasks that will get

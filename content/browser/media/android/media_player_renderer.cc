@@ -273,10 +273,12 @@ void MediaPlayerRenderer::OnSeekComplete(int player_id,
 
 void MediaPlayerRenderer::OnError(int player_id, int error) {
   // Some errors are forwarded to the MediaPlayerListener, but are of no
-  // importance to us. Ignore these errors, which are reported as error 0 by
-  // MediaPlayerListener.
-  if (!error)
+  // importance to us. Ignore these errors, which are reported as
+  // MEDIA_ERROR_INVALID_CODE by MediaPlayerListener.
+  if (error ==
+      media::MediaPlayerAndroid::MediaErrorType::MEDIA_ERROR_INVALID_CODE) {
     return;
+  }
 
   LOG(ERROR) << __func__ << " Error: " << error;
   has_error_ = true;
