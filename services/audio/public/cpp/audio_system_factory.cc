@@ -4,15 +4,15 @@
 
 #include "services/audio/public/cpp/audio_system_factory.h"
 
-#include "media/audio/audio_system_impl.h"
+#include "services/audio/public/cpp/audio_system_to_service_adapter.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace audio {
 
 std::unique_ptr<media::AudioSystem> CreateAudioSystem(
     std::unique_ptr<service_manager::Connector> connector) {
-  // TODO(olka): Switch to the service-based AudioSystem in the next CL.
-  return media::AudioSystemImpl::CreateInstance();
+  return std::make_unique<audio::AudioSystemToServiceAdapter>(
+      std::move(connector));
 }
 
 }  // namespace audio
