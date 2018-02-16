@@ -60,6 +60,8 @@ KeywordHintView::KeywordHintView(views::ButtonListener* listener,
 
   trailing_label_ =
       CreateLabel(font_list, text_color, background_color);
+
+  SetFocusBehavior(FocusBehavior::NEVER);
 }
 
 KeywordHintView::~KeywordHintView() {}
@@ -89,7 +91,10 @@ void KeywordHintView::SetKeyword(const base::string16& keyword) {
     int message_id = is_extension_keyword
                          ? IDS_OMNIBOX_EXTENSION_KEYWORD_HINT_TOUCH
                          : IDS_OMNIBOX_KEYWORD_HINT_TOUCH;
-    chip_label_->SetText(l10n_util::GetStringFUTF16(message_id, short_name));
+    base::string16 visible_text =
+        l10n_util::GetStringFUTF16(message_id, short_name);
+    chip_label_->SetText(visible_text);
+    SetAccessibleName(visible_text);
 
     leading_label_->SetText(base::string16());
     trailing_label_->SetText(base::string16());
@@ -106,7 +111,14 @@ void KeywordHintView::SetKeyword(const base::string16& keyword) {
         keyword_hint.substr(0, content_param_offsets.front()));
     trailing_label_->SetText(
         keyword_hint.substr(content_param_offsets.front()));
+
+    const base::string16 tab_key_name =
+        l10n_util::GetStringUTF16(IDS_OMNIBOX_KEYWORD_HINT_KEY_ACCNAME);
+    SetAccessibleName(leading_label_->text() + tab_key_name +
+                      trailing_label_->text());
   }
+
+  NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }
 
 gfx::Size KeywordHintView::CalculatePreferredSize() const {
