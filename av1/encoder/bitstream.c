@@ -3409,6 +3409,8 @@ static void write_film_grain_params(AV1_COMMON *const cm,
 
   aom_wb_write_literal(wb, pars->ar_coeff_shift - 6, 2);  // 8 + value
 
+  aom_wb_write_literal(wb, pars->grain_scale_shift, 2);
+
   if (pars->num_cb_points) {
     aom_wb_write_literal(wb, pars->cb_mult, 8);
     aom_wb_write_literal(wb, pars->cb_luma_mult, 8);

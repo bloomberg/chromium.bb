@@ -2269,6 +2269,8 @@ void av1_read_film_grain_params(AV1_COMMON *cm,
 
   pars->ar_coeff_shift = aom_rb_read_literal(rb, 2) + 6;  // 6 + value
 
+  pars->grain_scale_shift = aom_rb_read_literal(rb, 2);
+
   if (pars->num_cb_points) {
     pars->cb_mult = aom_rb_read_literal(rb, 8);
     pars->cb_luma_mult = aom_rb_read_literal(rb, 8);

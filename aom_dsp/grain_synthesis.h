@@ -76,6 +76,8 @@ typedef struct {
 
   int chroma_scaling_from_luma;
 
+  int grain_scale_shift;
+
   uint16_t random_seed;
 } aom_film_grain_t;
 

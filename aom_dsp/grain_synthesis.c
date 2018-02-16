@@ -386,6 +386,7 @@ static void generate_luma_grain_block(
     int luma_block_size_y, int luma_block_size_x, int luma_grain_stride,
     int left_pad, int top_pad, int right_pad, int bottom_pad) {
   int bit_depth = params->bit_depth;
+  int gauss_sec_shift = 12 - bit_depth + params->grain_scale_shift;
 
   int num_pos_luma = 2 * params->ar_coeff_lag * (params->ar_coeff_lag + 1);
   int rounding_offset = (1 << (params->ar_coeff_shift - 1));
@@ -394,8 +395,8 @@ static void generate_luma_grain_block(
     for (int j = 0; j < luma_block_size_x; j++)
       luma_grain_block[i * luma_grain_stride + j] =
           (gaussian_sequence[get_random_number(gauss_bits)] +
-           ((1 << (12 - bit_depth)) >> 1)) >>
-          (12 - bit_depth);
+           ((1 << gauss_sec_shift) >> 1)) >>
+          gauss_sec_shift;
 
   for (int i = top_pad; i < luma_block_size_y - bottom_pad; i++)
     for (int j = left_pad; j < luma_block_size_x - right_pad; j++) {
@@ -421,6 +422,7 @@ static void generate_chroma_grain_blocks(
     int chroma_block_size_x, int chroma_grain_stride, int left_pad, int top_pad,
     int right_pad, int bottom_pad) {
   int bit_depth = params->bit_depth;
+  int gauss_sec_shift = 12 - bit_depth + params->grain_scale_shift;
 
   int num_pos_chroma =
       2 * params->ar_coeff_lag * (params->ar_coeff_lag + 1) + 1;
@@ -430,12 +432,12 @@ static void generate_chroma_grain_blocks(
     for (int j = 0; j < chroma_block_size_x; j++) {
       cb_grain_block[i * chroma_grain_stride + j] =
           (gaussian_sequence[get_random_number(gauss_bits)] +
-           ((1 << (12 - bit_depth)) >> 1)) >>
-          (12 - bit_depth);
+           ((1 << gauss_sec_shift) >> 1)) >>
+          gauss_sec_shift;
       cr_grain_block[i * chroma_grain_stride + j] =
           (gaussian_sequence[get_random_number(gauss_bits)] +
-           ((1 << (12 - bit_depth)) >> 1)) >>
-          (12 - bit_depth);
+           ((1 << gauss_sec_shift) >> 1)) >>
+          gauss_sec_shift;
     }
 
   for (int i = top_pad; i < chroma_block_size_y - bottom_pad; i++)
