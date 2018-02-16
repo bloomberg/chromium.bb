@@ -305,7 +305,7 @@
               'device_type': 'marlin',
             },
           ],
-          'hard_timeout': 960,
+          'hard_timeout': 1800,
         },
         'skip_output_links': True,
         'os_type': 'android',
