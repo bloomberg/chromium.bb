@@ -17,6 +17,7 @@ EXTRA_DIST =					\
 	issue-400.yaml				\
 	issue-401.yaml				\
 	issue-406.yaml				\
+	issue-412.yaml				\
 	issue-479.yaml				\
 	issue-498.yaml				\
 	issue-537.yaml				\

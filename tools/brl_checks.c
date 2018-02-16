@@ -87,6 +87,9 @@ check_base(const char *tableList, const char *input, const char *expected,
 	if (in.cursorPos >= 0) {
 		cursorPos = in.cursorPos;
 	}
+	if (in.max_outlen >= 0) {
+		outlen = in.max_outlen;
+	}
 	inlen = _lou_extParseChars(input, inbuf);
 	if (!inlen) {
 		fprintf(stderr, "Cannot parse input string.\n");
