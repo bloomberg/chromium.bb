@@ -2502,25 +2502,26 @@ TEST_P(RenderTextTest, StringSizeEmptyString) {
 }
 
 TEST_P(RenderTextTest, StringSizeRespectsFontListMetrics) {
-  // Check that Arial and the CJK font have different font metrics.
-  Font arial_font("Arial", 16);
-  ASSERT_EQ("arial",
-            base::ToLowerASCII(arial_font.GetActualFontNameForTesting()));
+  // Check that Verdana and the CJK font have different font metrics.
+  Font verdana_font("Verdana", 16);
+  ASSERT_EQ("verdana",
+            base::ToLowerASCII(verdana_font.GetActualFontNameForTesting()));
   Font cjk_font(kCJKFontName, 16);
   ASSERT_EQ(base::ToLowerASCII(kCJKFontName),
             base::ToLowerASCII(cjk_font.GetActualFontNameForTesting()));
-  EXPECT_NE(arial_font.GetHeight(), cjk_font.GetHeight());
-  EXPECT_NE(arial_font.GetBaseline(), cjk_font.GetBaseline());
-  // "a" should be rendered with Arial, not with the CJK font.
-  const char* arial_font_text = "a";
-  // "円" (U+5168 Han character YEN) should render with the CJK font, not Arial.
+  EXPECT_NE(verdana_font.GetHeight(), cjk_font.GetHeight());
+  EXPECT_NE(verdana_font.GetBaseline(), cjk_font.GetBaseline());
+  // "a" should be rendered with Verdana, not with the CJK font.
+  const char* verdana_font_text = "a";
+  // "円" (U+5168 Han character YEN) should render with the CJK font, not
+  // Verdana.
   const char* cjk_font_text = "\u5168";
-  Font smaller_font = arial_font;
+  Font smaller_font = verdana_font;
   Font larger_font = cjk_font;
-  const char* smaller_font_text = arial_font_text;
+  const char* smaller_font_text = verdana_font_text;
   const char* larger_font_text = cjk_font_text;
-  if (cjk_font.GetHeight() < arial_font.GetHeight() &&
-      cjk_font.GetBaseline() < arial_font.GetBaseline()) {
+  if (cjk_font.GetHeight() < verdana_font.GetHeight() &&
+      cjk_font.GetBaseline() < verdana_font.GetBaseline()) {
     std::swap(smaller_font, larger_font);
     std::swap(smaller_font_text, larger_font_text);
   }
