@@ -87,15 +87,6 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator {
 
   // Runs when timer expires and cancels all issued requests to a U2fDevice.
   void OnTimeout();
-
-  void InvokeCallbackAndCleanup(
-      MakeCredentialCallback callback,
-      webauth::mojom::AuthenticatorStatus status,
-      webauth::mojom::MakeCredentialAuthenticatorResponsePtr response);
-  void InvokeCallbackAndCleanup(
-      GetAssertionCallback callback,
-      webauth::mojom::AuthenticatorStatus status,
-      webauth::mojom::GetAssertionAuthenticatorResponsePtr response);
   void Cleanup();
 
   // Owns pipes to this Authenticator from |render_frame_host_|.
@@ -109,11 +100,6 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator {
 
   MakeCredentialCallback make_credential_response_callback_;
   GetAssertionCallback get_assertion_response_callback_;
-
-  // The response to return at timeout. The default may be overriden by
-  // NOT_ALLOWED_ERROR based on the response from the authenticator.
-  webauth::mojom::AuthenticatorStatus error_response_ =
-      webauth::mojom::AuthenticatorStatus::TIMED_OUT;
 
   // Holds the client data to be returned to the caller.
   CollectedClientData client_data_;

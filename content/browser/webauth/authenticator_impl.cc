@@ -180,8 +180,7 @@ void AuthenticatorImpl::MakeCredential(
     webauth::mojom::PublicKeyCredentialCreationOptionsPtr options,
     MakeCredentialCallback callback) {
   if (u2f_request_) {
-    InvokeCallbackAndCleanup(
-        std::move(callback),
+    std::move(callback).Run(
         webauth::mojom::AuthenticatorStatus::PENDING_REQUEST, nullptr);
     return;
   }
@@ -192,26 +191,23 @@ void AuthenticatorImpl::MakeCredential(
   if (!HasValidEffectiveDomain(caller_origin)) {
     bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
                                     bad_message::AUTH_INVALID_EFFECTIVE_DOMAIN);
-    InvokeCallbackAndCleanup(
-        std::move(callback),
-        webauth::mojom::AuthenticatorStatus::INVALID_DOMAIN, nullptr);
+    std::move(callback).Run(webauth::mojom::AuthenticatorStatus::INVALID_DOMAIN,
+                            nullptr);
     return;
   }
 
   if (!IsRelyingPartyIdValid(relying_party_id_, caller_origin)) {
     bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
                                     bad_message::AUTH_INVALID_RELYING_PARTY);
-    InvokeCallbackAndCleanup(
-        std::move(callback),
-        webauth::mojom::AuthenticatorStatus::INVALID_DOMAIN, nullptr);
+    std::move(callback).Run(webauth::mojom::AuthenticatorStatus::INVALID_DOMAIN,
+                            nullptr);
     return;
   }
 
   // Check that at least one of the cryptographic parameters is supported.
   // Only ES256 is currently supported by U2F_V2.
   if (!HasValidAlgorithm(options->public_key_parameters)) {
-    InvokeCallbackAndCleanup(
-        std::move(callback),
+    std::move(callback).Run(
         webauth::mojom::AuthenticatorStatus::NOT_SUPPORTED_ERROR, nullptr);
     return;
   }
@@ -272,8 +268,7 @@ void AuthenticatorImpl::GetAssertion(
     webauth::mojom::PublicKeyCredentialRequestOptionsPtr options,
     GetAssertionCallback callback) {
   if (u2f_request_) {
-    InvokeCallbackAndCleanup(
-        std::move(callback),
+    std::move(callback).Run(
         webauth::mojom::AuthenticatorStatus::PENDING_REQUEST, nullptr);
     return;
   }
@@ -283,18 +278,16 @@ void AuthenticatorImpl::GetAssertion(
   if (!HasValidEffectiveDomain(caller_origin)) {
     bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
                                     bad_message::AUTH_INVALID_EFFECTIVE_DOMAIN);
-    InvokeCallbackAndCleanup(
-        std::move(callback),
-        webauth::mojom::AuthenticatorStatus::INVALID_DOMAIN, nullptr);
+    std::move(callback).Run(webauth::mojom::AuthenticatorStatus::INVALID_DOMAIN,
+                            nullptr);
     return;
   }
 
   if (!IsRelyingPartyIdValid(options->relying_party_id, caller_origin)) {
     bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
                                     bad_message::AUTH_INVALID_RELYING_PARTY);
-    InvokeCallbackAndCleanup(
-        std::move(callback),
-        webauth::mojom::AuthenticatorStatus::INVALID_DOMAIN, nullptr);
+    std::move(callback).Run(webauth::mojom::AuthenticatorStatus::INVALID_DOMAIN,
+                            nullptr);
     return;
   }
 
@@ -329,20 +322,19 @@ void AuthenticatorImpl::GetAssertion(
 void AuthenticatorImpl::OnRegisterResponse(
     device::U2fReturnCode status_code,
     base::Optional<device::RegisterResponseData> response_data) {
+  timer_->Stop();
+
   switch (status_code) {
     case device::U2fReturnCode::CONDITIONS_NOT_SATISFIED:
       // Duplicate registration.
-      // NotAllowedError responses should not be returned until after the
-      // timer has expired in order to prevent a leak of possibly-identifying
-      // user information.
-      error_response_ = webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
-      return;
+      std::move(make_credential_response_callback_)
+          .Run(webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
+      break;
     case device::U2fReturnCode::FAILURE:
     case device::U2fReturnCode::INVALID_PARAMS:
-      InvokeCallbackAndCleanup(
-          std::move(make_credential_response_callback_),
-          webauth::mojom::AuthenticatorStatus::UNKNOWN_ERROR, nullptr);
-      return;
+      std::move(make_credential_response_callback_)
+          .Run(webauth::mojom::AuthenticatorStatus::UNKNOWN_ERROR, nullptr);
+      break;
     case device::U2fReturnCode::SUCCESS:
       DCHECK(response_data.has_value());
 
@@ -360,14 +352,12 @@ void AuthenticatorImpl::OnRegisterResponse(
       }
 
       response_data->EraseAttestationStatement();
-      InvokeCallbackAndCleanup(
-          std::move(make_credential_response_callback_),
-          webauth::mojom::AuthenticatorStatus::SUCCESS,
-          CreateMakeCredentialResponse(std::move(client_data_),
-                                       std::move(*response_data)));
-      return;
+      std::move(make_credential_response_callback_)
+          .Run(webauth::mojom::AuthenticatorStatus::SUCCESS,
+               CreateMakeCredentialResponse(std::move(client_data_),
+                                            std::move(*response_data)));
   }
-  NOTREACHED();
+  Cleanup();
 }
 
 void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
@@ -377,78 +367,58 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
          webauth::mojom::AttestationConveyancePreference::NONE);
 
   if (!attestation_permitted) {
-    // NotAllowedError responses should not be returned until after the
-    // timer has expired in order to prevent a leak of possibly-identifying
-    // user information.
-    error_response_ = webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
-    return;
+    std::move(make_credential_response_callback_)
+        .Run(webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
   } else {
-    InvokeCallbackAndCleanup(
-        std::move(make_credential_response_callback_),
-        webauth::mojom::AuthenticatorStatus::SUCCESS,
-        CreateMakeCredentialResponse(std::move(client_data_),
-                                     std::move(response_data)));
-    return;
+    std::move(make_credential_response_callback_)
+        .Run(webauth::mojom::AuthenticatorStatus::SUCCESS,
+             CreateMakeCredentialResponse(std::move(client_data_),
+                                          std::move(response_data)));
   }
-  NOTREACHED();
+
+  Cleanup();
 }
 
 void AuthenticatorImpl::OnSignResponse(
     device::U2fReturnCode status_code,
     base::Optional<device::SignResponseData> response_data) {
+  timer_->Stop();
   switch (status_code) {
     case device::U2fReturnCode::CONDITIONS_NOT_SATISFIED:
       // No authenticators contained the credential.
-      error_response_ = webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
-      return;
+      std::move(get_assertion_response_callback_)
+          .Run(webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
+      break;
     case device::U2fReturnCode::FAILURE:
     case device::U2fReturnCode::INVALID_PARAMS:
-      InvokeCallbackAndCleanup(
-          std::move(get_assertion_response_callback_),
-          webauth::mojom::AuthenticatorStatus::UNKNOWN_ERROR, nullptr);
-      return;
+      std::move(get_assertion_response_callback_)
+          .Run(webauth::mojom::AuthenticatorStatus::UNKNOWN_ERROR, nullptr);
+      break;
     case device::U2fReturnCode::SUCCESS:
       DCHECK(response_data.has_value());
-      InvokeCallbackAndCleanup(
-          std::move(get_assertion_response_callback_),
-          webauth::mojom::AuthenticatorStatus::SUCCESS,
-          CreateGetAssertionResponse(std::move(client_data_),
-                                     std::move(*response_data)));
-      return;
+      std::move(get_assertion_response_callback_)
+          .Run(webauth::mojom::AuthenticatorStatus::SUCCESS,
+               CreateGetAssertionResponse(std::move(client_data_),
+                                          std::move(*response_data)));
+      break;
   }
-  NOTREACHED();
+  Cleanup();
 }
 
 void AuthenticatorImpl::OnTimeout() {
   DCHECK(make_credential_response_callback_ ||
          get_assertion_response_callback_);
   if (make_credential_response_callback_) {
-    InvokeCallbackAndCleanup(std::move(make_credential_response_callback_),
-                             error_response_, nullptr);
+    std::move(make_credential_response_callback_)
+        .Run(webauth::mojom::AuthenticatorStatus::TIMED_OUT, nullptr);
   } else if (get_assertion_response_callback_) {
-    InvokeCallbackAndCleanup(std::move(get_assertion_response_callback_),
-                             error_response_, nullptr);
+    std::move(get_assertion_response_callback_)
+        .Run(webauth::mojom::AuthenticatorStatus::TIMED_OUT, nullptr);
   }
-}
-
-void AuthenticatorImpl::InvokeCallbackAndCleanup(
-    MakeCredentialCallback callback,
-    webauth::mojom::AuthenticatorStatus status,
-    webauth::mojom::MakeCredentialAuthenticatorResponsePtr response) {
-  std::move(callback).Run(status, std::move(response));
-  Cleanup();
-}
-
-void AuthenticatorImpl::InvokeCallbackAndCleanup(
-    GetAssertionCallback callback,
-    webauth::mojom::AuthenticatorStatus status,
-    webauth::mojom::GetAssertionAuthenticatorResponsePtr response) {
-  std::move(callback).Run(status, std::move(response));
   Cleanup();
 }
 
 void AuthenticatorImpl::Cleanup() {
-  timer_->Stop();
   u2f_request_.reset();
   make_credential_response_callback_.Reset();
   get_assertion_response_callback_.Reset();
