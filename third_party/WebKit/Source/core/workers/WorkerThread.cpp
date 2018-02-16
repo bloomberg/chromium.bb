@@ -151,7 +151,7 @@ void WorkerThread::Terminate() {
   DCHECK(IsMainThread());
 
   {
-    MutexLocker lock(thread_state_mutex_);
+    MutexLocker lock(mutex_);
     if (requested_to_terminate_)
       return;
     requested_to_terminate_ = true;
@@ -241,13 +241,13 @@ ThreadableLoadingContext* WorkerThread::GetLoadingContext() {
 
 void WorkerThread::AppendDebuggerTask(CrossThreadClosure task) {
   DCHECK(IsMainThread());
-  if (requested_to_terminate_)
+  if (CheckRequestedToTerminate())
     return;
   inspector_task_runner_->AppendTask(CrossThreadBind(
       &WorkerThread::PerformDebuggerTaskOnWorkerThread,
       CrossThreadUnretained(this), WTF::Passed(std::move(task))));
   {
-    MutexLocker lock(thread_state_mutex_);
+    MutexLocker lock(mutex_);
     if (GetIsolate() && thread_state_ != ThreadState::kReadyToShutdown)
       inspector_task_runner_->InterruptAndRunAllTasksDontWait(GetIsolate());
   }
@@ -305,7 +305,7 @@ PlatformThreadId WorkerThread::GetPlatformThreadId() {
 }
 
 bool WorkerThread::IsForciblyTerminated() {
-  MutexLocker lock(thread_state_mutex_);
+  MutexLocker lock(mutex_);
   switch (exit_code_) {
     case ExitCode::kNotTerminated:
     case ExitCode::kGracefullyTerminated:
@@ -322,7 +322,7 @@ bool WorkerThread::IsForciblyTerminated() {
 }
 
 ExitCode WorkerThread::GetExitCodeForTesting() {
-  MutexLocker lock(thread_state_mutex_);
+  MutexLocker lock(mutex_);
   return exit_code_;
 }
 
@@ -353,10 +353,8 @@ void WorkerThread::ScheduleToTerminateScriptExecution() {
       forcible_termination_delay_);
 }
 
-bool WorkerThread::ShouldTerminateScriptExecution(const MutexLocker& lock) {
+bool WorkerThread::ShouldTerminateScriptExecution() {
   DCHECK(IsMainThread());
-  DCHECK(IsThreadStateMutexLocked(lock));
-
   switch (thread_state_) {
     case ThreadState::kNotStarted:
       // Shutdown sequence will surely start during initialization sequence
@@ -378,13 +376,13 @@ bool WorkerThread::ShouldTerminateScriptExecution(const MutexLocker& lock) {
 
 void WorkerThread::EnsureScriptExecutionTerminates(ExitCode exit_code) {
   DCHECK(IsMainThread());
-  MutexLocker lock(thread_state_mutex_);
-  if (!ShouldTerminateScriptExecution(lock))
+  MutexLocker lock(mutex_);
+  if (!ShouldTerminateScriptExecution())
     return;
 
   DCHECK(exit_code == ExitCode::kSyncForciblyTerminated ||
          exit_code == ExitCode::kAsyncForciblyTerminated);
-  SetExitCode(lock, exit_code);
+  SetExitCode(exit_code);
 
   GetIsolate()->TerminateExecution();
   forcible_termination_task_handle_.Cancel();
@@ -409,12 +407,9 @@ void WorkerThread::InitializeOnWorkerThread(
     const WTF::Optional<WorkerBackingThreadStartupData>& thread_startup_data,
     WorkerInspectorProxy::PauseOnWorkerStart pause_on_start) {
   DCHECK(IsCurrentThread());
-  DCHECK_EQ(ThreadState::kNotStarted, thread_state_);
-
-  KURL script_url = global_scope_creation_params->script_url;
-
   {
-    MutexLocker lock(thread_state_mutex_);
+    MutexLocker lock(mutex_);
+    DCHECK_EQ(ThreadState::kNotStarted, thread_state_);
 
     if (IsOwningBackingThread()) {
       DCHECK(thread_startup_data.has_value());
@@ -440,13 +435,13 @@ void WorkerThread::InitializeOnWorkerThread(
           GlobalScope()->ScriptController()->GetContext());
     }
 
-    SetThreadState(lock, ThreadState::kRunning);
+    SetThreadState(ThreadState::kRunning);
   }
 
   if (pause_on_start == WorkerInspectorProxy::PauseOnWorkerStart::kPause)
     StartRunningDebuggerTasksOnPauseOnWorkerThread();
 
-  if (CheckRequestedToTerminateOnWorkerThread()) {
+  if (CheckRequestedToTerminate()) {
     // Stop further worker tasks from running after this point. WorkerThread
     // was requested to terminate before initialization or during running
     // debugger tasks. PerformShutdownOnWorkerThread() will be called soon.
@@ -481,12 +476,12 @@ void WorkerThread::ImportModuleScriptOnWorkerThread(
 void WorkerThread::PrepareForShutdownOnWorkerThread() {
   DCHECK(IsCurrentThread());
   {
-    MutexLocker lock(thread_state_mutex_);
+    MutexLocker lock(mutex_);
     if (thread_state_ == ThreadState::kReadyToShutdown)
       return;
-    SetThreadState(lock, ThreadState::kReadyToShutdown);
+    SetThreadState(ThreadState::kReadyToShutdown);
     if (exit_code_ == ExitCode::kNotTerminated)
-      SetExitCode(lock, ExitCode::kGracefullyTerminated);
+      SetExitCode(ExitCode::kGracefullyTerminated);
   }
 
   inspector_task_runner_->Kill();
@@ -509,8 +504,13 @@ void WorkerThread::PrepareForShutdownOnWorkerThread() {
 
 void WorkerThread::PerformShutdownOnWorkerThread() {
   DCHECK(IsCurrentThread());
-  DCHECK(CheckRequestedToTerminateOnWorkerThread());
-  DCHECK_EQ(ThreadState::kReadyToShutdown, thread_state_);
+#if DCHECK_IS_ON()
+  {
+    MutexLocker lock(mutex_);
+    DCHECK(requested_to_terminate_);
+    DCHECK_EQ(ThreadState::kReadyToShutdown, thread_state_);
+  }
+#endif
 
   if (IsOwningBackingThread())
     GetWorkerBackingThread().ShutdownOnBackingThread();
@@ -529,7 +529,7 @@ void WorkerThread::PerformDebuggerTaskOnWorkerThread(CrossThreadClosure task) {
   InspectorTaskRunner::IgnoreInterruptsScope scope(
       inspector_task_runner_.get());
   {
-    MutexLocker lock(thread_state_mutex_);
+    MutexLocker lock(mutex_);
     DCHECK_EQ(ThreadState::kRunning, thread_state_);
     running_debugger_task_ = true;
   }
@@ -537,7 +537,7 @@ void WorkerThread::PerformDebuggerTaskOnWorkerThread(CrossThreadClosure task) {
   std::move(task).Run();
   ThreadDebugger::IdleStarted(GetIsolate());
   {
-    MutexLocker lock(thread_state_mutex_);
+    MutexLocker lock(mutex_);
     running_debugger_task_ = false;
   }
 }
@@ -550,9 +550,7 @@ void WorkerThread::PerformDebuggerTaskDontWaitOnWorkerThread() {
     std::move(task).Run();
 }
 
-void WorkerThread::SetThreadState(const MutexLocker& lock,
-                                  ThreadState next_thread_state) {
-  DCHECK(IsThreadStateMutexLocked(lock));
+void WorkerThread::SetThreadState(ThreadState next_thread_state) {
   switch (next_thread_state) {
     case ThreadState::kNotStarted:
       NOTREACHED();
@@ -568,24 +566,13 @@ void WorkerThread::SetThreadState(const MutexLocker& lock,
   }
 }
 
-void WorkerThread::SetExitCode(const MutexLocker& lock, ExitCode exit_code) {
-  DCHECK(IsThreadStateMutexLocked(lock));
+void WorkerThread::SetExitCode(ExitCode exit_code) {
   DCHECK_EQ(ExitCode::kNotTerminated, exit_code_);
   exit_code_ = exit_code;
 }
 
-bool WorkerThread::IsThreadStateMutexLocked(const MutexLocker& /* unused */) {
-#if DCHECK_IS_ON()
-  // Mutex::locked() is available only if DCHECK_IS_ON() is true.
-  return thread_state_mutex_.Locked();
-#else
-  // Otherwise, believe the given MutexLocker holds |m_threadStateMutex|.
-  return true;
-#endif
-}
-
-bool WorkerThread::CheckRequestedToTerminateOnWorkerThread() {
-  MutexLocker lock(thread_state_mutex_);
+bool WorkerThread::CheckRequestedToTerminate() {
+  MutexLocker lock(mutex_);
   return requested_to_terminate_;
 }
 

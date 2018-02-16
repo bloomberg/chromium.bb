@@ -146,23 +146,25 @@ class WorkerThreadTest : public ::testing::Test {
 
 TEST_F(WorkerThreadTest, ShouldTerminateScriptExecution) {
   using ThreadState = WorkerThread::ThreadState;
-  MutexLocker dummy_lock(worker_thread_->thread_state_mutex_);
+
+  // SetExitCode() and ShouldTerminateScriptExecution() require the lock.
+  MutexLocker dummy_lock(worker_thread_->mutex_);
 
   EXPECT_EQ(ThreadState::kNotStarted, worker_thread_->thread_state_);
-  EXPECT_FALSE(worker_thread_->ShouldTerminateScriptExecution(dummy_lock));
+  EXPECT_FALSE(worker_thread_->ShouldTerminateScriptExecution());
 
-  worker_thread_->SetThreadState(dummy_lock, ThreadState::kRunning);
+  worker_thread_->SetThreadState(ThreadState::kRunning);
   EXPECT_FALSE(worker_thread_->running_debugger_task_);
-  EXPECT_TRUE(worker_thread_->ShouldTerminateScriptExecution(dummy_lock));
+  EXPECT_TRUE(worker_thread_->ShouldTerminateScriptExecution());
 
   worker_thread_->running_debugger_task_ = true;
-  EXPECT_FALSE(worker_thread_->ShouldTerminateScriptExecution(dummy_lock));
+  EXPECT_FALSE(worker_thread_->ShouldTerminateScriptExecution());
 
-  worker_thread_->SetThreadState(dummy_lock, ThreadState::kReadyToShutdown);
-  EXPECT_FALSE(worker_thread_->ShouldTerminateScriptExecution(dummy_lock));
+  worker_thread_->SetThreadState(ThreadState::kReadyToShutdown);
+  EXPECT_FALSE(worker_thread_->ShouldTerminateScriptExecution());
 
   // This is necessary to satisfy DCHECK in the dtor of WorkerThread.
-  worker_thread_->SetExitCode(dummy_lock, ExitCode::kGracefullyTerminated);
+  worker_thread_->SetExitCode(ExitCode::kGracefullyTerminated);
 }
 
 TEST_F(WorkerThreadTest, AsyncTerminate_OnIdle) {

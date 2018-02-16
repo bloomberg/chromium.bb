@@ -31,6 +31,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/thread_annotations.h"
 #include "base/unguessable_token.h"
 #include "core/CoreExport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -118,7 +119,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // the underlying thread. This task may be blocked by JavaScript execution on
   // the worker thread, so this function also forcibly terminates JavaScript
   // execution after a certain grace period.
-  void Terminate();
+  void Terminate() LOCKS_EXCLUDED(mutex_);
 
   // Terminates the worker thread. Subclasses of WorkerThread can override this
   // to do cleanup. The default behavior is to call Terminate() and
@@ -154,7 +155,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   }
 
   // Only callable on the main thread.
-  void AppendDebuggerTask(CrossThreadClosure);
+  void AppendDebuggerTask(CrossThreadClosure) LOCKS_EXCLUDED(mutex_);
 
   // Only callable on the main thread.
   const base::UnguessableToken& GetDevToolsWorkerToken() const {
@@ -187,10 +188,10 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
 
   PlatformThreadId GetPlatformThreadId();
 
-  bool IsForciblyTerminated();
+  bool IsForciblyTerminated() LOCKS_EXCLUDED(mutex_);
 
   void WaitForShutdownForTesting() { shutdown_event_->Wait(); }
-  ExitCode GetExitCodeForTesting();
+  ExitCode GetExitCodeForTesting() LOCKS_EXCLUDED(mutex_);
 
   ParentFrameTaskRunners* GetParentFrameTaskRunners() const {
     return parent_frame_task_runners_.Get();
@@ -224,11 +225,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   FRIEND_TEST_ALL_PREFIXES(WorkerThreadTest,
                            Terminate_WhileDebuggerTaskIsRunning);
 
-  // Represents the state of this worker thread. A caller may need to acquire
-  // a lock |m_threadStateMutex| before accessing this:
-  //   - Only the worker thread can set this with the lock.
-  //   - The worker thread can read this without the lock.
-  //   - The main thread can read this with the lock.
+  // Represents the state of this worker thread.
   enum class ThreadState {
     kNotStarted,
     kRunning,
@@ -252,23 +249,22 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   void ScheduleToTerminateScriptExecution();
 
   // Returns true if we should synchronously terminate the script execution so
-  // that a shutdown task can be handled by the thread event loop. This must be
-  // called with |m_threadStateMutex| acquired.
-  bool ShouldTerminateScriptExecution(const MutexLocker&);
+  // that a shutdown task can be handled by the thread event loop.
+  bool ShouldTerminateScriptExecution() EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
   // Terminates worker script execution if the worker thread is running and not
   // already shutting down. Does not terminate if a debugger task is running,
   // because the debugger task is guaranteed to finish and it heavily uses V8
   // API calls which would crash after forcible script termination. Called on
   // the main thread.
-  void EnsureScriptExecutionTerminates(ExitCode);
+  void EnsureScriptExecutionTerminates(ExitCode) LOCKS_EXCLUDED(mutex_);
 
   // These are called in this order during worker thread startup.
   void InitializeSchedulerOnWorkerThread(WaitableEvent*);
   void InitializeOnWorkerThread(
       std::unique_ptr<GlobalScopeCreationParams>,
       const WTF::Optional<WorkerBackingThreadStartupData>&,
-      WorkerInspectorProxy::PauseOnWorkerStart);
+      WorkerInspectorProxy::PauseOnWorkerStart) LOCKS_EXCLUDED(mutex_);
 
   void EvaluateClassicScriptOnWorkerThread(
       const KURL& script_url,
@@ -279,36 +275,32 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
                                         network::mojom::FetchCredentialsMode);
 
   // These are called in this order during worker thread termination.
-  void PrepareForShutdownOnWorkerThread();
-  void PerformShutdownOnWorkerThread();
+  void PrepareForShutdownOnWorkerThread() LOCKS_EXCLUDED(mutex_);
+  void PerformShutdownOnWorkerThread() LOCKS_EXCLUDED(mutex_);
 
-  void PerformDebuggerTaskOnWorkerThread(CrossThreadClosure);
+  void PerformDebuggerTaskOnWorkerThread(CrossThreadClosure)
+      LOCKS_EXCLUDED(mutex_);
   void PerformDebuggerTaskDontWaitOnWorkerThread();
 
-  // These must be called with |m_threadStateMutex| acquired.
-  void SetThreadState(const MutexLocker&, ThreadState);
-  void SetExitCode(const MutexLocker&, ExitCode);
-  bool IsThreadStateMutexLocked(const MutexLocker&);
+  void SetThreadState(ThreadState) EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+  void SetExitCode(ExitCode) EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
-  // This internally acquires |m_threadStateMutex|. If you already have the
-  // lock or you're on the main thread, you should consider directly accessing
-  // |m_requestedToTerminate|.
-  bool CheckRequestedToTerminateOnWorkerThread();
+  bool CheckRequestedToTerminate() LOCKS_EXCLUDED(mutex_);
 
   // A unique identifier among all WorkerThreads.
   const int worker_thread_id_;
 
-  // Set on the main thread and checked on both the main and worker threads.
-  bool requested_to_terminate_ = false;
+  // Set on the main thread.
+  bool requested_to_terminate_ GUARDED_BY(mutex_) = false;
 
   // Accessed only on the worker thread.
   bool paused_in_debugger_ = false;
 
-  // Set on the worker thread and checked on both the main and worker threads.
-  bool running_debugger_task_ = false;
+  // Set on the worker thread.
+  bool running_debugger_task_ GUARDED_BY(mutex_) = false;
 
-  ThreadState thread_state_ = ThreadState::kNotStarted;
-  ExitCode exit_code_ = ExitCode::kNotTerminated;
+  ThreadState thread_state_ GUARDED_BY(mutex_) = ThreadState::kNotStarted;
+  ExitCode exit_code_ GUARDED_BY(mutex_) = ExitCode::kNotTerminated;
 
   TimeDelta forcible_termination_delay_;
 
@@ -328,9 +320,10 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   std::unique_ptr<scheduler::WorkerGlobalScopeScheduler>
       global_scope_scheduler_;
 
-  // This lock protects |m_globalScope|, |m_requestedToTerminate|,
-  // |m_threadState|, |m_runningDebuggerTask| and |m_exitCode|.
-  Mutex thread_state_mutex_;
+  // This lock protects shared states between the main thread and the worker
+  // thread. See thread-safety annotations (e.g., GUARDED_BY) in this header
+  // file.
+  Mutex mutex_;
 
   CrossThreadPersistent<ConsoleMessageStorage> console_message_storage_;
   CrossThreadPersistent<WorkerOrWorkletGlobalScope> global_scope_;
