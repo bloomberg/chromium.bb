@@ -25,7 +25,11 @@
 
 #pragma mark - property implementation.
 
-- (UIViewController<ViewControllerSwapping>*)mainViewController {
+- (UIViewController*)mainViewController {
+  return _mainViewController;
+}
+
+- (id<ViewControllerSwapping>)viewControllerSwapper {
   return _mainViewController;
 }
 

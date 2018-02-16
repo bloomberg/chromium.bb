@@ -7,11 +7,9 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/tab_switcher/tab_switcher.h"
-
 // View controller representing a tab switcher. The tab switcher has an
 // incognito tab grid, regular tab grid, and remote tabs.
-@interface TabGridViewController : UIViewController<TabSwitcher>
+@interface TabGridViewController : UIViewController
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_VIEW_CONTROLLER_H_

@@ -17,7 +17,10 @@
 // (This is only public while the view controller architecture is being
 // refactored).
 @property(nonatomic, weak, readonly, nullable)
-    UIViewController<ViewControllerSwapping>* mainViewController;
+    UIViewController* mainViewController;
+
+@property(nonatomic, weak, readonly, nullable) id<ViewControllerSwapping>
+    viewControllerSwapper;
 
 @end
 

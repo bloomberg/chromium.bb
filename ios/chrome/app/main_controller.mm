@@ -133,7 +133,7 @@
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #import "ios/chrome/browser/ui/stack_view/stack_view_controller.h"
-#include "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
+#include "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -306,7 +306,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   SettingsNavigationController* _settingsNavigationController;
 
   // TabSwitcher object -- the stack view, tablet switcher, etc.
-  id<TabSwitcher> _tabSwitcherController;
+  id<TabSwitcher> _tabSwitcher;
 
   // YES while animating the dismissal of stack view.
   BOOL _dismissingStackView;
@@ -846,9 +846,9 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   DCHECK(IsIPadIdiom() || (!otrBVCIsCurrent || _tabSwitcherIsActive));
 
   // We always clear the otr tab model on iPad.
-  // Notify the _tabSwitcherController that its otrBVC will be destroyed.
+  // Notify the _tabSwitcher that its otrBVC will be destroyed.
   if (IsIPadIdiom() || _tabSwitcherIsActive)
-    [_tabSwitcherController setOtrTabModel:nil];
+    [_tabSwitcher setOtrTabModel:nil];
 
   [_browserViewWrangler
       deleteIncognitoTabModelState:self.browsingDataRemovalController];
@@ -858,9 +858,9 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   }
 
   // Always set the new otr tab model on iPad with tab switcher enabled.
-  // Notify the _tabSwitcherController with the new otrBVC.
+  // Notify the _tabSwitcher with the new otrBVC.
   if (IsIPadIdiom() || _tabSwitcherIsActive)
-    [_tabSwitcherController setOtrTabModel:self.otrTabModel];
+    [_tabSwitcher setOtrTabModel:self.otrTabModel];
 }
 
 - (BrowsingDataRemovalController*)browsingDataRemovalController {
@@ -890,7 +890,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (id<ViewControllerSwapping>)viewControllerSwapper {
-  return self.mainCoordinator.mainViewController;
+  return self.mainCoordinator.viewControllerSwapper;
 }
 
 - (MainCoordinator*)mainCoordinator {
@@ -900,7 +900,12 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   }
   if (!_mainCoordinator) {
     // Lazily create the main coordinator.
-    _mainCoordinator = [[MainCoordinator alloc] initWithWindow:self.window];
+    if (IsTabSwitcherTabGridEnabled()) {
+      _mainCoordinator =
+          [[TabGridCoordinator alloc] initWithWindow:self.window];
+    } else {
+      _mainCoordinator = [[MainCoordinator alloc] initWithWindow:self.window];
+    }
   }
   return _mainCoordinator;
 }
@@ -1872,34 +1877,31 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
         ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
   }
 
-  if (!_tabSwitcherController) {
-    _tabSwitcherController = [self newTabSwitcherController];
+  if (!_tabSwitcher) {
+    _tabSwitcher = [self newTabSwitcher];
   } else {
     // The StackViewController is kept in memory to avoid the performance hit of
     // loading from the nib on next showing, but clears out its card models to
     // release memory.  The tab models are required to rebuild the card stacks.
-    [_tabSwitcherController
-        restoreInternalStateWithMainTabModel:self.mainTabModel
-                                 otrTabModel:self.otrTabModel
-                              activeTabModel:self.currentTabModel];
+    [_tabSwitcher restoreInternalStateWithMainTabModel:self.mainTabModel
+                                           otrTabModel:self.otrTabModel
+                                        activeTabModel:self.currentTabModel];
   }
   _tabSwitcherIsActive = YES;
-  [_tabSwitcherController setDelegate:self];
+  [_tabSwitcher setDelegate:self];
   if (IsIPadIdiom()) {
     TabSwitcherTransitionContext* transitionContext =
         [TabSwitcherTransitionContext
             tabSwitcherTransitionContextWithCurrent:currentBVC
                                             mainBVC:self.mainBVC
                                              otrBVC:self.otrBVC];
-    [_tabSwitcherController setTransitionContext:transitionContext];
+    [_tabSwitcher setTransitionContext:transitionContext];
   } else {
     // User interaction is disabled when the stack controller is dismissed.
-    [[_tabSwitcherController viewController].view
-        setUserInteractionEnabled:YES];
+    [[_tabSwitcher viewController].view setUserInteractionEnabled:YES];
   }
 
-  [self.viewControllerSwapper showTabSwitcher:_tabSwitcherController
-                                   completion:nil];
+  [self.viewControllerSwapper showTabSwitcher:_tabSwitcher completion:nil];
 }
 
 - (BOOL)shouldOpenNTPTabOnActivationOfTabModel:(TabModel*)tabModel {
@@ -1916,13 +1918,13 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
     // If the tabSwitcher is contained, check if the parent container is
     // presenting another view controller.
-    if ([[_tabSwitcherController viewController]
+    if ([[_tabSwitcher viewController]
                 .parentViewController presentedViewController]) {
       return NO;
     }
 
     // Check if the tabSwitcher is directly presenting another view controller.
-    if ([_tabSwitcherController viewController].presentedViewController) {
+    if ([_tabSwitcher viewController].presentedViewController) {
       return NO;
     }
 
@@ -1935,25 +1937,23 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 #pragma mark - TabSwitching implementation.
 
 - (BOOL)openNewTabFromTabSwitcher {
-  if (!_tabSwitcherController)
+  if (!_tabSwitcher)
     return NO;
 
-  [_tabSwitcherController
-      dismissWithNewTabAnimationToModel:self.mainTabModel
-                                withURL:GURL(kChromeUINewTabURL)
-                                atIndex:NSNotFound
-                             transition:ui::PAGE_TRANSITION_TYPED];
+  [_tabSwitcher dismissWithNewTabAnimationToModel:self.mainTabModel
+                                          withURL:GURL(kChromeUINewTabURL)
+                                          atIndex:NSNotFound
+                                       transition:ui::PAGE_TRANSITION_TYPED];
   return YES;
 }
 
 - (void)dismissTabSwitcherWithoutAnimationInModel:(TabModel*)tabModel {
   DCHECK(_tabSwitcherIsActive);
   DCHECK(!_dismissingStackView);
-  if ([_tabSwitcherController
-          respondsToSelector:@selector(tabSwitcherDismissWithModel:
-                                                          animated:)]) {
+  if ([_tabSwitcher respondsToSelector:@selector
+                    (tabSwitcherDismissWithModel:animated:)]) {
     [self dismissModalDialogsWithCompletion:nil dismissOmnibox:YES];
-    [_tabSwitcherController tabSwitcherDismissWithModel:tabModel animated:NO];
+    [_tabSwitcher tabSwitcherDismissWithModel:tabModel animated:NO];
   } else {
     [self beginDismissingStackViewWithCurrentModel:tabModel];
     [self finishDismissingStackView];
@@ -1977,7 +1977,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   _dismissingStackView = YES;
   // Prevent wayward touches from wreaking havoc while the stack view is being
   // dismissed.
-  [[_tabSwitcherController viewController].view setUserInteractionEnabled:NO];
+  [[_tabSwitcher viewController].view setUserInteractionEnabled:NO];
   BrowserViewController* targetBVC =
       (tabModel == self.mainTabModel) ? self.mainBVC : self.otrBVC;
   self.currentBVC = targetBVC;
@@ -2005,7 +2005,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     // animation is complete.  At this point in the process, the tab switcher is
     // still the active VC.
     DCHECK_EQ(self.viewControllerSwapper.activeViewController,
-              [_tabSwitcherController viewController]);
+              [_tabSwitcher viewController]);
   }
 
   if (_modeToDisplayOnStackViewDismissal == StackViewDismissalMode::NORMAL) {
@@ -2029,7 +2029,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     action();
   }
 
-  [_tabSwitcherController setDelegate:nil];
+  [_tabSwitcher setDelegate:nil];
 
   _tabSwitcherIsActive = NO;
   _dismissingStackView = NO;
@@ -2253,11 +2253,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       self.NTPActionAfterTabSwitcherDismissal =
           [_startupParameters postOpeningAction];
       [self setStartupParameters:nil];
-      tab = [_tabSwitcherController
-          dismissWithNewTabAnimationToModel:targetBVC.tabModel
-                                    withURL:url
-                                    atIndex:tabIndex
-                                 transition:transition];
+      tab = [_tabSwitcher dismissWithNewTabAnimationToModel:targetBVC.tabModel
+                                                    withURL:url
+                                                    atIndex:tabIndex
+                                                 transition:transition];
     }
   } else {
     if (!self.currentBVC.presentedViewController) {
@@ -2513,9 +2512,19 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 #pragma mark - Experimental flag
 
-- (UIViewController<TabSwitcher>*)newTabSwitcherController {
+// Creates and returns a tab switcher object according to the current
+// experimental flags and device idioms:
+// - If the tab grid experimental flag is enabled, the TabGridController's
+//   TabSwitcher is returned.
+// - If the current device is an iPad, a new TabSwitcherController is returned.
+// - Otherwise, a new StackViewController is returned.
+- (id<TabSwitcher>)newTabSwitcher {
   if (IsTabSwitcherTabGridEnabled()) {
-    return [[TabGridViewController alloc] init];
+    DCHECK(_mainCoordinator)
+        << " Main coordinator not created when tab switcher needed.";
+    TabGridCoordinator* tabGridCoordinator =
+        base::mac::ObjCCastStrict<TabGridCoordinator>(self.mainCoordinator);
+    return tabGridCoordinator.tabSwitcher;
   } else {
     if (IsIPadIdiom()) {
       return [[TabSwitcherController alloc]
@@ -2544,12 +2553,12 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   return [_browserViewWrangler deviceSharingManager];
 }
 
-- (id<TabSwitcher>)tabSwitcherController {
-  return _tabSwitcherController;
+- (id<TabSwitcher>)tabSwitcher {
+  return _tabSwitcher;
 }
 
-- (void)setTabSwitcherController:(id<TabSwitcher>)controller {
-  _tabSwitcherController = controller;
+- (void)setTabSwitcher:(id<TabSwitcher>)switcher {
+  _tabSwitcher = switcher;
 }
 
 - (UIViewController*)topPresentedViewController {
