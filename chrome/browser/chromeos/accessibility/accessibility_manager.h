@@ -312,10 +312,10 @@ class AccessibilityManager
   void PostUnloadSelectToSpeak();
   void UpdateAlwaysShowMenuFromPref();
   void OnLargeCursorChanged();
-  void UpdateStickyKeysFromPref();
+  void OnStickyKeysChanged();
   void OnSpokenFeedbackChanged();
   void OnHighContrastChanged();
-  void UpdateVirtualKeyboardFromPref();
+  void OnVirtualKeyboardChanged();
   void OnMonoAudioChanged();
   void UpdateCaretHighlightFromPref();
   void UpdateCursorHighlightFromPref();
@@ -386,9 +386,7 @@ class AccessibilityManager
   PrefHandler select_to_speak_pref_handler_;
   PrefHandler switch_access_pref_handler_;
 
-  bool sticky_keys_enabled_;
   bool spoken_feedback_enabled_;
-  bool virtual_keyboard_enabled_;
   bool caret_highlight_enabled_;
   bool cursor_highlight_enabled_;
   bool focus_highlight_enabled_;

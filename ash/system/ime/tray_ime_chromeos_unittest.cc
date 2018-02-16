@@ -7,13 +7,10 @@
 #include <memory>
 #include <vector>
 
-#include "ash/accessibility/accessibility_delegate.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/ime/ime_controller.h"
-#include "ash/public/cpp/accessibility_types.h"
-#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/system/ime_menu/ime_list_view.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,10 +28,6 @@ class TrayIMETest : public AshTestBase {
   views::View* default_view() const { return default_view_.get(); }
 
   views::View* detailed_view() const { return detailed_view_.get(); }
-
-  // Mocks enabling the a11y virtual keyboard since the actual a11y manager
-  // is not created in ash tests.
-  void SetAccessibilityKeyboardEnabled(bool enabled);
 
   // Creates |count| simulated active IMEs.
   void SetActiveImeCount(int count);
@@ -74,15 +67,6 @@ class TrayIMETest : public AshTestBase {
 
   DISALLOW_COPY_AND_ASSIGN(TrayIMETest);
 };
-
-void TrayIMETest::SetAccessibilityKeyboardEnabled(bool enabled) {
-  Shell::Get()->accessibility_delegate()->SetVirtualKeyboardEnabled(enabled);
-  keyboard::SetAccessibilityKeyboardEnabled(enabled);
-  AccessibilityNotificationVisibility notification =
-      enabled ? A11Y_NOTIFICATION_SHOW : A11Y_NOTIFICATION_NONE;
-  Shell::Get()->system_tray_notifier()->NotifyAccessibilityStatusChanged(
-      notification);
-}
 
 void TrayIMETest::SetActiveImeCount(int count) {
   available_imes_.resize(count);
@@ -162,7 +146,7 @@ void TrayIMETest::RefreshImeController() {
 void TrayIMETest::TearDown() {
   if (keyboard_suppressed_)
     RestoreKeyboard();
-  SetAccessibilityKeyboardEnabled(false);
+  Shell::Get()->accessibility_controller()->SetVirtualKeyboardEnabled(false);
   tray_.reset();
   default_view_.reset();
   detailed_view_.reset();
@@ -230,11 +214,9 @@ TEST_F(TrayIMETest, HidesOnA11yEnabled) {
   SetActiveImeCount(0);
   SuppressKeyboard();
   EXPECT_TRUE(default_view()->visible());
-  // Enable a11y keyboard.
-  SetAccessibilityKeyboardEnabled(true);
+  Shell::Get()->accessibility_controller()->SetVirtualKeyboardEnabled(true);
   EXPECT_FALSE(default_view()->visible());
-  // Disable the a11y keyboard.
-  SetAccessibilityKeyboardEnabled(false);
+  Shell::Get()->accessibility_controller()->SetVirtualKeyboardEnabled(false);
   EXPECT_TRUE(default_view()->visible());
 }
 

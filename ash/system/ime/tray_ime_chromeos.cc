@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -213,7 +214,7 @@ void TrayIME::UpdateTrayLabel(const mojom::ImeInfo& current, size_t count) {
 
 bool TrayIME::ShouldShowKeyboardToggle() {
   return keyboard_suppressed_ &&
-         !Shell::Get()->accessibility_delegate()->IsVirtualKeyboardEnabled();
+         !Shell::Get()->accessibility_controller()->IsVirtualKeyboardEnabled();
 }
 
 base::string16 TrayIME::GetDefaultViewLabel(bool show_ime_label) {

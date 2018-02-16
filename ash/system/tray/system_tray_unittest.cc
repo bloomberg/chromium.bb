@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/accessibility/accessibility_delegate.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/ash_view_ids.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -913,7 +913,7 @@ TEST_F(SystemTrayTest, PersistentBubble) {
 // status.
 TEST_F(SystemTrayTest, WithSystemModal) {
   // The accessiblity item is created and is visible either way.
-  Shell::Get()->accessibility_delegate()->SetVirtualKeyboardEnabled(true);
+  Shell::Get()->accessibility_controller()->SetVirtualKeyboardEnabled(true);
   std::unique_ptr<views::Widget> widget(CreateTestWidget(
       new ModalWidgetDelegate, kShellWindowId_SystemModalContainer,
       gfx::Rect(0, 0, 100, 100)));

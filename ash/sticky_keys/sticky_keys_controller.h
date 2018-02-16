@@ -81,6 +81,8 @@ class ASH_EXPORT StickyKeysController : public ui::EventRewriter {
       const ui::Event& last_event,
       std::unique_ptr<ui::Event>* new_event) override;
 
+  bool enabled_for_test() const { return enabled_; }
+
  private:
   // Rewrite keyboard event.
   ui::EventRewriteStatus RewriteKeyEvent(

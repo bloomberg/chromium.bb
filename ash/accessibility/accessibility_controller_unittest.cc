@@ -10,12 +10,14 @@
 #include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/system/accessibility_observer.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/ash_test_base.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "components/prefs/pref_service.h"
+#include "ui/keyboard/keyboard_util.h"
 
 namespace ash {
 
@@ -82,6 +84,9 @@ TEST_F(AccessibilityControllerTest, PrefsAreRegistered) {
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityScreenMagnifierScale));
   EXPECT_TRUE(
       prefs->FindPreference(prefs::kAccessibilitySpokenFeedbackEnabled));
+  EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityStickyKeysEnabled));
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kAccessibilityVirtualKeyboardEnabled));
 }
 
 TEST_F(AccessibilityControllerTest, SetAutoclickEnabled) {
@@ -200,6 +205,52 @@ TEST_F(AccessibilityControllerTest, SetSpokenFeedbackEnabled) {
   EXPECT_FALSE(controller->IsSpokenFeedbackEnabled());
   EXPECT_EQ(1, observer.notification_none_changed_);
   EXPECT_EQ(1, observer.notification_show_changed_);
+
+  Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(&observer);
+}
+
+TEST_F(AccessibilityControllerTest, SetStickyKeysEnabled) {
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  EXPECT_FALSE(controller->IsStickyKeysEnabled());
+
+  TestAccessibilityObserver observer;
+  Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(&observer);
+  EXPECT_EQ(0, observer.notification_none_changed_);
+
+  StickyKeysController* sticky_keys_controller =
+      Shell::Get()->sticky_keys_controller();
+  controller->SetStickyKeysEnabled(true);
+  EXPECT_TRUE(sticky_keys_controller->enabled_for_test());
+  EXPECT_TRUE(controller->IsStickyKeysEnabled());
+  EXPECT_EQ(1, observer.notification_none_changed_);
+
+  controller->SetStickyKeysEnabled(false);
+  EXPECT_FALSE(sticky_keys_controller->enabled_for_test());
+  EXPECT_FALSE(controller->IsStickyKeysEnabled());
+  EXPECT_EQ(2, observer.notification_none_changed_);
+
+  Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(&observer);
+}
+
+TEST_F(AccessibilityControllerTest, SetVirtualKeyboardEnabled) {
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  EXPECT_FALSE(controller->IsVirtualKeyboardEnabled());
+
+  TestAccessibilityObserver observer;
+  Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(&observer);
+  EXPECT_EQ(0, observer.notification_none_changed_);
+
+  controller->SetVirtualKeyboardEnabled(true);
+  EXPECT_TRUE(keyboard::GetAccessibilityKeyboardEnabled());
+  EXPECT_TRUE(controller->IsVirtualKeyboardEnabled());
+  EXPECT_EQ(1, observer.notification_none_changed_);
+
+  controller->SetVirtualKeyboardEnabled(false);
+  EXPECT_FALSE(keyboard::GetAccessibilityKeyboardEnabled());
+  EXPECT_FALSE(controller->IsVirtualKeyboardEnabled());
+  EXPECT_EQ(2, observer.notification_none_changed_);
 
   Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(&observer);
 }

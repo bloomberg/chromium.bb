@@ -16,6 +16,7 @@
 #include "ash/session/session_observer.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
+#include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/scoped_backlights_forced_off.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -29,6 +30,7 @@
 #include "services/ui/public/interfaces/accessibility_manager.mojom.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "ui/base/cursor/cursor_type.h"
+#include "ui/keyboard/keyboard_util.h"
 
 using session_manager::SessionState;
 
@@ -83,6 +85,10 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
                                   false);
     registry->RegisterBooleanPref(prefs::kAccessibilitySelectToSpeakEnabled,
                                   false);
+    registry->RegisterBooleanPref(prefs::kAccessibilityStickyKeysEnabled,
+                                  false);
+    registry->RegisterBooleanPref(prefs::kAccessibilityVirtualKeyboardEnabled,
+                                  false);
     return;
   }
 
@@ -98,6 +104,8 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
   registry->RegisterForeignPref(prefs::kAccessibilityScreenMagnifierScale);
   registry->RegisterForeignPref(prefs::kAccessibilitySpokenFeedbackEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilitySelectToSpeakEnabled);
+  registry->RegisterForeignPref(prefs::kAccessibilityStickyKeysEnabled);
+  registry->RegisterForeignPref(prefs::kAccessibilityVirtualKeyboardEnabled);
 }
 
 void AccessibilityController::BindRequest(
@@ -178,6 +186,30 @@ void AccessibilityController::SetSelectToSpeakEnabled(bool enabled) {
 
 bool AccessibilityController::IsSelectToSpeakEnabled() const {
   return select_to_speak_enabled_;
+}
+
+void AccessibilityController::SetStickyKeysEnabled(bool enabled) {
+  PrefService* prefs = GetActivePrefService();
+  if (!prefs)
+    return;
+  prefs->SetBoolean(prefs::kAccessibilityStickyKeysEnabled, enabled);
+  prefs->CommitPendingWrite();
+}
+
+bool AccessibilityController::IsStickyKeysEnabled() const {
+  return sticky_keys_enabled_;
+}
+
+void AccessibilityController::SetVirtualKeyboardEnabled(bool enabled) {
+  PrefService* prefs = GetActivePrefService();
+  if (!prefs)
+    return;
+  prefs->SetBoolean(prefs::kAccessibilityVirtualKeyboardEnabled, enabled);
+  prefs->CommitPendingWrite();
+}
+
+bool AccessibilityController::IsVirtualKeyboardEnabled() const {
+  return virtual_keyboard_enabled_;
 }
 
 void AccessibilityController::TriggerAccessibilityAlert(
@@ -291,6 +323,14 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
       prefs::kAccessibilitySelectToSpeakEnabled,
       base::Bind(&AccessibilityController::UpdateSelectToSpeakFromPref,
                  base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilityStickyKeysEnabled,
+      base::Bind(&AccessibilityController::UpdateStickyKeysFromPref,
+                 base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilityVirtualKeyboardEnabled,
+      base::Bind(&AccessibilityController::UpdateVirtualKeyboardFromPref,
+                 base::Unretained(this)));
 
   // Load current state.
   UpdateAutoclickFromPref();
@@ -300,6 +340,8 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
   UpdateMonoAudioFromPref();
   UpdateSpokenFeedbackFromPref();
   UpdateSelectToSpeakFromPref();
+  UpdateStickyKeysFromPref();
+  UpdateVirtualKeyboardFromPref();
 }
 
 void AccessibilityController::UpdateAutoclickFromPref() {
@@ -436,6 +478,53 @@ void AccessibilityController::UpdateSelectToSpeakFromPref() {
   select_to_speak_enabled_ = enabled;
 
   NotifyAccessibilityStatusChanged(A11Y_NOTIFICATION_NONE);
+}
+
+void AccessibilityController::UpdateStickyKeysFromPref() {
+  PrefService* prefs = GetActivePrefService();
+  const bool enabled =
+      prefs->GetBoolean(prefs::kAccessibilityStickyKeysEnabled);
+
+  if (sticky_keys_enabled_ == enabled)
+    return;
+
+  sticky_keys_enabled_ = enabled;
+
+  NotifyAccessibilityStatusChanged(A11Y_NOTIFICATION_NONE);
+
+  Shell::Get()->sticky_keys_controller()->Enable(enabled);
+}
+
+void AccessibilityController::UpdateVirtualKeyboardFromPref() {
+  PrefService* prefs = GetActivePrefService();
+  const bool enabled =
+      prefs->GetBoolean(prefs::kAccessibilityVirtualKeyboardEnabled);
+
+  if (virtual_keyboard_enabled_ == enabled)
+    return;
+
+  virtual_keyboard_enabled_ = enabled;
+
+  NotifyAccessibilityStatusChanged(A11Y_NOTIFICATION_NONE);
+
+  keyboard::SetAccessibilityKeyboardEnabled(enabled);
+
+  if (Shell::GetAshConfig() == Config::MASH) {
+    // TODO(mash): Support on-screen keyboard. See https://crbug.com/646565.
+    NOTIMPLEMENTED();
+    return;
+  }
+
+  // Note that there are two versions of the on-screen keyboard. A full layout
+  // is provided for accessibility, which includes sticky modifier keys to
+  // enable typing of hotkeys. A compact version is used in tablet mode to
+  // provide a layout with larger keys to facilitate touch typing. In the event
+  // that the a11y keyboard is being disabled, an on-screen keyboard might still
+  // be enabled and a forced reset is required to pick up the layout change.
+  if (keyboard::IsKeyboardEnabled())
+    Shell::Get()->CreateKeyboard();
+  else
+    Shell::Get()->DestroyKeyboard();
 }
 
 }  // namespace ash
