@@ -29,6 +29,11 @@ if (enable_pdf) {
       "//ui/gfx/range",
     ]
 
+    public = [
+      "pdf.h",
+      "pdf_ppapi.h",
+    ]
+
     sources = [
       "chunk_stream.h",
       "document_loader.cc",
