@@ -128,7 +128,8 @@ base::FilePath TrafficAnnotationAuditor::GetClangLibraryPath() {
 bool TrafficAnnotationAuditor::RunClangTool(
     const std::vector<std::string>& path_filters,
     bool filter_files_based_on_heuristics,
-    bool use_compile_commands) {
+    bool use_compile_commands,
+    bool rerun_on_errors) {
   if (!safe_list_loaded_ && !LoadSafeList())
     return false;
 
@@ -157,8 +158,10 @@ bool TrafficAnnotationAuditor::RunClangTool(
   fprintf(
       options_file,
       "--generate-compdb --tool=traffic_annotation_extractor -p=%s "
-      "--tool-path=%s --tool-arg=--extra-arg=-resource-dir=%s "
-      "--tool-arg=--extra-arg=-Wno-comment ",
+      "--tool-path=%s "
+      "--tool-arg=--extra-arg=-resource-dir=%s "
+      "--tool-arg=--extra-arg=-Wno-comment "
+      "--tool-arg=--extra-arg=-Wno-tautological-unsigned-enum-zero-compare ",
       build_path_.MaybeAsASCII().c_str(),
       base::MakeAbsoluteFilePath(clang_tool_path_).MaybeAsASCII().c_str(),
       base::MakeAbsoluteFilePath(GetClangLibraryPath()).MaybeAsASCII().c_str());
@@ -204,13 +207,17 @@ bool TrafficAnnotationAuditor::RunClangTool(
       std::string tool_errors;
       std::string options_file_text;
 
-      base::GetAppOutputAndError(cmdline, &tool_errors);
+      if (rerun_on_errors)
+        base::GetAppOutputAndError(cmdline, &tool_errors);
+      else
+        tool_errors = "Not Available.";
+
       if (!base::ReadFileToString(options_filepath, &options_file_text))
         options_file_text = "Could not read options file.";
 
       LOG(ERROR) << base::StringPrintf(
-          "Calling clang tool from %s returned false.\nCommand line: %s\n\n"
-          "Returned error text: %s\n\nPartial options file: %s\n",
+          "Calling clang tool returned false from %s\nCommandline: %s\n\n"
+          "Returned output: %s\n\nPartial options file: %s\n",
           source_path_.MaybeAsASCII().c_str(),
 #if defined(OS_WIN)
           base::UTF16ToASCII(cmdline.GetCommandLineString()).c_str(),

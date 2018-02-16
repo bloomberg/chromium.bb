@@ -352,7 +352,8 @@ int main(int argc, char* argv[]) {
 
   // If 'error-resilient' switch is provided, 0 will be returned in case of
   // operational errors, otherwise 1.
-  int error_value = command_line.HasSwitch("error-resilient") ? 0 : 1;
+  bool error_resilient = command_line.HasSwitch("error-resilient");
+  int error_value = error_resilient ? 0 : 1;
 
 #if defined(OS_WIN)
   for (const auto& path : command_line.GetArgs()) {
@@ -392,7 +393,8 @@ int main(int argc, char* argv[]) {
 
   // Extract annotations.
   if (extractor_input.empty()) {
-    if (!auditor.RunClangTool(path_filters, filter_files, all_files)) {
+    if (!auditor.RunClangTool(path_filters, filter_files, all_files,
+                              !error_resilient)) {
       LOG(ERROR) << "Failed to run clang tool.";
       return error_value;
     }
