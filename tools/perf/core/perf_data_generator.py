@@ -865,23 +865,12 @@ def generate_all_tests(waterfall):
   return tests
 
 
-def get_json_config_file_for_waterfall(waterfall):
-  filename = '%s.json' % waterfall['name']
-  buildbot_dir = os.path.join(
-      path_util.GetChromiumSrcDir(), 'testing', 'buildbot')
-  return os.path.join(buildbot_dir, filename)
-
-
-def update_all_tests(waterfalls):
-  all_tests = {}
-  for w in waterfalls:
-    tests = generate_all_tests(w)
-    all_tests.update(tests)
-    config_file = get_json_config_file_for_waterfall(w)
-    with open(config_file, 'w') as fp:
-      json.dump(tests, fp, indent=2, separators=(',', ': '), sort_keys=True)
-      fp.write('\n')
-  verify_all_tests_in_benchmark_csv(all_tests,
+def update_all_tests(waterfall, file_path):
+  tests = generate_all_tests(waterfall)
+  with open(file_path, 'w') as fp:
+    json.dump(tests, fp, indent=2, separators=(',', ': '), sort_keys=True)
+    fp.write('\n')
+  verify_all_tests_in_benchmark_csv(tests,
                                     get_all_waterfall_benchmarks_metadata())
 
 
@@ -1006,7 +995,7 @@ def _verify_benchmark_owners(benchmark_metadata):
       'Please fix the following errors:\n'+ '\n'.join(error_messages))
 
 
-def update_benchmark_csv():
+def update_benchmark_csv(file_path):
   """Updates go/chrome-benchmarks.
 
   Updates telemetry/perf/benchmark.csv containing the current benchmark names,
@@ -1033,16 +1022,17 @@ def update_benchmark_csv():
   csv_data = sorted(csv_data, key=lambda b: b[0])
   csv_data = header_data + csv_data
 
-  perf_dir = os.path.join(path_util.GetChromiumSrcDir(), 'tools', 'perf')
-  benchmark_file = os.path.join(perf_dir, 'benchmark.csv')
-  with open(benchmark_file, 'wb') as f:
+  with open(file_path, 'wb') as f:
     writer = csv.writer(f, lineterminator="\n")
     writer.writerows(csv_data)
 
 
 def main():
-  waterfall = get_waterfall_config()
-  waterfall['name'] = 'chromium.perf'
+  waterfall_file = os.path.join(
+      path_util.GetChromiumSrcDir(), 'testing', 'buildbot',
+      'chromium.perf.json')
+  update_all_tests(get_waterfall_config(), waterfall_file)
 
-  update_all_tests([waterfall])
-  update_benchmark_csv()
+  benchmark_file = os.path.join(
+      path_util.GetChromiumSrcDir(), 'tools', 'perf', 'benchmark.csv')
+  update_benchmark_csv(benchmark_file)
