@@ -138,8 +138,7 @@ Polymer({
    */
   getExplanation_: function(networkProperties) {
     return this.i18n(
-        'tetherConnectionExplanation',
-        CrOnc.getEscapedNetworkName(networkProperties));
+        'tetherConnectionExplanation', CrOnc.getNetworkName(networkProperties));
   },
 
   /**
@@ -150,7 +149,7 @@ Polymer({
   getDescriptionTitle_: function(networkProperties) {
     return this.i18n(
         'tetherConnectionDescriptionTitle',
-        CrOnc.getEscapedNetworkName(networkProperties));
+        CrOnc.getNetworkName(networkProperties));
   },
 
   /**
