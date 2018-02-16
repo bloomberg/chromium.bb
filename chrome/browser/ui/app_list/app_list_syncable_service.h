@@ -12,6 +12,7 @@
 #include <string>
 
 #include "ash/public/interfaces/app_list.mojom.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -25,8 +26,8 @@
 #include "components/sync/model/syncable_service.h"
 #include "components/sync/protocol/app_list_specifics.pb.h"
 
+class AppListModelUpdater;
 class ArcAppModelBuilder;
-class ChromeAppListModelUpdater;
 class ChromeAppListItem;
 class ExtensionAppModelBuilder;
 class Profile;
@@ -45,8 +46,6 @@ class PrefRegistrySyncable;
 
 namespace app_list {
 
-// TODO(hejq): Remove AppListItem when we have a mojo struct for this.
-class AppListItem;
 // TODO(hejq): Remove these when we get rid of |GetModel| and |GetSearchModel|.
 class AppListModel;
 class SearchModel;
@@ -76,6 +75,23 @@ class AppListSyncableService : public syncer::SyncableService,
 
    protected:
     virtual ~Observer() = default;
+  };
+
+  // An app list model updater factory function used by tests.
+  using ModelUpdaterFactoryCallback =
+      base::Callback<std::unique_ptr<AppListModelUpdater>()>;
+
+  // Sets and resets an app list model updater factory function for tests.
+  class ScopedModelUpdaterFactoryForTest {
+   public:
+    explicit ScopedModelUpdaterFactoryForTest(
+        const ModelUpdaterFactoryCallback& factory);
+    ~ScopedModelUpdaterFactoryForTest();
+
+   private:
+    ModelUpdaterFactoryCallback factory_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedModelUpdaterFactoryForTest);
   };
 
   using SyncItemMap = std::map<std::string, std::unique_ptr<SyncItem>>;
@@ -121,7 +137,7 @@ class AppListSyncableService : public syncer::SyncableService,
                       const syncer::StringOrdinal& item_pin_ordinal);
 
   // Gets the app list model updater.
-  ChromeAppListModelUpdater* GetModelUpdater();
+  AppListModelUpdater* GetModelUpdater();
 
   // Gets the app list model.
   // Note: This will be removed. Use |GetModelUpdater| instead.
@@ -264,7 +280,7 @@ class AppListSyncableService : public syncer::SyncableService,
 
   Profile* profile_;
   extensions::ExtensionSystem* extension_system_;
-  std::unique_ptr<ChromeAppListModelUpdater> model_updater_;
+  std::unique_ptr<AppListModelUpdater> model_updater_;
   std::unique_ptr<ModelUpdaterDelegate> model_updater_delegate_;
   std::unique_ptr<ExtensionAppModelBuilder> apps_builder_;
   std::unique_ptr<ArcAppModelBuilder> arc_apps_builder_;

@@ -3,13 +3,14 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
+#include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
-#include "chrome/browser/ui/app_list/chrome_app_list_model_updater.h"
+#include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
@@ -174,6 +175,13 @@ class AppListSyncableServiceTest : public AppListTestBase {
     extensions::ExtensionSystem* extension_system =
         extensions::ExtensionSystem::Get(profile_.get());
     DCHECK(extension_system);
+
+    model_updater_factory_scope_ = std::make_unique<
+        app_list::AppListSyncableService::ScopedModelUpdaterFactoryForTest>(
+        base::Bind([]() -> std::unique_ptr<AppListModelUpdater> {
+          return std::make_unique<FakeAppListModelUpdater>();
+        }));
+
     app_list_syncable_service_ =
         std::make_unique<app_list::AppListSyncableService>(profile_.get(),
                                                            extension_system);
@@ -183,7 +191,7 @@ class AppListSyncableServiceTest : public AppListTestBase {
 
   void TearDown() override { app_list_syncable_service_.reset(); }
 
-  ChromeAppListModelUpdater* model_updater() {
+  AppListModelUpdater* model_updater() {
     return app_list_syncable_service_->GetModelUpdater();
   }
 
@@ -205,6 +213,9 @@ class AppListSyncableServiceTest : public AppListTestBase {
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<AppListModelUpdater::TestApi> model_updater_test_api_;
   std::unique_ptr<app_list::AppListSyncableService> app_list_syncable_service_;
+  std::unique_ptr<
+      app_list::AppListSyncableService::ScopedModelUpdaterFactoryForTest>
+      model_updater_factory_scope_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListSyncableServiceTest);
 };

@@ -27,6 +27,14 @@ ChromeAppListModelUpdater::~ChromeAppListModelUpdater() {
   model_->RemoveObserver(this);
 }
 
+app_list::AppListModel* ChromeAppListModelUpdater::GetModel() {
+  return model_.get();
+}
+
+app_list::SearchModel* ChromeAppListModelUpdater::GetSearchModel() {
+  return search_model_.get();
+}
+
 void ChromeAppListModelUpdater::AddItem(
     std::unique_ptr<ChromeAppListItem> app_item) {
   ash::mojom::AppListItemMetadataPtr item_data = app_item->CloneMetadata();
@@ -248,7 +256,7 @@ app_list::SearchResult* ChromeAppListModelUpdater::FindSearchResult(
 
 void ChromeAppListModelUpdater::ResolveOemFolderPosition(
     const std::string& oem_folder_id,
-    const syncer::StringOrdinal& preffered_oem_position,
+    const syncer::StringOrdinal& preferred_oem_position,
     ResolveOemFolderPositionCallback callback) {
   // In ash:
   app_list::AppListFolderItem* ash_oem_folder =
@@ -256,7 +264,7 @@ void ChromeAppListModelUpdater::ResolveOemFolderPosition(
   ash::mojom::AppListItemMetadataPtr metadata = nullptr;
   if (ash_oem_folder) {
     const syncer::StringOrdinal& oem_folder_pos =
-        preffered_oem_position.IsValid() ? preffered_oem_position
+        preferred_oem_position.IsValid() ? preferred_oem_position
                                          : GetOemFolderPos();
     model_->SetItemPosition(ash_oem_folder, oem_folder_pos);
     metadata = ash_oem_folder->CloneMetadata();
@@ -288,8 +296,8 @@ void ChromeAppListModelUpdater::AddItemToOemFolder(
     app_list::AppListSyncableService::SyncItem* oem_sync_item,
     const std::string& oem_folder_id,
     const std::string& oem_folder_name,
-    const syncer::StringOrdinal& preffered_oem_position) {
-  syncer::StringOrdinal position_to_try = preffered_oem_position;
+    const syncer::StringOrdinal& preferred_oem_position) {
+  syncer::StringOrdinal position_to_try = preferred_oem_position;
   // If we find a valid postion in the sync item, then we'll try it.
   if (oem_sync_item && oem_sync_item->item_ordinal.IsValid())
     position_to_try = oem_sync_item->item_ordinal;
@@ -325,6 +333,11 @@ void ChromeAppListModelUpdater::UpdateAppItemFromSyncItem(
     // This updates the folder in both chrome and ash:
     MoveItemToFolder(chrome_item->id(), sync_item->parent_id);
   }
+}
+
+void ChromeAppListModelUpdater::SetDelegate(
+    AppListModelUpdaterDelegate* delegate) {
+  delegate_ = delegate;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -374,15 +387,15 @@ ash::mojom::AppListItemMetadataPtr
 ChromeAppListModelUpdater::FindOrCreateOemFolder(
     const std::string& oem_folder_id,
     const std::string& oem_folder_name,
-    const syncer::StringOrdinal& preffered_oem_position) {
+    const syncer::StringOrdinal& preferred_oem_position) {
   app_list::AppListFolderItem* oem_folder =
       model_->FindFolderItem(oem_folder_id);
   if (!oem_folder) {
     std::unique_ptr<app_list::AppListFolderItem> new_folder(
         new app_list::AppListFolderItem(
             oem_folder_id, app_list::AppListFolderItem::FOLDER_TYPE_OEM));
-    syncer::StringOrdinal oem_position = preffered_oem_position.IsValid()
-                                             ? preffered_oem_position
+    syncer::StringOrdinal oem_position = preferred_oem_position.IsValid()
+                                             ? preferred_oem_position
                                              : GetOemFolderPos();
     // Do not create a sync item for the OEM folder here, do it in
     // ResolveFolderPositions() when the item position is finalized.
