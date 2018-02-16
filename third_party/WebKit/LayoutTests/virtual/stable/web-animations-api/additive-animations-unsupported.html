@@ -25,8 +25,8 @@ test(function() {
 
 test(function() {
     var replaceReplaceKeyframes = [
-        {width: '0px', composite: 'replace'},
-        {width: '100px', composite: 'replace'}
+        {color: 'blue', composite: 'replace'},
+        {color: 'green', composite: 'replace'}
     ];
 
     assert_not_equals(element.animate(replaceReplaceKeyframes), undefined);
@@ -34,28 +34,32 @@ test(function() {
 
 test(function() {
     var addAddKeyframes = [
-        {width: '0px', composite: 'add'},
-        {width: '100px', composite: 'add'}
+        {color: 'blue', composite: 'add'},
+        {color: 'green', composite: 'add'}
     ];
 
-    assert_throws('NOT_SUPPORTED_ERR', function() { element.animate(addAddKeyframes); });
-}, 'Calling element.animate() with an add -> add animation should throw a NotSupportedError.');
+    element.animate(addAddKeyframes, {fill: 'forwards'});
+    assert_equals(getComputedStyle(element).color, 'rgb(0, 128, 0)');
+}, 'Calling element.animate() with an add -> add animation should result in a replace -> replace animation.');
 
 test(function() {
     var replaceAddKeyframes = [
-        {width: '0px', composite: 'replace'},
-        {width: '100px', composite: 'add'}
+        {color: 'blue', composite: 'replace'},
+        {color: 'green', composite: 'add'}
     ];
 
-    assert_throws('NOT_SUPPORTED_ERR', function() { element.animate(replaceAddKeyframes); });
-}, 'Calling element.animate() with a replace -> add animation should throw a NotSupportedError.');
+    element.animate(replaceAddKeyframes, {fill: 'forwards'});
+    assert_equals(getComputedStyle(element).color, 'rgb(0, 128, 0)');
+}, 'Calling element.animate() with a replace -> add animation should result in a replace -> replace animation.');
 
 test(function() {
     var addReplaceKeyframes = [
-        {width: '0px', composite: 'add'},
-        {width: '100px', composite: 'replace'}
+        {color: 'blue', composite: 'add'},
+        {color: 'green', composite: 'replace'}
     ];
 
-    assert_throws('NOT_SUPPORTED_ERR', function() { element.animate(addReplaceKeyframes); });
-}, 'Calling element.animate() with an add -> replace animation should throw a NotSupportedError.');
+    const anim = element.animate(addReplaceKeyframes, {fill: 'backwards'});
+    anim.reverse();
+    assert_equals(getComputedStyle(element).color, 'rgb(0, 0, 255)');
+}, 'Calling element.animate() with an add -> replace animation should result in a replace -> replace animation.');
 </script>

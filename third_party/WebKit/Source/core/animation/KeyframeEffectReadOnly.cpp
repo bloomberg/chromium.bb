@@ -56,8 +56,8 @@ KeyframeEffectReadOnly* KeyframeEffectReadOnly::Create(
 
   EffectModel::CompositeOperation composite = EffectModel::kCompositeReplace;
   if (options.IsKeyframeEffectOptions()) {
-    composite = EffectModel::ExtractCompositeOperation(
-        options.GetAsKeyframeEffectOptions());
+    composite = EffectModel::StringToCompositeOperation(
+        options.GetAsKeyframeEffectOptions().composite());
   }
 
   KeyframeEffectModelBase* model = EffectInput::Convert(

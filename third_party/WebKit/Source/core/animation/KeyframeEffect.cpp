@@ -71,8 +71,8 @@ KeyframeEffect* KeyframeEffect::Create(
 
   EffectModel::CompositeOperation composite = EffectModel::kCompositeReplace;
   if (options.IsKeyframeEffectOptions()) {
-    composite = EffectModel::ExtractCompositeOperation(
-        options.GetAsKeyframeEffectOptions());
+    composite = EffectModel::StringToCompositeOperation(
+        options.GetAsKeyframeEffectOptions().composite());
   }
 
   KeyframeEffectModelBase* model = EffectInput::Convert(
@@ -120,9 +120,8 @@ KeyframeEffect::KeyframeEffect(Element* target,
 KeyframeEffect::~KeyframeEffect() = default;
 
 void KeyframeEffect::setComposite(String composite_string) {
-  EffectModel::CompositeOperation composite;
-  if (EffectModel::StringToCompositeOperation(composite_string, composite))
-    Model()->SetComposite(composite);
+  Model()->SetComposite(
+      EffectModel::StringToCompositeOperation(composite_string));
 }
 
 AnimationEffectTiming* KeyframeEffect::timing() {

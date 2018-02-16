@@ -1,7 +1,7 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 
-<div id="cssTarget"></div>
+<div id="cssTarget" style="color: red;"></div>
 <svg>
   <rect id="svgTarget" color="red"></rect>
 </svg>
@@ -11,14 +11,13 @@ internals.disableCSSAdditiveAnimations();
 
 test(() => {
   assert_throws('NotSupportedError', () => {
-    cssTarget.animate({color: 'red'});
+    cssTarget.animate({color: 'green'});
   });
-  assert_throws('NotSupportedError', () => {
-    cssTarget.animate([
-      {color: 'red'},
-      {color: 'red', composite: 'add'},
-    ]);
-  });
+  var animation = cssTarget.animate([
+      {color: 'green', composite: 'add'},
+      {color: 'green', composite: 'add'},
+  ], { fill: 'forwards' });
+  assert_equals(getComputedStyle(cssTarget).color, 'rgb(0, 128, 0)');
 }, 'Precheck that disabling CSS additive animations works.');
 
 test(() => {
