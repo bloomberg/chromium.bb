@@ -6,8 +6,8 @@
 // https://drafts.css-houdini.org/css-typed-om-1/#cssmathinvert
 [
   Constructor(CSSNumberish arg),
-  Exposed=(Window,PaintWorklet),
-  RuntimeEnabled=CSSTypedOM
+  RuntimeEnabled=CSSTypedOM,
+  Exposed=(Window,PaintWorklet)
 ] interface CSSMathInvert : CSSMathValue {
   readonly attribute CSSNumberish value;
 };

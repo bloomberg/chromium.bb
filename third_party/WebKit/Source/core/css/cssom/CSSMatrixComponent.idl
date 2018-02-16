@@ -8,8 +8,8 @@
 [
     Constructor(DOMMatrixReadOnly matrix,
         optional CSSMatrixComponentOptions options),
-    Exposed=(Window,PaintWorklet),
-    RuntimeEnabled=CSSTypedOM
+    RuntimeEnabled=CSSTypedOM,
+    Exposed=(Window,PaintWorklet)
 ] interface CSSMatrixComponent : CSSTransformComponent {
     attribute DOMMatrix matrix;
 };

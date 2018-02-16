@@ -6,8 +6,8 @@
 // image types.
 // https://drafts.css-houdini.org/css-typed-om/#imagevalue-objects
 [
-    Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM,
+    Exposed=(Window,PaintWorklet),
     ImplementedAs=CSSStyleImageValue
 ] interface CSSImageValue : CSSResourceValue {
     readonly attribute double? intrinsicWidth;

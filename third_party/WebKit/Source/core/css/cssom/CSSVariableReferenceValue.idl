@@ -6,8 +6,8 @@
 // Spec: https://drafts.css-houdini.org/css-typed-om/#cssvariablereferencevalue
 [
     Constructor(DOMString variable, optional CSSUnparsedValue fallback),
-    Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM,
+    Exposed=(Window,PaintWorklet),
     RaisesException=Constructor,
     ImplementedAs=CSSStyleVariableReferenceValue
 ] interface CSSVariableReferenceValue {
