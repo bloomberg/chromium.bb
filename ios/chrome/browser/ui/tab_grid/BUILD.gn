@@ -23,8 +23,11 @@ source_set("tab_grid_ui") {
   sources = [
     "grid_cell.h",
     "grid_cell.mm",
+    "grid_consumer.h",
     "grid_item.h",
     "grid_item.mm",
+    "grid_view_controller.h",
+    "grid_view_controller.mm",
     "tab_grid_view_controller.h",
     "tab_grid_view_controller.mm",
   ]

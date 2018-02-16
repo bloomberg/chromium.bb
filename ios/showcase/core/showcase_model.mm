@@ -67,9 +67,9 @@
       showcase::kUseCaseKey : @"Bubble",
     },
     @{
-      showcase::kClassForDisplayKey : @"TabGridViewController",
-      showcase::kClassForInstantiationKey : @"SCTabGridCoordinator",
-      showcase::kUseCaseKey : @"Tab grid",
+      showcase::kClassForDisplayKey : @"GridViewController",
+      showcase::kClassForInstantiationKey : @"SCGridCoordinator",
+      showcase::kUseCaseKey : @"Grid UI",
     },
     @{
       showcase::kClassForDisplayKey : @"GridCell",
