@@ -339,10 +339,18 @@ void LayoutEmbeddedContent::UpdateGeometry(
   // Ignore transform here, as we only care about the sub-pixel accumulation.
   // TODO(trchen): What about multicol? Need a LayoutBox function to query
   // sub-pixel accumulation.
-  LayoutPoint absolute_location(LocalToAbsolute(FloatPoint()));
-  LayoutRect absolute_replaced_rect = ReplacedContentRect();
+  LayoutRect replaced_rect = ReplacedContentRect();
+  TransformState transform_state(TransformState::kApplyTransformDirection,
+                                 FloatPoint(),
+                                 FloatQuad(FloatRect(replaced_rect)));
+  MapLocalToAncestor(nullptr, transform_state,
+                     kApplyContainerFlip | kUseTransforms);
+  transform_state.Flatten();
+  LayoutPoint absolute_location(transform_state.LastPlanarPoint());
+  LayoutRect absolute_replaced_rect(replaced_rect);
   absolute_replaced_rect.MoveBy(absolute_location);
-
+  FloatRect absolute_bounding_box =
+      transform_state.LastPlanarQuad().BoundingBox();
   IntRect frame_rect(IntPoint(),
                      PixelSnappedIntRect(absolute_replaced_rect).Size());
   // Normally the location of the frame rect is ignored by the painter, but
@@ -354,8 +362,6 @@ void LayoutEmbeddedContent::UpdateGeometry(
   // RemoteFrameView::frameRectsChanged().
   // WebPluginContainerImpl::reportGeometry()
   // TODO(trchen): Remove this hack once we fixed all callers.
-  FloatRect absolute_bounding_box =
-      LocalToAbsoluteQuad(FloatRect(ReplacedContentRect())).BoundingBox();
   frame_rect.SetLocation(RoundedIntPoint(absolute_bounding_box.Location()));
 
   embedded_content_view.SetFrameRect(frame_rect);
