@@ -17,6 +17,7 @@
 #include "content/public/browser/speech_recognition_manager_delegate.h"
 #include "content/public/browser/speech_recognition_session_config.h"
 #include "content/public/browser/speech_recognition_session_context.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 
 namespace content {
@@ -89,7 +90,7 @@ void SpeechRecognitionDispatcherHost::OnStartRequest(
     return;
   }
 
-  int embedder_render_process_id = 0;
+  int embedder_render_process_id = ChildProcessHost::kInvalidUniqueID;
   int embedder_render_view_id = MSG_ROUTING_NONE;
   RenderViewHostImpl* render_view_host =
       RenderViewHostImpl::FromID(render_process_id_, params.render_view_id);
@@ -109,7 +110,7 @@ void SpeechRecognitionDispatcherHost::OnStartRequest(
     // to decide permission.
     embedder_render_process_id =
         outer_web_contents->GetRenderViewHost()->GetProcess()->GetID();
-    DCHECK_NE(embedder_render_process_id, 0);
+    DCHECK_NE(embedder_render_process_id, ChildProcessHost::kInvalidUniqueID);
     embedder_render_view_id =
         outer_web_contents->GetRenderViewHost()->GetRoutingID();
     DCHECK_NE(embedder_render_view_id, MSG_ROUTING_NONE);
@@ -149,8 +150,6 @@ void SpeechRecognitionDispatcherHost::OnStartRequestOnIO(
   context.render_frame_id = params_render_frame_id;
   context.embedder_render_process_id = embedder_render_process_id;
   context.embedder_render_view_id = embedder_render_view_id;
-  if (embedder_render_process_id)
-    context.guest_render_view_id = params.render_view_id;
   context.request_id = params.request_id;
 
   SpeechRecognitionSessionConfig config;
