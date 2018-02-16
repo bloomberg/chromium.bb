@@ -196,12 +196,11 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   *eob = rec_eob_pos(eob_pt, eob_extra);
 
   {
-    // Read the last non-zero coefficient
+    // Read the non-zero coefficient with scan index eob-1
     // TODO(angiebird): Put this into a function
     const int c = *eob - 1;
     const int pos = scan[c];
-    const int coeff_ctx =
-        get_nz_map_ctx(levels, pos, bwl, height, c, 1, tx_size, tx_type);
+    const int coeff_ctx = get_lower_levels_ctx_eob(bwl, height, c);
     const int nsymbs = 3;
     aom_cdf_prob *cdf =
         ec_ctx->coeff_base_eob_cdf[txs_ctx][plane_type][coeff_ctx];
@@ -228,7 +227,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
     const int c = *eob - 1 - i;
     const int pos = scan[c];
     const int coeff_ctx =
-        get_nz_map_ctx(levels, pos, bwl, height, c, 0, tx_size, tx_type);
+        get_lower_levels_ctx(levels, pos, bwl, tx_size, tx_type);
     aom_cdf_prob *cdf = ec_ctx->coeff_base_cdf[txs_ctx][plane_type][coeff_ctx];
     const int nsymbs = 4;
     int level = aom_read_symbol(r, cdf, nsymbs, ACCT_STR);
