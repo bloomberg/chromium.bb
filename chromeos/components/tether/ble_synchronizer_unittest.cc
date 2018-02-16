@@ -92,6 +92,10 @@ class MockBluetoothAdapterWithAdvertisements
 
   MOCK_METHOD1(RegisterAdvertisementWithArgsStruct,
                void(RegisterAdvertisementArgs*));
+  MOCK_METHOD3(StartDiscoverySessionWithFilterRaw,
+               void(device::BluetoothDiscoveryFilter*,
+                    const device::BluetoothAdapter::DiscoverySessionCallback&,
+                    const device::BluetoothAdapter::ErrorCallback&));
 
   void RegisterAdvertisement(
       std::unique_ptr<device::BluetoothAdvertisement::Data> advertisement_data,
@@ -100,6 +104,14 @@ class MockBluetoothAdapterWithAdvertisements
           error_callback) override {
     RegisterAdvertisementWithArgsStruct(new RegisterAdvertisementArgs(
         *advertisement_data->service_uuids(), callback, error_callback));
+  }
+
+  void StartDiscoverySessionWithFilter(
+      std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter,
+      const device::BluetoothAdapter::DiscoverySessionCallback& callback,
+      const device::BluetoothAdapter::ErrorCallback& error_callback) override {
+    StartDiscoverySessionWithFilterRaw(discovery_filter.get(), callback,
+                                       error_callback);
   }
 
  protected:
@@ -208,7 +220,7 @@ class BleSynchronizerTest : public testing::Test {
     ON_CALL(*mock_adapter_, RegisterAdvertisementWithArgsStruct(_))
         .WillByDefault(
             Invoke(this, &BleSynchronizerTest::OnAdapterRegisterAdvertisement));
-    ON_CALL(*mock_adapter_, StartDiscoverySession(_, _))
+    ON_CALL(*mock_adapter_, StartDiscoverySessionWithFilterRaw(_, _, _))
         .WillByDefault(
             Invoke(this, &BleSynchronizerTest::OnAdapterStartDiscoverySession));
 
@@ -234,8 +246,11 @@ class BleSynchronizerTest : public testing::Test {
   }
 
   void OnAdapterStartDiscoverySession(
+      device::BluetoothDiscoveryFilter* discovery_filter,
       const device::BluetoothAdapter::DiscoverySessionCallback& callback,
       const device::BluetoothAdapter::ErrorCallback& error_callback) {
+    EXPECT_EQ(device::BluetoothTransport::BLUETOOTH_TRANSPORT_LE,
+              discovery_filter->GetTransport());
     start_discovery_args_list_.emplace_back(base::WrapUnique(
         new StartDiscoverySessionArgs(callback, error_callback)));
   }
