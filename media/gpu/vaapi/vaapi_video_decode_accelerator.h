@@ -21,7 +21,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/condition_variable.h"
@@ -31,6 +30,7 @@
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/shared_memory_region.h"
+#include "media/gpu/vaapi/vaapi_decode_surface.h"
 #include "media/gpu/vaapi/vaapi_picture_factory.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/video/picture.h"
@@ -56,9 +56,6 @@ class VaapiPicture;
 class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
     : public VideoDecodeAccelerator {
  public:
-  // Wrapper of a VASurface with id and visible area.
-  class VaapiDecodeSurface;
-
   VaapiVideoDecodeAccelerator(
       const MakeGLContextCurrentCallback& make_context_current_cb,
       const BindGLImageCallback& bind_image_cb);
