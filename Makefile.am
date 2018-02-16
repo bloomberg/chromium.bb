@@ -95,7 +95,11 @@ nodist_libwayland_client_la_SOURCES =		\
 pkgconfig_DATA += src/wayland-client.pc src/wayland-server.pc
 
 protocol/%-protocol.c : $(top_srcdir)/protocol/%.xml
+if USE_HOST_SCANNER
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) code $< $@
+else
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) public-code $< $@
+endif
 
 protocol/%-server-protocol.h : $(top_srcdir)/protocol/%.xml
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) server-header $< $@
