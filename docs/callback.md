@@ -201,19 +201,33 @@ pointer.
 base::Closure cb = base::Bind(&MyClass::MyFunc, this, 23, "hello world");
 ```
 
-### Partial Binding Of Parameters
+### Partial Binding Of Parameters (Currying)
 
 You can specify some parameters when you create the callback, and specify the
 rest when you execute the callback.
 
-```cpp
-void MyFunc(int i, const std::string& str) {}
-base::Callback<void(const std::string&)> cb = base::Bind(&MyFunc, 23);
-cb.Run("hello world");
-```
-
 When calling a function bound parameters are first, followed by unbound
 parameters.
+
+```cpp
+void ReadIntFromFile(const std::string& filename,
+                     base::OnceCallback<void(int)> on_read);
+
+void DisplayIntWithPrefix(const std::string& prefix, int result) {
+  LOG(INFO) << prefix << result;
+}
+
+void AnotherFunc(const std::string& file) {
+  ReadIntFromFile(file, base::BindOnce(&DisplayIntWithPrefix, "MyPrefix: "));
+};
+```
+
+This technique is known as [Currying](http://en.wikipedia.org/wiki/Currying). It
+should be used in lieu of creating an adapter class that holds the bound
+arguments. Notice also that the `"MyPrefix: "` argument is actually a
+`const char*`, while `DisplayIntWithPrefix` actually wants a
+`const std::string&`. Like normal function dispatch, `base::Bind`, will coerce
+parameter types if possible.
 
 ### Avoiding Copies with Callback Parameters
 

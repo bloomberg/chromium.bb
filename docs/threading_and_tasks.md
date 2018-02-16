@@ -4,6 +4,14 @@
 
 ## Overview
 
+Chromium is a very multithreaded product. We try to keep the UI as responsive as
+possible, and this means not blocking the UI thread with any blocking I/O or
+other expensive operations. Our approach is to use message passing as the way of
+communicating between threads. We discourage locking and threadsafe
+objects. Instead, objects live on only one thread, we pass messages between
+threads for communication, and we use callback interfaces (implemented by
+message passing) for most cross-thread requests.
+
 ### Threads
 
 Every Chrome process has
@@ -55,7 +63,8 @@ that require mere thread-safety as it opens up scheduling paradigms that
 wouldn't be possible otherwise (sequences can hop threads instead of being stuck
 behind unrelated work on a dedicated thread). Ability to hop threads also means
 the thread count can dynamically adapt to the machine's true resource
-availability (faster on bigger machines, avoids trashing on slower machines).
+availability (increased parallelism on bigger machines, avoids trashing
+resources on smaller machines).
 
 Many core APIs were recently made sequence-friendly (classes are rarely
 thread-affine -- i.e. only when using thread-local-storage or third-party APIs
@@ -140,7 +149,7 @@ ways of controlling tasks in tests).
 
 A sequence is a set of tasks that run one at a time in posting order (not
 necessarily on the same thread). To post tasks as part of a sequence, use a
- [`SequencedTaskRunner`](https://cs.chromium.org/chromium/src/base/sequenced_task_runner.h).
+[`SequencedTaskRunner`](https://cs.chromium.org/chromium/src/base/sequenced_task_runner.h).
 
 ### Posting to a New Sequence
 
@@ -218,6 +227,23 @@ scoped_refptr<SequencedTaskRunner> other_task_runner = ...;
 other_task_runner->PostTask(FROM_HERE,
                             base::BindOnce(&A::AddValue, base::Unretained(&a)));
 ```
+
+Locks should only be used to swap in a shared data structure that can be
+accessed on multiple threads.  If one thread updates it based on expensive
+computation or through disk access, then that slow work should be done without
+holding on to the lock.  Only when the result is available should the lock be
+used to swap in the new data.  An example of this is in PluginList::LoadPlugins
+([`content/common/plugin_list.cc`](https://cs.chromium.org/chromium/src/content/
+common/plugin_list.cc). If you must use locks,
+[here](https://www.chromium.org/developers/lock-and-condition-variable) are some
+best practices and pitfalls to avoid.
+
+In order to write non-blocking code, many APIs in Chromium are asynchronous.
+Usually this means that they either need to be executed on a particular
+thread/sequence and will return results via a custom delegate interface, or they
+take a `base::Callback<>` object that is called when the requested operation is
+completed.  Executing work on a specific thread/sequence is covered in the
+PostTask sections above.
 
 ## Posting Multiple Tasks to the Same Thread
 
@@ -382,7 +408,8 @@ base::PostTaskWithTraits(
 Do not perform expensive work on the main thread, the IO thread or any sequence
 that is expected to run tasks with a low latency. Instead, perform expensive
 work asynchronously using `base::PostTaskAndReply*()` or
-`SequencedTaskRunner::PostTaskAndReply()`.
+`SequencedTaskRunner::PostTaskAndReply()`. Note that asynchronous/overlapped
+I/O on the IO thread are fine.
 
 Example: Running the code below on the main thread will prevent the browser from
 responding to user input for a long time.
