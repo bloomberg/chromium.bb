@@ -691,8 +691,7 @@ TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeFor200) {
           "Via: 1.1 Chrome-Compression-Proxy-Suffix, 9.9 other-proxy\r\n"
           "Via: 2.2 Chrome-Compression-Proxy\r\n"
           "Warning: 214 Chrome-Compression-Proxy \"Transformation Applied\"\r\n"
-          "X-Original-Content-Length: 10000\r\n"
-          "Chrome-Proxy: q=low\r\n"
+          "Chrome-Proxy: q=low,ofcl=10000\r\n"
           "Content-Length: 1000\r\n\r\n",
       },
       {
@@ -822,7 +821,7 @@ TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeFor304) {
   } test_cases[] = {{
                         "HTTP/1.1 304 Not Modified\r\n"
                         "Via: 1.1 Chrome-Compression-Proxy\r\n"
-                        "X-Original-Content-Length: 10000\r\n\r\n",
+                        "Chrome-Proxy: ofcl=10000\r\n\r\n",
                     },
                     {
                         "HTTP/1.1 304 Not Modified\r\n"
@@ -909,17 +908,17 @@ TEST_F(DataReductionProxyDelegateTest, PartialRangeSavings) {
       {"HTTP/1.1 200 OK\r\n"
        "Via: 1.1 Chrome-Compression-Proxy\r\n"
        "Content-Length: 1000\r\n"
-       "X-Original-Content-Length: 3000\r\n\r\n",
+       "Chrome-Proxy: ofcl=3000\r\n\r\n",
        100, 300},
       {"HTTP/1.1 200 OK\r\n"
        "Via: 1.1 Chrome-Compression-Proxy\r\n"
        "Content-Length: 1000\r\n"
-       "X-Original-Content-Length: 1000\r\n\r\n",
+       "Chrome-Proxy: ofcl=1000\r\n\r\n",
        100, 100},
       {"HTTP/1.1 200 OK\r\n"
        "Via: 1.1 Chrome-Compression-Proxy\r\n"
        "Content-Length: 3000\r\n"
-       "X-Original-Content-Length: 1000\r\n\r\n",
+       "Chrome-Proxy: ofcl=1000\r\n\r\n",
        300, 100},
       {"HTTP/1.1 200 OK\r\n"
        "Via: 1.1 Chrome-Compression-Proxy\r\n"
@@ -928,38 +927,38 @@ TEST_F(DataReductionProxyDelegateTest, PartialRangeSavings) {
       {"HTTP/1.1 200 OK\r\n"
        "Via: 1.1 Chrome-Compression-Proxy\r\n"
        "Content-Length: 1000\r\n"
-       "X-Original-Content-Length: nonsense\r\n\r\n",
+       "Chrome-Proxy: ofcl=nonsense\r\n\r\n",
        100, 100},
       {"HTTP/1.1 200 OK\r\n"
        "Via: 1.1 Chrome-Compression-Proxy\r\n"
        "Content-Length: 0\r\n"
-       "X-Original-Content-Length: 1000\r\n\r\n",
+       "Chrome-Proxy: ofcl=1000\r\n\r\n",
        0, 1000},
       {"HTTP/1.1 200 OK\r\n"
        "Via: 1.1 Chrome-Compression-Proxy\r\n"
-       "X-Original-Content-Length: 1000\r\n\r\n",
+       "Chrome-Proxy: ofcl=1000\r\n\r\n",
        100, 100},
       {"HTTP/1.1 200 OK\r\n"
        "Via: 1.1 Chrome-Compression-Proxy\r\n"
        "Content-Length: nonsense\r\n"
-       "X-Original-Content-Length: 3000\r\n\r\n",
+       "Chrome-Proxy: ofcl=3000\r\n\r\n",
        100, 100},
       {"HTTP/1.1 200 OK\r\n"
        "Via: 1.1 Chrome-Compression-Proxy\r\n"
        "Content-Length: 1000\r\n"
-       "X-Original-Content-Length: 0\r\n\r\n",
+       "Chrome-Proxy: ofcl=0\r\n\r\n",
        100, 0},
       {"HTTP/1.1 200 OK\r\n"
        "Via: 1.1 Chrome-Compression-Proxy\r\n"
        "Content-Length: 1000\r\n"
-       "X-Original-Content-Length: 0\r\n\r\n",
+       "Chrome-Proxy: ofcl=0\r\n\r\n",
        0, 0},
       {"HTTP/1.1 200 OK\r\n"
        "Via: 1.1 Chrome-Compression-Proxy\r\n"
        "Content-Length: " +
            base::Int64ToString(static_cast<int64_t>(1) << 60) +
            "\r\n"
-           "X-Original-Content-Length: " +
+           "Chrome-Proxy: ofcl=" +
            base::Int64ToString((static_cast<int64_t>(1) << 60) * 3) +
            "\r\n\r\n",
        100, 300},
