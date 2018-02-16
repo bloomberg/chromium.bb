@@ -785,6 +785,8 @@ void MediaControlsImpl::MaybeShow() {
     download_iph_manager_->SetControlsVisibility(true);
   if (loading_panel_)
     loading_panel_->OnControlsShown();
+
+  timeline_->OnControlsShown();
 }
 
 void MediaControlsImpl::Hide() {
@@ -801,6 +803,13 @@ void MediaControlsImpl::Hide() {
     download_iph_manager_->SetControlsVisibility(false);
   if (loading_panel_)
     loading_panel_->OnControlsHidden();
+
+  // Cancel scrubbing if necessary.
+  if (is_scrubbing_) {
+    is_paused_for_scrubbing_ = false;
+    EndScrubbing();
+  }
+  timeline_->OnControlsHidden();
 }
 
 bool MediaControlsImpl::IsVisible() const {

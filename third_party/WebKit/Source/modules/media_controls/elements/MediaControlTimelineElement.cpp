@@ -129,7 +129,7 @@ const char* MediaControlTimelineElement::GetNameForHistograms() const {
 }
 
 void MediaControlTimelineElement::DefaultEventHandler(Event* event) {
-  if (!isConnected() || !GetDocument().IsActive())
+  if (!isConnected() || !GetDocument().IsActive() || controls_hidden_)
     return;
 
   RenderBarSegments();
@@ -308,11 +308,25 @@ bool MediaControlTimelineElement::BeginScrubbingEvent(Event& event) {
   return false;
 }
 
+void MediaControlTimelineElement::OnControlsHidden() {
+  controls_hidden_ = true;
+
+  // End scrubbing state.
+  is_touching_ = false;
+  if (current_time_display_)
+    current_time_display_->SetIsWanted(false);
+}
+
+void MediaControlTimelineElement::OnControlsShown() {
+  controls_hidden_ = false;
+}
+
 bool MediaControlTimelineElement::EndScrubbingEvent(Event& event) {
   if (is_touching_) {
     if (event.type() == EventTypeNames::touchend ||
         event.type() == EventTypeNames::touchcancel ||
         event.type() == EventTypeNames::change) {
+      is_touching_ = false;
       return true;
     }
   } else if (event.type() == EventTypeNames::pointerup ||

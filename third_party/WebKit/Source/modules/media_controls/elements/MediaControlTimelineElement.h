@@ -34,6 +34,10 @@ class MediaControlTimelineElement : public MediaControlSliderElement {
 
   void RenderBarSegments();
 
+  // Inform the timeline that the Media Controls have been shown or hidden.
+  void OnControlsShown();
+  void OnControlsHidden();
+
   virtual void Trace(blink::Visitor*);
 
  protected:
@@ -55,6 +59,8 @@ class MediaControlTimelineElement : public MediaControlSliderElement {
   Member<MediaControlCurrentTimeDisplayElement> current_time_display_;
 
   bool is_touching_ = false;
+
+  bool controls_hidden_ = false;
 };
 
 }  // namespace blink
