@@ -26,24 +26,27 @@ if (!use_system_minigbm) {
   shared_library("minigbm") {
     sources = [
       "src/amdgpu.c",
-      "src/cirrus.c",
+      "src/amlogic.c",
       "src/drv.c",
       "src/evdi.c",
       "src/exynos.c",
       "src/gbm.c",
       "src/gbm_helpers.c",
-      "src/gma500.c",
       "src/helpers.c",
+      "src/helpers_array.c",
       "src/i915.c",
       "src/marvell.c",
       "src/mediatek.c",
+      "src/msm.c",
       "src/nouveau.c",
+      "src/radeon.c",
       "src/rockchip.c",
       "src/tegra.c",
       "src/udl.c",
       "src/vc4.c",
       "src/vgem.c",
-      "src/virtio_gpu.c",
+      "src/virtio_dumb.c",
+      "src/virtio_virgl.c",
     ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]
