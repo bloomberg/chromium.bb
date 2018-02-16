@@ -170,6 +170,10 @@ void av1_convolve_2d_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
   const int fo_horiz = filter_params_x->taps / 2 - 1;
   const uint8_t *const src_ptr = src - fo_vert * src_stride - fo_horiz;
 
+  const int bits =
+      FILTER_BITS * 2 - conv_params->round_0 - conv_params->round_1;
+  const int offset_bits = bd + 2 * FILTER_BITS - conv_params->round_0;
+
   __m256i filt[4], coeffs_h[4], coeffs_v[4];
 
   filt[0] = _mm256_load_si256((__m256i const *)filt1_global_avx2);
@@ -184,12 +188,14 @@ void av1_convolve_2d_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
       ((1 << (conv_params->round_0 - 1)) >> 1) + (1 << (bd + FILTER_BITS - 2)));
   const __m128i round_shift_h = _mm_cvtsi32_si128(conv_params->round_0 - 1);
 
+  const __m256i sum_round_v = _mm256_set1_epi32(
+      (1 << offset_bits) + ((1 << conv_params->round_1) >> 1));
+  const __m128i sum_shift_v = _mm_cvtsi32_si128(conv_params->round_1);
+
   const __m256i round_const_v = _mm256_set1_epi32(
-      ((1 << conv_params->round_1) >> 1) -
-      (1 << (bd + 2 * FILTER_BITS - conv_params->round_0 - 1)) +
-      ((1 << (2 * FILTER_BITS - conv_params->round_0)) >> 1));
-  const __m128i round_shift_v =
-      _mm_cvtsi32_si128(2 * FILTER_BITS - conv_params->round_0);
+      ((1 << bits) >> 1) - (1 << (offset_bits - conv_params->round_1)) -
+      ((1 << (offset_bits - conv_params->round_1)) >> 1));
+  const __m128i round_shift_v = _mm_cvtsi32_si128(bits);
 
   for (j = 0; j < w; j += 8) {
     for (i = 0; i < im_h; i += 2) {
@@ -241,10 +247,15 @@ void av1_convolve_2d_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
         s[3] = _mm256_unpacklo_epi16(s6, s7);
         s[7] = _mm256_unpackhi_epi16(s6, s7);
 
-        const __m256i res_a = convolve_y_2d(s, coeffs_v);
-        const __m256i res_b = convolve_y_2d(s + 4, coeffs_v);
+        __m256i res_a = convolve_y_2d(s, coeffs_v);
+        __m256i res_b = convolve_y_2d(s + 4, coeffs_v);
 
         // Combine V round and 2F-H-V round into a single rounding
+        res_a =
+            _mm256_sra_epi32(_mm256_add_epi32(res_a, sum_round_v), sum_shift_v);
+        res_b =
+            _mm256_sra_epi32(_mm256_add_epi32(res_b, sum_round_v), sum_shift_v);
+
         const __m256i res_a_round = _mm256_sra_epi32(
             _mm256_add_epi32(res_a, round_const_v), round_shift_v);
         const __m256i res_b_round = _mm256_sra_epi32(
