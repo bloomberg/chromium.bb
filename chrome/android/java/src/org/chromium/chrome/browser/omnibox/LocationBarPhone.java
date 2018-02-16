@@ -51,7 +51,7 @@ public class LocationBarPhone extends LocationBarLayout {
     private int mIncognitoBadgePadding;
     private int mGoogleGWidth;
     private int mGoogleGMargin;
-    private float mUrlFocusChangePercent;
+
     private Runnable mKeyboardResizeModeTask;
     private ObjectAnimator mOmniboxBackgroundAnimator;
     private boolean mCloseSheetOnBackButton;
