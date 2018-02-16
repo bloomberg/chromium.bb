@@ -19,6 +19,7 @@ component("captive_portal") {
     "//base",
     "//components/data_use_measurement/core",
     "//net",
+    "//services/network/public/cpp",
     "//url",
   ]
 }
@@ -34,6 +35,7 @@ static_library("test_support") {
     ":captive_portal",
     "//base",
     "//net:test_support",
+    "//services/network:test_support",
     "//url",
   ]
 }

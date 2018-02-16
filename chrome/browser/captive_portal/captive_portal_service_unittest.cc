@@ -104,7 +104,8 @@ class CaptivePortalServiceTest : public testing::Test,
     profile_.reset(new TestingProfile());
     tick_clock_.reset(new base::SimpleTestTickClock());
     tick_clock_->Advance(base::TimeTicks::Now() - tick_clock_->NowTicks());
-    service_.reset(new CaptivePortalService(profile_.get(), tick_clock_.get()));
+    service_.reset(new CaptivePortalService(profile_.get(), tick_clock_.get(),
+                                            test_loader_factory()));
 
     // Use no delays for most tests.
     set_initial_backoff_no_portal(base::TimeDelta());

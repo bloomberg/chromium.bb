@@ -45,20 +45,11 @@ void CaptivePortalDetectorTestBase::CompleteURLFetch(
     int net_error,
     int status_code,
     const char* response_headers) {
-  if (net_error != net::OK) {
-    DCHECK(!response_headers);
-    fetcher()->set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                                net_error));
-  } else {
-    fetcher()->set_response_code(status_code);
-    if (response_headers) {
-      scoped_refptr<net::HttpResponseHeaders> headers(
-          CreateResponseHeaders(response_headers));
-      DCHECK_EQ(status_code, headers->response_code());
-      fetcher()->set_response_headers(headers);
-    }
-  }
-  detector()->OnURLFetchComplete(fetcher());
+  scoped_refptr<net::HttpResponseHeaders> headers;
+  if (response_headers)
+    headers = CreateResponseHeaders(response_headers);
+  detector()->OnSimpleLoaderCompleteInternal(net_error, status_code, GURL(),
+                                             headers.get());
 }
 
 }  // namespace captive_portal

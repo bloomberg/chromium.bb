@@ -82,8 +82,7 @@ class NetworkingConfigTest
     content::RunAllPendingInMessageLoop();
 
     network_portal_detector_ = new NetworkPortalDetectorImpl(
-        g_browser_process->system_request_context(),
-        true /* create_notification_controller */);
+        test_loader_factory(), true /* create_notification_controller */);
     chromeos::network_portal_detector::InitializeForTesting(
         network_portal_detector_);
     network_portal_detector_->Enable(false /* start_detection */);

@@ -35,7 +35,7 @@ CaptivePortalDetectorTabHelper::CaptivePortalDetectorTabHelper(
     id<CaptivePortalDetectorTabHelperDelegate> delegate)
     : delegate_(delegate),
       detector_(std::make_unique<captive_portal::CaptivePortalDetector>(
-          web_state->GetBrowserState()->GetRequestContext())) {
+          web_state->GetBrowserState()->GetURLLoaderFactory())) {
   DCHECK(delegate);
 }
 

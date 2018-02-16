@@ -34,6 +34,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/active_directory_password_change_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/enrollment_screen_handler.h"
@@ -283,7 +284,9 @@ void GaiaScreenHandler::MaybePreloadAuthExtension() {
 
   if (!network_portal_detector_) {
     NetworkPortalDetectorImpl* detector = new NetworkPortalDetectorImpl(
-        g_browser_process->system_request_context(), false);
+        g_browser_process->system_network_context_manager()
+            ->GetURLLoaderFactory(),
+        false);
     detector->set_portal_test_url(GURL(kRestrictiveProxyURL));
     network_portal_detector_.reset(detector);
     network_portal_detector_->AddObserver(this);

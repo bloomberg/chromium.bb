@@ -2326,6 +2326,31 @@ TEST_P(SimpleURLLoaderTest,
   EXPECT_EQ("", *test_helper->response_body());
 }
 
+// Test for GetFinalURL.
+TEST_P(SimpleURLLoaderTest, GetFinalURL) {
+  GURL url = test_server_.GetURL("/echo");
+  std::unique_ptr<network::ResourceRequest> resource_request =
+      std::make_unique<network::ResourceRequest>();
+  resource_request->url = url;
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelper(std::move(resource_request));
+  test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
+
+  EXPECT_EQ(net::OK, test_helper->simple_url_loader()->NetError());
+  EXPECT_EQ(url, test_helper->simple_url_loader()->GetFinalURL());
+}
+
+// Test for GetFinalURL with a redirect.
+TEST_P(SimpleURLLoaderTest, GetFinalURLAfterRedirect) {
+  GURL url = test_server_.GetURL("/echo");
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelperForURL(test_server_.GetURL("/server-redirect?" + url.spec()));
+  test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
+
+  EXPECT_EQ(net::OK, test_helper->simple_url_loader()->NetError());
+  EXPECT_EQ(url, test_helper->simple_url_loader()->GetFinalURL());
+}
+
 INSTANTIATE_TEST_CASE_P(
     /* No prefix */,
     SimpleURLLoaderTest,

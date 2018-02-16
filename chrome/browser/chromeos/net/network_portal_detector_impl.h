@@ -33,8 +33,10 @@ namespace base {
 class Value;
 }
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+namespace mojom {
+class URLLoaderFactory;
+}
 }
 
 namespace chromeos {
@@ -55,9 +57,8 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
   static constexpr base::TimeDelta kDelaySinceShillPortalForUMA =
       base::TimeDelta::FromSeconds(60);
 
-  NetworkPortalDetectorImpl(
-      const scoped_refptr<net::URLRequestContextGetter>& request_context,
-      bool create_notification_controller);
+  NetworkPortalDetectorImpl(network::mojom::URLLoaderFactory* loader_factory,
+                            bool create_notification_controller);
   ~NetworkPortalDetectorImpl() override;
 
   // Set the URL to be tested for portal state.

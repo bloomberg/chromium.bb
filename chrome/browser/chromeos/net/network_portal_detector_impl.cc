@@ -211,14 +211,14 @@ constexpr base::TimeDelta
     NetworkPortalDetectorImpl::kDelaySinceShillPortalForUMA;
 
 NetworkPortalDetectorImpl::NetworkPortalDetectorImpl(
-    const scoped_refptr<net::URLRequestContextGetter>& request_context,
+    network::mojom::URLLoaderFactory* loader_factory,
     bool create_notification_controller)
     : strategy_(PortalDetectorStrategy::CreateById(
           PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN,
           this)),
       weak_factory_(this) {
   NET_LOG(EVENT) << "NetworkPortalDetectorImpl::NetworkPortalDetectorImpl()";
-  captive_portal_detector_.reset(new CaptivePortalDetector(request_context));
+  captive_portal_detector_.reset(new CaptivePortalDetector(loader_factory));
 
   // Captive portal randomization can cause problems in some environemnts.
   // Disable randomization by default by setting portal_test_url_.

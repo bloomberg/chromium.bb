@@ -19,6 +19,12 @@
 
 class Profile;
 
+namespace network {
+namespace mojom {
+class URLLoaderFactory;
+}
+}  // namespace network
+
 // Service that checks for captive portals when queried, and sends a
 // NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT with the Profile as the source and
 // a CaptivePortalService::Results as the details.
@@ -49,7 +55,9 @@ class CaptivePortalService : public KeyedService {
   };
 
   explicit CaptivePortalService(Profile* profile);
-  CaptivePortalService(Profile* profile, base::TickClock* clock_for_testing);
+  CaptivePortalService(Profile* profile,
+                       base::TickClock* clock_for_testing,
+                       network::mojom::URLLoaderFactory* loader_factory);
   ~CaptivePortalService() override;
 
   // Triggers a check for a captive portal.  If there's already a check in

@@ -16,7 +16,6 @@
 #include "components/captive_portal/captive_portal_testing_utils.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -58,11 +57,7 @@ class CaptivePortalDetectorTest : public testing::Test,
   ~CaptivePortalDetectorTest() override {}
 
   void SetUp() override {
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter(
-        new net::TestURLRequestContextGetter(
-            base::ThreadTaskRunnerHandle::Get()));
-
-    detector_.reset(new CaptivePortalDetector(request_context_getter.get()));
+    detector_.reset(new CaptivePortalDetector(test_loader_factory()));
     set_detector(detector_.get());
   }
 
@@ -139,9 +134,8 @@ TEST_F(CaptivePortalDetectorTest, CaptivePortalResultCodes) {
 
   // Generic network error case.
   results.result = captive_portal::RESULT_NO_RESPONSE;
-  results.response_code = net::URLFetcher::RESPONSE_CODE_INVALID;
-  RunTest(results, net::ERR_TIMED_OUT, net::URLFetcher::RESPONSE_CODE_INVALID,
-          nullptr);
+  results.response_code = 0;
+  RunTest(results, net::ERR_TIMED_OUT, 0, nullptr);
 
   // In the general captive portal case, the portal will return a page with a
   // 200 status.
