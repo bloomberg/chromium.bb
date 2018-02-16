@@ -976,7 +976,7 @@ String FrameSelection::SelectedTextForClipboard() const {
                  .Build());
 }
 
-LayoutRect FrameSelection::UnclippedBoundsInDocument() const {
+LayoutRect FrameSelection::AbsoluteUnclippedBounds() const {
   LocalFrameView* view = frame_->View();
   LayoutView* layout_view = frame_->ContentLayoutObject();
 
@@ -984,8 +984,7 @@ LayoutRect FrameSelection::UnclippedBoundsInDocument() const {
     return LayoutRect();
 
   view->UpdateLifecycleToLayoutClean();
-  return view->AbsoluteToDocument(
-      LayoutRect(layout_selection_->AbsoluteSelectionBounds()));
+  return LayoutRect(layout_selection_->AbsoluteSelectionBounds());
 }
 
 IntRect FrameSelection::ComputeRectToScroll(

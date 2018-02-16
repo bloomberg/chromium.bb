@@ -136,6 +136,7 @@ TEST_P(DragControllerSimTest, DropURLOnNonNavigatingClearsState) {
 }
 
 TEST_P(DragControllerTest, DragImageForSelectionClipsToViewport) {
+  bool rls = RuntimeEnabledFeatures::RootLayerScrollingEnabled();
   SetBodyInnerHTML(R"HTML(
     <style>
       * { margin: 0; }
@@ -183,7 +184,7 @@ TEST_P(DragControllerTest, DragImageForSelectionClipsToViewport) {
   frame_view->LayoutViewportScrollableArea()->SetScrollOffset(
       ScrollOffset(0, scroll_offset), kProgrammaticScroll);
   expected_selection =
-      FloatRect(0, scroll_offset, node_width, viewport_height_css);
+      FloatRect(0, rls ? 0 : scroll_offset, node_width, viewport_height_css);
   EXPECT_EQ(expected_selection, DragController::ClippedSelection(GetFrame()));
   selection_image = DragController::DragImageForSelection(GetFrame(), 1);
   expected_image_size = IntSize(RoundedIntSize(expected_selection.Size()));
@@ -195,7 +196,7 @@ TEST_P(DragControllerTest, DragImageForSelectionClipsToViewport) {
   scroll_offset = 800;
   frame_view->LayoutViewportScrollableArea()->SetScrollOffset(
       ScrollOffset(0, scroll_offset), kProgrammaticScroll);
-  expected_selection = FloatRect(0, scroll_offset, node_width,
+  expected_selection = FloatRect(0, rls ? 0 : scroll_offset, node_width,
                                  node_height + node_margin_top - scroll_offset);
   EXPECT_EQ(expected_selection, DragController::ClippedSelection(GetFrame()));
   selection_image = DragController::DragImageForSelection(GetFrame(), 1);
@@ -205,6 +206,7 @@ TEST_P(DragControllerTest, DragImageForSelectionClipsToViewport) {
 }
 
 TEST_P(DragControllerTest, DragImageForSelectionClipsChildFrameToViewport) {
+  bool rls = RuntimeEnabledFeatures::RootLayerScrollingEnabled();
   SetBodyInnerHTML(R"HTML(
     <style>
       * { margin: 0; }
@@ -274,7 +276,7 @@ TEST_P(DragControllerTest, DragImageForSelectionClipsChildFrameToViewport) {
   int iframe_scroll_offset = 7;
   child_frame.View()->LayoutViewportScrollableArea()->SetScrollOffset(
       ScrollOffset(0, iframe_scroll_offset), kProgrammaticScroll);
-  expected_selection = FloatRect(0, 17, 30, 8);
+  expected_selection = FloatRect(0, rls ? 10 : 17, 30, 8);
   EXPECT_EQ(expected_selection, DragController::ClippedSelection(child_frame));
   selection_image = DragController::DragImageForSelection(child_frame, 1);
   expected_image_size = IntSize(RoundedIntSize(expected_selection.Size()));
@@ -283,6 +285,7 @@ TEST_P(DragControllerTest, DragImageForSelectionClipsChildFrameToViewport) {
 
 TEST_P(DragControllerTest,
        DragImageForSelectionClipsChildFrameToViewportWithPageScaleFactor) {
+  bool rls = RuntimeEnabledFeatures::RootLayerScrollingEnabled();
   SetBodyInnerHTML(R"HTML(
     <style>
       * { margin: 0; }
@@ -357,7 +360,7 @@ TEST_P(DragControllerTest,
   int iframe_scroll_offset = 7;
   child_frame.View()->LayoutViewportScrollableArea()->SetScrollOffset(
       ScrollOffset(0, iframe_scroll_offset), kProgrammaticScroll);
-  expected_selection = FloatRect(0, 17, 30, 8);
+  expected_selection = FloatRect(0, rls ? 10 : 17, 30, 8);
   EXPECT_EQ(expected_selection, DragController::ClippedSelection(child_frame));
   selection_image = DragController::DragImageForSelection(child_frame, 1);
   expected_image_size = IntSize(RoundedIntSize(expected_selection.Size()));
