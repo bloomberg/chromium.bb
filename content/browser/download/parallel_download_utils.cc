@@ -194,7 +194,8 @@ void DebugSlicesInfo(const download::DownloadItem::ReceivedSlices& slices) {
   DVLOG(1) << "Received slices size : " << slices.size();
   for (const auto& it : slices) {
     DVLOG(1) << "Slice offset = " << it.offset
-             << " , received_bytes = " << it.received_bytes;
+             << " , received_bytes = " << it.received_bytes
+             << " , finished = " << it.finished;
   }
 }
 

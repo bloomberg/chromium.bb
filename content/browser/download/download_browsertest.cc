@@ -918,7 +918,87 @@ class ParallelDownloadTest : public DownloadContentTest {
 
   ~ParallelDownloadTest() override {}
 
-  // Verify parallel download completion tests.
+  // Creates the intermediate file that has already contained randomly generated
+  // download data pieces.
+  download::DownloadItem* CreateDownloadAndIntermediateFile(
+      const base::FilePath& path,
+      const std::vector<GURL>& url_chain,
+      const download::DownloadItem::ReceivedSlices& slices,
+      TestDownloadHttpResponse::Parameters& parameters) {
+    std::string output;
+    int64_t total_bytes = 0u;
+    {
+      base::ScopedAllowBlockingForTesting allow_io_for_test_setup;
+      base::File file(path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+      for (const auto& slice : slices) {
+        total_bytes += slice.received_bytes;
+
+        EXPECT_TRUE(file.IsValid());
+        output = TestDownloadHttpResponse::GetPatternBytes(
+            parameters.pattern_generator_seed, slice.offset,
+            slice.received_bytes);
+        EXPECT_EQ(slice.received_bytes, file.Write(slice.offset, output.data(),
+                                                   slice.received_bytes));
+      }
+      file.Close();
+    }
+
+    download::DownloadItem* download =
+        DownloadManagerForShell(shell())->CreateDownloadItem(
+            "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, path, base::FilePath(),
+            url_chain, GURL(), GURL(), GURL(), GURL(),
+            "application/octet-stream", "application/octet-stream",
+            base::Time::Now(), base::Time(), parameters.etag,
+            parameters.last_modified, total_bytes, parameters.size,
+            std::string(), download::DownloadItem::INTERRUPTED,
+            download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+            download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false,
+            base::Time(), false, slices);
+    return download;
+  }
+
+  // Verifies parallel download resumption in different scenarios, where the
+  // intermediate file is generated based on |slices| and has a full length of
+  // |total_length|.
+  void RunResumptionTest(
+      const download::DownloadItem::ReceivedSlices& received_slices,
+      int64_t total_length,
+      size_t expected_request_count) {
+    EXPECT_TRUE(base::FeatureList::IsEnabled(features::kParallelDownloading));
+    GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+    GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+    TestDownloadHttpResponse::Parameters parameters;
+    parameters.etag = "ABC";
+    parameters.size = total_length;
+    parameters.last_modified = std::string();
+    // Needed to specify HTTP connection type to create parallel download.
+    parameters.connection_type = net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1;
+    TestDownloadHttpResponse::StartServing(parameters, server_url);
+
+    base::FilePath intermediate_file_path =
+        GetDownloadDirectory().AppendASCII("intermediate");
+    std::vector<GURL> url_chain;
+    url_chain.push_back(server_url);
+
+    // Create the intermediate file reflecting the received slices.
+    download::DownloadItem* download = CreateDownloadAndIntermediateFile(
+        intermediate_file_path, url_chain, received_slices, parameters);
+
+    // Resume the parallel download with sparse file and received slices data.
+    download->Resume();
+    WaitForCompletion(download);
+
+    // Verify number of requests sent to the server.
+    const TestDownloadResponseHandler::CompletedRequests& completed_requests =
+        test_response_handler()->completed_requests();
+    EXPECT_EQ(expected_request_count, completed_requests.size());
+
+    // Verify download content on disk.
+    ReadAndVerifyFileContents(parameters.pattern_generator_seed,
+                              parameters.size, download->GetTargetFilePath());
+  }
+
+  // Verifies parallel download completion.
   void RunCompletionTest(TestDownloadHttpResponse::Parameters& parameters) {
     EXPECT_TRUE(base::FeatureList::IsEnabled(features::kParallelDownloading));
 
@@ -3050,74 +3130,47 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, OnlyFirstRequestValid) {
 }
 
 // Verify parallel download resumption.
-IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ParallelDownloadResumption) {
-  EXPECT_TRUE(base::FeatureList::IsEnabled(features::kParallelDownloading));
-
-  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
-  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
-  TestDownloadHttpResponse::Parameters parameters;
-  parameters.etag = "ABC";
-  parameters.size = 3000000;
-  parameters.last_modified = std::string();
-  parameters.connection_type = net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1;
-  TestDownloadHttpResponse::StartServing(parameters, server_url);
-
-  base::FilePath intermediate_file_path =
-      GetDownloadDirectory().AppendASCII("intermediate");
-  std::vector<GURL> url_chain;
-  url_chain.push_back(server_url);
-
-  // Create an intermediate file that contains 3 chunks of data.
-  const int kIntermediateSize = 1000;
-  std::string output;
-  {
-    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
-    base::File file(intermediate_file_path,
-                    base::File::FLAG_CREATE | base::File::FLAG_WRITE);
-    ASSERT_TRUE(file.IsValid());
-    output = TestDownloadHttpResponse::GetPatternBytes(
-        parameters.pattern_generator_seed, 0, kIntermediateSize);
-    EXPECT_EQ(kIntermediateSize,
-              file.Write(0, output.data(), kIntermediateSize));
-    output = TestDownloadHttpResponse::GetPatternBytes(
-        parameters.pattern_generator_seed, 1000000, kIntermediateSize);
-    EXPECT_EQ(kIntermediateSize,
-              file.Write(1000000, output.data(), kIntermediateSize));
-    output = TestDownloadHttpResponse::GetPatternBytes(
-        parameters.pattern_generator_seed, 2000000, kIntermediateSize);
-    EXPECT_EQ(kIntermediateSize,
-              file.Write(2000000, output.data(), kIntermediateSize));
-    file.Close();
-  }
-
-  // Create the received slices data that reflects the data in the file.
+IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, Resumption) {
+  // Create the received slices data, the last request is not finished and the
+  // server will send more data to finish the last slice.
   std::vector<download::DownloadItem::ReceivedSlice> received_slices = {
       download::DownloadItem::ReceivedSlice(0, 1000),
       download::DownloadItem::ReceivedSlice(1000000, 1000),
-      download::DownloadItem::ReceivedSlice(2000000, 1000)};
+      download::DownloadItem::ReceivedSlice(2000000, 1000,
+                                            false /* finished */)};
 
-  download::DownloadItem* download =
-      DownloadManagerForShell(shell())->CreateDownloadItem(
-          "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, intermediate_file_path,
-          base::FilePath(), url_chain, GURL(), GURL(), GURL(), GURL(),
-          "application/octet-stream", "application/octet-stream",
-          base::Time::Now(), base::Time(), parameters.etag,
-          parameters.last_modified, kIntermediateSize * 3, parameters.size,
-          std::string(), download::DownloadItem::INTERRUPTED,
-          download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-          download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false,
-          base::Time(), false, received_slices);
+  RunResumptionTest(received_slices, 3000000, kTestRequestCount);
+}
 
-  // Resume the parallel download with sparse file and received slices data.
-  download->Resume();
-  WaitForCompletion(download);
+// Verifies that if the last slice is finished, parallel download resumption
+// can complete.
+IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ResumptionLastSliceFinished) {
+  // Create the received slices data, last slice is actually finished.
+  std::vector<download::DownloadItem::ReceivedSlice> received_slices = {
+      download::DownloadItem::ReceivedSlice(0, 1000),
+      download::DownloadItem::ReceivedSlice(1000000, 1000),
+      download::DownloadItem::ReceivedSlice(2000000, 1000000,
+                                            true /* finished */)};
 
-  const TestDownloadResponseHandler::CompletedRequests& completed_requests =
-      test_response_handler()->completed_requests();
-  EXPECT_EQ(kTestRequestCount, static_cast<int>(completed_requests.size()));
+  // The server shouldn't receive an additional request, since the last slice
+  // is marked as finished.
+  RunResumptionTest(received_slices, 3000000, kTestRequestCount - 1);
+}
 
-  ReadAndVerifyFileContents(parameters.pattern_generator_seed, parameters.size,
-                            download->GetTargetFilePath());
+// Verifies that if the last slice is finished, but the database record is not
+// finished, which may happen in database migration.
+// When the server sends HTTP range not satisfied, the download can complete.
+IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ResumptionLastSliceUnfinished) {
+  // Create the received slices data, last slice is actually finished.
+  std::vector<download::DownloadItem::ReceivedSlice> received_slices = {
+      download::DownloadItem::ReceivedSlice(0, 1000),
+      download::DownloadItem::ReceivedSlice(1000000, 1000),
+      download::DownloadItem::ReceivedSlice(2000000, 1000000,
+                                            false /* finished */)};
+
+  // Client will send an out of range request where server will send back HTTP
+  // range not satisfied, and download can complete.
+  RunResumptionTest(received_slices, 3000000, kTestRequestCount);
 }
 
 // Test to verify that the browser-side enforcement of X-Frame-Options does

@@ -19,7 +19,8 @@ struct DownloadSliceInfo {
   DownloadSliceInfo();
   DownloadSliceInfo(DownloadId download_id,
                     int64_t offset,
-                    int64_t received_bytes);
+                    int64_t received_bytes,
+                    bool finished);
   DownloadSliceInfo(const DownloadSliceInfo& other);
   ~DownloadSliceInfo();
 
@@ -33,6 +34,9 @@ struct DownloadSliceInfo {
 
   // The number of bytes received (so far).
   int64_t received_bytes;
+
+  // If the download stream is successfully finished for this slice.
+  bool finished;
 };
 
 }  // namespace history
