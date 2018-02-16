@@ -20,7 +20,6 @@ template("generate_runner_script") {
   _package_path = "$_pkg_dir/${invoker.package_name}.far"
   _runner_target = "${target_name}_runner"
   _legacy_runner_target = "${target_name}_legacy_runner"
-  _target_name = target_name
 
   group(_runtime_deps_target) {
     forward_variables_from(invoker,
@@ -110,7 +109,6 @@ template("generate_runner_script") {
     _generated_script = "${invoker.generated_script}_v2"
 
     script = "//build/fuchsia/runner_v2/create_runner_script.py"
-    depfile = "$target_gen_dir/$_target_name.d"
 
     outputs = [
       _generated_script,
