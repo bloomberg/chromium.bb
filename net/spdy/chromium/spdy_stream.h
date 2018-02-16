@@ -321,6 +321,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // MORE_DATA_TO_SEND for bidirectional streams; for request/response
   // streams, it must be MORE_DATA_TO_SEND if there is more data to
   // upload, or NO_MORE_DATA_TO_SEND if not.
+  // Must not be called until Delegate::OnHeadersSent() is called.
   void SendData(IOBuffer* data, int length, SpdySendStatus send_status);
 
   // Fills SSL info in |ssl_info| and returns true when SSL is in use.
