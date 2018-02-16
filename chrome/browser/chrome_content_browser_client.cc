@@ -374,7 +374,6 @@
 #include "extensions/browser/extension_navigation_throttle.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
@@ -3755,13 +3754,9 @@ void ChromeContentBrowserClient::RegisterNonNetworkNavigationURLLoaderFactories(
     content::RenderFrameHost* frame_host,
     NonNetworkURLLoaderFactoryMap* factories) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  content::BrowserContext* browser_context =
-      frame_host->GetProcess()->GetBrowserContext();
   factories->emplace(
       extensions::kExtensionScheme,
-      extensions::CreateExtensionNavigationURLLoaderFactory(
-          frame_host,
-          extensions::ExtensionSystem::Get(browser_context)->info_map()));
+      extensions::CreateExtensionNavigationURLLoaderFactory(frame_host));
 #endif
 }
 
@@ -3771,11 +3766,8 @@ void ChromeContentBrowserClient::
         const GURL& frame_url,
         NonNetworkURLLoaderFactoryMap* factories) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  content::BrowserContext* browser_context =
-      frame_host->GetProcess()->GetBrowserContext();
   auto factory = extensions::MaybeCreateExtensionSubresourceURLLoaderFactory(
-      frame_host, frame_url,
-      extensions::ExtensionSystem::Get(browser_context)->info_map());
+      frame_host, frame_url);
   if (factory)
     factories->emplace(extensions::kExtensionScheme, std::move(factory));
 #endif

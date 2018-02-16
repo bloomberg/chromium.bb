@@ -178,27 +178,6 @@ ChromeExtensionsBrowserClient::MaybeCreateResourceBundleRequestJob(
       send_cors_header);
 }
 
-base::FilePath ChromeExtensionsBrowserClient::GetBundleResourcePath(
-    const network::ResourceRequest& request,
-    const base::FilePath& extension_resources_path,
-    int* resource_id) const {
-  return chrome_url_request_util::GetBundleResourcePath(
-      request, extension_resources_path, resource_id);
-}
-
-void ChromeExtensionsBrowserClient::LoadResourceFromResourceBundle(
-    const network::ResourceRequest& request,
-    network::mojom::URLLoaderRequest loader,
-    const base::FilePath& resource_relative_path,
-    int resource_id,
-    const std::string& content_security_policy,
-    network::mojom::URLLoaderClientPtr client,
-    bool send_cors_header) {
-  chrome_url_request_util::LoadResourceFromResourceBundle(
-      request, std::move(loader), resource_relative_path, resource_id,
-      content_security_policy, std::move(client), send_cors_header);
-}
-
 bool ChromeExtensionsBrowserClient::AllowCrossRendererResourceLoad(
     const GURL& url,
     content::ResourceType resource_type,
