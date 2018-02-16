@@ -13,14 +13,13 @@
 // the timeouts for different environments (like TSan).
 class TestTimeouts {
  public:
-  // Argument that can be passed on the command line to indicate "no timeout".
-  static constexpr const char kNoTimeoutSwitchValue[] = "-1";
-
   // Initializes the timeouts. Non thread-safe. Should be called exactly once
   // by the test suite.
   static void Initialize();
 
-  // Timeout for actions that are expected to finish "almost instantly".
+  // Timeout for actions that are expected to finish "almost instantly".  This
+  // is used in various tests to post delayed tasks and usually functions more
+  // like a delay value than a timeout.
   static base::TimeDelta tiny_timeout() {
     DCHECK(initialized_);
     return base::TimeDelta::FromMilliseconds(tiny_timeout_ms_);

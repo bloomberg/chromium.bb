@@ -68,8 +68,8 @@ class ScopedFeatureList;
 //
 // UI listed can be shown interactively using the --ui argument. E.g.
 //
-//   browser_tests --gtest_filter=BrowserUiTest.Invoke --interactive
-//       --ui=FooUiTest.InvokeUi_name
+//   browser_tests --gtest_filter=BrowserUiTest.Invoke
+//       --test-launcher-interactive --ui=FooUiTest.InvokeUi_name
 class TestBrowserUi {
  protected:
   TestBrowserUi();
@@ -125,12 +125,5 @@ class SupportsTestUi : public Base, public TestUi {
 };
 
 using UiBrowserTest = SupportsTestUi<InProcessBrowserTest, TestBrowserUi>;
-
-namespace internal {
-
-// When present on the command line, runs the test in an interactive mode.
-constexpr const char kInteractiveSwitch[] = "interactive";
-
-}  // namespace internal
 
 #endif  // CHROME_BROWSER_UI_TEST_TEST_BROWSER_UI_H_
