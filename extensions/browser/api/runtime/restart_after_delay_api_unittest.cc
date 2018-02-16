@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -26,8 +28,8 @@ class DelayedRestartTestApiDelegate : public TestRuntimeAPIDelegate {
 
   // TestRuntimeAPIDelegate:
   bool RestartDevice(std::string* error_message) override {
-    if (!quit_closure_.is_null())
-      base::ResetAndReturn(&quit_closure_).Run();
+    if (quit_closure_)
+      std::move(quit_closure_).Run();
 
     *error_message = "Success.";
     restart_done_ = true;
@@ -46,7 +48,7 @@ class DelayedRestartTestApiDelegate : public TestRuntimeAPIDelegate {
   }
 
  private:
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 
   bool restart_done_ = false;
 

@@ -4,13 +4,16 @@
 
 #include "chrome/browser/extensions/extension_install_prompt_test_helper.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 ExtensionInstallPromptTestHelper::ExtensionInstallPromptTestHelper() {}
 ExtensionInstallPromptTestHelper::ExtensionInstallPromptTestHelper(
-    const base::Closure& quit_closure) : quit_closure_(quit_closure) {}
+    base::OnceClosure quit_closure)
+    : quit_closure_(std::move(quit_closure)) {}
 ExtensionInstallPromptTestHelper::~ExtensionInstallPromptTestHelper() {}
 
 ExtensionInstallPrompt::DoneCallback
@@ -32,7 +35,7 @@ void ExtensionInstallPromptTestHelper::HandleResult(
     ExtensionInstallPrompt::Result result) {
   if (result_.get())
     ADD_FAILURE() << "HandleResult() called twice!";
-  if (!quit_closure_.is_null())
-    base::ResetAndReturn(&quit_closure_).Run();
+  if (quit_closure_)
+    std::move(quit_closure_).Run();
   result_.reset(new ExtensionInstallPrompt::Result(result));
 }
