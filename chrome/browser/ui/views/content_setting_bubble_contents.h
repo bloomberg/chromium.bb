@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_CONTENT_SETTING_BUBBLE_CONTENTS_H_
 #define CHROME_BROWSER_UI_VIEWS_CONTENT_SETTING_BUBBLE_CONTENTS_H_
 
-#include <list>
 #include <map>
 
 #include "base/compiler_specific.h"
@@ -14,8 +13,6 @@
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/media_stream_request.h"
-#include "ui/base/models/combobox_model.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -78,27 +75,6 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
  private:
-  // A combobox model that builds the contents of the media capture devices menu
-  // in the content setting bubble.
-  class MediaComboboxModel : public ui::ComboboxModel {
-   public:
-    explicit MediaComboboxModel(content::MediaStreamType type);
-    ~MediaComboboxModel() override;
-
-    content::MediaStreamType type() const { return type_; }
-    const content::MediaStreamDevices& GetDevices() const;
-    int GetDeviceIndex(const content::MediaStreamDevice& device) const;
-
-    // ui::ComboboxModel:
-    int GetItemCount() const override;
-    base::string16 GetItemAt(int index) override;
-
-   private:
-    content::MediaStreamType type_;
-
-    DISALLOW_COPY_AND_ASSIGN(MediaComboboxModel);
-  };
-
   class Favicon;
   class ListItemContainer;
 
@@ -134,9 +110,6 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   views::LabelButton* manage_button_;
   views::Checkbox* manage_checkbox_;
   views::ImageButton* learn_more_button_;
-
-  // Combobox models the bubble owns.
-  std::list<MediaComboboxModel> combobox_models_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSettingBubbleContents);
 };
