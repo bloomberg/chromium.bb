@@ -10,6 +10,7 @@
 #import "ios/web/public/web_state/web_state_user_data.h"
 
 @protocol SadTabTabHelperDelegate;
+class ScopedFullscreenDisabler;
 
 // SadTabTabHelper listens to RenderProcessGone events and presents a
 // SadTabView view appropriately.
@@ -53,6 +54,10 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
   // Presents a new SadTabView via the web_state object.
   void PresentSadTab(const GURL& url_causing_failure);
 
+  // Called when the Sad Tab is added or removed from the WebState's content
+  // area.
+  void SetIsShowingSadTab(bool showing_sad_tab);
+
   // Loads the current page after renderer crash while displaying the page
   // placeholder during the load. Reloading the page which was not visible to
   // the user during the crash is a better user experience than presenting
@@ -67,9 +72,16 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
   // Removes UIApplicationDidBecomeActiveNotification observer.
   void RemoveApplicationDidBecomeActiveObserver();
 
+  // Creates or resets the fullscreen disabler depending on whether the sad tab
+  // is currently visible.
+  void UpdateFullscreenDisabler();
+
   // WebStateObserver:
   void WasShown(web::WebState* web_state) override;
+  void WasHidden(web::WebState* web_state) override;
   void RenderProcessGone(web::WebState* web_state) override;
+  void DidStartNavigation(web::WebState* web_state,
+                          web::NavigationContext* navigation_context) override;
   void DidFinishNavigation(web::WebState* web_state,
                            web::NavigationContext* navigation_context) override;
   void WebStateDestroyed(web::WebState* web_state) override;
@@ -89,6 +101,12 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
   // Stores the last date that the renderer crashed,
   // used to determine time window for repeated crashes.
   std::unique_ptr<base::ElapsedTimer> last_failed_timer_;
+
+  // Whether a Sad Tab is being shown over |web_state_|'s content area.
+  bool showing_sad_tab_ = false;
+
+  // The fullscreen disabler for when the sad tab is visible.
+  std::unique_ptr<ScopedFullscreenDisabler> fullscreen_disabler_;
 
   // Stores the interval window in seconds during which a second
   // RenderProcessGone failure will be considered a repeat failure.
