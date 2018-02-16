@@ -84,8 +84,11 @@
                    curve:UIViewAnimationCurveEaseInOut
               animations:showControls];
 
+    [slowAnimator addCompletion:^(UIViewAnimatingPosition finalPosition) {
+      [fastAnimator startAnimation];
+    }];
+
     [slowAnimator startAnimation];
-    [fastAnimator startAnimation];
   } else {
     contraction();
     showControls();
