@@ -15,6 +15,7 @@ config("components_download_implementation") {
 
 component("public") {
   sources = [
+    "download_content.h",
     "download_danger_type.h",
     "download_interrupt_reason_values.h",
     "download_interrupt_reasons.h",
@@ -24,6 +25,8 @@ component("public") {
     "download_source.h",
     "download_url_parameters.cc",
     "download_url_parameters.h",
+    "rate_estimator.h",
+    "resume_mode.h",
   ]
 
   configs += [ ":components_download_implementation" ]

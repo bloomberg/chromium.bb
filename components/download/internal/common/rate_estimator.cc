@@ -1,22 +1,22 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/rate_estimator.h"
+#include "components/download/public/common/rate_estimator.h"
 
 #include "base/logging.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
 
-namespace content {
+namespace download {
 
 namespace {
 
 static const int kDefaultBucketTimeSeconds = 1;
 static const size_t kDefaultNumBuckets = 10;
 
-} // namespace
+}  // namespace
 
 RateEstimator::RateEstimator()
     : history_(kDefaultNumBuckets),
@@ -37,8 +37,7 @@ RateEstimator::RateEstimator(TimeDelta bucket_time,
   ResetBuckets(now);
 }
 
-RateEstimator::~RateEstimator() {
-}
+RateEstimator::~RateEstimator() {}
 
 void RateEstimator::Increment(uint32_t count) {
   Increment(count, TimeTicks::Now());
@@ -52,7 +51,7 @@ void RateEstimator::Increment(uint32_t count, TimeTicks now) {
   DCHECK(delta_buckets >= 0);
   size_t index_offset = static_cast<size_t>(delta_buckets);
   DCHECK(index_offset <= history_.size());
-  int current_index = (oldest_index_ + delta_buckets) % history_.size();
+  size_t current_index = (oldest_index_ + delta_buckets) % history_.size();
   history_[current_index] += count;
 }
 
@@ -119,4 +118,4 @@ void RateEstimator::ResetBuckets(TimeTicks now) {
   oldest_time_ = now;
 }
 
-}  // namespace content
+}  // namespace download

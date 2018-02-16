@@ -25,9 +25,9 @@
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_save_info.h"
 #include "components/download/public/common/download_stream.mojom.h"
+#include "components/download/public/common/rate_estimator.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/base_file.h"
-#include "content/browser/download/rate_estimator.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 
@@ -342,7 +342,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   size_t bytes_seen_;
   base::TimeDelta disk_writes_time_;
   base::TimeTicks download_start_;
-  RateEstimator rate_estimator_;
+  download::RateEstimator rate_estimator_;
   int num_active_streams_;
   bool record_stream_bandwidth_;
   base::TimeTicks last_update_time_;

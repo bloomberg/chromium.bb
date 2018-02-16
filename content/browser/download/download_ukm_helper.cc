@@ -23,7 +23,7 @@ int DownloadUkmHelper::CalcExponentialBucket(int value) {
 void DownloadUkmHelper::RecordDownloadStarted(
     int download_id,
     ukm::SourceId source_id,
-    DownloadContent file_type,
+    download::DownloadContent file_type,
     download::DownloadSource download_source) {
   ukm::builders::Download_Started(source_id)
       .SetDownloadId(download_id)
@@ -54,7 +54,7 @@ void DownloadUkmHelper::RecordDownloadInterrupted(
 
 void DownloadUkmHelper::RecordDownloadResumed(
     int download_id,
-    ResumeMode mode,
+    download::ResumeMode mode,
     const base::TimeDelta& time_since_start) {
   ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
   ukm::builders::Download_Resumed(source_id)

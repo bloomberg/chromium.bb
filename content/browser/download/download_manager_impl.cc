@@ -30,6 +30,7 @@
 #include "content/browser/byte_stream.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/download/download_create_info.h"
+#include "content/browser/download/download_file.h"
 #include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_item_factory.h"
 #include "content/browser/download/download_item_impl.h"
