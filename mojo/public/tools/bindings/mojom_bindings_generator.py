@@ -220,7 +220,8 @@ class MojomProcessor(object):
             generate_non_variant_code=args.generate_non_variant_code,
             support_lazy_serialization=args.support_lazy_serialization,
             disallow_native_types=args.disallow_native_types,
-            disallow_interfaces=args.disallow_interfaces)
+            disallow_interfaces=args.disallow_interfaces,
+            generate_message_ids=args.generate_message_ids)
         filtered_args = []
         if hasattr(generator_module, 'GENERATOR_PREFIX'):
           prefix = '--' + generator_module.GENERATOR_PREFIX + '_'
@@ -410,6 +411,11 @@ def main():
       help="Disallows interface definitions within the mojom file. It is an "
       "error to specify this flag when processing a mojom file which defines "
       "any interface.", action="store_true")
+  generate_parser.add_argument(
+      "--generate_message_ids",
+      help="Generates only the message IDs header for C++ bindings. Note that "
+      "this flag only matters if --generate_non_variant_code is also "
+      "specified.", action="store_true")
   generate_parser.set_defaults(func=_Generate)
 
   precompile_parser = subparsers.add_parser("precompile",

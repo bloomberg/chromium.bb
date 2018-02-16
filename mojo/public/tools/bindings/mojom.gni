@@ -23,6 +23,12 @@ declare_args() {
   # with typemapping disabled, so it is never valid to set this to |false| in
   # any Chromium build configuration.
   enable_mojom_typemapping = true
+
+  # Controls message ID scrambling behavior. If |true|, message IDs are
+  # scrambled (i.e. randomized based on the contents of //chrome/VERSION) on
+  # non-Chrome OS desktop platforms. Set to |false| to disable message ID
+  # scrambling on all platforms.
+  enable_mojom_message_id_scrambling = true
 }
 
 # NOTE: We would like to avoid scrambling message IDs where it doesn't add
@@ -39,8 +45,9 @@ declare_args() {
 # consequently also when building for NaCl toolchains.) For this reason we
 # check |target_os| explicitly, as it's consistent across all toolchains.
 enable_scrambled_message_ids =
-    is_mac || is_win || (is_linux && !is_chromeos) ||
-    ((enable_nacl || is_nacl || is_nacl_nonsfi) && target_os != "chromeos")
+    enable_mojom_message_id_scrambling &&
+    (is_mac || is_win || (is_linux && !is_chromeos) ||
+     ((enable_nacl || is_nacl || is_nacl_nonsfi) && target_os != "chromeos"))
 
 mojom_generator_root = "//mojo/public/tools/bindings"
 mojom_generator_script = "$mojom_generator_root/mojom_bindings_generator.py"
@@ -82,10 +89,23 @@ if (enable_scrambled_message_ids) {
     }
   }
 
-  mojom_generator_sources += [ mojom_message_id_salt_path ]
+  assert(mojom_message_id_salt_path != "")
+  message_scrambling_args = [
+    "--scrambled_message_id_salt_path",
+    rebase_path(mojom_message_id_salt_path, root_build_dir),
+  ]
+  message_scrambling_inputs = [ mojom_message_id_salt_path ]
+
   if (mojom_message_id_salt_suffix_path != "") {
-    mojom_generator_sources += [ mojom_message_id_salt_suffix_path ]
+    message_scrambling_args += [
+      "--scrambled_message_id_salt_path",
+      rebase_path(mojom_message_id_salt_suffix_path, root_build_dir),
+    ]
+    message_scrambling_inputs += [ mojom_message_id_salt_suffix_path ]
   }
+} else {
+  message_scrambling_args = []
+  message_scrambling_inputs = []
 }
 
 if (enable_mojom_typemapping) {
@@ -398,6 +418,8 @@ template("mojom") {
     }
   }
 
+  generator_cpp_message_ids_target_name = "${target_name}__generate_message_ids"
+
   # Generate code that is shared by different variants.
   if (defined(invoker.sources)) {
     common_generator_args = [
@@ -413,25 +435,6 @@ template("mojom") {
       "--bytecode_path",
       rebase_path("$root_gen_dir/mojo/public/tools/bindings", root_build_dir),
     ]
-
-    if (!defined(invoker.scramble_message_ids) || invoker.scramble_message_ids) {
-      # Scramble message IDs if enabled, unless the target has explicitly opted
-      # out.
-      if (enable_scrambled_message_ids) {
-        assert(mojom_message_id_salt_path != "")
-        common_generator_args += [
-          "--scrambled_message_id_salt_path",
-          rebase_path(mojom_message_id_salt_path, root_build_dir),
-        ]
-
-        if (mojom_message_id_salt_suffix_path != "") {
-          common_generator_args += [
-            "--scrambled_message_id_salt_path",
-            rebase_path(mojom_message_id_salt_suffix_path, root_build_dir),
-          ]
-        }
-      }
-    }
 
     if (defined(invoker.disallow_native_types) &&
         invoker.disallow_native_types) {
@@ -482,6 +485,32 @@ template("mojom") {
       }
     }
 
+    action_foreach(generator_cpp_message_ids_target_name) {
+      script = mojom_generator_script
+      inputs = mojom_generator_sources
+      sources = invoker.sources
+      deps = [
+        ":$parsed_target_name",
+        "//mojo/public/tools/bindings:precompile_templates",
+      ]
+      outputs = [
+        "{{source_gen_dir}}/{{source_name_part}}.mojom-shared-message-ids.h",
+      ]
+      args = common_generator_args
+      args += [
+        "--generate_non_variant_code",
+        "--generate_message_ids",
+        "-g",
+        "c++",
+      ]
+
+      if (!defined(invoker.scramble_message_ids) ||
+          invoker.scramble_message_ids) {
+        inputs += message_scrambling_inputs
+        args += message_scrambling_args
+      }
+    }
+
     generator_shared_cpp_outputs = [
       "{{source_gen_dir}}/{{source_name_part}}.mojom-shared-internal.h",
       "{{source_gen_dir}}/{{source_name_part}}.mojom-shared.cc",
@@ -512,6 +541,9 @@ template("mojom") {
           "base/component_export.h",
         ]
       }
+    }
+  } else {
+    group(generator_cpp_message_ids_target_name) {
     }
   }
 
@@ -595,7 +627,6 @@ template("mojom") {
     enabled_sources = []
     if (defined(invoker.sources)) {
       generator_cpp_outputs = []
-      generator_java_outputs = []
       variant_dash_suffix = ""
       if (defined(variant)) {
         variant_dash_suffix = "-${variant}"
@@ -658,10 +689,6 @@ template("mojom") {
         }
       }
 
-      if (!cpp_only) {
-        generator_java_outputs =
-            [ "{{source_gen_dir}}/{{source_name_part}}.mojom.srcjar" ]
-      }
       generator_target_name = "${target_name}${variant_suffix}__generator"
       action_foreach(generator_target_name) {
         script = mojom_generator_script
@@ -672,20 +699,12 @@ template("mojom") {
           ":$type_mappings_target_name",
           "//mojo/public/tools/bindings:precompile_templates",
         ]
-        outputs = generator_cpp_outputs + generator_java_outputs
+        outputs = generator_cpp_outputs
         args = common_generator_args
-
-        if (cpp_only) {
-          args += [
-            "-g",
-            "c++",
-          ]
-        } else {
-          args += [
-            "-g",
-            "c++,java",
-          ]
-        }
+        args += [
+          "-g",
+          "c++",
+        ]
 
         if (defined(bindings_configuration.variant)) {
           args += [
@@ -832,6 +851,7 @@ template("mojom") {
         sources = process_file_template(enabled_sources, generator_cpp_outputs)
       }
       deps = [
+        ":$generator_cpp_message_ids_target_name",
         "//mojo/public/cpp/bindings:struct_traits",
         "//mojo/public/interfaces/bindings:bindings__generator",
         "//mojo/public/interfaces/bindings:bindings_shared__generator",
@@ -917,6 +937,37 @@ template("mojom") {
     if (!cpp_only && is_android) {
       import("//build/config/android/rules.gni")
 
+      java_generator_target_name = target_name + "_java__generator"
+      if (enabled_sources != []) {
+        generator_java_outputs =
+            [ "{{source_gen_dir}}/{{source_name_part}}.mojom.srcjar" ]
+        action_foreach(java_generator_target_name) {
+          script = mojom_generator_script
+          inputs = mojom_generator_sources
+          sources = enabled_sources
+          deps = [
+            ":$parsed_target_name",
+            ":$type_mappings_target_name",
+            "//mojo/public/tools/bindings:precompile_templates",
+          ]
+          outputs = generator_java_outputs
+          args = common_generator_args
+          args += [
+            "-g",
+            "java",
+          ]
+
+          if (!defined(invoker.scramble_message_ids) ||
+              invoker.scramble_message_ids) {
+            inputs += message_scrambling_inputs
+            args += message_scrambling_args
+          }
+        }
+      } else {
+        group(java_generator_target_name) {
+        }
+      }
+
       java_srcjar_target_name = target_name + "_java_sources"
       action(java_srcjar_target_name) {
         script = "//mojo/public/tools/gn/zip.py"
@@ -938,7 +989,7 @@ template("mojom") {
         deps = []
         if (enabled_sources != []) {
           deps = [
-            ":$generator_target_name",
+            ":$java_generator_target_name",
           ]
         }
       }
@@ -989,6 +1040,12 @@ template("mojom") {
           "-g",
           "javascript",
         ]
+
+        if (!defined(invoker.scramble_message_ids) ||
+            invoker.scramble_message_ids) {
+          inputs += message_scrambling_inputs
+          args += message_scrambling_args
+        }
       }
     }
 

@@ -42,7 +42,6 @@ namespace internal {
 {#--- Interface parameter definitions #}
 {%- for interface in interfaces %}
 {%-   for method in interface.methods %}
-{%-     set method_name = "k%s_%s_Name"|format(interface.name, method.name) %}
 {%-     set struct = method.param_struct %}
 {%      include "struct_definition.tmpl" %}
 {%-     if method.response_parameters != None %}
