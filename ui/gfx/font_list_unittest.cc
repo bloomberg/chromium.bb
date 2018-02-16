@@ -299,9 +299,9 @@ TEST(FontListTest, MAYBE_Fonts_DeriveWithSizeDelta) {
 #endif
 TEST(FontListTest, MAYBE_Fonts_GetHeight_GetBaseline) {
   // If a font list has only one font, the height and baseline must be the same.
-  Font font1("Arial", 16);
-  ASSERT_EQ("arial", base::ToLowerASCII(font1.GetActualFontNameForTesting()));
-  FontList font_list1("Arial, 16px");
+  Font font1("Verdana", 16);
+  ASSERT_EQ("verdana", base::ToLowerASCII(font1.GetActualFontNameForTesting()));
+  FontList font_list1("Verdana, 16px");
   EXPECT_EQ(font1.GetHeight(), font_list1.GetHeight());
   EXPECT_EQ(font1.GetBaseline(), font_list1.GetBaseline());
 

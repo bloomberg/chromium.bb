@@ -15,7 +15,7 @@ const char kSymbolFontName[] = "Symbol";
 #endif
 
 #if defined(OS_LINUX)
-const char kCJKFontName[] = "Kochi Mincho";
+const char kCJKFontName[] = "IPAMincho";
 #elif defined(OS_MACOSX)
 const char kCJKFontName[] = "Heiti SC";
 #else
