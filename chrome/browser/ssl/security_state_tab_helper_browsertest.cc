@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_window.h"
@@ -1188,8 +1189,16 @@ IN_PROC_BROWSER_TEST_F(SecurityStateLoadingTest, NavigationStateChanges) {
 
 // Tests that when a visible password field is detected on an HTTP page
 // load, the security level is downgraded to HTTP_SHOW_WARNING.
+//
+// Disabled on Mac bots. See crbug.com/812960.
+#if defined(OS_MACOSX)
+#define MAYBE_PasswordSecurityLevelDowngraded \
+  DISABLED_PasswordSecurityLevelDowngraded
+#else
+#define MAYBE_PasswordSecurityLevelDowngraded PasswordSecurityLevelDowngraded
+#endif
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
-                       PasswordSecurityLevelDowngraded) {
+                       MAYBE_PasswordSecurityLevelDowngraded) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
