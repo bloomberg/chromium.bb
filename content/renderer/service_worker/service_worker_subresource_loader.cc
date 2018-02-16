@@ -134,6 +134,32 @@ class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
 };
 }  // namespace
 
+// A ServiceWorkerStreamCallback implementation which waits for completion of
+// a stream response for subresource loading. It calls
+// ServiceWorkerSubresourceLoader::CommitCompleted() upon completion of the
+// response.
+class ServiceWorkerSubresourceLoader::StreamWaiter
+    : public blink::mojom::ServiceWorkerStreamCallback {
+ public:
+  StreamWaiter(ServiceWorkerSubresourceLoader* owner,
+               blink::mojom::ServiceWorkerStreamCallbackRequest request)
+      : owner_(owner), binding_(this, std::move(request)) {
+    DCHECK(owner_);
+    binding_.set_connection_error_handler(
+        base::BindOnce(&StreamWaiter::OnAborted, base::Unretained(this)));
+  }
+
+  // mojom::ServiceWorkerStreamCallback implementations:
+  void OnCompleted() override { owner_->CommitCompleted(net::OK); }
+  void OnAborted() override { owner_->CommitCompleted(net::ERR_ABORTED); }
+
+ private:
+  ServiceWorkerSubresourceLoader* owner_;
+  mojo::Binding<blink::mojom::ServiceWorkerStreamCallback> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(StreamWaiter);
+};
+
 // ServiceWorkerSubresourceLoader -------------------------------------------
 
 ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
@@ -421,17 +447,18 @@ void ServiceWorkerSubresourceLoader::StartResponse(
 
   // Handle a stream response body.
   if (!body_as_stream.is_null() && body_as_stream->stream.is_valid()) {
+    DCHECK(!body_as_blob);
     DCHECK(url_loader_client_.is_bound());
+    stream_waiter_ = std::make_unique<StreamWaiter>(
+        this, std::move(body_as_stream->callback_request));
     url_loader_client_->OnStartLoadingResponseBody(
         std::move(body_as_stream->stream));
-    // TODO(falken): Call CommitCompleted() when stream finished.
-    // See https://crbug.com/758455
-    CommitCompleted(net::OK);
     return;
   }
 
   // Handle a blob response body.
   if (body_as_blob) {
+    DCHECK(!body_as_stream);
     body_as_blob_ = std::move(body_as_blob);
     mojo::ScopedDataPipeConsumerHandle data_pipe;
     int error = ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
@@ -465,6 +492,7 @@ void ServiceWorkerSubresourceLoader::CommitResponseHeaders() {
 void ServiceWorkerSubresourceLoader::CommitCompleted(int error_code) {
   DCHECK_LT(status_, Status::kCompleted);
   DCHECK(url_loader_client_.is_bound());
+  stream_waiter_.reset();
   status_ = Status::kCompleted;
   network::URLLoaderCompletionStatus status;
   status.error_code = error_code;
