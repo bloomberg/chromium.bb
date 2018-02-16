@@ -104,6 +104,15 @@ PropertyHandleSet StringKeyframe::Properties() const {
   return properties;
 }
 
+bool StringKeyframe::HasCssProperty() const {
+  PropertyHandleSet properties = Properties();
+  for (const PropertyHandle& property : properties) {
+    if (property.IsCSSProperty())
+      return true;
+  }
+  return false;
+}
+
 void StringKeyframe::AddKeyframePropertiesToV8Object(
     V8ObjectBuilder& object_builder) const {
   Keyframe::AddKeyframePropertiesToV8Object(object_builder);

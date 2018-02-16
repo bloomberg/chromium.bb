@@ -1,10 +1,10 @@
 This is a testharness.js-based test.
-Found 167 tests; 150 PASS, 17 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 167 tests; 153 PASS, 14 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS A KeyframeEffectReadOnly can be constructed with no frames
 PASS easing values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in KeyframeEffectOptions
 PASS Invalid easing values are correctly rejected when passed to the KeyframeEffectReadOnly constructor in KeyframeEffectOptions
-FAIL composite values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in property-indexed keyframes Failed to construct 'KeyframeEffectReadOnly': Invalid composite value: 'accumulate'
-FAIL composite values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in regular keyframes Failed to construct 'KeyframeEffectReadOnly': Invalid composite value: 'accumulate'
+FAIL composite values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in property-indexed keyframes assert_equals: resulting composite for 'accumulate' expected "accumulate" but got "replace"
+FAIL composite values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in regular keyframes assert_equals: resulting composite for 'accumulate' expected "accumulate" but got "replace"
 PASS composite value is null if the composite operation specified on the keyframe effect is being used
 PASS A KeyframeEffectReadOnly can be constructed with a one property two value property-indexed keyframes specification
 PASS A KeyframeEffectReadOnly constructed with a one property two value property-indexed keyframes specification roundtrips
@@ -72,12 +72,12 @@ PASS A KeyframeEffectReadOnly can be constructed with a property-indexed keyfram
 PASS A KeyframeEffectReadOnly constructed with a property-indexed keyframe with an array of easings that is too long roundtrips
 PASS A KeyframeEffectReadOnly can be constructed with a property-indexed keyframe with a single composite operation
 PASS A KeyframeEffectReadOnly constructed with a property-indexed keyframe with a single composite operation roundtrips
-FAIL A KeyframeEffectReadOnly can be constructed with a property-indexed keyframe with a composite array Failed to construct 'KeyframeEffectReadOnly': Invalid composite value: 'accumulate'
-FAIL A KeyframeEffectReadOnly constructed with a property-indexed keyframe with a composite array roundtrips Failed to construct 'KeyframeEffectReadOnly': Invalid composite value: 'accumulate'
+FAIL A KeyframeEffectReadOnly can be constructed with a property-indexed keyframe with a composite array assert_equals: value for 'composite' on ComputedKeyframe #2 expected "accumulate" but got "replace"
+PASS A KeyframeEffectReadOnly constructed with a property-indexed keyframe with a composite array roundtrips
 PASS A KeyframeEffectReadOnly can be constructed with a property-indexed keyframe with a composite array that is too short
 PASS A KeyframeEffectReadOnly constructed with a property-indexed keyframe with a composite array that is too short roundtrips
-FAIL A KeyframeEffectReadOnly can be constructed with a property-indexed keyframe with a composite array that is too long Failed to construct 'KeyframeEffectReadOnly': Invalid composite value: 'accumulate'
-FAIL A KeyframeEffectReadOnly constructed with a property-indexed keyframe with a composite array that is too long roundtrips Failed to construct 'KeyframeEffectReadOnly': Invalid composite value: 'accumulate'
+PASS A KeyframeEffectReadOnly can be constructed with a property-indexed keyframe with a composite array that is too long
+PASS A KeyframeEffectReadOnly constructed with a property-indexed keyframe with a composite array that is too long roundtrips
 PASS A KeyframeEffectReadOnly can be constructed with a property-indexed keyframe with a single-element composite array
 PASS A KeyframeEffectReadOnly constructed with a property-indexed keyframe with a single-element composite array roundtrips
 PASS A KeyframeEffectReadOnly can be constructed with a one property one keyframe sequence
