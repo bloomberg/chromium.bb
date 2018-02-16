@@ -58,7 +58,6 @@ public class OfflinePageBridge {
 
     /** Whether an offline sub-feature is enabled or not. */
     private static Boolean sOfflineBookmarksEnabled;
-    private static Boolean sIsPageSharingEnabled;
 
     /**
      * Callback used when saving an offline page.
@@ -132,11 +131,7 @@ public class OfflinePageBridge {
      */
     @VisibleForTesting
     public static boolean isPageSharingEnabled() {
-        ThreadUtils.assertOnUiThread();
-        if (sIsPageSharingEnabled == null) {
-            sIsPageSharingEnabled = nativeIsPageSharingEnabled();
-        }
-        return sIsPageSharingEnabled;
+        return nativeIsPageSharingEnabled();
     }
 
     /**

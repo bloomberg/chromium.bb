@@ -326,7 +326,7 @@ public class DownloadUtils {
         for (int i = 0; i < items.size(); i++) {
             DownloadHistoryItemWrapper wrappedItem  = items.get(i);
 
-            if (wrappedItem.isOfflinePage()) {
+            if (wrappedItem.isOfflinePage() && !OfflinePageBridge.isPageSharingEnabled()) {
                 if (offlinePagesString.length() != 0) {
                     offlinePagesString.append("\n");
                 }
@@ -390,7 +390,7 @@ public class DownloadUtils {
         }
 
         if (itemUris.size() == 1 && offlinePagesString.length() == 0) {
-            // Sharing a DownloadItem.
+            // Sharing a downloaded item or an offline page.
             shareIntent.putExtra(Intent.EXTRA_STREAM, getUriForItem(items.get(0).getFile()));
         } else {
             shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, itemUris);

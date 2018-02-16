@@ -5,7 +5,9 @@
 #include "components/offline_pages/core/downloads/offline_item_conversions.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/offline_pages/core/background/save_page_request.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -53,6 +55,21 @@ TEST(OfflineItemConversionsTest, OfflinePageItemConversion) {
   EXPECT_EQ(100, offline_item.progress.max.value());
   EXPECT_EQ(OfflineItemProgressUnit::PERCENTAGE, offline_item.progress.unit);
   EXPECT_TRUE(offline_item.is_suggested);
+
+  // Enabled P2P sharing and flag the item as suggested when creating the
+  // OfflineItem. Then check that only the mime type is and is_suggested
+  // information changed.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kOfflinePagesSharingFeature);
+  OfflineItem offline_item_p2p =
+      OfflineItemConversions::CreateOfflineItem(offline_page_item, false);
+  EXPECT_EQ("multipart/related", offline_item_p2p.mime_type);
+  EXPECT_FALSE(offline_item_p2p.is_suggested);
+
+  // Change offline_item_p2p to match offline_item and check that it does.
+  offline_item_p2p.mime_type = "text/html";
+  offline_item_p2p.is_suggested = true;
+  EXPECT_EQ(offline_item, offline_item_p2p);
 }
 
 TEST(OfflineItemConversionsTest, SavePageRequestConversion) {
@@ -83,6 +100,18 @@ TEST(OfflineItemConversionsTest, SavePageRequestConversion) {
   EXPECT_FALSE(offline_item.progress.max.has_value());
   EXPECT_EQ(OfflineItemProgressUnit::PERCENTAGE, offline_item.progress.unit);
   EXPECT_FALSE(offline_item.is_suggested);
+
+  // Enabled P2P sharing of offline pages and check that only the mime type is
+  // different.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kOfflinePagesSharingFeature);
+  OfflineItem offline_item_p2p =
+      OfflineItemConversions::CreateOfflineItem(save_page_request);
+  EXPECT_EQ("multipart/related", offline_item_p2p.mime_type);
+
+  // Change offline_item_p2p to match offline_item and check that it does.
+  offline_item_p2p.mime_type = "text/html";
+  EXPECT_EQ(offline_item, offline_item_p2p);
 }
 
 }  // namespace offline_pages

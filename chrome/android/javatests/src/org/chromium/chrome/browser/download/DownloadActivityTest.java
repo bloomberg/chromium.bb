@@ -23,6 +23,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
@@ -45,6 +46,8 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.ListMenuButton.Item;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -61,6 +64,9 @@ public class DownloadActivityTest {
     @Rule
     public ActivityTestRule<DownloadActivity> mActivityTestRule =
             new ActivityTestRule<>(DownloadActivity.class);
+
+    @Rule
+    public TestRule mProcessor = new Features.InstrumentationProcessor();
 
     private static class TestObserver extends RecyclerView.AdapterDataObserver
             implements SelectionObserver<DownloadHistoryItemWrapper>,
@@ -574,6 +580,34 @@ public class DownloadActivityTest {
                 shareIntent.getParcelableArrayListExtra(Intent.EXTRA_STREAM).size());
         Assert.assertEquals("Intent expected to have plain text for offline page URL",
                 "https://thangs.com",
+                IntentUtils.safeGetStringExtra(shareIntent, Intent.EXTRA_TEXT));
+    }
+
+    // TODO(carlosk): OfflineItems used here come from StubbedProvider so this might not be the best
+    // place to test peer-2-peer sharing.
+    @Test
+    @MediumTest
+    @EnableFeatures("OfflinePagesSharing")
+    public void testShareOfflinePageWithP2PSharingEnabled() throws Exception {
+        // Scroll to ensure the item at position 2 is visible.
+        ThreadUtils.runOnUiThread(() -> mRecyclerView.scrollToPosition(3));
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+
+        // Select the offline page located at position #3.
+        toggleItemSelection(3);
+        List<DownloadHistoryItemWrapper> selected_items =
+                mUi.getBackendProvider().getSelectionDelegate().getSelectedItems();
+        Assert.assertEquals("There should be only one item selected", 1, selected_items.size());
+        Intent shareIntent = DownloadUtils.createShareIntent(selected_items);
+
+        Assert.assertEquals("Incorrect intent action", Intent.ACTION_SEND, shareIntent.getAction());
+        Assert.assertEquals("Incorrect intent mime type", "*/*", shareIntent.getType());
+        Assert.assertNotNull("Intent expected to have parcelable ArrayList",
+                shareIntent.getParcelableExtra(Intent.EXTRA_STREAM));
+        Assert.assertEquals("Intent expected to have parcelable Uri",
+                "file:///data/fake_path/Downloads/4",
+                shareIntent.getParcelableExtra(Intent.EXTRA_STREAM).toString());
+        Assert.assertNull("Intent expected to not have any text for offline page",
                 IntentUtils.safeGetStringExtra(shareIntent, Intent.EXTRA_TEXT));
     }
 
