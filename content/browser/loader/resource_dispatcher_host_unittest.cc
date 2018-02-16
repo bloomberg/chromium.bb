@@ -1022,51 +1022,6 @@ TEST_F(ResourceDispatcherHostTest, Cancel) {
   EXPECT_EQ(0, network_delegate()->error_count());
 }
 
-TEST_F(ResourceDispatcherHostTest, DownloadToNetworkCache) {
-  network::mojom::URLLoaderPtr loader1, loader2;
-  network::TestURLLoaderClient client1, client2;
-  // Normal request.
-  MakeTestRequest(0, 1, net::URLRequestTestJob::test_url_2(),
-                  mojo::MakeRequest(&loader1), client1.CreateInterfacePtr());
-
-  // Cache-only request.
-  network::ResourceRequest request_to_cache = CreateResourceRequest(
-      "GET", RESOURCE_TYPE_IMAGE, net::URLRequestTestJob::test_url_3());
-  request_to_cache.download_to_network_cache_only = true;
-  filter_->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader2), 0, 2, network::mojom::kURLLoadOptionNone,
-      request_to_cache, client2.CreateInterfacePtr(),
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-
-  content::RunAllTasksUntilIdle();
-
-  // The handler for the cache-only request should have been detached now.
-  GlobalRequestID global_request_id(filter_->child_id(), 2);
-  ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(
-      host_.GetURLRequest(global_request_id));
-  ASSERT_TRUE(info->detachable_handler()->is_detached());
-
-  // Flush all the pending requests.
-  while (net::URLRequestTestJob::ProcessOnePendingMessage()) {
-  }
-  content::RunAllTasksUntilIdle();
-
-  // Everything should be out now.
-  EXPECT_EQ(0, host_.pending_requests());
-
-  // The normal request succeeded.
-  CheckSuccessfulRequest(&client1, net::URLRequestTestJob::test_data_2());
-
-  // The cache-only request got canceled, as far as the renderer is concerned.
-  client2.RunUntilComplete();
-  EXPECT_EQ(net::ERR_ABORTED, client2.completion_status().error_code);
-
-  // However, all requests should have actually gone to completion.
-  EXPECT_EQ(2, network_delegate()->completed_requests());
-  EXPECT_EQ(0, network_delegate()->canceled_requests());
-  EXPECT_EQ(0, network_delegate()->error_count());
-}
-
 // Shows that detachable requests will timeout if the request takes too long to
 // complete.
 TEST_F(ResourceDispatcherHostTest, DetachedResourceTimesOut) {

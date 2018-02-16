@@ -215,10 +215,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
 
   // Wether or not the initiator of this request is a secure context.
   bool initiated_in_secure_context = false;
-
-  // The response should be downloaded and stored in the network cache, but not
-  // sent back to the renderer.
-  bool download_to_network_cache_only = false;
 };
 
 }  // namespace network

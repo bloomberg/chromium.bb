@@ -1324,17 +1324,13 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
         new RedirectToFileResourceHandler(std::move(handler), request));
   }
 
-  bool start_detached = request_data.download_to_network_cache_only;
-
   // Prefetches and <a ping> requests outlive their child process.
-  if (start_detached || request_data.resource_type == RESOURCE_TYPE_PREFETCH ||
+  if (request_data.resource_type == RESOURCE_TYPE_PREFETCH ||
       request_data.keepalive) {
     auto detachable_handler = std::make_unique<DetachableResourceHandler>(
         request,
         base::TimeDelta::FromMilliseconds(kDefaultDetachableCancelDelayMs),
         std::move(handler));
-    if (start_detached)
-      detachable_handler->Detach();
     handler = std::move(detachable_handler);
   }
 
