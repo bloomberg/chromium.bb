@@ -264,6 +264,15 @@ class WebViewChromiumAwInit {
         return mBrowserContext;
     }
 
+    /**
+     * Returns the lock used for guarding chromium initialization.
+     * We make this package-public to let higher-level classes use this lock to guard variables
+     * dependent on this class, to avoid introducing new locks (which can cause deadlocks).
+     */
+    Object getLock() {
+        return mLock;
+    }
+
     public SharedStatics getStatics() {
         synchronized (mLock) {
             if (mSharedStatics == null) {
