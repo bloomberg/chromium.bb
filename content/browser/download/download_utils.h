@@ -26,9 +26,14 @@ namespace network {
 struct ResourceRequest;
 }
 
+namespace storage {
+class BlobStorageContext;
+}
+
 namespace content {
 
 class BrowserContext;
+class ResourceContext;
 struct DownloadCreateInfo;
 
 // Handle the url request completion status and return the interrupt reasons.
@@ -64,6 +69,9 @@ CONTENT_EXPORT void HandleResponseHeaders(
 CONTENT_EXPORT base::Optional<download::DownloadEntry> GetInProgressEntry(
     const std::string& guid,
     BrowserContext* browser_context);
+
+storage::BlobStorageContext* BlobStorageContextGetter(
+    ResourceContext* resource_context);
 
 }  // namespace content
 

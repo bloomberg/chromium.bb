@@ -1074,8 +1074,12 @@ bool DownloadsDownloadFunction::RunAsync() {
       downloads::ToString(options.method);
   if (!method_string.empty())
     download_params->set_method(method_string);
-  if (options.body.get())
-    download_params->set_post_body(*options.body);
+  if (options.body.get()) {
+    download_params->set_post_body(
+        network::ResourceRequestBody::CreateFromBytes(options.body->data(),
+                                                      options.body->size()));
+  }
+
   download_params->set_callback(base::Bind(
       &DownloadsDownloadFunction::OnStarted, this,
       creator_suggested_filename, options.conflict_action));
