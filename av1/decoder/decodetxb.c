@@ -195,26 +195,21 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       break;
   }
 
-  // printf("Dec: ");
   if (k_eob_offset_bits[eob_pt] > 0) {
     int bit = aom_read_symbol(
         r, ec_ctx->eob_extra_cdf[txs_ctx][plane_type][eob_pt], 2, ACCT_STR);
-    // printf("eob_extra_cdf: %d %d %2d\n", txs_ctx, plane_type, eob_pt);
     if (bit) {
       eob_extra += (1 << (k_eob_offset_bits[eob_pt] - 1));
     }
 
     for (int i = 1; i < k_eob_offset_bits[eob_pt]; i++) {
       bit = aom_read_bit(r, ACCT_STR);
-      // printf("eob_bit:\n");
       if (bit) {
         eob_extra += (1 << (k_eob_offset_bits[eob_pt] - 1 - i));
       }
-      //  printf("%d ", bit);
     }
   }
   *eob = rec_eob_pos(eob_pt, eob_extra);
-  // printf("=>[%d, %d], (%d, %d)\n", seg_eob, *eob, eob_pt, eob_extra);
 
   for (int i = 0; i < *eob; ++i) {
     const int c = *eob - 1 - i;
@@ -232,12 +227,8 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
     }
     int level = aom_read_symbol(r, cdf, nsymbs, ACCT_STR) + (c == *eob - 1);
     if (level > NUM_BASE_LEVELS) {
-#if USE_CAUSAL_BR_CTX
       const int br_ctx =
           get_br_ctx(levels, pos, bwl, level_counts[pos], tx_type);
-#else
-      const int br_ctx = get_br_ctx(levels, pos, bwl, level_counts[pos]);
-#endif
       for (int idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
         const int k = aom_read_symbol(
             r,

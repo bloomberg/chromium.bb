@@ -43,13 +43,11 @@ static const int base_ref_offset[BASE_CONTEXT_POSITION_NUM][2] = {
 };
 
 #define CONTEXT_MAG_POSITION_NUM 3
-#if USE_CAUSAL_BR_CTX
 static const int mag_ref_offset_with_txclass[3][CONTEXT_MAG_POSITION_NUM][2] = {
   { { 0, 1 }, { 1, 0 }, { 1, 1 } },
   { { 0, 1 }, { 1, 0 }, { 0, 2 } },
   { { 0, 1 }, { 1, 0 }, { 2, 0 } }
 };
-#endif
 static const int mag_ref_offset[CONTEXT_MAG_POSITION_NUM][2] = {
   { 0, 1 }, { 1, 0 }, { 1, 1 }
 };
@@ -195,7 +193,6 @@ static INLINE int get_level_count(const uint8_t *const levels, const int stride,
   return count;
 }
 
-#if USE_CAUSAL_BR_CTX
 static INLINE void get_level_mag_with_txclass(const uint8_t *const levels,
                                               const int stride, const int row,
                                               const int col, int *const mag,
@@ -207,7 +204,6 @@ static INLINE void get_level_mag_with_txclass(const uint8_t *const levels,
     mag[idx] = levels[pos];
   }
 }
-#endif
 
 static INLINE void get_level_mag(const uint8_t *const levels, const int stride,
                                  const int row, const int col, int *const mag) {
@@ -363,18 +359,13 @@ static INLINE int get_br_ctx_from_count_mag(const int row, const int col,
 
 static INLINE int get_br_ctx(const uint8_t *const levels,
                              const int c,  // raster order
-                             const int bwl, const int count
-#if USE_CAUSAL_BR_CTX
-                             ,
-                             const TX_TYPE tx_type
-#endif
-) {
+                             const int bwl, const int count,
+                             const TX_TYPE tx_type) {
   const int row = c >> bwl;
   const int col = c - (row << bwl);
   const int stride = (1 << bwl) + TX_PAD_HOR;
   int mag = 0;
   int nb_mag[3] = { 0 };
-#if USE_CAUSAL_BR_CTX
   (void)count;
   const TX_CLASS tx_class = tx_type_to_class[tx_type];
   get_level_mag_with_txclass(levels, stride, row, col, nb_mag, tx_class);
@@ -396,12 +387,6 @@ static INLINE int get_br_ctx(const uint8_t *const levels,
     }
   }
   return mag + 14;
-#else
-  get_level_mag(levels, stride, row, col, nb_mag);
-  for (int idx = 0; idx < 3; ++idx) mag = AOMMAX(mag, nb_mag[idx]);
-  const int ctx = get_br_ctx_from_count_mag(row, col, count, mag);
-  return ctx;
-#endif
 }
 
 #define SIG_REF_OFFSET_NUM 5

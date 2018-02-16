@@ -560,13 +560,8 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     if (level > NUM_BASE_LEVELS) {
       // level is above 1.
       const int base_range = level - 1 - NUM_BASE_LEVELS;
-#if USE_CAUSAL_BR_CTX
       const int br_ctx =
           get_br_ctx(levels, pos, bwl, level_counts[pos], tx_type);
-
-#else
-      const int br_ctx = get_br_ctx(levels, pos, bwl, level_counts[pos]);
-#endif
       for (int idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
         const int k = AOMMIN(base_range - idx, BR_CDF_SIZE - 1);
         aom_write_symbol(w, k,
@@ -757,11 +752,7 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
       }
       if (level > NUM_BASE_LEVELS) {
         int ctx;
-#if USE_CAUSAL_BR_CTX
         ctx = get_br_ctx(levels, pos, bwl, level_counts[pos], tx_type);
-#else
-        ctx = get_br_ctx(levels, pos, bwl, level_counts[pos]);
-#endif
         const int base_range = level - 1 - NUM_BASE_LEVELS;
         if (base_range < COEFF_BASE_RANGE) {
           cost += coeff_costs->lps_cost[ctx][base_range];
@@ -1384,17 +1375,10 @@ static int get_coeff_cost(const tran_low_t qc, const int scan_idx,
       const int row = pos >> txb_info->bwl;
       const int col = pos - (row << txb_info->bwl);
 
-#if USE_CAUSAL_BR_CTX
       (void)col;
       const int count = 0;
       const int ctx = get_br_ctx(txb_info->levels, pos, txb_info->bwl, count,
                                  txb_info->tx_type);
-#else
-      const int count = get_level_count(
-          txb_info->levels, (1 << txb_info->bwl) + TX_PAD_HOR, row, col,
-          NUM_BASE_LEVELS, br_ref_offset, BR_CONTEXT_POSITION_NUM);
-      const int ctx = get_br_ctx(txb_info->levels, pos, txb_info->bwl, count);
-#endif
       cost += get_br_cost(abs_qc, ctx, txb_costs->lps_cost[ctx]);
       cost += get_golomb_cost(abs_qc);
     }
@@ -2357,33 +2341,19 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     }
     if (level > NUM_BASE_LEVELS) {
       const int base_range = level - 1 - NUM_BASE_LEVELS;
-#if USE_CAUSAL_BR_CTX
       const int br_ctx =
           get_br_ctx(levels, pos, bwl, level_counts[pos], tx_type);
-#else
-      const int br_ctx = get_br_ctx(levels, pos, bwl, level_counts[pos]);
-#endif
       for (int idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
         const int k = AOMMIN(base_range - idx, BR_CDF_SIZE - 1);
         if (allow_update_cdf) {
-          update_cdf(
-#if 0
-         ec_ctx->coeff_br_cdf[AOMMIN(txsize_ctx, TX_16X16)][plane_type][br_ctx],
-#else
-              ec_ctx->coeff_br_cdf[AOMMIN(txsize_ctx, TX_32X32)][plane_type]
-                                  [br_ctx],
-#endif
-              k, BR_CDF_SIZE);
+          update_cdf(ec_ctx->coeff_br_cdf[AOMMIN(txsize_ctx, TX_32X32)]
+                                         [plane_type][br_ctx],
+                     k, BR_CDF_SIZE);
         }
         for (int lps = 0; lps < BR_CDF_SIZE - 1; lps++) {
 #if CONFIG_ENTROPY_STATS
-#if 0
-         ++td->counts->coeff_lps[AOMMIN(txsize_ctx, TX_16X16)][plane_type][lps]
-                                 [ctx][lps == k];
-#else
           ++td->counts->coeff_lps[AOMMIN(txsize_ctx, TX_32X32)][plane_type][lps]
                                  [br_ctx][lps == k];
-#endif
 #endif  // CONFIG_ENTROPY_STATS
           if (lps == k) break;
         }
