@@ -62,7 +62,6 @@ const MediaRouteController = class {
    * @protected
    */
   onMojoConnectionError() {
-    this.logger.info('Encountered Mojo connection error.');
     this.dispose();
     this.onControllerInvalidated();
   }
