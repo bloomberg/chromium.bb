@@ -56,9 +56,12 @@ class TrafficAnnotationAuditor {
   // filtered to only process the relevant files. If |use_compile_commands| flag
   // is set, the list of files is extracted from compile_commands.json instead
   // of git and will not be filtered.
+  // If clang tool returns error, and |rerun_on_errors| is true, the tool is run
+  // again to record errors.
   bool RunClangTool(const std::vector<std::string>& path_filters,
                     bool filter_files_based_on_heuristics,
-                    bool use_compile_commands);
+                    bool use_compile_commands,
+                    bool rerun_on_errors);
 
   // Parses the output of clang tool (|clang_tool_raw_output_|) and populates
   // |extracted_annotations_|, |extracted_calls_|, and |errors_|.
