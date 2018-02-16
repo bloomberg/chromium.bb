@@ -1578,6 +1578,9 @@ are declared in build/common.gypi.
       <message name="IDS_MD_DOWNLOAD_NO_DOWNLOADS" desc="A message shown when the user has no downloads to show on chrome://downloads.">
         Files you download appear here
       </message>
+      <message name="IDS_DOWNLOAD_ITEM_DROPDOWN_BUTTON_ACCESSIBLE_TEXT" desc="Text for the dropdown button that opens the download item options menu">
+        Options menu
+      </message>
       <message name="IDS_DOWNLOAD_LINK_RESUME"
                desc="In the download view, 'Resume' link text">
         Resume
@@ -2057,6 +2060,9 @@ are declared in build/common.gypi.
           </message>
         </if>
       </if>
+      <message name="IDS_APPLICATION_INFO_LAUNCH_OPTIONS_ACCNAME" desc="Accessible name for launch options combobox.">
+        How would you like this application to launch?
+      </message>
       <message name="IDS_APPLICATION_INFO_SIZE_LOADING_LABEL" desc="Text displayed instead of the app or extension's size on disk in the details section of the dialog while the size is being calculated.">
         Calculating...
       </message>
@@ -5164,6 +5170,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ZOOM_SET_DEFAULT" desc="The text label of a button which, when clicked, returns the page to default zoom">
         Reset
       </message>
+      <message name="IDS_TOOLTIP_FIND" desc="The tooltip for the find button">
+        Find
+      </message>
 
       <!--Accessible name/action strings-->
       <message name="IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT" desc="The format for the accessible title of an incognito window">
@@ -5658,6 +5667,9 @@ the Bookmarks menu.">
       </message>
       <message name="IDS_LEGACY_SUPERVISED_USER_AVATAR_LABEL" desc="A label for the supervised user which is used in the avatar menu and as a label in the titlebar.">
         Supervised user
+      </message>
+      <message name="IDS_GENERIC_USER_AVATAR_LABEL" desc="Label shown for the user that is currently active, when there are multiple user accounts.">
+        Current user
       </message>
       <message name="IDS_LEGACY_SUPERVISED_USER_NEW_AVATAR_LABEL" desc="Label shown in the new avatar menu for a supervised user.">
         <ph name="PROFILE_DISPLAY_NAME">$1<ex>Markus</ex></ph> (Supervised)

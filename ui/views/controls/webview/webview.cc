@@ -214,6 +214,10 @@ void WebView::AboutToRequestFocusFromTabTraversal(bool reverse) {
 
 void WebView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kWebView;
+  // A webview does not need an accessible name as the document title is
+  // provided via other means. Providing it here would be redundant.
+  // Mark the name as explicitly empty so that accessibility_checks pass.
+  node_data->SetNameExplicitlyEmpty();
 }
 
 gfx::NativeViewAccessible WebView::GetNativeViewAccessible() {

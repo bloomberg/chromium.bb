@@ -447,6 +447,7 @@ bool TableView::GetTooltipTextOrigin(const gfx::Point& p,
 }
 
 void TableView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  // TODO(aleventhal) Needs work, see https://crbug.com/811277.
   node_data->role = ax::mojom::Role::kTable;
   node_data->SetRestriction(ax::mojom::Restriction::kReadOnly);
   node_data->AddIntAttribute(ax::mojom::IntAttribute::kSetSize, RowCount());
@@ -461,6 +462,7 @@ void TableView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
       node_data->AddState(ax::mojom::State::kSelected);
     }
 
+    // Generate accessible name from column headers and selected cell text.
     std::vector<base::string16> name_parts;
     for (const VisibleColumn& visible_column : visible_columns_) {
       base::string16 value = model_->GetText(
@@ -471,6 +473,9 @@ void TableView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
       }
     }
     node_data->SetName(base::JoinString(name_parts, base::ASCIIToUTF16(", ")));
+  } else {
+    // Name requires a selection.
+    node_data->SetNameExplicitlyEmpty();
   }
 }
 

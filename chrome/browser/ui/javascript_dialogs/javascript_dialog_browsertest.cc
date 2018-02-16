@@ -155,9 +155,10 @@ IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest, HandleJavaScriptDialog) {
   }
 
   // prompt, cancel
-  js_helper->RunJavaScriptDialog(
-      tab, GURL(), content::JAVASCRIPT_DIALOG_TYPE_PROMPT, base::string16(),
-      base::string16(), callback_helper.GetCallback(), &did_suppress);
+  js_helper->RunJavaScriptDialog(tab, GURL(),
+                                 content::JAVASCRIPT_DIALOG_TYPE_PROMPT,
+                                 base::ASCIIToUTF16("Label"), base::string16(),
+                                 callback_helper.GetCallback(), &did_suppress);
   ASSERT_TRUE(js_helper->IsShowingDialogForTesting());
   js_helper->HandleJavaScriptDialog(tab, false, nullptr);
   ASSERT_FALSE(js_helper->IsShowingDialogForTesting());
@@ -168,9 +169,10 @@ IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest, HandleJavaScriptDialog) {
   base::string16 value2 = base::ASCIIToUTF16("123");
 
   // prompt, ok + override
-  js_helper->RunJavaScriptDialog(
-      tab, GURL(), content::JAVASCRIPT_DIALOG_TYPE_PROMPT, base::string16(),
-      value1, callback_helper.GetCallback(), &did_suppress);
+  js_helper->RunJavaScriptDialog(tab, GURL(),
+                                 content::JAVASCRIPT_DIALOG_TYPE_PROMPT,
+                                 base::ASCIIToUTF16("Label"), value1,
+                                 callback_helper.GetCallback(), &did_suppress);
   ASSERT_TRUE(js_helper->IsShowingDialogForTesting());
   js_helper->HandleJavaScriptDialog(tab, true, &value2);
   ASSERT_FALSE(js_helper->IsShowingDialogForTesting());
@@ -178,9 +180,10 @@ IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest, HandleJavaScriptDialog) {
   ASSERT_EQ(value2, callback_helper.last_input());
 
   // prompt, ok + no override
-  js_helper->RunJavaScriptDialog(
-      tab, GURL(), content::JAVASCRIPT_DIALOG_TYPE_PROMPT, base::string16(),
-      value1, callback_helper.GetCallback(), &did_suppress);
+  js_helper->RunJavaScriptDialog(tab, GURL(),
+                                 content::JAVASCRIPT_DIALOG_TYPE_PROMPT,
+                                 base::ASCIIToUTF16("Label"), value1,
+                                 callback_helper.GetCallback(), &did_suppress);
   ASSERT_TRUE(js_helper->IsShowingDialogForTesting());
   js_helper->HandleJavaScriptDialog(tab, true, nullptr);
   ASSERT_FALSE(js_helper->IsShowingDialogForTesting());

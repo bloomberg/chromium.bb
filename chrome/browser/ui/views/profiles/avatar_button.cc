@@ -19,9 +19,11 @@
 #include "chrome/browser/ui/views/frame/avatar_button_manager.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
@@ -452,9 +454,18 @@ void AvatarButton::Update() {
       !profile_->IsGuestSession() && storage.GetNumberOfProfiles() == 1 &&
       !SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated();
 
-  SetText(use_generic_button
-              ? base::string16()
-              : profiles::GetAvatarButtonTextForProfile(profile_));
+  // Always set the accessible name as accessible text, but don't display it if
+  // is just a generic button.
+  base::string16 name =
+      use_generic_button
+          ? l10n_util::GetStringUTF16(IDS_GENERIC_USER_AVATAR_LABEL)
+          : profiles::GetAvatarButtonTextForProfile(profile_);
+  if (use_generic_button) {
+    SetText(base::string16());
+    SetAccessibleName(name);  // Must be set after setting text to override it.
+  } else {
+    SetText(name);
+  }
 
 #if !defined(OS_MACOSX)
   // If the button has no text, clear the text shadows to make sure the

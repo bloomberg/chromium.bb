@@ -159,8 +159,8 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
 
     // Check for any existing pinned shelf item with a matching |shelf_id|.
     if (!owner()->GetItem(shelf_id)) {
-      owner()->CreateAppLauncherItem(std::move(controller),
-                                     ash::STATUS_RUNNING);
+      owner()->CreateAppLauncherItem(std::move(controller), ash::STATUS_RUNNING,
+                                     app_window->GetTitle());
     } else {
       owner()->shelf_model()->SetShelfItemDelegate(shelf_id,
                                                    std::move(controller));

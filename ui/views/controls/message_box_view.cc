@@ -207,8 +207,9 @@ void MessageBoxView::Init(const InitParams& params) {
     message_labels_[0]->SetSelectable(true);
 
   if (params.options & HAS_PROMPT_FIELD) {
-    prompt_field_ = new Textfield;
+    prompt_field_ = new Textfield();
     prompt_field_->SetText(params.default_prompt);
+    prompt_field_->SetAccessibleName(params.message);
   }
 
   inter_row_vertical_spacing_ = params.inter_row_vertical_spacing;

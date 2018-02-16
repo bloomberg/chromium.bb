@@ -61,6 +61,9 @@ TabIconView::TabIconView(TabIconViewModel* model,
       model_(model),
       is_light_(false) {
   InitializeIfNeeded();
+  // Inheriting from Button causes this View to be focusable, but it us
+  // purely decorative and should not be exposed as focusable in accessibility.
+  SetFocusBehavior(FocusBehavior::NEVER);
 }
 
 TabIconView::~TabIconView() {

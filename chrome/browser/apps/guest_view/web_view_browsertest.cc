@@ -98,6 +98,7 @@
 #include "ui/display/display_switches.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -4509,6 +4510,8 @@ IN_PROC_BROWSER_TEST_P(WebViewFocusTest, TouchFocusesEmbedder) {
   other_focusable_view->SetBounds(bounds.x() + bounds.width(), bounds.y(), 100,
                                   100);
   other_focusable_view->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+  // Focusable views require an accessible name to pass accessibility checks.
+  other_focusable_view->GetViewAccessibility().OverrideName("Any name");
   aura_webview->parent()->AddChildView(other_focusable_view);
   other_focusable_view->SetPosition(gfx::Point(bounds.x() + bounds.width(), 0));
 
