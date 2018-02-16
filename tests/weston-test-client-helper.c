@@ -155,6 +155,8 @@ pointer_handle_motion(void *data, struct wl_pointer *wl_pointer,
 	pointer->x = wl_fixed_to_int(x);
 	pointer->y = wl_fixed_to_int(y);
 	pointer->motion_time_msec = time_msec;
+	pointer->motion_time_timespec = pointer->input_timestamp;
+	pointer->input_timestamp = (struct timespec) { 0 };
 
 	fprintf(stderr, "test-client: got pointer motion %d %d\n",
 		pointer->x, pointer->y);
@@ -170,6 +172,8 @@ pointer_handle_button(void *data, struct wl_pointer *wl_pointer,
 	pointer->button = button;
 	pointer->state = state;
 	pointer->button_time_msec = time_msec;
+	pointer->button_time_timespec = pointer->input_timestamp;
+	pointer->input_timestamp = (struct timespec) { 0 };
 
 	fprintf(stderr, "test-client: got pointer button %u %u\n",
 		button, state);
@@ -184,6 +188,8 @@ pointer_handle_axis(void *data, struct wl_pointer *wl_pointer,
 	pointer->axis = axis;
 	pointer->axis_value = wl_fixed_to_double(value);
 	pointer->axis_time_msec = time_msec;
+	pointer->axis_time_timespec = pointer->input_timestamp;
+	pointer->input_timestamp = (struct timespec) { 0 };
 
 	fprintf(stderr, "test-client: got pointer axis %u %f\n",
 		axis, wl_fixed_to_double(value));
@@ -210,6 +216,8 @@ pointer_handle_axis_stop(void *data, struct wl_pointer *wl_pointer,
 
 	pointer->axis = axis;
 	pointer->axis_stop_time_msec = time_msec;
+	pointer->axis_stop_time_timespec = pointer->input_timestamp;
+	pointer->input_timestamp = (struct timespec) { 0 };
 
 	fprintf(stderr, "test-client: got pointer axis stop %u\n", axis);
 }
@@ -281,6 +289,8 @@ keyboard_handle_key(void *data, struct wl_keyboard *wl_keyboard,
 	keyboard->key = key;
 	keyboard->state = state;
 	keyboard->key_time_msec = time_msec;
+	keyboard->key_time_timespec = keyboard->input_timestamp;
+	keyboard->input_timestamp = (struct timespec) { 0 };
 
 	fprintf(stderr, "test-client: got keyboard key %u %u\n", key, state);
 }
@@ -336,6 +346,8 @@ touch_handle_down(void *data, struct wl_touch *wl_touch,
 	touch->down_y = wl_fixed_to_int(y_w);
 	touch->id = id;
 	touch->down_time_msec = time_msec;
+	touch->down_time_timespec = touch->input_timestamp;
+	touch->input_timestamp = (struct timespec) { 0 };
 
 	fprintf(stderr, "test-client: got touch down %d %d, surf: %p, id: %d\n",
 		touch->down_x, touch->down_y, surface, id);
@@ -348,6 +360,8 @@ touch_handle_up(void *data, struct wl_touch *wl_touch,
 	struct touch *touch = data;
 	touch->up_id = id;
 	touch->up_time_msec = time_msec;
+	touch->up_time_timespec = touch->input_timestamp;
+	touch->input_timestamp = (struct timespec) { 0 };
 
 	fprintf(stderr, "test-client: got touch up, id: %d\n", id);
 }
@@ -361,6 +375,8 @@ touch_handle_motion(void *data, struct wl_touch *wl_touch,
 	touch->x = wl_fixed_to_int(x_w);
 	touch->y = wl_fixed_to_int(y_w);
 	touch->motion_time_msec = time_msec;
+	touch->motion_time_timespec = touch->input_timestamp;
+	touch->input_timestamp = (struct timespec) { 0 };
 
 	fprintf(stderr, "test-client: got touch motion, %d %d, id: %d\n",
 		touch->x, touch->y, id);

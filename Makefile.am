@@ -879,7 +879,9 @@ BUILT_SOURCES +=					\
 	protocol/ivi-application-protocol.c		\
 	protocol/ivi-application-client-protocol.h	\
 	protocol/linux-dmabuf-unstable-v1-protocol.c	\
-	protocol/linux-dmabuf-unstable-v1-client-protocol.h
+	protocol/linux-dmabuf-unstable-v1-client-protocol.h		\
+	protocol/input-timestamps-unstable-v1-protocol.c		\
+	protocol/input-timestamps-unstable-v1-client-protocol.h
 
 westondatadir = $(datadir)/weston
 dist_westondata_DATA =				\
@@ -1335,10 +1337,14 @@ vertex_clip_test_LDADD = libtest-runner.la -lm $(CLOCK_GETTIME_LIBS)
 
 libtest_client_la_SOURCES =			\
 	tests/weston-test-client-helper.c	\
-	tests/weston-test-client-helper.h
-nodist_libtest_client_la_SOURCES =		\
-	protocol/weston-test-protocol.c	\
-	protocol/weston-test-client-protocol.h
+	tests/weston-test-client-helper.h	\
+	tests/input-timestamps-helper.c		\
+	tests/input-timestamps-helper.h
+nodist_libtest_client_la_SOURCES =				\
+	protocol/weston-test-protocol.c				\
+	protocol/weston-test-client-protocol.h			\
+	protocol/input-timestamps-unstable-v1-protocol.c	\
+	protocol/input-timestamps-unstable-v1-client-protocol.h
 libtest_client_la_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS) $(CAIRO_CFLAGS)
 libtest_client_la_LIBADD = libshared.la libtest-runner.la $(TEST_CLIENT_LIBS) $(CAIRO_LIBS)
 

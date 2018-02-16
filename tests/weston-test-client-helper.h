@@ -31,6 +31,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <time.h>
 #include <pixman.h>
 
 #include <wayland-client-protocol.h>
@@ -98,6 +99,11 @@ struct pointer {
 	uint32_t button_time_msec;
 	uint32_t axis_time_msec;
 	uint32_t axis_stop_time_msec;
+	struct timespec input_timestamp;
+	struct timespec motion_time_timespec;
+	struct timespec button_time_timespec;
+	struct timespec axis_time_timespec;
+	struct timespec axis_stop_time_timespec;
 };
 
 struct keyboard {
@@ -114,6 +120,8 @@ struct keyboard {
 		int delay;
 	} repeat_info;
 	uint32_t key_time_msec;
+	struct timespec input_timestamp;
+	struct timespec key_time_timespec;
 };
 
 struct touch {
@@ -129,6 +137,10 @@ struct touch {
 	uint32_t down_time_msec;
 	uint32_t up_time_msec;
 	uint32_t motion_time_msec;
+	struct timespec input_timestamp;
+	struct timespec down_time_timespec;
+	struct timespec up_time_timespec;
+	struct timespec motion_time_timespec;
 };
 
 struct output {
