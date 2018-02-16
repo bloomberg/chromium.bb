@@ -22,7 +22,6 @@ class TickClock;
 
 namespace net {
 class NetLog;
-class ProxyServer;
 }
 
 namespace data_reduction_proxy {
@@ -167,29 +166,13 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
       DataReductionProxyEventCreator* event_creator);
   ~MockDataReductionProxyConfig();
 
-  MOCK_METHOD2(SetProxyPrefs, void(bool enabled, bool at_startup));
-  MOCK_CONST_METHOD2(IsDataReductionProxy,
-                     bool(const net::ProxyServer& proxy_server,
-                          DataReductionProxyTypeInfo* proxy_info));
   MOCK_CONST_METHOD2(WasDataReductionProxyUsed,
                      bool(const net::URLRequest*,
                           DataReductionProxyTypeInfo* proxy_info));
   MOCK_CONST_METHOD1(ContainsDataReductionProxy,
                      bool(const net::ProxyConfig::ProxyRules& proxy_rules));
-  MOCK_CONST_METHOD2(IsBypassedByDataReductionProxyLocalRules,
-                     bool(const net::URLRequest& request,
-                          const net::ProxyConfig& data_reduction_proxy_config));
-  MOCK_CONST_METHOD3(AreDataReductionProxiesBypassed,
-                     bool(const net::URLRequest& request,
-                          const net::ProxyConfig& data_reduction_proxy_config,
-                          base::TimeDelta* min_retry_delay));
   MOCK_METHOD1(SecureProxyCheck,
                void(SecureProxyCheckerCallback fetcher_callback));
-
-  using DataReductionProxyConfig::UpdateConfigForTesting;
-
-  // Resets the Lo-Fi status to default state.
-  void ResetLoFiStatusForTest();
 };
 
 }  // namespace data_reduction_proxy
