@@ -3244,7 +3244,6 @@ crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ 
 crbug.com/417782 http/tests/misc/acid3.html [ Failure ]
 crbug.com/417782 inspector-protocol/css/css-get-background-colors.js [ Failure ]
 crbug.com/417782 inspector-protocol/dom-snapshot/dom-snapshot-getSnapshot.js [ Failure ]
-crbug.com/417782 inspector-protocol/page/get-layout-metrics.js [ Failure ]
 crbug.com/787666 paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Crash ]
 crbug.com/417782 [ Linux ] paint/overflow/fixed-background-scroll-window.html [ Failure ]
 crbug.com/417782 [ Linux ] virtual/android/fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure ]
