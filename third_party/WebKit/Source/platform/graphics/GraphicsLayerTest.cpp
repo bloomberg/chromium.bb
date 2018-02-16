@@ -34,12 +34,15 @@
 #include "platform/animation/CompositorKeyframeModel.h"
 #include "platform/animation/CompositorTargetProperty.h"
 #include "platform/graphics/CompositorElementId.h"
+#include "platform/graphics/paint/PaintControllerTest.h"
 #include "platform/graphics/paint/PropertyTreeState.h"
+#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
 #include "platform/graphics/test/FakeScrollableArea.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/testing/FakeGraphicsLayer.h"
 #include "platform/testing/FakeGraphicsLayerClient.h"
+#include "platform/testing/PaintTestConfigurations.h"
 #include "platform/testing/WebLayerTreeViewImplForTesting.h"
 #include "platform/transforms/Matrix3DTransformOperation.h"
 #include "platform/transforms/RotateTransformOperation.h"
@@ -54,7 +57,8 @@
 
 namespace blink {
 
-class GraphicsLayerTest : public ::testing::Test {
+class GraphicsLayerTest : public ::testing::Test,
+                          public PaintTestConfigurations {
  public:
   GraphicsLayerTest() {
     clip_layer_ = WTF::WrapUnique(new FakeGraphicsLayer(client_));
@@ -109,6 +113,10 @@ class GraphicsLayerTest : public ::testing::Test {
   std::unique_ptr<WebLayerTreeViewImplForTesting> layer_tree_view_;
 };
 
+INSTANTIATE_TEST_CASE_P(All,
+                        GraphicsLayerTest,
+                        ::testing::Values(0, kSlimmingPaintV175));
+
 class AnimationPlayerForTesting : public CompositorAnimationPlayerClient {
  public:
   AnimationPlayerForTesting() {
@@ -122,7 +130,7 @@ class AnimationPlayerForTesting : public CompositorAnimationPlayerClient {
   std::unique_ptr<CompositorAnimationPlayer> compositor_player_;
 };
 
-TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations) {
+TEST_P(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations) {
   ASSERT_FALSE(platform_layer_->HasTickingAnimationForTesting());
 
   std::unique_ptr<CompositorFloatAnimationCurve> curve =
@@ -177,7 +185,7 @@ TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations) {
   host.RemoveTimeline(*compositor_timeline.get());
 }
 
-TEST_F(GraphicsLayerTest, Paint) {
+TEST_P(GraphicsLayerTest, Paint) {
   IntRect interest_rect(1, 2, 3, 4);
   EXPECT_TRUE(PaintWithoutCommit(*graphics_layer_, &interest_rect));
   graphics_layer_->GetPaintController().CommitNewDisplayItems();
@@ -198,6 +206,44 @@ TEST_F(GraphicsLayerTest, Paint) {
   EXPECT_TRUE(PaintWithoutCommit(*graphics_layer_, &interest_rect));
   graphics_layer_->GetPaintController().CommitNewDisplayItems();
   EXPECT_FALSE(PaintWithoutCommit(*graphics_layer_, &interest_rect));
+}
+
+TEST_P(GraphicsLayerTest, PaintRecursively) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+
+  IntRect interest_rect(1, 2, 3, 4);
+  auto transform_root = TransformPaintPropertyNode::Root();
+  auto transform1 = TransformPaintPropertyNode::Create(
+      transform_root, TransformationMatrix().Translate(10, 20), FloatPoint3D());
+  auto transform2 = TransformPaintPropertyNode::Create(
+      transform1, TransformationMatrix().Scale(2), FloatPoint3D());
+
+  client_.SetPainter([&](const GraphicsLayer* layer, GraphicsContext& context,
+                         GraphicsLayerPaintingPhase, const IntRect&) {
+    {
+      ScopedPaintChunkProperties properties(
+          context.GetPaintController(), transform1, *layer, kBackgroundType);
+      PaintControllerTestBase::DrawRect(context, *layer, kBackgroundType,
+                                        interest_rect);
+    }
+    {
+      ScopedPaintChunkProperties properties(
+          context.GetPaintController(), transform2, *layer, kForegroundType);
+      PaintControllerTestBase::DrawRect(context, *layer, kForegroundType,
+                                        interest_rect);
+    }
+  });
+
+  transform1->Update(transform_root, TransformationMatrix().Translate(20, 30),
+                     FloatPoint3D());
+  EXPECT_TRUE(transform1->Changed(*transform_root));
+  EXPECT_TRUE(transform2->Changed(*transform_root));
+  client_.SetNeedsRepaint(true);
+  graphics_layer_->PaintRecursively();
+
+  EXPECT_FALSE(transform1->Changed(*transform_root));
+  EXPECT_FALSE(transform2->Changed(*transform_root));
 }
 
 }  // namespace blink

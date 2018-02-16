@@ -291,7 +291,17 @@ IntRect GraphicsLayer::InterestRect() {
 }
 
 void GraphicsLayer::PaintRecursively() {
-  PaintRecursivelyInternal();
+  Vector<GraphicsLayer*> repainted_layers;
+  PaintRecursivelyInternal(repainted_layers);
+
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    // Clear paint property change flags that are for this paint only.
+    for (auto* layer : repainted_layers) {
+      for (const auto& chunk :
+           layer->GetPaintController().GetPaintArtifact().PaintChunks())
+        chunk.properties.property_tree_state.ClearChangedToRoot();
+    }
+  }
 
 #if DCHECK_IS_ON()
   if (VLOG_IS_ON(2)) {
@@ -308,23 +318,26 @@ void GraphicsLayer::PaintRecursively() {
 #endif
 }
 
-void GraphicsLayer::PaintRecursivelyInternal() {
-  if (DrawsContent())
-    Paint(nullptr);
+void GraphicsLayer::PaintRecursivelyInternal(
+    Vector<GraphicsLayer*>& repainted_layers) {
+  if (DrawsContent()) {
+    if (Paint(nullptr))
+      repainted_layers.push_back(this);
+  }
 
   if (MaskLayer())
-    MaskLayer()->PaintRecursivelyInternal();
+    MaskLayer()->PaintRecursivelyInternal(repainted_layers);
   if (ContentsClippingMaskLayer())
-    ContentsClippingMaskLayer()->PaintRecursivelyInternal();
+    ContentsClippingMaskLayer()->PaintRecursivelyInternal(repainted_layers);
 
   for (auto* child : Children())
-    child->PaintRecursivelyInternal();
+    child->PaintRecursivelyInternal(repainted_layers);
 }
 
-void GraphicsLayer::Paint(const IntRect* interest_rect,
+bool GraphicsLayer::Paint(const IntRect* interest_rect,
                           GraphicsContext::DisabledMode disabled_mode) {
   if (!PaintWithoutCommit(interest_rect, disabled_mode))
-    return;
+    return false;
 
 #if DCHECK_IS_ON()
   if (VLOG_IS_ON(2)) {
@@ -357,6 +370,8 @@ void GraphicsLayer::Paint(const IntRect* interest_rect,
       layer_->Layer()->Invalidate();
     }
   }
+
+  return true;
 }
 
 bool GraphicsLayer::PaintWithoutCommit(

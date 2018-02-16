@@ -254,7 +254,8 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   IntRect InterestRect();
   void PaintRecursively();
-  void Paint(const IntRect* interest_rect,
+  // Returns true if this layer is repainted.
+  bool Paint(const IntRect* interest_rect,
              GraphicsContext::DisabledMode = GraphicsContext::kNothingDisabled);
 
   // cc::LayerClient implementation.
@@ -309,7 +310,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
                      PaintingControlSetting = kPaintDefaultBehavior) final;
   size_t ApproximateUnsharedMemoryUsage() const final;
 
-  void PaintRecursivelyInternal();
+  void PaintRecursivelyInternal(Vector<GraphicsLayer*>& repainted_layers);
 
   // Returns true if PaintController::paintArtifact() changed and needs commit.
   bool PaintWithoutCommit(
