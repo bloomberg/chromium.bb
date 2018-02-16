@@ -5,6 +5,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/bookmark_app_navigation_throttle.h"
@@ -75,6 +76,13 @@ namespace {
 
 const char kQueryParam[] = "test=";
 const char kQueryParamName[] = "test";
+
+// On macOS the Meta key is used as a modifier instead of Control.
+#if defined(OS_MACOSX)
+constexpr int kCtrlOrMeta = blink::WebInputEvent::kMetaKey;
+#else
+constexpr int kCtrlOrMeta = blink::WebInputEvent::kControlKey;
+#endif
 
 // Subclass of TestNavigationObserver that saves extra information about the
 // navigation and watches all navigations to |target_url|.
@@ -247,13 +255,15 @@ WindowAccessResult CanChildWindowAccessOpener(
 }
 
 // Creates an <a> element, sets its href and target to |link_url| and |target|
-// respectively, adds it to the DOM, and clicks on it. Returns once |target_url|
-// has loaded.
-void ClickLinkAndWaitForURL(content::WebContents* web_contents,
-                            const GURL& link_url,
-                            const GURL& target_url,
-                            LinkTarget target,
-                            const std::string& rel) {
+// respectively, adds it to the DOM, and clicks on it with |modifiers|. Returns
+// once |target_url| has loaded. |modifiers| should be based on
+// blink::WebInputEvent::Modifiers.
+void ClickLinkWithModifiersAndWaitForURL(content::WebContents* web_contents,
+                                         const GURL& link_url,
+                                         const GURL& target_url,
+                                         LinkTarget target,
+                                         const std::string& rel,
+                                         int modifiers) {
   auto observer = GetTestNavigationObserver(target_url);
   std::string script = base::StringPrintf(
       "(() => {"
@@ -261,14 +271,37 @@ void ClickLinkAndWaitForURL(content::WebContents* web_contents,
       "link.href = '%s';"
       "link.target = '%s';"
       "link.rel = '%s';"
+      // Make a click target that covers the whole viewport.
+      "const click_target = document.createElement('textarea');"
+      "click_target.position = 'absolute';"
+      "click_target.top = 0;"
+      "click_target.left = 0;"
+      "click_target.style.height = '100vh';"
+      "click_target.style.width = '100vw';"
+      "link.appendChild(click_target);"
       "document.body.appendChild(link);"
-      "const event = new MouseEvent('click', {'view': window});"
-      "link.dispatchEvent(event);"
       "})();",
       link_url.spec().c_str(), target == LinkTarget::SELF ? "_self" : "_blank",
       rel.c_str());
   ASSERT_TRUE(content::ExecuteScript(web_contents, script));
+
+  content::SimulateMouseClick(web_contents, modifiers,
+                              blink::WebMouseEvent::Button::kLeft);
+
   observer->WaitForNavigationFinished();
+}
+
+// Creates an <a> element, sets its href and target to |link_url| and |target|
+// respectively, adds it to the DOM, and clicks on it. Returns once |target_url|
+// has loaded.
+void ClickLinkAndWaitForURL(content::WebContents* web_contents,
+                            const GURL& link_url,
+                            const GURL& target_url,
+                            LinkTarget target,
+                            const std::string& rel) {
+  ClickLinkWithModifiersAndWaitForURL(
+      web_contents, link_url, target_url, target, rel,
+      blink::WebInputEvent::Modifiers::kNoModifiers);
 }
 
 // Creates an <a> element, sets its href and target to |link_url| and |target|
@@ -279,6 +312,19 @@ void ClickLinkAndWait(content::WebContents* web_contents,
                       LinkTarget target,
                       const std::string& rel) {
   ClickLinkAndWaitForURL(web_contents, link_url, link_url, target, rel);
+}
+
+// Creates an <a> element, sets its href and target to |link_url| and |target|
+// respectively, adds it to the DOM, and clicks on it with |modifiers|. Returns
+// once the link has loaded. |modifiers| should be based on
+// blink::WebInputEvent::Modifiers.
+void ClickLinkWithModifiersAndWait(content::WebContents* web_contents,
+                                   const GURL& link_url,
+                                   LinkTarget target,
+                                   const std::string& rel,
+                                   int modifiers) {
+  ClickLinkWithModifiersAndWaitForURL(web_contents, link_url, link_url, target,
+                                      rel, modifiers);
 }
 
 // Adds a query parameter to |base_url|.
@@ -1001,6 +1047,25 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
       global_histogram(),
       {{ProcessNavigationResult::kDeferOpenAppCloseEmptyWebContents, 1},
        GetAppLaunchedEntry()});
+}
+
+// Tests that Ctrl + Clicking a link to the app's app_url opens a new background
+// tab and not the app.
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
+                       AppUrlCtrlClick) {
+  InstallTestBookmarkApp();
+  NavigateToLaunchingPage();
+
+  const GURL app_url = embedded_test_server()->GetURL(kAppUrlPath);
+  TestTabActionOpensBackgroundTab(
+      app_url,
+      base::BindOnce(&ClickLinkWithModifiersAndWait,
+                     browser()->tab_strip_model()->GetActiveWebContents(),
+                     app_url, LinkTarget::SELF, GetParam(), kCtrlOrMeta));
+
+  ExpectNavigationResultHistogramEquals(
+      global_histogram(),
+      {{ProcessNavigationResult::kProceedDispositionNewBackgroundTab, 1}});
 }
 
 // Tests that clicking a link with target="_self" and for which the server
