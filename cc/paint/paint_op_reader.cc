@@ -53,7 +53,8 @@ bool IsValidPaintShaderType(PaintShader::Type type) {
 }
 
 bool IsValidSkShaderTileMode(SkShader::TileMode mode) {
-  return mode < SkShader::kTileModeCount;
+  // When Skia adds Decal, update this (skbug.com/7638)
+  return mode <= SkShader::kMirror_TileMode;
 }
 
 bool IsValidPaintShaderScalingBehavior(PaintShader::ScalingBehavior behavior) {
