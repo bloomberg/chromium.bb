@@ -623,8 +623,10 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
   // be propagated from shadow host to distributed node.
   if (state.DistributedToV0InsertionPoint() || element->AssignedSlot()) {
     if (Element* parent = element->parentElement()) {
-      if (ComputedStyle* style_of_shadow_host = parent->MutableComputedStyle())
+      if (const ComputedStyle* style_of_shadow_host =
+              parent->GetComputedStyle()) {
         state.Style()->SetUserModify(style_of_shadow_host->UserModify());
+      }
     }
   }
 
