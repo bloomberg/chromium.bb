@@ -11,6 +11,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
 #include "ui/chromeos/ksv/keyboard_shortcut_item.h"
+#include "ui/chromeos/ksv/vector_icons/vector_icons.h"
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -62,12 +63,22 @@ base::Optional<base::string16> GetSpecialStringForKeyboardCode(
       msg_id = ui::DeviceUsesKeyboardLayout2() ? IDS_KSV_MODIFIER_LAUNCHER
                                                : IDS_KSV_MODIFIER_SEARCH;
       break;
+    case ui::VKEY_SPACE:
+      msg_id = IDS_KSV_KEY_SPACE;
+      break;
+    case ui::VKEY_MEDIA_LAUNCH_APP1:
+      msg_id = IDS_KSV_KEY_OVERVIEW;
+      break;
+    case ui::VKEY_MEDIA_LAUNCH_APP2:
+      msg_id = IDS_KSV_KEY_FULLSCREEN;
+      break;
     case ui::VKEY_UNKNOWN:
+      // TODO(wutao): make this reliable.
       // If this is VKEY_UNKNOWN, it indicates to insert a "+" separator. Use
-      // one space to replace the string resourece's placeholder so that the
-      // separator is not searchable. This does not conflict with the
-      // replacement string for "VKEY_SPACE", which is "Space".
-      return base::ASCIIToUTF16(" ");
+      // one plus and one space to replace the string resourece's placeholder so
+      // that the separator will not conflict with the replacement string for
+      // "VKEY_OEM_PLUS", which is "+" and "VKEY_SPACE", which is "Space".
+      return base::ASCIIToUTF16("+ ");
     default:
       return base::nullopt;
   }
@@ -128,28 +139,23 @@ base::string16 GetStringForKeyboardCode(ui::KeyboardCode key_code) {
 const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
   CR_DEFINE_STATIC_LOCAL(
       std::vector<KeyboardShortcutItem>, item_list,
-      // TODO(crbug.com/793997): These are two examples how we organize the
-      // metadata. Full metadata will be provided.
       ({
           {// |categories|
-           {ShortcutCategory::kPopular, ShortcutCategory::kSystemAndDisplay},
+           {ShortcutCategory::kPopular},
            IDS_KSV_DESCRIPTION_LOCK_SCREEN,
            IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
            // |accelerator_ids|
            {{ui::VKEY_L, ui::EF_COMMAND_DOWN}}},
 
-          // Some accelerators are grouped into one metadata for the
-          // KeyboardShortcutViewer due to the similarity. E.g. the shortcut for
-          // "Change screen resolution" is "Ctrl + Shift and + or -", which
-          // groups
-          // two accelerators.
           {// |categories|
            {ShortcutCategory::kSystemAndDisplay},
            IDS_KSV_DESCRIPTION_CHANGE_SCREEN_RESOLUTION,
            IDS_KSV_SHORTCUT_CHANGE_SCREEN_RESOLUTION,
            // |accelerator_ids|
-           {{ui::VKEY_OEM_MINUS, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN},
-            {ui::VKEY_OEM_PLUS, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN}}},
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_SHIFT,
+            ui::VKEY_UNKNOWN, ui::VKEY_OEM_PLUS, ui::VKEY_OEM_MINUS}},
 
           {// |categories|
            {ShortcutCategory::kTabAndWindow},
@@ -157,15 +163,954 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
            IDS_KSV_SHORTCUT_DRAG_LINK_IN_SAME_TAB},
 
           {// |categories|
+           {ShortcutCategory::kTabAndWindow},
+           IDS_KSV_DESCRIPTION_DRAG_LINK_IN_NEW_TAB,
+           IDS_KSV_SHORTCUT_DRAG_LINK_IN_NEW_TAB},
+
+          {// |categories|
            {ShortcutCategory::kAccessibility},
-           IDS_KSV_DESCRIPTION_HIGHLIGHT_NEXT_ITEM,
-           IDS_KSV_SHORTCUT_HIGHLIGHT_NEXT_ITEM,
+           IDS_KSV_DESCRIPTION_HIGHLIGHT_NEXT_ITEM_ON_SHELF,
+           IDS_KSV_SHORTCUT_HIGHLIGHT_NEXT_ITEM_ON_SHELF,
            // |accelerator_ids|
            {},
            // |shortcut_key_codes|
            {ui::VKEY_SHIFT, ui::VKEY_UNKNOWN, ui::VKEY_LMENU, ui::VKEY_UNKNOWN,
             ui::VKEY_L, ui::VKEY_TAB, ui::VKEY_RIGHT}},
 
+          {// |categories|
+           {ShortcutCategory::kPopular, ShortcutCategory::kTabAndWindow},
+           IDS_KSV_DESCRIPTION_CYCLE_BACKWARD_MRU,
+           IDS_KSV_SHORTCUT_CYCLE_BACKWARD_MRU,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_LMENU, ui::VKEY_UNKNOWN, ui::VKEY_SHIFT, ui::VKEY_TAB}},
+
+          {// |categories|
+           {ShortcutCategory::kPopular, ShortcutCategory::kTabAndWindow},
+           IDS_KSV_DESCRIPTION_CYCLE_FORWARD_MRU,
+           IDS_KSV_SHORTCUT_CYCLE_FORWARD_MRU,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_LMENU, ui::VKEY_TAB}},
+
+          {// |categories|
+           {ShortcutCategory::kAccessibility},
+           IDS_KSV_DESCRIPTION_FOCUS_SHELF,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_IDC_BOOKMARK_ALL_TABS,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_D, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_IDC_BOOKMARK_PAGE,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_D, ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kTabAndWindow},
+           IDS_KSV_DESCRIPTION_IDC_CLOSE_TAB,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_W, ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kTabAndWindow},
+           IDS_KSV_DESCRIPTION_IDC_CLOSE_WINDOW,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kTextEditing},
+           IDS_KSV_DESCRIPTION_IDC_CONTENT_CONTEXT_SELECTALL,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_A}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_IDC_DEV_TOOLS,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_IDC_DEV_TOOLS_CONSOLE,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_J, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_IDC_FIND,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_F, ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_IDC_FIND_NEXT,
+           IDS_KSV_SHORTCUT_IDC_FIND_NEXT,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_G, ui::VKEY_RETURN}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_IDC_FIND_PREVIOUS,
+           IDS_KSV_SHORTCUT_IDC_FIND_PREVIOUS,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_SHIFT,
+            ui::VKEY_UNKNOWN, ui::VKEY_G, ui::VKEY_SHIFT, ui::VKEY_UNKNOWN,
+            ui::VKEY_RETURN}},
+
+          {// |categories|
+           {ShortcutCategory::kAccessibility},
+           IDS_KSV_DESCRIPTION_IDC_FOCUS_BOOKMARKS,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_B, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPopular, ShortcutCategory::kTextEditing},
+           IDS_KSV_DESCRIPTION_IDC_FOCUS_LOCATION,
+           IDS_KSV_SHORTCUT_IDC_FOCUS_LOCATION,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_L, ui::VKEY_LMENU,
+            ui::VKEY_UNKNOWN, ui::VKEY_D}},
+
+          {// |categories|
+           {ShortcutCategory::kPopular, ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_IDC_FOCUS_SEARCH,
+           IDS_KSV_SHORTCUT_IDC_FOCUS_SEARCH,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_K, ui::VKEY_E}},
+
+          {// |categories|
+           {ShortcutCategory::kAccessibility},
+           IDS_KSV_DESCRIPTION_IDC_FOCUS_TOOLBAR,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_T, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kTextEditing},
+           IDS_KSV_DESCRIPTION_KEYBOARD_BRIGHTNESS_DOWN,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_BRIGHTNESS_DOWN, ui::EF_ALT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kTextEditing},
+           IDS_KSV_DESCRIPTION_KEYBOARD_BRIGHTNESS_UP,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_BRIGHTNESS_UP, ui::EF_ALT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kSystemAndDisplay},
+           IDS_KSV_DESCRIPTION_LAUNCH_LAST_APP,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_9, ui::EF_ALT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPopular, ShortcutCategory::kTabAndWindow},
+           IDS_KSV_DESCRIPTION_NEW_TAB,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_T, ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPopular, ShortcutCategory::kTabAndWindow},
+           IDS_KSV_DESCRIPTION_NEW_WINDOW,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_N, ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kTabAndWindow},
+           IDS_KSV_DESCRIPTION_IDC_NEW_INCOGNITO_WINDOW,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_N, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kTabAndWindow},
+           IDS_KSV_DESCRIPTION_IDC_OPEN_FILE,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_O, ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_IDC_PRINT,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_P, ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_IDC_RELOAD,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_R, ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_IDC_RELOAD_BYPASSING_CACHE,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_R, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kTabAndWindow},
+           IDS_KSV_DESCRIPTION_IDC_RESTORE_TAB,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_T, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_IDC_SAVE_PAGE,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_S, ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kTabAndWindow},
+           IDS_KSV_DESCRIPTION_IDC_SELECT_LAST_TAB,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_9, ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPopular},
+           IDS_KSV_DESCRIPTION_IDC_SELECT_NEXT_TAB,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_TAB, ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPopular},
+           IDS_KSV_DESCRIPTION_IDC_SELECT_PREVIOUS_TAB,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_TAB, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_IDC_SHOW_BOOKMARK_BAR,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_B, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_IDC_SHOW_HISTORY,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_H, ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_IDC_STOP,
+           IDS_KSV_SHORTCUT_ONE_KEY,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_ESCAPE}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_IDC_VIEW_SOURCE,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_U, ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_IDC_ZOOM_MINUS,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_OEM_MINUS, ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_IDC_ZOOM_NORMAL,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_0, ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_IDC_ZOOM_PLUS,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_OEM_PLUS, ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kTextEditing},
+           IDS_KSV_DESCRIPTION_NEXT_IME,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_SPACE, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kSystemAndDisplay},
+           IDS_KSV_DESCRIPTION_OPEN_FILE_MANAGER,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_M, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kTextEditing},
+           IDS_KSV_DESCRIPTION_PREVIOUS_IME,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_SPACE, ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kSystemAndDisplay},
+           IDS_KSV_DESCRIPTION_ROTATE_SCREEN,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_BROWSER_REFRESH,
+             ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kSystemAndDisplay},
+           IDS_KSV_DESCRIPTION_SCALE_UI_RESET,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_0, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kSystemAndDisplay},
+           IDS_KSV_DESCRIPTION_SWITCH_TO_NEXT_USER,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_OEM_PERIOD, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kSystemAndDisplay},
+           IDS_KSV_DESCRIPTION_SWITCH_TO_PREVIOUS_USER,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_OEM_COMMA, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPopular},
+           IDS_KSV_DESCRIPTION_TAKE_PARTIAL_SCREENSHOT,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_MEDIA_LAUNCH_APP1,
+             ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPopular},
+           IDS_KSV_DESCRIPTION_TAKE_SCREENSHOT,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPopular, ShortcutCategory::kTextEditing},
+           IDS_KSV_DESCRIPTION_TOGGLE_CAPS_LOCK,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_LWIN, ui::EF_ALT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kAccessibility},
+           IDS_KSV_DESCRIPTION_TOGGLE_HIGH_CONTRAST,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_H, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kSystemAndDisplay},
+           IDS_KSV_DESCRIPTION_TOGGLE_MESSAGE_CENTER_BUBBLE,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_N, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPopular},
+           IDS_KSV_DESCRIPTION_TOGGLE_OVERVIEW,
+           IDS_KSV_SHORTCUT_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE}}},
+
+          {// |categories|
+           {ShortcutCategory::kAccessibility},
+           IDS_KSV_DESCRIPTION_TOGGLE_SPOKEN_FEEDBACK,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_Z, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kSystemAndDisplay},
+           IDS_KSV_DESCRIPTION_TOGGLE_SYSTEM_TRAY_BUBBLE,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kTabAndWindow},
+           IDS_KSV_DESCRIPTION_WINDOW_CYCLE_SNAP_LEFT,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_OEM_4, ui::EF_ALT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kTabAndWindow},
+           IDS_KSV_DESCRIPTION_WINDOW_CYCLE_SNAP_RIGHT,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_OEM_6, ui::EF_ALT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPopular, ShortcutCategory::kTextEditing},
+           IDS_KSV_DESCRIPTION_COPY,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_C}},
+
+          {// |categories|
+           {ShortcutCategory::kPopular, ShortcutCategory::kTextEditing},
+           IDS_KSV_DESCRIPTION_PASTE,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_V}},
+
+          {// |categories|
+           {ShortcutCategory::kPopular},
+           IDS_KSV_DESCRIPTION_SELECT_NUMBERED_TAB,
+           IDS_KSV_SHORTCUT_SELECT_NUMBERED_TAB,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN}},
+
+          {// |categories|
+           {ShortcutCategory::kPopular, ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_IDC_RELOAD,
+           IDS_KSV_SHORTCUT_ONE_KEY,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_BROWSER_REFRESH}},
+
+          {// |categories|
+           {ShortcutCategory::kPopular},
+           IDS_KSV_DESCRIPTION_KEYBOARD_SHORTCUT_HELPER,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_OEM_2, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kTabAndWindow},
+           IDS_KSV_DESCRIPTION_OPEN_LINK_IN_TAB_BACKGROUND,
+           IDS_KSV_SHORTCUT_OPEN_LINK_IN_TAB_BACKGROUND,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL}},
+
+          {// |categories|
+           {ShortcutCategory::kTabAndWindow},
+           IDS_KSV_DESCRIPTION_OPEN_LINK_IN_TAB,
+           IDS_KSV_SHORTCUT_OPEN_LINK_IN_TAB,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_SHIFT}},
+
+          {// |categories|
+           {ShortcutCategory::kTabAndWindow},
+           IDS_KSV_DESCRIPTION_OPEN_LINK_IN_WINDOW,
+           IDS_KSV_SHORTCUT_OPEN_LINK_IN_WINDOW,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_SHIFT}},
+
+          {// |categories|
+           {ShortcutCategory::kTabAndWindow},
+           IDS_KSV_DESCRIPTION_OPEN_PAGE_IN_NEW_TAB,
+           IDS_KSV_SHORTCUT_OPEN_PAGE_IN_NEW_TAB,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_LMENU, ui::VKEY_UNKNOWN, ui::VKEY_RETURN}},
+
+          {// |categories|
+           {ShortcutCategory::kTabAndWindow},
+           IDS_KSV_DESCRIPTION_STOP_DRAG_TAB,
+           IDS_KSV_SHORTCUT_STOP_DRAG_TAB,
+           // |accelerator_ids|
+           {{ui::VKEY_ESCAPE, ui::EF_NONE}}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_PAGE_UP,
+           IDS_KSV_SHORTCUT_PAGE_UP,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_LMENU, ui::VKEY_COMMAND, ui::VKEY_UNKNOWN, ui::VKEY_UP}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_PAGE_DOWN,
+           IDS_KSV_SHORTCUT_PAGE_DOWN,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_LWIN, ui::VKEY_COMMAND, ui::VKEY_UNKNOWN, ui::VKEY_DOWN}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_SCROLL_DOWN_PAGE,
+           IDS_KSV_SHORTCUT_ONE_KEY,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_SPACE}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_GO_TO_TOP,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_LMENU,
+            ui::VKEY_UNKNOWN, ui::VKEY_UP}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_GO_TO_BOTTOM,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_LMENU,
+            ui::VKEY_UNKNOWN, ui::VKEY_DOWN}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_RIGHT_CLICK,
+           IDS_KSV_SHORTCUT_RIGHT_CLICK,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_LMENU}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_SAVE_LINK_AS_BOOKMARK,
+           IDS_KSV_SHORTCUT_SAVE_LINK_AS_BOOKMARK,
+           // |accelerator_ids|
+           {}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_AUTO_COMPLETE,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_RETURN}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_OPEN_DOWNLOADS_PAGE,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_J, ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kSystemAndDisplay},
+           IDS_KSV_DESCRIPTION_OPEN_FILE,
+           IDS_KSV_SHORTCUT_OPEN_FILE,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_SPACE}},
+
+          {// |categories|
+           {ShortcutCategory::kSystemAndDisplay},
+           IDS_KSV_DESCRIPTION_DISPLAY_HIDDEN_FILES,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_OEM_PERIOD}},
+
+          {// |categories|
+           {ShortcutCategory::kSystemAndDisplay},
+           IDS_KSV_DESCRIPTION_LAUNCH_NUMBERED_APP,
+           IDS_KSV_SHORTCUT_LAUNCH_NUMBERED_APP,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_LMENU, ui::VKEY_UNKNOWN}},
+
+          {// |categories|
+           {ShortcutCategory::kSystemAndDisplay},
+           IDS_KSV_DESCRIPTION_USE_F_KEYS,
+           IDS_KSV_SHORTCUT_USE_F_KEYS,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_COMMAND, ui::VKEY_UNKNOWN}},
+
+          {// |categories|
+           {ShortcutCategory::kTextEditing},
+           IDS_KSV_DESCRIPTION_SELECT_ADDRESS_BAR,
+           IDS_KSV_SHORTCUT_SELECT_ADDRESS_BAR,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_L, ui::VKEY_LMENU,
+            ui::VKEY_UNKNOWN, ui::VKEY_D}},
+
+          {// |categories|
+           {ShortcutCategory::kTextEditing},
+           IDS_KSV_DESCRIPTION_SELECT_NEXT_WORD,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_SHIFT,
+            ui::VKEY_UNKNOWN, ui::VKEY_RIGHT}},
+
+          {// |categories|
+           {ShortcutCategory::kTextEditing},
+           IDS_KSV_DESCRIPTION_SELECT_TEXT_TO_END_OF_LINE,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_SHIFT, ui::VKEY_UNKNOWN, ui::VKEY_COMMAND,
+            ui::VKEY_UNKNOWN, ui::VKEY_RIGHT}},
+
+          {// |categories|
+           {ShortcutCategory::kTextEditing},
+           IDS_KSV_DESCRIPTION_SELECT_TEXT_TO_BEGINNING,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_SHIFT, ui::VKEY_UNKNOWN, ui::VKEY_COMMAND,
+            ui::VKEY_UNKNOWN, ui::VKEY_LEFT}},
+
+          {// |categories|
+           {ShortcutCategory::kTextEditing},
+           IDS_KSV_DESCRIPTION_SELECT_PREVIOUS_WORD,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_SHIFT,
+            ui::VKEY_UNKNOWN, ui::VKEY_LEFT}},
+
+          {// |categories|
+           {ShortcutCategory::kTextEditing},
+           IDS_KSV_DESCRIPTION_MOVE_TO_END_OF_WORD,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_RIGHT}},
+
+          {// |categories|
+           {ShortcutCategory::kTextEditing},
+           IDS_KSV_DESCRIPTION_MOVE_TO_START_OF_PREVIOUS_WORD,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_LEFT}},
+
+          {// |categories|
+           {ShortcutCategory::kTextEditing},
+           IDS_KSV_DESCRIPTION_GO_TO_END_OF_DOCUMENT,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_COMMAND,
+            ui::VKEY_UNKNOWN, ui::VKEY_RIGHT}},
+
+          {// |categories|
+           {ShortcutCategory::kTextEditing},
+           IDS_KSV_DESCRIPTION_GO_TO_BEGINNING_OF_DOCUMENT,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_COMMAND,
+            ui::VKEY_UNKNOWN, ui::VKEY_LEFT}},
+
+          {// |categories|
+           {ShortcutCategory::kTextEditing},
+           IDS_KSV_DESCRIPTION_PASTE_CONTENT_AS_TEXT,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_SHIFT,
+            ui::VKEY_UNKNOWN, ui::VKEY_V}},
+
+          {// |categories|
+           {ShortcutCategory::kTextEditing},
+           IDS_KSV_DESCRIPTION_CUT,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_X}},
+
+          {// |categories|
+           {ShortcutCategory::kTextEditing},
+           IDS_KSV_DESCRIPTION_DELETE_PREVIOUS_WORD,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_BACK}},
+
+          {// |categories|
+           {ShortcutCategory::kTextEditing},
+           IDS_KSV_DESCRIPTION_DELETE_NEXT_WORD,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_LMENU, ui::VKEY_UNKNOWN, ui::VKEY_BACK}},
+
+          {// |categories|
+           {ShortcutCategory::kTextEditing},
+           IDS_KSV_DESCRIPTION_UNDO,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_Z}},
+
+          {// |categories|
+           {ShortcutCategory::kTextEditing},
+           IDS_KSV_DESCRIPTION_REDO,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_SHIFT,
+            ui::VKEY_UNKNOWN, ui::VKEY_Z}},
+
+          {// |categories|
+           {ShortcutCategory::kAccessibility},
+           IDS_KSV_DESCRIPTION_HIGHLIGHT_PREVIOUS_ITEM_ON_SHELF,
+           IDS_KSV_SHORTCUT_HIGHLIGHT_PREVIOUS_ITEM_ON_SHELF,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_SHIFT, ui::VKEY_UNKNOWN, ui::VKEY_LMENU, ui::VKEY_UNKNOWN,
+            ui::VKEY_L, ui::VKEY_SHIFT, ui::VKEY_UNKNOWN, ui::VKEY_TAB,
+            ui::VKEY_LEFT}},
+
+          {// |categories|
+           {ShortcutCategory::kAccessibility},
+           IDS_KSV_DESCRIPTION_OPEN_HIGHLIGHTED_ITEM_ON_SHELF,
+           IDS_KSV_SHORTCUT_OPEN_HIGHLIGHTED_ITEM_ON_SHELF,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_SHIFT, ui::VKEY_UNKNOWN, ui::VKEY_LMENU, ui::VKEY_UNKNOWN,
+            ui::VKEY_L, ui::VKEY_SPACE, ui::VKEY_RETURN}},
+
+          {// |categories|
+           {ShortcutCategory::kAccessibility},
+           IDS_KSV_DESCRIPTION_REMOVE_HIGHLIGHT_ON_SHELF,
+           IDS_KSV_SHORTCUT_REMOVE_HIGHLIGHT_ON_SHELF,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_SHIFT, ui::VKEY_UNKNOWN, ui::VKEY_LMENU, ui::VKEY_UNKNOWN,
+            ui::VKEY_L, ui::VKEY_ESCAPE}},
+
+          {// |categories|
+           {ShortcutCategory::kAccessibility},
+           IDS_KSV_DESCRIPTION_SWITCH_FOCUS,
+           IDS_KSV_SHORTCUT_SWITCH_FOCUS,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_LEFT, ui::VKEY_CONTROL,
+            ui::VKEY_UNKNOWN, ui::VKEY_RIGHT}},
+
+          {// |categories|
+           {ShortcutCategory::kAccessibility},
+           IDS_KSV_DESCRIPTION_OPEN_RIGHT_CLICK_MENU_FOR_HIGHLIGHTED_ITEM,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {},
+           // |shortcut_key_codes|
+           {ui::VKEY_SHIFT, ui::VKEY_UNKNOWN, ui::VKEY_COMMAND,
+            ui::VKEY_UNKNOWN, ui::VKEY_VOLUME_UP}},
+
+          {// |categories|
+           {ShortcutCategory::kSystemAndDisplay},
+           IDS_KSV_DESCRIPTION_TOGGLE_MIRROR_MODE,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_MEDIA_LAUNCH_APP2, ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kSystemAndDisplay},
+           IDS_KSV_DESCRIPTION_SWAP_PRIMARY_DISPLAY,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_MEDIA_LAUNCH_APP2, ui::EF_ALT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kSystemAndDisplay},
+           IDS_KSV_DESCRIPTION_BRIGHTNESS_DOWN,
+           IDS_KSV_SHORTCUT_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_BRIGHTNESS_DOWN, ui::EF_NONE}}},
+
+          {// |categories|
+           {ShortcutCategory::kSystemAndDisplay},
+           IDS_KSV_DESCRIPTION_BRIGHTNESS_UP,
+           IDS_KSV_SHORTCUT_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_BRIGHTNESS_UP, ui::EF_NONE}}},
+
+          {// |categories|
+           {ShortcutCategory::kSystemAndDisplay},
+           IDS_KSV_DESCRIPTION_MAGNIFY_SCREEN_ZOOM_OUT,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_BRIGHTNESS_DOWN, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kSystemAndDisplay},
+           IDS_KSV_DESCRIPTION_MAGNIFY_SCREEN_ZOOM_IN,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_BRIGHTNESS_UP, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kSystemAndDisplay},
+           IDS_KSV_DESCRIPTION_VOLUME_MUTE,
+           IDS_KSV_SHORTCUT_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_VOLUME_MUTE, ui::EF_NONE}}},
+
+          {// |categories|
+           {ShortcutCategory::kSystemAndDisplay},
+           IDS_KSV_DESCRIPTION_VOLUME_DOWN,
+           IDS_KSV_SHORTCUT_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_VOLUME_DOWN, ui::EF_NONE}}},
+
+          {// |categories|
+           {ShortcutCategory::kSystemAndDisplay},
+           IDS_KSV_DESCRIPTION_VOLUME_UP,
+           IDS_KSV_SHORTCUT_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_VOLUME_UP, ui::EF_NONE}}},
+
+          {// |categories|
+           {ShortcutCategory::kSystemAndDisplay},
+           IDS_KSV_DESCRIPTION_SHOW_TASK_MANAGER,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_ESCAPE, ui::EF_COMMAND_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kTabAndWindow},
+           IDS_KSV_DESCRIPTION_TOGGLE_FULLSCREEN,
+           IDS_KSV_SHORTCUT_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_MEDIA_LAUNCH_APP2, ui::EF_NONE}}},
+
+          {// |categories|
+           {ShortcutCategory::kTabAndWindow},
+           IDS_KSV_DESCRIPTION_WINDOW_MINIMIZE,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_OEM_MINUS, ui::EF_ALT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_FOCUS_NEXT_PANE,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_BROWSER_FORWARD, ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kPageAndBrowser},
+           IDS_KSV_DESCRIPTION_FOCUS_PREVIOUS_PANE,
+           IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_BROWSER_BACK, ui::EF_CONTROL_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kTabAndWindow},
+           IDS_KSV_DESCRIPTION_MOVE_WINDOW_TO_ABOVE_DISPLAY,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_UP, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kTabAndWindow},
+           IDS_KSV_DESCRIPTION_MOVE_WINDOW_TO_BELOW_DISPLAY,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_DOWN, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kTabAndWindow},
+           IDS_KSV_DESCRIPTION_MOVE_WINDOW_TO_LEFT_DISPLAY,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_LEFT, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN}}},
+
+          {// |categories|
+           {ShortcutCategory::kTabAndWindow},
+           IDS_KSV_DESCRIPTION_MOVE_WINDOW_TO_RIGHT_DISPLAY,
+           IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+           // |accelerator_ids|
+           {{ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN}}},
       }));
 
   CR_DEFINE_STATIC_LOCAL(bool, is_initialized, (false));

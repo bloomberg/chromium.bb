@@ -89,8 +89,9 @@ KeyboardShortcutItemView::KeyboardShortcutItemView(
   shortcut_label_view_->SetHorizontalAlignment(
       base::i18n::IsRTL() ? gfx::ALIGN_LEFT : gfx::ALIGN_RIGHT);
   DCHECK_EQ(replacement_strings.size(), offsets.size());
-  // If the replacement string is " ", it indicates to insert a seperator view.
-  const base::string16 separator_string = base::ASCIIToUTF16(" ");
+  // TODO(wutao): make this reliable.
+  // If the replacement string is "+ ", it indicates to insert a seperator view.
+  const base::string16 separator_string = base::ASCIIToUTF16("+ ");
   for (size_t i = 0; i < offsets.size(); ++i) {
     views::StyledLabel::RangeStyleInfo style_info;
     style_info.disable_line_wrapping = true;
