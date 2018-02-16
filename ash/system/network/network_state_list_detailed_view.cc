@@ -260,15 +260,13 @@ void NetworkStateListDetailedView::CreateExtraTitleRowButtons() {
   DCHECK(!info_button_);
   tri_view()->SetContainerVisible(TriView::Container::END, true);
 
-  info_button_ = new SystemMenuButton(
-      this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuInfoIcon,
-      IDS_ASH_STATUS_TRAY_NETWORK_INFO);
+  info_button_ = new SystemMenuButton(this, kSystemMenuInfoIcon,
+                                      IDS_ASH_STATUS_TRAY_NETWORK_INFO);
   tri_view()->AddView(TriView::Container::END, info_button_);
 
   DCHECK(!settings_button_);
-  settings_button_ = new SystemMenuButton(
-      this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuSettingsIcon,
-      IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS);
+  settings_button_ = new SystemMenuButton(this, kSystemMenuSettingsIcon,
+                                          IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS);
   tri_view()->AddView(TriView::Container::END, settings_button_);
 }
 

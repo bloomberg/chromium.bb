@@ -154,13 +154,12 @@ class TrayPopupUtils {
   // returned separator.
   static views::Separator* CreateVerticalSeparator();
 
-  // Creates in InkDrop instance for |host| according to the |ink_drop_style|.
+  // Creates in InkDrop instance for |host|.
   // All styles are configured to show the highlight when the ripple is visible.
   //
   // All targetable views in the system menu should delegate
   // InkDropHost::CreateInkDrop() calls here.
   static std::unique_ptr<views::InkDrop> CreateInkDrop(
-      TrayPopupInkDropStyle ink_drop_style,
       views::InkDropHostView* host);
 
   // Creates an InkDropRipple instance for |host| according to the

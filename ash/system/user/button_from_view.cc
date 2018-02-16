@@ -98,8 +98,7 @@ void ButtonFromView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
 }
 
 std::unique_ptr<views::InkDrop> ButtonFromView::CreateInkDrop() {
-  return TrayPopupUtils::CreateInkDrop(TrayPopupInkDropStyle::INSET_BOUNDS,
-                                       this);
+  return TrayPopupUtils::CreateInkDrop(this);
 }
 
 std::unique_ptr<views::InkDropRipple> ButtonFromView::CreateInkDropRipple()

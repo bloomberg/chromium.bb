@@ -66,8 +66,7 @@ class MessageCenterButton : public views::ToggleImageButton {
   }
 
   std::unique_ptr<views::InkDrop> CreateInkDrop() override {
-    return TrayPopupUtils::CreateInkDrop(TrayPopupInkDropStyle::HOST_CENTERED,
-                                         this);
+    return TrayPopupUtils::CreateInkDrop(this);
   }
 
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {

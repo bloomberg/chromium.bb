@@ -68,7 +68,7 @@ void ActionableView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 std::unique_ptr<views::InkDrop> ActionableView::CreateInkDrop() {
-  return TrayPopupUtils::CreateInkDrop(ink_drop_style_, this);
+  return TrayPopupUtils::CreateInkDrop(this);
 }
 
 std::unique_ptr<views::InkDropRipple> ActionableView::CreateInkDropRipple()

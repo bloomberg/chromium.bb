@@ -125,8 +125,7 @@ SystemMenuButton* CreateImeMenuButton(views::ButtonListener* listener,
                                       const gfx::VectorIcon& icon,
                                       int accessible_name_id,
                                       int right_border) {
-  return new SystemMenuButton(listener, TrayPopupInkDropStyle::HOST_CENTERED,
-                              icon, accessible_name_id);
+  return new SystemMenuButton(listener, icon, accessible_name_id);
 }
 
 // The view that contains IME menu title.

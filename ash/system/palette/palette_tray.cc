@@ -98,12 +98,10 @@ class TitleView : public views::View, public views::ButtonListener {
     TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::TITLE);
     style.SetupLabel(title_label);
     layout_ptr->SetFlexForView(title_label, 1);
-    help_button_ =
-        new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
-                             kSystemMenuHelpIcon, IDS_ASH_STATUS_TRAY_HELP);
-    settings_button_ =
-        new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
-                             kSystemMenuSettingsIcon, IDS_ASH_PALETTE_SETTINGS);
+    help_button_ = new SystemMenuButton(this, kSystemMenuHelpIcon,
+                                        IDS_ASH_STATUS_TRAY_HELP);
+    settings_button_ = new SystemMenuButton(this, kSystemMenuSettingsIcon,
+                                            IDS_ASH_PALETTE_SETTINGS);
 
     AddChildView(help_button_);
     AddChildView(TrayPopupUtils::CreateVerticalSeparator());
