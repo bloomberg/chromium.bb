@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file.h"
@@ -90,20 +89,17 @@ class FileURLDirectoryLoader
     : public network::mojom::URLLoader,
       public net::DirectoryLister::DirectoryListerDelegate {
  public:
-  static void CreateAndStart(
-      const base::FilePath& profile_path,
-      const network::ResourceRequest& request,
-      network::mojom::URLLoaderRequest loader,
-      network::mojom::URLLoaderClientPtrInfo client_info,
-      std::unique_ptr<FileURLLoaderObserver> observer,
-      scoped_refptr<net::HttpResponseHeaders> response_headers) {
+  static void CreateAndStart(const base::FilePath& profile_path,
+                             const network::ResourceRequest& request,
+                             network::mojom::URLLoaderRequest loader,
+                             network::mojom::URLLoaderClientPtrInfo client_info,
+                             std::unique_ptr<FileURLLoaderObserver> observer) {
     // Owns itself. Will live as long as its URLLoader and URLLoaderClientPtr
     // bindings are alive - essentially until either the client gives up or all
     // file data has been sent to it.
     auto* file_url_loader = new FileURLDirectoryLoader;
     file_url_loader->Start(profile_path, request, std::move(loader),
-                           std::move(client_info), std::move(observer),
-                           std::move(response_headers));
+                           std::move(client_info), std::move(observer));
   }
 
   // network::mojom::URLLoader:
@@ -122,8 +118,7 @@ class FileURLDirectoryLoader
              const network::ResourceRequest& request,
              network::mojom::URLLoaderRequest loader,
              network::mojom::URLLoaderClientPtrInfo client_info,
-             std::unique_ptr<content::FileURLLoaderObserver> observer,
-             scoped_refptr<net::HttpResponseHeaders> response_headers) {
+             std::unique_ptr<content::FileURLLoaderObserver> observer) {
     binding_.Bind(std::move(loader));
     binding_.set_connection_error_handler(base::BindOnce(
         &FileURLDirectoryLoader::OnConnectionError, base::Unretained(this)));
@@ -397,7 +392,7 @@ class FileURLLoader : public network::mojom::URLLoader {
       new_request.url = directory_url;
       FileURLDirectoryLoader::CreateAndStart(
           profile_path, new_request, binding_.Unbind(), client.PassInterface(),
-          std::move(observer), std::move(extra_response_headers));
+          std::move(observer));
       MaybeDeleteSelf();
       return;
     }
@@ -454,16 +449,8 @@ class FileURLLoader : public network::mojom::URLLoader {
       observer->OnStart();
 
     base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
-    net::Error net_error = net::FileErrorToNetError(file.error_details());
     if (observer)
-      observer->OnOpenComplete(net_error);
-    if (!file.IsValid()) {
-      if (observer)
-        observer->OnDoneReading();
-      client->OnComplete(network::URLLoaderCompletionStatus(net_error));
-      MaybeDeleteSelf();
-      return;
-    }
+      observer->OnOpenComplete(net::FileErrorToNetError(file.error_details()));
     char initial_read_buffer[net::kMaxBytesToSniff];
     int initial_read_result =
         file.ReadAtCurrentPos(initial_read_buffer, net::kMaxBytesToSniff);
@@ -474,7 +461,7 @@ class FileURLLoader : public network::mojom::URLLoader {
         observer->OnBytesRead(nullptr, 0u, read_error);
         observer->OnDoneReading();
       }
-      net_error = net::FileErrorToNetError(read_error);
+      net::Error net_error = net::FileErrorToNetError(read_error);
       client->OnComplete(network::URLLoaderCompletionStatus(net_error));
       return;
     } else if (observer) {
@@ -548,11 +535,6 @@ class FileURLLoader : public network::mojom::URLLoader {
               ? net::ForceSniffFileUrlsForHtml::kEnabled
               : net::ForceSniffFileUrlsForHtml::kDisabled,
           &head.mime_type);
-    }
-    if (head.headers) {
-      head.headers->AddHeader(
-          base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentType,
-                             head.mime_type.c_str()));
     }
     client->OnReceiveResponse(head, base::nullopt, nullptr);
     client->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
@@ -637,7 +619,7 @@ void FileURLLoaderFactory::CreateLoaderAndStart(
         FROM_HERE,
         base::BindOnce(&FileURLDirectoryLoader::CreateAndStart, profile_path_,
                        request, std::move(loader), client.PassInterface(),
-                       std::unique_ptr<FileURLLoaderObserver>(), nullptr));
+                       std::unique_ptr<FileURLLoaderObserver>()));
   } else {
     task_runner_->PostTask(
         FROM_HERE,
