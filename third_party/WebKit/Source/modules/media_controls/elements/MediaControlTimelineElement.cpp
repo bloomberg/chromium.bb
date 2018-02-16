@@ -273,7 +273,7 @@ void MediaControlTimelineElement::RenderBarSegments() {
       // Draw highlight to show what we have played.
       if (current_position > start_position) {
         SetAfterSegmentPosition(MediaControlSliderElement::Position(
-            start_position, current_position));
+            start_position, current_position - start_position));
       }
 
       // Draw dark grey highlight to show what we have loaded.
