@@ -70,7 +70,8 @@
     },
     "mac10.13_blink_rel": {
         "port_name": "mac-mac10.13",
-        "specifiers": ["Mac10.13", "Release"]
+        "specifiers": ["Mac10.13", "Release"],
+        "is_try_builder": true
     },
     "win7_blink_rel": {
         "port_name": "win-win7",
