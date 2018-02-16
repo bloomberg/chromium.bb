@@ -98,6 +98,8 @@ class JsonRequest : public net::URLFetcherDelegate {
       return *this;
     }
 
+    bool is_interactive_request() const { return params_.interactive_request; }
+
    private:
     std::string BuildHeaders() const;
     std::string BuildBody() const;

@@ -12,6 +12,7 @@
 #include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"
 #include "base/optional.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -52,12 +53,6 @@ using testing::Property;
 using testing::StartsWith;
 
 const char kAPIKey[] = "fakeAPIkey";
-const char kTestChromeContentSuggestionsSignedOutUrl[] =
-    "https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
-    "fetch?key=fakeAPIkey";
-const char kTestChromeContentSuggestionsSignedInUrl[] =
-    "https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/fetch";
-
 const char kTestEmail[] = "foo@bar.com";
 
 // Artificial time delay for JSON parsing.
@@ -258,17 +253,18 @@ void ParseJsonDelayed(const std::string& json,
 
 }  // namespace
 
-class RemoteSuggestionsFetcherImplTestBase : public testing::Test {
+class RemoteSuggestionsFetcherImplTest : public testing::Test {
  public:
-  explicit RemoteSuggestionsFetcherImplTestBase(const GURL& gurl)
+  RemoteSuggestionsFetcherImplTest()
       : default_variation_params_(
-            {{"send_top_languages", "true"}, {"send_user_class", "true"}}),
+            {{"send_top_languages", "true"},
+             {"send_user_class", "true"},
+             {"append_request_priority_as_query_parameter", "true"}}),
         params_manager_(ntp_snippets::kArticleSuggestionsFeature.name,
                         default_variation_params_,
                         {ntp_snippets::kArticleSuggestionsFeature.name}),
         mock_task_runner_(new base::TestMockTimeTaskRunner(
-            base::TestMockTimeTaskRunner::Type::kBoundToThread)),
-        test_url_(gurl) {
+            base::TestMockTimeTaskRunner::Type::kBoundToThread)) {
     UserClassifier::RegisterProfilePrefs(utils_.pref_service()->registry());
     user_classifier_ = std::make_unique<UserClassifier>(
         utils_.pref_service(), base::DefaultClock::GetInstance());
@@ -277,8 +273,7 @@ class RemoteSuggestionsFetcherImplTestBase : public testing::Test {
     ResetFetcher();
   }
 
-  ~RemoteSuggestionsFetcherImplTestBase() override {
-  }
+  ~RemoteSuggestionsFetcherImplTest() override {}
 
   void ResetFetcher() { ResetFetcherWithAPIKey(kAPIKey); }
 
@@ -339,11 +334,12 @@ class RemoteSuggestionsFetcherImplTestBase : public testing::Test {
         {ntp_snippets::kArticleSuggestionsFeature.name});
   }
 
-  void SetFakeResponse(const std::string& response_data,
+  void SetFakeResponse(const GURL& request_url,
+                       const std::string& response_data,
                        net::HttpStatusCode response_code,
                        net::URLRequestStatus::Status status) {
     InitFakeURLFetcherFactory();
-    fake_url_fetcher_factory_->SetFakeResponse(test_url_, response_data,
+    fake_url_fetcher_factory_->SetFakeResponse(request_url, response_data,
                                                response_code, status);
   }
 
@@ -365,34 +361,13 @@ class RemoteSuggestionsFetcherImplTestBase : public testing::Test {
   std::unique_ptr<RemoteSuggestionsFetcherImpl> fetcher_;
   std::unique_ptr<UserClassifier> user_classifier_;
   MockSnippetsAvailableCallback mock_callback_;
-  const GURL test_url_;
+  GURL test_url_;
   base::HistogramTester histogram_tester_;
 
-  DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsFetcherImplTestBase);
+  DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsFetcherImplTest);
 };
 
-class RemoteSuggestionsSignedOutFetcherTest
-    : public RemoteSuggestionsFetcherImplTestBase {
- public:
-  RemoteSuggestionsSignedOutFetcherTest()
-      : RemoteSuggestionsFetcherImplTestBase(
-            GURL(kTestChromeContentSuggestionsSignedOutUrl)) {}
-};
-
-// TODO(jkrcal): Investigate whether the "authentication in progress" case can
-// ever happen (see discussion on https://codereview.chromium.org/2582573002),
-// and if so, add unit-tests for it. This will require more changes (instead of
-// FakeSigninManagerBase use FakeSigninManager which does not exist on
-// ChromeOS). crbug.com/688310
-class RemoteSuggestionsSignedInFetcherTest
-    : public RemoteSuggestionsFetcherImplTestBase {
- public:
-  RemoteSuggestionsSignedInFetcherTest()
-      : RemoteSuggestionsFetcherImplTestBase(
-            GURL(kTestChromeContentSuggestionsSignedInUrl)) {}
-};
-
-TEST_F(RemoteSuggestionsSignedOutFetcherTest, ShouldNotFetchOnCreation) {
+TEST_F(RemoteSuggestionsFetcherImplTest, ShouldNotFetchOnCreation) {
   // The lack of registered baked in responses would cause any fetch to fail.
   FastForwardUntilNoTasksRemain();
   EXPECT_THAT(histogram_tester().GetAllSamples(
@@ -403,7 +378,7 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest, ShouldNotFetchOnCreation) {
   EXPECT_THAT(fetcher().GetLastStatusForDebugging(), IsEmpty());
 }
 
-TEST_F(RemoteSuggestionsSignedOutFetcherTest, ShouldFetchSuccessfully) {
+TEST_F(RemoteSuggestionsFetcherImplTest, ShouldFetchSuccessfully) {
   const std::string kJsonStr =
       "{\"categories\" : [{"
       "  \"id\": 1,"
@@ -421,8 +396,10 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest, ShouldFetchSuccessfully) {
       "    \"faviconUrl\" : \"http://localhost/favicon.ico\" "
       "  }]"
       "}]}";
-  SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(
+      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+           "fetch?key=fakeAPIkey&priority=user_action"),
+      /*response_data=*/kJsonStr, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true),
                   /*fetched_categories=*/AllOf(
@@ -441,7 +418,50 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest, ShouldFetchSuccessfully) {
                                        /*count=*/1)));
 }
 
-TEST_F(RemoteSuggestionsSignedInFetcherTest, ShouldFetchSuccessfully) {
+TEST_F(RemoteSuggestionsFetcherImplTest, ShouldExposeRequestPriorityInUrl) {
+  SetFakeResponse(
+      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+           "fetch?key=fakeAPIkey&priority=background_prefetch"),
+      /*response_data=*/"{\"categories\" : []}", net::HTTP_OK,
+      net::URLRequestStatus::SUCCESS);
+  EXPECT_CALL(mock_callback(), Run(Property(&Status::IsSuccess, true),
+                                   /*fetched_categories=*/_));
+
+  RequestParams params = test_params();
+  params.interactive_request = false;
+  fetcher().FetchSnippets(params,
+                          ToSnippetsAvailableCallback(&mock_callback()));
+
+  // Wait for the fake response.
+  FastForwardUntilNoTasksRemain();
+
+  EXPECT_THAT(fetcher().GetLastStatusForDebugging(), Eq("OK"));
+}
+
+TEST_F(RemoteSuggestionsFetcherImplTest,
+       ShouldNotExposeRequestPriorityInUrlWhenDisabled) {
+  SetVariationParam("append_request_priority_as_query_parameter", "false");
+
+  SetFakeResponse(
+      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+           "fetch?key=fakeAPIkey"),
+      /*response_data=*/"{\"categories\" : []}", net::HTTP_OK,
+      net::URLRequestStatus::SUCCESS);
+  EXPECT_CALL(mock_callback(), Run(Property(&Status::IsSuccess, true),
+                                   /*fetched_categories=*/_));
+
+  RequestParams params = test_params();
+  params.interactive_request = false;
+  fetcher().FetchSnippets(params,
+                          ToSnippetsAvailableCallback(&mock_callback()));
+
+  // Wait for the fake response.
+  FastForwardUntilNoTasksRemain();
+
+  EXPECT_THAT(fetcher().GetLastStatusForDebugging(), Eq("OK"));
+}
+
+TEST_F(RemoteSuggestionsFetcherImplTest, ShouldFetchSuccessfullyWhenSignedIn) {
   SignIn();
 
   const std::string kJsonStr =
@@ -461,8 +481,10 @@ TEST_F(RemoteSuggestionsSignedInFetcherTest, ShouldFetchSuccessfully) {
       "    \"faviconUrl\" : \"http://localhost/favicon.ico\" "
       "  }]"
       "}]}";
-  SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(
+      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+           "fetch?priority=user_action"),
+      /*response_data=*/kJsonStr, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true),
                   /*fetched_categories=*/AllOf(
@@ -488,7 +510,62 @@ TEST_F(RemoteSuggestionsSignedInFetcherTest, ShouldFetchSuccessfully) {
                                        /*count=*/1)));
 }
 
-TEST_F(RemoteSuggestionsSignedInFetcherTest, ShouldRetryWhenOAuthCancelled) {
+TEST_F(RemoteSuggestionsFetcherImplTest,
+       ShouldExposeRequestPriorityInUrlWhenSignedIn) {
+  SignIn();
+
+  SetFakeResponse(
+      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+           "fetch?priority=background_prefetch"),
+      /*response_data=*/"{\"categories\" : []}", net::HTTP_OK,
+      net::URLRequestStatus::SUCCESS);
+  EXPECT_CALL(mock_callback(), Run(Property(&Status::IsSuccess, true),
+                                   /*fetched_categories=*/_));
+
+  RequestParams params = test_params();
+  params.interactive_request = false;
+  fetcher().FetchSnippets(params,
+                          ToSnippetsAvailableCallback(&mock_callback()));
+
+  identity_test_env_.WaitForAccessTokenRequestAndRespondWithToken(
+      "access_token", base::Time::Max());
+
+  // Wait for the fake response.
+  FastForwardUntilNoTasksRemain();
+
+  EXPECT_THAT(fetcher().GetLastStatusForDebugging(), Eq("OK"));
+}
+
+TEST_F(RemoteSuggestionsFetcherImplTest,
+       ShouldNotExposeRequestPriorityInUrlWhenDisabledWhenSignedIn) {
+  SetVariationParam("append_request_priority_as_query_parameter", "false");
+
+  SignIn();
+
+  SetFakeResponse(
+      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+           "fetch"),
+      /*response_data=*/"{\"categories\" : []}", net::HTTP_OK,
+      net::URLRequestStatus::SUCCESS);
+  EXPECT_CALL(mock_callback(), Run(Property(&Status::IsSuccess, true),
+                                   /*fetched_categories=*/_));
+
+  RequestParams params = test_params();
+  params.interactive_request = false;
+  fetcher().FetchSnippets(params,
+                          ToSnippetsAvailableCallback(&mock_callback()));
+
+  identity_test_env_.WaitForAccessTokenRequestAndRespondWithToken(
+      "access_token", base::Time::Max());
+
+  // Wait for the fake response.
+  FastForwardUntilNoTasksRemain();
+
+  EXPECT_THAT(fetcher().GetLastStatusForDebugging(), Eq("OK"));
+}
+
+TEST_F(RemoteSuggestionsFetcherImplTest,
+       ShouldRetryWhenOAuthCancelledWhenSignedIn) {
   SignIn();
 
   const std::string kJsonStr =
@@ -508,8 +585,10 @@ TEST_F(RemoteSuggestionsSignedInFetcherTest, ShouldRetryWhenOAuthCancelled) {
       "    \"faviconUrl\" : \"http://localhost/favicon.ico\" "
       "  }]"
       "}]}";
-  SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(
+      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+           "fetch?priority=user_action"),
+      /*response_data=*/kJsonStr, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true),
                   /*fetched_categories=*/AllOf(
@@ -541,14 +620,16 @@ TEST_F(RemoteSuggestionsSignedInFetcherTest, ShouldRetryWhenOAuthCancelled) {
                                        /*count=*/1)));
 }
 
-TEST_F(RemoteSuggestionsSignedOutFetcherTest, EmptyCategoryIsOK) {
+TEST_F(RemoteSuggestionsFetcherImplTest, EmptyCategoryIsOK) {
   const std::string kJsonStr =
       "{\"categories\" : [{"
       "  \"id\": 1,"
       "  \"localizedTitle\": \"Articles for You\""
       "}]}";
-  SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(
+      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+           "fetch?key=fakeAPIkey&priority=user_action"),
+      /*response_data=*/kJsonStr, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true),
                   /*fetched_categories=*/IsEmptyArticleList()));
@@ -565,7 +646,7 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest, EmptyCategoryIsOK) {
                                        /*count=*/1)));
 }
 
-TEST_F(RemoteSuggestionsSignedOutFetcherTest, ServerCategories) {
+TEST_F(RemoteSuggestionsFetcherImplTest, ServerCategories) {
   const std::string kJsonStr =
       "{\"categories\" : [{"
       "  \"id\": 1,"
@@ -599,8 +680,10 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest, ServerCategories) {
       "    \"faviconUrl\" : \"http://localhost/favicon.ico\" "
       "  }]"
       "}]}";
-  SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(
+      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+           "fetch?key=fakeAPIkey&priority=user_action"),
+      /*response_data=*/kJsonStr, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
   RemoteSuggestionsFetcher::OptionalFetchedCategories fetched_categories;
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true), /*fetched_categories=*/_))
@@ -638,7 +721,7 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest, ServerCategories) {
                                        /*count=*/1)));
 }
 
-TEST_F(RemoteSuggestionsSignedOutFetcherTest,
+TEST_F(RemoteSuggestionsFetcherImplTest,
        SupportMissingAllowFetchingMoreResultsOption) {
   // This tests makes sure we handle the missing option although it's required
   // by the interface. It's just that the Service doesn't follow that
@@ -661,8 +744,10 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest,
       "    \"faviconUrl\" : \"http://localhost/favicon.ico\" "
       "  }]"
       "}]}";
-  SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(
+      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+           "fetch?key=fakeAPIkey&priority=user_action"),
+      /*response_data=*/kJsonStr, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
   RemoteSuggestionsFetcher::OptionalFetchedCategories fetched_categories;
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true), /*fetched_categories=*/_))
@@ -679,7 +764,7 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest,
               Eq(base::UTF8ToUTF16("Articles for Me")));
 }
 
-TEST_F(RemoteSuggestionsSignedOutFetcherTest, ExclusiveCategoryOnly) {
+TEST_F(RemoteSuggestionsFetcherImplTest, ExclusiveCategoryOnly) {
   const std::string kJsonStr =
       "{\"categories\" : [{"
       "  \"id\": 1,"
@@ -727,8 +812,10 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest, ExclusiveCategoryOnly) {
       "    \"faviconUrl\" : \"http://localhost/favicon.ico\" "
       "  }]"
       "}]}";
-  SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(
+      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+           "fetch?key=fakeAPIkey&priority=user_action"),
+      /*response_data=*/kJsonStr, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
   RemoteSuggestionsFetcher::OptionalFetchedCategories fetched_categories;
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true), /*fetched_categories=*/_))
@@ -751,7 +838,7 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest, ExclusiveCategoryOnly) {
               Eq("http://localhost/foo2"));
 }
 
-TEST_F(RemoteSuggestionsSignedOutFetcherTest, ShouldNotFetchWithoutApiKey) {
+TEST_F(RemoteSuggestionsFetcherImplTest, ShouldNotFetchWithoutApiKey) {
   ResetFetcherWithAPIKey(std::string());
 
   EXPECT_CALL(
@@ -773,11 +860,12 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest, ShouldNotFetchWithoutApiKey) {
               IsEmpty());
 }
 
-TEST_F(RemoteSuggestionsSignedOutFetcherTest,
-       ShouldFetchSuccessfullyEmptyList) {
+TEST_F(RemoteSuggestionsFetcherImplTest, ShouldFetchSuccessfullyEmptyList) {
   const std::string kJsonStr = "{\"categories\": []}";
-  SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(
+      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+           "fetch?key=fakeAPIkey&priority=user_action"),
+      /*response_data=*/kJsonStr, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true),
                   /*fetched_categories=*/IsEmptyCategoriesList()));
@@ -794,7 +882,7 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest,
               ElementsAre(base::Bucket(/*min=*/200, /*count=*/1)));
 }
 
-TEST_F(RemoteSuggestionsSignedOutFetcherTest, RetryOnInteractiveRequests) {
+TEST_F(RemoteSuggestionsFetcherImplTest, RetryOnInteractiveRequests) {
   DelegateCallingTestURLFetcherFactory fetcher_factory;
   RequestParams params = test_params();
   params.interactive_request = true;
@@ -807,7 +895,7 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest, RetryOnInteractiveRequests) {
   EXPECT_THAT(fetcher->GetMaxRetriesOn5xx(), Eq(2));
 }
 
-TEST_F(RemoteSuggestionsSignedOutFetcherTest,
+TEST_F(RemoteSuggestionsFetcherImplTest,
        RetriesConfigurableOnNonInteractiveRequests) {
   struct ExpectationForVariationParam {
     std::string param_value;
@@ -837,9 +925,12 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest,
   }
 }
 
-TEST_F(RemoteSuggestionsSignedOutFetcherTest, ShouldReportUrlStatusError) {
-  SetFakeResponse(/*response_data=*/std::string(), net::HTTP_NOT_FOUND,
-                  net::URLRequestStatus::FAILED);
+TEST_F(RemoteSuggestionsFetcherImplTest, ShouldReportUrlStatusError) {
+  SetFakeResponse(
+      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+           "fetch?key=fakeAPIkey&priority=user_action"),
+      /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
+      net::URLRequestStatus::FAILED);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -862,9 +953,12 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest, ShouldReportUrlStatusError) {
               Not(IsEmpty()));
 }
 
-TEST_F(RemoteSuggestionsSignedOutFetcherTest, ShouldReportHttpError) {
-  SetFakeResponse(/*response_data=*/std::string(), net::HTTP_NOT_FOUND,
-                  net::URLRequestStatus::SUCCESS);
+TEST_F(RemoteSuggestionsFetcherImplTest, ShouldReportHttpError) {
+  SetFakeResponse(
+      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+           "fetch?key=fakeAPIkey&priority=user_action"),
+      /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
+      net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -885,10 +979,13 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest, ShouldReportHttpError) {
               Not(IsEmpty()));
 }
 
-TEST_F(RemoteSuggestionsSignedOutFetcherTest, ShouldReportJsonError) {
+TEST_F(RemoteSuggestionsFetcherImplTest, ShouldReportJsonError) {
   const std::string kInvalidJsonStr = "{ \"recos\": []";
-  SetFakeResponse(/*response_data=*/kInvalidJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(
+      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+           "fetch?key=fakeAPIkey&priority=user_action"),
+      /*response_data=*/kInvalidJsonStr, net::HTTP_OK,
+      net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -912,10 +1009,13 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest, ShouldReportJsonError) {
                                        /*count=*/1)));
 }
 
-TEST_F(RemoteSuggestionsSignedOutFetcherTest,
+TEST_F(RemoteSuggestionsFetcherImplTest,
        ShouldReportJsonErrorForEmptyResponse) {
-  SetFakeResponse(/*response_data=*/std::string(), net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(
+      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+           "fetch?key=fakeAPIkey&priority=user_action"),
+      /*response_data=*/std::string(), net::HTTP_OK,
+      net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -934,11 +1034,13 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest,
               ElementsAre(base::Bucket(/*min=*/200, /*count=*/1)));
 }
 
-TEST_F(RemoteSuggestionsSignedOutFetcherTest, ShouldReportInvalidListError) {
+TEST_F(RemoteSuggestionsFetcherImplTest, ShouldReportInvalidListError) {
   const std::string kJsonStr =
       "{\"recos\": [{ \"contentInfo\": { \"foo\" : \"bar\" }}]}";
-  SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(
+      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+           "fetch?key=fakeAPIkey&priority=user_action"),
+      /*response_data=*/kJsonStr, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -961,7 +1063,7 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest, ShouldReportInvalidListError) {
               Not(IsEmpty()));
 }
 
-TEST_F(RemoteSuggestionsSignedOutFetcherTest,
+TEST_F(RemoteSuggestionsFetcherImplTest,
        ShouldReportInvalidListErrorForIncompleteSuggestionButValidJson) {
   // This is valid json, but it does not represent a valid suggestion
   // (fullPageUrl is missing).
@@ -982,8 +1084,11 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest,
       "    \"faviconUrl\" : \"http://localhost/favicon.ico\" "
       "  }]"
       "}]}";
-  SetFakeResponse(/*response_data=*/kValidJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(
+      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+           "fetch?key=fakeAPIkey&priority=user_action"),
+      /*response_data=*/kValidJsonStr, net::HTTP_OK,
+      net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -1005,7 +1110,7 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest,
               Not(IsEmpty()));
 }
 
-TEST_F(RemoteSuggestionsSignedOutFetcherTest,
+TEST_F(RemoteSuggestionsFetcherImplTest,
        ShouldReportInvalidListErrorForInvalidTimestampButValidJson) {
   // This is valid json, but it does not represent a valid suggestion
   // (creationTime is invalid).
@@ -1026,8 +1131,11 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest,
       "    \"faviconUrl\" : \"http://localhost/favicon.ico\" "
       "  }]"
       "}]}";
-  SetFakeResponse(/*response_data=*/kValidJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(
+      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+           "fetch?key=fakeAPIkey&priority=user_action"),
+      /*response_data=*/kValidJsonStr, net::HTTP_OK,
+      net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -1041,7 +1149,7 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest,
               StartsWith("Invalid / empty list"));
 }
 
-TEST_F(RemoteSuggestionsSignedOutFetcherTest,
+TEST_F(RemoteSuggestionsFetcherImplTest,
        ShouldReportInvalidListErrorForInvalidUrlButValidJson) {
   // This is valid json, but it does not represent a valid suggestion
   // (URL is invalid).
@@ -1062,8 +1170,11 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest,
       "    \"faviconUrl\" : \"http://localhost/favicon.ico\" "
       "  }]"
       "}]}";
-  SetFakeResponse(/*response_data=*/kValidJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(
+      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+           "fetch?key=fakeAPIkey&priority=user_action"),
+      /*response_data=*/kValidJsonStr, net::HTTP_OK,
+      net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -1077,10 +1188,13 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest,
               StartsWith("Invalid / empty list"));
 }
 
-TEST_F(RemoteSuggestionsSignedOutFetcherTest,
+TEST_F(RemoteSuggestionsFetcherImplTest,
        ShouldReportRequestFailureAsTemporaryError) {
-  SetFakeResponse(/*response_data=*/std::string(), net::HTTP_NOT_FOUND,
-                  net::URLRequestStatus::FAILED);
+  SetFakeResponse(
+      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+           "fetch?key=fakeAPIkey&priority=user_action"),
+      /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
+      net::URLRequestStatus::FAILED);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -1094,7 +1208,7 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest,
 
 // This test actually verifies that the test setup itself is sane, to prevent
 // hard-to-reproduce test failures.
-TEST_F(RemoteSuggestionsSignedOutFetcherTest,
+TEST_F(RemoteSuggestionsFetcherImplTest,
        ShouldReportHttpErrorForMissingBakedResponse) {
   InitFakeURLFetcherFactory();
   EXPECT_CALL(
@@ -1108,10 +1222,12 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest,
   FastForwardUntilNoTasksRemain();
 }
 
-TEST_F(RemoteSuggestionsSignedOutFetcherTest, ShouldProcessConcurrentFetches) {
+TEST_F(RemoteSuggestionsFetcherImplTest, ShouldProcessConcurrentFetches) {
   const std::string kJsonStr = "{ \"categories\": [] }";
-  SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(
+      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+           "fetch?key=fakeAPIkey&priority=user_action"),
+      /*response_data=*/kJsonStr, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true),
                   /*fetched_categories=*/IsEmptyCategoriesList()))
