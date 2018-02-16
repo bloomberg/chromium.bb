@@ -150,3 +150,39 @@ id<LayoutGuideProvider> SafeAreaLayoutGuideForView(UIView* view) {
     return view;
   }
 }
+
+void AddSameConstraintsToSides(id<LayoutGuideProvider> view1,
+                               id<LayoutGuideProvider> view2,
+                               LayoutSides side_flags) {
+  AddSameConstraintsToSidesWithInsets(
+      view1, view2, side_flags, ChromeDirectionalEdgeInsetsMake(0, 0, 0, 0));
+}
+
+void AddSameConstraintsToSidesWithInsets(id<LayoutGuideProvider> innerView,
+                                         id<LayoutGuideProvider> outerView,
+                                         LayoutSides side_flags,
+                                         ChromeDirectionalEdgeInsets insets) {
+  NSMutableArray* constraints = [[NSMutableArray alloc] init];
+  if (IsLayoutSidesMaskSet(side_flags, LayoutSides::kTop)) {
+    [constraints addObject:[innerView.topAnchor
+                               constraintEqualToAnchor:outerView.topAnchor
+                                              constant:insets.top]];
+  }
+  if (IsLayoutSidesMaskSet(side_flags, LayoutSides::kLeading)) {
+    [constraints addObject:[innerView.leadingAnchor
+                               constraintEqualToAnchor:outerView.leadingAnchor
+                                              constant:insets.leading]];
+  }
+  if (IsLayoutSidesMaskSet(side_flags, LayoutSides::kBottom)) {
+    [constraints addObject:[innerView.bottomAnchor
+                               constraintEqualToAnchor:outerView.bottomAnchor
+                                              constant:-insets.bottom]];
+  }
+  if (IsLayoutSidesMaskSet(side_flags, LayoutSides::kTrailing)) {
+    [constraints addObject:[innerView.trailingAnchor
+                               constraintEqualToAnchor:outerView.trailingAnchor
+                                              constant:-insets.trailing]];
+  }
+
+  [NSLayoutConstraint activateConstraints:constraints];
+}

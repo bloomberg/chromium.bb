@@ -7,6 +7,49 @@
 
 #import <UIKit/UIKit.h>
 
+// A bitmask to refer to sides of a layout rectangle.
+enum class LayoutSides {
+  kTop = 1 << 0,
+  kLeading = 1 << 1,
+  kBottom = 1 << 2,
+  kTrailing = 1 << 3,
+};
+
+// Implementation of bitwise "or", "and" operators (as those are not
+// automatically defined for "class enum").
+constexpr LayoutSides operator|(LayoutSides lhs, LayoutSides rhs) {
+  return static_cast<LayoutSides>(
+      static_cast<std::underlying_type<LayoutSides>::type>(lhs) |
+      static_cast<std::underlying_type<LayoutSides>::type>(rhs));
+};
+
+constexpr LayoutSides operator&(LayoutSides lhs, LayoutSides rhs) {
+  return static_cast<LayoutSides>(
+      static_cast<std::underlying_type<LayoutSides>::type>(lhs) &
+      static_cast<std::underlying_type<LayoutSides>::type>(rhs));
+};
+
+// Returns whether the |flag| is set in |mask|.
+constexpr bool IsLayoutSidesMaskSet(LayoutSides mask, LayoutSides flag) {
+  return (mask & flag) == flag;
+}
+
+// Same as NSDirectionalEdgeInsets but available on iOS 10.
+struct ChromeDirectionalEdgeInsets {
+  CGFloat top, leading, bottom, trailing;  // specify amount to inset (positive)
+                                           // for each of the edges. values can
+                                           // be negative to 'outset'
+};
+
+inline ChromeDirectionalEdgeInsets ChromeDirectionalEdgeInsetsMake(
+    CGFloat top,
+    CGFloat leading,
+    CGFloat bottom,
+    CGFloat trailing) {
+  ChromeDirectionalEdgeInsets insets = {top, leading, bottom, trailing};
+  return insets;
+}
+
 // Defines a protocol for common -...Anchor methods of UIView and UILayoutGuide.
 @protocol LayoutGuideProvider<NSObject>
 @property(nonatomic, readonly, strong) NSLayoutXAxisAnchor* leadingAnchor;
@@ -129,6 +172,25 @@ void AddSameConstraints(id<LayoutGuideProvider> view1,
 // Adds constraints to make |innerView| leading, trailing, top and bottom
 // anchors equals to |outerView| safe area (or view bounds) anchors.
 void PinToSafeArea(id<LayoutGuideProvider> innerView, UIView* outerView);
+
+// Constraints |side_flags| of |view1| and |view2| together.
+// Example usage: AddSameConstraintsToSides(view1, view2,
+// LayoutSides::kTop|LayoutSides::kLeading)
+void AddSameConstraintsToSides(id<LayoutGuideProvider> view1,
+                               id<LayoutGuideProvider> view2,
+                               LayoutSides side_flags);
+
+// Constraints |side_flags| sides of |innerView| and |outerView| together, with
+// |innerView| inset by |insets|. Example usage:
+// AddSameConstraintsToSidesWithInsets(view1, view2,
+// LayoutSides::kTop|LayoutSides::kLeading, ChromeDirectionalEdgeInsets{10, 5,
+// 10, 5}) - This will constraint innerView to be inside of outerView, with
+// leading/trailing inset by 10 and top/bottom inset by 5.
+// Edge insets for sides not listed in |side_flags| are ignored.
+void AddSameConstraintsToSidesWithInsets(id<LayoutGuideProvider> innerView,
+                                         id<LayoutGuideProvider> outerView,
+                                         LayoutSides side_flags,
+                                         ChromeDirectionalEdgeInsets insets);
 
 #pragma mark - Safe Area.
 
