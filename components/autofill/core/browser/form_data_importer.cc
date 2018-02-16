@@ -312,10 +312,20 @@ bool FormDataImporter::ImportCreditCard(
   if (has_duplicate_field_type)
     return false;
 
-  // Reject the credit card if we did not detect enough filled credit card
-  // fields (such as valid number, month, year).
-  if (!candidate_credit_card.IsValid())
+  if (!candidate_credit_card.IsValid()) {
+    if (candidate_credit_card.HasValidCardNumber()) {
+      AutofillMetrics::LogSubmittedCardStateMetric(
+          AutofillMetrics::HAS_CARD_NUMBER_ONLY);
+    }
+    if (candidate_credit_card.HasValidExpirationDate()) {
+      AutofillMetrics::LogSubmittedCardStateMetric(
+          AutofillMetrics::HAS_EXPIRATION_DATE_ONLY);
+    }
+
     return false;
+  }
+  AutofillMetrics::LogSubmittedCardStateMetric(
+      AutofillMetrics::HAS_CARD_NUMBER_AND_EXPIRATION_DATE);
 
   // Attempt to merge with an existing credit card. Don't present a prompt if we
   // have already saved this card number, unless |should_return_local_card| is

@@ -624,8 +624,15 @@ bool CreditCard::IsEmpty(const std::string& app_locale) const {
 }
 
 bool CreditCard::IsValid() const {
-  return IsValidCreditCardNumber(number_) &&
-         IsValidCreditCardExpirationDate(expiration_year_, expiration_month_,
+  return HasValidCardNumber() && HasValidExpirationDate();
+}
+
+bool CreditCard::HasValidCardNumber() const {
+  return IsValidCreditCardNumber(number_);
+}
+
+bool CreditCard::HasValidExpirationDate() const {
+  return IsValidCreditCardExpirationDate(expiration_year_, expiration_month_,
                                          AutofillClock::Now());
 }
 

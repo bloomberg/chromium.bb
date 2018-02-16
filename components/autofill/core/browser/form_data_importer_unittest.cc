@@ -1386,8 +1386,12 @@ TEST_F(FormDataImporterTest, ImportCreditCard_Valid) {
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */);
   std::unique_ptr<CreditCard> imported_credit_card;
+  base::HistogramTester histogram_tester;
   EXPECT_TRUE(ImportCreditCard(form_structure, false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SubmittedCardState",
+      AutofillMetrics::HAS_CARD_NUMBER_AND_EXPIRATION_DATE, 1);
   personal_data_manager_->SaveImportedCreditCard(*imported_credit_card);
 
   WaitForOnPersonalDataChanged();
@@ -1401,8 +1405,8 @@ TEST_F(FormDataImporterTest, ImportCreditCard_Valid) {
   EXPECT_EQ(0, expected.Compare(*results[0]));
 }
 
-// Tests that an invalid credit card is not extracted.
-TEST_F(FormDataImporterTest, ImportCreditCard_Invalid) {
+// Tests that an invalid credit card number is not extracted.
+TEST_F(FormDataImporterTest, ImportCreditCard_InvalidCardNumber) {
   FormData form;
   AddFullCreditCardForm(&form, "Jim Johansen", "1000000000000000", "02",
                         "2999");
@@ -1410,8 +1414,34 @@ TEST_F(FormDataImporterTest, ImportCreditCard_Invalid) {
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */);
   std::unique_ptr<CreditCard> imported_credit_card;
+  base::HistogramTester histogram_tester;
   EXPECT_FALSE(ImportCreditCard(form_structure, false, &imported_credit_card));
   ASSERT_FALSE(imported_credit_card);
+  histogram_tester.ExpectUniqueSample("Autofill.SubmittedCardState",
+                                      AutofillMetrics::HAS_EXPIRATION_DATE_ONLY,
+                                      1);
+
+  // Since no refresh is expected, reload the data from the database to make
+  // sure no changes were written out.
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  ASSERT_EQ(0U, personal_data_manager_->GetCreditCards().size());
+}
+
+// Tests that an invalid credit card expiration is not extracted.
+TEST_F(FormDataImporterTest, ImportCreditCard_InvalidExpiryDate) {
+  FormData form;
+  AddFullCreditCardForm(&form, "Smalls Biggie", "4111-1111-1111-1111", "0",
+                        "2999");
+
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */);
+  std::unique_ptr<CreditCard> imported_credit_card;
+  base::HistogramTester histogram_tester;
+  EXPECT_FALSE(ImportCreditCard(form_structure, false, &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
+  histogram_tester.ExpectUniqueSample("Autofill.SubmittedCardState",
+                                      AutofillMetrics::HAS_CARD_NUMBER_ONLY, 1);
 
   // Since no refresh is expected, reload the data from the database to make
   // sure no changes were written out.
@@ -1443,8 +1473,12 @@ TEST_F(FormDataImporterTest, ImportCreditCard_MonthSelectInvalidText) {
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */);
   std::unique_ptr<CreditCard> imported_credit_card;
+  base::HistogramTester histogram_tester;
   EXPECT_TRUE(ImportCreditCard(form_structure, false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SubmittedCardState",
+      AutofillMetrics::HAS_CARD_NUMBER_AND_EXPIRATION_DATE, 1);
   personal_data_manager_->SaveImportedCreditCard(*imported_credit_card);
 
   WaitForOnPersonalDataChanged();

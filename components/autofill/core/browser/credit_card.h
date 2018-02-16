@@ -164,9 +164,15 @@ class CreditCard : public AutofillDataModel {
   // Returns true if there are no values (field types) set.
   bool IsEmpty(const std::string& app_locale) const;
 
-  // Returns true if all field types have valid values set and the card is not
-  // expired. MASKED_SERVER_CARDs will never be valid because the number is
+  // Returns true if credit card number is valid.
+  // MASKED_SERVER_CARDs will never be valid because the number is
   // not complete.
+  bool HasValidCardNumber() const;
+
+  // Returns true if credit card has valid expiration date.
+  bool HasValidExpirationDate() const;
+
+  // Returns true if IsValidCardNumber && IsValidExpirationDate.
   bool IsValid() const;
 
   // Returns the card number.
