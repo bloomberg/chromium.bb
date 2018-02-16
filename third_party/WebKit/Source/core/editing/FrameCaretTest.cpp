@@ -12,7 +12,7 @@
 #include "core/layout/LayoutTheme.h"
 #include "core/page/FocusController.h"
 #include "platform/LayoutTestSupport.h"
-#include "platform/scheduler/test/fake_web_task_runner.h"
+#include "platform/scheduler/test/fake_task_runner.h"
 
 namespace blink {
 
@@ -38,8 +38,8 @@ class FrameCaretTest : public EditingTestBase {
 
 TEST_F(FrameCaretTest, BlinkAfterTyping) {
   FrameCaret& caret = Selection().FrameCaretForTesting();
-  scoped_refptr<scheduler::FakeWebTaskRunner> task_runner =
-      base::MakeRefCounted<scheduler::FakeWebTaskRunner>();
+  scoped_refptr<scheduler::FakeTaskRunner> task_runner =
+      base::MakeRefCounted<scheduler::FakeTaskRunner>();
   task_runner->SetTime(0);
   caret.RecreateCaretBlinkTimerForTesting(task_runner.get());
   const double kInterval = 10;

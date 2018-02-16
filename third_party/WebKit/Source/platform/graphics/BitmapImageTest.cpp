@@ -36,7 +36,7 @@
 #include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/test/MockImageDecoder.h"
-#include "platform/scheduler/test/fake_web_task_runner.h"
+#include "platform/scheduler/test/fake_task_runner.h"
 #include "platform/testing/HistogramTester.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
@@ -468,8 +468,8 @@ TEST_F(BitmapImageTestWithMockDecoder, DontAdvanceToIncompleteFrame) {
   // still won't advance it.
   image_->SetData(SharedBuffer::Create("data", sizeof("data")), true);
 
-  scoped_refptr<scheduler::FakeWebTaskRunner> task_runner =
-      base::MakeRefCounted<scheduler::FakeWebTaskRunner>();
+  scoped_refptr<scheduler::FakeTaskRunner> task_runner =
+      base::MakeRefCounted<scheduler::FakeTaskRunner>();
   image_->SetTaskRunnerForTesting(task_runner);
   task_runner->SetTime(10);
 
@@ -503,8 +503,8 @@ TEST_F(BitmapImageTestWithMockDecoder, FrameSkipTracking) {
   // received.
   image_->SetData(SharedBuffer::Create("data", sizeof("data")), false);
 
-  scoped_refptr<scheduler::FakeWebTaskRunner> task_runner =
-      base::MakeRefCounted<scheduler::FakeWebTaskRunner>();
+  scoped_refptr<scheduler::FakeTaskRunner> task_runner =
+      base::MakeRefCounted<scheduler::FakeTaskRunner>();
   image_->SetTaskRunnerForTesting(task_runner);
   task_runner->SetTime(10);
 

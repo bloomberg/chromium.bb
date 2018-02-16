@@ -30,7 +30,7 @@
 
 #include "platform/network/NetworkStateNotifier.h"
 
-#include "platform/scheduler/test/fake_web_task_runner.h"
+#include "platform/scheduler/test/fake_task_runner.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/Optional.h"
@@ -43,7 +43,7 @@
 
 namespace blink {
 
-using scheduler::FakeWebTaskRunner;
+using scheduler::FakeTaskRunner;
 
 namespace {
 const double kNoneMaxBandwidthMbps = 0.0;
@@ -163,8 +163,8 @@ class StateObserver : public NetworkStateNotifier::NetworkStateObserver {
 class NetworkStateNotifierTest : public ::testing::Test {
  public:
   NetworkStateNotifierTest()
-      : task_runner_(base::MakeRefCounted<FakeWebTaskRunner>()),
-        task_runner2_(base::MakeRefCounted<FakeWebTaskRunner>()) {
+      : task_runner_(base::MakeRefCounted<FakeTaskRunner>()),
+        task_runner2_(base::MakeRefCounted<FakeTaskRunner>()) {
     // Initialize connection, so that future calls to setWebConnection issue
     // notifications.
     notifier_.SetWebConnection(kWebConnectionTypeUnknown, 0.0);
@@ -241,8 +241,8 @@ class NetworkStateNotifierTest : public ::testing::Test {
            observer.ObservedSaveData() == save_data;
   }
 
-  scoped_refptr<FakeWebTaskRunner> task_runner_;
-  scoped_refptr<FakeWebTaskRunner> task_runner2_;
+  scoped_refptr<FakeTaskRunner> task_runner_;
+  scoped_refptr<FakeTaskRunner> task_runner2_;
   NetworkStateNotifier notifier_;
 };
 
