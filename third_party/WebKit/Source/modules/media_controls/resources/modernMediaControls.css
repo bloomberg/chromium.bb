@@ -103,9 +103,13 @@ video::-internal-media-controls-button-panel {
   box-sizing: border-box;
 }
 
-audio::-internal-media-controls-button-spacer,
 video::-internal-media-controls-button-spacer {
   flex: 1;
+}
+
+audio::-internal-media-controls-button-spacer,
+video::-webkit-media-controls.audio-only [pseudo="-internal-media-controls-button-spacer"] {
+  display: none;
 }
 
 /**
@@ -272,7 +276,8 @@ video::-webkit-media-controls-timeline {
   box-sizing: unset !important;
 }
 
-audio::-webkit-media-controls-timeline {
+audio::-webkit-media-controls-timeline,
+video::-webkit-media-controls.audio-only [pseudo="-webkit-media-controls-timeline"] {
   padding-top: 26px;
   padding-bottom: 26px;
 }
@@ -289,6 +294,28 @@ input[pseudo="-webkit-media-controls-timeline" i]::-internal-media-controls-segm
   background: rgba(0, 0, 0, .2);
   border-radius: 2px;
   position: relative;
+}
+
+/* thumb-current-time CSS here instead of in the scoped CSS so we can hide on
+ * audio-only. */
+input[pseudo="-webkit-media-controls-timeline" i]::-internal-media-controls-thumb-current-time {
+  position: absolute;
+  height: 16px;
+  left: 5px;
+  bottom: 16px;
+  padding: 4px 12px;
+  opacity: 0.9;
+  background: #FFFFFF;
+  border-radius: 100px;
+  font-family: Roboto-Regular, Roboto, sans-serif;
+  font-size: 14px;
+  color: #000000;
+  letter-spacing: 0;
+  text-shadow: 0 0 10px #FFFFFF;
+}
+
+video::-webkit-media-controls.audio-only input[pseudo="-webkit-media-controls-timeline"]::-internal-media-controls-thumb-current-time {
+  display: none;
 }
 
 input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb {
@@ -490,15 +517,19 @@ audio {
   height: 54px;
 }
 
-audio::-webkit-media-controls {
+audio::-webkit-media-controls,
+video::-webkit-media-controls.audio-only {
   min-width: 240px;
+  min-height: 54px;
 }
 
-audio::-webkit-media-controls-overlay-enclosure {
+audio::-webkit-media-controls-overlay-enclosure,
+video::-webkit-media-controls.audio-only [pseudo="-webkit-media-controls-overlay-enclosure"] {
   display: none;
 }
 
-audio::-webkit-media-controls-enclosure {
+audio::-webkit-media-controls-enclosure,
+video::-webkit-media-controls.audio-only [pseudo="-webkit-media-controls-enclosure"] {
   min-height: 54px;
   max-height: 54px;
   flex-direction: row;
@@ -507,7 +538,8 @@ audio::-webkit-media-controls-enclosure {
   overflow: hidden;
 }
 
-audio::-webkit-media-controls-panel {
+audio::-webkit-media-controls-panel,
+video::-webkit-media-controls.audio-only [pseudo="-webkit-media-controls-panel"] {
   flex-direction: row;
   background: none;
   padding: 0 10px;
@@ -515,30 +547,38 @@ audio::-webkit-media-controls-panel {
   justify-content: flex-start;
 }
 
-audio::-internal-media-controls-play-button {
+audio::-internal-media-controls-play-button,
+video::-webkit-media-controls.audio-only [pseudo="-internal-media-controls-play-button"] {
   display: none;
 }
 
-audio::-webkit-media-controls-current-time-display {
+audio::-webkit-media-controls-current-time-display,
+video::-webkit-media-controls.audio-only [pseudo="-webkit-media-controls-current-time-display"] {
   text-align: right;
   margin-left: 5px;
 }
 
 audio::-webkit-media-controls-current-time-display,
-audio::-webkit-media-controls-time-remaining-display {
+video::-webkit-media-controls.audio-only [pseudo="-webkit-media-controls-current-time-display"],
+audio::-webkit-media-controls-time-remaining-display,
+video::-webkit-media-controls.audio-only [pseudo="-webkit-media-controls-time-remaining-display"] {
   min-width: auto;
   flex: 0;
   white-space: nowrap;
 }
 
-audio::-webkit-media-controls-timeline {
+audio::-webkit-media-controls-timeline,
+video::-webkit-media-controls.audio-only [pseudo="-webkit-media-controls-timeline"] {
   flex: 1 0 0px;
   width: 0;
 }
 
 audio::-webkit-media-controls-play-button,
+video::-webkit-media-controls.audio-only [pseudo="-webkit-media-controls-play-button"],
 audio::-webkit-media-controls-mute-button,
-audio::-internal-media-controls-overflow-button {
+video::-webkit-media-controls.audio-only [pseudo="-webkit-media-controls-mute-button"],
+audio::-internal-media-controls-overflow-button,
+video::-webkit-media-controls.audio-only [pseudo="-internal-media-controls-overflow-button"] {
   flex: 0 0 32px;
 }
 
@@ -570,7 +610,8 @@ video::-internal-media-controls-loading-panel {
   opacity: .5;
 }
 
-audio::-internal-media-controls-loading-panel {
+audio::-internal-media-controls-loading-panel,
+video::-webkit-media-controls.audio-only [pseudo="-internal-media-controls-loading-panel"] {
   display: none;
 }
 

@@ -81,13 +81,12 @@ MediaControlTimelineElement::MediaControlTimelineElement(
       Element* thumb = track.getElementById("thumb");
       DCHECK(thumb);
 
-      // The time display should not have a pseudo ID and have a timeline
-      // specific element ID. This is to ensure it does not pick up styles from
-      // the current time display.
+      // The time display should have a have a timeline-specific pseudo ID. This
+      // is to ensure it does not pick up styles from the current time display.
       current_time_display_ =
           new MediaControlCurrentTimeDisplayElement(GetMediaControls());
-      current_time_display_->setAttribute("pseudo", "");
-      current_time_display_->setAttribute("id", "thumb-current-time");
+      current_time_display_->setAttribute(
+          "pseudo", "-internal-media-controls-thumb-current-time");
       current_time_display_->SetIsWanted(false);
       thumb->AppendChild(current_time_display_);
     }

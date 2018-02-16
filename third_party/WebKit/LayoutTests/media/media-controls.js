@@ -16,6 +16,14 @@ function isControlVisible(control) {
     return (display != "none" && visibility == "visible");
 }
 
+function mediaControls(videoElement) {
+  var controlID = '-webkit-media-controls';
+  var element = mediaControlsElement(window.internals.shadowRoot(videoElement).firstChild, controlID);
+  if (!element)
+    throw 'Failed to find media controls';
+  return element;
+}
+
 function castButton(videoElement) {
     var controlID = '-internal-media-controls-cast-button';
     var button = mediaControlsElement(window.internals.shadowRoot(videoElement).firstChild, controlID);
@@ -215,8 +223,9 @@ function timelineThumb(videoElement) {
 }
 
 function timelineThumbCurrentTime(videoElement) {
+    const controlID = '-internal-media-controls-thumb-current-time';
     const timeline = timelineElement(videoElement);
-    const thumb = window.internals.shadowRoot(timeline).getElementById('thumb-current-time');
+    const thumb = mediaControlsElement(window.internals.shadowRoot(timeline).firstChild, controlID);
     if (!thumb)
         throw 'Failed to find timeline current time';
     return thumb;
