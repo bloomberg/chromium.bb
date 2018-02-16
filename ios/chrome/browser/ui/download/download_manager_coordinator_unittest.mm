@@ -6,6 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/mac/foundation_util.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/download/download_directory_util.h"
@@ -233,6 +234,38 @@ TEST_F(DownloadManagerCoordinatorTest, Close) {
 
   // Stop to avoid holding a dangling pointer to destroyed task.
   [coordinator_ stop];
+}
+
+// Tests closing view controller while the download is in progress. Coordinator
+// should present the confirmation dialog.
+TEST_F(DownloadManagerCoordinatorTest, CloseInProgressDownload) {
+  web::FakeDownloadTask task(GURL(kTestUrl), kTestMimeType);
+  task.Start(std::make_unique<net::URLFetcherStringWriter>());
+  coordinator_.downloadTask = &task;
+  [coordinator_ start];
+
+  EXPECT_EQ(1U, base_view_controller_.childViewControllers.count);
+  DownloadManagerViewController* viewController =
+      base_view_controller_.childViewControllers.firstObject;
+  ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+  [viewController.delegate
+      downloadManagerViewControllerDidClose:viewController];
+
+  // Verify that UIAlert is presented.
+  ASSERT_TRUE([base_view_controller_.presentedViewController
+      isKindOfClass:[UIAlertController class]]);
+  UIAlertController* alert = base::mac::ObjCCast<UIAlertController>(
+      base_view_controller_.presentedViewController);
+  EXPECT_NSEQ(@"Cancel Download?", alert.title);
+  EXPECT_FALSE(alert.message);
+
+  // Stop to avoid holding a dangling pointer to destroyed task.
+  [coordinator_ stop];
+
+  // |stop| should dismiss the apert.
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout, ^{
+    return !base_view_controller_.presentedViewController;
+  }));
 }
 
 // Tests starting the download. Verifies that download task is started and its
