@@ -224,7 +224,8 @@ TEST_F(LocaleMacTest, formatDate) {
   // Do not test ja_JP locale. OS X 10.8 and 10.7 have different formats.
 }
 
-TEST_F(LocaleMacTest, formatTime) {
+// http://crbug.com/811685 This test is flaky.
+TEST_F(LocaleMacTest, DISABLED_formatTime) {
   EXPECT_STREQ("1:23 PM",
                FormatTime("en_US", 13, 23, 00, 000, true).Utf8().data());
   EXPECT_STREQ("13:23",
