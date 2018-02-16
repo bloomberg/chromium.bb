@@ -32,6 +32,7 @@ run_jsbundler("select_to_speak_copied_files") {
     "../chromevox/cvox2/background/tree_walker.js",
     "checked.png",
     "closure_shim.js",
+    "earcons/null_selection.ogg",
     "options.css",
     "options.html",
     "paragraph_utils.js",
