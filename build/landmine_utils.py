@@ -70,6 +70,22 @@ def distributor():
     return 'goma'
 
 
+def host_os():
+  """
+  Returns a string representing the host_os of the current system.
+  Possible values: 'win', 'mac', 'linux', 'unknown'.
+  """
+  if IsWindows():
+    return 'win'
+  elif IsLinux():
+    return 'linux'
+  elif IsMac():
+    return 'mac'
+  else:
+    return 'unknown'
+
+
+# TODO(machenbach): Deprecate this method as it depends on env variables.
 @memoize()
 def platform():
   """
