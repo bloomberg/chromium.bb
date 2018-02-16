@@ -14,6 +14,7 @@
 #include "content/browser/renderer_host/delegated_frame_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
+#include "ui/display/display.h"
 
 namespace ui {
 class AcceleratedWidgetMacNSView;
@@ -61,20 +62,20 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
       viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink);
   void OnDidNotProduceFrame(const viz::BeginFrameAck& ack);
   void SetBackgroundColor(SkColor background_color);
-  void SetDisplayColorSpace(const gfx::ColorSpace& color_space);
   void UpdateVSyncParameters(const base::TimeTicks& timebase,
                              const base::TimeDelta& interval);
   void SetNeedsBeginFrames(bool needs_begin_frames);
   void SetWantsAnimateOnlyBeginFrames();
 
   // Update the renderer's SurfaceId to reflect the current dimensions of the
-  // NSView. This will allocate a new SurfaceId if the dimensions have indeed
-  // changed.
-  void OnNSViewWasResized();
+  // NSView. This will allocate a new SurfaceId if needed. This will return
+  // true if any properties that need to be communicated to the
+  // RenderWidgetHostImpl have changed.
+  bool UpdateNSViewAndDisplay();
 
   // Update the renderer's SurfaceId to reflect |size_dip| in anticipation of
   // the NSView resizing during auto-resize.
-  void OnNSViewWillAutoResize(const gfx::Size& size_dip);
+  void UpdateForAutoResize(const gfx::Size& size_dip);
 
   // This is used to ensure that the ui::Compositor be attached to the
   // DelegatedFrameHost while the RWHImpl is visible.
@@ -90,11 +91,10 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
 
   viz::FrameSinkId GetRootFrameSinkId();
 
-  const gfx::Size& GetRendererSize() const {
-    return delegated_frame_host_size_dip_;
-  }
+  const gfx::Size& GetRendererSize() const { return dfh_size_dip_; }
+  void GetRendererScreenInfo(ScreenInfo* screen_info) const;
   const viz::LocalSurfaceId& GetRendererLocalSurfaceId() const {
-    return delegated_frame_host_surface_id_;
+    return dfh_surface_id_;
   }
 
   // Indicate that the recyclable compositor should be destroyed, and no future
@@ -175,16 +175,14 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
 
   // The surface for the delegated frame host, rendered into by the renderer
   // process.
-  void UpdateDelegatedFrameHostSurface(const gfx::Size& size_dip,
-                                       float scale_factor);
-  viz::LocalSurfaceId delegated_frame_host_surface_id_;
-  gfx::Size delegated_frame_host_size_pixels_;
-  gfx::Size delegated_frame_host_size_dip_;
-  float delegated_frame_host_scale_factor_ = 1.f;
+  viz::LocalSurfaceId dfh_surface_id_;
+  gfx::Size dfh_size_pixels_;
+  gfx::Size dfh_size_dip_;
+  display::Display dfh_display_;
 
-  // The surface for the ui::Compositor, which will embed
-  // |delegated_frame_host_surface_id_| into its tree. Updated to match the
-  // delegated frame host values when attached and at OnFirstSurfaceActivation.
+  // The surface for the ui::Compositor, which will embed |dfh_surface_id_|
+  // into its tree. Updated to match the delegated frame host values when
+  // attached and at OnFirstSurfaceActivation.
   viz::LocalSurfaceId compositor_surface_id_;
   gfx::Size compositor_size_pixels_;
   float compositor_scale_factor_ = 1.f;

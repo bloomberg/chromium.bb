@@ -226,6 +226,9 @@ class DISPLAY_EXPORT Display final {
     is_monochrome_ = is_monochrome;
   }
 
+  bool operator==(const Display& rhs) const;
+  bool operator!=(const Display& rhs) const { return !(*this == rhs); }
+
  private:
   friend struct mojo::StructTraits<mojom::DisplayDataView, Display>;
 
