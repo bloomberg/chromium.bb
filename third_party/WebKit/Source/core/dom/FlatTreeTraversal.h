@@ -127,11 +127,12 @@ class CORE_EXPORT FlatTreeTraversal {
   // Flat tree range helper functions for range based for statement.
   // TODO(dom-team): We should have following functions to match with
   // |NodeTraversal|:
-  //   - AncestorsOf()
   //   - DescendantsOf()
   //   - InclusiveDescendantsOf()
   //   - StartsAt()
   //   - StartsAfter()
+  static TraversalRange<TraversalAncestorsIterator<FlatTreeTraversal>>
+  AncestorsOf(const Node&);
   static TraversalRange<TraversalChildrenIterator<FlatTreeTraversal>>
   ChildrenOf(const Node&);
 
@@ -341,6 +342,11 @@ inline Node* FlatTreeTraversal::TraverseLastChild(const Node& node) {
 }
 
 // TraverseRange<T> implementations
+inline TraversalRange<TraversalAncestorsIterator<FlatTreeTraversal>>
+FlatTreeTraversal::AncestorsOf(const Node& node) {
+  return TraversalRange<TraversalAncestorsIterator<FlatTreeTraversal>>(&node);
+}
+
 inline TraversalRange<TraversalChildrenIterator<FlatTreeTraversal>>
 FlatTreeTraversal::ChildrenOf(const Node& parent) {
   return TraversalRange<TraversalChildrenIterator<FlatTreeTraversal>>(&parent);
