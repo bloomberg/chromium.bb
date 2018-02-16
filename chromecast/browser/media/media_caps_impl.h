@@ -26,7 +26,6 @@ class MediaCapsImpl : public mojom::MediaCaps {
   void Initialize();
   void AddBinding(mojom::MediaCapsRequest request);
 
-  void SetSupportedHdmiSinkCodecs(unsigned int supported_codecs_bitmask);
   void ScreenResolutionChanged(unsigned width, unsigned height);
   void ScreenInfoChanged(int hdcp_version,
                          int supported_eotfs,
@@ -42,7 +41,6 @@ class MediaCapsImpl : public mojom::MediaCaps {
   // chromecast::mojom::MediaCaps implementation.
   void AddObserver(mojom::MediaCapsObserverPtr observer) override;
 
-  unsigned int supported_codecs_bitmask_;
   int hdcp_version_;
   int supported_eotfs_;
   int dolby_vision_flags_;
