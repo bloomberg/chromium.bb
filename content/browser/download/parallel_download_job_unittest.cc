@@ -365,6 +365,41 @@ TEST_F(ParallelDownloadJobTest, CreateResumptionRequestsTwoSlicesToFill) {
   DestroyParallelJob();
 }
 
+// Verifies that if the last received slice is finished, we don't send an out
+// of range request that starts from the last byte position.
+TEST_F(ParallelDownloadJobTest, LastReceivedSliceFinished) {
+  // One finished slice, no parallel requests should be created. Content length
+  // should be 0.
+  download::DownloadItem::ReceivedSlices slices = {
+      download::DownloadItem::ReceivedSlice(0, 100, true)};
+  CreateParallelJob(100, 0, slices, 3, 1, 10);
+  BuildParallelRequests();
+  EXPECT_EQ(0u, job_->workers().size());
+  DestroyParallelJob();
+
+  // Two received slices with one hole in the middle. Since the second slice is
+  // finished, and the hole will be filled by original request, no parallel
+  // requests will be created.
+  slices = {download::DownloadItem::ReceivedSlice(0, 25),
+            download::DownloadItem::ReceivedSlice(75, 25, true)};
+  CreateParallelJob(25, 100, slices, 3, 1, 10);
+  BuildParallelRequests();
+  EXPECT_EQ(0u, job_->workers().size());
+  DestroyParallelJob();
+
+  // Three received slices with two hole in the middle and the last slice is
+  // finished. The original request will work on the first hole and one parallel
+  // request is created to fill the second hole.
+  slices = {download::DownloadItem::ReceivedSlice(0, 25),
+            download::DownloadItem::ReceivedSlice(50, 25),
+            download::DownloadItem::ReceivedSlice(100, 25, true)};
+  CreateParallelJob(25, 125, slices, 3, 1, 10);
+  BuildParallelRequests();
+  EXPECT_EQ(1u, job_->workers().size());
+  VerifyWorker(75, 0);
+  DestroyParallelJob();
+}
+
 // Pause, cancel, resume can be called before or after the worker establish
 // the byte stream.
 // These tests ensure the states consistency between the job and workers.

@@ -11,14 +11,17 @@ namespace history {
 DownloadSliceInfo::DownloadSliceInfo()
     : download_id(kInvalidDownloadId),
       offset(0),
-      received_bytes(0) {}
+      received_bytes(0),
+      finished(false) {}
 
 DownloadSliceInfo::DownloadSliceInfo(DownloadId download_id,
                                      int64_t offset,
-                                     int64_t received_bytes)
+                                     int64_t received_bytes,
+                                     bool finished)
     : download_id(download_id),
       offset(offset),
-      received_bytes(received_bytes) {}
+      received_bytes(received_bytes),
+      finished(finished) {}
 
 DownloadSliceInfo::DownloadSliceInfo(const DownloadSliceInfo& other) = default;
 
@@ -26,7 +29,7 @@ DownloadSliceInfo::~DownloadSliceInfo() = default;
 
 bool DownloadSliceInfo::operator==(const DownloadSliceInfo& rhs) const {
   return download_id == rhs.download_id && offset == rhs.offset &&
-      received_bytes == rhs.received_bytes;
+         received_bytes == rhs.received_bytes && finished == rhs.finished;
 }
 
 }  // namespace history

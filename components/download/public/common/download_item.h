@@ -109,17 +109,23 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
 
   // A slice of the target file that has been received so far, used when
   // parallel downloading is enabled. Slices should have different offsets
-  // so that they don't overlap.
+  // so that they don't overlap. |finished| will be marked as true when the
+  // download stream is successfully completed.
   struct COMPONENTS_DOWNLOAD_EXPORT ReceivedSlice {
     ReceivedSlice(int64_t offset, int64_t received_bytes)
-        : offset(offset), received_bytes(received_bytes) {}
+        : offset(offset), received_bytes(received_bytes), finished(false) {}
+
+    ReceivedSlice(int64_t offset, int64_t received_bytes, bool finished)
+        : offset(offset), received_bytes(received_bytes), finished(finished) {}
 
     bool operator==(const ReceivedSlice& rhs) const {
-      return offset == rhs.offset && received_bytes == rhs.received_bytes;
+      return offset == rhs.offset && received_bytes == rhs.received_bytes &&
+             finished == rhs.finished;
     }
 
     int64_t offset;
     int64_t received_bytes;
+    bool finished;
   };
 
   using ReceivedSlices = std::vector<DownloadItem::ReceivedSlice>;

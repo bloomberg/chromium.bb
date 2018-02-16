@@ -986,7 +986,8 @@ TEST_F(HistoryBackendDBTest, ConfirmDownloadRowCreateAndDelete) {
   db_->QueryDownloads(&results);
   ASSERT_EQ(1u, results.size());
   // Add a download slice and update the DB
-  results[0].download_slice_info.push_back(DownloadSliceInfo(id1, 500, 100));
+  results[0].download_slice_info.push_back(
+      DownloadSliceInfo(id1, 500, 100, false));
   ASSERT_TRUE(db_->UpdateDownload(results[0]));
 
   AddDownload(id2,
@@ -1017,6 +1018,7 @@ TEST_F(HistoryBackendDBTest, ConfirmDownloadRowCreateAndDelete) {
         "Select Count(*) from downloads_slices"));
     EXPECT_TRUE(statement2.Step());
     EXPECT_EQ(1, statement2.ColumnInt(0));
+    EXPECT_EQ(0, statement2.ColumnInt(3));
   }
 
   // Delete some rows and make sure the results are still correct.
@@ -1118,7 +1120,8 @@ TEST_F(HistoryBackendDBTest, ConfirmDownloadInProgressCleanup) {
   db_->QueryDownloads(&results);
   ASSERT_EQ(1u, results.size());
   // Add a download slice and update the DB
-  results[0].download_slice_info.push_back(DownloadSliceInfo(id, 500, 100));
+  results[0].download_slice_info.push_back(
+      DownloadSliceInfo(id, 500, 100, true));
   ASSERT_TRUE(db_->UpdateDownload(results[0]));
 
   // Confirm that they made it into the DB unchanged.
@@ -1205,7 +1208,7 @@ TEST_F(HistoryBackendDBTest, CreateAndUpdateDownloadingSlice) {
   download.by_ext_id = "extension-id";
   download.by_ext_name = "extension-name";
   download.download_slice_info.push_back(
-      DownloadSliceInfo(download.id, 500, download.received_bytes));
+      DownloadSliceInfo(download.id, 500, download.received_bytes, true));
 
   ASSERT_TRUE(db_->CreateDownload(download));
   std::vector<DownloadRow> results;
@@ -1259,7 +1262,7 @@ TEST_F(HistoryBackendDBTest, UpdateDownloadWithNewSlice) {
 
   // Add a new slice and call UpdateDownload().
   download.download_slice_info.push_back(
-      DownloadSliceInfo(download.id, 500, 100));
+      DownloadSliceInfo(download.id, 500, 100, true));
   ASSERT_TRUE(db_->UpdateDownload(download));
   std::vector<DownloadRow> results;
   db_->QueryDownloads(&results);
@@ -1300,14 +1303,14 @@ TEST_F(HistoryBackendDBTest, DownloadSliceDeletedIfEmpty) {
   download.by_ext_id = "extension-id";
   download.by_ext_name = "extension-name";
   download.download_slice_info.push_back(
-      DownloadSliceInfo(download.id, 0, download.received_bytes));
+      DownloadSliceInfo(download.id, 0, download.received_bytes, false));
   download.download_slice_info.push_back(
-      DownloadSliceInfo(download.id, 500, download.received_bytes));
+      DownloadSliceInfo(download.id, 500, download.received_bytes, false));
   download.download_slice_info.push_back(
-      DownloadSliceInfo(download.id, 100, download.received_bytes));
+      DownloadSliceInfo(download.id, 100, download.received_bytes, false));
   // The empty slice will not be inserted.
   download.download_slice_info.push_back(
-      DownloadSliceInfo(download.id, 1500, 0));
+      DownloadSliceInfo(download.id, 1500, 0, true));
 
   ASSERT_TRUE(db_->CreateDownload(download));
   std::vector<DownloadRow> results;
@@ -1539,6 +1542,45 @@ TEST_F(HistoryBackendDBTest, MigrateVisitSegmentNames) {
   EXPECT_THAT(results[0]->GetTitle(), testing::AnyOf(title1, title2));
   EXPECT_EQ(segment_id1, db_->GetSegmentNamed(legacy_segment_name1));
   EXPECT_EQ(0u, db_->GetSegmentNamed(legacy_segment_name2));
+}
+
+// Test to verify the finished column will be correctly added to download slices
+// table during migration to version 39.
+TEST_F(HistoryBackendDBTest, MigrateDownloadSliceFinished) {
+  ASSERT_NO_FATAL_FAILURE(CreateDBVersion(38));
+  {
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
+  }
+  CreateBackendAndDatabase();
+  DeleteBackend();
+
+  {
+    // Re-open the db for manual manipulation.
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
+    // The version should have been updated.
+    int cur_version = HistoryDatabase::GetCurrentVersion();
+    ASSERT_LE(38, cur_version);
+    {
+      sql::Statement s(db.GetUniqueStatement(
+          "SELECT value FROM meta WHERE key = 'version'"));
+      EXPECT_TRUE(s.Step());
+      EXPECT_EQ(cur_version, s.ColumnInt(0));
+    }
+    {
+      // The downloads_slices table should have the finished column.
+      sql::Statement s1(
+          db.GetUniqueStatement("SELECT COUNT(*) from downloads_slices"));
+      EXPECT_TRUE(s1.Step());
+      EXPECT_EQ(0, s1.ColumnInt(0));
+      const char kInsertStatement[] =
+          "INSERT INTO downloads_slices "
+          "(download_id, offset, received_bytes, finished) VALUES (1, 0, 100, "
+          "1)";
+      ASSERT_TRUE(db.Execute(kInsertStatement));
+    }
+  }
 }
 
 bool FilterURL(const GURL& url) {

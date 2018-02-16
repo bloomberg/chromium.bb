@@ -128,8 +128,10 @@ std::vector<download::DownloadItem::ReceivedSlice> ToContentReceivedSlices(
     const std::vector<DownloadSliceInfo>& slice_infos) {
   std::vector<download::DownloadItem::ReceivedSlice> result;
 
-  for (const auto& slice_info : slice_infos)
-    result.emplace_back(slice_info.offset, slice_info.received_bytes);
+  for (const auto& slice_info : slice_infos) {
+    result.emplace_back(slice_info.offset, slice_info.received_bytes,
+                        slice_info.finished);
+  }
 
   return result;
 }
@@ -138,8 +140,10 @@ std::vector<DownloadSliceInfo> GetHistoryDownloadSliceInfos(
     const download::DownloadItem& item) {
   std::vector<DownloadSliceInfo> result;
 
-  for (const auto& slice : item.GetReceivedSlices())
-    result.emplace_back(item.GetId(), slice.offset, slice.received_bytes);
+  for (const auto& slice : item.GetReceivedSlices()) {
+    result.emplace_back(item.GetId(), slice.offset, slice.received_bytes,
+                        slice.finished);
+  }
 
   return result;
 }

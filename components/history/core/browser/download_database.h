@@ -99,6 +99,9 @@ class DownloadDatabase {
   // Returns true if able to add transient column to the download table.
   bool MigrateDownloadTransient();
 
+  // Returns true if able to add the finished column to downloads slices table.
+  bool MigrateDownloadSliceFinished();
+
   // Creates the downloads table if needed.
   bool InitDownloadTable();
 
@@ -117,7 +120,13 @@ class DownloadDatabase {
   // fixes such entries.
   void EnsureInProgressEntriesCleanedUp();
 
+  // Ensures a column exists in downloads table.
   bool EnsureColumnExists(const std::string& name, const std::string& type);
+
+  // Ensures a column exists in |table|.
+  bool EnsureColumnExistsInTable(const std::string& table,
+                                 const std::string& name,
+                                 const std::string& type);
 
   void RemoveDownloadURLs(DownloadId id);
 

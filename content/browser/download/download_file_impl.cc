@@ -256,6 +256,13 @@ void DownloadFileImpl::Initialize(
   int64_t bytes_so_far = 0;
   cancel_request_callback_ = cancel_request_callback;
   received_slices_ = received_slices;
+
+  // If the last slice is finished, then we know the actual content size.
+  if (!received_slices_.empty() && received_slices_.back().finished) {
+    SetPotentialFileLength(received_slices_.back().offset +
+                           received_slices_.back().received_bytes);
+  }
+
   if (IsSparseFile()) {
     for (const auto& received_slice : received_slices_) {
       bytes_so_far += received_slice.received_bytes;
@@ -670,10 +677,18 @@ void DownloadFileImpl::NotifyObserver(SourceStream* source_stream,
     // Signal successful completion or termination of the current stream.
     source_stream->ClearDataReadyCallback();
     source_stream->set_finished(true);
+
     if (should_terminate)
       CancelRequest(source_stream->offset());
     if (source_stream->length() ==
         download::DownloadSaveInfo::kLengthFullContent) {
+      // Mark received slice as finished.
+      if (IsSparseFile() && source_stream->bytes_written() > 0) {
+        DCHECK_GT(received_slices_.size(), source_stream->index())
+            << "Received slice index out of bound!";
+        received_slices_[source_stream->index()].finished = true;
+      }
+
       SetPotentialFileLength(source_stream->offset() +
                              source_stream->bytes_written());
     }

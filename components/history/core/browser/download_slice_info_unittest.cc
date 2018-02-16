@@ -9,11 +9,14 @@
 namespace history {
 
 TEST(DownloadSliceInfoTest, CompareDownloadSliceInfo) {
-  DownloadSliceInfo info1(1, 500, 10);
-  DownloadSliceInfo info2(1, 500, 1000);
+  DownloadSliceInfo info1(1, 500, 10, false);
+  DownloadSliceInfo info2(1, 500, 1000, true);
   EXPECT_FALSE(info1 == info2);
 
   info1.received_bytes = 1000;
+  EXPECT_FALSE(info1 == info2);
+
+  info1.finished = true;
   EXPECT_TRUE(info1 == info2);
 
   info1.offset = 1;

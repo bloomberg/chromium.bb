@@ -151,8 +151,10 @@ void ParallelDownloadJob::BuildParallelRequests() {
   // Get the next |kParallelRequestCount - 1| slices and fork
   // new requests. For the remaining slices, they will be handled once some
   // of the workers finish their job.
+  const download::DownloadItem::ReceivedSlices& received_slices =
+      download_item_->GetReceivedSlices();
   download::DownloadItem::ReceivedSlices slices_to_download =
-      FindSlicesToDownload(download_item_->GetReceivedSlices());
+      FindSlicesToDownload(received_slices);
 
   DCHECK(!slices_to_download.empty());
   int64_t first_slice_offset = slices_to_download[0].offset;
@@ -180,10 +182,8 @@ void ParallelDownloadJob::BuildParallelRequests() {
         remaining_time, 0, base::TimeDelta::FromDays(1).InSeconds(), 50);
     if (remaining_bytes / current_bytes_per_second >
         GetMinRemainingTimeInSeconds()) {
-      // TODO(qinmin): Check the size of the last slice. If it is huge, we can
-      // split it into N pieces and pass the last N-1 pieces to different
-      // workers. Otherwise, just fork |slices_to_download.size()| number of
-      // workers.
+      // Fork more requests to accelerate, only if one slice is left to download
+      // and remaining time seems to be long enough.
       slices_to_download = FindSlicesForRemainingContent(
           first_slice_offset,
           content_length_ - first_slice_offset + initial_request_offset_,
@@ -195,6 +195,13 @@ void ParallelDownloadJob::BuildParallelRequests() {
   }
 
   DCHECK(!slices_to_download.empty());
+
+  // If the last received slice is finished, remove the last request which can
+  // be out of the range of the file. E.g, the file is 100 bytes, and the last
+  // request's range header will be "Range:100-".
+  if (!received_slices.empty() && received_slices.back().finished)
+    slices_to_download.pop_back();
+
   ForkSubRequests(slices_to_download);
   RecordParallelDownloadRequestCount(
       static_cast<int>(slices_to_download.size()));
