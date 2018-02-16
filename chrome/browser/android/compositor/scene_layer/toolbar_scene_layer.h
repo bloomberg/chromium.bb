@@ -37,6 +37,7 @@ class ToolbarSceneLayer : public SceneLayer {
       jint toolbar_background_color,
       jint url_bar_resource_id,
       jfloat url_bar_alpha,
+      jint url_bar_color,
       jfloat y_offset,
       jfloat view_height,
       bool visible,

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.compositor.scene_layer;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.RectF;
 
 import org.chromium.base.annotations.JNINamespace;
@@ -18,6 +19,9 @@ import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
 import org.chromium.chrome.browser.widget.ControlContainer;
@@ -97,10 +101,27 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
                 ? fullscreenManager.getBottomControlOffset()
                 : fullscreenManager.getTopControlOffset();
 
+        int textBoxColor = Color.WHITE;
+        int textBoxResourceId = R.drawable.card_single;
+
+        boolean isNtp = false;
+        boolean useModern = false;
+        Tab currentTab = fullscreenManager.getTab();
+        if (currentTab != null) {
+            isNtp = currentTab != null ? NewTabPage.isNTPUrl(currentTab.getUrl()) : false;
+            useModern = currentTab.getActivity().supportsModernDesign()
+                    && FeatureUtilities.isChromeModernDesignEnabled();
+        }
+
+        if (useModern) {
+            textBoxColor = ColorUtils.getTextBoxColorForToolbarBackground(
+                    mContext.getResources(), isNtp, browserControlsBackgroundColor, true);
+            textBoxResourceId = R.drawable.modern_location_bar;
+        }
+
         nativeUpdateToolbarLayer(mNativePtr, resourceManager, R.id.control_container,
-                browserControlsBackgroundColor, R.drawable.card_single,
-                browserControlsUrlBarAlpha, controlsOffset, windowHeight, useTexture, showShadow,
-                FeatureUtilities.isChromeModernDesignEnabled());
+                browserControlsBackgroundColor, textBoxResourceId, browserControlsUrlBarAlpha,
+                textBoxColor, controlsOffset, windowHeight, useTexture, showShadow, useModern);
 
         if (mProgressBarDrawingInfo == null) return;
         nativeUpdateProgressBar(mNativePtr, mProgressBarDrawingInfo.progressBarRect.left,
@@ -155,9 +176,9 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
             if (!fullscreenManager.getTab().isIncognito()) alpha = 1f;
         }
 
-        // In Chrome modern design, the url bar is always drawn in the Java layer rather than the
-        // compositor layer.
-        if (FeatureUtilities.isChromeModernDesignEnabled()) alpha = 0;
+        // In Chrome modern design, the url bar is always opaque since it is drawn in the
+        // compositor.
+        if (FeatureUtilities.isChromeModernDesignEnabled()) alpha = 1;
 
         update(color, alpha, mLayoutProvider.getFullscreenManager(), resourceManager,
                 forceHideBrowserControlsAndroidView, viewportMode, DeviceFormFactor.isTablet(),
@@ -257,6 +278,7 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
             int toolbarBackgroundColor,
             int urlBarResourceId,
             float urlBarAlpha,
+            int urlBarColor,
             float topOffset,
             float viewHeight,
             boolean visible,

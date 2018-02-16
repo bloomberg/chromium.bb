@@ -69,17 +69,19 @@ public class TabListSceneLayer extends SceneLayer {
             boolean useModernDesign = FeatureUtilities.isChromeModernDesignEnabled();
 
             float shadowAlpha = decoration;
-            if (useModernDesign) shadowAlpha /= 2;
+            int urlBarBackgroundId = R.drawable.card_single;
+            if (useModernDesign) {
+                urlBarBackgroundId = R.drawable.modern_location_bar;
+                shadowAlpha /= 2;
+            }
 
             int defaultThemeColor =
                     ColorUtils.getDefaultThemeColor(res, useModernDesign, t.isIncognito());
 
             int toolbarBackgroundColor = getTabThemeColor(context, t);
-            int textBoxBackgroundColor = t.getTextBoxBackgroundColor();
 
-            // In the modern design, the text box is always drawn in the Java layer rather
-            // than the compositor layer.
-            float textBoxAlpha = useModernDesign ? 0.f : t.getTextBoxAlpha();
+            // In the modern design, the text box is always drawn opaque in the compositor.
+            float textBoxAlpha = useModernDesign ? 1.f : t.getTextBoxAlpha();
 
             int closeButtonColor =
                     ColorUtils.getThemedAssetColor(toolbarBackgroundColor, t.isIncognito());
@@ -108,8 +110,8 @@ public class TabListSceneLayer extends SceneLayer {
                     LayoutTab.CLOSE_BUTTON_WIDTH_DP * dpToPx, t.getStaticToViewBlend(),
                     t.getBorderScale(), t.getSaturation(), t.getBrightness(), t.showToolbar(),
                     defaultThemeColor, toolbarBackgroundColor, closeButtonColor,
-                    t.anonymizeToolbar(), t.isTitleNeeded(), R.drawable.card_single,
-                    textBoxBackgroundColor, textBoxAlpha, t.getToolbarAlpha(),
+                    t.anonymizeToolbar(), t.isTitleNeeded(), urlBarBackgroundId,
+                    t.getTextBoxBackgroundColor(), textBoxAlpha, t.getToolbarAlpha(),
                     t.getToolbarYOffset() * dpToPx, t.getSideBorderScale(),
                     t.insetBorderVertical());
         }

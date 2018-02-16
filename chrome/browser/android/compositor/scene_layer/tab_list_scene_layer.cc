@@ -158,6 +158,9 @@ void TabListSceneLayer::PutTabLayer(
   // used for this frame.
   used_tints_.insert(toolbar_background_color);
   used_tints_.insert(close_button_color);
+  if (modern_design_enabled) {
+    used_tints_.insert(toolbar_textbox_background_color);
+  }
 
   DCHECK(layer);
   if (layer) {
