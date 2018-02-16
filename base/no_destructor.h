@@ -30,7 +30,7 @@ namespace base {
 //     std::string s(16);
 //     crypto::RandString(s.data(), s.size());
 //     return s;
-//   })());
+//   }());
 //   return *nonce;
 // }
 //
