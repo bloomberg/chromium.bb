@@ -166,7 +166,7 @@ class RenderWidgetLayerTreeFrameSink : public RenderWidgetCompositor {
     layer_tree_host()->SetVisible(true);
 
     base::TimeTicks some_time;
-    layer_tree_host()->Composite(some_time);
+    layer_tree_host()->Composite(some_time, true /* raster */);
   }
 
   void RequestNewLayerTreeFrameSink() override {

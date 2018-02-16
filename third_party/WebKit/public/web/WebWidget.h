@@ -50,6 +50,7 @@ namespace blink {
 
 class WebCompositeAndReadbackAsyncCallback;
 class WebCoalescedInputEvent;
+class WebLayerTreeView;
 class WebLayoutAndPaintAsyncCallback;
 class WebPagePopup;
 struct WebPoint;
@@ -95,6 +96,10 @@ class WebWidget {
   enum class LifecycleUpdate { kPrePaint, kAll };
   virtual void UpdateLifecycle(
       LifecycleUpdate requested_update = LifecycleUpdate::kAll) {}
+
+  // Performs the complete set of document lifecycle phases, including updates
+  // to the compositor state except rasterization.
+  virtual void UpdateAllLifecyclePhasesAndCompositeForTesting() {}
 
   // Called to paint the rectangular region within the WebWidget
   // onto the specified canvas at (viewPort.x,viewPort.y).

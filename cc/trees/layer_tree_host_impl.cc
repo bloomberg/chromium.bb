@@ -425,6 +425,14 @@ void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
     sync_tree()->InvalidateRegionForImages(images_to_invalidate);
   }
 
+  // Note that it is important to push the state for checkerboarded and animated
+  // images prior to PrepareTiles here when committing to the active tree. This
+  // is because new tiles on the active tree depend on tree specific state
+  // cached in these components, which must be pushed to active before preparing
+  // tiles for the updated active tree.
+  if (CommitToActiveTree())
+    ActivateStateForImages();
+
   // Start working on newly created tiles immediately if needed.
   // TODO(vmpstr): Investigate always having PrepareTiles issue
   // NotifyReadyToActivate, instead of handling it here.
@@ -2422,20 +2430,18 @@ void LayerTreeHostImpl::ActivateSyncTree() {
     // If we commit to the active tree directly, this is already done during
     // commit.
     ActivateAnimations();
+
+    // Update the state for images in ImageAnimationController and TileManager
+    // before dirtying tile priorities. Since these components cache tree
+    // specific state, these should be updated before DidModifyTilePriorities
+    // which can synchronously issue a PrepareTiles. Note that if we commit to
+    // the active tree directly, this is already done during commit.
+    ActivateStateForImages();
   } else {
     active_tree_->ProcessUIResourceRequestQueue();
   }
 
   UpdateViewportContainerSizes();
-
-  // Inform the ImageAnimationController and TileManager before dirtying tile
-  // priorities. Since these components cache tree specific state, these should
-  // be updated before DidModifyTilePriorities which can synchronously issue a
-  // PrepareTiles.
-  if (image_animation_controller_)
-    image_animation_controller_->DidActivate();
-  tile_manager_.DidActivateSyncTree();
-
   active_tree_->DidBecomeActive();
   client_->RenewTreePriority();
 
@@ -2444,7 +2450,6 @@ void LayerTreeHostImpl::ActivateSyncTree() {
   if (!active_tree_->picture_layers().empty())
     DidModifyTilePriorities();
 
-  tile_manager_.DidActivateSyncTree();
   client_->OnCanDrawStateChanged(CanDraw());
   client_->DidActivateSyncTree();
   if (!tree_activation_callback_.is_null())
@@ -2461,6 +2466,12 @@ void LayerTreeHostImpl::ActivateSyncTree() {
   // Activation can change the root scroll offset, so inform the synchronous
   // input handler.
   UpdateRootLayerStateForSynchronousInputHandler();
+}
+
+void LayerTreeHostImpl::ActivateStateForImages() {
+  if (image_animation_controller_)
+    image_animation_controller_->DidActivate();
+  tile_manager_.DidActivateSyncTree();
 }
 
 void LayerTreeHostImpl::SetVisible(bool visible) {

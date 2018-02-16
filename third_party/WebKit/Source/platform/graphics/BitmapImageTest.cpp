@@ -31,7 +31,9 @@
 #include "platform/graphics/BitmapImage.h"
 
 #include "base/test/simple_test_tick_clock.h"
+#include "cc/paint/skia_paint_canvas.h"
 #include "platform/SharedBuffer.h"
+#include "platform/geometry/FloatRect.h"
 #include "platform/graphics/BitmapImageMetrics.h"
 #include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/graphics/ImageObserver.h"
@@ -43,6 +45,7 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {
@@ -105,6 +108,83 @@ class BitmapImageTest : public ::testing::Test {
     if (load_all_frames) {
       for (size_t i = 0; i < frame_count; ++i)
         FrameAtIndex(i);
+    }
+  }
+
+  SkBitmap GenerateBitmap(size_t frame_index) {
+    CHECK_GE(image_->FrameCount(), frame_index);
+    for (size_t i = 0; i < frame_index; ++i)
+      AdvanceAnimation();
+    auto paint_image = image_->PaintImageForCurrentFrame();
+    CHECK(paint_image);
+    CHECK_EQ(paint_image.frame_index(), frame_index);
+
+    SkBitmap bitmap;
+    SkImageInfo info = SkImageInfo::MakeN32Premul(image_->Size().Width(),
+                                                  image_->Size().Height());
+    bitmap.allocPixels(info, image_->Size().Width() * 4);
+    bitmap.eraseColor(SK_AlphaTRANSPARENT);
+    cc::SkiaPaintCanvas canvas(bitmap);
+    canvas.drawImage(paint_image, 0u, 0u, nullptr);
+    return bitmap;
+  }
+
+  SkBitmap GenerateBitmapForImage(const char* file_name) {
+    scoped_refptr<SharedBuffer> image_data = ReadFile(file_name);
+    EXPECT_TRUE(image_data.get());
+    if (!image_data)
+      return SkBitmap();
+
+    auto image = BitmapImage::Create();
+    image->SetData(image_data, true);
+    auto paint_image = image->PaintImageForCurrentFrame();
+    CHECK(paint_image);
+    CHECK_EQ(paint_image.frame_index(), 0u);
+
+    SkBitmap bitmap;
+    SkImageInfo info = SkImageInfo::MakeN32Premul(image->Size().Width(),
+                                                  image->Size().Height());
+    bitmap.allocPixels(info, image->Size().Width() * 4);
+    bitmap.eraseColor(SK_AlphaTRANSPARENT);
+    cc::SkiaPaintCanvas canvas(bitmap);
+    canvas.drawImage(paint_image, 0u, 0u, nullptr);
+    return bitmap;
+  }
+
+  void VerifyBitmap(const SkBitmap& bitmap, SkColor color) {
+    ASSERT_GT(bitmap.width(), 0);
+    ASSERT_GT(bitmap.height(), 0);
+
+    for (int i = 0; i < bitmap.width(); ++i) {
+      for (int j = 0; j < bitmap.height(); ++j) {
+        auto bitmap_color = bitmap.getColor(i, j);
+        EXPECT_EQ(bitmap_color, color)
+            << "Bitmap: " << SkColorGetA(bitmap_color) << ","
+            << SkColorGetR(bitmap_color) << "," << SkColorGetG(bitmap_color)
+            << "," << SkColorGetB(bitmap_color)
+            << "Expected: " << SkColorGetA(color) << "," << SkColorGetR(color)
+            << "," << SkColorGetG(color) << "," << SkColorGetB(color);
+      }
+    }
+  }
+
+  void VerifyBitmap(const SkBitmap& bitmap, const SkBitmap& expected) {
+    ASSERT_GT(bitmap.width(), 0);
+    ASSERT_GT(bitmap.height(), 0);
+    ASSERT_EQ(bitmap.info(), expected.info());
+
+    for (int i = 0; i < bitmap.width(); ++i) {
+      for (int j = 0; j < bitmap.height(); ++j) {
+        auto bitmap_color = bitmap.getColor(i, j);
+        auto expected_color = expected.getColor(i, j);
+        EXPECT_EQ(bitmap_color, expected_color)
+            << "Bitmap: " << SkColorGetA(bitmap_color) << ","
+            << SkColorGetR(bitmap_color) << "," << SkColorGetG(bitmap_color)
+            << "," << SkColorGetB(bitmap_color)
+            << "Expected: " << SkColorGetA(expected_color) << ","
+            << SkColorGetR(expected_color) << "," << SkColorGetG(expected_color)
+            << "," << SkColorGetB(expected_color);
+      }
     }
   }
 
@@ -347,6 +427,120 @@ TEST_F(BitmapImageTest, ImageForDefaultFrame_SingleFrame) {
 
   // Default frame images for single-frame cases is the image itself.
   EXPECT_EQ(image_->ImageForDefaultFrame(), image_);
+}
+
+TEST_F(BitmapImageTest, GifDecoderFrame0) {
+  LoadImage("/LayoutTests/images/resources/green-red-blue-yellow-animated.gif");
+  auto bitmap = GenerateBitmap(0u);
+  SkColor color = SkColorSetARGB(255, 0, 128, 0);
+  VerifyBitmap(bitmap, color);
+}
+
+TEST_F(BitmapImageTest, GifDecoderFrame1) {
+  LoadImage("/LayoutTests/images/resources/green-red-blue-yellow-animated.gif");
+  auto bitmap = GenerateBitmap(1u);
+  VerifyBitmap(bitmap, SK_ColorRED);
+}
+
+TEST_F(BitmapImageTest, GifDecoderFrame2) {
+  LoadImage("/LayoutTests/images/resources/green-red-blue-yellow-animated.gif");
+  auto bitmap = GenerateBitmap(2u);
+  VerifyBitmap(bitmap, SK_ColorBLUE);
+}
+
+TEST_F(BitmapImageTest, GifDecoderFrame3) {
+  LoadImage("/LayoutTests/images/resources/green-red-blue-yellow-animated.gif");
+  auto bitmap = GenerateBitmap(3u);
+  VerifyBitmap(bitmap, SK_ColorYELLOW);
+}
+
+TEST_F(BitmapImageTest, APNGDecoder00) {
+  LoadImage("/LayoutTests/images/resources/apng00.png");
+  auto actual_bitmap = GenerateBitmap(0u);
+  auto expected_bitmap =
+      GenerateBitmapForImage("/LayoutTests/images/resources/apng00-ref.png");
+  VerifyBitmap(actual_bitmap, expected_bitmap);
+}
+
+// Jump to the final frame of each image.
+TEST_F(BitmapImageTest, APNGDecoder01) {
+  LoadImage("/LayoutTests/images/resources/apng01.png");
+  auto actual_bitmap = GenerateBitmap(9u);
+  auto expected_bitmap =
+      GenerateBitmapForImage("/LayoutTests/images/resources/apng01-ref.png");
+  VerifyBitmap(actual_bitmap, expected_bitmap);
+}
+
+TEST_F(BitmapImageTest, APNGDecoder02) {
+  LoadImage("/LayoutTests/images/resources/apng02.png");
+  auto actual_bitmap = GenerateBitmap(9u);
+  auto expected_bitmap =
+      GenerateBitmapForImage("/LayoutTests/images/resources/apng02-ref.png");
+  VerifyBitmap(actual_bitmap, expected_bitmap);
+}
+
+TEST_F(BitmapImageTest, APNGDecoder04) {
+  LoadImage("/LayoutTests/images/resources/apng04.png");
+  auto actual_bitmap = GenerateBitmap(12u);
+  auto expected_bitmap =
+      GenerateBitmapForImage("/LayoutTests/images/resources/apng04-ref.png");
+  VerifyBitmap(actual_bitmap, expected_bitmap);
+}
+
+TEST_F(BitmapImageTest, APNGDecoder08) {
+  LoadImage("/LayoutTests/images/resources/apng08.png");
+  auto actual_bitmap = GenerateBitmap(12u);
+  auto expected_bitmap =
+      GenerateBitmapForImage("/LayoutTests/images/resources/apng08-ref.png");
+  VerifyBitmap(actual_bitmap, expected_bitmap);
+}
+
+TEST_F(BitmapImageTest, APNGDecoder10) {
+  LoadImage("/LayoutTests/images/resources/apng10.png");
+  auto actual_bitmap = GenerateBitmap(3u);
+  auto expected_bitmap =
+      GenerateBitmapForImage("/LayoutTests/images/resources/apng10-ref.png");
+  VerifyBitmap(actual_bitmap, expected_bitmap);
+}
+
+TEST_F(BitmapImageTest, APNGDecoder11) {
+  LoadImage("/LayoutTests/images/resources/apng11.png");
+  auto actual_bitmap = GenerateBitmap(9u);
+  auto expected_bitmap =
+      GenerateBitmapForImage("/LayoutTests/images/resources/apng11-ref.png");
+  VerifyBitmap(actual_bitmap, expected_bitmap);
+}
+
+TEST_F(BitmapImageTest, APNGDecoder12) {
+  LoadImage("/LayoutTests/images/resources/apng12.png");
+  auto actual_bitmap = GenerateBitmap(9u);
+  auto expected_bitmap =
+      GenerateBitmapForImage("/LayoutTests/images/resources/apng12-ref.png");
+  VerifyBitmap(actual_bitmap, expected_bitmap);
+}
+
+TEST_F(BitmapImageTest, APNGDecoder14) {
+  LoadImage("/LayoutTests/images/resources/apng14.png");
+  auto actual_bitmap = GenerateBitmap(12u);
+  auto expected_bitmap =
+      GenerateBitmapForImage("/LayoutTests/images/resources/apng14-ref.png");
+  VerifyBitmap(actual_bitmap, expected_bitmap);
+}
+
+TEST_F(BitmapImageTest, APNGDecoder18) {
+  LoadImage("/LayoutTests/images/resources/apng18.png");
+  auto actual_bitmap = GenerateBitmap(12u);
+  auto expected_bitmap =
+      GenerateBitmapForImage("/LayoutTests/images/resources/apng18-ref.png");
+  VerifyBitmap(actual_bitmap, expected_bitmap);
+}
+
+TEST_F(BitmapImageTest, APNGDecoderDisposePrevious) {
+  LoadImage("/LayoutTests/images/resources/crbug722072.png");
+  auto actual_bitmap = GenerateBitmap(3u);
+  auto expected_bitmap =
+      GenerateBitmapForImage("/LayoutTests/images/resources/green.png");
+  VerifyBitmap(actual_bitmap, expected_bitmap);
 }
 
 class BitmapImageTestWithMockDecoder : public BitmapImageTest,
