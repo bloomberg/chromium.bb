@@ -21,8 +21,8 @@ int CdmContext::GetCdmId() const {
 }
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-bool CdmContext::GetDecryptContext() {
-  return false;
+CdmProxyContext* CdmContext::GetCdmProxyContext() {
+  return nullptr;
 }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 

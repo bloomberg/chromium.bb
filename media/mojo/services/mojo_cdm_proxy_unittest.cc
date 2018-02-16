@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/test_message_loop.h"
+#include "media/base/cdm_proxy_context.h"
 #include "media/base/gmock_callback_support.h"
 #include "media/base/mock_filters.h"
 #include "media/mojo/interfaces/cdm_proxy.mojom.h"
@@ -38,6 +39,8 @@ MATCHER_P(StatusEq, status, "") {
 }
 
 constexpr uint32_t kCryptoSessionId = 1010;
+
+class MockCdmProxyContext : public CdmProxyContext {};
 
 class MockCdmProxy : public media::CdmProxy, public media::CdmContext {
  public:
@@ -91,9 +94,12 @@ class MockCdmProxy : public media::CdmProxy, public media::CdmContext {
                     const std::vector<uint8_t>& key_id));
 
   // media::CdmContext implementation.
-  bool GetDecryptContext() override { return true; }
+  CdmProxyContext* GetCdmProxyContext() override {
+    return &mock_cdm_proxy_context_;
+  }
 
  private:
+  MockCdmProxyContext mock_cdm_proxy_context_;
   base::WeakPtrFactory<MockCdmProxy> weak_factory_;
 };
 
@@ -240,7 +246,9 @@ class MojoCdmProxyTest : public ::testing::Test {
     cdm_context_ = cdm_context_ref_->GetCdmContext();
   }
 
-  bool GetDecryptContext() { return cdm_context_->GetDecryptContext(); }
+  CdmProxyContext* GetCdmProxyContext() {
+    return cdm_context_->GetCdmProxyContext();
+  }
 
   void Destroy() {
     mojo_cdm_proxy_.reset();
@@ -348,26 +356,26 @@ TEST_F(MojoCdmProxyTest, ConnectionError_AfterInitialize) {
   CreateMediaCryptoSession(Status::kFail, false);
 }
 
-TEST_F(MojoCdmProxyTest, GetDecryptContext) {
+TEST_F(MojoCdmProxyTest, GetCdmProxyContext) {
   Initialize();
   SetCdm();
-  EXPECT_TRUE(GetDecryptContext());
+  EXPECT_TRUE(GetCdmProxyContext());
 }
 
-TEST_F(MojoCdmProxyTest, GetDecryptContext_AfterDestroy) {
+TEST_F(MojoCdmProxyTest, GetCdmProxyContext_AfterDestroy) {
   Initialize();
   SetCdm();
-  EXPECT_TRUE(GetDecryptContext());
+  EXPECT_TRUE(GetCdmProxyContext());
   Destroy();
-  EXPECT_FALSE(GetDecryptContext());
+  EXPECT_FALSE(GetCdmProxyContext());
 }
 
-TEST_F(MojoCdmProxyTest, GetDecryptContext_AfterConnectionError) {
+TEST_F(MojoCdmProxyTest, GetCdmProxyContext_AfterConnectionError) {
   Initialize();
   SetCdm();
-  EXPECT_TRUE(GetDecryptContext());
+  EXPECT_TRUE(GetCdmProxyContext());
   ForceConnectionError();
-  EXPECT_FALSE(GetDecryptContext());
+  EXPECT_FALSE(GetCdmProxyContext());
 }
 
 }  // namespace media

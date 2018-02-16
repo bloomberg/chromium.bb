@@ -38,13 +38,13 @@ class CdmProxyContextRef : public CdmContextRef, public CdmContext {
 
  private:
   // CdmContext implementation.
-  bool GetDecryptContext() final {
+  CdmProxyContext* GetCdmProxyContext() final {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
     if (!cdm_context_)
-      return false;
+      return nullptr;
 
-    return cdm_context_->GetDecryptContext();
+    return cdm_context_->GetCdmProxyContext();
   }
 
   base::WeakPtr<CdmContext> cdm_context_;

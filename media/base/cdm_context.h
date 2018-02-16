@@ -12,6 +12,7 @@
 
 namespace media {
 
+class CdmProxyContext;
 class Decryptor;
 
 // An interface representing the context that a media player needs from a
@@ -36,13 +37,11 @@ class MEDIA_EXPORT CdmContext {
   virtual int GetCdmId() const;
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  // Returns true if DecryptContext is supported and the DecryptContext is
-  // successfully populated. Returns false otherwise. The DecryptContext is only
-  // guaranteed to be valid before the caller returns. Typically this is
-  // supported by CdmProxy implementations.
-  // TODO(rkuroiwa): Finalize this method and populate the DecryptContext as an
-  // output parameter.
-  virtual bool GetDecryptContext() WARN_UNUSED_RESULT;
+  // Returns a CdmProxyContext. The default implementation returns a nullptr
+  // to indidate that there is no context.
+  // If CdmProxy is not used, then this returns a nullptr.
+  // The pointer is owned by the callee.
+  virtual CdmProxyContext* GetCdmProxyContext();
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
   // Returns a unique class identifier. Some subclasses override and use this
