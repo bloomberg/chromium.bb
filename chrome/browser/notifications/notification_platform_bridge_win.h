@@ -46,6 +46,8 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
   FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinUITest, GetDisplayed);
   FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinUITest, HandleEvent);
 
+  void PostTaskToTaskRunnerThread(base::OnceClosure closure) const;
+
   // Simulates a click/dismiss event. Only for use in testing.
   // Note: Ownership of |notification| and |args| is retained by the caller.
   void ForwardHandleEventForTesting(
@@ -58,6 +60,13 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
   void SetDisplayedNotificationsForTesting(
       std::vector<ABI::Windows::UI::Notifications::IToastNotification*>*
           notifications);
+
+  // Obtain an IToastNotification interface from a given XML (provided by the
+  // NotificationTemplateBuilder). For testing use only.
+  HRESULT GetToastNotificationForTesting(
+      const message_center::Notification& notification,
+      const NotificationTemplateBuilder& notification_template_builder,
+      ABI::Windows::UI::Notifications::IToastNotification** toast_notification);
 
   // Takes an |encoded| string as input and decodes it, returning the values in
   // the out parameters. |encoded| and |notifiation_id| must be provided. Other
@@ -76,15 +85,6 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
       const std::string& profile_id,
       bool incognito,
       const GURL& origin_url);
-
-  // Obtain an IToastNotification interface from a given XML (provided by the
-  // NotificationTemplateBuilder). For testing use only.
-  HRESULT GetToastNotificationForTesting(
-      const message_center::Notification& notification,
-      const NotificationTemplateBuilder& notification_template_builder,
-      ABI::Windows::UI::Notifications::IToastNotification** toast_notification);
-
-  void PostTaskToTaskRunnerThread(base::OnceClosure closure) const;
 
   scoped_refptr<NotificationPlatformBridgeWinImpl> impl_;
 

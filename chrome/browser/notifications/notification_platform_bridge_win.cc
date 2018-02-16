@@ -752,6 +752,12 @@ void NotificationPlatformBridgeWin::SetReadyCallback(
                      impl_, base::Passed(&callback)));
 }
 
+void NotificationPlatformBridgeWin::PostTaskToTaskRunnerThread(
+    base::OnceClosure closure) const {
+  bool success = task_runner_->PostTask(FROM_HERE, std::move(closure));
+  DCHECK(success);
+}
+
 void NotificationPlatformBridgeWin::ForwardHandleEventForTesting(
     NotificationCommon::Operation operation,
     winui::Notifications::IToastNotification* notification,
@@ -767,6 +773,15 @@ void NotificationPlatformBridgeWin::SetDisplayedNotificationsForTesting(
     std::vector<ABI::Windows::UI::Notifications::IToastNotification*>*
         notifications) {
   NotificationPlatformBridgeWinImpl::notifications_for_testing_ = notifications;
+}
+
+HRESULT NotificationPlatformBridgeWin::GetToastNotificationForTesting(
+    const message_center::Notification& notification,
+    const NotificationTemplateBuilder& notification_template_builder,
+    winui::Notifications::IToastNotification** toast_notification) {
+  return impl_->GetToastNotification(
+      notification, notification_template_builder, "UnusedValue",
+      false /* incognito */, toast_notification);
 }
 
 // static
@@ -825,19 +840,4 @@ std::string NotificationPlatformBridgeWin::EncodeTemplateId(
   return base::StringPrintf(
       "%d|%s|%d|%s|%s", static_cast<int>(notification_type), profile_id.c_str(),
       incognito, origin_url.spec().c_str(), notification_id.c_str());
-}
-
-void NotificationPlatformBridgeWin::PostTaskToTaskRunnerThread(
-    base::OnceClosure closure) const {
-  bool success = task_runner_->PostTask(FROM_HERE, std::move(closure));
-  DCHECK(success);
-}
-
-HRESULT NotificationPlatformBridgeWin::GetToastNotificationForTesting(
-    const message_center::Notification& notification,
-    const NotificationTemplateBuilder& notification_template_builder,
-    winui::Notifications::IToastNotification** toast_notification) {
-  return impl_->GetToastNotification(
-      notification, notification_template_builder, "UnusedValue",
-      false /* incognito */, toast_notification);
 }
