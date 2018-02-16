@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/main/main_presenting_view_controller.h"
 
 #import "base/logging.h"
+#include "base/mac/bundle_locations.h"
+#include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/main/bvc_container_view_controller.h"
 #import "ios/chrome/browser/ui/main/transitions/bvc_container_to_tab_switcher_animator.h"
 #import "ios/chrome/browser/ui/main/transitions/tab_switcher_to_bvc_container_animator.h"
@@ -19,6 +21,9 @@
 
 @property(nonatomic, strong) BVCContainerViewController* bvcContainer;
 
+// A copy of the launch screen view used to mask flicker at startup.
+@property(nonatomic, strong) UIView* launchScreen;
+
 // Redeclared as readwrite.
 @property(nonatomic, readwrite, weak) id<TabSwitcher> tabSwitcher;
 
@@ -28,10 +33,24 @@
 @synthesize animationsDisabledForTesting = _animationsDisabledForTesting;
 @synthesize tabSwitcher = _tabSwitcher;
 @synthesize bvcContainer = _bvcContainer;
+@synthesize launchScreen = _launchScreen;
 
 - (void)viewDidLoad {
   // Set a white background color to avoid flickers of black during startup.
   self.view.backgroundColor = [UIColor whiteColor];
+  // In some circumstances (such as when uploading a crash report), there may
+  // be no other view controller visible for a few seconds. To prevent a
+  // white screen from appearing in that case, the startup view is added to
+  // the view hierarchy until another view controller is added.
+  NSBundle* mainBundle = base::mac::FrameworkBundle();
+  NSArray* topObjects =
+      [mainBundle loadNibNamed:@"LaunchScreen" owner:self options:nil];
+  UIViewController* launchScreenController =
+      base::mac::ObjCCastStrict<UIViewController>([topObjects lastObject]);
+  self.launchScreen = launchScreenController.view;
+  self.launchScreen.userInteractionEnabled = NO;
+  self.launchScreen.frame = self.view.bounds;
+  [self.view addSubview:self.launchScreen];
 }
 
 - (UIViewController*)activeViewController {
