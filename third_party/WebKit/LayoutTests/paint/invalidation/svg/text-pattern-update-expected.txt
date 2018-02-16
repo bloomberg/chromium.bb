@@ -17,7 +17,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGText text",
+          "object": "InlineTextBox 'X'",
           "rect": [8, 8, 100, 100],
           "reason": "SVG resource change"
         }

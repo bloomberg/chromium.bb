@@ -33,9 +33,9 @@
       "bounds": [200, 200],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='target'",
+          "object": "LayoutBlockFlow DIV",
           "rect": [0, 0, 200, 200],
-          "reason": "subtree"
+          "reason": "disappeared"
         }
       ]
     },
@@ -67,11 +67,6 @@
           "object": "LayoutBlockFlow DIV id='target'",
           "rect": [0, 0, 200, 200],
           "reason": "full"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='target'",
-          "rect": [0, 0, 200, 200],
-          "reason": "subtree"
         }
       ]
     }
@@ -79,15 +74,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV id='target'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='target'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='target'",
-      "reason": "subtree"
+      "reason": "style change"
     }
   ]
 }

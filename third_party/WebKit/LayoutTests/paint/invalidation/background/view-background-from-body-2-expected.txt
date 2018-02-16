@@ -3,14 +3,7 @@
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
-      "backgroundColor": "#0000FF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 800, 600],
-          "reason": "style change"
-        }
-      ]
+      "backgroundColor": "#0000FF"
     },
     {
       "name": "Scrolling Layer",
@@ -24,7 +17,7 @@
       "backgroundColor": "#0000FF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow BODY",
+          "object": "LayoutBlockFlow HTML",
           "rect": [50, 50, 700, 500],
           "reason": "appeared"
         }

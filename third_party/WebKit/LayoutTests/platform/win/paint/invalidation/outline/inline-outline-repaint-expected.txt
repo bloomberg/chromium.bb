@@ -17,28 +17,49 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [8, 156, 100, 40],
-          "reason": "geometry"
-        },
-        {
           "object": "LayoutInline SPAN id='test'",
           "rect": [5, 153, 92, 45],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox ' '",
           "rect": [8, 156, 86, 39],
-          "reason": "full"
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'Lorem ipsum'",
+          "rect": [8, 156, 86, 39],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'dolor sit amet\u00A0'",
+          "rect": [8, 156, 86, 39],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox ' '",
+          "rect": [8, 156, 83, 39],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'Lorem ipsum'",
+          "rect": [8, 156, 83, 39],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'dolor\u00A0'",
+          "rect": [8, 156, 83, 39],
+          "reason": "appeared"
+        },
+        {
+          "object": "Caret",
+          "rect": [44, 176, 1, 19],
+          "reason": "appeared"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutText #text",
-      "reason": "disappeared"
-    },
     {
       "object": "LayoutBlockFlow DIV",
       "reason": "geometry"

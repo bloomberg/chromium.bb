@@ -17,41 +17,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='shiftMe'",
-          "rect": [0, 0, 1500, 237],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='shiftMe'",
-          "rect": [-250, 0, 1500, 237],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
-          "rect": [704, 0, 700, 237],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
-          "rect": [454, 0, 700, 237],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
-          "rect": [0, 0, 700, 237],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
-          "rect": [-250, 0, 700, 237],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [1250, 0, 250, 585],
-          "reason": "background on scrolling contents layer"
-        },
-        {
           "object": "LayoutImage IMG",
           "rect": [704, 0, 214, 232],
           "reason": "geometry"
@@ -62,22 +27,17 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutImage IMG",
+          "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
           "rect": [0, 0, 214, 232],
-          "reason": "geometry"
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutImage IMG",
-          "rect": [-250, 0, 214, 232],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox '\n'",
           "rect": [700, 217, 4, 19],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox '\n'",
           "rect": [450, 217, 4, 19],
           "reason": "geometry"
         }
@@ -87,7 +47,7 @@
   "objectPaintInvalidations": [
     {
       "object": "Scrolling Contents Layer",
-      "reason": "background on scrolling contents layer"
+      "reason": "incremental"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='shiftMe'",

@@ -8,53 +8,48 @@
       "paintInvalidations": [
         {
           "object": "LayoutView #document",
-          "rect": [0, 585, 785, 15],
-          "reason": "scroll control"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [8, 16, 784, 2072],
+          "rect": [0, 0, 2008, 2096],
           "reason": "style change"
         },
         {
-          "object": "LayoutBlockFlow P",
-          "rect": [8, 52, 784, 20],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow P",
-          "rect": [8, 16, 784, 20],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Bug 36461 - No vertical scrollbar after the CSS class change'",
           "rect": [124, 52, 383, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Bug 36461 - No vertical scrollbar after the CSS class change'",
+          "rect": [124, 52, 383, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'You should see both vertical and horizontal scrollbars.'",
           "rect": [8, 16, 341, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'You should see both vertical and horizontal scrollbars.'",
+          "rect": [8, 16, 341, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'This is the test for '",
           "rect": [8, 52, 116, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutView #document",
-          "rect": [785, 0, 15, 585],
-          "reason": "scroll control"
+          "object": "InlineTextBox 'This is the test for '",
+          "rect": [8, 52, 116, 19],
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutView #document",
-          "rect": [785, 585, 15, 15],
-          "reason": "scroll control"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox '.'",
           "rect": [507, 52, 4, 19],
-          "reason": "geometry"
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox '.'",
+          "rect": [507, 52, 4, 19],
+          "reason": "disappeared"
         }
       ]
     }
@@ -67,6 +62,10 @@
     {
       "object": "LayoutView #document",
       "reason": "geometry"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "style change"
     },
     {
       "object": "LayoutBlockFlow BODY",

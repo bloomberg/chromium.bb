@@ -12,12 +12,12 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow DIV id='div'",
-          "rect": [8, 84, 784, 20],
-          "reason": "appeared"
+          "object": "Caret",
+          "rect": [8, 84, 1, 19],
+          "reason": "caret"
         },
         {
-          "object": "LayoutBlockFlow DIV id='div'",
+          "object": "Caret",
           "rect": [8, 64, 1, 19],
           "reason": "caret"
         }

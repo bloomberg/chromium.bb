@@ -17,14 +17,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='square'",
+          "object": "LayoutBlockFlow HTML",
           "rect": [10, 10, 100, 100],
-          "reason": "subtree"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow DIV id='square'",
           "rect": [35, 35, 50, 50],
-          "reason": "subtree"
+          "reason": "appeared"
         }
       ]
     }
@@ -32,11 +32,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV id='square'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='square'",
-      "reason": "subtree"
+      "reason": "style change"
     }
   ]
 }

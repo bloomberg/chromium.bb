@@ -7,22 +7,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='inner-target'",
-          "rect": [8, 187, 784, 20],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='inner-target'",
-          "rect": [18, 18, 284, 20],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "LayoutBlockFlow HTML",
           "rect": [18, 18, 22, 19],
           "reason": "disappeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'abc'",
           "rect": [8, 187, 22, 19],
           "reason": "appeared"
         }
@@ -45,14 +35,6 @@
     {
       "object": "InlineTextBox 'abc'",
       "reason": "appeared"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='inner-target'",
-      "reason": "disappeared"
     }
   ]
 }

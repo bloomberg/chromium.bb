@@ -8,22 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV class='container'",
-          "rect": [0, 0, 600, 500],
+          "rect": [0, 0, 600, 250],
           "reason": "geometry"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 250, 600, 250],
-          "reason": "incremental"
         },
         {
           "object": "LayoutBlockFlow DIV class='parent'",
-          "rect": [0, 0, 6, 500],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
-          "rect": [0, 250, 6, 30],
+          "rect": [0, 0, 6, 250],
           "reason": "geometry"
         },
         {
@@ -67,13 +57,8 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV class='container'",
-          "rect": [0, 0, 600, 250],
+          "rect": [0, 0, 400, 250],
           "reason": "geometry"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [400, 0, 200, 250],
-          "reason": "incremental"
         },
         {
           "object": "LayoutBlockFlow DIV class='parent'",

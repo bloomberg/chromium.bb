@@ -17,17 +17,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGInlineText #text",
+          "object": "InlineTextBox 'Unknown'",
           "rect": [90, 115, 64, 19],
           "reason": "disappeared"
         },
         {
-          "object": "LayoutSVGText text id='status'",
-          "rect": [90, 115, 64, 19],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
+          "object": "InlineTextBox 'Passed'",
           "rect": [90, 115, 44, 19],
           "reason": "appeared"
         }
@@ -35,10 +30,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "disappeared"
-    },
     {
       "object": "LayoutSVGText text id='status'",
       "reason": "full"

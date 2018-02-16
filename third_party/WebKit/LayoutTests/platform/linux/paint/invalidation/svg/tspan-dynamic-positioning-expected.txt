@@ -17,34 +17,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGInlineText #text",
+          "object": "InlineTextBox 'This text should be at visible at 200,200'",
           "rect": [200, 185, 251, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutSVGTSpan tspan id='ts'",
-          "rect": [200, 185, 251, 19],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [200, 185, 251, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
+          "object": "InlineTextBox 'This text should be at visible at 200,200'",
           "rect": [20, 5, 251, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan id='ts'",
-          "rect": [20, 5, 251, 19],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [20, 5, 251, 19],
-          "reason": "geometry"
+          "reason": "disappeared"
         }
       ]
     }

@@ -7,19 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGContainer g",
+          "object": "InlineTextBox 'Hello'",
           "rect": [9, 13, 48, 28],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [9, 13, 48, 28],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGText text id='t'",
-          "rect": [9, 13, 48, 28],
-          "reason": "style change"
+          "reason": "appeared"
         }
       ]
     }

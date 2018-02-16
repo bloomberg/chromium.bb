@@ -3,14 +3,7 @@
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
-      "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 800, 600],
-          "reason": "style change"
-        }
-      ]
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "Scrolling Layer",
@@ -24,7 +17,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
+          "object": "Scrolling Contents Layer",
           "rect": [0, 0, 800, 600],
           "reason": "background on scrolling contents layer"
         },
@@ -48,6 +41,10 @@
     {
       "object": "LayoutBlockFlow HTML",
       "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV id='div'",

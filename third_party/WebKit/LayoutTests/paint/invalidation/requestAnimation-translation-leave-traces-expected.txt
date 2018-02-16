@@ -20,34 +20,34 @@ Tested locations: 1200,1500
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
+          "object": "Scrolling Contents Layer",
           "rect": [1300, 0, 300, 585],
-          "reason": "background on scrolling contents layer"
+          "reason": "incremental"
         },
         {
-          "object": "LayoutView #document",
+          "object": "Scrolling Contents Layer",
           "rect": [1000, 0, 300, 585],
-          "reason": "background on scrolling contents layer"
+          "reason": "incremental"
         },
         {
           "object": "LayoutBlockFlow DIV id='box'",
           "rect": [1500, 0, 100, 100],
-          "reason": "subtree"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow DIV id='box'",
           "rect": [1200, 0, 100, 100],
-          "reason": "subtree"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow DIV id='box'",
           "rect": [1200, 0, 100, 100],
-          "reason": "subtree"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow DIV id='box'",
           "rect": [900, 0, 100, 100],
-          "reason": "subtree"
+          "reason": "paint property change"
         }
       ]
     }
@@ -55,19 +55,11 @@ Tested locations: 1200,1500
   "objectPaintInvalidations": [
     {
       "object": "Scrolling Contents Layer",
-      "reason": "background on scrolling contents layer"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='box'",
-      "reason": "subtree"
+      "reason": "incremental"
     },
     {
       "object": "Scrolling Contents Layer",
-      "reason": "background on scrolling contents layer"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='box'",
-      "reason": "subtree"
+      "reason": "incremental"
     }
   ]
 }

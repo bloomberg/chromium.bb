@@ -13,12 +13,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='chunk3'",
           "rect": [400, 400, 100, 100],
-          "reason": "subtree"
+          "reason": "chunk reordered"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='chunk2'",
           "rect": [0, 0, 1, 1],
-          "reason": "subtree"
+          "reason": "chunk reordered"
         }
       ],
       "transform": 1
@@ -33,16 +33,6 @@
         [0, 0, 1, 0],
         [8, 8, 0, 1]
       ]
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='chunk2'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='chunk3'",
-      "reason": "subtree"
     }
   ]
 }

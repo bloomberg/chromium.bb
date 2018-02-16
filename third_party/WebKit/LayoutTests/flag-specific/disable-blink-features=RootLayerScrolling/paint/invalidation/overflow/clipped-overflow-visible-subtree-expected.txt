@@ -21,8 +21,8 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow (floating) DIV id='node'",
-      "reason": "disappeared"
+      "object": "LayoutBlockFlow (floating) DIV",
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (floating) DIV",

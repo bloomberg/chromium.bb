@@ -9,12 +9,12 @@
         {
           "object": "LayoutView #document",
           "rect": [0, 0, 800, 600],
-          "reason": "background"
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [0, 0, 800, 200],
-          "reason": "style change"
+          "reason": "disappeared"
         }
       ]
     }
@@ -22,7 +22,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutView #document",
-      "reason": "background"
+      "reason": "style change"
     },
     {
       "object": "LayoutBlockFlow HTML",

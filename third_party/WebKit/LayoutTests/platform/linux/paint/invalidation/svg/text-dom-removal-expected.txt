@@ -17,41 +17,19 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGContainer g id='objectsToRemove'",
-          "rect": [0, 0, 212, 129],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [50, 110, 162, 19],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [50, 110, 162, 19],
+          "object": "InlineTextBox 'This should not be visible'",
+          "rect": [49, 109, 164, 21],
           "reason": "disappeared"
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [0, 0, 20, 20],
+          "rect": [0, 0, 21, 21],
           "reason": "disappeared"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRect rect",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutSVGText text",
-      "reason": "disappeared"
-    },
     {
       "object": "LayoutSVGContainer g id='objectsToRemove'",
       "reason": "disappeared"

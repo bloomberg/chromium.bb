@@ -151,7 +151,7 @@ CASE 3, hovering over the inner div
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV class='smallbox'",
-          "rect": [19, 21, 85, 86],
+          "rect": [26, 28, 71, 72],
           "reason": "style change"
         }
       ]

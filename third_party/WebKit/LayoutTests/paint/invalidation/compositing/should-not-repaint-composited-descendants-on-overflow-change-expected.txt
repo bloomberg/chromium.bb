@@ -14,19 +14,7 @@
       "name": "Scrolling Contents Layer",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow DIV id='overflow2'",
-          "rect": [0, 200, 200, 200],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='overflow1'",
-          "rect": [0, 0, 200, 200],
-          "reason": "style change"
-        }
-      ]
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow DIV class='composited-child'",

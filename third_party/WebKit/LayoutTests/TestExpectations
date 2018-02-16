@@ -55,23 +55,39 @@ crbug.com/619427 [ Mac Linux ] virtual/spv2/fast/overflow/overflow-height-float-
 # --- End SPV2 Tests ---
 
 # Slimming paint V1.75
-crbug.com/771643 [ Mac Win Android ] virtual/spv175/ [ Skip ]
+crbug.com/771643 [ Mac Win Android ] virtual/disable-spv175/ [ Skip ]
+crbug.com/771643 [ Linux ] virtual/disable-spv175/paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html [ Pass Failure ]
 
-crbug.com/771643 virtual/spv175/compositing/overflow/nested-border-radius-clipping.html [ Failure ]
-crbug.com/807395 virtual/spv175/fast/multicol/mixed-opacity-test.html [ Failure ]
-crbug.com/807382 virtual/spv175/fast/multicol/multicol-svg.html [ Failure ]
+crbug.com/808325 virtual/gpu/fast/canvas/canvas-css-clip-path.html [ Failure ]
+
+# Subpixel differences
+crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]
+crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-image-5.html [ Failure ]
+# Difficult ancestor clip mask issue.
+crbug.com/771643 compositing/overflow/nested-border-radius-clipping.html [ Failure ]
+crbug.com/771643 virtual/prefer_compositing_to_lcd_text/compositing/overflow/nested-border-radius-clipping.html [ Failure ]
+
+crbug.com/771643 [ Mac ] virtual/gpu-rasterization/images/color-profile-filter.html [ Timeout Pass Failure ]
+crbug.com/805134 http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
+crbug.com/805134 virtual/threaded/http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
+
+crbug.com/711468 plugins/webview-plugin-nested-iframe-scroll.html [ Failure ]
+
+crbug.com/807395 fast/multicol/mixed-opacity-test.html [ Failure ]
+crbug.com/807382 fast/multicol/multicol-svg.html [ Failure ]
+# End of Slimming paint v1.75
 
 ########## Ref tests can't be rebaselined ##########
 crbug.com/504613 crbug.com/524248 [ Mac ] paint/images/image-backgrounds-not-antialiased.html [ Failure ]
 
 crbug.com/619103 paint/invalidation/background/background-resize-width.html [ Failure Pass ]
-crbug.com/619103 virtual/spv175/paint/invalidation/background/background-resize-width.html [ Skip ]
+crbug.com/619103 virtual/disable-spv175/paint/invalidation/background/background-resize-width.html [ Skip ]
 
 # Scanlines off by 1, but code path should be the same
 crbug.com/644433 virtual/gpu/fast/canvas/OffscreenCanvas-2d-pattern-in-worker.html [ Failure ]
 
 crbug.com/702006 paint/invalidation/compositing/scrolling-neg-z-index-descendants-should-cause-repaint.html [ Failure ]
-crbug.com/702006 virtual/spv175/paint/invalidation/compositing/scrolling-neg-z-index-descendants-should-cause-repaint.html [ Skip ]
+crbug.com/702006 virtual/disable-spv175/paint/invalidation/compositing/scrolling-neg-z-index-descendants-should-cause-repaint.html [ Skip ]
 
 crbug.com/784956 fast/history/frameset-repeated-name.html [ Pass Failure ]
 
@@ -79,11 +95,11 @@ crbug.com/784956 fast/history/frameset-repeated-name.html [ Pass Failure ]
 crbug.com/624233 virtual/gpu-rasterization/images/color-profile-background-clip-text.html [ Pass Failure ]
 
 crbug.com/653722 compositing/reflections/nested-reflection-anchor-point.html [ Pass Failure ]
-crbug.com/653722 virtual/spv175/compositing/reflections/nested-reflection-anchor-point.html [ Skip ]
+crbug.com/653722 virtual/disable-spv175/compositing/reflections/nested-reflection-anchor-point.html [ Skip ]
 crbug.com/653722 compositing/reflections/nested-reflection-animated.html [ Pass Failure ]
-crbug.com/653722 virtual/spv175/compositing/reflections/nested-reflection-animated.html [ Skip ]
+crbug.com/653722 virtual/disable-spv175/compositing/reflections/nested-reflection-animated.html [ Skip ]
 crbug.com/653722 compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
-crbug.com/653722 virtual/spv175/compositing/reflections/nested-reflection-transition.html [ Skip ]
+crbug.com/653722 virtual/disable-spv175/compositing/reflections/nested-reflection-transition.html [ Skip ]
 
 crbug.com/664852 virtual/gpu/fast/canvas/canvas-createImageBitmap-webgl.html [ Pass Failure ]
 crbug.com/664852 virtual/gpu/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Pass Failure ]
@@ -92,7 +108,7 @@ crbug.com/664852 virtual/gpu/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Pas
 # This is a missing event and increasing the timeout or using run-after-layout-and-paint doesn't
 # seem to fix it.
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
-crbug.com/309675 virtual/spv175/compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Skip ]
+crbug.com/309675 virtual/disable-spv175/compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Skip ]
 
 # The failure in the next line is due to virtual/gpu bots using osmesa
 # Under osmesa, skia's filter quality doesn't work correctly. This test is expected to pass
@@ -101,7 +117,7 @@ crbug.com/549742 [ Mac ] virtual/gpu/fast/canvas/canvas-drawImage-video-imageSmo
 
 # SwiftShader Failures
 crbug.com/726075 [ Win Linux ] compositing/3d-cube.html [ Failure ]
-crbug.com/726075 [ Win Linux ] virtual/spv175/compositing/3d-cube.html [ Skip ]
+crbug.com/726075 [ Win Linux ] virtual/disable-spv175/compositing/3d-cube.html [ Skip ]
 crbug.com/726075 [ Linux ] shapedetection/detection-HTMLVideoElement.html [ Timeout ]
 
 # Fails consistently on WebKit Mac10.10, WebKit Mac10.11 (retina) and mac10.10_blink_rel tryserver, but not on other Mac bots.
@@ -125,11 +141,10 @@ crbug.com/730267 virtual/gpu-rasterization/images/color-profile-layer.html [ Pas
 crbug.com/730267 virtual/gpu-rasterization/images/color-profile-layer-filter.html [ Pass Timeout Failure ]
 
 crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
-crbug.com/736052 virtual/spv175/compositing/overflow/composited-scroll-with-fractional-translation.html [ Skip ]
+crbug.com/736052 virtual/disable-spv175/compositing/overflow/composited-scroll-with-fractional-translation.html [ Skip ]
 crbug.com/736052 virtual/prefer_compositing_to_lcd_text/compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
 
-# Will be fixed in slimming-paint-v175.
-crbug.com/798638 fragmentation/repeating-thead-tfoot-different-fragment-height.html [ Failure ]
+crbug.com/798638 virtual/disable-spv175/fragmentation/repeating-thead-tfoot-different-fragment-height.html [ Failure ]
 # ====== Paint team owned tests to here ======
 
 # ====== Layout team owned tests from here ======
@@ -1072,8 +1087,8 @@ crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
 # Printing Layout broken in these tests.
 crbug.com/377696 printing/setPrinting.html [ Skip ]
 crbug.com/377696 printing/width-overflow.html [ Skip ]
-crbug.com/377696 virtual/spv175/printing/setPrinting.html [ Skip ]
-crbug.com/377696 virtual/spv175/printing/width-overflow.html [ Skip ]
+crbug.com/377696 virtual/disable-spv175/printing/setPrinting.html [ Skip ]
+crbug.com/377696 virtual/disable-spv175/printing/width-overflow.html [ Skip ]
 
 crbug.com/658305 css3/filters/buffer-offset.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-all-on-background-hw.html [ Failure Pass ]
@@ -1119,7 +1134,7 @@ crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 
 crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ Failure ]
-crbug.com/467477 virtual/spv175/fast/multicol/vertical-rl/nested-columns.html [ Skip ]
+crbug.com/467477 virtual/disable-spv175/fast/multicol/vertical-rl/nested-columns.html [ Skip ]
 
 crbug.com/674225 [ Mac ] fast/replaced/input-radio-height-inside-auto-container.html [ Failure ]
 
@@ -1164,7 +1179,7 @@ crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scro
 
 crbug.com/599670 [ Win ] http/tests/devtools/resource-parameters-ipv6.js [ Pass Failure ]
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Failure ]
-crbug.com/472330 virtual/spv175/fast/borders/border-image-outset-split-inline-vertical-lr.html [ Skip ]
+crbug.com/472330 virtual/disable-spv175/fast/borders/border-image-outset-split-inline-vertical-lr.html [ Skip ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
 
@@ -3019,7 +3034,7 @@ crbug.com/773122 [ Win7 ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [
 
 # Sheriff failures 2017-10-13
 crbug.com/774437 paint/invalidation/selection/selection-partial-invalidation-between-blocks.html [ Pass Failure ]
-crbug.com/774437 virtual/spv175/paint/invalidation/selection/selection-partial-invalidation-between-blocks.html [ Skip ]
+crbug.com/774437 virtual/disable-spv175/paint/invalidation/selection/selection-partial-invalidation-between-blocks.html [ Skip ]
 crbug.com/774463 [ Win7 Debug ] fast/events/autoscroll-should-not-stop-on-keypress.html [ Failure Pass ]
 crbug.com/774463 [ Win7 Debug ] virtual/mouseevent_fractional/fast/events/autoscroll-should-not-stop-on-keypress.html [ Failure Pass ]
 crbug.com/774688 [ Mac ] fast/spatial-navigation/snav-container-white-space.html [ Pass Failure ]
@@ -3196,7 +3211,7 @@ crbug.com/809152 netinfo/estimate-multiple-frames.html [ Pass Failure ]
 
 # Sheriff failures 2018-02-07
 crbug.com/810009 [ Linux ] paint/invalidation/image/canvas-composite-repaint-by-all-imagesource.html [ Pass Timeout ]
-crbug.com/810009 [ Linux ] virtual/spv175/paint/invalidation/image/canvas-composite-repaint-by-all-imagesource.html [ Pass Timeout ]
+crbug.com/810009 [ Linux ] virtual/disable-spv175/paint/invalidation/image/canvas-composite-repaint-by-all-imagesource.html [ Pass Timeout ]
 
 # Sheriff failures 2018-02-15
 crbug.com/812417 [ Win7 ] http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Failure ]
@@ -3226,7 +3241,6 @@ crbug.com/417782 fast/overflow/scrollRevealButton.html [ Failure ]
 crbug.com/417782 [ Android ] fast/scrolling/scrollable-area-overflow-auto-display-none.html [ Failure Pass ]
 crbug.com/417782 [ Android ] fast/scrolling/scrollable-area-overflow-not-set.html [ Failure Crash Pass ]
 crbug.com/417782 [ Win ] http/tests/devtools/editor/text-editor-formatter.js [ Timeout ]
-crbug.com/417782 http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
 crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.js [ Timeout ]
 crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Timeout ]
 crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Timeout ]
@@ -3237,16 +3251,16 @@ crbug.com/417782 inspector-protocol/dom-snapshot/dom-snapshot-getSnapshot.js [ F
 crbug.com/417782 [ Mac ] paint/invalidation/forms/checkbox-focus-by-mouse-then-keydown.html [ Failure Pass ]
 crbug.com/417782 [ Mac ] paint/invalidation/forms/radio-focus-by-mouse-then-keydown.html [ Failure Pass ]
 crbug.com/417782 paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Crash ]
+crbug.com/417782 virtual/disable-spv175/paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Skip ]
 crbug.com/417782 [ Linux ] paint/overflow/fixed-background-scroll-window.html [ Failure ]
+crbug.com/417782 [ Linux ] virtual/disable-spv175/paint/overflow/fixed-background-scroll-window.html [ Skip ]
 crbug.com/417782 [ Linux ] virtual/android/fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure ]
 crbug.com/417782 [ Linux ] virtual/android/fullscreen/full-screen-iframe-allowed-video.html [ Failure ]
 crbug.com/417782 [ Linux ] virtual/android/fullscreen/video-controls-timeline.html [ Failure ]
 crbug.com/417782 [ Linux ] virtual/android/fullscreen/video-scrolled-iframe.html [ Failure ]
 crbug.com/417782 virtual/prefer_compositing_to_lcd_text/compositing/overflow/tiled-mask.html [ Failure ]
 crbug.com/417782 virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-iframes.html [ Failure ]
-crbug.com/417782 virtual/spv175/paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Crash ]
 crbug.com/417782 virtual/threaded/compositing/visibility/visibility-image-layers-dynamic.html [ Failure ]
-crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
 crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.js [ Timeout ]
 crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Timeout ]
 crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Timeout ]

@@ -7,48 +7,8 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutMultiColumnSet (anonymous)",
-          "rect": [8, 8, 630, 20],
-          "reason": "geometry"
-        },
-        {
           "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [488, -52, 150, 80],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [328, -32, 150, 80],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [168, -12, 150, 80],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [8, 68, 150, 20],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [488, 8, 80, 20],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [328, 28, 80, 20],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [168, 48, 80, 20],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 68, 80, 20],
+          "rect": [483, 8, 85, 80],
           "reason": "appeared"
         }
       ]
@@ -57,11 +17,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutMultiColumnFlowThread (anonymous)",
-      "reason": "incremental"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "incremental"
+      "reason": "geometry"
     },
     {
       "object": "LayoutMultiColumnFlowThread (anonymous)",

@@ -14,7 +14,7 @@ layer at (0,0) size 785x626 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutBlockFlow {DIV} at (266,0) size 262x562 [border: (1px solid #000000)]
           LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
-layer at (9,53) size 260x560 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 transparent
+layer at (9,53) size 260x560 backgroundClip at (9,53) size 260x547 clip at (9,53) size 260x547 transparent
   LayoutImage {IMG} at (1,1) size 260x560
-layer at (275,53) size 260x560 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 transparent
+layer at (275,53) size 260x560 backgroundClip at (275,53) size 260x547 clip at (275,53) size 260x547 transparent
   LayoutImage {IMG} at (1,1) size 260x560

@@ -19,7 +19,12 @@
         {
           "object": "LayoutSVGRect rect",
           "rect": [8, 8, 200, 200],
-          "reason": "subtree"
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [8, 8, 100, 100],
+          "reason": "disappeared"
         }
       ]
     }
@@ -27,7 +32,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGRect rect",
-      "reason": "subtree"
+      "reason": "full"
     }
   ]
 }

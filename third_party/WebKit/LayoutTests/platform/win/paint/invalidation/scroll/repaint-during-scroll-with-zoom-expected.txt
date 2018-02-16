@@ -22,22 +22,22 @@
           "reason": "full"
         },
         {
-          "object": "LayoutBlockFlow BODY",
+          "object": "LayoutBlockFlow HTML",
           "rect": [3, 65, 235, 235],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
-          "object": "LayoutView #document",
+          "object": "HorizontalScrollbar",
           "rect": [3, 300, 235, 15],
           "reason": "scroll control"
         },
         {
-          "object": "LayoutText #text",
+          "object": "LayoutBlockFlow HTML",
           "rect": [3, 65, 52, 17],
           "reason": "appeared"
         },
         {
-          "object": "LayoutView #document",
+          "object": "VerticalScrollbar",
           "rect": [238, 65, 15, 235],
           "reason": "scroll control"
         }
@@ -56,26 +56,6 @@
     {
       "object": "VerticalScrollbar",
       "reason": "scroll control"
-    },
-    {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "appeared"
-    },
-    {
-      "object": "InlineTextBox 'scroll me'",
-      "reason": "appeared"
     }
   ]
 }

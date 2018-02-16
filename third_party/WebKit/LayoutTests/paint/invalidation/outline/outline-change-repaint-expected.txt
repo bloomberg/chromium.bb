@@ -18,7 +18,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='test'",
-          "rect": [-10, -10, 120, 120],
+          "rect": [0, 0, 110, 110],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='test'",
+          "rect": [0, 0, 110, 110],
           "reason": "style change"
         }
       ]

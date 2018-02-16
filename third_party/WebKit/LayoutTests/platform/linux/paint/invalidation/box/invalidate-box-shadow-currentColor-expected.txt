@@ -17,12 +17,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutInline SPAN id='target'",
+          "object": "InlineFlowBox",
           "rect": [8, 8, 29, 24],
           "reason": "style change"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Text'",
           "rect": [8, 8, 29, 19],
           "reason": "style change"
         }

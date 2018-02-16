@@ -23,7 +23,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target' class='green'",
-          "rect": [-1, 0, 15, 14],
+          "rect": [0, 0, 14, 14],
           "reason": "style change"
         }
       ],

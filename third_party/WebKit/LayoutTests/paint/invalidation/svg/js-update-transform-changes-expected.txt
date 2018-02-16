@@ -17,9 +17,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGPath polygon id='polygon'",
+          "object": "LayoutSVGRoot svg",
           "rect": [253, 208, 184, 129],
-          "reason": "subtree"
+          "reason": "appeared"
         }
       ]
     }
@@ -27,7 +27,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGPath polygon id='polygon'",
-      "reason": "subtree"
+      "reason": "full"
     }
   ]
 }

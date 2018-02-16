@@ -17,34 +17,24 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow P",
-          "rect": [8, 136, 784, 68],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Hello'",
           "rect": [8, 184, 32, 19],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Hello'",
           "rect": [8, 156, 32, 19],
           "reason": "geometry"
         },
         {
-          "object": "LayoutInline SPAN id='d'",
+          "object": "InlineTextBox '\u00A0'",
           "rect": [8, 150, 4, 19],
-          "reason": "style change"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [8, 150, 4, 19],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox '\u00A0'",
           "rect": [8, 136, 4, 19],
-          "reason": "style change"
+          "reason": "disappeared"
         }
       ]
     }

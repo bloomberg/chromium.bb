@@ -7,22 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutTable (positioned) TABLE",
-          "rect": [0, 0, 350, 350],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutTableSection TBODY",
-          "rect": [0, 0, 350, 350],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutTableCell (anonymous)",
-          "rect": [200, 200, 100, 100],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutTableCell TD id='moveMe' class='fixed'",
+          "object": "LayoutTableCell TD id='moveMe'",
           "rect": [200, 200, 100, 100],
           "reason": "disappeared"
         },
@@ -47,10 +32,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutTableCell TD id='moveMe' class='fixed'",
-      "reason": "disappeared"
-    },
     {
       "object": "LayoutTable (positioned) TABLE",
       "reason": "style change"

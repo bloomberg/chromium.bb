@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [15, 60, 100, 100],
-          "reason": "background"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutBlockFlow DIV id='target'",
+          "object": "LayoutBlockFlow DIV",
           "rect": [15, 60, 100, 100],
-          "reason": "appeared"
+          "reason": "disappeared"
         }
       ]
     }

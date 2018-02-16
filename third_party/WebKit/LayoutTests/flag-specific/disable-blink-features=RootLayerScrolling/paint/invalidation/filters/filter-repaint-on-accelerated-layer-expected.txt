@@ -16,13 +16,6 @@
       "bounds": [100, 200],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow DIV id='resize' class='accelerated'",
-          "rect": [100, 0, 100, 200],
-          "reason": "incremental"
-        }
-      ],
       "transform": 1
     }
   ],

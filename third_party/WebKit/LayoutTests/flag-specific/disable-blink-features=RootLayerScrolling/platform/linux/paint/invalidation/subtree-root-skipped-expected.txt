@@ -7,14 +7,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [10, 11, 150, 16],
-          "reason": "geometry"
+          "object": "InlineTextBox 'PASS'",
+          "rect": [10, 11, 35, 16],
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [10, 11, 35, 16],
-          "reason": "full"
+          "object": "InlineTextBox 'FAIL'",
+          "rect": [10, 11, 28, 16],
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='div'",

@@ -17,24 +17,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGInlineText #text",
+          "object": "InlineTextBox 'Passes, if text is at 200x20'",
           "rect": [208, 13, 166, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutSVGText text id='ttt'",
-          "rect": [208, 13, 166, 19],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
+          "object": "InlineTextBox 'Passes, if text is at 200x20'",
           "rect": [18, 193, 166, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGText text id='ttt'",
-          "rect": [18, 193, 166, 19],
-          "reason": "full"
+          "reason": "disappeared"
         }
       ]
     }

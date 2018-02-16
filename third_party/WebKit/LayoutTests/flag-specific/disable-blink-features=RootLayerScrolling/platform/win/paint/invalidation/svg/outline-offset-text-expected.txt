@@ -7,9 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGInlineText #text",
+          "object": "InlineTextBox 'Foo'",
           "rect": [103, 26, 160, 113],
-          "reason": "geometry"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGText text",
@@ -17,9 +17,9 @@
           "reason": "full"
         },
         {
-          "object": "LayoutSVGInlineText #text",
+          "object": "InlineTextBox 'Foo'",
           "rect": [63, 26, 160, 113],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGText text",

@@ -17,16 +17,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (anonymous)",
-          "rect": [11, 366, 778, 28],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (anonymous)",
-          "rect": [11, 360, 778, 28],
-          "reason": "geometry"
-        },
-        {
           "object": "LayoutBlockFlow DIV class='outer'",
           "rect": [61, 537, 62, 37],
           "reason": "geometry"
@@ -437,292 +427,142 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [67, 255, 32, 10],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [67, 249, 32, 10],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [66, 297, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [66, 291, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [63, 21, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [63, 15, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [59, 543, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [59, 537, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [59, 504, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [59, 498, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [59, 465, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [59, 459, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [59, 426, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [59, 420, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [59, 255, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [59, 249, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [59, 216, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [59, 210, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [59, 177, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [59, 171, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [59, 138, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [59, 132, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [58, 375, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [58, 369, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [58, 336, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [58, 330, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [57, 99, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [57, 93, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [57, 60, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN",
-          "rect": [57, 54, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [66, 298, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [66, 292, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [63, 22, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [63, 16, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [59, 544, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [59, 538, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [59, 505, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [59, 499, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [59, 466, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [59, 460, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [59, 427, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [59, 421, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [59, 256, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [59, 250, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [59, 217, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [59, 211, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [59, 178, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [59, 172, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [59, 139, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [59, 133, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [58, 376, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [58, 370, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [58, 337, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [58, 331, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [57, 100, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [57, 94, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [57, 61, 16, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'x'",
           "rect": [57, 55, 16, 18],
           "reason": "geometry"
         }

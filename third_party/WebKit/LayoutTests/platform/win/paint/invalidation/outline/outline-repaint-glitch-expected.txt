@@ -23,6 +23,16 @@
         },
         {
           "object": "LayoutBlockFlow DIV",
+          "rect": [15, 391, 208, 68],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [15, 229, 208, 68],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
           "rect": [15, 229, 208, 68],
           "reason": "geometry"
         },

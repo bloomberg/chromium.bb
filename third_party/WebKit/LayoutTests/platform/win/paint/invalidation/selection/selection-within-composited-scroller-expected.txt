@@ -36,7 +36,7 @@
       "backgroundColor": "#D3D3D3",
       "paintInvalidations": [
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'test'",
           "rect": [0, 610, 21, 19],
           "reason": "selection"
         }

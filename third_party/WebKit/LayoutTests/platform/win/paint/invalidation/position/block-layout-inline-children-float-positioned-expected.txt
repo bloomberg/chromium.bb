@@ -18,21 +18,11 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) SPAN",
-          "rect": [162, 37, 278, 20],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutText #text",
           "rect": [162, 37, 278, 19],
           "reason": "appeared"
         },
         {
-          "object": "LayoutBlockFlow (floating) SPAN",
-          "rect": [324, 37, 277, 20],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "LayoutBlockFlow HTML",
           "rect": [324, 37, 277, 19],
           "reason": "appeared"
         }

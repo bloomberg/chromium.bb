@@ -7,24 +7,19 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutIFrame (positioned) IFRAME",
-          "rect": [0, 200, 500, 200],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutView #document",
           "rect": [0, 200, 500, 200],
           "reason": "incremental"
         },
         {
-          "object": "LayoutBlockFlow H3",
-          "rect": [8, 300, 400, 23],
+          "object": "LayoutBlockFlow HTML",
+          "rect": [8, 300, 60, 22],
           "reason": "appeared"
         },
         {
           "object": "LayoutView #document",
           "rect": [485, 0, 15, 200],
-          "reason": "scroll control"
+          "reason": "disappeared"
         }
       ]
     }
@@ -45,14 +40,6 @@
     {
       "object": "LayoutView #document",
       "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow H3",
-      "reason": "appeared"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "appeared"
     }
   ]
 }

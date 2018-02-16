@@ -18,13 +18,13 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV class='item'",
-          "rect": [0, 153, 100, 199],
-          "reason": "incremental"
+          "rect": [100, 52, 100, 300],
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='item'",
-          "rect": [100, 203, 100, 149],
-          "reason": "incremental"
+          "rect": [0, 52, 100, 300],
+          "reason": "geometry"
         }
       ]
     }
@@ -32,11 +32,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV class='item'",
-      "reason": "incremental"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV class='item'",
-      "reason": "incremental"
+      "reason": "geometry"
     }
   ]
 }

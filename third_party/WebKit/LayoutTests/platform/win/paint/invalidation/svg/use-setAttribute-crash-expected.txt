@@ -17,52 +17,19 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow body",
-          "rect": [8, 8, 784, 205],
-          "reason": "geometry"
-        },
-        {
           "object": "LayoutSVGEllipse svg:circle id='circle'",
-          "rect": [32, 32, 52, 52],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGContainer svg:use id='use'",
-          "rect": [33, 33, 50, 50],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGRoot svg:svg id='svg'",
-          "rect": [33, 33, 50, 50],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='symbol'",
-          "rect": [33, 33, 50, 50],
+          "rect": [27, 27, 62, 62],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGEllipse svg:circle id='circle'",
-          "rect": [52, 52, 12, 12],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='symbol'",
-          "rect": [53, 53, 10, 10],
+          "rect": [51, 51, 14, 14],
           "reason": "disappeared"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGEllipse svg:circle id='circle'",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutSVGViewportContainer svg id='symbol'",
-      "reason": "disappeared"
-    },
     {
       "object": "LayoutBlockFlow body",
       "reason": "geometry"

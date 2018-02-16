@@ -8,8 +8,8 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='div'",
-          "rect": [310, 100, 210, 220],
-          "reason": "incremental"
+          "rect": [100, 100, 420, 220],
+          "reason": "geometry"
         }
       ]
     }
@@ -17,7 +17,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='div'",
-      "reason": "incremental"
+      "reason": "geometry"
     }
   ]
 }

@@ -7,24 +7,28 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGRect rect",
-          "rect": [0, 0, 576, 432],
+          "object": "LayoutView #document",
+          "rect": [0, 0, 800, 600],
           "reason": "style change"
         },
         {
           "object": "LayoutSVGRoot svg",
-          "rect": [0, 0, 576, 432],
-          "reason": "style change"
+          "rect": [0, 0, 577, 433],
+          "reason": "appeared"
         },
         {
-          "object": "LayoutSVGRect rect",
-          "rect": [0, 0, 480, 360],
-          "reason": "style change"
+          "object": "LayoutSVGRoot svg",
+          "rect": [0, 0, 481, 361],
+          "reason": "disappeared"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "style change"
+    },
     {
       "object": "LayoutSVGRoot svg",
       "reason": "style change"

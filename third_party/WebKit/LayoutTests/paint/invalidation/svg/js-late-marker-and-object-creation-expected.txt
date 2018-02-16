@@ -22,13 +22,8 @@
           "reason": "full"
         },
         {
-          "object": "LayoutSVGPath path",
+          "object": "LayoutSVGRoot svg id='svg-root'",
           "rect": [189, 197, 139, 139],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGContainer g id='content'",
-          "rect": [190, 198, 137, 137],
           "reason": "appeared"
         }
       ]

@@ -20,78 +20,44 @@ Hi!
         {
           "object": "LayoutBlockFlow (positioned) DIV id='abs'",
           "rect": [425, 980, 360, 90],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='abs'",
           "rect": [425, 980, 360, 90],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='abs'",
           "rect": [425, 480, 360, 90],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='abs'",
           "rect": [425, 480, 360, 90],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
-          "object": "LayoutText #text",
+          "object": "LayoutBlockFlow (positioned) DIV id='abs'",
           "rect": [425, 980, 19, 19],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
-          "object": "LayoutText #text",
+          "object": "LayoutBlockFlow (positioned) DIV id='abs'",
           "rect": [425, 980, 19, 19],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
-          "object": "LayoutText #text",
+          "object": "LayoutBlockFlow (positioned) DIV id='abs'",
           "rect": [425, 480, 19, 19],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
-          "object": "LayoutText #text",
+          "object": "LayoutBlockFlow (positioned) DIV id='abs'",
           "rect": [425, 480, 19, 19],
-          "reason": "geometry"
+          "reason": "paint property change"
         }
       ]
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='abs'",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'Hi!'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='abs'",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'Hi!'",
-      "reason": "geometry"
     }
   ]
 }

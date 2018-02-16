@@ -18,13 +18,13 @@
       "paintInvalidations": [
         {
           "object": "LayoutTableRow TR",
-          "rect": [0, 292, 106, 236],
+          "rect": [0, 52, 106, 238],
           "reason": "geometry"
         },
         {
           "object": "LayoutTableRow TR",
-          "rect": [0, 100, 106, 190],
-          "reason": "incremental"
+          "rect": [0, 292, 106, 236],
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableRow TR",
@@ -32,39 +32,24 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutTableCell TD",
-          "rect": [2, 52, 102, 238],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [2, 292, 102, 236],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [2, 102, 102, 46],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'ROW2'",
           "rect": [3, 400, 45, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'ROW1'",
           "rect": [3, 161, 45, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'ROW2'",
           "rect": [3, 115, 45, 19],
-          "reason": "geometry"
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'ROW1'",
           "rect": [3, 66, 45, 19],
-          "reason": "geometry"
+          "reason": "disappeared"
         }
       ]
     }

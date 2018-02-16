@@ -18,14 +18,9 @@
           "reason": "full"
         },
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [1, 601, 100, 100],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
+          "object": "LayoutBlockFlow DIV id='scroller'",
           "rect": [1, 201, 100, 100],
-          "reason": "geometry"
+          "reason": "appeared"
         }
       ]
     }
@@ -34,14 +29,6 @@
     {
       "object": "LayoutBlockFlow DIV id='scroller'",
       "reason": "full"
-    },
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "geometry"
     }
   ]
 }

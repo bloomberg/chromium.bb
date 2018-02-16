@@ -10,11 +10,6 @@
           "object": "LayoutView #document",
           "rect": [0, 0, 800, 600],
           "reason": "background"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [0, 0, 800, 200],
-          "reason": "geometry"
         }
       ]
     }

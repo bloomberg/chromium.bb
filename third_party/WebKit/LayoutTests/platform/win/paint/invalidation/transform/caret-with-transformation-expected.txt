@@ -17,12 +17,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='div'",
+          "object": "Caret",
           "rect": [42, 36, 11, 18],
           "reason": "caret"
         },
         {
-          "object": "LayoutBlockFlow DIV id='div'",
+          "object": "Caret",
           "rect": [324, 199, 11, 17],
           "reason": "caret"
         }

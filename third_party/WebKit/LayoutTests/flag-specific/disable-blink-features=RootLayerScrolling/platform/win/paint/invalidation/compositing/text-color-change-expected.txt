@@ -7,7 +7,122 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox '\n'",
+          "rect": [8, 61, 48, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [8, 61, 48, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [8, 61, 48, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [8, 61, 48, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [8, 61, 48, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [8, 61, 48, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [8, 61, 48, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [8, 61, 48, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [8, 61, 48, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [8, 61, 48, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [8, 61, 48, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [8, 61, 48, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '  Text'",
+          "rect": [8, 61, 48, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '  Text'",
+          "rect": [8, 61, 48, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '  Text'",
+          "rect": [8, 61, 48, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '  Text'",
+          "rect": [8, 61, 48, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '  Text'",
+          "rect": [8, 61, 48, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '  Text'",
+          "rect": [8, 61, 48, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '  Text'",
+          "rect": [8, 61, 48, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '  Text'",
+          "rect": [8, 61, 48, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '  Text'",
+          "rect": [8, 61, 48, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '  Text'",
+          "rect": [8, 61, 48, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '  Text'",
+          "rect": [8, 61, 48, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '  Text'",
           "rect": [8, 61, 48, 185],
           "reason": "style change"
         }

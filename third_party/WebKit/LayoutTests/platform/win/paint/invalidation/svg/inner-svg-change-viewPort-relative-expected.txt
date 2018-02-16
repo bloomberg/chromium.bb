@@ -23,38 +23,28 @@
         },
         {
           "object": "LayoutSVGViewportContainer svg id='inner'",
-          "rect": [0, 0, 200, 200],
-          "reason": "full"
+          "rect": [100, 0, 100, 200],
+          "reason": "incremental"
         },
         {
-          "object": "LayoutSVGInlineText #text",
+          "object": "InlineTextBox 'right-aligned text'",
           "rect": [100, 85, 100, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutSVGText text",
-          "rect": [100, 85, 100, 19],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
+          "object": "InlineTextBox 'right-aligned text'",
           "rect": [0, 85, 100, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [0, 85, 100, 19],
-          "reason": "full"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGContainer use",
           "rect": [180, 120, 20, 20],
-          "reason": "full"
+          "reason": "paint property change"
         },
         {
-          "object": "LayoutSVGPath polygon id='triangle'",
-          "rect": [180, 120, 20, 20],
-          "reason": "geometry"
+          "object": "LayoutSVGRect rect",
+          "rect": [180, 60, 20, 20],
+          "reason": "incremental"
         },
         {
           "object": "LayoutSVGRect rect",
@@ -64,12 +54,12 @@
         {
           "object": "LayoutSVGContainer use",
           "rect": [80, 120, 20, 20],
-          "reason": "full"
+          "reason": "paint property change"
         },
         {
-          "object": "LayoutSVGPath polygon id='triangle'",
-          "rect": [80, 120, 20, 20],
-          "reason": "geometry"
+          "object": "LayoutSVGRect rect",
+          "rect": [80, 60, 20, 20],
+          "reason": "incremental"
         },
         {
           "object": "LayoutSVGRect rect",
@@ -111,10 +101,6 @@
     {
       "object": "LayoutSVGContainer use",
       "reason": "full"
-    },
-    {
-      "object": "LayoutSVGPath polygon id='triangle'",
-      "reason": "geometry"
     }
   ]
 }

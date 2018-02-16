@@ -7,249 +7,39 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGContainer g id='text2g'",
-          "rect": [0, 63, 402, 100],
-          "reason": "full"
+          "object": "InlineTextBox 'PASS '",
+          "rect": [0, 114, 302, 46],
+          "reason": "appeared"
         },
         {
-          "object": "LayoutSVGContainer g id='text1g'",
-          "rect": [0, 13, 402, 100],
-          "reason": "subtree"
+          "object": "LayoutSVGRoot (positioned) svg",
+          "rect": [0, 14, 302, 46],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg",
+          "rect": [310, 114, 92, 46],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg",
+          "rect": [310, 14, 92, 46],
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer g id='text3g'",
-          "rect": [0, 113, 402, 87],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 114, 193, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 114, 193, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 114, 193, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [0, 114, 193, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [0, 114, 193, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 14, 193, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 14, 193, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 14, 193, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [0, 14, 193, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [0, 14, 193, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGForeignObject foreignObject",
-          "rect": [210, 13, 100, 100],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGForeignObject foreignObject",
-          "rect": [210, 113, 100, 87],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutBlockFlow P",
-          "rect": [210, 113, 100, 48],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutBlockFlow P",
-          "rect": [210, 13, 100, 48],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [310, 114, 92, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [310, 114, 92, 46],
-          "reason": "subtree"
+          "rect": [0, 3, 10, 3],
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGViewportContainer svg",
-          "rect": [310, 114, 92, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [310, 14, 92, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [310, 14, 92, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg",
-          "rect": [310, 14, 92, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [210, 114, 92, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [210, 14, 92, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGContainer g id='text3g'",
-          "rect": [0, 3, 14, 4],
-          "reason": "subtree"
+          "rect": [9, 3, 4, 3],
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGContainer g id='text1g'",
-          "rect": [0, 0, 8, 2],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 0, 8, 2],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 0, 8, 2],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 0, 8, 2],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [0, 0, 8, 2],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [0, 0, 8, 2],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 3, 7, 3],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 3, 7, 3],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 3, 7, 3],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [0, 3, 7, 3],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [0, 3, 7, 3],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [9, 3, 5, 3],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [9, 3, 5, 3],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg",
-          "rect": [9, 3, 5, 3],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 0, 5, 2],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [0, 0, 5, 2],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg",
-          "rect": [0, 0, 5, 2],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGForeignObject foreignObject",
-          "rect": [6, 3, 4, 4],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutBlockFlow P",
-          "rect": [6, 3, 4, 2],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [6, 3, 4, 2],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutBlockFlow P",
           "rect": [0, 0, 1, 1],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGForeignObject foreignObject",
-          "rect": [0, 0, 1, 1],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [0, 0, 1, 1],
-          "reason": "subtree"
+          "reason": "disappeared"
         }
       ]
     }
@@ -257,83 +47,63 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGContainer g id='text1g'",
-      "reason": "subtree"
+      "reason": "full"
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'PASS '",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'PASS'",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutSVGForeignObject foreignObject",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow P",
-      "reason": "subtree"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "subtree"
-    },
-    {
-      "object": "InlineTextBox 'PASS'",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGViewportContainer svg",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'PASS'",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGContainer g id='text2g'",
@@ -341,83 +111,63 @@
     },
     {
       "object": "LayoutSVGContainer g id='text3g'",
-      "reason": "subtree"
+      "reason": "full"
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'PASS '",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'PASS'",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutSVGForeignObject foreignObject",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow P",
-      "reason": "subtree"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "subtree"
-    },
-    {
-      "object": "InlineTextBox 'PASS'",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGViewportContainer svg",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'PASS'",
-      "reason": "subtree"
+      "reason": "geometry"
     }
   ]
 }

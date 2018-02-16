@@ -19,7 +19,7 @@
         {
           "object": "LayoutBlockFlow DIV class='target'",
           "rect": [8, 8, 100, 100],
-          "reason": "full"
+          "reason": "paint property change"
         }
       ]
     }

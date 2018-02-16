@@ -36,9 +36,9 @@
       "backgroundColor": "#0000FF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='container'",
+          "object": "Scrolling Contents Layer",
           "rect": [0, 500, 400, 1500],
-          "reason": "background on scrolling contents layer"
+          "reason": "incremental"
         }
       ],
       "transform": 1
@@ -75,7 +75,7 @@
   "objectPaintInvalidations": [
     {
       "object": "Scrolling Contents Layer",
-      "reason": "background on scrolling contents layer"
+      "reason": "incremental"
     }
   ]
 }

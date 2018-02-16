@@ -135,6 +135,10 @@
     {
       "object": "LayoutBlockFlow DIV class='half'",
       "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='half'",
+      "reason": "geometry"
     }
   ]
 }

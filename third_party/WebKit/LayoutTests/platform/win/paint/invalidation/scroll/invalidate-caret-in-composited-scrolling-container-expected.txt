@@ -25,7 +25,12 @@
         {
           "object": "LayoutTextControl INPUT id='root'",
           "rect": [0, 0, 70, 24],
-          "reason": "subtree"
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutTextControl INPUT id='root'",
+          "rect": [0, 0, 70, 24],
+          "reason": "paint property change"
         },
         {
           "object": "LayoutTextControl INPUT id='root'",
@@ -33,14 +38,24 @@
           "reason": "full"
         },
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [3, 4, 64, 16],
-          "reason": "subtree"
+          "object": "LayoutTextControl INPUT id='root'",
+          "rect": [0, 0, 68, 22],
+          "reason": "paint property change"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [3, 4, 64, 16],
-          "reason": "subtree"
+          "object": "LayoutBlockFlow DIV",
+          "rect": [2, 3, 64, 16],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [3, 4, 63, 16],
+          "reason": "paint property change"
+        },
+        {
+          "object": "Caret",
+          "rect": [65, 4, 1, 16],
+          "reason": "appeared"
         }
       ]
     }

@@ -24,12 +24,7 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [10, 11, 64, 16],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [10, 11, 64, 16],
-          "reason": "subtree"
+          "reason": "paint property change"
         }
       ]
     }

@@ -7,12 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='stacked'",
-          "rect": [19, 167, 200, 43],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox '\u1EA6\u1EA4\u1EAA\u1EA8\u1EB0'",
           "rect": [19, 168, 130, 41],
           "reason": "disappeared"
         }
@@ -20,10 +15,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutText #text",
-      "reason": "disappeared"
-    },
     {
       "object": "LayoutBlockFlow DIV id='stacked'",
       "reason": "full"

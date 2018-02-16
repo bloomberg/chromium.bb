@@ -29,10 +29,6 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutBlockFlow BODY",
       "reason": "geometry"
     },
@@ -42,26 +38,6 @@
     },
     {
       "object": "LayoutEmbeddedObject OBJECT",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGRoot svg",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGRect rect",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGRect rect",
       "reason": "geometry"
     }
   ]

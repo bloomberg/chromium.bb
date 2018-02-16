@@ -7,14 +7,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
+          "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='to_remove_inner' class='inner'",
+          "rect": [408, 88, 100, 100],
+          "reason": "disappeared"
+        },
+        {
           "object": "LayoutBlockFlow DIV id='keep' class='item'",
           "rect": [408, 88, 100, 100],
           "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='to_remove' class='item'",
-          "rect": [408, 88, 100, 100],
-          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow DIV id='keep' class='item'",
@@ -22,17 +22,17 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox '\u00A0'",
           "rect": [408, 88, 4, 19],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='to_remove_inner' class='inner'",
           "rect": [408, 88, 4, 19],
           "reason": "disappeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox '\u00A0'",
           "rect": [208, 88, 4, 19],
           "reason": "geometry"
         }
@@ -41,20 +41,8 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutText #text",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='to_remove' class='item'",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='to_remove_inner' class='inner'",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='node' class='outer'",
-      "reason": "disappeared"
+      "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_outer' class='outer'",
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='abs_pos'",

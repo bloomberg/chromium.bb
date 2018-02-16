@@ -37,12 +37,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
           "rect": [25, 125, 50, 50],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
           "rect": [25, 25, 50, 50],
-          "reason": "geometry"
+          "reason": "paint property change"
         }
       ],
       "transform": 1
@@ -69,12 +69,6 @@
         [8, 8, 0, 1]
       ],
       "flattenInheritedTransform": false
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
-      "reason": "geometry"
     }
   ]
 }

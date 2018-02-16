@@ -7,63 +7,49 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [10, 62, 307, 377],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [10, 62, 307, 377],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [10, 62, 307, 377],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [10, 62, 307, 377],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [10, 62, 307, 377],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [10, 62, 307, 377],
+          "object": "InlineTextBox ' '",
+          "rect": [10, 60, 310, 380],
           "reason": "disappeared"
         },
         {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [10, 62, 307, 377],
-          "reason": "geometry"
+          "object": "InlineTextBox ' '",
+          "rect": [10, 60, 310, 380],
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [10, 62, 307, 377],
-          "reason": "geometry"
+          "object": "InlineTextBox 'FAIL'",
+          "rect": [10, 60, 310, 380],
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutSVGTSpan tspan id='modify'",
-          "rect": [10, 62, 307, 377],
-          "reason": "geometry"
+          "object": "InlineTextBox 'PASS'",
+          "rect": [10, 60, 310, 380],
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutSVGText text",
-          "rect": [10, 62, 307, 377],
-          "reason": "full"
+          "object": "InlineTextBox 'PASS'",
+          "rect": [10, 60, 310, 380],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox ' '",
+          "rect": [10, 180, 310, 260],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [10, 180, 310, 260],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [10, 180, 310, 260],
+          "reason": "appeared"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "disappeared"
-    },
     {
       "object": "LayoutSVGText text",
       "reason": "full"

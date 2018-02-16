@@ -8,53 +8,8 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='absolute'",
-          "rect": [8, 2000, 777, 350],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='absolute'",
-          "rect": [8, 2000, 777, 350],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutBlockFlow P",
-          "rect": [8, 2200, 777, 100],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutBlockFlow P",
-          "rect": [8, 2200, 777, 100],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutBlockFlow P",
-          "rect": [8, 2050, 777, 100],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutBlockFlow P",
-          "rect": [8, 2050, 777, 100],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 2046, 774, 107],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 2046, 774, 107],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 2196, 655, 107],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 2196, 655, 107],
-          "reason": "subtree"
+          "rect": [8, 2046, 774, 257],
+          "reason": "appeared"
         }
       ],
       "transform": 1
@@ -74,99 +29,51 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV id='container'",
-      "reason": "subtree"
+      "reason": "style change"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='absolute'",
-      "reason": "subtree"
+      "reason": "style change"
     },
     {
       "object": "LayoutBlockFlow P",
-      "reason": "subtree"
+      "reason": "style change"
     },
     {
       "object": "RootInlineBox",
-      "reason": "subtree"
+      "reason": "style change"
     },
     {
       "object": "LayoutText #text",
-      "reason": "subtree"
+      "reason": "style change"
     },
     {
       "object": "InlineTextBox 'This test checks that switching opacity'",
-      "reason": "subtree"
+      "reason": "style change"
     },
     {
       "object": "InlineTextBox 'invalidates the full subtree.'",
-      "reason": "subtree"
+      "reason": "style change"
     },
     {
       "object": "LayoutBlockFlow P",
-      "reason": "subtree"
+      "reason": "style change"
     },
     {
       "object": "RootInlineBox",
-      "reason": "subtree"
+      "reason": "style change"
     },
     {
       "object": "LayoutText #text",
-      "reason": "subtree"
+      "reason": "style change"
     },
     {
       "object": "InlineTextBox 'This text should be visible in the'",
-      "reason": "subtree"
+      "reason": "style change"
     },
     {
       "object": "InlineTextBox 'output.'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='container'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='absolute'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow P",
-      "reason": "subtree"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "subtree"
-    },
-    {
-      "object": "InlineTextBox 'This test checks that switching opacity'",
-      "reason": "subtree"
-    },
-    {
-      "object": "InlineTextBox 'invalidates the full subtree.'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow P",
-      "reason": "subtree"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "subtree"
-    },
-    {
-      "object": "InlineTextBox 'This text should be visible in the'",
-      "reason": "subtree"
-    },
-    {
-      "object": "InlineTextBox 'output.'",
-      "reason": "subtree"
+      "reason": "style change"
     }
   ]
 }

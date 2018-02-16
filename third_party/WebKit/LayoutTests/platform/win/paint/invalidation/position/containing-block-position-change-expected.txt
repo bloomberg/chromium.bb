@@ -24,24 +24,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [100, 74, 50, 50],
-          "reason": "subtree"
+          "reason": "style change"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='t'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "subtree"
-    },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV id='t'",
       "reason": "style change"

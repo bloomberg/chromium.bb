@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
+          "object": "VerticalScrollbar",
           "rect": [187, 102, 15, 200],
           "reason": "scroll control"
         }

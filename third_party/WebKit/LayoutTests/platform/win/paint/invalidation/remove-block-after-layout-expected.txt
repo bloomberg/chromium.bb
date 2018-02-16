@@ -22,21 +22,11 @@
           "reason": "disappeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "LayoutBlockFlow (positioned) DIV id='target'",
           "rect": [8, 108, 90, 39],
           "reason": "disappeared"
         }
       ]
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutText #text",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='target'",
-      "reason": "disappeared"
     }
   ]
 }

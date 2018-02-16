@@ -87,10 +87,6 @@ CASE 2, overlap3 gets added:
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
       "reason": "appeared"
     }
   ]
@@ -139,12 +135,6 @@ CASE 3, overlap2 gets removed. Since this does not resize the layer, there shoul
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
-      "reason": "disappeared"
-    }
   ]
 }
 CASE 4, overlap1 gets removed:
@@ -173,11 +163,6 @@ CASE 4, overlap1 gets removed:
       "bounds": [100, 100],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
-          "rect": [160, 160, 100, 100],
-          "reason": "subtree"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
           "rect": [0, 0, 100, 100],
           "reason": "disappeared"
@@ -185,7 +170,7 @@ CASE 4, overlap1 gets removed:
         {
           "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
           "rect": [0, 0, 100, 100],
-          "reason": "compositing update"
+          "reason": "paint property change"
         }
       ]
     }
@@ -203,14 +188,6 @@ CASE 4, overlap1 gets removed:
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
-      "reason": "subtree"
-    },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
       "reason": "compositing update"
@@ -245,7 +222,7 @@ CASE 5, overlap2 gets added back:
         {
           "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
           "rect": [80, 80, 100, 100],
-          "reason": "compositing update"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
@@ -255,7 +232,7 @@ CASE 5, overlap2 gets added back:
         {
           "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
           "rect": [0, 0, 100, 100],
-          "reason": "subtree"
+          "reason": "paint property change"
         }
       ]
     }
@@ -273,18 +250,6 @@ CASE 5, overlap2 gets added back:
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
-      "reason": "subtree"
-    },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
       "reason": "appeared"
@@ -323,7 +288,7 @@ CASE 6, overlap1 gets added back, and overlap3 gets removed:
         {
           "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
           "rect": [80, 80, 100, 100],
-          "reason": "compositing update"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
@@ -338,7 +303,7 @@ CASE 6, overlap1 gets added back, and overlap3 gets removed:
         {
           "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
           "rect": [0, 0, 100, 100],
-          "reason": "subtree"
+          "reason": "paint property change"
         }
       ]
     }
@@ -356,22 +321,6 @@ CASE 6, overlap1 gets added back, and overlap3 gets removed:
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
-      "reason": "subtree"
-    },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
       "reason": "appeared"

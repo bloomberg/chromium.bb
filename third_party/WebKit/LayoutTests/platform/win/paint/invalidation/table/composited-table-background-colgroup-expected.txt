@@ -17,7 +17,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutTableCol COLGROUP id='target'",
+          "object": "LayoutTableSection TBODY",
           "rect": [8, 28, 184, 134],
           "reason": "style change"
         }

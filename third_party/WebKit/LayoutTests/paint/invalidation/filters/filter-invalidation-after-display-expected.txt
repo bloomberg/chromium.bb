@@ -17,14 +17,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='box' class='green box'",
+          "object": "LayoutBlockFlow (positioned) DIV id='box' class='green drop-shadowed box'",
           "rect": [300, 8, 330, 330],
-          "reason": "subtree"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='box' class='green box'",
           "rect": [300, 8, 200, 200],
-          "reason": "subtree"
+          "reason": "paint property change"
         }
       ]
     }
@@ -32,11 +32,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='box' class='green box'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='box' class='green box'",
-      "reason": "subtree"
+      "reason": "style change"
     }
   ]
 }

@@ -3,14 +3,7 @@
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
-      "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 800, 600],
-          "reason": "style change"
-        }
-      ]
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "Scrolling Layer",
@@ -24,19 +17,19 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
+          "object": "Scrolling Contents Layer",
           "rect": [0, 0, 800, 600],
           "reason": "background on scrolling contents layer"
         },
         {
-          "object": "LayoutSVGRect rect",
-          "rect": [6, 4, 788, 592],
-          "reason": "style change"
+          "object": "LayoutSVGRoot svg",
+          "rect": [6, 2, 788, 595],
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRoot svg",
-          "rect": [7, 5, 786, 590],
-          "reason": "style change"
+          "rect": [6, 4, 788, 592],
+          "reason": "disappeared"
         }
       ]
     }

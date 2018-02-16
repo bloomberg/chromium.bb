@@ -13,10 +13,10 @@ layer at (0,0) size 800x436
                 LayoutSVGInlineText {#text} at (100,65) size 143x68
                   chunk 1 text run 1 at (100.00,120.00) startOffset 0 endOffset 4 width 143.00: "CLIP"
         LayoutText {#text} at (0,0) size 0x0
-layer at (8,28) size 400x400 clip at (8,28) size 385x385 scrollWidth 500 scrollHeight 700
+layer at (8,28) size 400x400 backgroundClip at (108,93) size 143x68 clip at (108,93) size 143x68 scrollWidth 500 scrollHeight 700
   LayoutBlockFlow {DIV} at (0,20) size 400x400 [bgcolor=#0000FF]
     LayoutBlockFlow {DIV} at (0,0) size 100x100 [bgcolor=#008000]
     LayoutBlockFlow {DIV} at (0,100) size 500x500 [bgcolor=#FFFF00]
     LayoutBlockFlow {DIV} at (0,600) size 100x100 [bgcolor=#008000]
-layer at (8,378) size 100x100 backgroundClip at (8,28) size 385x385 clip at (8,28) size 385x385
+layer at (8,378) size 100x100 backgroundClip at (108,93) size 143x68 clip at (108,93) size 143x68
   LayoutBlockFlow (relative positioned) {DIV} at (0,0) size 100x100 [bgcolor=#008000]

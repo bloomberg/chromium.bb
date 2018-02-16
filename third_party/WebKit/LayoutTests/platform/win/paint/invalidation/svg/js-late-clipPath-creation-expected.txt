@@ -18,18 +18,13 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGContainer g id='content'",
-          "rect": [16, 42, 784, 170],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [16, 42, 784, 170],
-          "reason": "geometry"
+          "rect": [16, 40, 784, 173],
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [16, 42, 784, 170],
-          "reason": "full"
+          "rect": [16, 40, 318, 173],
+          "reason": "appeared"
         }
       ]
     }

@@ -16,10 +16,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutSVGRect rect id='rect'",
-      "reason": "disappeared"
-    },
-    {
       "object": "LayoutSVGRect rect",
       "reason": "full"
     }

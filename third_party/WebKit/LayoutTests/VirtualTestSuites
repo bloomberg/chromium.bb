@@ -253,46 +253,39 @@
     "args": ["--enable-slimming-paint-v2"]
   },
   {
-    "prefix": "spv175",
+    "prefix": "disable-spv175",
     "base": "compositing",
-    "args": ["--enable-slimming-paint-v175"],
-    "references_use_default_args": true
+    "args": ["--disable-blink-features=SlimmingPaintV175"]
   },
   {
-    "prefix": "spv175",
+    "prefix": "disable-spv175",
     "base": "paint",
-    "args": ["--enable-slimming-paint-v175"],
-    "references_use_default_args": true
+    "args": ["--disable-blink-features=SlimmingPaintV175"]
   },
   {
-    "prefix": "spv175",
+    "prefix": "disable-spv175",
     "base": "fast/borders",
-    "args": ["--enable-slimming-paint-v175"],
-    "references_use_default_args": true
+    "args": ["--disable-blink-features=SlimmingPaintV175"]
   },
   {
-    "prefix": "spv175",
+    "prefix": "disable-spv175",
     "base": "fast/multicol",
-    "args": ["--enable-slimming-paint-v175"],
-    "references_use_default_args": true
+    "args": ["--disable-blink-features=SlimmingPaintV175"]
   },
   {
-    "prefix": "spv175",
+    "prefix": "disable-spv175",
     "base": "fast/pagination",
-    "args": ["--enable-slimming-paint-v175"],
-    "references_use_default_args": true
+    "args": ["--disable-blink-features=SlimmingPaintV175"]
   },
   {
-    "prefix": "spv175",
+    "prefix": "disable-spv175",
     "base": "fragmentation",
-    "args": ["--enable-slimming-paint-v175"],
-    "references_use_default_args": true
+    "args": ["--disable-blink-features=SlimmingPaintV175"]
   },
   {
-    "prefix": "spv175",
+    "prefix": "disable-spv175",
     "base": "printing",
-    "args": ["--enable-slimming-paint-v175"],
-    "references_use_default_args": true
+    "args": ["--disable-blink-features=SlimmingPaintV175"]
   },
   {
     "prefix": "scalefactor200",

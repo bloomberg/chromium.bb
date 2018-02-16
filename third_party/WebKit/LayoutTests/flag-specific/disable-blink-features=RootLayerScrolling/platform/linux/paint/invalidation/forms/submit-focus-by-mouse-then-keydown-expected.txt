@@ -12,12 +12,7 @@
           "reason": "subtree"
         },
         {
-          "object": "LayoutBlockFlow (anonymous)",
-          "rect": [16, 11, 41, 16],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Submit'",
           "rect": [16, 11, 41, 16],
           "reason": "subtree"
         }

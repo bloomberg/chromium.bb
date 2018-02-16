@@ -7,14 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [33, 23, 697, 194],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [33, 23, 697, 194],
-          "reason": "full"
+          "object": "InlineTextBox 'Gradient on fill'",
+          "rect": [33, 22, 697, 196],
+          "reason": "appeared"
         }
       ]
     }

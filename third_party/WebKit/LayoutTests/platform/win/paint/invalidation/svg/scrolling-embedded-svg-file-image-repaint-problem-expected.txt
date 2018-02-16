@@ -17,39 +17,59 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow P",
-          "rect": [24, 1011, 737, 21],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'pservers-pattern-01-b \u2190'",
           "rect": [177, 1012, 203, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'pservers-pattern-01-b \u2190'",
+          "rect": [177, 1012, 203, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox '\u2192 script-handle-01-b'",
           "rect": [435, 1012, 173, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutInline A",
+          "object": "InlineTextBox '\u2192 script-handle-01-b'",
+          "rect": [435, 1012, 173, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
           "rect": [384, 1011, 47, 21],
-          "reason": "style change"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'index'",
           "rect": [385, 1012, 45, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'index'",
+          "rect": [385, 1012, 45, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox '\n'",
           "rect": [429, 1012, 7, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox '\n'",
+          "rect": [429, 1012, 7, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox '\n'",
           "rect": [379, 1012, 7, 19],
-          "reason": "geometry"
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [379, 1012, 7, 19],
+          "reason": "disappeared"
         }
       ],
       "transform": 1

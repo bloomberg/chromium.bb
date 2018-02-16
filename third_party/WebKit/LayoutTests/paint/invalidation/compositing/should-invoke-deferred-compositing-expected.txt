@@ -29,20 +29,11 @@
           "object": "LayoutHTMLCanvas (positioned) CANVAS",
           "rect": [0, 0, 200, 200],
           "reason": "full"
-        },
-        {
-          "object": "LayoutHTMLCanvas (positioned) CANVAS",
-          "rect": [0, 0, 200, 200],
-          "reason": "appeared"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutHTMLCanvas (positioned) CANVAS",
-      "reason": "subtree"
-    },
     {
       "object": "LayoutHTMLCanvas (positioned) CANVAS",
       "reason": "appeared"

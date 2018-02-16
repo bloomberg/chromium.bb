@@ -17,9 +17,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGContainer g id='root'",
+          "object": "LayoutSVGRect rect",
           "rect": [50, 50, 453, 299],
-          "reason": "geometry"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGRect rect",
@@ -30,15 +30,16 @@
           "object": "LayoutSVGRect rect",
           "rect": [100, 100, 403, 249],
           "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [100, 100, 403, 249],
+          "reason": "appeared"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRect rect",
-      "reason": "disappeared"
-    },
     {
       "object": "LayoutSVGContainer g id='root'",
       "reason": "geometry"

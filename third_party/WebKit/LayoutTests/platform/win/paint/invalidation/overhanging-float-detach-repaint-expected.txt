@@ -17,21 +17,11 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (floating) DIV class='float'",
+          "object": "LayoutBlockFlow HTML",
           "rect": [8, 68, 100, 100],
           "reason": "disappeared"
         }
       ]
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (floating) DIV class='float'",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='floatContainer'",
-      "reason": "disappeared"
     }
   ]
 }

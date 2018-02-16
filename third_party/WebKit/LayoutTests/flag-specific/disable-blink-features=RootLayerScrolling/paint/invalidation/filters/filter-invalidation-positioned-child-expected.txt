@@ -9,24 +9,24 @@
         {
           "object": "LayoutBlockFlow DIV id='box'",
           "rect": [8, 8, 430, 230],
-          "reason": "subtree"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='positioned'",
           "rect": [400, 400, 380, 180],
-          "reason": "subtree"
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='box'",
+          "rect": [8, 8, 380, 180],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='positioned'",
+          "rect": [400, 400, 330, 130],
+          "reason": "paint property change"
         }
       ]
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='box'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='positioned'",
-      "reason": "subtree"
     }
   ]
 }

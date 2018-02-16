@@ -8,13 +8,13 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGEllipse circle id='bounce'",
-          "rect": [102, 102, 66, 66],
-          "reason": "subtree"
+          "rect": [101, 101, 68, 68],
+          "reason": "appeared"
         },
         {
-          "object": "LayoutSVGEllipse circle id='bounce'",
-          "rect": [2, 2, 66, 66],
-          "reason": "subtree"
+          "object": "LayoutSVGRoot svg",
+          "rect": [1, 1, 68, 68],
+          "reason": "disappeared"
         }
       ]
     }
@@ -22,7 +22,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGEllipse circle id='bounce'",
-      "reason": "subtree"
+      "reason": "full"
     }
   ]
 }

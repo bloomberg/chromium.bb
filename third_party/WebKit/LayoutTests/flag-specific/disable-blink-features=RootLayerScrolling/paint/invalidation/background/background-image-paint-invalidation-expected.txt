@@ -12,9 +12,9 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutBlockFlow BODY",
+          "object": "LayoutBlockFlow HTML",
           "rect": [8, 8, 800, 2000],
-          "reason": "style change"
+          "reason": "appeared"
         }
       ]
     }

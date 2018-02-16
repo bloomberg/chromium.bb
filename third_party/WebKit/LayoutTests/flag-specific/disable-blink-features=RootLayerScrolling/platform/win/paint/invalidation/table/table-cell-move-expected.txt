@@ -8,16 +8,6 @@
       "paintInvalidations": [
         {
           "object": "LayoutTableCell TD",
-          "rect": [8, 206, 60, 180],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [8, 146, 60, 180],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutTableCell TD",
           "rect": [8, 326, 60, 60],
           "reason": "disappeared"
         },
@@ -30,11 +20,6 @@
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 206, 60, 60],
           "reason": "geometry"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [8, 146, 60, 60],
-          "reason": "appeared"
         }
       ]
     }
@@ -43,6 +28,10 @@
     {
       "object": "LayoutTableCell TD",
       "reason": "appeared"
+    },
+    {
+      "object": "LayoutTableRow TR",
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell TD",
@@ -57,8 +46,12 @@
       "reason": "geometry"
     },
     {
+      "object": "LayoutTableRow TR",
+      "reason": "geometry"
+    },
+    {
       "object": "LayoutTableCell TD",
-      "reason": "disappeared"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell TD id='s'",

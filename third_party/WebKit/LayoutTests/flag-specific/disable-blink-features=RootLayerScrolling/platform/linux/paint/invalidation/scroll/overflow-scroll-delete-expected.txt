@@ -7,9 +7,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Passed'",
           "rect": [8, 136, 44, 17],
-          "reason": "full"
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'Failed'",
+          "rect": [8, 136, 40, 17],
+          "reason": "disappeared"
         }
       ]
     }

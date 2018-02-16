@@ -26,18 +26,28 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='composited-box'",
-          "rect": [-30, -30, 50, 100],
-          "reason": "subtree"
+          "rect": [0, 0, 20, 70],
+          "reason": "paint property change"
         },
         {
-          "object": "LayoutBlockFlow DIV class='child'",
-          "rect": [-30, -30, 50, 50],
-          "reason": "subtree"
+          "object": "LayoutBlockFlow (positioned) DIV id='composited-box'",
+          "rect": [0, 0, 20, 20],
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='composited-box'",
           "rect": [0, 0, 10, 60],
           "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='composited-box'",
+          "rect": [0, 0, 10, 60],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='composited-box'",
+          "rect": [0, 0, 10, 10],
+          "reason": "paint property change"
         }
       ]
     },

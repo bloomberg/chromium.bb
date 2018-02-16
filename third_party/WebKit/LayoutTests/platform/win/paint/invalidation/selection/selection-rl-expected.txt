@@ -17,7 +17,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Testing both hit testing'",
           "rect": [773, 43, 19, 77],
           "reason": "selection"
         }

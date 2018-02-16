@@ -7,14 +7,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='hideMe' class='absolute red'",
+          "object": "LayoutBlockFlow (positioned) DIV class='absolute green reflected'",
           "rect": [250, 280, 100, 100],
-          "reason": "subtree"
+          "reason": "chunk reordered"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='hideMe' class='absolute red'",
           "rect": [250, 280, 100, 100],
-          "reason": "subtree"
+          "reason": "style change"
         }
       ],
       "transform": 1
@@ -34,11 +34,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='hideMe' class='absolute red'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='hideMe' class='absolute red'",
-      "reason": "subtree"
+      "reason": "style change"
     }
   ]
 }

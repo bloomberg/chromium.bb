@@ -9,17 +9,12 @@
         {
           "object": "LayoutBlockFlow DIV class='innerWrapper'",
           "rect": [8, 18, 100, 190],
-          "reason": "full"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutBlockFlow DIV class='red'",
+          "object": "LayoutBlockFlow DIV class='innerWrapper'",
           "rect": [8, 18, 100, 190],
           "reason": "disappeared"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='ucp' class='green'",
-          "rect": [8, 18, 100, 190],
-          "reason": "appeared"
         }
       ]
     }
@@ -31,11 +26,11 @@
     },
     {
       "object": "LayoutBlockFlow DIV class='red'",
-      "reason": "disappeared"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV id='ucp' class='green'",
-      "reason": "appeared"
+      "reason": "geometry"
     }
   ]
 }

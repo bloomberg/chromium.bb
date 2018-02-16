@@ -22,14 +22,14 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [30, 30, 200, 23],
-          "reason": "geometry"
+          "object": "InlineTextBox 'NEW'",
+          "rect": [30, 30, 46, 23],
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [30, 30, 46, 23],
-          "reason": "full"
+          "object": "InlineTextBox 'OLD'",
+          "rect": [30, 30, 42, 23],
+          "reason": "disappeared"
         }
       ]
     }

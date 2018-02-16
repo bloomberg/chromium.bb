@@ -9,27 +9,17 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
           "rect": [79, 129, 142, 142],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='moveMe' class='absolute clipped rotated'",
-          "rect": [79, 129, 142, 142],
-          "reason": "subtree"
+          "reason": "appeared"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
           "rect": [114, 129, 107, 36],
-          "reason": "subtree"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
           "rect": [100, 150, 100, 100],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='moveMe' class='absolute clipped rotated'",
-          "rect": [100, 150, 100, 100],
-          "reason": "subtree"
+          "reason": "paint property change"
         }
       ]
     }
@@ -37,27 +27,15 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='moveMe' class='absolute clipped rotated'",
-      "reason": "subtree"
+      "reason": "full"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
-      "reason": "subtree"
+      "reason": "style change"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='moveMe' class='absolute clipped rotated'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
-      "reason": "subtree"
+      "reason": "style change"
     }
   ]
 }

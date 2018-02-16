@@ -19,12 +19,12 @@
         {
           "object": "LayoutBlockFlow DIV id='div2'",
           "rect": [8, 108, 100, 100],
-          "reason": "style change"
+          "reason": "appeared"
         },
         {
           "object": "LayoutBlockFlow DIV id='div1'",
           "rect": [8, 8, 100, 100],
-          "reason": "style change"
+          "reason": "disappeared"
         }
       ]
     }

@@ -17,9 +17,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGContainer g",
+          "object": "LayoutSVGRoot svg",
           "rect": [0, 0, 200, 200],
-          "reason": "full"
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [0, 0, 100, 100],
+          "reason": "appeared"
         }
       ]
     }

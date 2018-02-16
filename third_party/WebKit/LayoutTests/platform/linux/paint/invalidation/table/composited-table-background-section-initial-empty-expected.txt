@@ -25,7 +25,7 @@
         {
           "object": "LayoutTableSection TBODY id='target'",
           "rect": [0, 0, 186, 134],
-          "reason": "style change"
+          "reason": "appeared"
         }
       ]
     },

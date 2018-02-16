@@ -22,34 +22,24 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutSVGContainer g",
+          "object": "LayoutSVGRect rect",
           "rect": [42, 119, 334, 268],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [42, 119, 334, 268],
-          "reason": "SVG resource change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [42, 119, 334, 268],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [17, 219, 84, 68],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [17, 219, 84, 68],
-          "reason": "SVG resource change"
+          "reason": "paint property change"
         },
         {
-          "object": "LayoutSVGRoot svg",
+          "object": "LayoutSVGRect rect",
           "rect": [17, 219, 84, 68],
-          "reason": "geometry"
+          "reason": "paint property change"
         }
       ]
     }
@@ -65,10 +55,6 @@
     },
     {
       "object": "LayoutSVGRoot svg",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGContainer g",
       "reason": "geometry"
     },
     {

@@ -17,7 +17,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Should have blue, not gray, highlight'",
           "rect": [18, 18, 215, 19],
           "reason": "selection"
         }

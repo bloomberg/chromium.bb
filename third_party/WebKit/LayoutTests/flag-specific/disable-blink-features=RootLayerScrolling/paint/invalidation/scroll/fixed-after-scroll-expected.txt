@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='t' class='green absolute'",
           "rect": [8, 700, 100, 100],
-          "reason": "subtree"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='t' class='green absolute'",
           "rect": [8, 200, 100, 100],
-          "reason": "subtree"
+          "reason": "paint property change"
         }
       ],
       "transform": 1
@@ -34,15 +34,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='t' class='green absolute'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='t' class='green absolute'",
       "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='t' class='green absolute'",
-      "reason": "subtree"
     }
   ]
 }
