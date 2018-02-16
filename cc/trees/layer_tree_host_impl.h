@@ -945,6 +945,12 @@ class CC_EXPORT LayerTreeHostImpl
   // it's lost instead of having this bool.
   bool has_valid_layer_tree_frame_sink_;
 
+  // If it is enabled in the LayerTreeSettings, we can check damage in
+  // WillBeginImplFrame and abort early if there is no damage. We only check
+  // damage in WillBeginImplFrame if a recent frame had no damage. We keep
+  // track of this with |consecutive_frame_with_damage_count_|.
+  int consecutive_frame_with_damage_count_;
+
   std::unique_ptr<Viewport> viewport_;
 
   std::unique_ptr<PendingTreeDurationHistogramTimer>

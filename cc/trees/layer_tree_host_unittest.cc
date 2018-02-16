@@ -1092,12 +1092,12 @@ class LayerTreeHostTestSurfaceDamage : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSurfaceDamage);
 
-// When settings->check_damage_early is true, verify that invalidate is not
-// called when changes to a layer don't cause visible damage.
+// When settings->enable_early_damage_check is true, verify that invalidate is
+// not called when changes to a layer don't cause visible damage.
 class LayerTreeHostTestNoDamageCausesNoInvalidate : public LayerTreeHostTest {
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->using_synchronous_renderer_compositor = true;
-    settings->check_damage_early = true;
+    settings->enable_early_damage_check = true;
   }
 
  protected:
@@ -1123,7 +1123,7 @@ class LayerTreeHostTestNoDamageCausesNoInvalidate : public LayerTreeHostTest {
   void DidCommit() override {
     // This does not damage the frame because the root layer is outside the
     // viewport.
-    if (layer_tree_host()->SourceFrameNumber() == 1)
+    if (layer_tree_host()->SourceFrameNumber() == 2)
       root_->SetOpacity(0.9f);
   }
 
@@ -1137,11 +1137,11 @@ class LayerTreeHostTestNoDamageCausesNoInvalidate : public LayerTreeHostTest {
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     switch (impl->active_tree()->source_frame_number()) {
       // This gives us some assurance that invalidates happen before this call,
-      // so invalidating on frame 1 will cause a failure before the test ends.
+      // so invalidating on frame 2 will cause a failure before the test ends.
       case 0:
         EXPECT_TRUE(first_frame_invalidate_before_commit_);
         break;
-      case 1:
+      case 2:
         EndTest();
     }
   }
@@ -1153,9 +1153,13 @@ class LayerTreeHostTestNoDamageCausesNoInvalidate : public LayerTreeHostTest {
       case 0:
         first_frame_invalidate_before_commit_ = true;
         break;
+      // Frame 1 will invalidate, even though it has no damage. The early
+      // damage check that prevents frame 2 from invalidating only runs if
+      // a previous frame did not have damage.
+
       // This frame should not cause an invalidate, since there is no visible
       // damage.
-      case 1:
+      case 2:
         ADD_FAILURE();
     }
   }
@@ -1170,6 +1174,100 @@ class LayerTreeHostTestNoDamageCausesNoInvalidate : public LayerTreeHostTest {
 // This behavior is specific to Android WebView, which only uses
 // multi-threaded compositor.
 MULTI_THREAD_TEST_F(LayerTreeHostTestNoDamageCausesNoInvalidate);
+
+// When settings->enable_early_damage_check is true, verify that the early
+// damage check is turned off after |settings->damaged_frame_limit| frames
+// have consecutive damage.
+// The test verifies that frames come in as follows:
+// 0: visible damage as the root appears; invalidated
+// 1: no visible damage; invalidate because all previous frames had damage
+// 2: no visible damage; check early since frame 1 had no damage; no invalidate
+// 3: visible damage
+// ... (visible damage)
+// 3 + damaged_frame_limit - 1: visible damage
+// 3 + damaged_frame_limit: no visible damage, but invalidate because all of
+// the last |damaged_frame_limit| frames had damage.
+class LayerTreeHostTestEarlyDamageCheckStops : public LayerTreeHostTest {
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->using_synchronous_renderer_compositor = true;
+    settings->enable_early_damage_check = true;
+    damaged_frame_limit_ = settings->damaged_frame_limit;
+  }
+
+ protected:
+  void SetupTree() override {
+    root_ = Layer::Create();
+    child_ = Layer::Create();
+    root_->AddChild(child_);
+
+    layer_tree_host()->SetViewportSize(gfx::Size(100, 100));
+
+    layer_tree_host()->SetRootLayer(root_);
+    root_->SetBounds(gfx::Size(50, 50));
+    child_->SetBounds(gfx::Size(50, 50));
+
+    // Translate the child layer past the viewport.
+    gfx::Transform translation;
+    translation.Translate(200, 200);
+    child_->SetTransform(translation);
+
+    LayerTreeHostTest::SetupTree();
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void WillBeginMainFrame() override {
+    int frame = layer_tree_host()->SourceFrameNumber();
+    // Change the child layer each frame. Since the child layer is translated
+    // past the viewport, it should not cause damage, but webview will still
+    // invalidate if the frame doesn't check for damage early.
+    child_->SetOpacity(1.0 / (float)(frame + 1));
+
+    // For |damaged_frame_limit| consecutive frames, cause actual damage.
+    if (frame >= 3 && frame < (damaged_frame_limit_ + 3)) {
+      root_->SetOpacity(1.0 / (float)frame);
+    }
+  }
+
+  void DidInvalidateLayerTreeFrameSink(LayerTreeHostImpl* impl) override {
+    int frame_number = impl->active_tree()->source_frame_number();
+
+    // Frames 0 and 1 invalidate because the early damage check is not enabled
+    // during this setup. But frames 1 and 2 are not damaged, so the early
+    // check should prevent frame 2 from invalidating.
+    if (frame_number == 2) {
+      ADD_FAILURE();
+    } else if (frame_number > 2) {
+      invalidate_count_++;
+    }
+
+    // Frame number |damaged_frame_limit_ + 3| was not damaged, but it should
+    // invalidate since the previous |damaged_frame_limit_| frames had damage
+    // and should have turned off the early damage check.
+    if (frame_number == damaged_frame_limit_ + 3) {
+      EndTest();
+      return;
+    }
+
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void AfterTest() override {
+    // We should invalidate |damaged_frame_limit_| frames that had actual damage
+    // and one additional frame after, since the early check is disabled.
+    EXPECT_EQ(invalidate_count_, damaged_frame_limit_ + 1);
+  }
+
+ private:
+  scoped_refptr<Layer> root_;
+  scoped_refptr<Layer> child_;
+  int invalidate_count_ = 0;
+  int damaged_frame_limit_;
+};
+
+// This behavior is specific to Android WebView, which only uses
+// multi-threaded compositor.
+MULTI_THREAD_TEST_F(LayerTreeHostTestEarlyDamageCheckStops);
 
 // Verify CanDraw() is false until first commit.
 class LayerTreeHostTestCantDrawBeforeCommit : public LayerTreeHostTest {
