@@ -202,6 +202,7 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/page/scrolling/SnapCoordinator.h"
 #include "core/page/scrolling/TopDocumentRootScrollerController.h"
+#include "core/paint/PaintLayerScrollableArea.h"
 #include "core/paint/compositing/PaintLayerCompositor.h"
 #include "core/policy/DocumentPolicy.h"
 #include "core/probe/CoreProbes.h"
@@ -2080,6 +2081,19 @@ void Document::PropagateStyleToViewport() {
     new_style->SetScrollPaddingLeft(scroll_padding_left);
     GetLayoutView()->SetStyle(new_style);
     SetupFontBuilder(*new_style);
+
+    View()->RecalculateScrollbarOverlayColorTheme(
+        View()->DocumentBackgroundColor());
+    View()->RecalculateCustomScrollbarStyle();
+    if (PaintLayerScrollableArea* scrollable_area =
+            GetLayoutView()->GetScrollableArea()) {
+      if (scrollable_area->HorizontalScrollbar() &&
+          scrollable_area->HorizontalScrollbar()->IsCustomScrollbar())
+        scrollable_area->HorizontalScrollbar()->StyleChanged();
+      if (scrollable_area->VerticalScrollbar() &&
+          scrollable_area->VerticalScrollbar()->IsCustomScrollbar())
+        scrollable_area->VerticalScrollbar()->StyleChanged();
+    }
   }
 }
 
