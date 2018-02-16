@@ -307,39 +307,6 @@ class ChromeServiceWorkerFetchTest : public ChromeServiceWorkerTest {
   DISALLOW_COPY_AND_ASSIGN(ChromeServiceWorkerFetchTest);
 };
 
-// Flaky on Windows; https://crbug.com/628898.
-#if defined(OS_WIN)
-#define MAYBE_EmbedPdfSameOrigin DISABLED_EmbedPdfSameOrigin
-#else
-#define MAYBE_EmbedPdfSameOrigin EmbedPdfSameOrigin
-#endif
-IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchTest, MAYBE_EmbedPdfSameOrigin) {
-  // <embed src="test.pdf">
-  const std::string result(ExecuteScriptAndExtractString(
-      "var embed = document.createElement('embed');"
-      "embed.src = 'test.pdf';"
-      "document.body.appendChild(embed);"));
-  EXPECT_EQ(RequestString(GetURL("/test.pdf"), "no-cors", "include"), result);
-}
-
-// Flaky on Windows; https://crbug.com/628898.
-#if defined(OS_WIN)
-#define MAYBE_EmbedPdfOtherOrigin DISABLED_EmbedPdfOtherOrigin
-#else
-#define MAYBE_EmbedPdfOtherOrigin EmbedPdfOtherOrigin
-#endif
-IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchTest,
-                       MAYBE_EmbedPdfOtherOrigin) {
-  // <embed src="https://www.example.com/test.pdf">
-  const std::string result(ExecuteScriptAndExtractString(
-      "var embed = document.createElement('embed');"
-      "embed.src = 'https://www.example.com/test.pdf';"
-      "document.body.appendChild(embed);"));
-  EXPECT_EQ(
-      RequestString("https://www.example.com/test.pdf", "no-cors", "include"),
-      result);
-}
-
 class ChromeServiceWorkerManifestFetchTest
     : public ChromeServiceWorkerFetchTest {
  protected:
