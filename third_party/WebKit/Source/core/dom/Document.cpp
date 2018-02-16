@@ -2115,6 +2115,13 @@ static void AssertLayoutTreeUpdated(Node& root) {
     DCHECK(!node.ChildNeedsDistributionRecalc());
     DCHECK(!node.NeedsStyleInvalidation());
     DCHECK(!node.ChildNeedsStyleInvalidation());
+    // Make sure there is no node which has a LayoutObject, but doesn't have a
+    // parent in a flat tree. If there is such a node, we forgot to dettach a
+    // node. DocumentNode is only an exception.
+    DCHECK((node.IsDocumentNode() || !node.GetLayoutObject() ||
+            FlatTreeTraversal::Parent(node)))
+        << node;
+
     if (ShadowRoot* shadow_root = node.GetShadowRoot())
       AssertLayoutTreeUpdated(*shadow_root);
   }
