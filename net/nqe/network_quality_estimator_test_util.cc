@@ -9,6 +9,7 @@
 #include "net/base/load_flags.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log_entry.h"
+#include "net/nqe/external_estimate_provider.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
