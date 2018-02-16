@@ -5,3 +5,6 @@
 
 # Flaky, https://crbug.com/764018.
 -IPCChannelBadMessageTest.BadMessage
+
+# Flaky, https://crbug.com/764015.
+-IPCChannelProxyTest.MessageClassFilters
