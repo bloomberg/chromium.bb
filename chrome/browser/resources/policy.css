@@ -36,11 +36,6 @@ html[dir='rtl'] div.left-aligned-button {
   float: right;
 }
 
-div.chrome-for-work {
-  -webkit-padding-start: 25px;
-  display: inline-block;
-}
-
 section.status-box-section {
   clear: both;
 }

@@ -24,7 +24,6 @@ content::WebUIDataSource* CreatePolicyUIHtmlSource() {
                              IDS_POLICY_FILTER_PLACEHOLDER);
   source->AddLocalizedString("reloadPolicies", IDS_POLICY_RELOAD_POLICIES);
   source->AddLocalizedString("exportPoliciesJSON", IDS_EXPORT_POLICIES_JSON);
-  source->AddLocalizedString("chromeForWork", IDS_POLICY_CHROME_FOR_WORK);
   source->AddLocalizedString("status", IDS_POLICY_STATUS);
   source->AddLocalizedString("statusDevice", IDS_POLICY_STATUS_DEVICE);
   source->AddLocalizedString("statusUser", IDS_POLICY_STATUS_USER);
