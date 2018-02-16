@@ -32,8 +32,21 @@ std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams(
 // Builds a TaskScheduler::InitParams from variations params that are prefixed
 // with |variation_param_prefix| in the BrowserScheduler field trial. Returns
 // nullptr on failure.
+//
+// TODO(fdoray): Move this to the anonymous namespace in the .cc file.
+// https://crbug.com/810049
 std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams(
     base::StringPiece variation_param_prefix);
+
+// Builds a TaskScheduler::InitParams to use in the browser process from
+// variation params in the BrowserScheduler field trial.
+std::unique_ptr<base::TaskScheduler::InitParams>
+GetTaskSchedulerInitParamsForBrowser();
+
+// Builds a TaskScheduler::InitParams to use in renderer processes from
+// variation params in the BrowserScheduler field trial.
+std::unique_ptr<base::TaskScheduler::InitParams>
+GetTaskSchedulerInitParamsForRenderer();
 
 #if !defined(OS_IOS)
 // Serializes variation params from the BrowserScheduler field trial whose key

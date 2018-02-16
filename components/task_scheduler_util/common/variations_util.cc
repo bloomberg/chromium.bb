@@ -130,6 +130,20 @@ std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams(
   return GetTaskSchedulerInitParams(variation_param_prefix, variation_params);
 }
 
+std::unique_ptr<base::TaskScheduler::InitParams>
+GetTaskSchedulerInitParamsForBrowser() {
+  // Variations params for the browser processes have no prefix.
+  constexpr char kVariationParamPrefix[] = "";
+  return GetTaskSchedulerInitParams(kVariationParamPrefix);
+}
+
+std::unique_ptr<base::TaskScheduler::InitParams>
+GetTaskSchedulerInitParamsForRenderer() {
+  // Variations params for renderer processes are prefixed with "Renderer".
+  constexpr char kVariationParamPrefix[] = "Renderer";
+  return GetTaskSchedulerInitParams(kVariationParamPrefix);
+}
+
 #if !defined(OS_IOS)
 void AddVariationParamsToCommandLine(base::StringPiece key_prefix,
                                      base::CommandLine* command_line) {

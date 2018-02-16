@@ -1902,11 +1902,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
   StackSamplingConfiguration::Get()->AppendCommandLineSwitchForChildProcess(
       process_type,
       command_line);
-
-  if (process_type == switches::kRendererProcess) {
-    task_scheduler_util::AddVariationParamsToCommandLine("Renderer",
-                                                         command_line);
-  }
 }
 
 void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
@@ -3693,9 +3688,7 @@ void ChromeContentBrowserClient::CreateMediaRemoter(
 
 std::unique_ptr<base::TaskScheduler::InitParams>
 ChromeContentBrowserClient::GetTaskSchedulerInitParams() {
-  // TaskScheduler variation params for the browser process have no prefix.
-  constexpr char kBrowserPrefix[] = "";
-  return task_scheduler_util::GetTaskSchedulerInitParams(kBrowserPrefix);
+  return task_scheduler_util::GetTaskSchedulerInitParamsForBrowser();
 }
 
 base::FilePath ChromeContentBrowserClient::GetLoggingFileName(

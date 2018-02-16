@@ -50,11 +50,8 @@ IOSChromeMain::IOSChromeMain() {
   main_params.argv = argv;
 #endif
 
-  const base::StringPiece kEmptyPrefix;
   main_params.get_task_scheduler_init_params_callback = base::BindOnce(
-      static_cast<std::unique_ptr<base::TaskScheduler::InitParams> (*)(
-          base::StringPiece)>(&task_scheduler_util::GetTaskSchedulerInitParams),
-      kEmptyPrefix);
+      &task_scheduler_util::GetTaskSchedulerInitParamsForBrowser);
   // Chrome registers an AtExitManager in main in order to initialize breakpad
   // early, so prevent a second registration by WebMainRunner.
   main_params.register_exit_manager = false;
