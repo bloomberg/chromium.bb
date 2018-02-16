@@ -30,6 +30,7 @@
 #define AudioArray_h
 
 #include <string.h>
+#include "build/build_config.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/allocator/Partitions.h"
@@ -61,7 +62,8 @@ class AudioArray {
 
     unsigned initial_size = sizeof(T) * n;
 
-#if defined(WTF_USE_WEBAUDIO_FFMPEG) || defined(WTF_USE_WEBAUDIO_OPENMAX_DL_FFT)
+#if defined(ARCH_CPU_X86_FAMILY) || defined(WTF_USE_WEBAUDIO_FFMPEG) || \
+    defined(WTF_USE_WEBAUDIO_OPENMAX_DL_FFT)
     const size_t kAlignment = 32;
 #else
     const size_t kAlignment = 16;
