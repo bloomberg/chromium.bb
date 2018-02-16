@@ -340,7 +340,7 @@ TEST(PageAllocatorTest, AllocFailure) {
     return;
 
   void* result = base::AllocPages(nullptr, size, kPageAllocationGranularity,
-                                  PageInaccessible);
+                                  PageInaccessible, PageTag::kChromium, false);
   if (result == nullptr) {
     // We triggered allocation failure. Our reservation should have been
     // released, and we should be able to make a new reservation.

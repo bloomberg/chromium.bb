@@ -10,20 +10,24 @@
 
 #include "base/allocator/partition_allocator/address_space_randomization.h"
 #include "base/allocator/partition_allocator/spin_lock.h"
-#include "base/compiler_specific.h"
 #include "base/base_export.h"
+#include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/numerics/checked_math.h"
 #include "build/build_config.h"
-
-#if defined(OS_MACOSX)
-#include <mach/mach.h>
-#endif
 
 #if defined(OS_POSIX)
 
 #include <errno.h>
 #include <sys/mman.h>
+
+#if defined(OS_MACOSX)
+#include <mach/mach.h>
+#endif
+#if defined(OS_LINUX)
+#include <sys/resource.h>
+#endif
 
 #ifndef MADV_FREE
 #define MADV_FREE MADV_DONTNEED
@@ -56,6 +60,27 @@ int GetAccessFlags(PageAccessibilityConfiguration page_accessibility) {
       return PROT_NONE;
   }
 }
+
+#if defined(OS_LINUX) && defined(ARCH_CPU_64_BITS)
+// On Linux, multiple guarded memory regions may exceed the process address
+// space limit. This function will raise or lower the limit by |amount|.
+bool AdjustAddressSpaceLimit(int64_t amount) {
+  struct rlimit old_rlimit;
+  if (getrlimit(RLIMIT_AS, &old_rlimit))
+    return false;
+  const rlim_t new_limit =
+      CheckAdd(old_rlimit.rlim_cur, amount).ValueOrDefault(old_rlimit.rlim_max);
+  const struct rlimit new_rlimit = {std::min(new_limit, old_rlimit.rlim_max),
+                                    old_rlimit.rlim_max};
+  // setrlimit will fail if limit > old_rlimit.rlim_max.
+  return setrlimit(RLIMIT_AS, &new_rlimit) == 0;
+}
+
+// Current WASM guarded memory regions have 8 GiB of address space. There are
+// schemes that reduce that to 4 GiB.
+constexpr size_t kMinimumGuardedMemorySize = 1ULL << 32;  // 4 GiB
+
+#endif  // defined(OS_LINUX) && defined(ARCH_CPU_64_BITS)
 
 #elif defined(OS_WIN)
 
@@ -220,6 +245,19 @@ void* AllocPages(void* address,
   uintptr_t align_base_mask = ~align_offset_mask;
   DCHECK(!(reinterpret_cast<uintptr_t>(address) & align_offset_mask));
 
+#if defined(OS_LINUX) && defined(ARCH_CPU_64_BITS)
+  // On 64 bit Linux, we may need to adjust the address space limit for
+  // guarded allocations.
+  if (length >= kMinimumGuardedMemorySize) {
+    CHECK_EQ(PageInaccessible, page_accessibility);
+    CHECK(!commit);
+    if (AdjustAddressSpaceLimit(base::checked_cast<int64_t>(length))) {
+      DLOG(WARNING) << "Could not address space by " << length;
+      // Fall through. Try the allocation, since we may have a reserve.
+    }
+  }
+#endif
+
   // If the client passed null as the address, choose a good one.
   if (address == nullptr) {
     address = GetRandomPageBase();
@@ -291,6 +329,12 @@ void FreePages(void* address, size_t length) {
 #if defined(OS_POSIX)
   int ret = munmap(address, length);
   CHECK(!ret);
+#if defined(OS_LINUX) && defined(ARCH_CPU_64_BITS)
+  // On 64 bit Linux, restore the address space limit.
+  if (length >= kMinimumGuardedMemorySize) {
+    CHECK(AdjustAddressSpaceLimit(-base::checked_cast<int64_t>(length)));
+  }
+#endif
 #else
   BOOL ret = VirtualFree(address, 0, MEM_RELEASE);
   CHECK(ret);
