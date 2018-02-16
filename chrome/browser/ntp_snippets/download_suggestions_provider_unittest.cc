@@ -323,7 +323,8 @@ class DownloadSuggestionsProviderTest : public testing::Test {
   void FireOfflinePageDeleted(const OfflinePageItem& item) {
     DCHECK(provider_);
     offline_pages::OfflinePageModel::DeletedPageInfo info(
-        item.offline_id, item.client_id, item.request_origin);
+        item.offline_id, item.system_download_id, item.client_id,
+        item.request_origin);
     provider_->OfflinePageDeleted(info);
   }
 

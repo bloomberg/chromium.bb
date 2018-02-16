@@ -35,9 +35,11 @@ class SystemDownloadManagerStub : public SystemDownloadManager {
   long length() { return length_; }
   void set_installed(bool installed) { installed_ = installed; }
   void set_download_id(int64_t download_id) { download_id_ = download_id; }
+  int64_t last_removed_id() { return last_removed_id_; }
 
  private:
   int64_t download_id_;
+  int64_t last_removed_id_;
   std::string title_;
   std::string description_;
   std::string path_;

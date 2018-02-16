@@ -26,6 +26,8 @@ namespace ntp_snippets {
 
 namespace {
 
+const int64_t kSystemDownloadId = 0;
+
 class MockOfflinePageModel : public offline_pages::StubOfflinePageModel {
  public:
   ~MockOfflinePageModel() override = default;
@@ -132,7 +134,8 @@ TEST_F(PrefetchedPagesTrackerImplTest, ShouldDeletePrefetchedURLWhenNotified) {
   ASSERT_TRUE(
       tracker.PrefetchedOfflinePageExists(GURL("http://prefetched.com")));
   tracker.OfflinePageDeleted(offline_pages::OfflinePageModel::DeletedPageInfo(
-      item.offline_id, item.client_id, /*request_origin=*/""));
+      item.offline_id, kSystemDownloadId, item.client_id,
+      /*request_origin=*/""));
   EXPECT_FALSE(
       tracker.PrefetchedOfflinePageExists(GURL("http://prefetched.com")));
 }
@@ -152,7 +155,8 @@ TEST_F(PrefetchedPagesTrackerImplTest,
   ASSERT_TRUE(
       tracker.PrefetchedOfflinePageExists(GURL("http://prefetched.com")));
   tracker.OfflinePageDeleted(offline_pages::OfflinePageModel::DeletedPageInfo(
-      manually_downloaded_item.offline_id, manually_downloaded_item.client_id,
+      manually_downloaded_item.offline_id, kSystemDownloadId,
+      manually_downloaded_item.client_id,
       /*request_origin=*/""));
   EXPECT_TRUE(
       tracker.PrefetchedOfflinePageExists(GURL("http://prefetched.com")));
@@ -250,7 +254,8 @@ TEST_F(PrefetchedPagesTrackerImplTest,
       tracker.PrefetchedOfflinePageExists(GURL("http://prefetched.com")));
 
   tracker.OfflinePageDeleted(offline_pages::OfflinePageModel::DeletedPageInfo(
-      first_item.offline_id, first_item.client_id, /*request_origin=*/""));
+      first_item.offline_id, kSystemDownloadId, first_item.client_id,
+      /*request_origin=*/""));
 
   // Only one offline page (out of two) has been removed, the remaining one
   // should be reported here.
@@ -273,13 +278,15 @@ TEST_F(PrefetchedPagesTrackerImplTest,
       tracker.PrefetchedOfflinePageExists(GURL("http://prefetched.com")));
 
   tracker.OfflinePageDeleted(offline_pages::OfflinePageModel::DeletedPageInfo(
-      first_item.offline_id, first_item.client_id, /*request_origin=*/""));
+      first_item.offline_id, kSystemDownloadId, first_item.client_id,
+      /*request_origin=*/""));
 
   ASSERT_TRUE(
       tracker.PrefetchedOfflinePageExists(GURL("http://prefetched.com")));
 
   tracker.OfflinePageDeleted(offline_pages::OfflinePageModel::DeletedPageInfo(
-      second_item.offline_id, second_item.client_id, /*request_origin=*/""));
+      second_item.offline_id, kSystemDownloadId, second_item.client_id,
+      /*request_origin=*/""));
 
   // All offline pages have been removed, their absence should be reported here.
   EXPECT_FALSE(

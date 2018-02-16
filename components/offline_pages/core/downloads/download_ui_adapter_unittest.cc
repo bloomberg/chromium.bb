@@ -38,6 +38,7 @@ namespace {
 // Constants for a test OfflinePageItem.
 static const int kTestOfflineId1 = 1;
 static const int kTestOfflineId2 = 2;
+static const int64_t kSystemDownloadId = 0;
 static const char kTestUrl[] = "http://foo.com/bar.mhtml";
 static const char kTestGuid1[] = "cccccccc-cccc-4ccc-0ccc-ccccccccccc1";
 static const char kTestGuid2[] = "cccccccc-cccc-4ccc-0ccc-ccccccccccc2";
@@ -138,8 +139,8 @@ class MockOfflinePageModel : public StubOfflinePageModel {
   void DeletePageAndNotifyAdapter(const std::string& guid) {
     for (const auto& page : pages) {
       if (page.second.client_id.id == guid) {
-        DeletedPageInfo info(page.second.offline_id, page.second.client_id,
-                             page.second.request_origin);
+        DeletedPageInfo info(page.second.offline_id, kSystemDownloadId,
+                             page.second.client_id, page.second.request_origin);
         observer_->OfflinePageDeleted(info);
         pages.erase(page.first);
         return;

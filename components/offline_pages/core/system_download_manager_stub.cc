@@ -8,7 +8,7 @@ namespace offline_pages {
 
 SystemDownloadManagerStub::SystemDownloadManagerStub(int64_t id_to_use,
                                                      bool installed)
-    : download_id_(id_to_use), installed_(installed) {}
+    : download_id_(id_to_use), last_removed_id_(0), installed_(installed) {}
 
 SystemDownloadManagerStub::~SystemDownloadManagerStub() {}
 
@@ -35,7 +35,10 @@ int64_t SystemDownloadManagerStub::AddCompletedDownload(
 
 int SystemDownloadManagerStub::Remove(
     const std::vector<int64_t>& android_download_manager_ids) {
-  return static_cast<int>(android_download_manager_ids.size());
+  int count = static_cast<int>(android_download_manager_ids.size());
+  if (count > 0)
+    last_removed_id_ = android_download_manager_ids[count - 1];
+  return count;
 }
 
 }  // namespace offline_pages

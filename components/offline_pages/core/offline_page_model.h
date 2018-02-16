@@ -79,10 +79,14 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
     DeletedPageInfo(const DeletedPageInfo& other);
     ~DeletedPageInfo();
     DeletedPageInfo(int64_t offline_id,
+                    int64_t system_download_id,
                     const ClientId& client_id,
                     const std::string& request_origin);
     // The ID of the deleted page.
     int64_t offline_id;
+    // The system download manager id of the deleted page.  This will be 0 if
+    // there is no system download manager assigned id.
+    int64_t system_download_id;
     // Client ID of the deleted page.
     ClientId client_id;
     // The origin that the page was saved on behalf of.
