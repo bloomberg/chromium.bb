@@ -33,10 +33,10 @@ std::vector<FrameTreeNode*> GetChildren(FrameTreeNode* node) {
   for (size_t i = 0; i != node->child_count(); ++i)
     children[i] = node->child_at(i);
 
-  if (auto* inner_contents = WebContentsImpl::FromOuterFrameTreeNode(node)) {
-    children.push_back(inner_contents->GetMainFrame()->frame_tree_node());
+  if (auto* contents = WebContentsImpl::FromOuterFrameTreeNode(node)) {
+    children.push_back(contents->GetMainFrame()->frame_tree_node());
   } else {
-    auto* contents = WebContentsImpl::FromFrameTreeNode(node);
+    contents = WebContentsImpl::FromFrameTreeNode(node);
     if (node->IsMainFrame() && contents->GetBrowserPluginEmbedder()) {
       for (auto* inner_contents : contents->GetInnerWebContents()) {
         children.push_back(inner_contents->GetMainFrame()->frame_tree_node());
