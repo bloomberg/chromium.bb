@@ -231,6 +231,19 @@ timespec_is_zero(const struct timespec *a)
 	return a->tv_sec == 0 && a->tv_nsec == 0;
 }
 
+/* Check if two timespecs are equal
+ *
+ * \param a[in] timespec to check
+ * \param b[in] timespec to check
+ * \return whether timespecs a and b are equal
+ */
+static inline bool
+timespec_eq(const struct timespec *a, const struct timespec *b)
+{
+	return a->tv_sec == b->tv_sec &&
+	       a->tv_nsec == b->tv_nsec;
+}
+
 /* Convert milli-Hertz to nanoseconds
  *
  * \param mhz frequency in mHz, not zero

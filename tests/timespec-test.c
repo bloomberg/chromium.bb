@@ -294,3 +294,15 @@ ZUC_TEST(timespec_test, timespec_is_zero)
 	ZUC_ASSERT_FALSE(timespec_is_zero(&non_zero_nsec));
 	ZUC_ASSERT_FALSE(timespec_is_zero(&non_zero_sec));
 }
+
+ZUC_TEST(timespec_test, timespec_eq)
+{
+	struct timespec a = { .tv_sec = 2, .tv_nsec = 1 };
+	struct timespec b = { .tv_sec = -1, .tv_nsec = 2 };
+
+	ZUC_ASSERT_TRUE(timespec_eq(&a, &a));
+	ZUC_ASSERT_TRUE(timespec_eq(&b, &b));
+
+	ZUC_ASSERT_FALSE(timespec_eq(&a, &b));
+	ZUC_ASSERT_FALSE(timespec_eq(&b, &a));
+}
