@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_provider_test_singleton.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_test_utils.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -31,6 +32,7 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/history_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
+#include "ios/chrome/test/base/scoped_block_swizzler.h"
 #include "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -77,7 +79,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 // Mock provider from the singleton.
 @property(nonatomic, assign, readonly) MockContentSuggestionsProvider* provider;
 // Article category, used by the singleton.
-@property(nonatomic, assign, readonly) Category category;
+@property(nonatomic, assign, readonly) ntp_snippets::Category category;
 
 @end
 
@@ -150,8 +152,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   return [[ContentSuggestionsTestSingleton sharedInstance] provider];
 }
 
-- (Category)category {
-  return Category::FromKnownCategory(KnownCategories::ARTICLES);
+- (ntp_snippets::Category)category {
+  return ntp_snippets::Category::FromKnownCategory(KnownCategories::ARTICLES);
 }
 
 #pragma mark - Tests
@@ -398,6 +400,32 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
   // Check that the page is loaded.
   [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString];
+}
+
+// Tests that tapping the fake omnibox logs correctly.
+// It is important for ranking algorithm of omnibox that requests from fakebox
+// and real omnibox are marked appropriately.
+- (void)testTapFakeOmniboxLogsCorrectly {
+  if (!IsIPadIdiom()) {
+    // This logging only happens on iPad, since on iPhone there is no real
+    // omnibox on NTP, only fakebox.
+    return;
+  }
+
+  // Swizzle the method that needs to be called for correct logging.
+  __block BOOL tapped = NO;
+  ScopedBlockSwizzler swizzler([LocationBarCoordinator class],
+                               @selector(focusOmniboxFromFakebox), ^() {
+                                 tapped = YES;
+                               });
+
+  // Tap the fake omnibox.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          FakeOmniboxAccessibilityID())]
+      performAction:grey_tap()];
+
+  // Check that the page is loaded.
+  GREYAssertTrue(tapped, @"The tap on the fakebox was not correctly logged.");
 }
 
 // Tests that tapping the fake omnibox moves the collection.

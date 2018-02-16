@@ -234,6 +234,11 @@ class OmniboxEditModel {
     return focus_state_ == OMNIBOX_FOCUS_VISIBLE;
   }
 
+  FocusSource focus_source() const { return focus_source_; }
+  void set_focus_source(FocusSource focus_source) {
+    focus_source_ = focus_source;
+  }
+
   // Accessors for keyword-related state (see comments on keyword_ and
   // is_keyword_hint_).
   const base::string16& keyword() const { return keyword_; }
