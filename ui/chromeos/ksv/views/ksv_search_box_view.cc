@@ -48,6 +48,20 @@ gfx::Size KSVSearchBoxView::CalculatePreferredSize() const {
   return gfx::Size(704, 32);
 }
 
+void KSVSearchBoxView::OnKeyEvent(ui::KeyEvent* event) {
+  if (event->key_code() != ui::VKEY_BACK)
+    return;
+
+  if (!search_box()->text().empty())
+    return;
+
+  if (exit_search_mode_on_next_backspace_) {
+    SetSearchBoxActive(false);
+    event->SetHandled();
+  }
+  exit_search_mode_on_next_backspace_ = !exit_search_mode_on_next_backspace_;
+}
+
 void KSVSearchBoxView::UpdateBackgroundColor(SkColor color) {
   SetSearchBoxBackgroundColor(color);
 }

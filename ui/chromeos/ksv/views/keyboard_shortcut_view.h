@@ -48,6 +48,8 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
 
   void InitViews();
 
+  // Put focus on the active tab. Used when the first time to show the widget or
+  // after exiting search mode.
   void RequestFocusForActiveTab();
 
   static KeyboardShortcutView* GetInstanceForTesting();
