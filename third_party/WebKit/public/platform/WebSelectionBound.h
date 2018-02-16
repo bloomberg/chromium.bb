@@ -16,15 +16,18 @@ struct WebSelectionBound {
   // |WebSelection| for determining bound orientation.
   enum Type { kCaret, kSelectionLeft, kSelectionRight };
 
-  explicit WebSelectionBound(Type type)
-      : type(type), layer_id(0), is_text_direction_rtl(false), hidden(false) {}
+#if INSIDE_BLINK
+  WebSelectionBound() = default;
+#endif
+
+  explicit WebSelectionBound(Type type) : type(type) {}
 
   // The logical type of the endpoint. Note that this is dependent not only on
   // the bound's relative location, but also the underlying text direction.
-  Type type;
+  Type type = kCaret;
 
   // The id of the platform layer to which the bound should be anchored.
-  int layer_id;
+  int layer_id = 0;
 
   // The bottom and top coordinates of the edge (caret), in layer coordinates,
   // that define the selection bound.
@@ -32,10 +35,10 @@ struct WebSelectionBound {
   WebPoint edge_bottom_in_layer;
 
   // Whether the text direction at this location is RTL.
-  bool is_text_direction_rtl;
+  bool is_text_direction_rtl = false;
 
   // Whether this bound is hidden (clipped out/occluded).
-  bool hidden;
+  bool hidden = false;
 };
 
 }  // namespace blink
