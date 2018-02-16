@@ -7,10 +7,11 @@
 
 #include <set>
 
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/version.h"
 #include "extensions/browser/computed_hashes.h"
-#include "extensions/browser/content_verifier_delegate.h"
+#include "extensions/browser/content_verifier/content_verifier_key.h"
 #include "extensions/browser/verified_contents.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_id.h"
