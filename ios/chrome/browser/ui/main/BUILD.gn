@@ -21,6 +21,7 @@ source_set("main") {
   deps = [
     ":feature_flags",
     "//base",
+    "//ios/chrome/app/resources:launchscreen_xib",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browsing_data",
