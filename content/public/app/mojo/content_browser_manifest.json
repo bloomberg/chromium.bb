@@ -70,6 +70,7 @@
       },
       "requires": {
         "*": [ "app" ],
+        "audio": [ "info" ],
         "cdm": [ "media:cdm" ],
         "content_gpu": [ "browser" ],
         "content_plugin": [ "browser" ],

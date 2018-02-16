@@ -11,12 +11,15 @@
 #include "build/build_config.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "media/audio/audio_system.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/audio/public/cpp/audio_system_factory.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
@@ -113,7 +116,10 @@ void WebRtcContentBrowserTestBase::ExecuteJavascriptAndWaitForOk(
 bool WebRtcContentBrowserTestBase::HasAudioOutputDevices() {
   bool has_devices = false;
   base::RunLoop run_loop;
-  auto audio_system = media::AudioSystem::CreateInstance();
+  auto audio_system = audio::CreateAudioSystem(
+      content::ServiceManagerConnection::GetForProcess()
+          ->GetConnector()
+          ->Clone());
   audio_system->HasOutputDevices(base::BindOnce(
       [](base::Closure finished_callback, bool* result, bool received) {
         *result = received;

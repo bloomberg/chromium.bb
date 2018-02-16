@@ -892,6 +892,7 @@ test("content_browsertests") {
     "//mojo/public/cpp/bindings",
     "//net:test_support",
     "//ppapi/features",
+    "//services/audio/public/cpp",
     "//services/catalog:lib",
     "//services/device/public/cpp:device_features",
     "//services/device/public/cpp/generic_sensor",

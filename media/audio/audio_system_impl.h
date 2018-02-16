@@ -14,6 +14,10 @@ class AudioManager;
 
 class MEDIA_EXPORT AudioSystemImpl : public AudioSystem {
  public:
+  // Creates AudioSystem using the global AudioManager instance, which must be
+  // created prior to that.
+  static std::unique_ptr<AudioSystem> CreateInstance();
+
   explicit AudioSystemImpl(AudioManager* audio_manager);
 
   // AudioSystem implementation.

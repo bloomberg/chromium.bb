@@ -44,10 +44,7 @@ class MEDIA_EXPORT AudioSystem {
   using OnDeviceDescriptionsCallback =
       base::OnceCallback<void(AudioDeviceDescriptions)>;
 
-  // The global AudioManager instance must be created prior to that.
-  static std::unique_ptr<AudioSystem> CreateInstance();
-
-  virtual ~AudioSystem();
+  virtual ~AudioSystem() = default;
 
   virtual void GetInputStreamParameters(const std::string& device_id,
                                         OnAudioParamsCallback on_params_cb) = 0;

@@ -15,6 +15,7 @@
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/deferred_sequenced_task_runner.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -124,6 +125,7 @@
 #include "net/socket/client_socket_factory.h"
 #include "net/ssl/ssl_config_service.h"
 #include "ppapi/features/features.h"
+#include "services/audio/public/cpp/audio_system_factory.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/client_process_impl.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
@@ -1331,12 +1333,20 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       // AudioManager shutdown failed.
       ignore_result(user_input_monitor_.release());
     }
+
+    // Leaking AudioSystem: we cannot correctly destroy it since Audio service
+    // connection in there is bound to IO thread.
+    ignore_result(audio_system_.release());
   }
 
   if (parts_) {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:PostDestroyThreads");
     parts_->PostDestroyThreads();
   }
+}
+
+base::SequencedTaskRunner* BrowserMainLoop::audio_service_runner() {
+  return audio_service_runner_.get();
 }
 
 #if !defined(OS_ANDROID)
@@ -1380,6 +1390,9 @@ void BrowserMainLoop::InitializeMainThread() {
 
 int BrowserMainLoop::BrowserThreadsStarted() {
   TRACE_EVENT0("startup", "BrowserMainLoop::BrowserThreadsStarted");
+
+  audio_service_runner_ =
+      base::MakeRefCounted<base::DeferredSequencedTaskRunner>();
 
   // Bring up Mojo IPC and the embedded Service Manager as early as possible.
   // Initializaing mojo requires the IO thread to have been initialized first,
@@ -1829,7 +1842,15 @@ void BrowserMainLoop::CreateAudioManager() {
                                     MediaInternals::GetInstance());
   }
   CHECK(audio_manager_);
-  audio_system_ = media::AudioSystem::CreateInstance();
+
+  TRACE_EVENT_INSTANT0("startup", "Starting Audio service task runner",
+                       TRACE_EVENT_SCOPE_THREAD);
+  audio_service_runner_->StartWithTaskRunner(audio_manager_->GetTaskRunner());
+
+  audio_system_ = audio::CreateAudioSystem(
+      content::ServiceManagerConnection::GetForProcess()
+          ->GetConnector()
+          ->Clone());
   CHECK(audio_system_);
 }
 
