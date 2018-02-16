@@ -56,8 +56,14 @@ const size_t kNumSystemFontsForFontconfig =
 
 const char* const kCloudStorageSyncedFonts[] = {
     // The DejaVuSans font is used by the css2.1 tests.
-    "DejaVuSans.ttf",           "Garuda.ttf",         "Lohit-Devanagari.ttf",
-    "Lohit-Tamil.ttf",          "Lohit-Gurmukhi.ttf", "MuktiNarrow.ttf",
+    "DejaVuSans.ttf",
+    "Garuda.ttf",
+    "Lohit-Devanagari.ttf",
+    "Lohit-Tamil.ttf",
+    "Lohit-Gurmukhi.ttf",
+    "MuktiNarrow.ttf",
+    // TODO(sergeyu): Uncomment this and update test expectations.
+    // "NotoSansCJKjp-Regular.otf",
     "NotoSansKhmer-Regular.ttf"};
 
 const size_t kNumCloudStorageSyncedFonts = arraysize(kCloudStorageSyncedFonts);
