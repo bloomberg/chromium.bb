@@ -118,6 +118,19 @@ class AutofillMetrics {
     NUM_INFO_BAR_METRICS,
   };
 
+  // Represents card submitted state.
+  enum SubmittedCardStateMetric {
+    // Submitted card has valid card number and expiration date.
+    HAS_CARD_NUMBER_AND_EXPIRATION_DATE,
+    // Submitted card has a valid card number but an invalid or missing
+    // expiration date.
+    HAS_CARD_NUMBER_ONLY,
+    // Submitted card has a valid expiration date but an invalid or missing card
+    // number.
+    HAS_EXPIRATION_DATE_ONLY,
+    NUM_SUBMITTED_CARD_STATE_METRICS,
+  };
+
   // Metric to measure if a submitted card's expiration date matches the same
   // server card's expiration date (unmasked or not).  Cards are considered to
   // be the same if they have the same card number (if unmasked) or if they have
@@ -693,6 +706,8 @@ class AutofillMetrics {
   // server card's known expiration date.
   static void LogSubmittedServerCardExpirationStatusMetric(
       SubmittedServerCardExpirationStatusMetric metric);
+
+  static void LogSubmittedCardStateMetric(SubmittedCardStateMetric metric);
 
   // |upload_decision_metrics| is a bitmask of |CardUploadDecisionMetric|.
   static void LogCardUploadDecisionMetrics(int upload_decision_metrics);

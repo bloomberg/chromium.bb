@@ -633,6 +633,14 @@ void AutofillMetrics::LogSubmittedServerCardExpirationStatusMetric(
 }
 
 // static
+void AutofillMetrics::LogSubmittedCardStateMetric(
+    SubmittedCardStateMetric metric) {
+  DCHECK_LT(metric, NUM_SUBMITTED_CARD_STATE_METRICS);
+  UMA_HISTOGRAM_ENUMERATION("Autofill.SubmittedCardState", metric,
+                            NUM_SUBMITTED_CARD_STATE_METRICS);
+}
+
+// static
 void AutofillMetrics::LogCardUploadDecisionMetrics(
     int upload_decision_metrics) {
   DCHECK(upload_decision_metrics);

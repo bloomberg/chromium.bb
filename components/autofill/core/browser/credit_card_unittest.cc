@@ -631,7 +631,7 @@ TEST(CreditCardTest, UpdateFromImportedCard) {
   EXPECT_EQ(original_card, a);
 }
 
-TEST(CreditCardTest, IsValid) {
+TEST(CreditCardTest, IsValidCardNumberAndExpiryDate) {
   CreditCard card;
   // Invalid because expired
   const base::Time now(base::Time::Now());
@@ -643,6 +643,8 @@ TEST(CreditCardTest, IsValid) {
                   base::IntToString16(now_exploded.year - 1));
   card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
   EXPECT_FALSE(card.IsValid());
+  EXPECT_FALSE(card.HasValidExpirationDate());
+  EXPECT_TRUE(card.HasValidCardNumber());
 
   // Invalid because card number is not complete
   card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("12"));
@@ -654,11 +656,15 @@ TEST(CreditCardTest, IsValid) {
     SCOPED_TRACE(valid_number);
     card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16(valid_number));
     EXPECT_TRUE(card.IsValid());
+    EXPECT_TRUE(card.HasValidCardNumber());
+    EXPECT_TRUE(card.HasValidExpirationDate());
   }
   for (const char* invalid_number : kInvalidNumbers) {
     SCOPED_TRACE(invalid_number);
     card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16(invalid_number));
     EXPECT_FALSE(card.IsValid());
+    EXPECT_TRUE(card.HasValidExpirationDate());
+    EXPECT_FALSE(card.HasValidCardNumber());
   }
 }
 
