@@ -690,30 +690,34 @@ void AllocatorShimLogAlloc(AllocatorType type,
   if (!send_buffers)
     return;
 
-  // Sample allocations smaller than g_sampling_rate. Always record larger
-  // allocations. [There's no point in sampling larger allocations since we
-  // want to record them with probability 1. Just do that.]
+  // When sampling, we divide allocations into two buckets. For allocations
+  // larger than g_sampling_rate we just skip the sampling logic entirely, since
+  // we want to record them with probability 1. Allocations smaller than
+  // g_sampling_rate we use a poisson process to sample. That gives us a
+  // computationally cheap mechanism to sample allocations with probability P =
+  // (size) / g_sampling_rate.
   if (g_sample_allocations && LIKELY(sz < g_sampling_rate)) {
     ShimState* shim_state = GetShimState();
 
-    // Update the sampling interval, if necessary. This also handles the case
-    // where the sampling interval has not yet been initialized.
-    //
-    // interval_to_next_sample is actually an underflowing counter that
-    // triggers a sample. Incrementing by GetNextSampleInterval() provides a
-    // poisson process sampling of allocations with probability = (sz /
-    // g_sampling_rate).
-    if (shim_state->interval_to_next_sample <= 0) {
-      shim_state->interval_to_next_sample +=
-          GetNextSampleInterval(g_sampling_rate);
-    }
-
     shim_state->interval_to_next_sample -= sz;
 
-    // Do not sample the allocation.
-    if (shim_state->interval_to_next_sample > 0) {
+    // When |interval_to_next_sample|  underflows, we record a sample.
+    if (LIKELY(shim_state->interval_to_next_sample > 0)) {
       return;
     }
+
+    // Very occasionally, when sampling, we'll want to take more than 1 sample
+    // from the same object. Ideally, we'd have a "count" or "weight" associated
+    // with the allocation in question. Since the memlog stream format does not
+    // support that, just use |sz| as a proxy.
+    int sz_multiplier = 0;
+    while (shim_state->interval_to_next_sample <= 0) {
+      shim_state->interval_to_next_sample +=
+          GetNextSampleInterval(g_sampling_rate);
+      ++sz_multiplier;
+    }
+
+    sz *= sz_multiplier;
   }
 
   if (address) {
