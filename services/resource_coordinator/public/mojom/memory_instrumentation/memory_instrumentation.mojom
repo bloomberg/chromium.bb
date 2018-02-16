@@ -148,7 +148,7 @@ struct OSMemDump {
 
   // This is private swapped memory in kilobytes reported on Linux and Android
   // only.
-  [EnableIf=OS_LINUX_OR_OS_ANDROID]
+  [EnableIf=private_swap_info]
   uint32 private_footprint_swap_kb = 0;
 };
 

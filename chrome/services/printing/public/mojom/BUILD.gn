@@ -19,9 +19,4 @@ mojom("mojom") {
     "//mojo/common:common_custom_types",
     "//ui/gfx/geometry/mojo",
   ]
-
-  enabled_features = []
-  if (is_win) {
-    enabled_features += [ "is_win" ]
-  }
 }

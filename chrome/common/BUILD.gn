@@ -695,11 +695,6 @@ mojom("mojo_bindings") {
 
   component_deps = [ "//content/public/common" ]
 
-  enabled_features = []
-  if (is_android) {
-    enabled_features += [ "OS_ANDROID" ]
-  }
-
   # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
   use_once_callback = false
 }

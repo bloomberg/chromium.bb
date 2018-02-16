@@ -148,11 +148,6 @@ mojom("mojo_platform_bindings") {
     "//url/mojom:url_mojom_origin",
   ]
 
-  enabled_features = []
-  if (is_mac) {
-    enabled_features += [ "is_mac" ]
-  }
-
   export_class_attribute = "BLINK_COMMON_EXPORT"
   export_define = "BLINK_COMMON_IMPLEMENTATION=1"
   export_header = "third_party/WebKit/common/common_export.h"

@@ -617,11 +617,6 @@ mojom("mojo_bindings") {
     "//url/mojom:url_mojom_origin",
   ]
 
-  enabled_features = []
-  if (is_android) {
-    enabled_features += [ "is_android" ]
-  }
-
   overridden_deps = [ "//third_party/WebKit/common:mojo_bindings" ]
   component_deps = [ "//third_party/WebKit/common:blink_common" ]
 
