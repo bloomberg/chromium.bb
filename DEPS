@@ -58,7 +58,7 @@ vars = {
   'checkout_libaom': True,
 
   # By default do not check out the Oculus SDK. Only available for Googlers.
-  'checkout_oculus_sdk' : 'checkout_src_internal',
+  'checkout_oculus_sdk' : 'checkout_src_internal and checkout_win',
 
   # TODO(dpranke): change to != "small" once != is supported.
   'checkout_traffic_annotation_tools': 'checkout_configuration == "default"',
