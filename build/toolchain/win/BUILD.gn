@@ -299,12 +299,19 @@ template("msvc_toolchain") {
 
       command = "$python_path $tool_wrapper_path link-wrapper $env False $link /nologo /OUT:$exename /PDB:$pdbname @$rspfile"
 
+      if (host_os == "win") {
+        shellprefix = "cmd /c"
+      } else {
+        shellprefix = ""
+      }
+      not_needed([ "shellprefix" ])
+
       if (is_official_build) {
         # On bots, the binary's PDB grow and eventually exceed 4G, causing the
         # link to fail. As there's no utility to keeping the PDB around
         # incrementally anyway in this config (because we're doing
         # non-incremental LTCG builds), delete it before linking.
-        command = "cmd /c $python_path $tool_wrapper_path delete-file $pdbname && $command"
+        command = "$shellprefix $python_path $tool_wrapper_path delete-file $pdbname && $command"
       }
 
       if (linkrepro_root_dir != "") {
@@ -314,7 +321,7 @@ template("msvc_toolchain") {
         # because the linker doesn't generate the directory specified to the
         # /LINKREPRO flag if it doesn't exist.
         linkrepro_dir = "$linkrepro_root_dir\\{{target_output_name}}"
-        command = "cmd /c mkdir $linkrepro_dir && $command"
+        command = "$shellprefix mkdir $linkrepro_dir && $command"
       }
 
       default_output_extension = ".exe"
