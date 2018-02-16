@@ -96,6 +96,8 @@ source_set("base") {
     "cdm_promise.h",
     "cdm_promise_adapter.cc",
     "cdm_promise_adapter.h",
+    "cdm_proxy_context.cc",
+    "cdm_proxy_context.h",
     "cdm_session_tracker.cc",
     "cdm_session_tracker.h",
     "channel_mixer.cc",
