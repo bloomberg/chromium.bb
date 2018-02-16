@@ -470,4 +470,8 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     AwBrowserContext getBrowserContextOnUiThread() {
         return mAwInit.getBrowserContextOnUiThread();
     }
+
+    WebViewChromiumAwInit getAwInit() {
+        return mAwInit;
+    }
 }
