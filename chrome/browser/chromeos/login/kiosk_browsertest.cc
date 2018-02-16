@@ -80,6 +80,7 @@
 #include "media/audio/sounds/sounds_manager.h"
 #include "media/audio/test_audio_thread.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/audio/public/cpp/fake_system_info.h"
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/keyboard/keyboard_switches.h"
@@ -2357,7 +2358,8 @@ class KioskVirtualKeyboardTestSoundsManagerTestImpl
 
 // Specialized test fixture for testing kiosk mode where virtual keyboard is
 // enabled.
-class KioskVirtualKeyboardTest : public KioskTest {
+class KioskVirtualKeyboardTest : public KioskTest,
+                                 public audio::FakeSystemInfo {
  public:
   KioskVirtualKeyboardTest() {}
   ~KioskVirtualKeyboardTest() override = default;
@@ -2378,7 +2380,14 @@ class KioskVirtualKeyboardTest : public KioskTest {
     command_line->AppendSwitch(keyboard::switches::kEnableVirtualKeyboard);
   }
 
+  // audio::FakeSystemInfo override.
+  void HasInputDevices(HasInputDevicesCallback callback) override {
+    std::move(callback).Run(true);
+  }
+
   // Use class variable for sane lifetime.
+  // TODO(https://crbug.com/812170): Remove it when media::AudioSystem becomes
+  // service-based.
   std::unique_ptr<media::MockAudioManager> mock_audio_manager_;
 
  private:
@@ -2393,6 +2402,7 @@ IN_PROC_BROWSER_TEST_F(KioskVirtualKeyboardTest, RestrictFeatures) {
   mock_audio_manager_ = std::make_unique<media::MockAudioManager>(
       std::make_unique<media::TestAudioThread>());
   mock_audio_manager_->SetHasInputDevices(true);
+  audio::FakeSystemInfo::OverrideGlobalBinderForAudioService(this);
 
   set_test_app_id(kTestVirtualKeyboardKioskApp);
   set_test_app_version("0.1");
@@ -2400,7 +2410,7 @@ IN_PROC_BROWSER_TEST_F(KioskVirtualKeyboardTest, RestrictFeatures) {
 
   extensions::ResultCatcher catcher;
   StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 
   // Shutdown should be done in the same thread, thus not in the destructor.
   mock_audio_manager_->Shutdown();

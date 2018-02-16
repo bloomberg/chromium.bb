@@ -888,6 +888,7 @@ static_library("extensions") {
     "//ppapi/features",
     "//printing/features",
     "//rlz/features",
+    "//services/audio/public/cpp",
     "//services/data_decoder/public/cpp",
     "//services/device/public/interfaces",
     "//services/identity/public/mojom",

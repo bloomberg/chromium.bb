@@ -88,6 +88,12 @@ AudioSystemImpl::MaybeBindToCurrentLoop(
              : media::BindToCurrentLoop(std::move(callback));
 }
 
+// static
+std::unique_ptr<AudioSystem> AudioSystemImpl::CreateInstance() {
+  DCHECK(AudioManager::Get()) << "AudioManager instance is not created";
+  return std::make_unique<AudioSystemImpl>(AudioManager::Get());
+}
+
 AudioSystemImpl::AudioSystemImpl(AudioManager* audio_manager)
     : audio_manager_(audio_manager) {
   DETACH_FROM_THREAD(thread_checker_);

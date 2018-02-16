@@ -42,11 +42,14 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
+#include "media/audio/audio_manager.h"
 #include "media/media_features.h"
 #include "media/mojo/features.h"
 #include "media/mojo/interfaces/constants.mojom.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/incoming_broker_client_invitation.h"
+#include "services/audio/public/mojom/constants.mojom.h"
+#include "services/audio/service_factory.h"
 #include "services/catalog/manifest_provider.h"
 #include "services/catalog/public/cpp/manifest_parsing_util.h"
 #include "services/catalog/public/mojom/constants.mojom.h"
@@ -528,6 +531,18 @@ ServiceManagerContext::ServiceManagerContext() {
     info.factory = base::BindRepeating(&metrics::CreateMetricsService);
     packaged_services_connection_->AddEmbeddedService(
         metrics::mojom::kMetricsServiceName, info);
+  }
+
+  if (BrowserMainLoop* bml = BrowserMainLoop::GetInstance()) {
+    service_manager::EmbeddedServiceInfo info;
+    info.factory = base::BindRepeating(
+        [](BrowserMainLoop* bml) -> std::unique_ptr<service_manager::Service> {
+          return audio::CreateEmbeddedService(bml->audio_manager());
+        },
+        bml);
+    info.task_runner = bml->audio_service_runner();
+    packaged_services_connection_->AddEmbeddedService(
+        audio::mojom::kServiceName, info);
   }
 
   ContentBrowserClient::StaticServiceMap services;
