@@ -195,21 +195,43 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   }
   *eob = rec_eob_pos(eob_pt, eob_extra);
 
-  for (int i = 0; i < *eob; ++i) {
+  {
+    // Read the last non-zero coefficient
+    // TODO(angiebird): Put this into a function
+    const int c = *eob - 1;
+    const int pos = scan[c];
+    const int coeff_ctx =
+        get_nz_map_ctx(levels, pos, bwl, height, c, 1, tx_size, tx_type);
+    const int nsymbs = 3;
+    aom_cdf_prob *cdf =
+        ec_ctx->coeff_base_eob_cdf[txs_ctx][plane_type][coeff_ctx];
+    int level = aom_read_symbol(r, cdf, nsymbs, ACCT_STR) + 1;
+    if (level > NUM_BASE_LEVELS) {
+      const int br_ctx =
+          get_br_ctx(levels, pos, bwl, level_counts[pos], tx_type);
+      for (int idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
+        const int k = aom_read_symbol(
+            r,
+            ec_ctx->coeff_br_cdf[AOMMIN(txs_ctx, TX_32X32)][plane_type][br_ctx],
+            BR_CDF_SIZE, ACCT_STR);
+        level += k;
+        if (k < BR_CDF_SIZE - 1) break;
+      }
+      if (level > NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
+        update_pos[num_updates] = pos;
+        ++num_updates;
+      }
+    }
+    levels[get_padded_idx(pos, bwl)] = level;
+  }
+  for (int i = 1; i < *eob; ++i) {
     const int c = *eob - 1 - i;
     const int pos = scan[c];
-    const int coeff_ctx = get_nz_map_ctx(levels, pos, bwl, height, c,
-                                         c == *eob - 1, tx_size, tx_type);
-    aom_cdf_prob *cdf;
-    int nsymbs;
-    if (c == *eob - 1) {
-      cdf = ec_ctx->coeff_base_eob_cdf[txs_ctx][plane_type][coeff_ctx];
-      nsymbs = 3;
-    } else {
-      cdf = ec_ctx->coeff_base_cdf[txs_ctx][plane_type][coeff_ctx];
-      nsymbs = 4;
-    }
-    int level = aom_read_symbol(r, cdf, nsymbs, ACCT_STR) + (c == *eob - 1);
+    const int coeff_ctx =
+        get_nz_map_ctx(levels, pos, bwl, height, c, 0, tx_size, tx_type);
+    aom_cdf_prob *cdf = ec_ctx->coeff_base_cdf[txs_ctx][plane_type][coeff_ctx];
+    const int nsymbs = 4;
+    int level = aom_read_symbol(r, cdf, nsymbs, ACCT_STR);
     if (level > NUM_BASE_LEVELS) {
       const int br_ctx =
           get_br_ctx(levels, pos, bwl, level_counts[pos], tx_type);
