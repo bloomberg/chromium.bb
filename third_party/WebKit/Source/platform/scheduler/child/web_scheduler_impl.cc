@@ -8,7 +8,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
-#include "platform/scheduler/child/web_task_runner_impl.h"
+#include "platform/scheduler/child/task_runner_impl.h"
 #include "platform/scheduler/child/worker_scheduler.h"
 #include "platform/scheduler/renderer/web_view_scheduler.h"
 
@@ -22,10 +22,10 @@ WebSchedulerImpl::WebSchedulerImpl(
     scoped_refptr<TaskQueue> v8_task_runner)
     : child_scheduler_(child_scheduler),
       idle_task_runner_(idle_task_runner),
-      timer_web_task_runner_(
-          WebTaskRunnerImpl::Create(timer_task_runner, base::nullopt)),
-      v8_web_task_runner_(
-          WebTaskRunnerImpl::Create(v8_task_runner, base::nullopt)) {}
+      timer_task_runner_(
+          TaskRunnerImpl::Create(std::move(timer_task_runner), base::nullopt)),
+      v8_task_runner_(
+          TaskRunnerImpl::Create(std::move(v8_task_runner), base::nullopt)) {}
 
 WebSchedulerImpl::~WebSchedulerImpl() = default;
 
@@ -64,11 +64,11 @@ void WebSchedulerImpl::PostNonNestableIdleTask(
 }
 
 base::SingleThreadTaskRunner* WebSchedulerImpl::TimerTaskRunner() {
-  return timer_web_task_runner_.get();
+  return timer_task_runner_.get();
 }
 
 base::SingleThreadTaskRunner* WebSchedulerImpl::V8TaskRunner() {
-  return v8_web_task_runner_.get();
+  return v8_task_runner_.get();
 }
 
 base::SingleThreadTaskRunner* WebSchedulerImpl::CompositorTaskRunner() {

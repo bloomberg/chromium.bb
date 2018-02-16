@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
+#include "platform/scheduler/child/task_runner_impl.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
 #include "platform/scheduler/test/create_task_queue_manager_for_test.h"
@@ -64,13 +65,12 @@ class WebViewSchedulerImplTest : public ::testing::Test {
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> ThrottleableTaskRunner() {
-    return WebTaskRunnerImpl::Create(ThrottleableTaskQueue(),
-                                     TaskType::kInternalTest);
+    return TaskRunnerImpl::Create(ThrottleableTaskQueue(),
+                                  TaskType::kInternalTest);
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> LoadingTaskRunner() {
-    return WebTaskRunnerImpl::Create(LoadingTaskQueue(),
-                                     TaskType::kInternalTest);
+    return TaskRunnerImpl::Create(LoadingTaskQueue(), TaskType::kInternalTest);
   }
 
   scoped_refptr<TaskQueue> ThrottleableTaskQueue() {

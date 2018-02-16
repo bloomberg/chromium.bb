@@ -10,7 +10,7 @@
 #include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/base/real_time_domain.h"
 #include "platform/scheduler/base/virtual_time_domain.h"
-#include "platform/scheduler/child/web_task_runner_impl.h"
+#include "platform/scheduler/child/task_runner_impl.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "platform/scheduler/renderer/budget_pool.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
@@ -224,12 +224,12 @@ WebFrameSchedulerImpl::GetTaskRunner(TaskType type) {
   // TODO(haraken): Optimize the mapping from TaskTypes to task runners.
   switch (type) {
     case TaskType::kJavascriptTimer:
-      return WebTaskRunnerImpl::Create(ThrottleableTaskQueue(), type);
+      return TaskRunnerImpl::Create(ThrottleableTaskQueue(), type);
     case TaskType::kUnspecedLoading:
     case TaskType::kNetworking:
-      return WebTaskRunnerImpl::Create(LoadingTaskQueue(), type);
+      return TaskRunnerImpl::Create(LoadingTaskQueue(), type);
     case TaskType::kNetworkingControl:
-      return WebTaskRunnerImpl::Create(LoadingControlTaskQueue(), type);
+      return TaskRunnerImpl::Create(LoadingControlTaskQueue(), type);
     // Throttling following tasks may break existing web pages, so tentatively
     // these are unthrottled.
     // TODO(nhiroki): Throttle them again after we're convinced that it's safe
@@ -253,7 +253,7 @@ WebFrameSchedulerImpl::GetTaskRunner(TaskType type) {
     case TaskType::kUnspecedTimer:
     case TaskType::kMiscPlatformAPI:
       // TODO(altimin): Move appropriate tasks to throttleable task queue.
-      return WebTaskRunnerImpl::Create(DeferrableTaskQueue(), type);
+      return TaskRunnerImpl::Create(DeferrableTaskQueue(), type);
     // PostedMessage can be used for navigation, so we shouldn't defer it
     // when expecting a user gesture.
     case TaskType::kPostedMessage:
@@ -265,11 +265,11 @@ WebFrameSchedulerImpl::GetTaskRunner(TaskType type) {
     case TaskType::kInternalIndexedDB:
     case TaskType::kInternalMedia:
     case TaskType::kInternalMediaRealTime:
-      return WebTaskRunnerImpl::Create(PausableTaskQueue(), type);
+      return TaskRunnerImpl::Create(PausableTaskQueue(), type);
     case TaskType::kUnthrottled:
     case TaskType::kInternalTest:
     case TaskType::kInternalWebCrypto:
-      return WebTaskRunnerImpl::Create(UnpausableTaskQueue(), type);
+      return TaskRunnerImpl::Create(UnpausableTaskQueue(), type);
     case TaskType::kCount:
       NOTREACHED();
       break;

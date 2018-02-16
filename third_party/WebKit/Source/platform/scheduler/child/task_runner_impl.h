@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_WEB_TASK_RUNNER_IMPL_H_
-#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_WEB_TASK_RUNNER_IMPL_H_
+#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_TASK_RUNNER_IMPL_H_
+#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_TASK_RUNNER_IMPL_H_
 
 #include <memory>
 
@@ -20,10 +20,9 @@ namespace blink {
 namespace scheduler {
 class TaskQueue;
 
-// TODO(yutak): WebTaskRunner is no more; rename the class.
-class PLATFORM_EXPORT WebTaskRunnerImpl : public base::SingleThreadTaskRunner {
+class PLATFORM_EXPORT TaskRunnerImpl : public base::SingleThreadTaskRunner {
  public:
-  static scoped_refptr<WebTaskRunnerImpl> Create(
+  static scoped_refptr<TaskRunnerImpl> Create(
       scoped_refptr<TaskQueue> task_queue,
       base::Optional<TaskType> task_type);
 
@@ -41,17 +40,17 @@ class PLATFORM_EXPORT WebTaskRunnerImpl : public base::SingleThreadTaskRunner {
                                   base::TimeDelta) override;
 
  private:
-  WebTaskRunnerImpl(scoped_refptr<TaskQueue> task_queue,
-                    base::Optional<TaskType> task_type);
-  ~WebTaskRunnerImpl() override;
+  TaskRunnerImpl(scoped_refptr<TaskQueue> task_queue,
+                 base::Optional<TaskType> task_type);
+  ~TaskRunnerImpl() override;
 
   scoped_refptr<TaskQueue> task_queue_;
   base::Optional<TaskType> task_type_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebTaskRunnerImpl);
+  DISALLOW_COPY_AND_ASSIGN(TaskRunnerImpl);
 };
 
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_WEB_TASK_RUNNER_IMPL_H_
+#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_TASK_RUNNER_IMPL_H_
