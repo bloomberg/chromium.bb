@@ -221,8 +221,9 @@ void OmniboxViewIOS::SetWindowTextAndCaretPos(const base::string16& text,
                                               bool notify_text_changed) {
   // Do not call SetUserText() here, as the user has not triggered this change.
   // Instead, set the field's text directly.
-  // TODO(justincohen): b/5244062 Temporary fix to set the text_field value
-  // before model()->CurrentTextIsUrl(), since that pulls from text_field.value.
+  // Set the field_ value before calling ApplyTextAttributes(), because that
+  // internally calls model()->CurrentTextIsUrl(), which uses the text in the
+  // field_.
   [field_ setText:base::SysUTF16ToNSString(text)];
 
   NSAttributedString* as = ApplyTextAttributes(text);
@@ -510,15 +511,13 @@ void OmniboxViewIOS::OnDidChange(bool processing_user_event) {
   // Generally do not notify the autocomplete system of a text change unless the
   // change was a direct result of a user event.  One exception is if the marked
   // text changed, which could happen through a delayed IME recognition
-  // callback.  iOS4 does not provide API access to marked text, so use
-  // |IsImeComposing()| as a proxy.
+  // callback.
   bool proceed_without_user_event = false;
 
   // The IME exception does not work for Korean text, because Korean does not
   // seem to ever have marked text.  It simply replaces or modifies previous
-  // characters as you type.  Always proceed without user input on iOS7 if the
-  // Korean keyboard is currently active.  (This Korean exception is not
-  // possible on iOS6 due to crbug.com/285294.)
+  // characters as you type.  Always proceed without user input if the
+  // Korean keyboard is currently active.
   NSString* current_language = [[field_ textInputMode] primaryLanguage];
 
   if ([current_language hasPrefix:@"ko-"]) {
@@ -669,11 +668,9 @@ void OmniboxViewIOS::UpdateSchemeStyle(const gfx::Range& range) {
       // strikethrough attribute, typing and setting text without strikethrough
       // attribute will still result in strikethrough. The following is a
       // workaround that prevents crossing out the first character.
-      if (base::ios::IsRunningOnOrLater(11, 0, 0)) {
-        if (strikethroughRange.location == 0 && strikethroughRange.length > 0) {
-          strikethroughRange.location += 1;
-          strikethroughRange.length -= 1;
-        }
+      if (strikethroughRange.location == 0 && strikethroughRange.length > 0) {
+        strikethroughRange.location += 1;
+        strikethroughRange.length -= 1;
       }
     }
 
@@ -761,8 +758,8 @@ void OmniboxViewIOS::ClearText() {
     RemoveQueryRefinementChip();
   } else {
     // Otherwise, just remove the text in the omnibox.
-    // Since iOS 6, calling |setText| does not trigger |textDidChange| so it
-    // must be called explicitly.
+    // Calling -[UITextField setText:] does not trigger
+    // -[id<UITextFieldDelegate> textDidChange] so it must be called explicitly.
     OnClear();
     [field_ setText:@""];
     OnDidChange(YES);
