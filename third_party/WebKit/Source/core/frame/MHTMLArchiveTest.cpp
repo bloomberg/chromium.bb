@@ -1,13 +1,38 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+/*
+ * Copyright (C) 2014 Google Inc. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 #include <map>
 
 #include "build/build_config.h"
 #include "platform/SerializedResource.h"
 #include "platform/SharedBuffer.h"
-#include "platform/blob/BlobData.h"
 #include "platform/mhtml/MHTMLArchive.h"
 #include "platform/mhtml/MHTMLParser.h"
 #include "platform/testing/TestingPlatformSupport.h"
@@ -22,9 +47,18 @@ using blink::URLTestHelpers::ToKURL;
 namespace blink {
 namespace testing {
 
+namespace {
+
+const char kEndOfPartBoundary[] = "--boundary-example";
+const char kEndOfDocumentBoundary[] = "--boundary-example--";
+
+}  // namespace
+
 class MHTMLArchiveTest : public ::testing::Test {
  public:
-  MHTMLArchiveTest() { file_path_ = testing::CoreTestDataPath("mhtml/"); }
+  MHTMLArchiveTest() {
+    file_path_ = testing::CoreTestDataPath("frameserializer/css/");
+  }
 
  protected:
   void AddResource(const char* url,
@@ -36,6 +70,10 @@ class MHTMLArchiveTest : public ::testing::Test {
 
   void AddResource(const char* url, const char* mime, const char* file_name) {
     AddResource(url, mime, ReadFile(file_name));
+  }
+
+  void AddTestMainResource() {
+    AddResource("http://www.test.com", "text/html", "css_test_page.html");
   }
 
   void AddTestResources() {
@@ -62,12 +100,9 @@ class MHTMLArchiveTest : public ::testing::Test {
     AddResource("http://www.test.com/ol-dot.png", "image/png", "ol-dot.png");
   }
 
-  static std::map<std::string, std::string> ExtractMHTMLHeaders(
-      scoped_refptr<RawData> mhtml_data) {
-    // Read the MHTML data per line until reaching the empty line.
+  std::map<std::string, std::string> ExtractHeaders(LineReader& line_reader) {
+    // Read the data per line until reaching the empty line.
     std::map<std::string, std::string> mhtml_headers;
-    LineReader line_reader(
-        std::string(mhtml_data->data(), mhtml_data->length()));
     std::string line;
     line_reader.GetNextLine(&line);
     while (line.length()) {
@@ -96,42 +131,43 @@ class MHTMLArchiveTest : public ::testing::Test {
     return mhtml_headers;
   }
 
-  static scoped_refptr<RawData> GenerateMHTMLData(
-      const Vector<SerializedResource>& resources,
-      MHTMLArchive::EncodingPolicy encoding_policy,
-      const KURL& url,
-      const String& title,
-      const String& mime_type) {
+  std::map<std::string, std::string> ExtractMHTMLHeaders() {
+    LineReader line_reader(std::string(mhtml_data_.data(), mhtml_data_.size()));
+    return ExtractHeaders(line_reader);
+  }
+
+  void GenerateMHTMLData(const Vector<SerializedResource>& resources,
+                         MHTMLArchive::EncodingPolicy encoding_policy,
+                         const KURL& url,
+                         const String& title,
+                         const String& mime_type) {
     // This boundary is as good as any other.  Plus it gets used in almost
     // all the examples in the MHTML spec - RFC 2557.
     String boundary = String::FromUTF8("boundary-example");
 
-    scoped_refptr<RawData> mhtml_data = RawData::Create();
     MHTMLArchive::GenerateMHTMLHeader(boundary, url, title, mime_type,
-                                      *mhtml_data->MutableData());
+                                      mhtml_data_);
     for (const auto& resource : resources) {
       MHTMLArchive::GenerateMHTMLPart(boundary, String(), encoding_policy,
-                                      resource, *mhtml_data->MutableData());
+                                      resource, mhtml_data_);
     }
-    MHTMLArchive::GenerateMHTMLFooterForTesting(boundary,
-                                                *mhtml_data->MutableData());
+    MHTMLArchive::GenerateMHTMLFooterForTesting(boundary, mhtml_data_);
 
     // Validate the generated MHTML.
     MHTMLParser parser(
-        SharedBuffer::Create(mhtml_data->data(), mhtml_data->length()));
+        SharedBuffer::Create(mhtml_data_.data(), mhtml_data_.size()));
     EXPECT_FALSE(parser.ParseArchive().IsEmpty())
         << "Generated MHTML is malformed";
-
-    return mhtml_data;
   }
 
-  scoped_refptr<RawData> Serialize(
-      const KURL& url,
-      const String& title,
-      const String& mime,
-      MHTMLArchive::EncodingPolicy encoding_policy) {
+  void Serialize(const KURL& url,
+                 const String& title,
+                 const String& mime,
+                 MHTMLArchive::EncodingPolicy encoding_policy) {
     return GenerateMHTMLData(resources_, encoding_policy, url, title, mime);
   }
+
+  Vector<char>& mhtml_data() { return mhtml_data_; }
 
  private:
   scoped_refptr<SharedBuffer> ReadFile(const char* file_name) {
@@ -141,18 +177,18 @@ class MHTMLArchiveTest : public ::testing::Test {
 
   String file_path_;
   Vector<SerializedResource> resources_;
+  Vector<char> mhtml_data_;
 };
 
 TEST_F(MHTMLArchiveTest,
        TestMHTMLHeadersWithTitleContainingAllPrintableCharacters) {
   const char kURL[] = "http://www.example.com/";
   const char kTitle[] = "abc";
-  AddTestResources();
-  scoped_refptr<RawData> data =
-      Serialize(ToKURL(kURL), String::FromUTF8(kTitle), "text/html",
-                MHTMLArchive::kUseDefaultEncoding);
+  AddTestMainResource();
+  Serialize(ToKURL(kURL), String::FromUTF8(kTitle), "text/html",
+            MHTMLArchive::kUseDefaultEncoding);
 
-  std::map<std::string, std::string> mhtml_headers = ExtractMHTMLHeaders(data);
+  std::map<std::string, std::string> mhtml_headers = ExtractMHTMLHeaders();
 
   EXPECT_EQ("<Saved by Blink>", mhtml_headers["From"]);
   EXPECT_FALSE(mhtml_headers["Date"].empty());
@@ -167,12 +203,11 @@ TEST_F(MHTMLArchiveTest,
        TestMHTMLHeadersWithTitleContainingNonPrintableCharacters) {
   const char kURL[] = "http://www.example.com/";
   const char kTitle[] = "abc \t=\xe2\x98\x9d\xf0\x9f\x8f\xbb";
-  AddTestResources();
-  scoped_refptr<RawData> data =
-      Serialize(ToKURL(kURL), String::FromUTF8(kTitle), "text/html",
-                MHTMLArchive::kUseDefaultEncoding);
+  AddTestMainResource();
+  Serialize(ToKURL(kURL), String::FromUTF8(kTitle), "text/html",
+            MHTMLArchive::kUseDefaultEncoding);
 
-  std::map<std::string, std::string> mhtml_headers = ExtractMHTMLHeaders(data);
+  std::map<std::string, std::string> mhtml_headers = ExtractMHTMLHeaders();
 
   EXPECT_EQ("<Saved by Blink>", mhtml_headers["From"]);
   EXPECT_FALSE(mhtml_headers["Date"].empty());
@@ -191,12 +226,11 @@ TEST_F(MHTMLArchiveTest,
       "01234567890123456789012345678901234567890123456789"
       "01234567890123456789012345678901234567890123456789"
       " \t=\xe2\x98\x9d\xf0\x9f\x8f\xbb";
-  AddTestResources();
-  scoped_refptr<RawData> data =
-      Serialize(ToKURL(kURL), String::FromUTF8(kTitle), "text/html",
-                MHTMLArchive::kUseDefaultEncoding);
+  AddTestMainResource();
+  Serialize(ToKURL(kURL), String::FromUTF8(kTitle), "text/html",
+            MHTMLArchive::kUseDefaultEncoding);
 
-  std::map<std::string, std::string> mhtml_headers = ExtractMHTMLHeaders(data);
+  std::map<std::string, std::string> mhtml_headers = ExtractMHTMLHeaders();
 
   EXPECT_EQ("<Saved by Blink>", mhtml_headers["From"]);
   EXPECT_FALSE(mhtml_headers["Date"].empty());
@@ -213,53 +247,82 @@ TEST_F(MHTMLArchiveTest,
   EXPECT_EQ(kURL, mhtml_headers["Snapshot-Content-Location"]);
 }
 
-TEST_F(MHTMLArchiveTest, TestMHTMLEncoding) {
+TEST_F(MHTMLArchiveTest, TestMHTMLPartsWithBinaryEncoding) {
   const char kURL[] = "http://www.example.com";
   AddTestResources();
-  scoped_refptr<RawData> data =
-      Serialize(ToKURL(kURL), "Test Serialization", "text/html",
-                MHTMLArchive::kUseDefaultEncoding);
+  Serialize(ToKURL(kURL), "Test Serialization", "text/html",
+            MHTMLArchive::kUseBinaryEncoding);
 
   // Read the MHTML data line per line and do some pseudo-parsing to make sure
   // the right encoding is used for the different sections.
-  LineReader line_reader(std::string(data->data(), data->length()));
-  int section_checked_count = 0;
-  const char* expected_encoding = nullptr;
-  std::string line;
+  LineReader line_reader(std::string(mhtml_data().data(), mhtml_data().size()));
+  int part_count = 0;
+  std::string line, last_line;
   while (line_reader.GetNextLine(&line)) {
-    if (line.compare(0, 13, "Content-Type:") == 0) {
-      ASSERT_FALSE(expected_encoding);
-      if (line.find("multipart/related;") != std::string::npos) {
-        // Skip this one, it's part of the MHTML header.
-        continue;
-      }
-      if (line.find("text/") != std::string::npos)
-        expected_encoding = "quoted-printable";
-      else if (line.find("image/") != std::string::npos)
-        expected_encoding = "base64";
-      else
-        FAIL() << "Unexpected Content-Type: " << line;
+    last_line = line;
+    if (line != kEndOfPartBoundary)
       continue;
-    }
-    if (line.compare(0, 26, "Content-Transfer-Encoding:") == 0) {
-      ASSERT_TRUE(expected_encoding);
-      EXPECT_NE(line.find(expected_encoding), std::string::npos);
-      expected_encoding = nullptr;
-      section_checked_count++;
-    }
+    part_count++;
+
+    std::map<std::string, std::string> part_headers =
+        ExtractHeaders(line_reader);
+    EXPECT_FALSE(part_headers["Content-Type"].empty());
+    EXPECT_EQ("binary", part_headers["Content-Transfer-Encoding"]);
+    EXPECT_FALSE(part_headers["Content-Location"].empty());
   }
-  EXPECT_EQ(12, section_checked_count);
+  EXPECT_EQ(12, part_count);
+
+  // Last line should be the end-of-document boundary.
+  EXPECT_EQ(kEndOfDocumentBoundary, last_line);
+}
+
+TEST_F(MHTMLArchiveTest, TestMHTMLPartsWithDefaultEncoding) {
+  const char kURL[] = "http://www.example.com";
+  AddTestResources();
+  Serialize(ToKURL(kURL), "Test Serialization", "text/html",
+            MHTMLArchive::kUseDefaultEncoding);
+
+  // Read the MHTML data line per line and do some pseudo-parsing to make sure
+  // the right encoding is used for the different sections.
+  LineReader line_reader(std::string(mhtml_data().data(), mhtml_data().size()));
+  int part_count = 0;
+  std::string line, last_line;
+  while (line_reader.GetNextLine(&line)) {
+    last_line = line;
+    if (line != kEndOfPartBoundary)
+      continue;
+    part_count++;
+
+    std::map<std::string, std::string> part_headers =
+        ExtractHeaders(line_reader);
+
+    std::string content_type = part_headers["Content-Type"];
+    EXPECT_FALSE(content_type.empty());
+
+    std::string encoding = part_headers["Content-Transfer-Encoding"];
+    EXPECT_FALSE(encoding.empty());
+
+    if (content_type.compare(0, 5, "text/") == 0)
+      EXPECT_EQ("quoted-printable", encoding);
+    else if (content_type.compare(0, 6, "image/") == 0)
+      EXPECT_EQ("base64", encoding);
+    else
+      FAIL() << "Unexpected Content-Type: " << content_type;
+  }
+  EXPECT_EQ(12, part_count);
+
+  // Last line should be the end-of-document boundary.
+  EXPECT_EQ(kEndOfDocumentBoundary, last_line);
 }
 
 TEST_F(MHTMLArchiveTest, MHTMLFromScheme) {
   const char kURL[] = "http://www.example.com";
-  AddTestResources();
-  scoped_refptr<RawData> raw_data =
-      Serialize(ToKURL(kURL), "Test Serialization", "text/html",
-                MHTMLArchive::kUseDefaultEncoding);
+  AddTestMainResource();
+  Serialize(ToKURL(kURL), "Test Serialization", "text/html",
+            MHTMLArchive::kUseDefaultEncoding);
 
   scoped_refptr<SharedBuffer> data =
-      SharedBuffer::Create(raw_data->data(), raw_data->length());
+      SharedBuffer::Create(mhtml_data().data(), mhtml_data().size());
   KURL http_url = ToKURL("http://www.example.com");
   KURL content_url = ToKURL("content://foo");
   KURL file_url = ToKURL("file://foo");
