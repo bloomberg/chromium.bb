@@ -13,8 +13,8 @@ import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_D
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
 import android.app.Activity;
-import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 import android.widget.ImageView;
 
@@ -71,17 +71,14 @@ public class VrShellTransitionTest {
 
     private void enterVrShellNfc(boolean supported) {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        NfcSimUtils.simNfcScan(mTestRule.getActivity());
         if (supported) {
-            TransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+            NfcSimUtils.simNfcScanUntilVrEntry(mTestRule.getActivity());
             Assert.assertTrue(VrShellDelegate.isInVr());
         } else {
+            NfcSimUtils.simNfcScan(mTestRule.getActivity());
             Assert.assertFalse(VrShellDelegate.isInVr());
         }
         TransitionUtils.forceExitVr();
-        // TODO(bsheedy): Figure out why NFC tests cause the next test to fail
-        // to enter VR unless we sleep for some amount of time after exiting VR
-        // in the NFC test
     }
 
     private void enterExitVrShell(boolean supported) {
@@ -108,10 +105,8 @@ public class VrShellTransitionTest {
     @Test
     @Restriction({RESTRICTION_TYPE_DEVICE_DAYDREAM, RESTRICTION_TYPE_VIEWER_DAYDREAM})
     @RetryOnFailure(message = "crbug.com/736527")
-    @MediumTest
+    @LargeTest
     public void test2dtoVrShellNfcSupported() {
-        // Sleep necessary to deal with https://crbug.com/736527
-        SystemClock.sleep(10000);
         enterVrShellNfc(true /* supported */);
     }
 
