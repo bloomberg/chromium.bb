@@ -61,9 +61,6 @@ crbug.com/771643 virtual/spv175/compositing/overflow/nested-border-radius-clippi
 crbug.com/807395 virtual/spv175/fast/multicol/mixed-opacity-test.html [ Failure ]
 crbug.com/807382 virtual/spv175/fast/multicol/multicol-svg.html [ Failure ]
 
-# spv175+root-layer-scrolls failures. They also fail with root-layer-scrolls without enable-slimming-paint-v175.
-crbug.com/417782 virtual/spv175/paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Crash ]
-
 ########## Ref tests can't be rebaselined ##########
 crbug.com/504613 crbug.com/524248 [ Mac ] paint/images/image-backgrounds-not-antialiased.html [ Failure ]
 
@@ -3229,12 +3226,12 @@ crbug.com/807110 external/wpt/media-source/mediasource-sourcebuffer-mode-timesta
 
 ################################################################################
 # Root Layer Scrolling expectations
-#
-# These entries were copied from FlagExpectations/root-layer-scrolls
-################################################################################
+
 crbug.com/417782 css3/filters/effect-reference-subregion-nested.html [ Failure ]
 crbug.com/417782 fast/frames/iframe-scaling-with-scroll.html [ Failure ]
 crbug.com/417782 fast/overflow/scrollRevealButton.html [ Failure ]
+crbug.com/417782 [ Android ] fast/scrolling/scrollable-area-overflow-auto-display-none.html [ Failure Pass ]
+crbug.com/417782 [ Android ] fast/scrolling/scrollable-area-overflow-not-set.html [ Failure Crash Pass ]
 crbug.com/417782 [ Win ] http/tests/devtools/editor/text-editor-formatter.js [ Timeout ]
 crbug.com/417782 http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
 crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.js [ Timeout ]
@@ -3244,7 +3241,9 @@ crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ 
 crbug.com/417782 http/tests/misc/acid3.html [ Failure ]
 crbug.com/417782 inspector-protocol/css/css-get-background-colors.js [ Failure ]
 crbug.com/417782 inspector-protocol/dom-snapshot/dom-snapshot-getSnapshot.js [ Failure ]
-crbug.com/787666 paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Crash ]
+crbug.com/417782 [ Mac ] paint/invalidation/forms/checkbox-focus-by-mouse-then-keydown.html [ Failure Pass ]
+crbug.com/417782 [ Mac ] paint/invalidation/forms/radio-focus-by-mouse-then-keydown.html [ Failure Pass ]
+crbug.com/417782 paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Crash ]
 crbug.com/417782 [ Linux ] paint/overflow/fixed-background-scroll-window.html [ Failure ]
 crbug.com/417782 [ Linux ] virtual/android/fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure ]
 crbug.com/417782 [ Linux ] virtual/android/fullscreen/full-screen-iframe-allowed-video.html [ Failure ]
@@ -3252,6 +3251,7 @@ crbug.com/417782 [ Linux ] virtual/android/fullscreen/video-controls-timeline.ht
 crbug.com/417782 [ Linux ] virtual/android/fullscreen/video-scrolled-iframe.html [ Failure ]
 crbug.com/417782 virtual/prefer_compositing_to_lcd_text/compositing/overflow/tiled-mask.html [ Failure ]
 crbug.com/417782 virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-iframes.html [ Failure ]
+crbug.com/417782 virtual/spv175/paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Crash ]
 crbug.com/417782 virtual/threaded/compositing/visibility/visibility-image-layers-dynamic.html [ Failure ]
 crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
 crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.js [ Timeout ]
@@ -3259,12 +3259,6 @@ crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/timeline-paint/tim
 crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Timeout ]
 crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ Failure ]
 
-crbug.com/808112 [ Android ] fast/scrolling/scrollable-area-overflow-auto-display-none.html [ Failure Pass ]
-crbug.com/808112 [ Android ] fast/scrolling/scrollable-area-overflow-not-set.html [ Failure Crash Pass ]
-crbug.com/808112 [ Mac ] paint/invalidation/forms/checkbox-focus-by-mouse-then-keydown.html [ Failure Pass ]
-crbug.com/808112 [ Mac ] paint/invalidation/forms/radio-focus-by-mouse-then-keydown.html [ Failure Pass ]
-
-################################################################################
 # End of Root Layer Scrolling expectations
 ################################################################################
 
