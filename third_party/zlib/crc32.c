@@ -34,6 +34,9 @@
 
 #if defined(CRC32_SIMD_SSE42_PCLMUL)
 #include "crc32_simd.h"
+#elif defined(CRC32_ARMV8_CRC32)
+#include "arm_features.h"
+#include "crc32_simd.h"
 #endif
 
 /* Definitions for doing the crc four data bytes at a time. */
@@ -277,6 +280,22 @@ unsigned long ZEXPORT crc32(crc, buf, len)
     const unsigned char FAR *buf;
     uInt len;
 {
+#if defined(CRC32_ARMV8_CRC32)
+    /* We got to verify ARM CPU features, so exploit the common usage pattern
+     * of calling this function with Z_NULL for an initial valid crc value.
+     * This allows to cache the result of the feature check and avoid extraneous
+     * function calls.
+     * TODO: try to move this to crc32_z if we don't loose performance on ARM.
+     */
+    if (buf == Z_NULL) {
+        if (!len) /* Assume user is calling crc32(0, NULL, 0); */
+            arm_check_features();
+        return 0UL;
+    }
+
+    if (arm_cpu_enable_crc32)
+        return armv8_crc32_little(crc, buf, len);
+#endif
     return crc32_z(crc, buf, len);
 }
 
