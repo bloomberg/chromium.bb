@@ -663,7 +663,7 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '1002:679e',
-          'os': 'Mac-10.10',
+          'os': 'Mac-10.12',
           'pool': 'Chrome-GPU',
         },
       ],
