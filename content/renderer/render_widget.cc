@@ -848,8 +848,10 @@ void RenderWidget::OnSetLocalSurfaceIdForAutoResize(
     const content::ScreenInfo& screen_info,
     uint32_t content_source_id,
     const viz::LocalSurfaceId& local_surface_id) {
-  if (!auto_resize_mode_ || resize_or_repaint_ack_num_ != sequence_number)
+  if (!auto_resize_mode_ || resize_or_repaint_ack_num_ != sequence_number) {
+    DidResizeOrRepaintAck();
     return;
+  }
 
   SetLocalSurfaceIdForAutoResize(sequence_number, screen_info,
                                  content_source_id, local_surface_id);
@@ -2377,8 +2379,13 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
       // on, that notification will not arrive here because the compositor is
       // deferring commits and thus submission of CompositorFrames.
       if (!size_.IsEmpty() && compositor_ &&
-          compositor_->IsSurfaceSynchronizationEnabled()) {
-        DidResizeOrRepaintAck();
+          compositor_->IsSurfaceSynchronizationEnabled() &&
+          !auto_resize_ack_callback_.callback()) {
+        auto_resize_ack_callback_.Reset(
+            base::BindOnce(&RenderWidget::DidResizeOrRepaintAck,
+                           weak_ptr_factory_.GetWeakPtr()));
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, auto_resize_ack_callback_.callback());
       }
     }
   }

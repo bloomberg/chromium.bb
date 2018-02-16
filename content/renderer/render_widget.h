@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/cancelable_callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -734,6 +735,11 @@ class CONTENT_EXPORT RenderWidget
 
   // The sequence number used for ViewHostMsg_UpdateRect.
   uint64_t resize_or_repaint_ack_num_ = 0;
+
+  // A pending ResizeOrRepaintAck callback in response to an auto-resize
+  // initiated by Blink. If auto-resize mode is canceled with an in-flight
+  // Ack, then the Ack will be canceled.
+  base::CancelableOnceClosure auto_resize_ack_callback_;
 
   // Set to true if we should ignore RenderWidget::Show calls.
   bool did_show_;

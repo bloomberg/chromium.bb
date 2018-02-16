@@ -1913,6 +1913,8 @@ void RenderViewImpl::OnDisableAutoResize(const gfx::Size& new_size) {
   if (!webview())
     return;
   auto_resize_mode_ = false;
+  auto_resize_ack_callback_.Cancel();
+  need_resize_ack_for_auto_resize_ = false;
   webview()->DisableAutoResizeMode();
 
   if (!new_size.IsEmpty()) {
@@ -1938,8 +1940,10 @@ void RenderViewImpl::OnSetLocalSurfaceIdForAutoResize(
     const content::ScreenInfo& screen_info,
     uint32_t content_source_id,
     const viz::LocalSurfaceId& local_surface_id) {
-  if (!auto_resize_mode_ || resize_or_repaint_ack_num_ != sequence_number)
+  if (!auto_resize_mode_ || resize_or_repaint_ack_num_ != sequence_number) {
+    DidResizeOrRepaintAck();
     return;
+  }
 
   SetLocalSurfaceIdForAutoResize(sequence_number, screen_info,
                                  content_source_id, local_surface_id);
