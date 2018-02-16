@@ -409,7 +409,7 @@ void ScriptInjection::InjectCss(std::set<std::string>* injected_stylesheets,
           ? blink::WebDocument::kUserOrigin
           : blink::WebDocument::kAuthorOrigin;
   for (const blink::WebString& css : css_sources)
-    web_frame->GetDocument().InsertStyleSheet(css, blink_css_origin);
+    web_frame->GetDocument().InsertStyleSheet(css, nullptr, blink_css_origin);
 }
 
 }  // namespace extensions

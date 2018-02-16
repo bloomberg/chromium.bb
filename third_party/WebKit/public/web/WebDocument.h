@@ -55,7 +55,7 @@ class WebString;
 class WebURL;
 struct WebDistillabilityFeatures;
 
-using WebStyleSheetId = unsigned;
+using WebStyleSheetKey = WebString;
 
 // Provides readonly access to some properties of a DOM document.
 class WebDocument : public WebNode {
@@ -110,14 +110,16 @@ class WebDocument : public WebNode {
   BLINK_EXPORT WebReferrerPolicy GetReferrerPolicy() const;
   BLINK_EXPORT WebString OutgoingReferrer();
 
-  // Inserts the given CSS source code as a stylesheet in the document, and
-  // return its id.
-  BLINK_EXPORT WebStyleSheetId InsertStyleSheet(const WebString& source_code,
-                                                CSSOrigin = kAuthorOrigin);
+  // Inserts the given CSS source code as a style sheet in the document.
+  BLINK_EXPORT WebStyleSheetKey InsertStyleSheet(
+      const WebString& source_code,
+      const WebStyleSheetKey* = nullptr,
+      CSSOrigin = kAuthorOrigin);
 
   // Removes the CSS which was previously inserted by a call to
   // InsertStyleSheet().
-  BLINK_EXPORT void RemoveInsertedStyleSheet(WebStyleSheetId);
+  BLINK_EXPORT void RemoveInsertedStyleSheet(const WebStyleSheetKey&,
+                                             CSSOrigin = kAuthorOrigin);
 
   // Arranges to call WebFrameClient::didMatchCSS(frame(), ...) when one of
   // the selectors matches or stops matching an element in this document.

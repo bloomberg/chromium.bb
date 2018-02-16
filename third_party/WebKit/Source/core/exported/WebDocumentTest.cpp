@@ -70,7 +70,7 @@ TEST_F(WebDocumentTest, InsertAndRemoveStyleSheet) {
 
   unsigned start_count = core_doc->GetStyleEngine().StyleForElementCount();
 
-  WebStyleSheetId stylesheet_id =
+  WebStyleSheetKey style_sheet_key =
       web_doc.InsertStyleSheet("body { color: green }");
 
   // Check insertStyleSheet did not cause a synchronous style recalc.
@@ -84,34 +84,34 @@ TEST_F(WebDocumentTest, InsertAndRemoveStyleSheet) {
   const ComputedStyle& style_before_insertion =
       body_element->ComputedStyleRef();
 
-  // Inserted stylesheet not yet applied.
+  // Inserted style sheet not yet applied.
   ASSERT_EQ(Color(0, 0, 0), style_before_insertion.VisitedDependentColor(
                                 GetCSSPropertyColor()));
 
-  // Apply inserted stylesheet.
+  // Apply inserted style sheet.
   core_doc->UpdateStyleAndLayoutTree();
 
   const ComputedStyle& style_after_insertion = body_element->ComputedStyleRef();
 
-  // Inserted stylesheet applied.
+  // Inserted style sheet applied.
   ASSERT_EQ(Color(0, 128, 0),
             style_after_insertion.VisitedDependentColor(GetCSSPropertyColor()));
 
   start_count = core_doc->GetStyleEngine().StyleForElementCount();
 
   // Check RemoveInsertedStyleSheet did not cause a synchronous style recalc.
-  web_doc.RemoveInsertedStyleSheet(stylesheet_id);
+  web_doc.RemoveInsertedStyleSheet(style_sheet_key);
   element_count =
       core_doc->GetStyleEngine().StyleForElementCount() - start_count;
   ASSERT_EQ(0U, element_count);
 
   const ComputedStyle& style_before_removing = body_element->ComputedStyleRef();
 
-  // Removed stylesheet not yet applied.
+  // Removed style sheet not yet applied.
   ASSERT_EQ(Color(0, 128, 0),
             style_before_removing.VisitedDependentColor(GetCSSPropertyColor()));
 
-  // Apply removed stylesheet.
+  // Apply removed style sheet.
   core_doc->UpdateStyleAndLayoutTree();
 
   const ComputedStyle& style_after_removing = body_element->ComputedStyleRef();

@@ -141,34 +141,36 @@ StyleEngine::StyleSheetsForStyleSheetList(TreeScope& tree_scope) {
   return collection.StyleSheetsForStyleSheetList();
 }
 
-WebStyleSheetId StyleEngine::InjectSheet(StyleSheetContents* sheet,
-                                         WebDocument::CSSOrigin origin) {
-  if (origin == WebDocument::kUserOrigin) {
-    injected_user_style_sheets_.push_back(
-        std::make_pair(++injected_sheets_id_count_,
-                       CSSStyleSheet::Create(sheet, *document_)));
+void StyleEngine::InjectSheet(const StyleSheetKey& key,
+                              StyleSheetContents* sheet,
+                              WebDocument::CSSOrigin origin) {
+  HeapVector<std::pair<StyleSheetKey, TraceWrapperMember<CSSStyleSheet>>>&
+      injected_style_sheets = origin == WebDocument::kUserOrigin
+                                  ? injected_user_style_sheets_
+                                  : injected_author_style_sheets_;
+  injected_style_sheets.push_back(
+      std::make_pair(key, CSSStyleSheet::Create(sheet, *document_)));
+  if (origin == WebDocument::kUserOrigin)
     MarkUserStyleDirty();
-  } else {
-    injected_author_style_sheets_.push_back(
-        std::make_pair(++injected_sheets_id_count_,
-                       CSSStyleSheet::Create(sheet, *document_)));
+  else
     MarkDocumentDirty();
-  }
-
-  return injected_sheets_id_count_;
 }
 
-void StyleEngine::RemoveInjectedSheet(WebStyleSheetId sheet_id) {
-  for (size_t i = 0; i < injected_user_style_sheets_.size(); ++i) {
-    if (injected_user_style_sheets_[i].first == sheet_id) {
-      injected_user_style_sheets_.EraseAt(i);
-      MarkUserStyleDirty();
-    }
-  }
-  for (size_t i = 0; i < injected_author_style_sheets_.size(); ++i) {
-    if (injected_author_style_sheets_[i].first == sheet_id) {
-      injected_author_style_sheets_.EraseAt(i);
-      MarkDocumentDirty();
+void StyleEngine::RemoveInjectedSheet(const StyleSheetKey& key,
+                                      WebDocument::CSSOrigin origin) {
+  HeapVector<std::pair<StyleSheetKey, TraceWrapperMember<CSSStyleSheet>>>&
+      injected_style_sheets = origin == WebDocument::kUserOrigin
+                                  ? injected_user_style_sheets_
+                                  : injected_author_style_sheets_;
+  for (auto it = injected_style_sheets.rbegin();
+       it != injected_style_sheets.rend(); it++) {
+    if (it->first == key) {
+      injected_style_sheets.erase(std::next(it).base());
+      if (origin == WebDocument::kUserOrigin)
+        MarkUserStyleDirty();
+      else
+        MarkDocumentDirty();
+      break;
     }
   }
 }
