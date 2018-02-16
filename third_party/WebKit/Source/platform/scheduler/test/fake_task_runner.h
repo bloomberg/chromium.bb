@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_FAKE_WEB_TASK_RUNNER_H_
-#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_FAKE_WEB_TASK_RUNNER_H_
+#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_FAKE_TASK_RUNNER_H_
+#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_FAKE_TASK_RUNNER_H_
 
 #include <deque>
 
@@ -16,10 +16,10 @@
 namespace blink {
 namespace scheduler {
 
-// A dummy WebTaskRunner for tests.
-class FakeWebTaskRunner : public base::SingleThreadTaskRunner {
+// A dummy task runner for tests.
+class FakeTaskRunner : public base::SingleThreadTaskRunner {
  public:
-  FakeWebTaskRunner();
+  FakeTaskRunner();
 
   void SetTime(base::TimeTicks new_time);
   void SetTime(double new_time) {
@@ -47,18 +47,18 @@ class FakeWebTaskRunner : public base::SingleThreadTaskRunner {
                                   base::TimeDelta delay) override;
 
  private:
-  ~FakeWebTaskRunner() override;
+  ~FakeTaskRunner() override;
 
   class Data;
   class BaseTaskRunner;
   scoped_refptr<Data> data_;
 
-  explicit FakeWebTaskRunner(scoped_refptr<Data> data);
+  explicit FakeTaskRunner(scoped_refptr<Data> data);
 
-  DISALLOW_COPY_AND_ASSIGN(FakeWebTaskRunner);
+  DISALLOW_COPY_AND_ASSIGN(FakeTaskRunner);
 };
 
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_FAKE_WEB_TASK_RUNNER_H_
+#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_FAKE_TASK_RUNNER_H_

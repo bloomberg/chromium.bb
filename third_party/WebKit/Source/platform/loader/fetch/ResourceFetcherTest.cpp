@@ -49,7 +49,6 @@
 #include "platform/loader/testing/MockFetchContext.h"
 #include "platform/loader/testing/MockResource.h"
 #include "platform/loader/testing/MockResourceClient.h"
-#include "platform/scheduler/test/fake_web_task_runner.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"

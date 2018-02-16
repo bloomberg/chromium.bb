@@ -10,8 +10,8 @@
 #include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceTimingInfo.h"
+#include "platform/scheduler/test/fake_task_runner.h"
 #include "platform/scheduler/test/fake_web_frame_scheduler.h"
-#include "platform/scheduler/test/fake_web_task_runner.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLLoaderFactory.h"
@@ -125,7 +125,7 @@ class MockFetchContext : public FetchContext {
 
   MockFetchContext(LoadPolicy load_policy)
       : load_policy_(load_policy),
-        runner_(base::MakeRefCounted<scheduler::FakeWebTaskRunner>()),
+        runner_(base::MakeRefCounted<scheduler::FakeTaskRunner>()),
         security_origin_(SecurityOrigin::CreateUnique()),
         frame_scheduler_(new MockFrameScheduler(runner_)),
         complete_(false),

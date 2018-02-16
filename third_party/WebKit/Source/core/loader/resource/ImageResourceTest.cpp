@@ -48,7 +48,7 @@
 #include "platform/loader/testing/MockFetchContext.h"
 #include "platform/loader/testing/MockResourceClient.h"
 #include "platform/network/http_names.h"
-#include "platform/scheduler/test/fake_web_task_runner.h"
+#include "platform/scheduler/test/fake_task_runner.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/ScopedMockedURL.h"
 #include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
@@ -469,8 +469,8 @@ TEST(ImageResourceTest, CancelOnRemoveObserver) {
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
 
   ResourceFetcher* fetcher = CreateFetcher();
-  scheduler::FakeWebTaskRunner* task_runner =
-      static_cast<scheduler::FakeWebTaskRunner*>(
+  scheduler::FakeTaskRunner* task_runner =
+      static_cast<scheduler::FakeTaskRunner*>(
           fetcher->Context().GetLoadingTaskRunner().get());
   task_runner->SetTime(1);
 
@@ -1927,8 +1927,8 @@ class ImageResourceCounterTest : public ::testing::Test {
     KURL test_url(url);
     ResourceRequest request = ResourceRequest(test_url);
     FetchParameters fetch_params(request);
-    scheduler::FakeWebTaskRunner* task_runner =
-        static_cast<scheduler::FakeWebTaskRunner*>(
+    scheduler::FakeTaskRunner* task_runner =
+        static_cast<scheduler::FakeTaskRunner*>(
             fetcher->Context().GetLoadingTaskRunner().get());
     task_runner->SetTime(1);
 

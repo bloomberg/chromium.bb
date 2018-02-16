@@ -4,7 +4,7 @@
 
 #include "platform/WebTaskRunner.h"
 
-#include "platform/scheduler/test/fake_web_task_runner.h"
+#include "platform/scheduler/test/fake_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -38,8 +38,8 @@ class CancellationTestHelper {
 }  // namespace
 
 TEST(WebTaskRunnerTest, PostCancellableTaskTest) {
-  scoped_refptr<scheduler::FakeWebTaskRunner> task_runner =
-      base::MakeRefCounted<scheduler::FakeWebTaskRunner>();
+  scoped_refptr<scheduler::FakeTaskRunner> task_runner =
+      base::MakeRefCounted<scheduler::FakeTaskRunner>();
 
   // Run without cancellation.
   int count = 0;
@@ -121,8 +121,8 @@ TEST(WebTaskRunnerTest, PostCancellableTaskTest) {
 }
 
 TEST(WebTaskRunnerTest, CancellationCheckerTest) {
-  scoped_refptr<scheduler::FakeWebTaskRunner> task_runner =
-      base::MakeRefCounted<scheduler::FakeWebTaskRunner>();
+  scoped_refptr<scheduler::FakeTaskRunner> task_runner =
+      base::MakeRefCounted<scheduler::FakeTaskRunner>();
 
   int count = 0;
   TaskHandle handle = PostCancellableTask(
