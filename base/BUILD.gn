@@ -2307,6 +2307,7 @@ test("base_unittests") {
     "test/test_reg_util_win_unittest.cc",
     "test/trace_event_analyzer_unittest.cc",
     "test/user_action_tester_unittest.cc",
+    "thread_annotations_unittest.cc",
     "threading/platform_thread_unittest.cc",
     "threading/post_task_and_reply_impl_unittest.cc",
     "threading/scoped_blocking_call_unittest.cc",
@@ -2587,6 +2588,7 @@ if (enable_nocompile_tests) {
       "optional_unittest.nc",
       "strings/string16_unittest.nc",
       "task_scheduler/task_traits_unittest.nc",
+      "thread_annotations_unittest.nc",
     ]
 
     deps = [
