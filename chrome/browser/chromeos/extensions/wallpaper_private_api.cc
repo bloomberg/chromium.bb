@@ -93,6 +93,11 @@ bool IsOEMDefaultWallpaper() {
       chromeos::switches::kDefaultWallpaperIsOem);
 }
 
+bool IsUsingNewWallpaperPicker() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kNewWallpaperPicker);
+}
+
 // Saves |data| as |file_name| to directory with |key|. Return false if the
 // directory can not be found/created or failed to write file.
 bool SaveData(int key,
@@ -198,11 +203,15 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
   SET_STRING("allCategoryLabel", IDS_WALLPAPER_MANAGER_ALL_CATEGORY_LABEL);
   SET_STRING("deleteCommandLabel", IDS_WALLPAPER_MANAGER_DELETE_COMMAND_LABEL);
   SET_STRING("customCategoryLabel",
-             IDS_WALLPAPER_MANAGER_CUSTOM_CATEGORY_LABEL);
+             IsUsingNewWallpaperPicker()
+                 ? IDS_WALLPAPER_MANAGER_MY_PHOTOS_CATEGORY_LABEL
+                 : IDS_WALLPAPER_MANAGER_CUSTOM_CATEGORY_LABEL);
   SET_STRING("selectCustomLabel",
              IDS_WALLPAPER_MANAGER_SELECT_CUSTOM_LABEL);
   SET_STRING("positionLabel", IDS_WALLPAPER_MANAGER_POSITION_LABEL);
   SET_STRING("colorLabel", IDS_WALLPAPER_MANAGER_COLOR_LABEL);
+  SET_STRING("refreshLabel", IDS_WALLPAPER_MANAGER_REFRESH_LABEL);
+  SET_STRING("exploreLabel", IDS_WALLPAPER_MANAGER_EXPLORE_LABEL);
   SET_STRING("centerCroppedLayout",
              IDS_WALLPAPER_MANAGER_LAYOUT_CENTER_CROPPED);
   SET_STRING("centerLayout", IDS_WALLPAPER_MANAGER_LAYOUT_CENTER);
@@ -214,7 +223,10 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
              IDS_WALLPAPER_MANAGER_SHOW_CUSTOM_WALLPAPER_ON_START_WARNING);
   SET_STRING("accessFileFailure", IDS_WALLPAPER_MANAGER_ACCESS_FILE_FAILURE);
   SET_STRING("invalidWallpaper", IDS_WALLPAPER_MANAGER_INVALID_WALLPAPER);
-  SET_STRING("surpriseMeLabel", IDS_WALLPAPER_MANAGER_SURPRISE_ME_LABEL);
+  SET_STRING("noImagesAvailable", IDS_WALLPAPER_MANAGER_NO_IMAGES_AVAILABLE);
+  SET_STRING("surpriseMeLabel", IsUsingNewWallpaperPicker()
+                                    ? IDS_WALLPAPER_MANAGER_DAILY_REFRESH_LABEL
+                                    : IDS_WALLPAPER_MANAGER_SURPRISE_ME_LABEL);
   SET_STRING("learnMore", IDS_LEARN_MORE);
   SET_STRING("currentWallpaperSetByMessage",
              IDS_CURRENT_WALLPAPER_SET_BY_MESSAGE);
@@ -245,9 +257,7 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
   dict->SetBoolean("isOEMDefaultWallpaper", IsOEMDefaultWallpaper());
   dict->SetString("canceledWallpaper",
                   wallpaper_api_util::kCancelWallpaperMessage);
-  dict->SetBoolean("useNewWallpaperPicker",
-                   base::CommandLine::ForCurrentProcess()->HasSwitch(
-                       chromeos::switches::kNewWallpaperPicker));
+  dict->SetBoolean("useNewWallpaperPicker", IsUsingNewWallpaperPicker());
 
   bool show_backdrop_wallpapers = false;
 #if defined(GOOGLE_CHROME_BUILD)
