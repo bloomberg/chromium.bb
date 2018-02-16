@@ -125,7 +125,8 @@ class DataReductionProxyConfig
   // contain the names of the Data Reduction Proxy servers that would be used if
   // |proxy_info.proxy_servers.front()| is bypassed, if any exist. In addition,
   // |proxy_info| will note if the proxy used was a fallback. |proxy_info| can
-  // be NULL if the caller isn't interested in its values.
+  // be NULL if the caller isn't interested in its values. Virtualized for
+  // testing.
   virtual bool WasDataReductionProxyUsed(
       const net::URLRequest* request,
       DataReductionProxyTypeInfo* proxy_info) const;
@@ -136,17 +137,14 @@ class DataReductionProxyConfig
   // will contain the name of the Data Reduction Proxy servers that would be
   // used if |proxy_info.proxy_servers.front()| is bypassed, if any exist. In
   // addition, |proxy_info| will note if the proxy was a fallback. |proxy_info|
-  // can be NULL if the caller isn't interested in its values. Virtual for
-  // testing.
-  virtual bool IsDataReductionProxy(
-      const net::ProxyServer& proxy_server,
-      DataReductionProxyTypeInfo* proxy_info) const;
+  // can be NULL if the caller isn't interested in its values.
+  bool IsDataReductionProxy(const net::ProxyServer& proxy_server,
+                            DataReductionProxyTypeInfo* proxy_info) const;
 
   // Returns true if this request would be bypassed by the Data Reduction Proxy
   // based on applying the |data_reduction_proxy_config| param rules to the
   // request URL.
-  // Virtualized for mocking.
-  virtual bool IsBypassedByDataReductionProxyLocalRules(
+  bool IsBypassedByDataReductionProxyLocalRules(
       const net::URLRequest& request,
       const net::ProxyConfig& data_reduction_proxy_config) const;
 
@@ -157,8 +155,7 @@ class DataReductionProxyConfig
   // reduction proxies in min_retry_delay (if not NULL). If there are no
   // bypassed data reduction proxies for the request scheme, returns false and
   // does not assign min_retry_delay.
-  // Virtualized for mocking.
-  virtual bool AreDataReductionProxiesBypassed(
+  bool AreDataReductionProxiesBypassed(
       const net::URLRequest& request,
       const net::ProxyConfig& data_reduction_proxy_config,
       base::TimeDelta* min_retry_delay) const;
@@ -204,6 +201,7 @@ class DataReductionProxyConfig
 
   // Returns the details of the proxy to which the warmup URL probe is
   // in-flight. Returns base::nullopt if no warmup probe is in-flight.
+  // Virtualized for testing.
   virtual base::Optional<
       std::pair<bool /* is_secure_proxy */, bool /*is_core_proxy */>>
   GetInFlightWarmupProxyDetails() const;
@@ -310,8 +308,8 @@ class DataReductionProxyConfig
   // the use of secure proxies.
   void HandleCaptivePortal();
 
-  // Returns true if the current network has captive portal. Virtualized
-  // for testing.
+  // Returns true if the current network has captive portal. Virtualized for
+  // testing.
   virtual bool GetIsCaptivePortal() const;
 
   // Fetches the warmup URL.
