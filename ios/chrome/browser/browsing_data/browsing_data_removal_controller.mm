@@ -21,7 +21,6 @@
 #include "components/signin/ios/browser/account_consistency_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
-#include "ios/chrome/browser/browsing_data/browsing_data_remover_helper.h"
 #include "ios/chrome/browser/browsing_data/ios_chrome_browsing_data_remover.h"
 #include "ios/chrome/browser/sessions/session_util.h"
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
@@ -48,12 +47,11 @@ void DoNothing(uint32_t n) {}
 
 @interface BrowsingDataRemovalController ()
 // Removes browsing data that is created by web views associated with
-// |browserState|. |mask| is obtained from
-// IOSChromeBrowsingDataRemover::RemoveDataMask. |deleteBegin| defines the begin
-// time from which the data has to be removed, up to the present time.
-// |completionHandler| is called when this operation finishes. This method
-// finishes removal of the browsing data even if |browserState| is destroyed
-// after this method call.
+// |browserState|. |mask| is obtained from BrowsingDataRemoveMask. |deleteBegin|
+// defines the begin time from which the data has to be removed, up to the
+// present time. |completionHandler| is called when this operation finishes.
+// This method finishes removal of the browsing data even if |browserState| is
+// destroyed after this method call.
 - (void)
 removeWebViewCreatedBrowsingDataFromBrowserState:
     (ios::ChromeBrowserState*)browserState
@@ -63,12 +61,10 @@ removeWebViewCreatedBrowsingDataFromBrowserState:
                                    (ProceduralBlock)completionHandler;
 // Removes browsing data that is created by WKWebViews associated with
 // |browserState|. |browserState| must not be off the record. |mask| is obtained
-// from IOSChromeBrowsingDataRemover::RemoveDataMask. |deleteBegin| defines the
-// begin time from which the data has to be removed, up to the present time.
-// |completionHandler| is called when this operation finishes. This method
-// finishes removal of the browsing data even if |browserState| is destroyed
-// after this method call.
-// Note: This method works only on iOS9+.
+// from BrowsingDataRemoveMask. |deleteBegin| defines the begin time from which
+// the data has to be removed, up to the present time. |completionHandler| is
+// called when this operation finishes. This method finishes removal of the
+// browsing data even if |browserState| is destroyed after this method call.
 - (void)
 removeWKWebViewCreatedBrowsingDataFromBrowserState:
     (ios::ChromeBrowserState*)browserState
@@ -78,12 +74,11 @@ removeWKWebViewCreatedBrowsingDataFromBrowserState:
                                      (ProceduralBlock)completionHandler;
 
 // Removes browsing data associated with |browserState| that is specific to iOS
-// and not removed when the |browserState| is destroyed.
-// |mask| is obtained from IOSChromeBrowsingDataRemover::RemoveDataMask
-// |deleteBegin| defines the begin time from which the data has to be removed.
-// |browserState| cannot be  null. |completionHandler| is called when
-// this operation finishes. This method finishes removal of the browsing data
-// even if |browserState| is destroyed after this method call.
+// and not removed when the |browserState| is destroyed. |mask| is obtained from
+// BrowsingDataRemoveMask |deleteBegin| defines the begin time from which the
+// data has to be removed. |browserState| cannot be  null. |completionHandler|
+// is called when this operation finishes. This method finishes removal of the
+// browsing data even if |browserState| is destroyed after this method call.
 - (void)
 removeIOSSpecificBrowsingDataFromBrowserState:
     (ios::ChromeBrowserState*)browserState
@@ -91,11 +86,10 @@ removeIOSSpecificBrowsingDataFromBrowserState:
                                   deleteBegin:(base::Time)deleteBegin
                             completionHandler:
                                 (ProceduralBlock)completionHandler;
-// Removes browsing data from |browserState| that is persisted on disk.
-// |mask| is obtained from IOSChromeBrowsingDataRemover::RemoveDataMask.
-// |browserState| cannot be null and must be off the record.
-// This method finishes removal of the browsing data even if |browserState| is
-// destroyed after this method call.
+// Removes browsing data from |browserState| that is persisted on disk. |mask|
+// is obtained from BrowsingDataRemoveMask. |browserState| cannot be null and
+// must be off the record. This method finishes removal of the browsing data
+// even if |browserState| is destroyed after this method call.
 - (void)
 removeIOSSpecificPersistentIncognitoDataFromBrowserState:
     (ios::ChromeBrowserState*)browserState
@@ -120,19 +114,14 @@ removeIOSSpecificPersistentIncognitoDataFromBrowserState:
 @end
 
 @implementation BrowsingDataRemovalController {
-  // Wrapper around IOSChromeBrowsingDataRemover that serializes removal
-  // operations.
-  std::unique_ptr<BrowsingDataRemoverHelper> _browsingDataRemoverHelper;
+  // Mapping from ChromeBrowserState to the IOSChromeBrowsingDataRemover used
+  // for removal of the data on that instance.
+  base::flat_map<ios::ChromeBrowserState*,
+                 std::unique_ptr<IOSChromeBrowsingDataRemover>>
+      _browingDataRemovers;
   // A map that tracks the number of pending removals for a given
   // ChromeBrowserState.
-  base::hash_map<ios::ChromeBrowserState*, int> _pendingRemovalCount;
-}
-
-- (instancetype)init {
-  if ((self = [super init])) {
-    _browsingDataRemoverHelper.reset(new BrowsingDataRemoverHelper());
-  }
-  return self;
+  base::flat_map<ios::ChromeBrowserState*, int> _pendingRemovalCount;
 }
 
 - (void)removeBrowsingDataFromBrowserState:
@@ -189,10 +178,19 @@ removeIOSSpecificPersistentIncognitoDataFromBrowserState:
 
   if (!browserState->IsOffTheRecord()) {
     callbackCounter->IncrementCount();
-    _browsingDataRemoverHelper->Remove(browserState, mask, timePeriod,
-                                       base::BindBlockArc(^{
-                                         callbackCounter->DecrementCount();
-                                       }));
+    auto iterator = _browingDataRemovers.find(browserState);
+    if (iterator == _browingDataRemovers.end()) {
+      iterator =
+          _browingDataRemovers
+              .emplace(
+                  browserState,
+                  std::make_unique<IOSChromeBrowsingDataRemover>(browserState))
+              .first;
+      DCHECK(iterator != _browingDataRemovers.end());
+    }
+    iterator->second->Remove(timePeriod, mask, base::BindBlockArc(^{
+                               callbackCounter->DecrementCount();
+                             }));
   }
 }
 
@@ -301,8 +299,7 @@ removeWKWebViewCreatedBrowsingDataFromBrowserState:
     callbackCounter->DecrementCount();
   };
 
-  // Converts browsing data types from
-  // IOSChromeBrowsingDataRemover::RemoveDataMask to
+  // Converts browsing data types from BrowsingDataRemoveMask to
   // WKWebsiteDataStore strings.
   NSMutableSet* dataTypesToRemove = [[NSMutableSet alloc] init];
   if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_CACHE_STORAGE)) {
@@ -444,6 +441,7 @@ removeIOSSpecificPersistentIncognitoDataFromBrowserState:
 }
 
 - (void)browserStateDestroyed:(ios::ChromeBrowserState*)browserState {
+  _browingDataRemovers.erase(browserState);
   _pendingRemovalCount.erase(browserState);
 }
 

@@ -11,8 +11,6 @@ source_set("browsing_data_remove_mask") {
 
 source_set("browsing_data") {
   sources = [
-    "browsing_data_remover_helper.cc",
-    "browsing_data_remover_helper.h",
     "ios_chrome_browsing_data_remover.h",
     "ios_chrome_browsing_data_remover.mm",
   ]
