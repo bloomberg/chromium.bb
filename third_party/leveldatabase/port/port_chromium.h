@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "build/build_config.h"
 
 // Linux's ThreadIdentifier() needs this.
@@ -34,13 +35,13 @@ namespace port {
 // Chromium only supports little endian.
 static const bool kLittleEndian = true;
 
-class Mutex {
+class LOCKABLE Mutex {
  public:
   Mutex();
   ~Mutex();
-  void Lock();
-  void Unlock();
-  void AssertHeld();
+  void Lock() EXCLUSIVE_LOCK_FUNCTION();
+  void Unlock() UNLOCK_FUNCTION();
+  void AssertHeld() ASSERT_EXCLUSIVE_LOCK();
 
  private:
   base::Lock mu_;
