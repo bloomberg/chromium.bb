@@ -3478,10 +3478,23 @@ RenderFrameImpl::CreateWorkerFetchContext() {
       container_host_ptr_info = provider_context->CloneContainerHostPtrInfo();
   }
 
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  std::unique_ptr<SharedURLLoaderFactoryInfo>
+      direct_network_loader_factory_info;
+  // Could be null in tests.
+  if (render_thread) {
+    direct_network_loader_factory_info =
+        base::MakeRefCounted<PossiblyAssociatedWrapperSharedURLLoaderFactory>(
+            render_thread->blink_platform_impl()
+                ->CreateNetworkURLLoaderFactory())
+            ->Clone();
+  }
+
   std::unique_ptr<WorkerFetchContextImpl> worker_fetch_context =
       std::make_unique<WorkerFetchContextImpl>(
           std::move(service_worker_client_request),
           std::move(container_host_ptr_info), GetLoaderFactoryBundle()->Clone(),
+          std::move(direct_network_loader_factory_info),
           GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
               URLLoaderThrottleProviderType::kWorker));
 
