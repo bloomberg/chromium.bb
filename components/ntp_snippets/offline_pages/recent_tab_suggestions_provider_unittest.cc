@@ -42,6 +42,8 @@ namespace ntp_snippets {
 
 namespace {
 
+const int64_t kSystemDownloadId = 0;
+
 OfflinePageItem CreateDummyRecentTab(int offline_id) {
   // This is used to assign unique tab IDs to pages.  Since offline IDs are
   // typically small integers like 1, 2, 3 etc, we start at 1001 to ensure that
@@ -124,7 +126,8 @@ class RecentTabSuggestionsProviderTestNoLoad : public testing::Test {
     RemoveTab(tab_id);
     ui_adapter_->OfflinePageDeleted(
         offline_pages::OfflinePageModel::DeletedPageInfo(
-            item.offline_id, item.client_id, "" /* request_origin */));
+            item.offline_id, kSystemDownloadId, item.client_id,
+            "" /* request_origin */));
   }
 
   std::set<std::string> ReadDismissedIDsFromPrefs() {

@@ -130,6 +130,9 @@ class OfflinePageModelTaskifiedTest
   OfflinePageMetadataStoreTestUtil* store_test_util() {
     return &store_test_util_;
   }
+  SystemDownloadManagerStub* download_manager_stub() {
+    return download_manager_stub_;
+  }
   OfflinePageItemGenerator* page_generator() { return &generator_; }
   TaskQueue* task_queue() { return &model_->task_queue_; }
   base::HistogramTester* histogram_tester() { return histogram_tester_.get(); }
@@ -161,6 +164,7 @@ class OfflinePageModelTaskifiedTest
   base::ThreadTaskRunnerHandle task_runner_handle_;
   std::unique_ptr<OfflinePageModelTaskified> model_;
   OfflinePageMetadataStoreTestUtil store_test_util_;
+  SystemDownloadManagerStub* download_manager_stub_;
   OfflinePageItemGenerator generator_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
   base::ScopedTempDir temporary_dir_;
@@ -220,11 +224,13 @@ void OfflinePageModelTaskifiedTest::BuildStore() {
 
 void OfflinePageModelTaskifiedTest::BuildModel() {
   ASSERT_TRUE(store_test_util_.store());
+  // Keep a copy of the system download manager stub to test against.
+  download_manager_stub_ = new SystemDownloadManagerStub(kDownloadId, true);
   auto archive_manager = std::make_unique<ArchiveManager>(
       temporary_dir_path(), private_archive_dir_path(),
       public_archive_dir_path(), base::ThreadTaskRunnerHandle::Get());
   std::unique_ptr<SystemDownloadManager> download_manager(
-      new SystemDownloadManagerStub(kDownloadId, true));
+      download_manager_stub_);
   model_ = std::make_unique<OfflinePageModelTaskified>(
       store_test_util()->ReleaseStore(), std::move(archive_manager),
       std::move(download_manager), base::ThreadTaskRunnerHandle::Get(),
@@ -786,6 +792,7 @@ TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByOfflineId) {
   page_generator()->SetNamespace(kDefaultNamespace);
   OfflinePageItem page1 = page_generator()->CreateItemWithTempFile();
   OfflinePageItem page2 = page_generator()->CreateItemWithTempFile();
+  page1.system_download_id = kDownloadId;
   InsertPageIntoStore(page1);
   InsertPageIntoStore(page2);
   EXPECT_EQ(2UL, test_utils::GetFileCountInDirectory(temporary_dir_path()));
@@ -803,6 +810,8 @@ TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByOfflineId) {
   EXPECT_EQ(last_deleted_page_info().offline_id, page1.offline_id);
   EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(temporary_dir_path()));
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
+  EXPECT_EQ(page1.system_download_id,
+            download_manager_stub()->last_removed_id());
   histogram_tester()->ExpectUniqueSample(
       "OfflinePages.DeletePageCount",
       static_cast<int>(

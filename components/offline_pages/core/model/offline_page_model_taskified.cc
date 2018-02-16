@@ -497,6 +497,7 @@ void OfflinePageModelTaskified::OnDeleteDone(
     const std::vector<OfflinePageModel::DeletedPageInfo>& infos) {
   UMA_HISTOGRAM_ENUMERATION("OfflinePages.DeletePageResult", result,
                             DeletePageResult::RESULT_COUNT);
+  std::vector<int64_t> system_download_ids;
 
   // Notify observers and run callback.
   for (const auto& info : infos) {
@@ -506,9 +507,26 @@ void OfflinePageModelTaskified::OnDeleteDone(
         OfflinePagesNamespaceEnumeration::RESULT_COUNT);
     for (Observer& observer : observers_)
       observer.OfflinePageDeleted(info);
+    if (info.system_download_id != 0)
+      system_download_ids.push_back(info.system_download_id);
   }
+
+  // Remove the page from the system download manager. We don't need to wait for
+  // completion before calling the delete page callback.
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&OfflinePageModelTaskified::RemoveFromDownloadManager,
+                     download_manager_.get(), system_download_ids));
+
   if (!callback.is_null())
     callback.Run(result);
+}
+
+void OfflinePageModelTaskified::RemoveFromDownloadManager(
+    SystemDownloadManager* download_manager,
+    const std::vector<int64_t>& system_download_ids) {
+  if (system_download_ids.size() > 0)
+    download_manager->Remove(system_download_ids);
 }
 
 void OfflinePageModelTaskified::ScheduleMaintenanceTasks() {

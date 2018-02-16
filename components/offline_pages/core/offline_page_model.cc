@@ -25,9 +25,11 @@ OfflinePageModel::DeletedPageInfo::DeletedPageInfo(
 OfflinePageModel::DeletedPageInfo::~DeletedPageInfo() = default;
 OfflinePageModel::DeletedPageInfo::DeletedPageInfo(
     int64_t offline_id,
+    int64_t system_download_id,
     const ClientId& client_id,
     const std::string& request_origin)
     : offline_id(offline_id),
+      system_download_id(system_download_id),
       client_id(client_id),
       request_origin(request_origin) {}
 

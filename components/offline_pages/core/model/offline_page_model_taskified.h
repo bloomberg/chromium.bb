@@ -197,6 +197,11 @@ class OfflinePageModelTaskified : public OfflinePageModel,
                           const OfflinePageItem& offline_page,
                           PublishArchiveResult* archive_result);
 
+  // Method for unpublishing the page from the system download manager.
+  static void RemoveFromDownloadManager(
+      SystemDownloadManager* download_manager,
+      const std::vector<int64_t>& system_download_ids);
+
   // Other utility methods.
   void RemovePagesMatchingUrlAndNamespace(const OfflinePageItem& page);
   void ErasePendingArchiver(OfflinePageArchiver* archiver);
