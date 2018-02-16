@@ -23,7 +23,8 @@ Here is a typical flow for using the setup.
     Operation completed over 1 objects/1.9 GiB.
     ```
   - unzip into *moblab_image_source* folder. Note that we need the image as well
-    as some of the scripts bundled with it.
+    as some of the scripts bundled with it, and that the unzipped contents take
+    up about 13 GB.
     ```
     pprabhu@pprabhu:moblab_image$ unzip image.zip
     Archive:  image.zip
@@ -76,7 +77,8 @@ Here is a typical flow for using the setup.
   ```
 - Create a new moblabvm using these images. You need to be under a full
   chromiumos checkout for the following to work smoothly. All _cros_ commands
-  are run outside the chroot.
+  are run outside the chroot. Note that this assumes that /work/scratch, or
+  whatever you use in its place, is a sane path and has ~15 GB of space free.
   ```
   pprabhu@pprabhu:chromiumos$ cros moblabvm --workspace /work/scratch/moblabvm create --dut-image-dir /work/scratch/dut_image /work/scratch/moblab_image
   11:00:48: NOTICE: Initializing workspace in /work/scratch/moblabvm
@@ -258,3 +260,15 @@ If you're working on devserver instead, you want:
 (cr) ((8e3381b52...)) pprabhu@pprabhu ~/trunk/src/scripts $ emerge-moblab-generic-vm chromeos-base/devserver
 pprabhu@pprabhu:~$ cros deploy localhost:16482 chromeos-base/devserver
 ```
+# Troubleshooting
+
+For most errors, the first thing to do is to rerun with `--debug`. This may make
+the path forward clear on its own, and if not will get a better message to seek
+help from other developers with.
+
+## Out of Disk Space
+
+Images are large, and so if their location is chosen poorly you may run out of
+disk space while unzipping the pre-existing images or creating the new ones.
+Development machines generally have a extra partition with >60G of
+space, which may be named `/work` or `/dev`, where you can place them.
