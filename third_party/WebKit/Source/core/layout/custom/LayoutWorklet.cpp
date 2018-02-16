@@ -46,6 +46,10 @@ void LayoutWorklet::AddPendingLayout(const AtomicString& name, Node* node) {
   pending_layout_registry_->AddPendingLayout(name, node);
 }
 
+LayoutWorkletGlobalScopeProxy* LayoutWorklet::Proxy() {
+  return LayoutWorkletGlobalScopeProxy::From(FindAvailableGlobalScope());
+}
+
 void LayoutWorklet::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_definition_map_);
   visitor->Trace(pending_layout_registry_);

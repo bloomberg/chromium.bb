@@ -38,6 +38,8 @@ class CORE_EXPORT LayoutWorkletGlobalScopeProxy
   void WorkletObjectDestroyed() override;
   void TerminateWorkletGlobalScope() override;
 
+  CSSLayoutDefinition* FindDefinition(const AtomicString& name);
+
   LayoutWorkletGlobalScope* global_scope() const { return global_scope_.Get(); }
 
   void Trace(blink::Visitor*) override;
