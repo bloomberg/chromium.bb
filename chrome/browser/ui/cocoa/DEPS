@@ -1,4 +1,5 @@
 include_rules = [
+  "+chrome/browser/ui/views",
   "+third_party/apple_sample_code",  # Apple code ImageAndTextCell.
   "+third_party/molokocacao",  # For NSBezierPath additions.
   "+third_party/ocmock",  # For unit tests.
@@ -13,7 +14,6 @@ specific_include_rules = {
   # file name. Mac-specific toolkit-views code that doesn't need to interact
   # with a Cocoa browser should go under chrome/browser/ui/views.
   ".*(_views).*\.(cc|h|mm)$": [
-    "+chrome/browser/ui/views",
     "+ui/views",
   ],
 }
