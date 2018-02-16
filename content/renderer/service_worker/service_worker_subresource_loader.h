@@ -55,6 +55,8 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   void OnConnectionClosed() override;
 
  private:
+  class StreamWaiter;
+
   void DeleteSoon();
 
   void StartRequest(const network::ResourceRequest& resource_request);
@@ -79,7 +81,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   void OnFallback(base::Time dispatch_event_time) override;
 
   void StartResponse(const ServiceWorkerResponse& response,
-                     blink::mojom::BlobPtr blob,
+                     blink::mojom::BlobPtr body_as_blob,
                      blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream);
 
   // network::mojom::URLLoader overrides:
@@ -129,6 +131,8 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   // over the lifetime of this loader due to redirects.
   network::ResourceRequest resource_request_;
 
+  std::unique_ptr<StreamWaiter> stream_waiter_;
+
   // For network fallback.
   scoped_refptr<SharedURLLoaderFactory> default_loader_factory_;
 
@@ -137,7 +141,6 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
     kStarted,
     kSentHeader,
     kCompleted,
-    kCancelled
   };
   Status status_ = Status::kNotStarted;
 

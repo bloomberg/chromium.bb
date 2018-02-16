@@ -319,6 +319,25 @@ class FakeServiceWorkerContainerHost
   DISALLOW_COPY_AND_ASSIGN(FakeServiceWorkerContainerHost);
 };
 
+// Returns an expected ResourceResponseHead which is used by stream response
+// related tests.
+std::unique_ptr<network::ResourceResponseHead>
+CreateResponseInfoFromServiceWorker() {
+  auto head = std::make_unique<network::ResourceResponseHead>();
+  std::string headers = "HTTP/1.1 200 OK\n\n";
+  head->headers = new net::HttpResponseHeaders(
+      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.length()));
+  head->was_fetched_via_service_worker = true;
+  head->was_fallback_required_by_service_worker = false;
+  head->url_list_via_service_worker = std::vector<GURL>();
+  head->response_type_via_service_worker =
+      network::mojom::FetchResponseType::kDefault;
+  head->is_in_cache_storage = false;
+  head->cache_storage_cache_name = std::string();
+  head->did_service_worker_navigation_preload = false;
+  return head;
+}
+
 }  // namespace
 
 class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
@@ -362,6 +381,29 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
         mojo::MakeRequest(out_loader), 0, 0, network::mojom::kURLLoadOptionNone,
         request, (*out_loader_client)->CreateInterfacePtr(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+  }
+
+  void ExpectResponseInfo(const network::ResourceResponseHead& info,
+                          const network::ResourceResponseHead& expected_info) {
+    EXPECT_EQ(expected_info.headers->response_code(),
+              info.headers->response_code());
+    EXPECT_EQ(expected_info.was_fetched_via_service_worker,
+              info.was_fetched_via_service_worker);
+    EXPECT_EQ(expected_info.was_fallback_required_by_service_worker,
+              info.was_fallback_required_by_service_worker);
+    EXPECT_EQ(expected_info.url_list_via_service_worker,
+              info.url_list_via_service_worker);
+    EXPECT_EQ(expected_info.response_type_via_service_worker,
+              info.response_type_via_service_worker);
+    EXPECT_EQ(expected_info.is_in_cache_storage, info.is_in_cache_storage);
+    EXPECT_EQ(expected_info.cache_storage_cache_name,
+              info.cache_storage_cache_name);
+    EXPECT_EQ(expected_info.did_service_worker_navigation_preload,
+              info.did_service_worker_navigation_preload);
+    EXPECT_NE(expected_info.service_worker_start_time,
+              info.service_worker_start_time);
+    EXPECT_NE(expected_info.service_worker_ready_time,
+              info.service_worker_ready_time);
   }
 
   network::ResourceRequest CreateRequest(const GURL& url) {
@@ -638,17 +680,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse) {
   client->RunUntilResponseReceived();
 
   const network::ResourceResponseHead& info = client->response_head();
-  EXPECT_EQ(200, info.headers->response_code());
-  EXPECT_EQ(true, info.was_fetched_via_service_worker);
-  EXPECT_EQ(false, info.was_fallback_required_by_service_worker);
-  EXPECT_EQ(std::vector<GURL>(), info.url_list_via_service_worker);
-  EXPECT_EQ(network::mojom::FetchResponseType::kDefault,
-            info.response_type_via_service_worker);
-  EXPECT_EQ(false, info.is_in_cache_storage);
-  EXPECT_EQ(std::string(), info.cache_storage_cache_name);
-  EXPECT_EQ(false, info.did_service_worker_navigation_preload);
-  EXPECT_NE(base::TimeTicks(), info.service_worker_start_time);
-  EXPECT_NE(base::TimeTicks(), info.service_worker_ready_time);
+  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
 
   // Write the body stream.
   uint32_t written_bytes = sizeof(kResponseBody) - 1;
@@ -661,6 +693,48 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse) {
 
   client->RunUntilComplete();
   EXPECT_EQ(net::OK, client->completion_status().error_code);
+
+  // Test the body.
+  std::string response;
+  EXPECT_TRUE(client->response_body().is_valid());
+  EXPECT_TRUE(mojo::common::BlockingCopyToString(
+      client->response_body_release(), &response));
+  EXPECT_EQ(kResponseBody, response);
+}
+
+TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse_Abort) {
+  // Construct the Stream to respond with.
+  const char kResponseBody[] = "Here is sample text for the Stream.";
+  blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
+  mojo::DataPipe data_pipe;
+  fake_controller_.RespondWithStream(mojo::MakeRequest(&stream_callback),
+                                     std::move(data_pipe.consumer_handle));
+
+  std::unique_ptr<ServiceWorkerSubresourceLoaderFactory> factory =
+      CreateSubresourceLoaderFactory();
+
+  // Perform the request.
+  network::ResourceRequest request =
+      CreateRequest(GURL("https://www.example.com/foo.txt"));
+  network::mojom::URLLoaderPtr loader;
+  std::unique_ptr<network::TestURLLoaderClient> client;
+  StartRequest(factory.get(), request, &loader, &client);
+  client->RunUntilResponseReceived();
+
+  const network::ResourceResponseHead& info = client->response_head();
+  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
+
+  // Start writing the body stream, then abort before finishing.
+  uint32_t written_bytes = sizeof(kResponseBody) - 1;
+  MojoResult mojo_result = data_pipe.producer_handle->WriteData(
+      kResponseBody, &written_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+  ASSERT_EQ(MOJO_RESULT_OK, mojo_result);
+  EXPECT_EQ(sizeof(kResponseBody) - 1, written_bytes);
+  stream_callback->OnAborted();
+  data_pipe.producer_handle.reset();
+
+  client->RunUntilComplete();
+  EXPECT_EQ(net::ERR_ABORTED, client->completion_status().error_code);
 
   // Test the body.
   std::string response;

@@ -34,7 +34,7 @@ bool BodyHasNoDataPipeGetters(const network::ResourceRequestBody* body) {
 }  // namespace
 
 // This class waits for completion of a stream response from the service worker.
-// It calls ServiceWorkerURLLoader::CommitComplete() upon completion of the
+// It calls ServiceWorkerURLLoader::CommitCompleted() upon completion of the
 // response.
 class ServiceWorkerURLLoaderJob::StreamWaiter
     : public blink::mojom::ServiceWorkerStreamCallback {
