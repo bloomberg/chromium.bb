@@ -35,6 +35,8 @@ KSVSearchBoxView::KSVSearchBoxView(search_box::SearchBoxViewDelegate* delegate)
   search_box()->set_placeholder_text(
       l10n_util::GetStringUTF16(IDS_KSV_SEARCH_BOX_PLACEHOLDER));
   search_box()->set_placeholder_text_draw_flags(gfx::Canvas::TEXT_ALIGN_CENTER);
+  search_box()->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_KSV_SEARCH_BOX_ACCESSIBILITY_NAME));
 
   constexpr SkColor kSearchBarIconColor =
       SkColorSetARGBMacro(0xFF, 0x3C, 0x40, 0x43);
@@ -77,19 +79,22 @@ void KSVSearchBoxView::SetupCloseButton() {
   close->SetSize(gfx::Size(kIconSize, kIconSize));
   close->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                            views::ImageButton::ALIGN_MIDDLE);
+  close->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_KSV_CLEAR_SEARCHBOX_ACCESSIBILITY_NAME));
   close->SetVisible(false);
 }
 
 void KSVSearchBoxView::SetupBackButton() {
   constexpr SkColor kBackIconColor =
       SkColorSetARGBMacro(0xFF, 0x42, 0x85, 0xF4);
-
   views::ImageButton* back = back_button();
   back->SetImage(views::ImageButton::STATE_NORMAL,
                  gfx::CreateVectorIcon(kKsvSearchBackIcon, kBackIconColor));
   back->SetSize(gfx::Size(kIconSize, kIconSize));
   back->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                           views::ImageButton::ALIGN_MIDDLE);
+  back->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_KSV_BACK_ACCESSIBILITY_NAME));
   back->SetVisible(false);
 }
 

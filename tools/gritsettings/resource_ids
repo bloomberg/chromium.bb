@@ -338,53 +338,53 @@
     "messages": [25920],
   },
   "ui/file_manager/file_manager_resources.grd": {
-    "includes": [26150],
+    "includes": [26650],
   },
   "ui/keyboard/keyboard_resources.grd": {
-    "includes": [26400],
+    "includes": [26900],
   },
   "ui/login/login_resources.grd": {
-    "includes": [26500],
+    "includes": [27000],
   },
   "ui/resources/ui_resources.grd": {
-    "structures": [26600],
+    "structures": [27100],
   },
   "ui/resources/ui_unscaled_resources.grd": {
-    "includes": [26850],
+    "includes": [27350],
   },
   "ui/strings/app_locale_settings.grd": {
-    "messages": [26900],
+    "messages": [27400],
   },
   "ui/strings/ui_strings.grd": {
-    "messages": [26950],
+    "messages": [27450],
   },
   "ui/views/resources/views_resources.grd": {
-    "structures": [27150],
+    "structures": [27650],
   },
   "ui/webui/resources/webui_resources.grd": {
-    "includes": [27450],
-    "structures": [27650],
+    "includes": [27950],
+    "structures": [28150],
   },
 
   # This file is generated during the build.
   "<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd": {
-    "includes": [28450],
+    "includes": [28950],
   },
   "devtools_resources.grd": {
-    "includes": [28450],
+    "includes": [28950],
   },
 
   "cloud_print/virtual_driver/win/install/virtual_driver_setup_resources.grd": {
-    "includes": [28600],
-	"messages": [28650],
+    "includes": [29100],
+  "messages": [29150],
   },
 
   "third_party/libaddressinput/chromium/address_input_strings.grd": {
-    "messages": [28700],
+    "messages": [29200],
   },
 
   "mojo/public/js/mojo_bindings_resources.grd": {
-    "includes": [28800],
+    "includes": [29300],
   },
   # END "everything else" section.
   # Everything but chrome/, components/, content/, and ios/
