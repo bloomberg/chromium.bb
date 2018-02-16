@@ -493,7 +493,7 @@ bool MHTMLGenerationManager::Job::WriteExtraDataParts(
     // location, a newline, the content type, a newline, extra_headers,
     // two newlines, the body, and end with a newline.
     std::string serialized_extra_data_part = base::StringPrintf(
-        "--%s\r\n%s%s\r\n%s%s\r\n%s\r\n\r\n%s\r\n", boundary.c_str(),
+        "\r\n--%s\r\n%s%s\r\n%s%s\r\n%s\r\n\r\n%s\r\n", boundary.c_str(),
         kContentLocation, part.content_location.c_str(), kContentType,
         part.content_type.c_str(), part.extra_headers.c_str(),
         part.body.c_str());
@@ -511,7 +511,8 @@ bool MHTMLGenerationManager::Job::WriteExtraDataParts(
 bool MHTMLGenerationManager::Job::WriteFooter(const std::string& boundary,
                                               base::File& file) {
   DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
-  std::string footer = base::StringPrintf("--%s--\r\n", boundary.c_str());
+  // Per the spec, the boundary must occur at the beginning of a line.
+  std::string footer = base::StringPrintf("\r\n--%s--\r\n", boundary.c_str());
   DCHECK(base::IsStringASCII(footer));
   return (file.WriteAtCurrentPos(footer.data(), footer.size()) >= 0);
 }

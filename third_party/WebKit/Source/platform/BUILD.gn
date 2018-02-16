@@ -1903,6 +1903,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "json/JSONValuesTest.cpp",
     "mac/GraphicsContextCanvasTest.mm",
     "mac/VersionUtilMacTest.mm",
+    "mhtml/MHTMLParserTest.cpp",
     "mojo/BigStringMojomTraitsTest.cpp",
     "mojo/GeometryStructTraitsTest.cpp",
     "mojo/InterfaceInvalidatorTest.cpp",

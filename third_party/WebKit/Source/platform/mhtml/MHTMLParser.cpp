@@ -275,6 +275,10 @@ ArchiveResource* MHTMLParser::ParseNextPart(
     bool& end_of_archive_reached) {
   DCHECK_EQ(end_of_part_boundary.IsEmpty(), end_of_document_boundary.IsEmpty());
 
+  // Per the spec, the bondary to separate parts should start with CRLF.
+  // |end_of_part_boundary| passed here does not contain CRLF at the beginning.
+  // The parsing logic below takes care of CRLF handling.
+
   // If no content transfer encoding is specified, default to binary encoding.
   MIMEHeader::Encoding content_transfer_encoding =
       mime_header.ContentTransferEncoding();
@@ -289,12 +293,34 @@ ArchiveResource* MHTMLParser::ParseNextPart(
       DVLOG(1) << "Binary contents requires end of part";
       return nullptr;
     }
+    // Due to a bug in MHTMLArchive, CRLF was not added to the beginning of the
+    // boundary that is placed after the part encoded as binary. To handle both
+    // cases that CRLF may or may not be at the beginning of the boundary, we
+    // read the part content till reaching the boundary without CRLF. So the
+    // part content may contain CRLF at the end, which will be stripped off
+    // later.
     line_reader_.SetSeparator(end_of_part_boundary.Utf8().data());
     if (!line_reader_.NextChunk(content)) {
       DVLOG(1) << "Binary contents requires end of part";
       return nullptr;
     }
     line_reader_.SetSeparator("\r\n");
+
+    // Strip the CRLF from the end of the content if present.
+    // Note: it may be the case that CRLF stripped off is really part of the
+    // content, instead of part of the boundary.
+    // 1) If the content denotes text or html data, stripping off CRLF will
+    //    normally bring no harm.
+    // 2) Otherwise, the content denotes image or other type of binary data.
+    //    Usually it doesn't have CRLF at the end.
+    // In order to support parsing the MHTML archive file produced before the
+    // MHTMLArchive bug was fixed, we need to take a risk of stripping off the
+    // CRLF that indeed belongs to the content.
+    if (content.size() >= 2 && content[content.size() - 2] == '\r' &&
+        content[content.size() - 1] == '\n') {
+      content.resize(content.size() - 2);
+    }
+
     Vector<char> next_chars;
     if (line_reader_.Peek(next_chars, 2) != 2) {
       DVLOG(1) << "Invalid seperator.";
