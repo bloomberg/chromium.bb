@@ -28,7 +28,7 @@ class LoginUserViewUnittest : public LoginTestBase {
         new LoginUserView(display_style, show_dropdown,
                           base::BindRepeating(&LoginUserViewUnittest::OnTapped,
                                               base::Unretained(this)));
-    mojom::LoginUserInfoPtr user = CreateUser("foo");
+    mojom::LoginUserInfoPtr user = CreateUser("foo@foo.com");
     view->UpdateForUser(user, false /*animate*/);
     container_->AddChildView(view);
     widget()->GetContentsView()->Layout();
@@ -77,8 +77,7 @@ TEST_F(LoginUserViewUnittest, DifferentUsernamesHaveSameWidth) {
   EXPECT_GT(extra_small_width, 0);
 
   for (int i = 0; i < 25; ++i) {
-    std::string name(i, 'a');
-    mojom::LoginUserInfoPtr user = CreateUser(name);
+    mojom::LoginUserInfoPtr user = CreateUser("user@domain.com");
     large->UpdateForUser(user, false /*animate*/);
     small->UpdateForUser(user, false /*animate*/);
     extra_small->UpdateForUser(user, false /*animate*/);
