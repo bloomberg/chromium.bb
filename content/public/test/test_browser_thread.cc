@@ -101,6 +101,10 @@ bool TestBrowserThread::StartIOThread() {
   return impl_->StartWithOptions(options);
 }
 
+void TestBrowserThread::InitIOThreadDelegate() {
+  impl_->InitIOThreadDelegate();
+}
+
 void TestBrowserThread::Stop() {
   impl_->Stop();
 }

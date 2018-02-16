@@ -49,16 +49,22 @@ class BrowserProcessImplTest : public ::testing::Test {
     g_browser_process = stashed_browser_process_;
   }
 
-  // Creates the secondary threads (all threads except the UI thread).
+  // Creates the secondary thread (IO thread).
   // The UI thread needs to be alive while BrowserProcessImpl is alive, and is
   // managed separately.
   void StartSecondaryThreads() {
     base::TaskScheduler::GetInstance()->StartWithDefaultParams();
+    io_thread_->StartIOThread();
+  }
+
+  // Initializes the IO thread delegate and starts the ServiceManager.
+  void Initialize() {
+    io_thread_->InitIOThreadDelegate();
+
     // TestServiceManagerContext creation requires the task scheduler to be
     // started.
     service_manager_context_ =
         std::make_unique<content::TestServiceManagerContext>();
-    io_thread_->StartIOThread();
   }
 
   // Destroys the secondary threads (all threads except the UI thread).
@@ -109,8 +115,11 @@ class BrowserProcessImplTest : public ::testing::Test {
 TEST_F(BrowserProcessImplTest, MAYBE_LifeCycle) {
   // Setup the BrowserProcessImpl and the threads.
   browser_process_impl()->Init();
-  browser_process_impl()->PreCreateThreads(*command_line());
+  // A lightweigh IO Thread is created before the
+  // BrowserThreadImpl::PreCreateThreads is called. https://crbug.com/729596.
   StartSecondaryThreads();
+  browser_process_impl()->PreCreateThreads(*command_line());
+  Initialize();
   browser_process_impl()->PreMainMessageLoopRun();
 
   // Force the creation of the NTPResourceCache, to test the destruction order.
