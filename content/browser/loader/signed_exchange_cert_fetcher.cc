@@ -10,6 +10,7 @@
 #include "content/public/common/resource_type.h"
 #include "content/public/common/shared_url_loader_factory.h"
 #include "content/public/common/url_loader_throttle.h"
+#include "ipc/ipc_message.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
@@ -180,6 +181,7 @@ SignedExchangeCertFetcher::SignedExchangeCertFetcher(
     resource_request_->load_flags |=
         net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_CACHE;
   }
+  resource_request_->render_frame_id = MSG_ROUTING_NONE;
 }
 
 SignedExchangeCertFetcher::~SignedExchangeCertFetcher() = default;
