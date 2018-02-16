@@ -11,12 +11,16 @@ directory. Maintaining these files by hand is too unwieldy.
 Note: chromium.perf.fyi.json is updated manuall for now until crbug.com/757933
 is complete.
 """
+import argparse
 import collections
 import csv
+import filecmp
 import json
 import os
 import re
+import sys
 import sets
+import tempfile
 
 
 from core import path_util
@@ -1027,12 +1031,54 @@ def update_benchmark_csv(file_path):
     writer.writerows(csv_data)
 
 
-def main():
+def validate_tests(waterfall, waterfall_file, benchmark_file):
+  up_to_date = True
+
+  waterfall_tempfile = tempfile.NamedTemporaryFile(delete=False).name
+  benchmark_tempfile = tempfile.NamedTemporaryFile(delete=False).name
+
+  try:
+    update_all_tests(waterfall, waterfall_tempfile)
+    up_to_date &= filecmp.cmp(waterfall_file, waterfall_tempfile)
+
+    update_benchmark_csv(benchmark_tempfile)
+    up_to_date &= filecmp.cmp(benchmark_file, benchmark_tempfile)
+  finally:
+    os.remove(waterfall_tempfile)
+    os.remove(benchmark_tempfile)
+
+  return up_to_date
+
+
+def main(args):
+  parser = argparse.ArgumentParser(
+      description=('Generate perf test\' json config and benchmark.csv. '
+                   'This needs to be done anytime you add/remove any existing'
+                   'benchmarks in tools/perf/benchmarks.'))
+  parser.add_argument(
+      '--validate-only', action='store_true', default=False,
+      help=('Validate whether the perf json generated will be the same as the '
+            'existing configs. This does not change the contain of existing '
+            'configs'))
+  options = parser.parse_args(args)
+
   waterfall_file = os.path.join(
       path_util.GetChromiumSrcDir(), 'testing', 'buildbot',
       'chromium.perf.json')
-  update_all_tests(get_waterfall_config(), waterfall_file)
 
   benchmark_file = os.path.join(
       path_util.GetChromiumSrcDir(), 'tools', 'perf', 'benchmark.csv')
-  update_benchmark_csv(benchmark_file)
+
+  if options.validate_only:
+    if validate_tests(get_waterfall_config(), waterfall_file, benchmark_file):
+      print 'All the perf JSON config files are up-to-date. \\o/'
+      return 0
+    else:
+      print ('The perf JSON config files are not up-to-date. Please run %s '
+             'without --validate-only flag to update the perf JSON '
+             'configs and benchmark.csv.') % sys.argv[0]
+      return 1
+  else:
+    update_all_tests(get_waterfall_config(), waterfall_file)
+    update_benchmark_csv(benchmark_file)
+  return 0
