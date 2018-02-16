@@ -1362,10 +1362,16 @@ void VrShellGl::OnVSync(base::TimeTicks frame_time) {
   vsync_helper_.RequestVSync(
       base::Bind(&VrShellGl::OnVSync, base::Unretained(this)));
 
-  ScheduleOrCancelWebVrFrameTimeout();
+  bool can_send_webvr_vsync = ui_->CanSendWebVrVSync();
+  if (!last_should_send_webvr_vsync_ && can_send_webvr_vsync) {
+    // We will start sending vsync to the WebVR page, so schedule the first
+    // frame timeout.
+    ScheduleOrCancelWebVrFrameTimeout();
+  }
+  last_should_send_webvr_vsync_ = can_send_webvr_vsync;
 
   // Process WebVR presenting VSync (VRDisplay rAF).
-  if (!callback_.is_null() && ui_->CanSendWebVrVSync()) {
+  if (!callback_.is_null() && can_send_webvr_vsync) {
     // A callback was stored by GetVSync. Use it now for sending a VSync.
     SendVSync(frame_time, base::ResetAndReturn(&callback_));
   } else {
