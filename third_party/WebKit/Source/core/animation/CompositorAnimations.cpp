@@ -153,6 +153,23 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
     const Animation* animation_to_add,
     const EffectModel& effect,
     double animation_playback_rate) {
+  // Check whether this animation is main thread compositable or not.
+  // If this runtime feature is on + we have either opacity or 2d transform
+  // animation, then this animation is main thread compositable.
+  if (RuntimeEnabledFeatures::
+          TurnOff2DAndOpacityCompositorAnimationsEnabled()) {
+    LayoutObject* layout_object = target_element.GetLayoutObject();
+    if (layout_object) {
+      const ComputedStyle* style = layout_object->Style();
+      if (style && (style->HasCurrentOpacityAnimation() ||
+                    (style->HasCurrentTransformAnimation() &&
+                     !style->Has3DTransform()))) {
+        return FailureCode::AcceleratableAnimNotAccelerated(
+            "Acceleratable animation not accelerated due to an experiment");
+      }
+    }
+  }
+
   const KeyframeEffectModelBase& keyframe_effect =
       ToKeyframeEffectModelBase(effect);
 
@@ -294,24 +311,9 @@ CompositorAnimations::CheckCanStartElementOnCompositor(
     bool paints_into_own_backing =
         layout_object &&
         layout_object->GetCompositingState() == kPaintsIntoOwnBacking;
-    // This function is called in CheckCanStartAnimationOnCompositor(), after
-    // CheckCanStartEffectOnCompositor returns code.Ok(), which means that we
-    // know the effect (such as transform) could be accelerated. If the target
-    // element is SVG, then we should not return code.Ok() because a SVG
-    // animation cannot be composited. If the target element is not SVG, and
-    // |!paints_into_own_backing|, then we know that the animation is not
-    // composited due to certain check, such as the
-    // ComputedStyle::ShouldCompositeForCurrentAnimations(), for a running
-    // experiment.
-    bool is_svg_element = layout_object && layout_object->IsSVG();
     if (!paints_into_own_backing) {
-      if (!is_svg_element) {
-        return FailureCode::AcceleratableAnimNotAccelerated(
-            "Acceleratable animation not accelerated due to an experiment");
-      } else {
-        return FailureCode::NonActionable(
-            "Element does not paint into own backing");
-      }
+      return FailureCode::NonActionable(
+          "Element does not paint into own backing");
     }
   }
 

@@ -1358,7 +1358,7 @@ TEST_F(AnimationCompositorAnimationsTest,
 }
 
 TEST_F(AnimationCompositorAnimationsTest,
-       cannotStartElementOnCompositorEffectWithRuntimeFeature) {
+       cannotStartAnimationOnCompositorWithRuntimeFeature) {
   ScopedTurnOff2DAndOpacityCompositorAnimationsForTest
       turn_off_2d_and_opacity_compositors_animation(true);
   LoadTestData("transform-animation.html");
@@ -1367,8 +1367,12 @@ TEST_F(AnimationCompositorAnimationsTest,
   const ObjectPaintProperties* properties =
       target->GetLayoutObject()->FirstFragment().PaintProperties();
   EXPECT_TRUE(properties->Transform()->HasDirectCompositingReasons());
+  Timing timing;
+  KeyframeEffectModelBase* effect =
+      StringKeyframeEffectModel::Create(StringKeyframeVector());
   CompositorAnimations::FailureCode code =
-      CompositorAnimations::CheckCanStartElementOnCompositor(*target);
+      CompositorAnimations::CheckCanStartAnimationOnCompositor(
+          timing, *target, nullptr, *effect, 1.0);
   EXPECT_EQ(
       code,
       CompositorAnimations::FailureCode::AcceleratableAnimNotAccelerated(
