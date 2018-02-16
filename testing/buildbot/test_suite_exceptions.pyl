@@ -518,6 +518,7 @@
       'Cast Audio Linux',
       'Cast Linux',
       # chromium.clang
+      'ToTAndroidCFI',
       'ToTLinuxThinLTO',
       # chromium.fyi
       'ThinLTO Linux ToT',
@@ -593,6 +594,8 @@
     'remove_from': [
       # TODO(crbug.com/731759): Enable this once we're confident that it passes.
       'Marshmallow Phone Tester (rel)',
+      # chromium.clang
+      'ToTAndroidCFI',
       # TODO(dpranke): on chromium.swarm, this is probably also an accident.
       'Android N5X Swarm',
     ],
@@ -2053,6 +2056,8 @@
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x86 Cloud Tester',
+      # chromium.clang
+      'ToTAndroidCFI',
     ],
   },
   'keyboard_unittests': {
@@ -2285,6 +2290,8 @@
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x86 Cloud Tester',
+      # chromium.clang
+      'ToTAndroidCFI',
     ],
   },
   'mojo_common_unittests': {
@@ -2686,6 +2693,8 @@
       'x86 Cloud Tester',
       # On chromium.linux, unclear why these aren't run on 32-bit.
       'Linux Tests (dbg)(1)(32)',
+      # chromium.clang
+      'ToTAndroidCFI',
     ],
   },
   'renderer_side_navigation_content_browsertests': {

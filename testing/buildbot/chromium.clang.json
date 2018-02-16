@@ -4796,32 +4796,7 @@
             }
           ]
         },
-        "test": "cast_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "MMB29Q",
-              "device_type": "bullhead"
-            }
-          ]
-        },
         "test": "cc_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "MMB29Q",
-              "device_type": "bullhead"
-            }
-          ],
-          "shards": 14
-        },
-        "test": "chrome_public_test_apk"
       },
       {
         "swarming": {
@@ -5063,18 +5038,6 @@
             }
           ]
         },
-        "test": "jingle_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "MMB29Q",
-              "device_type": "bullhead"
-            }
-          ]
-        },
         "test": "latency_unittests"
       },
       {
@@ -5100,18 +5063,6 @@
           ]
         },
         "test": "media_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "MMB29Q",
-              "device_type": "bullhead"
-            }
-          ]
-        },
-        "test": "midi_unittests"
       },
       {
         "swarming": {
@@ -5185,18 +5136,6 @@
           "shards": 4
         },
         "test": "net_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "MMB29Q",
-              "device_type": "bullhead"
-            }
-          ]
-        },
-        "test": "remoting_unittests"
       },
       {
         "swarming": {
