@@ -24,8 +24,6 @@ class CONTENT_EXPORT WebRtcRemoteEventLogManager final
     : public LogFileWriter,
       public WebRtcEventLogUploaderObserver {
  public:
-  using BrowserContextId = uintptr_t;
-
   explicit WebRtcRemoteEventLogManager(WebRtcRemoteEventLogsObserver* observer);
   ~WebRtcRemoteEventLogManager() override;
 
@@ -34,13 +32,13 @@ class CONTENT_EXPORT WebRtcRemoteEventLogManager final
   // peer connections associated with this BrowserContext, in the
   // BrowserContext's user-data directory, becomes possible.
   // This method would typically be called when a BrowserContext is initialized.
-  void EnableForBrowserContext(BrowserContextId browser_context,
+  void EnableForBrowserContext(BrowserContextId browser_context_id,
                                const base::FilePath& browser_context_dir);
 
   // Enables remote-bound logging for a given BrowserContext. Pending logs from
   // earlier (while it was enabled) may still be uploaded, but no additional
   // logs will be created.
-  void DisableForBrowserContext(BrowserContextId browser_context);
+  void DisableForBrowserContext(BrowserContextId browser_context_id);
 
   // Called to inform |this| of peer connections being added/removed.
   // This information is used to:
@@ -50,10 +48,8 @@ class CONTENT_EXPORT WebRtcRemoteEventLogManager final
   // The return value of both methods indicates only the consistency of the
   // information with previously received information (e.g. can't remove a
   // peer connection that was never added, etc.).
-  bool PeerConnectionAdded(int render_process_id, int lid);
-  bool PeerConnectionRemoved(int render_process_id,
-                             int lid,
-                             BrowserContextId browser_context);
+  bool PeerConnectionAdded(const PeerConnectionKey& key);
+  bool PeerConnectionRemoved(const PeerConnectionKey& key);
 
   // Attempt to start logging the WebRTC events of an active peer connection.
   // Logging is subject to several restrictions:
@@ -66,9 +62,7 @@ class CONTENT_EXPORT WebRtcRemoteEventLogManager final
   // 3. The maximum file size must be sensible.
   // The return value is true if all of the restrictions were observed, and if
   // a file was successfully created for this log.
-  bool StartRemoteLogging(int render_process_id,
-                          int lid,
-                          BrowserContextId browser_context,
+  bool StartRemoteLogging(const PeerConnectionKey& key,
                           const base::FilePath& browser_context_dir,
                           size_t max_file_size_bytes,
                           const std::string& metadata);
@@ -83,9 +77,7 @@ class CONTENT_EXPORT WebRtcRemoteEventLogManager final
   // changes from ACTIVE to PENDING.
   // True is returned if and only if |message| was written in its entirety to
   // an active log.
-  bool EventLogWrite(int render_process_id,
-                     int lid,
-                     const std::string& message);
+  bool EventLogWrite(const PeerConnectionKey& key, const std::string& message);
 
   // An implicit PeerConnectionRemoved() on all of the peer connections that
   // were associated with the renderer process.
@@ -117,10 +109,10 @@ class CONTENT_EXPORT WebRtcRemoteEventLogManager final
   using PeerConnectionKey = WebRtcEventLogPeerConnectionKey;
 
   struct PendingLog {
-    PendingLog(BrowserContextId browser_context,
+    PendingLog(BrowserContextId browser_context_id,
                const base::FilePath& path,
                base::Time last_modified)
-        : browser_context(browser_context),
+        : browser_context_id(browser_context_id),
           path(path),
           last_modified(last_modified) {}
 
@@ -131,12 +123,17 @@ class CONTENT_EXPORT WebRtcRemoteEventLogManager final
       return path < other.path;  // Break ties arbitrarily, but consistently.
     }
 
-    const BrowserContextId browser_context;  // This file's owner.
+    const BrowserContextId browser_context_id;  // This file's owner.
     const base::FilePath path;
     // |last_modified| recorded at BrowserContext initialization. Chrome will
     // not modify it afterwards, and neither should the user.
     const base::Time last_modified;
   };
+
+  // Checks whether a browser context has already been enabled via a call to
+  // EnableForBrowserContext(), and not yet disabled using a call to
+  // DisableForBrowserContext().
+  bool BrowserContextEnabled(BrowserContextId browser_context_id) const;
 
   // LogFileWriter implementation. Closes an active log file, changing its
   // state from ACTIVE to PENDING.
@@ -151,24 +148,20 @@ class CONTENT_EXPORT WebRtcRemoteEventLogManager final
   // remote-bound logs that were created during previous Chrome sessions.
   // This function does *not* protect against manipulation by the user,
   // who might seed the directory with more files than were permissible.
-  void AddPendingLogs(BrowserContextId browser_context,
+  void AddPendingLogs(BrowserContextId browser_context_id,
                       const base::FilePath& remote_bound_logs_dir);
 
   // Attempts the creation of a locally stored file into which a remote-bound
   // log may be written. True is returned if and only if such a file was
   // successfully created.
-  bool StartWritingLog(int render_process_id,
-                       int lid,
-                       BrowserContextId browser_context,
+  bool StartWritingLog(const PeerConnectionKey& key,
                        const base::FilePath& browser_context_dir,
                        size_t max_file_size_bytes,
                        const std::string& metadata);
 
   // Checks if the referenced peer connection has an associated active
   // remote-bound log. If it does, the log is changed from ACTIVE to PENDING.
-  void MaybeStopRemoteLogging(int render_process_id,
-                              int lid,
-                              BrowserContextId browser_context);
+  void MaybeStopRemoteLogging(const PeerConnectionKey& key);
 
   // Get rid of pending logs whose age exceeds our retention policy.
   // On the one hand, we want to remove expired files as soon as possible, but
@@ -184,6 +177,10 @@ class CONTENT_EXPORT WebRtcRemoteEventLogManager final
   // against for retention, is only read from disk once per file, meaning
   // this check is not too expensive.
   void PrunePendingLogs();
+
+  // Return |true| if and only if we can start another active log (with respect
+  // to limitations on the numbers active and pending logs).
+  bool AdditionalActiveLogAllowed(BrowserContextId browser_context_id) const;
 
   // Initiating a new upload is only allowed when there are no active peer
   // connection which might be adversely affected by the bandwidth consumption
@@ -209,6 +206,9 @@ class CONTENT_EXPORT WebRtcRemoteEventLogManager final
   // decide when to ask WebRTC to start/stop sending event logs.
   WebRtcRemoteEventLogsObserver* const observer_;
 
+  // The IDs of the BrowserContexts for which logging is enabled.
+  std::set<BrowserContextId> enabled_browser_contexts_;
+
   // Currently active peer connections. PeerConnections which have been closed
   // are not considered active, regardless of whether they have been torn down.
   std::set<PeerConnectionKey> active_peer_connections_;
@@ -229,16 +229,6 @@ class CONTENT_EXPORT WebRtcRemoteEventLogManager final
   // null-implementation uploaders, or uploaders whose behavior is controlled
   // by the unit test.)
   std::unique_ptr<WebRtcEventLogUploader::Factory> uploader_factory_;
-
-  // Active logs are subject to a global limit (no more than X active logs,
-  // regardless of which context they belong to). This makes sense, because
-  // performance is the limiting factor. However, pending logs are subject
-  // to a per-browser-context limit, because a user that chooses to run multiple
-  // profiles is resigning himself to increased disk utilization. We only keep
-  // track of active_logs_counts_ - the per-browser-context active log count -
-  // because active logs become pending logs once completed.
-  std::map<BrowserContextId, size_t> active_logs_counts_;
-  std::map<BrowserContextId, size_t> pending_logs_counts_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcRemoteEventLogManager);
 };

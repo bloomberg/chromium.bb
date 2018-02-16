@@ -22,16 +22,14 @@ class WebRtcLocalEventLogManager final : public LogFileWriter {
   explicit WebRtcLocalEventLogManager(WebRtcLocalEventLogsObserver* observer);
   ~WebRtcLocalEventLogManager() override;
 
-  bool PeerConnectionAdded(int render_process_id, int lid);
-  bool PeerConnectionRemoved(int render_process_id, int lid);
+  bool PeerConnectionAdded(const PeerConnectionKey& key);
+  bool PeerConnectionRemoved(const PeerConnectionKey& key);
 
   bool EnableLogging(const base::FilePath& base_path,
                      size_t max_file_size_bytes);
   bool DisableLogging();
 
-  bool EventLogWrite(int render_process_id,
-                     int lid,
-                     const std::string& message);
+  bool EventLogWrite(const PeerConnectionKey& key, const std::string& message);
 
   void RenderProcessHostExitedDestroyed(int render_process_id);
 
@@ -42,17 +40,16 @@ class WebRtcLocalEventLogManager final : public LogFileWriter {
 
  private:
   // Create a local log file.
-  void StartLogFile(int render_process_id, int lid);
+  void StartLogFile(const PeerConnectionKey& key);
 
   // LogFileWriter implementation. Closes a log file, flushing it to disk
   // and relinquishing its handle.
   LogFilesMap::iterator CloseLogFile(LogFilesMap::iterator it) override;
 
   // Derives the name of a local log file. The format is:
-  // [user_defined]_[date]_[time]_[pid]_[lid].log
+  // [user_defined]_[date]_[time]_[render_process_id]_[lid].log
   base::FilePath GetFilePath(const base::FilePath& base_path,
-                             int render_process_id,
-                             int lid);
+                             const PeerConnectionKey& key) const;
 
   // This object is expected to be created and destroyed on the UI thread,
   // but live on its owner's internal, IO-capable task queue.

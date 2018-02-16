@@ -4,6 +4,7 @@
 
 #include "content/browser/webrtc/webrtc_remote_event_log_manager.h"
 
+#include <algorithm>
 #include <limits>
 
 #include "base/big_endian.h"
@@ -34,6 +35,29 @@ void DiscardLogFile(base::File* file, const base::FilePath& file_path) {
   if (!base::DeleteFile(file_path, /*recursive=*/false)) {
     LOG(ERROR) << "Failed to delete " << file_path << ".";
   }
+}
+
+bool ValidLogParameters(size_t max_file_size_bytes,
+                        const std::string& metadata) {
+  // TODO(eladalon): Set a tighter limit (following discussion with rschriebman
+  // and manj). https://crbug.com/775415
+  if (max_file_size_bytes == kWebRtcEventLogManagerUnlimitedFileSize) {
+    return false;
+  }
+
+  if (metadata.length() > 0xFFFFFFu) {
+    // We use three bytes to encode the length of the metadata.
+    LOG(ERROR) << "Metadata must be less than 2^24 bytes.";
+    return false;
+  }
+
+  if (metadata.size() + kRemoteBoundLogFileHeaderSizeBytes >=
+      max_file_size_bytes) {
+    LOG(ERROR) << "Max file size and metadata must leave room for event log.";
+    return false;
+  }
+
+  return true;
 }
 }  // namespace
 
@@ -69,9 +93,11 @@ WebRtcRemoteEventLogManager::~WebRtcRemoteEventLogManager() {
 }
 
 void WebRtcRemoteEventLogManager::EnableForBrowserContext(
-    BrowserContextId browser_context,
+    BrowserContextId browser_context_id,
     const base::FilePath& browser_context_dir) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+  DCHECK(!BrowserContextEnabled(browser_context_id)) << "Already enabled.";
+
   const base::FilePath remote_bound_logs_dir =
       GetLogsDirectoryPath(browser_context_dir);
   if (!MaybeCreateLogsDirectory(remote_bound_logs_dir)) {
@@ -79,46 +105,63 @@ void WebRtcRemoteEventLogManager::EnableForBrowserContext(
         << "WebRtcRemoteEventLogManager couldn't create logs directory.";
     return;
   }
-  AddPendingLogs(browser_context, remote_bound_logs_dir);
+
+  AddPendingLogs(browser_context_id, remote_bound_logs_dir);
+
+  enabled_browser_contexts_.insert(browser_context_id);
 }
 
+// TODO(eladalon): Add unit tests. https://crbug.com/775415
 void WebRtcRemoteEventLogManager::DisableForBrowserContext(
-    BrowserContextId browser_context) {
+    BrowserContextId browser_context_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
-  auto active_it = active_logs_counts_.find(browser_context);
-  if (active_it != active_logs_counts_.end()) {
-    active_logs_counts_.erase(active_it);
+
+  if (!BrowserContextEnabled(browser_context_id)) {
+    return;  // Enabling may have failed due to lacking permissions.
   }
-  auto pending_it = pending_logs_counts_.find(browser_context);
-  if (pending_it != pending_logs_counts_.end()) {
-    pending_logs_counts_.erase(pending_it);
+
+  enabled_browser_contexts_.erase(browser_context_id);
+
+#if DCHECK_IS_ON()
+  // All of the RPHs associated with this BrowserContext must already have
+  // exited, which should have implicitly stopped all active logs.
+  auto pred = [browser_context_id](decltype(active_logs_)::value_type& log) {
+    return log.first.browser_context_id == browser_context_id;
+  };
+  DCHECK(std::count_if(active_logs_.begin(), active_logs_.end(), pred) == 0u);
+#endif
+
+  // Pending logs for this BrowserContext are no longer eligible for upload.
+  // (Active uploads, if any, are not affected.)
+  for (auto it = pending_logs_.begin(); it != pending_logs_.end();) {
+    if (it->browser_context_id == browser_context_id) {
+      it = pending_logs_.erase(it);
+    } else {
+      ++it;
+    }
   }
 }
 
-bool WebRtcRemoteEventLogManager::PeerConnectionAdded(int render_process_id,
-                                                      int lid) {
+bool WebRtcRemoteEventLogManager::PeerConnectionAdded(
+    const PeerConnectionKey& key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
   PrunePendingLogs();  // Infrequent event - good opportunity to prune.
-  const auto result = active_peer_connections_.emplace(render_process_id, lid);
+  const auto result = active_peer_connections_.insert(key);
   return result.second;
 }
 
 bool WebRtcRemoteEventLogManager::PeerConnectionRemoved(
-    int render_process_id,
-    int lid,
-    BrowserContextId browser_context) {
+    const PeerConnectionKey& key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
 
   PrunePendingLogs();  // Infrequent event - good opportunity to prune.
 
-  const PeerConnectionKey key = PeerConnectionKey(render_process_id, lid);
-  auto peer_connection = active_peer_connections_.find(key);
-
+  const auto peer_connection = active_peer_connections_.find(key);
   if (peer_connection == active_peer_connections_.end()) {
     return false;
   }
 
-  MaybeStopRemoteLogging(render_process_id, lid, browser_context);
+  MaybeStopRemoteLogging(key);
 
   active_peer_connections_.erase(peer_connection);
 
@@ -128,33 +171,19 @@ bool WebRtcRemoteEventLogManager::PeerConnectionRemoved(
 }
 
 bool WebRtcRemoteEventLogManager::StartRemoteLogging(
-    int render_process_id,
-    int lid,
-    BrowserContextId browser_context,
+    const PeerConnectionKey& key,
     const base::FilePath& browser_context_dir,
     size_t max_file_size_bytes,
     const std::string& metadata) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
 
-  // TODO(eladalon): Set a tighter limit (following discussion with rschriebman
-  // and manj). https://crbug.com/775415
-  if (max_file_size_bytes == kWebRtcEventLogManagerUnlimitedFileSize) {
+  if (!ValidLogParameters(max_file_size_bytes, metadata)) {
     return false;
   }
 
-  if (metadata.length() > 0xFFFFFFu) {
-    // We use three bytes to encode the length of the metadata.
-    LOG(ERROR) << "Metadata must be less than 2^24 bytes.";
+  if (!BrowserContextEnabled(key.browser_context_id)) {
     return false;
   }
-
-  if (metadata.size() + kRemoteBoundLogFileHeaderSizeBytes >=
-      max_file_size_bytes) {
-    LOG(ERROR) << "Max file size and metadata must leave room for event log.";
-    return false;
-  }
-
-  const PeerConnectionKey key(render_process_id, lid);
 
   // May not start logging inactive peer connections.
   if (active_peer_connections_.find(key) == active_peer_connections_.end()) {
@@ -164,8 +193,8 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
   // May not restart active remote logs.
   auto it = active_logs_.find(key);
   if (it != active_logs_.end()) {
-    LOG(ERROR) << "Remote logging already underway for (" << render_process_id
-               << ", " << lid << ").";
+    LOG(ERROR) << "Remote logging already underway for ("
+               << key.render_process_id << ", " << key.lid << ").";
     return false;
   }
 
@@ -173,29 +202,19 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
   // making room for this file.
   PrunePendingLogs();
 
-  // Limit over concurrently active logs (across BrowserContext-s).
-  if (active_logs_.size() >= kMaxActiveRemoteBoundWebRtcEventLogs) {
+  if (!AdditionalActiveLogAllowed(key.browser_context_id)) {
     return false;
   }
 
-  // Limit over the number of pending logs (per BrowserContext). We count active
-  // logs too, since they become pending logs once completed.
-  if (active_logs_counts_[browser_context] +
-          pending_logs_counts_[browser_context] >=
-      kMaxPendingRemoteBoundWebRtcEventLogs) {
-    return false;
-  }
-
-  return StartWritingLog(render_process_id, lid, browser_context,
-                         browser_context_dir, max_file_size_bytes, metadata);
+  return StartWritingLog(key, browser_context_dir, max_file_size_bytes,
+                         metadata);
 }
 
-bool WebRtcRemoteEventLogManager::EventLogWrite(int render_process_id,
-                                                int lid,
+bool WebRtcRemoteEventLogManager::EventLogWrite(const PeerConnectionKey& key,
                                                 const std::string& message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
 
-  auto it = active_logs_.find(PeerConnectionKey(render_process_id, lid));
+  auto it = active_logs_.find(key);
   if (it == active_logs_.end()) {
     return false;
   }
@@ -276,6 +295,12 @@ base::FilePath WebRtcRemoteEventLogManager::GetLogsDirectoryPath(
   return browser_context_dir.Append(kRemoteBoundLogSubDirectory);
 }
 
+bool WebRtcRemoteEventLogManager::BrowserContextEnabled(
+    BrowserContextId browser_context_id) const {
+  const auto it = enabled_browser_contexts_.find(browser_context_id);
+  return it != enabled_browser_contexts_.cend();
+}
+
 WebRtcRemoteEventLogManager::LogFilesMap::iterator
 WebRtcRemoteEventLogManager::CloseLogFile(LogFilesMap::iterator it) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
@@ -314,16 +339,9 @@ bool WebRtcRemoteEventLogManager::MaybeCreateLogsDirectory(
 }
 
 void WebRtcRemoteEventLogManager::AddPendingLogs(
-    BrowserContextId browser_context,
+    BrowserContextId browser_context_id,
     const base::FilePath& remote_bound_logs_dir) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
-  DCHECK(active_logs_counts_.find(browser_context) ==
-         active_logs_counts_.end());
-  DCHECK(pending_logs_counts_.find(browser_context) ==
-         pending_logs_counts_.end());
-
-  active_logs_counts_.emplace(browser_context, 0);
-  pending_logs_counts_.emplace(browser_context, 0);
 
   base::FilePath::StringType pattern =
       base::FilePath::StringType(FILE_PATH_LITERAL("*")) +
@@ -334,17 +352,15 @@ void WebRtcRemoteEventLogManager::AddPendingLogs(
 
   for (auto path = enumerator.Next(); !path.empty(); path = enumerator.Next()) {
     const auto last_modified = enumerator.GetInfo().GetLastModifiedTime();
-    pending_logs_.emplace(browser_context, path, last_modified);
-    pending_logs_counts_[browser_context] += 1;
+    auto it = pending_logs_.emplace(browser_context_id, path, last_modified);
+    DCHECK(it.second);  // No pre-existing entry.
   }
 
   MaybeStartUploading();
 }
 
 bool WebRtcRemoteEventLogManager::StartWritingLog(
-    int render_process_id,
-    int lid,
-    BrowserContextId browser_context,
+    const PeerConnectionKey& key,
     const base::FilePath& browser_context_dir,
     size_t max_file_size_bytes,
     const std::string& metadata) {
@@ -401,30 +417,23 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
   }
 
   // Record that we're now writing this remote-bound log to this file.
-  const PeerConnectionKey key(render_process_id, lid);
   const size_t header_and_metadata_size_bytes =
       kRemoteBoundLogFileHeaderSizeBytes + metadata_length;
   const auto it = active_logs_.emplace(
       key, LogFile(file_path, std::move(file), max_file_size_bytes,
                    header_and_metadata_size_bytes));
   DCHECK(it.second);
-  active_logs_counts_[browser_context] += 1;
 
-  observer_->OnRemoteLogStarted(PeerConnectionKey(render_process_id, lid),
-                                file_path);
+  observer_->OnRemoteLogStarted(key, file_path);
 
   return true;
 }
 
 void WebRtcRemoteEventLogManager::MaybeStopRemoteLogging(
-    int render_process_id,
-    int lid,
-    BrowserContextId browser_context) {
+    const PeerConnectionKey& key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
 
-  const PeerConnectionKey key(render_process_id, lid);
   const auto it = active_logs_.find(key);
-
   if (it == active_logs_.end()) {
     return;
   }
@@ -434,15 +443,15 @@ void WebRtcRemoteEventLogManager::MaybeStopRemoteLogging(
 
   // The current time is a good enough approximation of the file's last
   // modification time.
-  base::Time last_modified = base::Time::Now();
+  const base::Time last_modified = base::Time::Now();
 
-  pending_logs_.emplace(browser_context, it->second.path, last_modified);
-  pending_logs_counts_[browser_context] += 1;
-
+  // The stopped log becomes a pending log. It is no longer an active log.
+  const auto emplace_result = pending_logs_.emplace(
+      key.browser_context_id, it->second.path, last_modified);
+  DCHECK(emplace_result.second);  // No pre-existing entry.
   active_logs_.erase(it);
-  active_logs_counts_[browser_context] -= 1;
 
-  observer_->OnRemoteLogStopped(PeerConnectionKey(render_process_id, lid));
+  observer_->OnRemoteLogStopped(key);
 
   MaybeStartUploading();
 }
@@ -456,12 +465,35 @@ void WebRtcRemoteEventLogManager::PrunePendingLogs() {
       if (!base::DeleteFile(it->path, /*recursive=*/false)) {
         LOG(ERROR) << "Failed to delete " << it->path << ".";
       }
-      pending_logs_counts_[it->browser_context] -= 1;
       it = pending_logs_.erase(it);
     } else {
       ++it;
     }
   }
+}
+
+bool WebRtcRemoteEventLogManager::AdditionalActiveLogAllowed(
+    BrowserContextId browser_context_id) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+
+  // Limit over concurrently active logs (across BrowserContext-s).
+  if (active_logs_.size() >= kMaxActiveRemoteBoundWebRtcEventLogs) {
+    return false;
+  }
+
+  // Limit over the number of pending logs (per BrowserContext). We count active
+  // logs too, since they become pending logs once completed.
+  const size_t active_count = std::count_if(
+      active_logs_.begin(), active_logs_.end(),
+      [browser_context_id](const decltype(active_logs_)::value_type& log) {
+        return log.first.browser_context_id == browser_context_id;
+      });
+  const size_t pending_count = std::count_if(
+      pending_logs_.begin(), pending_logs_.end(),
+      [browser_context_id](const decltype(pending_logs_)::value_type& log) {
+        return log.browser_context_id == browser_context_id;
+      });
+  return active_count + pending_count < kMaxPendingRemoteBoundWebRtcEventLogs;
 }
 
 bool WebRtcRemoteEventLogManager::UploadingAllowed() const {

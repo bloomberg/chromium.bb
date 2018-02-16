@@ -39,31 +39,29 @@ WebRtcLocalEventLogManager::~WebRtcLocalEventLogManager() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-bool WebRtcLocalEventLogManager::PeerConnectionAdded(int render_process_id,
-                                                     int lid) {
+bool WebRtcLocalEventLogManager::PeerConnectionAdded(
+    const PeerConnectionKey& key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
 
-  const auto result = active_peer_connections_.emplace(render_process_id, lid);
-
-  if (!result.second) {  // PeerConnection already registered.
-    return false;
+  const auto insertion_result = active_peer_connections_.insert(key);
+  if (!insertion_result.second) {
+    return false;  // Attempt to re-add the PeerConnection.
   }
 
   if (!base_path_.empty() &&
       log_files_.size() < kMaxNumberLocalWebRtcEventLogFiles) {
     // Note that success/failure of starting the local log file is unrelated
     // to the success/failure of PeerConnectionAdded().
-    StartLogFile(render_process_id, lid);
+    StartLogFile(key);
   }
 
   return true;
 }
 
-bool WebRtcLocalEventLogManager::PeerConnectionRemoved(int render_process_id,
-                                                       int lid) {
+bool WebRtcLocalEventLogManager::PeerConnectionRemoved(
+    const PeerConnectionKey& key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
 
-  const PeerConnectionKey key = PeerConnectionKey(render_process_id, lid);
   auto peer_connection = active_peer_connections_.find(key);
 
   if (peer_connection == active_peer_connections_.end()) {
@@ -100,7 +98,7 @@ bool WebRtcLocalEventLogManager::EnableLogging(const base::FilePath& base_path,
     if (log_files_.size() >= kMaxNumberLocalWebRtcEventLogFiles) {
       break;
     }
-    StartLogFile(peer_connection.render_process_id, peer_connection.lid);
+    StartLogFile(peer_connection);
   }
 
   return true;
@@ -123,11 +121,10 @@ bool WebRtcLocalEventLogManager::DisableLogging() {
   return true;
 }
 
-bool WebRtcLocalEventLogManager::EventLogWrite(int render_process_id,
-                                               int lid,
+bool WebRtcLocalEventLogManager::EventLogWrite(const PeerConnectionKey& key,
                                                const std::string& message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
-  auto it = log_files_.find(PeerConnectionKey(render_process_id, lid));
+  auto it = log_files_.find(key);
   if (it == log_files_.end()) {
     return false;
   }
@@ -165,11 +162,11 @@ void WebRtcLocalEventLogManager::SetClockForTesting(base::Clock* clock) {
   clock_for_testing_ = clock;
 }
 
-void WebRtcLocalEventLogManager::StartLogFile(int render_process_id, int lid) {
+void WebRtcLocalEventLogManager::StartLogFile(const PeerConnectionKey& key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
 
   // Add some information to the name given by the caller.
-  base::FilePath file_path = GetFilePath(base_path_, render_process_id, lid);
+  base::FilePath file_path = GetFilePath(base_path_, key);
   CHECK(!file_path.empty()) << "Couldn't set path for local WebRTC log file.";
 
   // In the unlikely case that this filename is already taken, find a unique
@@ -196,10 +193,8 @@ void WebRtcLocalEventLogManager::StartLogFile(int render_process_id, int lid) {
     return;
   }
 
-  const PeerConnectionKey key(render_process_id, lid);
-
   // If the file was successfully created, it's now ready to be written to.
-  DCHECK(log_files_.find({render_process_id, lid}) == log_files_.end());
+  DCHECK(log_files_.find(key) == log_files_.end());
   log_files_.emplace(
       key, LogFile(file_path, std::move(file), max_log_file_size_bytes_));
 
@@ -227,8 +222,7 @@ WebRtcLocalEventLogManager::CloseLogFile(LogFilesMap::iterator it) {
 
 base::FilePath WebRtcLocalEventLogManager::GetFilePath(
     const base::FilePath& base_path,
-    int render_process_id,
-    int lid) {
+    const PeerConnectionKey& key) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
 
   base::Time::Exploded now;
@@ -238,12 +232,12 @@ base::FilePath WebRtcLocalEventLogManager::GetFilePath(
     base::Time::Now().LocalExplode(&now);
   }
 
-  // [user_defined]_[date]_[time]_[pid]_[lid].log
+  // [user_defined]_[date]_[time]_[render_process_id]_[lid].log
   char stamp[100];
   int written =
       base::snprintf(stamp, arraysize(stamp), "%04d%02d%02d_%02d%02d_%d_%d",
                      now.year, now.month, now.day_of_month, now.hour,
-                     now.minute, render_process_id, lid);
+                     now.minute, key.render_process_id, key.lid);
   CHECK_GT(written, 0);
   CHECK_LT(static_cast<size_t>(written), arraysize(stamp));
 

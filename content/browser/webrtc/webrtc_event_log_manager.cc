@@ -24,7 +24,7 @@ class PeerConnectionTrackerProxyImpl
  public:
   ~PeerConnectionTrackerProxyImpl() override = default;
 
-  void SetWebRtcEventLoggingState(WebRtcEventLogPeerConnectionKey key,
+  void SetWebRtcEventLoggingState(const WebRtcEventLogPeerConnectionKey& key,
                                   bool event_logging_enabled) override {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -151,27 +151,32 @@ void WebRtcEventLogManager::PeerConnectionAdded(
     base::OnceCallback<void(bool)> reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);
-  if (!host) {
+  RenderProcessHost* rph = RenderProcessHost::FromID(render_process_id);
+  if (!rph) {
     // RPH died before processing of this notification.
     MaybeReply(std::move(reply), false);
     return;
   }
 
-  auto it = observed_render_process_hosts_.find(host);
+  auto it = observed_render_process_hosts_.find(rph);
   if (it == observed_render_process_hosts_.end()) {
     // This is the first PeerConnection which we see that's associated
     // with this RPH.
-    host->AddObserver(this);
-    observed_render_process_hosts_.insert(host);
+    rph->AddObserver(this);
+    observed_render_process_hosts_.insert(rph);
   }
+
+  const auto browser_context_id = GetBrowserContextId(rph->GetBrowserContext());
+  DCHECK_NE(browser_context_id, kNullBrowserContextId);
 
   // The object outlives the task queue - base::Unretained(this) is safe.
   task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&WebRtcEventLogManager::PeerConnectionAddedInternal,
-                     base::Unretained(this), render_process_id, lid,
-                     std::move(reply)));
+      base::BindOnce(
+          &WebRtcEventLogManager::PeerConnectionAddedInternal,
+          base::Unretained(this),
+          PeerConnectionKey(render_process_id, lid, browser_context_id),
+          std::move(reply)));
 }
 
 void WebRtcEventLogManager::PeerConnectionRemoved(
@@ -180,8 +185,7 @@ void WebRtcEventLogManager::PeerConnectionRemoved(
     base::OnceCallback<void(bool)> reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  const BrowserContextId browser_context_id =
-      GetBrowserContextId(render_process_id);
+  const auto browser_context_id = GetBrowserContextId(render_process_id);
   if (browser_context_id == kNullBrowserContextId) {
     // RPH died before processing of this notification. This is handled by
     // RenderProcessExited() / RenderProcessHostDestroyed.
@@ -192,9 +196,11 @@ void WebRtcEventLogManager::PeerConnectionRemoved(
   // The object outlives the task queue - base::Unretained(this) is safe.
   task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&WebRtcEventLogManager::PeerConnectionRemovedInternal,
-                     base::Unretained(this), render_process_id, lid,
-                     browser_context_id, std::move(reply)));
+      base::BindOnce(
+          &WebRtcEventLogManager::PeerConnectionRemovedInternal,
+          base::Unretained(this),
+          PeerConnectionKey(render_process_id, lid, browser_context_id),
+          std::move(reply)));
 }
 
 void WebRtcEventLogManager::PeerConnectionStopped(
@@ -237,24 +243,24 @@ void WebRtcEventLogManager::StartRemoteLogging(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const BrowserContext* browser_context = GetBrowserContext(render_process_id);
-  if (!browser_context) {
-    // RPH died before processing of this notification.
+  if (!browser_context || browser_context->IsOffTheRecord()) {
+    // RPH died before processing of this notification, or is incognito.
     MaybeReply(std::move(reply), false);
     return;
   }
 
-  base::Optional<BrowserContextId> browser_context_id;
-  if (!browser_context->IsOffTheRecord()) {
-    browser_context_id = GetBrowserContextId(browser_context);
-  }
+  const auto browser_context_id = GetBrowserContextId(browser_context);
+  DCHECK_NE(browser_context_id, kNullBrowserContextId);
 
   // The object outlives the task queue - base::Unretained(this) is safe.
   task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&WebRtcEventLogManager::StartRemoteLoggingInternal,
-                     base::Unretained(this), render_process_id, lid,
-                     browser_context_id, browser_context->GetPath(),
-                     max_file_size_bytes, metadata, std::move(reply)));
+      base::BindOnce(
+          &WebRtcEventLogManager::StartRemoteLoggingInternal,
+          base::Unretained(this),
+          PeerConnectionKey(render_process_id, lid, browser_context_id),
+          browser_context->GetPath(), max_file_size_bytes, metadata,
+          std::move(reply)));
 }
 
 void WebRtcEventLogManager::OnWebRtcEventLogWrite(
@@ -271,13 +277,19 @@ void WebRtcEventLogManager::OnWebRtcEventLogWrite(
     return;
   }
 
+  const auto browser_context_id = GetBrowserContextId(browser_context);
+  DCHECK_NE(browser_context_id, kNullBrowserContextId);
+
+  const bool remote_logging_allowed = !browser_context->IsOffTheRecord();
+
   // The object outlives the task queue - base::Unretained(this) is safe.
   task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&WebRtcEventLogManager::OnWebRtcEventLogWriteInternal,
-                     base::Unretained(this), render_process_id, lid,
-                     !browser_context->IsOffTheRecord(), message,
-                     std::move(reply)));
+      base::BindOnce(
+          &WebRtcEventLogManager::OnWebRtcEventLogWriteInternal,
+          base::Unretained(this),
+          PeerConnectionKey(render_process_id, lid, browser_context_id),
+          remote_logging_allowed, message, std::move(reply)));
 }
 
 void WebRtcEventLogManager::SetLocalLogsObserver(
@@ -419,8 +431,11 @@ void WebRtcEventLogManager::EnableForBrowserContextInternal(
     const base::FilePath& browser_context_dir,
     base::OnceClosure reply) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_NE(browser_context_id, kNullBrowserContextId);
+
   remote_logs_manager_.EnableForBrowserContext(browser_context_id,
                                                browser_context_dir);
+
   if (reply) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(reply));
   }
@@ -430,22 +445,23 @@ void WebRtcEventLogManager::DisableForBrowserContextInternal(
     BrowserContextId browser_context_id,
     base::OnceClosure reply) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
   remote_logs_manager_.DisableForBrowserContext(browser_context_id);
+
   if (reply) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(reply));
   }
 }
 
 void WebRtcEventLogManager::PeerConnectionAddedInternal(
-    int render_process_id,
-    int lid,
+    PeerConnectionKey key,
     base::OnceCallback<void(bool)> reply) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  const bool local_result =
-      local_logs_manager_.PeerConnectionAdded(render_process_id, lid);
-  const bool remote_result =
-      remote_logs_manager_.PeerConnectionAdded(render_process_id, lid);
+
+  const bool local_result = local_logs_manager_.PeerConnectionAdded(key);
+  const bool remote_result = remote_logs_manager_.PeerConnectionAdded(key);
   DCHECK_EQ(local_result, remote_result);
+
   if (reply) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::BindOnce(std::move(reply), local_result));
@@ -453,16 +469,14 @@ void WebRtcEventLogManager::PeerConnectionAddedInternal(
 }
 
 void WebRtcEventLogManager::PeerConnectionRemovedInternal(
-    int render_process_id,
-    int lid,
-    BrowserContextId browser_context_id,
+    PeerConnectionKey key,
     base::OnceCallback<void(bool)> reply) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  const bool local_result =
-      local_logs_manager_.PeerConnectionRemoved(render_process_id, lid);
-  const bool remote_result = remote_logs_manager_.PeerConnectionRemoved(
-      render_process_id, lid, browser_context_id);
+
+  const bool local_result = local_logs_manager_.PeerConnectionRemoved(key);
+  const bool remote_result = remote_logs_manager_.PeerConnectionRemoved(key);
   DCHECK_EQ(local_result, remote_result);
+
   if (reply) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::BindOnce(std::move(reply), local_result));
@@ -474,8 +488,10 @@ void WebRtcEventLogManager::EnableLocalLoggingInternal(
     size_t max_file_size_bytes,
     base::OnceCallback<void(bool)> reply) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
   const bool result =
       local_logs_manager_.EnableLogging(base_path, max_file_size_bytes);
+
   if (reply) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::BindOnce(std::move(reply), result));
@@ -485,7 +501,9 @@ void WebRtcEventLogManager::EnableLocalLoggingInternal(
 void WebRtcEventLogManager::DisableLocalLoggingInternal(
     base::OnceCallback<void(bool)> reply) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
   const bool result = local_logs_manager_.DisableLogging();
+
   if (reply) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::BindOnce(std::move(reply), result));
@@ -493,23 +511,15 @@ void WebRtcEventLogManager::DisableLocalLoggingInternal(
 }
 
 void WebRtcEventLogManager::StartRemoteLoggingInternal(
-    int render_process_id,
-    int lid,
-    base::Optional<BrowserContextId> browser_context_id,
+    PeerConnectionKey key,
     const base::FilePath& browser_context_dir,
     size_t max_file_size_bytes,
     const std::string metadata,
     base::OnceCallback<void(bool)> reply) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-  bool result;
-  if (browser_context_id) {  // Not off the records.
-    result = remote_logs_manager_.StartRemoteLogging(
-        render_process_id, lid, *browser_context_id, browser_context_dir,
-        max_file_size_bytes, std::move(metadata));
-  } else {
-    result = false;
-  }
+  const bool result = remote_logs_manager_.StartRemoteLogging(
+      key, browser_context_dir, max_file_size_bytes, std::move(metadata));
 
   if (reply) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -518,18 +528,19 @@ void WebRtcEventLogManager::StartRemoteLoggingInternal(
 }
 
 void WebRtcEventLogManager::OnWebRtcEventLogWriteInternal(
-    int render_process_id,
-    int lid,
+    PeerConnectionKey key,
     bool remote_logging_allowed,
     const std::string message,
     base::OnceCallback<void(std::pair<bool, bool>)> reply) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  const bool local_result = local_logs_manager_.EventLogWrite(
-      render_process_id, lid, std::move(message));
+
+  const bool local_result =
+      local_logs_manager_.EventLogWrite(key, std::move(message));
   const bool remote_result =
-      remote_logging_allowed ? remote_logs_manager_.EventLogWrite(
-                                   render_process_id, lid, std::move(message))
-                             : false;
+      remote_logging_allowed
+          ? remote_logs_manager_.EventLogWrite(key, std::move(message))
+          : false;
+
   if (reply) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -548,7 +559,9 @@ void WebRtcEventLogManager::SetLocalLogsObserverInternal(
     WebRtcLocalEventLogsObserver* observer,
     base::OnceClosure reply) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
   local_logs_observer_ = observer;
+
   if (reply) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(reply));
   }
@@ -558,7 +571,9 @@ void WebRtcEventLogManager::SetRemoteLogsObserverInternal(
     WebRtcRemoteEventLogsObserver* observer,
     base::OnceClosure reply) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
   remote_logs_observer_ = observer;
+
   if (reply) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(reply));
   }
