@@ -43,6 +43,9 @@ class TestBrowserThread {
   // Starts the thread with an IOThread message loop.
   bool StartIOThread();
 
+  // Initializes the BrowserThreadDelegate.
+  void InitIOThreadDelegate();
+
   // Stops the thread.
   void Stop();
 

@@ -739,6 +739,11 @@ void BrowserMainLoop::MainMessageLoopStart() {
 
 void BrowserMainLoop::PostMainMessageLoopStart() {
   {
+    TRACE_EVENT0("startup",
+                 "BrowserMainLoop::Subsystem:CreateBrowserThread::IO");
+    InitializeIOThread();
+  }
+  {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:SystemMonitor");
     system_monitor_.reset(new base::SystemMonitor);
   }
@@ -1034,89 +1039,44 @@ int BrowserMainLoop::CreateThreads() {
 
   base::SequencedWorkerPool::EnableWithRedirectionToTaskSchedulerForProcess();
 
-  base::Thread::Options io_message_loop_options;
-  io_message_loop_options.message_loop_type = base::MessageLoop::TYPE_IO;
+  TRACE_EVENT_BEGIN1("startup", "BrowserMainLoop::CreateThreads:start",
+                     "Thread", "BrowserThread::PROCESS_LAUNCHER");
 
-  // Start threads in the order they occur in the BrowserThread::ID enumeration,
-  // except for BrowserThread::UI which is the main thread.
-  //
-  // Must be size_t so we can increment it.
-  for (size_t thread_id = BrowserThread::UI + 1;
-       thread_id < BrowserThread::ID_COUNT;
-       ++thread_id) {
-    // If this thread ID is backed by a real thread, |thread_to_start| will be
-    // set to the appropriate BrowserProcessSubThread*. And |options| can be
-    // updated away from its default.
-    std::unique_ptr<BrowserProcessSubThread>* thread_to_start = nullptr;
-    base::Thread::Options options;
-    // If |message_loop| is not nullptr, then this BrowserThread will use this
-    // message loop instead of creating a new thread. Note that means this
-    // thread will not be joined on shutdown, and may cause use-after-free if
-    // anything tries to access objects deleted by AtExitManager, such as
-    // non-leaky LazyInstance.
-    base::MessageLoop* message_loop = nullptr;
-
-    // Otherwise this thread ID will be backed by a SingleThreadTaskRunner using
-    // |task_traits| (to be set below instead of |thread_to_start|).
-    base::TaskTraits task_traits;
-
-    switch (thread_id) {
-      case BrowserThread::PROCESS_LAUNCHER:
-        TRACE_EVENT_BEGIN1("startup",
-            "BrowserMainLoop::CreateThreads:start",
-            "Thread", "BrowserThread::PROCESS_LAUNCHER");
 #if defined(OS_ANDROID)
-        // Android specializes Launcher thread so it is accessible in java.
-        // Note Android never does clean shutdown, so shutdown use-after-free
-        // concerns are not a problem in practice.
-        message_loop = android::LauncherThread::GetMessageLoop();
-        DCHECK(message_loop);
-        thread_to_start = &process_launcher_thread_;
+  // Android specializes Launcher thread so it is accessible in java.
+  // Note Android never does clean shutdown, so shutdown use-after-free
+  // concerns are not a problem in practice.
+  base::MessageLoop* message_loop = android::LauncherThread::GetMessageLoop();
+  DCHECK(message_loop);
+  // This BrowserThread will use this message loop instead of creating a new
+  // thread. Note that means this/ thread will not be joined on shutdown, and
+  // may cause use-after-free if anything tries to access objects deleted by
+  // AtExitManager, such as non-leaky LazyInstance.
+  process_launcher_thread_.reset(new BrowserProcessSubThread(
+      BrowserThread::PROCESS_LAUNCHER, message_loop));
 #else   // defined(OS_ANDROID)
-        // TODO(gab): WithBaseSyncPrimitives() is likely not required here.
-        task_traits = {base::MayBlock(), base::WithBaseSyncPrimitives(),
-                       base::TaskPriority::USER_BLOCKING,
-                       base::TaskShutdownBehavior::BLOCK_SHUTDOWN};
+  // This thread ID will be backed by a SingleThreadTaskRunner using
+  // |task_traits|.
+  // TODO(gab): WithBaseSyncPrimitives() is likely not required here.
+  base::TaskTraits task_traits = {base::MayBlock(),
+                                  base::WithBaseSyncPrimitives(),
+                                  base::TaskPriority::USER_BLOCKING,
+                                  base::TaskShutdownBehavior::BLOCK_SHUTDOWN};
+  scoped_refptr<base::SingleThreadTaskRunner> redirection_task_runner =
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          task_traits, base::SingleThreadTaskRunnerThreadMode::DEDICATED);
+  DCHECK(redirection_task_runner);
+  BrowserThreadImpl::RedirectThreadIDToTaskRunner(
+      BrowserThread::PROCESS_LAUNCHER, std::move(redirection_task_runner));
 #endif  // defined(OS_ANDROID)
-        break;
-      case BrowserThread::IO:
-        TRACE_EVENT_BEGIN1("startup",
-            "BrowserMainLoop::CreateThreads:start",
-            "Thread", "BrowserThread::IO");
-        thread_to_start = &io_thread_;
-        options = io_message_loop_options;
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-        // Up the priority of the |io_thread_| as some of its IPCs relate to
-        // display tasks.
-        options.priority = base::ThreadPriority::DISPLAY;
-#endif
-        break;
-      case BrowserThread::UI:        // Falls through.
-      case BrowserThread::ID_COUNT:  // Falls through.
-        NOTREACHED();
-        break;
-    }
 
-    BrowserThread::ID id = static_cast<BrowserThread::ID>(thread_id);
+  // |io_thread_| is created by |PostMainMessageLoopStart()|, but its
+  // full initialization is deferred until this point because it requires
+  // several dependencies we don't want to depend on so early in startup.
+  DCHECK(io_thread_);
+  io_thread_->InitIOThreadDelegate();
 
-    if (thread_to_start) {
-      (*thread_to_start)
-          .reset(message_loop ? new BrowserProcessSubThread(id, message_loop)
-                              : new BrowserProcessSubThread(id));
-      // Start the thread if an existing |message_loop| wasn't provided.
-      if (!message_loop && !(*thread_to_start)->StartWithOptions(options))
-        LOG(FATAL) << "Failed to start the browser thread: id == " << id;
-    } else {
-      scoped_refptr<base::SingleThreadTaskRunner> redirection_task_runner =
-          base::CreateSingleThreadTaskRunnerWithTraits(
-              task_traits, base::SingleThreadTaskRunnerThreadMode::DEDICATED);
-      DCHECK(redirection_task_runner);
-      BrowserThreadImpl::RedirectThreadIDToTaskRunner(
-          id, std::move(redirection_task_runner));
-    }
-
-    TRACE_EVENT_END0("startup", "BrowserMainLoop::CreateThreads:start");
-  }
+  TRACE_EVENT_END0("startup", "BrowserMainLoop::CreateThreads:start");
   created_threads_ = true;
   return result_code_;
 }
@@ -1347,6 +1307,10 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 
 base::SequencedTaskRunner* BrowserMainLoop::audio_service_runner() {
   return audio_service_runner_.get();
+}
+
+void BrowserMainLoop::InitializeIOThreadForTesting() {
+  InitializeIOThread();
 }
 
 #if !defined(OS_ANDROID)
@@ -1694,6 +1658,20 @@ void BrowserMainLoop::MainMessageLoopRun() {
   base::RunLoop run_loop;
   run_loop.Run();
 #endif
+}
+
+void BrowserMainLoop::InitializeIOThread() {
+  base::Thread::Options options;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+  // Up the priority of the |io_thread_| as some of its IPCs relate to
+  // display tasks.
+  options.priority = base::ThreadPriority::DISPLAY;
+#endif
+
+  io_thread_.reset(new BrowserProcessSubThread(BrowserThread::IO));
+  if (!io_thread_->StartWithOptions(options))
+    LOG(FATAL) << "Failed to start the browser thread: IO";
 }
 
 void BrowserMainLoop::InitializeMojo() {

@@ -159,6 +159,8 @@ class CONTENT_EXPORT BrowserMainLoop {
   // through stopping threads to PostDestroyThreads.
   void ShutdownThreadsAndCleanUp();
 
+  void InitializeIOThreadForTesting();
+
   int GetResultCode() const { return result_code_; }
 
   media::AudioManager* audio_manager() const { return audio_manager_.get(); }
@@ -247,6 +249,7 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   void MainMessageLoopRun();
 
+  void InitializeIOThread();
   void InitializeMojo();
   base::FilePath GetStartupTraceFileName(
       const base::CommandLine& command_line) const;
