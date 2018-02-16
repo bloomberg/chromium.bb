@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_switches.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_features.h"
 #include "ui/base/ui_base_features.h"
@@ -33,7 +34,7 @@ void TestBrowserUi::ShowAndVerifyUi() {
   ShowUi(NameFromTestCase());
   ASSERT_TRUE(VerifyUi());
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          internal::kInteractiveSwitch))
+          switches::kTestLauncherInteractive))
     WaitForUserDismissal();
   else
     DismissUi();

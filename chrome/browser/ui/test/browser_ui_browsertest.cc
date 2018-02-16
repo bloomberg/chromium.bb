@@ -4,11 +4,11 @@
 
 #include "base/command_line.h"
 #include "base/process/launch.h"
+#include "base/stl_util.h"
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/test/test_browser_ui.h"
 #include "content/public/common/content_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor_switches.h"
@@ -68,12 +68,8 @@ TEST(BrowserUiTest, Invoke) {
 
   base::LaunchOptions options;
 
-  // Disable timeouts and generate screen output if --interactive was specified.
-  if (command.HasSwitch(internal::kInteractiveSwitch)) {
-    command.AppendSwitchASCII(switches::kUiTestActionMaxTimeout,
-                              TestTimeouts::kNoTimeoutSwitchValue);
-    command.AppendSwitchASCII(switches::kTestLauncherTimeout,
-                              TestTimeouts::kNoTimeoutSwitchValue);
+  // Generate screen output if --test-launcher-interactive was specified.
+  if (command.HasSwitch(switches::kTestLauncherInteractive)) {
     command.AppendSwitch(switches::kEnablePixelOutputInTests);
 #if defined(OS_WIN)
     // Under Windows, the child process won't launch without the wait option.
