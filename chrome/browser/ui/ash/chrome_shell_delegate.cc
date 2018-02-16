@@ -107,16 +107,6 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     return chromeos::MagnificationManager::Get()->IsMagnifierEnabled();
   }
 
-  void SetVirtualKeyboardEnabled(bool enabled) override {
-    DCHECK(AccessibilityManager::Get());
-    return AccessibilityManager::Get()->EnableVirtualKeyboard(enabled);
-  }
-
-  bool IsVirtualKeyboardEnabled() const override {
-    DCHECK(AccessibilityManager::Get());
-    return AccessibilityManager::Get()->IsVirtualKeyboardEnabled();
-  }
-
   void SetCaretHighlightEnabled(bool enabled) override {
     DCHECK(AccessibilityManager::Get());
     AccessibilityManager::Get()->SetCaretHighlightEnabled(enabled);
@@ -145,16 +135,6 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
   bool IsFocusHighlightEnabled() const override {
     DCHECK(AccessibilityManager::Get());
     return AccessibilityManager::Get()->IsFocusHighlightEnabled();
-  }
-
-  void SetStickyKeysEnabled(bool enabled) override {
-    DCHECK(AccessibilityManager::Get());
-    return AccessibilityManager::Get()->EnableStickyKeys(enabled);
-  }
-
-  bool IsStickyKeysEnabled() const override {
-    DCHECK(AccessibilityManager::Get());
-    return AccessibilityManager::Get()->IsStickyKeysEnabled();
   }
 
   void SetTapDraggingEnabled(bool enabled) override {

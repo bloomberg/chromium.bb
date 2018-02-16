@@ -81,7 +81,6 @@
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "url/gurl.h"
@@ -245,9 +244,7 @@ AccessibilityManager::AccessibilityManager()
           ash::prefs::kAccessibilitySelectToSpeakEnabled),
       switch_access_pref_handler_(
           ash::prefs::kAccessibilitySwitchAccessEnabled),
-      sticky_keys_enabled_(false),
       spoken_feedback_enabled_(false),
-      virtual_keyboard_enabled_(false),
       caret_highlight_enabled_(false),
       cursor_highlight_enabled_(false),
       focus_highlight_enabled_(false),
@@ -414,30 +411,15 @@ void AccessibilityManager::EnableStickyKeys(bool enabled) {
 }
 
 bool AccessibilityManager::IsStickyKeysEnabled() const {
-  return sticky_keys_enabled_;
+  return profile_ && profile_->GetPrefs()->GetBoolean(
+                         ash::prefs::kAccessibilityStickyKeysEnabled);
 }
 
-void AccessibilityManager::UpdateStickyKeysFromPref() {
-  if (!profile_)
-    return;
-
-  const bool enabled = profile_->GetPrefs()->GetBoolean(
-      ash::prefs::kAccessibilityStickyKeysEnabled);
-
-  if (sticky_keys_enabled_ == enabled)
-    return;
-
-  sticky_keys_enabled_ = enabled;
-
+void AccessibilityManager::OnStickyKeysChanged() {
   AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_STICKY_KEYS,
-                                          enabled, ash::A11Y_NOTIFICATION_NONE);
+                                          IsStickyKeysEnabled(),
+                                          ash::A11Y_NOTIFICATION_NONE);
   NotifyAccessibilityStatusChanged(details);
-
-  // TODO(crbug.com/594887): Fix for mash by moving pref into ash.
-  if (GetAshConfig() == ash::Config::MASH)
-    return;
-
-  ash::Shell::Get()->sticky_keys_controller()->Enable(enabled);
 }
 
 void AccessibilityManager::EnableSpokenFeedback(
@@ -666,40 +648,14 @@ void AccessibilityManager::EnableVirtualKeyboard(bool enabled) {
 }
 
 bool AccessibilityManager::IsVirtualKeyboardEnabled() const {
-  return virtual_keyboard_enabled_;
+  return profile_ && profile_->GetPrefs()->GetBoolean(
+                         ash::prefs::kAccessibilityVirtualKeyboardEnabled);
 }
 
-void AccessibilityManager::UpdateVirtualKeyboardFromPref() {
-  if (!profile_)
-    return;
-
-  const bool enabled = profile_->GetPrefs()->GetBoolean(
-      ash::prefs::kAccessibilityVirtualKeyboardEnabled);
-
-  if (virtual_keyboard_enabled_ == enabled)
-    return;
-  virtual_keyboard_enabled_ = enabled;
-
-  keyboard::SetAccessibilityKeyboardEnabled(enabled);
-  if (GetAshConfig() != ash::Config::MASH) {
-    // Note that there are two versions of the on-screen keyboard. A full layout
-    // is provided for accessibility, which includes sticky modifier keys to
-    // enable typing of hotkeys. A compact version is used in tablet mode
-    // to provide a layout with larger keys to facilitate touch typing. In the
-    // event that the a11y keyboard is being disabled, an on-screen keyboard
-    // might still be enabled and a forced reset is required to pick up the
-    // layout change.
-    if (keyboard::IsKeyboardEnabled())
-      ash::Shell::Get()->CreateKeyboard();
-    else
-      ash::Shell::Get()->DestroyKeyboard();
-  } else {
-    // TODO(mash): Support on-screen keyboard. See http://crbug.com/646565
-    NOTIMPLEMENTED();
-  }
-
+void AccessibilityManager::OnVirtualKeyboardChanged() {
   AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD,
-                                          enabled, ash::A11Y_NOTIFICATION_NONE);
+                                          IsVirtualKeyboardEnabled(),
+                                          ash::A11Y_NOTIFICATION_NONE);
   NotifyAccessibilityStatusChanged(details);
 }
 
@@ -1074,7 +1030,7 @@ void AccessibilityManager::SetProfile(Profile* profile) {
                    base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilityStickyKeysEnabled,
-        base::Bind(&AccessibilityManager::UpdateStickyKeysFromPref,
+        base::Bind(&AccessibilityManager::OnStickyKeysChanged,
                    base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilitySpokenFeedbackEnabled,
@@ -1086,7 +1042,7 @@ void AccessibilityManager::SetProfile(Profile* profile) {
                    base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilityVirtualKeyboardEnabled,
-        base::Bind(&AccessibilityManager::UpdateVirtualKeyboardFromPref,
+        base::Bind(&AccessibilityManager::OnVirtualKeyboardChanged,
                    base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilityMonoAudioEnabled,
@@ -1157,8 +1113,6 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   else
     UpdateBrailleImeState();
   UpdateAlwaysShowMenuFromPref();
-  UpdateStickyKeysFromPref();
-  UpdateVirtualKeyboardFromPref();
   UpdateCaretHighlightFromPref();
   UpdateCursorHighlightFromPref();
   UpdateFocusHighlightFromPref();
@@ -1211,7 +1165,9 @@ void AccessibilityManager::NotifyAccessibilityStatusChanged(
       details.notification_type != ACCESSIBILITY_TOGGLE_LARGE_CURSOR &&
       details.notification_type != ACCESSIBILITY_TOGGLE_MONO_AUDIO &&
       details.notification_type != ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK &&
-      details.notification_type != ACCESSIBILITY_TOGGLE_SELECT_TO_SPEAK) {
+      details.notification_type != ACCESSIBILITY_TOGGLE_SELECT_TO_SPEAK &&
+      details.notification_type != ACCESSIBILITY_TOGGLE_STICKY_KEYS &&
+      details.notification_type != ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD) {
     ash::Shell::Get()->system_tray_notifier()->NotifyAccessibilityStatusChanged(
         details.notify);
   }

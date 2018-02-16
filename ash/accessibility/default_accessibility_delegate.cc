@@ -23,14 +23,6 @@ bool DefaultAccessibilityDelegate::IsMagnifierEnabled() const {
   return screen_magnifier_enabled_;
 }
 
-void DefaultAccessibilityDelegate::SetVirtualKeyboardEnabled(bool enabled) {
-  virtual_keyboard_enabled_ = enabled;
-}
-
-bool DefaultAccessibilityDelegate::IsVirtualKeyboardEnabled() const {
-  return virtual_keyboard_enabled_;
-}
-
 void DefaultAccessibilityDelegate::SetCaretHighlightEnabled(bool enabled) {
   caret_highlight_enabled_ = enabled;
 }
@@ -55,14 +47,6 @@ bool DefaultAccessibilityDelegate::IsFocusHighlightEnabled() const {
   return focus_highlight_enabled_;
 }
 
-void DefaultAccessibilityDelegate::SetStickyKeysEnabled(bool enabled) {
-  sticky_keys_enabled_ = enabled;
-}
-
-bool DefaultAccessibilityDelegate::IsStickyKeysEnabled() const {
-  return sticky_keys_enabled_;
-}
-
 void DefaultAccessibilityDelegate::SetTapDraggingEnabled(bool enabled) {
   tap_dragging_enabled_ = enabled;
 }
@@ -75,7 +59,8 @@ bool DefaultAccessibilityDelegate::ShouldShowAccessibilityMenu() const {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
   return controller->IsSpokenFeedbackEnabled() || screen_magnifier_enabled_ ||
-         controller->IsAutoclickEnabled() || virtual_keyboard_enabled_ ||
+         controller->IsAutoclickEnabled() ||
+         controller->IsVirtualKeyboardEnabled() ||
          controller->IsMonoAudioEnabled() ||
          controller->IsLargeCursorEnabled() ||
          controller->IsHighContrastEnabled();

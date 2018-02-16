@@ -75,7 +75,7 @@ uint32_t GetAccessibilityState() {
     state |= A11Y_LARGE_CURSOR;
   if (controller->IsAutoclickEnabled())
     state |= A11Y_AUTOCLICK;
-  if (delegate->IsVirtualKeyboardEnabled())
+  if (controller->IsVirtualKeyboardEnabled())
     state |= A11Y_VIRTUAL_KEYBOARD;
   if (controller->braille_display_connected())
     state |= A11Y_BRAILLE_DISPLAY_CONNECTED;
@@ -87,7 +87,7 @@ uint32_t GetAccessibilityState() {
     state |= A11Y_HIGHLIGHT_MOUSE_CURSOR;
   if (delegate->IsFocusHighlightEnabled())
     state |= A11Y_HIGHLIGHT_KEYBOARD_FOCUS;
-  if (delegate->IsStickyKeysEnabled())
+  if (controller->IsStickyKeysEnabled())
     state |= A11Y_STICKY_KEYS;
   if (delegate->IsTapDraggingEnabled())
     state |= A11Y_TAP_DRAGGING;
@@ -178,7 +178,7 @@ void AccessibilityDetailedView::OnAccessibilityStatusChanged() {
   TrayPopupUtils::UpdateCheckMarkVisibility(autoclick_view_,
                                             autoclick_enabled_);
 
-  virtual_keyboard_enabled_ = delegate->IsVirtualKeyboardEnabled();
+  virtual_keyboard_enabled_ = controller->IsVirtualKeyboardEnabled();
   TrayPopupUtils::UpdateCheckMarkVisibility(virtual_keyboard_view_,
                                             virtual_keyboard_enabled_);
 
@@ -204,7 +204,7 @@ void AccessibilityDetailedView::OnAccessibilityStatusChanged() {
         highlight_keyboard_focus_view_, highlight_keyboard_focus_enabled_);
   }
 
-  sticky_keys_enabled_ = delegate->IsStickyKeysEnabled();
+  sticky_keys_enabled_ = controller->IsStickyKeysEnabled();
   TrayPopupUtils::UpdateCheckMarkVisibility(sticky_keys_view_,
                                             sticky_keys_enabled_);
 
@@ -254,7 +254,7 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_AUTOCLICK),
       autoclick_enabled_);
 
-  virtual_keyboard_enabled_ = delegate->IsVirtualKeyboardEnabled();
+  virtual_keyboard_enabled_ = controller->IsVirtualKeyboardEnabled();
   virtual_keyboard_view_ = AddScrollListCheckableItem(
       kSystemMenuKeyboardIcon,
       l10n_util::GetStringUTF16(
@@ -298,7 +298,7 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
         highlight_keyboard_focus_enabled_);
   }
 
-  sticky_keys_enabled_ = delegate->IsStickyKeysEnabled();
+  sticky_keys_enabled_ = controller->IsStickyKeysEnabled();
   sticky_keys_view_ = AddScrollListCheckableItem(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_STICKY_KEYS),
       sticky_keys_enabled_);
@@ -350,10 +350,11 @@ void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
                            : UserMetricsAction("StatusArea_AutoClickDisabled"));
     controller->SetAutoclickEnabled(new_state);
   } else if (virtual_keyboard_view_ && view == virtual_keyboard_view_) {
-    RecordAction(delegate->IsVirtualKeyboardEnabled()
-                     ? UserMetricsAction("StatusArea_VirtualKeyboardDisabled")
-                     : UserMetricsAction("StatusArea_VirtualKeyboardEnabled"));
-    delegate->SetVirtualKeyboardEnabled(!delegate->IsVirtualKeyboardEnabled());
+    bool new_state = !controller->IsVirtualKeyboardEnabled();
+    RecordAction(new_state
+                     ? UserMetricsAction("StatusArea_VirtualKeyboardEnabled")
+                     : UserMetricsAction("StatusArea_VirtualKeyboardDisabled"));
+    controller->SetVirtualKeyboardEnabled(new_state);
   } else if (caret_highlight_view_ && view == caret_highlight_view_) {
     RecordAction(delegate->IsCaretHighlightEnabled()
                      ? UserMetricsAction("StatusArea_CaretHighlightDisabled")
@@ -379,10 +380,11 @@ void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
             : UserMetricsAction("StatusArea_HighlightKeyboardFocusEnabled"));
     delegate->SetFocusHighlightEnabled(!delegate->IsFocusHighlightEnabled());
   } else if (sticky_keys_view_ && view == sticky_keys_view_) {
-    RecordAction(delegate->IsStickyKeysEnabled()
-                     ? UserMetricsAction("StatusArea_StickyKeysDisabled")
-                     : UserMetricsAction("StatusArea_StickyKeysEnabled"));
-    delegate->SetStickyKeysEnabled(!delegate->IsStickyKeysEnabled());
+    bool new_state = !controller->IsStickyKeysEnabled();
+    RecordAction(new_state
+                     ? UserMetricsAction("StatusArea_StickyKeysEnabled")
+                     : UserMetricsAction("StatusArea_StickyKeysDisabled"));
+    controller->SetStickyKeysEnabled(new_state);
   } else if (tap_dragging_view_ && view == tap_dragging_view_) {
     RecordAction(delegate->IsTapDraggingEnabled()
                      ? UserMetricsAction("StatusArea_TapDraggingDisabled")

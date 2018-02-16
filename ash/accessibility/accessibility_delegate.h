@@ -27,12 +27,6 @@ class ASH_EXPORT AccessibilityDelegate {
   // Returns true if the screen magnifier is enabled.
   virtual bool IsMagnifierEnabled() const = 0;
 
-  // Invoked to enable or disable the a11y on-screen keyboard.
-  virtual void SetVirtualKeyboardEnabled(bool enabled) = 0;
-
-  // Returns if the a11y virtual keyboard is enabled.
-  virtual bool IsVirtualKeyboardEnabled() const = 0;
-
   // Invoked to enable or disable caret highlighting.
   virtual void SetCaretHighlightEnabled(bool enabled) = 0;
 
@@ -50,12 +44,6 @@ class ASH_EXPORT AccessibilityDelegate {
 
   // Returns if focus highlighting is enabled.
   virtual bool IsFocusHighlightEnabled() const = 0;
-
-  // Invoked to enable or disable sticky keys.
-  virtual void SetStickyKeysEnabled(bool enabled) = 0;
-
-  // Returns if sticky keys is enabled.
-  virtual bool IsStickyKeysEnabled() const = 0;
 
   // Invoked to enable or disable tap dragging.
   virtual void SetTapDraggingEnabled(bool enabled) = 0;

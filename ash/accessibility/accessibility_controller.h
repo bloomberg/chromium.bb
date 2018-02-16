@@ -64,6 +64,12 @@ class ASH_EXPORT AccessibilityController
   void SetSelectToSpeakEnabled(bool enabled);
   bool IsSelectToSpeakEnabled() const;
 
+  void SetStickyKeysEnabled(bool enabled);
+  bool IsStickyKeysEnabled() const;
+
+  void SetVirtualKeyboardEnabled(bool enabled);
+  bool IsVirtualKeyboardEnabled() const;
+
   bool braille_display_connected() const { return braille_display_connected_; }
 
   // Triggers an accessibility alert to give the user feedback.
@@ -118,6 +124,8 @@ class ASH_EXPORT AccessibilityController
   void UpdateMonoAudioFromPref();
   void UpdateSpokenFeedbackFromPref();
   void UpdateSelectToSpeakFromPref();
+  void UpdateStickyKeysFromPref();
+  void UpdateVirtualKeyboardFromPref();
 
   service_manager::Connector* connector_ = nullptr;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
@@ -136,6 +144,8 @@ class ASH_EXPORT AccessibilityController
   bool mono_audio_enabled_ = false;
   bool spoken_feedback_enabled_ = false;
   bool select_to_speak_enabled_ = false;
+  bool sticky_keys_enabled_ = false;
+  bool virtual_keyboard_enabled_ = false;
   bool braille_display_connected_ = false;
 
   // TODO(warx): consider removing this and replacing it with a more reliable

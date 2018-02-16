@@ -5,7 +5,6 @@
 #include "ash/system/ime_menu/ime_menu_tray.h"
 
 #include "ash/accessibility/accessibility_controller.h"
-#include "ash/accessibility/accessibility_delegate.h"
 #include "ash/ash_constants.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/root_window_controller.h"
@@ -387,16 +386,16 @@ void ImeMenuTray::ShowKeyboardWithKeyset(const std::string& keyset) {
     return;
   }
 
-  AccessibilityDelegate* accessibility_delegate =
-      Shell::Get()->accessibility_delegate();
+  AccessibilityController* accessibility_controller =
+      Shell::Get()->accessibility_controller();
   // Fails to show the keyboard.
-  if (accessibility_delegate->IsVirtualKeyboardEnabled())
+  if (accessibility_controller->IsVirtualKeyboardEnabled())
     return;
 
   // Onscreen keyboard has not been enabled yet, forces to bring out the
   // keyboard for one time.
   force_show_keyboard_ = true;
-  accessibility_delegate->SetVirtualKeyboardEnabled(true);
+  accessibility_controller->SetVirtualKeyboardEnabled(true);
   keyboard_controller = keyboard::KeyboardController::GetInstance();
   if (keyboard_controller) {
     keyboard_controller->AddObserver(this);
@@ -430,7 +429,7 @@ bool ImeMenuTray::ShouldShowBottomButtons() {
 
 bool ImeMenuTray::ShouldShowKeyboardToggle() const {
   return keyboard_suppressed_ &&
-         !Shell::Get()->accessibility_delegate()->IsVirtualKeyboardEnabled();
+         !Shell::Get()->accessibility_controller()->IsVirtualKeyboardEnabled();
 }
 
 base::string16 ImeMenuTray::GetAccessibleNameForTray() {
@@ -584,7 +583,7 @@ void ImeMenuTray::UpdateTrayLabel() {
 }
 
 void ImeMenuTray::DisableVirtualKeyboard() {
-  Shell::Get()->accessibility_delegate()->SetVirtualKeyboardEnabled(false);
+  Shell::Get()->accessibility_controller()->SetVirtualKeyboardEnabled(false);
   force_show_keyboard_ = false;
 }
 
