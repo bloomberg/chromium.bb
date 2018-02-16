@@ -65,7 +65,7 @@ int SeatbeltExecClient::SendProfileAndGetFD() {
     return -1;
   }
 
-  if (!WriteString(&serialized_protobuf)) {
+  if (!WriteString(serialized_protobuf)) {
     logging::Error(
         "SeatbeltExecClient: Writing the serialized profile failed.");
     return -1;
@@ -80,25 +80,28 @@ int SeatbeltExecClient::SendProfileAndGetFD() {
   return pipe_[0];
 }
 
-bool SeatbeltExecClient::WriteString(std::string* str) {
-  struct iovec iov[1];
-  iov[0].iov_base = &(*str)[0];
-  iov[0].iov_len = str->size();
+bool SeatbeltExecClient::WriteString(const std::string& str) {
+  uint64_t str_len = static_cast<uint64_t>(str.size());
 
-  ssize_t written = HANDLE_EINTR(writev(pipe_[1], iov, arraysize(iov)));
-  if (written < 0) {
-    logging::PError("SeatbeltExecClient: writev failed");
+  if (HANDLE_EINTR(write(pipe_[1], &str_len, sizeof(str_len))) !=
+      sizeof(str_len)) {
+    logging::PError("SeatbeltExecClient: write size of buffer failed");
     return false;
   }
 
-  bool write_complete = static_cast<uint64_t>(written) == str->size();
-  if (!write_complete) {
-    logging::Error("SeatbeltExecClient: short writev(). written: %" PRIu64
-                   ", str->size(): %" PRIu64 "",
-                   static_cast<uint64_t>(written), str->size());
+  uint64_t bytes_written = 0;
+
+  while (bytes_written < str_len) {
+    ssize_t wrote_this_pass = HANDLE_EINTR(
+        write(pipe_[1], &str[bytes_written], str_len - bytes_written));
+    if (wrote_this_pass < 0) {
+      logging::PError("SeatbeltExecClient: write failed");
+      return false;
+    }
+    bytes_written += wrote_this_pass;
   }
 
-  return write_complete;
+  return true;
 }
 
 SeatbeltExecServer::SeatbeltExecServer(int fd) : fd_(fd), extra_params_() {}
@@ -147,19 +150,27 @@ bool SeatbeltExecServer::ApplySandboxProfile(const mac::SandboxPolicy& policy) {
 }
 
 bool SeatbeltExecServer::ReadString(std::string* str) {
-  // 4 pages of memory is enough to hold the sandbox profiles.
-  std::vector<char> buffer(4096 * 4, '\0');
-
-  struct iovec iov[1];
-  iov[0].iov_base = buffer.data();
-  iov[0].iov_len = buffer.size();
-
-  ssize_t read_length = HANDLE_EINTR(readv(fd_, iov, arraysize(iov)));
-  if (read_length < 0) {
-    logging::PError("SeatbeltExecServer: readv failed");
+  uint64_t buf_len = 0;
+  if (HANDLE_EINTR(read(fd_, &buf_len, sizeof(buf_len))) != sizeof(buf_len)) {
+    logging::PError("SeatbeltExecServer: read buffer length failed");
     return false;
   }
-  str->assign(buffer.data());
+
+  str->clear();
+  str->resize(buf_len);
+
+  uint64_t bytes_read = 0;
+
+  while (bytes_read < buf_len) {
+    ssize_t read_this_pass =
+        HANDLE_EINTR(read(fd_, &(*str)[bytes_read], buf_len - bytes_read));
+    if (read_this_pass < 0) {
+      logging::PError("SeatbeltExecServer: read failed");
+      return false;
+    }
+    bytes_read += read_this_pass;
+  }
+
   return true;
 }
 

@@ -45,7 +45,7 @@ class SEATBELT_EXPORT SeatbeltExecClient {
 
  private:
   // This writes a string (the serialized protobuf) to the |pipe_|.
-  bool WriteString(std::string* str);
+  bool WriteString(const std::string& str);
 
   // This is the protobuf which contains the sandbox profile and parameters,
   // and is serialized and sent to the other process.
