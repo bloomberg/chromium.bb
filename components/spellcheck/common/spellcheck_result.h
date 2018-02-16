@@ -24,7 +24,6 @@ struct SpellCheckResult {
     LAST = GRAMMAR,
   };
 
-  // Default values are so we have a default constructor for IPC::ReadParam()
   explicit SpellCheckResult(
       Decoration d = SPELLING,
       int loc = 0,

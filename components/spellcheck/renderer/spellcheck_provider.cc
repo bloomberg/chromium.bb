@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
-#include "components/spellcheck/common/spellcheck_messages.h"
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/renderer/spellcheck.h"
 #include "components/spellcheck/renderer/spellcheck_language.h"
@@ -85,31 +84,18 @@ void SpellCheckProvider::RequestTextChecking(
   last_identifier_ = text_check_completions_.Add(completion);
 
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  // TODO(crbug.com/714480): convert the RequestTextCheck IPC to mojo.
   // Text check (unified request for grammar and spell check) is only
   // available for browser process, so we ask the system spellchecker
-  // over IPC or return an empty result if the checker is not available.
-  Send(new SpellCheckHostMsg_RequestTextCheck(routing_id(), last_identifier_,
-                                              text));
+  // over mojo or return an empty result if the checker is not available.
+  GetSpellCheckHost().RequestTextCheck(
+      text, routing_id(),
+      base::BindOnce(&SpellCheckProvider::OnRespondTextCheck,
+                     weak_factory_.GetWeakPtr(), last_identifier_, text));
 #else
   GetSpellCheckHost().CallSpellingService(
       text, base::BindOnce(&SpellCheckProvider::OnRespondSpellingService,
                            weak_factory_.GetWeakPtr(), last_identifier_, text));
 #endif  // !USE_BROWSER_SPELLCHECKER
-}
-
-bool SpellCheckProvider::OnMessageReceived(const IPC::Message& message) {
-#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(SpellCheckProvider, message)
-    // TODO(crbug.com/714480): convert the RequestTextCheck IPC to mojo.
-    IPC_MESSAGE_HANDLER(SpellCheckMsg_RespondTextCheck, OnRespondTextCheck)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-#else
-  return false;
-#endif
 }
 
 void SpellCheckProvider::FocusedNodeChanged(const blink::WebNode& unused) {
@@ -120,9 +106,7 @@ void SpellCheckProvider::FocusedNodeChanged(const blink::WebNode& unused) {
                            : frame->GetDocument().FocusedElement();
   bool enabled = !element.IsNull() && element.IsEditable();
   bool checked = enabled && IsSpellCheckingEnabled();
-
-  // TODO(crbug.com/714480): convert the ToggleSpellCheck IPC to mojo.
-  Send(new SpellCheckHostMsg_ToggleSpellCheck(routing_id(), enabled, checked));
+  GetSpellCheckHost().ToggleSpellCheck(enabled, checked);
 #endif  // USE_BROWSER_SPELLCHECKER
 }
 

@@ -23,7 +23,6 @@
 #include "components/guest_view/common/guest_view_message_generator.h"
 #include "components/network_hints/common/network_hints_message_generator.h"
 #include "components/safe_browsing/common/safebrowsing_message_generator.h"
-#include "components/spellcheck/common/spellcheck_message_generator.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/tracing/common/tracing_messages.h"
 #include "content/common/all_messages.h"

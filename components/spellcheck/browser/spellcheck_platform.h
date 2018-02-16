@@ -87,8 +87,6 @@ void IgnoreWord(const base::string16& word);
 void CloseDocumentWithTag(int tag);
 
 // Requests an asyncronous spell and grammar checking.
-// The result is returned to an IPC message to |destination| thus it should
-// not be null.
 void RequestTextCheck(int document_tag,
                       const base::string16& text,
                       TextCheckCompleteCallback callback);

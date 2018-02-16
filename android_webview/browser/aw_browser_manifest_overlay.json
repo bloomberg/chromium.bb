@@ -4,7 +4,8 @@
     "service_manager:connector": {
       "provides": {
         "renderer": [
-          "safe_browsing::mojom::SafeBrowsing"
+          "safe_browsing::mojom::SafeBrowsing",
+          "spellcheck::mojom::SpellCheckHost"
         ]
       }
     },

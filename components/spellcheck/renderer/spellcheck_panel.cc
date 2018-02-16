@@ -65,7 +65,7 @@ void SpellCheckPanel::ToggleSpellPanel(bool visible) {
   DCHECK(render_frame->GetWebFrame());
 
   // Tell our frame whether the spelling panel is visible or not so
-  // that it won't need to make ipc calls later.
+  // that it won't need to make mojo calls later.
   spelling_panel_visible_ = visible;
 
   render_frame->GetWebFrame()->ExecuteCommand(

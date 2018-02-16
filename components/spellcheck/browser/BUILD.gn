@@ -10,11 +10,11 @@ source_set("browser") {
   sources = [
     "pref_names.cc",
     "pref_names.h",
+    "spell_check_host_impl.cc",
+    "spell_check_host_impl.h",
     "spellcheck_dictionary.h",
     "spellcheck_host_metrics.cc",
     "spellcheck_host_metrics.h",
-    "spellcheck_message_filter_platform.h",
-    "spellcheck_message_filter_platform_android.cc",
     "spellcheck_platform.h",
     "spellcheck_platform_android.cc",
     "spellcheck_platform_mac.mm",
@@ -58,6 +58,7 @@ source_set("unit_tests") {
     "//components/spellcheck/common",
     "//components/variations",
     "//content/test:test_support",
+    "//mojo/public/cpp/bindings",
     "//net:test_support",
     "//testing/gtest",
   ]

@@ -12,21 +12,23 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "components/spellcheck/common/spellcheck.mojom.h"
 
 // A class used to interface between the Java class of the same name and the
-// android message filter.  This class receives text to be spellchecked
-// from the message filter, sends that text to the Java side via JNI to be
-// spellchecked, and then sends those results to the renderer.
+// android SpellCheckHost.  This class receives text to be spellchecked, sends
+// that text to the Java side via JNI to be spellchecked, and then sends those
+// results to the renderer.
 class SpellCheckerSessionBridge {
  public:
-  explicit SpellCheckerSessionBridge(int render_process_id);
+  SpellCheckerSessionBridge();
   ~SpellCheckerSessionBridge();
 
-  // Receives text to be checked from the message filter and sends it to Java
-  // to be spellchecked.
-  void RequestTextCheck(int route_id,
-                        int identifier,
-                        const base::string16& text);
+  using RequestTextCheckCallback =
+      spellcheck::mojom::SpellCheckHost::RequestTextCheckCallback;
+
+  // Receives text to be checked and sends it to Java to be spellchecked.
+  void RequestTextCheck(const base::string16& text,
+                        RequestTextCheckCallback callback);
 
   // Receives information from Java side about the typos in a given string
   // of text, processes these and sends them to the renderer.
@@ -42,16 +44,18 @@ class SpellCheckerSessionBridge {
   void DisconnectSession();
 
  private:
-  struct SpellingRequest {
-    SpellingRequest(int route_id, int identifier, const base::string16& text);
+  class SpellingRequest {
+   public:
+    SpellingRequest(const base::string16& text,
+                    RequestTextCheckCallback callback);
     ~SpellingRequest();
 
-    int route_id;
-    int identifier;
-    base::string16 text;
-  };
+    base::string16 text_;
+    RequestTextCheckCallback callback_;
 
-  int render_process_id_;
+   private:
+    DISALLOW_COPY_AND_ASSIGN(SpellingRequest);
+  };
 
   std::unique_ptr<SpellingRequest> active_request_;
   std::unique_ptr<SpellingRequest> pending_request_;

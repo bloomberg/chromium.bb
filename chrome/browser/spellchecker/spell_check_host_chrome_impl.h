@@ -5,22 +5,18 @@
 #ifndef CHROME_BROWSER_SPELLCHECKER_SPELL_CHECK_HOST_CHROME_IMPL_H_
 #define CHROME_BROWSER_SPELLCHECKER_SPELL_CHECK_HOST_CHROME_IMPL_H_
 
-#include "base/macros.h"
+#include "build/build_config.h"
+#include "components/spellcheck/browser/spell_check_host_impl.h"
 #include "components/spellcheck/browser/spelling_service_client.h"
-#include "components/spellcheck/common/spellcheck.mojom.h"
-#include "components/spellcheck/spellcheck_build_features.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
-
-#if !BUILDFLAG(ENABLE_SPELLCHECK)
-#error "Spellcheck should be enabled."
-#endif
 
 class SpellcheckCustomDictionary;
 class SpellcheckService;
 
 struct SpellCheckResult;
 
-class SpellCheckHostChromeImpl : public spellcheck::mojom::SpellCheckHost {
+// Implementation of SpellCheckHost involving Chrome-only features.
+class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
  public:
   explicit SpellCheckHostChromeImpl(
       const service_manager::Identity& renderer_identity);
@@ -31,14 +27,16 @@ class SpellCheckHostChromeImpl : public spellcheck::mojom::SpellCheckHost {
 
  private:
   friend class TestSpellCheckHostChromeImpl;
+  friend class SpellCheckHostChromeImplMacTest;
 
-  // spellcheck::mojom::SpellCheckHost:
+  // SpellCheckHostImpl:
   void RequestDictionary() override;
   void NotifyChecked(const base::string16& word, bool misspelled) override;
+
+#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   void CallSpellingService(const base::string16& text,
                            CallSpellingServiceCallback callback) override;
 
-#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   // Invoked when the remote Spelling service has finished checking the
   // text of a CallSpellingService request.
   void CallSpellingServiceDone(
@@ -54,6 +52,28 @@ class SpellCheckHostChromeImpl : public spellcheck::mojom::SpellCheckHost {
       const SpellcheckCustomDictionary& custom_dictionary,
       const std::vector<SpellCheckResult>& service_results);
 #endif
+
+#if defined(OS_MACOSX)
+  // Non-Mac (i.e., Android) implementations of the following APIs are in the
+  // base class SpellCheckHostImpl.
+  void CheckSpelling(const base::string16& word,
+                     int route_id,
+                     CheckSpellingCallback callback) override;
+  void FillSuggestionList(const base::string16& word,
+                          FillSuggestionListCallback callback) override;
+  void RequestTextCheck(const base::string16& text,
+                        int route_id,
+                        RequestTextCheckCallback callback) override;
+
+  // Exposed to tests only.
+  static void CombineResultsForTesting(
+      std::vector<SpellCheckResult>* remote_results,
+      const std::vector<SpellCheckResult>& local_results);
+
+  int ToDocumentTag(int route_id);
+  void RetireDocumentTag(int route_id);
+  std::map<int, int> tag_map_;
+#endif  // defined(OS_MACOSX)
 
   // Returns the SpellcheckService of our |render_process_id_|. The return
   // is null if the render process is being shut down.
