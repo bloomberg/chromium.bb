@@ -414,8 +414,13 @@ void HeadlessWebContentsImpl::RenderFrameDeleted(
 void HeadlessWebContentsImpl::RenderViewReady() {
   DCHECK(web_contents()->GetMainFrame()->IsRenderFrameLive());
 
+  if (devtools_target_ready_notification_sent_)
+    return;
+
   for (auto& observer : observers_)
     observer.DevToolsTargetReady();
+
+  devtools_target_ready_notification_sent_ = true;
 }
 
 int HeadlessWebContentsImpl::GetMainFrameRenderProcessId() const {
