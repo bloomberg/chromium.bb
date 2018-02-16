@@ -83,12 +83,13 @@ function getNodeState(node) {
 /**
  * Returns true if a node should be ignored by Select-to-Speak.
  * @param {AutomationNode} node The node to test
+ * @param {boolean} includeOffscreen Whether to include offscreen nodes.
  * @return {boolean} whether this node should be ignored.
  */
-function shouldIgnoreNode(node) {
+function shouldIgnoreNode(node, includeOffscreen) {
   return (
-      !node.name || !node.location || node.state.offscreen ||
-      node.state.invisible);
+      !node.name || !node.location || node.state.invisible ||
+      (node.state.offscreen && !includeOffscreen));
 }
 
 /**
@@ -113,7 +114,8 @@ function findAllMatching(node, rect, nodes) {
 
   // Closure needs node.location check here to allow the next few
   // lines to compile.
-  if (shouldIgnoreNode(node) || node.location === undefined)
+  if (shouldIgnoreNode(node, /* don't include offscreen */ false) ||
+      node.location === undefined)
     return false;
 
   if (overlaps(node.location, rect)) {
@@ -527,7 +529,7 @@ SelectToSpeak.prototype = {
     let nodes = [];
     let selectedNode = firstPosition.node;
     if (selectedNode.name && firstPosition.offset < selectedNode.name.length &&
-        !shouldIgnoreNode(selectedNode)) {
+        !shouldIgnoreNode(selectedNode, /* include offscreen */ true)) {
       // Initialize to the first node in the list if it's valid and inside
       // of the offset bounds.
       nodes.push(selectedNode);
@@ -548,7 +550,7 @@ SelectToSpeak.prototype = {
           selectedNode, constants.Dir.FORWARD,
           AutomationPredicate.leafWithText);
       if (selectedNode) {
-        if (!shouldIgnoreNode(selectedNode))
+        if (!shouldIgnoreNode(selectedNode, /* include offscreen */ true))
           nodes.push(selectedNode);
       } else {
         break;
