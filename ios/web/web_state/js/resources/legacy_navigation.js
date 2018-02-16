@@ -7,30 +7,30 @@
  * switching to WKBasedNavigationManager.
  */
 
- goog.provide('__crWeb.legacynavigation');
+goog.provide('__crWeb.legacynavigation');
 
 /** Beginning of anonymouse object */
 (function() {
 
-  /**
-   * Intercept window.history methods to call back/forward natively.
-   */
-  window.history.back = function() {
-    __gCrWeb.message.invokeOnHost({'command': 'window.history.back'});
-  };
+/**
+ * Intercept window.history methods to call back/forward natively.
+ */
+window.history.back = function() {
+  __gCrWeb.message.invokeOnHost({'command': 'window.history.back'});
+};
 
-  window.history.forward = function() {
-    __gCrWeb.message.invokeOnHost({'command': 'window.history.forward'});
-  };
+window.history.forward = function() {
+  __gCrWeb.message.invokeOnHost({'command': 'window.history.forward'});
+};
 
-  window.history.go = function(delta) {
-    __gCrWeb.message.invokeOnHost(
-        {'command': 'window.history.go', 'value': delta | 0});
-  };
+window.history.go = function(delta) {
+  __gCrWeb.message.invokeOnHost(
+      {'command': 'window.history.go', 'value': delta | 0});
+};
 
-  /** Flush the message queue. */
-  if (__gCrWeb.message) {
-    __gCrWeb.message.invokeQueues();
-  }
+/** Flush the message queue. */
+if (__gCrWeb.message) {
+  __gCrWeb.message.invokeQueues();
+}
 
 }());  // End of anonymouse object

@@ -7,10 +7,10 @@
 
 // Script to set windowId.
 (function() {
-  // CRWJSWindowIDManager replaces $(WINDOW_ID) with appropriate string upon
-  // injection.
-  __gCrWeb['windowId'] = '$(WINDOW_ID)';
+// CRWJSWindowIDManager replaces $(WINDOW_ID) with appropriate string upon
+// injection.
+__gCrWeb['windowId'] = '$(WINDOW_ID)';
 
-  // Send messages queued since message.js injection.
-  __gCrWeb.message.invokeQueues();
+// Send messages queued since message.js injection.
+__gCrWeb.message.invokeQueues();
 }());

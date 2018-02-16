@@ -24,25 +24,23 @@ __gCrWeb.suggestion = {};
 // minification.
 __gCrWeb['suggestion'] = __gCrWeb.suggestion;
 
- /**
-  * Returns the element with the specified name that is a child of the
-  * specified parent element.
-  * @param {Element} parent The parent of the desired element.
-  * @param {string} name The name of the desired element.
-  * @return {Element} The element if found, otherwise null;
-  */
- var getElementByNameWithParent_ = function(parent, name) {
-   if (parent.name === name)
-     return parent;
+/**
+ * Returns the element with the specified name that is a child of the
+ * specified parent element.
+ * @param {Element} parent The parent of the desired element.
+ * @param {string} name The name of the desired element.
+ * @return {Element} The element if found, otherwise null;
+ */
+var getElementByNameWithParent_ = function(parent, name) {
+  if (parent.name === name) return parent;
 
-   var el;
-   for (var i = 0; i < parent.children.length; i++) {
-     el = getElementByNameWithParent_(parent.children[i], name);
-     if (el)
-       return el;
-   }
-   return null;
- };
+  var el;
+  for (var i = 0; i < parent.children.length; i++) {
+    el = getElementByNameWithParent_(parent.children[i], name);
+    if (el) return el;
+  }
+  return null;
+};
 
 /**
  * Returns the first element in |elements| that is later than |elementToCompare|
@@ -57,8 +55,8 @@ __gCrWeb['suggestion'] = __gCrWeb.suggestion;
  * @return {Element} the first element in |elements| that is later than
  *     |elementToCompare| in tab order if there is one; null otherwise.
  */
-__gCrWeb.suggestion.getNextElementInTabOrder =
-    function(elementToCompare, elementList) {
+__gCrWeb.suggestion.getNextElementInTabOrder = function(
+    elementToCompare, elementList) {
   var elements = [];
   for (var i = 0; i < elementList.length; ++i) {
     elements[i] = elementList[i];
@@ -87,10 +85,10 @@ __gCrWeb.suggestion.getNextElementInTabOrder =
   // |element2| that has DOM tree position |index2| in tab order. It is assumed
   // |index1 !== index2|.
   var comparator = function(element1, index1, element2, index2) {
-      var tabOrder1 = __gCrWeb.suggestion.getTabOrder(element1);
-      var tabOrder2 = __gCrWeb.suggestion.getTabOrder(element2);
-      return tabOrder1 > tabOrder2 ||
-             (tabOrder1 === tabOrder2 && index1 > index2);
+    var tabOrder1 = __gCrWeb.suggestion.getTabOrder(element1);
+    var tabOrder2 = __gCrWeb.suggestion.getTabOrder(element2);
+    return tabOrder1 > tabOrder2 ||
+        (tabOrder1 === tabOrder2 && index1 > index2);
   };
   return __gCrWeb.suggestion.getFormElementAfter(
       elementToCompare, elements, comparator);
@@ -109,8 +107,8 @@ __gCrWeb.suggestion.getNextElementInTabOrder =
  * @return {Element} the last element in |elements| that is earlier than
  *     |elementToCompare| in tab order if there is one; null otherwise.
  */
-__gCrWeb.suggestion.getPreviousElementInTabOrder =
-    function(elementToCompare, elementList) {
+__gCrWeb.suggestion.getPreviousElementInTabOrder = function(
+    elementToCompare, elementList) {
   var elements = [];
   for (var i = 0; i < elementList.length; ++i) {
     elements[i] = elementList[i];
@@ -136,10 +134,10 @@ __gCrWeb.suggestion.getPreviousElementInTabOrder =
   // |element2| that has DOM tree position |index2| in tab order. It is assumed
   // |index1 !== index2|.
   var comparator = function(element1, index1, element2, index2) {
-      var tabOrder1 = __gCrWeb.suggestion.getTabOrder(element1);
-      var tabOrder2 = __gCrWeb.suggestion.getTabOrder(element2);
-      return tabOrder1 < tabOrder2 ||
-             (tabOrder1 === tabOrder2 && index1 < index2);
+    var tabOrder1 = __gCrWeb.suggestion.getTabOrder(element1);
+    var tabOrder2 = __gCrWeb.suggestion.getTabOrder(element2);
+    return tabOrder1 < tabOrder2 ||
+        (tabOrder1 === tabOrder2 && index1 < index2);
   };
 
   return __gCrWeb.suggestion.getFormElementAfter(
@@ -165,8 +163,8 @@ __gCrWeb.suggestion.getPreviousElementInTabOrder =
  *     tree order.
  * @return {Element} The element that satisfies the conditions given above.
  */
-__gCrWeb.suggestion.getFormElementAfter =
-    function(elementToCompare, elements, comparator) {
+__gCrWeb.suggestion.getFormElementAfter = function(
+    elementToCompare, elements, comparator) {
   // Computes the index |indexToCompare| of |elementToCompare| in |element|.
   var indexToCompare = elements.indexOf(elementToCompare);
   if (indexToCompare === -1) {
@@ -234,8 +232,7 @@ __gCrWeb.suggestion.isSequentiallyReachable = function(element) {
   // on this condition, false is returned for an iframe (as Mobile Safari does
   // not navigate to elements in an iframe, there is no need to recursively
   // check if there is a reachable element in an iframe).
-  if (element.tagName !== 'INPUT' &&
-      element.tagName !== 'SELECT' &&
+  if (element.tagName !== 'INPUT' && element.tagName !== 'SELECT' &&
       element.tagName !== 'TEXTAREA') {
     return false;
   }
@@ -243,12 +240,9 @@ __gCrWeb.suggestion.isSequentiallyReachable = function(element) {
   // The following elements are skipped when navigating using 'Prev' and "Next'
   // buttons in Mobile Safari.
   if (element.tagName === 'INPUT' &&
-      (element.type === 'submit' ||
-       element.type === 'reset' ||
-       element.type === 'image' ||
-       element.type === 'button' ||
-       element.type === 'range' ||
-       element.type === 'radio' ||
+      (element.type === 'submit' || element.type === 'reset' ||
+       element.type === 'image' || element.type === 'button' ||
+       element.type === 'range' || element.type === 'radio' ||
        element.type === 'checkbox')) {
     return false;
   }
@@ -289,8 +283,7 @@ __gCrWeb.suggestion.getTabOrder = function(element) {
  */
 __gCrWeb.suggestion.getFormElement = function(formName, fieldName) {
   var form = __gCrWeb.common.getFormElementFromIdentifier(formName);
-  if (!form)
-    return null;
+  if (!form) return null;
   return getElementByNameWithParent_(form, fieldName);
 };
 
@@ -299,11 +292,11 @@ __gCrWeb.suggestion.getFormElement = function(formName, fieldName) {
  * if there is no such element.
  */
 __gCrWeb.suggestion['selectNextElement'] = function(formName, fieldName) {
-  var currentElement =
-      formName ? __gCrWeb.suggestion.getFormElement(formName, fieldName) :
-                 document.activeElement;
-  var nextElement = __gCrWeb.suggestion.getNextElementInTabOrder(currentElement,
-                                                                 document.all);
+  var currentElement = formName ?
+      __gCrWeb.suggestion.getFormElement(formName, fieldName) :
+      document.activeElement;
+  var nextElement = __gCrWeb.suggestion.getNextElementInTabOrder(
+      currentElement, document.all);
   if (nextElement) {
     nextElement.focus();
   }
@@ -314,9 +307,9 @@ __gCrWeb.suggestion['selectNextElement'] = function(formName, fieldName) {
  * operation if there is no such element.
  */
 __gCrWeb.suggestion['selectPreviousElement'] = function(formName, fieldName) {
-  var currentElement =
-      formName ? __gCrWeb.suggestion.getFormElement(formName, fieldName) :
-                 document.activeElement;
+  var currentElement = formName ?
+      __gCrWeb.suggestion.getFormElement(formName, fieldName) :
+      document.activeElement;
   var prevElement = __gCrWeb.suggestion.getPreviousElementInTabOrder(
       currentElement, document.all);
   if (prevElement) {
@@ -325,25 +318,29 @@ __gCrWeb.suggestion['selectPreviousElement'] = function(formName, fieldName) {
 };
 
 /**
+ * @param {string} formName The name of the form containing the element.
+ * @param {string} fieldName The name of the field containing the element.
  * @return {boolean} Whether there is an element in the sequential navigation
  *     after the currently active element.
  */
 __gCrWeb.suggestion['hasNextElement'] = function(formName, fieldName) {
-  var currentElement =
-      formName ? __gCrWeb.suggestion.getFormElement(formName, fieldName) :
-                 document.activeElement;
-  return __gCrWeb.suggestion.getNextElementInTabOrder(currentElement,
-                                                      document.all) !== null;
+  var currentElement = formName ?
+      __gCrWeb.suggestion.getFormElement(formName, fieldName) :
+      document.activeElement;
+  return __gCrWeb.suggestion.getNextElementInTabOrder(
+             currentElement, document.all) !== null;
 };
 
 /**
+ * @param {string} formName The name of the form containing the element.
+ * @param {string} fieldName The name of the field containing the element.
  * @return {boolean} Whether there is an element in the sequential navigation
  *     before the currently active element.
  */
 __gCrWeb.suggestion['hasPreviousElement'] = function(formName, fieldName) {
-  var currentElement =
-      formName ? __gCrWeb.suggestion.getFormElement(formName, fieldName) :
-                 document.activeElement;
+  var currentElement = formName ?
+      __gCrWeb.suggestion.getFormElement(formName, fieldName) :
+      document.activeElement;
   return __gCrWeb.suggestion.getPreviousElementInTabOrder(
              currentElement, document.all) !== null;
 };
