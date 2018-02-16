@@ -597,41 +597,14 @@
 -NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.PrefetchCookieCrossDomain/0
 -NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.PrefetchCookieCrossDomain/1
 
-# Depends on captive portal component making requests through URLLoader instead of
-# URLLoaderFetcher, which is blocked on services/network efforts so that it can
-# be used on ios. https://crbug.com/753658
-# TODO(jam): started converting to use interceptor but then blocked on above, see
-# https://chromium-review.googlesource.com/c/chromium/src/+/823222
--CaptivePortalBrowserTest.AbortLoad
--CaptivePortalBrowserTest.CloseLoginTab
--CaptivePortalBrowserTest.Disabled
--CaptivePortalBrowserTest.GoBack
--CaptivePortalBrowserTest.GoBackToTimeout
+# TODO(jam)
 -CaptivePortalBrowserTest.HstsLogin
 -CaptivePortalBrowserTest.HttpsToHttpRedirect
--CaptivePortalBrowserTest.HttpTimeout
 -CaptivePortalBrowserTest.HttpToHttpsRedirectLogin
--CaptivePortalBrowserTest.InternetConnected
 -CaptivePortalBrowserTest.InterstitialTimerCertErrorAfterSlowLoad
--CaptivePortalBrowserTest.Login
--CaptivePortalBrowserTest.LoginExtraNavigations
--CaptivePortalBrowserTest.LoginFastTimeout
--CaptivePortalBrowserTest.LoginIncognito
--CaptivePortalBrowserTest.LoginSlow
--CaptivePortalBrowserTest.NavigateBrokenTab
 -CaptivePortalBrowserTest.NavigateLoadingTabToTimeoutSingleSite
 -CaptivePortalBrowserTest.NavigateLoadingTabToTimeoutThreeSites
 -CaptivePortalBrowserTest.NavigateLoadingTabToTimeoutTwoSites
--CaptivePortalBrowserTest.RedirectSSLCertError
--CaptivePortalBrowserTest.ReloadTimeout
--CaptivePortalBrowserTest.RequestFails
--CaptivePortalBrowserTest.Status511
--CaptivePortalBrowserTest.TwoBrokenTabs
--CaptivePortalBrowserTest.RequestFailsFastTimout
--CaptivePortalBrowserTest.SSLCertErrorLogin
--CaptivePortalBrowserTest.ShowCaptivePortalInterstitialOnCertError
--CaptivePortalBrowserTest.InterstitialTimerNavigateAwayWhileLoading
--CaptivePortalBrowserTest.InterstitialTimerNavigateWhileLoading_EndWithCaptivePortalInterstitial
 
 # Add support of download_to_file for URLLoader.
 # http://crbug.com/791702

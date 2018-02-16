@@ -101,8 +101,7 @@ class NetworkPortalDetectorImplBrowserTest
         chromeos::ProfileHelper::GetSigninProfile());
 
     network_portal_detector_ = new NetworkPortalDetectorImpl(
-        g_browser_process->system_request_context(),
-        true /* create_notification_controller */);
+        test_loader_factory(), true /* create_notification_controller */);
     network_portal_detector::InitializeForTesting(network_portal_detector_);
     network_portal_detector_->Enable(false /* start_detection */);
     set_detector(network_portal_detector_->captive_portal_detector_.get());

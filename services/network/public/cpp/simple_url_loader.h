@@ -15,6 +15,8 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 
+class GURL;
+
 namespace base {
 class FilePath;
 }
@@ -248,6 +250,10 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
   // was never received. May only be called once the loader has informed the
   // caller of completion.
   virtual const ResourceResponseHead* ResponseInfo() const = 0;
+
+  // Returns the URL that this loader is processing. May only be called once the
+  // loader has informed the caller of completion.
+  virtual const GURL& GetFinalURL() const = 0;
 
  protected:
   SimpleURLLoader();

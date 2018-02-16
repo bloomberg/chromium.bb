@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "components/captive_portal/captive_portal_detector.h"
-#include "net/url_request/test_url_fetcher_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 
 namespace base {
 class Time;
@@ -37,14 +37,15 @@ class CaptivePortalDetectorTestBase {
 
   void set_detector(CaptivePortalDetector* detector) { detector_ = detector; }
 
-  CaptivePortalDetector* detector() { return detector_; }
+  network::TestURLLoaderFactory* test_loader_factory() {
+    return &test_loader_factory_;
+  }
 
-  net::TestURLFetcher* fetcher() { return factory_.GetFetcherByID(0); }
+  CaptivePortalDetector* detector() { return detector_; }
 
  protected:
   CaptivePortalDetector* detector_;
-
-  net::TestURLFetcherFactory factory_;
+  network::TestURLLoaderFactory test_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalDetectorTestBase);
 };

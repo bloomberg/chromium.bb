@@ -23,6 +23,7 @@
 #include "base/scoped_observer.h"
 #include "base/sequence_checker.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/captive_portal/captive_portal_service.h"
@@ -61,6 +62,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/transport_security_state.h"
@@ -76,6 +78,7 @@
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using captive_portal::CaptivePortalResult;
@@ -114,8 +117,7 @@ const char* const kMockCaptivePortal511Url =
     "http://mock.captive.portal.511/page511.html";
 
 // When behind a captive portal, this URL hangs without committing until a call
-// to URLRequestTimeoutOnDemandJob::FailJobs.  When that function is called,
-// the request will time out.
+// to FailJobs.  When that function is called, the request will time out.
 //
 // When connected to the Internet, this URL returns a non-error page.
 const char* const kMockHttpsUrl =
@@ -142,35 +144,23 @@ class URLRequestTimeoutOnDemandJob : public net::URLRequestJob {
   // net::URLRequestJob:
   void Start() override;
 
-  // All the public static methods below can be called on any thread.
-
-  // Waits for exactly |num_jobs|.
-  static void WaitForJobs(int num_jobs);
-
-  // Fails all active URLRequestTimeoutOnDemandJobs with connection timeouts.
-  // There are expected to be exactly |expected_num_jobs| waiting for
-  // failure.  The only way to guarantee this is with an earlier call to
-  // WaitForJobs, so makes sure there has been a matching WaitForJobs call.
-  static void FailJobs(int expected_num_jobs);
-
-  // Fails all active URLRequestTimeoutOnDemandJobs with SSL cert errors.
-  // |expected_num_jobs| behaves just as in FailJobs.
-  static void FailJobsWithCertError(int expected_num_jobs,
-                                    const net::SSLInfo& ssl_info);
-
-  // Abandon all active URLRequestTimeoutOnDemandJobs.  |expected_num_jobs|
-  // behaves just as in FailJobs.
-  static void AbandonJobs(int expected_num_jobs);
-
- private:
-  friend class URLRequestMockCaptivePortalJobFactory;
-
   // Operation to perform on jobs when removing them from |job_list_|.
   enum EndJobOperation {
     FAIL_JOBS,
     ABANDON_JOBS,
     FAIL_JOBS_WITH_CERT_ERROR
   };
+
+  // All the public static methods below must be called on the IO thread.
+  // For documentation, see the similarly named methods on
+  // CaptivePortalBrowserTest.
+  static void WaitForJobs(int num_jobs);
+  static void FailOrAbandonJobs(int expected_num_jobs,
+                                EndJobOperation end_job_operation,
+                                const net::SSLInfo& ssl_info);
+
+ private:
+  friend class URLRequestMockCaptivePortalJobFactory;
 
   URLRequestTimeoutOnDemandJob(net::URLRequest* request,
                                net::NetworkDelegate* network_delegate);
@@ -179,11 +169,6 @@ class URLRequestTimeoutOnDemandJob : public net::URLRequestJob {
   // Attempts to removes |this| from |jobs_|.  Returns true if it was removed
   // from the list.
   bool RemoveFromList();
-
-  static void WaitForJobsOnIOThread(int num_jobs);
-  static void FailOrAbandonJobsOnIOThread(int expected_num_jobs,
-                                          EndJobOperation end_job_operation,
-                                          const net::SSLInfo& ssl_info);
 
   // Checks if there are at least |num_jobs_to_wait_for_| jobs in
   // |job_list_|.  If so, exits the message loop on the UI thread, which
@@ -239,41 +224,6 @@ void URLRequestTimeoutOnDemandJob::Start() {
   MaybeStopWaitingForJobsOnIOThread();
 }
 
-// static
-void URLRequestTimeoutOnDemandJob::WaitForJobs(int num_jobs) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&URLRequestTimeoutOnDemandJob::WaitForJobsOnIOThread,
-                     num_jobs));
-  content::RunMessageLoop();
-}
-
-// static
-void URLRequestTimeoutOnDemandJob::FailJobs(int expected_num_jobs) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&URLRequestTimeoutOnDemandJob::FailOrAbandonJobsOnIOThread,
-                     expected_num_jobs, FAIL_JOBS, net::SSLInfo()));
-}
-
-// static
-void URLRequestTimeoutOnDemandJob::FailJobsWithCertError(
-    int expected_num_jobs,
-    const net::SSLInfo& ssl_info) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&URLRequestTimeoutOnDemandJob::FailOrAbandonJobsOnIOThread,
-                     expected_num_jobs, FAIL_JOBS_WITH_CERT_ERROR, ssl_info));
-}
-
-// static
-void URLRequestTimeoutOnDemandJob::AbandonJobs(int expected_num_jobs) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&URLRequestTimeoutOnDemandJob::FailOrAbandonJobsOnIOThread,
-                     expected_num_jobs, ABANDON_JOBS, net::SSLInfo()));
-}
-
 URLRequestTimeoutOnDemandJob::URLRequestTimeoutOnDemandJob(
     net::URLRequest* request, net::NetworkDelegate* network_delegate)
     : net::URLRequestJob(request, network_delegate),
@@ -304,7 +254,7 @@ bool URLRequestTimeoutOnDemandJob::RemoveFromList() {
 }
 
 // static
-void URLRequestTimeoutOnDemandJob::WaitForJobsOnIOThread(int num_jobs) {
+void URLRequestTimeoutOnDemandJob::WaitForJobs(int num_jobs) {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ASSERT_EQ(0, num_jobs_to_wait_for_);
   ASSERT_LT(0, num_jobs);
@@ -335,7 +285,7 @@ void URLRequestTimeoutOnDemandJob::MaybeStopWaitingForJobsOnIOThread() {
 }
 
 // static
-void URLRequestTimeoutOnDemandJob::FailOrAbandonJobsOnIOThread(
+void URLRequestTimeoutOnDemandJob::FailOrAbandonJobs(
     int expected_num_jobs,
     EndJobOperation end_job_operation,
     const net::SSLInfo& ssl_info) {
@@ -386,6 +336,8 @@ class URLRequestMockCaptivePortalJobFactory {
   // Sets whether or not there is a captive portal.  Outstanding requests are
   // not affected.
   void SetBehindCaptivePortal(bool behind_captive_portal);
+
+  bool behind_captive_portal() const { return behind_captive_portal_; }
 
  private:
   class Interceptor : public net::URLRequestInterceptor {
@@ -950,6 +902,9 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   void TearDownOnMainThread() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;
 
+  // Called by |url_loader_interceptor_|.
+  bool OnIntercept(content::URLLoaderInterceptor::RequestParams* params);
+
   // Sets the captive portal checking preference.  Does not affect the command
   // line flag, which is set in SetUpCommandLine.
   void EnableCaptivePortalDetection(Profile* profile, bool enabled);
@@ -1013,8 +968,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   // Navigates the active tab to a slow loading SSL page, which will then
   // trigger a captive portal test.  The test is expected to find a captive
   // portal.  The slow loading page will continue to load after the function
-  // returns, until URLRequestTimeoutOnDemandJob::FailJobs() is called,
-  // at which point it will timeout.
+  // returns, until FailJobs() is called, at which point it will timeout.
   //
   // When |expect_open_login_tab| is false, no login tab is expected to be
   // opened, because one already exists, and the function returns once the
@@ -1027,7 +981,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   //
   // This function must not be called when the active tab is currently loading.
   // Waits for the hanging request to be issued, so other functions can rely
-  // on URLRequestTimeoutOnDemandJob::WaitForJobs having been called.
+  // on WaitForJobs having been called.
   void SlowLoadBehindCaptivePortal(Browser* browser,
                                    bool expect_open_login_tab);
 
@@ -1119,8 +1073,125 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
 
   CaptivePortalTabReloader* GetTabReloader(WebContents* web_contents) const;
 
+  // Waits for exactly |num_jobs| kMockHttps* requests.
+  void WaitForJobs(int num_jobs) {
+    if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+      content::BrowserThread::PostTask(
+          content::BrowserThread::IO, FROM_HERE,
+          base::BindOnce(&CaptivePortalBrowserTest::WaitForJobs,
+                         base::Unretained(this), num_jobs));
+      content::RunMessageLoop();
+      return;
+    }
+
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      DCHECK(!num_jobs_to_wait_for_);
+      EXPECT_LE(static_cast<int>(ongoing_mock_requests_.size()), num_jobs);
+      if (num_jobs == static_cast<int>(ongoing_mock_requests_.size())) {
+        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                                base::MessageLoop::QuitWhenIdleClosure());
+      } else {
+        num_jobs_to_wait_for_ = num_jobs;
+      }
+    } else {
+      URLRequestTimeoutOnDemandJob::WaitForJobs(num_jobs);
+    }
+  }
+
+  // Fails all active kMockHttps* requests with connection timeouts.
+  // There are expected to be exactly |expected_num_jobs| waiting for
+  // failure.  The only way to guarantee this is with an earlier call to
+  // WaitForJobs, so makes sure there has been a matching WaitForJobs call.
+  void FailJobs(int expected_num_jobs) {
+    if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::BindOnce(&CaptivePortalBrowserTest::FailJobs,
+                         base::Unretained(this), expected_num_jobs));
+      return;
+    }
+
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      EXPECT_EQ(expected_num_jobs,
+                static_cast<int>(ongoing_mock_requests_.size()));
+      network::URLLoaderCompletionStatus status;
+      status.error_code = net::ERR_CONNECTION_TIMED_OUT;
+      for (auto& job : ongoing_mock_requests_)
+        job->OnComplete(status);
+      ongoing_mock_requests_.clear();
+      return;
+    }
+
+    URLRequestTimeoutOnDemandJob::FailOrAbandonJobs(
+        expected_num_jobs, URLRequestTimeoutOnDemandJob::FAIL_JOBS,
+        net::SSLInfo());
+  }
+
+  // Fails all active kMockHttps* requests with SSL cert errors.
+  // |expected_num_jobs| behaves just as in FailJobs.
+  void FailJobsWithCertError(int expected_num_jobs,
+                             const net::SSLInfo& ssl_info) {
+    if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::BindOnce(&CaptivePortalBrowserTest::FailJobsWithCertError,
+                         base::Unretained(this), expected_num_jobs, ssl_info));
+      return;
+    }
+
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      EXPECT_EQ(expected_num_jobs,
+                static_cast<int>(ongoing_mock_requests_.size()));
+      NOTIMPLEMENTED();
+      return;
+    }
+
+    URLRequestTimeoutOnDemandJob::FailOrAbandonJobs(
+        expected_num_jobs,
+        URLRequestTimeoutOnDemandJob::FAIL_JOBS_WITH_CERT_ERROR, ssl_info);
+  }
+
+  // Abandon all active kMockHttps* requests.  |expected_num_jobs|
+  // behaves just as in FailJobs.
+  void AbandonJobs(int expected_num_jobs) {
+    if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::BindOnce(&CaptivePortalBrowserTest::AbandonJobs,
+                         base::Unretained(this), expected_num_jobs));
+      return;
+    }
+
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      NOTIMPLEMENTED();
+      return;
+    }
+
+    URLRequestTimeoutOnDemandJob::FailOrAbandonJobs(
+        expected_num_jobs, URLRequestTimeoutOnDemandJob::ABANDON_JOBS,
+        net::SSLInfo());
+  }
+
+  // Returns the contents of the given filename under chrome/test/data.
+  static std::string GetContents(const std::string& path) {
+    base::FilePath root_http;
+    PathService::Get(chrome::DIR_TEST_DATA, &root_http);
+    base::ScopedAllowBlockingForTesting allow_io;
+    base::FilePath file_path = root_http.AppendASCII(path);
+    std::string contents;
+    CHECK(base::ReadFileToString(file_path, &contents));
+    return contents;
+  }
+
  protected:
+  // Used when the network service isn't in use.
   URLRequestMockCaptivePortalJobFactory factory_;
+
+  // Used with network service.
+  std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
+  // Only accessed on the IO thread.
+  int num_jobs_to_wait_for_ = 0;
+  std::vector<network::mojom::URLLoaderClientPtr> ongoing_mock_requests_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalBrowserTest);
@@ -1130,11 +1201,18 @@ CaptivePortalBrowserTest::CaptivePortalBrowserTest() {
 }
 
 void CaptivePortalBrowserTest::SetUpOnMainThread() {
-  // Enable mock requests.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
-  factory_.AddUrlHandlers();
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    url_loader_interceptor_ =
+        std::make_unique<content::URLLoaderInterceptor>(base::Bind(
+            &CaptivePortalBrowserTest::OnIntercept, base::Unretained(this)));
+
+  } else {
+    // Enable mock requests.
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
+    factory_.AddUrlHandlers();
+  }
 
   // Double-check that the captive portal service isn't enabled by default for
   // browser tests.
@@ -1157,9 +1235,68 @@ void CaptivePortalBrowserTest::SetUpOnMainThread() {
       base::TimeDelta::FromHours(1));
 }
 
+bool CaptivePortalBrowserTest::OnIntercept(
+    content::URLLoaderInterceptor::RequestParams* params) {
+  auto url_string = params->url_request.url.spec();
+  if (url_string == kMockHttpsUrl || url_string == kMockHttpsUrl2 ||
+      url_string == kMockHttpsQuickTimeoutUrl) {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    if (factory_.behind_captive_portal()) {
+      if (url_string == kMockHttpsQuickTimeoutUrl) {
+        network::URLLoaderCompletionStatus status;
+        status.error_code = net::ERR_CONNECTION_TIMED_OUT;
+        params->client->OnComplete(status);
+      } else {
+        ongoing_mock_requests_.push_back(std::move(params->client));
+        if (num_jobs_to_wait_for_ ==
+            static_cast<int>(ongoing_mock_requests_.size())) {
+          num_jobs_to_wait_for_ = 0;
+          BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                                  base::MessageLoop::QuitWhenIdleClosure());
+        }
+      }
+    } else {
+      // Once logged in to the portal, HTTPS requests return the
+      // page that was actually requested.
+      content::URLLoaderInterceptor::WriteResponse(
+          "HTTP/1.1 200 OK\nContent-type: text/html\n\n",
+          GetContents("title2.html"), params->client.get());
+    }
+    return true;
+  }
+
+  std::string headers;
+  if (url_string == kMockCaptivePortalTestUrl ||
+      url_string == kMockCaptivePortal511Url) {
+    std::string contents;
+    if (factory_.behind_captive_portal()) {
+      // Prior to logging in to the portal, the HTTP test URLs are
+      // intercepted by the captive portal.
+      if (url_string == kMockCaptivePortal511Url) {
+        contents = GetContents("captive_portal/page511.html");
+        headers = "HTTP/1.1 511 Network Authentication Required\n";
+      } else {
+        contents = GetContents("captive_portal/login.html");
+        headers = "HTTP/1.0 200 Just Peachy\n";
+      }
+    } else {
+      // After logging in to the portal, the test URLs return a 204
+      // response.
+      headers = "HTTP/1.0 204 No Content\nContent-Length: 0\n";
+    }
+    headers += "Content-Type: text/html\n\n";
+    content::URLLoaderInterceptor::WriteResponse(headers, contents,
+                                                 params->client.get());
+    return true;
+  }
+
+  return false;
+}
+
 void CaptivePortalBrowserTest::TearDownOnMainThread() {
   // No test should have a captive portal check pending on quit.
   EXPECT_FALSE(CheckPending(browser()));
+  url_loader_interceptor_.reset();
 }
 
 void CaptivePortalBrowserTest::SetUpCommandLine(
@@ -1294,8 +1431,8 @@ void CaptivePortalBrowserTest::SlowLoadNoCaptivePortal(
   EXPECT_EQ(1, NumLoadingTabs());
 
   // Wait for the request to be issued, then time it out.
-  URLRequestTimeoutOnDemandJob::WaitForJobs(1);
-  URLRequestTimeoutOnDemandJob::FailJobs(1);
+  WaitForJobs(1);
+  FailJobs(1);
   navigation_observer.WaitForNavigations(1);
 
   ASSERT_EQ(1, browser->tab_strip_model()->count());
@@ -1426,7 +1563,7 @@ void CaptivePortalBrowserTest::SlowLoadBehindCaptivePortal(
 
   // Wait for all the expect resource loads to actually start, so subsequent
   // functions can rely on them having started.
-  URLRequestTimeoutOnDemandJob::WaitForJobs(initial_loading_tabs + 1);
+  WaitForJobs(initial_loading_tabs + 1);
 
   EXPECT_EQ(initial_loading_tabs + 1, NumLoadingTabs());
   EXPECT_EQ(expected_broken_tabs, NumBrokenTabs());
@@ -1605,7 +1742,6 @@ void CaptivePortalBrowserTest::Login(Browser* browser,
   // Trigger a navigation.
   content::ExecuteScriptAsync(tab_strip_model->GetActiveWebContents(),
                               "submitForm()");
-
   portal_observer.WaitForResults(1);
 
   // Wait for all the timed out tabs to reload.
@@ -1689,8 +1825,8 @@ void CaptivePortalBrowserTest::FailLoadsAfterLogin(Browser* browser,
   FailLoadsAfterLoginObserver fail_loads_observer;
   // Connection(s) finally time out.  There should have already been a call
   // to wait for the requests to be issued before logging on.
-  URLRequestTimeoutOnDemandJob::WaitForJobs(num_loading_tabs);
-  URLRequestTimeoutOnDemandJob::FailJobs(num_loading_tabs);
+  WaitForJobs(num_loading_tabs);
+  FailJobs(num_loading_tabs);
 
   fail_loads_observer.WaitForNavigations();
 
@@ -1723,7 +1859,7 @@ void CaptivePortalBrowserTest::FailLoadsWithoutLogin(Browser* browser,
   MultiNavigationObserver navigation_observer;
   // Connection(s) finally time out.  There should have already been a call
   // to wait for the requests to be issued.
-  URLRequestTimeoutOnDemandJob::FailJobs(num_loading_tabs);
+  FailJobs(num_loading_tabs);
 
   navigation_observer.WaitForNavigations(num_loading_tabs);
 
@@ -1760,8 +1896,8 @@ void CaptivePortalBrowserTest::RunNavigateLoadingTabToTimeoutTest(
   SlowLoadBehindCaptivePortal(browser, true, hanging_url, 1, 1);
 
   // Abandon the request.
-  URLRequestTimeoutOnDemandJob::WaitForJobs(1);
-  URLRequestTimeoutOnDemandJob::AbandonJobs(1);
+  WaitForJobs(1);
+  AbandonJobs(1);
 
   TabStripModel* tab_strip_model = browser->tab_strip_model();
   CaptivePortalTabReloader* tab_reloader =
@@ -1795,7 +1931,7 @@ void CaptivePortalBrowserTest::RunNavigateLoadingTabToTimeoutTest(
   ASSERT_TRUE(IsLoginTab(tab_strip_model->GetWebContentsAt(1)));
 
   // Need to make sure the request has been issued before logging in.
-  URLRequestTimeoutOnDemandJob::WaitForJobs(1);
+  WaitForJobs(1);
 
   // Simulate logging in.
   tab_strip_model->ActivateTabAt(1, true);
@@ -2167,6 +2303,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
 // interstitials should be shown.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
                        InterstitialTimerNavigateAwayWhileLoading) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
   https_server.ServeFilesFromSourceDirectory("chrome/test/data");
@@ -2185,7 +2322,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   // a load stop notification before starting a new navigation.
   MultiNavigationObserver test_navigation_observer;
   browser()->OpenURL(content::OpenURLParams(
-      URLRequestMockHTTPJob::GetMockUrl("title2.html"), content::Referrer(),
+      embedded_test_server()->GetURL("/title2.html"), content::Referrer(),
       WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
   test_navigation_observer.WaitForNavigations(1);
 
@@ -2392,6 +2529,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, CloseLoginTab) {
 // Checks that two tabs with SSL timeouts in the same window work.  Both
 // tabs only timeout after logging in.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, TwoBrokenTabs) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   SlowLoadBehindCaptivePortal(browser(), true);
 
   // Can't set the TabReloader HTTPS timeout on a new tab without doing some
@@ -2400,7 +2538,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, TwoBrokenTabs) {
   MultiNavigationObserver navigation_observer;
   CaptivePortalObserver portal_observer(browser()->profile());
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), URLRequestMockHTTPJob::GetMockUrl("title2.html"),
+      browser(), embedded_test_server()->GetURL("/title2.html"),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
@@ -2432,8 +2570,8 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, AbortLoad) {
   SlowLoadBehindCaptivePortal(browser(), true);
 
   // Abandon the request.
-  URLRequestTimeoutOnDemandJob::WaitForJobs(1);
-  URLRequestTimeoutOnDemandJob::AbandonJobs(1);
+  WaitForJobs(1);
+  AbandonJobs(1);
 
   CaptivePortalObserver portal_observer(browser()->profile());
   MultiNavigationObserver navigation_observer;
@@ -2457,6 +2595,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, AbortLoad) {
 // Checks the case where the timed out tab is successfully navigated before
 // logging in.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, NavigateBrokenTab) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   // Go to the error page.
   SlowLoadBehindCaptivePortal(browser(), true);
   FailLoadsWithoutLogin(browser(), 1);
@@ -2464,8 +2603,8 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, NavigateBrokenTab) {
   // Navigate the error tab to a non-error page.
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
   tab_strip_model->ActivateTabAt(0, true);
-  ui_test_utils::NavigateToURL(
-      browser(), URLRequestMockHTTPJob::GetMockUrl("title2.html"));
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title2.html"));
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE,
             GetStateOfTabReloaderAt(browser(), 0));
 
@@ -2509,18 +2648,18 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
 // navigation is cancelled by a navigation to yet another site.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
                        NavigateLoadingTabToTimeoutThreeSites) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   RunNavigateLoadingTabToTimeoutTest(
-      browser(),
-      URLRequestMockHTTPJob::GetMockUrl("title.html"),
-      GURL(kMockHttpsUrl),
-      GURL(kMockHttpsUrl2));
+      browser(), embedded_test_server()->GetURL("/title1.html"),
+      GURL(kMockHttpsUrl), GURL(kMockHttpsUrl2));
 }
 
 // Checks that navigating a timed out tab back clears its state.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, GoBack) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   // Navigate to a working page.
-  ui_test_utils::NavigateToURL(
-      browser(), URLRequestMockHTTPJob::GetMockUrl("title2.html"));
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title2.html"));
 
   // Go to the error page.
   SlowLoadBehindCaptivePortal(browser(), true);
@@ -2544,6 +2683,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, GoBack) {
 
 // Checks that navigating back to a timeout triggers captive portal detection.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, GoBackToTimeout) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   // Disable captive portal detection so the first navigation doesn't open a
   // login tab.
   EnableCaptivePortalDetection(browser()->profile(), false);
@@ -2551,8 +2691,8 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, GoBackToTimeout) {
   SlowLoadNoCaptivePortal(browser(), captive_portal::RESULT_INTERNET_CONNECTED);
 
   // Navigate to a working page.
-  ui_test_utils::NavigateToURL(
-      browser(), URLRequestMockHTTPJob::GetMockUrl("title2.html"));
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title2.html"));
   ASSERT_EQ(CaptivePortalTabReloader::STATE_NONE,
             GetStateOfTabReloaderAt(browser(), 0));
 
@@ -2574,7 +2714,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, GoBackToTimeout) {
   portal_observer.WaitForResults(1);
   navigation_observer.WaitForNavigations(1);
   // Make sure the request has been issued.
-  URLRequestTimeoutOnDemandJob::WaitForJobs(1);
+  WaitForJobs(1);
 
   EXPECT_EQ(1, portal_observer.num_results_received());
   ASSERT_FALSE(CheckPending(browser()));
@@ -2628,7 +2768,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, ReloadTimeout) {
   portal_observer.WaitForResults(1);
   navigation_observer.WaitForNavigations(1);
   // Make sure the request has been issued.
-  URLRequestTimeoutOnDemandJob::WaitForJobs(1);
+  WaitForJobs(1);
 
   ASSERT_EQ(1, portal_observer.num_results_received());
   ASSERT_FALSE(CheckPending(browser()));
@@ -2752,14 +2892,15 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HttpsToHttpRedirect) {
       base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
 
-  GURL http_timeout_url =
-      URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_TIMED_OUT);
-
-  // 2 navigations due to the Link Doctor.
+  // The redirect points to a non-existant host, instead of using a
+  // http://mock.failed.request URL, because with the network service enabled if
+  // the initial URL doesn't go through URLLoaderInterceptor (because it's
+  // served by the EmbeddedTestServer), then URLLoaderInterceptor (which is what
+  // handles mock.failed.request URLs) wouldn't see the redirect.
+  GURL http_error_url("http://doesnt.exist/");
   NavigateToPageExpectNoTest(
       browser(),
-      https_server.GetURL(CreateServerRedirect(http_timeout_url.spec())),
-      2);
+      https_server.GetURL(CreateServerRedirect(http_error_url.spec())), 1);
 }
 
 // Tests the 511 response code, along with an HTML redirect to a login page.
@@ -2820,7 +2961,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   info.cert =
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
   info.unverified_cert = info.cert;
-  URLRequestTimeoutOnDemandJob::FailJobsWithCertError(1, info);
+  FailJobsWithCertError(1, info);
   navigation_observer.WaitForNavigations(1);
 
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NEEDS_RELOAD,

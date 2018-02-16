@@ -100,6 +100,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -217,7 +218,9 @@ void InitializeNetworkPortalDetector() {
   } else {
     network_portal_detector::SetNetworkPortalDetector(
         new NetworkPortalDetectorImpl(
-            g_browser_process->system_request_context(), true));
+            g_browser_process->system_network_context_manager()
+                ->GetURLLoaderFactory(),
+            true));
   }
 }
 

@@ -16,25 +16,19 @@
 #include "components/captive_portal/captive_portal_export.h"
 #include "components/captive_portal/captive_portal_types.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 class GURL;
 
 namespace captive_portal {
 
-class CAPTIVE_PORTAL_EXPORT CaptivePortalDetector
-    : public net::URLFetcherDelegate {
+class CAPTIVE_PORTAL_EXPORT CaptivePortalDetector {
  public:
   struct Results {
-    Results()
-        : result(captive_portal::RESULT_NO_RESPONSE),
-          response_code(net::URLFetcher::RESPONSE_CODE_INVALID) {
-    }
-
-    captive_portal::CaptivePortalResult result;
-    int response_code;
+    captive_portal::CaptivePortalResult result =
+        captive_portal::RESULT_NO_RESPONSE;
+    int response_code = 0;
     base::TimeDelta retry_after_delta;
     GURL landing_url;
   };
@@ -49,8 +43,8 @@ class CAPTIVE_PORTAL_EXPORT CaptivePortalDetector
   static const char kDefaultURL[];
 
   explicit CaptivePortalDetector(
-      const scoped_refptr<net::URLRequestContextGetter>& request_context);
-  ~CaptivePortalDetector() override;
+      network::mojom::URLLoaderFactory* loader_factory);
+  ~CaptivePortalDetector();
 
   // Triggers a check for a captive portal. After completion, runs the
   // |callback|.
@@ -65,15 +59,21 @@ class CAPTIVE_PORTAL_EXPORT CaptivePortalDetector
  private:
   friend class CaptivePortalDetectorTestBase;
 
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
-  // Takes a net::URLFetcher that has finished trying to retrieve the
-  // test URL, and fills a Results struct based on its result.  If the
+  void OnSimpleLoaderCompleteInternal(int net_error,
+                                      int response_code,
+                                      const GURL& url,
+                                      net::HttpResponseHeaders* headers);
+
+  // Fills a Results struct based on the response from SimpleURLLoader. If the
   // response is a 503 with a Retry-After header, |retry_after| field
   // of |results| is populated accordingly.  Otherwise, it's set to
   // base::TimeDelta().
-  void GetCaptivePortalResultFromResponse(const net::URLFetcher* url_fetcher,
+  void GetCaptivePortalResultFromResponse(int net_error,
+                                          int response_code,
+                                          const GURL& url,
+                                          net::HttpResponseHeaders* headers,
                                           Results* results) const;
 
   // Returns the current time. Used only when determining time until a
@@ -93,12 +93,10 @@ class CAPTIVE_PORTAL_EXPORT CaptivePortalDetector
     time_for_testing_ += delta;
   }
 
-  // URL request context.
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
-
   DetectionCallback detection_callback_;
 
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  network::mojom::URLLoaderFactory* loader_factory_ = nullptr;
+  std::unique_ptr<network::SimpleURLLoader> simple_loader_;
 
   // Test time used by unit tests.
   base::Time time_for_testing_;

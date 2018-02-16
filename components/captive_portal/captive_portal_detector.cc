@@ -18,9 +18,8 @@ const char CaptivePortalDetector::kDefaultURL[] =
     "http://www.gstatic.com/generate_204";
 
 CaptivePortalDetector::CaptivePortalDetector(
-    const scoped_refptr<net::URLRequestContextGetter>& request_context)
-    : request_context_(request_context) {
-}
+    network::mojom::URLLoaderFactory* loader_factory)
+    : loader_factory_(loader_factory) {}
 
 CaptivePortalDetector::~CaptivePortalDetector() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -36,56 +35,72 @@ void CaptivePortalDetector::DetectCaptivePortal(
 
   detection_callback_ = detection_callback;
 
-  // The first 0 means this can use a TestURLFetcherFactory in unit tests.
-  url_fetcher_ = net::URLFetcher::Create(0, url, net::URLFetcher::GET, this,
-                                         traffic_annotation);
-  url_fetcher_->SetAutomaticallyRetryOn5xx(false);
-  url_fetcher_->SetRequestContext(request_context_.get());
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      url_fetcher_.get(),
-      data_use_measurement::DataUseUserData::CAPTIVE_PORTAL);
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = url;
 
   // Can't safely use net::LOAD_DISABLE_CERT_REVOCATION_CHECKING here,
   // since then the connection may be reused without checking the cert.
-  url_fetcher_->SetLoadFlags(
-      net::LOAD_BYPASS_CACHE |
-      net::LOAD_DO_NOT_SAVE_COOKIES |
-      net::LOAD_DO_NOT_SEND_COOKIES |
-      net::LOAD_DO_NOT_SEND_AUTH_DATA);
-  url_fetcher_->Start();
+  resource_request->load_flags =
+      net::LOAD_BYPASS_CACHE | net::LOAD_DO_NOT_SAVE_COOKIES |
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SEND_AUTH_DATA;
+
+  // TODO(jam): switch to using ServiceURLLoader to track data measurement once
+  // https://crbug.com/808498 is fixed.
+  simple_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                    traffic_annotation);
+  simple_loader_->SetAllowHttpErrorResults(true);
+  network::SimpleURLLoader::BodyAsStringCallback callback = base::BindOnce(
+      &CaptivePortalDetector::OnSimpleLoaderComplete, base::Unretained(this));
+  simple_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      loader_factory_, std::move(callback));
 }
 
 void CaptivePortalDetector::Cancel() {
-  url_fetcher_.reset();
+  simple_loader_.reset();
   detection_callback_.Reset();
 }
 
-void CaptivePortalDetector::OnURLFetchComplete(const net::URLFetcher* source) {
+void CaptivePortalDetector::OnSimpleLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(FetchingURL());
-  DCHECK_EQ(url_fetcher_.get(), source);
   DCHECK(!detection_callback_.is_null());
 
+  int response_code = 0;
+  net::HttpResponseHeaders* headers = nullptr;
+  if (simple_loader_->ResponseInfo() &&
+      simple_loader_->ResponseInfo()->headers) {
+    headers = simple_loader_->ResponseInfo()->headers.get();
+    response_code = simple_loader_->ResponseInfo()->headers->response_code();
+  }
+  OnSimpleLoaderCompleteInternal(simple_loader_->NetError(), response_code,
+                                 simple_loader_->GetFinalURL(), headers);
+}
+
+void CaptivePortalDetector::OnSimpleLoaderCompleteInternal(
+    int net_error,
+    int response_code,
+    const GURL& url,
+    net::HttpResponseHeaders* headers) {
   Results results;
-  GetCaptivePortalResultFromResponse(url_fetcher_.get(), &results);
+  GetCaptivePortalResultFromResponse(net_error, response_code, url, headers,
+                                     &results);
   DetectionCallback callback = detection_callback_;
-  url_fetcher_.reset();
+  simple_loader_.reset();
   detection_callback_.Reset();
   callback.Run(results);
 }
 
-// Takes a net::URLFetcher that has finished trying to retrieve the test
-// URL, and returns a CaptivePortalService::Result based on its result.
 void CaptivePortalDetector::GetCaptivePortalResultFromResponse(
-    const net::URLFetcher* url_fetcher,
+    int net_error,
+    int response_code,
+    const GURL& url,
+    net::HttpResponseHeaders* headers,
     Results* results) const {
-  DCHECK(results);
-  DCHECK(!url_fetcher->GetStatus().is_io_pending());
-
   results->result = captive_portal::RESULT_NO_RESPONSE;
-  results->response_code = url_fetcher->GetResponseCode();
+  results->response_code = response_code;
   results->retry_after_delta = base::TimeDelta();
-  results->landing_url = url_fetcher->GetURL();
+  results->landing_url = url;
 
   VLOG(1) << "Getting captive portal result"
           << " response code: " << results->response_code
@@ -95,12 +110,11 @@ void CaptivePortalDetector::GetCaptivePortalResultFromResponse(
   // there may be a networking problem, rather than a captive portal.
   // TODO(mmenke):  Consider special handling for redirects that end up at
   //                errors, especially SSL certificate errors.
-  if (url_fetcher->GetStatus().status() != net::URLRequestStatus::SUCCESS)
+  if (net_error != net::OK)
     return;
 
   // In the case of 503 errors, look for the Retry-After header.
   if (results->response_code == 503) {
-    net::HttpResponseHeaders* headers = url_fetcher->GetResponseHeaders();
     std::string retry_after_string;
 
     // If there's no Retry-After header, nothing else to do.
@@ -108,9 +122,8 @@ void CaptivePortalDetector::GetCaptivePortalResultFromResponse(
       return;
 
     base::TimeDelta retry_after_delta;
-    if (net::HttpUtil::ParseRetryAfterHeader(retry_after_string,
-                                             GetCurrentTime(),
-                                             &retry_after_delta)) {
+    if (net::HttpUtil::ParseRetryAfterHeader(
+            retry_after_string, GetCurrentTime(), &retry_after_delta)) {
       results->retry_after_delta = retry_after_delta;
     }
 
@@ -146,7 +159,7 @@ base::Time CaptivePortalDetector::GetCurrentTime() const {
 }
 
 bool CaptivePortalDetector::FetchingURL() const {
-  return url_fetcher_.get() != nullptr;
+  return simple_loader_.get() != nullptr;
 }
 
 }  // namespace captive_portal
