@@ -424,6 +424,15 @@ CrOnc.getNetworkName = function(properties) {
 
 /**
  * @param {!CrOnc.NetworkProperties|!CrOnc.NetworkStateProperties|undefined}
+ *     properties The ONC network properties or state properties.
+ * @return {string} The name to display for |network|.
+ */
+CrOnc.getEscapedNetworkName = function(properties) {
+  return HTMLEscape(CrOnc.getNetworkName(properties));
+};
+
+/**
+ * @param {!CrOnc.NetworkProperties|!CrOnc.NetworkStateProperties|undefined}
  *   properties The ONC network properties or state properties.
  * @return {boolean} True if |properties| is a Cellular network with a
  *   locked SIM.
