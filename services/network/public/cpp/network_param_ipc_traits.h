@@ -327,7 +327,6 @@ IPC_STRUCT_TRAITS_BEGIN(network::ResourceRequest)
   IPC_STRUCT_TRAITS_MEMBER(previews_state)
   IPC_STRUCT_TRAITS_MEMBER(resource_body_stream_url)
   IPC_STRUCT_TRAITS_MEMBER(initiated_in_secure_context)
-  IPC_STRUCT_TRAITS_MEMBER(download_to_network_cache_only)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(network::ResourceResponseInfo)
