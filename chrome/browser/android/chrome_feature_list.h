@@ -64,6 +64,7 @@ extern const base::Feature kNTPModernLayoutFeature;
 extern const base::Feature kNTPLaunchAfterInactivity;
 extern const base::Feature NTPShowGoogleGInOmniboxFeature;
 extern const base::Feature kOmniboxSpareRenderer;
+extern const base::Feature kOmniboxVoiceSearchAlwaysVisible;
 extern const base::Feature kPayWithGoogleV1;
 extern const base::Feature kPhysicalWebFeature;
 extern const base::Feature kPhysicalWebSharing;
