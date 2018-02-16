@@ -17,12 +17,9 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/modules/websockets/websocket.mojom.h"
+#include "url/origin.h"
 
 class GURL;
-
-namespace url {
-class Origin;
-}  // namespace url
 
 namespace net {
 class URLRequestContext;
@@ -47,6 +44,7 @@ class CONTENT_EXPORT WebSocketImpl : public blink::mojom::WebSocket {
                 blink::mojom::WebSocketRequest request,
                 int child_id,
                 int frame_id,
+                url::Origin origin,
                 base::TimeDelta delay);
   ~WebSocketImpl() override;
 
@@ -57,7 +55,6 @@ class CONTENT_EXPORT WebSocketImpl : public blink::mojom::WebSocket {
   // blink::mojom::WebSocket methods:
   void AddChannelRequest(const GURL& url,
                          const std::vector<std::string>& requested_protocols,
-                         const url::Origin& origin,
                          const GURL& site_for_cookies,
                          const std::string& user_agent_override,
                          blink::mojom::WebSocketClientPtr client) override;
@@ -76,7 +73,6 @@ class CONTENT_EXPORT WebSocketImpl : public blink::mojom::WebSocket {
   void OnConnectionError();
   void AddChannel(const GURL& socket_url,
                   const std::vector<std::string>& requested_protocols,
-                  const url::Origin& origin,
                   const GURL& site_for_cookies,
                   const std::string& user_agent_override);
 
@@ -98,6 +94,9 @@ class CONTENT_EXPORT WebSocketImpl : public blink::mojom::WebSocket {
 
   int child_id_;
   int frame_id_;
+
+  // The web origin to use for the WebSocket.
+  const url::Origin origin_;
 
   // handshake_succeeded_ is set and used by WebSocketManager to manage
   // counters for per-renderer WebSocket throttling.

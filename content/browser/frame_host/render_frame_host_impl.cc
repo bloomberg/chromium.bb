@@ -3135,7 +3135,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   // This is to support usage of WebSockets in cases in which there is an
   // associated RenderFrame. This is important for showing the correct security
   // state of the page and also honoring user override of bad certificates.
-  registry_->AddInterface(base::Bind(&WebSocketManager::CreateWebSocket,
+  registry_->AddInterface(base::Bind(&WebSocketManager::CreateWebSocketForFrame,
                                      process_->GetID(), routing_id_));
 
   registry_->AddInterface(base::Bind(&SharedWorkerConnectorImpl::Create,
