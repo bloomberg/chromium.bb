@@ -38,6 +38,14 @@ GURL CreateRestoreSessionUrl(
 // Returns true if the base URL of |url| is restore_session.html.
 bool IsRestoreSessionUrl(const GURL& url);
 
+// Creates a restore_session.html URL that encodes the specified |target_url| in
+// its 'targetUrl' query component. When this URL is loaded in the web view, it
+// executes a client-side redirect to |target_url|. This results in a new
+// navigation entry and prunes forward navigation history. This URL is used by
+// WKBasedNavigationManagerImpl to reload a page with user agent override, as
+// reloading |target_url| directly doesn't create a new navigation entry.
+GURL CreateRedirectUrl(const GURL& target_url);
+
 // Extracts the URL encoded in the 'targetUrl' query component of
 // |restore_session_url| to |target_url| and returns true. If no such query
 // component exists, returns false.

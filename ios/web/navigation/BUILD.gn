@@ -31,8 +31,6 @@ source_set("navigation") {
     "navigation_item_storage_builder.mm",
     "nscoder_util.h",
     "nscoder_util.mm",
-    "placeholder_navigation_util.h",
-    "placeholder_navigation_util.mm",
     "serializable_user_data_manager_impl.h",
     "serializable_user_data_manager_impl.mm",
     "session_storage_builder.h",
@@ -41,8 +39,6 @@ source_set("navigation") {
     "time_smoother.h",
     "wk_based_navigation_manager_impl.h",
     "wk_based_navigation_manager_impl.mm",
-    "wk_based_restore_session_util.h",
-    "wk_based_restore_session_util.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -64,6 +60,10 @@ source_set("core") {
     "navigation_manager_impl.mm",
     "navigation_manager_util.h",
     "navigation_manager_util.mm",
+    "placeholder_navigation_util.h",
+    "placeholder_navigation_util.mm",
+    "wk_based_restore_session_util.h",
+    "wk_based_restore_session_util.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
