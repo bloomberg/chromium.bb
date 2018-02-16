@@ -208,6 +208,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   explicit MediaControlsImpl(HTMLMediaElement&);
 
   void InitializeControls();
+  void PopulatePanel();
 
   void MakeOpaque();
   void MakeOpaqueFromPointerEvent();
@@ -250,6 +251,12 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   // used because these menus use a fixed position in order to appear over all
   // content.
   void PositionPopupMenu(Element*);
+
+  // When a video element has an audio track but no video track, we modify the
+  // controls to display like audio controls.
+  bool ShouldActAsAudioControls() const;
+  void StartActingAsAudioControls();
+  void StopActingAsAudioControls();
 
   // Node
   bool IsMediaControls() const override { return true; }
@@ -336,6 +343,8 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   bool pointer_event_did_show_controls_ = false;
 
   Member<MediaDownloadInProductHelpManager> download_iph_manager_;
+
+  bool is_acting_as_audio_controls_ = false;
 };
 
 DEFINE_ELEMENT_TYPE_CASTS(MediaControlsImpl, IsMediaControls());
