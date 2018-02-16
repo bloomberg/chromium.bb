@@ -638,25 +638,22 @@ NativeWidgetMacNSWindow* NativeWidgetMac::CreateNSWindow(
 void Widget::CloseAllSecondaryWidgets() {
   NSArray* starting_windows = [NSApp windows];  // Creates an autoreleased copy.
   for (NSWindow* window in starting_windows) {
-    // Crash keys for http://crbug.com/788271 and http://crbug.com/808318.
-    // Crashes suggest the window delegate may have become invalid, so record
-    // a separate key before sending messages to the delegate.
-    // TODO(tapted): Remove the delegate key. The window info key is probably
-    // useful to keep to help diagnose leaked observers crashing in Widget code.
+    // Ignore any windows that couldn't have been created by NativeWidgetMac or
+    // a subclass. GetNativeWidgetForNativeWindow() will later interrogate the
+    // NSWindow delegate, but we can't trust that delegate to be a valid object.
+    if (![window isKindOfClass:[NativeWidgetMacNSWindow class]])
+      continue;
+
+    // Record a crash key to detect when client code may destroy a
+    // WidgetObserver without removing it (possibly leaking the Widget).
+    // A crash can occur in generic Widget teardown paths when trying to notify.
+    // See http://crbug.com/808318.
     static crash_reporter::CrashKeyString<256> window_info_key("windowInfo");
-    static crash_reporter::CrashKeyString<256> window_delegate_info_key(
-        "windowDelegateInfo");
     std::string value = base::SysNSStringToUTF8(
         [NSString stringWithFormat:@"Closing %@ (%@)", [window title],
                                    [window className]]);
     crash_reporter::ScopedCrashKeyString scopedWindowKey(&window_info_key,
                                                          value);
-
-    NSObject* delegate = [window delegate];
-    value = base::SysNSStringToUTF8([NSString
-        stringWithFormat:@"NSWindow delegate class: %@", [delegate className]]);
-    crash_reporter::ScopedCrashKeyString scopedDelegateKey(
-        &window_delegate_info_key, value);
 
     Widget* widget = GetWidgetForNativeWindow(window);
     if (widget && widget->is_secondary_widget())
