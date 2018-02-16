@@ -1028,20 +1028,17 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
   dice_sync_promo_accounts_ =
       signin_ui_util::GetAccountsForDicePromos(browser_->profile());
 
-  // Create a view that holds an illustration and a promo, which includes a
-  // button. The illustration should slightly overlap with the promo at the
-  // bottom, therefore between_child_spacing of |view| is set to negative
-  // |kIllustrationPromoOverlap|. The illustration will be changed in the
-  // future, once the final asset is ready.
-  constexpr int kIllustrationPromoOverlap = 48;
+  // Create a view that holds an illustration, a promo text and a button to turn
+  // on Sync.
+  const int promotext_top_spacing = 24;
   const int additional_bottom_spacing =
       dice_sync_promo_accounts_.empty() ? 0 : 8;
   views::View* view = new views::View();
   view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical,
-      gfx::Insets(0, 0, additional_bottom_spacing, 0),
-      -kIllustrationPromoOverlap));
+      gfx::Insets(0, 0, additional_bottom_spacing, 0)));
 
+  // Add the illustration.
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   views::ImageView* illustration = new views::ImageView();
   illustration->SetImage(
@@ -1049,41 +1046,33 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
            .ToImageSkia());
   view->AddChildView(illustration);
 
-  views::View* promo_button_container = new views::View();
-  // There are no insets in |promo_button_container| because the child views
-  // have different borders. Even though |promo| and the sign-in button have
-  // borders on the left and right, |sync_to_another_account| stretches over the
-  // entire width.
-  promo_button_container->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  // Add the promo text.
   views::Label* promo = new views::Label(
       l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_PROMO));
   promo->SetMultiLine(true);
   promo->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   promo->SetMaximumWidth(menu_width_ - 2 * kMenuEdgeMargin);
-  promo->SetBorder(
-      views::CreateEmptyBorder(0, kMenuEdgeMargin, 0, kMenuEdgeMargin));
-  promo_button_container->AddChildView(promo);
+  promo->SetBorder(views::CreateEmptyBorder(
+      promotext_top_spacing, kMenuEdgeMargin, 0, kMenuEdgeMargin));
+  view->AddChildView(promo);
 
-  // A border around the sign-in button is created. HoverButton already has its
-  // own border and a second border can't be added, therefore a parent view with
-  // a border has to be created.
+  // Create a parent view with border for the sign-in button, because
+  // |DiceSigninButton| already has its own border and a second border can't be
+  // added.
   views::View* signin_button_view = new views::View();
   signin_button_view->SetLayoutManager(std::make_unique<views::FillLayout>());
   signin_button_view->SetBorder(
       views::CreateSolidBorder(kMenuEdgeMargin, SK_ColorTRANSPARENT));
 
   if (dice_sync_promo_accounts_.empty()) {
-    // When there is no signed in web account, just display a sign-in button.
+    // When there is no signed in web account, create a sign-in button without
+    // account information.
     signin_current_profile_button_ = new DiceSigninButton(this);
-
     signin_button_view->AddChildView(signin_current_profile_button_);
-    promo_button_container->AddChildView(signin_button_view);
-    view->AddChildView(promo_button_container);
+    view->AddChildView(signin_button_view);
     return view;
   }
-
-  // Create a hover button to sign in the first account of
+  // Create a button to sign in the first account of
   // |dice_sync_promo_accounts_|.
   AccountInfo dice_promo_default_account = dice_sync_promo_accounts_[0];
   gfx::Image account_icon =
@@ -1098,8 +1087,9 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
                            false /* show drop down arrow */);
 
   signin_button_view->AddChildView(signin_with_gaia_account_button_);
-  promo_button_container->AddChildView(signin_button_view);
+  view->AddChildView(signin_button_view);
 
+  // Create a button to sync to another account.
   constexpr int kSmallMenuIconSize = 16;
   std::unique_ptr<views::ImageView> switch_account_icon_view(
       new views::ImageView());
@@ -1110,9 +1100,7 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
       l10n_util::GetStringUTF16(
           IDS_PROFILES_DICE_SIGNIN_WITH_ANOTHER_ACCOUNT_BUTTON),
       base::string16() /* subtitle */, true /* show right arrow */);
-  promo_button_container->AddChildView(sync_to_another_account_button_);
-
-  view->AddChildView(promo_button_container);
+  view->AddChildView(sync_to_another_account_button_);
   return view;
 }
 
