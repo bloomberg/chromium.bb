@@ -34,7 +34,6 @@
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
-#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
@@ -1592,20 +1591,17 @@ base::string16 BrowserView::GetAccessibleWindowTitleForChannelAndProfile(
 
   // Finally annotate with the user - add Incognito if it's an incognito
   // window, otherwise use the avatar name.
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
   if (profile->IsOffTheRecord()) {
     title = l10n_util::GetStringFUTF16(
         IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT, title);
-  } else if (profile->GetProfileType() == Profile::REGULAR_PROFILE) {
+  } else if (profile->GetProfileType() == Profile::REGULAR_PROFILE &&
+             profile_manager->GetNumberOfProfiles() > 1) {
     base::string16 profile_name =
         profiles::GetAvatarNameForProfile(profile->GetPath());
-
-    // GetAvatarNameForProfile will return the empty string if there's only one
-    // user account, so the profile name is only appended if someone is
-    // using multiple user accounts. That keeps it concise for most users
-    // who only use one account.
     if (!profile_name.empty()) {
       title = l10n_util::GetStringFUTF16(
-          IDS_ACCESSIBLE_WINDOW_TITLE_WITH_PROFILE_FORMAT, profile_name, title);
+          IDS_ACCESSIBLE_WINDOW_TITLE_WITH_PROFILE_FORMAT, title, profile_name);
     }
   }
 
