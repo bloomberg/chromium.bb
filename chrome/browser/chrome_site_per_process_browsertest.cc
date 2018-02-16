@@ -712,6 +712,11 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   ASSERT_NE(opener_contents, popup_contents);
   EXPECT_TRUE(content::WaitForLoadStop(popup_contents));
 
+  // This test technically performs a tab-under navigation. This will be blocked
+  // if the tab-under blocking feature is enabled. Simulate clicking the opener
+  // here to avoid that behavior.
+  opener_contents->UserGestureDone();
+
   // From the popup, start a navigation in the opener to b.com, but don't
   // commit.
   GURL b_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
