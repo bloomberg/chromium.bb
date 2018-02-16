@@ -36,6 +36,10 @@ SynchronousCompositorProxy::SynchronousCompositorProxy(
       hardware_draw_reply_(nullptr),
       software_draw_reply_(nullptr),
       hardware_draw_reply_async_(false),
+      compute_scroll_called_via_ipc_(false),
+      browser_needs_begin_frame_state_(false),
+      needs_begin_frame_for_frame_sink_(false),
+      needs_begin_frame_for_animate_input_(false),
       version_(0u),
       page_scale_factor_(0.f),
       min_page_scale_factor_(0.f),
@@ -69,8 +73,13 @@ void SynchronousCompositorProxy::SetLayerTreeFrameSink(
 }
 
 void SynchronousCompositorProxy::SetNeedsSynchronousAnimateInput() {
-  need_animate_scroll_ = true;
-  Invalidate();
+  if (compute_scroll_called_via_ipc_) {
+    needs_begin_frame_for_animate_input_ = true;
+    SendSetNeedsBeginFramesIfNeeded();
+  } else {
+    need_animate_scroll_ = true;
+    Invalidate();
+  }
 }
 
 void SynchronousCompositorProxy::UpdateRootLayerState(
@@ -124,9 +133,10 @@ void SynchronousCompositorProxy::PopulateCommonParams(
   params->page_scale_factor = page_scale_factor_;
   params->min_page_scale_factor = min_page_scale_factor_;
   params->max_page_scale_factor = max_page_scale_factor_;
-  params->need_animate_scroll = need_animate_scroll_;
   params->need_invalidate_count = need_invalidate_count_;
   params->did_activate_pending_tree_count = did_activate_pending_tree_count_;
+  if (!compute_scroll_called_via_ipc_)
+    params->need_animate_scroll = need_animate_scroll_;
 }
 
 void SynchronousCompositorProxy::OnMessageReceived(
@@ -360,13 +370,24 @@ void SynchronousCompositorProxy::SubmitCompositorFrame(
   }
 }
 
+void SynchronousCompositorProxy::SendSetNeedsBeginFramesIfNeeded() {
+  bool needs_begin_frames =
+      needs_begin_frame_for_frame_sink_ || needs_begin_frame_for_animate_input_;
+  if (browser_needs_begin_frame_state_ != needs_begin_frames)
+    Send(new SyncCompositorHostMsg_SetNeedsBeginFrames(routing_id_,
+                                                       needs_begin_frames));
+  browser_needs_begin_frame_state_ = needs_begin_frames;
+}
+
 void SynchronousCompositorProxy::SetNeedsBeginFrames(bool needs_begin_frames) {
-  Send(new SyncCompositorHostMsg_SetNeedsBeginFrames(routing_id_,
-                                                     needs_begin_frames));
+  needs_begin_frame_for_frame_sink_ = needs_begin_frames;
+  SendSetNeedsBeginFramesIfNeeded();
 }
 
 void SynchronousCompositorProxy::OnComputeScroll(
     base::TimeTicks animation_time) {
+  compute_scroll_called_via_ipc_ = true;
+
   if (need_animate_scroll_) {
     need_animate_scroll_ = false;
     input_handler_proxy_->SynchronouslyAnimate(animation_time);
@@ -380,7 +401,11 @@ void SynchronousCompositorProxy::OnSetBeginFrameSourcePaused(bool paused) {
 }
 
 void SynchronousCompositorProxy::OnBeginFrame(const viz::BeginFrameArgs& args) {
-  if (layer_tree_frame_sink_)
+  if (needs_begin_frame_for_animate_input_) {
+    needs_begin_frame_for_animate_input_ = false;
+    input_handler_proxy_->SynchronouslyAnimate(args.frame_time);
+  }
+  if (needs_begin_frame_for_frame_sink_ && layer_tree_frame_sink_)
     layer_tree_frame_sink_->BeginFrame(args);
 
   SyncCompositorCommonRendererParams param;

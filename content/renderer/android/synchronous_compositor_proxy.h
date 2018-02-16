@@ -67,6 +67,8 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
  private:
   struct SharedMemoryWithSize;
 
+  void SendSetNeedsBeginFramesIfNeeded();
+
   // IPC handlers.
   void OnComputeScroll(base::TimeTicks animation_time);
   void OnSetBeginFrameSourcePaused(bool paused);
@@ -115,6 +117,11 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
   IPC::Message* software_draw_reply_;
   bool hardware_draw_reply_async_;
   bool begin_frame_paused_ = false;
+
+  bool compute_scroll_called_via_ipc_;
+  bool browser_needs_begin_frame_state_;
+  bool needs_begin_frame_for_frame_sink_;
+  bool needs_begin_frame_for_animate_input_;
 
   // From browser.
   std::unique_ptr<SharedMemoryWithSize> software_draw_shm_;
