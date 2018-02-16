@@ -148,6 +148,8 @@ SoftwareImageDecodeCacheUtils::GenerateCacheEntryFromCandidate(
 SoftwareImageDecodeCacheUtils::CacheKey
 SoftwareImageDecodeCacheUtils::CacheKey::FromDrawImage(const DrawImage& image,
                                                        SkColorType color_type) {
+  DCHECK(!image.paint_image().GetSkImage()->isTextureBacked());
+
   const PaintImage::FrameKey frame_key = image.frame_key();
 
   const SkSize& scale = image.scale();

@@ -1660,6 +1660,8 @@ GpuImageDecodeCache::ImageData* GpuImageDecodeCache::GetImageDataForDrawImage(
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::GetImageDataForDrawImage");
   lock_.AssertAcquired();
+  DCHECK(!draw_image.paint_image().GetSkImage()->isTextureBacked());
+
   auto found_in_use =
       in_use_cache_.find(InUseCacheKey::FromDrawImage(draw_image));
   if (found_in_use != in_use_cache_.end())

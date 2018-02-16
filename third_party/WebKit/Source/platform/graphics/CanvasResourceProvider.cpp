@@ -318,6 +318,9 @@ CanvasResourceProvider::CanvasImageProvider::GetDecodedDrawImage(
     const cc::DrawImage& draw_image) {
   auto scoped_decoded_image =
       playback_image_provider_.GetDecodedDrawImage(draw_image);
+  if (!scoped_decoded_image.needs_unlock())
+    return scoped_decoded_image;
+
   if (!scoped_decoded_image.decoded_image().is_budgeted()) {
     // If we have exceeded the budget, ReleaseLockedImages any locked decodes.
     ReleaseLockedImages();
