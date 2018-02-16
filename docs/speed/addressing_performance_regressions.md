@@ -19,111 +19,117 @@ who you can cc on a performance bug if you have questions.
 
 ## Understanding the bisect results
 
-The bisect bot spits out a comment on the bug that looks like this:
+### The bug comment
 
-```
-=== BISECT JOB RESULTS ===
-Perf regression found with culprit
+The bisect service spits out a comment on the bug that looks like this:
 
-Suspected Commit
-Author : Your Name
-Commit : 15092e9195954cbc331cd58e344d0895fe03d0cd
-Date : Wed Jun 14 03:09:47 2017
-Subject: Your CL Description.
+> **📍 Found significant differences after each of 2 commits.**<br>
+> https://pinpoint-dot-chromeperf.appspot.com/job/148a8d4e840000
+>
+> **Add smcgruer as an animations OWNER** by flackr@chromium.org<br>
+> https://chromium.googlesource.com/chromium/src/+/b091c264862d26ac12d932e84eef7bd5f674e62b
+>
+> **Roll src/third_party/depot_tools/ 0f7b2007a..fd4ad2416 (1 commit)**
+> by depot-tools-roller@chromium.org<br>
+> https://chromium.googlesource.com/chromium/src/+/14fc99e3fd3614096caab7c7a8362edde8327a5d
+> 
+> Understanding performance regressions:<br>
+> &nbsp;&nbsp;http://g.co/ChromePerformanceRegressions
 
-Bisect Details
-Configuration: mac_pro_perf_bisect
-Benchmark : system_health.common_desktop
-Metric : timeToFirstContentfulPaint_avg/load_search/load_search_taobao
-Change : 15.25% | 1010.02 -> 1164.04
+The bug comment gives a summary of that commits that caused improvements or
+regressions. For more details, click the link at the beginning of the comment
+to go to the Pinpoint Job details page.
 
-Revision Result N
-chromium@479147 1010.02 +- 1535.41 14 good
-chromium@479209 699.332 +- 1282.01 6 good
-chromium@479240 383.617 +- 917.038 6 good
-chromium@479255 649.186 +- 1896.26 14 good
-chromium@479262 788.828 +- 1897.91 14 good
-chromium@479268 880.727 +- 2235.29 21 good
-chromium@479269 886.511 +- 1150.91 6 good
-chromium@479270 1164.04 +- 979.746 14 bad <--
+### The Job details page
 
-To Run This Test
-src/tools/perf/run_benchmark -v --browser=release --output-format=chartjson --upload-results --pageset-repeat=1 --also-run-disabled-tests --story-filter=load.search.taobao system_health.common_desktop
-```
+Clicking the Pinpoint link in the bug comment brings you to the Job details
+page.
 
-There's a lot of information packed in that bug comment! Here's a breakdown:
+![Pinpoint Job page](images/pinpoint-job-page.png)
 
-  * **What regressed exactly?** The comment gives you several details:
-    * **The benchmark that regressed**: Under `Bisect Details`, you can see
-      `Benchmark :`. In this case, the `system_health.common_desktop`
-      benchmark regressed.
-    * **What platform did it regress on?** Under `Configuration`, you can find
-      some details on the bot that regressed. In this example, it is a Mac Pro
-      laptop.
-    * **How do I run that locally?** Follow the instructions under
-      `To Run This Test`. But be aware that if it regressed on Android and
-      you're developing on Windows, you may not be able to reproduce locally.
-      (See [Debugging regressions](#Debugging-regressions) below)
-    * **What is this testing?** Generally the metric
-      (`timeToFirstContentfulPaint_avg`) gives some information. If you're not
-      familiar, you can cc the [benchmark owner](https://docs.google.com/spreadsheets/d/1xaAo0_SU3iDfGdqDJZX_jRV0QtkufwHUKH3kQKF3YQs/edit#gid=0)
-      to ask for help.
-    * **How severe is this regression?** There are different axes on which to
-      answer that question:
-      * **How much did performance regress?** The bisect bot answers this both
-        in relative terms (`Change : 15.25%`) and absolute terms
-        (`1010.02 -> 1164.04`). To understand the absolute terms, you'll need
-        to look at the units on the performance graphs linked in comment #1
-        of the bug (`https://chromeperf.appspot.com/group_report?bug_id=XXX`).
-        In this example, the units are milliseconds; the time to load taobao
-        regressed from ~1.02 second to 1.16 seconds.
-      * **How widespread is the regression?** The graphs linked in comment #1
-        of the bug (`https://chromeperf.appspot.com/group_report?bug_id=XXX`)
-        will give you an idea how widespread the regression is. The `Bot`
-        column shows all the different bots the regression occurred on, and the
-        `Test` column shows the metrics it regressed on. Often, the same metric
-        is gathered on many different web pages. If you see a long list of
-        pages, it's likely that the regression affects most pages; if it's
-        short maybe your regression is an edge case.
+Down the left you can see some details about the bisect configuration, including
+the benchmark (`loading.desktop`) and story (`Pantip`) that ran, the bot it ran
+on (`chromium-rel-mac11-pro`), and the metric that was measured
+(`cpuTimeToFirstMeaningfulPaint`). If you're not familiar with the benchmark or
+metric, you can cc the
+[benchmark owner](https://docs.google.com/spreadsheets/d/1xaAo0_SU3iDfGdqDJZX_jRV0QtkufwHUKH3kQKF3YQs/edit#gid=0)
+to ask for help.
+
+The graph in the middle of the page shows a summary of the commits that were
+tested across the x-axis and their results on the y-axis. The dots show the
+medians, and the bars show the min and max. These can be used to estimate the
+size of the regression. The units are not available on this page, but are on the
+performance graphs linked on the bug in comment #1.
+
+Click the `+` button in the bottom-right corner of the page to test a patch with
+the current configuration.
+
+### The alerts page
+
+Comment 1 on the bug will have a link to the perf dashboard graphs for the
+regression. (`https://chromeperf.appspot.com/group_report?bug_id=XXX`)
+
+![Dashboard Alerts page](images/dashboard-alerts-page.png)
+
+The graphs will give you an idea how widespread the regression is. The `Bot`
+column shows all the different bots the regression occurred on, and the
+`Test` column shows the metrics it regressed on. Often, the same metric
+is gathered on many different web pages. If you see a long list of
+pages, it's likely that the regression affects most pages; if it's
+short, maybe your regression is an edge case. The size of the regressions on
+each bot are also in the table in both relative and absolute terms.
 
 ## Debugging regressions
 
-  * **How do I run the test locally???** Follow the instructions under
-    `To Run This Test` in the bisect comment. But be aware that regressions
-    are often hardware and/or platform-specific.
-  * **What do I do if I don't have the right hardware to test locally?** If
-    you don't have a local machine that matches the specs of the hardware that
-    regressed, you can run a perf tryjob on the same lab machines that ran the
-    bisect that blamed your CL.
-    [Here are the instructions for perf tryjobs](perf_trybots.md).
-    Drop the `perf_bisect` from the bot name and substitute dashes for
-    underscores to get the trybot name (`mac_pro_perf_bisect` -> `mac_pro`
-    in the example above).
-  * **Can I get a trace?** For most metrics, yes. Here are the steps:
-    1. Click on the `All graphs for this bug` link in comment #1. It should
-       look like this:
-       `https://chromeperf.appspot.com/group_report?bug_id=XXXX`
-    2. Select a bot/test combo that looks like what the bisect bot originally
-       caught. You might want to look through various regressions for a really
-       large increase.
-    3. On the graph, click on the exclamation point icon at the regression, and
-       a tooltip comes up. There is a "trace" link in the tooltip, click it to
-       open a the trace that was recorded during the performance test.
-  * **Wait, what's a trace?** See the
-    [documentation on tracing](https://www.chromium.org/developers/how-tos/trace-event-profiling-tool)
-    to learn how to use traces to debug performance issues.
-  * **Are there debugging tips specific to certain benchmarks?**
-    * **[Memory](https://chromium.googlesource.com/chromium/src/+/master/docs/memory-infra/memory_benchmarks.md)**
-    * **[Android binary size](apk_size_regressions.md)**
+### How do I run the test?
+
+It's best to [run a perf tryjob](perf_trybots.md), since the machines in the lab
+are set up to match the device and software configs as the perf waterfall,
+making the regression more likely to reproduce. From the Pinpoint Job page,
+clicking the `+` button in the bottom-right corner to test a patch with the
+current configuration.
+
+You can also run locally:
+```
+src$ tools/perf/run_benchmark benchmark_name --story-filter story_name
+```
+
+### Can I get a trace?
+
+For most metrics, yes. Here are the steps:
+
+1. Click on the `All graphs for this bug` link in comment #1. It should
+   look like this:
+   `https://chromeperf.appspot.com/group_report?bug_id=XXXX`
+
+2. Select a bot/test combo that looks like what the bisect bot originally
+   caught. You might want to look through various regressions for a really
+   large increase.
+
+3. On the graph, click on the exclamation point icon at the regression, and
+   a tooltip comes up. There is a "trace" link in the tooltip, click it to
+   open a the trace that was recorded during the performance test.
+
+4. There is also a "Request Debug Trace" button, which kicks off a tryjob with
+   all of the debug trace categories enabled.
+
+### Wait, what's a trace?
+
+See the
+[documentation on tracing](https://www.chromium.org/developers/how-tos/trace-event-profiling-tool)
+to learn how to use traces to debug performance issues.
+
+### Are there debugging tips specific to certain benchmarks?
+
+* [Memory](https://chromium.googlesource.com/chromium/src/+/master/docs/memory-infra/memory_benchmarks.md)
+* [Android binary size](apk_size_regressions.md)
 
 ## If you don't believe your CL could be the cause
 
-*** promo
-Please remember that our performance tests exist to catch unexpected
+> Please remember that our performance tests exist to catch unexpected
 regressions. Often, the tests catch performance problems the CL author was
 not aware of. Please look at the data carefully and understand what the test
 is measuring before concluding that your CL is not related.
-***
 
 There are some clear reasons to believe the bisect bot made a mistake:
 
