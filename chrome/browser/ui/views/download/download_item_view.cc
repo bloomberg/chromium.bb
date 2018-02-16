@@ -183,6 +183,9 @@ DownloadItemView::DownloadItemView(DownloadItem* download_item,
   download()->AddObserver(this);
   set_context_menu_controller(this);
 
+  dropdown_button_->SetAccessibleName(l10n_util::GetStringUTF16(
+      IDS_DOWNLOAD_ITEM_DROPDOWN_BUTTON_ACCESSIBLE_TEXT));
+
   dropdown_button_->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(kDropdownBorderWidth)));
   dropdown_button_->set_has_ink_drop_action_on_click(false);

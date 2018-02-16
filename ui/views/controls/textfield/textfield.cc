@@ -38,6 +38,7 @@
 #include "ui/gfx/selection_bound.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/focusable_border.h"
@@ -270,6 +271,7 @@ Textfield::Textfield()
       selection_background_color_(SK_ColorBLUE),
       placeholder_text_draw_flags_(gfx::Canvas::DefaultCanvasTextAlignment()),
       invalid_(false),
+      label_ax_id_(0),
       text_input_type_(ui::TEXT_INPUT_TYPE_TEXT),
       text_input_flags_(0),
       performing_user_action_(false),
@@ -314,6 +316,11 @@ Textfield::~Textfield() {
     // The textfield should have been blurred before destroy.
     DCHECK(this != GetInputMethod()->GetTextInputClient());
   }
+}
+
+void Textfield::SetAssociatedLabel(Label* label) {
+  label_ax_id_ = label->GetViewAccessibility().GetUniqueId().Get();
+  accessible_name_ = label->text();
 }
 
 void Textfield::SetReadOnly(bool read_only) {
@@ -937,6 +944,11 @@ void Textfield::OnDragDone() {
 
 void Textfield::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kTextField;
+  if (label_ax_id_) {
+    node_data->AddIntListAttribute(ax::mojom::IntListAttribute::kLabelledbyIds,
+                                   {label_ax_id_});
+  }
+
   node_data->SetName(accessible_name_);
   // Editable state indicates support of editable interface, and is always set
   // for a textfield, even if disabled or readonly.

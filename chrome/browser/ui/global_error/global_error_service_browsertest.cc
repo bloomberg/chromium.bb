@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/global_error/global_error.h"
@@ -42,10 +43,10 @@ class BubbleViewError : public GlobalErrorWithStandardBubble {
     return std::vector<base::string16>();
   }
   base::string16 GetBubbleViewAcceptButtonLabel() override {
-    return base::string16();
+    return base::ASCIIToUTF16("OK");
   }
   base::string16 GetBubbleViewCancelButtonLabel() override {
-    return base::string16();
+    return base::ASCIIToUTF16("Cancel");
   }
   void OnBubbleViewDidClose(Browser* browser) override {
     EXPECT_TRUE(browser);

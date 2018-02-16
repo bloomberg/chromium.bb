@@ -95,7 +95,8 @@ class ChromeLauncherController
   // Creates a new app item on the shelf for |item_delegate|.
   ash::ShelfID CreateAppLauncherItem(
       std::unique_ptr<ash::ShelfItemDelegate> item_delegate,
-      ash::ShelfItemStatus status);
+      ash::ShelfItemStatus status,
+      const base::string16& title = base::string16());
 
   // Returns the shelf item with the given id, or null if |id| isn't found.
   const ash::ShelfItem* GetItem(const ash::ShelfID& id) const;
@@ -326,7 +327,8 @@ class ChromeLauncherController
       std::unique_ptr<ash::ShelfItemDelegate> item_delegate,
       ash::ShelfItemStatus status,
       int index,
-      ash::ShelfItemType shelf_item_type);
+      ash::ShelfItemType shelf_item_type,
+      const base::string16& title = base::string16());
 
   // Create the Chrome browser shortcut ShelfItem.
   void CreateBrowserShortcutLauncherItem();

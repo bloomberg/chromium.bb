@@ -294,9 +294,10 @@ void ChromeLauncherController::Init() {
 
 ash::ShelfID ChromeLauncherController::CreateAppLauncherItem(
     std::unique_ptr<ash::ShelfItemDelegate> item_delegate,
-    ash::ShelfItemStatus status) {
+    ash::ShelfItemStatus status,
+    const base::string16& title) {
   return InsertAppLauncherItem(std::move(item_delegate), status,
-                               model_->item_count(), ash::TYPE_APP);
+                               model_->item_count(), ash::TYPE_APP, title);
 }
 
 const ash::ShelfItem* ChromeLauncherController::GetItem(
@@ -1078,7 +1079,8 @@ ash::ShelfID ChromeLauncherController::InsertAppLauncherItem(
     std::unique_ptr<ash::ShelfItemDelegate> item_delegate,
     ash::ShelfItemStatus status,
     int index,
-    ash::ShelfItemType shelf_item_type) {
+    ash::ShelfItemType shelf_item_type,
+    const base::string16& title) {
   CHECK(item_delegate);
   CHECK(!GetItem(item_delegate->shelf_id()));
   // Ash's ShelfWindowWatcher handles app panel windows separately.
@@ -1087,6 +1089,7 @@ ash::ShelfID ChromeLauncherController::InsertAppLauncherItem(
   item.status = status;
   item.type = shelf_item_type;
   item.id = item_delegate->shelf_id();
+  item.title = title;
   // Set the delegate first to avoid constructing one in ShelfItemAdded.
   model_->SetShelfItemDelegate(item.id, std::move(item_delegate));
   model_->AddAt(index, item);

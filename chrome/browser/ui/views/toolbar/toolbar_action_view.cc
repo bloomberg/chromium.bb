@@ -124,6 +124,7 @@ content::WebContents* ToolbarActionView::GetCurrentWebContents() const {
 
 void ToolbarActionView::UpdateState() {
   content::WebContents* web_contents = GetCurrentWebContents();
+  SetAccessibleName(view_controller_->GetAccessibleName(web_contents));
   if (SessionTabHelper::IdForTab(web_contents) < 0)
     return;
 
@@ -144,7 +145,6 @@ void ToolbarActionView::UpdateState() {
     SetImage(views::Button::STATE_NORMAL, icon);
 
   SetTooltipText(view_controller_->GetTooltip(web_contents));
-  SetAccessibleName(view_controller_->GetAccessibleName(web_contents));
 
   Layout();  // We need to layout since we may have added an icon as a result.
   SchedulePaint();

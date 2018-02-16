@@ -40,6 +40,7 @@ class TimeDelta;
 
 namespace views {
 
+class Label;
 class MenuRunner;
 class TextfieldController;
 
@@ -218,8 +219,14 @@ class VIEWS_EXPORT Textfield : public View,
   // Clears Edit history.
   void ClearEditHistory();
 
-  // Set the accessible name of the text field.
+  // Set the accessible name of the text field. If the textfield has a visible
+  // label, use SetAssociatedLabel() instead.
   void SetAccessibleName(const base::string16& name);
+
+  // If the accessible name should be the same as the label text, use this. It
+  // will set both the accessible label relationship and the accessible name
+  // from the contents of the label.
+  void SetAssociatedLabel(Label* label);
 
   // Set extra spacing placed between glyphs; used for obscured text styling.
   void SetGlyphSpacing(int spacing);
@@ -503,6 +510,9 @@ class VIEWS_EXPORT Textfield : public View,
   // True when the contents are deemed unacceptable and should be indicated as
   // such.
   bool invalid_;
+
+  // The unique id for the associated label's accessible object.
+  int32_t label_ax_id_;
 
   // The accessible name of the text field.
   base::string16 accessible_name_;

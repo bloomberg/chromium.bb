@@ -106,10 +106,14 @@ struct AX_EXPORT AXNodeData {
   void AddStringListAttribute(ax::mojom::StringListAttribute attribute,
                               const std::vector<std::string>& value);
 
-  // Convenience functions, mainly for writing unit tests.
+  // Convenience functions.
   // Equivalent to AddStringAttribute(ATTR_NAME, name).
   void SetName(const std::string& name);
   void SetName(const base::string16& name);
+  // Equivalent to AddIntAttribute(ax::mojom::IntAttribute::NameFrom,
+  //                    ax::mojom::NameFrom::kAttributeExplicitlyEmpty)
+  // Allows nameless objects to pass accessibility checks.
+  void SetNameExplicitlyEmpty();
   // Equivalent to AddStringAttribute(ATTR_VALUE, value).
   void SetValue(const std::string& value);
   void SetValue(const base::string16& value);

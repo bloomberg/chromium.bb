@@ -465,6 +465,10 @@ void AXNodeData::SetName(const base::string16& name) {
   SetName(base::UTF16ToUTF8(name));
 }
 
+void AXNodeData::SetNameExplicitlyEmpty() {
+  SetNameFrom(ax::mojom::NameFrom::kAttributeExplicitlyEmpty);
+}
+
 void AXNodeData::SetValue(const std::string& value) {
   for (size_t i = 0; i < string_attributes.size(); ++i) {
     if (string_attributes[i].first == ax::mojom::StringAttribute::kValue) {
