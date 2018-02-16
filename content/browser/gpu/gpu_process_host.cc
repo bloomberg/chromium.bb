@@ -1297,7 +1297,7 @@ void GpuProcessHost::RecordProcessCrash() {
           !disable_crash_limit) {
         // SwiftShader is too unstable to use. Disable it for current session.
         gpu_enabled_ = false;
-        GpuDataManagerImpl::GetInstance()->DisableSwiftShader();
+        GpuDataManagerImpl::GetInstance()->BlockSwiftShader();
       }
     } else {
       int count = static_cast<int>(

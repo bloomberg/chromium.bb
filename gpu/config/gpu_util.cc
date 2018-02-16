@@ -202,6 +202,34 @@ GpuFeatureInfo ComputeGpuFeatureInfoWithHardwareAccelerationDisabled() {
   return gpu_feature_info;
 }
 
+GpuFeatureInfo ComputeGpuFeatureInfoWithNoGpuProcess() {
+  GpuFeatureInfo gpu_feature_info;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS] =
+      kGpuFeatureStatusSoftware;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_COMPOSITING] =
+      kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL] =
+      kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_FLASH3D] =
+      kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_FLASH_STAGE3D] =
+      kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE] =
+      kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE] =
+      kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
+      kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL2] =
+      kGpuFeatureStatusDisabled;
+#if DCHECK_IS_ON()
+  for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
+    DCHECK_NE(kGpuFeatureStatusUndefined, gpu_feature_info.status_values[ii]);
+  }
+#endif
+  return gpu_feature_info;
+}
+
 GpuFeatureInfo ComputeGpuFeatureInfoForSwiftShader() {
   GpuFeatureInfo gpu_feature_info;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS] =

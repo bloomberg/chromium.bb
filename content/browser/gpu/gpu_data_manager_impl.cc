@@ -84,9 +84,9 @@ void GpuDataManagerImpl::DisableHardwareAcceleration() {
   private_->DisableHardwareAcceleration();
 }
 
-void GpuDataManagerImpl::DisableSwiftShader() {
+void GpuDataManagerImpl::BlockSwiftShader() {
   base::AutoLock auto_lock(lock_);
-  private_->DisableSwiftShader();
+  private_->BlockSwiftShader();
 }
 
 bool GpuDataManagerImpl::HardwareAccelerationEnabled() const {

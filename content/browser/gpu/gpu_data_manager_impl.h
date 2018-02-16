@@ -158,7 +158,7 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   // Called when GPU process initialization failed.
   void OnGpuProcessInitFailure();
 
-  void DisableSwiftShader();
+  void BlockSwiftShader();
 
  private:
   friend class GpuDataManagerImplPrivate;

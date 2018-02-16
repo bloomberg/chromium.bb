@@ -54,7 +54,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void UnblockDomainFrom3DAPIs(const GURL& url);
   void DisableHardwareAcceleration();
   bool HardwareAccelerationEnabled() const;
-  void DisableSwiftShader();
+  void BlockSwiftShader();
 
   void UpdateGpuInfo(const gpu::GPUInfo& gpu_info);
   void UpdateGpuFeatureInfo(const gpu::GpuFeatureInfo& gpu_feature_info);
@@ -144,6 +144,9 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   // Notify all observers whenever there is a GPU info update.
   void NotifyGpuInfoUpdate();
 
+  // Called when gpu process becomes blocked.
+  void OnGpuProcessBlocked();
+
   // Helper to extract the domain from a given URL.
   std::string GetDomainFromURL(const GURL& url) const;
 
@@ -178,8 +181,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   // the --disable-gpu commandline switch.
   bool card_disabled_;
 
-  // SwiftShader force-disabled due to GPU crashes using SwiftShader.
-  bool swiftshader_disabled_;
+  // SwiftShader force-blocked due to GPU crashes using SwiftShader.
+  bool swiftshader_blocked_;
 
   // We disable histogram stuff in testing, especially in unit tests because
   // they cause random failures.
