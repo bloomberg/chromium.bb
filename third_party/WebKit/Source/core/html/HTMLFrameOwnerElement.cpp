@@ -329,6 +329,13 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
     request.SetCacheMode(mojom::FetchCacheMode::kBypassCache);
   }
 
+  // Plug-ins should not load via service workers as plug-ins may have their
+  // own origin checking logic that may get confused if service workers respond
+  // with resources from another origin.
+  // https://w3c.github.io/ServiceWorker/#implementer-concerns
+  if (IsPlugin())
+    request.SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kNone);
+
   child_frame->Loader().Load(FrameLoadRequest(&GetDocument(), request),
                              child_load_type);
   return true;
