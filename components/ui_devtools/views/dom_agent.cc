@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/ui_devtools/devtools_server.h"
 #include "components/ui_devtools/views/overlay_agent.h"
+#include "components/ui_devtools/views/root_element.h"
 #include "components/ui_devtools/views/ui_element.h"
 #include "components/ui_devtools/views/view_element.h"
 #include "components/ui_devtools/views/widget_element.h"
@@ -536,7 +537,7 @@ int DOMAgent::FindElementIdTargetedByPoint(
       views::Widget::GetWidgetForNativeWindow(targeted_window);
   if (!targeted_widget) {
 #if defined(USE_AURA)
-    return window_element_root_->FindUIElementIdForBackendElement<aura::Window>(
+    return element_root_->FindUIElementIdForBackendElement<aura::Window>(
         targeted_window);
 #else
     return 0;
@@ -554,7 +555,7 @@ int DOMAgent::FindElementIdTargetedByPoint(
   views::View* targeted_view =
       root_view->GetEventHandlerForPoint(point_in_targeted_window);
   DCHECK(targeted_view);
-  return window_element_root_->FindUIElementIdForBackendElement<views::View>(
+  return element_root_->FindUIElementIdForBackendElement<views::View>(
       targeted_view);
 }
 
@@ -607,7 +608,7 @@ void DOMAgent::ShowDistancesInHighlightOverlay(int pinned_id, int element_id) {
 int DOMAgent::GetParentIdOfNodeId(int node_id) const {
   DCHECK(node_id_to_ui_element_.count(node_id));
   const UIElement* element = node_id_to_ui_element_.at(node_id);
-  if (element->parent() && element->parent() != window_element_root_.get())
+  if (element->parent() && element->parent() != element_root_.get())
     return element->parent()->node_id();
   return 0;
 }
@@ -764,20 +765,17 @@ std::unique_ptr<DOM::Node> DOMAgent::BuildInitialTree() {
   is_building_tree_ = true;
   std::unique_ptr<Array<DOM::Node>> children = Array<DOM::Node>::create();
 
-  // TODO(thanhph): Root of UIElement tree shoudn't be WindowElement
-  // but maybe a new different element type.
-  window_element_root_ =
-      std::make_unique<WindowElement>(nullptr, this, nullptr);
+  element_root_ = base::MakeUnique<RootElement>(this);
 
   for (aura::Window* window : root_windows()) {
     UIElement* window_element =
-        new WindowElement(window, this, window_element_root_.get());
+        new WindowElement(window, this, element_root_.get());
 
     children->addItem(BuildTreeForUIElement(window_element));
-    window_element_root_->AddChild(window_element);
+    element_root_->AddChild(window_element);
   }
-  std::unique_ptr<DOM::Node> root_node = BuildNode(
-      "root", nullptr, std::move(children), window_element_root_->node_id());
+  std::unique_ptr<DOM::Node> root_node =
+      BuildNode("root", nullptr, std::move(children), element_root_->node_id());
   is_building_tree_ = false;
   return root_node;
 }
@@ -869,7 +867,7 @@ void DOMAgent::Reset() {
   is_building_tree_ = false;
   render_text_.reset();
   layer_for_highlighting_.reset();
-  window_element_root_.reset();
+  element_root_.reset();
   node_id_to_ui_element_.clear();
   observers_.Clear();
 }

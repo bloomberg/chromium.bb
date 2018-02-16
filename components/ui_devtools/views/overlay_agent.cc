@@ -45,7 +45,7 @@ protocol::Response OverlayAgent::hideHighlight() {
 void OverlayAgent::OnMouseEvent(ui::MouseEvent* event) {
   // Make sure the element tree has been populated before processing
   // mouse events.
-  if (!dom_agent_->window_element_root())
+  if (!dom_agent_->element_root())
     return;
 
   // Show parent of the pinned element with id |pinned_id_| when mouse scrolls
@@ -92,7 +92,7 @@ void OverlayAgent::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void OverlayAgent::OnKeyEvent(ui::KeyEvent* event) {
-  if (!dom_agent_->window_element_root())
+  if (!dom_agent_->element_root())
     return;
 
   // Exit inspect mode by pressing ESC key.

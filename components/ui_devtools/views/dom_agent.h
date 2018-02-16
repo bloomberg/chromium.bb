@@ -70,7 +70,7 @@ class DOMAgent : public UiDevToolsBaseAgent<protocol::DOM::Metainfo>,
   void AddObserver(DOMAgentObserver* observer);
   void RemoveObserver(DOMAgentObserver* observer);
   UIElement* GetElementFromNodeId(int node_id);
-  UIElement* window_element_root() const { return window_element_root_.get(); };
+  UIElement* element_root() const { return element_root_.get(); };
   const std::vector<gfx::NativeWindow>& root_windows() const {
     return root_windows_;
   };
@@ -127,7 +127,7 @@ class DOMAgent : public UiDevToolsBaseAgent<protocol::DOM::Metainfo>,
   bool show_size_on_canvas_ = false;
   HighlightRectsConfiguration highlight_rect_config_;
   bool is_swap_ = false;
-  std::unique_ptr<UIElement> window_element_root_;
+  std::unique_ptr<UIElement> element_root_;
   std::unordered_map<int, UIElement*> node_id_to_ui_element_;
 
   // TODO(thanhph): |layer_for_highlighting_| should be owned by the overlay
