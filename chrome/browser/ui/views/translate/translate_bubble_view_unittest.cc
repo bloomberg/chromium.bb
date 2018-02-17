@@ -103,6 +103,8 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
     return should_always_translate_;
   }
 
+  bool ShouldShowAlwaysTranslateShortcut() const override { return false; }
+
   void SetAlwaysTranslate(bool value) override {
     should_always_translate_ = value;
     set_always_translate_called_count_++;

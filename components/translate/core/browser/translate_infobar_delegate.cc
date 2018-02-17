@@ -25,27 +25,6 @@
 
 namespace translate {
 
-namespace {
-
-// Counts used to decide whether infobars should be shown.
-// Android and iOS implementations do not offer a drop down (for space reasons),
-// so we are more aggressive about showing the shortcut to never translate.
-// The "Always Translate" option is always shown on iOS and Android.
-#if defined(OS_ANDROID)
-const int kAlwaysTranslateMinCount = 1;
-const int kNeverTranslateMinCount = 1;
-#elif defined(OS_IOS)
-// The iOS implementation, like the Android implementation, shows the "Never
-// translate" infobar after two denials. There is an offset of one because on
-// Android the last event is not counted.
-const int kAlwaysTranslateMinCount = 1;
-const int kNeverTranslateMinCount = 2;
-#else
-const int kAlwaysTranslateMinCount = 3;
-const int kNeverTranslateMinCount = 3;
-#endif
-}  // namespace
-
 const base::Feature kTranslateCompactUI{"TranslateCompactUI",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -278,13 +257,6 @@ bool TranslateInfoBarDelegate::ShouldShowMessageInfoBarButton() {
   return !GetMessageInfoBarButtonText().empty();
 }
 
-bool TranslateInfoBarDelegate::ShouldShowNeverTranslateShortcut() {
-  DCHECK_EQ(translate::TRANSLATE_STEP_BEFORE_TRANSLATE, step_);
-  return !is_off_the_record_ &&
-      (prefs_->GetTranslationDeniedCount(original_language_code()) >=
-          kNeverTranslateMinCount);
-}
-
 bool TranslateInfoBarDelegate::ShouldShowAlwaysTranslateShortcut() {
 #if defined(OS_IOS)
   // On mobile, the option to always translate is shown after the translation.
@@ -293,9 +265,12 @@ bool TranslateInfoBarDelegate::ShouldShowAlwaysTranslateShortcut() {
   // On desktop, the option to always translate is shown before the translation.
   DCHECK_EQ(translate::TRANSLATE_STEP_BEFORE_TRANSLATE, step_);
 #endif
-  return !is_off_the_record_ &&
-      (prefs_->GetTranslationAcceptedCount(original_language_code()) >=
-          kAlwaysTranslateMinCount);
+  return ui_delegate_.ShouldShowAlwaysTranslateShortcut();
+}
+
+bool TranslateInfoBarDelegate::ShouldShowNeverTranslateShortcut() {
+  DCHECK_EQ(translate::TRANSLATE_STEP_BEFORE_TRANSLATE, step_);
+  return ui_delegate_.ShouldShowNeverTranslateShortcut();
 }
 
 #if defined(OS_IOS)

@@ -127,6 +127,14 @@ class TranslateUIDelegate {
   // Returns true if the Always Translate checkbox should be checked by default.
   bool ShouldAlwaysTranslateBeCheckedByDefault();
 
+  // Returns true if the UI should offer the user a shortcut to always translate
+  // the language, when we think the user wants that functionality.
+  bool ShouldShowAlwaysTranslateShortcut();
+
+  // Returns true if the UI should offer the user a shortcut to never translate
+  // the language, when we think the user wants that functionality.
+  bool ShouldShowNeverTranslateShortcut();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(TranslateUIDelegateTest, GetPageHost);
 

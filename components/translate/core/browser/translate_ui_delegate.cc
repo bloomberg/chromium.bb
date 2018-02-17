@@ -328,6 +328,18 @@ bool TranslateUIDelegate::ShouldAlwaysTranslateBeCheckedByDefault() {
   return ShouldAlwaysTranslate();
 }
 
+bool TranslateUIDelegate::ShouldShowAlwaysTranslateShortcut() {
+  return !translate_driver_->IsIncognito() &&
+         prefs_->GetTranslationAcceptedCount(GetOriginalLanguageCode()) >=
+             kAlwaysTranslateShortcutMinimumAccepts;
+}
+
+bool TranslateUIDelegate::ShouldShowNeverTranslateShortcut() {
+  return !translate_driver_->IsIncognito() &&
+         prefs_->GetTranslationDeniedCount(GetOriginalLanguageCode()) >=
+             kNeverTranslateShortcutMinimumDenials;
+}
+
 void TranslateUIDelegate::SetAlwaysTranslate(bool value) {
   const std::string& original_lang = GetOriginalLanguageCode();
   const std::string& target_lang = GetTargetLanguageCode();
