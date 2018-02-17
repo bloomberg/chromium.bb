@@ -8,7 +8,7 @@
     Constructor(USVString url),
     ConstructorCallWith=ScriptState,
     RuntimeEnabled=CSSTypedOM,
-    Exposed=(Window,PaintWorklet),
+    Exposed=(Window,LayoutWorklet,PaintWorklet),
     RaisesException=Constructor
 ] interface CSSURLImageValue : CSSImageValue {
     readonly attribute USVString url;

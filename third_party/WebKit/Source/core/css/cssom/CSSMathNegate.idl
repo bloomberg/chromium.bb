@@ -7,7 +7,7 @@
 [
   Constructor(CSSNumberish arg),
   RuntimeEnabled=CSSTypedOM,
-  Exposed=(Window,PaintWorklet)
+  Exposed=(Window,LayoutWorklet,PaintWorklet)
 ] interface CSSMathNegate : CSSMathValue {
   readonly attribute CSSNumberish value;
 };

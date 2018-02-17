@@ -11,7 +11,7 @@ enum CSSResourceState {
 
 [
     RuntimeEnabled=CSSTypedOM,
-    Exposed=(Window,PaintWorklet)
+    Exposed=(Window,LayoutWorklet,PaintWorklet)
 ] interface CSSResourceValue : CSSStyleValue {
     readonly attribute CSSResourceState state;
 };

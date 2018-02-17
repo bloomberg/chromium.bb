@@ -4,7 +4,7 @@
 
 [
   RuntimeEnabled=CSSTypedOM,
-  Exposed=(Window,PaintWorklet)
+  Exposed=(Window,LayoutWorklet,PaintWorklet)
 ] enum CSSNumericBaseType {
     "length",
     "angle",
@@ -17,7 +17,7 @@
 
 // https://drafts.css-houdini.org/css-typed-om-1/#cssnumerictype
 [
-  Exposed(Window CSSTypedOM, PaintWorklet CSSTypedOM)
+  Exposed=(Window,LayoutWorklet,PaintWorklet)
 ] dictionary CSSNumericType {
     long length;
     long angle;

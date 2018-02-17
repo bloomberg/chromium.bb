@@ -9,7 +9,7 @@
   Constructor(double value, DOMString unit),
   RaisesException=Constructor,
   RuntimeEnabled=CSSTypedOM,
-  Exposed=(Window,PaintWorklet)
+  Exposed=(Window,LayoutWorklet,PaintWorklet)
 ] interface CSSUnitValue : CSSNumericValue {
   [EnforceRange] attribute double value;
   readonly attribute DOMString unit;

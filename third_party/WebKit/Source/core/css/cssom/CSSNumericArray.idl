@@ -6,7 +6,7 @@
 // https://drafts.css-houdini.org/css-typed-om-1/#cssmathsum
 [
   RuntimeEnabled=CSSTypedOM,
-  Exposed=(Window,PaintWorklet),
+  Exposed=(Window,LayoutWorklet,PaintWorklet),
   RaisesException=Constructor
 ] interface CSSNumericArray {
   readonly attribute unsigned long length;

@@ -7,7 +7,7 @@
 [
     Constructor(DOMString variable, optional CSSUnparsedValue fallback),
     RuntimeEnabled=CSSTypedOM,
-    Exposed=(Window,PaintWorklet),
+    Exposed=(Window,LayoutWorklet,PaintWorklet),
     RaisesException=Constructor,
     ImplementedAs=CSSStyleVariableReferenceValue
 ] interface CSSVariableReferenceValue {

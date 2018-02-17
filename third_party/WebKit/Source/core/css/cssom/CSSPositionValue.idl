@@ -8,7 +8,7 @@
 [
   Constructor(CSSNumericValue x, CSSNumericValue y),
   RuntimeEnabled=CSSTypedOM,
-  Exposed=(Window,PaintWorklet),
+  Exposed=(Window,LayoutWorklet,PaintWorklet),
   RaisesException=Constructor
 ] interface CSSPositionValue : CSSStyleValue {
   [RaisesException=Setter] attribute CSSNumericValue x;
