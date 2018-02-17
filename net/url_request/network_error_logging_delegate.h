@@ -22,14 +22,17 @@ class ReportingService;
 
 class NET_EXPORT NetworkErrorLoggingDelegate {
  public:
-  // The details of a network error that are included in an NEL report.
+  // The details of a network request that are included in an NEL report.
   //
   // See http://wicg.github.io/network-error-logging/#dfn-network-error-object
   // for details on the semantics of each field.
-  struct NET_EXPORT ErrorDetails {
-    ErrorDetails();
-    ErrorDetails(const ErrorDetails& other);
-    ~ErrorDetails();
+  struct NET_EXPORT RequestDetails {
+    RequestDetails();
+    RequestDetails(const RequestDetails& other);
+    ~RequestDetails();
+
+    bool IsHttpError() const;
+    bool RequestWasSuccessful() const;
 
     GURL uri;
     GURL referrer;
@@ -63,10 +66,10 @@ class NET_EXPORT NetworkErrorLoggingDelegate {
   virtual void OnHeader(const url::Origin& origin,
                         const std::string& value) = 0;
 
-  // Called when the network stack detects a network error.
+  // Called when a request to a monitored origin is complete.
   //
-  // |details| is the details of the network error.
-  virtual void OnNetworkError(const ErrorDetails& details) = 0;
+  // |details| is the details of the request.
+  virtual void OnRequest(const RequestDetails& details) = 0;
 
   // Removes all stored data associated with any origins matching
   // |origin_filter| (or all origins if null).

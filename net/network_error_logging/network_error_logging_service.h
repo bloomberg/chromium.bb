@@ -66,7 +66,7 @@ class NET_EXPORT NetworkErrorLoggingService
 
   void OnHeader(const url::Origin& origin, const std::string& value) override;
 
-  void OnNetworkError(const ErrorDetails& details) override;
+  void OnRequest(const RequestDetails& details) override;
 
   void RemoveBrowsingData(
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter) override;
@@ -118,7 +118,7 @@ class NET_EXPORT NetworkErrorLoggingService
   std::unique_ptr<const base::Value> CreateReportBody(
       const std::string& type,
       double sampling_fraction,
-      const ErrorDetails& details) const;
+      const RequestDetails& details) const;
 
   base::TickClock* tick_clock_;
 

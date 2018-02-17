@@ -1172,12 +1172,7 @@ void URLRequest::MaybeGenerateNetworkErrorLoggingReport() {
   // TODO(juliatuttle): Figure out whether we should be ignoring errors from
   // non-HTTPS origins.
 
-  // TODO(juliatuttle): Remove this and reconsider interface once there's a
-  // better story for reporting successes.
-  if (status().ToNetError() == OK)
-    return;
-
-  NetworkErrorLoggingDelegate::ErrorDetails details;
+  NetworkErrorLoggingDelegate::RequestDetails details;
 
   details.uri = url();
   details.referrer = GURL(referrer());
@@ -1201,7 +1196,7 @@ void URLRequest::MaybeGenerateNetworkErrorLoggingReport() {
       context()->reporting_service() &&
       context()->reporting_service()->RequestIsUpload(*this);
 
-  delegate->OnNetworkError(details);
+  delegate->OnRequest(details);
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 

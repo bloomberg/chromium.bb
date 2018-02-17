@@ -7219,7 +7219,7 @@ class TestNetworkErrorLoggingDelegate : public NetworkErrorLoggingDelegate {
   };
 
   const std::vector<Header>& headers() { return headers_; }
-  const std::vector<ErrorDetails>& errors() { return errors_; }
+  const std::vector<RequestDetails>& errors() { return errors_; }
 
   // NetworkErrorLoggingDelegate implementation:
 
@@ -7236,7 +7236,7 @@ class TestNetworkErrorLoggingDelegate : public NetworkErrorLoggingDelegate {
     headers_.push_back(header);
   }
 
-  void OnNetworkError(const ErrorDetails& details) override {
+  void OnRequest(const RequestDetails& details) override {
     errors_.push_back(details);
   }
 
@@ -7247,7 +7247,7 @@ class TestNetworkErrorLoggingDelegate : public NetworkErrorLoggingDelegate {
 
  private:
   std::vector<Header> headers_;
-  std::vector<ErrorDetails> errors_;
+  std::vector<RequestDetails> errors_;
 };
 
 std::unique_ptr<test_server::HttpResponse> SendNelHeader(
