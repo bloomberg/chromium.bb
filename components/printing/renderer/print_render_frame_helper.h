@@ -409,7 +409,8 @@ class PrintRenderFrameHelper
     bool CreatePreviewDocument(
         std::unique_ptr<PrepareFrameAndViewForPrint> prepared_frame,
         const std::vector<int>& pages,
-        SkiaDocumentType doc_type);
+        SkiaDocumentType doc_type,
+        int document_cookie);
 
     // Called after a page gets rendered. |page_time| is how long the
     // rendering took.
