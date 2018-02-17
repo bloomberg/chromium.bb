@@ -4,55 +4,127 @@
 
 #include "ui/message_center/public/mojo/notification_struct_traits.h"
 
+#include "mojo/common/time_struct_traits.h"
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "ui/gfx/image/mojo/image_skia_struct_traits.h"
+#include "ui/message_center/public/mojo/notifier_id_struct_traits.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
 
 namespace mojo {
 
 using message_center::mojom::NotificationDataView;
 using message_center::mojom::RichNotificationDataDataView;
+using message_center::NotificationItem;
+using message_center::ButtonInfo;
 using message_center::Notification;
 using message_center::RichNotificationData;
-using NotificationStructTraits =
-    StructTraits<NotificationDataView, Notification>;
+using NotificationItemStructTraits =
+    StructTraits<message_center::mojom::NotificationItemDataView,
+                 NotificationItem>;
+using ButtonInfoStructTraits =
+    StructTraits<message_center::mojom::ButtonInfoDataView, ButtonInfo>;
 using RichNotificationDataStructTraits =
     StructTraits<RichNotificationDataDataView, RichNotificationData>;
+using NotificationStructTraits =
+    StructTraits<NotificationDataView, Notification>;
 
 // static
-int RichNotificationDataStructTraits::progress(
-    const message_center::RichNotificationData& r) {
+bool NotificationItemStructTraits::Read(
+    message_center::mojom::NotificationItemDataView data,
+    message_center::NotificationItem* out) {
+  return data.ReadTitle(&out->title) && data.ReadMessage(&out->message);
+}
+
+// static
+gfx::ImageSkia ButtonInfoStructTraits::icon(
+    const message_center::ButtonInfo& b) {
+  return b.icon.AsImageSkia();
+}
+
+// static
+bool ButtonInfoStructTraits::Read(
+    message_center::mojom::ButtonInfoDataView data,
+    ButtonInfo* out) {
+  gfx::ImageSkia icon;
+  if (!data.ReadIcon(&icon))
+    return false;
+  out->icon = gfx::Image(icon);
+  return data.ReadTitle(&out->title) && data.ReadPlaceholder(&out->placeholder);
+}
+
+// static
+int RichNotificationDataStructTraits::priority(const RichNotificationData& r) {
+  return r.priority;
+}
+
+// static
+bool RichNotificationDataStructTraits::never_time_out(
+    const RichNotificationData& r) {
+  return r.never_timeout;
+}
+
+// static
+const base::Time& RichNotificationDataStructTraits::timestamp(
+    const RichNotificationData& r) {
+  return r.timestamp;
+}
+
+// static
+gfx::ImageSkia RichNotificationDataStructTraits::image(
+    const RichNotificationData& r) {
+  return r.image.AsImageSkia();
+}
+
+//  static
+gfx::ImageSkia RichNotificationDataStructTraits::small_image(
+    const RichNotificationData& r) {
+  return r.small_image.AsImageSkia();
+}
+
+// static
+const std::vector<NotificationItem>& RichNotificationDataStructTraits::items(
+    const RichNotificationData& r) {
+  return r.items;
+}
+
+// static
+int RichNotificationDataStructTraits::progress(const RichNotificationData& r) {
   return r.progress;
 }
 
 // static
 const base::string16& RichNotificationDataStructTraits::progress_status(
-    const message_center::RichNotificationData& r) {
+    const RichNotificationData& r) {
   return r.progress_status;
+}
+
+// static
+const std::vector<ButtonInfo>& RichNotificationDataStructTraits::buttons(
+    const RichNotificationData& r) {
+  return r.buttons;
 }
 
 // static
 bool RichNotificationDataStructTraits::
     should_make_spoken_feedback_for_popup_updates(
-        const message_center::RichNotificationData& r) {
+        const RichNotificationData& r) {
   return r.should_make_spoken_feedback_for_popup_updates;
 }
 
 // static
 bool RichNotificationDataStructTraits::clickable(
-    const message_center::RichNotificationData& r) {
+    const RichNotificationData& r) {
   return r.clickable;
 }
 
 // static
-bool RichNotificationDataStructTraits::pinned(
-    const message_center::RichNotificationData& r) {
+bool RichNotificationDataStructTraits::pinned(const RichNotificationData& r) {
   return r.pinned;
 }
 
 // static
 const base::string16& RichNotificationDataStructTraits::accessible_name(
-    const message_center::RichNotificationData& r) {
+    const RichNotificationData& r) {
   return r.accessible_name;
 }
 
@@ -66,13 +138,36 @@ std::string RichNotificationDataStructTraits::vector_small_image_id(
 
 // static
 SkColor RichNotificationDataStructTraits::accent_color(
-    const message_center::RichNotificationData& r) {
+    const RichNotificationData& r) {
   return r.accent_color;
+}
+
+// static
+message_center::SettingsButtonHandler
+RichNotificationDataStructTraits::settings_button_handler(
+    const RichNotificationData& r) {
+  return r.settings_button_handler;
+}
+
+//  static
+message_center::FullscreenVisibility
+RichNotificationDataStructTraits::fullscreen_visibility(
+    const RichNotificationData& r) {
+  return r.fullscreen_visibility;
 }
 
 // static
 bool RichNotificationDataStructTraits::Read(RichNotificationDataDataView data,
                                             RichNotificationData* out) {
+  out->priority = data.priority();
+  out->never_timeout = data.never_time_out();
+  gfx::ImageSkia image, small_image;
+  if (!data.ReadImage(&image))
+    return false;
+  out->image = gfx::Image(image);
+  if (!data.ReadSmallImage(&small_image))
+    return false;
+  out->small_image = gfx::Image(small_image);
   out->progress = data.progress();
   out->should_make_spoken_feedback_for_popup_updates =
       data.should_make_spoken_feedback_for_popup_updates();
@@ -89,8 +184,18 @@ bool RichNotificationDataStructTraits::Read(RichNotificationDataDataView data,
   }
 
   out->accent_color = data.accent_color();
-  return data.ReadProgressStatus(&out->progress_status) &&
-         data.ReadAccessibleName(&out->accessible_name);
+  return data.ReadTimestamp(&out->timestamp) && data.ReadItems(&out->items) &&
+         data.ReadButtons(&out->buttons) &&
+         data.ReadProgressStatus(&out->progress_status) &&
+         data.ReadAccessibleName(&out->accessible_name) &&
+         EnumTraits<message_center::mojom::SettingsButtonHandler,
+                    message_center::SettingsButtonHandler>::
+             FromMojom(data.settings_button_handler(),
+                       &out->settings_button_handler) &&
+         EnumTraits<message_center::mojom::FullscreenVisibility,
+                    message_center::FullscreenVisibility>::
+             FromMojom(data.fullscreen_visibility(),
+                       &out->fullscreen_visibility);
 }
 
 // static
@@ -131,6 +236,12 @@ const GURL& NotificationStructTraits::origin_url(const Notification& n) {
 }
 
 // static
+const message_center::NotifierId& NotificationStructTraits::notifier_id(
+    const Notification& n) {
+  return n.notifier_id();
+}
+
+// static
 const RichNotificationData& NotificationStructTraits::optional_fields(
     const Notification& n) {
   return n.rich_notification_data();
@@ -150,6 +261,7 @@ bool NotificationStructTraits::Read(NotificationDataView data,
          data.ReadMessage(&out->message_) &&
          data.ReadDisplaySource(&out->display_source_) &&
          data.ReadOriginUrl(&out->origin_url_) &&
+         data.ReadNotifierId(&out->notifier_id_) &&
          data.ReadOptionalFields(&out->optional_fields_);
 }
 

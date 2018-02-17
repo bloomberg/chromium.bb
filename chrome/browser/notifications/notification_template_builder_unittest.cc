@@ -475,11 +475,11 @@ TEST_F(NotificationTemplateBuilderTest, ListEntries) {
 
   notification->set_type(message_center::NOTIFICATION_TYPE_MULTIPLE);
   std::vector<message_center::NotificationItem> items;
-  items.emplace_back(L"title1", L"message1");
-  items.emplace_back(L"title2", L"message2");
-  items.emplace_back(L"title3", L"message3");
-  items.emplace_back(L"title4", L"message4");
-  items.emplace_back(L"title5", L"message5");  // Will be truncated.
+  items.push_back({L"title1", L"message1"});
+  items.push_back({L"title2", L"message2"});
+  items.push_back({L"title3", L"message3"});
+  items.push_back({L"title4", L"message4"});
+  items.push_back({L"title5", L"message5"});  // Will be truncated.
   notification->set_items(items);
 
   const wchar_t kExpectedXml[] =

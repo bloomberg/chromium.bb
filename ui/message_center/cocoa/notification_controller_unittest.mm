@@ -302,16 +302,16 @@ TEST_F(NotificationControllerTest, Image) {
 
 TEST_F(NotificationControllerTest, List) {
   message_center::RichNotificationData optional;
-  message_center::NotificationItem item1(
-      UTF8ToUTF16("First title"), UTF8ToUTF16("first message"));
+  message_center::NotificationItem item1{UTF8ToUTF16("First title"),
+                                         UTF8ToUTF16("first message")};
   optional.items.push_back(item1);
-  message_center::NotificationItem item2(
+  message_center::NotificationItem item2{
       UTF8ToUTF16("Second title"),
-      UTF8ToUTF16("second slightly longer message"));
+      UTF8ToUTF16("second slightly longer message")};
   optional.items.push_back(item2);
-  message_center::NotificationItem item3(
+  message_center::NotificationItem item3{
       UTF8ToUTF16(""),    // Test for empty string.
-      UTF8ToUTF16(" "));  // Test for string containing only spaces.
+      UTF8ToUTF16(" ")};  // Test for string containing only spaces.
   optional.items.push_back(item3);
   optional.context_message = UTF8ToUTF16("Context Message");
 

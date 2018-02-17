@@ -40,16 +40,14 @@ class NotificationDataView;
 
 // Represents an individual item in NOTIFICATION_TYPE_MULTIPLE notifications.
 struct MESSAGE_CENTER_PUBLIC_EXPORT NotificationItem {
-  NotificationItem(const base::string16& title, const base::string16& message);
-
   base::string16 title;
   base::string16 message;
 };
 
 enum class SettingsButtonHandler {
-  NONE,     // No button. This is the default.
-  INLINE,   // Button shown, settings inline.
-  DELEGATE  // Button shown, notification's delegate handles action.
+  NONE = 0,     // No button. This is the default.
+  INLINE = 1,   // Button shown, settings inline.
+  DELEGATE = 2  // Button shown, notification's delegate handles action.
 };
 
 enum class SystemNotificationWarningLevel { NORMAL, WARNING, CRITICAL_WARNING };
@@ -58,6 +56,7 @@ enum class SystemNotificationWarningLevel { NORMAL, WARNING, CRITICAL_WARNING };
 struct MESSAGE_CENTER_PUBLIC_EXPORT ButtonInfo {
   explicit ButtonInfo(const base::string16& title);
   ButtonInfo(const ButtonInfo& other);
+  ButtonInfo();
   ~ButtonInfo();
   ButtonInfo& operator=(const ButtonInfo& other);
 
@@ -75,13 +74,10 @@ struct MESSAGE_CENTER_PUBLIC_EXPORT ButtonInfo {
   base::Optional<base::string16> placeholder;
 };
 
-// TODO(estade): add an ALWAYS value to mark notifications as additionally
-// visible over system fullscreen windows such as Chrome OS login so we don't
-// need to centrally track Ash system notification IDs.
 enum class FullscreenVisibility {
-  NONE,       // Don't show the notification over fullscreen (default).
-  OVER_USER,  // Show over the current fullscreened client window.
-              // windows (like Chrome OS login).
+  NONE = 0,       // Don't show the notification over fullscreen (default).
+  OVER_USER = 1,  // Show over the current fullscreened client window.
+                  // windows (like Chrome OS login).
 };
 
 // Represents rich features available for notifications.
@@ -511,8 +507,11 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   // it's a system notification.
   GURL origin_url_;
   NotifierId notifier_id_;
-  unsigned serial_number_;
   RichNotificationData optional_fields_;
+
+  // TODO(estade): these book-keeping fields should be moved into
+  // NotificationList.
+  unsigned serial_number_;
   bool shown_as_popup_;  // True if this has been shown as a popup.
   bool is_read_;         // True if this has been seen in the message center.
 
