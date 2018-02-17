@@ -440,8 +440,10 @@ Polymer({
 
     if (this.autoReposition) {
       this.resizeObserver_ = new ResizeObserver(() => {
-        if (this.lastConfig_)
+        if (this.lastConfig_) {
           this.positionDialog_(this.lastConfig_);
+          this.fire('cr-action-menu-repositioned');  // For easier testing.
+        }
       });
 
       this.resizeObserver_.observe(this);
