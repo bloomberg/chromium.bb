@@ -84,7 +84,7 @@
         <div class="secondary">[[promoSecondaryLabel]]</div>
       </div>
       <div class="separator" hidden="[[shouldShowAvatarRow_]]"></div>
-      <paper-button class="primary-button" on-tap="onSigninTap_"
+      <paper-button class="primary-button" on-click="onSigninTap_"
           disabled="[[syncStatus.setupInProgress]]"
           hidden="[[shouldShowAvatarRow_]]">
         $i18n{syncSignin}
@@ -109,17 +109,17 @@
           </div>
           <div class="separator" hidden="[[syncStatus.signedIn]]"></div>
           <button is="paper-icon-button-light" id="dots"
-              on-tap="onMenuButtonTap_" title="$i18n{moreActions}"
+              on-click="onMenuButtonTap_" title="$i18n{moreActions}"
               class="icon-arrow-dropdown" hidden="[[syncStatus.signedIn]]">
           </button>
         </div>
-        <paper-button class="action-button" on-tap="onSyncButtonTap_"
+        <paper-button class="action-button" on-click="onSyncButtonTap_"
             hidden="[[syncStatus.signedIn]]"
             disabled="[[syncStatus.setupInProgress]]">
           [[getSubstituteLabel_(
               '$i18nPolymer{syncAsName}', shownAccount_.fullName)]]
         </paper-button>
-        <paper-button class="secondary-button" on-tap="onTurnOffButtonTap_"
+        <paper-button class="secondary-button" on-click="onTurnOffButtonTap_"
             hidden="[[!syncStatus.signedIn]]"
             disabled="[[syncStatus.setupInProgress]]">
           $i18n{turnOffSync}
@@ -128,13 +128,13 @@
       <template is="dom-if" if="[[!syncStatus.signedIn]]" restamp>
         <dialog is="cr-action-menu" id="menu" auto-reposition>
           <template is="dom-repeat" items="[[storedAccounts_]]">
-            <button class="dropdown-item" on-tap="onAccountTap_" slot="item">
+            <button class="dropdown-item" on-click="onAccountTap_" slot="item">
               <img class="account-icon small"
                   src="[[getAccountImageSrc_(item.avatarImage)]]">
               <span class="email">[[item.email]]</span>
             </button>
           </template>
-          <button class="dropdown-item" on-tap="onSigninTap_" slot="item"
+          <button class="dropdown-item" on-click="onSigninTap_" slot="item"
               disabled="[[syncStatus.setupInProgress]]">
             <img class="account-icon small"
                 src="chrome://theme/IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE">

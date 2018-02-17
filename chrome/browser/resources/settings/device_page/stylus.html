@@ -77,7 +77,7 @@
 
     <!-- TODO(scottchen): Make a proper a[href].settings-box with
          icon-external (see: https://crbug.com/684005)-->
-    <div class="settings-box two-line" on-tap="onFindAppsTap_" actionable
+    <div class="settings-box two-line" on-click="onFindAppsTap_" actionable
         hidden$="[[!prefs.arc.enabled.value]]">
       <div class="start">
         $i18n{stylusFindMoreAppsPrimary}
@@ -97,7 +97,7 @@
         <div class="settings-box first">
           <div id="lock-screen-toggle-label" class="start"
               actionable$="[[!disallowedOnLockScreenByPolicy_(selectedApp_)]]"
-              on-tap="toggleLockScreenSupport_">
+              on-click="toggleLockScreenSupport_">
             $i18n{stylusNoteTakingAppEnabledOnLockScreen}
           </div>
           <template is="dom-if"

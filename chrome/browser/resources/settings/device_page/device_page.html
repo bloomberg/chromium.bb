@@ -24,7 +24,7 @@
         focus-config="[[focusConfig_]]">
       <neon-animatable id="main" route-path="default">
         <div id="pointersRow" class="settings-box first"
-            on-tap="onPointersTap_" actionable>
+            on-click="onPointersTap_" actionable>
           <div class="start">
             [[getPointersTitle_(hasMouse_, hasTouchpad_)]]
           </div>
@@ -32,34 +32,34 @@
               aria-label$="[[getPointersTitle_(hasMouse_,
                   hasTouchpad_)]]"></button>
         </div>
-        <div id="keyboardRow" class="settings-box" on-tap="onKeyboardTap_"
+        <div id="keyboardRow" class="settings-box" on-click="onKeyboardTap_"
             actionable>
           <div class="start">$i18n{keyboardTitle}</div>
           <button class="subpage-arrow" is="paper-icon-button-light"
               aria-label="$i18n{keyboardTitle}"></button>
         </div>
         <template is="dom-if" if="[[hasStylus_]]">
-          <div id="stylusRow" class="settings-box" on-tap="onStylusTap_"
+          <div id="stylusRow" class="settings-box" on-click="onStylusTap_"
               actionable>
             <div class="start">$i18n{stylusTitle}</div>
           <button class="subpage-arrow" is="paper-icon-button-light"
               aria-label="$i18n{stylusTitle}"></button>
           </div>
         </template>
-        <div id="displayRow" class="settings-box" on-tap="onDisplayTap_"
+        <div id="displayRow" class="settings-box" on-click="onDisplayTap_"
             actionable>
           <div class="start">$i18n{displayTitle}</div>
           <button class="subpage-arrow" is="paper-icon-button-light"
               aria-label="$i18n{displayTitle}"></button>
         </div>
-        <div id="storageRow" class="settings-box" on-tap="onStorageTap_"
+        <div id="storageRow" class="settings-box" on-click="onStorageTap_"
             actionable>
           <div class="start">$i18n{storageTitle}</div>
           <button class="subpage-arrow" is="paper-icon-button-light"
               aria-label="$i18n{storageTitle}"></button>
         </div>
         <template is="dom-if" if="[[enablePowerSettings_]]">
-          <div id="powerRow" class="settings-box" on-tap="onPowerTap_"
+          <div id="powerRow" class="settings-box" on-click="onPowerTap_"
               actionable>
             <div class="start">$i18n{powerTitle}</div>
             <button class="subpage-arrow" is="paper-icon-button-light"

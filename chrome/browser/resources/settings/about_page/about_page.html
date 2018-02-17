@@ -88,7 +88,7 @@
             focus-config="[[focusConfig_]]">
           <neon-animatable route-path="default">
             <div class="settings-box two-line">
-              <img id="product-logo" on-tap="onProductLogoTap_"
+              <img id="product-logo" on-click="onProductLogoTap_"
                   srcset="chrome://theme/current-channel-logo@1x 1x,
                           chrome://theme/current-channel-logo@2x 2x"
                   alt="$i18n{aboutProductLogoAlt}">
@@ -133,18 +133,18 @@
               <div class="separator" hidden="[[!showButtonContainer_]]"></div>
               <span id="buttonContainer" hidden="[[!showButtonContainer_]]">
                 <paper-button id="relaunch" class="secondary-button"
-                    hidden="[[!showRelaunch_]]" on-tap="onRelaunchTap_">
+                    hidden="[[!showRelaunch_]]" on-click="onRelaunchTap_">
                   $i18n{aboutRelaunch}
                 </paper-button>
 <if expr="chromeos">
                 <paper-button id="relaunchAndPowerwash" class="secondary-button"
                     hidden="[[!showRelaunchAndPowerwash_]]"
-                    on-tap="onRelaunchAndPowerwashTap_">
+                    on-click="onRelaunchAndPowerwashTap_">
                   $i18n{aboutRelaunchAndPowerwash}
                 </paper-button>
                 <paper-button id="checkForUpdates" class="secondary-button"
                     hidden="[[!showCheckUpdates_]]"
-                    on-tap="onCheckUpdatesTap_">
+                    on-click="onCheckUpdatesTap_">
                   $i18n{aboutCheckForUpdates}
                 </paper-button>
 </if>
@@ -153,13 +153,13 @@
 <if expr="chromeos">
             <div id="aboutTPMFirmwareUpdate" class="settings-box two-line"
                 hidden$="[[!showTPMFirmwareUpdateLineItem_]]"
-                on-tap="onTPMFirmwareUpdateTap_" actionable>
+                on-click="onTPMFirmwareUpdateTap_" actionable>
               <div class="start">
                 <div>$i18n{aboutTPMFirmwareUpdateTitle}</div>
                 <div class="secondary">
                   $i18n{aboutTPMFirmwareUpdateDescription}
                   <a href="$i18n{aboutTPMFirmwareUpdateLearnMoreURL}"
-                      target="_blank" on-tap="onLearnMoreTap_">
+                      target="_blank" on-click="onLearnMoreTap_">
                     $i18n{learnMore}
                   </a>
                 </div>
@@ -174,12 +174,12 @@
               <div id="promoteUpdater" class="settings-box"
                   disabled$="[[promoteUpdaterStatus_.disabled]]"
                   actionable$="[[promoteUpdaterStatus_.actionable]]"
-                  on-tap="onPromoteUpdaterTap_">
+                  on-click="onPromoteUpdaterTap_">
                 <div class="start">
                   [[promoteUpdaterStatus_.text]]
                   <a href="https://support.google.com/chrome/answer/95414"
                       target="_blank" id="updaterLearnMore"
-                      on-tap="onLearnMoreTap_">
+                      on-click="onLearnMoreTap_">
                     $i18n{learnMore}
                   </a>
                 </div>
@@ -191,21 +191,22 @@
               </div>
             </template>
 </if>
-            <div id="help" class="settings-box" on-tap="onHelpTap_" actionable>
+            <div id="help" class="settings-box" on-click="onHelpTap_"
+                actionable>
               <div class="start">$i18n{aboutGetHelpUsingChrome}</div>
               <button class="icon-external" is="paper-icon-button-light"
                   aria-labelledby="help"></button>
             </div>
 <if expr="_google_chrome">
             <div id="reportIssue" class="settings-box" actionable
-                on-tap="onReportIssueTap_">
+                on-click="onReportIssueTap_">
               <div class="start">$i18n{aboutReportAnIssue}</div>
               <button class="subpage-arrow" is="paper-icon-button-light"
                   aria-labelledby="reportIssue"></button>
             </div>
 </if>
 <if expr="chromeos">
-            <div class="settings-box" on-tap="onDetailedBuildInfoTap_"
+            <div class="settings-box" on-click="onDetailedBuildInfoTap_"
                 actionable>
               <div class="start">$i18n{aboutDetailedBuildInfo}</div>
               <button id="detailed-build-info-trigger" class="subpage-arrow"

@@ -23,7 +23,7 @@
         <template is="dom-if" if="[[havePlayStoreApp]]" restamp>
           <div id="android-apps" class="settings-box two-line first"
               actionable$="[[androidAppsInfo.playStoreEnabled]]"
-              on-tap="onSubpageTap_">
+              on-click="onSubpageTap_">
             <div class="start">
               $i18n{androidAppsPageLabel}
               <div class="secondary" id="secondaryText"
@@ -43,7 +43,7 @@
               <div class="separator"></div>
               <paper-button id="enable" class="secondary-button"
                   disabled="[[isEnforced_(prefs.arc.enabled)]]"
-                  on-tap="onEnableTap_"
+                  on-click="onEnableTap_"
                   aria-label="$i18n{androidAppsPageTitle}"
                   aria-describedby="secondaryText">
                 $i18n{androidAppsEnable}

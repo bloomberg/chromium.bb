@@ -52,11 +52,11 @@
         <div slot="body">$i18nRaw{doNotTrackDialogMessage}</div>
         <div slot="button-container">
           <paper-button class="cancel-button"
-              on-tap="onDoNotTrackDialogCancel_">
+              on-click="onDoNotTrackDialogCancel_">
             $i18n{cancel}
           </paper-button>
           <paper-button class="action-button"
-              on-tap="onDoNotTrackDialogConfirm_">
+              on-click="onDoNotTrackDialogConfirm_">
             $i18n{confirm}
           </paper-button>
         </div>
@@ -101,7 +101,7 @@
             on-settings-boolean-control-change="onMetricsReportingChange_"
             no-set-pref>
           <template is="dom-if" if="[[showRestart_]]" restamp>
-            <paper-button on-tap="onRestartTap_" id="restart"
+            <paper-button on-click="onRestartTap_" id="restart"
                 slot="more-actions">
               $i18n{restart}
             </paper-button>
@@ -133,7 +133,7 @@
 </if>
 <if expr="use_nss_certs or is_win or is_macosx">
         <div id="manageCertificates" class="settings-box two-line"
-            actionable on-tap="onManageCertificatesTap_">
+            actionable on-click="onManageCertificatesTap_">
           <div class="start">
             $i18n{manageCertificates}
             <div class="secondary" id="manageCertificatesSecondary">
@@ -154,7 +154,7 @@
 </if>
         <div id="site-settings-subpage-trigger"
             class="settings-box two-line" actionable
-            on-tap="onSiteSettingsTap_">
+            on-click="onSiteSettingsTap_">
           <div class="start">
             [[siteSettingsPageTitle_()]]
             <div class="secondary" id="siteSettingsSecondary">
@@ -166,7 +166,7 @@
               aria-describedby="siteSettingsSecondary"></button>
         </div>
         <div class="settings-box two-line" id="clearBrowsingData"
-            on-tap="onClearBrowsingDataTap_" actionable>
+            on-click="onClearBrowsingDataTap_" actionable>
           <div class="start">
             $i18n{clearBrowsingData}
             <div class="secondary" id="clearBrowsingDataSecondary">
@@ -257,7 +257,7 @@
               label="$i18n{thirdPartyCookie}"
               sub-label="$i18n{thirdPartyCookieSublabel}">
           </settings-toggle-button>
-          <div class="settings-box" actionable on-tap="onSiteDataTap_">
+          <div class="settings-box" actionable on-click="onSiteDataTap_">
              <div class="start" id="cookiesLink">
                $i18n{siteSettingsCookieLink}
              </div>
@@ -486,7 +486,7 @@
       <template is="dom-if" route-path="/cookies/detail" no-search>
         <settings-subpage page-title="[[pageTitle]]">
           <paper-button slot="subpage-title-extra" class="secondary-button"
-              on-tap="onRemoveAllCookiesFromSite_">
+              on-click="onRemoveAllCookiesFromSite_">
             $i18n{siteSettingsCookieRemoveAll}
           </paper-button>
           <site-data-details-subpage page-title="{{pageTitle}}">

@@ -46,7 +46,7 @@
       <paper-spinner-lite active="[[isLoading_]]"></paper-spinner-lite>
       <paper-button class="secondary-button"
           disabled$="[[isLoading_]]" id="removeShowingSites"
-          on-tap="onRemoveShowingSitesTap_" hidden$="[[!sites.length]]">
+          on-click="onRemoveShowingSitesTap_" hidden$="[[!sites.length]]">
         [[computeRemoveLabel_(filter)]]
       </paper-button>
     </div>
@@ -54,7 +54,7 @@
         scroll-target="[[subpageScrollTarget]]">
       <template>
         <div class="settings-box two-line site-item" first$="[[!index]]"
-            on-tap="onSiteTap_" actionable>
+            on-click="onSiteTap_" actionable>
           <div class="favicon-image"
               style$="background-image: [[favicon_(item.site)]]">
           </div>
@@ -67,7 +67,7 @@
           <div class="separator"></div>
           <button is="paper-icon-button-light" class="icon-delete-gray"
               title$="[[i18n('siteSettingsCookieRemoveSite', item.site)]]"
-              on-tap="onRemoveSiteTap_">
+              on-click="onRemoveSiteTap_">
           </button>
         </div>
       </template>
@@ -81,10 +81,10 @@
       </div>
       <div slot="body">$i18n{siteSettingsCookieRemoveMultipleConfirmation}</div>
       <div slot="button-container">
-        <paper-button class="cancel-button" on-tap="onCloseDialog_">
+        <paper-button class="cancel-button" on-click="onCloseDialog_">
           $i18n{cancel}
         </paper-button>
-        <paper-button class="action-button" on-tap="onConfirmDelete_">
+        <paper-button class="action-button" on-click="onConfirmDelete_">
           $i18n{siteSettingsCookiesClearAll}
         </paper-button>
       </div>

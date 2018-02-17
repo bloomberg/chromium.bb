@@ -46,7 +46,7 @@
     </settings-toggle-button>
     <iron-collapse opened="[[prefs.settings.accessibility.value]]">
       <div class="settings-box"
-          on-tap="onChromeVoxSettingsTap_" actionable>
+          on-click="onChromeVoxSettingsTap_" actionable>
         <div class="start">$i18n{chromeVoxOptionsLabel}</div>
         <button class="icon-external" is="paper-icon-button-light"
             aria-label="$i18n{chromeVoxOptionsLabel}"></button>
@@ -59,7 +59,7 @@
     </settings-toggle-button>
     <iron-collapse opened="[[prefs.settings.a11y.select_to_speak.value]]">
       <div class="settings-box"
-          on-tap="onSelectToSpeakSettingsTap_" actionable>
+          on-click="onSelectToSpeakSettingsTap_" actionable>
         <div class="start">$i18n{selectToSpeakOptionsLabel}</div>
         <button class="icon-external" is="paper-icon-button-light"
             aria-label="$i18n{selectToSpeakOptionsLabel}"></button>
@@ -83,7 +83,7 @@
           disabled="[[!prefs.settings.a11y.screen_magnifier.value]]">
       </settings-dropdown-menu>
     </div>
-    <div class="settings-box two-line" on-tap="onDisplayTap_" actionable>
+    <div class="settings-box two-line" on-click="onDisplayTap_" actionable>
       <div class="start">
         $i18n{displaySettingsTitle}
         <div class="secondary">$i18n{displaySettingsDescription}</div>
@@ -92,7 +92,7 @@
           aria-label="$i18n{displaySettingsTitle}"
           aria-describedby="displaySettingsSecondary"></button>
     </div>
-    <div class="settings-box two-line" on-tap="onAppearanceTap_" actionable>
+    <div class="settings-box two-line" on-click="onAppearanceTap_" actionable>
       <div class="start">
         $i18n{appearanceSettingsTitle}
         <div class="secondary" id="appearanceSettingsSecondary">
@@ -127,13 +127,13 @@
           label="$i18n{switchAccessLabel}">
         <button is="paper-icon-button-light"
             class="icon-settings" slot="more-actions"
-            on-tap="onSwitchAccessSettingsTap_"
+            on-click="onSwitchAccessSettingsTap_"
             hidden="[[!prefs.settings.a11y.switch_access.value]]"
             aria-label="$i18n{selectToSpeakOptionsLabel}">
         </button>
       </settings-toggle-button>
     </template>
-    <div class="settings-box two-line" on-tap="onKeyboardTap_" actionable>
+    <div class="settings-box two-line" on-click="onKeyboardTap_" actionable>
       <div class="start">
         $i18n{keyboardSettingsTitle}
         <div class="secondary" id="keyboardSettingsSecondary">
@@ -180,7 +180,7 @@
         pref="{{prefs.settings.a11y.cursor_highlight}}"
         label="$i18n{cursorHighlightLabel}">
     </settings-toggle-button>
-    <div class="settings-box two-line" on-tap="onMouseTap_" actionable>
+    <div class="settings-box two-line" on-click="onMouseTap_" actionable>
       <div class="start">
         $i18n{mouseSettingsTitle}
         <div class="secondary" id="mouseSettingsSecondary">

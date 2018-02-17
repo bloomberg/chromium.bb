@@ -84,7 +84,7 @@
         focus-config="[[focusConfig_]]">
       <neon-animatable route-path="default">
         <div class$="settings-box first [[getLanguageListTwoLine_()]]"
-            actionable on-tap="toggleExpandButton_">
+            actionable on-click="toggleExpandButton_">
           <div class="start">
             <div>$i18n{languagesListTitle}</div>
 <if expr="chromeos or is_win">
@@ -127,20 +127,20 @@
 <if expr="chromeos or is_win">
                 <template is="dom-if" if="[[isRestartRequired_(
                         item.language.code, languages.prospectiveUILanguage)]]">
-                  <paper-button on-tap="onRestartTap_">
+                  <paper-button on-click="onRestartTap_">
                     $i18n{restart}
                   </paper-button>
                 </template>
 </if>
                 <button is="paper-icon-button-light" title="$i18n{moreActions}"
-                    id="more-[[item.language.code]]" on-tap="onDotsTap_"
+                    id="more-[[item.language.code]]" on-click="onDotsTap_"
                     class="icon-more-vert">
                 </button>
               </div>
             </template>
             <div class="list-item">
               <a is="action-link" class="list-button" id="addLanguages"
-                  on-tap="onAddLanguagesTap_">
+                  on-click="onAddLanguagesTap_">
                 $i18n{addLanguages}
               </a>
             </div>
@@ -153,7 +153,7 @@
 <if expr="chromeos">
         <div id="manageInputMethodsSubpageTrigger"
             class="settings-box two-line" actionable
-            on-tap="toggleExpandButton_">
+            on-click="toggleExpandButton_">
           <div class="start">
             <div>$i18n{inputMethodsListTitle}</div>
             <div class="secondary">
@@ -171,7 +171,7 @@
                 items="[[languages.inputMethods.enabled]]">
               <div class$="list-item [[getInputMethodItemClass_(
                       item.id, languages.inputMethods.currentId)]]"
-                  on-tap="onInputMethodTap_" on-keypress="onInputMethodTap_"
+                  on-click="onInputMethodTap_" on-keypress="onInputMethodTap_"
                   actionable tabindex="0">
                 <div class="start">
                   <div>[[item.displayName]]</div>
@@ -182,12 +182,13 @@
                   </div>
                 </div>
                 <button class="icon-external" is="paper-icon-button-light"
-                    on-tap="onInputMethodOptionsTap_"
+                    on-click="onInputMethodOptionsTap_"
                     hidden="[[!item.hasOptionsPage]]">
                 </button>
               </div>
             </template>
-            <div class="list-item" on-tap="onManageInputMethodsTap_" actionable>
+            <div class="list-item" on-click="onManageInputMethodsTap_"
+                actionable>
               <div class="start" id="manageInputMethods">
                 $i18n{manageInputMethods}
               </div>
@@ -207,7 +208,7 @@
             class$="settings-box [[getSpellCheckListTwoLine_(
                 spellCheckSecondaryText_)]]"
             actionable$="[[!spellCheckDisabled_]]"
-            on-tap="toggleExpandButton_">
+            on-click="toggleExpandButton_">
           <div class="start">
             <div>$i18n{spellCheckListTitle}</div>
             <div class="secondary">[[spellCheckSecondaryText_]]</div>
@@ -230,7 +231,7 @@
             <template is="dom-repeat" items="[[spellCheckLanguages_]]">
               <div class="list-item">
                 <template is="dom-if" if="[[!item.isManaged]]">
-                  <div class="start" on-tap="onSpellCheckChange_"
+                  <div class="start" on-click="onSpellCheckChange_"
                       actionable$="[[item.language.supportsSpellcheck]]">
                     [[item.language.displayName]]
                   </div>
@@ -250,7 +251,7 @@
                 </template>
               </div>
             </template>
-            <div class="list-item" on-tap="onEditDictionaryTap_" actionable>
+            <div class="list-item" on-click="onEditDictionaryTap_" actionable>
               <div class="start" id="customSpelling">
                 $i18n{manageSpellCheck}
               </div>
@@ -287,24 +288,24 @@
             </paper-checkbox>
             <hr slot="item">
             <button slot="item" class="dropdown-item" role="menuitem"
-                on-tap="onMoveToTopTap_"
+                on-click="onMoveToTopTap_"
                 hidden="[[isNthLanguage_(
                     0, detailLanguage_, languages.enabled.*)]]">
               $i18n{moveToTop}
             </button>
             <button slot="item" class="dropdown-item" role="menuitem"
-                on-tap="onMoveUpTap_"
+                on-click="onMoveUpTap_"
                 hidden="[[!showMoveUp_(detailLanguage_, languages.enabled.*)]]">
               $i18n{moveUp}
             </button>
             <button slot="item" class="dropdown-item" role="menuitem"
-                on-tap="onMoveDownTap_"
+                on-click="onMoveDownTap_"
                 hidden="[[!showMoveDown_(
                     detailLanguage_, languages.enabled.*)]]">
               $i18n{moveDown}
             </button>
             <button slot="item" class="dropdown-item" role="menuitem"
-                on-tap="onRemoveLanguageTap_"
+                on-click="onRemoveLanguageTap_"
                 hidden="[[!detailLanguage_.removable]]">
               $i18n{removeLanguage}
             </button>

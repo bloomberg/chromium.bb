@@ -35,15 +35,15 @@
       </div>
       <div class="keyword-column">[[engine.keyword]]</div>
       <button is="paper-icon-button-light" class="icon-more-vert"
-          on-tap="onDotsTap_" title="$i18n{moreActions}" focus-row-control
+          on-click="onDotsTap_" title="$i18n{moreActions}" focus-row-control
           focus-type="menu">
       </button>
       <dialog is="cr-action-menu">
-        <button slot="item" class="dropdown-item" on-tap="onManageTap_"
+        <button slot="item" class="dropdown-item" on-click="onManageTap_"
             id="manage">
           $i18n{searchEnginesManageExtension}
         </button>
-        <button slot="item" class="dropdown-item" on-tap="onDisableTap_"
+        <button slot="item" class="dropdown-item" on-click="onDisableTap_"
             id="disable">
           $i18n{disable}
         </button>

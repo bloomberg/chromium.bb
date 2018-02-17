@@ -86,19 +86,19 @@
         <button is="paper-icon-button-light" id="addButton"
             hidden$="[[!showAddButton_(deviceState, globalPolicy)]]"
             aria-label="$i18n{internetAddWiFi}" class="icon-add-wifi"
-            on-tap="onAddButtonTap_" tabindex$="[[tabindex]]">
+            on-click="onAddButtonTap_" tabindex$="[[tabindex]]">
         </button>
         <paper-toggle-button id="deviceEnabledButton"
             aria-label$="[[getToggleA11yString_(deviceState)]]"
             checked="[[deviceIsEnabled_(deviceState)]]"
             disabled="[[!enableToggleIsEnabled_(deviceState)]]"
-            on-tap="onDeviceEnabledTap_">
+            on-click="onDeviceEnabledTap_">
         </paper-toggle-button>
       </div>
     </template>
 
     <template is="dom-if" if="[[knownNetworksIsVisible_(deviceState)]]">
-      <div actionable class="settings-box" on-tap="onKnownNetworksTap_">
+      <div actionable class="settings-box" on-click="onKnownNetworksTap_">
         <div class="start">$i18n{knownNetworksButton}</div>
         <button class="subpage-arrow" is="paper-icon-button-light"
             aria-label="$i18n{knownNetworksButton}">
@@ -114,7 +114,7 @@
             <div class="flex">$i18n{networkVpnBuiltin}</div>
             <button is="paper-icon-button-light" class="icon-add-circle"
                 aria-label="$i18n{internetAddVPN}"
-                on-tap="onAddButtonTap_" tabindex$="[[tabindex]]">
+                on-click="onAddButtonTap_" tabindex$="[[tabindex]]">
             </button>
           </div>
         </template>
@@ -166,7 +166,7 @@
               <div class="flex">[[item.ProviderName]]</div>
               <button is="paper-icon-button-light" class="icon-add-circle"
                   aria-label$="[[getAddThirdPartyVpnA11yString_(item)]]"
-                  on-tap="onAddThirdPartyVpnTap_" tabindex$="[[tabindex]]">
+                  on-click="onAddThirdPartyVpnTap_" tabindex$="[[tabindex]]">
               </button>
             </div>
             <cr-network-list show-buttons
@@ -186,7 +186,7 @@
               <div class="flex">[[item.ProviderName]]</div>
               <button is="paper-icon-button-light" class="icon-add-circle"
                   aria-label$="[[getAddArcVpnAllyString_(item)]]"
-                  on-tap="onAddArcVpnTap_" tabindex$="[[tabindex]]">
+                  on-click="onAddArcVpnTap_" tabindex$="[[tabindex]]">
               </button>
             </div>
             <cr-network-list show-buttons
@@ -205,7 +205,7 @@
       <template is="dom-if"
           if="[[tetherToggleIsVisible_(deviceState, tetherDeviceState)]]">
         <div class="settings-box two-line" actionable
-            on-tap="onTetherEnabledTap_">
+            on-click="onTetherEnabledTap_">
           <div class="start">
             $i18n{internetToggleTetherLabel}
             <div id="tetherSecondary" class="secondary">

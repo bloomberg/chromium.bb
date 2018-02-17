@@ -34,7 +34,7 @@
         font-weight: 400;
       }
     </style>
-    <div actionable class="settings-box two-line" on-tap="onShowDetailsTap_">
+    <div actionable class="settings-box two-line" on-click="onShowDetailsTap_">
       <div id="details" no-flex$="[[showSimInfo_(deviceState)]]">
         <cr-network-icon network-state="[[activeNetworkState]]"
             device-state="[[deviceState]]">
@@ -48,7 +48,7 @@
       </div>
 
       <template is="dom-if" if="[[showSimInfo_(deviceState)]]" restamp>
-        <network-siminfo editable on-tap="doNothing_"
+        <network-siminfo editable on-click="doNothing_"
             network-properties="[[getCellularState_(deviceState)]]"
             networking-private="[[networkingPrivate]]">
         </network-siminfo>
@@ -57,7 +57,7 @@
       <template is="dom-if" if="[[showPolicyIndicator_(activeNetworkState)]]">
         <cr-policy-indicator indicator-type="[[getIndicatorTypeForSource(
             activeNetworkState.Source)]]"
-            on-tap="doNothing_">
+            on-click="doNothing_">
         </cr-policy-indicator>
       </template>
 
@@ -75,7 +75,7 @@
             aria-label$="[[getToggleA11yString_(deviceState)]]"
             checked="[[deviceIsEnabled_(deviceState)]]"
             disabled="[[!enableToggleIsEnabled_(deviceState)]]"
-            on-tap="onDeviceEnabledTap_">
+            on-click="onDeviceEnabledTap_">
         </paper-toggle-button>
       </template>
     </div>

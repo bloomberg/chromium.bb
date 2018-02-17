@@ -55,14 +55,14 @@
                 on-change="onFingerprintLabelChanged_">
             </paper-input>
             <button is="paper-icon-button-light" class="icon-delete-gray"
-                on-tap="onFingerprintDeleteTapped_">
+                on-click="onFingerprintDeleteTapped_">
             </button>
           </div>
         </template>
       </iron-list>
       <div class="continuation">
         <paper-button id="addFingerprint" class="add-link action-button"
-            on-tap="openAddFingerprintDialog_">
+            on-click="openAddFingerprintDialog_">
           $i18n{lockScreenAddFingerprint}
         </paper-button>
       </div>

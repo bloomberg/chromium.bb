@@ -54,19 +54,19 @@
       <div id="keyword-column"><div>[[engine.keyword]]</div></div>
       <div id="url-column" class="text-elide">[[engine.url]]</div>
       <button is="paper-icon-button-light" class="icon-more-vert"
-          on-tap="onDotsTap_" title="$i18n{moreActions}" focus-row-control
+          on-click="onDotsTap_" title="$i18n{moreActions}" focus-row-control
           focus-type="cr-menu-button">
       </button>
       <dialog is="cr-action-menu">
-        <button slot="item" class="dropdown-item" on-tap="onMakeDefaultTap_"
+        <button slot="item" class="dropdown-item" on-click="onMakeDefaultTap_"
             hidden$="[[!engine.canBeDefault]]" id="makeDefault">
           $i18n{searchEnginesMakeDefault}
         </button>
-        <button slot="item" class="dropdown-item" on-tap="onEditTap_"
+        <button slot="item" class="dropdown-item" on-click="onEditTap_"
             hidden$="[[!engine.canBeEdited]]" id="edit">
           $i18n{edit}
         </button>
-        <button slot="item" class="dropdown-item" on-tap="onDeleteTap_"
+        <button slot="item" class="dropdown-item" on-click="onDeleteTap_"
             hidden$="[[!engine.canBeRemoved]]" id="delete">
           $i18n{searchEnginesRemoveFromList}
         </button>

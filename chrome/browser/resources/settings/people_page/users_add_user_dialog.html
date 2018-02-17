@@ -25,10 +25,10 @@
         </paper-input>
       </div>
       <div slot="button-container">
-        <paper-button class="cancel-button" on-tap="onCancelTap_">
+        <paper-button class="cancel-button" on-click="onCancelTap_">
           $i18n{cancel}
         </paper-button>
-        <paper-button on-tap="addUser_" class="action-button"
+        <paper-button on-click="addUser_" class="action-button"
             disabled$="[[!isValid_]]">
           $i18n{add}
         </paper-button>

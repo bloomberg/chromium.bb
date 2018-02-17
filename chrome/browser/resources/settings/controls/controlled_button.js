@@ -32,7 +32,7 @@ Polymer({
    * @private
    */
   onIndicatorTap_: function(e) {
-    // Disallow <controlled-button on-tap="..."> when controlled.
+    // Disallow <controlled-button on-click="..."> when controlled.
     e.preventDefault();
     e.stopPropagation();
   },

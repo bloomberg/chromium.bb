@@ -23,7 +23,7 @@
           selected="{{selectedPrinter}}">
       </array-selector>
       <template is="dom-repeat" items="[[printers]]">
-        <button class="list-item" on-tap="onSelect_">
+        <button class="list-item" on-click="onSelect_">
           [[item.printerName]]
         </button>
       </template>
@@ -60,7 +60,7 @@
         background-size: 24px;
       }
     </style>
-    <paper-input-container no-label-float on-tap="onTap_">
+    <paper-input-container no-label-float on-click="onTap_">
       <input is="iron-input" type="search" bind-value="{{selectedItem}}"
           on-search="onInputValueChanged_" on-change="onChange_" incremental
           slot="input">
@@ -76,7 +76,7 @@
       <div slot="dropdown-content">
         <template is="dom-repeat" items="[[items]]"
             filter="[[filterItems_(searchTerm_)]]">
-          <button class="list-item" on-tap="onSelect_">[[item]]</button>
+          <button class="list-item" on-click="onSelect_">[[item]]</button>
         </template>
       </div>
     </iron-dropdown>

@@ -88,7 +88,7 @@
         <div hidden="[[!showExplanation_]]">
           <span class="secondary">[[explanation_]]</span>
           <a id="learn-more" href="$i18n{chromeCleanupLearnMoreUrl}"
-              on-tap="learnMore_" target="_blank"
+              on-click="learnMore_" target="_blank"
               hidden="[[!showLearnMore_]]">
             $i18n{learnMore}
           </a>
@@ -97,7 +97,7 @@
       <template is="dom-if" if="[[showActionButton_]]">
         <div class="separator"></div>
         <paper-button id="action-button" class="primary-button"
-            on-tap="proceed_">
+            on-click="proceed_">
           [[actionButtonLabel_]]
         </paper-button>
       </template>
@@ -112,7 +112,7 @@
         on-settings-boolean-control-change="changeLogsPermission_">
     </settings-toggle-button>
     <div id="show-items-button" class="settings-box" actionable
-        on-tap="toggleExpandButton_" hidden="[[!showItemsToRemove_]]">
+        on-click="toggleExpandButton_" hidden="[[!showItemsToRemove_]]">
       <div class="start">[[showItemsLinkLabel_]]</div>
       <cr-expand-button expanded="{{itemsToRemoveSectionExpanded_}}"
           alt="[[showItemsLinkLabel_]]">

@@ -21,7 +21,7 @@
         focus-config="[[focusConfig_]]">
       <neon-animatable route-path="default">
         <div id="bluetoothDevices"
-            class="settings-box two-line" actionable on-tap="onTap_">
+            class="settings-box two-line" actionable on-click="onTap_">
           <iron-icon icon="[[getIcon_(bluetoothToggleState_)]]"></iron-icon>
           <div class="middle">
             $i18n{bluetoothPageTitle}
@@ -36,7 +36,7 @@
           </cr-policy-pref-indicator>
           <template is="dom-if" if="[[bluetoothToggleState_]]">
             <button class="subpage-arrow" is="paper-icon-button-light"
-                on-tap="onSubpageArrowTap_"
+                on-click="onSubpageArrowTap_"
                 aria-label="$i18n{bluetoothPageTitle}"
                 aria-describedby="bluetoothSecondary">
             </button>
@@ -46,7 +46,7 @@
               checked="{{bluetoothToggleState_}}"
               disabled$=
                   "[[!isToggleEnabled_(adapterState_, stateChangeInProgress_)]]"
-              on-tap="stopTap_"
+              on-click="stopTap_"
               aria-label="$i18n{bluetoothToggleA11yLabel}">
           </paper-toggle-button>
         </div>

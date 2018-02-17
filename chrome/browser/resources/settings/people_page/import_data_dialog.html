@@ -104,7 +104,7 @@
                 importStatusEnum_.SUCCEEDED, importStatus_)]]"
             disabled="[[hasImportStatus_(
                 importStatusEnum_.IN_PROGRESS, importStatus_)]]"
-            on-tap="closeDialog_">
+            on-click="closeDialog_">
           $i18n{cancel}
         </paper-button>
         <paper-button id="import" class="action-button"
@@ -112,14 +112,14 @@
                 importStatusEnum_.SUCCEEDED, importStatus_)]]"
             disabled="[[shouldDisableImport_(
                 importStatus_, noImportDataTypeSelected_)]]"
-            on-tap="onActionButtonTap_">
+            on-click="onActionButtonTap_">
           [[getActionButtonText_(selected_)]]
         </paper-button>
 
         <paper-button id="done" class="action-button"
             hidden$="[[!hasImportStatus_(
                 importStatusEnum_.SUCCEEDED, importStatus_)]]"
-            on-tap="closeDialog_">$i18n{done}</paper-button>
+            on-click="closeDialog_">$i18n{done}</paper-button>
       </div>
     </dialog>
   </template>

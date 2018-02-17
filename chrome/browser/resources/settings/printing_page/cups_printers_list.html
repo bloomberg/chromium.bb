@@ -15,10 +15,10 @@
     </style>
 
     <dialog is="cr-action-menu">
-      <button slot="item" class="dropdown-item" on-tap="onEditTap_">
+      <button slot="item" class="dropdown-item" on-click="onEditTap_">
         $i18n{editPrinter}
       </button>
-      <button slot="item" class="dropdown-item" on-tap="onRemoveTap_">
+      <button slot="item" class="dropdown-item" on-click="onRemoveTap_">
         $i18n{removePrinter}
       </button>
     </dialog>
@@ -29,7 +29,7 @@
           <div class="printer-name text-elide">[[item.printerName]]</div>
           <!--TODO(xdai): Add icon for enterprise CUPS printer. -->
           <button is="paper-icon-button-light" class="icon-more-vert"
-              on-tap="onOpenActionMenuTap_" title="$i18n{moreActions}">
+              on-click="onOpenActionMenuTap_" title="$i18n{moreActions}">
           </button>
         </div>
       </template>

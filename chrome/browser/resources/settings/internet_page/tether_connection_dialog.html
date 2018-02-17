@@ -108,11 +108,11 @@
         </ul>
       </div>
       <div slot="button-container">
-        <paper-button class="cancel-button" on-tap="onNotNowTap_">
+        <paper-button class="cancel-button" on-click="onNotNowTap_">
           $i18n{tetherConnectionNotNowButton}
         </paper-button>
         <paper-button id="connectButton" class="action-button"
-            on-tap="onConnectTap_" disabled="[[outOfRange]]">
+            on-click="onConnectTap_" disabled="[[outOfRange]]">
           $i18n{tetherConnectionConnectButton}
         </paper-button>
       </div>

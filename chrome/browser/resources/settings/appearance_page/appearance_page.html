@@ -60,7 +60,7 @@
         <button icon-class="icon-external" id="wallpaperButton"
             is="cr-link-row"
             hidden="[[!pageVisibility.setWallpaper]]"
-            on-tap="openWallpaperManager_"
+            on-click="openWallpaperManager_"
             label="$i18n{setWallpaper}" sub-label="$i18n{openWallpaperApp}"
             disabled="[[isWallpaperPolicyControlled_]]">
           <template is="dom-if" if="[[isWallpaperPolicyControlled_]]">
@@ -76,11 +76,11 @@
           <button class="first" icon-class="icon-external" is="cr-link-row"
               hidden="[[!pageVisibility.setTheme]]"
               label="$i18n{themes}" sub-label="[[themeSublabel_]]"
-              on-tap="openThemeUrl_"></button>
+              on-click="openThemeUrl_"></button>
 <if expr="not is_linux or chromeos">
           <template is="dom-if" if="[[prefs.extensions.theme.id.value]]">
             <div class="separator"></div>
-            <paper-button id="useDefault" on-tap="onUseDefaultTap_"
+            <paper-button id="useDefault" on-click="onUseDefaultTap_"
                 class="secondary-button">
               $i18n{resetToDefaultTheme}
             </paper-button>
@@ -94,14 +94,14 @@
             <div class="separator"></div>
             <template is="dom-if" if="[[showUseClassic_(
                 prefs.extensions.theme.id.value, useSystemTheme_)]]" restamp>
-              <paper-button id="useDefault" on-tap="onUseDefaultTap_"
+              <paper-button id="useDefault" on-click="onUseDefaultTap_"
                   class="secondary-button">
                 $i18n{useClassicTheme}
               </paper-button>
             </template>
             <template is="dom-if" if="[[showUseSystem_(
                 prefs.extensions.theme.id.value, useSystemTheme_)]]" restamp>
-              <paper-button id="useSystem" on-tap="onUseSystemTap_"
+              <paper-button id="useSystem" on-click="onUseSystemTap_"
                   class="secondary-button">
                 $i18n{useSystemTheme}
               </paper-button>
@@ -168,7 +168,7 @@
         </div>
         <button class="hr" is="cr-link-row"
             icon-class="subpage-arrow" id="customize-fonts-subpage-trigger"
-            label="$i18n{customizeFonts}" on-tap="onCustomizeFontsTap_">
+            label="$i18n{customizeFonts}" on-click="onCustomizeFontsTap_">
         </button>
         <div class="settings-box" hidden="[[!pageVisibility.pageZoom]]">
           <div id="pageZoom" class="start">$i18n{pageZoom}</div>

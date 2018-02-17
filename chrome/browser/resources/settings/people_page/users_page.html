@@ -59,7 +59,7 @@
       <div id="add-user-button" class="list-item"
           hidden="[[isEditingUsersDisabled_(isOwner_, isWhitelistManaged_,
               prefs.cros.accounts.allowGuest.value)]]">
-        <a is="action-link" class="list-button" on-tap="openAddUserDialog_">
+        <a is="action-link" class="list-button" on-click="openAddUserDialog_">
           $i18n{addUsers}
         </a>
       </div>

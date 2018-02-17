@@ -25,7 +25,7 @@
     <settings-animated-pages id="reset-pages" section="reset">
       <neon-animatable route-path="default">
         <div class="settings-box first two-line" id="resetProfile"
-            on-tap="onShowResetProfileDialog_" actionable>
+            on-click="onShowResetProfileDialog_" actionable>
           <div class="start">
             $i18n{resetTrigger}
             <div class="secondary" id="resetProfileSecondary">
@@ -44,7 +44,7 @@
         </template>
 <if expr="chromeos">
         <div class="settings-box two-line" id="powerwash" actionable
-            on-tap="onShowPowerwashDialog_" hidden="[[!allowPowerwash_]]">
+            on-click="onShowPowerwashDialog_" hidden="[[!allowPowerwash_]]">
           <div class="start">
             $i18n{powerwashTitle}
             <div class="secondary" id="powerwashSecondary">
@@ -63,7 +63,7 @@
 <if expr="_google_chrome and is_win">
         <template is="dom-if" if="[[userInitiatedCleanupsEnabled_]]" restamp>
           <div class="settings-box two-line" id="chromeCleanupSubpageTrigger"
-              on-tap="onChromeCleanupTap_" actionable>
+              on-click="onChromeCleanupTap_" actionable>
             <div class="start">
               $i18n{resetCleanupComputerTrigger}
               <div class="secondary" id="chromeCleanupSecondary">
