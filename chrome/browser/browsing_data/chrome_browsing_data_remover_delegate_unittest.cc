@@ -1254,7 +1254,10 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowsingDataRemoverDelegateTest);
 };
 
-TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveSafeBrowsingCookieForever) {
+// TODO(crbug.com/812589): Disabled due to flakiness in cookie store
+//                         initialization.
+TEST_F(ChromeBrowsingDataRemoverDelegateTest,
+       DISABLED_RemoveSafeBrowsingCookieForever) {
   RemoveSafeBrowsingCookieTester tester;
 
   tester.AddCookie();
@@ -1270,8 +1273,10 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveSafeBrowsingCookieForever) {
   EXPECT_FALSE(tester.ContainsCookie());
 }
 
+// TODO(crbug.com/812589): Disabled due to flakiness in cookie store
+//                         initialization.
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
-       RemoveSafeBrowsingCookieLastHour) {
+       DISABLED_RemoveSafeBrowsingCookieLastHour) {
   RemoveSafeBrowsingCookieTester tester;
 
   tester.AddCookie();
@@ -1289,8 +1294,10 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   EXPECT_TRUE(tester.ContainsCookie());
 }
 
+// TODO(crbug.com/812589): Disabled due to flakiness in cookie store
+//                         initialization.
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
-       RemoveSafeBrowsingCookieForeverWithPredicate) {
+       DISABLED_RemoveSafeBrowsingCookieForeverWithPredicate) {
   RemoveSafeBrowsingCookieTester tester;
 
   tester.AddCookie();
