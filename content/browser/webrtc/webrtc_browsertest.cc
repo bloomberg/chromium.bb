@@ -170,8 +170,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
 
 // This test will modify the SDP offer to an unsupported codec, which should
 // cause SetLocalDescription to fail.
+// TODO(crbug.com/813215): Re-enable once WebRTC change has rolled in.
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       NegotiateUnsupportedVideoCodec) {
+                       DISABLED_NegotiateUnsupportedVideoCodec) {
   MakeTypicalPeerConnectionCall("negotiateUnsupportedVideoCodec();");
 }
 
