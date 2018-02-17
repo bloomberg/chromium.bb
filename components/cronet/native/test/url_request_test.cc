@@ -8,8 +8,9 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/scoped_task_environment.h"
 #include "components/cronet/native/test/test_url_request_callback.h"
 #include "components/cronet/native/test/test_util.h"
 #include "components/cronet/test/test_server.h"
@@ -104,7 +105,8 @@ class UrlRequestTest : public ::testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  // Provide a message loop for use by TestExecutor instances.
+  base::MessageLoop message_loop_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UrlRequestTest);

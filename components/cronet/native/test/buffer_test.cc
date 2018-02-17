@@ -6,7 +6,8 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "components/cronet/native/test/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,7 +23,8 @@ class BufferTest : public ::testing::Test {
                                        Cronet_BufferPtr buffer);
   bool on_destroy_called() const { return on_destroy_called_; }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  // Provide a message loop for use by TestExecutor instances.
+  base::MessageLoop message_loop_;
 
  private:
   void set_on_destroy_called(bool value) { on_destroy_called_ = value; }
@@ -116,7 +118,7 @@ TEST_F(BufferTest, TestCronetBufferAsync) {
       Cronet_Runnable_CreateWith(TestRunnable_DestroyBuffer);
   Cronet_Runnable_SetClientContext(runnable, buffer);
   Cronet_Executor_Execute(executor, runnable);
-  scoped_task_environment_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(on_destroy_called());
   Cronet_Executor_Destroy(executor);
 }

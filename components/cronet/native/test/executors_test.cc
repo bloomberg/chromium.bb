@@ -6,7 +6,8 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "components/cronet/native/test/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,7 +22,8 @@ class ExecutorsTest : public ::testing::Test {
   static void TestRunnable_Run(Cronet_RunnablePtr self);
   bool runnable_called() const { return runnable_called_; }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  // Provide a message loop for use by TestExecutor instances.
+  base::MessageLoop message_loop_;
 
  private:
   void set_runnable_called(bool value) { runnable_called_ = value; }
@@ -57,7 +59,7 @@ TEST_F(ExecutorsTest, TestCustom) {
       Cronet_Executor_CreateWith(TestExecutor_Execute);
   Cronet_Executor_Execute(executor, runnable);
   Cronet_Executor_Destroy(executor);
-  scoped_task_environment_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(runnable_called());
 }
 
@@ -69,7 +71,7 @@ TEST_F(ExecutorsTest, TestTestExecutor) {
   Cronet_ExecutorPtr executor = cronet::test::CreateTestExecutor();
   Cronet_Executor_Execute(executor, runnable);
   Cronet_Executor_Destroy(executor);
-  scoped_task_environment_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(runnable_called());
 }
 

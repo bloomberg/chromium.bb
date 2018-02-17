@@ -31,7 +31,7 @@ source_set("cronet_native_headers") {
   ]
 }
 
-# Cronet native API implementation.
+# Cross-platform portion of Cronet native API implementation.
 source_set("cronet_native_impl") {
   deps = [
     ":cronet_native_headers",
@@ -73,6 +73,7 @@ source_set("cronet_native_unittests") {
     ":cronet_native_impl",
     "//components/cronet/native/test:cronet_native_testutil",
     "//net:test_support",
+    "//testing/gtest",
   ]
 
   configs += [ ":cronet_native_include_config" ]

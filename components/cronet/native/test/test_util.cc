@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
-#include "base/task_scheduler/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/cronet/native/generated/cronet.idl_c.h"
 #include "net/base/net_errors.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -20,7 +20,8 @@ void TestExecutor_Execute(Cronet_ExecutorPtr self,
                           Cronet_RunnablePtr runnable) {
   CHECK(self);
   DVLOG(1) << "Post Task";
-  base::PostTask(FROM_HERE, base::BindOnce(Cronet_Runnable_Run, runnable));
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(Cronet_Runnable_Run, runnable));
 }
 }  // namespace
 
