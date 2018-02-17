@@ -376,7 +376,9 @@ body:not([surprise-me-disabled]) [visibleif~='surprise-me-disabled'] {
   background-image: url(../images/ui/checkbox_checked.png);
 }
 
-.top-header {
+#top-header,
+#dialog-header,
+#no-images-message {
   display: none;
 }
 
@@ -389,16 +391,33 @@ body.v2 {
 
 .v2 .dialog-container {
   background-color: #fff;
-  flex-direction: row;
-  height: 450px;
+  border-radius: 4px;
+  height: 512px;
   position: absolute;
-  top: 180px;
-  width: 100%;
+  width: 768px;
+}
+
+.v2 #dialog-header {
+  display: flex;
+  height: 40px;
+}
+
+.v2 .dialog-body {
+  display: flex;
+  height: 476px;
 }
 
 .v2 .dialog-topbar {
+  -webkit-margin-end: 32px;
   display: block;
   height: 100%;
+  overflow: visible;
+  padding: unset;
+  width: 192px;
+}
+
+.v2 .dialog-topbar #bar {
+  display: none;
 }
 
 .v2 .image-picker {
@@ -411,20 +430,55 @@ body.v2 {
 }
 
 .v2 #categories-list > li {
-  height: 100%;
+  border-top: unset;
+  height: 36px;
+  margin-bottom: 8px;
+}
+
+.v2 #categories-list > li > div {
+  color: rgb(128, 134, 139);
+  font-family: 'Roboto';
+  font-size: 13px;
+  font-weight: 500;
+  padding: 0 30px;
+}
+
+.v2 #categories-list > li[selected] {
+  background-color: rgb(232, 240, 254);
+  border-radius: 0 32px 32px 0;
 }
 
 .v2 #categories-list > li[selected] > div {
-  color: #000;
+  color: rgb(66, 133, 244);
+  font-weight: 700;
 }
 
 .v2 #surprise-me {
   display: none;
 }
 
+.v2 .image-picker {
+  -webkit-padding-end: unset;
+  -webkit-padding-start: unset;
+  padding-bottom: unset;
+  padding-top: unset;
+}
+
 .v2 .image-picker [role=listitem] {
+  -webkit-margin-end: 8px;
+  border-radius: 4px;
   height: 160px;
+  margin-bottom: 8px;
   width: 160px;
+}
+
+.v2 .image-picker [role=listitem][selected] {
+  -webkit-margin-end: 24px;
+  -webkit-margin-start: 16px;
+  height: 128px;
+  margin-bottom: 24px;
+  margin-top: 16px;
+  width: 128px;
 }
 
 .v2 .image-picker img {
@@ -434,18 +488,77 @@ body.v2 {
   width: unset;
 }
 
+.v2 .close {
+  background-color: rgba(128, 134, 139, 0.3);
+  border-radius: 4px;
+  left: 734px;
+  top: -40px;
+}
+
+.v2 .image-picker .check,
 .v2 .bottom-bar {
   display: none;
 }
 
-.v2 .top-header {
+.v2 #top-header {
   background-color: #fff;
+  border-radius: 0 0 48px 48px;
   display: flex;
-  height: 50px;
+  height: 33px;
+  padding-top: 15px;
   position: absolute;
-  width: 760px;
+  top: 0;
+  width: 698px;
 }
 
-.v2 .top-header .more-options {
+.v2 .top-header-contents {
+  display: none;
+  font-family: 'Roboto';
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.v2:not(.no-images) .top-header-contents {
   display: flex;
+}
+
+.v2 .top-header-contents #image-title {
+  -webkit-padding-start: 32px;
+  color: rgb(32, 33, 36);
+  max-width: 360px;
+  overflow: hidden;
+}
+
+.v2 .top-header-contents #collection-name {
+  -webkit-padding-start: 24px;
+  color: rgb(128, 134, 139);
+}
+
+.v2 .top-header-contents .more-options {
+  display: flex;
+  position: absolute;
+  right: 0;
+}
+
+.v2 .top-header-contents .more-options > div {
+  -webkit-padding-end: 32px;
+  color: rgb(66, 133, 244);
+  display: none;
+}
+
+.v2 .top-header-contents .more-options a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.v2 .top-header-contents.online .online-option,
+.v2 .top-header-contents.custom .custom-option {
+  display: flex;
+}
+
+.v2.no-images #no-images-message {
+  display: block;
+  left: 180px;
+  position: absolute;
+  top: 220px;
 }

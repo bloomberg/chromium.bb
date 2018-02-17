@@ -89,54 +89,64 @@ found in the LICENSE file.
     </div>
   </div>
   <div class="dialog-container">
-    <div class="dialog-topbar">
-      <div id="navstrip">
-        <list id="categories-list"></list>
-        <div id="bar"></div>
-      </div>
-      <div class="spacer"></div>
-      <div id="window-close-button" class="close"></div>
-    </div>
-    <div class="dialog-main">
-      <div id="category-container">
-        <div id="wallpaper-set-by-message"></div>
-        <grid id="wallpaper-grid" class="image-picker"></grid>
-        <div id="spinner-container" hidden></div>
-        <div class="progress-bar" hidden>
-          <div class="progress-track"></div>
+    <div id="dialog-header"></div>
+    <div class="dialog-body">
+      <div class="dialog-topbar">
+        <div id="navstrip">
+          <list id="categories-list"></list>
+          <div id="bar"></div>
         </div>
-        <div class="bottom-bar">
-          <div id="online-wallpaper-attribute">
-            <img id="attribute-image" hidden>
-            <div id="wallpaper-attribute" hidden>
-              <div>
-                <label>
-                  <span id="author-name"></span>
-                </label>
-              </div>
-              <div>
-                <a id="author-website" target="_blank"></a>
+        <div class="spacer"></div>
+        <div id="window-close-button" class="close"></div>
+      </div>
+      <div class="dialog-main">
+        <div id="category-container">
+          <div id="wallpaper-set-by-message"></div>
+          <grid id="wallpaper-grid" class="image-picker"></grid>
+          <div id="spinner-container" hidden></div>
+          <div class="progress-bar" hidden>
+            <div class="progress-track"></div>
+          </div>
+          <div id="no-images-message" i18n-content="noImagesAvailable"></div>
+          <div class="bottom-bar">
+            <div id="online-wallpaper-attribute">
+              <img id="attribute-image" hidden>
+              <div id="wallpaper-attribute" hidden>
+                <div>
+                  <label>
+                    <span id="author-name"></span>
+                  </label>
+                </div>
+                <div>
+                  <a id="author-website" target="_blank"></a>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="spacer"></div>
-          <div id="surprise-me" hidden>
-            <div id="checkbox"></div>
-            <span i18n-content="surpriseMeLabel"></span>
+            <div class="spacer"></div>
+            <div id="surprise-me" hidden>
+              <div id="checkbox"></div>
+              <span i18n-content="surpriseMeLabel"></span>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <div class="top-header">
-    <div id="photographer-name"></div>
-    <div id="collection-name"></div>
-    <div class="more-options">
-      <div id="refresh"></div>
-      <div>
-        <a id="explore" target="_blank"></a>
+  <div id="top-header">
+    <div class="top-header-contents">
+      <div id="image-title"></div>
+      <div id="collection-name"></div>
+      <div class="more-options">
+        <div id="refresh" class='online-option' i18n-content="refreshLabel">
+        </div>
+        <div class='online-option'>
+          <a id="explore" i18n-content="exploreLabel" target="_blank"></a>
+        </div>
+        <div id="center" class='custom-option' i18n-content="centerLayout">
+        </div>
+        <div id="center-cropped" class='custom-option'
+            i18n-content="centerCroppedLayout"></div>
       </div>
-      <div id="preview"></div>
     </div>
   </div>
 </body>

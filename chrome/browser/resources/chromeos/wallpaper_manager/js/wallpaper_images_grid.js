@@ -94,21 +94,14 @@ cr.define('wallpapers', function() {
           window.setTimeout(this.callback_.bind(this, this.dataModelId_), 0);
           break;
         case Constants.WallpaperSourceEnum.Custom:
-          if (loadTimeData.getBoolean('useNewWallpaperPicker')) {
-            this.decorateCustomWallpaper_(
-                imageEl, this.dataItem,
-                this.callback_.bind(this, this.dataModelId_));
-          } else {
-            this.decorateCustomWallpaperForOldPicker_(
-                imageEl, this.dataItem,
-                this.callback_.bind(this, this.dataModelId_));
-          }
+          if (loadTimeData.getBoolean('useNewWallpaperPicker'))
+            this.decorateCustomWallpaper_(imageEl, this.dataItem);
+          else
+            this.decorateCustomWallpaperForOldPicker_(imageEl, this.dataItem);
           break;
         case Constants.WallpaperSourceEnum.OEM:
         case Constants.WallpaperSourceEnum.Online:
-          this.decorateOnlineOrOEMWallpaper_(
-              imageEl, this.dataItem,
-              this.callback_.bind(this, this.dataModelId_));
+          this.decorateOnlineOrOEMWallpaper_(imageEl, this.dataItem);
           break;
         case Constants.WallpaperSourceEnum.Daily:
         case Constants.WallpaperSourceEnum.ThirdParty:
@@ -129,10 +122,9 @@ cr.define('wallpapers', function() {
      * @param {{filePath: string, baseURL: string, layout: string,
      *          source: string, availableOffline: boolean}
      *     dataItem The info related to the wallpaper image.
-     * @param {function} callback The callback function.
      * @private
      */
-    decorateCustomWallpaper_(imageElement, dataItem, callback) {
+    decorateCustomWallpaper_(imageElement, dataItem) {
       if (dataItem.source != Constants.WallpaperSourceEnum.Custom) {
         console.error(
             '|decorateCustomWallpaper_| is called but the wallpaper source ' +
@@ -148,7 +140,8 @@ cr.define('wallpapers', function() {
               console.error(
                   'Initialization of custom wallpaper grid failed for path ' +
                   dataItem.filePath);
-              callback(null /*opt_wallpaperId=*/, imageElement);
+              this.callback_(
+                  this.dataModelId_, null /*opt_wallpaperId=*/, imageElement);
               return;
             }
 
@@ -157,7 +150,9 @@ cr.define('wallpapers', function() {
             // frequently.
             WallpaperUtil.displayImage(
                 imageElement, imageData,
-                callback.bind(null /*opt_wallpaperId=*/, imageElement));
+                this.callback_.bind(
+                    this, this.dataModelId_, null /*opt_wallpaperId=*/,
+                    imageElement));
           });
     },
 
@@ -168,33 +163,32 @@ cr.define('wallpapers', function() {
      * @param {{filePath: string, baseURL: string, layout: string,
      *          source: string, availableOffline: boolean}
      *     dataItem The info related to the wallpaper image.
-     * @param {function} callback The callback function.
      * @private
      */
-    decorateCustomWallpaperForOldPicker_(imageElement, dataItem, callback) {
+    decorateCustomWallpaperForOldPicker_(imageElement, dataItem) {
       if (dataItem.source != Constants.WallpaperSourceEnum.Custom) {
         console.error(
             '|decorateCustomWallpaperForOldPicker_| is called but the ' +
             'wallpaper source is not custom.');
         return;
       }
-      var errorHandler = function(e) {
+      var errorHandler = e => {
         console.error('Can not access file system.');
-        callback();
+        this.callback_(this.dataModelId_);
       };
-      var setURL = function(fileEntry) {
+      var setURL = fileEntry => {
         imageElement.src = fileEntry.toURL();
-        callback(dataItem.wallpaperId, imageElement);
+        this.callback_(this.dataModelId_, dataItem.wallpaperId, imageElement);
       };
       var wallpaperDirectories = WallpaperDirectories.getInstance();
-      var fallback = function() {
+      var fallback = () => {
         wallpaperDirectories.getDirectory(
             Constants.WallpaperDirNameEnum.ORIGINAL, function(dirEntry) {
               dirEntry.getFile(
                   dataItem.baseURL, {create: false}, setURL, errorHandler);
             }, errorHandler);
       };
-      var success = function(dirEntry) {
+      var success = dirEntry => {
         dirEntry.getFile(dataItem.baseURL, {create: false}, setURL, fallback);
       };
       wallpaperDirectories.getDirectory(
@@ -207,10 +201,9 @@ cr.define('wallpapers', function() {
      * @param {{filePath: string, baseURL: string, layout: string,
      *          source: string, availableOffline: boolean}
      *     dataItem The info related to the wallpaper image.
-     * @param {function} callback The callback function.
      * @private
      */
-    decorateOnlineOrOEMWallpaper_(imageElement, dataItem, callback) {
+    decorateOnlineOrOEMWallpaper_(imageElement, dataItem) {
       if (dataItem.source != Constants.WallpaperSourceEnum.Online &&
           dataItem.source != Constants.WallpaperSourceEnum.OEM) {
         console.error(
@@ -224,7 +217,9 @@ cr.define('wallpapers', function() {
                 if (data) {
                   WallpaperUtil.displayImage(
                       imageElement, data,
-                      callback.bind(dataItem.wallpaperId, imageElement));
+                      this.callback_.bind(
+                          this, this.dataModelId_, dataItem.wallpaperId,
+                          imageElement));
                 } else if (
                     dataItem.source == Constants.WallpaperSourceEnum.Online) {
                   var xhr = new XMLHttpRequest();
@@ -235,15 +230,17 @@ cr.define('wallpapers', function() {
                       true);
                   xhr.responseType = 'arraybuffer';
                   xhr.send(null);
-                  xhr.addEventListener('load', function(e) {
+                  xhr.addEventListener('load', e => {
                     if (xhr.status === 200) {
                       chrome.wallpaperPrivate.saveThumbnail(
                           dataItem.baseURL, xhr.response);
                       WallpaperUtil.displayImage(
                           imageElement, xhr.response,
-                          callback.bind(dataItem.wallpaperId, imageElement));
+                          this.callback_.bind(
+                              this, this.dataModelId_, dataItem.wallpaperId,
+                              imageElement));
                     } else {
-                      callback();
+                      this.callback_(this.dataModelId_);
                     }
                   });
                 }
@@ -360,13 +357,16 @@ cr.define('wallpapers', function() {
         // item is constructed in function itemConstructor below.
         this.pendingItems_ = 0;
 
-        this.style.visibility = 'hidden';
-        // If spinner is hidden, schedule to show the spinner after
-        // ShowSpinnerDelayMs delay. Otherwise, keep it spinning.
-        if ($('spinner-container').hidden) {
-          this.spinnerTimeout_ = window.setTimeout(function() {
-            $('spinner-container').hidden = false;
-          }, ShowSpinnerDelayMs);
+        // Only show the spinner on the old wallpaper picker.
+        if (!this.useNewWallpaperPicker_) {
+          this.style.visibility = 'hidden';
+          // If spinner is hidden, schedule to show the spinner after
+          // ShowSpinnerDelayMs delay. Otherwise, keep it spinning.
+          if ($('spinner-container').hidden) {
+            this.spinnerTimeout_ = window.setTimeout(function() {
+              $('spinner-container').hidden = false;
+            }, ShowSpinnerDelayMs);
+          }
         }
       } else {
         // Sets dataModel to null should hide spinner immediately.
@@ -431,7 +431,7 @@ cr.define('wallpapers', function() {
       if (opt_wallpaperId != null)
         this.thumbnailList_[opt_wallpaperId] = opt_thumbnail;
 
-      if (opt_thumbnail && loadTimeData.getBoolean('useNewWallpaperPicker'))
+      if (opt_thumbnail && this.useNewWallpaperPicker_)
         this.cropImageToFitGrid_(opt_thumbnail);
 
       if (this.pendingItems_ == 0) {
@@ -439,6 +439,12 @@ cr.define('wallpapers', function() {
         window.clearTimeout(this.spinnerTimeout_);
         this.spinnerTimeout_ = 0;
         $('spinner-container').hidden = true;
+        if (this.useNewWallpaperPicker_) {
+          // TODO(crbug.com/812725): Decide what to show in the top header bar
+          // if the current wallpaper in use was not selected from the picker.
+          // For now, show the info of the first wallpaper in this collection.
+          wallpaperManager.setWallpaperAttribution(this.dataModel.item(0));
+        }
       }
     },
 
@@ -452,6 +458,8 @@ cr.define('wallpapers', function() {
       this.checkmark_.classList.add('check');
       this.dataModel = new ArrayDataModel([]);
       this.thumbnailList_ = new ArrayDataModel([]);
+      this.useNewWallpaperPicker_ =
+          loadTimeData.getBoolean('useNewWallpaperPicker');
       var self = this;
       this.itemConstructor = function(value) {
         var dataModelId = self.dataModelId_;

@@ -42,6 +42,7 @@ function WallpaperManager(dialogDom) {
   // the same path, ie. pass the info to |WallpaperThumbnailsGridItem| for
   // actual image rendering.
   this.document_.body.classList.toggle('v2', this.useNewWallpaperPicker_);
+  this.placeWallpaperPicker_();
 
   if (loadTimeData.getBoolean('showBackdropWallpapers')) {
     // |collectionsInfo_| represents the list of wallpaper collections. Each
@@ -209,36 +210,15 @@ WallpaperManager.prototype.fetchManifest_ = function() {
  */
 WallpaperManager.prototype.getCollectionsInfo_ = function() {
   chrome.wallpaperPrivate.getCollectionsInfo(collectionsInfo => {
-    if (chrome.runtime.lastError)
-      this.onGetCollectionsInfoFailed_();
-    else
-      this.onGetCollectionsInfoSucceeded_(collectionsInfo);
+    if (chrome.runtime.lastError) {
+      // TODO(crbug.com/800945): Distinguish the error types and show custom
+      // error messages.
+      this.showError_(str('connectionFailed'));
+      $('wallpaper-grid').classList.add('image-picker-offline');
+    }
+    this.collectionsInfo_ = collectionsInfo;
+    this.postDownloadDomInit_();
   });
-};
-
-/**
- * Called upon the success of fetching the collection info.
- * @param {Object} collectionsInfo The collection info.
- * @private
- */
-WallpaperManager.prototype.onGetCollectionsInfoSucceeded_ = function(
-    collectionsInfo) {
-  this.collectionsInfo_ = collectionsInfo;
-  if (this.collectionsInfo_.length == 0) {
-    // Although fetch succeeds, the collection list may be empty in the first
-    // place, in this case do nothing.
-    return;
-  }
-  // Initialize the category list and show the collection names.
-  this.postDownloadDomInit_();
-};
-
-/**
- * Called upon the failure of fetching the collection names.
- * @private
- */
-WallpaperManager.prototype.onGetCollectionsInfoFailed_ = function() {
-  // TODO(crbug.com/800945): Show error message.
 };
 
 /**
@@ -248,6 +228,8 @@ WallpaperManager.prototype.onGetCollectionsInfoFailed_ = function() {
  * @private
  */
 WallpaperManager.prototype.showCollection_ = function(index) {
+  // Clear the 'no images' message if there's any.
+  this.document_.body.classList.remove('no-images');
   var collectionId = this.collectionsInfo_[index]['collectionId'];
   // Check if the info for this collection has already been fetched. If so,
   // directly show the images.
@@ -262,8 +244,8 @@ WallpaperManager.prototype.showCollection_ = function(index) {
       return;
     }
     if (imagesInfo.length == 0) {
-      // TODO(crbug.com/800945): Decide if we want to show error message if the
-      // fetch succeeds but the images info list turns out to be empty.
+      // Show a 'no images' message to user.
+      this.document_.body.classList.add('no-images');
       return;
     }
 
@@ -276,7 +258,7 @@ WallpaperManager.prototype.showCollection_ = function(index) {
         layout: Constants.WallpaperThumbnailDefaultLayout,
         source: Constants.WallpaperSourceEnum.Online,
         availableOffline: false,
-        author: imagesInfo[i]['displayText'][0],
+        imageTitle: imagesInfo[i]['displayText'][0],
         authorWebsite: imagesInfo[i]['actionUrl'],
         collectionName: this.collectionsInfo_[index]['collectionName']
       };
@@ -288,6 +270,25 @@ WallpaperManager.prototype.showCollection_ = function(index) {
     // Caches the info.
     this.imagesInfoMap_[collectionId] = wallpapersDataModel;
   });
+};
+
+/**
+ * Places the main dialog in the center of the screen, and the header bar at the
+ * top. Only used for the new wallpaper picker.
+ * @private
+ */
+WallpaperManager.prototype.placeWallpaperPicker_ = function() {
+  if (!this.useNewWallpaperPicker_)
+    return;
+  var totalWidth = this.document_.body.offsetWidth;
+  var totalHeight = this.document_.body.offsetHeight;
+  $('top-header').style.left =
+      (totalWidth - $('top-header').offsetWidth) / 2 + 'px';
+  var dialogContainer = this.document_.querySelector('.dialog-container');
+  dialogContainer.style.left =
+      (totalWidth - dialogContainer.offsetWidth) / 2 + 'px';
+  dialogContainer.style.top =
+      (totalHeight - dialogContainer.offsetHeight) / 2 + 'px';
 };
 
 /**
@@ -409,6 +410,15 @@ WallpaperManager.prototype.postDownloadDomInit_ = function() {
       .addEventListener('change', this.onFileSelectorChanged_.bind(this));
   $('set-wallpaper-layout')
       .addEventListener('change', this.onWallpaperLayoutChanged_.bind(this));
+
+  // On the new wallpaper picker, clicking the refresh button will force
+  // fetching the online wallpapers from scratch.
+  $('refresh').addEventListener('click', this.getCollectionsInfo_.bind(this));
+  $('center').addEventListener(
+      'click', this.setCustomWallpaperLayout_.bind(this, 'CENTER'));
+  $('center-cropped')
+      .addEventListener(
+          'click', this.setCustomWallpaperLayout_.bind(this, 'CENTER_CROPPED'));
 
   // Always prefer the value from local filesystem to avoid the time window
   // of setting the third party app name and the third party wallpaper.
@@ -590,6 +600,13 @@ WallpaperManager.prototype.onCommandCanExecute_ = function(event) {
  * Preset to the category which contains current wallpaper.
  */
 WallpaperManager.prototype.presetCategory_ = function() {
+  if (this.useNewWallpaperPicker_) {
+    // TODO(crbug.com/812725): Implement preset category for the new picker. For
+    // now, autoselect the first category.
+    this.categoriesList_.selectionModel.selectedIndex = 0;
+    return;
+  }
+
   this.currentWallpaper_ = str('currentWallpaper');
   // The currentWallpaper_ is either a url contains HightResolutionSuffix or a
   // custom wallpaper file name converted from an integer value represent
@@ -832,6 +849,16 @@ WallpaperManager.prototype.setSelectedOnlineWallpaper_ = function(
         'not online.');
     return;
   }
+
+  // Cancel any ongoing wallpaper request, otherwise the wallpaper being set in
+  // the end may not be the one that the user selected the last, because the
+  // time needed to set each wallpaper may vary (e.g. some wallpapers already
+  // exist in the local file system but others need to be fetched from server).
+  if (this.useNewWallpaperPicker_ && this.wallpaperRequest_) {
+    this.wallpaperRequest_.abort();
+    this.wallpaperRequest_ = null;
+  }
+
   var wallpaperURL = selectedItem.baseURL +
       WallpaperUtil.getOnlineWallpaperHighResolutionSuffix();
   var selectedGridItem = this.wallpaperGrid_.getListItem(selectedItem);
@@ -844,9 +871,6 @@ WallpaperManager.prototype.setSelectedOnlineWallpaper_ = function(
         }
 
         // Falls back to request wallpaper from server.
-        if (this.wallpaperRequest_)
-          this.wallpaperRequest_.abort();
-
         this.wallpaperRequest_ = new XMLHttpRequest();
         this.progressManager_.reset(this.wallpaperRequest_, selectedGridItem);
 
@@ -934,7 +958,7 @@ WallpaperManager.prototype.onFileSystemError_ = function(e) {
  * Handles changing of selectedItem in wallpaper manager.
  */
 WallpaperManager.prototype.onSelectedItemChanged_ = function() {
-  this.setWallpaperAttribution_(this.selectedItem_);
+  this.setWallpaperAttribution(this.selectedItem_);
 
   if (!this.selectedItem_ || this.selectedItem_.source == 'ADDNEW')
     return;
@@ -960,14 +984,18 @@ WallpaperManager.prototype.onSelectedItemChanged_ = function() {
  * the attributions.
  * @param {Object} selectedItem the selected item in WallpaperThumbnailsGrid's
  *     data model.
- * @private
  */
-WallpaperManager.prototype.setWallpaperAttribution_ = function(selectedItem) {
+WallpaperManager.prototype.setWallpaperAttribution = function(selectedItem) {
   if (this.useNewWallpaperPicker_) {
-    $('photographer-name').textContent = selectedItem.author;
+    $('image-title').textContent = selectedItem.imageTitle;
     $('collection-name').textContent = selectedItem.collectionName;
-    $('explore').textContent = selectedItem.authorWebsite;
     $('explore').href = selectedItem.authorWebsite;
+    var topHeaderContents =
+        this.document_.querySelector('.top-header-contents');
+    topHeaderContents.classList.toggle(
+        'online', selectedItem.source === Constants.WallpaperSourceEnum.Online);
+    topHeaderContents.classList.toggle(
+        'custom', selectedItem.source === Constants.WallpaperSourceEnum.Custom);
     return;
   }
 
@@ -1021,6 +1049,7 @@ WallpaperManager.prototype.setWallpaperAttribution_ = function(selectedItem) {
  * Resize thumbnails grid and categories list to fit the new window size.
  */
 WallpaperManager.prototype.onResize_ = function() {
+  this.placeWallpaperPicker_();
   this.wallpaperGrid_.redraw();
   this.categoriesList_.redraw();
 };
@@ -1210,18 +1239,26 @@ WallpaperManager.prototype.setCustomWallpaper = function(
  * Handles the layout setting change of custom wallpaper.
  */
 WallpaperManager.prototype.onWallpaperLayoutChanged_ = function() {
-  var layout = getSelectedLayout();
-  var self = this;
-  chrome.wallpaperPrivate.setCustomWallpaperLayout(layout, function() {
+  this.setCustomWallpaperLayout_(getSelectedLayout());
+};
+
+/**
+ * Implementation of |onWallpaperLayoutChanged_|. A wrapper of the
+ * |setCustomWallpaperLayout| api.
+ * @param {string} layout The user selected wallpaper layout.
+ * @private
+ */
+WallpaperManager.prototype.setCustomWallpaperLayout_ = function(layout) {
+  chrome.wallpaperPrivate.setCustomWallpaperLayout(layout, () => {
     if (chrome.runtime.lastError != undefined &&
         chrome.runtime.lastError.message != str('canceledWallpaper')) {
-      self.showError_(chrome.runtime.lastError.message);
-      self.removeCustomWallpaper(fileName);
+      this.showError_(chrome.runtime.lastError.message);
+      this.removeCustomWallpaper(fileName);
       $('set-wallpaper-layout').disabled = true;
     } else {
-      WallpaperUtil.saveToLocalStorage(self.currentWallpaper_, layout);
-      self.onWallpaperChanged_(
-          self.wallpaperGrid_.activeItem, self.currentWallpaper_);
+      WallpaperUtil.saveToLocalStorage(this.currentWallpaper_, layout);
+      this.onWallpaperChanged_(
+          this.wallpaperGrid_.activeItem, this.currentWallpaper_);
     }
   });
 };
@@ -1244,6 +1281,9 @@ WallpaperManager.prototype.onCategoriesChange_ = function() {
   if (selectedListItem.custom) {
     if (this.useNewWallpaperPicker_) {
       chrome.wallpaperPrivate.getLocalImagePaths(localImagePaths => {
+        // Show a 'no images' message to user if there's no local image.
+        this.document_.body.classList.toggle(
+            'no-images', localImagePaths.length == 0);
         var wallpapersDataModel = new cr.ui.ArrayDataModel([]);
         for (var imagePath of localImagePaths) {
           var wallpaperInfo = {
@@ -1259,7 +1299,10 @@ WallpaperManager.prototype.onCategoriesChange_ = function() {
             baseURL: new Date().getTime().toString(),
             layout: Constants.WallpaperThumbnailDefaultLayout,
             source: Constants.WallpaperSourceEnum.Custom,
-            availableOffline: true
+            availableOffline: true,
+            // The file name is displayed as the image title.
+            imageTitle: imagePath.split(/[/\\]/).pop(),
+            collectionName: str('customCategoryLabel')
           };
           wallpapersDataModel.push(wallpaperInfo);
         }
