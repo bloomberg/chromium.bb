@@ -1936,31 +1936,34 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       continue;
     }
 
+    const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, mbmi);
     RD_STATS this_rd_stats;
     av1_invalid_rd_stats(&this_rd_stats);
     if (cpi->sf.optimize_coefficients != FULL_TRELLIS_OPT) {
       av1_xform_quant(
           cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
           USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP);
+      rate_cost =
+          av1_cost_coeffs(cpi, x, plane, blk_row, blk_col, block, tx_size,
+                          scan_order, a, l, use_fast_coef_costing);
     } else {
       av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
                       tx_size, AV1_XFORM_QUANT_FP);
       av1_optimize_b(cpi, x, plane, blk_row, blk_col, block, plane_bsize,
                      tx_size, a, l, 1, &rate_cost);
+      const int eob = x->plane[plane].eobs[block];
+      if (eob)
+        rate_cost +=
+            av1_tx_type_cost(cm, x, xd, mbmi->sb_type, plane, tx_size, tx_type);
+      else
+        rate_cost =
+            av1_cost_coeffs(cpi, x, plane, blk_row, blk_col, block, tx_size,
+                            scan_order, a, l, use_fast_coef_costing);
     }
     av1_dist_block(cpi, x, plane, plane_bsize, block, blk_row, blk_col, tx_size,
                    &this_rd_stats.dist, &this_rd_stats.sse,
                    OUTPUT_HAS_PREDICTED_PIXELS);
 
-    const int eob = x->plane[plane].eobs[block];
-    const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, mbmi);
-    if (eob)
-      rate_cost +=
-          av1_tx_type_cost(cm, x, xd, mbmi->sb_type, plane, tx_size, tx_type);
-    else
-      rate_cost =
-          av1_cost_coeffs(cpi, x, plane, blk_row, blk_col, block, tx_size,
-                          scan_order, a, l, use_fast_coef_costing);
     this_rd_stats.rate = rate_cost;
 
     const int64_t rd =
