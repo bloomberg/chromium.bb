@@ -99,19 +99,6 @@ void PrinterQuery::SetSettings(
                                               std::move(new_settings)));
 }
 
-#if defined(OS_CHROMEOS)
-void PrinterQuery::SetSettingsFromPOD(
-    std::unique_ptr<printing::PrintSettings> new_settings,
-    base::OnceClosure callback) {
-  StartWorker(std::move(callback));
-
-  worker_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PrintJobWorker::SetSettingsFromPOD,
-                     base::Unretained(worker_.get()), std::move(new_settings)));
-}
-#endif
-
 void PrinterQuery::StartWorker(base::OnceClosure callback) {
   DCHECK(!callback_);
   DCHECK(worker_);

@@ -86,12 +86,6 @@ class PRINTING_EXPORT PrintingContext {
   // settings information. |ranges| has the new page range settings.
   Result UpdatePrintSettings(const base::DictionaryValue& job_settings);
 
-#if defined(OS_CHROMEOS)
-  // Updates Print Settings.
-  Result UpdatePrintSettingsFromPOD(
-      std::unique_ptr<PrintSettings> job_settings);
-#endif
-
   // Does platform specific setup of the printer before the printing. Signal the
   // printer that a document is about to be spooled.
   // Warning: This function enters a message loop. That may cause side effects

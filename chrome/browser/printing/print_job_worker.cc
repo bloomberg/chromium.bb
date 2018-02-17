@@ -6,7 +6,6 @@
 
 #include <memory>
 #include <string>
-#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -206,20 +205,6 @@ void PrintJobWorker::SetSettings(
                          base::Unretained(this), std::move(new_settings))));
 }
 
-#if defined(OS_CHROMEOS)
-void PrintJobWorker::SetSettingsFromPOD(
-    std::unique_ptr<printing::PrintSettings> new_settings) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(
-          &HoldRefCallback, base::WrapRefCounted(owner_),
-          base::BindOnce(&PrintJobWorker::UpdatePrintSettingsFromPOD,
-                         base::Unretained(this), std::move(new_settings))));
-}
-#endif
-
 void PrintJobWorker::UpdatePrintSettings(
     std::unique_ptr<base::DictionaryValue> new_settings) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -227,16 +212,6 @@ void PrintJobWorker::UpdatePrintSettings(
       printing_context_->UpdatePrintSettings(*new_settings);
   GetSettingsDone(result);
 }
-
-#if defined(OS_CHROMEOS)
-void PrintJobWorker::UpdatePrintSettingsFromPOD(
-    std::unique_ptr<printing::PrintSettings> new_settings) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  PrintingContext::Result result =
-      printing_context_->UpdatePrintSettingsFromPOD(std::move(new_settings));
-  GetSettingsDone(result);
-}
-#endif
 
 void PrintJobWorker::GetSettingsDone(PrintingContext::Result result) {
   // Most PrintingContext functions may start a message loop and process
