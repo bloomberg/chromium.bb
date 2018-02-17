@@ -27,7 +27,6 @@
 using std::string;
 using testing::_;
 using testing::AnyNumber;
-using testing::CreateFunctor;
 using testing::InSequence;
 
 namespace net {

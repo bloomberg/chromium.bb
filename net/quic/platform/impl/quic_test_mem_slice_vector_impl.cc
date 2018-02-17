@@ -14,7 +14,7 @@ TestIOBuffer::~TestIOBuffer() {
 QuicTestMemSliceVectorImpl::~QuicTestMemSliceVectorImpl() {}
 
 QuicTestMemSliceVectorImpl::QuicTestMemSliceVectorImpl(
-    std::vector<std::pair<char*, int>> buffers) {
+    std::vector<std::pair<char*, size_t>> buffers) {
   for (auto& buffer : buffers) {
     buffers_.push_back(new TestIOBuffer(buffer.first));
     lengths_.push_back(buffer.second);
