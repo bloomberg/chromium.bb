@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x92
-  LayoutNGBlockFlow {HTML} at (0,0) size 800x91.59
-    LayoutNGBlockFlow {BODY} at (8,8) size 784x75.59
+layer at (0,0) size 800x600
+  LayoutNGBlockFlow {HTML} at (0,0) size 800x600
+    LayoutNGBlockFlow {BODY} at (8,8) size 784x584
       LayoutNGBlockFlow {DIV} at (0,0) size 784x75.59 [border: (5px solid #000000)]
         LayoutFieldset {FIELDSET} at (7,5) size 770x65.59 [border: (10px groove #FF0000)]
           LayoutNGBlockFlow {LEGEND} at (42,0) size 121.89x20

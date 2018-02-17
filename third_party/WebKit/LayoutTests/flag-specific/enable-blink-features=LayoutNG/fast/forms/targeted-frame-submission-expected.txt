@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x248
-  LayoutNGBlockFlow {HTML} at (0,0) size 800x248
-    LayoutNGBlockFlow {BODY} at (8,8) size 784x232
+layer at (0,0) size 800x600
+  LayoutNGBlockFlow {HTML} at (0,0) size 800x600
+    LayoutNGBlockFlow {BODY} at (8,8) size 784x584
       LayoutNGBlockFlow {FORM} at (0,0) size 784x22
         LayoutButton {INPUT} at (0,0) size 42x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
           LayoutNGBlockFlow (anonymous) at (8,3) size 26x16
@@ -19,9 +19,9 @@ layer at (8,86) size 304x154
   LayoutIFrame {IFRAME} at (0,0) size 304x154 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 300x150
       LayoutView at (0,0) size 300x150
-    layer at (0,0) size 300x37
-      LayoutNGBlockFlow {HTML} at (0,0) size 300x37
-        LayoutNGBlockFlow {BODY} at (8,8) size 284x16
+    layer at (0,0) size 300x150
+      LayoutNGBlockFlow {HTML} at (0,0) size 300x150
+        LayoutNGBlockFlow {BODY} at (8,8) size 284x129
           LayoutNGBlockFlow {PRE} at (0,0) size 284x16
             LayoutText {#text} at (0,0) size 56x16
               text run at (0,0) width 56: "SUCCESS"

@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x173
-  LayoutNGBlockFlow {HTML} at (0,0) size 800x173
-    LayoutNGBlockFlow {BODY} at (8,8) size 784x149
+layer at (0,0) size 800x600
+  LayoutNGBlockFlow {HTML} at (0,0) size 800x600
+    LayoutNGBlockFlow {BODY} at (8,8) size 784x576
       LayoutNGBlockFlow (anonymous) at (0,0) size 784x40
         LayoutText {#text} at (0,0) size 746x39
           text run at (0,0) width 746: "This tests whether alt text is shown for image-type form input elements with no src attribute. You should see \"Success\""

@@ -267,10 +267,8 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   border_scrollbar_padding_ =
       CalculateBorderScrollbarPadding(ConstraintSpace(), Style(), Node());
 
-  // TODO(layout-ng): For quirks mode, should we pass blockSize instead of
-  // NGSizeIndefinite?
-  NGLogicalSize size = CalculateBorderBoxSize(ConstraintSpace(), Style(),
-                                              min_max_size, NGSizeIndefinite);
+  NGLogicalSize size = CalculateBorderBoxSize(
+      ConstraintSpace(), Style(), min_max_size, CalculateDefaultBlockSize());
 
   // Our calculated block-axis size may be indefinite at this point.
   // If so, just leave the size as NGSizeIndefinite instead of subtracting
@@ -478,6 +476,8 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   }
 
   // Recompute the block-axis size now that we know our content size.
+  intrinsic_block_size_ = std::max(intrinsic_block_size_,
+                                   CalculateMinimumBlockSize(end_margin_strut));
   size.block_size = ComputeBlockSizeForFragment(ConstraintSpace(), Style(),
                                                 intrinsic_block_size_);
   container_builder_.SetBlockSize(size.block_size);
@@ -1712,6 +1712,51 @@ void NGBlockLayoutAlgorithm::AddPositionedFloats(
     container_builder_.AddChild(positioned_float.layout_result, logical_offset);
     container_builder_.PropagateBreak(positioned_float.layout_result);
   }
+}
+
+// In quirks mode, BODY and HTML elements must completely fill initial
+// containing block. Percentage resolution size is minimal size
+// that would fill the ICB.
+LayoutUnit NGBlockLayoutAlgorithm::CalculateDefaultBlockSize() {
+  if (!Node().GetDocument().InQuirksMode())
+    return NGSizeIndefinite;
+
+  if (Node().IsDocumentElement() || Node().IsBody()) {
+    LayoutUnit block_size = ConstraintSpace().AvailableSize().block_size;
+    block_size -= ComputeMarginsForSelf(ConstraintSpace(), Style()).BlockSum();
+    return block_size.ClampNegativeToZero();
+  }
+  return NGSizeIndefinite;
+}
+
+LayoutUnit NGBlockLayoutAlgorithm::CalculateMinimumBlockSize(
+    const NGMarginStrut& end_margin_strut) {
+  if (!Node().GetDocument().InQuirksMode())
+    return NGSizeIndefinite;
+
+  if (Node().IsDocumentElement() && Node().Style().LogicalHeight().IsAuto()) {
+    return ConstraintSpace().AvailableSize().block_size -
+           ComputeMarginsForSelf(ConstraintSpace(), Style()).BlockSum();
+  }
+  if (Node().IsBody() && Node().Style().LogicalHeight().IsAuto()) {
+    LayoutUnit body_block_end_margin =
+        ComputeMarginsForSelf(ConstraintSpace(), Style()).block_end;
+    LayoutUnit margin_sum;
+    if (container_builder_.BfcOffset()) {
+      NGMarginStrut body_strut = end_margin_strut;
+      body_strut.Append(body_block_end_margin, /* is_quirky */ false);
+      margin_sum = container_builder_.BfcOffset().value().block_offset -
+                   ConstraintSpace().BfcOffset().block_offset +
+                   body_strut.Sum();
+    } else {
+      // end_margin_strut is top margin when we have no BfcOffset.
+      margin_sum = end_margin_strut.Sum() + body_block_end_margin;
+    }
+    LayoutUnit minimum_block_size =
+        ConstraintSpace().AvailableSize().block_size - margin_sum;
+    return minimum_block_size.ClampNegativeToZero();
+  }
+  return NGSizeIndefinite;
 }
 
 }  // namespace blink

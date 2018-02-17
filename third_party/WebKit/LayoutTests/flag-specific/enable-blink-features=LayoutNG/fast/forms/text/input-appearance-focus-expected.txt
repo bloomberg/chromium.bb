@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x178
-  LayoutNGBlockFlow {HTML} at (0,0) size 800x178
-    LayoutNGBlockFlow {BODY} at (8,8) size 784x154
+layer at (0,0) size 800x600
+  LayoutNGBlockFlow {HTML} at (0,0) size 800x600
+    LayoutNGBlockFlow {BODY} at (8,8) size 784x576
       LayoutNGBlockFlow (anonymous) at (0,0) size 784x20
         LayoutText {#text} at (0,0) size 754x19
           text run at (0,0) width 754: "This test uses the new text field to test focus() and blur() and to make sure that onFocus and onBlur events fire correctly."

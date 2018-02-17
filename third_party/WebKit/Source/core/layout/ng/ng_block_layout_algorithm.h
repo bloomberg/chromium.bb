@@ -197,6 +197,14 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       const NGBoxStrut& child_margins,
       const WTF::Optional<NGBfcOffset>& known_fragment_offset);
 
+  // Computes default content size for HTML and BODY elements in quirks mode.
+  // Returns NGSizeIndefinite in all other cases.
+  LayoutUnit CalculateDefaultBlockSize();
+
+  // Computes minimum size for HTML and BODY elements in quirks mode.
+  // Returns NGSizeIndefinite in all other cases.
+  LayoutUnit CalculateMinimumBlockSize(const NGMarginStrut& end_margin_strut);
+
   NGLogicalSize child_available_size_;
   NGLogicalSize child_percentage_size_;
 

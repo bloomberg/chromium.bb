@@ -10,6 +10,7 @@
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
+#include "core/layout/ng/ng_length_utils.h"
 
 namespace blink {
 
@@ -138,9 +139,9 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
   // DCHECK(is_new_fc,
   //  box.IsLayoutBlock() && ToLayoutBlock(box).CreatesNewFormattingContext());
 
-  FloatSize icb_float_size = box.View()->ViewportSizeForViewportUnits();
-  NGPhysicalSize initial_containing_block_size{
-      LayoutUnit(icb_float_size.Width()), LayoutUnit(icb_float_size.Height())};
+  IntSize icb_size = box.View()->GetLayoutSize(kExcludeScrollbars);
+  NGPhysicalSize initial_containing_block_size{LayoutUnit(icb_size.Width()),
+                                               LayoutUnit(icb_size.Height())};
 
   // ICB cannot be indefinite by the spec.
   DCHECK_GE(initial_containing_block_size.width, LayoutUnit());

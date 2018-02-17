@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x305
-  LayoutNGBlockFlow {HTML} at (0,0) size 800x305
-    LayoutNGBlockFlow {BODY} at (8,8) size 784x289 [bgcolor=#CCCCCC]
+layer at (0,0) size 800x600
+  LayoutNGBlockFlow {HTML} at (0,0) size 800x600
+    LayoutNGBlockFlow {BODY} at (8,8) size 784x584 [bgcolor=#CCCCCC]
       LayoutNGBlockFlow {P} at (0,0) size 784x20
         LayoutText {#text} at (0,0) size 355x19
           text run at (0,0) width 355: "The style declarations which apply to the text below are:"
