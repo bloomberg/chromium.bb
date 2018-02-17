@@ -132,6 +132,9 @@
     {
       'target_name': 'advanced_options_settings',
       'dependencies': [
+        '../data/compiled_resources2.gyp:destination',
+        'advanced_settings_dialog',
+        'settings_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -188,6 +191,7 @@
         '../data/compiled_resources2.gyp:destination_store',
         '../data/compiled_resources2.gyp:user_info',
         'destination_list',
+        'print_preview_search_box',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -198,7 +202,6 @@
         '../compiled_resources2.gyp:native_layer',
         '../data/compiled_resources2.gyp:destination',
         'destination_list_item',
-        'print_preview_search_box',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -207,6 +210,17 @@
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:search_highlight_utils',
         '../data/compiled_resources2.gyp:destination',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'advanced_settings_dialog',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_dialog/compiled_resources2.gyp:cr_dialog',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
+        '../data/compiled_resources2.gyp:destination',
+        'print_preview_search_box',
+        'settings_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
