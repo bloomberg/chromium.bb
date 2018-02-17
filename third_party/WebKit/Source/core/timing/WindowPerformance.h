@@ -36,13 +36,13 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/PerformanceMonitor.h"
 #include "core/timing/MemoryInfo.h"
-#include "core/timing/PerformanceBase.h"
+#include "core/timing/Performance.h"
 #include "core/timing/PerformanceNavigation.h"
 #include "core/timing/PerformanceTiming.h"
 
 namespace blink {
 
-class CORE_EXPORT WindowPerformance final : public PerformanceBase,
+class CORE_EXPORT WindowPerformance final : public Performance,
                                             public PerformanceMonitor::Client,
                                             public DOMWindowClient {
   DEFINE_WRAPPERTYPEINFO();
@@ -64,7 +64,7 @@ class CORE_EXPORT WindowPerformance final : public PerformanceBase,
   void UpdateLongTaskInstrumentation() override;
 
   void Trace(blink::Visitor*) override;
-  using PerformanceBase::TraceWrappers;
+  using Performance::TraceWrappers;
 
  private:
   explicit WindowPerformance(LocalDOMWindow*);

@@ -50,7 +50,7 @@ PerformanceObserver* PerformanceObserver::Create(
 
 PerformanceObserver::PerformanceObserver(
     ExecutionContext* execution_context,
-    PerformanceBase* performance,
+    Performance* performance,
     V8PerformanceObserverCallback* callback)
     : ContextClient(execution_context),
       execution_context_(execution_context),

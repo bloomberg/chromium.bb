@@ -27,7 +27,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/timing/PerformanceBase.h"
+#include "core/timing/Performance.h"
 #include "core/timing/PerformanceMark.h"
 #include "core/timing/PerformanceMeasure.h"
 #include "platform/Histogram.h"
@@ -74,8 +74,7 @@ const RestrictedKeyMap& GetRestrictedKeyMap() {
 
 }  // namespace
 
-UserTiming::UserTiming(PerformanceBase& performance)
-    : performance_(&performance) {}
+UserTiming::UserTiming(Performance& performance) : performance_(&performance) {}
 
 static void InsertPerformanceEntry(PerformanceEntryMap& performance_entry_map,
                                    PerformanceEntry& entry) {

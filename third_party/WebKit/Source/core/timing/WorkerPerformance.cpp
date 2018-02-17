@@ -41,13 +41,13 @@
 namespace blink {
 
 WorkerPerformance::WorkerPerformance(WorkerGlobalScope* context)
-    : PerformanceBase(TimeTicksFromSeconds(context->TimeOrigin()),
-                      context->GetTaskRunner(TaskType::kPerformanceTimeline)),
+    : Performance(TimeTicksFromSeconds(context->TimeOrigin()),
+                  context->GetTaskRunner(TaskType::kPerformanceTimeline)),
       execution_context_(context) {}
 
 void WorkerPerformance::Trace(blink::Visitor* visitor) {
   visitor->Trace(execution_context_);
-  PerformanceBase::Trace(visitor);
+  Performance::Trace(visitor);
 }
 
 }  // namespace blink

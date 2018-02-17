@@ -9,7 +9,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/testing/NullExecutionContext.h"
-#include "core/timing/PerformanceBase.h"
+#include "core/timing/Performance.h"
 #include "core/timing/PerformanceLongTaskTiming.h"
 #include "core/timing/PerformanceObserver.h"
 #include "core/timing/PerformanceObserverInit.h"
@@ -19,13 +19,13 @@
 
 namespace blink {
 
-class TestPerformanceBase : public PerformanceBase {
+class TestPerformance : public Performance {
  public:
-  explicit TestPerformanceBase(ScriptState* script_state)
-      : PerformanceBase(TimeTicks(),
-                        ExecutionContext::From(script_state)
-                            ->GetTaskRunner(TaskType::kPerformanceTimeline)) {}
-  ~TestPerformanceBase() = default;
+  explicit TestPerformance(ScriptState* script_state)
+      : Performance(TimeTicks(),
+                    ExecutionContext::From(script_state)
+                        ->GetTaskRunner(TaskType::kPerformanceTimeline)) {}
+  ~TestPerformance() = default;
 
   ExecutionContext* GetExecutionContext() const override { return nullptr; }
 
@@ -37,15 +37,15 @@ class TestPerformanceBase : public PerformanceBase {
     return HasObserverFor(entry_type);
   }
 
-  void Trace(blink::Visitor* visitor) { PerformanceBase::Trace(visitor); }
+  void Trace(blink::Visitor* visitor) { Performance::Trace(visitor); }
 };
 
-class PerformanceBaseTest : public ::testing::Test {
+class PerformanceTest : public ::testing::Test {
  protected:
   void Initialize(ScriptState* script_state) {
     v8::Local<v8::Function> callback =
         v8::Function::New(script_state->GetContext(), nullptr).ToLocalChecked();
-    base_ = new TestPerformanceBase(script_state);
+    base_ = new TestPerformance(script_state);
     cb_ = V8PerformanceObserverCallback::Create(callback);
     observer_ = new PerformanceObserver(ExecutionContext::From(script_state),
                                         base_, cb_);
@@ -67,18 +67,18 @@ class PerformanceBaseTest : public ::testing::Test {
       const ResourceResponse& final_response,
       const SecurityOrigin& initiator_security_origin,
       ExecutionContext* context) {
-    return PerformanceBase::AllowsTimingRedirect(
+    return Performance::AllowsTimingRedirect(
         redirect_chain, final_response, initiator_security_origin, context);
   }
 
-  Persistent<TestPerformanceBase> base_;
+  Persistent<TestPerformance> base_;
   Persistent<ExecutionContext> execution_context_;
   Persistent<PerformanceObserver> observer_;
   std::unique_ptr<DummyPageHolder> page_holder_;
   Persistent<V8PerformanceObserverCallback> cb_;
 };
 
-TEST_F(PerformanceBaseTest, Register) {
+TEST_F(PerformanceTest, Register) {
   V8TestingScope scope;
   Initialize(scope.GetScriptState());
 
@@ -94,7 +94,7 @@ TEST_F(PerformanceBaseTest, Register) {
   EXPECT_EQ(0, base_->NumActiveObservers());
 }
 
-TEST_F(PerformanceBaseTest, Activate) {
+TEST_F(PerformanceTest, Activate) {
   V8TestingScope scope;
   Initialize(scope.GetScriptState());
 
@@ -114,7 +114,7 @@ TEST_F(PerformanceBaseTest, Activate) {
   EXPECT_EQ(1, base_->NumActiveObservers());
 }
 
-TEST_F(PerformanceBaseTest, AddLongTaskTiming) {
+TEST_F(PerformanceTest, AddLongTaskTiming) {
   V8TestingScope scope;
   Initialize(scope.GetScriptState());
   SubTaskAttribution::EntriesVector sub_task_attributions;
@@ -142,7 +142,7 @@ TEST_F(PerformanceBaseTest, AddLongTaskTiming) {
   EXPECT_EQ(1, NumPerformanceEntriesInObserver());  // added an entry
 }
 
-TEST_F(PerformanceBaseTest, AllowsTimingRedirect) {
+TEST_F(PerformanceTest, AllowsTimingRedirect) {
   // When there are no cross-origin redirects.
   AtomicString origin_domain = "http://127.0.0.1:8000";
   Vector<ResourceResponse> redirect_chain;

@@ -17,7 +17,7 @@ namespace blink {
 
 class ExecutionContext;
 class ExceptionState;
-class PerformanceBase;
+class Performance;
 class PerformanceObserver;
 class PerformanceObserverInit;
 class V8PerformanceObserverCallback;
@@ -30,8 +30,8 @@ class CORE_EXPORT PerformanceObserver final
       public ContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(PerformanceObserver);
-  friend class PerformanceBase;
-  friend class PerformanceBaseTest;
+  friend class Performance;
+  friend class PerformanceTest;
   friend class PerformanceObserverTest;
 
  public:
@@ -53,14 +53,14 @@ class CORE_EXPORT PerformanceObserver final
 
  private:
   PerformanceObserver(ExecutionContext*,
-                      PerformanceBase*,
+                      Performance*,
                       V8PerformanceObserverCallback*);
   void Deliver();
   bool ShouldBeSuspended() const;
 
   Member<ExecutionContext> execution_context_;
   TraceWrapperMember<V8PerformanceObserverCallback> callback_;
-  WeakMember<PerformanceBase> performance_;
+  WeakMember<Performance> performance_;
   PerformanceEntryVector performance_entries_;
   PerformanceEntryTypeMask filter_options_;
   bool is_registered_;

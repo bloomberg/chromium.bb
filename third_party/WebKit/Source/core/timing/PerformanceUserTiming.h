@@ -26,7 +26,7 @@
 #ifndef PerformanceUserTiming_h
 #define PerformanceUserTiming_h
 
-#include "core/timing/PerformanceBase.h"
+#include "core/timing/Performance.h"
 #include "core/timing/PerformanceTiming.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
@@ -34,7 +34,7 @@
 namespace blink {
 
 class ExceptionState;
-class PerformanceBase;
+class Performance;
 
 typedef unsigned long long (
     PerformanceTiming::*NavigationTimingFunction)() const;
@@ -42,7 +42,7 @@ using PerformanceEntryMap = HeapHashMap<String, PerformanceEntryVector>;
 
 class UserTiming final : public GarbageCollected<UserTiming> {
  public:
-  static UserTiming* Create(PerformanceBase& performance) {
+  static UserTiming* Create(Performance& performance) {
     return new UserTiming(performance);
   }
 
@@ -68,11 +68,11 @@ class UserTiming final : public GarbageCollected<UserTiming> {
   void Trace(blink::Visitor*);
 
  private:
-  explicit UserTiming(PerformanceBase&);
+  explicit UserTiming(Performance&);
 
   double FindExistingMarkStartTime(const String& mark_name, ExceptionState&);
 
-  Member<PerformanceBase> performance_;
+  Member<Performance> performance_;
   PerformanceEntryMap marks_map_;
   PerformanceEntryMap measures_map_;
 };

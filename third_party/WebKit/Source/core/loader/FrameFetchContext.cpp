@@ -65,7 +65,7 @@
 #include "core/probe/CoreProbes.h"
 #include "core/svg/graphics/SVGImageChromeClient.h"
 #include "core/timing/DOMWindowPerformance.h"
-#include "core/timing/PerformanceBase.h"
+#include "core/timing/Performance.h"
 #include "core/timing/WindowPerformance.h"
 #include "platform/Histogram.h"
 #include "platform/WebFrameScheduler.h"
