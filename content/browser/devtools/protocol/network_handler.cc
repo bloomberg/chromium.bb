@@ -477,15 +477,15 @@ String securityState(const GURL& url, const net::CertStatus& cert_status) {
   return Security::SecurityStateEnum::Secure;
 }
 
-DevToolsURLRequestInterceptor::InterceptionStage ToInterceptorStage(
+DevToolsNetworkInterceptor::InterceptionStage ToInterceptorStage(
     const protocol::Network::InterceptionStage& interceptor_stage) {
   if (interceptor_stage == protocol::Network::InterceptionStageEnum::Request)
-    return DevToolsURLRequestInterceptor::REQUEST;
+    return DevToolsNetworkInterceptor::REQUEST;
   if (interceptor_stage ==
       protocol::Network::InterceptionStageEnum::HeadersReceived)
-    return DevToolsURLRequestInterceptor::RESPONSE;
+    return DevToolsNetworkInterceptor::RESPONSE;
   NOTREACHED();
-  return DevToolsURLRequestInterceptor::REQUEST;
+  return DevToolsNetworkInterceptor::REQUEST;
 }
 
 net::Error NetErrorFromString(const std::string& error, bool* ok) {
@@ -1388,7 +1388,7 @@ DispatchResponse NetworkHandler::SetRequestInterception(
     return Response::OK();
   }
 
-  std::vector<DevToolsURLRequestInterceptor::Pattern> interceptor_patterns;
+  std::vector<DevToolsNetworkInterceptor::Pattern> interceptor_patterns;
   for (size_t i = 0; i < patterns->length(); ++i) {
     base::flat_set<ResourceType> resource_types;
     std::string resource_type = patterns->get(i)->GetResourceType("");
@@ -1398,7 +1398,7 @@ DispatchResponse NetworkHandler::SetRequestInterception(
             "Cannot intercept resources of type '%s'", resource_type.c_str()));
       }
     }
-    interceptor_patterns.push_back(DevToolsURLRequestInterceptor::Pattern(
+    interceptor_patterns.push_back(DevToolsNetworkInterceptor::Pattern(
         patterns->get(i)->GetUrlPattern("*"), std::move(resource_types),
         ToInterceptorStage(patterns->get(i)->GetInterceptionStage(
             protocol::Network::InterceptionStageEnum::Request))));
@@ -1458,7 +1458,7 @@ void NetworkHandler::ContinueInterceptedRequest(
 
   interceptor->ContinueInterceptedRequest(
       interception_id,
-      std::make_unique<DevToolsURLRequestInterceptor::Modifications>(
+      std::make_unique<DevToolsNetworkInterceptor::Modifications>(
           std::move(error), std::move(raw_response), std::move(url),
           std::move(method), std::move(post_data), std::move(headers),
           std::move(auth_challenge_response), mark_as_canceled),

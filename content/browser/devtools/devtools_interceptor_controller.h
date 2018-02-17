@@ -25,13 +25,13 @@ struct GlobalRequestID;
 class DevToolsInterceptorController : public base::SupportsUserData::Data {
  public:
   using GetResponseBodyForInterceptionCallback =
-      DevToolsURLRequestInterceptor::GetResponseBodyForInterceptionCallback;
+      DevToolsNetworkInterceptor::GetResponseBodyForInterceptionCallback;
   using RequestInterceptedCallback =
-      DevToolsURLRequestInterceptor::RequestInterceptedCallback;
+      DevToolsNetworkInterceptor::RequestInterceptedCallback;
   using ContinueInterceptedRequestCallback =
-      DevToolsURLRequestInterceptor::ContinueInterceptedRequestCallback;
-  using Modifications = DevToolsURLRequestInterceptor::Modifications;
-  using Pattern = DevToolsURLRequestInterceptor::Pattern;
+      DevToolsNetworkInterceptor::ContinueInterceptedRequestCallback;
+  using Modifications = DevToolsNetworkInterceptor::Modifications;
+  using Pattern = DevToolsNetworkInterceptor::Pattern;
 
   static DevToolsInterceptorController* FromBrowserContext(
       BrowserContext* context);
@@ -58,7 +58,7 @@ class DevToolsInterceptorController : public base::SupportsUserData::Data {
   friend class DevToolsURLRequestInterceptor;
 
   DevToolsInterceptorController(
-      base::WeakPtr<DevToolsURLRequestInterceptor> interceptor,
+      base::WeakPtr<DevToolsNetworkInterceptor> interceptor,
       std::unique_ptr<DevToolsTargetRegistry> target_registry,
       BrowserContext* browser_context);
 
@@ -66,7 +66,7 @@ class DevToolsInterceptorController : public base::SupportsUserData::Data {
                          const GlobalRequestID& request_id);
   void NavigationFinished(const std::string& interception_id);
 
-  base::WeakPtr<DevToolsURLRequestInterceptor> interceptor_;
+  base::WeakPtr<DevToolsNetworkInterceptor> interceptor_;
   std::unique_ptr<DevToolsTargetRegistry> target_registry_;
   base::flat_map<std::string, GlobalRequestID> navigation_requests_;
   base::flat_set<GlobalRequestID> canceled_navigation_requests_;
@@ -78,17 +78,17 @@ class DevToolsInterceptorController : public base::SupportsUserData::Data {
 class InterceptionHandle {
  public:
   ~InterceptionHandle();
-  void UpdatePatterns(std::vector<DevToolsURLRequestInterceptor::Pattern>);
+  void UpdatePatterns(std::vector<DevToolsNetworkInterceptor::Pattern>);
 
  private:
   friend class DevToolsInterceptorController;
   InterceptionHandle(DevToolsTargetRegistry::RegistrationHandle registration,
-                     base::WeakPtr<DevToolsURLRequestInterceptor> interceptor,
-                     DevToolsURLRequestInterceptor::FilterEntry* entry);
+                     base::WeakPtr<DevToolsNetworkInterceptor> interceptor,
+                     DevToolsNetworkInterceptor::FilterEntry* entry);
 
   DevToolsTargetRegistry::RegistrationHandle registration_;
-  base::WeakPtr<DevToolsURLRequestInterceptor> interceptor_;
-  DevToolsURLRequestInterceptor::FilterEntry* entry_;
+  base::WeakPtr<DevToolsNetworkInterceptor> interceptor_;
+  DevToolsNetworkInterceptor::FilterEntry* entry_;
 
   DISALLOW_COPY_AND_ASSIGN(InterceptionHandle);
 };
