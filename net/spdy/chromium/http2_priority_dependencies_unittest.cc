@@ -16,14 +16,14 @@ namespace net {
 bool operator==(const Http2PriorityDependencies::DependencyUpdate& a,
                 const Http2PriorityDependencies::DependencyUpdate& b) {
   return a.id == b.id && a.parent_stream_id == b.parent_stream_id &&
-         a.exclusive == b.exclusive;
+         a.weight == b.weight && a.exclusive == b.exclusive;
 }
 
 std::ostream& operator<<(
     std::ostream& os,
     const std::vector<Http2PriorityDependencies::DependencyUpdate>& v) {
   for (auto e : v) {
-    os << "{" << e.id << "," << e.parent_stream_id << ","
+    os << "{" << e.id << "," << e.parent_stream_id << "," << e.weight << ","
        << (e.exclusive ? "true" : "false") << "}";
   }
   return os;
@@ -67,6 +67,7 @@ class HttpPriorityDependencyTest : public PlatformTest {
   struct ExpectedDependencyUpdate {
     SpdyStreamId id;
     SpdyStreamId parent_id;
+    int weight;
   };
 
   void TestStreamUpdate(SpdyStreamId id,
@@ -75,7 +76,8 @@ class HttpPriorityDependencyTest : public PlatformTest {
     auto value = dependency_state_.OnStreamUpdate(id, new_priority);
     std::vector<Http2PriorityDependencies::DependencyUpdate> expected_value;
     for (auto e : expected) {
-      expected_value.push_back({e.id, e.parent_id, true /* exclusive */});
+      expected_value.push_back(
+          {e.id, e.parent_id, e.weight, true /* exclusive */});
     }
     if (value != expected_value) {
       ADD_FAILURE() << "OnStreamUpdate(" << id << ", " << int(new_priority)
@@ -210,6 +212,10 @@ TEST_F(HttpPriorityDependencyTest, UpdateThreeStreams) {
   TestStreamCreation(second_id, MEDIUM, first_id);
   TestStreamCreation(third_id, LOWEST, second_id);
 
+  const int highest_weight = Spdy3PriorityToHttp2Weight(HIGHEST);
+  const int medium_weight = Spdy3PriorityToHttp2Weight(MEDIUM);
+  const int lowest_weight = Spdy3PriorityToHttp2Weight(LOWEST);
+
   std::vector<ExpectedDependencyUpdate> empty;
 
   // no-op: still at top.
@@ -222,16 +228,22 @@ TEST_F(HttpPriorityDependencyTest, UpdateThreeStreams) {
   TestStreamUpdate(third_id, LOWEST, empty);
 
   // second moves to top, first moves below second.
-  TestStreamUpdate(first_id, MEDIUM, {{second_id, 0}, {first_id, second_id}});
+  TestStreamUpdate(
+      first_id, MEDIUM,
+      {{second_id, 0, medium_weight}, {first_id, second_id, medium_weight}});
 
   // third moves to top.
-  TestStreamUpdate(third_id, HIGHEST, {{third_id, 0}});
+  TestStreamUpdate(third_id, HIGHEST, {{third_id, 0, highest_weight}});
 
   // third moves to bottom.
-  TestStreamUpdate(third_id, LOWEST, {{second_id, 0}, {third_id, first_id}});
+  TestStreamUpdate(
+      third_id, LOWEST,
+      {{second_id, 0, medium_weight}, {third_id, first_id, lowest_weight}});
 
   // first moves to top.
-  TestStreamUpdate(first_id, HIGHEST, {{third_id, second_id}, {first_id, 0}});
+  TestStreamUpdate(
+      first_id, HIGHEST,
+      {{third_id, second_id, lowest_weight}, {first_id, 0, highest_weight}});
 }
 
 // A more complex example parallel to a simple web page with pushed responses.
@@ -252,15 +264,20 @@ TEST_F(HttpPriorityDependencyTest, UpdateComplex) {
   TestStreamCreation(sixth_id, MEDIUM, fifth_id);
   TestStreamCreation(seventh_id, LOW, sixth_id);
 
+  const int highest_weight = Spdy3PriorityToHttp2Weight(HIGHEST);
+  const int medium_weight = Spdy3PriorityToHttp2Weight(MEDIUM);
+  const int lowest_weight = Spdy3PriorityToHttp2Weight(LOWEST);
+
   // second matches a HIGHEST priority response.
   // 3 moves under 7
   // 2 moves under 4
   TestStreamUpdate(second_id, HIGHEST,
-                   {{third_id, seventh_id}, {second_id, fourth_id}});
+                   {{third_id, seventh_id, lowest_weight},
+                    {second_id, fourth_id, highest_weight}});
 
   // third matches a MEDIUM priority response.
   // 3 moves under 6
-  TestStreamUpdate(third_id, MEDIUM, {{third_id, sixth_id}});
+  TestStreamUpdate(third_id, MEDIUM, {{third_id, sixth_id, medium_weight}});
 }
 
 }  // namespace net

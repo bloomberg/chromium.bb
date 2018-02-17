@@ -135,18 +135,20 @@ Http2PriorityDependencies::OnStreamUpdate(SpdyStreamId id,
     // |old_parent|.
     IdList::iterator old_child;
     if (ChildOfStream(id, &old_child)) {
+      int weight = Spdy3PriorityToHttp2Weight(old_child->second);
       if (old_has_parent) {
-        result.push_back({old_child->first, old_parent->first, true});
+        result.push_back({old_child->first, old_parent->first, weight, true});
       } else {
-        result.push_back({old_child->first, 0, true});
+        result.push_back({old_child->first, 0, weight, true});
       }
     }
 
+    int weight = Spdy3PriorityToHttp2Weight(new_priority);
     // |id| moves to be dependent on |new_parent|.
     if (new_has_parent) {
-      result.push_back({id, new_parent->first, true});
+      result.push_back({id, new_parent->first, weight, true});
     } else {
-      result.push_back({id, 0, true});
+      result.push_back({id, 0, weight, true});
     }
   }
 
