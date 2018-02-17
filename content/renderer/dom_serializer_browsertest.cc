@@ -743,8 +743,10 @@ IN_PROC_BROWSER_TEST_F(
 // declaration, we will add the META which have correct charset declaration
 // as first child of HEAD element and remove all original META charset
 // declarations.
-IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
-                       SerializeHTMLDOMWithMultipleMetaCharsetInOriginalDoc) {
+// Disabled due to http://crbug.com/812904
+IN_PROC_BROWSER_TEST_F(
+    MAYBE_DomSerializerTests,
+    DISABLED_SerializeHTMLDOMWithMultipleMetaCharsetInOriginalDoc) {
   base::FilePath page_file_path =
       GetTestFilePath("dom_serializer", "youtube_2.htm");
   // Get file URL.
