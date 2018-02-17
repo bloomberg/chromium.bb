@@ -36,6 +36,7 @@ class TestAccessibilityController : ash::mojom::AccessibilityController {
   }
   void SetDarkenScreen(bool darken) override {}
   void BrailleDisplayStateChanged(bool connected) override {}
+  void SetFocusHighlightRect(const gfx::Rect& bounds_in_screen) override {}
 
   bool was_client_set() const { return was_client_set_; }
 

@@ -2,6 +2,10 @@
 # include a link. If a test should never run on mash, add an early exit to the
 # code instead of listing here. See Shell::GetAshConfig().
 
+# TODO: mash screenshot support: https://crbug.com/557397.
+-AccessibilityHighlightControllerTest.TestCaretRingDrawsBluePixels
+-AccessibilityHighlightControllerTest.TestFocusRingDrawsPixels
+
 # TODO: AppList needs to respond to fullscreen and VKB: crbug.com/610874
 -AppListPresenterDelegateTest.AppListViewDragHandler
 -AppListPresenterDelegateTest.AppListViewDragHandlerTabletModeFromSearch

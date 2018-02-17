@@ -39,7 +39,6 @@ class Rect;
 namespace chromeos {
 
 class AccessibilityExtensionLoader;
-class AccessibilityHighlightManager;
 class SwitchAccessEventHandler;
 
 enum AccessibilityNotificationType {
@@ -317,13 +316,12 @@ class AccessibilityManager
   void OnHighContrastChanged();
   void OnVirtualKeyboardChanged();
   void OnMonoAudioChanged();
-  void UpdateCaretHighlightFromPref();
-  void UpdateCursorHighlightFromPref();
-  void UpdateFocusHighlightFromPref();
+  void OnCaretHighlightChanged();
+  void OnCursorHighlightChanged();
+  void OnFocusHighlightChanged();
   void UpdateTapDraggingFromPref();
   void OnSelectToSpeakChanged();
   void UpdateSwitchAccessFromPref();
-  void UpdateAccessibilityHighlightingFromPrefs();
 
   void CheckBrailleState();
   void ReceiveBrailleDisplayState(
@@ -387,9 +385,6 @@ class AccessibilityManager
   PrefHandler switch_access_pref_handler_;
 
   bool spoken_feedback_enabled_;
-  bool caret_highlight_enabled_;
-  bool cursor_highlight_enabled_;
-  bool focus_highlight_enabled_;
   bool tap_dragging_enabled_;
   bool select_to_speak_enabled_;
   bool switch_access_enabled_;
@@ -417,9 +412,6 @@ class AccessibilityManager
                  extensions::ExtensionRegistryObserver>
       extension_registry_observer_;
 
-  std::unique_ptr<AccessibilityHighlightManager>
-      accessibility_highlight_manager_;
-
   std::unique_ptr<AccessibilityExtensionLoader> chromevox_loader_;
 
   std::unique_ptr<AccessibilityExtensionLoader> select_to_speak_loader_;
@@ -429,7 +421,7 @@ class AccessibilityManager
   std::unique_ptr<chromeos::SwitchAccessEventHandler>
       switch_access_event_handler_;
 
-  // Ash's mojom::AccessibilityController used to SetDarkenScreen.
+  // Ash's mojom::AccessibilityController used to request Ash's a11y feature.
   ash::mojom::AccessibilityControllerPtr accessibility_controller_;
 
   bool app_terminating_ = false;

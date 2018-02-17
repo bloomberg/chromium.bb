@@ -6,6 +6,7 @@ module ash.mojom;
 
 import "mojo/common/time.mojom";
 import "ui/accessibility/ax_enums.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // Alert sent to the accessibility api.
 enum AccessibilityAlert {
@@ -50,6 +51,9 @@ interface AccessibilityController {
 
   // Called when braille display state is changed.
   BrailleDisplayStateChanged(bool connected);
+
+  // Sets the focus highlight rect using |bounds_in_screen|.
+  SetFocusHighlightRect(gfx.mojom.Rect bounds_in_screen);
 };
 
 // Interface for ash to request accessibility service from its client (e.g.
