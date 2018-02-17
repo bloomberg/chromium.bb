@@ -8,7 +8,7 @@
 [
     Constructor(CSSNumberish x, CSSNumberish y, optional CSSNumberish z),
     RuntimeEnabled=CSSTypedOM,
-    Exposed=(Window,PaintWorklet),
+    Exposed=(Window,LayoutWorklet,PaintWorklet),
     RaisesException=Constructor
 ] interface CSSScale : CSSTransformComponent {
     [RaisesException=Setter] attribute CSSNumberish x;

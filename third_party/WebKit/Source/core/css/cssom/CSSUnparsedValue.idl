@@ -8,7 +8,7 @@
 [
   Constructor(sequence<CSSUnparsedSegment> members),
   RuntimeEnabled=CSSTypedOM,
-  Exposed=(Window,PaintWorklet)
+  Exposed=(Window,LayoutWorklet,PaintWorklet)
 ] interface CSSUnparsedValue : CSSStyleValue {
     iterable<CSSUnparsedSegment>;
     readonly attribute unsigned long length;

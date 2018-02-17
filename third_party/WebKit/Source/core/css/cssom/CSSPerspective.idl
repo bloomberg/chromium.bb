@@ -8,7 +8,7 @@
 [
     Constructor(CSSNumericValue length),
     RuntimeEnabled=CSSTypedOM,
-    Exposed=(Window,PaintWorklet),
+    Exposed=(Window,LayoutWorklet,PaintWorklet),
     RaisesException=Constructor
 ] interface CSSPerspective : CSSTransformComponent {
     [RaisesException=Setter] attribute CSSNumericValue length;

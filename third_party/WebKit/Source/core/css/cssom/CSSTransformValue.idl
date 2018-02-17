@@ -6,7 +6,7 @@
     Constructor(sequence<CSSTransformComponent> transforms),
     RaisesException=Constructor,
     RuntimeEnabled=CSSTypedOM,
-    Exposed=(Window,PaintWorklet)
+    Exposed=(Window,LayoutWorklet,PaintWorklet)
 ] interface CSSTransformValue : CSSStyleValue {
     // https://github.com/w3c/css-houdini-drafts/issues/358
     readonly attribute unsigned long length;

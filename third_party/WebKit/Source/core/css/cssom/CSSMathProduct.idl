@@ -7,7 +7,7 @@
 [
   Constructor(CSSNumberish... args),
   RuntimeEnabled=CSSTypedOM,
-  Exposed=(Window,PaintWorklet),
+  Exposed=(Window,LayoutWorklet,PaintWorklet),
   RaisesException=Constructor
 ] interface CSSMathProduct : CSSMathValue {
   readonly attribute CSSNumericArray values;
