@@ -8,12 +8,12 @@
 #include "base/macros.h"
 #include "net/quic/platform/api/quic_flag_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "net/test/gtest_util.h"
 
-using std::string;
 using testing::UnorderedElementsAre;
 using testing::Pair;
 
@@ -40,7 +40,7 @@ TEST_F(CopyAndValidateHeaders, NormalUsage) {
                            {"cookie", "part3"},
 
                            // Already-delimited headers are passed through.
-                           {"passed-through", string("foo\0baz", 7)},
+                           {"passed-through", QuicString("foo\0baz", 7)},
 
                            // Other headers are joined on \0.
                            {"joined", "value 1"},
@@ -357,7 +357,7 @@ TEST_F(GetHostNameFromHeaderBlock, NormalUsage) {
 using PopulateHeaderBlockFromUrl = QuicTest;
 
 TEST_F(PopulateHeaderBlockFromUrl, NormalUsage) {
-  string url = "https://www.google.com/index.html";
+  QuicString url = "https://www.google.com/index.html";
   SpdyHeaderBlock headers;
   EXPECT_TRUE(SpdyUtils::PopulateHeaderBlockFromUrl(url, &headers));
   EXPECT_EQ("https", headers[":scheme"].as_string());
@@ -366,7 +366,7 @@ TEST_F(PopulateHeaderBlockFromUrl, NormalUsage) {
 }
 
 TEST_F(PopulateHeaderBlockFromUrl, UrlWithNoPath) {
-  string url = "https://www.google.com";
+  QuicString url = "https://www.google.com";
   SpdyHeaderBlock headers;
   EXPECT_TRUE(SpdyUtils::PopulateHeaderBlockFromUrl(url, &headers));
   EXPECT_EQ("https", headers[":scheme"].as_string());

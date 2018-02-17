@@ -18,6 +18,7 @@
 #include "net/quic/core/quic_crypto_stream.h"
 #include "net/quic/core/quic_server_id.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -89,7 +90,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
     // ChannelIDSource operated asynchronously. Intended for testing.
     virtual bool WasChannelIDSourceCallbackRun() const = 0;
 
-    virtual std::string chlo_hash() const = 0;
+    virtual QuicString chlo_hash() const = 0;
 
     // Returns true once any encrypter (initial/0RTT or final/1RTT) has been set
     // for the connection.
@@ -153,7 +154,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
   // ChannelIDSource operated asynchronously. Intended for testing.
   bool WasChannelIDSourceCallbackRun() const;
 
-  std::string chlo_hash() const;
+  QuicString chlo_hash() const;
 
  private:
   std::unique_ptr<HandshakerDelegate> handshaker_;

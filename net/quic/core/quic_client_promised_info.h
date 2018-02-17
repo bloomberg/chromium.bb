@@ -14,6 +14,7 @@
 #include "net/quic/core/quic_spdy_client_session_base.h"
 #include "net/quic/core/quic_spdy_stream.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/spdy/core/spdy_framer.h"
 
 namespace net {
@@ -32,7 +33,7 @@ class QUIC_EXPORT_PRIVATE QuicClientPromisedInfo
   // Interface to QuicSpdyClientStream
   QuicClientPromisedInfo(QuicSpdyClientSessionBase* session,
                          QuicStreamId id,
-                         std::string url);
+                         QuicString url);
   virtual ~QuicClientPromisedInfo();
 
   void Init();
@@ -74,7 +75,7 @@ class QUIC_EXPORT_PRIVATE QuicClientPromisedInfo
 
   QuicStreamId id() const { return id_; }
 
-  const std::string url() const { return url_; }
+  const QuicString url() const { return url_; }
 
   // Return true if there's a request pending matching this push promise.
   bool is_validating() const { return client_request_delegate_ != nullptr; }
@@ -96,7 +97,7 @@ class QUIC_EXPORT_PRIVATE QuicClientPromisedInfo
 
   QuicSpdyClientSessionBase* session_;
   QuicStreamId id_;
-  std::string url_;
+  QuicString url_;
   SpdyHeaderBlock request_headers_;
   std::unique_ptr<SpdyHeaderBlock> response_headers_;
   SpdyHeaderBlock client_request_headers_;

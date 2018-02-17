@@ -12,6 +12,7 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_types.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 
 namespace net {
@@ -48,7 +49,7 @@ class QUIC_EXPORT_PRIVATE ProofVerifierCallback {
   // details of the verification. |Run| may take ownership of |details| by
   // calling |release| on it.
   virtual void Run(bool ok,
-                   const std::string& error_details,
+                   const QuicString& error_details,
                    std::unique_ptr<ProofVerifyDetails>* details) = 0;
 };
 
@@ -75,16 +76,16 @@ class QUIC_EXPORT_PRIVATE ProofVerifier {
   // The signature uses SHA-256 as the hash function and PSS padding in the
   // case of RSA.
   virtual QuicAsyncStatus VerifyProof(
-      const std::string& hostname,
+      const QuicString& hostname,
       const uint16_t port,
-      const std::string& server_config,
+      const QuicString& server_config,
       QuicTransportVersion transport_version,
       QuicStringPiece chlo_hash,
-      const std::vector<std::string>& certs,
-      const std::string& cert_sct,
-      const std::string& signature,
+      const std::vector<QuicString>& certs,
+      const QuicString& cert_sct,
+      const QuicString& signature,
       const ProofVerifyContext* context,
-      std::string* error_details,
+      QuicString* error_details,
       std::unique_ptr<ProofVerifyDetails>* details,
       std::unique_ptr<ProofVerifierCallback> callback) = 0;
 
@@ -101,10 +102,10 @@ class QUIC_EXPORT_PRIVATE ProofVerifier {
   // will call back, on the original thread, via |callback| when complete.
   // In this case, the ProofVerifier will take ownership of |callback|.
   virtual QuicAsyncStatus VerifyCertChain(
-      const std::string& hostname,
-      const std::vector<std::string>& certs,
+      const QuicString& hostname,
+      const std::vector<QuicString>& certs,
       const ProofVerifyContext* context,
-      std::string* error_details,
+      QuicString* error_details,
       std::unique_ptr<ProofVerifyDetails>* details,
       std::unique_ptr<ProofVerifierCallback> callback) = 0;
 };

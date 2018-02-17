@@ -16,6 +16,7 @@
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_stack_trace.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/tools/quic/chlo_extractor.h"
 #include "net/tools/quic/quic_per_connection_packet_writer.h"
@@ -23,7 +24,6 @@
 #include "net/tools/quic/quic_time_wait_list_manager.h"
 #include "net/tools/quic/stateless_rejector.h"
 
-using std::string;
 
 namespace net {
 
@@ -69,7 +69,7 @@ class PacketCollector : public QuicPacketCreator::DelegateInterface,
   }
 
   void OnUnrecoverableError(QuicErrorCode error,
-                            const string& error_details,
+                            const QuicString& error_details,
                             ConnectionCloseSource source) override {}
 
   void SaveStatelessRejectFrameData(QuicStringPiece reject) {
@@ -111,9 +111,7 @@ class StatelessConnectionTerminator {
       : connection_id_(connection_id),
         framer_(framer),
         collector_(helper->GetStreamSendBufferAllocator()),
-        creator_(connection_id,
-                 framer,
-                 &collector_),
+        creator_(connection_id, framer, &collector_),
         time_wait_list_manager_(time_wait_list_manager) {
     framer_->set_data_producer(&collector_);
   }
@@ -186,14 +184,14 @@ class ChloAlpnExtractor : public ChloExtractor::Delegate {
               const CryptoHandshakeMessage& chlo) override {
     QuicStringPiece alpn_value;
     if (chlo.GetStringPiece(kALPN, &alpn_value)) {
-      alpn_ = string(alpn_value);
+      alpn_ = QuicString(alpn_value);
     }
   }
 
-  string&& ConsumeAlpn() { return std::move(alpn_); }
+  QuicString&& ConsumeAlpn() { return std::move(alpn_); }
 
  private:
-  string alpn_;
+  QuicString alpn_;
 };
 
 // Class which sits between the ChloExtractor and the StatelessRejector
@@ -225,14 +223,14 @@ class ChloValidator : public ChloAlpnExtractor {
 
   bool can_accept() const { return can_accept_; }
 
-  const string& error_details() const { return error_details_; }
+  const QuicString& error_details() const { return error_details_; }
 
  private:
   QuicCryptoServerStream::Helper* helper_;  // Unowned.
   QuicSocketAddress self_address_;
   StatelessRejector* rejector_;  // Unowned.
   bool can_accept_;
-  string error_details_;
+  QuicString error_details_;
 };
 
 }  // namespace
@@ -557,7 +555,7 @@ void QuicDispatcher::Shutdown() {
 
 void QuicDispatcher::OnConnectionClosed(QuicConnectionId connection_id,
                                         QuicErrorCode error,
-                                        const string& error_details) {
+                                        const QuicString& error_details) {
   SessionMap::iterator it = session_map_.find(connection_id);
   if (it == session_map_.end()) {
     QUIC_BUG << "ConnectionId " << connection_id

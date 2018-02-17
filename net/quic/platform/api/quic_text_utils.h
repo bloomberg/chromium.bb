@@ -5,6 +5,7 @@
 #ifndef NET_QUIC_PLATFORM_API_QUIC_TEXT_UTILS_H_
 #define NET_QUIC_PLATFORM_API_QUIC_TEXT_UTILS_H_
 
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/platform/impl/quic_text_utils_impl.h"
 
@@ -24,7 +25,7 @@ class QuicTextUtils {
   }
 
   // Returns a new string in which |data| has been converted to lower case.
-  static std::string ToLower(QuicStringPiece data) {
+  static QuicString ToLower(QuicStringPiece data) {
     return QuicTextUtilsImpl::ToLower(data);
   }
 
@@ -58,38 +59,38 @@ class QuicTextUtils {
   }
 
   // Returns a new string representing |in|.
-  static std::string Uint64ToString(uint64_t in) {
+  static QuicString Uint64ToString(uint64_t in) {
     return QuicTextUtilsImpl::Uint64ToString(in);
   }
 
   // This converts |length| bytes of binary to a 2*|length|-character
   // hexadecimal representation.
   // Return value: 2*|length| characters of ASCII string.
-  static std::string HexEncode(const char* data, size_t length) {
+  static QuicString HexEncode(const char* data, size_t length) {
     return HexEncode(QuicStringPiece(data, length));
   }
 
   // This converts |data.length()| bytes of binary to a
   // 2*|data.length()|-character hexadecimal representation.
   // Return value: 2*|data.length()| characters of ASCII string.
-  static std::string HexEncode(QuicStringPiece data) {
+  static QuicString HexEncode(QuicStringPiece data) {
     return QuicTextUtilsImpl::HexEncode(data);
   }
 
   // This converts a uint32 into an 8-character hexidecimal
   // representation.  Return value: 8 characters of ASCII string.
-  static std::string Hex(uint32_t v) { return QuicTextUtilsImpl::Hex(v); }
+  static QuicString Hex(uint32_t v) { return QuicTextUtilsImpl::Hex(v); }
 
   // Converts |data| from a hexadecimal ASCII string to a binary string
   // that is |data.length()/2| bytes long.
-  static std::string HexDecode(QuicStringPiece data) {
+  static QuicString HexDecode(QuicStringPiece data) {
     return QuicTextUtilsImpl::HexDecode(data);
   }
 
   // Base64 encodes with no padding |data_len| bytes of |data| into |output|.
   static void Base64Encode(const uint8_t* data,
                            size_t data_len,
-                           std::string* output) {
+                           QuicString* output) {
     return QuicTextUtilsImpl::Base64Encode(data, data_len, output);
   }
 
@@ -98,7 +99,7 @@ class QuicTextUtils {
   // printed as '.' in the ASCII output.
   // For example, given the input "Hello, QUIC!\01\02\03\04", returns:
   // "0x0000:  4865 6c6c 6f2c 2051 5549 4321 0102 0304  Hello,.QUIC!...."
-  static std::string HexDump(QuicStringPiece binary_data) {
+  static QuicString HexDump(QuicStringPiece binary_data) {
     return QuicTextUtilsImpl::HexDump(binary_data);
   }
 

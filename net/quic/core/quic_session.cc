@@ -15,8 +15,7 @@
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_map_util.h"
 #include "net/quic/platform/api/quic_str_cat.h"
-
-using std::string;
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -155,7 +154,7 @@ void QuicSession::OnGoAway(const QuicGoAwayFrame& frame) {
 }
 
 void QuicSession::OnConnectionClosed(QuicErrorCode error,
-                                     const string& error_details,
+                                     const QuicString& error_details,
                                      ConnectionCloseSource source) {
   DCHECK(!connection_->connected());
   if (error_ == QUIC_NO_ERROR) {
@@ -429,7 +428,8 @@ void QuicSession::SendRstStream(QuicStreamId id,
   CloseStreamInner(id, true);
 }
 
-void QuicSession::SendGoAway(QuicErrorCode error_code, const string& reason) {
+void QuicSession::SendGoAway(QuicErrorCode error_code,
+                             const QuicString& reason) {
   if (goaway_sent_) {
     return;
   }

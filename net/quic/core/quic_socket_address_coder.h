@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_socket_address.h"
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -23,7 +24,7 @@ class QUIC_EXPORT_PRIVATE QuicSocketAddressCoder {
   explicit QuicSocketAddressCoder(const QuicSocketAddress& address);
   ~QuicSocketAddressCoder();
 
-  std::string Encode() const;
+  QuicString Encode() const;
 
   bool Decode(const char* data, size_t length);
 

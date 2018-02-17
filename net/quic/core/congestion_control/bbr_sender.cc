@@ -14,6 +14,7 @@
 #include "net/quic/platform/api/quic_flag_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -778,7 +779,7 @@ void BbrSender::CalculateRecoveryWindow(QuicByteCount bytes_acked,
   recovery_window_ = std::max(min_congestion_window_, recovery_window_);
 }
 
-std::string BbrSender::GetDebugState() const {
+QuicString BbrSender::GetDebugState() const {
   std::ostringstream stream;
   stream << ExportDebugState();
   return stream.str();
@@ -799,7 +800,7 @@ BbrSender::DebugState BbrSender::ExportDebugState() const {
   return DebugState(*this);
 }
 
-static std::string ModeToString(BbrSender::Mode mode) {
+static QuicString ModeToString(BbrSender::Mode mode) {
   switch (mode) {
     case BbrSender::STARTUP:
       return "STARTUP";

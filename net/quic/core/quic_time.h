@@ -19,6 +19,7 @@
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 
 #define QUICTIME_CONSTEXPR inline
 
@@ -75,7 +76,7 @@ class QUIC_EXPORT_PRIVATE QuicTime {
       return time_offset_ == kQuicInfiniteTimeUs;
     }
 
-    std::string ToDebugValue() const;
+    QuicString ToDebugValue() const;
 
    private:
     base::TimeDelta delta_;

@@ -7,6 +7,7 @@
 
 #include "net/quic/core/quic_error_codes.h"
 #include "net/quic/core/quic_types.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 
 namespace net {
@@ -16,7 +17,7 @@ class QUIC_EXPORT_PRIVATE CryptoMessageParser {
   virtual ~CryptoMessageParser() {}
 
   virtual QuicErrorCode error() const = 0;
-  virtual const std::string& error_detail() const = 0;
+  virtual const QuicString& error_detail() const = 0;
 
   // Processes input data, which must be delivered in order. Returns
   // false if there was an error, and true otherwise.

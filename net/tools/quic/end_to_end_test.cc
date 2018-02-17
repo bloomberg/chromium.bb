@@ -33,6 +33,7 @@
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/platform/api/quic_str_cat.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/platform/api/quic_test_loopback.h"
@@ -69,7 +70,6 @@
 
 using base::IntToString;
 using base::WaitableEvent;
-using std::string;
 
 namespace net {
 namespace test {
@@ -596,7 +596,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
 
   bool initialized_;
   QuicSocketAddress server_address_;
-  string server_hostname_;
+  QuicString server_hostname_;
   QuicHttpResponseCache response_cache_;
   std::unique_ptr<ServerThread> server_thread_;
   std::unique_ptr<QuicTestClient> client_;
@@ -758,7 +758,8 @@ TEST_P(EndToEndTestWithTls, MultipleClients) {
 
 TEST_P(EndToEndTestWithTls, RequestOverMultiplePackets) {
   // Send a large enough request to guarantee fragmentation.
-  string huge_request = "/some/path?query=" + string(kMaxPacketSize, '.');
+  QuicString huge_request =
+      "/some/path?query=" + QuicString(kMaxPacketSize, '.');
   AddToCache(huge_request, 200, kBarResponseBody);
 
   ASSERT_TRUE(Initialize());
@@ -769,7 +770,8 @@ TEST_P(EndToEndTestWithTls, RequestOverMultiplePackets) {
 
 TEST_P(EndToEndTestWithTls, MultiplePacketsRandomOrder) {
   // Send a large enough request to guarantee fragmentation.
-  string huge_request = "/some/path?query=" + string(kMaxPacketSize, '.');
+  QuicString huge_request =
+      "/some/path?query=" + QuicString(kMaxPacketSize, '.');
   AddToCache(huge_request, 200, kBarResponseBody);
 
   ASSERT_TRUE(Initialize());
@@ -805,7 +807,7 @@ TEST_P(EndToEndTest, LargePostNoPacketLoss) {
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
 
   // 1 MB body.
-  string body(1024 * 1024, 'a');
+  QuicString body(1024 * 1024, 'a');
   SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
@@ -826,7 +828,7 @@ TEST_P(EndToEndTest, LargePostNoPacketLoss1sRTT) {
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
 
   // 100 KB body.
-  string body(100 * 1024, 'a');
+  QuicString body(100 * 1024, 'a');
   SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
@@ -854,7 +856,7 @@ TEST_P(EndToEndTest, LargePostWithPacketLoss) {
   SetPacketLossPercentage(30);
 
   // 10 KB body.
-  string body(1024 * 10, 'a');
+  QuicString body(1024 * 10, 'a');
   SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
@@ -882,7 +884,7 @@ TEST_P(EndToEndTest, LargePostWithPacketLossAndBlockedSocket) {
   client_writer_->set_fake_blocked_socket_percentage(10);
 
   // 10 KB body.
-  string body(1024 * 10, 'a');
+  QuicString body(1024 * 10, 'a');
   SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
@@ -902,7 +904,7 @@ TEST_P(EndToEndTest, LargePostNoPacketLossWithDelayAndReordering) {
   SetReorderPercentage(30);
 
   // 1 MB body.
-  string body(1024 * 1024, 'a');
+  QuicString body(1024 * 1024, 'a');
   SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
@@ -918,7 +920,7 @@ TEST_P(EndToEndTest, LargePostZeroRTTFailure) {
   // a 0-RTT handshake for the next request.
   ASSERT_TRUE(Initialize());
 
-  string body(20480, 'a');
+  QuicString body(20480, 'a');
   SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
@@ -1028,7 +1030,7 @@ TEST_P(EndToEndTest, LargePostSynchronousRequest) {
   // a 0-RTT handshake for the next request.
   ASSERT_TRUE(Initialize());
 
-  string body(20480, 'a');
+  QuicString body(20480, 'a');
   SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
@@ -1128,7 +1130,7 @@ TEST_P(EndToEndTest, LargePostSmallBandwidthLargeBuffer) {
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
 
   // 1 MB body.
-  string body(1024 * 1024, 'a');
+  QuicString body(1024 * 1024, 'a');
   SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
@@ -1190,7 +1192,7 @@ TEST_P(EndToEndTest, InvalidStream) {
   ASSERT_TRUE(Initialize());
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
 
-  string body(kMaxPacketSize, 'a');
+  QuicString body(kMaxPacketSize, 'a');
   SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
@@ -1213,15 +1215,15 @@ TEST_P(EndToEndTest, LargeHeaders) {
   ASSERT_TRUE(Initialize());
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
 
-  string body(kMaxPacketSize, 'a');
+  QuicString body(kMaxPacketSize, 'a');
   SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
   headers[":authority"] = server_hostname_;
-  headers["key1"] = string(15 * 1024, 'a');
-  headers["key2"] = string(15 * 1024, 'a');
-  headers["key3"] = string(15 * 1024, 'a');
+  headers["key1"] = QuicString(15 * 1024, 'a');
+  headers["key2"] = QuicString(15 * 1024, 'a');
+  headers["key3"] = QuicString(15 * 1024, 'a');
 
   client_->SendCustomSynchronousRequest(headers, body);
   EXPECT_EQ(QUIC_HEADERS_TOO_LARGE, client_->stream_error());
@@ -1232,7 +1234,7 @@ TEST_P(EndToEndTest, EarlyResponseWithQuicStreamNoError) {
   ASSERT_TRUE(Initialize());
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
 
-  string large_body(1024 * 1024, 'a');
+  QuicString large_body(1024 * 1024, 'a');
   SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
@@ -1519,7 +1521,7 @@ TEST_P(EndToEndTest, MaxStreamsUberTest) {
     SetPacketLossPercentage(1);
   }
   ASSERT_TRUE(Initialize());
-  string large_body(10240, 'a');
+  QuicString large_body(10240, 'a');
   int max_streams = 100;
 
   AddToCache("/large_response", 200, large_body);
@@ -1539,7 +1541,7 @@ TEST_P(EndToEndTest, MaxStreamsUberTest) {
 
 TEST_P(EndToEndTestWithTls, StreamCancelErrorTest) {
   ASSERT_TRUE(Initialize());
-  string small_body(256, 'a');
+  QuicString small_body(256, 'a');
 
   AddToCache("/small_response", 200, small_body);
 
@@ -1918,7 +1920,7 @@ class TestResponseListener : public QuicSpdyClientBase::ResponseListener {
  public:
   void OnCompleteResponse(QuicStreamId id,
                           const SpdyHeaderBlock& response_headers,
-                          const string& response_body) override {
+                          const QuicString& response_body) override {
     QUIC_DVLOG(1) << "response for stream " << id << " "
                   << response_headers.DebugString() << "\n"
                   << response_body;
@@ -1953,8 +1955,8 @@ TEST_P(EndToEndTest, AckNotifierWithPacketLossAndBlockedSocket) {
 
   // Test the AckNotifier's ability to track multiple packets by making the
   // request body exceed the size of a single packet.
-  string request_string =
-      "a request body bigger than one packet" + string(kMaxPacketSize, '.');
+  QuicString request_string =
+      "a request body bigger than one packet" + QuicString(kMaxPacketSize, '.');
 
   // The TestAckListener will cause a failure if not notified.
   QuicReferenceCountedPointer<TestAckListener> ack_listener(
@@ -2195,7 +2197,7 @@ TEST_P(EndToEndTestWithTls, BadEncryptedData) {
       false, 1, "At least 20 characters.", PACKET_8BYTE_CONNECTION_ID,
       PACKET_6BYTE_PACKET_NUMBER));
   // Damage the encrypted data.
-  string damaged_packet(packet->data(), packet->length());
+  QuicString damaged_packet(packet->data(), packet->length());
   damaged_packet[30] ^= 0x01;
   QUIC_DLOG(INFO) << "Sending bad packet.";
   client_writer_->WritePacket(
@@ -2246,7 +2248,7 @@ class ServerStreamWithErrorResponseBody : public QuicSimpleServerStream {
   ServerStreamWithErrorResponseBody(QuicStreamId id,
                                     QuicSpdySession* session,
                                     QuicHttpResponseCache* response_cache,
-                                    string response_body)
+                                    QuicString response_body)
       : QuicSimpleServerStream(id, session, response_cache),
         response_body_(std::move(response_body)) {}
 
@@ -2265,12 +2267,12 @@ class ServerStreamWithErrorResponseBody : public QuicSimpleServerStream {
     SendHeadersAndBody(std::move(headers), response_body_);
   }
 
-  string response_body_;
+  QuicString response_body_;
 };
 
 class StreamWithErrorFactory : public QuicTestServer::StreamFactory {
  public:
-  explicit StreamWithErrorFactory(string response_body)
+  explicit StreamWithErrorFactory(QuicString response_body)
       : response_body_(std::move(response_body)) {}
 
   ~StreamWithErrorFactory() override = default;
@@ -2284,7 +2286,7 @@ class StreamWithErrorFactory : public QuicTestServer::StreamFactory {
   }
 
  private:
-  string response_body_;
+  QuicString response_body_;
 };
 
 // A test server stream that drops all received body.
@@ -2356,7 +2358,7 @@ class ServerStreamThatSendsHugeResponse : public QuicSimpleServerStream {
  protected:
   void SendResponse() override {
     QuicHttpResponseCache::Response response;
-    string body(body_bytes_, 'a');
+    QuicString body(body_bytes_, 'a');
     response.set_body(body);
     SendHeadersAndBodyAndTrailers(response.headers().Clone(), response.body(),
                                   response.trailers().Clone());
@@ -2457,7 +2459,7 @@ class MockableQuicClientThatDropsBody : public MockableQuicClient {
 class QuicTestClientThatDropsBody : public QuicTestClient {
  public:
   QuicTestClientThatDropsBody(QuicSocketAddress server_address,
-                              const string& server_hostname,
+                              const QuicString& server_hostname,
                               const QuicConfig& config,
                               const ParsedQuicVersionVector& supported_versions)
       : QuicTestClient(server_address,
@@ -2489,7 +2491,7 @@ TEST_P(EndToEndTest, EarlyResponseFinRecording) {
   // it.
   uint32_t response_body_size =
       2 * client_config_.GetInitialStreamFlowControlWindowToSend();
-  string response_body(response_body_size, 'a');
+  QuicString response_body(response_body_size, 'a');
 
   StreamWithErrorFactory stream_factory(response_body);
   SetSpdyStreamFactory(&stream_factory);
@@ -2515,7 +2517,7 @@ TEST_P(EndToEndTest, EarlyResponseFinRecording) {
   // before the request FIN is processed but receive the request FIN before the
   // response is sent completely.
   const uint32_t kRequestBodySize = kMaxPacketSize + 10;
-  string request_body(kRequestBodySize, 'a');
+  QuicString request_body(kRequestBodySize, 'a');
 
   // Send the request.
   client_->SendMessage(headers, request_body);
@@ -2551,7 +2553,7 @@ TEST_P(EndToEndTestWithTls, Trailers) {
   SetReorderPercentage(30);
 
   // Add a response with headers, body, and trailers.
-  const string kBody = "body content";
+  const QuicString kBody = "body content";
 
   SpdyHeaderBlock headers;
   headers[":status"] = "200";
@@ -2586,24 +2588,24 @@ class EndToEndTestServerPush : public EndToEndTest {
   // If |resource_size| == 0, response body of push resources use default string
   // concatenating with resource url. Otherwise, generate a string of
   // |resource_size| as body.
-  void AddRequestAndResponseWithServerPush(string host,
-                                           string path,
-                                           string response_body,
-                                           string* push_urls,
+  void AddRequestAndResponseWithServerPush(QuicString host,
+                                           QuicString path,
+                                           QuicString response_body,
+                                           QuicString* push_urls,
                                            const size_t num_resources,
                                            const size_t resource_size) {
     bool use_large_response = resource_size != 0;
-    string large_resource;
+    QuicString large_resource;
     if (use_large_response) {
       // Generate a response common body larger than flow control window for
       // push response.
-      large_resource = string(resource_size, 'a');
+      large_resource = QuicString(resource_size, 'a');
     }
     std::list<QuicHttpResponseCache::ServerPushInfo> push_resources;
     for (size_t i = 0; i < num_resources; ++i) {
-      string url = push_urls[i];
+      QuicString url = push_urls[i];
       QuicUrl resource_url(url);
-      string body =
+      QuicString body =
           use_large_response
               ? large_resource
               : QuicStrCat("This is server push response body for ", url);
@@ -2635,12 +2637,12 @@ TEST_P(EndToEndTestServerPush, ServerPush) {
   SetReorderPercentage(30);
 
   // Add a response with headers, body, and push resources.
-  const string kBody = "body content";
+  const QuicString kBody = "body content";
   size_t kNumResources = 4;
-  string push_urls[] = {"https://example.com/font.woff",
-                        "https://example.com/script.js",
-                        "https://fonts.example.com/font.woff",
-                        "https://example.com/logo-hires.jpg"};
+  QuicString push_urls[] = {"https://example.com/font.woff",
+                            "https://example.com/script.js",
+                            "https://fonts.example.com/font.woff",
+                            "https://example.com/logo-hires.jpg"};
   AddRequestAndResponseWithServerPush("example.com", "/push_example", kBody,
                                       push_urls, kNumResources, 0);
 
@@ -2658,11 +2660,11 @@ TEST_P(EndToEndTestServerPush, ServerPush) {
   // hasn't finished yet.
   EXPECT_TRUE(QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
 
-  for (const string& url : push_urls) {
+  for (const QuicString& url : push_urls) {
     QUIC_DVLOG(1) << "send request for pushed stream on url " << url;
-    string expected_body =
+    QuicString expected_body =
         QuicStrCat("This is server push response body for ", url);
-    string response_body = client_->SendSynchronousRequest(url);
+    QuicString response_body = client_->SendSynchronousRequest(url);
     QUIC_DVLOG(1) << "response body " << response_body;
     EXPECT_EQ(expected_body, response_body);
   }
@@ -2682,11 +2684,10 @@ TEST_P(EndToEndTestServerPush, ServerPushUnderLimit) {
   SetReorderPercentage(30);
 
   // Add a response with headers, body, and push resources.
-  const string kBody = "body content";
+  const QuicString kBody = "body content";
   size_t const kNumResources = 4;
-  string push_urls[] = {
-      "https://example.com/font.woff",
-      "https://example.com/script.js",
+  QuicString push_urls[] = {
+      "https://example.com/font.woff", "https://example.com/script.js",
       "https://fonts.example.com/font.woff",
       "https://example.com/logo-hires.jpg",
   };
@@ -2702,13 +2703,13 @@ TEST_P(EndToEndTestServerPush, ServerPushUnderLimit) {
   EXPECT_EQ(kBody, client_->SendSynchronousRequest(
                        "https://example.com/push_example"));
 
-  for (const string& url : push_urls) {
+  for (const QuicString& url : push_urls) {
     // Sending subsequent requesets will not actually send anything on the wire,
     // as the responses are already in the client's cache.
     QUIC_DVLOG(1) << "send request for pushed stream on url " << url;
-    string expected_body =
+    QuicString expected_body =
         QuicStrCat("This is server push response body for ", url);
-    string response_body = client_->SendSynchronousRequest(url);
+    QuicString response_body = client_->SendSynchronousRequest(url);
     QUIC_DVLOG(1) << "response body " << response_body;
     EXPECT_EQ(expected_body, response_body);
   }
@@ -2731,11 +2732,11 @@ TEST_P(EndToEndTestServerPush, ServerPushOverLimitNonBlocking) {
   SetReorderPercentage(30);
 
   // Add a response with headers, body, and push resources.
-  const string kBody = "body content";
+  const QuicString kBody = "body content";
 
   // One more resource than max number of outgoing stream of this session.
   const size_t kNumResources = 1 + kNumMaxStreams;  // 11.
-  string push_urls[11];
+  QuicString push_urls[11];
   for (size_t i = 0; i < kNumResources; ++i) {
     push_urls[i] = QuicStrCat("https://example.com/push_resources", i);
   }
@@ -2751,7 +2752,7 @@ TEST_P(EndToEndTestServerPush, ServerPushOverLimitNonBlocking) {
   EXPECT_EQ(kBody, client_->SendSynchronousRequest(
                        "https://example.com/push_example"));
 
-  for (const string& url : push_urls) {
+  for (const QuicString& url : push_urls) {
     // Sending subsequent requesets will not actually send anything on the wire,
     // as the responses are already in the client's cache.
     EXPECT_EQ(QuicStrCat("This is server push response body for ", url),
@@ -2789,10 +2790,10 @@ TEST_P(EndToEndTestServerPush, ServerPushOverLimitWithBlocking) {
   SetReorderPercentage(30);
 
   // Add a response with headers, body, and push resources.
-  const string kBody = "body content";
+  const QuicString kBody = "body content";
 
   const size_t kNumResources = kNumMaxStreams + 1;
-  string push_urls[11];
+  QuicString push_urls[11];
   for (size_t i = 0; i < kNumResources; ++i) {
     push_urls[i] = QuicStrCat("http://example.com/push_resources", i);
   }
@@ -2867,7 +2868,7 @@ TEST_P(EndToEndTest, DISABLED_TestHugePostWithPacketLoss) {
   // Request body size is 4G plus one more kSizeBytes.
   int64_t request_body_size_bytes = pow(2, 32) + kSizeBytes;
   ASSERT_LT(INT64_C(4294967296), request_body_size_bytes);
-  string body(kSizeBytes, 'a');
+  QuicString body(kSizeBytes, 'a');
 
   SpdyHeaderBlock headers;
   headers[":method"] = "POST";
@@ -2881,7 +2882,7 @@ TEST_P(EndToEndTest, DISABLED_TestHugePostWithPacketLoss) {
 
   for (int i = 0; i < request_body_size_bytes / kSizeBytes; ++i) {
     bool fin = (i == request_body_size_bytes - 1);
-    client_->SendData(string(body.data(), kSizeBytes), fin);
+    client_->SendData(QuicString(body.data(), kSizeBytes), fin);
     client_->client()->WaitForEvents();
   }
   VerifyCleanConnection(true);
@@ -2946,7 +2947,7 @@ TEST_P(EndToEndTest, WayTooLongRequestHeaders) {
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
   headers[":authority"] = server_hostname_;
-  headers["key"] = string(64 * 1024, 'a');
+  headers["key"] = QuicString(64 * 1024, 'a');
 
   client_->SendMessage(headers, "");
   client_->WaitForResponse();
@@ -2978,7 +2979,7 @@ TEST_P(EndToEndTest, WindowUpdateInAck) {
   client_connection->set_debug_visitor(&observer);
   QuicTransportVersion version = client_connection->transport_version();
   // 100KB body.
-  string body(100 * 1024, 'a');
+  QuicString body(100 * 1024, 'a');
   SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
@@ -3013,7 +3014,7 @@ TEST_P(EndToEndTest, DoNotCrashOnPacketWriteError) {
   std::unique_ptr<QuicTestClient> client(CreateQuicClient(bad_writer));
 
   // 1 MB body.
-  string body(1024 * 1024, 'a');
+  QuicString body(1024 * 1024, 'a');
   SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";

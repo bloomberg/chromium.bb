@@ -11,8 +11,7 @@
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_str_cat.h"
-
-using std::string;
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 namespace {
@@ -111,7 +110,7 @@ QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
     QuicStringPiece data,
     QuicTime timestamp,
     size_t* const bytes_buffered,
-    std::string* error_details) {
+    QuicString* error_details) {
   CHECK_EQ(destruction_indicator_, 123456) << "This object has been destructed";
   *bytes_buffered = 0;
   QuicStreamOffset offset = starting_offset;
@@ -185,7 +184,7 @@ QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
   if (offset < current_gap->begin_offset &&
       offset + size > current_gap->begin_offset) {
     // Beginning of new data overlaps data before current gap.
-    string prefix(data.data(), data.length() < 128 ? data.length() : 128);
+    QuicString prefix(data.data(), data.length() < 128 ? data.length() : 128);
     *error_details =
         QuicStrCat("Beginning of received data overlaps with buffered data.\n",
                    "New frame range [", offset, ", ", offset + size,
@@ -196,7 +195,7 @@ QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
   }
   if (offset + size > current_gap->end_offset) {
     // End of new data overlaps with data after current gap.
-    string prefix(data.data(), data.length() < 128 ? data.length() : 128);
+    QuicString prefix(data.data(), data.length() < 128 ? data.length() : 128);
     *error_details = QuicStrCat(
         "End of received data overlaps with buffered data.\nNew frame range [",
         offset, ", ", offset + size, ") with first 128 bytes: ", prefix, "\n",
@@ -237,7 +236,7 @@ QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
 bool QuicStreamSequencerBuffer::CopyStreamData(QuicStreamOffset offset,
                                                QuicStringPiece data,
                                                size_t* bytes_copy,
-                                               string* error_details) {
+                                               QuicString* error_details) {
   *bytes_copy = 0;
   size_t source_remaining = data.size();
   if (source_remaining == 0) {
@@ -345,7 +344,7 @@ inline void QuicStreamSequencerBuffer::UpdateGapList(
 QuicErrorCode QuicStreamSequencerBuffer::Readv(const iovec* dest_iov,
                                                size_t dest_count,
                                                size_t* bytes_read,
-                                               string* error_details) {
+                                               QuicString* error_details) {
   CHECK_EQ(destruction_indicator_, 123456) << "This object has been destructed";
 
   *bytes_read = 0;
@@ -667,11 +666,11 @@ void QuicStreamSequencerBuffer::UpdateFrameArrivalMap(QuicStreamOffset offset) {
   }
 }
 
-string QuicStreamSequencerBuffer::GapsDebugString() {
+QuicString QuicStreamSequencerBuffer::GapsDebugString() {
   if (allow_overlapping_data_) {
     return bytes_received_.ToString();
   }
-  string current_gaps_string;
+  QuicString current_gaps_string;
   for (const Gap& gap : gaps_) {
     QuicStreamOffset current_gap_begin = gap.begin_offset;
     QuicStreamOffset current_gap_end = gap.end_offset;
@@ -681,8 +680,8 @@ string QuicStreamSequencerBuffer::GapsDebugString() {
   return current_gaps_string;
 }
 
-string QuicStreamSequencerBuffer::ReceivedFramesDebugString() {
-  string current_frames_string;
+QuicString QuicStreamSequencerBuffer::ReceivedFramesDebugString() {
+  QuicString current_frames_string;
   for (auto it : frame_arrival_time_map_) {
     QuicStreamOffset current_frame_begin_offset = it.first;
     QuicStreamOffset current_frame_end_offset =

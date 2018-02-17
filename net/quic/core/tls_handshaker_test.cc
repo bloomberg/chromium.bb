@@ -5,13 +5,13 @@
 #include "net/quic/core/tls_client_handshaker.h"
 #include "net/quic/core/tls_server_handshaker.h"
 #include "net/quic/platform/api/quic_arraysize.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/fake_proof_source.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/quic/test_tools/mock_quic_session_visitor.h"
 
-using std::string;
 
 namespace net {
 namespace test {
@@ -25,16 +25,16 @@ class FakeProofVerifier : public ProofVerifier {
       : verifier_(crypto_test_utils::ProofVerifierForTesting()) {}
 
   QuicAsyncStatus VerifyProof(
-      const string& hostname,
+      const QuicString& hostname,
       const uint16_t port,
-      const string& server_config,
+      const QuicString& server_config,
       QuicTransportVersion quic_version,
       QuicStringPiece chlo_hash,
-      const std::vector<string>& certs,
-      const string& cert_sct,
-      const string& signature,
+      const std::vector<QuicString>& certs,
+      const QuicString& cert_sct,
+      const QuicString& signature,
       const ProofVerifyContext* context,
-      string* error_details,
+      QuicString* error_details,
       std::unique_ptr<ProofVerifyDetails>* details,
       std::unique_ptr<ProofVerifierCallback> callback) override {
     return verifier_->VerifyProof(
@@ -43,10 +43,10 @@ class FakeProofVerifier : public ProofVerifier {
   }
 
   QuicAsyncStatus VerifyCertChain(
-      const string& hostname,
-      const std::vector<string>& certs,
+      const QuicString& hostname,
+      const std::vector<QuicString>& certs,
       const ProofVerifyContext* context,
-      string* error_details,
+      QuicString* error_details,
       std::unique_ptr<ProofVerifyDetails>* details,
       std::unique_ptr<ProofVerifierCallback> callback) override {
     if (!active_) {
@@ -76,7 +76,7 @@ class FakeProofVerifier : public ProofVerifier {
   class FailingProofVerifierCallback : public ProofVerifierCallback {
    public:
     void Run(bool ok,
-             const std::string& error_details,
+             const QuicString& error_details,
              std::unique_ptr<ProofVerifyDetails>* details) override {
       FAIL();
     }
@@ -84,10 +84,10 @@ class FakeProofVerifier : public ProofVerifier {
 
   class VerifyChainPendingOp {
    public:
-    VerifyChainPendingOp(const string& hostname,
-                         const std::vector<string>& certs,
+    VerifyChainPendingOp(const QuicString& hostname,
+                         const std::vector<QuicString>& certs,
                          const ProofVerifyContext* context,
-                         string* error_details,
+                         QuicString* error_details,
                          std::unique_ptr<ProofVerifyDetails>* details,
                          std::unique_ptr<ProofVerifierCallback> callback,
                          ProofVerifier* delegate)
@@ -112,10 +112,10 @@ class FakeProofVerifier : public ProofVerifier {
     }
 
    private:
-    string hostname_;
-    std::vector<string> certs_;
+    QuicString hostname_;
+    std::vector<QuicString> certs_;
     const ProofVerifyContext* context_;
-    string* error_details_;
+    QuicString* error_details_;
     std::unique_ptr<ProofVerifyDetails>* details_;
     std::unique_ptr<ProofVerifierCallback> callback_;
     ProofVerifier* delegate_;
@@ -153,10 +153,10 @@ class TestQuicCryptoStream : public QuicCryptoStream {
   }
 
   void WriteCryptoData(const QuicStringPiece& data) override {
-    pending_writes_.push_back(string(data));
+    pending_writes_.push_back(QuicString(data));
   }
 
-  const std::vector<string>& pending_writes() { return pending_writes_; }
+  const std::vector<QuicString>& pending_writes() { return pending_writes_; }
 
   // Sends the pending frames to |stream| and clears the array of pending
   // writes.
@@ -171,7 +171,7 @@ class TestQuicCryptoStream : public QuicCryptoStream {
   }
 
  private:
-  std::vector<string> pending_writes_;
+  std::vector<QuicString> pending_writes_;
 };
 
 class TestQuicCryptoClientStream : public TestQuicCryptoStream {

@@ -6,9 +6,8 @@
 
 #include <memory>
 
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
-
-using std::string;
 
 namespace net {
 namespace test {
@@ -19,8 +18,8 @@ class P256KeyExchangeTest : public QuicTest {};
 // parties end up with the same key.
 TEST_F(P256KeyExchangeTest, SharedKey) {
   for (int i = 0; i < 5; i++) {
-    string alice_private(P256KeyExchange::NewPrivateKey());
-    string bob_private(P256KeyExchange::NewPrivateKey());
+    QuicString alice_private(P256KeyExchange::NewPrivateKey());
+    QuicString bob_private(P256KeyExchange::NewPrivateKey());
 
     ASSERT_FALSE(alice_private.empty());
     ASSERT_FALSE(bob_private.empty());
@@ -35,7 +34,7 @@ TEST_F(P256KeyExchangeTest, SharedKey) {
     const QuicStringPiece alice_public(alice->public_value());
     const QuicStringPiece bob_public(bob->public_value());
 
-    std::string alice_shared, bob_shared;
+    QuicString alice_shared, bob_shared;
     ASSERT_TRUE(alice->CalculateSharedKey(bob_public, &alice_shared));
     ASSERT_TRUE(bob->CalculateSharedKey(alice_public, &bob_shared));
     ASSERT_EQ(alice_shared, bob_shared);

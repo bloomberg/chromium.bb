@@ -13,6 +13,7 @@
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -254,7 +255,7 @@ void TcpCubicSenderBytes::OnRetransmissionTimeout(bool packets_retransmitted) {
   HandleRetransmissionTimeout();
 }
 
-std::string TcpCubicSenderBytes::GetDebugState() const {
+QuicString TcpCubicSenderBytes::GetDebugState() const {
   return "";
 }
 

@@ -10,6 +10,7 @@
 #include "net/quic/core/quic_spdy_client_session_base.h"
 #include "net/quic/core/quic_types.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -65,7 +66,7 @@ class QUIC_EXPORT_PRIVATE QuicClientPushPromiseIndex {
 
   // Called by client code, used to enforce affinity between requests
   // for promised streams and the session the promise came from.
-  QuicClientPromisedInfo* GetPromised(const std::string& url);
+  QuicClientPromisedInfo* GetPromised(const QuicString& url);
 
   // Called by client code, to initiate rendezvous between a request
   // and a server push stream.  If |request|'s url is in the index,

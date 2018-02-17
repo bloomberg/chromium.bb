@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "net/quic/core/crypto/key_exchange.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
 
@@ -29,12 +30,12 @@ class QUIC_EXPORT_PRIVATE P256KeyExchange : public KeyExchange {
   // |NewPrivateKey| returns a private key, suitable for passing to |New|.
   // If |NewPrivateKey| can't generate a private key, it returns an empty
   // string.
-  static std::string NewPrivateKey();
+  static QuicString NewPrivateKey();
 
   // KeyExchange interface.
   KeyExchange* NewKeyPair(QuicRandom* rand) const override;
   bool CalculateSharedKey(QuicStringPiece peer_public_value,
-                          std::string* shared_key) const override;
+                          QuicString* shared_key) const override;
   QuicStringPiece public_value() const override;
   QuicTag tag() const override;
 

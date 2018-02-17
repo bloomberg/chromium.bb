@@ -28,6 +28,7 @@
 #include "net/quic/platform/api/quic_containers.h"
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_socket_address.h"
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -53,7 +54,7 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
     // Called when the connection is closed after the streams have been closed.
     virtual void OnConnectionClosed(QuicConnectionId connection_id,
                                     QuicErrorCode error,
-                                    const std::string& error_details) = 0;
+                                    const QuicString& error_details) = 0;
 
     // Called when the session has become write blocked.
     virtual void OnWriteBlocked(QuicBlockedWriterInterface* blocked_writer) = 0;
@@ -95,7 +96,7 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
   void OnBlockedFrame(const QuicBlockedFrame& frame) override;
   void OnConnectionClosed(QuicErrorCode error,
-                          const std::string& error_details,
+                          const QuicString& error_details,
                           ConnectionCloseSource source) override;
   void OnWriteBlocked() override;
   void OnSuccessfulVersionNegotiation(
@@ -160,7 +161,7 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
                              QuicStreamOffset bytes_written);
 
   // Called when the session wants to go away and not accept any new streams.
-  virtual void SendGoAway(QuicErrorCode error_code, const std::string& reason);
+  virtual void SendGoAway(QuicErrorCode error_code, const QuicString& reason);
 
   // Sends a BLOCKED frame.
   virtual void SendBlocked(QuicStreamId id);

@@ -7,10 +7,11 @@
 #include <cinttypes>
 
 #include "net/quic/platform/api/quic_str_cat.h"
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
-std::string QuicBandwidth::ToDebugValue() const {
+QuicString QuicBandwidth::ToDebugValue() const {
   if (bits_per_second_ < 80000) {
     return QuicStringPrintf("%" PRId64 " bits/s (%" PRId64 " bytes/s)",
                             bits_per_second_, bits_per_second_ / 8);

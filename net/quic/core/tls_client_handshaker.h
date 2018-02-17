@@ -11,6 +11,7 @@
 #include "net/quic/core/quic_crypto_stream.h"
 #include "net/quic/core/tls_handshaker.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
 namespace net {
@@ -41,7 +42,7 @@ class QUIC_EXPORT_PRIVATE TlsClientHandshaker
   int num_scup_messages_received() const override;
   bool WasChannelIDSent() const override;
   bool WasChannelIDSourceCallbackRun() const override;
-  std::string chlo_hash() const override;
+  QuicString chlo_hash() const override;
 
   // From QuicCryptoClientStream::HandshakerDelegate and TlsHandshaker
   bool encryption_established() const override;
@@ -60,7 +61,7 @@ class QUIC_EXPORT_PRIVATE TlsClientHandshaker
 
     // ProofVerifierCallback interface.
     void Run(bool ok,
-             const std::string& error_details,
+             const QuicString& error_details,
              std::unique_ptr<ProofVerifyDetails>* details) override;
 
     // If called, Cancel causes the pending callback to be a no-op.
@@ -107,7 +108,7 @@ class QUIC_EXPORT_PRIVATE TlsClientHandshaker
   ProofVerifierCallbackImpl* proof_verify_callback_ = nullptr;
   std::unique_ptr<ProofVerifyDetails> verify_details_;
   enum ssl_verify_result_t verify_result_ = ssl_verify_retry;
-  std::string cert_verify_error_details_;
+  QuicString cert_verify_error_details_;
 
   bool encryption_established_ = false;
   bool handshake_confirmed_ = false;

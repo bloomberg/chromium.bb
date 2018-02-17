@@ -16,6 +16,7 @@
 #include "net/quic/core/quic_simple_buffer_allocator.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_socket_address.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/mock_random.h"
@@ -26,7 +27,6 @@
 #include "net/quic/test_tools/simple_data_producer.h"
 #include "net/quic/test_tools/simple_quic_framer.h"
 
-using std::string;
 using testing::_;
 using testing::InSequence;
 using testing::Return;
@@ -48,7 +48,7 @@ class MockDelegate : public QuicPacketGenerator::DelegateInterface {
   MOCK_METHOD1(PopulateStopWaitingFrame, void(QuicStopWaitingFrame*));
   MOCK_METHOD1(OnSerializedPacket, void(SerializedPacket* packet));
   MOCK_METHOD3(OnUnrecoverableError,
-               void(QuicErrorCode, const string&, ConnectionCloseSource));
+               void(QuicErrorCode, const QuicString&, ConnectionCloseSource));
 
   void SetCanWriteAnything() {
     EXPECT_CALL(*this, ShouldGeneratePacket(_, _)).WillRepeatedly(Return(true));
@@ -178,7 +178,7 @@ class QuicPacketGeneratorTest : public QuicTest {
   }
 
   QuicGoAwayFrame* CreateGoAwayFrame() {
-    return new QuicGoAwayFrame(2, QUIC_NO_ERROR, 1, string());
+    return new QuicGoAwayFrame(2, QUIC_NO_ERROR, 1, QuicString());
   }
 
   void CheckPacketContains(const PacketContents& contents,

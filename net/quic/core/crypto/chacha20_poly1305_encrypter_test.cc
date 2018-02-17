@@ -9,11 +9,11 @@
 #include "net/quic/core/crypto/chacha20_poly1305_decrypter.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_arraysize.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
-using std::string;
 
 namespace {
 
@@ -91,15 +91,15 @@ TEST_F(ChaCha20Poly1305EncrypterTest, EncryptThenDecrypt) {
   ChaCha20Poly1305Encrypter encrypter;
   ChaCha20Poly1305Decrypter decrypter;
 
-  string key = QuicTextUtils::HexDecode(test_vectors[0].key);
+  QuicString key = QuicTextUtils::HexDecode(test_vectors[0].key);
   ASSERT_TRUE(encrypter.SetKey(key));
   ASSERT_TRUE(decrypter.SetKey(key));
   ASSERT_TRUE(encrypter.SetNoncePrefix("abcd"));
   ASSERT_TRUE(decrypter.SetNoncePrefix("abcd"));
 
   QuicPacketNumber packet_number = UINT64_C(0x123456789ABC);
-  string associated_data = "associated_data";
-  string plaintext = "plaintext";
+  QuicString associated_data = "associated_data";
+  QuicString plaintext = "plaintext";
   char encrypted[1024];
   size_t len;
   ASSERT_TRUE(encrypter.EncryptPacket(QuicTransportVersionMax(), packet_number,
@@ -115,12 +115,12 @@ TEST_F(ChaCha20Poly1305EncrypterTest, EncryptThenDecrypt) {
 TEST_F(ChaCha20Poly1305EncrypterTest, Encrypt) {
   for (size_t i = 0; test_vectors[i].key != nullptr; i++) {
     // Decode the test vector.
-    string key = QuicTextUtils::HexDecode(test_vectors[i].key);
-    string pt = QuicTextUtils::HexDecode(test_vectors[i].pt);
-    string iv = QuicTextUtils::HexDecode(test_vectors[i].iv);
-    string fixed = QuicTextUtils::HexDecode(test_vectors[i].fixed);
-    string aad = QuicTextUtils::HexDecode(test_vectors[i].aad);
-    string ct = QuicTextUtils::HexDecode(test_vectors[i].ct);
+    QuicString key = QuicTextUtils::HexDecode(test_vectors[i].key);
+    QuicString pt = QuicTextUtils::HexDecode(test_vectors[i].pt);
+    QuicString iv = QuicTextUtils::HexDecode(test_vectors[i].iv);
+    QuicString fixed = QuicTextUtils::HexDecode(test_vectors[i].fixed);
+    QuicString aad = QuicTextUtils::HexDecode(test_vectors[i].aad);
+    QuicString ct = QuicTextUtils::HexDecode(test_vectors[i].ct);
 
     ChaCha20Poly1305Encrypter encrypter;
     ASSERT_TRUE(encrypter.SetKey(key));

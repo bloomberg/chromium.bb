@@ -9,12 +9,11 @@
 #include <limits>
 
 #include "net/quic/platform/api/quic_str_cat.h"
-
-using std::string;
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
-string QuicTime::Delta::ToDebugValue() const {
+QuicString QuicTime::Delta::ToDebugValue() const {
   const int64_t one_ms = 1000;
   const int64_t one_s = 1000 * one_ms;
 

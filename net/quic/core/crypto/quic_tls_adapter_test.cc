@@ -7,10 +7,10 @@
 #include <vector>
 
 #include "net/quic/platform/api/quic_arraysize.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "third_party/boringssl/src/include/openssl/bio.h"
 
-using std::string;
 
 namespace net {
 namespace test {
@@ -21,18 +21,18 @@ class TestVisitor : public QuicTlsAdapter::Visitor {
   void OnDataAvailableForBIO() override { data_available_count_++; }
 
   void OnDataReceivedFromBIO(const QuicStringPiece& data) override {
-    received_messages_.push_back(string(data.data(), data.length()));
+    received_messages_.push_back(QuicString(data.data(), data.length()));
   }
 
   int data_available_count() const { return data_available_count_; }
 
-  const std::vector<string>& received_messages() const {
+  const std::vector<QuicString>& received_messages() const {
     return received_messages_;
   }
 
  private:
   int data_available_count_ = 0;
-  std::vector<string> received_messages_;
+  std::vector<QuicString> received_messages_;
 };
 
 class QuicTlsAdapterTest : public QuicTestWithParam<Perspective> {
@@ -51,19 +51,19 @@ INSTANTIATE_TEST_CASE_P(Tests,
                                           Perspective::IS_SERVER));
 
 TEST_P(QuicTlsAdapterTest, ProcessInput) {
-  string input = "abc";
+  QuicString input = "abc";
   EXPECT_TRUE(adapter_.ProcessInput(input, GetParam()));
   EXPECT_EQ(1, visitor_.data_available_count());
 
   char buf[4];
   ASSERT_EQ(static_cast<int>(input.length()),
             BIO_read(bio_, buf, QUIC_ARRAYSIZE(buf)));
-  EXPECT_EQ(input, string(buf, input.length()));
+  EXPECT_EQ(input, QuicString(buf, input.length()));
 }
 
 TEST_P(QuicTlsAdapterTest, BIORead) {
-  string input1 = "abcd";
-  string input2 = "efgh";
+  QuicString input1 = "abcd";
+  QuicString input2 = "efgh";
 
   EXPECT_TRUE(adapter_.ProcessInput(input1, GetParam()));
   EXPECT_EQ(QUIC_NO_ERROR, adapter_.error());
@@ -74,7 +74,7 @@ TEST_P(QuicTlsAdapterTest, BIORead) {
   char buf1[3];
   ASSERT_EQ(static_cast<int>(QUIC_ARRAYSIZE(buf1)),
             BIO_read(bio_, buf1, QUIC_ARRAYSIZE(buf1)));
-  EXPECT_EQ("abc", string(buf1, QUIC_ARRAYSIZE(buf1)));
+  EXPECT_EQ("abc", QuicString(buf1, QUIC_ARRAYSIZE(buf1)));
   EXPECT_EQ(1u, adapter_.InputBytesRemaining());
 
   // Test that the bytes read by BIO_read can span input read in by
@@ -85,12 +85,12 @@ TEST_P(QuicTlsAdapterTest, BIORead) {
   char buf2[5];
   ASSERT_EQ(static_cast<int>(QUIC_ARRAYSIZE(buf2)),
             BIO_read(bio_, buf2, QUIC_ARRAYSIZE(buf2)));
-  EXPECT_EQ("defgh", string(buf2, QUIC_ARRAYSIZE(buf2)));
+  EXPECT_EQ("defgh", QuicString(buf2, QUIC_ARRAYSIZE(buf2)));
   EXPECT_EQ(0u, adapter_.InputBytesRemaining());
 }
 
 TEST_P(QuicTlsAdapterTest, BIOWrite) {
-  string input = "abcde";
+  QuicString input = "abcde";
   // Test that just calling BIO_write does not post any messages to the Visitor.
   EXPECT_EQ(static_cast<int>(input.length()),
             BIO_write(bio_, input.data(), input.length()));

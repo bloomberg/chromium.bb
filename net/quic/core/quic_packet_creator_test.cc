@@ -18,6 +18,7 @@
 #include "net/quic/core/quic_simple_buffer_allocator.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_socket_address.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/quic_framer_peer.h"
@@ -25,7 +26,6 @@
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simple_data_producer.h"
 
-using std::string;
 using testing::_;
 using testing::DoAll;
 using testing::InSequence;
@@ -166,7 +166,7 @@ class QuicPacketCreatorTest : public QuicTestWithParam<TestParams> {
 
   void CheckStreamFrame(const QuicFrame& frame,
                         QuicStreamId stream_id,
-                        const string& data,
+                        const QuicString& data,
                         QuicStreamOffset offset,
                         bool fin) {
     EXPECT_EQ(STREAM_FRAME, frame.type);
@@ -226,7 +226,7 @@ class QuicPacketCreatorTest : public QuicTestWithParam<TestParams> {
   StrictMock<MockFramerVisitor> framer_visitor_;
   StrictMock<MockPacketCreatorDelegate> delegate_;
   QuicConnectionId connection_id_;
-  string data_;
+  QuicString data_;
   struct iovec iov_;
   TestPacketCreator creator_;
   SerializedPacket serialized_packet_;
@@ -427,7 +427,7 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithFullPacketAndPadding) {
       GetStreamFrameOverhead(client_framer_.transport_version());
   size_t capacity = kDefaultMaxPacketSize - overhead;
   for (int delta = -5; delta <= 0; ++delta) {
-    string data(capacity + delta, 'A');
+    QuicString data(capacity + delta, 'A');
     size_t bytes_free = 0 - delta;
 
     QuicFrame frame;
@@ -518,7 +518,7 @@ TEST_P(QuicPacketCreatorTest, ConsumeDataFinOnly) {
   ASSERT_TRUE(frame.stream_frame);
   size_t consumed = frame.stream_frame->data_length;
   EXPECT_EQ(0u, consumed);
-  CheckStreamFrame(frame, 1u, string(), 0u, true);
+  CheckStreamFrame(frame, 1u, QuicString(), 0u, true);
   EXPECT_TRUE(creator_.HasPendingFrames());
 }
 
@@ -561,7 +561,7 @@ TEST_P(QuicPacketCreatorTest, StreamFrameConsumption) {
   size_t capacity = kDefaultMaxPacketSize - overhead;
   // Now, test various sizes around this size.
   for (int delta = -5; delta <= 5; ++delta) {
-    string data(capacity + delta, 'A');
+    QuicString data(capacity + delta, 'A');
     size_t bytes_free = delta > 0 ? 0 : 0 - delta;
     QuicFrame frame;
     MakeIOVector(data, &iov_);
@@ -593,7 +593,7 @@ TEST_P(QuicPacketCreatorTest, CryptoStreamFramePacketPadding) {
   size_t capacity = kDefaultMaxPacketSize - overhead;
   // Now, test various sizes around this size.
   for (int delta = -5; delta <= 5; ++delta) {
-    string data(capacity + delta, 'A');
+    QuicString data(capacity + delta, 'A');
     size_t bytes_free = delta > 0 ? 0 : 0 - delta;
 
     QuicFrame frame;
@@ -632,7 +632,7 @@ TEST_P(QuicPacketCreatorTest, NonCryptoStreamFramePacketNonPadding) {
   size_t capacity = kDefaultMaxPacketSize - overhead;
   // Now, test various sizes around this size.
   for (int delta = -5; delta <= 5; ++delta) {
-    string data(capacity + delta, 'A');
+    QuicString data(capacity + delta, 'A');
     size_t bytes_free = delta > 0 ? 0 : 0 - delta;
 
     QuicFrame frame;
@@ -795,7 +795,7 @@ TEST_P(QuicPacketCreatorTest, ConsumeDataLargerThanOneStreamFrame) {
       !kIncludeDiversificationNonce, creator_.connection_id_length(),
       PACKET_1BYTE_PACKET_NUMBER, &payload_length));
   QuicFrame frame;
-  const string too_long_payload(payload_length * 2, 'a');
+  const QuicString too_long_payload(payload_length * 2, 'a');
   MakeIOVector(too_long_payload, &iov_);
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
       .WillOnce(Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
@@ -804,7 +804,7 @@ TEST_P(QuicPacketCreatorTest, ConsumeDataLargerThanOneStreamFrame) {
   ASSERT_TRUE(frame.stream_frame);
   size_t consumed = frame.stream_frame->data_length;
   EXPECT_EQ(payload_length, consumed);
-  const string payload(payload_length, 'a');
+  const QuicString payload(payload_length, 'a');
   CheckStreamFrame(frame, 1u, payload, 0u, false);
   creator_.Flush();
   DeleteSerializedPacket();

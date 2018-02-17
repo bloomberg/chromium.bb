@@ -9,6 +9,7 @@
 #include <string>
 
 #include "net/quic/core/quic_tag.h"
+#include "net/quic/platform/api/quic_string.h"
 
 // Version and Crypto tags are written to the wire with a big-endian
 // representation of the name of the tag.  For example
@@ -24,7 +25,7 @@
 
 namespace net {
 
-typedef std::string ServerConfigID;
+typedef QuicString ServerConfigID;
 
 // clang-format off
 const QuicTag kCHLO = TAG('C', 'H', 'L', 'O');   // Client hello

@@ -17,6 +17,7 @@
 #include "net/quic/core/quic_time.h"
 #include "net/quic/core/quic_types.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -86,7 +87,7 @@ class QUIC_EXPORT_PRIVATE QuicBandwidth {
                                              bits_per_second_);
   }
 
-  std::string ToDebugValue() const;
+  QuicString ToDebugValue() const;
 
  private:
   explicit constexpr QuicBandwidth(int64_t bits_per_second)

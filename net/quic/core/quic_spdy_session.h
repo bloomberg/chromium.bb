@@ -15,6 +15,7 @@
 #include "net/quic/core/quic_spdy_stream.h"
 #include "net/quic/http/decoder/quic_http_frame_decoder_adapter.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/spdy/core/http2_frame_decoder_adapter.h"
 
@@ -145,7 +146,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   virtual bool ShouldReleaseHeadersStreamSequencerBuffer();
 
   void CloseConnectionWithDetails(QuicErrorCode error,
-                                  const std::string& details);
+                                  const QuicString& details);
 
   void set_max_inbound_header_list_size(size_t max_inbound_header_list_size) {
     max_inbound_header_list_size_ = max_inbound_header_list_size;

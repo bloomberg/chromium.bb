@@ -15,6 +15,7 @@
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/platform/api/quic_test_mem_slice_vector.h"
 #include "net/quic/test_tools/quic_config_peer.h"
@@ -27,7 +28,6 @@
 #include "net/test/gtest_util.h"
 #include "testing/gmock_mutant.h"
 
-using std::string;
 using testing::_;
 using testing::AnyNumber;
 using testing::AtLeast;
@@ -58,15 +58,15 @@ class TestStream : public QuicStream {
 
   using QuicStream::CanWriteNewData;
   using QuicStream::CloseWriteSide;
+  using QuicStream::fin_buffered;
   using QuicStream::OnClose;
+  using QuicStream::set_ack_listener;
   using QuicStream::WriteMemSlices;
   using QuicStream::WriteOrBufferData;
   using QuicStream::WritevData;
-  using QuicStream::fin_buffered;
-  using QuicStream::set_ack_listener;
 
  private:
-  string data_;
+  QuicString data_;
 };
 
 class QuicStreamTest : public QuicTestWithParam<bool> {
@@ -290,7 +290,7 @@ TEST_F(QuicStreamTest, WriteOrBufferData) {
 TEST_F(QuicStreamTest, WriteOrBufferDataReachStreamLimit) {
   SetQuicReloadableFlag(quic_stream_too_long, true);
   Initialize(kShouldProcessData);
-  string data("aaaaa");
+  QuicString data("aaaaa");
   QuicStreamPeer::SetStreamBytesWritten(kMaxStreamLength - data.length(),
                                         stream_);
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
@@ -465,7 +465,7 @@ TEST_F(QuicStreamTest, StopReadingSendsFlowControl) {
     EXPECT_CALL(*connection_, SendWindowUpdate(_, _)).Times(AtLeast(1));
   }
 
-  string data(1000, 'x');
+  QuicString data(1000, 'x');
   for (QuicStreamOffset offset = 0;
        offset < 2 * kInitialStreamFlowControlWindowForTest;
        offset += data.length()) {
@@ -852,7 +852,7 @@ TEST_F(QuicStreamTest, WriteBufferedData) {
   set_initial_flow_control_window_bytes(500000);
 
   Initialize(kShouldProcessData);
-  string data(1024, 'a');
+  QuicString data(1024, 'a');
   EXPECT_TRUE(stream_->CanWriteNewData());
 
   // Testing WriteOrBufferData.
@@ -948,7 +948,7 @@ TEST_F(QuicStreamTest, WriteBufferedData) {
 TEST_F(QuicStreamTest, WritevDataReachStreamLimit) {
   SetQuicReloadableFlag(quic_stream_too_long, true);
   Initialize(kShouldProcessData);
-  string data("aaaaa");
+  QuicString data("aaaaa");
   QuicStreamPeer::SetStreamBytesWritten(kMaxStreamLength - data.length(),
                                         stream_);
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
@@ -1221,7 +1221,7 @@ TEST_F(QuicStreamTest, MarkConnectionLevelWriteBlockedOnWindowUpdateFrame) {
   } else {
     EXPECT_CALL(*connection_, SendBlocked(stream_->id()));
   }
-  string data(1024, '.');
+  QuicString data(1024, '.');
   stream_->WriteOrBufferData(data, false, nullptr);
   EXPECT_FALSE(HasWriteBlockedStreams());
 

@@ -8,8 +8,7 @@
 #include "net/quic/core/spdy_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
-
-using std::string;
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -99,7 +98,7 @@ bool QuicSpdyClientSessionBase::HandlePromised(QuicStreamId /* associated_id */,
     return false;
   }
 
-  const string url = SpdyUtils::GetPromisedUrlFromHeaderBlock(headers);
+  const QuicString url = SpdyUtils::GetPromisedUrlFromHeaderBlock(headers);
   QuicClientPromisedInfo* old_promised = GetPromisedByUrl(url);
   if (old_promised) {
     QUIC_DVLOG(1) << "Promise for stream " << promised_id
@@ -131,7 +130,7 @@ bool QuicSpdyClientSessionBase::HandlePromised(QuicStreamId /* associated_id */,
 }
 
 QuicClientPromisedInfo* QuicSpdyClientSessionBase::GetPromisedByUrl(
-    const string& url) {
+    const QuicString& url) {
   QuicPromisedByUrlMap::iterator it =
       push_promise_index_->promised_by_url()->find(url);
   if (it != push_promise_index_->promised_by_url()->end()) {

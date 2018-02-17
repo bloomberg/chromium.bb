@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "net/quic/core/crypto/key_exchange.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 
 namespace net {
@@ -29,12 +30,12 @@ class QUIC_EXPORT_PRIVATE Curve25519KeyExchange : public KeyExchange {
 
   // NewPrivateKey returns a private key, generated from |rand|, suitable for
   // passing to |New|.
-  static std::string NewPrivateKey(QuicRandom* rand);
+  static QuicString NewPrivateKey(QuicRandom* rand);
 
   // KeyExchange interface.
   KeyExchange* NewKeyPair(QuicRandom* rand) const override;
   bool CalculateSharedKey(QuicStringPiece peer_public_value,
-                          std::string* shared_key) const override;
+                          QuicString* shared_key) const override;
   QuicStringPiece public_value() const override;
   QuicTag tag() const override;
 

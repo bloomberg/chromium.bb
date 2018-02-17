@@ -9,6 +9,7 @@
 
 #include "net/quic/core/crypto/crypto_protocol.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 
 namespace net {
@@ -30,7 +31,7 @@ class QUIC_EXPORT_PRIVATE KeyExchange {
   // (which is implicitly known by a KeyExchange object) and a public value
   // from the peer.
   virtual bool CalculateSharedKey(QuicStringPiece peer_public_value,
-                                  std::string* shared_key) const = 0;
+                                  QuicString* shared_key) const = 0;
 
   // public_value returns the local public key which can be sent to a peer in
   // order to complete a key exchange. The returned QuicStringPiece is a

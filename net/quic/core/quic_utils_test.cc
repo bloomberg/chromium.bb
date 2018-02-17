@@ -5,9 +5,8 @@
 #include "net/quic/core/quic_utils.h"
 
 #include "net/quic/core/crypto/crypto_protocol.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
-
-using std::string;
 
 namespace net {
 namespace test {
@@ -16,11 +15,11 @@ namespace {
 class QuicUtilsTest : public QuicTest {};
 
 TEST_F(QuicUtilsTest, DetermineAddressChangeType) {
-  const string kIPv4String1 = "1.2.3.4";
-  const string kIPv4String2 = "1.2.3.5";
-  const string kIPv4String3 = "1.1.3.5";
-  const string kIPv6String1 = "2001:700:300:1800::f";
-  const string kIPv6String2 = "2001:700:300:1800:1:1:1:f";
+  const QuicString kIPv4String1 = "1.2.3.4";
+  const QuicString kIPv4String2 = "1.2.3.5";
+  const QuicString kIPv4String3 = "1.1.3.5";
+  const QuicString kIPv6String1 = "2001:700:300:1800::f";
+  const QuicString kIPv6String2 = "2001:700:300:1800:1:1:1:f";
   QuicSocketAddress old_address;
   QuicSocketAddress new_address;
   QuicIpAddress address;

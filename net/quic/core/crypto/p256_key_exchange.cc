@@ -10,12 +10,11 @@
 #include <utility>
 
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "third_party/boringssl/src/include/openssl/ec.h"
 #include "third_party/boringssl/src/include/openssl/ecdh.h"
 #include "third_party/boringssl/src/include/openssl/err.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
-
-using std::string;
 
 namespace net {
 
@@ -55,35 +54,35 @@ P256KeyExchange* P256KeyExchange::New(QuicStringPiece key) {
 }
 
 // static
-string P256KeyExchange::NewPrivateKey() {
+QuicString P256KeyExchange::NewPrivateKey() {
   bssl::UniquePtr<EC_KEY> key(EC_KEY_new_by_curve_name(NID_X9_62_prime256v1));
   if (!key.get() || !EC_KEY_generate_key(key.get())) {
     QUIC_DLOG(INFO) << "Can't generate a new private key.";
-    return string();
+    return QuicString();
   }
 
   int key_len = i2d_ECPrivateKey(key.get(), nullptr);
   if (key_len <= 0) {
     QUIC_DLOG(INFO) << "Can't convert private key to string";
-    return string();
+    return QuicString();
   }
   std::unique_ptr<uint8_t[]> private_key(new uint8_t[key_len]);
   uint8_t* keyp = private_key.get();
   if (!i2d_ECPrivateKey(key.get(), &keyp)) {
     QUIC_DLOG(INFO) << "Can't convert private key to string.";
-    return string();
+    return QuicString();
   }
-  return string(reinterpret_cast<char*>(private_key.get()), key_len);
+  return QuicString(reinterpret_cast<char*>(private_key.get()), key_len);
 }
 
 KeyExchange* P256KeyExchange::NewKeyPair(QuicRandom* /*rand*/) const {
   // TODO(agl): avoid the serialisation/deserialisation in this function.
-  const string private_value = NewPrivateKey();
+  const QuicString private_value = NewPrivateKey();
   return P256KeyExchange::New(private_value);
 }
 
 bool P256KeyExchange::CalculateSharedKey(QuicStringPiece peer_public_value,
-                                         string* out_result) const {
+                                         QuicString* out_result) const {
   if (peer_public_value.size() != kUncompressedP256PointBytes) {
     QUIC_DLOG(INFO) << "Peer public value is invalid";
     return false;

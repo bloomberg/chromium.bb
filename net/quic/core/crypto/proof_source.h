@@ -14,6 +14,7 @@
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_reference_counted.h"
 #include "net/quic/platform/api/quic_socket_address.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 
 namespace net {
@@ -25,9 +26,9 @@ class QUIC_EXPORT_PRIVATE ProofSource {
   // Chain is a reference-counted wrapper for a vector of stringified
   // certificates.
   struct QUIC_EXPORT_PRIVATE Chain : public QuicReferenceCounted {
-    explicit Chain(const std::vector<std::string>& certs);
+    explicit Chain(const std::vector<QuicString>& certs);
 
-    const std::vector<std::string> certs;
+    const std::vector<QuicString> certs;
 
    protected:
     ~Chain() override;
@@ -86,7 +87,7 @@ class QUIC_EXPORT_PRIVATE ProofSource {
     //
     // |signature| contains the signature of the data provided to
     // ComputeTlsSignature. Its value is undefined if |ok| is false.
-    virtual void Run(bool ok, std::string signature) = 0;
+    virtual void Run(bool ok, QuicString signature) = 0;
 
    private:
     SignatureCallback(const SignatureCallback&) = delete;
@@ -114,8 +115,8 @@ class QUIC_EXPORT_PRIVATE ProofSource {
   //
   // Callers should expect that |callback| might be invoked synchronously.
   virtual void GetProof(const QuicSocketAddress& server_address,
-                        const std::string& hostname,
-                        const std::string& server_config,
+                        const QuicString& hostname,
+                        const QuicString& server_config,
                         QuicTransportVersion transport_version,
                         QuicStringPiece chlo_hash,
                         std::unique_ptr<Callback> callback) = 0;
@@ -123,7 +124,7 @@ class QUIC_EXPORT_PRIVATE ProofSource {
   // Returns the certificate chain for |hostname| in leaf-first order.
   virtual QuicReferenceCountedPointer<Chain> GetCertChain(
       const QuicSocketAddress& server_address,
-      const std::string& hostname) = 0;
+      const QuicString& hostname) = 0;
 
   // Computes a signature using the private key of the certificate for
   // |hostname|. The value in |in| is signed using the algorithm specified by
@@ -135,7 +136,7 @@ class QUIC_EXPORT_PRIVATE ProofSource {
   // Callers should expect that |callback| might be invoked synchronously.
   virtual void ComputeTlsSignature(
       const QuicSocketAddress& server_address,
-      const std::string& hostname,
+      const QuicString& hostname,
       uint16_t signature_algorithm,
       QuicStringPiece in,
       std::unique_ptr<SignatureCallback> callback) = 0;

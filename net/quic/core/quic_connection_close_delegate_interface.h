@@ -8,6 +8,7 @@
 #include "net/quic/core/quic_error_codes.h"
 #include "net/quic/core/quic_types.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -18,7 +19,7 @@ class QUIC_EXPORT_PRIVATE QuicConnectionCloseDelegateInterface {
 
   // Called when an unrecoverable error is encountered.
   virtual void OnUnrecoverableError(QuicErrorCode error,
-                                    const std::string& error_details,
+                                    const QuicString& error_details,
                                     ConnectionCloseSource source) = 0;
 };
 

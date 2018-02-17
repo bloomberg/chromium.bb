@@ -5,9 +5,9 @@
 #include "net/quic/core/crypto/quic_tls_adapter.h"
 
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 
-using std::string;
 
 namespace net {
 
@@ -81,7 +81,7 @@ QuicErrorCode QuicTlsAdapter::error() const {
   return QUIC_NO_ERROR;
 }
 
-const string& QuicTlsAdapter::error_detail() const {
+const QuicString& QuicTlsAdapter::error_detail() const {
   return error_detail_;
 }
 

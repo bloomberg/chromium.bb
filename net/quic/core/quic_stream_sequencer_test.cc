@@ -15,6 +15,7 @@
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/mock_clock.h"
@@ -24,7 +25,6 @@
 #include "net/test/gtest_util.h"
 #include "testing/gmock_mutant.h"
 
-using std::string;
 using testing::_;
 using testing::AnyNumber;
 using testing::InSequence;
@@ -39,7 +39,7 @@ class MockStream : public QuicStream {
   MOCK_METHOD0(OnFinRead, void());
   MOCK_METHOD0(OnDataAvailable, void());
   MOCK_METHOD2(CloseConnectionWithDetails,
-               void(QuicErrorCode error, const string& details));
+               void(QuicErrorCode error, const QuicString& details));
   MOCK_METHOD1(Reset, void(QuicRstStreamErrorCode error));
   MOCK_METHOD0(OnCanWrite, void());
 
@@ -78,17 +78,17 @@ class QuicStreamSequencerTest : public QuicTest {
         sequencer_(new QuicStreamSequencer(&stream_, &clock_)) {}
 
   // Verify that the data in first region match with the expected[0].
-  bool VerifyReadableRegion(const std::vector<string>& expected) {
+  bool VerifyReadableRegion(const std::vector<QuicString>& expected) {
     iovec iovecs[1];
     if (sequencer_->GetReadableRegions(iovecs, 1)) {
-      return (VerifyIovecs(iovecs, 1, std::vector<string>{expected[0]}));
+      return (VerifyIovecs(iovecs, 1, std::vector<QuicString>{expected[0]}));
     }
     return false;
   }
 
   // Verify that the data in each of currently readable regions match with each
   // item given in |expected|.
-  bool VerifyReadableRegions(const std::vector<string>& expected) {
+  bool VerifyReadableRegions(const std::vector<QuicString>& expected) {
     iovec iovecs[5];
     size_t num_iovecs =
         sequencer_->GetReadableRegions(iovecs, QUIC_ARRAYSIZE(iovecs));
@@ -98,7 +98,7 @@ class QuicStreamSequencerTest : public QuicTest {
 
   bool VerifyIovecs(iovec* iovecs,
                     size_t num_iovecs,
-                    const std::vector<string>& expected) {
+                    const std::vector<QuicString>& expected) {
     int start_position = 0;
     for (size_t i = 0; i < num_iovecs; ++i) {
       if (!VerifyIovec(iovecs[i],
@@ -371,7 +371,7 @@ TEST_F(QuicStreamSequencerTest, MutipleOffsets) {
 
 class QuicSequencerRandomTest : public QuicStreamSequencerTest {
  public:
-  typedef std::pair<int, string> Frame;
+  typedef std::pair<int, QuicString> Frame;
   typedef std::vector<Frame> FrameList;
 
   void CreateFrames() {
@@ -380,7 +380,8 @@ class QuicSequencerRandomTest : public QuicStreamSequencerTest {
     while (remaining_payload != 0) {
       int size = std::min(OneToN(6), remaining_payload);
       int index = payload_size - remaining_payload;
-      list_.push_back(std::make_pair(index, string(kPayload + index, size)));
+      list_.push_back(
+          std::make_pair(index, QuicString(kPayload + index, size)));
       remaining_payload -= size;
     }
   }
@@ -406,9 +407,9 @@ class QuicSequencerRandomTest : public QuicStreamSequencerTest {
     output_.append(output, bytes_read);
   }
 
-  string output_;
+  QuicString output_;
   // Data which peek at using GetReadableRegion if we back up.
-  string peeked_;
+  QuicString peeked_;
   SimpleRandom random_;
   FrameList list_;
 };
@@ -476,8 +477,8 @@ TEST_F(QuicSequencerRandomTest, RandomFramesNoDroppingBackup) {
       ASSERT_EQ(output_.size(), peeked_.size());
     }
   }
-  EXPECT_EQ(string(kPayload), output_);
-  EXPECT_EQ(string(kPayload), peeked_);
+  EXPECT_EQ(QuicString(kPayload), output_);
+  EXPECT_EQ(QuicString(kPayload), peeked_);
 }
 
 // Same as above, just using a different method for reading.
@@ -493,14 +494,14 @@ TEST_F(QuicStreamSequencerTest, MarkConsumed) {
   EXPECT_EQ(9u, sequencer_->NumBytesBuffered());
 
   // Peek into the data.
-  std::vector<string> expected = {"abcdefghi"};
+  std::vector<QuicString> expected = {"abcdefghi"};
   ASSERT_TRUE(VerifyReadableRegions(expected));
 
   // Consume 1 byte.
   sequencer_->MarkConsumed(1);
   EXPECT_EQ(1u, stream_.flow_controller()->bytes_consumed());
   // Verify data.
-  std::vector<string> expected2 = {"bcdefghi"};
+  std::vector<QuicString> expected2 = {"bcdefghi"};
   ASSERT_TRUE(VerifyReadableRegions(expected2));
   EXPECT_EQ(8u, sequencer_->NumBytesBuffered());
 
@@ -508,7 +509,7 @@ TEST_F(QuicStreamSequencerTest, MarkConsumed) {
   sequencer_->MarkConsumed(2);
   EXPECT_EQ(3u, stream_.flow_controller()->bytes_consumed());
   // Verify data.
-  std::vector<string> expected3 = {"defghi"};
+  std::vector<QuicString> expected3 = {"defghi"};
   ASSERT_TRUE(VerifyReadableRegions(expected3));
   EXPECT_EQ(6u, sequencer_->NumBytesBuffered());
 
@@ -516,7 +517,7 @@ TEST_F(QuicStreamSequencerTest, MarkConsumed) {
   sequencer_->MarkConsumed(5);
   EXPECT_EQ(8u, stream_.flow_controller()->bytes_consumed());
   // Verify data.
-  std::vector<string> expected4{"i"};
+  std::vector<QuicString> expected4{"i"};
   ASSERT_TRUE(VerifyReadableRegions(expected4));
   EXPECT_EQ(1u, sequencer_->NumBytesBuffered());
 }
@@ -529,7 +530,7 @@ TEST_F(QuicStreamSequencerTest, MarkConsumedError) {
 
   // Peek into the data.  Only the first chunk should be readable because of the
   // missing data.
-  std::vector<string> expected{"abc"};
+  std::vector<QuicString> expected{"abc"};
   ASSERT_TRUE(VerifyReadableRegions(expected));
 
   // Now, attempt to mark consumed more data than was readable and expect the
@@ -549,7 +550,7 @@ TEST_F(QuicStreamSequencerTest, MarkConsumedWithMissingPacket) {
   // Missing packet: 6, ghi.
   OnFrame(9, "jkl");
 
-  std::vector<string> expected = {"abcdef"};
+  std::vector<QuicString> expected = {"abcdef"};
   ASSERT_TRUE(VerifyReadableRegions(expected));
 
   sequencer_->MarkConsumed(6);
@@ -583,7 +584,7 @@ TEST_F(QuicStreamSequencerTest, DataAvailableOnOverlappingFrames) {
   }
   QuicStreamId id =
       QuicSpdySessionPeer::GetNthClientInitiatedStreamId(session_, 0);
-  const string data(1000, '.');
+  const QuicString data(1000, '.');
 
   // Received [0, 1000).
   QuicStreamFrame frame1(id, false, 0, data);

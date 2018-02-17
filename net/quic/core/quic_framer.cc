@@ -29,9 +29,9 @@
 #include "net/quic/platform/api/quic_map_util.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_str_cat.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 
-using std::string;
 
 namespace net {
 
@@ -513,7 +513,7 @@ std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildPublicResetPacket(
       IpAddressFamily::IP_UNSPEC) {
     // packet.client_address is non-empty.
     QuicSocketAddressCoder address_coder(packet.client_address);
-    string serialized_address = address_coder.Encode();
+    QuicString serialized_address = address_coder.Encode();
     if (serialized_address.empty()) {
       return nullptr;
     }
@@ -2830,7 +2830,7 @@ bool QuicFramer::AppendIetfConnectionCloseFrame(
 
 bool QuicFramer::AppendIetfConnectionCloseFrame(
     const QuicIetfTransportErrorCodes code,
-    const string& phrase,
+    const QuicString& phrase,
     QuicDataWriter* writer) {
   return AppendIetfCloseFrame(
       IETF_CONNECTION_CLOSE, static_cast<const uint16_t>(code), phrase, writer);
@@ -2844,7 +2844,7 @@ bool QuicFramer::AppendIetfApplicationCloseFrame(
                               frame.error_details, writer);
 }
 bool QuicFramer::AppendIetfApplicationCloseFrame(const uint16_t code,
-                                                 const string& phrase,
+                                                 const QuicString& phrase,
                                                  QuicDataWriter* writer) {
   return AppendIetfCloseFrame(IETF_APPLICATION_CLOSE, code, phrase, writer);
 }
@@ -2856,7 +2856,7 @@ bool QuicFramer::AppendIetfApplicationCloseFrame(const uint16_t code,
 //    phrase  (string)
 bool QuicFramer::AppendIetfCloseFrame(const QuicIetfFrameType type,
                                       const uint16_t code,
-                                      const string& phrase,
+                                      const QuicString& phrase,
                                       QuicDataWriter* writer) {
   if (!writer->WriteUInt8(type)) {
     set_detailed_error("Can not write close frame type byte");

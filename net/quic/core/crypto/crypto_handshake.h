@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -104,28 +105,28 @@ struct QUIC_EXPORT_PRIVATE QuicCryptoNegotiatedParameters
 
   QuicTag key_exchange;
   QuicTag aead;
-  std::string initial_premaster_secret;
-  std::string forward_secure_premaster_secret;
+  QuicString initial_premaster_secret;
+  QuicString forward_secure_premaster_secret;
   // initial_subkey_secret is used as the PRK input to the HKDF used when
   // performing key extraction that needs to happen before forward-secure keys
   // are available.
-  std::string initial_subkey_secret;
+  QuicString initial_subkey_secret;
   // subkey_secret is used as the PRK input to the HKDF used for key extraction.
-  std::string subkey_secret;
+  QuicString subkey_secret;
   CrypterPair initial_crypters;
   CrypterPair forward_secure_crypters;
   // Normalized SNI: converted to lower case and trailing '.' removed.
-  std::string sni;
-  std::string client_nonce;
-  std::string server_nonce;
+  QuicString sni;
+  QuicString client_nonce;
+  QuicString server_nonce;
   // hkdf_input_suffix contains the HKDF input following the label: the
   // ConnectionId, client hello and server config. This is only populated in the
   // client because only the client needs to derive the forward secure keys at a
   // later time from the initial keys.
-  std::string hkdf_input_suffix;
+  QuicString hkdf_input_suffix;
   // cached_certs contains the cached certificates that a client used when
   // sending a client hello.
-  std::vector<std::string> cached_certs;
+  std::vector<QuicString> cached_certs;
   // client_key_exchange is used by clients to store the ephemeral KeyExchange
   // for the connection.
   std::unique_ptr<KeyExchange> client_key_exchange;
@@ -133,14 +134,14 @@ struct QUIC_EXPORT_PRIVATE QuicCryptoNegotiatedParameters
   // proves possession of the corresponding private key. It consists of 32
   // bytes of x coordinate, followed by 32 bytes of y coordinate. Both values
   // are big-endian and the pair is a P-256 public key.
-  std::string channel_id;
+  QuicString channel_id;
   QuicTag token_binding_key_param;
 
   // Used when generating proof signature when sending server config updates.
 
   // Used to generate cert chain when sending server config updates.
-  std::string client_common_set_hashes;
-  std::string client_cached_cert_hashes;
+  QuicString client_common_set_hashes;
+  QuicString client_cached_cert_hashes;
 
   // Default to false; set to true if the client indicates that it supports sct
   // by sending CSCT tag with an empty value in client hello.

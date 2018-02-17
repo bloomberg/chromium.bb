@@ -6,6 +6,7 @@
 #define NET_QUIC_PLATFORM_API_QUIC_URL_H_
 
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/platform/impl/quic_url_impl.h"
 
@@ -41,21 +42,21 @@ class QUIC_EXPORT_PRIVATE QuicUrl {
   // Return values are platform-dependent if called on a invalid QuicUrl.
 
   // Returns full text of the QuicUrl.
-  std::string ToString() const;
+  QuicString ToString() const;
 
   // Returns host:port.
   // If the host is empty, it will return an empty string.
   // If the host is an IPv6 address, it will be bracketed.
   // If port is not present or is equal to default_port of scheme (e.g., port
   // 80 for HTTP), it won't be returned.
-  std::string HostPort() const;
+  QuicString HostPort() const;
 
   // Returns a string assembles path, parameters and query.
-  std::string PathParamsQuery() const;
+  QuicString PathParamsQuery() const;
 
-  std::string scheme() const;
-  std::string host() const;
-  std::string path() const;
+  QuicString scheme() const;
+  QuicString host() const;
+  QuicString path() const;
   uint16_t port() const;
 
   const QuicUrlImpl& impl() const { return impl_; }

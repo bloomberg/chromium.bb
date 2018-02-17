@@ -11,6 +11,7 @@
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_map_util.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/platform/api/quic_url_utils.h"
@@ -18,7 +19,6 @@
 #include "net/spdy/core/spdy_framer.h"
 #include "net/spdy/core/spdy_protocol.h"
 
-using std::string;
 
 namespace net {
 
@@ -60,7 +60,7 @@ bool SpdyUtils::CopyAndValidateHeaders(const QuicHeaderList& header_list,
                                        int64_t* content_length,
                                        SpdyHeaderBlock* headers) {
   for (const auto& p : header_list) {
-    const string& name = p.first;
+    const QuicString& name = p.first;
     if (name.empty()) {
       QUIC_DLOG(ERROR) << "Header name must not be empty.";
       return false;
@@ -89,7 +89,7 @@ bool SpdyUtils::CopyAndValidateTrailers(const QuicHeaderList& header_list,
                                         SpdyHeaderBlock* trailers) {
   bool found_final_byte_offset = false;
   for (const auto& p : header_list) {
-    const string& name = p.first;
+    const QuicString& name = p.first;
 
     // Pull out the final offset pseudo header which indicates the number of
     // response body bytes expected.
@@ -128,7 +128,7 @@ bool SpdyUtils::CopyAndValidateTrailers(const QuicHeaderList& header_list,
 }
 
 // static
-string SpdyUtils::GetPromisedUrlFromHeaderBlock(
+QuicString SpdyUtils::GetPromisedUrlFromHeaderBlock(
     const SpdyHeaderBlock& headers) {
   // RFC 7540, Section 8.1.2.3: All HTTP/2 requests MUST include exactly
   // one valid value for the ":method", ":scheme", and ":path" pseudo-header
@@ -149,12 +149,12 @@ string SpdyUtils::GetPromisedUrlFromHeaderBlock(
   // So the only methods allowed in a PUSH_PROMISE are GET and HEAD.
   SpdyHeaderBlock::const_iterator it = headers.find(":method");
   if (it == headers.end() || (it->second != "GET" && it->second != "HEAD")) {
-    return string();
+    return QuicString();
   }
 
   it = headers.find(":scheme");
   if (it == headers.end() || it->second.empty()) {
-    return string();
+    return QuicString();
   }
   QuicStringPiece scheme = it->second;
 
@@ -163,7 +163,7 @@ string SpdyUtils::GetPromisedUrlFromHeaderBlock(
   // (see Section 10.1).
   it = headers.find(":authority");
   if (it == headers.end() || it->second.empty()) {
-    return string();
+    return QuicString();
   }
   QuicStringPiece authority = it->second;
 
@@ -174,7 +174,7 @@ string SpdyUtils::GetPromisedUrlFromHeaderBlock(
   // is deferred to implementations in QuicUrlUtils::GetPushPromiseUrl().
   it = headers.find(":path");
   if (it == headers.end()) {
-    return string();
+    return QuicString();
   }
   QuicStringPiece path = it->second;
 
@@ -182,7 +182,8 @@ string SpdyUtils::GetPromisedUrlFromHeaderBlock(
 }
 
 // static
-string SpdyUtils::GetHostNameFromHeaderBlock(const SpdyHeaderBlock& headers) {
+QuicString SpdyUtils::GetHostNameFromHeaderBlock(
+    const SpdyHeaderBlock& headers) {
   // TODO(fayang): Consider just checking out the value of the ":authority" key
   // in headers.
   return QuicUrlUtils::HostName(GetPromisedUrlFromHeaderBlock(headers));
@@ -190,22 +191,22 @@ string SpdyUtils::GetHostNameFromHeaderBlock(const SpdyHeaderBlock& headers) {
 
 // static
 bool SpdyUtils::UrlIsValid(const SpdyHeaderBlock& headers) {
-  string url(GetPromisedUrlFromHeaderBlock(headers));
+  QuicString url(GetPromisedUrlFromHeaderBlock(headers));
   return !url.empty() && QuicUrlUtils::IsValidUrl(url);
 }
 
 // static
-bool SpdyUtils::PopulateHeaderBlockFromUrl(const string url,
+bool SpdyUtils::PopulateHeaderBlockFromUrl(const QuicString url,
                                            SpdyHeaderBlock* headers) {
   (*headers)[":method"] = "GET";
   size_t pos = url.find("://");
-  if (pos == string::npos) {
+  if (pos == QuicString::npos) {
     return false;
   }
   (*headers)[":scheme"] = url.substr(0, pos);
   size_t start = pos + 3;
   pos = url.find("/", start);
-  if (pos == string::npos) {
+  if (pos == QuicString::npos) {
     (*headers)[":authority"] = url.substr(start);
     (*headers)[":path"] = "/";
     return true;

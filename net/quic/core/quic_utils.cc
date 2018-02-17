@@ -12,8 +12,7 @@
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_prefetch.h"
-
-using std::string;
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 namespace {
@@ -163,7 +162,7 @@ const char* QuicUtils::TransmissionTypeToString(TransmissionType type) {
   return "INVALID_TRANSMISSION_TYPE";
 }
 
-string QuicUtils::AddressChangeTypeToString(AddressChangeType type) {
+QuicString QuicUtils::AddressChangeTypeToString(AddressChangeType type) {
   switch (type) {
     RETURN_STRING_LITERAL(NO_CHANGE);
     RETURN_STRING_LITERAL(PORT_CHANGE);

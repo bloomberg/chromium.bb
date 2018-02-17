@@ -10,10 +10,10 @@
 #include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "third_party/boringssl/src/include/openssl/err.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 
-using std::string;
 
 namespace net {
 
@@ -118,7 +118,7 @@ bool AeadBaseDecrypter::SetDiversificationNonce(
     return true;
   }
 
-  string key, nonce_prefix;
+  QuicString key, nonce_prefix;
   size_t prefix_size = nonce_size_ - sizeof(QuicPacketNumber);
   DiversifyPreliminaryKey(
       QuicStringPiece(reinterpret_cast<const char*>(key_), key_size_),

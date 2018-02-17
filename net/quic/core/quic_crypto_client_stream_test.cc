@@ -16,6 +16,7 @@
 #include "net/quic/core/tls_server_handshaker.h"
 #include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_flags.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_stream_peer.h"
@@ -23,7 +24,6 @@
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simple_quic_framer.h"
 
-using std::string;
 
 using testing::_;
 
@@ -188,10 +188,10 @@ TEST_F(QuicCryptoClientStreamTest, InvalidCachedServerConfig) {
   QuicCryptoClientConfig::CachedState* state =
       crypto_config_.LookupOrCreate(server_id_);
 
-  std::vector<string> certs = state->certs();
-  string cert_sct = state->cert_sct();
-  string signature = state->signature();
-  string chlo_hash = state->chlo_hash();
+  std::vector<QuicString> certs = state->certs();
+  QuicString cert_sct = state->cert_sct();
+  QuicString signature = state->signature();
+  QuicString chlo_hash = state->chlo_hash();
   state->SetProof(certs, cert_sct, chlo_hash, signature + signature);
 
   EXPECT_CALL(*session_, OnProofVerifyDetailsAvailable(testing::_))
@@ -243,7 +243,7 @@ TEST_F(QuicCryptoClientStreamTest, ServerConfigUpdate) {
   // Make sure that the STK and SCFG are cached correctly.
   EXPECT_EQ("xstk", state->source_address_token());
 
-  const string& cached_scfg = state->server_config();
+  const QuicString& cached_scfg = state->server_config();
   test::CompareCharArraysWithHexError(
       "scfg", cached_scfg.data(), cached_scfg.length(),
       reinterpret_cast<char*>(scfg), QUIC_ARRAYSIZE(scfg));

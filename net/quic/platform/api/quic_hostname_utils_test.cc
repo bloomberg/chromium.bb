@@ -5,9 +5,9 @@
 #include "net/quic/platform/api/quic_hostname_utils.h"
 
 #include "net/quic/platform/api/quic_arraysize.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 
-using std::string;
 
 namespace net {
 namespace test {
@@ -57,7 +57,7 @@ TEST_F(QuicHostnameUtilsTest, NormalizeHostname) {
   for (size_t i = 0; i < QUIC_ARRAYSIZE(tests); ++i) {
     char buf[256];
     snprintf(buf, sizeof(buf), "%s", tests[i].input);
-    EXPECT_EQ(string(tests[i].expected),
+    EXPECT_EQ(QuicString(tests[i].expected),
               QuicHostnameUtils::NormalizeHostname(buf));
   }
 }

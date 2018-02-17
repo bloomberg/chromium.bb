@@ -33,6 +33,7 @@
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_mem_slice_span.h"
 #include "net/quic/platform/api/quic_reference_counted.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 
 namespace net {
@@ -91,7 +92,7 @@ class QUIC_EXPORT_PRIVATE QuicStream {
   // Called by the subclass or the sequencer to close the entire connection from
   // this end.
   virtual void CloseConnectionWithDetails(QuicErrorCode error,
-                                          const std::string& details);
+                                          const QuicString& details);
 
   // Returns true if this stream is still waiting for acks of sent data.
   // This will return false if all data has been acked, or if the stream

@@ -16,6 +16,7 @@
 #include "net/quic/core/quic_types.h"
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_socket_address.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 
 namespace net {
@@ -52,7 +53,7 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
   static const char* TransmissionTypeToString(TransmissionType type);
 
   // Returns AddressChangeType as a std::string.
-  static std::string AddressChangeTypeToString(AddressChangeType type);
+  static QuicString AddressChangeTypeToString(AddressChangeType type);
 
   // Determines and returns change type of address change from |old_address| to
   // |new_address|.

@@ -8,12 +8,12 @@
 #include <string>
 
 #include "net/quic/platform/api/quic_flags.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/quic_buffered_packet_store_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
-using std::string;
 
 namespace net {
 
@@ -63,7 +63,7 @@ class QuicBufferedPacketStoreTest : public QuicTest {
   QuicBufferedPacketStore store_;
   QuicSocketAddress server_address_;
   QuicSocketAddress client_address_;
-  string packet_content_;
+  QuicString packet_content_;
   QuicTime packet_time_;
   QuicReceivedPacket packet_;
 };

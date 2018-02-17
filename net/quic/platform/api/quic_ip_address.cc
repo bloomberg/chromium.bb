@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 #include "net/quic/platform/api/quic_ip_address.h"
-
-using std::string;
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -46,11 +45,11 @@ int QuicIpAddress::AddressFamilyToInt() const {
   return impl_.AddressFamilyToInt();
 }
 
-std::string QuicIpAddress::ToPackedString() const {
+QuicString QuicIpAddress::ToPackedString() const {
   return impl_.ToPackedString();
 }
 
-std::string QuicIpAddress::ToString() const {
+QuicString QuicIpAddress::ToString() const {
   return impl_.ToString();
 }
 
@@ -66,7 +65,7 @@ bool QuicIpAddress::FromPackedString(const char* data, size_t length) {
   return impl_.FromPackedString(data, length);
 }
 
-bool QuicIpAddress::FromString(string str) {
+bool QuicIpAddress::FromString(QuicString str) {
   return impl_.FromString(str);
 }
 

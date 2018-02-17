@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_mutex.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 
 namespace net {
@@ -34,13 +35,13 @@ class QUIC_EXPORT_PRIVATE CryptoSecretBoxer {
   // used by |Box|, but all supplied keys will be tried by |Unbox|, to handle
   // key skew across the fleet. This must be called before |Box| or |Unbox|.
   // Keys must be |GetKeySize()| bytes long.
-  void SetKeys(const std::vector<std::string>& keys);
+  void SetKeys(const std::vector<QuicString>& keys);
 
   // Box encrypts |plaintext| using a random nonce generated from |rand| and
   // returns the resulting ciphertext. Since an authenticator and nonce are
   // included, the result will be slightly larger than |plaintext|. The first
   // key in the vector supplied to |SetKeys| will be used.
-  std::string Box(QuicRandom* rand, QuicStringPiece plaintext) const;
+  QuicString Box(QuicRandom* rand, QuicStringPiece plaintext) const;
 
   // Unbox takes the result of a previous call to |Box| in |ciphertext| and
   // authenticates+decrypts it. If |ciphertext| cannot be decrypted with any of
@@ -48,7 +49,7 @@ class QUIC_EXPORT_PRIVATE CryptoSecretBoxer {
   // used to store the result and |out| is set to point into |out_storage| and
   // contains the original plaintext.
   bool Unbox(QuicStringPiece ciphertext,
-             std::string* out_storage,
+             QuicString* out_storage,
              QuicStringPiece* out) const;
 
  private:

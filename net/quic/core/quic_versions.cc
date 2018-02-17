@@ -12,8 +12,7 @@
 #include "net/quic/platform/api/quic_flag_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
-
-using std::string;
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 namespace {
@@ -224,7 +223,7 @@ QuicVersionLabel QuicVersionToQuicVersionLabel(
       ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, transport_version));
 }
 
-string QuicVersionLabelToString(QuicVersionLabel version_label) {
+QuicString QuicVersionLabelToString(QuicVersionLabel version_label) {
   return QuicTagToString(QuicEndian::HostToNet32(version_label));
 }
 
@@ -242,7 +241,7 @@ HandshakeProtocol QuicVersionLabelToHandshakeProtocol(
   case x:                        \
     return #x
 
-string QuicVersionToString(QuicTransportVersion transport_version) {
+QuicString QuicVersionToString(QuicTransportVersion transport_version) {
   switch (transport_version) {
     RETURN_STRING_LITERAL(QUIC_VERSION_35);
     RETURN_STRING_LITERAL(QUIC_VERSION_37);
@@ -257,13 +256,13 @@ string QuicVersionToString(QuicTransportVersion transport_version) {
   }
 }
 
-string ParsedQuicVersionToString(ParsedQuicVersion version) {
+QuicString ParsedQuicVersionToString(ParsedQuicVersion version) {
   return QuicVersionLabelToString(CreateQuicVersionLabel(version));
 }
 
-string QuicTransportVersionVectorToString(
+QuicString QuicTransportVersionVectorToString(
     const QuicTransportVersionVector& versions) {
-  string result = "";
+  QuicString result = "";
   for (size_t i = 0; i < versions.size(); ++i) {
     if (i != 0) {
       result.append(",");
@@ -273,9 +272,9 @@ string QuicTransportVersionVectorToString(
   return result;
 }
 
-string ParsedQuicVersionVectorToString(
+QuicString ParsedQuicVersionVectorToString(
     const ParsedQuicVersionVector& versions) {
-  string result = "";
+  QuicString result = "";
   for (size_t i = 0; i < versions.size(); ++i) {
     if (i != 0) {
       result.append(",");

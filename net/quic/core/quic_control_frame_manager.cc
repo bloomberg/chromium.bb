@@ -8,8 +8,7 @@
 #include "net/quic/core/quic_session.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_map_util.h"
-
-using std::string;
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -43,7 +42,7 @@ void QuicControlFrameManager::WriteOrBufferRstStream(
 void QuicControlFrameManager::WriteOrBufferGoAway(
     QuicErrorCode error,
     QuicStreamId last_good_stream_id,
-    const string& reason) {
+    const QuicString& reason) {
   QUIC_DVLOG(1) << "Writing GOAWAY_FRAME";
   const bool had_buffered_frames = HasBufferedFrames();
   control_frames_.emplace_back(QuicFrame(new QuicGoAwayFrame(

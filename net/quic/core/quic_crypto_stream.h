@@ -14,6 +14,7 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_stream.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 
 namespace net {
@@ -51,7 +52,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoStream : public QuicStream {
   bool ExportKeyingMaterial(QuicStringPiece label,
                             QuicStringPiece context,
                             size_t result_len,
-                            std::string* result) const;
+                            QuicString* result) const;
 
   // Performs key extraction for Token Binding. Unlike ExportKeyingMaterial,
   // this function can be called before forward-secure encryption is
@@ -61,7 +62,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoStream : public QuicStream {
   // Since this depends only on the initial keys, a signature over it can be
   // repurposed by an attacker who obtains the client's or server's DH private
   // value.
-  bool ExportTokenBindingKeyingMaterial(std::string* result) const;
+  bool ExportTokenBindingKeyingMaterial(QuicString* result) const;
 
   // Writes |data| to the QuicStream.
   virtual void WriteCryptoData(const QuicStringPiece& data);

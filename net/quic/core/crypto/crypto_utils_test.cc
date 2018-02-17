@@ -6,11 +6,11 @@
 
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_arraysize.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
-using std::string;
 
 namespace net {
 namespace test {
@@ -25,7 +25,7 @@ TEST_F(CryptoUtilsTest, TestHkdfExpandLabel) {
       0x8f, 0x01, 0x00, 0x67, 0x9c, 0x96, 0x5a, 0xc5, 0x9f, 0x28, 0x3a,
       0x02, 0x52, 0x2a, 0x6e, 0x43, 0xcf, 0xae, 0xf6, 0x3c, 0x45, 0x48,
       0xb0, 0xa6, 0x8f, 0x91, 0x91, 0x40, 0xee, 0x7d, 0x9a, 0x48};
-  const string label = "QUIC client cleartext Secret";
+  const QuicString label = "QUIC client cleartext Secret";
   std::vector<uint8_t> out =
       CryptoUtils::HkdfExpandLabel(EVP_sha256(), secret, label, 32);
 
@@ -70,18 +70,18 @@ TEST_F(CryptoUtilsTest, TestExportKeyingMaterial) {
 
   for (size_t i = 0; i < QUIC_ARRAYSIZE(test_vector); i++) {
     // Decode the test vector.
-    string subkey_secret =
+    QuicString subkey_secret =
         QuicTextUtils::HexDecode(test_vector[i].subkey_secret);
-    string label = QuicTextUtils::HexDecode(test_vector[i].label);
-    string context = QuicTextUtils::HexDecode(test_vector[i].context);
+    QuicString label = QuicTextUtils::HexDecode(test_vector[i].label);
+    QuicString context = QuicTextUtils::HexDecode(test_vector[i].context);
     size_t result_len = test_vector[i].result_len;
     bool expect_ok = test_vector[i].expected != nullptr;
-    string expected;
+    QuicString expected;
     if (expect_ok) {
       expected = QuicTextUtils::HexDecode(test_vector[i].expected);
     }
 
-    string result;
+    QuicString result;
     bool ok = CryptoUtils::ExportKeyingMaterial(subkey_secret, label, context,
                                                 result_len, &result);
     EXPECT_EQ(expect_ok, ok);

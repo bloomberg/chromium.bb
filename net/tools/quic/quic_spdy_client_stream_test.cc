@@ -12,6 +12,7 @@
 #include "net/quic/core/tls_client_handshaker.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_socket_address.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
@@ -20,7 +21,6 @@
 #include "net/tools/quic/quic_spdy_client_session.h"
 
 using base::IntToString;
-using std::string;
 using testing::_;
 using testing::StrictMock;
 
@@ -89,7 +89,7 @@ class QuicSpdyClientStreamTest : public QuicTest {
   std::unique_ptr<QuicSpdyClientStream> stream_;
   std::unique_ptr<StreamVisitor> stream_visitor_;
   SpdyHeaderBlock headers_;
-  string body_;
+  QuicString body_;
 };
 
 TEST_F(QuicSpdyClientStreamTest, TestReceivingIllegalResponseStatusCode) {
@@ -145,7 +145,7 @@ TEST_F(QuicSpdyClientStreamTest, TestFramingOnePacket) {
 }
 
 TEST_F(QuicSpdyClientStreamTest, DISABLED_TestFramingExtraData) {
-  string large_body = "hello world!!!!!!";
+  QuicString large_body = "hello world!!!!!!";
 
   auto headers = AsHeaderList(headers_);
   stream_->OnStreamHeaderList(false, headers.uncompressed_header_bytes(),

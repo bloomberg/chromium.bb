@@ -10,9 +10,8 @@
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
-
-using std::string;
 
 namespace net {
 
@@ -85,7 +84,7 @@ void QuicServerSessionBase::OnConfigNegotiated() {
 }
 
 void QuicServerSessionBase::OnConnectionClosed(QuicErrorCode error,
-                                               const string& error_details,
+                                               const QuicString& error_details,
                                                ConnectionCloseSource source) {
   QuicSession::OnConnectionClosed(error, error_details, source);
   // In the unlikely event we get a connection close while doing an asynchronous

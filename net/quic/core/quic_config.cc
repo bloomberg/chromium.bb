@@ -14,9 +14,9 @@
 #include "net/quic/platform/api/quic_flag_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 
-using std::string;
 
 namespace net {
 
@@ -28,7 +28,7 @@ QuicErrorCode ReadUint32(const CryptoHandshakeMessage& msg,
                          QuicConfigPresence presence,
                          uint32_t default_value,
                          uint32_t* out,
-                         string* error_details) {
+                         QuicString* error_details) {
   DCHECK(error_details != nullptr);
   QuicErrorCode error = msg.GetUint32(tag, out);
   switch (error) {
@@ -96,7 +96,7 @@ void QuicNegotiableUint32::ToHandshakeMessage(
 QuicErrorCode QuicNegotiableUint32::ProcessPeerHello(
     const CryptoHandshakeMessage& peer_hello,
     HelloType hello_type,
-    string* error_details) {
+    QuicString* error_details) {
   DCHECK(!negotiated());
   DCHECK(error_details != nullptr);
   uint32_t value;
@@ -126,8 +126,8 @@ bool QuicFixedUint32::HasSendValue() const {
 }
 
 uint32_t QuicFixedUint32::GetSendValue() const {
-  QUIC_BUG_IF(!has_send_value_) << "No send value to get for tag:"
-                                << QuicTagToString(tag_);
+  QUIC_BUG_IF(!has_send_value_)
+      << "No send value to get for tag:" << QuicTagToString(tag_);
   return send_value_;
 }
 
@@ -141,8 +141,8 @@ bool QuicFixedUint32::HasReceivedValue() const {
 }
 
 uint32_t QuicFixedUint32::GetReceivedValue() const {
-  QUIC_BUG_IF(!has_receive_value_) << "No receive value to get for tag:"
-                                   << QuicTagToString(tag_);
+  QUIC_BUG_IF(!has_receive_value_)
+      << "No receive value to get for tag:" << QuicTagToString(tag_);
   return receive_value_;
 }
 
@@ -160,7 +160,7 @@ void QuicFixedUint32::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
 QuicErrorCode QuicFixedUint32::ProcessPeerHello(
     const CryptoHandshakeMessage& peer_hello,
     HelloType hello_type,
-    string* error_details) {
+    QuicString* error_details) {
   DCHECK(error_details != nullptr);
   QuicErrorCode error = peer_hello.GetUint32(tag_, &receive_value_);
   switch (error) {
@@ -225,7 +225,7 @@ void QuicFixedUint128::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
 QuicErrorCode QuicFixedUint128::ProcessPeerHello(
     const CryptoHandshakeMessage& peer_hello,
     HelloType hello_type,
-    string* error_details) {
+    QuicString* error_details) {
   DCHECK(error_details != nullptr);
   QuicErrorCode error = peer_hello.GetUint128(tag_, &receive_value_);
   switch (error) {
@@ -261,8 +261,8 @@ bool QuicFixedTagVector::HasSendValues() const {
 }
 
 QuicTagVector QuicFixedTagVector::GetSendValues() const {
-  QUIC_BUG_IF(!has_send_values_) << "No send values to get for tag:"
-                                 << QuicTagToString(tag_);
+  QUIC_BUG_IF(!has_send_values_)
+      << "No send values to get for tag:" << QuicTagToString(tag_);
   return send_values_;
 }
 
@@ -276,8 +276,8 @@ bool QuicFixedTagVector::HasReceivedValues() const {
 }
 
 QuicTagVector QuicFixedTagVector::GetReceivedValues() const {
-  QUIC_BUG_IF(!has_receive_values_) << "No receive value to get for tag:"
-                                    << QuicTagToString(tag_);
+  QUIC_BUG_IF(!has_receive_values_)
+      << "No receive value to get for tag:" << QuicTagToString(tag_);
   return receive_values_;
 }
 
@@ -295,7 +295,7 @@ void QuicFixedTagVector::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
 QuicErrorCode QuicFixedTagVector::ProcessPeerHello(
     const CryptoHandshakeMessage& peer_hello,
     HelloType hello_type,
-    string* error_details) {
+    QuicString* error_details) {
   DCHECK(error_details != nullptr);
   QuicTagVector values;
   QuicErrorCode error = peer_hello.GetTaglist(tag_, &values);
@@ -332,8 +332,8 @@ bool QuicFixedSocketAddress::HasSendValue() const {
 }
 
 const QuicSocketAddress& QuicFixedSocketAddress::GetSendValue() const {
-  QUIC_BUG_IF(!has_send_value_) << "No send value to get for tag:"
-                                << QuicTagToString(tag_);
+  QUIC_BUG_IF(!has_send_value_)
+      << "No send value to get for tag:" << QuicTagToString(tag_);
   return send_value_;
 }
 
@@ -347,8 +347,8 @@ bool QuicFixedSocketAddress::HasReceivedValue() const {
 }
 
 const QuicSocketAddress& QuicFixedSocketAddress::GetReceivedValue() const {
-  QUIC_BUG_IF(!has_receive_value_) << "No receive value to get for tag:"
-                                   << QuicTagToString(tag_);
+  QUIC_BUG_IF(!has_receive_value_)
+      << "No receive value to get for tag:" << QuicTagToString(tag_);
   return receive_value_;
 }
 
@@ -368,7 +368,7 @@ void QuicFixedSocketAddress::ToHandshakeMessage(
 QuicErrorCode QuicFixedSocketAddress::ProcessPeerHello(
     const CryptoHandshakeMessage& peer_hello,
     HelloType hello_type,
-    string* error_details) {
+    QuicString* error_details) {
   QuicStringPiece address;
   if (!peer_hello.GetStringPiece(tag_, &address)) {
     if (presence_ == PRESENCE_REQUIRED) {
@@ -700,7 +700,7 @@ void QuicConfig::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
 QuicErrorCode QuicConfig::ProcessPeerHello(
     const CryptoHandshakeMessage& peer_hello,
     HelloType hello_type,
-    string* error_details) {
+    QuicString* error_details) {
   DCHECK(error_details != nullptr);
 
   QuicErrorCode error = QUIC_NO_ERROR;
