@@ -108,6 +108,10 @@ class WebContentsTester {
       NavigationHandle* navigation_handle,
       scoped_refptr<net::HttpResponseHeaders> response_headers) = 0;
 
+  // Simulate this WebContents' main frame having an opener that points to the
+  // main frame of |opener|.
+  virtual void SetOpener(WebContents* opener) = 0;
+
   // Returns headers that were passed in the previous SaveFrameWithHeaders(...)
   // call.
   virtual const std::string& GetSaveFrameHeaders() = 0;
