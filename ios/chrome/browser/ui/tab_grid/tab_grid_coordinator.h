@@ -10,11 +10,15 @@
 #import "ios/chrome/browser/ui/main/main_coordinator.h"
 #import "ios/chrome/browser/ui/main/view_controller_swapping.h"
 
+@class TabModel;
 @protocol TabSwitcher;
 
 @interface TabGridCoordinator : MainCoordinator<ViewControllerSwapping>
 
 @property(nonatomic, readonly) id<TabSwitcher> tabSwitcher;
+
+@property(nonatomic, weak) TabModel* regularTabModel;
+@property(nonatomic, weak) TabModel* incognitoTabModel;
 
 // If this property is YES, calls to |showTabSwitcher:completion:| and
 // |showTabViewController:completion:| will present the given view controllers
