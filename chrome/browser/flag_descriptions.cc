@@ -2990,6 +2990,11 @@ const char kAshEnableNewOverviewUiName[] = "Enable new overview UI.";
 const char kAshEnableNewOverviewUiDescription[] =
     "Enables the new overview mode UI.";
 
+const char kAshEnableNewOverviewAnimationsName[] =
+    "Enable new overview animations.";
+const char kAshEnableNewOverviewAnimationsDescription[] =
+    "Enables the new overview mode animations.";
+
 const char kAshEnablePersistentWindowBoundsName[] =
     "Enable persistent window bounds in multi-displays scenario.";
 const char kAshEnablePersistentWindowBoundsDescription[] =
