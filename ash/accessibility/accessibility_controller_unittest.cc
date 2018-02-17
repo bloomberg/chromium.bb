@@ -75,6 +75,12 @@ TEST_F(AccessibilityControllerTest, PrefsAreRegistered) {
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityAutoclickEnabled));
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityAutoclickDelayMs));
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kAccessibilityCaretHighlightEnabled));
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kAccessibilityCursorHighlightEnabled));
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kAccessibilityFocusHighlightEnabled));
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityHighContrastEnabled));
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityLargeCursorEnabled));
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityLargeCursorDipSize));
@@ -104,6 +110,66 @@ TEST_F(AccessibilityControllerTest, SetAutoclickEnabled) {
 
   controller->SetAutoclickEnabled(false);
   EXPECT_FALSE(controller->IsAutoclickEnabled());
+  EXPECT_EQ(2, observer.notification_none_changed_);
+
+  Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(&observer);
+}
+
+TEST_F(AccessibilityControllerTest, SetCaretHighlightEnabled) {
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  EXPECT_FALSE(controller->IsCaretHighlightEnabled());
+
+  TestAccessibilityObserver observer;
+  Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(&observer);
+  EXPECT_EQ(0, observer.notification_none_changed_);
+
+  controller->SetCaretHighlightEnabled(true);
+  EXPECT_TRUE(controller->IsCaretHighlightEnabled());
+  EXPECT_EQ(1, observer.notification_none_changed_);
+
+  controller->SetCaretHighlightEnabled(false);
+  EXPECT_FALSE(controller->IsCaretHighlightEnabled());
+  EXPECT_EQ(2, observer.notification_none_changed_);
+
+  Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(&observer);
+}
+
+TEST_F(AccessibilityControllerTest, SetCursorHighlightEnabled) {
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  EXPECT_FALSE(controller->IsCursorHighlightEnabled());
+
+  TestAccessibilityObserver observer;
+  Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(&observer);
+  EXPECT_EQ(0, observer.notification_none_changed_);
+
+  controller->SetCursorHighlightEnabled(true);
+  EXPECT_TRUE(controller->IsCursorHighlightEnabled());
+  EXPECT_EQ(1, observer.notification_none_changed_);
+
+  controller->SetCursorHighlightEnabled(false);
+  EXPECT_FALSE(controller->IsCursorHighlightEnabled());
+  EXPECT_EQ(2, observer.notification_none_changed_);
+
+  Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(&observer);
+}
+
+TEST_F(AccessibilityControllerTest, SetFocusHighlightEnabled) {
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  EXPECT_FALSE(controller->IsFocusHighlightEnabled());
+
+  TestAccessibilityObserver observer;
+  Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(&observer);
+  EXPECT_EQ(0, observer.notification_none_changed_);
+
+  controller->SetFocusHighlightEnabled(true);
+  EXPECT_TRUE(controller->IsFocusHighlightEnabled());
+  EXPECT_EQ(1, observer.notification_none_changed_);
+
+  controller->SetFocusHighlightEnabled(false);
+  EXPECT_FALSE(controller->IsFocusHighlightEnabled());
   EXPECT_EQ(2, observer.notification_none_changed_);
 
   Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(&observer);

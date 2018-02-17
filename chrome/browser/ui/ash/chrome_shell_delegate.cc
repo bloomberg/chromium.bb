@@ -107,36 +107,6 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     return chromeos::MagnificationManager::Get()->IsMagnifierEnabled();
   }
 
-  void SetCaretHighlightEnabled(bool enabled) override {
-    DCHECK(AccessibilityManager::Get());
-    AccessibilityManager::Get()->SetCaretHighlightEnabled(enabled);
-  }
-
-  bool IsCaretHighlightEnabled() const override {
-    DCHECK(AccessibilityManager::Get());
-    return AccessibilityManager::Get()->IsCaretHighlightEnabled();
-  }
-
-  void SetCursorHighlightEnabled(bool enabled) override {
-    DCHECK(AccessibilityManager::Get());
-    AccessibilityManager::Get()->SetCursorHighlightEnabled(enabled);
-  }
-
-  bool IsCursorHighlightEnabled() const override {
-    DCHECK(AccessibilityManager::Get());
-    return AccessibilityManager::Get()->IsCursorHighlightEnabled();
-  }
-
-  void SetFocusHighlightEnabled(bool enabled) override {
-    DCHECK(AccessibilityManager::Get());
-    AccessibilityManager::Get()->SetFocusHighlightEnabled(enabled);
-  }
-
-  bool IsFocusHighlightEnabled() const override {
-    DCHECK(AccessibilityManager::Get());
-    return AccessibilityManager::Get()->IsFocusHighlightEnabled();
-  }
-
   void SetTapDraggingEnabled(bool enabled) override {
     DCHECK(AccessibilityManager::Get());
     return AccessibilityManager::Get()->EnableTapDragging(enabled);

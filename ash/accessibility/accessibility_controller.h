@@ -27,6 +27,7 @@ class Connector;
 
 namespace ash {
 
+class AccessibilityHighlightController;
 class ScopedBacklightsForcedOff;
 
 // The controller for accessibility features in ash. Features can be enabled
@@ -47,6 +48,15 @@ class ASH_EXPORT AccessibilityController
 
   void SetAutoclickEnabled(bool enabled);
   bool IsAutoclickEnabled() const;
+
+  void SetCaretHighlightEnabled(bool enabled);
+  bool IsCaretHighlightEnabled() const;
+
+  void SetCursorHighlightEnabled(bool enabled);
+  bool IsCursorHighlightEnabled() const;
+
+  void SetFocusHighlightEnabled(bool enabled);
+  bool IsFocusHighlightEnabled() const;
 
   void SetHighContrastEnabled(bool enabled);
   bool IsHighContrastEnabled() const;
@@ -104,6 +114,7 @@ class ASH_EXPORT AccessibilityController
   void SetClient(mojom::AccessibilityControllerClientPtr client) override;
   void SetDarkenScreen(bool darken) override;
   void BrailleDisplayStateChanged(bool connected) override;
+  void SetFocusHighlightRect(const gfx::Rect& bounds_in_screen) override;
 
   // SessionObserver:
   void OnSigninScreenPrefServiceInitialized(PrefService* prefs) override;
@@ -119,6 +130,9 @@ class ASH_EXPORT AccessibilityController
 
   void UpdateAutoclickFromPref();
   void UpdateAutoclickDelayFromPref();
+  void UpdateCaretHighlightFromPref();
+  void UpdateCursorHighlightFromPref();
+  void UpdateFocusHighlightFromPref();
   void UpdateHighContrastFromPref();
   void UpdateLargeCursorFromPref();
   void UpdateMonoAudioFromPref();
@@ -126,6 +140,7 @@ class ASH_EXPORT AccessibilityController
   void UpdateSelectToSpeakFromPref();
   void UpdateStickyKeysFromPref();
   void UpdateVirtualKeyboardFromPref();
+  void UpdateAccessibilityHighlightingFromPrefs();
 
   service_manager::Connector* connector_ = nullptr;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
@@ -138,6 +153,9 @@ class ASH_EXPORT AccessibilityController
 
   bool autoclick_enabled_ = false;
   base::TimeDelta autoclick_delay_;
+  bool caret_highlight_enabled_ = false;
+  bool cursor_highlight_enabled_ = false;
+  bool focus_highlight_enabled_ = false;
   bool high_contrast_enabled_ = false;
   bool large_cursor_enabled_ = false;
   int large_cursor_size_in_dip_ = kDefaultLargeCursorSize;
@@ -152,6 +170,10 @@ class ASH_EXPORT AccessibilityController
   // way (https://crbug.com/800270).
   AccessibilityNotificationVisibility spoken_feedback_notification_ =
       A11Y_NOTIFICATION_NONE;
+
+  // Used to control the highlights of caret, cursor and focus.
+  std::unique_ptr<AccessibilityHighlightController>
+      accessibility_highlight_controller_;
 
   // Used to force the backlights off to darken the screen.
   std::unique_ptr<ScopedBacklightsForcedOff> scoped_backlights_forced_off_;

@@ -23,30 +23,6 @@ bool DefaultAccessibilityDelegate::IsMagnifierEnabled() const {
   return screen_magnifier_enabled_;
 }
 
-void DefaultAccessibilityDelegate::SetCaretHighlightEnabled(bool enabled) {
-  caret_highlight_enabled_ = enabled;
-}
-
-bool DefaultAccessibilityDelegate::IsCaretHighlightEnabled() const {
-  return caret_highlight_enabled_;
-}
-
-void DefaultAccessibilityDelegate::SetCursorHighlightEnabled(bool enabled) {
-  cursor_highlight_enabled_ = enabled;
-}
-
-bool DefaultAccessibilityDelegate::IsCursorHighlightEnabled() const {
-  return cursor_highlight_enabled_;
-}
-
-void DefaultAccessibilityDelegate::SetFocusHighlightEnabled(bool enabled) {
-  focus_highlight_enabled_ = enabled;
-}
-
-bool DefaultAccessibilityDelegate::IsFocusHighlightEnabled() const {
-  return focus_highlight_enabled_;
-}
-
 void DefaultAccessibilityDelegate::SetTapDraggingEnabled(bool enabled) {
   tap_dragging_enabled_ = enabled;
 }

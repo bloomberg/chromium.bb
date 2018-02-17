@@ -81,11 +81,11 @@ uint32_t GetAccessibilityState() {
     state |= A11Y_BRAILLE_DISPLAY_CONNECTED;
   if (controller->IsMonoAudioEnabled())
     state |= A11Y_MONO_AUDIO;
-  if (delegate->IsCaretHighlightEnabled())
+  if (controller->IsCaretHighlightEnabled())
     state |= A11Y_CARET_HIGHLIGHT;
-  if (delegate->IsCursorHighlightEnabled())
+  if (controller->IsCursorHighlightEnabled())
     state |= A11Y_HIGHLIGHT_MOUSE_CURSOR;
-  if (delegate->IsFocusHighlightEnabled())
+  if (controller->IsFocusHighlightEnabled())
     state |= A11Y_HIGHLIGHT_KEYBOARD_FOCUS;
   if (controller->IsStickyKeysEnabled())
     state |= A11Y_STICKY_KEYS;
@@ -190,16 +190,16 @@ void AccessibilityDetailedView::OnAccessibilityStatusChanged() {
   TrayPopupUtils::UpdateCheckMarkVisibility(mono_audio_view_,
                                             mono_audio_enabled_);
 
-  caret_highlight_enabled_ = delegate->IsCaretHighlightEnabled();
+  caret_highlight_enabled_ = controller->IsCaretHighlightEnabled();
   TrayPopupUtils::UpdateCheckMarkVisibility(caret_highlight_view_,
                                             caret_highlight_enabled_);
 
-  highlight_mouse_cursor_enabled_ = delegate->IsCursorHighlightEnabled();
+  highlight_mouse_cursor_enabled_ = controller->IsCursorHighlightEnabled();
   TrayPopupUtils::UpdateCheckMarkVisibility(highlight_mouse_cursor_view_,
                                             highlight_mouse_cursor_enabled_);
 
   if (highlight_keyboard_focus_view_) {
-    highlight_keyboard_focus_enabled_ = delegate->IsFocusHighlightEnabled();
+    highlight_keyboard_focus_enabled_ = controller->IsFocusHighlightEnabled();
     TrayPopupUtils::UpdateCheckMarkVisibility(
         highlight_keyboard_focus_view_, highlight_keyboard_focus_enabled_);
   }
@@ -276,13 +276,13 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_MONO_AUDIO),
       mono_audio_enabled_);
 
-  caret_highlight_enabled_ = delegate->IsCaretHighlightEnabled();
+  caret_highlight_enabled_ = controller->IsCaretHighlightEnabled();
   caret_highlight_view_ = AddScrollListCheckableItem(
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_CARET_HIGHLIGHT),
       caret_highlight_enabled_);
 
-  highlight_mouse_cursor_enabled_ = delegate->IsCursorHighlightEnabled();
+  highlight_mouse_cursor_enabled_ = controller->IsCursorHighlightEnabled();
   highlight_mouse_cursor_view_ = AddScrollListCheckableItem(
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGHLIGHT_MOUSE_CURSOR),
@@ -291,7 +291,7 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
   // Focus highlighting can't be on when spoken feedback is on because
   // ChromeVox does its own focus highlighting.
   if (!spoken_feedback_enabled_) {
-    highlight_keyboard_focus_enabled_ = delegate->IsFocusHighlightEnabled();
+    highlight_keyboard_focus_enabled_ = controller->IsFocusHighlightEnabled();
     highlight_keyboard_focus_view_ = AddScrollListCheckableItem(
         l10n_util::GetStringUTF16(
             IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGHLIGHT_KEYBOARD_FOCUS),
@@ -356,10 +356,11 @@ void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
                      : UserMetricsAction("StatusArea_VirtualKeyboardDisabled"));
     controller->SetVirtualKeyboardEnabled(new_state);
   } else if (caret_highlight_view_ && view == caret_highlight_view_) {
-    RecordAction(delegate->IsCaretHighlightEnabled()
-                     ? UserMetricsAction("StatusArea_CaretHighlightDisabled")
-                     : UserMetricsAction("StatusArea_CaretHighlightEnabled"));
-    delegate->SetCaretHighlightEnabled(!delegate->IsCaretHighlightEnabled());
+    bool new_state = !controller->IsCaretHighlightEnabled();
+    RecordAction(new_state
+                     ? UserMetricsAction("StatusArea_CaretHighlightEnabled")
+                     : UserMetricsAction("StatusArea_CaretHighlightDisabled"));
+    controller->SetCaretHighlightEnabled(new_state);
   } else if (mono_audio_view_ && view == mono_audio_view_) {
     bool new_state = !controller->IsMonoAudioEnabled();
     RecordAction(new_state ? UserMetricsAction("StatusArea_MonoAudioEnabled")
@@ -367,18 +368,20 @@ void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
     controller->SetMonoAudioEnabled(new_state);
   } else if (highlight_mouse_cursor_view_ &&
              view == highlight_mouse_cursor_view_) {
+    bool new_state = !controller->IsCursorHighlightEnabled();
     RecordAction(
-        delegate->IsCursorHighlightEnabled()
-            ? UserMetricsAction("StatusArea_HighlightMouseCursorDisabled")
-            : UserMetricsAction("StatusArea_HighlightMouseCursorEnabled"));
-    delegate->SetCursorHighlightEnabled(!delegate->IsCursorHighlightEnabled());
+        new_state
+            ? UserMetricsAction("StatusArea_HighlightMouseCursorEnabled")
+            : UserMetricsAction("StatusArea_HighlightMouseCursorDisabled"));
+    controller->SetCursorHighlightEnabled(new_state);
   } else if (highlight_keyboard_focus_view_ &&
              view == highlight_keyboard_focus_view_) {
+    bool new_state = !controller->IsFocusHighlightEnabled();
     RecordAction(
-        delegate->IsFocusHighlightEnabled()
-            ? UserMetricsAction("StatusArea_HighlightKeyboardFocusDisabled")
-            : UserMetricsAction("StatusArea_HighlightKeyboardFocusEnabled"));
-    delegate->SetFocusHighlightEnabled(!delegate->IsFocusHighlightEnabled());
+        new_state
+            ? UserMetricsAction("StatusArea_HighlightKeyboardFocusEnabled")
+            : UserMetricsAction("StatusArea_HighlightKeyboardFocusDisabled"));
+    controller->SetFocusHighlightEnabled(new_state);
   } else if (sticky_keys_view_ && view == sticky_keys_view_) {
     bool new_state = !controller->IsStickyKeysEnabled();
     RecordAction(new_state

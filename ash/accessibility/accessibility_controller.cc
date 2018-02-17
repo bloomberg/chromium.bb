@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/accessibility/accessibility_highlight_controller.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/autoclick/mus/public/mojom/autoclick.mojom.h"
 #include "ash/high_contrast/high_contrast_controller.h"
@@ -70,6 +71,12 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
         prefs::kAccessibilityAutoclickDelayMs,
         static_cast<int>(
             AutoclickController::GetDefaultAutoclickDelay().InMilliseconds()));
+    registry->RegisterBooleanPref(prefs::kAccessibilityCaretHighlightEnabled,
+                                  false);
+    registry->RegisterBooleanPref(prefs::kAccessibilityCursorHighlightEnabled,
+                                  false);
+    registry->RegisterBooleanPref(prefs::kAccessibilityFocusHighlightEnabled,
+                                  false);
     registry->RegisterBooleanPref(prefs::kAccessibilityHighContrastEnabled,
                                   false);
     registry->RegisterBooleanPref(prefs::kAccessibilityLargeCursorEnabled,
@@ -96,6 +103,9 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
   // TODO(jamescook): Move ownership to ash.
   registry->RegisterForeignPref(prefs::kAccessibilityAutoclickEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityAutoclickDelayMs);
+  registry->RegisterForeignPref(prefs::kAccessibilityCaretHighlightEnabled);
+  registry->RegisterForeignPref(prefs::kAccessibilityCursorHighlightEnabled);
+  registry->RegisterForeignPref(prefs::kAccessibilityFocusHighlightEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityHighContrastEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityLargeCursorEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityLargeCursorDipSize);
@@ -123,6 +133,42 @@ void AccessibilityController::SetAutoclickEnabled(bool enabled) {
 
 bool AccessibilityController::IsAutoclickEnabled() const {
   return autoclick_enabled_;
+}
+
+void AccessibilityController::SetCaretHighlightEnabled(bool enabled) {
+  PrefService* prefs = GetActivePrefService();
+  if (!prefs)
+    return;
+  prefs->SetBoolean(prefs::kAccessibilityCaretHighlightEnabled, enabled);
+  prefs->CommitPendingWrite();
+}
+
+bool AccessibilityController::IsCaretHighlightEnabled() const {
+  return caret_highlight_enabled_;
+}
+
+void AccessibilityController::SetCursorHighlightEnabled(bool enabled) {
+  PrefService* prefs = GetActivePrefService();
+  if (!prefs)
+    return;
+  prefs->SetBoolean(prefs::kAccessibilityCursorHighlightEnabled, enabled);
+  prefs->CommitPendingWrite();
+}
+
+bool AccessibilityController::IsCursorHighlightEnabled() const {
+  return cursor_highlight_enabled_;
+}
+
+void AccessibilityController::SetFocusHighlightEnabled(bool enabled) {
+  PrefService* prefs = GetActivePrefService();
+  if (!prefs)
+    return;
+  prefs->SetBoolean(prefs::kAccessibilityFocusHighlightEnabled, enabled);
+  prefs->CommitPendingWrite();
+}
+
+bool AccessibilityController::IsFocusHighlightEnabled() const {
+  return focus_highlight_enabled_;
 }
 
 void AccessibilityController::SetHighContrastEnabled(bool enabled) {
@@ -273,6 +319,13 @@ void AccessibilityController::BrailleDisplayStateChanged(bool connected) {
   NotifyAccessibilityStatusChanged(A11Y_NOTIFICATION_SHOW);
 }
 
+void AccessibilityController::SetFocusHighlightRect(
+    const gfx::Rect& bounds_in_screen) {
+  if (!accessibility_highlight_controller_)
+    return;
+  accessibility_highlight_controller_->SetFocusHighlightRect(bounds_in_screen);
+}
+
 void AccessibilityController::OnSigninScreenPrefServiceInitialized(
     PrefService* prefs) {
   ObservePrefs(prefs);
@@ -298,6 +351,18 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
   pref_change_registrar_->Add(
       prefs::kAccessibilityAutoclickDelayMs,
       base::Bind(&AccessibilityController::UpdateAutoclickDelayFromPref,
+                 base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilityCaretHighlightEnabled,
+      base::Bind(&AccessibilityController::UpdateCaretHighlightFromPref,
+                 base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilityCursorHighlightEnabled,
+      base::Bind(&AccessibilityController::UpdateCursorHighlightFromPref,
+                 base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilityFocusHighlightEnabled,
+      base::Bind(&AccessibilityController::UpdateFocusHighlightFromPref,
                  base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kAccessibilityHighContrastEnabled,
@@ -335,6 +400,9 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
   // Load current state.
   UpdateAutoclickFromPref();
   UpdateAutoclickDelayFromPref();
+  UpdateCaretHighlightFromPref();
+  UpdateCursorHighlightFromPref();
+  UpdateFocusHighlightFromPref();
   UpdateHighContrastFromPref();
   UpdateLargeCursorFromPref();
   UpdateMonoAudioFromPref();
@@ -386,6 +454,52 @@ void AccessibilityController::UpdateAutoclickDelayFromPref() {
   }
 
   Shell::Get()->autoclick_controller()->SetAutoclickDelay(autoclick_delay_);
+}
+
+void AccessibilityController::UpdateCaretHighlightFromPref() {
+  PrefService* prefs = GetActivePrefService();
+  const bool enabled =
+      prefs->GetBoolean(prefs::kAccessibilityCaretHighlightEnabled);
+
+  if (caret_highlight_enabled_ == enabled)
+    return;
+
+  caret_highlight_enabled_ = enabled;
+
+  NotifyAccessibilityStatusChanged(A11Y_NOTIFICATION_NONE);
+  UpdateAccessibilityHighlightingFromPrefs();
+}
+
+void AccessibilityController::UpdateCursorHighlightFromPref() {
+  PrefService* prefs = GetActivePrefService();
+  const bool enabled =
+      prefs->GetBoolean(prefs::kAccessibilityCursorHighlightEnabled);
+
+  if (cursor_highlight_enabled_ == enabled)
+    return;
+
+  cursor_highlight_enabled_ = enabled;
+
+  NotifyAccessibilityStatusChanged(A11Y_NOTIFICATION_NONE);
+  UpdateAccessibilityHighlightingFromPrefs();
+}
+
+void AccessibilityController::UpdateFocusHighlightFromPref() {
+  PrefService* prefs = GetActivePrefService();
+  bool enabled = prefs->GetBoolean(prefs::kAccessibilityFocusHighlightEnabled);
+
+  // Focus highlighting can't be on when spoken feedback is on, because
+  // ChromeVox does its own focus highlighting.
+  if (spoken_feedback_enabled_)
+    enabled = false;
+
+  if (focus_highlight_enabled_ == enabled)
+    return;
+
+  focus_highlight_enabled_ = enabled;
+
+  NotifyAccessibilityStatusChanged(A11Y_NOTIFICATION_NONE);
+  UpdateAccessibilityHighlightingFromPrefs();
 }
 
 void AccessibilityController::UpdateHighContrastFromPref() {
@@ -462,9 +576,29 @@ void AccessibilityController::UpdateSpokenFeedbackFromPref() {
   spoken_feedback_enabled_ = enabled;
 
   NotifyAccessibilityStatusChanged(spoken_feedback_notification_);
-  // TODO(warx): Chrome observes prefs change and turns on/off spoken feedback.
-  // Define a mojo call to control toggling spoken feedback (ChromeVox) once
-  // prefs ownership and registration is moved to ash.
+  // TODO(warx): ChromeVox loading/unloading requires browser process started,
+  // thus it is still handled on Chrome side.
+
+  // ChromeVox focus highlighting overrides the other focus highlighting.
+  UpdateFocusHighlightFromPref();
+}
+
+void AccessibilityController::UpdateAccessibilityHighlightingFromPrefs() {
+  if (!caret_highlight_enabled_ && !cursor_highlight_enabled_ &&
+      !focus_highlight_enabled_) {
+    accessibility_highlight_controller_.reset();
+    return;
+  }
+
+  if (!accessibility_highlight_controller_) {
+    accessibility_highlight_controller_ =
+        std::make_unique<AccessibilityHighlightController>();
+  }
+
+  accessibility_highlight_controller_->HighlightCaret(caret_highlight_enabled_);
+  accessibility_highlight_controller_->HighlightCursor(
+      cursor_highlight_enabled_);
+  accessibility_highlight_controller_->HighlightFocus(focus_highlight_enabled_);
 }
 
 void AccessibilityController::UpdateSelectToSpeakFromPref() {

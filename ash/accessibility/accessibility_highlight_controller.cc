@@ -1,22 +1,24 @@
-// Copyright (c) 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/accessibility/accessibility_highlight_manager.h"
+#include "ash/accessibility/accessibility_highlight_controller.h"
+
+#include <vector>
 
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
+#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
-#include "content/public/browser/focused_node_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ime/input_method.h"
+#include "ui/base/ime/text_input_client.h"
+#include "ui/events/event.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/public/activation_client.h"
 
-using ash::AccessibilityFocusRingController;
-
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -28,64 +30,54 @@ ui::InputMethod* GetInputMethod(aura::Window* root_window) {
 
 }  // namespace
 
-AccessibilityHighlightManager::AccessibilityHighlightManager() {}
+AccessibilityHighlightController::AccessibilityHighlightController() {
+  Shell::Get()->AddPreTargetHandler(this);
+  // TODO: CursorManager not created in mash. https://crbug.com/631103.
+  if (Shell::GetAshConfig() != Config::MASH)
+    Shell::Get()->cursor_manager()->AddObserver(this);
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
+  ui::InputMethod* input_method = GetInputMethod(root_window);
+  input_method->AddObserver(this);
+}
 
-AccessibilityHighlightManager::~AccessibilityHighlightManager() {
-  // No need to do anything during shutdown
-  if (!ash::Shell::HasInstance())
-    return;
-
+AccessibilityHighlightController::~AccessibilityHighlightController() {
   AccessibilityFocusRingController::GetInstance()->SetFocusRing(
       std::vector<gfx::Rect>(),
       AccessibilityFocusRingController::FADE_OUT_FOCUS_RING);
   AccessibilityFocusRingController::GetInstance()->HideCaretRing();
   AccessibilityFocusRingController::GetInstance()->HideCursorRing();
 
-  ash::Shell* shell = ash::Shell::Get();
-  if (shell && registered_observers_) {
-    shell->RemovePreTargetHandler(this);
-    shell->cursor_manager()->RemoveObserver(this);
-
-    aura::Window* root_window = shell->GetPrimaryRootWindow();
-    ui::InputMethod* input_method = GetInputMethod(root_window);
-    input_method->RemoveObserver(this);
-  }
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
+  ui::InputMethod* input_method = GetInputMethod(root_window);
+  input_method->RemoveObserver(this);
+  // TODO: CursorManager not created in mash. https://crbug.com/631103.
+  if (Shell::GetAshConfig() != Config::MASH)
+    Shell::Get()->cursor_manager()->RemoveObserver(this);
+  Shell::Get()->RemovePreTargetHandler(this);
 }
 
-void AccessibilityHighlightManager::HighlightFocus(bool focus) {
+void AccessibilityHighlightController::HighlightFocus(bool focus) {
   focus_ = focus;
   UpdateFocusAndCaretHighlights();
 }
 
-void AccessibilityHighlightManager::HighlightCursor(bool cursor) {
+void AccessibilityHighlightController::HighlightCursor(bool cursor) {
   cursor_ = cursor;
   UpdateCursorHighlight();
 }
 
-void AccessibilityHighlightManager::HighlightCaret(bool caret) {
+void AccessibilityHighlightController::HighlightCaret(bool caret) {
   caret_ = caret;
   UpdateFocusAndCaretHighlights();
 }
 
-void AccessibilityHighlightManager::RegisterObservers() {
-  ash::Shell* shell = ash::Shell::Get();
-  shell->AddPreTargetHandler(this);
-  shell->cursor_manager()->AddObserver(this);
-  registrar_.Add(this, content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
-                 content::NotificationService::AllSources());
-  aura::Window* root_window = ash::Shell::GetPrimaryRootWindow();
-  ui::InputMethod* input_method = GetInputMethod(root_window);
-  input_method->AddObserver(this);
-  registered_observers_ = true;
-}
-
-void AccessibilityHighlightManager::OnViewFocusedInArc(
+void AccessibilityHighlightController::SetFocusHighlightRect(
     const gfx::Rect& bounds_in_screen) {
   focus_rect_ = bounds_in_screen;
   UpdateFocusAndCaretHighlights();
 }
 
-void AccessibilityHighlightManager::OnMouseEvent(ui::MouseEvent* event) {
+void AccessibilityHighlightController::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_MOVED) {
     cursor_point_ = event->location();
     if (event->target()) {
@@ -96,23 +88,12 @@ void AccessibilityHighlightManager::OnMouseEvent(ui::MouseEvent* event) {
   }
 }
 
-void AccessibilityHighlightManager::OnKeyEvent(ui::KeyEvent* event) {
+void AccessibilityHighlightController::OnKeyEvent(ui::KeyEvent* event) {
   if (event->type() == ui::ET_KEY_PRESSED)
     UpdateFocusAndCaretHighlights();
 }
 
-void AccessibilityHighlightManager::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(type, content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE);
-  content::FocusedNodeDetails* node_details =
-      content::Details<content::FocusedNodeDetails>(details).ptr();
-  focus_rect_ = node_details->node_bounds_in_screen;
-  UpdateFocusAndCaretHighlights();
-}
-
-void AccessibilityHighlightManager::OnTextInputStateChanged(
+void AccessibilityHighlightController::OnTextInputStateChanged(
     const ui::TextInputClient* client) {
   if (!client || client->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE) {
     caret_visible_ = false;
@@ -120,7 +101,7 @@ void AccessibilityHighlightManager::OnTextInputStateChanged(
   }
 }
 
-void AccessibilityHighlightManager::OnCaretBoundsChanged(
+void AccessibilityHighlightController::OnCaretBoundsChanged(
     const ui::TextInputClient* client) {
   if (!client || client->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE) {
     caret_visible_ = false;
@@ -128,8 +109,7 @@ void AccessibilityHighlightManager::OnCaretBoundsChanged(
   }
   gfx::Rect caret_bounds = client->GetCaretBounds();
   gfx::Point new_caret_point = caret_bounds.CenterPoint();
-  ::wm::ConvertPointFromScreen(ash::Shell::GetPrimaryRootWindow(),
-                               &new_caret_point);
+  ::wm::ConvertPointFromScreen(Shell::GetPrimaryRootWindow(), &new_caret_point);
   if (new_caret_point == caret_point_)
     return;
   caret_point_ = new_caret_point;
@@ -137,17 +117,21 @@ void AccessibilityHighlightManager::OnCaretBoundsChanged(
   UpdateFocusAndCaretHighlights();
 }
 
-void AccessibilityHighlightManager::OnCursorVisibilityChanged(bool is_visible) {
+void AccessibilityHighlightController::OnCursorVisibilityChanged(
+    bool is_visible) {
   UpdateCursorHighlight();
 }
 
-bool AccessibilityHighlightManager::IsCursorVisible() {
-  return ash::Shell::Get()->cursor_manager()->IsCursorVisible();
+bool AccessibilityHighlightController::IsCursorVisible() {
+  // TODO: CursorManager not created in mash. https://crbug.com/631103.
+  if (Shell::GetAshConfig() == Config::MASH)
+    return false;
+  return Shell::Get()->cursor_manager()->IsCursorVisible();
 }
 
-bool AccessibilityHighlightManager::IsCaretVisible(
+bool AccessibilityHighlightController::IsCaretVisible(
     const gfx::Rect& caret_bounds) {
-  aura::Window* root_window = ash::Shell::GetPrimaryRootWindow();
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
   aura::Window* active_window =
       ::wm::GetActivationClient(root_window)->GetActiveWindow();
   if (!active_window)
@@ -156,7 +140,7 @@ bool AccessibilityHighlightManager::IsCaretVisible(
          active_window->GetBoundsInScreen().Contains(caret_point_);
 }
 
-void AccessibilityHighlightManager::UpdateFocusAndCaretHighlights() {
+void AccessibilityHighlightController::UpdateFocusAndCaretHighlights() {
   auto* controller = AccessibilityFocusRingController::GetInstance();
 
   // The caret highlight takes precedence over the focus highlight if
@@ -181,7 +165,7 @@ void AccessibilityHighlightManager::UpdateFocusAndCaretHighlights() {
   }
 }
 
-void AccessibilityHighlightManager::UpdateCursorHighlight() {
+void AccessibilityHighlightController::UpdateCursorHighlight() {
   if (cursor_ && IsCursorVisible()) {
     AccessibilityFocusRingController::GetInstance()->SetCursorRing(
         cursor_point_);
@@ -190,4 +174,4 @@ void AccessibilityHighlightManager::UpdateCursorHighlight() {
   }
 }
 
-}  // namespace chromeos
+}  // namespace ash
