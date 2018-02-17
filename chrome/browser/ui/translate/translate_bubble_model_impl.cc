@@ -50,6 +50,10 @@ bool TranslateBubbleModelImpl::ShouldAlwaysTranslateBeCheckedByDefault() const {
   return ui_delegate_->ShouldAlwaysTranslateBeCheckedByDefault();
 }
 
+bool TranslateBubbleModelImpl::ShouldShowAlwaysTranslateShortcut() const {
+  return ui_delegate_->ShouldShowAlwaysTranslateShortcut();
+}
+
 void TranslateBubbleModelImpl::SetViewState(
     TranslateBubbleModel::ViewState view_state) {
   view_state_transition_.SetViewState(view_state);

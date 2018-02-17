@@ -171,13 +171,11 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   void MessageInfoBarButtonPressed();
   bool ShouldShowMessageInfoBarButton();
 
-  // Called by the before translate infobar to figure-out if it should show
-  // an extra shortcut to let the user black-list/white-list that language
-  // (based on how many times the user accepted/declined translation).
-  // The shortcut itself is platform specific, it can be a button or a new bar
-  // for example.
-  bool ShouldShowNeverTranslateShortcut();
+  // Returns true if the infobar should offer a (platform-specific) shortcut to
+  // allow the user to always/never translate the language, when we think the
+  // user wants that functionality.
   bool ShouldShowAlwaysTranslateShortcut();
+  bool ShouldShowNeverTranslateShortcut();
 
 #if defined(OS_IOS)
   // Shows the Infobar offering to never translate the language or the site.

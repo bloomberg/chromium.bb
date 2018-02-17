@@ -167,6 +167,30 @@ TEST_F(TranslateUIDelegateTest, ShouldAlwaysTranslateBeCheckedByDefaultNever) {
   }
 }
 
+TEST_F(TranslateUIDelegateTest, ShouldShowAlwaysTranslateShortcut) {
+  std::unique_ptr<TranslatePrefs> prefs = client_->GetTranslatePrefs();
+  for (int i = 0; i < kAlwaysTranslateShortcutMinimumAccepts; i++) {
+    EXPECT_FALSE(delegate_->ShouldShowAlwaysTranslateShortcut())
+        << " at iteration #" << i;
+    prefs->IncrementTranslationAcceptedCount("ar");
+  }
+  EXPECT_TRUE(delegate_->ShouldShowAlwaysTranslateShortcut());
+  driver_.set_incognito();
+  EXPECT_FALSE(delegate_->ShouldShowAlwaysTranslateShortcut());
+}
+
+TEST_F(TranslateUIDelegateTest, ShouldShowNeverTranslateShortcut) {
+  std::unique_ptr<TranslatePrefs> prefs = client_->GetTranslatePrefs();
+  for (int i = 0; i < kNeverTranslateShortcutMinimumDenials; i++) {
+    EXPECT_FALSE(delegate_->ShouldShowNeverTranslateShortcut())
+        << " at iteration #" << i;
+    prefs->IncrementTranslationDeniedCount("ar");
+  }
+  EXPECT_TRUE(delegate_->ShouldShowNeverTranslateShortcut());
+  driver_.set_incognito();
+  EXPECT_FALSE(delegate_->ShouldShowNeverTranslateShortcut());
+}
+
 TEST_F(TranslateUIDelegateTest, LanguageCodes) {
   // Test language codes.
   EXPECT_EQ("ar", delegate_->GetOriginalLanguageCode());

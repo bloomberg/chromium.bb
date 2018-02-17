@@ -43,9 +43,29 @@ extern const base::Feature kRegionalLocalesAsDisplayUI;
 // target language option.
 extern const base::Feature kTranslateRecentTarget;
 
-// The name of the parameter for the number of translations, after which the
-// "Always Translate" checkbox default to checked.
-extern const char kAlwaysTranslateOfferThreshold[];
+// Minimum number of times the user must accept a translation before we show
+// a shortcut to the "Always Translate" functionality.
+#if defined(OS_ANDROID) || defined(OS_IOS)
+// The "Always Translate" shortcut is always shown on iOS and Android.
+constexpr int kAlwaysTranslateShortcutMinimumAccepts = 1;
+#else
+constexpr int kAlwaysTranslateShortcutMinimumAccepts = 3;
+#endif
+
+// Minimum number of times the user must deny a translation before we show
+// a shortcut to the "Never Translate" functionality.
+// Android and iOS implementations do not offer a drop down (for space reasons),
+// so we are more aggressive about showing this shortcut.
+#if defined(OS_ANDROID)
+// On Android, this shows the "Never Translate" shortcut after two denials just
+// like on iOS. However, the last event is not counted so we must subtract one
+// to get the same behavior.
+constexpr int kNeverTranslateShortcutMinimumDenials = 1;
+#elif defined(OS_IOS)
+constexpr int kNeverTranslateShortcutMinimumDenials = 2;
+#else
+constexpr int kNeverTranslateShortcutMinimumDenials = 3;
+#endif
 
 class TranslateAcceptLanguages;
 

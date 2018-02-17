@@ -11,7 +11,8 @@ namespace testing {
 const std::string kHtmlMimeType = "text/html";
 
 MockTranslateDriver::MockTranslateDriver()
-    : on_is_page_translated_changed_called_(false),
+    : is_incognito_(false),
+      on_is_page_translated_changed_called_(false),
       on_translate_enabled_changed_called_(false),
       translate_page_is_called_(false),
       language_state_(this),
@@ -41,9 +42,8 @@ bool MockTranslateDriver::IsLinkNavigation() {
   return false;
 }
 
-
 bool MockTranslateDriver::IsIncognito() {
-  return false;
+  return is_incognito_;
 }
 
 const std::string& MockTranslateDriver::GetContentsMimeType() {
