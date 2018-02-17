@@ -1465,6 +1465,8 @@ void WebContentsImpl::SetLastActiveTime(base::TimeTicks last_active_time) {
 }
 
 void WebContentsImpl::WasShown() {
+  const Visibility previous_visibility = GetVisibility();
+
   controller_.SetActive(true);
 
   if (auto* view = GetRenderWidgetHostView()) {
@@ -1480,14 +1482,13 @@ void WebContentsImpl::WasShown() {
   SendPageMessage(new PageMsg_WasShown(MSG_ROUTING_NONE));
 
   last_active_time_ = base::TimeTicks::Now();
-
-  for (auto& observer : observers_)
-    observer.WasShown();
-
   should_normally_be_visible_ = true;
+  NotifyVisibilityChanged(previous_visibility);
 }
 
 void WebContentsImpl::WasHidden() {
+  const Visibility previous_visibility = GetVisibility();
+
   // If there are entities capturing screenshots or video (e.g., mirroring),
   // don't activate the "disable rendering" optimization.
   if (!IsBeingCaptured()) {
@@ -1506,10 +1507,8 @@ void WebContentsImpl::WasHidden() {
     SendPageMessage(new PageMsg_WasHidden(MSG_ROUTING_NONE));
   }
 
-  for (auto& observer : observers_)
-    observer.WasHidden();
-
   should_normally_be_visible_ = false;
+  NotifyVisibilityChanged(previous_visibility);
 }
 
 #if defined(OS_ANDROID)
@@ -1541,30 +1540,40 @@ void WebContentsImpl::SetImportance(ChildProcessImportance importance) {
 }
 #endif
 
-bool WebContentsImpl::IsVisible() const {
-  return should_normally_be_visible_;
-}
-
 void WebContentsImpl::WasOccluded() {
+  const Visibility previous_visibility = GetVisibility();
+
   if (!IsBeingCaptured()) {
     for (RenderWidgetHostView* view : GetRenderWidgetHostViewsInTree())
       view->WasOccluded();
   }
 
   should_normally_be_occluded_ = true;
+  NotifyVisibilityChanged(previous_visibility);
 }
 
 void WebContentsImpl::WasUnOccluded() {
+  const Visibility previous_visibility = GetVisibility();
+
   if (!IsBeingCaptured())
     DoWasUnOccluded();
 
   should_normally_be_occluded_ = false;
+  NotifyVisibilityChanged(previous_visibility);
 }
 
 void WebContentsImpl::DoWasUnOccluded() {
   // TODO(fdoray): Only call WasUnOccluded on frames in the active viewport.
   for (RenderWidgetHostView* view : GetRenderWidgetHostViewsInTree())
     view->WasUnOccluded();
+}
+
+Visibility WebContentsImpl::GetVisibility() const {
+  if (!should_normally_be_visible_)
+    return Visibility::HIDDEN;
+  if (should_normally_be_occluded_)
+    return Visibility::OCCLUDED;
+  return Visibility::VISIBLE;
 }
 
 bool WebContentsImpl::NeedToFireBeforeUnload() {
@@ -3430,6 +3439,17 @@ void WebContentsImpl::LoadStateChanged(
   if (IsLoading()) {
     NotifyNavigationStateChanged(static_cast<InvalidateTypes>(
         INVALIDATE_TYPE_LOAD | INVALIDATE_TYPE_TAB));
+  }
+}
+
+void WebContentsImpl::NotifyVisibilityChanged(Visibility previous_visibility) {
+  // Notify observers if the visibility changed or if WasShown() is being called
+  // for the first time.
+  const Visibility visibility = GetVisibility();
+  if (visibility != previous_visibility ||
+      (visibility == Visibility::VISIBLE && !did_first_set_visible_)) {
+    for (auto& observer : observers_)
+      observer.OnVisibilityChanged(visibility);
   }
 }
 
@@ -6011,8 +6031,8 @@ void WebContentsImpl::UpdateWebContentsVisibility(bool visible) {
     // However, the page load mechanism requires an activation call through a
     // visibility call to (re)load.
     if (visible) {
-      did_first_set_visible_ = true;
       WasShown();
+      did_first_set_visible_ = true;
     }
     return;
   }

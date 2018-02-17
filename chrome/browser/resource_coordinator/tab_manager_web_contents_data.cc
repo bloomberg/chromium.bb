@@ -30,7 +30,10 @@ TabManager::WebContentsData::WebContentsData(content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
       time_to_purge_(base::TimeDelta::FromMinutes(30)),
       is_purged_(false),
-      ukm_source_id_(0) {}
+      ukm_source_id_(0) {
+  tab_data_.is_hidden =
+      web_contents->GetVisibility() == content::Visibility::HIDDEN;
+}
 
 TabManager::WebContentsData::~WebContentsData() {}
 
@@ -78,10 +81,14 @@ void TabManager::WebContentsData::DidFinishNavigation(
                                           ukm::SourceIdType::NAVIGATION_ID);
 }
 
-void TabManager::WebContentsData::WasShown() {
-  if (tab_data_.last_inactive_time.is_null())
-    return;
-  ReportUKMWhenBackgroundTabIsClosedOrForegrounded(true);
+void TabManager::WebContentsData::OnVisibilityChanged(
+    content::Visibility visibility) {
+  bool was_hidden = tab_data_.is_hidden;
+  tab_data_.is_hidden = visibility == content::Visibility::HIDDEN;
+  if (!tab_data_.is_hidden && was_hidden &&
+      !tab_data_.last_inactive_time.is_null()) {
+    ReportUKMWhenBackgroundTabIsClosedOrForegrounded(true);
+  }
 }
 
 void TabManager::WebContentsData::WebContentsDestroyed() {
@@ -102,8 +109,10 @@ void TabManager::WebContentsData::WebContentsDestroyed() {
 
   ReportUKMWhenTabIsClosed();
 
-  if (!web_contents()->IsVisible() && !tab_data_.last_inactive_time.is_null())
+  if (web_contents()->GetVisibility() == content::Visibility::HIDDEN &&
+      !tab_data_.last_inactive_time.is_null()) {
     ReportUKMWhenBackgroundTabIsClosedOrForegrounded(false);
+  }
 
   SetTabLoadingState(TAB_IS_NOT_LOADING);
   SetIsInSessionRestore(false);
@@ -209,6 +218,7 @@ TabManager::WebContentsData::Data::Data()
     : id(0),
       is_discarded(false),
       discard_count(0),
+      is_hidden(true),
       is_recently_audible(false),
       is_auto_discardable(true),
       tab_loading_state(TAB_IS_NOT_LOADING),
@@ -220,6 +230,7 @@ TabManager::WebContentsData::Data::Data()
 
 bool TabManager::WebContentsData::Data::operator==(const Data& right) const {
   return id == right.id && is_discarded == right.is_discarded &&
+         is_hidden == right.is_hidden &&
          is_recently_audible == right.is_recently_audible &&
          last_audio_change_time == right.last_audio_change_time &&
          last_discard_time == right.last_discard_time &&

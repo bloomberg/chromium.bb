@@ -59,7 +59,7 @@ class ContentAutofillDriverFactory : public AutofillDriverFactory,
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void WasHidden() override;
+  void OnVisibilityChanged(content::Visibility visibility) override;
 
   static const char kContentAutofillDriverFactoryWebContentsUserDataKey[];
 

@@ -244,7 +244,7 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
     MetricsWebContentsObserver* observer =
         MetricsWebContentsObserver::CreateForWebContents(
             web_contents(), std::move(embedder_interface));
-    observer->WasShown();
+    observer->OnVisibilityChanged(content::Visibility::VISIBLE);
   }
 
   void CheckErrorEvent(InternalErrorLoadEvent error, int count) {

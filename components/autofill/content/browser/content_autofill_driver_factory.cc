@@ -149,8 +149,10 @@ void ContentAutofillDriverFactory::DidFinishNavigation(
       ->DidNavigateMainFrame(navigation_handle);
 }
 
-void ContentAutofillDriverFactory::WasHidden() {
-  TabHidden();
+void ContentAutofillDriverFactory::OnVisibilityChanged(
+    content::Visibility visibility) {
+  if (visibility == content::Visibility::HIDDEN)
+    TabHidden();
 }
 
 }  // namespace autofill

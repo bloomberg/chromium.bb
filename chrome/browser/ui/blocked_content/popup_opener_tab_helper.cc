@@ -68,7 +68,8 @@ PopupOpenerTabHelper::PopupOpenerTabHelper(
     : content::WebContentsObserver(web_contents),
       tick_clock_(std::move(tick_clock)) {
   visibility_tracker_ = std::make_unique<ScopedVisibilityTracker>(
-      tick_clock_.get(), web_contents->IsVisible());
+      tick_clock_.get(),
+      web_contents->GetVisibility() != content::Visibility::HIDDEN);
 }
 
 void PopupOpenerTabHelper::DidFinishNavigation(
@@ -82,12 +83,13 @@ void PopupOpenerTabHelper::DidFinishNavigation(
       navigation_handle->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
 }
 
-void PopupOpenerTabHelper::WasShown() {
-  visibility_tracker_->OnShown();
-}
-
-void PopupOpenerTabHelper::WasHidden() {
-  visibility_tracker_->OnHidden();
+void PopupOpenerTabHelper::OnVisibilityChanged(content::Visibility visibility) {
+  // TODO(csharrison): Consider handling OCCLUDED tabs the same way as HIDDEN
+  // tabs.
+  if (visibility == content::Visibility::HIDDEN)
+    visibility_tracker_->OnHidden();
+  else
+    visibility_tracker_->OnShown();
 }
 
 void PopupOpenerTabHelper::DidGetUserInteraction(

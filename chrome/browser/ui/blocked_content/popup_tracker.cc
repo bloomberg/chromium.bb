@@ -51,19 +51,22 @@ void PopupTracker::DidFinishNavigation(
   // we've committed the first navigation in this WebContents.
   if (!first_load_visibility_tracker_) {
     first_load_visibility_tracker_ = std::make_unique<ScopedVisibilityTracker>(
-        tick_clock_.get(), web_contents()->IsVisible());
+        tick_clock_.get(),
+        web_contents()->GetVisibility() != content::Visibility::HIDDEN);
   } else {
     web_contents()->RemoveUserData(UserDataKey());
     // Destroys this object.
   }
 }
 
-void PopupTracker::WasShown() {
-  if (first_load_visibility_tracker_)
-    first_load_visibility_tracker_->OnShown();
+void PopupTracker::OnVisibilityChanged(content::Visibility visibility) {
+  if (first_load_visibility_tracker_) {
+    // TODO(csharrison): Consider handling OCCLUDED tabs the same way as HIDDEN
+    // tabs.
+    if (visibility == content::Visibility::HIDDEN)
+      first_load_visibility_tracker_->OnHidden();
+    else
+      first_load_visibility_tracker_->OnShown();
+  }
 }
 
-void PopupTracker::WasHidden() {
-  if (first_load_visibility_tracker_)
-    first_load_visibility_tracker_->OnHidden();
-}

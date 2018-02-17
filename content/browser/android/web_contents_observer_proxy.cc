@@ -227,14 +227,17 @@ void WebContentsObserverProxy::DidFirstVisuallyNonEmptyPaint() {
                                                               java_observer_);
 }
 
-void WebContentsObserverProxy::WasShown() {
-  JNIEnv* env = AttachCurrentThread();
-  Java_WebContentsObserverProxy_wasShown(env, java_observer_);
-}
+void WebContentsObserverProxy::OnVisibilityChanged(
+    content::Visibility visibility) {
+  // Occlusion is not supported on Android.
+  DCHECK_NE(visibility, content::Visibility::OCCLUDED);
 
-void WebContentsObserverProxy::WasHidden() {
   JNIEnv* env = AttachCurrentThread();
-  Java_WebContentsObserverProxy_wasHidden(env, java_observer_);
+
+  if (visibility == content::Visibility::VISIBLE)
+    Java_WebContentsObserverProxy_wasShown(env, java_observer_);
+  else
+    Java_WebContentsObserverProxy_wasHidden(env, java_observer_);
 }
 
 void WebContentsObserverProxy::TitleWasSet(NavigationEntry* entry) {

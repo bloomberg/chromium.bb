@@ -58,7 +58,7 @@ class TabManager::WebContentsData
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void WasShown() override;
+  void OnVisibilityChanged(content::Visibility visibility) override;
   void WebContentsDestroyed() override;
 
   // Called by TabManager::ResourceCoordinatorSignalObserver to notify that a
@@ -168,6 +168,8 @@ class TabManager::WebContentsData
     bool is_discarded;
     // Number of times the tab has been discarded.
     int discard_count;
+    // Is the tab hidden?
+    bool is_hidden;
     // Is the tab playing audio?
     bool is_recently_audible;
     // The navigation time associated with this tab. Useful as a reference time

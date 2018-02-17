@@ -112,9 +112,11 @@ class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
     testing::Mock::VerifyAndClearExpectations(&autofill_client_);
   }
 
-  void WasHidden() override {
-    if (!web_contents_hidden_callback_.is_null())
+  void OnVisibilityChanged(content::Visibility visibility) override {
+    if (visibility == content::Visibility::HIDDEN &&
+        !web_contents_hidden_callback_.is_null()) {
       web_contents_hidden_callback_.Run();
+    }
   }
 
   void DidFinishNavigation(

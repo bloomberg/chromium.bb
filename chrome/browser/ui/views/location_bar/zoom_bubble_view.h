@@ -103,7 +103,7 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
   void OnExtensionIconImageChanged(extensions::IconImage* /* image */) override;
 
   // content::WebContentsObserver:
-  void WasHidden() override;
+  void OnVisibilityChanged(content::Visibility visibility) override;
   void WebContentsDestroyed() override;
 
   // Sets information about the extension that initiated the zoom change.

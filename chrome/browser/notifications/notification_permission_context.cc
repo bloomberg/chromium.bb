@@ -46,8 +46,7 @@ class VisibilityTimerTabHelper
   void CancelTask(const PermissionRequestID& id);
 
   // WebContentsObserver:
-  void WasShown() override;
-  void WasHidden() override;
+  void OnVisibilityChanged(content::Visibility visibility) override;
   void WebContentsDestroyed() override;
 
  private:
@@ -129,16 +128,17 @@ void VisibilityTimerTabHelper::CancelTask(const PermissionRequestID& id) {
     task_queue_.front().timer->Reset();
 }
 
-void VisibilityTimerTabHelper::WasShown() {
-  if (!is_visible_ && !task_queue_.empty())
-    task_queue_.front().timer->Reset();
-  is_visible_ = true;
-}
-
-void VisibilityTimerTabHelper::WasHidden() {
-  if (is_visible_ && !task_queue_.empty())
-    task_queue_.front().timer->Stop();
-  is_visible_ = false;
+void VisibilityTimerTabHelper::OnVisibilityChanged(
+    content::Visibility visibility) {
+  if (visibility == content::Visibility::VISIBLE) {
+    if (!is_visible_ && !task_queue_.empty())
+      task_queue_.front().timer->Reset();
+    is_visible_ = true;
+  } else {
+    if (is_visible_ && !task_queue_.empty())
+      task_queue_.front().timer->Stop();
+    is_visible_ = false;
+  }
 }
 
 void VisibilityTimerTabHelper::WebContentsDestroyed() {

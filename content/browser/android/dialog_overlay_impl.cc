@@ -180,9 +180,10 @@ void DialogOverlayImpl::FrameDeleted(RenderFrameHost* render_frame_host) {
     Stop();
 }
 
-void DialogOverlayImpl::WasHidden() {
+void DialogOverlayImpl::OnVisibilityChanged(content::Visibility visibility) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  Stop();
+  if (visibility == content::Visibility::HIDDEN)
+    Stop();
 }
 
 void DialogOverlayImpl::WebContentsDestroyed() {

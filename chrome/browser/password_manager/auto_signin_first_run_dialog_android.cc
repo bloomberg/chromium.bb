@@ -109,9 +109,12 @@ void AutoSigninFirstRunDialogAndroid::WebContentsDestroyed() {
   Java_AutoSigninFirstRunDialog_dismissDialog(env, dialog_jobject_);
 }
 
-void AutoSigninFirstRunDialogAndroid::WasHidden() {
-  // TODO(https://crbug.com/610700): once bug is fixed, this code should be
-  // gone.
-  JNIEnv* env = AttachCurrentThread();
-  Java_AutoSigninFirstRunDialog_dismissDialog(env, dialog_jobject_);
+void AutoSigninFirstRunDialogAndroid::OnVisibilityChanged(
+    content::Visibility visibility) {
+  if (visibility == content::Visibility::HIDDEN) {
+    // TODO(https://crbug.com/610700): once bug is fixed, this code should be
+    // gone.
+    JNIEnv* env = AttachCurrentThread();
+    Java_AutoSigninFirstRunDialog_dismissDialog(env, dialog_jobject_);
+  }
 }

@@ -40,11 +40,11 @@ TEST_F(WebContentsViewAuraTest, EnableDisableOverscroll) {
 }
 
 TEST_F(WebContentsViewAuraTest, ShowHideParent) {
-  EXPECT_TRUE(web_contents()->IsVisible());
+  EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::VISIBLE);
   root_window()->Hide();
-  EXPECT_FALSE(web_contents()->IsVisible());
+  EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::HIDDEN);
   root_window()->Show();
-  EXPECT_TRUE(web_contents()->IsVisible());
+  EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::VISIBLE);
 }
 
 }  // namespace content

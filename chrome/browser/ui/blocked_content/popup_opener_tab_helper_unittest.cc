@@ -73,7 +73,7 @@ class PopupOpenerTabHelperTest : public ChromeRenderViewHostTestHarness {
     // which the code uses to determine if it is set yet.
     raw_clock_->Advance(base::TimeDelta::FromMilliseconds(1));
 
-    EXPECT_TRUE(web_contents()->IsVisible());
+    EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::VISIBLE);
   }
 
   void TearDown() override {

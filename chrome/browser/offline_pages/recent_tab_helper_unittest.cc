@@ -297,7 +297,7 @@ TEST_F(RecentTabHelperTest, LastNCaptureAfterLoad) {
   ASSERT_EQ(0U, GetAllPages().size());
 
   // Tab is hidden with a fully loaded page. A snapshot save should happen.
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(1U, page_added_count());
   ASSERT_EQ(1U, GetAllPages().size());
@@ -310,7 +310,7 @@ TEST_F(RecentTabHelperTest, LastNCaptureAfterLoad) {
 TEST_F(RecentTabHelperTest, NoLastNCaptureIfTabHiddenTooEarlyInPageLoad) {
   // Commit the navigation and hide the tab. Nothing should be saved.
   NavigateAndCommit(kTestPageUrl);
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(0U, page_added_count());
   ASSERT_EQ(0U, GetAllPages().size());
@@ -333,7 +333,7 @@ TEST_F(RecentTabHelperTest, NoTabIdNoCapture) {
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   recent_tab_helper()->ObserveAndDownloadCurrentPage(NewDownloadClientId(),
                                                      123L, "");
   RunUntilIdle();
@@ -352,7 +352,7 @@ TEST_F(RecentTabHelperTest, LastNDisabledOnSvelte) {
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(0U, page_added_count());
   ASSERT_EQ(0U, GetAllPages().size());
@@ -375,7 +375,7 @@ TEST_F(RecentTabHelperTest, LastNWontSaveCustomTab) {
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(0U, page_added_count());
   ASSERT_EQ(0U, GetAllPages().size());
@@ -392,7 +392,7 @@ TEST_F(RecentTabHelperTest, LastNWontSaveCustomTab) {
   default_test_delegate()->set_is_custom_tab(false);
 
   // Upon the next hide a last_n snapshot should be saved.
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(2U, page_added_count());
   ASSERT_EQ(2U, GetAllPages().size());
@@ -408,7 +408,7 @@ TEST_F(RecentTabHelperTest, TwoCapturesSamePageLoad) {
   EXPECT_EQ(0U, page_added_count());
 
   // Tab is hidden and a snapshot should be saved.
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(1U, page_added_count());
   EXPECT_EQ(0U, model_removed_count());
@@ -426,7 +426,7 @@ TEST_F(RecentTabHelperTest, TwoCapturesSamePageLoad) {
 
   // Tab is hidden again. At this point a higher quality snapshot is expected so
   // a new one should be captured and replace the previous one.
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(2U, page_added_count());
   EXPECT_EQ(1U, model_removed_count());
@@ -444,7 +444,7 @@ TEST_F(RecentTabHelperTest, DISABLED_TwoCapturesWhere2ndFailsSamePageLoad) {
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentAvailableInMainFrame();
   FastForwardSnapshotController();
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(1U, page_added_count());
   EXPECT_EQ(0U, model_removed_count());
@@ -463,7 +463,7 @@ TEST_F(RecentTabHelperTest, DISABLED_TwoCapturesWhere2ndFailsSamePageLoad) {
   // from before should still be available.
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(1U, page_added_count());
   EXPECT_EQ(0U, model_removed_count());
@@ -479,7 +479,7 @@ TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsSameUrl) {
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(1U, page_added_count());
   EXPECT_EQ(0U, model_removed_count());
@@ -497,7 +497,7 @@ TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsSameUrl) {
   ASSERT_EQ(0U, GetAllPages().size());
 
   // Hide the tab and a new snapshot should be taken.
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(2U, page_added_count());
   EXPECT_EQ(1U, model_removed_count());
@@ -514,7 +514,7 @@ TEST_F(RecentTabHelperTest, TwoCapturesWhere2ndFailsDifferentPageLoadsSameUrl) {
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(1U, page_added_count());
   EXPECT_EQ(0U, model_removed_count());
@@ -532,7 +532,7 @@ TEST_F(RecentTabHelperTest, TwoCapturesWhere2ndFailsDifferentPageLoadsSameUrl) {
   NavigateAndCommitTyped(kTestPageUrl);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(1U, page_added_count());
   EXPECT_EQ(1U, model_removed_count());
@@ -546,7 +546,7 @@ TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsDifferentUrls) {
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(1U, page_added_count());
   EXPECT_EQ(0U, model_removed_count());
@@ -562,7 +562,7 @@ TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsDifferentUrls) {
   ASSERT_EQ(0U, GetAllPages().size());
 
   // Then hide the tab and check for a single snapshot of the new page.
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(2U, page_added_count());
   EXPECT_EQ(1U, model_removed_count());
@@ -580,11 +580,11 @@ TEST_F(RecentTabHelperTest, TwoLastNAndTwoDownloadCapturesSamePage) {
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentAvailableInMainFrame();
   FastForwardSnapshotController();
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(2U, page_added_count());
   EXPECT_EQ(1U, model_removed_count());
@@ -630,7 +630,7 @@ TEST_F(RecentTabHelperTest, NoCaptureOnErrorPage) {
   FailLoad(kTestPageUrl);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   recent_tab_helper()->ObserveAndDownloadCurrentPage(NewDownloadClientId(),
                                                      123L, "");
   RunUntilIdle();
@@ -645,7 +645,7 @@ TEST_F(RecentTabHelperTest, LastNFeatureNotEnabled) {
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   // No page should be captured.
   ASSERT_EQ(0U, GetAllPages().size());
@@ -758,7 +758,7 @@ TEST_F(RecentTabHelperTest, SimultaneousCapturesFromLastNAndDownloads) {
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   const int64_t download_offline_id = 153L;
   const ClientId download_client_id = NewDownloadClientId();
   recent_tab_helper()->ObserveAndDownloadCurrentPage(download_client_id,
@@ -787,13 +787,13 @@ TEST_F(RecentTabHelperTest, DuplicateTabHiddenEventsShouldTriggerNewSnapshots) {
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentAvailableInMainFrame();
   FastForwardSnapshotController();
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(1U, page_added_count());
   EXPECT_EQ(0U, model_removed_count());
   ASSERT_EQ(1U, GetAllPages().size());
 
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(2U, page_added_count());
   EXPECT_EQ(1U, model_removed_count());
@@ -801,13 +801,13 @@ TEST_F(RecentTabHelperTest, DuplicateTabHiddenEventsShouldTriggerNewSnapshots) {
 
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(3U, page_added_count());
   EXPECT_EQ(2U, model_removed_count());
   ASSERT_EQ(1U, GetAllPages().size());
 
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(4U, page_added_count());
   EXPECT_EQ(3U, model_removed_count());
@@ -861,7 +861,7 @@ TEST_F(RecentTabHelperTest, SaveSameDocumentNavigationSnapshots) {
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(1U, page_added_count());
   EXPECT_EQ(0U, model_removed_count());
@@ -871,7 +871,7 @@ TEST_F(RecentTabHelperTest, SaveSameDocumentNavigationSnapshots) {
   // Another snapshot should be created to the updated URL.
   const GURL kTestPageUrlWithFragment(kTestPageUrl.spec() + "#aaa");
   NavigateAndCommit(kTestPageUrlWithFragment);
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(2U, page_added_count());
   EXPECT_EQ(1U, model_removed_count());
@@ -898,7 +898,7 @@ TEST_F(RecentTabHelperTest, ReloadIsTrackedAsNavigationAndSavedOnlyUponLoad) {
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   ASSERT_EQ(1U, GetAllPages().size());
 
@@ -908,7 +908,7 @@ TEST_F(RecentTabHelperTest, ReloadIsTrackedAsNavigationAndSavedOnlyUponLoad) {
   content::WebContentsTester* web_contents_tester =
       content::WebContentsTester::For(web_contents());
   web_contents_tester->CommitPendingNavigation();
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(1U, page_added_count());
   EXPECT_EQ(1U, model_removed_count());
@@ -917,7 +917,7 @@ TEST_F(RecentTabHelperTest, ReloadIsTrackedAsNavigationAndSavedOnlyUponLoad) {
   // Finish loading and hide the tab. A new snapshot should be created.
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(2U, page_added_count());
   EXPECT_EQ(1U, model_removed_count());
@@ -935,7 +935,7 @@ TEST_F(RecentTabHelperTest, NoSaveIfTabIsClosing) {
   FastForwardSnapshotController();
   // Note: These two next calls are always expected to happen in this order.
   recent_tab_helper()->WillCloseTab();
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(0U, page_added_count());
   EXPECT_EQ(0U, model_removed_count());
@@ -943,8 +943,8 @@ TEST_F(RecentTabHelperTest, NoSaveIfTabIsClosing) {
 
   // Simulates the page being restored and shown again, then hidden. At this
   // moment a snapshot should be created.
-  recent_tab_helper()->WasShown();
-  recent_tab_helper()->WasHidden();
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::VISIBLE);
+  recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(1U, page_added_count());
   EXPECT_EQ(0U, model_removed_count());

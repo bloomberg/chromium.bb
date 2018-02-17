@@ -211,6 +211,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                         uint64_t upload_position,
                         uint64_t upload_size);
 
+  // Notify observers that the visibility changed.
+  void NotifyVisibilityChanged(Visibility previous_visibility);
+
   // Notify observers that the web contents has been focused.
   void NotifyWebContentsFocused(RenderWidgetHost* render_widget_host);
 
@@ -358,9 +361,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void SetLastActiveTime(base::TimeTicks last_active_time) override;
   void WasShown() override;
   void WasHidden() override;
-  bool IsVisible() const override;
   void WasOccluded() override;
   void WasUnOccluded() override;
+  Visibility GetVisibility() const override;
   bool NeedToFireBeforeUnload() override;
   void DispatchBeforeUnload() override;
   void AttachToOuterWebContentsFrame(

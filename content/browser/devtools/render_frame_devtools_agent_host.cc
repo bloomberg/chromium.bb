@@ -645,15 +645,13 @@ void RenderFrameDevToolsAgentHost::DidDetachInterstitialPage() {
     page->DidDetachInterstitialPage();
 }
 
-void RenderFrameDevToolsAgentHost::WasShown() {
+void RenderFrameDevToolsAgentHost::OnVisibilityChanged(
+    content::Visibility visibility) {
 #if defined(OS_ANDROID)
-  GetWakeLock()->RequestWakeLock();
-#endif
-}
-
-void RenderFrameDevToolsAgentHost::WasHidden() {
-#if defined(OS_ANDROID)
-  GetWakeLock()->CancelWakeLock();
+  if (visibility == content::Visibility::HIDDEN)
+    GetWakeLock()->CancelWakeLock();
+  else
+    GetWakeLock()->RequestWakeLock();
 #endif
 }
 

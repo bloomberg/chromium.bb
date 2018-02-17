@@ -1471,7 +1471,7 @@ class SessionRestorePaintWaiter : public SessionRestoreObserver {
   void WaitForForegroundTabs(size_t num_expected_foreground_tabs) {
     size_t num_actual_foreground_tabs = 0;
     for (auto iter = waiters_.begin(); iter != waiters_.end(); ++iter) {
-      if (!iter->first->IsVisible())
+      if (iter->first->GetVisibility() == content::Visibility::HIDDEN)
         continue;
       iter->second->Wait();
       ++num_actual_foreground_tabs;

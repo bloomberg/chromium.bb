@@ -1061,7 +1061,8 @@ void TabManager::OnWillRestoreTab(WebContents* contents) {
   WebContentsData* data = GetWebContentsData(contents);
   DCHECK(!data->is_in_session_restore());
   data->SetIsInSessionRestore(true);
-  data->SetIsRestoredInForeground(contents->IsVisible());
+  data->SetIsRestoredInForeground(contents->GetVisibility() !=
+                                  content::Visibility::HIDDEN);
   restored_tab_count_++;
 
   // TabUIHelper is initialized in TabHelpers::AttachTabHelpers. But this place
@@ -1075,7 +1076,7 @@ content::NavigationThrottle::ThrottleCheckResult
 TabManager::MaybeThrottleNavigation(BackgroundTabNavigationThrottle* throttle) {
   content::WebContents* contents =
       throttle->navigation_handle()->GetWebContents();
-  DCHECK(!contents->IsVisible());
+  DCHECK_EQ(contents->GetVisibility(), content::Visibility::HIDDEN);
 
   // Skip delaying the navigation if this tab is in session restore, whose
   // loading is already controlled by TabLoader.

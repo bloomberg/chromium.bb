@@ -239,9 +239,12 @@ void CoreTabHelper::DidStartLoading() {
   UpdateContentRestrictions(0);
 }
 
-void CoreTabHelper::WasShown() {
-  web_cache::WebCacheManager::GetInstance()->ObserveActivity(
-      web_contents()->GetMainFrame()->GetProcess()->GetID());
+void CoreTabHelper::OnVisibilityChanged(content::Visibility visibility) {
+  // TODO(jochen): Consider handling OCCLUDED tabs the same way as HIDDEN tabs.
+  if (visibility != content::Visibility::HIDDEN) {
+    web_cache::WebCacheManager::GetInstance()->ObserveActivity(
+        web_contents()->GetMainFrame()->GetProcess()->GetID());
+  }
 }
 
 void CoreTabHelper::WebContentsDestroyed() {

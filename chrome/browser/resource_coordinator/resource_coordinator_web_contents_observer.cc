@@ -41,7 +41,9 @@ ResourceCoordinatorWebContentsObserver::ResourceCoordinatorWebContentsObserver(
 
   // Make sure to set the visibility property when we create
   // |page_resource_coordinator_|.
-  page_resource_coordinator_->SetVisibility(web_contents->IsVisible());
+  const bool is_visible =
+      web_contents->GetVisibility() != content::Visibility::HIDDEN;
+  page_resource_coordinator_->SetVisibility(is_visible);
 
   if (auto* page_signal_receiver =
           resource_coordinator::PageSignalReceiver::GetInstance()) {
@@ -70,12 +72,11 @@ void ResourceCoordinatorWebContentsObserver::DidStopLoading() {
   page_resource_coordinator_->SetIsLoading(false);
 }
 
-void ResourceCoordinatorWebContentsObserver::WasShown() {
-  page_resource_coordinator_->SetVisibility(true);
-}
-
-void ResourceCoordinatorWebContentsObserver::WasHidden() {
-  page_resource_coordinator_->SetVisibility(false);
+void ResourceCoordinatorWebContentsObserver::OnVisibilityChanged(
+    content::Visibility visibility) {
+  // TODO(fdoray): An OCCLUDED tab should not be considered visible.
+  const bool is_visible = visibility != content::Visibility::HIDDEN;
+  page_resource_coordinator_->SetVisibility(is_visible);
 }
 
 void ResourceCoordinatorWebContentsObserver::WebContentsDestroyed() {

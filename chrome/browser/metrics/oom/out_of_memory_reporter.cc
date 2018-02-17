@@ -82,7 +82,7 @@ void OutOfMemoryReporter::DidFinishNavigation(
 void OutOfMemoryReporter::RenderProcessGone(base::TerminationStatus status) {
   if (!last_committed_source_id_.has_value())
     return;
-  if (!web_contents()->IsVisible())
+  if (web_contents()->GetVisibility() != content::Visibility::VISIBLE)
     return;
 
   crashed_render_process_id_ =

@@ -112,8 +112,7 @@ class PermissionRequestManager
   void DocumentLoadedInFrame(
       content::RenderFrameHost* render_frame_host) override;
   void WebContentsDestroyed() override;
-  void WasShown() override;
-  void WasHidden() override;
+  void OnVisibilityChanged(content::Visibility visibility) override;
 
   // PermissionPrompt::Delegate:
   const std::vector<PermissionRequest*>& Requests() override;
@@ -173,7 +172,7 @@ class PermissionRequestManager
   std::unique_ptr<PermissionPrompt> view_;
   // We only show new prompts when both of these are true.
   bool main_frame_has_fully_loaded_;
-  bool tab_is_visible_;
+  bool tab_is_hidden_;
 
   std::vector<PermissionRequest*> requests_;
   base::circular_deque<PermissionRequest*> queued_requests_;

@@ -55,8 +55,7 @@ class OomInterventionTabHelper
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DocumentAvailableInMainFrame() override;
-  void WasShown() override;
-  void WasHidden() override;
+  void OnVisibilityChanged(content::Visibility visibility) override;
 
   // OutOfMemoryReporter::Observer:
   void OnForegroundOOMDetected(const GURL& url,

@@ -150,10 +150,7 @@ class SiteEngagementService::Helper
         const MediaPlayerInfo& media_info,
         const MediaPlayerId& id,
         WebContentsObserver::MediaStoppedReason reason) override;
-    void WasShown() override;
-    void WasHidden() override;
 
-    bool is_hidden_;
     std::vector<MediaPlayerId> active_media_players_;
 
     DISALLOW_COPY_AND_ASSIGN(MediaTracker);
@@ -182,8 +179,7 @@ class SiteEngagementService::Helper
   // content::WebContentsObserver overrides.
   void DidFinishNavigation(content::NavigationHandle* handle) override;
   void ReadyToCommitNavigation(content::NavigationHandle* handle) override;
-  void WasShown() override;
-  void WasHidden() override;
+  void OnVisibilityChanged(content::Visibility visibility) override;
 
   InputTracker input_tracker_;
   MediaTracker media_tracker_;

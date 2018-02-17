@@ -619,8 +619,10 @@ void ContentSettingBubbleContents::DidFinishNavigation(
   GetWidget()->Close();
 }
 
-void ContentSettingBubbleContents::WasHidden() {
-  GetWidget()->Close();
+void ContentSettingBubbleContents::OnVisibilityChanged(
+    content::Visibility visibility) {
+  if (visibility == content::Visibility::HIDDEN)
+    GetWidget()->Close();
 }
 
 void ContentSettingBubbleContents::WebContentsDestroyed() {

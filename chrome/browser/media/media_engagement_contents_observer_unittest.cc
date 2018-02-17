@@ -142,9 +142,13 @@ class MediaEngagementContentsObserverTest
     contents_observer_->MediaMutedStatusChanged(player_id, muted);
   }
 
-  void SimulateIsVisible() { contents_observer_->WasShown(); }
+  void SimulateIsVisible() {
+    contents_observer_->OnVisibilityChanged(content::Visibility::VISIBLE);
+  }
 
-  void SimulateIsHidden() { contents_observer_->WasHidden(); }
+  void SimulateIsHidden() {
+    contents_observer_->OnVisibilityChanged(content::Visibility::HIDDEN);
+  }
 
   bool AreConditionsMet() const {
     return contents_observer_->AreConditionsMet();

@@ -67,7 +67,8 @@ MetricsWebContentsObserver::MetricsWebContentsObserver(
     content::WebContents* web_contents,
     std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface)
     : content::WebContentsObserver(web_contents),
-      in_foreground_(web_contents->IsVisible()),
+      in_foreground_(web_contents->GetVisibility() !=
+                     content::Visibility::HIDDEN),
       embedder_interface_(std::move(embedder_interface)),
       has_navigated_(false),
       page_load_metrics_binding_(web_contents, this) {
@@ -480,25 +481,26 @@ void MetricsWebContentsObserver::DidRedirectNavigation(
   it->second->Redirect(navigation_handle);
 }
 
-void MetricsWebContentsObserver::WasShown() {
-  if (in_foreground_)
+void MetricsWebContentsObserver::OnVisibilityChanged(
+    content::Visibility visibility) {
+  // TODO(bmcquade): Consider handling an OCCLUDED tab as not in foreground.
+  bool was_in_foreground = in_foreground_;
+  in_foreground_ = visibility != content::Visibility::HIDDEN;
+  if (in_foreground_ == was_in_foreground)
     return;
-  in_foreground_ = true;
-  if (committed_load_)
-    committed_load_->WebContentsShown();
-  for (const auto& kv : provisional_loads_) {
-    kv.second->WebContentsShown();
-  }
-}
 
-void MetricsWebContentsObserver::WasHidden() {
-  if (!in_foreground_)
-    return;
-  in_foreground_ = false;
-  if (committed_load_)
-    committed_load_->WebContentsHidden();
-  for (const auto& kv : provisional_loads_) {
-    kv.second->WebContentsHidden();
+  if (in_foreground_) {
+    if (committed_load_)
+      committed_load_->WebContentsShown();
+    for (const auto& kv : provisional_loads_) {
+      kv.second->WebContentsShown();
+    }
+  } else {
+    if (committed_load_)
+      committed_load_->WebContentsHidden();
+    for (const auto& kv : provisional_loads_) {
+      kv.second->WebContentsHidden();
+    }
   }
 }
 

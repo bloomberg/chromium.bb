@@ -193,7 +193,8 @@ void TabManagerStatsCollector::RecordExpectedTaskQueueingDuration(
     base::TimeDelta queueing_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!contents->IsVisible())
+  // TODO(fdoray): Consider not recording this for occluded tabs.
+  if (contents->GetVisibility() == content::Visibility::HIDDEN)
     return;
 
   if (IsInOverlappedSession())

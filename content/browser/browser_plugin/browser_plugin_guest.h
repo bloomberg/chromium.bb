@@ -133,7 +133,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   bool mouse_locked() const { return mouse_locked_; }
 
   // Called when the embedder WebContents changes visibility.
-  void EmbedderVisibilityChanged(bool visible);
+  void EmbedderVisibilityChanged(Visibility visibility);
 
   // Creates a new guest WebContentsImpl with the provided |params| with |this|
   // as the |opener|.
@@ -408,7 +408,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   bool mouse_locked_;
   bool pending_lock_request_;
   bool guest_visible_;
-  bool embedder_visible_;
+  Visibility embedder_visibility_;
   // Whether the browser plugin is inside a plugin document.
   bool is_full_page_plugin_;
 

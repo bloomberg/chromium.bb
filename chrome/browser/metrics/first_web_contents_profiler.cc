@@ -57,7 +57,7 @@ class FirstWebContentsProfiler : public content::WebContentsObserver {
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void WasHidden() override;
+  void OnVisibilityChanged(content::Visibility visibility) override;
   void WebContentsDestroyed() override;
 
   // Whether this instance has finished collecting first-paint and main-frame-
@@ -180,10 +180,13 @@ void FirstWebContentsProfiler::DidFinishNavigation(
       base::TimeTicks::Now());
 }
 
-void FirstWebContentsProfiler::WasHidden() {
-  // Stop profiling if the content gets hidden as its load may be deprioritized
-  // and timing it becomes meaningless.
-  FinishedCollectingMetrics(FinishReason::ABANDON_CONTENT_HIDDEN);
+void FirstWebContentsProfiler::OnVisibilityChanged(
+    content::Visibility visibility) {
+  if (visibility != content::Visibility::VISIBLE) {
+    // Stop profiling if the content gets hidden as its load may be
+    // deprioritized and timing it becomes meaningless.
+    FinishedCollectingMetrics(FinishReason::ABANDON_CONTENT_HIDDEN);
+  }
 }
 
 void FirstWebContentsProfiler::WebContentsDestroyed() {

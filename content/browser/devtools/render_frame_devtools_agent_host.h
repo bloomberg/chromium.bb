@@ -131,8 +131,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void RenderProcessGone(base::TerminationStatus status) override;
   void DidAttachInterstitialPage() override;
   void DidDetachInterstitialPage() override;
-  void WasShown() override;
-  void WasHidden() override;
+  void OnVisibilityChanged(content::Visibility visibility) override;
   void DidReceiveCompositorFrame() override;
 
   bool IsChildFrame();

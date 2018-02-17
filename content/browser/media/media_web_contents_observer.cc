@@ -120,18 +120,24 @@ bool MediaWebContentsObserver::OnMessageReceived(
   return handled;
 }
 
-void MediaWebContentsObserver::WasShown() {
-  // Restore wake lock if there are active video players running.
-  if (!active_video_players_.empty())
-    LockVideo();
-}
+void MediaWebContentsObserver::OnVisibilityChanged(
+    content::Visibility visibility) {
+  if (visibility == content::Visibility::HIDDEN) {
+    // If there are entities capturing screenshots or video (e.g., mirroring),
+    // don't release the wake lock.
+    if (!web_contents()->IsBeingCaptured()) {
+      GetVideoWakeLock()->CancelWakeLock();
+      has_video_wake_lock_for_testing_ = false;
+    }
+  } else {
+    // TODO(ke.he@intel.com): Determine whether a tab should be allowed to
+    // request the wake lock when it's occluded.
+    DCHECK(visibility == content::Visibility::VISIBLE ||
+           visibility == content::Visibility::OCCLUDED);
 
-void MediaWebContentsObserver::WasHidden() {
-  // If there are entities capturing screenshots or video (e.g., mirroring),
-  // don't release the wake lock.
-  if (!web_contents()->IsBeingCaptured()) {
-    GetVideoWakeLock()->CancelWakeLock();
-    has_video_wake_lock_for_testing_ = false;
+    // Restore wake lock if there are active video players running.
+    if (!active_video_players_.empty())
+      LockVideo();
   }
 }
 

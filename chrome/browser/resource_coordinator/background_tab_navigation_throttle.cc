@@ -33,7 +33,13 @@ BackgroundTabNavigationThrottle::MaybeCreateThrottleFor(
   content::WebContents* web_contents = navigation_handle->GetWebContents();
 
   // Never delay foreground tabs.
-  if (web_contents->IsVisible())
+
+  // TODO(fdoray): Create a throttle for OCCLUDED WebContents. To do this, it is
+  // necessary to support removing the throttle when the WebContents is no
+  // longer OCCLUDED (currently, the throttle removed by
+  // TabManager::ResumeTabNavigationIfNeeded when the active tab changes).
+  // https://crbug.com/810506
+  if (web_contents->GetVisibility() != content::Visibility::HIDDEN)
     return nullptr;
 
   // Never delay the tab when there is opener, so the created window can talk

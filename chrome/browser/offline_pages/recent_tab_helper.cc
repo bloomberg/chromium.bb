@@ -295,7 +295,14 @@ void RecentTabHelper::WebContentsDestroyed() {
   CancelInFlightSnapshots();
 }
 
-void RecentTabHelper::WasHidden() {
+void RecentTabHelper::OnVisibilityChanged(content::Visibility visibility) {
+  if (visibility == content::Visibility::HIDDEN)
+    WebContentsWasHidden();
+  else
+    WebContentsWasShown();
+}
+
+void RecentTabHelper::WebContentsWasHidden() {
   if (!IsOffliningRecentPagesEnabled())
     return;
 
@@ -337,7 +344,7 @@ void RecentTabHelper::WasHidden() {
   last_n_latest_saved_snapshot_info_.reset();
 }
 
-void RecentTabHelper::WasShown() {
+void RecentTabHelper::WebContentsWasShown() {
   // If the tab was closing and is now being shown, the closure was reverted.
   DVLOG_IF(0, tab_is_closing_) << "Tab is not closing anymore: "
                                << web_contents()->GetLastCommittedURL().spec();

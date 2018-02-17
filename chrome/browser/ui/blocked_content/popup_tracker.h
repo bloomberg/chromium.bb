@@ -41,8 +41,7 @@ class PopupTracker : public content::WebContentsObserver,
   // content::WebContentsObserver:
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void WasShown() override;
-  void WasHidden() override;
+  void OnVisibilityChanged(content::Visibility visibility) override;
 
   // The clock which is used by the visibility tracker.
   std::unique_ptr<base::DefaultTickClock> tick_clock_;
