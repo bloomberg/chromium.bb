@@ -15,7 +15,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents.h"
-#include "content/test/test_web_contents.h"
+#include "content/public/test/web_contents_tester.h"
 #include "url/gurl.h"
 
 namespace resource_coordinator {
@@ -93,12 +93,10 @@ TEST_P(BackgroundTabNavigationThrottleTest, Instantiate) {
   else
     web_contents()->WasShown();
 
-  std::unique_ptr<content::TestWebContents> opener(
-      content::TestWebContents::Create(browser_context(),
-                                       main_rfh()->GetSiteInstance()));
+  std::unique_ptr<content::WebContents> opener;
   if (!no_opener_) {
-    static_cast<content::TestWebContents*>(web_contents())
-        ->SetOpener(opener.get());
+    opener.reset(CreateTestWebContents());
+    content::WebContentsTester::For(web_contents())->SetOpener(opener.get());
   }
 
   content::RenderFrameHost* rfh;

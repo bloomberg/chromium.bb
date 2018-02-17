@@ -1,7 +1,6 @@
 include_rules = [
   # TODO(mash): Remove. http://crbug.com/723881
   "+ash/shell.h",
-  "+content/test/test_web_contents.h",
   "+services/resource_coordinator/public",
   # No inclusion of WebKit from the browser, other than strictly enum/POD,
   # header-only types, and some selected common code.

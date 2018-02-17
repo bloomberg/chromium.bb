@@ -285,8 +285,9 @@ RenderViewHostDelegateView* TestWebContents::GetDelegateView() {
   return WebContentsImpl::GetDelegateView();
 }
 
-void TestWebContents::SetOpener(TestWebContents* opener) {
-  frame_tree_.root()->SetOpener(opener->GetFrameTree()->root());
+void TestWebContents::SetOpener(WebContents* opener) {
+  frame_tree_.root()->SetOpener(
+      static_cast<WebContentsImpl*>(opener)->GetFrameTree()->root());
 }
 
 void TestWebContents::AddPendingContents(TestWebContents* contents) {
