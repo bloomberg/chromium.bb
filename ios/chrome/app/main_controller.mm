@@ -901,8 +901,11 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   if (!_mainCoordinator) {
     // Lazily create the main coordinator.
     if (IsTabSwitcherTabGridEnabled()) {
-      _mainCoordinator =
+      TabGridCoordinator* tabGridCoordinator =
           [[TabGridCoordinator alloc] initWithWindow:self.window];
+      tabGridCoordinator.regularTabModel = self.mainTabModel;
+      tabGridCoordinator.incognitoTabModel = self.otrTabModel;
+      _mainCoordinator = tabGridCoordinator;
     } else {
       _mainCoordinator = [[MainCoordinator alloc] initWithWindow:self.window];
     }

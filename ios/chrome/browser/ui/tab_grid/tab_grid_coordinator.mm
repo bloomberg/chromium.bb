@@ -4,9 +4,10 @@
 
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
 
+#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/main/bvc_container_view_controller.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_adaptor.h"
-
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_mediator.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -19,6 +20,8 @@
 // Container view controller for the BVC to live in; this class's view
 // controller will present this.
 @property(nonatomic, strong) BVCContainerViewController* bvcContainer;
+// Mediates between the model layer and the tab grid UI layer.
+@property(nonatomic, strong) TabGridMediator* mediator;
 @end
 
 @implementation TabGridCoordinator
@@ -26,9 +29,12 @@
 @synthesize mainViewController = _mainViewController;
 // Public properties.
 @synthesize animationsDisabledForTesting = _animationsDisabledForTesting;
+@synthesize regularTabModel = _regularTabModel;
+@synthesize incognitoTabModel = _incognitoTabModel;
 // Private properties.
 @synthesize adaptor = _adaptor;
 @synthesize bvcContainer = _bvcContainer;
+@synthesize mediator = _mediator;
 
 #pragma mark - Public properties
 
@@ -51,6 +57,10 @@
   self.window.rootViewController = self.mainViewController;
   self.adaptor = [[TabGridAdaptor alloc] init];
   self.adaptor.tabGridViewController = self.mainViewController;
+
+  self.mediator = [[TabGridMediator alloc] init];
+  self.mediator.regularTabModel = self.regularTabModel;
+  self.mediator.incognitoTabModel = self.incognitoTabModel;
 }
 
 #pragma mark - UIViewControllerTransitioningDelegate
