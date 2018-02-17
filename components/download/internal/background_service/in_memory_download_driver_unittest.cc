@@ -44,6 +44,8 @@ class TestInMemoryDownload : public InMemoryDownload {
 
   // InMemoryDownload implementation.
   void Start() override {}
+  void Pause() override {}
+  void Resume() override {}
   std::unique_ptr<storage::BlobDataHandle> ResultAsBlob() override {
     return nullptr;
   }

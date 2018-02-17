@@ -16,6 +16,7 @@
 #include "components/download/public/background_service/download_params.h"
 #include "net/base/completion_callback.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "net/url_request/url_fetcher_response_writer.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace net {
@@ -88,6 +89,12 @@ class InMemoryDownload {
   // Send the download request.
   virtual void Start() = 0;
 
+  // Pause the download request.
+  virtual void Pause() = 0;
+
+  // Resume the download request.
+  virtual void Resume() = 0;
+
   // Get a copy of blob data handle.
   virtual std::unique_ptr<storage::BlobDataHandle> ResultAsBlob() = 0;
 
@@ -143,8 +150,50 @@ class InMemoryDownloadImpl : public net::URLFetcherDelegate,
   ~InMemoryDownloadImpl() override;
 
  private:
+  // Response writer that supports pause and resume operations.
+  class ResponseWriter : public net::URLFetcherResponseWriter {
+   public:
+    ResponseWriter(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+    ~ResponseWriter() override;
+
+    // Pause writing data from pipe into |data_|.
+    void Pause();
+
+    // Resume writing data from the pipe into |data_|.
+    void Resume();
+
+    // Take the data, must be called after the network layer completes its job.
+    std::unique_ptr<std::string> TakeData();
+
+   private:
+    // net::URLFetcherResponseWriter implementation.
+    int Initialize(const net::CompletionCallback& callback) override;
+    int Write(net::IOBuffer* buffer,
+              int num_bytes,
+              const net::CompletionCallback& callback) override;
+    int Finish(int net_error, const net::CompletionCallback& callback) override;
+
+    void PauseOnIO();
+    void ResumeOnIO();
+
+    // Download data, should be moved to avoid extra copy.
+    std::unique_ptr<std::string> data_;
+
+    bool paused_on_io_;
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
+    // When paused, cached callback to trigger the next read. Must be set and
+    // called on fetcher's IO thread.
+    net::CompletionCallback write_callback_;
+
+    DISALLOW_COPY_AND_ASSIGN(ResponseWriter);
+  };
+
   // InMemoryDownload implementation.
   void Start() override;
+  void Pause() override;
+  void Resume() override;
+
   std::unique_ptr<storage::BlobDataHandle> ResultAsBlob() override;
   size_t EstimateMemoryUsage() const override;
 
@@ -164,8 +213,13 @@ class InMemoryDownloadImpl : public net::URLFetcherDelegate,
   void OnSaveBlobDone(std::unique_ptr<storage::BlobDataHandle> blob_handle,
                       storage::BlobStatus status);
 
-  // Notifies the delegate about completion.
+  // Notifies the delegate about completion. Can be called multiple times and
+  // |completion_notified_| will ensure the delegate only receive one completion
+  // call.
   void NotifyDelegateDownloadComplete();
+
+  // Sends the network request.
+  void SendRequest();
 
   // Request parameters of the download.
   const RequestParams request_params_;
@@ -177,6 +231,10 @@ class InMemoryDownloadImpl : public net::URLFetcherDelegate,
   // string buffer. We should avoid extra copy on the data and release the
   // memory when needed.
   std::unique_ptr<net::URLFetcher> url_fetcher_;
+
+  // Owned by |url_fetcher_|. Lives on fetcher's delegate thread, perform
+  // network IO on fetcher's IO thread.
+  ResponseWriter* response_writer_;
 
   // Request context getter used by |url_fetcher_|.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
@@ -192,6 +250,11 @@ class InMemoryDownloadImpl : public net::URLFetcherDelegate,
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   Delegate* delegate_;
+
+  bool paused_;
+
+  // Ensures Delegate::OnDownloadComplete is only called once.
+  bool completion_notified_;
 
   // Bounded to main thread task runner.
   base::WeakPtrFactory<InMemoryDownloadImpl> weak_ptr_factory_;

@@ -5,10 +5,12 @@
 #include "components/download/internal/background_service/in_memory_download.h"
 
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "components/download/internal/background_service/blob_task_proxy.h"
+#include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
@@ -35,6 +37,73 @@ net::URLFetcher::RequestType ToRequestType(const std::string& method) {
 
 }  // namespace
 
+InMemoryDownloadImpl::ResponseWriter::ResponseWriter(
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
+    : paused_on_io_(false), io_task_runner_(io_task_runner) {}
+
+InMemoryDownloadImpl::ResponseWriter::~ResponseWriter() = default;
+
+void InMemoryDownloadImpl::ResponseWriter::Pause() {
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ResponseWriter::PauseOnIO, base::Unretained(this)));
+}
+
+void InMemoryDownloadImpl::ResponseWriter::PauseOnIO() {
+  io_task_runner_->BelongsToCurrentThread();
+  paused_on_io_ = true;
+}
+
+void InMemoryDownloadImpl::ResponseWriter::Resume() {
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ResponseWriter::ResumeOnIO, base::Unretained(this)));
+}
+
+void InMemoryDownloadImpl::ResponseWriter::ResumeOnIO() {
+  io_task_runner_->BelongsToCurrentThread();
+  paused_on_io_ = false;
+
+  // Continue read from network layer. Since we didn't write on pause, report
+  // 0 byte to network layer.
+  if (!write_callback_.is_null()) {
+    base::ResetAndReturn(&write_callback_).Run(0u);
+  }
+}
+
+std::unique_ptr<std::string> InMemoryDownloadImpl::ResponseWriter::TakeData() {
+  return std::move(data_);
+}
+
+int InMemoryDownloadImpl::ResponseWriter::Initialize(
+    const net::CompletionCallback& callback) {
+  data_ = std::make_unique<std::string>();
+  return net::OK;
+}
+
+int InMemoryDownloadImpl::ResponseWriter::Write(
+    net::IOBuffer* buffer,
+    int num_bytes,
+    const net::CompletionCallback& callback) {
+  io_task_runner_->BelongsToCurrentThread();
+
+  if (paused_on_io_) {
+    write_callback_ = callback;
+    return net::ERR_IO_PENDING;
+  }
+
+  DCHECK(data_);
+  data_->append(buffer->data(), num_bytes);
+  return num_bytes;
+}
+
+int InMemoryDownloadImpl::ResponseWriter::Finish(
+    int net_error,
+    const net::CompletionCallback& callback) {
+  io_task_runner_->BelongsToCurrentThread();
+  return net::OK;
+}
+
 InMemoryDownload::InMemoryDownload(const std::string& guid)
     : guid_(guid), state_(State::INITIAL), bytes_downloaded_(0u) {}
 
@@ -52,10 +121,12 @@ InMemoryDownloadImpl::InMemoryDownloadImpl(
       request_params_(request_params),
       traffic_annotation_(traffic_annotation),
       request_context_getter_(request_context_getter),
-      blob_task_proxy_(BlobTaskProxy::Create(std::move(blob_context_getter),
-                                             io_task_runner)),
+      blob_task_proxy_(
+          BlobTaskProxy::Create(blob_context_getter, io_task_runner)),
       io_task_runner_(io_task_runner),
       delegate_(delegate),
+      paused_(false),
+      completion_notified_(false),
       weak_ptr_factory_(this) {
   DCHECK(!guid_.empty());
 }
@@ -65,26 +136,67 @@ InMemoryDownloadImpl::~InMemoryDownloadImpl() {
 }
 
 void InMemoryDownloadImpl::Start() {
-  DCHECK(state_ == State::INITIAL);
-  url_fetcher_ = net::URLFetcher::Create(request_params_.url,
-                                         ToRequestType(request_params_.method),
-                                         this, traffic_annotation_);
-  url_fetcher_->SetRequestContext(request_context_getter_.get());
-  url_fetcher_->SetExtraRequestHeaders(
-      request_params_.request_headers.ToString());
-  url_fetcher_->Start();
+  DCHECK(state_ == State::INITIAL) << "Only call Start() for new download.";
+  SendRequest();
   state_ = State::IN_PROGRESS;
+}
+
+void InMemoryDownloadImpl::Pause() {
+  if (paused_)
+    return;
+  paused_ = true;
+
+  switch (state_) {
+    case State::INITIAL:
+      // Do nothing.
+      return;
+    case State::IN_PROGRESS:
+      // Do nothing if network operation is done.
+      DCHECK(response_writer_);
+      response_writer_->Pause();
+      return;
+    case State::FAILED:
+      return;
+    case State::COMPLETE:
+      // Do nothing.
+      return;
+  }
+}
+
+void InMemoryDownloadImpl::Resume() {
+  if (!paused_)
+    return;
+  paused_ = false;
+
+  switch (state_) {
+    case State::INITIAL:
+      NOTREACHED();
+      return;
+    case State::IN_PROGRESS:
+      // Do nothing if network operation is done.
+      DCHECK(response_writer_);
+      response_writer_->Resume();
+      return;
+    case State::FAILED:
+      // Restart the network layer. No ongoing blob task should exist.
+      SendRequest();
+      state_ = State::IN_PROGRESS;
+      return;
+    case State::COMPLETE:
+      NotifyDelegateDownloadComplete();
+      return;
+  }
 }
 
 std::unique_ptr<storage::BlobDataHandle> InMemoryDownloadImpl::ResultAsBlob() {
   DCHECK(state_ == State::COMPLETE || state_ == State::FAILED);
-  // Return a copy.
+  // Return a copy, we keep one reference of the underlying data to avoid
+  // unexpected deletion.
   return std::make_unique<storage::BlobDataHandle>(*blob_data_handle_);
 }
 
 size_t InMemoryDownloadImpl::EstimateMemoryUsage() const {
-  // TODO(xingliu): Implement this when destroy |url_fetcher| correctly.
-  return 0u;
+  return bytes_downloaded_;
 }
 
 void InMemoryDownloadImpl::OnURLFetchDownloadProgress(
@@ -119,7 +231,7 @@ void InMemoryDownloadImpl::OnURLFetchComplete(const net::URLFetcher* source) {
     case net::URLRequestStatus::Status::FAILED:
       state_ = State::FAILED;
       NotifyDelegateDownloadComplete();
-      break;
+      return;
   }
 }
 
@@ -142,13 +254,7 @@ bool InMemoryDownloadImpl::HandleResponseCode(int response_code) {
 
 void InMemoryDownloadImpl::SaveAsBlob() {
   DCHECK(url_fetcher_);
-
-  // This will copy the internal memory in |url_fetcher| into |data|.
-  // TODO(xingliu): Use response writer to avoid one extra copies. And destroy
-  // |url_fetcher_| at the correct time.
-  std::unique_ptr<std::string> data = std::make_unique<std::string>();
-  url_fetcher_->GetResponseAsString(data.get());
-
+  std::unique_ptr<std::string> data = response_writer_->TakeData();
   auto callback = base::BindOnce(&InMemoryDownloadImpl::OnSaveBlobDone,
                                  weak_ptr_factory_.GetWeakPtr());
   blob_task_proxy_->SaveAsBlob(std::move(data), std::move(callback));
@@ -167,12 +273,40 @@ void InMemoryDownloadImpl::OnSaveBlobDone(
   blob_data_handle_ = std::move(blob_handle);
   completion_time_ = base::Time::Now();
 
+  // Resets network backend.
+  response_writer_ = nullptr;
+  url_fetcher_.reset();
+
+  // Not considering |paused_| here, if pause after starting a blob operation,
+  // just let it finish.
   NotifyDelegateDownloadComplete();
 }
 
 void InMemoryDownloadImpl::NotifyDelegateDownloadComplete() {
+  if (completion_notified_)
+    return;
+  completion_notified_ = true;
+
   if (delegate_)
     delegate_->OnDownloadComplete(this);
+}
+
+void InMemoryDownloadImpl::SendRequest() {
+  url_fetcher_ = net::URLFetcher::Create(request_params_.url,
+                                         ToRequestType(request_params_.method),
+                                         this, traffic_annotation_);
+  url_fetcher_->SetRequestContext(request_context_getter_.get());
+  url_fetcher_->SetExtraRequestHeaders(
+      request_params_.request_headers.ToString());
+  response_writer_ =
+      new ResponseWriter(request_context_getter_->GetNetworkTaskRunner());
+  url_fetcher_->SaveResponseWithWriter(
+      std::unique_ptr<ResponseWriter>(response_writer_));
+  url_fetcher_->Start();
+
+  // Pause on network thread if needed.
+  if (paused_)
+    response_writer_->Pause();
 }
 
 }  // namespace download

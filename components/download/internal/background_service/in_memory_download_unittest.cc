@@ -19,6 +19,19 @@
 namespace download {
 namespace {
 
+// Posts a dummy task on |task_runner| and wait for its callback, to drain all
+// previous tasks on |task_runner|.
+void DrainPreviousTasks(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  base::RunLoop run_loop;
+
+  auto dummy_task = []() {};
+  task_runner->PostTaskAndReply(FROM_HERE, base::BindRepeating(dummy_task),
+                                run_loop.QuitClosure());
+
+  run_loop.Run();
+}
+
 class MockDelegate : public InMemoryDownload::Delegate {
  public:
   MockDelegate() = default;
@@ -91,6 +104,9 @@ class InMemoryDownloadTest : public testing::Test {
   InMemoryDownload* download() { return download_.get(); }
   MockDelegate* delegate() { return &mock_delegate_; }
   net::EmbeddedTestServer* test_server() { return &test_server_; }
+  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter() {
+    return request_context_getter_;
+  }
 
  private:
   // IO thread used by network and blob IO tasks.
@@ -119,6 +135,27 @@ TEST_F(InMemoryDownloadTest, DownloadTest) {
   base::FilePath path = GetTestDataDirectory().AppendASCII("text_data.json");
   std::string data;
   EXPECT_TRUE(ReadFileToString(path, &data));
+  EXPECT_EQ(InMemoryDownload::State::COMPLETE, download()->state());
+  // TODO(xingliu): Read the blob and verify data.
+}
+
+TEST_F(InMemoryDownloadTest, PauseResume) {
+  RequestParams request_params;
+  request_params.url = test_server()->GetURL("/text_data.json");
+  CreateDownload(request_params);
+
+  // Pause before sending request.
+  download()->Pause();
+  download()->Start();
+
+  // Force to return ERR_IO_PENDING on network thread in
+  // InMemoryDownloadImpl::ResponseWriter::Write.
+  DrainPreviousTasks(request_context_getter()->GetNetworkTaskRunner());
+
+  download()->Resume();
+  delegate()->WaitForCompletion();
+
+  base::FilePath path = GetTestDataDirectory().AppendASCII("text_data.json");
   EXPECT_EQ(InMemoryDownload::State::COMPLETE, download()->state());
   // TODO(xingliu): Read the blob and verify data.
 }

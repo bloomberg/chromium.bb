@@ -56,7 +56,7 @@ void BlobTaskProxy::SaveAsBlobOnIO(std::unique_ptr<std::string> data,
                                    BlobDataHandleCallback callback) {
   io_task_runner_->BelongsToCurrentThread();
 
-  // Build blob data.
+  // Build blob data. This has to do a copy into blob's internal storage.
   std::string blob_uuid = base::GenerateGUID();
   auto builder = std::make_unique<storage::BlobDataBuilder>(blob_uuid);
   builder->AppendData(*data.get());
