@@ -29,13 +29,13 @@ class NET_EXPORT_PRIVATE Http2PriorityDependencies {
 
   // Called when a stream is created. This is used for both client-initiated
   // and server-initiated (pushed) streams.
-  // On return, |*dependent_stream_id| is set to the stream id that
-  // this stream should be made dependent on, |*exclusive| is set to
-  // whether that dependency should be exclusive, and |*weight| is set to
-  // the relative weight for the created stream given this priority.
+  // On return, |*parent_stream_id| is set to the stream id that should become
+  // the parent of this stream, |*exclusive| is set to whether that dependency
+  // should be exclusive, and |*weight| is set to the relative weight for the
+  // created stream given this priority.
   void OnStreamCreation(SpdyStreamId id,
                         SpdyPriority priority,
-                        SpdyStreamId* dependent_stream_id,
+                        SpdyStreamId* parent_stream_id,
                         int* weight,
                         bool* exclusive);
 
@@ -44,7 +44,7 @@ class NET_EXPORT_PRIVATE Http2PriorityDependencies {
 
   struct DependencyUpdate {
     SpdyStreamId id;
-    SpdyStreamId dependent_stream_id;
+    SpdyStreamId parent_stream_id;
     bool exclusive;
   };
 
