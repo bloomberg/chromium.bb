@@ -1894,8 +1894,13 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   DCHECK(!(load_flags & net::LOAD_IGNORE_LIMITS));
 
   std::unique_ptr<net::URLRequest> new_request;
+  net::RequestPriority net_priority = net::HIGHEST;
+  if (!info.is_main_frame &&
+      base::FeatureList::IsEnabled(features::kLowPriorityIframes)) {
+    net_priority = net::LOWEST;
+  }
   new_request = request_context->CreateRequest(
-      info.common_params.url, net::HIGHEST, nullptr, GetTrafficAnnotation());
+      info.common_params.url, net_priority, nullptr, GetTrafficAnnotation());
 
   new_request->set_method(info.common_params.method);
   new_request->set_site_for_cookies(info.site_for_cookies);
