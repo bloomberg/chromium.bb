@@ -43,7 +43,7 @@ class PlatformSensorProviderWin::SensorThread final : public base::Thread {
       static bool logged_failure = false;
       if (!logged_failure) {
         LOG(ERROR) << "Unable to create instance of SensorManager: "
-                   << _com_error(hr).ErrorMessage() << " (0x " << std::hex
+                   << _com_error(hr).ErrorMessage() << " (0x" << std::hex
                    << std::uppercase << std::setfill('0') << std::setw(8) << hr
                    << ")";
         logged_failure = true;
