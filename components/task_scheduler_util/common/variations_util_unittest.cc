@@ -6,10 +6,7 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
-#include "build/build_config.h"
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/task_scheduler/scheduler_worker_params.h"
@@ -20,13 +17,6 @@
 namespace task_scheduler_util {
 
 namespace {
-
-#if !defined(OS_IOS)
-constexpr char kFieldTrialName[] = "BrowserScheduler";
-constexpr char kFieldTrialTestGroup[] = "Test";
-constexpr char kTaskSchedulerVariationParamsSwitch[] =
-    "task-scheduler-variation-params";
-#endif  // !defined(OS_IOS)
 
 class TaskSchedulerUtilVariationsUtilTest : public testing::Test {
  public:
@@ -146,77 +136,5 @@ TEST_F(TaskSchedulerUtilVariationsUtilTest, NegativeSuggestedReclaimTime) {
   variation_params["RendererForegroundBlocking"] = "8;8;1;0;72";
   EXPECT_FALSE(GetTaskSchedulerInitParams("Renderer", variation_params));
 }
-
-#if !defined(OS_IOS)
-// Verify that AddVariationParamsToCommandLine() serializes BrowserScheduler
-// variation params that start with the specified prefix to the command line and
-// that GetVariationParamsFromCommandLine() correctly deserializes them.
-TEST_F(TaskSchedulerUtilVariationsUtilTest, CommandLine) {
-  std::map<std::string, std::string> in_variation_params;
-  in_variation_params["PrefixFoo"] = "Foo";
-  in_variation_params["PrefixBar"] = "Bar";
-  in_variation_params["NoPrefix"] = "NoPrefix";
-  ASSERT_TRUE(variations::AssociateVariationParams(
-      kFieldTrialName, kFieldTrialTestGroup, in_variation_params));
-  base::FieldTrialList::CreateFieldTrial(kFieldTrialName, kFieldTrialTestGroup);
-
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  AddVariationParamsToCommandLine("Prefix", &command_line);
-  const std::map<std::string, std::string> out_variation_params =
-      GetVariationParamsFromCommandLine(command_line);
-
-  std::map<std::string, std::string> expected_out_variation_params;
-  expected_out_variation_params["PrefixFoo"] = "Foo";
-  expected_out_variation_params["PrefixBar"] = "Bar";
-  EXPECT_EQ(expected_out_variation_params, out_variation_params);
-}
-
-// Verify that AddVariationParamsToCommandLine() doesn't add anything to the
-// command line when a BrowserScheduler variation param key contains |. A key
-// that contains | wouldn't be deserialized correctly by
-// GetVariationParamsFromCommandLine().
-TEST_F(TaskSchedulerUtilVariationsUtilTest,
-       CommandLineSeparatorInVariationParamsKey) {
-  std::map<std::string, std::string> in_variation_params;
-  in_variation_params["PrefixFoo"] = "Foo";
-  in_variation_params["PrefixKey|"] = "Value";
-  ASSERT_TRUE(variations::AssociateVariationParams(
-      kFieldTrialName, kFieldTrialTestGroup, in_variation_params));
-  base::FieldTrialList::CreateFieldTrial(kFieldTrialName, kFieldTrialTestGroup);
-
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  AddVariationParamsToCommandLine("Prefix", &command_line);
-  EXPECT_TRUE(
-      command_line.GetSwitchValueASCII(kTaskSchedulerVariationParamsSwitch)
-          .empty());
-}
-
-// Verify that AddVariationParamsToCommandLine() doesn't add anything to the
-// command line when a BrowserScheduler variation param value contains |. A
-// value that contains | wouldn't be deserialized correctly by
-// GetVariationParamsFromCommandLine().
-TEST_F(TaskSchedulerUtilVariationsUtilTest,
-       CommandLineSeparatorInVariationParamsValue) {
-  std::map<std::string, std::string> in_variation_params;
-  in_variation_params["PrefixFoo"] = "Foo";
-  in_variation_params["PrefixKey"] = "Value|";
-  ASSERT_TRUE(variations::AssociateVariationParams(
-      kFieldTrialName, kFieldTrialTestGroup, in_variation_params));
-  base::FieldTrialList::CreateFieldTrial(kFieldTrialName, kFieldTrialTestGroup);
-
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  AddVariationParamsToCommandLine("Prefix", &command_line);
-  EXPECT_TRUE(
-      command_line.GetSwitchValueASCII(kTaskSchedulerVariationParamsSwitch)
-          .empty());
-}
-
-// Verify that GetVariationParamsFromCommandLine() returns an empty map when the
-// command line doesn't have a --task-scheduler-variation-params switch.
-TEST_F(TaskSchedulerUtilVariationsUtilTest, CommandLineNoSwitch) {
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  EXPECT_TRUE(GetVariationParamsFromCommandLine(command_line).empty());
-}
-#endif  // !defined(OS_IOS)
 
 }  // namespace task_scheduler_util

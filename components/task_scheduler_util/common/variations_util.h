@@ -11,11 +11,6 @@
 
 #include "base/strings/string_piece.h"
 #include "base/task_scheduler/task_scheduler.h"
-#include "build/build_config.h"
-
-namespace base {
-class CommandLine;
-}
 
 namespace task_scheduler_util {
 
@@ -47,19 +42,6 @@ GetTaskSchedulerInitParamsForBrowser();
 // variation params in the BrowserScheduler field trial.
 std::unique_ptr<base::TaskScheduler::InitParams>
 GetTaskSchedulerInitParamsForRenderer();
-
-#if !defined(OS_IOS)
-// Serializes variation params from the BrowserScheduler field trial whose key
-// start with |prefix| to the --task-scheduler-variation-params switch of
-// |command_line|.
-void AddVariationParamsToCommandLine(base::StringPiece key_prefix,
-                                     base::CommandLine* command_line);
-
-// Returns a map of key-value pairs deserialized from the
-// --task-scheduler-variation-params switch of |command_line|.
-std::map<std::string, std::string> GetVariationParamsFromCommandLine(
-    const base::CommandLine& command_line);
-#endif  // !defined(OS_IOS)
 
 }  // namespace task_scheduler_util
 
