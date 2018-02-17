@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 
+#import "ios/chrome/browser/ui/tab_grid/grid_view_controller.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_bottom_toolbar.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_top_toolbar.h"
 
@@ -11,13 +12,63 @@
 #error "This file requires ARC support."
 #endif
 
+@interface TabGridViewController ()
+@property(nonatomic, weak) GridViewController* regularTabsViewController;
+@property(nonatomic, weak) GridViewController* incognitoTabsViewController;
+@end
+
 @implementation TabGridViewController
+@synthesize regularTabsViewController = _regularTabsViewController;
+@synthesize incognitoTabsViewController = _incognitoTabsViewController;
 
 #pragma mark - UIViewController
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+  [self setupRegularTabsViewController];
+  [self setupToolbars];
+}
 
+- (UIStatusBarStyle)preferredStatusBarStyle {
+  return UIStatusBarStyleLightContent;
+}
+
+#pragma mark - Public
+
+- (id<GridConsumer>)regularTabsConsumer {
+  return self.regularTabsViewController;
+}
+
+- (id<GridConsumer>)incognitoTabsConsumer {
+  return self.incognitoTabsViewController;
+}
+
+#pragma mark - Private
+
+// Adds the regular tabs GridViewController as a contained view controller, and
+// sets constraints.
+- (void)setupRegularTabsViewController {
+  GridViewController* viewController = [[GridViewController alloc] init];
+  viewController.view.translatesAutoresizingMaskIntoConstraints = NO;
+  [self addChildViewController:viewController];
+  [self.view addSubview:viewController.view];
+  [viewController didMoveToParentViewController:self];
+  self.regularTabsViewController = viewController;
+
+  NSArray* constraints = @[
+    [viewController.view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+    [viewController.view.bottomAnchor
+        constraintEqualToAnchor:self.view.bottomAnchor],
+    [viewController.view.leadingAnchor
+        constraintEqualToAnchor:self.view.leadingAnchor],
+    [viewController.view.trailingAnchor
+        constraintEqualToAnchor:self.view.trailingAnchor],
+  ];
+  [NSLayoutConstraint activateConstraints:constraints];
+}
+
+// Adds the top and bottom toolbars and sets constraints.
+- (void)setupToolbars {
   UIView* topToolbar = [[TabGridTopToolbar alloc] init];
   topToolbar.translatesAutoresizingMaskIntoConstraints = NO;
 
@@ -63,10 +114,12 @@
     ]];
   }
   [NSLayoutConstraint activateConstraints:constraints];
-}
 
-- (UIStatusBarStyle)preferredStatusBarStyle {
-  return UIStatusBarStyleLightContent;
+  // The content inset of the tab grids must be modified so that the toolbars do
+  // not obscure the tabs.
+  self.regularTabsViewController.gridView.contentInset =
+      UIEdgeInsetsMake(topToolbar.intrinsicContentSize.height, 0,
+                       bottomToolbar.intrinsicContentSize.height, 0);
 }
 
 @end

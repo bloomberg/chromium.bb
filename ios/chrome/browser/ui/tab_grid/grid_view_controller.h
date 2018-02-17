@@ -11,6 +11,8 @@
 
 // A view controller that contains a grid of items.
 @interface GridViewController : UIViewController<GridConsumer>
+// The gridView is accessible to manage the content inset behavior.
+@property(nonatomic, readonly) UIScrollView* gridView;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_VIEW_CONTROLLER_H_

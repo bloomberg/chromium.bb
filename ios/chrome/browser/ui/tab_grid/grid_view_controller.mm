@@ -55,6 +55,12 @@ NSString* const kCellIdentifier = @"GridCellIdentifier";
   self.view = collectionView;
 }
 
+#pragma mark - Public
+
+- (UIScrollView*)gridView {
+  return self.collectionView;
+}
+
 #pragma mark - UICollectionViewDataSource
 
 - (NSInteger)collectionView:(UICollectionView*)collectionView
@@ -78,9 +84,7 @@ NSString* const kCellIdentifier = @"GridCellIdentifier";
   self.items = [items mutableCopy];
   self.selectedIndex = selectedIndex;
   if ([self isViewLoaded]) {
-    [self.collectionView
-        reloadItemsAtIndexPaths:[self.collectionView
-                                        indexPathsForVisibleItems]];
+    [self.collectionView reloadData];
   }
 }
 
