@@ -116,8 +116,8 @@ struct FeatureEntry {
     const FeatureParam* params;
     int num_params;
     // A variation id number in the format of
-    // VariationsHttpHeaderProvider::SetDefaultVariationIds or nullptr
-    // if you do not need to set any variation_id for this feature variation.
+    // VariationsHttpHeaderProvider::ForceVariationIds() or nullptr if you do
+    // not need to set any variation_id for this feature variation.
     const char* variation_id;
   };
 
@@ -203,8 +203,8 @@ namespace testing {
 // name-of-experiment + kMultiSeparator + selected_index.
 extern const char kMultiSeparator[];
 
-}  // namespace
+}  // namespace testing
 
-}  // namespace flag_ui
+}  // namespace flags_ui
 
 #endif  // COMPONENTS_FLAGS_UI_FEATURE_ENTRY_H_

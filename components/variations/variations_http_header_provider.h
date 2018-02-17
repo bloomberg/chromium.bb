@@ -45,19 +45,21 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   // a leading and trailing space, e.g. " 123 234 345 ".
   std::string GetVariationsString();
 
-  // Forces the list of |variation_ids| (which will be modified by adding the
-  // comma-separated |command_line_variation_ids|). This is a wrapper function
-  // around SetDefaultVariationIds.
-  bool ForceVariationIds(
-      const std::string& command_line_variation_ids,
-      std::vector<std::string>* variation_ids);
+  // Result of ForceVariationIds() call.
+  enum class ForceIdsResult {
+    SUCCESS,
+    INVALID_VECTOR_ENTRY,  // Invalid entry in |variation_ids|.
+    INVALID_SWITCH_ENTRY,  // Invalid entry in |command_line_variation_ids|.
+  };
 
   // Sets *additional* variation ids and trigger variation ids to be encoded in
   // the X-Client-Data request header. This is intended for development use to
   // force a server side experiment id. |variation_ids| should be a list of
-  // strings of numeric experiment ids. If an id is prefixed with "t" it will
-  // be treated as a trigger experiment id.
-  bool SetDefaultVariationIds(const std::vector<std::string>& variation_ids);
+  // strings of numeric experiment ids. Ids explicitly passed in |variation_ids|
+  // and those in the comma-separated |command_line_variation_ids| are added.
+  ForceIdsResult ForceVariationIds(
+      const std::vector<std::string>& variation_ids,
+      const std::string& command_line_variation_ids);
 
   // Resets any cached state for tests.
   void ResetForTesting();
@@ -68,9 +70,11 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   typedef std::pair<VariationID, IDCollectionKey> VariationIDEntry;
 
   FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
-                           SetDefaultVariationIds_Valid);
+                           ForceVariationIds_Valid);
   FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
-                           SetDefaultVariationIds_Invalid);
+                           ForceVariationIds_ValidCommandLine);
+  FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
+                           ForceVariationIds_Invalid);
   FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
                            OnFieldTrialGroupFinalized);
   FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
@@ -108,6 +112,10 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   // Generates a base64-encoded proto to be used as a header value for the given
   // |is_signed_in| state.
   std::string GenerateBase64EncodedProto(bool is_signed_in);
+
+  // Adds *additional* variation ids and trigger variation ids to be encoded in
+  // the X-Client-Data request header.
+  bool AddDefaultVariationIds(const std::vector<std::string>& variation_ids);
 
   // Returns the currently active set of variation ids, which includes any
   // default values, synthetic variations and actual field trial variations.

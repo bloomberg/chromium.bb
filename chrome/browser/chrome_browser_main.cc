@@ -934,8 +934,8 @@ void ChromeBrowserMainParts::SetupFieldTrials() {
       browser_process_->variations_service();
   variations_service->SetupFieldTrials(
       cc::switches::kEnableGpuBenchmarking, switches::kEnableFeatures,
-      switches::kDisableFeatures, unforceable_field_trials,
-      std::move(feature_list), &variation_ids, &browser_field_trials_);
+      switches::kDisableFeatures, unforceable_field_trials, variation_ids,
+      std::move(feature_list), &browser_field_trials_);
 
   // Initialize FieldTrialSynchronizer system. This is a singleton and is used
   // for posting tasks via base::Bind. Its deleted when it goes out of scope.

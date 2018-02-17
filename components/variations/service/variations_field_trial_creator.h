@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VARIATIONS_FIELD_TRIAL_CREATOR_H_
-#define COMPONENTS_VARIATIONS_FIELD_TRIAL_CREATOR_H_
+#ifndef COMPONENTS_VARIATIONS_SERVICE_VARIATIONS_FIELD_TRIAL_CREATOR_H_
+#define COMPONENTS_VARIATIONS_SERVICE_VARIATIONS_FIELD_TRIAL_CREATOR_H_
 
+#include <memory>
+#include <set>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -42,10 +45,10 @@ class VariationsFieldTrialCreator {
   // feature controlling flags not directly accesible from variations.
   // |unforcable_field_trials| contains the list of trials that can not be
   // overridden.
-  // |low_entropy_provider| allows for field trial randomization.
-  // |feature_list| contains the list of all active features for this client.
   // |variation_ids| allows for forcing ids selected in chrome://flags and/or
   // specified using the command-line flag.
+  // |low_entropy_provider| allows for field trial randomization.
+  // |feature_list| contains the list of all active features for this client.
   // |platform_field_trials| provides the platform specific field trial set up
   // for Chrome.
   // |safe_seed_manager| should be notified of the combined server and client
@@ -55,10 +58,10 @@ class VariationsFieldTrialCreator {
                         const char* kEnableFeatures,
                         const char* kDisableFeatures,
                         const std::set<std::string>& unforceable_field_trials,
+                        const std::vector<std::string>& variation_ids,
                         std::unique_ptr<const base::FieldTrial::EntropyProvider>
                             low_entropy_provider,
                         std::unique_ptr<base::FeatureList> feature_list,
-                        std::vector<std::string>* variation_ids,
                         PlatformFieldTrials* platform_field_trials,
                         SafeSeedManager* safe_seed_manager);
 
@@ -151,4 +154,4 @@ class VariationsFieldTrialCreator {
 
 }  // namespace variations
 
-#endif  // COMPONENTS_VARIATIONS_FIELD_TRIAL_CREATOR_H_
+#endif  // COMPONENTS_VARIATIONS_SERVICE_VARIATIONS_FIELD_TRIAL_CREATOR_H_

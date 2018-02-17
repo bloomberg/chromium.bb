@@ -61,49 +61,23 @@ std::string VariationsHttpHeaderProvider::GetVariationsString() {
   return ids_string;
 }
 
-bool VariationsHttpHeaderProvider::ForceVariationIds(
-    const std::string& command_line_variation_ids,
-    std::vector<std::string>* variation_ids) {
+VariationsHttpHeaderProvider::ForceIdsResult
+VariationsHttpHeaderProvider::ForceVariationIds(
+    const std::vector<std::string>& variation_ids,
+    const std::string& command_line_variation_ids) {
+  default_variation_ids_set_.clear();
+
+  if (!AddDefaultVariationIds(variation_ids))
+    return ForceIdsResult::INVALID_VECTOR_ENTRY;
+
   if (!command_line_variation_ids.empty()) {
-    // Combine |variation_ids| with |command_line_variation_ids|.
-    std::vector<std::string> variation_ids_flags =
+    std::vector<std::string> variation_ids_from_command_line =
         base::SplitString(command_line_variation_ids, ",",
                           base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    variation_ids->insert(variation_ids->end(), variation_ids_flags.begin(),
-                          variation_ids_flags.end());
+    if (!AddDefaultVariationIds(variation_ids_from_command_line))
+      return ForceIdsResult::INVALID_SWITCH_ENTRY;
   }
-
-  if (!variation_ids->empty()) {
-    // Create default variation ids which will always be included in the
-    // X-Client-Data request header.
-    return SetDefaultVariationIds(*variation_ids);
-  }
-  return true;
-}
-
-bool VariationsHttpHeaderProvider::SetDefaultVariationIds(
-    const std::vector<std::string>& variation_ids) {
-  default_variation_ids_set_.clear();
-  for (const std::string& entry : variation_ids) {
-    if (entry.empty()) {
-      default_variation_ids_set_.clear();
-      return false;
-    }
-    bool trigger_id =
-        base::StartsWith(entry, "t", base::CompareCase::SENSITIVE);
-    // Remove the "t" prefix if it's there.
-    std::string trimmed_entry = trigger_id ? entry.substr(1) : entry;
-
-    int variation_id = 0;
-    if (!base::StringToInt(trimmed_entry, &variation_id)) {
-      default_variation_ids_set_.clear();
-      return false;
-    }
-    default_variation_ids_set_.insert(VariationIDEntry(
-        variation_id,
-        trigger_id ? GOOGLE_WEB_PROPERTIES_TRIGGER : GOOGLE_WEB_PROPERTIES));
-  }
-  return true;
+  return ForceIdsResult::SUCCESS;
 }
 
 void VariationsHttpHeaderProvider::ResetForTesting() {
@@ -258,6 +232,30 @@ std::string VariationsHttpHeaderProvider::GenerateBase64EncodedProto(
   std::string hashed;
   base::Base64Encode(serialized, &hashed);
   return hashed;
+}
+
+bool VariationsHttpHeaderProvider::AddDefaultVariationIds(
+    const std::vector<std::string>& variation_ids) {
+  for (const std::string& entry : variation_ids) {
+    if (entry.empty()) {
+      default_variation_ids_set_.clear();
+      return false;
+    }
+    bool trigger_id =
+        base::StartsWith(entry, "t", base::CompareCase::SENSITIVE);
+    // Remove the "t" prefix if it's there.
+    std::string trimmed_entry = trigger_id ? entry.substr(1) : entry;
+
+    int variation_id = 0;
+    if (!base::StringToInt(trimmed_entry, &variation_id)) {
+      default_variation_ids_set_.clear();
+      return false;
+    }
+    default_variation_ids_set_.insert(VariationIDEntry(
+        variation_id,
+        trigger_id ? GOOGLE_WEB_PROPERTIES_TRIGGER : GOOGLE_WEB_PROPERTIES));
+  }
+  return true;
 }
 
 std::set<VariationsHttpHeaderProvider::VariationIDEntry>

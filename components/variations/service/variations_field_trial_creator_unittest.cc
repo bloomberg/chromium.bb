@@ -200,12 +200,11 @@ class TestVariationsFieldTrialCreator : public VariationsFieldTrialCreator {
   // A convenience wrapper around SetupFieldTrials() which passes default values
   // for uninteresting params.
   bool SetupFieldTrials() {
-    std::vector<std::string> variation_ids;
     TestPlatformFieldTrials platform_field_trials;
     return VariationsFieldTrialCreator::SetupFieldTrials(
-        "", "", "", std::set<std::string>(), nullptr,
-        std::make_unique<base::FeatureList>(), &variation_ids,
-        &platform_field_trials, safe_seed_manager_);
+        "", "", "", std::set<std::string>(), std::vector<std::string>(),
+        nullptr, std::make_unique<base::FeatureList>(), &platform_field_trials,
+        safe_seed_manager_);
   }
 
   TestVariationsSeedStore* seed_store() { return &seed_store_; }

@@ -228,8 +228,8 @@ void IOSChromeMainParts::SetupFieldTrials() {
   application_context_->GetVariationsService()->SetupFieldTrials(
       "dummy-enable-gpu-benchmarking", switches::kEnableFeatures,
       switches::kDisableFeatures,
-      /*unforceable_field_trials=*/std::set<std::string>(),
-      std::move(feature_list), &variation_ids, &ios_field_trials_);
+      /*unforceable_field_trials=*/std::set<std::string>(), variation_ids,
+      std::move(feature_list), &ios_field_trials_);
 }
 
 void IOSChromeMainParts::SetupMetrics() {
