@@ -556,6 +556,16 @@ FYI_WATERFALL = {
           'pool': 'Chrome-GPU',
         },
       ],
+      # TODO(kbr): this separate dictionary is a hack to avoid generalizing the
+      # "swarming_dimensions" handling in this generator script. When merging
+      # this script with the one in src/testing/buildbot/, this will no longer
+      # be necessary.
+      'swarming_settings': {
+        # There's only one bot of this type in the Swarming pool right now, so
+        # we have to increase the default expiration time of 1 hour (3600
+        # seconds) to prevent webgl2_conformance_tests' shards from timing out.
+        'expiration': 10800,
+      },
       'build_config': 'Release',
       # Even though this bot is a one-off, it's still in the Swarming pool.
       'swarming': True,
