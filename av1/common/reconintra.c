@@ -273,6 +273,8 @@ static int has_top_right(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
       const int col_off_64 = col_off % plane_bw_unit_64;
       return col_off_64 + top_right_count_unit < plane_bw_unit_64;
     }
+#else
+    (void)ss_y;
 #endif
     return col_off + top_right_count_unit < plane_bw_unit;
   } else {
