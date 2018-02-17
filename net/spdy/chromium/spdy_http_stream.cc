@@ -133,6 +133,7 @@ int SpdyHttpStream::ReadResponseBody(IOBuffer* buf,
 
   CHECK(buf);
   CHECK(buf_len);
+  CHECK(!callback.is_null());
 
   // If we have data buffered, complete the IO immediately.
   if (!response_body_queue_.IsEmpty()) {
@@ -141,7 +142,6 @@ int SpdyHttpStream::ReadResponseBody(IOBuffer* buf,
     return closed_stream_status_;
   }
 
-  CHECK(!callback.is_null());
   CHECK(response_callback_.is_null());
   CHECK(!user_buffer_.get());
   CHECK_EQ(0, user_buffer_len_);
@@ -368,19 +368,19 @@ void SpdyHttpStream::OnDataSent() {
 void SpdyHttpStream::OnTrailers(const SpdyHeaderBlock& trailers) {}
 
 void SpdyHttpStream::OnClose(int status) {
+  DCHECK(stream_);
+
   // Cancel any pending reads from the upload data stream.
   if (request_info_ && request_info_->upload_data_stream)
     request_info_->upload_data_stream->Reset();
 
-  if (stream_) {
-    stream_closed_ = true;
-    closed_stream_status_ = status;
-    closed_stream_id_ = stream_->stream_id();
-    closed_stream_has_load_timing_info_ =
-        stream_->GetLoadTimingInfo(&closed_stream_load_timing_info_);
-    closed_stream_received_bytes_ = stream_->raw_received_bytes();
-    closed_stream_sent_bytes_ = stream_->raw_sent_bytes();
-  }
+  stream_closed_ = true;
+  closed_stream_status_ = status;
+  closed_stream_id_ = stream_->stream_id();
+  closed_stream_has_load_timing_info_ =
+      stream_->GetLoadTimingInfo(&closed_stream_load_timing_info_);
+  closed_stream_received_bytes_ = stream_->raw_received_bytes();
+  closed_stream_sent_bytes_ = stream_->raw_sent_bytes();
   stream_ = nullptr;
 
   // Callbacks might destroy |this|.
@@ -526,13 +526,11 @@ void SpdyHttpStream::DoBufferedReadCallback() {
 
   // If the transaction is cancelled or errored out, we don't need to complete
   // the read.
-  if (!stream_ && !stream_closed_)
+  if (stream_closed_ && closed_stream_status_ != OK) {
+    if (response_callback_)
+      DoResponseCallback(closed_stream_status_);
     return;
-
-  int stream_status =
-      stream_closed_ ? closed_stream_status_ : stream_->response_status();
-  if (stream_status != OK)
-    return;
+  }
 
   // When more_read_data_pending_ is true, it means that more data has
   // arrived since we started waiting.  Wait a little longer and continue
@@ -542,18 +540,20 @@ void SpdyHttpStream::DoBufferedReadCallback() {
     return;
   }
 
-  int rv = 0;
-  if (user_buffer_.get()) {
-    // At this point SpdyHttpStream::ReadResponseBody() is guaranteed to return
-    // synchronously for non-trivial reasons, therefore it is safe to call it
-    // with a null callback.
-    rv = ReadResponseBody(user_buffer_.get(), user_buffer_len_,
-                          CompletionOnceCallback());
-    CHECK_NE(rv, ERR_IO_PENDING);
-    user_buffer_ = NULL;
+  if (!user_buffer_.get())
+    return;
+
+  if (!response_body_queue_.IsEmpty()) {
+    int rv =
+        response_body_queue_.Dequeue(user_buffer_->data(), user_buffer_len_);
+    user_buffer_ = nullptr;
     user_buffer_len_ = 0;
     DoResponseCallback(rv);
+    return;
   }
+
+  if (stream_closed_ && response_callback_)
+    DoResponseCallback(closed_stream_status_);
 }
 
 void SpdyHttpStream::DoRequestCallback(int rv) {
