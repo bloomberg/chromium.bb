@@ -328,6 +328,10 @@ typedef struct AV1Common {
   int cur_frame_force_integer_mv;  // 0 the default in AOM, 1 only integer
 #endif
 
+#if CONFIG_INTRA_EDGE2
+  int disable_intra_edge_filter;  // 1 - disable corner/edge/upsampling
+#endif
+
   int allow_screen_content_tools;
 #if CONFIG_INTRABC
   int allow_intrabc;

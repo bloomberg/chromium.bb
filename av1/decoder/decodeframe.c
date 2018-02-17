@@ -2800,6 +2800,12 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   if (frame_is_intra_only(cm)) read_sequence_header(&cm->seq_params, rb);
 #endif  // !CONFIG_OBU
 
+#if CONFIG_INTRA_EDGE2
+  if (frame_is_intra_only(cm)) {
+    cm->disable_intra_edge_filter = aom_rb_read_bit(rb);
+  }
+#endif  // CONFIG_INTRA_EDGE2
+
   if (cm->seq_params.force_screen_content_tools == 2) {
     cm->allow_screen_content_tools = aom_rb_read_bit(rb);
   } else {

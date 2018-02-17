@@ -3266,6 +3266,9 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 #if CONFIG_AMVR
   cm->seq_params.force_integer_mv = 2;
 #endif
+#if CONFIG_INTRA_EDGE2
+  cm->disable_intra_edge_filter = 0;
+#endif  // CONFIG_INTRA_EDGE2
 }
 
 AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,

@@ -3678,6 +3678,9 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
 #if CONFIG_REFERENCE_BUFFER
     write_sequence_header(cpi, wb);
 #endif  // CONFIG_REFERENCE_BUFFER
+#if CONFIG_INTRA_EDGE2
+    aom_wb_write_bit(wb, cm->disable_intra_edge_filter);
+#endif  // CONFIG_INTRA_EDGE2
   }
 
   if (cm->seq_params.force_screen_content_tools == 2) {
@@ -4046,6 +4049,12 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
   aom_wb_write_bit(wb, cm->show_frame);
   aom_wb_write_bit(wb, cm->error_resilient_mode);
+
+#if CONFIG_INTRA_EDGE2
+  if (frame_is_intra_only(cm)) {
+    aom_wb_write_bit(wb, cm->disable_intra_edge_filter);
+  }
+#endif  // CONFIG_INTRA_EDGE2
 
   if (cm->seq_params.force_screen_content_tools == 2) {
     aom_wb_write_bit(wb, cm->allow_screen_content_tools);

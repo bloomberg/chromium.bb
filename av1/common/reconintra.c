@@ -1623,10 +1623,16 @@ void av1_upsample_intra_edge_high_c(uint16_t *p, int sz, int bd) {
 }
 #endif  // CONFIG_INTRA_EDGE
 
-static void build_intra_predictors_high(
-    const MACROBLOCKD *xd, const uint8_t *ref8, int ref_stride, uint8_t *dst8,
-    int dst_stride, PREDICTION_MODE mode, TX_SIZE tx_size, int n_top_px,
-    int n_topright_px, int n_left_px, int n_bottomleft_px, int plane) {
+static void build_intra_predictors_high(const MACROBLOCKD *xd,
+                                        const uint8_t *ref8, int ref_stride,
+                                        uint8_t *dst8, int dst_stride,
+                                        PREDICTION_MODE mode, TX_SIZE tx_size,
+#if CONFIG_INTRA_EDGE2
+                                        int disable_edge_filter,
+#endif  // CONFIG_INTRA_EDGE2
+                                        int n_top_px, int n_topright_px,
+                                        int n_left_px, int n_bottomleft_px,
+                                        int plane) {
   int i;
   uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
   uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);
@@ -1786,43 +1792,49 @@ static void build_intra_predictors_high(
 #endif  // CONFIG_FILTER_INTRA
 
   if (is_dr_mode) {
-#if CONFIG_INTRA_EDGE
-    const int need_right = p_angle < 90;
-    const int need_bottom = p_angle > 180;
-    const int filt_type = get_filt_type(xd, plane);
-    if (p_angle != 90 && p_angle != 180) {
-      const int ab_le = need_above_left ? 1 : 0;
+    int upsample_above = 0;
+    int upsample_left = 0;
+#if CONFIG_INTRA_EDGE2
+    if (!disable_edge_filter) {
+#endif  // CONFIG_INTRA_EDGE2
+      const int need_right = p_angle < 90;
+      const int need_bottom = p_angle > 180;
+      const int filt_type = get_filt_type(xd, plane);
+      if (p_angle != 90 && p_angle != 180) {
+        const int ab_le = need_above_left ? 1 : 0;
 #if CONFIG_EXT_INTRA_MOD
-      if (need_above && need_left && (txwpx + txhpx >= 24)) {
-        av1_filter_intra_edge_corner_high(above_row, left_col);
-      }
+        if (need_above && need_left && (txwpx + txhpx >= 24)) {
+          av1_filter_intra_edge_corner_high(above_row, left_col);
+        }
 #endif  // CONFIG_EXT_INTRA_MOD
-      if (need_above && n_top_px > 0) {
-        const int strength =
-            intra_edge_filter_strength(txwpx, txhpx, p_angle - 90, filt_type);
-        const int n_px = n_top_px + ab_le + (need_right ? txhpx : 0);
-        av1_filter_intra_edge_high(above_row - ab_le, n_px, strength);
+        if (need_above && n_top_px > 0) {
+          const int strength =
+              intra_edge_filter_strength(txwpx, txhpx, p_angle - 90, filt_type);
+          const int n_px = n_top_px + ab_le + (need_right ? txhpx : 0);
+          av1_filter_intra_edge_high(above_row - ab_le, n_px, strength);
+        }
+        if (need_left && n_left_px > 0) {
+          const int strength = intra_edge_filter_strength(
+              txhpx, txwpx, p_angle - 180, filt_type);
+          const int n_px = n_left_px + ab_le + (need_bottom ? txwpx : 0);
+          av1_filter_intra_edge_high(left_col - ab_le, n_px, strength);
+        }
       }
-      if (need_left && n_left_px > 0) {
-        const int strength =
-            intra_edge_filter_strength(txhpx, txwpx, p_angle - 180, filt_type);
-        const int n_px = n_left_px + ab_le + (need_bottom ? txwpx : 0);
-        av1_filter_intra_edge_high(left_col - ab_le, n_px, strength);
+      upsample_above =
+          use_intra_edge_upsample(txwpx, txhpx, p_angle - 90, filt_type);
+      if (need_above && upsample_above) {
+        const int n_px = txwpx + (need_right ? txhpx : 0);
+        av1_upsample_intra_edge_high(above_row, n_px, xd->bd);
       }
+      upsample_left =
+          use_intra_edge_upsample(txhpx, txwpx, p_angle - 180, filt_type);
+      if (need_left && upsample_left) {
+        const int n_px = txhpx + (need_bottom ? txwpx : 0);
+        av1_upsample_intra_edge_high(left_col, n_px, xd->bd);
+      }
+#if CONFIG_INTRA_EDGE2
     }
-    const int upsample_above =
-        use_intra_edge_upsample(txwpx, txhpx, p_angle - 90, filt_type);
-    if (need_above && upsample_above) {
-      const int n_px = txwpx + (need_right ? txhpx : 0);
-      av1_upsample_intra_edge_high(above_row, n_px, xd->bd);
-    }
-    const int upsample_left =
-        use_intra_edge_upsample(txhpx, txwpx, p_angle - 180, filt_type);
-    if (need_left && upsample_left) {
-      const int n_px = txhpx + (need_bottom ? txwpx : 0);
-      av1_upsample_intra_edge_high(left_col, n_px, xd->bd);
-    }
-#endif  // CONFIG_INTRA_EDGE
+#endif  // CONFIG_INTRA_EDGE2
     highbd_dr_predictor(dst, dst_stride, tx_size, above_row, left_col,
 #if CONFIG_INTRA_EDGE
                         upsample_above, upsample_left,
@@ -1843,6 +1855,9 @@ static void build_intra_predictors_high(
 static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
                                    int ref_stride, uint8_t *dst, int dst_stride,
                                    PREDICTION_MODE mode, TX_SIZE tx_size,
+#if CONFIG_INTRA_EDGE2
+                                   int disable_edge_filter,
+#endif  // CONFIG_INTRA_EDGE2
                                    int n_top_px, int n_topright_px,
                                    int n_left_px, int n_bottomleft_px,
                                    int plane) {
@@ -2001,43 +2016,49 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
 #endif  // CONFIG_FILTER_INTRA
 
   if (is_dr_mode) {
-#if CONFIG_INTRA_EDGE
-    const int need_right = p_angle < 90;
-    const int need_bottom = p_angle > 180;
-    const int filt_type = get_filt_type(xd, plane);
-    if (p_angle != 90 && p_angle != 180) {
-      const int ab_le = need_above_left ? 1 : 0;
+    int upsample_above = 0;
+    int upsample_left = 0;
+#if CONFIG_INTRA_EDGE2
+    if (!disable_edge_filter) {
+#endif  // CONFIG_INTRA_EDGE2
+      const int need_right = p_angle < 90;
+      const int need_bottom = p_angle > 180;
+      const int filt_type = get_filt_type(xd, plane);
+      if (p_angle != 90 && p_angle != 180) {
+        const int ab_le = need_above_left ? 1 : 0;
 #if CONFIG_EXT_INTRA_MOD
-      if (need_above && need_left && (txwpx + txhpx >= 24)) {
-        av1_filter_intra_edge_corner(above_row, left_col);
-      }
+        if (need_above && need_left && (txwpx + txhpx >= 24)) {
+          av1_filter_intra_edge_corner(above_row, left_col);
+        }
 #endif  // CONFIG_EXT_INTRA_MOD
-      if (need_above && n_top_px > 0) {
-        const int strength =
-            intra_edge_filter_strength(txwpx, txhpx, p_angle - 90, filt_type);
-        const int n_px = n_top_px + ab_le + (need_right ? txhpx : 0);
-        av1_filter_intra_edge(above_row - ab_le, n_px, strength);
+        if (need_above && n_top_px > 0) {
+          const int strength =
+              intra_edge_filter_strength(txwpx, txhpx, p_angle - 90, filt_type);
+          const int n_px = n_top_px + ab_le + (need_right ? txhpx : 0);
+          av1_filter_intra_edge(above_row - ab_le, n_px, strength);
+        }
+        if (need_left && n_left_px > 0) {
+          const int strength = intra_edge_filter_strength(
+              txhpx, txwpx, p_angle - 180, filt_type);
+          const int n_px = n_left_px + ab_le + (need_bottom ? txwpx : 0);
+          av1_filter_intra_edge(left_col - ab_le, n_px, strength);
+        }
       }
-      if (need_left && n_left_px > 0) {
-        const int strength =
-            intra_edge_filter_strength(txhpx, txwpx, p_angle - 180, filt_type);
-        const int n_px = n_left_px + ab_le + (need_bottom ? txwpx : 0);
-        av1_filter_intra_edge(left_col - ab_le, n_px, strength);
+      upsample_above =
+          use_intra_edge_upsample(txwpx, txhpx, p_angle - 90, filt_type);
+      if (need_above && upsample_above) {
+        const int n_px = txwpx + (need_right ? txhpx : 0);
+        av1_upsample_intra_edge(above_row, n_px);
       }
+      upsample_left =
+          use_intra_edge_upsample(txhpx, txwpx, p_angle - 180, filt_type);
+      if (need_left && upsample_left) {
+        const int n_px = txhpx + (need_bottom ? txwpx : 0);
+        av1_upsample_intra_edge(left_col, n_px);
+      }
+#if CONFIG_INTRA_EDGE2
     }
-    const int upsample_above =
-        use_intra_edge_upsample(txwpx, txhpx, p_angle - 90, filt_type);
-    if (need_above && upsample_above) {
-      const int n_px = txwpx + (need_right ? txhpx : 0);
-      av1_upsample_intra_edge(above_row, n_px);
-    }
-    const int upsample_left =
-        use_intra_edge_upsample(txhpx, txwpx, p_angle - 180, filt_type);
-    if (need_left && upsample_left) {
-      const int n_px = txhpx + (need_bottom ? txwpx : 0);
-      av1_upsample_intra_edge(left_col, n_px);
-    }
-#endif  // CONFIG_INTRA_EDGE
+#endif  // CONFIG_INTRA_EDGE2
     dr_predictor(dst, dst_stride, tx_size, above_row, left_col,
 #if CONFIG_INTRA_EDGE
                  upsample_above, upsample_left,
@@ -2136,9 +2157,15 @@ void av1_predict_intra_block(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     return;
   }
 
+#if CONFIG_INTRA_EDGE2
+  const int disable_edge_filter = cm->disable_intra_edge_filter;
+#endif  // CONFIG_INTRA_EDGE2
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     build_intra_predictors_high(
         xd, ref, ref_stride, dst, dst_stride, mode, tx_size,
+#if CONFIG_INTRA_EDGE2
+        disable_edge_filter,
+#endif  // CONFIG_INTRA_EDGE2
         have_top ? AOMMIN(txwpx, xr + txwpx) : 0,
         have_top_right ? AOMMIN(txwpx, xr) : 0,
         have_left ? AOMMIN(txhpx, yd + txhpx) : 0,
@@ -2147,6 +2174,9 @@ void av1_predict_intra_block(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
 
   build_intra_predictors(xd, ref, ref_stride, dst, dst_stride, mode, tx_size,
+#if CONFIG_INTRA_EDGE2
+                         disable_edge_filter,
+#endif  // CONFIG_INTRA_EDGE2
                          have_top ? AOMMIN(txwpx, xr + txwpx) : 0,
                          have_top_right ? AOMMIN(txwpx, xr) : 0,
                          have_left ? AOMMIN(txhpx, yd + txhpx) : 0,

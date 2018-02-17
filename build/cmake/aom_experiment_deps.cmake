@@ -47,6 +47,12 @@ macro (fix_experiment_configs)
     endif ()
   endif ()
 
+  if (CONFIG_INTRA_EDGE2)
+    if (NOT CONFIG_INTRA_EDGE)
+      change_config_and_warn(CONFIG_INTRA_EDGE 1 CONFIG_INTRA_EDGE2)
+    endif ()
+  endif ()
+
   if (CONFIG_EXT_PARTITION_TYPES)
     if (CONFIG_FP_MB_STATS)
       change_config_and_warn(CONFIG_FP_MB_STATS 0 CONFIG_EXT_PARTITION_TYPES)
