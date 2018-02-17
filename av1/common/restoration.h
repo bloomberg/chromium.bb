@@ -220,6 +220,7 @@ typedef struct {
   uint8_t *stripe_boundary_above;
   uint8_t *stripe_boundary_below;
   int stripe_boundary_stride;
+  int stripe_boundary_size;
 } RestorationStripeBoundaries;
 
 typedef struct {

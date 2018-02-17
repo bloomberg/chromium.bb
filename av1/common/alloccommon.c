@@ -112,9 +112,12 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
   const int num_planes = av1_num_planes(cm);
   for (int p = 0; p < num_planes; ++p)
     av1_alloc_restoration_struct(cm, &cm->rst_info[p], p > 0);
-  aom_free(cm->rst_tmpbuf);
-  CHECK_MEM_ERROR(cm, cm->rst_tmpbuf,
-                  (int32_t *)aom_memalign(16, RESTORATION_TMPBUF_SIZE));
+
+  if (cm->rst_tmpbuf == NULL) {
+    aom_free(cm->rst_tmpbuf);
+    CHECK_MEM_ERROR(cm, cm->rst_tmpbuf,
+                    (int32_t *)aom_memalign(16, RESTORATION_TMPBUF_SIZE));
+  }
 
   // For striped loop restoration, we divide each row of tiles into "stripes",
   // of height 64 luma pixels but with an offset by RESTORATION_TILE_OFFSET
@@ -156,15 +159,21 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
     const int buf_size = num_stripes * stride * RESTORATION_CTX_VERT
                          << use_highbd;
     RestorationStripeBoundaries *boundaries = &cm->rst_info[p].boundaries;
-    aom_free(boundaries->stripe_boundary_above);
-    aom_free(boundaries->stripe_boundary_below);
 
-    CHECK_MEM_ERROR(cm, boundaries->stripe_boundary_above,
-                    (uint8_t *)aom_memalign(32, buf_size));
-    CHECK_MEM_ERROR(cm, boundaries->stripe_boundary_below,
-                    (uint8_t *)aom_memalign(32, buf_size));
+    if (buf_size != boundaries->stripe_boundary_size ||
+        boundaries->stripe_boundary_above == NULL ||
+        boundaries->stripe_boundary_below == NULL) {
+      aom_free(boundaries->stripe_boundary_above);
+      aom_free(boundaries->stripe_boundary_below);
 
-    boundaries->stripe_boundary_stride = stride;
+      CHECK_MEM_ERROR(cm, boundaries->stripe_boundary_above,
+                      (uint8_t *)aom_memalign(32, buf_size));
+      CHECK_MEM_ERROR(cm, boundaries->stripe_boundary_below,
+                      (uint8_t *)aom_memalign(32, buf_size));
+
+      boundaries->stripe_boundary_stride = stride;
+      boundaries->stripe_boundary_size = buf_size;
+    }
   }
 }
 
