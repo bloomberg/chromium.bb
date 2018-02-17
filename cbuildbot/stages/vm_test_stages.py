@@ -387,9 +387,7 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
 
   # This includes the time we expect to take to prepare and run the tests. It
   # excludes the time required to archive the results at the end.
-  # TODO(crbug.com/810060) Reduce this to 90 minute once we've fixed the root
-  # cause that is making this test take too long on pre-cq.
-  _PERFORM_TIMEOUT_S = 110 * 60
+  _PERFORM_TIMEOUT_S = 90 * 60
 
   def __str__(self):
     return type(self).__name__
