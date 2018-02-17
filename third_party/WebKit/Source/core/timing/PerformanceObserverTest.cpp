@@ -7,7 +7,7 @@
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/v8_performance_observer_callback.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/timing/PerformanceBase.h"
+#include "core/timing/Performance.h"
 #include "core/timing/PerformanceMark.h"
 #include "core/timing/PerformanceObserverInit.h"
 #include "core/timing/WindowPerformance.h"
@@ -17,13 +17,13 @@
 
 namespace blink {
 
-class MockPerformanceBase : public PerformanceBase {
+class MockPerformance : public Performance {
  public:
-  explicit MockPerformanceBase(ScriptState* script_state)
-      : PerformanceBase(TimeTicks(),
-                        ExecutionContext::From(script_state)
-                            ->GetTaskRunner(TaskType::kPerformanceTimeline)) {}
-  ~MockPerformanceBase() = default;
+  explicit MockPerformance(ScriptState* script_state)
+      : Performance(TimeTicks(),
+                    ExecutionContext::From(script_state)
+                        ->GetTaskRunner(TaskType::kPerformanceTimeline)) {}
+  ~MockPerformance() = default;
 
   ExecutionContext* GetExecutionContext() const override { return nullptr; }
 };
@@ -33,7 +33,7 @@ class PerformanceObserverTest : public ::testing::Test {
   void Initialize(ScriptState* script_state) {
     v8::Local<v8::Function> callback =
         v8::Function::New(script_state->GetContext(), nullptr).ToLocalChecked();
-    base_ = new MockPerformanceBase(script_state);
+    base_ = new MockPerformance(script_state);
     cb_ = V8PerformanceObserverCallback::Create(callback);
     observer_ = new PerformanceObserver(ExecutionContext::From(script_state),
                                         base_, cb_);
@@ -43,7 +43,7 @@ class PerformanceObserverTest : public ::testing::Test {
   int NumPerformanceEntries() { return observer_->performance_entries_.size(); }
   void Deliver() { observer_->Deliver(); }
 
-  Persistent<MockPerformanceBase> base_;
+  Persistent<MockPerformance> base_;
   Persistent<V8PerformanceObserverCallback> cb_;
   Persistent<PerformanceObserver> observer_;
 };

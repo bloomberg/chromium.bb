@@ -4,7 +4,7 @@
 
 #include "core/dom/IdleDeadline.h"
 
-#include "core/timing/PerformanceBase.h"
+#include "core/timing/Performance.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/Platform.h"
@@ -25,7 +25,7 @@ double IdleDeadline::timeRemaining() const {
     return 0;
   }
 
-  return 1000.0 * PerformanceBase::ClampTimeResolution(time_remaining);
+  return 1000.0 * Performance::ClampTimeResolution(time_remaining);
 }
 
 }  // namespace blink

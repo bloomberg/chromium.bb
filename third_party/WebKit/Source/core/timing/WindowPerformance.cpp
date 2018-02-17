@@ -107,7 +107,7 @@ static TimeTicks ToTimeOrigin(LocalDOMWindow* window) {
 }
 
 WindowPerformance::WindowPerformance(LocalDOMWindow* window)
-    : PerformanceBase(
+    : Performance(
           ToTimeOrigin(window),
           window->document()->GetTaskRunner(TaskType::kPerformanceTimeline)),
       DOMWindowClient(window) {}
@@ -173,7 +173,7 @@ void WindowPerformance::UpdateLongTaskInstrumentation() {
 }
 
 void WindowPerformance::BuildJSONValue(V8ObjectBuilder& builder) const {
-  PerformanceBase::BuildJSONValue(builder);
+  Performance::BuildJSONValue(builder);
   builder.Add("timing", timing()->toJSONForBinding(builder.GetScriptState()));
   builder.Add("navigation",
               navigation()->toJSONForBinding(builder.GetScriptState()));
@@ -182,7 +182,7 @@ void WindowPerformance::BuildJSONValue(V8ObjectBuilder& builder) const {
 void WindowPerformance::Trace(blink::Visitor* visitor) {
   visitor->Trace(navigation_);
   visitor->Trace(timing_);
-  PerformanceBase::Trace(visitor);
+  Performance::Trace(visitor);
   PerformanceMonitor::Client::Trace(visitor);
   DOMWindowClient::Trace(visitor);
 }

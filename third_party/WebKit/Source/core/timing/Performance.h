@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PerformanceBase_h
-#define PerformanceBase_h
+#ifndef Performance_h
+#define Performance_h
 
 #include "core/CoreExport.h"
 #include "core/dom/DOMHighResTimeStamp.h"
@@ -65,10 +65,9 @@ class V8ObjectBuilder;
 
 using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
 
-class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
-
+class CORE_EXPORT Performance : public EventTargetWithInlineData {
  public:
-  ~PerformanceBase() override;
+  ~Performance() override;
 
   const AtomicString& InterfaceName() const override;
 
@@ -226,8 +225,8 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
   void AddPaintTiming(PerformancePaintTiming::PaintType, TimeTicks start_time);
 
  protected:
-  PerformanceBase(TimeTicks time_origin,
-                  scoped_refptr<base::SingleThreadTaskRunner>);
+  Performance(TimeTicks time_origin,
+              scoped_refptr<base::SingleThreadTaskRunner>);
 
   // Expect Performance to override this method,
   // WorkerPerformance doesn't have to override this.
@@ -261,9 +260,9 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
   HeapLinkedHashSet<TraceWrapperMember<PerformanceObserver>> observers_;
   HeapLinkedHashSet<Member<PerformanceObserver>> active_observers_;
   HeapLinkedHashSet<Member<PerformanceObserver>> suspended_observers_;
-  TaskRunnerTimer<PerformanceBase> deliver_observations_timer_;
+  TaskRunnerTimer<Performance> deliver_observations_timer_;
 };
 
 }  // namespace blink
 
-#endif  // PerformanceBase_h
+#endif  // Performance_h

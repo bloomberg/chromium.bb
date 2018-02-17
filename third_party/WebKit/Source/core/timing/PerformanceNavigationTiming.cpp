@@ -10,7 +10,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/timing/PerformanceBase.h"
+#include "core/timing/Performance.h"
 #include "platform/loader/fetch/ResourceTimingInfo.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom-blink.h"
 
@@ -121,7 +121,7 @@ bool PerformanceNavigationTiming::GetAllowRedirectDetails() const {
     return false;
   // TODO(sunjian): Think about how to make this flag deterministic.
   // crbug/693183.
-  return PerformanceBase::AllowsTimingRedirect(
+  return Performance::AllowsTimingRedirect(
       resource_timing_info_->RedirectChain(),
       resource_timing_info_->FinalResponse(), *security_origin, context);
 }
@@ -141,7 +141,7 @@ DOMHighResTimeStamp PerformanceNavigationTiming::unloadEventStart() const {
   if (!allow_redirect_details || !timing ||
       !timing->HasSameOriginAsPreviousDocument())
     return 0;
-  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+  return Performance::MonotonicTimeToDOMHighResTimeStamp(
       TimeOrigin(), timing->UnloadEventStart(),
       false /* allow_negative_value */);
 }
@@ -153,7 +153,7 @@ DOMHighResTimeStamp PerformanceNavigationTiming::unloadEventEnd() const {
   if (!allow_redirect_details || !timing ||
       !timing->HasSameOriginAsPreviousDocument())
     return 0;
-  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+  return Performance::MonotonicTimeToDOMHighResTimeStamp(
       TimeOrigin(), timing->UnloadEventEnd(), false /* allow_negative_value */);
 }
 
@@ -161,7 +161,7 @@ DOMHighResTimeStamp PerformanceNavigationTiming::domInteractive() const {
   const DocumentTiming* timing = GetDocumentTiming();
   if (!timing)
     return 0.0;
-  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+  return Performance::MonotonicTimeToDOMHighResTimeStamp(
       TimeOrigin(), timing->DomInteractive(), false /* allow_negative_value */);
 }
 
@@ -170,7 +170,7 @@ DOMHighResTimeStamp PerformanceNavigationTiming::domContentLoadedEventStart()
   const DocumentTiming* timing = GetDocumentTiming();
   if (!timing)
     return 0.0;
-  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+  return Performance::MonotonicTimeToDOMHighResTimeStamp(
       TimeOrigin(), timing->DomContentLoadedEventStart(),
       false /* allow_negative_value */);
 }
@@ -180,7 +180,7 @@ DOMHighResTimeStamp PerformanceNavigationTiming::domContentLoadedEventEnd()
   const DocumentTiming* timing = GetDocumentTiming();
   if (!timing)
     return 0.0;
-  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+  return Performance::MonotonicTimeToDOMHighResTimeStamp(
       TimeOrigin(), timing->DomContentLoadedEventEnd(),
       false /* allow_negative_value */);
 }
@@ -189,7 +189,7 @@ DOMHighResTimeStamp PerformanceNavigationTiming::domComplete() const {
   const DocumentTiming* timing = GetDocumentTiming();
   if (!timing)
     return 0.0;
-  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+  return Performance::MonotonicTimeToDOMHighResTimeStamp(
       TimeOrigin(), timing->DomComplete(), false /* allow_negative_value */);
 }
 
@@ -197,7 +197,7 @@ DOMHighResTimeStamp PerformanceNavigationTiming::loadEventStart() const {
   DocumentLoadTiming* timing = GetDocumentLoadTiming();
   if (!timing)
     return 0.0;
-  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+  return Performance::MonotonicTimeToDOMHighResTimeStamp(
       TimeOrigin(), timing->LoadEventStart(), false /* allow_negative_value */);
 }
 
@@ -205,7 +205,7 @@ DOMHighResTimeStamp PerformanceNavigationTiming::loadEventEnd() const {
   DocumentLoadTiming* timing = GetDocumentLoadTiming();
   if (!timing)
     return 0.0;
-  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+  return Performance::MonotonicTimeToDOMHighResTimeStamp(
       TimeOrigin(), timing->LoadEventEnd(), false /* allow_negative_value */);
 }
 
@@ -230,7 +230,7 @@ DOMHighResTimeStamp PerformanceNavigationTiming::redirectStart() const {
   DocumentLoadTiming* timing = GetDocumentLoadTiming();
   if (!allow_redirect_details || !timing)
     return 0;
-  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+  return Performance::MonotonicTimeToDOMHighResTimeStamp(
       TimeOrigin(), timing->RedirectStart(), false /* allow_negative_value */);
 }
 
@@ -239,7 +239,7 @@ DOMHighResTimeStamp PerformanceNavigationTiming::redirectEnd() const {
   DocumentLoadTiming* timing = GetDocumentLoadTiming();
   if (!allow_redirect_details || !timing)
     return 0;
-  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+  return Performance::MonotonicTimeToDOMHighResTimeStamp(
       TimeOrigin(), timing->RedirectEnd(), false /* allow_negative_value */);
 }
 
@@ -247,7 +247,7 @@ DOMHighResTimeStamp PerformanceNavigationTiming::fetchStart() const {
   DocumentLoadTiming* timing = GetDocumentLoadTiming();
   if (!timing)
     return 0.0;
-  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+  return Performance::MonotonicTimeToDOMHighResTimeStamp(
       TimeOrigin(), timing->FetchStart(), false /* allow_negative_value */);
 }
 
@@ -255,7 +255,7 @@ DOMHighResTimeStamp PerformanceNavigationTiming::responseEnd() const {
   DocumentLoadTiming* timing = GetDocumentLoadTiming();
   if (!timing)
     return 0.0;
-  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+  return Performance::MonotonicTimeToDOMHighResTimeStamp(
       TimeOrigin(), timing->ResponseEnd(), false /* allow_negative_value */);
 }
 

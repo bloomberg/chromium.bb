@@ -237,30 +237,30 @@ TEST_F(WindowPerformanceTest, ParameterHistogramForMeasure) {
 
   histogram_tester.ExpectBucketCount(
       kStartMarkForMeasureHistogram,
-      static_cast<int>(PerformanceBase::kUnloadEventStart), 1);
+      static_cast<int>(Performance::kUnloadEventStart), 1);
   histogram_tester.ExpectBucketCount(
       kEndMarkForMeasureHistogram,
-      static_cast<int>(PerformanceBase::kUnloadEventEnd), 1);
+      static_cast<int>(Performance::kUnloadEventEnd), 1);
 
   performance_->measure("testMark", "domInteractive", "[object Object]",
                         exception_state);
 
   histogram_tester.ExpectBucketCount(
       kStartMarkForMeasureHistogram,
-      static_cast<int>(PerformanceBase::kDomInteractive), 1);
+      static_cast<int>(Performance::kDomInteractive), 1);
   histogram_tester.ExpectBucketCount(
-      kEndMarkForMeasureHistogram,
-      static_cast<int>(PerformanceBase::kObjectObject), 1);
+      kEndMarkForMeasureHistogram, static_cast<int>(Performance::kObjectObject),
+      1);
 
   performance_->measure("testMark", "[object Object]", "[object Object]",
                         exception_state);
 
   histogram_tester.ExpectBucketCount(
       kStartMarkForMeasureHistogram,
-      static_cast<int>(PerformanceBase::kObjectObject), 1);
+      static_cast<int>(Performance::kObjectObject), 1);
   histogram_tester.ExpectBucketCount(
-      kEndMarkForMeasureHistogram,
-      static_cast<int>(PerformanceBase::kObjectObject), 2);
+      kEndMarkForMeasureHistogram, static_cast<int>(Performance::kObjectObject),
+      2);
 }
 
 }  // namespace blink

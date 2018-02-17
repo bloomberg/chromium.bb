@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/timing/PerformanceBase.h"
+#include "core/timing/Performance.h"
 
 #include <algorithm>
 #include "bindings/core/v8/V8ObjectBuilder.h"
@@ -64,7 +64,7 @@ const SecurityOrigin* GetSecurityOrigin(ExecutionContext* context) {
   return nullptr;
 }
 
-// When a PerformanceBase object is first created, use the current system time
+// When a Performance object is first created, use the current system time
 // to calculate what the Unix time would be at the time the monotonic clock time
 // was zero, assuming no manual changes to the system clock. This can be
 // calculated as current_unix_time - current_monotonic_time.
@@ -77,9 +77,8 @@ DOMHighResTimeStamp GetUnixAtZeroMonotonic() {
 }
 
 bool IsNavigationTimingType(
-    PerformanceBase::PerformanceMeasurePassedInParameterType type) {
-  return type != PerformanceBase::kObjectObject &&
-         type != PerformanceBase::kOther;
+    Performance::PerformanceMeasurePassedInParameterType type) {
+  return type != Performance::kObjectObject && type != Performance::kOther;
 }
 
 }  // namespace
@@ -89,7 +88,7 @@ using PerformanceObserverVector = HeapVector<Member<PerformanceObserver>>;
 static const size_t kDefaultResourceTimingBufferSize = 150;
 static const size_t kDefaultFrameTimingBufferSize = 150;
 
-PerformanceBase::PerformanceBase(
+Performance::Performance(
     TimeTicks time_origin,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : frame_timing_buffer_size_(kDefaultFrameTimingBufferSize),
@@ -97,28 +96,28 @@ PerformanceBase::PerformanceBase(
       user_timing_(nullptr),
       time_origin_(time_origin),
       observer_filter_options_(PerformanceEntry::kInvalid),
-      deliver_observations_timer_(
-          std::move(task_runner),
-          this,
-          &PerformanceBase::DeliverObservationsTimerFired) {}
+      deliver_observations_timer_(std::move(task_runner),
+                                  this,
+                                  &Performance::DeliverObservationsTimerFired) {
+}
 
-PerformanceBase::~PerformanceBase() = default;
+Performance::~Performance() = default;
 
-const AtomicString& PerformanceBase::InterfaceName() const {
+const AtomicString& Performance::InterfaceName() const {
   return EventTargetNames::Performance;
 }
 
-PerformanceTiming* PerformanceBase::timing() const {
+PerformanceTiming* Performance::timing() const {
   return nullptr;
 }
 
-DOMHighResTimeStamp PerformanceBase::timeOrigin() const {
+DOMHighResTimeStamp Performance::timeOrigin() const {
   DCHECK(!time_origin_.is_null());
   return GetUnixAtZeroMonotonic() +
          ConvertTimeTicksToDOMHighResTimeStamp(time_origin_);
 }
 
-PerformanceEntryVector PerformanceBase::getEntries() {
+PerformanceEntryVector Performance::getEntries() {
   PerformanceEntryVector entries;
 
   entries.AppendVector(resource_timing_buffer_);
@@ -145,8 +144,7 @@ PerformanceEntryVector PerformanceBase::getEntries() {
   return entries;
 }
 
-PerformanceEntryVector PerformanceBase::getEntriesByType(
-    const String& entry_type) {
+PerformanceEntryVector Performance::getEntriesByType(const String& entry_type) {
   PerformanceEntryVector entries;
   PerformanceEntry::EntryType type =
       PerformanceEntry::ToEntryTypeEnum(entry_type);
@@ -202,9 +200,8 @@ PerformanceEntryVector PerformanceBase::getEntriesByType(
   return entries;
 }
 
-PerformanceEntryVector PerformanceBase::getEntriesByName(
-    const String& name,
-    const String& entry_type) {
+PerformanceEntryVector Performance::getEntriesByName(const String& name,
+                                                     const String& entry_type) {
   PerformanceEntryVector entries;
   PerformanceEntry::EntryType type =
       PerformanceEntry::ToEntryTypeEnum(entry_type);
@@ -255,17 +252,17 @@ PerformanceEntryVector PerformanceBase::getEntriesByName(
   return entries;
 }
 
-void PerformanceBase::clearResourceTimings() {
+void Performance::clearResourceTimings() {
   resource_timing_buffer_.clear();
 }
 
-void PerformanceBase::setResourceTimingBufferSize(unsigned size) {
+void Performance::setResourceTimingBufferSize(unsigned size) {
   resource_timing_buffer_size_ = size;
   if (IsResourceTimingBufferFull())
     DispatchEvent(Event::Create(EventTypeNames::resourcetimingbufferfull));
 }
 
-bool PerformanceBase::PassesTimingAllowCheck(
+bool Performance::PassesTimingAllowCheck(
     const ResourceResponse& response,
     const SecurityOrigin& initiator_security_origin,
     const AtomicString& original_timing_allow_origin,
@@ -303,7 +300,7 @@ bool PerformanceBase::PassesTimingAllowCheck(
   return false;
 }
 
-bool PerformanceBase::AllowsTimingRedirect(
+bool Performance::AllowsTimingRedirect(
     const Vector<ResourceResponse>& redirect_chain,
     const ResourceResponse& final_response,
     const SecurityOrigin& initiator_security_origin,
@@ -321,7 +318,7 @@ bool PerformanceBase::AllowsTimingRedirect(
   return true;
 }
 
-void PerformanceBase::GenerateAndAddResourceTiming(
+void Performance::GenerateAndAddResourceTiming(
     const ResourceTimingInfo& info,
     const AtomicString& initiator_type) {
   if (IsResourceTimingBufferFull() &&
@@ -337,7 +334,7 @@ void PerformanceBase::GenerateAndAddResourceTiming(
       !initiator_type.IsNull() ? initiator_type : info.InitiatorType());
 }
 
-WebResourceTimingInfo PerformanceBase::GenerateResourceTiming(
+WebResourceTimingInfo Performance::GenerateResourceTiming(
     const SecurityOrigin& destination_origin,
     const ResourceTimingInfo& info,
     ExecutionContext& context_for_use_counter) {
@@ -397,8 +394,8 @@ WebResourceTimingInfo PerformanceBase::GenerateResourceTiming(
   return result;
 }
 
-void PerformanceBase::AddResourceTiming(const WebResourceTimingInfo& info,
-                                        const AtomicString& initiator_type) {
+void Performance::AddResourceTiming(const WebResourceTimingInfo& info,
+                                    const AtomicString& initiator_type) {
   if (IsResourceTimingBufferFull() &&
       !HasObserverFor(PerformanceEntry::kResource))
     return;
@@ -411,24 +408,24 @@ void PerformanceBase::AddResourceTiming(const WebResourceTimingInfo& info,
 }
 
 // Called after loadEventEnd happens.
-void PerformanceBase::NotifyNavigationTimingToObservers() {
+void Performance::NotifyNavigationTimingToObservers() {
   if (!navigation_timing_)
     navigation_timing_ = CreateNavigationTimingInstance();
   if (navigation_timing_)
     NotifyObserversOfEntry(*navigation_timing_);
 }
 
-void PerformanceBase::AddFirstPaintTiming(TimeTicks start_time) {
+void Performance::AddFirstPaintTiming(TimeTicks start_time) {
   AddPaintTiming(PerformancePaintTiming::PaintType::kFirstPaint, start_time);
 }
 
-void PerformanceBase::AddFirstContentfulPaintTiming(TimeTicks start_time) {
+void Performance::AddFirstContentfulPaintTiming(TimeTicks start_time) {
   AddPaintTiming(PerformancePaintTiming::PaintType::kFirstContentfulPaint,
                  start_time);
 }
 
-void PerformanceBase::AddPaintTiming(PerformancePaintTiming::PaintType type,
-                                     TimeTicks start_time) {
+void Performance::AddPaintTiming(PerformancePaintTiming::PaintType type,
+                                 TimeTicks start_time) {
   if (!RuntimeEnabledFeatures::PerformancePaintTimingEnabled())
     return;
 
@@ -442,18 +439,18 @@ void PerformanceBase::AddPaintTiming(PerformancePaintTiming::PaintType type,
   NotifyObserversOfEntry(*entry);
 }
 
-void PerformanceBase::AddResourceTimingBuffer(PerformanceEntry& entry) {
+void Performance::AddResourceTimingBuffer(PerformanceEntry& entry) {
   resource_timing_buffer_.push_back(&entry);
 
   if (IsResourceTimingBufferFull())
     DispatchEvent(Event::Create(EventTypeNames::resourcetimingbufferfull));
 }
 
-bool PerformanceBase::IsResourceTimingBufferFull() {
+bool Performance::IsResourceTimingBufferFull() {
   return resource_timing_buffer_.size() >= resource_timing_buffer_size_;
 }
 
-void PerformanceBase::AddLongTaskTiming(
+void Performance::AddLongTaskTiming(
     TimeTicks start_time,
     TimeTicks end_time,
     const String& name,
@@ -477,14 +474,14 @@ void PerformanceBase::AddLongTaskTiming(
   NotifyObserversOfEntry(*entry);
 }
 
-void PerformanceBase::mark(ScriptState* script_state,
-                           const String& mark_name,
-                           ExceptionState& exception_state) {
+void Performance::mark(ScriptState* script_state,
+                       const String& mark_name,
+                       ExceptionState& exception_state) {
   DoubleOrPerformanceMarkOptions startOrOptions;
   this->mark(script_state, mark_name, startOrOptions, exception_state);
 }
 
-void PerformanceBase::mark(
+void Performance::mark(
     ScriptState* script_state,
     const String& mark_name,
     DoubleOrPerformanceMarkOptions& start_time_or_mark_options,
@@ -519,16 +516,16 @@ void PerformanceBase::mark(
     NotifyObserversOfEntry(*entry);
 }
 
-void PerformanceBase::clearMarks(const String& mark_name) {
+void Performance::clearMarks(const String& mark_name) {
   if (!user_timing_)
     user_timing_ = UserTiming::Create(*this);
   user_timing_->ClearMarks(mark_name);
 }
 
-void PerformanceBase::measure(const String& measure_name,
-                              const String& start_mark,
-                              const String& end_mark,
-                              ExceptionState& exception_state) {
+void Performance::measure(const String& measure_name,
+                          const String& start_mark,
+                          const String& end_mark,
+                          ExceptionState& exception_state) {
   UMA_HISTOGRAM_ENUMERATION(
       "Performance.PerformanceMeasurePassedInParameter.StartMark",
       ToPerformanceMeasurePassedInParameterType(start_mark),
@@ -565,27 +562,26 @@ void PerformanceBase::measure(const String& measure_name,
     NotifyObserversOfEntry(*entry);
 }
 
-void PerformanceBase::clearMeasures(const String& measure_name) {
+void Performance::clearMeasures(const String& measure_name) {
   if (!user_timing_)
     user_timing_ = UserTiming::Create(*this);
   user_timing_->ClearMeasures(measure_name);
 }
 
-void PerformanceBase::RegisterPerformanceObserver(
-    PerformanceObserver& observer) {
+void Performance::RegisterPerformanceObserver(PerformanceObserver& observer) {
   observer_filter_options_ |= observer.FilterOptions();
   observers_.insert(&observer);
   UpdateLongTaskInstrumentation();
 }
 
-void PerformanceBase::UnregisterPerformanceObserver(
+void Performance::UnregisterPerformanceObserver(
     PerformanceObserver& old_observer) {
   observers_.erase(&old_observer);
   UpdatePerformanceObserverFilterOptions();
   UpdateLongTaskInstrumentation();
 }
 
-void PerformanceBase::UpdatePerformanceObserverFilterOptions() {
+void Performance::UpdatePerformanceObserverFilterOptions() {
   observer_filter_options_ = PerformanceEntry::kInvalid;
   for (const auto& observer : observers_) {
     observer_filter_options_ |= observer->FilterOptions();
@@ -593,7 +589,7 @@ void PerformanceBase::UpdatePerformanceObserverFilterOptions() {
   UpdateLongTaskInstrumentation();
 }
 
-void PerformanceBase::NotifyObserversOfEntry(PerformanceEntry& entry) const {
+void Performance::NotifyObserversOfEntry(PerformanceEntry& entry) const {
   bool observer_found = false;
   for (auto& observer : observers_) {
     if (observer->FilterOptions() & entry.EntryTypeEnum()) {
@@ -605,26 +601,25 @@ void PerformanceBase::NotifyObserversOfEntry(PerformanceEntry& entry) const {
     UseCounter::Count(GetExecutionContext(), WebFeature::kPaintTimingObserved);
 }
 
-void PerformanceBase::NotifyObserversOfEntries(
-    PerformanceEntryVector& entries) {
+void Performance::NotifyObserversOfEntries(PerformanceEntryVector& entries) {
   for (const auto& entry : entries) {
     NotifyObserversOfEntry(*entry.Get());
   }
 }
 
-bool PerformanceBase::HasObserverFor(
+bool Performance::HasObserverFor(
     PerformanceEntry::EntryType filter_type) const {
   return observer_filter_options_ & filter_type;
 }
 
-void PerformanceBase::ActivateObserver(PerformanceObserver& observer) {
+void Performance::ActivateObserver(PerformanceObserver& observer) {
   if (active_observers_.IsEmpty())
     deliver_observations_timer_.StartOneShot(TimeDelta(), FROM_HERE);
 
   active_observers_.insert(&observer);
 }
 
-void PerformanceBase::ResumeSuspendedObservers() {
+void Performance::ResumeSuspendedObservers() {
   if (suspended_observers_.IsEmpty())
     return;
 
@@ -638,7 +633,7 @@ void PerformanceBase::ResumeSuspendedObservers() {
   }
 }
 
-void PerformanceBase::DeliverObservationsTimerFired(TimerBase*) {
+void Performance::DeliverObservationsTimerFired(TimerBase*) {
   decltype(active_observers_) observers;
   active_observers_.Swap(observers);
   for (const auto& observer : observers) {
@@ -650,13 +645,13 @@ void PerformanceBase::DeliverObservationsTimerFired(TimerBase*) {
 }
 
 // static
-double PerformanceBase::ClampTimeResolution(double time_seconds) {
+double Performance::ClampTimeResolution(double time_seconds) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(TimeClamper, clamper, ());
   return clamper.ClampTimeResolution(time_seconds);
 }
 
 // static
-DOMHighResTimeStamp PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+DOMHighResTimeStamp Performance::MonotonicTimeToDOMHighResTimeStamp(
     TimeTicks time_origin,
     TimeTicks monotonic_time,
     bool allow_negative_value) {
@@ -672,28 +667,28 @@ DOMHighResTimeStamp PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
   return ConvertSecondsToDOMHighResTimeStamp(clamped_time_in_seconds);
 }
 
-DOMHighResTimeStamp PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+DOMHighResTimeStamp Performance::MonotonicTimeToDOMHighResTimeStamp(
     TimeTicks monotonic_time) const {
   return MonotonicTimeToDOMHighResTimeStamp(time_origin_, monotonic_time,
                                             false /* allow_negative_value */);
 }
 
-DOMHighResTimeStamp PerformanceBase::now() const {
+DOMHighResTimeStamp Performance::now() const {
   return MonotonicTimeToDOMHighResTimeStamp(CurrentTimeTicks());
 }
 
-ScriptValue PerformanceBase::toJSONForBinding(ScriptState* script_state) const {
+ScriptValue Performance::toJSONForBinding(ScriptState* script_state) const {
   V8ObjectBuilder result(script_state);
   BuildJSONValue(result);
   return result.GetScriptValue();
 }
 
-void PerformanceBase::BuildJSONValue(V8ObjectBuilder& builder) const {
+void Performance::BuildJSONValue(V8ObjectBuilder& builder) const {
   builder.AddNumber("timeOrigin", timeOrigin());
   // |memory| is not part of the spec, omitted.
 }
 
-void PerformanceBase::Trace(blink::Visitor* visitor) {
+void Performance::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_timing_buffer_);
   visitor->Trace(resource_timing_buffer_);
   visitor->Trace(navigation_timing_);
@@ -706,8 +701,7 @@ void PerformanceBase::Trace(blink::Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
 }
 
-void PerformanceBase::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+void Performance::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   for (const auto& observer : observers_)
     visitor->TraceWrappers(observer);
   EventTargetWithInlineData::TraceWrappers(visitor);

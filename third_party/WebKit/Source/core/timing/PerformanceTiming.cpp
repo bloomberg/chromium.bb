@@ -42,7 +42,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/InteractiveDetector.h"
 #include "core/paint/PaintTiming.h"
-#include "core/timing/PerformanceBase.h"
+#include "core/timing/Performance.h"
 #include "platform/loader/fetch/ResourceLoadTiming.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 
@@ -51,7 +51,7 @@ namespace blink {
 
 static unsigned long long ToIntegerMilliseconds(double seconds) {
   DCHECK_GE(seconds, 0);
-  double clamped_seconds = PerformanceBase::ClampTimeResolution(seconds);
+  double clamped_seconds = Performance::ClampTimeResolution(seconds);
   return static_cast<unsigned long long>(clamped_seconds * 1000.0);
 }
 

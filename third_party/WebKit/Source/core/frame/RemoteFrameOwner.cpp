@@ -7,7 +7,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/WebLocalFrameImpl.h"
-#include "core/timing/PerformanceBase.h"
+#include "core/timing/Performance.h"
 #include "public/platform/WebResourceTimingInfo.h"
 #include "public/web/WebFrameClient.h"
 
@@ -51,10 +51,9 @@ void RemoteFrameOwner::ClearContentFrame() {
 
 void RemoteFrameOwner::AddResourceTiming(const ResourceTimingInfo& info) {
   LocalFrame* frame = ToLocalFrame(frame_);
-  WebResourceTimingInfo resource_timing =
-      PerformanceBase::GenerateResourceTiming(
-          *frame->Tree().Parent()->GetSecurityContext()->GetSecurityOrigin(),
-          info, *frame->GetDocument());
+  WebResourceTimingInfo resource_timing = Performance::GenerateResourceTiming(
+      *frame->Tree().Parent()->GetSecurityContext()->GetSecurityOrigin(), info,
+      *frame->GetDocument());
   frame->Client()->ForwardResourceTimingToParent(resource_timing);
 }
 
