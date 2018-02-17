@@ -86,7 +86,8 @@
         <div class="throbber"></div>
       </div>
     </header>
-    <template is="dom-repeat" items="[[destinations]]">
+    <template is="dom-repeat" items="[[destinations]]" notify-dom-change
+        on-dom-change="updateIfNeeded_">
       <print-preview-destination-list-item class="list-item"
           search-query="[[searchQuery]]" destination="[[item]]"
           on-tap="onDestinationSelected_">

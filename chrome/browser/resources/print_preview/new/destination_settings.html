@@ -74,7 +74,7 @@
           <img class="destination-icon"
              src="[[destination.iconUrl]]" alt="">
           <div class="destination-info-wrapper">
-            <div class="destination-name">[[destination.id]]</div>
+            <div class="destination-name">[[destination.displayName]]</div>
             <div class="destination-location">[[destination.hint]]</div>
             <div class="destination-connection-status">
                 [[destination.connectionStatusText]]</div>
@@ -92,7 +92,8 @@
       <print-preview-destination-dialog
           destination-store="[[destinationStore]]"
           recent-destinations="[[recentDestinations]]"
-          user-info="[[userInfo]]">
+          user-info="{{userInfo}}"
+          show-cloud-print-promo="{{showCloudPrintPromo_}}">
       </print-preview-destination-dialog>
     </template>
   </template>

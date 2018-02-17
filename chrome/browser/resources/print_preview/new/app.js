@@ -80,11 +80,17 @@ Polymer({
   /** @private {?print_preview.NativeLayer} */
   nativeLayer_: null,
 
+  /** @private {?cloudprint.CloudPrintInterface} */
+  cloudPrintInterface_: null,
+
   /** @private {!EventTracker} */
   tracker_: new EventTracker(),
 
   /** @private {boolean} */
   cancelled_: false,
+
+  /** @private {boolean} */
+  isInAppKioskMode_: false,
 
   /** @override */
   attached: function() {
@@ -92,6 +98,8 @@ Polymer({
     this.documentInfo_ = new print_preview.DocumentInfo();
     this.userInfo_ = new print_preview.UserInfo();
     this.listenerTracker_ = new WebUIListenerTracker();
+    this.listenerTracker_.add(
+        'use-cloud-print', this.onCloudPrintEnable_.bind(this));
     this.destinationStore_ = new print_preview.DestinationStore(
         this.userInfo_, this.listenerTracker_);
     this.tracker_.add(
@@ -142,6 +150,38 @@ Polymer({
         settings.isInAppKioskMode, settings.printerName,
         settings.serializedDefaultDestinationSelectionRulesStr,
         this.recentDestinations_);
+  },
+
+  /**
+   * Called when Google Cloud Print integration is enabled by the
+   * PrintPreviewHandler.
+   * Fetches the user's cloud printers.
+   * @param {string} cloudPrintUrl The URL to use for cloud print servers.
+   * @param {boolean} appKioskMode Whether to print automatically for kiosk
+   *     mode.
+   * @private
+   */
+  onCloudPrintEnable_: function(cloudPrintUrl, appKioskMode) {
+    assert(!this.cloudPrintInterface_);
+    this.cloudPrintInterface_ = new cloudprint.CloudPrintInterface(
+        cloudPrintUrl, assert(this.nativeLayer_), assert(this.userInfo_),
+        appKioskMode);
+    this.tracker_.add(
+        assert(this.cloudPrintInterface_),
+        cloudprint.CloudPrintInterfaceEventType.SUBMIT_DONE,
+        this.close_.bind(this));
+    [cloudprint.CloudPrintInterfaceEventType.SEARCH_FAILED,
+     cloudprint.CloudPrintInterfaceEventType.SUBMIT_FAILED,
+     cloudprint.CloudPrintInterfaceEventType.PRINTER_FAILED,
+    ].forEach(eventType => {
+      this.tracker_.add(
+          assert(this.cloudPrintInterface_), eventType,
+          this.onCloudPrintError_.bind(this));
+    });
+
+    this.destinationStore_.setCloudPrintInterface(this.cloudPrintInterface_);
+    if (this.$.destinationSettings.isDialogOpen())
+      this.destinationStore_.startLoadCloudDestinations();
   },
 
   /** @private */
@@ -229,12 +269,19 @@ Polymer({
     this.$.state.transitTo(print_preview_new.State.READY);
   },
 
-  /** @private */
-  onPrintToCloud_: function() {
-    // TODO (rbpotter): Actually print to cloud print once cloud print
-    // interface is hooked up. Currently there are no cloud printers so
-    // this should never happen.
-    assertNotReached('Trying to print to cloud printer!');
+  /**
+   * Called when the native layer has retrieved the data to print to Google
+   * Cloud Print.
+   * @param {string} data The body to send in the HTTP request.
+   * @private
+   */
+  onPrintToCloud_: function(data) {
+    assert(
+        this.cloudPrintInterface_ != null, 'Google Cloud Print is not enabled');
+    const destination = assert(this.destinationStore_.selectedDestination);
+    this.cloudPrintInterface_.submit(
+        destination, this.$.model.createCloudJobTicket(destination),
+        assert(this.documentInfo_), data);
   },
 
   /**
@@ -252,6 +299,31 @@ Polymer({
   /** @private */
   onPreviewFailed_: function() {
     this.$.state.transitTo(print_preview_new.State.FATAL_ERROR);
+  },
+
+  /**
+   * Called when there was an error communicating with Google Cloud print.
+   * Displays an error message in the print header.
+   * @param {!Event} event Contains the error message.
+   * @private
+   */
+  onCloudPrintError_: function(event) {
+    if (event.status == 0) {
+      return;  // Ignore, the system does not have internet connectivity.
+    }
+    if (event.status == 403) {
+      if (!this.isInAppKioskMode_) {
+        this.$.destinationSettings.showCloudPrintPromo();
+      }
+    } else {
+      this.set('state_.cloudPrintError', event.message);
+    }
+    if (event.status == 200) {
+      console.error(
+          `Google Cloud Print Error: (${event.errorCode}) ${event.message}`);
+    } else {
+      console.error(`Google Cloud Print Error: HTTP status ${event.status}`);
+    }
   },
 
   /** @private */

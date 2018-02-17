@@ -16,12 +16,21 @@ Polymer({
     recentDestinations: Array,
 
     /** @type {!print_preview.UserInfo} */
-    userInfo: Object,
+    userInfo: {
+      type: Object,
+      notify: true,
+    },
 
     disabled: Boolean,
 
     /** @type {!print_preview_new.State} */
     state: Number,
+
+    /** @private {boolean} */
+    showCloudPrintPromo_: {
+      type: Boolean,
+      value: false,
+    },
 
     /** @private {boolean} */
     loadingDestination_: {
@@ -57,5 +66,15 @@ Polymer({
     this.async(() => {
       dialog.show();
     }, 1);
+  },
+
+  showCloudPrintPromo: function() {
+    this.showCloudPrintPromo_ = true;
+  },
+
+  /** @return {boolean} Whether the destinations dialog is open. */
+  isDialogOpen: function() {
+    const destinationDialog = this.$$('print-preview-destination-dialog');
+    return destinationDialog && destinationDialog.isOpen();
   },
 });
