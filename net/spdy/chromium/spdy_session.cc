@@ -866,9 +866,7 @@ int SpdySession::GetPushedStream(const GURL& url,
   for (auto u : updates) {
     ActiveStreamMap::iterator it = active_streams_.find(u.id);
     DCHECK(it != active_streams_.end());
-    int weight = Spdy3PriorityToHttp2Weight(
-        ConvertRequestPriorityToSpdyPriority(it->second->priority()));
-    EnqueuePriorityFrame(u.id, u.parent_stream_id, weight, u.exclusive);
+    EnqueuePriorityFrame(u.id, u.parent_stream_id, u.weight, u.exclusive);
   }
 
   return OK;

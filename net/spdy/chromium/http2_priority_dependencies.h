@@ -45,6 +45,7 @@ class NET_EXPORT_PRIVATE Http2PriorityDependencies {
   struct DependencyUpdate {
     SpdyStreamId id;
     SpdyStreamId parent_stream_id;
+    int weight;
     bool exclusive;
   };
 
