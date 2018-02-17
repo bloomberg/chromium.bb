@@ -281,14 +281,13 @@ class IntegrationTest(unittest.TestCase):
     d = diff.Diff(size_info1, size_info2)
     self.assertEquals(d.raw_symbols.pss, 0)
     self.assertEquals((0, 0, 1), _DiffCounts(d.raw_symbols))
-    # shrinkToFit is in a cluster, so removed turns to a changed when clustered.
-    self.assertEquals((1, 0, 0), _DiffCounts(d.symbols.GroupedByFullName()))
+    self.assertEquals((0, 0, 1), _DiffCounts(d.symbols.GroupedByFullName()))
 
     # Adding one alias should not change size.
     d = diff.Diff(size_info2, size_info1)
     self.assertEquals(d.raw_symbols.pss, 0)
     self.assertEquals((0, 1, 0), _DiffCounts(d.raw_symbols))
-    self.assertEquals((1, 0, 0), _DiffCounts(d.symbols.GroupedByFullName()))
+    self.assertEquals((0, 1, 0), _DiffCounts(d.symbols.GroupedByFullName()))
 
   def test_Diff_Aliases2(self):
     size_info1 = self._CloneSizeInfo()
