@@ -38,8 +38,7 @@ class RecentTabHelper
   void DocumentAvailableInMainFrame() override;
   void DocumentOnLoadCompletedInMainFrame() override;
   void WebContentsDestroyed() override;
-  void WasHidden() override;
-  void WasShown() override;
+  void OnVisibilityChanged(content::Visibility visibility) override;
 
   // Notifies that the tab of the associated WebContents will (most probably) be
   // closed. This call is expected to always happen before the one to WasHidden.
@@ -94,6 +93,9 @@ class RecentTabHelper
 
   explicit RecentTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<RecentTabHelper>;
+
+  void WebContentsWasHidden();
+  void WebContentsWasShown();
 
   bool EnsureInitialized();
   void ContinueSnapshotWithIdsToPurge(SnapshotProgressInfo* snapshot_info,

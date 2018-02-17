@@ -250,17 +250,15 @@ void JavaScriptDialogTabHelper::CancelDialogs(
   return AppModalDialogManager()->CancelDialogs(web_contents, reset_state);
 }
 
-void JavaScriptDialogTabHelper::WasShown() {
-  if (pending_dialog_) {
+void JavaScriptDialogTabHelper::OnVisibilityChanged(
+    content::Visibility visibility) {
+  if (visibility == content::Visibility::HIDDEN) {
+    HandleTabSwitchAway(DismissalCause::TAB_HIDDEN);
+  } else if (pending_dialog_) {
     dialog_ = std::move(pending_dialog_).Run();
     pending_dialog_.Reset();
-
     SetTabNeedsAttention(false);
   }
-}
-
-void JavaScriptDialogTabHelper::WasHidden() {
-  HandleTabSwitchAway(DismissalCause::TAB_HIDDEN);
 }
 
 // This function handles the case where browser-side navigation (PlzNavigate) is
@@ -289,7 +287,7 @@ void JavaScriptDialogTabHelper::DidStartNavigationToPendingEntry(
 #if !defined(OS_ANDROID)
 void JavaScriptDialogTabHelper::OnBrowserSetLastActive(Browser* browser) {
   if (IsWebContentsForemost(web_contents())) {
-    WasShown();
+    OnVisibilityChanged(content::Visibility::VISIBLE);
   } else {
     HandleTabSwitchAway(DismissalCause::BROWSER_SWITCHED);
   }

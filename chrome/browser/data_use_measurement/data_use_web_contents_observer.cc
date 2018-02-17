@@ -69,12 +69,10 @@ void DataUseWebContentsObserver::ReadyToCommitNavigation(
   service_->ReadyToCommitNavigation(navigation_handle);
 }
 
-void DataUseWebContentsObserver::WasShown() {
-  service_->WasShownOrHidden(web_contents()->GetMainFrame(), true);
-}
-
-void DataUseWebContentsObserver::WasHidden() {
-  service_->WasShownOrHidden(web_contents()->GetMainFrame(), false);
+void DataUseWebContentsObserver::OnVisibilityChanged(
+    content::Visibility visibility) {
+  service_->WasShownOrHidden(web_contents()->GetMainFrame(),
+                             visibility == content::Visibility::VISIBLE);
 }
 
 void DataUseWebContentsObserver::RenderFrameHostChanged(

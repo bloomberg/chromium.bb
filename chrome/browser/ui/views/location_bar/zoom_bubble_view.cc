@@ -417,8 +417,9 @@ void ZoomBubbleView::OnExtensionIconImageChanged(
   image_button_->SchedulePaint();
 }
 
-void ZoomBubbleView::WasHidden() {
-  CloseBubble();
+void ZoomBubbleView::OnVisibilityChanged(content::Visibility visibility) {
+  if (visibility == content::Visibility::HIDDEN)
+    CloseBubble();
 }
 
 void ZoomBubbleView::WebContentsDestroyed() {

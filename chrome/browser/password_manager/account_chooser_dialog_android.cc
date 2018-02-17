@@ -195,12 +195,15 @@ void AccountChooserDialogAndroid::WebContentsDestroyed() {
   Java_AccountChooserDialog_dismissDialog(env, dialog_jobject_);
 }
 
-void AccountChooserDialogAndroid::WasHidden() {
-  // TODO(https://crbug.com/610700): once bug is fixed, this code should be
-  // gone.
-  OnDialogCancel();
-  JNIEnv* env = AttachCurrentThread();
-  Java_AccountChooserDialog_dismissDialog(env, dialog_jobject_);
+void AccountChooserDialogAndroid::OnVisibilityChanged(
+    content::Visibility visibility) {
+  if (visibility == content::Visibility::HIDDEN) {
+    // TODO(https://crbug.com/610700): once bug is fixed, this code should be
+    // gone.
+    OnDialogCancel();
+    JNIEnv* env = AttachCurrentThread();
+    Java_AccountChooserDialog_dismissDialog(env, dialog_jobject_);
+  }
 }
 
 void AccountChooserDialogAndroid::OnDialogCancel() {

@@ -271,6 +271,7 @@ jumbo_source_set("browser_sources") {
     "utility_process_host_client.h",
     "utility_process_mojo_client.h",
     "video_capture_device_launcher.h",
+    "visibility.h",
     "vpn_service_proxy.h",
     "web_contents.cc",
     "web_contents.h",

@@ -49,7 +49,7 @@ class AccountChooserDialogAndroid : public content::WebContentsObserver {
 
   // content::WebContentsObserver overrides:
   void WebContentsDestroyed() override;
-  void WasHidden() override;
+  void OnVisibilityChanged(content::Visibility visibility) override;
 
  private:
   void OnDialogCancel();

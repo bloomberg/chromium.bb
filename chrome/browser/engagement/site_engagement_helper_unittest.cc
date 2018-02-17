@@ -540,6 +540,55 @@ TEST_F(SiteEngagementHelperTest, ShowAndHide) {
   EXPECT_TRUE(IsTrackingInput(helper));
 }
 
+// Verify that the site engagement helper:
+// - Doesn't reset input tracking on a visible <-> occluded transition.
+// - Handles a hidden <-> occluded transition like a hidden <-> visible
+//   transition.
+TEST_F(SiteEngagementHelperTest, Occlusion) {
+  base::MockTimer* input_tracker_timer = new base::MockTimer(true, false);
+  SiteEngagementService::Helper* helper = GetHelper(web_contents());
+  SetInputTrackerPauseTimer(helper, base::WrapUnique(input_tracker_timer));
+
+  NavigationSimulator::NavigateAndCommitFromBrowser(
+      web_contents(), GURL("https://www.google.com/"));
+  input_tracker_timer->Fire();
+
+  // Visible -> Occluded transition should not affect input tracking.
+  EXPECT_EQ(content::Visibility::VISIBLE, web_contents()->GetVisibility());
+  web_contents()->WasOccluded();
+  EXPECT_EQ(content::Visibility::OCCLUDED, web_contents()->GetVisibility());
+  EXPECT_FALSE(input_tracker_timer->IsRunning());
+  EXPECT_TRUE(IsTrackingInput(helper));
+
+  // Occluded -> Visible transition should not affect input tracking.
+  EXPECT_EQ(content::Visibility::OCCLUDED, web_contents()->GetVisibility());
+  web_contents()->WasUnOccluded();
+  EXPECT_EQ(content::Visibility::VISIBLE, web_contents()->GetVisibility());
+  EXPECT_FALSE(input_tracker_timer->IsRunning());
+  EXPECT_TRUE(IsTrackingInput(helper));
+
+  // Visible -> Occluded transition should not affect input tracking.
+  EXPECT_EQ(content::Visibility::VISIBLE, web_contents()->GetVisibility());
+  web_contents()->WasOccluded();
+  EXPECT_EQ(content::Visibility::OCCLUDED, web_contents()->GetVisibility());
+  EXPECT_FALSE(input_tracker_timer->IsRunning());
+  EXPECT_TRUE(IsTrackingInput(helper));
+
+  // Occluded -> Hidden transition should stop input tracking.
+  EXPECT_EQ(content::Visibility::OCCLUDED, web_contents()->GetVisibility());
+  web_contents()->WasHidden();
+  EXPECT_EQ(content::Visibility::HIDDEN, web_contents()->GetVisibility());
+  EXPECT_FALSE(input_tracker_timer->IsRunning());
+  EXPECT_FALSE(IsTrackingInput(helper));
+
+  // Hidden -> Occluded transition should start a timer to track input.
+  EXPECT_EQ(content::Visibility::HIDDEN, web_contents()->GetVisibility());
+  web_contents()->WasShown();
+  EXPECT_EQ(content::Visibility::OCCLUDED, web_contents()->GetVisibility());
+  EXPECT_TRUE(input_tracker_timer->IsRunning());
+  EXPECT_FALSE(IsTrackingInput(helper));
+}
+
 // Ensure tracking behavior is correct for multiple navigations in a single tab.
 TEST_F(SiteEngagementHelperTest, SingleTabNavigation) {
   GURL url1("https://www.google.com/");

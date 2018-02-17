@@ -138,16 +138,17 @@ const char kRedirectResponseFullPath[] =
 class WebContentsHiddenObserver : public content::WebContentsObserver {
  public:
   WebContentsHiddenObserver(content::WebContents* web_contents,
-                            const base::Closure& hidden_callback)
+                            base::Closure hidden_callback)
       : WebContentsObserver(web_contents),
-        hidden_callback_(hidden_callback),
-        hidden_observed_(false) {
-  }
+        hidden_callback_(std::move(hidden_callback)),
+        hidden_observed_(false) {}
 
   // WebContentsObserver.
-  void WasHidden() override {
-    hidden_observed_ = true;
-    hidden_callback_.Run();
+  void OnVisibilityChanged(content::Visibility visibility) override {
+    if (visibility == content::Visibility::HIDDEN) {
+      hidden_observed_ = true;
+      hidden_callback_.Run();
+    }
   }
 
   bool hidden_observed() { return hidden_observed_; }

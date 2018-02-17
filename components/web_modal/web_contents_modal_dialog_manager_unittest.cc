@@ -200,13 +200,13 @@ TEST_F(WebContentsModalDialogManagerTest, VisibilityObservation) {
   EXPECT_TRUE(delegate->web_contents_blocked());
   EXPECT_EQ(NativeManagerTracker::SHOWN, tracker.state_);
 
-  test_api->WebContentsWasHidden();
+  test_api->WebContentsVisibilityChanged(content::Visibility::HIDDEN);
 
   EXPECT_TRUE(manager->IsDialogActive());
   EXPECT_TRUE(delegate->web_contents_blocked());
   EXPECT_EQ(NativeManagerTracker::HIDDEN, tracker.state_);
 
-  test_api->WebContentsWasShown();
+  test_api->WebContentsVisibilityChanged(content::Visibility::VISIBLE);
 
   EXPECT_TRUE(manager->IsDialogActive());
   EXPECT_TRUE(delegate->web_contents_blocked());

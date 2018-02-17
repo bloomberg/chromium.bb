@@ -116,9 +116,7 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
     return false;
 
 #if defined(OS_CHROMEOS)
-  // TODO(fdoray): Return false from IsVisible() when the WebContents is
-  // occluded.
-  if (GetWebContents()->IsVisible())
+  if (GetWebContents()->GetVisibility() == content::Visibility::VISIBLE)
     return false;
 #else
   // Do not discard the tab if it is currently active in its window.
@@ -186,7 +184,11 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::Discard(
 
   content::WebContents* const old_contents = GetWebContents();
   content::WebContents::CreateParams create_params(tab_strip_model_->profile());
-  create_params.initially_hidden = !old_contents->IsVisible();
+  // TODO(fdoray): Consider setting |initially_hidden| to true when the tab is
+  // OCCLUDED. Will require checking that the tab reload correctly when it
+  // becomes VISIBLE.
+  create_params.initially_hidden =
+      old_contents->GetVisibility() == content::Visibility::HIDDEN;
   content::WebContents* const null_contents =
       content::WebContents::Create(create_params);
   // Copy over the state from the navigation controller to preserve the

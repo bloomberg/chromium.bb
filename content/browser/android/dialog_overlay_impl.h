@@ -50,7 +50,7 @@ class DialogOverlayImpl : public ui::ViewAndroidObserver,
   void OnDetachedFromWindow() override;
 
   // WebContentsObserver
-  void WasHidden() override;
+  void OnVisibilityChanged(content::Visibility visibility) override;
   void WebContentsDestroyed() override;
   void DidToggleFullscreenModeForTab(bool entered_fullscreen,
                                      bool will_cause_resize) override;

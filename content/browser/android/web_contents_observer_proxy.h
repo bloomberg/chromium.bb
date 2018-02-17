@@ -40,8 +40,7 @@ class WebContentsObserverProxy : public WebContentsObserver {
                    const base::string16& error_description) override;
   void DocumentAvailableInMainFrame() override;
   void DidFirstVisuallyNonEmptyPaint() override;
-  void WasShown() override;
-  void WasHidden() override;
+  void OnVisibilityChanged(content::Visibility visibility) override;
   void TitleWasSet(NavigationEntry* entry) override;
 
   void DidStartNavigation(NavigationHandle* navigation_handle) override;

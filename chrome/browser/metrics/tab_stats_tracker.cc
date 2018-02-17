@@ -182,8 +182,9 @@ class TabStatsTracker::WebContentsUsageObserver
         web_contents());
   }
 
-  void WasShown() override {
-    tab_stats_tracker_->tab_stats_data_store()->OnTabVisible(web_contents());
+  void OnVisibilityChanged(content::Visibility visibility) override {
+    if (visibility == content::Visibility::VISIBLE)
+      tab_stats_tracker_->tab_stats_data_store()->OnTabVisible(web_contents());
   }
 
   void WebContentsDestroyed() override {

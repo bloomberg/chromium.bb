@@ -195,13 +195,14 @@ void OomInterventionTabHelper::DocumentAvailableInMainFrame() {
     StartMonitoringIfNeeded();
 }
 
-void OomInterventionTabHelper::WasShown() {
-  StartMonitoringIfNeeded();
-  SetLastVisibleWebContents(web_contents());
-}
-
-void OomInterventionTabHelper::WasHidden() {
-  StopMonitoring();
+void OomInterventionTabHelper::OnVisibilityChanged(
+    content::Visibility visibility) {
+  if (visibility == content::Visibility::VISIBLE) {
+    StartMonitoringIfNeeded();
+    SetLastVisibleWebContents(web_contents());
+  } else {
+    StopMonitoring();
+  }
 }
 
 void OomInterventionTabHelper::OnForegroundOOMDetected(
@@ -283,7 +284,7 @@ void OomInterventionTabHelper::StartDetectionInRenderer() {
 
 void OomInterventionTabHelper::OnNearOomDetected() {
   DCHECK(!ShouldDetectInRenderer());
-  DCHECK(web_contents()->IsVisible());
+  DCHECK_EQ(web_contents()->GetVisibility(), content::Visibility::VISIBLE);
   DCHECK(!near_oom_detected_time_);
   subscription_.reset();
 

@@ -82,8 +82,10 @@ void PageInfoBubbleViewBase::RenderFrameDeleted(
   }
 }
 
-void PageInfoBubbleViewBase::WasHidden() {
-  GetWidget()->Close();
+void PageInfoBubbleViewBase::OnVisibilityChanged(
+    content::Visibility visibility) {
+  if (visibility == content::Visibility::HIDDEN)
+    GetWidget()->Close();
 }
 
 void PageInfoBubbleViewBase::DidStartNavigation(

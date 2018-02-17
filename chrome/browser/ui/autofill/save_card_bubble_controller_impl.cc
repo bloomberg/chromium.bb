@@ -322,8 +322,10 @@ void SaveCardBubbleControllerImpl::DidFinishNavigation(
   }
 }
 
-void SaveCardBubbleControllerImpl::WasHidden() {
-  HideBubble();
+void SaveCardBubbleControllerImpl::OnVisibilityChanged(
+    content::Visibility visibility) {
+  if (visibility == content::Visibility::HIDDEN)
+    HideBubble();
 }
 
 void SaveCardBubbleControllerImpl::WebContentsDestroyed() {

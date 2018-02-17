@@ -86,8 +86,11 @@ class TabActivityWatcher::WebContentsData
     // contents.
     TabActivityWatcher::GetInstance()->OnDidStopLoading(web_contents());
   }
-  void WasHidden() override {
-    TabActivityWatcher::GetInstance()->OnWasHidden(web_contents());
+  void OnVisibilityChanged(content::Visibility visibility) override {
+    // TODO(michaelpg): Consider tracking occluded tabs, not just background
+    // tabs.
+    if (visibility == content::Visibility::HIDDEN)
+      TabActivityWatcher::GetInstance()->OnWasHidden(web_contents());
   }
 
   // content::RenderWidgetHost::InputEventObserver:
@@ -160,7 +163,7 @@ void TabActivityWatcher::OnWasHidden(content::WebContents* web_contents) {
 void TabActivityWatcher::OnDidStopLoading(content::WebContents* web_contents) {
   // Ignore load events in foreground tabs. The tab state of a foreground tab
   // will be logged if/when it is backgrounded.
-  if (web_contents->IsVisible())
+  if (web_contents->GetVisibility() != content::Visibility::HIDDEN)
     return;
   MaybeLogTab(web_contents);
 }

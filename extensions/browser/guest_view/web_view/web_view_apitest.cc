@@ -88,9 +88,11 @@ class WebContentsHiddenObserver : public content::WebContentsObserver {
   }
 
   // WebContentsObserver.
-  void WasHidden() override {
-    hidden_observed_ = true;
-    hidden_callback_.Run();
+  void OnVisibilityChanged(content::Visibility visibility) override {
+    if (visibility == content::Visibility::HIDDEN) {
+      hidden_observed_ = true;
+      hidden_callback_.Run();
+    }
   }
 
   bool hidden_observed() { return hidden_observed_; }

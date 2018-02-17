@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest, SimpleTabUnder_IsBlocked) {
 
   EXPECT_TRUE(PopupOpenerTabHelper::FromWebContents(opener)
                   ->has_opened_popup_since_last_user_gesture());
-  EXPECT_FALSE(opener->IsVisible());
+  EXPECT_EQ(opener->GetVisibility(), content::Visibility::HIDDEN);
 
   content::TestNavigationObserver tab_under_observer(opener, 1);
   const GURL cross_origin_url =
@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest,
 
   EXPECT_TRUE(PopupOpenerTabHelper::FromWebContents(opener)
                   ->has_opened_popup_since_last_user_gesture());
-  EXPECT_FALSE(opener->IsVisible());
+  EXPECT_EQ(opener->GetVisibility(), content::Visibility::HIDDEN);
 
   // Perform some user gesture on the page.
   content::SimulateMouseClick(opener, 0, blink::WebMouseEvent::Button::kLeft);

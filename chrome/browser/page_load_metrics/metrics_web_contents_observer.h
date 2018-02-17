@@ -85,8 +85,7 @@ class MetricsWebContentsObserver
       content::NavigationHandle* navigation_handle) override;
   void NavigationStopped() override;
   void OnInputEvent(const blink::WebInputEvent& event) override;
-  void WasShown() override;
-  void WasHidden() override;
+  void OnVisibilityChanged(content::Visibility visibility) override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;

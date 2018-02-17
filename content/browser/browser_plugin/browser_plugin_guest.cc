@@ -92,12 +92,8 @@ class BrowserPluginGuest::EmbedderVisibilityObserver
   ~EmbedderVisibilityObserver() override {}
 
   // WebContentsObserver implementation.
-  void WasShown() override {
-    browser_plugin_guest_->EmbedderVisibilityChanged(true);
-  }
-
-  void WasHidden() override {
-    browser_plugin_guest_->EmbedderVisibilityChanged(false);
+  void OnVisibilityChanged(content::Visibility visibility) override {
+    browser_plugin_guest_->EmbedderVisibilityChanged(visibility);
   }
 
  private:
@@ -118,7 +114,7 @@ BrowserPluginGuest::BrowserPluginGuest(bool has_render_view,
       mouse_locked_(false),
       pending_lock_request_(false),
       guest_visible_(false),
-      embedder_visible_(true),
+      embedder_visibility_(Visibility::VISIBLE),
       is_full_page_plugin_(false),
       has_render_view_(has_render_view),
       is_in_destruction_(false),
@@ -410,8 +406,8 @@ BrowserPluginGuest::GetBrowserPluginGuestManager() const {
   return GetWebContents()->GetBrowserContext()->GetGuestManager();
 }
 
-void BrowserPluginGuest::EmbedderVisibilityChanged(bool visible) {
-  embedder_visible_ = visible;
+void BrowserPluginGuest::EmbedderVisibilityChanged(Visibility visibility) {
+  embedder_visibility_ = visibility;
   UpdateVisibility();
 }
 
@@ -1024,10 +1020,18 @@ void BrowserPluginGuest::OnSetVisibility(int browser_plugin_instance_id,
     return;
 
   guest_visible_ = visible;
-  if (embedder_visible_ && guest_visible_)
-    GetWebContents()->WasShown();
-  else
+  // TODO(fdoray): Simplify the logic below. https://crbug.com/668690
+  if (!guest_visible_ || embedder_visibility_ == Visibility::HIDDEN) {
     GetWebContents()->WasHidden();
+  } else if (embedder_visibility_ == Visibility::VISIBLE) {
+    GetWebContents()->WasShown();
+    if (GetWebContents()->GetVisibility() == Visibility::OCCLUDED)
+      GetWebContents()->WasUnOccluded();
+  } else {
+    if (GetWebContents()->GetVisibility() == Visibility::HIDDEN)
+      GetWebContents()->WasShown();
+    GetWebContents()->WasOccluded();
+  }
 }
 
 void BrowserPluginGuest::OnUnlockMouse() {

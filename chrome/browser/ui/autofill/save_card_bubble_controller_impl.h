@@ -83,7 +83,7 @@ class SaveCardBubbleControllerImpl
   // content::WebContentsObserver:
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void WasHidden() override;
+  void OnVisibilityChanged(content::Visibility visibility) override;
   void WebContentsDestroyed() override;
 
  private:

@@ -198,7 +198,8 @@ void TabStatsDataStore::AddTabToIntervalMap(
   DCHECK(interval_map);
   DCHECK(web_contents);
   bool visible_or_audible =
-      web_contents->IsVisible() || web_contents->IsCurrentlyAudible();
+      web_contents->GetVisibility() == content::Visibility::VISIBLE ||
+      web_contents->IsCurrentlyAudible();
 
   auto& tab_state = (*interval_map)[tab_id];
   tab_state.existed_before_interval = existed_before_interval;

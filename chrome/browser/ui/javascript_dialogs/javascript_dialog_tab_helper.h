@@ -73,8 +73,7 @@ class JavaScriptDialogTabHelper
                      bool reset_state) override;
 
   // WebContentsObserver:
-  void WasShown() override;
-  void WasHidden() override;
+  void OnVisibilityChanged(content::Visibility visibility) override;
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidStartNavigationToPendingEntry(

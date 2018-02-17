@@ -37,8 +37,7 @@ class DataUseWebContentsObserver
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void WasShown() override;
-  void WasHidden() override;
+  void OnVisibilityChanged(content::Visibility visibility) override;
   void RenderFrameHostChanged(content::RenderFrameHost* old_host,
                               content::RenderFrameHost* new_host) override;
   void DidFinishNavigation(
