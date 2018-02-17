@@ -110,8 +110,10 @@ DomKey NonPrintableXKeySymToDomKey(xkb_keysym_t keysym) {
       return DomKey::END;
     case XKB_KEY_Select:
       return DomKey::SELECT;
+    // Treat Print/PrintScreen as PrintScreen https://crbug.com/683097.
     case XKB_KEY_Print:
-      return DomKey::PRINT;
+    case XKB_KEY_3270_PrintScreen:
+      return DomKey::PRINT_SCREEN;
     case XKB_KEY_Execute:
       return DomKey::EXECUTE;
     case XKB_KEY_Insert:
@@ -357,8 +359,6 @@ DomKey NonPrintableXKeySymToDomKey(xkb_keysym_t keysym) {
       return DomKey::EX_SEL;
     case XKB_KEY_3270_CursorSelect:
       return DomKey::CR_SEL;
-    case XKB_KEY_3270_PrintScreen:
-      return DomKey::PRINT_SCREEN;
     case XKB_KEY_ISO_Level3_Shift:
       return DomKey::ALT_GRAPH;
     case XKB_KEY_ISO_Level3_Latch:
