@@ -118,7 +118,7 @@ void HtmlVideoElementCapturerSource::StopCapture() {
 
 void HtmlVideoElementCapturerSource::sendNewFrame() {
   DVLOG(3) << __func__;
-  TRACE_EVENT0("video", "HtmlVideoElementCapturerSource::sendNewFrame");
+  TRACE_EVENT0("media", "HtmlVideoElementCapturerSource::sendNewFrame");
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!web_media_player_ || new_frame_callback_.is_null())

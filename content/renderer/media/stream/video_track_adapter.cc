@@ -597,7 +597,7 @@ void VideoTrackAdapter::DeliverFrameOnIO(
     const scoped_refptr<media::VideoFrame>& frame,
     base::TimeTicks estimated_capture_time) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  TRACE_EVENT0("video", "VideoTrackAdapter::DeliverFrameOnIO");
+  TRACE_EVENT0("media", "VideoTrackAdapter::DeliverFrameOnIO");
   ++frame_counter_;
 
   bool is_device_rotated = false;

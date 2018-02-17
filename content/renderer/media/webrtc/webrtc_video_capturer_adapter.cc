@@ -43,7 +43,7 @@ WebRtcVideoCapturerAdapter::~WebRtcVideoCapturerAdapter() {
 void WebRtcVideoCapturerAdapter::OnFrameCaptured(
     const scoped_refptr<media::VideoFrame>& input_frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  TRACE_EVENT0("video", "WebRtcVideoCapturerAdapter::OnFrameCaptured");
+  TRACE_EVENT0("media", "WebRtcVideoCapturerAdapter::OnFrameCaptured");
   if (!(input_frame->IsMappable() &&
         (input_frame->format() == media::PIXEL_FORMAT_I420 ||
          input_frame->format() == media::PIXEL_FORMAT_I420A)) &&

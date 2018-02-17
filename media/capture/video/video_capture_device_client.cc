@@ -104,7 +104,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     base::TimeTicks reference_time,
     base::TimeDelta timestamp,
     int frame_feedback_id) {
-  TRACE_EVENT0("video", "VideoCaptureDeviceClient::OnIncomingCapturedData");
+  TRACE_EVENT0("media", "VideoCaptureDeviceClient::OnIncomingCapturedData");
   DCHECK_EQ(VideoPixelStorage::CPU, format.pixel_storage);
 
   if (last_captured_pixel_format_ != format.pixel_format) {

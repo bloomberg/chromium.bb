@@ -126,7 +126,7 @@ void PpFrameWriter::StopSourceImpl() {
 void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
                              int64_t time_stamp_ns) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  TRACE_EVENT0("video", "PpFrameWriter::PutFrame");
+  TRACE_EVENT0("media", "PpFrameWriter::PutFrame");
   DVLOG(3) << "PpFrameWriter::PutFrame()";
 
   if (!image_data) {

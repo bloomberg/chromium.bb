@@ -69,7 +69,7 @@ bool VpxEncoder::CanEncodeAlphaChannel() {
 
 void VpxEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
                                             base::TimeTicks capture_timestamp) {
-  TRACE_EVENT0("video", "VpxEncoder::EncodeOnEncodingTaskRunner");
+  TRACE_EVENT0("media", "VpxEncoder::EncodeOnEncodingTaskRunner");
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 
   const gfx::Size frame_size = frame->visible_rect().size();
