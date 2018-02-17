@@ -15,9 +15,13 @@
 
 namespace net {
 
-// A helper class encapsulating the state and logic to set dependencies of
-// HTTP2 streams based on their SpdyPriority and the ordering
-// of creation and deletion of the streams.
+// A helper class encapsulating the state and logic to set the priority fields
+// for HTTP/2 streams based on their SpdyPriority and the ordering of creation
+// and deletion of the streams. This implentation includes a gross hack in which
+// the HTTP/2 weight is set to a transformation of the SpdyPriority value
+// in order to support servers which do not honor HTTP/2 stream dependencies
+// and instead treat the weight value like a SPDY/3 priority.
+// TODO(rch): Eliminate this gross hack when servers no longer act like this.
 class NET_EXPORT_PRIVATE Http2PriorityDependencies {
  public:
   Http2PriorityDependencies();
@@ -26,11 +30,13 @@ class NET_EXPORT_PRIVATE Http2PriorityDependencies {
   // Called when a stream is created. This is used for both client-initiated
   // and server-initiated (pushed) streams.
   // On return, |*dependent_stream_id| is set to the stream id that
-  // this stream should be made dependent on, and |*exclusive| set to
-  // whether that dependency should be exclusive.
+  // this stream should be made dependent on, |*exclusive| is set to
+  // whether that dependency should be exclusive, and |*weight| is set to
+  // the relative weight for the created stream given this priority.
   void OnStreamCreation(SpdyStreamId id,
                         SpdyPriority priority,
                         SpdyStreamId* dependent_stream_id,
+                        int* weight,
                         bool* exclusive);
 
   // Called when a stream is destroyed.

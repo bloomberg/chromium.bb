@@ -15,12 +15,20 @@ void Http2PriorityDependencies::OnStreamCreation(
     SpdyStreamId id,
     SpdyPriority priority,
     SpdyStreamId* dependent_stream_id,
+    int* weight,
     bool* exclusive) {
   if (entry_by_stream_id_.find(id) != entry_by_stream_id_.end())
     return;
 
-  *dependent_stream_id = 0ul;
+  *dependent_stream_id = 0;
   *exclusive = true;
+  // Since the generated dependency graph is a single linked list, the value
+  // of weight should not actually matter, and perhaps the default weight of 16
+  // from the HTTP/2 spec would be reasonable. However, there are some servers
+  // which currently interpret the weight field like an old SPDY priority value.
+  // As long as those servers need to be supported, weight should be set to
+  // a value those servers will interpret correctly.
+  *weight = Spdy3PriorityToHttp2Weight(priority);
 
   // Dependent on the lowest-priority stream that has a priority >= |priority|.
   IdList::iterator parent;

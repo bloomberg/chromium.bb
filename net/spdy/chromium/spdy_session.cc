@@ -966,12 +966,12 @@ std::unique_ptr<SpdySerializedFrame> SpdySession::CreateHeaders(
   SpdyPriority spdy_priority = ConvertRequestPriorityToSpdyPriority(priority);
 
   bool has_priority = true;
-  int weight = Spdy3PriorityToHttp2Weight(spdy_priority);
+  int weight = 0;
   SpdyStreamId dependent_stream_id = 0;
   bool exclusive = false;
 
-  priority_dependency_state_.OnStreamCreation(stream_id, spdy_priority,
-                                              &dependent_stream_id, &exclusive);
+  priority_dependency_state_.OnStreamCreation(
+      stream_id, spdy_priority, &dependent_stream_id, &weight, &exclusive);
 
   if (net_log().IsCapturing()) {
     net_log().AddEvent(
@@ -1698,11 +1698,11 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
   SpdyPriority spdy_priority =
       ConvertRequestPriorityToSpdyPriority(request_priority);
   SpdyStreamId dependency_id = 0;
+  int weight = 0;
   bool exclusive = false;
-  priority_dependency_state_.OnStreamCreation(stream_id, spdy_priority,
-                                              &dependency_id, &exclusive);
-  EnqueuePriorityFrame(stream_id, dependency_id,
-                       Spdy3PriorityToHttp2Weight(spdy_priority), exclusive);
+  priority_dependency_state_.OnStreamCreation(
+      stream_id, spdy_priority, &dependency_id, &weight, &exclusive);
+  EnqueuePriorityFrame(stream_id, dependency_id, weight, exclusive);
 
   // PUSH_PROMISE arrives on associated stream.
   associated_it->second->AddRawReceivedBytes(last_compressed_frame_len_);

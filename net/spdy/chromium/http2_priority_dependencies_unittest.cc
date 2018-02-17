@@ -46,15 +46,21 @@ class HttpPriorityDependencyTest : public PlatformTest {
   void TestStreamCreation(SpdyStreamId new_id,
                           SpdyPriority priority,
                           SpdyStreamId expected_dependent_id) {
+    int expected_weight = Spdy3PriorityToHttp2Weight(priority);
+
     SpdyStreamId dependent_id = 999u;
+    int weight = -1;
     bool exclusive = false;
-    dependency_state_.OnStreamCreation(new_id, priority, &dependent_id,
+    dependency_state_.OnStreamCreation(new_id, priority, &dependent_id, &weight,
                                        &exclusive);
-    if (expected_dependent_id != dependent_id || !exclusive) {
+    if (expected_dependent_id != dependent_id || !exclusive ||
+        expected_weight != weight) {
       ADD_FAILURE() << "OnStreamCreation(" << new_id << ", " << int(priority)
                     << ")\n"
-                    << "  Got:  (" << dependent_id << ", " << exclusive << ")\n"
-                    << "  Want: (" << expected_dependent_id << ", true)\n";
+                    << "  Got:  (" << dependent_id << ", " << weight << ", "
+                    << exclusive << ")\n"
+                    << "  Want: (" << expected_dependent_id << ", "
+                    << expected_weight << ", true)\n";
     }
   }
 
