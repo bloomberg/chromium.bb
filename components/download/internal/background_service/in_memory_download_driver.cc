@@ -107,11 +107,15 @@ void InMemoryDownloadDriver::Remove(const std::string& guid) {
 }
 
 void InMemoryDownloadDriver::Pause(const std::string& guid) {
-  NOTIMPLEMENTED();
+  auto it = downloads_.find(guid);
+  if (it != downloads_.end())
+    it->second->Pause();
 }
 
 void InMemoryDownloadDriver::Resume(const std::string& guid) {
-  NOTIMPLEMENTED();
+  auto it = downloads_.find(guid);
+  if (it != downloads_.end())
+    it->second->Resume();
 }
 
 base::Optional<DriverEntry> InMemoryDownloadDriver::Find(
@@ -153,7 +157,7 @@ void InMemoryDownloadDriver::OnDownloadComplete(InMemoryDownload* download) {
   DriverEntry entry = CreateDriverEntry(*download);
   switch (download->state()) {
     case InMemoryDownload::State::FAILED:
-      // TODO(xingliu): Support recoverable.
+      // URLFetcher retries for network failures.
       client_->OnDownloadFailed(entry, FailureType::NOT_RECOVERABLE);
       // Should immediately return in case |client_| removes |download| in
       // OnDownloadFailed.
