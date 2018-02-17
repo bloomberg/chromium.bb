@@ -182,6 +182,14 @@ group("gn_all") {
     ]
   }
 
+  # TODO(https://crbug.com/812268): Fix Windows build, and enable it.
+  if (!is_ios && !is_android && !is_win) {
+    deps += [
+      "//components/cronet:cronet_tests",
+      "//components/cronet:cronet_unittests",
+    ]
+  }
+
   if (!is_ios && !is_fuchsia) {
     deps += [
       "//chrome/test:telemetry_perf_unittests",

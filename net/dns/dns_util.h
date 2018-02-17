@@ -71,6 +71,7 @@ enum AddressListDeltaType {
 
 // Compares two AddressLists to see how similar or different their addresses
 // are. (See |AddressListDeltaType| for details of exactly what's checked.)
+NET_EXPORT
 AddressListDeltaType FindAddressListDeltaType(const AddressList& a,
                                               const AddressList& b);
 

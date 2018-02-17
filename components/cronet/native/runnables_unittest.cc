@@ -9,7 +9,8 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "components/cronet/native/generated/cronet.idl_impl_interface.h"
 #include "components/cronet/native/include/cronet_c.h"
 #include "components/cronet/native/test/test_util.h"
@@ -41,7 +42,8 @@ class RunnablesTest : public ::testing::Test {
 
   bool callback_called() const { return callback_called_; }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  // Provide a message loop for use by TestExecutor instances.
+  base::MessageLoop message_loop_;
 
  private:
   bool callback_called_ = false;
@@ -139,7 +141,7 @@ TEST_F(RunnablesTest, TestRunCallbackOnExecutor) {
   new_location_url = "bad";
   Cronet_UrlRequestCallback_SetClientContext(callback, this);
   Cronet_Executor_Execute(executor, runnable);
-  scoped_task_environment_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback_called());
   Cronet_Executor_Destroy(executor);
 }
@@ -162,7 +164,7 @@ TEST_F(RunnablesTest, TestRunOnceClosureOnExecutor) {
                      /* request = */ nullptr, /* response_info = */ nullptr));
   Cronet_UrlRequestCallback_SetClientContext(callback, this);
   Cronet_Executor_Execute(executor, runnable);
-  scoped_task_environment_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback_called());
   Cronet_Executor_Destroy(executor);
 }
@@ -190,7 +192,7 @@ TEST_F(RunnablesTest, TestCronetBuffer) {
       /* response_info = */ nullptr, buffer, /* bytes_read = */ 0));
   Cronet_UrlRequestCallback_SetClientContext(callback, this);
   Cronet_Executor_Execute(executor, runnable);
-  scoped_task_environment_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback_called());
   Cronet_Executor_Destroy(executor);
 }

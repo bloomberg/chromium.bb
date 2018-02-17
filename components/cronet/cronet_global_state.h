@@ -18,8 +18,8 @@ class ProxyResolutionService;
 
 namespace cronet {
 
-// Returns true when running on initialization thread.
-// Only callable after initialization thread is started.
+// Returns true when called on the initialization thread.
+// May only be called after EnsureInitialized() has returned.
 bool OnInitThread();
 
 // Posts a task to run on initialization thread. Blocks until initialization
@@ -27,24 +27,29 @@ bool OnInitThread();
 void PostTaskToInitThread(const base::Location& posted_from,
                           base::OnceClosure task);
 
-// Ensure that one time initialization of Cronet global state is done. Can be
-// called from any thread. The initialization is performed on initialization
-// thread.
+// Performs one-off initialization of Cronet global state, including creating,
+// or binding to an existing thread, to run initialization and process
+// network notifications on. The implementation must be thread-safe and
+// idempotent, and must complete initialization before returning.
 void EnsureInitialized();
 
 // Creates a proxy config service appropriate for this platform that fetches the
-// system proxy settings.
+// system proxy settings. Cronet will call this API only after a prior call
+// to EnsureInitialized() has returned.
 std::unique_ptr<net::ProxyConfigService> CreateProxyConfigService(
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
 
 // Creates a proxy service appropriate for this platform that fetches the
-// system proxy settings.
+// system proxy settings. Cronet will call this API only after a prior call
+// to EnsureInitialized() has returned.
 std::unique_ptr<net::ProxyResolutionService> CreateProxyService(
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,
     net::NetLog* net_log);
 
 // Creates default User-Agent request value, combining optional
-// |partial_user_agent| with system-dependent values.
+// |partial_user_agent| with system-dependent values. This API may be invoked
+// before EnsureInitialized(), in which case it may trigger initialization
+// itself, if necessary.
 std::string CreateDefaultUserAgent(const std::string& partial_user_agent);
 
 }  // namespace cronet
