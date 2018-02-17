@@ -105,6 +105,8 @@ void av1_convolve_y_sse2(const uint8_t *src, int src_stride,
   (void)dst0;
   (void)dst_stride0;
 
+  assert(bits >= 0);
+
   prepare_coeffs(filter_params_y, subpel_y_q4, coeffs);
 
   if (w == 4) {
@@ -252,6 +254,8 @@ void av1_convolve_x_sse2(const uint8_t *src, int src_stride,
   (void)dst0;
   (void)dst_stride0;
 
+  assert(bits >= 0);
+
   prepare_coeffs(filter_params_x, subpel_x_q4, coeffs);
 
   if (w == 4) {
@@ -334,6 +338,10 @@ void av1_convolve_y_sr_sse2(const uint8_t *src, int src_stride,
   (void)filter_params_x;
   (void)subpel_x_q4;
   (void)conv_params;
+
+  assert(conv_params->round_0 <= FILTER_BITS);
+  assert(((conv_params->round_0 + conv_params->round_1) <= (FILTER_BITS + 1)) ||
+         ((conv_params->round_0 + conv_params->round_1) == (2 * FILTER_BITS)));
 
   prepare_coeffs(filter_params_y, subpel_y_q4, coeffs);
 
@@ -484,13 +492,20 @@ void av1_convolve_x_sr_sse2(const uint8_t *src, int src_stride,
                             ConvolveParams *conv_params) {
   const int fo_horiz = filter_params_x->taps / 2 - 1;
   const uint8_t *src_ptr = src - fo_horiz;
-  const __m128i round_const = _mm_set1_epi32(
-      ((1 << conv_params->round_0) >> 1) + (1 << (FILTER_BITS - 1)));
-  const __m128i round_shift = _mm_cvtsi32_si128(FILTER_BITS);
+  const int bits = FILTER_BITS - conv_params->round_0;
+  const __m128i round_0_const =
+      _mm_set1_epi32((1 << conv_params->round_0) >> 1);
+  const __m128i round_const = _mm_set1_epi32((1 << bits) >> 1);
+  const __m128i round_0_shift = _mm_cvtsi32_si128(conv_params->round_0);
+  const __m128i round_shift = _mm_cvtsi32_si128(bits);
   __m128i coeffs[4];
 
   (void)filter_params_y;
   (void)subpel_y_q4;
+
+  assert(bits >= 0);
+  assert((FILTER_BITS - conv_params->round_1) >= 0 ||
+         ((conv_params->round_0 + conv_params->round_1) == 2 * FILTER_BITS));
 
   prepare_coeffs(filter_params_x, subpel_x_q4, coeffs);
 
@@ -507,8 +522,10 @@ void av1_convolve_x_sr_sse2(const uint8_t *src, int src_stride,
       s[3] =
           _mm_unpacklo_epi8(_mm_srli_si128(data, 6), _mm_srli_si128(data, 7));
       const __m128i res_lo = convolve_lo_x(s, coeffs);
-      const __m128i res_lo_round =
-          _mm_sra_epi32(_mm_add_epi32(res_lo, round_const), round_shift);
+      __m128i res_lo_round =
+          _mm_sra_epi32(_mm_add_epi32(res_lo, round_0_const), round_0_shift);
+      res_lo_round =
+          _mm_sra_epi32(_mm_add_epi32(res_lo_round, round_const), round_shift);
 
       const __m128i res16 = _mm_packs_epi32(res_lo_round, res_lo_round);
       const __m128i res = _mm_packus_epi16(res16, res16);
@@ -549,10 +566,14 @@ void av1_convolve_x_sr_sse2(const uint8_t *src, int src_stride,
         // Rearrange pixels back into the order 0 ... 7
         const __m128i res_lo = _mm_unpacklo_epi32(res_even, res_odd);
         const __m128i res_hi = _mm_unpackhi_epi32(res_even, res_odd);
-        const __m128i res_lo_round =
-            _mm_sra_epi32(_mm_add_epi32(res_lo, round_const), round_shift);
-        const __m128i res_hi_round =
-            _mm_sra_epi32(_mm_add_epi32(res_hi, round_const), round_shift);
+        __m128i res_lo_round =
+            _mm_sra_epi32(_mm_add_epi32(res_lo, round_0_const), round_0_shift);
+        res_lo_round = _mm_sra_epi32(_mm_add_epi32(res_lo_round, round_const),
+                                     round_shift);
+        __m128i res_hi_round =
+            _mm_sra_epi32(_mm_add_epi32(res_hi, round_0_const), round_0_shift);
+        res_hi_round = _mm_sra_epi32(_mm_add_epi32(res_hi_round, round_const),
+                                     round_shift);
 
         const __m128i res16 = _mm_packs_epi32(res_lo_round, res_hi_round);
         const __m128i res = _mm_packus_epi16(res16, res16);

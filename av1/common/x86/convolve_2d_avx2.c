@@ -43,6 +43,8 @@ void av1_convolve_2d_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
 
   __m256i filt[4], s[8], coeffs_x[4], coeffs_y[4];
 
+  assert(conv_params->round_0 > 0);
+
   filt[0] = _mm256_load_si256((__m256i const *)filt1_global_avx2);
   filt[1] = _mm256_load_si256((__m256i const *)filt2_global_avx2);
   filt[2] = _mm256_load_si256((__m256i const *)filt3_global_avx2);
@@ -175,6 +177,8 @@ void av1_convolve_2d_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
   const int offset_bits = bd + 2 * FILTER_BITS - conv_params->round_0;
 
   __m256i filt[4], coeffs_h[4], coeffs_v[4];
+
+  assert(conv_params->round_0 > 0);
 
   filt[0] = _mm256_load_si256((__m256i const *)filt1_global_avx2);
   filt[1] = _mm256_load_si256((__m256i const *)filt2_global_avx2);

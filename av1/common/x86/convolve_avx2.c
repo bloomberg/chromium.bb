@@ -359,6 +359,8 @@ void av1_convolve_y_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
   const __m256i avg_mask = _mm256_set1_epi32(conv_params->do_average ? -1 : 0);
   __m256i coeffs[4], s[8];
 
+  assert((FILTER_BITS - conv_params->round_0) >= 0);
+
   prepare_coeffs(filter_params_y, subpel_y_q4, coeffs);
 
   (void)conv_params;
@@ -514,6 +516,10 @@ void av1_convolve_y_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
       _mm256_set1_epi16((1 << right_shift_bits) >> 1);
   __m256i coeffs[4], s[8];
 
+  assert(conv_params->round_0 <= FILTER_BITS);
+  assert(((conv_params->round_0 + conv_params->round_1) <= (FILTER_BITS + 1)) ||
+         ((conv_params->round_0 + conv_params->round_1) == (2 * FILTER_BITS)));
+
   prepare_coeffs(filter_params_y, subpel_y_q4, coeffs);
 
   (void)filter_params_x;
@@ -665,6 +671,9 @@ void av1_convolve_x_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
 
   __m256i filt[4], coeffs[4];
 
+  assert(bits >= 0);
+  assert(conv_params->round_0 > 0);
+
   filt[0] = _mm256_load_si256((__m256i const *)filt1_global_avx2);
   filt[1] = _mm256_load_si256((__m256i const *)filt2_global_avx2);
   filt[2] = _mm256_load_si256((__m256i const *)filt3_global_avx2);
@@ -720,6 +729,7 @@ void av1_convolve_x_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
   int i, j;
   const int fo_horiz = filter_params_x->taps / 2 - 1;
   const uint8_t *const src_ptr = src - fo_horiz;
+  const int bits = FILTER_BITS - conv_params->round_0;
 
   __m256i filt[4], coeffs[4];
 
@@ -730,13 +740,19 @@ void av1_convolve_x_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
 
   prepare_coeffs(filter_params_x, subpel_x_q4, coeffs);
 
-  const __m256i round_const =
-      _mm256_set1_epi16(((1 << (conv_params->round_0 - 1)) >> 1) +
-                        ((1 << (FILTER_BITS - 1)) >> 1));
-  const __m128i round_shift = _mm_cvtsi32_si128(FILTER_BITS - 1);
+  const __m256i round_0_const =
+      _mm256_set1_epi16((1 << (conv_params->round_0 - 1)) >> 1);
+  const __m128i round_0_shift = _mm_cvtsi32_si128(conv_params->round_0 - 1);
+  const __m256i round_const = _mm256_set1_epi16((1 << bits) >> 1);
+  const __m128i round_shift = _mm_cvtsi32_si128(bits);
 
   (void)filter_params_y;
   (void)subpel_y_q4;
+
+  assert(bits >= 0);
+  assert((FILTER_BITS - conv_params->round_1) >= 0 ||
+         ((conv_params->round_0 + conv_params->round_1) == 2 * FILTER_BITS));
+  assert(conv_params->round_0 > 0);
 
   for (i = 0; i < h; ++i) {
     for (j = 0; j < w; j += 16) {
@@ -748,7 +764,9 @@ void av1_convolve_x_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
 
       __m256i res_16b = convolve_x(data, coeffs, filt);
 
-      // Combine V round and 2F-H-V round into a single rounding
+      res_16b = _mm256_sra_epi16(_mm256_add_epi16(res_16b, round_0_const),
+                                 round_0_shift);
+
       res_16b =
           _mm256_sra_epi16(_mm256_add_epi16(res_16b, round_const), round_shift);
 

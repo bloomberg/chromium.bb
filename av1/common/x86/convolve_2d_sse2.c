@@ -41,6 +41,8 @@ void av1_convolve_2d_sse2(const uint8_t *src, int src_stride, uint8_t *dst0,
 
   const __m128i zero = _mm_setzero_si128();
 
+  assert(conv_params->round_0 > 0);
+
   /* Horizontal filter */
   {
     const int16_t *x_filter = av1_get_interp_filter_subpel_kernel(
@@ -225,6 +227,8 @@ void av1_convolve_2d_sr_sse2(const uint8_t *src, int src_stride, uint8_t *dst,
   const int bits =
       FILTER_BITS * 2 - conv_params->round_0 - conv_params->round_1;
   const int offset_bits = bd + 2 * FILTER_BITS - conv_params->round_0;
+
+  assert(conv_params->round_0 > 0);
 
   /* Horizontal filter */
   {
