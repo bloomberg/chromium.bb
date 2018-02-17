@@ -74,7 +74,11 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
  private:
   friend class IconFocusRing;
 
-  SkColor GetIconImageColor(bool checked) const;
+  // Bitmask constants for GetIconImageColor.
+  enum IconState { CHECKED = 0b1, ENABLED = 0b10 };
+
+  // |icon_state| is a bitmask using the IconState enum.
+  SkColor GetIconImageColor(int icon_state) const;
 
   // Button:
   void NotifyClick(const ui::Event& event) override;

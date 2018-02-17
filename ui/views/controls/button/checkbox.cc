@@ -12,6 +12,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
@@ -215,14 +216,16 @@ std::unique_ptr<InkDropRipple> Checkbox::CreateInkDropRipple() const {
 
 SkColor Checkbox::GetInkDropBaseColor() const {
   // Usually ink drop ripples match the text color. Checkboxes use the color of
-  // the unchecked icon.
-  return GetIconImageColor(false);
+  // the unchecked, enabled icon.
+  return GetIconImageColor(IconState::ENABLED);
 }
 
 gfx::ImageSkia Checkbox::GetImage(ButtonState for_state) const {
   if (UseMd()) {
+    const int checked = checked_ ? IconState::CHECKED : 0;
+    const int enabled = for_state != STATE_DISABLED ? IconState::ENABLED : 0;
     return gfx::CreateVectorIcon(GetVectorIcon(), 16,
-                                 GetIconImageColor(checked_));
+                                 GetIconImageColor(checked | enabled));
   }
 
   const size_t checked_index = checked_ ? 1 : 0;
@@ -263,14 +266,19 @@ const gfx::VectorIcon& Checkbox::GetVectorIcon() const {
   return checked() ? kCheckboxActiveIcon : kCheckboxNormalIcon;
 }
 
-SkColor Checkbox::GetIconImageColor(bool checked) const {
+SkColor Checkbox::GetIconImageColor(int icon_state) const {
   DCHECK(UseMd());
-  return checked
-             ? GetNativeTheme()->GetSystemColor(
-                   ui::NativeTheme::kColorId_FocusedBorderColor)
-             // When unchecked, the icon color matches push button text color.
-             : style::GetColor(*this, style::CONTEXT_BUTTON_MD,
-                               style::STYLE_PRIMARY);
+  const SkColor active_color =
+      (icon_state & IconState::CHECKED)
+          ? GetNativeTheme()->GetSystemColor(
+                ui::NativeTheme::kColorId_FocusedBorderColor)
+          // When unchecked, the icon color matches push button text color.
+          : style::GetColor(*this, style::CONTEXT_BUTTON_MD,
+                            style::STYLE_PRIMARY);
+  return (icon_state & IconState::ENABLED)
+             ? active_color
+             : color_utils::BlendTowardOppositeLuma(active_color,
+                                                    gfx::kDisabledControlAlpha);
 }
 
 void Checkbox::NotifyClick(const ui::Event& event) {
