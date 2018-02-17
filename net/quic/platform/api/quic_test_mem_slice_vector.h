@@ -20,7 +20,7 @@ namespace test {
 // returned QuicMemSliceSpan.
 class QuicTestMemSliceVector {
  public:
-  explicit QuicTestMemSliceVector(std::vector<std::pair<char*, int>> buffers)
+  explicit QuicTestMemSliceVector(std::vector<std::pair<char*, size_t>> buffers)
       : impl_(std::move(buffers)) {}
 
   QuicMemSliceSpan span() { return QuicMemSliceSpan(impl_.span()); }

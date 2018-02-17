@@ -34,12 +34,12 @@ using testing::Matcher;
 using testing::NiceMock;
 using testing::Return;
 using testing::ReturnPointee;
-using testing::SetArgPointee;
 using testing::StrictMock;
 using testing::Truly;
 
 namespace net {
 namespace test {
+namespace {
 
 class FramerVisitorCapturingPublicReset : public NoOpFramerVisitor {
  public:
@@ -58,8 +58,6 @@ class FramerVisitorCapturingPublicReset : public NoOpFramerVisitor {
   QuicPublicResetPacket public_reset_packet_;
 };
 
-namespace {
-
 class MockFakeTimeEpollServer : public FakeTimeEpollServer {
  public:
   MOCK_METHOD2(RegisterAlarm,
@@ -73,7 +71,7 @@ class QuicTimeWaitListManagerTest : public QuicTest {
         alarm_factory_(&epoll_server_),
         time_wait_list_manager_(&writer_, &visitor_, &helper_, &alarm_factory_),
         connection_id_(45),
-        client_address_(net::test::TestPeerIPAddress(), kTestPort),
+        client_address_(TestPeerIPAddress(), kTestPort),
         writer_is_blocked_(false) {}
 
   ~QuicTimeWaitListManagerTest() override = default;
@@ -138,13 +136,13 @@ class QuicTimeWaitListManagerTest : public QuicTest {
 
 bool ValidPublicResetPacketPredicate(
     QuicConnectionId expected_connection_id,
-    const ::testing::tuple<const char*, int>& packet_buffer) {
+    const testing::tuple<const char*, int>& packet_buffer) {
   FramerVisitorCapturingPublicReset visitor;
   QuicFramer framer(AllSupportedVersions(), QuicTime::Zero(),
                     Perspective::IS_CLIENT);
   framer.set_visitor(&visitor);
-  QuicEncryptedPacket encrypted(::testing::get<0>(packet_buffer),
-                                ::testing::get<1>(packet_buffer));
+  QuicEncryptedPacket encrypted(testing::get<0>(packet_buffer),
+                                testing::get<1>(packet_buffer));
   framer.ProcessPacket(encrypted);
   QuicPublicResetPacket packet = visitor.public_reset_packet();
   return expected_connection_id == packet.connection_id &&
@@ -155,7 +153,7 @@ bool ValidPublicResetPacketPredicate(
 Matcher<const testing::tuple<const char*, int>> PublicResetPacketEq(
     QuicConnectionId connection_id) {
   return Truly(
-      [connection_id](const ::testing::tuple<const char*, int> packet_buffer) {
+      [connection_id](const testing::tuple<const char*, int> packet_buffer) {
         return ValidPublicResetPacketPredicate(connection_id, packet_buffer);
       });
 }
@@ -222,7 +220,7 @@ TEST_F(QuicTimeWaitListManagerTest, SendTwoConnectionCloses) {
   EXPECT_CALL(writer_, WritePacket(_, kConnectionCloseLength,
                                    server_address_.host(), client_address_, _))
       .Times(2)
-      .WillRepeatedly(Return(WriteResult(WRITE_STATUS_OK, 1)));
+      .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 1)));
 
   ProcessPacket(connection_id_);
 }
@@ -433,13 +431,11 @@ TEST_F(QuicTimeWaitListManagerTest, AddConnectionIdTwice) {
 }
 
 TEST_F(QuicTimeWaitListManagerTest, ConnectionIdsOrderedByTime) {
-  // Simple randomization: the values of connection_ids are swapped based on the
-  // current seconds on the clock. If the container is broken, the test will be
-  // 50% flaky.
-  int odd_second = static_cast<int>(epoll_server_.ApproximateNowInUsec()) % 2;
-  EXPECT_TRUE(odd_second == 0 || odd_second == 1);
-  const QuicConnectionId connection_id1 = odd_second;
-  const QuicConnectionId connection_id2 = 1 - odd_second;
+  // Simple randomization: the values of connection_ids are randomly swapped.
+  // If the container is broken, the test will be 50% flaky.
+  const QuicConnectionId connection_id1 =
+      QuicRandom::GetInstance()->RandUint64() % 2;
+  const QuicConnectionId connection_id2 = 1 - connection_id1;
 
   // 1 will hash lower than 2, but we add it later. They should come out in the
   // add order, not hash order.

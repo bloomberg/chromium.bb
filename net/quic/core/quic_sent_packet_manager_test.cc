@@ -44,7 +44,7 @@ const size_t kMinTimeoutsBeforePathDegrading = 2;
 
 // Matcher to check that the packet number matches the second argument.
 MATCHER(PacketNumberEq, "") {
-  return std::tr1::get<0>(arg).packet_number == std::tr1::get<1>(arg);
+  return ::testing::get<0>(arg).packet_number == ::testing::get<1>(arg);
 }
 
 class MockDebugDelegate : public QuicSentPacketManager::DebugDelegate {
@@ -1199,7 +1199,7 @@ TEST_P(QuicSentPacketManagerTest,
   // Ensure both packets get discarded when packet 2 is acked.
   QuicAckFrame ack_frame = InitAckFrame({{3, 4}});
   ExpectUpdatedRtt(3);
-  manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  manager_.OnIncomingAck(ack_frame, clock_.Now());
   VerifyUnackedPackets(nullptr, 0);
   VerifyRetransmittablePackets(nullptr, 0);
 }
@@ -1384,7 +1384,7 @@ TEST_P(QuicSentPacketManagerTest, TwoRetransmissionTimeoutsAckSecond) {
   QuicAckFrame ack_frame = InitAckFrame({{2, 3}});
   ack_frame.ack_delay_time = QuicTime::Delta::Zero();
   ExpectAck(2);
-  manager_.OnIncomingAck(ack_frame, clock_.Now());
+  manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
 
   // The original packet and newest should be outstanding.
   EXPECT_EQ(2 * kDefaultLength,
@@ -1436,7 +1436,7 @@ TEST_P(QuicSentPacketManagerTest, TwoRetransmissionTimeoutsAckFirst) {
   QuicAckFrame ack_frame = InitAckFrame({{3, 4}});
   ack_frame.ack_delay_time = QuicTime::Delta::Zero();
   ExpectAck(3);
-  manager_.OnIncomingAck(ack_frame, clock_.Now());
+  manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
 
   // The first two packets should still be outstanding.
   EXPECT_EQ(2 * kDefaultLength,

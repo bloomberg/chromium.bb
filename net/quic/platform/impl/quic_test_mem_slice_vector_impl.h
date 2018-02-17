@@ -22,7 +22,7 @@ class TestIOBuffer : public IOBuffer {
 class QuicTestMemSliceVectorImpl {
  public:
   explicit QuicTestMemSliceVectorImpl(
-      std::vector<std::pair<char*, int>> buffers);
+      std::vector<std::pair<char*, size_t>> buffers);
   ~QuicTestMemSliceVectorImpl();
 
   QuicMemSliceSpanImpl span();

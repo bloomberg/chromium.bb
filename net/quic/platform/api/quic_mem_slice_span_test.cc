@@ -23,7 +23,7 @@ class QuicMemSliceSpanImplTest : public QuicTest {
   }
 
   char data_[1024];
-  std::vector<std::pair<char*, int>> buffers_;
+  std::vector<std::pair<char*, size_t>> buffers_;
 };
 
 TEST_F(QuicMemSliceSpanImplTest, SaveDataInSendBuffer) {

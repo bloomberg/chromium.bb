@@ -17,6 +17,7 @@
 #include "net/quic/core/quic_crypto_stream.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/core/tls_server_handshaker.h"
+#include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_str_cat.h"
@@ -43,14 +44,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::string;
-using testing::CreateFunctor;
-using testing::DoAll;
+using testing::_;
 using testing::InSequence;
 using testing::Invoke;
 using testing::Return;
 using testing::WithArg;
 using testing::WithoutArgs;
-using testing::_;
 
 static const size_t kDefaultMaxConnectionsInStore = 100;
 static const size_t kMaxConnectionsWithoutCHLO =
@@ -287,8 +286,7 @@ class QuicDispatcherTest : public QuicTest {
                       const QuicEncryptedPacket& packet) {
     EXPECT_EQ(data_connection_map_[conn_id].front().length(),
               packet.AsStringPiece().length());
-    EXPECT_EQ(data_connection_map_[conn_id].front(),
-              packet.AsStringPiece().as_string());
+    EXPECT_EQ(data_connection_map_[conn_id].front(), packet.AsStringPiece());
     data_connection_map_[conn_id].pop_front();
   }
 
@@ -598,7 +596,7 @@ TEST_F(QuicDispatcherTest, TooBigSeqNoPacketToTimeWaitListManager) {
 }
 
 TEST_F(QuicDispatcherTest, SupportedTransportVersionsChangeInFlight) {
-  static_assert(arraysize(kSupportedTransportVersions) == 8u,
+  static_assert(QUIC_ARRAYSIZE(kSupportedTransportVersions) == 8u,
                 "Supported versions out of sync");
   SetQuicReloadableFlag(quic_disable_version_37, false);
   SetQuicReloadableFlag(quic_disable_version_38, false);

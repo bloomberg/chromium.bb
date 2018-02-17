@@ -38,7 +38,6 @@
 #include "testing/gmock_mutant.h"
 
 using std::string;
-using testing::CreateFunctor;
 using testing::_;
 using testing::AtLeast;
 using testing::InSequence;
