@@ -54,7 +54,7 @@ H264Encoder::~H264Encoder() {
 void H264Encoder::EncodeOnEncodingTaskRunner(
     scoped_refptr<VideoFrame> frame,
     base::TimeTicks capture_timestamp) {
-  TRACE_EVENT0("video", "H264Encoder::EncodeOnEncodingTaskRunner");
+  TRACE_EVENT0("media", "H264Encoder::EncodeOnEncodingTaskRunner");
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 
   const gfx::Size frame_size = frame->visible_rect().size();
@@ -112,7 +112,7 @@ void H264Encoder::EncodeOnEncodingTaskRunner(
 }
 
 void H264Encoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {
-  TRACE_EVENT0("video", "H264Encoder::ConfigureEncoderOnEncodingTaskRunner");
+  TRACE_EVENT0("media", "H264Encoder::ConfigureEncoderOnEncodingTaskRunner");
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
   ISVCEncoder* temp_encoder = nullptr;
   if (WelsCreateSVCEncoder(&temp_encoder) != 0) {

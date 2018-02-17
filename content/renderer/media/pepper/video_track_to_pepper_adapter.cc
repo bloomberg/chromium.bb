@@ -50,7 +50,7 @@ class PpFrameReceiver : public MediaStreamVideoSink {
 
   void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
                     base::TimeTicks estimated_capture_time) {
-    TRACE_EVENT0("video", "PpFrameReceiver::OnVideoFrame");
+    TRACE_EVENT0("media", "PpFrameReceiver::OnVideoFrame");
     if (reader_)
       reader_->GotFrame(frame);
   }
