@@ -507,6 +507,10 @@ static INLINE int get_nz_map_ctx_from_stats(
     return ctx + map[AOMMIN(idx, 2)];
   }
 }
+
+typedef aom_cdf_prob (*base_cdf_arr)[CDF_SIZE(4)];
+typedef aom_cdf_prob (*br_cdf_arr)[CDF_SIZE(BR_CDF_SIZE)];
+
 static INLINE int get_lower_levels_ctx_eob(int bwl, int height, int scan_idx) {
   if (scan_idx == 0) return 0;
   if (scan_idx <= (height << bwl) / 8) return 1;
