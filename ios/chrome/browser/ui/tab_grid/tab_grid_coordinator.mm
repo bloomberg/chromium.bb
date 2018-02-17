@@ -8,20 +8,23 @@
 #import "ios/chrome/browser/ui/main/bvc_container_view_controller.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_adaptor.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_mediator.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_transition_handler.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface TabGridCoordinator ()<UIViewControllerTransitioningDelegate>
-// Object that internally backs the public TabSwitcher
+@interface TabGridCoordinator ()
+// Object that internally backs the public  TabSwitcher
 @property(nonatomic, strong) TabGridAdaptor* adaptor;
 // Container view controller for the BVC to live in; this class's view
 // controller will present this.
 @property(nonatomic, strong) BVCContainerViewController* bvcContainer;
 // Mediates between the model layer and the tab grid UI layer.
 @property(nonatomic, strong) TabGridMediator* mediator;
+// Transitioning delegate for the view controller.
+@property(nonatomic, strong) TabGridTransitionHandler* transitionHandler;
 @end
 
 @implementation TabGridCoordinator
@@ -35,6 +38,7 @@
 @synthesize adaptor = _adaptor;
 @synthesize bvcContainer = _bvcContainer;
 @synthesize mediator = _mediator;
+@synthesize transitionHandler = _transitionHandler;
 
 #pragma mark - Public properties
 
@@ -51,8 +55,11 @@
 #pragma mark - ChromeCoordinator
 
 - (void)start {
-  UIViewController* mainViewController = [[TabGridViewController alloc] init];
-  mainViewController.transitioningDelegate = self;
+  TabGridViewController* mainViewController =
+      [[TabGridViewController alloc] init];
+  self.transitionHandler = [[TabGridTransitionHandler alloc] init];
+  self.transitionHandler.provider = mainViewController;
+  mainViewController.transitioningDelegate = self.transitionHandler;
   _mainViewController = mainViewController;
   self.window.rootViewController = self.mainViewController;
   self.adaptor = [[TabGridAdaptor alloc] init];
@@ -61,22 +68,6 @@
   self.mediator = [[TabGridMediator alloc] init];
   self.mediator.regularTabModel = self.regularTabModel;
   self.mediator.incognitoTabModel = self.incognitoTabModel;
-}
-
-#pragma mark - UIViewControllerTransitioningDelegate
-
-- (id<UIViewControllerAnimatedTransitioning>)
-animationControllerForPresentedController:(UIViewController*)presented
-                     presentingController:(UIViewController*)presenting
-                         sourceController:(UIViewController*)source {
-  return nil;
-}
-
-- (id<UIViewControllerAnimatedTransitioning>)
-animationControllerForDismissedController:(UIViewController*)dismissed {
-  // Verify that the presenting and dismissed view controllers are of the
-  // expected types.
-  return nil;
 }
 
 #pragma mark - ViewControllerSwapping
@@ -105,7 +96,7 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
   // If a BVC is currently being presented, dismiss it.  This will trigger any
   // necessary animations.
   if (self.bvcContainer) {
-    self.bvcContainer.transitioningDelegate = self;
+    self.bvcContainer.transitioningDelegate = self.transitionHandler;
     self.bvcContainer = nil;
     BOOL animated = !self.animationsDisabledForTesting;
     [self.mainViewController dismissViewControllerAnimated:animated
@@ -133,7 +124,7 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
 
   self.bvcContainer = [[BVCContainerViewController alloc] init];
   self.bvcContainer.currentBVC = viewController;
-  self.bvcContainer.transitioningDelegate = self;
+  self.bvcContainer.transitioningDelegate = self.transitionHandler;
   BOOL animated = !self.animationsDisabledForTesting;
   [self.mainViewController presentViewController:self.bvcContainer
                                         animated:animated
