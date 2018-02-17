@@ -1,3 +1,7 @@
+# Components must declare all dependencies explicitly. They do not inherit
+# from //ash/DEPS.
+noparent = True
+
 include_rules = [
   # Components may not directly access ash, except through public mojo
   # IPC interfaces.
