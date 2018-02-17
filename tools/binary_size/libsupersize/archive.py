@@ -508,29 +508,25 @@ def _AddNmAliases(raw_symbols, names_by_address):
 
   # Step 2: Create new symbols as siblings to each existing one.
   logging.debug('Creating %d new symbols from nm output', num_new_symbols)
-  src_cursor_end = len(raw_symbols)
-  raw_symbols += [None] * num_new_symbols
-  dst_cursor_end = len(raw_symbols)
-  for src_index, name_list in reversed(replacements):
-    # Copy over symbols that come after the current one.
-    chunk_size = src_cursor_end - src_index - 1
-    dst_cursor_end -= chunk_size
-    src_cursor_end -= chunk_size
-    raw_symbols[dst_cursor_end:dst_cursor_end + chunk_size] = (
-        raw_symbols[src_cursor_end:src_cursor_end + chunk_size])
-    sym = raw_symbols[src_index]
-    src_cursor_end -= 1
-
-    # Create symbols (does not bother reusing the existing symbol).
-    for i, full_name in enumerate(name_list):
-      dst_cursor_end -= 1
+  expected_num_symbols = len(raw_symbols) + num_new_symbols
+  ret = []
+  prev_src = 0
+  for cur_src, name_list in replacements:
+    ret += raw_symbols[prev_src:cur_src]
+    prev_src = cur_src + 1
+    sym = raw_symbols[cur_src]
+    # Create symbols (|sym| gets recreated and discarded).
+    new_syms = []
+    for full_name in name_list:
       # Do not set |aliases| in order to avoid being pruned by
       # _CompactLargeAliasesIntoSharedSymbols(), which assumes aliases differ
       # only by path. The field will be set afterwards by _ConnectNmAliases().
-      raw_symbols[dst_cursor_end] = models.Symbol(
-          sym.section_name, sym.size, address=sym.address, full_name=full_name)
-
-  assert dst_cursor_end == src_cursor_end
+      new_syms.append(models.Symbol(
+          sym.section_name, sym.size, address=sym.address, full_name=full_name))
+    ret += new_syms
+  ret += raw_symbols[prev_src:]
+  assert expected_num_symbols == len(ret)
+  return ret
 
 
 def LoadAndPostProcessSizeInfo(path):
@@ -642,7 +638,7 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, output_directory,
         'Adding symbols removed by identical code folding (as reported by nm)')
     # This normally does not block (it's finished by this time).
     names_by_address = elf_nm_result.get()
-    _AddNmAliases(raw_symbols, names_by_address)
+    raw_symbols = _AddNmAliases(raw_symbols, names_by_address)
 
     if output_directory:
       object_paths_by_name = bulk_analyzer.GetSymbolNames()

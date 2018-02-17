@@ -162,18 +162,18 @@ Index | Running Total | Section@Address | PSS | Path
              _GLOBAL__sub_I_SkDeviceProfile.cpp
 35)  77769369 (100.0%) t@0x28f1e0   69124          third_party/icu/ucnv_ext.c
              foo_bar
-36)  77769393 (100.0%) t@0x2a0000   24 (size=48)   {no path}
-             blink::ContiguousContainerBase::shrinkToFit (num_aliases=2)
-37)  77769417 (100.0%) t@0x2a0000   24 (size=48)   third_party/icu/ucnv_ext.c
+36)  77769393 (100.0%) t@0x2a0000   24 (size=48)   third_party/icu/ucnv_ext.c
              BazAlias (num_aliases=2)
-38)  77769420 (100.0%) t@0x2a0010   3 (size=12)    third_party/paint.cc
-             blink::ContiguousContainerBase::shrinkToFit (num_aliases=4)
-39)  77769423 (100.0%) t@0x2a0010   3 (size=12)    third_party/icu/ucnv_ext.c
-             blink::ContiguousContainerBase::shrinkToFit (num_aliases=4)
-40)  77769426 (100.0%) t@0x2a0010   3 (size=12)    third_party/fft_float.cc
-             FooAlias (num_aliases=4)
-41)  77769429 (100.0%) t@0x2a0010   3 (size=12)    third_party/fft_float.cc
+37)  77769417 (100.0%) t@0x2a0000   24 (size=48)   {no path}
+             blink::ContiguousContainerBase::shrinkToFit (num_aliases=2)
+38)  77769420 (100.0%) t@0x2a0010   3 (size=12)    third_party/fft_float.cc
              BarAlias (num_aliases=4)
+39)  77769423 (100.0%) t@0x2a0010   3 (size=12)    third_party/fft_float.cc
+             FooAlias (num_aliases=4)
+40)  77769426 (100.0%) t@0x2a0010   3 (size=12)    third_party/paint.cc
+             blink::ContiguousContainerBase::shrinkToFit (num_aliases=4)
+41)  77769429 (100.0%) t@0x2a0010   3 (size=12)    third_party/icu/ucnv_ext.c
+             blink::ContiguousContainerBase::shrinkToFit (num_aliases=4)
 42)  77769457 (100.0%) t@0x2a0020   28             third_party/container.c
              blink::ContiguousContainerBase::ContiguousContainerBase
 43)  77769551 (100.0%) t@0x2a1000   94             third_party/container.c
