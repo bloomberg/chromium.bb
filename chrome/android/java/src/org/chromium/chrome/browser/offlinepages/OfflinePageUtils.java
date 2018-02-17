@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.offlinepages;
 import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Environment;
 
 import org.chromium.base.ActivityState;
@@ -345,44 +346,48 @@ public class OfflinePageUtils {
     }
 
     /**
-     * Share an offline copy of the current page.
+     * If possible, creates the ShareParams needed to share the current offline page loaded in the
+     * provided tab as a MHTML file.
+     *
      * @param activity The activity used for sharing and file provider interaction.
-     * @param currentTab The current tab for which sharing is being done.
+     * @param currentTab The current tab from which the page is being shared.
+     * @param shareCallback The callback to be used to send the ShareParams. This will only be
+     *                      called if this function call returns true.
+     * @return true if the sharing of the page is possible and the callback will be invoked.
      */
-    public static ShareParams buildShareParams(final Activity activity, final Tab tab) {
-        if (tab == null) return null;
+    public static boolean maybeShareOfflinePage(
+            final Activity activity, Tab tab, final Callback<ShareParams> shareCallback) {
+        if (tab == null) return false;
 
-        final OfflinePageBridge offlinePageBridge =
-                getInstance().getOfflinePageBridge(tab.getProfile());
+        OfflinePageBridge offlinePageBridge = getInstance().getOfflinePageBridge(tab.getProfile());
 
         if (offlinePageBridge == null) {
             Log.e(TAG, "Unable to perform sharing on current tab.");
-            return null;
+            return false;
         }
 
         OfflinePageItem offlinePage = offlinePageBridge.getOfflinePage(tab.getWebContents());
-        // Bail if there is no offline page that can be shared.
-        if (offlinePage == null) return null;
+        // Bail if there is no offline page or sharing is not enabled.
+        if (offlinePage == null || !OfflinePageBridge.isPageSharingEnabled()) return false;
 
-        // Only cached pages are supported right now.
-        // TODO(fgorski): Provide sharing support for user requested pages.
-        if (!isCachedPage(offlinePage)) return null;
+        final String tabTitle = tab.getTitle();
+        final String tabUrl = tab.getUrl();
+        final File offlinePageFile = new File(offlinePage.getFilePath());
+        AsyncTask<Void, Void, Uri> task = new AsyncTask<Void, Void, Uri>() {
+            protected Uri doInBackground(Void... v) {
+                return ChromeFileProvider.generateUri(activity, offlinePageFile);
+            }
+            protected void onPostExecute(Uri uri) {
+                ShareParams shareParams = new ShareParams.Builder(activity, tabTitle, tabUrl)
+                                                  .setShareDirectly(false)
+                                                  .setOfflineUri(uri)
+                                                  .build();
+                shareCallback.onResult(shareParams);
+            }
+        };
+        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
-        final File offlineFile = new File(offlinePage.getFilePath());
-        final Uri contentUri = ChromeFileProvider.generateUri(activity, offlineFile);
-
-        return new ShareParams.Builder(activity, tab.getTitle(), tab.getUrl())
-                .setShareDirectly(false)
-                .setOfflineUri(contentUri)
-                .build();
-    }
-
-    private static boolean isCachedPage(OfflinePageItem offlinePage) {
-        assert offlinePage != null;
-        String namespace = offlinePage.getClientId().getNamespace();
-        return namespace != OfflinePageBridge.DOWNLOAD_NAMESPACE
-                && namespace != OfflinePageBridge.ASYNC_NAMESPACE
-                && namespace != OfflinePageBridge.BROWSER_ACTIONS_NAMESPACE;
+        return true;
     }
 
     /**
