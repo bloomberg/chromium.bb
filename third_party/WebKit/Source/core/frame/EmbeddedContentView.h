@@ -31,7 +31,7 @@ class CORE_EXPORT EmbeddedContentView : public GarbageCollectedMixin {
   virtual void SetParentVisible(bool) = 0;
   virtual void SetFrameRect(const IntRect&) = 0;
   virtual void FrameRectsChanged() = 0;
-  virtual const IntRect& FrameRect() const = 0;
+  virtual IntRect FrameRect() const = 0;
   virtual void Paint(GraphicsContext&,
                      const GlobalPaintFlags,
                      const CullRect&) const = 0;

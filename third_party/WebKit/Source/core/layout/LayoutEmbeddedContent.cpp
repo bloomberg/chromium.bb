@@ -364,6 +364,17 @@ void LayoutEmbeddedContent::UpdateGeometry(
   // TODO(trchen): Remove this hack once we fixed all callers.
   frame_rect.SetLocation(RoundedIntPoint(absolute_bounding_box.Location()));
 
+  // As an optimization, we don't include the root layer's scroll offset in the
+  // frame rect.  As a result, we don't need to recalculate the frame rect every
+  // time the root layer scrolls; however, each implementation of
+  // EmbeddedContentView::FrameRect() must add the root layer's scroll offset
+  // into its position.
+  // TODO(szager): Refactor this functionality into EmbeddedContentView, rather
+  // than reimplementing in each concrete subclass.
+  LayoutView* layout_view = View();
+  if (layout_view && layout_view->HasOverflowClip())
+    frame_rect.Move(layout_view->ScrolledContentOffset());
+
   embedded_content_view.SetFrameRect(frame_rect);
 }
 

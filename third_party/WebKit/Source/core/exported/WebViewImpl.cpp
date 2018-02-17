@@ -1728,12 +1728,12 @@ void WebViewImpl::ResizeViewWhileAnchored(float top_controls_height,
     // TextAutosizer are updated.
     TextAutosizer::DeferUpdatePageInfo defer_update_page_info(GetPage());
     LocalFrameView* frame_view = MainFrameImpl()->GetFrameView();
-    IntRect old_rect = frame_view->FrameRect();
+    IntSize old_size = frame_view->Size();
     UpdateICBAndResizeViewport();
-    IntRect new_rect = frame_view->FrameRect();
+    IntSize new_size = frame_view->Size();
     frame_view->MarkViewportConstrainedObjectsForLayout(
-        old_rect.Width() != new_rect.Width(),
-        old_rect.Height() != new_rect.Height());
+        old_size.Width() != new_size.Width(),
+        old_size.Height() != new_size.Height());
   }
 
   fullscreen_controller_->UpdateSize();
@@ -3366,7 +3366,7 @@ void WebViewImpl::ResizeAfterLayout() {
 
   if (should_auto_resize_) {
     LocalFrameView* view = MainFrameImpl()->GetFrame()->View();
-    WebSize frame_size = view->FrameRect().Size();
+    WebSize frame_size = view->Size();
     if (frame_size != size_) {
       size_ = frame_size;
 

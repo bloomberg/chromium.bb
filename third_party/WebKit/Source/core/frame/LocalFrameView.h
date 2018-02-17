@@ -121,17 +121,21 @@ class CORE_EXPORT LocalFrameView final
   void Invalidate() { InvalidateRect(IntRect(0, 0, Width(), Height())); }
   void InvalidateRect(const IntRect&);
   void SetFrameRect(const IntRect&) override;
-  const IntRect& FrameRect() const override { return frame_rect_; }
-  int X() const { return frame_rect_.X(); }
-  int Y() const { return frame_rect_.Y(); }
-  int Width() const { return frame_rect_.Width(); }
-  int Height() const { return frame_rect_.Height(); }
+  IntRect FrameRect() const override { return IntRect(Location(), Size()); }
+  IntPoint Location() const;
+  int X() const { return Location().X(); }
+  int Y() const { return Location().Y(); }
+  int Width() const { return Size().Width(); }
+  int Height() const { return Size().Height(); }
   IntSize Size() const { return frame_rect_.Size(); }
-  IntPoint Location() const { return frame_rect_.Location(); }
-  void Resize(int width, int height) {
-    SetFrameRect(IntRect(frame_rect_.X(), frame_rect_.Y(), width, height));
+  void Resize(int width, int height) { Resize(IntSize(width, height)); }
+  void Resize(const IntSize& size) {
+    SetFrameRect(IntRect(frame_rect_.Location(), size));
   }
-  void Resize(const IntSize& size) { SetFrameRect(IntRect(Location(), size)); }
+
+  // Called when our frame rect changes (or the rect/scroll offset of an
+  // ancestor changes).
+  void FrameRectsChanged() override;
 
   LocalFrame& GetFrame() const {
     DCHECK(frame_);
@@ -1069,10 +1073,6 @@ class CORE_EXPORT LocalFrameView final
   void Init();
 
   void ClearLayoutSubtreeRootsAndMarkContainingBlocks();
-
-  // Called when our frame rect changes (or the rect/scroll offset of an
-  // ancestor changes).
-  void FrameRectsChanged() override;
 
   bool ContentsInCompositedLayer() const;
 

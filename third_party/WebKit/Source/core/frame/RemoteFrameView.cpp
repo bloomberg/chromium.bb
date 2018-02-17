@@ -124,17 +124,35 @@ void RemoteFrameView::SetFrameRect(const IntRect& frame_rect) {
   FrameRectsChanged();
 }
 
+IntRect RemoteFrameView::FrameRect() const {
+  IntPoint location(frame_rect_.Location());
+
+  // As an optimization, we don't include the root layer's scroll offset in the
+  // frame rect.  As a result, we don't need to recalculate the frame rect every
+  // time the root layer scrolls, but we need to add it in here.
+  LayoutEmbeddedContent* owner = remote_frame_->OwnerLayoutObject();
+  if (owner) {
+    LayoutView* owner_layout_view = owner->View();
+    DCHECK(owner_layout_view);
+    if (owner_layout_view->HasOverflowClip())
+      location.Move(-owner_layout_view->ScrolledContentOffset());
+  }
+
+  return IntRect(location, frame_rect_.Size());
+}
+
 void RemoteFrameView::FrameRectsChanged() {
   // Update the rect to reflect the position of the frame relative to the
   // containing local frame root. The position of the local root within
   // any remote frames, if any, is accounted for by the embedder.
-  IntRect screen_space_rect = frame_rect_;
+  IntRect frame_rect(FrameRect());
+  IntRect screen_space_rect = frame_rect;
 
   if (LocalFrameView* parent = ParentFrameView()) {
     screen_space_rect =
         parent->ConvertToRootFrame(parent->ContentsToFrame(screen_space_rect));
   }
-  remote_frame_->Client()->FrameRectsChanged(frame_rect_, screen_space_rect);
+  remote_frame_->Client()->FrameRectsChanged(frame_rect, screen_space_rect);
 }
 
 void RemoteFrameView::UpdateGeometry() {
@@ -203,7 +221,7 @@ void RemoteFrameView::UpdateRenderThrottlingStatus(bool hidden,
   // Note that we disallow throttling of 0x0 and display:none frames because
   // some sites use them to drive UI logic.
   HTMLFrameOwnerElement* owner_element = remote_frame_->DeprecatedLocalOwner();
-  hidden_for_throttling_ = hidden && !FrameRect().IsEmpty() &&
+  hidden_for_throttling_ = hidden && !frame_rect_.IsEmpty() &&
                            (owner_element && owner_element->GetLayoutObject());
   subtree_throttled_ = subtree_throttled;
 

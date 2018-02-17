@@ -3810,7 +3810,7 @@ LayoutUnit LayoutBox::ContainingBlockLogicalWidthForPositioned(
       // set yet.
       LayoutSize viewport_size(
           frame_view->LayoutViewportScrollableArea()->ExcludeScrollbars(
-              frame_view->FrameRect().Size()));
+              frame_view->Size()));
       return LayoutUnit(containing_block->IsHorizontalWritingMode()
                             ? viewport_size.Width()
                             : viewport_size.Height());
@@ -3874,7 +3874,7 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPositioned(
       // set yet.
       LayoutSize viewport_size(
           frame_view->LayoutViewportScrollableArea()->ExcludeScrollbars(
-              frame_view->FrameRect().Size()));
+              frame_view->Size()));
       return containing_block->IsHorizontalWritingMode()
                  ? viewport_size.Height()
                  : viewport_size.Width();

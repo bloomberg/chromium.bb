@@ -89,7 +89,7 @@ class CORE_EXPORT WebPluginContainerImpl final
   void SetParentVisible(bool) override;
   void FrameRectsChanged() override;
   void SetFrameRect(const IntRect&) override;
-  const IntRect& FrameRect() const override { return frame_rect_; }
+  IntRect FrameRect() const override;
   void Paint(GraphicsContext&,
              const GlobalPaintFlags,
              const CullRect&) const override;
