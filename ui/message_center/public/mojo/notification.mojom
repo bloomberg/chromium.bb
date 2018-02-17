@@ -4,8 +4,10 @@
 
 module message_center.mojom;
 
+import "mojo/common/time.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "ui/gfx/image/mojo/image.mojom";
+import "ui/message_center/public/mojo/notifier_id.mojom";
 import "url/mojom/url.mojom";
 
 // Matches message_center::NotificationType.
@@ -18,21 +20,58 @@ enum NotificationType {
   CUSTOM = 5,
 };
 
+// Matches message_center::SettingsButtonHandler.
+enum SettingsButtonHandler {
+  NONE = 0,
+  INLINE = 1,
+  DELEGATE = 2,
+};
+
+// Matches message_center::FullscreenVisibility.
+enum FullscreenVisibility {
+  NONE= 0,
+  OVER_USER = 1,
+};
+
+// The fields and their meanings match message_center::NotificationItem.
+struct NotificationItem {
+  mojo_base.mojom.String16 title;
+  mojo_base.mojom.String16 message;
+};
+
+// The fields and their meanings match message_center::ButtonInfo.
+struct ButtonInfo {
+  string title;
+  gfx.mojom.ImageSkia? icon;
+  mojo_base.mojom.String16? placeholder;
+};
+
 // These fields and their meanings are identical to those in
 // message_center::RichNotificationData.
-// TODO(estade): Add the rest of the fields for RichNotificationData.
 struct RichNotificationData {
+  int32 priority;
+  bool never_time_out;
+  mojo.common.mojom.Time timestamp;
+  // |context_message| intentionally omitted. See https://crbug.com/797084
+  gfx.mojom.ImageSkia? image;
+  gfx.mojom.ImageSkia? small_image;
+  array<NotificationItem> items;
   int32 progress;
   mojo_base.mojom.String16 progress_status;
+  array<ButtonInfo> buttons;
   bool should_make_spoken_feedback_for_popup_updates;
   bool clickable;
   bool pinned;
+  // |vibration_pattern| intentionally omitted
+  // |renotify| intentionally omitted
+  // |silent| intentionally omitted
   mojo_base.mojom.String16 accessible_name;
   string vector_small_image_id;
   uint32 accent_color;
+  SettingsButtonHandler settings_button_handler;
+  FullscreenVisibility fullscreen_visibility;
 };
 
-// TODO(mhashmi): Add the rest of the fields for a Notification
 struct Notification {
   NotificationType type;
 
@@ -45,6 +84,10 @@ struct Notification {
   gfx.mojom.ImageSkia? icon;
   mojo_base.mojom.String16 display_source;
   url.mojom.Url origin_url;
-
+  NotifierId notifier_id;
   RichNotificationData optional_fields;
+  // |serial_number_| intentionally omitted.
+  // |shown_as_popup_| intentionally omitted.
+  // |is_read_| intentionally omitted.
+  // |delegate_| intentionally omitted.
 };
