@@ -29,30 +29,45 @@
 
 namespace {
 
+// Note:
+// APPLY_UNIT_TESTS
+// 1: Do unit tests
+// 0: Generate MD5 array as required
+#define APPLY_UNIT_TESTS 1
+
 typedef void (*AvxPredFunc)(uint8_t *dst, ptrdiff_t y_stride,
                             const uint8_t *above, const uint8_t *left);
 
-const int kBPS = 32;
+const int kBPS = 64;
 const int kTotalPixels = kBPS * kBPS;
 // 4 DC variants, V, H, PAETH, SMOOTH, SMOOTH_V, SMOOTH_H
 const int kNumAv1IntraFuncs = 10;
+
+#if APPLY_UNIT_TESTS
 const char *kAv1IntraPredNames[kNumAv1IntraFuncs] = {
   "DC_PRED", "DC_LEFT_PRED", "DC_TOP_PRED", "DC_128_PRED",   "V_PRED",
   "H_PRED",  "PAETH_PRED",   "SMOOTH_PRED", "SMOOTH_V_PRED", "SMOOTH_H_PRED",
 };
+#endif  // APPLY_UNIT_TESTS
 
 template <typename Pixel>
 struct IntraPredTestMem {
-  void Init(int block_width, int bd) {
-    libaom_test::ACMRandom rnd(libaom_test::ACMRandom::DeterministicSeed());
-    Pixel *const above = above_mem + 16;
-    const int mask = (1 << bd) - 1;
-    for (int i = 0; i < kTotalPixels; ++i) ref_src[i] = rnd.Rand16() & mask;
-    for (int i = 0; i < kBPS; ++i) left[i] = rnd.Rand16() & mask;
-    for (int i = -1; i < kBPS; ++i) above[i] = rnd.Rand16() & mask;
-
+  void Init(int block_width, int block_height, int bd) {
     ASSERT_LE(block_width, kBPS);
-    for (int i = kBPS; i < 2 * kBPS; ++i) {
+    ASSERT_LE(block_height, kBPS);
+    // Note: for blocks having width <= 32 and height <= 32, we generate 32x32
+    // random pixels as before to avoid having to recalculate all hashes again.
+    const int block_size_upto_32 = (block_width <= 32) && (block_height <= 32);
+    stride = block_size_upto_32 ? 32 : kBPS;
+    num_pixels = stride * stride;
+    libaom_test::ACMRandom rnd(libaom_test::ACMRandom::DeterministicSeed());
+    above = above_mem + 16;
+    const int mask = (1 << bd) - 1;
+    for (int i = 0; i < num_pixels; ++i) ref_src[i] = rnd.Rand16() & mask;
+    for (int i = 0; i < stride; ++i) left[i] = rnd.Rand16() & mask;
+    for (int i = -1; i < stride; ++i) above[i] = rnd.Rand16() & mask;
+
+    for (int i = stride; i < 2 * stride; ++i) {
       left[i] = rnd.Rand16() & mask;
       above[i] = rnd.Rand16() & mask;
     }
@@ -61,6 +76,11 @@ struct IntraPredTestMem {
   DECLARE_ALIGNED(16, Pixel, src[kTotalPixels]);
   DECLARE_ALIGNED(16, Pixel, ref_src[kTotalPixels]);
   DECLARE_ALIGNED(16, Pixel, left[2 * kBPS]);
+  Pixel *above;
+  int stride;
+  int num_pixels;
+
+ private:
   DECLARE_ALIGNED(16, Pixel, above_mem[2 * kBPS + 16]);
 };
 
@@ -68,12 +88,6 @@ struct IntraPredTestMem {
 // Low Bittdepth
 
 typedef IntraPredTestMem<uint8_t> Av1IntraPredTestMem;
-
-// Note:
-// APPLY_UNIT_TESTS
-// 1: Do unit tests
-// 0: Generate MD5 array as required
-#define APPLY_UNIT_TESTS 1
 
 static const char *const kTxSizeStrings[TX_SIZES_ALL] = {
   "4X4",  "8X8",  "16X16", "32X32", "64X64", "4X8",   "8X4",
@@ -93,6 +107,9 @@ void CheckMd5Signature(TX_SIZE tx_size, bool is_hbd,
          kAv1IntraPredNames[idx], elapsed_time, md5.Get());
   EXPECT_STREQ(signatures[idx], md5.Get());
 #else
+  (void)signatures;
+  (void)elapsed_time;
+  (void)idx;
   printf("\"%s\",\n", md5.Get());
 #endif
 }
@@ -105,9 +122,7 @@ void TestIntraPred(TX_SIZE tx_size, AvxPredFunc const *pred_funcs,
       block_width * block_height * kNumAv1IntraFuncs;
   const int kNumTests = static_cast<int>(2.e10 / num_pixels_per_test);
   Av1IntraPredTestMem intra_pred_test_mem;
-  const uint8_t *const above = intra_pred_test_mem.above_mem + 16;
-
-  intra_pred_test_mem.Init(block_width, 8);
+  intra_pred_test_mem.Init(block_width, block_height, 8);
 
   for (int k = 0; k < kNumAv1IntraFuncs; ++k) {
     if (pred_funcs[k] == NULL) continue;
@@ -116,17 +131,20 @@ void TestIntraPred(TX_SIZE tx_size, AvxPredFunc const *pred_funcs,
     aom_usec_timer timer;
     aom_usec_timer_start(&timer);
     for (int num_tests = 0; num_tests < kNumTests; ++num_tests) {
-      pred_funcs[k](intra_pred_test_mem.src, kBPS, above,
-                    intra_pred_test_mem.left);
+      pred_funcs[k](intra_pred_test_mem.src, intra_pred_test_mem.stride,
+                    intra_pred_test_mem.above, intra_pred_test_mem.left);
     }
     libaom_test::ClearSystemState();
     aom_usec_timer_mark(&timer);
     const int elapsed_time =
         static_cast<int>(aom_usec_timer_elapsed(&timer) / 1000);
-    CheckMd5Signature(tx_size, false, signatures, intra_pred_test_mem.src,
-                      sizeof(intra_pred_test_mem.src), elapsed_time, k);
+    CheckMd5Signature(
+        tx_size, false, signatures, intra_pred_test_mem.src,
+        intra_pred_test_mem.num_pixels * sizeof(*intra_pred_test_mem.src),
+        elapsed_time, k);
   }
 }
+
 static const char *const kSignatures[TX_SIZES_ALL][kNumAv1IntraFuncs] = {
   {
       // 4X4
@@ -182,7 +200,16 @@ static const char *const kSignatures[TX_SIZES_ALL][kNumAv1IntraFuncs] = {
   },
   {
       // 64X64
-      // TODO(urvang): Add.
+      "6e1094fa7b50bc813aa2ba29f5df8755",
+      "afe020786b83b793c2bbd9468097ff6e",
+      "be91585259bc37bf4dc1651936e90b3e",
+      "a1650dbcd56e10288c3e269eca37967d",
+      "9e5c34f3797e0cdd3cd9d4c05b0d8950",
+      "bc87be7ac899cc6a28f399d7516c49fe",
+      "9811fd0d2dd515f06122f5d1bd18b784",
+      "3c140e466f2c2c0d9cb7d2157ab8dc27",
+      "9543de76c925a8f6adc884cc7f98dc91",
+      "df1df0376cc944afe7e74e94f53e575a",
   },
   {
       // 4X8
@@ -262,7 +289,110 @@ static const char *const kSignatures[TX_SIZES_ALL][kNumAv1IntraFuncs] = {
       "12f6ddf98c7f30a277307f1ea935b030",
       "354321d6c32bbdb0739e4fa2acbf41e1",
   },
-  // TODO(urvang): Add the 1x4 sizes.
+  {
+      // 32X64
+      "0ce332b343934b34cd4417725faa85cb",
+      "4e2a2cfd8f56f15939bdfc753145b303",
+      "0f46d124ba9f48cdd5d5290acf786d6d",
+      "e1e8ed803236367821981500a3d9eebe",
+      "1d2f8e48e3adb7c448be05d9f66f4954",
+      "9fb2e176636a5689b26f73ca73fcc512",
+      "e720ebccae7e25e36f23da53ae5b5d6a",
+      "86fe4364734169aaa4520d799890d530",
+      "b1870290764bb1b100d1974e2bd70f1d",
+      "ce5b238e19d85ef69d85badfab4e63ae",
+  },
+  {
+      // 64X32
+      "a6c5aeb722615089efbca80b02951ceb",
+      "538424b24bd0830f21788e7238ca762f",
+      "80c15b303235f9bc2259027bb92dfdc4",
+      "e48e1ac15e97191a8fda08d62fff343e",
+      "12604b37875533665078405ef4582e35",
+      "0048afa17bd3e1632d68b96048836530",
+      "07a0cfcb56a5eed50c4bd6c26814336b",
+      "529d8a070de5bc6531fa3ee8f450c233",
+      "33c50a11c7d78f72434064f634305e95",
+      "e0ef7f0559c1a50ec5a8c12011b962f7",
+  },
+  {
+      // 4X16
+      "750491056568eb8fe15387b86bdf06b8",
+      "3a52dae9f599f08cfb3bd1b910dc0e11",
+      "af79f71e3e03dbeca44e2e13561f70c7",
+      "ca7dfd7624afc0c06fb5552f44398535",
+      "b591af115444bf43140c29c269f68fb2",
+      "483d942ae36e69e62f31eb215331416f",
+      "f14b58525e81870bc5d95c7ac71a347f",
+      "371208bb4027d9badb04095d1590bbc4",
+      "c7049c21b2924d70c7c12784d6b6b796",
+      "7d87233f4b5b0f12086045e5d7b2d4c2",
+  },
+  {
+      // 16X4
+      "7c6e325a65e77e732b3adbe237e045e4",
+      "24478f93ffcec47852e004d0fe948464",
+      "258d042c67d4ba3ecfa667f0adc9aebf",
+      "b2cd21d06959f159a1f3c4d9768ee7fb",
+      "b4e1f38157bf8410e7c3da02f687a343",
+      "869e703729eb0fc0711c254944ff5d5a",
+      "9638dd77105a640b146a8201ea7a0801",
+      "919d932c6af8a1cc7486e8ce996dd487",
+      "e1c9be493b6714c7ae48f30044c43140",
+      "bf0fe3889d654b2f6eb98c8fc751f9e4",
+  },
+  {
+      // 8X32
+      "8dfac4319fe0bd40013ffb3102da8c72",
+      "feb46b6dc4e2ca0a09533bfc51d4dcb0",
+      "850837ec714c37262216527aaf4cbbe9",
+      "4603c7800fb08361f163daca876e8bda",
+      "1ff95e7d2debc27b05806fb25abfd624",
+      "d81b9a51a062b23ca7823804cb7bec22",
+      "f1d8978158766f46335203608cb807e7",
+      "f3527096256258c0878d644a9d7d53ca",
+      "cbde98ac8b009953eb112807ad2ea29e",
+      "654fb1153415747feae599f538122af5",
+  },
+  {
+      // 32X8
+      "3d4ee16fab374357474f60b845327bc7",
+      "bc17c5059473a476df4e85f56395ad55",
+      "3d4ee16fab374357474f60b845327bc7",
+      "c14b8db34dc2355b84e3735c9ba16c7f",
+      "a71d25b5d47a92a8b9223c98f18458ee",
+      "6c1cfe2b1893f4576a80675687cb6426",
+      "92d11bbef8b85bb48d799bb055de3514",
+      "bcf81d1db8ae5cc03360467f44f498ec",
+      "79f8c564163555592e808e145eaf5c60",
+      "46fff139cef2ef773938bcc8b0e5abb8",
+  },
+  {
+      // 16X64
+      "3b2a053ee8b05a8ac35ad23b0422a151",
+      "12b0c69595328c465e0b25e0c9e3e9fc",
+      "f77c544ac8035e01920deae40cee7b07",
+      "727797ef15ccd8d325476fe8f12006a3",
+      "f3be77c0fe67eb5d9d515e92bec21eb7",
+      "f1ece6409e01e9dd98b800d49628247d",
+      "efd2ec9bfbbd4fd1f6604ea369df1894",
+      "ec703de918422b9e03197ba0ed60a199",
+      "739418efb89c07f700895deaa5d0b3e3",
+      "9943ae1bbeeebfe1d3a92dc39e049d63",
+  },
+  {
+      // 64X16
+      "821b76b1494d4f84d20817840f719a1a",
+      "69e462c3338a9aaf993c3f7cfbc15649",
+      "516d8f6eb054d74d150e7b444185b6b9",
+      "de1b736e9d99129609d6ef3a491507a0",
+      "fd9b4276e7affe1e0e4ce4f428058994",
+      "cd82fd361a4767ac29a9f406b480b8f3",
+      "2792c2f810157a4a6cb13c28529ff779",
+      "1220442d90c4255ba0969d28b91e93a6",
+      "c7253e10b45f7f67dfee3256c9b94825",
+      "879792198071c7e0b50b9b5010d8c18f",
+  },
 };
 
 }  // namespace
@@ -280,7 +410,7 @@ static const char *const kSignatures[TX_SIZES_ALL][kNumAv1IntraFuncs] = {
   }
 
 // -----------------------------------------------------------------------------
-// 4x4
+// 4x4, 4x8, 4x16
 
 INTRA_PRED_TEST(C_1, TX_4X4, aom_dc_predictor_4x4_c,
                 aom_dc_left_predictor_4x4_c, aom_dc_top_predictor_4x4_c,
@@ -295,6 +425,13 @@ INTRA_PRED_TEST(C_2, TX_4X8, aom_dc_predictor_4x8_c,
                 aom_h_predictor_4x8_c, aom_paeth_predictor_4x8_c,
                 aom_smooth_predictor_4x8_c, aom_smooth_v_predictor_4x8_c,
                 aom_smooth_h_predictor_4x8_c)
+
+INTRA_PRED_TEST(C_3, TX_4X16, aom_dc_predictor_4x16_c,
+                aom_dc_left_predictor_4x16_c, aom_dc_top_predictor_4x16_c,
+                aom_dc_128_predictor_4x16_c, aom_v_predictor_4x16_c,
+                aom_h_predictor_4x16_c, aom_paeth_predictor_4x16_c,
+                aom_smooth_predictor_4x16_c, aom_smooth_v_predictor_4x16_c,
+                aom_smooth_h_predictor_4x16_c)
 
 #if HAVE_SSE2
 INTRA_PRED_TEST(SSE2_1, TX_4X4, aom_dc_predictor_4x4_sse2,
@@ -336,7 +473,7 @@ INTRA_PRED_TEST(MSA, TX_4X4, aom_dc_predictor_4x4_msa,
 #endif  // HAVE_MSA
 
 // -----------------------------------------------------------------------------
-// 8x8
+// 8x8, 8x4, 8x16, 8x32
 
 INTRA_PRED_TEST(C_1, TX_8X8, aom_dc_predictor_8x8_c,
                 aom_dc_left_predictor_8x8_c, aom_dc_top_predictor_8x8_c,
@@ -358,6 +495,13 @@ INTRA_PRED_TEST(C_3, TX_8X16, aom_dc_predictor_8x16_c,
                 aom_h_predictor_8x16_c, aom_paeth_predictor_8x16_c,
                 aom_smooth_predictor_8x16_c, aom_smooth_v_predictor_8x16_c,
                 aom_smooth_h_predictor_8x16_c)
+
+INTRA_PRED_TEST(C_4, TX_8X32, aom_dc_predictor_8x32_c,
+                aom_dc_left_predictor_8x32_c, aom_dc_top_predictor_8x32_c,
+                aom_dc_128_predictor_8x32_c, aom_v_predictor_8x32_c,
+                aom_h_predictor_8x32_c, aom_paeth_predictor_8x32_c,
+                aom_smooth_predictor_8x32_c, aom_smooth_v_predictor_8x32_c,
+                aom_smooth_h_predictor_8x32_c)
 
 #if HAVE_SSE2
 INTRA_PRED_TEST(SSE2_1, TX_8X8, aom_dc_predictor_8x8_sse2,
@@ -406,7 +550,7 @@ INTRA_PRED_TEST(MSA, TX_8X8, aom_dc_predictor_8x8_msa,
 #endif  // HAVE_MSA
 
 // -----------------------------------------------------------------------------
-// 16x16
+// 16x16, 16x8, 16x32, 16x4, 16x64
 
 INTRA_PRED_TEST(C_1, TX_16X16, aom_dc_predictor_16x16_c,
                 aom_dc_left_predictor_16x16_c, aom_dc_top_predictor_16x16_c,
@@ -428,6 +572,20 @@ INTRA_PRED_TEST(C_3, TX_16X32, aom_dc_predictor_16x32_c,
                 aom_h_predictor_16x32_c, aom_paeth_predictor_16x32_c,
                 aom_smooth_predictor_16x32_c, aom_smooth_v_predictor_16x32_c,
                 aom_smooth_h_predictor_16x32_c)
+
+INTRA_PRED_TEST(C_4, TX_16X4, aom_dc_predictor_16x4_c,
+                aom_dc_left_predictor_16x4_c, aom_dc_top_predictor_16x4_c,
+                aom_dc_128_predictor_16x4_c, aom_v_predictor_16x4_c,
+                aom_h_predictor_16x4_c, aom_paeth_predictor_16x4_c,
+                aom_smooth_predictor_16x4_c, aom_smooth_v_predictor_16x4_c,
+                aom_smooth_h_predictor_16x4_c)
+
+INTRA_PRED_TEST(C_5, TX_16X64, aom_dc_predictor_16x64_c,
+                aom_dc_left_predictor_16x64_c, aom_dc_top_predictor_16x64_c,
+                aom_dc_128_predictor_16x64_c, aom_v_predictor_16x64_c,
+                aom_h_predictor_16x64_c, aom_paeth_predictor_16x64_c,
+                aom_smooth_predictor_16x64_c, aom_smooth_v_predictor_16x64_c,
+                aom_smooth_h_predictor_16x64_c)
 
 #if HAVE_SSE2
 INTRA_PRED_TEST(SSE2_1, TX_16X16, aom_dc_predictor_16x16_sse2,
@@ -488,7 +646,7 @@ INTRA_PRED_TEST(MSA, TX_16X16, aom_dc_predictor_16x16_msa,
 #endif  // HAVE_MSA
 
 // -----------------------------------------------------------------------------
-// 32x32
+// 32x32, 32x16, 32x64, 32x8
 
 INTRA_PRED_TEST(C_1, TX_32X32, aom_dc_predictor_32x32_c,
                 aom_dc_left_predictor_32x32_c, aom_dc_top_predictor_32x32_c,
@@ -503,6 +661,20 @@ INTRA_PRED_TEST(C_2, TX_32X16, aom_dc_predictor_32x16_c,
                 aom_h_predictor_32x16_c, aom_paeth_predictor_32x16_c,
                 aom_smooth_predictor_32x16_c, aom_smooth_v_predictor_32x16_c,
                 aom_smooth_h_predictor_32x16_c)
+
+INTRA_PRED_TEST(C_3, TX_32X64, aom_dc_predictor_32x64_c,
+                aom_dc_left_predictor_32x64_c, aom_dc_top_predictor_32x64_c,
+                aom_dc_128_predictor_32x64_c, aom_v_predictor_32x64_c,
+                aom_h_predictor_32x64_c, aom_paeth_predictor_32x64_c,
+                aom_smooth_predictor_32x64_c, aom_smooth_v_predictor_32x64_c,
+                aom_smooth_h_predictor_32x64_c)
+
+INTRA_PRED_TEST(C_4, TX_32X8, aom_dc_predictor_32x8_c,
+                aom_dc_left_predictor_32x8_c, aom_dc_top_predictor_32x8_c,
+                aom_dc_128_predictor_32x8_c, aom_v_predictor_32x8_c,
+                aom_h_predictor_32x8_c, aom_paeth_predictor_32x8_c,
+                aom_smooth_predictor_32x8_c, aom_smooth_v_predictor_32x8_c,
+                aom_smooth_h_predictor_32x8_c)
 
 #if HAVE_SSE2
 INTRA_PRED_TEST(SSE2_1, TX_32X32, aom_dc_predictor_32x32_sse2,
@@ -556,6 +728,30 @@ INTRA_PRED_TEST(MSA, TX_32X32, aom_dc_predictor_32x32_msa,
 #endif  // HAVE_MSA
 
 // -----------------------------------------------------------------------------
+// 64x64, 64x32, 64x16
+
+INTRA_PRED_TEST(C_1, TX_64X64, aom_dc_predictor_64x64_c,
+                aom_dc_left_predictor_64x64_c, aom_dc_top_predictor_64x64_c,
+                aom_dc_128_predictor_64x64_c, aom_v_predictor_64x64_c,
+                aom_h_predictor_64x64_c, aom_paeth_predictor_64x64_c,
+                aom_smooth_predictor_64x64_c, aom_smooth_v_predictor_64x64_c,
+                aom_smooth_h_predictor_64x64_c)
+
+INTRA_PRED_TEST(C_2, TX_64X32, aom_dc_predictor_64x32_c,
+                aom_dc_left_predictor_64x32_c, aom_dc_top_predictor_64x32_c,
+                aom_dc_128_predictor_64x32_c, aom_v_predictor_64x32_c,
+                aom_h_predictor_64x32_c, aom_paeth_predictor_64x32_c,
+                aom_smooth_predictor_64x32_c, aom_smooth_v_predictor_64x32_c,
+                aom_smooth_h_predictor_64x32_c)
+
+INTRA_PRED_TEST(C_3, TX_64X16, aom_dc_predictor_64x16_c,
+                aom_dc_left_predictor_64x16_c, aom_dc_top_predictor_64x16_c,
+                aom_dc_128_predictor_64x16_c, aom_v_predictor_64x16_c,
+                aom_h_predictor_64x16_c, aom_paeth_predictor_64x16_c,
+                aom_smooth_predictor_64x16_c, aom_smooth_v_predictor_64x16_c,
+                aom_smooth_h_predictor_64x16_c)
+
+// -----------------------------------------------------------------------------
 // High Bitdepth
 namespace {
 
@@ -573,10 +769,8 @@ void TestHighbdIntraPred(TX_SIZE tx_size, AvxHighbdPredFunc const *pred_funcs,
       block_width * block_height * kNumAv1IntraFuncs;
   const int kNumTests = static_cast<int>(2.e10 / num_pixels_per_test);
   Av1HighbdIntraPredTestMem intra_pred_test_mem;
-  const uint16_t *const above = intra_pred_test_mem.above_mem + 16;
   const int bd = 12;
-
-  intra_pred_test_mem.Init(block_width, bd);
+  intra_pred_test_mem.Init(block_width, block_height, bd);
 
   for (int k = 0; k < kNumAv1IntraFuncs; ++k) {
     if (pred_funcs[k] == NULL) continue;
@@ -585,15 +779,17 @@ void TestHighbdIntraPred(TX_SIZE tx_size, AvxHighbdPredFunc const *pred_funcs,
     aom_usec_timer timer;
     aom_usec_timer_start(&timer);
     for (int num_tests = 0; num_tests < kNumTests; ++num_tests) {
-      pred_funcs[k](intra_pred_test_mem.src, kBPS, above,
-                    intra_pred_test_mem.left, bd);
+      pred_funcs[k](intra_pred_test_mem.src, intra_pred_test_mem.stride,
+                    intra_pred_test_mem.above, intra_pred_test_mem.left, bd);
     }
     libaom_test::ClearSystemState();
     aom_usec_timer_mark(&timer);
     const int elapsed_time =
         static_cast<int>(aom_usec_timer_elapsed(&timer) / 1000);
-    CheckMd5Signature(tx_size, true, signatures, intra_pred_test_mem.src,
-                      sizeof(intra_pred_test_mem.src), elapsed_time, k);
+    CheckMd5Signature(
+        tx_size, true, signatures, intra_pred_test_mem.src,
+        intra_pred_test_mem.num_pixels * sizeof(*intra_pred_test_mem.src),
+        elapsed_time, k);
   }
 }
 
@@ -651,8 +847,17 @@ static const char *const kHighbdSignatures[TX_SIZES_ALL][kNumAv1IntraFuncs] = {
       "c51607aebad5dcb3c1e3b58ef9e5b84e",
   },
   {
-      // 64x64
-      // TODO(urvang): Add.
+      // 64X64
+      "a6baa0d4bfb2269a94c7a38f86a4bccf",
+      "3f1ef5f473a49eba743f17a3324adf9d",
+      "12ac11889ae5f55b7781454efd706a6a",
+      "d9a906c0e692b22e1b4414e71a704b7e",
+      "47d4cadd56f70c11ff8f3e5d8df81161",
+      "de997744cf24c16c5ac2a36b02b351cc",
+      "23781211ae178ddeb6c4bb97a6bd7d83",
+      "a79d2e28340ca34b9e37daabbf030f63",
+      "0372bd3ddfc258750a6ac106b70587f4",
+      "228ef625d9460cbf6fa253a16a730976",
   },
   {
       // 4X8
@@ -732,7 +937,110 @@ static const char *const kHighbdSignatures[TX_SIZES_ALL][kNumAv1IntraFuncs] = {
       "4ced9c212ec6f9956e27f68a91b59fef",
       "4a7a0b93f138bb0863e4e465b01ec0b1",
   },
-  // TODO(urvang): Add 1x4 sizes.
+  {
+      // 32X64
+      "ad9cfc395a5c5644a21d958c7274ac14",
+      "f29d6d03c143ddf96fef04c19f2c8333",
+      "a8bdc852ef704dd4975c61893e8fbc3f",
+      "7d0bd7dea26226741dbca9a97f27fa74",
+      "45c27c5cca9a91b6ae8379feb0881c9f",
+      "8a0b78df1e001b85c874d686eac4aa1b",
+      "ce9fa75fac54a3f6c0cc3f2083b938f1",
+      "c0dca10d88762c954af18dc9e3791a39",
+      "61df229eddfccab913b8fda4bb02f9ac",
+      "4f4df6bc8d50a5600b573f0e44d70e66",
+  },
+  {
+      // 64X32
+      "db9d82921fd88b24fdff6f849f2f9c87",
+      "5ecc7fdc52d2f575ad4f2d0e9e6b1e11",
+      "b4581311a0a73d95dfac7f8f44591032",
+      "68bd283cfd1a125f6b2ee47cee874d36",
+      "804179f05c032908a5e36077bb87c994",
+      "fc5fd041a8ee779015394d0c066ee43c",
+      "68f5579ccadfe9a1baafb158334a3db2",
+      "fe237e45e215ab06d79046da9ad71e84",
+      "9a8a938a6824551bf7d21b8fd1d70ea1",
+      "eb7332f2017cd96882c76e7136aeaf53",
+  },
+  {
+      // 4X16
+      "7bafa307d507747b8132e7735b7f1c73",
+      "e58bc2d8213a97d1fea9cfb73d7a9633",
+      "435f8a8e8bbf14dbf2fe16b2be9e97aa",
+      "1d0e767b68d84acbfb50b7a04e633836",
+      "5f713bd7b324fe73bb7063e35ee14e5e",
+      "0dac4e1fa3d59814202715468c01ed56",
+      "47709d1db4a330c7a8900f450e6fddd1",
+      "258e0b930bb27db28f05da9cf7d1ee7c",
+      "36cf030fbae767912593efea045bfff5",
+      "248d7aceabb7499febae663fae41a920",
+  },
+  {
+      // 16X4
+      "04dde98e632670e393704742c89f9067",
+      "8c72543f1664651ae1fa08e2ac0adb9b",
+      "2354a2cdc2773aa2df8ab4010db1be39",
+      "6300ad3221c26da39b10e0e6d87ee3be",
+      "8ea30b661c6ba60b28d3167f19e449b8",
+      "fb6c1e4ff101a371cede63c2955cdb7e",
+      "a517c06433d6d7927b16a72184a23e92",
+      "393828be5d62ab6c48668bea5e2f801a",
+      "b1e510c542013eb9d6fb188dea2ce90a",
+      "569a8f2fe01679ca216535ecbcdccb62",
+  },
+  {
+      // 8X32
+      "9d541865c185ca7607852852613ac1fc",
+      "b96be67f08c6b5fa5ebd3411299c2f7c",
+      "75a2dcf50004b9d188849b048239767e",
+      "429492ff415c9fd9b050d73b2ad500f8",
+      "64b3606c1ccd036bd766bd5711392cf4",
+      "cb59844a0f01660ac955bae3511f1100",
+      "3e076155b7a70e8828618e3f33b51e3d",
+      "ed2d1f597ab7c50beff690f737cf9726",
+      "7909c6a26aaf20c59d996d3e5b5f9c29",
+      "965798807240c98c6f7cc9b457ed0773",
+  },
+  {
+      // 32X8
+      "36f391aa31619eec1f4d9ee95ea454cc",
+      "b82648f14eeba2527357cb50bc3223cb",
+      "7a7b2adf429125e8bee9d1d00a66e13f",
+      "4198e4d6ba503b7cc2d7e96bb845f661",
+      "96c160d2ec1be9fe0cdea9682f14d257",
+      "19a450bcebaa75afb4fc6bd1fd6434af",
+      "2bd2e35967d43d0ec1c6587a36f204d5",
+      "49799a99aa4ccfbd989bee92a99422f1",
+      "955530e99813812a74659edeac3f5475",
+      "f0316b84e378a19cd11b19a6e40b2914",
+  },
+  {
+      // 16X64
+      "8cba1b70a0bde29e8ef235cedc5faa7d",
+      "96d00ddc7537bf7f196006591b733b4e",
+      "cbf69d5d157c9f3355a4757b1d6e3414",
+      "3ac1f642019493dec1b737d7a3a1b4e5",
+      "35f9ee300d7fa3c97338e81a6f21dcd4",
+      "aae335442e77c8ebc280f16ea50ba9c7",
+      "a6140fdac2278644328be094d88731db",
+      "2df93621b6ff100f7008432d509f4161",
+      "c77bf5aee39e7ed4a3dd715f816f452a",
+      "02109bd63557d90225c32a8f1338258e",
+  },
+  {
+      // 64X16
+      "a5e2f9fb685d5f4a048e9a96affd25a4",
+      "1348f249690d9eefe09d9ad7ead2c801",
+      "525da4b187acd81b1ff1116b60461141",
+      "e99d072de858094c98b01bd4a6772634",
+      "873bfa9dc24693f19721f7c8d527f7d3",
+      "0acfc6507bd3468e9679efc127d6e4b9",
+      "57d03f8d079c7264854e22ac1157cfae",
+      "6c2c4036f70c7d957a9399b5436c0774",
+      "42b8e4a97b7f8416c72a5148c031c0b1",
+      "a38a2c5f79993dfae8530e9e25800893",
+  },
 };
 
 }  // namespace
@@ -747,7 +1055,7 @@ static const char *const kHighbdSignatures[TX_SIZES_ALL][kNumAv1IntraFuncs] = {
   }
 
 // -----------------------------------------------------------------------------
-// 4x4
+// 4x4, 4x8, 4x16
 
 HIGHBD_INTRA_PRED_TEST(
     C_1, TX_4X4, aom_highbd_dc_predictor_4x4_c,
@@ -756,6 +1064,22 @@ HIGHBD_INTRA_PRED_TEST(
     aom_highbd_h_predictor_4x4_c, aom_highbd_paeth_predictor_4x4_c,
     aom_highbd_smooth_predictor_4x4_c, aom_highbd_smooth_v_predictor_4x4_c,
     aom_highbd_smooth_h_predictor_4x4_c)
+
+HIGHBD_INTRA_PRED_TEST(
+    C_2, TX_4X8, aom_highbd_dc_predictor_4x8_c,
+    aom_highbd_dc_left_predictor_4x8_c, aom_highbd_dc_top_predictor_4x8_c,
+    aom_highbd_dc_128_predictor_4x8_c, aom_highbd_v_predictor_4x8_c,
+    aom_highbd_h_predictor_4x8_c, aom_highbd_paeth_predictor_4x8_c,
+    aom_highbd_smooth_predictor_4x8_c, aom_highbd_smooth_v_predictor_4x8_c,
+    aom_highbd_smooth_h_predictor_4x8_c)
+
+HIGHBD_INTRA_PRED_TEST(
+    C_3, TX_4X16, aom_highbd_dc_predictor_4x16_c,
+    aom_highbd_dc_left_predictor_4x16_c, aom_highbd_dc_top_predictor_4x16_c,
+    aom_highbd_dc_128_predictor_4x16_c, aom_highbd_v_predictor_4x16_c,
+    aom_highbd_h_predictor_4x16_c, aom_highbd_paeth_predictor_4x16_c,
+    aom_highbd_smooth_predictor_4x16_c, aom_highbd_smooth_v_predictor_4x16_c,
+    aom_highbd_smooth_h_predictor_4x16_c)
 
 #if HAVE_SSE2
 HIGHBD_INTRA_PRED_TEST(SSE2_1, TX_4X4, aom_highbd_dc_predictor_4x4_sse2,
@@ -773,16 +1097,8 @@ HIGHBD_INTRA_PRED_TEST(SSE2_2, TX_4X8, aom_highbd_dc_predictor_4x8_sse2,
                        aom_highbd_h_predictor_4x8_sse2, NULL, NULL, NULL, NULL)
 #endif
 
-HIGHBD_INTRA_PRED_TEST(
-    C_2, TX_4X8, aom_highbd_dc_predictor_4x8_c,
-    aom_highbd_dc_left_predictor_4x8_c, aom_highbd_dc_top_predictor_4x8_c,
-    aom_highbd_dc_128_predictor_4x8_c, aom_highbd_v_predictor_4x8_c,
-    aom_highbd_h_predictor_4x8_c, aom_highbd_paeth_predictor_4x8_c,
-    aom_highbd_smooth_predictor_4x8_c, aom_highbd_smooth_v_predictor_4x8_c,
-    aom_highbd_smooth_h_predictor_4x8_c)
-
 // -----------------------------------------------------------------------------
-// 8x8
+// 8x8, 8x4, 8x16, 8x32
 
 HIGHBD_INTRA_PRED_TEST(
     C_1, TX_8X8, aom_highbd_dc_predictor_8x8_c,
@@ -791,6 +1107,30 @@ HIGHBD_INTRA_PRED_TEST(
     aom_highbd_h_predictor_8x8_c, aom_highbd_paeth_predictor_8x8_c,
     aom_highbd_smooth_predictor_8x8_c, aom_highbd_smooth_v_predictor_8x8_c,
     aom_highbd_smooth_h_predictor_8x8_c)
+
+HIGHBD_INTRA_PRED_TEST(
+    C_2, TX_8X4, aom_highbd_dc_predictor_8x4_c,
+    aom_highbd_dc_left_predictor_8x4_c, aom_highbd_dc_top_predictor_8x4_c,
+    aom_highbd_dc_128_predictor_8x4_c, aom_highbd_v_predictor_8x4_c,
+    aom_highbd_h_predictor_8x4_c, aom_highbd_paeth_predictor_8x4_c,
+    aom_highbd_smooth_predictor_8x4_c, aom_highbd_smooth_v_predictor_8x4_c,
+    aom_highbd_smooth_h_predictor_8x4_c)
+
+HIGHBD_INTRA_PRED_TEST(
+    C_3, TX_8X16, aom_highbd_dc_predictor_8x16_c,
+    aom_highbd_dc_left_predictor_8x16_c, aom_highbd_dc_top_predictor_8x16_c,
+    aom_highbd_dc_128_predictor_8x16_c, aom_highbd_v_predictor_8x16_c,
+    aom_highbd_h_predictor_8x16_c, aom_highbd_paeth_predictor_8x16_c,
+    aom_highbd_smooth_predictor_8x16_c, aom_highbd_smooth_v_predictor_8x16_c,
+    aom_highbd_smooth_h_predictor_8x16_c)
+
+HIGHBD_INTRA_PRED_TEST(
+    C_4, TX_8X32, aom_highbd_dc_predictor_8x32_c,
+    aom_highbd_dc_left_predictor_8x32_c, aom_highbd_dc_top_predictor_8x32_c,
+    aom_highbd_dc_128_predictor_8x32_c, aom_highbd_v_predictor_8x32_c,
+    aom_highbd_h_predictor_8x32_c, aom_highbd_paeth_predictor_8x32_c,
+    aom_highbd_smooth_predictor_8x32_c, aom_highbd_smooth_v_predictor_8x32_c,
+    aom_highbd_smooth_h_predictor_8x32_c)
 
 #if HAVE_SSE2
 HIGHBD_INTRA_PRED_TEST(SSE2_1, TX_8X8, aom_highbd_dc_predictor_8x8_sse2,
@@ -818,24 +1158,8 @@ HIGHBD_INTRA_PRED_TEST(SSSE3, TX_8X8, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                        NULL, NULL, NULL)
 #endif
 
-HIGHBD_INTRA_PRED_TEST(
-    C_2, TX_8X4, aom_highbd_dc_predictor_8x4_c,
-    aom_highbd_dc_left_predictor_8x4_c, aom_highbd_dc_top_predictor_8x4_c,
-    aom_highbd_dc_128_predictor_8x4_c, aom_highbd_v_predictor_8x4_c,
-    aom_highbd_h_predictor_8x4_c, aom_highbd_paeth_predictor_8x4_c,
-    aom_highbd_smooth_predictor_8x4_c, aom_highbd_smooth_v_predictor_8x4_c,
-    aom_highbd_smooth_h_predictor_8x4_c)
-
-HIGHBD_INTRA_PRED_TEST(
-    C_3, TX_8X16, aom_highbd_dc_predictor_8x16_c,
-    aom_highbd_dc_left_predictor_8x16_c, aom_highbd_dc_top_predictor_8x16_c,
-    aom_highbd_dc_128_predictor_8x16_c, aom_highbd_v_predictor_8x16_c,
-    aom_highbd_h_predictor_8x16_c, aom_highbd_paeth_predictor_8x16_c,
-    aom_highbd_smooth_predictor_8x16_c, aom_highbd_smooth_v_predictor_8x16_c,
-    aom_highbd_smooth_h_predictor_8x16_c)
-
 // -----------------------------------------------------------------------------
-// 16x16
+// 16x16, 16x8, 16x32, 16x4, 16x64
 
 HIGHBD_INTRA_PRED_TEST(
     C_1, TX_16X16, aom_highbd_dc_predictor_16x16_c,
@@ -844,6 +1168,38 @@ HIGHBD_INTRA_PRED_TEST(
     aom_highbd_h_predictor_16x16_c, aom_highbd_paeth_predictor_16x16_c,
     aom_highbd_smooth_predictor_16x16_c, aom_highbd_smooth_v_predictor_16x16_c,
     aom_highbd_smooth_h_predictor_16x16_c)
+
+HIGHBD_INTRA_PRED_TEST(
+    C_2, TX_16X8, aom_highbd_dc_predictor_16x8_c,
+    aom_highbd_dc_left_predictor_16x8_c, aom_highbd_dc_top_predictor_16x8_c,
+    aom_highbd_dc_128_predictor_16x8_c, aom_highbd_v_predictor_16x8_c,
+    aom_highbd_h_predictor_16x8_c, aom_highbd_paeth_predictor_16x8_c,
+    aom_highbd_smooth_predictor_16x8_c, aom_highbd_smooth_v_predictor_16x8_c,
+    aom_highbd_smooth_h_predictor_16x8_c)
+
+HIGHBD_INTRA_PRED_TEST(
+    C_3, TX_16X32, aom_highbd_dc_predictor_16x32_c,
+    aom_highbd_dc_left_predictor_16x32_c, aom_highbd_dc_top_predictor_16x32_c,
+    aom_highbd_dc_128_predictor_16x32_c, aom_highbd_v_predictor_16x32_c,
+    aom_highbd_h_predictor_16x32_c, aom_highbd_paeth_predictor_16x32_c,
+    aom_highbd_smooth_predictor_16x32_c, aom_highbd_smooth_v_predictor_16x32_c,
+    aom_highbd_smooth_h_predictor_16x32_c)
+
+HIGHBD_INTRA_PRED_TEST(
+    C_4, TX_16X4, aom_highbd_dc_predictor_16x4_c,
+    aom_highbd_dc_left_predictor_16x4_c, aom_highbd_dc_top_predictor_16x4_c,
+    aom_highbd_dc_128_predictor_16x4_c, aom_highbd_v_predictor_16x4_c,
+    aom_highbd_h_predictor_16x4_c, aom_highbd_paeth_predictor_16x4_c,
+    aom_highbd_smooth_predictor_16x4_c, aom_highbd_smooth_v_predictor_16x4_c,
+    aom_highbd_smooth_h_predictor_16x4_c)
+
+HIGHBD_INTRA_PRED_TEST(
+    C_5, TX_16X64, aom_highbd_dc_predictor_16x64_c,
+    aom_highbd_dc_left_predictor_16x64_c, aom_highbd_dc_top_predictor_16x64_c,
+    aom_highbd_dc_128_predictor_16x64_c, aom_highbd_v_predictor_16x64_c,
+    aom_highbd_h_predictor_16x64_c, aom_highbd_paeth_predictor_16x64_c,
+    aom_highbd_smooth_predictor_16x64_c, aom_highbd_smooth_v_predictor_16x64_c,
+    aom_highbd_smooth_h_predictor_16x64_c)
 
 #if HAVE_SSE2
 HIGHBD_INTRA_PRED_TEST(SSE2_1, TX_16X16, aom_highbd_dc_predictor_16x16_sse2,
@@ -884,24 +1240,8 @@ HIGHBD_INTRA_PRED_TEST(AVX2_3, TX_16X32, NULL, NULL, NULL, NULL, NULL, NULL,
                        NULL, NULL, NULL, NULL)
 #endif
 
-HIGHBD_INTRA_PRED_TEST(
-    C_2, TX_16X8, aom_highbd_dc_predictor_16x8_c,
-    aom_highbd_dc_left_predictor_16x8_c, aom_highbd_dc_top_predictor_16x8_c,
-    aom_highbd_dc_128_predictor_16x8_c, aom_highbd_v_predictor_16x8_c,
-    aom_highbd_h_predictor_16x8_c, aom_highbd_paeth_predictor_16x8_c,
-    aom_highbd_smooth_predictor_16x8_c, aom_highbd_smooth_v_predictor_16x8_c,
-    aom_highbd_smooth_h_predictor_16x8_c)
-
-HIGHBD_INTRA_PRED_TEST(
-    C_3, TX_16X32, aom_highbd_dc_predictor_16x32_c,
-    aom_highbd_dc_left_predictor_16x32_c, aom_highbd_dc_top_predictor_16x32_c,
-    aom_highbd_dc_128_predictor_16x32_c, aom_highbd_v_predictor_16x32_c,
-    aom_highbd_h_predictor_16x32_c, aom_highbd_paeth_predictor_16x32_c,
-    aom_highbd_smooth_predictor_16x32_c, aom_highbd_smooth_v_predictor_16x32_c,
-    aom_highbd_smooth_h_predictor_16x32_c)
-
 // -----------------------------------------------------------------------------
-// 32x32
+// 32x32, 32x16, 32x64, 32x8
 
 HIGHBD_INTRA_PRED_TEST(
     C_1, TX_32X32, aom_highbd_dc_predictor_32x32_c,
@@ -910,6 +1250,30 @@ HIGHBD_INTRA_PRED_TEST(
     aom_highbd_h_predictor_32x32_c, aom_highbd_paeth_predictor_32x32_c,
     aom_highbd_smooth_predictor_32x32_c, aom_highbd_smooth_v_predictor_32x32_c,
     aom_highbd_smooth_h_predictor_32x32_c)
+
+HIGHBD_INTRA_PRED_TEST(
+    C_2, TX_32X16, aom_highbd_dc_predictor_32x16_c,
+    aom_highbd_dc_left_predictor_32x16_c, aom_highbd_dc_top_predictor_32x16_c,
+    aom_highbd_dc_128_predictor_32x16_c, aom_highbd_v_predictor_32x16_c,
+    aom_highbd_h_predictor_32x16_c, aom_highbd_paeth_predictor_32x16_c,
+    aom_highbd_smooth_predictor_32x16_c, aom_highbd_smooth_v_predictor_32x16_c,
+    aom_highbd_smooth_h_predictor_32x16_c)
+
+HIGHBD_INTRA_PRED_TEST(
+    C_3, TX_32X64, aom_highbd_dc_predictor_32x64_c,
+    aom_highbd_dc_left_predictor_32x64_c, aom_highbd_dc_top_predictor_32x64_c,
+    aom_highbd_dc_128_predictor_32x64_c, aom_highbd_v_predictor_32x64_c,
+    aom_highbd_h_predictor_32x64_c, aom_highbd_paeth_predictor_32x64_c,
+    aom_highbd_smooth_predictor_32x64_c, aom_highbd_smooth_v_predictor_32x64_c,
+    aom_highbd_smooth_h_predictor_32x64_c)
+
+HIGHBD_INTRA_PRED_TEST(
+    C_4, TX_32X8, aom_highbd_dc_predictor_32x8_c,
+    aom_highbd_dc_left_predictor_32x8_c, aom_highbd_dc_top_predictor_32x8_c,
+    aom_highbd_dc_128_predictor_32x8_c, aom_highbd_v_predictor_32x8_c,
+    aom_highbd_h_predictor_32x8_c, aom_highbd_paeth_predictor_32x8_c,
+    aom_highbd_smooth_predictor_32x8_c, aom_highbd_smooth_v_predictor_32x8_c,
+    aom_highbd_smooth_h_predictor_32x8_c)
 
 #if HAVE_SSE2
 HIGHBD_INTRA_PRED_TEST(SSE2_1, TX_32X32, aom_highbd_dc_predictor_32x32_sse2,
@@ -941,12 +1305,33 @@ HIGHBD_INTRA_PRED_TEST(AVX2_2, TX_32X16, NULL, NULL, NULL, NULL, NULL, NULL,
                        NULL, NULL, NULL, NULL)
 #endif
 
+// -----------------------------------------------------------------------------
+// 64x64, 64x32, 64x16
+
 HIGHBD_INTRA_PRED_TEST(
-    C_2, TX_32X16, aom_highbd_dc_predictor_32x16_c,
-    aom_highbd_dc_left_predictor_32x16_c, aom_highbd_dc_top_predictor_32x16_c,
-    aom_highbd_dc_128_predictor_32x16_c, aom_highbd_v_predictor_32x16_c,
-    aom_highbd_h_predictor_32x16_c, aom_highbd_paeth_predictor_32x16_c,
-    aom_highbd_smooth_predictor_32x16_c, aom_highbd_smooth_v_predictor_32x16_c,
-    aom_highbd_smooth_h_predictor_32x16_c)
+    C_1, TX_64X64, aom_highbd_dc_predictor_64x64_c,
+    aom_highbd_dc_left_predictor_64x64_c, aom_highbd_dc_top_predictor_64x64_c,
+    aom_highbd_dc_128_predictor_64x64_c, aom_highbd_v_predictor_64x64_c,
+    aom_highbd_h_predictor_64x64_c, aom_highbd_paeth_predictor_64x64_c,
+    aom_highbd_smooth_predictor_64x64_c, aom_highbd_smooth_v_predictor_64x64_c,
+    aom_highbd_smooth_h_predictor_64x64_c)
+
+HIGHBD_INTRA_PRED_TEST(
+    C_2, TX_64X32, aom_highbd_dc_predictor_64x32_c,
+    aom_highbd_dc_left_predictor_64x32_c, aom_highbd_dc_top_predictor_64x32_c,
+    aom_highbd_dc_128_predictor_64x32_c, aom_highbd_v_predictor_64x32_c,
+    aom_highbd_h_predictor_64x32_c, aom_highbd_paeth_predictor_64x32_c,
+    aom_highbd_smooth_predictor_64x32_c, aom_highbd_smooth_v_predictor_64x32_c,
+    aom_highbd_smooth_h_predictor_64x32_c)
+
+HIGHBD_INTRA_PRED_TEST(
+    C_3, TX_64X16, aom_highbd_dc_predictor_64x16_c,
+    aom_highbd_dc_left_predictor_64x16_c, aom_highbd_dc_top_predictor_64x16_c,
+    aom_highbd_dc_128_predictor_64x16_c, aom_highbd_v_predictor_64x16_c,
+    aom_highbd_h_predictor_64x16_c, aom_highbd_paeth_predictor_64x16_c,
+    aom_highbd_smooth_predictor_64x16_c, aom_highbd_smooth_v_predictor_64x16_c,
+    aom_highbd_smooth_h_predictor_64x16_c)
+
+// -----------------------------------------------------------------------------
 
 #include "test/test_libaom.cc"
