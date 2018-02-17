@@ -125,7 +125,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      */
     public static final int MINIMUM_LOAD_PROGRESS = 5;
 
-    private static final String CHROME_MEMEX_URL = "https://chrome-memex.appspot.com";
+    private static final String CHROME_MEMEX_URL = "https://chrome-memex.appspot.com/";
+    private static final String CHROME_MEMEX_DEV_URL = "https://chrome-memex-dev.appspot.com/";
 
     private final ToolbarLayout mToolbar;
     private final ToolbarControlContainer mControlContainer;
@@ -999,9 +1000,18 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
     @Override
     public void openMemexUI() {
-        Tab currentTab = mToolbarModel.getTab();
-        if (currentTab == null) return;
-        currentTab.loadUrl(new LoadUrlParams(CHROME_MEMEX_URL, PageTransition.AUTO_BOOKMARK));
+        TabModel model = mTabModelSelector.getModel(false);
+        for (int i = 0; i < model.getCount(); i++) {
+            String url = model.getTabAt(i).getUrl();
+            if (url.startsWith(CHROME_MEMEX_URL) || url.startsWith(CHROME_MEMEX_DEV_URL)) {
+                model.setIndex(i, TabSelectionType.FROM_USER);
+                return;
+            }
+        }
+
+        mTabModelSelector.openNewTab(
+                new LoadUrlParams(CHROME_MEMEX_URL, PageTransition.AUTO_BOOKMARK),
+                TabLaunchType.FROM_CHROME_UI, null, false);
     }
 
     /**
