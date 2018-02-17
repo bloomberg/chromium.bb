@@ -61,13 +61,9 @@ PrintPreviewSettingsSectionsTest = class extends NewPrintPreviewTest {
   }
 };
 
-/*
-TODO(crbug.com/813221): This test crashes with SlimmingPaintV175.
-Will fix it asap.
 TEST_F('PrintPreviewSettingsSectionsTest', 'Copies', function() {
   this.runMochaTest(settings_sections_tests.TestNames.Copies);
 });
-*/
 
 TEST_F('PrintPreviewSettingsSectionsTest', 'Layout', function() {
   this.runMochaTest(settings_sections_tests.TestNames.Layout);
@@ -101,9 +97,13 @@ TEST_F('PrintPreviewSettingsSectionsTest', 'SetPages', function() {
   this.runMochaTest(settings_sections_tests.TestNames.SetPages);
 });
 
+/*
+TODO(crbug.com/813221): This test crashes with SlimmingPaintV175.
+Will fix it asap.
 TEST_F('PrintPreviewSettingsSectionsTest', 'SetCopies', function() {
   this.runMochaTest(settings_sections_tests.TestNames.SetCopies);
 });
+*/
 
 TEST_F('PrintPreviewSettingsSectionsTest', 'SetLayout', function() {
   this.runMochaTest(settings_sections_tests.TestNames.SetLayout);
