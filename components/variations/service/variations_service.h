@@ -6,7 +6,9 @@
 #define COMPONENTS_VARIATIONS_SERVICE_VARIATIONS_SERVICE_H_
 
 #include <memory>
+#include <set>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -163,8 +165,8 @@ class VariationsService
                         const char* kEnableFeatures,
                         const char* kDisableFeatures,
                         const std::set<std::string>& unforceable_field_trials,
+                        const std::vector<std::string>& variation_ids,
                         std::unique_ptr<base::FeatureList> feature_list,
-                        std::vector<std::string>* variation_ids,
                         variations::PlatformFieldTrials* platform_field_trials);
 
  protected:

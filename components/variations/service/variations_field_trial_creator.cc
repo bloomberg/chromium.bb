@@ -6,8 +6,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <memory>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -16,6 +19,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #include "base/version.h"
@@ -137,6 +141,14 @@ void RecordCreateTrialsSeedExpiry(VariationsSeedExpiry expiry_check_result) {
 void RecordSeedFreshness(base::TimeDelta seed_age) {
   UMA_HISTOGRAM_CUSTOM_COUNTS("Variations.SeedFreshness", seed_age.InMinutes(),
                               1, base::TimeDelta::FromDays(30).InMinutes(), 50);
+}
+
+// If an invalid command-line to force field trials was specified, exit the
+// browser with a helpful error message, so that the user can correct their
+// mistake.
+void ExitWithMessage(const std::string& message) {
+  puts(message.c_str());
+  exit(1);
 }
 
 }  // namespace
@@ -402,10 +414,10 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
     const char* kEnableFeatures,
     const char* kDisableFeatures,
     const std::set<std::string>& unforceable_field_trials,
+    const std::vector<std::string>& variation_ids,
     std::unique_ptr<const base::FieldTrial::EntropyProvider>
         low_entropy_provider,
     std::unique_ptr<base::FeatureList> feature_list,
-    std::vector<std::string>* variation_ids,
     PlatformFieldTrials* platform_field_trials,
     SafeSeedManager* safe_seed_manager) {
   const base::CommandLine* command_line =
@@ -418,8 +430,10 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
   if (command_line->HasSwitch(switches::kForceFieldTrialParams)) {
     bool result = AssociateParamsFromString(
         command_line->GetSwitchValueASCII(switches::kForceFieldTrialParams));
-    CHECK(result) << "Invalid --" << switches::kForceFieldTrialParams
-                  << " list specified.";
+    if (!result) {
+      ExitWithMessage(base::StringPrintf("Invalid --%s list specified.",
+                                         switches::kForceFieldTrialParams));
+    }
   }
 
   // Ensure any field trials specified on the command line are initialized.
@@ -429,19 +443,32 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
     bool result = base::FieldTrialList::CreateTrialsFromString(
         command_line->GetSwitchValueASCII(::switches::kForceFieldTrials),
         unforceable_field_trials);
-    CHECK(result) << "Invalid --" << ::switches::kForceFieldTrials
-                  << " list specified.";
+    if (!result) {
+      ExitWithMessage(base::StringPrintf("Invalid --%s list specified.",
+                                         ::switches::kForceFieldTrials));
+    }
   }
 
   VariationsHttpHeaderProvider* http_header_provider =
       VariationsHttpHeaderProvider::GetInstance();
   // Force the variation ids selected in chrome://flags and/or specified using
   // the command-line flag.
-  bool result = http_header_provider->ForceVariationIds(
-      command_line->GetSwitchValueASCII(switches::kForceVariationIds),
-      variation_ids);
-  CHECK(result) << "Invalid list of variation ids specified (either in --"
-                << switches::kForceVariationIds << " or in chrome://flags)";
+  auto result = http_header_provider->ForceVariationIds(
+      variation_ids,
+      command_line->GetSwitchValueASCII(switches::kForceVariationIds));
+  switch (result) {
+    case VariationsHttpHeaderProvider::ForceIdsResult::INVALID_SWITCH_ENTRY:
+      ExitWithMessage(base::StringPrintf("Invalid --%s list specified.",
+                                         switches::kForceVariationIds));
+      break;
+    case VariationsHttpHeaderProvider::ForceIdsResult::INVALID_VECTOR_ENTRY:
+      // It should not be possible to have invalid variation ids from the
+      // vector param (which corresponds to chrome://flags).
+      NOTREACHED();
+      break;
+    case VariationsHttpHeaderProvider::ForceIdsResult::SUCCESS:
+      break;
+  }
 
   feature_list->InitializeFromCommandLine(
       command_line->GetSwitchValueASCII(kEnableFeatures),
@@ -471,6 +498,6 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
 
 VariationsSeedStore* VariationsFieldTrialCreator::GetSeedStore() {
   return &seed_store_;
-};
+}
 
 }  // namespace variations

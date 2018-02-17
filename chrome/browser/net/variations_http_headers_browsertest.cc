@@ -49,7 +49,7 @@ class VariationsHttpHeadersBrowserTest : public InProcessBrowserTest {
     // Set up some fake variations.
     auto* variations_provider =
         variations::VariationsHttpHeaderProvider::GetInstance();
-    variations_provider->SetDefaultVariationIds({"12", "456", "t789"});
+    variations_provider->ForceVariationIds({"12", "456", "t789"}, "");
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
