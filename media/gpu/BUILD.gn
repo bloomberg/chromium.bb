@@ -295,6 +295,12 @@ component("gpu") {
         "windows/d3d11_video_decoder_impl.h",
       ]
     }
+    if (enable_library_cdms) {
+      sources += [
+        "d3d11_cdm_proxy.cc",
+        "d3d11_cdm_proxy.h",
+      ]
+    }
   }
 }
 
@@ -554,5 +560,13 @@ source_set("unit_tests") {
 
   if (use_vaapi) {
     deps += [ "//media/gpu/vaapi:unit_test" ]
+  }
+  if (is_win && enable_library_cdms) {
+    sources += [
+      "d3d11_mocks.cc",
+      "d3d11_mocks.h",
+      "d3d11_proxy_unittest.cc",
+    ]
+    libs = [ "dxguid.lib" ]
   }
 }
