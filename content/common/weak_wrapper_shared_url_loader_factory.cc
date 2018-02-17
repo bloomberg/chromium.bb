@@ -24,8 +24,7 @@ void WeakWrapperSharedURLLoaderFactory::CreateLoaderAndStart(
     uint32_t options,
     const network::ResourceRequest& request,
     network::mojom::URLLoaderClientPtr client,
-    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    const Constraints& constraints) {
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   if (!factory_ptr_)
     return;
   factory_ptr_->CreateLoaderAndStart(std::move(loader), routing_id, request_id,

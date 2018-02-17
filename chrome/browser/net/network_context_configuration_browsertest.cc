@@ -122,12 +122,14 @@ class NetworkContextConfigurationBrowserTest
       case NetworkContextType::kProfile:
         return content::BrowserContext::GetDefaultStoragePartition(
                    browser()->profile())
-            ->GetURLLoaderFactoryForBrowserProcess();
+            ->GetURLLoaderFactoryForBrowserProcess()
+            .get();
       case NetworkContextType::kIncognitoProfile:
         DCHECK(incognito_);
         return content::BrowserContext::GetDefaultStoragePartition(
                    incognito_->profile())
-            ->GetURLLoaderFactoryForBrowserProcess();
+            ->GetURLLoaderFactoryForBrowserProcess()
+            .get();
     }
     NOTREACHED();
     return nullptr;

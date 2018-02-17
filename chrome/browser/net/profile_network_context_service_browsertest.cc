@@ -60,7 +60,8 @@ class ProfileNetworkContextServiceBrowsertest
   void SetUpOnMainThread() override {
     loader_factory_ = content::BrowserContext::GetDefaultStoragePartition(
                           browser()->profile())
-                          ->GetURLLoaderFactoryForBrowserProcess();
+                          ->GetURLLoaderFactoryForBrowserProcess()
+                          .get();
   }
 
   network::mojom::URLLoaderFactory* loader_factory() const {

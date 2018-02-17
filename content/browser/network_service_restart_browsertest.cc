@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/test/scoped_feature_list.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
@@ -16,6 +17,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/browser/shell_browser_context.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -68,6 +70,23 @@ int LoadBasicRequestOnIOThread(
           base::Unretained(url_loader_factory_getter),
           simple_loader_helper.GetCallback()));
 
+  simple_loader_helper.WaitForCallback();
+  return simple_loader->NetError();
+}
+
+int LoadBasicRequestOnUIThread(
+    network::mojom::URLLoaderFactory* url_loader_factory,
+    const GURL& url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = url;
+
+  SimpleURLLoaderTestHelper simple_loader_helper;
+  std::unique_ptr<network::SimpleURLLoader> simple_loader =
+      network::SimpleURLLoader::Create(std::move(request),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory, simple_loader_helper.GetCallback());
   simple_loader_helper.WaitForCallback();
   return simple_loader->NetError();
 }
@@ -260,6 +279,44 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, BasicXHR) {
 
   EXPECT_TRUE(CheckCanLoadHttp("/title2.html"));
   EXPECT_EQ(last_request_relative_url(), "/title2.html");
+}
+
+// Make sure the factory returned from
+// |StoragePartition::GetURLLoaderFactoryForBrowserProcess()| continues to work
+// after crashes.
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, BrowserUIFactory) {
+  auto* partition =
+      BrowserContext::GetDefaultStoragePartition(browser_context());
+  auto* factory = partition->GetURLLoaderFactoryForBrowserProcess().get();
+
+  EXPECT_EQ(net::OK, LoadBasicRequestOnUIThread(factory, GetTestURL()));
+
+  SimulateNetworkServiceCrash();
+  // Flush the interface to make sure the error notification was received.
+  partition->FlushNetworkInterfaceForTesting();
+
+  EXPECT_EQ(net::OK, LoadBasicRequestOnUIThread(factory, GetTestURL()));
+}
+
+// Make sure the factory returned from
+// |StoragePartition::GetURLLoaderFactoryForBrowserProcess()| doesn't crash if
+// it's called after the StoragePartition is deleted.
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
+                       BrowserUIFactoryAfterStoragePartitionGone) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  std::unique_ptr<ShellBrowserContext> browser_context =
+      std::make_unique<ShellBrowserContext>(true, nullptr);
+  auto* partition =
+      BrowserContext::GetDefaultStoragePartition(browser_context.get());
+  scoped_refptr<content::SharedURLLoaderFactory> factory(
+      partition->GetURLLoaderFactoryForBrowserProcess());
+
+  EXPECT_EQ(net::OK, LoadBasicRequestOnUIThread(factory.get(), GetTestURL()));
+
+  browser_context.reset();
+
+  EXPECT_EQ(net::ERR_FAILED,
+            LoadBasicRequestOnUIThread(factory.get(), GetTestURL()));
 }
 
 }  // namespace content

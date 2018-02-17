@@ -48,7 +48,8 @@ PasswordAutoSignInView::PasswordAutoSignInView(
   CredentialsItemView* credential = new CredentialsItemView(
       this, upper_text, lower_text, kButtonHoverColor, &form,
       content::BrowserContext::GetDefaultStoragePartition(model()->GetProfile())
-          ->GetURLLoaderFactoryForBrowserProcess());
+          ->GetURLLoaderFactoryForBrowserProcess()
+          .get());
   credential->SetEnabled(false);
   AddChildView(credential);
 

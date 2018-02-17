@@ -12,11 +12,35 @@
 #include "content/common/content_export.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {
 
-class SharedURLLoaderFactory;
+class SharedURLLoaderFactoryInfo;
+
+// This is a ref-counted C++ interface to replace raw mojom::URLLoaderFactory
+// pointers and various factory getters.
+// A SharedURLLoaderFactory instance is supposed to be used on a single
+// sequence. To use it on a different sequence, use Clone() and pass the
+// resulting SharedURLLoaderFactoryInfo instance to the target sequence. On the
+// target sequence, call SharedURLLoaderFactory::Create() to convert the info
+// instance to a new SharedURLLoaderFactory.
+class CONTENT_EXPORT SharedURLLoaderFactory
+    : public base::RefCounted<SharedURLLoaderFactory>,
+      public network::mojom::URLLoaderFactory {
+ public:
+  static scoped_refptr<SharedURLLoaderFactory> Create(
+      std::unique_ptr<SharedURLLoaderFactoryInfo> info);
+
+  // network::mojom::URLLoaderFactory
+  void Clone(network::mojom::URLLoaderFactoryRequest request) final;
+
+  virtual std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() = 0;
+
+ protected:
+  friend class base::RefCounted<SharedURLLoaderFactory>;
+  ~SharedURLLoaderFactory() override;
+};
 
 // SharedURLLoaderFactoryInfo contains necessary information to construct a
 // SharedURLLoaderFactory. It is not sequence safe but can be passed across
@@ -37,41 +61,6 @@ class CONTENT_EXPORT SharedURLLoaderFactoryInfo {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SharedURLLoaderFactoryInfo);
-};
-
-// A SharedURLLoaderFactory instance is supposed to be used on a single
-// sequence. To use it on a different sequence, use Clone() and pass the
-// resulting SharedURLLoaderFactoryInfo instance to the target sequence. On the
-// target sequence, call SharedURLLoaderFactory::Create() to convert the info
-// instance to a new SharedURLLoaderFactory.
-class CONTENT_EXPORT SharedURLLoaderFactory
-    : public base::RefCounted<SharedURLLoaderFactory> {
- public:
-  struct Constraints {
-    // Skip appcache and service worker if this flag is set to true.
-    bool bypass_custom_network_loader = false;
-  };
-
-  static scoped_refptr<SharedURLLoaderFactory> Create(
-      std::unique_ptr<SharedURLLoaderFactoryInfo> info);
-
-  virtual void CreateLoaderAndStart(
-      network::mojom::URLLoaderRequest loader,
-      int32_t routing_id,
-      int32_t request_id,
-      uint32_t options,
-      const network::ResourceRequest& request,
-      network::mojom::URLLoaderClientPtr client,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      const Constraints& constraints = kDefaultConstraints) = 0;
-
-  virtual std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() = 0;
-
- protected:
-  friend class base::RefCounted<SharedURLLoaderFactory>;
-  virtual ~SharedURLLoaderFactory();
-
-  static const Constraints kDefaultConstraints;
 };
 
 }  // namespace content

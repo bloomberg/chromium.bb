@@ -133,7 +133,8 @@ class BrowsingDataRemoverImplBrowserTest : public ContentBrowserTest {
   network::mojom::URLLoaderFactory* url_loader_factory() {
     return BrowserContext::GetDefaultStoragePartition(
                shell()->web_contents()->GetBrowserContext())
-        ->GetURLLoaderFactoryForBrowserProcess();
+        ->GetURLLoaderFactoryForBrowserProcess()
+        .get();
   }
 
  private:

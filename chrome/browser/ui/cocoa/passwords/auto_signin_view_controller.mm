@@ -43,9 +43,9 @@ initWithAvatarManager:(AccountAvatarFetcherManager*)avatarManager
 
 - (instancetype)initWithDelegate:
     (id<BasePasswordsContentViewDelegate>)delegate {
-  auto* loader_factory = content::BrowserContext::GetDefaultStoragePartition(
-                             delegate.model->GetProfile())
-                             ->GetURLLoaderFactoryForBrowserProcess();
+  auto loader_factory = content::BrowserContext::GetDefaultStoragePartition(
+                            delegate.model->GetProfile())
+                            ->GetURLLoaderFactoryForBrowserProcess();
   base::scoped_nsobject<AccountAvatarFetcherManager> avatarManager(
       [[AccountAvatarFetcherManager alloc]
           initWithLoaderFactory:loader_factory]);

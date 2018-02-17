@@ -30,7 +30,6 @@ class ZoomLevelDelegate;
 
 namespace mojom {
 class NetworkContext;
-class URLLoaderFactory;
 }
 
 // Fake implementation of StoragePartition.
@@ -57,13 +56,7 @@ class TestStoragePartition : public StoragePartition {
   }
   network::mojom::NetworkContext* GetNetworkContext() override;
 
-  void set_url_loader_factory_for_browser_process(
-      network::mojom::URLLoaderFactory*
-          url_loader_factory_for_browser_process) {
-    url_loader_factory_for_browser_process_ =
-        url_loader_factory_for_browser_process;
-  }
-  network::mojom::URLLoaderFactory* GetURLLoaderFactoryForBrowserProcess()
+  scoped_refptr<SharedURLLoaderFactory> GetURLLoaderFactoryForBrowserProcess()
       override;
 
   void set_cookie_manager_for_browser_process(
@@ -174,8 +167,6 @@ class TestStoragePartition : public StoragePartition {
   net::URLRequestContextGetter* url_request_context_getter_ = nullptr;
   net::URLRequestContextGetter* media_url_request_context_getter_ = nullptr;
   network::mojom::NetworkContext* network_context_ = nullptr;
-  network::mojom::URLLoaderFactory* url_loader_factory_for_browser_process_ =
-      nullptr;
   network::mojom::CookieManager* cookie_manager_for_browser_process_ = nullptr;
   storage::QuotaManager* quota_manager_ = nullptr;
   AppCacheService* app_cache_service_ = nullptr;

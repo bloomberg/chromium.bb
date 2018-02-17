@@ -187,7 +187,8 @@ void AccountChooserDialogView::InitWindow() {
       CreateCredentialsView(controller_->GetLocalForms(), this,
                             content::BrowserContext::GetDefaultStoragePartition(
                                 GetProfileFromWebContents(web_contents_))
-                                ->GetURLLoaderFactoryForBrowserProcess()));
+                                ->GetURLLoaderFactoryForBrowserProcess()
+                                .get()));
 }
 
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)

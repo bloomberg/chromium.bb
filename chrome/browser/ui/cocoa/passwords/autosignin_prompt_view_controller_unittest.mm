@@ -41,7 +41,8 @@ class AutoSigninPromptViewControllerTest : public PasswordPromptBridgeInterface,
   // PasswordPromptBridgeInterface:
   void PerformClose() override;
   PasswordDialogController* GetDialogController() override;
-  network::mojom::URLLoaderFactory* GetURLLoaderFactory() const override;
+  scoped_refptr<content::SharedURLLoaderFactory> GetURLLoaderFactory()
+      const override;
 
  private:
   PasswordDialogControllerMock dialog_controller_;
@@ -70,7 +71,7 @@ AutoSigninPromptViewControllerTest::GetDialogController() {
   return &dialog_controller_;
 }
 
-network::mojom::URLLoaderFactory*
+scoped_refptr<content::SharedURLLoaderFactory>
 AutoSigninPromptViewControllerTest::GetURLLoaderFactory() const {
   NOTREACHED();
   return nullptr;

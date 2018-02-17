@@ -90,7 +90,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   net::URLRequestContextGetter* GetURLRequestContext() override;
   net::URLRequestContextGetter* GetMediaURLRequestContext() override;
   network::mojom::NetworkContext* GetNetworkContext() override;
-  network::mojom::URLLoaderFactory* GetURLLoaderFactoryForBrowserProcess()
+  scoped_refptr<SharedURLLoaderFactory> GetURLLoaderFactoryForBrowserProcess()
       override;
   network::mojom::CookieManager* GetCookieManagerForBrowserProcess() override;
   storage::QuotaManager* GetQuotaManager() override;
@@ -187,11 +187,13 @@ class CONTENT_EXPORT StoragePartitionImpl
 
  private:
   class NetworkContextOwner;
+  class URLLoaderFactoryForBrowserProcess;
 
   friend class BackgroundSyncManagerTest;
   friend class BackgroundSyncServiceImplTest;
   friend class PaymentAppContentUnitTestBase;
   friend class StoragePartitionImplMap;
+  friend class URLLoaderFactoryForBrowserProcess;
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionShaderClearTest, ClearShaderCache);
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest,
                            RemoveQuotaManagedDataForeverBoth);
@@ -273,6 +275,9 @@ class CONTENT_EXPORT StoragePartitionImpl
   // storage configuration info.
   void GetQuotaSettings(storage::OptionalQuotaSettingsCallback callback);
 
+  network::mojom::URLLoaderFactory*
+  GetURLLoaderFactoryForBrowserProcessInternal();
+
   // |is_in_memory_| and |relative_partition_path_| are cached from
   // |StoragePartitionImpl::Create()| in order to re-create |NetworkContext|.
   bool is_in_memory_;
@@ -317,6 +322,9 @@ class CONTENT_EXPORT StoragePartitionImpl
   // provided by the embedder, or is created by the StoragePartition and owned
   // by |network_context_owner_|.
   network::mojom::NetworkContextPtr network_context_;
+
+  scoped_refptr<URLLoaderFactoryForBrowserProcess>
+      shared_url_loader_factory_for_browser_process_;
 
   // URLLoaderFactory/CookieManager for use in the browser process only.
   // See the method comment for

@@ -136,7 +136,8 @@ std::unique_ptr<BitmapFetcher> BitmapFetcherService::CreateFetcher(
       net::LOAD_NORMAL);
   new_fetcher->Start(
       content::BrowserContext::GetDefaultStoragePartition(context_)
-          ->GetURLLoaderFactoryForBrowserProcess());
+          ->GetURLLoaderFactoryForBrowserProcess()
+          .get());
   return new_fetcher;
 }
 

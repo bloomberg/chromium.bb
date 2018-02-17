@@ -33,8 +33,7 @@ void SignedExchangeURLLoaderFactoryForNonNetworkService::CreateLoaderAndStart(
     uint32_t options,
     const network::ResourceRequest& request,
     network::mojom::URLLoaderClientPtr client,
-    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    const Constraints& constraints) {
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   if (!url_request_context_getter_->GetURLRequestContext()) {
     // The context has been destroyed.
     return;

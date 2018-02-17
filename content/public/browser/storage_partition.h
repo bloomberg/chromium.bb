@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "content/public/common/shared_url_loader_factory.h"
 #include "net/cookies/cookie_store.h"
 
 class GURL;
@@ -33,7 +34,6 @@ namespace network {
 namespace mojom {
 class CookieManager;
 class NetworkContext;
-class URLLoaderFactory;
 }
 }  // namespace network
 
@@ -79,7 +79,9 @@ class CONTENT_EXPORT StoragePartition {
   // storage partition.  Prefer to use this instead of creating a new
   // URLLoaderFactory when issuing requests from the Browser process, to
   // share resources and preserve ordering.
-  virtual network::mojom::URLLoaderFactory*
+  // The returned SharedURLLoaderFactory can be held on and will work across
+  // network process restarts.
+  virtual scoped_refptr<SharedURLLoaderFactory>
   GetURLLoaderFactoryForBrowserProcess() = 0;
   virtual network::mojom::CookieManager*
   GetCookieManagerForBrowserProcess() = 0;

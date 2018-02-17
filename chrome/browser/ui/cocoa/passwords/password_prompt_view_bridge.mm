@@ -58,7 +58,7 @@ PasswordPromptViewBridge::GetDialogController() {
   return controller_;
 }
 
-network::mojom::URLLoaderFactory*
+scoped_refptr<content::SharedURLLoaderFactory>
 PasswordPromptViewBridge::GetURLLoaderFactory() const {
   return content::BrowserContext::GetDefaultStoragePartition(
              Profile::FromBrowserContext(web_contents_->GetBrowserContext()))

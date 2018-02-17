@@ -195,7 +195,8 @@ void ContextualSearchSceneLayer::FetchThumbnail(
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   network::mojom::URLLoaderFactory* loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetURLLoaderFactoryForBrowserProcess();
+          ->GetURLLoaderFactoryForBrowserProcess()
+          .get();
   fetcher_ =
       std::make_unique<BitmapFetcher>(gurl, this, NO_TRAFFIC_ANNOTATION_YET);
   fetcher_->Init(

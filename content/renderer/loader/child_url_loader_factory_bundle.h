@@ -69,15 +69,14 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
   // URLLoaderFactoryBundle overrides.
   network::mojom::URLLoaderFactory* GetFactoryForURL(const GURL& url) override;
 
-  void CreateLoaderAndStart(
-      network::mojom::URLLoaderRequest loader,
-      int32_t routing_id,
-      int32_t request_id,
-      uint32_t options,
-      const network::ResourceRequest& request,
-      network::mojom::URLLoaderClientPtr client,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      const Constraints& constaints = kDefaultConstraints) override;
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const network::ResourceRequest& request,
+                            network::mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override;
 
   std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() override;
 
@@ -88,10 +87,6 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
 
   void InitDefaultBlobFactoryIfNecessary();
   void InitDirectNetworkFactoryIfNecessary();
-
-  network::mojom::URLLoaderFactory* GetFactoryForURLWithConstraits(
-      const GURL& url,
-      const Constraints& constraints);
 
   PossiblyAssociatedFactoryGetterCallback direct_network_factory_getter_;
   PossiblyAssociatedURLLoaderFactoryPtr direct_network_factory_;

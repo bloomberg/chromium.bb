@@ -221,7 +221,8 @@ WebstorePrivateBeginInstallWithManifest3Function::Run() {
   if (!icon_url.is_empty()) {
     loader_factory =
         content::BrowserContext::GetDefaultStoragePartition(browser_context())
-            ->GetURLLoaderFactoryForBrowserProcess();
+            ->GetURLLoaderFactoryForBrowserProcess()
+            .get();
   }
 
   scoped_refptr<WebstoreInstallHelper> helper = new WebstoreInstallHelper(

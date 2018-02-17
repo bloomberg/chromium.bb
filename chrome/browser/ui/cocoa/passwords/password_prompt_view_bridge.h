@@ -36,7 +36,8 @@ class PasswordPromptViewBridge : public AccountChooserPrompt,
   // PasswordPromptBridgeInterface:
   void PerformClose() override;
   PasswordDialogController* GetDialogController() override;
-  network::mojom::URLLoaderFactory* GetURLLoaderFactory() const override;
+  scoped_refptr<content::SharedURLLoaderFactory> GetURLLoaderFactory()
+      const override;
 
  private:
   void ShowWindow();

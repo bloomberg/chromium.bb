@@ -313,7 +313,8 @@ void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
   // The helper will call us back via OnWebstoreParseSuccess() or
   // OnWebstoreParseFailure().
   helper->Start(content::BrowserContext::GetDefaultStoragePartition(profile_)
-                    ->GetURLLoaderFactoryForBrowserProcess());
+                    ->GetURLLoaderFactoryForBrowserProcess()
+                    .get());
 }
 
 void WebstoreStandaloneInstaller::OnWebstoreResponseParseFailure(

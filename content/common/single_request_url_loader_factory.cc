@@ -85,8 +85,7 @@ void SingleRequestURLLoaderFactory::CreateLoaderAndStart(
     uint32_t options,
     const network::ResourceRequest& request,
     network::mojom::URLLoaderClientPtr client,
-    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    const Constraints& constraints) {
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   state_->HandleRequest(std::move(loader), std::move(client));
 }
 
