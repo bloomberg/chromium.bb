@@ -6,10 +6,11 @@
 #define CHROME_GPU_CHROME_CONTENT_GPU_CLIENT_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
-#include "base/profiler/stack_sampling_profiler.h"
 #include "base/single_thread_task_runner.h"
+#include "chrome/common/thread_profiler.h"
 #include "content/public/gpu/content_gpu_client.h"
 
 #if defined(OS_CHROMEOS)
@@ -52,8 +53,8 @@ class ChromeContentGpuClient : public content::ContentGpuClient {
       ::arc::mojom::ProtectedBufferManagerRequest request);
 #endif
 
-  // Used to profile process startup.
-  base::StackSamplingProfiler stack_sampling_profiler_;
+  // Used to profile main thread startup.
+  std::unique_ptr<ThreadProfiler> main_thread_profiler_;
 
 #if defined(OS_CHROMEOS)
   gpu::GpuPreferences gpu_preferences_;

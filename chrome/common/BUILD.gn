@@ -177,6 +177,8 @@ static_library("common") {
     "ssl_insecure_content.h",
     "stack_sampling_configuration.cc",
     "stack_sampling_configuration.h",
+    "thread_profiler.cc",
+    "thread_profiler.h",
     "trace_event_args_whitelist.cc",
     "trace_event_args_whitelist.h",
     "tts_messages.h",
@@ -275,6 +277,10 @@ static_library("common") {
     "//ui/message_center/public/cpp",
     "//ui/resources:resources",
     "//url",
+  ]
+
+  deps = [
+    "//components/metrics:child_call_stacks",
   ]
 
   if (enable_plugins) {
@@ -430,7 +436,7 @@ static_library("common") {
   }
 
   if (is_win) {
-    deps = [
+    deps += [
       "//chrome/common/win:eventlog_messages",
       "//chrome_elf:chrome_elf_main_include",
       "//components/crash/content/app:crash_export_thunk_include",
@@ -484,9 +490,7 @@ static_library("common") {
   }
 
   if (is_linux) {
-    deps = [
-      "//sandbox/linux:sandbox_services",
-    ]
+    deps += [ "//sandbox/linux:sandbox_services" ]
   }
 
   if (enable_cdm_host_verification) {

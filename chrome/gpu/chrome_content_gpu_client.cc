@@ -4,20 +4,12 @@
 
 #include "chrome/gpu/chrome_content_gpu_client.h"
 
+#include <string>
 #include <utility>
 
-#include "base/command_line.h"
-#include "base/lazy_instance.h"
-#include "base/threading/platform_thread.h"
-#include "base/threading/sequence_local_storage_slot.h"
 #include "base/time/time.h"
-#include "chrome/common/stack_sampling_configuration.h"
-#include "components/metrics/child_call_stack_profile_collector.h"
 #include "content/public/child/child_thread.h"
-#include "content/public/common/content_switches.h"
-#include "content/public/common/service_names.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_paths.h"
@@ -35,53 +27,9 @@
 #include "ui/ozone/public/surface_factory_ozone.h"
 #endif
 
-namespace {
-
-base::LazyInstance<metrics::ChildCallStackProfileCollector>::Leaky
-    g_call_stack_profile_collector = LAZY_INSTANCE_INITIALIZER;
-
-// The profiler object is stored in a SequenceLocalStorageSlot on the IO thread
-// so that it will be destroyed when the IO thread stops.
-base::LazyInstance<base::SequenceLocalStorageSlot<
-    std::unique_ptr<base::StackSamplingProfiler>>>::Leaky
-    io_thread_sampling_profiler = LAZY_INSTANCE_INITIALIZER;
-
-// Starts to profile the IO thread.
-void StartIOThreadProfiling() {
-  StackSamplingConfiguration* config = StackSamplingConfiguration::Get();
-
-  if (config->IsProfilerEnabledForCurrentProcess()) {
-    auto profiler = std::make_unique<base::StackSamplingProfiler>(
-        base::PlatformThread::CurrentId(),
-        config->GetSamplingParamsForCurrentProcess(),
-        g_call_stack_profile_collector.Get().GetProfilerCallback(
-            metrics::CallStackProfileParams(
-                metrics::CallStackProfileParams::GPU_PROCESS,
-                metrics::CallStackProfileParams::IO_THREAD,
-                metrics::CallStackProfileParams::PROCESS_STARTUP,
-                metrics::CallStackProfileParams::MAY_SHUFFLE)));
-
-    profiler->Start();
-    io_thread_sampling_profiler.Get().Set(std::move(profiler));
-  }
-}
-
-}  // namespace
-
 ChromeContentGpuClient::ChromeContentGpuClient()
-    : stack_sampling_profiler_(
-          base::PlatformThread::CurrentId(),
-          StackSamplingConfiguration::Get()
-              ->GetSamplingParamsForCurrentProcess(),
-          g_call_stack_profile_collector.Get().GetProfilerCallback(
-              metrics::CallStackProfileParams(
-                  metrics::CallStackProfileParams::GPU_PROCESS,
-                  metrics::CallStackProfileParams::GPU_MAIN_THREAD,
-                  metrics::CallStackProfileParams::PROCESS_STARTUP,
-                  metrics::CallStackProfileParams::MAY_SHUFFLE))) {
-  if (StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
-    stack_sampling_profiler_.Start();
-
+    : main_thread_profiler_(ThreadProfiler::CreateAndStartOnMainThread(
+          metrics::CallStackProfileParams::GPU_MAIN_THREAD)) {
 #if defined(OS_CHROMEOS)
   protected_buffer_manager_ = std::make_unique<arc::ProtectedBufferManager>();
 #endif
@@ -118,16 +66,15 @@ void ChromeContentGpuClient::GpuServiceInitialized(
                      base::Unretained(protected_buffer_manager_.get())));
 #endif
 
-  metrics::mojom::CallStackProfileCollectorPtr browser_interface;
-  content::ChildThread::Get()->GetConnector()->BindInterface(
-      content::mojom::kBrowserServiceName, &browser_interface);
-  g_call_stack_profile_collector.Get().SetParentProfileCollector(
-      std::move(browser_interface));
+  ThreadProfiler::SetServiceManagerConnectorForChildProcess(
+      content::ChildThread::Get()->GetConnector());
 }
 
 void ChromeContentGpuClient::PostIOThreadCreated(
     base::SingleThreadTaskRunner* io_task_runner) {
-  io_task_runner->PostTask(FROM_HERE, base::BindOnce(&StartIOThreadProfiling));
+  io_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&ThreadProfiler::StartOnChildThread,
+                                metrics::CallStackProfileParams::IO_THREAD));
 }
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
