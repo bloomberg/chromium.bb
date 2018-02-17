@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x220
-  LayoutNGBlockFlow {HTML} at (0,0) size 800x220
-    LayoutNGBlockFlow {BODY} at (8,8) size 784x204
+layer at (0,0) size 800x600
+  LayoutNGBlockFlow {HTML} at (0,0) size 800x600
+    LayoutNGBlockFlow {BODY} at (8,8) size 784x584
       LayoutNGBlockFlow {P} at (0,0) size 784x60
         LayoutText {#text} at (0,0) size 748x59
           text run at (0,0) width 748: "Assuming the port-specific theme draws focus rings, this test can be used to ensure that a focus ring is not drawn for an"

@@ -99,6 +99,14 @@ bool NGLayoutInputNode::IsFixedContainer() const {
   return box_->CanContainFixedPositionObjects();
 }
 
+bool NGLayoutInputNode::IsBody() const {
+  return IsBlock() && box_->IsBody();
+}
+
+bool NGLayoutInputNode::IsDocumentElement() const {
+  return box_->IsDocumentElement();
+}
+
 bool NGLayoutInputNode::CreatesNewFormattingContext() const {
   return IsBlock() && box_->AvoidsFloats();
 }
@@ -151,9 +159,10 @@ Document& NGLayoutInputNode::GetDocument() const {
 }
 
 NGPhysicalSize NGLayoutInputNode::InitialContainingBlockSize() const {
-  LayoutView* view = GetDocument().GetLayoutView();
-  FloatSize size = view->ViewportSizeForViewportUnits();
-  return NGPhysicalSize{LayoutUnit(size.Width()), LayoutUnit(size.Height())};
+  IntSize icb_size =
+      GetDocument().GetLayoutView()->GetLayoutSize(kExcludeScrollbars);
+  return NGPhysicalSize{LayoutUnit(icb_size.Width()),
+                        LayoutUnit(icb_size.Height())};
 }
 
 LayoutObject* NGLayoutInputNode::GetLayoutObject() const {

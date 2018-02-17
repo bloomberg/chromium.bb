@@ -54,6 +54,8 @@ class CORE_EXPORT NGLayoutInputNode {
   bool IsReplaced() const;
   bool IsAbsoluteContainer() const;
   bool IsFixedContainer() const;
+  bool IsBody() const;
+  bool IsDocumentElement() const;
   bool ShouldBeConsideredAsReplaced() const;
 
   // If the node is a quirky container for margin collapsing, see:
