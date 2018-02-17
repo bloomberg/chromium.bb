@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/test_browser_context.h"
@@ -129,7 +130,8 @@ class NavigationURLLoaderNetworkServiceTest : public testing::Test {
       const std::string& headers,
       const std::string& method,
       NavigationURLLoaderDelegate* delegate,
-      bool allow_download = false) {
+      bool allow_download = false,
+      bool is_main_frame = true) {
     mojom::BeginNavigationParamsPtr begin_params =
         mojom::BeginNavigationParams::New(
             headers, net::LOAD_NORMAL, false /* skip_service_worker */,
@@ -147,11 +149,10 @@ class NavigationURLLoaderNetworkServiceTest : public testing::Test {
 
     std::unique_ptr<NavigationRequestInfo> request_info(
         new NavigationRequestInfo(
-            common_params, std::move(begin_params), url,
-            true /* is_main_frame */, false /* parent_is_main_frame */,
-            false /* are_ancestors_secure */, -1 /* frame_tree_node_id */,
-            false /* is_for_guests_only */, false /* report_raw_headers */,
-            false /* is_prerenering */));
+            common_params, std::move(begin_params), url, is_main_frame,
+            false /* parent_is_main_frame */, false /* are_ancestors_secure */,
+            -1 /* frame_tree_node_id */, false /* is_for_guests_only */,
+            false /* report_raw_headers */, false /* is_prerenering */));
     std::vector<std::unique_ptr<URLLoaderRequestHandler>> handlers;
     most_recent_resource_request_ = base::nullopt;
     handlers.push_back(std::make_unique<TestURLLoaderRequestHandler>(
@@ -212,6 +213,25 @@ class NavigationURLLoaderNetworkServiceTest : public testing::Test {
     }
   }
 
+  net::RequestPriority NavigateAndReturnRequestPriority(const GURL& url,
+                                                        bool is_main_frame) {
+    TestNavigationURLLoaderDelegate delegate;
+    base::test::ScopedFeatureList scoped_feature_list_;
+
+    scoped_feature_list_.InitAndEnableFeature(features::kLowPriorityIframes);
+
+    std::unique_ptr<NavigationURLLoader> loader = CreateTestLoader(
+        url,
+        base::StringPrintf("%s: %s", net::HttpRequestHeaders::kOrigin,
+                           url.GetOrigin().spec().c_str()),
+        "GET", &delegate, false /* allow_download */, is_main_frame);
+    delegate.WaitForRequestRedirected();
+    loader->FollowRedirect();
+    delegate.WaitForResponseStarted();
+
+    return most_recent_resource_request_.value().priority;
+  }
+
  protected:
   base::test::ScopedFeatureList feature_list_;
   TestBrowserThreadBundle thread_bundle_;
@@ -219,6 +239,16 @@ class NavigationURLLoaderNetworkServiceTest : public testing::Test {
   net::EmbeddedTestServer http_test_server_;
   base::Optional<network::ResourceRequest> most_recent_resource_request_;
 };
+
+TEST_F(NavigationURLLoaderNetworkServiceTest, RequestPriority) {
+  ASSERT_TRUE(http_test_server_.Start());
+  const GURL url = http_test_server_.GetURL("/redirect301-to-echo");
+
+  EXPECT_EQ(net::HIGHEST,
+            NavigateAndReturnRequestPriority(url, true /* is_main_frame */));
+  EXPECT_EQ(net::LOWEST,
+            NavigateAndReturnRequestPriority(url, false /* is_main_frame */));
+}
 
 TEST_F(NavigationURLLoaderNetworkServiceTest, Redirect301Tests) {
   ASSERT_TRUE(http_test_server_.Start());

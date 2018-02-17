@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/trace_event/trace_event.h"
@@ -198,7 +199,14 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->method = request_info->common_params.method;
   new_request->url = request_info->common_params.url;
   new_request->site_for_cookies = request_info->site_for_cookies;
-  new_request->priority = net::HIGHEST;
+
+  net::RequestPriority net_priority = net::HIGHEST;
+  if (!request_info->is_main_frame &&
+      base::FeatureList::IsEnabled(features::kLowPriorityIframes)) {
+    net_priority = net::LOWEST;
+  }
+  new_request->priority = net_priority;
+
   new_request->render_frame_id = frame_tree_node_id;
 
   // The code below to set fields like request_initiator, referrer, etc has
