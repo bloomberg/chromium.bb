@@ -1249,7 +1249,7 @@
     "gtest_tests": [
       {
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -1259,8 +1259,10 @@
           ],
           "dimension_sets": [
             {
-              "gpu": "0000:0000",
-              "os": "Android"
+              "device_os": "L",
+              "device_type": "shamu",
+              "os": "Android",
+              "pool": "Chrome-GPU"
             }
           ],
           "output_links": [
@@ -1279,7 +1281,7 @@
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -1289,8 +1291,10 @@
           ],
           "dimension_sets": [
             {
-              "gpu": "0000:0000",
-              "os": "Android"
+              "device_os": "L",
+              "device_type": "shamu",
+              "os": "Android",
+              "pool": "Chrome-GPU"
             }
           ],
           "output_links": [
@@ -1309,7 +1313,7 @@
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -1319,8 +1323,10 @@
           ],
           "dimension_sets": [
             {
-              "gpu": "0000:0000",
-              "os": "Android"
+              "device_os": "L",
+              "device_type": "shamu",
+              "os": "Android",
+              "pool": "Chrome-GPU"
             }
           ],
           "output_links": [
@@ -1339,7 +1345,7 @@
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -1349,8 +1355,10 @@
           ],
           "dimension_sets": [
             {
-              "gpu": "0000:0000",
-              "os": "Android"
+              "device_os": "L",
+              "device_type": "shamu",
+              "os": "Android",
+              "pool": "Chrome-GPU"
             }
           ],
           "output_links": [
@@ -1384,11 +1392,13 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "0000:0000",
-              "os": "Android"
+              "device_os": "L",
+              "device_type": "shamu",
+              "os": "Android",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -1408,11 +1418,13 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "0000:0000",
-              "os": "Android"
+              "device_os": "L",
+              "device_type": "shamu",
+              "os": "Android",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -1432,11 +1444,13 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "0000:0000",
-              "os": "Android"
+              "device_os": "L",
+              "device_type": "shamu",
+              "os": "Android",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -1456,11 +1470,13 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "0000:0000",
-              "os": "Android"
+              "device_os": "L",
+              "device_type": "shamu",
+              "os": "Android",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -1474,9 +1490,9 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--expected-vendor-id",
-          "0000",
+          "0",
           "--expected-device-id",
-          "0000"
+          "0"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
@@ -1484,11 +1500,13 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "0000:0000",
-              "os": "Android"
+              "device_os": "L",
+              "device_type": "shamu",
+              "os": "Android",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -1515,11 +1533,13 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "0000:0000",
-              "os": "Android"
+              "device_os": "L",
+              "device_type": "shamu",
+              "os": "Android",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -1554,11 +1574,13 @@
           "--download-refimg-from-cloud-storage"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "0000:0000",
-              "os": "Android"
+              "device_os": "L",
+              "device_type": "shamu",
+              "os": "Android",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -1579,11 +1601,13 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "0000:0000",
-              "os": "Android"
+              "device_os": "L",
+              "device_type": "shamu",
+              "os": "Android",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -1603,11 +1627,13 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "0000:0000",
-              "os": "Android"
+              "device_os": "L",
+              "device_type": "shamu",
+              "os": "Android",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -1628,11 +1654,13 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "0000:0000",
-              "os": "Android"
+              "device_os": "L",
+              "device_type": "shamu",
+              "os": "Android",
+              "pool": "Chrome-GPU"
             }
           ],
           "shards": 6
