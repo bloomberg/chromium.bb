@@ -224,39 +224,51 @@ void HardwareDisplayController::AddCrtc(
 std::unique_ptr<CrtcController> HardwareDisplayController::RemoveCrtc(
     const scoped_refptr<DrmDevice>& drm,
     uint32_t crtc) {
-  for (auto it = crtc_controllers_.begin(); it != crtc_controllers_.end();
-       ++it) {
-    if ((*it)->drm() == drm && (*it)->crtc() == crtc) {
-      std::unique_ptr<CrtcController> controller(std::move(*it));
-      crtc_controllers_.erase(it);
+  auto controller_it = std::find_if(
+      crtc_controllers_.begin(), crtc_controllers_.end(),
+      [drm, crtc](const std::unique_ptr<CrtcController>& crtc_controller) {
+        return crtc_controller->drm() == drm && crtc_controller->crtc() == crtc;
+      });
+  if (controller_it == crtc_controllers_.end())
+    return nullptr;
 
-      // Remove entry from |owned_hardware_planes_| iff no other crtcs share it.
-      bool found = false;
-      for (auto it = crtc_controllers_.begin(); it != crtc_controllers_.end();
-           ++it) {
-        if ((*it)->drm() == controller->drm()) {
-          found = true;
-          break;
-        }
-      }
-      if (found) {
-        std::vector<HardwareDisplayPlane*> all_planes;
-        HardwareDisplayPlaneList* plane_list =
-            owned_hardware_planes_[drm.get()].get();
-        all_planes.swap(plane_list->old_plane_list);
-        for (auto* plane : all_planes) {
-          if (plane->owning_crtc() != crtc)
-            plane_list->old_plane_list.push_back(plane);
-        }
-      } else {
-        owned_hardware_planes_.erase(controller->drm().get());
-      }
+  std::unique_ptr<CrtcController> controller(std::move(*controller_it));
+  crtc_controllers_.erase(controller_it);
 
-      return controller;
-    }
+  // Remove and disable only the planes owned by the CRTC we just
+  // removed.
+  std::vector<HardwareDisplayPlane*>& old_plane_list =
+      owned_hardware_planes_[drm.get()]->old_plane_list;
+
+  // Move all the planes that have been committed in the last pageflip for this
+  // CRTC at the end of the collection.
+  auto first_plane_to_disable_it =
+      std::partition(old_plane_list.begin(), old_plane_list.end(),
+                     [crtc](const HardwareDisplayPlane* plane) {
+                       return plane->owning_crtc() != crtc;
+                     });
+
+  // Disable the planes enabled with the last commit on |crtc|, otherwise
+  // the planes will be visible if the crtc is reassigned to another connector.
+  HardwareDisplayPlaneList hardware_plane_list;
+  std::copy(first_plane_to_disable_it, old_plane_list.end(),
+            std::back_inserter(hardware_plane_list.old_plane_list));
+  drm->plane_manager()->DisableOverlayPlanes(&hardware_plane_list);
+
+  // If it was the only CRTC for this drm device, we can remove the hardware
+  // planes list in |owned_hardware_planes_|.
+  if (std::find_if(crtc_controllers_.begin(), crtc_controllers_.end(),
+                   [drm](const std::unique_ptr<CrtcController>& crtc) {
+                     return crtc->drm() == drm;
+                   }) == crtc_controllers_.end()) {
+    owned_hardware_planes_.erase(controller->drm().get());
+  } else {
+    // Otherwise we can remove the planes assigned to |crtc| but we can't
+    // remove the entry in |owned_hardware_planes_|.
+    old_plane_list.erase(first_plane_to_disable_it, old_plane_list.end());
   }
 
-  return nullptr;
+  return controller;
 }
 
 bool HardwareDisplayController::HasCrtc(const scoped_refptr<DrmDevice>& drm,
