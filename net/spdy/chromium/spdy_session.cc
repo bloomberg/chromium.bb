@@ -868,7 +868,7 @@ int SpdySession::GetPushedStream(const GURL& url,
     DCHECK(it != active_streams_.end());
     int weight = Spdy3PriorityToHttp2Weight(
         ConvertRequestPriorityToSpdyPriority(it->second->priority()));
-    EnqueuePriorityFrame(u.id, u.dependent_stream_id, weight, u.exclusive);
+    EnqueuePriorityFrame(u.id, u.parent_stream_id, weight, u.exclusive);
   }
 
   return OK;
@@ -967,24 +967,24 @@ std::unique_ptr<SpdySerializedFrame> SpdySession::CreateHeaders(
 
   bool has_priority = true;
   int weight = 0;
-  SpdyStreamId dependent_stream_id = 0;
+  SpdyStreamId parent_stream_id = 0;
   bool exclusive = false;
 
   priority_dependency_state_.OnStreamCreation(
-      stream_id, spdy_priority, &dependent_stream_id, &weight, &exclusive);
+      stream_id, spdy_priority, &parent_stream_id, &weight, &exclusive);
 
   if (net_log().IsCapturing()) {
     net_log().AddEvent(
         NetLogEventType::HTTP2_SESSION_SEND_HEADERS,
         base::Bind(&NetLogSpdyHeadersSentCallback, &block,
                    (flags & CONTROL_FLAG_FIN) != 0, stream_id, has_priority,
-                   weight, dependent_stream_id, exclusive, source_dependency));
+                   weight, parent_stream_id, exclusive, source_dependency));
   }
 
   SpdyHeadersIR headers(stream_id, std::move(block));
   headers.set_has_priority(has_priority);
   headers.set_weight(weight);
-  headers.set_parent_stream_id(dependent_stream_id);
+  headers.set_parent_stream_id(parent_stream_id);
   headers.set_exclusive(exclusive);
   headers.set_fin((flags & CONTROL_FLAG_FIN) != 0);
 

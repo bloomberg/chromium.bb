@@ -11,16 +11,15 @@ Http2PriorityDependencies::Http2PriorityDependencies() = default;
 
 Http2PriorityDependencies::~Http2PriorityDependencies() = default;
 
-void Http2PriorityDependencies::OnStreamCreation(
-    SpdyStreamId id,
-    SpdyPriority priority,
-    SpdyStreamId* dependent_stream_id,
-    int* weight,
-    bool* exclusive) {
+void Http2PriorityDependencies::OnStreamCreation(SpdyStreamId id,
+                                                 SpdyPriority priority,
+                                                 SpdyStreamId* parent_stream_id,
+                                                 int* weight,
+                                                 bool* exclusive) {
   if (entry_by_stream_id_.find(id) != entry_by_stream_id_.end())
     return;
 
-  *dependent_stream_id = 0;
+  *parent_stream_id = 0;
   *exclusive = true;
   // Since the generated dependency graph is a single linked list, the value
   // of weight should not actually matter, and perhaps the default weight of 16
@@ -33,7 +32,7 @@ void Http2PriorityDependencies::OnStreamCreation(
   // Dependent on the lowest-priority stream that has a priority >= |priority|.
   IdList::iterator parent;
   if (PriorityLowerBound(priority, &parent)) {
-    *dependent_stream_id = parent->first;
+    *parent_stream_id = parent->first;
   }
 
   id_priority_lists_[priority].push_back(std::make_pair(id, priority));

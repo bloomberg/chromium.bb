@@ -15,7 +15,7 @@ namespace net {
 
 bool operator==(const Http2PriorityDependencies::DependencyUpdate& a,
                 const Http2PriorityDependencies::DependencyUpdate& b) {
-  return a.id == b.id && a.dependent_stream_id == b.dependent_stream_id &&
+  return a.id == b.id && a.parent_stream_id == b.parent_stream_id &&
          a.exclusive == b.exclusive;
 }
 
@@ -23,7 +23,7 @@ std::ostream& operator<<(
     std::ostream& os,
     const std::vector<Http2PriorityDependencies::DependencyUpdate>& v) {
   for (auto e : v) {
-    os << "{" << e.id << "," << e.dependent_stream_id << ","
+    os << "{" << e.id << "," << e.parent_stream_id << ","
        << (e.exclusive ? "true" : "false") << "}";
   }
   return os;
@@ -45,21 +45,21 @@ class HttpPriorityDependencyTest : public PlatformTest {
 
   void TestStreamCreation(SpdyStreamId new_id,
                           SpdyPriority priority,
-                          SpdyStreamId expected_dependent_id) {
+                          SpdyStreamId expected_parent_id) {
     int expected_weight = Spdy3PriorityToHttp2Weight(priority);
 
-    SpdyStreamId dependent_id = 999u;
+    SpdyStreamId parent_id = 999u;
     int weight = -1;
     bool exclusive = false;
-    dependency_state_.OnStreamCreation(new_id, priority, &dependent_id, &weight,
+    dependency_state_.OnStreamCreation(new_id, priority, &parent_id, &weight,
                                        &exclusive);
-    if (expected_dependent_id != dependent_id || !exclusive ||
+    if (expected_parent_id != parent_id || !exclusive ||
         expected_weight != weight) {
       ADD_FAILURE() << "OnStreamCreation(" << new_id << ", " << int(priority)
                     << ")\n"
-                    << "  Got:  (" << dependent_id << ", " << weight << ", "
+                    << "  Got:  (" << parent_id << ", " << weight << ", "
                     << exclusive << ")\n"
-                    << "  Want: (" << expected_dependent_id << ", "
+                    << "  Want: (" << expected_parent_id << ", "
                     << expected_weight << ", true)\n";
     }
   }
