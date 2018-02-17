@@ -129,7 +129,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   const char* GetClassName() const override;
 
   // WidgetDelegate overrides:
-  bool ShouldHandleSystemCommands() const override;
   ax::mojom::Role GetAccessibleWindowRole() const override;
 
   // Overridden from views::View:

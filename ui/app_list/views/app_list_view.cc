@@ -356,10 +356,6 @@ const char* AppListView::GetClassName() const {
   return "AppListView";
 }
 
-bool AppListView::ShouldHandleSystemCommands() const {
-  return true;
-}
-
 class AppListView::FullscreenWidgetObserver : views::WidgetObserver {
  public:
   explicit FullscreenWidgetObserver(app_list::AppListView* view)

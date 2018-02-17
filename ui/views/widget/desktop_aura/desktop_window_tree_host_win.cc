@@ -718,10 +718,6 @@ gfx::NativeViewAccessible DesktopWindowTreeHostWin::GetNativeViewAccessible() {
              : nullptr;
 }
 
-bool DesktopWindowTreeHostWin::ShouldHandleSystemCommands() const {
-  return GetWidget()->widget_delegate()->ShouldHandleSystemCommands();
-}
-
 void DesktopWindowTreeHostWin::HandleAppDeactivated() {
   native_widget_delegate_->SetAlwaysRenderAsActive(false);
 }

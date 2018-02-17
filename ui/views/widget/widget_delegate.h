@@ -86,10 +86,6 @@ class VIEWS_EXPORT WidgetDelegate {
   // Returns true if the window should show a close button in the title bar.
   virtual bool ShouldShowCloseButton() const;
 
-  // Returns true if the window should handle standard system commands, such as
-  // close, minimize, maximize.
-  virtual bool ShouldHandleSystemCommands() const;
-
   // Returns the app icon for the window. On Windows, this is the ICON_BIG used
   // in Alt-Tab list and Win7's taskbar.
   virtual gfx::ImageSkia GetWindowAppIcon();
