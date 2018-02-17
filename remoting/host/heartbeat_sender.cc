@@ -5,10 +5,11 @@
 #include "remoting/host/heartbeat_sender.h"
 
 #include <math.h>
-#include <stdint.h>
+
+#include <cstdint>
+#include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringize_macros.h"
@@ -103,7 +104,7 @@ void HeartbeatSender::OnSignalStrategyStateChange(SignalStrategy::State state) {
   } else if (state == SignalStrategy::DISCONNECTED) {
     request_.reset();
     iq_sender_.reset();
-    timer_.Stop();
+    timer_.AbandonAndStop();
   }
 }
 
@@ -113,21 +114,21 @@ bool HeartbeatSender::OnSignalStrategyIncomingStanza(
 }
 
 void HeartbeatSender::OnHostOfflineReasonTimeout() {
-  DCHECK(!host_offline_reason_ack_callback_.is_null());
+  DCHECK(host_offline_reason_ack_callback_);
 
-  base::ResetAndReturn(&host_offline_reason_ack_callback_).Run(false);
+  std::move(host_offline_reason_ack_callback_).Run(false);
 }
 
 void HeartbeatSender::OnHostOfflineReasonAck() {
-  if (host_offline_reason_ack_callback_.is_null()) {
+  if (!host_offline_reason_ack_callback_) {
     DCHECK(!host_offline_reason_timeout_timer_.IsRunning());
     return;
   }
 
   DCHECK(host_offline_reason_timeout_timer_.IsRunning());
-  host_offline_reason_timeout_timer_.Stop();
+  host_offline_reason_timeout_timer_.AbandonAndStop();
 
-  base::ResetAndReturn(&host_offline_reason_ack_callback_).Run(true);
+  std::move(host_offline_reason_ack_callback_).Run(true);
 }
 
 void HeartbeatSender::SetHostOfflineReason(
@@ -135,7 +136,7 @@ void HeartbeatSender::SetHostOfflineReason(
     const base::TimeDelta& timeout,
     const base::Callback<void(bool success)>& ack_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(host_offline_reason_ack_callback_.is_null());
+  DCHECK(!host_offline_reason_ack_callback_);
 
   host_offline_reason_ = host_offline_reason;
   host_offline_reason_ack_callback_ = ack_callback;
@@ -144,7 +145,7 @@ void HeartbeatSender::SetHostOfflineReason(
   if (signal_strategy_->GetState() == SignalStrategy::CONNECTED) {
     // Drop timer or pending heartbeat and send a new heartbeat immediately.
     request_.reset();
-    timer_.Stop();
+    timer_.AbandonAndStop();
 
     SendHeartbeat();
   }
@@ -152,12 +153,17 @@ void HeartbeatSender::SetHostOfflineReason(
 
 void HeartbeatSender::SendHeartbeat() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(signal_strategy_->GetState(), SignalStrategy::CONNECTED);
   VLOG(1) << "Sending heartbeat stanza to " << directory_bot_jid_;
 
-  request_ = iq_sender_->SendIq(
-      buzz::STR_SET, directory_bot_jid_, CreateHeartbeatMessage(),
-      base::Bind(&HeartbeatSender::OnResponse, base::Unretained(this)));
+  if (iq_sender_) {
+    DCHECK_EQ(signal_strategy_->GetState(), SignalStrategy::CONNECTED);
+    request_ = iq_sender_->SendIq(
+        buzz::STR_SET, directory_bot_jid_, CreateHeartbeatMessage(),
+        base::Bind(&HeartbeatSender::OnResponse, base::Unretained(this)));
+  } else {
+    DCHECK_EQ(signal_strategy_->GetState(), SignalStrategy::DISCONNECTED);
+  }
+
   if (request_) {
     request_->SetTimeout(kHeartbeatResponseTimeout);
   } else {
@@ -179,8 +185,8 @@ void HeartbeatSender::OnResponse(IqRequest* request,
     failed_heartbeat_count_ = 0;
 
     // Notify listener of the first successful heartbeat.
-    if (!on_heartbeat_successful_callback_.is_null()) {
-      base::ResetAndReturn(&on_heartbeat_successful_callback_).Run();
+    if (on_heartbeat_successful_callback_) {
+      std::move(on_heartbeat_successful_callback_).Run();
     }
 
     // Notify caller of SetHostOfflineReason that we got an ack and don't
