@@ -3956,6 +3956,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Populated"/>
 </enum>
 
+<enum name="BooleanPrecededByJsScroll">
+  <int value="0" label="Scroll restoration would succeed"/>
+  <int value="1" label="Scroll restoration would be prevented"/>
+</enum>
+
 <enum name="BooleanPreferred">
   <int value="0" label="Not Preferred"/>
   <int value="1" label="Preferred"/>

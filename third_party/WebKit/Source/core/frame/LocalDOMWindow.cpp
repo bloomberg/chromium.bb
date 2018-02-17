@@ -1153,6 +1153,17 @@ void LocalDOMWindow::scrollBy(double x,
   if (!page)
     return;
 
+  // TODO(810510): Move this logic inside "ScrollableArea::SetScrollOffset" and
+  // rely on ScrollType to detect js scrolls and set the flag. This requires
+  // adding new scroll type to enable this.
+  if (GetFrame()->Loader().GetDocumentLoader()) {
+    GetFrame()
+        ->Loader()
+        .GetDocumentLoader()
+        ->GetInitialScrollState()
+        .was_scrolled_by_js = true;
+  }
+
   x = ScrollableArea::NormalizeNonFiniteScroll(x);
   y = ScrollableArea::NormalizeNonFiniteScroll(y);
 
@@ -1189,6 +1200,17 @@ void LocalDOMWindow::scrollTo(double x, double y) const {
   Page* page = GetFrame()->GetPage();
   if (!page)
     return;
+
+  // TODO(810510): Move this logic inside "ScrollableArea::SetScrollOffset" and
+  // rely on ScrollType to detect js scrolls and set the flag. This requires
+  // adding new scroll type to enable this.
+  if (GetFrame()->Loader().GetDocumentLoader()) {
+    GetFrame()
+        ->Loader()
+        .GetDocumentLoader()
+        ->GetInitialScrollState()
+        .was_scrolled_by_js = true;
+  }
 
   x = ScrollableArea::NormalizeNonFiniteScroll(x);
   y = ScrollableArea::NormalizeNonFiniteScroll(y);

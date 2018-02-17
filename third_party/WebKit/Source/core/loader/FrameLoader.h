@@ -259,6 +259,8 @@ class CORE_EXPORT FrameLoader final {
                  NavigationPolicy,
                  HistoryItem*);
 
+  void ClearInitialScrollState();
+
   void LoadInSameDocument(const KURL&,
                           scoped_refptr<SerializedScriptValue> state_object,
                           FrameLoadType,
