@@ -150,6 +150,7 @@ dev_list="\
   bison
   cdbs
   curl
+  dbus-x11
   dpkg-dev
   elfutils
   devscripts
