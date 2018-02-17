@@ -57,6 +57,9 @@ Polymer({
     },
   },
 
+  /** @private {boolean} */
+  newDestinations_: false,
+
   /**
    * @param {!Array<!print_preview.Destination>} current
    * @param {?Array<!print_preview.Destination>} previous
@@ -66,8 +69,16 @@ Polymer({
     if (previous == undefined) {
       this.matchingDestinationsCount_ = this.destinations.length;
     } else {
-      this.update_();
+      this.newDestinations_ = true;
     }
+  },
+
+  /** @private */
+  updateIfNeeded_: function() {
+    if (!this.newDestinations_)
+      return;
+    this.newDestinations_ = false;
+    this.update_();
   },
 
   /** @private */

@@ -5,6 +5,8 @@
 Polymer({
   is: 'print-preview-destination-dialog',
 
+  behaviors: [I18nBehavior],
+
   properties: {
     /** @type {?print_preview.DestinationStore} */
     destinationStore: {
@@ -13,7 +15,16 @@ Polymer({
     },
 
     /** @type {!print_preview.UserInfo} */
-    userInfo: Object,
+    userInfo: {
+      type: Object,
+      notify: true,
+    },
+
+    /** @type {boolean} */
+    showCloudPrintPromo: {
+      type: Boolean,
+      notify: true,
+    },
 
     /** @private {!Array<!print_preview.Destination>} */
     destinations_: {
@@ -50,6 +61,27 @@ Polymer({
   /** @private {!EventTracker} */
   tracker_: new EventTracker(),
 
+  /** @override */
+  ready: function() {
+    this.$$('.promo-text').innerHTML =
+        this.i18nAdvanced('cloudPrintPromotion', {
+          substitutions: ['<a is="action-link" class="sign-in">', '</a>'],
+          attrs: {
+            'is': (node, v) => v == 'action-link',
+            'class': (node, v) => v == 'sign-in',
+          },
+        });
+  },
+
+  /** @override */
+  attached: function() {
+    this.tracker_.add(
+        assert(this.$$('.sign-in')), 'click', this.onSignInClick_.bind(this));
+    this.tracker_.add(
+        assert(this.$$('.cloudprint-promo > .close-button')), 'click',
+        this.onCloudPrintPromoDismissed_.bind(this));
+  },
+
   /** @private */
   onDestinationStoreSet_: function() {
     assert(this.destinations_.length == 0);
@@ -66,6 +98,12 @@ Polymer({
 
   /** @private */
   updateDestinations_: function() {
+    this.notifyPath('userInfo.users');
+    this.notifyPath('userInfo.activeUser');
+    this.notifyPath('userInfo.loggedIn');
+    if (this.userInfo.loggedIn)
+      this.showCloudPrintPromo = false;
+
     this.destinations_ = this.userInfo ?
         this.destinationStore.destinations(this.userInfo.activeUser) :
         [];
@@ -90,15 +128,6 @@ Polymer({
       }
     });
     return recentDestinations;
-  },
-
-  /**
-   * @return {string} The cloud print promotion HTML.
-   * @private
-   */
-  getCloudPrintPromotion_: function() {
-    return loadTimeData.getStringF(
-        'cloudPrintPromotion', '<a is="action-link" class="sign-in">', '</a>');
   },
 
   /** @private */
@@ -126,5 +155,51 @@ Polymer({
     this.loadingDestinations_ =
         this.destinationStore.isPrintDestinationSearchInProgress;
     this.$.dialog.showModal();
+  },
+
+  /** @return {boolean} Whether the dialog is open. */
+  isOpen: function() {
+    return this.$.dialog.hasAttribute('open');
+  },
+
+  /** @private */
+  isSelected_: function(account) {
+    return account == this.userInfo.activeUser;
+  },
+
+  /** @private */
+  onSignInClick_: function() {
+    print_preview.NativeLayer.getInstance().signIn(false).then(() => {
+      this.destinationStore.onDestinationsReload();
+    });
+  },
+
+  /** @private */
+  onCloudPrintPromoDismissed_: function() {
+    this.showCloudPrintPromo = false;
+  },
+
+  /** @private */
+  onUserChange_: function() {
+    const select = this.$$('select');
+    const account = select.value;
+    if (account) {
+      this.showCloudPrintPromo = false;
+      this.userInfo.activeUser = account;
+      this.notifyPath('userInfo.activeUser');
+      this.notifyPath('userInfo.loggedIn');
+      this.destinationStore.reloadUserCookieBasedDestinations();
+    } else {
+      print_preview.NativeLayer.getInstance().signIn(true).then(
+          this.destinationStore.onDestinationsReload.bind(
+              this.destinationStore));
+      const options = select.querySelectorAll('option');
+      for (let i = 0; i < options.length; i++) {
+        if (options[i].value == this.userInfo.activeUser) {
+          select.selectedIndex = i;
+          break;
+        }
+      }
+    }
   },
 });

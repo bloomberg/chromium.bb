@@ -21,6 +21,7 @@
         'preview_area',
         'model',
         'state',
+        '../compiled_resources2.gyp:cloud_print_interface',
         '../compiled_resources2.gyp:native_layer',
         '../data/compiled_resources2.gyp:destination',
         '../data/compiled_resources2.gyp:destination_store',

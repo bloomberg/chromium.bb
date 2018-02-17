@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/html/event_tracker.html">
 <link rel="import" href="chrome://resources/html/webui_listener_tracker.html">
+<link rel="import" href="../cloud_print_interface.html">
 <link rel="import" href="../native_layer.html">
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="../data/destination_store.html">
@@ -69,11 +70,12 @@
           on-cancel-requested="onCancelRequested_">
       </print-preview-header>
       <div id="settings-sections">
-        <print-preview-destination-settings destination="[[destination_]]"
-          destination-store="[[destinationStore_]]"
-          disabled="[[controlsDisabled_]]" state="[[state]]"
-          recent-destinations="[[recentDestinations_]]"
-          user-info="[[userInfo_]]">
+        <print-preview-destination-settings id="destinationSettings"
+            destination="[[destination_]]"
+            destination-store="[[destinationStore_]]"
+            disabled="[[controlsDisabled_]]" state="[[state]]"
+            recent-destinations="[[recentDestinations_]]"
+            user-info="{{userInfo_}}">
         </print-preview-destination-settings>
         <print-preview-pages-settings settings="{{settings}}"
             document-info="[[documentInfo_]]" disabled="[[controlsDisabled_]]"
