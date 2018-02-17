@@ -141,6 +141,7 @@ class BattOrAgent : public BattOrConnection::Listener,
     SEND_SAMPLES_REQUEST,
     READ_CALIBRATION_FRAME,
     READ_DATA_FRAME,
+    POST_READ_ERROR_FLUSH,
 
     // Actions required for recording a clock sync marker.
     SEND_CURRENT_SAMPLE_REQUEST,
@@ -172,6 +173,9 @@ class BattOrAgent : public BattOrConnection::Listener,
 
   // Retry the last command.
   void RetryCommand();
+
+  // Retry the last sample frame.
+  void RetryFrame();
 
   // Completes the command with the specified error.
   void CompleteCommand(BattOrError error);
@@ -219,6 +223,9 @@ class BattOrAgent : public BattOrConnection::Listener,
 
   // The number of times we've attempted a command.
   uint8_t num_command_attempts_;
+
+  // The number of times we've attempted receiving a frame.
+  uint8_t num_frame_attempts_;
 
   // The timeout that's run when an action times out.
   base::CancelableClosure timeout_callback_;
