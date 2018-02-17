@@ -1184,6 +1184,7 @@ CrSettingsInternetDetailPageTest.prototype = {
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
     ROOT_PATH + 'ui/webui/resources/js/assert.js',
+    ROOT_PATH + 'ui/webui/resources/js/util.js',
     '../fake_chrome_event.js',
     '../chromeos/fake_networking_private.js',
     'internet_detail_page_tests.js',
