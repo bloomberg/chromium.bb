@@ -19,6 +19,7 @@ package-lock.json
 */tests/
 .travis.yml
 *.d.ts
+*wct.conf.json
 
 # app-layout specific
 */patterns/

@@ -34,6 +34,26 @@
       },
     },
 
+    // The list of keys has been taken from
+    // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/getModifierState
+    _MODIFIER_KEYS : [
+      'Alt',
+      'AltGraph',
+      'CapsLock',
+      'Control',
+      'Fn',
+      'FnLock',
+      'Hyper',
+      'Meta',
+      'NumLock',
+      'OS',
+      'ScrollLock',
+      'Shift',
+      'Super',
+      'Symbol',
+      'SymbolLock'
+    ],
+
     _SEARCH_RESET_TIMEOUT_MS: 1000,
 
     _previousTabIndex: 0,
@@ -117,6 +137,12 @@
      * @param {KeyboardEvent} event A KeyboardEvent.
      */
     _focusWithKeyboardEvent: function(event) {
+      // Make sure that the key pressed is not a modifier key.
+      // getModifierState is not being used, as it is not available in Safari
+      // earlier than 10.0.2 (https://trac.webkit.org/changeset/206725/webkit)
+      if (this._MODIFIER_KEYS.indexOf(event.key) !== -1)
+        return;
+
       this.cancelDebouncer('_clearSearchText');
 
       var searchText = this._searchText || '';
@@ -331,8 +357,10 @@
      * @param {CustomEvent} event A key combination event.
      */
     _onEscKey: function(event) {
-      // esc blurs the control
-      this.focusedItem.blur();
+      var focusedItem = this.focusedItem;
+      if (focusedItem) {
+        focusedItem.blur();
+      }
     },
 
     /**
