@@ -104,12 +104,6 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
 
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() = 0;
 
-  // Returns true if the window should handle standard system commands, such as
-  // close, minimize, maximize.
-  // TODO(benwells): Remove this once bubbles don't have two widgets
-  // implementing them on non-aura windows. http://crbug.com/189112.
-  virtual bool ShouldHandleSystemCommands() const = 0;
-
   // TODO(beng): Investigate migrating these methods to On* prefixes once
   // HWNDMessageHandler is the WindowImpl.
 
