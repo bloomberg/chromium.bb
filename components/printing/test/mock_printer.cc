@@ -213,7 +213,7 @@ void MockPrinter::PrintPage(
 #if defined(OS_MACOSX)
   printing::PdfMetafileCg metafile;
 #else
-  printing::PdfMetafileSkia metafile;
+  printing::PdfMetafileSkia metafile(printing::SkiaDocumentType::PDF);
 #endif
   metafile.InitFromData(metafile_data.memory(), content.data_size);
   printing::Image image(metafile);

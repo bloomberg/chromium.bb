@@ -49,7 +49,6 @@
 #include "platform/loader/fetch/ResourceError.h"
 #include "platform/wtf/Forward.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCanvas.h"
 #include "public/platform/WebFocusType.h"
 #include "public/platform/WebMenuSourceType.h"
 #include "public/platform/WebScreenInfo.h"
@@ -429,9 +428,6 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
   void SetIsInert(bool) override {}
   void UpdateRenderThrottlingStatus(bool is_throttled,
                                     bool subtree_throttled) override {}
-  uint32_t Print(const IntRect& rect, WebCanvas* canvas) const override {
-    return 0;
-  }
 
   // FrameClient implementation.
   bool InShadowTree() const override { return false; }

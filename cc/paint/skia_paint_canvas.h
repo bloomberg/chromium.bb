@@ -135,12 +135,6 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
   using PaintCanvas::drawImage;
   using PaintCanvas::drawPicture;
 
-  // Same as the above drawPicture() except using the given custom data
-  // raster callback.
-  void drawPicture(
-      sk_sp<const PaintRecord> record,
-      PlaybackParams::CustomDataRasterCallback custom_raster_callback);
-
  private:
   // We always need skia shaders since the ops will be played on an SkCanvas.
   static const bool kCreateSkiaShaders;

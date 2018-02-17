@@ -344,7 +344,15 @@ void SkiaPaintCanvas::drawTextBlob(scoped_refptr<PaintTextBlob> blob,
 }
 
 void SkiaPaintCanvas::drawPicture(sk_sp<const PaintRecord> record) {
-  drawPicture(record, PlaybackParams::CustomDataRasterCallback());
+  auto did_draw_op_cb =
+      context_flushes_.enable
+          ? base::BindRepeating(&SkiaPaintCanvas::FlushAfterDrawIfNeeded,
+                                base::Unretained(this))
+          : PlaybackParams::DidDrawOpCallback();
+  PlaybackParams params(image_provider_, canvas_->getTotalMatrix(),
+                        PlaybackParams::CustomDataRasterCallback(),
+                        did_draw_op_cb);
+  record->Playback(canvas_, params);
 }
 
 bool SkiaPaintCanvas::isClipEmpty() const {
@@ -375,19 +383,6 @@ void SkiaPaintCanvas::Annotate(AnnotationType type,
       break;
     }
   }
-}
-
-void SkiaPaintCanvas::drawPicture(
-    sk_sp<const PaintRecord> record,
-    PlaybackParams::CustomDataRasterCallback custom_raster_callback) {
-  auto did_draw_op_cb =
-      context_flushes_.enable
-          ? base::BindRepeating(&SkiaPaintCanvas::FlushAfterDrawIfNeeded,
-                                base::Unretained(this))
-          : PlaybackParams::DidDrawOpCallback();
-  PlaybackParams params(image_provider_, canvas_->getTotalMatrix(),
-                        custom_raster_callback, did_draw_op_cb);
-  record->Playback(canvas_, params);
 }
 
 void SkiaPaintCanvas::FlushAfterDrawIfNeeded() {

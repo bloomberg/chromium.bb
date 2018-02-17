@@ -10,7 +10,6 @@
 #include "core/frame/LocalFrameView.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebCanvas.h"
 
 namespace blink {
 
@@ -45,7 +44,7 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
   const IntRect& FrameRect() const override { return frame_rect_; }
   void Paint(GraphicsContext&,
              const GlobalPaintFlags,
-             const CullRect&) const override;
+             const CullRect&) const override {}
   void UpdateGeometry() override;
   void Hide() override;
   void Show() override;
@@ -58,8 +57,6 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
 
   void SetIntrinsicSizeInfo(const IntrinsicSizingInfo& size_info);
   bool HasIntrinsicSizingInfo() const override;
-
-  uint32_t Print(const IntRect&, WebCanvas*) const;
 
   virtual void Trace(blink::Visitor*);
 

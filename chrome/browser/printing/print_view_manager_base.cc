@@ -193,7 +193,7 @@ void PrintViewManagerBase::PrintDocument(
   }
 #else
   std::unique_ptr<PdfMetafileSkia> metafile =
-      std::make_unique<PdfMetafileSkia>();
+      std::make_unique<PdfMetafileSkia>(SkiaDocumentType::PDF);
   CHECK(metafile->InitFromData(print_data->front(), print_data->size()));
 
   // Update the rendered document. It will send notifications to the listener.

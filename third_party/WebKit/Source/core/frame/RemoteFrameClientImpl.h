@@ -44,7 +44,6 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
   void SetIsInert(bool) override;
   void UpdateRenderThrottlingStatus(bool is_throttled,
                                     bool subtree_throttled) override;
-  uint32_t Print(const IntRect&, WebCanvas*) const override;
 
   WebRemoteFrameImpl* GetWebFrame() const { return web_frame_; }
 

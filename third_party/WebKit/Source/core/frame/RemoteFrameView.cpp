@@ -13,10 +13,6 @@
 #include "core/intersection_observer/IntersectionObserverEntry.h"
 #include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutView.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/CullRect.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
 
 namespace blink {
 
@@ -141,26 +137,6 @@ void RemoteFrameView::FrameRectsChanged() {
   remote_frame_->Client()->FrameRectsChanged(frame_rect_, screen_space_rect);
 }
 
-void RemoteFrameView::Paint(GraphicsContext& context,
-                            const GlobalPaintFlags flags,
-                            const CullRect& rect) const {
-  // Painting remote frames is only for printing.
-  if (!context.Printing())
-    return;
-
-  if (!rect.IntersectsCullRect(FrameRect()))
-    return;
-
-  DrawingRecorder recorder(context, *GetFrame().OwnerLayoutObject(),
-                           DisplayItem::kDocumentBackground);
-  DCHECK(context.Canvas());
-  // Inform the remote frame to print.
-  uint32_t content_id = Print(FrameRect(), context.Canvas());
-
-  // Record the place holder id on canvas.
-  context.Canvas()->recordCustomData(content_id);
-}
-
 void RemoteFrameView::UpdateGeometry() {
   if (LayoutEmbeddedContent* layout = remote_frame_->OwnerLayoutObject())
     layout->UpdateGeometry(*this);
@@ -263,10 +239,6 @@ bool RemoteFrameView::GetIntrinsicSizingInfo(
 
 bool RemoteFrameView::HasIntrinsicSizingInfo() const {
   return has_intrinsic_sizing_info_;
-}
-
-uint32_t RemoteFrameView::Print(const IntRect& rect, WebCanvas* canvas) const {
-  return remote_frame_->Client()->Print(rect, canvas);
 }
 
 void RemoteFrameView::Trace(blink::Visitor* visitor) {
