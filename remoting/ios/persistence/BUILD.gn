@@ -8,6 +8,10 @@ import("//remoting/build/config/remoting_build.gni")
 
 source_set("persistence") {
   sources = [
+    "keychain.cc",
+    "keychain.h",
+    "remoting_keychain.cc",
+    "remoting_keychain.h",
     "remoting_preferences.h",
     "remoting_preferences.mm",
   ]
@@ -16,6 +20,21 @@ source_set("persistence") {
     "//base",
     "//remoting/ios/domain",
   ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "remoting_keychain_unittest.mm",
+  ]
+  deps = [
+    ":persistence",
+    "//testing/gtest",
+  ]
+
+  libs = [ "Security.framework" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

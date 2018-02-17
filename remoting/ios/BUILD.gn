@@ -72,3 +72,11 @@ source_set("ios_core_unit_tests") {
 
   data = []
 }
+
+test("ios_remoting_unittests") {
+  deps = [
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//remoting/ios/persistence:unit_tests",
+  ]
+}
