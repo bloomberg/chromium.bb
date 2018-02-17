@@ -6,12 +6,20 @@
 
 namespace net {
 
-NetworkErrorLoggingDelegate::ErrorDetails::ErrorDetails() = default;
+NetworkErrorLoggingDelegate::RequestDetails::RequestDetails() = default;
 
-NetworkErrorLoggingDelegate::ErrorDetails::ErrorDetails(
-    const ErrorDetails& other) = default;
+NetworkErrorLoggingDelegate::RequestDetails::RequestDetails(
+    const RequestDetails& other) = default;
 
-NetworkErrorLoggingDelegate::ErrorDetails::~ErrorDetails() = default;
+NetworkErrorLoggingDelegate::RequestDetails::~RequestDetails() = default;
+
+bool NetworkErrorLoggingDelegate::RequestDetails::IsHttpError() const {
+  return status_code >= 400 && status_code < 600;
+}
+
+bool NetworkErrorLoggingDelegate::RequestDetails::RequestWasSuccessful() const {
+  return type == OK && !IsHttpError();
+}
 
 const char NetworkErrorLoggingDelegate::kHeaderName[] = "NEL";
 

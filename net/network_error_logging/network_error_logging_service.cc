@@ -54,10 +54,14 @@ std::string GetSuperdomain(const std::string& domain) {
   return domain.substr(dot_pos + 1);
 }
 
+const char kHttpErrorType[] = "http.error";
+
 const struct {
   Error error;
   const char* type;
 } kErrorTypes[] = {
+    {OK, "ok"},
+
     // dns.unreachable?
     {ERR_NAME_NOT_RESOLVED, "dns.name_not_resolved"},
     {ERR_NAME_RESOLUTION_FAILED, "dns.failed"},
@@ -161,7 +165,7 @@ void NetworkErrorLoggingService::OnHeader(const url::Origin& origin,
   MaybeAddWildcardPolicy(origin, &inserted.first->second);
 }
 
-void NetworkErrorLoggingService::OnNetworkError(const ErrorDetails& details) {
+void NetworkErrorLoggingService::OnRequest(const RequestDetails& details) {
   if (!reporting_service_)
     return;
 
@@ -187,8 +191,12 @@ void NetworkErrorLoggingService::OnNetworkError(const ErrorDetails& details) {
   if (!GetTypeFromNetError(details.type, &type_string))
     return;
 
-  // TODO(dcreager): Report successful requests, too.
-  double sampling_fraction = policy->failure_fraction;
+  if (details.IsHttpError())
+    type_string = kHttpErrorType;
+
+  double sampling_fraction = details.RequestWasSuccessful()
+                                 ? policy->success_fraction
+                                 : policy->failure_fraction;
   if (base::RandDouble() >= sampling_fraction)
     return;
 
@@ -358,7 +366,7 @@ void NetworkErrorLoggingService::MaybeRemoveWildcardPolicy(
 std::unique_ptr<const base::Value> NetworkErrorLoggingService::CreateReportBody(
     const std::string& type,
     double sampling_fraction,
-    const NetworkErrorLoggingDelegate::ErrorDetails& details) const {
+    const NetworkErrorLoggingDelegate::RequestDetails& details) const {
   auto body = std::make_unique<base::DictionaryValue>();
 
   body->SetString(kUriKey, details.uri.spec());
