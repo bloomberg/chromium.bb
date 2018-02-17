@@ -323,26 +323,40 @@ chrome.app.runtime.onLaunched.addListener(function() {
   }
 
   chrome.commandLinePrivate.hasSwitch('new-wallpaper-picker', (result) => {
-    var windowWidth = result ? 800 : 574;
-    var windowHeight = result ? 800 : 420;
+    var options = result ? {
+      frame: 'none',
+      state: 'maximized',
+      resizable: true,
+      alphaEnabled: true
+    } :
+                           {
+                             frame: 'none',
+                             width: 574,
+                             height: 420,
+                             resizable: false,
+                             alphaEnabled: true
+                           };
 
-    chrome.app.window.create(
-        'main.html', {
-          frame: 'none',
-          width: windowWidth,
-          height: windowHeight,
-          resizable: false,
-          alphaEnabled: true
-        },
-        function(w) {
-          wallpaperPickerWindow = w;
-          chrome.wallpaperPrivate.minimizeInactiveWindows();
-          w.onClosed.addListener(function() {
-            wallpaperPickerWindow = null;
-            chrome.wallpaperPrivate.restoreMinimizedWindows();
-          });
-          WallpaperUtil.testSendMessage('wallpaper-window-created');
+    chrome.app.window.create('main.html', options, function(w) {
+      wallpaperPickerWindow = w;
+      chrome.wallpaperPrivate.minimizeInactiveWindows();
+      w.onClosed.addListener(function() {
+        wallpaperPickerWindow = null;
+        chrome.wallpaperPrivate.restoreMinimizedWindows();
+      });
+      if (result) {
+        // By design, the new wallpaper picker should never be shown on top of
+        // another window.
+        wallpaperPickerWindow.contentWindow.addEventListener(
+            'focus', function() {
+              chrome.wallpaperPrivate.minimizeInactiveWindows();
+            });
+        w.onMinimized.addListener(function() {
+          chrome.wallpaperPrivate.restoreMinimizedWindows();
         });
+      }
+      WallpaperUtil.testSendMessage('wallpaper-window-created');
+    });
   });
 });
 
