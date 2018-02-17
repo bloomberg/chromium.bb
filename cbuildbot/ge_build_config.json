@@ -914,18 +914,6 @@
       ]
     },
     {
-      "name": "nami",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": false,
-          "board_group": "",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "nautilus",
       "configs": [
         {
@@ -1833,6 +1821,33 @@
         {
           "board_name": "kahlee",
           "name": "kahlee",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        }
+      ]
+    },
+    {
+      "name": "nami",
+      "reference_board_name": "nami",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": false,
+      "models": [
+        {
+          "board_name": "nami",
+          "name": "nami",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "nami",
+          "name": "pantheon",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "nami",
+          "name": "vayne",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         }
