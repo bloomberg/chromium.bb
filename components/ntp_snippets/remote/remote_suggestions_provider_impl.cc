@@ -955,11 +955,10 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
   if (IsKeepingPrefetchedSuggestionsEnabled() && prefetched_pages_tracker_ &&
       !prefetched_pages_tracker_->IsInitialized()) {
     // Wait until the tracker is initialized.
-    prefetched_pages_tracker_->AddInitializationCompletedCallback(
-        base::BindOnce(&RemoteSuggestionsProviderImpl::OnFetchFinished,
-                       base::Unretained(this), std::move(callback),
-                       interactive_request, status,
-                       std::move(fetched_categories)));
+    prefetched_pages_tracker_->Initialize(base::BindOnce(
+        &RemoteSuggestionsProviderImpl::OnFetchFinished, base::Unretained(this),
+        std::move(callback), interactive_request, status,
+        std::move(fetched_categories)));
     return;
   }
 

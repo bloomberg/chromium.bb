@@ -268,13 +268,10 @@ class MockPrefetchedPagesTracker : public PrefetchedPagesTracker {
 
   // GMock does not support movable-only types (e.g. OnceCallback), therefore,
   // the call is redirected to a mock method with a pointer to the callback.
-  void AddInitializationCompletedCallback(
-      base::OnceCallback<void()> callback) override {
-    AddInitializationCompletedCallback(&callback);
+  void Initialize(base::OnceCallback<void()> callback) override {
+    Initialize(&callback);
   }
-  MOCK_METHOD1(AddInitializationCompletedCallback,
-               void(base::OnceCallback<void()>* callback));
-
+  MOCK_METHOD1(Initialize, void(base::OnceCallback<void()>* callback));
   MOCK_CONST_METHOD1(PrefetchedOfflinePageExists, bool(const GURL& url));
 };
 
@@ -3283,7 +3280,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 
   base::OnceCallback<void()> initialization_completed_callback;
   EXPECT_CALL(*mock_tracker, IsInitialized()).WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_tracker, AddInitializationCompletedCallback(_))
+  EXPECT_CALL(*mock_tracker, Initialize(_))
       .WillOnce(MoveFirstArgumentPointeeTo(&initialization_completed_callback));
   std::vector<FetchedCategory> fetched_categories;
   fetched_categories.push_back(

@@ -21,11 +21,10 @@ class PrefetchedPagesTracker {
   // Whether the tracker has finished initialization.
   virtual bool IsInitialized() const = 0;
 
-  // Add a callback, which will be called when the initialization is completed.
-  // If the tracker has been initialized already, the callback is called
-  // immediately.
-  virtual void AddInitializationCompletedCallback(
-      base::OnceCallback<void()> callback) = 0;
+  // Starts asynchronous initialization. Callback will be called when the
+  // initialization is completed. If the tracker has been initialized already,
+  // the callback is called immediately.
+  virtual void Initialize(base::OnceCallback<void()> callback) = 0;
 
   virtual bool PrefetchedOfflinePageExists(const GURL& url) const = 0;
 };
