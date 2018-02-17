@@ -545,6 +545,7 @@
             "_template": "fuzzer",
             "archive_build_debug": true,
             "build_type": "full",
+            "builder_class_name": "fuzzer_builders.FuzzerBuilder",
             "description": "Full Builds",
             "disk_layout": "2gb-rootfs",
             "display_label": "full",
@@ -560,10 +561,7 @@
             ],
             "profile": "fuzzer",
             "trybot_list": true,
-            "usepkg_build_packages": false,
-            "vm_tests": [
-                "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
-            ]
+            "usepkg_build_packages": false
         },
         "incremental": {
             "_template": "incremental",

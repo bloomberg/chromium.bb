@@ -795,6 +795,5 @@ class GenerateSysrootStage(generic_stages.BoardSpecificBuilderStage,
     self._upload_queue.put([sysroot_tarball])
 
   def PerformStage(self):
-    steps = [self._GenerateSysroot]
     with self.ArtifactUploader(self._upload_queue, archive=False):
       self._GenerateSysroot()
