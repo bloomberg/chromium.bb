@@ -77,7 +77,7 @@ Polymer({
     });
 
     this.$$('paper-checkbox a')
-        .addEventListener('tap', this.onShowReportedSettingsTap_.bind(this));
+        .addEventListener('click', this.onShowReportedSettingsTap_.bind(this));
     // Prevent toggling of the checkbox when hitting the "Enter" key on the
     // link.
     this.$$('paper-checkbox a').addEventListener('keydown', function(e) {

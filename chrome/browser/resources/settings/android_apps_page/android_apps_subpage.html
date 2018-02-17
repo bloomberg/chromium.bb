@@ -21,7 +21,7 @@
     </template>
 
     <template is="dom-if" if="[[allowRemove_(prefs.arc.enabled.*)]]">
-      <div id="remove" class="settings-box" actionable on-tap="onRemoveTap_">
+      <div id="remove" class="settings-box" actionable on-click="onRemoveTap_">
         <div class="start">$i18n{androidAppsRemove}</div>
         <button class="subpage-arrow" is="paper-icon-button-light"
             aria-label="$i18n{androidAppsRemove}">
@@ -37,11 +37,11 @@
       <div slot="body" inner-h-t-m-l="[[dialogBody_]]"></div>
       <div slot="button-container">
         <paper-button class="cancel-button"
-            on-tap="onConfirmDisableDialogCancel_">
+            on-click="onConfirmDisableDialogCancel_">
           $i18n{cancel}
         </paper-button>
         <paper-button class="action-button"
-            on-tap="onConfirmDisableDialogConfirm_">
+            on-click="onConfirmDisableDialogConfirm_">
           $i18n{androidAppsDisableDialogRemove}
         </paper-button>
       </div>

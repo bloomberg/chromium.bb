@@ -44,10 +44,10 @@
         $i18n{siteSettingsSiteResetConfirmation}
       </div>
       <div slot="button-container">
-        <paper-button class="cancel-button" on-tap="onCloseDialog_">
+        <paper-button class="cancel-button" on-click="onCloseDialog_">
           $i18n{cancel}
         </paper-button>
-        <paper-button class="action-button" on-tap="onClearAndReset_">
+        <paper-button class="action-button" on-click="onClearAndReset_">
           $i18n{siteSettingsSiteResetAll}
         </paper-button>
       </div>
@@ -66,7 +66,7 @@
           <div class="list-item" id="storage" hidden$="[[!storedData_]]">
             <div class="start">[[storedData_]]</div>
             <button is="paper-icon-button-light" class="icon-delete-gray"
-                on-tap="onConfirmClearStorage_"
+                on-click="onConfirmClearStorage_"
                 aria-label="$i18n{siteSettingsDelete}">
             </button>
           </div>
@@ -159,7 +159,7 @@
     </div>
 
     <div id="clearAndReset" class="settings-box"
-        on-tap="onConfirmClearSettings_" actionable>
+        on-click="onConfirmClearSettings_" actionable>
       <div class="start">
         $i18n{siteSettingsReset}
       </div>

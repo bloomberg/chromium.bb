@@ -88,7 +88,7 @@
                 on-keypress="onSubmitExistingPassphraseTap_">
             </paper-input>
             <paper-button id="submitExistingPassphrase"
-                on-tap="onSubmitExistingPassphraseTap_" class="action-button"
+                on-click="onSubmitExistingPassphraseTap_" class="action-button"
                 disabled="[[!existingPassphrase_]]">
               $i18n{submitPassphraseButton}
             </paper-button>
@@ -251,7 +251,7 @@
 
       <a class="settings-box two-line inherit-color no-outline" tabindex="-1"
           target="_blank" href="$i18n{activityControlsUrl}"
-          on-tap="onActivityControlsTap_">
+          on-click="onActivityControlsTap_">
         <div class="start">
           $i18n{personalizeGoogleServicesTitle}
           <div class="secondary" id="activityControlsSecondary">
@@ -294,7 +294,7 @@
               <span>[[syncPrefs.fullEncryptionBody]]</span>
             </template>
             <template is="dom-if" if="[[!syncPrefs.fullEncryptionBody]]">
-              <span on-tap="onLearnMoreTap_">
+              <span on-click="onLearnMoreTap_">
                 $i18nRaw{encryptWithSyncPassphraseLabel}
               </span>
             </template>
@@ -323,7 +323,7 @@
                 error-message="$i18n{mismatchedPassphraseError}">
             </paper-input>
             <paper-button id="saveNewPassphrase"
-                on-tap="onSaveNewPassphraseTap_" class="action-button"
+                on-click="onSaveNewPassphraseTap_" class="action-button"
                 disabled="[[!isSaveNewPassphraseEnabled_(passphrase_,
                                                          confirmation_)]]">
               $i18n{save}

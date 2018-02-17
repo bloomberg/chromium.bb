@@ -111,7 +111,7 @@
                   <div id="pinPasswordSecondaryActionDiv"
                       class="secondary-action">
                     <paper-button id="setupPinButton" class="secondary-button"
-                        on-tap="onConfigurePin_">
+                        on-click="onConfigurePin_">
                       [[getSetupPinText_(hasPin)]]
                     </paper-button>
                   </div>
@@ -140,7 +140,7 @@
               <div class="separator"></div>
               <div class="secondary-action">
                 <paper-button class="secondary-button"
-                    on-tap="onEditFingerprints_"
+                    on-click="onEditFingerprints_"
                     aria-label="$i18n{lockScreenEditFingerprints}"
                     aria-descibedby="lockScreenEditFingerprintsSecondary">
                   $i18n{lockScreenSetupFingerprintButton}
@@ -167,13 +167,13 @@
           <div class="separator"></div>
           <template is="dom-if" if="[[!easyUnlockEnabled_]]">
             <paper-button id="easyUnlockSetup" class="secondary-button"
-                on-tap="onEasyUnlockSetupTap_">
+                on-click="onEasyUnlockSetupTap_">
               $i18n{easyUnlockSetupButton}
             </paper-button>
           </template>
           <template is="dom-if" if="[[easyUnlockEnabled_]]">
             <paper-button id="easyUnlockTurnOff" class="secondary-button"
-                on-tap="onEasyUnlockTurnOffTap_">
+                on-click="onEasyUnlockTurnOffTap_">
               $i18n{easyUnlockTurnOffButton}
             </paper-button>
           </template>

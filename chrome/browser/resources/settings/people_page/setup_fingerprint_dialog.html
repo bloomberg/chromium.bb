@@ -72,13 +72,13 @@
         </div>
       </div>
       <div slot="button-container">
-        <paper-button id="addAnotherButton" on-tap="onAddAnotherFingerprint_"
+        <paper-button id="addAnotherButton" on-click="onAddAnotherFingerprint_"
             hidden$="[[hideAddAnother_(step_)]]">
           $i18n{configureFingerprintAddAnotherButton}
         </paper-button>
 
         <paper-button id="closeButton"
-            class$="[[getCloseButtonClass_(step_)]]" on-tap="onClose_">
+            class$="[[getCloseButtonClass_(step_)]]" on-click="onClose_">
           [[getCloseButtonText_(step_)]]
         </paper-button>
       </div>

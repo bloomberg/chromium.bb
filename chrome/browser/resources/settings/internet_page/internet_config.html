@@ -31,17 +31,17 @@
       </div>
 
       <div slot="button-container">
-        <paper-button class="cancel-button" on-tap="onCancelTap_">
+        <paper-button class="cancel-button" on-click="onCancelTap_">
           $i18n{cancel}
         </paper-button>
         <template is="dom-if" if="[[isConfigured_(networkProperties_, guid)]]">
-          <paper-button class="action-button" on-tap="onSaveOrConnectTap_"
+          <paper-button class="action-button" on-click="onSaveOrConnectTap_"
               disabled="[[!enableSave_]]">
             $i18n{save}
           </paper-button>
         </template>
         <template is="dom-if" if="[[!isConfigured_(networkProperties_, guid)]]">
-          <paper-button class="action-button" on-tap="onSaveOrConnectTap_"
+          <paper-button class="action-button" on-click="onSaveOrConnectTap_"
               disabled="[[!enableConnect_]]">
             $i18n{networkButtonConnect}
           </paper-button>

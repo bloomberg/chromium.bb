@@ -33,7 +33,7 @@ Polymer({
   subLabelHtmlChanged_: function() {
     const links = this.root.querySelectorAll('.secondary.label a');
     links.forEach((link) => {
-      link.addEventListener('tap', this.stopPropagation);
+      link.addEventListener('click', this.stopPropagation);
     });
   },
 

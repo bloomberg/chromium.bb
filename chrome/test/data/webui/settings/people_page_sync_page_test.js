@@ -268,7 +268,7 @@ cr.define('settings_people_page_sync_page', function() {
       link.href = '#';
       // Prevent the link from triggering a page navigation when tapped.
       // Breaks the test in Vulcanized mode.
-      link.addEventListener('tap', function(e) { e.preventDefault(); });
+      link.addEventListener('click', function(e) { e.preventDefault(); });
 
       MockInteractions.tap(link);
 

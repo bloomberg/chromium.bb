@@ -81,30 +81,30 @@
         </template>
       </div>
       <template is="dom-if" if="[[!isSecondaryUser_]]">
-        <paper-button on-tap="onForgetTap_"
+        <paper-button on-click="onForgetTap_"
             hidden$="[[!showForget_(networkProperties)]]">
           $i18n{networkButtonForget}
         </paper-button>
-        <paper-button on-tap="onViewAccountTap_"
+        <paper-button on-click="onViewAccountTap_"
             hidden$="[[!showViewAccount_(networkProperties)]]">
           $i18n{networkButtonViewAccount}
         </paper-button>
-        <paper-button on-tap="onActivateTap_"
+        <paper-button on-click="onActivateTap_"
             hidden$="[[!showActivate_(networkProperties)]]">
           $i18n{networkButtonActivate}
         </paper-button>
-        <paper-button on-tap="onConfigureTap_"
+        <paper-button on-click="onConfigureTap_"
             hidden$="[[!showConfigure_(networkProperties, globalPolicy)]]">
           $i18n{networkButtonConfigure}
         </paper-button>
       </template>
-      <paper-button class="primary-button" on-tap="onConnectTap_"
+      <paper-button class="primary-button" on-click="onConnectTap_"
           hidden$="[[!showConnect_(networkProperties, globalPolicy)]]"
           disabled="[[!enableConnect_(networkProperties, defaultNetwork,
               globalPolicy, networkPropertiesReceived_, outOfRange_)]]">
         $i18n{networkButtonConnect}
       </paper-button>
-      <paper-button class="primary-button" on-tap="onDisconnectTap_"
+      <paper-button class="primary-button" on-click="onDisconnectTap_"
           hidden$="[[!showDisconnect_(networkProperties)]]">
         $i18n{networkButtonDisconnect}
       </paper-button>
@@ -203,7 +203,7 @@
 
       <template is="dom-if" if="[[showAdvanced_(networkProperties)]]">
         <!-- Advanced toggle. -->
-        <div class="settings-box" actionable on-tap="toggleAdvancedExpanded_">
+        <div class="settings-box" actionable on-click="toggleAdvancedExpanded_">
           <div class="flex">$i18n{networkSectionAdvanced}</div>
           <cr-expand-button expanded="{{advancedExpanded_}}"
               alt="$i18n{networkSectionAdvancedA11yLabel}">
@@ -232,7 +232,7 @@
 
       <template is="dom-if" if="[[hasNetworkSection_(networkProperties)]]">
         <!-- Network toggle -->
-        <div class="settings-box" actionable on-tap="toggleNetworkExpanded_">
+        <div class="settings-box" actionable on-click="toggleNetworkExpanded_">
           <div class="start">$i18n{networkSectionNetwork}</div>
           <cr-expand-button expanded="{{networkExpanded_}}"
               alt="$i18n{networkSectionNetworkExpandA11yLabel}">
@@ -274,7 +274,7 @@
 
       <template is="dom-if" if="[[hasProxySection_(networkProperties)]]">
         <!-- Proxy toggle -->
-        <div class="settings-box" actionable on-tap="toggleProxyExpanded_">
+        <div class="settings-box" actionable on-click="toggleProxyExpanded_">
           <div class="start">$i18n{networkSectionProxy}</div>
           <cr-expand-button expanded="{{proxyExpanded_}}"
               alt="$i18n{networkSectionProxyExpandA11yLabel}">

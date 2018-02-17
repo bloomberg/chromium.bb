@@ -32,7 +32,7 @@
     <img role="presentation" src="chrome://extension-icon/[[extensionId]]/40/1">
     <span inner-h-t-m-l="[[getLabel_(extensionId, extensionName)]]"></span>
     <template is="dom-if" if="[[extensionCanBeDisabled]]" restamp>
-      <paper-button class="secondary-button" on-tap="onDisableTap_">
+      <paper-button class="secondary-button" on-click="onDisableTap_">
         $i18n{disable}
       </paper-button>
     </template>

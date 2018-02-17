@@ -442,7 +442,7 @@ Polymer({
   },
 
   /**
-   * Event triggered when the known networks button is tapped.
+   * Event triggered when the known networks button is clicked.
    * @private
    */
   onKnownNetworksTap_: function() {

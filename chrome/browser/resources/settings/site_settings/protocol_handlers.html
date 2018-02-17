@@ -49,7 +49,7 @@
               </div>
             </div>
 
-            <button is="paper-icon-button-light" on-tap="showMenu_"
+            <button is="paper-icon-button-light" on-click="showMenu_"
                 class="icon-more-vert" title="$i18n{moreActions}">
             </button>
           </div>
@@ -59,11 +59,11 @@
     </template>
 
     <dialog is="cr-action-menu">
-      <button slot="item" class="dropdown-item" on-tap="onDefaultTap_"
+      <button slot="item" class="dropdown-item" on-click="onDefaultTap_"
           id="defaultButton" hidden$="[[isModelDefault_(actionMenuModel_)]]">
         $i18n{handlerSetDefault}
       </button>
-      <button slot="item" class="dropdown-item" on-tap="onRemoveTap_"
+      <button slot="item" class="dropdown-item" on-click="onRemoveTap_"
           id="removeButton">
         $i18n{handlerRemove}
       </button>
@@ -72,7 +72,7 @@
 <if expr="chromeos">
   <template is="dom-if" if="[[settingsAppAvailable_]]">
     <div class="settings-box first"
-        on-tap="onManageAndroidAppsTap_" actionable>
+        on-click="onManageAndroidAppsTap_" actionable>
       <div class="start">
         <div>$i18n{androidAppsManageAppLinks}</div>
       </div>

@@ -42,7 +42,7 @@
                 '$i18nPolymer{addDictionaryWordDuplicateError}',
                 '$i18nPolymer{addDictionaryWordLengthError}')]]"></paper-input>
       </div>
-      <paper-button class="secondary-button" on-tap="onAddWordTap_"
+      <paper-button class="secondary-button" on-click="onAddWordTap_"
           disabled="[[disableAddButton_(newWordValue_)]]" id="addWord">
         $i18n{addDictionaryWordButton}
       </paper-button>
@@ -58,7 +58,7 @@
             <div class="list-item">
               <div class="word text-elide">[[item]]</div>
               <button is="paper-icon-button-light" class="icon-clear"
-                  on-tap="onRemoveWordTap_" tabindex$="[[tabIndex]]">
+                  on-click="onRemoveWordTap_" tabindex$="[[tabIndex]]">
               </button>
             </div>
           </template>

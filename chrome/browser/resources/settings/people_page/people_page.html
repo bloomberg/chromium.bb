@@ -113,11 +113,11 @@
 </if>
           <div id="picture-subpage-trigger" class="settings-box first two-line">
             <template is="dom-if" if="[[syncStatus]]">
-              <div id="profile-icon" on-tap="onProfileTap_" actionable
+              <div id="profile-icon" on-click="onProfileTap_" actionable
                   style="background-image: [[getIconImageSet_(
                       profileIconUrl_)]]">
               </div>
-              <div class="middle two-line no-min-width" on-tap="onProfileTap_"
+              <div class="middle two-line no-min-width" on-click="onProfileTap_"
                   actionable>
                 <div class="flex text-elide">
                   <span id="profile-name">[[profileName_]]</span>
@@ -139,7 +139,7 @@
 <if expr="not chromeos">
               <template is="dom-if" if="[[showSignin_(syncStatus)]]">
                 <div class="separator"></div>
-                <paper-button class="primary-button" on-tap="onSigninTap_"
+                <paper-button class="primary-button" on-click="onSigninTap_"
                     disabled="[[syncStatus.setupInProgress]]">
                   $i18n{syncSignin}
                 </paper-button>
@@ -147,7 +147,7 @@
               <template is="dom-if" if="[[syncStatus.signedIn]]">
                 <div class="separator"></div>
                 <paper-button id="disconnectButton" class="secondary-button"
-                    on-tap="onDisconnectTap_"
+                    on-click="onDisconnectTap_"
                     disabled="[[syncStatus.setupInProgress]]">
                   $i18n{syncDisconnect}
                 </paper-button>
@@ -195,7 +195,7 @@
 
         <template is="dom-if"
             if="[[isAdvancedSyncSettingsVisible_(syncStatus)]]">
-          <div class="settings-box two-line" on-tap="onSyncTap_"
+          <div class="settings-box two-line" on-click="onSyncTap_"
               id="sync-status" actionable$="[[isSyncStatusActionable_(
               syncStatus)]]">
             <div class="icon-container">
@@ -217,7 +217,7 @@
 
 <if expr="not chromeos">
         <template is="dom-if" if="[[diceEnabled_]]">
-          <div class="settings-box" id="edit-profile" on-tap="onProfileTap_"
+          <div class="settings-box" id="edit-profile" on-click="onProfileTap_"
               actionable>
             <div class="start">$i18n{profileNameAndPicture}</div>
             <button class="subpage-arrow" is="paper-icon-button-light"
@@ -228,7 +228,7 @@
 
 <if expr="chromeos">
         <div id="lock-screen-subpage-trigger" class="settings-box two-line"
-            actionable on-tap="onConfigureLockTap_">
+            actionable on-click="onConfigureLockTap_">
           <div class="start">
             $i18n{lockScreenTitle}
             <div class="secondary" id="lockScreenSecondary">
@@ -243,14 +243,14 @@
 </if>
 
         <div id="manage-other-people-subpage-trigger"
-            class="settings-box" on-tap="onManageOtherPeople_" actionable>
+            class="settings-box" on-click="onManageOtherPeople_" actionable>
           <div class="start">$i18n{manageOtherPeople}</div>
           <button class="subpage-arrow" is="paper-icon-button-light"
               aria-label="$i18n{manageOtherPeople}"></button>
         </div>
 
 <if expr="not chromeos">
-        <div class="settings-box" on-tap="onImportDataTap_" actionable>
+        <div class="settings-box" on-click="onImportDataTap_" actionable>
           <div class="start">$i18n{importTitle}</div>
           <button id="importDataDialogTrigger" class="subpage-arrow"
               is="paper-icon-button-light" aria-label="$i18n{importTitle}">
@@ -324,16 +324,16 @@
           </div>
         </div>
         <div slot="button-container">
-          <paper-button on-tap="onDisconnectCancel_" class="cancel-button">
+          <paper-button on-click="onDisconnectCancel_" class="cancel-button">
             $i18n{cancel}
           </paper-button>
           <paper-button id="disconnectConfirm" class="action-button"
-              hidden="[[syncStatus.domain]]" on-tap="onDisconnectConfirm_">
+              hidden="[[syncStatus.domain]]" on-click="onDisconnectConfirm_">
             $i18n{syncDisconnect}
           </paper-button>
           <paper-button id="disconnectManagedProfileConfirm"
               class="action-button" hidden="[[!syncStatus.domain]]"
-              on-tap="onDisconnectConfirm_">
+              on-click="onDisconnectConfirm_">
             $i18n{syncDisconnectConfirm}
           </paper-button>
         </div>

@@ -48,7 +48,7 @@ Polymer({
     'blur': 'updatePressed_',
     'down': 'updatePressed_',
     'focus': 'updatePressed_',
-    'tap': 'onTap_',
+    'click': 'onTap_',
     'up': 'updatePressed_',
   },
 
@@ -88,7 +88,7 @@ Polymer({
    * @private
    */
   onIndicatorTap_: function(e) {
-    // Disallow <controlled-radio-button on-tap="..."> when controlled.
+    // Disallow <controlled-radio-button on-click="..."> when controlled.
     e.preventDefault();
     e.stopPropagation();
   },

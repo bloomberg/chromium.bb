@@ -29,7 +29,7 @@
       <div class="separator"></div>
       <controlled-button class="secondary-button" id="changeDownloadsPath"
           label="$i18n{changeDownloadLocation}"
-          on-tap="selectDownloadLocation_"
+          on-click="selectDownloadLocation_"
           pref="[[prefs.download.default_directory]]"
           end-justified>
       </controlled-button>
@@ -52,7 +52,7 @@
         </div>
         <div class="separator"></div>
         <paper-button id="resetAutoOpenFileTypes" class="secondary-button"
-            on-tap="onClearAutoOpenFileTypesTap_">
+            on-click="onClearAutoOpenFileTypesTap_">
           $i18n{clear}
         </paper-button>
       </div>

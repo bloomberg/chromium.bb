@@ -51,18 +51,18 @@
       <div slot="dialog-buttons">
         <div>  <!-- Left group -->
           <paper-button id="manuallyAddPrinterButton" class="secondary-button"
-              on-tap="switchToManualAddDialog_">
+              on-click="switchToManualAddDialog_">
             $i18n{manuallyAddPrinterButtonText}
           </paper-button>
         </div>
         <div>  <!-- Right group -->
           <paper-button class="cancel-button secondary-button"
-              on-tap="onCancelTap_">
+              on-click="onCancelTap_">
             $i18n{cancel}
           </paper-button>
           <paper-button class="action-button" id="addPrinterButton"
               disabled="[[!canAddPrinter_(selectedPrinter)]]"
-              on-tap="switchToConfiguringDialog_">
+              on-click="switchToConfiguringDialog_">
             $i18n{addPrinterButtonText}
           </paper-button>
         </div>
@@ -174,17 +174,17 @@
       <div slot="dialog-buttons">
         <div>  <!-- Left group -->
           <paper-button class="secondary-button"
-              on-tap="switchToDiscoveryDialog_">
+              on-click="switchToDiscoveryDialog_">
             $i18n{discoverPrintersButtonText}
           </paper-button>
         </div>
         <div>  <!-- Right group -->
           <paper-button class="cancel-button secondary-button"
-              on-tap="onCancelTap_">
+              on-click="onCancelTap_">
             $i18n{cancel}
           </paper-button>
           <paper-button id="addPrinterButton" class="action-button"
-              on-tap="addPressed_"
+              on-click="addPressed_"
               disabled="[[!canAddPrinter_(newPrinter.printerName,
                                           newPrinter.printerAddress)]]">
             $i18n{addPrinterButtonText}
@@ -237,7 +237,7 @@
                   error-message="$i18n{selectDriverErrorMessage}"
                   invalid="[[invalidPPD]]">
                 <paper-button class="browse-button" suffix
-                    on-tap="onBrowseFile_">
+                    on-click="onBrowseFile_">
                   $i18n{selectDriverButtonText}
                 </paper-button>
               </paper-input>
@@ -250,14 +250,14 @@
       </div>
       <div slot="dialog-buttons">
         <paper-button class="cancel-button secondary-button"
-            on-tap="onCancelTap_">
+            on-click="onCancelTap_">
           $i18n{cancel}
         </paper-button>
         <paper-button class="action-button" id="addPrinterButton"
             disabled="[[!canAddPrinter_(activePrinter.ppdManufacturer,
                                         activePrinter.ppdModel,
                                         activePrinter.printerPPDPath)]]"
-            on-tap="switchToConfiguringDialog_">
+            on-click="switchToConfiguringDialog_">
           $i18n{addPrinterButtonText}
         </paper-button>
       </div>
@@ -281,7 +281,7 @@
       </div>
       <div slot="dialog-buttons">
         <paper-button class="cancel-button secondary-button"
-            on-tap="onCancelConfiguringTap_">
+            on-click="onCancelConfiguringTap_">
           $i18n{cancel}
         </paper-button>
       </div>

@@ -365,7 +365,7 @@ Polymer({
   },
 
   /**
-   * Event triggered when the 'Add connections' div is tapped.
+   * Event triggered when the 'Add connections' div is clicked.
    * @param {!Event} event
    * @private
    */

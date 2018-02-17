@@ -38,7 +38,7 @@
         </network-summary>
         <template is="dom-if" if="[[allowAddConnection_(globalPolicy_)]]">
           <div actionable class="settings-box two-line"
-              on-tap="onExpandAddConnectionsTap_">
+              on-click="onExpandAddConnectionsTap_">
             <div class="start layout horizontal center">
               <div>$i18n{internetAddConnection}</div>
             </div>
@@ -50,7 +50,7 @@
             <div class="list-frame vertical-list">
               <template is="dom-if"
                   if="[[deviceIsEnabled_(deviceStates.WiFi)]]">
-                <div actionable class="list-item" on-tap="onAddWiFiTap_">
+                <div actionable class="list-item" on-click="onAddWiFiTap_">
                   <div class="start">$i18n{internetAddWiFi}</div>
                   <button class$="[[getAddNetworkClass_('WiFi')]]"
                       is="paper-icon-button-light"
@@ -58,7 +58,7 @@
                   </button>
                 </div>
               </template>
-              <div actionable class="list-item" on-tap="onAddVPNTap_">
+              <div actionable class="list-item" on-click="onAddVPNTap_">
                 <div class="start">$i18n{internetAddVPN}</div>
                 <button class$="[[getAddNetworkClass_('VPN')]]"
                     is="paper-icon-button-light"
@@ -67,7 +67,7 @@
               </div>
               <template is="dom-repeat" items="[[thirdPartyVpnProviders_]]">
                 <div actionable class="list-item"
-                    on-tap="onAddThirdPartyVpnTap_" provider="[[item]]">
+                    on-click="onAddThirdPartyVpnTap_" provider="[[item]]">
                   <div class="start">[[getAddThirdPartyVpnLabel_(item)]]</div>
                   <button class="icon-external" is="paper-icon-button-light"
                       aria-label$="[[getAddThirdPartyVpnLabel_(item)]]">
@@ -76,7 +76,7 @@
               </template>
               <template is="dom-if" if="[[arcVpnProviders_.length]]">
                 <div actionable class="list-item" id="addArcVpn"
-                    on-tap="onAddArcVpnTap_">
+                    on-click="onAddArcVpnTap_">
                   <div class="start">$i18n{internetAddArcVPN}</div>
                   <button class="icon-external" is="paper-icon-button-light"
                       aria-label$="$i18n{internetAddArcVPN}">

@@ -195,7 +195,7 @@
         </div>
       </div>
     </div>
-    <div class="settings-box two-line" on-tap="onDownloadsTap_" actionable>
+    <div class="settings-box two-line" on-click="onDownloadsTap_" actionable>
       <div class="start">
         $i18n{storageItemDownloads}
         <div id="downloadsSize" class="secondary">
@@ -207,7 +207,7 @@
           aria-describedby="downloadsSize"></button>
     </div>
     <template is="dom-if" if="[[driveEnabled_]]">
-      <div class="settings-box two-line" on-tap="onDriveCacheTap_"
+      <div class="settings-box two-line" on-click="onDriveCacheTap_"
           actionable$="[[hasDriveCache_]]" >
         <div class="start">
           $i18n{storageItemDriveCache}
@@ -221,7 +221,7 @@
         </button>
       </div>
     </template>
-    <div class="settings-box two-line" on-tap="onBrowsingDataTap_" actionable>
+    <div class="settings-box two-line" on-click="onBrowsingDataTap_" actionable>
       <div class="start">
         $i18n{storageItemBrowsingData}
         <div id="browsingDataSize" class="secondary">
@@ -233,7 +233,7 @@
           aria-describedby="browsingDataSize"></button>
     </div>
     <template is="dom-if" if="[[androidEnabled_]]">
-      <div class="settings-box two-line" on-tap="onAndroidTap_" actionable>
+      <div class="settings-box two-line" on-click="onAndroidTap_" actionable>
         <div class="start">
           $i18n{storageItemAndroid}
           <div id="androidSize" class="secondary">
@@ -246,7 +246,7 @@
       </div>
     </template>
     <template is="dom-if" if="[[!isGuest_]]">
-      <div class="settings-box two-line" on-tap="onOtherUsersTap_" actionable>
+      <div class="settings-box two-line" on-click="onOtherUsersTap_" actionable>
         <div class="start">
           $i18n{storageItemOtherUsers}
           <div id="otherUsersSize" class="secondary">

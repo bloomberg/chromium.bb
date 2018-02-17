@@ -30,30 +30,31 @@
         <h2 class="start">[[categoryHeader]]</h2>
         <paper-button id="addSite"
             class="secondary-button header-aligned-button"
-            hidden="[[readOnlyList]]" on-tap="onAddSiteTap_">
+            hidden="[[readOnlyList]]" on-click="onAddSiteTap_">
           $i18n{add}
         </paper-button>
       </div>
 
       <dialog is="cr-action-menu">
         <button slot="item" class="dropdown-item" id="allow"
-            on-tap="onAllowTap_" hidden$="[[!showAllowAction_]]">
+            on-click="onAllowTap_" hidden$="[[!showAllowAction_]]">
           $i18n{siteSettingsActionAllow}
         </button>
         <button slot="item" class="dropdown-item" id="block"
-            on-tap="onBlockTap_" hidden$="[[!showBlockAction_]]">
+            on-click="onBlockTap_" hidden$="[[!showBlockAction_]]">
           $i18n{siteSettingsActionBlock}
         </button>
         <button slot="item" class="dropdown-item" id="sessionOnly"
-            on-tap="onSessionOnlyTap_"
+            on-click="onSessionOnlyTap_"
             hidden$="[[!showSessionOnlyActionForSite_(actionMenuSite_)]]">
           $i18n{siteSettingsActionSessionOnly}
         </button>
-        <button slot="item" class="dropdown-item" id="edit" on-tap="onEditTap_">
+        <button slot="item" class="dropdown-item" id="edit"
+            on-click="onEditTap_">
           $i18n{edit}
         </button>
         <button slot="item" class="dropdown-item" id="reset"
-            on-tap="onResetTap_">
+            on-click="onResetTap_">
           $i18n{siteSettingsActionReset}
         </button>
       </dialog>
@@ -65,7 +66,7 @@
         <template is="dom-repeat" items="[[sites]]">
           <div class="list-item">
             <div class="settings-row"
-                actionable$="[[enableSiteSettings_]]" on-tap="onOriginTap_">
+                actionable$="[[enableSiteSettings_]]" on-click="onOriginTap_">
               <div class="favicon-image"
                   style$="[[computeSiteIcon(item.origin)]]">
               </div>
@@ -77,7 +78,7 @@
                     id="siteDescription">[[computeSiteDescription_(item)]]</div>
               </div>
               <template is="dom-if" if="[[enableSiteSettings_]]">
-                <div on-tap="onOriginTap_" actionable>
+                <div on-click="onOriginTap_" actionable>
                   <button class="subpage-arrow" is="paper-icon-button-light"
                       aria-label$="[[item.displayName]]"
                       aria-describedby="siteDescription"></button>
@@ -91,12 +92,12 @@
               </cr-policy-pref-indicator>
             </template>
             <button is="paper-icon-button-light" id="resetSite"
-                class="icon-delete-gray" on-tap="onResetButtonTap_"
+                class="icon-delete-gray" on-click="onResetButtonTap_"
                 hidden="[[shouldHideResetButton_(item, readOnlyList)]]"
                 aria-label="$i18n{siteSettingsActionReset}">
             </button>
             <button is="paper-icon-button-light" id="actionMenuButton"
-                class="icon-more-vert" on-tap="onShowActionMenuTap_"
+                class="icon-more-vert" on-click="onShowActionMenuTap_"
                 hidden="[[shouldHideActionMenu_(item, readOnlyList)]]"
                 title="$i18n{moreActions}">
             </button>

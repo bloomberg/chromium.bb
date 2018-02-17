@@ -18,7 +18,7 @@
     </style>
     <template is="dom-if" if="[[enableSiteSettings_]]">
       <div class="settings-box first" category$="[[ALL_SITES]]"
-          data-route="SITE_SETTINGS_ALL" on-tap="onTapNavigate_" actionable>
+          data-route="SITE_SETTINGS_ALL" on-click="onTapNavigate_" actionable>
         <iron-icon icon="settings:list"></iron-icon>
         <div class="middle">$i18n{siteSettingsCategoryAllSites}</div>
         <button class="subpage-arrow" is="paper-icon-button-light"
@@ -29,7 +29,7 @@
     </template>
     <div id="cookies" class="settings-box two-line first"
         category$="[[ContentSettingsTypes.COOKIES]]"
-        data-route="SITE_SETTINGS_COOKIES" on-tap="onTapNavigate_" actionable>
+        data-route="SITE_SETTINGS_COOKIES" on-click="onTapNavigate_" actionable>
       <iron-icon icon="settings:cookie"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsCookies}
@@ -47,7 +47,8 @@
     </div>
     <div id="location" class="settings-box two-line"
         category$="[[ContentSettingsTypes.GEOLOCATION]]"
-        data-route="SITE_SETTINGS_LOCATION" on-tap="onTapNavigate_" actionable>
+        data-route="SITE_SETTINGS_LOCATION" on-click="onTapNavigate_"
+        actionable>
       <iron-icon icon="settings:location-on"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsLocation}
@@ -65,7 +66,7 @@
     <div id="camera" class="settings-box two-line"
         category$="[[ContentSettingsTypes.CAMERA]]"
         data-route="SITE_SETTINGS_CAMERA"
-        on-tap="onTapNavigate_" actionable>
+        on-click="onTapNavigate_" actionable>
       <iron-icon icon="settings:videocam"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsCamera}
@@ -82,7 +83,7 @@
     </div>
     <div id="microphone" class="settings-box two-line"
         category$="[[ContentSettingsTypes.MIC]]"
-        data-route="SITE_SETTINGS_MICROPHONE" on-tap="onTapNavigate_"
+        data-route="SITE_SETTINGS_MICROPHONE" on-click="onTapNavigate_"
         actionable>
       <iron-icon icon="settings:mic"></iron-icon>
       <div class="middle">
@@ -101,7 +102,7 @@
     <template is="dom-if" if="[[enableSensorsContentSetting_]]">
       <div id="sensors" class="settings-box two-line"
           category$="[[ContentSettingsTypes.SENSORS]]"
-          data-route="SITE_SETTINGS_SENSORS" on-tap="onTapNavigate_"
+          data-route="SITE_SETTINGS_SENSORS" on-click="onTapNavigate_"
           actionable>
         <iron-icon icon="settings:sensors"></iron-icon>
         <div class="middle">
@@ -120,7 +121,7 @@
     </template>
     <div id="notifications" class="settings-box two-line"
         category$="[[ContentSettingsTypes.NOTIFICATIONS]]"
-        data-route="SITE_SETTINGS_NOTIFICATIONS" on-tap="onTapNavigate_"
+        data-route="SITE_SETTINGS_NOTIFICATIONS" on-click="onTapNavigate_"
         actionable>
       <iron-icon icon="settings:notifications"></iron-icon>
       <div class="middle">
@@ -138,7 +139,7 @@
     </div>
     <div id="javascript" class="settings-box two-line"
         category$="[[ContentSettingsTypes.JAVASCRIPT]]"
-        data-route="SITE_SETTINGS_JAVASCRIPT" on-tap="onTapNavigate_"
+        data-route="SITE_SETTINGS_JAVASCRIPT" on-click="onTapNavigate_"
         actionable>
       <iron-icon icon="settings:code"></iron-icon>
       <div class="middle">
@@ -156,7 +157,7 @@
     </div>
     <div id="flash" class="settings-box two-line"
         category$="[[ContentSettingsTypes.PLUGINS]]"
-        data-route="SITE_SETTINGS_FLASH" on-tap="onTapNavigate_" actionable>
+        data-route="SITE_SETTINGS_FLASH" on-click="onTapNavigate_" actionable>
       <iron-icon icon="cr:extension"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsFlash}
@@ -173,7 +174,7 @@
     </div>
     <div id="images" class="settings-box two-line"
         category$="[[ContentSettingsTypes.IMAGES]]"
-        data-route="SITE_SETTINGS_IMAGES" on-tap="onTapNavigate_" actionable>
+        data-route="SITE_SETTINGS_IMAGES" on-click="onTapNavigate_" actionable>
       <iron-icon icon="settings:photo"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsImages}
@@ -190,7 +191,7 @@
     </div>
     <div id="popups" category$="[[ContentSettingsTypes.POPUPS]]"
         class="settings-box two-line" data-route="SITE_SETTINGS_POPUPS"
-        on-tap="onTapNavigate_" actionable>
+        on-click="onTapNavigate_" actionable>
       <iron-icon icon="cr:open-in-new"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsPopups}
@@ -208,7 +209,7 @@
     <template is="dom-if" if="[[enableSafeBrowsingSubresourceFilter_]]">
       <div id="ads" class="settings-box two-line"
           category$="[[ContentSettingsTypes.ADS]]"
-          data-route="SITE_SETTINGS_ADS" on-tap="onTapNavigate_"
+          data-route="SITE_SETTINGS_ADS" on-click="onTapNavigate_"
           actionable>
         <iron-icon icon="settings:ads"></iron-icon>
         <div class="middle">
@@ -227,7 +228,7 @@
     </template>
     <div id="background-sync" class="settings-box two-line"
         category$="[[ContentSettingsTypes.BACKGROUND_SYNC]]"
-        data-route="SITE_SETTINGS_BACKGROUND_SYNC" on-tap="onTapNavigate_"
+        data-route="SITE_SETTINGS_BACKGROUND_SYNC" on-click="onTapNavigate_"
         actionable>
       <iron-icon icon="settings:sync"></iron-icon>
       <div class="middle">
@@ -246,7 +247,7 @@
     <template is="dom-if" if="[[enableSoundContentSetting_]]">
       <div id="sound" class="settings-box two-line"
           category$="[[ContentSettingsTypes.SOUND]]"
-          data-route="SITE_SETTINGS_SOUND" on-tap="onTapNavigate_"
+          data-route="SITE_SETTINGS_SOUND" on-click="onTapNavigate_"
           actionable>
           <iron-icon icon="settings:volume-up"></iron-icon>
         <div class="middle">
@@ -266,7 +267,7 @@
     <div id="automatic-downloads" class="settings-box two-line"
         category$="[[ContentSettingsTypes.AUTOMATIC_DOWNLOADS]]"
         data-route="SITE_SETTINGS_AUTOMATIC_DOWNLOADS"
-        on-tap="onTapNavigate_" actionable>
+        on-click="onTapNavigate_" actionable>
       <iron-icon icon="cr:file-download"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsAutomaticDownloads}
@@ -284,7 +285,7 @@
     <div id="unsandboxed-plugins" class="settings-box two-line"
         category$="[[ContentSettingsTypes.UNSANDBOXED_PLUGINS]]"
         data-route="SITE_SETTINGS_UNSANDBOXED_PLUGINS"
-        on-tap="onTapNavigate_" actionable>
+        on-click="onTapNavigate_" actionable>
       <iron-icon icon="cr:extension"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsUnsandboxedPlugins}
@@ -303,7 +304,7 @@
       <div id="protocol-handlers" class="settings-box two-line"
           category$="[[ContentSettingsTypes.PROTOCOL_HANDLERS]]"
           data-route="SITE_SETTINGS_HANDLERS"
-          on-tap="onTapNavigate_" actionable>
+          on-click="onTapNavigate_" actionable>
         <iron-icon icon="settings:protocol-handler"></iron-icon>
         <div class="middle">
           $i18n{siteSettingsHandlers}
@@ -322,7 +323,7 @@
     <div id="midi-devices" class="settings-box two-line"
         category$="[[ContentSettingsTypes.MIDI_DEVICES]]"
         data-route="SITE_SETTINGS_MIDI_DEVICES"
-        on-tap="onTapNavigate_" actionable>
+        on-click="onTapNavigate_" actionable>
       <iron-icon icon="settings:midi"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsMidiDevices}
@@ -339,7 +340,7 @@
     </div>
     <div id="zoom-levels" class="settings-box"
         category$="[[ContentSettingsTypes.ZOOM_LEVELS]]"
-        data-route="SITE_SETTINGS_ZOOM_LEVELS" on-tap="onTapNavigate_"
+        data-route="SITE_SETTINGS_ZOOM_LEVELS" on-click="onTapNavigate_"
         actionable>
       <iron-icon icon="settings:zoom-in"></iron-icon>
       <div class="middle">$i18n{siteSettingsZoomLevels}</div>
@@ -348,7 +349,7 @@
     </div>
     <div id="usb-devices" class="settings-box"
         category$="[[ContentSettingsTypes.USB_DEVICES]]"
-        data-route="SITE_SETTINGS_USB_DEVICES" on-tap="onTapNavigate_"
+        data-route="SITE_SETTINGS_USB_DEVICES" on-click="onTapNavigate_"
         actionable>
       <iron-icon icon="settings:usb"></iron-icon>
       <div class="middle">$i18n{siteSettingsUsbDevices}</div>
@@ -356,7 +357,7 @@
           aria-label="$i18n{siteSettingsUsbDevices}"></button>
     </div>
     <div id="pdf-documents" class="settings-box"
-        data-route="SITE_SETTINGS_PDF_DOCUMENTS" on-tap="onTapNavigate_"
+        data-route="SITE_SETTINGS_PDF_DOCUMENTS" on-click="onTapNavigate_"
         actionable>
       <iron-icon icon="settings:pdf"></iron-icon>
       <div class="middle">$i18n{siteSettingsPdfDocuments}</div>
@@ -364,7 +365,7 @@
           aria-label="$i18n{siteSettingsPdfDocuments}"></button>
     </div>
     <div id="protected-content" class="settings-box"
-        data-route="SITE_SETTINGS_PROTECTED_CONTENT" on-tap="onTapNavigate_"
+        data-route="SITE_SETTINGS_PROTECTED_CONTENT" on-click="onTapNavigate_"
         actionable>
       <iron-icon icon="settings:security"></iron-icon>
       <div class="middle">$i18n{siteSettingsProtectedContent}</div>
@@ -374,7 +375,7 @@
     <template is="dom-if" if="[[enableClipboardContentSetting_]]">
       <div id="clipboard" class="settings-box two-line"
            category$="[[ContentSettingsTypes.CLIPBOARD]]"
-           data-route="SITE_SETTINGS_CLIPBOARD" on-tap="onTapNavigate_"
+           data-route="SITE_SETTINGS_CLIPBOARD" on-click="onTapNavigate_"
            actionable>
         <iron-icon icon="settings:clipboard"></iron-icon>
         <div class="middle">

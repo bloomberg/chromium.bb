@@ -35,11 +35,11 @@
       <div slot="button-container">
         <paper-spinner-lite id="resetSpinner" active="[[clearingInProgress_]]">
         </paper-spinner-lite>
-        <paper-button class="cancel-button" on-tap="onCancelTap_"
+        <paper-button class="cancel-button" on-click="onCancelTap_"
             id="cancel" disabled="[[clearingInProgress_]]">
           $i18n{cancel}
         </paper-button>
-        <paper-button class="action-button" on-tap="onResetTap_"
+        <paper-button class="action-button" on-click="onResetTap_"
             id="reset" disabled="[[clearingInProgress_]]">
           $i18n{resetPageCommit}
         </paper-button>

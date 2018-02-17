@@ -252,10 +252,10 @@
         <paper-spinner-lite active="[[clearingInProgress_]]">
         </paper-spinner-lite>
         <paper-button class="cancel-button" disabled="[[clearingInProgress_]]"
-            on-tap="onCancelTap_">$i18n{cancel}</paper-button>
+            on-click="onCancelTap_">$i18n{cancel}</paper-button>
         <paper-button id="clearBrowsingDataConfirm"
             class="action-button" disabled="[[clearingInProgress_]]"
-            on-tap="onClearBrowsingDataTap_">
+            on-click="onClearBrowsingDataTap_">
             $i18n{clearData}
         </paper-button>
       </div>
@@ -289,10 +289,10 @@
           <paper-spinner-lite active="[[clearingInProgress_]]">
           </paper-spinner-lite>
           <paper-button class="cancel-button" disabled="[[clearingInProgress_]]"
-              on-tap="onImportantSitesCancelTap_">$i18n{cancel}</paper-button>
+              on-click="onImportantSitesCancelTap_">$i18n{cancel}</paper-button>
           <paper-button id="importantSitesConfirm"
               class="action-button" disabled="[[clearingInProgress_]]"
-              on-tap="onImportantSitesConfirmTap_">
+              on-click="onImportantSitesConfirmTap_">
             $i18n{importantSitesConfirm}
           </paper-button>
         </div>

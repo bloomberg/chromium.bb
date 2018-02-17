@@ -45,7 +45,7 @@
             if="[[prefs.cros.flags.fine_grained_time_zone_detection_enabled.value]]"
             restamp>
           <div id="timeZoneSettingsTrigger" class="settings-box first"
-              on-tap="onTimeZoneSettings_" actionable>
+              on-click="onTimeZoneSettings_" actionable>
             <div id="timeZoneButton" class="two-line">
                 $i18n{timeZoneButton}
               <div class="secondary">
@@ -79,7 +79,7 @@
             label="$i18n{use24HourClock}">
         </settings-toggle-button>
         <div class="settings-box" id="setDateTime" actionable
-            on-tap="onSetDateTimeTap_" hidden$="[[!canSetDateTime_]]">
+            on-click="onSetDateTimeTap_" hidden$="[[!canSetDateTime_]]">
           <div class="start">$i18n{setDateTime}</div>
           <button class="subpage-arrow" is="paper-icon-button-light"
               aria-label="$i18n{setDateTime}"></button>

@@ -12,7 +12,7 @@ cr.exportPath('settings');
 
 /**
  * The name of the event fired from this element when the "Edit" option is
- * tapped.
+ * clicked.
  * @type {string}
  */
 settings.EDIT_STARTUP_URL_EVENT = 'edit-startup-url';

@@ -18,7 +18,7 @@
     <div class="list-frame menu-content vertical-list" id="listContainer">
       <template is="dom-repeat" items="[[sites]]">
         <div class="list-item">
-          <div class="layout horizontal center flex" on-tap="onOriginTap_"
+          <div class="layout horizontal center flex" on-click="onOriginTap_"
               actionable>
             <div class="favicon-image"
                 style$="[[computeSiteIcon(item.origin)]]">

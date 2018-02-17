@@ -82,7 +82,7 @@
         restamp>
       <div class="secondary self-start">
         <paper-checkbox checked="[[isMirrored_(displays)]]"
-            on-tap="onMirroredTap_"
+            on-click="onMirroredTap_"
             aria-label="[[getDisplayMirrorText_(displays)]]">
           <div class="text-area">[[getDisplayMirrorText_(displays)]]</div>
         </paper-checkbox>
@@ -188,7 +188,7 @@
 
       <button is="cr-link-row" icon-class="subpage-arrow" class="indented hr"
           id="overscan" label="$i18n{displayOverscanPageTitle}"
-          sub-label="$i18n{displayOverscanPageText}" on-tap="onOverscanTap_"
+          sub-label="$i18n{displayOverscanPageText}" on-click="onOverscanTap_"
           hidden$="[[!showOverscanSetting_(selectedDisplay)]]">
       </button>
 
@@ -198,7 +198,7 @@
       </settings-display-overscan-dialog>
 
       <div class="settings-box indented two-line"
-          on-tap="onTouchCalibrationTap_"
+          on-click="onTouchCalibrationTap_"
           hidden$="[[!showTouchCalibrationSetting_(selectedDisplay)]]"
           actionable>
         <div class="start">
