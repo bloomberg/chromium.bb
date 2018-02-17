@@ -194,6 +194,7 @@ class CORE_EXPORT DocumentLoader
         : was_scrolled_by_user(false), did_restore_from_history(false) {}
 
     bool was_scrolled_by_user;
+    bool was_scrolled_by_js;
     bool did_restore_from_history;
   };
   InitialScrollState& GetInitialScrollState() { return initial_scroll_state_; }
