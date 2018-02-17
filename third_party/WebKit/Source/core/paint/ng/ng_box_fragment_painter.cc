@@ -736,6 +736,15 @@ void NGBoxFragmentPainter::PaintBackground(
                   geometry, bleed_avoidance);
 }
 
+bool NGBoxFragmentPainter::IsInSelfHitTestingPhase(HitTestAction action) const {
+  // TODO(layout-dev): We should set an IsContainingBlock flag on
+  // NGPhysicalBoxFragment, instead of routing back to LayoutObject.
+  const LayoutObject* layout_object = box_fragment_.GetLayoutObject();
+  if (layout_object->IsBox())
+    return ToLayoutBox(layout_object)->IsInSelfHitTestingPhase(action);
+  return action == kHitTestForeground;
+}
+
 bool NGBoxFragmentPainter::NodeAtPoint(
     HitTestResult& result,
     const HitTestLocation& location_in_container,
@@ -748,7 +757,7 @@ bool NGBoxFragmentPainter::NodeAtPoint(
   LayoutSize size(box_fragment_.Size().width, box_fragment_.Size().height);
   const ComputedStyle& style = box_fragment_.Style();
 
-  bool hit_test_self = action == kHitTestForeground;
+  bool hit_test_self = IsInSelfHitTestingPhase(action);
 
   // TODO(layout-dev): Add support for hit testing overflow controls once we
   // overflow has been implemented.
