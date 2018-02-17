@@ -52,7 +52,7 @@ void CastBrowserTest::PostRunTestOnMainThread() {
   cast_web_view_.reset();
 }
 
-content::WebContents* CastBrowserTest::NavigateToURL(const GURL& url) {
+content::WebContents* CastBrowserTest::CreateWebView() {
   CastWebView::CreateParams params;
   params.delegate = this;
   params.enabled_for_dev = true;
@@ -61,7 +61,13 @@ content::WebContents* CastBrowserTest::NavigateToURL(const GURL& url) {
                                            nullptr,         /* extension */
                                            GURL() /* initial_url */);
 
-  content::WebContents* web_contents = cast_web_view_->web_contents();
+  return cast_web_view_->web_contents();
+}
+
+content::WebContents* CastBrowserTest::NavigateToURL(const GURL& url) {
+  content::WebContents* web_contents =
+      cast_web_view_ ? cast_web_view_->web_contents() : CreateWebView();
+
   content::WaitForLoadStop(web_contents);
   content::TestNavigationObserver same_tab_observer(web_contents, 1);
 
