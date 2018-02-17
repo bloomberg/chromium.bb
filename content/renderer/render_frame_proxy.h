@@ -15,7 +15,6 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/common/feature_policy/feature_policy.h"
-#include "third_party/WebKit/public/platform/WebCanvas.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
 #include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
 #include "third_party/WebKit/public/web/WebRemoteFrame.h"
@@ -194,7 +193,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
                     blink::WebLocalFrame* source) override;
   void FrameFocused() override;
   base::UnguessableToken GetDevToolsFrameToken() override;
-  uint32_t Print(const blink::WebRect& rect, blink::WebCanvas* canvas) override;
 
   // IPC handlers
   void OnDidStartLoading();

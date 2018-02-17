@@ -1221,8 +1221,7 @@ bool PrintRenderFrameHelper::CreatePreviewDocument() {
   const std::vector<int>& pages = print_pages_params_->pages;
 
   if (!print_preview_context_.CreatePreviewDocument(
-          std::move(prep_frame_view_), pages, print_params.printed_doc_type,
-          print_params.document_cookie)) {
+          std::move(prep_frame_view_), pages, print_params.printed_doc_type)) {
     return false;
   }
 
@@ -1432,7 +1431,7 @@ void PrintRenderFrameHelper::OnPrintFrameContent(
   if (!weak_this)
     return;
 
-  PdfMetafileSkia metafile(SkiaDocumentType::MSKP, params.document_cookie);
+  PdfMetafileSkia metafile(SkiaDocumentType::MSKP);
   gfx::Rect area(params.printable_area.width(), params.printable_area.height());
   // Since GetVectorCanvasForNewPage() starts a new recording, it will return
   // a valid canvas.
@@ -1470,7 +1469,6 @@ void PrintRenderFrameHelper::OnPrintFrameContent(
     DLOG(ERROR) << "CopyMetafileDataToSharedMem failed";
     return;
   }
-
   Send(new PrintHostMsg_DidPrintFrameContent(
       routing_id(), params.document_cookie, printed_frame_params));
 
@@ -1670,8 +1668,7 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
   if (printed_pages.empty())
     return false;
 
-  PdfMetafileSkia metafile(print_params.printed_doc_type,
-                           print_params.document_cookie);
+  PdfMetafileSkia metafile(print_params.printed_doc_type);
   CHECK(metafile.Init());
 
   PrintHostMsg_DidPrintDocument_Params page_params;
@@ -2031,7 +2028,6 @@ bool PrintRenderFrameHelper::CopyMetafileDataToReadOnlySharedMem(
       &params->metafile_data_handle, nullptr, nullptr);
   DCHECK_EQ(MOJO_RESULT_OK, result);
   params->data_size = metafile.GetDataSize();
-  params->subframe_content_info = metafile.GetSubframeContentInfo();
   return true;
 }
 
@@ -2199,8 +2195,7 @@ void PrintRenderFrameHelper::PrintPreviewContext::OnPrintPreview() {
 bool PrintRenderFrameHelper::PrintPreviewContext::CreatePreviewDocument(
     std::unique_ptr<PrepareFrameAndViewForPrint> prepared_frame,
     const std::vector<int>& pages,
-    SkiaDocumentType doc_type,
-    int document_cookie) {
+    SkiaDocumentType doc_type) {
   DCHECK_EQ(INITIALIZED, state_);
   state_ = RENDERING;
 
@@ -2215,7 +2210,7 @@ bool PrintRenderFrameHelper::PrintPreviewContext::CreatePreviewDocument(
     return false;
   }
 
-  metafile_ = std::make_unique<PdfMetafileSkia>(doc_type, document_cookie);
+  metafile_ = std::make_unique<PdfMetafileSkia>(doc_type);
   CHECK(metafile_->Init());
 
   current_page_index_ = 0;

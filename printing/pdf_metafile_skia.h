@@ -28,11 +28,7 @@ struct PdfMetafileSkiaData;
 // TODO(thestig): Rename to MetafileSkia.
 class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
  public:
-  // Default constructor, for SkiaDocumentType::PDF type only.
-  // TODO(weili): we should split up this use case into a different class, see
-  //              comments before InitFromData()'s implementation.
-  PdfMetafileSkia();
-  PdfMetafileSkia(SkiaDocumentType type, int document_cookie);
+  explicit PdfMetafileSkia(SkiaDocumentType type);
   ~PdfMetafileSkia() override;
 
   // Metafile methods.
@@ -85,21 +81,7 @@ class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
                                              const gfx::Rect& content_area,
                                              const float& scale_factor);
 
-  // This is used for painting content of out-of-process subframes.
-  // For such a subframe, since the content is in another process, we create a
-  // place holder picture now, and replace it with actual content by pdf
-  // compositor service later.
-  uint32_t CreateContentForRemoteFrame(const gfx::Rect& rect,
-                                       int render_proxy_id);
-
-  int GetDocumentCookie() const;
-  const ContentToProxyIdMap& GetSubframeContentInfo() const;
-
  private:
-  // Callback function used during page content drawing to replace a custom
-  // data holder with corresponding place holder SkPicture.
-  void CustomDataToSkPictureCallback(SkCanvas* canvas, uint32_t content_id);
-
   std::unique_ptr<PdfMetafileSkiaData> data_;
 
   DISALLOW_COPY_AND_ASSIGN(PdfMetafileSkia);

@@ -8,7 +8,6 @@
 #include "core/frame/FrameClient.h"
 #include "core/frame/FrameTypes.h"
 #include "core/loader/FrameLoaderTypes.h"
-#include "public/platform/WebCanvas.h"
 #include "public/platform/WebFocusType.h"
 
 namespace blink {
@@ -51,8 +50,6 @@ class RemoteFrameClient : public FrameClient {
 
   virtual void UpdateRenderThrottlingStatus(bool isThrottled,
                                             bool subtreeThrottled) = 0;
-
-  virtual uint32_t Print(const IntRect&, WebCanvas*) const = 0;
 };
 
 }  // namespace blink

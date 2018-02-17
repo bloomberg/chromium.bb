@@ -5,7 +5,6 @@
 #ifndef WebRemoteFrameClient_h
 #define WebRemoteFrameClient_h
 
-#include "public/platform/WebCanvas.h"
 #include "public/platform/WebFocusType.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/web/WebDOMMessageEvent.h"
@@ -69,13 +68,6 @@ class WebRemoteFrameClient {
   virtual base::UnguessableToken GetDevToolsFrameToken() {
     return base::UnguessableToken::Create();
   }
-
-  // Print out this frame.
-  // |rect| is the rectangular area where this frame resides in its parent
-  // frame.
-  // |canvas| is the canvas we are printing on.
-  // Returns the id of the placeholder content.
-  virtual uint32_t Print(const WebRect& rect, WebCanvas* canvas) { return 0; }
 
  protected:
   virtual ~WebRemoteFrameClient() = default;

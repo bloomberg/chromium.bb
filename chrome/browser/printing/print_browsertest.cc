@@ -227,12 +227,15 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeContent) {
   WaitUntilMessagesReceived();
 }
 
+// TODO(weili): Enabled the following tests when the render side change is
+//              completed.
+
 // Printing frame content with a cross-site iframe which also has a cross-site
 // iframe. The site reference chain is a.com --> b.com --> c.com.
 // This test passes when both cross-site frames are printed and their
 // responses which are checked in
 // TestPrintFrameContentMsgFilter::CheckMessage().
-IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeChain) {
+IN_PROC_BROWSER_TEST_F(PrintBrowserTest, DISABLED_PrintSubframeChain) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL(
       "/printing/content_with_iframe_chain.html"));
@@ -279,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeChain) {
 // This test passes when both cross-site frames are printed and send back
 // responses which are checked in
 // TestPrintFrameContentMsgFilter::CheckMessage().
-IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeABA) {
+IN_PROC_BROWSER_TEST_F(PrintBrowserTest, DISABLED_PrintSubframeABA) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL(
       "a.com", "/printing/content_with_iframe_loop.html"));

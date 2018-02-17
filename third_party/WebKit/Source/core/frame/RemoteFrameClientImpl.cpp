@@ -178,9 +178,4 @@ void RemoteFrameClientImpl::UpdateRenderThrottlingStatus(
                                                      subtree_throttled);
 }
 
-uint32_t RemoteFrameClientImpl::Print(const IntRect& rect,
-                                      WebCanvas* canvas) const {
-  return web_frame_->Client()->Print(rect, canvas);
-}
-
 }  // namespace blink

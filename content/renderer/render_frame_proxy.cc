@@ -33,7 +33,6 @@
 #include "content/renderer/render_widget.h"
 #include "content/renderer/resource_timing_info_conversions.h"
 #include "ipc/ipc_message_macros.h"
-#include "printing/features/features.h"
 #include "third_party/WebKit/public/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/public/common/frame/frame_policy.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
@@ -49,13 +48,6 @@
 #if defined(USE_AURA)
 #include "content/renderer/mus/mus_embedded_frame.h"
 #include "content/renderer/mus/renderer_window_tree_client.h"
-#endif
-
-#if BUILDFLAG(ENABLE_PRINTING)
-// nogncheck because dependency on //printing is conditional upon
-// enable_basic_printing or enable_print_preview flags.
-#include "printing/metafile_skia_wrapper.h"  // nogncheck
-#include "printing/pdf_metafile_skia.h"      // nogncheck
 #endif
 
 namespace content {
@@ -802,27 +794,6 @@ void RenderFrameProxy::SetLayer(std::unique_ptr<blink::WebLayer> web_layer) {
 
 SkBitmap* RenderFrameProxy::GetSadPageBitmap() {
   return GetContentClient()->renderer()->GetSadWebViewBitmap();
-}
-
-uint32_t RenderFrameProxy::Print(const blink::WebRect& rect,
-                                 blink::WebCanvas* canvas) {
-#if BUILDFLAG(ENABLE_PRINTING)
-  printing::PdfMetafileSkia* metafile =
-      printing::MetafileSkiaWrapper::GetMetafileFromCanvas(canvas);
-  DCHECK(metafile);
-
-  // Create a place holder content for the remote frame so it can be replaced
-  // with actual content later.
-  uint32_t content_id =
-      metafile->CreateContentForRemoteFrame(rect, routing_id_);
-
-  // Inform browser to print the remote subframe.
-  Send(new FrameHostMsg_PrintCrossProcessSubframe(
-      routing_id_, rect, metafile->GetDocumentCookie()));
-  return content_id;
-#else
-  return 0;
-#endif
 }
 
 }  // namespace content
