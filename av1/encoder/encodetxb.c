@@ -411,7 +411,6 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
-  DECLARE_ALIGNED(16, uint8_t, level_counts[MAX_TX_SQUARE]);
   DECLARE_ALIGNED(16, int8_t, coeff_contexts[MAX_TX_SQUARE]);
   uint16_t update_pos[MAX_TX_SQUARE];
   int num_updates = 0;
@@ -501,8 +500,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     if (level > NUM_BASE_LEVELS) {
       // level is above 1.
       const int base_range = level - 1 - NUM_BASE_LEVELS;
-      const int br_ctx =
-          get_br_ctx(levels, pos, bwl, level_counts[pos], tx_type);
+      const int br_ctx = get_br_ctx(levels, pos, bwl, tx_type);
       for (int idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
         const int k = AOMMIN(base_range - idx, BR_CDF_SIZE - 1);
         aom_write_symbol(w, k,
@@ -645,7 +643,6 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
   const int16_t *const scan = scan_order->scan;
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
-  DECLARE_ALIGNED(16, uint8_t, level_counts[MAX_TX_SQUARE]);
   DECLARE_ALIGNED(16, int8_t, coeff_contexts[MAX_TX_SQUARE]);
   const LV_MAP_COEFF_COST *const coeff_costs =
       &x->coeff_costs[txs_ctx][plane_type];
@@ -693,7 +690,7 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
       }
       if (level > NUM_BASE_LEVELS) {
         int ctx;
-        ctx = get_br_ctx(levels, pos, bwl, level_counts[pos], tx_type);
+        ctx = get_br_ctx(levels, pos, bwl, tx_type);
         const int base_range = level - 1 - NUM_BASE_LEVELS;
         if (base_range < COEFF_BASE_RANGE) {
           cost += coeff_costs->lps_cost[ctx][base_range];
@@ -1317,9 +1314,8 @@ static int get_coeff_cost(const tran_low_t qc, const int scan_idx,
       const int col = pos - (row << txb_info->bwl);
 
       (void)col;
-      const int count = 0;
-      const int ctx = get_br_ctx(txb_info->levels, pos, txb_info->bwl, count,
-                                 txb_info->tx_type);
+      const int ctx =
+          get_br_ctx(txb_info->levels, pos, txb_info->bwl, txb_info->tx_type);
       cost += get_br_cost(abs_qc, ctx, txb_costs->lps_cost[ctx]);
       cost += get_golomb_cost(abs_qc);
     }
@@ -2187,7 +2183,6 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   const int height = get_txb_high(tx_size);
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
-  DECLARE_ALIGNED(16, uint8_t, level_counts[MAX_TX_SQUARE]);
   const uint8_t allow_update_cdf = args->allow_update_cdf;
 
   TX_SIZE txsize_ctx = get_txsize_entropy_ctx(tx_size);
@@ -2254,8 +2249,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     }
     if (level > NUM_BASE_LEVELS) {
       const int base_range = level - 1 - NUM_BASE_LEVELS;
-      const int br_ctx =
-          get_br_ctx(levels, pos, bwl, level_counts[pos], tx_type);
+      const int br_ctx = get_br_ctx(levels, pos, bwl, tx_type);
       for (int idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
         const int k = AOMMIN(base_range - idx, BR_CDF_SIZE - 1);
         if (allow_update_cdf) {

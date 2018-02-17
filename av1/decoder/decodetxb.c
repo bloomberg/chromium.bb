@@ -86,7 +86,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   int cul_level = 0;
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
-  DECLARE_ALIGNED(16, uint8_t, level_counts[MAX_TX_SQUARE]);
   uint16_t update_pos[MAX_TX_SQUARE];
 
   const int all_zero = aom_read_symbol(
@@ -206,8 +205,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
         ec_ctx->coeff_base_eob_cdf[txs_ctx][plane_type][coeff_ctx];
     int level = aom_read_symbol(r, cdf, nsymbs, ACCT_STR) + 1;
     if (level > NUM_BASE_LEVELS) {
-      const int br_ctx =
-          get_br_ctx(levels, pos, bwl, level_counts[pos], tx_type);
+      const int br_ctx = get_br_ctx(levels, pos, bwl, tx_type);
       for (int idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
         const int k = aom_read_symbol(
             r,
@@ -232,8 +230,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
     const int nsymbs = 4;
     int level = aom_read_symbol(r, cdf, nsymbs, ACCT_STR);
     if (level > NUM_BASE_LEVELS) {
-      const int br_ctx =
-          get_br_ctx(levels, pos, bwl, level_counts[pos], tx_type);
+      const int br_ctx = get_br_ctx(levels, pos, bwl, tx_type);
       for (int idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
         const int k = aom_read_symbol(
             r,
