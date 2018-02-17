@@ -2209,33 +2209,72 @@ void av1_read_film_grain_params(AV1_COMMON *cm,
   aom_film_grain_t *pars = &cm->film_grain_params;
 
   pars->apply_grain = aom_rb_read_bit(rb);
-  if (!pars->apply_grain) return;
+  if (!pars->apply_grain) {
+    memset(pars, 0, sizeof(*pars));
+    return;
+  }
 
   pars->random_seed = aom_rb_read_literal(rb, 16);
 
   pars->update_parameters = aom_rb_read_bit(rb);
-  if (!pars->update_parameters) return;
+  if (!pars->update_parameters) {
+    if (cm->frame_type != INTER_FRAME) {
+      aom_internal_error(
+          &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+          "Film grain parameters prediction is only allowed in inter-frames");
+    }
+    return;
+  }
 
   // Scaling functions parameters
 
   pars->num_y_points = aom_rb_read_literal(rb, 4);  // max 14
+  if (pars->num_y_points > 14)
+    aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+                       "Number of points for film grain luma scaling function "
+                       "exceeds the maximum value.");
   for (int i = 0; i < pars->num_y_points; i++) {
     pars->scaling_points_y[i][0] = aom_rb_read_literal(rb, 8);
+    if (i && pars->scaling_points_y[i - 1][0] >= pars->scaling_points_y[i][0])
+      aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+                         "First coordinateg of the scaling function points "
+                         "shall be increasing.");
     pars->scaling_points_y[i][1] = aom_rb_read_literal(rb, 8);
   }
 
   pars->chroma_scaling_from_luma = aom_rb_read_bit(rb);
 
-  if (!pars->chroma_scaling_from_luma) {
+  if (pars->chroma_scaling_from_luma) {
+    pars->num_cb_points = 0;
+    pars->num_cr_points = 0;
+  } else {
     pars->num_cb_points = aom_rb_read_literal(rb, 4);  // max 10
+    if (pars->num_cb_points > 10)
+      aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+                         "Number of points for film grain cb scaling function "
+                         "exceeds the maximum value.");
     for (int i = 0; i < pars->num_cb_points; i++) {
       pars->scaling_points_cb[i][0] = aom_rb_read_literal(rb, 8);
+      if (i &&
+          pars->scaling_points_cb[i - 1][0] >= pars->scaling_points_cb[i][0])
+        aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+                           "First coordinate of the scaling function points "
+                           "shall be increasing.");
       pars->scaling_points_cb[i][1] = aom_rb_read_literal(rb, 8);
     }
 
     pars->num_cr_points = aom_rb_read_literal(rb, 4);  // max 10
+    if (pars->num_cr_points > 10)
+      aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+                         "Number of points for film grain cr scaling function "
+                         "exceeds the maximum value.");
     for (int i = 0; i < pars->num_cr_points; i++) {
       pars->scaling_points_cr[i][0] = aom_rb_read_literal(rb, 8);
+      if (i &&
+          pars->scaling_points_cr[i - 1][0] >= pars->scaling_points_cr[i][0])
+        aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+                           "First coordinate of the scaling function points "
+                           "shall be increasing.");
       pars->scaling_points_cr[i][1] = aom_rb_read_literal(rb, 8);
     }
   }

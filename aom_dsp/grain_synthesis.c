@@ -493,6 +493,8 @@ static void generate_chroma_grain_blocks(
 
 static void init_scaling_function(int scaling_points[][2], int num_points,
                                   int scaling_lut[]) {
+  if (num_points == 0) return;
+
   for (int i = 0; i < scaling_points[0][0]; i++)
     scaling_lut[i] = scaling_points[0][1];
 

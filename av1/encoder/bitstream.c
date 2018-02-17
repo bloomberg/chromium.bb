@@ -3361,7 +3361,10 @@ static void write_film_grain_params(AV1_COMMON *const cm,
 
   aom_wb_write_bit(wb, pars->chroma_scaling_from_luma);
 
-  if (!pars->chroma_scaling_from_luma) {
+  if (pars->chroma_scaling_from_luma) {
+    assert(pars->num_cb_points == 0);
+    assert(pars->num_cr_points == 0);
+  } else {
     aom_wb_write_literal(wb, pars->num_cb_points, 4);  // max 10
     for (int i = 0; i < pars->num_cb_points; i++) {
       aom_wb_write_literal(wb, pars->scaling_points_cb[i][0], 8);
