@@ -16,22 +16,6 @@
 
 namespace content {
 
-InterceptedRequestInfo::InterceptedRequestInfo()
-    : response_error_code(net::OK) {}
-
-InterceptedRequestInfo::~InterceptedRequestInfo() = default;
-
-DevToolsURLRequestInterceptor::FilterEntry::FilterEntry(
-    const base::UnguessableToken& target_id,
-    std::vector<Pattern> patterns,
-    RequestInterceptedCallback callback)
-    : target_id(target_id),
-      patterns(std::move(patterns)),
-      callback(std::move(callback)) {}
-
-DevToolsURLRequestInterceptor::FilterEntry::FilterEntry(FilterEntry&&) {}
-DevToolsURLRequestInterceptor::FilterEntry::~FilterEntry() {}
-
 // static
 bool DevToolsURLRequestInterceptor::IsNavigationRequest(
     ResourceType resource_type) {

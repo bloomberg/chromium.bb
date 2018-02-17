@@ -527,7 +527,7 @@ DevToolsURLInterceptorRequestJob::DevToolsURLInterceptorRequestJob(
     net::URLRequest* original_request,
     net::NetworkDelegate* original_network_delegate,
     const base::UnguessableToken& devtools_token,
-    DevToolsURLRequestInterceptor::RequestInterceptedCallback callback,
+    DevToolsNetworkInterceptor::RequestInterceptedCallback callback,
     bool is_redirect,
     ResourceType resource_type,
     InterceptionStage stage_to_intercept)
@@ -870,7 +870,7 @@ void DevToolsURLInterceptorRequestJob::StopIntercepting() {
     // Fallthough.
     case WaitingForUserResponse::WAITING_FOR_REQUEST_ACK:
       ProcessInterceptionRespose(
-          std::make_unique<DevToolsURLRequestInterceptor::Modifications>(
+          std::make_unique<DevToolsNetworkInterceptor::Modifications>(
               base::nullopt, base::nullopt, protocol::Maybe<std::string>(),
               protocol::Maybe<std::string>(), protocol::Maybe<std::string>(),
               protocol::Maybe<protocol::Network::Headers>(),
@@ -884,7 +884,7 @@ void DevToolsURLInterceptorRequestJob::StopIntercepting() {
                                ResponseEnum::Default)
               .Build();
       ProcessAuthRespose(
-          std::make_unique<DevToolsURLRequestInterceptor::Modifications>(
+          std::make_unique<DevToolsNetworkInterceptor::Modifications>(
               base::nullopt, base::nullopt, protocol::Maybe<std::string>(),
               protocol::Maybe<std::string>(), protocol::Maybe<std::string>(),
               protocol::Maybe<protocol::Network::Headers>(),
@@ -899,7 +899,7 @@ void DevToolsURLInterceptorRequestJob::StopIntercepting() {
 }
 
 void DevToolsURLInterceptorRequestJob::ContinueInterceptedRequest(
-    std::unique_ptr<DevToolsURLRequestInterceptor::Modifications> modifications,
+    std::unique_ptr<DevToolsNetworkInterceptor::Modifications> modifications,
     std::unique_ptr<ContinueInterceptedRequestCallback> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   switch (waiting_for_user_response_) {
@@ -1022,8 +1022,7 @@ DevToolsURLInterceptorRequestJob::BuildRequestInfo() {
 }
 
 void DevToolsURLInterceptorRequestJob::ProcessInterceptionRespose(
-    std::unique_ptr<DevToolsURLRequestInterceptor::Modifications>
-        modifications) {
+    std::unique_ptr<DevToolsNetworkInterceptor::Modifications> modifications) {
   bool is_response_ack = waiting_for_user_response_ ==
                          WaitingForUserResponse::WAITING_FOR_RESPONSE_ACK;
   waiting_for_user_response_ = WaitingForUserResponse::NOT_WAITING;
@@ -1120,8 +1119,7 @@ void DevToolsURLInterceptorRequestJob::ProcessInterceptionRespose(
 }
 
 bool DevToolsURLInterceptorRequestJob::ProcessAuthRespose(
-    std::unique_ptr<DevToolsURLRequestInterceptor::Modifications>
-        modifications) {
+    std::unique_ptr<DevToolsNetworkInterceptor::Modifications> modifications) {
   waiting_for_user_response_ = WaitingForUserResponse::NOT_WAITING;
 
   protocol::Network::AuthChallengeResponse* auth_challenge_response =
