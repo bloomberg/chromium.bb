@@ -660,6 +660,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   void UpdateLayout() override;
   void Paint(const PaintInfo&, const LayoutPoint&) const override;
+
+  virtual bool IsInSelfHitTestingPhase(HitTestAction hit_test_action) const {
+    return hit_test_action == kHitTestForeground;
+  }
+
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation& location_in_container,
                    const LayoutPoint& accumulated_offset,
@@ -1582,10 +1587,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   void LocationChanged();
   void SizeChanged();
-
-  virtual bool IsInSelfHitTestingPhase(HitTestAction hit_test_action) const {
-    return hit_test_action == kHitTestForeground;
-  }
 
   void UpdateBackgroundAttachmentFixedStatusAfterStyleChange();
 

@@ -109,6 +109,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                        const Color& background_color,
                        BackgroundBleedAvoidance = kBackgroundBleedNone);
 
+  bool IsInSelfHitTestingPhase(HitTestAction) const;
   bool VisibleToHitTestRequest(const HitTestRequest&) const;
   bool HitTestChildren(HitTestResult&,
                        const Vector<std::unique_ptr<NGPaintFragment>>&,
