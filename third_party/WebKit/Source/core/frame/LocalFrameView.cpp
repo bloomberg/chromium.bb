@@ -579,7 +579,6 @@ void LocalFrameView::InvalidateRect(const IntRect& rect) {
 void LocalFrameView::SetFrameRect(const IntRect& frame_rect) {
   if (frame_rect == frame_rect_)
     return;
-
   const bool width_changed = frame_rect_.Width() != frame_rect.Width();
   const bool height_changed = frame_rect_.Height() != frame_rect.Height();
   frame_rect_ = frame_rect;
@@ -607,6 +606,22 @@ void LocalFrameView::SetFrameRect(const IntRect& frame_rect) {
 
     GetFrame().Loader().RestoreScrollPositionAndViewState();
   }
+}
+
+IntPoint LocalFrameView::Location() const {
+  IntPoint location(frame_rect_.Location());
+
+  // As an optimization, we don't include the root layer's scroll offset in the
+  // frame rect.  As a result, we don't need to recalculate the frame rect every
+  // time the root layer scrolls, but we need to add it in here.
+  LayoutEmbeddedContent* owner = frame_->OwnerLayoutObject();
+  if (owner) {
+    LayoutView* owner_layout_view = owner->View();
+    DCHECK(owner_layout_view);
+    if (owner_layout_view->HasOverflowClip())
+      location.Move(-owner_layout_view->ScrolledContentOffset());
+  }
+  return location;
 }
 
 Page* LocalFrameView::GetPage() const {
@@ -4206,7 +4221,7 @@ void LocalFrameView::SetCursor(const Cursor& cursor) {
 void LocalFrameView::FrameRectsChanged() {
   TRACE_EVENT0("blink", "LocalFrameView::frameRectsChanged");
   if (LayoutSizeFixedToFrameSize())
-    SetLayoutSizeInternal(FrameRect().Size());
+    SetLayoutSizeInternal(Size());
 
   ForAllChildViewsAndPlugins([](EmbeddedContentView& embedded_content_view) {
     embedded_content_view.FrameRectsChanged();
@@ -4315,9 +4330,8 @@ ScrollbarMode LocalFrameView::EffectiveVerticalScrollbarMode() const {
 
 IntSize LocalFrameView::VisibleContentSize(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
-  return scrollbar_inclusion == kExcludeScrollbars
-             ? ExcludeScrollbars(FrameRect().Size())
-             : FrameRect().Size();
+  return scrollbar_inclusion == kExcludeScrollbars ? ExcludeScrollbars(Size())
+                                                   : Size();
 }
 
 IntRect LocalFrameView::VisibleContentRect(
@@ -5428,7 +5442,7 @@ void LocalFrameView::UpdateRenderThrottlingStatus(
 
   // Note that we disallow throttling of 0x0 and display:none frames because
   // some sites use them to drive UI logic.
-  hidden_for_throttling_ = hidden && !FrameRect().IsEmpty();
+  hidden_for_throttling_ = hidden && !Size().IsEmpty();
   subtree_throttled_ = subtree_throttled;
   HTMLFrameOwnerElement* owner_element = frame_->DeprecatedLocalOwner();
   if (owner_element)
@@ -5528,8 +5542,8 @@ void LocalFrameView::RecordDeferredLoadingStats() {
   if (why_parent_loaded == WouldLoadReason::kCreated)
     return;
   // These frames are never meant to be seen so we will need to load them.
-  if (FrameRect().IsEmpty() || FrameRect().MaxY() < 0 ||
-      FrameRect().MaxX() < 0) {
+  IntRect frame_rect(FrameRect());
+  if (frame_rect.IsEmpty() || frame_rect.MaxY() < 0 || frame_rect.MaxX() < 0) {
     GetFrame().GetDocument()->RecordDeferredLoadReason(why_parent_loaded);
     return;
   }
@@ -5537,15 +5551,15 @@ void LocalFrameView::RecordDeferredLoadingStats() {
   IntRect parent_rect = parent->FrameRect();
   // First clause: for this rough data collection we assume the user never
   // scrolls right.
-  if (FrameRect().X() >= parent_rect.Width() || parent_rect.Height() <= 0)
+  if (frame_rect.X() >= parent_rect.Width() || parent_rect.Height() <= 0)
     return;
 
   int this_frame_screens_away = 0;
   // If an frame is created above the current scoll position, this logic counts
   // it as visible.
-  if (FrameRect().Y() > parent->GetScrollOffset().Height()) {
+  if (frame_rect.Y() > parent->GetScrollOffset().Height()) {
     this_frame_screens_away =
-        (FrameRect().Y() - parent->GetScrollOffset().Height()) /
+        (frame_rect.Y() - parent->GetScrollOffset().Height()) /
         parent_rect.Height();
   }
   DCHECK_GE(this_frame_screens_away, 0);

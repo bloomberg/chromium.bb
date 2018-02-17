@@ -456,7 +456,15 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
     Layer()->UpdateLayerPositionsAfterOverflowScroll();
     // Update regions, scrolling may change the clip of a particular region.
     frame_view->UpdateDocumentAnnotatedRegions();
-    frame_view->SetNeedsUpdateGeometries();
+
+    // As a performance optimization, the scroll offset of the root layer is
+    // not included in EmbeddedContentView's stored frame rect, so there is no
+    // reason to mark the FrameView as needing a geometry update here.
+    // However plugins still need to be notified, so we call FrameRectsChanged.
+    if (is_root_layer)
+      frame_view->FrameRectsChanged();
+    else
+      frame_view->SetNeedsUpdateGeometries();
     UpdateCompositingLayersAfterScroll();
   }
 

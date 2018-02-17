@@ -52,10 +52,9 @@ void FrameViewAutoSizeInfo::AutoSizeIfNeeded() {
   // If this is the first time we run autosize, start from small height and
   // allow it to grow.
   if (!did_run_autosize_)
-    frame_view_->Resize(frame_view_->FrameRect().Width(),
-                        min_auto_size_.Height());
+    frame_view_->Resize(frame_view_->Width(), min_auto_size_.Height());
 
-  IntSize size = frame_view_->FrameRect().Size();
+  IntSize size = frame_view_->Size();
   ScrollableArea* layout_viewport = frame_view_->LayoutViewportScrollableArea();
 
   // Do the resizing twice. The first time is basically a rough calculation

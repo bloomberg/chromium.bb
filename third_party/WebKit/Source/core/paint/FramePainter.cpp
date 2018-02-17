@@ -39,10 +39,11 @@ void FramePainter::Paint(GraphicsContext& context,
   GetFrameView().NotifyPageThatContentAreaWillPaint();
 
   IntRect document_dirty_rect;
+  IntPoint frame_view_location(GetFrameView().Location());
   IntRect visible_area_without_scrollbars(
-      GetFrameView().Location(), GetFrameView().VisibleContentRect().Size());
+      frame_view_location, GetFrameView().VisibleContentRect().Size());
   IntPoint content_offset =
-      -GetFrameView().Location() + GetFrameView().ScrollOffsetInt();
+      -frame_view_location + GetFrameView().ScrollOffsetInt();
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
       !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     auto content_cull_rect = rect;
@@ -80,8 +81,8 @@ void FramePainter::Paint(GraphicsContext& context,
     TransformRecorder transform_recorder(
         context, *GetFrameView().GetLayoutView(),
         AffineTransform::Translation(
-            GetFrameView().X() - GetFrameView().ScrollX(),
-            GetFrameView().Y() - GetFrameView().ScrollY()));
+            frame_view_location.X() - GetFrameView().ScrollX(),
+            frame_view_location.Y() - GetFrameView().ScrollY()));
 
     ClipRecorder clip_recorder(context, *GetFrameView().GetLayoutView(),
                                DisplayItem::kClipFrameToVisibleContentRect,
@@ -93,10 +94,10 @@ void FramePainter::Paint(GraphicsContext& context,
     DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
     IntRect scroll_view_dirty_rect = rect.rect_;
     IntRect visible_area_with_scrollbars(
-        GetFrameView().Location(),
+        frame_view_location,
         GetFrameView().VisibleContentRect(kIncludeScrollbars).Size());
     scroll_view_dirty_rect.Intersect(visible_area_with_scrollbars);
-    scroll_view_dirty_rect.MoveBy(-GetFrameView().Location());
+    scroll_view_dirty_rect.MoveBy(-frame_view_location);
 
     Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
@@ -110,7 +111,8 @@ void FramePainter::Paint(GraphicsContext& context,
 
     TransformRecorder transform_recorder(
         context, *GetFrameView().GetLayoutView(),
-        AffineTransform::Translation(GetFrameView().X(), GetFrameView().Y()));
+        AffineTransform::Translation(frame_view_location.X(),
+                                     frame_view_location.Y()));
 
     ClipRecorder recorder(
         context, *GetFrameView().GetLayoutView(),
