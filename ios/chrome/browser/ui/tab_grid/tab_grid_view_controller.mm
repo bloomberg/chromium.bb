@@ -93,7 +93,7 @@
                            constraintEqualToAnchor:self.view.trailingAnchor],
                        nil];
   if (@available(iOS 11, *)) {
-    // SafeArea is only available in iOS 11+.
+    // SafeArea is only available in iOS  11+.
     [constraints addObjectsFromArray:@[
       [topToolbar.bottomAnchor
           constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor
@@ -120,6 +120,12 @@
   self.regularTabsViewController.gridView.contentInset =
       UIEdgeInsetsMake(topToolbar.intrinsicContentSize.height, 0,
                        bottomToolbar.intrinsicContentSize.height, 0);
+}
+
+#pragma mark - TabGridTransitionStateProvider properties
+
+- (BOOL)selectedTabVisible {
+  return NO;
 }
 
 @end
