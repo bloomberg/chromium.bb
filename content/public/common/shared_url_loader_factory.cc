@@ -7,19 +7,22 @@
 namespace content {
 
 // static
-const SharedURLLoaderFactory::Constraints
-    SharedURLLoaderFactory::kDefaultConstraints;
-
-SharedURLLoaderFactoryInfo::SharedURLLoaderFactoryInfo() = default;
-
-SharedURLLoaderFactoryInfo::~SharedURLLoaderFactoryInfo() = default;
-
-// static
 scoped_refptr<SharedURLLoaderFactory> SharedURLLoaderFactory::Create(
     std::unique_ptr<SharedURLLoaderFactoryInfo> info) {
   return info->CreateFactory();
 }
 
 SharedURLLoaderFactory::~SharedURLLoaderFactory() = default;
+
+void SharedURLLoaderFactory::Clone(
+    network::mojom::URLLoaderFactoryRequest request) {
+  NOTREACHED() << "Don't call SharedURLLoaderFactory Clone method from "
+                  "URLLoaderFactory interface as that the loses type safety "
+                  "that SharedURLLoaderFactory gives. Instead call Clone().";
+}
+
+SharedURLLoaderFactoryInfo::SharedURLLoaderFactoryInfo() = default;
+
+SharedURLLoaderFactoryInfo::~SharedURLLoaderFactoryInfo() = default;
 
 }  // namespace content

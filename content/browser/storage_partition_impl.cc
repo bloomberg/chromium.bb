@@ -290,6 +290,49 @@ class StoragePartitionImpl::NetworkContextOwner {
   DISALLOW_COPY_AND_ASSIGN(NetworkContextOwner);
 };
 
+class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
+    : public SharedURLLoaderFactory {
+ public:
+  explicit URLLoaderFactoryForBrowserProcess(
+      StoragePartitionImpl* storage_partition)
+      : storage_partition_(storage_partition) {}
+
+  // mojom::URLLoaderFactory implementation:
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const network::ResourceRequest& url_request,
+                            network::mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (!storage_partition_)
+      return;
+    storage_partition_->GetURLLoaderFactoryForBrowserProcessInternal()
+        ->CreateLoaderAndStart(std::move(request), routing_id, request_id,
+                               options, url_request, std::move(client),
+                               traffic_annotation);
+  }
+
+  // SharedURLLoaderFactory implementation:
+  std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() override {
+    NOTREACHED() << "This isn't supported. If you need a SharedURLLoaderFactory"
+                    " on the IO thread, get it from URLLoaderFactoryGetter.";
+    return nullptr;
+  }
+
+  void Shutdown() { storage_partition_ = nullptr; }
+
+ private:
+  friend class base::RefCounted<URLLoaderFactoryForBrowserProcess>;
+  ~URLLoaderFactoryForBrowserProcess() override {}
+
+  StoragePartitionImpl* storage_partition_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryForBrowserProcess);
+};
+
 // Static.
 int StoragePartitionImpl::GenerateQuotaClientMask(uint32_t remove_mask) {
   int quota_client_mask = 0;
@@ -484,6 +527,10 @@ StoragePartitionImpl::~StoragePartitionImpl() {
   if (url_loader_factory_getter_)
     url_loader_factory_getter_->OnStoragePartitionDestroyed();
 
+  if (shared_url_loader_factory_for_browser_process_) {
+    shared_url_loader_factory_for_browser_process_->Shutdown();
+  }
+
   if (GetDatabaseTracker()) {
     GetDatabaseTracker()->task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&storage::DatabaseTracker::Shutdown,
@@ -673,27 +720,13 @@ network::mojom::NetworkContext* StoragePartitionImpl::GetNetworkContext() {
   return network_context_.get();
 }
 
-network::mojom::URLLoaderFactory*
+scoped_refptr<SharedURLLoaderFactory>
 StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcess() {
-  // Create the URLLoaderFactory as needed.
-  if (url_loader_factory_for_browser_process_ &&
-      !url_loader_factory_for_browser_process_.encountered_error()) {
-    return url_loader_factory_for_browser_process_.get();
+  if (!shared_url_loader_factory_for_browser_process_) {
+    shared_url_loader_factory_for_browser_process_ =
+        new URLLoaderFactoryForBrowserProcess(this);
   }
-
-  if (g_url_loader_factory_callback_for_test.Get().is_null()) {
-    GetNetworkContext()->CreateURLLoaderFactory(
-        mojo::MakeRequest(&url_loader_factory_for_browser_process_), 0);
-    return url_loader_factory_for_browser_process_.get();
-  }
-
-  network::mojom::URLLoaderFactoryPtr original_factory;
-  GetNetworkContext()->CreateURLLoaderFactory(
-      mojo::MakeRequest(&original_factory), 0);
-  url_loader_factory_for_browser_process_ =
-      g_url_loader_factory_callback_for_test.Get().Run(
-          std::move(original_factory));
-  return url_loader_factory_for_browser_process_.get();
+  return shared_url_loader_factory_for_browser_process_;
 }
 
 network::mojom::CookieManager*
@@ -1183,6 +1216,29 @@ void StoragePartitionImpl::GetQuotaSettings(
     storage::OptionalQuotaSettingsCallback callback) {
   GetContentClient()->browser()->GetQuotaSettings(browser_context_, this,
                                                   std::move(callback));
+}
+
+network::mojom::URLLoaderFactory*
+StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal() {
+  // Create the URLLoaderFactory as needed.
+  if (url_loader_factory_for_browser_process_ &&
+      !url_loader_factory_for_browser_process_.encountered_error()) {
+    return url_loader_factory_for_browser_process_.get();
+  }
+
+  if (g_url_loader_factory_callback_for_test.Get().is_null()) {
+    GetNetworkContext()->CreateURLLoaderFactory(
+        mojo::MakeRequest(&url_loader_factory_for_browser_process_), 0);
+    return url_loader_factory_for_browser_process_.get();
+  }
+
+  network::mojom::URLLoaderFactoryPtr original_factory;
+  GetNetworkContext()->CreateURLLoaderFactory(
+      mojo::MakeRequest(&original_factory), 0);
+  url_loader_factory_for_browser_process_ =
+      g_url_loader_factory_callback_for_test.Get().Run(
+          std::move(original_factory));
+  return url_loader_factory_for_browser_process_.get();
 }
 
 }  // namespace content

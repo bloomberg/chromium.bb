@@ -70,8 +70,7 @@ void URLLoaderFactoryBundle::CreateLoaderAndStart(
     uint32_t options,
     const network::ResourceRequest& request,
     network::mojom::URLLoaderClientPtr client,
-    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    const Constraints& constaints) {
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   network::mojom::URLLoaderFactory* factory_ptr = GetFactoryForURL(request.url);
 
   factory_ptr->CreateLoaderAndStart(std::move(loader), routing_id, request_id,

@@ -153,7 +153,8 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, StartTest) {
       net::LOAD_NORMAL);
   fetcher.Start(
       content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
-          ->GetURLLoaderFactoryForBrowserProcess());
+          ->GetURLLoaderFactoryForBrowserProcess()
+          .get());
 
   // Blocks until test delegate is notified via a callback.
   delegate.Wait();
@@ -202,7 +203,8 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, OnURLFetchFailureTest) {
       net::LOAD_NORMAL);
   fetcher.Start(
       content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
-          ->GetURLLoaderFactoryForBrowserProcess());
+          ->GetURLLoaderFactoryForBrowserProcess()
+          .get());
 
   // Blocks until test delegate is notified via a callback.
   delegate.Wait();
@@ -221,7 +223,8 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, HandleImageFailedTest) {
       net::LOAD_NORMAL);
   fetcher.Start(
       content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
-          ->GetURLLoaderFactoryForBrowserProcess());
+          ->GetURLLoaderFactoryForBrowserProcess()
+          .get());
 
   // Blocks until test delegate is notified via a callback.
   delegate.Wait();

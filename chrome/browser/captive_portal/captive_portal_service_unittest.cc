@@ -111,7 +111,7 @@ class CaptivePortalServiceTest : public testing::Test,
     set_initial_backoff_no_portal(base::TimeDelta());
     set_initial_backoff_portal(base::TimeDelta());
 
-    set_detector(&service_->captive_portal_detector_);
+    set_detector(service_->captive_portal_detector_.get());
     SetTime(base::Time::Now());
 
     // Disable jitter, so can check exact values.

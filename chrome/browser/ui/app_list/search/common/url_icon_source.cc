@@ -69,7 +69,8 @@ void UrlIconSource::StartIconFetch() {
                                                     traffic_annotation);
   network::mojom::URLLoaderFactory* loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(browser_context_)
-          ->GetURLLoaderFactoryForBrowserProcess();
+          ->GetURLLoaderFactoryForBrowserProcess()
+          .get();
   simple_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       loader_factory, base::BindOnce(&UrlIconSource::OnSimpleLoaderComplete,
                                      base::Unretained(this)));

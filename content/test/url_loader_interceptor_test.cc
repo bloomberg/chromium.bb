@@ -136,7 +136,8 @@ IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, InterceptBrowser) {
       }));
   auto* factory = BrowserContext::GetDefaultStoragePartition(
                       shell()->web_contents()->GetBrowserContext())
-                      ->GetURLLoaderFactoryForBrowserProcess();
+                      ->GetURLLoaderFactoryForBrowserProcess()
+                      .get();
   factory->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), 0, 0, 0, request, client.CreateInterfacePtr(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));

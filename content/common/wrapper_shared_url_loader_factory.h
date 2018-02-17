@@ -46,15 +46,14 @@ class WrapperSharedURLLoaderFactoryBase : public SharedURLLoaderFactory {
       : factory_ptr_(std::move(factory_ptr_info)) {}
 
   // SharedURLLoaderFactory implementation.
-  void CreateLoaderAndStart(
-      network::mojom::URLLoaderRequest loader,
-      int32_t routing_id,
-      int32_t request_id,
-      uint32_t options,
-      const network::ResourceRequest& request,
-      network::mojom::URLLoaderClientPtr client,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      const Constraints& constraints) override {
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const network::ResourceRequest& request,
+                            network::mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override {
     if (!factory_ptr_)
       return;
     factory_ptr_->CreateLoaderAndStart(std::move(loader), routing_id,

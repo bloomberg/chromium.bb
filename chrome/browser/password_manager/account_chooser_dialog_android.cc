@@ -152,7 +152,8 @@ void AccountChooserDialogAndroid::ShowDialog() {
   network::mojom::URLLoaderFactory* loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(
           Profile::FromBrowserContext(web_contents_->GetBrowserContext()))
-          ->GetURLLoaderFactoryForBrowserProcess();
+          ->GetURLLoaderFactoryForBrowserProcess()
+          .get();
   int avatar_index = 0;
   for (const auto& form : local_credentials_forms())
     FetchAvatar(dialog_jobject_, form.get(), avatar_index++, loader_factory);

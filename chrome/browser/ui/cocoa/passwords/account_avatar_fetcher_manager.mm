@@ -54,15 +54,16 @@ void AccountAvatarFetcherBridge::UpdateAvatar(const gfx::ImageSkia& image) {
 
 @implementation AccountAvatarFetcherManager
 
-- (id)initWithLoaderFactory:(network::mojom::URLLoaderFactory*)loaderFactory {
+- (id)initWithLoaderFactory:
+    (scoped_refptr<content::SharedURLLoaderFactory>)loaderFactory {
   if ((self = [super init])) {
-    loaderFactory_ = loaderFactory;
+    loaderFactory_ = std::move(loaderFactory);
   }
   return self;
 }
 
 - (void)startRequestWithFetcher:(AccountAvatarFetcher*)fetcher {
-  fetcher->Start(loaderFactory_);
+  fetcher->Start(loaderFactory_.get());
 }
 
 - (void)fetchAvatar:(const GURL&)avatarURL forView:(CredentialItemButton*)view {

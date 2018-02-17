@@ -27,15 +27,14 @@ class SignedExchangeURLLoaderFactoryForNonNetworkService
       net::URLRequestContextGetter* url_request_context_getter);
 
   // SharedURLLoaderFactory:
-  void CreateLoaderAndStart(
-      network::mojom::URLLoaderRequest loader_request,
-      int32_t routing_id,
-      int32_t request_id,
-      uint32_t options,
-      const network::ResourceRequest& request,
-      network::mojom::URLLoaderClientPtr client,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      const Constraints& constraints) override;
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader_request,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const network::ResourceRequest& request,
+                            network::mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override;
   std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() override;
 
  private:

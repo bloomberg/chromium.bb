@@ -52,7 +52,19 @@ ChildURLLoaderFactoryBundle::~ChildURLLoaderFactoryBundle() = default;
 
 network::mojom::URLLoaderFactory* ChildURLLoaderFactoryBundle::GetFactoryForURL(
     const GURL& url) {
-  return GetFactoryForURLWithConstraits(url, kDefaultConstraints);
+  if (url.SchemeIsBlob())
+    InitDefaultBlobFactoryIfNecessary();
+
+  auto it = factories_.find(url.scheme());
+  if (it != factories_.end())
+    return it->second.get();
+
+  if (default_factory_)
+    return default_factory_.get();
+
+  InitDirectNetworkFactoryIfNecessary();
+  DCHECK(direct_network_factory_);
+  return direct_network_factory_.get();
 }
 
 void ChildURLLoaderFactoryBundle::CreateLoaderAndStart(
@@ -62,10 +74,8 @@ void ChildURLLoaderFactoryBundle::CreateLoaderAndStart(
     uint32_t options,
     const network::ResourceRequest& request,
     network::mojom::URLLoaderClientPtr client,
-    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    const Constraints& constaints) {
-  network::mojom::URLLoaderFactory* factory_ptr =
-      GetFactoryForURLWithConstraits(request.url, constaints);
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
+  network::mojom::URLLoaderFactory* factory_ptr = GetFactoryForURL(request.url);
 
   factory_ptr->CreateLoaderAndStart(std::move(loader), routing_id, request_id,
                                     options, request, std::move(client),
@@ -131,25 +141,6 @@ void ChildURLLoaderFactoryBundle::InitDirectNetworkFactoryIfNecessary() {
   } else {
     direct_network_factory_getter_.Reset();
   }
-}
-
-network::mojom::URLLoaderFactory*
-ChildURLLoaderFactoryBundle::GetFactoryForURLWithConstraits(
-    const GURL& url,
-    const Constraints& constraints) {
-  if (url.SchemeIsBlob())
-    InitDefaultBlobFactoryIfNecessary();
-
-  auto it = factories_.find(url.scheme());
-  if (it != factories_.end())
-    return it->second.get();
-
-  if (!constraints.bypass_custom_network_loader && default_factory_)
-    return default_factory_.get();
-
-  InitDirectNetworkFactoryIfNecessary();
-  DCHECK(direct_network_factory_);
-  return direct_network_factory_.get();
 }
 
 }  // namespace content
