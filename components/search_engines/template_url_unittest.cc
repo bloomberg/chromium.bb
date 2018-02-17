@@ -522,24 +522,71 @@ TEST_F(TemplateURLTest, ReplaceArbitrarySearchTerms) {
     const std::string url;
     const std::string expected_result;
   } test_data[] = {
-    { "BIG5",  base::WideToUTF16(L"\x60BD"),
-      "http://foo/?{searchTerms}{inputEncoding}",
-      "http://foo/?%B1~BIG5" },
-    { "UTF-8", ASCIIToUTF16("blah"),
-      "http://foo/?{searchTerms}{inputEncoding}",
-      "http://foo/?blahUTF-8" },
-    { "Shift_JIS", base::UTF8ToUTF16("\xe3\x81\x82"),
-      "http://foo/{searchTerms}/bar",
-      "http://foo/%82%A0/bar"},
-    { "Shift_JIS", base::UTF8ToUTF16("\xe3\x81\x82 \xe3\x81\x84"),
-      "http://foo/{searchTerms}/bar",
-      "http://foo/%82%A0%20%82%A2/bar"},
+      {"BIG5", base::WideToUTF16(L"\x60BD"),
+       "http://foo/?{searchTerms}{inputEncoding}", "http://foo/?%B1~BIG5"},
+      {"UTF-8", ASCIIToUTF16("blah"),
+       "http://foo/?{searchTerms}{inputEncoding}", "http://foo/?blahUTF-8"},
+      {"Shift_JIS", base::UTF8ToUTF16("\xe3\x81\x82"),
+       "http://foo/{searchTerms}/bar", "http://foo/%82%A0/bar"},
+      {"Shift_JIS", base::UTF8ToUTF16("\xe3\x81\x82 \xe3\x81\x84"),
+       "http://foo/{searchTerms}/bar", "http://foo/%82%A0%20%82%A2/bar"},
   };
   TemplateURLData data;
   for (size_t i = 0; i < arraysize(test_data); ++i) {
     data.SetURL(test_data[i].url);
     data.input_encodings.clear();
     data.input_encodings.push_back(test_data[i].encoding);
+    TemplateURL url(data);
+    EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
+    ASSERT_TRUE(url.url_ref().SupportsReplacement(search_terms_data_));
+    GURL result(url.url_ref().ReplaceSearchTerms(
+        TemplateURLRef::SearchTermsArgs(test_data[i].search_term),
+        search_terms_data_));
+    ASSERT_TRUE(result.is_valid());
+    EXPECT_EQ(test_data[i].expected_result, result.spec());
+  }
+}
+
+// Test that encoding with several optional codepages works as intended.
+// Codepages are tried in order, fallback is UTF-8.
+TEST_F(TemplateURLTest, ReplaceSearchTermsMultipleEncodings) {
+  struct TestData {
+    const std::vector<std::string> encodings;
+    const base::string16 search_term;
+    const std::string url;
+    const std::string expected_result;
+  } test_data[] = {
+      // First and third encodings are valid. First is used.
+      {{"windows-1251", "cp-866", "UTF-8"},
+       base::UTF8ToUTF16("\xD1\x8F"),
+       "http://foo/?{searchTerms}{inputEncoding}",
+       "http://foo/?%FFwindows-1251"},
+      // Second and third encodings are valid, second is used.
+      {{"cp-866", "GB2312", "UTF-8"},
+       base::UTF8ToUTF16("\xE7\x8B\x97"),
+       "http://foo/?{searchTerms}{inputEncoding}",
+       "http://foo/?%B9%B7GB2312"},
+      // Second and third encodings are valid in another order, second is used.
+      {{"cp-866", "UTF-8", "GB2312"},
+       base::UTF8ToUTF16("\xE7\x8B\x97"),
+       "http://foo/?{searchTerms}{inputEncoding}",
+       "http://foo/?%E7%8B%97UTF-8"},
+      // Both encodings are invalid, fallback to UTF-8.
+      {{"cp-866", "windows-1251"},
+       base::UTF8ToUTF16("\xE7\x8B\x97"),
+       "http://foo/?{searchTerms}{inputEncoding}",
+       "http://foo/?%E7%8B%97UTF-8"},
+      // No encodings are given, fallback to UTF-8.
+      {{},
+       base::UTF8ToUTF16("\xE7\x8B\x97"),
+       "http://foo/?{searchTerms}{inputEncoding}",
+       "http://foo/?%E7%8B%97UTF-8"},
+  };
+
+  TemplateURLData data;
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
+    data.SetURL(test_data[i].url);
+    data.input_encodings = test_data[i].encodings;
     TemplateURL url(data);
     EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
     ASSERT_TRUE(url.url_ref().SupportsReplacement(search_terms_data_));

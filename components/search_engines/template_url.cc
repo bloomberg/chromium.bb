@@ -71,19 +71,23 @@ const char kOutputEncodingType[] = "UTF-8";
 
 // Attempts to encode |terms| and |original_query| in |encoding| and escape
 // them.  |terms| may be escaped as path or query depending on |is_in_query|;
-// |original_query| is always escaped as query.  Returns whether the encoding
-// process succeeded.
+// |original_query| is always escaped as query. If |force_encode| is true
+// encoding ignores errors and function always returns true. Otherwise function
+// returns whether the encoding process succeeded.
 bool TryEncoding(const base::string16& terms,
                  const base::string16& original_query,
                  const char* encoding,
                  bool is_in_query,
+                 bool force_encode,
                  base::string16* escaped_terms,
                  base::string16* escaped_original_query) {
   DCHECK(escaped_terms);
   DCHECK(escaped_original_query);
+  base::OnStringConversionError::Type error_handling =
+      force_encode ? base::OnStringConversionError::SKIP
+                   : base::OnStringConversionError::FAIL;
   std::string encoded_terms;
-  if (!base::UTF16ToCodepage(terms, encoding,
-      base::OnStringConversionError::SKIP, &encoded_terms))
+  if (!base::UTF16ToCodepage(terms, encoding, error_handling, &encoded_terms))
     return false;
   *escaped_terms = base::UTF8ToUTF16(is_in_query ?
       net::EscapeQueryParamValue(encoded_terms, true) :
@@ -91,8 +95,8 @@ bool TryEncoding(const base::string16& terms,
   if (original_query.empty())
     return true;
   std::string encoded_original_query;
-  if (!base::UTF16ToCodepage(original_query, encoding,
-      base::OnStringConversionError::SKIP, &encoded_original_query))
+  if (!base::UTF16ToCodepage(original_query, encoding, error_handling,
+                             &encoded_original_query))
     return false;
   *escaped_original_query = base::UTF8ToUTF16(
       net::EscapeQueryParamValue(encoded_original_query, true));
@@ -1425,11 +1429,11 @@ void TemplateURL::EncodeSearchTerms(
   std::vector<std::string> encodings(input_encodings());
   if (std::find(encodings.begin(), encodings.end(), "UTF-8") == encodings.end())
     encodings.push_back("UTF-8");
-  for (std::vector<std::string>::const_iterator i(encodings.begin());
-       i != encodings.end(); ++i) {
+  for (auto i = encodings.begin(); i != encodings.end(); ++i) {
     if (TryEncoding(search_terms_args.search_terms,
-                    search_terms_args.original_query, i->c_str(),
-                    is_in_query, encoded_terms, encoded_original_query)) {
+                    search_terms_args.original_query, i->c_str(), is_in_query,
+                    std::next(i) == encodings.end(), encoded_terms,
+                    encoded_original_query)) {
       *input_encoding = *i;
       return;
     }
