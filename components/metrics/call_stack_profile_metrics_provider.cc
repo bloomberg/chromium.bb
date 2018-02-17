@@ -558,6 +558,12 @@ CallStackProfileMetricsProvider::CallStackProfileMetricsProvider() {
 CallStackProfileMetricsProvider::~CallStackProfileMetricsProvider() {
 }
 
+StackSamplingProfiler::CompletedCallback
+CallStackProfileMetricsProvider::GetProfilerCallbackForBrowserProcess(
+    CallStackProfileParams* params) {
+  return internal::GetProfilerCallback(params);
+}
+
 StackSamplingProfiler::CompletedCallback CallStackProfileMetricsProvider::
     GetProfilerCallbackForBrowserProcessUIThreadStartup() {
   return internal::GetProfilerCallback(&g_ui_thread_sampling_params);
