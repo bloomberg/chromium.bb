@@ -6,9 +6,9 @@
 
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/platform/api/quic_flags.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/spdy/core/spdy_protocol.h"
 
-using std::string;
 
 namespace net {
 
@@ -41,7 +41,7 @@ void QuicHeaderList::OnHeader(QuicStringPiece name, QuicStringPiece value) {
     current_header_list_size_ += name.size();
     current_header_list_size_ += value.size();
     current_header_list_size_ += kPerHeaderOverhead;
-    header_list_.emplace_back(string(name), string(value));
+    header_list_.emplace_back(QuicString(name), QuicString(value));
   }
 }
 
@@ -61,8 +61,8 @@ void QuicHeaderList::Clear() {
   compressed_header_bytes_ = 0;
 }
 
-string QuicHeaderList::DebugString() const {
-  string s = "{ ";
+QuicString QuicHeaderList::DebugString() const {
+  QuicString s = "{ ";
   for (const auto& p : *this) {
     s.append(p.first + "=" + p.second + ", ");
   }

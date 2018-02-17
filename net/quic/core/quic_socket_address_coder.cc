@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 #include "net/quic/core/quic_socket_address_coder.h"
-
-using std::string;
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -24,8 +23,8 @@ QuicSocketAddressCoder::QuicSocketAddressCoder(const QuicSocketAddress& address)
 
 QuicSocketAddressCoder::~QuicSocketAddressCoder() {}
 
-string QuicSocketAddressCoder::Encode() const {
-  string serialized;
+QuicString QuicSocketAddressCoder::Encode() const {
+  QuicString serialized;
   uint16_t address_family;
   switch (address_.host().address_family()) {
     case IpAddressFamily::IP_V4:

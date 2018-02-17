@@ -20,6 +20,7 @@
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_map_util.h"
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -983,7 +984,7 @@ QuicPacketCount QuicSentPacketManager::GetSlowStartThresholdInTcpMss() const {
   return send_algorithm_->GetSlowStartThreshold() / kDefaultTCPMSS;
 }
 
-std::string QuicSentPacketManager::GetDebugState() const {
+QuicString QuicSentPacketManager::GetDebugState() const {
   return send_algorithm_->GetDebugState();
 }
 

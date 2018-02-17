@@ -9,10 +9,9 @@
 #include "net/quic/core/crypto/quic_crypto_server_config.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "third_party/boringssl/src/include/openssl/pool.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
-
-using std::string;
 
 namespace net {
 
@@ -20,7 +19,8 @@ TlsServerHandshaker::SignatureCallback::SignatureCallback(
     TlsServerHandshaker* handshaker)
     : handshaker_(handshaker) {}
 
-void TlsServerHandshaker::SignatureCallback::Run(bool ok, string signature) {
+void TlsServerHandshaker::SignatureCallback::Run(bool ok,
+                                                 QuicString signature) {
   if (handshaker_ == nullptr) {
     return;
   }
@@ -78,7 +78,8 @@ void TlsServerHandshaker::CancelOutstandingCallbacks() {
   }
 }
 
-bool TlsServerHandshaker::GetBase64SHA256ClientChannelID(string* output) const {
+bool TlsServerHandshaker::GetBase64SHA256ClientChannelID(
+    QuicString* output) const {
   // Channel ID is not supported when TLS is used in QUIC.
   return false;
 }

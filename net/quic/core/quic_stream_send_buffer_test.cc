@@ -8,11 +8,11 @@
 #include "net/quic/core/quic_simple_buffer_allocator.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/quic_stream_send_buffer_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
-using std::string;
 
 namespace net {
 namespace test {
@@ -30,8 +30,8 @@ class QuicStreamSendBufferTest : public QuicTest {
     EXPECT_EQ(0u, send_buffer_.size());
     EXPECT_EQ(0u, send_buffer_.stream_bytes_written());
     EXPECT_EQ(0u, send_buffer_.stream_bytes_outstanding());
-    string data1(1536, 'a');
-    string data2 = string(256, 'b') + string(256, 'c');
+    QuicString data1(1536, 'a');
+    QuicString data2 = QuicString(256, 'b') + QuicString(256, 'c');
     struct iovec iov[2];
     iov[0] = MakeIovec(QuicStringPiece(data1));
     iov[1] = MakeIovec(QuicStringPiece(data2));
@@ -77,10 +77,11 @@ class QuicStreamSendBufferTest : public QuicTest {
 TEST_F(QuicStreamSendBufferTest, CopyDataToBuffer) {
   char buf[4000];
   QuicDataWriter writer(4000, buf, HOST_BYTE_ORDER);
-  string copy1(1024, 'a');
-  string copy2 = string(512, 'a') + string(256, 'b') + string(256, 'c');
-  string copy3(1024, 'c');
-  string copy4(768, 'd');
+  QuicString copy1(1024, 'a');
+  QuicString copy2 =
+      QuicString(512, 'a') + QuicString(256, 'b') + QuicString(256, 'c');
+  QuicString copy3(1024, 'c');
+  QuicString copy4(768, 'd');
 
   ASSERT_TRUE(send_buffer_.WriteStreamData(0, 1024, &writer));
   EXPECT_EQ(copy1, QuicStringPiece(buf, 1024));
@@ -93,11 +94,12 @@ TEST_F(QuicStreamSendBufferTest, CopyDataToBuffer) {
 
   // Test data piece across boundries.
   QuicDataWriter writer2(4000, buf, HOST_BYTE_ORDER);
-  string copy5 = string(536, 'a') + string(256, 'b') + string(232, 'c');
+  QuicString copy5 =
+      QuicString(536, 'a') + QuicString(256, 'b') + QuicString(232, 'c');
   ASSERT_TRUE(send_buffer_.WriteStreamData(1000, 1024, &writer2));
   EXPECT_EQ(copy5, QuicStringPiece(buf, 1024));
   ASSERT_TRUE(send_buffer_.WriteStreamData(2500, 1024, &writer2));
-  string copy6 = string(572, 'c') + string(452, 'd');
+  QuicString copy6 = QuicString(572, 'c') + QuicString(452, 'd');
   EXPECT_EQ(copy6, QuicStringPiece(buf + 1024, 1024));
 
   // Invalid data copy.

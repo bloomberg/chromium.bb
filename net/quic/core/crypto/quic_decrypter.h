@@ -11,6 +11,7 @@
 
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 
 namespace net {
@@ -126,8 +127,8 @@ class QUIC_EXPORT_PRIVATE QuicDecrypter {
                                       const DiversificationNonce& nonce,
                                       size_t key_size,
                                       size_t nonce_prefix_size,
-                                      std::string* out_key,
-                                      std::string* out_nonce_prefix);
+                                      QuicString* out_key,
+                                      QuicString* out_nonce_prefix);
 };
 
 }  // namespace net

@@ -12,6 +12,7 @@
 #include "net/quic/core/quic_spdy_session.h"
 #include "net/quic/platform/api/quic_containers.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -26,7 +27,7 @@ class QuicSpdyClientStream;
 // session affinity for requests corresponding to cross-origin push
 // promised streams.
 using QuicPromisedByUrlMap =
-    QuicUnorderedMap<std::string, QuicClientPromisedInfo*>;
+    QuicUnorderedMap<QuicString, QuicClientPromisedInfo*>;
 
 // The maximum time a promises stream can be reserved without being
 // claimed by a client request.
@@ -77,10 +78,10 @@ class QUIC_EXPORT_PRIVATE QuicSpdyClientSessionBase
   // list in the certificate should contain a matching DNS name, or IP
   // address.  |hostname| is derived from the ":authority" header field of
   // the PUSH_PROMISE frame, port if present there will be dropped.
-  virtual bool IsAuthorized(const std::string& hostname) = 0;
+  virtual bool IsAuthorized(const QuicString& hostname) = 0;
 
   // Session retains ownership.
-  QuicClientPromisedInfo* GetPromisedByUrl(const std::string& url);
+  QuicClientPromisedInfo* GetPromisedByUrl(const QuicString& url);
   // Session retains ownership.
   QuicClientPromisedInfo* GetPromisedById(const QuicStreamId id);
 

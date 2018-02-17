@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_spdy_stream.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/spdy/core/spdy_framer.h"
 
@@ -49,7 +50,7 @@ class QuicSpdyClientStream : public QuicSpdyStream {
   size_t SendRequest(SpdyHeaderBlock headers, QuicStringPiece body, bool fin);
 
   // Returns the response data.
-  const std::string& data() { return data_; }
+  const QuicString& data() { return data_; }
 
   // Returns whatever headers have been received for this stream.
   const SpdyHeaderBlock& response_headers() { return response_headers_; }
@@ -73,7 +74,7 @@ class QuicSpdyClientStream : public QuicSpdyStream {
   // The parsed content-length, or -1 if none is specified.
   int64_t content_length_;
   int response_code_;
-  std::string data_;
+  QuicString data_;
   size_t header_bytes_read_;
   size_t header_bytes_written_;
 

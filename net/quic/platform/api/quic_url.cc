@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 #include "net/quic/platform/api/quic_url.h"
-
-using std::string;
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -19,27 +18,27 @@ bool QuicUrl::IsValid() const {
   return impl_.IsValid();
 }
 
-string QuicUrl::ToString() const {
+QuicString QuicUrl::ToString() const {
   return impl_.ToStringIfValid();
 }
 
-string QuicUrl::HostPort() const {
+QuicString QuicUrl::HostPort() const {
   return impl_.HostPort();
 }
 
-string QuicUrl::PathParamsQuery() const {
+QuicString QuicUrl::PathParamsQuery() const {
   return impl_.PathParamsQuery();
 }
 
-string QuicUrl::host() const {
+QuicString QuicUrl::host() const {
   return impl_.host();
 }
 
-string QuicUrl::path() const {
+QuicString QuicUrl::path() const {
   return impl_.path();
 }
 
-string QuicUrl::scheme() const {
+QuicString QuicUrl::scheme() const {
   return impl_.scheme();
 }
 

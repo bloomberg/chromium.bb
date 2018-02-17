@@ -6,9 +6,8 @@
 
 #include "net/quic/core/crypto/quic_encrypter.h"
 #include "net/quic/core/quic_session.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
-
-using std::string;
 
 namespace net {
 
@@ -20,7 +19,7 @@ TlsClientHandshaker::ProofVerifierCallbackImpl::~ProofVerifierCallbackImpl() {}
 
 void TlsClientHandshaker::ProofVerifierCallbackImpl::Run(
     bool ok,
-    const string& error_details,
+    const QuicString& error_details,
     std::unique_ptr<ProofVerifyDetails>* details) {
   if (parent_ == nullptr) {
     return;
@@ -100,7 +99,7 @@ bool TlsClientHandshaker::WasChannelIDSourceCallbackRun() const {
   return false;
 }
 
-string TlsClientHandshaker::chlo_hash() const {
+QuicString TlsClientHandshaker::chlo_hash() const {
   return "";
 }
 
@@ -225,11 +224,11 @@ enum ssl_verify_result_t TlsClientHandshaker::VerifyCert(uint8_t* out_alert) {
     return ssl_verify_invalid;
   }
   // TODO(nharper): Pass the CRYPTO_BUFFERs into the QUIC stack to avoid copies.
-  std::vector<string> certs;
+  std::vector<QuicString> certs;
   for (CRYPTO_BUFFER* cert : cert_chain) {
     certs.push_back(
-        string(reinterpret_cast<const char*>(CRYPTO_BUFFER_data(cert)),
-               CRYPTO_BUFFER_len(cert)));
+        QuicString(reinterpret_cast<const char*>(CRYPTO_BUFFER_data(cert)),
+                   CRYPTO_BUFFER_len(cert)));
   }
 
   ProofVerifierCallbackImpl* proof_verify_callback =

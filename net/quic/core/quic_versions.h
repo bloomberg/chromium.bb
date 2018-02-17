@@ -11,6 +11,7 @@
 #include "net/quic/core/quic_tag.h"
 #include "net/quic/core/quic_types.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -174,9 +175,9 @@ CreateQuicVersionLabel(ParsedQuicVersion parsed_version);
 QUIC_EXPORT_PRIVATE QuicVersionLabel
 QuicVersionToQuicVersionLabel(QuicTransportVersion transport_version);
 
-// Helper function which translates from a QuicVersionLabel to a std::string.
-QUIC_EXPORT_PRIVATE std::string QuicVersionLabelToString(
-    QuicVersionLabel version_label);
+// Helper function which translates from a QuicVersionLabel to a string.
+QUIC_EXPORT_PRIVATE QuicString
+QuicVersionLabelToString(QuicVersionLabel version_label);
 
 // Returns appropriate QuicTransportVersion from a QuicVersionLabel.
 // Returns QUIC_VERSION_UNSUPPORTED if |version_label| cannot be understood.
@@ -190,18 +191,18 @@ QuicVersionLabelToHandshakeProtocol(QuicVersionLabel version_label);
 
 // Helper function which translates from a QuicTransportVersion to a string.
 // Returns strings corresponding to enum names (e.g. QUIC_VERSION_6).
-QUIC_EXPORT_PRIVATE std::string QuicVersionToString(
-    QuicTransportVersion transport_version);
+QUIC_EXPORT_PRIVATE QuicString
+QuicVersionToString(QuicTransportVersion transport_version);
 
-// Helper function which translates from a ParsedQuicVersion to a std::string.
-// Returns std::strings corresponding to the on-the-wire tag.
-QUIC_EXPORT_PRIVATE std::string ParsedQuicVersionToString(
-    ParsedQuicVersion version);
+// Helper function which translates from a ParsedQuicVersion to a string.
+// Returns strings corresponding to the on-the-wire tag.
+QUIC_EXPORT_PRIVATE QuicString
+ParsedQuicVersionToString(ParsedQuicVersion version);
 
 // Returns comma separated list of string representations of QuicVersion enum
 // values in the supplied |versions| vector.
-QUIC_EXPORT_PRIVATE std::string QuicTransportVersionVectorToString(
-    const QuicTransportVersionVector& versions);
+QUIC_EXPORT_PRIVATE QuicString
+QuicTransportVersionVectorToString(const QuicTransportVersionVector& versions);
 
 // Returns comma separated list of std::string representations of
 // ParsedQuicVersion values in the supplied |versions| vector.

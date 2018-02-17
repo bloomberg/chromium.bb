@@ -12,17 +12,18 @@
 #include "net/quic/core/spdy_utils.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "net/spdy/core/spdy_protocol.h"
 
 using base::IntToString;
-using std::string;
 
 namespace net {
-#define ENDPOINT                                                               \
-  (session()->perspective() == Perspective::IS_SERVER ? "Server: " : "Client:" \
-                                                                     " ")
+#define ENDPOINT                                                   \
+  (session()->perspective() == Perspective::IS_SERVER ? "Server: " \
+                                                      : "Client:"  \
+                                                        " ")
 
 QuicSpdyStream::QuicSpdyStream(QuicStreamId id, QuicSpdySession* spdy_session)
     : QuicStream(id, spdy_session),
@@ -60,7 +61,7 @@ size_t QuicSpdyStream::WriteHeaders(
 }
 
 void QuicSpdyStream::WriteOrBufferBody(
-    const string& data,
+    const QuicString& data,
     bool fin,
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
   WriteOrBufferData(data, fin, std::move(ack_listener));

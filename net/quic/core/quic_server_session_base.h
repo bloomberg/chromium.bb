@@ -19,6 +19,7 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_spdy_session.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -44,7 +45,7 @@ class QUIC_EXPORT_PRIVATE QuicServerSessionBase : public QuicSpdySession {
 
   // Override the base class to cancel any ongoing asychronous crypto.
   void OnConnectionClosed(QuicErrorCode error,
-                          const std::string& error_details,
+                          const QuicString& error_details,
                           ConnectionCloseSource source) override;
 
   // Sends a server config update to the client, containing new bandwidth
@@ -63,7 +64,7 @@ class QUIC_EXPORT_PRIVATE QuicServerSessionBase : public QuicSpdySession {
   // client.
   void OnConfigNegotiated() override;
 
-  void set_serving_region(const std::string& serving_region) {
+  void set_serving_region(const QuicString& serving_region) {
     serving_region_ = serving_region;
   }
 
@@ -116,7 +117,7 @@ class QUIC_EXPORT_PRIVATE QuicServerSessionBase : public QuicSpdySession {
 
   // Text describing server location. Sent to the client as part of the bandwith
   // estimate in the source-address token. Optional, can be left empty.
-  std::string serving_region_;
+  QuicString serving_region_;
 
   // Time at which we send the last SCUP to the client.
   QuicTime last_scup_time_;

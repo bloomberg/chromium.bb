@@ -8,11 +8,11 @@
 
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_arraysize.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
-using std::string;
 
 namespace {
 
@@ -182,12 +182,12 @@ TEST_F(Aes128GcmEncrypterTest, Encrypt) {
     const TestGroupInfo& test_info = test_group_info[i];
     for (size_t j = 0; test_vectors[j].key != nullptr; j++) {
       // Decode the test vector.
-      string key = QuicTextUtils::HexDecode(test_vectors[j].key);
-      string iv = QuicTextUtils::HexDecode(test_vectors[j].iv);
-      string pt = QuicTextUtils::HexDecode(test_vectors[j].pt);
-      string aad = QuicTextUtils::HexDecode(test_vectors[j].aad);
-      string ct = QuicTextUtils::HexDecode(test_vectors[j].ct);
-      string tag = QuicTextUtils::HexDecode(test_vectors[j].tag);
+      QuicString key = QuicTextUtils::HexDecode(test_vectors[j].key);
+      QuicString iv = QuicTextUtils::HexDecode(test_vectors[j].iv);
+      QuicString pt = QuicTextUtils::HexDecode(test_vectors[j].pt);
+      QuicString aad = QuicTextUtils::HexDecode(test_vectors[j].aad);
+      QuicString ct = QuicTextUtils::HexDecode(test_vectors[j].ct);
+      QuicString tag = QuicTextUtils::HexDecode(test_vectors[j].tag);
 
       // The test vector's lengths should look sane. Note that the lengths
       // in |test_info| are in bits.
@@ -200,12 +200,12 @@ TEST_F(Aes128GcmEncrypterTest, Encrypt) {
 
       Aes128GcmEncrypter encrypter;
       ASSERT_TRUE(encrypter.SetKey(key));
-      std::unique_ptr<QuicData> encrypted(EncryptWithNonce(
-          &encrypter, iv,
-          // This deliberately tests that the encrypter can handle an AAD that
-          // is set to nullptr, as opposed to a zero-length, non-nullptr
-          // pointer.
-          aad.length() ? aad : QuicStringPiece(), pt));
+      std::unique_ptr<QuicData> encrypted(
+          EncryptWithNonce(&encrypter, iv,
+                           // This deliberately tests that the encrypter can
+                           // handle an AAD that is set to nullptr, as opposed
+                           // to a zero-length, non-nullptr pointer.
+                           aad.length() ? aad : QuicStringPiece(), pt));
       ASSERT_TRUE(encrypted.get());
 
       ASSERT_EQ(ct.length() + tag.length(), encrypted->length());
@@ -219,12 +219,13 @@ TEST_F(Aes128GcmEncrypterTest, Encrypt) {
 }
 
 TEST_F(Aes128GcmEncrypterTest, EncryptPacket) {
-  string key = QuicTextUtils::HexDecode("d95a145250826c25a77b6a84fd4d34fc");
-  string iv = QuicTextUtils::HexDecode("50c4431ebb18283448e276e2");
+  QuicString key = QuicTextUtils::HexDecode("d95a145250826c25a77b6a84fd4d34fc");
+  QuicString iv = QuicTextUtils::HexDecode("50c4431ebb18283448e276e2");
   QuicPacketNumber packet_num = 0x13278f44;
-  string aad = QuicTextUtils::HexDecode("875d49f64a70c9cbe713278f44ff000005");
-  string pt = QuicTextUtils::HexDecode("aa0003a250bd000000000001");
-  string ct = QuicTextUtils::HexDecode(
+  QuicString aad =
+      QuicTextUtils::HexDecode("875d49f64a70c9cbe713278f44ff000005");
+  QuicString pt = QuicTextUtils::HexDecode("aa0003a250bd000000000001");
+  QuicString ct = QuicTextUtils::HexDecode(
       "7dd4708b989ee7d38a013e3656e9b37beefd05808fe1ab41e3b4f2c0");
 
   std::vector<char> out(ct.size());

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -22,7 +23,7 @@ namespace net {
 // just a mnemonic for the value 0x504d5845 (little-endian version of the ASCII
 // std::string E X M P).
 typedef uint32_t QuicTag;
-typedef std::map<QuicTag, std::string> QuicTagValueMap;
+typedef std::map<QuicTag, QuicString> QuicTagValueMap;
 typedef std::vector<QuicTag> QuicTagVector;
 
 // MakeQuicTag returns a value given the four bytes. For example:
@@ -46,7 +47,7 @@ QUIC_EXPORT_PRIVATE bool FindMutualQuicTag(const QuicTagVector& our_tags,
 // A utility function that converts a tag to a string. It will try to maintain
 // the human friendly name if possible (i.e. kABCD -> "ABCD"), or will just
 // treat it as a number if not.
-QUIC_EXPORT_PRIVATE std::string QuicTagToString(QuicTag tag);
+QUIC_EXPORT_PRIVATE QuicString QuicTagToString(QuicTag tag);
 
 }  // namespace net
 

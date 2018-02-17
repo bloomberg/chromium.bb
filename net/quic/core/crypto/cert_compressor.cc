@@ -9,9 +9,8 @@
 
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "third_party/zlib/zlib.h"
-
-using std::string;
 
 namespace net {
 
@@ -175,7 +174,7 @@ struct CertEntry {
 // efficiently represent |certs| to a peer who has the common sets identified
 // by |client_common_set_hashes| and who has cached the certificates with the
 // 64-bit, FNV-1a hashes in |client_cached_cert_hashes|.
-std::vector<CertEntry> MatchCerts(const std::vector<string>& certs,
+std::vector<CertEntry> MatchCerts(const std::vector<QuicString>& certs,
                                   QuicStringPiece client_common_set_hashes,
                                   QuicStringPiece client_cached_cert_hashes,
                                   const CommonCertSets* common_sets) {
@@ -186,8 +185,8 @@ std::vector<CertEntry> MatchCerts(const std::vector<string>& certs,
       client_cached_cert_hashes.size() % sizeof(uint64_t) == 0 &&
       !client_cached_cert_hashes.empty();
 
-  for (std::vector<string>::const_iterator i = certs.begin(); i != certs.end();
-       ++i) {
+  for (std::vector<QuicString>::const_iterator i = certs.begin();
+       i != certs.end(); ++i) {
     CertEntry entry;
 
     if (cached_valid) {
@@ -216,9 +215,8 @@ std::vector<CertEntry> MatchCerts(const std::vector<string>& certs,
       }
     }
 
-    if (common_sets &&
-        common_sets->MatchCert(*i, client_common_set_hashes, &entry.set_hash,
-                               &entry.index)) {
+    if (common_sets && common_sets->MatchCert(*i, client_common_set_hashes,
+                                              &entry.set_hash, &entry.index)) {
       entry.type = CertEntry::COMMON;
       entries.push_back(entry);
       continue;
@@ -286,9 +284,9 @@ void SerializeCertEntries(uint8_t* out, const std::vector<CertEntry>& entries) {
 // dictionary to use in order to decompress a zlib block following |entries|.
 // |certs| is one-to-one with |entries| and contains the certificates for those
 // entries that are CACHED or COMMON.
-string ZlibDictForEntries(const std::vector<CertEntry>& entries,
-                          const std::vector<string>& certs) {
-  string zlib_dict;
+QuicString ZlibDictForEntries(const std::vector<CertEntry>& entries,
+                              const std::vector<QuicString>& certs) {
+  QuicString zlib_dict;
 
   // The dictionary starts with the common and cached certs in reverse order.
   size_t zlib_dict_size = 0;
@@ -309,8 +307,8 @@ string ZlibDictForEntries(const std::vector<CertEntry>& entries,
     }
   }
 
-  zlib_dict += string(reinterpret_cast<const char*>(kCommonCertSubstrings),
-                      sizeof(kCommonCertSubstrings));
+  zlib_dict += QuicString(reinterpret_cast<const char*>(kCommonCertSubstrings),
+                          sizeof(kCommonCertSubstrings));
 
   DCHECK_EQ(zlib_dict.size(), zlib_dict_size);
 
@@ -318,12 +316,12 @@ string ZlibDictForEntries(const std::vector<CertEntry>& entries,
 }
 
 // HashCerts returns the FNV-1a hashes of |certs|.
-std::vector<uint64_t> HashCerts(const std::vector<string>& certs) {
+std::vector<uint64_t> HashCerts(const std::vector<QuicString>& certs) {
   std::vector<uint64_t> ret;
   ret.reserve(certs.size());
 
-  for (std::vector<string>::const_iterator i = certs.begin(); i != certs.end();
-       ++i) {
+  for (std::vector<QuicString>::const_iterator i = certs.begin();
+       i != certs.end(); ++i) {
     ret.push_back(QuicUtils::FNV1a_64_Hash(*i));
   }
 
@@ -335,10 +333,10 @@ std::vector<uint64_t> HashCerts(const std::vector<string>& certs) {
 // resolved using |cached_certs| and |common_sets| and written to |out_certs|.
 // |in_out| is updated to contain the trailing data.
 bool ParseEntries(QuicStringPiece* in_out,
-                  const std::vector<string>& cached_certs,
+                  const std::vector<QuicString>& cached_certs,
                   const CommonCertSets* common_sets,
                   std::vector<CertEntry>* out_entries,
-                  std::vector<string>* out_certs) {
+                  std::vector<QuicString>* out_certs) {
   QuicStringPiece in = *in_out;
   std::vector<uint64_t> cached_hashes;
 
@@ -361,7 +359,7 @@ bool ParseEntries(QuicStringPiece* in_out,
 
     switch (entry.type) {
       case CertEntry::COMPRESSED:
-        out_certs->push_back(string());
+        out_certs->push_back(QuicString());
         break;
       case CertEntry::CACHED: {
         if (in.size() < sizeof(uint64_t)) {
@@ -454,10 +452,11 @@ class ScopedZLib {
 }  // anonymous namespace
 
 // static
-string CertCompressor::CompressChain(const std::vector<string>& certs,
-                                     QuicStringPiece client_common_set_hashes,
-                                     QuicStringPiece client_cached_cert_hashes,
-                                     const CommonCertSets* common_sets) {
+QuicString CertCompressor::CompressChain(
+    const std::vector<QuicString>& certs,
+    QuicStringPiece client_common_set_hashes,
+    QuicStringPiece client_cached_cert_hashes,
+    const CommonCertSets* common_sets) {
   const std::vector<CertEntry> entries = MatchCerts(
       certs, client_common_set_hashes, client_cached_cert_hashes, common_sets);
   DCHECK_EQ(entries.size(), certs.size());
@@ -482,7 +481,7 @@ string CertCompressor::CompressChain(const std::vector<string>& certs,
     }
     scoped_z.reset(&z);
 
-    string zlib_dict = ZlibDictForEntries(entries, certs);
+    QuicString zlib_dict = ZlibDictForEntries(entries, certs);
 
     rv = deflateSetDictionary(
         &z, reinterpret_cast<const uint8_t*>(&zlib_dict[0]), zlib_dict.size());
@@ -496,7 +495,7 @@ string CertCompressor::CompressChain(const std::vector<string>& certs,
 
   const size_t entries_size = CertEntriesSize(entries);
 
-  string result;
+  QuicString result;
   result.resize(entries_size + (uncompressed_size > 0 ? 4 : 0) +
                 compressed_size);
 
@@ -555,10 +554,11 @@ string CertCompressor::CompressChain(const std::vector<string>& certs,
 }
 
 // static
-bool CertCompressor::DecompressChain(QuicStringPiece in,
-                                     const std::vector<string>& cached_certs,
-                                     const CommonCertSets* common_sets,
-                                     std::vector<string>* out_certs) {
+bool CertCompressor::DecompressChain(
+    QuicStringPiece in,
+    const std::vector<QuicString>& cached_certs,
+    const CommonCertSets* common_sets,
+    std::vector<QuicString>* out_certs) {
   std::vector<CertEntry> entries;
   if (!ParseEntries(&in, cached_certs, common_sets, &entries, out_certs)) {
     return false;
@@ -599,7 +599,7 @@ bool CertCompressor::DecompressChain(QuicStringPiece in,
 
     int rv = inflate(&z, Z_FINISH);
     if (rv == Z_NEED_DICT) {
-      string zlib_dict = ZlibDictForEntries(entries, *out_certs);
+      QuicString zlib_dict = ZlibDictForEntries(entries, *out_certs);
       const uint8_t* dict = reinterpret_cast<const uint8_t*>(zlib_dict.data());
       if (Z_OK != inflateSetDictionary(&z, dict, zlib_dict.size())) {
         return false;

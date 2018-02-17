@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/platform/impl/quic_url_utils_impl.h"
 
@@ -15,7 +16,7 @@ namespace net {
 class QUIC_EXPORT_PRIVATE QuicUrlUtils {
  public:
   // Returns hostname, or empty std::string if missing.
-  static std::string HostName(QuicStringPiece url);
+  static QuicString HostName(QuicStringPiece url);
 
   // Returns false if any of these conditions occur: (1) Host name too long; (2)
   // Invalid characters in host name, path or params; (3) Invalid port number
@@ -25,9 +26,9 @@ class QUIC_EXPORT_PRIVATE QuicUrlUtils {
   // Returns a canonical, valid URL for a PUSH_PROMISE with the specified
   // ":scheme", ":authority", and ":path" header fields, or an empty
   // string if the resulting URL is not valid or supported.
-  static std::string GetPushPromiseUrl(QuicStringPiece scheme,
-                                       QuicStringPiece authority,
-                                       QuicStringPiece path);
+  static QuicString GetPushPromiseUrl(QuicStringPiece scheme,
+                                      QuicStringPiece authority,
+                                      QuicStringPiece path);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicUrlUtils);

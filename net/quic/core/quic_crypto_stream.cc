@@ -14,8 +14,8 @@
 #include "net/quic/platform/api/quic_flag_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
-
-using std::string;
+#include "net/quic/platform/api/quic_string.h"
+#include "net/quic/platform/api/quic_string_piece.h"
 
 namespace net {
 
@@ -70,7 +70,7 @@ void QuicCryptoStream::OnDataAvailable() {
 bool QuicCryptoStream::ExportKeyingMaterial(QuicStringPiece label,
                                             QuicStringPiece context,
                                             size_t result_len,
-                                            string* result) const {
+                                            QuicString* result) const {
   if (!handshake_confirmed()) {
     QUIC_DLOG(ERROR) << "ExportKeyingMaterial was called before forward-secure"
                      << "encryption was established.";
@@ -81,7 +81,8 @@ bool QuicCryptoStream::ExportKeyingMaterial(QuicStringPiece label,
       result);
 }
 
-bool QuicCryptoStream::ExportTokenBindingKeyingMaterial(string* result) const {
+bool QuicCryptoStream::ExportTokenBindingKeyingMaterial(
+    QuicString* result) const {
   if (!encryption_established()) {
     QUIC_BUG << "ExportTokenBindingKeyingMaterial was called before initial"
              << "encryption was established.";

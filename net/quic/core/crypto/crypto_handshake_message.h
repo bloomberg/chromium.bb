@@ -14,6 +14,7 @@
 #include "net/base/int128.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 
 namespace net {
@@ -45,7 +46,7 @@ class QUIC_EXPORT_PRIVATE CryptoHandshakeMessage {
   template <class T>
   void SetValue(QuicTag tag, const T& v) {
     tag_value_map_[tag] =
-        std::string(reinterpret_cast<const char*>(&v), sizeof(v));
+        QuicString(reinterpret_cast<const char*>(&v), sizeof(v));
   }
 
   // SetVector sets an element with the given tag to the raw contents of an
@@ -53,10 +54,10 @@ class QUIC_EXPORT_PRIVATE CryptoHandshakeMessage {
   template <class T>
   void SetVector(QuicTag tag, const std::vector<T>& v) {
     if (v.empty()) {
-      tag_value_map_[tag] = std::string();
+      tag_value_map_[tag] = QuicString();
     } else {
-      tag_value_map_[tag] = std::string(reinterpret_cast<const char*>(&v[0]),
-                                        v.size() * sizeof(T));
+      tag_value_map_[tag] = QuicString(reinterpret_cast<const char*>(&v[0]),
+                                       v.size() * sizeof(T));
     }
   }
 
@@ -126,7 +127,7 @@ class QUIC_EXPORT_PRIVATE CryptoHandshakeMessage {
 
   // DebugString returns a multi-line, string representation of the message
   // suitable for including in debug output.
-  std::string DebugString(Perspective perspective) const;
+  QuicString DebugString(Perspective perspective) const;
 
  private:
   // GetPOD is a utility function for extracting a plain-old-data value. If
@@ -138,7 +139,7 @@ class QUIC_EXPORT_PRIVATE CryptoHandshakeMessage {
   // little-endian.
   QuicErrorCode GetPOD(QuicTag tag, void* out, size_t len) const;
 
-  std::string DebugStringInternal(size_t indent, Perspective perspective) const;
+  QuicString DebugStringInternal(size_t indent, Perspective perspective) const;
 
   QuicTag tag_;
   QuicTagValueMap tag_value_map_;

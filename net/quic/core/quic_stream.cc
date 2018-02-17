@@ -11,8 +11,7 @@
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_str_cat.h"
-
-using std::string;
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -211,7 +210,7 @@ void QuicStream::Reset(QuicRstStreamErrorCode error) {
 }
 
 void QuicStream::CloseConnectionWithDetails(QuicErrorCode error,
-                                            const string& details) {
+                                            const QuicString& details) {
   session()->connection()->CloseConnection(
       error, details, ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
 }

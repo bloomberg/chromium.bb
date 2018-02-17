@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "net/quic/platform/api/quic_arraysize.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 
 namespace net {
@@ -32,7 +33,7 @@ bool FindMutualQuicTag(const QuicTagVector& our_tags,
   return false;
 }
 
-std::string QuicTagToString(QuicTag tag) {
+QuicString QuicTagToString(QuicTag tag) {
   char chars[sizeof tag];
   bool ascii = true;
   const QuicTag orig_tag = tag;
@@ -51,7 +52,7 @@ std::string QuicTagToString(QuicTag tag) {
   }
 
   if (ascii) {
-    return std::string(chars, sizeof(chars));
+    return QuicString(chars, sizeof(chars));
   }
 
   return QuicTextUtils::Uint64ToString(orig_tag);

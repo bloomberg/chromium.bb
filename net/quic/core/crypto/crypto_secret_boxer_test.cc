@@ -5,9 +5,9 @@
 #include "net/quic/core/crypto/crypto_secret_boxer.h"
 
 #include "net/quic/core/crypto/quic_random.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 
-using std::string;
 
 namespace net {
 namespace test {
@@ -18,29 +18,29 @@ TEST_F(CryptoSecretBoxerTest, BoxAndUnbox) {
   QuicStringPiece message("hello world");
 
   CryptoSecretBoxer boxer;
-  boxer.SetKeys({string(CryptoSecretBoxer::GetKeySize(), 0x11)});
+  boxer.SetKeys({QuicString(CryptoSecretBoxer::GetKeySize(), 0x11)});
 
-  const string box = boxer.Box(QuicRandom::GetInstance(), message);
+  const QuicString box = boxer.Box(QuicRandom::GetInstance(), message);
 
-  string storage;
+  QuicString storage;
   QuicStringPiece result;
   EXPECT_TRUE(boxer.Unbox(box, &storage, &result));
   EXPECT_EQ(result, message);
 
-  EXPECT_FALSE(boxer.Unbox(string(1, 'X') + box, &storage, &result));
-  EXPECT_FALSE(boxer.Unbox(box.substr(1, string::npos), &storage, &result));
-  EXPECT_FALSE(boxer.Unbox(string(), &storage, &result));
-  EXPECT_FALSE(
-      boxer.Unbox(string(1, box[0] ^ 0x80) + box.substr(1, string::npos),
-                  &storage, &result));
+  EXPECT_FALSE(boxer.Unbox(QuicString(1, 'X') + box, &storage, &result));
+  EXPECT_FALSE(boxer.Unbox(box.substr(1, QuicString::npos), &storage, &result));
+  EXPECT_FALSE(boxer.Unbox(QuicString(), &storage, &result));
+  EXPECT_FALSE(boxer.Unbox(
+      QuicString(1, box[0] ^ 0x80) + box.substr(1, QuicString::npos), &storage,
+      &result));
 }
 
 // Helper function to test whether one boxer can decode the output of another.
 static bool CanDecode(const CryptoSecretBoxer& decoder,
                       const CryptoSecretBoxer& encoder) {
   QuicStringPiece message("hello world");
-  const string boxed = encoder.Box(QuicRandom::GetInstance(), message);
-  string storage;
+  const QuicString boxed = encoder.Box(QuicRandom::GetInstance(), message);
+  QuicString storage;
   QuicStringPiece result;
   bool ok = decoder.Unbox(boxed, &storage, &result);
   if (ok) {
@@ -50,8 +50,8 @@ static bool CanDecode(const CryptoSecretBoxer& decoder,
 }
 
 TEST_F(CryptoSecretBoxerTest, MultipleKeys) {
-  string key_11(CryptoSecretBoxer::GetKeySize(), 0x11);
-  string key_12(CryptoSecretBoxer::GetKeySize(), 0x12);
+  QuicString key_11(CryptoSecretBoxer::GetKeySize(), 0x11);
+  QuicString key_12(CryptoSecretBoxer::GetKeySize(), 0x12);
 
   CryptoSecretBoxer boxer_11, boxer_12, boxer;
   boxer_11.SetKeys({key_11});

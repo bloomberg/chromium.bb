@@ -27,6 +27,7 @@
 #include "net/quic/core/quic_unacked_packet_map.h"
 #include "net/quic/platform/api/quic_containers.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -203,7 +204,7 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   QuicPacketCount GetSlowStartThresholdInTcpMss() const;
 
   // Returns debugging information about the state of the congestion controller.
-  std::string GetDebugState() const;
+  QuicString GetDebugState() const;
 
   // Returns the number of bytes that are considered in-flight, i.e. not lost or
   // acknowledged.

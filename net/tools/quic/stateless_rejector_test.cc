@@ -15,6 +15,7 @@
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_str_cat.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/platform/api/quic_text_utils.h"
@@ -22,7 +23,6 @@
 #include "net/quic/test_tools/quic_crypto_server_config_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
-using std::string;
 
 namespace net {
 namespace test {
@@ -56,7 +56,7 @@ struct TestParams {
   FlagsMode flags;
 };
 
-string TestParamToString(const testing::TestParamInfo<TestParams>& params) {
+QuicString TestParamToString(const testing::TestParamInfo<TestParams>& params) {
   return QuicStrCat("v", params.param.version, "_",
                     FlagsModeToString(params.param.flags));
 }
@@ -122,7 +122,7 @@ class StatelessRejectorTest : public QuicTestWithParam<TestParams> {
         "#" + QuicTextUtils::HexEncode(public_value, sizeof(public_value));
 
     // Generate a client nonce.
-    string nonce;
+    QuicString nonce;
     CryptoUtils::GenerateNonce(
         clock_.WallNow(), QuicRandom::GetInstance(),
         QuicStringPiece(
@@ -135,7 +135,7 @@ class StatelessRejectorTest : public QuicTestWithParam<TestParams> {
     SourceAddressTokens previous_tokens;
     QuicIpAddress ip = QuicIpAddress::Loopback4();
     MockRandom rand;
-    string stk = config_peer_.NewSourceAddressToken(
+    QuicString stk = config_peer_.NewSourceAddressToken(
         config_peer_.GetPrimaryConfig()->id, previous_tokens, ip, &rand,
         clock_.WallNow(), nullptr);
     stk_hex_ = "#" + QuicTextUtils::HexEncode(stk);
@@ -162,11 +162,11 @@ class StatelessRejectorTest : public QuicTestWithParam<TestParams> {
   std::unique_ptr<StatelessRejector> rejector_;
 
   // Values used in CHLO messages
-  string scid_hex_;
-  string nonc_hex_;
-  string pubs_hex_;
-  string ver_hex_;
-  string stk_hex_;
+  QuicString scid_hex_;
+  QuicString nonc_hex_;
+  QuicString pubs_hex_;
+  QuicString ver_hex_;
+  QuicString stk_hex_;
 };
 
 INSTANTIATE_TEST_CASE_P(Flags,
@@ -253,7 +253,7 @@ TEST_P(StatelessRejectorTest, RejectChlo) {
 
 TEST_P(StatelessRejectorTest, AcceptChlo) {
   const uint64_t xlct = crypto_test_utils::LeafCertHashForTesting();
-  const string xlct_hex =
+  const QuicString xlct_hex =
       "#" + QuicTextUtils::HexEncode(reinterpret_cast<const char*>(&xlct),
                                      sizeof(xlct));
   // clang-format off

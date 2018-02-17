@@ -8,11 +8,11 @@
 
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_arraysize.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
-using std::string;
 
 namespace {
 
@@ -182,12 +182,12 @@ TEST_F(Aes128Gcm12EncrypterTest, Encrypt) {
     const TestGroupInfo& test_info = test_group_info[i];
     for (size_t j = 0; test_vectors[j].key != nullptr; j++) {
       // Decode the test vector.
-      string key = QuicTextUtils::HexDecode(test_vectors[j].key);
-      string iv = QuicTextUtils::HexDecode(test_vectors[j].iv);
-      string pt = QuicTextUtils::HexDecode(test_vectors[j].pt);
-      string aad = QuicTextUtils::HexDecode(test_vectors[j].aad);
-      string ct = QuicTextUtils::HexDecode(test_vectors[j].ct);
-      string tag = QuicTextUtils::HexDecode(test_vectors[j].tag);
+      QuicString key = QuicTextUtils::HexDecode(test_vectors[j].key);
+      QuicString iv = QuicTextUtils::HexDecode(test_vectors[j].iv);
+      QuicString pt = QuicTextUtils::HexDecode(test_vectors[j].pt);
+      QuicString aad = QuicTextUtils::HexDecode(test_vectors[j].aad);
+      QuicString ct = QuicTextUtils::HexDecode(test_vectors[j].ct);
+      QuicString tag = QuicTextUtils::HexDecode(test_vectors[j].tag);
 
       // The test vector's lengths should look sane. Note that the lengths
       // in |test_info| are in bits.
@@ -200,12 +200,12 @@ TEST_F(Aes128Gcm12EncrypterTest, Encrypt) {
 
       Aes128Gcm12Encrypter encrypter;
       ASSERT_TRUE(encrypter.SetKey(key));
-      std::unique_ptr<QuicData> encrypted(EncryptWithNonce(
-          &encrypter, iv,
-          // This deliberately tests that the encrypter can handle an AAD that
-          // is set to nullptr, as opposed to a zero-length, non-nullptr
-          // pointer.
-          aad.length() ? aad : QuicStringPiece(), pt));
+      std::unique_ptr<QuicData> encrypted(
+          EncryptWithNonce(&encrypter, iv,
+                           // This deliberately tests that the encrypter can
+                           // handle an AAD that is set to nullptr, as opposed
+                           // to a zero-length, non-nullptr pointer.
+                           aad.length() ? aad : QuicStringPiece(), pt));
       ASSERT_TRUE(encrypted.get());
 
       // The test vectors have 16 byte authenticators but this code only uses

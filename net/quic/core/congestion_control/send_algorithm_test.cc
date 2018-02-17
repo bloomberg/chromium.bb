@@ -13,6 +13,7 @@
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_str_cat.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/quic_config_peer.h"
@@ -23,7 +24,6 @@
 #include "net/quic/test_tools/simulator/simulator.h"
 #include "net/quic/test_tools/simulator/switch.h"
 
-using std::string;
 
 namespace net {
 namespace test {
@@ -133,7 +133,7 @@ struct TestParams {
   const CongestionControlType congestion_control_type;
 };
 
-string TestParamToString(const testing::TestParamInfo<TestParams>& params) {
+QuicString TestParamToString(const testing::TestParamInfo<TestParams>& params) {
   return QuicStrCat(
       CongestionControlTypeToString(params.param.congestion_control_type), "_");
 }

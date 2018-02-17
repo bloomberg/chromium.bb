@@ -12,9 +12,7 @@
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
-#include "net/tools/quic/quic_spdy_client_stream.h"
-
-using std::string;
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -135,7 +133,7 @@ QuicSpdyClientSession::CreateQuicCryptoStream() {
       crypto_config_, this);
 }
 
-bool QuicSpdyClientSession::IsAuthorized(const string& authority) {
+bool QuicSpdyClientSession::IsAuthorized(const QuicString& authority) {
   return true;
 }
 

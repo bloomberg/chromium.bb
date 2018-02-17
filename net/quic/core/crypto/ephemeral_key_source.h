@@ -9,6 +9,7 @@
 
 #include "net/quic/core/quic_time.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 
 namespace net {
@@ -29,12 +30,12 @@ class QUIC_EXPORT_PRIVATE EphemeralKeySource {
   // and returns the shared key between |peer_public_value| and the private
   // key. |*public_value| will be sent to the peer to be used with the peer's
   // private key.
-  virtual std::string CalculateForwardSecureKey(
+  virtual QuicString CalculateForwardSecureKey(
       const KeyExchange* key_exchange,
       QuicRandom* rand,
       QuicTime now,
       QuicStringPiece peer_public_value,
-      std::string* public_value) = 0;
+      QuicString* public_value) = 0;
 };
 
 }  // namespace net

@@ -9,6 +9,7 @@
 #include "net/quic/core/quic_error_codes.h"
 #include "net/quic/core/quic_types.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "third_party/boringssl/src/include/openssl/bio.h"
 
@@ -102,7 +103,7 @@ class QUIC_EXPORT QuicTlsAdapter : public CryptoMessageParser {
   ~QuicTlsAdapter() override;
 
   QuicErrorCode error() const override;
-  const std::string& error_detail() const override;
+  const QuicString& error_detail() const override;
   bool ProcessInput(QuicStringPiece input, Perspective perspective) override;
   size_t InputBytesRemaining() const override;
 
@@ -147,13 +148,13 @@ class QUIC_EXPORT QuicTlsAdapter : public CryptoMessageParser {
   bssl::UniquePtr<BIO> bio_;
 
   // Buffer of data received from ProcessInput waiting to be read by the BIO.
-  std::string read_buffer_;
+  QuicString read_buffer_;
 
   // Buffer of data received from the BIO waiting to be handed off to
   // Visitor::OnDataReceivedFromBIO.
-  std::string write_buffer_;
+  QuicString write_buffer_;
 
-  std::string error_detail_;
+  QuicString error_detail_;
 };
 
 }  // namespace net

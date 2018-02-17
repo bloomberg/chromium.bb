@@ -3,13 +3,12 @@
 // found in the LICENSE file.
 
 #include "net/quic/platform/api/quic_url_utils.h"
-
-using std::string;
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
 // static
-string QuicUrlUtils::HostName(QuicStringPiece url) {
+QuicString QuicUrlUtils::HostName(QuicStringPiece url) {
   return QuicUrlUtilsImpl::HostName(url);
 }
 
@@ -19,9 +18,9 @@ bool QuicUrlUtils::IsValidUrl(QuicStringPiece url) {
 }
 
 // static
-string QuicUrlUtils::GetPushPromiseUrl(QuicStringPiece scheme,
-                                       QuicStringPiece authority,
-                                       QuicStringPiece path) {
+QuicString QuicUrlUtils::GetPushPromiseUrl(QuicStringPiece scheme,
+                                           QuicStringPiece authority,
+                                           QuicStringPiece path) {
   return QuicUrlUtilsImpl::GetPushPromiseUrl(scheme, authority, path);
 }
 

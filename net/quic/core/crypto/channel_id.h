@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "net/quic/core/quic_types.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 
 namespace net {
@@ -24,10 +25,10 @@ class QUIC_EXPORT_PRIVATE ChannelIDKey {
   // Sign signs |signed_data| using the ChannelID private key and puts the
   // signature into |out_signature|. It returns true on success.
   virtual bool Sign(QuicStringPiece signed_data,
-                    std::string* out_signature) const = 0;
+                    QuicString* out_signature) const = 0;
 
   // SerializeKey returns the serialized ChannelID public key.
-  virtual std::string SerializeKey() const = 0;
+  virtual QuicString SerializeKey() const = 0;
 };
 
 // ChannelIDSourceCallback provides a generic mechanism for a ChannelIDSource
@@ -58,7 +59,7 @@ class QUIC_EXPORT_PRIVATE ChannelIDSource {
   // when complete. In this case, the ChannelIDSource will take ownership of
   // |callback|.
   virtual QuicAsyncStatus GetChannelIDKey(
-      const std::string& hostname,
+      const QuicString& hostname,
       std::unique_ptr<ChannelIDKey>* channel_id_key,
       ChannelIDSourceCallback* callback) = 0;
 };

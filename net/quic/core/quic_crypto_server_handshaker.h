@@ -11,6 +11,7 @@
 #include "net/quic/core/quic_crypto_server_stream.h"
 #include "net/quic/core/quic_session.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -35,7 +36,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerHandshaker
 
   // From HandshakerDelegate
   void CancelOutstandingCallbacks() override;
-  bool GetBase64SHA256ClientChannelID(std::string* output) const override;
+  bool GetBase64SHA256ClientChannelID(QuicString* output) const override;
   void SendServerConfigUpdate(
       const CachedNetworkParameters* cached_network_params) override;
   uint8_t NumHandshakeMessages() const override;
@@ -124,7 +125,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerHandshaker
   void FinishProcessingHandshakeMessageAfterProcessClientHello(
       const ValidateClientHelloResultCallback::Result& result,
       QuicErrorCode error,
-      const std::string& error_details,
+      const QuicString& error_details,
       std::unique_ptr<CryptoHandshakeMessage> reply,
       std::unique_ptr<DiversificationNonce> diversification_nonce,
       std::unique_ptr<ProofSource::Details> proof_source_details);
@@ -165,7 +166,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerHandshaker
 
   // Hash of the last received CHLO message which can be used for generating
   // server config update messages.
-  std::string chlo_hash_;
+  QuicString chlo_hash_;
 
   // Pointer to the helper for this crypto stream. Must outlive this stream.
   QuicCryptoServerStream::Helper* helper_;

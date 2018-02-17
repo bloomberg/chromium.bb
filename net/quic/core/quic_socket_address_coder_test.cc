@@ -5,9 +5,9 @@
 #include "net/quic/core/quic_socket_address_coder.h"
 
 #include "net/quic/platform/api/quic_arraysize.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 
-using std::string;
 
 namespace net {
 namespace test {
@@ -18,8 +18,8 @@ TEST_F(QuicSocketAddressCoderTest, EncodeIPv4) {
   QuicIpAddress ip;
   ip.FromString("4.31.198.44");
   QuicSocketAddressCoder coder(QuicSocketAddress(ip, 0x1234));
-  string serialized = coder.Encode();
-  string expected("\x02\x00\x04\x1f\xc6\x2c\x34\x12", 8);
+  QuicString serialized = coder.Encode();
+  QuicString expected("\x02\x00\x04\x1f\xc6\x2c\x34\x12", 8);
   EXPECT_EQ(expected, serialized);
 }
 
@@ -27,8 +27,8 @@ TEST_F(QuicSocketAddressCoderTest, EncodeIPv6) {
   QuicIpAddress ip;
   ip.FromString("2001:700:300:1800::f");
   QuicSocketAddressCoder coder(QuicSocketAddress(ip, 0x5678));
-  string serialized = coder.Encode();
-  string expected(
+  QuicString serialized = coder.Encode();
+  QuicString expected(
       "\x0a\x00"
       "\x20\x01\x07\x00\x03\x00\x18\x00"
       "\x00\x00\x00\x00\x00\x00\x00\x0f"
@@ -38,17 +38,17 @@ TEST_F(QuicSocketAddressCoderTest, EncodeIPv6) {
 }
 
 TEST_F(QuicSocketAddressCoderTest, DecodeIPv4) {
-  string serialized("\x02\x00\x04\x1f\xc6\x2c\x34\x12", 8);
+  QuicString serialized("\x02\x00\x04\x1f\xc6\x2c\x34\x12", 8);
   QuicSocketAddressCoder coder;
   ASSERT_TRUE(coder.Decode(serialized.data(), serialized.length()));
   EXPECT_EQ(IpAddressFamily::IP_V4, coder.ip().address_family());
-  string expected_addr("\x04\x1f\xc6\x2c");
+  QuicString expected_addr("\x04\x1f\xc6\x2c");
   EXPECT_EQ(expected_addr, coder.ip().ToPackedString());
   EXPECT_EQ(0x1234, coder.port());
 }
 
 TEST_F(QuicSocketAddressCoderTest, DecodeIPv6) {
-  string serialized(
+  QuicString serialized(
       "\x0a\x00"
       "\x20\x01\x07\x00\x03\x00\x18\x00"
       "\x00\x00\x00\x00\x00\x00\x00\x0f"
@@ -57,7 +57,7 @@ TEST_F(QuicSocketAddressCoderTest, DecodeIPv6) {
   QuicSocketAddressCoder coder;
   ASSERT_TRUE(coder.Decode(serialized.data(), serialized.length()));
   EXPECT_EQ(IpAddressFamily::IP_V6, coder.ip().address_family());
-  string expected_addr(
+  QuicString expected_addr(
       "\x20\x01\x07\x00\x03\x00\x18\x00"
       "\x00\x00\x00\x00\x00\x00\x00\x0f",
       16);
@@ -66,7 +66,7 @@ TEST_F(QuicSocketAddressCoderTest, DecodeIPv6) {
 }
 
 TEST_F(QuicSocketAddressCoderTest, DecodeBad) {
-  string serialized(
+  QuicString serialized(
       "\x0a\x00"
       "\x20\x01\x07\x00\x03\x00\x18\x00"
       "\x00\x00\x00\x00\x00\x00\x00\x0f"
@@ -115,7 +115,7 @@ TEST_F(QuicSocketAddressCoderTest, EncodeAndDecode) {
     QuicIpAddress ip;
     ASSERT_TRUE(ip.FromString(test_case[i].ip_literal));
     QuicSocketAddressCoder encoder(QuicSocketAddress(ip, test_case[i].port));
-    string serialized = encoder.Encode();
+    QuicString serialized = encoder.Encode();
 
     QuicSocketAddressCoder decoder;
     ASSERT_TRUE(decoder.Decode(serialized.data(), serialized.length()));

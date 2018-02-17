@@ -11,6 +11,7 @@
 #include "net/quic/core/tls_client_handshaker.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_socket_address.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_client_promised_info_peer.h"
@@ -18,7 +19,6 @@
 #include "net/test/gtest_util.h"
 #include "net/tools/quic/quic_spdy_client_session.h"
 
-using std::string;
 using testing::_;
 using testing::StrictMock;
 
@@ -42,7 +42,9 @@ class MockQuicSpdyClientSession : public QuicSpdyClientSession {
         authorized_(true) {}
   ~MockQuicSpdyClientSession() override {}
 
-  bool IsAuthorized(const string& authority) override { return authorized_; }
+  bool IsAuthorized(const QuicString& authority) override {
+    return authorized_;
+  }
 
   void set_authorized(bool authorized) { authorized_ = authorized; }
 
@@ -113,10 +115,10 @@ class QuicClientPromisedInfoTest : public QuicTest {
   std::unique_ptr<StreamVisitor> stream_visitor_;
   std::unique_ptr<QuicSpdyClientStream> promised_stream_;
   SpdyHeaderBlock headers_;
-  string body_;
+  QuicString body_;
   SpdyHeaderBlock push_promise_;
   QuicStreamId promise_id_;
-  string promise_url_;
+  QuicString promise_url_;
   SpdyHeaderBlock client_request_;
 };
 

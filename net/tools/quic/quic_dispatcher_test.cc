@@ -21,6 +21,7 @@
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_str_cat.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/fake_proof_source.h"
@@ -43,7 +44,6 @@
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using std::string;
 using testing::_;
 using testing::InSequence;
 using testing::Invoke;
@@ -78,7 +78,7 @@ class TestQuicSpdyServerSession : public QuicServerSessionBase {
 
   MOCK_METHOD3(OnConnectionClosed,
                void(QuicErrorCode error,
-                    const string& error_details,
+                    const QuicString& error_details,
                     ConnectionCloseSource source));
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
   MOCK_METHOD0(CreateOutgoingDynamicStream, QuicSpdyStream*());
@@ -222,7 +222,7 @@ class QuicDispatcherTest : public QuicTest {
   void ProcessPacket(QuicSocketAddress client_address,
                      QuicConnectionId connection_id,
                      bool has_version_flag,
-                     const string& data) {
+                     const QuicString& data) {
     ProcessPacket(client_address, connection_id, has_version_flag, data,
                   PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER);
   }
@@ -232,7 +232,7 @@ class QuicDispatcherTest : public QuicTest {
   void ProcessPacket(QuicSocketAddress client_address,
                      QuicConnectionId connection_id,
                      bool has_version_flag,
-                     const string& data,
+                     const QuicString& data,
                      QuicConnectionIdLength connection_id_length,
                      QuicPacketNumberLength packet_number_length) {
     ProcessPacket(client_address, connection_id, has_version_flag, data,
@@ -243,7 +243,7 @@ class QuicDispatcherTest : public QuicTest {
   void ProcessPacket(QuicSocketAddress client_address,
                      QuicConnectionId connection_id,
                      bool has_version_flag,
-                     const string& data,
+                     const QuicString& data,
                      QuicConnectionIdLength connection_id_length,
                      QuicPacketNumberLength packet_number_length,
                      QuicPacketNumber packet_number) {
@@ -257,7 +257,7 @@ class QuicDispatcherTest : public QuicTest {
                      QuicConnectionId connection_id,
                      bool has_version_flag,
                      ParsedQuicVersion version,
-                     const string& data,
+                     const QuicString& data,
                      QuicConnectionIdLength connection_id_length,
                      QuicPacketNumberLength packet_number_length,
                      QuicPacketNumber packet_number) {
@@ -272,11 +272,11 @@ class QuicDispatcherTest : public QuicTest {
       // Add CHLO packet to the beginning to be verified first, because it is
       // also processed first by new session.
       data_connection_map_[connection_id].push_front(
-          string(packet->data(), packet->length()));
+          QuicString(packet->data(), packet->length()));
     } else {
       // For non-CHLO, always append to last.
       data_connection_map_[connection_id].push_back(
-          string(packet->data(), packet->length()));
+          QuicString(packet->data(), packet->length()));
     }
     dispatcher_->ProcessPacket(server_address_, client_address,
                                *received_packet);
@@ -320,7 +320,7 @@ class QuicDispatcherTest : public QuicTest {
                                                time_wait_list_manager_);
   }
 
-  string SerializeCHLO() {
+  QuicString SerializeCHLO() {
     CryptoHandshakeMessage client_hello;
     client_hello.set_tag(kCHLO);
     client_hello.SetStringPiece(kALPN, "hq");
@@ -329,7 +329,7 @@ class QuicDispatcherTest : public QuicTest {
         .as_string();
   }
 
-  string SerializeTlsClientHello() { return ""; }
+  QuicString SerializeTlsClientHello() { return ""; }
 
   EpollServer eps_;
   QuicEpollConnectionHelper helper_;
@@ -344,7 +344,7 @@ class QuicDispatcherTest : public QuicTest {
   MockTimeWaitListManager* time_wait_list_manager_;
   TestQuicSpdyServerSession* session1_;
   TestQuicSpdyServerSession* session2_;
-  std::map<QuicConnectionId, std::list<string>> data_connection_map_;
+  std::map<QuicConnectionId, std::list<QuicString>> data_connection_map_;
   QuicBufferedPacketStore* store_;
 };
 
@@ -1406,7 +1406,7 @@ class BufferedPacketStoreTest
         &full_chlo_);
   }
 
-  string SerializeFullCHLO() {
+  QuicString SerializeFullCHLO() {
     return full_chlo_.GetSerialized(Perspective::IS_CLIENT)
         .AsStringPiece()
         .as_string();
@@ -1832,13 +1832,13 @@ class AsyncGetProofTest : public QuicDispatcherTest {
     return static_cast<FakeProofSource*>(crypto_config_peer_.GetProofSource());
   }
 
-  string SerializeFullCHLO() {
+  QuicString SerializeFullCHLO() {
     return full_chlo_.GetSerialized(Perspective::IS_CLIENT)
         .AsStringPiece()
         .as_string();
   }
 
-  string SerializeCHLO() {
+  QuicString SerializeCHLO() {
     return chlo_.GetSerialized(Perspective::IS_CLIENT)
         .AsStringPiece()
         .as_string();

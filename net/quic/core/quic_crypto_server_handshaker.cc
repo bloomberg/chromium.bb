@@ -7,10 +7,10 @@
 #include <memory>
 
 #include "net/quic/platform/api/quic_arraysize.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
-using std::string;
 
 namespace net {
 
@@ -24,7 +24,7 @@ class QuicCryptoServerHandshaker::ProcessClientHelloCallback
       : parent_(parent), result_(result) {}
 
   void Run(QuicErrorCode error,
-           const string& error_details,
+           const QuicString& error_details,
            std::unique_ptr<CryptoHandshakeMessage> message,
            std::unique_ptr<DiversificationNonce> diversification_nonce,
            std::unique_ptr<net::ProofSource::Details> proof_source_details)
@@ -161,7 +161,7 @@ void QuicCryptoServerHandshaker::
     FinishProcessingHandshakeMessageAfterProcessClientHello(
         const ValidateClientHelloResultCallback::Result& result,
         QuicErrorCode error,
-        const string& error_details,
+        const QuicString& error_details,
         std::unique_ptr<CryptoHandshakeMessage> reply,
         std::unique_ptr<DiversificationNonce> diversification_nonce,
         std::unique_ptr<ProofSource::Details> proof_source_details) {
@@ -206,7 +206,7 @@ void QuicCryptoServerHandshaker::
   // session config.
   QuicConfig* config = session()->config();
   OverrideQuicConfigDefaults(config);
-  string process_error_details;
+  QuicString process_error_details;
   const QuicErrorCode process_error =
       config->ProcessPeerHello(message, CLIENT, &process_error_details);
   if (process_error != QUIC_NO_ERROR) {
@@ -272,8 +272,7 @@ void QuicCryptoServerHandshaker::SendServerConfigUpdate(
       previous_source_address_tokens_, session()->connection()->self_address(),
       GetClientAddress().host(), session()->connection()->clock(),
       session()->connection()->random_generator(), compressed_certs_cache_,
-      *crypto_negotiated_params_, cached_network_params,
-      std::move(cb));
+      *crypto_negotiated_params_, cached_network_params, std::move(cb));
 }
 
 QuicCryptoServerHandshaker::SendServerConfigUpdateCallback::
@@ -348,13 +347,13 @@ bool QuicCryptoServerHandshaker::ShouldSendExpectCTHeader() const {
 }
 
 bool QuicCryptoServerHandshaker::GetBase64SHA256ClientChannelID(
-    string* output) const {
+    QuicString* output) const {
   if (!encryption_established() ||
       crypto_negotiated_params_->channel_id.empty()) {
     return false;
   }
 
-  const string& channel_id(crypto_negotiated_params_->channel_id);
+  const QuicString& channel_id(crypto_negotiated_params_->channel_id);
   uint8_t digest[SHA256_DIGEST_LENGTH];
   SHA256(reinterpret_cast<const uint8_t*>(channel_id.data()), channel_id.size(),
          digest);
@@ -386,7 +385,7 @@ void QuicCryptoServerHandshaker::ProcessClientHello(
     std::unique_ptr<ProofSource::Details> proof_source_details,
     std::unique_ptr<ProcessClientHelloResultCallback> done_cb) {
   const CryptoHandshakeMessage& message = result->client_hello;
-  string error_details;
+  QuicString error_details;
   if (!helper_->CanAcceptClientHello(
           message, session()->connection()->self_address(), &error_details)) {
     done_cb->Run(QUIC_HANDSHAKE_FAILED, error_details, nullptr, nullptr,

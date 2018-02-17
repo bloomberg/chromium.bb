@@ -17,10 +17,9 @@
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_str_cat.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "net/spdy/core/http2_frame_decoder_adapter.h"
-
-using std::string;
 
 namespace net {
 
@@ -277,7 +276,7 @@ class QuicSpdySession::SpdyFramerVisitor
   }
 
  private:
-  void CloseConnection(const string& details, QuicErrorCode code) {
+  void CloseConnection(const QuicString& details, QuicErrorCode code) {
     if (session_->IsConnected()) {
       session_->CloseConnectionWithDetails(code, details);
     }
@@ -368,8 +367,8 @@ void QuicSpdySession::OnStreamHeaderList(QuicStreamId stream_id,
     // byte offset necessary for flow control and open stream accounting.
     size_t final_byte_offset = 0;
     for (const auto& header : header_list) {
-      const string& header_key = header.first;
-      const string& header_value = header.second;
+      const QuicString& header_key = header.first;
+      const QuicString& header_value = header.second;
       if (header_key == kFinalOffsetHeaderKey) {
         if (!QuicTextUtils::StringToSizeT(header_value, &final_byte_offset)) {
           connection()->CloseConnection(
@@ -523,7 +522,7 @@ void QuicSpdySession::OnPromiseHeaderList(QuicStreamId stream_id,
                                           QuicStreamId promised_stream_id,
                                           size_t frame_len,
                                           const QuicHeaderList& header_list) {
-  string error = "OnPromiseHeaderList should be overridden in client code.";
+  QuicString error = "OnPromiseHeaderList should be overridden in client code.";
   QUIC_BUG << error;
   connection()->CloseConnection(QUIC_INTERNAL_ERROR, error,
                                 ConnectionCloseBehavior::SILENT_CLOSE);
@@ -652,7 +651,7 @@ void QuicSpdySession::set_max_uncompressed_header_bytes(
 }
 
 void QuicSpdySession::CloseConnectionWithDetails(QuicErrorCode error,
-                                                 const string& details) {
+                                                 const QuicString& details) {
   connection()->CloseConnection(
       error, details, ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
 }

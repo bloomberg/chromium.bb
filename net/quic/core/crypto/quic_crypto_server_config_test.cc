@@ -17,12 +17,12 @@
 #include "net/quic/core/quic_time.h"
 #include "net/quic/core/tls_server_handshaker.h"
 #include "net/quic/platform/api/quic_socket_address.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/quic_crypto_server_config_peer.h"
 
-using std::string;
 
 namespace net {
 namespace test {
@@ -57,11 +57,11 @@ TEST_F(QuicCryptoServerConfigTest, CompressCerts) {
                                 TlsServerHandshaker::CreateSslCtx());
   QuicCryptoServerConfigPeer peer(&server);
 
-  std::vector<string> certs = {"testcert"};
+  std::vector<QuicString> certs = {"testcert"};
   QuicReferenceCountedPointer<ProofSource::Chain> chain(
       new ProofSource::Chain(certs));
 
-  string compressed = QuicCryptoServerConfigPeer::CompressChain(
+  QuicString compressed = QuicCryptoServerConfigPeer::CompressChain(
       &compressed_certs_cache, chain, "", "", nullptr);
 
   EXPECT_EQ(compressed_certs_cache.Size(), 1u);
@@ -78,18 +78,18 @@ TEST_F(QuicCryptoServerConfigTest, CompressSameCertsTwice) {
   QuicCryptoServerConfigPeer peer(&server);
 
   // Compress the certs for the first time.
-  std::vector<string> certs = {"testcert"};
+  std::vector<QuicString> certs = {"testcert"};
   QuicReferenceCountedPointer<ProofSource::Chain> chain(
       new ProofSource::Chain(certs));
-  string common_certs = "";
-  string cached_certs = "";
+  QuicString common_certs = "";
+  QuicString cached_certs = "";
 
-  string compressed = QuicCryptoServerConfigPeer::CompressChain(
+  QuicString compressed = QuicCryptoServerConfigPeer::CompressChain(
       &compressed_certs_cache, chain, common_certs, cached_certs, nullptr);
   EXPECT_EQ(compressed_certs_cache.Size(), 1u);
 
   // Compress the same certs, should use cache if available.
-  string compressed2 = QuicCryptoServerConfigPeer::CompressChain(
+  QuicString compressed2 = QuicCryptoServerConfigPeer::CompressChain(
       &compressed_certs_cache, chain, common_certs, cached_certs, nullptr);
   EXPECT_EQ(compressed, compressed2);
   EXPECT_EQ(compressed_certs_cache.Size(), 1u);
@@ -107,13 +107,13 @@ TEST_F(QuicCryptoServerConfigTest, CompressDifferentCerts) {
                                 TlsServerHandshaker::CreateSslCtx());
   QuicCryptoServerConfigPeer peer(&server);
 
-  std::vector<string> certs = {"testcert"};
+  std::vector<QuicString> certs = {"testcert"};
   QuicReferenceCountedPointer<ProofSource::Chain> chain(
       new ProofSource::Chain(certs));
-  string common_certs = "";
-  string cached_certs = "";
+  QuicString common_certs = "";
+  QuicString cached_certs = "";
 
-  string compressed = QuicCryptoServerConfigPeer::CompressChain(
+  QuicString compressed = QuicCryptoServerConfigPeer::CompressChain(
       &compressed_certs_cache, chain, common_certs, cached_certs, nullptr);
   EXPECT_EQ(compressed_certs_cache.Size(), 1u);
 
@@ -121,7 +121,7 @@ TEST_F(QuicCryptoServerConfigTest, CompressDifferentCerts) {
   QuicReferenceCountedPointer<ProofSource::Chain> chain2(
       new ProofSource::Chain(certs));
 
-  string compressed2 = QuicCryptoServerConfigPeer::CompressChain(
+  QuicString compressed2 = QuicCryptoServerConfigPeer::CompressChain(
       &compressed_certs_cache, chain2, common_certs, cached_certs, nullptr);
   EXPECT_EQ(compressed_certs_cache.Size(), 2u);
 
@@ -131,7 +131,7 @@ TEST_F(QuicCryptoServerConfigTest, CompressDifferentCerts) {
       crypto_test_utils::MockCommonCertSets(certs[0], set_hash, 1));
   QuicStringPiece different_common_certs(
       reinterpret_cast<const char*>(&set_hash), sizeof(set_hash));
-  string compressed3 = QuicCryptoServerConfigPeer::CompressChain(
+  QuicString compressed3 = QuicCryptoServerConfigPeer::CompressChain(
       &compressed_certs_cache, chain, different_common_certs.as_string(),
       cached_certs, common_sets.get());
   EXPECT_EQ(compressed_certs_cache.Size(), 3u);
@@ -158,33 +158,35 @@ class SourceAddressTokenTest : public QuicTest {
         rand_, &clock_, QuicCryptoServerConfig::ConfigOptions()));
   }
 
-  string NewSourceAddressToken(string config_id, const QuicIpAddress& ip) {
+  QuicString NewSourceAddressToken(QuicString config_id,
+                                   const QuicIpAddress& ip) {
     return NewSourceAddressToken(config_id, ip, nullptr);
   }
 
-  string NewSourceAddressToken(string config_id,
-                               const QuicIpAddress& ip,
-                               const SourceAddressTokens& previous_tokens) {
+  QuicString NewSourceAddressToken(QuicString config_id,
+                                   const QuicIpAddress& ip,
+                                   const SourceAddressTokens& previous_tokens) {
     return peer_.NewSourceAddressToken(config_id, previous_tokens, ip, rand_,
                                        clock_.WallNow(), nullptr);
   }
 
-  string NewSourceAddressToken(string config_id,
-                               const QuicIpAddress& ip,
-                               CachedNetworkParameters* cached_network_params) {
+  QuicString NewSourceAddressToken(
+      QuicString config_id,
+      const QuicIpAddress& ip,
+      CachedNetworkParameters* cached_network_params) {
     SourceAddressTokens previous_tokens;
     return peer_.NewSourceAddressToken(config_id, previous_tokens, ip, rand_,
                                        clock_.WallNow(), cached_network_params);
   }
 
-  HandshakeFailureReason ValidateSourceAddressTokens(string config_id,
+  HandshakeFailureReason ValidateSourceAddressTokens(QuicString config_id,
                                                      QuicStringPiece srct,
                                                      const QuicIpAddress& ip) {
     return ValidateSourceAddressTokens(config_id, srct, ip, nullptr);
   }
 
   HandshakeFailureReason ValidateSourceAddressTokens(
-      string config_id,
+      QuicString config_id,
       QuicStringPiece srct,
       const QuicIpAddress& ip,
       CachedNetworkParameters* cached_network_params) {
@@ -192,8 +194,8 @@ class SourceAddressTokenTest : public QuicTest {
         config_id, srct, ip, clock_.WallNow(), cached_network_params);
   }
 
-  const string kPrimary = "<primary>";
-  const string kOverride = "Config with custom source address token key";
+  const QuicString kPrimary = "<primary>";
+  const QuicString kOverride = "Config with custom source address token key";
 
   QuicIpAddress ip4_;
   QuicIpAddress ip4_dual_;
@@ -213,9 +215,9 @@ class SourceAddressTokenTest : public QuicTest {
 // to a single IP address and server config.
 TEST_F(SourceAddressTokenTest, SourceAddressToken) {
   // Primary config generates configs that validate successfully.
-  const string token4 = NewSourceAddressToken(kPrimary, ip4_);
-  const string token4d = NewSourceAddressToken(kPrimary, ip4_dual_);
-  const string token6 = NewSourceAddressToken(kPrimary, ip6_);
+  const QuicString token4 = NewSourceAddressToken(kPrimary, ip4_);
+  const QuicString token4d = NewSourceAddressToken(kPrimary, ip4_dual_);
+  const QuicString token6 = NewSourceAddressToken(kPrimary, ip6_);
   EXPECT_EQ(HANDSHAKE_OK, ValidateSourceAddressTokens(kPrimary, token4, ip4_));
   ASSERT_EQ(HANDSHAKE_OK,
             ValidateSourceAddressTokens(kPrimary, token4, ip4_dual_));
@@ -230,7 +232,7 @@ TEST_F(SourceAddressTokenTest, SourceAddressToken) {
 }
 
 TEST_F(SourceAddressTokenTest, SourceAddressTokenExpiration) {
-  const string token = NewSourceAddressToken(kPrimary, ip4_);
+  const QuicString token = NewSourceAddressToken(kPrimary, ip4_);
 
   // Validation fails if the token is from the future.
   clock_.AdvanceTime(QuicTime::Delta::FromSeconds(-3600 * 2));
@@ -248,7 +250,7 @@ TEST_F(SourceAddressTokenTest, SourceAddressTokenWithNetworkParams) {
   // that this gets written to ValidateSourceAddressToken output argument.
   CachedNetworkParameters cached_network_params_input;
   cached_network_params_input.set_bandwidth_estimate_bytes_per_second(1234);
-  const string token4_with_cached_network_params =
+  const QuicString token4_with_cached_network_params =
       NewSourceAddressToken(kPrimary, ip4_, &cached_network_params_input);
 
   CachedNetworkParameters cached_network_params_output;
@@ -271,7 +273,7 @@ TEST_F(SourceAddressTokenTest, SourceAddressTokenMultipleAddresses) {
   previous_token.set_timestamp(now.ToUNIXSeconds());
   SourceAddressTokens previous_tokens;
   (*previous_tokens.add_tokens()) = previous_token;
-  const string token4or6 =
+  const QuicString token4or6 =
       NewSourceAddressToken(kPrimary, ip4_, previous_tokens);
 
   EXPECT_EQ(HANDSHAKE_OK,
@@ -339,7 +341,7 @@ class CryptoServerConfigsTest : public QuicTest {
           QuicCryptoServerConfig::GenerateConfig(rand_, &clock_, options);
       protobuf->set_primary_time(primary_time);
       protobuf->set_priority(priority);
-      if (string(server_config_id).find("INVALID") == 0) {
+      if (QuicString(server_config_id).find("INVALID") == 0) {
         protobuf->clear_key();
         has_invalid = true;
       }
@@ -358,7 +360,7 @@ class CryptoServerConfigsTest : public QuicTest {
 };
 
 TEST_F(CryptoServerConfigsTest, NoConfigs) {
-  test_peer_.CheckConfigs(std::vector<std::pair<string, bool>>());
+  test_peer_.CheckConfigs(std::vector<std::pair<QuicString, bool>>());
 }
 
 TEST_F(CryptoServerConfigsTest, MakePrimaryFirst) {

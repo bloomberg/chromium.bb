@@ -25,6 +25,7 @@
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_reference_counted.h"
 #include "net/quic/platform/api/quic_str_cat.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/mock_clock.h"
@@ -42,7 +43,6 @@
 #include "net/test/gtest_util.h"
 #include "testing/gmock_mutant.h"
 
-using std::string;
 using testing::_;
 using testing::AnyNumber;
 using testing::AtLeast;
@@ -3383,7 +3383,7 @@ TEST_P(QuicConnectionTest, SendMtuDiscoveryPacket) {
 
   // Send more than MTU worth of data.  No acknowledgement was received so far,
   // so the MTU should be at its old value.
-  const string data(kDefaultMaxPacketSize + 1, '.');
+  const QuicString data(kDefaultMaxPacketSize + 1, '.');
   QuicByteCount size_before_mtu_change;
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
       .Times(2)
@@ -3791,7 +3791,7 @@ TEST_P(QuicConnectionTest, NewTimeoutAfterSendSilentClose) {
 
   // Create a handshake message that also enables silent close.
   CryptoHandshakeMessage msg;
-  string error_details;
+  QuicString error_details;
   QuicConfig client_config;
   client_config.SetInitialStreamFlowControlWindowToSend(
       kInitialStreamFlowControlWindowForTest);
@@ -3854,7 +3854,7 @@ TEST_P(QuicConnectionTest, TimeoutAfterSendSilentCloseAndTLP) {
 
   // Create a handshake message that also enables silent close.
   CryptoHandshakeMessage msg;
-  string error_details;
+  QuicString error_details;
   QuicConfig client_config;
   client_config.SetInitialStreamFlowControlWindowToSend(
       kInitialStreamFlowControlWindowForTest);
@@ -3908,7 +3908,7 @@ TEST_P(QuicConnectionTest, TimeoutAfterSendSilentCloseWithOpenStreams) {
 
   // Create a handshake message that also enables silent close.
   CryptoHandshakeMessage msg;
-  string error_details;
+  QuicString error_details;
   QuicConfig client_config;
   client_config.SetInitialStreamFlowControlWindowToSend(
       kInitialStreamFlowControlWindowForTest);
@@ -4159,7 +4159,7 @@ TEST_P(QuicConnectionTest, TestQueueLimitsOnSendStreamData) {
 
   // Queue the first packet.
   EXPECT_CALL(*send_algorithm_, CanSend(_)).WillOnce(testing::Return(false));
-  const string payload(payload_length, 'a');
+  const QuicString payload(payload_length, 'a');
   EXPECT_EQ(0u, connection_.SendStreamDataWithString(3, payload, 0, NO_FIN)
                     .bytes_consumed);
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
@@ -4183,7 +4183,7 @@ TEST_P(QuicConnectionTest, LoopThroughSendingPackets) {
   // Queue the first packet.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(7);
   // The first stream frame will have 2 fewer overhead bytes than the other six.
-  const string payload(payload_length * 7 + 2, 'a');
+  const QuicString payload(payload_length * 7 + 2, 'a');
   EXPECT_EQ(payload.size(),
             connection_.SendStreamDataWithString(1, payload, 0, NO_FIN)
                 .bytes_consumed);
@@ -4193,7 +4193,7 @@ TEST_P(QuicConnectionTest, LoopThroughSendingPacketsWithTruncation) {
   set_perspective(Perspective::IS_SERVER);
   QuicPacketCreatorPeer::SetSendVersionInPacket(creator_, false);
   // Set up a larger payload than will fit in one packet.
-  const string payload(connection_.max_packet_length(), 'a');
+  const QuicString payload(connection_.max_packet_length(), 'a');
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _)).Times(AnyNumber());
 
   // Now send some packets with no truncation.
@@ -5642,7 +5642,7 @@ TEST_P(QuicConnectionTest, DonotForceSendingAckOnPacketTooLarge) {
 }
 
 TEST_P(QuicConnectionTest, CloseConnectionForStatelessReject) {
-  string error_details("stateless reject");
+  QuicString error_details("stateless reject");
   EXPECT_CALL(visitor_, OnConnectionClosed(
                             QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT,
                             error_details, ConnectionCloseSource::FROM_PEER));

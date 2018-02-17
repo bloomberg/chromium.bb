@@ -8,17 +8,18 @@
 #include <string>
 #include <utility>
 
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/impl/quic_str_cat_impl.h"
 
 namespace net {
 
 template <typename... Args>
-inline std::string QuicStrCat(const Args&... args) {
+inline QuicString QuicStrCat(const Args&... args) {
   return QuicStrCatImpl(std::forward<const Args&>(args)...);
 }
 
 template <typename... Args>
-inline std::string QuicStringPrintf(const Args&... args) {
+inline QuicString QuicStringPrintf(const Args&... args) {
   return QuicStringPrintfImpl(std::forward<const Args&>(args)...);
 }
 

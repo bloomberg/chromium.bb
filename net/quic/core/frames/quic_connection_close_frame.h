@@ -10,6 +10,7 @@
 
 #include "net/quic/core/quic_error_codes.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -21,7 +22,7 @@ struct QUIC_EXPORT_PRIVATE QuicConnectionCloseFrame {
       const QuicConnectionCloseFrame& c);
 
   QuicErrorCode error_code;
-  std::string error_details;
+  QuicString error_details;
 };
 
 }  // namespace net

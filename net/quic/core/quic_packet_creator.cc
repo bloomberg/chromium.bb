@@ -18,9 +18,9 @@
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 
-using std::string;
 
 // If true, enforce that QUIC CHLOs fit in one packet.
 bool FLAGS_quic_enforce_single_packet_chlo = true;
@@ -131,7 +131,8 @@ bool QuicPacketCreator::ConsumeData(QuicStreamId id,
   if (FLAGS_quic_enforce_single_packet_chlo &&
       StreamFrameStartsWithChlo(*frame->stream_frame) &&
       frame->stream_frame->data_length < write_length) {
-    const string error_details = "Client hello won't fit in a single packet.";
+    const QuicString error_details =
+        "Client hello won't fit in a single packet.";
     QUIC_BUG << error_details << " Constructed stream frame length: "
              << frame->stream_frame->data_length
              << " CHLO length: " << write_length;
@@ -265,7 +266,7 @@ void QuicPacketCreator::Flush() {
 
 void QuicPacketCreator::OnSerializedPacket() {
   if (packet_.encrypted_buffer == nullptr) {
-    const string error_details = "Failed to SerializePacket.";
+    const QuicString error_details = "Failed to SerializePacket.";
     QUIC_BUG << error_details;
     delegate_->OnUnrecoverableError(QUIC_FAILED_TO_SERIALIZE_PACKET,
                                     error_details,
@@ -542,7 +543,8 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
   if (frame.type == STREAM_FRAME &&
       frame.stream_frame->stream_id != kCryptoStreamId &&
       packet_.encryption_level == ENCRYPTION_NONE) {
-    const string error_details = "Cannot send stream data without encryption.";
+    const QuicString error_details =
+        "Cannot send stream data without encryption.";
     QUIC_BUG << error_details;
     delegate_->OnUnrecoverableError(
         QUIC_ATTEMPT_TO_SEND_UNENCRYPTED_STREAM_DATA, error_details,

@@ -19,9 +19,9 @@
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 
-using std::string;
 
 namespace net {
 
@@ -87,7 +87,7 @@ void QuicCryptoServerStream::CancelOutstandingCallbacks() {
 }
 
 bool QuicCryptoServerStream::GetBase64SHA256ClientChannelID(
-    string* output) const {
+    QuicString* output) const {
   return handshaker()->GetBase64SHA256ClientChannelID(output);
 }
 

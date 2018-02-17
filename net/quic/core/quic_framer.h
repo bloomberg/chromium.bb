@@ -14,6 +14,7 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/platform/api/quic_endian.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 
 namespace net {
@@ -328,7 +329,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // to ciphertext no larger than |ciphertext_size|.
   size_t GetMaxPlaintextSize(size_t ciphertext_size);
 
-  const std::string& detailed_error() { return detailed_error_; }
+  const QuicString& detailed_error() { return detailed_error_; }
 
   // The minimum packet number length required to represent |packet_number|.
   static QuicPacketNumberLength GetMinPacketNumberLength(
@@ -514,16 +515,16 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool AppendIetfConnectionCloseFrame(const QuicConnectionCloseFrame& frame,
                                       QuicDataWriter* writer);
   bool AppendIetfConnectionCloseFrame(const QuicIetfTransportErrorCodes code,
-                                      const std::string& phrase,
+                                      const QuicString& phrase,
                                       QuicDataWriter* writer);
   bool AppendIetfApplicationCloseFrame(const QuicConnectionCloseFrame& frame,
                                        QuicDataWriter* writer);
   bool AppendIetfApplicationCloseFrame(const uint16_t code,
-                                       const std::string& phrase,
+                                       const QuicString& phrase,
                                        QuicDataWriter* writer);
   bool AppendIetfCloseFrame(const QuicIetfFrameType type,
                             const uint16_t code,
-                            const std::string& phrase,
+                            const QuicString& phrase,
                             QuicDataWriter* writer);
   bool ProcessIetfConnectionCloseFrame(QuicDataReader* reader,
                                        const uint8_t frame_type,
@@ -551,7 +552,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   QuicStringPiece TruncateErrorString(QuicStringPiece error);
 
-  std::string detailed_error_;
+  QuicString detailed_error_;
   QuicFramerVisitorInterface* visitor_;
   QuicErrorCode error_;
   // Updated by ProcessPacketHeader when it succeeds decrypting a larger packet.

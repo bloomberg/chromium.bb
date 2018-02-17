@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 #include "net/quic/platform/api/quic_socket_address.h"
-
-using std::string;
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -32,7 +31,7 @@ bool QuicSocketAddress::IsInitialized() const {
   return impl_.IsInitialized();
 }
 
-string QuicSocketAddress::ToString() const {
+QuicString QuicSocketAddress::ToString() const {
   return impl_.ToString();
 }
 

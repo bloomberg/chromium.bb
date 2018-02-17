@@ -8,9 +8,9 @@
 #include <map>
 #include <string>
 
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 
-using std::string;
 
 namespace net {
 namespace {
@@ -20,7 +20,7 @@ class PacketNumberIndexedQueueTest : public QuicTest {
   PacketNumberIndexedQueueTest() {}
 
  protected:
-  PacketNumberIndexedQueue<string> queue_;
+  PacketNumberIndexedQueue<QuicString> queue_;
 };
 
 TEST_F(PacketNumberIndexedQueueTest, InitialState) {

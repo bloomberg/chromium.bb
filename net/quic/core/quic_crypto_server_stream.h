@@ -18,6 +18,7 @@
 #include "net/quic/core/quic_crypto_stream.h"
 #include "net/quic/core/quic_session.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -41,7 +42,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStreamBase : public QuicCryptoStream {
   // GetBase64SHA256ClientChannelID sets |*output| to the base64 encoded,
   // SHA-256 hash of the client's ChannelID key and returns true, if the client
   // presented a ChannelID. Otherwise it returns false.
-  virtual bool GetBase64SHA256ClientChannelID(std::string* output) const = 0;
+  virtual bool GetBase64SHA256ClientChannelID(QuicString* output) const = 0;
 
   virtual int NumServerConfigUpdateMessagesSent() const = 0;
 
@@ -92,7 +93,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStream
     // GetBase64SHA256ClientChannelID sets |*output| to the base64 encoded,
     // SHA-256 hash of the client's ChannelID key and returns true, if the
     // client presented a ChannelID. Otherwise it returns false.
-    virtual bool GetBase64SHA256ClientChannelID(std::string* output) const = 0;
+    virtual bool GetBase64SHA256ClientChannelID(QuicString* output) const = 0;
 
     // Sends the latest server config and source-address token to the client.
     virtual void SendServerConfigUpdate(
@@ -144,7 +145,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStream
     // and populates |error_details|.
     virtual bool CanAcceptClientHello(const CryptoHandshakeMessage& message,
                                       const QuicSocketAddress& self_address,
-                                      std::string* error_details) const = 0;
+                                      QuicString* error_details) const = 0;
   };
 
   // |crypto_config| must outlive the stream.
@@ -160,7 +161,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStream
 
   // From QuicCryptoServerStreamBase
   void CancelOutstandingCallbacks() override;
-  bool GetBase64SHA256ClientChannelID(std::string* output) const override;
+  bool GetBase64SHA256ClientChannelID(QuicString* output) const override;
   void SendServerConfigUpdate(
       const CachedNetworkParameters* cached_network_params) override;
   uint8_t NumHandshakeMessages() const override;

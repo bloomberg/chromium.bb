@@ -67,6 +67,7 @@
 #include "base/macros.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 
 namespace net {
@@ -121,14 +122,14 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
                              QuicStringPiece data,
                              QuicTime timestamp,
                              size_t* bytes_buffered,
-                             std::string* error_details);
+                             QuicString* error_details);
 
   // Reads from this buffer into given iovec array, up to number of iov_len
   // iovec objects and returns the number of bytes read.
   QuicErrorCode Readv(const struct iovec* dest_iov,
                       size_t dest_count,
                       size_t* bytes_read,
-                      std::string* error_details);
+                      QuicString* error_details);
 
   // Returns the readable region of valid data in iovec format. The readable
   // region is the buffer region where there is valid data not yet read by
@@ -180,7 +181,7 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
   bool CopyStreamData(QuicStreamOffset offset,
                       QuicStringPiece data,
                       size_t* bytes_copy,
-                      std::string* error_details);
+                      QuicString* error_details);
 
   // Dispose the given buffer block.
   // After calling this method, blocks_[index] is set to nullptr
@@ -234,10 +235,10 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
   void UpdateFrameArrivalMap(QuicStreamOffset offset);
 
   // Return |gaps_| as a string: [1024, 1500) [1800, 2048)... for debugging.
-  std::string GapsDebugString();
+  QuicString GapsDebugString();
 
   // Return all received frames as a string in same format as GapsDebugString();
-  std::string ReceivedFramesDebugString();
+  QuicString ReceivedFramesDebugString();
 
   // The maximum total capacity of this buffer in byte, as constructed.
   const size_t max_buffer_capacity_bytes_;

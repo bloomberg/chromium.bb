@@ -12,6 +12,7 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_stream_sequencer_buffer.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -108,7 +109,7 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencer {
   bool level_triggered() const { return level_triggered_; }
 
   // Returns std::string describing internal state.
-  const std::string DebugString() const;
+  const QuicString DebugString() const;
 
  private:
   friend class test::QuicStreamSequencerPeer;

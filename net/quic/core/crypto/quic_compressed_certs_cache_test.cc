@@ -6,12 +6,12 @@
 
 #include "base/macros.h"
 #include "net/quic/core/crypto/cert_compressor.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 
 using base::IntToString;
-using std::string;
 
 namespace net {
 
@@ -29,38 +29,38 @@ class QuicCompressedCertsCacheTest : public testing::Test {
 };
 
 TEST_F(QuicCompressedCertsCacheTest, CacheHit) {
-  std::vector<string> certs = {"leaf cert", "intermediate cert", "root cert"};
+  std::vector<QuicString> certs = {"leaf cert", "intermediate cert",
+                                   "root cert"};
   QuicReferenceCountedPointer<ProofSource::Chain> chain(
       new ProofSource::Chain(certs));
-  string common_certs = "common certs";
-  string cached_certs = "cached certs";
-  string compressed = "compressed cert";
+  QuicString common_certs = "common certs";
+  QuicString cached_certs = "cached certs";
+  QuicString compressed = "compressed cert";
 
   certs_cache_.Insert(chain, common_certs, cached_certs, compressed);
 
-  const string* cached_value =
+  const QuicString* cached_value =
       certs_cache_.GetCompressedCert(chain, common_certs, cached_certs);
   ASSERT_NE(nullptr, cached_value);
   EXPECT_EQ(*cached_value, compressed);
 }
 
 TEST_F(QuicCompressedCertsCacheTest, CacheMiss) {
-  std::vector<string> certs = {"leaf cert", "intermediate cert", "root cert"};
+  std::vector<QuicString> certs = {"leaf cert", "intermediate cert",
+                                   "root cert"};
   QuicReferenceCountedPointer<ProofSource::Chain> chain(
       new ProofSource::Chain(certs));
 
-  string common_certs = "common certs";
-  string cached_certs = "cached certs";
-  string compressed = "compressed cert";
+  QuicString common_certs = "common certs";
+  QuicString cached_certs = "cached certs";
+  QuicString compressed = "compressed cert";
 
   certs_cache_.Insert(chain, common_certs, cached_certs, compressed);
 
-  EXPECT_EQ(nullptr,
-            certs_cache_.GetCompressedCert(chain, "mismatched common certs",
-                                           cached_certs));
-  EXPECT_EQ(nullptr,
-            certs_cache_.GetCompressedCert(chain, common_certs,
-                                           "mismatched cached certs"));
+  EXPECT_EQ(nullptr, certs_cache_.GetCompressedCert(
+                         chain, "mismatched common certs", cached_certs));
+  EXPECT_EQ(nullptr, certs_cache_.GetCompressedCert(chain, common_certs,
+                                                    "mismatched cached certs"));
 
   // A different chain though with equivalent certs should get a cache miss.
   QuicReferenceCountedPointer<ProofSource::Chain> chain2(
@@ -72,13 +72,14 @@ TEST_F(QuicCompressedCertsCacheTest, CacheMiss) {
 TEST_F(QuicCompressedCertsCacheTest, CacheMissDueToEviction) {
   // Test cache returns a miss when a queried uncompressed certs was cached but
   // then evicted.
-  std::vector<string> certs = {"leaf cert", "intermediate cert", "root cert"};
+  std::vector<QuicString> certs = {"leaf cert", "intermediate cert",
+                                   "root cert"};
   QuicReferenceCountedPointer<ProofSource::Chain> chain(
       new ProofSource::Chain(certs));
 
-  string common_certs = "common certs";
-  string cached_certs = "cached certs";
-  string compressed = "compressed cert";
+  QuicString common_certs = "common certs";
+  QuicString cached_certs = "cached certs";
+  QuicString compressed = "compressed cert";
   certs_cache_.Insert(chain, common_certs, cached_certs, compressed);
 
   // Insert another kQuicCompressedCertsCacheSize certs to evict the first

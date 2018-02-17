@@ -18,6 +18,7 @@
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_socket_address.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/fake_proof_source.h"
@@ -36,7 +37,6 @@
 #include "net/tools/quic/quic_simple_server_stream.h"
 #include "net/tools/quic/test_tools/mock_quic_session_visitor.h"
 
-using std::string;
 using testing::_;
 using testing::StrictMock;
 
@@ -421,7 +421,7 @@ TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
   int32_t bandwidth_estimate_kbytes_per_second = 123;
   int32_t max_bandwidth_estimate_kbytes_per_second = 134;
   int32_t max_bandwidth_estimate_timestamp = 1122334455;
-  const string serving_region = "not a real region";
+  const QuicString serving_region = "not a real region";
   session_->set_serving_region(serving_region);
 
   MockQuicCryptoServerStream* crypto_stream =
@@ -515,7 +515,7 @@ TEST_P(QuicServerSessionBaseTest, BandwidthResumptionExperiment) {
   copt.push_back(kBWRE);
   QuicConfigPeer::SetReceivedConnectionOptions(session_->config(), copt);
 
-  const string kTestServingRegion = "a serving region";
+  const QuicString kTestServingRegion = "a serving region";
   session_->set_serving_region(kTestServingRegion);
 
   // Set the time to be one hour + one second from the 0 baseline.
@@ -612,9 +612,9 @@ TEST_P(StreamMemberLifetimeTest, Basic) {
   std::vector<ParsedQuicVersion> packet_version_list = {version};
   std::unique_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
       1, true, false, 1,
-      string(chlo.GetSerialized(Perspective::IS_CLIENT)
-                 .AsStringPiece()
-                 .as_string()),
+      QuicString(chlo.GetSerialized(Perspective::IS_CLIENT)
+                     .AsStringPiece()
+                     .as_string()),
       PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER,
       &packet_version_list));
 

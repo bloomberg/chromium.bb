@@ -11,6 +11,7 @@
 #include "net/quic/platform/api/quic_fallthrough.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_str_cat.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 
 namespace net {
@@ -70,7 +71,7 @@ QuicErrorCode CryptoFramer::error() const {
   return error_;
 }
 
-const std::string& CryptoFramer::error_detail() const {
+const QuicString& CryptoFramer::error_detail() const {
   return error_detail_;
 }
 

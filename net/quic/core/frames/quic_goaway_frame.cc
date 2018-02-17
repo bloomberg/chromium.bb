@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 #include "net/quic/core/frames/quic_goaway_frame.h"
-
-using std::string;
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -14,7 +13,7 @@ QuicGoAwayFrame::QuicGoAwayFrame()
 QuicGoAwayFrame::QuicGoAwayFrame(QuicControlFrameId control_frame_id,
                                  QuicErrorCode error_code,
                                  QuicStreamId last_good_stream_id,
-                                 const string& reason)
+                                 const QuicString& reason)
     : QuicControlFrame(control_frame_id),
       error_code(error_code),
       last_good_stream_id(last_good_stream_id),

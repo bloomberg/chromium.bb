@@ -7,6 +7,7 @@
 
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_ip_address.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/impl/quic_socket_address_impl.h"
 
 namespace net {
@@ -30,7 +31,7 @@ class QUIC_EXPORT_PRIVATE QuicSocketAddress {
                                              const QuicSocketAddress& rhs);
 
   bool IsInitialized() const;
-  std::string ToString() const;
+  QuicString ToString() const;
   int FromSocket(int fd);
   QuicSocketAddress Normalized() const;
 

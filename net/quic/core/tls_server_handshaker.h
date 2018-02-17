@@ -11,6 +11,7 @@
 #include "net/quic/core/quic_crypto_stream.h"
 #include "net/quic/core/tls_handshaker.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "third_party/boringssl/src/include/openssl/pool.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
@@ -35,7 +36,7 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
 
   // From QuicCryptoServerStream::HandshakerDelegate
   void CancelOutstandingCallbacks() override;
-  bool GetBase64SHA256ClientChannelID(std::string* output) const override;
+  bool GetBase64SHA256ClientChannelID(QuicString* output) const override;
   void SendServerConfigUpdate(
       const CachedNetworkParameters* cached_network_params) override;
   uint8_t NumHandshakeMessages() const override;
@@ -62,7 +63,7 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
   class SignatureCallback : public ProofSource::SignatureCallback {
    public:
     explicit SignatureCallback(TlsServerHandshaker* handshaker);
-    void Run(bool ok, std::string signature) override;
+    void Run(bool ok, QuicString signature) override;
 
     // If called, Cancel causes the pending callback to be a no-op.
     void Cancel();
@@ -144,8 +145,8 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
   ProofSource* proof_source_;
   SignatureCallback* signature_callback_ = nullptr;
 
-  std::string hostname_;
-  std::string cert_verify_sig_;
+  QuicString hostname_;
+  QuicString cert_verify_sig_;
 
   bool encryption_established_ = false;
   bool handshake_confirmed_ = false;

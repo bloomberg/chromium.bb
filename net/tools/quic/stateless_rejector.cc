@@ -7,6 +7,7 @@
 #include "net/quic/core/quic_crypto_server_stream.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_flags.h"
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -103,7 +104,7 @@ class StatelessRejector::ProcessClientHelloCallback
       : rejector_(std::move(rejector)), done_cb_(std::move(done_cb)) {}
 
   void Run(QuicErrorCode error,
-           const std::string& error_details,
+           const QuicString& error_details,
            std::unique_ptr<CryptoHandshakeMessage> message,
            std::unique_ptr<DiversificationNonce> diversification_nonce,
            std::unique_ptr<ProofSource::Details> /* proof_source_details */)
@@ -138,7 +139,7 @@ void StatelessRejector::ProcessClientHello(
 
 void StatelessRejector::ProcessClientHelloDone(
     QuicErrorCode error,
-    const std::string& error_details,
+    const QuicString& error_details,
     std::unique_ptr<CryptoHandshakeMessage> message,
     std::unique_ptr<StatelessRejector> rejector,
     std::unique_ptr<StatelessRejector::ProcessDoneCallback> done_cb) {

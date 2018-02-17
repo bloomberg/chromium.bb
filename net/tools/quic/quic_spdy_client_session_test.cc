@@ -13,6 +13,7 @@
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/platform/api/quic_str_cat.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/mock_quic_spdy_client_stream.h"
@@ -24,7 +25,6 @@
 #include "net/tools/quic/quic_spdy_client_stream.h"
 
 using google::protobuf::implicit_cast;
-using std::string;
 using testing::_;
 using testing::AnyNumber;
 using testing::Invoke;
@@ -125,7 +125,7 @@ class QuicSpdyClientSessionTest : public QuicTestWithParam<ParsedQuicVersion> {
   std::unique_ptr<TestQuicSpdyClientSession> session_;
   QuicClientPushPromiseIndex push_promise_index_;
   SpdyHeaderBlock push_promise_;
-  string promise_url_;
+  QuicString promise_url_;
   QuicStreamId promised_stream_id_;
   QuicStreamId associated_stream_id_;
 };
@@ -503,7 +503,8 @@ TEST_P(QuicSpdyClientSessionTest, ReceivingPromiseEnhanceYourCalm) {
         session_->HandlePromised(associated_stream_id_, id, push_promise_));
 
     // Verify that the promise is in the unclaimed streams map.
-    string promise_url(SpdyUtils::GetPromisedUrlFromHeaderBlock(push_promise_));
+    QuicString promise_url(
+        SpdyUtils::GetPromisedUrlFromHeaderBlock(push_promise_));
     EXPECT_NE(session_->GetPromisedByUrl(promise_url), nullptr);
     EXPECT_NE(session_->GetPromisedById(id), nullptr);
   }
@@ -523,7 +524,8 @@ TEST_P(QuicSpdyClientSessionTest, ReceivingPromiseEnhanceYourCalm) {
       session_->HandlePromised(associated_stream_id_, id, push_promise_));
 
   // Verify that the promise was not created.
-  string promise_url(SpdyUtils::GetPromisedUrlFromHeaderBlock(push_promise_));
+  QuicString promise_url(
+      SpdyUtils::GetPromisedUrlFromHeaderBlock(push_promise_));
   EXPECT_EQ(session_->GetPromisedById(id), nullptr);
   EXPECT_EQ(session_->GetPromisedByUrl(promise_url), nullptr);
 }

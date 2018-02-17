@@ -8,11 +8,11 @@
 
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_arraysize.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
-using std::string;
 
 namespace {
 
@@ -228,12 +228,12 @@ TEST_F(Aes128GcmDecrypterTest, Decrypt) {
       bool has_pt = test_vectors[j].pt;
 
       // Decode the test vector.
-      string key = QuicTextUtils::HexDecode(test_vectors[j].key);
-      string iv = QuicTextUtils::HexDecode(test_vectors[j].iv);
-      string ct = QuicTextUtils::HexDecode(test_vectors[j].ct);
-      string aad = QuicTextUtils::HexDecode(test_vectors[j].aad);
-      string tag = QuicTextUtils::HexDecode(test_vectors[j].tag);
-      string pt;
+      QuicString key = QuicTextUtils::HexDecode(test_vectors[j].key);
+      QuicString iv = QuicTextUtils::HexDecode(test_vectors[j].iv);
+      QuicString ct = QuicTextUtils::HexDecode(test_vectors[j].ct);
+      QuicString aad = QuicTextUtils::HexDecode(test_vectors[j].aad);
+      QuicString tag = QuicTextUtils::HexDecode(test_vectors[j].tag);
+      QuicString pt;
       if (has_pt) {
         pt = QuicTextUtils::HexDecode(test_vectors[j].pt);
       }
@@ -248,17 +248,17 @@ TEST_F(Aes128GcmDecrypterTest, Decrypt) {
       if (has_pt) {
         EXPECT_EQ(test_info.pt_len, pt.length() * 8);
       }
-      string ciphertext = ct + tag;
+      QuicString ciphertext = ct + tag;
 
       Aes128GcmDecrypter decrypter;
       ASSERT_TRUE(decrypter.SetKey(key));
 
-      std::unique_ptr<QuicData> decrypted(DecryptWithNonce(
-          &decrypter, iv,
-          // This deliberately tests that the decrypter can handle an AAD that
-          // is set to nullptr, as opposed to a zero-length, non-nullptr
-          // pointer.
-          aad.length() ? aad : QuicStringPiece(), ciphertext));
+      std::unique_ptr<QuicData> decrypted(
+          DecryptWithNonce(&decrypter, iv,
+                           // This deliberately tests that the decrypter can
+                           // handle an AAD that is set to nullptr, as opposed
+                           // to a zero-length, non-nullptr pointer.
+                           aad.length() ? aad : QuicStringPiece(), ciphertext));
       if (!decrypted.get()) {
         EXPECT_FALSE(has_pt);
         continue;

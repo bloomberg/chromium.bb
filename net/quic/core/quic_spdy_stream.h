@@ -24,6 +24,7 @@
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_socket_address.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/spdy/core/spdy_framer.h"
 
 namespace net {
@@ -110,7 +111,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
 
   // Sends |data| to the peer, or buffers if it can't be sent immediately.
   void WriteOrBufferBody(
-      const std::string& data,
+      const QuicString& data,
       bool fin,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 

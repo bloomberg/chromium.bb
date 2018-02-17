@@ -35,12 +35,12 @@
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/quic_framer_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simple_data_producer.h"
 
-using std::string;
 
 namespace net {
 namespace test {
@@ -385,7 +385,7 @@ TEST_F(QuicIetfFramerTest, ConnectionClose1) {
   QuicDataWriter writer(sizeof(packet_buffer), packet_buffer,
                         NETWORK_BYTE_ORDER);
 
-  string test_string = "This is a test of the emergency broadcast system";
+  QuicString test_string = "This is a test of the emergency broadcast system";
   // write the frame to the packet buffer.
   EXPECT_TRUE(QuicFramerPeer::AppendIetfConnectionCloseFrame(
       &framer_, QuicIetfTransportErrorCodes::VERSION_NEGOTIATION_ERROR,
@@ -425,7 +425,7 @@ TEST_F(QuicIetfFramerTest, ConnectionClose2) {
                         NETWORK_BYTE_ORDER);
 
   // empty string,
-  string test_string;
+  QuicString test_string;
   // write the frame to the packet buffer.
   EXPECT_TRUE(QuicFramerPeer::AppendIetfConnectionCloseFrame(
       &framer_,
@@ -466,7 +466,7 @@ TEST_F(QuicIetfFramerTest, ConnectionClose3) {
                         NETWORK_BYTE_ORDER);
 
   // empty string,
-  string test_string = "Ich Bin Ein Jelly Donut?";
+  QuicString test_string = "Ich Bin Ein Jelly Donut?";
   QuicConnectionCloseFrame sent_frame;
   sent_frame.error_code = static_cast<QuicErrorCode>(0);
   sent_frame.error_details = test_string;
@@ -504,7 +504,7 @@ TEST_F(QuicIetfFramerTest, ApplicationClose1) {
   QuicDataWriter writer(sizeof(packet_buffer), packet_buffer,
                         NETWORK_BYTE_ORDER);
 
-  string test_string = "This is a test of the emergency broadcast system";
+  QuicString test_string = "This is a test of the emergency broadcast system";
   // write the frame to the packet buffer.
   EXPECT_TRUE(QuicFramerPeer::AppendIetfApplicationCloseFrame(
       &framer_,
@@ -544,7 +544,7 @@ TEST_F(QuicIetfFramerTest, ApplicationClose2) {
                         NETWORK_BYTE_ORDER);
 
   // empty string,
-  string test_string;
+  QuicString test_string;
   // write the frame to the packet buffer.
   EXPECT_TRUE(QuicFramerPeer::AppendIetfApplicationCloseFrame(
       &framer_, 0, test_string, &writer));
@@ -582,7 +582,7 @@ TEST_F(QuicIetfFramerTest, ApplicationClose3) {
                         NETWORK_BYTE_ORDER);
 
   // empty string,
-  string test_string = "Ich Bin Ein Jelly Donut?";
+  QuicString test_string = "Ich Bin Ein Jelly Donut?";
   QuicConnectionCloseFrame sent_frame;
   sent_frame.error_code = static_cast<QuicErrorCode>(0);
   sent_frame.error_details = test_string;

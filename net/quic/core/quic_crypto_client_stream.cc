@@ -20,8 +20,7 @@
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_str_cat.h"
-
-using std::string;
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -94,7 +93,7 @@ bool QuicCryptoClientStream::WasChannelIDSourceCallbackRun() const {
   return handshaker_->WasChannelIDSourceCallbackRun();
 }
 
-string QuicCryptoClientStream::chlo_hash() const {
+QuicString QuicCryptoClientStream::chlo_hash() const {
   return handshaker_->chlo_hash();
 }
 

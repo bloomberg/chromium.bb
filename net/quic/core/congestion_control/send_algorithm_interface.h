@@ -20,6 +20,7 @@
 #include "net/quic/core/quic_unacked_packet_map.h"
 #include "net/quic/platform/api/quic_clock.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -117,7 +118,7 @@ class QUIC_EXPORT_PRIVATE SendAlgorithmInterface {
 
   // Retrieves debugging information about the current state of the
   // send algorithm.
-  virtual std::string GetDebugState() const = 0;
+  virtual QuicString GetDebugState() const = 0;
 
   // Called when the connection has no outstanding data to send. Specifically,
   // this means that none of the data streams are write-blocked, there are no

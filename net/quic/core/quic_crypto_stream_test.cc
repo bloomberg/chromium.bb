@@ -14,13 +14,13 @@
 #include "net/quic/core/crypto/crypto_handshake.h"
 #include "net/quic/core/crypto/crypto_protocol.h"
 #include "net/quic/platform/api/quic_socket_address.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_stream_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock_mutant.h"
 
-using std::string;
 
 using testing::_;
 using testing::InSequence;
@@ -114,7 +114,7 @@ TEST_F(QuicCryptoStreamTest, ProcessRawData) {
 }
 
 TEST_F(QuicCryptoStreamTest, ProcessBadData) {
-  string bad(message_data_->data(), message_data_->length());
+  QuicString bad(message_data_->data(), message_data_->length());
   const int kFirstTagIndex = sizeof(uint32_t) +  // message tag
                              sizeof(uint16_t) +  // number of tag-value pairs
                              sizeof(uint16_t);   // padding
@@ -136,7 +136,7 @@ TEST_F(QuicCryptoStreamTest, RetransmitCryptoData) {
   InSequence s;
   // Send [0, 1350) in ENCRYPTION_NONE.
   EXPECT_EQ(ENCRYPTION_NONE, connection_->encryption_level());
-  string data(1350, 'a');
+  QuicString data(1350, 'a');
   EXPECT_CALL(session_, WritevData(_, kCryptoStreamId, 1350, 0, _))
       .WillOnce(Invoke(MockQuicSession::ConsumeData));
   stream_.WriteOrBufferData(data, false, nullptr);
@@ -171,7 +171,7 @@ TEST_F(QuicCryptoStreamTest, RetransmitCryptoData) {
 TEST_F(QuicCryptoStreamTest, NeuterUnencryptedStreamData) {
   // Send [0, 1350) in ENCRYPTION_NONE.
   EXPECT_EQ(ENCRYPTION_NONE, connection_->encryption_level());
-  string data(1350, 'a');
+  QuicString data(1350, 'a');
   EXPECT_CALL(session_, WritevData(_, kCryptoStreamId, 1350, 0, _))
       .WillOnce(Invoke(MockQuicSession::ConsumeData));
   stream_.WriteOrBufferData(data, false, nullptr);
@@ -203,7 +203,7 @@ TEST_F(QuicCryptoStreamTest, RetransmitStreamData) {
   InSequence s;
   // Send [0, 1350) in ENCRYPTION_NONE.
   EXPECT_EQ(ENCRYPTION_NONE, connection_->encryption_level());
-  string data(1350, 'a');
+  QuicString data(1350, 'a');
   EXPECT_CALL(session_, WritevData(_, kCryptoStreamId, 1350, 0, _))
       .WillOnce(Invoke(MockQuicSession::ConsumeData));
   stream_.WriteOrBufferData(data, false, nullptr);

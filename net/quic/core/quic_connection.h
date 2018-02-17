@@ -44,6 +44,7 @@
 #include "net/quic/platform/api/quic_containers.h"
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_socket_address.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 
 namespace net {
@@ -114,7 +115,7 @@ class QUIC_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   // Called when the connection is closed either locally by the framer, or
   // remotely by the peer.
   virtual void OnConnectionClosed(QuicErrorCode error,
-                                  const std::string& error_details,
+                                  const QuicString& error_details,
                                   ConnectionCloseSource source) = 0;
 
   // Called when the connection failed to write because the socket was blocked.
@@ -257,7 +258,7 @@ class QUIC_EXPORT_PRIVATE QuicConnectionDebugVisitor
 
   // Called when the connection is closed.
   virtual void OnConnectionClosed(QuicErrorCode error,
-                                  const std::string& error_details,
+                                  const QuicString& error_details,
                                   ConnectionCloseSource source) {}
 
   // Called when the version negotiation is successful.
@@ -393,13 +394,13 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // packet is sent to the peer.
   virtual void CloseConnection(
       QuicErrorCode error,
-      const std::string& details,
+      const QuicString& details,
       ConnectionCloseBehavior connection_close_behavior);
 
   // Sends a GOAWAY frame.
   virtual void SendGoAway(QuicErrorCode error,
                           QuicStreamId last_good_stream_id,
-                          const std::string& reason);
+                          const QuicString& reason);
 
   // Returns statistics tracked for this connection.
   const QuicConnectionStats& GetStats();
@@ -481,7 +482,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // QuicConnectionCloseDelegateInterface
   void OnUnrecoverableError(QuicErrorCode error,
-                            const std::string& error_details,
+                            const QuicString& error_details,
                             ConnectionCloseSource source) override;
 
   // QuicPacketGenerator::DelegateInterface
@@ -782,7 +783,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Sends the connection close packet to the peer. |ack_mode| determines
   // whether ack frame will be bundled with the connection close packet.
   virtual void SendConnectionClosePacket(QuicErrorCode error,
-                                         const std::string& details,
+                                         const QuicString& details,
                                          AckBundling ack_mode);
 
   // Returns true if the packet should be discarded and not sent.
@@ -814,7 +815,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Notifies the visitor of the close and marks the connection as disconnected.
   // Does not send a connection close frame to the peer.
   void TearDownLocalConnectionState(QuicErrorCode error,
-                                    const std::string& details,
+                                    const QuicString& details,
                                     ConnectionCloseSource source);
 
   // Writes the given packet to socket, encrypted with packet's

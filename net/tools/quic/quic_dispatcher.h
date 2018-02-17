@@ -23,6 +23,7 @@
 #include "net/quic/core/quic_version_manager.h"
 #include "net/quic/platform/api/quic_containers.h"
 #include "net/quic/platform/api/quic_socket_address.h"
+#include "net/quic/platform/api/quic_string.h"
 
 #include "net/tools/quic/quic_process_packet_interface.h"
 #include "net/tools/quic/quic_time_wait_list_manager.h"
@@ -76,7 +77,7 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // Ensure that the closed connection is cleaned up asynchronously.
   void OnConnectionClosed(QuicConnectionId connection_id,
                           QuicErrorCode error,
-                          const std::string& error_details) override;
+                          const QuicString& error_details) override;
 
   // QuicSession::Visitor interface implementation (via inheritance of
   // QuicTimeWaitListManager::Visitor):
@@ -387,7 +388,7 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   QuicSocketAddress current_server_address_;
   const QuicReceivedPacket* current_packet_;
   // If |current_packet_| is a CHLO packet, the extracted alpn.
-  std::string current_alpn_;
+  QuicString current_alpn_;
   QuicConnectionId current_connection_id_;
 
   // Used to get the supported versions based on flag. Does not own.

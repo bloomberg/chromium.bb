@@ -9,16 +9,16 @@
 #include "net/quic/core/spdy_utils.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/spdy/core/spdy_protocol.h"
 
-using std::string;
 
 namespace net {
 
 QuicClientPromisedInfo::QuicClientPromisedInfo(
     QuicSpdyClientSessionBase* session,
     QuicStreamId id,
-    string url)
+    QuicString url)
     : session_(session),
       id_(id),
       url_(std::move(url)),

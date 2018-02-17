@@ -18,6 +18,7 @@
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_str_cat.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
@@ -30,14 +31,13 @@
 #include "net/spdy/core/spdy_test_utils.h"
 #include "net/test/gtest_util.h"
 
-using std::string;
+using testing::_;
 using testing::AtLeast;
 using testing::InSequence;
 using testing::Invoke;
 using testing::Return;
 using testing::StrictMock;
 using testing::WithArgs;
-using testing::_;
 
 namespace net {
 namespace test {
@@ -327,10 +327,10 @@ class QuicHeadersStreamTest : public QuicTestWithParam<TestParams> {
   QuicHeadersStream* headers_stream_;
   SpdyHeaderBlock headers_;
   std::unique_ptr<TestHeadersHandler> headers_handler_;
-  string body_;
-  string saved_data_;
-  string saved_header_data_;
-  string saved_payloads_;
+  QuicString body_;
+  QuicString saved_data_;
+  QuicString saved_header_data_;
+  QuicString saved_payloads_;
   std::unique_ptr<SpdyFramer> framer_;
   std::unique_ptr<Http2DecoderAdapter> deframer_;
   StrictMock<MockVisitor> visitor_;
@@ -595,9 +595,9 @@ TEST_P(QuicHeadersStreamTest, ProcessLargeRawData) {
   // We want to create a frame that is more than the SPDY Framer's max control
   // frame size, which is 16K, but less than the HPACK decoders max decode
   // buffer size, which is 32K.
-  headers_["key0"] = string(1 << 13, '.');
-  headers_["key1"] = string(1 << 13, '.');
-  headers_["key2"] = string(1 << 13, '.');
+  headers_["key0"] = QuicString(1 << 13, '.');
+  headers_["key1"] = QuicString(1 << 13, '.');
+  headers_["key2"] = QuicString(1 << 13, '.');
   for (QuicStreamId stream_id = client_id_1_; stream_id < client_id_3_;
        stream_id += next_stream_id_) {
     for (bool fin : {false, true}) {
@@ -798,9 +798,9 @@ TEST_P(QuicHeadersStreamTest, HpackDecoderDebugVisitor) {
 
   // Create some headers we expect to generate entries in HPACK's
   // dynamic table, in addition to content-length.
-  headers_["key0"] = string(1 << 1, '.');
-  headers_["key1"] = string(1 << 2, '.');
-  headers_["key2"] = string(1 << 3, '.');
+  headers_["key0"] = QuicString(1 << 1, '.');
+  headers_["key1"] = QuicString(1 << 2, '.');
+  headers_["key2"] = QuicString(1 << 3, '.');
   for (QuicStreamId stream_id = client_id_1_; stream_id < client_id_3_;
        stream_id += next_stream_id_) {
     for (bool fin : {false, true}) {

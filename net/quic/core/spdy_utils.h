@@ -13,6 +13,7 @@
 #include "net/quic/core/quic_header_list.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/spdy/core/spdy_framer.h"
 
 namespace net {
@@ -39,11 +40,11 @@ class QUIC_EXPORT_PRIVATE SpdyUtils {
   // :path headers of a PUSH_PROMISE. Returns empty string if the headers do not
   // conform to HTTP/2 spec or if the ":method" header contains a forbidden
   // method for PUSH_PROMISE.
-  static std::string GetPromisedUrlFromHeaderBlock(
+  static QuicString GetPromisedUrlFromHeaderBlock(
       const SpdyHeaderBlock& headers);
 
   // Returns hostname, or empty string if missing.
-  static std::string GetHostNameFromHeaderBlock(const SpdyHeaderBlock& headers);
+  static QuicString GetHostNameFromHeaderBlock(const SpdyHeaderBlock& headers);
 
   // Returns true if result of |GetPromisedUrlFromHeaderBlock()| is non-empty
   // and is a well-formed URL.
@@ -51,7 +52,7 @@ class QUIC_EXPORT_PRIVATE SpdyUtils {
 
   // Populates the fields of |headers| to make a GET request of |url|,
   // which must be fully-qualified.
-  static bool PopulateHeaderBlockFromUrl(const std::string url,
+  static bool PopulateHeaderBlockFromUrl(const QuicString url,
                                          SpdyHeaderBlock* headers);
 
  private:

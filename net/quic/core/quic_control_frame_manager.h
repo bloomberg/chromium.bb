@@ -7,6 +7,7 @@
 
 #include "net/quic/core/frames/quic_frame.h"
 #include "net/quic/platform/api/quic_containers.h"
+#include "net/quic/platform/api/quic_string.h"
 
 namespace net {
 
@@ -41,7 +42,7 @@ class QUIC_EXPORT_PRIVATE QuicControlFrameManager {
   // immediately.
   void WriteOrBufferGoAway(QuicErrorCode error,
                            QuicStreamId last_good_stream_id,
-                           const std::string& reason);
+                           const QuicString& reason);
 
   // Tries to send a WINDOW_UPDATE_FRAME. Buffers the frame if it cannot be sent
   // immediately.

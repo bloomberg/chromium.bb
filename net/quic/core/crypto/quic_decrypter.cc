@@ -14,6 +14,7 @@
 #include "net/quic/core/crypto/null_decrypter.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "third_party/boringssl/src/include/openssl/tls1.h"
 
 namespace net {
@@ -57,8 +58,8 @@ void QuicDecrypter::DiversifyPreliminaryKey(QuicStringPiece preliminary_key,
                                             const DiversificationNonce& nonce,
                                             size_t key_size,
                                             size_t nonce_prefix_size,
-                                            std::string* out_key,
-                                            std::string* out_nonce_prefix) {
+                                            QuicString* out_key,
+                                            QuicString* out_nonce_prefix) {
   crypto::HKDF hkdf(preliminary_key.as_string() + nonce_prefix.as_string(),
                     QuicStringPiece(nonce.data(), nonce.size()),
                     "QUIC key diversification", 0, key_size, 0,

@@ -5,10 +5,10 @@
 #include "net/quic/core/quic_header_list.h"
 
 #include "net/quic/platform/api/quic_flags.h"
+#include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
-using std::string;
 
 namespace net {
 
@@ -26,8 +26,8 @@ TEST_F(QuicHeaderListTest, OnHeader) {
 
 TEST_F(QuicHeaderListTest, TooLarge) {
   QuicHeaderList headers;
-  string key = "key";
-  string value(1 << 18, '1');
+  QuicString key = "key";
+  QuicString value(1 << 18, '1');
   // Send a header that exceeds max_header_list_size.
   headers.OnHeader(key, value);
   // Send a second header exceeding max_header_list_size.
@@ -44,8 +44,8 @@ TEST_F(QuicHeaderListTest, TooLarge) {
 TEST_F(QuicHeaderListTest, NotTooLarge) {
   QuicHeaderList headers;
   headers.set_max_header_list_size(1 << 20);
-  string key = "key";
-  string value(1 << 18, '1');
+  QuicString key = "key";
+  QuicString value(1 << 18, '1');
   headers.OnHeader(key, value);
   size_t total_bytes = key.size() + value.size();
   headers.OnHeaderBlockEnd(total_bytes, total_bytes);
