@@ -57,6 +57,42 @@ void UpdateThrottleCheckResult(
   *to_update = result;
 }
 
+#define LOG_NAVIGATION_TIMING_HISTOGRAM(histogram, transition, value)       \
+  do {                                                                      \
+    UMA_HISTOGRAM_TIMES("Navigation." histogram, value);                    \
+    if (transition & ui::PAGE_TRANSITION_FORWARD_BACK) {                    \
+      UMA_HISTOGRAM_TIMES("Navigation." histogram ".BackForward", value);   \
+    } else if (ui::PageTransitionCoreTypeIs(transition,                     \
+                                            ui::PAGE_TRANSITION_RELOAD)) {  \
+      UMA_HISTOGRAM_TIMES("Navigation." histogram ".Reload", value);        \
+    } else if (ui::PageTransitionIsNewNavigation(transition)) {             \
+      UMA_HISTOGRAM_TIMES("Navigation." histogram ".NewNavigation", value); \
+    } else {                                                                \
+      NOTREACHED() << "Invalid page transition: " << transition;            \
+    }                                                                       \
+  } while (0)
+
+void LogIsSameProcess(ui::PageTransition transition, bool is_same_process) {
+  // Log overall value, then log specific value per type of navigation.
+  UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess", is_same_process);
+
+  if (transition & ui::PAGE_TRANSITION_FORWARD_BACK) {
+    UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess.BackForward",
+                          is_same_process);
+    return;
+  }
+  if (ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD)) {
+    UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess.Reload", is_same_process);
+    return;
+  }
+  if (ui::PageTransitionIsNewNavigation(transition)) {
+    UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess.NewNavigation",
+                          is_same_process);
+    return;
+  }
+  NOTREACHED() << "Invalid page transition: " << transition;
+}
+
 }  // namespace
 
 // static
@@ -751,7 +787,7 @@ void NavigationHandleImpl::WillProcessResponse(
         << "Blob, filesystem, data, and about URLs with a suggested filename "
            "should always result in a download, so we should never process a "
            "navigation response here.";
-    ReadyToCommitNavigation(render_frame_host_);
+    ReadyToCommitNavigation(render_frame_host_, false);
   }
 
   TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationHandle", this,
@@ -760,7 +796,8 @@ void NavigationHandleImpl::WillProcessResponse(
 }
 
 void NavigationHandleImpl::ReadyToCommitNavigation(
-    RenderFrameHostImpl* render_frame_host) {
+    RenderFrameHostImpl* render_frame_host,
+    bool is_error) {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                "ReadyToCommitNavigation");
 
@@ -769,15 +806,15 @@ void NavigationHandleImpl::ReadyToCommitNavigation(
   state_ = READY_TO_COMMIT;
   ready_to_commit_time_ = base::TimeTicks::Now();
 
-  // For back-forward navigations, record metrics.
-  if ((transition_ & ui::PAGE_TRANSITION_FORWARD_BACK) && !IsSameDocument()) {
+  // Record metrics for the time it takes to get to this state from the
+  // beginning of the navigation.
+  if (!IsSameDocument() && !is_error) {
+    LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit", transition_,
+                                    ready_to_commit_time_ - navigation_start_);
     bool is_same_process =
         render_frame_host_->GetProcess()->GetID() ==
         frame_tree_node_->current_frame_host()->GetProcess()->GetID();
-    UMA_HISTOGRAM_BOOLEAN("Navigation.BackForward.IsSameProcess",
-                          is_same_process);
-    UMA_HISTOGRAM_TIMES("Navigation.BackForward.TimeToReadyToCommit",
-                        ready_to_commit_time_ - navigation_start_);
+    LogIsSameProcess(transition_, is_same_process);
   }
 
   SetExpectedProcess(render_frame_host->GetProcess());
@@ -807,18 +844,6 @@ void NavigationHandleImpl::DidCommitNavigation(
   base_url_ = params.base_url;
   navigation_type_ = navigation_type;
 
-  // For back-forward navigations, record metrics.
-  if ((transition_ & ui::PAGE_TRANSITION_FORWARD_BACK) &&
-      !ready_to_commit_time_.is_null() && !IsSameDocument()) {
-    UMA_HISTOGRAM_TIMES("Navigation.BackForward.ReadyToCommitUntilCommit",
-                        base::TimeTicks::Now() - ready_to_commit_time_);
-  }
-
-  DCHECK(!IsInMainFrame() || navigation_entry_committed)
-      << "Only subframe navigations can get here without changing the "
-      << "NavigationEntry";
-  subframe_entry_committed_ = navigation_entry_committed;
-
   // If an error page reloads, net_error_code might be 200 but we still want to
   // count it as an error page.
   if (params.base_url.spec() == kUnreachableWebDataURL ||
@@ -830,18 +855,30 @@ void NavigationHandleImpl::DidCommitNavigation(
     TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                  "DidCommitNavigation");
     state_ = DID_COMMIT;
+  }
 
-    // Getting this far means that the navigation was not blocked, and neither
-    // is this the error page navigation following a blocked navigation. Ensure
-    // the frame owner element is no longer collapsed as a result of a prior
-    // navigation having been blocked with BLOCK_REQUEST_AND_COLLAPSE.
-    if (!frame_tree_node()->IsMainFrame()) {
-      // The last committed load in collapsed frames will be an error page with
-      // |kUnreachableWebDataURL|. Same-document navigation should not be
-      // possible.
-      DCHECK(!is_same_document_ || !frame_tree_node()->is_collapsed());
-      frame_tree_node()->SetCollapsed(false);
-    }
+  // Record metrics for the time it takes to get from ReadyToCommit state
+  // until this moment where the commit occurs.
+  if (!ready_to_commit_time_.is_null() && !IsSameDocument() && !IsErrorPage()) {
+    LOG_NAVIGATION_TIMING_HISTOGRAM(
+        "ReadyToCommitUntilCommit", transition_,
+        base::TimeTicks::Now() - ready_to_commit_time_);
+  }
+
+  DCHECK(!IsInMainFrame() || navigation_entry_committed)
+      << "Only subframe navigations can get here without changing the "
+      << "NavigationEntry";
+  subframe_entry_committed_ = navigation_entry_committed;
+
+  // For successful navigations, ensure the frame owner element is no longer
+  // collapsed as a result of a prior navigation having been blocked with
+  // BLOCK_REQUEST_AND_COLLAPSE.
+  if (!IsErrorPage() && !frame_tree_node()->IsMainFrame()) {
+    // The last committed load in collapsed frames will be an error page with
+    // |kUnreachableWebDataURL|. Same-document navigation should not be
+    // possible.
+    DCHECK(!is_same_document_ || !frame_tree_node()->is_collapsed());
+    frame_tree_node()->SetCollapsed(false);
   }
 }
 
@@ -1124,7 +1161,7 @@ void NavigationHandleImpl::ResumeInternal() {
     // the navigation is now ready to commit, unless it is not set to commit
     // (204/205s/downloads).
     if (result.action() == NavigationThrottle::PROCEED && render_frame_host_)
-      ReadyToCommitNavigation(render_frame_host_);
+      ReadyToCommitNavigation(render_frame_host_, false);
   }
   DCHECK_NE(NavigationThrottle::DEFER, result.action());
 
