@@ -61,9 +61,6 @@ void SetOnInitAllocatorShimCallbackForTesting(
     base::OnceClosure callback,
     scoped_refptr<base::TaskRunner> task_runner);
 
-void DisableAllocationTrackingForCurrentThreadForTesting();
-void EnableAllocationTrackingForCurrentThreadForTesting();
-
 }  // namespace profiling
 
 #endif  // CHROME_COMMON_PROFILING_MEMLOG_ALLOCATOR_SHIM_H_

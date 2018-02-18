@@ -688,10 +688,8 @@ void ProfilingTestDriver::MakeTestAllocations() {
   leaks_.reserve(2 * kMallocAllocCount + 1 + kPartitionAllocSize);
 
   {
-    DisableAllocationTrackingForCurrentThreadForTesting();
     TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION event(kMallocTypeTag);
     TRACE_EVENT0(kTestCategory, kMallocEvent);
-    EnableAllocationTrackingForCurrentThreadForTesting();
 
     for (int i = 0; i < kMallocAllocCount; ++i) {
       leaks_.push_back(new char[kMallocAllocSize]);
@@ -699,9 +697,7 @@ void ProfilingTestDriver::MakeTestAllocations() {
   }
 
   {
-    DisableAllocationTrackingForCurrentThreadForTesting();
     TRACE_EVENT0(kTestCategory, kPAEvent);
-    EnableAllocationTrackingForCurrentThreadForTesting();
 
     for (int i = 0; i < kPartitionAllocCount; ++i) {
       leaks_.push_back(static_cast<char*>(partition_allocator_.root()->Alloc(
@@ -710,9 +706,7 @@ void ProfilingTestDriver::MakeTestAllocations() {
   }
 
   {
-    DisableAllocationTrackingForCurrentThreadForTesting();
     TRACE_EVENT0(kTestCategory, kVariadicEvent);
-    EnableAllocationTrackingForCurrentThreadForTesting();
 
     for (int i = 0; i < kVariadicAllocCount; ++i) {
       leaks_.push_back(new char[i + 8000]);  // Variadic allocation.
