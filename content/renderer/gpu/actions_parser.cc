@@ -89,9 +89,9 @@ bool ActionsParser::ParsePointerActionSequence() {
   for (size_t action_index = 0; action_index < longest_action_sequence_;
        ++action_index) {
     SyntheticPointerActionListParams::ParamList param_list;
-    for (const auto pointer_list : pointer_actions_list_) {
-      if (action_index < pointer_list.size())
-        param_list.push_back(pointer_list[action_index]);
+    for (const auto pointer_action_list : pointer_actions_list_) {
+      if (action_index < pointer_action_list.size())
+        param_list.push_back(pointer_action_list[action_index]);
     }
     gesture_params_.PushPointerActionParamsList(param_list);
   }
