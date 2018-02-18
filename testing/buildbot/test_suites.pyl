@@ -330,11 +330,7 @@
   'chromedriver_py_tests_isolated_scripts': {
     'chromedriver_py_tests': {
       "args": [
-        # TODO(johnchen@chromium.org): As the initial step of adding
-        # ChromeDriver tests to commit queue, the following filter is used to
-        # enable a single test case as a smoke test. Many more test cases will
-        # be enabled in the future.
-        "--filter=__main__.ChromeDriverTest.testLoadUrl",
+        "--test-type=integration",
       ],
     },
   },

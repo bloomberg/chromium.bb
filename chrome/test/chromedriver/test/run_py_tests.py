@@ -143,6 +143,38 @@ _DESKTOP_NEGATIVE_FILTER = [
     'ChromeDriverAndroidTest.*',
 ]
 
+_INTEGRATION_NEGATIVE_FILTER = [
+    # The following test is flaky on Windows and Mac.
+    'ChromeDownloadDirTest.testDownloadDirectoryOverridesExistingPreferences',
+    # ChromeDriverLogTest tests an internal ChromeDriver feature, not needed
+    # for integration test.
+    'ChromeDriverLogTest.*',
+    # ChromeDriverPageLoadTimeoutTest is flaky, particularly on Mac.
+    'ChromeDriverPageLoadTimeoutTest.*',
+    # Some trivial test cases that provide no additional value beyond what are
+    # already tested by other test cases.
+    'ChromeDriverTest.testGetCurrentWindowHandle',
+    'ChromeDriverTest.testStartStop',
+    'ChromeDriverTest.testSendCommand*',
+    # LaunchApp is an obsolete API.
+    'ChromeExtensionsCapabilityTest.testCanLaunchApp',
+    # The following test uses the obsolete LaunchApp API, and is thus excluded.
+    # TODO(johnchen@chromium.org): Investigate feasibility of re-writing the
+    # test case without using LaunchApp.
+    'ChromeExtensionsCapabilityTest.testCanInspectBackgroundPage',
+    # PerfTest takes a long time, requires extra setup, and adds little value
+    # to integration testing.
+    'PerfTest.*',
+    # HeadlessInvalidCertificateTest is sometimes flaky.
+    'HeadlessInvalidCertificateTest.*',
+    # RemoteBrowserTest requires extra setup. TODO(johnchen@chromium.org):
+    # Modify the test so it runs correctly as isolated test.
+    'RemoteBrowserTest.*',
+    # SessionHandlingTest tests an internal ChromeDriver feature, not needed
+    # for integration test. It is also slightly flaky.
+    'SessionHandlingTest.*',
+]
+
 
 def _GetDesktopNegativeFilter(version_name):
   filter = _NEGATIVE_FILTER + _DESKTOP_NEGATIVE_FILTER
@@ -2714,6 +2746,9 @@ if __name__ == '__main__':
   parser.add_option(
       '', '--isolated-script-test-perf-output',
       help='JSON perf output file used by swarming, ignored')
+  parser.add_option(
+      '', '--test-type',
+      help='Select type of tests to run. Possible value: integration')
 
   options, args = parser.parse_args()
 
@@ -2761,11 +2796,21 @@ if __name__ == '__main__':
       negative_filter = _ANDROID_NEGATIVE_FILTER[_ANDROID_PACKAGE_KEY]
     else:
       negative_filter = _GetDesktopNegativeFilter(options.chrome_version)
+
+    if options.test_type is not None:
+      if options.test_type == 'integration':
+        negative_filter += _INTEGRATION_NEGATIVE_FILTER
+      else:
+        parser.error('Invalid --test-type. Valid value: integration')
+
     options.filter = '*-' + ':__main__.'.join([''] + negative_filter)
 
   all_tests_suite = unittest.defaultTestLoader.loadTestsFromModule(
       sys.modules[__name__])
   tests = unittest_util.FilterTestSuite(all_tests_suite, options.filter)
+  # TODO(johnchen@chromium.org): Investigate feasibility of combining
+  # multiple GlobalSetup and GlobalTearDown, and reducing the number of HTTP
+  # servers used for the test.
   ChromeDriverTest.GlobalSetUp()
   HeadlessInvalidCertificateTest.GlobalSetUp()
   MobileEmulationCapabilityTest.GlobalSetUp()
