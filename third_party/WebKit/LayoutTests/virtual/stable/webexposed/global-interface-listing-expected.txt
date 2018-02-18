@@ -4532,6 +4532,7 @@ interface Request
     getter destination
     getter headers
     getter integrity
+    getter keepalive
     getter method
     getter mode
     getter redirect
