@@ -365,8 +365,8 @@ void RTCVideoDecoder::DismissPictureBuffer(int32_t id) {
 
   if (!picture_buffers_at_display_.count(id)) {
     // We can delete the texture immediately as it's not being displayed.
-    for (const auto& id : buffer_to_dismiss.client_texture_ids())
-      factories_->DeleteTexture(id);
+    for (const auto& texture_id : buffer_to_dismiss.client_texture_ids())
+      factories_->DeleteTexture(texture_id);
     return;
   }
   // Not destroying a texture in display in |picture_buffers_at_display_|.
