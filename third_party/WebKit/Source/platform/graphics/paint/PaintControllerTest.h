@@ -8,15 +8,23 @@
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintController.h"
+#include "platform/testing/FakeDisplayItemClient.h"
+#include "platform/testing/PaintPropertyTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
 class GraphicsContext;
 
+using blink::testing::DefaultPaintChunkProperties;
+
 class PaintControllerTestBase : public ::testing::Test {
  public:
-  PaintControllerTestBase() : paint_controller_(PaintController::Create()) {}
+  PaintControllerTestBase()
+      : root_paint_property_client_("root"),
+        root_paint_chunk_id_(root_paint_property_client_,
+                             DisplayItem::kUninitializedType),
+        paint_controller_(PaintController::Create()) {}
 
   static void DrawNothing(GraphicsContext& context,
                           const DisplayItemClient& client,
@@ -35,6 +43,13 @@ class PaintControllerTestBase : public ::testing::Test {
       return;
     DrawingRecorder recorder(context, client, type);
     context.DrawRect(RoundedIntRect(FloatRect(bounds)));
+  }
+
+  void InitRootChunk() {
+    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+      GetPaintController().UpdateCurrentPaintChunkProperties(
+          root_paint_chunk_id_, DefaultPaintChunkProperties());
+    }
   }
 
  protected:
@@ -62,6 +77,8 @@ class PaintControllerTestBase : public ::testing::Test {
   }
 
  private:
+  FakeDisplayItemClient root_paint_property_client_;
+  PaintChunk::Id root_paint_chunk_id_;
   std::unique_ptr<PaintController> paint_controller_;
 };
 

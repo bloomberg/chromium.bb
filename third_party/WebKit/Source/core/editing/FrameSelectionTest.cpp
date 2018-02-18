@@ -26,12 +26,21 @@
 #include "core/testing/DummyPageHolder.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintController.h"
+#include "platform/testing/FakeDisplayItemClient.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
 class FrameSelectionTest : public EditingTestBase {
+ public:
+  FrameSelectionTest()
+      : root_paint_property_client_("root"),
+        root_paint_chunk_id_(root_paint_property_client_,
+                             DisplayItem::kUninitializedType) {}
+  FakeDisplayItemClient root_paint_property_client_;
+  PaintChunk::Id root_paint_chunk_id_;
+
  protected:
   VisibleSelection VisibleSelectionInDOMTree() const {
     return Selection().ComputeVisibleSelectionInDOMTree();
@@ -135,6 +144,15 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
   std::unique_ptr<PaintController> paint_controller = PaintController::Create();
   {
     GraphicsContext context(*paint_controller);
+
+    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+      paint_controller->UpdateCurrentPaintChunkProperties(
+          root_paint_chunk_id_,
+          PaintChunkProperties(PropertyTreeState(
+              TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
+              EffectPaintPropertyNode::Root())));
+    }
+
     Selection().PaintCaret(context, LayoutPoint());
   }
   paint_controller->CommitNewDisplayItems();

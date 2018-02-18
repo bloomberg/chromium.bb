@@ -34,7 +34,7 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
   // properties. See: ScopedPaintChunkProperties.
   // TODO(trchen): Enable this check for SPv175 too. Some drawable layers
   // don't paint with property tree yet, e.g. scrollbar layers.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     DCHECK(current_properties_.property_tree_state.Transform());
     DCHECK(current_properties_.property_tree_state.Clip());
     DCHECK(current_properties_.property_tree_state.Effect());
