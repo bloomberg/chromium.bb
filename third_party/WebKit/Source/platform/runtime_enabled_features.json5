@@ -415,7 +415,7 @@
     },
     {
       name: "FetchRequestKeepalive",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "FileSystem",
