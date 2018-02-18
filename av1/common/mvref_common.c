@@ -1731,6 +1731,7 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
   int gld_buf_idx = cm->frame_refs[GOLDEN_FRAME - LAST_FRAME].idx;
   int alt_buf_idx = cm->frame_refs[ALTREF_FRAME - LAST_FRAME].idx;
   int lst_buf_idx = cm->frame_refs[LAST_FRAME - LAST_FRAME].idx;
+  int lst2_buf_idx = cm->frame_refs[LAST2_FRAME - LAST_FRAME].idx;
   int bwd_buf_idx = cm->frame_refs[BWDREF_FRAME - LAST_FRAME].idx;
   int alt2_buf_idx = cm->frame_refs[ALTREF2_FRAME - LAST_FRAME].idx;
 
@@ -1782,6 +1783,12 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
 
   if (alt_frame_index > cur_frame_index && ref_stamp >= 0)
     if (motion_field_projection(cm, ALTREF_FRAME, ref_stamp, 0)) --ref_stamp;
+
+  if (ref_stamp >= 0 && lst_buf_idx >= 0)
+    if (motion_field_projection(cm, LAST_FRAME, ref_stamp, 2)) --ref_stamp;
+
+  if (ref_stamp >= 0 && lst2_buf_idx >= 0)
+    if (motion_field_projection(cm, LAST2_FRAME, ref_stamp, 2)) --ref_stamp;
 }
 #endif  // CONFIG_MFMV
 
