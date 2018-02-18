@@ -2459,9 +2459,9 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
       detail.update.root_id = param.update.root_id;
       detail.update.node_id_to_clear = param.update.node_id_to_clear;
       detail.update.nodes.resize(param.update.nodes.size());
-      for (size_t i = 0; i < param.update.nodes.size(); ++i) {
-        AXContentNodeDataToAXNodeData(param.update.nodes[i],
-                                      &detail.update.nodes[i]);
+      for (size_t j = 0; j < param.update.nodes.size(); ++j) {
+        AXContentNodeDataToAXNodeData(param.update.nodes[j],
+                                      &detail.update.nodes[j]);
       }
       details.push_back(detail);
     }

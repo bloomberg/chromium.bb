@@ -182,10 +182,9 @@ class CONTENT_EXPORT StoragePartitionImpl
     return site_for_service_worker_;
   }
 
-  struct DataDeletionHelper;
-  struct QuotaManagedDataDeletionHelper;
-
  private:
+  class DataDeletionHelper;
+  class QuotaManagedDataDeletionHelper;
   class NetworkContextOwner;
   class URLLoaderFactoryForBrowserProcess;
 

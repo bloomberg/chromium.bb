@@ -392,10 +392,11 @@ NavigationRequest::NavigationRequest(
     source_site_instance_ =
         frame_tree_node->current_frame_host()->GetSiteInstance();
   } else {
-    FrameNavigationEntry* frame_entry = entry->GetFrameEntry(frame_tree_node);
-    if (frame_entry) {
-      source_site_instance_ = frame_entry->source_site_instance();
-      dest_site_instance_ = frame_entry->site_instance();
+    FrameNavigationEntry* frame_navigation_entry =
+        entry->GetFrameEntry(frame_tree_node);
+    if (frame_navigation_entry) {
+      source_site_instance_ = frame_navigation_entry->source_site_instance();
+      dest_site_instance_ = frame_navigation_entry->site_instance();
     }
     restore_type_ = entry->restore_type();
     is_view_source_ = entry->IsViewSourceMode();

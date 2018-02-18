@@ -375,16 +375,17 @@ void StoragePartitionImpl::
 // Helper for deleting quota managed data from a partition.
 //
 // Most of the operations in this class are done on IO thread.
-struct StoragePartitionImpl::QuotaManagedDataDeletionHelper {
+class StoragePartitionImpl::QuotaManagedDataDeletionHelper {
+ public:
   QuotaManagedDataDeletionHelper(uint32_t remove_mask,
                                  uint32_t quota_storage_remove_mask,
                                  const GURL& storage_origin,
                                  const base::Closure& callback)
-      : remove_mask(remove_mask),
-        quota_storage_remove_mask(quota_storage_remove_mask),
-        storage_origin(storage_origin),
-        callback(callback),
-        task_count(0) {}
+      : remove_mask_(remove_mask),
+        quota_storage_remove_mask_(quota_storage_remove_mask),
+        storage_origin_(storage_origin),
+        callback_(callback),
+        task_count_(0) {}
 
   void IncrementTaskCountOnIO();
   void DecrementTaskCountOnIO();
@@ -405,12 +406,15 @@ struct StoragePartitionImpl::QuotaManagedDataDeletionHelper {
       const std::set<GURL>& origins,
       blink::mojom::StorageType quota_storage_type);
 
+ private:
   // All of these data are accessed on IO thread.
-  uint32_t remove_mask;
-  uint32_t quota_storage_remove_mask;
-  GURL storage_origin;
-  const base::Closure callback;
-  int task_count;
+  uint32_t remove_mask_;
+  uint32_t quota_storage_remove_mask_;
+  GURL storage_origin_;
+  const base::Closure callback_;
+  int task_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuotaManagedDataDeletionHelper);
 };
 
 // Helper for deleting all sorts of data from a partition, keeps track of
@@ -423,7 +427,8 @@ struct StoragePartitionImpl::QuotaManagedDataDeletionHelper {
 // deletion process (StoragePartitionImpl::ClearDataImpl) and the instance is
 // forwarded and updated on each (sub) deletion's callback. The instance is
 // finally destroyed when deletion completes (and |callback| is invoked).
-struct StoragePartitionImpl::DataDeletionHelper {
+class StoragePartitionImpl::DataDeletionHelper {
+ public:
   // An instance of this class is used instead of a callback to
   // DecrementTaskCount when the callback may be destroyed
   // rather than invoked.  The destruction of this object (which also
@@ -451,10 +456,10 @@ struct StoragePartitionImpl::DataDeletionHelper {
   DataDeletionHelper(uint32_t remove_mask,
                      uint32_t quota_storage_remove_mask,
                      base::OnceClosure callback)
-      : remove_mask(remove_mask),
-        quota_storage_remove_mask(quota_storage_remove_mask),
-        callback(std::move(callback)),
-        task_count(0) {}
+      : remove_mask_(remove_mask),
+        quota_storage_remove_mask_(quota_storage_remove_mask),
+        callback_(std::move(callback)),
+        task_count_(0) {}
 
   ~DataDeletionHelper() {}
 
@@ -483,13 +488,16 @@ struct StoragePartitionImpl::DataDeletionHelper {
       const StoragePartition::OriginMatcherFunction& origin_matcher,
       const base::Closure& callback);
 
-  uint32_t remove_mask;
-  uint32_t quota_storage_remove_mask;
+ private:
+  uint32_t remove_mask_;
+  uint32_t quota_storage_remove_mask_;
 
   // Accessed on UI thread.
-  base::OnceClosure callback;
+  base::OnceClosure callback_;
   // Accessed on UI thread.
-  int task_count;
+  int task_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(DataDeletionHelper);
 };
 
 void StoragePartitionImpl::DataDeletionHelper::ClearQuotaManagedDataOnIOThread(
@@ -503,10 +511,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearQuotaManagedDataOnIOThread(
 
   StoragePartitionImpl::QuotaManagedDataDeletionHelper* helper =
       new StoragePartitionImpl::QuotaManagedDataDeletionHelper(
-          remove_mask,
-          quota_storage_remove_mask,
-          storage_origin,
-          callback);
+          remove_mask_, quota_storage_remove_mask_, storage_origin, callback);
   helper->ClearDataOnIOThread(quota_manager, begin, special_storage_policy,
                               origin_matcher);
 }
@@ -891,18 +896,18 @@ void StoragePartitionImpl::DeletionHelperDone(base::OnceClosure callback) {
 void StoragePartitionImpl::
     QuotaManagedDataDeletionHelper::IncrementTaskCountOnIO() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  ++task_count;
+  ++task_count_;
 }
 
 void StoragePartitionImpl::
     QuotaManagedDataDeletionHelper::DecrementTaskCountOnIO() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK_GT(task_count, 0);
-  --task_count;
-  if (task_count)
+  DCHECK_GT(task_count_, 0);
+  --task_count_;
+  if (task_count_)
     return;
 
-  callback.Run();
+  callback_.Run();
   delete this;
 }
 
@@ -916,7 +921,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
       &QuotaManagedDataDeletionHelper::DecrementTaskCountOnIO,
       base::Unretained(this));
 
-  if (quota_storage_remove_mask & QUOTA_MANAGED_STORAGE_MASK_PERSISTENT) {
+  if (quota_storage_remove_mask_ & QUOTA_MANAGED_STORAGE_MASK_PERSISTENT) {
     IncrementTaskCountOnIO();
     // Ask the QuotaManager for all origins with persistent quota modified
     // within the user-specified timeframe, and deal with the resulting set in
@@ -929,7 +934,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
   }
 
   // Do the same for temporary quota.
-  if (quota_storage_remove_mask & QUOTA_MANAGED_STORAGE_MASK_TEMPORARY) {
+  if (quota_storage_remove_mask_ & QUOTA_MANAGED_STORAGE_MASK_TEMPORARY) {
     IncrementTaskCountOnIO();
     quota_manager->GetOriginsModifiedSince(
         blink::mojom::StorageType::kTemporary, begin,
@@ -939,7 +944,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
   }
 
   // Do the same for syncable quota.
-  if (quota_storage_remove_mask & QUOTA_MANAGED_STORAGE_MASK_SYNCABLE) {
+  if (quota_storage_remove_mask_ & QUOTA_MANAGED_STORAGE_MASK_SYNCABLE) {
     IncrementTaskCountOnIO();
     quota_manager->GetOriginsModifiedSince(
         blink::mojom::StorageType::kSyncable, begin,
@@ -974,7 +979,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
   for (std::set<GURL>::const_iterator origin = origins.begin();
        origin != origins.end(); ++origin) {
     // TODO(mkwst): Clean this up, it's slow. http://crbug.com/130746
-    if (!storage_origin.is_empty() && origin->GetOrigin() != storage_origin)
+    if (!storage_origin_.is_empty() && origin->GetOrigin() != storage_origin_)
       continue;
 
     if (!origin_matcher.is_null() &&
@@ -985,10 +990,9 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
     (*deletion_task_count)++;
     quota_manager->DeleteOriginData(
         *origin, quota_storage_type,
-        StoragePartitionImpl::GenerateQuotaClientMask(remove_mask),
-        base::Bind(&OnQuotaManagedOriginDeleted,
-                   origin->GetOrigin(), quota_storage_type,
-                   deletion_task_count, callback));
+        StoragePartitionImpl::GenerateQuotaClientMask(remove_mask_),
+        base::Bind(&OnQuotaManagedOriginDeleted, origin->GetOrigin(),
+                   quota_storage_type, deletion_task_count, callback));
   }
   (*deletion_task_count)--;
 
@@ -997,7 +1001,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
 
 void StoragePartitionImpl::DataDeletionHelper::IncrementTaskCountOnUI() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  ++task_count;
+  ++task_count_;
 }
 
 void StoragePartitionImpl::DataDeletionHelper::DecrementTaskCount() {
@@ -1008,10 +1012,10 @@ void StoragePartitionImpl::DataDeletionHelper::DecrementTaskCount() {
                        base::Unretained(this)));
     return;
   }
-  DCHECK_GT(task_count, 0);
-  --task_count;
-  if (!task_count) {
-    std::move(callback).Run();
+  DCHECK_GT(task_count_, 0);
+  --task_count_;
+  if (!task_count_) {
+    std::move(callback_).Run();
     delete this;
   }
 }
@@ -1028,14 +1032,14 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     storage::FileSystemContext* filesystem_context,
     const base::Time begin,
     const base::Time end) {
-  DCHECK_NE(remove_mask, 0u);
-  DCHECK(!callback.is_null());
+  DCHECK_NE(remove_mask_, 0u);
+  DCHECK(!callback_.is_null());
 
   IncrementTaskCountOnUI();
   base::Closure decrement_callback = base::Bind(
       &DataDeletionHelper::DecrementTaskCount, base::Unretained(this));
 
-  if (remove_mask & REMOVE_DATA_MASK_COOKIES) {
+  if (remove_mask_ & REMOVE_DATA_MASK_COOKIES) {
     // Handle the cookies.
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -1050,12 +1054,12 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
                 base::Passed(std::make_unique<OwnsReference>(this)))));
   }
 
-  if (remove_mask & REMOVE_DATA_MASK_INDEXEDDB ||
-      remove_mask & REMOVE_DATA_MASK_WEBSQL ||
-      remove_mask & REMOVE_DATA_MASK_APPCACHE ||
-      remove_mask & REMOVE_DATA_MASK_FILE_SYSTEMS ||
-      remove_mask & REMOVE_DATA_MASK_SERVICE_WORKERS ||
-      remove_mask & REMOVE_DATA_MASK_CACHE_STORAGE) {
+  if (remove_mask_ & REMOVE_DATA_MASK_INDEXEDDB ||
+      remove_mask_ & REMOVE_DATA_MASK_WEBSQL ||
+      remove_mask_ & REMOVE_DATA_MASK_APPCACHE ||
+      remove_mask_ & REMOVE_DATA_MASK_FILE_SYSTEMS ||
+      remove_mask_ & REMOVE_DATA_MASK_SERVICE_WORKERS ||
+      remove_mask_ & REMOVE_DATA_MASK_CACHE_STORAGE) {
     IncrementTaskCountOnUI();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -1066,7 +1070,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
             origin_matcher, decrement_callback));
   }
 
-  if (remove_mask & REMOVE_DATA_MASK_LOCAL_STORAGE) {
+  if (remove_mask_ & REMOVE_DATA_MASK_LOCAL_STORAGE) {
     IncrementTaskCountOnUI();
     ClearLocalStorageOnUIThread(base::WrapRefCounted(dom_storage_context),
                                 base::WrapRefCounted(special_storage_policy),
@@ -1085,7 +1089,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     }
   }
 
-  if (remove_mask & REMOVE_DATA_MASK_SHADER_CACHE) {
+  if (remove_mask_ & REMOVE_DATA_MASK_SHADER_CACHE) {
     IncrementTaskCountOnUI();
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                             base::BindOnce(&ClearShaderCacheOnIOThread, path,
@@ -1093,7 +1097,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  if (remove_mask & REMOVE_DATA_MASK_PLUGIN_PRIVATE_DATA) {
+  if (remove_mask_ & REMOVE_DATA_MASK_PLUGIN_PRIVATE_DATA) {
     IncrementTaskCountOnUI();
     filesystem_context->default_file_task_runner()->PostTask(
         FROM_HERE,
