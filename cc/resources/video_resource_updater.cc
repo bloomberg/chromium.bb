@@ -46,6 +46,7 @@ VideoFrameExternalResources::ResourceType ExternalResourceTypeForHardwarePlanes(
   switch (format) {
     case media::PIXEL_FORMAT_ARGB:
     case media::PIXEL_FORMAT_XRGB:
+    case media::PIXEL_FORMAT_RGB32:
     case media::PIXEL_FORMAT_UYVY:
       switch (target) {
         case GL_TEXTURE_EXTERNAL_OES:
@@ -83,7 +84,6 @@ VideoFrameExternalResources::ResourceType ExternalResourceTypeForHardwarePlanes(
     case media::PIXEL_FORMAT_NV21:
     case media::PIXEL_FORMAT_YUY2:
     case media::PIXEL_FORMAT_RGB24:
-    case media::PIXEL_FORMAT_RGB32:
     case media::PIXEL_FORMAT_MJPEG:
     case media::PIXEL_FORMAT_MT21:
     case media::PIXEL_FORMAT_YUV420P9:
