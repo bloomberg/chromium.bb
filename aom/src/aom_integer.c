@@ -29,7 +29,7 @@ int aom_uleb_decode(const uint8_t *buffer, size_t available, uint64_t *value) {
   if (buffer && value) {
     for (size_t i = 0; i < kMaximumLeb128Size && i < available; ++i) {
       const uint8_t decoded_byte = *(buffer + i) & kLeb128ByteMask;
-      *value |= decoded_byte << (i * 7);
+      *value |= ((uint64_t)decoded_byte) << (i * 7);
       if ((*(buffer + i) >> 7) == 0) {
         status = 0;
         break;
