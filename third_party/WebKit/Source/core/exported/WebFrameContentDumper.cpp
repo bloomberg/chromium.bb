@@ -159,7 +159,8 @@ class InnerTextDumper final {
 };
 
 bool TextContentDumperIgnoresElement(const Element& element) {
-  return IsHTMLStyleElement(element) || IsHTMLScriptElement(element);
+  return IsHTMLStyleElement(element) || IsHTMLScriptElement(element) ||
+         IsHTMLNoScriptElement(element);
 }
 
 bool IsWhiteSpace(UChar ch) {
