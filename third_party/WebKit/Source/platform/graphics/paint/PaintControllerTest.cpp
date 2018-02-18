@@ -532,7 +532,7 @@ TEST_P(PaintControllerTest, UpdateClip) {
   {
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       PaintChunk::Id id(first, kClipType);
-      PaintChunkProperties properties = DefaultPaintChunkProperties();
+      PaintChunkProperties properties = testing::DefaultPaintChunkProperties();
       properties.property_tree_state.SetClip(clip.get());
       GetPaintController().UpdateCurrentPaintChunkProperties(id, properties);
     }
@@ -594,7 +594,7 @@ TEST_P(PaintControllerTest, UpdateClip) {
   {
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       PaintChunk::Id id(second, kClipType);
-      PaintChunkProperties properties = DefaultPaintChunkProperties();
+      PaintChunkProperties properties = testing::DefaultPaintChunkProperties();
       properties.property_tree_state.SetClip(clip2.get());
 
       GetPaintController().UpdateCurrentPaintChunkProperties(id, properties);
@@ -831,7 +831,7 @@ TEST_P(PaintControllerTest, CachedSubsequenceForcePaintChunk) {
   GraphicsContext context(GetPaintController());
 
   FakeDisplayItemClient root("root");
-  auto root_properties = DefaultPaintChunkProperties();
+  auto root_properties = testing::DefaultPaintChunkProperties();
   PaintChunk::Id root_id(root, DisplayItem::kCaret);
   // Record a first chunk with backface_hidden == false
   GetPaintController().UpdateCurrentPaintChunkProperties(root_id,
@@ -841,7 +841,7 @@ TEST_P(PaintControllerTest, CachedSubsequenceForcePaintChunk) {
   FakeDisplayItemClient container("container");
   {
     // Record a second chunk with backface_hidden == true
-    auto container_properties = DefaultPaintChunkProperties();
+    auto container_properties = testing::DefaultPaintChunkProperties();
     container_properties.backface_hidden = true;
     PaintChunk::Id container_id(container, DisplayItem::kCaret);
 
@@ -887,8 +887,10 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
   FakeDisplayItemClient content2("content2", LayoutRect(100, 200, 50, 200));
   GraphicsContext context(GetPaintController());
 
-  PaintChunkProperties container1_properties = DefaultPaintChunkProperties();
-  PaintChunkProperties container2_properties = DefaultPaintChunkProperties();
+  PaintChunkProperties container1_properties =
+      testing::DefaultPaintChunkProperties();
+  PaintChunkProperties container2_properties =
+      testing::DefaultPaintChunkProperties();
 
   {
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
@@ -1152,8 +1154,10 @@ TEST_P(PaintControllerTest, UpdateSwapOrderCrossingChunks) {
   FakeDisplayItemClient content2("content2", LayoutRect(100, 200, 50, 200));
   GraphicsContext context(GetPaintController());
 
-  PaintChunkProperties container1_properties = DefaultPaintChunkProperties();
-  PaintChunkProperties container2_properties = DefaultPaintChunkProperties();
+  PaintChunkProperties container1_properties =
+      testing::DefaultPaintChunkProperties();
+  PaintChunkProperties container2_properties =
+      testing::DefaultPaintChunkProperties();
 
   {
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
@@ -1287,13 +1291,15 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
   GraphicsContext context(GetPaintController());
 
   PaintChunkProperties container1_background_properties =
-      DefaultPaintChunkProperties();
-  PaintChunkProperties content1_properties = DefaultPaintChunkProperties();
+      testing::DefaultPaintChunkProperties();
+  PaintChunkProperties content1_properties =
+      testing::DefaultPaintChunkProperties();
   PaintChunkProperties container1_foreground_properties =
-      DefaultPaintChunkProperties();
+      testing::DefaultPaintChunkProperties();
   PaintChunkProperties container2_background_properties =
-      DefaultPaintChunkProperties();
-  PaintChunkProperties content2_properties = DefaultPaintChunkProperties();
+      testing::DefaultPaintChunkProperties();
+  PaintChunkProperties content2_properties =
+      testing::DefaultPaintChunkProperties();
 
   {
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
@@ -1778,7 +1784,7 @@ TEST_P(PaintControllerTest, SmallPaintControllerHasOnePaintChunk) {
 
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     GetPaintController().UpdateCurrentPaintChunkProperties(
-        WTF::nullopt, DefaultPaintChunkProperties());
+        WTF::nullopt, testing::DefaultPaintChunkProperties());
   }
   GraphicsContext context(GetPaintController());
   DrawRect(context, client, kBackgroundType, FloatRect(0, 0, 100, 100));
