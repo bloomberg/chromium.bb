@@ -55,6 +55,7 @@ bool ValidFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::BGRX_1010102:
+    case gfx::BufferFormat::RGBX_1010102:
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::RGBA_F16:
       return true;
@@ -85,6 +86,7 @@ bool IsCompressedFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::BGRX_1010102:
+    case gfx::BufferFormat::RGBX_1010102:
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::RGBA_F16:
       return false;
@@ -128,6 +130,7 @@ GLenum TextureFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::BGRX_8888:
       return GL_RGB;
     case gfx::BufferFormat::BGRX_1010102:
+    case gfx::BufferFormat::RGBX_1010102:
       // Technically speaking we should use an opaque format, but neither
       // OpenGLES nor OpenGL supports the hypothetical GL_RGB10_EXT.
       return GL_RGB10_A2_EXT;
@@ -145,6 +148,7 @@ GLenum TextureFormat(gfx::BufferFormat format) {
 GLenum DataFormat(gfx::BufferFormat format) {
   switch (format) {
     case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::RGBX_1010102:
       return GL_RGBA;
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::BGRX_1010102:
@@ -192,6 +196,7 @@ GLenum DataType(gfx::BufferFormat format) {
     case gfx::BufferFormat::RGBA_F16:
       return GL_HALF_FLOAT_OES;
     case gfx::BufferFormat::BGRX_1010102:
+    case gfx::BufferFormat::RGBX_1010102:
       return GL_UNSIGNED_INT_2_10_10_10_REV;
     case gfx::BufferFormat::ATC:
     case gfx::BufferFormat::ATCIA:
@@ -220,6 +225,7 @@ GLint DataRowLength(size_t stride, gfx::BufferFormat format) {
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::BGRX_1010102:
+    case gfx::BufferFormat::RGBX_1010102:
     case gfx::BufferFormat::BGRA_8888:
       return base::checked_cast<GLint>(stride) / 4;
     case gfx::BufferFormat::RGBA_F16:
@@ -337,6 +343,7 @@ std::unique_ptr<uint8_t[]> GLES2Data(const gfx::Size& size,
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::BGRX_1010102:
+    case gfx::BufferFormat::RGBX_1010102:
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::RGBA_F16:
     case gfx::BufferFormat::R_8:
