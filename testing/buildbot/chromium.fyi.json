@@ -1802,7 +1802,7 @@
     "isolated_scripts": [
       {
         "args": [
-          "--filter=__main__.ChromeDriverTest.testLoadUrl"
+          "--test-type=integration"
         ],
         "isolate_name": "chromedriver_py_tests",
         "name": "chromedriver_py_tests",
@@ -2554,7 +2554,7 @@
     "isolated_scripts": [
       {
         "args": [
-          "--filter=__main__.ChromeDriverTest.testLoadUrl"
+          "--test-type=integration"
         ],
         "isolate_name": "chromedriver_py_tests",
         "name": "chromedriver_py_tests",
@@ -5698,7 +5698,7 @@
     "isolated_scripts": [
       {
         "args": [
-          "--filter=__main__.ChromeDriverTest.testLoadUrl"
+          "--test-type=integration"
         ],
         "isolate_name": "chromedriver_py_tests",
         "name": "chromedriver_py_tests",
@@ -7653,7 +7653,7 @@
     "isolated_scripts": [
       {
         "args": [
-          "--filter=__main__.ChromeDriverTest.testLoadUrl"
+          "--test-type=integration"
         ],
         "isolate_name": "chromedriver_py_tests",
         "name": "chromedriver_py_tests",
