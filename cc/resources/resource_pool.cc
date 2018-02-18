@@ -544,19 +544,19 @@ void ResourcePool::PoolResource::OnMemoryDump(
     DCHECK(!shared_bitmap_->GetSharedMemoryHandle().IsValid());
     backing_guid = viz::GetSharedBitmapGUIDForTracing(shared_bitmap_->id());
   } else if (gpu_backing_) {
+    // We prefer the SharedMemoryGuid() if it exists, if the resource is backed
+    // by shared memory.
     shm_guid = gpu_backing_->SharedMemoryGuid();
     if (shm_guid.is_empty()) {
       auto* dump_manager = base::trace_event::MemoryDumpManager::GetInstance();
       backing_guid =
           gpu_backing_->MemoryDumpGuid(dump_manager->GetTracingProcessId());
     }
-
-    // If |dump_parent| is false, the ownership of the resource is in the
-    // ResourcePool, so we can see if any memory is allocated. If not, then
-    // don't dump it.
-    if (shm_guid.is_empty() && backing_guid.empty())
-      return;
   }
+
+  // If memory isn't allocated on the resource yet, then don't dump it.
+  if (shm_guid.is_empty() && backing_guid.empty())
+    return;
 
   // Resource IDs are not process-unique, so log with the
   // LayerTreeResourceProvider's unique id.
@@ -564,34 +564,18 @@ void ResourcePool::PoolResource::OnMemoryDump(
       base::StringPrintf("cc/tile_memory/provider_%d/resource_%zd",
                          resource_provider->tracing_id(), unique_id_);
   MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
+
   // The importance value used here needs to be greater than the importance
   // used in other places that use this GUID to inform the system that this is
   // the root ownership. The gpu processes uses 0, so 2 is sufficient, and was
   // chosen historically and there is no need to adjust it.
   const int kImportance = 2;
-  if (shared_bitmap_) {
-    // Software resources are in shared memory but are kept closed to avoid
-    // holding an fd open. So there is no SharedMemoryHandle to get a guid
-    // from.
-    DCHECK(!shared_bitmap_->GetSharedMemoryHandle().IsValid());
-    base::trace_event::MemoryAllocatorDumpGuid guid =
-        viz::GetSharedBitmapGUIDForTracing(shared_bitmap_->id());
-    DCHECK(!guid.empty());
-    pmd->CreateSharedGlobalAllocatorDump(guid);
-    pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
+  if (!shm_guid.is_empty()) {
+    pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shm_guid, kImportance);
   } else {
-    // The importance value used here needs to be greater than the importance
-    // used in other places that use this GUID to inform the system that this is
-    // the root ownership. The gpu processes uses 0, so 2 is sufficient, and was
-    // chosen historically and there is no need to adjust it.
-    const int kImportance = 2;
-    if (!shm_guid.is_empty()) {
-      pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shm_guid, kImportance);
-    } else {
-      DCHECK(!backing_guid.empty());
-      pmd->CreateSharedGlobalAllocatorDump(backing_guid);
-      pmd->AddOwnershipEdge(dump->guid(), backing_guid, kImportance);
-    }
+    DCHECK(!backing_guid.empty());
+    pmd->CreateSharedGlobalAllocatorDump(backing_guid);
+    pmd->AddOwnershipEdge(dump->guid(), backing_guid, kImportance);
   }
 
   uint64_t total_bytes =
