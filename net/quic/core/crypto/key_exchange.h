@@ -5,8 +5,6 @@
 #ifndef NET_QUIC_CORE_CRYPTO_KEY_EXCHANGE_H_
 #define NET_QUIC_CORE_CRYPTO_KEY_EXCHANGE_H_
 
-#include <string>
-
 #include "net/quic/core/crypto/crypto_protocol.h"
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_string.h"

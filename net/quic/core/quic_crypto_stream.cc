@@ -4,8 +4,6 @@
 
 #include "net/quic/core/quic_crypto_stream.h"
 
-#include <string>
-
 #include "net/quic/core/crypto/crypto_handshake.h"
 #include "net/quic/core/crypto/crypto_utils.h"
 #include "net/quic/core/quic_connection.h"

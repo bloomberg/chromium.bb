@@ -7,7 +7,6 @@
 #include <cstdint>
 #include <memory>
 #include <ostream>
-#include <string>
 
 #include "base/macros.h"
 #include "net/quic/core/crypto/null_encrypter.h"

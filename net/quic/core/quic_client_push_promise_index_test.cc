@@ -4,8 +4,6 @@
 
 #include "net/quic/core/quic_client_push_promise_index.h"
 
-#include <string>
-
 #include "net/quic/core/spdy_utils.h"
 #include "net/quic/core/tls_client_handshaker.h"
 #include "net/quic/platform/api/quic_string.h"

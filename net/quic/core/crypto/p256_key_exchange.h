@@ -6,7 +6,6 @@
 #define NET_QUIC_CORE_CRYPTO_P256_KEY_EXCHANGE_H_
 
 #include <cstdint>
-#include <string>
 
 #include "base/macros.h"
 #include "net/quic/core/crypto/key_exchange.h"

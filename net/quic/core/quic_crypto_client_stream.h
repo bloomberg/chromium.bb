@@ -7,7 +7,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <string>
 
 #include "base/macros.h"
 #include "net/quic/core/crypto/channel_id.h"

@@ -6,7 +6,6 @@
 #define NET_QUIC_CORE_QUIC_TAG_H_
 
 #include <map>
-#include <string>
 #include <vector>
 
 #include "net/quic/platform/api/quic_export.h"

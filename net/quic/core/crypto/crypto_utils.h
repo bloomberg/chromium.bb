@@ -9,7 +9,6 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <string>
 
 #include "base/macros.h"
 #include "net/quic/core/crypto/crypto_handshake.h"

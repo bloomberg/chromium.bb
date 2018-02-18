@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 #include <sys/types.h>
-#include <string>
 
 #include "base/macros.h"
 #include "net/quic/core/quic_packets.h"

@@ -6,7 +6,6 @@
 #define NET_QUIC_CORE_CRYPTO_PROOF_SOURCE_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "net/quic/core/crypto/quic_crypto_proof.h"

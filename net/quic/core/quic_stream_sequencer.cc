@@ -6,7 +6,6 @@
 
 #include <algorithm>
 #include <limits>
-#include <string>
 #include <utility>
 
 #include "net/quic/core/quic_packets.h"

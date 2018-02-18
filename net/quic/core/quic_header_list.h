@@ -7,7 +7,6 @@
 
 #include <algorithm>
 #include <functional>
-#include <string>
 #include <utility>
 
 #include "net/quic/platform/api/quic_bug_tracker.h"

@@ -7,7 +7,6 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <string>
 
 #include "base/macros.h"
 #include "net/base/int128.h"

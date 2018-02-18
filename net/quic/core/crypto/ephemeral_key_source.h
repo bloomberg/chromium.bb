@@ -5,8 +5,6 @@
 #ifndef NET_QUIC_CORE_CRYPTO_EPHEMERAL_KEY_SOURCE_H_
 #define NET_QUIC_CORE_CRYPTO_EPHEMERAL_KEY_SOURCE_H_
 
-#include <string>
-
 #include "net/quic/core/quic_time.h"
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_string.h"

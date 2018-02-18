@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <limits>
 #include <map>
-#include <string>
 #include <utility>
 
 #include "base/macros.h"

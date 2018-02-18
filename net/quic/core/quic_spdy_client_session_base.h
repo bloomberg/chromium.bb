@@ -5,8 +5,6 @@
 #ifndef NET_QUIC_CORE_QUIC_SPDY_CLIENT_SESSION_BASE_H_
 #define NET_QUIC_CORE_QUIC_SPDY_CLIENT_SESSION_BASE_H_
 
-#include <string>
-
 #include "base/macros.h"
 #include "net/quic/core/quic_crypto_client_stream.h"
 #include "net/quic/core/quic_spdy_session.h"

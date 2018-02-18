@@ -5,7 +5,6 @@
 #ifndef NET_QUIC_CORE_QUIC_CLIENT_PROMISED_INFO_H_
 #define NET_QUIC_CORE_QUIC_CLIENT_PROMISED_INFO_H_
 
-#include <string>
 #include <sys/types.h>
 
 #include "net/quic/core/quic_alarm.h"
