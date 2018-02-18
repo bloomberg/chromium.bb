@@ -182,11 +182,11 @@ void AV1Convolve2DSrTest::RunCheckOutput(convolve_2d_func test_impl) {
               av1_get_interp_filter_params((InterpFilter)hfilter);
           InterpFilterParams filter_params_y =
               av1_get_interp_filter_params((InterpFilter)vfilter);
-          for (int do_average = 0; do_average <= 1; ++do_average) {
+          for (int do_average = 0; do_average < 1; ++do_average) {
             ConvolveParams conv_params1 =
-                get_conv_params_no_round(0, do_average, 0, NULL, 0, 1, 8);
+                get_conv_params_no_round(0, do_average, 0, NULL, 0, 0, 8);
             ConvolveParams conv_params2 =
-                get_conv_params_no_round(0, do_average, 0, NULL, 0, 1, 8);
+                get_conv_params_no_round(0, do_average, 0, NULL, 0, 0, 8);
 
             const int subx_range = has_subx ? 16 : 1;
             const int suby_range = has_suby ? 16 : 1;
@@ -246,7 +246,7 @@ void AV1Convolve2DSrTest::RunSpeedTest(convolve_2d_func test_impl) {
       av1_get_interp_filter_params((InterpFilter)vfilter);
   const int do_average = 0;
   ConvolveParams conv_params2 =
-      get_conv_params_no_round(0, do_average, 0, NULL, 0, 1, 8);
+      get_conv_params_no_round(0, do_average, 0, NULL, 0, 0, 8);
 
   for (int block_idx = BLOCK_4X4; block_idx < BLOCK_SIZES_ALL; ++block_idx) {
     // Make sure that sizes 2xN and Nx2 are also tested for chroma.
