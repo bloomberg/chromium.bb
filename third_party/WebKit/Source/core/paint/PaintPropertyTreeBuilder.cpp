@@ -663,6 +663,11 @@ static bool NeedsEffect(const LayoutObject& object) {
   const bool is_css_isolated_group =
       object.IsBoxModelObject() && style.IsStackingContext();
 
+  // TODO(chrishtr): this should not be necessary, since masks induce
+  // stacking contexts. See crbug.com/813348
+  if (style.HasMask())
+    return true;
+
   if (!is_css_isolated_group && !object.IsSVGChild())
     return false;
 
