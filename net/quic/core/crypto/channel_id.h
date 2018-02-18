@@ -6,7 +6,6 @@
 #define NET_QUIC_CORE_CRYPTO_CHANNEL_ID_H_
 
 #include <memory>
-#include <string>
 
 #include "base/macros.h"
 #include "net/quic/core/quic_types.h"

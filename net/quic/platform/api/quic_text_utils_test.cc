@@ -4,8 +4,6 @@
 
 #include "net/quic/platform/api/quic_text_utils.h"
 
-#include <string>
-
 #include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 

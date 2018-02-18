@@ -6,7 +6,6 @@
 #define NET_QUIC_CORE_CRYPTO_CRYPTO_HANDSHAKE_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/macros.h"

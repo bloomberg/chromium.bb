@@ -6,7 +6,6 @@
 #define NET_QUIC_CORE_QUIC_SERVER_ID_H_
 
 #include <cstdint>
-#include <string>
 
 #include "net/base/host_port_pair.h"
 #include "net/base/privacy_mode.h"

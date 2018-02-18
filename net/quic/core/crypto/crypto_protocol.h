@@ -6,7 +6,6 @@
 #define NET_QUIC_CORE_CRYPTO_CRYPTO_PROTOCOL_H_
 
 #include <cstddef>
-#include <string>
 
 #include "net/quic/core/quic_tag.h"
 #include "net/quic/platform/api/quic_string.h"

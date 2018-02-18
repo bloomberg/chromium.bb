@@ -8,7 +8,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <string>
 
 #include "base/macros.h"
 #include "net/quic/core/quic_packets.h"

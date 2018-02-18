@@ -5,8 +5,6 @@
 #ifndef NET_QUIC_PLATFORM_API_QUIC_IP_ADDRESS_H_
 #define NET_QUIC_PLATFORM_API_QUIC_IP_ADDRESS_H_
 
-#include <string>
-
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/impl/quic_ip_address_impl.h"

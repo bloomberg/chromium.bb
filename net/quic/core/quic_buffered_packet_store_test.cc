@@ -5,7 +5,6 @@
 #include "net/quic/core/quic_buffered_packet_store.h"
 
 #include <list>
-#include <string>
 
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_string.h"

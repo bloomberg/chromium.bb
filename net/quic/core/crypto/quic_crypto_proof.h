@@ -5,8 +5,6 @@
 #ifndef NET_QUIC_CORE_CRYPTO_QUIC_CRYPTO_PROOF_H_
 #define NET_QUIC_CORE_CRYPTO_QUIC_CRYPTO_PROOF_H_
 
-#include <string>
-
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_string.h"
 

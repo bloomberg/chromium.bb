@@ -6,7 +6,6 @@
 #define NET_QUIC_CORE_FRAMES_QUIC_CONNECTION_CLOSE_FRAME_H_
 
 #include <ostream>
-#include <string>
 
 #include "net/quic/core/quic_error_codes.h"
 #include "net/quic/platform/api/quic_export.h"

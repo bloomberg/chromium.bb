@@ -5,7 +5,6 @@
 #ifndef NET_QUIC_CORE_CRYPTO_QUIC_COMPRESSED_CERTS_CACHE_H_
 #define NET_QUIC_CORE_CRYPTO_QUIC_COMPRESSED_CERTS_CACHE_H_
 
-#include <string>
 #include <vector>
 
 #include "net/quic/core/crypto/proof_source.h"

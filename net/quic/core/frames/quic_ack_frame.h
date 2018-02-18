@@ -7,7 +7,6 @@
 
 #include <deque>
 #include <ostream>
-#include <string>
 
 #include "net/quic/core/quic_types.h"
 #include "net/quic/platform/api/quic_containers.h"

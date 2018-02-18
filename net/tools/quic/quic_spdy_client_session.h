@@ -8,7 +8,6 @@
 #define NET_TOOLS_QUIC_QUIC_SPDY_CLIENT_SESSION_H_
 
 #include <memory>
-#include <string>
 
 #include "base/macros.h"
 #include "net/quic/core/quic_crypto_client_stream.h"

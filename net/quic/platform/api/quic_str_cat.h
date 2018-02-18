@@ -5,7 +5,6 @@
 #ifndef NET_QUIC_PLATFORM_API_QUIC_STR_CAT_H_
 #define NET_QUIC_PLATFORM_API_QUIC_STR_CAT_H_
 
-#include <string>
 #include <utility>
 
 #include "net/quic/platform/api/quic_string.h"

@@ -20,7 +20,6 @@
 #include <cstdint>
 #include <map>
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "net/quic/core/crypto/null_decrypter.h"

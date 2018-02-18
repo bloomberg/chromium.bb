@@ -6,7 +6,6 @@
 #define NET_QUIC_CORE_QUIC_SOCKET_ADDRESS_CODER_H_
 
 #include <cstdint>
-#include <string>
 
 #include "base/macros.h"
 #include "net/quic/platform/api/quic_export.h"

@@ -20,7 +20,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <list>
-#include <string>
 
 #include "base/macros.h"
 #include "net/base/iovec.h"

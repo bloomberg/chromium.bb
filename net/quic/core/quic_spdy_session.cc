@@ -6,7 +6,6 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <string>
 #include <utility>
 
 #include "net/quic/core/quic_headers_stream.h"

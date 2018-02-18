@@ -4,8 +4,6 @@
 
 #include "net/quic/core/crypto/aead_base_encrypter.h"
 
-#include <string>
-
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_aligned.h"
 #include "net/quic/platform/api/quic_arraysize.h"

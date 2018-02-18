@@ -5,7 +5,6 @@
 #ifndef NET_QUIC_CORE_QUIC_VERSIONS_H_
 #define NET_QUIC_CORE_QUIC_VERSIONS_H_
 
-#include <string>
 #include <vector>
 
 #include "net/quic/core/quic_tag.h"

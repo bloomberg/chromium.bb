@@ -7,7 +7,6 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <string>
 
 #include "net/base/int128.h"
 #include "net/quic/core/quic_packets.h"

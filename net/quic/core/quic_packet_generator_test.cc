@@ -6,7 +6,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <string>
 
 #include "base/macros.h"
 #include "net/quic/core/crypto/crypto_protocol.h"

@@ -13,7 +13,6 @@
 
 #include <cstddef>
 #include <list>
-#include <string>
 
 #include "base/macros.h"
 #include "net/base/iovec.h"

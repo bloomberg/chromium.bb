@@ -5,7 +5,6 @@
 #ifndef NET_QUIC_CORE_CRYPTO_CERT_COMPRESSOR_H_
 #define NET_QUIC_CORE_CRYPTO_CERT_COMPRESSOR_H_
 
-#include <string>
 #include <vector>
 
 #include "base/macros.h"

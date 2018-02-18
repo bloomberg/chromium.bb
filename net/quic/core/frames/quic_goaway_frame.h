@@ -6,7 +6,6 @@
 #define NET_QUIC_CORE_FRAMES_QUIC_GOAWAY_FRAME_H_
 
 #include <ostream>
-#include <string>
 
 #include "net/quic/core/frames/quic_control_frame.h"
 #include "net/quic/core/quic_error_codes.h"
