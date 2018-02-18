@@ -32,7 +32,7 @@ namespace {
 template <typename F, typename T>
 class UpsampleTest : public FunctionEquivalenceTest<F> {
  protected:
-  static const int kIterations = 1e6;
+  static const int kIterations = 1000000;
   static const int kMinEdge = 4;
   static const int kMaxEdge = 24;
   static const int kBufSize = 2 * 64 + 32;
@@ -162,7 +162,7 @@ INSTANTIATE_TEST_CASE_P(
 template <typename F, typename T>
 class FilterEdgeTest : public FunctionEquivalenceTest<F> {
  protected:
-  static const int kIterations = 1e6;
+  static const int kIterations = 1000000;
   static const int kMaxEdge = 2 * 64;
   static const int kBufSize = kMaxEdge + 32;
   static const int kOffset = 15;
@@ -278,7 +278,7 @@ INSTANTIATE_TEST_CASE_P(SSE4_1, FilterEdgeTestHB,
 // Speed tests
 
 TEST_P(UpsampleTest8B, DISABLED_Speed) {
-  const int test_count = 1e7;
+  const int test_count = 10000000;
   size_ = kMaxEdge;
   for (int i = 0; i < kOffset + size_; ++i) {
     edge_tst_data_[i] = rng_.Rand8();
@@ -290,7 +290,7 @@ TEST_P(UpsampleTest8B, DISABLED_Speed) {
 }
 
 TEST_P(UpsampleTestHB, DISABLED_Speed) {
-  const int test_count = 1e7;
+  const int test_count = 10000000;
   size_ = kMaxEdge;
   bit_depth_ = 12;
   const int hi = 1 << bit_depth_;
@@ -304,7 +304,7 @@ TEST_P(UpsampleTestHB, DISABLED_Speed) {
 }
 
 TEST_P(FilterEdgeTest8B, DISABLED_Speed) {
-  const int test_count = 1e7;
+  const int test_count = 10000000;
   size_ = kMaxEdge;
   strength_ = 1;
   for (int i = 0; i < kOffset + size_; ++i) {
@@ -319,7 +319,7 @@ TEST_P(FilterEdgeTest8B, DISABLED_Speed) {
 }
 
 TEST_P(FilterEdgeTestHB, DISABLED_Speed) {
-  const int test_count = 1e7;
+  const int test_count = 10000000;
   size_ = kMaxEdge;
   strength_ = 1;
   bit_depth_ = 12;
