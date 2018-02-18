@@ -355,7 +355,6 @@ void HookFree(const AllocatorDispatch* self, void* address, void* context) {
   next->free_function(next, address, context);
 
   if (LIKELY(!reentering)) {
-    AllocatorShimLogFree(address);
     g_prevent_reentrancy.Pointer()->Set(false);
   }
 }
@@ -432,19 +431,37 @@ AllocatorDispatch g_memlog_hooks = {
 #endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
 
 void HookPartitionAlloc(void* address, size_t size, const char* type) {
-  AllocatorShimLogAlloc(AllocatorType::kPartitionAlloc, address, size, type);
+  // If this is our first time passing through, set the reentrancy bit.
+  if (LIKELY(!g_prevent_reentrancy.Pointer()->Get())) {
+    g_prevent_reentrancy.Pointer()->Set(true);
+    AllocatorShimLogAlloc(AllocatorType::kPartitionAlloc, address, size, type);
+    g_prevent_reentrancy.Pointer()->Set(false);
+  }
 }
 
 void HookPartitionFree(void* address) {
-  AllocatorShimLogFree(address);
+  // If this is our first time passing through, set the reentrancy bit.
+  if (LIKELY(!g_prevent_reentrancy.Pointer()->Get())) {
+    g_prevent_reentrancy.Pointer()->Set(true);
+    AllocatorShimLogFree(address);
+    g_prevent_reentrancy.Pointer()->Set(false);
+  }
 }
 
 void HookGCAlloc(uint8_t* address, size_t size, const char* type) {
-  AllocatorShimLogAlloc(AllocatorType::kOilpan, address, size, type);
+  if (LIKELY(!g_prevent_reentrancy.Pointer()->Get())) {
+    g_prevent_reentrancy.Pointer()->Set(true);
+    AllocatorShimLogAlloc(AllocatorType::kOilpan, address, size, type);
+    g_prevent_reentrancy.Pointer()->Set(false);
+  }
 }
 
 void HookGCFree(uint8_t* address) {
-  AllocatorShimLogFree(address);
+  if (LIKELY(!g_prevent_reentrancy.Pointer()->Get())) {
+    g_prevent_reentrancy.Pointer()->Set(true);
+    AllocatorShimLogFree(address);
+    g_prevent_reentrancy.Pointer()->Set(false);
+  }
 }
 
 // Updates an existing in_memory buffer with frame data. If a frame contains a
@@ -813,14 +830,6 @@ void SetOnInitAllocatorShimCallbackForTesting(
     scoped_refptr<base::TaskRunner> task_runner) {
   *g_on_init_allocator_shim_callback_.Pointer() = std::move(callback);
   *g_on_init_allocator_shim_task_runner_.Pointer() = task_runner;
-}
-
-void DisableAllocationTrackingForCurrentThreadForTesting() {
-  g_prevent_reentrancy.Pointer()->Set(true);
-}
-
-void EnableAllocationTrackingForCurrentThreadForTesting() {
-  g_prevent_reentrancy.Pointer()->Set(false);
 }
 
 }  // namespace profiling
