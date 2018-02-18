@@ -20,6 +20,7 @@ const IntRect kBounds(1, 2, 3, 4);
 TEST_F(DrawingRecorderTest, Nothing) {
   FakeDisplayItemClient client;
   GraphicsContext context(GetPaintController());
+  InitRootChunk();
   DrawNothing(context, client, kForegroundType);
   GetPaintController().CommitNewDisplayItems();
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 1,
@@ -32,6 +33,7 @@ TEST_F(DrawingRecorderTest, Nothing) {
 TEST_F(DrawingRecorderTest, Rect) {
   FakeDisplayItemClient client;
   GraphicsContext context(GetPaintController());
+  InitRootChunk();
   DrawRect(context, client, kForegroundType, kBounds);
   GetPaintController().CommitNewDisplayItems();
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 1,
@@ -41,6 +43,7 @@ TEST_F(DrawingRecorderTest, Rect) {
 TEST_F(DrawingRecorderTest, Cached) {
   FakeDisplayItemClient client;
   GraphicsContext context(GetPaintController());
+  InitRootChunk();
   DrawNothing(context, client, kBackgroundType);
   DrawRect(context, client, kForegroundType, kBounds);
   GetPaintController().CommitNewDisplayItems();
@@ -49,6 +52,7 @@ TEST_F(DrawingRecorderTest, Cached) {
                       TestDisplayItem(client, kBackgroundType),
                       TestDisplayItem(client, kForegroundType));
 
+  InitRootChunk();
   DrawNothing(context, client, kBackgroundType);
   DrawRect(context, client, kForegroundType, kBounds);
 
