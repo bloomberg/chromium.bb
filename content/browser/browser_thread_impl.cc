@@ -422,7 +422,7 @@ void BrowserThreadImpl::StopRedirectionOfThreadID(
       FROM_HERE,
       base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&flushed)));
   {
-    base::AutoUnlock auto_lock(globals.lock);
+    base::AutoUnlock auto_unlock(globals.lock);
     flushed.Wait();
   }
 
