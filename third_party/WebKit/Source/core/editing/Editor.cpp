@@ -950,6 +950,12 @@ void Editor::Copy(EditorCommandSource source) {
   if (!CanCopy())
     return;
 
+  // Since copy is a read-only operation it succeeds anytime a selection
+  // is *visible*. In contrast to cut or paste, the selection does not
+  // need to be focused - being visible is enough.
+  if (source == kCommandFromMenuOrKeyBinding && GetFrameSelection().IsHidden())
+    return;
+
   // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // A 'copy' event handler might have dirtied the layout so we need to update

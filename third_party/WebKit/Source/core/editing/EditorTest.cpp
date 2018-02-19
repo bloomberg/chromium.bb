@@ -4,6 +4,7 @@
 
 #include "core/editing/Editor.h"
 
+#include "core/clipboard/Pasteboard.h"
 #include "core/editing/testing/EditingTestBase.h"
 #include "core/html/forms/HTMLInputElement.h"
 
@@ -32,6 +33,27 @@ TEST_F(EditorTest, copyGeneratedPassword) {
 
   element.SetShouldRevealPassword(true);
   EXPECT_TRUE(editor.CanCopy());
+}
+
+TEST_F(EditorTest, DontCopyHiddenSelections) {
+  const char* body_content =
+      "<input type=checkbox id=checkbox>"
+      "<input id=hiding value=HEY></input>";
+  SetBodyContent(body_content);
+
+  HTMLInputElement& text_control =
+      ToHTMLInputElement(*GetDocument().getElementById("hiding"));
+  text_control.select();
+
+  HTMLInputElement& checkbox =
+      ToHTMLInputElement(*GetDocument().getElementById("checkbox"));
+  checkbox.focus();
+
+  Editor& editor = GetDocument().GetFrame()->GetEditor();
+  editor.Copy(kCommandFromMenuOrKeyBinding);
+
+  const String copied = Pasteboard::GeneralPasteboard()->PlainText();
+  EXPECT_TRUE(copied.IsEmpty()) << copied << " was copied.";
 }
 
 }  // namespace blink
