@@ -420,7 +420,6 @@ void DelegatedFrameHost::SubmitCompositorFrame(
     skipped_frames_ = false;
 
     // Give the same damage rect to the compositor.
-    viz::RenderPass* root_pass = frame.render_pass_list.back().get();
     root_pass->damage_rect = gfx::Rect(frame_size);
   }
 
