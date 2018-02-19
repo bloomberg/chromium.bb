@@ -672,9 +672,17 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
         browser_, signin_with_gaia_account_button_->account().value(),
         access_point_);
   } else if (sender == sync_to_another_account_button_) {
-    // Display a submenu listing the GAIA web accounts (without the first one).
+    // Extract the promo accounts for the submenu, i.e. remove the first
+    // one from the list because it is already shown in a separate button.
     std::vector<AccountInfo> accounts(dice_sync_promo_accounts_.begin() + 1,
                                       dice_sync_promo_accounts_.end());
+    if (accounts.empty()) {
+      // If there is no account to list for the submenu, directly open the
+      // sign-in page.
+      ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN);
+      return;
+    }
+    // Display the submenu to list |accounts|.
     // Using base::Unretained(this) is safe here because |dice_accounts_menu_|
     // is owned by |ProfileChooserView|, i.e. |this|.
     dice_accounts_menu_ = std::make_unique<DiceAccountsMenu>(
@@ -1095,11 +1103,15 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
       new views::ImageView());
   switch_account_icon_view->SetImage(gfx::CreateVectorIcon(
       kSyncSwitchAccountIcon, kSmallMenuIconSize, gfx::kChromeIconGrey));
-  sync_to_another_account_button_ = new HoverButton(
-      this, std::move(switch_account_icon_view),
-      l10n_util::GetStringUTF16(
-          IDS_PROFILES_DICE_SIGNIN_WITH_ANOTHER_ACCOUNT_BUTTON),
-      base::string16() /* subtitle */, true /* show right arrow */);
+  // The accounts submenu is only needed when there are additional accounts to
+  // list, i.e. when there is more than 1 account (the first account has it's
+  // own button).
+  const bool show_submenu_arrow = dice_sync_promo_accounts_.size() > 1;
+  sync_to_another_account_button_ =
+      new HoverButton(this, std::move(switch_account_icon_view),
+                      l10n_util::GetStringUTF16(
+                          IDS_PROFILES_DICE_SIGNIN_WITH_ANOTHER_ACCOUNT_BUTTON),
+                      base::string16() /* subtitle */, show_submenu_arrow);
   view->AddChildView(sync_to_another_account_button_);
   return view;
 }
