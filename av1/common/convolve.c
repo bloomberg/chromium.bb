@@ -1290,6 +1290,7 @@ void av1_highbd_convolve_2d_facade(const uint8_t *src8, int src_stride,
     // 0-bit rounding just to convert from int32 to uint16
     const int rbits =
         2 * FILTER_BITS - conv_params->round_0 - conv_params->round_1;
+    assert(rbits >= 0);
     av1_highbd_convolve_rounding(tmp_dst, tmp_dst_stride, dst, dst_stride, w, h,
                                  rbits, bd);
   }
