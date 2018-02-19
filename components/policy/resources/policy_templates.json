@@ -7990,16 +7990,19 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome_os:27-'],
+      'supported_on': ['chrome_os:27-65'],
       'device_only': True,
       'features': {
         'dynamic_refresh': False,
       },
+      'deprecated': True,
       'example_value': [ "enable-managed-mode", "my-cool-flag" ],
       'id': 191,
       'caption': '''System wide flags to be applied on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> start-up''',
       'tags': [],
-      'desc': '''Specifies the flags that should be applied to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> when it starts. The specified flags are applied on the login screen only. Flags set via this policy do not propagate into user sessions.''',
+      'desc': '''This policy is deprecated and removed in M66, because it was used only for internal testing and it is a security liability.
+
+      Specifies the flags that should be applied to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> when it starts. The specified flags are applied on the login screen only. Flags set via this policy do not propagate into user sessions.''',
     },
     {
       'name': 'UptimeLimit',
