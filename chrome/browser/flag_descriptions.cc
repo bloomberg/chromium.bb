@@ -1313,12 +1313,6 @@ const char kServiceWorkerPaymentAppsName[] = "Service Worker payment apps";
 const char kServiceWorkerPaymentAppsDescription[] =
     "Enable Service Worker applications to integrate as payment apps";
 
-const char kServiceWorkerScriptStreamingName[] =
-    "Service worker script streaming.";
-const char kServiceWorkerScriptStreamingDescription[] =
-    "Installed scripts for a service worker are sent over a dedicated "
-    "message pipe and data pipes, and that is never be blocked on the main "
-    "thread.";
 
 const char kServiceWorkerScriptFullCodeCacheName[] =
     "Service worker script full code cache.";

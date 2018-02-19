@@ -110,25 +110,20 @@ bool ServiceWorkerScriptURLLoaderFactory::ShouldHandleScriptRequest(
 
   // TODO: Make sure we don't handle the redirected request.
 
-  // If script streaming is enabled, for installed service workers, typically
-  // all the scripts are served via script streaming, so we don't come here.
-  // However, we still come here when the service worker is A) importing a
-  // script that was never installed, or B) loading the same script twice.
-  // For now, return false here to fallback to network. Eventually, A) should
-  // be deprecated (https://crbug.com/719052), and B) should be handled by
-  // script streaming as well, see the TODO in
-  // WebServiceWorkerInstalledScriptsManagerImpl::GetRawScriptData().
+  // For installed service workers, typically all the scripts are served via
+  // script streaming, so we don't come here. However, we still come here when
+  // the service worker is importing a script that was never installed. For now,
+  // return false here to fallback to network. Eventually, it should be
+  // deprecated (https://crbug.com/719052).
   //
-  // When script streaming is not enabled, we get here even for the main
+  // For service workers that are not installed, we get here even for the main
   // script. Therefore, ServiceWorkerScriptURLLoader must handle the request
   // (even though it currently just does a network fetch for now), because it
   // sets the main script's HTTP Response Info (via
   // ServiceWorkerVersion::SetMainScriptHttpResponseInfo()) which otherwise
   // would never be set.
-  if (ServiceWorkerVersion::IsInstalled(version->status()) &&
-      ServiceWorkerUtils::IsScriptStreamingEnabled()) {
+  if (ServiceWorkerVersion::IsInstalled(version->status()))
     return false;
-  }
 
   // TODO: Make sure we come here only for new / unknown scripts
   // once script streaming manager in the renderer side stops sending

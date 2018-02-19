@@ -79,8 +79,7 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
     double time_origin) {
   // If the script is being loaded via script streaming, the script is not yet
   // loaded.
-  if (RuntimeEnabledFeatures::ServiceWorkerScriptStreamingEnabled() &&
-      thread->GetInstalledScriptsManager() &&
+  if (thread->GetInstalledScriptsManager() &&
       thread->GetInstalledScriptsManager()->IsScriptInstalled(
           creation_params->script_url)) {
     // CSP headers, referrer policy, and origin trial tokens will be provided by
@@ -110,8 +109,7 @@ void ServiceWorkerGlobalScope::EvaluateClassicScript(
   // Receive the main script via script streaming if needed.
   InstalledScriptsManager* installed_scripts_manager =
       GetThread()->GetInstalledScriptsManager();
-  if (RuntimeEnabledFeatures::ServiceWorkerScriptStreamingEnabled() &&
-      installed_scripts_manager &&
+  if (installed_scripts_manager &&
       installed_scripts_manager->IsScriptInstalled(script_url)) {
     // GetScriptData blocks until the script is received from the browser.
     InstalledScriptsManager::ScriptData script_data;

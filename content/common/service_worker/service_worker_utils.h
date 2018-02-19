@@ -45,8 +45,6 @@ class ServiceWorkerUtils {
                                           const GURL& script_url,
                                           std::string* error_message);
 
-  CONTENT_EXPORT static bool IsScriptStreamingEnabled();
-
   // Returns true if all members of |urls| have the same origin, and
   // OriginCanAccessServiceWorkers is true for this origin.
   // If --disable-web-security is enabled, the same origin check is

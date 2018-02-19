@@ -1504,8 +1504,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   params->is_installed = IsInstalled(status_);
   params->pause_after_download = pause_after_download_;
 
-  if (ServiceWorkerUtils::IsScriptStreamingEnabled() && IsInstalled(status()) &&
-      !pause_after_download_) {
+  if (IsInstalled(status()) && !pause_after_download_) {
     DCHECK(!installed_scripts_sender_);
     installed_scripts_sender_ =
         std::make_unique<ServiceWorkerInstalledScriptsSender>(this);
