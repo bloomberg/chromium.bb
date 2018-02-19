@@ -42,30 +42,6 @@
 
 namespace blink {
 
-namespace {
-
-class URLRequestExtraDataContainer : public ResourceRequest::ExtraData {
- public:
-  static scoped_refptr<URLRequestExtraDataContainer> Create(
-      std::unique_ptr<WebURLRequest::ExtraData> extra_data) {
-    return base::AdoptRef(
-        new URLRequestExtraDataContainer(std::move(extra_data)));
-  }
-
-  ~URLRequestExtraDataContainer() override = default;
-
-  WebURLRequest::ExtraData* GetExtraData() const { return extra_data_.get(); }
-
- private:
-  explicit URLRequestExtraDataContainer(
-      std::unique_ptr<WebURLRequest::ExtraData> extra_data)
-      : extra_data_(std::move(extra_data)) {}
-
-  std::unique_ptr<WebURLRequest::ExtraData> extra_data_;
-};
-
-}  // namespace
-
 // The purpose of this struct is to permit allocating a ResourceRequest on the
 // heap, which is otherwise disallowed by DISALLOW_NEW_EXCEPT_PLACEMENT_NEW
 // annotation on ResourceRequest.
@@ -358,16 +334,11 @@ void WebURLRequest::SetPreviewsState(
 }
 
 WebURLRequest::ExtraData* WebURLRequest::GetExtraData() const {
-  scoped_refptr<ResourceRequest::ExtraData> data =
-      resource_request_->GetExtraData();
-  if (!data)
-    return nullptr;
-  return static_cast<URLRequestExtraDataContainer*>(data.get())->GetExtraData();
+  return resource_request_->GetExtraData();
 }
 
 void WebURLRequest::SetExtraData(std::unique_ptr<ExtraData> extra_data) {
-  resource_request_->SetExtraData(
-      URLRequestExtraDataContainer::Create(std::move(extra_data)));
+  resource_request_->SetExtraData(std::move(extra_data));
 }
 
 ResourceRequest& WebURLRequest::ToMutableResourceRequest() {

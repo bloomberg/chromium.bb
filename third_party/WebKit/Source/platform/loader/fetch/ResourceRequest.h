@@ -83,11 +83,6 @@ class PLATFORM_EXPORT ResourceRequest final {
  public:
   enum class RedirectStatus : uint8_t { kFollowedRedirect, kNoRedirect };
 
-  class ExtraData : public RefCounted<ExtraData> {
-   public:
-    virtual ~ExtraData() = default;
-  };
-
   ResourceRequest();
   explicit ResourceRequest(const String& url_string);
   explicit ResourceRequest(const KURL&);
@@ -254,9 +249,16 @@ class PLATFORM_EXPORT ResourceRequest final {
   }
 
   // Extra data associated with this request.
-  ExtraData* GetExtraData() const { return extra_data_.get(); }
-  void SetExtraData(scoped_refptr<ExtraData> extra_data) {
-    extra_data_ = std::move(extra_data);
+  WebURLRequest::ExtraData* GetExtraData() const {
+    return sharable_extra_data_ ? sharable_extra_data_->data.get() : nullptr;
+  }
+  void SetExtraData(std::unique_ptr<WebURLRequest::ExtraData> extra_data) {
+    if (extra_data) {
+      sharable_extra_data_ =
+          base::MakeRefCounted<SharableExtraData>(std::move(extra_data));
+    } else {
+      sharable_extra_data_ = nullptr;
+    }
   }
 
   WebURLRequest::RequestContext GetRequestContext() const {
@@ -363,6 +365,9 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool IsAdResource() const { return is_ad_resource_; }
 
  private:
+  using SharableExtraData =
+      base::RefCountedData<std::unique_ptr<WebURLRequest::ExtraData>>;
+
   const CacheControlHeader& GetCacheControlHeader() const;
 
   bool NeedsHTTPOrigin() const;
@@ -398,7 +403,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   int plugin_child_id_;
   int app_cache_host_id_;
   WebURLRequest::PreviewsState previews_state_;
-  scoped_refptr<ExtraData> extra_data_;
+  scoped_refptr<SharableExtraData> sharable_extra_data_;
   WebURLRequest::RequestContext request_context_;
   network::mojom::RequestContextFrameType frame_type_;
   network::mojom::FetchRequestMode fetch_request_mode_;
