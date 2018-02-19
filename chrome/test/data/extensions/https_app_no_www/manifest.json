@@ -4,7 +4,7 @@
   "manifest_version": 2,
   "app": {
     "launch": {
-      "web_url": "http://example.com/"
+      "web_url": "https://example.com/"
     }
   }
 }
