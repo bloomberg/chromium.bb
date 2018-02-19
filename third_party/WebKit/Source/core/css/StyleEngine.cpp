@@ -162,16 +162,18 @@ void StyleEngine::RemoveInjectedSheet(const StyleSheetKey& key,
       injected_style_sheets = origin == WebDocument::kUserOrigin
                                   ? injected_user_style_sheets_
                                   : injected_author_style_sheets_;
-  for (auto it = injected_style_sheets.rbegin();
-       it != injected_style_sheets.rend(); it++) {
-    if (it->first == key) {
-      injected_style_sheets.erase(std::next(it).base());
-      if (origin == WebDocument::kUserOrigin)
-        MarkUserStyleDirty();
-      else
-        MarkDocumentDirty();
-      break;
-    }
+  // Remove the last sheet that matches.
+  const auto& it = std::find_if(injected_style_sheets.rbegin(),
+                                injected_style_sheets.rend(),
+                                [&key](const auto& item) {
+                                  return item.first == key;
+                                });
+  if (it != injected_style_sheets.rend()) {
+    injected_style_sheets.erase(std::next(it).base());
+    if (origin == WebDocument::kUserOrigin)
+      MarkUserStyleDirty();
+    else
+      MarkDocumentDirty();
   }
 }
 
