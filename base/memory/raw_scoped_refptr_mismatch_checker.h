@@ -5,7 +5,6 @@
 #ifndef BASE_MEMORY_RAW_SCOPED_REFPTR_MISMATCH_CHECKER_H_
 #define BASE_MEMORY_RAW_SCOPED_REFPTR_MISMATCH_CHECKER_H_
 
-#include <tuple>
 #include <type_traits>
 
 #include "base/memory/ref_counted.h"
@@ -38,22 +37,6 @@ struct NeedsScopedRefptrButGetsRawPtr {
           std::is_convertible<T,
                               const subtle::RefCountedThreadSafeBase*>::value))
   };
-};
-
-template <typename Params>
-struct ParamsUseScopedRefptrCorrectly {
-  enum { value = 0 };
-};
-
-template <>
-struct ParamsUseScopedRefptrCorrectly<std::tuple<>> {
-  enum { value = 1 };
-};
-
-template <typename Head, typename... Tail>
-struct ParamsUseScopedRefptrCorrectly<std::tuple<Head, Tail...>> {
-  enum { value = !NeedsScopedRefptrButGetsRawPtr<Head>::value &&
-                  ParamsUseScopedRefptrCorrectly<std::tuple<Tail...>>::value };
 };
 
 }  // namespace internal
