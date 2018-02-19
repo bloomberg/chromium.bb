@@ -12,6 +12,7 @@
 #include "google/cacheinvalidation/client_gateway.pb.h"
 #include "google/cacheinvalidation/types.pb.h"
 #include "jingle/notifier/listener/push_client.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace syncer {
 
@@ -42,7 +43,9 @@ PushClientChannel::~PushClientChannel() {
 
 void PushClientChannel::UpdateCredentials(
     const std::string& email, const std::string& token) {
-  push_client_->UpdateCredentials(email, token);
+  // TODO(https://crbug.com/656607): Add proper annotation.
+  push_client_->UpdateCredentials(email, token,
+                                  NO_TRAFFIC_ANNOTATION_BUG_656607);
 }
 
 int PushClientChannel::GetInvalidationClientType() {

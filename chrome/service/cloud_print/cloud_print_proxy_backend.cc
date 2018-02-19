@@ -330,7 +330,10 @@ void CloudPrintProxyBackend::Core::OnAuthenticationComplete(
   } else {
     // If we are refreshing a token, update the XMPP token too.
     DCHECK(push_client_.get());
-    push_client_->UpdateCredentials(robot_email, access_token);
+
+    // TODO(https://crbug.com/656607): Add proper annotation here.
+    push_client_->UpdateCredentials(robot_email, access_token,
+                                    NO_TRAFFIC_ANNOTATION_BUG_656607);
   }
   // Start cloud print connector if needed.
   if (!connector_->IsRunning()) {
@@ -387,7 +390,10 @@ void CloudPrintProxyBackend::Core::InitNotifications(
   subscription.from = kCloudPrintPushNotificationsSource;
   push_client_->UpdateSubscriptions(
       notifier::SubscriptionList(1, subscription));
-  push_client_->UpdateCredentials(robot_email, access_token);
+
+  // TODO(https://crbug.com/656607): Add proper annotation here.
+  push_client_->UpdateCredentials(robot_email, access_token,
+                                  NO_TRAFFIC_ANNOTATION_BUG_656607);
 }
 
 void CloudPrintProxyBackend::Core::DoShutdown() {

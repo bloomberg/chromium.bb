@@ -174,11 +174,9 @@ void SingleLoginAttempt::TryConnect(
           jid.Str(), client_settings.auth_token(),
           client_settings.token_service(),
           login_settings_.auth_mechanism());
-  xmpp_connection_.reset(
-      new XmppConnection(client_settings,
-                         login_settings_.request_context_getter(),
-                         this,
-                         pre_xmpp_auth));
+  xmpp_connection_.reset(new XmppConnection(
+      client_settings, login_settings_.request_context_getter(), this,
+      pre_xmpp_auth, login_settings_.traffic_annotation()));
 }
 
 }  // namespace notifier

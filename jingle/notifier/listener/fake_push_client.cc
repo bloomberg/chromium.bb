@@ -26,7 +26,9 @@ void FakePushClient::UpdateSubscriptions(
 }
 
 void FakePushClient::UpdateCredentials(
-    const std::string& email, const std::string& token) {
+    const std::string& email,
+    const std::string& token,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   email_ = email;
   token_ = token;
 }

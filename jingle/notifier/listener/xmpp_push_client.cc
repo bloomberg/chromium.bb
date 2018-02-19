@@ -117,7 +117,9 @@ void XmppPushClient::UpdateSubscriptions(
 }
 
 void XmppPushClient::UpdateCredentials(
-      const std::string& email, const std::string& token) {
+    const std::string& email,
+    const std::string& token,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "Push: Updating credentials for " << email;
   xmpp_settings_ = MakeXmppClientSettings(notifier_options_, email, token);
@@ -126,12 +128,10 @@ void XmppPushClient::UpdateCredentials(
   } else {
     DVLOG(1) << "Push: Starting XMPP connection";
     base_task_.reset();
-    login_.reset(new notifier::Login(this,
-                                     xmpp_settings_,
-                                     notifier_options_.request_context_getter,
-                                     GetServerList(notifier_options_),
-                                     notifier_options_.try_ssltcp_first,
-                                     notifier_options_.auth_mechanism));
+    login_.reset(new notifier::Login(
+        this, xmpp_settings_, notifier_options_.request_context_getter,
+        GetServerList(notifier_options_), notifier_options_.try_ssltcp_first,
+        notifier_options_.auth_mechanism, traffic_annotation));
     login_->StartConnection();
   }
 }

@@ -37,7 +37,10 @@ class NonBlockingPushClient::Core
   void DestroyOnDelegateThread();
 
   void UpdateSubscriptions(const SubscriptionList& subscriptions);
-  void UpdateCredentials(const std::string& email, const std::string& token);
+  void UpdateCredentials(
+      const std::string& email,
+      const std::string& token,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
   void SendNotification(const Notification& data);
   void SendPing();
 
@@ -98,10 +101,12 @@ void NonBlockingPushClient::Core::UpdateSubscriptions(
 }
 
 void NonBlockingPushClient::Core::UpdateCredentials(
-      const std::string& email, const std::string& token) {
+    const std::string& email,
+    const std::string& token,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
   DCHECK(delegate_push_client_.get());
-  delegate_push_client_->UpdateCredentials(email, token);
+  delegate_push_client_->UpdateCredentials(email, token, traffic_annotation);
 }
 
 void NonBlockingPushClient::Core::SendNotification(
@@ -192,12 +197,13 @@ void NonBlockingPushClient::UpdateSubscriptions(
 }
 
 void NonBlockingPushClient::UpdateCredentials(
-    const std::string& email, const std::string& token) {
+    const std::string& email,
+    const std::string& token,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(thread_checker_.CalledOnValidThread());
   delegate_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&NonBlockingPushClient::Core::UpdateCredentials,
-                 core_, email, token));
+      FROM_HERE, base::Bind(&NonBlockingPushClient::Core::UpdateCredentials,
+                            core_, email, token, traffic_annotation));
 }
 
 void NonBlockingPushClient::SendNotification(

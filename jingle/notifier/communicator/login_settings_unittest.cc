@@ -6,6 +6,7 @@
 
 #include <cstddef>
 
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppclientsettings.h"
 
@@ -28,25 +29,22 @@ class LoginSettingsTest : public ::testing::Test {
 };
 
 TEST_F(LoginSettingsTest, Basic) {
-  const LoginSettings login_settings(buzz::XmppClientSettings(),
-                                     NULL,
-                                     servers_,
-                                     false /* try_ssltcp_first */,
-                                     kAuthMechanism);
+  const LoginSettings login_settings(
+      buzz::XmppClientSettings(), NULL, servers_, false /* try_ssltcp_first */,
+      kAuthMechanism, TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(base::Time(), login_settings.GetRedirectExpirationForTest());
   const ServerList& servers = login_settings.GetServers();
   ASSERT_EQ(servers_.size(), servers.size());
   for (size_t i = 0; i < servers.size(); ++i) {
     EXPECT_TRUE(servers[i].Equals(servers_[i]));
   }
+  EXPECT_EQ(TRAFFIC_ANNOTATION_FOR_TESTS, login_settings.traffic_annotation());
 }
 
 TEST_F(LoginSettingsTest, Redirect) {
-  LoginSettings login_settings(buzz::XmppClientSettings(),
-                               NULL,
-                               servers_,
-                               false /* try_ssltcp_first */,
-                               kAuthMechanism);
+  LoginSettings login_settings(buzz::XmppClientSettings(), NULL, servers_,
+                               false /* try_ssltcp_first */, kAuthMechanism,
+                               TRAFFIC_ANNOTATION_FOR_TESTS);
   const ServerInformation redirect_server(
       net::HostPortPair("redirect.com", 200),
       SUPPORTS_SSLTCP);
