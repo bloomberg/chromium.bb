@@ -1242,22 +1242,16 @@ Node* Document::importNode(Node* imported_node,
                            ExceptionState& exception_state) {
   // https://dom.spec.whatwg.org/#dom-document-importnode
   // TODO(tkent): Share code with cloneNode(). crbug.com/812089
+  CloneChildrenFlag clone_children =
+      deep ? CloneChildrenFlag::kClone : CloneChildrenFlag::kSkip;
   switch (imported_node->getNodeType()) {
     case kTextNode:
-      return createTextNode(imported_node->nodeValue());
     case kCdataSectionNode:
-      return CDATASection::Create(*this, imported_node->nodeValue());
     case kProcessingInstructionNode:
-      return createProcessingInstruction(imported_node->nodeName(),
-                                         imported_node->nodeValue(),
-                                         exception_state);
     case kCommentNode:
-      return createComment(imported_node->nodeValue());
-    case kDocumentTypeNode: {
-      DocumentType* doctype = ToDocumentType(imported_node);
-      return DocumentType::Create(this, doctype->name(), doctype->publicId(),
-                                  doctype->systemId());
-    }
+    case kDocumentTypeNode:
+      return imported_node->Clone(*this, clone_children);
+
     case kElementNode: {
       Element* old_element = ToElement(imported_node);
       // FIXME: The following check might be unnecessary. Is it possible that
@@ -1267,25 +1261,18 @@ Node* Document::importNode(Node* imported_node,
             kNamespaceError, "The imported node has an invalid namespace.");
         return nullptr;
       }
-      Element* new_element =
-          old_element->CloneElementWithoutAttributesAndChildren(*this);
-
-      new_element->CloneDataFromElement(
-          *old_element,
-          deep ? CloneChildrenFlag::kClone : CloneChildrenFlag::kSkip);
-
-      if (deep)
-        old_element->CloneChildNodes(new_element);
-      return new_element;
+      return imported_node->Clone(*this, clone_children);
     }
     case kAttributeNode:
+      // The following code doesn't create an Attr with namespace.  See
+      // crbug.com/812105.
       return Attr::Create(
           *this,
           QualifiedName(g_null_atom,
                         AtomicString(ToAttr(imported_node)->name()),
                         g_null_atom),
           ToAttr(imported_node)->value());
-    case kDocumentFragmentNode: {
+    case kDocumentFragmentNode:
       if (imported_node->IsShadowRoot()) {
         // ShadowRoot nodes should not be explicitly importable.
         // Either they are imported along with their host node, or created
@@ -1295,11 +1282,7 @@ Node* Document::importNode(Node* imported_node,
             "The node provided is a shadow root, which may not be imported.");
         return nullptr;
       }
-      DocumentFragment* new_fragment = createDocumentFragment();
-      if (deep)
-        ToDocumentFragment(imported_node)->CloneChildNodes(new_fragment);
-      return new_fragment;
-    }
+      return imported_node->Clone(*this, clone_children);
     case kDocumentNode:
       exception_state.ThrowDOMException(
           kNotSupportedError,
