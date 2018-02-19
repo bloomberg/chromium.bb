@@ -38,6 +38,7 @@ cvox.KbExplorer.init = function() {
       cvox.KbExplorer.onBrailleKeyEvent);
   chrome.accessibilityPrivate.onAccessibilityGesture.addListener(
       cvox.KbExplorer.onAccessibilityGesture);
+  chrome.accessibilityPrivate.setKeyboardListener(true, true);
 
   window.onbeforeunload = function(evt) {
     backgroundWindow.removeEventListener(
@@ -50,6 +51,7 @@ cvox.KbExplorer.init = function() {
         cvox.KbExplorer.onBrailleKeyEvent);
     chrome.accessibilityPrivate.onAccessibilityGesture.removeListener(
         cvox.KbExplorer.onAccessibilityGesture);
+    chrome.accessibilityPrivate.setKeyboardListener(true, false);
   };
   if (localStorage['useClassic'] != 'true') {
     cvox.ChromeVoxKbHandler.handlerKeyMap = cvox.KeyMap.fromNext();
