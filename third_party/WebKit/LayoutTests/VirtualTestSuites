@@ -591,5 +591,10 @@
     "prefix": "navigation-mojo-response",
     "base": "external/wpt/service-workers/service-worker",
     "args": ["--enable-features=NavigationMojoResponse"]
+  },
+  {
+    "prefix": "enable-webauthn",
+    "base": "http/tests/credentialmanager/",
+    "args": ["--enable-features=WebAuthentication"]
   }
 ]

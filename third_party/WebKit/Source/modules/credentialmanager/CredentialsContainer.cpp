@@ -69,7 +69,7 @@ class ScopedPromiseResolver {
   }
 
   // Releases the owned |resolver_|. This is to be called by the Mojo response
-  // callback responsible for resolving the corresponding ScriptPromise.
+  // callback responsible for resolving the corresponding ScriptPromise
   //
   // If this method is not called before |this| goes of scope, it is assumed
   // that a Mojo connection error has occurred, and the response callback was
@@ -391,9 +391,19 @@ ScriptPromise CredentialsContainer::get(
     return promise;
 
   if (options.hasPublicKey()) {
+    const String& relying_party_id = options.publicKey().rpId();
+    if (!CheckPublicKeySecurityRequirements(resolver, relying_party_id))
+      return promise;
+
     auto mojo_options =
         MojoPublicKeyCredentialRequestOptions::From(options.publicKey());
     if (mojo_options) {
+      if (!mojo_options->relying_party_id) {
+        mojo_options->relying_party_id = resolver->GetFrame()
+                                             ->GetSecurityContext()
+                                             ->GetSecurityOrigin()
+                                             ->Domain();
+      }
       auto* authenticator =
           CredentialManagerProxy::From(script_state)->Authenticator();
       authenticator->GetAssertion(
@@ -515,9 +525,9 @@ ScriptPromise CredentialsContainer::create(
   } else {
     DCHECK(options.hasPublicKey());
     const String& relying_party_id = options.publicKey().rp().id();
-    if (!CheckPublicKeySecurityRequirements(resolver, relying_party_id)) {
+    if (!CheckPublicKeySecurityRequirements(resolver, relying_party_id))
       return promise;
-    }
+
     auto mojo_options =
         MojoPublicKeyCredentialCreationOptions::From(options.publicKey());
     if (mojo_options) {
