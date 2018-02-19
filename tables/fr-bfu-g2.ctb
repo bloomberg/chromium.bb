@@ -9,7 +9,7 @@
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2018-01-29
+#-updated: 2018-02-19
 
 # liblouis: Unified French Grade 2 Table
 
@@ -47,28 +47,6 @@
 
 # Contracted Unified French Table
 # --------------------------------
-
-#Digits et litdigits utilisés en désabréviation
-digit 1 16a
-digit 2 126a
-digit 3 146a
-digit 4 1456a
-digit 5 156a
-digit 6 1246a
-digit 7 12456a
-digit 8 1256a
-digit 9 246a
-digit 0 3456a
-litdigit 1 16a
-litdigit 2 126a
-litdigit 3 146a
-litdigit 4 1456a
-litdigit 5 156a
-litdigit 6 1246a
-litdigit 7 12456a
-litdigit 8 1256a
-litdigit 9 246a
-litdigit 0 3456a
 
 sign  56
 
@@ -2336,7 +2314,7 @@ prfword puissance		1234-14
 contraction pc	1234-14
 word vpc 1236-1234-14
 prfword puissances		1234-14-234
-
+nofor word qu 12345-136
 word qualitatif		12345-123-2345-124
 word qualitatifs	12345-123-2345-124-234
 word qualitative	12345-123-2345-1236
@@ -4295,7 +4273,7 @@ nofor correct "Q"["u"]"."$l ?
 nofor correct ".q"["u"]"." ?
 nofor correct ".Q"["u"]"." ?
 nofor correct "qu"["u"] ?
-
+nofor correct "QU"["U"] ?
 #gestion du tiret en début de mot
 noback correct [`"-"]$l "`-"
 noback correct $s["-"]$l "`-"
@@ -4325,9 +4303,9 @@ nofor pass2 @56 *#1=0
 nofor pass2 `@6-6-236!%frmath *#1=0
 nofor pass2 $s@6-6-236!%frmath *#1=0
 #Cas particulier des mots finissant par "lieues"
-nofor pass2 @123-6-156~ *#1=0
-nofor pass2 @123-6-156$s *#1=0
-nofor pass2 @123-6-156!$l *#1=0
+nofor pass3 @123-6-156~ *#1=0
+nofor pass3 @123-6-156$s *#1=0
+nofor pass3 @123-6-156!$l *#1=0
 
 #Traitement des opérateurs
 nofor pass2 #1=1[@235] @2358	plus
@@ -4354,17 +4332,26 @@ nofor pass2 #1=0[@356-12]$sp @234568	crochet droit littéraire
 nofor pass2 #1=0[@356-12]~ @234568
 
 #Les chiffres
-nofor pass2 #1=1[@16] @16a
-nofor pass2 #1=1[@126] @126a
-nofor pass2 #1=1[@146] @146a
-nofor pass2 #1=1[@1456] @1456a
-nofor pass2 #1=1[@156] @156a
-nofor pass2 #1=1[@1246] @1246a
-nofor pass2 #1=1[@12456] @12456a
-nofor pass2 #1=1[@1256] @1256a
-nofor pass2 #1=1[@246] @246a
-nofor pass2 #1=1[@3456] @3456a
-
+nofor pass2 #1=1[@16] @168
+nofor pass2 #1=1[@126] @1268
+nofor pass2 #1=1[@146] @1468
+nofor pass2 #1=1[@1456] @14568
+nofor pass2 #1=1[@156] @1568
+nofor pass2 #1=1[@1246] @12468
+nofor pass2 #1=1[@12456] @124568
+nofor pass2 #1=1[@1256] @12568
+nofor pass2 #1=1[@246] @2468
+nofor pass2 #1=1[@3456] @34568
+nofor context @168 "1"
+nofor context @1268 "2"
+nofor context @1468 "3"
+nofor context @14568 "4"
+nofor context @1568 "5"
+nofor context @12468 "6"
+nofor context @124568 "7"
+nofor context @12568 "8"
+nofor context @2468 "9"
+nofor context @34568 "0"
 nofor context @2358 "+"
 nofor context @368 "-"
 nofor context @13678 "-"
@@ -4410,7 +4397,7 @@ nofor correct $l["-te-"]"on" "-t-"
 nofor correct $l["-te-"]"y" "-t-"
 
 # lettres suivi nombre
-nofor pass2 $l[]@6$d @0-8-0
+nofor pass3 $l[]@6$d @0-8-0
 nofor correct "\s\\8/\s" ?
 
 # nombre suivi lettres sans pts 56
