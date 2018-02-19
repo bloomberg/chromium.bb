@@ -784,16 +784,6 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     }
   }
 
-  if (policy.has_start_up_flags()) {
-    const em::StartUpFlagsProto& container(policy.start_up_flags());
-    std::unique_ptr<base::ListValue> flags(new base::ListValue());
-    for (const auto& entry : container.flags())
-      flags->Append(std::make_unique<base::Value>(entry));
-    policies->Set(key::kDeviceStartUpFlags, POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD, std::move(flags),
-                  nullptr);
-  }
-
   if (policy.has_variations_parameter()) {
     if (policy.variations_parameter().has_parameter()) {
       policies->Set(key::kDeviceVariationsRestrictParameter,
