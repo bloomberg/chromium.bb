@@ -95,11 +95,11 @@ bool TrafficAnnotationFileFilter::IsFileRelevant(const std::string& file_path) {
     return false;
   }
 
-  // Ignore unittest files to speed up the tests. They would be only tested when
+  // Ignore test files to speed up the tests. They would be only tested when
   // filters are disabled.
-  pos = file_path.length() - 12;
-  if (pos >= 0 && (!strcmp("_unittest.cc", file_path.c_str() + pos) ||
-                   !strcmp("_unittest.mm", file_path.c_str() + pos))) {
+  pos = file_path.length() - 7;
+  if (pos >= 0 && (!strcmp("test.cc", file_path.c_str() + pos) ||
+                   !strcmp("test.mm", file_path.c_str() + pos))) {
     return false;
   }
 
