@@ -5,6 +5,7 @@
 #include "core/css/cssom/CSSUnitValue.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/animation/LengthPropertyFunctions.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSResolutionUnits.h"
 #include "core/css/cssom/CSSMathInvert.h"
@@ -13,6 +14,7 @@
 #include "core/css/cssom/CSSMathProduct.h"
 #include "core/css/cssom/CSSMathSum.h"
 #include "core/css/cssom/CSSNumericSumValue.h"
+#include "core/css/properties/CSSProperty.h"
 #include "platform/wtf/MathExtras.h"
 
 namespace blink {
@@ -114,6 +116,22 @@ bool CSSUnitValue::Equals(const CSSNumericValue& other) const {
 }
 
 const CSSPrimitiveValue* CSSUnitValue::ToCSSValue() const {
+  return CSSPrimitiveValue::Create(value_, unit_);
+}
+
+const CSSPrimitiveValue* CSSUnitValue::ToCSSValueWithProperty(
+    CSSPropertyID property_id) const {
+  // FIXME: Avoid this CSSProperty::Get call as it can be costly.
+  // The caller often has a CSSProperty already, so we can just pass it here.
+  if (LengthPropertyFunctions::GetValueRange(CSSProperty::Get(property_id)) ==
+          kValueRangeNonNegative &&
+      value_ < 0) {
+    // Wrap out of range values with a calc.
+    CSSCalcExpressionNode* node = ToCalcExpressionNode();
+    node->SetIsNestedCalc();
+    return CSSPrimitiveValue::Create(CSSCalcValue::Create(node));
+  }
+
   return CSSPrimitiveValue::Create(value_, unit_);
 }
 
