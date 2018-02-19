@@ -23,7 +23,7 @@
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/history/web_history_service_factory.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
@@ -45,10 +45,6 @@ using content::BrowsingDataRemover;
 
 namespace {
 
-Profile* GetOriginalProfile() {
-  return ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
-}
-
 void OnBrowsingDataRemoverDone(
     JavaObjectWeakGlobalRef weak_chrome_native_preferences) {
   JNIEnv* env = AttachCurrentThread();
@@ -64,6 +60,7 @@ void OnBrowsingDataRemoverDone(
 static void JNI_BrowsingDataBridge_ClearBrowsingData(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& jprofile,
     const JavaParamRef<jintArray>& data_types,
     jint time_period,
     const JavaParamRef<jobjectArray>& jexcluding_domains,
@@ -72,8 +69,9 @@ static void JNI_BrowsingDataBridge_ClearBrowsingData(
     const JavaParamRef<jintArray>& jignoring_domain_reasons) {
   TRACE_EVENT0("browsing_data", "BrowsingDataBridge_ClearBrowsingData");
 
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   BrowsingDataRemover* browsing_data_remover =
-      content::BrowserContext::GetBrowsingDataRemover(GetOriginalProfile());
+      content::BrowserContext::GetBrowsingDataRemover(profile);
 
   std::vector<int> data_types_vector;
   base::android::JavaIntArrayToIntVector(env, data_types, &data_types_vector);
@@ -138,8 +136,8 @@ static void JNI_BrowsingDataBridge_ClearBrowsingData(
 
   if (!excluding_domains.empty() || !ignoring_domains.empty()) {
     ImportantSitesUtil::RecordBlacklistedAndIgnoredImportantSites(
-        GetOriginalProfile(), excluding_domains, excluding_domain_reasons,
-        ignoring_domains, ignoring_domain_reasons);
+        profile, excluding_domains, excluding_domain_reasons, ignoring_domains,
+        ignoring_domain_reasons);
   }
 
   base::OnceClosure callback = base::BindOnce(
@@ -166,15 +164,16 @@ static void EnableDialogAboutOtherFormsOfBrowsingHistory(
 static void JNI_BrowsingDataBridge_RequestInfoAboutOtherFormsOfBrowsingHistory(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& jprofile,
     const JavaParamRef<jobject>& listener) {
   TRACE_EVENT0(
       "browsing_data",
       "BrowsingDataBridge_RequestInfoAboutOtherFormsOfBrowsingHistory");
   // The one-time notice in the dialog.
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   browsing_data::ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
-      ProfileSyncServiceFactory::GetForProfile(GetOriginalProfile()),
-      WebHistoryServiceFactory::GetForProfile(GetOriginalProfile()),
-      chrome::GetChannel(),
+      ProfileSyncServiceFactory::GetForProfile(profile),
+      WebHistoryServiceFactory::GetForProfile(profile), chrome::GetChannel(),
       base::Bind(&EnableDialogAboutOtherFormsOfBrowsingHistory,
                  ScopedJavaGlobalRef<jobject>(env, listener)));
 }
@@ -182,9 +181,10 @@ static void JNI_BrowsingDataBridge_RequestInfoAboutOtherFormsOfBrowsingHistory(
 static void JNI_BrowsingDataBridge_FetchImportantSites(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& jprofile,
     const JavaParamRef<jobject>& java_callback) {
   TRACE_EVENT0("browsing_data", "BrowsingDataBridge_FetchImportantSites");
-  Profile* profile = GetOriginalProfile();
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   std::vector<ImportantSitesUtil::ImportantDomainInfo> important_sites =
       ImportantSitesUtil::GetImportantRegisterableDomains(
           profile, ImportantSitesUtil::kMaxImportantSites);
@@ -221,9 +221,10 @@ static jint JNI_BrowsingDataBridge_GetMaxImportantSites(
 static void JNI_BrowsingDataBridge_MarkOriginAsImportantForTesting(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& jprofile,
     const JavaParamRef<jstring>& jorigin) {
   GURL origin(base::android::ConvertJavaStringToUTF8(jorigin));
   CHECK(origin.is_valid());
-  ImportantSitesUtil::MarkOriginAsImportantForTesting(GetOriginalProfile(),
-                                                      origin);
+  ImportantSitesUtil::MarkOriginAsImportantForTesting(
+      ProfileAndroid::FromProfileAndroid(jprofile), origin);
 }
