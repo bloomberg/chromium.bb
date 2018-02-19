@@ -101,5 +101,6 @@ test(
 test(
   'intel-symbol-check',
   prog_bash,
+  env : env_test,
   args : [files('intel-symbol-check'), libdrm_intel]
 )

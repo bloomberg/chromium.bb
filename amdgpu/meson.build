@@ -61,5 +61,6 @@ ext_libdrm_amdgpu = declare_dependency(
 test(
   'amdgpu-symbol-check',
   prog_bash,
+  env : env_test,
   args : [files('amdgpu-symbol-check'), libdrm_amdgpu]
 )

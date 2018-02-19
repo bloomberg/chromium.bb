@@ -332,6 +332,9 @@ pkg.generate(
   description : 'Userspace interface to kernel DRM services',
 )
 
+env_test = environment()
+env_test.set('NM', find_program('nm').path())
+
 if with_libkms
   subdir('libkms')
 endif
