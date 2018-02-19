@@ -73,7 +73,8 @@ bool BubbleIconView::GetTooltipText(const gfx::Point& p,
 
 gfx::Size BubbleIconView::CalculatePreferredSize() const {
   gfx::Rect image_rect(image_->GetPreferredSize());
-  image_rect.Inset(-gfx::Insets(LocationBarView::kIconInteriorPadding));
+  image_rect.Inset(
+      -gfx::Insets(GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING)));
   DCHECK_EQ(image_rect.height(),
             GetLayoutConstant(LOCATION_BAR_HEIGHT) -
                 2 * (GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
@@ -232,7 +233,7 @@ void BubbleIconView::UpdateIcon() {
               ui::NativeTheme::kColorId_ProminentButtonColor)
           : GetInkDropBaseColor();
   image_->SetImage(gfx::CreateVectorIcon(
-      GetVectorIcon(), LocationBarView::kIconWidth, icon_color));
+      GetVectorIcon(), GetLayoutConstant(LOCATION_BAR_ICON_SIZE), icon_color));
 }
 
 void BubbleIconView::SetActiveInternal(bool active) {

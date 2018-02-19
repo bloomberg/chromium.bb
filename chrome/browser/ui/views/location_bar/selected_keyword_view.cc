@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/search_engines/template_url_service.h"
@@ -33,7 +34,8 @@ SelectedKeywordView::~SelectedKeywordView() {
 
 void SelectedKeywordView::ResetImage() {
   SetImage(gfx::CreateVectorIcon(vector_icons::kSearchIcon,
-                                 LocationBarView::kIconWidth, GetTextColor()));
+                                 GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
+                                 GetTextColor()));
 }
 
 SkColor SelectedKeywordView::GetTextColor() const {

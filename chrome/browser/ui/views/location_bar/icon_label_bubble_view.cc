@@ -110,7 +110,7 @@ IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list)
   // |image_| as a separate mouse hover region from |this|.
   image_->set_can_process_events_within_subtree(false);
   image_->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(LocationBarView::kIconInteriorPadding)));
+      gfx::Insets(GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING))));
   AddChildView(image_);
 
   label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);

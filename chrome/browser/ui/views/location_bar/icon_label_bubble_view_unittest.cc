@@ -81,9 +81,10 @@ class TestIconLabelBubbleView : public IconLabelBubbleView {
 
   bool ShouldShowLabel() const override {
     return !IsShrinking() ||
-           (width() > (image()->GetPreferredSize().width() +
-                       2 * LocationBarView::kIconInteriorPadding +
-                       2 * GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING)));
+           (width() >
+            (image()->GetPreferredSize().width() +
+             2 * GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING) +
+             2 * GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING)));
   }
 
   double WidthMultiplier() const override {

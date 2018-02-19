@@ -232,7 +232,8 @@ void LocationBarView::Init() {
     ContentSettingImageView* image_view =
         new ContentSettingImageView(std::move(model), this, font_list);
     content_setting_views_.push_back(image_view);
-    image_view->set_next_element_interior_padding(kIconInteriorPadding);
+    image_view->set_next_element_interior_padding(
+        GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING));
     image_view->SetVisible(false);
     AddChildView(image_view);
   }
@@ -431,7 +432,7 @@ gfx::Size LocationBarView::CalculatePreferredSize() const {
         location_icon_view_->GetMinimumSizeForLabelText(GetLocationIconText())
             .width();
   } else {
-    leading_width += GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
+    leading_width += GetLayoutConstant(LOCATION_BAR_PADDING) +
                      location_icon_view_->GetMinimumSize().width();
   }
 
@@ -454,7 +455,7 @@ gfx::Size LocationBarView::CalculatePreferredSize() const {
   }
 
   min_size.set_width(leading_width + omnibox_view_->GetMinimumSize().width() +
-                     2 * GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) -
+                     2 * GetLayoutConstant(LOCATION_BAR_PADDING) -
                      omnibox_view_->GetInsets().width() + trailing_width);
   return min_size;
 }
@@ -710,7 +711,7 @@ int LocationBarView::GetHorizontalEdgeThickness() const {
 
 int LocationBarView::GetTotalVerticalPadding() const {
   return BackgroundWith1PxBorder::kLocationBarBorderThicknessDip +
-         GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING);
+         GetLayoutConstant(LOCATION_BAR_PADDING);
 }
 
 void LocationBarView::RefreshLocationIcon() {
@@ -726,7 +727,8 @@ void LocationBarView::RefreshLocationIcon() {
                            ? color_utils::DeriveDefaultIconColor(GetColor(TEXT))
                            : GetSecureTextColor(security_level);
   location_icon_view_->SetImage(gfx::CreateVectorIcon(
-      omnibox_view_->GetVectorIcon(), kIconWidth, icon_color));
+      omnibox_view_->GetVectorIcon(), GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
+      icon_color));
   location_icon_view_->Update();
 }
 
