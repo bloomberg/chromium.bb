@@ -31,7 +31,9 @@
 #include "core/loader/resource/ImageResource.h"
 
 #include <memory>
+#include "core/loader/EmptyClients.h"
 #include "core/loader/resource/MockImageResourceObserver.h"
+#include "core/testing/DummyPageHolder.h"
 #include "platform/InstanceCounters.h"
 #include "platform/SharedBuffer.h"
 #include "platform/exported/WrappedResourceResponse.h"
@@ -1807,11 +1809,30 @@ TEST(ImageResourceTest,
 }
 
 TEST(ImageResourceTest, PeriodicFlushTest) {
+  EmptyChromeClient* chrome_client = new EmptyChromeClient();
+  Page::PageClients clients;
+  FillWithEmptyClients(clients);
+  clients.chrome_client = chrome_client;
+  std::unique_ptr<DummyPageHolder> page_holder = DummyPageHolder::Create(
+      IntSize(800, 600), &clients, EmptyLocalFrameClient::Create(), nullptr);
+
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform;
   KURL test_url(kTestURL);
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
+
+  MockFetchContext* context = MockFetchContext::Create(
+      MockFetchContext::LoadPolicy::kShouldLoadNewResource,
+      page_holder->GetFrame().GetTaskRunner(TaskType::kInternalTest));
+  ResourceFetcher* fetcher = ResourceFetcher::Create(context);
+  ResourceLoadScheduler* scheduler = ResourceLoadScheduler::Create();
   ImageResource* image_resource = ImageResource::CreateForTest(test_url);
+
+  // Ensure that |image_resource| has a loader.
+  ResourceLoader* loader =
+      ResourceLoader::Create(fetcher, scheduler, image_resource);
+  ALLOW_UNUSED_LOCAL(loader);
+
   image_resource->SetStatus(ResourceStatus::kPending);
   image_resource->NotifyStartLoad();
 

@@ -143,7 +143,7 @@ class CORE_EXPORT ImageResource final
   void DestroyDecodedDataIfPossible() override;
   void DestroyDecodedDataForFailedRevalidation() override;
 
-  void FlushImageIfNeeded(TimerBase*);
+  void FlushImageIfNeeded();
 
   bool ShouldReloadBrokenPlaceholder() const;
 
@@ -176,12 +176,13 @@ class CORE_EXPORT ImageResource final
   };
   PlaceholderOption placeholder_option_;
 
-  Timer<ImageResource> flush_timer_;
   double last_flush_time_ = 0.;
 
   bool is_during_finish_as_error_ = false;
 
   bool is_referenced_from_ua_stylesheet_ = false;
+
+  bool is_pending_flushing_ = false;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(Image);

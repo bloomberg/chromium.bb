@@ -31,8 +31,10 @@ class MockFetchContext : public FetchContext {
     kShouldLoadNewResource,
     kShouldNotLoadNewResource,
   };
-  static MockFetchContext* Create(LoadPolicy load_policy) {
-    return new MockFetchContext(load_policy);
+  static MockFetchContext* Create(LoadPolicy load_policy,
+                                  scoped_refptr<base::SingleThreadTaskRunner>
+                                      loading_task_runner = nullptr) {
+    return new MockFetchContext(load_policy, std::move(loading_task_runner));
   }
 
   ~MockFetchContext() override = default;
@@ -123,9 +125,13 @@ class MockFetchContext : public FetchContext {
     scoped_refptr<base::SingleThreadTaskRunner> runner_;
   };
 
-  MockFetchContext(LoadPolicy load_policy)
+  MockFetchContext(
+      LoadPolicy load_policy,
+      scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner)
       : load_policy_(load_policy),
-        runner_(base::MakeRefCounted<scheduler::FakeTaskRunner>()),
+        runner_(loading_task_runner
+                    ? std::move(loading_task_runner)
+                    : base::MakeRefCounted<scheduler::FakeTaskRunner>()),
         security_origin_(SecurityOrigin::CreateUnique()),
         frame_scheduler_(new MockFrameScheduler(runner_)),
         complete_(false),
