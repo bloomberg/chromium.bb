@@ -2,6 +2,7 @@
 <script src="../resources/gc.js"></script>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="./idle-promise-helpers.js"></script>
 
 <!--
 
@@ -19,19 +20,17 @@ test(function(t) {
     assert_true(internals.runtimeFlags.accessibilityObjectModelEnabled);
 }, "Make sure that Accessibility Object Model is enabled");
 
-test(async function(test) {
-    var element = document.getElementById("button1");
-    var computedAXNode = await window.getComputedAccessibleNode(element)
+promise_test(async t => {
+    const element = document.getElementById("button1");
+    let computedAXNode = await getComputedAccessibleNode(element);
     assert_true(computedAXNode != null);
 }, 'Ensure that a non null value is returned from getComputedAccessibleNode');
 
-
-test(async function(test) {
-    var element = document.getElementById("button1");
-
-    var computedAXNode1 = await window.getComputedAccessibleNode(element);
-    var computedAXNode2 = await window.getComputedAccessibleNode(element);
-    assert_true(computedAXNode1 === computedAXNode2);
+promise_test(async t => {
+    const element = document.getElementById("button1");
+    let computedAXNode1 = await getComputedAccessibleNode(element);
+    let computedAXNode2 = await getComputedAccessibleNode(element);
+    assert_false(computedAXNode1 === computedAXNode2);
 }, "Multiple calls to getComputedAccessibleNode will return the same node.");
 </script>
 
@@ -39,9 +38,9 @@ test(async function(test) {
 
 <script>
 
-test(async function(test) {
+promise_test(async t => {
     var button1 = document.getElementById("button1");
-    var button1CAXNode = await window.getComputedAccessibleNode(button1);
+    let button1CAXNode = await getComputedAccessibleNode(button1);
 
     assert_equals(button1CAXNode.name, "Click");
     assert_equals(button1CAXNode.role, "button");
@@ -49,8 +48,7 @@ test(async function(test) {
     button1.style.display = "none";
 
     var button2 = document.getElementById("button2");
-    var button2CAXNode = await window.getComputedAccessibleNode(button2);
-
+    let button2CAXNode = await getComputedAccessibleNode(button2);
     assert_equals(button2CAXNode.name, "axButton");
     assert_equals(button2CAXNode.role, "button");
 
@@ -69,7 +67,7 @@ test(async function(test) {
 
 <script>
 
-async_test(async function(test) {
+promise_test(async function(test) {
     var radio1 = document.getElementById("radio1");
     var caxNode1 = await window.getComputedAccessibleNode(radio1);
     var radio2 = document.getElementById("radio2");
@@ -93,8 +91,6 @@ async_test(async function(test) {
 
     caxNode1.ensureUpToDate();
     assert_equals(caxNode1.name, "pasta");
-
-    test.done();
 }, "ComputedAccessibleNode.ensureUpToDate");
 
 
