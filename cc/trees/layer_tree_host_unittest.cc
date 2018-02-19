@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "cc/animation/timing_function.h"
 #include "cc/input/scroll_elasticity_helper.h"
 #include "cc/layers/content_layer_client.h"
@@ -1265,9 +1266,12 @@ class LayerTreeHostTestEarlyDamageCheckStops : public LayerTreeHostTest {
   int damaged_frame_limit_;
 };
 
+// Flaky on Win7 Tests (dbg)(1). https://crbug.com/813578
+#if !defined(OS_WIN)
 // This behavior is specific to Android WebView, which only uses
 // multi-threaded compositor.
 MULTI_THREAD_TEST_F(LayerTreeHostTestEarlyDamageCheckStops);
+#endif
 
 // Verify CanDraw() is false until first commit.
 class LayerTreeHostTestCantDrawBeforeCommit : public LayerTreeHostTest {
