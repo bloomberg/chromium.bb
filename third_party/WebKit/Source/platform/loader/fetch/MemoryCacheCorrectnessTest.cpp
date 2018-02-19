@@ -64,7 +64,7 @@ class MemoryCacheCorrectnessTest : public ::testing::Test {
     MockResource* resource = MockResource::Create(request);
     resource->SetResponse(response);
     resource->FinishForTest();
-    GetMemoryCache()->Add(resource);
+    AddResourceToMemoryCache(resource);
 
     return resource;
   }
@@ -76,9 +76,13 @@ class MemoryCacheCorrectnessTest : public ::testing::Test {
     MockResource* resource = MockResource::Create(request);
     resource->SetResponse(ResourceResponse(KURL(kResourceURL), "text/html"));
     resource->FinishForTest();
-    GetMemoryCache()->Add(resource);
+    AddResourceToMemoryCache(resource);
 
     return resource;
+  }
+  void AddResourceToMemoryCache(Resource* resource) {
+    resource->SetSourceOrigin(security_origin_);
+    GetMemoryCache()->Add(resource);
   }
   // TODO(toyoshim): Consider to use MockResource for all tests instead of
   // RawResource.
@@ -102,8 +106,12 @@ class MemoryCacheCorrectnessTest : public ::testing::Test {
     // Save the global memory cache to restore it upon teardown.
     global_memory_cache_ = ReplaceMemoryCacheForTesting(MemoryCache::Create());
 
-    fetcher_ = ResourceFetcher::Create(
-        MockFetchContext::Create(MockFetchContext::kShouldNotLoadNewResource));
+    MockFetchContext* context =
+        MockFetchContext::Create(MockFetchContext::kShouldNotLoadNewResource);
+    security_origin_ = SecurityOrigin::CreateUnique();
+    context->SetSecurityOrigin(security_origin_);
+
+    fetcher_ = ResourceFetcher::Create(context);
   }
   void TearDown() override {
     GetMemoryCache()->EvictResources();
@@ -113,6 +121,7 @@ class MemoryCacheCorrectnessTest : public ::testing::Test {
   }
 
   Persistent<MemoryCache> global_memory_cache_;
+  scoped_refptr<const SecurityOrigin> security_origin_;
   Persistent<ResourceFetcher> fetcher_;
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform_;
@@ -376,7 +385,7 @@ TEST_F(MemoryCacheCorrectnessTest, FreshWithFreshRedirect) {
 
   first_resource->SetResponse(fresh200_response);
   first_resource->FinishForTest();
-  GetMemoryCache()->Add(first_resource);
+  AddResourceToMemoryCache(first_resource);
 
   AdvanceClock(500.);
 
@@ -414,7 +423,7 @@ TEST_F(MemoryCacheCorrectnessTest, FreshWithStaleRedirect) {
 
   first_resource->SetResponse(fresh200_response);
   first_resource->FinishForTest();
-  GetMemoryCache()->Add(first_resource);
+  AddResourceToMemoryCache(first_resource);
 
   AdvanceClock(500.);
 
@@ -427,7 +436,7 @@ TEST_F(MemoryCacheCorrectnessTest, PostToSameURLTwice) {
   request1.SetHTTPMethod(HTTPNames::POST);
   RawResource* resource1 = RawResource::CreateForTest(request1, Resource::kRaw);
   resource1->SetStatus(ResourceStatus::kPending);
-  GetMemoryCache()->Add(resource1);
+  AddResourceToMemoryCache(resource1);
 
   ResourceRequest request2{KURL(kResourceURL)};
   request2.SetHTTPMethod(HTTPNames::POST);
@@ -467,7 +476,7 @@ TEST_F(MemoryCacheCorrectnessTest, 302RedirectNotImplicitlyFresh) {
 
   first_resource->SetResponse(fresh200_response);
   first_resource->FinishForTest();
-  GetMemoryCache()->Add(first_resource);
+  AddResourceToMemoryCache(first_resource);
 
   AdvanceClock(500.);
 
@@ -505,7 +514,7 @@ TEST_F(MemoryCacheCorrectnessTest, 302RedirectExplicitlyFreshMaxAge) {
 
   first_resource->SetResponse(fresh200_response);
   first_resource->FinishForTest();
-  GetMemoryCache()->Add(first_resource);
+  AddResourceToMemoryCache(first_resource);
 
   AdvanceClock(500.);
 
@@ -544,7 +553,7 @@ TEST_F(MemoryCacheCorrectnessTest, 302RedirectExplicitlyFreshExpires) {
 
   first_resource->SetResponse(fresh200_response);
   first_resource->FinishForTest();
-  GetMemoryCache()->Add(first_resource);
+  AddResourceToMemoryCache(first_resource);
 
   AdvanceClock(500.);
 

@@ -292,6 +292,10 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   }
   String CacheIdentifier() const { return cache_identifier_; }
 
+  void SetSourceOrigin(scoped_refptr<const SecurityOrigin> source_origin) {
+    source_origin_ = source_origin;
+  }
+
   virtual void DidSendData(unsigned long long /* bytesSent */,
                            unsigned long long /* totalBytesToBeSent */) {}
   virtual void DidDownloadData(int) {}
@@ -308,7 +312,9 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
     response_.SetDecodedBodyLength(value);
   }
 
-  virtual bool CanReuse(const FetchParameters&) const;
+  virtual bool CanReuse(
+      const FetchParameters&,
+      scoped_refptr<const SecurityOrigin> new_source_origin) const;
 
   // If cache-aware loading is activated, this callback is called when the first
   // disk-cache-only request failed due to cache miss. After this callback,
@@ -448,9 +454,34 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   Type type_;
   ResourceStatus status_;
+
+  // A SecurityOrigin representing the origin from which the loading of the
+  // Resource was initiated. This is calculated and set by ResourceFetcher at
+  // the beginning of the loading.
+  //
+  // Unlike |security_origin| on |options_|, which:
+  // - holds a SecurityOrigin to override the FetchContext's SecurityOrigin
+  //   (in case of e.g. that the script initiated the loading is in an isolated
+  //   world)
+  // - may be modified during redirect as required by the CORS protocol
+  // this variable is stable after the loading has started.
+  //
+  // Used and should be used only for isolating resources for different origins
+  // in the MemoryCache.
+  //
+  // TODO(crbug.com/811669): Merge with some of the other SecurityOrigin
+  // variables.
+  scoped_refptr<const SecurityOrigin> source_origin_;
+
   CORSStatus cors_status_;
 
   Member<CachedMetadataHandlerImpl> cache_handler_;
+
+  // Holds the SecurityOrigin obtained from the associated FetchContext.
+  // ResourceFetcher sets this at the beginning of loading. The override by
+  // specifying a SecurityOrigin in ResourceLoaderOptions doesn't affect this.
+  //
+  // TODO(crbug.com/811669): Merge this with |source_origin_|.
   scoped_refptr<const SecurityOrigin> fetcher_security_origin_;
 
   Optional<ResourceError> error_;

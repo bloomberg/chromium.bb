@@ -371,7 +371,14 @@ class PLATFORM_EXPORT ResourceRequest final {
   double timeout_interval_;  // 0 is a magic value for platform default on
                              // platforms that have one.
   KURL site_for_cookies_;
+
+  // The SecurityOrigin specified by the ResourceLoaderOptions in case e.g.
+  // when the fetching was initiated in an isolated world. Set by
+  // ResourceFetcher but only when needed.
+  //
+  // TODO(crbug.com/811669): Merge with some of the other origin variables.
   scoped_refptr<const SecurityOrigin> requestor_origin_;
+
   AtomicString http_method_;
   HTTPHeaderMap http_header_fields_;
   scoped_refptr<EncodedFormData> http_body_;
