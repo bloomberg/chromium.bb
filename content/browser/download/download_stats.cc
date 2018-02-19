@@ -226,7 +226,7 @@ constexpr const base::FilePath::CharType* kDangerousFileTypes[] = {
     FILE_PATH_LITERAL(".vssx"),        FILE_PATH_LITERAL(".vstx"),       // 294
     FILE_PATH_LITERAL(".vsdm"),        FILE_PATH_LITERAL(".vssm"),       // 296
     FILE_PATH_LITERAL(".vstm"),        FILE_PATH_LITERAL(".btapp"),      // 298
-    FILE_PATH_LITERAL(".btbtskin"),    FILE_PATH_LITERAL(".btinstall"),  // 300
+    FILE_PATH_LITERAL(".btskin"),      FILE_PATH_LITERAL(".btinstall"),  // 300
     FILE_PATH_LITERAL(".btkey"),       FILE_PATH_LITERAL(".btsearch"),   // 302
     FILE_PATH_LITERAL(".dhtml"),       FILE_PATH_LITERAL(".dhtm"),       // 304
     FILE_PATH_LITERAL(".dht"),         FILE_PATH_LITERAL(".shtml"),      // 306

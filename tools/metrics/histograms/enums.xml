@@ -10188,7 +10188,7 @@ Called by update_net_error_codes.py.-->
   <int value="296" label="vssm"/>
   <int value="297" label="vstm"/>
   <int value="298" label="btapp"/>
-  <int value="299" label="btbtskin"/>
+  <int value="299" label="btskin"/>
   <int value="300" label="btinstall"/>
   <int value="301" label="btkey"/>
   <int value="302" label="btsearch"/>
@@ -38533,7 +38533,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="296" label="VSSM"/>
   <int value="297" label="VSTM"/>
   <int value="298" label="BTAPP"/>
-  <int value="299" label="BTBTSKIN"/>
+  <int value="299" label="BTSKIN"/>
   <int value="300" label="BTINSTALL"/>
   <int value="301" label="BTKEY"/>
   <int value="302" label="BTSEARCH"/>
