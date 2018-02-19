@@ -465,8 +465,6 @@ crbug.com/626703 [ Debug ] external/wpt/html/nemantics/tabular-data/processing-m
 # This test continues to fail as timeout on Win7(dbg)
 crbug.com/757292 [ Win Debug ] external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-encode-form-errors-han.html [ Slow ]
 
-crbug.com/779965 external/wpt/beacon/headers/header-content-type.html [ Slow ]
-
 # This page loads slow in real browser, and can timeout in SPv2 layout test.
 crbug.com/779366 fast/shapes/crash-allocating-very-large-raster-shape.html [ Slow ]
 
