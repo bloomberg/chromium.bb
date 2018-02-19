@@ -511,6 +511,24 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       PromptForDifferentFormWithEmptyAction) {
+  // Log in, see a form on the landing page. That form is not related to the
+  // signin form. The signin and the form on the landing page have empty
+  // actions, so we should offer saving the password.
+  NavigateToFile("/password/navigate_to_same_url_empty_actions.html");
+
+  NavigationObserver observer(WebContents());
+  auto prompt_observer = base::MakeUnique<BubbleObserver>(WebContents());
+  std::string fill_and_submit =
+      "document.getElementById('username').value = 'temp';"
+      "document.getElementById('password').value = 'random';"
+      "document.getElementById('submit-button').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        PromptAfterSubmitWithSubFrameNavigation) {
   NavigateToFile("/password/multi_frames.html");
 
