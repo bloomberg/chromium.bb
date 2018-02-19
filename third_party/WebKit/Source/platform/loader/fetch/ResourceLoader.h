@@ -131,6 +131,8 @@ class PLATFORM_EXPORT ResourceLoader final
   // ResourceLoadSchedulerClient.
   void Run() override;
 
+  scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceLoaderTest, DetermineCORSStatus);
 

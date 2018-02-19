@@ -781,4 +781,9 @@ bool ResourceLoader::ShouldBeKeptAliveWhenDetached() const {
          resource_->GetResponse().IsNull();
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+ResourceLoader::GetLoadingTaskRunner() {
+  return Context().GetLoadingTaskRunner();
+}
+
 }  // namespace blink
