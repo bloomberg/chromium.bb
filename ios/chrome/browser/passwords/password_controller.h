@@ -33,6 +33,9 @@ class PasswordManagerDriver;
 - (BOOL)displaySignInNotification:(UIViewController*)viewController
                         fromTabId:(NSString*)tabId;
 
+// Opens the list of saved passwords in the settings.
+- (void)displaySavedPasswordList;
+
 @end
 
 // Per-tab password controller. Handles password autofill and saving.

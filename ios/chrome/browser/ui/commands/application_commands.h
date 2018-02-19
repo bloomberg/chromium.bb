@@ -32,6 +32,10 @@
 - (void)showSyncPassphraseSettingsFromViewController:
     (UIViewController*)baseViewController;
 
+// Shows the list of saved passwords in the settings.
+- (void)showSavedPasswordsSettingsFromViewController:
+    (UIViewController*)baseViewController;
+
 @end
 
 // Protocol for commands that will generally be handled by the application,

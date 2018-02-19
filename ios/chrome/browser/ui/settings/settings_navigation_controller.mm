@@ -512,6 +512,16 @@ initWithRootViewController:(UIViewController*)rootViewController
   [self pushViewController:controller animated:YES];
 }
 
+// TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.
+- (void)showSavedPasswordsSettingsFromViewController:
+    (UIViewController*)baseViewController {
+  SavePasswordsCollectionViewController* controller =
+      [[SavePasswordsCollectionViewController alloc]
+          initWithBrowserState:mainBrowserState_];
+  controller.dispatcher = [delegate_ dispatcherForSettings];
+  [self pushViewController:controller animated:YES];
+}
+
 #pragma mark - Profile
 
 - (ios::ChromeBrowserState*)mainBrowserState {
