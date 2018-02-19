@@ -20,6 +20,8 @@ blink_platform_sources("loader") {
     "SubresourceIntegrity.h",
     "cors/CORS.cpp",
     "cors/CORS.h",
+    "cors/CORSErrorString.cpp",
+    "cors/CORSErrorString.h",
     "fetch/AccessControlStatus.h",
     "fetch/BufferingDataPipeWriter.cpp",
     "fetch/BufferingDataPipeWriter.h",

@@ -53,6 +53,7 @@ base::Optional<mojom::CORSError> CheckRedirectLocation(const GURL& redirect_url,
 
 // Performs the required CORS checks on the response to a preflight request.
 // Returns |kPreflightSuccess| if preflight response was successful.
+// TODO(toyoshim): Rename to CheckPreflightStatus.
 COMPONENT_EXPORT(NETWORK_CPP)
 base::Optional<mojom::CORSError> CheckPreflight(const int status_code);
 
