@@ -74,6 +74,8 @@ SKIP = {
 SKIP_GN_ISOLATE_MAP_TARGETS = {
   # This target is magic and not present in gn_isolate_map.pyl.
   'all',
+  'remoting/client:client',
+  'remoting/host:host',
 
   # These targets are listed only in build-side recipes.
   'All_syzygy',
