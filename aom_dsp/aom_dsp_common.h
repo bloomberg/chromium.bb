@@ -52,7 +52,7 @@ extern "C" {
 #define UNLIKELY(v) (v)
 #endif
 
-typedef uint16_t qm_val_t;
+typedef uint8_t qm_val_t;
 #define AOM_QM_BITS 5
 
 // Note:
