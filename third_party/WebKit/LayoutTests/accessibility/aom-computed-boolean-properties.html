@@ -2,6 +2,7 @@
 <script src="../resources/gc.js"></script>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="./idle-promise-helpers.js"></script>
 
 <!--
 
@@ -11,7 +12,7 @@ Spec: https://wicg.github.io/aom/spec/
 
 -->
 
-<div id="aria-atomic" aria-atomic="true">POD</div>
+<div id="aria-atomic" aria-live="polite" aria-atomic="true">POD</div>
 <div id="alert-atomic" role="alert">Achtung!</div>
 
 <script>
@@ -20,7 +21,7 @@ test(function(t) {
     assert_true(internals.runtimeFlags.accessibilityObjectModelEnabled);
 }, "Make sure that Accessibility Object Model is enabled");
 
-test(async function(t) {
+promise_test(async function(t) {
     // atomic attribute is implicitly set for role=alert.
     var divElement = document.getElementById("aria-atomic");
     var alertElement = document.getElementById("alert-atomic");
