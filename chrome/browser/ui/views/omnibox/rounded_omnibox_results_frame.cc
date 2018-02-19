@@ -25,10 +25,9 @@ constexpr int kElevation = 16;
 
 // Insets used to position |contents_| within |contents_host_|.
 gfx::Insets GetContentInsets(views::View* location_bar) {
-  // TODO(tapted): When icon alignment is fixed, this should be changed to only
-  // use only the top insets from kLocationBarAlignmentInsets so that the
-  // selection highlight goes to the edges of the frame.
-  return RoundedOmniboxResultsFrame::kLocationBarAlignmentInsets +
+  return gfx::Insets(
+             RoundedOmniboxResultsFrame::kLocationBarAlignmentInsets.top(), 0,
+             0, 0) +
          gfx::Insets(location_bar->height(), 0, 0, 0);
 }
 

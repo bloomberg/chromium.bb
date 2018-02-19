@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
+#include "chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
@@ -177,6 +178,29 @@ bool IsTwoLineLayout() {
          ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
 }
 
+// Creates a views::Background for the current result style.
+std::unique_ptr<views::Background> CreateBackgroundWithColor(SkColor bg_color) {
+  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
+             ? views::CreateSolidBackground(bg_color)
+             : std::make_unique<BackgroundWith1PxBorder>(bg_color, bg_color);
+}
+
+// Returns the horizontal offset that ensures icons align vertically with the
+// Omnibox icon.
+int GetIconAlignmentOffset() {
+  // The horizontal bounds of a result is the width of the selection highlight
+  // (i.e. the views::Background). The traditional popup is designed with its
+  // selection shape mimicking the internal shape of the omnibox border. Inset
+  // to be consistent with the border drawn in BackgroundWith1PxBorder.
+  int offset = BackgroundWith1PxBorder::kLocationBarBorderThicknessDip;
+
+  // The touch-optimized popup selection always fills the results frame. So to
+  // align icons, inset additionally by the frame alignment inset on the left.
+  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
+    offset += RoundedOmniboxResultsFrame::kLocationBarAlignmentInsets.left();
+  return offset;
+}
+
 }  // namespace
 
 // This class is a utility class for calculations affected by whether the result
@@ -290,9 +314,7 @@ void OmniboxResultView::Invalidate() {
   if (state == NORMAL) {
     SetBackground(nullptr);
   } else {
-    const SkColor bg_color = GetColor(state, BACKGROUND);
-    SetBackground(
-        std::make_unique<BackgroundWith1PxBorder>(bg_color, bg_color));
+    SetBackground(CreateBackgroundWithColor(GetColor(state, BACKGROUND)));
   }
 
   // While the text in the RenderTexts may not have changed, the styling
@@ -747,11 +769,7 @@ void OmniboxResultView::Layout() {
   const int horizontal_padding =
       GetLayoutConstant(LOCATION_BAR_PADDING) +
       GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING);
-  // The horizontal bounds we're given are the outside bounds, so we can match
-  // the omnibox border outline shape exactly in OnPaint().  We have to inset
-  // here to keep the icons lined up.
-  const int start_x = BackgroundWith1PxBorder::kLocationBarBorderThicknessDip +
-                      horizontal_padding;
+  const int start_x = GetIconAlignmentOffset() + horizontal_padding;
   const int end_x = width() - start_x;
 
   const gfx::Image icon = GetIcon();
