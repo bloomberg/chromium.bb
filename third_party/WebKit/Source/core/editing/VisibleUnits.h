@@ -148,7 +148,7 @@ EndOfWordPosition(const VisiblePositionInFlatTree&,
                   EWordSide = kNextWordIfOnBoundary);
 CORE_EXPORT VisiblePositionInFlatTree
 EndOfWord(const VisiblePositionInFlatTree&, EWordSide = kNextWordIfOnBoundary);
-VisiblePosition PreviousWordPosition(const VisiblePosition&);
+CORE_EXPORT VisiblePosition PreviousWordPosition(const VisiblePosition&);
 CORE_EXPORT VisiblePosition NextWordPosition(const VisiblePosition&);
 
 // sentences
