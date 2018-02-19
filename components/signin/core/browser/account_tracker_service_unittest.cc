@@ -7,8 +7,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/message_loop/message_loop.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/image_fetcher/core/image_data_fetcher.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -286,7 +287,8 @@ class AccountTrackerServiceTest : public testing::Test {
         AccountFetcherService::kLastUpdatePref, 0);
     signin_client_.reset(new TestSigninClient(&pref_service_));
     signin_client_.get()->SetURLRequestContext(
-        new net::TestURLRequestContextGetter(message_loop_.task_runner()));
+        new net::TestURLRequestContextGetter(
+            scoped_task_environment_.GetMainThreadTaskRunner()));
 
     account_tracker_.reset(new AccountTrackerService());
     account_tracker_->Initialize(signin_client_.get());
@@ -352,12 +354,14 @@ class AccountTrackerServiceTest : public testing::Test {
   }
   SigninClient* signin_client() { return signin_client_.get(); }
 
+ protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
  private:
   void ReturnFetchResults(int fetcher_id,
                           net::HttpStatusCode response_code,
                           const std::string& response_string);
 
-  base::MessageLoopForIO message_loop_;
   net::TestURLFetcherFactory test_fetcher_factory_;
   std::unique_ptr<FakeOAuth2TokenService> fake_oauth2_token_service_;
   TestingPrefServiceSimple pref_service_;
@@ -651,27 +655,37 @@ TEST_F(AccountTrackerServiceTest, FindAccountInfoByEmail) {
 }
 
 TEST_F(AccountTrackerServiceTest, Persistence) {
+  // Define a user data directory for the account image storage.
+  base::ScopedTempDir scoped_user_data_dir;
+  ASSERT_TRUE(scoped_user_data_dir.CreateUniqueTempDir());
   // Create a tracker and add two accounts.  This should cause the accounts
   // to be saved to persistence.
   {
     AccountTrackerService tracker;
-    tracker.Initialize(signin_client());
+    tracker.Initialize(signin_client(), scoped_user_data_dir.GetPath());
     SimulateTokenAvailable("alpha");
     ReturnAccountInfoFetchSuccess("alpha");
+    ReturnAccountImageFetchSuccess("alpha");
     SimulateTokenAvailable("beta");
     ReturnAccountInfoFetchSuccess("beta");
+    ReturnAccountImageFetchSuccess("beta");
     tracker.Shutdown();
   }
 
-  // Create a new tracker and make sure it loads the accounts correctly from
-  // persistence.
+  // Create a new tracker and make sure it loads the accounts (including the
+  // images) correctly from persistence.
   {
     AccountTrackerService tracker;
     AccountTrackerObserver observer;
     tracker.AddObserver(&observer);
-    tracker.Initialize(signin_client());
+    tracker.Initialize(signin_client(), scoped_user_data_dir.GetPath());
     ASSERT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, "alpha"),
                                      TrackingEvent(UPDATED, "beta")));
+    // Wait until all account images are loaded.
+    scoped_task_environment_.RunUntilIdle();
+    ASSERT_TRUE(observer.CheckEvents(TrackingEvent(IMAGE_UPDATED, "alpha"),
+                                     TrackingEvent(IMAGE_UPDATED, "beta")));
+
     tracker.RemoveObserver(&observer);
 
     std::vector<AccountInfo> infos = tracker.GetAccounts();
