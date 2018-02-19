@@ -50,7 +50,7 @@ class PrefServiceSyncableFactory : public PrefServiceFactory {
       std::unique_ptr<PrefValueStore::Delegate> delegate = nullptr);
 
  private:
-  PrefModelAssociatorClient* pref_model_associator_client_;
+  PrefModelAssociatorClient* pref_model_associator_client_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PrefServiceSyncableFactory);
 };
