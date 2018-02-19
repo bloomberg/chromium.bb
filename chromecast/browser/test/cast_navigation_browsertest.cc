@@ -76,7 +76,9 @@ IN_PROC_BROWSER_TEST_F(CastNavigationBrowserTest, EmptyTest) {
   LoadAboutBlank();
 }
 
-IN_PROC_BROWSER_TEST_F(CastNavigationBrowserTest, AudioPlaybackWavPcm) {
+// Disabled due to flakiness. See crbug.com/813481.
+IN_PROC_BROWSER_TEST_F(CastNavigationBrowserTest,
+                       DISABLED_AudioPlaybackWavPcm) {
   PlayAudio("bear_pcm.wav");
 }
 
