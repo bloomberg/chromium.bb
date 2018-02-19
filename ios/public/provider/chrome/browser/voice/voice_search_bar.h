@@ -9,6 +9,9 @@
 
 @protocol VoiceSearchBarDelegate;
 
+// TODO(crbug.com/800266): Check if those protocols are still relevant with the
+// adaptive toolbar.
+
 // Protocol used by bottom toolbars containing a button to launch VoiceSearch.
 @protocol VoiceSearchBar<NSObject>
 

@@ -61,6 +61,12 @@
   return self;
 }
 
+#pragma mark - UIView
+
+- (CGSize)intrinsicContentSize {
+  return CGSizeMake(UIViewNoIntrinsicMetric, kToolbarHeight);
+}
+
 #pragma mark - Setup
 
 // Sets all the subviews and constraints of the view.
@@ -97,7 +103,15 @@
   self.stackView.translatesAutoresizingMaskIntoConstraints = NO;
   [self addSubview:self.stackView];
 
-  PinToSafeArea(self.stackView, self);
+  id<LayoutGuideProvider> safeArea = SafeAreaLayoutGuideForView(self);
+
+  [NSLayoutConstraint activateConstraints:@[
+    [self.stackView.leadingAnchor
+        constraintEqualToAnchor:safeArea.leadingAnchor],
+    [self.stackView.trailingAnchor
+        constraintEqualToAnchor:safeArea.trailingAnchor],
+    [self.stackView.topAnchor constraintEqualToAnchor:self.topAnchor],
+  ]];
 }
 
 #pragma mark - AdaptiveToolbarView
