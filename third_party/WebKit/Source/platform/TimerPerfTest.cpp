@@ -11,6 +11,7 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/Platform.h"
+#include "public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -32,14 +33,20 @@ class TimerPerfTest : public ::testing::Test {
 
 TEST_F(TimerPerfTest, PostAndRunTimers) {
   const int kNumIterations = 10000;
-  Vector<std::unique_ptr<Timer<TimerPerfTest>>> timers(kNumIterations);
+  Vector<std::unique_ptr<TaskRunnerTimer<TimerPerfTest>>> timers(
+      kNumIterations);
   for (int i = 0; i < kNumIterations; i++) {
-    timers[i].reset(new Timer<TimerPerfTest>(this, &TimerPerfTest::NopTask));
+    timers[i].reset(new TaskRunnerTimer<TimerPerfTest>(
+        scheduler::GetSingleThreadTaskRunnerForTesting(), this,
+        &TimerPerfTest::NopTask));
   }
 
-  Timer<TimerPerfTest> measure_run_start(this,
-                                         &TimerPerfTest::RecordStartRunTime);
-  Timer<TimerPerfTest> measure_run_end(this, &TimerPerfTest::RecordEndRunTime);
+  TaskRunnerTimer<TimerPerfTest> measure_run_start(
+      scheduler::GetSingleThreadTaskRunnerForTesting(), this,
+      &TimerPerfTest::RecordStartRunTime);
+  TaskRunnerTimer<TimerPerfTest> measure_run_end(
+      scheduler::GetSingleThreadTaskRunnerForTesting(), this,
+      &TimerPerfTest::RecordEndRunTime);
 
   measure_run_start.StartOneShot(TimeDelta(), FROM_HERE);
   base::ThreadTicks post_start = base::ThreadTicks::Now();
@@ -62,14 +69,20 @@ TEST_F(TimerPerfTest, PostAndRunTimers) {
 
 TEST_F(TimerPerfTest, PostThenCancelTenThousandTimers) {
   const int kNumIterations = 10000;
-  Vector<std::unique_ptr<Timer<TimerPerfTest>>> timers(kNumIterations);
+  Vector<std::unique_ptr<TaskRunnerTimer<TimerPerfTest>>> timers(
+      kNumIterations);
   for (int i = 0; i < kNumIterations; i++) {
-    timers[i].reset(new Timer<TimerPerfTest>(this, &TimerPerfTest::NopTask));
+    timers[i].reset(new TaskRunnerTimer<TimerPerfTest>(
+        scheduler::GetSingleThreadTaskRunnerForTesting(), this,
+        &TimerPerfTest::NopTask));
   }
 
-  Timer<TimerPerfTest> measure_run_start(this,
-                                         &TimerPerfTest::RecordStartRunTime);
-  Timer<TimerPerfTest> measure_run_end(this, &TimerPerfTest::RecordEndRunTime);
+  TaskRunnerTimer<TimerPerfTest> measure_run_start(
+      scheduler::GetSingleThreadTaskRunnerForTesting(), this,
+      &TimerPerfTest::RecordStartRunTime);
+  TaskRunnerTimer<TimerPerfTest> measure_run_end(
+      scheduler::GetSingleThreadTaskRunnerForTesting(), this,
+      &TimerPerfTest::RecordEndRunTime);
 
   measure_run_start.StartOneShot(TimeDelta(), FROM_HERE);
   base::ThreadTicks post_start = base::ThreadTicks::Now();
