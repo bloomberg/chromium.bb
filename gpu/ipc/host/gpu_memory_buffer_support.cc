@@ -40,19 +40,12 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
     defined(OS_ANDROID)
   if (AreNativeGpuMemoryBuffersEnabled()) {
     const gfx::BufferFormat kNativeFormats[] = {
-        gfx::BufferFormat::R_8,
-        gfx::BufferFormat::RG_88,
-        gfx::BufferFormat::R_16,
-        gfx::BufferFormat::BGR_565,
-        gfx::BufferFormat::RGBA_4444,
-        gfx::BufferFormat::RGBA_8888,
-        gfx::BufferFormat::BGRA_8888,
-        gfx::BufferFormat::BGRX_1010102,
-        gfx::BufferFormat::RGBX_1010102,
-        gfx::BufferFormat::RGBA_F16,
-        gfx::BufferFormat::UYVY_422,
-        gfx::BufferFormat::YVU_420,
-        gfx::BufferFormat::YUV_420_BIPLANAR};
+        gfx::BufferFormat::R_8,       gfx::BufferFormat::RG_88,
+        gfx::BufferFormat::R_16,      gfx::BufferFormat::BGR_565,
+        gfx::BufferFormat::RGBA_4444, gfx::BufferFormat::RGBA_8888,
+        gfx::BufferFormat::BGRA_8888, gfx::BufferFormat::BGRX_1010102,
+        gfx::BufferFormat::RGBA_F16,  gfx::BufferFormat::UYVY_422,
+        gfx::BufferFormat::YVU_420,   gfx::BufferFormat::YUV_420_BIPLANAR};
     const gfx::BufferUsage kNativeUsages[] = {
         gfx::BufferUsage::GPU_READ,
         gfx::BufferUsage::SCANOUT,
