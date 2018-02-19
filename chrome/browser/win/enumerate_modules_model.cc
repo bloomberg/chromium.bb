@@ -6,13 +6,9 @@
 
 #include <windows.h>
 
-#include <softpub.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <tlhelp32.h>
-#include <wincrypt.h>
-#include <wintrust.h>
-#include <mscat.h>  // NOLINT: This must be after wincrypt and wintrust.
 
 #include <algorithm>
 #include <set>
