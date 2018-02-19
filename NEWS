@@ -31,6 +31,8 @@ issues]].
 ** Deprecation notice
 
 ** Backwards incompatible changes
+- The translation mode ~comp8Dots~ has been removed as it was never
+  really implemented anyway
 
 ** New, renamed or removed tables
 *** New
