@@ -91,6 +91,9 @@ URLRequestJob::URLRequestJob(URLRequest* request,
       last_notified_total_received_bytes_(0),
       last_notified_total_sent_bytes_(0),
       weak_factory_(this) {
+  // Socket tagging only supported for HTTP/HTTPS.
+  DCHECK(request == nullptr || SocketTag() == request->socket_tag() ||
+         request->url().SchemeIsHTTPOrHTTPS());
   base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
   if (power_monitor)
     power_monitor->AddObserver(this);

@@ -12213,4 +12213,42 @@ TEST_F(URLRequestTest, HeadersCallbacksNonHTTP) {
   EXPECT_FALSE(r->is_pending());
 }
 
+// Test that URLRequests get properly tagged.
+#if defined(OS_ANDROID)
+TEST_F(URLRequestTestHTTP, TestTagging) {
+  ASSERT_TRUE(http_test_server()->Start());
+
+  // The tag under which the system reports untagged traffic.
+  static const int32_t UNTAGGED_TAG = 0;
+
+  uint64_t old_traffic = GetTaggedBytes(UNTAGGED_TAG);
+
+  // Untagged traffic should be tagged with tag UNTAGGED_TAG.
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> req(default_context_.CreateRequest(
+      http_test_server()->GetURL("/"), DEFAULT_PRIORITY, &delegate,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
+  EXPECT_EQ(SocketTag(), req->socket_tag());
+  req->Start();
+  base::RunLoop().Run();
+
+  EXPECT_GT(GetTaggedBytes(UNTAGGED_TAG), old_traffic);
+
+  int32_t tag_val1 = 0x12345678;
+  SocketTag tag1(SocketTag::UNSET_UID, tag_val1);
+  old_traffic = GetTaggedBytes(tag_val1);
+
+  // Test specific tag value.
+  req = default_context_.CreateRequest(http_test_server()->GetURL("/"),
+                                       DEFAULT_PRIORITY, &delegate,
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+  req->set_socket_tag(tag1);
+  EXPECT_EQ(tag1, req->socket_tag());
+  req->Start();
+  base::RunLoop().Run();
+
+  EXPECT_GT(GetTaggedBytes(tag_val1), old_traffic);
+}
+#endif
+
 }  // namespace net
