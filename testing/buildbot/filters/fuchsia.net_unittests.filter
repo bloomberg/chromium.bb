@@ -23,3 +23,6 @@
 
 # Flaky, https://crbug.com/810521.
 -DiskCacheEntryTest.ExternalAsyncIONoBuffer
+
+# Flaky, https://crbug.com/813631.
+-URLRequestQuicTest.CancelPushIfCached_AllCached
