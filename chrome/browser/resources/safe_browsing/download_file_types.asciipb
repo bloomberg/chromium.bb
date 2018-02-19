@@ -8,7 +8,7 @@
 ##
 ## Top level settings
 ##
-version_id: 15
+version_id: 16
 sampled_ping_probability: 0.01
 max_archived_binaries_to_report: 10
 default_file_type {
@@ -797,7 +797,7 @@ file_types {
 file_types {
   # Opened by uTorrent and Transmission (can be a renamed .torrent)
   # Added crbug.com/767502
-  extension: "btbtskin"
+  extension: "btskin"
   uma_value: 299
   ping_setting: FULL_PING
 }
