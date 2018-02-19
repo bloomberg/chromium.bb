@@ -26,12 +26,25 @@ enum LayoutConstant {
   // images inside.
   LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET,
 
-  // The horizontal padding between location bar decorations as well as the
-  // vertical and horizontal padding inside the border.
+  // The horizontal padding between location bar decorations.
   LOCATION_BAR_ELEMENT_PADDING,
+
+  // The padding inside the location bar border (i.e. between the border and the
+  // location bar's children).
+  LOCATION_BAR_PADDING,
 
   // The height to be occupied by the LocationBar.
   LOCATION_BAR_HEIGHT,
+
+  // The size of the icons used inside the LocationBar.
+  LOCATION_BAR_ICON_SIZE,
+
+  // The amount of padding used around the icon inside the LocationBar, i.e. the
+  // full width of a LocationBar icon will be LOCATION_BAR_ICON_SIZE + 2 *
+  // LOCATION_BAR_ICON_INTERIOR_PADDING. Icons may additionally be spaced
+  // horizontally by LOCATION_BAR_ELEMENT_PADDING, but this region is not part
+  // of the icon view (e.g. does not highlight on hover).
+  LOCATION_BAR_ICON_INTERIOR_PADDING,
 
   // The amount of overlap between the last tab and the new tab button.
   TABSTRIP_NEW_TAB_BUTTON_OVERLAP,

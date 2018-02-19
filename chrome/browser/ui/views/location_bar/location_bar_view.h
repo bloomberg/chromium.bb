@@ -98,14 +98,6 @@ class LocationBarView : public LocationBar,
     SECURITY_CHIP_TEXT,
   };
 
-  // Visual width (and height) of icons in location bar.
-  static constexpr int kIconWidth = 16;
-
-  // The amount of padding between the visual edge of an icon and the edge of
-  // its click target, for all all sides of the icon. The total edge length of
-  // each icon view should be kIconWidth + 2 * kIconInteriorPadding.
-  static constexpr int kIconInteriorPadding = 4;
-
   // The location bar view's class name.
   static const char kViewClassName[];
 

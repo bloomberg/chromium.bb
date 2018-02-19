@@ -234,8 +234,9 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
   CHECK_GE(model_index, 0);
   keyword_icon_->set_owned_by_client();
   keyword_icon_->EnableCanvasFlippingForRTLUI(true);
-  keyword_icon_->SetImage(gfx::CreateVectorIcon(omnibox::kKeywordSearchIcon, 16,
-                                                GetVectorIconColor()));
+  keyword_icon_->SetImage(gfx::CreateVectorIcon(
+      omnibox::kKeywordSearchIcon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
+      GetVectorIconColor()));
   keyword_icon_->SizeToPreferredSize();
 }
 
@@ -645,7 +646,8 @@ int OmniboxResultView::GetVerticalMargin() const {
       omnibox::kUIExperimentVerticalMargin,
       OmniboxFieldTrial::kUIVerticalMarginParam,
       Md::GetMode() == Md::MATERIAL_HYBRID ? 8 : 4);
-  const int min_height = LocationBarView::kIconWidth + 2 * kIconVerticalPad;
+  const int min_height =
+      GetLayoutConstant(LOCATION_BAR_ICON_SIZE) + 2 * kIconVerticalPad;
 
   return std::max(kVerticalMargin, (min_height - GetTextHeight()) / 2);
 }
@@ -743,8 +745,8 @@ void OmniboxResultView::SetHovered(bool hovered) {
 
 void OmniboxResultView::Layout() {
   const int horizontal_padding =
-      GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
-      LocationBarView::kIconInteriorPadding;
+      GetLayoutConstant(LOCATION_BAR_PADDING) +
+      GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING);
   // The horizontal bounds we're given are the outside bounds, so we can match
   // the omnibox border outline shape exactly in OnPaint().  We have to inset
   // here to keep the icons lined up.
@@ -761,7 +763,8 @@ void OmniboxResultView::Layout() {
   const int icon_y = GetVerticalMargin() + (row_height - icon.Height()) / 2;
   icon_bounds_.SetRect(start_x, icon_y, icon.Width(), icon.Height());
 
-  const int text_x = start_x + LocationBarView::kIconWidth + horizontal_padding;
+  const int text_x =
+      start_x + GetLayoutConstant(LOCATION_BAR_ICON_SIZE) + horizontal_padding;
   int text_width = end_x - text_x;
 
   if (match_.associated_keyword.get()) {

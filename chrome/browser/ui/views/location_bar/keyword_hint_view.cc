@@ -126,7 +126,7 @@ gfx::Size KeywordHintView::CalculatePreferredSize() const {
   return gfx::Size(leading_label_->GetPreferredSize().width() +
                        chip_container_->GetPreferredSize().width() +
                        trailing_label_->GetPreferredSize().width() +
-                       LocationBarView::kIconInteriorPadding,
+                       GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING),
                    0);
 }
 
