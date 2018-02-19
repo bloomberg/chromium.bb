@@ -5,8 +5,12 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_SYNC_DICE_BUBBLE_SYNC_PROMO_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_SYNC_DICE_BUBBLE_SYNC_PROMO_VIEW_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/macros.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
+#include "chrome/browser/ui/views/profiles/dice_accounts_menu.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -40,12 +44,23 @@ class DiceBubbleSyncPromoView : public views::View,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  private:
+  // Used to enable sync in the DiceAccountsMenu and when |signin_button_| is
+  // pressed.
+  void EnableSync(const base::Optional<AccountInfo>& account);
+
   // views::View:
   const char* GetClassName() const override;
 
   // Delegate, to handle clicks on the sign-in buttons.
   BubbleSyncPromoDelegate* delegate_;
   DiceSigninButton* signin_button_ = nullptr;
+
+  // Accounts submenu that is shown when |signin_button_->drop_down_arrow()| is
+  // pressed.
+  std::unique_ptr<DiceAccountsMenu> dice_accounts_menu_;
+
+  std::vector<AccountInfo> accounts_for_submenu_;
+  std::vector<gfx::Image> images_for_submenu_;
 
   DISALLOW_COPY_AND_ASSIGN(DiceBubbleSyncPromoView);
 };
