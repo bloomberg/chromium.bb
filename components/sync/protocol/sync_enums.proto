@@ -120,7 +120,9 @@ message SyncEnums {
     UNKNOWN_ACTION = 5;              // This is the default.
   }
 
+  // Please keep in sync with chrome/android/java/.../ForeignSessionHelper.java
   enum DeviceType {
+    TYPE_UNSET = 0;
     TYPE_WIN = 1;
     TYPE_MAC = 2;
     TYPE_LINUX = 3;

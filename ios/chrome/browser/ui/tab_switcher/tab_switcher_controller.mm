@@ -1142,8 +1142,8 @@ enum class SnapshotViewOption {
     } else {
       index -= kHeaderDistantSessionIndexOffset;
 
-      sync_sessions::SyncedSession::DeviceType deviceType =
-          sync_sessions::SyncedSession::TYPE_UNSET;
+      sync_pb::SyncEnums::DeviceType deviceType =
+          sync_pb::SyncEnums::TYPE_UNSET;
       NSString* cellTitle = nil;
 
       if (index < _controllersOfDistantSessions.count) {
@@ -1156,10 +1156,10 @@ enum class SnapshotViewOption {
       }
       TabSwitcherSessionCellType cellType;
       switch (deviceType) {
-        case sync_sessions::SyncedSession::TYPE_PHONE:
+        case sync_pb::SyncEnums::TYPE_PHONE:
           cellType = kPhoneRemoteSessionCell;
           break;
-        case sync_sessions::SyncedSession::TYPE_TABLET:
+        case sync_pb::SyncEnums::TYPE_TABLET:
           cellType = kTabletRemoteSessionCell;
           break;
         default:

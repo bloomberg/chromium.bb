@@ -118,10 +118,10 @@ const int kRelativeTimeMaxHours = 4;
     (synced_sessions::DistantSession const*)distantSession {
   NSString* imageName = nil;
   switch (distantSession->device_type) {
-    case sync_sessions::SyncedSession::TYPE_PHONE:
+    case sync_pb::SyncEnums::TYPE_PHONE:
       imageName = @"ntp_opentabs_phone";
       break;
-    case sync_sessions::SyncedSession::TYPE_TABLET:
+    case sync_pb::SyncEnums::TYPE_TABLET:
       imageName = @"ntp_opentabs_tablet";
       break;
     default:

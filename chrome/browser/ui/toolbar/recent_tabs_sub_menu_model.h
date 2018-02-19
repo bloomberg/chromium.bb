@@ -117,7 +117,7 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
 
   // Add the favicon for the device section header.
   void AddDeviceFavicon(int index_in_menu,
-                        sync_sessions::SyncedSession::DeviceType device_type);
+                        sync_pb::SyncEnums::DeviceType device_type);
 
   // Add the favicon for a local or other devices' tab asynchronously,
   // OnFaviconDataAvailable() will be invoked when the favicon is ready.

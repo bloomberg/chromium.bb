@@ -60,7 +60,7 @@ class DistantSession {
   std::string tag;
   std::string name;
   base::Time modified_time;
-  sync_sessions::SyncedSession::DeviceType device_type;
+  sync_pb::SyncEnums::DeviceType device_type;
   std::vector<std::unique_ptr<DistantTab>> tabs;
 
   DISALLOW_COPY_AND_ASSIGN(DistantSession);

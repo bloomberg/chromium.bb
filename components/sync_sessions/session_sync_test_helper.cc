@@ -51,7 +51,7 @@ void SessionSyncTestHelper::VerifySyncedSession(
     const std::vector<std::vector<SessionID::id_type>>& windows,
     const SyncedSession& session) {
   ASSERT_EQ(tag, session.session_tag);
-  ASSERT_EQ(SyncedSession::TYPE_LINUX, session.device_type);
+  ASSERT_EQ(sync_pb::SyncEnums_DeviceType_TYPE_LINUX, session.device_type);
   ASSERT_EQ(kClientName, session.session_name);
   ASSERT_EQ(windows.size(), session.windows.size());
 
