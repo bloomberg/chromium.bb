@@ -82,6 +82,9 @@ void LoadCallback(const base::FilePath& path,
           codec.model_sync_transaction_version());
       UMA_HISTOGRAM_TIMES("Bookmarks.DecodeTime",
                           TimeTicks::Now() - start_time);
+      int64_t size = 0;
+      if (base::GetFileSize(path, &size))
+        UMA_HISTOGRAM_MEMORY_KB("Bookmarks.FileSize", size);
 
       load_index = true;
     }
