@@ -367,18 +367,29 @@ void FontCache::Invalidate() {
 }
 
 void FontCache::CrashWithFontInfo(const FontDescription* font_description) {
-  FontCache* font_cache = FontCache::GetFontCache();
+  FontCache* font_cache = nullptr;
   SkFontMgr* font_mgr = nullptr;
   int num_families = std::numeric_limits<int>::min();
   bool is_test_font_mgr = false;
-  if (font_cache) {
+  if (FontGlobalContext::Get(kDoNotCreate)) {
+    font_cache = FontCache::GetFontCache();
+    if (font_cache) {
 #if defined(OS_WIN)
-    is_test_font_mgr = font_cache->is_test_font_mgr_;
+      is_test_font_mgr = font_cache->is_test_font_mgr_;
 #endif
-    font_mgr = font_cache->font_manager_.get();
-    if (font_mgr)
-      num_families = font_mgr->countFamilies();
+      font_mgr = font_cache->font_manager_.get();
+      if (font_mgr)
+        num_families = font_mgr->countFamilies();
+    }
   }
+
+  // In production, these 3 font managers must match.
+  // They don't match in unit tests or in single process mode.
+  SkFontMgr* static_font_mgr = static_font_manager_;
+  SkFontMgr* skia_default_font_mgr = SkFontMgr::RefDefault().get();
+  base::debug::Alias(&font_mgr);
+  base::debug::Alias(&static_font_mgr);
+  base::debug::Alias(&skia_default_font_mgr);
 
   FontDescription font_description_copy = *font_description;
   base::debug::Alias(&font_description_copy);
