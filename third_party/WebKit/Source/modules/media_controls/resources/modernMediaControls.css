@@ -439,6 +439,7 @@ video::-internal-media-controls-overflow-menu-list-item {
 
   line-height: 48px;
   padding-left: 15px;
+  padding-right: 15px;
 }
 
 label[pseudo="-internal-media-controls-overflow-menu-list-item"] input {
