@@ -124,6 +124,7 @@ mojom("mojo_platform_bindings") {
     "clipboard/clipboard.mojom",
     "color_chooser/color_chooser.mojom",
     "feature_policy/feature_policy.mojom",
+    "loader/prefetch_url_loader_service.mojom",
     "net/ip_address_space.mojom",
     "page/page_visibility_state.mojom",
     "quota/quota_dispatcher_host.mojom",

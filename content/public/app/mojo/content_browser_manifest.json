@@ -139,6 +139,7 @@
           "blink::mojom::MediaSessionService",
           "blink::mojom::NotificationService",
           "blink::mojom::PermissionService",
+          "blink::mojom::PrefetchURLLoaderService",
           "blink::mojom::PresentationService",
           "blink::mojom::QuotaDispatcherHost",
           "blink::mojom::TextSuggestionHost",

@@ -44,6 +44,7 @@
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
+#include "third_party/WebKit/common/loader/prefetch_url_loader_service.mojom-blink.h"
 
 namespace service_manager {
 class InterfaceProvider;
@@ -307,6 +308,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // preview.
   bool IsUsingDataSavingPreview() const;
 
+  // Prefetch URLLoader service. May return nullptr.
+  blink::mojom::blink::PrefetchURLLoaderService* PrefetchURLLoaderService();
+
  private:
   friend class FrameNavigationDisabler;
 
@@ -373,6 +377,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   // Per-frame URLLoader factory.
   std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;
+
+  blink::mojom::blink::PrefetchURLLoaderServicePtr prefetch_loader_service_;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {

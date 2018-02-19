@@ -51,6 +51,7 @@
 #include "content/browser/installedapp/installed_app_provider_impl_default.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/keyboard_lock/keyboard_lock_service_impl.h"
+#include "content/browser/loader/prefetch_url_loader_factory.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_scheduler_filter.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
@@ -3231,6 +3232,15 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   // TODO(crbug.com/775792): Move to RendererInterfaceBinders.
   registry_->AddInterface(base::BindRepeating(
       &QuotaDispatcherHost::CreateForFrame, GetProcess(), routing_id_));
+
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    StoragePartitionImpl* storage_partition =
+        static_cast<StoragePartitionImpl*>(BrowserContext::GetStoragePartition(
+            GetSiteInstance()->GetBrowserContext(), GetSiteInstance()));
+    registry_->AddInterface(base::BindRepeating(
+        &PrefetchURLLoaderFactory::ConnectToService,
+        base::RetainedRef(storage_partition->GetPrefetchURLLoaderFactory())));
+  }
 }
 
 void RenderFrameHostImpl::ResetWaitingState() {

@@ -116,7 +116,7 @@ struct ResourceLoaderOptions {
 
   // If not null, this URLLoaderFactory should be used to load this resource
   // rather than whatever factory the system might otherwise use.
-  // Used for example for loading blob: URLs.
+  // Used for example for loading blob: URLs and for prefetch loading.
   scoped_refptr<
       base::RefCountedData<network::mojom::blink::URLLoaderFactoryPtr>>
       url_loader_factory;

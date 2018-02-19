@@ -127,6 +127,7 @@ class TestFilterSpecifyingChild : public ResourceMessageFilter {
             nullptr,
             nullptr,
             nullptr,
+            nullptr,
             base::Bind(&TestFilterSpecifyingChild::GetContexts,
                        base::Unretained(this)),
             BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)),
