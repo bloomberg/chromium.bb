@@ -796,24 +796,6 @@
     }
   }
 
-  function disabledTrackVideoSize() {
-    var videoElement = $('local-view-1');
-    navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: { width: { exact: 320 }, height: { exact: 240 }}
-    }).then(stream => {
-      stream.getVideoTracks()[0].enabled = false;
-
-      videoElement.onloadedmetadata = () => {
-        assertEquals(320, videoElement.videoWidth);
-        assertEquals(240, videoElement.videoHeight);
-        reportTestSuccess();
-      };
-
-      videoElement.srcObject = stream;
-    }).catch(failTest);
-  }
-
   function getUserMediaAfterStopCanvasCapture() {
     var canvas = document.createElement('canvas');
     canvas.width = canvas.height = 64;
