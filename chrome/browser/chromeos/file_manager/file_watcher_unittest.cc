@@ -107,7 +107,8 @@ TEST_F(FileManagerFileWatcherTest, AddSameExtensionMultipleTimes) {
   ASSERT_EQ(0U, extension_ids.size());
 }
 
-TEST_F(FileManagerFileWatcherTest, WatchLocalFile) {
+// Disabled for flakiness. crbug.com/813483.
+TEST_F(FileManagerFileWatcherTest, DISABLED_WatchLocalFile) {
   const base::FilePath kVirtualPath =
       base::FilePath::FromUTF8Unsafe("foo/bar.txt");
   const char kExtensionId[] = "extension-id";
