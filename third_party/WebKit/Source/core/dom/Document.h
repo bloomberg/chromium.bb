@@ -1424,9 +1424,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   virtual Document* CloneDocumentWithoutChildren();
 
-  bool ImportContainerNodeChildren(ContainerNode* old_container_node,
-                                   ContainerNode* new_container_node,
-                                   ExceptionState&);
   void LockCompatibilityMode() { compatibility_mode_locked_ = true; }
   ParserSynchronizationPolicy GetParserSynchronizationPolicy() const {
     return parser_sync_policy_;
