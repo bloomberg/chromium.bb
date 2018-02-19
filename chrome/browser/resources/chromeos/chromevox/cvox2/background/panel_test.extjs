@@ -82,7 +82,8 @@ TEST_F('PanelTest', 'DISABLED_ActivateMenu', function() {
   });
 });
 
-TEST_F('PanelTest', 'LinkMenu', function() {
+// Flaky, see https://crbug.com/813320
+TEST_F('PanelTest', 'DISABLED_LinkMenu', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksDoc, function(root) {
     var openMenus = new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_link');
