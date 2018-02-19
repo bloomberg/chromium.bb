@@ -842,8 +842,8 @@ static INLINE void set_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
 }
 
 static INLINE int calc_mi_size(int len) {
-  // len is in mi units.
-  return len + MAX_MIB_SIZE;
+  // len is in mi units. Align to a multiple of SBs.
+  return ALIGN_POWER_OF_TWO(len, MAX_MIB_SIZE_LOG2);
 }
 
 static INLINE void set_plane_n4(MACROBLOCKD *const xd, int bw, int bh,
