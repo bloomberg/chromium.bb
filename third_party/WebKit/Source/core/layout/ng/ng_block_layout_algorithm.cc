@@ -11,6 +11,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "core/layout/ng/list/ng_list_layout_algorithm.h"
 #include "core/layout/ng/ng_block_child_iterator.h"
 #include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_constraint_space.h"
@@ -109,7 +110,8 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(NGBlockNode node,
                                                NGBlockBreakToken* break_token)
     : NGLayoutAlgorithm(node, space, break_token),
       is_resuming_(break_token && !break_token->IsBreakBefore()),
-      exclusion_space_(new NGExclusionSpace(space.ExclusionSpace())) {}
+      exclusion_space_(new NGExclusionSpace(space.ExclusionSpace())),
+      unpositioned_list_marker_(nullptr) {}
 
 Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
     const MinMaxSizeInput& input) const {
@@ -373,6 +375,9 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     } else if (child.IsFloating()) {
       HandleFloat(previous_inflow_position, ToNGBlockNode(child),
                   ToNGBlockBreakToken(child_break_token));
+    } else if (child.IsListMarkerWrapperForBlockContent()) {
+      DCHECK(!unpositioned_list_marker_);
+      unpositioned_list_marker_ = ToNGBlockNode(child);
     } else {
       // We need to propagate the initial break-before value up our container
       // chain, until we reach a container that's not a first child. If we get
@@ -706,6 +711,9 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
       std::max(intrinsic_block_size_,
                logical_offset.block_offset + fragment.BlockSize());
 
+  if (unpositioned_list_marker_)
+    PositionListMarker(physical_fragment, logical_offset);
+
   container_builder_.AddChild(layout_result, logical_offset);
   container_builder_.PropagateBreak(layout_result);
 
@@ -1032,6 +1040,9 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
         std::max(intrinsic_block_size_,
                  logical_offset.block_offset + fragment.BlockSize());
   }
+
+  if (unpositioned_list_marker_)
+    PositionListMarker(physical_fragment, logical_offset);
 
   container_builder_.AddChild(layout_result, logical_offset);
   if (child.IsBlock())
@@ -1567,6 +1578,15 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
         .SetIsShrinkToFit(ShouldShrinkToFit(Style(), child_style))
         .SetTextDirection(child_style.Direction());
     writing_mode = child_style.GetWritingMode();
+
+    // PositionListMarker() requires a first line baseline.
+    if (unpositioned_list_marker_) {
+      space_builder.AddBaselineRequest(
+          {NGBaselineAlgorithmType::kFirstLine,
+           IsHorizontalWritingMode(constraint_space_.GetWritingMode())
+               ? kAlphabeticBaseline
+               : kIdeographicBaseline});
+    }
   }
 
   LayoutUnit space_available;
@@ -1757,6 +1777,18 @@ LayoutUnit NGBlockLayoutAlgorithm::CalculateMinimumBlockSize(
     return minimum_block_size.ClampNegativeToZero();
   }
   return NGSizeIndefinite;
+}
+
+void NGBlockLayoutAlgorithm::PositionListMarker(
+    const NGPhysicalFragment& content,
+    const NGLogicalOffset& content_offset) {
+  DCHECK(unpositioned_list_marker_);
+
+  NGListLayoutAlgorithm::AddListMarkerForBlockContent(
+      unpositioned_list_marker_, constraint_space_,
+      ToNGPhysicalBoxFragment(content), content_offset, &container_builder_);
+
+  unpositioned_list_marker_ = NGBlockNode(nullptr);
 }
 
 }  // namespace blink

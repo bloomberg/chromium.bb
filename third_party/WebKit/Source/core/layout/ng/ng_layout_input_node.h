@@ -57,6 +57,10 @@ class CORE_EXPORT NGLayoutInputNode {
   bool IsBody() const;
   bool IsDocumentElement() const;
   bool ShouldBeConsideredAsReplaced() const;
+  bool IsListMarker() const;
+  // True for an anonymous block wrapper of a list marker. See
+  // LayoutNGListMarker::IsListMarkerWrapper() for more.
+  bool IsListMarkerWrapperForBlockContent() const;
 
   // If the node is a quirky container for margin collapsing, see:
   // https://html.spec.whatwg.org/#margin-collapsing-quirks

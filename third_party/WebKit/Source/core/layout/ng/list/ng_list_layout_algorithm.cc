@@ -7,31 +7,83 @@
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/ng/inline/ng_inline_box_state.h"
 #include "core/layout/ng/inline/ng_inline_item_result.h"
+#include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_constraint_space.h"
-#include "core/layout/ng/ng_fragment.h"
+#include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_layout_result.h"
 
 namespace blink {
+
+namespace {
+
+std::pair<LayoutUnit, LayoutUnit> InlineMarginsForOutside(
+    const NGFragment& list_marker,
+    const NGConstraintSpace& constraint_space) {
+  DCHECK(&list_marker);
+  bool is_image = false;  // TODO(kojii): implement
+  return LayoutListMarker::InlineMarginsForOutside(
+      list_marker.Style(), is_image, list_marker.InlineSize());
+}
+
+}  // namespace
 
 void NGListLayoutAlgorithm::SetListMarkerPosition(
     const NGConstraintSpace& constraint_space,
     const NGLineInfo& line_info,
     LayoutUnit line_width,
-    unsigned list_marker_index,
-    NGLineBoxFragmentBuilder::ChildList* line_box) {
-  const NGPhysicalFragment* physical_fragment =
-      (*line_box)[list_marker_index].PhysicalFragment();
-  DCHECK(physical_fragment);
-  NGFragment list_marker(constraint_space.GetWritingMode(), *physical_fragment);
-
-  // Compute the inline offset relative to the line.
-  bool is_image = false;  // TODO(kojii): implement
-  auto margins = LayoutListMarker::InlineMarginsForOutside(
-      physical_fragment->Style(), is_image, list_marker.InlineSize());
+    NGLineBoxFragmentBuilder::Child* list_marker_child) {
+  DCHECK(list_marker_child->PhysicalFragment());
+  NGFragment list_marker_fragment(constraint_space.GetWritingMode(),
+                                  *list_marker_child->PhysicalFragment());
+  auto margins =
+      InlineMarginsForOutside(list_marker_fragment, constraint_space);
   LayoutUnit line_offset = IsLtr(line_info.BaseDirection())
                                ? margins.first
                                : line_width + margins.second;
-  (*line_box)[list_marker_index].offset.inline_offset = line_offset;
+  list_marker_child->offset.inline_offset = line_offset;
+}
+
+void NGListLayoutAlgorithm::AddListMarkerForBlockContent(
+    NGBlockNode list_marker_node,
+    const NGConstraintSpace& constraint_space,
+    const NGPhysicalBoxFragment& content,
+    NGLogicalOffset offset,
+    NGFragmentBuilder* container_builder) {
+  // Layout the list marker.
+  scoped_refptr<NGLayoutResult> list_marker_layout_result =
+      list_marker_node.LayoutAtomicInline(constraint_space,
+                                          constraint_space.UseFirstLineStyle());
+  DCHECK(list_marker_layout_result->PhysicalFragment());
+  NGBoxFragment list_marker_fragment(
+      constraint_space.GetWritingMode(),
+      ToNGPhysicalBoxFragment(*list_marker_layout_result->PhysicalFragment()));
+
+  // Compute the inline offset of the marker from its margins.
+  auto margins =
+      InlineMarginsForOutside(list_marker_fragment, constraint_space);
+  offset.inline_offset += margins.first;
+
+  // Compute the block offset of the marker by aligning the baseline of the
+  // marker to the first baseline of the content.
+  FontBaseline baseline_type =
+      IsHorizontalWritingMode(constraint_space.GetWritingMode())
+          ? kAlphabeticBaseline
+          : kIdeographicBaseline;
+  NGLineHeightMetrics list_marker_metrics =
+      list_marker_fragment.BaselineMetrics(
+          {NGBaselineAlgorithmType::kAtomicInline, baseline_type},
+          constraint_space);
+  NGBoxFragment content_fragment(constraint_space.GetWritingMode(), content);
+  NGLineHeightMetrics content_metrics = content_fragment.BaselineMetrics(
+      {NGBaselineAlgorithmType::kFirstLine, baseline_type}, constraint_space);
+
+  // |offset.block_offset| is at the top of the content. Adjust it to the top of
+  // the list marker by adding the differences of the ascent between content's
+  // first line and the list marker.
+  offset.block_offset += content_metrics.ascent - list_marker_metrics.ascent;
+
+  DCHECK(container_builder);
+  container_builder->AddChild(std::move(list_marker_layout_result), offset);
 }
 
 }  // namespace blink

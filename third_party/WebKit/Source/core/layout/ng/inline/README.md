@@ -321,7 +321,7 @@ In a bird's‐eye view, it consists of two parts:
 [NGInlineItem]: ng_inline_item.h
 [NGInlineItemResult]: ng_inline_item_result.h
 [NGInlineNode]: ng_inline_node.h
-[NGInlineLayoutAlgorithm]: ng_inlineLlayout_algorithm.h
+[NGInlineLayoutAlgorithm]: ng_inline_layout_algorithm.h
 [NGLayoutInputNode]: ../ng_layout_input_node.h
 [NGLineBreaker]: ng_line_breaker.h
 [NGPhysicalBoxFragment]: ../ng_physical_box_fragment.h

@@ -23,13 +23,6 @@ bool LayoutNGListItem::IsOfType(LayoutObjectType type) const {
   return type == kLayoutObjectNGListItem || LayoutNGBlockFlow::IsOfType(type);
 }
 
-bool LayoutNGListItem::IsListMarker(LayoutObject* layout_object) {
-  DCHECK(layout_object);
-  LayoutObject* parent = layout_object->Parent();
-  return parent && parent->IsLayoutNGListItem() &&
-         ToLayoutNGListItem(parent)->marker_ == layout_object;
-}
-
 void LayoutNGListItem::WillBeDestroyed() {
   DestroyMarker();
 
@@ -65,8 +58,7 @@ void LayoutNGListItem::OrdinalValueChanged() {
 }
 
 void LayoutNGListItem::WillCollectInlines() {
-  if (marker_ && !is_marker_text_updated_)
-    UpdateMarkerText(ToLayoutText(marker_->SlowFirstChild()));
+  UpdateMarkerTextIfNeeded();
 }
 
 // Returns true if this is 'list-style-position: inside', or should be laid out
@@ -90,6 +82,11 @@ void LayoutNGListItem::UpdateMarkerText(LayoutText* text) {
   marker_type_ = MarkerText(&marker_text_builder, kWithSuffix);
   text->SetText(marker_text_builder.ToString().ReleaseImpl());
   is_marker_text_updated_ = true;
+}
+
+void LayoutNGListItem::UpdateMarkerText() {
+  DCHECK(marker_);
+  UpdateMarkerText(ToLayoutText(marker_->SlowFirstChild()));
 }
 
 void LayoutNGListItem::UpdateMarker() {
