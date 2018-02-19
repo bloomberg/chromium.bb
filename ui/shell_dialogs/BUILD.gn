@@ -8,6 +8,9 @@ import("//testing/test.gni")
 if (is_android) {
   import("//build/config/android/config.gni")
 }
+if (is_mac) {
+  import("//build/config/mac/rules.gni")
+}
 
 jumbo_component("shell_dialogs") {
   sources = [
@@ -76,11 +79,30 @@ jumbo_component("shell_dialogs") {
   }
 }
 
+if (is_mac) {
+  mac_xib_bundle_data("shell_dialogs_unittests_xibs") {
+    testonly = true
+    sources = [
+      "//chrome/app/nibs/SaveAccessoryView.xib",
+    ]
+  }
+
+  mac_framework_bundle("shell_dialogs_unittests_bundle") {
+    testonly = true
+    info_plist = "//ui/base/test/framework-Info.plist"
+    deps = [
+      ":shell_dialogs_unittests_xibs",
+      "//ui/resources:ui_test_pak_bundle_data",
+    ]
+    extra_substitutions = [ "CHROMIUM_BUNDLE_ID=$target_name" ]
+  }
+}
+
 test("shell_dialogs_unittests") {
+  testonly = true
   sources = [
-    # TODO(karandeepb) : Revisit this once gn gets mac bundle support.
-    # "select_file_dialog_mac_unittest.mm",
     "run_all_unittests.cc",
+    "select_file_dialog_mac_unittest.mm",
     "select_file_dialog_unittest.cc",
     "select_file_dialog_win_unittest.cc",
   ]
@@ -92,4 +114,8 @@ test("shell_dialogs_unittests") {
     "//testing/gtest",
     "//ui/base:base",
   ]
+
+  if (is_mac) {
+    deps += [ ":shell_dialogs_unittests_bundle" ]
+  }
 }

@@ -44,9 +44,8 @@ void ShellDialogsTestSuite::Initialize() {
   // Set up framework bundle so that tests on Mac can access nib files.
   base::FilePath path;
   PathService::Get(base::DIR_EXE, &path);
-  // The three DirName() calls strip "Contents/MacOS/<binary>" from the path.
-  path = path.DirName().DirName().DirName();
-  path = path.Append(FILE_PATH_LITERAL("shell_dialogs_unittests.app"));
+  path = path.Append(
+      FILE_PATH_LITERAL("shell_dialogs_unittests_bundle.framework"));
   base::mac::SetOverrideFrameworkBundlePath(path);
 
   // Setup resource bundle.
