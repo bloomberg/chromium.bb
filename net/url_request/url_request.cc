@@ -1219,6 +1219,12 @@ void URLRequest::SetResponseHeadersCallback(ResponseHeadersCallback callback) {
   response_headers_callback_ = std::move(callback);
 }
 
+void URLRequest::set_socket_tag(const SocketTag& socket_tag) {
+  DCHECK(!is_pending_);
+  DCHECK(url().SchemeIsHTTPOrHTTPS());
+  socket_tag_ = socket_tag;
+}
+
 void URLRequest::set_status(URLRequestStatus status) {
   DCHECK(status_.is_io_pending() || status_.is_success() ||
          (!status.is_success() && !status.is_io_pending()));

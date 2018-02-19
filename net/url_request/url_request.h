@@ -37,6 +37,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/net_features.h"
 #include "net/socket/connection_attempts.h"
+#include "net/socket/socket_tag.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
@@ -693,6 +694,17 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // called with a response from the server.
   void SetResponseHeadersCallback(ResponseHeadersCallback callback);
 
+  // Sets socket tag to be applied to all sockets used to execute this request.
+  // Must be set before Start() is called.  Only currently supported for HTTP
+  // and HTTPS requests on Android; UID tagging requires
+  // MODIFY_NETWORK_ACCOUNTING permission.
+  // NOTE(pauljensen): Setting a tag disallows sharing of sockets with requests
+  // with other tags, which may adversely effect performance by prohibiting
+  // connection sharing. In other words use of multiplexed sockets (e.g. HTTP/2
+  // and QUIC) will only be allowed if all requests have the same socket tag.
+  void set_socket_tag(const SocketTag& socket_tag);
+  const SocketTag& socket_tag() const { return socket_tag_; }
+
  protected:
   // Allow the URLRequestJob class to control the is_pending() flag.
   void set_is_pending(bool value) { is_pending_ = value; }
@@ -903,6 +915,8 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   bool is_pac_request_;
 
   const NetworkTrafficAnnotationTag traffic_annotation_;
+
+  SocketTag socket_tag_;
 
   // See Set{Request|Response}HeadersCallback() above for details.
   RequestHeadersCallback request_headers_callback_;
