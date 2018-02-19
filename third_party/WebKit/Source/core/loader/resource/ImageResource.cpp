@@ -374,6 +374,9 @@ void ImageResource::DecodeError(bool all_data_received) {
   if (!ErrorOccurred())
     SetStatus(ResourceStatus::kDecodeError);
 
+  if (multipart_parser_)
+    multipart_parser_->Cancel();
+
   bool is_multipart = !!multipart_parser_;
   // Finishes loading if needed, and notifies observers.
   if (!all_data_received && Loader()) {
@@ -405,7 +408,8 @@ void ImageResource::NotifyStartLoad() {
 void ImageResource::Finish(double load_finish_time,
                            base::SingleThreadTaskRunner* task_runner) {
   if (multipart_parser_) {
-    multipart_parser_->Finish();
+    if (!ErrorOccurred())
+      multipart_parser_->Finish();
     if (Data())
       UpdateImageAndClearBuffer();
   } else {
