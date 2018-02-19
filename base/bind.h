@@ -364,13 +364,16 @@ static inline internal::OwnedWrapper<T> Owned(T* o) {
 // argument will CHECK() because the first invocation would have already
 // transferred ownership to the target function.
 //
+// Note that Passed() is not necessary with BindOnce(), as std::move() does the
+// same thing. Avoid Passed() in favor of std::move() with BindOnce().
+//
 // EXAMPLE OF Passed():
 //
 //   void TakesOwnership(std::unique_ptr<Foo> arg) { }
-//   std::unique_ptr<Foo> CreateFoo() { return std::unique_ptr<Foo>(new Foo());
+//   std::unique_ptr<Foo> CreateFoo() { return std::make_unique<Foo>();
 //   }
 //
-//   std::unique_ptr<Foo> f(new Foo());
+//   auto f = std::make_unique<Foo>();
 //
 //   // |cb| is given ownership of Foo(). |f| is now NULL.
 //   // You can use std::move(f) in place of &f, but it's more verbose.
@@ -387,11 +390,6 @@ static inline internal::OwnedWrapper<T> Owned(T* o) {
 //   // no longer owns Foo() and, if reset, would not delete Foo().
 //   cb.Run();  // Foo() is now transferred to |arg| and deleted.
 //   cb.Run();  // This CHECK()s since Foo() already been used once.
-//
-// Passed() is particularly useful with PostTask() when you are transferring
-// ownership of an argument into a task, but don't necessarily know if the
-// task will always be executed. This can happen if the task is cancellable
-// or if it is posted to a TaskRunner.
 //
 // We offer 2 syntaxes for calling Passed().  The first takes an rvalue and
 // is best suited for use with the return value of a function or other temporary
