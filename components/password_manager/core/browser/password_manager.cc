@@ -71,11 +71,19 @@ bool URLsEqualUpToHttpHttpsSubstitution(const GURL& a, const GURL& b) {
   return false;
 }
 
+// Since empty or unspecified form's action is automatically set to the page
+// origin, this function checks if a form's action is empty by comparing it to
+// its origin.
+bool HasNonEmptyAction(const autofill::PasswordForm& form) {
+  return form.action != form.origin;
+}
+
 // Checks if the observed form looks like the submitted one to handle "Invalid
 // password entered" case so we don't offer a password save when we shouldn't.
 bool IsPasswordFormReappeared(const autofill::PasswordForm& observed_form,
                               const autofill::PasswordForm& submitted_form) {
-  if (observed_form.action.is_valid() &&
+  if (observed_form.action.is_valid() && HasNonEmptyAction(observed_form) &&
+      HasNonEmptyAction(submitted_form) &&
       URLsEqualUpToHttpHttpsSubstitution(submitted_form.action,
                                          observed_form.action)) {
     return true;
