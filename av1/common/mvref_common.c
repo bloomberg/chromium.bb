@@ -1638,6 +1638,8 @@ static int motion_field_projection(AV1_COMMON *cm, MV_REFERENCE_FRAME ref_frame,
   int ref_frame_idx = cm->frame_refs[FWD_RF_OFFSET(ref_frame)].idx;
   if (ref_frame_idx < 0) return 0;
 
+  if (cm->buffer_pool->frame_bufs[ref_frame_idx].intra_only) return 0;
+
   if (cm->buffer_pool->frame_bufs[ref_frame_idx].mi_rows != cm->mi_rows ||
       cm->buffer_pool->frame_bufs[ref_frame_idx].mi_cols != cm->mi_cols)
     return 0;
