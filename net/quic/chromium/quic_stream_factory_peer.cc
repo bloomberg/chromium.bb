@@ -33,12 +33,12 @@ QuicCryptoClientConfig* QuicStreamFactoryPeer::GetCryptoConfig(
 
 bool QuicStreamFactoryPeer::HasActiveSession(QuicStreamFactory* factory,
                                              const QuicServerId& server_id) {
-  return factory->HasActiveSession(server_id);
+  return factory->HasActiveSession(QuicSessionKey(server_id, SocketTag()));
 }
 
 bool QuicStreamFactoryPeer::HasActiveJob(QuicStreamFactory* factory,
                                          const QuicServerId& server_id) {
-  return factory->HasActiveJob(server_id);
+  return factory->HasActiveJob(QuicSessionKey(server_id, SocketTag()));
 }
 
 bool QuicStreamFactoryPeer::HasActiveCertVerifierJob(
@@ -50,8 +50,9 @@ bool QuicStreamFactoryPeer::HasActiveCertVerifierJob(
 QuicChromiumClientSession* QuicStreamFactoryPeer::GetActiveSession(
     QuicStreamFactory* factory,
     const QuicServerId& server_id) {
-  DCHECK(factory->HasActiveSession(server_id));
-  return factory->active_sessions_[server_id];
+  QuicSessionKey session_key(server_id, SocketTag());
+  DCHECK(factory->HasActiveSession(session_key));
+  return factory->active_sessions_[session_key];
 }
 
 bool QuicStreamFactoryPeer::IsLiveSession(QuicStreamFactory* factory,

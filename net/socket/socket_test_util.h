@@ -809,6 +809,15 @@ class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
   void set_source_port(uint16_t port) { source_port_ = port; }
   uint16_t source_port() const { return source_port_; }
 
+  // Returns last tag applied to socket.
+  SocketTag tag() const { return tag_; }
+
+  // Returns false if socket's tag was changed after the socket was used for
+  // data transfer (e.g. Read/Write() called), otherwise returns true.
+  bool tagged_before_data_transferred() const {
+    return tagged_before_data_transferred_;
+  }
+
  private:
   int CompleteRead();
 
@@ -835,6 +844,10 @@ class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
   CompletionCallback pending_write_callback_;
 
   NetLogWithSource net_log_;
+
+  SocketTag tag_;
+  bool data_transferred_ = false;
+  bool tagged_before_data_transferred_ = true;
 
   base::WeakPtrFactory<MockUDPClientSocket> weak_factory_;
 
@@ -1128,18 +1141,28 @@ class MockTaggingClientSocketFactory : public MockClientSocketFactory {
  public:
   MockTaggingClientSocketFactory() = default;
 
+  // ClientSocketFactory implementation.
+  std::unique_ptr<DatagramClientSocket> CreateDatagramClientSocket(
+      DatagramSocket::BindType bind_type,
+      const RandIntCallback& rand_int_cb,
+      NetLog* net_log,
+      const NetLogSource& source) override;
   std::unique_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList& addresses,
       std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
       NetLog* net_log,
       const NetLogSource& source) override;
 
-  // Returns a pointer to last socket produced by this factory.
-  // NOTE: Socket must still exist, or pointer will be to freed memory.
-  MockTaggingStreamSocket* GetLastProducedSocket() { return socket_; }
+  // These methods return pointers to last TCP and UDP sockets produced by this
+  // factory. NOTE: Socket must still exist, or pointer will be to freed memory.
+  MockTaggingStreamSocket* GetLastProducedTCPSocket() const {
+    return tcp_socket_;
+  }
+  MockUDPClientSocket* GetLastProducedUDPSocket() const { return udp_socket_; }
 
  private:
-  MockTaggingStreamSocket* socket_ = nullptr;
+  MockTaggingStreamSocket* tcp_socket_ = nullptr;
+  MockUDPClientSocket* udp_socket_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MockTaggingClientSocketFactory);
 };

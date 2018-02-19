@@ -897,9 +897,9 @@ TEST_P(HttpProxyClientSocketPoolTest, Tag) {
   EXPECT_TRUE(handle_.is_initialized());
   ASSERT_TRUE(handle_.socket());
   EXPECT_TRUE(handle_.socket()->IsConnected());
-  EXPECT_EQ(socket_factory()->GetLastProducedSocket()->tag(), tag1);
+  EXPECT_EQ(socket_factory()->GetLastProducedTCPSocket()->tag(), tag1);
   EXPECT_TRUE(
-      socket_factory()->GetLastProducedSocket()->tagged_before_connected());
+      socket_factory()->GetLastProducedTCPSocket()->tagged_before_connected());
 
   // Verify reused socket is retagged properly.
   StreamSocket* socket = handle_.socket();
@@ -911,7 +911,7 @@ TEST_P(HttpProxyClientSocketPoolTest, Tag) {
   EXPECT_TRUE(handle_.socket());
   EXPECT_TRUE(handle_.socket()->IsConnected());
   EXPECT_EQ(handle_.socket(), socket);
-  EXPECT_EQ(socket_factory()->GetLastProducedSocket()->tag(), tag2);
+  EXPECT_EQ(socket_factory()->GetLastProducedTCPSocket()->tag(), tag2);
   handle_.socket()->Disconnect();
   handle_.Reset();
 }

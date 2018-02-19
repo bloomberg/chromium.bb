@@ -33,6 +33,7 @@
 #include "net/quic/chromium/quic_chromium_packet_writer.h"
 #include "net/quic/chromium/quic_connection_logger.h"
 #include "net/quic/chromium/quic_connectivity_probing_manager.h"
+#include "net/quic/chromium/quic_session_key.h"
 #include "net/quic/core/quic_client_push_promise_index.h"
 #include "net/quic/core/quic_crypto_client_stream.h"
 #include "net/quic/core/quic_packets.h"
@@ -344,7 +345,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       QuicClock* clock,
       TransportSecurityState* transport_security_state,
       std::unique_ptr<QuicServerInfo> server_info,
-      const QuicServerId& server_id,
+      const QuicSessionKey& session_key,
       bool require_confirmation,
       bool migrate_sesion_early,
       bool migrate_session_on_network_change,
@@ -509,9 +510,11 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // Returns true if |hostname| may be pooled onto this session.  If this
   // is a secure QUIC session, then |hostname| must match the certificate
   // presented during the handshake.
-  bool CanPool(const std::string& hostname, PrivacyMode privacy_mode) const;
+  bool CanPool(const std::string& hostname,
+               PrivacyMode privacy_mode,
+               const SocketTag& socket_tag) const;
 
-  const QuicServerId& server_id() const { return server_id_; }
+  const QuicServerId& server_id() const { return session_key_.server_id(); }
 
   // Attempts to migrate session when a write error is encountered.
   void MigrateSessionOnWriteError(int error_code);
@@ -697,7 +700,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // delete |this|.
   void NotifyFactoryOfSessionClosed();
 
-  QuicServerId server_id_;
+  QuicSessionKey session_key_;
   bool require_confirmation_;
   bool migrate_session_early_;
   bool migrate_session_on_network_change_;

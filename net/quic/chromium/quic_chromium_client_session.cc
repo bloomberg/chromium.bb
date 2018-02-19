@@ -657,7 +657,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     QuicClock* clock,
     TransportSecurityState* transport_security_state,
     std::unique_ptr<QuicServerInfo> server_info,
-    const QuicServerId& server_id,
+    const QuicSessionKey& session_key,
     bool require_confirmation,
     bool migrate_session_early,
     bool migrate_sessions_on_network_change,
@@ -680,7 +680,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
     NetLog* net_log)
     : QuicSpdyClientSessionBase(connection, push_promise_index, config),
-      server_id_(server_id),
+      session_key_(session_key),
       require_confirmation_(require_confirmation),
       migrate_session_early_(migrate_session_early),
       migrate_session_on_network_change_(migrate_sessions_on_network_change),
@@ -732,15 +732,16 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       yield_after_duration, net_log_));
   crypto_stream_.reset(
       crypto_client_stream_factory->CreateQuicCryptoClientStream(
-          server_id, this,
+          session_key.server_id(), this,
           std::make_unique<ProofVerifyContextChromium>(cert_verify_flags,
                                                        net_log_),
           crypto_config));
   connection->set_debug_visitor(logger_.get());
   connection->set_creator_debug_delegate(logger_.get());
-  net_log_.BeginEvent(NetLogEventType::QUIC_SESSION,
-                      base::Bind(NetLogQuicClientSessionCallback, &server_id,
-                                 cert_verify_flags, require_confirmation_));
+  net_log_.BeginEvent(
+      NetLogEventType::QUIC_SESSION,
+      base::Bind(NetLogQuicClientSessionCallback, &session_key.server_id(),
+                 cert_verify_flags, require_confirmation_));
   IPEndPoint address;
   if (socket && socket->GetLocalAddress(&address) == OK &&
       address.GetFamily() == ADDRESS_FAMILY_IPV6) {
@@ -1210,10 +1211,12 @@ int QuicChromiumClientSession::GetNumSentClientHellos() const {
 }
 
 bool QuicChromiumClientSession::CanPool(const std::string& hostname,
-                                        PrivacyMode privacy_mode) const {
+                                        PrivacyMode privacy_mode,
+                                        const SocketTag& socket_tag) const {
   DCHECK(connection()->connected());
-  if (privacy_mode != server_id_.privacy_mode()) {
-    // Privacy mode must always match.
+  if (privacy_mode != session_key_.privacy_mode() ||
+      socket_tag != session_key_.socket_tag()) {
+    // Privacy mode and socket tag must always match.
     return false;
   }
   SSLInfo ssl_info;
@@ -1223,7 +1226,7 @@ bool QuicChromiumClientSession::CanPool(const std::string& hostname,
   }
 
   return SpdySession::CanPool(transport_security_state_, ssl_info,
-                              server_id_.host(), hostname);
+                              session_key_.host(), hostname);
 }
 
 bool QuicChromiumClientSession::ShouldCreateIncomingDynamicStream(
@@ -2134,7 +2137,8 @@ ProbingResult QuicChromiumClientSession::StartProbeNetwork(
   std::unique_ptr<DatagramClientSocket> probing_socket =
       stream_factory_->CreateSocket(net_log_.net_log(), net_log_.source());
   if (stream_factory_->ConfigureSocket(probing_socket.get(), peer_address,
-                                       network) != OK) {
+                                       network,
+                                       session_key_.socket_tag()) != OK) {
     HistogramAndLogMigrationFailure(
         migration_net_log, MIGRATION_STATUS_INTERNAL_ERROR, connection_id(),
         "Socket configuration failed");
@@ -2514,8 +2518,8 @@ MigrationResult QuicChromiumClientSession::Migrate(
   // Create and configure socket on |network|.
   std::unique_ptr<DatagramClientSocket> socket(
       stream_factory_->CreateSocket(net_log_.net_log(), net_log_.source()));
-  if (stream_factory_->ConfigureSocket(socket.get(), peer_address, network) !=
-      OK) {
+  if (stream_factory_->ConfigureSocket(socket.get(), peer_address, network,
+                                       session_key_.socket_tag()) != OK) {
     HistogramAndLogMigrationFailure(
         migration_net_log, MIGRATION_STATUS_INTERNAL_ERROR, connection_id(),
         "Socket configuration failed");
@@ -2609,7 +2613,8 @@ const DatagramClientSocket* QuicChromiumClientSession::GetDefaultSocket()
 }
 
 bool QuicChromiumClientSession::IsAuthorized(const std::string& hostname) {
-  bool result = CanPool(hostname, server_id_.privacy_mode());
+  bool result =
+      CanPool(hostname, session_key_.privacy_mode(), session_key_.socket_tag());
   if (result)
     streams_pushed_count_++;
   return result;

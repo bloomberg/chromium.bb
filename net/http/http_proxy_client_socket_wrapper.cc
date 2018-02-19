@@ -638,7 +638,7 @@ int HttpProxyClientSocketWrapper::DoQuicProxyCreateSession() {
       ssl_params_->GetDirectConnectionParams()->destination().host_port_pair();
   return quic_stream_request_.Request(
       proxy_server, quic_version_, ssl_params_->privacy_mode(), priority_,
-      ssl_params_->ssl_config().GetCertVerifyFlags(),
+      initial_socket_tag_, ssl_params_->ssl_config().GetCertVerifyFlags(),
       GURL("https://" + proxy_server.ToString()), net_log_,
       &quic_net_error_details_,
       base::Bind(&HttpProxyClientSocketWrapper::OnIOComplete,

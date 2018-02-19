@@ -388,9 +388,9 @@ TEST_F(SOCKSClientSocketPoolTest, Tag) {
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
-  EXPECT_EQ(socket_factory.GetLastProducedSocket()->tag(), tag1);
+  EXPECT_EQ(socket_factory.GetLastProducedTCPSocket()->tag(), tag1);
   EXPECT_TRUE(
-      socket_factory.GetLastProducedSocket()->tagged_before_connected());
+      socket_factory.GetLastProducedTCPSocket()->tagged_before_connected());
 
   // Test socket is tagged when reused synchronously.
   StreamSocket* socket = handle.socket();
@@ -402,7 +402,7 @@ TEST_F(SOCKSClientSocketPoolTest, Tag) {
   EXPECT_TRUE(handle.socket());
   EXPECT_TRUE(handle.socket()->IsConnected());
   EXPECT_EQ(handle.socket(), socket);
-  EXPECT_EQ(socket_factory.GetLastProducedSocket()->tag(), tag2);
+  EXPECT_EQ(socket_factory.GetLastProducedTCPSocket()->tag(), tag2);
   handle.socket()->Disconnect();
   handle.Reset();
 
@@ -417,9 +417,9 @@ TEST_F(SOCKSClientSocketPoolTest, Tag) {
   EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
-  EXPECT_EQ(socket_factory.GetLastProducedSocket()->tag(), tag1);
+  EXPECT_EQ(socket_factory.GetLastProducedTCPSocket()->tag(), tag1);
   EXPECT_TRUE(
-      socket_factory.GetLastProducedSocket()->tagged_before_connected());
+      socket_factory.GetLastProducedTCPSocket()->tagged_before_connected());
 
   // Test socket is tagged when reused after being created asynchronously.
   socket = handle.socket();
@@ -431,7 +431,7 @@ TEST_F(SOCKSClientSocketPoolTest, Tag) {
   EXPECT_TRUE(handle.socket());
   EXPECT_TRUE(handle.socket()->IsConnected());
   EXPECT_EQ(handle.socket(), socket);
-  EXPECT_EQ(socket_factory.GetLastProducedSocket()->tag(), tag2);
+  EXPECT_EQ(socket_factory.GetLastProducedTCPSocket()->tag(), tag2);
 }
 #endif
 
