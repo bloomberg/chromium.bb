@@ -26,7 +26,7 @@ var SigninSyncConfirmationTest = class extends PolymerTest {
 
   /** @override */
   testGenPreamble() {
-    GEN('  EnableDice();');
+    GEN('  EnableUnity();');
   }
 
   /** @override */
