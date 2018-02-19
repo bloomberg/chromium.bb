@@ -33,10 +33,12 @@ namespace extensions {
 
 namespace {
 
-bool IsSameOriginOrMoreSecure(const GURL& app_url, const GURL& page_url) {
+// Returns true if |page_url| is both secure (https) and on the same origin as
+// |app_url|. Note that even if |app_url| is http, this still returns true as
+// long as |page_url| is https.
+bool IsSameOriginAndSecure(const GURL& app_url, const GURL& page_url) {
   const std::string www("www.");
-  return (app_url.scheme_piece() == page_url.scheme_piece() ||
-          page_url.scheme_piece() == url::kHttpsScheme) &&
+  return page_url.scheme_piece() == url::kHttpsScheme &&
          (app_url.host_piece() == page_url.host_piece() ||
           www + app_url.host() == page_url.host_piece()) &&
          app_url.port() == page_url.port();
@@ -133,10 +135,9 @@ bool HostedAppBrowserController::ShouldShowLocationBar() const {
   }
 
   GURL launch_url = AppLaunchInfo::GetLaunchWebURL(extension);
-  return !(IsSameOriginOrMoreSecure(launch_url,
-                                    web_contents->GetVisibleURL()) &&
-           IsSameOriginOrMoreSecure(launch_url,
-                                    web_contents->GetLastCommittedURL()));
+  return !IsSameOriginAndSecure(launch_url, web_contents->GetVisibleURL()) ||
+         !IsSameOriginAndSecure(launch_url,
+                                web_contents->GetLastCommittedURL());
 }
 
 void HostedAppBrowserController::UpdateLocationBarVisibility(

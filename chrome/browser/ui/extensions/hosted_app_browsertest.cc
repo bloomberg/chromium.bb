@@ -248,20 +248,20 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, CtrlClickLink) {
 
 // Check that the location bar is shown correctly.
 IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBar) {
-  SetupApp("app");
+  SetupApp("https_app");
 
   // Navigate to the app's launch page; the location bar should be hidden.
-  NavigateAndCheckForLocationBar(
-      app_browser_, "http://www.example.com/empty.html", false);
+  NavigateAndCheckForLocationBar(app_browser_,
+                                 "https://www.example.com/empty.html", false);
 
   // Navigate to another page on the same origin; the location bar should still
   // hidden.
-  NavigateAndCheckForLocationBar(
-      app_browser_, "http://www.example.com/blah", false);
+  NavigateAndCheckForLocationBar(app_browser_, "https://www.example.com/blah",
+                                 false);
 
   // Navigate to different origin; the location bar should now be visible.
-  NavigateAndCheckForLocationBar(
-      app_browser_, "http://www.foo.com/blah", true);
+  NavigateAndCheckForLocationBar(app_browser_, "https://www.foo.com/blah",
+                                 true);
 }
 
 // Check that the location bar is shown correctly for HTTP apps when they
@@ -269,12 +269,13 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBar) {
 IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBarForHTTPApp) {
   SetupApp("app");
 
-  // Navigate to the app's launch page; the location bar should be hidden.
-  NavigateAndCheckForLocationBar(
-      app_browser_, "http://www.example.com/empty.html", false);
+  // Navigate to the app's launch page; the location bar should be visible, even
+  // though it exactly matches the site, because it is not secure.
+  NavigateAndCheckForLocationBar(app_browser_,
+                                 "http://www.example.com/empty.html", true);
 
   // Navigate to the https version of the site; the location bar should
-  // be hidden.
+  // be hidden, as it is a more secure version of the site.
   NavigateAndCheckForLocationBar(
       app_browser_, "https://www.example.com/blah", false);
 }
@@ -289,8 +290,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBarForHTTPSApp) {
       app_browser_, "https://www.example.com/empty.html", false);
 
   // Navigate to the http version of the site; the location bar should
-  // be visible for the https version as it is now on a less secure version
-  // of its host.
+  // be visible for the https version as it is not secure.
   NavigateAndCheckForLocationBar(
       app_browser_, "http://www.example.com/blah", true);
 }
@@ -298,20 +298,20 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBarForHTTPSApp) {
 // Check that the location bar is shown correctly for apps that specify start
 // URLs without the 'www.' prefix.
 IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBarForAppWithoutWWW) {
-  SetupApp("app_no_www");
+  SetupApp("https_app_no_www");
 
   // Navigate to the app's launch page; the location bar should be hidden.
-  NavigateAndCheckForLocationBar(
-      app_browser_, "http://example.com/empty.html", false);
+  NavigateAndCheckForLocationBar(app_browser_, "https://example.com/empty.html",
+                                 false);
 
   // Navigate to the app's launch page with the 'www.' prefis; the location bar
   // should be hidden.
-  NavigateAndCheckForLocationBar(
-      app_browser_, "http://www.example.com/empty.html", false);
+  NavigateAndCheckForLocationBar(app_browser_,
+                                 "https://www.example.com/empty.html", false);
 
   // Navigate to different origin; the location bar should now be visible.
-  NavigateAndCheckForLocationBar(
-      app_browser_, "http://www.foo.com/blah", true);
+  NavigateAndCheckForLocationBar(app_browser_, "https://www.foo.com/blah",
+                                 true);
 }
 
 // Check that a subframe on a regular web page can navigate to a URL that
