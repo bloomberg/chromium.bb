@@ -9,6 +9,7 @@
 #include "core/layout/MinMaxSize.h"
 #include "core/layout/ng/geometry/ng_logical_size.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
+#include "core/layout/ng/list/layout_ng_list_marker.h"
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -84,6 +85,15 @@ bool NGLayoutInputNode::IsReplaced() const {
 
 bool NGLayoutInputNode::ShouldBeConsideredAsReplaced() const {
   return box_->ShouldBeConsideredAsReplaced();
+}
+
+bool NGLayoutInputNode::IsListMarker() const {
+  return IsBlock() && box_->IsLayoutNGListMarker();
+}
+
+bool NGLayoutInputNode::IsListMarkerWrapperForBlockContent() const {
+  return IsBlock() &&
+         LayoutNGListMarker::IsListMarkerWrapperForBlockContent(*box_);
 }
 
 bool NGLayoutInputNode::IsQuirkyContainer() const {

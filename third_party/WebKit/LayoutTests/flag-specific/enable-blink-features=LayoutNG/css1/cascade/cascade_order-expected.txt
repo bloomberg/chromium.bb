@@ -38,8 +38,9 @@ layer at (0,0) size 785x849 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (0,0) width 189: "This list item should be blue..."
         LayoutNGListItem {LI} at (40,20) size 729x80 [color=#0000FF]
           LayoutNGBlockFlow (anonymous) at (0,0) size 729x20
-            LayoutNGListMarker (anonymous) at (0,15) size 0x0
-              LayoutText (anonymous) at (0,0) size 0x0
+            LayoutNGListMarker (anonymous) at (-18,0) size 10x20
+              LayoutText (anonymous) at (0,0) size 10x19
+                text run at (0,0) width 10: "\x{2022} "
             LayoutText {#text} at (0,0) size 289x19
               text run at (0,0) width 289: "...and so should this; neither should be purple."
           LayoutNGBlockFlow {UL} at (0,20) size 729x60
@@ -114,8 +115,9 @@ layer at (0,0) size 785x849 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                     text run at (0,0) width 189: "This list item should be blue..."
                 LayoutNGListItem {LI} at (40,20) size 643x80 [color=#0000FF]
                   LayoutNGBlockFlow (anonymous) at (0,0) size 643x20
-                    LayoutNGListMarker (anonymous) at (0,15) size 0x0
-                      LayoutText (anonymous) at (0,0) size 0x0
+                    LayoutNGListMarker (anonymous) at (-18,0) size 10x20
+                      LayoutText (anonymous) at (0,0) size 10x19
+                        text run at (0,0) width 10: "\x{2022} "
                     LayoutText {#text} at (0,0) size 289x19
                       text run at (0,0) width 289: "...and so should this; neither should be purple."
                   LayoutNGBlockFlow {UL} at (0,20) size 643x60

@@ -85,6 +85,11 @@ void NGInlineItem::ComputeBoxProperties() {
     return;
   }
 
+  if (type_ == kListMarker) {
+    is_empty_item_ = false;
+    return;
+  }
+
   is_empty_item_ = true;
 }
 

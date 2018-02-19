@@ -36,6 +36,7 @@ class CORE_EXPORT NGFragment {
   NGBorderEdges BorderEdges() const;
 
   NGPhysicalFragment::NGFragmentType Type() const;
+  const ComputedStyle& Style() const { return physical_fragment_.Style(); }
 
  protected:
   const NGPhysicalFragment& physical_fragment_;

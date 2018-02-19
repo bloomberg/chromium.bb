@@ -21,11 +21,15 @@ class CORE_EXPORT LayoutNGListItem final : public LayoutNGBlockFlow {
   int Value() const;
   String MarkerTextWithoutSuffix() const;
 
+  LayoutObject* Marker() const { return marker_; }
+
+  void UpdateMarkerTextIfNeeded() {
+    if (marker_ && !is_marker_text_updated_)
+      UpdateMarkerText();
+  }
+
   void OrdinalValueChanged();
   void WillCollectInlines() override;
-
-  // Returns whether the LayoutObject is a list marker or not.
-  static bool IsListMarker(LayoutObject*);
 
   const char* GetName() const override { return "LayoutNGListItem"; }
 
@@ -42,6 +46,7 @@ class CORE_EXPORT LayoutNGListItem final : public LayoutNGBlockFlow {
   enum MarkerTextFormat { kWithSuffix, kWithoutSuffix };
   enum MarkerType { kStatic, kOrdinalValue };
   MarkerType MarkerText(StringBuilder*, MarkerTextFormat) const;
+  void UpdateMarkerText();
   void UpdateMarkerText(LayoutText*);
   void UpdateMarker();
   void DestroyMarker();

@@ -94,7 +94,7 @@ void CollectInlinesInternal(
       builder->AppendOpaque(NGInlineItem::kOutOfFlowPositioned, nullptr, node);
 
     } else if (node->IsAtomicInlineLevel()) {
-      if (LayoutNGListItem::IsListMarker(node)) {
+      if (node->IsLayoutNGListMarker()) {
         // LayoutNGListItem produces the 'outside' list marker as an inline
         // block. This is an out-of-flow item whose position is computed
         // automatically.

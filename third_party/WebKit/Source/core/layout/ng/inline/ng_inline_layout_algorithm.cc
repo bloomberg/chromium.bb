@@ -237,8 +237,8 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
 
   if (list_marker_index.has_value()) {
     NGListLayoutAlgorithm::SetListMarkerPosition(
-        constraint_space_, *line_info, inline_size, list_marker_index.value(),
-        &line_box_);
+        constraint_space_, *line_info, inline_size,
+        &line_box_[list_marker_index.value()]);
   }
 
   container_builder_.AddChildren(line_box_);

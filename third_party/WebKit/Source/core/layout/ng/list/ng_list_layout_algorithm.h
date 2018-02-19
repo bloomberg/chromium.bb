@@ -21,12 +21,19 @@ class NGLineInfo;
 // or renaming.
 class CORE_EXPORT NGListLayoutAlgorithm final {
  public:
-  // Compute and set the list marker inline position.
+  // Compute and set the inline position to an outside list marker for a line
+  // box.
   static void SetListMarkerPosition(const NGConstraintSpace&,
                                     const NGLineInfo&,
                                     LayoutUnit line_width,
-                                    unsigned list_marker_index,
-                                    NGLineBoxFragmentBuilder::ChildList*);
+                                    NGLineBoxFragmentBuilder::Child*);
+
+  // Add a fragment for an outside list marker for a block content.
+  static void AddListMarkerForBlockContent(NGBlockNode,
+                                           const NGConstraintSpace&,
+                                           const NGPhysicalBoxFragment&,
+                                           NGLogicalOffset,
+                                           NGFragmentBuilder*);
 };
 
 }  // namespace blink
