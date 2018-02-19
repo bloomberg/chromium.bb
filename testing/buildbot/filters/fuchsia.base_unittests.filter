@@ -83,3 +83,6 @@
 
 # Flaky, https://crbug.com/811881
 -AddressSpaceRandomizationTest.RandomBitCorrelations*
+
+# Flaky, https://crbug.com/813651
+-TaskSchedulerWorkerPoolCheckTlsReuse.CheckCleanupWorkers
