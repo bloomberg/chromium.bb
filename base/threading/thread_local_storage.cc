@@ -71,7 +71,6 @@ base::subtle::Atomic32 g_native_tls_key =
 
 // The maximum number of slots in our thread local storage stack.
 constexpr int kThreadLocalStorageSize = 256;
-constexpr int kInvalidSlotValue = -1;
 
 enum TlsStatus {
   FREE,
@@ -251,7 +250,7 @@ void PlatformThreadLocalStorage::OnThreadExit(void* value) {
 
 }  // namespace internal
 
-void ThreadLocalStorage::StaticSlot::Initialize(TLSDestructorFunc destructor) {
+void ThreadLocalStorage::Slot::Initialize(TLSDestructorFunc destructor) {
   PlatformThreadLocalStorage::TLSKey key =
       base::subtle::NoBarrier_Load(&g_native_tls_key);
   if (key == PlatformThreadLocalStorage::TLS_KEY_OUT_OF_INDEXES ||
@@ -260,8 +259,6 @@ void ThreadLocalStorage::StaticSlot::Initialize(TLSDestructorFunc destructor) {
   }
 
   // Grab a new slot.
-  slot_ = kInvalidSlotValue;
-  version_ = 0;
   {
     base::AutoLock auto_lock(*GetTLSMetadataLock());
     for (int i = 0; i < kThreadLocalStorageSize; ++i) {
@@ -276,6 +273,7 @@ void ThreadLocalStorage::StaticSlot::Initialize(TLSDestructorFunc destructor) {
         g_tls_metadata[slot_candidate].status = TlsStatus::IN_USE;
         g_tls_metadata[slot_candidate].destructor = destructor;
         g_last_assigned_slot = slot_candidate;
+        DCHECK_EQ(kInvalidSlotValue, slot_);
         slot_ = slot_candidate;
         version_ = g_tls_metadata[slot_candidate].version;
         break;
@@ -284,12 +282,9 @@ void ThreadLocalStorage::StaticSlot::Initialize(TLSDestructorFunc destructor) {
   }
   CHECK_NE(slot_, kInvalidSlotValue);
   CHECK_LT(slot_, kThreadLocalStorageSize);
-
-  // Setup our destructor.
-  base::subtle::Release_Store(&initialized_, 1);
 }
 
-void ThreadLocalStorage::StaticSlot::Free() {
+void ThreadLocalStorage::Slot::Free() {
   DCHECK_NE(slot_, kInvalidSlotValue);
   DCHECK_LT(slot_, kThreadLocalStorageSize);
   {
@@ -299,10 +294,9 @@ void ThreadLocalStorage::StaticSlot::Free() {
     ++(g_tls_metadata[slot_].version);
   }
   slot_ = kInvalidSlotValue;
-  base::subtle::Release_Store(&initialized_, 0);
 }
 
-void* ThreadLocalStorage::StaticSlot::Get() const {
+void* ThreadLocalStorage::Slot::Get() const {
   TlsVectorEntry* tls_data = static_cast<TlsVectorEntry*>(
       PlatformThreadLocalStorage::GetTLSValue(
           base::subtle::NoBarrier_Load(&g_native_tls_key)));
@@ -316,7 +310,7 @@ void* ThreadLocalStorage::StaticSlot::Get() const {
   return tls_data[slot_].data;
 }
 
-void ThreadLocalStorage::StaticSlot::Set(void* value) {
+void ThreadLocalStorage::Slot::Set(void* value) {
   TlsVectorEntry* tls_data = static_cast<TlsVectorEntry*>(
       PlatformThreadLocalStorage::GetTLSValue(
           base::subtle::NoBarrier_Load(&g_native_tls_key)));
@@ -329,19 +323,11 @@ void ThreadLocalStorage::StaticSlot::Set(void* value) {
 }
 
 ThreadLocalStorage::Slot::Slot(TLSDestructorFunc destructor) {
-  tls_slot_.Initialize(destructor);
+  Initialize(destructor);
 }
 
 ThreadLocalStorage::Slot::~Slot() {
-  tls_slot_.Free();
-}
-
-void* ThreadLocalStorage::Slot::Get() const {
-  return tls_slot_.Get();
-}
-
-void ThreadLocalStorage::Slot::Set(void* value) {
-  tls_slot_.Set(value);
+  Free();
 }
 
 }  // namespace base
