@@ -287,6 +287,14 @@ class PLATFORM_EXPORT HeapAllocator {
     visitor->Trace(vector_backing);
   }
 
+  template <typename T, typename HashTable, typename VisitorDispatcher>
+  static void TraceHashTableBacking(VisitorDispatcher visitor, T* backing) {
+    HeapHashTableBacking<HashTable>* hashtable_backing =
+        reinterpret_cast<HeapHashTableBacking<HashTable>*>(backing);
+    // Backing store reference is registered by the caller.
+    visitor->Trace(hashtable_backing);
+  }
+
  private:
   static void BackingFree(void*);
   static bool BackingExpand(void*, size_t);
