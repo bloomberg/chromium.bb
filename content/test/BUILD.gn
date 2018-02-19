@@ -1364,6 +1364,7 @@ test("content_unittests") {
     "../browser/net/network_quality_observer_impl_unittest.cc",
     "../browser/net/quota_policy_cookie_store_unittest.cc",
     "../browser/notification_service_impl_unittest.cc",
+    "../browser/notifications/blink_notification_service_impl_unittest.cc",
     "../browser/notifications/notification_database_data_unittest.cc",
     "../browser/notifications/notification_database_unittest.cc",
     "../browser/notifications/notification_event_dispatcher_impl_unittest.cc",

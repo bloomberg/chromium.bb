@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/browser_context.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -22,7 +23,8 @@ class ResourceContext;
 // Implementation of the NotificationService used for Web Notifications. Is
 // responsible for displaying, updating and reading of both non-persistent
 // and persistent notifications. Lives on the IO thread.
-class BlinkNotificationServiceImpl : public blink::mojom::NotificationService {
+class CONTENT_EXPORT BlinkNotificationServiceImpl
+    : public blink::mojom::NotificationService {
  public:
   BlinkNotificationServiceImpl(
       PlatformNotificationContextImpl* notification_context,
