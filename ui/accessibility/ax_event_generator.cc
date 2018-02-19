@@ -128,6 +128,9 @@ void AXEventGenerator::OnStateChanged(AXTree* tree,
   AddEvent(node, Event::STATE_CHANGED);
   if (state == ax::mojom::State::kExpanded) {
     AddEvent(node, new_value ? Event::EXPANDED : Event::COLLAPSED);
+
+    // TODO(accessibility): tree in the midst of updates. Disallow access to
+    // |node|.
     if (node->data().role == ax::mojom::Role::kRow ||
         node->data().role == ax::mojom::Role::kTreeItem) {
       ui::AXNode* container = node;
@@ -158,6 +161,9 @@ void AXEventGenerator::OnStringAttributeChanged(AXTree* tree,
   switch (attr) {
     case ax::mojom::StringAttribute::kName:
       AddEvent(node, Event::NAME_CHANGED);
+
+      // TODO(accessibility): tree in the midst of updates. Disallow
+      // access to |node|.
       if (node->data().HasStringAttribute(
               ax::mojom::StringAttribute::kContainerLiveStatus)) {
         FireLiveRegionEvents(node);
@@ -173,6 +179,8 @@ void AXEventGenerator::OnStringAttributeChanged(AXTree* tree,
       AddEvent(node, Event::INVALID_STATUS_CHANGED);
       break;
     case ax::mojom::StringAttribute::kLiveStatus:
+      // TODO(accessibility): tree in the midst of updates. Disallow access to
+      // |node|.
       if (node->data().role != ax::mojom::Role::kAlert)
         AddEvent(node, Event::LIVE_REGION_CREATED);
       break;
@@ -328,6 +336,9 @@ void AXEventGenerator::OnAtomicUpdateFinished(
         FireLiveRegionEvents(change.node);
       }
     }
+
+    if (change.type != NODE_CREATED && change.type != SUBTREE_CREATED)
+      FireRelationSourceEvents(tree, change.node);
   }
 
   FireActiveDescendantEvents();
@@ -369,6 +380,34 @@ void AXEventGenerator::FireActiveDescendantEvents() {
     }
   }
   active_descendant_changed_.clear();
+}
+
+void AXEventGenerator::FireRelationSourceEvents(AXTree* tree,
+                                                AXNode* target_node) {
+  int32_t target_id = target_node->id();
+  std::set<AXNode*> source_nodes;
+  auto callback = [&](const auto entry) {
+    const auto target_to_sources = entry.second;
+    auto sources_it = target_to_sources.find(target_id);
+    if (sources_it == target_to_sources.end())
+      return;
+
+    auto sources = sources_it->second;
+    std::for_each(sources.begin(), sources.end(), [&](int32_t source_id) {
+      AXNode* source_node = tree->GetFromId(source_id);
+
+      if (!source_node || source_nodes.count(source_node) > 0)
+        return;
+
+      source_nodes.insert(source_node);
+      AddEvent(source_node, Event::RELATED_NODE_CHANGED);
+    });
+  };
+
+  std::for_each(tree->int_reverse_relations().begin(),
+                tree->int_reverse_relations().end(), callback);
+  std::for_each(tree->intlist_reverse_relations().begin(),
+                tree->intlist_reverse_relations().end(), callback);
 }
 
 }  // namespace ui

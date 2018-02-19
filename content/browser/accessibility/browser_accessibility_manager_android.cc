@@ -208,6 +208,7 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
     case Event::MENU_ITEM_SELECTED:
     case Event::NAME_CHANGED:
     case Event::OTHER_ATTRIBUTE_CHANGED:
+    case Event::RELATED_NODE_CHANGED:
     case Event::ROLE_CHANGED:
     case Event::ROW_COUNT_CHANGED:
     case Event::SELECTED_CHANGED:
