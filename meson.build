@@ -32,8 +32,6 @@ pkg = import('pkgconfig')
 with_udev = get_option('udev')
 with_freedreno_kgsl = get_option('freedreno-kgsl')
 with_install_tests = get_option('install-test-programs')
-with_cairo_tests = get_option('cairo-tests')
-with_valgrind = get_option('valgrind')
 
 config = configuration_data()
 
@@ -226,8 +224,22 @@ endforeach
 
 dep_pciaccess = dependency('pciaccess', version : '>= 0.10', required : with_intel)
 dep_cunit = dependency('cunit', version : '>= 2.1', required : false)
-dep_cairo = dependency('cairo', required : with_cairo_tests == 'true')
-dep_valgrind = dependency('valgrind', required : with_valgrind == 'true')
+_cairo_tests = get_option('cairo-tests')
+if _cairo_tests != 'false'
+  dep_cairo = dependency('cairo', required : _cairo_tests == 'true')
+  with_cairo_tests = dep_cairo.found()
+else
+  dep_cairo = []
+  with_cairo_tests = false
+endif
+_valgrind = get_option('valgrind')
+if _valgrind != 'false'
+  dep_valgrind = dependency('valgrind', required : _valgrind == 'true')
+  with_valgrind = dep_valgrind.found()
+else
+  dep_valgrind = []
+  with_valgrind = false
+endif
 
 with_man_pages = get_option('man-pages')
 prog_xslt = find_program('xsltproc', required : with_man_pages == 'true')
@@ -259,8 +271,8 @@ foreach t : [
              [with_radeon, 'RADEON'],
              [with_vc4, 'VC4'],
              [with_vmwgfx, 'VMWGFX'],
-             [dep_cairo.found(), 'CAIRO'],
-             [dep_valgrind.found(), 'VALGRIND'],
+             [with_cairo_tests, 'CAIRO'],
+             [with_valgrind, 'VALGRIND'],
             ]
   config.set10('HAVE_@0@'.format(t[1]), t[0])
 endforeach
