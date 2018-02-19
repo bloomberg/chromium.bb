@@ -10,6 +10,7 @@
 #include <glib.h>
 #endif
 
+#include "base/barrier_closure.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -52,44 +53,84 @@ storage::FileSystemContext* GetFileSystemContext() {
       primary_profile, file_manager::kFileManagerAppId);
 }
 
+void GetFileSystemUrlsFromPickle(
+    const base::Pickle& pickle,
+    std::vector<storage::FileSystemURL>* file_system_urls) {
+  storage::FileSystemContext* file_system_context = GetFileSystemContext();
+  if (!file_system_context)
+    return;
+
+  std::vector<content::DropData::FileSystemFileInfo> file_system_files;
+  if (!content::DropData::FileSystemFileInfo::ReadFileSystemFilesFromPickle(
+          pickle, &file_system_files))
+    return;
+
+  for (const auto& file_system_file : file_system_files) {
+    const storage::FileSystemURL file_system_url =
+        file_system_context->CrackURL(file_system_file.url);
+    if (file_system_url.is_valid())
+      file_system_urls->push_back(file_system_url);
+  }
+}
+
+// Helper function for |GetUrlsFromPickle|.
+void OnSingleUrlResolved(const base::RepeatingClosure& barrier_closure,
+                         std::vector<GURL>* out_urls,
+                         const GURL& url) {
+  out_urls->push_back(url);
+  barrier_closure.Run();
+}
+
+// Helper function for |GetUrlsFromPickle|.
+void OnAllUrlsResolved(exo::FileHelper::UrlsFromPickleCallback callback,
+                       std::unique_ptr<std::vector<GURL>> urls) {
+  std::move(callback).Run(*urls);
+}
+
 class ChromeFileHelper : public exo::FileHelper {
  public:
-  ChromeFileHelper() {}
-  ~ChromeFileHelper() override {}
+  ChromeFileHelper() = default;
+  ~ChromeFileHelper() override = default;
 
   // exo::FileHelper:
   std::string GetMimeTypeForUriList() const override {
     return kMimeTypeArcUriList;
   }
+
   bool GetUrlFromPath(const std::string& app_id,
                       const base::FilePath& path,
                       GURL* out) override {
     return file_manager::util::ConvertPathToArcUrl(path, out);
   }
-  bool GetUrlsFromPickle(const std::string& app_id,
+
+  bool HasUrlsInPickle(const base::Pickle& pickle) override {
+    std::vector<storage::FileSystemURL> file_system_urls;
+    GetFileSystemUrlsFromPickle(pickle, &file_system_urls);
+    return !file_system_urls.empty();
+  }
+
+  void GetUrlsFromPickle(const std::string& app_id,
                          const base::Pickle& pickle,
-                         std::vector<GURL>* out_urls) override {
-    storage::FileSystemContext* file_system_context = GetFileSystemContext();
-    if (!file_system_context)
-      return false;
-
-    std::vector<content::DropData::FileSystemFileInfo> file_system_files;
-    if (!content::DropData::FileSystemFileInfo::ReadFileSystemFilesFromPickle(
-            pickle, &file_system_files))
-      return false;
-
-    for (const auto& file_system_file : file_system_files) {
-      const storage::FileSystemURL file_system_url =
-          file_system_context->CrackURL(file_system_file.url);
-      GURL out_url;
-      // TODO(niwa): Check that app_id is an Arc app once the caller
-      //             (exo::DataOffer) starts filling app_id.
-      if (file_manager::util::ConvertPathToArcUrl(file_system_url.path(),
-                                                  &out_url)) {
-        out_urls->push_back(out_url);
-      }
+                         UrlsFromPickleCallback callback) override {
+    std::vector<storage::FileSystemURL> file_system_urls;
+    GetFileSystemUrlsFromPickle(pickle, &file_system_urls);
+    if (file_system_urls.empty()) {
+      std::move(callback).Run(std::vector<GURL>());
+      return;
     }
-    return !out_urls->empty();
+
+    auto out_urls = std::make_unique<std::vector<GURL>>();
+    auto* out_urls_ptr = out_urls.get();
+    auto barrier = base::BarrierClosure(
+        file_system_urls.size(),
+        base::BindOnce(&OnAllUrlsResolved, std::move(callback),
+                       std::move(out_urls)));
+    auto convert_url_callback =
+        base::BindRepeating(&OnSingleUrlResolved, barrier, out_urls_ptr);
+    for (const auto& file_system_url : file_system_urls) {
+      file_manager::util::ConvertToContentUrl(file_system_url,
+                                              convert_url_callback);
+    }
   }
 };
 
