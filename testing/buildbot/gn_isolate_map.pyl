@@ -862,10 +862,6 @@
     "label": "//chrome/installer/mini_installer:next_version_mini_installer",
     "type": "additional_compile_target",
   },
-  "notification_helper_unittests": {
-    "label": "//notification_helper:notification_helper_unittests",
-    "type": "raw",
-  },
   "ocmock_support_unittests": {
     "label": "//ios/testing:ocmock_support_unittests",
     "type": "raw",
