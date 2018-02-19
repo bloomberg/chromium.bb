@@ -232,11 +232,10 @@ class TestFileHelper : public FileHelper {
                       GURL* out) override {
     return true;
   }
-  bool GetUrlsFromPickle(const std::string& app_id,
+  bool HasUrlsInPickle(const base::Pickle& pickle) override { return false; }
+  void GetUrlsFromPickle(const std::string& app_id,
                          const base::Pickle& pickle,
-                         std::vector<GURL>* out_urls) override {
-    return false;
-  }
+                         UrlsFromPickleCallback callback) override {}
 };
 
 TEST_F(DisplayTest, CreateDataDevice) {

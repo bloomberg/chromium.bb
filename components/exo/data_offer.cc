@@ -74,31 +74,17 @@ bool GetUrlListFromDataFile(FileHelper* file_helper,
   return !url_list_string->empty();
 }
 
-// Gets a comma-separated list of urls extracted from |data|->pickle.
-bool GetUrlListFromDataPickle(FileHelper* file_helper,
-                              const ui::OSExchangeData& data,
-                              base::string16* url_list_string) {
+ui::Clipboard::FormatType GetClipboardFormatType() {
   static const char kFormatString[] = "chromium/x-file-system-files";
-  CR_DEFINE_STATIC_LOCAL(ui::Clipboard::FormatType, formatType,
+  CR_DEFINE_STATIC_LOCAL(ui::Clipboard::FormatType, format_type,
                          (ui::Clipboard::GetFormatType(kFormatString)));
-  base::Pickle pickle;
-  if (!data.GetPickledData(formatType, &pickle))
-    return false;
-  std::vector<GURL> app_urls;
-  // TODO(niwa): Need to fill the correct app_id.
-  if (file_helper->GetUrlsFromPickle(/* app_id */ "", pickle, &app_urls)) {
-    for (const GURL& app_url : app_urls) {
-      if (!url_list_string->empty())
-        *url_list_string += base::UTF8ToUTF16(kUriListSeparator);
-      *url_list_string += base::UTF8ToUTF16(app_url.spec());
-    }
-  }
-  return !url_list_string->empty();
+  return format_type;
 }
 
 }  // namespace
 
-DataOffer::DataOffer(DataOfferDelegate* delegate) : delegate_(delegate) {}
+DataOffer::DataOffer(DataOfferDelegate* delegate)
+    : delegate_(delegate), weak_ptr_factory_(this) {}
 
 DataOffer::~DataOffer() {
   delegate_->OnDataOfferDestroying(this);
@@ -118,15 +104,20 @@ void DataOffer::RemoveObserver(DataOfferObserver* observer) {
 void DataOffer::Accept(const std::string& mime_type) {}
 
 void DataOffer::Receive(const std::string& mime_type, base::ScopedFD fd) {
-  const auto it = data_.find(mime_type);
-  if (it == data_.end()) {
+  const auto data_it = data_.find(mime_type);
+  if (data_it == data_.end()) {
     DLOG(ERROR) << "Unexpected mime type is requested";
     return;
   }
-
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-      base::BindOnce(&WriteFileDescriptor, std::move(fd), it->second));
+  if (data_it->second) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+        base::BindOnce(&WriteFileDescriptor, std::move(fd), data_it->second));
+  } else {
+    // Data bytes for this mime type are being processed currently.
+    pending_receive_requests_.push_back(
+        std::make_pair(mime_type, std::move(fd)));
+  }
 }
 
 void DataOffer::Finish() {}
@@ -147,22 +138,38 @@ void DataOffer::SetDropData(FileHelper* file_helper,
                             const ui::OSExchangeData& data) {
   DCHECK_EQ(0u, data_.size());
 
+  const std::string uri_list_mime_type = file_helper->GetMimeTypeForUriList();
   base::string16 url_list_string;
-  bool found_urls =
-      GetUrlListFromDataFile(file_helper, data, &url_list_string) ||
-      GetUrlListFromDataPickle(file_helper, data, &url_list_string);
-  if (found_urls) {
-    data_.emplace(file_helper->GetMimeTypeForUriList(),
+  if (GetUrlListFromDataFile(file_helper, data, &url_list_string)) {
+    data_.emplace(uri_list_mime_type,
                   RefCountedString16::TakeString(std::move(url_list_string)));
-  } else if (data.HasString()) {
-    base::string16 string_content;
-    if (data.GetString(&string_content)) {
-      data_.emplace(std::string(ui::Clipboard::kMimeTypeText),
-                    RefCountedString16::TakeString(std::move(string_content)));
-    }
+    delegate_->OnOffer(uri_list_mime_type);
+    return;
   }
-  for (const auto& pair : data_) {
-    delegate_->OnOffer(pair.first);
+
+  base::Pickle pickle;
+  if (data.GetPickledData(GetClipboardFormatType(), &pickle) &&
+      file_helper->HasUrlsInPickle(pickle)) {
+    // Set nullptr as a temporary value for the mime type.
+    // The value will be overriden in the callback below.
+    data_.emplace(uri_list_mime_type, nullptr);
+    // TODO(niwa): Need to fill the correct app_id.
+    file_helper->GetUrlsFromPickle(
+        /* app_id */ "", pickle,
+        base::BindOnce(&DataOffer::OnPickledUrlsResolved,
+                       weak_ptr_factory_.GetWeakPtr(), uri_list_mime_type));
+    delegate_->OnOffer(uri_list_mime_type);
+    return;
+  }
+
+  base::string16 string_content;
+  if (data.HasString() && data.GetString(&string_content)) {
+    const std::string text_mime_type =
+        std::string(ui::Clipboard::kMimeTypeText);
+    data_.emplace(text_mime_type,
+                  RefCountedString16::TakeString(std::move(string_content)));
+    delegate_->OnOffer(text_mime_type);
+    return;
   }
 }
 
@@ -176,9 +183,41 @@ void DataOffer::SetClipboardData(FileHelper* file_helper,
     std::string utf8_content = base::UTF16ToUTF8(content);
     data_.emplace(std::string(kTextMimeTypeUtf8),
                   base::RefCountedString::TakeString(&utf8_content));
+    delegate_->OnOffer(std::string(kTextMimeTypeUtf8));
   }
-  for (const auto& pair : data_) {
-    delegate_->OnOffer(pair.first);
+}
+
+void DataOffer::OnPickledUrlsResolved(const std::string& mime_type,
+                                      const std::vector<GURL>& urls) {
+  const auto data_it = data_.find(mime_type);
+  DCHECK(data_it != data_.end());
+  DCHECK(!data_it->second);  // nullptr should be set as a temporary value.
+  data_.erase(data_it);
+
+  base::string16 url_list_string;
+  for (const GURL& url : urls) {
+    if (!url.is_valid())
+      continue;
+    if (!url_list_string.empty())
+      url_list_string += base::UTF8ToUTF16(kUriListSeparator);
+    url_list_string += base::UTF8ToUTF16(url.spec());
+  }
+  const auto ref_counted_memory =
+      RefCountedString16::TakeString(std::move(url_list_string));
+  data_.emplace(mime_type, ref_counted_memory);
+
+  // Process pending receive requests for this mime type, if there are any.
+  auto it = pending_receive_requests_.begin();
+  while (it != pending_receive_requests_.end()) {
+    if (it->first == mime_type) {
+      base::PostTaskWithTraits(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+          base::BindOnce(&WriteFileDescriptor, std::move(it->second),
+                         ref_counted_memory));
+      it = pending_receive_requests_.erase(it);
+    } else {
+      ++it;
+    }
   }
 }
 
