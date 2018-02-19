@@ -1237,21 +1237,6 @@ Text* Document::CreateEditingTextNode(const String& text) {
   return Text::CreateEditingText(*this, text);
 }
 
-bool Document::ImportContainerNodeChildren(ContainerNode* old_container_node,
-                                           ContainerNode* new_container_node,
-                                           ExceptionState& exception_state) {
-  for (Node& old_child : NodeTraversal::ChildrenOf(*old_container_node)) {
-    Node* new_child = importNode(&old_child, true, exception_state);
-    if (exception_state.HadException())
-      return false;
-    new_container_node->AppendChild(new_child, exception_state);
-    if (exception_state.HadException())
-      return false;
-  }
-
-  return true;
-}
-
 Node* Document::importNode(Node* imported_node,
                            bool deep,
                            ExceptionState& exception_state) {
@@ -1289,12 +1274,8 @@ Node* Document::importNode(Node* imported_node,
           *old_element,
           deep ? CloneChildrenFlag::kClone : CloneChildrenFlag::kSkip);
 
-      if (deep) {
-        if (!ImportContainerNodeChildren(old_element, new_element,
-                                         exception_state))
-          return nullptr;
-      }
-
+      if (deep)
+        old_element->CloneChildNodes(new_element);
       return new_element;
     }
     case kAttributeNode:
@@ -1314,12 +1295,9 @@ Node* Document::importNode(Node* imported_node,
             "The node provided is a shadow root, which may not be imported.");
         return nullptr;
       }
-      DocumentFragment* old_fragment = ToDocumentFragment(imported_node);
       DocumentFragment* new_fragment = createDocumentFragment();
-      if (deep && !ImportContainerNodeChildren(old_fragment, new_fragment,
-                                               exception_state))
-        return nullptr;
-
+      if (deep)
+        ToDocumentFragment(imported_node)->CloneChildNodes(new_fragment);
       return new_fragment;
     }
     case kDocumentNode:
