@@ -36,13 +36,10 @@ class CORE_EXPORT CSSUnparsedValue final : public CSSStyleValue {
 
   StyleValueType GetType() const override { return kUnparsedType; }
 
-  CSSUnparsedSegment AnonymousIndexedGetter(
-      unsigned index,
-      ExceptionState& exception_state) const {
-    if (index < tokens_.size())
-      return tokens_[index];
-    return {};
-  }
+  CSSUnparsedSegment AnonymousIndexedGetter(unsigned, ExceptionState&);
+  bool AnonymousIndexedSetter(unsigned,
+                              const CSSUnparsedSegment&,
+                              ExceptionState&);
 
   size_t length() const { return tokens_.size(); }
 
