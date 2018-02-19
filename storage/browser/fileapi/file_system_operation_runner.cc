@@ -675,8 +675,8 @@ void FileSystemOperationRunner::OnCopyProgress(
 void FileSystemOperationRunner::PrepareForWrite(OperationID id,
                                                 const FileSystemURL& url) {
   if (file_system_context_->GetUpdateObservers(url.type())) {
-    file_system_context_->GetUpdateObservers(url.type())->Notify(
-        &FileUpdateObserver::OnStartUpdate, std::make_tuple(url));
+    file_system_context_->GetUpdateObservers(url.type())
+        ->Notify(&FileUpdateObserver::OnStartUpdate, url);
   }
   write_target_urls_[id].insert(url);
 }
@@ -684,8 +684,8 @@ void FileSystemOperationRunner::PrepareForWrite(OperationID id,
 void FileSystemOperationRunner::PrepareForRead(OperationID id,
                                                const FileSystemURL& url) {
   if (file_system_context_->GetAccessObservers(url.type())) {
-    file_system_context_->GetAccessObservers(url.type())->Notify(
-        &FileAccessObserver::OnAccess, std::make_tuple(url));
+    file_system_context_->GetAccessObservers(url.type())
+        ->Notify(&FileAccessObserver::OnAccess, url);
   }
 }
 
@@ -706,8 +706,8 @@ void FileSystemOperationRunner::FinishOperation(OperationID id) {
     for (FileSystemURLSet::const_iterator iter = urls.begin();
         iter != urls.end(); ++iter) {
       if (file_system_context_->GetUpdateObservers(iter->type())) {
-        file_system_context_->GetUpdateObservers(iter->type())->Notify(
-            &FileUpdateObserver::OnEndUpdate, std::make_tuple(*iter));
+        file_system_context_->GetUpdateObservers(iter->type())
+            ->Notify(&FileUpdateObserver::OnEndUpdate, *iter);
       }
     }
     write_target_urls_.erase(found);
