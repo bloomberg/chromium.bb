@@ -34,7 +34,7 @@ struct FuzzerFixedParams {
 
 base::AtExitManager at_exit_manager;  // used by ICU integration
 
-extern "C" int LLVMFuzzerInitialize(int argc, char*** argv) {
+extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
   CHECK(base::i18n::InitializeICU());
   return 0;
 }
