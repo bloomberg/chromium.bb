@@ -25,6 +25,7 @@ class WebPackageRequestHandler final : public URLLoaderRequestHandler {
 
   WebPackageRequestHandler(
       url::Origin request_initiator,
+      uint32_t url_loader_options,
       scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter);
   ~WebPackageRequestHandler() override;
@@ -49,6 +50,7 @@ class WebPackageRequestHandler final : public URLLoaderRequestHandler {
   std::unique_ptr<WebPackageLoader> web_package_loader_;
 
   url::Origin request_initiator_;
+  const uint32_t url_loader_options_;
   scoped_refptr<SharedURLLoaderFactory> url_loader_factory_;
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
 

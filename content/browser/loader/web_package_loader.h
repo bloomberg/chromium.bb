@@ -40,6 +40,7 @@ class WebPackageLoader final : public network::mojom::URLLoaderClient,
                    network::mojom::URLLoaderClientPtr forwarding_client,
                    network::mojom::URLLoaderClientEndpointsPtr endpoints,
                    url::Origin request_initiator,
+                   uint32_t url_loader_options,
                    scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
                    URLLoaderThrottlesGetter url_loader_throttles_getter);
   ~WebPackageLoader() override;
@@ -113,8 +114,11 @@ class WebPackageLoader final : public network::mojom::URLLoaderClient,
   mojo::ScopedDataPipeConsumerHandle pending_body_consumer_;
 
   url::Origin request_initiator_;
+  const uint32_t url_loader_options_;
   scoped_refptr<SharedURLLoaderFactory> url_loader_factory_;
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
+
+  base::Optional<net::SSLInfo> ssl_info_;
 
   base::WeakPtrFactory<WebPackageLoader> weak_factory_;
 
