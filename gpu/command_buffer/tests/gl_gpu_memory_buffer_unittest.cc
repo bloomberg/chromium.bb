@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process_handle.h"
-#include "build/build_config.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/image_manager.h"
@@ -134,25 +133,16 @@ void SetRow(gfx::BufferFormat format,
       }
       return;
     }
-    case gfx::BufferFormat::RGBX_1010102:
-      for (int x = 0; x < width; ++x) {
-        *reinterpret_cast<uint32_t*>(&buffer[x * 4]) =
-            0x3 << 30 |  // Alpha channel is unused
-            ((pixel[2] << 2) | (pixel[2] >> 6)) << 20 |  // B
-            ((pixel[1] << 2) | (pixel[1] >> 6)) << 10 |  // G
-            ((pixel[0] << 2) | (pixel[0] >> 6));         // R
-      }
-      return;
     case gfx::BufferFormat::ATC:
     case gfx::BufferFormat::ATCIA:
     case gfx::BufferFormat::BGRX_8888:
-    case gfx::BufferFormat::BGRX_1010102:
     case gfx::BufferFormat::DXT1:
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::R_16:
     case gfx::BufferFormat::RG_88:
     case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::BGRX_1010102:
     case gfx::BufferFormat::UYVY_422:
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
@@ -172,7 +162,7 @@ GLenum InternalFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::RG_88:
       return GL_RG;
     case gfx::BufferFormat::BGR_565:
-    case gfx::BufferFormat::RGBX_1010102:
+    case gfx::BufferFormat::BGRX_1010102:
       return GL_RGB;
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBA_8888:
@@ -184,7 +174,6 @@ GLenum InternalFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::ATC:
     case gfx::BufferFormat::ATCIA:
     case gfx::BufferFormat::BGRX_8888:
-    case gfx::BufferFormat::BGRX_1010102:
     case gfx::BufferFormat::DXT1:
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
@@ -213,12 +202,6 @@ TEST_P(GpuMemoryBufferTest, Lifecycle) {
   if (GetParam() == gfx::BufferFormat::RGBA_F16 &&
       !gl_.GetCapabilities().texture_half_float_linear) {
     LOG(WARNING) << "texture_half_float_linear not supported. Skipping test.";
-    return;
-  }
-
-  if (GetParam() == gfx::BufferFormat::RGBX_1010102 &&
-      !gl_.GetCapabilities().image_xb30) {
-    LOG(WARNING) << "image_xb30 not supported. Skipping test.";
     return;
   }
 
@@ -303,7 +286,6 @@ INSTANTIATE_TEST_CASE_P(GpuMemoryBufferTests,
                                           gfx::BufferFormat::BGR_565,
                                           gfx::BufferFormat::RGBA_4444,
                                           gfx::BufferFormat::RGBA_8888,
-                                          gfx::BufferFormat::RGBX_1010102,
                                           gfx::BufferFormat::BGRA_8888,
                                           gfx::BufferFormat::RGBA_F16));
 
