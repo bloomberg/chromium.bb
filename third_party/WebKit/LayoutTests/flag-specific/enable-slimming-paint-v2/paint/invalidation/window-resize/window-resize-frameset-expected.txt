@@ -90,6 +90,11 @@
           "reason": "geometry"
         },
         {
+          "object": "LayoutFrameSet FRAMESET",
+          "rect": [0, 250, 400, 350],
+          "reason": "incremental"
+        },
+        {
           "object": "LayoutView #document",
           "rect": [0, 250, 400, 350],
           "reason": "incremental"
@@ -132,6 +137,11 @@
           "object": "LayoutFrameSet FRAMESET",
           "rect": [0, 0, 800, 600],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutFrameSet FRAMESET",
+          "rect": [400, 0, 400, 600],
+          "reason": "incremental"
         },
         {
           "object": "LayoutView #document",

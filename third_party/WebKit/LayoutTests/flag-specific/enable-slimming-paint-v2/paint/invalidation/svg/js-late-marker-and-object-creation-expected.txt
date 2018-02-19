@@ -9,7 +9,7 @@
         {
           "object": "LayoutSVGPath path",
           "rect": [189, 197, 139, 139],
-          "reason": "style change"
+          "reason": "full"
         },
         {
           "object": "LayoutSVGRoot svg id='svg-root'",
@@ -30,7 +30,7 @@
     },
     {
       "object": "LayoutSVGPath path",
-      "reason": "style change"
+      "reason": "full"
     }
   ]
 }

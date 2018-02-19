@@ -67,6 +67,11 @@
           "reason": "incremental"
         },
         {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [0, 25, 60, 35],
+          "reason": "incremental"
+        },
+        {
           "object": "LayoutBlockFlow DIV",
           "rect": [0, 25, 60, 35],
           "reason": "incremental"
@@ -74,6 +79,11 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [25, 0, 35, 60],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [25, 0, 35, 25],
           "reason": "incremental"
         }
       ]
