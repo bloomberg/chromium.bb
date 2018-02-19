@@ -861,7 +861,9 @@ void Resource::FinishPendingClients() {
   DCHECK(clients_awaiting_callback_.IsEmpty() || scheduled);
 }
 
-bool Resource::CanReuse(const FetchParameters& params) const {
+bool Resource::CanReuse(
+    const FetchParameters& params,
+    scoped_refptr<const SecurityOrigin> new_source_origin) const {
   const ResourceRequest& new_request = params.GetResourceRequest();
   const ResourceLoaderOptions& new_options = params.Options();
 
@@ -929,6 +931,13 @@ bool Resource::CanReuse(const FetchParameters& params) const {
   if (resource_request_.GetKeepalive() || new_request.GetKeepalive()) {
     return false;
   }
+
+  DCHECK(source_origin_);
+  DCHECK(new_source_origin);
+
+  // Don't reuse an existing resource when the source origin is different.
+  if (!source_origin_->IsSameSchemeHostPort(new_source_origin.get()))
+    return false;
 
   // securityOrigin has more complicated checks which callers are responsible
   // for.

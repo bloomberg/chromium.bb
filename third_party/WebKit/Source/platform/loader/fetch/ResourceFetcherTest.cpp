@@ -95,6 +95,12 @@ class ResourceFetcherTest : public ::testing::Test {
 
  protected:
   MockFetchContext* Context() { return platform_->Context(); }
+  void AddResourceToMemoryCache(
+      Resource* resource,
+      scoped_refptr<const SecurityOrigin> source_origin) {
+    resource->SetSourceOrigin(source_origin);
+    GetMemoryCache()->Add(resource);
+  }
 
   ScopedTestingPlatformSupport<FetchTestingPlatformSupport> platform_;
 
@@ -144,9 +150,14 @@ TEST_F(ResourceFetcherTest, UseExistingResource) {
 }
 
 TEST_F(ResourceFetcherTest, Vary) {
+  scoped_refptr<const SecurityOrigin> source_origin =
+      SecurityOrigin::CreateUnique();
+  Context()->SetSecurityOrigin(source_origin);
+
   KURL url("http://127.0.0.1:8000/foo.html");
   Resource* resource = RawResource::CreateForTest(url, Resource::kRaw);
-  GetMemoryCache()->Add(resource);
+  AddResourceToMemoryCache(resource, source_origin);
+
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
   response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
@@ -202,11 +213,16 @@ TEST_F(ResourceFetcherTest, NavigationTimingInfo) {
 }
 
 TEST_F(ResourceFetcherTest, VaryOnBack) {
+  scoped_refptr<const SecurityOrigin> source_origin =
+      SecurityOrigin::CreateUnique();
+  Context()->SetSecurityOrigin(source_origin);
+
   ResourceFetcher* fetcher = ResourceFetcher::Create(Context());
 
   KURL url("http://127.0.0.1:8000/foo.html");
   Resource* resource = RawResource::CreateForTest(url, Resource::kRaw);
-  GetMemoryCache()->Add(resource);
+  AddResourceToMemoryCache(resource, source_origin);
+
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
   response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
@@ -253,7 +269,8 @@ class RequestSameResourceOnComplete
  public:
   explicit RequestSameResourceOnComplete(FetchParameters& params,
                                          ResourceFetcher* fetcher)
-      : notify_finished_called_(false) {
+      : notify_finished_called_(false),
+        source_origin_(fetcher->Context().GetSecurityOrigin()) {
     MockResource::Fetch(params, fetcher, this);
   }
 
@@ -261,6 +278,7 @@ class RequestSameResourceOnComplete
     EXPECT_EQ(GetResource(), resource);
     MockFetchContext* context =
         MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
+    context->SetSecurityOrigin(source_origin_);
     ResourceFetcher* fetcher2 = ResourceFetcher::Create(context);
     ResourceRequest resource_request2(GetResource()->Url());
     resource_request2.SetCacheMode(mojom::FetchCacheMode::kValidateCache);
@@ -280,15 +298,22 @@ class RequestSameResourceOnComplete
 
  private:
   bool notify_finished_called_;
+  scoped_refptr<const SecurityOrigin> source_origin_;
 };
 
 TEST_F(ResourceFetcherTest, RevalidateWhileFinishingLoading) {
+  scoped_refptr<const SecurityOrigin> source_origin =
+      SecurityOrigin::CreateUnique();
+  Context()->SetSecurityOrigin(source_origin);
+
   KURL url("http://127.0.0.1:8000/foo.png");
+
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
   response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
   response.SetHTTPHeaderField(HTTPNames::ETag, "1234567890");
   RegisterMockedURLLoadWithCustomResponse(url, response);
+
   ResourceFetcher* fetcher1 = ResourceFetcher::Create(Context());
   ResourceRequest request1(url);
   request1.SetHTTPHeaderField(HTTPNames::Cache_Control, "no-cache");
@@ -693,9 +718,14 @@ TEST_F(ResourceFetcherTest, SpeculativePreloadShouldBePromotedToLinkePreload) {
 }
 
 TEST_F(ResourceFetcherTest, Revalidate304) {
+  scoped_refptr<const SecurityOrigin> source_origin =
+      SecurityOrigin::CreateUnique();
+  Context()->SetSecurityOrigin(source_origin);
+
   KURL url("http://127.0.0.1:8000/foo.html");
   Resource* resource = RawResource::CreateForTest(url, Resource::kRaw);
-  GetMemoryCache()->Add(resource);
+  AddResourceToMemoryCache(resource, source_origin);
+
   ResourceResponse response(url);
   response.SetHTTPStatusCode(304);
   response.SetHTTPHeaderField("etag", "1234567890");
