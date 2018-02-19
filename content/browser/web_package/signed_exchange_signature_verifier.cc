@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/loader/signed_exchange_signature_verifier.h"
+#include "content/browser/web_package/signed_exchange_signature_verifier.h"
 
 #include "base/containers/span.h"
 #include "base/strings/string_number_conversions.h"
@@ -10,8 +10,8 @@
 #include "base/strings/string_util.h"
 #include "components/cbor/cbor_values.h"
 #include "components/cbor/cbor_writer.h"
-#include "content/browser/loader/signed_exchange_consts.h"
-#include "content/browser/loader/signed_exchange_header_parser.h"
+#include "content/browser/web_package/signed_exchange_consts.h"
+#include "content/browser/web_package/signed_exchange_header_parser.h"
 #include "crypto/signature_verifier.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/x509_util.h"

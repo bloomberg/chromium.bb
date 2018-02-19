@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/loader/web_package_request_handler.h"
+#include "content/browser/web_package/web_package_request_handler.h"
 
 #include <memory>
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "content/browser/loader/web_package_loader.h"
+#include "content/browser/web_package/web_package_loader.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/shared_url_loader_factory.h"
