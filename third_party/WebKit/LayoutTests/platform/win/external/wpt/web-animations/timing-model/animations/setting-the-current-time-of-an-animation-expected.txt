@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Setting the current time of a pausing animation applies a pending playback rate assert_true: expected true got undefined
+Harness: the test ran to completion.
+
