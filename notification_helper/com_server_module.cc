@@ -22,8 +22,8 @@ namespace notification_helper {
 // The reset policy of the event MUST BE set to MANUAL to avoid signaling the
 // event in IsSignaled() itself, which is called by IsEventSignaled().
 ComServerModule::ComServerModule()
-    : com_object_released_(base::WaitableEvent::ResetPolicy::MANUAL,
-                           base::WaitableEvent::InitialState::NOT_SIGNALED) {}
+    : object_zero_count_(base::WaitableEvent::ResetPolicy::MANUAL,
+                         base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
 ComServerModule::~ComServerModule() = default;
 
@@ -41,7 +41,7 @@ HRESULT ComServerModule::RegisterClassObjects() {
   // method is invoked when the last instance object of the module is released.
   auto& module =
       Microsoft::WRL::Module<Microsoft::WRL::OutOfProcDisableCaching>::Create(
-          this, &ComServerModule::SignalObjectReleaseEvent);
+          this, &ComServerModule::SignalObjectCountZero);
 
   // Usually COM module classes statically define their CLSID at compile time
   // through the use of various macros, and WRL::Module internals takes care of
@@ -99,15 +99,15 @@ void ComServerModule::UnregisterClassObjects() {
 }
 
 bool ComServerModule::IsEventSignaled() {
-  return com_object_released_.IsSignaled();
+  return object_zero_count_.IsSignaled();
 }
 
 void ComServerModule::WaitForZeroObjectCount() {
-  com_object_released_.Wait();
+  object_zero_count_.Wait();
 }
 
-void ComServerModule::SignalObjectReleaseEvent() {
-  com_object_released_.Signal();
+void ComServerModule::SignalObjectCountZero() {
+  object_zero_count_.Signal();
 }
 
 }  // namespace notification_helper

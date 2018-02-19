@@ -35,15 +35,15 @@ class ComServerModule {
   // Waits for all instance objects are released from the module.
   void WaitForZeroObjectCount();
 
-  // Signals the COM object release event.
-  void SignalObjectReleaseEvent();
+  // Sends out the signal that all objects are now released from the module.
+  void SignalObjectCountZero();
 
   // Identifiers of registered class objects. Used for unregistration.
   DWORD cookies_[1] = {0};
 
   // This event starts "unsignaled", and is signaled when the last instance
   // object is released from the module.
-  base::WaitableEvent com_object_released_;
+  base::WaitableEvent object_zero_count_;
 
   DISALLOW_COPY_AND_ASSIGN(ComServerModule);
 };
