@@ -93,6 +93,8 @@ void MockPlatformNotificationService::GetDisplayedNotifications(
 
   for (const auto& kv : persistent_notifications_)
     displayed_notifications->insert(kv.first);
+  for (const auto& notification_id : non_persistent_notifications_)
+    displayed_notifications->insert(notification_id);
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -151,6 +153,11 @@ void MockPlatformNotificationService::SimulateClose(const std::string& title,
       by_user, base::BindOnce(&OnEventDispatchComplete));
 }
 
+void MockPlatformNotificationService::SetPermission(
+    blink::mojom::PermissionStatus permission_status) {
+  permission_status_ = permission_status;
+}
+
 blink::mojom::PermissionStatus
 MockPlatformNotificationService::CheckPermissionOnUIThread(
     BrowserContext* browser_context,
@@ -177,7 +184,7 @@ void MockPlatformNotificationService::ReplaceNotificationIfNeeded(
 
 blink::mojom::PermissionStatus MockPlatformNotificationService::CheckPermission(
     const GURL& origin) {
-  return blink::mojom::PermissionStatus::GRANTED;
+  return permission_status_;
 }
 
 }  // namespace content
