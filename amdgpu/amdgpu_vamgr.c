@@ -57,7 +57,7 @@ drm_private void amdgpu_vamgr_init(struct amdgpu_bo_va_mgr *mgr, uint64_t start,
 	pthread_mutex_init(&mgr->bo_va_mutex, NULL);
 	pthread_mutex_lock(&mgr->bo_va_mutex);
 	n = calloc(1, sizeof(struct amdgpu_bo_va_hole));
-	n->size = mgr->va_max;
+	n->size = mgr->va_max - start;
 	n->offset = start;
 	list_add(&n->list, &mgr->va_holes);
 	pthread_mutex_unlock(&mgr->bo_va_mutex);
@@ -79,6 +79,7 @@ amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr, uint64_t size,
 {
 	struct amdgpu_bo_va_hole *hole, *n;
 	uint64_t offset = 0, waste = 0;
+
 
 	alignment = MAX2(alignment, mgr->va_alignment);
 	size = ALIGN(size, mgr->va_alignment);
