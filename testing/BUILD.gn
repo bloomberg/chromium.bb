@@ -12,13 +12,14 @@ source_set("gmock_mutant") {
   ]
 }
 
-if (!is_clang) {
-  # Used by linux-gcc-rel to ensure gcc doesn't choke on clang-only flags.
-  executable("empty_main") {
-    sources = [
-      "empty_main.cc",
-    ]
-  }
+# Used by linux-gcc-rel to ensure gcc doesn't choke on clang-only flags.
+executable("empty_main") {
+  sources = [
+    "empty_main.cc",
+  ]
+  deps = [
+    "//build/config:exe_and_shlib_deps",
+  ]
 }
 
 # Targets needed for isolate script to execute.
