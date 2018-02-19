@@ -3205,6 +3205,9 @@ crbug.com/810009 [ Linux ] virtual/disable-spv175/paint/invalidation/image/canva
 # Sheriff failures 2018-02-15
 crbug.com/812417 [ Win7 ] http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Failure ]
 
+# Sheriff failures 2018-02-19
+crbug.com/771643 [ Mac10.11 ] virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Failure ]
+
 # These pass on bots with proprietary codecs (most CQ bots) while failing on bots without.
 crbug.com/807110 external/wpt/html/semantics/embedded-content/media-elements/mime-types/canPlayType.html [ Failure Pass ]
 crbug.com/807110 external/wpt/media-source/mediasource-addsourcebuffer.html [ Failure Pass ]

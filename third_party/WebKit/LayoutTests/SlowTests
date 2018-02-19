@@ -339,7 +339,7 @@ crbug.com/726075 [ Win Linux ] paint/invalidation/filters/filter-repaint-on-acce
 crbug.com/726075 [ Win Linux ] virtual/disable-spv175/paint/invalidation/filters/filter-repaint-on-accelerated-layer.html [ Slow ]
 crbug.com/726075 [ Win Linux ] virtual/exotic-color-space/images/color-profile-layer-filter.html [ Slow ]
 crbug.com/726075 [ Win Linux ] virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Slow ]
-crbug.com/726075 [ Win Linux ] virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Slow ]
+crbug.com/726075 [ Win Linux Mac ] virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Slow ]
 crbug.com/726075 [ Win Linux ] virtual/gpu/fast/canvas/OffscreenCanvas-filter-in-worker.html [ Slow ]
 crbug.com/726075 [ Win Linux ] virtual/gpu/fast/canvas/OffscreenCanvas-filter.html [ Slow ]
 crbug.com/726075 [ Win Linux ] virtual/gpu/fast/canvas/canvas-blending-clipping.html [ Slow ]
