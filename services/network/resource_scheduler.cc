@@ -1095,9 +1095,9 @@ void ResourceScheduler::OnClientDeleted(int child_id, int route_id) {
   // navigations, async revalidations and detachable requests after
   // OnClientDeleted() returns.
   RequestSet client_unowned_requests = client->StartAndRemoveAllRequests();
-  for (RequestSet::iterator it = client_unowned_requests.begin();
-       it != client_unowned_requests.end(); ++it) {
-    unowned_requests_.insert(*it);
+  for (RequestSet::iterator request_it = client_unowned_requests.begin();
+       request_it != client_unowned_requests.end(); ++request_it) {
+    unowned_requests_.insert(*request_it);
   }
 
   delete client;
