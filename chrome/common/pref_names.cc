@@ -1855,9 +1855,6 @@ const char kPowerMetricsIdleSuspendCount[] = "power.metrics.idle_suspend_count";
 const char kPowerMetricsLidClosedSuspendCount[] =
     "power.metrics.lid_closed_suspend_count";
 
-// Key for list of users that should be reported.
-const char kReportingUsers[] = "reporting_users";
-
 #endif  // defined(OS_CHROMEOS)
 
 // Whether there is a Flash version installed that supports clearing LSO data.

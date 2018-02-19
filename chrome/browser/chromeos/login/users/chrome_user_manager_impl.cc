@@ -109,6 +109,9 @@ const char kRegularUsers[] = "LoggedInUsers";
 // A vector pref of the device local accounts defined on this device.
 const char kDeviceLocalAccounts[] = "PublicAccounts";
 
+// Key for list of users that should be reported.
+const char kReportingUsers[] = "reporting_users";
+
 // A string pref that gets set when a device local account is removed but a
 // user is currently logged into that account, requiring the account's data to
 // be removed after logout.
@@ -192,7 +195,7 @@ void ChromeUserManagerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(kDeviceLocalAccounts);
   registry->RegisterStringPref(kDeviceLocalAccountPendingDataRemoval,
                                std::string());
-  registry->RegisterListPref(prefs::kReportingUsers);
+  registry->RegisterListPref(kReportingUsers);
 
   SupervisedUserManager::RegisterPrefs(registry);
   SessionLengthLimiter::RegisterPrefs(registry);
@@ -1329,19 +1332,19 @@ void ChromeUserManagerImpl::SetUserAffiliation(
 
 bool ChromeUserManagerImpl::ShouldReportUser(const std::string& user_id) const {
   const base::ListValue& reporting_users =
-      *(GetLocalState()->GetList(prefs::kReportingUsers));
+      *(GetLocalState()->GetList(kReportingUsers));
   base::Value user_id_value(FullyCanonicalize(user_id));
   return !(reporting_users.Find(user_id_value) == reporting_users.end());
 }
 
 void ChromeUserManagerImpl::AddReportingUser(const AccountId& account_id) {
-  ListPrefUpdate users_update(GetLocalState(), prefs::kReportingUsers);
+  ListPrefUpdate users_update(GetLocalState(), kReportingUsers);
   users_update->AppendIfNotPresent(
       std::make_unique<base::Value>(account_id.GetUserEmail()));
 }
 
 void ChromeUserManagerImpl::RemoveReportingUser(const AccountId& account_id) {
-  ListPrefUpdate users_update(GetLocalState(), prefs::kReportingUsers);
+  ListPrefUpdate users_update(GetLocalState(), kReportingUsers);
   users_update->Remove(
       base::Value(FullyCanonicalize(account_id.GetUserEmail())), NULL);
 }
