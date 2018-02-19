@@ -596,6 +596,23 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
     // target_version_display_name is not actually a policy, but a display
     // string for target_version_prefix, so we ignore it.
 
+    if (container.has_rollback_to_target_version()) {
+      policies->Set(
+          key::kDeviceRollbackToTargetVersion, POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+          std::make_unique<base::Value>(container.rollback_to_target_version()),
+          nullptr);
+    }
+
+    if (container.has_rollback_allowed_milestones()) {
+      policies->Set(key::kDeviceRollbackAllowedMilestones,
+                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                    POLICY_SOURCE_CLOUD,
+                    std::make_unique<base::Value>(
+                        container.rollback_allowed_milestones()),
+                    nullptr);
+    }
+
     if (container.has_scatter_factor_in_seconds()) {
       // TODO(dcheng): Shouldn't this use DecodeIntegerValue?
       policies->Set(key::kDeviceUpdateScatterFactor, POLICY_LEVEL_MANDATORY,
