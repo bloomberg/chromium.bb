@@ -1828,8 +1828,10 @@ drm_output_apply_state_legacy(struct drm_output_state *state)
 	 */
 	if (output->base.disable_planes) {
 		output->cursor_view = NULL;
-		output->cursor_plane->base.x = INT32_MIN;
-		output->cursor_plane->base.y = INT32_MIN;
+		if (output->cursor_plane) {
+			output->cursor_plane->base.x = INT32_MIN;
+			output->cursor_plane->base.y = INT32_MIN;
+		}
 	}
 
 	if (state->dpms != WESTON_DPMS_ON) {
