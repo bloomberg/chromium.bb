@@ -957,9 +957,6 @@
       name: "ServiceWorkerScriptFullCodeCache",
     },
     {
-      name: "ServiceWorkerScriptStreaming",
-    },
-    {
       name: "ServiceWorkerUpdateViaCache",
       status: "experimental",
     },

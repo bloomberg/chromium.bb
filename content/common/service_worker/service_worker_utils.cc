@@ -147,11 +147,6 @@ bool ServiceWorkerUtils::IsServicificationEnabled() {
 }
 
 // static
-bool ServiceWorkerUtils::IsScriptStreamingEnabled() {
-  return base::FeatureList::IsEnabled(features::kServiceWorkerScriptStreaming);
-}
-
-// static
 std::string ServiceWorkerUtils::ErrorTypeToString(
     blink::mojom::ServiceWorkerErrorType error) {
   std::ostringstream oss;

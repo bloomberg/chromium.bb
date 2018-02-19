@@ -226,11 +226,6 @@ class ServiceWorkerURLRequestJobTest
     version_ = new ServiceWorkerVersion(
         registration_.get(), GURL("https://example.com/service_worker.js"), 1L,
         helper_->context()->AsWeakPtr());
-    // If script streaming is not enabled, SetMainScriptHttpResponseInfo()
-    // should be called manually since |http_info| which is stored in disk cache
-    // won't be read during SWVersion::StartWorker() in tests.
-    if (!ServiceWorkerUtils::IsScriptStreamingEnabled())
-      version_->SetMainScriptHttpResponseInfo(*http_info);
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     records.push_back(WriteToDiskCacheWithCustomResponseInfoSync(
         helper_->context()->storage(), version_->script_url(), 10,

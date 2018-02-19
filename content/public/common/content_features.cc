@@ -314,10 +314,6 @@ const base::Feature kSendBeaconThrowForBlobWithNonSimpleType{
 const base::Feature kServiceWorkerPaymentApps{
     "ServiceWorkerPaymentApps", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Streaming installed scripts on starting service workers.
-const base::Feature kServiceWorkerScriptStreaming{
-    "ServiceWorkerScriptStreaming", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Generate V8 full code cache of service worker scripts.
 const base::Feature kServiceWorkerScriptFullCodeCache{
     "ServiceWorkerScriptFullCodeCache", base::FEATURE_DISABLED_BY_DEFAULT};

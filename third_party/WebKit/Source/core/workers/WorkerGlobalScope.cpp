@@ -161,10 +161,8 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls,
     String source_code;
     std::unique_ptr<Vector<char>> cached_meta_data;
     LoadResult result = LoadResult::kNotHandled;
-    if (RuntimeEnabledFeatures::ServiceWorkerScriptStreamingEnabled()) {
-      result = LoadingScriptFromInstalledScriptsManager(
-          complete_url, &response_url, &source_code, &cached_meta_data);
-    }
+    result = LoadingScriptFromInstalledScriptsManager(
+        complete_url, &response_url, &source_code, &cached_meta_data);
 
     // If the script wasn't provided by the InstalledScriptsManager, load from
     // ResourceLoader.

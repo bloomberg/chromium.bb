@@ -382,10 +382,6 @@ void WebRuntimeFeatures::EnableScrollAnchorSerialization(bool enable) {
   RuntimeEnabledFeatures::SetScrollAnchorSerializationEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableServiceWorkerScriptStreaming(bool enable) {
-  RuntimeEnabledFeatures::SetServiceWorkerScriptStreamingEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableServiceWorkerScriptFullCodeCache(bool enable) {
   RuntimeEnabledFeatures::SetServiceWorkerScriptFullCodeCacheEnabled(enable);
 }

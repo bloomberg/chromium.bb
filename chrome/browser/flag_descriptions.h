@@ -806,8 +806,6 @@ extern const char kServiceWorkerNavigationPreloadDescription[];
 extern const char kServiceWorkerPaymentAppsName[];
 extern const char kServiceWorkerPaymentAppsDescription[];
 
-extern const char kServiceWorkerScriptStreamingName[];
-extern const char kServiceWorkerScriptStreamingDescription[];
 
 extern const char kServiceWorkerScriptFullCodeCacheName[];
 extern const char kServiceWorkerScriptFullCodeCacheDescription[];

@@ -292,9 +292,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kServiceWorkerPaymentApps))
     WebRuntimeFeatures::EnablePaymentApp(true);
 
-  WebRuntimeFeatures::EnableServiceWorkerScriptStreaming(
-      base::FeatureList::IsEnabled(features::kServiceWorkerScriptStreaming));
-
   WebRuntimeFeatures::EnableServiceWorkerScriptFullCodeCache(
       base::FeatureList::IsEnabled(
           features::kServiceWorkerScriptFullCodeCache));

@@ -101,8 +101,7 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
       pause_after_download_state_(kDontPauseAfterDownload),
       waiting_for_debugger_state_(kNotWaitingForDebugger),
       interface_provider_info_(std::move(interface_provider_info)) {
-  if (RuntimeEnabledFeatures::ServiceWorkerScriptStreamingEnabled() &&
-      installed_scripts_manager) {
+  if (installed_scripts_manager) {
     installed_scripts_manager_ =
         std::make_unique<ServiceWorkerInstalledScriptsManager>(
             std::move(installed_scripts_manager));
@@ -256,10 +255,11 @@ void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
   shadow_page_->DocumentLoader()->SetServiceWorkerNetworkProvider(
       worker_context_client_->CreateServiceWorkerNetworkProvider());
 
-  // Kickstart the worker before loading the script when the script has been
-  // installed.
-  if (RuntimeEnabledFeatures::ServiceWorkerScriptStreamingEnabled() &&
-      installed_scripts_manager_ &&
+  // If this is an installed service worker, we can start the worker thread
+  // now. The script will be streamed in by the installed scripts manager in
+  // parallel. For non-installed scripts, the script must be loaded from network
+  // before the worker thread can be started.
+  if (installed_scripts_manager_ &&
       installed_scripts_manager_->IsScriptInstalled(
           worker_start_data_.script_url)) {
     DCHECK_EQ(pause_after_download_state_, kDontPauseAfterDownload);
