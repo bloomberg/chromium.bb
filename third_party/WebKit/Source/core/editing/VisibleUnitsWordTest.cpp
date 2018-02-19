@@ -57,6 +57,16 @@ class VisibleUnitsWordTest : public EditingTestBase {
                           .DeepEquivalent())
             .Build());
   }
+
+  std::string DoPreviousWord(const std::string& selection_text) {
+    const Position position = SetSelectionTextToBody(selection_text).Base();
+    const Position result =
+        PreviousWordPosition(CreateVisiblePosition(position)).DeepEquivalent();
+    if (result.IsNull())
+      return GetSelectionTextFromBody(SelectionInDOMTree());
+    return GetSelectionTextFromBody(
+        SelectionInDOMTree::Builder().Collapse(result).Build());
+  }
 };
 
 TEST_F(VisibleUnitsWordTest, StartOfWordBasic) {
@@ -430,6 +440,25 @@ TEST_F(VisibleUnitsWordTest, NextWordPunctuation) {
 TEST_F(VisibleUnitsWordTest, NextWordSkipTab) {
   InsertStyleElement("s { white-space: pre }");
   EXPECT_EQ("<p><s>\t</s>foo|</p>", DoNextWord("<p><s>\t|</s>foo</p>"));
+}
+
+//----
+
+TEST_F(VisibleUnitsWordTest, PreviousWordBasic) {
+  EXPECT_EQ("<p> |(1) abc def</p>", DoPreviousWord("<p>| (1) abc def</p>"));
+  EXPECT_EQ("<p> |(1) abc def</p>", DoPreviousWord("<p> |(1) abc def</p>"));
+  EXPECT_EQ("<p> |(1) abc def</p>", DoPreviousWord("<p> (|1) abc def</p>"));
+  EXPECT_EQ("<p> (|1) abc def</p>", DoPreviousWord("<p> (1|) abc def</p>"));
+  EXPECT_EQ("<p> (|1) abc def</p>", DoPreviousWord("<p> (1)| abc def</p>"));
+  EXPECT_EQ("<p> (|1) abc def</p>", DoPreviousWord("<p> (1) |abc def</p>"));
+  EXPECT_EQ("<p> (1) |abc def</p>", DoPreviousWord("<p> (1) a|bc def</p>"));
+  EXPECT_EQ("<p> (1) |abc def</p>", DoPreviousWord("<p> (1) ab|c def</p>"));
+  EXPECT_EQ("<p> (1) |abc def</p>", DoPreviousWord("<p> (1) abc| def</p>"));
+  EXPECT_EQ("<p> (1) |abc def</p>", DoPreviousWord("<p> (1) abc |def</p>"));
+  EXPECT_EQ("<p> (1) abc |def</p>", DoPreviousWord("<p> (1) abc d|ef</p>"));
+  EXPECT_EQ("<p> (1) abc |def</p>", DoPreviousWord("<p> (1) abc de|f</p>"));
+  EXPECT_EQ("<p> (1) abc |def</p>", DoPreviousWord("<p> (1) abc def|</p>"));
+  EXPECT_EQ("<p> (1) abc |def</p>", DoPreviousWord("<p> (1) abc def</p>|"));
 }
 
 }  // namespace visible_units_word_test
