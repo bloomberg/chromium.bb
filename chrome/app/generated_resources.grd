@@ -7721,7 +7721,10 @@ I don't think this site should be blocked!
       <message name="IDS_SYNC_CONFIRMATION_TITLE" desc="Title of the sync confirmation dialog in the tab modal signin flow">
         You've signed in and turned on Sync
       </message>
-      <message name="IDS_SYNC_CONFIRMATION_DICE_TITLE" desc="Title of the sync confirmation dialog in the tab modal signin flow">
+      <message name="IDS_SYNC_CONFIRMATION_DICE_TITLE" desc="Title of the sync confirmation dialog in the tab modal signin flow when Dice is enabled">
+        You've turned on Sync
+      </message>
+      <message name="IDS_SYNC_CONFIRMATION_UNITY_TITLE" desc="Title of the sync confirmation dialog in the tab modal signin flow when Unity is enabled">
         Get even more from Chrome
       </message>
 

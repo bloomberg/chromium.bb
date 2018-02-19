@@ -14,7 +14,7 @@ cr.define('signin_sync_confirmation', function() {
 
     // Tests that no DCHECKS are thrown during initialization of the UI.
     test('LoadPage', function() {
-      assertTrue(!!app.$.heading);
+      assertEquals('Get even more from Chrome', app.$.heading.textContent);
     });
   });
 });
