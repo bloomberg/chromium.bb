@@ -53,10 +53,6 @@ bool SpokenFeedbackEventRewriterDelegate::DispatchKeyEventToChromeVox(
   // Forward all key events to ChromeVox's background page.
   chromeos::ForwardKeyToExtension(key_event, host);
 
-  if ((key_event.key_code() >= ui::VKEY_F1) &&
-      (key_event.key_code() <= ui::VKEY_F12))
-    return false;
-
   return capture;
 }
 
@@ -64,10 +60,6 @@ void SpokenFeedbackEventRewriterDelegate::HandleKeyboardEvent(
     content::WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
   ui::KeyEvent key_event(*static_cast<ui::KeyEvent*>(event.os_event));
-
-  if ((key_event.key_code() >= ui::VKEY_F1) &&
-      (key_event.key_code() <= ui::VKEY_F12))
-    return;
 
   ui::EventSink* sink =
       ash::Shell::GetPrimaryRootWindow()->GetHost()->event_sink();
