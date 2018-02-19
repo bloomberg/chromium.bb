@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/loader/web_package_loader.h"
+#include "content/browser/web_package/web_package_loader.h"
 
 #include <memory>
 
 #include "base/feature_list.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/loader/data_pipe_to_source_stream.h"
-#include "content/browser/loader/signed_exchange_handler.h"
 #include "content/browser/loader/source_stream_to_data_pipe.h"
+#include "content/browser/web_package/signed_exchange_handler.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/shared_url_loader_factory.h"
 #include "net/cert/cert_status_flags.h"
@@ -163,8 +163,7 @@ void WebPackageLoader::OnStartLoadingResponseBody(
 }
 
 void WebPackageLoader::OnComplete(
-    const network::URLLoaderCompletionStatus& status) {
-}
+    const network::URLLoaderCompletionStatus& status) {}
 
 void WebPackageLoader::FollowRedirect() {
   NOTREACHED();

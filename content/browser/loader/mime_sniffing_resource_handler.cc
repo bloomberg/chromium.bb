@@ -23,7 +23,7 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/loader/stream_resource_handler.h"
-#include "content/browser/loader/web_package_request_handler.h"
+#include "content/browser/web_package/web_package_request_handler.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/resource_context.h"

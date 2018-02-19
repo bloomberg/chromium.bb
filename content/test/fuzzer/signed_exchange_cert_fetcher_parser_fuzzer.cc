@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/loader/signed_exchange_cert_fetcher.h"  // nogncheck
+#include "content/browser/web_package/signed_exchange_cert_fetcher.h"  // nogncheck
 
 #include "base/strings/string_piece.h"
 

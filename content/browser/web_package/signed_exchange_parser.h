@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_LOADER_SIGNED_EXCHANGE_PARSER_H_
-#define CONTENT_BROWSER_LOADER_SIGNED_EXCHANGE_PARSER_H_
+#ifndef CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_PARSER_H_
+#define CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_PARSER_H_
 
 #include <stdint.h>
 
 #include "base/callback.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
-#include "content/browser/loader/signed_exchange_header.h"
+#include "content/browser/web_package/signed_exchange_header.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -119,4 +119,4 @@ class CONTENT_EXPORT SignedExchangeParser {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_LOADER_SIGNED_EXCHANGE_PARSER_H_
+#endif  // CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_PARSER_H_

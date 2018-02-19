@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/loader/signed_exchange_url_loader_factory_for_non_network_service.h"
+#include "content/browser/web_package/signed_exchange_url_loader_factory_for_non_network_service.h"
 
 #include "base/feature_list.h"
 #include "content/browser/loader/resource_requester_info.h"

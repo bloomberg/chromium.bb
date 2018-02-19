@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_LOADER_WEB_PACKAGE_REQUEST_HANDLER_H_
-#define CONTENT_BROWSER_LOADER_WEB_PACKAGE_REQUEST_HANDLER_H_
+#ifndef CONTENT_BROWSER_WEB_PACKAGE_WEB_PACKAGE_REQUEST_HANDLER_H_
+#define CONTENT_BROWSER_WEB_PACKAGE_WEB_PACKAGE_REQUEST_HANDLER_H_
 
 #include "base/memory/weak_ptr.h"
 #include "content/browser/loader/url_loader_request_handler.h"
@@ -61,4 +61,4 @@ class WebPackageRequestHandler final : public URLLoaderRequestHandler {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_LOADER_WEB_PACKAGE_REQUEST_HANDLER_H_
+#endif  // CONTENT_BROWSER_WEB_PACKAGE_WEB_PACKAGE_REQUEST_HANDLER_H_

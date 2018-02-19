@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_LOADER_WEB_PACKAGE_LOADER_H_
-#define CONTENT_BROWSER_LOADER_WEB_PACKAGE_LOADER_H_
+#ifndef CONTENT_BROWSER_WEB_PACKAGE_WEB_PACKAGE_LOADER_H_
+#define CONTENT_BROWSER_WEB_PACKAGE_WEB_PACKAGE_LOADER_H_
 
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -127,4 +127,4 @@ class WebPackageLoader final : public network::mojom::URLLoaderClient,
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_LOADER_WEB_PACKAGE_LOADER_H_
+#endif  // CONTENT_BROWSER_WEB_PACKAGE_WEB_PACKAGE_LOADER_H_

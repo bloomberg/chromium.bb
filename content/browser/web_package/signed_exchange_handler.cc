@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/loader/signed_exchange_handler.h"
+#include "content/browser/web_package/signed_exchange_handler.h"
 
 #include "base/feature_list.h"
 #include "components/cbor/cbor_reader.h"
 #include "content/browser/loader/merkle_integrity_source_stream.h"
-#include "content/browser/loader/signed_exchange_cert_fetcher.h"
-#include "content/browser/loader/signed_exchange_consts.h"
-#include "content/browser/loader/signed_exchange_header_parser.h"
+#include "content/browser/web_package/signed_exchange_cert_fetcher.h"
+#include "content/browser/web_package/signed_exchange_consts.h"
+#include "content/browser/web_package/signed_exchange_header_parser.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/shared_url_loader_factory.h"
 #include "content/public/common/url_loader_throttle.h"
