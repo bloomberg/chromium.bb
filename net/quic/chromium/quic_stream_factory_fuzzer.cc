@@ -21,6 +21,7 @@
 #include "net/quic/test_tools/mock_random.h"
 #include "net/socket/fuzzed_datagram_client_socket.h"
 #include "net/socket/fuzzed_socket_factory.h"
+#include "net/socket/socket_tag.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
@@ -148,9 +149,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   NetErrorDetails net_error_details;
   request.Request(env->host_port_pair,
                   data_provider.PickValueInArray(kSupportedTransportVersions),
-                  PRIVACY_MODE_DISABLED, DEFAULT_PRIORITY, kCertVerifyFlags,
-                  GURL(kUrl), env->net_log, &net_error_details,
-                  callback.callback());
+                  PRIVACY_MODE_DISABLED, DEFAULT_PRIORITY, SocketTag(),
+                  kCertVerifyFlags, GURL(kUrl), env->net_log,
+                  &net_error_details, callback.callback());
 
   callback.WaitForResult();
   std::unique_ptr<QuicChromiumClientSession::Handle> session =

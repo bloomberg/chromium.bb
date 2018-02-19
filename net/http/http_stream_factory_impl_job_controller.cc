@@ -1144,16 +1144,17 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceInfoInternal(
     // Check whether there is an existing QUIC session to use for this origin.
     HostPortPair mapped_origin(origin.host(), origin.port());
     ignore_result(ApplyHostMappingRules(original_url, &mapped_origin));
-    QuicServerId server_id(mapped_origin, request_info.privacy_mode);
+    QuicSessionKey session_key(mapped_origin, request_info.privacy_mode,
+                               request_info.socket_tag);
 
     HostPortPair destination(alternative_service_info.host_port_pair());
-    if (server_id.host() != destination.host() &&
+    if (session_key.host() != destination.host() &&
         !session_->params().quic_allow_remote_alt_svc) {
       continue;
     }
     ignore_result(ApplyHostMappingRules(original_url, &destination));
 
-    if (session_->quic_stream_factory()->CanUseExistingSession(server_id,
+    if (session_->quic_stream_factory()->CanUseExistingSession(session_key,
                                                                destination))
       return alternative_service_info;
 

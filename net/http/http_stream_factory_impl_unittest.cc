@@ -1442,6 +1442,16 @@ int GetHandedOutSocketCount(ClientSocketPool* pool) {
     return -1;
   return count;
 }
+
+// Return count of distinct QUIC sessions.
+int GetQuicSessionCount(HttpNetworkSession* session) {
+  std::unique_ptr<base::DictionaryValue> dict(
+      base::DictionaryValue::From(session->QuicInfoToValue()));
+  base::ListValue* session_list;
+  if (!dict->GetList("sessions", &session_list))
+    return -1;
+  return session_list->GetSize();
+}
 #endif
 
 }  // namespace
@@ -2329,7 +2339,7 @@ class HttpStreamFactoryBidirectionalQuicTest
     return server_packet_maker_;
   }
 
-  MockClientSocketFactory& socket_factory() { return socket_factory_; }
+  MockTaggingClientSocketFactory& socket_factory() { return socket_factory_; }
 
   HttpNetworkSession* session() { return session_.get(); }
 
@@ -2345,7 +2355,7 @@ class HttpStreamFactoryBidirectionalQuicTest
   MockClock clock_;
   test::QuicTestPacketMaker client_packet_maker_;
   test::QuicTestPacketMaker server_packet_maker_;
-  MockClientSocketFactory socket_factory_;
+  MockTaggingClientSocketFactory socket_factory_;
   std::unique_ptr<HttpNetworkSession> session_;
   test::MockRandom random_generator_;
   MockCertVerifier cert_verifier_;
@@ -2694,9 +2704,9 @@ TEST_F(HttpStreamFactoryTest, Tag) {
   EXPECT_EQ(1, GetHandedOutSocketCount(session->GetSSLSocketPool(
                    HttpNetworkSession::NORMAL_SOCKET_POOL)));
   // Verify socket tagged appropriately.
-  EXPECT_TRUE(tag1 == socket_factory->GetLastProducedSocket()->tag());
+  EXPECT_TRUE(tag1 == socket_factory->GetLastProducedTCPSocket()->tag());
   EXPECT_TRUE(
-      socket_factory->GetLastProducedSocket()->tagged_before_connected());
+      socket_factory->GetLastProducedTCPSocket()->tagged_before_connected());
 
   // Verify one more stream with a different tag results in one more session and
   // socket.
@@ -2725,9 +2735,9 @@ TEST_F(HttpStreamFactoryTest, Tag) {
   EXPECT_EQ(2, GetHandedOutSocketCount(session->GetSSLSocketPool(
                    HttpNetworkSession::NORMAL_SOCKET_POOL)));
   // Verify socket tagged appropriately.
-  EXPECT_TRUE(tag2 == socket_factory->GetLastProducedSocket()->tag());
+  EXPECT_TRUE(tag2 == socket_factory->GetLastProducedTCPSocket()->tag());
   EXPECT_TRUE(
-      socket_factory->GetLastProducedSocket()->tagged_before_connected());
+      socket_factory->GetLastProducedTCPSocket()->tagged_before_connected());
 
   // Verify one more stream reusing a tag does not create new sessions, groups
   // or sockets.
@@ -2755,6 +2765,130 @@ TEST_F(HttpStreamFactoryTest, Tag) {
                    HttpNetworkSession::NORMAL_SOCKET_POOL)));
   EXPECT_EQ(2, GetHandedOutSocketCount(session->GetSSLSocketPool(
                    HttpNetworkSession::NORMAL_SOCKET_POOL)));
+}
+
+// Verify HttpStreamFactoryImplJob passes socket tag along properly to QUIC
+// sessions and that QuicSessions have unique socket tags (e.g. one sessions
+// should not be shared amongst streams with different socket tags).
+TEST_P(HttpStreamFactoryBidirectionalQuicTest, Tag) {
+  // Prepare mock QUIC data for a first session establishment.
+  MockQuicData mock_quic_data;
+  SpdyPriority priority =
+      ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
+  size_t spdy_headers_frame_length;
+  QuicStreamOffset header_stream_offset = 0;
+  mock_quic_data.AddWrite(client_packet_maker().MakeInitialSettingsPacket(
+      1, &header_stream_offset));
+  mock_quic_data.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
+      2, GetNthClientInitiatedStreamId(0), /*should_include_version=*/true,
+      /*fin=*/true, priority,
+      client_packet_maker().GetRequestHeaders("GET", "https", "/"),
+      /*parent_stream_id=*/0, &spdy_headers_frame_length,
+      &header_stream_offset));
+  size_t spdy_response_headers_frame_length;
+  mock_quic_data.AddRead(server_packet_maker().MakeResponseHeadersPacket(
+      1, GetNthClientInitiatedStreamId(0), /*should_include_version=*/false,
+      /*fin=*/true, server_packet_maker().GetResponseHeaders("200"),
+      &spdy_response_headers_frame_length));
+  mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more read data.
+  mock_quic_data.AddSocketDataToFactory(&socket_factory());
+
+  // Prepare mock QUIC data for a second session establishment.
+  MockQuicData mock_quic_data2;
+  QuicStreamOffset header_stream_offset2 = 0;
+  mock_quic_data2.AddWrite(client_packet_maker().MakeInitialSettingsPacket(
+      1, &header_stream_offset2));
+  mock_quic_data2.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
+      2, GetNthClientInitiatedStreamId(0), /*should_include_version=*/true,
+      /*fin=*/true, priority,
+      client_packet_maker().GetRequestHeaders("GET", "https", "/"),
+      /*parent_stream_id=*/0, &spdy_headers_frame_length,
+      &header_stream_offset));
+  mock_quic_data2.AddRead(server_packet_maker().MakeResponseHeadersPacket(
+      1, GetNthClientInitiatedStreamId(0), /*should_include_version=*/false,
+      /*fin=*/true, server_packet_maker().GetResponseHeaders("200"),
+      &spdy_response_headers_frame_length));
+  mock_quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more read data.
+  mock_quic_data2.AddSocketDataToFactory(&socket_factory());
+
+  // Add hanging data for http job.
+  auto hanging_data = std::make_unique<StaticSocketDataProvider>();
+  MockConnect hanging_connect(SYNCHRONOUS, ERR_IO_PENDING);
+  hanging_data->set_connect_data(hanging_connect);
+  socket_factory().AddSocketDataProvider(hanging_data.get());
+  SSLSocketDataProvider ssl_data(ASYNC, OK);
+  socket_factory().AddSSLSocketDataProvider(&ssl_data);
+
+  // Set up QUIC as alternative_service.
+  Initialize();
+  AddQuicAlternativeService();
+
+  // Prepare two different tags and corresponding HttpRequestInfos.
+  SocketTag tag1(SocketTag::UNSET_UID, 0x12345678);
+  HttpRequestInfo request_info1;
+  request_info1.method = "GET";
+  request_info1.url = default_url_;
+  request_info1.load_flags = 0;
+  request_info1.socket_tag = tag1;
+  SocketTag tag2(getuid(), 0x87654321);
+  HttpRequestInfo request_info2 = request_info1;
+  request_info2.socket_tag = tag2;
+
+  // Verify one stream with one tag results in one QUIC session.
+  SSLConfig ssl_config;
+  StreamRequestWaiter waiter1;
+  std::unique_ptr<HttpStreamRequest> request1(
+      session()->http_stream_factory()->RequestStream(
+          request_info1, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter1,
+          /* enable_ip_based_pooling = */ true,
+          /* enable_alternative_services = */ true, NetLogWithSource()));
+  waiter1.WaitForStream();
+  EXPECT_TRUE(waiter1.stream_done());
+  EXPECT_TRUE(nullptr == waiter1.websocket_stream());
+  ASSERT_TRUE(nullptr != waiter1.stream());
+  EXPECT_EQ(kProtoQUIC, request1->negotiated_protocol());
+  EXPECT_EQ(1, GetQuicSessionCount(session()));
+
+  // Verify socket tagged appropriately.
+  EXPECT_TRUE(tag1 == socket_factory().GetLastProducedUDPSocket()->tag());
+  EXPECT_TRUE(socket_factory()
+                  .GetLastProducedUDPSocket()
+                  ->tagged_before_data_transferred());
+
+  // Verify one more stream with a different tag results in one more session and
+  // socket.
+  StreamRequestWaiter waiter2;
+  std::unique_ptr<HttpStreamRequest> request2(
+      session()->http_stream_factory()->RequestStream(
+          request_info2, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter2,
+          /* enable_ip_based_pooling = */ true,
+          /* enable_alternative_services = */ true, NetLogWithSource()));
+  waiter2.WaitForStream();
+  EXPECT_TRUE(waiter2.stream_done());
+  EXPECT_TRUE(nullptr == waiter2.websocket_stream());
+  ASSERT_TRUE(nullptr != waiter2.stream());
+  EXPECT_EQ(kProtoQUIC, request2->negotiated_protocol());
+  EXPECT_EQ(2, GetQuicSessionCount(session()));
+
+  // Verify socket tagged appropriately.
+  EXPECT_TRUE(tag2 == socket_factory().GetLastProducedUDPSocket()->tag());
+  EXPECT_TRUE(socket_factory()
+                  .GetLastProducedUDPSocket()
+                  ->tagged_before_data_transferred());
+
+  // Verify one more stream reusing a tag does not create new sessions.
+  StreamRequestWaiter waiter3;
+  std::unique_ptr<HttpStreamRequest> request3(
+      session()->http_stream_factory()->RequestStream(
+          request_info2, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter3,
+          /* enable_ip_based_pooling = */ true,
+          /* enable_alternative_services = */ true, NetLogWithSource()));
+  waiter3.WaitForStream();
+  EXPECT_TRUE(waiter3.stream_done());
+  EXPECT_TRUE(nullptr == waiter3.websocket_stream());
+  ASSERT_TRUE(nullptr != waiter3.stream());
+  EXPECT_EQ(kProtoQUIC, request3->negotiated_protocol());
+  EXPECT_EQ(2, GetQuicSessionCount(session()));
 }
 #endif
 

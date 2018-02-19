@@ -32,6 +32,7 @@
 #include "net/quic/chromium/network_connection.h"
 #include "net/quic/chromium/quic_chromium_client_session.h"
 #include "net/quic/chromium/quic_clock_skew_detector.h"
+#include "net/quic/chromium/quic_session_key.h"
 #include "net/quic/core/quic_client_push_promise_index.h"
 #include "net/quic/core/quic_config.h"
 #include "net/quic/core/quic_crypto_stream.h"
@@ -66,6 +67,7 @@ class QuicRandom;
 class QuicServerInfo;
 class QuicStreamFactory;
 class SocketPerformanceWatcherFactory;
+class SocketTag;
 class TransportSecurityState;
 
 namespace test {
@@ -114,6 +116,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
               QuicTransportVersion quic_version,
               PrivacyMode privacy_mode,
               RequestPriority priority,
+              const SocketTag& socket_tag,
               int cert_verify_flags,
               const GURL& url,
               const NetLogWithSource& net_log,
@@ -151,13 +154,13 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
 
   NetErrorDetails* net_error_details() { return net_error_details_; }
 
-  const QuicServerId& server_id() const { return server_id_; }
+  const QuicSessionKey& session_key() const { return session_key_; }
 
   const NetLogWithSource& net_log() const { return net_log_; }
 
  private:
   QuicStreamFactory* factory_;
-  QuicServerId server_id_;
+  QuicSessionKey session_key_;
   NetLogWithSource net_log_;
   CompletionCallback callback_;
   NetErrorDetails* net_error_details_;  // Unowned.
@@ -185,26 +188,27 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // |server_id| identifies the origin of the request,
   // the crypto handshake advertises |server_id.host()| to the server,
   // and the certificate is also matched against |server_id.host()|.
-  class NET_EXPORT_PRIVATE QuicSessionKey {
+  class NET_EXPORT_PRIVATE QuicSessionAliasKey {
    public:
-    QuicSessionKey() = default;
-    QuicSessionKey(const HostPortPair& destination,
-                   const QuicServerId& server_id);
-    ~QuicSessionKey() = default;
+    QuicSessionAliasKey() = default;
+    QuicSessionAliasKey(const HostPortPair& destination,
+                        const QuicSessionKey& session_key);
+    ~QuicSessionAliasKey() = default;
 
     // Needed to be an element of std::set.
-    bool operator<(const QuicSessionKey& other) const;
-    bool operator==(const QuicSessionKey& other) const;
+    bool operator<(const QuicSessionAliasKey& other) const;
+    bool operator==(const QuicSessionAliasKey& other) const;
 
     const HostPortPair& destination() const { return destination_; }
-    const QuicServerId& server_id() const { return server_id_; }
+    const QuicServerId& server_id() const { return session_key_.server_id(); }
+    const QuicSessionKey& session_key() const { return session_key_; }
 
     // Returns the estimate of dynamically allocated memory in bytes.
     size_t EstimateMemoryUsage() const;
 
    private:
     HostPortPair destination_;
-    QuicServerId server_id_;
+    QuicSessionKey session_key_;
   };
 
   QuicStreamFactory(
@@ -248,10 +252,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool enable_socket_recv_optimization);
   ~QuicStreamFactory() override;
 
-  // Returns true if there is an existing session for |server_id| or if the
+  // Returns true if there is an existing session for |session_key| or if the
   // request can be pooled to an existing session to the IP address of
   // |destination|.
-  bool CanUseExistingSession(const QuicServerId& server_id,
+  bool CanUseExistingSession(const QuicSessionKey& session_key,
                              const HostPortPair& destination);
 
   // Fetches a QuicChromiumClientSession to |host_port_pair| which will be
@@ -259,7 +263,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // If a matching session already exists, this method will return OK.  If no
   // matching session exists, this will return ERR_IO_PENDING and will invoke
   // OnRequestComplete asynchronously.
-  int Create(const QuicServerId& server_id,
+  int Create(const QuicSessionKey& session_key,
              const HostPortPair& destination,
              QuicTransportVersion quic_version,
              RequestPriority priority,
@@ -308,7 +312,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Returns net_error code.
   int ConfigureSocket(DatagramClientSocket* socket,
                       IPEndPoint addr,
-                      NetworkChangeNotifier::NetworkHandle network);
+                      NetworkChangeNotifier::NetworkHandle network,
+                      const SocketTag& socket_tag);
 
   // Finds an alternative to |old_network| from the platform's list of connected
   // networks. Returns NetworkChangeNotifier::kInvalidNetworkHandle if no
@@ -384,26 +389,27 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   class CertVerifierJob;
   friend class test::QuicStreamFactoryPeer;
 
-  typedef std::map<QuicServerId, QuicChromiumClientSession*> SessionMap;
-  typedef std::map<QuicChromiumClientSession*, QuicSessionKey> SessionIdMap;
-  typedef std::set<QuicSessionKey> AliasSet;
+  typedef std::map<QuicSessionKey, QuicChromiumClientSession*> SessionMap;
+  typedef std::map<QuicChromiumClientSession*, QuicSessionAliasKey>
+      SessionIdMap;
+  typedef std::set<QuicSessionAliasKey> AliasSet;
   typedef std::map<QuicChromiumClientSession*, AliasSet> SessionAliasMap;
   typedef std::set<QuicChromiumClientSession*> SessionSet;
   typedef std::map<IPEndPoint, SessionSet> IPAliasMap;
   typedef std::map<QuicChromiumClientSession*, IPEndPoint> SessionPeerIPMap;
-  typedef std::map<QuicServerId, std::unique_ptr<Job>> JobMap;
+  typedef std::map<QuicSessionKey, std::unique_ptr<Job>> JobMap;
   typedef std::map<QuicServerId, std::unique_ptr<CertVerifierJob>>
       CertVerifierJobMap;
 
-  bool HasMatchingIpSession(const QuicSessionKey& key,
+  bool HasMatchingIpSession(const QuicSessionAliasKey& key,
                             const AddressList& address_list);
   void OnJobHostResolutionComplete(Job* job, int rv);
   void OnJobComplete(Job* job, int rv);
   void OnCertVerifyJobComplete(CertVerifierJob* job, int rv);
-  bool HasActiveSession(const QuicServerId& server_id) const;
-  bool HasActiveJob(const QuicServerId& server_id) const;
+  bool HasActiveSession(const QuicSessionKey& session_key) const;
+  bool HasActiveJob(const QuicSessionKey& session_key) const;
   bool HasActiveCertVerifierJob(const QuicServerId& server_id) const;
-  int CreateSession(const QuicSessionKey& key,
+  int CreateSession(const QuicSessionAliasKey& key,
                     const QuicTransportVersion& quic_version,
                     int cert_verify_flags,
                     bool require_confirmation,
@@ -412,7 +418,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
                     base::TimeTicks dns_resolution_end_time,
                     const NetLogWithSource& net_log,
                     QuicChromiumClientSession** session);
-  void ActivateSession(const QuicSessionKey& key,
+  void ActivateSession(const QuicSessionAliasKey& key,
                        QuicChromiumClientSession* session);
   void MarkAllActiveSessionsGoingAway();
 

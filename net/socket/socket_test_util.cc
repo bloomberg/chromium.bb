@@ -1329,6 +1329,7 @@ int MockUDPClientSocket::Read(IOBuffer* buf,
                               const CompletionCallback& callback) {
   if (!connected_ || !data_)
     return ERR_UNEXPECTED;
+  data_transferred_ = true;
 
   // If the buffer is already in use, a read is already in progress!
   DCHECK(!pending_read_buf_);
@@ -1363,6 +1364,7 @@ int MockUDPClientSocket::Write(
 
   if (!connected_ || !data_)
     return ERR_UNEXPECTED;
+  data_transferred_ = true;
 
   std::string data(buf->data(), buf_len);
   MockWriteResult write_result = data_->OnWrite(data);
@@ -1447,7 +1449,10 @@ NetworkChangeNotifier::NetworkHandle MockUDPClientSocket::GetBoundNetwork()
   return network_;
 }
 
-void MockUDPClientSocket::ApplySocketTag(const SocketTag& tag) {}
+void MockUDPClientSocket::ApplySocketTag(const SocketTag& tag) {
+  tagged_before_data_transferred_ &= !data_transferred_ || tag == tag_;
+  tag_ = tag;
+}
 
 void MockUDPClientSocket::OnReadComplete(const MockRead& data) {
   if (!data_)
@@ -1912,8 +1917,21 @@ MockTaggingClientSocketFactory::CreateTransportClientSocket(
   std::unique_ptr<MockTaggingStreamSocket> socket(new MockTaggingStreamSocket(
       MockClientSocketFactory::CreateTransportClientSocket(
           addresses, std::move(socket_performance_watcher), net_log, source)));
-  socket_ = socket.get();
+  tcp_socket_ = socket.get();
   return std::move(socket);
+}
+
+std::unique_ptr<DatagramClientSocket>
+MockTaggingClientSocketFactory::CreateDatagramClientSocket(
+    DatagramSocket::BindType bind_type,
+    const RandIntCallback& rand_int_cb,
+    NetLog* net_log,
+    const NetLogSource& source) {
+  std::unique_ptr<DatagramClientSocket> socket(
+      MockClientSocketFactory::CreateDatagramClientSocket(
+          bind_type, rand_int_cb, net_log, source));
+  udp_socket_ = static_cast<MockUDPClientSocket*>(socket.get());
+  return socket;
 }
 
 const char kSOCKS4OkRequestLocalHostPort80[] = {0x04, 0x01, 0x00, 0x50, 127,

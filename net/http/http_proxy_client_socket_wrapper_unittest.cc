@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <memory>
 
+#include "build/build_config.h"
 #include "net/cert/do_nothing_ct_verifier.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
@@ -202,7 +203,7 @@ class HttpProxyClientSocketWrapperTest
   NetLogWithSource net_log_;
   MockHostResolver host_resolver_;
   scoped_refptr<SSLConfigService> ssl_config_service_;
-  MockClientSocketFactory socket_factory_;
+  MockTaggingClientSocketFactory socket_factory_;
   HttpServerPropertiesImpl http_server_properties_;
   std::unique_ptr<MockCertVerifier> cert_verifier_;
   CTPolicyEnforcer ct_policy_enforcer_;
@@ -287,6 +288,60 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxy) {
   EXPECT_TRUE(mock_quic_data_.AllReadDataConsumed());
   EXPECT_TRUE(mock_quic_data_.AllWriteDataConsumed());
 }
+
+// Test that the SocketTag is appropriately applied to the underlying socket
+// for QUIC proxies.
+#if defined(OS_ANDROID)
+TEST_P(HttpProxyClientSocketWrapperTest, QuicProxySocketTag) {
+  Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  mock_quic_data_.AddWrite(ConstructSettingsPacket(1));
+  mock_quic_data_.AddWrite(ConstructConnectRequestPacket(2));
+  mock_quic_data_.AddRead(ConstructServerConnectReplyPacket(1, !kFin));
+  mock_quic_data_.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  mock_quic_data_.AddWrite(
+      ConstructAckAndRstPacket(3, QUIC_STREAM_CANCELLED, 1, 1, 1));
+  mock_quic_data_.AddSocketDataToFactory(&socket_factory_);
+
+  scoped_refptr<TransportSocketParams> transport_params =
+      new TransportSocketParams(
+          proxy_host_port_, false, OnHostResolutionCallback(),
+          TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT);
+
+  scoped_refptr<SSLSocketParams> ssl_params =
+      new SSLSocketParams(transport_params, nullptr, nullptr, proxy_host_port_,
+                          SSLConfig(), privacy_mode_, 0, false);
+  transport_params = nullptr;
+  SocketTag tag(getuid(), 0x87654321);
+
+  client_socket_wrapper_.reset(new HttpProxyClientSocketWrapper(
+      /*group_name=*/std::string(), /*requiest_priority=*/DEFAULT_PRIORITY,
+      /*socket_tag=*/tag,
+      /*respect_limits=*/ClientSocketPool::RespectLimits::DISABLED,
+      /*connect_timeout_duration=*/base::TimeDelta::FromHours(1),
+      /*proxy_negotiation_timeout_duration=*/base::TimeDelta::FromHours(1),
+      /*transport_pool=*/nullptr, /*ssl_pool=*/nullptr,
+      /*transport_params=*/nullptr, ssl_params, quic_version_, kUserAgent,
+      endpoint_host_port_, &http_auth_cache_, http_auth_handler_factory_.get(),
+      /*spdy_session_pool=*/nullptr, quic_stream_factory_.get(),
+      /*is_trusted_proxy=*/false, /*tunnel=*/true, net_log_));
+
+  TestCompletionCallback callback;
+  client_socket_wrapper_->Connect(callback.callback());
+
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+
+  EXPECT_EQ(socket_factory_.GetLastProducedUDPSocket()->tag(), tag);
+  EXPECT_TRUE(socket_factory_.GetLastProducedUDPSocket()
+                  ->tagged_before_data_transferred());
+
+  client_socket_wrapper_.reset();
+  EXPECT_TRUE(mock_quic_data_.AllReadDataConsumed());
+  EXPECT_TRUE(mock_quic_data_.AllWriteDataConsumed());
+}
+#endif
 
 INSTANTIATE_TEST_CASE_P(
     VersionIncludeStreamDependencySequnece,

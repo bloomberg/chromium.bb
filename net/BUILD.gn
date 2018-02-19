@@ -1133,6 +1133,8 @@ component("net") {
       "quic/chromium/quic_proxy_client_socket.h",
       "quic/chromium/quic_server_info.cc",
       "quic/chromium/quic_server_info.h",
+      "quic/chromium/quic_session_key.cc",
+      "quic/chromium/quic_session_key.h",
       "quic/chromium/quic_stream_factory.cc",
       "quic/chromium/quic_stream_factory.h",
       "quic/chromium/quic_utils_chromium.cc",

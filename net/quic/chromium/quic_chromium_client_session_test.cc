@@ -95,7 +95,10 @@ class QuicChromiumClientSessionTest
             new SequencedSocketData(default_read_.get(), 1, nullptr, 0)),
         random_(0),
         helper_(&clock_, &random_),
-        server_id_(kServerHostname, kServerPort, PRIVACY_MODE_DISABLED),
+        session_key_(kServerHostname,
+                     kServerPort,
+                     PRIVACY_MODE_DISABLED,
+                     SocketTag()),
         destination_(kServerHostname, kServerPort),
         client_maker_(version_,
                       0,
@@ -140,7 +143,7 @@ class QuicChromiumClientSessionTest
         connection, std::move(socket),
         /*stream_factory=*/nullptr, &crypto_client_stream_factory_, &clock_,
         &transport_security_state_,
-        base::WrapUnique(static_cast<QuicServerInfo*>(nullptr)), server_id_,
+        base::WrapUnique(static_cast<QuicServerInfo*>(nullptr)), session_key_,
         /*require_confirmation=*/false, /*migrate_session_early*/ false,
         /*migrate_session_on_network_change*/ false,
         /*migrate_session_early_v2*/ false,
@@ -207,7 +210,7 @@ class QuicChromiumClientSessionTest
   TransportSecurityState transport_security_state_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   QuicClientPushPromiseIndex push_promise_index_;
-  QuicServerId server_id_;
+  QuicSessionKey session_key_;
   HostPortPair destination_;
   std::unique_ptr<TestingQuicChromiumClientSession> session_;
   TestServerPushDelegate test_push_delegate_;
@@ -301,7 +304,7 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
   EXPECT_TRUE(handle->IsConnected());
   EXPECT_FALSE(handle->IsCryptoHandshakeConfirmed());
   EXPECT_EQ(version_, handle->GetQuicVersion());
-  EXPECT_EQ(server_id_, handle->server_id());
+  EXPECT_EQ(session_key_.server_id(), handle->server_id());
   EXPECT_EQ(session_net_log.source().type, handle->net_log().source().type);
   EXPECT_EQ(session_net_log.source().id, handle->net_log().source().id);
   EXPECT_EQ(session_net_log.net_log(), handle->net_log().net_log());
@@ -330,7 +333,7 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
   EXPECT_FALSE(handle->IsConnected());
   EXPECT_TRUE(handle->IsCryptoHandshakeConfirmed());
   EXPECT_EQ(version_, handle->GetQuicVersion());
-  EXPECT_EQ(server_id_, handle->server_id());
+  EXPECT_EQ(session_key_.server_id(), handle->server_id());
   EXPECT_EQ(session_net_log.source().type, handle->net_log().source().type);
   EXPECT_EQ(session_net_log.source().id, handle->net_log().source().id);
   EXPECT_EQ(session_net_log.net_log(), handle->net_log().net_log());
@@ -355,7 +358,7 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
   EXPECT_FALSE(handle->IsConnected());
   EXPECT_TRUE(handle->IsCryptoHandshakeConfirmed());
   EXPECT_EQ(version_, handle->GetQuicVersion());
-  EXPECT_EQ(server_id_, handle->server_id());
+  EXPECT_EQ(session_key_.server_id(), handle->server_id());
   EXPECT_EQ(session_net_log.source().type, handle->net_log().source().type);
   EXPECT_EQ(session_net_log.source().id, handle->net_log().source().id);
   EXPECT_EQ(session_net_log.net_log(), handle->net_log().net_log());
@@ -1080,11 +1083,24 @@ TEST_P(QuicChromiumClientSessionTest, CanPool) {
   CompleteCryptoHandshake();
   session_->OnProofVerifyDetailsAvailable(details);
 
-  EXPECT_TRUE(session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED));
-  EXPECT_FALSE(session_->CanPool("www.example.org", PRIVACY_MODE_ENABLED));
-  EXPECT_TRUE(session_->CanPool("mail.example.org", PRIVACY_MODE_DISABLED));
-  EXPECT_TRUE(session_->CanPool("mail.example.com", PRIVACY_MODE_DISABLED));
-  EXPECT_FALSE(session_->CanPool("mail.google.com", PRIVACY_MODE_DISABLED));
+  EXPECT_TRUE(
+      session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED, SocketTag()));
+  EXPECT_FALSE(
+      session_->CanPool("www.example.org", PRIVACY_MODE_ENABLED, SocketTag()));
+#if defined(OS_ANDROID)
+  SocketTag tag1(SocketTag::UNSET_UID, 0x12345678);
+  SocketTag tag2(getuid(), 0x87654321);
+  EXPECT_FALSE(
+      session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED, tag1));
+  EXPECT_FALSE(
+      session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED, tag2));
+#endif
+  EXPECT_TRUE(session_->CanPool("mail.example.org", PRIVACY_MODE_DISABLED,
+                                SocketTag()));
+  EXPECT_TRUE(session_->CanPool("mail.example.com", PRIVACY_MODE_DISABLED,
+                                SocketTag()));
+  EXPECT_FALSE(
+      session_->CanPool("mail.google.com", PRIVACY_MODE_DISABLED, SocketTag()));
 }
 
 TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithTlsChannelId) {
@@ -1111,10 +1127,14 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithTlsChannelId) {
   QuicChromiumClientSessionPeer::SetHostname(session_.get(), "www.example.org");
   session_->OverrideChannelIDSent();
 
-  EXPECT_TRUE(session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED));
-  EXPECT_TRUE(session_->CanPool("mail.example.org", PRIVACY_MODE_DISABLED));
-  EXPECT_FALSE(session_->CanPool("mail.example.com", PRIVACY_MODE_DISABLED));
-  EXPECT_FALSE(session_->CanPool("mail.google.com", PRIVACY_MODE_DISABLED));
+  EXPECT_TRUE(
+      session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED, SocketTag()));
+  EXPECT_TRUE(session_->CanPool("mail.example.org", PRIVACY_MODE_DISABLED,
+                                SocketTag()));
+  EXPECT_FALSE(session_->CanPool("mail.example.com", PRIVACY_MODE_DISABLED,
+                                 SocketTag()));
+  EXPECT_FALSE(
+      session_->CanPool("mail.google.com", PRIVACY_MODE_DISABLED, SocketTag()));
 }
 
 TEST_P(QuicChromiumClientSessionTest, ConnectionNotPooledWithDifferentPin) {
@@ -1147,7 +1167,8 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionNotPooledWithDifferentPin) {
   QuicChromiumClientSessionPeer::SetHostname(session_.get(), "www.example.org");
   session_->OverrideChannelIDSent();
 
-  EXPECT_FALSE(session_->CanPool("mail.example.org", PRIVACY_MODE_DISABLED));
+  EXPECT_FALSE(session_->CanPool("mail.example.org", PRIVACY_MODE_DISABLED,
+                                 SocketTag()));
 }
 
 TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithMatchingPin) {
@@ -1179,7 +1200,8 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithMatchingPin) {
   QuicChromiumClientSessionPeer::SetHostname(session_.get(), "www.example.org");
   session_->OverrideChannelIDSent();
 
-  EXPECT_TRUE(session_->CanPool("mail.example.org", PRIVACY_MODE_DISABLED));
+  EXPECT_TRUE(session_->CanPool("mail.example.org", PRIVACY_MODE_DISABLED,
+                                SocketTag()));
 }
 
 TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
