@@ -84,31 +84,7 @@ template("internal_jumbo_target") {
     invoker_sources = []
   }
 
-  if (invoker_sources != []) {
-    gen_target_dir = get_path_info(invoker_sources[0], "gen_dir")
-    assert(excluded_sources != [] || true)  # Prevent "unused variable".
-
-    # Find the gen_target_dir directory with shortest path. Short paths
-    # are nice in themselves since they mean shorter error messages and
-    # fewer bytes to parse, but the currently deployed version of ninja
-    # also has a limitation where it only allows 32 path components in
-    # Windows.
-    # See https://crbug.com/738186 and
-    # https://github.com/ninja-build/ninja/issues/1161
-    foreach(source_file, invoker_sources) {
-      possibly_better_gen_target_dir = get_path_info(gen_target_dir, "dir")
-      possibly_better_gen_target_dir_2 =
-          get_path_info(possibly_better_gen_target_dir, "dir")
-      alt_gen_target_dir = get_path_info(source_file, "gen_dir")
-      if (alt_gen_target_dir == possibly_better_gen_target_dir ||
-          alt_gen_target_dir == possibly_better_gen_target_dir_2) {
-        gen_target_dir = alt_gen_target_dir
-      }
-    }
-  } else {
-    gen_target_dir = "<will not be used>"  # Will not result in
-                                           # anything used anyway.
-  }
+  gen_target_dir = invoker.target_gen_dir
 
   assert(gen_target_dir != "")  # Prevent "unused variable".
 
