@@ -276,9 +276,9 @@ class AsyncSocket {
 // StaticSocketDataHelper manages a list of reads and writes.
 class StaticSocketDataHelper {
  public:
-  StaticSocketDataHelper(MockRead* reads,
+  StaticSocketDataHelper(const MockRead* reads,
                          size_t reads_count,
-                         MockWrite* writes,
+                         const MockWrite* writes,
                          size_t writes_count);
   ~StaticSocketDataHelper();
 
@@ -312,12 +312,12 @@ class StaticSocketDataHelper {
   // fails if no data is available.
   const MockWrite& PeekRealWrite() const;
 
-  MockRead* reads_;
+  const MockRead* const reads_;
   size_t read_index_;
-  size_t read_count_;
-  MockWrite* writes_;
+  const size_t read_count_;
+  const MockWrite* const writes_;
   size_t write_index_;
-  size_t write_count_;
+  const size_t write_count_;
 
   DISALLOW_COPY_AND_ASSIGN(StaticSocketDataHelper);
 };
@@ -327,9 +327,9 @@ class StaticSocketDataHelper {
 class StaticSocketDataProvider : public SocketDataProvider {
  public:
   StaticSocketDataProvider();
-  StaticSocketDataProvider(MockRead* reads,
+  StaticSocketDataProvider(const MockRead* reads,
                            size_t reads_count,
-                           MockWrite* writes,
+                           const MockWrite* writes,
                            size_t writes_count);
   ~StaticSocketDataProvider() override;
 
@@ -382,18 +382,18 @@ class SequencedSocketData : public SocketDataProvider {
  public:
   // |reads| is the list of MockRead completions.
   // |writes| is the list of MockWrite completions.
-  SequencedSocketData(MockRead* reads,
+  SequencedSocketData(const MockRead* reads,
                       size_t reads_count,
-                      MockWrite* writes,
+                      const MockWrite* writes,
                       size_t writes_count);
 
   // |connect| is the result for the connect phase.
   // |reads| is the list of MockRead completions.
   // |writes| is the list of MockWrite completions.
   SequencedSocketData(const MockConnect& connect,
-                      MockRead* reads,
+                      const MockRead* reads,
                       size_t reads_count,
-                      MockWrite* writes,
+                      const MockWrite* writes,
                       size_t writes_count);
 
   ~SequencedSocketData() override;

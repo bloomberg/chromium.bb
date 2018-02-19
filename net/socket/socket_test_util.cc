@@ -174,17 +174,16 @@ SocketDataProvider::~SocketDataProvider() {
     socket_->OnDataProviderDestroyed();
 }
 
-StaticSocketDataHelper::StaticSocketDataHelper(MockRead* reads,
+StaticSocketDataHelper::StaticSocketDataHelper(const MockRead* reads,
                                                size_t reads_count,
-                                               MockWrite* writes,
+                                               const MockWrite* writes,
                                                size_t writes_count)
     : reads_(reads),
       read_index_(0),
       read_count_(reads_count),
       writes_(writes),
       write_index_(0),
-      write_count_(writes_count) {
-}
+      write_count_(writes_count) {}
 
 StaticSocketDataHelper::~StaticSocketDataHelper() = default;
 
@@ -250,12 +249,11 @@ StaticSocketDataProvider::StaticSocketDataProvider()
     : StaticSocketDataProvider(nullptr, 0, nullptr, 0) {
 }
 
-StaticSocketDataProvider::StaticSocketDataProvider(MockRead* reads,
+StaticSocketDataProvider::StaticSocketDataProvider(const MockRead* reads,
                                                    size_t reads_count,
-                                                   MockWrite* writes,
+                                                   const MockWrite* writes,
                                                    size_t writes_count)
-    : helper_(reads, reads_count, writes, writes_count) {
-}
+    : helper_(reads, reads_count, writes, writes_count) {}
 
 StaticSocketDataProvider::~StaticSocketDataProvider() = default;
 
@@ -317,9 +315,9 @@ SSLSocketDataProvider::SSLSocketDataProvider(
 
 SSLSocketDataProvider::~SSLSocketDataProvider() = default;
 
-SequencedSocketData::SequencedSocketData(MockRead* reads,
+SequencedSocketData::SequencedSocketData(const MockRead* reads,
                                          size_t reads_count,
-                                         MockWrite* writes,
+                                         const MockWrite* writes,
                                          size_t writes_count)
     : helper_(reads, reads_count, writes, writes_count),
       sequence_number_(0),
@@ -395,9 +393,9 @@ SequencedSocketData::SequencedSocketData(MockRead* reads,
 }
 
 SequencedSocketData::SequencedSocketData(const MockConnect& connect,
-                                         MockRead* reads,
+                                         const MockRead* reads,
                                          size_t reads_count,
-                                         MockWrite* writes,
+                                         const MockWrite* writes,
                                          size_t writes_count)
     : SequencedSocketData(reads, reads_count, writes, writes_count) {
   set_connect_data(connect);
