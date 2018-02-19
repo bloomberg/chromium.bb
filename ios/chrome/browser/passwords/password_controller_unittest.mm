@@ -187,14 +187,12 @@ class PasswordControllerTest : public web::WebTestWithWebState {
   // YES on success, NO otherwise.
   BOOL BasicFormFill(NSString* html);
 
-  // Retrieve the current suggestions from suggestionController_ sorted in
-  // alphabetical order according to their value properties.
-  NSArray* GetSortedSuggestionValues() {
+  // Retrieve the current suggestions from suggestionController_.
+  NSArray* GetSuggestionValues() {
     NSMutableArray* suggestion_values = [NSMutableArray array];
     for (FormSuggestion* suggestion in [suggestionController_ suggestions])
       [suggestion_values addObject:suggestion.value];
-    return [suggestion_values
-        sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
+    return [suggestion_values copy];
   }
 
   // Returns an identifier for the |form_number|th form in the page.
@@ -1115,6 +1113,7 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
   EXPECT_NSEQ(@"[]=, onkeyup=false, onchange=false",
               ExecuteJavaScript(kUsernamePasswordVerificationScript));
 
+  NSString* showAll = @"Show All\u2026";
   // clang-format off
   SuggestionTestData test_data[] = {
     {
@@ -1123,16 +1122,16 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
           "evt.initEvent('focus', true, true, window, 1);"
           "username_.dispatchEvent(evt);"),
         @""],
-      @[@"abc", @"user0"],
+      @[@"user0", @"abc", showAll],
       @"[]=, onkeyup=false, onchange=false"
     },
     {
-      "Should not show suggestions when focusing password field",
+      "Should not show password suggestions when focusing password field",
       @[(@"var evt = document.createEvent('Events');"
           "evt.initEvent('focus', true, true, window, 1);"
           "password_.dispatchEvent(evt);"),
         @""],
-      @[],
+      @[showAll],
       @"[]=, onkeyup=false, onchange=false"
     },
     {
@@ -1142,7 +1141,7 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
           "evt.initEvent('focus', true, true, window, 1);"
           "username_.dispatchEvent(evt);"),
         @""],
-      @[@"abc"],
+      @[@"abc", showAll],
       @"ab[]=, onkeyup=false, onchange=false"
     },
     {
@@ -1156,7 +1155,7 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
           "evt.keyCode = 98;"
           "username_.dispatchEvent(evt);"),
         @""],
-      @[@"abc"],
+      @[@"abc", showAll],
       @"ab[]=, onkeyup=true, onchange=false"
     },
     {
@@ -1175,7 +1174,7 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
           "evt.keyCode = 8;"
           "username_.dispatchEvent(evt);"),
         @""],
-      @[@"abc", @"user0"],
+      @[@"user0", @"abc", showAll],
       @"[]=, onkeyup=true, onchange=false"
     },
   };
@@ -1198,7 +1197,7 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
       WaitForBackgroundTasks();
     }
 
-    EXPECT_NSEQ(data.expected_suggestions, GetSortedSuggestionValues());
+    EXPECT_NSEQ(data.expected_suggestions, GetSuggestionValues());
     EXPECT_NSEQ(data.expected_result,
                 ExecuteJavaScript(kUsernamePasswordVerificationScript));
     // Clear all suggestions.
@@ -1274,7 +1273,7 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
                           webState:web_state()
                  completionHandler:^(NSArray* suggestions,
                                      id<FormSuggestionProvider> provider) {
-                   EXPECT_EQ(1u, [suggestions count]);
+                   EXPECT_EQ(2u, [suggestions count]);
                    block_was_called = YES;
                  }];
     EXPECT_TRUE(block_was_called);

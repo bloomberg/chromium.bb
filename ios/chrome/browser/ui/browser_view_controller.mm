@@ -3274,6 +3274,10 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 }
 
+- (void)displaySavedPasswordList {
+  [self.dispatcher showSavedPasswordsSettingsFromViewController:self];
+}
+
 #pragma mark - CRWWebStateDelegate methods.
 
 - (web::WebState*)webState:(web::WebState*)webState
