@@ -229,10 +229,10 @@ arguments. Notice also that the `"MyPrefix: "` argument is actually a
 `const std::string&`. Like normal function dispatch, `base::Bind`, will coerce
 parameter types if possible.
 
-### Avoiding Copies with Callback Parameters
+### Avoiding Copies With Callback Parameters
 
-A parameter of `base::Bind()` is moved into its internal storage if it is passed as a
-rvalue.
+A parameter of `base::BindRepeating()` or `base::BindOnce()` is moved into its
+internal storage if it is passed as a rvalue.
 
 ```cpp
 std::vector<int> v = {1, 2, 3};
@@ -241,23 +241,37 @@ base::Bind(&Foo, std::move(v));
 ```
 
 ```cpp
-std::vector<int> v = {1, 2, 3};
 // The vector is moved into the internal storage without copy.
 base::Bind(&Foo, std::vector<int>({1, 2, 3}));
 ```
 
-A bound object is moved out to the target function if you use `base::Passed()`
-for the parameter. If you use `base::BindOnce()`, the bound object is moved out
-even without `base::Passed()`.
+Arguments bound with `base::BindOnce()` are always moved, if possible, to the
+target function.
+A function parameter that is passed by value and has a move constructor will be
+moved instead of copied.
+This makes it easy to use move-only types with `base::BindOnce()`.
+
+In contrast, arguments bound with `base::BindRepeating()` are only moved to the
+target function if the argument is bound with `base::Passed()`.
+
+**DANGER**:
+A `base::RepeatingCallback` can only be run once if arguments were bound with
+`base::Passed()`.
+For this reason, avoid `base::Passed()`.
+If you know a callback will only be called once, prefer to refactor code to
+work with `base::OnceCallback` instead.
+
+Avoid using `base::Passed()` with `base::BindOnce()`, as `std::move()` does the
+same thing and is more familiar.
 
 ```cpp
 void Foo(std::unique_ptr<int>) {}
-std::unique_ptr<int> p(new int(42));
+auto p = std::make_unique<int>(42);
 
 // |p| is moved into the internal storage of Bind(), and moved out to |Foo|.
 base::BindOnce(&Foo, std::move(p));
-base::BindRepeating(&Foo, base::Passed(&p));
-base::BindRepeating(&Foo, base::Passed(std::move(p)));
+base::BindRepeating(&Foo, base::Passed(&p)); // Ok, but subtle.
+base::BindRepeating(&Foo, base::Passed(std::move(p))); // Ok, but subtle.
 ```
 
 ## Quick reference for advanced binding
@@ -337,10 +351,9 @@ run (like if you post a task during shutdown).
 
 ```cpp
 void TakesOwnership(std::unique_ptr<Foo> arg) {}
-std::unique_ptr<Foo> f(new Foo);
+auto f = std::make_unique<Foo>();
 // f becomes null during the following call.
-base::RepeatingClosure cb =
-    base::BindRepeating(&TakesOwnership, base::Passed(&f));
+base::OnceClosure cb = base::BindOnce(&TakesOwnership, std::move(f));
 ```
 
 Ownership of the parameter will be with the callback until the callback is run,
