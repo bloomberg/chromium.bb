@@ -3,13 +3,14 @@ Layer tree:
   "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [1200, 900],
+      "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutView #document",
-      "bounds": [1200, 900]
+      "name": "LayoutScrollbarPart (anonymous)",
+      "bounds": [800, 600],
+      "backgroundColor": "#0000FF"
     }
   ]
 }
@@ -19,13 +20,14 @@ Layer list
   "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [1200, 900],
+      "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutView #document",
-      "bounds": [1200, 900]
+      "name": "LayoutScrollbarPart (anonymous)",
+      "bounds": [800, 600],
+      "backgroundColor": "#0000FF"
     }
   ]
 }

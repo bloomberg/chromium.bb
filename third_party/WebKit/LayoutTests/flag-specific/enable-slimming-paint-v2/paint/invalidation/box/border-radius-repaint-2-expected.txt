@@ -21,10 +21,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    },
-    {
       "object": "LayoutBlockFlow BODY",
       "reason": "incremental"
     },

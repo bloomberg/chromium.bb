@@ -14,12 +14,7 @@
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [8, 300, 60, 22],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [485, 0, 15, 200],
-          "reason": "disappeared"
+          "reason": "appeared"
         }
       ]
     }

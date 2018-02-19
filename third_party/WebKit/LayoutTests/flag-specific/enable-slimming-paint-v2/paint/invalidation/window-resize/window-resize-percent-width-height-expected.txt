@@ -74,6 +74,11 @@
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [0, 125, 200, 175],
           "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [0, 125, 200, 175],
+          "reason": "incremental"
         }
       ]
     }
@@ -101,6 +106,11 @@
           "object": "LayoutView #document",
           "rect": [0, 0, 800, 600],
           "reason": "background"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [200, 0, 200, 300],
+          "reason": "incremental"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV",
