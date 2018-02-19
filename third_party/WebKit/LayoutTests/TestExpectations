@@ -1480,7 +1480,10 @@ crbug.com/772048 crbug.com/772060 external/wpt/web-animations/timing-model/anima
 crbug.com/772014 external/wpt/web-animations/animation-model/animation-types/interpolation-per-property.html [ Timeout ]
 crbug.com/772014 external/wpt/web-animations/animation-model/animation-types/addition-per-property.html [ Timeout ]
 crbug.com/771722 external/wpt/web-animations/timing-model/animations/current-time.html [ Failure ]
+crbug.com/772076 external/wpt/web-animations/timing-model/animations/finishing-an-animation.html [ Pass Failure ]
+crbug.com/771722 external/wpt/web-animations/timing-model/animations/the-current-time-of-an-animation.html [ Failure ]
 crbug.com/771722 crbug.com/771751 crbug.com/772060 external/wpt/web-animations/timing-model/animations/set-the-animation-start-time.html [ Failure ]
+crbug.com/771722 crbug.com/771751 crbug.com/772060 external/wpt/web-animations/timing-model/animations/setting-the-start-time-of-an-animation.html [ Failure ]
 
 crbug.com/611658 [ Win7 ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
 crbug.com/611658 [ Win ] fast/text/emphasis-combined-text.html [ Failure ]
