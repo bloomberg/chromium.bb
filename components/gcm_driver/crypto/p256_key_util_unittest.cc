@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/base64.h"
+#include "crypto/ec_private_key.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gcm {
@@ -22,26 +23,24 @@ const size_t kUncompressedPointBytes = 1 + 2 * 32;
 // Precomputed private/public key-pair. Keys are stored on disk, so previously
 // created values must continue to be usable for computing shared secrets.
 const char kBobPrivateKey[] =
-    "MIGwMBsGCiqGSIb3DQEMAQMwDQQIyCB6/yia3wACAQEEgZCp4yoEpn9ZITGy7mt2+zqI1IFgHy"
-    "1RglXKiPdy+Ue5eubZ3Xe/pz/5yQWvysXLaTT+/LeuAoq2gwKK2AINTWglIEMCmcveERa0gZDW"
-    "avhYEYtEynNLVop4bHlii5DcUY1/e9DY5Dxh7b2dYdWI2Ev+529KughVKK8qFu12wn3cSSlfXh"
-    "9Hb8Nh/4yP0jg6k5k=";
+    "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgS8wRbDOWz0lKExvIVQiRKtPAP8"
+    "dgHUHAw5gyOd5d4jKhRANCAARZb49Va5MD/KcWtc0oiWc2e8njBDtQzj0mzcOl1fDSt16Pvu6p"
+    "fTU3MTWnImDNnkPxtXm58K7Uax8jFxA4TeXJ";
 const char kBobPublicKey[] =
-    "BFVSaqVujqpHlzYQwWY8HmW/oXvuSMnGu78CGFNyHQx7qeMRtwNSIdNxkBOowc/tIPcf0X/ydr"
-    "YBINg1pdk8Q/0=";
+    "BFlvj1VrkwP8pxa1zSiJZzZ7yeMEO1DOPSbNw6XV8NK3Xo++7ql9NTcxNaciYM2eQ/G1ebnwrt"
+    "RrHyMXEDhN5ck=";
 
 const char kCarolPrivateKey[] =
-    "MIGwMBsGCiqGSIb3DQEMAQMwDQQIOyIGhczk5TECAQEEgZCQO0tXSd0dCxuKCcmU462i+VNwJz"
-    "J4KT/C32F6K3edQnZ2J750g6nMVtkoK9TF23UcEIVB0Lo7FG4T5WF03wjC4A+5FC/1mYzsWFHO"
-    "6AugLhum5psqX3fq6UmgYoir9dJsI7Rmmn1JH8Gtw6KJHMncPi1lGriLZqzcrw+oULVf6dcnH1"
-    "z9F39GuYob5+sY7ak=";
+    "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgmqy/ighwCm+RBP4Kct3rzaFEJ"
+    "CZhokknro3KYsriurChRANCAAScr5sTsqmlP8SqiI+8fzxVLr1pby2HyG5mC5J0WSpYVIpMNS"
+    "C16k1qcxqOJ4fiv8Ya47FYw/MIS7X1kobK27mP";
 const char kCarolPublicKey[] =
-    "BE6jQ5Gqc4hUVLxF3z/cxKcCYvpGIf/iW1eQWQw0CkvZJl7ys/mobilZqWDZAyNGXWDNSpDTFM"
-    "XeP4aa0NS/bBA=";
+    "BJyvmxOyqaU/xKqIj7x/PFUuvWlvLYfIbmYLknRZKlhUikw1ILXqTWpzGo4nh+K/xhrjsVjD8"
+    "whLtfWShsrbuY8=";
 
 // The shared secret between Bob and Carol.
 const char kBobCarolSharedSecret[] =
-    "epd8m4CulXi284tsHYbGIZJg73xnxoNvlP/qLyqkA30=";
+    "AUNmKkgLLVLf6j/VnA9Eg1CiPSPfQHGirQj79n4vOyw=";
 
 TEST(P256KeyUtilTest, UniqueKeyPairGeneration) {
   // Canary for determining that no key repetitions are found in few iterations.
@@ -52,7 +51,10 @@ TEST(P256KeyUtilTest, UniqueKeyPairGeneration) {
     SCOPED_TRACE(iteration);
 
     std::string private_key, public_key;
-    ASSERT_TRUE(CreateP256KeyPair(&private_key, &public_key));
+    std::unique_ptr<crypto::ECPrivateKey> key(crypto::ECPrivateKey::Create());
+    ASSERT_TRUE(key);
+    ASSERT_TRUE(GetRawPublicKey(*key, &public_key));
+    ASSERT_TRUE(GetRawPrivateKey(*key, &private_key));
 
     EXPECT_NE(private_key, public_key);
     EXPECT_GT(private_key.size(), 0u);
@@ -67,17 +69,24 @@ TEST(P256KeyUtilTest, UniqueKeyPairGeneration) {
 }
 
 TEST(P256KeyUtilTest, SharedSecretCalculation) {
-  std::string bob_private_key, bob_public_key;
-  std::string alice_private_key, alice_public_key;
+  std::unique_ptr<crypto::ECPrivateKey> bob_key =
+      crypto::ECPrivateKey::Create();
+  std::unique_ptr<crypto::ECPrivateKey> alice_key =
+      crypto::ECPrivateKey::Create();
 
-  ASSERT_TRUE(CreateP256KeyPair(&bob_private_key, &bob_public_key));
-  ASSERT_TRUE(CreateP256KeyPair(&alice_private_key, &alice_public_key));
+  std::string alice_public_key, bob_public_key, alice_private_key,
+      bob_private_key;
+  ASSERT_TRUE(GetRawPublicKey(*bob_key, &bob_public_key));
+  ASSERT_TRUE(GetRawPublicKey(*alice_key, &alice_public_key));
+  ASSERT_TRUE(GetRawPrivateKey(*bob_key, &bob_private_key));
+  ASSERT_TRUE(GetRawPrivateKey(*alice_key, &alice_private_key));
+  ASSERT_NE(bob_public_key, alice_public_key);
   ASSERT_NE(bob_private_key, alice_private_key);
 
   std::string bob_shared_secret, alice_shared_secret;
-  ASSERT_TRUE(ComputeSharedP256Secret(bob_private_key, alice_public_key,
-                                      &bob_shared_secret));
-  ASSERT_TRUE(ComputeSharedP256Secret(alice_private_key, bob_public_key,
+  ASSERT_TRUE(
+      ComputeSharedP256Secret(*bob_key, alice_public_key, &bob_shared_secret));
+  ASSERT_TRUE(ComputeSharedP256Secret(*alice_key, bob_public_key,
                                       &alice_shared_secret));
 
   EXPECT_GT(bob_shared_secret.size(), 0u);
@@ -86,43 +95,52 @@ TEST(P256KeyUtilTest, SharedSecretCalculation) {
   std::string unused_shared_secret;
 
   // Empty and too short peer public values should be considered invalid.
-  ASSERT_FALSE(
-      ComputeSharedP256Secret(bob_private_key, "", &unused_shared_secret));
-  ASSERT_FALSE(ComputeSharedP256Secret(
-      bob_private_key, bob_public_key.substr(1), &unused_shared_secret));
+  ASSERT_FALSE(ComputeSharedP256Secret(*bob_key, "", &unused_shared_secret));
+  ASSERT_FALSE(ComputeSharedP256Secret(*bob_key, bob_public_key.substr(1),
+                                       &unused_shared_secret));
 }
 
 TEST(P256KeyUtilTest, SharedSecretWithPreExistingKey) {
   std::string bob_private_key, bob_public_key;
-  std::string alice_private_key, alice_public_key;
-
   ASSERT_TRUE(base::Base64Decode(kBobPrivateKey, &bob_private_key));
   ASSERT_TRUE(base::Base64Decode(kBobPublicKey, &bob_public_key));
 
+  std::vector<uint8_t> bob_private_key_vec(
+    bob_private_key.begin(), bob_private_key.end());
+  std::unique_ptr<crypto::ECPrivateKey> bob_key =
+    crypto::ECPrivateKey::CreateFromPrivateKeyInfo(bob_private_key_vec);
+  ASSERT_TRUE(bob_key);
   // First verify against a newly created, ephemeral key-pair.
-  ASSERT_TRUE(CreateP256KeyPair(&alice_private_key, &alice_public_key));
-
+  std::unique_ptr<crypto::ECPrivateKey> alice_key(
+      crypto::ECPrivateKey::Create());
+  std::string alice_public_key;
+  ASSERT_TRUE(GetRawPublicKey(*alice_key, &alice_public_key));
   std::string bob_shared_secret, alice_shared_secret;
-  ASSERT_TRUE(ComputeSharedP256Secret(bob_private_key, alice_public_key,
+
+  ASSERT_TRUE(ComputeSharedP256Secret(*bob_key, alice_public_key,
                                       &bob_shared_secret));
-  ASSERT_TRUE(ComputeSharedP256Secret(alice_private_key, bob_public_key,
+  ASSERT_TRUE(ComputeSharedP256Secret(*alice_key, bob_public_key,
                                       &alice_shared_secret));
 
   EXPECT_GT(bob_shared_secret.size(), 0u);
   EXPECT_EQ(bob_shared_secret, alice_shared_secret);
 
   std::string carol_private_key, carol_public_key;
-
   ASSERT_TRUE(base::Base64Decode(kCarolPrivateKey, &carol_private_key));
   ASSERT_TRUE(base::Base64Decode(kCarolPublicKey, &carol_public_key));
 
+  std::vector<uint8_t> carol_private_key_vec(
+    carol_private_key.begin(), carol_private_key.end());
+  std::unique_ptr<crypto::ECPrivateKey> carol_key =
+    crypto::ECPrivateKey::CreateFromPrivateKeyInfo(carol_private_key_vec);
+  ASSERT_TRUE(carol_key);
   bob_shared_secret.clear();
   std::string carol_shared_secret;
 
   // Then verify against another stored key-pair and shared secret.
-  ASSERT_TRUE(ComputeSharedP256Secret(bob_private_key, carol_public_key,
+  ASSERT_TRUE(ComputeSharedP256Secret(*bob_key, carol_public_key,
                                       &bob_shared_secret));
-  ASSERT_TRUE(ComputeSharedP256Secret(carol_private_key, bob_public_key,
+  ASSERT_TRUE(ComputeSharedP256Secret(*carol_key, bob_public_key,
                                       &carol_shared_secret));
 
   EXPECT_GT(carol_shared_secret.size(), 0u);

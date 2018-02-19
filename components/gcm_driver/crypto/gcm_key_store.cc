@@ -89,8 +89,8 @@ void GCMKeyStore::GetKeysAfterInitialize(
       if (fallback_to_empty_authorized_entity && inner_iter == inner_map.end())
         inner_iter = inner_map.find(std::string());
       if (inner_iter != inner_map.end()) {
-        const KeyPairAndAuthSecret& key_and_auth = inner_iter->second;
-        std::move(callback).Run(key_and_auth.first, key_and_auth.second);
+        const auto& map_entry = inner_iter->second;
+        std::move(callback).Run(map_entry.first->Copy(), map_entry.second);
         success = true;
       }
     }
@@ -98,7 +98,7 @@ void GCMKeyStore::GetKeysAfterInitialize(
 
   UMA_HISTOGRAM_BOOLEAN("GCM.Crypto.GetKeySuccessRate", success);
   if (!success)
-    std::move(callback).Run(KeyPair(), std::string() /* auth_secret */);
+    std::move(callback).Run(nullptr /* key */, std::string() /* auth_secret */);
 }
 
 void GCMKeyStore::CreateKeys(const std::string& app_id,
@@ -115,7 +115,7 @@ void GCMKeyStore::CreateKeysAfterInitialize(
     KeysCallback callback) {
   DCHECK(state_ == State::INITIALIZED || state_ == State::FAILED);
   if (state_ != State::INITIALIZED) {
-    std::move(callback).Run(KeyPair(), std::string() /* auth_secret */);
+    std::move(callback).Run(nullptr /* key */, std::string() /* auth_secret */);
     return;
   }
 
@@ -132,11 +132,12 @@ void GCMKeyStore::CreateKeysAfterInitialize(
       << "Instance ID tokens cannot share an app_id with a non-InstanceID GCM "
          "registration";
 
-  std::string private_key, public_key;
-  if (!CreateP256KeyPair(&private_key, &public_key)) {
+  std::unique_ptr<crypto::ECPrivateKey> key(crypto::ECPrivateKey::Create());
+
+  if (!key) {
     NOTREACHED() << "Unable to initialize a P-256 key pair.";
 
-    std::move(callback).Run(KeyPair(), std::string() /* auth_secret */);
+    std::move(callback).Run(nullptr /* key */, std::string() /* auth_secret */);
     return;
   }
 
@@ -154,14 +155,14 @@ void GCMKeyStore::CreateKeysAfterInitialize(
     encryption_data.set_authorized_entity(authorized_entity);
   encryption_data.set_auth_secret(auth_secret);
 
-  KeyPair* pair = encryption_data.add_keys();
-  pair->set_type(KeyPair::ECDH_P256);
-  pair->set_private_key(private_key);
-  pair->set_public_key(public_key);
+  std::string private_key;
+  bool success = GetRawPrivateKey(*key, &private_key);
+  DCHECK(success);
+  encryption_data.set_private_key(private_key);
 
   // Write them immediately to our cache, so subsequent calls to
   // {Get/Create/Remove}Keys can see them.
-  key_data_[app_id][authorized_entity] = {*pair, auth_secret};
+  key_data_[app_id][authorized_entity] = {key->Copy(), auth_secret};
 
   using EntryVectorType =
       leveldb_proto::ProtoDatabase<EncryptionData>::KeyEntryVector;
@@ -176,10 +177,10 @@ void GCMKeyStore::CreateKeysAfterInitialize(
   database_->UpdateEntries(
       std::move(entries_to_save), std::move(keys_to_remove),
       base::BindOnce(&GCMKeyStore::DidStoreKeys, weak_factory_.GetWeakPtr(),
-                     *pair, auth_secret, std::move(callback)));
+                     std::move(key), auth_secret, std::move(callback)));
 }
 
-void GCMKeyStore::DidStoreKeys(const KeyPair& pair,
+void GCMKeyStore::DidStoreKeys(std::unique_ptr<crypto::ECPrivateKey> pair,
                                const std::string& auth_secret,
                                KeysCallback callback,
                                bool success) {
@@ -191,11 +192,11 @@ void GCMKeyStore::DidStoreKeys(const KeyPair& pair,
     // Our cache is now inconsistent. Reject requests until restarted.
     state_ = State::FAILED;
 
-    std::move(callback).Run(KeyPair(), std::string() /* auth_secret */);
+    std::move(callback).Run(nullptr /* key */, std::string() /* auth_secret */);
     return;
   }
 
-  std::move(callback).Run(pair, auth_secret);
+  std::move(callback).Run(std::move(pair), auth_secret);
 }
 
 void GCMKeyStore::RemoveKeys(const std::string& app_id,
@@ -317,13 +318,35 @@ void GCMKeyStore::DidLoadKeys(
   }
 
   for (const EncryptionData& entry : *entries) {
-    DCHECK_EQ(1, entry.keys_size());
-
     std::string authorized_entity;
     if (entry.has_authorized_entity())
       authorized_entity = entry.authorized_entity();
-    key_data_[entry.app_id()][authorized_entity] = {entry.keys(0),
-                                                    entry.auth_secret()};
+    std::unique_ptr<crypto::ECPrivateKey> key;
+
+    // TODO(nator): Remove the old format EncryptionData from the database
+    // and update with the new format.
+    // The old format of EncryptionData has a KeyPair in it. Previously
+    // we used to cache the key pair and auth secret in key_data_.
+    // The new code adds the pair {ECPrivateKey, auth_secret} to
+    // key_data_ instead.
+    if (entry.keys_size()) {
+      // Old format of EncryptionData. Create an ECPrivateKey from it.
+      std::string private_key_str = entry.keys(0).private_key();
+      key = crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
+          std::vector<uint8_t>(
+              private_key_str.data(),
+              private_key_str.data() + private_key_str.size()));
+    } else {
+      std::string private_key_str = entry.private_key();
+      if (private_key_str.empty())
+        continue;
+      std::vector<uint8_t> private_key(private_key_str.begin(),
+                                       private_key_str.end());
+      key = crypto::ECPrivateKey::CreateFromPrivateKeyInfo(private_key);
+    }
+
+    key_data_[entry.app_id()][authorized_entity] =
+        std::make_pair(std::move(key), entry.auth_secret());
   }
 
   state_ = State::INITIALIZED;

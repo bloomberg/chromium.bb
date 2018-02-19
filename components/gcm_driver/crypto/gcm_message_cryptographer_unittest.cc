@@ -14,6 +14,7 @@
 #include "components/gcm_driver/crypto/p256_key_util.h"
 #include "crypto/random.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "crypto/ec_private_key.h"
 
 namespace gcm {
 
@@ -50,21 +51,18 @@ static_assert(arraysize(kCommonRecipientPublicKey) == 65,
               "Raw P-256 public keys must be 65 bytes in size.");
 
 const unsigned char kCommonRecipientPrivateKey[] = {
-    0x30, 0x81, 0xB0, 0x30, 0x1B, 0x06, 0x0A, 0x2A, 0x86, 0x48, 0x86, 0xF7,
-    0x0D, 0x01, 0x0C, 0x01, 0x03, 0x30, 0x0D, 0x04, 0x08, 0xF3, 0xD6, 0x39,
-    0xB0, 0xBF, 0xC2, 0xF7, 0xEF, 0x02, 0x01, 0x01, 0x04, 0x81, 0x90, 0x0C,
-    0xBC, 0xC9, 0x5F, 0x95, 0x6C, 0x4C, 0x6A, 0x57, 0xC4, 0x04, 0x47, 0x8F,
-    0x59, 0xFD, 0x35, 0x97, 0x3B, 0xF3, 0x66, 0xA7, 0xEB, 0x8D, 0x44, 0x1E,
-    0xCB, 0x4D, 0xFC, 0xD8, 0x8A, 0x38, 0xCA, 0xA8, 0xD7, 0x93, 0x45, 0x61,
-    0xCC, 0xC7, 0xD8, 0x24, 0x16, 0xBF, 0xFC, 0xF4, 0x20, 0x54, 0x53, 0xB1,
-    0x20, 0x3E, 0x19, 0x62, 0x08, 0xBE, 0x3D, 0x5B, 0x56, 0x60, 0x2D, 0x0C,
-    0xDB, 0x29, 0x4A, 0x0B, 0xC8, 0xE0, 0x58, 0xAA, 0xE0, 0xAE, 0xE5, 0x91,
-    0xEA, 0x6E, 0x40, 0x39, 0xD7, 0x3A, 0x1D, 0x75, 0x1E, 0xFF, 0xE3, 0xA7,
-    0x64, 0x53, 0x50, 0x4A, 0xC1, 0xE9, 0x31, 0x9F, 0x0E, 0xB5, 0x12, 0x3E,
-    0x57, 0xD7, 0x96, 0x5D, 0x69, 0xD5, 0x5A, 0xF8, 0x7C, 0x21, 0xF2, 0x43,
-    0x2C, 0x34, 0x11, 0x8C, 0xB4, 0x37, 0x85, 0xB8, 0xDF, 0xFB, 0x5E, 0x68,
-    0xD5, 0xAA, 0xBC, 0x29, 0x2B, 0xE1, 0x8C, 0xA2, 0x76, 0xAA, 0x59, 0x2D,
-    0x8D, 0xB9, 0xC0, 0x11, 0xC8, 0xA9, 0x01, 0xD6, 0xB3, 0xBD, 0xEE};
+    0x30, 0x81, 0x87, 0x02, 0x01, 0x00, 0x30, 0x13, 0x06, 0x07, 0x2A, 0x86,
+    0x48, 0xCE, 0x3D, 0x02, 0x01, 0x06, 0x08, 0x2A, 0x86, 0x48, 0xCE, 0x3D,
+    0x03, 0x01, 0x07, 0x04, 0x6D, 0x30, 0x6B, 0x02, 0x01, 0x01, 0x04, 0x20,
+    0x16, 0xCC, 0xB4, 0x37, 0xA3, 0x04, 0x0C, 0x28, 0xDE, 0x56, 0x77, 0x27,
+    0x0B, 0xD8, 0x1E, 0x82, 0xD7, 0x7F, 0x07, 0xA6, 0x43, 0x6E, 0x70, 0xDD,
+    0x9C, 0x3C, 0xF1, 0x2C, 0x93, 0xE3, 0x37, 0xD1, 0xA1, 0x44, 0x03, 0x42,
+    0x00, 0x04, 0x35, 0x02, 0x67, 0xB9, 0x10, 0x8F, 0x9B, 0xF1, 0x85, 0xF5,
+    0x1B, 0xD7, 0xA4, 0xEF, 0xBD, 0x28, 0xB3, 0x11, 0x40, 0xBA, 0xD0, 0xEE,
+    0xB2, 0x97, 0xDA, 0x6A, 0x93, 0x2D, 0x26, 0x45, 0xBD, 0xB2, 0x9A, 0x9F,
+    0xB8, 0x19, 0xD8, 0x21, 0x6F, 0x66, 0xE3, 0xF6, 0x0B, 0x74, 0xB2, 0x28,
+    0x38, 0xDC, 0xA7, 0x8A, 0x58, 0x0D, 0x56, 0x47, 0x3E, 0xD0, 0x5B, 0x5C,
+    0x93, 0x4E, 0xB3, 0x89, 0x87, 0x64};
 
 const unsigned char kCommonAuthSecret[] = {0x25, 0xF2, 0xC2, 0xB8, 0x19, 0xD8,
                                            0xFD, 0x35, 0x97, 0xDF, 0xFB, 0x5E,
@@ -234,6 +232,43 @@ const TestVector kDecryptionTestVectorsDraft08[] = {
      4096,
      ""}};
 
+// Computes the shared secret between the sender and the receiver. The sender
+// must have a ASN.1-encoded PKCS #8 EncryptedPrivateKeyInfo block, whereas
+// the receiver must have a public key in uncompressed EC point format.
+bool ComputeSharedP256SecretFromPrivateKeyStr(
+    const base::StringPiece& private_key,
+    const base::StringPiece& peer_public_key,
+    std::string* out_shared_secret) {
+  DCHECK(out_shared_secret);
+  std::unique_ptr<crypto::ECPrivateKey> local_key(
+      crypto::ECPrivateKey::CreateFromPrivateKeyInfo(std::vector<uint8_t>(
+          private_key.data(), private_key.data() + private_key.size())));
+  if (!local_key) {
+    DLOG(ERROR) << "Unable to create the local key";
+    return false;
+  }
+
+  return ComputeSharedP256Secret(*local_key, peer_public_key,
+                                 out_shared_secret);
+}
+
+void ComputeSharedSecret(
+    const base::StringPiece& encoded_sender_private_key,
+    const base::StringPiece& encoded_receiver_public_key,
+    std::string* shared_secret) {
+  std::string sender_private_key, receiver_public_key;
+  ASSERT_TRUE(base::Base64UrlDecode(
+      encoded_sender_private_key,
+      base::Base64UrlDecodePolicy::IGNORE_PADDING, &sender_private_key));
+  ASSERT_TRUE(base::Base64UrlDecode(
+      encoded_receiver_public_key,
+      base::Base64UrlDecodePolicy::IGNORE_PADDING, &receiver_public_key));
+
+  ASSERT_TRUE(ComputeSharedP256SecretFromPrivateKeyStr(
+      sender_private_key, receiver_public_key,
+      shared_secret));
+}
+
 }  // namespace
 
 class GCMMessageCryptographerTestBase : public ::testing::Test {
@@ -249,9 +284,13 @@ class GCMMessageCryptographerTestBase : public ::testing::Test {
     std::string recipient_private_key(
         kCommonRecipientPrivateKey,
         kCommonRecipientPrivateKey + arraysize(kCommonRecipientPrivateKey));
-
+    std::vector<uint8_t> recipient_private_key_vec(
+      recipient_private_key.begin(), recipient_private_key.end());
+    std::unique_ptr<crypto::ECPrivateKey> recipient_key =
+      crypto::ECPrivateKey::CreateFromPrivateKeyInfo(recipient_private_key_vec);
+    ASSERT_TRUE(recipient_key);
     ASSERT_TRUE(ComputeSharedP256Secret(
-        recipient_private_key, sender_public_key_, &ecdh_shared_secret_));
+        *recipient_key, sender_public_key_, &ecdh_shared_secret_));
 
     auth_secret_.assign(kCommonAuthSecret,
                         kCommonAuthSecret + arraysize(kCommonAuthSecret));
@@ -686,27 +725,7 @@ TEST_F(GCMMessageCryptographerTestVectorTest, DecryptionVectorsDraft08) {
   }
 }
 
-class GCMMessageCryptographerReferenceTest : public ::testing::Test {
- protected:
-  // Computes the shared secret between the sender and the receiver. The sender
-  // must have a ASN.1-encoded PKCS #8 EncryptedPrivateKeyInfo block, whereas
-  // the receiver must have a public key in uncompressed EC point format.
-  void ComputeSharedSecret(
-      const base::StringPiece& encoded_sender_private_key,
-      const base::StringPiece& encoded_receiver_public_key,
-      std::string* shared_secret) const {
-    std::string sender_private_key, receiver_public_key;
-    ASSERT_TRUE(base::Base64UrlDecode(
-        encoded_sender_private_key,
-        base::Base64UrlDecodePolicy::IGNORE_PADDING, &sender_private_key));
-    ASSERT_TRUE(base::Base64UrlDecode(
-        encoded_receiver_public_key,
-        base::Base64UrlDecodePolicy::IGNORE_PADDING, &receiver_public_key));
-
-    ASSERT_TRUE(ComputeSharedP256Secret(sender_private_key, receiver_public_key,
-                                        shared_secret));
-  }
-};
+class GCMMessageCryptographerReferenceTest : public ::testing::Test {};
 
 // Reference test included for the Version::DRAFT_03 implementation.
 // https://tools.ietf.org/html/draft-ietf-webpush-encryption-03
@@ -720,20 +739,18 @@ TEST_F(GCMMessageCryptographerReferenceTest, ReferenceDraft03) {
 
   // The keying material used by the sender to encrypt the |kCiphertext|.
   const char kSenderPrivate[] =
-      "MIGxMBwGCiqGSIb3DQEMAQMwDgQIh9aZ3UvuDloCAggABIGQZ-T8CJZe-no4mOTDgX1Gm986"
-      "Gsbe3mjJeABhA4KOmut_qJh5kt_DLqdNShiQr-afk3AdkX-fxLZdrcHiW9aWvBjnMAY65zg5"
-      "oHsuUaoEuG88Ksbku2u193OENWTQTsYaYE2O44qmRfsX773UNVcWXg_omwIbhbgf6tLZUZH_"
-      "dTC3YjzuxjbSP89HPEJ-eBXA";
+      "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgnCScek-QpEjmOOlT-rQ38nZz"
+      "vdPlqa00Zy0i6m2OJvahRANCAATaEQ22_OCRpvIOWeQhcbq0qrF1iddSLX1xFmFSxPOWOwmJ"
+      "A417CBHOGqsWGkNRvAapFwiegz6Q61rXVo_5roB1";
   const char kSenderPublicKeyUncompressed[] =
       "BNoRDbb84JGm8g5Z5CFxurSqsXWJ11ItfXEWYVLE85Y7CYkDjXsIEc4aqxYaQ1G8BqkXCJ6D"
       "PpDrWtdWj_mugHU";
 
   // The keying material used by the recipient to decrypt the |kCiphertext|.
   const char kRecipientPrivate[] =
-      "MIGxMBwGCiqGSIb3DQEMAQMwDgQIqMt4d7uJdt4CAggABIGQeikRHE3CqUeF-uUtJno9BL0g"
-      "mNRyDihZe8P3nF_g-NYVzvdQowsXfYeza6OQOdDuMXxnGgNToVy2jsiWVN6rxCaSMTY622y8"
-      "ajW5voSdqC2PakQ8ZNTPNHarLDMC9NpgGKrUh8hfRLhvb7vtbKIWmx-22rQB5yTYdqzN2m7A"
-      "GHMWRnVk0mMzMsMjZqYFaa2D";
+      "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQg9FWl15_QUQAWDaD3k3l50ZBZ"
+      "QJ4au27F1V4F0uLSD_OhRANCAAQhJAY8y_GdwvqItkO6BObdjafqe6LIxi4Pd6lD9ML6kU9t"
+      "RBFsn9HEA0HGpEDKs-IUCmDkN4pdpzWXLeB4AFEF";
   const char kRecipientPublicKeyUncompressed[] =
       "BCEkBjzL8Z3C-oi2Q7oE5t2Np-p7osjGLg93qUP0wvqRT21EEWyf0cQDQcakQMqz4hQKYOQ3"
       "il2nNZct4HgAUQU";
@@ -800,17 +817,15 @@ TEST_F(GCMMessageCryptographerReferenceTest, ReferenceDraft08) {
 
   // The keying material used by the sender to encrypt the |kCiphertext|.
   const char kSenderPrivate[] =
-      "MIGxMBwGCiqGSIb3DQEMAQMwDgQIScUGT5GSrLoCAggABIGQMr4LCZNVg8uqAo5MSUrI5cCV"
-      "AyQzjG7jdSXooDx_yPXgwMskoNzKhBXIG0AZF7MBimdXFTg_wlv38empWRr_-x4fnQiIBKya"
-      "pt6uBOfYVuE_nnhqudqvSxiiv6hikBvxS2zabgph8-vFPQG10uUv8xkAO6vPdtTABCUzCXQU"
-      "p1QmuP471ZdaNAMuCPmxry-C";
+      "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgyfWPiYE-n46HLnH0KqZOF1fJ"
+      "JU3MYrct3AELtAQ-oRyhRANCAAT-M_SrDepxkU21WCP3O1SUj0EwbZIHMtu5pZpTKGSCIA5Z"
+      "ent7wmC6HCJ5mFgJkuk5cwAvMBKiiujwa7t45ewP";
 
   // The keying material used by the recipient to decrypt the |kCiphertext|.
-  const char kRecipientPrivate[] =
-      "MIGxMBwGCiqGSIb3DQEMAQMwDgQIFMj5PQ6zlvwCAggABIGQfr9ZUZd5kr5Wf3AnThoNI8mr"
-      "V3dkpfaKWc725soIIny8V1l_-8AkfbsisM7VpEmZMWKhjSoCKtq970vb-27xUGUCtxy6Mhij"
-      "r4suUqirpM1noA1oKd0O0ap7_zHG4X6j2iA-4UPC0T4lSIscgmRZJWKQeA_7U0pUfryhTolM"
-      "o175tTl399amT66tOGI2wn3O";
+const char kRecipientPrivate[] =
+      "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgq1dXpw3UpT5VOmu_cf_v6ih0"
+      "7Aems3njxI-JWgLcM96hRANCAAQlcbK-zf3jYFUarx7Q9M02bBHOvlVfiby3sYalMzkXMWjs"
+      "4uvgGFl70wR5uG48j47O1XfKWRh-kkaZDbaCAIsO";
   const char kRecipientPublicKeyUncompressed[] =
       "BCVxsr7N_eNgVRqvHtD0zTZsEc6-VV-JvLexhqUzORcxaOzi6-AYWXvTBHm4bjyPjs7Vd8pZ"
       "GH6SRpkNtoIAiw4";
@@ -844,13 +859,13 @@ TEST_F(GCMMessageCryptographerReferenceTest, ReferenceDraft08) {
 
   // Compute the shared secret based on the sender's public key, which isn't a
   // constant but instead is included in the message's binary header.
-  std::string sender_private_key;
+  std::string recipient_private_key;
   ASSERT_TRUE(base::Base64UrlDecode(kRecipientPrivate,
                                     base::Base64UrlDecodePolicy::IGNORE_PADDING,
-                                    &sender_private_key));
-
-  ASSERT_TRUE(ComputeSharedP256Secret(sender_private_key, sender_public_key,
-                                      &receiver_shared_secret));
+                                    &recipient_private_key));
+  ASSERT_NO_FATAL_FAILURE(ComputeSharedP256SecretFromPrivateKeyStr(
+      recipient_private_key, sender_public_key,
+      &receiver_shared_secret));
 
   ASSERT_GT(sender_shared_secret.size(), 0u);
   ASSERT_EQ(sender_shared_secret, receiver_shared_secret);
