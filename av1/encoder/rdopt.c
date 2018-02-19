@@ -8892,6 +8892,9 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     assert((dv.col & 7) == 0);
     assert((dv.row & 7) == 0);
     memset(&mbmi->palette_mode_info, 0, sizeof(mbmi->palette_mode_info));
+#if CONFIG_FILTER_INTRA
+    mbmi->filter_intra_mode_info.use_filter_intra = 0;
+#endif  // CONFIG_FILTER_INTRA
     mbmi->use_intrabc = 1;
     mbmi->mode = DC_PRED;
     mbmi->uv_mode = UV_DC_PRED;
