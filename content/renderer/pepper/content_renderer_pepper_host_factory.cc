@@ -222,9 +222,9 @@ ContentRendererPepperHostFactory::CreateResourceHost(
         return std::make_unique<PepperFileChooserHost>(host_, instance,
                                                        resource);
       case PpapiHostMsg_VideoCapture_Create::ID: {
-        std::unique_ptr<PepperVideoCaptureHost> host(
+        std::unique_ptr<PepperVideoCaptureHost> video_host(
             new PepperVideoCaptureHost(host_, instance, resource));
-        return host->Init() ? std::move(host) : nullptr;
+        return video_host->Init() ? std::move(video_host) : nullptr;
       }
     }
   }
@@ -235,9 +235,9 @@ ContentRendererPepperHostFactory::CreateResourceHost(
     if (!GetPermissions().HasPermission(ppapi::PERMISSION_PRIVATE) &&
         !CanUseCameraDeviceAPI(host_, instance))
       return nullptr;
-    std::unique_ptr<PepperCameraDeviceHost> host(
+    std::unique_ptr<PepperCameraDeviceHost> camera_host(
         new PepperCameraDeviceHost(host_, instance, resource));
-    return host->Init() ? std::move(host) : nullptr;
+    return camera_host->Init() ? std::move(camera_host) : nullptr;
   }
 
   return nullptr;
