@@ -5,7 +5,7 @@
 #ifndef FakeBlobRegistry_h
 #define FakeBlobRegistry_h
 
-#include "third_party/WebKit/common/blob/blob_registry.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/blob/blob_registry.mojom-blink.h"
 
 namespace blink {
 

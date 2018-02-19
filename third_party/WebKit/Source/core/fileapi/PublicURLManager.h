@@ -33,7 +33,7 @@
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/text/WTFString.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
-#include "third_party/WebKit/common/blob/blob_url_store.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/blob/blob_url_store.mojom-blink.h"
 
 namespace blink {
 

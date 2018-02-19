@@ -33,7 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/wtf/text/WTFString.h"
-#include "third_party/WebKit/common/blob/blob.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/blob/blob.mojom-blink.h"
 
 namespace blink {
 

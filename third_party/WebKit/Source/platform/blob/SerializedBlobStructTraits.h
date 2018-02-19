@@ -9,7 +9,7 @@
 #include "mojo/public/cpp/bindings/string_traits_wtf.h"
 #include "platform/PlatformExport.h"
 #include "platform/blob/BlobData.h"
-#include "third_party/WebKit/common/blob/serialized_blob.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/blob/serialized_blob.mojom-blink.h"
 
 namespace mojo {
 

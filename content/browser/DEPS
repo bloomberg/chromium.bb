@@ -62,11 +62,12 @@ include_rules = [
   "+third_party/cros_system_api",
 
   # No inclusion of WebKit from the browser, other than the ones in
-  # WebKit/public/common, or the ones that are strictly enum/POD,
+  # WebKit/public/{mojom,common}, or the ones that are strictly enum/POD,
   # header-only types, and some selected common code.
   "-third_party/WebKit",
   "+third_party/WebKit/common",  # TODO(kinuko): Remove this.
   "+third_party/WebKit/public/common",
+  "+third_party/WebKit/public/mojom",
   "+third_party/WebKit/public/platform/WebAddressSpace.h",
   "+third_party/WebKit/public/platform/WebContentSecurityPolicy.h",
   "+third_party/WebKit/public/platform/WebCursorInfo.h",

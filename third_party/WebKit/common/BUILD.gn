@@ -24,6 +24,8 @@ jumbo_component("blink_common") {
   defines = [ "BLINK_COMMON_IMPLEMENTATION=1" ]
 
   sources = [
+    # NOTE: Please do not add public headers that need to be referenced from
+    # outside WebKit, add them in public/common instead.
     "client_hints/client_hints.cc",
     "common_export.h",
     "device_memory/approximated_device_memory.cc",
@@ -116,11 +118,9 @@ jumbo_source_set("blink_common_unittests_sources") {
 # are typemapped to a type in Source/core.
 mojom("mojo_platform_bindings") {
   sources = [
+    # NOTE: Consider adding new mojom files under public/mojom, this target
+    # will be deprecated.
     "array_buffer/array_buffer_contents.mojom",
-    "blob/blob.mojom",
-    "blob/blob_registry.mojom",
-    "blob/blob_url_store.mojom",
-    "blob/serialized_blob.mojom",
     "clipboard/clipboard.mojom",
     "color_chooser/color_chooser.mojom",
     "feature_policy/feature_policy.mojom",
@@ -140,6 +140,13 @@ mojom("mojo_platform_bindings") {
     "service_worker/service_worker_registration.mojom",
     "service_worker/service_worker_state.mojom",
     "service_worker/service_worker_stream_handle.mojom",
+
+    # TODO(kinuko): Create a separate BUILD.gn in public/mojom (or have the
+    # target in public/BUILD.gn).
+    "../public/mojom/blob/blob.mojom",
+    "../public/mojom/blob/blob_registry.mojom",
+    "../public/mojom/blob/blob_url_store.mojom",
+    "../public/mojom/blob/serialized_blob.mojom",
   ]
 
   public_deps = [

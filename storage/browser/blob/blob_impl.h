@@ -7,7 +7,7 @@
 
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "storage/browser/storage_browser_export.h"
-#include "third_party/WebKit/common/blob/blob.mojom.h"
+#include "third_party/WebKit/public/mojom/blob/blob.mojom.h"
 
 namespace storage {
 

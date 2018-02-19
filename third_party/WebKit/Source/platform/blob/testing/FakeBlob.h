@@ -5,7 +5,7 @@
 #ifndef FakeBlob_h
 #define FakeBlob_h
 
-#include "third_party/WebKit/common/blob/blob.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/blob/blob.mojom-blink.h"
 
 namespace blink {
 

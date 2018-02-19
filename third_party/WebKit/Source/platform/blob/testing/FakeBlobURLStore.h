@@ -5,7 +5,7 @@
 #ifndef FakeBlobURLStore_h
 #define FakeBlobURLStore_h
 
-#include "third_party/WebKit/common/blob/blob_url_store.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/blob/blob_url_store.mojom-blink.h"
 
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "platform/weborigin/KURLHash.h"
