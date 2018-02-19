@@ -52,6 +52,11 @@ class Node;
 // NodeList cache manipulation in the destructor.
 class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
  public:
+  enum HitTestPointType {
+    kInternal = 1 << 1,
+    kWebExposed = 1 << 2,
+  };
+
   TreeScope* ParentTreeScope() const { return parent_tree_scope_; }
 
   bool IsInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(
@@ -142,7 +147,7 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
   void SetNeedsStyleRecalcForViewportUnits();
 
  private:
-  Element* HitTestPointInternal(Node*) const;
+  Element* HitTestPointInternal(Node*, HitTestPointType) const;
 
   Member<ContainerNode> root_node_;
   Member<Document> document_;
