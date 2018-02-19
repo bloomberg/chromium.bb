@@ -1024,6 +1024,11 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 
   mbmi->ref_frame[0] = INTRA_FRAME;
   mbmi->ref_frame[1] = NONE_FRAME;
+  mbmi->palette_mode_info.palette_size[0] = 0;
+  mbmi->palette_mode_info.palette_size[1] = 0;
+#if CONFIG_FILTER_INTRA
+  mbmi->filter_intra_mode_info.use_filter_intra = 0;
+#endif  // CONFIG_FILTER_INTRA
 
 #if CONFIG_INTRABC
   if (cm->allow_screen_content_tools) {
@@ -1089,12 +1094,9 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 #endif
   }
 
-  mbmi->palette_mode_info.palette_size[0] = 0;
-  mbmi->palette_mode_info.palette_size[1] = 0;
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
     read_palette_mode_info(cm, xd, mi_row, mi_col, r);
 #if CONFIG_FILTER_INTRA
-  mbmi->filter_intra_mode_info.use_filter_intra = 0;
   read_filter_intra_mode_info(xd, r);
 #endif  // CONFIG_FILTER_INTRA
 
