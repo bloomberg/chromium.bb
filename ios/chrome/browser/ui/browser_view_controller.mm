@@ -528,6 +528,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Bridge class to deliver container change notifications to BVC.
   std::unique_ptr<InfoBarContainerDelegateIOS> _infoBarContainerDelegate;
 
+  // TODO(crbug.com/800266): Remove this object.
   // Voice search bar at the bottom of the view overlayed on |_contentArea|
   // when displaying voice search results.
   UIView<VoiceSearchBar>* _voiceSearchBar;
@@ -701,10 +702,15 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     id<ToolbarCoordinating, ToolsMenuPresentationStateProvider>
         toolbarInterface;
 
-// Vertical offset for fullscreen toolbar.
+// Vertical offset for the primary toolbar, used for fullscreen.
 @property(nonatomic, strong) NSLayoutConstraint* primaryToolbarOffsetConstraint;
-// Height constraint for toolbar.
+// Height constraint for the primary toolbar.
 @property(nonatomic, strong) NSLayoutConstraint* primaryToolbarHeightConstraint;
+// Height constraint for the secondary toolbar.
+@property(nonatomic, strong)
+    NSLayoutConstraint* secondaryToolbarHeightConstraint;
+// Current Fullscreen progress for the footers.
+@property(nonatomic, assign) CGFloat footerFullscreenProgress;
 // Y-dimension offset for placement of the header.
 @property(nonatomic, readonly) CGFloat headerOffset;
 // Height of the header view for the tab model's current tab.
@@ -940,6 +946,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
 @synthesize secondaryToolbarCoordinator = _secondaryToolbarCoordinator;
 @synthesize primaryToolbarOffsetConstraint = _primaryToolbarOffsetConstraint;
 @synthesize primaryToolbarHeightConstraint = _primaryToolbarHeightConstraint;
+@synthesize secondaryToolbarHeightConstraint =
+    _secondaryToolbarHeightConstraint;
+@synthesize footerFullscreenProgress = _footerFullscreenProgress;
 @synthesize toolbarInterface = _toolbarInterface;
 @synthesize imageSaver = _imageSaver;
 // DialogPresenterDelegate property
@@ -1609,9 +1618,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   if (IsIPhoneX()) {
     [self setUpViewLayout:NO];
   }
-  // Update the toolbar height to account for the new top inset.
+  // Update the heights of the toolbars to account for the new insets.
   self.primaryToolbarHeightConstraint.constant =
       [self primaryToolbarHeightWithInset];
+  self.secondaryToolbarHeightConstraint.constant =
+      [self secondaryToolbarHeightWithInset];
 }
 
 - (void)viewDidLayoutSubviews {
@@ -1730,6 +1741,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       traitCollectionDidChange:previousTraitCollection];
   // Update voice search bar visibility.
   [self updateVoiceSearchBarVisibilityAnimated:NO];
+  // Change the height of the secondary toolbar to show/hide it.
+  self.secondaryToolbarHeightConstraint.constant =
+      [self secondaryToolbarHeightWithInset];
+  [self updateFootersForFullscreenProgress:self.footerFullscreenProgress];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size
@@ -2046,6 +2061,22 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   return primaryToolbar.intrinsicContentSize.height + unsafeHeight;
 }
 
+// The height of the secondary toolbar with the bottom safe area inset included.
+// Returns 0 if the toolbar should be hidden.
+- (CGFloat)secondaryToolbarHeightWithInset {
+  if (!IsSplitToolbarMode())
+    return 0;
+
+  UIView* secondaryToolbar =
+      self.secondaryToolbarCoordinator.viewController.view;
+  // Add the safe area inset to the toolbar height.
+  CGFloat unsafeHeight = 0.0;
+  if (@available(iOS 11, *)) {
+    unsafeHeight = self.view.safeAreaInsets.bottom;
+  }
+  return secondaryToolbar.intrinsicContentSize.height + unsafeHeight;
+}
+
 - (void)addConstraintsToToolbar {
   NSLayoutYAxisAnchor* topAnchor;
   // On iPad, the toolbar is underneath the tab strip.
@@ -2074,14 +2105,23 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [self.primaryToolbarCoordinator.viewController.view.trailingAnchor
         constraintEqualToAnchor:[self view].trailingAnchor],
   ]];
+
   if (self.secondaryToolbarCoordinator) {
+    // Create a constraint for the height of the toolbar to include the unsafe
+    // area height.
+    UIView* secondaryView =
+        self.secondaryToolbarCoordinator.viewController.view;
+    self.secondaryToolbarHeightConstraint = [secondaryView.heightAnchor
+        constraintEqualToConstant:[self secondaryToolbarHeightWithInset]];
+
     [NSLayoutConstraint activateConstraints:@[
-      [self.secondaryToolbarCoordinator.viewController.view.leadingAnchor
-          constraintEqualToAnchor:[self view].leadingAnchor],
-      [self.secondaryToolbarCoordinator.viewController.view.trailingAnchor
-          constraintEqualToAnchor:[self view].trailingAnchor],
-      [self.secondaryToolbarCoordinator.viewController.view.bottomAnchor
-          constraintEqualToAnchor:[self view].bottomAnchor],
+      self.secondaryToolbarHeightConstraint,
+      [secondaryView.leadingAnchor
+          constraintEqualToAnchor:self.view.leadingAnchor],
+      [secondaryView.trailingAnchor
+          constraintEqualToAnchor:self.view.trailingAnchor],
+      [secondaryView.bottomAnchor
+          constraintEqualToAnchor:self.view.bottomAnchor],
     ]];
   }
   [[self view] layoutIfNeeded];
@@ -2373,7 +2413,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (UIView*)footerView {
-  return _voiceSearchBar;
+  if (IsUIRefreshPhase1Enabled()) {
+    return self.secondaryToolbarCoordinator.viewController.view;
+  } else {
+    return _voiceSearchBar;
+  }
 }
 
 - (CGFloat)headerHeightForTab:(Tab*)tab {
@@ -3000,7 +3044,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (void)ensureVoiceSearchBarCreated {
-  if (_voiceSearchBar)
+  if (_voiceSearchBar || IsUIRefreshPhase1Enabled())
     return;
 
   CGFloat width = CGRectGetWidth([[self view] bounds]);
@@ -3842,16 +3886,23 @@ bubblePresenterForFeature:(const base::Feature&)feature
 // Translates the footer view up and down according to |progress|, where a
 // progress of 1.0 fully shows the footer and a progress of 0.0 fully hides it.
 - (void)updateFootersForFullscreenProgress:(CGFloat)progress {
-  if (![_model currentTab].isVoiceSearchResultsTab)
-    return;
+  self.footerFullscreenProgress = progress;
 
-  UIView* footerView = [self footerView];
-  DCHECK(footerView);
-  CGRect frame = footerView.frame;
-  frame.origin.y =
-      AlignValueToPixel(CGRectGetMaxY(footerView.superview.bounds) -
-                        progress * CGRectGetHeight(frame));
-  footerView.frame = frame;
+  if (IsUIRefreshPhase1Enabled()) {
+    self.secondaryToolbarHeightConstraint.constant =
+        [self secondaryToolbarHeightWithInset] * progress;
+  } else {
+    if (![_model currentTab].isVoiceSearchResultsTab)
+      return;
+
+    UIView* footerView = [self footerView];
+    DCHECK(footerView);
+    CGRect frame = footerView.frame;
+    frame.origin.y =
+        AlignValueToPixel(CGRectGetMaxY(footerView.superview.bounds) -
+                          progress * CGRectGetHeight(frame));
+    footerView.frame = frame;
+  }
 }
 
 // Updates the top padding of the web view proxy.  This either resets the frame
