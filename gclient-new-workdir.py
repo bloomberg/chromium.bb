@@ -77,7 +77,7 @@ def main():
 
   gclient = os.path.join(args.repository, '.gclient')
   if os.path.islink(gclient):
-    gclient = os.realpath(gclient)
+    gclient = os.path.realpath(gclient)
   new_gclient = os.path.join(args.new_workdir, '.gclient')
 
   if try_vol_snapshot(args.repository, args.new_workdir):

@@ -1049,5 +1049,5 @@ def clone_file(repository, new_workdir, link, operation):
     os.makedirs(link_dir)
   src = os.path.join(repository, link)
   if os.path.islink(src):
-    src = os.realpath(src)
+    src = os.path.realpath(src)
   operation(src, os.path.join(new_workdir, link))
