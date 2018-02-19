@@ -1772,7 +1772,7 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
         cm->buffer_pool->frame_bufs[lst_buf_idx].alt_frame_offset;
 
     const int is_lst_overlay = (alt_frame_idx == gld_frame_index);
-    if (!is_lst_overlay) motion_field_projection(cm, LAST_FRAME, ref_stamp, 1);
+    if (!is_lst_overlay) motion_field_projection(cm, LAST_FRAME, ref_stamp, 2);
 
     --ref_stamp;
   }
@@ -1787,9 +1787,6 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
 
   if (alt_frame_index > cur_frame_index && ref_stamp >= 0)
     if (motion_field_projection(cm, ALTREF_FRAME, ref_stamp, 0)) --ref_stamp;
-
-  if (ref_stamp >= 0 && lst_buf_idx >= 0)
-    if (motion_field_projection(cm, LAST_FRAME, ref_stamp, 2)) --ref_stamp;
 
   if (ref_stamp >= 0 && lst2_buf_idx >= 0)
     if (motion_field_projection(cm, LAST2_FRAME, ref_stamp, 2)) --ref_stamp;
