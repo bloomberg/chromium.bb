@@ -4,9 +4,7 @@
 
 #include "chrome/browser/ui/views/sync/dice_bubble_sync_promo_view.h"
 
-#include <memory>
 #include <utility>
-#include <vector>
 
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
@@ -61,6 +59,15 @@ DiceBubbleSyncPromoView::DiceBubbleSyncPromoView(
           profiles::GetPlaceholderAvatarIconResourceID());
     }
     signin_button_ = new DiceSigninButton(accounts[0], account_icon, this);
+
+    // Store account information for submenu.
+    accounts_for_submenu_.assign(accounts.begin() + 1, accounts.end());
+    AccountTrackerService* tracker_service =
+        AccountTrackerServiceFactory::GetForProfile(profile);
+    for (auto account : accounts_for_submenu_) {
+      images_for_submenu_.push_back(
+          tracker_service->GetAccountImage(account.account_id));
+    }
   }
   AddChildView(signin_button_);
 }
@@ -70,18 +77,28 @@ DiceBubbleSyncPromoView::~DiceBubbleSyncPromoView() = default;
 void DiceBubbleSyncPromoView::ButtonPressed(views::Button* sender,
                                             const ui::Event& event) {
   if (sender == signin_button_) {
-    DVLOG(1) << "Sign In button pressed";
-    delegate_->OnEnableSync(signin_button_->account().value_or(AccountInfo()));
+    EnableSync(signin_button_->account());
     return;
   }
 
   if (sender == signin_button_->drop_down_arrow()) {
-    DVLOG(1) << "Drop down arrow pressed";
-    // TODO(msarda): Show the other accounts menu.
+    // Display a submenu listing the GAIA web accounts (except the first one).
+    // Using base::Unretained(this) is safe here because |dice_accounts_menu_|
+    // is owned by |DiceBubbleSyncPromoView|, i.e. |this|.
+    dice_accounts_menu_ = std::make_unique<DiceAccountsMenu>(
+        accounts_for_submenu_, images_for_submenu_,
+        base::BindOnce(&DiceBubbleSyncPromoView::EnableSync,
+                       base::Unretained(this)));
+    dice_accounts_menu_->Show(signin_button_);
     return;
   }
 
   NOTREACHED();
+}
+
+void DiceBubbleSyncPromoView::EnableSync(
+    const base::Optional<AccountInfo>& account) {
+  delegate_->OnEnableSync(signin_button_->account().value_or(AccountInfo()));
 }
 
 const char* DiceBubbleSyncPromoView::GetClassName() const {
