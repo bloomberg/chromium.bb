@@ -218,10 +218,10 @@ void PepperVideoCaptureHost::AllocBuffers(const gfx::Size& resolution,
     // Add the serialized shared memory handle to params. FileDescriptor is
     // treated in special case.
     {
-      EnterResourceNoLock<PPB_Buffer_API> enter(res, true);
-      DCHECK(enter.succeeded());
+      EnterResourceNoLock<PPB_Buffer_API> enter2(res, true);
+      DCHECK(enter2.succeeded());
       base::SharedMemory* shm;
-      int32_t result = enter.object()->GetSharedMemory(&shm);
+      int32_t result = enter2.object()->GetSharedMemory(&shm);
       DCHECK(result == PP_OK);
       params.AppendHandle(ppapi::proxy::SerializedHandle(
           dispatcher->ShareSharedMemoryHandleWithRemote(shm->handle()), size));

@@ -159,10 +159,10 @@ void EnumerateProperties(PP_Var var,
     return;
   ScopedPPVarArray identifier_vars(identifiers->Length());
   for (uint32_t i = 0; i < identifiers->Length(); ++i) {
-    ScopedPPVar var = try_catch.FromV8(identifiers->Get(i));
+    ScopedPPVar identifier = try_catch.FromV8(identifiers->Get(i));
     if (try_catch.HasException())
       return;
-    identifier_vars.Set(i, var);
+    identifier_vars.Set(i, identifier);
   }
 
   size_t size = identifier_vars.size();
