@@ -13,8 +13,32 @@
 // Usage documentation
 // -----------------------------------------------------------------------------
 //
-// See //docs/callback.md for documentation.
+// Overview:
+// base::BindOnce() and base::BindRepeating() are helpers for creating
+// base::OnceCallback and base::RepeatingCallback objects respectively.
 //
+// For a runnable object of n-arity, the base::Bind*() family allows partial
+// application of the first m arguments. The remaining n - m arguments must be
+// passed when invoking the callback with Run().
+//
+//   // The first argument is bound at callback creation; the remaining
+//   // two must be passed when calling Run() on the callback object.
+//   base::OnceCallback<void(int, long)> cb = base::BindOnce(
+//       [](short x, int y, long z) { return x * y * z; }, 42);
+//
+// When binding to a method, the receiver object must also be specified at
+// callback creation time. When Run() is invoked, the method will be invoked on
+// the specified receiver object.
+//
+//   class C : public base::RefCounted<C> { void F(); };
+//   auto instance = base::MakeRefCounted<C>();
+//   auto cb = base::BindOnce(&C::F, instance);
+//   cb.Run();  // Identical to instance->F()
+//
+// base::Bind is currently a type alias for base::BindRepeating(). In the
+// future, we expect to flip this to default to base::BindOnce().
+//
+// See //docs/callback.md for the full documentation.
 //
 // -----------------------------------------------------------------------------
 // Implementation notes
