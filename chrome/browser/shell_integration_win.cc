@@ -235,7 +235,7 @@ DefaultWebClientState GetDefaultWebClientStateFromShellUtilDefaultState(
 }
 
 // A recorder of user actions in the Windows Settings app.
-class DefaultBrowserActionRecorder : public win::SettingsAppMonitor::Delegate {
+class DefaultBrowserActionRecorder : public SettingsAppMonitor::Delegate {
  public:
   // Creates the recorder and the monitor that drives it. |continuation| will be
   // run once the monitor's initialization completes (regardless of success or
@@ -297,7 +297,7 @@ class DefaultBrowserActionRecorder : public win::SettingsAppMonitor::Delegate {
 
   // Monitors user interaction with the Windows Settings app for the sake of
   // reporting user actions.
-  win::SettingsAppMonitor settings_app_monitor_;
+  SettingsAppMonitor settings_app_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultBrowserActionRecorder);
 };

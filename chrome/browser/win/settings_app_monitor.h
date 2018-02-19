@@ -7,16 +7,14 @@
 
 #include <windows.h>
 
-#include "base/callback_forward.h"
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
-#include "base/strings/string_piece.h"
-#include "base/threading/thread.h"
 
-namespace shell_integration {
-namespace win {
+class AutomationController;
 
 // A monitor that watches the Windows Settings app and notifies a delegate of
 // particularly interesting events. An asychronous initialization procedure is
@@ -27,7 +25,7 @@ class SettingsAppMonitor {
  public:
   class Delegate {
    public:
-    virtual ~Delegate() {}
+    virtual ~Delegate() = default;
 
     // Invoked to indicate that initialization is complete. |result| indicates
     // whether or not the operation succeeded and, if not, the reason for
@@ -55,7 +53,7 @@ class SettingsAppMonitor {
   ~SettingsAppMonitor();
 
  private:
-  class Context;
+  class AutomationControllerDelegate;
 
   // Methods for passing actions on to the instance's Delegate.
   void OnInitialized(HRESULT result);
@@ -66,22 +64,17 @@ class SettingsAppMonitor {
   void OnPromoChoiceMade(bool accept_promo);
 
   SEQUENCE_CHECKER(sequence_checker_);
+
   Delegate* delegate_;
 
-  // A thread in the COM MTA in which automation calls are made.
-  base::Thread automation_thread_;
+  // Allows the use of the UI Automation API.
+  std::unique_ptr<AutomationController> automation_controller_;
 
-  // A pointer to the context object that lives on the automation thread.
-  base::WeakPtr<Context> context_;
-
-  // A factory for the weak pointer handed to |context_|, through which
-  // notifications to the delegate are passed.
+  // Weak pointers are passed to the AutomationControllerDelegate so that it can
+  // safely call back the monitor from any thread.
   base::WeakPtrFactory<SettingsAppMonitor> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsAppMonitor);
 };
-
-}  // namespace win
-}  // namespace shell_integration
 
 #endif  // CHROME_BROWSER_WIN_SETTINGS_APP_MONITOR_H_
