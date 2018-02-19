@@ -33,6 +33,7 @@
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/loader/cors/CORS.h"
+#include "platform/loader/cors/CORSErrorString.h"
 #include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceError.h"
@@ -301,11 +302,11 @@ bool ResourceLoader::WillFollowRedirect(
 
         if (!unused_preload) {
           Context().AddErrorConsoleMessage(
-              CORS::GetErrorString(
+              CORS::GetErrorString(CORS::ErrorParameter::Create(
                   *cors_error, redirect_response.Url(), new_url,
                   redirect_response.HttpStatusCode(),
                   redirect_response.HttpHeaderFields(), *source_origin.get(),
-                  resource_->LastResourceRequest().GetRequestContext()),
+                  resource_->LastResourceRequest().GetRequestContext())),
               FetchContext::kJSSource);
         }
 
@@ -475,11 +476,11 @@ CORSStatus ResourceLoader::DetermineCORSStatus(const ResourceResponse& response,
   error_msg.Append("' from origin '");
   error_msg.Append(source_origin->ToString());
   error_msg.Append("' has been blocked by CORS policy: ");
-  error_msg.Append(CORS::GetErrorString(
+  error_msg.Append(CORS::GetErrorString(CORS::ErrorParameter::Create(
       *cors_error, initial_request.Url(), KURL(),
       response_for_access_control.HttpStatusCode(),
       response_for_access_control.HttpHeaderFields(), *source_origin,
-      initial_request.GetRequestContext()));
+      initial_request.GetRequestContext())));
 
   return CORSStatus::kFailed;
 }
