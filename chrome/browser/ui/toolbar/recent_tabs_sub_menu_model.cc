@@ -588,24 +588,24 @@ void RecentTabsSubMenuModel::BuildOtherDevicesTabItem(
 
 void RecentTabsSubMenuModel::AddDeviceFavicon(
     int index_in_menu,
-    sync_sessions::SyncedSession::DeviceType device_type) {
+    sync_pb::SyncEnums::DeviceType device_type) {
 #if defined(OS_MACOSX)
   int favicon_id = -1;
   switch (device_type) {
-    case sync_sessions::SyncedSession::TYPE_PHONE:
+    case sync_pb::SyncEnums::TYPE_PHONE:
       favicon_id = IDR_PHONE_FAVICON;
       break;
 
-    case sync_sessions::SyncedSession::TYPE_TABLET:
+    case sync_pb::SyncEnums::TYPE_TABLET:
       favicon_id = IDR_TABLET_FAVICON;
       break;
 
-    case sync_sessions::SyncedSession::TYPE_CHROMEOS:
-    case sync_sessions::SyncedSession::TYPE_WIN:
-    case sync_sessions::SyncedSession::TYPE_MACOSX:
-    case sync_sessions::SyncedSession::TYPE_LINUX:
-    case sync_sessions::SyncedSession::TYPE_OTHER:
-    case sync_sessions::SyncedSession::TYPE_UNSET:
+    case sync_pb::SyncEnums::TYPE_CROS:
+    case sync_pb::SyncEnums::TYPE_WIN:
+    case sync_pb::SyncEnums::TYPE_MAC:
+    case sync_pb::SyncEnums::TYPE_LINUX:
+    case sync_pb::SyncEnums::TYPE_OTHER:
+    case sync_pb::SyncEnums::TYPE_UNSET:
       favicon_id = IDR_LAPTOP_FAVICON;
       break;
   }
@@ -615,20 +615,20 @@ void RecentTabsSubMenuModel::AddDeviceFavicon(
 #else
   const gfx::VectorIcon* favicon = nullptr;
   switch (device_type) {
-    case sync_sessions::SyncedSession::TYPE_PHONE:
+    case sync_pb::SyncEnums::TYPE_PHONE:
       favicon = &kSmartphoneIcon;
       break;
 
-    case sync_sessions::SyncedSession::TYPE_TABLET:
+    case sync_pb::SyncEnums::TYPE_TABLET:
       favicon = &kTabletIcon;
       break;
 
-    case sync_sessions::SyncedSession::TYPE_CHROMEOS:
-    case sync_sessions::SyncedSession::TYPE_WIN:
-    case sync_sessions::SyncedSession::TYPE_MACOSX:
-    case sync_sessions::SyncedSession::TYPE_LINUX:
-    case sync_sessions::SyncedSession::TYPE_OTHER:
-    case sync_sessions::SyncedSession::TYPE_UNSET:
+    case sync_pb::SyncEnums::TYPE_CROS:
+    case sync_pb::SyncEnums::TYPE_WIN:
+    case sync_pb::SyncEnums::TYPE_MAC:
+    case sync_pb::SyncEnums::TYPE_LINUX:
+    case sync_pb::SyncEnums::TYPE_OTHER:
+    case sync_pb::SyncEnums::TYPE_UNSET:
       favicon = &kLaptopIcon;
       break;
   }

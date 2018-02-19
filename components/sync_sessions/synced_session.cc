@@ -23,7 +23,7 @@ sync_pb::SessionWindow SyncedSessionWindow::ToSessionWindowProto() const {
 }
 
 SyncedSession::SyncedSession()
-    : session_tag("invalid"), device_type(TYPE_UNSET) {}
+    : session_tag("invalid"), device_type(sync_pb::SyncEnums::TYPE_UNSET) {}
 
 SyncedSession::~SyncedSession() {}
 
@@ -34,31 +34,7 @@ sync_pb::SessionHeader SyncedSession::ToSessionHeaderProto() const {
     w->CopyFrom(window_pair.second->ToSessionWindowProto());
   }
   header.set_client_name(session_name);
-  switch (device_type) {
-    case SyncedSession::TYPE_WIN:
-      header.set_device_type(sync_pb::SyncEnums_DeviceType_TYPE_WIN);
-      break;
-    case SyncedSession::TYPE_MACOSX:
-      header.set_device_type(sync_pb::SyncEnums_DeviceType_TYPE_MAC);
-      break;
-    case SyncedSession::TYPE_LINUX:
-      header.set_device_type(sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
-      break;
-    case SyncedSession::TYPE_CHROMEOS:
-      header.set_device_type(sync_pb::SyncEnums_DeviceType_TYPE_CROS);
-      break;
-    case SyncedSession::TYPE_PHONE:
-      header.set_device_type(sync_pb::SyncEnums_DeviceType_TYPE_PHONE);
-      break;
-    case SyncedSession::TYPE_TABLET:
-      header.set_device_type(sync_pb::SyncEnums_DeviceType_TYPE_TABLET);
-      break;
-    case SyncedSession::TYPE_OTHER:
-    // Intentionally fall-through
-    default:
-      header.set_device_type(sync_pb::SyncEnums_DeviceType_TYPE_OTHER);
-      break;
-  }
+  header.set_device_type(device_type);
   return header;
 }
 

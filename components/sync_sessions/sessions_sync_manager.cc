@@ -110,27 +110,6 @@ bool ShouldSyncTabId(SessionID::id_type tab_id) {
   return true;
 }
 
-SyncedSession::DeviceType ProtoDeviceTypeToSyncedSessionDeviceType(
-    sync_pb::SyncEnums::DeviceType proto_device_type) {
-  switch (proto_device_type) {
-    case sync_pb::SyncEnums_DeviceType_TYPE_WIN:
-      return SyncedSession::TYPE_WIN;
-    case sync_pb::SyncEnums_DeviceType_TYPE_MAC:
-      return SyncedSession::TYPE_MACOSX;
-    case sync_pb::SyncEnums_DeviceType_TYPE_LINUX:
-      return SyncedSession::TYPE_LINUX;
-    case sync_pb::SyncEnums_DeviceType_TYPE_CROS:
-      return SyncedSession::TYPE_CHROMEOS;
-    case sync_pb::SyncEnums_DeviceType_TYPE_PHONE:
-      return SyncedSession::TYPE_PHONE;
-    case sync_pb::SyncEnums_DeviceType_TYPE_TABLET:
-      return SyncedSession::TYPE_TABLET;
-    case sync_pb::SyncEnums_DeviceType_TYPE_OTHER:
-      return SyncedSession::TYPE_OTHER;
-  }
-  return SyncedSession::TYPE_OTHER;
-}
-
 bool IsWindowSyncable(const SyncedWindowDelegate& window_delegate) {
   return window_delegate.ShouldSync() && window_delegate.GetTabCount() &&
          window_delegate.HasWindow();
@@ -266,8 +245,7 @@ void SessionsSyncManager::AssociateWindows(
   SyncedSession* current_session =
       session_tracker_.GetSession(current_machine_tag());
   current_session->session_name = current_session_name_;
-  current_session->device_type =
-      ProtoDeviceTypeToSyncedSessionDeviceType(current_device_type_);
+  current_session->device_type = current_device_type_;
   current_session->session_tag = current_machine_tag();
 
   SyncedWindowDelegatesGetter::SyncedWindowDelegateMap windows =
@@ -1056,8 +1034,7 @@ void SessionsSyncManager::PopulateSyncedSessionFromSpecifics(
   if (header_specifics.has_client_name())
     synced_session->session_name = header_specifics.client_name();
   if (header_specifics.has_device_type()) {
-    synced_session->device_type = ProtoDeviceTypeToSyncedSessionDeviceType(
-        header_specifics.device_type());
+    synced_session->device_type = header_specifics.device_type();
   }
   synced_session->modified_time =
       std::max(mtime, synced_session->modified_time);

@@ -160,7 +160,8 @@ bool SyncedSessionTracker::DeleteForeignSession(
   if (iter != synced_session_map_.end()) {
     // An implicitly created session that has children tabs but no header node
     // will have never had the device_type changed from unset.
-    header_existed = iter->second->device_type != SyncedSession::TYPE_UNSET;
+    header_existed =
+        iter->second->device_type != sync_pb::SyncEnums::TYPE_UNSET;
     // SyncedSession's destructor will trigger deletion of windows which will in
     // turn trigger the deletion of tabs. This doesn't affect the convenience
     // maps.

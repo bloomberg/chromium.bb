@@ -225,7 +225,7 @@ TEST_F(SyncedSessionTrackerTest, Complex) {
   SyncedSession* session = GetTracker()->GetSession(kTag);
   SyncedSession* session2 = GetTracker()->GetSession(kTag2);
   SyncedSession* session3 = GetTracker()->GetSession(kTag3);
-  session3->device_type = SyncedSession::TYPE_OTHER;
+  session3->device_type = sync_pb::SyncEnums_DeviceType_TYPE_LINUX;
   ASSERT_EQ(3U, GetTracker()->num_synced_sessions());
 
   ASSERT_TRUE(session);

@@ -160,8 +160,9 @@ const char* ProtoEnumToString(sync_pb::SyncEnums::Action action) {
 }
 
 const char* ProtoEnumToString(sync_pb::SyncEnums::DeviceType device_type) {
-  ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, DeviceType, TYPE_WIN, TYPE_TABLET);
+  ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, DeviceType, TYPE_UNSET, TYPE_TABLET);
   switch (device_type) {
+    ENUM_CASE(sync_pb::SyncEnums, TYPE_UNSET);
     ENUM_CASE(sync_pb::SyncEnums, TYPE_WIN);
     ENUM_CASE(sync_pb::SyncEnums, TYPE_MAC);
     ENUM_CASE(sync_pb::SyncEnums, TYPE_LINUX);
