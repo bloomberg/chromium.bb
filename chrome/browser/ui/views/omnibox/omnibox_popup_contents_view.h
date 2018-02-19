@@ -63,6 +63,7 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  private:
+  friend class OmniboxPopupContentsViewTest;
   class AutocompletePopupWidget;
 
   // Updates |start_margin_| and |end_margin_| and returns the target popup

@@ -265,3 +265,4 @@
 
 # Access aura window shadow layer. http://crbug.com/811859
 -OmniboxPopupContentsViewTest.PopupAlignment/Rounded
+-RoundedOmniboxPopupContentsViewTest.*

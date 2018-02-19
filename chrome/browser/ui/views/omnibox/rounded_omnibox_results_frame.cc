@@ -12,6 +12,8 @@
 #include "ui/views/painter.h"
 
 #if defined(USE_AURA)
+#include "ui/aura/window.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/wm/core/shadow.h"
 #include "ui/wm/core/shadow_controller.h"
 #endif
@@ -29,6 +31,18 @@ gfx::Insets GetContentInsets(views::View* location_bar) {
   return RoundedOmniboxResultsFrame::kLocationBarAlignmentInsets +
          gfx::Insets(location_bar->height(), 0, 0, 0);
 }
+
+#if defined(USE_AURA)
+// A ui::EventTargeter that allows mouse and touch events in the top portion of
+// the Widget to pass through to the omnibox beneath it.
+class ResultsTargeter : public aura::WindowTargeter {
+ public:
+  explicit ResultsTargeter(int top_inset) {
+    const gfx::Insets event_insets(top_inset, 0, 0, 0);
+    SetInsets(event_insets, event_insets);
+  }
+};
+#endif  // USE_AURA
 
 }  // namespace
 
@@ -113,6 +127,9 @@ void RoundedOmniboxResultsFrame::Layout() {
 
 void RoundedOmniboxResultsFrame::AddedToWidget() {
 #if defined(USE_AURA)
+  GetWidget()->GetNativeWindow()->SetEventTargeter(
+      std::make_unique<ResultsTargeter>(content_insets_.top()));
+
   // This works well on ChromeOS. On other platforms, some tricks may be needed
   // to ensure the shadow is not clipped to the parent Widget bounds, since it
   // can peek outside the browser bounds. It is possible to just put the shadow
