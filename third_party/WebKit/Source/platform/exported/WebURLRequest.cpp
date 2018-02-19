@@ -47,8 +47,9 @@ namespace {
 class URLRequestExtraDataContainer : public ResourceRequest::ExtraData {
  public:
   static scoped_refptr<URLRequestExtraDataContainer> Create(
-      WebURLRequest::ExtraData* extra_data) {
-    return base::AdoptRef(new URLRequestExtraDataContainer(extra_data));
+      std::unique_ptr<WebURLRequest::ExtraData> extra_data) {
+    return base::AdoptRef(
+        new URLRequestExtraDataContainer(std::move(extra_data)));
   }
 
   ~URLRequestExtraDataContainer() override = default;
@@ -56,8 +57,9 @@ class URLRequestExtraDataContainer : public ResourceRequest::ExtraData {
   WebURLRequest::ExtraData* GetExtraData() const { return extra_data_.get(); }
 
  private:
-  explicit URLRequestExtraDataContainer(WebURLRequest::ExtraData* extra_data)
-      : extra_data_(WTF::WrapUnique(extra_data)) {}
+  explicit URLRequestExtraDataContainer(
+      std::unique_ptr<WebURLRequest::ExtraData> extra_data)
+      : extra_data_(std::move(extra_data)) {}
 
   std::unique_ptr<WebURLRequest::ExtraData> extra_data_;
 };
@@ -363,11 +365,9 @@ WebURLRequest::ExtraData* WebURLRequest::GetExtraData() const {
   return static_cast<URLRequestExtraDataContainer*>(data.get())->GetExtraData();
 }
 
-void WebURLRequest::SetExtraData(WebURLRequest::ExtraData* extra_data) {
-  if (extra_data != GetExtraData()) {
-    resource_request_->SetExtraData(
-        URLRequestExtraDataContainer::Create(extra_data));
-  }
+void WebURLRequest::SetExtraData(std::unique_ptr<ExtraData> extra_data) {
+  resource_request_->SetExtraData(
+      URLRequestExtraDataContainer::Create(std::move(extra_data)));
 }
 
 ResourceRequest& WebURLRequest::ToMutableResourceRequest() {

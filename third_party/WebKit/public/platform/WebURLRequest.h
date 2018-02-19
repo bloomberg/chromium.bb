@@ -303,7 +303,7 @@ class WebURLRequest {
   // data pointer will cause the underlying resource request to be
   // dissociated from any existing non-null extra data pointer.
   BLINK_PLATFORM_EXPORT ExtraData* GetExtraData() const;
-  BLINK_PLATFORM_EXPORT void SetExtraData(ExtraData*);
+  BLINK_PLATFORM_EXPORT void SetExtraData(std::unique_ptr<ExtraData>);
 
   BLINK_PLATFORM_EXPORT Priority GetPriority() const;
   BLINK_PLATFORM_EXPORT void SetPriority(Priority);

@@ -636,9 +636,9 @@ TEST_F(WebURLLoaderImplTest, BrowserSideNavigationCommit) {
       new StreamOverrideParameters());
   stream_override->stream_url = kStreamURL;
   stream_override->response.mime_type = kMimeType;
-  RequestExtraData* extra_data = new RequestExtraData();
+  auto extra_data = std::make_unique<RequestExtraData>();
   extra_data->set_stream_override(std::move(stream_override));
-  request.SetExtraData(extra_data);
+  request.SetExtraData(std::move(extra_data));
 
   client()->loader()->LoadAsynchronously(request, client());
 

@@ -55,7 +55,7 @@ ServiceWorkerFetchContextImpl::WrapURLLoaderFactory(
 
 void ServiceWorkerFetchContextImpl::WillSendRequest(
     blink::WebURLRequest& request) {
-  RequestExtraData* extra_data = new RequestExtraData();
+  auto extra_data = std::make_unique<RequestExtraData>();
   extra_data->set_service_worker_provider_id(service_worker_provider_id_);
   extra_data->set_originated_from_service_worker(true);
   extra_data->set_initiated_in_secure_context(true);
@@ -63,7 +63,7 @@ void ServiceWorkerFetchContextImpl::WillSendRequest(
     extra_data->set_url_loader_throttles(throttle_provider_->CreateThrottles(
         MSG_ROUTING_NONE, request.Url(), WebURLRequestToResourceType(request)));
   }
-  request.SetExtraData(extra_data);
+  request.SetExtraData(std::move(extra_data));
 }
 
 bool ServiceWorkerFetchContextImpl::IsControlledByServiceWorker() const {

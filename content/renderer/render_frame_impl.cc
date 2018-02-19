@@ -437,11 +437,11 @@ WebURLRequest CreateURLRequestForNavigation(
   request.SetPreviewsState(
       static_cast<WebURLRequest::PreviewsState>(common_params.previews_state));
 
-  RequestExtraData* extra_data = new RequestExtraData();
+  auto extra_data = std::make_unique<RequestExtraData>();
   extra_data->set_stream_override(std::move(stream_override));
   extra_data->set_navigation_initiated_by_renderer(
       request_params.nav_entry_id == 0);
-  request.SetExtraData(extra_data);
+  request.SetExtraData(std::move(extra_data));
 
   // Set the ui timestamp for this navigation. Currently the timestamp here is
   // only non empty when the navigation was triggered by an Android intent. The
@@ -4761,10 +4761,9 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
 
   ResourceType resource_type = WebURLRequestToResourceType(request);
   WebDocument frame_document = frame_->GetDocument();
-  RequestExtraData* extra_data =
-      static_cast<RequestExtraData*>(request.GetExtraData());
-  if (!extra_data)
-    extra_data = new RequestExtraData();
+  if (!request.GetExtraData())
+    request.SetExtraData(std::make_unique<RequestExtraData>());
+  auto* extra_data = static_cast<RequestExtraData*>(request.GetExtraData());
   extra_data->set_visibility_state(VisibilityState());
   extra_data->set_custom_user_agent(custom_user_agent);
   extra_data->set_requested_with(requested_with);
@@ -4806,8 +4805,6 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
         render_thread->url_loader_throttle_provider()->CreateThrottles(
             routing_id_, request.Url(), resource_type));
   }
-
-  request.SetExtraData(extra_data);
 
   if (request.GetPreviewsState() == WebURLRequest::kPreviewsUnspecified) {
     if (is_main_frame_ && !navigation_state->request_committed()) {
@@ -6713,7 +6710,7 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
 
   // Update the transition type of the request for client side redirects.
   if (!info.url_request.GetExtraData())
-    info.url_request.SetExtraData(new RequestExtraData());
+    info.url_request.SetExtraData(std::make_unique<RequestExtraData>());
   if (info.is_client_redirect) {
     RequestExtraData* extra_data =
         static_cast<RequestExtraData*>(info.url_request.GetExtraData());

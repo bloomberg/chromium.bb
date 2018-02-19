@@ -169,7 +169,7 @@ WorkerFetchContextImpl::WrapURLLoaderFactory(
 }
 
 void WorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
-  RequestExtraData* extra_data = new RequestExtraData();
+  auto extra_data = std::make_unique<RequestExtraData>();
   extra_data->set_service_worker_provider_id(service_worker_provider_id_);
   extra_data->set_render_frame_id(parent_frame_id_);
   extra_data->set_initiated_in_secure_context(is_secure_context_);
@@ -177,7 +177,7 @@ void WorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
     extra_data->set_url_loader_throttles(throttle_provider_->CreateThrottles(
         parent_frame_id_, request.Url(), WebURLRequestToResourceType(request)));
   }
-  request.SetExtraData(extra_data);
+  request.SetExtraData(std::move(extra_data));
   request.SetAppCacheHostID(appcache_host_id_);
 
   if (!IsControlledByServiceWorker() &&
