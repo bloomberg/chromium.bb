@@ -10,24 +10,10 @@
 
 namespace ash {
 
-const int kPaddingFromRightEdgeOfScreenBottomAlignment = 7;
-const int kPaddingFromBottomOfScreenBottomAlignment = 7;
-const int kPaddingFromOuterEdgeOfLauncherVerticalAlignment = 8;
-const int kPaddingFromInnerEdgeOfLauncherVerticalAlignment = 9;
-const int kPaddingFromBottomOfScreenVerticalAlignment = 10;
-
 // Padding used to position the system menu relative to the status area.
 const int kBubblePaddingHorizontalBottom = 6;
-const int kBubblePaddingHorizontalSide = 10;
-const int kBubblePaddingVerticalBottom = 3;
-const int kBubblePaddingVerticalSide = 15;
 
 const int kTrayTextFontSizeIncrease = 2;
-
-// Top inset of system tray bubble for bottom anchor alignment.
-const int kTrayBubbleAnchorTopInsetBottomAnchor = 3;
-
-const int kTrayImageItemHorizontalPaddingVerticalAlignment = 1;
 
 // Size of tray items on the primary axis.
 const int kTrayItemSize = 32;
@@ -37,12 +23,9 @@ const int kTrayLabelItemHorizontalPaddingBottomAlignment = 7;
 // Vertical padding between status tray items when the shelf is vertical.
 const int kTrayLabelItemVerticalPaddingVerticalAlignment = 4;
 
-const int kTrayMenuBottomRowPadding = 3;
-const int kTrayMenuBottomRowPaddingBetweenItems = -1;
 const int kTrayMenuWidth = 360;
 
 const int kTrayPopupAutoCloseDelayInSeconds = 2;
-const int kTrayPopupAutoCloseDelayForTextInSeconds = 5;
 const int kTrayPopupPaddingHorizontal = 18;
 const int kTrayPopupPaddingBetweenItems = 10;
 const int kTrayPopupButtonEndMargin = 10;
@@ -67,17 +50,8 @@ const SkColor kPublicAccountUserCardNameColor = SK_ColorBLACK;
 const SkColor kHeaderBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);
 
 const SkColor kHeaderTextColorNormal = SkColorSetARGB(0x7f, 0, 0, 0);
-const SkColor kHeaderTextColorHover = SkColorSetARGB(0xd3, 0, 0, 0);
 
 const SkColor kMobileNotConnectedXIconColor = SkColorSetRGB(0xb2, 0xb2, 0xb2);
-
-const int kTrayPopupMinWidth = 300;
-const int kTrayPopupMaxWidth = 500;
-const int kNotificationIconWidth = 40;
-const int kNotificationButtonWidth = 32;
-const int kTrayNotificationContentsWidth =
-    kTrayPopupMinWidth - (kNotificationIconWidth + kNotificationButtonWidth +
-                          (kTrayPopupPaddingHorizontal / 2) * 3);
 
 const int kTrayIconSize = 16;
 const SkColor kTrayIconColor = SK_ColorWHITE;

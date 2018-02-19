@@ -10,24 +10,11 @@
 
 namespace ash {
 
-extern const int kPaddingFromRightEdgeOfScreenBottomAlignment;
-extern const int kPaddingFromBottomOfScreenBottomAlignment;
-extern const int kPaddingFromOuterEdgeOfLauncherVerticalAlignment;
-extern const int kPaddingFromInnerEdgeOfLauncherVerticalAlignment;
-extern const int kPaddingFromBottomOfScreenVerticalAlignment;
-
 extern const int kBubblePaddingHorizontalBottom;
-extern const int kBubblePaddingHorizontalSide;
-extern const int kBubblePaddingVerticalBottom;
-extern const int kBubblePaddingVerticalSide;
 
 // The size delta between the default font and the font size found in tray
 // items like labels and buttons.
 extern const int kTrayTextFontSizeIncrease;
-
-extern const int kTrayBubbleAnchorTopInsetBottomAnchor;
-
-extern const int kTrayImageItemHorizontalPaddingVerticalAlignment;
 
 ASH_EXPORT extern const int kTrayItemSize;
 
@@ -37,14 +24,10 @@ constexpr int kTrayImageItemPadding = 3;
 extern const int kTrayLabelItemHorizontalPaddingBottomAlignment;
 extern const int kTrayLabelItemVerticalPaddingVerticalAlignment;
 
-extern const int kTrayMenuBottomRowPadding;
-extern const int kTrayMenuBottomRowPaddingBetweenItems;
-
 // The width of the tray menu.
 extern const int kTrayMenuWidth;
 
 extern const int kTrayPopupAutoCloseDelayInSeconds;
-extern const int kTrayPopupAutoCloseDelayForTextInSeconds;
 extern const int kTrayPopupPaddingHorizontal;
 extern const int kTrayPopupPaddingBetweenItems;
 extern const int kTrayPopupButtonEndMargin;
@@ -85,15 +68,8 @@ extern const SkColor kPublicAccountUserCardNameColor;
 extern const SkColor kHeaderBackgroundColor;
 
 extern const SkColor kHeaderTextColorNormal;
-extern const SkColor kHeaderTextColorHover;
 
 extern const SkColor kMobileNotConnectedXIconColor;
-
-extern const int kTrayPopupMinWidth;
-extern const int kTrayPopupMaxWidth;
-extern const int kNotificationIconWidth;
-extern const int kNotificationButtonWidth;
-extern const int kTrayNotificationContentsWidth;
 
 // Extra padding used to adjust hitting region around tray items.
 extern const int kHitRegionPadding;
