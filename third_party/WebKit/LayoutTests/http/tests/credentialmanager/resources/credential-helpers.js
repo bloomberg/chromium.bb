@@ -15,12 +15,12 @@ class MockCredentialManager {
   }
 
   constructCredentialInfo_(type, id, password, name, icon) {
-    return new passwordManager.mojom.CredentialInfo({
+  return new passwordManager.mojom.CredentialInfo({
       type: type,
       id: id,
       name: name,
       icon: new url.mojom.Url({url: icon}),
-      password: password,
+    password: password,
       federation: new url.mojom.Origin(
           {scheme: '', host: '', port: 0, unique: true})
     });
@@ -198,7 +198,7 @@ var ACCEPTABLE_CREDENTIAL = {
     transports: ["usb", "nfc", "ble"]
 };
 
-var GET_ASSERTION_OPTIONS = {
+var GET_CREDENTIAL_OPTIONS = {
     challenge: CHALLENGE,
     rpId: "subdomain.example.test",
     allowCredentials: [ACCEPTABLE_CREDENTIAL]
@@ -213,23 +213,42 @@ var SIGNATURE = new TextEncoder("utf-8").encode("signature");
 
 var TEST_NESTED_CREDENTIAL_ID = "nestedCredentialId";
 
-// Use an invalid algorithm in the parameters for "success" cases
-// so each test will exercise the rpID checks in  both the renderer
-// and browser but return prior to reaching the device layer.
-var CUSTOM_PUBLIC_KEY = 'var customPublicKey = '
-    + '{challenge : new TextEncoder().encode("challenge"), '
+// Use a 3-second timeout in the parameters for "success" cases
+// so that each test will exercise the rpID checks in both the renderer
+// and browser but will time out instead of wait for a device response.
+var CUSTOM_MAKE_CREDENTIAL_OPTIONS = 'var customPublicKey = '
+    + '{challenge: new TextEncoder().encode("challenge"), '
     + 'rp: {id: "subdomain.example.test", name: "Acme"}, '
     + 'user: {id: new TextEncoder().encode("1098237235409872"), '
     + 'name: "acme@example.com", displayName: "Acme", icon:"iconUrl"}, '
-    + 'pubKeyCredParams: [{type: "public-key", alg: 0,},], excludeCredentials:[],};';
+    + 'timeout: 2000, '
+    + 'pubKeyCredParams: [{type: "public-key", alg: -7,},], excludeCredentials:[],};';
 
-var CREATE_CUSTOM_CREDENTIALS = CUSTOM_PUBLIC_KEY
+var CREATE_CUSTOM_CREDENTIALS = CUSTOM_MAKE_CREDENTIAL_OPTIONS
     + "navigator.credentials.create({publicKey : customPublicKey})"
     + ".then(c => window.parent.postMessage(c.id, '*'))"
     + ".catch(e => window.parent.postMessage(e.name, '*'));";
 
 var CREATE_CREDENTIALS = "navigator.credentials.create({publicKey : MAKE_CREDENTIAL_OPTIONS})"
     + ".then(c => window.parent.postMessage(c.id, '*'));";
+
+var CUSTOM_GET_CREDENTIAL_OPTIONS = 'var customPublicKey = '
+    + '{challenge: new TextEncoder().encode("challenge"), '
+    + 'rpId: "subdomain.example.test", '
+    + 'timeout: 2000, '
+    + 'allowCredentials: [{type: "public-key", id: new TextEncoder().encode("allowedCredential"), transports: ["usb", "nfc", "ble"]},],};';
+
+var GET_CUSTOM_CREDENTIALS = CUSTOM_GET_CREDENTIAL_OPTIONS
+    + "navigator.credentials.get({publicKey : customPublicKey})"
+    + ".then(c => window.parent.postMessage(c.id, '*'))"
+    + ".catch(e => window.parent.postMessage(e.name, '*'));";
+
+var GET_CREDENTIAL = "navigator.credentials.get({publicKey : GET_CREDENTIAL_OPTIONS})"
+    + ".then(c => window.parent.postMessage(c.id, '*'));";
+
+function EncloseInScriptTag(code) {
+  return "<script>" + code + "</scr" + "ipt>";
+}
 
 // Verifies if |r| is the valid response to credentials.create(publicKey).
 function assertValidMakeCredentialResponse(r) {
@@ -249,7 +268,7 @@ assert_equals(r.id, ID, 'id');
 }
 
 // Verifies if |r| is the valid response to credentials.get(publicKey).
-function assertValidGetAssertionResponse(r) {
+function assertValidGetCredentialResponse(r) {
     assert_equals(r.id, ID, 'id');
     assert_true(r.rawId instanceof ArrayBuffer);
     assert_array_equals(new Uint8Array(r.rawId),

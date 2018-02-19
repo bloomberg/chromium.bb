@@ -22,8 +22,8 @@
 
 namespace {
 // Time to wait for an authenticator to successfully complete an operation.
-constexpr TimeDelta kAdjustedTimeoutLower = TimeDelta::FromMinutes(1);
-constexpr TimeDelta kAdjustedTimeoutUpper = TimeDelta::FromMinutes(2);
+constexpr TimeDelta kAdjustedTimeoutLower = TimeDelta::FromSeconds(1);
+constexpr TimeDelta kAdjustedTimeoutUpper = TimeDelta::FromMinutes(1);
 
 WTF::TimeDelta AdjustTimeout(uint32_t timeout) {
   WTF::TimeDelta adjusted_timeout;
@@ -249,7 +249,7 @@ TypeConverter<PublicKeyCredentialCreationOptionsPtr,
   if (options.hasTimeout()) {
     mojo_options->adjusted_timeout = AdjustTimeout(options.timeout());
   } else {
-    mojo_options->adjusted_timeout = kAdjustedTimeoutLower;
+    mojo_options->adjusted_timeout = kAdjustedTimeoutUpper;
   }
 
   // Steps 8 and 9 of
@@ -312,7 +312,7 @@ TypeConverter<PublicKeyCredentialRequestOptionsPtr,
   if (options.hasTimeout()) {
     mojo_options->adjusted_timeout = AdjustTimeout(options.timeout());
   } else {
-    mojo_options->adjusted_timeout = kAdjustedTimeoutLower;
+    mojo_options->adjusted_timeout = kAdjustedTimeoutUpper;
   }
 
   mojo_options->relying_party_id = options.rpId();
