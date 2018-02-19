@@ -155,18 +155,15 @@ ElementShadowV0::DestinationInsertionPointsFor(const Node* key) const {
 }
 
 void ElementShadowV0::Distribute() {
-  HeapVector<Member<HTMLShadowElement>, 32> shadow_insertion_points;
   DistributionPool pool(element_shadow_->Host());
-
-  ShadowRoot& root = GetShadowRoot();
   HTMLShadowElement* shadow_insertion_point = nullptr;
-  for (const auto& point : root.DescendantInsertionPoints()) {
+
+  for (const auto& point : GetShadowRoot().DescendantInsertionPoints()) {
     if (!point->IsActive())
       continue;
     if (auto* shadow = ToHTMLShadowElementOrNull(*point)) {
       DCHECK(!shadow_insertion_point);
       shadow_insertion_point = shadow;
-      shadow_insertion_points.push_back(shadow_insertion_point);
     } else {
       pool.DistributeTo(point, this);
       if (ElementShadow* shadow =
@@ -178,10 +175,7 @@ void ElementShadowV0::Distribute() {
     }
   }
 
-  for (size_t i = shadow_insertion_points.size(); i > 0; --i) {
-    HTMLShadowElement* shadow_insertion_point = shadow_insertion_points[i - 1];
-    ShadowRoot* root = shadow_insertion_point->ContainingShadowRoot();
-    DCHECK(root);
+  if (shadow_insertion_point) {
     pool.DistributeTo(shadow_insertion_point, this);
     if (ElementShadow* shadow =
             ShadowWhereNodeCanBeDistributedForV0(*shadow_insertion_point))
