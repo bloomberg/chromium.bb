@@ -1466,6 +1466,95 @@ message TpmVersionInfo {
   optional string vendor_specific = 6;
 }
 
+// System state included with some log events.
+message SystemState {
+  // VolumeInfo is reused from existing Chrome reporting.
+  repeated VolumeInfo volume_info = 1;
+}
+
+// A single entry in the push-install log for an app.
+message AppInstallReportLogEvent {
+  // Enumerates the possible event types.
+  enum EventType {
+    // Request received by device
+    SERVER_REQUEST = 0;
+    // Request forwarded to CloudDPC
+    CLOUDDPC_REQUEST = 1;
+    // Request forwarded to CloudDPS
+    CLOUDDPS_REQUEST = 2;
+    // Response received from CloudDPS
+    CLOUDDPS_RESPONSE = 3;
+    // Log line written by Phonesky
+    PHONESKY_LOG = 4;
+    // Install success
+    SUCCESS = 5;
+    // Request canceled
+    CANCELED = 6;
+    // Connectivity state changed
+    CONNECTIVITY_CHANGE = 7;
+    // Session state changed
+    SESSION_STATE_CHANGE = 8;
+  }
+
+  // Enumerates the possible changes in session state.
+  enum SessionStateChangeType {
+    // Session starting
+    LOGIN = 0;
+    // Session ending
+    LOGOUT = 1;
+    // Suspending
+    SUSPEND = 2;
+    // Resuming
+    RESUME = 3;
+  }
+
+  // Timestamp, in milliseconds since epoch. Set for all log
+  // events.
+  optional int64 timestamp = 1;
+
+  // Event type. Set for all log events.
+  optional EventType event_type = 2;
+
+  // System state. Set for event types SERVER_REQUEST,
+  // CLOUDDPS_RESPONSE and SUCCESS.
+  optional SystemState system_state = 3;
+
+  // CloudDPS response. Set for event type CLOUDDPS_RESPONSE.
+  optional int32 clouddps_response = 4;
+
+  // Log line written by Phonesky. Set for event type PHONESKY_LOG.
+  optional string phonesky_log = 5;
+
+  // Network state. Set for SERVER_REQUEST and CONNECTIVITY_CHANGE.
+  optional NetworkState network_state = 6;
+
+  // Type of session state change. Set for SESSION_STATE_CHANGE.
+  optional SessionStateChangeType session_state_change_type = 7;
+}
+
+// Log bucket for an app.
+message AppInstallReport {
+  // Package name of the app.
+  optional string package = 1;
+
+  // Whether the log is incomplete, e.g. due to the log ring buffer overflowing
+  // or disk corruption.
+  optional bool incomplete = 2;
+
+  // Log events for the app.
+  repeated AppInstallReportLogEvent log = 3;
+}
+
+// Push-install logs for all apps.
+message AppInstallReportRequest {
+  // Log buckets for each app.
+  repeated AppInstallReport app_install_report = 1;
+}
+
+// Response from server after receiving a report on the status of app
+// push-installs.
+message AppInstallReportResponse {}
+
 // Request from the DMAgent on the device to the DMServer.  This is
 // container for all requests from device to server.  The overall HTTP
 // request MUST be in the following format:
@@ -1548,6 +1637,7 @@ message TpmVersionInfo {
 //   check_device_license: check_device_license_request
 //   active_directory_user_signin: active_directory_user_signin_request
 //   register_browser: register_browser_request
+//   app_install_report: app_install_report_request
 //
 message DeviceManagementRequest {
   // Register request.
@@ -1625,6 +1715,9 @@ message DeviceManagementRequest {
 
   // A Chrome desktop report request.
   optional ChromeDesktopReportRequest chrome_desktop_report_request = 24;
+
+  // A report on the status of app push-installs.
+  optional AppInstallReportRequest app_install_report_request = 25;
 }
 
 // Response from server to device.
@@ -1751,4 +1844,7 @@ message DeviceManagementResponse {
 
   // Response to a Chrome browser registration request.
   optional RegisterBrowserResponse register_browser_response = 24;
+
+  // Response a report on the status of app push-installs
+  optional AppInstallReportResponse app_install_report_response = 25;
 }
