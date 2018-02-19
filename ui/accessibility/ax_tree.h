@@ -158,6 +158,13 @@ class AX_EXPORT AXTreeDelegate {
 // accessibility APIs on a specific platform.
 class AX_EXPORT AXTree {
  public:
+  typedef std::map<ax::mojom::IntAttribute,
+                   std::map<int32_t, std::set<int32_t>>>
+      IntReverseRelationMap;
+  typedef std::map<ax::mojom::IntListAttribute,
+                   std::map<int32_t, std::set<int32_t>>>
+      IntListReverseRelationMap;
+
   AXTree();
   explicit AXTree(const AXTreeUpdate& initial_state);
   virtual ~AXTree();
@@ -214,6 +221,13 @@ class AX_EXPORT AXTree {
   std::set<int32_t> GetReverseRelations(ax::mojom::IntListAttribute attr,
                                         int32_t dst_id) const;
 
+  // Map from a relation attribute to a map from a target id to source ids.
+  const IntReverseRelationMap& int_reverse_relations() {
+    return int_reverse_relations_;
+  }
+  const IntListReverseRelationMap& intlist_reverse_relations() {
+    return intlist_reverse_relations_;
+  }
   // Return a multi-line indented string representation, for logging.
   std::string ToString() const;
 
@@ -273,12 +287,10 @@ class AX_EXPORT AXTree {
 
   // Map from an int attribute (if IsNodeIdIntAttribute is true) to
   // a reverse mapping from target nodes to source nodes.
-  std::map<ax::mojom::IntAttribute, std::map<int32_t, std::set<int32_t>>>
-      int_reverse_relations_;
+  IntReverseRelationMap int_reverse_relations_;
   // Map from an int list attribute (if IsNodeIdIntListAttribute is true) to
   // a reverse mapping from target nodes to source nodes.
-  std::map<ax::mojom::IntListAttribute, std::map<int32_t, std::set<int32_t>>>
-      intlist_reverse_relations_;
+  IntListReverseRelationMap intlist_reverse_relations_;
 };
 
 }  // namespace ui

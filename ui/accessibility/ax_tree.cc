@@ -464,6 +464,10 @@ bool AXTree::UpdateNode(const AXNodeData& src,
   AXNode* node = GetFromId(src.id);
   if (node) {
     update_state->pending_nodes.erase(node);
+
+    // TODO(accessibility): CallNodeChangeCallbacks should not pass |node|,
+    // since the tree and the node data are not yet in a consistent
+    // state. Possibly only pass id.
     if (update_state->new_nodes.find(node) == update_state->new_nodes.end())
       CallNodeChangeCallbacks(node, src);
     UpdateReverseRelations(node, src);

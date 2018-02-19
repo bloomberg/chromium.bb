@@ -71,6 +71,9 @@ std::string DumpEvents(AXEventGenerator* generator) {
       case AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED:
         event_name = "OTHER_ATTRIBUTE_CHANGED";
         break;
+      case AXEventGenerator::Event::RELATED_NODE_CHANGED:
+        event_name = "RELATED_NODE_CHANGED";
+        break;
       case AXEventGenerator::Event::ROLE_CHANGED:
         event_name = "ROLE_CHANGED";
         break;
@@ -349,7 +352,10 @@ TEST(AXEventGeneratorTest, ActiveDescendantChanged) {
   update.nodes[0].AddIntAttribute(ax::mojom::IntAttribute::kActivedescendantId,
                                   3);
   EXPECT_TRUE(tree.Unserialize(update));
-  EXPECT_EQ("ACTIVE_DESCENDANT_CHANGED on 1", DumpEvents(&event_generator));
+  EXPECT_EQ(
+      "ACTIVE_DESCENDANT_CHANGED on 1, "
+      "RELATED_NODE_CHANGED on 1",
+      DumpEvents(&event_generator));
 }
 
 TEST(AXEventGeneratorTest, CreateAlertAndLiveRegion) {
@@ -625,7 +631,8 @@ TEST(AXEventGeneratorTest, OtherAttributeChanged) {
       "OTHER_ATTRIBUTE_CHANGED on 3, "
       "OTHER_ATTRIBUTE_CHANGED on 4, "
       "OTHER_ATTRIBUTE_CHANGED on 5, "
-      "OTHER_ATTRIBUTE_CHANGED on 6",
+      "OTHER_ATTRIBUTE_CHANGED on 6, "
+      "RELATED_NODE_CHANGED on 6",
       DumpEvents(&event_generator));
 }
 
@@ -697,7 +704,8 @@ TEST(AXEventGeneratorTest, MenuItemSelected) {
   EXPECT_TRUE(tree.Unserialize(update));
   EXPECT_EQ(
       "ACTIVE_DESCENDANT_CHANGED on 1, "
-      "MENU_ITEM_SELECTED on 3",
+      "MENU_ITEM_SELECTED on 3, "
+      "RELATED_NODE_CHANGED on 1",
       DumpEvents(&event_generator));
 }
 
