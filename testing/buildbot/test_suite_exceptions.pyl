@@ -2656,15 +2656,6 @@
       },
     },
   },
-  'notification_helper_unittests': {
-    'remove_from': [
-      # On chromium.win, this unit test requires WinRT, which only exists on Windows 8 or above.
-      'Win 7 Tests x64 (1)',
-      'Win7 (32) Tests',
-      'Win7 Tests (1)',
-      'Win7 Tests (dbg)(1)',
-    ],
-  },
   'printing_unittests': {
     'remove_from': [
       # chromium.chromiumos
