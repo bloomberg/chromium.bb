@@ -13,6 +13,7 @@
     iterable<CSSUnparsedSegment>;
     readonly attribute unsigned long length;
     [RaisesException] getter CSSUnparsedSegment (unsigned long index);
+    [RaisesException] setter CSSUnparsedSegment (unsigned long index, CSSUnparsedSegment val);
 };
 
 typedef (DOMString or CSSVariableReferenceValue) CSSUnparsedSegment;
