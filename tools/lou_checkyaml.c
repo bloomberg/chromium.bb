@@ -255,8 +255,6 @@ read_mode(yaml_parser_t *parser) {
 			mode |= compbrlAtCursor;
 		} else if (!strcmp((const char *)event.data.scalar.value, "dotsIO")) {
 			mode |= dotsIO;
-		} else if (!strcmp((const char *)event.data.scalar.value, "comp8Dots")) {
-			mode |= comp8Dots;
 		} else if (!strcmp((const char *)event.data.scalar.value, "pass1Only")) {
 			mode |= pass1Only;
 		} else if (!strcmp((const char *)event.data.scalar.value, "compbrlLeftCursor")) {
