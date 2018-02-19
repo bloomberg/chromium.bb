@@ -1292,6 +1292,12 @@ crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-horiz-001b.xhtml [ Failure ]
 crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-horiz-003.xhtml [ Failure ]
 crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-horiz-005.xhtml [ Failure ]
+crbug.com/467127 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-writing-mode-010.html [ Failure Pass ]
+crbug.com/467127 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-writing-mode-011.html [ Failure Pass ]
+crbug.com/467127 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-writing-mode-012.html [ Failure Pass ]
+crbug.com/467127 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-writing-mode-013.html [ Failure Pass ]
+crbug.com/467127 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-writing-mode-014.html [ Failure Pass ]
+crbug.com/467127 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-writing-mode-015.html [ Failure Pass ]
 
 crbug.com/654999 [ Win Linux ] fast/forms/color/color-suggestion-picker-appearance-zoom200.html [ Pass Failure ]
 crbug.com/660185 [ Mac ] fast/forms/datalist/input-appearance-range-with-transform.html [ Pass Failure ]
