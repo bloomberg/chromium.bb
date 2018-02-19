@@ -544,12 +544,12 @@ class DeviceStatusCollectorTest : public testing::Test {
   em::DeviceStatusReportRequest device_status_;
   em::SessionStatusReportRequest session_status_;
   bool got_session_status_;
+  TestingPrefServiceSimple local_state_;
   std::unique_ptr<TestingDeviceStatusCollector> status_collector_;
   const policy::DeviceLocalAccount fake_kiosk_device_local_account_;
   const policy::ArcKioskAppBasicInfo fake_arc_kiosk_app_basic_info_;
   const policy::DeviceLocalAccount fake_arc_kiosk_device_local_account_;
   base::ScopedPathOverride user_data_dir_override_;
-  TestingPrefServiceSimple local_state_;
   chromeos::FakeUpdateEngineClient* const update_engine_client_;
   std::unique_ptr<base::RunLoop> run_loop_;
 };
@@ -833,6 +833,78 @@ TEST_F(DeviceStatusCollectorTest, ActivityTimesKeptUntilSubmittedSuccessfully) {
   status_collector_->OnSubmittedSuccessfully();
   GetStatus();
   EXPECT_EQ(ActivePeriodMilliseconds(), GetActiveMilliseconds(device_status_));
+}
+
+TEST_F(DeviceStatusCollectorTest, ActivityNoUser) {
+  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
+                                 ui::IDLE_STATE_ACTIVE};
+  settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceUsers, true);
+
+  status_collector_->Simulate(test_states, 3);
+  GetStatus();
+  EXPECT_EQ(1, device_status_.active_period_size());
+  EXPECT_TRUE(device_status_.active_period(0).user_email().empty());
+}
+
+TEST_F(DeviceStatusCollectorTest, ActivityWithPublicSessionUser) {
+  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
+                                 ui::IDLE_STATE_ACTIVE};
+  settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceUsers, true);
+  const AccountId public_account_id(
+      AccountId::FromUserEmail("public@localhost"));
+  user_manager_->CreatePublicAccountUser(public_account_id);
+
+  status_collector_->Simulate(test_states, 3);
+  GetStatus();
+  EXPECT_EQ(1, device_status_.active_period_size());
+  EXPECT_TRUE(device_status_.active_period(0).user_email().empty());
+}
+
+TEST_F(DeviceStatusCollectorTest, ActivityWithAffiliatedUser) {
+  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
+                                 ui::IDLE_STATE_ACTIVE};
+  settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceUsers, true);
+  const AccountId account_id0(AccountId::FromUserEmail("user0@managed.com"));
+  user_manager_->AddUserWithAffiliation(account_id0, true);
+
+  status_collector_->Simulate(test_states, 3);
+  GetStatus();
+  EXPECT_EQ(1, device_status_.active_period_size());
+  EXPECT_EQ(account_id0.GetUserEmail(),
+            device_status_.active_period(0).user_email());
+  device_status_.clear_active_period();  // Clear the result protobuf.
+
+  settings_helper_.SetBoolean(chromeos::kReportDeviceUsers, false);
+
+  status_collector_->Simulate(test_states, 3);
+  GetStatus();
+  EXPECT_EQ(1, device_status_.active_period_size());
+  EXPECT_TRUE(device_status_.active_period(0).user_email().empty());
+}
+
+TEST_F(DeviceStatusCollectorTest, ActivityWithNotAffiliatedUser) {
+  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
+                                 ui::IDLE_STATE_ACTIVE};
+  settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceUsers, true);
+  const AccountId account_id0(AccountId::FromUserEmail("user0@managed.com"));
+  user_manager_->AddUserWithAffiliation(account_id0, false);
+
+  status_collector_->Simulate(test_states, 3);
+  GetStatus();
+  EXPECT_EQ(1, device_status_.active_period_size());
+  EXPECT_TRUE(device_status_.active_period(0).user_email().empty());
+  device_status_.clear_active_period();  // Clear the result protobuf.
+
+  settings_helper_.SetBoolean(chromeos::kReportDeviceUsers, false);
+
+  status_collector_->Simulate(test_states, 3);
+  GetStatus();
+  EXPECT_EQ(1, device_status_.active_period_size());
+  EXPECT_TRUE(device_status_.active_period(0).user_email().empty());
 }
 
 TEST_F(DeviceStatusCollectorTest, DevSwitchBootMode) {

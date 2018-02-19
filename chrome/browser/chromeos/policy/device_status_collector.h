@@ -41,6 +41,7 @@ namespace user_manager {
 class User;
 }
 
+class PrefChangeRegistrar;
 class PrefRegistrySimple;
 class PrefService;
 class Profile;
@@ -167,7 +168,9 @@ class DeviceStatusCollector {
                                  int min_day_trim_duration,
                                  int64_t max_day_key);
 
-  void AddActivePeriod(base::Time start, base::Time end);
+  void AddActivePeriod(base::Time start,
+                       base::Time end,
+                       const std::string& active_user_email);
 
   // Clears the cached hardware resource usage.
   void ClearCachedResourceUsage();
@@ -217,6 +220,9 @@ class DeviceStatusCollector {
 
   // Callback invoked to update our cpu usage information.
   void ReceiveCPUStatistics(const std::string& statistics);
+
+  // Callback invoked when reporting users pref is changed.
+  void ReportingUsersChanged();
 
   PrefService* const local_state_;
 
@@ -298,6 +304,8 @@ class DeviceStatusCollector {
       os_update_status_subscription_;
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       running_kiosk_app_subscription_;
+
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   // Task runner in the creation thread where responses are sent to.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
