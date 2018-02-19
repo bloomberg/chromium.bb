@@ -5479,11 +5479,6 @@ void Document::SetEncodingData(const DocumentEncodingData& new_data) {
       encoding_data_.Encoding().UsesVisualOrdering();
   if (should_use_visual_ordering != visually_ordered_) {
     visually_ordered_ = should_use_visual_ordering;
-    // FIXME: How is possible to not have a layoutObject here?
-    if (GetLayoutView()) {
-      GetLayoutView()->MutableStyleRef().SetRtlOrdering(
-          visually_ordered_ ? EOrder::kVisual : EOrder::kLogical);
-    }
     SetNeedsStyleRecalc(kSubtreeStyleChange,
                         StyleChangeReasonForTracing::Create(
                             StyleChangeReason::kVisuallyOrdered));
