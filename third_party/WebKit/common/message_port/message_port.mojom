@@ -5,7 +5,7 @@
 module blink.mojom;
 
 import "third_party/WebKit/common/array_buffer/array_buffer_contents.mojom";
-import "third_party/WebKit/common/blob/serialized_blob.mojom";
+import "third_party/WebKit/public/mojom/blob/serialized_blob.mojom";
 import "skia/public/interfaces/bitmap.mojom";
 
 // A MessagePort is represented as a raw mojo message pipe, as such no interface

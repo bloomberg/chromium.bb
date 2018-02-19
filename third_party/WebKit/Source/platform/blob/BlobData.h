@@ -40,8 +40,8 @@
 #include "platform/wtf/ThreadSafeRefCounted.h"
 #include "platform/wtf/ThreadingPrimitives.h"
 #include "platform/wtf/text/WTFString.h"
-#include "third_party/WebKit/common/blob/blob.mojom-blink.h"
-#include "third_party/WebKit/common/blob/blob_registry.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/blob/blob.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/blob/blob_registry.mojom-blink.h"
 
 namespace blink {
 

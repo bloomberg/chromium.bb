@@ -10,7 +10,7 @@
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/storage_browser_export.h"
-#include "third_party/WebKit/common/blob/blob_registry.mojom.h"
+#include "third_party/WebKit/public/mojom/blob/blob_registry.mojom.h"
 
 namespace storage {
 

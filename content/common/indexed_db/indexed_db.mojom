@@ -11,7 +11,7 @@ module indexed_db.mojom;
 import "mojo/common/file_path.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/common/time.mojom";
-import "third_party/WebKit/common/blob/blob.mojom";
+import "third_party/WebKit/public/mojom/blob/blob.mojom";
 import "url/mojom/origin.mojom";
 
 enum CursorDirection {

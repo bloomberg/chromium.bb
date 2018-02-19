@@ -5,7 +5,7 @@
 module content.mojom;
 
 import "mojo/common/time.mojom";
-import "third_party/WebKit/common/blob/blob.mojom";
+import "third_party/WebKit/public/mojom/blob/blob.mojom";
 import "third_party/WebKit/common/service_worker/service_worker_stream_handle.mojom";
 
 [Native]
