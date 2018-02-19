@@ -616,6 +616,13 @@ void ImageResource::OnePartInMultipartReceived(
     const ResourceResponse& response) {
   DCHECK(multipart_parser_);
 
+  if (!GetResponse().IsNull()) {
+    CHECK_EQ(GetResponse().WasFetchedViaServiceWorker(),
+             response.WasFetchedViaServiceWorker());
+    CHECK_EQ(GetResponse().ResponseTypeViaServiceWorker(),
+             response.ResponseTypeViaServiceWorker());
+  }
+
   SetResponse(response);
   if (multipart_parsing_state_ == MultipartParsingState::kWaitingForFirstPart) {
     // We have nothing to do because we don't have any data.
