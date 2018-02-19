@@ -1250,19 +1250,9 @@ Node* Document::importNode(Node* imported_node,
     case kProcessingInstructionNode:
     case kCommentNode:
     case kDocumentTypeNode:
+    case kElementNode:
       return imported_node->Clone(*this, clone_children);
 
-    case kElementNode: {
-      Element* old_element = ToElement(imported_node);
-      // FIXME: The following check might be unnecessary. Is it possible that
-      // oldElement has mismatched prefix/namespace?
-      if (!HasValidNamespaceForElements(old_element->TagQName())) {
-        exception_state.ThrowDOMException(
-            kNamespaceError, "The imported node has an invalid namespace.");
-        return nullptr;
-      }
-      return imported_node->Clone(*this, clone_children);
-    }
     case kAttributeNode:
       // The following code doesn't create an Attr with namespace.  See
       // crbug.com/812105.
