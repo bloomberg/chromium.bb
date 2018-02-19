@@ -25,19 +25,21 @@ namespace notifier {
 
 Login::Delegate::~Delegate() {}
 
-Login::Login(Delegate* delegate,
-             const buzz::XmppClientSettings& user_settings,
-             const scoped_refptr<net::URLRequestContextGetter>&
-                request_context_getter,
-             const ServerList& servers,
-             bool try_ssltcp_first,
-             const std::string& auth_mechanism)
+Login::Login(
+    Delegate* delegate,
+    const buzz::XmppClientSettings& user_settings,
+    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
+    const ServerList& servers,
+    bool try_ssltcp_first,
+    const std::string& auth_mechanism,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : delegate_(delegate),
       login_settings_(user_settings,
                       request_context_getter,
                       servers,
                       try_ssltcp_first,
-                      auth_mechanism) {
+                      auth_mechanism,
+                      traffic_annotation) {
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   // TODO(akalin): Add as DNSObserver once bug 130610 is fixed.
   ResetReconnectState();

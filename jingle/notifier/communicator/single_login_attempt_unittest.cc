@@ -15,6 +15,7 @@
 #include "jingle/notifier/base/fake_base_task.h"
 #include "jingle/notifier/communicator/login_settings.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
@@ -91,7 +92,8 @@ class SingleLoginAttemptTest : public ::testing::Test {
                        ServerInformation(net::HostPortPair("example.com", 100),
                                          SUPPORTS_SSLTCP)),
             false /* try_ssltcp_first */,
-            "auth_mechanism"),
+            "auth_mechanism",
+            TRAFFIC_ANNOTATION_FOR_TESTS),
         attempt_(new SingleLoginAttempt(login_settings_, &fake_delegate_)) {}
 
   void TearDown() override { base::RunLoop().RunUntilIdle(); }

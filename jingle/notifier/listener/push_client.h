@@ -9,6 +9,7 @@
 #include <string>
 
 #include "jingle/notifier/listener/notification_defines.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace notifier {
 
@@ -46,7 +47,9 @@ class PushClient {
   // already connected, the next connection attempt will use the given
   // credentials.
   virtual void UpdateCredentials(
-      const std::string& email, const std::string& token) = 0;
+      const std::string& email,
+      const std::string& token,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) = 0;
 
   // Sends a notification (with no reliability guarantees).
   virtual void SendNotification(const Notification& notification) = 0;

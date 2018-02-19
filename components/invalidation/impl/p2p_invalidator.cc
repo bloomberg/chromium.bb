@@ -17,6 +17,7 @@
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "jingle/notifier/listener/push_client.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace syncer {
 
@@ -202,7 +203,9 @@ void P2PInvalidator::UpdateCredentials(
       notifier::SubscriptionList(1, subscription));
   // If already logged in, the new credentials will take effect on the
   // next reconnection.
-  push_client_->UpdateCredentials(email, token);
+  // TODO(https://crbug.com/656607): Add proper annotation here.
+  push_client_->UpdateCredentials(email, token,
+                                  NO_TRAFFIC_ANNOTATION_BUG_656607);
   logged_in_ = true;
 }
 
