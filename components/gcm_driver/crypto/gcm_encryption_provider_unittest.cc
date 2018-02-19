@@ -54,6 +54,8 @@ const char kInvalidThreeValueCryptoKeyHeader[] =
 
 }  // namespace
 
+using ECPrivateKeyUniquePtr = std::unique_ptr<crypto::ECPrivateKey>;
+
 class GCMEncryptionProviderTest : public ::testing::Test {
  public:
   void SetUp() override {
@@ -82,11 +84,11 @@ class GCMEncryptionProviderTest : public ::testing::Test {
   }
 
   // To be used as a callback for GCMKeyStore::{GetKeys,CreateKeys}.
-  void HandleKeysCallback(KeyPair* pair_out,
+  void HandleKeysCallback(ECPrivateKeyUniquePtr* key_out,
                           std::string* auth_secret_out,
-                          const KeyPair& pair,
+                          ECPrivateKeyUniquePtr key,
                           const std::string& auth_secret) {
-    *pair_out = pair;
+    *key_out = std::move(key);
     *auth_secret_out = auth_secret;
   }
 
@@ -104,26 +106,29 @@ class GCMEncryptionProviderTest : public ::testing::Test {
   }
 
   // Checks that the underlying key store has a key for the |kExampleAppId| +
-  // authorized entity pair if and only if |should_have_key| is true. Must wrap
+  // authorized entity key if and only if |should_have_key| is true. Must wrap
   // with ASSERT/EXPECT_NO_FATAL_FAILURE.
   void CheckHasKey(const std::string& authorized_entity, bool should_have_key) {
-    KeyPair pair;
+    ECPrivateKeyUniquePtr key;
     std::string auth_secret;
     encryption_provider()->key_store_->GetKeys(
         kExampleAppId, authorized_entity,
         false /* fallback_to_empty_authorized_entity */,
-        base::Bind(&GCMEncryptionProviderTest::HandleKeysCallback,
-                   base::Unretained(this), &pair, &auth_secret));
+        base::BindOnce(&GCMEncryptionProviderTest::HandleKeysCallback,
+                       base::Unretained(this), &key, &auth_secret));
 
     base::RunLoop().RunUntilIdle();
 
     if (should_have_key) {
-      ASSERT_GT(pair.public_key().size(), 0u);
-      ASSERT_GT(pair.private_key().size(), 0u);
+      ASSERT_TRUE(key);
+      std::string private_key, public_key;
+      ASSERT_TRUE(GetRawPrivateKey(*key, &private_key));
+      ASSERT_TRUE(GetRawPublicKey(*key, &public_key));
+      ASSERT_GT(public_key.size(), 0u);
+      ASSERT_GT(private_key.size(), 0u);
       ASSERT_GT(auth_secret.size(), 0u);
     } else {
-      ASSERT_EQ(0u, pair.public_key().size());
-      ASSERT_EQ(0u, pair.private_key().size());
+      ASSERT_FALSE(key);
       ASSERT_EQ(0u, auth_secret.size());
     }
   }
@@ -453,33 +458,40 @@ void GCMEncryptionProviderTest::TestEncryptionRoundTrip(
     const std::string& authorized_entity,
     GCMMessageCryptographer::Version version) {
   // Performs a full round-trip of the encryption feature, including getting a
-  // public/private key-pair and performing the cryptographic operations. This
+  // public/private key-key and performing the cryptographic operations. This
   // is more of an integration test than a unit test.
 
-  KeyPair pair, server_pair;
+  ECPrivateKeyUniquePtr key, server_key;
   std::string auth_secret, server_authentication;
 
-  // Retrieve the public/private key-pair immediately from the key store, given
+  // Retrieve the public/private key-key immediately from the key store, given
   // that the GCMEncryptionProvider will only share the public key with users.
-  // Also create a second pair, which will act as the server's keys.
+  // Also create a second key, which will act as the server's keys.
   encryption_provider()->key_store_->CreateKeys(
       app_id, authorized_entity,
-      base::Bind(&GCMEncryptionProviderTest::HandleKeysCallback,
-                 base::Unretained(this), &pair, &auth_secret));
+      base::BindOnce(&GCMEncryptionProviderTest::HandleKeysCallback,
+                     base::Unretained(this), &key, &auth_secret));
 
   encryption_provider()->key_store_->CreateKeys(
       "server-" + app_id, authorized_entity,
-      base::Bind(&GCMEncryptionProviderTest::HandleKeysCallback,
-                 base::Unretained(this), &server_pair, &server_authentication));
+      base::BindOnce(&GCMEncryptionProviderTest::HandleKeysCallback,
+                     base::Unretained(this), &server_key,
+                     &server_authentication));
 
   // Creating the public keys will be done asynchronously.
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_GT(pair.public_key().size(), 0u);
-  ASSERT_GT(server_pair.public_key().size(), 0u);
+  std::string public_key, server_public_key;
+  ASSERT_TRUE(GetRawPublicKey(*key, &public_key));
+  ASSERT_TRUE(GetRawPublicKey(*server_key, &server_public_key));
+  ASSERT_GT(public_key.size(), 0u);
+  ASSERT_GT(server_public_key.size(), 0u);
 
-  ASSERT_GT(pair.private_key().size(), 0u);
-  ASSERT_GT(server_pair.private_key().size(), 0u);
+  std::string private_key, server_private_key;
+  ASSERT_TRUE(GetRawPublicKey(*key, &private_key));
+  ASSERT_TRUE(GetRawPublicKey(*server_key, &server_private_key));
+  ASSERT_GT(private_key.size(), 0u);
+  ASSERT_GT(server_private_key.size(), 0u);
 
   std::string salt;
 
@@ -488,8 +500,7 @@ void GCMEncryptionProviderTest::TestEncryptionRoundTrip(
   crypto::RandBytes(base::WriteInto(&salt, 16 + 1), 16);
 
   std::string shared_secret;
-  ASSERT_TRUE(ComputeSharedP256Secret(
-      pair.private_key(), server_pair.public_key(), &shared_secret));
+  ASSERT_TRUE(ComputeSharedP256Secret(*key, server_public_key, &shared_secret));
 
   IncomingMessage message;
   size_t record_size;
@@ -502,8 +513,8 @@ void GCMEncryptionProviderTest::TestEncryptionRoundTrip(
 
   std::string ciphertext;
   ASSERT_TRUE(cryptographer.Encrypt(
-      pair.public_key(), server_pair.public_key(), shared_secret, auth_secret,
-      salt, kExampleMessage, &record_size, &ciphertext));
+      public_key, server_public_key, shared_secret, auth_secret, salt,
+      kExampleMessage, &record_size, &ciphertext));
 
   switch (version) {
     case GCMMessageCryptographer::Version::DRAFT_03: {
@@ -512,7 +523,7 @@ void GCMEncryptionProviderTest::TestEncryptionRoundTrip(
       // Compile the incoming GCM message, including the required headers.
       base::Base64UrlEncode(salt, base::Base64UrlEncodePolicy::INCLUDE_PADDING,
                             &encoded_salt);
-      base::Base64UrlEncode(server_pair.public_key(),
+      base::Base64UrlEncode(server_public_key,
                             base::Base64UrlEncodePolicy::INCLUDE_PADDING,
                             &encoded_key);
 
@@ -527,11 +538,10 @@ void GCMEncryptionProviderTest::TestEncryptionRoundTrip(
     }
     case GCMMessageCryptographer::Version::DRAFT_08: {
       uint32_t rs = record_size;
-      uint8_t key_length = server_pair.public_key().size();
+      uint8_t key_length = server_public_key.size();
 
       std::vector<char> payload(salt.size() + sizeof(rs) + sizeof(key_length) +
-                                server_pair.public_key().size() +
-                                ciphertext.size());
+                                server_public_key.size() + ciphertext.size());
 
       char* current = &payload.front();
 
@@ -544,9 +554,8 @@ void GCMEncryptionProviderTest::TestEncryptionRoundTrip(
       base::WriteBigEndian(current, key_length);
       current += sizeof(key_length);
 
-      memcpy(current, server_pair.public_key().data(),
-             server_pair.public_key().size());
-      current += server_pair.public_key().size();
+      memcpy(current, server_public_key.data(), server_public_key.size());
+      current += server_public_key.size();
 
       memcpy(current, ciphertext.data(), ciphertext.size());
 

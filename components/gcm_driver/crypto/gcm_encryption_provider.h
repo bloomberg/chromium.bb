@@ -21,12 +21,15 @@ class FilePath;
 class SequencedTaskRunner;
 }
 
+namespace crypto {
+class ECPrivateKey;
+}
+
 namespace gcm {
 
 enum class GCMDecryptionResult;
 class GCMKeyStore;
 struct IncomingMessage;
-class KeyPair;
 
 // Provider that enables the GCM Driver to deal with encryption key management
 // and decryption of incoming messages.
@@ -90,11 +93,11 @@ class GCMEncryptionProvider {
   void DidGetEncryptionInfo(const std::string& app_id,
                             const std::string& authorized_entity,
                             EncryptionInfoCallback callback,
-                            const KeyPair& pair,
+                            std::unique_ptr<crypto::ECPrivateKey> key,
                             const std::string& auth_secret);
 
   void DidCreateEncryptionInfo(EncryptionInfoCallback callback,
-                               const KeyPair& pair,
+                               std::unique_ptr<crypto::ECPrivateKey> key,
                                const std::string& auth_secret);
 
   void DecryptMessageWithKey(const std::string& collapse_key,
@@ -105,7 +108,7 @@ class GCMEncryptionProvider {
                              const std::string& ciphertext,
                              GCMMessageCryptographer::Version version,
                              const MessageCallback& callback,
-                             const KeyPair& pair,
+                             std::unique_ptr<crypto::ECPrivateKey> key,
                              const std::string& auth_secret);
 
   std::unique_ptr<GCMKeyStore> key_store_;

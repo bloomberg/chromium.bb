@@ -33,66 +33,44 @@ const size_t kUncompressedPointBytes = 1 + 2 * kFieldBytes;
 
 }  // namespace
 
-bool CreateP256KeyPair(std::string* out_private_key,
-                       std::string* out_public_key) {
-  DCHECK(out_private_key);
-  DCHECK(out_public_key);
-
-  std::unique_ptr<crypto::ECPrivateKey> key_pair(
-      crypto::ECPrivateKey::Create());
-  if (!key_pair.get()) {
-    DLOG(ERROR) << "Unable to generate a new P-256 key pair.";
-    return false;
-  }
-
-  std::vector<uint8_t> private_key;
-
-  // Export the encrypted private key with an empty password. This is not done
-  // to provide any security, but rather to achieve a consistent private key
-  // storage between the BoringSSL and NSS implementations.
-  if (!key_pair->ExportEncryptedPrivateKey(&private_key)) {
-    DLOG(ERROR) << "Unable to export the private key.";
-    return false;
-  }
-
+bool GetRawPublicKey(const crypto::ECPrivateKey& key, std::string* public_key) {
+  DCHECK(public_key);
   std::string candidate_public_key;
 
   // ECPrivateKey::ExportRawPublicKey() returns the EC point in the uncompressed
   // point format, but does not include the leading byte of value 0x04 that
   // indicates usage of uncompressed points, per SEC1 2.3.3.
-  if (!key_pair->ExportRawPublicKey(&candidate_public_key) ||
+  if (!key.ExportRawPublicKey(&candidate_public_key) ||
       candidate_public_key.size() != 2 * kFieldBytes) {
     DLOG(ERROR) << "Unable to export the public key.";
     return false;
   }
-
-  out_private_key->assign(reinterpret_cast<const char*>(private_key.data()),
-                          private_key.size());
-
   // Concatenate the leading 0x04 byte and the two uncompressed points.
-  out_public_key->reserve(kUncompressedPointBytes);
-  out_public_key->push_back(kUncompressedPointForm);
-  out_public_key->append(candidate_public_key);
-
+  public_key->erase();
+  public_key->reserve(kUncompressedPointBytes);
+  public_key->push_back(kUncompressedPointForm);
+  public_key->append(candidate_public_key);
   return true;
 }
 
-bool ComputeSharedP256Secret(const base::StringPiece& private_key,
+// TODO(peter): Get rid of this once all key management code has been updated
+// to use ECPrivateKey instead of std::string.
+bool GetRawPrivateKey(const crypto::ECPrivateKey& key,
+                      std::string* private_key) {
+  DCHECK(private_key);
+  std::vector<uint8_t> private_key_vector;
+  if (!key.ExportPrivateKey(&private_key_vector))
+    return false;
+  private_key->assign(private_key_vector.begin(), private_key_vector.end());
+  return true;
+}
+
+bool ComputeSharedP256Secret(crypto::ECPrivateKey& key,
                              const base::StringPiece& peer_public_key,
                              std::string* out_shared_secret) {
   DCHECK(out_shared_secret);
 
-  std::unique_ptr<crypto::ECPrivateKey> local_key_pair(
-      crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
-          std::vector<uint8_t>(private_key.data(),
-                               private_key.data() + private_key.size())));
-
-  if (!local_key_pair) {
-    DLOG(ERROR) << "Unable to create the local key pair.";
-    return false;
-  }
-
-  EC_KEY* ec_private_key = EVP_PKEY_get0_EC_KEY(local_key_pair->key());
+  EC_KEY* ec_private_key = EVP_PKEY_get0_EC_KEY(key.key());
   if (!ec_private_key || !EC_KEY_check_key(ec_private_key)) {
     DLOG(ERROR) << "The private key is invalid.";
     return false;

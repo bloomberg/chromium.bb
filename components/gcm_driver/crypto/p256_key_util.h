@@ -10,27 +10,31 @@
 #include "base/compiler_specific.h"
 #include "base/strings/string_piece.h"
 
+namespace crypto {
+class ECPrivateKey;
+}
+
 namespace gcm {
 
-// Creates a new key pair for key exchanges using elliptic-curve Diffie-
-// Hellman using the NIST P-256 curve. Returns whether the key pair could be
-// created successfully, and was written to the out arguments.
-//
-// The |out_private_key| will be an ASN.1-encoded PKCS#8 EncryptedPrivateKeyInfo
-// block, |out_public_key| an octet string in uncompressed form per SEC1 2.3.3.
-bool CreateP256KeyPair(std::string* out_private_key,
-                       std::string* out_public_key) WARN_UNUSED_RESULT;
+// Writes the public key associated with the |key| to |*public_key| in
+// uncompressed point format. That is, a 65-octet sequence that starts with a
+// 0x04 octet. Returns whether the public key could be extracted successfully.
+bool GetRawPublicKey(const crypto::ECPrivateKey& key,
+                     std::string* public_key) WARN_UNUSED_RESULT;
 
-// Computes the shared secret between |private_key| and |peer_public_key|. The
-// |public_key| associated with the |private_key| is necessary for NSS. Returns
-// whether the secret could be computed, and was written to the out argument.
-//
-// The |private_key| must be an ASN.1-encoded PKCS#8 EncryptedPrivateKeyInfo
-// block. This is legacy from the NSS implementation.
-//
-// The |peer_public_key| must be an octet string in uncompressed form per
+// Writes the private key associated with the |key| to |*private_key| as a PKCS
+// #8 PrivateKeyInfo block. Returns whether the private key could be extracted
+// successfully.
+bool GetRawPrivateKey(const crypto::ECPrivateKey& key,
+                      std::string* private_key) WARN_UNUSED_RESULT;
+
+// Computes the shared secret between |key| and |peer_public_key|.The
+// |peer_public_key| must be an octet string in uncompressed form per
 // SEC1 2.3.3.
-bool ComputeSharedP256Secret(const base::StringPiece& private_key,
+//
+// Returns whether the secret could be computed, and was written to the out
+// argument.
+bool ComputeSharedP256Secret(crypto::ECPrivateKey& key,
                              const base::StringPiece& peer_public_key,
                              std::string* out_shared_secret) WARN_UNUSED_RESULT;
 
