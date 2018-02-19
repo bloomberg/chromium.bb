@@ -58,12 +58,10 @@ class WebServiceWorkerNetworkProviderForFrame
       : provider_(std::move(provider)) {}
 
   void WillSendRequest(blink::WebURLRequest& request) override {
-    RequestExtraData* extra_data =
-        static_cast<RequestExtraData*>(request.GetExtraData());
-    if (!extra_data)
-      extra_data = new RequestExtraData();
+    if (!request.GetExtraData())
+      request.SetExtraData(std::make_unique<RequestExtraData>());
+    auto* extra_data = static_cast<RequestExtraData*>(request.GetExtraData());
     extra_data->set_service_worker_provider_id(provider_->provider_id());
-    request.SetExtraData(extra_data);
 
     // If the provider does not have a controller at this point, the renderer
     // expects the request to never be handled by a service worker,

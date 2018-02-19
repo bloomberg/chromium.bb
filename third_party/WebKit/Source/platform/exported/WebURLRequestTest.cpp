@@ -52,19 +52,20 @@ TEST(WebURLRequestTest, ExtraData) {
   bool alive = false;
   {
     WebURLRequest url_request;
-    RequestTestExtraData* extra_data = new RequestTestExtraData(&alive);
+    auto extra_data = std::make_unique<RequestTestExtraData>(&alive);
     EXPECT_TRUE(alive);
 
-    url_request.SetExtraData(extra_data);
-    EXPECT_EQ(extra_data, url_request.GetExtraData());
+    auto* raw_extra_data_pointer = extra_data.get();
+    url_request.SetExtraData(std::move(extra_data));
+    EXPECT_EQ(raw_extra_data_pointer, url_request.GetExtraData());
     {
       WebURLRequest other_url_request = url_request;
       EXPECT_TRUE(alive);
-      EXPECT_EQ(extra_data, other_url_request.GetExtraData());
-      EXPECT_EQ(extra_data, url_request.GetExtraData());
+      EXPECT_EQ(raw_extra_data_pointer, other_url_request.GetExtraData());
+      EXPECT_EQ(raw_extra_data_pointer, url_request.GetExtraData());
     }
     EXPECT_TRUE(alive);
-    EXPECT_EQ(extra_data, url_request.GetExtraData());
+    EXPECT_EQ(raw_extra_data_pointer, url_request.GetExtraData());
   }
   EXPECT_FALSE(alive);
 }
