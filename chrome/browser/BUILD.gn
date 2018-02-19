@@ -1537,6 +1537,8 @@ jumbo_split_static_library("browser") {
     "webshare/webshare_target.h",
     "win/app_icon.cc",
     "win/app_icon.h",
+    "win/automation_controller.cc",
+    "win/automation_controller.h",
     "win/browser_util.cc",
     "win/browser_util.h",
     "win/chrome_elf_init.cc",
@@ -1561,6 +1563,8 @@ jumbo_split_static_library("browser") {
     "win/taskbar_icon_finder.h",
     "win/titlebar_config.cc",
     "win/titlebar_config.h",
+    "win/ui_automation_util.cc",
+    "win/ui_automation_util.h",
   ]
 
   configs += [
