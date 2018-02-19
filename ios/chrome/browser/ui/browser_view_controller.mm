@@ -1670,22 +1670,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [super viewWillDisappear:animated];
 }
 
-- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)orient
-                                duration:(NSTimeInterval)duration {
-  [super willRotateToInterfaceOrientation:orient duration:duration];
-  [self dismissPopups];
-  [self reshowFindBarIfNeededWithCoordinator:nil];
-}
-
-- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)orient {
-  [super didRotateFromInterfaceOrientation:orient];
-
-  // This reinitializes the toolbar, including updating the Overlay View,
-  // if there is one.
-  [self updateToolbar];
-  [self infoBarContainerStateDidChangeAnimated:NO];
-}
-
 - (BOOL)prefersStatusBarHidden {
   BOOL defaultValue = NO;
   if (IsUIRefreshPhase1Enabled()) {
