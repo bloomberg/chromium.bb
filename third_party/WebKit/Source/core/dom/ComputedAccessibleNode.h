@@ -6,7 +6,6 @@
 #define ComputedAccessibleNode_h
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/events/EventTarget.h"
 #include "platform/bindings/ScriptWrappable.h"
@@ -19,32 +18,11 @@ namespace blink {
 class ScriptPromiseResolver;
 class ScriptState;
 
-class ComputedAccessibleNodePromiseResolver final
-    : public GarbageCollectedFinalized<ComputedAccessibleNodePromiseResolver> {
- public:
-  static ComputedAccessibleNodePromiseResolver* Create(ScriptState*, Element&);
-  ~ComputedAccessibleNodePromiseResolver() {}
-
-  ScriptPromise Promise();
-
-  void ComputeAccessibleNode();
-
-  void Trace(blink::Visitor*);
-
- private:
-  ComputedAccessibleNodePromiseResolver(ScriptState*, Element&);
-  void IdleTaskFired(double deadline_seconds);
-  void UpdateTreeAndResolve();
-
-  Member<Element> element_;
-  Member<ScriptPromiseResolver> resolver_;
-};
-
 class ComputedAccessibleNode : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static ComputedAccessibleNode* Create(AXID, WebComputedAXTree*);
+  static ComputedAccessibleNode* Create(Element*);
   virtual ~ComputedAccessibleNode();
 
   void Trace(Visitor*);
@@ -83,18 +61,18 @@ class ComputedAccessibleNode : public ScriptWrappable {
   bool modal(bool& is_null) const;
 
  private:
-  ComputedAccessibleNode(AXID, WebComputedAXTree*);
+  explicit ComputedAccessibleNode(Element*);
 
   // content::ComputedAXTree callback.
   void OnSnapshotResponse(ScriptPromiseResolver*);
   void OnUpdateResponse(ScriptPromiseResolver*);
-
   int32_t GetIntAttribute(WebAOMIntAttribute, bool& is_null) const;
   const String GetStringAttribute(WebAOMStringAttribute) const;
   bool GetBoolAttribute(WebAOMBoolAttribute, bool& is_null) const;
   ComputedAccessibleNode* GetRelationFromCache(AXID) const;
 
-  AXID ax_id_;
+  Member<Element> element_;
+  Member<AXObjectCache> cache_;
 
   // This tree is owned by the RenderFrame.
   blink::WebComputedAXTree* tree_;

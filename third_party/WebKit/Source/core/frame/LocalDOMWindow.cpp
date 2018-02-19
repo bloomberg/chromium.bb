@@ -1102,13 +1102,9 @@ ScriptPromise LocalDOMWindow::getComputedAccessibleNode(
     ScriptState* script_state,
     Element* element) {
   DCHECK(element);
-  // TODO(meredithl): Create finer grain method for enabling accessibility.
-  element->GetDocument().GetPage()->GetSettings().SetAccessibilityEnabled(true);
-  ComputedAccessibleNodePromiseResolver* resolver =
-      ComputedAccessibleNodePromiseResolver::Create(script_state, *element);
-  ScriptPromise promise = resolver->Promise();
-  resolver->ComputeAccessibleNode();
-  return promise;
+  ComputedAccessibleNode* computed_accessible_node =
+      element->GetComputedAccessibleNode();
+  return computed_accessible_node->ComputeAccessibleProperties(script_state);
 }
 
 CSSRuleList* LocalDOMWindow::getMatchedCSSRules(

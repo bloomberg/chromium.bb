@@ -2,7 +2,6 @@
 <script src="../resources/gc.js"></script>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="./idle-promise-helpers.js"></script>
 
 <!--
 
@@ -24,34 +23,37 @@ test(function(t) {
     assert_true(internals.runtimeFlags.accessibilityObjectModelEnabled);
 }, "Make sure that Accessibility Object Model is enabled");
 
-promise_test(async function(test) {
+test(async function(test) {
     var element = document.getElementById("option1");
     var computedAXNode = await window.getComputedAccessibleNode(element);
     var computedParent = computedAXNode.parent;
     assert_false(computedParent === null);
     assert_equals(computedParent.name, "container");
-    // TODO(meredithl): assert_true(computedParent.firstChild === computedAXNode);
+    assert_true(computedParent.firstChild === computedAXNode);
+
+    // Parent of listbox should be null.
+    assert_equals(computedParent.parent, null);
 }, "ComputedAccessibleNode.parent.");
 
-promise_test(async function(test) {
+test(async function(test) {
     var element = document.getElementById("listbox");
     var computedAXNode = await window.getComputedAccessibleNode(element);
     var computedChild = computedAXNode.firstChild
     assert_false(computedChild === null);
     assert_equals(computedChild.name, "Option 1");
-    // TODO(meredithl): assert_true(computedChild.parent === computedAXNode);
+    assert_true(computedChild.parent === computedAXNode);
 }, "ComputedAccessibleNode.firstChild.");
 
-promise_test(async function(test) {
+test(async function(test) {
     var element = document.getElementById("listbox");
     var computedAXNode = await window.getComputedAccessibleNode(element);
     var computedChild = computedAXNode.lastChild;
     assert_false(computedChild === null);
     assert_equals(computedChild.name, "Option 3");
-    // TODO(meredithl): assert_true(computedChild.parent === computedAXNode);
+    assert_true(computedChild.parent === computedAXNode);
 }, "ComputedAccessibleNode.lastChild.");
 
-promise_test(async function(test) {
+test(async function(test) {
     var element = document.getElementById("option2");
     var computedAXNode = await window.getComputedAccessibleNode(element);
     var computedSibling = computedAXNode.previousSibling;
@@ -60,10 +62,10 @@ promise_test(async function(test) {
 
     // Check that a call to non-existant sibling is null.
     assert_equals(computedSibling.previousSibling, null);
-    // TODO(meredithl): assert_true(computedSibling.nextSibling === computedAXNode);
+    assert_true(computedSibling.nextSibling === computedAXNode);
 }, "ComputedAccessibleNode.previousSibling");
 
-promise_test(async function(test) {
+test(async function(test) {
     var element = document.getElementById("option2");
     var computedAXNode = await window.getComputedAccessibleNode(element);
     var computedSibling = computedAXNode.nextSibling;
@@ -72,7 +74,7 @@ promise_test(async function(test) {
 
     // Check that a call to non-existant sibling is null.
     assert_equals(computedSibling.nextSibling, null);
-    // TODO(meredithl): assert_true(computedSibling.previousSibling === computedAXNode);
+    assert_true(computedSibling.previousSibling === computedAXNode);
 }, "ComputedAccessibleNode.nextSibling");
 
 </script>
