@@ -524,6 +524,11 @@ void BrowserCompositorMac::EndPauseForFrame() {
 }
 
 bool BrowserCompositorMac::ShouldContinueToPauseForFrame() const {
+  // The renderer won't produce a frame if its frame sink hasn't been created
+  // yet.
+  if (!renderer_compositor_frame_sink_)
+    return false;
+
   if (!recyclable_compositor_)
     return false;
 
