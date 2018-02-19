@@ -2733,7 +2733,11 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
         "surface-invariants-violation", base::debug::CrashKeySize::Size256);
     base::debug::ScopedCrashKeyString key_value(
         crash_key,
-        new_surface_properties.ToDiffString(last_surface_properties_));
+        base::StringPrintf(
+            "[OOPIF? %d] %s\n",
+            view_ && view_->IsRenderWidgetHostViewChildFrame(),
+            new_surface_properties.ToDiffString(last_surface_properties_)
+                .c_str()));
     bad_message::ReceivedBadMessage(
         GetProcess(), bad_message::RWH_SURFACE_INVARIANTS_VIOLATION);
     return;
