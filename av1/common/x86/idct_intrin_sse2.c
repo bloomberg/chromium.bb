@@ -661,6 +661,13 @@ static INLINE void write_buffer_8x4_round5(uint8_t *dest, __m128i *in,
   RECON_AND_STORE(dest + 3 * stride, in[3]);
 }
 
+static INLINE void iidtx8x4_sse2(__m128i *in) {
+  in[0] = _mm_slli_epi16(in[0], 1);
+  in[1] = _mm_slli_epi16(in[1], 1);
+  in[2] = _mm_slli_epi16(in[2], 1);
+  in[3] = _mm_slli_epi16(in[3], 1);
+}
+
 void av1_iht8x4_32_add_sse2(const tran_low_t *input, uint8_t *dest, int stride,
                             const TxfmParam *txfm_param) {
   __m128i in[8];
@@ -689,7 +696,7 @@ void av1_iht8x4_32_add_sse2(const tran_low_t *input, uint8_t *dest, int stride,
     case V_ADST:
     case V_DCT:
     case IDTX:
-      iidtx8_sse2(in);
+      iidtx8x4_sse2(in);
       array_transpose_8x8(in, in);
       break;
     default: assert(0); break;
