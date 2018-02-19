@@ -3149,6 +3149,14 @@
   "DeviceAutoUpdateP2PEnabled": {
   },
 
+  "DeviceRollbackAllowedMilestones": {
+    "note": "Chrome OS device policy used by update_engine only, not used in Chrome. TODO(hunyadym): add os field when M67 in dev."
+  },
+
+  "DeviceRollbackToTargetVersion": {
+    "note": "Chrome OS device policy used by update_engine only, not used in Chrome. TODO(hunyadym): add os field when M67 in dev."
+  },
+
   "DeviceTargetVersionPrefix": {
   },
 

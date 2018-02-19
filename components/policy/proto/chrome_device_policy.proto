@@ -176,11 +176,10 @@ message AutoUpdateSettingsProto {
   optional bool update_disabled = 1;
 
   // Specifies the prefix of the target version we want the device to
-  // update to, if it's on a older version. If the device is already on
+  // update to, if it's on an older version. If the device is already on
   // a version with the given prefix, then there's no effect. If the device is
-  // on a higher version, it will remain on the higher version as we
-  // don't support rollback yet. The format of this version can be one
-  // of the following:
+  // on a higher version, the behavior depends on |rollback_to_target_version|.
+  // The format of this version can be one of the following:
   // ---------------------------------------------------------------------
   // "" (or not set at all): update to latest version available.
   // 1412.: update to any minor version of 1412 (e.g. 1412.24.34 or 1412.60.2)
@@ -239,6 +238,30 @@ message AutoUpdateSettingsProto {
   // True if AU payloads may be shared with and consumed from other devices
   // on the LAN, using p2p. False otherwise.
   optional bool p2p_enabled = 9 [default = false];
+
+  // The possible types of rollback.
+  enum RollbackToTargetVersion {
+    // No value set. Default is ROLLBACK_DISABLED.
+    ROLLBACK_UNSPECIFIED = 0;
+    // No rollback should happen if |target_version_prefix| specifies an older
+    // version than the currently installed Chrome OS version.
+    ROLLBACK_DISABLED = 1;
+    // If |target_version_prefix| specifies an older version than the currently
+    // installed Chrome OS version, the device should roll back to a Chrome OS
+    // version starting with |target_version_prefix|.
+    ROLLBACK_WITH_FULL_POWERWASH = 2;
+  }
+
+  // Specifies what should happen if |target_version_prefix| specifies an older
+  // version than the currently installed Chrome OS version.
+  optional RollbackToTargetVersion rollback_to_target_version = 10
+      [default = ROLLBACK_DISABLED];
+
+  // Specifies the number of Chrome milestones rollback should be allowed,
+  // starting from the stable version at any time. Setting this policy prevents
+  // firmware and kernel rollback protection to apply for at least this number
+  // of milestones.
+  optional int32 rollback_allowed_milestones = 11 [default = 0];
 }
 
 message OBSOLETE_StartUpUrlsProto {

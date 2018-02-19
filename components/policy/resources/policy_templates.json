@@ -146,7 +146,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 425
+#   For your editing convenience: highest ID currently used: 427
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -6099,6 +6099,65 @@
       'desc': '''Specifies whether p2p is to be used for OS update payloads. If set to True, devices will share and attempt to consume update payloads on the LAN, potentially reducing Internet bandwidth usage and congestion. If the update payload is not available on the LAN, the device will fall back to downloading from an update server. If set to False or not configured, p2p will not be used.''',
     },
     {
+      'name': 'DeviceRollbackAllowedMilestones',
+      'type': 'int',
+      'schema': {
+        'type': 'integer',
+        'minimum': 0,
+        'maximum': 8,
+      },
+      'supported_on': ['chrome_os:67-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': 4,
+      'id': 426,
+      'caption': '''Number of milestones rollback is allowed''',
+      'tags': ['system-security'],
+      'desc': '''Specifies the minimum number of <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> milestones rollback should be allowed starting from the stable version at any time.
+
+      Default is 0 for consumer, 8 (approx. 1 year) for enterprise enrolled devices.
+
+      Setting this policy prevents rollback protection to apply for at least this number of milestones.
+
+      Setting this policy to a lower value has a permanent effect: the device MAY not be able to roll back to earlier versions even after the policy is reset to a larger value.
+
+      Actual rollback possibilities may also depend on the board and critical vulnerability patches.''',
+    },
+    {
+      'name': 'DeviceRollbackToTargetVersion',
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 1, 2 ],
+      },
+      'items': [
+        {
+          'name': 'RollbackDisabled',
+          'value': 1,
+          'caption': '''Do not roll back to target version if OS version is newer than target. Updates are also disabled.''',
+        },
+        {
+          'name': 'RollbackWithFullPowerwash',
+          'value': 2,
+          'caption': '''Roll back and stay on target version if OS version is newer than target. Do a full powerwash during the process.''',
+        },
+      ],
+      'supported_on': ['chrome_os:67-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': 1,
+      'id': 427,
+      'caption': '''Rollback to target version''',
+      'tags': ['system-security'],
+      'desc': '''Specifies whether the device should roll back to the version set by <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME">DeviceTargetVersionPrefix</ph> if it's already running a later version.
+
+      Default is RollbackDisabled.''',
+    },
+    {
       'name': 'DeviceTargetVersionPrefix',
       'type': 'string',
       'schema': { 'type': 'string' },
@@ -6113,7 +6172,7 @@
       'tags': ['system-security'],
       'desc': '''Sets a target version for Auto Updates.
 
-      Specifies the prefix of a target version <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> should update to. If the device is running a version that's before the specified prefix, it will update to the latest version with the given prefix. If the device is already on a later version, there is no effect (i.e. no downgrades are performed) and the device will remain on the current version. The prefix format works component-wise as is demonstrated in the following example:
+      Specifies the prefix of a target version <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> should update to. If the device is running a version that's before the specified prefix, it will update to the latest version with the given prefix. If the device is already on a later version, effects depend on the value of <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME">DeviceRollbackToTargetVersion</ph>. The prefix format works component-wise as is demonstrated in the following example:
 
       "" (or not configured): update to latest version available.
       "1412.": update to any minor version of 1412 (e.g. 1412.24.34 or 1412.60.2)

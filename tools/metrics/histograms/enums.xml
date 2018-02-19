@@ -12561,6 +12561,8 @@ Called by update_net_error_codes.py.-->
   <int value="423" label="PasswordProtectionLoginURLs"/>
   <int value="424" label="PasswordProtectionChangePasswordURL"/>
   <int value="425" label="DeviceMachinePasswordChangeRate"/>
+  <int value="426" label="DeviceRollbackAllowedMilestones"/>
+  <int value="427" label="DeviceRollbackToTargetVersion"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
