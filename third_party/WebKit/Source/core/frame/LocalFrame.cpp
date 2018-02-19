@@ -102,6 +102,8 @@
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/InterfaceRegistry.h"
 #include "public/platform/WebURLRequest.h"
+#include "services/network/public/cpp/features.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
 
@@ -939,6 +941,16 @@ static bool CanAccessAncestor(const SecurityOrigin& active_security_origin,
   }
 
   return false;
+}
+
+blink::mojom::blink::PrefetchURLLoaderService*
+LocalFrame::PrefetchURLLoaderService() {
+  if (!prefetch_loader_service_ &&
+      base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    GetInterfaceProvider().GetInterface(
+        mojo::MakeRequest(&prefetch_loader_service_));
+  }
+  return prefetch_loader_service_.get();
 }
 
 bool LocalFrame::CanNavigateWithoutFramebusting(const Frame& target_frame,

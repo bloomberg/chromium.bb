@@ -8,13 +8,16 @@
 #include "base/logging.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/browser/loader/prefetch_url_loader_factory.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_requester_info.h"
 #include "content/browser/loader/url_loader_factory_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/resource_messages.h"
+#include "content/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/common/content_features.h"
 #include "services/network/public/cpp/cors/cors_url_loader_factory.h"
 #include "services/network/public/cpp/features.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -31,6 +34,7 @@ ResourceMessageFilter::ResourceMessageFilter(
     ChromeBlobStorageContext* blob_storage_context,
     storage::FileSystemContext* file_system_context,
     ServiceWorkerContextWrapper* service_worker_context,
+    PrefetchURLLoaderFactory* prefetch_url_loader_factory,
     const GetContextsCallback& get_contexts_callback,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_runner)
     : BrowserMessageFilter(ResourceMsgStart),
@@ -43,6 +47,7 @@ ResourceMessageFilter::ResourceMessageFilter(
                                                    file_system_context,
                                                    service_worker_context,
                                                    get_contexts_callback)),
+      prefetch_url_loader_factory_(prefetch_url_loader_factory),
       io_thread_task_runner_(io_thread_runner),
       weak_ptr_factory_(this) {}
 
@@ -60,6 +65,7 @@ void ResourceMessageFilter::OnFilterAdded(IPC::Channel*) {
 void ResourceMessageFilter::OnChannelClosing() {
   DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
 
+  prefetch_url_loader_factory_ = nullptr;
   url_loader_factory_ = nullptr;
 
   // Unhook us from all pending network requests so they don't get sent to a
@@ -105,6 +111,17 @@ void ResourceMessageFilter::CreateLoaderAndStart(
                                          request_id, options, url_request,
                                          std::move(client), traffic_annotation);
     g_current_filter = nullptr;
+    return;
+  }
+
+  // TODO(kinuko): Remove this flag guard when we have more confidence, this
+  // doesn't need to be paired up with SignedExchange feature.
+  if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange) &&
+      url_request.resource_type == RESOURCE_TYPE_PREFETCH &&
+      prefetch_url_loader_factory_) {
+    prefetch_url_loader_factory_->CreateLoaderAndStart(
+        std::move(request), routing_id, request_id, options, url_request,
+        std::move(client), traffic_annotation, url_loader_factory_.get());
     return;
   }
 

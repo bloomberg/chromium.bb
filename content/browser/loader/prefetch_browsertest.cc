@@ -11,6 +11,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "content/browser/loader/prefetch_url_loader_factory.h"
+#include "content/browser/storage_partition_impl.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -21,8 +25,18 @@
 
 namespace content {
 
-class PrefetchBrowserTest : public ContentBrowserTest,
-                            public testing::WithParamInterface<bool> {
+struct PrefetchBrowserTestParam {
+  PrefetchBrowserTestParam(bool network_service_enabled,
+                           bool signed_exchange_enabled)
+      : network_service_enabled(network_service_enabled),
+        signed_exchange_enabled(signed_exchange_enabled) {}
+  const bool network_service_enabled;
+  const bool signed_exchange_enabled;
+};
+
+class PrefetchBrowserTest
+    : public ContentBrowserTest,
+      public testing::WithParamInterface<PrefetchBrowserTestParam> {
  public:
   struct ResponseEntry {
     ResponseEntry() = default;
@@ -41,9 +55,27 @@ class PrefetchBrowserTest : public ContentBrowserTest,
   ~PrefetchBrowserTest() = default;
 
   void SetUp() override {
-    if (GetParam())
-      feature_list_.InitWithFeatures({network::features::kNetworkService}, {});
+    std::vector<base::Feature> enable_features;
+    if (GetParam().network_service_enabled)
+      enable_features.push_back(network::features::kNetworkService);
+    if (GetParam().signed_exchange_enabled)
+      enable_features.push_back(features::kSignedHTTPExchange);
+    feature_list_.InitWithFeatures(enable_features, {});
     ContentBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    ContentBrowserTest::SetUpOnMainThread();
+    StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+        BrowserContext::GetDefaultStoragePartition(
+            shell()->web_contents()->GetBrowserContext()));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        BindOnce(
+            &PrefetchURLLoaderFactory::RegisterPrefetchLoaderCallbackForTest,
+            base::RetainedRef(partition->GetPrefetchURLLoaderFactory()),
+            base::BindRepeating(&PrefetchBrowserTest::OnPrefetchURLLoaderCalled,
+                                base::Unretained(this))));
   }
 
   void RegisterResponse(const std::string& url, const ResponseEntry& entry) {
@@ -76,6 +108,17 @@ class PrefetchBrowserTest : public ContentBrowserTest,
     }
   }
 
+  void OnPrefetchURLLoaderCalled() { prefetch_url_loader_called_++; }
+
+  bool CheckPrefetchURLLoaderCountIfSupported(int expected) const {
+    if (!base::FeatureList::IsEnabled(features::kSignedHTTPExchange) &&
+        !base::FeatureList::IsEnabled(network::features::kNetworkService))
+      return true;
+    return prefetch_url_loader_called_ == expected;
+  }
+
+  int prefetch_url_loader_called_ = 0;
+
  private:
   base::test::ScopedFeatureList feature_list_;
   std::map<std::string, ResponseEntry> response_map_;
@@ -102,12 +145,14 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, Simple) {
       &PrefetchBrowserTest::ServeResponses, base::Unretained(this)));
   ASSERT_TRUE(embedded_test_server()->Start());
   EXPECT_EQ(0, target_fetch_count);
+  EXPECT_TRUE(CheckPrefetchURLLoaderCountIfSupported(0));
 
   // Loading a page that prefetches the target URL would increment the
   // |target_fetch_count|.
   NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_url));
   prefetch_waiter.Run();
   EXPECT_EQ(1, target_fetch_count);
+  EXPECT_TRUE(CheckPrefetchURLLoaderCountIfSupported(1));
 
   // Subsequent navigation to the target URL wouldn't hit the network for
   // the target URL (therefore not increment |target_fetch_count|.
@@ -138,12 +183,14 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, DoublePrefetch) {
       &PrefetchBrowserTest::ServeResponses, base::Unretained(this)));
   ASSERT_TRUE(embedded_test_server()->Start());
   EXPECT_EQ(0, target_fetch_count);
+  EXPECT_TRUE(CheckPrefetchURLLoaderCountIfSupported(0));
 
   // Loading a page that prefetches the target URL would increment the
   // |target_fetch_count|, but it should hit only once.
   NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_url));
   prefetch_waiter.Run();
   EXPECT_EQ(1, target_fetch_count);
+  EXPECT_TRUE(CheckPrefetchURLLoaderCountIfSupported(1));
 
   // Subsequent navigation to the target URL wouldn't hit the network for
   // the target URL (therefore not increment |target_fetch_count|.
@@ -153,6 +200,7 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, DoublePrefetch) {
   NavigateToURL(shell(), embedded_test_server()->GetURL(target_url));
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
   EXPECT_EQ(1, target_fetch_count);
+  EXPECT_TRUE(CheckPrefetchURLLoaderCountIfSupported(1));
 }
 
 IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, NoCacheAndNoStore) {
@@ -184,6 +232,7 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, NoCacheAndNoStore) {
   embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
       &PrefetchBrowserTest::ServeResponses, base::Unretained(this)));
   ASSERT_TRUE(embedded_test_server()->Start());
+  EXPECT_TRUE(CheckPrefetchURLLoaderCountIfSupported(0));
 
   // Loading a page that prefetches the target URL would increment the
   // fetch count for the both targets.
@@ -192,6 +241,7 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, NoCacheAndNoStore) {
   nostore_waiter.Run();
   EXPECT_EQ(1, nocache_fetch_count);
   EXPECT_EQ(1, nostore_fetch_count);
+  EXPECT_TRUE(CheckPrefetchURLLoaderCountIfSupported(2));
 
   {
     // Subsequent navigation to the no-cache URL wouldn't hit the network,
@@ -211,6 +261,7 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, NoCacheAndNoStore) {
     EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
     EXPECT_EQ(2, nostore_fetch_count);
   }
+  EXPECT_TRUE(CheckPrefetchURLLoaderCountIfSupported(2));
 }
 
 IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WithPreload) {
@@ -241,6 +292,7 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WithPreload) {
   embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
       &PrefetchBrowserTest::ServeResponses, base::Unretained(this)));
   ASSERT_TRUE(embedded_test_server()->Start());
+  EXPECT_TRUE(CheckPrefetchURLLoaderCountIfSupported(0));
 
   // Loading a page that prefetches the target URL would increment both
   // |target_fetch_count| and |preload_fetch_count|.
@@ -248,6 +300,7 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WithPreload) {
   preload_waiter.Run();
   EXPECT_EQ(1, target_fetch_count);
   EXPECT_EQ(1, preload_fetch_count);
+  EXPECT_TRUE(CheckPrefetchURLLoaderCountIfSupported(1));
 
   int preload_url_entries = 0;
   while (preload_url_entries == 0) {
@@ -265,6 +318,10 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WithPreload) {
 
 INSTANTIATE_TEST_CASE_P(PrefetchBrowserTest,
                         PrefetchBrowserTest,
-                        testing::Bool());
+                        testing::Values(PrefetchBrowserTestParam(true, true),
+                                        PrefetchBrowserTestParam(true, false),
+                                        PrefetchBrowserTestParam(false, true),
+                                        PrefetchBrowserTestParam(false,
+                                                                 false)));
 
 }  // namespace content

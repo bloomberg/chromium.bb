@@ -1,0 +1,83 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CONTENT_BROWSER_LOADER_PREFETCH_URL_LOADER_H_
+#define CONTENT_BROWSER_LOADER_PREFETCH_URL_LOADER_H_
+
+#include <memory>
+
+#include "base/macros.h"
+#include "content/common/content_export.h"
+#include "mojo/common/data_pipe_drainer.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "url/gurl.h"
+
+namespace content {
+
+// PrefetchURLLoader which basically just keeps draining the data.
+class CONTENT_EXPORT PrefetchURLLoader
+    : public network::mojom::URLLoader,
+      public network::mojom::URLLoaderClient,
+      public mojo::common::DataPipeDrainer::Client {
+ public:
+  PrefetchURLLoader(
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const network::ResourceRequest& resource_request,
+      network::mojom::URLLoaderClientPtr client,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+      network::mojom::URLLoaderFactory* network_loader_factory);
+  ~PrefetchURLLoader() override;
+
+ private:
+  // network::mojom::URLLoader overrides:
+  void FollowRedirect() override;
+  void ProceedWithResponse() override;
+  void SetPriority(net::RequestPriority priority,
+                   int intra_priority_value) override;
+  void PauseReadingBodyFromNet() override;
+  void ResumeReadingBodyFromNet() override;
+
+  // network::mojom::URLLoaderClient overrides:
+  void OnReceiveResponse(
+      const network::ResourceResponseHead& head,
+      const base::Optional<net::SSLInfo>& ssl_info,
+      network::mojom::DownloadedTempFilePtr downloaded_file) override;
+  void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
+                         const network::ResourceResponseHead& head) override;
+  void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override;
+  void OnUploadProgress(int64_t current_position,
+                        int64_t total_size,
+                        base::OnceCallback<void()> callback) override;
+  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override;
+  void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
+  void OnStartLoadingResponseBody(
+      mojo::ScopedDataPipeConsumerHandle body) override;
+  void OnComplete(const network::URLLoaderCompletionStatus& status) override;
+
+  // mojo::common::DataPipeDrainer::Client overrides:
+  // This just does nothing but keep reading.
+  void OnDataAvailable(const void* data, size_t num_bytes) override {}
+  void OnDataComplete() override {}
+
+  void OnNetworkConnectionError();
+
+  // For the actual request.
+  network::mojom::URLLoaderPtr network_loader_;
+  mojo::Binding<network::mojom::URLLoaderClient> network_client_binding_;
+
+  // To be a URLLoader for the client.
+  network::mojom::URLLoaderClientPtr forwarding_client_;
+
+  std::unique_ptr<mojo::common::DataPipeDrainer> pipe_drainer_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrefetchURLLoader);
+};
+
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_LOADER_PREFETCH_URL_LOADER_H_

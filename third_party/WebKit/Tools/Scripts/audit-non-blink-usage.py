@@ -61,6 +61,9 @@ _CONFIG = [
             # Debugging helpers from //base/debug are allowed everywhere.
             'base::debug::.+',
 
+            # Feature list checking.
+            'base::FeatureList',
+
             # Standalone utility libraries that only depend on //base
             'skia::.+',
             'url::.+',
