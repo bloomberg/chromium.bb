@@ -329,6 +329,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       // header is verified and parsed, that's where the getter is used.
       handlers_.push_back(std::make_unique<WebPackageRequestHandler>(
           url::Origin::Create(request_info->common_params.url),
+          GetURLLoaderOptions(request_info->is_main_frame),
           base::MakeRefCounted<
               SignedExchangeURLLoaderFactoryForNonNetworkService>(
               resource_context_, url_request_context_getter),
@@ -473,6 +474,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       // header is verified and parsed, that's where the getter is used.
       handlers_.push_back(std::make_unique<WebPackageRequestHandler>(
           url::Origin::Create(request_info->common_params.url),
+          GetURLLoaderOptions(request_info->is_main_frame),
           base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
               default_url_loader_factory_getter_->GetNetworkFactory()),
           base::BindRepeating(

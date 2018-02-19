@@ -13,9 +13,11 @@
 #include "content/browser/loader/source_stream_to_data_pipe.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/shared_url_loader_factory.h"
+#include "net/cert/cert_status_flags.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {
 
@@ -73,6 +75,7 @@ WebPackageLoader::WebPackageLoader(
     network::mojom::URLLoaderClientPtr forwarding_client,
     network::mojom::URLLoaderClientEndpointsPtr endpoints,
     url::Origin request_initiator,
+    uint32_t url_loader_options,
     scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter)
     : original_response_timing_info_(
@@ -80,13 +83,15 @@ WebPackageLoader::WebPackageLoader(
       forwarding_client_(std::move(forwarding_client)),
       url_loader_client_binding_(this),
       request_initiator_(request_initiator),
+      url_loader_options_(url_loader_options),
       url_loader_factory_(std::move(url_loader_factory)),
       url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
       weak_factory_(this) {
   DCHECK(base::FeatureList::IsEnabled(features::kSignedHTTPExchange));
   url_loader_.Bind(std::move(endpoints->url_loader));
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (url_loader_options_ &
+      network::mojom::kURLLoadOptionPauseOnResponseStarted) {
     // We don't propagate the response to the navigation request and its
     // throttles, therefore we need to call this here internally in order to
     // move it forward.
@@ -159,8 +164,6 @@ void WebPackageLoader::OnStartLoadingResponseBody(
 
 void WebPackageLoader::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
-  // TODO(https://crbug.com/803774): Copy the data length information and pass
-  // to |client_| when OnHTTPExchangeFinished() is called.
 }
 
 void WebPackageLoader::FollowRedirect() {
@@ -219,6 +222,17 @@ void WebPackageLoader::OnHTTPExchangeFound(
   forwarding_client_->OnComplete(network::URLLoaderCompletionStatus(net::OK));
   forwarding_client_.reset();
 
+  if (ssl_info &&
+      (url_loader_options_ &
+       network::mojom::kURLLoadOptionSendSSLInfoForCertificateError) &&
+      net::IsCertStatusError(ssl_info->cert_status) &&
+      !net::IsCertStatusMinorError(ssl_info->cert_status)) {
+    ssl_info_ = ssl_info;
+  }
+  if (!(url_loader_options_ &
+        network::mojom::kURLLoadOptionSendSSLInfoWithResponse)) {
+    ssl_info = base::nullopt;
+  }
   client_->OnReceiveResponse(resource_response, std::move(ssl_info),
                              nullptr /* downloaded_file */);
 
@@ -234,7 +248,8 @@ void WebPackageLoader::OnHTTPExchangeFound(
       base::BindOnce(&WebPackageLoader::FinishReadingBody,
                      base::Unretained(this)));
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (url_loader_options_ &
+      network::mojom::kURLLoadOptionPauseOnResponseStarted) {
     // Need to wait until ProceedWithResponse() is called.
     return;
   }
@@ -245,8 +260,20 @@ void WebPackageLoader::OnHTTPExchangeFound(
 }
 
 void WebPackageLoader::FinishReadingBody(int result) {
+  // TODO(https://crbug.com/803774): Fill the data length information too.
+  network::URLLoaderCompletionStatus status;
+  status.error_code = result;
+
+  if (ssl_info_) {
+    DCHECK((url_loader_options_ &
+            network::mojom::kURLLoadOptionSendSSLInfoForCertificateError) &&
+           net::IsCertStatusError(ssl_info_->cert_status) &&
+           !net::IsCertStatusMinorError(ssl_info_->cert_status));
+    status.ssl_info = *ssl_info_;
+  }
+
   // This will eventually delete |this|.
-  client_->OnComplete(network::URLLoaderCompletionStatus(result));
+  client_->OnComplete(status);
 }
 
 }  // namespace content
