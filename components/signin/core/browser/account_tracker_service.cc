@@ -398,6 +398,7 @@ void AccountTrackerService::OnAccountImageLoaded(const std::string& account_id,
   if (base::ContainsKey(accounts_, account_id) &&
       accounts_[account_id].image.IsEmpty()) {
     accounts_[account_id].image = image;
+    NotifyAccountImageUpdated(account_id, image);
   }
 }
 
