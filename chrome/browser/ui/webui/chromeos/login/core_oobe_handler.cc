@@ -200,35 +200,7 @@ void CoreOobeHandler::ShowTpmError() {
 }
 
 void CoreOobeHandler::ShowDeviceResetScreen() {
-  // Powerwash is generally not available on enterprise devices. First, check
-  // the common case of a correctly enrolled device.
-  if (g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
-          ->IsEnterpriseManaged()) {
-    // Powerwash not allowed, except if allowed by the admin specifically for
-    // the purpose of installing a TPM firmware update.
-    tpm_firmware_update::ShouldOfferUpdateViaPowerwash(
-        base::Bind([](bool offer_update) {
-          if (offer_update) {
-            // Force the TPM firmware update option to be enabled.
-            g_browser_process->local_state()->SetBoolean(
-                prefs::kFactoryResetTPMFirmwareUpdateRequested, true);
-            LaunchResetScreen();
-          }
-        }),
-        base::TimeDelta());
-    return;
-  }
-
-  // Devices that are still in OOBE may be subject to forced re-enrollment (FRE)
-  // and thus pending for enterprise management. These should not be allowed to
-  // powerwash either. Note that taking consumer device ownership has the side
-  // effect of dropping the FRE requirement if it was previously in effect.
-  const AutoEnrollmentController::FRERequirement requirement =
-      AutoEnrollmentController::GetFRERequirement();
-  if (requirement != AutoEnrollmentController::EXPLICITLY_REQUIRED) {
-    LaunchResetScreen();
-  }
+  LaunchResetScreen();
 }
 
 void CoreOobeHandler::ShowEnableDebuggingScreen() {
@@ -392,7 +364,35 @@ void CoreOobeHandler::HandleSkipToUpdateForTesting() {
 }
 
 void CoreOobeHandler::HandleToggleResetScreen() {
-  ShowDeviceResetScreen();
+  // Powerwash is generally not available on enterprise devices. First, check
+  // the common case of a correctly enrolled device.
+  if (g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->IsEnterpriseManaged()) {
+    // Powerwash is only available if allowed by the admin specifically for the
+    // purpose of installing a TPM firmware update.
+    tpm_firmware_update::ShouldOfferUpdateViaPowerwash(
+        base::BindOnce([](bool offer_update) {
+          if (offer_update) {
+            // Force the TPM firmware update option to be enabled.
+            g_browser_process->local_state()->SetBoolean(
+                prefs::kFactoryResetTPMFirmwareUpdateRequested, true);
+            LaunchResetScreen();
+          }
+        }),
+        base::TimeDelta());
+    return;
+  }
+
+  // Devices that are still in OOBE may be subject to forced re-enrollment (FRE)
+  // and thus pending for enterprise management. These should not be allowed to
+  // powerwash either. Note that taking consumer device ownership has the side
+  // effect of dropping the FRE requirement if it was previously in effect.
+  const AutoEnrollmentController::FRERequirement requirement =
+      AutoEnrollmentController::GetFRERequirement();
+  if (requirement != AutoEnrollmentController::EXPLICITLY_REQUIRED) {
+    LaunchResetScreen();
+  }
 }
 
 void CoreOobeHandler::HandleEnableDebuggingScreen() {
