@@ -651,6 +651,24 @@ body:not(.has-error) #toolbar.expanded {
   opacity: 1;
 }
 
+#recording-timer {
+  align-items: center;
+  color: white;
+  display: flex;
+  font-size: 16px;
+  left: 0;
+  justify-content: center;
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  top: 56px;
+  z-index: 1;
+}
+
+#recording-timer.visible {
+  opacity: 1;
+}
+
 #performance-test {
   align-items: center;
   bottom: 0;

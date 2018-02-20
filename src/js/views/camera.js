@@ -327,6 +327,13 @@ camera.views.Camera = function(context, router) {
       }.bind(this));
 
   /**
+   * Timer for elapsed recording time for video recording.
+   * @type {number?}
+   * @private
+   */
+  this.recordingTimer_ = null;
+
+  /**
    * Window controls animation effect wrapper.
    * @type {camera.util.StyleEffect}
    * @private
@@ -1391,6 +1398,54 @@ camera.views.Camera.prototype.showToastMessage_ = function(message) {
 };
 
 /**
+ * Starts the timer and shows it on screen.
+ * @private
+ */
+camera.views.Camera.prototype.showRecordingTimer_ = function() {
+  // Format number of seconds into "HH:MM:SS" string.
+  var formatSeconds = function(seconds) {
+    var sec = seconds % 60;
+    var min = Math.floor(seconds / 60) % 60;
+    var hr = Math.floor(seconds / 3600);
+    if (sec < 10) {
+      sec = '0' + sec;
+    }
+    if (min < 10) {
+      min = '0' + min;
+    }
+    if (hr < 10) {
+      hr = '0' + hr;
+    }
+    return hr + ':' + min + ':' + sec;
+  }
+
+  var timerElement = document.querySelector('#recording-timer');
+  timerElement.classList.add('visible');
+  var timerTicks = 0;
+  timerElement.textContent = formatSeconds(timerTicks);
+
+  this.recordingTimer_ = setInterval(function() {
+    timerTicks++;
+    timerElement.textContent = formatSeconds(timerTicks);
+  }, 1000);
+};
+
+/**
+ * Stops and hides the timer.
+ * @private
+ */
+camera.views.Camera.prototype.hideRecordingTimer_ = function() {
+  if (this.recordingTimer_) {
+    clearInterval(this.recordingTimer_);
+    this.recordingTimer_ = null;
+  }
+
+  var timerElement = document.querySelector('#recording-timer');
+  timerElement.textContent = '';
+  timerElement.classList.remove('visible');
+};
+
+/**
  * Toggles the toolbar visibility. However, it may delay the operation, if
  * eg. some UI element is hovered.
  *
@@ -1805,6 +1860,7 @@ camera.views.Camera.prototype.takePictureImmediately_ = function(motionPicture) 
 
         var takePictureButton = document.querySelector('#take-picture');
         this.mediaRecorder_.onstop = function(event) {
+          this.hideRecordingTimer_();
           takePictureButton.classList.remove('flash');
           this.enableAudio_(false);
           // Add the motion picture after the recording is ended.
@@ -1829,6 +1885,9 @@ camera.views.Camera.prototype.takePictureImmediately_ = function(motionPicture) 
         // Start recording.
         this.enableAudio_(true);
         this.mediaRecorder_.start();
+
+        // Start to show the elapsed recording time.
+        this.showRecordingTimer_();
 
         // Re-enable the take-picture button to stop recording later and flash
         // the take-picture button until the recording is stopped.
