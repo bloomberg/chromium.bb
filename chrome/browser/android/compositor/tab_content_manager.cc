@@ -191,18 +191,6 @@ void TabContentManager::DetachLiveLayer(int tab_id,
   }
 }
 
-void TabContentManager::OnFinishDecompressThumbnail(int tab_id,
-                                                    bool success,
-                                                    SkBitmap bitmap) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> java_bitmap;
-  if (success)
-    java_bitmap = gfx::ConvertToJavaBitmap(&bitmap);
-
-  Java_TabContentManager_notifyDecompressBitmapFinished(
-      env, weak_java_tab_content_manager_.get(env), tab_id, java_bitmap);
-}
-
 jboolean TabContentManager::HasFullCachedThumbnail(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
