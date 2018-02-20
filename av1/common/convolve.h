@@ -111,6 +111,8 @@ static INLINE ConvolveParams get_conv_params_round(int ref, int do_average,
   if (intbufrange > 16) {
     conv_params.round_0 += intbufrange - 16;
   }
+#else
+  (void)bd;
 #endif  // CONFIG_LOWPRECISION_BLEND
   return conv_params;
 }
@@ -136,6 +138,7 @@ static INLINE ConvolveParams get_conv_params_no_round(int ref, int do_average,
     conv_params.round_1 -= intbufrange - 16;
   }
 #else
+  (void)bd;
   conv_params.round_1 = 0;
 #endif  // CONFIG_LOWPRECISION_BLEND
   // TODO(yunqing): The following dst should only be valid while
