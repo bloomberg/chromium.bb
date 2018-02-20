@@ -21,6 +21,7 @@ class GURL;
 @class OmniboxTextFieldIOS;
 @class OmniboxTextFieldPasteDelegate;
 class WebOmniboxEditController;
+@class OmniboxClearButtonBridge;
 
 namespace ios {
 class ChromeBrowserState;
@@ -157,6 +158,13 @@ class OmniboxViewIOS : public OmniboxView,
   void EmphasizeURLComponents() override;
 
  private:
+  // Creates the clear text UIButton to be used as a right view of |field_|.
+  void CreateClearTextIcon(bool is_incognito);
+
+  // Updates the view to show the appropriate button (e.g. clear text or voice
+  // search) on the right side of |field_|.
+  void UpdateRightDecorations();
+
   // Calculates text attributes according to |display_text| and
   // returns them in an autoreleased object.
   NSAttributedString* ApplyTextAttributes(const base::string16& text);
@@ -178,6 +186,10 @@ class OmniboxViewIOS : public OmniboxView,
   ios::ChromeBrowserState* browser_state_;
 
   OmniboxTextFieldIOS* field_;
+  __strong UIButton* clear_text_button_;
+
+  __strong OmniboxClearButtonBridge* clear_button_bridge_;
+
   OmniboxTextFieldPasteDelegate* paste_delegate_;
   WebOmniboxEditController* controller_;  // weak, owns us
   LeftImageProvider* left_image_provider_;  // weak
