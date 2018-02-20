@@ -249,7 +249,7 @@ _ANDROID_NEGATIVE_FILTER['chromium'] = (
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
-    _ANDROID_NEGATIVE_FILTER['chrome'] + [
+    _ANDROID_NEGATIVE_FILTER['chrome_stable'] + [
         # Tests in HeadlessInvalidCertificateTest class can't be run
         # on chromedriver_webview_shell
         'HeadlessInvalidCertificateTest.*',
