@@ -26,6 +26,8 @@ class Device {
   Status SetUp(const std::string& package,
                const std::string& activity,
                const std::string& process,
+               const std::string& device_socket,
+               const std::string& exec_name,
                const std::string& args,
                bool use_running_app,
                int port);

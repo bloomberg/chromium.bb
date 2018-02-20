@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/test/chromedriver/chrome/adb.h"
 #include "chrome/test/chromedriver/chrome/status.h"
@@ -32,9 +33,18 @@ Device::~Device() {
   release_callback_.Run();
 }
 
+// Only allow completely alpha exec names.
+bool IsValidExecName(const std::string& exec_name) {
+  return std::find_if_not(exec_name.begin(), exec_name.end(), [](char ch) {
+           return base::IsAsciiAlpha(ch);
+         }) == exec_name.end();
+}
+
 Status Device::SetUp(const std::string& package,
                      const std::string& activity,
                      const std::string& process,
+                     const std::string& device_socket,
+                     const std::string& exec_name,
                      const std::string& args,
                      bool use_running_app,
                      int port) {
@@ -48,21 +58,29 @@ Status Device::SetUp(const std::string& package,
 
   std::string known_activity;
   std::string command_line_file;
-  std::string device_socket;
-  std::string exec_name;
+  std::string known_device_socket;
+  std::string known_exec_name;
   if (package.compare("org.chromium.content_shell_apk") == 0) {
     // Chromium content shell.
     known_activity = ".ContentShellActivity";
-    device_socket = "content_shell_devtools_remote";
+    known_device_socket = "content_shell_devtools_remote";
     command_line_file = "/data/local/tmp/content-shell-command-line";
-    exec_name = "content_shell";
+    known_exec_name = "content_shell";
   } else if (package.find("chrome") != std::string::npos &&
              package.find("webview") == std::string::npos) {
     // Chrome.
     known_activity = "com.google.android.apps.chrome.Main";
-    device_socket = "chrome_devtools_remote";
+    known_device_socket = "chrome_devtools_remote";
     command_line_file = kChromeCmdLineFileBeforeM33;
-    exec_name = "chrome";
+    known_exec_name = "chrome";
+    status = adb_->SetDebugApp(serial_, package);
+    if (status.IsError())
+      return status;
+  } else if (!exec_name.empty() && IsValidExecName(exec_name)) {
+    known_exec_name = exec_name;
+    known_device_socket = device_socket;
+    command_line_file = base::StringPrintf("/data/local/tmp/%s_devtools_remote",
+                                           exec_name.c_str());
     status = adb_->SetDebugApp(serial_, package);
     if (status.IsError())
       return status;
@@ -87,16 +105,16 @@ Status Device::SetUp(const std::string& package,
       // There's no way to know if this is set, so write to both locations.
       // This can be removed once support for pre-M33 is no longer needed.
       if (command_line_file == kChromeCmdLineFileBeforeM33) {
-        status = adb_->SetCommandLineFile(
-            serial_, kChromeCmdLineFileBeforeM33, exec_name, args);
-        Status status2 = adb_->SetCommandLineFile(
-            serial_, kChromeCmdLineFile, exec_name, args);
+        status = adb_->SetCommandLineFile(serial_, kChromeCmdLineFileBeforeM33,
+                                          known_exec_name, args);
+        Status status2 = adb_->SetCommandLineFile(serial_, kChromeCmdLineFile,
+                                                  known_exec_name, args);
         if (status.IsError() && status2.IsError())
           return Status(kUnknownError,
               "Failed to set Chrome's command line file on device " + serial_);
       } else {
-        status = adb_->SetCommandLineFile(
-            serial_, command_line_file, exec_name, args);
+        status = adb_->SetCommandLineFile(serial_, command_line_file,
+                                          known_exec_name, args);
         if (status.IsError())
           return status;
       }
@@ -109,7 +127,7 @@ Status Device::SetUp(const std::string& package,
 
     active_package_ = package;
   }
-  this->ForwardDevtoolsPort(package, process, port, &device_socket);
+  this->ForwardDevtoolsPort(package, process, port, &known_device_socket);
 
   return status;
 }

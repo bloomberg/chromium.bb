@@ -106,6 +106,10 @@ struct Capabilities {
 
   std::string android_process;
 
+  std::string android_device_socket;
+
+  std::string android_exec_name;
+
   bool android_use_running_app;
 
   base::FilePath binary;
