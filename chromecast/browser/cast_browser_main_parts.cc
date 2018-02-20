@@ -356,6 +356,10 @@ content::BrowserContext* CastBrowserMainParts::browser_context() {
   return cast_browser_process_->browser_context();
 }
 
+bool CastBrowserMainParts::ShouldContentCreateFeatureList() {
+  return false;
+}
+
 void CastBrowserMainParts::PreMainMessageLoopStart() {
   // GroupedHistograms needs to be initialized before any threads are created
   // to prevent race conditions between calls to Preregister and those threads

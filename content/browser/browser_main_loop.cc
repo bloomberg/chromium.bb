@@ -668,6 +668,16 @@ int BrowserMainLoop::EarlyInitialization() {
       return pre_early_init_error_code;
   }
 
+  if (!parts_ || parts_->ShouldContentCreateFeatureList()) {
+    // Note that we do not initialize a new FeatureList when calling this for
+    // the second time.
+    const base::CommandLine* command_line =
+        base::CommandLine::ForCurrentProcess();
+    base::FeatureList::InitializeInstance(
+        command_line->GetSwitchValueASCII(switches::kEnableFeatures),
+        command_line->GetSwitchValueASCII(switches::kDisableFeatures));
+  }
+
 #if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   // We use quite a few file descriptors for our IPC as well as disk the disk
   // cache,and the default limit on the Mac is low (256), so bump it up.
@@ -861,14 +871,6 @@ int BrowserMainLoop::PreCreateThreads() {
   // redirection experiment concludes https://crbug.com/622400.
   if (!base::SequencedWorkerPool::IsEnabled())
     base::SequencedWorkerPool::EnableForProcess();
-
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  // Note that we do not initialize a new FeatureList when calling this for
-  // the second time.
-  base::FeatureList::InitializeInstance(
-      command_line->GetSwitchValueASCII(switches::kEnableFeatures),
-      command_line->GetSwitchValueASCII(switches::kDisableFeatures));
 
   InitializeMemoryManagementComponent();
 

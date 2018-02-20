@@ -72,6 +72,7 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   content::BrowserContext* browser_context();
 
   // content::BrowserMainParts implementation:
+  bool ShouldContentCreateFeatureList() override;
   void PreMainMessageLoopStart() override;
   void PostMainMessageLoopStart() override;
   void ToolkitInitialized() override;

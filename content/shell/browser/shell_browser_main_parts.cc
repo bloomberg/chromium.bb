@@ -139,6 +139,7 @@ int ShellBrowserMainParts::PreEarlyInitialization() {
   net::NetworkChangeNotifier::SetFactory(
       new net::NetworkChangeNotifierFactoryAndroid());
 #endif
+  SetupFieldTrials();
   return RESULT_CODE_NORMAL_EXIT;
 }
 
@@ -180,7 +181,6 @@ void ShellBrowserMainParts::SetupFieldTrials() {
 }
 
 int ShellBrowserMainParts::PreCreateThreads() {
-  SetupFieldTrials();
 #if defined(OS_ANDROID)
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
