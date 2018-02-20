@@ -133,6 +133,7 @@ viz_component("common") {
     "surfaces/parent_local_surface_id_allocator.h",
     "surfaces/surface_id.cc",
     "surfaces/surface_id.h",
+    "surfaces/surface_info.cc",
     "surfaces/surface_info.h",
     "switches.cc",
     "switches.h",
