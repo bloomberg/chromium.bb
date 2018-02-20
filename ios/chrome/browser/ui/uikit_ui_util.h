@@ -202,6 +202,17 @@ bool IsCompactTablet();
 // vertical size class.
 bool IsCompactHeight();
 
+// Whether the |environment| has a compact vertical size class.
+bool IsCompactHeight(id<UITraitEnvironment> environment);
+
+// Returns whether the toolbar is split between top and bottom toolbar or if it
+// is displayed as only one toolbar.
+bool IsSplitToolbarMode();
+
+// Returns whether the |environment|'s toolbar is split between top and bottom
+// toolbar or if it is displayed as only one toolbar.
+bool IsSplitToolbarMode(id<UITraitEnvironment> environment);
+
 // Returns the current first responder.
 UIResponder* GetFirstResponder();
 

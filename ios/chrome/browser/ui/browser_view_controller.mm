@@ -2069,7 +2069,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 // The height of the secondary toolbar with the bottom safe area inset included.
 // Returns 0 if the toolbar should be hidden.
 - (CGFloat)secondaryToolbarHeightWithInset {
-  if (!IsSplitToolbarMode())
+  if (!IsSplitToolbarMode(self))
     return 0;
 
   UIView* secondaryToolbar =
