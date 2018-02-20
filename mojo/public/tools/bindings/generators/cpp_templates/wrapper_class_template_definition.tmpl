@@ -11,9 +11,9 @@ template <typename StructPtrType>
 template <typename T,
           typename std::enable_if<std::is_same<
               T, {{struct.name}}>::value>::type*>
-bool {{struct.name}}::Equals(const T& other) const {
+bool {{struct.name}}::Equals(const T& other_struct) const {
 {%- for field in struct.fields %}
-  if (!mojo::Equals(this->{{field.name}}, other.{{field.name}}))
+  if (!mojo::Equals(this->{{field.name}}, other_struct.{{field.name}}))
     return false;
 {%- endfor %}
   return true;
