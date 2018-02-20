@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/display/persistent_window_info.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ash/wm/drag_details.h"
 #include "base/gtest_prod_util.h"
@@ -238,16 +239,25 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   // Gets/Sets the bounds of the window before it was moved by the auto window
   // management. As long as it was not auto-managed, it will return NULL.
-  base::Optional<gfx::Rect> pre_auto_manage_window_bounds() const {
+  const base::Optional<gfx::Rect> pre_auto_manage_window_bounds() {
     return pre_auto_manage_window_bounds_;
   }
   void SetPreAutoManageWindowBounds(const gfx::Rect& bounds);
 
   // Gets/Sets the property that is used on window added to workspace event.
-  base::Optional<gfx::Rect> pre_added_to_workspace_window_bounds() const {
+  const base::Optional<gfx::Rect> pre_added_to_workspace_window_bounds() {
     return pre_added_to_workspace_window_bounds_;
   }
   void SetPreAddedToWorkspaceWindowBounds(const gfx::Rect& bounds);
+
+  // Gets/Sets the persistent window info that is used on restoring persistent
+  // window bounds in multi-displays scenario.
+  const base::Optional<PersistentWindowInfo> persistent_window_info() {
+    return persistent_window_info_;
+  }
+  void SetPersistentWindowInfo(
+      const PersistentWindowInfo& persistent_window_info);
+  void ResetPersistentWindowInfo();
 
   // Layout related properties
 
@@ -425,6 +435,11 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // A property which resets when bounds is changed by user and sets when it is
   // nullptr, and window is removing from a workspace.
   base::Optional<gfx::Rect> pre_added_to_workspace_window_bounds_;
+
+  // A property to remember the persistent window info used in multi-displays
+  // scenario to attempt to restore windows to their original bounds when
+  // displays are restored to their previous states.
+  base::Optional<PersistentWindowInfo> persistent_window_info_;
 
   base::ObserverList<WindowStateObserver> observer_list_;
 
