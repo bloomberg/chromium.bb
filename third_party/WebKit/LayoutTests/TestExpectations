@@ -3314,3 +3314,6 @@ crbug.com/812941 [ Win7 ] external/wpt/css/css-multicol/multicol-span-all-margin
 crbug.com/812941 [ Win7 ] external/wpt/css/css-multicol/multicol-table-cell-vertical-align-001.xht [ Failure Pass ]
 
 crbug.com/813704 [ Win7 Mac ] http/tests/images/png-partial-load-as-document.html [ Failure Pass ]
+
+# TODO(rakuco): Remove after the corresponding bug is solved on the infra side.
+crbug.com/813762 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/javascript-url-abort/javascript-url-abort-return-value-string.tentative.html [ Failure ]
