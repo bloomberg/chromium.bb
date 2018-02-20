@@ -211,13 +211,13 @@ void PrintUsage(const char* argv0) {
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit_manager;
-  base::TaskScheduler::CreateAndStartWithDefaultParams("cert_verify_tool");
-  base::ScopedClosureRunner cleanup(
-      base::BindOnce([] { base::TaskScheduler::GetInstance()->Shutdown(); }));
   if (!base::CommandLine::Init(argc, argv)) {
     std::cerr << "ERROR in CommandLine::Init\n";
     return 1;
   }
+  base::TaskScheduler::CreateAndStartWithDefaultParams("cert_verify_tool");
+  base::ScopedClosureRunner cleanup(
+      base::BindOnce([] { base::TaskScheduler::GetInstance()->Shutdown(); }));
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
