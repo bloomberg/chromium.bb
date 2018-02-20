@@ -35,10 +35,12 @@
 #include "platform/PlatformChromeClient.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/scheduler/child/web_scheduler.h"
 #include "platform/scroll/MainThreadScrollingReason.h"
 #include "platform/scroll/ProgrammaticScrollAnimator.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/scroll/SmoothScrollSequencer.h"
+#include "public/platform/Platform.h"
 
 static const int kPixelsPerLineStep = 40;
 static const float kMinFractionToStepWhenPaging = 0.875f;
@@ -620,7 +622,8 @@ void ScrollableArea::ShowOverlayScrollbars() {
     return;
 
   if (!fade_overlay_scrollbars_timer_) {
-    fade_overlay_scrollbars_timer_.reset(new Timer<ScrollableArea>(
+    fade_overlay_scrollbars_timer_.reset(new TaskRunnerTimer<ScrollableArea>(
+        Platform::Current()->MainThread()->Scheduler()->CompositorTaskRunner(),
         this, &ScrollableArea::FadeOverlayScrollbarsTimerFired));
   }
 
