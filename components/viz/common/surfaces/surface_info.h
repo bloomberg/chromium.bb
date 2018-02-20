@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_COMMON_SURFACES_SURFACE_INFO_H_
 
 #include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/common/viz_common_export.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace IPC {
@@ -20,7 +21,7 @@ class SurfaceInfoDataView;
 }  // namespace mojom
 
 // This class contains information about the surface that is being embedded.
-class SurfaceInfo {
+class VIZ_COMMON_EXPORT SurfaceInfo {
  public:
   SurfaceInfo() = default;
   SurfaceInfo(const SurfaceId& id,
@@ -47,6 +48,8 @@ class SurfaceInfo {
   float device_scale_factor() const { return device_scale_factor_; }
   const gfx::Size& size_in_pixels() const { return size_in_pixels_; }
 
+  std::string ToString() const;
+
  private:
   friend struct mojo::StructTraits<mojom::SurfaceInfoDataView, SurfaceInfo>;
   friend struct IPC::ParamTraits<SurfaceInfo>;
@@ -55,6 +58,9 @@ class SurfaceInfo {
   float device_scale_factor_ = 1.f;
   gfx::Size size_in_pixels_;
 };
+
+VIZ_COMMON_EXPORT std::ostream& operator<<(std::ostream& out,
+                                           const SurfaceInfo& surface_info);
 
 }  // namespace viz
 
