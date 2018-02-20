@@ -299,7 +299,12 @@ class BlinkScrollbarPartAnimationTimer {
  public:
   BlinkScrollbarPartAnimationTimer(BlinkScrollbarPartAnimation* animation,
                                    CFTimeInterval duration)
-      : timer_(this, &BlinkScrollbarPartAnimationTimer::TimerFired),
+      : timer_(Platform::Current()
+                   ->MainThread()
+                   ->Scheduler()
+                   ->CompositorTaskRunner(),
+               this,
+               &BlinkScrollbarPartAnimationTimer::TimerFired),
         start_time_(0.0),
         duration_(duration),
         animation_(animation),
@@ -333,7 +338,7 @@ class BlinkScrollbarPartAnimationTimer {
     [animation_ setCurrentProgress:progress];
   }
 
-  Timer<BlinkScrollbarPartAnimationTimer> timer_;
+  TaskRunnerTimer<BlinkScrollbarPartAnimationTimer> timer_;
   double start_time_;                       // In seconds.
   double duration_;                         // In seconds.
   BlinkScrollbarPartAnimation* animation_;  // Weak, owns this.
