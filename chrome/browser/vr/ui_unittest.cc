@@ -61,12 +61,27 @@ const std::set<UiElementName> kElementsVisibleInBrowsing = {
     kReticle,
     kLaser,
     kVoiceSearchButton,
+    kControllerTouchpadButton,
+    kControllerAppButton,
+    kControllerHomeButton,
 };
 const std::set<UiElementName> kElementsVisibleWithExitPrompt = {
-    kBackgroundFront, kBackgroundLeft,      kBackgroundBack, kBackgroundRight,
-    kBackgroundTop,   kBackgroundBottom,    kCeiling,        kFloor,
-    kExitPrompt,      kExitPromptBackplane, kController,     kReticle,
+    kBackgroundFront,
+    kBackgroundLeft,
+    kBackgroundBack,
+    kBackgroundRight,
+    kBackgroundTop,
+    kBackgroundBottom,
+    kCeiling,
+    kFloor,
+    kExitPrompt,
+    kExitPromptBackplane,
+    kController,
+    kReticle,
     kLaser,
+    kControllerTouchpadButton,
+    kControllerAppButton,
+    kControllerHomeButton,
 };
 const std::set<UiElementName> kElementsVisibleWithExitWarning = {
     kScreenDimmer, kExitWarningBackground, kExitWarningText};
@@ -447,6 +462,9 @@ TEST_F(UiTest, UiUpdatesForFullscreenChanges) {
   visible_in_fullscreen.insert(kCloseButton);
   visible_in_fullscreen.insert(kExclusiveScreenToast);
   visible_in_fullscreen.insert(kController);
+  visible_in_fullscreen.insert(kControllerTouchpadButton);
+  visible_in_fullscreen.insert(kControllerAppButton);
+  visible_in_fullscreen.insert(kControllerHomeButton);
   visible_in_fullscreen.insert(kLaser);
   visible_in_fullscreen.insert(kReticle);
 

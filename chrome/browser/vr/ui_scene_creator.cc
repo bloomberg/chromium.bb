@@ -454,9 +454,8 @@ std::unique_ptr<UiElement> CreateControllerLabel(UiElementName name,
   return layout;
 }
 
-std::unique_ptr<UiElement> CreateControllerModel(Model* model) {
-  auto controller = std::make_unique<Controller>();
-  controller->SetDrawPhase(kPhaseForeground);
+std::unique_ptr<UiElement> CreateControllerElement(Model* model) {
+  auto controller = Create<Controller>(kController, kPhaseForeground);
   controller->AddBinding(VR_BIND_FUNC(gfx::Transform, Model, model,
                                       model->controller.transform, Controller,
                                       controller.get(), set_local_transform));
@@ -464,7 +463,8 @@ std::unique_ptr<UiElement> CreateControllerModel(Model* model) {
                                       model->controller.opacity, Controller,
                                       controller.get(), SetOpacity));
 
-  auto touchpad_button = Create<Rect>(kNone, kPhaseForeground);
+  auto touchpad_button =
+      Create<Rect>(kControllerTouchpadButton, kPhaseForeground);
   touchpad_button->SetColor(model->color_scheme().controller_button);
   touchpad_button->SetSize(kControllerWidth, kControllerWidth);
   touchpad_button->SetRotate(1, 0, 0, -base::kPiFloat / 2);
@@ -480,7 +480,8 @@ std::unique_ptr<UiElement> CreateControllerModel(Model* model) {
       Rect, touchpad_button.get(), SetColor));
   controller->AddChild(std::move(touchpad_button));
 
-  auto app_button = Create<VectorIcon>(kNone, kPhaseForeground, 100);
+  auto app_button =
+      Create<VectorIcon>(kControllerAppButton, kPhaseForeground, 100);
   app_button->SetIcon(kDaydreamControllerAppButtonIcon);
   app_button->SetColor(model->color_scheme().controller_button);
   app_button->SetSize(kControllerSmallButtonSize, kControllerSmallButtonSize);
@@ -494,7 +495,8 @@ std::unique_ptr<UiElement> CreateControllerModel(Model* model) {
                    VectorIcon, app_button.get(), SetColor));
   controller->AddChild(std::move(app_button));
 
-  auto home_button = Create<VectorIcon>(kNone, kPhaseForeground, 100);
+  auto home_button =
+      Create<VectorIcon>(kControllerHomeButton, kPhaseForeground, 100);
   home_button->SetIcon(kDaydreamControllerHomeButtonIcon);
   home_button->SetColor(model->color_scheme().controller_button);
   home_button->SetSize(kControllerSmallButtonSize, kControllerSmallButtonSize);
@@ -508,30 +510,6 @@ std::unique_ptr<UiElement> CreateControllerModel(Model* model) {
                    VectorIcon, home_button.get(), SetColor));
   controller->AddChild(std::move(home_button));
 
-  return controller;
-}
-
-std::unique_ptr<UiElement> CreateGltfControllerModel(Model* model) {
-  auto controller = std::make_unique<GltfController>();
-  controller->SetDrawPhase(kPhaseForeground);
-  controller->AddBinding(
-      VR_BIND_FUNC(gfx::Transform, Model, model, model->controller.transform,
-                   GltfController, controller.get(), set_local_transform));
-  controller->AddBinding(VR_BIND_FUNC(
-      bool, Model, model,
-      model->controller.touchpad_button_state == UiInputManager::DOWN,
-      GltfController, controller.get(), set_touchpad_button_pressed));
-  controller->AddBinding(
-      VR_BIND_FUNC(bool, Model, model,
-                   model->controller.app_button_state == UiInputManager::DOWN,
-                   GltfController, controller.get(), set_app_button_pressed));
-  controller->AddBinding(
-      VR_BIND_FUNC(bool, Model, model,
-                   model->controller.home_button_state == UiInputManager::DOWN,
-                   GltfController, controller.get(), set_home_button_pressed));
-  controller->AddBinding(VR_BIND_FUNC(float, Model, model,
-                                      model->controller.opacity, GltfController,
-                                      controller.get(), SetOpacity));
   return controller;
 }
 
@@ -1533,9 +1511,7 @@ void UiSceneCreator::CreateController() {
           base::Unretained(group.get()))));
   scene_->AddUiElement(kControllerRoot, std::move(group));
 
-  auto controller = model_->procedural_controller_enabled
-                        ? CreateControllerModel(model_)
-                        : CreateGltfControllerModel(model_);
+  auto controller = CreateControllerElement(model_);
 
   auto callout_group = Create<UiElement>(kNone, kPhaseNone);
   callout_group->SetVisible(false);

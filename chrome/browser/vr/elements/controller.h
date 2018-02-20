@@ -49,6 +49,7 @@ class Controller : public UiElement {
               const CameraModel& model) const final;
 
   gfx::Transform LocalTransform() const override;
+  gfx::Transform GetTargetLocalTransform() const override;
 
   gfx::Transform local_transform_;
 

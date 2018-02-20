@@ -40,11 +40,6 @@ class FakeUiElementRenderer : public UiElementRenderer {
                             int gridline_count,
                             float opacity) override;
 
-  void DrawGltfController(
-      ControllerMesh::State state,
-      float opacity,
-      const gfx::Transform& model_view_proj_matrix) override;
-
   void DrawController(float opacity,
                       const gfx::Transform& model_view_proj_matrix) override;
 

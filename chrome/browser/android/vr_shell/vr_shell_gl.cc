@@ -152,17 +152,6 @@ gfx::RectF GfxRectFromUV(gvr::Rectf rect) {
                     rect.top - rect.bottom);
 }
 
-void LoadControllerMeshTask(
-    base::WeakPtr<VrShellGl> weak_vr_shell_gl,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  auto controller_mesh = ControllerMesh::LoadFromResources();
-  if (controller_mesh) {
-    task_runner->PostTask(
-        FROM_HERE, base::Bind(&VrShellGl::SetControllerMesh, weak_vr_shell_gl,
-                              base::Passed(&controller_mesh)));
-  }
-}
-
 }  // namespace
 
 VrShellGl::VrShellGl(GlBrowserInterface* browser_interface,
@@ -320,13 +309,6 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
       ui_texture_id, true);
 
   webvr_vsync_align_ = base::FeatureList::IsEnabled(features::kWebVrVsyncAlign);
-
-  if (daydream_support_ && !reinitializing) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::TaskPriority::BACKGROUND},
-        base::Bind(LoadControllerMeshTask, weak_ptr_factory_.GetWeakPtr(),
-                   task_runner_));
-  }
 
   if (reinitializing && mailbox_bridge_) {
     mailbox_bridge_ = nullptr;
@@ -1332,10 +1314,6 @@ base::WeakPtr<VrShellGl> VrShellGl::GetWeakPtr() {
 
 base::WeakPtr<BrowserUiInterface> VrShellGl::GetBrowserUiWeakPtr() {
   return ui_->GetBrowserUiWeakPtr();
-}
-
-void VrShellGl::SetControllerMesh(std::unique_ptr<ControllerMesh> mesh) {
-  ui_->ui_element_renderer()->SetUpController(std::move(mesh));
 }
 
 void VrShellGl::OnVSync(base::TimeTicks frame_time) {

@@ -24,7 +24,6 @@ static_library("vr_common") {
     "browser_ui_interface.h",
     "content_input_delegate.cc",
     "content_input_delegate.h",
-    "controller_mesh.h",
     "cpu_surface_provider.cc",
     "cpu_surface_provider.h",
     "databinding/binding.h",
@@ -58,8 +57,6 @@ static_library("vr_common") {
     "elements/exit_prompt_texture.h",
     "elements/full_screen_rect.cc",
     "elements/full_screen_rect.h",
-    "elements/gltf_controller.cc",
-    "elements/gltf_controller.h",
     "elements/invisible_hit_target.cc",
     "elements/invisible_hit_target.h",
     "elements/keyboard.cc",
@@ -126,10 +123,6 @@ static_library("vr_common") {
     "fps_meter.h",
     "ganesh_surface_provider.cc",
     "ganesh_surface_provider.h",
-    "gltf_asset.cc",
-    "gltf_asset.h",
-    "gltf_parser.cc",
-    "gltf_parser.h",
     "keyboard_delegate.h",
     "keyboard_ui_interface.h",
     "macros.h",
@@ -215,12 +208,6 @@ static_library("vr_common") {
     "//ui/gl",
   ]
 
-  if (enable_gvr_services) {
-    sources += [ "controller_mesh.cc" ]
-
-    public_deps += [ "//chrome/browser/resources:vr_shell_resources" ]
-  }
-
   deps = [
     "//base",
     "//cc/animation",
@@ -273,7 +260,6 @@ test("vr_common_unittests") {
     "elements/vector_icon_unittest.cc",
     "elements/viewport_aware_root_unittest.cc",
     "fps_meter_unittest.cc",
-    "gltf_parser_unittest.cc",
     "pose_util_unittest.cc",
     "service/vr_device_manager_unittest.cc",
     "sliding_average_unittest.cc",
@@ -373,12 +359,6 @@ source_set("vr_test_support") {
     "test/vr_test_suite.h",
   ]
 
-  if (!enable_gvr_services) {
-    # For testing, we add back controller_mesh.cc on platforms where it isn't
-    # included by vr_common.
-    sources += [ "controller_mesh.cc" ]
-  }
-
   public_deps = [
     ":vr_common",
     ":vr_test_pak",
@@ -401,7 +381,6 @@ source_set("vr_test_support") {
   ]
 
   data = [
-    "test/data/",
     "$root_out_dir/vr_test.pak",
   ]
 }
@@ -425,7 +404,6 @@ source_set("vr_gl_test_support") {
 repack("vr_test_pak") {
   sources = [
     "$root_gen_dir/chrome/generated_resources_en-US.pak",
-    "$root_gen_dir/chrome/vr_shell_resources.pak",
     "$root_gen_dir/components/components_resources.pak",
     "$root_gen_dir/components/strings/components_strings_en-US.pak",
   ]
@@ -434,7 +412,6 @@ repack("vr_test_pak") {
 
   deps = [
     "//chrome/app:generated_resources",
-    "//chrome/browser/resources:vr_shell_resources",
     "//components/resources:components_resources",
     "//components/strings",
   ]

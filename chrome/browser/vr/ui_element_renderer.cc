@@ -42,7 +42,6 @@ void UiElementRenderer::Init() {
   webvr_renderer_ = std::make_unique<WebVrRenderer>();
   reticle_renderer_ = std::make_unique<Reticle::Renderer>();
   laser_renderer_ = std::make_unique<Laser::Renderer>();
-  gltf_controller_renderer_ = std::make_unique<GltfController::Renderer>();
   controller_renderer_ = std::make_unique<Controller::Renderer>();
   gradient_grid_renderer_ = std::make_unique<Grid::Renderer>();
   shadow_renderer_ = std::make_unique<Shadow::Renderer>();
@@ -94,17 +93,6 @@ void UiElementRenderer::DrawGradientGridQuad(
   gradient_grid_renderer_->Draw(model_view_proj_matrix, edge_color,
                                 center_color, grid_color, gridline_count,
                                 opacity);
-}
-
-void UiElementRenderer::DrawGltfController(
-    ControllerMesh::State state,
-    float opacity,
-    const gfx::Transform& model_view_proj_matrix) {
-  if (!gltf_controller_renderer_->IsSetUp()) {
-    return;
-  }
-  FlushIfNecessary(gltf_controller_renderer_.get());
-  gltf_controller_renderer_->Draw(state, opacity, model_view_proj_matrix);
 }
 
 void UiElementRenderer::DrawController(
@@ -175,10 +163,6 @@ void UiElementRenderer::Flush() {
   textured_quad_renderer_->Flush();
   external_textured_quad_renderer_->Flush();
   last_renderer_ = nullptr;
-}
-
-void UiElementRenderer::SetUpController(std::unique_ptr<ControllerMesh> mesh) {
-  gltf_controller_renderer_->SetUp(std::move(mesh));
 }
 
 void UiElementRenderer::FlushIfNecessary(BaseRenderer* renderer) {
