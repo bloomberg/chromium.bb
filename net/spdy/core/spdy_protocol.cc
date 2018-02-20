@@ -248,6 +248,7 @@ const char* const kHttp2AuthorityHeader = ":authority";
 const char* const kHttp2MethodHeader = ":method";
 const char* const kHttp2PathHeader = ":path";
 const char* const kHttp2SchemeHeader = ":scheme";
+const char* const kHttp2ProtocolHeader = ":protocol";
 
 const char* const kHttp2StatusHeader = ":status";
 

@@ -322,6 +322,7 @@ SPDY_EXPORT_PRIVATE extern const char* const kHttp2AuthorityHeader;
 SPDY_EXPORT_PRIVATE extern const char* const kHttp2MethodHeader;
 SPDY_EXPORT_PRIVATE extern const char* const kHttp2PathHeader;
 SPDY_EXPORT_PRIVATE extern const char* const kHttp2SchemeHeader;
+SPDY_EXPORT_PRIVATE extern const char* const kHttp2ProtocolHeader;
 
 // Name of pseudo-header defined for HTTP/2 responses.
 SPDY_EXPORT_PRIVATE extern const char* const kHttp2StatusHeader;
