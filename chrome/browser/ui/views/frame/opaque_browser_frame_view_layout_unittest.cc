@@ -49,6 +49,7 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
   void set_maximized(bool maximized) { maximized_ = maximized; }
 
   // OpaqueBrowserFrameViewLayoutDelegate:
+  bool IsIncognito() const override { return false; }
   bool ShouldShowWindowIcon() const override { return !window_title_.empty(); }
   bool ShouldShowWindowTitle() const override { return !window_title_.empty(); }
   base::string16 GetWindowTitle() const override { return window_title_; }
@@ -237,7 +238,8 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
       caption_buttons_width +=
           avatar_button_->GetPreferredSize().width() +
           (maximized ? OBFVL::kCaptionSpacing
-                     : -GetLayoutSize(NEW_TAB_BUTTON).width());
+                     : -GetLayoutSize(NEW_TAB_BUTTON, delegate_->IsIncognito())
+                            .width());
     }
     int tabstrip_x = OpaqueBrowserFrameView::kAvatarIconPadding;
     if (show_caption_buttons && caption_buttons_on_left) {

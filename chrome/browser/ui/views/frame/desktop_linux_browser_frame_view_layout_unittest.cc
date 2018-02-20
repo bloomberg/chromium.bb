@@ -41,6 +41,7 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
   ~TestLayoutDelegate() override {}
 
   // OpaqueBrowserFrameViewLayoutDelegate:
+  bool IsIncognito() const override { return false; }
   bool ShouldShowWindowIcon() const override { return false; }
   bool ShouldShowWindowTitle() const override { return false; }
   base::string16 GetWindowTitle() const override { return base::string16(); }

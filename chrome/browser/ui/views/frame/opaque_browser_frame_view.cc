@@ -352,6 +352,10 @@ gfx::ImageSkia OpaqueBrowserFrameView::GetFaviconForTabIconView() {
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, OpaqueBrowserFrameViewLayoutDelegate implementation:
 
+bool OpaqueBrowserFrameView::IsIncognito() const {
+  return browser_view()->tabstrip()->IsIncognito();
+}
+
 bool OpaqueBrowserFrameView::ShouldShowWindowIcon() const {
   views::WidgetDelegate* delegate = frame()->widget_delegate();
   return ShouldShowWindowTitleBar() && delegate &&

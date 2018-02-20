@@ -86,6 +86,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   gfx::ImageSkia GetFaviconForTabIconView() override;
 
   // OpaqueBrowserFrameViewLayoutDelegate implementation:
+  bool IsIncognito() const override;
   bool ShouldShowWindowIcon() const override;
   bool ShouldShowWindowTitle() const override;
   base::string16 GetWindowTitle() const override;
