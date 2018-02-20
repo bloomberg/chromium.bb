@@ -214,13 +214,11 @@ void av1_warp_affine_sse4_1(const int32_t *mat, const uint8_t *ref, int width,
   const int bd = 8;
   const int use_conv_params =
       (conv_params->round == CONVOLVE_OPT_NO_ROUND && conv_params->dst);
-  const int reduce_bits_horiz =
-      use_conv_params ? conv_params->round_0 : HORSHEAR_REDUCE_PREC_BITS;
+  const int reduce_bits_horiz = conv_params->round_0;
   const int reduce_bits_vert = use_conv_params
                                    ? conv_params->round_1
                                    : 2 * FILTER_BITS - reduce_bits_horiz;
-  const int offset_bits_horiz =
-      use_conv_params ? bd + FILTER_BITS - 1 : bd + FILTER_BITS - 1;
+  const int offset_bits_horiz = bd + FILTER_BITS - 1;
   if (use_conv_params) {
     conv_params->do_post_rounding = 1;
   }
@@ -482,11 +480,10 @@ void av1_warp_affine_sse4_1(const int32_t *mat, const uint8_t *ref, int width,
               (__m128i *)&conv_params
                   ->dst[(i + k + 4) * conv_params->dst_stride + j];
           const __m128i round_const = _mm_set1_epi32(
-              -(1 << (bd + 2 * FILTER_BITS - conv_params->round_0 - 1)) +
-              ((1 << (conv_params->round_1)) >> 1));
+              -(1 << (bd + 2 * FILTER_BITS - reduce_bits_horiz - 1)) +
+              ((1 << (reduce_bits_vert)) >> 1));
           res_lo = _mm_add_epi32(res_lo, round_const);
-          res_lo =
-              _mm_sra_epi32(res_lo, _mm_cvtsi32_si128(conv_params->round_1));
+          res_lo = _mm_sra_epi32(res_lo, _mm_cvtsi32_si128(reduce_bits_vert));
 #if CONFIG_JNT_COMP
           if (conv_params->use_jnt_comp_avg) {
             if (comp_avg) {
@@ -506,8 +503,7 @@ void av1_warp_affine_sse4_1(const int32_t *mat, const uint8_t *ref, int width,
 #endif
           if (p_width > 4) {
             res_hi = _mm_add_epi32(res_hi, round_const);
-            res_hi =
-                _mm_sra_epi32(res_hi, _mm_cvtsi32_si128(conv_params->round_1));
+            res_hi = _mm_sra_epi32(res_hi, _mm_cvtsi32_si128(reduce_bits_vert));
 #if CONFIG_JNT_COMP
             if (conv_params->use_jnt_comp_avg) {
               if (comp_avg) {

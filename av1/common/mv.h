@@ -51,10 +51,6 @@ typedef struct mv32 {
 
 #define WARP_PARAM_REDUCE_BITS 6
 
-// Precision bits reduction after horizontal shear
-#define HORSHEAR_REDUCE_PREC_BITS 3
-#define VERSHEAR_REDUCE_PREC_BITS (2 * FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS)
-
 #define WARPEDDIFF_PREC_BITS (WARPEDMODEL_PREC_BITS - WARPEDPIXEL_PREC_BITS)
 
 /* clang-format off */

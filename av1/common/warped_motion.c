@@ -424,21 +424,15 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
   int32_t tmp[15 * 8];
   const int use_conv_params =
       (conv_params->round == CONVOLVE_OPT_NO_ROUND && conv_params->dst);
-  int reduce_bits_horiz =
-      use_conv_params ? conv_params->round_0 : HORSHEAR_REDUCE_PREC_BITS;
+  int reduce_bits_horiz = conv_params->round_0;
   if (!use_conv_params && bd + FILTER_BITS + 2 - reduce_bits_horiz > 16)
     reduce_bits_horiz += bd + FILTER_BITS - reduce_bits_horiz - 14;
   const int reduce_bits_vert = use_conv_params
                                    ? conv_params->round_1
                                    : 2 * FILTER_BITS - reduce_bits_horiz;
-  const int max_bits_horiz = use_conv_params
-                                 ? bd + FILTER_BITS + 1 - conv_params->round_0
-                                 : bd + FILTER_BITS + 1 - reduce_bits_horiz;
-  const int offset_bits_horiz =
-      use_conv_params ? bd + FILTER_BITS - 1 : bd + FILTER_BITS - 1;
-  const int offset_bits_vert = use_conv_params
-                                   ? bd + 2 * FILTER_BITS - conv_params->round_0
-                                   : bd + 2 * FILTER_BITS - reduce_bits_horiz;
+  const int max_bits_horiz = bd + FILTER_BITS + 1 - reduce_bits_horiz;
+  const int offset_bits_horiz = bd + FILTER_BITS - 1;
+  const int offset_bits_vert = bd + 2 * FILTER_BITS - reduce_bits_horiz;
   if (use_conv_params) {
     conv_params->do_post_rounding = 1;
   }
@@ -511,10 +505,10 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
                 &conv_params
                      ->dst[(i - p_row + k + 4) * conv_params->dst_stride +
                            (j - p_col + l + 4)];
-            sum = ROUND_POWER_OF_TWO(sum, conv_params->round_1) -
-                  (1 << (offset_bits_horiz + FILTER_BITS -
-                         conv_params->round_0 - conv_params->round_1)) -
-                  (1 << (offset_bits_vert - conv_params->round_1));
+            sum = ROUND_POWER_OF_TWO(sum, reduce_bits_vert) -
+                  (1 << (offset_bits_horiz + FILTER_BITS - reduce_bits_horiz -
+                         reduce_bits_vert)) -
+                  (1 << (offset_bits_vert - reduce_bits_vert));
 #if CONFIG_JNT_COMP
             if (conv_params->use_jnt_comp_avg) {
               if (conv_params->do_average) {
@@ -686,7 +680,7 @@ static INLINE int error_measure(int err) {
     F := FILTER_BITS = 7 (or else the above ranges need adjusting)
          So a *single* filter stage maps a k-bit input to a (k + F + 1)-bit
          intermediate value.
-    H := HORSHEAR_REDUCE_PREC_BITS
+    H := ROUND0_BITS
     V := VERSHEAR_REDUCE_PREC_BITS
     (and note that we must have H + V = 2*F for the output to have the same
      scale as the input)
@@ -724,19 +718,13 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
   const int bd = 8;
   const int use_conv_params =
       (conv_params->round == CONVOLVE_OPT_NO_ROUND && conv_params->dst);
-  const int reduce_bits_horiz =
-      use_conv_params ? conv_params->round_0 : HORSHEAR_REDUCE_PREC_BITS;
+  const int reduce_bits_horiz = conv_params->round_0;
   const int reduce_bits_vert = use_conv_params
                                    ? conv_params->round_1
                                    : 2 * FILTER_BITS - reduce_bits_horiz;
-  const int max_bits_horiz =
-      use_conv_params ? bd + FILTER_BITS + 1 - conv_params->round_0
-                      : bd + FILTER_BITS + 1 - HORSHEAR_REDUCE_PREC_BITS;
-  const int offset_bits_horiz =
-      use_conv_params ? bd + FILTER_BITS - 1 : bd + FILTER_BITS - 1;
-  const int offset_bits_vert =
-      use_conv_params ? bd + 2 * FILTER_BITS - conv_params->round_0
-                      : bd + 2 * FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS;
+  const int max_bits_horiz = bd + FILTER_BITS + 1 - reduce_bits_horiz;
+  const int offset_bits_horiz = bd + FILTER_BITS - 1;
+  const int offset_bits_vert = bd + 2 * FILTER_BITS - reduce_bits_horiz;
   if (use_conv_params) {
     conv_params->do_post_rounding = 1;
   }
@@ -815,10 +803,10 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
                 &conv_params
                      ->dst[(i - p_row + k + 4) * conv_params->dst_stride +
                            (j - p_col + l + 4)];
-            sum = ROUND_POWER_OF_TWO(sum, conv_params->round_1) -
-                  (1 << (offset_bits_horiz + FILTER_BITS -
-                         conv_params->round_0 - conv_params->round_1)) -
-                  (1 << (offset_bits_vert - conv_params->round_1));
+            sum = ROUND_POWER_OF_TWO(sum, reduce_bits_vert) -
+                  (1 << (offset_bits_horiz + FILTER_BITS - reduce_bits_horiz -
+                         reduce_bits_vert)) -
+                  (1 << (offset_bits_vert - reduce_bits_vert));
 #if CONFIG_JNT_COMP
             if (conv_params->use_jnt_comp_avg) {
               if (conv_params->do_average) {
