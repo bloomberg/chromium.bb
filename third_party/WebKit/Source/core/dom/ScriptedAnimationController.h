@@ -81,6 +81,9 @@ class CORE_EXPORT ScriptedAnimationController
 
   void DispatchEventsAndCallbacksForPrinting();
 
+  bool CurrentFrameHadRAF() const { return current_frame_had_raf_; }
+  bool NextFrameHasPendingRAF() const { return next_frame_has_pending_raf_; }
+
  private:
   explicit ScriptedAnimationController(Document*);
 
@@ -104,6 +107,10 @@ class CORE_EXPORT ScriptedAnimationController
   using MediaQueryListListeners =
       HeapListHashSet<Member<MediaQueryListListener>>;
   MediaQueryListListeners media_query_list_listeners_;
+
+  // Used for animation metrics; see cc::CompositorTimingHistory::DidDraw.
+  bool current_frame_had_raf_;
+  bool next_frame_has_pending_raf_;
 };
 
 }  // namespace blink

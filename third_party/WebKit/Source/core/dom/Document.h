@@ -1415,6 +1415,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void RecordUkmOutliveTimeAfterShutdown(int outlive_time_count);
 
+  bool CurrentFrameHadRAF() const;
+  bool NextFrameHasPendingRAF() const;
+
  protected:
   Document(const DocumentInit&, DocumentClassFlags = kDefaultDocumentClass);
 

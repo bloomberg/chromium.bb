@@ -82,7 +82,9 @@ class CC_EXPORT CompositorTimingHistory {
                base::TimeTicks impl_frame_time,
                size_t composited_animations_count,
                size_t main_thread_animations_count,
-               size_t main_thread_compositable_animations_count);
+               size_t main_thread_compositable_animations_count,
+               bool current_frame_had_raf,
+               bool next_frame_has_pending_raf);
   void DidSubmitCompositorFrame();
   void DidReceiveCompositorFrameAck();
   void WillInvalidateOnImplSide();
@@ -163,6 +165,7 @@ class CC_EXPORT CompositorTimingHistory {
   bool previous_frame_had_composited_animations_ = false;
   bool previous_frame_had_main_thread_animations_ = false;
   bool previous_frame_had_main_thread_compositable_animations_ = false;
+  bool previous_frame_had_raf_ = false;
 
   TreePriority tree_priority_ = SAME_PRIORITY_FOR_BOTH_TREES;
 

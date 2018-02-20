@@ -85,8 +85,12 @@ void DocumentAnimations::UpdateAnimations(
         main_thread_compositable_animations_count =
             document.Timeline().MainThreadCompositableAnimationsCount();
       }
-      host->SetAnimationCounts(total_animations_count,
-                               main_thread_compositable_animations_count);
+      // In the CompositorTimingHistory::DidDraw where we know that there is
+      // visual update, we will use document.CurrentFrameHadRAF as a signal to
+      // record UMA or not.
+      host->SetAnimationCounts(
+          total_animations_count, main_thread_compositable_animations_count,
+          document.CurrentFrameHadRAF(), document.NextFrameHasPendingRAF());
     }
   }
 

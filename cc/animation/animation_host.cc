@@ -251,6 +251,8 @@ void AnimationHost::PushPropertiesToImplThread(AnimationHost* host_impl) {
   host_impl->main_thread_animations_count_ = main_thread_animations_count_;
   host_impl->main_thread_compositable_animations_count_ =
       main_thread_compositable_animations_count_;
+  host_impl->current_frame_had_raf_ = current_frame_had_raf_;
+  host_impl->next_frame_has_pending_raf_ = next_frame_has_pending_raf_;
 }
 
 scoped_refptr<ElementAnimations>
@@ -636,7 +638,9 @@ size_t AnimationHost::CompositedAnimationsCount() const {
 
 void AnimationHost::SetAnimationCounts(
     size_t total_animations_count,
-    size_t main_thread_compositable_animations_count) {
+    size_t main_thread_compositable_animations_count,
+    bool current_frame_had_raf,
+    bool next_frame_has_pending_raf) {
   // The |total_animations_count| is the total number of blink::Animations.
   // A blink::Animation holds a CompositorAnimationPlayerHolder, which holds
   // a CompositorAnimationPlayer, which holds a AnimationPlayer. In other
@@ -660,6 +664,14 @@ void AnimationHost::SetAnimationCounts(
   }
   DCHECK_GE(main_thread_animations_count_,
             main_thread_compositable_animations_count_);
+  if (current_frame_had_raf != current_frame_had_raf_) {
+    current_frame_had_raf_ = current_frame_had_raf;
+    SetNeedsPushProperties();
+  }
+  if (next_frame_has_pending_raf != next_frame_has_pending_raf_) {
+    next_frame_has_pending_raf_ = next_frame_has_pending_raf;
+    SetNeedsPushProperties();
+  }
 }
 
 size_t AnimationHost::MainThreadAnimationsCount() const {
@@ -668,6 +680,14 @@ size_t AnimationHost::MainThreadAnimationsCount() const {
 
 size_t AnimationHost::MainThreadCompositableAnimationsCount() const {
   return main_thread_compositable_animations_count_;
+}
+
+bool AnimationHost::CurrentFrameHadRAF() const {
+  return current_frame_had_raf_;
+}
+
+bool AnimationHost::NextFrameHasPendingRAF() const {
+  return next_frame_has_pending_raf_;
 }
 
 }  // namespace cc
