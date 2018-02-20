@@ -244,11 +244,11 @@ void ArcImeService::OnTextInputTypeChanged(ui::TextInputType type) {
     input_method->OnTextInputTypeChanged(this);
 }
 
-void ArcImeService::OnCursorRectChanged(const gfx::Rect& rect) {
+void ArcImeService::OnCursorRectChanged(const gfx::Rect& rect,
+                                        bool is_screen_coordinates) {
   InvalidateSurroundingTextAndSelectionRange();
-  if (cursor_rect_ == rect)
+  if (!UpdateCursorRect(rect, is_screen_coordinates))
     return;
-  cursor_rect_ = rect;
 
   ui::InputMethod* const input_method = GetInputMethod();
   if (input_method)
@@ -273,14 +273,14 @@ void ArcImeService::OnCursorRectChangedWithSurroundingText(
     const gfx::Rect& rect,
     const gfx::Range& text_range,
     const base::string16& text_in_range,
-    const gfx::Range& selection_range) {
+    const gfx::Range& selection_range,
+    bool is_screen_coordinates) {
   text_range_ = text_range;
   text_in_range_ = text_in_range;
   selection_range_ = selection_range;
 
-  if (cursor_rect_ == rect)
+  if (!UpdateCursorRect(rect, is_screen_coordinates))
     return;
-  cursor_rect_ = rect;
 
   ui::InputMethod* const input_method = GetInputMethod();
   if (input_method)
@@ -384,29 +384,7 @@ ui::TextInputType ArcImeService::GetTextInputType() const {
 }
 
 gfx::Rect ArcImeService::GetCaretBounds() const {
-  if (!focused_arc_window_)
-    return gfx::Rect();
-  aura::Window* window = focused_arc_window_;
-
-  // |cursor_rect_| holds the rectangle reported from ARC apps, in the "screen
-  // coordinates" in ARC, counted by physical pixels.
-  // Chrome OS input methods expect the coordinates in Chrome OS screen, within
-  // device independent pixels. Two factors are involved for the conversion.
-
-  // Divide by the scale factor. To convert from physical pixels to DIP.
-  // The default scale factor is always used because Android side is always
-  // using the default scale factor regardless of dynamic scale factor in Chrome
-  // side.
-  gfx::Rect converted = gfx::ScaleToEnclosingRect(
-      cursor_rect_, 1.0 / GetDefaultDeviceScaleFactor());
-
-  // Add the offset of the window showing the ARC app.
-  // TODO(yoshiki): Support for non-arc toplevel window. The following code do
-  // not work correctly with arc windows inside non-arc toplevel window (eg.
-  // notification).
-  converted.Offset(
-      window->GetToplevelWindow()->GetBoundsInScreen().OffsetFromOrigin());
-  return converted;
+  return cursor_rect_;
 }
 
 bool ArcImeService::GetTextRange(gfx::Range* range) const {
@@ -503,6 +481,31 @@ void ArcImeService::InvalidateSurroundingTextAndSelectionRange() {
   text_range_ = gfx::Range::InvalidRange();
   text_in_range_ = base::string16();
   selection_range_ = gfx::Range::InvalidRange();
+}
+
+bool ArcImeService::UpdateCursorRect(const gfx::Rect& rect,
+                                     bool is_screen_coordinates) {
+  // Divide by the scale factor. To convert from physical pixels to DIP.
+  // The default scale factor is always used because Android side is always
+  // using the default scale factor regardless of dynamic scale factor in Chrome
+  // side.
+  gfx::Rect converted(
+      gfx::ScaleToEnclosingRect(rect, 1 / GetDefaultDeviceScaleFactor()));
+
+  // If the supplied coordinates are relative to the window, add the offset of
+  // the window showing the ARC app.
+  if (!is_screen_coordinates) {
+    if (!focused_arc_window_)
+      return false;
+    converted.Offset(focused_arc_window_->GetToplevelWindow()
+                         ->GetBoundsInScreen()
+                         .OffsetFromOrigin());
+  }
+
+  if (cursor_rect_ == converted)
+    return false;
+  cursor_rect_ = converted;
+  return true;
 }
 
 }  // namespace arc

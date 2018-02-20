@@ -315,7 +315,8 @@ TEST_F(ArcImeServiceTest, GetTextFromRange) {
   const gfx::Range selection_range(cursor_pos, cursor_pos);
 
   instance_->OnCursorRectChangedWithSurroundingText(
-      gfx::Rect(0, 0, 1, 1), text_range, text_in_range, selection_range);
+      gfx::Rect(0, 0, 1, 1), text_range, text_in_range, selection_range,
+      true /* is_screen_coordinates */);
 
   gfx::Range temp;
   instance_->GetTextRange(&temp);
@@ -357,17 +358,28 @@ TEST_F(ArcImeServiceTest, OnKeyboardAppearanceChanged) {
 TEST_F(ArcImeServiceTest, GetCaretBounds) {
   EXPECT_EQ(gfx::Rect(), instance_->GetCaretBounds());
 
+  const gfx::Rect window_rect(123, 321, 100, 100);
+  arc_win_->SetBounds(window_rect);
   instance_->OnWindowFocused(arc_win_.get(), nullptr);
+
   const gfx::Rect cursor_rect(10, 12, 2, 8);
-  instance_->OnCursorRectChanged(cursor_rect);
+  instance_->OnCursorRectChanged(cursor_rect, true);  // screen coordinates
   EXPECT_EQ(cursor_rect, instance_->GetCaretBounds());
+
+  instance_->OnCursorRectChanged(cursor_rect, false);  // window coordinates
+  EXPECT_EQ(cursor_rect + window_rect.OffsetFromOrigin(),
+            instance_->GetCaretBounds());
 
   const double new_scale_factor = 10.0;
   const gfx::Rect new_cursor_rect(10 * new_scale_factor, 12 * new_scale_factor,
                                   2 * new_scale_factor, 8 * new_scale_factor);
   instance_->SetOverrideDefaultDeviceScaleFactorForTesting(new_scale_factor);
-  instance_->OnCursorRectChanged(new_cursor_rect);
+  instance_->OnCursorRectChanged(new_cursor_rect, true);  // screen coordinates
   EXPECT_EQ(cursor_rect, instance_->GetCaretBounds());
+
+  instance_->OnCursorRectChanged(new_cursor_rect, false);  // window coordinates
+  EXPECT_EQ(cursor_rect + window_rect.OffsetFromOrigin(),
+            instance_->GetCaretBounds());
 }
 
 }  // namespace arc
