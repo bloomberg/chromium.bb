@@ -21,12 +21,6 @@ const char kAshDeveloperShortcuts[] = "ash-dev-shortcuts";
 // Disables the dimming and blur of the wallpaper on login and lock screens.
 const char kAshDisableLoginDimAndBlur[] = "ash-disable-login-dim-and-blur";
 
-// Use a single in-process shelf data model shared between Chrome and Ash.
-// This only applies to the Classic Ash and Mus configs; synchronization between
-// two models is required when running the Mash config via --mash.
-const char kAshDisableShelfModelSynchronization[] =
-    "ash-disable-shelf-model-synchronization";
-
 // Disables a smoother animation for screen rotation.
 const char kAshDisableSmoothScreenRotation[] =
     "ash-disable-smooth-screen-rotation";

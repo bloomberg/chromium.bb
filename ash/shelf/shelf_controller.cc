@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/remote_shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_prefs.h"
@@ -19,7 +18,6 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/auto_reset.h"
-#include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -103,14 +101,6 @@ ShelfController::ShelfController()
     : is_touchable_app_context_menu_enabled_(
           features::IsTouchableAppContextMenuEnabled()),
       message_center_observer_(this) {
-  // Synchronization is required in the Mash config, since Chrome and Ash run in
-  // separate processes; it's optional via kAshDisableShelfModelSynchronization
-  // in the Classic Ash config, where Chrome can uses Ash's ShelfModel directly.
-  should_synchronize_shelf_models_ =
-      Shell::GetAshConfig() == Config::MASH ||
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshDisableShelfModelSynchronization);
-
   // Set the delegate and title string for the back button.
   model_.SetShelfItemDelegate(ShelfID(kBackButtonId), nullptr);
   DCHECK_EQ(0, model_.ItemIndexByID(ShelfID(kBackButtonId)));
@@ -172,29 +162,26 @@ void ShelfController::AddObserver(
   mojom::ShelfObserverAssociatedPtr observer_ptr;
   observer_ptr.Bind(std::move(observer));
 
-  if (should_synchronize_shelf_models_) {
-    // Synchronize two ShelfModel instances, one each owned by Ash and Chrome.
-    // Notify Chrome of existing ShelfModel items and delegates created by Ash.
-    for (int i = 0; i < model_.item_count(); ++i) {
-      ShelfItem item = model_.items()[i];
-      ShelfItemDelegate* delegate = model_.GetShelfItemDelegate(item.id);
-      // Notify observers of the delegate before the items themselves; Chrome
-      // creates default delegates if none exist, breaking ShelfWindowWatcher.
-      if (delegate) {
-        observer_ptr->OnShelfItemDelegateChanged(
-            item.id, delegate->CreateInterfacePtrAndBind());
-      }
-      // Pass null images to avoid transport costs; clients don't use images.
-      item.image = gfx::ImageSkia();
-      observer_ptr->OnShelfItemAdded(i, item);
+  // Synchronize two ShelfModel instances, one each owned by Ash and Chrome.
+  // Notify Chrome of existing ShelfModel items and delegates created by Ash.
+  for (int i = 0; i < model_.item_count(); ++i) {
+    ShelfItem item = model_.items()[i];
+    ShelfItemDelegate* delegate = model_.GetShelfItemDelegate(item.id);
+    // Notify observers of the delegate before the items themselves; Chrome
+    // creates default delegates if none exist, breaking ShelfWindowWatcher.
+    if (delegate) {
+      observer_ptr->OnShelfItemDelegateChanged(
+          item.id, delegate->CreateInterfacePtrAndBind());
     }
+    // Pass null images to avoid transport costs; clients don't use images.
+    item.image = gfx::ImageSkia();
+    observer_ptr->OnShelfItemAdded(i, item);
   }
 
   observers_.AddPtr(std::move(observer_ptr));
 }
 
 void ShelfController::AddShelfItem(int32_t index, const ShelfItem& item) {
-  DCHECK(should_synchronize_shelf_models_) << " Unexpected model sync";
   DCHECK(!applying_remote_shelf_model_changes_) << " Unexpected model change";
   index = index < 0 ? model_.item_count() : index;
   DCHECK_GT(index, 0) << " Items can not precede the AppList";
@@ -205,7 +192,6 @@ void ShelfController::AddShelfItem(int32_t index, const ShelfItem& item) {
 }
 
 void ShelfController::RemoveShelfItem(const ShelfID& id) {
-  DCHECK(should_synchronize_shelf_models_) << " Unexpected model sync";
   DCHECK(!applying_remote_shelf_model_changes_) << " Unexpected model change";
   const int index = model_.ItemIndexByID(id);
   DCHECK_GE(index, 0) << " No item found with the id: " << id;
@@ -217,7 +203,6 @@ void ShelfController::RemoveShelfItem(const ShelfID& id) {
 }
 
 void ShelfController::MoveShelfItem(const ShelfID& id, int32_t index) {
-  DCHECK(should_synchronize_shelf_models_) << " Unexpected model sync";
   DCHECK(!applying_remote_shelf_model_changes_) << " Unexpected model change";
   const int current_index = model_.ItemIndexByID(id);
   DCHECK_GE(current_index, 0) << " No item found with the id: " << id;
@@ -237,7 +222,6 @@ void ShelfController::MoveShelfItem(const ShelfID& id, int32_t index) {
 }
 
 void ShelfController::UpdateShelfItem(const ShelfItem& item) {
-  DCHECK(should_synchronize_shelf_models_) << " Unexpected model sync";
   DCHECK(!applying_remote_shelf_model_changes_) << " Unexpected model change";
   const int index = model_.ItemIndexByID(item.id);
   DCHECK_GE(index, 0) << " No item found with the id: " << item.id;
@@ -255,7 +239,6 @@ void ShelfController::UpdateShelfItem(const ShelfItem& item) {
 void ShelfController::SetShelfItemDelegate(
     const ShelfID& id,
     mojom::ShelfItemDelegatePtr delegate) {
-  DCHECK(should_synchronize_shelf_models_) << " Unexpected model sync";
   DCHECK(!applying_remote_shelf_model_changes_) << " Unexpected model change";
   base::AutoReset<bool> reset(&applying_remote_shelf_model_changes_, true);
   if (delegate.is_bound())
@@ -266,7 +249,7 @@ void ShelfController::SetShelfItemDelegate(
 }
 
 void ShelfController::ShelfItemAdded(int index) {
-  if (applying_remote_shelf_model_changes_ || !should_synchronize_shelf_models_)
+  if (applying_remote_shelf_model_changes_)
     return;
 
   // Pass null images to avoid transport costs; clients don't use images.
@@ -278,7 +261,7 @@ void ShelfController::ShelfItemAdded(int index) {
 }
 
 void ShelfController::ShelfItemRemoved(int index, const ShelfItem& old_item) {
-  if (applying_remote_shelf_model_changes_ || !should_synchronize_shelf_models_)
+  if (applying_remote_shelf_model_changes_)
     return;
 
   observers_.ForAllPtrs([old_item](mojom::ShelfObserver* observer) {
@@ -287,7 +270,7 @@ void ShelfController::ShelfItemRemoved(int index, const ShelfItem& old_item) {
 }
 
 void ShelfController::ShelfItemMoved(int start_index, int target_index) {
-  if (applying_remote_shelf_model_changes_ || !should_synchronize_shelf_models_)
+  if (applying_remote_shelf_model_changes_)
     return;
 
   const ShelfItem& item = model_.items()[target_index];
@@ -297,7 +280,7 @@ void ShelfController::ShelfItemMoved(int start_index, int target_index) {
 }
 
 void ShelfController::ShelfItemChanged(int index, const ShelfItem& old_item) {
-  if (applying_remote_shelf_model_changes_ || !should_synchronize_shelf_models_)
+  if (applying_remote_shelf_model_changes_)
     return;
 
   // Pass null images to avoid transport costs; clients don't use images.
@@ -311,7 +294,7 @@ void ShelfController::ShelfItemChanged(int index, const ShelfItem& old_item) {
 void ShelfController::ShelfItemDelegateChanged(const ShelfID& id,
                                                ShelfItemDelegate* old_delegate,
                                                ShelfItemDelegate* delegate) {
-  if (applying_remote_shelf_model_changes_ || !should_synchronize_shelf_models_)
+  if (applying_remote_shelf_model_changes_)
     return;
 
   observers_.ForAllPtrs([id, delegate](mojom::ShelfObserver* observer) {

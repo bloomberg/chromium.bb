@@ -30,6 +30,7 @@ namespace ash {
 
 // Ash's ShelfController owns the ShelfModel and implements interface functions
 // that allow Chrome to modify and observe the Shelf and ShelfModel state.
+// Chrome keeps its own ShelfModel copy in sync with Ash's ShelfModel.
 class ASH_EXPORT ShelfController : public message_center::MessageCenterObserver,
                                    public mojom::ShelfController,
                                    public ShelfModelObserver,
@@ -46,10 +47,6 @@ class ASH_EXPORT ShelfController : public message_center::MessageCenterObserver,
   void BindRequest(mojom::ShelfControllerRequest request);
 
   ShelfModel* model() { return &model_; }
-
-  bool should_synchronize_shelf_models() const {
-    return should_synchronize_shelf_models_;
-  }
 
   // mojom::ShelfController:
   void AddObserver(mojom::ShelfObserverAssociatedPtrInfo observer) override;
@@ -97,9 +94,6 @@ class ASH_EXPORT ShelfController : public message_center::MessageCenterObserver,
 
   // Bindings for the ShelfController interface.
   mojo::BindingSet<mojom::ShelfController> bindings_;
-
-  // True if Ash and Chrome should synchronize separate ShelfModel instances.
-  bool should_synchronize_shelf_models_ = false;
 
   // True when applying changes from the remote ShelfModel owned by Chrome.
   // Changes to the local ShelfModel should not be reported during this time.

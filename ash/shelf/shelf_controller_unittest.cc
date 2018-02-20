@@ -94,46 +94,8 @@ TEST_F(ShelfControllerTest, InitializesBackButtonAndAppListItemDelegate) {
   EXPECT_TRUE(model->GetShelfItemDelegate(ShelfID(kAppListId)));
 }
 
-TEST_F(ShelfControllerTest, ShelfModelChangesWithoutSync) {
+TEST_F(ShelfControllerTest, ShelfModelChangeSynchronization) {
   ShelfController* controller = Shell::Get()->shelf_controller();
-  if (controller->should_synchronize_shelf_models())
-    return;
-
-  TestShelfObserver observer;
-  mojom::ShelfObserverAssociatedPtr observer_ptr;
-  mojo::AssociatedBinding<mojom::ShelfObserver> binding(
-      &observer, mojo::MakeRequestAssociatedWithDedicatedPipe(&observer_ptr));
-  controller->AddObserver(observer_ptr.PassInterface());
-
-  // The ShelfModel should be initialized with a two items, one for the back
-  // button and one for the AppList. Without syncing, the observer should not be
-  // notified of ShelfModel changes.
-  EXPECT_EQ(2, controller->model()->item_count());
-  EXPECT_EQ(0u, observer.added_count());
-  EXPECT_EQ(0u, observer.removed_count());
-
-  // Add a ShelfModel item; |observer| should not be notified without sync.
-  ShelfItem item;
-  item.type = TYPE_PINNED_APP;
-  item.id = ShelfID("foo");
-  int index = controller->model()->Add(item);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(3, controller->model()->item_count());
-  EXPECT_EQ(0u, observer.added_count());
-  EXPECT_EQ(0u, observer.removed_count());
-
-  // Remove a ShelfModel item; |observer| should not be notified without sync.
-  controller->model()->RemoveItemAt(index);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2, controller->model()->item_count());
-  EXPECT_EQ(0u, observer.added_count());
-  EXPECT_EQ(0u, observer.removed_count());
-}
-
-TEST_F(ShelfControllerTest, ShelfModelChangesWithSync) {
-  ShelfController* controller = Shell::Get()->shelf_controller();
-  if (!controller->should_synchronize_shelf_models())
-    return;
 
   TestShelfObserver observer;
   mojom::ShelfObserverAssociatedPtr observer_ptr;
@@ -143,13 +105,13 @@ TEST_F(ShelfControllerTest, ShelfModelChangesWithSync) {
   base::RunLoop().RunUntilIdle();
 
   // The ShelfModel should be initialized with a two items, one for the back
-  // button and one for the AppList. When syncing, the observer is immediately
-  // notified of existing shelf items.
+  // button and one for the AppList. The observer is immediately notified of
+  // existing shelf items.
   EXPECT_EQ(2, controller->model()->item_count());
   EXPECT_EQ(2u, observer.added_count());
   EXPECT_EQ(0u, observer.removed_count());
 
-  // Add a ShelfModel item; |observer| should be notified when syncing.
+  // Add a ShelfModel item; |observer| should be notified.
   ShelfItem item;
   item.type = TYPE_PINNED_APP;
   item.id = ShelfID("foo");
@@ -159,7 +121,7 @@ TEST_F(ShelfControllerTest, ShelfModelChangesWithSync) {
   EXPECT_EQ(3u, observer.added_count());
   EXPECT_EQ(0u, observer.removed_count());
 
-  // Remove a ShelfModel item; |observer| should be notified when syncing.
+  // Remove a ShelfModel item; |observer| should be notified.
   controller->model()->RemoveItemAt(index);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, controller->model()->item_count());
@@ -183,10 +145,8 @@ TEST_F(ShelfControllerTest, ShelfModelChangesWithSync) {
   EXPECT_EQ(1u, observer.removed_count());
 }
 
-TEST_F(ShelfControllerTest, ShelfItemImageSync) {
+TEST_F(ShelfControllerTest, ShelfItemImageSynchronization) {
   ShelfController* controller = Shell::Get()->shelf_controller();
-  if (!controller->should_synchronize_shelf_models())
-    return;
 
   TestShelfObserver observer;
   mojom::ShelfObserverAssociatedPtr observer_ptr;
