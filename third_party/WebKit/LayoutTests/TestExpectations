@@ -3284,6 +3284,8 @@ crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/timeline-paint/tim
 # End of Root Layer Scrolling expectations
 ################################################################################
 
+crbug.com/813468 [ Mac ] virtual/navigation-mojo-response/http/tests/serviceworker/chromium/memory-cache.html [ Failure Pass ]
+
 # TODO(ricea): Remove these once fetch abort implementation is complete
 crbug.com/750599 external/wpt/fetch/api/abort/general-serviceworker.https.html [ Timeout ]
 crbug.com/750599 external/wpt/fetch/api/abort/general-sharedworker.html [ Timeout ]
