@@ -1150,19 +1150,6 @@ static void setup_segmentation_dequant(AV1_COMMON *const cm) {
       cm->v_iqmatrix[i][j] = av1_iqmatrix(cm, qmlevel, AOM_PLANE_V, j);
     }
 #endif  // CONFIG_AOM_QM
-#if CONFIG_NEW_QUANT
-    for (int dq = 0; dq < QUANT_PROFILES; dq++) {
-      // DC and AC coefs
-      for (int b = 0; b < 2; ++b) {
-        av1_get_dequant_val_nuq(cm->y_dequant_QTX[i][b != 0], b,
-                                cm->y_dequant_nuq_QTX[i][dq][b], dq);
-        av1_get_dequant_val_nuq(cm->u_dequant_QTX[i][b != 0], b,
-                                cm->u_dequant_nuq_QTX[i][dq][b], dq);
-        av1_get_dequant_val_nuq(cm->v_dequant_QTX[i][b != 0], b,
-                                cm->v_dequant_nuq_QTX[i][dq][b], dq);
-      }
-    }
-#endif  //  CONFIG_NEW_QUANT
   }
 }
 
@@ -3343,13 +3330,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   }
   cm->all_lossless = all_lossless(cm, xd);
   setup_segmentation_dequant(cm);
-#if CONFIG_NEW_QUANT
-  if (!cm->all_lossless) {
-    cm->dq_type = aom_rb_read_literal(rb, DQ_TYPE_BITS);
-  } else {
-    cm->dq_type = DQ_MULT;
-  }
-#endif  // CONFIG_NEW_QUANT
   if (!cm->all_lossless) {
     setup_cdef(cm, rb);
   }

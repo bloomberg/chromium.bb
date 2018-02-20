@@ -51,10 +51,6 @@ typedef struct macroblock_plane {
   const int16_t *zbin_QTX;
   const int16_t *round_QTX;
   const int16_t *dequant_QTX;
-#if CONFIG_NEW_QUANT
-  const cuml_bins_type_nuq *cuml_bins_nuq[X0_PROFILES];
-  const dequant_val_type_nuq *dequant_val_nuq_QTX[QUANT_PROFILES];
-#endif  // CONFIG_NEW_QUANT
 } MACROBLOCK_PLANE;
 
 typedef int av1_coeff_cost[PLANE_TYPES][REF_TYPES][COEF_BANDS][COEFF_CONTEXTS]

@@ -658,17 +658,6 @@ typedef enum ATTRIBUTE_PACKED {
 #define SUPERRES_SCALE_DENOMINATOR_MIN (SCALE_NUMERATOR + 1)
 #endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
-#if CONFIG_NEW_QUANT
-typedef enum ATTRIBUTE_PACKED {
-  DQ_MULT,          // Dequant is just multiplication
-  DQ_MULT_OFFSET1,  // Dequant is multiplication and offset1
-  DQ_MULT_OFFSET2,  // Dequant is multiplication and offset2
-  DQ_MULT_OFFSET3,  // Dequant is multiplication and offset3
-  DQ_TYPES
-} DqType;
-#define DQ_TYPE_BITS 2
-#endif  // CONFIG_NEW_QUANT
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif

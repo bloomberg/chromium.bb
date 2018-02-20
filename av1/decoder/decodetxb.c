@@ -50,7 +50,6 @@ static INLINE int rec_eob_pos(const int eob_token, const int extra) {
   return eob;
 }
 
-#if !CONFIG_NEW_QUANT
 static INLINE int get_dqv(const int16_t *dequant, int coeff_idx,
                           const qm_val_t *iqmatrix) {
   int dqv = dequant[!!coeff_idx];
@@ -63,18 +62,10 @@ static INLINE int get_dqv(const int16_t *dequant, int coeff_idx,
 #endif
   return dqv;
 }
-#endif
 
 uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
                             aom_reader *const r, const int blk_row,
                             const int blk_col, const int plane,
-#if CONFIG_NEW_QUANT
-#if CONFIG_AOM_QM
-                            int dq_profile,
-#else
-                            dequant_val_type_nuq *dq_val,
-#endif  // CONFIG_AOM_QM
-#endif  // CONFIG_NEW_QUANT
                             const TXB_CTX *const txb_ctx, const TX_SIZE tx_size,
                             int16_t *const max_scan_line, int *const eob) {
   FRAME_CONTEXT *const ec_ctx = xd->tile_ctx;
@@ -89,13 +80,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   const int16_t *const dequant = pd->seg_dequant_QTX[mbmi->segment_id];
   tran_low_t *const tcoeffs = pd->dqcoeff;
   const int shift = av1_get_tx_scale(tx_size);
-#if CONFIG_NEW_QUANT
-#if !CONFIG_AOM_QM
-  const tran_low_t *dqv_val = &dq_val[0][0];
-#endif  // !CONFIG_AOM_QM
-
-  const int nq_shift = shift;
-#endif  // CONFIG_NEW_QUANT && !CONFIG_AOM_QM
   const int bwl = get_txb_bwl(tx_size);
   const int width = get_txb_wide(tx_size);
   const int height = get_txb_high(tx_size);
@@ -273,19 +257,8 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       }
       cul_level += level;
       tran_low_t dq_coeff;
-#if CONFIG_NEW_QUANT
-#if CONFIG_AOM_QM
-      dq_coeff = av1_dequant_abscoeff_nuq(level, dequant[!!c], dq_profile, !!c,
-                                          nq_shift);
-#else
-      dqv_val = &dq_val[pos != 0][0];
-      dq_coeff =
-          av1_dequant_abscoeff_nuq(level, dequant[!!c], dqv_val, nq_shift);
-#endif  // CONFIG_AOM_QM
-#else
       dq_coeff = level * get_dqv(dequant, scan[c], iqmatrix);
       dq_coeff = dq_coeff >> shift;
-#endif  // CONFIG_NEW_QUANT
       if (sign) {
         dq_coeff = -dq_coeff;
       }
@@ -312,25 +285,12 @@ uint8_t av1_read_coeffs_txb_facade(const AV1_COMMON *const cm,
 
   const BLOCK_SIZE bsize = mbmi->sb_type;
   const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
-#if CONFIG_NEW_QUANT
-  const int seg_id = mbmi->segment_id;
-  const int ref = is_inter_block(mbmi);
-  int dq = get_dq_profile(cm->dq_type, xd->qindex[seg_id], ref, pd->plane_type);
-#endif  //  CONFIG_NEW_QUANT
 
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, pd->above_context + col,
               pd->left_context + row, &txb_ctx);
-  uint8_t cul_level =
-      av1_read_coeffs_txb(cm, xd, r, row, col, plane,
-#if CONFIG_NEW_QUANT
-#if CONFIG_AOM_QM
-                          dq,
-#else
-                          pd->seg_dequant_nuq_QTX[seg_id][dq],
-#endif  // CONFIG_AOM_QM
-#endif  // CONFIG_NEW_QUANT
-                          &txb_ctx, tx_size, max_scan_line, eob);
+  uint8_t cul_level = av1_read_coeffs_txb(cm, xd, r, row, col, plane, &txb_ctx,
+                                          tx_size, max_scan_line, eob);
   av1_set_contexts(xd, pd, plane, tx_size, cul_level, col, row);
   return cul_level;
 }

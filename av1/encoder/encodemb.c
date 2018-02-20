@@ -151,12 +151,6 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
           ? pd->seg_iqmatrix[seg_id][qm_tx_size]
           : cm->giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
 #endif  // CONFIG_AOM_QM
-#if CONFIG_NEW_QUANT
-  int dq = get_dq_profile(cm->dq_type, mb->qindex, ref, plane_type);
-#if !CONFIG_AOM_QM
-  const dequant_val_type_nuq *dequant_val = p->dequant_val_nuq_QTX[dq];
-#endif  // !CONFIG_AOM_QM
-#endif  // CONFIG_NEW_QUANT
   int64_t rd_cost0, rd_cost1;
   int16_t t0, t1;
   int i, final_eob = 0;
@@ -236,18 +230,7 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
        */
       int64_t d2_a;
       if (x_a != 0) {
-#if CONFIG_NEW_QUANT
-#if CONFIG_AOM_QM
-        dx = av1_dequant_coeff_nuq(x_a, dqv, dq, rc != 0, 0) -
-             (coeff[rc] * (1 << shift));
-#else
-        dx = av1_dequant_coeff_nuq(x_a, dqv, dequant_val[rc != 0], 0) -
-             (coeff[rc] * (1 << shift));
-#endif  // CONFIG_AOM_QM
-        dx >>= xd->bd - 8;
-#else   // CONFIG_NEW_QUANT
         dx -= ((dqv >> (xd->bd - 8)) + sz) ^ sz;
-#endif  // CONFIG_NEW_QUANT
         d2_a = (int64_t)dx * dx;
       } else {
         d2_a = d0;
@@ -321,20 +304,10 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
       int dqc_a = 0;
       if (best_x || best_eob_x) {
         if (x_a != 0) {
-#if CONFIG_NEW_QUANT
-#if CONFIG_AOM_QM
-          dqc_a = av1_dequant_abscoeff_nuq(abs(x_a), dqv, dq, rc != 0, shift);
-#else
-          dqc_a = av1_dequant_abscoeff_nuq(abs(x_a), dqv, dequant_val[rc != 0],
-                                           shift);
-#endif  // CONFIG_AOM_QM
-          if (sz) dqc_a = -dqc_a;
-#else
           if (x_a < 0)
             dqc_a = -((-x_a * dqv) >> shift);
           else
             dqc_a = (x_a * dqv) >> shift;
-#endif  // CONFIG_NEW_QUANT
         } else {
           dqc_a = 0;
         }
@@ -427,15 +400,9 @@ typedef enum QUANT_FUNC {
 
 static AV1_QUANT_FACADE
     quant_func_list[AV1_XFORM_QUANT_TYPES][QUANT_FUNC_TYPES] = {
-#if !CONFIG_NEW_QUANT
       { av1_quantize_fp_facade, av1_highbd_quantize_fp_facade },
       { av1_quantize_b_facade, av1_highbd_quantize_b_facade },
       { av1_quantize_dc_facade, av1_highbd_quantize_dc_facade },
-#else   // !CONFIG_NEW_QUANT
-      { av1_quantize_fp_nuq_facade, av1_highbd_quantize_fp_nuq_facade },
-      { av1_quantize_b_nuq_facade, av1_highbd_quantize_b_nuq_facade },
-      { av1_quantize_dc_nuq_facade, av1_highbd_quantize_dc_nuq_facade },
-#endif  // !CONFIG_NEW_QUANT
       { NULL, NULL }
     };
 
@@ -450,9 +417,6 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size,
                                     cm->reduced_tx_set_used);
 
-#if CONFIG_NEW_QUANT
-  const int is_inter = is_inter_block(mbmi);
-#endif
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
 
   tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
@@ -481,10 +445,6 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
       &p->src_diff[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
   qparam.log_scale = av1_get_tx_scale(tx_size);
   qparam.tx_size = tx_size;
-#if CONFIG_NEW_QUANT
-  qparam.dq = get_dq_profile(cm->dq_type, x->qindex, is_inter, plane_type);
-  qparam.x0 = get_x0_profile(x->optimize, x->qindex, is_inter, plane_type);
-#endif  // CONFIG_NEW_QUANT
 #if CONFIG_AOM_QM
   qparam.qmatrix = qmatrix;
   qparam.iqmatrix = iqmatrix;

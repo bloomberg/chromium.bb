@@ -4600,13 +4600,6 @@ void av1_encode_frame(AV1_COMP *cpi) {
   // Indicates whether or not to use a default reduced set for ext-tx
   // rather than the potential full set of 16 transforms
   cm->reduced_tx_set_used = 0;
-#if CONFIG_NEW_QUANT
-  switch (cpi->sf.optimize_coefficients) {
-    case NO_TRELLIS_OPT: cm->dq_type = DQ_MULT_OFFSET3; break;
-    case FINAL_PASS_TRELLIS_OPT: cm->dq_type = DQ_MULT_OFFSET3; break;
-    case FULL_TRELLIS_OPT: cm->dq_type = DQ_MULT_OFFSET1; break;
-  }
-#endif  // CONFIG_NEW_QUANT
 
   if (cm->show_frame == 0) {
     int arf_offset = AOMMIN(

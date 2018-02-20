@@ -29,13 +29,6 @@ typedef struct TxbInfo {
   tran_low_t *dqcoeff;
   const tran_low_t *tcoeff;
   const int16_t *dequant;
-#if CONFIG_NEW_QUANT
-#if CONFIG_AOM_QM
-  const int dq_idx;
-#else
-  const dequant_val_type_nuq *nq_dequant_vals;
-#endif  // CONFIG_AOM_QM
-#endif  // CONFIG_NEW_QUANT
   int shift;
   TX_SIZE tx_size;
   TX_SIZE txs_ctx;
