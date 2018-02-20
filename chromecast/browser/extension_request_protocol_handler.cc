@@ -155,7 +155,9 @@ bool CastExtensionURLRequestJob::GetCharset(std::string* charset) {
   return true;
 }
 
-void CastExtensionURLRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {}
+void CastExtensionURLRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {
+  *info = sub_request_->response_info();
+}
 
 void CastExtensionURLRequestJob::GetLoadTimingInfo(
     net::LoadTimingInfo* load_timing_info) const {
