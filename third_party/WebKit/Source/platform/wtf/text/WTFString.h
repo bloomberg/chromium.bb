@@ -335,6 +335,10 @@ class WTF_EXPORT String {
   // This function supports Latin-1 characters only.
   PRINTF_FORMAT(1, 2) static String Format(const char* format, ...);
 
+  // Returns a version suitable for gtest and base/logging.*.  It prepends and
+  // appends double-quotes, and escapes chracters other than ASCII printables.
+  String EncodeForDebugging() const;
+
   // Returns an uninitialized string. The characters needs to be written
   // into the buffer returned in data before the returned string is used.
   // Failure to do this will have unpredictable results.
