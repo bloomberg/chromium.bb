@@ -167,6 +167,7 @@ bool ScriptedAnimationController::HasScheduledItems() const {
 
 void ScriptedAnimationController::ServiceScriptedAnimations(
     double monotonic_time_now) {
+  current_frame_had_raf_ = HasCallback();
   if (!HasScheduledItems())
     return;
 
@@ -174,6 +175,7 @@ void ScriptedAnimationController::ServiceScriptedAnimations(
   DispatchEvents();
   RunTasks();
   ExecuteCallbacks(monotonic_time_now);
+  next_frame_has_pending_raf_ = HasCallback();
 
   ScheduleAnimationIfNeeded();
 }

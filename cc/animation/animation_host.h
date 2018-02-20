@@ -185,8 +185,12 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   size_t CompositedAnimationsCount() const override;
   size_t MainThreadAnimationsCount() const override;
   size_t MainThreadCompositableAnimationsCount() const override;
+  bool CurrentFrameHadRAF() const override;
+  bool NextFrameHasPendingRAF() const override;
   void SetAnimationCounts(size_t total_animations_count,
-                          size_t main_thread_compositable_animations_count);
+                          size_t main_thread_compositable_animations_count,
+                          bool current_frame_had_raf,
+                          bool next_frame_has_pending_raf);
 
  private:
   explicit AnimationHost(ThreadInstance thread_instance);
@@ -227,6 +231,8 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
 
   size_t main_thread_animations_count_ = 0;
   size_t main_thread_compositable_animations_count_ = 0;
+  bool current_frame_had_raf_ = false;
+  bool next_frame_has_pending_raf_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AnimationHost);
 };

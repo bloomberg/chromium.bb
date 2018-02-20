@@ -7255,6 +7255,16 @@ void Document::RecordUkmOutliveTimeAfterShutdown(int outlive_time_count) {
       .Record(ukm_recorder_.get());
 }
 
+bool Document::CurrentFrameHadRAF() const {
+  return scripted_animation_controller_ &&
+         scripted_animation_controller_->CurrentFrameHadRAF();
+}
+
+bool Document::NextFrameHasPendingRAF() const {
+  return scripted_animation_controller_ &&
+         scripted_animation_controller_->NextFrameHasPendingRAF();
+}
+
 void Document::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   // node_lists_ are traced in their corresponding NodeListsNodeData, keeping
   // them only alive for live nodes. Otherwise we would keep lists of dead

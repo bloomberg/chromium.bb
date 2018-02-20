@@ -321,6 +321,8 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
 
   LocalFrame* GetFrame() const { return helper_.LocalMainFrame()->GetFrame(); }
 
+  void BeginFrame() { helper_.GetWebView()->BeginFrame(WTF::CurrentTime()); }
+
   void ForceFullCompositingUpdate() {
     helper_.GetWebView()->UpdateAllLifecyclePhases();
   }
@@ -1314,6 +1316,70 @@ TEST_F(AnimationCompositorAnimationsTest,
 
   element->SetLayoutObject(nullptr);
   LayoutObjectProxy::Dispose(layout_object);
+}
+
+TEST_F(AnimationCompositorAnimationsTest, trackRafAnimation) {
+  LoadTestData("raf-countdown.html");
+
+  CompositorAnimationHost* host =
+      GetFrame()->GetDocument()->View()->GetCompositorAnimationHost();
+
+  // The test file registers two rAF 'animations'; one which ends after 5
+  // iterations and the other that ends after 10.
+  for (int i = 0; i < 9; i++) {
+    BeginFrame();
+    ForceFullCompositingUpdate();
+    EXPECT_TRUE(host->CurrentFrameHadRAFForTesting());
+    EXPECT_TRUE(host->NextFrameHasPendingRAFForTesting());
+  }
+
+  // On the 10th iteration, there should be a current rAF, but no more pending
+  // rAFs.
+  BeginFrame();
+  ForceFullCompositingUpdate();
+  EXPECT_TRUE(host->CurrentFrameHadRAFForTesting());
+  EXPECT_FALSE(host->NextFrameHasPendingRAFForTesting());
+
+  // On the 11th iteration, there should be no more rAFs firing.
+  BeginFrame();
+  ForceFullCompositingUpdate();
+  EXPECT_FALSE(host->CurrentFrameHadRAFForTesting());
+  EXPECT_FALSE(host->NextFrameHasPendingRAFForTesting());
+}
+
+TEST_F(AnimationCompositorAnimationsTest, trackRafAnimationTimeout) {
+  LoadTestData("raf-timeout.html");
+
+  CompositorAnimationHost* host =
+      GetFrame()->GetDocument()->View()->GetCompositorAnimationHost();
+
+  // The test file executes a rAF, which fires a setTimeout for the next rAF.
+  // Even with setTimeout(func, 0), the next rAF is not considered pending.
+  BeginFrame();
+  ForceFullCompositingUpdate();
+  EXPECT_TRUE(host->CurrentFrameHadRAFForTesting());
+  EXPECT_FALSE(host->NextFrameHasPendingRAFForTesting());
+}
+
+TEST_F(AnimationCompositorAnimationsTest, trackRafAnimationNoneRegistered) {
+  SetBodyInnerHTML("<div id='box'></div>");
+
+  // Run a full frame after loading the test data so that scripted animations
+  // are serviced and data propagated.
+  BeginFrame();
+  ForceFullCompositingUpdate();
+
+  // The HTML does not have any rAFs.
+  CompositorAnimationHost* host =
+      GetFrame()->GetDocument()->View()->GetCompositorAnimationHost();
+  EXPECT_FALSE(host->CurrentFrameHadRAFForTesting());
+  EXPECT_FALSE(host->NextFrameHasPendingRAFForTesting());
+
+  // And still shouldn't after another frame.
+  BeginFrame();
+  ForceFullCompositingUpdate();
+  EXPECT_FALSE(host->CurrentFrameHadRAFForTesting());
+  EXPECT_FALSE(host->NextFrameHasPendingRAFForTesting());
 }
 
 TEST_F(AnimationCompositorAnimationsTest, canStartElementOnCompositorEffect) {

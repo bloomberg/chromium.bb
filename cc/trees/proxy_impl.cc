@@ -399,6 +399,14 @@ size_t ProxyImpl::MainThreadCompositableAnimationsCount() const {
   return host_impl_->mutator_host()->MainThreadCompositableAnimationsCount();
 }
 
+bool ProxyImpl::CurrentFrameHadRAF() const {
+  return host_impl_->mutator_host()->CurrentFrameHadRAF();
+}
+
+bool ProxyImpl::NextFrameHasPendingRAF() const {
+  return host_impl_->mutator_host()->NextFrameHasPendingRAF();
+}
+
 bool ProxyImpl::IsInsideDraw() {
   return inside_draw_;
 }

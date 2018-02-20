@@ -385,6 +385,14 @@ size_t SingleThreadProxy::MainThreadCompositableAnimationsCount() const {
   return 0;
 }
 
+bool SingleThreadProxy::CurrentFrameHadRAF() const {
+  return false;
+}
+
+bool SingleThreadProxy::NextFrameHasPendingRAF() const {
+  return false;
+}
+
 bool SingleThreadProxy::IsInsideDraw() {
   return inside_draw_;
 }

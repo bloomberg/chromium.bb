@@ -883,7 +883,9 @@ void CompositorTimingHistory::DidDraw(
     base::TimeTicks impl_frame_time,
     size_t composited_animations_count,
     size_t main_thread_animations_count,
-    size_t main_thread_compositable_animations_count) {
+    size_t main_thread_compositable_animations_count,
+    bool current_frame_had_raf,
+    bool next_frame_has_pending_raf) {
   DCHECK_NE(base::TimeTicks(), draw_start_time_);
   base::TimeTicks draw_end_time = Now();
   base::TimeDelta draw_duration = draw_end_time - draw_start_time_;
@@ -924,8 +926,12 @@ void CompositorTimingHistory::DidDraw(
     uma_reporter_->AddMainAndImplFrameTimeDelta(main_and_impl_delta);
     active_tree_main_frame_time_ = base::TimeTicks();
 
-    if (main_thread_animations_count > 0 &&
-        previous_frame_had_main_thread_animations_) {
+    bool current_main_frame_had_visual_update =
+        main_thread_animations_count > 0 || current_frame_had_raf;
+    bool previous_main_frame_had_visual_update =
+        previous_frame_had_main_thread_animations_ || previous_frame_had_raf_;
+    if (current_main_frame_had_visual_update &&
+        previous_main_frame_had_visual_update) {
       base::TimeDelta draw_interval =
           draw_end_time - new_active_tree_draw_end_time_prev_;
       uma_reporter_->AddDrawIntervalWithMainThreadAnimations(draw_interval);
@@ -941,6 +947,14 @@ void CompositorTimingHistory::DidDraw(
         main_thread_animations_count > 0;
     previous_frame_had_main_thread_compositable_animations_ =
         main_thread_compositable_animations_count > 0;
+    // It's possible that two consecutive main frames both run a rAF but are
+    // separated by idle time (for example: calling requestAnimationFrame from a
+    // setInterval function, with nothing else producing a main frame
+    // in-between). To avoid incorrectly counting those cases as long draw
+    // intervals, we only update previous_frame_had_raf_ if the current frame
+    // also already has a future raf scheduled.
+    previous_frame_had_raf_ =
+        current_frame_had_raf && next_frame_has_pending_raf;
 
     new_active_tree_draw_end_time_prev_ = draw_end_time;
 
