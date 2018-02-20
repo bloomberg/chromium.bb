@@ -507,11 +507,11 @@ int av1_get_qindex(const struct segmentation *seg, int segment_id,
 }
 
 #if CONFIG_AOM_QM
-const qm_val_t *aom_iqmatrix(AV1_COMMON *cm, int qmlevel, int plane,
+const qm_val_t *av1_iqmatrix(AV1_COMMON *cm, int qmlevel, int plane,
                              TX_SIZE tx_size) {
   return &cm->giqmatrix[qmlevel][plane][tx_size][0];
 }
-const qm_val_t *aom_qmatrix(AV1_COMMON *cm, int qmlevel, int plane,
+const qm_val_t *av1_qmatrix(AV1_COMMON *cm, int qmlevel, int plane,
                             TX_SIZE tx_size) {
   return &cm->gqmatrix[qmlevel][plane][tx_size][0];
 }
@@ -520,7 +520,7 @@ const qm_val_t *aom_qmatrix(AV1_COMMON *cm, int qmlevel, int plane,
 static const qm_val_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE];
 static const qm_val_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE];
 
-void aom_qm_init(AV1_COMMON *cm) {
+void av1_qm_init(AV1_COMMON *cm) {
   const int num_planes = av1_num_planes(cm);
   int q, c, t;
   int current;

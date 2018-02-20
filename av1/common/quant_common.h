@@ -56,10 +56,10 @@ int av1_get_qindex(const struct segmentation *seg, int segment_id,
 static INLINE int aom_get_qmlevel(int qindex, int first, int last) {
   return first + (qindex * (last + 1 - first)) / QINDEX_RANGE;
 }
-void aom_qm_init(struct AV1Common *cm);
-const qm_val_t *aom_iqmatrix(struct AV1Common *cm, int qindex, int comp,
+void av1_qm_init(struct AV1Common *cm);
+const qm_val_t *av1_iqmatrix(struct AV1Common *cm, int qindex, int comp,
                              TX_SIZE tx_size);
-const qm_val_t *aom_qmatrix(struct AV1Common *cm, int qindex, int comp,
+const qm_val_t *av1_qmatrix(struct AV1Common *cm, int qindex, int comp,
                             TX_SIZE tx_size);
 #endif  // CONFIG_AOM_QM
 

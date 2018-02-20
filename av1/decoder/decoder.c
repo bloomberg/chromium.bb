@@ -123,7 +123,7 @@ AV1Decoder *av1_decoder_create(BufferPool *const pool) {
   av1_loop_filter_init(cm);
 
 #if CONFIG_AOM_QM
-  aom_qm_init(cm);
+  av1_qm_init(cm);
 #endif
 #if CONFIG_LOOP_RESTORATION
   av1_loop_restoration_precal();

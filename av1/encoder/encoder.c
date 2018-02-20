@@ -3819,7 +3819,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
    */
   av1_init_quantizer(cpi);
 #if CONFIG_AOM_QM
-  aom_qm_init(cm);
+  av1_qm_init(cm);
 #endif
 
   av1_loop_filter_init(cm);

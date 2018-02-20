@@ -1139,19 +1139,19 @@ static void setup_segmentation_dequant(AV1_COMMON *const cm) {
                             : aom_get_qmlevel(cm->base_qindex, minqm, maxqm);
 #endif
     for (int j = 0; j < TX_SIZES_ALL; ++j) {
-      cm->y_iqmatrix[i][j] = aom_iqmatrix(cm, qmlevel, AOM_PLANE_Y, j);
+      cm->y_iqmatrix[i][j] = av1_iqmatrix(cm, qmlevel, AOM_PLANE_Y, j);
     }
 #if CONFIG_AOM_QM_EXT
     qmlevel = (lossless || using_qm == 0) ? NUM_QM_LEVELS - 1 : cm->qm_u;
 #endif
     for (int j = 0; j < TX_SIZES_ALL; ++j) {
-      cm->u_iqmatrix[i][j] = aom_iqmatrix(cm, qmlevel, AOM_PLANE_U, j);
+      cm->u_iqmatrix[i][j] = av1_iqmatrix(cm, qmlevel, AOM_PLANE_U, j);
     }
 #if CONFIG_AOM_QM_EXT
     qmlevel = (lossless || using_qm == 0) ? NUM_QM_LEVELS - 1 : cm->qm_v;
 #endif
     for (int j = 0; j < TX_SIZES_ALL; ++j) {
-      cm->v_iqmatrix[i][j] = aom_iqmatrix(cm, qmlevel, AOM_PLANE_V, j);
+      cm->v_iqmatrix[i][j] = av1_iqmatrix(cm, qmlevel, AOM_PLANE_V, j);
     }
 #endif  // CONFIG_AOM_QM
 #if CONFIG_NEW_QUANT
