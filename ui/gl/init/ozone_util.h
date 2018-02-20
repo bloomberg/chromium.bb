@@ -20,7 +20,7 @@ inline ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() {
 
 // Returns true if there is an GLOzone for the specified GL implementation.
 inline bool HasGLOzone(GLImplementation impl) {
-  return GetSurfaceFactoryOzone()->GetGLOzone(impl) != nullptr;
+  return GetSurfaceFactoryOzone() && GetSurfaceFactoryOzone()->GetGLOzone(impl);
 }
 
 // Returns true if there is an GLOzone for the set GL implementation.

@@ -71,6 +71,7 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
     NV12_SINGLE_GMB,  // One NV12 GMB
     NV12_DUAL_GMB,    // One R8, one RG88 GMB
     XR30,             // 10:10:10:2 BGRX in one GMB
+    XB30,             // 10:10:10:2 RGBX in one GMB
   };
 
   // Return whether GPU encoding/decoding is enabled.
