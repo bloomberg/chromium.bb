@@ -21,11 +21,11 @@
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/audio/audio_input_delegate.h"
+#include "media/mojo/interfaces/audio_logging.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace media {
 class AudioParameters;
-class AudioLog;
 }  // namespace media
 
 namespace content {
@@ -42,7 +42,7 @@ class CONTENT_EXPORT RenderFrameAudioInputStreamFactory
   using CreateDelegateCallback =
       base::RepeatingCallback<std::unique_ptr<media::AudioInputDelegate>(
           AudioInputDeviceManager* audio_input_device_manager,
-          media::AudioLog* audio_log,
+          media::mojom::AudioLogPtr audio_log,
           AudioInputDeviceManager::KeyboardMicRegistration
               keyboard_mic_registration,
           uint32_t shared_memory_count,
@@ -54,7 +54,9 @@ class CONTENT_EXPORT RenderFrameAudioInputStreamFactory
 
   RenderFrameAudioInputStreamFactory(
       CreateDelegateCallback create_delegate_callback,
-      MediaStreamManager* media_stream_manager);
+      MediaStreamManager* media_stream_manager,
+      int render_process_id,
+      int render_frame_id);
 
   ~RenderFrameAudioInputStreamFactory() override;
 
@@ -83,7 +85,8 @@ class CONTENT_EXPORT RenderFrameAudioInputStreamFactory
 
   const CreateDelegateCallback create_delegate_callback_;
   MediaStreamManager* media_stream_manager_;
-  const std::unique_ptr<media::AudioLog> audio_log_;
+  const int render_process_id_;
+  const int render_frame_id_;
 
   InputStreamSet streams_;
   int next_stream_id_ = 0;
@@ -103,6 +106,8 @@ class CONTENT_EXPORT RenderFrameAudioInputStreamFactoryHandle {
   CreateFactory(RenderFrameAudioInputStreamFactory::CreateDelegateCallback
                     create_delegate_callback,
                 MediaStreamManager* media_stream_manager,
+                int render_process_id,
+                int render_frame_id,
                 mojom::RendererAudioInputStreamFactoryRequest request);
 
   ~RenderFrameAudioInputStreamFactoryHandle();
@@ -111,7 +116,9 @@ class CONTENT_EXPORT RenderFrameAudioInputStreamFactoryHandle {
   RenderFrameAudioInputStreamFactoryHandle(
       RenderFrameAudioInputStreamFactory::CreateDelegateCallback
           create_delegate_callback,
-      MediaStreamManager* media_stream_manager);
+      MediaStreamManager* media_stream_manager,
+      int render_process_id,
+      int render_frame_id);
 
   void Init(mojom::RendererAudioInputStreamFactoryRequest request);
 

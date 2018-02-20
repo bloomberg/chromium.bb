@@ -555,8 +555,9 @@ int AudioManagerBase::GetUserBufferSize() {
 }
 
 std::unique_ptr<AudioLog> AudioManagerBase::CreateAudioLog(
-    AudioLogFactory::AudioComponent component) {
-  return audio_log_factory_->CreateAudioLog(component);
+    AudioLogFactory::AudioComponent component,
+    int component_id) {
+  return audio_log_factory_->CreateAudioLog(component, component_id);
 }
 
 void AudioManagerBase::InitializeDebugRecording() {

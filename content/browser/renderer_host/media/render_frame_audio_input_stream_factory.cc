@@ -22,11 +22,14 @@ RenderFrameAudioInputStreamFactoryHandle::CreateFactory(
     RenderFrameAudioInputStreamFactory::CreateDelegateCallback
         create_delegate_callback,
     content::MediaStreamManager* media_stream_manager,
+    int render_process_id,
+    int render_frame_id,
     mojom::RendererAudioInputStreamFactoryRequest request) {
   std::unique_ptr<RenderFrameAudioInputStreamFactoryHandle,
                   BrowserThread::DeleteOnIOThread>
       handle(new RenderFrameAudioInputStreamFactoryHandle(
-          std::move(create_delegate_callback), media_stream_manager));
+          std::move(create_delegate_callback), media_stream_manager,
+          render_process_id, render_frame_id));
   // Unretained is safe since |*handle| must be posted to the IO thread prior to
   // deletion.
   BrowserThread::PostTask(
@@ -45,8 +48,13 @@ RenderFrameAudioInputStreamFactoryHandle::
     RenderFrameAudioInputStreamFactoryHandle(
         RenderFrameAudioInputStreamFactory::CreateDelegateCallback
             create_delegate_callback,
-        MediaStreamManager* media_stream_manager)
-    : impl_(std::move(create_delegate_callback), media_stream_manager),
+        MediaStreamManager* media_stream_manager,
+        int render_process_id,
+        int render_frame_id)
+    : impl_(std::move(create_delegate_callback),
+            media_stream_manager,
+            render_process_id,
+            render_frame_id),
       binding_(&impl_) {}
 
 void RenderFrameAudioInputStreamFactoryHandle::Init(
@@ -57,11 +65,13 @@ void RenderFrameAudioInputStreamFactoryHandle::Init(
 
 RenderFrameAudioInputStreamFactory::RenderFrameAudioInputStreamFactory(
     CreateDelegateCallback create_delegate_callback,
-    MediaStreamManager* media_stream_manager)
+    MediaStreamManager* media_stream_manager,
+    int render_process_id,
+    int render_frame_id)
     : create_delegate_callback_(std::move(create_delegate_callback)),
       media_stream_manager_(media_stream_manager),
-      audio_log_(MediaInternals::GetInstance()->CreateAudioLog(
-          media::AudioLogFactory::AUDIO_INPUT_CONTROLLER)),
+      render_process_id_(render_process_id),
+      render_frame_id_(render_frame_id),
       weak_ptr_factory_(this) {
   DCHECK(create_delegate_callback_);
   // No thread-hostile state has been initialized yet, so we don't have to bind
@@ -113,13 +123,18 @@ void RenderFrameAudioInputStreamFactory::DoCreateStream(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   int stream_id = ++next_stream_id_;
 
+  media::mojom::AudioLogPtr audio_log_ptr =
+      MediaInternals::GetInstance()->CreateMojoAudioLog(
+          media::AudioLogFactory::AUDIO_INPUT_CONTROLLER, stream_id,
+          render_process_id_, render_frame_id_);
+
   // Unretained is safe since |this| owns |streams_|.
   streams_.insert(std::make_unique<AudioInputStreamHandle>(
       std::move(client),
       base::BindOnce(
           create_delegate_callback_,
           base::Unretained(media_stream_manager_->audio_input_device_manager()),
-          audio_log_.get(), std::move(keyboard_mic_registration),
+          std::move(audio_log_ptr), std::move(keyboard_mic_registration),
           shared_memory_count, stream_id, session_id, automatic_gain_control,
           audio_params),
       base::BindOnce(&RenderFrameAudioInputStreamFactory::RemoveStream,

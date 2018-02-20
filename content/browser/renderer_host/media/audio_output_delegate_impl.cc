@@ -99,7 +99,7 @@ void AudioOutputDelegateImpl::ControllerEventHandler::OnLog(
 std::unique_ptr<media::AudioOutputDelegate> AudioOutputDelegateImpl::Create(
     EventHandler* handler,
     media::AudioManager* audio_manager,
-    media::AudioLog* audio_log,
+    media::mojom::AudioLogPtr audio_log,
     AudioMirroringManager* mirroring_manager,
     MediaObserver* media_observer,
     int stream_id,
@@ -116,9 +116,10 @@ std::unique_ptr<media::AudioOutputDelegate> AudioOutputDelegateImpl::Create(
     return nullptr;
 
   return std::make_unique<AudioOutputDelegateImpl>(
-      std::move(reader), std::move(socket), handler, audio_manager, audio_log,
-      mirroring_manager, media_observer, stream_id, render_frame_id,
-      render_process_id, params, std::move(observer), output_device_id);
+      std::move(reader), std::move(socket), handler, audio_manager,
+      std::move(audio_log), mirroring_manager, media_observer, stream_id,
+      render_frame_id, render_process_id, params, std::move(observer),
+      output_device_id);
 }
 
 AudioOutputDelegateImpl::AudioOutputDelegateImpl(
@@ -126,7 +127,7 @@ AudioOutputDelegateImpl::AudioOutputDelegateImpl(
     std::unique_ptr<base::CancelableSyncSocket> foreign_socket,
     EventHandler* handler,
     media::AudioManager* audio_manager,
-    media::AudioLog* audio_log,
+    media::mojom::AudioLogPtr audio_log,
     AudioMirroringManager* mirroring_manager,
     MediaObserver* media_observer,
     int stream_id,
@@ -136,7 +137,7 @@ AudioOutputDelegateImpl::AudioOutputDelegateImpl(
     media::mojom::AudioOutputStreamObserverPtr observer,
     const std::string& output_device_id)
     : subscriber_(handler),
-      audio_log_(audio_log),
+      audio_log_(std::move(audio_log)),
       reader_(std::move(reader)),
       foreign_socket_(std::move(foreign_socket)),
       mirroring_manager_(mirroring_manager),
@@ -170,7 +171,7 @@ AudioOutputDelegateImpl::AudioOutputDelegateImpl(
 AudioOutputDelegateImpl::~AudioOutputDelegateImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   UpdatePlayingState(false);
-  audio_log_->OnClosed(stream_id_);
+  audio_log_->OnClosed();
 
   // Since the ownership of |controller_| is shared, we instead use its Close
   // method to stop callbacks from it. |controller_| will call the closure (on
@@ -206,13 +207,13 @@ int AudioOutputDelegateImpl::GetStreamId() {
 void AudioOutputDelegateImpl::OnPlayStream() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   controller_->Play();
-  audio_log_->OnStarted(stream_id_);
+  audio_log_->OnStarted();
 }
 
 void AudioOutputDelegateImpl::OnPauseStream() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   controller_->Pause();
-  audio_log_->OnStopped(stream_id_);
+  audio_log_->OnStopped();
 }
 
 void AudioOutputDelegateImpl::OnSetVolume(double volume) {
@@ -220,7 +221,7 @@ void AudioOutputDelegateImpl::OnSetVolume(double volume) {
   DCHECK_GE(volume, 0);
   DCHECK_LE(volume, 1);
   controller_->SetVolume(volume);
-  audio_log_->OnSetVolume(stream_id_, volume);
+  audio_log_->OnSetVolume(volume);
 }
 
 void AudioOutputDelegateImpl::SendCreatedNotification() {
@@ -263,7 +264,7 @@ void AudioOutputDelegateImpl::UpdatePlayingState(bool playing) {
 void AudioOutputDelegateImpl::OnError() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  audio_log_->OnError(stream_id_);
+  audio_log_->OnError();
   subscriber_->OnStreamError(stream_id_);
 }
 

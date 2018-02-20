@@ -4336,7 +4336,8 @@ void RenderFrameHostImpl::CreateAudioInputStreamFactory(
                               AudioMirroringManager::GetInstance(),
                               browser_main_loop->user_input_monitor(),
                               GetProcess()->GetID(), GetRoutingID()),
-          browser_main_loop->media_stream_manager(), std::move(request));
+          browser_main_loop->media_stream_manager(), GetProcess()->GetID(),
+          GetRoutingID(), std::move(request));
 }
 
 void RenderFrameHostImpl::CreateAudioOutputStreamFactory(

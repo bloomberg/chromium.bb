@@ -82,9 +82,9 @@ class MEDIA_EXPORT AudioOutputDispatcherImpl : public AudioOutputDispatcher {
   typedef base::flat_map<AudioOutputProxy*, AudioOutputStream*> AudioStreamMap;
   AudioStreamMap proxy_to_physical_map_;
 
-  std::unique_ptr<AudioLog> audio_log_;
-  typedef base::flat_map<AudioOutputStream*, int> AudioStreamIDMap;
-  AudioStreamIDMap audio_stream_ids_;
+  using AudioLogMap =
+      base::flat_map<AudioOutputStream*, std::unique_ptr<media::AudioLog>>;
+  AudioLogMap audio_logs_;
   int audio_stream_id_;
 
   base::WeakPtrFactory<AudioOutputDispatcherImpl> weak_factory_;

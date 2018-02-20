@@ -121,7 +121,8 @@ std::string MockAudioManager::GetCommunicationsOutputDeviceID() {
 }
 
 std::unique_ptr<AudioLog> MockAudioManager::CreateAudioLog(
-    AudioLogFactory::AudioComponent component) {
+    AudioLogFactory::AudioComponent component,
+    int component_id) {
   return nullptr;
 }
 

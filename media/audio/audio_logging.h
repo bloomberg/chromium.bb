@@ -13,9 +13,7 @@ namespace media {
 
 class AudioParameters;
 
-// AudioLog logs state information about an active audio component.  Each method
-// takes a |component_id| along with method specific information.  Its methods
-// are safe to call from any thread.
+// AudioLog logs state information about an active audio component.
 class AudioLog {
  public:
   virtual ~AudioLog() {}
@@ -23,47 +21,33 @@ class AudioLog {
   // Called when an audio component is created.  |params| are the parameters of
   // the created stream.  |device_id| is the id of the audio device opened by
   // the created stream.
-  virtual void OnCreated(int component_id,
-                         const media::AudioParameters& params,
+  virtual void OnCreated(const media::AudioParameters& params,
                          const std::string& device_id) = 0;
 
   // Called when an audio component is started, generally this is synonymous
   // with "playing."
-  virtual void OnStarted(int component_id) = 0;
+  virtual void OnStarted() = 0;
 
   // Called when an audio component is stopped, generally this is synonymous
   // with "paused."
-  virtual void OnStopped(int component_id) = 0;
+  virtual void OnStopped() = 0;
 
   // Called when an audio component is closed, generally this is synonymous
   // with "deleted."
-  virtual void OnClosed(int component_id) = 0;
+  virtual void OnClosed() = 0;
 
   // Called when an audio component encounters an error.
-  virtual void OnError(int component_id) = 0;
+  virtual void OnError() = 0;
 
   // Called when an audio component changes volume.  |volume| is the new volume.
-  virtual void OnSetVolume(int component_id, double volume) = 0;
-
-  // Called when an audio component switches output device. |device_id| is the
-  // new audio output device.
-  virtual void OnSwitchOutputDevice(int component_id,
-                                    const std::string& device_id) = 0;
+  virtual void OnSetVolume(double volume) = 0;
 
   // Called when an audio component wants to forward a log message.
-  virtual void OnLogMessage(int component_id, const std::string& message) = 0;
+  virtual void OnLogMessage(const std::string& message) = 0;
 };
 
-// AudioLogFactory dispenses AudioLog instances to owning classes for tracking
-// AudioComponent behavior.  All AudioComponents have the concept of an owning
-// class:
-//
-//    - AudioInputRendererHost for AudioInputController
-//    - AudioRendererHost for AudioOutputController
-//    - AudioOutputDispatcherImpl for AudioOutputStream
-//
-// Each of these owning classes may own multiple instances of each component, as
-// such each AudioLog supports logging for multiple instances.
+// AudioLogFactory dispenses AudioLog instances for tracking AudioComponent
+// behavior.
 class AudioLogFactory {
  public:
   enum AudioComponent {
@@ -77,11 +61,11 @@ class AudioLogFactory {
     AUDIO_COMPONENT_MAX
   };
 
-  // Create a new AudioLog object for tracking the behavior for one or more
-  // instances of the given component.  Each instance of an "owning" class must
-  // create its own AudioLog.
-  virtual std::unique_ptr<AudioLog> CreateAudioLog(
-      AudioComponent component) = 0;
+  // Create a new AudioLog object for tracking the behavior for one instance of
+  // the given component.  Each instance of an "owning" class must create its
+  // own AudioLog.
+  virtual std::unique_ptr<AudioLog> CreateAudioLog(AudioComponent component,
+                                                   int component_id) = 0;
 
  protected:
   virtual ~AudioLogFactory() {}

@@ -5,6 +5,8 @@
 #ifndef MEDIA_AUDIO_FAKE_AUDIO_LOG_FACTORY_H_
 #define MEDIA_AUDIO_FAKE_AUDIO_LOG_FACTORY_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "media/audio/audio_logging.h"
@@ -17,7 +19,8 @@ class MEDIA_EXPORT FakeAudioLogFactory : public AudioLogFactory {
  public:
   FakeAudioLogFactory();
   ~FakeAudioLogFactory() override;
-  std::unique_ptr<AudioLog> CreateAudioLog(AudioComponent component) override;
+  std::unique_ptr<AudioLog> CreateAudioLog(AudioComponent component,
+                                           int component_id) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeAudioLogFactory);

@@ -1101,6 +1101,8 @@ jumbo_source_set("browser") {
     "media/media_web_contents_observer.h",
     "media/midi_host.cc",
     "media/midi_host.h",
+    "media/mojo_audio_logging_adapter.cc",
+    "media/mojo_audio_logging_adapter.h",
     "media/session/audio_focus_delegate.h",
     "media/session/audio_focus_delegate_android.cc",
     "media/session/audio_focus_delegate_android.h",

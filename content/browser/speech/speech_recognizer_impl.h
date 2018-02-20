@@ -17,13 +17,13 @@
 #include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "media/audio/audio_input_controller.h"
-#include "media/audio/audio_logging.h"
+#include "media/mojo/interfaces/audio_logging.mojom.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace media {
 class AudioBus;
 class AudioSystem;
-}
+}  // namespace media
 
 namespace content {
 
@@ -174,7 +174,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   std::unique_ptr<SpeechRecognitionEngine> recognition_engine_;
   Endpointer endpointer_;
   scoped_refptr<media::AudioInputController> audio_controller_;
-  std::unique_ptr<media::AudioLog> audio_log_;
+  media::mojom::AudioLogPtr audio_log_;
   int num_samples_recorded_;
   float audio_level_;
   bool is_dispatching_event_;
