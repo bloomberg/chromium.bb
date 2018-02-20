@@ -1058,7 +1058,6 @@ crbug.com/591099 external/wpt/css/CSS2/normal-flow/block-in-inline-remove-006.xh
 crbug.com/591099 external/wpt/css/CSS2/normal-flow/max-height-percentage-002.xht [ Failure ]
 crbug.com/591099 external/wpt/css/CSS2/normal-flow/max-width-applies-to-005.xht [ Pass ]
 crbug.com/591099 external/wpt/css/CSS2/normal-flow/root-box-001.xht [ Failure ]
-crbug.com/591099 external/wpt/css/CSS2/positioning/abspos-007.xht [ Failure ]
 crbug.com/591099 external/wpt/css/CSS2/positioning/positioning-float-001.xht [ Pass ]
 crbug.com/591099 external/wpt/css/CSS2/text/text-decoration-applies-to-015.xht [ Failure ]
 crbug.com/714962 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]
