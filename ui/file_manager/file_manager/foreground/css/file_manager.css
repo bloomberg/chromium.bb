@@ -165,7 +165,7 @@ div.splitter {
   flex: auto;
   font-weight: 500;
   margin: 0 6px;
-  overflow-x: hidden;
+  overflow: hidden;
   text-overflow: ellipsis;
 }
 
