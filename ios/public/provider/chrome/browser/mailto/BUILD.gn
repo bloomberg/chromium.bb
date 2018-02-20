@@ -12,15 +12,3 @@ source_set("mailto") {
     "//base",
   ]
 }
-
-source_set("test_support") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "test_mailto_handler_provider.h",
-    "test_mailto_handler_provider.mm",
-  ]
-  deps = [
-    ":mailto",
-  ]
-}
