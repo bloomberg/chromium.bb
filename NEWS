@@ -17,6 +17,7 @@ issues]].
 - Fix braille number input for Greek Braille thanks to Dave Mielke
 - Add a fix for "phad" according to UEB Rule 10.7.3 thanks to Anthony
   Tibbs
+- Updates to the Urdu tables thanks to Jake Kyle from Compass Braille
 
 ** Other changes
 *** Improved documentation
