@@ -41,6 +41,7 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/commands/BreakBlockquoteCommand.h"
 #include "core/editing/commands/DeleteSelectionCommand.h"
+#include "core/editing/commands/DeleteSelectionOptions.h"
 #include "core/editing/commands/EditingCommandsUtilities.h"
 #include "core/editing/commands/InsertIncrementalTextCommand.h"
 #include "core/editing/commands/InsertLineBreakCommand.h"
@@ -207,12 +208,13 @@ void TypingCommand::DeleteSelectionIfRange(const VisibleSelection& selection,
                                            EditingState* editing_state) {
   if (!selection.IsRange())
     return;
-  const bool kMergeBlocksAfterDelete = true;
-  const bool kExpandForSpecialElements = true;
-  const bool kSanitizeMarkup = true;
   ApplyCommandToComposite(DeleteSelectionCommand::Create(
-                              selection, smart_delete_, kMergeBlocksAfterDelete,
-                              kExpandForSpecialElements, kSanitizeMarkup),
+                              selection, DeleteSelectionOptions::Builder()
+                                             .SetSmartDelete(smart_delete_)
+                                             .SetMergeBlocksAfterDelete(true)
+                                             .SetExpandForSpecialElements(true)
+                                             .SetSanitizeMarkup(true)
+                                             .Build()),
                           editing_state);
 }
 

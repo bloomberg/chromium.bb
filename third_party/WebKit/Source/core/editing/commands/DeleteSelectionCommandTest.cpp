@@ -43,14 +43,13 @@ TEST_F(DeleteSelectionCommandTest, deleteListFromTable) {
           .Extend(Position(table, PositionAnchorType::kAfterAnchor))
           .Build());
 
-  const bool kNoSmartDelete = false;
-  const bool kMergeBlocksAfterDelete = true;
-  const bool kNoExpandForSpecialElements = false;
-  const bool kSanitizeMarkup = true;
-  DeleteSelectionCommand* command = DeleteSelectionCommand::Create(
-      GetDocument(), kNoSmartDelete, kMergeBlocksAfterDelete,
-      kNoExpandForSpecialElements, kSanitizeMarkup,
-      InputEvent::InputType::kDeleteByCut);
+  DeleteSelectionCommand* command =
+      DeleteSelectionCommand::Create(GetDocument(),
+                                     DeleteSelectionOptions::Builder()
+                                         .SetMergeBlocksAfterDelete(true)
+                                         .SetSanitizeMarkup(true)
+                                         .Build(),
+                                     InputEvent::InputType::kDeleteByCut);
 
   EXPECT_TRUE(command->Apply()) << "the delete command should have succeeded";
   EXPECT_EQ("<div contenteditable=\"true\"><br></div>",
@@ -67,13 +66,11 @@ TEST_F(DeleteSelectionCommandTest, ForwardDeleteWithFirstLetter) {
   Selection().SetSelectionAndEndTyping(
       SetSelectionTextToBody("<p contenteditable>a^b|c</p>"));
 
-  const bool kNoSmartDelete = false;
-  const bool kMergeBlocksAfterDelete = true;
-  const bool kNoExpandForSpecialElements = false;
-  const bool kSanitizeMarkup = true;
   DeleteSelectionCommand& command = *DeleteSelectionCommand::Create(
-      GetDocument(), kNoSmartDelete, kMergeBlocksAfterDelete,
-      kNoExpandForSpecialElements, kSanitizeMarkup);
+      GetDocument(), DeleteSelectionOptions::Builder()
+                         .SetMergeBlocksAfterDelete(true)
+                         .SetSanitizeMarkup(true)
+                         .Build());
   EXPECT_TRUE(command.Apply()) << "the delete command should have succeeded";
   EXPECT_EQ("<p contenteditable>a|c</p>",
             GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
