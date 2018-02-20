@@ -97,6 +97,11 @@ struct VIZ_COMMON_EXPORT TransferableResource {
   // and must be RGBA_8888 always for software resources.
   ResourceFormat format = RGBA_8888;
 
+  // Normally derrived from the |format|, but may differ for some resource
+  // producers. This is the format of the underlying texture backing for gpu
+  // resources, needed for using the backing as an overlay.
+  gfx::BufferFormat buffer_format = gfx::BufferFormat::RGBA_8888;
+
   // The |mailbox| inside here holds the gpu::Mailbox when this is a gpu
   // resource, or the SharedBitmapId when it is a software resource.
   // The |texture_target| and sync_token| inside here only apply for gpu
@@ -117,10 +122,9 @@ struct VIZ_COMMON_EXPORT TransferableResource {
   // drawing it. Typically GL_LINEAR, or GL_NEAREST if no anti-aliasing
   // during scaling is desired.
   uint32_t filter = 0;
-  // If a gpu resource is backed by a GpuMemoryBuffer, this specifies the
-  // format of that buffer, which may not match the |format|.
-  gfx::BufferFormat buffer_format = gfx::BufferFormat::RGBA_8888;
-  // Whether a gpu fence needs to be used for reading a gpu resource.
+  // If a gpu resource is backed by a GpuMemoryBuffer, then it will be accessed
+  // out-of-band, and a gpu fence needs to be waited on before the resource is
+  // returned and reused.
   bool read_lock_fences_enabled = false;
 #if defined(OS_ANDROID)
   // Indicates whether this resource may not be overlayed on Android, since
@@ -138,21 +142,20 @@ struct VIZ_COMMON_EXPORT TransferableResource {
 #endif
 
   bool operator==(const TransferableResource& o) const {
-    return id == o.id && format == o.format &&
-           buffer_format == o.buffer_format && filter == o.filter &&
-           size == o.size &&
+    return id == o.id && is_software == o.is_software && size == o.size &&
+           format == o.format && buffer_format == o.buffer_format &&
            mailbox_holder.mailbox == o.mailbox_holder.mailbox &&
            mailbox_holder.sync_token == o.mailbox_holder.sync_token &&
            mailbox_holder.texture_target == o.mailbox_holder.texture_target &&
-           read_lock_fences_enabled == o.read_lock_fences_enabled &&
-           is_software == o.is_software &&
+           color_space == o.color_space &&
            shared_bitmap_sequence_number == o.shared_bitmap_sequence_number &&
+           is_overlay_candidate == o.is_overlay_candidate &&
+           filter == o.filter &&
 #if defined(OS_ANDROID)
            is_backed_by_surface_texture == o.is_backed_by_surface_texture &&
            wants_promotion_hint == o.wants_promotion_hint &&
 #endif
-           is_overlay_candidate == o.is_overlay_candidate &&
-           color_space == o.color_space;
+           read_lock_fences_enabled == o.read_lock_fences_enabled;
   }
   bool operator!=(const TransferableResource& o) const { return !(*this == o); }
 };

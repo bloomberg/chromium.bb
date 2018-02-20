@@ -285,6 +285,8 @@ void ResourcePool::PrepareForExport(const InUsePoolResource& resource) {
         resource.resource_->gpu_backing()->mailbox_sync_token,
         resource.resource_->size(),
         resource.resource_->gpu_backing()->overlay_candidate);
+    transferable.read_lock_fences_enabled =
+        resource.resource_->gpu_backing()->wait_on_fence_required;
   } else {
     transferable = viz::TransferableResource::MakeSoftware(
         resource.resource_->shared_bitmap()->id(),
@@ -292,6 +294,7 @@ void ResourcePool::PrepareForExport(const InUsePoolResource& resource) {
         resource.resource_->size());
   }
   transferable.format = resource.resource_->format();
+  transferable.buffer_format = viz::BufferFormat(transferable.format);
   transferable.color_space = resource.resource_->color_space();
   resource.resource_->set_resource_id(resource_provider_->ImportResource(
       std::move(transferable),

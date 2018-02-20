@@ -55,6 +55,14 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
     gpu::SyncToken mailbox_sync_token;
     GLenum texture_target = 0;
     bool overlay_candidate = false;
+    // For resources that are modified directly on the gpu, outside the command
+    // stream, a fence must be used to know when the backing is not in use and
+    // may be returned to and reused by the pool.
+    bool wait_on_fence_required = false;
+
+    // Set by the ResourcePool when a resource is returned from the display
+    // compositor. The client of ResourcePool needs to wait on this token, if it
+    // exists, before using a resource handed out by the ResourcePool.
     gpu::SyncToken returned_sync_token;
 
     // Guids for for memory dumps. This guid will be valid once the GpuBacking
