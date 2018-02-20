@@ -183,7 +183,7 @@ OneCopyRasterBufferProvider::AcquireBufferForRaster(
 
     viz::TextureAllocation alloc = viz::TextureAllocation::MakeTextureId(
         gl, caps, resource.format(), use_gpu_memory_buffer_resources_,
-        /*for_framebuffer_attachment=*/true);
+        /*for_framebuffer_attachment=*/false);
     backing->texture_id = alloc.texture_id;
     backing->texture_target = alloc.texture_target;
     backing->overlay_candidate = alloc.overlay_candidate;
