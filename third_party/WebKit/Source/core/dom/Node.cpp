@@ -727,6 +727,16 @@ LayoutRect Node::BoundingBoxForScrollIntoView() const {
   return LayoutRect();
 }
 
+#ifndef NDEBUG
+inline static ShadowRoot* GetShadowRootFor(const Node* node) {
+  if (!node->IsElementNode())
+    return nullptr;
+  if (ElementShadow* shadow = ToElement(node)->Shadow())
+    return &shadow->GetShadowRoot();
+  return nullptr;
+}
+#endif
+
 Node& Node::ShadowIncludingRoot() const {
   if (isConnected())
     return GetDocument();
@@ -1844,7 +1854,7 @@ static void AppendMarkedTree(const String& base_indent,
                          marked_node2, marked_label2, builder);
     }
 
-    if (ShadowRoot* shadow_root = node.GetShadowRoot()) {
+    if (ShadowRoot* shadow_root = GetShadowRootFor(&node)) {
       AppendMarkedTree(indent.ToString(), shadow_root, marked_node1,
                        marked_label1, marked_node2, marked_label2, builder);
     }
@@ -1929,7 +1939,7 @@ static void PrintSubTreeAcrossFrame(const Node* node,
     PrintSubTreeAcrossFrame(ToHTMLFrameOwnerElement(node)->contentDocument(),
                             marked_node, indent + "\t", stream);
   }
-  if (ShadowRoot* shadow_root = node->GetShadowRoot())
+  if (ShadowRoot* shadow_root = GetShadowRootFor(node))
     PrintSubTreeAcrossFrame(shadow_root, marked_node, indent + "\t", stream);
   for (const Node* child = node->firstChild(); child;
        child = child->nextSibling())

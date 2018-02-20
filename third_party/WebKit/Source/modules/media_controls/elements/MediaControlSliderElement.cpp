@@ -86,7 +86,8 @@ Element& MediaControlSliderElement::GetTrackElement() {
   // #shadow-root
   //   - div
   //     - div::-webkit-slider-runnable-track#track
-  Element* track = GetShadowRoot()->getElementById(AtomicString("track"));
+  ShadowRoot& shadow_root = Shadow()->GetShadowRoot();
+  Element* track = shadow_root.getElementById(AtomicString("track"));
   DCHECK(track);
   return *track;
 }

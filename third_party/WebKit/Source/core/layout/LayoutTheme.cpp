@@ -23,6 +23,7 @@
 
 #include "core/CSSValueKeywords.h"
 #include "core/dom/Document.h"
+#include "core/dom/ElementShadow.h"
 #include "core/editing/FrameSelection.h"
 #include "core/fileapi/FileList.h"
 #include "core/frame/LocalFrame.h"

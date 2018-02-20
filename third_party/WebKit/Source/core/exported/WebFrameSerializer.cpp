@@ -358,12 +358,13 @@ void MHTMLFrameSerializerDelegate::GetCustomAttributesForImageElement(
 
 std::pair<Node*, Element*> MHTMLFrameSerializerDelegate::GetAuxiliaryDOMTree(
     const Element& element) const {
-  ShadowRoot* shadow_root = element.GetShadowRoot();
-  if (!shadow_root)
+  const ElementShadow* shadow = element.Shadow();
+  if (!shadow)
     return std::pair<Node*, Element*>();
+  ShadowRoot& shadow_root = shadow->GetShadowRoot();
 
   String shadow_mode;
-  switch (shadow_root->GetType()) {
+  switch (shadow_root.GetType()) {
     case ShadowRootType::kUserAgent:
       // No need to serialize.
       return std::pair<Node*, Element*>();
@@ -385,8 +386,8 @@ std::pair<Node*, Element*> MHTMLFrameSerializerDelegate::GetAuxiliaryDOMTree(
   template_element->setAttribute(
       QualifiedName(g_null_atom, kShadowModeAttributeName, g_null_atom),
       AtomicString(shadow_mode));
-  if (shadow_root->GetType() != ShadowRootType::V0 &&
-      shadow_root->delegatesFocus()) {
+  if (shadow_root.GetType() != ShadowRootType::V0 &&
+      shadow_root.delegatesFocus()) {
     template_element->setAttribute(
         QualifiedName(g_null_atom, kShadowDelegatesFocusAttributeName,
                       g_null_atom),
@@ -394,7 +395,7 @@ std::pair<Node*, Element*> MHTMLFrameSerializerDelegate::GetAuxiliaryDOMTree(
   }
   shadow_template_elements_.insert(template_element);
 
-  return std::pair<Node*, Element*>(shadow_root, template_element);
+  return std::pair<Node*, Element*>(&shadow_root, template_element);
 }
 
 bool CacheControlNoStoreHeaderPresent(
