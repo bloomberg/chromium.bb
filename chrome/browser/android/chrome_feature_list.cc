@@ -94,6 +94,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kFullscreenActivity,
     &kImprovedA2HS,
     &kLanguagesPreference,
+    &kModalPermissionDialogView,
     &kNewPhotoPicker,
     &kNoCreditCardAbort,
     &kNTPCondensedLayoutFeature,
@@ -286,6 +287,9 @@ const base::Feature kImprovedA2HS{"ImprovedA2HS",
 
 const base::Feature kLanguagesPreference{"LanguagesPreference",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kModalPermissionDialogView{
+    "ModalPermissionDialogView", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSearchEnginePromoExistingDevice{
     "SearchEnginePromo.ExistingDevice", base::FEATURE_ENABLED_BY_DEFAULT};

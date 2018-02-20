@@ -37,10 +37,15 @@ public class ModalDialogView implements View.OnClickListener {
         void onClick(@ButtonType int buttonType);
 
         /**
-         * Handle dismiss event when the dialog is not dismissed by actions on the dialog such as
+         * Handle cancel event when the dialog is not dismissed by actions on the dialog such as
          * back press, and on tab modal dialog, tab switcher button click.
          */
         void onCancel();
+
+        /**
+         * Handle dismiss event when the dialog is dismissed by actions on the dialog.
+         */
+        void onDismiss();
     }
 
     /** Parameters that can be used to create a new ModalDialogView. */
@@ -62,6 +67,18 @@ public class ModalDialogView implements View.OnClickListener {
 
         /** Optional: Resource ID of the String to show on the negative button. */
         public @StringRes int negativeButtonTextId;
+
+        /**
+         * Optional: The String to show on the positive button. Note that String
+         * must be null if positiveButtonTextId is not zero.
+         */
+        public String positiveButtonText;
+
+        /**
+         * Optional: The String to show on the negative button.  Note that String
+         * must be null if negativeButtonTextId is not zero
+         */
+        public String negativeButtonText;
     }
 
     @IntDef({BUTTON_POSITIVE, BUTTON_NEGATIVE})
@@ -134,18 +151,26 @@ public class ModalDialogView implements View.OnClickListener {
             mCustomView.setVisibility(View.GONE);
         }
 
-        if (mParams.positiveButtonTextId == 0) {
-            mPositiveButton.setVisibility(View.GONE);
-        } else {
+        assert(mParams.positiveButtonTextId == 0 || mParams.positiveButtonText == null);
+        if (mParams.positiveButtonTextId != 0) {
             mPositiveButton.setText(mParams.positiveButtonTextId);
             mPositiveButton.setOnClickListener(this);
+        } else if (mParams.positiveButtonText != null) {
+            mPositiveButton.setText(mParams.positiveButtonText);
+            mPositiveButton.setOnClickListener(this);
+        } else {
+            mPositiveButton.setVisibility(View.GONE);
         }
 
-        if (mParams.negativeButtonTextId == 0) {
-            mNegativeButton.setVisibility(View.GONE);
-        } else {
+        assert(mParams.negativeButtonTextId == 0 || mParams.negativeButtonText == null);
+        if (mParams.negativeButtonTextId != 0) {
             mNegativeButton.setText(mParams.negativeButtonTextId);
             mNegativeButton.setOnClickListener(this);
+        } else if (mParams.negativeButtonText != null) {
+            mNegativeButton.setText(mParams.negativeButtonText);
+            mNegativeButton.setOnClickListener(this);
+        } else {
+            mNegativeButton.setVisibility(View.GONE);
         }
     }
 

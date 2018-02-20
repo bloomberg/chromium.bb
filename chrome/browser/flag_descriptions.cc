@@ -2055,6 +2055,10 @@ const char kLsdPermissionPromptDescription[] =
     "Whether to use the Google Play Services Location Settings Dialog "
     "permission dialog.";
 
+const char kModalPermissionDialogViewName[] = "Modal Permission Dialog";
+const char kModalPermissionDialogViewDescription[] =
+    "Enable this option to use ModalDialogManager for permission Dialogs.";
+
 const char kMediaScreenCaptureName[] = "Experimental ScreenCapture.";
 const char kMediaScreenCaptureDescription[] =
     "Enable this option for experimental ScreenCapture feature on Android.";
