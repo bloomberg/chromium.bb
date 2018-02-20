@@ -207,4 +207,8 @@ void StylePropertyMap::remove(const String& property_name,
   }
 }
 
+void StylePropertyMap::clear() {
+  RemoveAllProperties();
+}
+
 }  // namespace blink

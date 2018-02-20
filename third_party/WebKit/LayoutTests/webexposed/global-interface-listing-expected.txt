@@ -6879,6 +6879,7 @@ interface StorageManager
 interface StylePropertyMap : StylePropertyMapReadOnly
     attribute @@toStringTag
     method append
+    method clear
     method constructor
     method delete
     method set

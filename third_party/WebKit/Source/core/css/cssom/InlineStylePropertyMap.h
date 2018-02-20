@@ -29,6 +29,7 @@ class CORE_EXPORT InlineStylePropertyMap final : public StylePropertyMap {
   void SetCustomProperty(const AtomicString&, const CSSValue&) override;
   void RemoveProperty(CSSPropertyID) override;
   void RemoveCustomProperty(const AtomicString&);
+  void RemoveAllProperties() final;
 
  private:
   Member<Element> owner_element_;
