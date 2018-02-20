@@ -170,11 +170,11 @@ TEST_F(SpdyStreamTest, SendDataAfterOpen) {
   AddRead(resp);
 
   SpdySerializedFrame msg(
-      spdy_util_.ConstructSpdyDataFrame(1, kPostBody, kPostBodyLength, false));
+      spdy_util_.ConstructSpdyDataFrame(1, kPostBodyStringPiece, false));
   AddWrite(msg);
 
   SpdySerializedFrame echo(
-      spdy_util_.ConstructSpdyDataFrame(1, kPostBody, kPostBodyLength, false));
+      spdy_util_.ConstructSpdyDataFrame(1, kPostBodyStringPiece, false));
   AddRead(echo);
 
   AddReadEOF();
@@ -239,14 +239,14 @@ TEST_F(SpdyStreamTest, Trailers) {
   AddWrite(req);
 
   SpdySerializedFrame msg(
-      spdy_util_.ConstructSpdyDataFrame(1, kPostBody, kPostBodyLength, true));
+      spdy_util_.ConstructSpdyDataFrame(1, kPostBodyStringPiece, true));
   AddWrite(msg);
 
   SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(nullptr, 0));
   AddRead(resp);
 
   SpdySerializedFrame echo(
-      spdy_util_.ConstructSpdyDataFrame(1, kPostBody, kPostBodyLength, false));
+      spdy_util_.ConstructSpdyDataFrame(1, kPostBodyStringPiece, false));
   AddRead(echo);
 
   SpdyHeaderBlock late_headers;
@@ -312,13 +312,12 @@ TEST_F(SpdyStreamTest, PushedStream) {
   AddReadPause();
 
   SpdyStringPiece pushed_msg("foo");
-  SpdySerializedFrame pushed_body(spdy_util_.ConstructSpdyDataFrame(
-      2, pushed_msg.data(), pushed_msg.size(), true));
+  SpdySerializedFrame pushed_body(
+      spdy_util_.ConstructSpdyDataFrame(2, pushed_msg, true));
   AddRead(pushed_body);
 
   SpdyStringPiece msg("bar");
-  SpdySerializedFrame body(
-      spdy_util_.ConstructSpdyDataFrame(1, msg.data(), msg.size(), true));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, msg, true));
   AddRead(body);
 
   AddReadEOF();
@@ -407,11 +406,11 @@ TEST_F(SpdyStreamTest, StreamError) {
   AddRead(resp);
 
   SpdySerializedFrame msg(
-      spdy_util_.ConstructSpdyDataFrame(1, kPostBody, kPostBodyLength, false));
+      spdy_util_.ConstructSpdyDataFrame(1, kPostBodyStringPiece, false));
   AddWrite(msg);
 
   SpdySerializedFrame echo(
-      spdy_util_.ConstructSpdyDataFrame(1, kPostBody, kPostBodyLength, false));
+      spdy_util_.ConstructSpdyDataFrame(1, kPostBodyStringPiece, false));
   AddRead(echo);
 
   AddReadEOF();
@@ -475,13 +474,13 @@ TEST_F(SpdyStreamTest, SendLargeDataAfterOpenRequestResponse) {
   AddWrite(req);
 
   SpdyString chunk_data(kMaxSpdyFrameChunkSize, 'x');
-  SpdySerializedFrame chunk(spdy_util_.ConstructSpdyDataFrame(
-      1, chunk_data.data(), chunk_data.length(), false));
+  SpdySerializedFrame chunk(
+      spdy_util_.ConstructSpdyDataFrame(1, chunk_data, false));
   AddWrite(chunk);
   AddWrite(chunk);
 
-  SpdySerializedFrame last_chunk(spdy_util_.ConstructSpdyDataFrame(
-      1, chunk_data.data(), chunk_data.length(), true));
+  SpdySerializedFrame last_chunk(
+      spdy_util_.ConstructSpdyDataFrame(1, chunk_data, true));
   AddWrite(last_chunk);
 
   SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(nullptr, 0));
@@ -534,8 +533,8 @@ TEST_F(SpdyStreamTest, SendLargeDataAfterOpenBidirectional) {
   AddRead(resp);
 
   SpdyString chunk_data(kMaxSpdyFrameChunkSize, 'x');
-  SpdySerializedFrame chunk(spdy_util_.ConstructSpdyDataFrame(
-      1, chunk_data.data(), chunk_data.length(), false));
+  SpdySerializedFrame chunk(
+      spdy_util_.ConstructSpdyDataFrame(1, chunk_data, false));
   AddWrite(chunk);
   AddWrite(chunk);
   AddWrite(chunk);
@@ -772,7 +771,7 @@ TEST_F(SpdyStreamTest, HeadersMustHaveStatusOnPushedStream) {
   AddWrite(rst);
 
   SpdySerializedFrame body(
-      spdy_util_.ConstructSpdyDataFrame(1, kPostBody, kPostBodyLength, true));
+      spdy_util_.ConstructSpdyDataFrame(1, kPostBodyStringPiece, true));
   AddRead(body);
 
   AddReadEOF();
@@ -820,7 +819,7 @@ TEST_F(SpdyStreamTest, HeadersMustPreceedData) {
 
   // Response body not preceeded by headers: protocol error.
   SpdySerializedFrame body(
-      spdy_util_.ConstructSpdyDataFrame(1, kPostBody, kPostBodyLength, true));
+      spdy_util_.ConstructSpdyDataFrame(1, kPostBodyStringPiece, true));
   AddRead(body);
 
   SpdySerializedFrame rst(
@@ -872,7 +871,7 @@ TEST_F(SpdyStreamTest, HeadersMustPreceedDataOnPushedStream) {
   AddWrite(priority);
 
   SpdySerializedFrame pushed_body(
-      spdy_util_.ConstructSpdyDataFrame(2, kPostBody, kPostBodyLength, true));
+      spdy_util_.ConstructSpdyDataFrame(2, kPostBodyStringPiece, true));
   AddRead(pushed_body);
 
   SpdySerializedFrame rst(
@@ -880,7 +879,7 @@ TEST_F(SpdyStreamTest, HeadersMustPreceedDataOnPushedStream) {
   AddWrite(rst);
 
   SpdySerializedFrame body(
-      spdy_util_.ConstructSpdyDataFrame(1, kPostBody, kPostBodyLength, true));
+      spdy_util_.ConstructSpdyDataFrame(1, kPostBodyStringPiece, true));
   AddRead(body);
 
   AddReadEOF();
@@ -930,7 +929,7 @@ TEST_F(SpdyStreamTest, TrailersMustNotFollowTrailers) {
   AddRead(reply);
 
   SpdySerializedFrame body(
-      spdy_util_.ConstructSpdyDataFrame(1, kPostBody, kPostBodyLength, false));
+      spdy_util_.ConstructSpdyDataFrame(1, kPostBodyStringPiece, false));
   AddRead(body);
 
   SpdyHeaderBlock trailers_block;
@@ -991,7 +990,7 @@ TEST_F(SpdyStreamTest, DataMustNotFollowTrailers) {
   AddRead(reply);
 
   SpdySerializedFrame body(
-      spdy_util_.ConstructSpdyDataFrame(1, kPostBody, kPostBodyLength, false));
+      spdy_util_.ConstructSpdyDataFrame(1, kPostBodyStringPiece, false));
   AddRead(body);
 
   SpdyHeaderBlock trailers_block;
@@ -1057,7 +1056,7 @@ TEST_F(SpdyStreamTest, InformationalHeaders) {
   AddRead(reply);
 
   SpdySerializedFrame body(
-      spdy_util_.ConstructSpdyDataFrame(1, kPostBody, kPostBodyLength, true));
+      spdy_util_.ConstructSpdyDataFrame(1, kPostBodyStringPiece, true));
   AddRead(body);
 
   AddReadEOF();
@@ -1159,7 +1158,7 @@ TEST_F(SpdyStreamTest, StatusCannotHaveExtraText) {
   AddRead(reply);
 
   SpdySerializedFrame body(
-      spdy_util_.ConstructSpdyDataFrame(1, kPostBody, kPostBodyLength, true));
+      spdy_util_.ConstructSpdyDataFrame(1, kPostBodyStringPiece, true));
   AddRead(body);
 
   SpdySerializedFrame rst(
@@ -1211,7 +1210,7 @@ TEST_F(SpdyStreamTest, StatusMustBePresent) {
   AddRead(reply);
 
   SpdySerializedFrame body(
-      spdy_util_.ConstructSpdyDataFrame(1, kPostBody, kPostBodyLength, true));
+      spdy_util_.ConstructSpdyDataFrame(1, kPostBodyStringPiece, true));
   AddRead(body);
 
   SpdySerializedFrame rst(
@@ -1349,7 +1348,7 @@ void SpdyStreamTest::RunResumeAfterUnstallRequestResponseTest(
   AddWrite(req);
 
   SpdySerializedFrame body(
-      spdy_util_.ConstructSpdyDataFrame(1, kPostBody, kPostBodyLength, true));
+      spdy_util_.ConstructSpdyDataFrame(1, kPostBodyStringPiece, true));
   AddWrite(body);
 
   SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
@@ -1425,11 +1424,11 @@ void SpdyStreamTest::RunResumeAfterUnstallBidirectionalTest(
   AddRead(resp);
 
   SpdySerializedFrame msg(
-      spdy_util_.ConstructSpdyDataFrame(1, kPostBody, kPostBodyLength, false));
+      spdy_util_.ConstructSpdyDataFrame(1, kPostBodyStringPiece, false));
   AddWrite(msg);
 
   SpdySerializedFrame echo(
-      spdy_util_.ConstructSpdyDataFrame(1, kPostBody, kPostBodyLength, false));
+      spdy_util_.ConstructSpdyDataFrame(1, kPostBodyStringPiece, false));
   AddRead(echo);
 
   AddReadEOF();
@@ -1506,7 +1505,7 @@ TEST_F(SpdyStreamTest, ReceivedBytes) {
   AddReadPause();
 
   SpdySerializedFrame msg(
-      spdy_util_.ConstructSpdyDataFrame(1, kPostBody, kPostBodyLength, false));
+      spdy_util_.ConstructSpdyDataFrame(1, kPostBodyStringPiece, false));
   AddRead(msg);
 
   AddReadPause();
@@ -1577,7 +1576,7 @@ TEST_F(SpdyStreamTest, DataOnHalfClosedRemoveStream) {
   AddRead(resp);
 
   SpdySerializedFrame data_frame(
-      spdy_util_.ConstructSpdyDataFrame(1, kPostBody, kPostBodyLength, true));
+      spdy_util_.ConstructSpdyDataFrame(1, kPostBodyStringPiece, true));
   AddRead(data_frame);
 
   SpdySerializedFrame rst(

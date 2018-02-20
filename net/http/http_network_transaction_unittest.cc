@@ -23,6 +23,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
@@ -1640,7 +1641,7 @@ void HttpNetworkTransactionTest::PreconnectErrorResendRequestTest(
   SpdySerializedFrame spdy_response(
       spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   SpdySerializedFrame spdy_data(
-      spdy_util_.ConstructSpdyDataFrame(1, "hello", 5, true));
+      spdy_util_.ConstructSpdyDataFrame(1, "hello", true));
 
   // HTTP/1.1 versions of the request and response.
   const char kHttpRequest[] = "GET / HTTP/1.1\r\n"
@@ -5333,14 +5334,14 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyConnectHttps) {
       "Host: www.example.org\r\n"
       "Connection: keep-alive\r\n\r\n";
   SpdySerializedFrame wrapped_get(
-      spdy_util_.ConstructSpdyDataFrame(1, get, strlen(get), false));
+      spdy_util_.ConstructSpdyDataFrame(1, get, false));
   SpdySerializedFrame conn_resp(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   const char resp[] = "HTTP/1.1 200 OK\r\n"
       "Content-Length: 10\r\n\r\n";
   SpdySerializedFrame wrapped_get_resp(
-      spdy_util_.ConstructSpdyDataFrame(1, resp, strlen(resp), false));
+      spdy_util_.ConstructSpdyDataFrame(1, resp, false));
   SpdySerializedFrame wrapped_body(
-      spdy_util_.ConstructSpdyDataFrame(1, "1234567890", 10, false));
+      spdy_util_.ConstructSpdyDataFrame(1, "1234567890", false));
   SpdySerializedFrame window_update(
       spdy_util_.ConstructSpdyWindowUpdate(1, wrapped_get_resp.size()));
 
@@ -5572,13 +5573,13 @@ TEST_F(HttpNetworkTransactionTest,
       "Host: www.example.org\r\n"
       "Connection: keep-alive\r\n\r\n";
   SpdySerializedFrame wrapped_get1(
-      spdy_util_.ConstructSpdyDataFrame(1, get1, strlen(get1), false));
+      spdy_util_.ConstructSpdyDataFrame(1, get1, false));
   const char resp1[] = "HTTP/1.1 200 OK\r\n"
       "Content-Length: 1\r\n\r\n";
   SpdySerializedFrame wrapped_get_resp1(
-      spdy_util_.ConstructSpdyDataFrame(1, resp1, strlen(resp1), false));
+      spdy_util_.ConstructSpdyDataFrame(1, resp1, false));
   SpdySerializedFrame wrapped_body1(
-      spdy_util_.ConstructSpdyDataFrame(1, "1", 1, false));
+      spdy_util_.ConstructSpdyDataFrame(1, "1", false));
   SpdySerializedFrame window_update(
       spdy_util_.ConstructSpdyWindowUpdate(1, wrapped_get_resp1.size()));
 
@@ -5597,13 +5598,13 @@ TEST_F(HttpNetworkTransactionTest,
       "Host: mail.example.org\r\n"
       "Connection: keep-alive\r\n\r\n";
   SpdySerializedFrame wrapped_get2(
-      spdy_util_.ConstructSpdyDataFrame(3, get2, strlen(get2), false));
+      spdy_util_.ConstructSpdyDataFrame(3, get2, false));
   const char resp2[] = "HTTP/1.1 200 OK\r\n"
       "Content-Length: 2\r\n\r\n";
   SpdySerializedFrame wrapped_get_resp2(
-      spdy_util_.ConstructSpdyDataFrame(3, resp2, strlen(resp2), false));
+      spdy_util_.ConstructSpdyDataFrame(3, resp2, false));
   SpdySerializedFrame wrapped_body2(
-      spdy_util_.ConstructSpdyDataFrame(3, "22", 2, false));
+      spdy_util_.ConstructSpdyDataFrame(3, "22", false));
 
   MockWrite spdy_writes[] = {
       CreateMockWrite(connect1, 0), CreateMockWrite(wrapped_get1, 2),
@@ -5707,13 +5708,13 @@ TEST_F(HttpNetworkTransactionTest,
       "Host: www.example.org\r\n"
       "Connection: keep-alive\r\n\r\n";
   SpdySerializedFrame wrapped_get1(
-      spdy_util_.ConstructSpdyDataFrame(1, get1, strlen(get1), false));
+      spdy_util_.ConstructSpdyDataFrame(1, get1, false));
   const char resp1[] = "HTTP/1.1 200 OK\r\n"
       "Content-Length: 1\r\n\r\n";
   SpdySerializedFrame wrapped_get_resp1(
-      spdy_util_.ConstructSpdyDataFrame(1, resp1, strlen(resp1), false));
+      spdy_util_.ConstructSpdyDataFrame(1, resp1, false));
   SpdySerializedFrame wrapped_body1(
-      spdy_util_.ConstructSpdyDataFrame(1, "1", 1, false));
+      spdy_util_.ConstructSpdyDataFrame(1, "1", false));
   SpdySerializedFrame window_update(
       spdy_util_.ConstructSpdyWindowUpdate(1, wrapped_get_resp1.size()));
 
@@ -5723,13 +5724,13 @@ TEST_F(HttpNetworkTransactionTest,
       "Host: www.example.org\r\n"
       "Connection: keep-alive\r\n\r\n";
   SpdySerializedFrame wrapped_get2(
-      spdy_util_.ConstructSpdyDataFrame(1, get2, strlen(get2), false));
+      spdy_util_.ConstructSpdyDataFrame(1, get2, false));
   const char resp2[] = "HTTP/1.1 200 OK\r\n"
       "Content-Length: 2\r\n\r\n";
   SpdySerializedFrame wrapped_get_resp2(
-      spdy_util_.ConstructSpdyDataFrame(1, resp2, strlen(resp2), false));
+      spdy_util_.ConstructSpdyDataFrame(1, resp2, false));
   SpdySerializedFrame wrapped_body2(
-      spdy_util_.ConstructSpdyDataFrame(1, "22", 2, false));
+      spdy_util_.ConstructSpdyDataFrame(1, "22", false));
 
   MockWrite spdy_writes[] = {
       CreateMockWrite(connect1, 0), CreateMockWrite(wrapped_get1, 2),
@@ -5828,7 +5829,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyLoadTimingTwoHttpRequests) {
   SpdySerializedFrame get1(
       spdy_util_.ConstructSpdyHeaders(1, std::move(headers), LOWEST, true));
   SpdySerializedFrame get_resp1(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
-  SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, "1", 1, true));
+  SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, "1", true));
   spdy_util_.UpdateWithStreamDestruction(1);
 
   // http://mail.example.org/
@@ -5837,8 +5838,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyLoadTimingTwoHttpRequests) {
   SpdySerializedFrame get2(
       spdy_util_.ConstructSpdyHeaders(3, std::move(headers2), LOWEST, true));
   SpdySerializedFrame get_resp2(spdy_util_.ConstructSpdyGetReply(NULL, 0, 3));
-  SpdySerializedFrame body2(
-      spdy_util_.ConstructSpdyDataFrame(3, "22", 2, true));
+  SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(3, "22", true));
 
   MockWrite spdy_writes[] = {
       CreateMockWrite(get1, 0), CreateMockWrite(get2, 3),
@@ -8836,8 +8836,8 @@ TEST_F(HttpNetworkTransactionTest, ErrorResponseToHttpsConnectViaSpdyProxy) {
   };
   SpdySerializedFrame resp(spdy_util_.ConstructSpdyReplyError(
       "404", kExtraHeaders, arraysize(kExtraHeaders) / 2, 1));
-  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(
-      1, "The host does not exist", 23, true));
+  SpdySerializedFrame body(
+      spdy_util_.ConstructSpdyDataFrame(1, "The host does not exist", true));
   MockRead data_reads[] = {
       CreateMockRead(resp, 1), CreateMockRead(body, 2),
       MockRead(ASYNC, 0, 4),  // EOF
@@ -8904,7 +8904,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
       "Host: www.example.org\r\n"
       "Connection: keep-alive\r\n\r\n";
   SpdySerializedFrame wrapped_get(
-      spdy_util_.ConstructSpdyDataFrame(3, get, strlen(get), false));
+      spdy_util_.ConstructSpdyDataFrame(3, get, false));
 
   MockWrite spdy_writes[] = {
       CreateMockWrite(req, 0, ASYNC), CreateMockWrite(rst, 2, ASYNC),
@@ -8925,9 +8925,9 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
       "Content-Length: 5\r\n\r\n";
 
   SpdySerializedFrame wrapped_get_resp(
-      spdy_util_.ConstructSpdyDataFrame(3, resp, strlen(resp), false));
+      spdy_util_.ConstructSpdyDataFrame(3, resp, false));
   SpdySerializedFrame wrapped_body(
-      spdy_util_.ConstructSpdyDataFrame(3, "hello", 5, false));
+      spdy_util_.ConstructSpdyDataFrame(3, "hello", false));
   MockRead spdy_reads[] = {
       CreateMockRead(conn_auth_resp, 1, ASYNC),
       CreateMockRead(conn_resp, 4, ASYNC),
@@ -9051,9 +9051,8 @@ TEST_F(HttpNetworkTransactionTest, CrossOriginSPDYProxyPush) {
 
   SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
 
-  const char kPushedData[] = "pushed";
-  SpdySerializedFrame stream2_body(spdy_util_.ConstructSpdyDataFrame(
-      2, kPushedData, strlen(kPushedData), true));
+  SpdySerializedFrame stream2_body(
+      spdy_util_.ConstructSpdyDataFrame(2, "pushed", true));
 
   MockRead spdy_reads[] = {
       CreateMockRead(stream2_syn, 1, ASYNC),
