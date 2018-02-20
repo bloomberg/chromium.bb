@@ -597,7 +597,9 @@ DesktopAutomationHandler.prototype = {
     var url = focusedRoot.docUrl;
     url = url.substring(0, url.indexOf('#')) || url;
     var pos = cvox.ChromeVox.position[url];
-    if (pos) {
+
+    // Disallow recovery for chrome urls.
+    if (pos && url.indexOf('chrome://') != 0) {
       focusedRoot.hitTestWithReply(
           pos.x, pos.y, this.onHitTestResult.bind(this));
       return;
