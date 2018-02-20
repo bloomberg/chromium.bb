@@ -8,6 +8,7 @@
 #error "This file requires ARC support."
 #endif
 
+#include "base/feature_list.h"
 #import "components/favicon/ios/web_favicon_driver.h"
 #include "components/history/core/browser/top_sites.h"
 #import "components/history/ios/browser/web_state_top_sites_observer.h"
@@ -28,6 +29,7 @@
 #import "ios/chrome/browser/reading_list/reading_list_web_state_observer.h"
 #import "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
+#include "ios/chrome/browser/ssl/captive_portal_features.h"
 #import "ios/chrome/browser/ssl/captive_portal_metrics_tab_helper.h"
 #import "ios/chrome/browser/ssl/insecure_input_tab_helper.h"
 #import "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
@@ -77,7 +79,10 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   StoreKitTabHelper::CreateForWebState(web_state);
   HistoryTabHelper::CreateForWebState(web_state);
   LoadTimingTabHelper::CreateForWebState(web_state);
-  CaptivePortalMetricsTabHelper::CreateForWebState(web_state);
+
+  if (base::FeatureList::IsEnabled(kCaptivePortalMetrics)) {
+    CaptivePortalMetricsTabHelper::CreateForWebState(web_state);
+  }
 
   ReadingListModel* model =
       ReadingListModelFactory::GetForBrowserState(browser_state);

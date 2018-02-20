@@ -6,3 +6,6 @@
 
 const base::Feature kCaptivePortalFeature{"CaptivePortalFeature",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kCaptivePortalMetrics{"CaptivePortalMetrics",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
