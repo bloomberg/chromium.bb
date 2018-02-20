@@ -91,7 +91,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '029e8ca778848d23cb5e3b16c1d30379c79b3906',
+  'angle_revision': 'e703c606f397e3b117025237dc6c0d3a1d3a4bbd',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
