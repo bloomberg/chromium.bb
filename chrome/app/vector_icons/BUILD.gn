@@ -66,6 +66,8 @@ aggregate_vector_icons("chrome_vector_icons") {
     "navigate_home.icon",
     "navigate_stop.1x.icon",
     "navigate_stop.icon",
+    "new_tab_button_incognito.icon",
+    "new_tab_button_plus.icon",
     "overflow_chevron.1x.icon",
     "overflow_chevron.icon",
     "paintbrush.icon",

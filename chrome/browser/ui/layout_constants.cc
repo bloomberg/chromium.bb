@@ -9,11 +9,10 @@
 #include "ui/base/material_design/material_design_controller.h"
 
 int GetLayoutConstant(LayoutConstant constant) {
-  const bool hybrid = ui::MaterialDesignController::GetMode() ==
-                      ui::MaterialDesignController::MATERIAL_HYBRID;
+  const int mode = ui::MaterialDesignController::GetMode();
+  const bool hybrid = mode == ui::MaterialDesignController::MATERIAL_HYBRID;
   const bool touch_optimized_material =
-      ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
-
+      mode == ui::MaterialDesignController::MATERIAL_TOUCH_OPTIMIZED;
   switch (constant) {
     case LOCATION_BAR_BUBBLE_VERTICAL_PADDING:
       return hybrid ? 1 : 3;
@@ -38,11 +37,19 @@ int GetLayoutConstant(LayoutConstant constant) {
       return 16;
     case LOCATION_BAR_ICON_INTERIOR_PADDING:
       return 4;
-    case TABSTRIP_NEW_TAB_BUTTON_OVERLAP:
-      return hybrid ? 6 : 5;
+    case TABSTRIP_NEW_TAB_BUTTON_SPACING: {
+      // In non-touch optimized UI, we make the new tab button overlap with the
+      // last tab in the tabstrip (i.e negative spacing). However, in
+      // touch-optimized UI, we actually want to push the new tab button
+      // further away from the tab. The distance is 8 DIP from the point at
+      // which the last tab's endcap intersects with the tabstrip separator,
+      // which is actually 6 DIP from the last tab's right point.
+      constexpr int kSpacing[] = {-5, -6, 6};
+      return kSpacing[mode];
+    }
     case TAB_HEIGHT: {
       constexpr int kTabHeight[] = {29, 33, 41};
-      return kTabHeight[ui::MaterialDesignController::GetMode()];
+      return kTabHeight[mode];
     }
     case TOOLBAR_ELEMENT_PADDING:
       return hybrid ? 8 : 0;
@@ -78,12 +85,14 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
   return gfx::Insets();
 }
 
-gfx::Size GetLayoutSize(LayoutSize size) {
-  const bool hybrid = ui::MaterialDesignController::GetMode() ==
-                      ui::MaterialDesignController::MATERIAL_HYBRID;
+gfx::Size GetLayoutSize(LayoutSize size, bool is_incognito) {
+  const int mode = ui::MaterialDesignController::GetMode();
   switch (size) {
-    case NEW_TAB_BUTTON:
-      return hybrid ? gfx::Size(39, 21) : gfx::Size(36, 18);
+    case NEW_TAB_BUTTON: {
+      const gfx::Size sizes[] = {
+          {36, 18}, {39, 21}, {(is_incognito ? 42 : 24), 24}};
+      return sizes[mode];
+    }
   }
   NOTREACHED();
   return gfx::Size();

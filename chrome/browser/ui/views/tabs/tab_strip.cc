@@ -117,9 +117,9 @@ const int kPinnedToNonPinnedOffset = 3;
 #endif
 
 // Returns the width needed for the new tab button (and padding).
-int GetNewTabButtonWidth() {
-  return GetLayoutSize(NEW_TAB_BUTTON).width() -
-         GetLayoutConstant(TABSTRIP_NEW_TAB_BUTTON_OVERLAP);
+int GetNewTabButtonWidth(bool is_incognito) {
+  return GetLayoutSize(NEW_TAB_BUTTON, is_incognito).width() +
+         GetLayoutConstant(TABSTRIP_NEW_TAB_BUTTON_SPACING);
 }
 
 // Animation delegate used for any automatic tab movement.  Hides the tab if it
@@ -847,7 +847,8 @@ bool TabStrip::IsTabPinned(const Tab* tab) const {
 }
 
 bool TabStrip::IsIncognito() const {
-  return controller_->IsIncognito();
+  // There may be no controller in tests.
+  return controller_ && controller_->IsIncognito();
 }
 
 void TabStrip::MaybeStartDrag(
@@ -1205,7 +1206,7 @@ gfx::Size TabStrip::CalculatePreferredSize() const {
     needed_tab_width = std::min(std::max(needed_tab_width, min_selected_width),
                                 largest_min_tab_width);
   }
-  return gfx::Size(needed_tab_width + GetNewTabButtonWidth(),
+  return gfx::Size(needed_tab_width + GetNewTabButtonWidth(IsIncognito()),
                    Tab::GetMinimumInactiveSize().height());
 }
 
@@ -1313,7 +1314,7 @@ void TabStrip::Init() {
   // So we get enter/exit on children to switch stacked layout on and off.
   set_notify_enter_exit_on_child(true);
 
-  new_tab_button_bounds_.set_size(GetLayoutSize(NEW_TAB_BUTTON));
+  new_tab_button_bounds_.set_size(GetLayoutSize(NEW_TAB_BUTTON, IsIncognito()));
   new_tab_button_bounds_.Inset(0, 0, 0, -NewTabButton::GetTopOffset());
   new_tab_button_ = new NewTabButton(this, this);
   new_tab_button_->SetTooltipText(
@@ -2120,8 +2121,8 @@ void TabStrip::GenerateIdealBounds() {
   // tabstrip. Constrain the x-coordinate of the new tab button so that it is
   // always visible.
   const int new_tab_x = std::min(
-      max_new_tab_x, tabs_.ideal_bounds(tabs_.view_size() - 1).right() -
-                         GetLayoutConstant(TABSTRIP_NEW_TAB_BUTTON_OVERLAP));
+      max_new_tab_x, tabs_.ideal_bounds(tabs_.view_size() - 1).right() +
+                         GetLayoutConstant(TABSTRIP_NEW_TAB_BUTTON_SPACING));
   const int old_max_x = new_tab_button_bounds_.right();
   new_tab_button_bounds_.set_origin(gfx::Point(new_tab_x, 0));
   if (new_tab_button_bounds_.right() != old_max_x) {
@@ -2150,7 +2151,7 @@ int TabStrip::GenerateIdealBoundsForPinnedTabs(int* first_non_pinned_index) {
 }
 
 int TabStrip::GetTabAreaWidth() const {
-  return width() - GetNewTabButtonWidth();
+  return width() - GetNewTabButtonWidth(IsIncognito());
 }
 
 void TabStrip::StartResizeLayoutAnimation() {
@@ -2194,8 +2195,8 @@ void TabStrip::StartMouseInitiatedRemoveTabAnimation(int model_index) {
   // the new tab button should stay where it is.
   new_tab_button_bounds_.set_x(
       std::min(width() - new_tab_button_bounds_.width(),
-               ideal_bounds(tab_count() - 1).right() -
-                   GetLayoutConstant(TABSTRIP_NEW_TAB_BUTTON_OVERLAP)));
+               ideal_bounds(tab_count() - 1).right() +
+                   GetLayoutConstant(TABSTRIP_NEW_TAB_BUTTON_SPACING)));
 
   PrepareForAnimation();
 

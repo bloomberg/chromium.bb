@@ -14,6 +14,9 @@ class Size;
 // Browser{,Frame,View}.
 class OpaqueBrowserFrameViewLayoutDelegate {
  public:
+  // Returns true if the browser is in incognito mode.
+  virtual bool IsIncognito() const = 0;
+
   // Controls the visual placement of the window icon/title in non-tabstrip
   // mode.
   virtual bool ShouldShowWindowIcon() const = 0;

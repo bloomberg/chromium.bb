@@ -60,7 +60,15 @@ class NewTabButton : public views::ImageButton,
   void OnMouseReleased(const ui::MouseEvent& event) override;
 #endif
   void OnGestureEvent(ui::GestureEvent* event) override;
+  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
+  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
+  void NotifyClick(const ui::Event& event) override;
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   void PaintButtonContents(gfx::Canvas* canvas) override;
+  void Layout() override;
+  void OnThemeChanged() override;
 
   // views::MaskedTargeterDelegate:
   bool GetHitTestMask(gfx::Path* mask) const override;
@@ -72,7 +80,7 @@ class NewTabButton : public views::ImageButton,
   // Note: This is different than the rect around the entire New Tab Button as
   // it extends to the top of the tabstrip for Fitts' Law interaction in a
   // maximized window. Used for anchoring the NewTabPromo.
-  gfx::Rect GetVisibleBounds();
+  gfx::Rect GetVisibleBounds() const;
 
   // Computes a path corresponding to the button's outer border for a given
   // |scale| and stores it in |path|.  |button_y| is used as the y-coordinate
@@ -91,22 +99,52 @@ class NewTabButton : public views::ImageButton,
                  const SkPath& fill,
                  gfx::Canvas* canvas) const;
 
+  SkColor GetButtonFillColor() const;
+
+  // In the touch-optimized UI, initializes the needed button icons.
+  void InitButtonIcons();
+
+  // Returns the path for the touch-optimized new tab button for the given
+  // |scale|. |button_y| is the button's top y-cordinate. If |for_fill| is true,
+  // the path will be shrunk by 1px from all sides to allow room for the stroke
+  // to show up.
+  SkPath GetTouchOptimizedButtonPath(float button_y,
+                                     float scale,
+                                     bool for_fill) const;
+
+  void UpdateInkDropBaseColor();
+
   // Tab strip that contains this button.
   TabStrip* tab_strip_;
 
   // Promotional UI that appears next to the NewTabButton and encourages its
   // use. Owned by its NativeWidget.
-  NewTabPromoBubbleView* new_tab_promo_;
+  NewTabPromoBubbleView* new_tab_promo_ = nullptr;
 
   // The offset used to paint the background image.
   gfx::Point background_offset_;
 
+  // Whether this new tab button belongs to a tabstrip that is part of an
+  // incognito mode browser or not. Note that you can't drag a tab from one
+  // incognito browser to another non-incognito browser or vice versa.
+  const bool is_incognito_;
+
+  // In the touch-optimized UI, the new tab button has a plus icon, and an
+  // incognito icon if is in incognito mode.
+  gfx::ImageSkia plus_icon_;
+  gfx::ImageSkia incognito_icon_;
+
+  // In touch-optimized UI, this view holds the ink drop layer so that it's
+  // shifted down to the correct top offset of the button, since the actual
+  // button's y-coordinate is 0 due to Fitt's Law needs.
+  views::InkDropContainerView* ink_drop_container_ = nullptr;
+
   // were we destroyed?
-  bool* destroyed_;
+  bool* destroyed_ = nullptr;
 
   // Observes the NewTabPromo's Widget.  Used to tell whether the promo is
   // open and get called back when it closes.
-  ScopedObserver<views::Widget, WidgetObserver> new_tab_promo_observer_;
+  ScopedObserver<views::Widget, WidgetObserver> new_tab_promo_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NewTabButton);
 };

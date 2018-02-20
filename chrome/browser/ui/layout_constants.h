@@ -46,8 +46,8 @@ enum LayoutConstant {
   // of the icon view (e.g. does not highlight on hover).
   LOCATION_BAR_ICON_INTERIOR_PADDING,
 
-  // The amount of overlap between the last tab and the new tab button.
-  TABSTRIP_NEW_TAB_BUTTON_OVERLAP,
+  // The amount of spacing between the last tab and the new tab button.
+  TABSTRIP_NEW_TAB_BUTTON_SPACING,
 
   // The height of a tab, including outer strokes.  In non-100% scales this is
   // slightly larger than the apparent height of the tab, as the top stroke is
@@ -93,12 +93,14 @@ enum LayoutInset {
 
 enum LayoutSize {
   // The visible size of the new tab button; does not include any Fitts' Law
-  // extensions.
+  // extensions. Note that in touch-optimized UI mode, the new tab button's
+  // width is larger when the browser is in incognito mode. The height remains
+  // the same whether incognito or not.
   NEW_TAB_BUTTON,
 };
 
 int GetLayoutConstant(LayoutConstant constant);
 gfx::Insets GetLayoutInsets(LayoutInset inset);
-gfx::Size GetLayoutSize(LayoutSize size);
+gfx::Size GetLayoutSize(LayoutSize size, bool is_incognito);
 
 #endif  // CHROME_BROWSER_UI_LAYOUT_CONSTANTS_H_
