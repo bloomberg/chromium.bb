@@ -486,7 +486,7 @@ deps = {
   },
 
   'src/third_party/googletest/src':
-    Var('chromium_git') + '/external/github.com/google/googletest.git' + '@' + '0062e4869f07a3ef235703ddf63af604b712446c',
+    Var('chromium_git') + '/external/github.com/google/googletest.git' + '@' + '7a2563a514563145d82f02b5b350cba1af33af67',
 
   # GNU binutils assembler for x86-32.
   'src/third_party/gnu_binutils': {
