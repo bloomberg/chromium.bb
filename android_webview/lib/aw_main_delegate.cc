@@ -81,6 +81,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   cl->AppendSwitch(switches::kDisableWebRtcHWDecoding);
 #endif
 
+  // Check damage in OnBeginFrame to prevent unnecessary draws.
+  cl->AppendSwitch(cc::switches::kCheckDamageEarly);
+
   // This is needed for sharing textures across the different GL threads.
   cl->AppendSwitch(switches::kEnableThreadedTextureMailboxes);
 
