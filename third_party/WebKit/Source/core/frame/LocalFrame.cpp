@@ -912,6 +912,16 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
     Client()->DidBlockFramebust(destination_url);
     return false;
   }
+
+  // Navigating window.opener cross origin, without user activation. See
+  // crbug.com/813643.
+  if (Client()->Opener() == target_frame &&
+      !HasTransientUserActivation(this, false /* checkIfMainThread */) &&
+      !target_frame.GetSecurityContext()->GetSecurityOrigin()->CanAccess(
+          SecurityOrigin::Create(destination_url).get())) {
+    UseCounter::Count(this, WebFeature::kOpenerNavigationWithoutGesture);
+  }
+
   if (!is_allowed_navigation && !error_reason.IsNull())
     PrintNavigationErrorMessage(target_frame, error_reason.Latin1().data());
   return is_allowed_navigation;
