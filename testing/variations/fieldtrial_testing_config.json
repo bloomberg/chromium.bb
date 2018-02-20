@@ -4001,6 +4001,21 @@
             ]
         }
     ],
+    "UserInitiatedChromeCleanupsFieldTrial": [
+        {
+            "platforms": [
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "On",
+                    "enable_features": [
+                        "UserInitiatedChromeCleanups"
+                    ]
+                }
+            ]
+        }
+    ],
     "V8AsmJSToWasm": [
         {
             "platforms": [
