@@ -14,5 +14,4 @@ callback UpdateFunction = CSSStyleValue (CSSStyleValue oldValue);
     [RaisesException, ImplementedAs=remove] void delete(DOMString property);
     // Putting Exposed=Window in the next line makes |set| not exposed to PaintWorklet.
     [RaisesException, CallWith=ExecutionContext, Exposed=Window] void set(DOMString property, (CSSStyleValue or DOMString)... values);
-    [RaisesException] void update(DOMString property, UpdateFunction updateFunction);
 };

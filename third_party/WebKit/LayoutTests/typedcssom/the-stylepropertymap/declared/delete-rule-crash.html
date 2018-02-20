@@ -24,6 +24,5 @@ test(() => {
   styleMap.append('transition-duration', '1s');
   styleMap.delete('color');
   styleMap.set('width', '10px');
-  styleMap.update('width', () => CSS.px(1));
 }, "Deleting a style rule does not crash the corresponding declared style map");
 </script>

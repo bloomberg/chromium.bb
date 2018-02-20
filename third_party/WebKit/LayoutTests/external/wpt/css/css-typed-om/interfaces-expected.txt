@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 237 tests; 226 PASS, 11 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 236 tests; 225 PASS, 11 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS CSS Typed OM IDL test
 PASS CSSStyleValue interface: existence and properties of interface object
 PASS CSSStyleValue interface object length
@@ -26,7 +26,6 @@ PASS StylePropertyMap interface: existence and properties of interface prototype
 PASS StylePropertyMap interface: operation append(DOMString, [object Object],[object Object])
 PASS StylePropertyMap interface: operation delete(DOMString)
 PASS StylePropertyMap interface: operation set(DOMString, [object Object],[object Object])
-PASS StylePropertyMap interface: operation update(DOMString, UpdateFunction)
 PASS CSSUnparsedValue interface: existence and properties of interface object
 PASS CSSUnparsedValue interface object length
 PASS CSSUnparsedValue interface object name
