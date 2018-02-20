@@ -32,7 +32,7 @@ import org.chromium.chrome.browser.banners.AppBannerManager;
 public class AddToHomescreenDialog {
     /**
      * The delegate for which this dialog is displayed. Used by the dialog to indicate when the user
-     * accedes to adding to home screen, and when the dialog is dismissedt gr.
+     * accedes to adding to home screen, and when the dialog is dismissed.
      */
     public static interface Delegate {
         /**
@@ -51,11 +51,14 @@ public class AddToHomescreenDialog {
     private ImageView mIconView;
 
     /**
-     * The {@mShortcutTitleInput} and the {@mPwaLayout} are mutually exclusive, depending on
-     * whether the site is WebAPK compatible.
+     * The {@mShortcutTitleInput} and the {@mAppLayout} are mutually exclusive, depending on whether
+     * the home screen item is a bookmark shortcut or a web app.
      */
     private EditText mShortcutTitleInput;
-    private LinearLayout mPwaLayout;
+    private LinearLayout mAppLayout;
+
+    private TextView mAppNameView;
+    private TextView mAppOriginView;
 
     private Delegate mDelegate;
 
@@ -95,7 +98,10 @@ public class AddToHomescreenDialog {
         mProgressBarView = view.findViewById(R.id.spinny);
         mIconView = (ImageView) view.findViewById(R.id.icon);
         mShortcutTitleInput = (EditText) view.findViewById(R.id.text);
-        mPwaLayout = (LinearLayout) view.findViewById(R.id.read_only_text);
+        mAppLayout = (LinearLayout) view.findViewById(R.id.app_info);
+
+        mAppNameView = (TextView) mAppLayout.findViewById(R.id.name);
+        mAppOriginView = (TextView) mAppLayout.findViewById(R.id.origin);
 
         // The dialog's text field is disabled till the "user title" is fetched,
         mShortcutTitleInput.setVisibility(View.INVISIBLE);
@@ -161,21 +167,21 @@ public class AddToHomescreenDialog {
 
     /**
      * Called when the home screen icon title (and possibly information from the web manifest) is
-     * available.
+     * available. Used for web apps and bookmark shortcuts.
      */
-    public void onUserTitleAvailable(String title, String url, boolean isTitleEditable) {
-        if (isTitleEditable) {
-            mShortcutTitleInput.setText(title);
-            mShortcutTitleInput.setVisibility(View.VISIBLE);
+    public void onUserTitleAvailable(String title, String url, boolean isWebapp) {
+        // Users may edit the title of bookmark shortcuts, but we respect web app names and do not
+        // let users change them.
+        if (isWebapp) {
+            mShortcutTitleInput.setVisibility(View.GONE);
+            mAppNameView.setText(title);
+            mAppOriginView.setText(url);
+            mAppLayout.setVisibility(View.VISIBLE);
             return;
         }
 
-        mShortcutTitleInput.setVisibility(View.GONE);
-        TextView nameView = (TextView) mPwaLayout.findViewById(R.id.name);
-        TextView originView = (TextView) mPwaLayout.findViewById(R.id.origin);
-        nameView.setText(title);
-        originView.setText(url);
-        mPwaLayout.setVisibility(View.VISIBLE);
+        mShortcutTitleInput.setText(title);
+        mShortcutTitleInput.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -194,7 +200,7 @@ public class AddToHomescreenDialog {
     void updateAddButtonEnabledState() {
         boolean enable = mHasIcon
                 && (!TextUtils.isEmpty(mShortcutTitleInput.getText())
-                           || mPwaLayout.getVisibility() == View.VISIBLE);
+                           || mAppLayout.getVisibility() == View.VISIBLE);
         mDialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(enable);
     }
 }
