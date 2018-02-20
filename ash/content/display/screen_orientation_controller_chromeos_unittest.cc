@@ -70,7 +70,7 @@ bool UserRotationLocked() {
 void SetDisplayRotationById(int64_t display_id,
                             display::Display::Rotation rotation) {
   Shell::Get()->display_manager()->SetDisplayRotation(
-      display_id, rotation, display::Display::ROTATION_SOURCE_USER);
+      display_id, rotation, display::Display::RotationSource::USER);
 }
 
 void SetInternalDisplayRotation(display::Display::Rotation rotation) {
@@ -643,7 +643,7 @@ TEST_F(ScreenOrientationControllerTest, RotateInactiveDisplay) {
   ScreenOrientationControllerTestApi(
       Shell::Get()->screen_orientation_controller())
       .SetDisplayRotation(kNewRotation,
-                          display::Display::ROTATION_SOURCE_ACTIVE);
+                          display::Display::RotationSource::ACTIVE);
 
   EXPECT_EQ(kNewRotation, display_manager()
                               ->GetDisplayInfo(kInternalDisplayId)

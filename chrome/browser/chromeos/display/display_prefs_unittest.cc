@@ -208,7 +208,7 @@ class DisplayPrefsTest : public ash::AshTestBase {
     return ash::Shell::Get()
         ->display_manager()
         ->GetDisplayInfo(display::Display::InternalDisplayId())
-        .GetRotation(display::Display::ROTATION_SOURCE_ACCELEROMETER);
+        .GetRotation(display::Display::RotationSource::ACCELEROMETER);
   }
 
   void StoreExternalDisplayMirrorInfo(
@@ -321,7 +321,7 @@ TEST_F(DisplayPrefsTest, BasicStores) {
 
   window_tree_host_manager->SetOverscanInsets(id1, gfx::Insets(10, 11, 12, 13));
   display_manager()->SetDisplayRotation(id1, display::Display::ROTATE_90,
-                                        display::Display::ROTATION_SOURCE_USER);
+                                        display::Display::RotationSource::USER);
   EXPECT_TRUE(display::test::DisplayManagerTestApi(display_manager())
                   .SetDisplayUIScale(id1, 1.25f));
   EXPECT_FALSE(display::test::DisplayManagerTestApi(display_manager())
@@ -717,7 +717,7 @@ TEST_F(DisplayPrefsTest, DontStoreInGuestMode) {
                                               gfx::Insets(10, 11, 12, 13));
   display_manager()->SetDisplayRotation(new_primary,
                                         display::Display::ROTATE_90,
-                                        display::Display::ROTATION_SOURCE_USER);
+                                        display::Display::RotationSource::USER);
 
   // Does not store the preferences locally.
   EXPECT_FALSE(local_state()
@@ -813,11 +813,11 @@ TEST_F(DisplayPrefsTest, DontSaveTabletModeControllerRotations) {
   // Populate the properties.
   display_manager()->SetDisplayRotation(display::Display::InternalDisplayId(),
                                         display::Display::ROTATE_180,
-                                        display::Display::ROTATION_SOURCE_USER);
+                                        display::Display::RotationSource::USER);
   // Reset property to avoid rotation lock
   display_manager()->SetDisplayRotation(display::Display::InternalDisplayId(),
                                         display::Display::ROTATE_0,
-                                        display::Display::ROTATION_SOURCE_USER);
+                                        display::Display::RotationSource::USER);
 
   // Open up 270 degrees to trigger tablet mode
   scoped_refptr<chromeos::AccelerometerUpdate> update(

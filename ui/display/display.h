@@ -48,29 +48,28 @@ class DISPLAY_EXPORT Display final {
   // The display rotation can have multiple causes for change. A user can set a
   // preference. On devices with accelerometers, they can change the rotation.
   // RotationSource allows for the tracking of a Rotation per source of the
-  // change. ROTATION_SOURCE_ACTIVE is the current rotation of the display.
-  // Rotation changes not due to an accelerometer, nor the user, are to use this
-  // source directly. ROTATION_SOURCE_UNKNOWN is when no rotation source has
-  // been provided.
-  enum RotationSource {
-    ROTATION_SOURCE_ACCELEROMETER = 0,
-    ROTATION_SOURCE_ACTIVE,
-    ROTATION_SOURCE_USER,
-    ROTATION_SOURCE_UNKNOWN,
+  // change. ACTIVE is the current rotation of the display. Rotation changes not
+  // due to an accelerometer, nor the user, are to use this source directly.
+  // UNKNOWN is when no rotation source has been provided.
+  enum class RotationSource {
+    ACCELEROMETER = 0,
+    ACTIVE,
+    USER,
+    UNKNOWN,
   };
 
   // Touch support for the display.
-  enum TouchSupport {
-    TOUCH_SUPPORT_UNKNOWN,
-    TOUCH_SUPPORT_AVAILABLE,
-    TOUCH_SUPPORT_UNAVAILABLE,
+  enum class TouchSupport {
+    UNKNOWN,
+    AVAILABLE,
+    UNAVAILABLE,
   };
 
   // Accelerometer support for the display.
-  enum AccelerometerSupport {
-    ACCELEROMETER_SUPPORT_UNKNOWN,
-    ACCELEROMETER_SUPPORT_AVAILABLE,
-    ACCELEROMETER_SUPPORT_UNAVAILABLE,
+  enum class AccelerometerSupport {
+    UNKNOWN,
+    AVAILABLE,
+    UNAVAILABLE,
   };
 
   // Creates a display with kInvalidDisplayId as default.
@@ -143,8 +142,7 @@ class DISPLAY_EXPORT Display final {
     accelerometer_support_ = support;
   }
 
-  // Utility functions that just return the size of display and
-  // work area.
+  // Utility functions that just return the size of display and work area.
   const gfx::Size& size() const { return bounds_.size(); }
   const gfx::Size& work_area_size() const { return work_area_.size(); }
 
@@ -240,8 +238,8 @@ class DISPLAY_EXPORT Display final {
   gfx::Rect work_area_;
   float device_scale_factor_;
   Rotation rotation_ = ROTATE_0;
-  TouchSupport touch_support_ = TOUCH_SUPPORT_UNKNOWN;
-  AccelerometerSupport accelerometer_support_ = ACCELEROMETER_SUPPORT_UNKNOWN;
+  TouchSupport touch_support_ = TouchSupport::UNKNOWN;
+  AccelerometerSupport accelerometer_support_ = AccelerometerSupport::UNKNOWN;
   gfx::Size maximum_cursor_size_;
   // NOTE: this is not currently written to the mojom as it is not used in
   // aura.

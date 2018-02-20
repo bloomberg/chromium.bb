@@ -97,7 +97,7 @@ TEST_F(OobeDisplayChooserTest, DontSwitchFromTouch) {
       display::ManagedDisplayInfo::CreateFromSpecWithID("0+0-3000x2000", 1));
   display_info.push_back(
       display::ManagedDisplayInfo::CreateFromSpecWithID("3000+0-800x600", 2));
-  display_info[0].set_touch_support(display::Display::TOUCH_SUPPORT_AVAILABLE);
+  display_info[0].set_touch_support(display::Display::TouchSupport::AVAILABLE);
   display_manager()->OnNativeDisplaysChanged(display_info);
   base::RunLoop().RunUntilIdle();
 

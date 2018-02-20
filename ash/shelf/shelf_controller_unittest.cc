@@ -471,7 +471,7 @@ TEST_F(ShelfControllerPrefsTest, ShelfSettingsInTabletMode) {
   // Verify that screen rotation does not change alignment or auto-hide.
   display_manager()->SetDisplayRotation(
       display::Screen::GetScreen()->GetPrimaryDisplay().id(),
-      display::Display::ROTATE_90, display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::ROTATE_90, display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
 

@@ -587,14 +587,14 @@ TEST_F(ScreenLayoutObserverTest, RotationNotification) {
   // The accelerometer source.
   display_manager()->SetDisplayRotation(
       primary_id, display::Display::ROTATE_90,
-      display::Display::ROTATION_SOURCE_ACCELEROMETER);
+      display::Display::RotationSource::ACCELEROMETER);
   EXPECT_TRUE(GetDisplayNotificationText().empty());
   EXPECT_TRUE(GetDisplayNotificationAdditionalText().empty());
 
   // The user source.
   display_manager()->SetDisplayRotation(primary_id,
                                         display::Display::ROTATE_180,
-                                        display::Display::ROTATION_SOURCE_USER);
+                                        display::Display::RotationSource::USER);
   EXPECT_EQ(l10n_util::GetStringFUTF16(
                 IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED, GetFirstDisplayName(),
                 l10n_util::GetStringUTF16(
@@ -604,7 +604,7 @@ TEST_F(ScreenLayoutObserverTest, RotationNotification) {
   // The active source.
   display_manager()->SetDisplayRotation(
       primary_id, display::Display::ROTATE_270,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(l10n_util::GetStringFUTF16(
                 IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED, GetFirstDisplayName(),
                 l10n_util::GetStringUTF16(
@@ -617,13 +617,13 @@ TEST_F(ScreenLayoutObserverTest, RotationNotification) {
   // The accelerometer source.
   display_manager()->SetDisplayRotation(
       primary_id, display::Display::ROTATE_90,
-      display::Display::ROTATION_SOURCE_ACCELEROMETER);
+      display::Display::RotationSource::ACCELEROMETER);
   EXPECT_TRUE(GetDisplayNotificationText().empty());
 
   // The user source.
   display_manager()->SetDisplayRotation(primary_id,
                                         display::Display::ROTATE_180,
-                                        display::Display::ROTATION_SOURCE_USER);
+                                        display::Display::RotationSource::USER);
   EXPECT_EQ(l10n_util::GetStringFUTF16(
                 IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED, GetFirstDisplayName(),
                 l10n_util::GetStringUTF16(
@@ -633,7 +633,7 @@ TEST_F(ScreenLayoutObserverTest, RotationNotification) {
   // The active source.
   display_manager()->SetDisplayRotation(
       primary_id, display::Display::ROTATE_270,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
   EXPECT_TRUE(GetDisplayNotificationText().empty());
 }
 

@@ -202,9 +202,9 @@ void ChromeOSMetricsProvider::ProvideSystemProfileMetrics(
   hardware->set_hardware_class(hardware_class_);
   display::Display::TouchSupport has_touch =
       ui::GetInternalDisplayTouchSupport();
-  if (has_touch == display::Display::TOUCH_SUPPORT_AVAILABLE)
+  if (has_touch == display::Display::TouchSupport::AVAILABLE)
     hardware->set_internal_display_supports_touch(true);
-  else if (has_touch == display::Display::TOUCH_SUPPORT_UNAVAILABLE)
+  else if (has_touch == display::Display::TouchSupport::UNAVAILABLE)
     hardware->set_internal_display_supports_touch(false);
 }
 

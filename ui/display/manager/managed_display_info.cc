@@ -240,7 +240,7 @@ ManagedDisplayInfo ManagedDisplayInfo::CreateFromSpecWithID(
   ManagedDisplayInfo display_info(
       id, base::StringPrintf("Display-%d", static_cast<int>(id)), has_overscan);
   display_info.set_device_scale_factor(device_scale_factor);
-  display_info.SetRotation(rotation, Display::ROTATION_SOURCE_ACTIVE);
+  display_info.SetRotation(rotation, Display::RotationSource::ACTIVE);
   display_info.set_configured_ui_scale(ui_scale);
   display_info.SetBounds(bounds_in_native);
   display_info.SetManagedDisplayModes(display_modes);
@@ -261,8 +261,8 @@ ManagedDisplayInfo ManagedDisplayInfo::CreateFromSpecWithID(
 ManagedDisplayInfo::ManagedDisplayInfo()
     : id_(kInvalidDisplayId),
       has_overscan_(false),
-      active_rotation_source_(Display::ROTATION_SOURCE_UNKNOWN),
-      touch_support_(Display::TOUCH_SUPPORT_UNKNOWN),
+      active_rotation_source_(Display::RotationSource::UNKNOWN),
+      touch_support_(Display::TouchSupport::UNKNOWN),
       device_scale_factor_(1.0f),
       device_dpi_(kDpi96),
       overscan_insets_in_dip_(0, 0, 0, 0),
@@ -277,8 +277,8 @@ ManagedDisplayInfo::ManagedDisplayInfo(int64_t id,
     : id_(id),
       name_(name),
       has_overscan_(has_overscan),
-      active_rotation_source_(Display::ROTATION_SOURCE_UNKNOWN),
-      touch_support_(Display::TOUCH_SUPPORT_UNKNOWN),
+      active_rotation_source_(Display::RotationSource::UNKNOWN),
+      touch_support_(Display::TouchSupport::UNKNOWN),
       device_scale_factor_(1.0f),
       device_dpi_(kDpi96),
       overscan_insets_in_dip_(0, 0, 0, 0),
@@ -295,12 +295,12 @@ ManagedDisplayInfo::~ManagedDisplayInfo() {}
 void ManagedDisplayInfo::SetRotation(Display::Rotation rotation,
                                      Display::RotationSource source) {
   rotations_[source] = rotation;
-  rotations_[Display::ROTATION_SOURCE_ACTIVE] = rotation;
+  rotations_[Display::RotationSource::ACTIVE] = rotation;
   active_rotation_source_ = source;
 }
 
 Display::Rotation ManagedDisplayInfo::GetActiveRotation() const {
-  return GetRotation(Display::ROTATION_SOURCE_ACTIVE);
+  return GetRotation(Display::RotationSource::ACTIVE);
 }
 
 Display::Rotation ManagedDisplayInfo::GetRotation(
@@ -423,9 +423,9 @@ std::string ManagedDisplayInfo::ToString() const {
       size_in_pixel_.ToString().c_str(), device_scale_factor_,
       overscan_insets_in_dip_.ToString().c_str(), rotation_degree,
       configured_ui_scale_,
-      touch_support_ == Display::TOUCH_SUPPORT_AVAILABLE
+      touch_support_ == Display::TouchSupport::AVAILABLE
           ? "yes"
-          : touch_support_ == Display::TOUCH_SUPPORT_UNAVAILABLE ? "no"
+          : touch_support_ == Display::TouchSupport::UNAVAILABLE ? "no"
                                                                  : "unknown");
 
   return result;

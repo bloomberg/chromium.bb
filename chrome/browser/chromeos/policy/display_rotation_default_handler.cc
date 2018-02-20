@@ -74,7 +74,7 @@ void DisplayRotationDefaultHandler::RotateDisplays() {
       if (display.rotation() != display_rotation_default_) {
         display_manager->SetDisplayRotation(
             id, display_rotation_default_,
-            display::Display::ROTATION_SOURCE_ACTIVE);
+            display::Display::RotationSource::ACTIVE);
       }
     }
   }

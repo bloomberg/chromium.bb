@@ -23,8 +23,7 @@ namespace chromeos {
 namespace {
 
 bool TouchSupportAvailable(const display::Display& display) {
-  return display.touch_support() ==
-         display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE;
+  return display.touch_support() == display::Display::TouchSupport::AVAILABLE;
 }
 
 // TODO(felixe): More context at crbug.com/738885

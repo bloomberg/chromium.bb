@@ -48,11 +48,11 @@ display::mojom::TouchSupport
 EnumTraits<display::mojom::TouchSupport, display::Display::TouchSupport>::
     ToMojom(display::Display::TouchSupport touch_support) {
   switch (touch_support) {
-    case display::Display::TOUCH_SUPPORT_UNKNOWN:
+    case display::Display::TouchSupport::UNKNOWN:
       return display::mojom::TouchSupport::UNKNOWN;
-    case display::Display::TOUCH_SUPPORT_AVAILABLE:
+    case display::Display::TouchSupport::AVAILABLE:
       return display::mojom::TouchSupport::AVAILABLE;
-    case display::Display::TOUCH_SUPPORT_UNAVAILABLE:
+    case display::Display::TouchSupport::UNAVAILABLE:
       return display::mojom::TouchSupport::UNAVAILABLE;
   }
   NOTREACHED();
@@ -64,13 +64,13 @@ bool EnumTraits<display::mojom::TouchSupport, display::Display::TouchSupport>::
               display::Display::TouchSupport* out) {
   switch (touch_support) {
     case display::mojom::TouchSupport::UNKNOWN:
-      *out = display::Display::TOUCH_SUPPORT_UNKNOWN;
+      *out = display::Display::TouchSupport::UNKNOWN;
       return true;
     case display::mojom::TouchSupport::AVAILABLE:
-      *out = display::Display::TOUCH_SUPPORT_AVAILABLE;
+      *out = display::Display::TouchSupport::AVAILABLE;
       return true;
     case display::mojom::TouchSupport::UNAVAILABLE:
-      *out = display::Display::TOUCH_SUPPORT_UNAVAILABLE;
+      *out = display::Display::TouchSupport::UNAVAILABLE;
       return true;
   }
   NOTREACHED();
@@ -82,11 +82,11 @@ EnumTraits<display::mojom::AccelerometerSupport,
            display::Display::AccelerometerSupport>::
     ToMojom(display::Display::AccelerometerSupport accelerometer_support) {
   switch (accelerometer_support) {
-    case display::Display::ACCELEROMETER_SUPPORT_UNKNOWN:
+    case display::Display::AccelerometerSupport::UNKNOWN:
       return display::mojom::AccelerometerSupport::UNKNOWN;
-    case display::Display::ACCELEROMETER_SUPPORT_AVAILABLE:
+    case display::Display::AccelerometerSupport::AVAILABLE:
       return display::mojom::AccelerometerSupport::AVAILABLE;
-    case display::Display::ACCELEROMETER_SUPPORT_UNAVAILABLE:
+    case display::Display::AccelerometerSupport::UNAVAILABLE:
       return display::mojom::AccelerometerSupport::UNAVAILABLE;
   }
   NOTREACHED();
@@ -99,13 +99,13 @@ bool EnumTraits<display::mojom::AccelerometerSupport,
               display::Display::AccelerometerSupport* out) {
   switch (accelerometer_support) {
     case display::mojom::AccelerometerSupport::UNKNOWN:
-      *out = display::Display::ACCELEROMETER_SUPPORT_UNKNOWN;
+      *out = display::Display::AccelerometerSupport::UNKNOWN;
       return true;
     case display::mojom::AccelerometerSupport::AVAILABLE:
-      *out = display::Display::ACCELEROMETER_SUPPORT_AVAILABLE;
+      *out = display::Display::AccelerometerSupport::AVAILABLE;
       return true;
     case display::mojom::AccelerometerSupport::UNAVAILABLE:
-      *out = display::Display::ACCELEROMETER_SUPPORT_UNAVAILABLE;
+      *out = display::Display::AccelerometerSupport::UNAVAILABLE;
       return true;
   }
   NOTREACHED();

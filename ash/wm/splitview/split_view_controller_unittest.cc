@@ -784,7 +784,7 @@ TEST_F(SplitViewControllerTest, RotationTest) {
 
   // Set the screen orientation to LANDSCAPE_PRIMARY.
   test_api.SetDisplayRotation(display::Display::ROTATE_0,
-                              display::Display::ROTATION_SOURCE_ACTIVE);
+                              display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
             blink::kWebScreenOrientationLockLandscapePrimary);
 
@@ -809,7 +809,7 @@ TEST_F(SplitViewControllerTest, RotationTest) {
 
   // Rotate the screen by 270 degree.
   test_api.SetDisplayRotation(display::Display::ROTATE_270,
-                              display::Display::ROTATION_SOURCE_ACTIVE);
+                              display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
             blink::kWebScreenOrientationLockPortraitPrimary);
 
@@ -827,7 +827,7 @@ TEST_F(SplitViewControllerTest, RotationTest) {
 
   // Rotate the screen by 180 degree.
   test_api.SetDisplayRotation(display::Display::ROTATE_180,
-                              display::Display::ROTATION_SOURCE_ACTIVE);
+                              display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
             blink::kWebScreenOrientationLockLandscapeSecondary);
 
@@ -845,7 +845,7 @@ TEST_F(SplitViewControllerTest, RotationTest) {
 
   // Rotate the screen by 90 degree.
   test_api.SetDisplayRotation(display::Display::ROTATE_90,
-                              display::Display::ROTATION_SOURCE_ACTIVE);
+                              display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
             blink::kWebScreenOrientationLockPortraitSecondary);
   bounds_window1 = window1->GetBoundsInScreen();
@@ -862,7 +862,7 @@ TEST_F(SplitViewControllerTest, RotationTest) {
 
   // Rotate the screen back to 0 degree.
   test_api.SetDisplayRotation(display::Display::ROTATE_0,
-                              display::Display::ROTATION_SOURCE_ACTIVE);
+                              display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
             blink::kWebScreenOrientationLockLandscapePrimary);
   bounds_window1 = window1->GetBoundsInScreen();
@@ -928,7 +928,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
 
   // Set the screen orientation to LANDSCAPE_PRIMARY
   test_api.SetDisplayRotation(display::Display::ROTATE_0,
-                              display::Display::ROTATION_SOURCE_ACTIVE);
+                              display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
             blink::kWebScreenOrientationLockLandscapePrimary);
 
@@ -955,7 +955,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
 
   // Rotate the screen by 270 degree.
   test_api.SetDisplayRotation(display::Display::ROTATE_270,
-                              display::Display::ROTATION_SOURCE_ACTIVE);
+                              display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
             blink::kWebScreenOrientationLockPortraitPrimary);
 
@@ -981,7 +981,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
 
   // Rotate the screen by 180 degree.
   test_api.SetDisplayRotation(display::Display::ROTATE_180,
-                              display::Display::ROTATION_SOURCE_ACTIVE);
+                              display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
             blink::kWebScreenOrientationLockLandscapeSecondary);
 
@@ -1008,7 +1008,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
 
   // Rotate the screen by 90 degree.
   test_api.SetDisplayRotation(display::Display::ROTATE_90,
-                              display::Display::ROTATION_SOURCE_ACTIVE);
+                              display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
             blink::kWebScreenOrientationLockPortraitSecondary);
 
