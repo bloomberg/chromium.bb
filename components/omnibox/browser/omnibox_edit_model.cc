@@ -238,9 +238,7 @@ GURL OmniboxEditModel::PermanentURL() const {
 }
 
 base::string16 OmniboxEditModel::GetCurrentPermanentUrlText() const {
-  // TODO(tommycli): The focus state is a rough approximation, but we will
-  // need to make this more sophisticated.
-  if (has_focus())
+  if (user_input_in_progress_)
     return url_for_editing_;
 
   return display_only_url_;
@@ -1108,7 +1106,7 @@ void OmniboxEditModel::OnPopupDataChanged(
     view_->OnInlineAutocompleteTextCleared();
 
   const base::string16& user_text =
-      user_input_in_progress_ ? user_text_ : url_for_editing_;
+      user_input_in_progress_ ? user_text_ : GetCurrentPermanentUrlText();
   if (keyword_state_changed && is_keyword_selected()) {
     // If we reach here, the user most likely entered keyword mode by inserting
     // a space between a keyword name and a search string (as pressing space or

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -126,6 +127,7 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       delete_at_end_pressed_(false),
       location_bar_view_(location_bar),
       ime_candidate_window_open_(false),
+      is_mouse_pressed_(false),
       select_all_on_mouse_release_(false),
       select_all_on_gesture_tap_(false),
       latency_histogram_state_(NOT_ACTIVE),
@@ -520,6 +522,39 @@ void OmniboxViewViews::ClearAccessibilityLabel() {
   friendly_suggestion_text_prefix_length_ = 0;
 }
 
+bool OmniboxViewViews::UnapplySteadyStateElisions() {
+  if (!base::FeatureList::IsEnabled(
+          omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains)) {
+    return false;
+  }
+
+  // If the mouse is pressed, we defer this operation until mouseup.
+  if (is_mouse_pressed_)
+    return false;
+
+  // No need to update the text if the user is already inputting text or if
+  // everything is selected.
+  if (model()->user_input_in_progress() || IsSelectAll())
+    return false;
+
+  model()->SetInputInProgress(true);
+
+  base::string16 full_url = model()->GetCurrentPermanentUrlText();
+  size_t start, end;
+  GetSelectionBounds(&start, &end);
+
+  // TODO(tommycli): Before this code goes into production, investigate
+  // whether using the offsets provided by FormatURL makes more sense.
+  size_t offset = full_url.find(GetText());
+  if (offset != base::string16::npos) {
+    start += offset;
+    end += offset;
+  }
+
+  SetTextAndSelectedRange(full_url, gfx::Range(start, end));
+  return true;
+}
+
 void OmniboxViewViews::OnBeforePossibleChange() {
   // Record our state.
   GetState(&state_before_change_);
@@ -542,8 +577,14 @@ bool OmniboxViewViews::OnAfterPossibleChange(bool allow_keyword_ui_change) {
       state_changes.text_differs ||
       (ime_composing_before_change_ != IsIMEComposing());
 
-  const bool something_changed = model()->OnAfterPossibleChange(
+  bool something_changed = model()->OnAfterPossibleChange(
       state_changes, allow_keyword_ui_change && !IsIMEComposing());
+
+  // If any mouse button is pressed, we defer this operation until mouseup.
+  if (UnapplySteadyStateElisions()) {
+    something_changed = true;
+    state_changes.text_differs = true;
+  }
 
   // If only selection was changed, we don't need to call model()'s
   // OnChanged() method, which is called in TextChanged().
@@ -642,6 +683,8 @@ const char* OmniboxViewViews::GetClassName() const {
 }
 
 bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
+  is_mouse_pressed_ = true;
+
   select_all_on_mouse_release_ =
       (event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) &&
       (!HasFocus() || (model()->focus_state() == OMNIBOX_FOCUS_INVISIBLE));
@@ -686,6 +729,10 @@ void OmniboxViewViews::OnMouseReleased(const ui::MouseEvent& event) {
     SelectAll(true);
   }
   select_all_on_mouse_release_ = false;
+
+  is_mouse_pressed_ = false;
+  if (UnapplySteadyStateElisions())
+    TextChanged();
 }
 
 void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {

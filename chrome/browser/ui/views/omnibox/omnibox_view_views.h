@@ -144,6 +144,10 @@ class OmniboxViewViews : public OmniboxView,
 
   void ClearAccessibilityLabel();
 
+  // Returns true if the user text was updated with the full URL (without
+  // steady-state elisions).
+  bool UnapplySteadyStateElisions();
+
   // OmniboxView:
   void SetWindowTextAndCaretPos(const base::string16& text,
                                 size_t caret_pos,
@@ -256,6 +260,9 @@ class OmniboxViewViews : public OmniboxView,
   // avoid showing the popup. So far, the candidate window is detected only
   // on Chrome OS.
   bool ime_candidate_window_open_;
+
+  // True if any mouse button is currently depressed.
+  bool is_mouse_pressed_;
 
   // Should we select all the text when we see the mouse button get released?
   // We select in response to a click that focuses the omnibox, but we defer
