@@ -61,7 +61,8 @@ CvcUnmaskViewController::CvcUnmaskViewController(
           Profile::FromBrowserContext(web_contents_->GetBrowserContext())
               ->GetPrefs(),
           IdentityManagerFactory::GetInstance()->GetForProfile(
-              Profile::FromBrowserContext(web_contents_->GetBrowserContext())),
+              Profile::FromBrowserContext(web_contents_->GetBrowserContext())
+                  ->GetOriginalProfile()),
           /*unmask_delegate=*/this,
           /*save_delegate=*/nullptr),
       full_card_request_(this,
