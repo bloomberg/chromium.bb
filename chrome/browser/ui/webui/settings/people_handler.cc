@@ -65,6 +65,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #endif
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "third_party/skia/include/core/SkBitmap.h"

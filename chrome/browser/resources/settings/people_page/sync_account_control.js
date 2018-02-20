@@ -16,11 +16,28 @@ Polymer({
      */
     syncStatus: Object,
 
+    /**
+     * Proxy variable for syncStatus.signedIn to shield observer from being
+     * triggered multiple times whenever syncStatus changes.
+     * @private {boolean}
+     */
+    signedIn_: {
+      type: Boolean,
+      computed: 'computeSignedIn_(syncStatus.signedIn)',
+      observer: 'onSignedInChanged_',
+    },
+
     /** @private {!Array<!settings.StoredAccount>} */
     storedAccounts_: Object,
 
     /** @private {?settings.StoredAccount} */
     shownAccount_: Object,
+
+    showingPromo: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
 
     promoLabel: String,
 
@@ -54,6 +71,26 @@ Polymer({
         'sync-status-changed', this.handleSyncStatus_.bind(this));
     this.addWebUIListener(
         'stored-accounts-updated', this.handleStoredAccounts_.bind(this));
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeSignedIn_: function() {
+    return !!this.syncStatus.signedIn;
+  },
+
+  /** @private */
+  onSignedInChanged_: function() {
+    if (!this.showingPromo && !this.syncStatus.signedIn &&
+        this.syncBrowserProxy_.getPromoImpressionCount() < 10) {
+      this.showingPromo = true;
+      this.syncBrowserProxy_.incrementPromoImpressionCount();
+    } else {
+      // Turn off the promo if the user is signed in.
+      this.showingPromo = false;
+    }
   },
 
   /**

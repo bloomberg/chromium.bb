@@ -77,17 +77,61 @@
         margin: auto;
         width: 12px;
       }
+
+      #sign-in {
+        min-width: 100px;
+      }
+
+      #banner {
+        background-color: var(--google-blue-500);
+        display: none;
+      }
+
+      #banner img {
+        -webkit-margin-start: 380px;
+        height: 100px;
+        margin-bottom: -12px;
+        margin-top: 32px;
+      }
+
+      :host([showing-promo]) #banner {
+        display: flex;
+      }
+
+      :host([showing-promo]) #promo-headers {
+        line-height: 1.625rem;
+        padding-bottom: 10px;
+        padding-top: 10px;
+      }
+
+      :host([showing-promo]) #promo-headers #promo-title {
+        font-size: 1.1rem;
+      }
+
+      :host([showing-promo]) #promo-headers .secondary {
+        font-size: 0.9rem;
+      }
+
+      :host([showing-promo]) #promo-headers .separator {
+        display: none;
+      }
     </style>
-    <div class="settings-box first two-line" hidden="[[syncStatus.signedIn]]">
+    <div class="settings-box" id="banner">
+      <img src="../images/sync_banner.svg">
+    </div>
+    <div class="settings-box first two-line" id="promo-headers"
+        hidden="[[syncStatus.signedIn]]">
       <div class="start">
-        <div>[[promoLabel]]</div>
-        <div class="secondary">[[promoSecondaryLabel]]</div>
+        <div id="promo-title">[[promoLabel]]</div>
+        <div class="secondary">
+          [[promoSecondaryLabel]]
+        </div>
       </div>
       <div class="separator" hidden="[[shouldShowAvatarRow_]]"></div>
-      <paper-button class="primary-button" on-click="onSigninTap_"
-          disabled="[[syncStatus.setupInProgress]]"
+      <paper-button class="action-button" on-click="onSigninTap_"
+          disabled="[[syncStatus.setupInProgress]]" id="sign-in"
           hidden="[[shouldShowAvatarRow_]]">
-        $i18n{syncSignin}
+        $i18n{peopleSignIn}
       </paper-button>
     </div>
     <template is="dom-if" if="[[shouldShowAvatarRow_]]">
