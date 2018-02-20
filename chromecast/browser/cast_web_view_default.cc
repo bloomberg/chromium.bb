@@ -173,6 +173,16 @@ bool CastWebViewDefault::CheckMediaAccessPermission(
   return true;
 }
 
+bool CastWebViewDefault::DidAddMessageToConsole(
+    content::WebContents* source,
+    int32_t level,
+    const base::string16& message,
+    int32_t line_no,
+    const base::string16& source_id) {
+  return delegate_->OnAddMessageToConsoleReceived(source, level, message,
+                                                  line_no, source_id);
+}
+
 const content::MediaStreamDevice* GetRequestedDeviceOrDefault(
     const content::MediaStreamDevices& devices,
     const std::string& requested_device_id) {
