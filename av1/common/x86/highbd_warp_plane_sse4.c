@@ -311,7 +311,7 @@ void av1_highbd_warp_affine_sse4_1(const int32_t *mat, const uint16_t *ref,
               ((1 << (conv_params->round_1)) >> 1));
           res_lo = _mm_add_epi32(res_lo, round_const);
           res_lo =
-              _mm_srl_epi32(res_lo, _mm_cvtsi32_si128(conv_params->round_1));
+              _mm_sra_epi32(res_lo, _mm_cvtsi32_si128(conv_params->round_1));
 #if CONFIG_JNT_COMP
           if (conv_params->use_jnt_comp_avg) {
             if (comp_avg) {
@@ -334,7 +334,7 @@ void av1_highbd_warp_affine_sse4_1(const int32_t *mat, const uint16_t *ref,
           if (p_width > 4) {
             res_hi = _mm_add_epi32(res_hi, round_const);
             res_hi =
-                _mm_srl_epi32(res_hi, _mm_cvtsi32_si128(conv_params->round_1));
+                _mm_sra_epi32(res_hi, _mm_cvtsi32_si128(conv_params->round_1));
 
 #if CONFIG_JNT_COMP
             if (conv_params->use_jnt_comp_avg) {
