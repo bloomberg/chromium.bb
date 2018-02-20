@@ -114,9 +114,10 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, PRE_Persist) {
                                 base::ASCIIToUTF16(kPersistBookmarkTitle));
 }
 
-#if defined(THREAD_SANITIZER)
+#if defined(THREAD_SANITIZER) || defined(OS_WIN)
 // BookmarkBrowsertest.Persist fails under ThreadSanitizer on Linux, see
 // http://crbug.com/340223.
+// Also flaky under Windows. See crbug.com/813759.
 #define MAYBE_Persist DISABLED_Persist
 #else
 #define MAYBE_Persist Persist
