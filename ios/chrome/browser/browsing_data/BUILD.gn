@@ -23,6 +23,7 @@ source_set("browsing_data") {
     "//components/keyed_service/core",
     "//components/language/core/browser",
     "//components/omnibox/browser",
+    "//components/open_from_clipboard",
     "//components/password_manager/core/browser",
     "//components/prefs",
     "//components/sessions",
@@ -37,8 +38,10 @@ source_set("browsing_data") {
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/translate:translate",
+    "//ios/chrome/browser/ui:external_files",
     "//ios/net",
     "//ios/public/provider/chrome/browser",
     "//ios/web",
@@ -65,6 +68,8 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/browsing_data/core",
+    "//components/open_from_clipboard",
+    "//components/open_from_clipboard:test_support",
     "//components/pref_registry",
     "//components/prefs",
     "//components/prefs:test_support",
@@ -76,7 +81,6 @@ source_set("unit_tests") {
     "//ios/web/public/test/fakes",
     "//net",
     "//testing/gtest",
-    "//third_party/ocmock",
   ]
 }
 

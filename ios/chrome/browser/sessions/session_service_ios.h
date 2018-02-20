@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/callback.h"
 #include "base/sequenced_task_runner.h"
 
 @class SessionIOS;
@@ -44,7 +45,8 @@ using SessionIOSFactory = SessionIOS* (^)();
 - (SessionIOS*)loadSessionFromPath:(NSString*)sessionPath;
 
 // Schedules deletion of the file containing the last session in |directory|.
-- (void)deleteLastSessionFileInDirectory:(NSString*)directory;
+- (void)deleteLastSessionFileInDirectory:(NSString*)directory
+                              completion:(base::OnceClosure)callback;
 
 // Returns the path of the session file for |directory|.
 + (NSString*)sessionPathForDirectory:(NSString*)directory;

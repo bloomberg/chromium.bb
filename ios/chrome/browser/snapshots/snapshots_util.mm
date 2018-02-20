@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_restrictions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -26,41 +27,47 @@ const char* kOrientationDescriptions[] = {
     "Portrait",
     "PortraitUpsideDown",
 };
-}  // namespace
 
-void ClearIOSSnapshots() {
-  // Generates a list containing all the possible snapshot paths because the
-  // list of snapshots stored on the device can't be obtained programmatically.
-  std::vector<base::FilePath> snapshotsPaths;
-  GetSnapshotsPaths(&snapshotsPaths);
-  for (base::FilePath snapshotPath : snapshotsPaths) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-        base::BindOnce(base::IgnoreResult(&base::DeleteFile), snapshotPath,
-                       false));
+// Delete all files in |paths|.
+void DeleteAllFiles(std::vector<base::FilePath> paths) {
+  base::AssertBlockingAllowed();
+  for (const auto& path : paths) {
+    ignore_result(base::DeleteFile(path, false));
   }
 }
+}  // namespace
 
-void GetSnapshotsPaths(std::vector<base::FilePath>* snapshotsPaths) {
-  DCHECK(snapshotsPaths);
-  base::FilePath snapshotsDir;
-  PathService::Get(base::DIR_CACHE, &snapshotsDir);
+void ClearIOSSnapshots(base::OnceClosure callback) {
+  // Generates a list containing all the possible snapshot paths because the
+  // list of snapshots stored on the device can't be obtained programmatically.
+  std::vector<base::FilePath> snapshots_paths;
+  GetSnapshotsPaths(&snapshots_paths);
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      base::BindOnce(&DeleteAllFiles, std::move(snapshots_paths)),
+      std::move(callback));
+}
+
+void GetSnapshotsPaths(std::vector<base::FilePath>* snapshots_paths) {
+  DCHECK(snapshots_paths);
+  base::FilePath snapshots_dir;
+  PathService::Get(base::DIR_CACHE, &snapshots_dir);
   // Snapshots are located in a path with the bundle ID used twice.
-  snapshotsDir = snapshotsDir.Append("Snapshots")
-                     .Append(base::mac::BaseBundleID())
-                     .Append(base::mac::BaseBundleID());
-  const char* retinaSuffix = "";
+  snapshots_dir = snapshots_dir.Append("Snapshots")
+                      .Append(base::mac::BaseBundleID())
+                      .Append(base::mac::BaseBundleID());
+  const char* retina_suffix = "";
   CGFloat scale = [UIScreen mainScreen].scale;
   if (scale == 2) {
-    retinaSuffix = "@2x";
+    retina_suffix = "@2x";
   } else if (scale == 3) {
-    retinaSuffix = "@3x";
+    retina_suffix = "@3x";
   }
   for (unsigned int i = 0; i < arraysize(kOrientationDescriptions); i++) {
-    std::string snapshotFilename =
+    std::string snapshot_filename =
         base::StringPrintf("UIApplicationAutomaticSnapshotDefault-%s%s.png",
-                           kOrientationDescriptions[i], retinaSuffix);
-    base::FilePath snapshotPath = snapshotsDir.Append(snapshotFilename);
-    snapshotsPaths->push_back(snapshotPath);
+                           kOrientationDescriptions[i], retina_suffix);
+    base::FilePath snapshot_path = snapshots_dir.Append(snapshot_filename);
+    snapshots_paths->push_back(snapshot_path);
   }
 }

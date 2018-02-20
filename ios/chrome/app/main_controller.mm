@@ -833,9 +833,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   };
   const BrowsingDataRemoveMask mask = BrowsingDataRemoveMask::REMOVE_ALL;
   [self.browsingDataRemovalController
-      removeIOSSpecificIncognitoBrowsingDataFromBrowserState:otrBrowserState
-                                                        mask:mask
-                                           completionHandler:completion];
+      removeBrowsingDataFromBrowserState:otrBrowserState
+                                    mask:mask
+                              timePeriod:browsing_data::TimePeriod::ALL_TIME
+                       completionHandler:completion];
 }
 
 - (void)deleteIncognitoBrowserState {

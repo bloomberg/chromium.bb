@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#import "base/mac/bind_objc_block.h"
 #include "base/scoped_observer.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/sessions/session_ios.h"
@@ -246,7 +247,9 @@ bool BrowserListSessionServiceImpl::RestoreSession() {
 
 void BrowserListSessionServiceImpl::ScheduleLastSessionDeletion() {
   DCHECK(browser_list_) << "ScheduleLastSessionDeletion called after Shutdown.";
-  [session_service_ deleteLastSessionFileInDirectory:session_directory_];
+  [session_service_ deleteLastSessionFileInDirectory:session_directory_
+                                          completion:base::BindBlockArc(^{
+                                                     })];
 }
 
 void BrowserListSessionServiceImpl::ScheduleSaveSession(bool immediately) {

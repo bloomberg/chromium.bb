@@ -6,41 +6,63 @@
 
 #include <memory>
 
-#import "base/test/ios/wait_util.h"
+#include "base/logging.h"
+#include "base/run_loop.h"
+#include "components/open_from_clipboard/clipboard_recent_content.h"
+#include "components/open_from_clipboard/fake_clipboard_recent_content.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/web/public/test/web_test.h"
+#include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#import "third_party/ocmock/OCMock/OCMock.h"
-#import "third_party/ocmock/gtest_support.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-typedef web::WebTest BrowsingDataRemovalControllerTest;
+class BrowsingDataRemovalControllerTest : public PlatformTest {
+ public:
+  BrowsingDataRemovalControllerTest()
+      : browser_state_(TestChromeBrowserState::Builder().Build()) {
+    DCHECK_EQ(ClipboardRecentContent::GetInstance(), nullptr);
+    ClipboardRecentContent::SetInstance(
+        std::make_unique<FakeClipboardRecentContent>());
+  }
 
-// Tests that |removeIOSSpecificIncognitoBrowsingDataFromBrowserState:| can
+  ~BrowsingDataRemovalControllerTest() override {
+    DCHECK_NE(ClipboardRecentContent::GetInstance(), nullptr);
+    ClipboardRecentContent::SetInstance(nullptr);
+  }
+
+ protected:
+  web::TestWebThreadBundle thread_bundle_;
+  std::unique_ptr<ios::ChromeBrowserState> browser_state_;
+};
+
+// Tests that
+// -removeBrowsingDataFromBrowserState:mask:timePeriod:completionHandler: can
 // finish performing its operation even when a BrowserState is destroyed.
 TEST_F(BrowsingDataRemovalControllerTest, PerformAfterBrowserStateDestruction) {
-  __block BOOL block_was_called = NO;
+  base::RunLoop run_loop;
+  base::RepeatingClosure quit_run_loop = run_loop.QuitClosure();
+
   BrowsingDataRemovalController* removal_controller =
       [[BrowsingDataRemovalController alloc] init];
 
-  TestChromeBrowserState::Builder builder;
-  std::unique_ptr<TestChromeBrowserState> browser_state = builder.Build();
-  ios::ChromeBrowserState* otr_browser_state =
-      browser_state->GetOffTheRecordChromeBrowserState();
+  __block BOOL block_was_called = NO;
   const BrowsingDataRemoveMask mask = BrowsingDataRemoveMask::REMOVE_ALL;
   [removal_controller
-      removeIOSSpecificIncognitoBrowsingDataFromBrowserState:otr_browser_state
-                                                        mask:mask
-                                           completionHandler:^{
-                                             block_was_called = YES;
-                                           }];
-  // Destroy the BrowserState immediately.
-  browser_state->DestroyOffTheRecordChromeBrowserState();
+      removeBrowsingDataFromBrowserState:browser_state_.get()
+                                    mask:mask
+                              timePeriod:browsing_data::TimePeriod::ALL_TIME
+                       completionHandler:^{
+                         block_was_called = YES;
+                         quit_run_loop.Run();
+                       }];
 
-  base::test::ios::WaitUntilCondition(^bool() {
-    return block_was_called;
-  });
+  // Destroy the BrowserState immediately.
+  [removal_controller browserStateDestroyed:browser_state_.get()];
+  browser_state_.reset();
+
+  run_loop.RunUntilIdle();
+  EXPECT_TRUE(block_was_called);
 }
