@@ -81,6 +81,11 @@
       showcase::kClassForInstantiationKey : @"SCTabGridCoordinator",
       showcase::kUseCaseKey : @"Full tab grid UI",
     },
+    @{
+      showcase::kClassForDisplayKey : @"TableContainerViewController",
+      showcase::kClassForInstantiationKey : @"SCTableContainerCoordinator",
+      showcase::kUseCaseKey : @"Table View",
+    },
   ];
 }
 
