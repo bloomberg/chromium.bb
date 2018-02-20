@@ -16,7 +16,6 @@
 #include "ash/public/interfaces/window_properties.mojom.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ash/shell.h"
-#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/ash_config.h"
@@ -102,19 +101,10 @@ class ChromeLauncherControllerInitializer
 
     if (session_manager::SessionManager::Get()->session_state() ==
         session_manager::SessionState::ACTIVE) {
-      ash::ShelfModel* model;
-      if (chromeos::GetAshConfig() == ash::Config::MASH ||
-          !base::CommandLine::ForCurrentProcess()->HasSwitch(
-              ash::switches::kAshDisableShelfModelSynchronization)) {
-        // Synchronize shelf models.
-        chrome_shelf_model_ = std::make_unique<ash::ShelfModel>();
-        model = chrome_shelf_model_.get();
-      } else {
-        // Use Ash's shelf model directly.
-        model = ash::Shell::Get()->shelf_model();
-      }
-      chrome_launcher_controller_ =
-          std::make_unique<ChromeLauncherController>(nullptr, model);
+      // Chrome keeps its own ShelfModel copy in sync with Ash's ShelfModel.
+      chrome_shelf_model_ = std::make_unique<ash::ShelfModel>();
+      chrome_launcher_controller_ = std::make_unique<ChromeLauncherController>(
+          nullptr, chrome_shelf_model_.get());
       chrome_launcher_controller_->Init();
 
       session_manager::SessionManager::Get()->RemoveObserver(this);
