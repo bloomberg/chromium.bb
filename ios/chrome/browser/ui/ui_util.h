@@ -48,10 +48,6 @@ bool IsTabSwitcherTabGridEnabled();
 // Returns the height of the status bar, accounting for orientation.
 CGFloat StatusBarHeight();
 
-// Returns whether the toolbar is split between top and bottom toolbar or if it
-// is displayed as only one toolbar.
-bool IsSplitToolbarMode();
-
 // Returns the closest pixel-aligned value less than |value|, taking the scale
 // factor into account. At a scale of 1, equivalent to floor().
 CGFloat AlignValueToPixel(CGFloat value);

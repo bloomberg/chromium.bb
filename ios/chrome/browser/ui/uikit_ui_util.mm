@@ -546,9 +546,20 @@ bool IsCompactTablet() {
 }
 
 bool IsCompactHeight() {
-  return [UIApplication sharedApplication]
-             .keyWindow.traitCollection.verticalSizeClass ==
+  return IsCompactHeight([UIApplication sharedApplication].keyWindow);
+}
+
+bool IsCompactHeight(id<UITraitEnvironment> environment) {
+  return environment.traitCollection.verticalSizeClass ==
          UIUserInterfaceSizeClassCompact;
+}
+
+bool IsSplitToolbarMode() {
+  return IsCompactWidth() && !IsCompactHeight();
+}
+
+bool IsSplitToolbarMode(id<UITraitEnvironment> environment) {
+  return IsCompactWidth(environment) && !IsCompactHeight(environment);
 }
 
 // Returns the current first responder.
