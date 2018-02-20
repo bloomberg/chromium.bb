@@ -23,6 +23,7 @@ if (!is_ios) {
       # for renovations.
       deps += [
         "//content/shell/android:content_shell_assets",
+        "//net/android:net_java",
         "//ui/android:ui_java",
       ]
     }
