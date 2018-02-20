@@ -503,17 +503,30 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       const int br_ctx = get_br_ctx(levels, pos, bwl, tx_type);
       for (int idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
         const int k = AOMMIN(base_range - idx, BR_CDF_SIZE - 1);
-        aom_write_symbol(w, k,
-#if 0
-            ec_ctx->coeff_br_cdf[AOMMIN(txs_ctx, TX_16X16)][plane_type][ctx],
-#else
-                         ec_ctx->coeff_br_cdf[AOMMIN(txs_ctx, TX_32X32)]
-                                             [plane_type][br_ctx],
-#endif
-                         BR_CDF_SIZE);
+        aom_write_symbol(
+            w, k,
+            ec_ctx->coeff_br_cdf[AOMMIN(txs_ctx, TX_32X32)][plane_type][br_ctx],
+            BR_CDF_SIZE);
         if (k < BR_CDF_SIZE - 1) break;
       }
+    }
+  }
+
+  // Loop to code all signs in the transform block,
+  // starting with the sign of DC (if applicable)
+  for (c = 0; c < eob; ++c) {
+    const tran_low_t v = tcoeff[scan[c]];
+    const tran_low_t level = abs(v);
+    const int sign = (v < 0) ? 1 : 0;
+    if (level) {
+      if (c == 0) {
+        aom_write_symbol(
+            w, sign, ec_ctx->dc_sign_cdf[plane_type][txb_ctx->dc_sign_ctx], 2);
+      } else {
+        aom_write_bit(w, sign);
+      }
       if (level > COEFF_BASE_RANGE + NUM_BASE_LEVELS) {
+        const int pos = scan[c];
         update_pos[num_updates] = pos;
         ++num_updates;
       }
@@ -523,21 +536,6 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   for (int i = 0; i < num_updates; ++i) {
     const int pos = update_pos[i];
     write_golomb(w, abs(tcoeff[pos]) - COEFF_BASE_RANGE - 1 - NUM_BASE_LEVELS);
-  }
-
-  // Loop to code all signs in the transform block,
-  // starting with the sign of DC (if applicable)
-  for (c = 0; c < eob; ++c) {
-    const tran_low_t v = tcoeff[scan[c]];
-    const int sign = (v < 0) ? 1 : 0;
-    if (v != 0) {
-      if (c == 0) {
-        aom_write_symbol(
-            w, sign, ec_ctx->dc_sign_cdf[plane_type][txb_ctx->dc_sign_ctx], 2);
-      } else {
-        aom_write_bit(w, sign);
-      }
-    }
   }
 }
 

@@ -63,10 +63,12 @@ static INLINE int get_dqv(const int16_t *dequant, int coeff_idx,
   return dqv;
 }
 
-static INLINE void read_coeffs_reverse_2d(
-    aom_reader *r, TX_SIZE tx_size, int start_si, int end_si,
-    const int16_t *scan, int bwl, uint8_t *levels, base_cdf_arr base_cdf,
-    br_cdf_arr br_cdf, int *num_updates, uint16_t *update_pos) {
+static INLINE void read_coeffs_reverse_2d(aom_reader *r, TX_SIZE tx_size,
+                                          int start_si, int end_si,
+                                          const int16_t *scan, int bwl,
+                                          uint8_t *levels,
+                                          base_cdf_arr base_cdf,
+                                          br_cdf_arr br_cdf) {
   for (int c = end_si; c >= start_si; --c) {
     const int pos = scan[c];
     const int coeff_ctx = get_lower_levels_ctx_2d(levels, pos, bwl, tx_size);
@@ -80,10 +82,6 @@ static INLINE void read_coeffs_reverse_2d(
         level += k;
         if (k < BR_CDF_SIZE - 1) break;
       }
-      if (level > NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
-        update_pos[*num_updates] = pos;
-        ++*num_updates;
-      }
     }
     levels[get_padded_idx(pos, bwl)] = level;
   }
@@ -93,8 +91,7 @@ static INLINE void read_coeffs_reverse(aom_reader *r, TX_SIZE tx_size,
                                        TX_TYPE tx_type, int start_si,
                                        int end_si, const int16_t *scan, int bwl,
                                        uint8_t *levels, base_cdf_arr base_cdf,
-                                       br_cdf_arr br_cdf, int *num_updates,
-                                       uint16_t *update_pos) {
+                                       br_cdf_arr br_cdf) {
   for (int c = end_si; c >= start_si; --c) {
     const int pos = scan[c];
     const int coeff_ctx =
@@ -108,10 +105,6 @@ static INLINE void read_coeffs_reverse(aom_reader *r, TX_SIZE tx_size,
         const int k = aom_read_symbol(r, cdf, BR_CDF_SIZE, ACCT_STR);
         level += k;
         if (k < BR_CDF_SIZE - 1) break;
-      }
-      if (level > NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
-        update_pos[*num_updates] = pos;
-        ++*num_updates;
       }
     }
     levels[get_padded_idx(pos, bwl)] = level;
@@ -142,6 +135,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
   uint16_t update_pos[MAX_TX_SQUARE];
+  uint8_t update_sign[MAX_TX_SQUARE];
 
   const int all_zero = aom_read_symbol(
       r, ec_ctx->txb_skip_cdf[txs_ctx][txb_ctx->txb_skip_ctx], 2, ACCT_STR);
@@ -269,10 +263,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
         level += k;
         if (k < BR_CDF_SIZE - 1) break;
       }
-      if (level > NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
-        update_pos[num_updates] = pos;
-        ++num_updates;
-      }
     }
     levels[get_padded_idx(pos, bwl)] = level;
   }
@@ -282,23 +272,17 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   const TX_CLASS tx_class = tx_type_to_class[tx_type];
   if (tx_class == TX_CLASS_2D) {
     read_coeffs_reverse_2d(r, tx_size, 0, *eob - 1 - 1, scan, bwl, levels,
-                           base_cdf, br_cdf, &num_updates, update_pos);
+                           base_cdf, br_cdf);
   } else {
     read_coeffs_reverse(r, tx_size, tx_type, 0, *eob - 1 - 1, scan, bwl, levels,
-                        base_cdf, br_cdf, &num_updates, update_pos);
-  }
-
-  for (int i = 0; i < num_updates; ++i) {
-    const int pos = update_pos[i];
-    const int level = levels[get_padded_idx(pos, bwl)];
-    tcoeffs[pos] = level + read_golomb(xd, r);
+                        base_cdf, br_cdf);
   }
 
   // Loop to decode all signs in the transform block,
   // starting with the sign of the DC (if applicable)
   for (int c = 0; c < *eob; ++c) {
     const int pos = scan[c];
-    int8_t sign;
+    uint8_t sign;
     tran_low_t level = levels[get_padded_idx(pos, bwl)];
     if (level) {
       *max_scan_line = AOMMAX(*max_scan_line, pos);
@@ -312,17 +296,34 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       if (level > NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
         // the quantized coeff with golomb residue is stored in tcoeffs because
         // levels doesn't have enough bits got store the residue
-        level = tcoeffs[pos];
+        update_pos[num_updates] = pos;
+        update_sign[num_updates] = sign;
+        ++num_updates;
+      } else {
+        cul_level += level;
+        tran_low_t dq_coeff;
+        dq_coeff = level * get_dqv(dequant, scan[c], iqmatrix);
+        dq_coeff = dq_coeff >> shift;
+        if (sign) {
+          dq_coeff = -dq_coeff;
+        }
+        tcoeffs[pos] = clamp(dq_coeff, min_value, max_value);
       }
-      cul_level += level;
-      tran_low_t dq_coeff;
-      dq_coeff = level * get_dqv(dequant, scan[c], iqmatrix);
-      dq_coeff = dq_coeff >> shift;
-      if (sign) {
-        dq_coeff = -dq_coeff;
-      }
-      tcoeffs[pos] = clamp(dq_coeff, min_value, max_value);
     }
+  }
+
+  for (int i = 0; i < num_updates; ++i) {
+    const int pos = update_pos[i];
+    const int sign = update_sign[i];
+    const int level = levels[get_padded_idx(pos, bwl)] + read_golomb(xd, r);
+    cul_level += level;
+    tran_low_t dq_coeff;
+    dq_coeff = level * get_dqv(dequant, pos, iqmatrix);
+    dq_coeff = dq_coeff >> shift;
+    if (sign) {
+      dq_coeff = -dq_coeff;
+    }
+    tcoeffs[pos] = clamp(dq_coeff, min_value, max_value);
   }
 
   cul_level = AOMMIN(63, cul_level);
