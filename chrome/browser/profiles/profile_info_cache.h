@@ -144,6 +144,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
                   const base::string16& user_name,
                   size_t icon_index,
                   const std::string& supervised_user_id) override;
+  void RemoveProfileByAccountId(const AccountId& account_id) override;
   void RemoveProfile(const base::FilePath& profile_path) override;
 
   bool GetProfileAttributesWithPath(const base::FilePath& path,

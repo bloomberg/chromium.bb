@@ -30,6 +30,7 @@ namespace gfx {
 class Image;
 }
 
+class AccountId;
 class PrefService;
 class ProfileAttributesEntry;
 class ProfileAvatarDownloader;
@@ -54,6 +55,11 @@ class ProfileAttributesStorage
                           const base::string16& user_name,
                           size_t icon_index,
                           const std::string& supervised_user_id) = 0;
+
+  // Removes the profile matching given |account_id| from this storage.
+  // Calculates profile path and calls RemoveProfile() on it.
+  virtual void RemoveProfileByAccountId(const AccountId& account_id) = 0;
+
   // Removes the profile at |profile_path| from this storage. Does not delete or
   // affect the actual profile's data.
   virtual void RemoveProfile(const base::FilePath& profile_path) = 0;
