@@ -157,4 +157,17 @@ bool IsMenuRelated(ax::mojom::Role role) {
   }
 }
 
+bool IsImage(ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kCanvas:
+    case ax::mojom::Role::kImageMap:
+    case ax::mojom::Role::kImage:
+    case ax::mojom::Role::kSvgRoot:
+    case ax::mojom::Role::kVideo:
+      return true;
+    default:
+      return false;
+  }
+}
+
 }  // namespace ui
