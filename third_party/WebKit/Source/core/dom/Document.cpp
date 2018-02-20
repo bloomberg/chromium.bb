@@ -1241,47 +1241,37 @@ Node* Document::importNode(Node* imported_node,
                            bool deep,
                            ExceptionState& exception_state) {
   // https://dom.spec.whatwg.org/#dom-document-importnode
-  // TODO(tkent): Share code with cloneNode(). crbug.com/812089
-  CloneChildrenFlag clone_children =
-      deep ? CloneChildrenFlag::kClone : CloneChildrenFlag::kSkip;
-  switch (imported_node->getNodeType()) {
-    case kTextNode:
-    case kCdataSectionNode:
-    case kProcessingInstructionNode:
-    case kCommentNode:
-    case kDocumentTypeNode:
-    case kElementNode:
-      return imported_node->Clone(*this, clone_children);
 
-    case kAttributeNode:
-      // The following code doesn't create an Attr with namespace.  See
-      // crbug.com/812105.
-      return Attr::Create(
-          *this,
-          QualifiedName(g_null_atom,
-                        AtomicString(ToAttr(imported_node)->name()),
-                        g_null_atom),
-          ToAttr(imported_node)->value());
-    case kDocumentFragmentNode:
-      if (imported_node->IsShadowRoot()) {
-        // ShadowRoot nodes should not be explicitly importable.
-        // Either they are imported along with their host node, or created
-        // implicitly.
-        exception_state.ThrowDOMException(
-            kNotSupportedError,
-            "The node provided is a shadow root, which may not be imported.");
-        return nullptr;
-      }
-      return imported_node->Clone(*this, clone_children);
-    case kDocumentNode:
-      exception_state.ThrowDOMException(
-          kNotSupportedError,
-          "The node provided is a document, which may not be imported.");
-      return nullptr;
+  // 1. If node is a document or shadow root, then throw a "NotSupportedError"
+  // DOMException.
+  if (imported_node->IsDocumentNode()) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError,
+        "The node provided is a document, which may not be imported.");
+    return nullptr;
+  }
+  if (imported_node->IsShadowRoot()) {
+    // ShadowRoot nodes should not be explicitly importable.  Either they are
+    // imported along with their host node, or created implicitly.
+    exception_state.ThrowDOMException(
+        kNotSupportedError,
+        "The node provided is a shadow root, which may not be imported.");
+    return nullptr;
   }
 
-  NOTREACHED();
-  return nullptr;
+  // 2. Return a clone of node, with context object and the clone children flag
+  // set if deep is true.
+  if (imported_node->IsAttributeNode()) {
+    // The following code doesn't create an Attr with namespace.  See
+    // crbug.com/812105.
+    return Attr::Create(
+        *this,
+        QualifiedName(g_null_atom, AtomicString(ToAttr(imported_node)->name()),
+                      g_null_atom),
+        ToAttr(imported_node)->value());
+  }
+  return imported_node->Clone(
+      *this, deep ? CloneChildrenFlag::kClone : CloneChildrenFlag::kSkip);
 }
 
 Node* Document::adoptNode(Node* source, ExceptionState& exception_state) {
