@@ -8,17 +8,6 @@
 
 namespace extension_urls {
 
-namespace {
-
-const char kGalleryUpdateHttpsUrl[] =
-    "https://clients2.google.com/service/update2/crx";
-
-}  // namespace
-
-const char* GetDefaultWebstoreUpdateUrl() {
-  return kGalleryUpdateHttpsUrl;
-}
-
 const char kWebstoreSourceField[] = "utm_source";
 
 const char kLaunchSourceAppList[] = "chrome-app-launcher";

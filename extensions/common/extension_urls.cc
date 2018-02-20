@@ -71,11 +71,15 @@ GURL GetWebstoreSearchPageUrl(const std::string& query) {
               net::EscapeQueryParamValue(query, false));
 }
 
+GURL GetDefaultWebstoreUpdateUrl() {
+  return GURL(kChromeWebstoreUpdateURL);
+}
+
 GURL GetWebstoreUpdateUrl() {
   extensions::ExtensionsClient* client = extensions::ExtensionsClient::Get();
   if (client)
     return client->GetWebstoreUpdateURL();
-  return GURL(kChromeWebstoreUpdateURL);
+  return GetDefaultWebstoreUpdateUrl();
 }
 
 GURL GetWebstoreReportAbuseUrl(const std::string& extension_id,
