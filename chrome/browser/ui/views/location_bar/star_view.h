@@ -11,16 +11,12 @@
 
 class Browser;
 class CommandUpdater;
-class WidgetObserver;
 
 // The star icon to show a bookmark bubble.
-class StarView : public BubbleIconView {
+class StarView : public BubbleIconView, public views::WidgetObserver {
  public:
   StarView(CommandUpdater* command_updater, Browser* browser);
   ~StarView() override;
-
-  // Show the Animated Ink drop highlight.
-  void SetHighlighted();
 
   // Toggles the star on or off.
   void SetToggled(bool on);
@@ -31,18 +27,20 @@ class StarView : public BubbleIconView {
  protected:
   // BubbleIconView:
   void OnExecuting(BubbleIconView::ExecuteSource execute_source) override;
-  void OnWidgetDestroying(views::Widget* widget) override;
   void ExecuteCommand(ExecuteSource source) override;
   views::BubbleDialogDelegateView* GetBubble() const override;
   SkColor GetInkDropBaseColor() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
+
+  // views::WidgetObserver:
+  void OnWidgetDestroying(views::Widget* widget) override;
 
  private:
   Browser* const browser_;
 
   // Observes the BookmarkPromoBubbleView's widget. Used to tell whether the
   // promo is open and gets called back when it closes.
-  ScopedObserver<views::Widget, WidgetObserver> bookmark_promo_observer_;
+  ScopedObserver<views::Widget, views::WidgetObserver> bookmark_promo_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(StarView);
 };
