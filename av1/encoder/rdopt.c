@@ -1797,7 +1797,7 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                                blk_row, blk_col, plane_bsize, tx_bsize);
       } else {
         uint8_t *recon;
-        DECLARE_ALIGNED(16, uint16_t, recon16[MAX_TX_SQUARE]);
+        DECLARE_ALIGNED(16, uint16_t, recon16[MAX_TX_SQUARE]) = { 0 };
 
         if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
           recon = CONVERT_TO_BYTEPTR(recon16);
