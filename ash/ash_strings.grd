@@ -1226,6 +1226,16 @@ Subsequent notifications, windows and dialogs may be split between desktops.
       <message name="IDS_ASH_MESSAGE_CENTER_NO_NOTIFIERS" desc="The message displayed in the message center when there are no notification sources.">
         Nothing to see just yet
       </message>
+      <if expr="is_chrome_branded">
+        <message name="IDS_ASH_MESSAGE_CENTER_SYSTEM_APP_NAME" desc="The source of a system-generated notification, as displayed to the user.">
+          Chrome OS
+        </message>
+      </if>
+      <if expr="not is_chrome_branded">
+        <message name="IDS_ASH_MESSAGE_CENTER_SYSTEM_APP_NAME" desc="The source of a system-generated notification, as displayed to the user.">
+          Chromium OS
+        </message>
+      </if>
 
       <!-- Window Control -->
       <message name="IDS_ASH_WINDOW_CONTROL_ACCNAME_BACK" desc="The accessible name for the back button on the window frame.">
