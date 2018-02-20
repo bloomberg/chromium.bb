@@ -668,7 +668,7 @@ static int upsampled_pref_error(const MACROBLOCKD *xd,
                                 unsigned int *sse) {
   unsigned int besterr;
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    DECLARE_ALIGNED(16, uint16_t, pred16[MAX_SB_SQUARE]);
+    DECLARE_ALIGNED(16, uint16_t, pred16[MAX_SB_SQUARE]) = { 0 };
     if (second_pred != NULL) {
       if (mask) {
         aom_highbd_comp_mask_upsampled_pred(
@@ -693,7 +693,7 @@ static int upsampled_pref_error(const MACROBLOCKD *xd,
 
     besterr = vfp->vf(CONVERT_TO_BYTEPTR(pred16), w, src, src_stride, sse);
   } else {
-    DECLARE_ALIGNED(16, uint8_t, pred[MAX_SB_SQUARE]);
+    DECLARE_ALIGNED(16, uint8_t, pred[MAX_SB_SQUARE]) = { 0 };
     if (second_pred != NULL) {
       if (mask) {
         aom_comp_mask_upsampled_pred(pred, second_pred, w, h, subpel_x_q3,

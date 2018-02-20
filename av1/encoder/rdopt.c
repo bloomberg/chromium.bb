@@ -8505,8 +8505,8 @@ static int64_t handle_inter_mode(
       int best_tmp_rate_mv = rate_mv;
       int tmp_skip_txfm_sb;
       int64_t tmp_skip_sse_sb;
-      DECLARE_ALIGNED(16, uint8_t, pred0[2 * MAX_SB_SQUARE]);
-      DECLARE_ALIGNED(16, uint8_t, pred1[2 * MAX_SB_SQUARE]);
+      DECLARE_ALIGNED(16, uint8_t, pred0[2 * MAX_SB_SQUARE]) = { 0 };
+      DECLARE_ALIGNED(16, uint8_t, pred1[2 * MAX_SB_SQUARE]) = { 0 };
       uint8_t *preds0[1] = { pred0 };
       uint8_t *preds1[1] = { pred1 };
       int strides[1] = { bw };
