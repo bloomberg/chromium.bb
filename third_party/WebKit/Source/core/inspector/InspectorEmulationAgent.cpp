@@ -13,6 +13,7 @@
 #include "core/page/Page.h"
 #include "platform/geometry/DoubleRect.h"
 #include "platform/graphics/Color.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/scheduler/util/thread_cpu_throttler.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/Platform.h"
@@ -228,6 +229,8 @@ WTF::TimeTicks InspectorEmulationAgent::ApplyVirtualTimePolicy(
   WTF::TimeTicks virtual_time_base_ticks(
       web_local_frame_->View()->Scheduler()->EnableVirtualTime());
   if (new_policy.virtual_time_budget_ms) {
+    TRACE_EVENT_ASYNC_BEGIN1("renderer.scheduler", "VirtualTimeBudget", this,
+                             "budget", *new_policy.virtual_time_budget_ms);
     WTF::TimeDelta budget_amount =
         WTF::TimeDelta::FromMillisecondsD(*new_policy.virtual_time_budget_ms);
     web_local_frame_->View()->Scheduler()->GrantVirtualTimeBudget(
@@ -258,6 +261,7 @@ Response InspectorEmulationAgent::setNavigatorOverrides(
 }
 
 void InspectorEmulationAgent::VirtualTimeBudgetExpired() {
+  TRACE_EVENT_ASYNC_END0("renderer.scheduler", "VirtualTimeBudget", this);
   web_local_frame_->View()->Scheduler()->SetVirtualTimePolicy(
       WebViewScheduler::VirtualTimePolicy::kPause);
   GetFrontend()->virtualTimeBudgetExpired();
