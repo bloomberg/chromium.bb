@@ -95,17 +95,11 @@ static void add_ref_mv_candidate(
     const MV_REFERENCE_FRAME rf[2], uint8_t refmv_counts[MODE_CTX_REF_FRAMES],
     uint8_t ref_match_counts[MODE_CTX_REF_FRAMES],
     uint8_t newmv_counts[MODE_CTX_REF_FRAMES],
-    CANDIDATE_MV ref_mv_stacks[][MAX_REF_MV_STACK_SIZE], const int use_hp,
-    int len,
+    CANDIDATE_MV ref_mv_stacks[][MAX_REF_MV_STACK_SIZE], int len,
 #if USE_CUR_GM_REFMV
     int_mv *gm_mv_candidates, const WarpedMotionParams *gm_params,
 #endif  // USE_CUR_GM_REFMV
-    int col, int weight
-#if CONFIG_AMVR
-    ,
-    int is_integer
-#endif
-) {
+    int col, int weight) {
 #if CONFIG_INTRABC
   if (!is_inter_block(candidate)) return;
 #endif  // CONFIG_INTRABC
@@ -129,11 +123,6 @@ static void add_ref_mv_candidate(
         else
 #endif  // USE_CUR_GM_REFMV
           this_refmv = get_sub_block_mv(candidate_mi, ref, col);
-#if CONFIG_AMVR
-        lower_mv_precision(&this_refmv.as_mv, use_hp, is_integer);
-#else
-        lower_mv_precision(&this_refmv.as_mv, use_hp);
-#endif  // CONFIG_AMVR
 
         for (index = 0; index < *refmv_count; ++index)
           if (ref_mv_stack[index].this_mv.as_int == this_refmv.as_int) break;
@@ -177,11 +166,6 @@ static void add_ref_mv_candidate(
         else
 #endif  // USE_CUR_GM_REFMV
           this_refmv[ref] = get_sub_block_mv(candidate_mi, ref, col);
-#if CONFIG_AMVR
-        lower_mv_precision(&this_refmv[ref].as_mv, use_hp, is_integer);
-#else
-        lower_mv_precision(&this_refmv[ref].as_mv, use_hp);
-#endif
       }
 
       for (index = 0; index < *refmv_count; ++index)
@@ -262,23 +246,12 @@ static void scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       *processed_rows = inc - row_offset - 1;
     }
 
-#if CONFIG_AMVR
-    add_ref_mv_candidate(
-        candidate_mi, candidate, rf, refmv_count, ref_match_count, newmv_count,
-        ref_mv_stack, cm->allow_high_precision_mv, len,
-#if USE_CUR_GM_REFMV
-        gm_mv_candidates, cm->global_motion,
-#endif  // USE_CUR_GM_REFMV
-        col_offset + i, weight, cm->cur_frame_force_integer_mv);
-#else
     add_ref_mv_candidate(candidate_mi, candidate, rf, refmv_count,
-                         ref_match_count, newmv_count, ref_mv_stack,
-                         cm->allow_high_precision_mv, len,
+                         ref_match_count, newmv_count, ref_mv_stack, len,
 #if USE_CUR_GM_REFMV
                          gm_mv_candidates, cm->global_motion,
 #endif  // USE_CUR_GM_REFMV
                          col_offset + i, weight);
-#endif
 
     i += len;
   }
@@ -331,23 +304,13 @@ static void scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       *processed_cols = inc - col_offset - 1;
     }
 
-#if CONFIG_AMVR
     add_ref_mv_candidate(candidate_mi, candidate, rf, refmv_count,
-                         ref_match_count, newmv_count, ref_mv_stack,
-                         cm->allow_high_precision_mv, len,
-#if USE_CUR_GM_REFMV
-                         gm_mv_candidates, cm->global_motion,
-#endif  // USE_CUR_GM_REFMV
-                         col_offset, weight, cm->cur_frame_force_integer_mv);
-#else
-    add_ref_mv_candidate(candidate_mi, candidate, rf, refmv_count,
-                         ref_match_count, newmv_count, ref_mv_stack,
-                         cm->allow_high_precision_mv, len,
+                         ref_match_count, newmv_count, ref_mv_stack, len,
 #if USE_CUR_GM_REFMV
                          gm_mv_candidates, cm->global_motion,
 #endif  // USE_CUR_GM_REFMV
                          col_offset, weight);
-#endif
+
     i += len;
   }
 }
@@ -375,23 +338,12 @@ static void scan_blk_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     const MB_MODE_INFO *const candidate = &candidate_mi->mbmi;
     const int len = mi_size_wide[BLOCK_8X8];
 
-#if CONFIG_AMVR
     add_ref_mv_candidate(candidate_mi, candidate, rf, refmv_count,
-                         ref_match_count, newmv_count, ref_mv_stack,
-                         cm->allow_high_precision_mv, len,
-#if USE_CUR_GM_REFMV
-                         gm_mv_candidates, cm->global_motion,
-#endif  // USE_CUR_GM_REFMV
-                         mi_pos.col, 2, cm->cur_frame_force_integer_mv);
-#else
-    add_ref_mv_candidate(candidate_mi, candidate, rf, refmv_count,
-                         ref_match_count, newmv_count, ref_mv_stack,
-                         cm->allow_high_precision_mv, len,
+                         ref_match_count, newmv_count, ref_mv_stack, len,
 #if USE_CUR_GM_REFMV
                          gm_mv_candidates, cm->global_motion,
 #endif  // USE_CUR_GM_REFMV
                          mi_pos.col, 2);
-#endif
   }  // Analyze a single 8x8 block motion information.
 }
 
