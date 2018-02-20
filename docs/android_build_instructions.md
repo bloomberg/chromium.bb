@@ -182,6 +182,23 @@ two targets can be substituted.
 **Note**: These targets are actually the open-source equivalents to the
 closed-source targets that get shipped to the Play Store.
 
+## Updating your checkout
+
+To update an existing checkout, you can run
+
+```shell
+$ git rebase-update
+$ gclient sync
+```
+
+The first command updates the primary Chromium source repository and rebases
+any of your local branches on top of tip-of-tree (aka the Git branch
+`origin/master`). If you don't want to use this script, you can also just use
+`git pull` or other common Git commands to update the repo.
+
+The second command syncs dependencies to the appropriate versions and re-runs
+hooks as needed.
+
 ## Installing and Running Chromium on a device
 
 ### Plug in your Android device
