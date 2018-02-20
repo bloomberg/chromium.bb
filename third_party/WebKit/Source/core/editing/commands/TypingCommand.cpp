@@ -204,18 +204,16 @@ void TypingCommand::DeleteSelection(Document& document, Options options) {
 }
 
 void TypingCommand::DeleteSelectionIfRange(const VisibleSelection& selection,
-                                           EditingState* editing_state,
-                                           bool smart_delete,
-                                           bool merge_blocks_after_delete,
-                                           bool expand_for_special_elements,
-                                           bool sanitize_markup) {
+                                           EditingState* editing_state) {
   if (!selection.IsRange())
     return;
-  ApplyCommandToComposite(
-      DeleteSelectionCommand::Create(
-          selection, smart_delete, merge_blocks_after_delete,
-          expand_for_special_elements, sanitize_markup),
-      editing_state);
+  const bool kMergeBlocksAfterDelete = true;
+  const bool kExpandForSpecialElements = true;
+  const bool kSanitizeMarkup = true;
+  ApplyCommandToComposite(DeleteSelectionCommand::Create(
+                              selection, smart_delete_, kMergeBlocksAfterDelete,
+                              kExpandForSpecialElements, kSanitizeMarkup),
+                          editing_state);
 }
 
 void TypingCommand::DeleteKeyPressed(Document& document,
@@ -925,7 +923,7 @@ void TypingCommand::DeleteKeyPressedInternal(
   if (frame->GetEditor().Behavior().ShouldUndoOfDeleteSelectText() &&
       opened_by_backward_delete_)
     SetStartingSelection(selection_after_undo);
-  DeleteSelectionIfRange(selection_to_delete, editing_state, smart_delete_);
+  DeleteSelectionIfRange(selection_to_delete, editing_state);
   if (editing_state->IsAborted())
     return;
   SetSmartDelete(false);
@@ -1065,7 +1063,7 @@ void TypingCommand::ForwardDeleteKeyPressedInternal(
   // Make undo select what was deleted on Mac alone
   if (frame->GetEditor().Behavior().ShouldUndoOfDeleteSelectText())
     SetStartingSelection(selection_after_undo);
-  DeleteSelectionIfRange(selection_to_delete, editing_state, smart_delete_);
+  DeleteSelectionIfRange(selection_to_delete, editing_state);
   if (editing_state->IsAborted())
     return;
   SetSmartDelete(false);
