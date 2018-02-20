@@ -4100,9 +4100,9 @@ jumbo_split_static_library("browser") {
 
   if (enable_vr) {
     if (enable_gvr_services) {
-      deps += [ "android/vr_shell:vr_android" ]
+      deps += [ "android/vr:vr_android" ]
       configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
-      allow_circular_includes_from += [ "android/vr_shell:vr_android" ]
+      allow_circular_includes_from += [ "android/vr:vr_android" ]
     }
 
     sources += [
