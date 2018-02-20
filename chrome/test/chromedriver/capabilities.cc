@@ -474,6 +474,10 @@ Status ParseChromeOptions(
         base::Bind(&ParseString, &capabilities->android_package);
     parser_map["androidProcess"] =
         base::Bind(&ParseString, &capabilities->android_process);
+    parser_map["androidExecName"] =
+        base::BindRepeating(&ParseString, &capabilities->android_exec_name);
+    parser_map["androidDeviceSocket"] =
+        base::BindRepeating(&ParseString, &capabilities->android_device_socket);
     parser_map["androidUseRunningApp"] =
         base::Bind(&ParseBoolean, &capabilities->android_use_running_app);
     parser_map["args"] = base::Bind(&ParseSwitches);

@@ -511,12 +511,11 @@ Status LaunchAndroidChrome(URLRequestContextGetter* context_getter,
     switches.SetUnparsedSwitch(android_switch);
   for (auto excluded_switch : capabilities.exclude_switches)
     switches.RemoveSwitch(excluded_switch);
-  status = device->SetUp(capabilities.android_package,
-                         capabilities.android_activity,
-                         capabilities.android_process,
-                         switches.ToString(),
-                         capabilities.android_use_running_app,
-                         port);
+  status = device->SetUp(
+      capabilities.android_package, capabilities.android_activity,
+      capabilities.android_process, capabilities.android_device_socket,
+      capabilities.android_exec_name, switches.ToString(),
+      capabilities.android_use_running_app, port);
   if (status.IsError()) {
     device->TearDown();
     return status;
