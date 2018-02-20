@@ -5,12 +5,12 @@
 #import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_view.h"
 
 #include "base/logging.h"
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_button.h"
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_factory.h"
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_configuration.h"
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_constants.h"
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_tab_grid_button.h"
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_tools_menu_button.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tab_grid_button.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
 

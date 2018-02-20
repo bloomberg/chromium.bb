@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_BUTTON_FACTORY_H_
-#define IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_BUTTON_FACTORY_H_
+#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_BUTTONS_TOOLBAR_BUTTON_FACTORY_H_
+#define IOS_CHROME_BROWSER_UI_TOOLBAR_BUTTONS_TOOLBAR_BUTTON_FACTORY_H_
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_style.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_style.h"
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
@@ -81,4 +81,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_BUTTON_FACTORY_H_
+#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_BUTTONS_TOOLBAR_BUTTON_FACTORY_H_

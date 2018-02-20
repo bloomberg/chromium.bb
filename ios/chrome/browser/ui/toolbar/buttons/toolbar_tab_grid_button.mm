@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_tab_grid_button.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tab_grid_button.h"
 
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_constants.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"

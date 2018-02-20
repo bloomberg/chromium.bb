@@ -14,7 +14,6 @@ source_set("toolbar") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
-    ":toolbar_components_ui",
     ":toolbar_ui",
     "//base",
     "//components/bookmarks/browser",
@@ -37,6 +36,7 @@ source_set("toolbar") {
     "//ios/chrome/browser/ui/ntp:util",
     "//ios/chrome/browser/ui/omnibox",
     "//ios/chrome/browser/ui/omnibox:omnibox_internal",
+    "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/keyboard_assist",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/tools_menu:configuration",
@@ -64,7 +64,6 @@ source_set("toolbar_ui") {
     "toolbar_view_controller.mm",
   ]
   deps = [
-    ":toolbar_components_ui",
     "//base",
     "//ios/chrome/app/theme",
     "//ios/chrome/browser/ui",
@@ -72,54 +71,13 @@ source_set("toolbar_ui") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/fullscreen:ui",
     "//ios/chrome/browser/ui/history_popup/requirements",
+    "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/toolbar/public:toolbar_base_feature",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/ui/voice",
     "//ios/chrome/common",
     "//ios/third_party/material_components_ios",
-  ]
-  libs = [ "UIKit.framework" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-source_set("toolbar_components_ui") {
-  sources = [
-    "toolbar_button.h",
-    "toolbar_button.mm",
-    "toolbar_button_factory.h",
-    "toolbar_button_factory.mm",
-    "toolbar_button_tints.h",
-    "toolbar_button_tints.mm",
-    "toolbar_button_visibility_configuration.h",
-    "toolbar_button_visibility_configuration.mm",
-    "toolbar_component_options.h",
-    "toolbar_configuration.h",
-    "toolbar_configuration.mm",
-    "toolbar_constants.h",
-    "toolbar_constants.mm",
-    "toolbar_style.h",
-    "toolbar_tab_grid_button.h",
-    "toolbar_tab_grid_button.mm",
-    "toolbar_tools_menu_button.h",
-    "toolbar_tools_menu_button.mm",
-    "toolbar_type.h",
-  ]
-  deps = [
-    "//base",
-    "//components/strings",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/app/theme",
-    "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui/commands",
-    "//ios/chrome/browser/ui/toolbar:resource_macros",
-    "//ios/chrome/browser/ui/toolbar/public",
-    "//ios/chrome/browser/ui/toolbar/public:toolbar_base_feature",
-    "//ios/chrome/browser/ui/util",
-    "//ios/public/provider/chrome/browser",
-    "//ios/public/provider/chrome/browser/images",
-    "//ios/third_party/material_components_ios",
-    "//ui/base",
   ]
   libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]

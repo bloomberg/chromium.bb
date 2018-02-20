@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_updater.h"
 
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_factory.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/voice/voice_search_notification_names.h"
 

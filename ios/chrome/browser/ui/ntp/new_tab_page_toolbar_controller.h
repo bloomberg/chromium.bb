@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_NTP_NEW_TAB_PAGE_TOOLBAR_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_UI_NTP_NEW_TAB_PAGE_TOOLBAR_CONTROLLER_H_
 
-#import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
+#import "ios/chrome/browser/ui/toolbar/legacy/toolbar_controller.h"
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;

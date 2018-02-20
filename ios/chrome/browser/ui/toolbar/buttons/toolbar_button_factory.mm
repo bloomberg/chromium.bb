@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_factory.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
 
 #include "base/ios/ios_util.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_button.h"
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_visibility_configuration.h"
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_configuration.h"
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_constants.h"
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_tab_grid_button.h"
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_tools_menu_button.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_visibility_configuration.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tab_grid_button.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"

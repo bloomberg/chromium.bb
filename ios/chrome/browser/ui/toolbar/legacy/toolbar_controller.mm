@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
+#import "ios/chrome/browser/ui/toolbar/legacy/toolbar_controller.h"
 
 #include <QuartzCore/QuartzCore.h>
 
@@ -25,11 +25,11 @@
 #import "ios/chrome/browser/ui/image_util/image_util.h"
 #import "ios/chrome/browser/ui/reversed_animation.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_tools_menu_button.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/tools_menu_button_observer_bridge.h"
+#import "ios/chrome/browser/ui/toolbar/legacy/toolbar_controller+protected.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_controller+protected.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
-#import "ios/chrome/browser/ui/toolbar/tools_menu_button_observer_bridge.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
@@ -598,7 +598,6 @@ using ios::material::TimingFunction;
   else
     [self fadeInStandardControls];
 }
-
 
 #pragma mark - ToolsMenuPresentationProvider
 

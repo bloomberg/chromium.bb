@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_CONTROLLER_H_
-#define IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_LEGACY_TOOLBAR_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_UI_TOOLBAR_LEGACY_TOOLBAR_CONTROLLER_H_
 
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
-#import "ios/chrome/browser/ui/toolbar/legacy_toolbar_view.h"
+#import "ios/chrome/browser/ui/toolbar/legacy/legacy_toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/public/abstract_toolbar.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_provider.h"
@@ -75,4 +75,4 @@ class ReadingListModel;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_LEGACY_TOOLBAR_CONTROLLER_H_

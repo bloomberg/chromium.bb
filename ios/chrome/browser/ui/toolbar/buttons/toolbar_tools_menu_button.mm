@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_tools_menu_button.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
 
 #import <QuartzCore/CAAnimation.h>
 #import <QuartzCore/CAMediaTimingFunction.h>
 
 #include "base/logging.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
-#include "ios/chrome/browser/ui/toolbar/clean/toolbar_button_tints.h"
+#include "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_tints.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

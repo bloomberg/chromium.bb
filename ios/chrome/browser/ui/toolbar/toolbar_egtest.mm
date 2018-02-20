@@ -12,7 +12,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_row.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_view.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
+#import "ios/chrome/browser/ui/toolbar/legacy/toolbar_controller.h"
 #include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"

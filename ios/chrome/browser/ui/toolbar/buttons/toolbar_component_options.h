@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_COMPONENT_OPTIONS_H_
-#define IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_COMPONENT_OPTIONS_H_
+#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_BUTTONS_TOOLBAR_COMPONENT_OPTIONS_H_
+#define IOS_CHROME_BROWSER_UI_TOOLBAR_BUTTONS_TOOLBAR_COMPONENT_OPTIONS_H_
 
 // List of different SizeClass states. If a Visibility Mask bit is TRUE then the
 // component could be visible for that SizeClass. In order for a component to be
@@ -42,4 +42,4 @@ typedef NS_OPTIONS(NSUInteger, ToolbarComponentVisibility) {
   ToolbarComponentVisibilityIPhoneOnly = 1 << 5,
 };
 
-#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_COMPONENT_OPTIONS_H_
+#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_BUTTONS_TOOLBAR_COMPONENT_OPTIONS_H_
