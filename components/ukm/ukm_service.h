@@ -76,6 +76,8 @@ class UkmService : public UkmRecorderImpl {
   // the provided PrefRegistry.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  int32_t report_count() const { return report_count_; }
+
  private:
   friend ::metrics::UkmBrowserTest;
   friend ::metrics::UkmEGTestHelper;

@@ -348,6 +348,46 @@ TEST_F(UkmServiceTest, MetricsProviderTest) {
   EXPECT_TRUE(provider->provide_system_profile_metrics_called());
 }
 
+TEST_F(UkmServiceTest, LogsRotation) {
+  UkmService service(&prefs_, &client_);
+  TestRecordingHelper recorder(&service);
+  EXPECT_EQ(GetPersistedLogCount(), 0);
+  service.Initialize();
+  task_runner_->RunUntilIdle();
+  service.EnableRecording();
+  service.EnableReporting();
+
+  EXPECT_EQ(0, service.report_count());
+
+  // Log rotation should generate a log.
+  const ukm::SourceId id = GetWhitelistedSourceId(0);
+  recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
+  task_runner_->RunPendingTasks();
+  EXPECT_EQ(1, service.report_count());
+  EXPECT_TRUE(client_.uploader()->is_uploading());
+
+  // Rotation shouldn't generate a log due to one being pending.
+  recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
+  task_runner_->RunPendingTasks();
+  EXPECT_EQ(1, service.report_count());
+  EXPECT_TRUE(client_.uploader()->is_uploading());
+
+  // Completing the upload should clear pending log, then log rotation should
+  // generate another log.
+  client_.uploader()->CompleteUpload(200);
+  task_runner_->RunPendingTasks();
+  EXPECT_EQ(2, service.report_count());
+
+  // Check that rotations keep working.
+  for (int i = 3; i < 6; i++) {
+    task_runner_->RunPendingTasks();
+    client_.uploader()->CompleteUpload(200);
+    recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
+    task_runner_->RunPendingTasks();
+    EXPECT_EQ(i, service.report_count());
+  }
+}
+
 TEST_F(UkmServiceTest, LogsUploadedOnlyWhenHavingSourcesOrEntries) {
   UkmService service(&prefs_, &client_);
   TestRecordingHelper recorder(&service);
