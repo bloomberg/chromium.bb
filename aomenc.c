@@ -458,6 +458,10 @@ static const arg_def_t enable_cdef =
     ARG_DEF(NULL, "enable-cdef", 1,
             "Enable the constrained directional enhancement filter (0: false, "
             "1: true (default))");
+static const arg_def_t enable_restoration =
+    ARG_DEF(NULL, "enable-restoration", 1,
+            "Enable the loop restoration filter (0: false, "
+            "1: true (default))");
 #if CONFIG_AOM_QM
 static const arg_def_t enable_qm =
     ARG_DEF(NULL, "enable-qm", 1,
@@ -696,6 +700,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &gf_cbr_boost_pct,
                                        &lossless,
                                        &enable_cdef,
+                                       &enable_restoration,
 #if CONFIG_AOM_QM
                                        &enable_qm,
                                        &qm_min,
@@ -771,6 +776,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_GF_CBR_BOOST_PCT,
                                         AV1E_SET_LOSSLESS,
                                         AV1E_SET_ENABLE_CDEF,
+                                        AV1E_SET_ENABLE_RESTORATION,
 #if CONFIG_AOM_QM
                                         AV1E_SET_ENABLE_QM,
                                         AV1E_SET_QM_MIN,

@@ -5163,7 +5163,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   struct loopfilter *lf = &cm->lf;
   int no_loopfilter = 0;
 #if CONFIG_LOOP_RESTORATION
-  int no_restoration = 0;
+  int no_restoration = !cpi->oxcf.using_restoration;
 #endif  // CONFIG_LOOP_RESTORATION
 
   if (is_lossless_requested(&cpi->oxcf)

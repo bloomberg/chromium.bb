@@ -191,6 +191,7 @@ typedef struct AV1EncoderConfig {
   DELTAQ_MODE deltaq_mode;
 #endif
   int using_cdef;
+  int using_restoration;
 #if CONFIG_AOM_QM
   int using_qm;
 #if CONFIG_AOM_QM_EXT

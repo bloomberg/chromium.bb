@@ -532,6 +532,16 @@ enum aome_enc_control_id {
    */
   AV1E_SET_ENABLE_CDEF,
 
+  /*!\brief Codec control function to encode with Loop Restoration Filter.
+   *
+   *                          0 = do not apply Restoration Filter
+   *                          1 = apply Restoration Filter
+   *
+   *  By default, the encoder applies Restoration Filter.
+   *
+   */
+  AV1E_SET_ENABLE_RESTORATION,
+
   /*!\brief Codec control function to encode with quantisation matrices.
    *
    * AOM can operate with default quantisation matrices dependent on
@@ -915,6 +925,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_LOSSLESS, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_CDEF, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_CDEF
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_RESTORATION, unsigned int)
+#define AOM_CTRL_AV1E_SET_ENABLE_RESTORATION
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_QM, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_QM
