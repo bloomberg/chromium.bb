@@ -5,7 +5,7 @@
 #ifndef WebServiceWorkerClientQueryOptions_h
 #define WebServiceWorkerClientQueryOptions_h
 
-#include "third_party/WebKit/common/service_worker/service_worker_client.mojom-shared.h"
+#include "third_party/WebKit/public/mojom/service_worker/service_worker_client.mojom-shared.h"
 
 namespace blink {
 

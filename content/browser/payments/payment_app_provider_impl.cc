@@ -17,7 +17,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/common/time.mojom.h"
-#include "third_party/WebKit/common/service_worker/service_worker_provider_type.mojom.h"
+#include "third_party/WebKit/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 
 namespace content {
 namespace {

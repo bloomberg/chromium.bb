@@ -24,7 +24,7 @@
 #include "platform/wtf/Vector.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientQueryOptions.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
-#include "third_party/WebKit/common/service_worker/service_worker_client.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/service_worker/service_worker_client.mojom-blink.h"
 
 namespace blink {
 

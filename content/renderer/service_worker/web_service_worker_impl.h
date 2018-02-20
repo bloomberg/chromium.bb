@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/common/service_worker/service_worker_object.mojom.h"
+#include "third_party/WebKit/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorker.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 

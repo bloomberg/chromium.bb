@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "content/renderer/service_worker/thread_safe_script_container.h"
-#include "third_party/WebKit/common/service_worker/service_worker_installed_scripts_manager.mojom.h"
+#include "third_party/WebKit/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerInstalledScriptsManager.h"
 
 namespace content {

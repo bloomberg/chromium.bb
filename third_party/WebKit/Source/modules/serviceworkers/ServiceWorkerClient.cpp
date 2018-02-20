@@ -17,7 +17,7 @@
 #include "platform/bindings/ScriptState.h"
 #include "public/platform/WebString.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
-#include "third_party/WebKit/common/service_worker/service_worker_client.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/service_worker/service_worker_client.mojom-blink.h"
 
 namespace blink {
 

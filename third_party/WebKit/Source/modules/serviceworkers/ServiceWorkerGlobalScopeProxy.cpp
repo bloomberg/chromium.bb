@@ -88,8 +88,8 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 #include "public/web/WebSerializedScriptValue.h"
 #include "public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
-#include "third_party/WebKit/common/service_worker/service_worker_client.mojom-blink.h"
-#include "third_party/WebKit/common/service_worker/service_worker_event_status.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/service_worker/service_worker_client.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/service_worker/service_worker_event_status.mojom-blink.h"
 
 namespace blink {
 
