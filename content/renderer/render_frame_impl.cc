@@ -1810,17 +1810,20 @@ void RenderFrameImpl::OnAssociatedInterfaceRequest(
 
 void RenderFrameImpl::BindEngagement(
     blink::mojom::EngagementClientAssociatedRequest request) {
-  engagement_binding_.Bind(std::move(request));
+  engagement_binding_.Bind(std::move(request),
+                           GetTaskRunner(blink::TaskType::kInternalIPC));
 }
 
 void RenderFrameImpl::BindFullscreen(
     mojom::FullscreenVideoElementHandlerAssociatedRequest request) {
-  fullscreen_binding_.Bind(std::move(request));
+  fullscreen_binding_.Bind(std::move(request),
+                           GetTaskRunner(blink::TaskType::kInternalIPC));
 }
 
 void RenderFrameImpl::BindMediaEngagement(
     blink::mojom::MediaEngagementClientAssociatedRequest request) {
-  media_engagement_binding_.Bind(std::move(request));
+  media_engagement_binding_.Bind(std::move(request),
+                                 GetTaskRunner(blink::TaskType::kInternalIPC));
 }
 
 void RenderFrameImpl::BindFrame(
@@ -1832,12 +1835,14 @@ void RenderFrameImpl::BindFrame(
 
 void RenderFrameImpl::BindFrameBindingsControl(
     mojom::FrameBindingsControlAssociatedRequest request) {
-  frame_bindings_control_binding_.Bind(std::move(request));
+  frame_bindings_control_binding_.Bind(
+      std::move(request), GetTaskRunner(blink::TaskType::kInternalIPC));
 }
 
 void RenderFrameImpl::BindFrameNavigationControl(
     mojom::FrameNavigationControlAssociatedRequest request) {
-  frame_navigation_control_binding_.Bind(std::move(request));
+  frame_navigation_control_binding_.Bind(
+      std::move(request), GetTaskRunner(blink::TaskType::kInternalIPC));
 }
 
 blink::mojom::ManifestManager& RenderFrameImpl::GetManifestManager() {
@@ -7054,7 +7059,8 @@ bool RenderFrameImpl::IsEncryptedMediaEnabled() const {
 void RenderFrameImpl::OnHostZoomClientRequest(
     mojom::HostZoomAssociatedRequest request) {
   DCHECK(!host_zoom_binding_.is_bound());
-  host_zoom_binding_.Bind(std::move(request));
+  host_zoom_binding_.Bind(std::move(request),
+                          GetTaskRunner(blink::TaskType::kInternalIPC));
 }
 
 void RenderFrameImpl::CheckIfAudioSinkExistsAndIsAuthorized(
