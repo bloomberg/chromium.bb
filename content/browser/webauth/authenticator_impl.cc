@@ -37,11 +37,9 @@ constexpr int32_t kCoseEs256 = -7;
 // Reference https://url.spec.whatwg.org/#valid-domain-string and
 // https://html.spec.whatwg.org/multipage/origin.html#concept-origin-effective-domain.
 bool HasValidEffectiveDomain(url::Origin caller_origin) {
-  return (caller_origin.unique() ||
-          url::HostIsIPAddress(caller_origin.host()) ||
-          !content::IsOriginSecure(caller_origin.GetURL()))
-             ? false
-             : true;
+  return !caller_origin.unique() &&
+         !url::HostIsIPAddress(caller_origin.host()) &&
+         content::IsOriginSecure(caller_origin.GetURL());
 }
 
 // Ensure the relying party ID is a registrable domain suffix of or equal
