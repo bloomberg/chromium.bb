@@ -12,7 +12,6 @@ namespace blink {
 
 class HTMLImageElement;
 class HTMLVideoElement;
-// class PictureInPictureMessageElement;
 
 // Picture in Picture UI. DOM structure looks like:
 //
