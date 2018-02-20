@@ -20,7 +20,7 @@
 
     <application android:label="Android System WebView"
                  android:icon="@drawable/icon_webview"
-                 android:name="com.android.webview.chromium.WebViewApplication"
+                 android:name="{{ application_name|default('com.android.webview.chromium.WebViewApplication') }}"
                  android:multiArch="true"
                  android:use32bitAbi="true">
         {# This part is shared between stand-alone WebView and Monochrome #}
