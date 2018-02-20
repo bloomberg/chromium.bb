@@ -71,6 +71,12 @@ source_set("vaapi") {
               "vaapi_video_decode_accelerator.h",
               "vaapi_video_encode_accelerator.cc",
               "vaapi_video_encode_accelerator.h",
+              "vaapi_h264_accelerator.cc",
+              "vaapi_h264_accelerator.h",
+              "vaapi_vp8_accelerator.cc",
+              "vaapi_vp8_accelerator.h",
+              "vaapi_vp9_accelerator.cc",
+              "vaapi_vp9_accelerator.h",
               "vaapi_wrapper.cc",
               "vaapi_wrapper.h",
             ] + get_target_outputs(":libva_generate_stubs")
