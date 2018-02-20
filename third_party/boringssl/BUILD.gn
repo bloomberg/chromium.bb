@@ -62,7 +62,6 @@ if (is_win && !is_msan) {
   source_set("boringssl_asm") {
     visibility = [ ":*" ]  # Only targets in this file can depend on this.
 
-    defines = [ "BORINGSSL_CLANG_SUPPORTS_DOT_ARCH" ]
     sources = []
     asmflags = []
     include_dirs = [ "src/include" ]
