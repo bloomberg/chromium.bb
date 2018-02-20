@@ -11,6 +11,7 @@
 
 namespace switches {
 
+extern const char kDisableBackgroundTasks[];
 extern const char kDisableBreakpad[];
 extern const char kDisableFeatures[];
 extern const char kDisableLowEndDeviceMode[];
