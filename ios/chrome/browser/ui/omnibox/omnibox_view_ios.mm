@@ -27,6 +27,8 @@
 #include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #include "ios/chrome/browser/ui/omnibox/web_omnibox_edit_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ios/web/public/referrer.h"
 #import "net/base/mac/url_conversions.h"
@@ -44,6 +46,9 @@
 using base::UserMetricsAction;
 
 namespace {
+const CGFloat kClearTextButtonWidth = 28;
+const CGFloat kClearTextButtonHeight = 28;
+
 // The color of the rest of the URL (i.e. after the TLD) in the omnibox.
 UIColor* BaseTextColor() {
   return [UIColor colorWithWhite:(161 / 255.0) alpha:1.0];
@@ -65,6 +70,8 @@ UIColor* IncognitoSecureTextColor() {
 }
 
 }  // namespace
+
+#pragma mark - AutocompleteTextFieldDelegate
 
 // Simple Obj-C object to forward UITextFieldDelegate method calls back to the
 // OmniboxViewIOS.
@@ -157,6 +164,41 @@ UIColor* IncognitoSecureTextColor() {
 
 @end
 
+#pragma mark - OmniboxClearButtonBridge
+
+// An ObjC bridge class to allow taps on the clear button to be sent to a C++
+// class.
+@interface OmniboxClearButtonBridge : NSObject
+
+- (instancetype)initWithOmniboxView:(OmniboxViewIOS*)omniboxView
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
+
+- (void)clearText;
+
+@end
+
+@implementation OmniboxClearButtonBridge {
+  OmniboxViewIOS* _omniboxView;
+}
+
+- (instancetype)initWithOmniboxView:(OmniboxViewIOS*)omniboxView {
+  self = [super init];
+  if (self) {
+    _omniboxView = omniboxView;
+  }
+  return self;
+}
+
+- (void)clearText {
+  _omniboxView->ClearText();
+}
+
+@end
+
+#pragma mark - OminboxViewIOS
+
 OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
                                WebOmniboxEditController* controller,
                                LeftImageProvider* left_image_provider,
@@ -186,6 +228,8 @@ OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
       forControlEvents:UIControlEventEditingChanged];
   use_strikethrough_workaround_ = base::ios::IsRunningOnOrLater(10, 3, 0) &&
                                   !base::ios::IsRunningOnOrLater(11, 2, 0);
+
+  CreateClearTextIcon(browser_state->IsOffTheRecord());
 }
 
 OmniboxViewIOS::~OmniboxViewIOS() {
@@ -383,6 +427,8 @@ void OmniboxViewIOS::OnDidBeginEditing() {
   if (!popup_was_open_before_editing_began)
     [field_ enterPreEditState];
 
+  UpdateRightDecorations();
+
   // The controller looks at the current pre-edit state, so the call to
   // OnSetFocus() must come after entering pre-edit.
   controller_->OnSetFocus();
@@ -394,6 +440,8 @@ void OmniboxViewIOS::OnDidEndEditing() {
   model()->OnKillFocus();
   if ([field_ isPreEditing])
     [field_ exitPreEditState];
+
+  UpdateRightDecorations();
 
   // The controller looks at the current pre-edit state, so the call to
   // OnKillFocus() must come after exiting pre-edit.
@@ -497,6 +545,8 @@ void OmniboxViewIOS::OnDidChange(bool processing_user_event) {
       [field_ setText:base::SysUTF16ToNSString(newText)];
     }
   }
+
+  UpdateRightDecorations();
 
   // Clear the autocomplete text, since the omnibox model does not expect to see
   // it in OnAfterPossibleChange().  Clearing the text here should not cause
@@ -714,6 +764,47 @@ void OmniboxViewIOS::UpdateAppearance() {
     NSAttributedString* as =
         ApplyTextAttributes(model()->GetCurrentPermanentUrlText());
     [field_ setText:as userTextLength:[as length]];
+  }
+}
+
+void OmniboxViewIOS::CreateClearTextIcon(bool is_incognito) {
+  UIButton* button = [UIButton buttonWithType:UIButtonTypeCustom];
+  UIImage* omniBoxClearImage = is_incognito
+                                   ? NativeImage(IDR_IOS_OMNIBOX_CLEAR_OTR)
+                                   : NativeImage(IDR_IOS_OMNIBOX_CLEAR);
+  UIImage* omniBoxClearPressedImage =
+      is_incognito ? NativeImage(IDR_IOS_OMNIBOX_CLEAR_OTR_PRESSED)
+                   : NativeImage(IDR_IOS_OMNIBOX_CLEAR_PRESSED);
+  [button setImage:omniBoxClearImage forState:UIControlStateNormal];
+  [button setImage:omniBoxClearPressedImage forState:UIControlStateHighlighted];
+
+  CGRect frame = CGRectZero;
+  frame.size = CGSizeMake(kClearTextButtonWidth, kClearTextButtonHeight);
+  [button setFrame:frame];
+
+  clear_button_bridge_ =
+      [[OmniboxClearButtonBridge alloc] initWithOmniboxView:this];
+  [button addTarget:clear_button_bridge_
+                action:@selector(clearText)
+      forControlEvents:UIControlEventTouchUpInside];
+  clear_text_button_ = button;
+
+  SetA11yLabelAndUiAutomationName(clear_text_button_,
+                                  IDS_IOS_ACCNAME_CLEAR_TEXT, @"Clear Text");
+}
+
+void OmniboxViewIOS::UpdateRightDecorations() {
+  DCHECK(clear_text_button_);
+  if (!model()->has_focus()) {
+    // Do nothing for iPhone. The right view will be set to nil after the
+    // omnibox animation is completed.
+    if (IsIPadIdiom())
+      [field_ setRightView:nil];
+  } else if ([field_ displayedText].empty()) {
+    [field_ setRightView:nil];
+  } else {
+    [field_ setRightView:clear_text_button_];
+    [clear_text_button_ setAlpha:1];
   }
 }
 
