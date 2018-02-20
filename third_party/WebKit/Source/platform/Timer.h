@@ -178,23 +178,6 @@ class TaskRunnerTimer : public TimerBase {
   TimerFiredFunction function_;
 };
 
-// TODO(dcheng): Consider removing this overload once all timers are using the
-// appropriate task runner. https://crbug.com/624694
-template <typename TimerFiredClass>
-class Timer : public TaskRunnerTimer<TimerFiredClass> {
- public:
-  using TimerFiredFunction =
-      typename TaskRunnerTimer<TimerFiredClass>::TimerFiredFunction;
-
-  ~Timer() override = default;
-
-  Timer(TimerFiredClass* timer_fired_class,
-        TimerFiredFunction timer_fired_function)
-      : TaskRunnerTimer<TimerFiredClass>(TimerBase::GetTimerTaskRunner(),
-                                         timer_fired_class,
-                                         timer_fired_function) {}
-};
-
 NO_SANITIZE_ADDRESS
 inline bool TimerBase::IsActive() const {
 #if DCHECK_IS_ON()
