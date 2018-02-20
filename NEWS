@@ -23,6 +23,10 @@ issues]].
 *** Improved documentation
 - Extend the documentation on multipass opcodes. Thanks to Dave Mielke
   and Christian Egli.
+- Remove the deprecation note of the '=' dots operand. While there are
+  still problems with back-translation we will not remove support for
+  it. See also the discussion in the [[https://github.com/liblouis/liblouis/issues/500][github issue]].
+
 *** Major overhaul of the YAML test suite
 - Due to problems in the cursor position computation the YAML test
   suite was improved to support proper testing of cursor position also
