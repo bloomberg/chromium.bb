@@ -69,6 +69,8 @@ component("google_toolbox_for_mac") {
       # GTMLogger and GTMSQLite are used by Phenotype, a dependency of GrowthKit.
       "src/Foundation/GTMLogger.h",
       "src/Foundation/GTMLogger.m",
+      "src/Foundation/GTMNSData+zlib.h",
+      "src/Foundation/GTMNSData+zlib.m",
       "src/Foundation/GTMNSDictionary+URLArguments.h",
       "src/Foundation/GTMNSDictionary+URLArguments.m",
       "src/Foundation/GTMNSString+URLArguments.h",
@@ -90,7 +92,10 @@ component("google_toolbox_for_mac") {
     # This should be removed once all deprecation violations have been fixed.
     cflags = [ "-Wno-deprecated-declarations" ]
 
-    libs = [ "sqlite3" ]
+    libs = [
+      "sqlite3",
+      "z",
+    ]
   }
 
   if (is_component_build) {
