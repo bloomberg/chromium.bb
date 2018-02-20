@@ -212,16 +212,13 @@ void av1_warp_affine_sse4_1(const int32_t *mat, const uint8_t *ref, int width,
   __m128i tmp[15];
   int i, j, k;
   const int bd = 8;
-  const int use_conv_params =
-      (conv_params->round == CONVOLVE_OPT_NO_ROUND && conv_params->dst);
   const int reduce_bits_horiz = conv_params->round_0;
-  const int reduce_bits_vert = use_conv_params
+  const int reduce_bits_vert = conv_params->is_compound
                                    ? conv_params->round_1
                                    : 2 * FILTER_BITS - reduce_bits_horiz;
   const int offset_bits_horiz = bd + FILTER_BITS - 1;
-  if (use_conv_params) {
-    conv_params->do_post_rounding = 1;
-  }
+  assert(IMPLIES(conv_params->is_compound, conv_params->dst != NULL));
+
 #if CONFIG_JNT_COMP
   const int w0 = conv_params->fwd_offset;
   const int w1 = conv_params->bck_offset;
@@ -475,7 +472,7 @@ void av1_warp_affine_sse4_1(const int32_t *mat, const uint8_t *ref, int width,
         __m128i res_lo = _mm_unpacklo_epi32(res_even, res_odd);
         __m128i res_hi = _mm_unpackhi_epi32(res_even, res_odd);
 
-        if (use_conv_params) {
+        if (conv_params->is_compound) {
           __m128i *const p =
               (__m128i *)&conv_params
                   ->dst[(i + k + 4) * conv_params->dst_stride + j];

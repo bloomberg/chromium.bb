@@ -422,21 +422,17 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
                               ConvolveParams *conv_params, int16_t alpha,
                               int16_t beta, int16_t gamma, int16_t delta) {
   int32_t tmp[15 * 8];
-  const int use_conv_params =
-      (conv_params->round == CONVOLVE_OPT_NO_ROUND && conv_params->dst);
-  int reduce_bits_horiz = conv_params->round_0;
-  if (!use_conv_params && bd + FILTER_BITS + 2 - reduce_bits_horiz > 16)
-    reduce_bits_horiz += bd + FILTER_BITS - reduce_bits_horiz - 14;
-  const int reduce_bits_vert = use_conv_params
+  const int reduce_bits_horiz =
+      conv_params->round_0 +
+      AOMMAX(bd + FILTER_BITS - conv_params->round_0 - 14, 0);
+  const int reduce_bits_vert = conv_params->is_compound
                                    ? conv_params->round_1
                                    : 2 * FILTER_BITS - reduce_bits_horiz;
   const int max_bits_horiz = bd + FILTER_BITS + 1 - reduce_bits_horiz;
   const int offset_bits_horiz = bd + FILTER_BITS - 1;
   const int offset_bits_vert = bd + 2 * FILTER_BITS - reduce_bits_horiz;
-  if (use_conv_params) {
-    conv_params->do_post_rounding = 1;
-  }
   (void)max_bits_horiz;
+  assert(IMPLIES(conv_params->is_compound, conv_params->dst != NULL));
 
   for (int i = p_row; i < p_row + p_height; i += 8) {
     for (int j = p_col; j < p_col + p_width; j += 8) {
@@ -500,7 +496,7 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
             sum += tmp[(k + m + 4) * 8 + (l + 4)] * coeffs[m];
           }
 
-          if (use_conv_params) {
+          if (conv_params->is_compound) {
             CONV_BUF_TYPE *p =
                 &conv_params
                      ->dst[(i - p_row + k + 4) * conv_params->dst_stride +
@@ -716,19 +712,15 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
                        int16_t gamma, int16_t delta) {
   int32_t tmp[15 * 8];
   const int bd = 8;
-  const int use_conv_params =
-      (conv_params->round == CONVOLVE_OPT_NO_ROUND && conv_params->dst);
   const int reduce_bits_horiz = conv_params->round_0;
-  const int reduce_bits_vert = use_conv_params
+  const int reduce_bits_vert = conv_params->is_compound
                                    ? conv_params->round_1
                                    : 2 * FILTER_BITS - reduce_bits_horiz;
   const int max_bits_horiz = bd + FILTER_BITS + 1 - reduce_bits_horiz;
   const int offset_bits_horiz = bd + FILTER_BITS - 1;
   const int offset_bits_vert = bd + 2 * FILTER_BITS - reduce_bits_horiz;
-  if (use_conv_params) {
-    conv_params->do_post_rounding = 1;
-  }
   (void)max_bits_horiz;
+  assert(IMPLIES(conv_params->is_compound, conv_params->dst != NULL));
 
   for (int i = p_row; i < p_row + p_height; i += 8) {
     for (int j = p_col; j < p_col + p_width; j += 8) {
@@ -798,7 +790,7 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
             sum += tmp[(k + m + 4) * 8 + (l + 4)] * coeffs[m];
           }
 
-          if (use_conv_params) {
+          if (conv_params->is_compound) {
             CONV_BUF_TYPE *p =
                 &conv_params
                      ->dst[(i - p_row + k + 4) * conv_params->dst_stride +

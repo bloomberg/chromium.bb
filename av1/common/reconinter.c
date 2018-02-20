@@ -69,6 +69,8 @@ static INLINE void av1_make_inter_predictor(
   // Make sure the selected motion mode is valid for this configuration
   assert_motion_mode_valid(mi->mbmi.motion_mode, xd->global_motion, xd, mi);
 
+  assert(IMPLIES(conv_params->is_compound, conv_params->dst != NULL));
+
   WarpedMotionParams final_warp_params;
   const int do_warp =
       (w >= 8 && h >= 8 &&
@@ -86,20 +88,17 @@ static INLINE void av1_make_inter_predictor(
                    pre_buf->buf0, pre_buf->width, pre_buf->height,
                    pre_buf->stride, dst, p_col, p_row, w, h, dst_stride,
                    pd->subsampling_x, pd->subsampling_y, conv_params);
-    assert(IMPLIES(conv_params->dst != NULL, conv_params->do_post_rounding));
-    assert(IMPLIES(conv_params->dst == NULL, !conv_params->do_post_rounding));
   } else if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     highbd_inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y,
                            sf, w, h, conv_params, interp_filters, xs, ys,
                            xd->bd);
-    assert(IMPLIES(conv_params->is_compound, conv_params->do_post_rounding));
-    assert(!(conv_params->is_compound && conv_params->dst == NULL));
   } else {
     inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y, sf, w,
                     h, conv_params, interp_filters, xs, ys);
-    assert(IMPLIES(conv_params->is_compound, conv_params->do_post_rounding));
-    assert(!(conv_params->is_compound && conv_params->dst == NULL));
   }
+  // For compound, do_post_rounding is always 1.
+  // For masked compound, this flag will be turned off after the blend stage.
+  conv_params->do_post_rounding = conv_params->is_compound;
 }
 
 #define NSMOOTHERS 1
@@ -1244,8 +1243,6 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
             subpel_params[ref].ys, xd);
     }
 
-    // if (!is_masked_compound_type(mi->mbmi.interinter_compound_type))
-    //   assert(conv_params.do_post_rounding);
     // TODO(angiebird): This part needs optimization
     if (conv_params.do_post_rounding) {
       assert(!is_masked_compound_type(mi->mbmi.interinter_compound_type));

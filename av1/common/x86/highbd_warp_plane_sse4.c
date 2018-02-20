@@ -24,19 +24,14 @@ void av1_highbd_warp_affine_sse4_1(const int32_t *mat, const uint16_t *ref,
   int comp_avg = conv_params->do_average;
   __m128i tmp[15];
   int i, j, k;
-  const int use_conv_params =
-      (conv_params->round == CONVOLVE_OPT_NO_ROUND && conv_params->dst);
-  int reduce_bits_horiz = conv_params->round_0;
-  if (!use_conv_params && bd + FILTER_BITS + 2 - reduce_bits_horiz > 16)
-    reduce_bits_horiz += bd + FILTER_BITS - reduce_bits_horiz - 14;
-  const int reduce_bits_vert = use_conv_params
+  const int reduce_bits_horiz =
+      conv_params->round_0 +
+      AOMMAX(bd + FILTER_BITS - conv_params->round_0 - 14, 0);
+  const int reduce_bits_vert = conv_params->is_compound
                                    ? conv_params->round_1
                                    : 2 * FILTER_BITS - reduce_bits_horiz;
   const int offset_bits_horiz = bd + FILTER_BITS - 1;
-  if (use_conv_params) {
-    conv_params->do_post_rounding = 1;
-  }
-  assert(FILTER_BITS == FILTER_BITS);
+  assert(IMPLIES(conv_params->is_compound, conv_params->dst != NULL));
   assert(!(bd == 12 && reduce_bits_horiz < 5));
 
 #if CONFIG_JNT_COMP
@@ -302,7 +297,7 @@ void av1_highbd_warp_affine_sse4_1(const int32_t *mat, const uint16_t *ref,
         __m128i res_lo = _mm_unpacklo_epi32(res_even, res_odd);
         __m128i res_hi = _mm_unpackhi_epi32(res_even, res_odd);
 
-        if (use_conv_params) {
+        if (conv_params->is_compound) {
           __m128i *const p =
               (__m128i *)&conv_params
                   ->dst[(i + k + 4) * conv_params->dst_stride + j];
