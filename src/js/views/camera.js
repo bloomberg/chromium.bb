@@ -357,13 +357,6 @@ camera.views.Camera = function(context, router) {
   this.taking_ = false;
 
   /**
-   * Contains uncompleted fly-away animations for taken pictures.
-   * @type {Array.<function()>}
-   * @private
-   */
-  this.flyAnimations_ = [];
-
-  /**
    * Timer used to automatically collapse the tools.
    * @type {?number}
    * @private
@@ -1337,13 +1330,6 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
       this.setCurrentEffect_(this.effectProcessors_.length - 1);
       event.preventDefault();
       break;
-    case 'Escape':
-      // Complete all fly-away animations immediately.
-      while (this.flyAnimations_.length) {
-        this.flyAnimations_[0]();
-      }
-      event.preventDefault();
-      break;
     case 'Space':  // Space key for taking the picture.
       document.querySelector('#take-picture').click();
       event.stopPropagation();
@@ -1755,7 +1741,7 @@ camera.views.Camera.prototype.endTakePicture_ = function() {
 
 /**
  * Takes the still picture or starts to take the motion picture immediately,
- * and saves and puts to the album with a nice animation when it's done.
+ * and saves and puts to the album.
  *
  * @param {boolean} motionPicture True to start video recording, false to take
  *     a still picture.
@@ -1771,135 +1757,68 @@ camera.views.Camera.prototype.takePictureImmediately_ = function(motionPicture) 
 
   setTimeout(function() {
     this.drawCameraFrame_(camera.views.Camera.DrawMode.BEST);
-    this.mainCanvas_.toBlob(function(blob) {
-      // Create a picture preview animation.
-      var picturePreview = document.querySelector('#picture-preview');
-      var img = document.createElement('img');
-      img.src = URL.createObjectURL(blob);
-      img.style.webkitTransform = 'rotate(' + (Math.random() * 40 - 20) + 'deg)';
-      img.addEventListener('click', function() {
-        // For simplicity, always navigate to the newest picture.
-        if (this.model_.length) {
-          this.router.navigate(camera.Router.ViewIdentifier.BROWSER);
-        }
-      }.bind(this));
-      if (motionPicture) {
-        img.classList.add('motion-picture');
-      }
 
-      // Create the fly-away animation with the image.
+    // Add picture to the gallery.
+    var addPicture = function(blob, type) {
       var albumButton = document.querySelector('#toolbar #album-enter');
-      var flyAnimation = function() {
-        var removal = this.flyAnimations_.indexOf(flyAnimation);
-        if (removal == -1)
-          return;
-        this.flyAnimations_.splice(removal, 1);
+      camera.util.setAnimationClass(albumButton, albumButton, 'flash');
 
-        img.classList.remove('activated');
+      // Add the photo or video to the model.
+      this.model_.addPicture(blob, type, function() {
+        this.showToastMessage_(
+            chrome.i18n.getMessage('errorMsgGallerySaveFailed'));
+      }.bind(this));
+    }.bind(this);
 
-        var sourceRect = img.getBoundingClientRect();
-        var targetRect = albumButton.getBoundingClientRect();
-
-        // If the album button is hidden, then we can't get its geometry.
-        if (targetRect.width && targetRect.height) {
-          var translateXValue = (targetRect.left + targetRect.right) / 2 -
-              (sourceRect.left + sourceRect.right) / 2;
-          var translateYValue = (targetRect.top + targetRect.bottom) / 2 -
-              (sourceRect.top + sourceRect.bottom) / 2;
-          var scaleValue = targetRect.width / sourceRect.width;
-
-          img.style.webkitTransform =
-              'rotate(0) translateX(' + translateXValue +'px) ' +
-              'translateY(' + translateYValue + 'px) ' +
-              'scale(' + scaleValue + ')';
+    if (motionPicture) {
+      var recordedChunks = [];
+      this.mediaRecorder_.ondataavailable = function(event) {
+        if (event.data && event.data.size > 0) {
+          recordedChunks.push(event.data);
         }
-        img.style.opacity = 0;
-
-        camera.util.waitForTransitionCompletion(img, 1200, function() {
-          img.parentNode.removeChild(img);
-          this.taking_ = false;
-        }.bind(this));
       }.bind(this);
 
-      // Add picture to the gallery with a nice animation.
-      var addPicture = function(blob, type) {
-        // Preview the picture with the fly-away animation after two seconds.
-        this.flyAnimations_.push(flyAnimation);
-        setTimeout(flyAnimation, 2000);
-
-        var onPointerDown = function() {
-          img.classList.add('activated');
-        };
-
-        // When clicking or touching, zoom the preview a little to give feedback.
-        // Do not release the 'activated' flag since in most cases, releasing the
-        // mouse button or touch would redirect to the browser view.
-        img.addEventListener('touchstart', onPointerDown);
-        img.addEventListener('mousedown', onPointerDown);
-
-        // Animate the album button.
-        camera.util.setAnimationClass(albumButton, albumButton, 'flash');
-
-        // Add to DOM.
-        picturePreview.appendChild(img);
-
-        // Add the picture to the model.
-        this.model_.addPicture(blob, type, function() {
+      var takePictureButton = document.querySelector('#take-picture');
+      this.mediaRecorder_.onstop = function(event) {
+        this.hideRecordingTimer_();
+        takePictureButton.classList.remove('flash');
+        this.enableAudio_(false);
+        // Add the motion picture after the recording is ended.
+        // TODO(yuli): Handle insufficient storage.
+        var recordedBlob = new Blob(recordedChunks, {type: 'video/webm'});
+        recordedChunks = [];
+        if (recordedBlob.size) {
+          // Play a video-record-ended sound.
+          this.recordEndSound_.currentTime = 0;
+          this.recordEndSound_.play();
+          addPicture(recordedBlob, camera.models.Gallery.PictureType.MOTION);
+        } else {
+          // The recording may have no data available because it's too short
+          // or the media recorder is not stable and Chrome needs to restart.
           this.showToastMessage_(
-              chrome.i18n.getMessage('errorMsgGallerySaveFailed'));
-        }.bind(this));
+              chrome.i18n.getMessage('errorMsgEmptyRecording'));
+        }
       }.bind(this);
 
-      if (motionPicture) {
-        var recordedChunks = [];
-        this.mediaRecorder_.ondataavailable = function(event) {
-          if (event.data && event.data.size > 0) {
-            recordedChunks.push(event.data);
-          }
-        }.bind(this);
+      // Start recording.
+      this.enableAudio_(true);
+      this.mediaRecorder_.start();
 
-        var takePictureButton = document.querySelector('#take-picture');
-        this.mediaRecorder_.onstop = function(event) {
-          this.hideRecordingTimer_();
-          takePictureButton.classList.remove('flash');
-          this.enableAudio_(false);
-          // Add the motion picture after the recording is ended.
-          // TODO(yuli): Handle insufficient storage.
-          var recordedBlob = new Blob(recordedChunks, {type: 'video/webm'});
-          recordedChunks = [];
-          if (recordedBlob.size) {
-            // Play a video-record-ended sound.
-            this.recordEndSound_.currentTime = 0;
-            this.recordEndSound_.play();
-            // TODO(yuli): Use the preview image's blob to create video's
-            // thumbnail to save time.
-            addPicture(recordedBlob, camera.models.Gallery.PictureType.MOTION);
-          } else {
-            // The recording may have no data available because it's too short
-            // or the media recorder is not stable and Chrome needs to restart.
-            this.showToastMessage_(
-                chrome.i18n.getMessage('errorMsgEmptyRecording'));
-          }
-        }.bind(this);
+      // Start to show the elapsed recording time.
+      this.showRecordingTimer_();
 
-        // Start recording.
-        this.enableAudio_(true);
-        this.mediaRecorder_.start();
-
-        // Start to show the elapsed recording time.
-        this.showRecordingTimer_();
-
-        // Re-enable the take-picture button to stop recording later and flash
-        // the take-picture button until the recording is stopped.
-        takePictureButton.disabled = false;
-        takePictureButton.classList.add('flash');
-      } else {
+      // Re-enable the take-picture button to stop recording later and flash
+      // the take-picture button until the recording is stopped.
+      takePictureButton.disabled = false;
+      takePictureButton.classList.add('flash');
+    } else {
+      this.mainCanvas_.toBlob(function(blob) {
         // Play a shutter sound.
         this.shutterSound_.currentTime = 0;
         this.shutterSound_.play();
         addPicture(blob, camera.models.Gallery.PictureType.STILL);
-      }
-    }.bind(this), 'image/jpeg');
+      }.bind(this), 'image/jpeg');
+    }
   }.bind(this), 0);
 };
 
