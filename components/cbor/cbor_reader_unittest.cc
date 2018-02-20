@@ -7,12 +7,25 @@
 
 #include "components/cbor/cbor_reader.h"
 
+#include "base/containers/span.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 /* Leveraging RFC 7049 examples from
    https://github.com/cbor/test-vectors/blob/master/appendix_a.json. */
 namespace cbor {
+
+namespace {
+
+std::vector<uint8_t> WithExtraneousData(base::span<const uint8_t> original) {
+  std::vector<uint8_t> ret(original.cbegin(), original.cend());
+  // Add a valid one byte long CBOR data item, namely, an unsigned integer
+  // with value "1".
+  ret.push_back(0x01);
+  return ret;
+}
+
+}  // namespace
 
 TEST(CBORReaderTest, TestReadUint) {
   struct UintTestCase {
@@ -42,6 +55,21 @@ TEST(CBORReaderTest, TestReadUint) {
     ASSERT_TRUE(cbor.has_value());
     ASSERT_EQ(cbor.value().type(), CBORValue::Type::UNSIGNED);
     EXPECT_EQ(cbor.value().GetInteger(), test_case.value);
+
+    auto cbor_data_with_extra_byte = WithExtraneousData(test_case.cbor_data);
+    CBORReader::DecoderError error_code;
+    cbor = CBORReader::Read(cbor_data_with_extra_byte, &error_code);
+    EXPECT_FALSE(cbor.has_value());
+    EXPECT_EQ(error_code, CBORReader::DecoderError::EXTRANEOUS_DATA);
+
+    size_t num_bytes_consumed;
+    cbor = CBORReader::Read(cbor_data_with_extra_byte, &num_bytes_consumed,
+                            &error_code);
+    ASSERT_TRUE(cbor.has_value());
+    ASSERT_EQ(cbor.value().type(), CBORValue::Type::UNSIGNED);
+    EXPECT_EQ(cbor.value().GetInteger(), test_case.value);
+    EXPECT_EQ(error_code, CBORReader::DecoderError::CBOR_NO_ERROR);
+    EXPECT_EQ(num_bytes_consumed, test_case.cbor_data.size());
   }
 }
 
@@ -120,6 +148,21 @@ TEST(CBORReaderTest, TestReadNegativeInt) {
     ASSERT_TRUE(cbor.has_value());
     ASSERT_EQ(cbor.value().type(), CBORValue::Type::NEGATIVE);
     EXPECT_EQ(cbor.value().GetInteger(), test_case.negative_int);
+
+    auto cbor_data_with_extra_byte = WithExtraneousData(test_case.cbor_data);
+    CBORReader::DecoderError error_code;
+    cbor = CBORReader::Read(cbor_data_with_extra_byte, &error_code);
+    EXPECT_FALSE(cbor.has_value());
+    EXPECT_EQ(error_code, CBORReader::DecoderError::EXTRANEOUS_DATA);
+
+    size_t num_bytes_consumed;
+    cbor = CBORReader::Read(cbor_data_with_extra_byte, &num_bytes_consumed,
+                            &error_code);
+    ASSERT_TRUE(cbor.has_value());
+    ASSERT_EQ(cbor.value().type(), CBORValue::Type::NEGATIVE);
+    EXPECT_EQ(cbor.value().GetInteger(), test_case.negative_int);
+    EXPECT_EQ(error_code, CBORReader::DecoderError::CBOR_NO_ERROR);
+    EXPECT_EQ(num_bytes_consumed, test_case.cbor_data.size());
   }
 }
 
@@ -145,6 +188,21 @@ TEST(CBORReaderTest, TestReadBytes) {
     ASSERT_TRUE(cbor.has_value());
     ASSERT_EQ(cbor.value().type(), CBORValue::Type::BYTE_STRING);
     EXPECT_EQ(cbor.value().GetBytestring(), test_case.value);
+
+    auto cbor_data_with_extra_byte = WithExtraneousData(test_case.cbor_data);
+    CBORReader::DecoderError error_code;
+    cbor = CBORReader::Read(cbor_data_with_extra_byte, &error_code);
+    EXPECT_FALSE(cbor.has_value());
+    EXPECT_EQ(error_code, CBORReader::DecoderError::EXTRANEOUS_DATA);
+
+    size_t num_bytes_consumed;
+    cbor = CBORReader::Read(cbor_data_with_extra_byte, &num_bytes_consumed,
+                            &error_code);
+    ASSERT_TRUE(cbor.has_value());
+    ASSERT_EQ(cbor.value().type(), CBORValue::Type::BYTE_STRING);
+    EXPECT_EQ(cbor.value().GetBytestring(), test_case.value);
+    EXPECT_EQ(error_code, CBORReader::DecoderError::CBOR_NO_ERROR);
+    EXPECT_EQ(num_bytes_consumed, test_case.cbor_data.size());
   }
 }
 
@@ -172,6 +230,21 @@ TEST(CBORReaderTest, TestReadString) {
     ASSERT_TRUE(cbor.has_value());
     ASSERT_EQ(cbor.value().type(), CBORValue::Type::STRING);
     EXPECT_EQ(cbor.value().GetString(), test_case.value);
+
+    auto cbor_data_with_extra_byte = WithExtraneousData(test_case.cbor_data);
+    CBORReader::DecoderError error_code;
+    cbor = CBORReader::Read(cbor_data_with_extra_byte, &error_code);
+    EXPECT_FALSE(cbor.has_value());
+    EXPECT_EQ(error_code, CBORReader::DecoderError::EXTRANEOUS_DATA);
+
+    size_t num_bytes_consumed;
+    cbor = CBORReader::Read(cbor_data_with_extra_byte, &num_bytes_consumed,
+                            &error_code);
+    ASSERT_TRUE(cbor.has_value());
+    ASSERT_EQ(cbor.value().type(), CBORValue::Type::STRING);
+    EXPECT_EQ(cbor.value().GetString(), test_case.value);
+    EXPECT_EQ(error_code, CBORReader::DecoderError::CBOR_NO_ERROR);
+    EXPECT_EQ(num_bytes_consumed, test_case.cbor_data.size());
   }
 }
 
@@ -202,6 +275,21 @@ TEST(CBORReaderTest, TestReadStringWithNUL) {
     ASSERT_TRUE(cbor.has_value());
     ASSERT_EQ(cbor.value().type(), CBORValue::Type::STRING);
     EXPECT_EQ(cbor.value().GetString(), test_case.value);
+
+    auto cbor_data_with_extra_byte = WithExtraneousData(test_case.cbor_data);
+    CBORReader::DecoderError error_code;
+    cbor = CBORReader::Read(cbor_data_with_extra_byte, &error_code);
+    EXPECT_FALSE(cbor.has_value());
+    EXPECT_EQ(error_code, CBORReader::DecoderError::EXTRANEOUS_DATA);
+
+    size_t num_bytes_consumed;
+    cbor = CBORReader::Read(cbor_data_with_extra_byte, &num_bytes_consumed,
+                            &error_code);
+    ASSERT_TRUE(cbor.has_value());
+    ASSERT_EQ(cbor.value().type(), CBORValue::Type::STRING);
+    EXPECT_EQ(cbor.value().GetString(), test_case.value);
+    EXPECT_EQ(error_code, CBORReader::DecoderError::CBOR_NO_ERROR);
+    EXPECT_EQ(num_bytes_consumed, test_case.cbor_data.size());
   }
 }
 
@@ -243,6 +331,21 @@ TEST(CBORReaderTest, TestReadArray) {
     EXPECT_EQ(cbor_array.GetArray()[i].GetInteger(),
               static_cast<int64_t>(i + 1));
   }
+
+  auto cbor_data_with_extra_byte = WithExtraneousData(kArrayTestCaseCbor);
+  CBORReader::DecoderError error_code;
+  cbor = CBORReader::Read(cbor_data_with_extra_byte, &error_code);
+  EXPECT_FALSE(cbor.has_value());
+  EXPECT_EQ(error_code, CBORReader::DecoderError::EXTRANEOUS_DATA);
+
+  size_t num_bytes_consumed;
+  cbor = CBORReader::Read(cbor_data_with_extra_byte, &num_bytes_consumed,
+                          &error_code);
+  ASSERT_TRUE(cbor.has_value());
+  ASSERT_EQ(cbor_array.type(), CBORValue::Type::ARRAY);
+  ASSERT_THAT(cbor_array.GetArray(), testing::SizeIs(25));
+  EXPECT_EQ(error_code, CBORReader::DecoderError::CBOR_NO_ERROR);
+  EXPECT_EQ(num_bytes_consumed, kArrayTestCaseCbor.size());
 }
 
 TEST(CBORReaderTest, TestReadMapWithMapValue) {
@@ -292,6 +395,21 @@ TEST(CBORReaderTest, TestReadMapWithMapValue) {
   ASSERT_EQ(cbor_val.GetMap().find(key_aa)->second.type(),
             CBORValue::Type::STRING);
   EXPECT_EQ(cbor_val.GetMap().find(key_aa)->second.GetString(), "AA");
+
+  auto cbor_data_with_extra_byte = WithExtraneousData(kMapTestCaseCbor);
+  CBORReader::DecoderError error_code;
+  cbor = CBORReader::Read(cbor_data_with_extra_byte, &error_code);
+  EXPECT_FALSE(cbor.has_value());
+  EXPECT_EQ(error_code, CBORReader::DecoderError::EXTRANEOUS_DATA);
+
+  size_t num_bytes_consumed;
+  cbor = CBORReader::Read(cbor_data_with_extra_byte, &num_bytes_consumed,
+                          &error_code);
+  ASSERT_TRUE(cbor.has_value());
+  ASSERT_EQ(cbor_val.type(), CBORValue::Type::MAP);
+  ASSERT_EQ(cbor_val.GetMap().size(), 4u);
+  EXPECT_EQ(error_code, CBORReader::DecoderError::CBOR_NO_ERROR);
+  EXPECT_EQ(num_bytes_consumed, kMapTestCaseCbor.size());
 }
 
 TEST(CBORReaderTest, TestReadMapWithIntegerKeys) {
@@ -341,6 +459,21 @@ TEST(CBORReaderTest, TestReadMapWithIntegerKeys) {
   ASSERT_EQ(cbor_val.GetMap().find(key_1111)->second.type(),
             CBORValue::Type::STRING);
   EXPECT_EQ(cbor_val.GetMap().find(key_1111)->second.GetString(), "d");
+
+  auto cbor_data_with_extra_byte = WithExtraneousData(kMapWithIntegerKeyCbor);
+  CBORReader::DecoderError error_code;
+  cbor = CBORReader::Read(cbor_data_with_extra_byte, &error_code);
+  EXPECT_FALSE(cbor.has_value());
+  EXPECT_EQ(error_code, CBORReader::DecoderError::EXTRANEOUS_DATA);
+
+  size_t num_bytes_consumed;
+  cbor = CBORReader::Read(cbor_data_with_extra_byte, &num_bytes_consumed,
+                          &error_code);
+  ASSERT_TRUE(cbor.has_value());
+  ASSERT_EQ(cbor_val.type(), CBORValue::Type::MAP);
+  ASSERT_EQ(cbor_val.GetMap().size(), 4u);
+  EXPECT_EQ(error_code, CBORReader::DecoderError::CBOR_NO_ERROR);
+  EXPECT_EQ(num_bytes_consumed, kMapWithIntegerKeyCbor.size());
 }
 
 TEST(CBORReaderTest, TestReadMapWithNegativeIntegersKeys) {
@@ -381,6 +514,21 @@ TEST(CBORReaderTest, TestReadMapWithNegativeIntegersKeys) {
   ASSERT_EQ(cbor_val.GetMap().find(key_100)->second.type(),
             CBORValue::Type::UNSIGNED);
   EXPECT_EQ(cbor_val.GetMap().find(key_100)->second.GetInteger(), 3);
+
+  auto cbor_data_with_extra_byte = WithExtraneousData(kMapWithIntegerKeyCbor);
+  CBORReader::DecoderError error_code;
+  cbor = CBORReader::Read(cbor_data_with_extra_byte, &error_code);
+  EXPECT_FALSE(cbor.has_value());
+  EXPECT_EQ(error_code, CBORReader::DecoderError::EXTRANEOUS_DATA);
+
+  size_t num_bytes_consumed;
+  cbor = CBORReader::Read(cbor_data_with_extra_byte, &num_bytes_consumed,
+                          &error_code);
+  ASSERT_TRUE(cbor.has_value());
+  ASSERT_EQ(cbor_val.type(), CBORValue::Type::MAP);
+  ASSERT_EQ(cbor_val.GetMap().size(), 3u);
+  EXPECT_EQ(error_code, CBORReader::DecoderError::CBOR_NO_ERROR);
+  EXPECT_EQ(num_bytes_consumed, kMapWithIntegerKeyCbor.size());
 }
 
 TEST(CBORReaderTest, TestReadMapWithArray) {
@@ -421,6 +569,21 @@ TEST(CBORReaderTest, TestReadMapWithArray) {
     EXPECT_EQ(nested_array.GetArray()[i].GetInteger(),
               static_cast<int64_t>(i + 2));
   }
+
+  auto cbor_data_with_extra_byte = WithExtraneousData(kMapArrayTestCaseCbor);
+  CBORReader::DecoderError error_code;
+  cbor = CBORReader::Read(cbor_data_with_extra_byte, &error_code);
+  EXPECT_FALSE(cbor.has_value());
+  EXPECT_EQ(error_code, CBORReader::DecoderError::EXTRANEOUS_DATA);
+
+  size_t num_bytes_consumed;
+  cbor = CBORReader::Read(cbor_data_with_extra_byte, &num_bytes_consumed,
+                          &error_code);
+  ASSERT_TRUE(cbor.has_value());
+  ASSERT_EQ(cbor_val.type(), CBORValue::Type::MAP);
+  ASSERT_EQ(cbor_val.GetMap().size(), 2u);
+  EXPECT_EQ(error_code, CBORReader::DecoderError::CBOR_NO_ERROR);
+  EXPECT_EQ(num_bytes_consumed, kMapArrayTestCaseCbor.size());
 }
 
 TEST(CBORReaderTest, TestReadMapWithTextStringKeys) {
@@ -451,6 +614,20 @@ TEST(CBORReaderTest, TestReadMapWithTextStringKeys) {
   ASSERT_EQ(cbor->GetMap().find(key_foo)->second.type(),
             CBORValue::Type::STRING);
   EXPECT_EQ(cbor->GetMap().find(key_foo)->second.GetString(), "bar");
+
+  auto cbor_data_with_extra_byte = WithExtraneousData(kMapTestCase);
+  cbor = CBORReader::Read(cbor_data_with_extra_byte, &error_code);
+  EXPECT_FALSE(cbor.has_value());
+  EXPECT_EQ(error_code, CBORReader::DecoderError::EXTRANEOUS_DATA);
+
+  size_t num_bytes_consumed;
+  cbor = CBORReader::Read(cbor_data_with_extra_byte, &num_bytes_consumed,
+                          &error_code);
+  ASSERT_TRUE(cbor.has_value());
+  ASSERT_EQ(cbor->type(), CBORValue::Type::MAP);
+  ASSERT_EQ(cbor->GetMap().size(), 2u);
+  EXPECT_EQ(error_code, CBORReader::DecoderError::CBOR_NO_ERROR);
+  EXPECT_EQ(num_bytes_consumed, kMapTestCase.size());
 }
 
 TEST(CBORReaderTest, TestReadMapWithByteStringKeys) {
@@ -484,6 +661,20 @@ TEST(CBORReaderTest, TestReadMapWithByteStringKeys) {
             CBORValue::Type::BYTE_STRING);
   static const std::vector<uint8_t> kBarBytes{'b', 'a', 'r'};
   EXPECT_EQ(cbor->GetMap().find(key_foo)->second.GetBytestring(), kBarBytes);
+
+  auto cbor_data_with_extra_byte = WithExtraneousData(kMapTestCase);
+  cbor = CBORReader::Read(cbor_data_with_extra_byte, &error_code);
+  EXPECT_FALSE(cbor.has_value());
+  EXPECT_EQ(error_code, CBORReader::DecoderError::EXTRANEOUS_DATA);
+
+  size_t num_bytes_consumed;
+  cbor = CBORReader::Read(cbor_data_with_extra_byte, &num_bytes_consumed,
+                          &error_code);
+  ASSERT_TRUE(cbor.has_value());
+  ASSERT_EQ(cbor->type(), CBORValue::Type::MAP);
+  ASSERT_EQ(cbor->GetMap().size(), 2u);
+  EXPECT_EQ(error_code, CBORReader::DecoderError::CBOR_NO_ERROR);
+  EXPECT_EQ(num_bytes_consumed, kMapTestCase.size());
 }
 
 TEST(CBORReaderTest, TestReadMapWithMixedKeys) {
@@ -545,6 +736,20 @@ TEST(CBORReaderTest, TestReadMapWithMixedKeys) {
     EXPECT_EQ(cbor->GetMap().find(keys[i])->second.GetInteger(),
               static_cast<int>(i));
   }
+
+  auto cbor_data_with_extra_byte = WithExtraneousData(kMapTestCase);
+  cbor = CBORReader::Read(cbor_data_with_extra_byte, &error_code);
+  EXPECT_FALSE(cbor.has_value());
+  EXPECT_EQ(error_code, CBORReader::DecoderError::EXTRANEOUS_DATA);
+
+  size_t num_bytes_consumed;
+  cbor = CBORReader::Read(cbor_data_with_extra_byte, &num_bytes_consumed,
+                          &error_code);
+  ASSERT_TRUE(cbor.has_value());
+  ASSERT_EQ(cbor->type(), CBORValue::Type::MAP);
+  ASSERT_EQ(cbor->GetMap().size(), 6u);
+  EXPECT_EQ(error_code, CBORReader::DecoderError::CBOR_NO_ERROR);
+  EXPECT_EQ(num_bytes_consumed, arraysize(kMapTestCase));
 }
 
 TEST(CBORReaderTest, TestReadNestedMap) {
@@ -651,6 +856,21 @@ TEST(CBORReaderTest, TestReadSimpleValue) {
     ASSERT_TRUE(cbor.has_value());
     ASSERT_EQ(cbor.value().type(), CBORValue::Type::SIMPLE_VALUE);
     EXPECT_EQ(cbor.value().GetSimpleValue(), test_case.value);
+
+    auto cbor_data_with_extra_byte = WithExtraneousData(test_case.cbor_data);
+    CBORReader::DecoderError error_code;
+    cbor = CBORReader::Read(cbor_data_with_extra_byte, &error_code);
+    EXPECT_FALSE(cbor.has_value());
+    EXPECT_EQ(error_code, CBORReader::DecoderError::EXTRANEOUS_DATA);
+
+    size_t num_bytes_consumed;
+    cbor = CBORReader::Read(cbor_data_with_extra_byte, &num_bytes_consumed,
+                            &error_code);
+    ASSERT_TRUE(cbor.has_value());
+    ASSERT_EQ(cbor.value().type(), CBORValue::Type::SIMPLE_VALUE);
+    EXPECT_EQ(cbor.value().GetSimpleValue(), test_case.value);
+    EXPECT_EQ(error_code, CBORReader::DecoderError::CBOR_NO_ERROR);
+    EXPECT_EQ(num_bytes_consumed, test_case.cbor_data.size());
   }
 }
 
