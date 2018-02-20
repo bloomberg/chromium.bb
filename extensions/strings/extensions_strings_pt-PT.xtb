@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">Falha ao ler a chave privada.</translation>
 <translation id="6391538222494443604">O directório de entrada tem de existir.</translation>
 <translation id="641087317769093025">Não foi possível descomprimir a extensão</translation>
+<translation id="6542618148162044354">"<ph name="APP_NAME" />" está a solicitar acesso a um ou mais dos seus dispositivos:</translation>
 <translation id="657064425229075395">Não foi possível carregar o script de segundo plano "<ph name="BACKGROUND_SCRIPT" />".</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> de <ph name="VENDOR_NAME" /> (número de série <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Não foi possível criar um diretório para descomprimir: "<ph name="DIRECTORY_PATH" />"</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">O pacote é inválido. Detalhes: "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">Falha desta extensão ao redirecionar um pedido de rede para <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, porque outra extensão (<ph name="EXTENSION_NAME" />) o redirecionou para <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Descompactador de extensões</translation>
+<translation id="8761756413268424715">"<ph name="APP_NAME" />" está a solicitar acesso a um dos seus dispositivos:</translation>
 <translation id="8825366169884721447">Falha desta extensão ao modificar o cabeçalho do pedido "<ph name="HEADER_NAME" />" de um pedido de rede, porque a modificação entrou em conflito com outra extensão (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Já existe uma chave privada para a extensão especificada. Volte a utilizar essa chave ou elimine-a primeiro.</translation>
 <translation id="907841381057066561">Falha ao criar ficheiro zip temporário durante o empacotamento.</translation>

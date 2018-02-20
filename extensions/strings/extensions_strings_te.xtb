@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">ప్రైవేట్ కీని చదవడంలో విఫలమైంది.</translation>
 <translation id="6391538222494443604">ఇన్‌పుట్ డైరెక్టరీ తప్పనిసరిగా ఉనికిలో ఉండాలి.</translation>
 <translation id="641087317769093025">పొడిగింపు అన్‌జిప్ చేయబడదు</translation>
+<translation id="6542618148162044354">"<ph name="APP_NAME" />" మీ ఒకటి లేదా అంతకంటే ఎక్కువ పరికరాలకు ప్రాప్యతను అభ్యర్థిస్తోంది:</translation>
 <translation id="657064425229075395">నేపథ్య స్క్రిప్ట్ '<ph name="BACKGROUND_SCRIPT" />'ను లోడ్ చేయడం సాధ్యం కాలేదు.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" /> నుండి <ph name="PRODUCT_NAME" /> (క్రమ సంఖ్య <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">దీనిలో అన్‌జిప్ చేయడానికి  డైరెక్టరీ సృష్టించబడదు: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">ప్యాకేజీ చెల్లనిది. వివరాలు: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">వేరొక పొడిగింపు (<ph name="EXTENSION_NAME" />) నెట్‌వర్క్ అభ్యర్థనను <ph name="ACTUAL_REDIRECT_DESTINATION" />కు దారి మళ్లించినందున ఈ పొడిగింపు దీన్ని <ph name="ATTEMPTED_REDIRECT_DESTINATION" />కు దారి మళ్లించడంలో విఫలమైంది.</translation>
 <translation id="8712265948125780616">ఎక్స్‌టెన్షన్ అన్‌ప్యాకర్</translation>
+<translation id="8761756413268424715">"<ph name="APP_NAME" />" మీ పరికరాల్లో ఒకదానికి ప్రాప్యతను అభ్యర్థిస్తోంది:</translation>
 <translation id="8825366169884721447">సవరణ వేరొక పొడిగింపు (<ph name="EXTENSION_NAME" />)కు వైరుధ్యంగా ఉన్నందున ఈ పొడిగింపు నెట్‌వర్క్ అభ్యర్థన యొక్క "<ph name="HEADER_NAME" />" అభ్యర్థన శీర్షికను సవరించడంలో విఫలమైంది.</translation>
 <translation id="8885905466771744233">నిర్థారించిన పొడిగింపుకు ఇప్పటికే ప్రైవేట్ కీ ఉంది. ఆ కీని మళ్ళీ ఉపయోగించండి లేదా దాన్ని మొదట తొలగించండి.</translation>
 <translation id="907841381057066561">ప్యాకేజింగ్ సమయంలో తాత్కాలిక జిప్ ఫైల్‌ను సృష్టించడంలో విఫలమైంది.</translation>

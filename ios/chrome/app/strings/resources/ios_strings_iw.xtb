@@ -39,6 +39,7 @@
 <translation id="1545749641540134597">‏סרוק קוד QR</translation>
 <translation id="1580783302095112590">הדואר נשלח.</translation>
 <translation id="1612730193129642006">הצג רשת כרטיסיות</translation>
+<translation id="1644574205037202324">היסטוריה</translation>
 <translation id="1646446875146297738">המשמעות של הפעלת 'ללא מעקב' היא שהבקשה תיכלל בתנועת הגלישה שלך. התוצאה בפועל תלויה בתגובה של האתר לבקשה ובפרשנות שהוא מייחס לה, אם בכלל. 
 
 לדוגמה, אתרים מסוימים עשויים להגיב לבקשה זו על ידי הצגת מודעות שאינן מבוססות על אתרים אחרים שבהם ביקרת. אתרים רבים עדיין יאספו את נתוני הגלישה שלך וישתמשו בהם - לדוגמה, על מנת לשפר את האבטחה, לספק תוכן, שירותים, מודעות והמלצות באתרים שלהם וכדי ליצור נתונים סטטיסטיים לדיווח. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
@@ -249,6 +250,7 @@
 <translation id="5871497086027727873">פריט אחד הועבר</translation>
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5916664084637901428">פועל</translation>
+<translation id="5938160824633642847">המכשיר שלך כמעט מלא. צריך לפנות מקום ולנסות שוב.</translation>
 <translation id="5948291296578561264">מאפשר לך לשמור תמונות בספריית התמונות.</translation>
 <translation id="5955891643922670672">מציג גרסה לא מקוונת</translation>
 <translation id="5964480694698977962">יצירת כרטיסייה חדשה של גלישה בסתר.</translation>
@@ -289,6 +291,7 @@
 
 הנתונים שלך הוצפנו ב-<ph name="TIME" /> באמצעות ביטוי הסיסמה לסינכרון. הזן אותו כדי להתחיל בסינכרון.</translation>
 <translation id="6418346271604475326">‏מכין PDF</translation>
+<translation id="6434591244308415567">אירעה שגיאה. אפשר לנסות שוב מאוחר יותר.</translation>
 <translation id="6445051938772793705">ארץ</translation>
 <translation id="6445981559479772097">ההודעה נשלחה.</translation>
 <translation id="6464071786529933911">פתח בכרטיסיית גלישה בסתר חדשה</translation>
@@ -299,6 +302,7 @@
 <translation id="6657585470893396449">סיסמה</translation>
 <translation id="667999046851023355">מסמך</translation>
 <translation id="6713747756340119864">Google Apps</translation>
+<translation id="6730682669179532099">אי אפשר לייצא סיסמאות</translation>
 <translation id="6762156594045689028"><ph name="BEGIN_LINK" />אפס את הסינכרון<ph name="END_LINK" /> כדי לשנות את ההגדרה הזו</translation>
 <translation id="6780034285637185932">מיקוד</translation>
 <translation id="6785453220513215166">שולח דוח קריסה...</translation>
@@ -326,6 +330,7 @@
 <translation id="7203585745079012652">משוב לתשובות על-ידי דיבור</translation>
 <translation id="722055596168483966">‏התאמה אישית של שירותי Google</translation>
 <translation id="7272437679830969316">לא ניתן לאמת את הזהות שלך. הסיסמה לא הועתקה.</translation>
+<translation id="7291368939935408496">מכין סיסמאות...</translation>
 <translation id="7336264872878993241">הושלמה הורדה של <ph name="PERCENT" /> אחוז</translation>
 <translation id="7346909386216857016">בסדר, הבנתי</translation>
 <translation id="7400418766976504921">כתובת אתר</translation>

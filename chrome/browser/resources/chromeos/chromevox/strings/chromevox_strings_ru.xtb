@@ -36,6 +36,7 @@
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Перейти к следующему заголовку шестого уровня</translation>
 <translation id="1275718070701477396">Выбрано</translation>
+<translation id="1286609444451033486">Для переключения нажмите Поиск + Пробел.</translation>
 <translation id="1319608975892113573">Предыдущей цитаты нет.</translation>
 <translation id="1321576897702511272">Скрыть справку ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> из <ph name="TOTAL" /></translation>
@@ -371,6 +372,7 @@
 <translation id="4191918948604314587">Кнопка</translation>
 <translation id="4202186506458631436">Переместить вправо</translation>
 <translation id="4206289001967551965">Открыта таблица.</translation>
+<translation id="4209770650650780359">Для автозаполнения нажимайте стрелку вверх или вниз.</translation>
 <translation id="4215733775853809057">Перейти к следующему ползунку</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{тире}one{# тире}few{# тире}many{# тире}other{# dashes}}</translation>
 <translation id="421884353938374759">color picker</translation>
@@ -404,6 +406,7 @@
 <translation id="4532633738839459153">{COUNT,plural, =1{косая черта}one{# косая черта}few{# косые черты}many{# косых черт}other{# slashes}}</translation>
 <translation id="4547556996012970016">Перейти к следующему заголовку пятого уровня</translation>
 <translation id="4562381607973973258">Заголовок.</translation>
+<translation id="4569941707103739422">Перемещайтесь по меню с помощью стрелок вверх и вниз. Чтобы выбрать команду, нажмите Ввод.</translation>
 <translation id="4570424871453628777">Конец неправильного слова</translation>
 <translation id="4591507479202817876">, выбрано.</translation>
 <translation id="4597532268155981612">форма</translation>
@@ -497,6 +500,7 @@
 <translation id="536031132345979795">Вернуться назад во время непрерывного чтения</translation>
 <translation id="5368000168321181111">Звуковые сигналы отключены.</translation>
 <translation id="5374320867641260420">Следующей кнопки нет.</translation>
+<translation id="5376407118396657359">Для перемещения по ячейкам нажмите Поиск + Ctrl + Alt и нужную стрелку.</translation>
 <translation id="5382299583965267720">Следующего заголовка первого уровня нет.</translation>
 <translation id="5402367795255837559">Шрифт Брайля</translation>
 <translation id="5402791055281059602">Модальное оповещение</translation>
@@ -505,6 +509,7 @@
 <translation id="5417034931411865818">Нажать на элемент под ключом маршрутизации $1</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{знак "меньше"}one{# знак "меньше"}few{# знака "меньше"}many{# знаков "меньше"}other{# less than signs}}</translation>
 <translation id="5444587279251314700">(активна)</translation>
+<translation id="5446809554778706307">Нет аудиофокуса. Нажмите Ctrl + T, чтобы открыть новую вкладку.</translation>
 <translation id="5451268436205074266">точки <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Дополнительно</translation>
 <translation id="5485036206801896268">Предыдущей диаграммы нет.</translation>
@@ -584,6 +589,7 @@
 <translation id="6006050241733874051">Форма</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{обратная косая черта}one{# обратная косая черта}few{# обратные косые черты}many{# обратных косых черт}other{# backslashes}}</translation>
 <translation id="6037602951055904232">Перейти вперед</translation>
+<translation id="6042826534790431634">Чтобы активировать элемент, нажмите Поиск + Пробел.</translation>
 <translation id="6044160928851315051">Затемнить экран</translation>
 <translation id="605761629541007221">Конец выделения полужирным</translation>
 <translation id="6065293622157674001">Начало грамматической ошибки</translation>
@@ -860,6 +866,7 @@
 <translation id="9065283790526219006">+popup</translation>
 <translation id="9077213568694924680">Удалено из выбранного фрагмента.</translation>
 <translation id="9082874451376019682">Предыдущего ползунка нет.</translation>
+<translation id="9087707351856729768">Для автозаполнения начните вводить текст.</translation>
 <translation id="9089864840575085222">Повторно озвучивать вводимый текст</translation>
 <translation id="9105227991373418255">вырезать $1.</translation>
 <translation id="9107530006868467849">Предыдущего виджета мультимедиа нет.</translation>

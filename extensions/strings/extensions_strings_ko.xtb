@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">비공개 키를 읽지 못했습니다.</translation>
 <translation id="6391538222494443604">입력 디렉토리가 있어야 합니다.</translation>
 <translation id="641087317769093025">확장 프로그램의 압축을 해제하지 못했습니다.</translation>
+<translation id="6542618148162044354">'<ph name="APP_NAME" />'이(가) 사용자의 기기 하나 이상에 액세스 권한을 요청하고 있습니다.</translation>
 <translation id="657064425229075395">백그라운드 스크립트('<ph name="BACKGROUND_SCRIPT" />')를 로드하지 못했습니다.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" />의 제품 <ph name="PRODUCT_NAME" />(일련 번호 <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">'<ph name="DIRECTORY_PATH" />'의 압축을 해제하기 위한 디렉토리를 만들지 못했습니다.</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">패키지가 잘못되었습니다. 세부정보: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">이 확장 프로그램에서 네트워크 요청을 <ph name="ATTEMPTED_REDIRECT_DESTINATION" />(으)로 리디렉션하는 데 실패했습니다. 다른 확장 프로그램(<ph name="EXTENSION_NAME" />)이 해당 요청을 <ph name="ACTUAL_REDIRECT_DESTINATION" />(으)로 리디렉션했습니다.</translation>
 <translation id="8712265948125780616">확장 프로그램 압축 해제 프로그램</translation>
+<translation id="8761756413268424715">'<ph name="APP_NAME" />'이(가) 사용자의 기기 중 하나에 액세스 권한을 요청하고 있습니다.</translation>
 <translation id="8825366169884721447">이 확장프로그램이 네트워크 요청의 요청 헤더 '<ph name="HEADER_NAME" />을(를) 수정하는 데 실패했습니다. 수정 요청이 다른 확장 프로그램(<ph name="EXTENSION_NAME" />)와(과) 충돌했습니다.</translation>
 <translation id="8885905466771744233">지정한 확장 프로그램에 대한 비공개 키가 이미 있습니다. 해당 키를 다시 사용하거나 먼저 삭제하세요.</translation>
 <translation id="907841381057066561">압축하는 동안 임시 zip 파일을 만들지 못했습니다.</translation>

@@ -6,7 +6,7 @@
 <translation id="1115445892567829615">Chromium आपला डेटा संकालित करू शकले नाही. कृपया आपला संकालन वाक्यांश अपडेट करा.</translation>
 <translation id="113122355610423240">Chromium आपला डीफॉल्ट ब्राउझर आहे</translation>
 <translation id="1170115874949214249">आपल्या फोनवर Chromium इंस्टॉल करा. आम्ही आपल्या खाते पुनर्प्राप्ती फोन नंबरवर एक SMS पाठवू.</translation>
-<translation id="1174473354587728743">एक संगणक सामायिक करायचा? आपल्याला आवडते त्या प्रकारे आपण आता Chromium सेट करू शकता.</translation>
+<translation id="1174473354587728743">एक कॉंप्युटर सामायिक करायचा? आपल्याला आवडते त्या प्रकारे आपण आता Chromium सेट करू शकता.</translation>
 <translation id="1185134272377778587">Chromium बद्दल</translation>
 <translation id="1298199220304005244">Chromium OS वापरून मदत मिळवा</translation>
 <translation id="1396446129537741364">Chromium पासवर्ड दर्शविण्याचा प्रयत्न करत आहे.</translation>
@@ -15,7 +15,6 @@
 <translation id="1502360822835740515">Chromium ला डीफॉल्‍ट ब्राउझर बनवा</translation>
 <translation id="151962892725702025">आपल्या डोमेनसाठी संकालन उपलब्ध नसल्यामुळे Chromium OS आपला डेटा संकालित करू शकले नाही.</translation>
 <translation id="1585657529869845941">ते दिसल्यास <ph name="BEGIN_BOLD" />कसेही स्विच करा<ph name="END_BOLD" /> वर क्लिक करा</translation>
-<translation id="1653828314016431939">ठीक आहे - आता पुन्हा एकदा सुरु करा</translation>
 <translation id="1668054258064581266">Chromium वरून आपले खाते काढल्यानंतर, प्रभावी होण्यासाठी आपल्याला आपले उघडे टॅब रीलोड करण्याची आवश्यकता असू शकते.</translation>
 <translation id="1688750314291223739">वेबवर आपली वैयक्तीकृत केलेली ब्राउझर वैशिष्ट्ये जतन करण्यासाठी समक्रमण सेट करा आणि कोणत्याही संगणकावरील Chromium वरून त्यात प्रवेश करा.</translation>
 <translation id="1708666629004767631">Chromium ची नवीन, सुरक्षित आवृत्ती उपलब्ध आहे.</translation>
@@ -31,11 +30,10 @@
 <translation id="2077129598763517140">उपलब्ध असेल तेव्हा हार्डवेअर ऍक्सीलरेशन वापरा</translation>
 <translation id="2119636228670142020">&amp;Chromium OS बद्दल</translation>
 <translation id="2158734852934720349">Chromium OS खुला स्त्रोत परवाने</translation>
-<translation id="2241627712206172106">आपण संगणक सामायिक केल्यास, मित्र आणि कुटुंब स्वतंत्रपणे ब्राउझ करू शकतात आणि त्यांना पाहिजे तसे Chromium सेट अप करू शकतात.</translation>
+<translation id="2241627712206172106">आपण कॉंप्युटर सामायिक केल्यास, मित्र आणि कुटुंब स्वतंत्रपणे ब्राउझ करू शकतात आणि त्यांना पाहिजे तसे Chromium सेट अप करू शकतात.</translation>
 <translation id="2265088490657775772">Chromium तुमच्या iPhone वर मिळवा</translation>
-<translation id="2347108572062610441">आपण Chromium प्रारंभ करता तेव्हा कोणते पृष्ठ दर्शविले जाते हे या विस्ताराने बदलले आहे.</translation>
-<translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{एक डाउनलोड सध्या प्रगतीपथावर आहे. आपण डाउनलोड रद्द करू आणि Chromium च्या बाहेर पडू इच्छिता?}one{सध्या # डाउनलोड प्रगतीपथावर आहे. आपण डाउनलोड रद्द करू आणि Chromium च्या बाहेर पडू इच्छिता?}other{सध्या # डाउनलोड प्रगतीपथावर आहेत. आपण डाउनलोड रद्द करू आणि Chromium च्या बाहेर पडू इच्छिता?}}</translation>
-<translation id="2396765026452590966">आपण Chromium प्रारंभ करता तेव्हा कोणते पृष्ठ दर्शविले जाते हे "<ph name="EXTENSION_NAME" />" विस्ताराने बदलले आहे.</translation>
+<translation id="2347108572062610441">आपण Chromium सुरू करता तेव्हा कोणते पृष्ठ दर्शविले जाते हे या विस्ताराने बदलले आहे.</translation>
+<translation id="2396765026452590966">आपण Chromium सुरू करता तेव्हा कोणते पृष्ठ दर्शविले जाते हे "<ph name="EXTENSION_NAME" />" विस्ताराने बदलले आहे.</translation>
 <translation id="2483889755041906834">Chromium मध्ये</translation>
 <translation id="2485422356828889247">अनइन्स्टॉल करणे</translation>
 <translation id="2527042973354814951"><ph name="PLUGIN_NAME" /> सक्षम करण्यासाठी Chromium रीस्टार्ट करा</translation>
@@ -93,7 +91,6 @@
 <translation id="4222580632002216401">आपण आता Chromium वर साइन इन केले आहे! आपल्या प्रशासकाद्वारे संकालन अक्षम केले गेले आहे.</translation>
 <translation id="4224199872375172890">Chromium अद्ययावत आहे.</translation>
 <translation id="4230135487732243613">या खात्यावर आपल्या Chromium डेटा चा दुवा साधायचा?</translation>
-<translation id="4246125976471362530">{SECONDS,plural, =1{Chromium 1 सेकंदात रीस्टार्ट होईल.}one{Chromium # सेकंदात रीस्टार्ट होईल.}other{Chromium # सेकंदांंमध्ये रीस्टार्ट होईल.}}</translation>
 <translation id="4271805377592243930">Chromium सह मदत मिळवा</translation>
 <translation id="4285930937574705105">अनिर्दिष्ट त्रुटीमुळे स्थापना अयशस्वी झाली. सध्‍या Chromium चालत असल्‍यास, कृपया त्‍यास बंद करा आणि पुन्‍हा प्रयत्‍न करा.</translation>
 <translation id="4330585738697551178">हे मॉड्यूल Chromium बरोबर विरोधाकरिता ओळखले जाते.</translation>
@@ -125,6 +122,7 @@
 <translation id="5479196819031988440">Chromium OS हे पृष्ठ उघडू शकत नाही.</translation>
 <translation id="5480860683791598150">या साइटसोबत तुमचे स्थान शेअर करण्यासाठी Chromium ला तुमच्या स्थानाचा अॅक्सेस हवा आहे</translation>
 <translation id="549669000822060376">कृपया Chromium नवीनतम सिस्टम अपडेट इंस्टॉल करेपर्यंत प्रतीक्षा करा.</translation>
+<translation id="5631814766731275228">Chromium नाव आणि चित्र</translation>
 <translation id="5634636535844844681">Chromium साठी Windows 7 किंवा नंतरची आवृत्ती आवश्यक आहे.</translation>
 <translation id="5680901439334282664">Chromium वर साइन इन करा</translation>
 <translation id="5698481217667032250">Chromium या भाषेत प्रदर्शि‍त करा</translation>
@@ -141,6 +139,7 @@
 <translation id="5987687638152509985">संकालित करण्यासाठी Chromium अपडेट करा</translation>
 <translation id="6055895534982063517">Chromium ची नवीन आवृत्ती उपलब्ध आहे आणि ही नेहमीपेक्षा जलद आहे.</translation>
 <translation id="6063093106622310249">आणि Chromium मध्ये उघडा</translation>
+<translation id="6072279588547424923"><ph name="EXTENSION_NAME" /> हे Chromium मध्‍ये जोडण्यात आले आहे</translation>
 <translation id="608189560609172163">साइन इन करण्यात एरर आल्यामुळे Chromium आपला डेटा संकालित करू शकले नाही.</translation>
 <translation id="6096348254544841612">Chromium कस्टमाइझ करा आणि नियंत्रित करा. अपडेट उपलब्ध आहे.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> धोकादायक आहे, त्यामुळे Chromium ने ते अवरोधित केले आहे.</translation>
@@ -154,7 +153,7 @@
 <translation id="6394232988457703198">आपण आता Chromium रीस्टार्ट करावे.</translation>
 <translation id="6400072781405947421">Mac OS X 10.9 वर Chromium ला सपोर्ट नसल्यामुळे ते कदाचित नीट चालणार नाही.</translation>
 <translation id="6403826409255603130">Chromium हे एक वेबब्राउझर असून ते वेबपृष्ठे आणि अॅप्लिकेशन अतिशय वेगात चालवते. हे वापरण्यास जलद, स्थिर आणि सोपे आहे. Chromium मध्ये तयार करण्यासाठी मालवेयर आणि फिशिंग संरक्षणासह वेब अधिक सुरक्षितपणे ब्राउझ करा.</translation>
-<translation id="6475912303565314141">आपण Chromium प्रारंभ करता तेव्हा कोणते पृष्ठ दर्शविले जाते हे देखील हे नियंत्रित करते.</translation>
+<translation id="6475912303565314141">आपण Chromium सुरू करता तेव्हा कोणते पृष्ठ दर्शविले जाते हे देखील हे नियंत्रित करते.</translation>
 <translation id="6485906693002546646">आपण आपली Chromium सामग्री संकालित करण्यासाठी <ph name="PROFILE_EMAIL" /> वापरत आहात. आपले संकालन प्राधान्य अपडेट करण्यासाठी किंवा Google खाते न सोडता Chromium वापरण्यासाठी, <ph name="SETTINGS_LINK" /> ला भेट द्या.</translation>
 <translation id="6510925080656968729">Chromium विस्‍थापित करा</translation>
 <translation id="6598877126913850652">Chromium च्या सूचना सेटिंग्जमध्ये जा</translation>
@@ -207,7 +206,6 @@ Chromium आपली सेटिंग्ज पुनर्प्राप्
 <translation id="7774736947049807614">प्रमाणीकरण प्रमाणपत्र अयशस्वी झाले. कृपया Chromium मध्ये <ph name="USER_NAME" /> म्हणून पुन्हा साइन इन करा किंवा आणखी माहितीसाठी तुमच्या प्रशासकाशी संपर्क साधा. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7867198900892795913">Chromium नवीनतम आवृत्तीवर अपडेट होऊ शकले नाही, त्यामुळे तुम्ही नवीन वैशिष्ट्ये आणि सुरक्षितता निराकरणे गमावत आहात.</translation>
 <translation id="7937630085815544518">आपण <ph name="USER_EMAIL_ADDRESS" /> या रुपात Chromium मध्ये साइन इन केले होते. कृपया पुन्हा साइन इन करण्यासाठी समान खाते वापरा.</translation>
-<translation id="795025003224538582">पुन्हा एकदा सुरु करु नका</translation>
 <translation id="7962572577636132072">Chromium स्वयंचलितपणे अपडेट होते जेणेकरून आपल्याकडे नेहमी सर्वात नवीन आवृत्ती असते.</translation>
 <translation id="7975919845073681630">ही Chromium ची दुय्यम स्थापना असून त्यास आपला डीफॉल्ट ब्राउझर बनवू शकत नाही.</translation>
 <translation id="7979877361127045932">Chromium मेनूमध्‍ये लपवा</translation>
@@ -227,14 +225,13 @@ Chromium आपली सेटिंग्ज पुनर्प्राप्
 <translation id="8621669128220841554">अनिर्दिष्ट त्रुटीमुळे स्थापना अयशस्वी झाली. कृपया Chromium पुन्‍हा डाउनलोड करा.</translation>
 <translation id="8628626585870903697">Chromium कार्य करण्यासाठी प्रिंट पूर्वावलोकनास आवश्यक असलेले PDF viewer समाविष्ट करीत नाही.</translation>
 <translation id="8667808506758191620">आपले <ph name="DEVICE_TYPE" /> अद्ययावत आहे.</translation>
-<translation id="8697124171261953979">आपण Chromium प्रारंभ करता किंवा ओम्निबॉक्समधून शोध घेता तेव्हा कोणते पृष्ठ दर्शविले जाते हे देखील हे नियंत्रित करते.</translation>
+<translation id="8697124171261953979">आपण Chromium सुरू करता किंवा ओम्निबॉक्समधून शोध घेता तेव्हा कोणते पृष्ठ दर्शविले जाते हे देखील हे नियंत्रित करते.</translation>
 <translation id="8704119203788522458">हे आपले Chromium आहे</translation>
-<translation id="872034308864968620">Chromium पार्श्वभूमीवर चालू द्या</translation>
 <translation id="8796602469536043152">या साइटसाठी Chromium ला तुमचा कॅमेरा आणि मायक्रोफोन अॅक्सेस करण्याची परवानगी हवी आहे</translation>
 <translation id="8803635938069941624">Chromium OS अटी</translation>
 <translation id="8821041990367117597">आपले खाते साइन इन तपशील कालबाह्य झाल्यामुळे Chromium आपला डेटा संकालित करू शकले नाही.</translation>
 <translation id="8862326446509486874">आपल्‍याकडे सिस्टम-स्तर स्थापनेसाठी उचित अधिकार नाहीत. प्रशासक म्हणून पुन्हा इन्स्टॉलर चालविण्याचा प्रयत्न करा.</translation>
-<translation id="8897323336392112261">आपण Chromium प्रारंभ करता किंवा होम बटण क्लिक करता तेव्हा कोणते पृष्ठ दर्शविले जाते हे देखील हे नियंत्रित करते.</translation>
+<translation id="8897323336392112261">आपण Chromium सुरू करता किंवा होम बटण क्लिक करता तेव्हा कोणते पृष्ठ दर्शविले जाते हे देखील हे नियंत्रित करते.</translation>
 <translation id="8907580949721785412">Chromium संकेतशब्‍द दर्शविण्‍याचा प्रयत्‍न करत आहे. यास अनुमती देण्‍यासाठी आपला Windows संकेतशब्‍द टाइप करा.</translation>
 <translation id="8941642502866065432">Chromium अपडेट करू शकत नाही</translation>
 <translation id="894903460958736500">आपल्या संगणकावर चालत असलेले सॉफ्टवेअर Chromium सह विसंगत आहे.</translation>

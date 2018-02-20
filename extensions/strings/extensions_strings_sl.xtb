@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">Zasebnega ključa ni bilo mogoče prebrati.</translation>
 <translation id="6391538222494443604">Obstajati mora imenik vnosa.</translation>
 <translation id="641087317769093025">Razširitve ni bilo mogoče odpakirati</translation>
+<translation id="6542618148162044354">Aplikacija »<ph name="APP_NAME" />« zahteva dostop do ene ali več vaših naprav:</translation>
 <translation id="657064425229075395">Skripta za ozadje »<ph name="BACKGROUND_SCRIPT" />« ni bilo mogoče naložiti.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> proizvajalca <ph name="VENDOR_NAME" /> (serijska številka <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Imenika za odpakiranje ni bilo mogoče ustvariti: »<ph name="DIRECTORY_PATH" />«</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">Paket je neveljaven. Podrobnosti: »<ph name="ERROR_MESSAGE" />«.</translation>
 <translation id="8670869118777164560">Razširitvi ni uspelo preusmeriti omrežne zahteve <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, ker jo je druga razširitev (<ph name="EXTENSION_NAME" />) preusmerila na cilj <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Orodje za odpakiranje razširitev</translation>
+<translation id="8761756413268424715">Aplikacija »<ph name="APP_NAME" />« zahteva dostop do ene od vaših naprav:</translation>
 <translation id="8825366169884721447">Razširitvi ni uspelo spremeniti glave zahteve »<ph name="HEADER_NAME" />« omrežne zahteve, ker je sprememba v sporu z drugo razširitvijo (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Zasebni ključ za navedeno razširitev že obstaja. Uporabite ga znova ali pa ga izbrišite.</translation>
 <translation id="907841381057066561">Pri pripravi paketov ni bilo mogoče ustvariti začasne datoteke zip.</translation>

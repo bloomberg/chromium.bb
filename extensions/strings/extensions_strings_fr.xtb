@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">Échec de lecture de la clé privée</translation>
 <translation id="6391538222494443604">Le répertoire d'extensions est obligatoire.</translation>
 <translation id="641087317769093025">Impossible de décompresser l'extension.</translation>
+<translation id="6542618148162044354"><ph name="APP_NAME" /> demande l'accès à un ou plusieurs de vos appareils :</translation>
 <translation id="657064425229075395">Impossible de charger le script d'arrière-plan "<ph name="BACKGROUND_SCRIPT" />".</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> de <ph name="VENDOR_NAME" /> (numéro de série <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Impossible de créer le répertoire de décompression : "<ph name="DIRECTORY_PATH" />"</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">Package incorrect. Détails : "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">Une requête réseau n'a pas pu être redirigée vers <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> par cette extension, car elle a été redirigée vers <ph name="ACTUAL_REDIRECT_DESTINATION" /> par une autre extension (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8712265948125780616">Décompression d'extensions</translation>
+<translation id="8761756413268424715"><ph name="APP_NAME" /> demande l'accès à l'un de vos appareils :</translation>
 <translation id="8825366169884721447">Le titre de demande d'une requête réseau ("<ph name="HEADER_NAME" />") n'a pas pu être modifié à partir de cette extension, car la modification demandée était en conflit avec une autre extension (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">L'extension indiquée est déjà associée à une clé privée. Utilisez cette clé ou supprimez-la.</translation>
 <translation id="907841381057066561">Échec de création du fichier zip temporaire lors de la création du pack</translation>

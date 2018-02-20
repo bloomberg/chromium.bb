@@ -47,6 +47,7 @@
 <translation id="1264126396475825575"><ph name="CRASH_TIME" /> にクラッシュ レポートが作成されました（まだアップロードされておらず、無視の指定もありません）</translation>
 <translation id="1270502636509132238">集荷方法</translation>
 <translation id="1285320974508926690">このサイトは翻訳しない</translation>
+<translation id="1294154142200295408">コマンドラインのバリエーション</translation>
 <translation id="129553762522093515">最近閉じたタブ</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Cookie を消去してみてください<ph name="END_LINK" /></translation>
 <translation id="1333989956347591814">ただし、次の相手に<ph name="BEGIN_EMPHASIS" />あなたのアクティビティが知られる<ph name="END_EMPHASIS" />可能性はあります。
@@ -74,6 +75,7 @@
 <translation id="1517500485252541695">利用可能なクレジット カードとデビットカード</translation>
 <translation id="1519264250979466059">ビルド日</translation>
 <translation id="1527263332363067270">接続を待機しています…</translation>
+<translation id="1532118530259321453">このページの内容</translation>
 <translation id="153384715582417236">現時点では他にありません</translation>
 <translation id="154408704832528245">配達先住所を選択</translation>
 <translation id="1549470594296187301">この機能を使用するには JavaScript を有効にする必要があります。</translation>
@@ -146,7 +148,6 @@
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />プロキシとファイアウォールを確認する<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">郵便番号</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 件の候補}other{# 件の候補}}</translation>
-<translation id="2065985942032347596">認証が必要</translation>
 <translation id="2079545284768500474">元に戻す</translation>
 <translation id="20817612488360358">システム プロキシ設定を使用するように設定されていますが、明示的なプロキシの設定も指定されています。</translation>
 <translation id="2091887806945687916">音声</translation>
@@ -160,7 +161,6 @@
 <translation id="214556005048008348">支払いをキャンセル</translation>
 <translation id="2147827593068025794">バックグラウンド同期</translation>
 <translation id="2148613324460538318">カードを追加</translation>
-<translation id="2149973817440762519">ブックマークを編集</translation>
 <translation id="2154054054215849342">お使いのドメインでは同期機能をご利用いただけません</translation>
 <translation id="2154484045852737596">カードを編集</translation>
 <translation id="2166049586286450108">すべてのデータへの管理者アクセス</translation>
@@ -245,13 +245,11 @@
 <translation id="2738330467931008676">集荷先住所を選択</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2742870351467570537">選択したアイテムを削除</translation>
-<translation id="2744590937989388266">このページに埋め込まれているページから</translation>
 <translation id="277133753123645258">配送方法</translation>
 <translation id="277499241957683684">デバイス レコードがありません</translation>
 <translation id="2784949926578158345">接続がリセットされました。</translation>
 <translation id="2788784517760473862">利用可能なクレジット カード</translation>
 <translation id="2794233252405721443">サイトがブロックされています</translation>
-<translation id="2795286477369100655">このサイトを離れてもよろしいですか？</translation>
 <translation id="2799020568854403057">アクセス先のサイトには有害なアプリがあります</translation>
 <translation id="2803306138276472711"><ph name="SITE" /> では最近、Google セーフ ブラウジングにより、<ph name="BEGIN_LINK" />不正なソフトウェアが検出されました<ph name="END_LINK" />。通常は安全なウェブサイトであっても、不正なソフトウェアに感染している場合があります。</translation>
 <translation id="2824775600643448204">アドレス検索バー</translation>
@@ -285,7 +283,6 @@
 <translation id="3010559122411665027">リスト エントリ「<ph name="ENTRY_INDEX" />」: <ph name="ERROR" /></translation>
 <translation id="301521992641321250">自動ブロックされました</translation>
 <translation id="3024663005179499861">ポリシー タイプが間違っています</translation>
-<translation id="3032412215588512954">このサイトを再読み込みしますか？</translation>
 <translation id="3037605927509011580">エラー</translation>
 <translation id="3039538478787849737">カードを Google に保存しますか？</translation>
 <translation id="3041612393474885105">証明書情報</translation>
@@ -368,6 +365,7 @@
 <translation id="3556433843310711081">ブロックの解除は管理者が行うことができます</translation>
 <translation id="3566021033012934673">この接続ではプライバシーが保護されません</translation>
 <translation id="3574305903863751447"><ph name="COUNTRY" /> <ph name="STATE" /> <ph name="CITY" /></translation>
+<translation id="3576616784287504635"><ph name="SITE" /> に埋め込まれているページの内容</translation>
 <translation id="358285529439630156">クレジット カードとプリペイド カードをご利用いただけます。</translation>
 <translation id="3582930987043644930">名前を追加</translation>
 <translation id="3583757800736429874">移動のやり直し（&amp;R）</translation>
@@ -405,7 +403,6 @@
 <translation id="3778403066972421603">このカードを Google アカウントとこの端末に保存しますか？</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">有効期限: <ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
-<translation id="3800436529451849929"><ph name="SITE" /> から</translation>
 <translation id="382518646247711829">プロキシ サーバーを使用している場合...</translation>
 <translation id="3828924085048779000">パスフレーズは必ず指定してください。</translation>
 <translation id="385051799172605136">戻る</translation>
@@ -419,6 +416,7 @@
 <translation id="3945915738023014686">クラッシュ レポート ID <ph name="CRASH_ID" /> がアップロードされました（ローカルのクラッシュ ID: <ph name="CRASH_LOCAL_ID" />）</translation>
 <translation id="3949571496842715403">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書で SAN（サブジェクトの別名）が指定されていません。設定が不適切であるか、悪意のあるユーザーによって接続が妨害されている可能性があります。</translation>
 <translation id="3949601375789751990">閲覧履歴がここに表示されます</translation>
+<translation id="3950820424414687140">ログイン</translation>
 <translation id="3963721102035795474">リーダーモード</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{なし}=1{1 件のサイトから}other{# 件のサイトから}}</translation>
 <translation id="397105322502079400">計算しています...</translation>
@@ -461,7 +459,6 @@
 <translation id="4269787794583293679">（ユーザー名なし）</translation>
 <translation id="4275830172053184480">デバイスの再起動</translation>
 <translation id="4280429058323657511">、有効期限: <ph name="EXPIRATION_DATE_ABBR" /></translation>
-<translation id="4304224509867189079">ログイン</translation>
 <translation id="4312866146174492540">ブロック（デフォルト）</translation>
 <translation id="4325863107915753736">記事が見つかりませんでした</translation>
 <translation id="4326324639298822553">有効期限の「日」を確認してもう一度お試しください</translation>
@@ -483,14 +480,12 @@
 <translation id="4515275063822566619">Chrome と Google アカウント（<ph name="ACCOUNT_EMAIL" />）に保存されているクレジット カードと住所です。[<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で管理できます。</translation>
 <translation id="4522570452068850558">詳細</translation>
 <translation id="4552089082226364758">Flash</translation>
-<translation id="4554702541363482291"><ph name="SITE" /> に埋め込まれているページから</translation>
 <translation id="4558551763791394412">拡張機能を無効にしてみてください。</translation>
 <translation id="457875822857220463">配送</translation>
 <translation id="4582800630050655161">Google アカウントにアクセスできなくなったり、個人情報が盗まれたりする可能性があります。Chromium で今すぐパスワードを変更することをおすすめします。</translation>
 <translation id="4587425331216688090">Chrome からアドレスを削除してもよろしいですか？</translation>
 <translation id="4592951414987517459"><ph name="DOMAIN" /> への接続は新しい暗号スイートにより暗号化されています。</translation>
 <translation id="4594403342090139922">削除の取り消し（&amp;U）</translation>
-<translation id="4611292653554630842">ログイン</translation>
 <translation id="4619615317237390068">他のデバイスからのタブ</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書にはエラーがあります。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
@@ -504,7 +499,6 @@
 <translation id="4726672564094551039">ポリシーを再読み込み</translation>
 <translation id="4728558894243024398">プラットフォーム</translation>
 <translation id="4736825316280949806">Chromium を再起動する</translation>
-<translation id="4737498291095696011">このページから</translation>
 <translation id="4744603770635761495">実行ファイルのパス</translation>
 <translation id="4749685221585524849">最終使用日: <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">お客様がこのサイトに送信した情報（パスワード、クレジット カード番号など）が第三者に見られることはありません。</translation>
@@ -523,17 +517,16 @@
 <translation id="4850886885716139402">表示</translation>
 <translation id="4854362297993841467">この配達方法はご利用いただけません。別の方法を選択してください。</translation>
 <translation id="4858792381671956233">このサイトを開いてもよいかの問い合わせを保護者に送信しました</translation>
-<translation id="4871132632506079383"><ph name="SITE" /> に埋め込まれているページから</translation>
 <translation id="4880827082731008257">履歴を検索</translation>
 <translation id="4881695831933465202">開く</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />、<ph name="TYPE_2" />、<ph name="TYPE_3" /></translation>
-<translation id="4913131542719409934">認証が必要です</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{他 1 件のウェブページ}other{他 # 件のウェブページ}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
 <translation id="4919958102839282947"><ph name="CREDIT_CARD" /> の CVC を入力します。確認後、Google Payments アカウントのカード情報がこのサイトと共有されます。</translation>
 <translation id="4923417429809017348">このページは、不明な言語から<ph name="LANGUAGE_LANGUAGE" />に翻訳されました。</translation>
 <translation id="4923459931733593730">お支払い</translation>
 <translation id="4926049483395192435">指定する必要があります。</translation>
+<translation id="4926159001844873046"><ph name="SITE" /> の内容</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" /> / <ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="495170559598752135">操作</translation>
 <translation id="4958444002117714549">リストを展開する</translation>
@@ -542,7 +535,6 @@
 <translation id="5002932099480077015">有効にすると、Chrome ではこの端末にカードのコピーが保存されます。これにより、フォームにすばやく入力できるようになります。</translation>
 <translation id="5018422839182700155">このページを開けません</translation>
 <translation id="5019198164206649151">代替ストアの状態が不適切です</translation>
-<translation id="5020990877659450221">このページから</translation>
 <translation id="5023310440958281426">管理者のポリシーを確認してください</translation>
 <translation id="5029568752722684782">コピーを消去</translation>
 <translation id="503069730517007720">「<ph name="SOFTWARE_NAME" />」のルート証明書が必要ですが、インストールされていません。IT 管理者に、「<ph name="SOFTWARE_NAME" />」の設定手順を確認したうえでこの問題を修正するよう依頼してください。<ph name="FURTHER_EXPLANATION" /></translation>
@@ -568,12 +560,12 @@
 <translation id="5172758083709347301">マシン</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />でない場合はこのエラーを報告する</translation>
 <translation id="5190835502935405962">ブックマーク バー</translation>
+<translation id="5201306358585911203">このページに埋め込まれているページの内容</translation>
 <translation id="5205222826937269299">名前は必須です</translation>
 <translation id="5222812217790122047">メールアドレスは必須です</translation>
 <translation id="522700295135997067">このサイトでパスワードを盗まれた可能性があります</translation>
 <translation id="5230733896359313003">配送先住所</translation>
 <translation id="5251803541071282808">クラウド</translation>
-<translation id="5277279256032773186">会社で Chrome を使用する場合は、従業員用に Chrome の設定を管理できます。詳細</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />このソフトウェアを一時的に無効にしてインターネットに接続できるようにするには、次の手順を行います。なお、この作業には管理者権限が必要です。<ph name="END_PARAGRAPH" />
 
     <ph name="BEGIN_LIST" />
@@ -635,7 +627,6 @@
 <translation id="5610142619324316209">接続を確認する</translation>
 <translation id="5610807607761827392">カードと住所は [<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で管理できます。</translation>
 <translation id="5617949217645503996"><ph name="HOST_NAME" /> でリダイレクトが繰り返し行われました。</translation>
-<translation id="5622887735448669177">このサイトを離れてもよろしいですか？</translation>
 <translation id="5629630648637658800">ポリシー設定を読み込めませんでした</translation>
 <translation id="5631439013527180824">無効なデバイス管理トークンです</translation>
 <translation id="5633066919399395251"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> では現在、悪意のあるユーザーによって、お使いのパソコン上に危険なプログラム（写真、パスワード、メッセージ、クレジット カードなどの情報を盗んだり削除したりするプログラム）がインストールされる可能性があります。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -658,7 +649,6 @@
 <translation id="5786044859038896871">カード情報を入力しますか？</translation>
 <translation id="5803412860119678065"><ph name="CARD_DETAIL" /> を入力しますか？</translation>
 <translation id="5810442152076338065"><ph name="DOMAIN" /> への接続は古い暗号スイートにより暗号化されています。</translation>
-<translation id="5810928923025889964">このページに埋め込まれているページから</translation>
 <translation id="5813119285467412249">追加のやり直し（&amp;R）</translation>
 <translation id="5838278095973806738">このサイトでは機密情報（パスワード、クレジット カードなど）を入力しないでください。悪意のあるユーザーに情報が盗まれる恐れがあります。</translation>
 <translation id="5866257070973731571">電話番号の追加</translation>
@@ -738,11 +728,9 @@
 <translation id="6489534406876378309">クラッシュのアップロードを開始</translation>
 <translation id="6507833130742554667">クレジット カードとデビットカードをご利用いただけます。</translation>
 <translation id="6508722015517270189">Chrome を再起動する</translation>
-<translation id="6521373090216409766">このサイトを再読み込みしてもよろしいですか？</translation>
 <translation id="6529602333819889595">削除のやり直し（&amp;R）</translation>
 <translation id="6534179046333460208">フィジカル ウェブからの URL</translation>
 <translation id="6550675742724504774">オプション</translation>
-<translation id="6556239504065605927">保護された接続</translation>
 <translation id="6556915248009097796">有効期限: <ph name="EXPIRATION_DATE_ABBR" />、最終使用日: <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">管理者がまだサイトを開くことを許可していません</translation>
 <translation id="6569060085658103619">拡張機能のページを表示しています</translation>
@@ -951,6 +939,7 @@
 <translation id="825929999321470778">保存したパスワードをすべて表示</translation>
 <translation id="8261506727792406068">削除</translation>
 <translation id="8267698848189296333"><ph name="USERNAME" /> としてログイン</translation>
+<translation id="8286036467436129157">ログイン</translation>
 <translation id="8288807391153049143">証明書を表示</translation>
 <translation id="8289355894181816810">確認方法がわからない場合は、ネットワーク管理者までお問い合わせください。</translation>
 <translation id="8293206222192510085">ブックマークの追加</translation>

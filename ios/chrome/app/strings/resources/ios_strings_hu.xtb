@@ -39,6 +39,7 @@
 <translation id="1545749641540134597">QR-kód beolvasása</translation>
 <translation id="1580783302095112590">Levél elküldve.</translation>
 <translation id="1612730193129642006">Laprács megjelenítése</translation>
+<translation id="1644574205037202324">Előzmények</translation>
 <translation id="1646446875146297738">A „Nincs nyomon követés” funkció engedélyezése azzal jár, hogy egy adott kérés beleszámít majd a böngészési forgalomba. A hatása attól is függ, hogy az adott webhely válaszol-e a kérésre, és hogyan értelmezi azt.
 
 Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdetéseket jelenítenek meg Önnek, amelyek nem az Ön által felkeresett más webhelyek alapján lettek kiválasztva. Sok webhelyszolgáltató így is összegyűjti és használja majd az Önnel kapcsolatos böngészési információkat – például a webhelyükön a biztonság javításához, valamint tartalmak, szolgáltatások, hirdetések és javaslatok biztosításához és jelentésstatisztikák gyűjtéséhez. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" /></translation>
@@ -249,6 +250,7 @@ Az Átadást engedélyezni kell a Beállítások általános részében is, és 
 <translation id="5871497086027727873">1 elem áthelyezve</translation>
 <translation id="5911030830365207728">Google Fordító</translation>
 <translation id="5916664084637901428">Be</translation>
+<translation id="5938160824633642847">Az eszköz majdnem megtelt. Szabadítson fel tárhelyet, és próbálja újra.</translation>
 <translation id="5948291296578561264">Segítségével fotókat menthet a fotótárba.</translation>
 <translation id="5955891643922670672">Offline verzió</translation>
 <translation id="5964480694698977962">Új inkognitólap létrehozása.</translation>
@@ -289,6 +291,7 @@ Az Átadást engedélyezni kell a Beállítások általános részében is, és 
 
 Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a következő időpontban: <ph name="TIME" />. Adja meg a jelszót a szinkronizálás megkezdéséhez.</translation>
 <translation id="6418346271604475326">PDF előkészítése</translation>
+<translation id="6434591244308415567">Hiba történt, próbálja újra később.</translation>
 <translation id="6445051938772793705">Ország</translation>
 <translation id="6445981559479772097">Üzenet elküldve.</translation>
 <translation id="6464071786529933911">Megnyitás új inkognitólapon</translation>
@@ -299,6 +302,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="6657585470893396449">Jelszó</translation>
 <translation id="667999046851023355">Dokumentum</translation>
 <translation id="6713747756340119864">Google Apps</translation>
+<translation id="6730682669179532099">Nem sikerült a jelszavak exportálása</translation>
 <translation id="6762156594045689028">A beállítás módosításához <ph name="BEGIN_LINK" />állítsa alaphelyzetbe a szinkronizálást<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Irányítószám</translation>
 <translation id="6785453220513215166">Hibajelentés küldése…</translation>
@@ -326,6 +330,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="7203585745079012652">Mondja ki a válaszokat</translation>
 <translation id="722055596168483966">A Google-szolgáltatások személyre szabása</translation>
 <translation id="7272437679830969316">Nem sikerült ellenőrizni a személyazonosságát. A jelszó nem lett másolva.</translation>
+<translation id="7291368939935408496">Jelszavak előkészítése…</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> százalék letöltve</translation>
 <translation id="7346909386216857016">Rendben, értem</translation>
 <translation id="7400418766976504921">URL</translation>

@@ -43,6 +43,7 @@
 <translation id="1951012854035635156">智能助理</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1995660704900986789">关机</translation>
 <translation id="2012624427112548395">Ctrl+搜索键+H</translation>
 <translation id="2049639323467105390">此设备由 <ph name="DOMAIN" /> 管理。</translation>
 <translation id="2050339315714019657">纵向</translation>
@@ -83,6 +84,7 @@
 <translation id="2844169650293029770">USB-C 设备（左侧前端端口）</translation>
 <translation id="2865888419503095837">网络信息</translation>
 <translation id="2872961005593481000">关机</translation>
+<translation id="2878884018241093801">近期没有任何内容</translation>
 <translation id="2903844815300039659">已连接到网络“<ph name="NAME" />”，<ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">您正在共享自己的屏幕</translation>
 <translation id="2942516765047364088">任务栏位置</translation>
@@ -139,6 +141,8 @@
 <translation id="4072264167173457037">信号中等</translation>
 <translation id="4279490309300973883">正在镜像</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4331809312908958774">Chrome OS
+</translation>
 <translation id="4338109981321384717">放大镜</translation>
 <translation id="4351433414020964307">智能助理正在加载中…</translation>
 <translation id="4378551569595875038">正在连接…</translation>
@@ -183,6 +187,7 @@
 <translation id="5744083938413354016">点按拖动</translation>
 <translation id="5777841717266010279">要停止屏幕共享吗？</translation>
 <translation id="57838592816432529">静音</translation>
+<translation id="5820394555380036790">Chromium 操作系统</translation>
 <translation id="5832805196449965646">添加用户</translation>
 <translation id="5860033963881614850">关闭</translation>
 <translation id="5895138241574237353">重新启动</translation>

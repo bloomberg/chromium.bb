@@ -36,6 +36,7 @@
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">അടുത്ത നില 6 ശീർഷകം</translation>
 <translation id="1275718070701477396">തിരഞ്ഞെടുത്തു</translation>
+<translation id="1286609444451033486">മാറ്റാൻ തിരയൽ + സ്‌പെയ്‌സ് അമർത്തുക.</translation>
 <translation id="1319608975892113573">മുൻ ബ്ലോക്ക്ക്വോട്ട് ഒന്നുമില്ല.</translation>
 <translation id="1321576897702511272">ChromeVox സഹായം മറയ്ക്കുക</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> / <ph name="TOTAL" /></translation>
@@ -370,6 +371,7 @@
 <translation id="4191918948604314587">ഒരു ബട്ടൺ</translation>
 <translation id="4202186506458631436">വലതുവശത്തേക്ക് നീക്കുക</translation>
 <translation id="4206289001967551965">പട്ടികയ്‌ക്കുള്ളിൽ</translation>
+<translation id="4209770650650780359">സ്വമേധയാ പൂർത്തിയാക്കാൻ മുകളിലേക്കോ താഴേക്കോ ഉള്ള അമ്പടയാള കീകൾ അമർത്തുക.</translation>
 <translation id="4215733775853809057">അടുത്ത സ്ലൈഡർ</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{ഡാഷ്}other{# ഡാഷുകൾ}}</translation>
 <translation id="421884353938374759">വർണ്ണ പിക്കർ</translation>
@@ -403,6 +405,7 @@
 <translation id="4532633738839459153">{COUNT,plural, =1{സ്ലാഷ്}other{# സ്ലാഷുകൾ}}</translation>
 <translation id="4547556996012970016">അടുത്ത നില 5 ശീർഷകം</translation>
 <translation id="4562381607973973258">ശീർഷകം</translation>
+<translation id="4569941707103739422">നാവിഗേറ്റ് ചെയ്യാൻ മുകളിലേക്കോ താഴേക്കോ ഉള്ള അമ്പടയാള കീകൾ അമർത്തുക; സജീവമാക്കാൻ എന്റർ അമർത്തുക.</translation>
 <translation id="4570424871453628777">അക്ഷരപ്പിശക് അവസാനിക്കുന്നു</translation>
 <translation id="4591507479202817876">, തിരഞ്ഞെടുത്തു</translation>
 <translation id="4597532268155981612">ഫോം</translation>
@@ -496,6 +499,7 @@
 <translation id="536031132345979795">വായന തുടരുന്നതിനിടയിൽ പുറകിലേക്ക് പോകുക</translation>
 <translation id="5368000168321181111">ഇയർകോൺസ് ഓഫാണ്</translation>
 <translation id="5374320867641260420">അടുത്ത ബട്ടൺ ഒന്നുമില്ല.</translation>
+<translation id="5376407118396657359">സെൽ പ്രകാരം നാവിഗേറ്റ് ചെയ്യാൻ തിരയൽ+Ctrl+Alt അമർത്തി അമ്പടയാള കീകൾ ഉപയോഗിക്കുക.</translation>
 <translation id="5382299583965267720">അടുത്ത നില 1 ശീർഷകം ഒന്നുമില്ല.</translation>
 <translation id="5402367795255837559">ബ്രെയ്‌ലി</translation>
 <translation id="5402791055281059602">ഒരു മോഡൽ അലേർട്ട്</translation>
@@ -504,6 +508,7 @@
 <translation id="5417034931411865818">$1 റൂട്ടിംഗ് കീയിലുള്ള ഇനം ക്ലിക്കുചെയ്യുക</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{ആരോഹണ ചിഹ്നം}other{# ആരോഹണ ചിഹ്നങ്ങൾ}}</translation>
 <translation id="5444587279251314700">(സജീവം)</translation>
+<translation id="5446809554778706307">ഫോക്കസ് ഇല്ല. പുതിയ ടാബ് തുറക്കാൻ Ctrl+T അമർത്തുക.</translation>
 <translation id="5451268436205074266"><ph name="DOT" /> ഡോട്ടുകൾ</translation>
 <translation id="5455441614648621694">കോംപ്ലിമെന്ററി</translation>
 <translation id="5485036206801896268">മുൻ ഗ്രാഫിക് ഒന്നുമില്ല.</translation>
@@ -583,6 +588,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, Alt+F അമർ
 <translation id="6006050241733874051">ഫോം</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{ബാക്ക്‌സ്ലാഷ്}other{# ബാക്ക്‌സ്ലാഷുകൾ}}</translation>
 <translation id="6037602951055904232">മുന്നിലേക്ക് പാൻ ചെയ്യുക</translation>
+<translation id="6042826534790431634">സജീവമാക്കാൻ തിരയൽ + സ്‌പെയ്‌സ് അമർത്തുക.</translation>
 <translation id="6044160928851315051">സ്‌ക്രീൻ ഓഫാക്കുക</translation>
 <translation id="605761629541007221">ബോൾഡ് അവസാനിക്കുന്നു</translation>
 <translation id="6065293622157674001">വ്യാകരണ പിശക് തുടങ്ങുന്നു</translation>
@@ -859,6 +865,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, Alt+F അമർ
 <translation id="9065283790526219006">+പോപ്പ്അപ്പ്</translation>
 <translation id="9077213568694924680">തിരഞ്ഞെടുത്തതിൽ നിന്നും നീക്കംചെയ്‌തു</translation>
 <translation id="9082874451376019682">മുൻ സ്ലൈഡർ ഒന്നുമില്ല.</translation>
+<translation id="9087707351856729768">സ്വമേധയാ പൂർത്തിയാക്കാൻ ടൈപ്പ് ചെയ്യുക.</translation>
 <translation id="9089864840575085222">സൈക്കിൾ ടൈപ്പുചെയ്യൽ എക്കൊ</translation>
 <translation id="9105227991373418255">$1 മുറിക്കുക.</translation>
 <translation id="9107530006868467849">മുമ്പത്തെ മീഡിയ വിജറ്റൊന്നുമില്ല.</translation>

@@ -36,6 +36,7 @@
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">পরবর্তী স্তর ৬ শিরোনাম</translation>
 <translation id="1275718070701477396">নির্বাচিত</translation>
+<translation id="1286609444451033486">টগল করতে সার্চ+স্পেস বোতাম টিপুন।</translation>
 <translation id="1319608975892113573">কোনো পূর্ববর্তী অবরুদ্ধ উর্দ্ধৃতি নেই৷</translation>
 <translation id="1321576897702511272">ChromeVox সহায়তা লুকান</translation>
 <translation id="1331702245475014624"><ph name="TOTAL" />-এর <ph name="INDEX" /></translation>
@@ -371,6 +372,7 @@
 <translation id="4191918948604314587">একটি বোতাম</translation>
 <translation id="4202186506458631436">ডানদিকে সরান</translation>
 <translation id="4206289001967551965">সারণীর অভ্যন্তরে</translation>
+<translation id="4209770650650780359">নিজে থেকে সম্পূর্ণ করার জন্য উপরের অথবা নিচের তীরচিহ্ন বোতামটি টিপুন।</translation>
 <translation id="4215733775853809057">পরবর্তী স্লাইডার</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{ড্যাশ}one{#টি ড্যাশ}other{#টি ড্যাশ}}</translation>
 <translation id="421884353938374759">রঙ চয়নকারী</translation>
@@ -404,6 +406,7 @@
 <translation id="4532633738839459153">{COUNT,plural, =1{স্ল্যাশ}one{#টি স্ল্যাশ}other{#টি স্ল্যাশ}}</translation>
 <translation id="4547556996012970016">পরবর্তী স্তর ৫ শিরোনাম</translation>
 <translation id="4562381607973973258">শিরোনাম</translation>
+<translation id="4569941707103739422">নেভিগেট করতে উপরের অথবা নিচের তীরচিহ্ন, চালু করতে এন্টার টিপুন।</translation>
 <translation id="4570424871453628777">ভুল বানান শেষ</translation>
 <translation id="4591507479202817876">, নির্বাচিত</translation>
 <translation id="4597532268155981612">ফর্ম</translation>
@@ -497,6 +500,7 @@
 <translation id="536031132345979795">একটানা পড়ার সময় ছেড়ে পিছনে যান</translation>
 <translation id="5368000168321181111">Earcons বন্ধ আছে</translation>
 <translation id="5374320867641260420">কোনো পরবর্তী বোতাম নেই৷</translation>
+<translation id="5376407118396657359">কক্ষের মাধ্যমে নেভিগেট করতে তীরচিহ্ন সহ সার্চ+Ctrl+Alt টিপুন।</translation>
 <translation id="5382299583965267720">কোনো পূর্ববর্তী স্তর ১ শিরোলেখ নেই৷</translation>
 <translation id="5402367795255837559">ব্রেইল</translation>
 <translation id="5402791055281059602">একটি মোডাল সতর্কতা</translation>
@@ -505,6 +509,7 @@
 <translation id="5417034931411865818">রাউটিং কী $1 এর নিচের আইটেমটি ক্লিক করুন</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{ক্ষুদ্রতম}one{#টি ক্ষুদ্রতম চিহ্ন}other{#টি ক্ষুদ্রতম চিহ্ন}}</translation>
 <translation id="5444587279251314700">(সক্রিয়)</translation>
+<translation id="5446809554778706307">কোনও ফোকাস নেই। একটি নতুন ট্যাব খুলতে Ctrl+T টিপুন।</translation>
 <translation id="5451268436205074266">ডট <ph name="DOT" /></translation>
 <translation id="5455441614648621694">পরিপূরক</translation>
 <translation id="5485036206801896268">কোনো পূর্ববর্তী গ্রাফিক নেই৷</translation>
@@ -584,6 +589,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="6006050241733874051">রূপ</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{ব্যাকস্ল্যাশ}one{#টি ব্যাকস্ল্যাশ}other{#টি ব্যাকস্ল্যাশ}}</translation>
 <translation id="6037602951055904232">প্যান ফরোয়ার্ড</translation>
+<translation id="6042826534790431634">চালু করতে সার্চ+স্পেস টিপুন।</translation>
 <translation id="6044160928851315051">স্ক্রীনে আলো কমান</translation>
 <translation id="605761629541007221">গাঢ় অক্ষর শেষ</translation>
 <translation id="6065293622157674001">ব্যাকরণের ত্রুটি শুরু</translation>
@@ -860,6 +866,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="9065283790526219006">+পপআপ</translation>
 <translation id="9077213568694924680">নির্বাচন থেকে সরিয়ে ফেলা হয়েছে</translation>
 <translation id="9082874451376019682">কোনো পূর্ববর্তী স্লাইডার নেই৷</translation>
+<translation id="9087707351856729768">নিজে থেকে সম্পূর্ণ করার জন্য টাইপ করুন।</translation>
 <translation id="9089864840575085222">আবর্ত টাইপিং ইকো</translation>
 <translation id="9105227991373418255">$1 কাটুন।</translation>
 <translation id="9107530006868467849">কোনো পূর্ববর্তী মিডিয়া উইজেট নেই৷</translation>

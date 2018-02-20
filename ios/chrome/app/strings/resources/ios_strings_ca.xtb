@@ -39,6 +39,7 @@
 <translation id="1545749641540134597">Escaneja el codi QR</translation>
 <translation id="1580783302095112590">Correu enviat.</translation>
 <translation id="1612730193129642006">Mostra la quadrícula de pestanyes</translation>
+<translation id="1644574205037202324">Historial</translation>
 <translation id="1646446875146297738">En activar l'opció de no seguiment, s'inclourà una sol·licitud amb el trànsit de navegació. Que tingui efecte o no dependrà de si algun lloc web respon a la sol·licitud i de com s'interpreta la sol·licitud. 
 
 Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web us mostrin anuncis que no estan basats en altres llocs web que heu visitat. Molts llocs web continuaran recopilant i utilitzant les vostres dades de navegació per, per exemple, millorar la seguretat, proporcionar contingut, serveis, anuncis i recomanacions sobre els seus llocs web i generar estadístiques d'informes. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
@@ -249,6 +250,7 @@ Handoff també ha d'estar activat a la secció General de Configuració, i els v
 <translation id="5871497086027727873">1 element desplaçat</translation>
 <translation id="5911030830365207728">Traductor de Google</translation>
 <translation id="5916664084637901428">Activat</translation>
+<translation id="5938160824633642847">El dispositiu està gairebé ple. Allibera espai i torna-ho a provar.</translation>
 <translation id="5948291296578561264">Et permet desar fotos a la biblioteca de fotos.</translation>
 <translation id="5955891643922670672">Se n'està mostrant la versió sense connexió</translation>
 <translation id="5964480694698977962">Crea una pestanya d'incògnit nova.</translation>
@@ -289,6 +291,7 @@ Handoff també ha d'estar activat a la secció General de Configuració, i els v
 
 Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase de contrasenya de sincronització. Introduïu-la per començar la sincronització.</translation>
 <translation id="6418346271604475326">Preparant el PDF</translation>
+<translation id="6434591244308415567">S'ha produït un error. Torna-ho a provar més tard.</translation>
 <translation id="6445051938772793705">País</translation>
 <translation id="6445981559479772097">Missatge enviat.</translation>
 <translation id="6464071786529933911">Obre en una pestanya d'incògnit</translation>
@@ -299,6 +302,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="6657585470893396449">Contrasenya</translation>
 <translation id="667999046851023355">Document</translation>
 <translation id="6713747756340119864">Google Apps</translation>
+<translation id="6730682669179532099">No es poden exportar les contrasenyes</translation>
 <translation id="6762156594045689028">Per canviar aquesta configuració, <ph name="BEGIN_LINK" />restabliu la sincronització<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Codi postal</translation>
 <translation id="6785453220513215166">S'està enviant l'informe d'error...</translation>
@@ -326,6 +330,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="7203585745079012652">Pronuncia les respostes</translation>
 <translation id="722055596168483966">Personalitzeu els serveis de Google</translation>
 <translation id="7272437679830969316">No es pot verificar la teva identitat. La contrasenya no s'ha copiat.</translation>
+<translation id="7291368939935408496">S'estan preparant les contrasenyes...</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> per cent baixat</translation>
 <translation id="7346909386216857016">D'acord</translation>
 <translation id="7400418766976504921">URL</translation>

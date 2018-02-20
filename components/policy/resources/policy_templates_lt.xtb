@@ -27,6 +27,7 @@
       Jei ši politika nustatyta, prisijungimo ekranas visada bus pateikiamas lokale, kuria pateikta pirma šios politikos vertė (politika apibrėžta kaip sąrašas, kad būtų suderinama ir ateityje).  Jei ši politika nenustatyta arba nustatytas tuščias sąrašas, prisijungimo ekranas bus pateikiamas paskutinės naudotojo sesijos lokale.  Jei ši politika nustatyta į netinkamą lokalės vertę, prisijungimo ekranas bus pateikiamas atsargine lokale (šiuo metu tai en-US).</translation>
 <translation id="1062011392452772310">Įgalinti nuotolinį įrenginio patvirtinimą</translation>
 <translation id="1062407476771304334">Pakeisti</translation>
+<translation id="109166998561583554">Paskyros, kuriai iškilo pavojus, žymėjimo dėl slaptažodžio apsaugos aktyviklis</translation>
 <translation id="1093082332347834239">Jei šis nustatymas įgalintas, nuotolinės pagalbos prieglobos serveris bus vykdomas su „<ph name="UIACCESS_PERMISSION_NAME" />“ leidimais. Taip nuotoliniai naudotojai galės sąveikauti su pakeltais langais vietiniame naudotojo staliniame kompiuteryje.
 
           Jei šis nustatymas išjungtas arba nesukonfigūruotas, nuotolinės pagalbos prieglobos serveris bus vykdomas naudotojo kontekste ir nuotoliniai naudotojai negalės sąveikauti su pakeltais langais staliniame kompiuteryje.</translation>
@@ -88,6 +89,7 @@
 
       Jei ši politika nustatyta į „false“, „<ph name="PRODUCT_NAME" />“ neleis pradėti svečio profilių.</translation>
 <translation id="1363275621236827384">Įgalinti užklausas į „Quirks Server“, skirtas aparatinės įrangos profiliams</translation>
+<translation id="1387596372902085462">Nurodoma, ar įgalinti patikimumo nustatymus „Symantec Corporation“ pasenusioje PKI infrastruktūroje</translation>
 <translation id="1393485621820363363">Įgalinti įmonės įrenginių spausdintuvai</translation>
 <translation id="1397855852561539316">Numatytojo paieškos teikėjo siūlymo URL</translation>
 <translation id="1426410128494586442">Taip</translation>
@@ -98,6 +100,7 @@
 
           Nenustačius šios politikos visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis „JavaScript“ nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
 <translation id="1456822151187621582">„Windows“ („<ph name="PRODUCT_OS_NAME" />“ klientai):</translation>
+<translation id="1457305643416399820">Paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos išjungtas</translation>
 <translation id="1464848559468748897">Kontroliuokite naudotojų elgseną kelių profilių sesijoje „<ph name="PRODUCT_OS_NAME" />“ įrenginiuose.
 
       Jei ši politika nustatyta į „MultiProfileUserBehaviorUnrestricted“, naudotojas gali būti pirminiu arba antriniu kelių profilių sesijos naudotoju.
@@ -207,6 +210,7 @@
       Politika turėtų būti nustatyta į URL, kuriuo „<ph name="PRODUCT_OS_NAME" />“ gali atsisiųsti paslaugų teikimo sąlygas. Paslaugų teikimo sąlygas turi sudaryti paprastasis tekstas, pateiktas kaip MIME tipo tekstas / paprastasis tekstas. Neleidžiamas joks žymėjimas.</translation>
 <translation id="1750315445671978749">Blokuoti visus atsisiuntimus</translation>
 <translation id="1781356041596378058">Ši politika taip pat valdo galimybę pasiekti „Android“ kūrėjo parinktis. Jei šią politiką nustatysite į „Tiesa“, naudotojai negalės pasiekti kūrėjo parinkčių. Jei šią politiką nustatysite į „Netiesa“ arba jos nenustatysite, naudotojai galės pasiekti kūrėjo parinktis palietę versijos numerį septynis kartus „Android“ nustatymų programoje.</translation>
+<translation id="1797233582739332495">Pasikartojančio raginimo, kuriame nurodoma, kad būtina paleisti iš naujo, rodymas naudotojui</translation>
 <translation id="1803646570632580723">Paleidimo priemonėje prisegtų rodomų programų sąrašas</translation>
 <translation id="1808715480127969042">Blokuoti slapukus šiose svetainėse</translation>
 <translation id="1827523283178827583">Naudoti fiksuotus tarpinius serverius</translation>
@@ -285,11 +289,11 @@
 
           Nenustačius šios politikos, bus naudojamos visos keturios schemos.</translation>
 <translation id="2067011586099792101">Blokuoti prieigą prie svetainių, nesančių turinio paketuose</translation>
-<translation id="2075030897098958514">Valdoma, ar įgalint „NTLMv2“.
+<translation id="2070270043919235595">Pranešama naudotojams, kad būtina iš naujo paleisti „<ph name="PRODUCT_NAME" />“, norint pritaikyti laukiantį naujinį.
 
-          Visų naujausių versijų „Samba“ ir „Windows“ serveriai palaiko „NTLMv2“. Tai turėtų būti išjungta tik atgalinio suderinamumo tikslais, nes suprastėja autentifikavimo sauga.
+      Taikant šį politikos nustatymą įgalinami pranešimai, kuriais naudotojas informuojamas, kad rekomenduojama arba būtina iš naujo paleisti naršyklę. Nenustačius, „<ph name="PRODUCT_NAME" />“ subtiliais meniu pakeitimais nurodo naudotojui, kad reikia paleisti iš naujo. Nustačius kaip „Rekomenduojama“, naudotojui rodomas pasikartojantis įspėjimas, kad rekomenduojama paleisti iš naujo. Naudotojas gali atsisakyti šio pranešimo, kad atidėtų paleidimą iš naujo. Nustačius kaip „Būtina“, naudotojui rodomas pasikartojantis įspėjimas, nurodantis, kad naršyklė bus priverstinai paleista iš naujo pasibaigus pranešimo laikotarpiui. Pagal numatytuosius nustatymus šis laikotarpis yra septynios dienos. Jį galima konfigūruoti politikos „<ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />“ nustatymuose.
 
-          Numatytoji vertė atgaliniam suderinamumui įjungti, kai ši politika neapibrėžta, šiuo metu yra „false“, bet ateityje bus pakeista į „true“.</translation>
+      Paleidus iš naujo, naudotojo sesija atkuriama.</translation>
 <translation id="2077129598763517140">Kai galima, naudoti aparatinės įrangos paspartinimą</translation>
 <translation id="2077273864382355561">Ekrano išjungimo delsa, kai naudojama akumuliatoriaus energija</translation>
 <translation id="2082205219176343977">Konfigūruoti mažiausią leistiną įrenginio „Chrome“ versiją.</translation>
@@ -334,6 +338,9 @@
       Jei šis nustatymas sukonfigūruotas, spartųjį atrakinimą naudojančių naudotojų bus prašoma įvesti slaptažodžius užrakinimo ekrane, atsižvelgiant į šį nustatymą.
 
       Jei šis nustatymas nesukonfigūruotas, spartųjį atrakinimą naudojančių naudotojų bus prašoma kasdien įvesti slaptažodį užrakinimo ekrane.</translation>
+<translation id="2188722565665306629">Leidžiama nustatyti laikotarpį, per kurį rodomi „<ph name="PRODUCT_NAME" />“ paleidimo iš naujo pranešimai, kad būtų galima pritaikyti laukiantį naujinį.
+
+      Šį politikos nustatymą galima naudoti norint valdyti laikotarpį (milisekundėmis), per kurį naudotojas pakartotinai informuojamas, kad būtina iš naujo paleisti „<ph name="PRODUCT_NAME" />“ (arba pakartotinai paleisti „<ph name="PRODUCT_OS_NAME" />“) norint pritaikyti naujinį. Per šį laikotarpį naudotojui bus pakartotinai pranešama apie reikalingą atnaujinimą, atsižvelgiant į politikos „<ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />“ nustatymą. Jei nenustatyta, naudojamas numatytasis 604 800 000 millisekundžių (vienos savaitės) laikotarpis.</translation>
 <translation id="2194470398825717446">Ši politika nebenaudojama M61, vietoje jos naudokite „EcryptfsMigrationStrategy“.
 
       Nurodo, kaip su „ecryptfs“ pristatytas įrenginys turi elgtis, jei reikia pereiti prie „ext4“ šifruotės.
@@ -405,6 +412,7 @@
 
           Nenustačius šios politikos, visose svetainėse naudojama visuotinė numatytoji vertė iš politikos „Numatytasis pranešimų nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
 <translation id="2386362615870139244">Leisti ekrano pažadinimo užraktus</translation>
+<translation id="2411817661175306360">Įspėjimas dėl slaptažodžio apsaugos išjungtas</translation>
 <translation id="2411919772666155530">Blokuoti pranešimus šiose svetainėse</translation>
 <translation id="2418507228189425036">„<ph name="PRODUCT_NAME" />“ neleidžiama išsaugoti naršyklės istorijos ir naudotojams keisti šio nustatymo.
 
@@ -537,6 +545,13 @@
           Į šią politiką atsižvelgiama, tik jei įgalinta politika „Numatytasis paieškos teikėjas įgalintas“.</translation>
 <translation id="2682225790874070339">Išjungiamas Diskas „<ph name="PRODUCT_OS_NAME" />“ programoje „Failai“</translation>
 <translation id="268577405881275241">Įgalinti duomenų glaudinimo tarpinio serverio funkciją</translation>
+<translation id="2726613915126661822">Leidžiama valdyti, ar virtualiesiems įrenginiams leidžiama veikti „Chrome“ OS.
+
+      Jei politika nustatyta kaip „True“, įrenginiui leidžiama paleisti virtualiuosius įrenginius.
+      Jei politika nustatyta kaip „False“, įrenginiui neleidžiama paleisti virtualiųjų įrenginių.
+      Pakeitus šios politikos nustatymą į „False“, jis taikomas paleidžiant naujus virtualiuosius įrenginius, bet jau veikiantys virtualieji įrenginiai nėra išjungiami.
+      Jei ši politika nenustatyta valdomame įrenginyje, įrenginiui neleidžiama paleisti virtualiųjų įrenginių.
+      Nevaldomiems įrenginiams leidžiama paleisti virtualiuosius įrenginius.</translation>
 <translation id="2731627323327011390">Neleisti naudoti „<ph name="PRODUCT_OS_NAME" />“ sertifikatų ARC programose</translation>
 <translation id="2742843273354638707">Slėpti „Chrome“ internetinės parduotuvės programą ir poraštės nuorodą Naujo skirtuko puslapyje ir „<ph name="PRODUCT_OS_NAME" />“ programų paleidimo priemonėje.
 
@@ -760,6 +775,7 @@
           Ši politika pasirenkama. Jei ji nenustatyta, nebus pateikiamas jos naujo skirtuko puslapis.
 
           Į šią politiką atsižvelgiama, tik jei įgalinta politika „DefaultSearchProviderEnabled“.</translation>
+<translation id="3465852069254497664">Pranešimas naudotojui apie rekomenduojamą ar būtiną naršyklės paleidimą iš naujo</translation>
 <translation id="346731943813722404">Nurodo, ar energijos valdymo delsa ir seanso ilgio apribojimas turėtų būti suaktyvinti tik naudotojui pradėjus seanso veiklą.
 
           Jei ši politika nustatyta į „True“, energijos valdymo delsa ir seanso ilgio apribojimas nesuaktyvinami, kol naudotojas nepradeda seanso veiklos.
@@ -779,7 +795,6 @@
 <translation id="3528000905991875314">Įgalinti kitus klaidų puslapius</translation>
 <translation id="3547954654003013442">Įgaliotojo serverio nustatymai</translation>
 <translation id="3577251398714997599">Skelbimų nustatymai svetainėms su nepageidaujamais skelbimais</translation>
-<translation id="3587482841069643663">Visi</translation>
 <translation id="3591584750136265240">Konfigūruoti prisijungimo autentifikavimo elgseną</translation>
 <translation id="3627678165642179114">Įgalinti rašybos tikrinimo žiniatinklio paslaugą arba jos neleisti</translation>
 <translation id="3646859102161347133">Nustatyti ekrano didinimo tipą</translation>
@@ -794,6 +809,7 @@
 <translation id="3711895659073496551">Laikinai sustabdyti</translation>
 <translation id="3736879847913515635">Asmens pridėjimo naudotojų tvarkytuvėje įgalinimas</translation>
 <translation id="3737544779868348650">Įrenginio tinklo prieglobos serverio pavadinimas</translation>
+<translation id="3740754010292550733">Paleidimo iš naujo norint atnaujinti pranešimų laikotarpio nustatymas</translation>
 <translation id="3750220015372671395">Blokuoti rakto generavimą šiose svetainėse</translation>
 <translation id="3756011779061588474">Blokuoti kūrėjo režimą</translation>
 <translation id="3758089716224084329">Leidžiama nurodyti „<ph name="PRODUCT_NAME" />“ naudojamą tarpinį serverį ir neleidžiama naudotojams keisti tarpinio serverio nustatymų.
@@ -1000,16 +1016,6 @@
 
           Šios politikos laikomasi, tik jei įgalinta politika „DefaultSearchProviderEnabled“.</translation>
 <translation id="4285674129118156176">Leidžiama nesusietiems naudotojams naudoti ARC</translation>
-<translation id="4294280661005713627">Nustatoma tikslinė automatinių naujinių versija.
-
-      Nurodomas tikslinės versijos, į kurią turėtų būti atnaujinta „<ph name="PRODUCT_OS_NAME" />“, priešdėlis. Jei įrenginyje vykdoma ankstesnė nei nurodyto priešdėlio versija, naudojant nurodytą priešdėlį atnaujinama į naujausią versiją. Jei įrenginyje jau veikia naujesnė versija, tai neturi jokios įtakos (t. y. ankstesnė versija negrąžinama) ir įrenginyje išlieka dabartinė versija. Priešdėlio formatas veikia pagal komponentus, kaip nurodyta šiame pavyzdyje:
-
-      "" (arba nesukonfigūruota): atnaujinti į naujausią pasiekiamą versiją.
-      "1412.": atnaujinti į šalutinę 1412 versiją (pvz., 1412.24.34 arba 1412.60.2)
-      "1412.2.": atnaujinti į šalutinę 1412.2 versiją (pvz., 1412.2.34 arba 1412.2.2)
-      "1412.24.34": atnaujinti tik į šią konkrečią versiją
-
-      Įspėjimas: nerekomenduojama konfigūruoti versijos apribojimų, nes dėl jų naudotojai gali negauti programinės įrangos naujinių ir svarbių saugos pataisų. Apribojus, kad būtų įdiegti tik konkrečios versijos priešdėlio naujiniai, gali kilti grėsmė naudotojų saugai.</translation>
 <translation id="4298509794364745131">Nurodomas programų, kurias galite įgalinti kaip užrašų programas „<ph name="PRODUCT_OS_NAME" />“ užrakinimo ekrane, sąrašas.
 
       Jei pageidaujama užrašų programa įgalinta užrakinimo ekrane, jame bus NS elementas pageidaujamai užrašų programai paleisti.
@@ -1033,6 +1039,13 @@
 <translation id="4347908978527632940">Jei nustatyta „true“ ir naudotojas yra prižiūrimas naudotojas, tada kitos „Android“ programos gali teikti naudotojo žiniatinklio apribojimų užklausas per turinio teikėją.
 
           Jei nustatyta „false“ arba nenustatyta, turinio teikėjas nepateikia jokios informacijos.</translation>
+<translation id="435461861920493948">Apima šablonų, kurie naudojami paskyrų matomumui naršyklėje „<ph name="PRODUCT_NAME" />“ valdyti, sąrašą.
+
+      Kiekviena „Google“ paskyra įrenginyje bus lyginama su šioje politikoje saugomais šablonais, siekiant nustatyti paskyros matomumą naršyklėje „<ph name="PRODUCT_NAME" />“. Paskyra matoma, jei jos pavadinimas atitinka bet kurį šabloną sąraše. Jei neatitinka, paskyra paslepiama.
+
+      Naudokite pakaitos simbolį * nuliui ar daugiau abejotinų simbolių taikyti. Kaitos simbolis yra \, taigi, kad simboliai atitiktų faktinius * arba \ simbolius, prieš juos įveskite \.
+
+      Jei ši politika nenustatyta, visos „Google“ paskyros įrenginyje matomos naršyklėje „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="436581050240847513">Pateikti įrenginio tinklo sąsajų ataskaitą</translation>
 <translation id="4372704773119750918">Neleisti įmonės naudotojui būti kelių profilių dalimi (pirminiu ar antriniu naudotoju)</translation>
 <translation id="4377599627073874279">Leisti visose svetainėse rodyti visus vaizdus</translation>
@@ -1105,6 +1118,7 @@
 
           Jei norite peržiūrėti visą galimų šios politikos nustatymų ir struktūros aprašą, apsilankykite adresu https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
+<translation id="4554651132977135445">Naudotojo politikos atgalinio ciklo apdorojimo režimas</translation>
 <translation id="4555850956567117258">Įgalinti nuotolinį naudotojo patvirtinimą</translation>
 <translation id="4557134566541205630">Numatytojo paieškos teikėjo naujo skirtuko puslapio URL</translation>
 <translation id="4600786265870346112">Įgalinti didelį žymeklį</translation>
@@ -1396,6 +1410,7 @@
 
       Atminkite, kad jei platformoje palaikomi politikos pranešimai, atnaujinimo delsa bus nustatyta į 24 val. (bus nepaisoma visų numatytųjų nustatymų ir šios politikos vertės), nes tikimasi, kad politikos pranešimai automatiškai suaktyvins atnaujinimą kaskart, kai politika bus pakeista, todėl nereikės dažniau atnaujinti.</translation>
 <translation id="5530347722229944744">Blokuoti potencialiai pavojingus atsisiuntimus</translation>
+<translation id="5530586312297447592">Paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos suaktyvinamas pakartotinai naudojant slaptažodį sukčiavimo puslapyje</translation>
 <translation id="5535973522252703021">„Kerberos“ nukreipimo serverio baltasis sąrašas</translation>
 <translation id="555077880566103058">Leisti visoms svetainėms automatiškai paleisti papildinį „<ph name="FLASH_PLUGIN_NAME" />“</translation>
 <translation id="5559079916187891399">Ši politika neturi įtakos „Android“ programoms.</translation>
@@ -1520,6 +1535,7 @@
           Jei nustatysite šią politiką, naudotojai galės laikinai jos nepaisyti įjungę arba išjungę didelį žymeklį. Tačiau naudotojo pasirinkimas nėra ilgalaikis ir numatytasis nustatymas atkuriamas, kai prisijungimo ekranas rodomas iš naujo arba naudotojas vieną minutę neatlieka veiksmų prisijungimo ekrane.
 
           Jei ši politika nenustatyta, didelis žymeklis išjungiamas, kai pirmą kartą rodomas prisijungimo ekranas. Naudotojai gali bet kada įjungti arba išjungti didelį žymeklį, o skirtingiems naudotojams prisijungimo ekrane bus rodoma ta pati žymeklio būsena.</translation>
+<translation id="5929855945144989709">Leidimas įrenginiams paleisti virtualiuosius įrenginius „Chrome“ OS</translation>
 <translation id="5932767795525445337">Šią politiką taip pat galima naudoti „Android“ programoms prisegti.</translation>
 <translation id="5936622343001856595">„Google“ žiniatinklio paieškos užklausos priverstinai vykdomos naudojant aktyvintą saugią paiešką. Neleidžiama naudotojams keisti šio nustatymo.
 
@@ -1534,17 +1550,6 @@
 <translation id="5983708779415553259">Numatytoji elgsena, skirta svetainėms, neesančioms turinio paketuose</translation>
 <translation id="5997543603646547632">Naudoti 24 val. laikrodį pagal numatytuosius nustatymus</translation>
 <translation id="5997846976342452720">Nurodoma, ar reikia išjungti papildinių paieškos priemonę (nebenaudojama)</translation>
-<translation id="6005179188836322782">Įgalinama „<ph name="PRODUCT_NAME" />“ Saugaus naršymo funkcija ir naudotojams neleidžiama keisti šio nustatymo.
-
-      Jei įgalinsite šį nustatymą, Saugus naršymas visada bus aktyvus.
-
-      Jei išjungsite šį nustatymą, Saugus naršymas neveiks.
-
-      Jei įgalinsite arba išjungsite šį nustatymą, naudotojai negalės keisti arba nepaisyti „<ph name="PRODUCT_NAME" />“ nustatymo „Įgalinti apsaugą nuo sukčiavimo ir kenkėjiškų programų“.
-
-      Jei ši politika nenustatyta, šis nustatymas bus įgalintas, bet naudotojas galės jį keisti.
-
-      Daugiau informacijos apie Saugų naršymą rasite adresu https://developers.google.com/safe-browsing.</translation>
 <translation id="6017568866726630990">Rodyti sistemos spausdinimo dialogo langą, o ne spaudinio peržiūrą.
 
       Kai šis nustatymas įgalintas, „<ph name="PRODUCT_NAME" />“ atvers sistemos spausdinimo dialogo langą, o ne integruotą spaudinio peržiūrą, kai naudotojas pateikia puslapio spausdinimo užklausą.
@@ -1599,6 +1604,17 @@
 
       Jei norite prisegti programas prie paleidimo priemonės, žr. „PinnedLauncherApps“.</translation>
 <translation id="602728333950205286">Numatytojo paieškos teikėjo intuityviosios paieškos URL</translation>
+<translation id="6029950823657977211">
+      PASTABA. Ši politika yra eksperimentinė ir gali sugadinti kai kurias funkcijas!
+      Ši politika taikoma prisijungimo ekranui. Taip pat žr. politiką „IsolateOrigins“, kuri taikoma naudotojo sesijai. Rekomenduojama nustatyti tas pačias abiejų politikų vertes.
+      Įgalinus politiką kiekvienas pavadinimą turintis šaltinis, įtrauktas į
+      kableliais atskirtų verčių sąrašą, vykdys savo procesą. Taip pat bus atskiriami
+      šaltiniai, pavadinti pagal padomenius, pvz., nurodžius https://example.com/
+      taip pat bus atskiriamas ir padomenis https://foo.example.com/ kaip svetainės
+      https://example.com/ dalis.
+      Išjungus politiką įsigalios išankstinio svetainės atskyrimo proceso tvarkymo logika.
+      Jei politika nesukonfigūruota, prisijungimo ekranui bus naudojami platformos numatytieji svetainės atskyrimo nustatymai.
+      </translation>
 <translation id="603410445099326293">Pasiūlymų URL parametrai, kuriuose naudojama POST</translation>
 <translation id="6036523166753287175">Įgalinkite užkardos apėjimą iš nuotolinės prieigos prieglobos</translation>
 <translation id="6070667616071269965">Įrenginio prisijungimo ekrano klaviatūros išdėstymai</translation>
@@ -1767,6 +1783,7 @@
       Jei ši politika nebus nustatyta, bus įgalintas tinklo numatymas, bet naudotojas galės jį pakeisti.</translation>
 <translation id="6658245400435704251">Nurodoma, iki kiek sekundžių įrenginys gali atsitiktinai atidėti naujinio atsisiuntimą nuo tada, kai naujinys buvo pirmąkart išsiųstas iš serverio. Įrenginys gali laukti dalį šio laiko pagal realųjį laiką, o likusią dalį – pagal naujinio tikrinimo kartus. Bet kuriuo atveju yra nustatyta viršutinė sklaidos riba (tam tikra trukmė), kad įrenginys nelauktų atsisiuntimo be galo.</translation>
 <translation id="6689792153960219308">Aparatinės įrangos būsenos ataskaitos pateikimas</translation>
+<translation id="6698071416141001300">Paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos suaktyvinamas pakartotinai naudojant slaptažodį</translation>
 <translation id="6699880231565102694">Įgalinti nuotolinės prieigos prieglobų autentifikavimą dviem veiksniais</translation>
 <translation id="6724842112053619797">Jei įgalinsite šį nustatymą, saugomą „<ph name="PRODUCT_NAME" />“ profiliuose, pvz., žymėse, automatinio pildymo duomenyse, slaptažodžiuose ir kt., išsaugoti nustatymai taip pat bus įrašyti į failą, saugomą tarptinklinio ryšio naudotojo profilio aplanke arba administratoriaus nurodytoje vietoje pagal „<ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />“ politiką. Sinchronizavimas debesyje automatiškai išjungiamas, kai įgalinama ši politika.
 
@@ -1774,6 +1791,15 @@
 
       „<ph name="SYNC_DISABLED_POLICY_NAME" />“ politika išjungia visų duomenų sinchronizavimą ir nepaiso „RoamingProfileSupportEnabled“.</translation>
 <translation id="6735701345096330595">Priverstinis rašybos tikrinimo kalbų įgalinimas</translation>
+<translation id="673699536430961464">Naudodami šį nustatymą naudotojai gali perjungti „Google“ paskyras naršyklės lango turinio srityje po to, kai prisijungia prie „<ph name="PRODUCT_OS_NAME" />“ įrenginio.
+
+      Jei ši politika nustatyta kaip „false“, nebus leidžiama prisijungti prie kitos paskyros naršyklės turinio srityje naršant ne inkognito režimu.
+
+      Jei ši politika nenustatyta arba nustatyta kaip „true“, bus naudojama numatytoji elgsena: naršyklės turinio srityje bus leidžiama prisijungti prie kitos paskyros, išskyrus vaikų paskyras, kurios bus blokuojamos turinio srityje naršant ne inkognito režimu.
+
+      Jei prisijungti prie kitos paskyros neturėtų būti leidžiama naršant inkognito režimu, turėtumėte užblokuoti tą režimą naudodami politiką „IncognitoModeAvailability“.
+
+      Atminkite, kad naudotojai galės pasiekti „Google“ paslaugas, nenustatant jų tapatybės, blokuodami slapukus.</translation>
 <translation id="6757438632136860443">Galima nustatyti URL šablonų, kuriuose nurodomos svetainės, kurioms leidžiama paleisti papildinį „<ph name="FLASH_PLUGIN_NAME" />“, sąrašą.
 
           Jei ši politika nenustatyta, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „DefaultPluginsSetting“ (jei ji nustatyta) arba naudotojo asmeninės konfigūracijos (kitu atveju).</translation>
@@ -1783,6 +1809,7 @@
 <translation id="6786967369487349613">Nustatyti tarptinklinio ryšio profilio katalogą</translation>
 <translation id="6810445994095397827">Blokuoti „JavaScript“ šiose svetainėse</translation>
 <translation id="681446116407619279">Palaikomos tapatumo nustatymo schemos</translation>
+<translation id="6835883744948188639">Pasikartojančio raginimo, kuriame nurodoma, kad rekomenduojama paleisti iš naujo, rodymas naudotojui</translation>
 <translation id="685769593149966548">Vykdyti griežtai ribotą režimą sistemoje „YouTube“</translation>
 <translation id="687046793986382807">Ši politika nebegalioja išleidus „<ph name="PRODUCT_NAME" />“ 35 versiją.
 
@@ -2019,6 +2046,7 @@
           Nenustačius šios politikos, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis iššokančiųjų langų nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
 <translation id="7529144158022474049">Automatiškai atnaujinamas sklaidos veiksnys</translation>
 <translation id="7534199150025803530">Ši politika neturi įtakos „Android“ skirtai „Google“ disko programai. Jei norite neleisti naudoti „Google“ disko veikiant koriniam ryšiui, turėtumėte uždrausti „Android“ skirtos „Google“ disko programos diegimą.</translation>
+<translation id="7547549430720182663">Sujungti</translation>
 <translation id="7553535237300701827">Kai ši politika nustatyta, prisijungimo autentifikavimo eiga priklausys nuo nustatymo vertės:
 
       Jei vertė nustatyta į GAIA, prisijungimas bus atliekamas naudojant įprastą GAIA autentifikavimo eigą.
@@ -2140,7 +2168,6 @@
       Nenustačius šios politikos „<ph name="PRODUCT_NAME" />“ bus naudojama numatytoji 5 000 milisekundžių vertė.</translation>
 <translation id="7841880500990419427">Minimalios versijos numatytasis TLS</translation>
 <translation id="7842869978353666042">„Google“ disko parinkčių konfigūravimas</translation>
-<translation id="7843525027689416831">Nurodomos žymos, kurios turėtų būti pritaikytos, kai paleidžiama „<ph name="PRODUCT_NAME" />“. Nurodytos žymos pritaikomos tik prisijungimo ekrane. Naudojant šią politiką išsiųstos žymos nepertraukia naudotojų sesijų.</translation>
 <translation id="787125417158068494">Nustačius „SyncDisabled“ arba nesukonfigūravus, <ph name="PRODUCT_OS_NAME" /> sertifikatų nebus galima naudoti ARC programose.
 
       Nustačius „CopyCaCerts“, visi per ONC įdiegti CA sertifikatai su „<ph name="WEB_TRUSTED_BIT" />“ bus prieinami ARC programose.</translation>
@@ -2303,9 +2330,17 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
       Jei ši politika nenustatyta ar išjungta, PDF failams atidaryti bus naudojamas PDF papildinys (jei naudotojas jo neišjungė).</translation>
 <translation id="8402079500086185021">Visada atidaryti PDF failus už programos ribų</translation>
 <translation id="8412312801707973447">Ar atliekami OCSP / CRL patikrinimai prisijungus</translation>
+<translation id="841977920223099909">Įspėjimo dėl slaptažodžio apsaugos aktyviklis</translation>
 <translation id="8424255554404582727">Nustatyti numatytąjį ekrano sukimo nustatymą, kuris bus iš naujo pritaikomas kiekvieną kartą paleidus iš naujo</translation>
 <translation id="8426231401662877819">Sukti ekraną pagal laikrodžio rodyklę 90 laipsnių kampu</translation>
 <translation id="8451988835943702790">Naudoti naujo skirtuko puslapį kaip pagrindinį puslapį</translation>
+<translation id="8459216513698220096">Nurodoma, ar apdorojama naudotojo politika iš kompiuterio GPO ir kaip apdorojama.
+
+      Jei politika nustatyta kaip „Numatytoji“ arba nenustatyta, naudotojo politika skaitoma tik iš naudotojo GPO (kompiuterio GPO nepaisoma).
+
+      Jei politika nustatyta kaip „Sujungti“, naudotojo politika naudotojo GPO sujungiama su naudotojo politika kompiuterio GPO (pirmenybė teikiama kompiuterio GPO).
+
+      Jei politika nustatyta kaip „Pakeisti“, naudotojo politika naudotojo GPO pakeičiama naudotojo politika kompiuterio GPO (naudotojo GPO nepaisoma).</translation>
 <translation id="8465065632133292531">Intuityviosios paieškos URL parametrai, kuriuose naudojama POST</translation>
 <translation id="847472800012384958">Neleisti jokioje svetainėje rodyti iššokančiųjų langų</translation>
 <translation id="8477885780684655676">1.0 versijos TLS</translation>
@@ -2354,6 +2389,7 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
           Jei nenustatysite šios politikos, „<ph name="PRODUCT_NAME" />“ bandys nustatyti, ar serveris yra intranete ir tik tada atsakys į IWA užklausas. Jei serveris aptinkamas internete, „<ph name="PRODUCT_NAME" />“ nepaisys jo siunčiamų IWA užklausų.</translation>
 <translation id="8672321184841719703">Taikomo automatinio naujinio versija</translation>
 <translation id="867410340948518937">U2F (universalusis antras veiksnys, angl. „Universal Second Factor“)</translation>
+<translation id="8685024486845674965">Įspėjimas dėl slaptažodžio apsaugos suaktyvinamas pakartotinai naudojant slaptažodį</translation>
 <translation id="8693243869659262736">Naudoti integruotą DNS kliento programą</translation>
 <translation id="8704831857353097849">Neleidžiamų papildinių sąrašas</translation>
 <translation id="8711086062295757690">Nurodomas raktinis žodis, kuris yra spartusis klavišas, naudojamas „Omnibox“ šio teikėjo paieškai suaktyvinti.
@@ -2370,6 +2406,7 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
       Jei šis nustatymas įgalintas arba nenustatytas, naršymo ir atsisiuntimo istorija gali būti ištrinta.
 
       Jei šis nustatymas neleidžiamas, naršymo ir atsisiuntimo istorija negali būti ištrinta.</translation>
+<translation id="8759829385824155666">Leidžiami „Kerberos“ šifruotės tipai</translation>
 <translation id="8764119899999036911">Nurodoma, ar sugeneruotas „Kerberos“ SPN veikia kanoniniu DNS vardu ar originaliu įvestu vardu.
 
           Jei įgalinsite šį nustatymą, CNAME paieška bus praleista ir bus naudojamas įvestas serverio pavadinimas.
@@ -2389,6 +2426,7 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
       Jei ši politika nenustatyta ar nustatyta „Ne“, nebus pranešta apie vietą.</translation>
 <translation id="8818768076343557335">Numatyti tinklo veiksmus bet kuriame ne mobiliojo ryšio tinkle.
           (Nebenaudojama nuo 50 versijos, pašalinta 52 versijoje. Po 52 versijos, jei nustatyta 1 vertė, ji bus laikoma 0 – numatyti tinklo veiksmus bet kurio ryšio tinkle.)</translation>
+<translation id="8825782996899863372">Įspėjimas dėl slaptažodžio apsaugos suaktyvinamas pakartotinai naudojant slaptažodį sukčiavimo puslapyje</translation>
 <translation id="8828766846428537606">Konfigūruojamas numatytasis pagrindinis „<ph name="PRODUCT_NAME" />“ puslapis, kurio keisti naudotojams neleidžiama.
 
       Naudotojo pagrindinio puslapio nustatymai bus visiškai užrakinti tik tada, jei kaip pagrindinį puslapį pasirinksite naujo skirtuko puslapį arba nustatysite, kad į jį būtų įkeltas URL, ir nurodysite pagrindinio puslapio URL. Jei pagrindinio puslapio URL nenurodysite, naudotojui ir toliau bus leidžiama kaip pagrindinį puslapį nustatyti naujo skirtuko puslapį nurodant „chrome://newtab“.</translation>
@@ -2449,6 +2487,12 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
       Jei nustatysite šią politiką, naudotojai negalės jos pakeisti arba nepaisyti.
 
       Ši politika nepaveiks naudotojams suteiktos galimybės konfigūruoti spausdintuvus atskiruose įrenginiuose. Politika papildo atskirų naudotojų spausdintuvų konfigūraciją.
+      </translation>
+<translation id="8934944553121392674">Valdoma, kurie spausdintuvai iš „<ph name="DEVICE_PRINTERS_POLICY" />“ pasiekiami naudotojams.
+
+      Nustatoma, kuri pasiekiamumo politika naudojama masinei spausdintuvų konfigūracijai. Jei pasirinkta „<ph name="PRINTERS_ALLOW_ALL" />“, rodomi visi spausdintuvai. Jei pasirinkta „<ph name="PRINTERS_BLACKLIST" />“, „<ph name="DEVICE_PRINTERS_BLACKLIST" />“ naudojama pasiekiamumui prie nurodytų spausdintuvų apriboti. Jei pasirinkta „<ph name="PRINTERS_WHITELIST" />“, „<ph name="DEVICE_PRINTERS_WHITELIST" />“ nustato tik tuos spausdintuvus, kuriuos galima pasirinkti.
+
+      Jei ši politika nenustatyta, taikoma „<ph name="PRINTERS_ALLOW_ALL" />“.
       </translation>
 <translation id="8947415621777543415">Pranešti įrenginio vietą</translation>
 <translation id="8951350807133946005">Nustatyti disko talpyklos katalogą</translation>
@@ -2530,5 +2574,11 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="930930237275114205">Nustatyti „<ph name="PRODUCT_FRAME_NAME" />“ naudotojo duomenų katalogą</translation>
 <translation id="934390688529359269">Įgalinamas „<ph name="PRODUCT_NAME" />“ priverstinis prisijungimas</translation>
 <translation id="944817693306670849">Nustatyti disko talpyklos dydį</translation>
+<translation id="9775893229076211">Leidžiama valdyti paskyros, kuriai iškilo pavojus, žymėjimo dėl slaptažodžio apsaugos suaktyvinimą. Paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos – tai „Google“ informavimas, kad ši paskyra gali būti užgrobta.
+
+      Jei ši politika nustatyta kaip „PasswordProtectionRiskOff“, nesuaktyvinamas joks paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos.
+      Jei ši politika nustatyta kaip „PasswordProtectionRiskOnPasswordReuse“, paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos suaktyvinamas, kai naudotojai pakartotinai naudoja „Google“ slaptažodžius bet kurioje svetainėje, kuri neįtraukta į baltąjį sąrašą.
+      Jei ši politika nustatyta kaip „PasswordProtectionRiskOnPhishingReuse“, paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos suaktyvinamas, kai naudotojai pakartotinai naudoja „Google“ slaptažodžius sukčiavimo svetainėse.
+      Jei ši politika nenustatyta, paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos suaktyvinamas, kai naudotojai pakartotinai naudoja „Google“ slaptažodžius sukčiavimo svetainėse, bet naudotojas gali tai pakeisti.</translation>
 <translation id="982497069985795632">Rašybos tikrinimo įgalinimas</translation>
 </translationbundle>

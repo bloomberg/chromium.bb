@@ -36,6 +36,7 @@
 <translation id="2046702855113914483">Ramen</translation>
 <translation id="2080010875307505892">Srpska tipkovnica</translation>
 <translation id="2136953289241069843">transliteracija (namaste → नमस्कार)</translation>
+<translation id="2145908266289632567">Uređivanje teksta</translation>
 <translation id="2164862903024139959">vijetnamska tipkovnica (TCVN)</translation>
 <translation id="2168214441502403371">perzijska tipkovnica</translation>
 <translation id="2198315389084035571">pojednostavnjeni kineski</translation>
@@ -57,6 +58,7 @@
 <translation id="2781645665747935084">belgijska</translation>
 <translation id="2790805296069989825">Ruska tipkovnica</translation>
 <translation id="2870836398458454343">transliteracija (marhaban ← مرحبا)</translation>
+<translation id="2872353916818027657">Zamjena primarnog monitora</translation>
 <translation id="288024221176729610">Češki</translation>
 <translation id="2894654529758326923">Informacije</translation>
 <translation id="2902734494705624966">američka (proširena)</translation>
@@ -69,8 +71,10 @@
 <translation id="2966459079597787514">Švedska tipkovnica</translation>
 <translation id="3064388234319122767">transliteracija (zdravo → здраво)</translation>
 <translation id="3088034400796962477">transliteracija (salam ← سلام)</translation>
+<translation id="3105917916468784889">Snimi zaslon</translation>
 <translation id="3116361045094675131">UK tipkovnica</translation>
 <translation id="3126026824346185272">Ctrl</translation>
+<translation id="3140353188828248647">Fokusiraj adresnu traku</translation>
 <translation id="3157729859914172001">Američka međunarodna tipkovnica (za PC)</translation>
 <translation id="3187212781151025377">Hebrejska tipkovnica</translation>
 <translation id="3197563288998582412">engleska (Velika Britanija: Dvorak)</translation>
@@ -82,12 +86,15 @@
 <translation id="3338239663705455570">Slovenska tipkovnica</translation>
 <translation id="3399597614303179694">Makedonska tipkovnica</translation>
 <translation id="3494768541638400973">Google japanski unos (za japanske tipkovnice)</translation>
+<translation id="3496213124478423963">Smanji</translation>
 <translation id="3519867315646775981">transliteracija (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portugalski</translation>
 <translation id="357479282490346887">Litavski</translation>
+<translation id="3592821358219525223">Postavke sustava i prikaza</translation>
 <translation id="3603385196401704894">francuska (kanadska)</translation>
 <translation id="3606220979431771195">Turska F</translation>
 <translation id="3619115746895587757">Cappuccino</translation>
+<translation id="3649256019230929621">Minimiziranje prozora</translation>
 <translation id="3678559383040232393">Malteška tipkovnica</translation>
 <translation id="3801082500826908679">Farerska</translation>
 <translation id="3809272675881623365">Zec</translation>
@@ -95,6 +102,7 @@
 <translation id="3825863595139017598">Mongolska tipkovnica</translation>
 <translation id="3833761542219863804">transliteracija (mausam → ਮੌਸਮ)</translation>
 <translation id="383652340667548381">Srpski</translation>
+<translation id="385051799172605136">Natrag</translation>
 <translation id="3855472144336161447">njemačka (Neo 2)</translation>
 <translation id="3858678421048828670">Talijanska tipkovnica</translation>
 <translation id="3910699493603749297">kmerska tipkovnica</translation>
@@ -144,6 +152,7 @@
 <translation id="5218183485292899140">švicarska (francuska)</translation>
 <translation id="5241298539944515331">vijetnamska tipkovnica (VIQR)</translation>
 <translation id="5257456363153333584">Vilin konjic</translation>
+<translation id="5316716239522500219">Zrcalni monitori</translation>
 <translation id="5319782540886810524">Letonska tipkovnica</translation>
 <translation id="5323213332664049067">latinoamerički</translation>
 <translation id="5402367795255837559">Brajica</translation>
@@ -166,14 +175,18 @@
 <translation id="5819442873484330149">hangul 3 set (završni)</translation>
 <translation id="5838825566232597749">Američka međunarodna Workman</translation>
 <translation id="5892290200158927959">Francuska BÉPO tipkovnica</translation>
+<translation id="5928303187149237472">Promjena razlučivosti zaslona</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">Latinoamerička tipkovnica</translation>
 <translation id="6012987430370760224">marathska tipkovnica (fonetska)</translation>
+<translation id="6022924867608035986">Brisanje teksta u okviru za pretraživanje</translation>
 <translation id="60357267506638014">češka (QWERTY)</translation>
 <translation id="6054173164583630569">Francuska tipkovnica</translation>
 <translation id="6111770213269631447">transliteracija (namaskar → নমস্কার)</translation>
+<translation id="6129953537138746214">Razmak</translation>
 <translation id="6164412158936057769">Leptiri</translation>
 <translation id="6170470584681422115">Sendvič</translation>
+<translation id="6185696379715117369">Stranica prema gore</translation>
 <translation id="6264347891387618177">transliteracija (selam → ሰላም)</translation>
 <translation id="6305012486838822927">laoska tipkovnica</translation>
 <translation id="6339034549827494595">Ruska fonetska (AATSEEL) tipkovnica</translation>
@@ -186,6 +199,8 @@
 <translation id="6505918941256367791">tamilska tipkovnica (InScript)</translation>
 <translation id="6509122719576673235">Norveški</translation>
 <translation id="6650726141019353908">Ružičasti leptir</translation>
+<translation id="671928215901716392">Zaključaj zaslon</translation>
+<translation id="6727005317916125192">Prethodno okno</translation>
 <translation id="6760765581316020278">vijetnamska tipkovnica (VNI)</translation>
 <translation id="6795884519221689054">Panda</translation>
 <translation id="6808193438228982088">Lisica</translation>
@@ -201,11 +216,14 @@
 <translation id="6939777852457331078">Američka Workman tipkovnica</translation>
 <translation id="6970230597523682626">Bugarski</translation>
 <translation id="6981982820502123353">Pristupačnost</translation>
+<translation id="7020813747703216897">Nisu pronađeni rezultati</translation>
+<translation id="7025325401470358758">Sljedeće okno</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">transliteracija (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Estonska tipkovnica</translation>
 <translation id="719009910964971313">Američka programerska tipkovnica Dvorak</translation>
 <translation id="7222624196722476520">bugarska fonetska tipkovnica</translation>
+<translation id="7272373489634936181">Pretraživanje prečaca</translation>
 <translation id="7348749398828259943">Američka međunarodna Workman tipkovnica</translation>
 <translation id="7389722738210761877">tajska tipkovnica (TIS 820-2531)</translation>
 <translation id="7396038720194014279">hindska tipkovnica (fonetska)</translation>
@@ -214,11 +232,13 @@
 <translation id="7434823369735508263">UK Dvorak tipkovnica</translation>
 <translation id="7460898608667578234">Ukrajinski</translation>
 <translation id="7474889694310679759">Kanadsko-engleska tipkovnica</translation>
+<translation id="7500462265946853476">Stranica i web-preglednik</translation>
 <translation id="751507702149411736">Bjeloruski</translation>
 <translation id="7547811415869834682">Nizozemski</translation>
 <translation id="7603724359189955920">Rešetke</translation>
 <translation id="770015031906360009">Grčki</translation>
 <translation id="7706319470528945664">Portugalska tipkovnica</translation>
+<translation id="7724603315864178912">Izreži</translation>
 <translation id="7774365994322694683">Ptica</translation>
 <translation id="7825423931463735974">tamilska tipkovnica (tamil99)</translation>
 <translation id="7853966320808728790">Francuska BÉPO</translation>
@@ -228,6 +248,7 @@
 <translation id="7943385054491506837">američka (SAD Colemak)</translation>
 <translation id="7969525169268594403">Slovenski</translation>
 <translation id="7987485481246785146">soransko-kurdska tipkovnica temeljena na arapskom</translation>
+<translation id="8004192919599017226">Pokretanje pretraživanja...</translation>
 <translation id="8008366997883261463">Jack Russell terijer</translation>
 <translation id="8031722894461705849">Slovačka tipkovnica</translation>
 <translation id="8045462269890919536">Rumunjski</translation>
@@ -248,6 +269,7 @@
 <translation id="8437209419043462667">američka</translation>
 <translation id="8467473010914675605">Korejski način unosa</translation>
 <translation id="8477649328507734757">Vrtnja</translation>
+<translation id="8487678622945914333">Povećaj</translation>
 <translation id="8521441079177373948">engleska (Velika Britanija)</translation>
 <translation id="8551494947769799688">Latvijski</translation>
 <translation id="8561206103590473338">Slon</translation>
@@ -258,6 +280,7 @@
 <translation id="8803496343472038847">ruska fonetska tipkovnica</translation>
 <translation id="8808686172382650546">Mačka</translation>
 <translation id="885381502874625531">Bjeloruska tipkovnica</translation>
+<translation id="88986195241502842">Stranica prema dolje</translation>
 <translation id="8900820606136623064">Mađarski</translation>
 <translation id="8901822611024316615">Češka QWERTY tipkovnica</translation>
 <translation id="8919081441417203123">Danski</translation>
@@ -265,6 +288,7 @@
 <translation id="9017798300203431059">ruska (fonetska)</translation>
 <translation id="913758436357682283">mjanmarska Myansan tipkovnica</translation>
 <translation id="9153744823707037316">način unosa niza</translation>
+<translation id="9179672198516322668">Popularni prečaci</translation>
 <translation id="9206487995878691001">način unosa cangjie</translation>
 <translation id="9219908252191632183">Površina Mjeseca</translation>
 </translationbundle>

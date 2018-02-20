@@ -43,6 +43,7 @@
 <translation id="1951012854035635156">Assistente</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1995660704900986789">Spegni</translation>
 <translation id="2012624427112548395">CTRL + tasto per la ricerca + H</translation>
 <translation id="2049639323467105390">Questo dispositivo è gestito da <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Verticale</translation>
@@ -83,6 +84,7 @@
 <translation id="2844169650293029770">Dispositivo USB-C (porta anteriore sinistra)</translation>
 <translation id="2865888419503095837">Informazioni di rete</translation>
 <translation id="2872961005593481000">Spegni</translation>
+<translation id="2878884018241093801">Nessun elemento recente</translation>
 <translation id="2903844815300039659">Connesso a <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">Stai condividendo lo schermo</translation>
 <translation id="2942516765047364088">Posizione shelf</translation>
@@ -139,6 +141,7 @@
 <translation id="4072264167173457037">Segnale medio</translation>
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Lente d'ingrandimento</translation>
 <translation id="4351433414020964307">L'assistente è in fase di caricamento…</translation>
 <translation id="4378551569595875038">Connessione...</translation>
@@ -183,6 +186,7 @@
 <translation id="5744083938413354016">Trascinamento al tocco</translation>
 <translation id="5777841717266010279">Interrompere la condivisione dello schermo?</translation>
 <translation id="57838592816432529">Disattiva audio</translation>
+<translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5832805196449965646">Aggiungi persona</translation>
 <translation id="5860033963881614850">Off</translation>
 <translation id="5895138241574237353">Riavvia</translation>
@@ -326,7 +330,7 @@ Le finestre, le notifiche e le finestre di dialogo successive potrebbero essere 
 <translation id="9091626656156419976">Schermo <ph name="DISPLAY_NAME" /> rimosso</translation>
 <translation id="9111102763498581341">Sblocca</translation>
 <translation id="9151726767154816831">Riavvia ed esegui Powerwash per aggiornare</translation>
-<translation id="9194617393863864469">Accedi a un altro utente...</translation>
+<translation id="9194617393863864469">Accedi con un altro account utente...</translation>
 <translation id="9201131092683066720">Percentuale di caricamento della batteria: <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Uscita dalla modalità Desktop unificato</translation>
 <translation id="923686485342484400">Premi due volte Control Maiusc Q per uscire.</translation>

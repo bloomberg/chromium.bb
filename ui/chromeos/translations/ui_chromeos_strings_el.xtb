@@ -38,6 +38,7 @@
 <translation id="2046702855113914483">Ράμεν</translation>
 <translation id="2080010875307505892">Πληκτρολόγιο με σερβικούς χαρακτήρες</translation>
 <translation id="2136953289241069843">Μεταγραφή (namaste → नमस्कार)</translation>
+<translation id="2145908266289632567">Επεξεργασία κειμένου</translation>
 <translation id="2164862903024139959">Πληκτρολόγιο Βιετναμικών (TCVN)</translation>
 <translation id="2168214441502403371">Πληκτρολόγιο Περσικών</translation>
 <translation id="2198315389084035571">Απλοποιημένα Κινεζικά</translation>
@@ -59,6 +60,7 @@
 <translation id="2781645665747935084">Βελγικά</translation>
 <translation id="2790805296069989825">Πληκτρολόγιο με ρωσικούς χαρακτήρες</translation>
 <translation id="2870836398458454343">Μεταγραφή (marhaban ← مرحبا)</translation>
+<translation id="2872353916818027657">Αλλαγή κύριας οθόνης</translation>
 <translation id="288024221176729610">Τσεχικά
 </translation>
 <translation id="2894654529758326923">Πληροφορίες</translation>
@@ -73,8 +75,10 @@
 <translation id="2966459079597787514">Πληκτρολόγιο με σουηδικούς χαρακτήρες</translation>
 <translation id="3064388234319122767">Μεταγραφή (zdravo → здраво)</translation>
 <translation id="3088034400796962477">Μεταγραφή (salam ← سلام)</translation>
+<translation id="3105917916468784889">Λήψη στιγμιότυπου οθόνης</translation>
 <translation id="3116361045094675131">Πληκτρολόγιο με αγγλικούς χαρακτήρες (ΗΒ)</translation>
 <translation id="3126026824346185272">Ctrl</translation>
+<translation id="3140353188828248647">Εστίαση γραμμής διευθύνσεων</translation>
 <translation id="3157729859914172001">Διεθνές πληκτρολόγιο ΗΠΑ (υπολογιστή)</translation>
 <translation id="3187212781151025377">Πληκτρολόγιο με εβραϊκούς χαρακτήρες</translation>
 <translation id="3197563288998582412">Dvorak ΗΒ</translation>
@@ -88,13 +92,16 @@
 <translation id="3338239663705455570">Πληκτρολόγιο με σλοβενικούς χαρακτήρες</translation>
 <translation id="3399597614303179694">Πληκτρολόγιο Σλαβομακεδονικών</translation>
 <translation id="3494768541638400973">Εισαγωγή Ιαπωνικών Google (για πληκτρολόγιο Ιαπωνικών)</translation>
+<translation id="3496213124478423963">Σμίκρυνση</translation>
 <translation id="3519867315646775981">Μεταγραφή (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Πορτογαλικά</translation>
 <translation id="357479282490346887">Λιθουανικά
 </translation>
+<translation id="3592821358219525223">Ρυθμίσεις συστήματος και οθόνης</translation>
 <translation id="3603385196401704894">Γαλλικά Καναδά</translation>
 <translation id="3606220979431771195">Τουρκικά-F</translation>
 <translation id="3619115746895587757">Καπουτσίνο</translation>
+<translation id="3649256019230929621">Ελαχιστοποίηση παραθύρου</translation>
 <translation id="3678559383040232393">Πληκτρολόγιο Μάλτας</translation>
 <translation id="3801082500826908679">Φερόε</translation>
 <translation id="3809272675881623365">Κουνέλι</translation>
@@ -103,6 +110,7 @@
 <translation id="3833761542219863804">Μεταγραφή (mausam → ਮੌਸਮ)</translation>
 <translation id="383652340667548381">Σερβικά
 </translation>
+<translation id="385051799172605136">Πίσω</translation>
 <translation id="3855472144336161447">Γερμανικά Neo 2</translation>
 <translation id="3858678421048828670">Πληκτρολόγιο με ιταλικούς χαρακτήρες</translation>
 <translation id="3910699493603749297">Πληκτρολόγιο Κμερ</translation>
@@ -156,6 +164,7 @@
 <translation id="5218183485292899140">Γαλλικά Ελβετίας</translation>
 <translation id="5241298539944515331">Πληκτρολόγιο Βιετναμικών (VIQR)</translation>
 <translation id="5257456363153333584">Λιβελλούλη</translation>
+<translation id="5316716239522500219">Κατοπτρισμός οθονών</translation>
 <translation id="5319782540886810524">Πληκτρολόγιο με λεττονικούς χαρακτήρες</translation>
 <translation id="5323213332664049067">Λατινικής Αμερικής</translation>
 <translation id="5402367795255837559">Μπράιγ</translation>
@@ -179,14 +188,18 @@
 <translation id="5819442873484330149">Σύνολο Χανγκίλ 3 (Τελικό)</translation>
 <translation id="5838825566232597749">Διεθνές ΗΠΑ Workman</translation>
 <translation id="5892290200158927959">Πληκτρολόγιο BÉPO Γαλλικών</translation>
+<translation id="5928303187149237472">Αλλαγή ανάλυσης οθόνης</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">Πληκτρολόγιο με χαρακτήρες Λατινικής Αμερικής</translation>
 <translation id="6012987430370760224">Πληκτρολόγιο μαράτι (Φωνητικό)</translation>
+<translation id="6022924867608035986">Διαγραφή κειμένου πλαισίου αναζήτησης</translation>
 <translation id="60357267506638014">Τσεχικό QWERTY</translation>
 <translation id="6054173164583630569">Πληκτρολόγιο με γαλλικούς χαρακτήρες</translation>
 <translation id="6111770213269631447">Μεταγραφή (namaskar → নমস্কার)</translation>
+<translation id="6129953537138746214">Κενό</translation>
 <translation id="6164412158936057769">Πεταλούδες</translation>
 <translation id="6170470584681422115">Σάντουιτς</translation>
+<translation id="6185696379715117369">Page up</translation>
 <translation id="6264347891387618177">Μεταγραφή (selam → ሰላም)</translation>
 <translation id="6305012486838822927">Πληκτρολόγιο Λάο</translation>
 <translation id="6339034549827494595">Ρωσικό φωνητικό πληκτρολόγιο (AATSEEL)</translation>
@@ -199,6 +212,8 @@
 <translation id="6505918941256367791">Πληκτρολόγιο Ταμίλ (InScript)</translation>
 <translation id="6509122719576673235">Νορβηγικά</translation>
 <translation id="6650726141019353908">Ροζ πεταλούδα</translation>
+<translation id="671928215901716392">Κλείδωμα οθόνης</translation>
+<translation id="6727005317916125192">Προηγούμενο παράθυρο</translation>
 <translation id="6760765581316020278">Πληκτρολόγιο Βιετναμικών (VNI)</translation>
 <translation id="6795884519221689054">Πάντα</translation>
 <translation id="6808193438228982088">Αλεπού</translation>
@@ -215,11 +230,14 @@
 <translation id="6939777852457331078">Πληκτρολόγιο ΗΠΑ Workman</translation>
 <translation id="6970230597523682626">Βουλγαρικά</translation>
 <translation id="6981982820502123353">Προσβασιμότητα</translation>
+<translation id="7020813747703216897">Δεν βρέθηκαν αποτελέσματα αντιστοίχισης</translation>
+<translation id="7025325401470358758">Επόμενο παράθυρο</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Μεταγραφή (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Πληκτρολόγιο με εσθονικούς χαρακτήρες</translation>
 <translation id="719009910964971313">Πληκτρολόγιο US Programmer Dvorak</translation>
 <translation id="7222624196722476520">Φωνητικό πληκτρολόγιο με βουλγαρικούς χαρακτήρες</translation>
+<translation id="7272373489634936181">Αναζήτηση συντομεύσεων</translation>
 <translation id="7348749398828259943">Διεθνές πληκτρολόγιο ΗΠΑ Workman</translation>
 <translation id="7389722738210761877">Πληκτρολόγιο Ταϊλανδικών (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Πληκτρολόγιο χίντι (Φωνητικό)</translation>
@@ -229,6 +247,7 @@
 <translation id="7460898608667578234">Ουκρανικά
 </translation>
 <translation id="7474889694310679759">Πληκτρολόγιο με αγγλικούς χαρακτήρες (Καναδά)</translation>
+<translation id="7500462265946853476">Σελίδα και πρόγραμμα περιήγησης</translation>
 <translation id="751507702149411736">Λευκορωσικά
 </translation>
 <translation id="7547811415869834682">Ολλανδικά
@@ -236,6 +255,7 @@
 <translation id="7603724359189955920">Πλέγματα</translation>
 <translation id="770015031906360009">Ελληνικά</translation>
 <translation id="7706319470528945664">Πληκτρολόγιο με πορτογαλικούς χαρακτήρες</translation>
+<translation id="7724603315864178912">Αποκοπή</translation>
 <translation id="7774365994322694683">Πουλί</translation>
 <translation id="7825423931463735974">Πληκτρολόγιο Ταμίλ (Tamil99)</translation>
 <translation id="7853966320808728790">Γαλλικά BÉPO</translation>
@@ -245,6 +265,7 @@
 <translation id="7943385054491506837">Colemak ΗΠΑ</translation>
 <translation id="7969525169268594403">Σλοβενικά</translation>
 <translation id="7987485481246785146">Πληκτρολόγιο Σορανί Κουρδικών βασισμένο στα Αραβικά</translation>
+<translation id="8004192919599017226">Έναρξη αναζήτησης…</translation>
 <translation id="8008366997883261463">Τεριέ Τζακ Ράσελ</translation>
 <translation id="8031722894461705849">Πληκτρολόγιο Σλοβακικών</translation>
 <translation id="8045462269890919536">Ρουμανικά
@@ -267,6 +288,7 @@
 <translation id="8437209419043462667">ΗΠΑ</translation>
 <translation id="8467473010914675605">Μέθοδος εισαγωγής Κορεατικών</translation>
 <translation id="8477649328507734757">Έλικας</translation>
+<translation id="8487678622945914333">Μεγέθυνση</translation>
 <translation id="8521441079177373948">ΗΒ</translation>
 <translation id="8551494947769799688">Λετονικά
 </translation>
@@ -279,6 +301,7 @@
 <translation id="8803496343472038847">Φωνητικό πληκτρολόγιο με ρωσικούς χαρακτήρες</translation>
 <translation id="8808686172382650546">Γάτα</translation>
 <translation id="885381502874625531">Λευκορωσικό πληκτρολόγιο</translation>
+<translation id="88986195241502842">Page down</translation>
 <translation id="8900820606136623064">Ουγγρικά
 </translation>
 <translation id="8901822611024316615">Τσεχικό πληκτρολόγιο QWERTY</translation>
@@ -288,6 +311,7 @@
 <translation id="9017798300203431059">Φωνητικό Ρωσικά</translation>
 <translation id="913758436357682283">Πληκτρολόγιο Μιανμάρ Myansan</translation>
 <translation id="9153744823707037316">Μέθοδος εισαγωγής πίνακα</translation>
+<translation id="9179672198516322668">Δημοφιλείς συντομεύσεις</translation>
 <translation id="9206487995878691001">Μέθοδος εισαγωγής Cangjie</translation>
 <translation id="9219908252191632183">Σεληνιακό τοπίο</translation>
 </translationbundle>

@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">Yksityisen avaimen lukeminen epäonnistui.</translation>
 <translation id="6391538222494443604">Syöttöhakemistoa ei ole olemassa.</translation>
 <translation id="641087317769093025">Laajennuksen purkaminen epäonnistui</translation>
+<translation id="6542618148162044354"><ph name="APP_NAME" /> pyytää oikeutta käyttää yhtä tai useampaa laitettasi:</translation>
 <translation id="657064425229075395">Taustakoodin <ph name="BACKGROUND_SCRIPT" /> lataaminen epäonnistui.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> myyjältä <ph name="VENDOR_NAME" /> (sarjanumero <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Ei voitu luoda hakemistoa <ph name="DIRECTORY_PATH" /> laajennuksen purkamista varten:</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">Paketti on virheellinen. Tietoja: <ph name="ERROR_MESSAGE" />.</translation>
 <translation id="8670869118777164560">Tämä laajennus ei uudelleenohjannut verkkopyyntöä kohteeseen <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, koska toinen laajennus (<ph name="EXTENSION_NAME" />) uudelleenohjasi sen kohteeseen <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Laajennuksien purkaja</translation>
+<translation id="8761756413268424715"><ph name="APP_NAME" /> pyytää oikeutta käyttää yhtä laitteistasi:</translation>
 <translation id="8825366169884721447">Tämä laajennus ei muokannut verkkopyynnön otsikkoa <ph name="HEADER_NAME" />, koska muokkaus oli ristiriidassa toisen laajennuksen (<ph name="EXTENSION_NAME" />) kanssa.</translation>
 <translation id="8885905466771744233">Kyseiselle laajennukselle on jo olemassa yksityinen avain. Käytä tätä avainta tai poista se ensin.</translation>
 <translation id="907841381057066561">Väliaikaisen zip-tiedoston luominen pakkauksen aikana epäonnistui.</translation>

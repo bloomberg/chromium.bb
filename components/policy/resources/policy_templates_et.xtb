@@ -27,6 +27,7 @@
       Kui see reegel on määratud, kuvatakse sisselogimisekraan alati lokaadis, mis selle reegli esimese väärtusega määratakse (reegel on määratud suunamise ühilduvuse loendina). Kui seda reeglit pole määratud või see on tühi loend, kuvatakse sisselogimisekraan kasutaja viimase seansi lokaadis. Kui sellele reeglile on määratud väärtus, mis ei ole kehtiv lokaat, kuvatakse sisselogimisekraan varulokaadis (praegu en-US).</translation>
 <translation id="1062011392452772310">Seadme kaugatesteerimise lubamine</translation>
 <translation id="1062407476771304334">Asenda</translation>
+<translation id="109166998561583554">Ohus oleva paroolikaitse konto märgistamise käivitaja</translation>
 <translation id="1093082332347834239">Kui seade on lubatud, käitatakse protsessis kaugabi hosti lubadega <ph name="UIACCESS_PERMISSION_NAME" />. See võimaldab kaugkasutajatel suhelda kohaliku kasutaja töölaual olevate administraatoriõigusi nõudvate akendega.
 
           Kui seade on keelatud või seadistamata, käitatakse kaugabi hosti kasutaja kontekstis ja kaugkasutajad ei saa töölaual suhelda administraatoriõigusi nõudvate akendega.</translation>
@@ -88,6 +89,7 @@
 
       Kui selle reegli väärtuseks määratakse Väär, ei luba teenus <ph name="PRODUCT_NAME" /> külaliste profiile käivitada.</translation>
 <translation id="1363275621236827384">Lubatakse riistvaraprofiilide päringud Quirks Serverist</translation>
+<translation id="1387596372902085462">Määrab, kas usaldada Symantec Corporationi PKI pärandtaristut</translation>
 <translation id="1393485621820363363">Ettevõtte seadmete jaoks lubatud printerid</translation>
 <translation id="1397855852561539316">Vaikeotsingupakkuja soovitatud URL</translation>
 <translation id="1426410128494586442">Jah</translation>
@@ -98,6 +100,7 @@
 
           Kui jätate selle reegli määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultJavaScriptSetting”, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>
 <translation id="1456822151187621582">Windows (operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> kliendid):</translation>
+<translation id="1457305643416399820">Ohus olevate paroolikaitse kontode märgistamine on välja lülitatud</translation>
 <translation id="1464848559468748897">Kasutaja käitumise juhtimine mitme profiiliga seansside puhul operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> seadmetes.
 
       Kui reegel on määratud valikule „MultiProfileUserBehaviorUnrestricted”, saab kasutaja mitme profiiliga seansi puhul olla kas peamine või sekundaarne kasutaja.
@@ -285,11 +288,6 @@
 
           Kui jätate selle reegli määramata, siis kasutatakse kõiki nelja skeemi.</translation>
 <translation id="2067011586099792101">Sisupakettidest väljaspool olevatele saitidele juurdepääsu blokeerimine</translation>
-<translation id="2075030897098958514">Määrab, kas NTLMv2 on lubatud või mitte.
-
-          Kõik hiljutised Samba ja Windowsi serverid toetavad NTLMv2. See tuleks keelata ainult tagasiulatuva ühilduvuse puhul ja see vähendab autentimise turvalisust.
-
-          Kui see reegel on määramata, siis on vaikeväärtus tagasiulatuva ühilduvuse puhul väär, kuid tulevikus muudetakse see tõeseks.</translation>
 <translation id="2077129598763517140">Kasuta võimaluse korral riistvarakiirendust</translation>
 <translation id="2077273864382355561">Ekraani väljalülitamise viiteaeg akutoite kasutamisel</translation>
 <translation id="2082205219176343977">Seadmes kõige vanema lubatud Chrome'i versiooni seadistamine.</translation>
@@ -403,6 +401,7 @@
 
           Kui jätate selle reegli määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultNotificationsSetting”, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>
 <translation id="2386362615870139244">Ekraani aktiveerimise lukustamise lubamine</translation>
+<translation id="2411817661175306360">Paroolikaitse hoiatus on välja lülitatud</translation>
 <translation id="2411919772666155530">Blokeerige märguanded nendel saitidel</translation>
 <translation id="2418507228189425036">Keelab brauseris <ph name="PRODUCT_NAME" /> sirvimisajaloo salvestamise ja takistab kasutajaid seadet muutmast.
 
@@ -775,7 +774,6 @@
 <translation id="3528000905991875314">Luba alternatiivsed vealehed</translation>
 <translation id="3547954654003013442">Puhverserveri seaded</translation>
 <translation id="3577251398714997599">Sekkuvate reklaamidega saitide reklaamiseaded</translation>
-<translation id="3587482841069643663">Kõik</translation>
 <translation id="3591584750136265240">Sisselogimise autentimise käitumise seadistamine</translation>
 <translation id="3627678165642179114">Õigekirjakontrolli veebiteenuse lubamine või keelamine</translation>
 <translation id="3646859102161347133">Ekraaniluubi tüübi määramine</translation>
@@ -990,16 +988,6 @@
 
           Reeglit järgitakse ainult siis, kui lubatud on reegel „DefaultSearchProviderEnabled”.</translation>
 <translation id="4285674129118156176">Seoseta kasutajatel ARC kasutamise lubamine</translation>
-<translation id="4294280661005713627">Määrab sihtversiooni automaatsete värskenduste jaoks.
-
-      Määrab eesliite sihtversioonile, millele <ph name="PRODUCT_OS_NAME" /> peab värskendama. Kui seade käitab versiooni, mis eelneb määratud eesliitele, värskendatakse see antud eesliite uusimale versioonile. Kui seade kasutab juba uuemat versiooni, siis sellel mõju pole (st ei toimu üleminekut vanemale versioonile) ja seade jääb praegusele versioonile. Eesliite vorming töötab komponendipõhiselt (nagu näha järgmises näites).
-
-      "" (või seadistamata): saadaval värskendus uusimale versioonile.
-      "1412.": värskendus mis tahes 1412 uuemale versioonile (nt 1412.24.34 või 1412.60.2)
-      "1412.2.": värskendus mis tahes 1412.2 uuemale versioonile (nt 1412.2.34 või 1412.2.2)
-      "1412.24.34": värskendus ainult sellele konkreetsele versioonile
-
-      Hoiatus. Me ei soovita versioonide piiranguid seadistada, kuna need võivad takistada kasutajatel tarkvaravärskendusi ja kriitilisi turvapaikasid vastu võtmast. Kui lubate kasutajatel kasutada vaid teatud versiooni eesliidet, võib see kasutajad ohtu seada.</translation>
 <translation id="4298509794364745131">Määratakse loend rakendustest, mille saab operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> lukustuskuval lubada märkmete tegemise rakendustena.
 
       Kui eelistatud märkmete tegemise rakendus on lukustuskuval lubatud, sisaldab lukustuskuva kasutajaliidese elementi eelistatud märkmete tegemise rakenduse käivitamiseks.
@@ -1023,6 +1011,13 @@
 <translation id="4347908978527632940">Kui see on tõene ja kasutaja on jälgitav kasutaja, siis saavad teised Androidi rakendused sisupakkuja kaudu esitada päringuid kasutaja veebipiirangute kohta.
 
           Kui see on väär või määramata, siis ei saada sisupakkuja teavet.</translation>
+<translation id="435461861920493948">Sisaldab loendit mustritest, mida kasutatakse teenuses <ph name="PRODUCT_NAME" /> kontode nähtavuse juhtimiseks.
+
+      Igat seadmes olevat Google'i kontot võrreldakse selles reeglis salvestatud mustritega, et määrata konto nähtavus teenuses <ph name="PRODUCT_NAME" />. Konto on nähtav, kui selle nimi ühtib mõne loendis oleva mustriga. Muul juhul konto peidetakse.
+
+      Metamärki „*” saab kasutada juhuslike tähemärkide vastendamiseks, mis võivad, aga ei pruugi esineda. Paomärk on „\”, seega märgi „*” või „\” vastendamiseks peate nende ette lisama märgi „\”.
+
+      Kui see reegel jäetakse määramata, siis on kõik seadmes olevad Google'i kontod teenuses <ph name="PRODUCT_NAME" /> nähtavad.</translation>
 <translation id="436581050240847513">Seadme võrguliidestest teatamine</translation>
 <translation id="4372704773119750918">Ärge lubage ettevõtte kasutajal olla osa multiprofiilist (esmane või teisene)</translation>
 <translation id="4377599627073874279">Luba kõikidel saitidel kõikide kujutiste kuvamine</translation>
@@ -1095,6 +1090,7 @@
 
           Vaadake reegli võimalike seadete ja struktuuri täielikku kirjeldust https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
+<translation id="4554651132977135445">Kasutajareeglite tagastusliidese töötlemisrežiim</translation>
 <translation id="4555850956567117258">Kasutajale kaugatesteerimise lubamine</translation>
 <translation id="4557134566541205630">Otsingupakkuja uue vahelehe vaike-URL</translation>
 <translation id="4600786265870346112">Suure kursori lubamine</translation>
@@ -1383,6 +1379,7 @@
 
       Pange tähele, et kui platvorm toetab reeglite märguandeid, määratakse värskendamise viiteks 24 tundi (eirates kõiki vaikeväärtusi ja selle reegli väärtust), kuna eeldatakse, et reegli märguanded jõustavad reegli muutmisel automaatse värskendamise, mis muudab sagedasemad värskendused ebavajalikuks.</translation>
 <translation id="5530347722229944744">Blokeeri potentsiaalselt ohtlikud allalaadimised</translation>
+<translation id="5530586312297447592">Ohus olevate paroolikaitse kontode märgistamise käivitab parooli uuesti kasutamine andmepüügilehel</translation>
 <translation id="5535973522252703021">Kerberose volitusserveri lubatud nimekiri</translation>
 <translation id="555077880566103058">Luba kõigil saitidel pistikprogrammi <ph name="FLASH_PLUGIN_NAME" /> automaatne käitamine</translation>
 <translation id="5559079916187891399">See reegel ei mõjuta Androidi rakendusi.</translation>
@@ -1522,17 +1519,6 @@
 <translation id="5983708779415553259">Mitte ühessegi sisupaketti kuuluvate saitide vaikekäitumine</translation>
 <translation id="5997543603646547632">Vaikimisi 24-tunnise kella kasutamine</translation>
 <translation id="5997846976342452720">Määramine, kas pistikprogrammide leidja tuleks keelata (tugi on katkestatud)</translation>
-<translation id="6005179188836322782">Lubab teenuse <ph name="PRODUCT_NAME" /> ohutu sirvimise funktsiooni ja takistab kasutajaid seda seadet muutmast.
-
-      Kui lubate selle seade, on ohutu sirvimine alati aktiivne.
-
-      Kui keelate selle seade, pole ohutu sirvimine alati aktiivne.
-
-      Kui lubate või keelate selle seade, ei saa kasutajad teenuses <ph name="PRODUCT_NAME" /> seadet „Luba andmepüügi ja pahavara kaitse” muuta ega alistada.
-
-      Kui jätate reegli määramata, on see lubatud, kuid kasutaja saab seda muuta.
-
-      Vaadake lisateavet ohutu sirvimise kohta aadressilt https://developers.google.com/safe-browsing.</translation>
 <translation id="6017568866726630990">Kuvab printimise eelvaate asemel süsteemi printimisdialoogi.
 
       Kui seade on lubatud ja kasutaja soovib lehte printida, avab <ph name="PRODUCT_NAME" /> süsteemi printimisdialoogi, mitte sisseehitatud printimise eelvaate.
@@ -1587,6 +1573,17 @@
 
       Rakenduste kinnitamiseks käivitusprogrammi vaadake reeglit PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Vaikeotsingupakkuja Instant-URL</translation>
+<translation id="6029950823657977211">
+      MÄRKUS. See reegel on katseline ja funktsioonid ei pruugi töötada.
+      See reegel kehtib sisselogimisekraanil. Vaadake ka reeglit „IsolateOrigins”, mis kehtib kasutaja seansi puhul. Soovitatav on mõlemale reeglile määrata sama väärtus.
+      Kui reegel on lubatud, käitab iga komadega eraldatud loendis
+      nimetatud lähtekoht oma protsesse. See isoleerib ka alamdomeenide
+      nimetatud lähtekohad; nt määrates aadressi https://example.com/
+      isoleeritakse ka aadress https://foo.example.com/ saidi
+      https://example.com/ osana.
+      Kui reegel on keelatud, jõustub saidi isoleerimise eelse protsessihalduse loogika.
+      Kui reegel on seadistamata, kasutatakse sisselogimisekraanil platvormi saitide isoleerimise vaikeseadeid.
+      </translation>
 <translation id="603410445099326293">Parameetrid POST-meetodit kasutava soovituse URL-i jaoks</translation>
 <translation id="6036523166753287175">Luba tulemüüri läbimine kaugjuurdepääsu hostist</translation>
 <translation id="6070667616071269965">Seadme sisselogimisekraani klaviatuuripaigutused</translation>
@@ -1755,6 +1752,7 @@
       Kui see reegel jäetakse määramata, on võrguprognoosid lubatud, kuid kasutaja saab seda muuta.</translation>
 <translation id="6658245400435704251">Määrab sekundite arvu pärast värskenduse serverist väljalaskmist, mille jooksul võib seade värskenduse allalaadimist juhuslikult viivitada. Seade võib oodata osa ajast reaalajas ja ülejäänud aja sõltuvalt värskenduste otsimiste arvust. Igal juhul on hajutatuse ülempiir seotud ajalise konstandiga, et seade ei jääks värskenduse allalaadimist igaveseks ootama.</translation>
 <translation id="6689792153960219308">Riistvara oleku aruanne</translation>
+<translation id="6698071416141001300">Ohus olevate paroolikaitse kontode märgistamise käivitab parooli uuesti kasutamine</translation>
 <translation id="6699880231565102694">Kahetasandilise autentimise lubamine kaugjuurdepääsu hostidele</translation>
 <translation id="6724842112053619797">Kui lubate selle seade, kirjutatakse teenuse <ph name="PRODUCT_NAME" /> profiilide salvestatud seaded, näiteks järjehoidjad, automaatse täitmise andmed, paroolid jms, faili, mis talletatakse rändlust kasutava profiili kausta või asukohta, mille administraator määrab reegliga <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Reegli lubamine keelab pilveteenusega sünkroonimise.
 
@@ -2008,6 +2006,7 @@
           Kui jätate selle reegli määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultPopupsSetting”, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>
 <translation id="7529144158022474049">Hajutusteguri automaatne värskendamine</translation>
 <translation id="7534199150025803530">See reegel ei mõjuta Androidi Google Drive'i rakendust. Kui soovite keelata Google Drive'i kasutamise mobiilse andmesideühenduse kaudu, peaksite Androidi Google Drive'i rakenduse installimise keelama.</translation>
+<translation id="7547549430720182663">Ühenda</translation>
 <translation id="7553535237300701827">Kui see reegel on määratud, on sisselogimise autentimisvoog seade väärtusest olenevalt üks järgmistest:
 
       Kui määratud on GAIA, toimub sisselogimine tavapärase GAIA autentimisvoo kaudu.
@@ -2128,7 +2127,6 @@
       Kui jätate reegli määramata, siis kasutab toode <ph name="PRODUCT_NAME" /> vaikeväärtust 5000 millisekundit.</translation>
 <translation id="7841880500990419427">Minimaalne TLS-i versioon, millele tagasi minna</translation>
 <translation id="7842869978353666042">Google Drive'i valikute seadistamine</translation>
-<translation id="7843525027689416831">Määrab märgistused, mis tuleb rakendada teenuses <ph name="PRODUCT_NAME" /> selle käivitamisel. Määratud märgistused rakendatakse ainult sisselogimisekraanil. Selle reegliga määratud märgistused ei rakendu kasutaja seanssides.</translation>
 <translation id="787125417158068494">Kui määratud on reegel SyncDisabled või seda ei määrata, pole operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> sertifikaadid ARC-rakenduste jaoks saadaval.
 
       Kui reegliks on määratud CopyCaCerts, on kõik üksusega <ph name="WEB_TRUSTED_BIT" /> ONC installitud CA-sertifikaadid ARC-rakenduste jaoks saadaval.</translation>
@@ -2293,9 +2291,17 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       Kui keelate reegli või jätate selle määramata, kasutatakse PDF-failide avamiseks PDF-i pistikprogrammi, välja arvatud juhul, kui kasutaja selle keelab.</translation>
 <translation id="8402079500086185021">Ava PDF-failid alati väliselt</translation>
 <translation id="8412312801707973447">Kontrolli võrgus OCSP-d/CRL-i</translation>
+<translation id="841977920223099909">Paroolikaitse hoiatuse käivitaja</translation>
 <translation id="8424255554404582727">Määratakse ekraani vaikepöördenurk, mis rakendatakse uuesti igal taaskäivitamisel</translation>
 <translation id="8426231401662877819">Ekraani pööramine 90 kraadi päripäeva</translation>
 <translation id="8451988835943702790">Kasuta avalehena Uut vahelehte</translation>
+<translation id="8459216513698220096">Määrab, kas ja kuidas töödeldakse arvuti GPO-st pärinevaid kasutajareegleid.
+
+      Kui reegli väärtuseks määratakse „Default” või see jäetakse määramata, loetakse kasutajareegleid ainult kasutaja GPO-dest (arvuti GPO-sid eiratakse).
+
+      Kui reegli väärtuseks määratakse „Merge”, liidetakse kasutaja GPO-des olevad kasutajareeglid arvuti GPO-des olevate kasutajareeglitega (eelistatakse arvuti GPO-sid).
+
+      Kui reegli väärtuseks määratakse „Replace”, asendatakse kasutaja GPO-des olevad kasutajareeglid arvuti GPO-des olevate kasutajareeglitega (kasutaja GPO-sid eiratakse).</translation>
 <translation id="8465065632133292531">Parameetrid Instant-URL-i jaoks, mis kasutab POST-meetodit</translation>
 <translation id="847472800012384958">Keela kõikidel saitidel hüpikakende näitamine</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2344,6 +2350,7 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
           Kui jätate selle reegli määramata, üritab <ph name="PRODUCT_NAME" /> tuvastada, kas server on intranetis, ja alles siis vastab IWA taotlustele. Kui server tuvastatakse Internetis, siis eirab <ph name="PRODUCT_NAME" /> sealt tulevaid IWA taotlusi.</translation>
 <translation id="8672321184841719703">Automaatse värskendamise sihtversioon</translation>
 <translation id="867410340948518937">U2F (universaalne teine tegur)</translation>
+<translation id="8685024486845674965">Paroolikaitse hoiatuse käivitab parooli uuesti kasutamine</translation>
 <translation id="8693243869659262736">Kasuta sisseehitatud DNS-i klienti</translation>
 <translation id="8704831857353097849">Keelatud pistikprogrammide loend</translation>
 <translation id="8711086062295757690">Määrab märksõna, mis on otsetee, mida kasutatakse omnikastikeses otsingupakkuja käivitamiseks.
@@ -2360,6 +2367,7 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       Kui see seade on lubatud või määramata, saab sirvimise ja allalaadimiste ajaloo kustutada.
 
       Kui see seade on keelatud, siis sirvimise ja allalaadimiste ajalugu kustutada ei saa.</translation>
+<translation id="8759829385824155666">Lubatud Kerberose krüpteerimistüübid</translation>
 <translation id="8764119899999036911">Määrab, kas loodud Kerberose SPN põhineb tavapärasel DNS-i nimel või sisestatud algsel nimel.
 
           Seade lubamisel jäetakse CNAME-i otsimine vahele ja serveri nime kasutatakse sisestatud kujul.
@@ -2379,6 +2387,7 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       Kui jätate eeskirjad määramata või keelate need, siis asukohta ei esitata.</translation>
 <translation id="8818768076343557335">Ennustage võrgutegevus kõigis võrkudes peale mobiilsidevõrgu.
           (Iganenud alates versioonist 50, eemaldatud alates versioonist 52. Kui hilisemas kui 52. versioonis määratakse väärtus 1, tõlgendatakse seda kui väärtust 0 – võrgutegevuste ennustamine mis tahes võrguühenduse puhul.)</translation>
+<translation id="8825782996899863372">Paroolikaitse hoiatuse käivitab parooli uuesti kasutamine andmepüügilehel</translation>
 <translation id="8828766846428537606">Seadistage rakenduse <ph name="PRODUCT_NAME" /> vaikeavaleht ja takistage kasutajaid seda muutmast. Kasutaja avalehe seaded on täielikult lukustatud vaid juhul, kui valite avaleheks uue vahelehe või seate selle URL-iks ja määrate avalehel URL-i. Kui te ei määra avalehe URL-i, saab kasutaja määrata avaleheks uue vahelehe käsuga chrome://newtab.</translation>
 <translation id="8833109046074170275">GAIA vaikevoo kaudu autentimine</translation>
 <translation id="8838303810937202360">Operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> lisab rakendused ja laiendused mitme kasutaja jaoks installimiseks seadme vahemällu, et vältida iga kasutaja puhul uuesti allalaadimist.
@@ -2437,6 +2446,12 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       Selle reegli määramisel ei saa kasutajad seda muuta ega alistada.
 
       See reegel ei mõjuta seda, kas kasutajad saavad printereid seadistada individuaalsetes seadmetes. See on mõeldud individuaalsete kasutajate printerite seadistuse täienduseks.
+      </translation>
+<translation id="8934944553121392674">Juhib, millised printerid seadistusest <ph name="DEVICE_PRINTERS_POLICY" /> on kasutajatele saadaval.
+
+      Määrab, millist juurdepääsureeglit kasutatakse printerite hulgiseadistamiseks. Kui valitud on väärtus <ph name="PRINTERS_ALLOW_ALL" />, kuvatakse kõik printerid. Kui valitud on väärtus <ph name="PRINTERS_BLACKLIST" />, kasutatakse määratud printeritele juurdepääsu piiramiseks reeglit <ph name="DEVICE_PRINTERS_BLACKLIST" />. Kui valitud on väärtus <ph name="PRINTERS_WHITELIST" />, määrab reegel <ph name="DEVICE_PRINTERS_WHITELIST" /> ainult need printerid, mida saab valida.
+
+      Kui see reegel on määramata, kasutatakse reeglit <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="8947415621777543415">Esita seadme asukoht</translation>
 <translation id="8951350807133946005">Vahemälu kataloogi seadmine</translation>
@@ -2518,5 +2533,11 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="930930237275114205">Määra rakenduse <ph name="PRODUCT_FRAME_NAME" /> kasutaja andmekataloog</translation>
 <translation id="934390688529359269">Lubab sundsisselogimise teenusesse <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Ketta vahemälu mahu määramine</translation>
+<translation id="9775893229076211">Võimaldab teil juhtida ohus olevate paroolikaitse kontode märgistamise käivitamist. Ohus olevate paroolikaitse kontode märgistamine tähendab, et Google'it teavitatakse, kui kontot ähvardab kaaperdamise oht.
+
+      Kui reegli väärtuseks määratakse „PasswordProtectionRiskOff”, ei käivitata ohus olevate paroolikaitse kontode märgistamist.
+      Kui reegli väärtuseks määratakse „PasswordProtectionRiskOnPasswordReuse”, käivitatakse ohus olevate paroolikaitse kontode märgistamine siis, kui kasutajad kasutavad Google'i paroole saitidel, mis ei kuulu lubatud saitide loendisse.
+      Kui reegli väärtuseks määratakse „PasswordProtectionRiskOnPhishingReuse”, käivitatakse ohus olevate paroolikaitse kontode märgistamine siis, kui kasutajad kasutavad Google'i paroole andmepüügisaitidel.
+      Kui see reegel jäetakse määramata, käivitatakse ohus olevate paroolikaitse kontode märgistamine siis, kui kasutajad kasutavad Google'i paroole andmepüügisaitidel, kuid kasutaja saab seda muuta.</translation>
 <translation id="982497069985795632">Õigekirjakontrolli lubamine</translation>
 </translationbundle>

@@ -27,6 +27,7 @@
       Si se asigna un valor a esta política, la pantalla de inicio de sesión se mostrará siempre en la configuración regional proporcionada por el primer valor de esta política (esta se define como lista para que sea compatible con versiones posteriores). Si no se le asigna ningún valor o se le asigna una lista vacía, la pantalla de inicio de sesión se mostrará en la configuración regional de la sesión del último usuario. Si el valor que se le asigna no es una configuración regional válida, la pantalla de inicio de sesión se mostrará en una configuración regional establecida antes (actualmente: en-US).</translation>
 <translation id="1062011392452772310">Habilitar confirmación remota para el dispositivo</translation>
 <translation id="1062407476771304334">Sustituir</translation>
+<translation id="109166998561583554">Activar advertencia de protección de contraseña sobre cuenta en riesgo</translation>
 <translation id="1093082332347834239">Si se habilita esta opción, el host de asistencia remota se ejecutará en un proceso con permisos de <ph name="UIACCESS_PERMISSION_NAME" />. Esto permitirá que los usuarios remotos interactúen con ventanas a las que se puede acceder con permisos de administrador en el ordenador del usuario local.
 
           Si esta opción no se configura o se inhabilita, el host de asistencia remota se ejecutará en el contexto del usuario y los usuarios remotos no podrán interactuar con las ventanas que requieren permisos de administrador en el ordenador.</translation>
@@ -87,6 +88,7 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
 
       Si se asigna el valor false a esta política, <ph name="PRODUCT_NAME" /> no permitirá que se inicien los perfiles de invitado.</translation>
 <translation id="1363275621236827384">Habilitar consultas a Quirks Server para los perfiles de hardware</translation>
+<translation id="1387596372902085462">Confiar o no en la infraestructura de clave pública antigua de Symantec Corporation</translation>
 <translation id="1393485621820363363">Impresoras de dispositivos de empresa habilitadas</translation>
 <translation id="1397855852561539316">URL de sugerencia del proveedor de búsquedas predeterminadas</translation>
 <translation id="1426410128494586442">Sí</translation>
@@ -97,6 +99,7 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultJavaScriptSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
 <translation id="1456822151187621582">Windows (clientes de <ph name="PRODUCT_OS_NAME" />):</translation>
+<translation id="1457305643416399820">La advertencia de protección de contraseña sobre cuenta en riesgo está desactivada</translation>
 <translation id="1464848559468748897">Controla el comportamiento del usuario en una sesión de varios perfiles en dispositivos <ph name="PRODUCT_OS_NAME" />.
 
       Si esta política se establece en MultiProfileUserBehaviorUnrestricted, el usuario puede ser principal o secundario en una sesión de varios perfiles.
@@ -280,11 +283,6 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
 
           Si no se establece esta política, se utilizarán los cuatro esquemas.</translation>
 <translation id="2067011586099792101">Bloquear acceso a sitios no incluidos en paquetes de contenido</translation>
-<translation id="2075030897098958514">Controla si la autenticación NTLMv2 está habilitada.
-
-          Todas las versiones recientes de los servidores Windows y Samba admiten la autenticación NTLMv2. Solo debe desactivarse para obtener compatibilidad con versiones anteriores, lo cual reduce la seguridad a la hora de autenticarse.
-
-          Actualmente, el valor predeterminado cuando esta política no está configurada es "False" (para obtener compatibilidad con versiones anteriores), pero cambiará a "True" próximamente.</translation>
 <translation id="2077129598763517140">Utilizar aceleración por hardware cuando esté disponible</translation>
 <translation id="2077273864382355561">Retraso de desconexión de pantalla cuando el dispositivo funciona con la batería</translation>
 <translation id="2082205219176343977">Configurar la versión mínima permitida de Chrome en el dispositivo.</translation>
@@ -400,6 +398,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultNotificationsSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
 <translation id="2386362615870139244">Permitir bloqueos de activación de pantalla</translation>
+<translation id="2411817661175306360">La advertencia de protección de contraseña está desactivada</translation>
 <translation id="2411919772666155530">Bloquear notificaciones en estos sitios</translation>
 <translation id="2418507228189425036">Permite inhabilitar el almacenamiento del historial de navegación de <ph name="PRODUCT_NAME" /> e impide que los usuarios modifiquen esta opción.
 
@@ -771,7 +770,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="3528000905991875314">Habilitar páginas de error alternativas</translation>
 <translation id="3547954654003013442">Configuración de proxy</translation>
 <translation id="3577251398714997599">Configuración de anuncios de sitios web con anuncios invasivos</translation>
-<translation id="3587482841069643663">Todo</translation>
 <translation id="3591584750136265240">Configurar el comportamiento de la autenticación de inicio de sesión</translation>
 <translation id="3627678165642179114">Habilitar o inhabilitar el servicio web de corrección ortográfica</translation>
 <translation id="3646859102161347133">Establecer el tipo de aumento de pantalla</translation>
@@ -991,16 +989,6 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
 <translation id="4285674129118156176">Permitir que los usuarios no afiliados utilicen ARC</translation>
-<translation id="4294280661005713627">Establece una versión de destino para las actualizaciones automáticas.
-
-      Especifica el prefijo de la versión de destino a la que debe actualizarse <ph name="PRODUCT_OS_NAME" />. Si el dispositivo ejecuta una versión anterior al prefijo especificado, actualizará a la versión más reciente con el prefijo establecido. Si el dispositivo ya utiliza la última versión, no se verá afectado (es decir, no se cambiará a una versión inferior) y seguirá utilizando la versión actual. El formato del prefijo depende del componente como se indica en el siguiente ejemplo:
-
-      "" (o no configurado): actualiza a la última versión disponible
-      "1412.": actualiza a cualquier versión menor de 1412 (por ejemplo, 1412.24.34 o 1412.60.2)
-      "1412.2.": actualiza a cualquier versión menor de 1412.2 (por ejemplo, 1412.2.34 o 1412.2.2)
-      "1412.24.34": actualiza solo a esta versión específica
-
-      Advertencia: No se recomienda configurar restricciones de versiones porque pueden evitar que los usuarios reciban actualizaciones de software y correcciones de seguridad muy importantes. Restringir las actualizaciones al prefijo de una versión específica podría suponer un riesgo para los usuarios.</translation>
 <translation id="4298509794364745131">Especifica la lista de aplicaciones que se pueden habilitar como aplicaciones para tomar notas en la pantalla de bloqueo de <ph name="PRODUCT_OS_NAME" />.
 
       Si la aplicación para tomar notas preferida está habilitada en la pantalla de bloqueo, esta contendrá un elemento de IU para iniciar dicha aplicación.
@@ -1024,6 +1012,13 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 <translation id="4347908978527632940">Si la política está activada y se trata de un usuario supervisado, otras aplicaciones de Android pueden consultar las restricciones web del usuario a través de un proveedor de contenido.
 
           Si está desactivada o no se ha establecido, el proveedor de contenido no devuelve ninguna información.</translation>
+<translation id="435461861920493948">Contiene una lista de patrones que se usan para controlar la visibilidad de las cuentas en <ph name="PRODUCT_NAME" />.
+
+      Cada cuenta de Google del dispositivo se comparará con los patrones almacenados en esta política para determinar la visibilidad de la cuenta en <ph name="PRODUCT_NAME" />. La cuenta podrá verse si su nombre coincide con alguno de los patrones de la lista. Si no, se ocultará.
+
+      El carácter comodín "*" se puede utilizar para buscar coincidencias con cero o más caracteres arbitrarios. El carácter de escape es "\" y, por tanto, se puede escribir antes de "*" o "\" para obtener coincidencias con los propios caracteres.
+
+      Si esta política no se configura, todas las cuentas de Google del dispositivo podrán verse en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="436581050240847513">Permite informar de interfaces de red del dispositivo</translation>
 <translation id="4372704773119750918">No permitir que el usuario de empresa forme parte de la función de varios perfiles (usuario principal o secundario)</translation>
 <translation id="4377599627073874279">Permitir que todos los sitios muestren todas las imágenes</translation>
@@ -1096,6 +1091,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
           Para consultar una descripción completa de las posibles pociones y la estructura de esta política, accede a https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
+<translation id="4554651132977135445">Modo de procesamiento loopback de políticas del usuario</translation>
 <translation id="4555850956567117258">Habilitar confirmación remota para el usuario</translation>
 <translation id="4557134566541205630">URL de la página Nueva pestaña del proveedor de búsqueda predeterminado</translation>
 <translation id="4600786265870346112">Habilitar cursor grande</translation>
@@ -1387,6 +1383,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
       Ten en cuenta que si la plataforma admite notificaciones sobre políticas, el tiempo de actualización se establecerá en 24 horas (ignorando todos los valores predeterminados y el valor de esta política), ya que se espera que estas notificaciones fuercen una actualización automática en cuanto se produzca algún cambio en una política. De esta forma, no será necesario realizar actualizaciones con mayor frecuencia.</translation>
 <translation id="5530347722229944744">Bloquear descargas potencialmente peligrosas</translation>
+<translation id="5530586312297447592">La advertencia de protección de contraseña sobre cuenta en riesgo se activa al reutilizar la contraseña en una página de phishing</translation>
 <translation id="5535973522252703021">Lista de admisión de servidores de delegación Kerberos</translation>
 <translation id="555077880566103058">Permitir que todos los sitios web ejecuten automáticamente el complemento <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Esta política no influye en las aplicaciones para Android.</translation>
@@ -1526,17 +1523,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5983708779415553259">Comportamiento predeterminado de sitios no incluidos en un paquete de contenido</translation>
 <translation id="5997543603646547632">Utilizar reloj de formato de 24 horas de forma predeterminada</translation>
 <translation id="5997846976342452720">Especificar si se debe inhabilitar el buscador de complementos (obsoleta)</translation>
-<translation id="6005179188836322782">Habilita la función Navegación Segura de <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien esta opción.
-
-      Si habilitas esta opción, la Navegación Segura está siempre activada.
-
-      Si inhabilitas esta opción, la Navegación Segura nunca está activada.
-
-      Si habilitas o inhabilitas esta opción, los usuarios no pueden cambiar ni anular la opción "Habilitar protección contra phishing y software malicioso" en <ph name="PRODUCT_NAME" />.
-
-      Si esta política no se establece, se habilitará esta opción, pero los usuarios podrán cambiarla.
-
-      Consulta https://developers.google.com/safe-browsing para obtener más información sobre la Navegación Segura.</translation>
 <translation id="6017568866726630990">Permite mostrar el cuadro de diálogo de impresión del sistema en lugar de la vista previa de impresión.
 
       Si esta opción se habilita, <ph name="PRODUCT_NAME" /> abrirá el cuadro de diálogo de impresión del sistema en lugar de la vista previa de impresión integrada cuando un usuario solicite que se imprima una página.
@@ -1591,6 +1577,17 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
       Para fijar aplicaciones en el menú, consulta la política PinnedLauncherApps.</translation>
 <translation id="602728333950205286">URL de función Instant del proveedor de búsquedas predeterminadas</translation>
+<translation id="6029950823657977211">
+      NOTA: Esta política es experimental y puede hacer que el funcionamiento no sea correcto.
+      Esta política se aplica a la pantalla de inicio de sesión. También puedes consultar la política "IsolateOrigins" que se aplica a la sesión del usuario. Te recomendamos que asignes el mismo valor a ambas políticas.
+      Si se habilita la política, cada uno de los orígenes especificados
+      en una lista de elementos separados por comas se ejecutará en un proceso propio. También se aislarán
+      los orígenes de los subdominios correspondientes ;(p. ej., si especificas https://example.com/,
+      también se aislará https://foo.example.com/ como parte del 
+      sitio web https://example.com/).
+      Si se inhabilita, se aplicará la lógica previa de administración de procesos de aislamiento de sitios web.
+      Si no se configura, se utilizarán los ajustes predeterminados de aislamiento de sitios web de la plataforma para la pantalla de inicio de sesión.
+      </translation>
 <translation id="603410445099326293">Parámetros para URL sugerida que utiliza POST</translation>
 <translation id="6036523166753287175">Habilita que se pueda pasar a través de un cortafuegos desde un host de acceso remoto.</translation>
 <translation id="6070667616071269965">Diseños de teclado para la pantalla de inicio de sesión del dispositivo</translation>
@@ -1759,6 +1756,7 @@ Si no se establece esta política, el teclado en pantalla se inhabilitará la pr
       Si esta política no se configura, la predicción de red se habilitará, pero el usuario no podrá modificarla.</translation>
 <translation id="6658245400435704251">Especifica el número de segundos hasta los que un dispositivo puede retrasar aleatoriamente la descarga de una actualización desde el momento en el que esta se envío al servidor por primera vez. El dispositivo puede dedicar una parte de este tiempo al propio proceso de actualización y el resto a realizar las comprobaciones necesarias. En cualquier caso, el límite superior de la dispersión es un periodo de tiempo constante, para que el dispositivo no se quede bloqueado mientras descarga una actualización.</translation>
 <translation id="6689792153960219308">Informar sobre el estado del hardware</translation>
+<translation id="6698071416141001300">La advertencia de protección de contraseña sobre cuenta en riesgo se activa al reutilizar la contraseña</translation>
 <translation id="6699880231565102694">Habilitar la autenticación de dos factores para hosts de acceso remoto</translation>
 <translation id="6724842112053619797">Si habilitas esta opción, la configuración almacenada en los perfiles de <ph name="PRODUCT_NAME" /> (como los marcadores, los datos de Autocompletar y las contraseñas) también se escribirá en un archivo almacenado en la carpeta Itinerancia del perfil de usuario o en una ubicación especificada por el administrador en la política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. 
 Al habilitar esta política, se inhabilita la sincronización en la nube.
@@ -2010,6 +2008,7 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultPopupsSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
 <translation id="7529144158022474049">Actualizar de forma automática el factor de dispersión</translation>
 <translation id="7534199150025803530">Esta política no afecta a la aplicación Google Drive para Android. Si quieres impedir el uso de esta aplicación en conexiones de datos móviles, debes inhabilitar la descarga de Google Drive para Android.</translation>
+<translation id="7547549430720182663">Combinar</translation>
 <translation id="7553535237300701827">El flujo de autenticación de inicio de sesión puede ser de dos formas diferentes, en función del valor que se asigne a esta política:
 
       Si se le asigna el valor GAIA, el inicio de sesión se hace a través del flujo de autenticación normal de GAIA.
@@ -2131,7 +2130,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
       Si no se establece esta política, <ph name="PRODUCT_NAME" /> utilizará el valor predeterminado de 5.000 milisegundos.</translation>
 <translation id="7841880500990419427">Versión mínima de TLS a la que recurrir</translation>
 <translation id="7842869978353666042">Opciones de configuración de Google Drive</translation>
-<translation id="7843525027689416831">Especifica las opciones que se deben aplicar a <ph name="PRODUCT_NAME" /> cuando se inicia. Las opciones especificadas solo se aplican en la pantalla de inicio de sesión. Las opciones establecidas a través de esta política no se propagan a las sesiones del usuario.</translation>
 <translation id="787125417158068494">Si se le asigna el valor SyncDisabled o no se configura, los certificados de <ph name="PRODUCT_OS_NAME" /> no estarán disponibles para las aplicaciones ARC.
 
       Si se le asigna el valor CopyCaCerts, todos los certificados de CA instalados en ONC con <ph name="WEB_TRUSTED_BIT" /> estarán disponibles para las aplicaciones ARC.</translation>
@@ -2294,9 +2292,17 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
       Si esta política no se establece o se inhabilita, el complemento de PDF se usará para abrir archivos PDF a menos que el usuario lo inhabilite.</translation>
 <translation id="8402079500086185021">Abrir siempre los archivos PDF de forma externa</translation>
 <translation id="8412312801707973447">Se realizan comprobaciones OCSP/CRL si estás online</translation>
+<translation id="841977920223099909">Activar advertencia de protección de contraseña</translation>
 <translation id="8424255554404582727">Establecer rotación de pantalla predeterminada y volver a aplicarla cada vez que se reinicie el dispositivo</translation>
 <translation id="8426231401662877819">Rotar la pantalla 90 grados hacia la derecha</translation>
 <translation id="8451988835943702790">Utilizar página Nueva pestaña como página principal</translation>
+<translation id="8459216513698220096">Especifica si la política del usuario del GPO del equipo se procesa o no y cómo lo hace.
+
+      Si se le asigna el valor "Predeterminado" a la política o no se le asigna ningún valor, la política del usuario solo podrá consultarse desde los GPO del usuario (se ignorarán los GPO del equipo).
+
+      Si se le asigna el valor "Combinar" a la política, la política del usuario de los GPO del usuario se combinará con la política del usuario de los GPO del equipo (los GPO del equipo tienen preferencia).
+
+      Si se le asigna el valor "Sustituir" a la política, la política del usuario de los GPO del usuario se sustituirá por la política del usuario de los GPO del equipo (se ignorarán los GPO del usuario).</translation>
 <translation id="8465065632133292531">Parámetros para URL instantánea que utiliza POST</translation>
 <translation id="847472800012384958">No permitir que ningún sitio muestre pop-ups</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2345,6 +2351,7 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
           Si no se establece esta política, <ph name="PRODUCT_NAME" /> intentará detectar si un servidor se encuentra en la intranet y solo entonces responderá a las solicitudes de IWA. Si se detecta Internet como servidor, <ph name="PRODUCT_NAME" /> ignorará las solicitudes de IWA que procedan de él.</translation>
 <translation id="8672321184841719703">Versión de destino de actualizaciones automáticas</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
+<translation id="8685024486845674965">La advertencia de protección de contraseña se activa al reutilizar la contraseña</translation>
 <translation id="8693243869659262736">Utilizar cliente DNS integrado</translation>
 <translation id="8704831857353097849">Lista de complementos inhabilitados</translation>
 <translation id="8711086062295757690">Permite especificar la palabra clave, que se usa como acceso directo en el omnibox para generar resultados de búsqueda de este proveedor.
@@ -2361,6 +2368,7 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
       Si esta opción se habilita o no se establece, se podrán eliminar los historiales de navegación y de descargas.
 
       Si se inhabilita esta opción, no se podrán eliminar los historiales de navegación y de descargas.</translation>
+<translation id="8759829385824155666">Tipos de cifrado Kerberos admitidos</translation>
 <translation id="8764119899999036911">Permite especificar si el SPN de Kerberos se basa en el nombre de dominio canónico o en el nombre que se introdujo originalmente.
 
           Si habilitas esta opción, se omitirá la consulta de nombre canónico y se usará el nombre del servidor tal como se haya introducido.
@@ -2380,6 +2388,7 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
      Si no se establece esta política o se establece el valor "false", no se informará de la ubicación.</translation>
 <translation id="8818768076343557335">Predecir las acciones de la red en cualquier red que no sea móvil.
           (Obsoleto en 50, eliminado en 52. Si se le asigna el valor 1 después de 52, se tratará como si fuese 0 - predecir las acciones de red en cualquier conexión de red).</translation>
+<translation id="8825782996899863372">La advertencia de protección de contraseña se activa al reutilizar la contraseña en una página de phishing</translation>
 <translation id="8828766846428537606">Permite configurar la página de inicio predeterminada en <ph name="PRODUCT_NAME" /> e impide que los usuarios la cambien.
 
       Para bloquear completamente la configuración de la página de inicio de los usuarios, es necesario establecerla como página Nueva pestaña o definirla como URL y establecerla como URL de página de inicio. Si no especificas la URL de página de inicio, los usuarios podrán establecer la página Nueva pestaña como página de inicio especificando "chrome://newtab".</translation>
@@ -2440,6 +2449,12 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
       Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
 
       Esta política no afecta a la capacidad de los usuarios para configurar impresoras en determinados dispositivos. La política se ha diseñado como complemento a la configuración de impresoras que realizan los usuarios.
+      </translation>
+<translation id="8934944553121392674">Controla a qué impresoras de la política <ph name="DEVICE_PRINTERS_POLICY" /> tienen acceso los usuarios.
+
+      Designa qué política de acceso se utiliza para configurar impresoras en bloque. Si se selecciona <ph name="PRINTERS_ALLOW_ALL" />, se mostrarán todas las impresoras. Si se selecciona <ph name="PRINTERS_BLACKLIST" />, se utilizará <ph name="DEVICE_PRINTERS_BLACKLIST" /> para restringir el acceso a impresoras específicas. Si se selecciona <ph name="PRINTERS_WHITELIST" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> designará únicamente las impresoras que se puedan seleccionar.
+
+      Si no se establece esta política, se utilizará <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="8947415621777543415">Informar de ubicación del dispositivo</translation>
 <translation id="8951350807133946005">Establecer directorio de caché de disco</translation>
@@ -2518,5 +2533,11 @@ Los controladores de protocolos registrados por la política se combinan con los
 <translation id="930930237275114205">Configurar directorio de datos de usuario de <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Habilitar el inicio de sesión forzoso de <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Establecer tamaño de caché de disco</translation>
+<translation id="9775893229076211">Permite controlar la activación de la advertencia de protección de contraseña sobre cuenta en riesgo. La advertencia de protección de contraseña sobre cuenta en riesgo informa a Google de que la cuenta corre el riesgo de ser interceptada.
+
+      Si se le asigna el valor "PasswordProtectionRiskOff" a esta política, no se activará la advertencia de protección de contraseña sobre cuenta en riesgo.
+      Si se le asigna el valor "PasswordProtectionRiskOnPasswordReuse", se activará la advertencia de protección de contraseña sobre cuenta en riesgo cuando los usuarios vuelvan a utilizar las contraseñas de Google en cualquier sitio web que no esté incluido en la lista blanca.
+       Si se le asigna el valor "PasswordProtectionRiskOnPhishingReuse" a esta política, se activará la advertencia de protección de contraseña sobre cuenta en riesgo cuando los usuarios vuelvan a utilizar las contraseñas de Google en sitios web de phishing.
+      Si no se le asigna ningún valor a esta política, se activará la advertencia de protección de contraseña sobre cuenta en riesgo cuando los usuarios vuelvan a utilizar las contraseñas de Google en sitios web de phishing, pero el usuario podrá cambiarlo.</translation>
 <translation id="982497069985795632">Habilitar corrector ortográfico</translation>
 </translationbundle>

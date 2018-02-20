@@ -36,6 +36,7 @@
 <translation id="2046702855113914483">ราเม็ง</translation>
 <translation id="2080010875307505892">แป้นพิมพ์ภาษาเซอร์เบียน</translation>
 <translation id="2136953289241069843">การทับศัพท์ (namaste → नमस्कार)</translation>
+<translation id="2145908266289632567">การแก้ไขข้อความ</translation>
 <translation id="2164862903024139959">แป้นพิมพ์ภาษาเวียดนาม (TCVN)</translation>
 <translation id="2168214441502403371">แป้นพิมพ์ภาษาเปอร์เซีย</translation>
 <translation id="2198315389084035571">จีนตัวย่อ</translation>
@@ -57,6 +58,7 @@
 <translation id="2781645665747935084">เบลเยียม</translation>
 <translation id="2790805296069989825">แป้นพิมพ์ภาษารัสเซีย</translation>
 <translation id="2870836398458454343">การทับศัพท์ (marhaban ← مرحبا)</translation>
+<translation id="2872353916818027657">สลับหน้าจอหลัก</translation>
 <translation id="288024221176729610">เช็ก</translation>
 <translation id="2894654529758326923">ข้อมูล</translation>
 <translation id="2902734494705624966">แป้นพิมพ์ขยายแบบสหรัฐอเมริกา</translation>
@@ -69,8 +71,10 @@
 <translation id="2966459079597787514">แป้นพิมพ์ภาษาสวีเดน</translation>
 <translation id="3064388234319122767">การทับศัพท์ (zdravo → здраво)</translation>
 <translation id="3088034400796962477">การทับศัพท์ (salam ← سلام)</translation>
+<translation id="3105917916468784889">จับภาพหน้าจอ</translation>
 <translation id="3116361045094675131">แป้นพิมพ์ภาษาอังกฤษสหราชอาณาจักร</translation>
 <translation id="3126026824346185272">Ctrl</translation>
+<translation id="3140353188828248647">โฟกัสแถบที่อยู่</translation>
 <translation id="3157729859914172001">แป้นพิมพ์สากลสหรัฐอเมริกา (พีซี)</translation>
 <translation id="3187212781151025377">แป้นพิมพ์ภาษาฮิบรู</translation>
 <translation id="3197563288998582412">ดีโวรักสหราชอาณาจักร</translation>
@@ -82,12 +86,15 @@
 <translation id="3338239663705455570">แป้นพิมพ์ภาษาสโลวีเนีย</translation>
 <translation id="3399597614303179694">แป้นพิมพ์ภาษามาซิโดเนีย</translation>
 <translation id="3494768541638400973">การป้อนข้อมูลภาษาญี่ปุ่นของ Google (สำหรับแป้นพิมพ์ภาษาญี่ปุ่น)</translation>
+<translation id="3496213124478423963">ย่อ</translation>
 <translation id="3519867315646775981">การทับศัพท์ (shalom ← שלום)</translation>
 <translation id="3522708245912499433">โปรตุเกส</translation>
 <translation id="357479282490346887">ลิทัวเนีย</translation>
+<translation id="3592821358219525223">การตั้งค่าระบบและการแสดงผล</translation>
 <translation id="3603385196401704894">ฝรั่งเศสแบบแคนาดา</translation>
 <translation id="3606220979431771195">ภาษาตุรกี-F</translation>
 <translation id="3619115746895587757">คาปูชิโน</translation>
+<translation id="3649256019230929621">ย่อหน้าต่าง</translation>
 <translation id="3678559383040232393">แป้นพิมพ์มอลตา</translation>
 <translation id="3801082500826908679">แฟโร</translation>
 <translation id="3809272675881623365">กระต่าย</translation>
@@ -95,6 +102,7 @@
 <translation id="3825863595139017598">แป้นพิมพ์มองโกเลีย</translation>
 <translation id="3833761542219863804">การทับศัพท์ (mausam → ਮੌਸਮ)</translation>
 <translation id="383652340667548381">เซอร์เบีย</translation>
+<translation id="385051799172605136">กลับ</translation>
 <translation id="3855472144336161447">Neo 2 แบบเยอรมัน</translation>
 <translation id="3858678421048828670">แป้นพิมพ์ภาษาอิตาลี</translation>
 <translation id="3910699493603749297">แป้นพิมพ์ภาษากัมพูชา</translation>
@@ -144,6 +152,7 @@
 <translation id="5218183485292899140">ฝรั่งเศสแบบสวิส</translation>
 <translation id="5241298539944515331">แป้นพิมพ์ภาษาเวียดนาม (VIQR)</translation>
 <translation id="5257456363153333584">แมลงปอ</translation>
+<translation id="5316716239522500219">แสดงผลบนหน้าจอ</translation>
 <translation id="5319782540886810524">แป้นพิมพ์ภาษาลัตเวีย</translation>
 <translation id="5323213332664049067">ละตินอเมริกา</translation>
 <translation id="5402367795255837559">เบรลล์</translation>
@@ -166,14 +175,18 @@
 <translation id="5819442873484330149">ฮังกูลแบบ 3 ชุด (สุดท้าย)</translation>
 <translation id="5838825566232597749">Workman สหรัฐฯ แบบสากล</translation>
 <translation id="5892290200158927959">แป้นพิมพ์ภาษาฝรั่งเศสแบบ BÉPO</translation>
+<translation id="5928303187149237472">เปลี่ยนความละเอียดของหน้าจอ</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">แป้นพิมพ์ภาษาละตินอเมริกา</translation>
 <translation id="6012987430370760224">แป้นพิมพ์ภาษามาราฐี (คำที่ใช้ออกเสียง)</translation>
+<translation id="6022924867608035986">ล้างข้อความในช่องค้นหา</translation>
 <translation id="60357267506638014">QWERTY แบบเช็ก</translation>
 <translation id="6054173164583630569">แป้นพิมพ์ภาษาฝรั่งเศส</translation>
 <translation id="6111770213269631447">การทับศัพท์ (namaskar → নমস্কার)</translation>
+<translation id="6129953537138746214">ช่องว่าง</translation>
 <translation id="6164412158936057769">ผีเสื้อ</translation>
 <translation id="6170470584681422115">แซนด์วิช</translation>
+<translation id="6185696379715117369">เลื่อนหน้าขึ้น</translation>
 <translation id="6264347891387618177">การทับศัพท์ (selam → ሰላም)</translation>
 <translation id="6305012486838822927">แป้นพิมพ์ภาษาลาว</translation>
 <translation id="6339034549827494595">แป้นพิมพ์การถ่ายเสียงภาษารัสเซีย (AATSEEL)</translation>
@@ -186,6 +199,8 @@
 <translation id="6505918941256367791">แป้นพิมพ์ภาษาทมิฬ (InScript)</translation>
 <translation id="6509122719576673235">นอร์เวย์</translation>
 <translation id="6650726141019353908">ผีเสื้อสีชมพู</translation>
+<translation id="671928215901716392">ล็อกหน้าจอ</translation>
+<translation id="6727005317916125192">แผงก่อนหน้า</translation>
 <translation id="6760765581316020278">แป้นพิมพ์ภาษาเวียดนาม (VNI)</translation>
 <translation id="6795884519221689054">แพนด้า</translation>
 <translation id="6808193438228982088">สุนัขจิ้งจอก</translation>
@@ -201,11 +216,14 @@
 <translation id="6939777852457331078">แป้นพิมพ์ Workman สหรัฐฯ</translation>
 <translation id="6970230597523682626">บัลแกเรีย</translation>
 <translation id="6981982820502123353">การเข้าถึง</translation>
+<translation id="7020813747703216897">ไม่พบผลการค้นหาที่ตรงกัน</translation>
+<translation id="7025325401470358758">แผงถัดไป</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">การทับศัพท์ (salam → ሰላም)</translation>
 <translation id="7172053773111046550">แป้นพิมพ์ภาษาเอสโตเนีย</translation>
 <translation id="719009910964971313">แป้นพิมพ์ดีโวรักโปรแกรมเมอร์สหรัฐอเมริกา</translation>
 <translation id="7222624196722476520">แป้นพิมพ์แบบออกเสียงภาษาบัลแกเรีย</translation>
+<translation id="7272373489634936181">ค้นหาแป้นพิมพ์ลัด</translation>
 <translation id="7348749398828259943">แป้นพิมพ์ Workman สหรัฐฯ แบบสากล</translation>
 <translation id="7389722738210761877">แป้นพิมพ์ภาษาไทย (มอก. 820-2531)</translation>
 <translation id="7396038720194014279">แป้นพิมพ์ภาษาฮินดี (คำที่ใช้ออกเสียง)</translation>
@@ -214,11 +232,13 @@
 <translation id="7434823369735508263">แป้นพิมพ์ดีโวรักสหราชอาณาจักร</translation>
 <translation id="7460898608667578234">ยูเครน</translation>
 <translation id="7474889694310679759">แป้นพิมพ์ภาษาอังกฤษแคนาดา</translation>
+<translation id="7500462265946853476">หน้าเว็บและเว็บเบราว์เซอร์</translation>
 <translation id="751507702149411736">เบลารุส</translation>
 <translation id="7547811415869834682">ดัตช์</translation>
 <translation id="7603724359189955920">ตารางกริด</translation>
 <translation id="770015031906360009">กรีก</translation>
 <translation id="7706319470528945664">แป้นพิมพ์ภาษาโปรตุเกส</translation>
+<translation id="7724603315864178912">ตัด</translation>
 <translation id="7774365994322694683">นก</translation>
 <translation id="7825423931463735974">แป้นพิมพ์ภาษาทมิฬ (Tamil99)</translation>
 <translation id="7853966320808728790">ภาษาฝรั่งเศสแบบ BÉPO</translation>
@@ -228,6 +248,7 @@
 <translation id="7943385054491506837">Colemak แบบสหรัฐอเมริกา</translation>
 <translation id="7969525169268594403">สโลวีเนีย</translation>
 <translation id="7987485481246785146">แป้นพิมพ์ภาษาเคิร์ดโซรานีแบบอารบิก</translation>
+<translation id="8004192919599017226">เริ่มค้นหา...</translation>
 <translation id="8008366997883261463">สุนัข</translation>
 <translation id="8031722894461705849">แป้นพิมพ์ภาษาสโลวัก</translation>
 <translation id="8045462269890919536">โรมาเนีย</translation>
@@ -248,6 +269,7 @@
 <translation id="8437209419043462667">สหรัฐอเมริกา</translation>
 <translation id="8467473010914675605">วิธีป้อนข้อมูลภาษาเกาหลี</translation>
 <translation id="8477649328507734757">หมุน</translation>
+<translation id="8487678622945914333">ขยาย</translation>
 <translation id="8521441079177373948">สหราชอาณาจักร</translation>
 <translation id="8551494947769799688">ลัตเวีย</translation>
 <translation id="8561206103590473338">ช้าง</translation>
@@ -258,6 +280,7 @@
 <translation id="8803496343472038847">แป้นพิมพ์แบบออกเสียงภาษารัสเซีย</translation>
 <translation id="8808686172382650546">แมว</translation>
 <translation id="885381502874625531">แป้นพิมพ์เบลารุส</translation>
+<translation id="88986195241502842">เลื่อนหน้าลง</translation>
 <translation id="8900820606136623064">ฮังการี</translation>
 <translation id="8901822611024316615">แป้นพิมพ์ QWERTY ของเช็ก</translation>
 <translation id="8919081441417203123">เดนมาร์ก</translation>
@@ -265,6 +288,7 @@
 <translation id="9017798300203431059">การออกเสียงภาษารัสเซีย</translation>
 <translation id="913758436357682283">แป้นพิมพ์เมียนซานของพม่า</translation>
 <translation id="9153744823707037316">วิธีการป้อนข้อมูลแบบอาร์เรย์</translation>
+<translation id="9179672198516322668">แป้นพิมพ์ลัดยอดนิยม</translation>
 <translation id="9206487995878691001">วิธีการป้อนข้อมูลแบบ Cangjie</translation>
 <translation id="9219908252191632183">ดวงจันทร์</translation>
 </translationbundle>

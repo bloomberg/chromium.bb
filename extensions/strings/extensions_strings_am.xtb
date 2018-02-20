@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">ግላዊ ቁልፍን ማንበብ አልተሳካም።</translation>
 <translation id="6391538222494443604">የግብአት ማውጫ መኖር ይኖርበታል።</translation>
 <translation id="641087317769093025">ቅጥያውን መበተን አልተቻለም</translation>
+<translation id="6542618148162044354">«<ph name="APP_NAME" />» የአንድ ወይም ተጨማሪ መሣሪያዎችዎ መዳረሻ እየጠየቁ ነው።</translation>
 <translation id="657064425229075395">የጀርባ ስክሪፕት «<ph name="BACKGROUND_SCRIPT" />» መጫን አልተቻለም።</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> ከ<ph name="VENDOR_NAME" /> (የመለያ ቁጥር <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">ይሄ የሚበተንበት አቃፊ መፍጠር አልተቻለም፦ «<ph name="DIRECTORY_PATH" />»</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">ጥቅሉ ልክ አይደለም። ዝርዝሮች፦ «<ph name="ERROR_MESSAGE" />»።</translation>
 <translation id="8670869118777164560">ይህ ቅጥያ አንድ የአውታረ መረብ ጥያቄ ወደ <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> ማዞር አልተሳካለትም ምክንያቱም ሌላ ቅጥያ (<ph name="EXTENSION_NAME" />) ወደ <ph name="ACTUAL_REDIRECT_DESTINATION" /> አዙሮታል።</translation>
 <translation id="8712265948125780616">ቅጥያ ማራገፊያ</translation>
+<translation id="8761756413268424715">«<ph name="APP_NAME" />» የአንዱ መሣሪያዎ መዳረሻ እየጠየቀ ነው።</translation>
 <translation id="8825366169884721447">ይህ ቅጥያ የጥያቄው ርዕስ «<ph name="HEADER_NAME" />»ን መቀየር አልተሳካለትም ምክንያቱም ለውጡ ከሌላ ቅጥያ (<ph name="EXTENSION_NAME" />) ጋር ስለተጋጨ።</translation>
 <translation id="8885905466771744233">ለተጠቀሰው ቅጥያ ቀድሞውንም ግላዊ ቁልፍ አለ። ይህን ቁልፍ ዳግም ይጠቀሙ ወይም  ይሰርዙት።</translation>
 <translation id="907841381057066561">በመጠቅለል ጊዜ ጊዜያዊ ዚፕ ፋይል መፍጠር አልተሳካም።</translation>

@@ -33,7 +33,6 @@
 <translation id="1936717151811561466">Finnish</translation>
 <translation id="1947424002851288782">German keyboard</translation>
 <translation id="1984603991036629094">Armenian Phonetic keyboard</translation>
-<translation id="1989746695744304008">Tab And Windows</translation>
 <translation id="2046702855113914483">Ramen</translation>
 <translation id="2080010875307505892">Serbian keyboard</translation>
 <translation id="2136953289241069843">Transliteration (namaste → नमस्कार)</translation>
@@ -59,6 +58,7 @@
 <translation id="2781645665747935084">Belgian</translation>
 <translation id="2790805296069989825">Russian keyboard</translation>
 <translation id="2870836398458454343">Transliteration (marhaban ← مرحبا)</translation>
+<translation id="2872353916818027657">Swap primary monitor</translation>
 <translation id="288024221176729610">Czech</translation>
 <translation id="2894654529758326923">Information</translation>
 <translation id="2902734494705624966">US extended</translation>
@@ -71,8 +71,10 @@
 <translation id="2966459079597787514">Swedish keyboard</translation>
 <translation id="3064388234319122767">Transliteration (zdravo → здраво)</translation>
 <translation id="3088034400796962477">Transliteration (salam ← سلام)</translation>
+<translation id="3105917916468784889">Take screenshot</translation>
 <translation id="3116361045094675131">UK keyboard</translation>
 <translation id="3126026824346185272">Ctrl</translation>
+<translation id="3140353188828248647">Focus address bar</translation>
 <translation id="3157729859914172001">US International (PC) keyboard</translation>
 <translation id="3187212781151025377">Hebrew keyboard</translation>
 <translation id="3197563288998582412">UK Dvorak</translation>
@@ -84,6 +86,7 @@
 <translation id="3338239663705455570">Slovenian keyboard</translation>
 <translation id="3399597614303179694">Macedonian keyboard</translation>
 <translation id="3494768541638400973">Google Japanese Input (for Japanese keyboard)</translation>
+<translation id="3496213124478423963">Zoom Out</translation>
 <translation id="3519867315646775981">Transliteration (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portuguese</translation>
 <translation id="357479282490346887">Lithuanian</translation>
@@ -91,6 +94,7 @@
 <translation id="3603385196401704894">Canadian French</translation>
 <translation id="3606220979431771195">Turkish-F</translation>
 <translation id="3619115746895587757">Cappuccino</translation>
+<translation id="3649256019230929621">Minimise window</translation>
 <translation id="3678559383040232393">Maltese keyboard</translation>
 <translation id="3801082500826908679">Faroese</translation>
 <translation id="3809272675881623365">Rabbit</translation>
@@ -98,6 +102,7 @@
 <translation id="3825863595139017598">Mongolian keyboard</translation>
 <translation id="3833761542219863804">Transliteration (mausam → ਮੌਸਮ)</translation>
 <translation id="383652340667548381">Serbian</translation>
+<translation id="385051799172605136">Back</translation>
 <translation id="3855472144336161447">German Neo 2</translation>
 <translation id="3858678421048828670">Italian keyboard</translation>
 <translation id="3910699493603749297">Khmer keyboard</translation>
@@ -147,6 +152,7 @@
 <translation id="5218183485292899140">Swiss French</translation>
 <translation id="5241298539944515331">Vietnamese keyboard (VIQR)</translation>
 <translation id="5257456363153333584">Dragonfly</translation>
+<translation id="5316716239522500219">Mirror monitors</translation>
 <translation id="5319782540886810524">Latvian keyboard</translation>
 <translation id="5323213332664049067">Latin American</translation>
 <translation id="5402367795255837559">Braille</translation>
@@ -173,11 +179,14 @@
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">Latin American keyboard</translation>
 <translation id="6012987430370760224">Marathi keyboard (Phonetic)</translation>
+<translation id="6022924867608035986">Clear search box text</translation>
 <translation id="60357267506638014">Czech QWERTY</translation>
 <translation id="6054173164583630569">French keyboard</translation>
 <translation id="6111770213269631447">Transliteration (namaskar → নমস্কার)</translation>
+<translation id="6129953537138746214">Space</translation>
 <translation id="6164412158936057769">Butterflies</translation>
 <translation id="6170470584681422115">Sandwich</translation>
+<translation id="6185696379715117369">Page up</translation>
 <translation id="6264347891387618177">Transliteration (selam → ሰላም)</translation>
 <translation id="6305012486838822927">Lao keyboard</translation>
 <translation id="6339034549827494595">Russian Phonetic (AATSEEL) keyboard</translation>
@@ -189,9 +198,9 @@
 <translation id="6503256918647795660">Swiss French keyboard</translation>
 <translation id="6505918941256367791">Tamil keyboard (InScript)</translation>
 <translation id="6509122719576673235">Norwegian</translation>
-<translation id="6629951648264770593"><ph name="MODIFIER" /> + <ph name="KEY" /></translation>
 <translation id="6650726141019353908">Pink butterfly</translation>
-<translation id="6684986274046026054">Lock your screen</translation>
+<translation id="671928215901716392">Lock screen</translation>
+<translation id="6727005317916125192">Previous pane</translation>
 <translation id="6760765581316020278">Vietnamese keyboard (VNI)</translation>
 <translation id="6795884519221689054">Panda</translation>
 <translation id="6808193438228982088">Fox</translation>
@@ -207,11 +216,14 @@
 <translation id="6939777852457331078">US Workman keyboard</translation>
 <translation id="6970230597523682626">Bulgarian</translation>
 <translation id="6981982820502123353">Accessibility</translation>
+<translation id="7020813747703216897">No matching results found</translation>
+<translation id="7025325401470358758">Next pane</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Transliteration (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Estonian keyboard</translation>
 <translation id="719009910964971313">US Programmer Dvorak keyboard</translation>
 <translation id="7222624196722476520">Bulgarian Phonetic keyboard</translation>
+<translation id="7272373489634936181">Search for shortcuts</translation>
 <translation id="7348749398828259943">US Workman international keyboard</translation>
 <translation id="7389722738210761877">Thai keyboard (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Hindi keyboard (Phonetic)</translation>
@@ -226,6 +238,7 @@
 <translation id="7603724359189955920">Grids</translation>
 <translation id="770015031906360009">Greek</translation>
 <translation id="7706319470528945664">Portuguese keyboard</translation>
+<translation id="7724603315864178912">Cut</translation>
 <translation id="7774365994322694683">Bird</translation>
 <translation id="7825423931463735974">Tamil keyboard (Tamil99)</translation>
 <translation id="7853966320808728790">French BÉPO</translation>
@@ -235,6 +248,7 @@
 <translation id="7943385054491506837">US Colemak</translation>
 <translation id="7969525169268594403">Slovenian</translation>
 <translation id="7987485481246785146">Sorani Kurdish Arabic-based keyboard</translation>
+<translation id="8004192919599017226">Start search…</translation>
 <translation id="8008366997883261463">Jack Russell Terrier</translation>
 <translation id="8031722894461705849">Slovak keyboard</translation>
 <translation id="8045462269890919536">Romanian</translation>
@@ -255,6 +269,7 @@
 <translation id="8437209419043462667">US</translation>
 <translation id="8467473010914675605">Korean input method</translation>
 <translation id="8477649328507734757">Spin</translation>
+<translation id="8487678622945914333">Zoom In</translation>
 <translation id="8521441079177373948">UK</translation>
 <translation id="8551494947769799688">Latvian</translation>
 <translation id="8561206103590473338">Elephant</translation>
@@ -264,8 +279,8 @@
 <translation id="874420130893181774">Traditional Pinyin input method</translation>
 <translation id="8803496343472038847">Russian Phonetic keyboard</translation>
 <translation id="8808686172382650546">Cat</translation>
-<translation id="8839645518696429828"><ph name="CTRL" /> + <ph name="SHIFT" /> and + or -</translation>
 <translation id="885381502874625531">Belarusian keyboard</translation>
+<translation id="88986195241502842">Page down</translation>
 <translation id="8900820606136623064">Hungarian</translation>
 <translation id="8901822611024316615">Czech QWERTY keyboard</translation>
 <translation id="8919081441417203123">Danish</translation>
@@ -273,6 +288,7 @@
 <translation id="9017798300203431059">Russian phonetic</translation>
 <translation id="913758436357682283">Myanmar Myansan keyboard</translation>
 <translation id="9153744823707037316">Array input method</translation>
+<translation id="9179672198516322668">Popular Shortcuts</translation>
 <translation id="9206487995878691001">Cangjie input method</translation>
 <translation id="9219908252191632183">Lunar</translation>
 </translationbundle>

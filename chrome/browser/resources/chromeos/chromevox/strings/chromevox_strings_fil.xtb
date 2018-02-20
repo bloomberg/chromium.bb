@@ -36,6 +36,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Susunod na heading sa antas 6</translation>
 <translation id="1275718070701477396">Pinili</translation>
+<translation id="1286609444451033486">Pindutin ang Search+Space upang i-toggle.</translation>
 <translation id="1319608975892113573">Walang nakaraang blockquote.</translation>
 <translation id="1321576897702511272">Itago ang tulong sa ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> ng <ph name="TOTAL" /></translation>
@@ -371,6 +372,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="4191918948604314587">Isang button</translation>
 <translation id="4202186506458631436">Ilipat pakanan</translation>
 <translation id="4206289001967551965">Nasa loob ng talahanayan</translation>
+<translation id="4209770650650780359">Pindutin ang pataas o pababang arrow para sa mga awtomatikong pagkumpleto.</translation>
 <translation id="4215733775853809057">Susunod na slider</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{gitling}one{# gitling}other{# na gitling}}</translation>
 <translation id="421884353938374759">tagapili ng kulay</translation>
@@ -404,6 +406,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="4532633738839459153">{COUNT,plural, =1{slash}one{# slash}other{# na slash}}</translation>
 <translation id="4547556996012970016">Susunod na heading sa antas 5</translation>
 <translation id="4562381607973973258">Header</translation>
+<translation id="4569941707103739422">Pindutin ang pataas o pababang arrow upang mag-navigate; pindutin ang enter upang i-activate.</translation>
 <translation id="4570424871453628777">Dulo ng maling spelling</translation>
 <translation id="4591507479202817876">, pinili</translation>
 <translation id="4597532268155981612">form</translation>
@@ -497,6 +500,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="536031132345979795">Lumaktaw pabalik habang patuloy na nagbabasa</translation>
 <translation id="5368000168321181111">Naka-off ang mga earcon</translation>
 <translation id="5374320867641260420">Walang susunod na button.</translation>
+<translation id="5376407118396657359">Pindutin ang Search+Ctrl+Alt at gamitin ang mga arrow upang mag-navigate sa bawat cell.</translation>
 <translation id="5382299583965267720">Walang susunod na heading sa antas 1.</translation>
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5402791055281059602">Isang modal na alerto</translation>
@@ -505,6 +509,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="5417034931411865818">I-click ang item sa ilalim ng routing key $1</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{less than}one{# less than sign}other{# na less than sign}}</translation>
 <translation id="5444587279251314700">(aktibo)</translation>
+<translation id="5446809554778706307">Walang focus. Pindutin ang Ctrl+T upang magbukas ng bagong tab.</translation>
 <translation id="5451268436205074266">dot <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Complementary</translation>
 <translation id="5485036206801896268">Walang nakaraang graphic.</translation>
@@ -584,6 +589,7 @@ Upang buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="6006050241733874051">Form</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{backslash}one{# backslash}other{# na backslash}}</translation>
 <translation id="6037602951055904232">I-pan paharap</translation>
+<translation id="6042826534790431634">Pindutin ang Search+Space upang i-activate.</translation>
 <translation id="6044160928851315051">Padilimin ang screen</translation>
 <translation id="605761629541007221">Dulo ng bold</translation>
 <translation id="6065293622157674001">Simula ng error sa grammar</translation>
@@ -860,6 +866,7 @@ Upang buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="9065283790526219006">+popup</translation>
 <translation id="9077213568694924680">inalis sa pagpili</translation>
 <translation id="9082874451376019682">Walang nakaraang slider.</translation>
+<translation id="9087707351856729768">I-type upang awtomatikong makumpleto.</translation>
 <translation id="9089864840575085222">Echo ng cycle typing</translation>
 <translation id="9105227991373418255">i-cut ang $1.</translation>
 <translation id="9107530006868467849">Walang nakaraang widget ng media.</translation>

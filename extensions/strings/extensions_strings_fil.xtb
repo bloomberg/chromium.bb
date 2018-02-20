@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">Nabigong basahin ang pribadong key.</translation>
 <translation id="6391538222494443604">Dapat na umiiral ang direktoryo ng input.</translation>
 <translation id="641087317769093025">Hindi ma-unzip ang extension</translation>
+<translation id="6542618148162044354">Humihiling ang "<ph name="APP_NAME" />" ng access sa isa o higit pa sa iyong mga device:</translation>
 <translation id="657064425229075395">Hindi ma-load ang script ng background na '<ph name="BACKGROUND_SCRIPT" />'.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> mula sa <ph name="VENDOR_NAME" /> (serial number <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Hindi malikha ang direktoryo para sa pag-unzip: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">Di-wasto ang package. Mga Detalye: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">Nabigo ang extension na ito na mag-redirect ng kahilingan sa network sa <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> dahil may isa pang extension (<ph name="EXTENSION_NAME" />) na nag-redirect nito sa <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Pang-unpack ng Extension</translation>
+<translation id="8761756413268424715">Humihiling ang "<ph name="APP_NAME" />" ng access sa isa sa iyong mga device:</translation>
 <translation id="8825366169884721447">Nabigo ang extension na ito na baguhin ang header ng kahilingan na "<ph name="HEADER_NAME" />" ng isang kahilingan sa network dahil sumalungat ang pagbabago sa isa pang extension (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Umiiral na ang pribadong key para sa tinukoy na extension. Gamiting muli ang key na iyon o tanggalin muna ito.</translation>
 <translation id="907841381057066561">Nabigo sa paglikha ng pansamantalang zip file sa oras ng packaging.</translation>

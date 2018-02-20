@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">Özel anahtar okunamadı.</translation>
 <translation id="6391538222494443604">Giriş dizininin olması gerekir.</translation>
 <translation id="641087317769093025">Uzantı açılamadı</translation>
+<translation id="6542618148162044354">"<ph name="APP_NAME" />" uygulaması cihazlarınızdan birine veya birkaçına erişim izni istiyor:</translation>
 <translation id="657064425229075395">Arka plan komut dosyası '<ph name="BACKGROUND_SCRIPT" />' yüklenemedi.</translation>
 <translation id="6580950983454333167">Ürün: <ph name="PRODUCT_NAME" />, Firma: <ph name="VENDOR_NAME" /> (seri numarası: <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Açma dizini oluşturulamadı: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">Paket geçersiz. Ayrıntılar: '<ph name="ERROR_MESSAGE" />'</translation>
 <translation id="8670869118777164560">Bu uzantı bir ağ isteğini <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> hedefine yönlendiremedi, çünkü başka bir uzantı (<ph name="EXTENSION_NAME" />) o isteği <ph name="ACTUAL_REDIRECT_DESTINATION" /> hedefine yönlendirmişti.</translation>
 <translation id="8712265948125780616">Uzantı Açıcı</translation>
+<translation id="8761756413268424715">"<ph name="APP_NAME" />" uygulaması cihazlarınızdan birine erişim izni istiyor:</translation>
 <translation id="8825366169884721447">Bu uzantı bir ağ isteğinin "<ph name="HEADER_NAME" />" adlı istek başlığını değiştiremedi, çünkü söz konusu değişiklik başka bir uzantı (<ph name="EXTENSION_NAME" />) ile çakışıyordu.</translation>
 <translation id="8885905466771744233">Belirtilen uzantıya ilişkin özel anahtar zaten var. Var olan anahtarı yeniden kullanın veya öncelikle bu anahtarı silin.</translation>
 <translation id="907841381057066561">Paketleme sırasında geçici zip dosyası oluşturulamadı.</translation>

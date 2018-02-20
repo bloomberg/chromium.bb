@@ -43,6 +43,7 @@
 <translation id="1951012854035635156">सहायक</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1995660704900986789">पावर बंद करें</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2049639323467105390">यह डिवाइस <ph name="DOMAIN" /> द्वारा प्रबंधित है.</translation>
 <translation id="2050339315714019657">पोर्ट्रेट</translation>
@@ -83,6 +84,7 @@
 <translation id="2844169650293029770">USB-C डिवाइस (बायां सामने वाला पोर्ट)</translation>
 <translation id="2865888419503095837">नेटवर्क जानकारी</translation>
 <translation id="2872961005593481000">शट डाउन करें</translation>
+<translation id="2878884018241093801">हाल का कोई आइटम नहीं</translation>
 <translation id="2903844815300039659"><ph name="NAME" /> से जुड़ गया है, <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">आप अपनी स्क्रीन शेयर कर रहे हैं</translation>
 <translation id="2942516765047364088">अलमारी की स्थिति</translation>
@@ -139,6 +141,7 @@
 <translation id="4072264167173457037">मध्यम सिग्नल</translation>
 <translation id="4279490309300973883">मिरर करना</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">आवर्धक ग्लास</translation>
 <translation id="4351433414020964307">Assistant सेवा लोड हो रही है...</translation>
 <translation id="4378551569595875038">कनेक्ट हो रहा है...</translation>
@@ -183,6 +186,7 @@
 <translation id="5744083938413354016">टैप करके खींचना</translation>
 <translation id="5777841717266010279">स्‍क्रीन साझाकरण बंद करें?</translation>
 <translation id="57838592816432529">म्यूट करें</translation>
+<translation id="5820394555380036790">क्रोमियम OS</translation>
 <translation id="5832805196449965646">व्‍यक्ति जोड़ें</translation>
 <translation id="5860033963881614850">बंद</translation>
 <translation id="5895138241574237353">पुन: प्रारंभ करें</translation>

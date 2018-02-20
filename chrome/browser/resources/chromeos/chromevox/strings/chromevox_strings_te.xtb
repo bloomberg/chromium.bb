@@ -36,6 +36,7 @@
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">తదుపరి స్థాయి 6 శీర్షిక</translation>
 <translation id="1275718070701477396">ఎంపికైంది</translation>
+<translation id="1286609444451033486">టోగుల్ చేయడం కోసం శోధన+స్పేస్ నొక్కండి.</translation>
 <translation id="1319608975892113573">మునుపటి బ్లాక్‌కోట్ లేదు.</translation>
 <translation id="1321576897702511272">ChromeVox సహాయాన్ని దాచండి</translation>
 <translation id="1331702245475014624"><ph name="TOTAL" />లో <ph name="INDEX" /></translation>
@@ -371,6 +372,7 @@
 <translation id="4191918948604314587">బటన్</translation>
 <translation id="4202186506458631436">కుడివైపు తరలించండి</translation>
 <translation id="4206289001967551965">పట్టిక లోపల ఉన్నారు</translation>
+<translation id="4209770650650780359">స్వయంచాలకంగా పూర్తి చేయడం కోసం పైకి లేదా కిందికి బాణాన్ని నొక్కండి.</translation>
 <translation id="4215733775853809057">తదుపరి స్లయిడర్</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{అడ్డగీత}other{# అడ్డగీతలు}}</translation>
 <translation id="421884353938374759">రంగు ఎంపిక</translation>
@@ -404,6 +406,7 @@
 <translation id="4532633738839459153">{COUNT,plural, =1{స్లాష్ గుర్తు}other{# స్లాష్ గుర్తులు}}</translation>
 <translation id="4547556996012970016">తదుపరి స్థాయి 5 శీర్షిక</translation>
 <translation id="4562381607973973258">ముఖ్య శీర్షిక</translation>
+<translation id="4569941707103739422">నావిగేట్ చేయడం కోసం పైకి లేదా కిందికి బాణాన్ని నొక్కండి; సక్రియం చేయడం కోసం enter నొక్కండి.</translation>
 <translation id="4570424871453628777">అక్షరక్రమ దోషం ముగింపు</translation>
 <translation id="4591507479202817876">, ఎంచుకోబడింది</translation>
 <translation id="4597532268155981612">ఫారమ్</translation>
@@ -497,6 +500,7 @@
 <translation id="536031132345979795">నిరంతరంగా చదివేటప్పుడు వెనుకకు దాటవేయండి</translation>
 <translation id="5368000168321181111">శబ్ద హెచ్చరికలు ఆపివేయబడ్డాయి</translation>
 <translation id="5374320867641260420">తదుపరి బటన్ లేదు.</translation>
+<translation id="5376407118396657359">గడుల వారీగా నావిగేట్ చేయడం కోసం బాణం గుర్తు ఉన్న బటన్‌లతో పాటు శోధన+Ctrl+Alt నొక్కండి.</translation>
 <translation id="5382299583965267720">తదుపరి స్థాయి 1 శీర్షిక లేదు.</translation>
 <translation id="5402367795255837559">బ్రెయిలీ</translation>
 <translation id="5402791055281059602">నమూనా హెచ్చరిక</translation>
@@ -505,6 +509,7 @@
 <translation id="5417034931411865818">రూటింగ్ కీ $1 క్రింద ఉన్న అంశాన్ని క్లిక్ చేయండి</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{న్యూన గుర్తు}other{# న్యూన గుర్తులు}}</translation>
 <translation id="5444587279251314700">(సక్రియంగా ఉంది)</translation>
+<translation id="5446809554778706307">దృష్టి కేంద్రీకరించలేదు. కొత్త ట్యాబ్‌ని తెరవడం కోసం Ctrl+T నొక్కండి.</translation>
 <translation id="5451268436205074266">చుక్కలు <ph name="DOT" /></translation>
 <translation id="5455441614648621694">బహుమానపూర్వకం</translation>
 <translation id="5485036206801896268">మునుపటి గ్రాఫిక్ లేదు.</translation>
@@ -584,6 +589,7 @@ Chrome బ్రౌజర్ మెనును తెరవడానికి, 
 <translation id="6006050241733874051">ఫారమ్</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{బ్యాక్‌స్లాష్ గుర్తు}other{# బ్యాక్‌స్లాష్ గుర్తులు}}</translation>
 <translation id="6037602951055904232">ముందుకు ప్యాన్ చేయండి</translation>
+<translation id="6042826534790431634">సక్రియం చేయడం కోసం శోధన+స్పేస్ నొక్కండి.</translation>
 <translation id="6044160928851315051">స్క్రీన్‌ను కాంతిహీనంగా చేస్తుంది</translation>
 <translation id="605761629541007221">బోల్డ్ ముగింపు</translation>
 <translation id="6065293622157674001">వ్యాకరణ దోషం ప్రారంభం</translation>
@@ -860,6 +866,7 @@ Chrome బ్రౌజర్ మెనును తెరవడానికి, 
 <translation id="9065283790526219006">+పాప్అప్</translation>
 <translation id="9077213568694924680">ఎంపిక నుండి తీసివేయబడింది</translation>
 <translation id="9082874451376019682">మునుపటి స్లయిడర్ లేదు.</translation>
+<translation id="9087707351856729768">స్వయంచాలకంగా పూర్తి చేయడం కోసం టైప్ చేయండి.</translation>
 <translation id="9089864840575085222">సైకిల్ టైపింగ్ అనుకరణ</translation>
 <translation id="9105227991373418255">$1ని కత్తిరించండి.</translation>
 <translation id="9107530006868467849">మునుపటి మీడియా విడ్జెట్ లేదు.</translation>

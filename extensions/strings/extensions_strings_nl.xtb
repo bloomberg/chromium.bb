@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">Lezen van persoonlijke sleutel is mislukt.</translation>
 <translation id="6391538222494443604">Er moet een invoerdirectory zijn.</translation>
 <translation id="641087317769093025">Kan extensie niet uitpakken</translation>
+<translation id="6542618148162044354"><ph name="APP_NAME" /> vraagt om toegang tot een of meer van je apparaten:</translation>
 <translation id="657064425229075395">Kan achtergrondscript '<ph name="BACKGROUND_SCRIPT" />' niet laden.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> van <ph name="VENDOR_NAME" /> (serienummer <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Kan geen directory maken voor het uitpakken van: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">Pakket is ongeldig. Details: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">Deze extensie heeft een netwerkverzoek niet kunnen omleiden naar <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> omdat een andere extensie (<ph name="EXTENSION_NAME" />) het verzoek heeft omgeleid naar <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Extension Unpacker</translation>
+<translation id="8761756413268424715"><ph name="APP_NAME" /> vraagt om toegang tot een van je apparaten:</translation>
 <translation id="8825366169884721447">Deze extensie heeft de koptekst voor het verzoek '<ph name="HEADER_NAME" />' van een netwerkverzoek niet kunnen aanpassen, omdat de aanpassing zorgde voor een conflict met een andere extensie (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Er bestaat al een persoonlijke sleutel voor de opgegeven extensie. Gebruik die sleutel opnieuw of verwijder deze eerst.</translation>
 <translation id="907841381057066561">Geen tijdelijk zipbestand gemaakt tijdens inpakken.</translation>

@@ -36,6 +36,7 @@
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">下一个6级标题</translation>
 <translation id="1275718070701477396">已选中</translation>
+<translation id="1286609444451033486">同时按搜索键和空格键即可切换选中状态。</translation>
 <translation id="1319608975892113573">不存在上一段引用。</translation>
 <translation id="1321576897702511272">隐藏ChromeVox帮助</translation>
 <translation id="1331702245475014624">第<ph name="INDEX" />个，共<ph name="TOTAL" />个</translation>
@@ -370,6 +371,7 @@
 <translation id="4191918948604314587">按钮</translation>
 <translation id="4202186506458631436">右移</translation>
 <translation id="4206289001967551965">在表格内</translation>
+<translation id="4209770650650780359">按向上或向下箭头即可浏览自动填写建议。</translation>
 <translation id="4215733775853809057">下一个滑块</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{1个破折号}other{#个破折号}}</translation>
 <translation id="421884353938374759">颜色选择器</translation>
@@ -403,6 +405,7 @@
 <translation id="4532633738839459153">{COUNT,plural, =1{1个斜线符号}other{#个斜线符号}}</translation>
 <translation id="4547556996012970016">下一个5级标题</translation>
 <translation id="4562381607973973258">标头标记</translation>
+<translation id="4569941707103739422">按向上或向下箭头即可浏览；按 Enter 键即可启动。</translation>
 <translation id="4570424871453628777">拼写有误的字词的末尾</translation>
 <translation id="4591507479202817876">，已选中</translation>
 <translation id="4597532268155981612">表单</translation>
@@ -496,6 +499,7 @@
 <translation id="536031132345979795">连续朗读时向后跳转</translation>
 <translation id="5368000168321181111">已关闭耳标</translation>
 <translation id="5374320867641260420">不存在下一个按钮。</translation>
+<translation id="5376407118396657359">同时按搜索键+Ctrl+Alt 和箭头键即可按单元格浏览。</translation>
 <translation id="5382299583965267720">不存在下一个1级标题。</translation>
 <translation id="5402367795255837559">盲文</translation>
 <translation id="5402791055281059602">模态提醒</translation>
@@ -504,6 +508,7 @@
 <translation id="5417034931411865818">点击路由键 $1 下的项</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{1个小于号}other{#个小于号}}</translation>
 <translation id="5444587279251314700">（有效）</translation>
+<translation id="5446809554778706307">未聚焦任何内容。同时按 Ctrl+T 即可打开新标签页。</translation>
 <translation id="5451268436205074266">点 <ph name="DOT" /></translation>
 <translation id="5455441614648621694">补充的内容</translation>
 <translation id="5485036206801896268">不存在上一个图形。</translation>
@@ -583,6 +588,7 @@
 <translation id="6006050241733874051">表单</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{1个反斜线符号}other{#个反斜线符号}}</translation>
 <translation id="6037602951055904232">向前平移</translation>
+<translation id="6042826534790431634">同时按搜索键和空格键即可启动。</translation>
 <translation id="6044160928851315051">调暗屏幕</translation>
 <translation id="605761629541007221">粗体文字的末尾</translation>
 <translation id="6065293622157674001">语法错误的开头</translation>
@@ -859,6 +865,7 @@
 <translation id="9065283790526219006">含弹出项</translation>
 <translation id="9077213568694924680">已从所选文字中移除</translation>
 <translation id="9082874451376019682">不存在上一个滑块。</translation>
+<translation id="9087707351856729768">输入即可自动填写。</translation>
 <translation id="9089864840575085222">循环输入回显</translation>
 <translation id="9105227991373418255">剪切 $1。</translation>
 <translation id="9107530006868467849">不存在上一个媒体微件。</translation>

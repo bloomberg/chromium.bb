@@ -26,7 +26,6 @@
 <translation id="1619887657840448962">За да направим Chrome по-безопасен, деактивирахме следното разширение, което липсва от <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и може да е било добавено без ваше знание.</translation>
 <translation id="1628000112320670027">Получаване на помощ за Chrome</translation>
 <translation id="163860049029591106">Първи стъпки с Chrome OS</translation>
-<translation id="1653828314016431939">OK – Рестартиране сега</translation>
 <translation id="1674870198290878346">Отваряне на връзката в прозорец в режим „инко&amp;гнито“ на Chrome</translation>
 <translation id="1682634494516646069">Google Chrome не може да чете и записва в директорията си за данни:
 
@@ -115,6 +114,7 @@
 <translation id="4028693306634653894">Стартирайте Chrome по-бързо</translation>
 <translation id="4050175100176540509">В последната версия са налице важни подобрения в сигурността и нови функции.</translation>
 <translation id="4053720452172726777">Персонализиране и контролиране на Google Chrome</translation>
+<translation id="4143243756087420366">Име и снимка за Chrome</translation>
 <translation id="4147555960264124640">Влизате с управляван профил и давате на администратора му контрол над потребителския си профил в Google Chrome. Данните ви в браузъра, като например приложения, отметки, история, пароли и други настройки, ще се свържат за постоянно с/ъс <ph name="USER_NAME" />. Ще можете да ги изтриете чрез таблото за управление на Google Профили, но не и да ги свържете с друг профил. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Инсталационната програма не успя да декомпресира архива. Моля, изтеглете Google Chrome отново.</translation>
 <translation id="4251615635259297716">Да се свържат ли данните ви в Chrome с този профил?</translation>
@@ -122,6 +122,7 @@
 <translation id="4309555186815777032">(изисква <ph name="BEGIN_BUTTON" />рестартиране<ph name="END_BUTTON" /> на Chrome)</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
+<translation id="4343195214584226067">Разширението <ph name="EXTENSION_NAME" /> бе добавено към Chrome</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Моля, излезте от профила си и влезте отново, за да влезе в сила тази промяна.</translation>
 <translation id="4458462641685292929">Извършва се друго действие, свързано с Google Chrome. Моля, опитайте отново по-късно.</translation>
@@ -154,12 +155,10 @@
 <translation id="5193136243808726294">Google Chrome OS не може да отвори тази страница.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Общи условия<ph name="END_TERMS_OF_SERVICE_LINK" /> на Google Chrome</translation>
 <translation id="5251420635869119124">Гостите могат да използват Chrome, без да оставят следи.</translation>
-<translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome ще се рестартира след 1 секунда.}other{Google Chrome ще се рестартира след # секунди.}}</translation>
 <translation id="532046782124376502">Предупреждение: Google Chrome не може да попречи на разширенията да записват историята ви на сърфиране. За да деактивирате това разширение в режим „инкогнито“, премахнете отметката от тази опция.</translation>
 <translation id="5334545119300433702">За този модул е известно, че влиза в конфликт с Google Chrome.</translation>
 <translation id="5386244825306882791">То също контролира коя страница се показва при стартиране на Chrome или при търсене от полето за всичко.</translation>
 <translation id="5430073640787465221">Файлът с предпочитанията ви е повреден или невалиден. Google Chrome не може да възстанови настройките ви.</translation>
-<translation id="5453904507266736060">Нека Google Chrome да се изпълнява на заден план</translation>
 <translation id="5495581687705680288">Модули, заредени в Google Chrome</translation>
 <translation id="556024056938947818">Google Chrome опитва да покаже паролите.</translation>
 <translation id="5566025111015594046">Google Chrome (входящ трафик за mDNS)</translation>
@@ -184,7 +183,6 @@
 <translation id="6338556085225130112">Google Chrome се актуализира</translation>
 <translation id="6368958679917195344">Chrome OS е възможна благодарение на допълнителен <ph name="BEGIN_LINK_CROS_OSS" />софтуер с отворен код<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6410540444482791104">Можете да ни помогнете да направим браузъра Chrome по-надежден и по-лесен за използване, като автоматично изпращате до Google системна информация и част от съдържанието на страниците, за да ни съдействате при откриването на опасни приложения и сайтове.</translation>
-<translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{В момента се изтегля файл. Искате ли да анулирате изтеглянето и да излезете от Google Chrome?}other{В момента се изтеглят # файла. Искате ли да анулирате изтеглянията и да излезете от Google Chrome?}}</translation>
 <translation id="6566149418543181476">Google Chrome се актуализира (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Използвате <ph name="PROFILE_EMAIL" /> за синхронизиране на нещата си в Chrome. За да актуализирате съответното предпочитание или да ползвате браузъра без профил в Google, посетете <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Копирано в Chrome</translation>
@@ -230,7 +228,6 @@
 <translation id="7890208801193284374">Ако споделяте компютър, близките и приятелите ви могат да сърфират отделно и да настроят Chrome точно така, както искат.</translation>
 <translation id="7896673875602241923">По-рано някой влезе в Chrome на този компютър като <ph name="ACCOUNT_EMAIL_LAST" />. Моля, създайте нов потребител в браузъра, така че информацията ви да се съхранява отделно.</translation>
 <translation id="7908168227788431038">Актуализирането почти завърши! Остава само да стартирате отново Google Chrome.</translation>
-<translation id="795025003224538582">Без рестартиране</translation>
 <translation id="7962410387636238736">От сега нататък този компютър няма да получава актуализации на Google Chrome, тъй като Windows XP и Windows Vista вече не се поддържат</translation>
 <translation id="8005540215158006229">Chrome е почти готов.</translation>
 <translation id="8008534537613507642">Повторно инсталиране на Chrome</translation>

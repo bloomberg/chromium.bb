@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">Не удалось прочитать закрытый ключ.</translation>
 <translation id="6391538222494443604">Каталог входа должен существовать.</translation>
 <translation id="641087317769093025">Не удалось распаковать расширение</translation>
+<translation id="6542618148162044354">Приложение "<ph name="APP_NAME" />" запрашивает доступ к нескольким устройствам.</translation>
 <translation id="657064425229075395">Не удалось загрузить фоновый скрипт <ph name="BACKGROUND_SCRIPT" />.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" />, поставщик: <ph name="VENDOR_NAME" /> (серийный номер: <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Не удалось создать каталог для распаковки: <ph name="DIRECTORY_PATH" /></translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">Недопустимый пакет. Подробные сведения: "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">Расширение не может перенаправить сетевой запрос на <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, поскольку другое расширение (<ph name="EXTENSION_NAME" />) перенаправило его на <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Распаковщик расширений</translation>
+<translation id="8761756413268424715">Приложение "<ph name="APP_NAME" />" запрашивает доступ к устройству.</translation>
 <translation id="8825366169884721447">Это расширение не может изменить заголовок запроса (<ph name="HEADER_NAME" />) из-за конфликта с другим расширением (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Закрытый ключ для указанного расширения уже существует. Удалите этот ключ или используйте его повторно.</translation>
 <translation id="907841381057066561">Не удалось создать временный zip-файл во время упаковки.</translation>

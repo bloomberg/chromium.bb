@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">ব্যক্তিগত কী-টি পড়তে ব্যর্থ৷</translation>
 <translation id="6391538222494443604">ইনপুট নির্দেশিকা বন্ধ করা আবশ্যক৷</translation>
 <translation id="641087317769093025">এক্সটেনশান আনজিপ করা যায়নি</translation>
+<translation id="6542618148162044354">"<ph name="APP_NAME" />" আপনার এক বা একাধিক ডিভাইসে অ্যাক্সেসের জন্য অনুরোধ করছে:</translation>
 <translation id="657064425229075395">পশ্চাদপট লিপি '<ph name="BACKGROUND_SCRIPT" />' লোড করা যায়নি৷</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" /> এর পক্ষ থেকে <ph name="PRODUCT_NAME" /> (ক্রমিক সংখ্যা <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">এটিকে আনজিপ করার জন্য ডিরেক্টরি তৈরি করা যায়নি: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">প্যাকেজটি অবৈধ৷ বিশদ বিবরণ: '<ph name="ERROR_MESSAGE" />'৷</translation>
 <translation id="8670869118777164560">এই এক্সটেনশনটি <ph name="ATTEMPTED_REDIRECT_DESTINATION" />এ একটি নেটওয়ার্কের পুনঃনির্দেশ অনুরোধ করতে ব্যর্থ হয়েছে কারণ অন্য এক্সটেনশন (<ph name="EXTENSION_NAME" />) এটিকে <ph name="ACTUAL_REDIRECT_DESTINATION" /> এ পুনঃনির্দেশ করেছে৷</translation>
 <translation id="8712265948125780616">এক্সটেনশান আনপ্যাকার</translation>
+<translation id="8761756413268424715">"<ph name="APP_NAME" />" আপনার একটি ডিভাইসে অ্যাক্সেসের জন্য অনুরোধ করছে:</translation>
 <translation id="8825366169884721447">এই এক্সটেনশনটি একটি নেটওয়ার্ক অনুরোধের অনুরোধ শীর্ষক "<ph name="HEADER_NAME" />" এর সংশোধন করতে ব্যর্থ হয়েছে কারণ সংশোধনটির অন্য এক্সটেনশন (<ph name="EXTENSION_NAME" />) এর সঙ্গে বিরোধ আছে৷</translation>
 <translation id="8885905466771744233">সুনির্দিষ্ট করা এক্সটেনশানটির ইতিমধ্যেই একটি ব্যক্তিগত কী আছে৷ এই কী-টি পুনঃব্যবহার করুন অথবা এটিকে প্রথমে মুছে দিন৷</translation>
 <translation id="907841381057066561">প্যাকেজিংয়ের সময় অস্থায়ী জিপ ফাইল তৈরি করতে ব্যর্থ৷</translation>

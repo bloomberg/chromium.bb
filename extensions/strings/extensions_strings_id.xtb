@@ -25,7 +25,6 @@
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME" /> dari vendor <ph name="VENDOR_ID" /> (nomor seri <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3561217442734750519">Nilai masukan untuk kunci pribadi harus jalur yang valid.</translation>
 <translation id="388442998277590542">Tidak dapat memuat halaman opsi '<ph name="OPTIONS_PAGE" />'.</translation>
-<translation id="3978916109400437922">"<ph name="APP_NAME" />" Meminta Akses ke Salah Satu Perangkat Anda</translation>
 <translation id="3984413272403535372">Kesalahan ketika menandai ekstensi.</translation>
 <translation id="4115165561519362854">Administrator perangkat ini mewajibkan <ph name="EXTENSION_NAME" /> untuk menjalankan versi minimum <ph name="EXTENSION_VERSION" />. Ekstensi tidak dapat diaktifkan sampai diperbarui ke versi tersebut (atau yang lebih tinggi).</translation>
 <translation id="4233778200880751280">Tidak dapat memuat halaman tentang '<ph name="ABOUT_PAGE" />'.</translation>
@@ -35,11 +34,9 @@
 <translation id="5026754133087629784">Tampilan web: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5098647635849512368">Tidak dapat menemukan jalur pasti ke direktori untuk masuk.</translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
-<translation id="5387167377635374680">"<ph name="APP_NAME" />" meminta akses ke salah satu perangkat Anda</translation>
 <translation id="5436430103864390185">Jendela berbentuk tidak didukung.</translation>
 <translation id="5456409301717116725">Ekstensi ini termasuk file kunci '<ph name="KEY_PATH" />'. Anda mungkin tidak ingin melakukannya.</translation>
 <translation id="5486326529110362464">Nilai masukan untuk kunci pribadi harus ada.</translation>
-<translation id="5550192259173147518">"<ph name="APP_NAME" />" Meminta Akses ke 1 atau Beberapa Perangkat Anda</translation>
 <translation id="5627523580512561598">ekstensi <ph name="EXTENSION_NAME" /></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">Administrator komputer ini mewajibkan agar <ph name="EXTENSION_NAME" /> dipasang. Ekstensi tersebut tidak dapat dicopot pemasangannya.</translation>
@@ -49,7 +46,7 @@
 <translation id="6322279351188361895">Gagal membaca kunci pribadi.</translation>
 <translation id="6391538222494443604">Direktori masukan harus ada.</translation>
 <translation id="641087317769093025">Tidak dapat mengekstrak ekstensi</translation>
-<translation id="6507723423832731189">"<ph name="APP_NAME" />" meminta akses ke 1 atau beberapa perangkat Anda</translation>
+<translation id="6542618148162044354">"<ph name="APP_NAME" />" meminta akses ke satu atau beberapa perangkat Anda:</translation>
 <translation id="657064425229075395">Tidak dapat memuat skrip latar belakang '<ph name="BACKGROUND_SCRIPT" />'.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> dari <ph name="VENDOR_NAME" /> (nomor seri <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Tidak dapat membuat direktori untuk pengekstrakan: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -67,6 +64,7 @@
 <translation id="8636666366616799973">Paket tidak valid. Detail: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">Ekstensi ini gagal mengalihkan permintaan jaringan ke <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> karena ekstensi lain (<ph name="EXTENSION_NAME" />) mengalihkannya ke <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Pembuka Ekstensi</translation>
+<translation id="8761756413268424715">"<ph name="APP_NAME" />" meminta akses ke salah satu perangkat Anda:</translation>
 <translation id="8825366169884721447">Ekstensi ini gagal memodifikasi tajuk permintaan "<ph name="HEADER_NAME" />" dari suatu permintaan jaringan karena modifikasi bertentangan dengan ekstensi lain (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Kunci pribadi untuk ekstensi yang ditentukan sudah ada. Gunakan kembali kunci itu atau hapus terlebih dulu.</translation>
 <translation id="907841381057066561">Gagal membuat file zip sementara selama pengemasan</translation>

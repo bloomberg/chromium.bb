@@ -36,6 +36,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Następny nagłówek poziomu 6</translation>
 <translation id="1275718070701477396">Zaznaczone</translation>
+<translation id="1286609444451033486">Naciśnij klawisz wyszukiwania + spację, aby przełączyć.</translation>
 <translation id="1319608975892113573">Brak poprzedniego cytatu blokowego.</translation>
 <translation id="1321576897702511272">Ukryj pomoc dotyczącą ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> z <ph name="TOTAL" /></translation>
@@ -371,6 +372,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="4191918948604314587">Przycisk</translation>
 <translation id="4202186506458631436">Przejdź w prawo</translation>
 <translation id="4206289001967551965">Wewnątrz tabeli</translation>
+<translation id="4209770650650780359">Naciśnij strzałkę w górę lub w dół, aby skorzystać z autouzupełniania.</translation>
 <translation id="4215733775853809057">Następny suwak</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{pauza}few{# pauzy}many{# pauz}other{# dashes}}</translation>
 <translation id="421884353938374759">selektor kolorów</translation>
@@ -404,6 +406,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="4532633738839459153">{COUNT,plural, =1{ukośnik}few{# ukośniki}many{# ukośników}other{# slashes}}</translation>
 <translation id="4547556996012970016">Następny nagłówek poziomu 5</translation>
 <translation id="4562381607973973258">Nagłówek</translation>
+<translation id="4569941707103739422">Naciśnij strzałkę w górę lub w dół, aby się poruszać, i Enter, aby wybrać.</translation>
 <translation id="4570424871453628777">Koniec błędnie napisanego słowa</translation>
 <translation id="4591507479202817876">, wybrany</translation>
 <translation id="4597532268155981612">formularz</translation>
@@ -497,6 +500,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="536031132345979795">Cofnij podczas ciągłego czytania</translation>
 <translation id="5368000168321181111">Ikony akustyczne są wyłączone</translation>
 <translation id="5374320867641260420">Brak przycisku Dalej.</translation>
+<translation id="5376407118396657359">Naciśnij klawisz wyszukiwania + Ctrl + Alt i przechodź między komórkami za pomocą klawiszy strzałek.</translation>
 <translation id="5382299583965267720">Brak następnego nagłówka poziomu 1.</translation>
 <translation id="5402367795255837559">Pismo Braille'a</translation>
 <translation id="5402791055281059602">Alert w oknie modalnym</translation>
@@ -505,6 +509,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="5417034931411865818">Kliknij element pod klawiszem sterującym $1</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{mniejszy niż}few{# znaki mniejszości}many{# znaków mniejszości}other{# less than signs}}</translation>
 <translation id="5444587279251314700">(aktywna)</translation>
+<translation id="5446809554778706307">Brak zaznaczenia. Naciśnij Ctrl + T, aby otworzyć nową kartę.</translation>
 <translation id="5451268436205074266">punkty <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Pomocniczy</translation>
 <translation id="5485036206801896268">Brak poprzedniej grafiki.</translation>
@@ -584,6 +589,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="6006050241733874051">Formularz</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{ukośnik wsteczny}few{# ukośniki wsteczne}many{# ukośników wstecznych}other{# backslashes}}</translation>
 <translation id="6037602951055904232">Przesuń do przodu</translation>
+<translation id="6042826534790431634">Naciśnij klawisz wyszukiwania + spację, aby aktywować.</translation>
 <translation id="6044160928851315051">Wygaś ekran</translation>
 <translation id="605761629541007221">Koniec pogrubienia</translation>
 <translation id="6065293622157674001">Początek błędu gramatycznego</translation>
@@ -860,6 +866,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="9065283790526219006">+wyskakujące okienko</translation>
 <translation id="9077213568694924680">usunięto zaznaczenie</translation>
 <translation id="9082874451376019682">Brak poprzedniego suwaka.</translation>
+<translation id="9087707351856729768">Gdy zaczniesz pisać, pojawi się podpowiedź.</translation>
 <translation id="9089864840575085222">Włącz/wyłącz odczytywanie podczas pisania</translation>
 <translation id="9105227991373418255">wytnij $1.</translation>
 <translation id="9107530006868467849">Brak widżetu poprzedniego pliku multimedialnego.</translation>

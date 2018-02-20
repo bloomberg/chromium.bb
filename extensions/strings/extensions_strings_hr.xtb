@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">Čitanje osobnog ključa nije uspjelo.</translation>
 <translation id="6391538222494443604">Mora postojati direktorij za unos.</translation>
 <translation id="641087317769093025">Nije uspjelo raspakiravanje proširenja</translation>
+<translation id="6542618148162044354">"<ph name="APP_NAME" />" zahtijeva pristup nekim od vaših uređaja:</translation>
 <translation id="657064425229075395">Nije bilo moguće učitati pozadinsku skriptu "<ph name="BACKGROUND_SCRIPT" />".</translation>
 <translation id="6580950983454333167">pristupiti uređaju <ph name="PRODUCT_NAME" /> dobavljača <ph name="VENDOR_NAME" /> (serijski broj <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Nije uspjelo stvaranje direktorija za raspakiravanje: "<ph name="DIRECTORY_PATH" />"</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">Paket je nevažeći. Pojedinosti "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">Ovo proširenje nije uspjelo preusmjeriti mrežni zahtjev na odredište <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> jer ga je drugo proširenje (<ph name="EXTENSION_NAME" />) preusmjerilo na odredište <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Otpakiravanje proširenja</translation>
+<translation id="8761756413268424715">"<ph name="APP_NAME" />" zahtijeva pristup jednom od vaših uređaja:</translation>
 <translation id="8825366169884721447">Ovo proširenje nije uspjelo izmijeniti zaglavlje zahtjeva "<ph name="HEADER_NAME" />" mrežnog zahtjeva jer je izmjena sukobljena s drugim proširenjem (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Osobni ključ za navedeno proširenje već postoji. Ponovo koristite taj ključ ili ga prvo izbrišite.</translation>
 <translation id="907841381057066561">Nije uspjelo stvaranje privremene sažete datoteke tijekom sažimanja.</translation>

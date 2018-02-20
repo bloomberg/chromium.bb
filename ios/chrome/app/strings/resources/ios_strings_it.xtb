@@ -39,6 +39,7 @@
 <translation id="1545749641540134597">Leggi il codice QR</translation>
 <translation id="1580783302095112590">Messaggio inviato.</translation>
 <translation id="1612730193129642006">Mostra griglia schede</translation>
+<translation id="1644574205037202324">Cronologia</translation>
 <translation id="1646446875146297738">Se attivi "Non tenere traccia", viene inclusa una richiesta con il tuo traffico di navigazione. Gli eventuali effetti dipendono dalla risposta o meno di un sito web alla richiesta e dalla modalità di interpretazione della richiesta.
 
 Ad esempio, alcuni siti web potrebbero rispondere alla richiesta visualizzando annunci non basati su altri siti web che hai visitato. Molti siti web raccoglieranno e utilizzeranno comunque i tuoi dati di navigazione, ad esempio per aumentare la sicurezza, fornire contenuti, servizi, annunci e consigli sui loro siti web, nonché per generare statistiche di reporting. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
@@ -249,6 +250,7 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 <translation id="5871497086027727873">1 elemento spostato</translation>
 <translation id="5911030830365207728">Google Traduttore</translation>
 <translation id="5916664084637901428">On</translation>
+<translation id="5938160824633642847">Il dispositivo è quasi pieno. Libera spazio e riprova.</translation>
 <translation id="5948291296578561264">In questo modo puoi salvare le foto nella raccolta di foto.</translation>
 <translation id="5955891643922670672">È visualizzata la versione offline</translation>
 <translation id="5964480694698977962">Crea nuova scheda in incognito.</translation>
@@ -289,6 +291,7 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 
 I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in data <ph name="TIME" />. Inseriscila per avviare la sincronizzazione.</translation>
 <translation id="6418346271604475326">Preparazione del PDF</translation>
+<translation id="6434591244308415567">Si è verificato un errore. Riprova più tardi.</translation>
 <translation id="6445051938772793705">Paese</translation>
 <translation id="6445981559479772097">Messaggio inviato.</translation>
 <translation id="6464071786529933911">Apri in nuova scheda in incognito</translation>
@@ -299,6 +302,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="6657585470893396449">Password</translation>
 <translation id="667999046851023355">Documento</translation>
 <translation id="6713747756340119864">Google Apps</translation>
+<translation id="6730682669179532099">Impossibile esportare le password</translation>
 <translation id="6762156594045689028">Per modificare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincronizzazione<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Codice postale</translation>
 <translation id="6785453220513215166">Invio rapporto sugli arresti anomali...</translation>
@@ -326,6 +330,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="7203585745079012652">Pronuncia le risposte</translation>
 <translation id="722055596168483966">Personalizza i servizi Google</translation>
 <translation id="7272437679830969316">Impossibile verificare la tua identità. Password non copiata.</translation>
+<translation id="7291368939935408496">Preparazione delle password...</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" />% scaricato</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="7400418766976504921">URL</translation>

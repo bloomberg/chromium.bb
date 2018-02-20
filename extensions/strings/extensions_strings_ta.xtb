@@ -47,6 +47,7 @@
 <translation id="6322279351188361895">தனிப்பட்ட விசையைப் படிப்பதில் தோல்வியடைந்தது.</translation>
 <translation id="6391538222494443604">உள்ளீட்டுக் கோப்பகம் இருப்பது அவசியம்.</translation>
 <translation id="641087317769093025">நீட்டிப்பின் ஜிப்பை திறக்க முடியவில்லை</translation>
+<translation id="6542618148162044354">"<ph name="APP_NAME" />" பயன்பாடு உங்கள் சாதனங்களில் ஒன்று அல்லது அதற்கு மேற்பட்ட சாதனங்களின் அணுகலைக் கோருகிறது:</translation>
 <translation id="657064425229075395">'<ph name="BACKGROUND_SCRIPT" />' என்ற பின்புல ஸ்கிரிப்டை ஏற்ற முடியவில்லை.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" /> இடமிருந்து <ph name="PRODUCT_NAME" /> (வரிசை எண் <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">இதன் ஜிப்பை திறப்பதற்குக் கோப்பகத்தை உருவாக்க முடியவில்லை: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -64,6 +65,7 @@
 <translation id="8636666366616799973">தொகுப்பு செல்லாதது. விவரங்கள்: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">(<ph name="EXTENSION_NAME" />) என்ற வேறொரு நீட்டிப்பு <ph name="ACTUAL_REDIRECT_DESTINATION" /> க்குத் திசைத்திருப்பப்பட்டதால் பிணைய கோரிக்கையை <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> க்கு திசைத்திருப்புவதில் இந்த நீட்டிப்பு தோல்வியடைந்தது.</translation>
 <translation id="8712265948125780616">எக்ஸ்டன்ஷன் அன்பேக்கர்</translation>
+<translation id="8761756413268424715">"<ph name="APP_NAME" />" பயன்பாடு உங்கள் சாதனங்களில் ஒன்றின் அணுகலைக் கோருகிறது:</translation>
 <translation id="8825366169884721447">(<ph name="EXTENSION_NAME" />) என்ற வேறொரு நீட்டிப்புடன் ஏற்பட்ட திருத்த முரண்பாட்டால் "<ph name="HEADER_NAME" />" கோரிக்கை மேற்தலைப்பைத் திருத்துவதில் இந்த நீட்டிப்பு தோல்வியடைந்தது.</translation>
 <translation id="8885905466771744233">குறிப்பிட்ட நீட்டிப்பிற்கான தனிப்பட்ட விசை ஏற்கனவே உள்ளது. அந்த விசையை மீண்டும் பயன்படுத்துக அல்லது அதை முதலில் நீக்குக.</translation>
 <translation id="907841381057066561">தொகுப்பாக்கலின்போது தற்காலிக ஜிப் கோப்பை உருவாக்குவதில் தோல்வியடைந்தது.</translation>

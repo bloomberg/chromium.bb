@@ -27,6 +27,7 @@
       如果此政策已设置，登录屏幕将会始终以此政策的第一个值指定的语言区域显示（为便于向前兼容，此政策会以列表的形式进行指定）。如果此政策未设置或设为空列表，登录屏幕则会以最后一次用户会话所采用的语言区域显示。如果此政策设为无效的语言区域值，登录屏幕便会以相应的后备语言区域显示（当前的后备语言区域是“en-US”）。</translation>
 <translation id="1062011392452772310">为设备启用远程认证</translation>
 <translation id="1062407476771304334">替换</translation>
+<translation id="109166998561583554">“密码保护服务举报面临风险的帐号”功能触发条件</translation>
 <translation id="1093082332347834239">启用此设置后，远程协助主机会在具有 <ph name="UIACCESS_PERMISSION_NAME" /> 权限的进程中运行。这样，远程用户就可以在本地用户桌面上操控提权后的窗口。
 
           如果停用或未配置此设置，远程协助主机则会在用户的环境中运行，而远程用户将无法在桌面上操控提权后的窗口。</translation>
@@ -87,6 +88,7 @@
 
       如果此政策设为 false，<ph name="PRODUCT_NAME" /> 将禁止使用访客个人资料登录。</translation>
 <translation id="1363275621236827384">允许在 Quirks Server 中查询硬件配置文件</translation>
+<translation id="1387596372902085462">是否信任赛门铁克公司的旧版 PKI 基础架构</translation>
 <translation id="1393485621820363363">已启用企业设备打印机</translation>
 <translation id="1397855852561539316">默认搜索服务提供商建议网址</translation>
 <translation id="1426410128494586442">是</translation>
@@ -95,6 +97,7 @@
 <translation id="1438739959477268107">默认的密钥生成设置</translation>
 <translation id="1454846751303307294">可让您设置网址格式的列表，这些网址格式用于指定不允许运行 JavaScript 的网站。在未设置此政策的情况下，如果设置了“DefaultJavaScriptSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="1456822151187621582">Windows（<ph name="PRODUCT_OS_NAME" />客户端）：</translation>
+<translation id="1457305643416399820">“密码保护服务举报面临风险的帐号”功能处于关闭状态</translation>
 <translation id="1464848559468748897">控制<ph name="PRODUCT_OS_NAME" />设备上多个人资料会话中的用户行为。
 
       如果此政策设为“MultiProfileUserBehaviorUnrestricted”，用户将能够以主用户或次要用户的身份登录多个人资料会话。
@@ -264,11 +267,6 @@
 
           如果此政策未设置，系统将使用所有这四种方案。</translation>
 <translation id="2067011586099792101">禁止访问非内容包内的网站</translation>
-<translation id="2075030897098958514">控制是否启用 NTLMv2。
-
-          近期推出的所有 Samba 和 Windows 服务器版本都支持 NTLMv2。除非是为了实现向后兼容，否则请勿停用 NTLMv2（因为这样做会降低身份验证的安全性）。
-
-          未定义此政策时，默认值目前为 false（为了实现向后兼容），但未来会变为 true。</translation>
 <translation id="2077129598763517140">使用硬件加速模式（如果可用）</translation>
 <translation id="2077273864382355561">使用电源供电时的屏幕关闭延迟时间</translation>
 <translation id="2082205219176343977">为设备配置允许使用的最低 Chrome 版本。</translation>
@@ -370,6 +368,7 @@
       指定的政策以毫秒为单位。</translation>
 <translation id="237494535617297575">可让您设置网址格式的列表，这些网址格式用于指定允许显示通知的网站。在未设置此政策的情况下，如果设置了“DefaultNotificationsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="2386362615870139244">允许使用屏幕唤醒锁定</translation>
+<translation id="2411817661175306360">密码保护服务警告功能处于关闭状态</translation>
 <translation id="2411919772666155530">阻止在这些网站上显示通知</translation>
 <translation id="2418507228189425036">停用 <ph name="PRODUCT_NAME" /> 中的浏览记录保存功能，并禁止用户更改此设置。
 
@@ -722,7 +721,6 @@
 <translation id="3528000905991875314">启用备用的错误页面</translation>
 <translation id="3547954654003013442">代理设置</translation>
 <translation id="3577251398714997599">针对含侵扰性广告的网站的广告设置</translation>
-<translation id="3587482841069643663">全部</translation>
 <translation id="3591584750136265240">配置登录身份验证行为</translation>
 <translation id="3627678165642179114">启用或停用拼写检查网络服务</translation>
 <translation id="3646859102161347133">设置放大镜类型</translation>
@@ -928,16 +926,6 @@
 
           此政策只在启用了“DefaultSearchProviderEnabled”政策的前提下才会生效。</translation>
 <translation id="4285674129118156176">允许独立用户使用 ARC</translation>
-<translation id="4294280661005713627">为自动更新功能设置目标版本。
-
-      为 <ph name="PRODUCT_OS_NAME" />应更新到的目标版本指定前缀。如果相应设备所运行的版本早于指定的前缀，该设备便会更新到采用指定前缀的最新版本。如果相应设备所运行的已是较新版本，则不会产生任何效果（即不会执行任何降级操作），而且该设备将会继续运行当前版本。前缀格式需按部分逐一指定，如下例所示：
-
-      “”（或未配置）：更新到现有的最新版本。
-      “1412.”：更新到 1412 的任意次要版本（例如 1412.24.34 或 1412.60.2）
-      “1412.2.”：更新到 1412.2 的任意次要版本（例如 1412.2.34 或 1412.2.2）
-      “1412.24.34”：仅更新到此特定版本
-
-      警告：建议您不要配置版本限制，因为这可能会阻止用户接收软件更新和重要的安全修补程序。限制更新到特定版本前缀可能会将用户置于风险之中。</translation>
 <translation id="4298509794364745131">指定可以在 <ph name="PRODUCT_OS_NAME" />锁定屏幕上作为备注应用启用的应用列表。
 
       如果在锁定屏幕上启用首选备注应用，则锁定屏幕将包含用于启动该首选备注应用的界面元素。
@@ -961,6 +949,13 @@
 <translation id="4347908978527632940">如果设为 true 且该用户是受监管用户，则其他 Android 应用可以通过内容提供方查询该用户的网络限制。
 
           如果设为 false 或未设置，则内容提供方不会返回任何信息。</translation>
+<translation id="435461861920493948">包含一系列用于控制在 <ph name="PRODUCT_NAME" /> 中显示哪些帐号的模式。
+
+      系统会将设备上的每个 Google 帐号与此政策中存储的模式进行比对，以确定是否在 <ph name="PRODUCT_NAME" /> 中显示各个帐号。帐号名称只要与该列表中的任一模式匹配，系统即会显示相应帐号。帐号名称如果与该列表中的任一模式均不匹配，系统则会隐藏相应帐号。
+
+      可以使用通配符“*”来匹配零个或更多个任意字符。转义字符为“\”，因此若想匹配实际的“*”或“\”字符，请在这些字符前面加上“\”。
+
+      如果此政策未设置，则设备上的所有 Google 帐号都将会显示在 <ph name="PRODUCT_NAME" /> 中。</translation>
 <translation id="436581050240847513">报告设备网络接口</translation>
 <translation id="4372704773119750918">不允许企业用户成为多用户配置的用户（一级或二级）</translation>
 <translation id="4377599627073874279">允许所有网站显示所有图片</translation>
@@ -1023,6 +1018,7 @@
 
           若想全面了解此政策的可能设置和结构，请访问 https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
+<translation id="4554651132977135445">用户政策环回处理模式</translation>
 <translation id="4555850956567117258">为该用户启用远程认证</translation>
 <translation id="4557134566541205630">默认搜索服务提供商新标签页网址</translation>
 <translation id="4600786265870346112">启用大号光标</translation>
@@ -1276,6 +1272,7 @@
 
       请注意，如果平台支持政策通知，刷新延迟时间将被设为 24 小时（忽略所有默认值和此政策的值），这是因为只要政策发生变化，政策通知应该会自动强制进行刷新，所以没有必要更频繁地进行刷新。</translation>
 <translation id="5530347722229944744">拦截可能有危险的下载内容</translation>
+<translation id="5530586312297447592">在网上诱骗网页中重复使用密码可触发“密码保护服务举报面临风险的帐号”功能</translation>
 <translation id="5535973522252703021">Kerberos 授权服务器白名单</translation>
 <translation id="555077880566103058">允许所有网站自动运行 <ph name="FLASH_PLUGIN_NAME" /> 插件</translation>
 <translation id="5559079916187891399">此政策对 Android 应用没有任何影响。</translation>
@@ -1408,17 +1405,6 @@
 <translation id="5983708779415553259">非任何内容包内的网站的默认行为</translation>
 <translation id="5997543603646547632">默认情况下，使用24小时制</translation>
 <translation id="5997846976342452720">指定是否应停用插件查找器（已弃用）</translation>
-<translation id="6005179188836322782">启用 <ph name="PRODUCT_NAME" /> 的安全浏览功能，并禁止用户更改此设置。
-
-      如果您启用了此设置，则系统将始终启用安全浏览功能。
-
-      如果您停用了此设置，则系统将始终停用安全浏览功能。
-
-      如果您启用或停用了此设置，那么用户将无法在 <ph name="PRODUCT_NAME" /> 中更改或替换“启用针对网上诱骗和恶意软件的防护功能”设置。
-
-      如果未设置此政策，则系统将会启用安全浏览功能，但用户可以对其进行更改。
-
-      要详细了解安全浏览功能，请访问 https://developers.google.com/safe-browsing。</translation>
 <translation id="6017568866726630990">显示系统打印对话框而非打印预览。
 
       启用此设置后，当用户请求打印某个页面时，<ph name="PRODUCT_NAME" /> 将打开系统打印对话框而非内置打印预览。
@@ -1473,6 +1459,13 @@
 
       要将应用固定到启动器上，请参阅 PinnedLauncherApps。</translation>
 <translation id="602728333950205286">默认搜索服务提供商的即搜即得网址</translation>
+<translation id="6029950823657977211">
+      请注意：此政策尚处于实验阶段，可能会导致功能中断！
+      此政策适用于登录屏幕。另请参阅适用于用户会话的“IsolateOrigins”政策。建议您将这两项政策设为相同的值。
+      如果此政策处于启用状态，则以英文逗号分隔的列表中指定的每个来源都将在自己的进程中运行。这还会隔离通过子网域指定的来源；例如，指定 https://example.com/ 还会导致 https://foo.example.com/ 作为 https://example.com/ 的一部分被隔离。
+      如果此政策处于停用状态，则系统将为登录屏幕使用“按网站隔离”进程管理逻辑。
+      如果此政策未配置，则系统将为登录屏幕使用平台默认的网站隔离设置。
+      </translation>
 <translation id="603410445099326293">在使用 POST 的建议网址中所需的参数</translation>
 <translation id="6036523166753287175">支持通过远程访问主机穿越防火墙</translation>
 <translation id="6070667616071269965">设备登录屏幕键盘布局</translation>
@@ -1629,6 +1622,7 @@
       如果此政策未设置，系统将启用网络联想查询功能，但用户可以自行更改。</translation>
 <translation id="6658245400435704251">指定一个时间（以秒为单位），即从更新首次推送到服务器起设备随机延迟更新下载的最大时间。设备的这一等待时间一部分会按照实际时间计算，而剩下的部分则取决于更新检查的次数。在任何情况下，分配的时间上限都是固定的，因此设备绝不会一直等待下载某个更新。</translation>
 <translation id="6689792153960219308">报告硬件状态</translation>
+<translation id="6698071416141001300">重复使用密码可触发“密码保护服务举报面临风险的帐号”功能</translation>
 <translation id="6699880231565102694">为远程访问主机启用双重身份验证</translation>
 <translation id="6724842112053619797">如果您启用此设置，存储在 <ph name="PRODUCT_NAME" /> 个人资料中的设置（例如书签、自动填充数据、密码等）将会被写入一个存储在漫游用户个人资料文件夹内的文件中，或被写入一个由管理员通过 <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> 政策指定的位置中。启用此政策会停用云同步。
 
@@ -1854,6 +1848,7 @@
 <translation id="7529100000224450960">可让您设置网址格式的列表，这些网址格式用于指定允许打开弹出式窗口的网站。在未设置此政策的情况下，如果设置了“DefaultPopupsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="7529144158022474049">自动更新分配因素</translation>
 <translation id="7534199150025803530">此政策对 Android 版“Google 云端硬盘”应用没有任何影响。如果您想阻止通过移动网络连接使用 Google 云端硬盘，则应禁止安装 Android 版“Google 云端硬盘”应用。</translation>
+<translation id="7547549430720182663">合并</translation>
 <translation id="7553535237300701827">设置此政策后，登录身份验证流程将采用以下其中一种方式，具体取决于设置的值：
 
       如果设为 GAIA，将通过常规 GAIA 身份验证流程完成登录。
@@ -1969,7 +1964,6 @@
       如果未设置此政策，<ph name="PRODUCT_NAME" /> 将使用默认值（即5000毫秒）。</translation>
 <translation id="7841880500990419427">要回退到的最低 TLS 版本</translation>
 <translation id="7842869978353666042">配置 Google 云端硬盘选项</translation>
-<translation id="7843525027689416831">指定应在 <ph name="PRODUCT_NAME" /> 启动时应用于它的选项。指定的选项仅会应用于登录屏幕。通过此政策设置的选项不会反映在用户会话中。</translation>
 <translation id="787125417158068494">如果设置为 SyncDisabled 或未配置，ARC 应用便无法使用 <ph name="PRODUCT_OS_NAME" /> 证书。
 
       如果设置为 CopyCaCerts，ARC 应用便可使用所有已安装 ONC 且带有 <ph name="WEB_TRUSTED_BIT" /> 的 CA 证书。</translation>
@@ -2118,9 +2112,17 @@
       如果此政策未设置或已停用，系统将使用 PDF 插件打开 PDF 文件，除非用户已停用此插件。</translation>
 <translation id="8402079500086185021">始终使用外部应用打开 PDF 文件</translation>
 <translation id="8412312801707973447">是否执行在线 OCSP/CRL 检查</translation>
+<translation id="841977920223099909">密码保护服务警告功能触发条件</translation>
 <translation id="8424255554404582727">设置显示屏默认旋转角度，每次重新启动后都重新应用设置的角度</translation>
 <translation id="8426231401662877819">将屏幕顺时针旋转 90 度</translation>
 <translation id="8451988835943702790">使用“新标签页”作为主页</translation>
+<translation id="8459216513698220096">指定是否处理计算机 GPO 中的用户政策以及如何处理。
+
+      如果此政策设为“默认”或未设置，则系统仅会从用户 GPO 读取用户政策（忽略计算机 GPO）。
+
+      如果此政策设为“合并”，则用户 GPO 中的用户政策将与计算机 GPO 中的用户政策合并（计算机 GPO 优先）。
+
+      如果此政策设为“替换”，则计算机 GPO 中的用户政策将替换用户 GPO 中的用户政策（忽略用户 GPO）。</translation>
 <translation id="8465065632133292531">在使用 POST 的即搜即得网址中所需的参数</translation>
 <translation id="847472800012384958">不允许任何网站显示弹出式窗口</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2169,6 +2171,7 @@
           如果此政策未设置，<ph name="PRODUCT_NAME" /> 将会尝试检测某个服务器是否在内网上，只有当该服务器在内网上时，该浏览器才会回应 IWA 请求。如果检测到某个服务器在互联网上，<ph name="PRODUCT_NAME" /> 将忽略来自它的 IWA 请求。</translation>
 <translation id="8672321184841719703">目标自动更新版本</translation>
 <translation id="867410340948518937">U2F（通用第二重因素）</translation>
+<translation id="8685024486845674965">重复使用密码可触发密码保护服务警告功能</translation>
 <translation id="8693243869659262736">使用内置 DNS 客户端</translation>
 <translation id="8704831857353097849">已停用插件的列表</translation>
 <translation id="8711086062295757690">指定关键字，该关键字在多功能框中作为快捷方式来触发针对此提供商的搜索。此政策是可选的，如果未设置，就没有任何关键字可激活搜索服务提供商。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
@@ -2181,6 +2184,7 @@
       如果已启用此设置或将此设置留空，则可以删除浏览和下载记录。
 
       如果停用了此设置，则不能删除浏览和下载记录。</translation>
+<translation id="8759829385824155666">允许的 Kerberos 加密类型</translation>
 <translation id="8764119899999036911">指定 Kerberos SPN 是基于规范 DNS 名称还是基于输入的原始名称。如果您启用了此设置，系统将跳过 CNAME 查找步骤，并使用输入的服务器名称。如果您停用或未配置此设置，系统将通过 CNAME 查找来确定服务器的规范名称。</translation>
 <translation id="87812015706645271">本地用户的名称和远程访问主机所有者的名称必须一致</translation>
 <translation id="8782750230688364867">指定设备处于演示模式时屏幕变暗延迟时间的调整幅度（百分比）。
@@ -2196,6 +2200,7 @@
       如果未设置此政策或将其设为 false，系统将不会报告相关位置。</translation>
 <translation id="8818768076343557335">连上网络时一律预测网络操作（移动网络除外）。
           （在版本 50 中已不适用，在版本 52 中已遭到移除。在 52 以上版本中，如果设置值为 1，则系统会视为 0 - 连上网络时一律预测网络操作。）</translation>
+<translation id="8825782996899863372">在网上诱骗网页中重复使用密码可触发密码保护服务警告功能</translation>
 <translation id="8828766846428537606">在“<ph name="PRODUCT_NAME" />”中配置默认主页，并禁止用户更改主页。只有将主页设置为新标签页或某个特定的主页网址，才能完全锁定用户的主页设置。如果您没有指定主页网址，那么用户仍然可以通过指定“chrome://newtab”，将主页设置为新标签页。</translation>
 <translation id="8833109046074170275">通过默认的 GAIA 流程进行身份验证</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" />会缓存应用和扩展程序，以便一台设备的多位用户安装，从而避免重复为每位用户下载。
@@ -2254,6 +2259,12 @@
       如果您设置了此政策，用户便无法更改或替换它。
 
       此政策对用户能否在各台设备上配置打印机没有影响。它旨在对各用户的打印机配置进行补充。
+      </translation>
+<translation id="8934944553121392674">控制用户可以使用 <ph name="DEVICE_PRINTERS_POLICY" /> 中的哪些打印机。
+
+      指定对批量打印机配置使用哪项访问政策。如果选择 <ph name="PRINTERS_ALLOW_ALL" />，则系统会显示所有打印机。如果选择 <ph name="PRINTERS_BLACKLIST" />，则系统会使用 <ph name="DEVICE_PRINTERS_BLACKLIST" /> 来限制用户使用指定的打印机。如果选择 <ph name="PRINTERS_WHITELIST" />，则 <ph name="DEVICE_PRINTERS_WHITELIST" /> 只会指定可供用户选择的打印机。
+
+      如果此政策未设置，则系统将会默认使用 <ph name="PRINTERS_ALLOW_ALL" />。
       </translation>
 <translation id="8947415621777543415">报告设备位置</translation>
 <translation id="8951350807133946005">设置磁盘缓存目录</translation>
@@ -2324,5 +2335,11 @@
 <translation id="930930237275114205">设置 <ph name="PRODUCT_FRAME_NAME" />用户数据目录</translation>
 <translation id="934390688529359269">为 <ph name="PRODUCT_NAME" /> 启用强制登录功能</translation>
 <translation id="944817693306670849">设置磁盘缓存大小</translation>
+<translation id="9775893229076211">可让您控制“密码保护服务举报面临风险的帐号”功能的触发条件。“密码保护服务举报面临风险的帐号”是指，当相应帐号面临被盗用的风险时，密码保护服务将会通知 Google。
+
+      如果此政策设为“PasswordProtectionRiskOff”，则一律不触发“密码保护服务举报面临风险的帐号”功能。
+      如果此政策设为“PasswordProtectionRiskOnPasswordReuse”，则当用户在任何未列入白名单的网站上重复使用 Google 密码时，都将会触发“密码保护服务举报面临风险的帐号”功能。
+      如果此政策设为“PasswordProtectionRiskOnPhishingReuse”，则当用户在网上诱骗网站上重复使用 Google 密码时，将会触发“密码保护服务举报面临风险的帐号”功能。
+      如果此政策未设置，则当用户在网上诱骗网站上重复使用 Google 密码时，将会触发“密码保护服务举报面临风险的帐号”功能，但用户可以对此进行更改。</translation>
 <translation id="982497069985795632">启用拼写检查</translation>
 </translationbundle>

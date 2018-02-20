@@ -39,6 +39,7 @@
 <translation id="1545749641540134597">QR कोड स्कॅन करा</translation>
 <translation id="1580783302095112590">मेल पाठवले.</translation>
 <translation id="1612730193129642006">टॅब ग्रिड दाखवा</translation>
+<translation id="1644574205037202324">इतिहास</translation>
 <translation id="1646446875146297738">'Do Not Track' सक्षम करणे अर्थात आपल्या ब्राउझिंग रहदारीसह एक विनंती समाविष्ट‍ केली जाईल. कोणताही प्रभाव यावर अवलंबून असतो कि वेबसाइट विनंतीस प्रतिसाद देते किंवा नाही आणि विनंतीचा निष्कर्ष कसा काढला जातो.
 
 उदाहरणार्थ, काही वेबसाइट आपण भेट दिलेल्या इतर वेबसाइटवर आधारित नसलेल्या जाहिराती आपल्याला दर्शवून या विनंतीस प्रतिसाद देऊ शकतात. अनेक वेबसाइट अद्यापही आपला ब्राउझिंग डेटा संकलित करून त्याचा वापर करतील - उदाहरणार्थ सुरक्षितता सुधारणे, सामग्री प्रदान करणे, त्यांच्या वेबसाइटवर जाहिराती आणि शिफारसी आणि अहवाल आकडेवारी व्युत्पन्न करणे. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
@@ -250,6 +251,7 @@
 <translation id="5871497086027727873">1 आयटम हलविला</translation>
 <translation id="5911030830365207728">Google भाषांतर</translation>
 <translation id="5916664084637901428">चालू</translation>
+<translation id="5938160824633642847">तुमचे डिव्हाइस जवळजवळ भरलेले आहे. जागा मोकळी करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="5948291296578561264">हे तुम्हाला तुमच्या फोटो लायब्ररीवर फोटो सेव्ह करू देते.</translation>
 <translation id="5955891643922670672">ऑफलाइन आवृत्ती पाहत आहे</translation>
 <translation id="5964480694698977962">नवीन गुप्त टॅब तयार करा.</translation>
@@ -290,6 +292,7 @@
 
 आपला डेटा आपल्या संकालन सांकेतिक वाक्यांशासह <ph name="TIME" /> वाजता कूटबद्ध केला होता. संकालन सुरु करण्यासाठी तो एंटर करा.</translation>
 <translation id="6418346271604475326">PDF तयार करीत आहे</translation>
+<translation id="6434591244308415567">एरर आली. नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="6445051938772793705">देश</translation>
 <translation id="6445981559479772097">संदेश पाठविला.</translation>
 <translation id="6464071786529933911">नवीन गुप्त टॅबमध्ये उघडा</translation>
@@ -300,6 +303,7 @@
 <translation id="6657585470893396449">पासवर्ड</translation>
 <translation id="667999046851023355">दस्तऐवज</translation>
 <translation id="6713747756340119864">Google Apps</translation>
+<translation id="6730682669179532099">पासवर्ड निर्यात करू शकत नाही</translation>
 <translation id="6762156594045689028">हे सेटिंग बदलण्यासाठी, <ph name="BEGIN_LINK" />संकालन रीसेट करा<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">पिनकोड</translation>
 <translation id="6785453220513215166">क्रॅश अहवाल पाठवत आहे...</translation>
@@ -327,6 +331,7 @@
 <translation id="7203585745079012652">उत्तरे वाचून सांगा</translation>
 <translation id="722055596168483966">Google सेेव वैयक्तिकृत करा</translation>
 <translation id="7272437679830969316">तुमच्या ओळखीची पडताळणी करू शकत नाही. पासवर्ड कॉपी केला नाही.</translation>
+<translation id="7291368939935408496">पासवर्ड तयार करत आहे…</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> टक्के डाउनलोड केले</translation>
 <translation id="7346909386216857016">ठीक आहे, समजले</translation>
 <translation id="7400418766976504921">URL</translation>

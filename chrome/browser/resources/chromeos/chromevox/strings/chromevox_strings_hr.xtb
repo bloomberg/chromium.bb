@@ -36,6 +36,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="1237866625126425153">gmbgr</translation>
 <translation id="1251750620252348585">Sljedeći naslov razine 6</translation>
 <translation id="1275718070701477396">Odabrano</translation>
+<translation id="1286609444451033486">Za promjenu pritisnite tipku za pretraživanje i razmaknicu.</translation>
 <translation id="1319608975892113573">Nema prethodnog navoda bloka.</translation>
 <translation id="1321576897702511272">Sakrij pomoć za ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> od <ph name="TOTAL" /></translation>
@@ -371,6 +372,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="4191918948604314587">Gumb</translation>
 <translation id="4202186506458631436">Pomakni desno</translation>
 <translation id="4206289001967551965">Unutar tablice</translation>
+<translation id="4209770650650780359">Za automatsko dovršavanje pritisnite strelicu prema gore ili dolje.</translation>
 <translation id="4215733775853809057">Sljedeći klizač</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{crtica}one{# crtica}few{# crtice}other{# crtica}}</translation>
 <translation id="421884353938374759">odabir boja</translation>
@@ -404,6 +406,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="4532633738839459153">{COUNT,plural, =1{kosa crta}one{# kosa crta}few{# kose crte}other{# kosih crta}}</translation>
 <translation id="4547556996012970016">Sljedeći naslov razine 5</translation>
 <translation id="4562381607973973258">Zaglavlje</translation>
+<translation id="4569941707103739422">Za kretanje po izborniku pritisnite strelicu prema gore ili dolje, a za aktiviranje stavke pritisnite Enter.</translation>
 <translation id="4570424871453628777">Kraj pravopisne pogreške</translation>
 <translation id="4591507479202817876">, odabran</translation>
 <translation id="4597532268155981612">obrazac</translation>
@@ -497,6 +500,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="536031132345979795">Preskoči natrag tijekom kontinuiranog čitanja</translation>
 <translation id="5368000168321181111">Zvučne su ikone isključene</translation>
 <translation id="5374320867641260420">Nema sljedećeg gumba.</translation>
+<translation id="5376407118396657359">Za kretanje od ćelije do ćelije pritisnite tipku za pretraživanje + Ctrl + Alt i strelice.</translation>
 <translation id="5382299583965267720">Nema sljedećeg naslova razine 1.</translation>
 <translation id="5402367795255837559">Brajica</translation>
 <translation id="5402791055281059602">Modalno upozorenje</translation>
@@ -505,6 +509,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="5417034931411865818">Klikanje stavke ispod tipke za usmjeravanje $1</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{znak "manje od"}one{# znak "manje od"}few{# znaka "manje od"}other{# znakova "manje od"}}</translation>
 <translation id="5444587279251314700">(aktivno)</translation>
+<translation id="5446809554778706307">Nema fokusa. Pritisnite Ctrl + T za otvaranje nove kartice.</translation>
 <translation id="5451268436205074266">točkice <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Dopunski</translation>
 <translation id="5485036206801896268">Nema prethodne slike.</translation>
@@ -584,6 +589,7 @@ Za otvaranje izbornika preglednika Chrome pritisnite tipke Alt i F.</translation
 <translation id="6006050241733874051">Obrazac</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{kosa crta ulijevo}one{# kosa crta ulijevo}few{# kose crte ulijevo}other{# kosih crta ulijevo}}</translation>
 <translation id="6037602951055904232">Pomiči se prema naprijed</translation>
+<translation id="6042826534790431634">Za aktiviranje pritisnite tipku za pretraživanje i razmaknicu.</translation>
 <translation id="6044160928851315051">Zatamni zaslon</translation>
 <translation id="605761629541007221">Kraj podebljanog teksta</translation>
 <translation id="6065293622157674001">Početak gramatičke pogreške</translation>
@@ -860,6 +866,7 @@ Za otvaranje izbornika preglednika Chrome pritisnite tipke Alt i F.</translation
 <translation id="9065283790526219006">+ skočni prozor</translation>
 <translation id="9077213568694924680">uklonjeno iz odabira</translation>
 <translation id="9082874451376019682">Nema prethodnog klizača.</translation>
+<translation id="9087707351856729768">Počnite upisivati za automatsko dovršavanje.</translation>
 <translation id="9089864840575085222">Kružna izmjena odjeka tipkanja</translation>
 <translation id="9105227991373418255">Izreži $1.</translation>
 <translation id="9107530006868467849">Nema widgeta za prethodni medij.</translation>

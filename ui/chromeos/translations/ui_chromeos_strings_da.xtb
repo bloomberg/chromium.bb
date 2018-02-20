@@ -36,6 +36,7 @@
 <translation id="2046702855113914483">Ramen</translation>
 <translation id="2080010875307505892">Serbisk tastatur</translation>
 <translation id="2136953289241069843">Translitteration (namaste → नमस्कार)</translation>
+<translation id="2145908266289632567">Tekstredigering</translation>
 <translation id="2164862903024139959">Vietnamesisk tastatur (TCVN)</translation>
 <translation id="2168214441502403371">Persisk tastatur</translation>
 <translation id="2198315389084035571">Kinesisk (forenklet)</translation>
@@ -57,6 +58,7 @@
 <translation id="2781645665747935084">Belgisk</translation>
 <translation id="2790805296069989825">Russisk tastatur</translation>
 <translation id="2870836398458454343">Translitteration (marhaban ← مرحبا)</translation>
+<translation id="2872353916818027657">Skift primær skærm</translation>
 <translation id="288024221176729610">Tjekkisk</translation>
 <translation id="2894654529758326923">Oplysninger</translation>
 <translation id="2902734494705624966">Amerikansk (udvidet)</translation>
@@ -69,8 +71,10 @@
 <translation id="2966459079597787514">Svensk tastatur</translation>
 <translation id="3064388234319122767">Translitteration (zdravo → здраво)</translation>
 <translation id="3088034400796962477">Translitteration (salam ← سلام)</translation>
+<translation id="3105917916468784889">Tag screenshot</translation>
 <translation id="3116361045094675131">Britisk tastatur</translation>
 <translation id="3126026824346185272">Ctrl</translation>
+<translation id="3140353188828248647">Fokuser på adresselinje</translation>
 <translation id="3157729859914172001">Amerikansk internationalt tastatur (pc)</translation>
 <translation id="3187212781151025377">Hebraisk tastatur</translation>
 <translation id="3197563288998582412">Britisk (Dvorak)</translation>
@@ -82,12 +86,15 @@
 <translation id="3338239663705455570">Slovensk tastatur</translation>
 <translation id="3399597614303179694">Makedonsk tastatur</translation>
 <translation id="3494768541638400973">Googles japanske indtastning (til japansk tastatur)</translation>
+<translation id="3496213124478423963">Zoom ud</translation>
 <translation id="3519867315646775981">Translitteration (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portugisisk</translation>
 <translation id="357479282490346887">Litauisk</translation>
+<translation id="3592821358219525223">System- og visningsindstillinger</translation>
 <translation id="3603385196401704894">Fransk (Canada)</translation>
 <translation id="3606220979431771195">Tyrkisk F</translation>
 <translation id="3619115746895587757">Cappuccino</translation>
+<translation id="3649256019230929621">Minimer vinduet</translation>
 <translation id="3678559383040232393">Maltesisk tastatur</translation>
 <translation id="3801082500826908679">Færøsk</translation>
 <translation id="3809272675881623365">Kanin</translation>
@@ -95,6 +102,7 @@
 <translation id="3825863595139017598">Mongolsk tastatur</translation>
 <translation id="3833761542219863804">Translitteration (mausam → ਮੌਸਮ)</translation>
 <translation id="383652340667548381">Serbisk</translation>
+<translation id="385051799172605136">Tilbage</translation>
 <translation id="3855472144336161447">Tysk (Neo 2)</translation>
 <translation id="3858678421048828670">Italiensk tastatur</translation>
 <translation id="3910699493603749297">Khmerisk tastatur</translation>
@@ -144,6 +152,7 @@
 <translation id="5218183485292899140">Schweizisk (fransk)</translation>
 <translation id="5241298539944515331">Vietnamesisk tastatur (VIQR)</translation>
 <translation id="5257456363153333584">Guldsmed</translation>
+<translation id="5316716239522500219">Spejlvend skærmene</translation>
 <translation id="5319782540886810524">Lettisk tastatur</translation>
 <translation id="5323213332664049067">Latinamerikansk</translation>
 <translation id="5402367795255837559">Braille</translation>
@@ -166,14 +175,18 @@
 <translation id="5819442873484330149">Hangul 3-sæt (endelig)</translation>
 <translation id="5838825566232597749">Internationalt amerikansk Workman</translation>
 <translation id="5892290200158927959">Fransk BÉPO-tastatur</translation>
+<translation id="5928303187149237472">Skift skærmopløsning</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">Latinamerikansk tastatur</translation>
 <translation id="6012987430370760224">Marathi-tastatur (fonetisk)</translation>
+<translation id="6022924867608035986">Ryd teksten i søgefeltet</translation>
 <translation id="60357267506638014">Tjekkisk (QWERTY)</translation>
 <translation id="6054173164583630569">Fransk tastatur</translation>
 <translation id="6111770213269631447">Translitteration (namaskar → নমস্কার)</translation>
+<translation id="6129953537138746214">Mellemrum</translation>
 <translation id="6164412158936057769">Sommerfugle</translation>
 <translation id="6170470584681422115">Sandwich</translation>
+<translation id="6185696379715117369">Gå en side op</translation>
 <translation id="6264347891387618177">Translitteration (selam → ሰላም)</translation>
 <translation id="6305012486838822927">Laotisk tastatur</translation>
 <translation id="6339034549827494595">Russisk fonetisk (AATSEEL) tastatur</translation>
@@ -186,6 +199,8 @@
 <translation id="6505918941256367791">Tamilsk tastatur (InScript)</translation>
 <translation id="6509122719576673235">Norsk</translation>
 <translation id="6650726141019353908">Lyserød sommerfugl</translation>
+<translation id="671928215901716392">Lås skærmen</translation>
+<translation id="6727005317916125192">Forrige rude</translation>
 <translation id="6760765581316020278">Vietnamesisk tastatur (VNI)</translation>
 <translation id="6795884519221689054">Panda</translation>
 <translation id="6808193438228982088">Ræv</translation>
@@ -201,11 +216,14 @@
 <translation id="6939777852457331078">Amerikansk Workman-tastatur</translation>
 <translation id="6970230597523682626">Bulgarsk</translation>
 <translation id="6981982820502123353">Hjælpefunktioner</translation>
+<translation id="7020813747703216897">Der blev ikke fundet nogen matchende resultater</translation>
+<translation id="7025325401470358758">Næste rude</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Translitteration (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Estisk tastatur</translation>
 <translation id="719009910964971313">Amerikansk (Programmer Dvorak) tastatur</translation>
 <translation id="7222624196722476520">Bulgarsk tastatur (fonetisk)</translation>
+<translation id="7272373489634936181">Søg efter genveje</translation>
 <translation id="7348749398828259943">Internationalt amerikansk Workman-tastatur</translation>
 <translation id="7389722738210761877">Thailandsk tastatur (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Hindi-tastatur (fonetisk)</translation>
@@ -214,11 +232,13 @@
 <translation id="7434823369735508263">Britisk (Dvorak) tastatur</translation>
 <translation id="7460898608667578234">ukrainsk</translation>
 <translation id="7474889694310679759">Canadisk (engelsk) tastatur</translation>
+<translation id="7500462265946853476">Side og webbrowser</translation>
 <translation id="751507702149411736">Hviderussisk</translation>
 <translation id="7547811415869834682">Hollandsk</translation>
 <translation id="7603724359189955920">Gitre</translation>
 <translation id="770015031906360009">Græsk</translation>
 <translation id="7706319470528945664">Portugisisk tastatur</translation>
+<translation id="7724603315864178912">Klip</translation>
 <translation id="7774365994322694683">Fugl</translation>
 <translation id="7825423931463735974">Tamilsk tastatur (Tamil99)</translation>
 <translation id="7853966320808728790">Fransk BÉPO</translation>
@@ -228,6 +248,7 @@
 <translation id="7943385054491506837">Amerikansk (Colemak)</translation>
 <translation id="7969525169268594403">Slovensk</translation>
 <translation id="7987485481246785146">Sorani-kurdisk tastatur (arabiskbaseret)</translation>
+<translation id="8004192919599017226">Start søgning...</translation>
 <translation id="8008366997883261463">Jack Russell-terrier</translation>
 <translation id="8031722894461705849">Slovakisk tastatur</translation>
 <translation id="8045462269890919536">Rumænsk</translation>
@@ -248,6 +269,7 @@
 <translation id="8437209419043462667">Amerikansk</translation>
 <translation id="8467473010914675605">Koreansk indtastningsmetode</translation>
 <translation id="8477649328507734757">Spin</translation>
+<translation id="8487678622945914333">Zoom ind</translation>
 <translation id="8521441079177373948">Britisk</translation>
 <translation id="8551494947769799688">Lettisk</translation>
 <translation id="8561206103590473338">Elefant</translation>
@@ -258,6 +280,7 @@
 <translation id="8803496343472038847">Russisk tastatur (fonetisk)</translation>
 <translation id="8808686172382650546">Kat</translation>
 <translation id="885381502874625531">Hviderussisk tastatur</translation>
+<translation id="88986195241502842">Gå en side ned</translation>
 <translation id="8900820606136623064">Ungarsk</translation>
 <translation id="8901822611024316615">Tjekkisk QWERTY-tastatur</translation>
 <translation id="8919081441417203123">Dansk</translation>
@@ -265,6 +288,7 @@
 <translation id="9017798300203431059">Russisk (fonetisk)</translation>
 <translation id="913758436357682283">Myanmar tastatur (Myansan)</translation>
 <translation id="9153744823707037316">Array-indtastningsmetode</translation>
+<translation id="9179672198516322668">Populære genveje</translation>
 <translation id="9206487995878691001">Cangjie-indtastningsmetode</translation>
 <translation id="9219908252191632183">Måne</translation>
 </translationbundle>

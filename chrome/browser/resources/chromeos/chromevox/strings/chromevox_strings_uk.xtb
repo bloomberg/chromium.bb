@@ -36,6 +36,7 @@
 <translation id="1237866625126425153">група перемикачів</translation>
 <translation id="1251750620252348585">Наступний заголовок рівня 6</translation>
 <translation id="1275718070701477396">Вибрано</translation>
+<translation id="1286609444451033486">Натисніть клавішу пошуку + пробіл, щоб увімкнути або вимкнути.</translation>
 <translation id="1319608975892113573">Немає попереднього блоку цитати.</translation>
 <translation id="1321576897702511272">Сховати довідку ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> з <ph name="TOTAL" /></translation>
@@ -370,6 +371,7 @@
 <translation id="4191918948604314587">Кнопка</translation>
 <translation id="4202186506458631436">Перемістити праворуч</translation>
 <translation id="4206289001967551965">Усередині таблиці</translation>
+<translation id="4209770650650780359">Натискайте стрілки вгору чи вниз для автозаповнення.</translation>
 <translation id="4215733775853809057">Наступний повзунок</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{тире}one{# тире}few{# тире}many{# тире}other{# dashes}}</translation>
 <translation id="421884353938374759">вибір кольору</translation>
@@ -403,6 +405,7 @@
 <translation id="4532633738839459153">{COUNT,plural, =1{коса риска}one{# коса риска}few{# косі риски}many{# косих рисок}other{# slashes}}</translation>
 <translation id="4547556996012970016">Наступний заголовок рівня 5</translation>
 <translation id="4562381607973973258">Заголовок</translation>
+<translation id="4569941707103739422">Натискайте стрілки вгору чи вниз для навігації; натисніть Enter, щоб активувати.</translation>
 <translation id="4570424871453628777">Кінець тексту з орфографічною помилкою</translation>
 <translation id="4591507479202817876">, вибрано</translation>
 <translation id="4597532268155981612">форма</translation>
@@ -496,6 +499,7 @@
 <translation id="536031132345979795">Перехід назад під час безперервного читання</translation>
 <translation id="5368000168321181111">Звуковий ефект вимкнено</translation>
 <translation id="5374320867641260420">Немає наступної кнопки.</translation>
+<translation id="5376407118396657359">Натискайте клавішу пошуку + Ctrl + Alt і клавіші зі стрілками, щоб переходити між клітинками.</translation>
 <translation id="5382299583965267720">Немає наступного заголовка рівня 1.</translation>
 <translation id="5402367795255837559">Команди Брайля</translation>
 <translation id="5402791055281059602">Сповіщення в модальному вікні</translation>
@@ -504,6 +508,7 @@
 <translation id="5417034931411865818">Натиснути елемент під клавішею напрямку $1</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{знак "менше"}one{# знак "менше"}few{# знаки "менше"}many{# знаків "менше"}other{# less than signs}}</translation>
 <translation id="5444587279251314700">(активна)</translation>
+<translation id="5446809554778706307">Елемент не вибрано. Натисніть Ctrl + T, щоб відкрити нову вкладку.</translation>
 <translation id="5451268436205074266">крапки: <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Додатково</translation>
 <translation id="5485036206801896268">Немає попереднього зображення.</translation>
@@ -583,6 +588,7 @@
 <translation id="6006050241733874051">Форма</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{зворотна коса риска}one{# зворотна коса риска}few{# зворотні косі риски}many{# зворотних косих рисок}other{# backslashes}}</translation>
 <translation id="6037602951055904232">На задній план</translation>
+<translation id="6042826534790431634">Натисніть клавішу пошуку та пробіл, щоб активувати.</translation>
 <translation id="6044160928851315051">Дезактивувати екран</translation>
 <translation id="605761629541007221">Кінець тексту жирним шрифтом</translation>
 <translation id="6065293622157674001">Початок тексту з граматичною помилкою</translation>
@@ -859,6 +865,7 @@
 <translation id="9065283790526219006">+ спливаюче вікно</translation>
 <translation id="9077213568694924680">видалено з виділеного</translation>
 <translation id="9082874451376019682">Немає попереднього повзунка.</translation>
+<translation id="9087707351856729768">Почніть вводити текст для автозаповнення.</translation>
 <translation id="9089864840575085222">Ще раз озвучити введення тексту</translation>
 <translation id="9105227991373418255">вирізати $1.</translation>
 <translation id="9107530006868467849">Немає попереднього медіа-віджета.</translation>

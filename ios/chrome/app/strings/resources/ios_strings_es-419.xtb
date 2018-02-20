@@ -39,6 +39,7 @@
 <translation id="1545749641540134597">Escanear código QR</translation>
 <translation id="1580783302095112590">Correo enviado</translation>
 <translation id="1612730193129642006">Mostrar la cuadrícula de pestañas</translation>
+<translation id="1644574205037202324">Historial</translation>
 <translation id="1646446875146297738">Si habilitas la opción "No realizar seguimiento", se incluirá una solicitud con el tráfico de navegación. Los efectos dependerán de si algún sitio web responde a dicha solicitud y de cómo se interpreta.
 
 Por ejemplo, algunos sitios web pueden responder a la solicitud a través de la publicación de anuncios que no se basan en los sitios web que visitaste. Muchos sitios web continuarán recopilando y usando tus datos de navegación para, por ejemplo, mejorar la seguridad, generar estadísticas para informes y ofrecer contenido, servicios, anuncios y recomendaciones. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
@@ -249,6 +250,7 @@ Handoff también debe estar habilitado en la sección General de la configuraci�
 <translation id="5871497086027727873">1 artículo movido</translation>
 <translation id="5911030830365207728">Google Traductor</translation>
 <translation id="5916664084637901428">Activada</translation>
+<translation id="5938160824633642847">El dispositivo está casi lleno. Libera espacio y vuelve a intentarlo.</translation>
 <translation id="5948291296578561264">Esta acción te permite guardar fotos en tu biblioteca de fotos.</translation>
 <translation id="5955891643922670672">Vista de la versión sin conexión</translation>
 <translation id="5964480694698977962">Crea una nueva pestaña de incógnito.</translation>
@@ -289,6 +291,7 @@ Handoff también debe estar habilitado en la sección General de la configuraci�
 
 Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph name="TIME" />. Debes ingresarla para iniciar la sincronización.</translation>
 <translation id="6418346271604475326">Preparando PDF</translation>
+<translation id="6434591244308415567">Se produjo un error. Vuelve a intentarlo más tarde.</translation>
 <translation id="6445051938772793705">País</translation>
 <translation id="6445981559479772097">Mensaje enviado</translation>
 <translation id="6464071786529933911">Abrir en una pestaña de incógnito nueva</translation>
@@ -299,6 +302,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="6657585470893396449">Contraseña</translation>
 <translation id="667999046851023355">Documento</translation>
 <translation id="6713747756340119864">Google Apps</translation>
+<translation id="6730682669179532099">No se pueden exportar las contraseñas</translation>
 <translation id="6762156594045689028">Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Código postal</translation>
 <translation id="6785453220513215166">Enviando informe de fallos…</translation>
@@ -326,6 +330,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="7203585745079012652">Decir las respuestas</translation>
 <translation id="722055596168483966">Personalizar los servicios de Google</translation>
 <translation id="7272437679830969316">No se puede verificar tu identidad. La contraseña no se copió.</translation>
+<translation id="7291368939935408496">Preparando las contraseñas…</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> % descargado</translation>
 <translation id="7346909386216857016">Entendido</translation>
 <translation id="7400418766976504921">URL</translation>

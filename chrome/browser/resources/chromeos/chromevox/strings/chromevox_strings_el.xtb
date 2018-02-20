@@ -36,6 +36,7 @@
 <translation id="1237866625126425153">ομάδα κουμπιών επιλογής</translation>
 <translation id="1251750620252348585">Επικεφαλίδα επόμενου επιπέδου 6</translation>
 <translation id="1275718070701477396">Επιλεγμένο</translation>
+<translation id="1286609444451033486">Πατήστε τα πλήκτρα Αναζήτηση+Space για εναλλαγή.</translation>
 <translation id="1319608975892113573">Δεν υπάρχει προηγούμενη ενότητα σε παράθεση.</translation>
 <translation id="1321576897702511272">Απόκρυψη βοήθειας ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> από <ph name="TOTAL" /></translation>
@@ -371,6 +372,7 @@
 <translation id="4191918948604314587">Ένα κουμπί</translation>
 <translation id="4202186506458631436">Μετακίνηση δεξιά</translation>
 <translation id="4206289001967551965">Μέσα στον πίνακα</translation>
+<translation id="4209770650650780359">Πατήστε το πάνω ή το κάτω βέλος για αυτόματες συμπληρώσεις.</translation>
 <translation id="4215733775853809057">Επόμενο ρυθμιστικό</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{παύλα}other{# παύλες}}</translation>
 <translation id="421884353938374759">επιλογέας χρώματος</translation>
@@ -404,6 +406,7 @@
 <translation id="4532633738839459153">{COUNT,plural, =1{κάθετος}other{# κάθετοι}}</translation>
 <translation id="4547556996012970016">Επικεφαλίδα επόμενου επιπέδου 5</translation>
 <translation id="4562381607973973258">Κεφαλίδα</translation>
+<translation id="4569941707103739422">Πατήστε το πάνω ή το κάτω βέλος για πλοήγηση και το πλήκτρο Enter για ενεργοποίηση.</translation>
 <translation id="4570424871453628777">Τέλος ορθογραφικού λάθους</translation>
 <translation id="4591507479202817876">, επιλέχθηκε</translation>
 <translation id="4597532268155981612">φόρμα</translation>
@@ -497,6 +500,7 @@
 <translation id="536031132345979795">Μετάβαση προς τα πίσω κατά τη συνεχόμενη ανάγνωση</translation>
 <translation id="5368000168321181111">Ηχητικά μηνύματα ανενεργά</translation>
 <translation id="5374320867641260420">Δεν υπάρχει επόμενο κουμπί.</translation>
+<translation id="5376407118396657359">Πατήστε τα πλήκτρα Αναζήτηση+Ctrl+Alt σε συνδυασμό με τα βέλη για πλοήγηση ανά κελί.</translation>
 <translation id="5382299583965267720">Δεν υπάρχει επόμενη επικεφαλίδα επιπέδου 1.</translation>
 <translation id="5402367795255837559">Μπράιγ</translation>
 <translation id="5402791055281059602">Μια αποκλειστική ειδοποίηση</translation>
@@ -505,6 +509,7 @@
 <translation id="5417034931411865818">Κάντε κλικ στο στοιχείο κάτω από το πλήκτρο δρομολόγησης $1</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{σύμβολο "μικρότερο από"}other{# σύμβολα "μικρότερο από"}}</translation>
 <translation id="5444587279251314700">(ενεργή)</translation>
+<translation id="5446809554778706307">Χωρίς εστίαση. Πατήστε Ctrl+T για να ανοίξετε μια νέα καρτέλα.</translation>
 <translation id="5451268436205074266">κουκκίδες <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Συμπληρωματικό</translation>
 <translation id="5485036206801896268">Δεν υπάρχει προηγούμενο γραφικό.</translation>
@@ -584,6 +589,7 @@
 <translation id="6006050241733874051">Φόρμα</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{ανάστροφη κάθετος}other{# ανάστροφες κάθετοι}}</translation>
 <translation id="6037602951055904232">Μετακίνηση προς τα εμπρός</translation>
+<translation id="6042826534790431634">Πατήστε τα πλήκτρα Αναζήτηση+Space για ενεργοποίηση.</translation>
 <translation id="6044160928851315051">Απενεργοποίηση φωτισμού οθόνης</translation>
 <translation id="605761629541007221">Τέλος έντονης γραφής</translation>
 <translation id="6065293622157674001">Αρχή γραμματικού σφάλματος</translation>
@@ -860,6 +866,7 @@
 <translation id="9065283790526219006">+αναδυόμενα παράθυρα</translation>
 <translation id="9077213568694924680">καταργήθηκε από την επιλογή</translation>
 <translation id="9082874451376019682">Δεν υπάρχει προηγούμενο ρυθμιστικό.</translation>
+<translation id="9087707351856729768">Πληκτρολογήστε για αυτόματη συμπλήρωση.</translation>
 <translation id="9089864840575085222">Επανάληψη εκφώνησης πληκτρολόγησης</translation>
 <translation id="9105227991373418255">αποκοπή $1.</translation>
 <translation id="9107530006868467849">Δεν υπάρχει γραφικό στοιχείο προηγούμενου μέσου.</translation>

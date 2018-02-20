@@ -33,7 +33,6 @@
 <translation id="1936717151811561466">الفنلندية</translation>
 <translation id="1947424002851288782">لوحة المفاتيح الألمانية</translation>
 <translation id="1984603991036629094">لوحة المفاتيح الأرمينية الصوتية</translation>
-<translation id="1989746695744304008">‏Tab وWindows</translation>
 <translation id="2046702855113914483">رامن</translation>
 <translation id="2080010875307505892">لوحة المفاتيح الصربية</translation>
 <translation id="2136953289241069843">‏التحويل الصوتي (ناماستي ← नमस्कार)</translation>
@@ -59,6 +58,7 @@
 <translation id="2781645665747935084">البلجيكية</translation>
 <translation id="2790805296069989825">لوحة المفاتيح الروسية</translation>
 <translation id="2870836398458454343">‏التحويل الصوتي (marhaban ← مرحبًا)</translation>
+<translation id="2872353916818027657">تبديل الشاشة الرئيسية</translation>
 <translation id="288024221176729610">التشيكية</translation>
 <translation id="2894654529758326923">المعلومات</translation>
 <translation id="2902734494705624966">أمريكية موسعة</translation>
@@ -71,8 +71,10 @@
 <translation id="2966459079597787514">لوحة المفاتيح السويدية</translation>
 <translation id="3064388234319122767">‏التحويل الصوتي (ذدرافو ← здраво)</translation>
 <translation id="3088034400796962477">‏التحويل الصوتي (سلام ← salam)</translation>
+<translation id="3105917916468784889">التقاط لقطة شاشة</translation>
 <translation id="3116361045094675131">لوحة المفاتيح البريطانية</translation>
 <translation id="3126026824346185272">Ctrl</translation>
+<translation id="3140353188828248647">تركيز شريط العناوين</translation>
 <translation id="3157729859914172001">لوحة المفاتيح (الكمبيوتر الشخصي) الأمريكية الدولية</translation>
 <translation id="3187212781151025377">لوحة المفاتيح العبرية</translation>
 <translation id="3197563288998582412">‏البريطانية Dvorak</translation>
@@ -84,6 +86,7 @@
 <translation id="3338239663705455570">لوحة المفاتيح السلوفينية</translation>
 <translation id="3399597614303179694">لوحة مفاتيح باللغة المقدونية</translation>
 <translation id="3494768541638400973">‏أسلوب Google للإدخال الياباني (للوحة المفاتيح اليابانية)</translation>
+<translation id="3496213124478423963">تصغير</translation>
 <translation id="3519867315646775981">التحويل الصوتي (שלום ← شالوم)</translation>
 <translation id="3522708245912499433">البرتغالية</translation>
 <translation id="357479282490346887">الليتوانية</translation>
@@ -91,6 +94,7 @@
 <translation id="3603385196401704894">الفرنسية الكندية</translation>
 <translation id="3606220979431771195">Turkish-F</translation>
 <translation id="3619115746895587757">كابتشينو</translation>
+<translation id="3649256019230929621">تصغير النافذة</translation>
 <translation id="3678559383040232393">لوحة المفاتيح المالطية</translation>
 <translation id="3801082500826908679">الفاروية</translation>
 <translation id="3809272675881623365">أرنب</translation>
@@ -98,6 +102,7 @@
 <translation id="3825863595139017598">لوحة المفاتيح المنغولية</translation>
 <translation id="3833761542219863804">‏التحويل الصوتي (ماوسام ← ਮੌਸਮ)</translation>
 <translation id="383652340667548381">الصربية</translation>
+<translation id="385051799172605136">الرجوع إلى الوراء</translation>
 <translation id="3855472144336161447">‏الألمانية Neo 2</translation>
 <translation id="3858678421048828670">لوحة المفاتيح الإيطالية</translation>
 <translation id="3910699493603749297">لوحة مفاتيح اللغة الخميرية</translation>
@@ -147,6 +152,7 @@
 <translation id="5218183485292899140">الفرنسية السويسرية</translation>
 <translation id="5241298539944515331">‏لوحة المفاتيح الفيتنامية (VIQR)</translation>
 <translation id="5257456363153333584">يعسوب</translation>
+<translation id="5316716239522500219">نسخ الشاشات</translation>
 <translation id="5319782540886810524">لوحة المفاتيح اللاتفية</translation>
 <translation id="5323213332664049067">أمريكا اللاتينية</translation>
 <translation id="5402367795255837559">لغة برايل</translation>
@@ -173,11 +179,14 @@
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">لوحة مفاتيح أمريكا اللاتينية</translation>
 <translation id="6012987430370760224">لوحة المفاتيح الماراثية (صوتية)</translation>
+<translation id="6022924867608035986">محو نص مربع البحث</translation>
 <translation id="60357267506638014">‏تخطيط QWERTY للتشيكية</translation>
 <translation id="6054173164583630569">لوحة المفاتيح الفرنسية</translation>
 <translation id="6111770213269631447">‏التحويل الصوتي (ناماسكار ← নমস্কার)</translation>
+<translation id="6129953537138746214">مسافة</translation>
 <translation id="6164412158936057769">فراشات</translation>
 <translation id="6170470584681422115">ساندويتش</translation>
+<translation id="6185696379715117369">صفحة لأعلى</translation>
 <translation id="6264347891387618177">‏التحويل الصوتي (سلام ← ሰላም)</translation>
 <translation id="6305012486838822927">لوحة مفاتيح لغة لاو</translation>
 <translation id="6339034549827494595">‏لوحة المفاتيح الروسية الصوتية (AATSEEL)</translation>
@@ -189,9 +198,9 @@
 <translation id="6503256918647795660">لوحة المفاتيح الفرنسية السويسرية</translation>
 <translation id="6505918941256367791">‏لوحة المفاتيح التاميلية (InScript)</translation>
 <translation id="6509122719576673235">النرويجية</translation>
-<translation id="6629951648264770593"><ph name="MODIFIER" /> + <ph name="KEY" /></translation>
 <translation id="6650726141019353908">فراشة وردية</translation>
-<translation id="6684986274046026054">قفل الشاشة</translation>
+<translation id="671928215901716392">قفل الشاشة</translation>
+<translation id="6727005317916125192">الجزء السابق</translation>
 <translation id="6760765581316020278">‏لوحة المفاتيح الفيتنامية (VNI)</translation>
 <translation id="6795884519221689054">باندا</translation>
 <translation id="6808193438228982088">ثعلب</translation>
@@ -207,11 +216,14 @@
 <translation id="6939777852457331078">‏لوحة مفاتيح US Workman</translation>
 <translation id="6970230597523682626">البلغارية</translation>
 <translation id="6981982820502123353">إمكانية الدخول</translation>
+<translation id="7020813747703216897">لم يتم العثور على أي نتائج مطابقة.</translation>
+<translation id="7025325401470358758">الجزء التالي</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">‏التحويل الصوتي (سلام ← ሰላም)</translation>
 <translation id="7172053773111046550">لوحة المفاتيح الإستونية</translation>
 <translation id="719009910964971313">‏لوحة مفاتيح المطور الأمريكية Dvorak</translation>
 <translation id="7222624196722476520">لوحة المفاتيح الصوتية البلغارية</translation>
+<translation id="7272373489634936181">البحث عن اختصارات</translation>
 <translation id="7348749398828259943">‏لوحة مفاتيح US Workman الدولية</translation>
 <translation id="7389722738210761877">‏لوحة المفاتيح التايلاندية (TIS 820-2531)</translation>
 <translation id="7396038720194014279">لوحة المفاتيح الهندية (صوتية)</translation>
@@ -226,6 +238,7 @@
 <translation id="7603724359189955920">شبكات</translation>
 <translation id="770015031906360009">اليونانية</translation>
 <translation id="7706319470528945664">لوحة المفاتيح البرتغالية</translation>
+<translation id="7724603315864178912">قص</translation>
 <translation id="7774365994322694683">طائر</translation>
 <translation id="7825423931463735974">‏لوحة المفاتيح التاميلية (Tamil99)</translation>
 <translation id="7853966320808728790">‏BÉPO الفرنسية</translation>
@@ -235,6 +248,7 @@
 <translation id="7943385054491506837">‏الأمريكية Colemak</translation>
 <translation id="7969525169268594403">السلوفينية</translation>
 <translation id="7987485481246785146">لوحة مفاتيح اللغة الكردية المدعمة بالعربية</translation>
+<translation id="8004192919599017226">جارٍ بدء البحث...</translation>
 <translation id="8008366997883261463">كلب</translation>
 <translation id="8031722894461705849">لوحة المفاتيح السلوفاكية</translation>
 <translation id="8045462269890919536">الرومانية</translation>
@@ -255,6 +269,7 @@
 <translation id="8437209419043462667">العربية</translation>
 <translation id="8467473010914675605">أسلوب الإدخال الكوري</translation>
 <translation id="8477649328507734757">دوران</translation>
+<translation id="8487678622945914333">تكبير</translation>
 <translation id="8521441079177373948">المملكة المتحدة</translation>
 <translation id="8551494947769799688">اللاتفية</translation>
 <translation id="8561206103590473338">فيل</translation>
@@ -264,8 +279,8 @@
 <translation id="874420130893181774">‏أسلوب إدخال Pinyin التقليدي</translation>
 <translation id="8803496343472038847">لوحة المفاتيح الصوتية الروسية</translation>
 <translation id="8808686172382650546">قط</translation>
-<translation id="8839645518696429828"><ph name="CTRL" /> + <ph name="SHIFT" /> و+ أو -</translation>
 <translation id="885381502874625531">لوحة المفاتيح البيلاروسية</translation>
+<translation id="88986195241502842">صفحة لأسفل</translation>
 <translation id="8900820606136623064">المجرية</translation>
 <translation id="8901822611024316615">‏لوحة المفاتيح التشيكية (تخطيط QWERTY)</translation>
 <translation id="8919081441417203123">الدانماركية</translation>
@@ -273,6 +288,7 @@
 <translation id="9017798300203431059">روسية صوتية</translation>
 <translation id="913758436357682283">لوحة مفاتيح ميانمار ميانسان</translation>
 <translation id="9153744823707037316">مصفوفة أسلوب الإدخال</translation>
+<translation id="9179672198516322668">الاختصارات الشائعة</translation>
 <translation id="9206487995878691001">‏أسلوب الإدخال لنظام Cangjie</translation>
 <translation id="9219908252191632183">قمري</translation>
 </translationbundle>
