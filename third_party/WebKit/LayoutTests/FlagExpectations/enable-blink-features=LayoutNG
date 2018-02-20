@@ -2374,7 +2374,6 @@ crbug.com/591099 fast/block/positioning/rel-positioned-inline-changes-width.html
 crbug.com/591099 fast/block/positioning/relative-overflow-replaced.html [ Failure ]
 crbug.com/591099 fast/block/positioning/rtl-static-positioning.html [ Failure ]
 crbug.com/591099 fast/block/positioning/table-cell-static-position.html [ Failure ]
-crbug.com/591099 fast/block/positioning/trailing-space-test.html [ Failure ]
 crbug.com/591099 fast/block/positioning/vertical-rl/002.html [ Failure ]
 crbug.com/591099 fast/body-propagation/background-image/003-declarative.xhtml [ Failure Pass ]
 crbug.com/591099 fast/body-propagation/background-image/004-declarative.xhtml [ Failure Pass ]

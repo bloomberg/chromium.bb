@@ -632,7 +632,10 @@ void NGBlockNode::SaveStaticOffsetForLegacy(
   DCHECK(box_->IsOutOfFlowPositioned());
   // Only set static position if the current offset container
   // is one that Legacy layout expects static offset from.
-  if (box_->Parent() == offset_container) {
+  const LayoutObject* parent = box_->Parent();
+  if (parent == offset_container ||
+      (parent && parent->IsLayoutInline() &&
+       parent->ContainingBlock() == offset_container)) {
     DCHECK(box_->Layer());
     box_->Layer()->SetStaticBlockPosition(offset.block_offset);
     box_->Layer()->SetStaticInlinePosition(offset.inline_offset);
