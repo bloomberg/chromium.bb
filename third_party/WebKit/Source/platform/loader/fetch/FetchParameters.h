@@ -70,11 +70,6 @@ class PLATFORM_EXPORT FetchParameters {
     kDisallowPlaceholder = 0,  // The requested image must not be a placeholder.
     kAllowPlaceholder,         // The image is allowed to be a placeholder.
   };
-  // TODO(toyoshim): Consider to define an enum for preload options, and use it
-  // instead of bool in this class, FrameFetchContext, and so on. If it is
-  // reasonable, we try merging m_speculativePreload and m_linkPreload into one
-  // enum type. See https://crbug.com/675883.
-
   struct ResourceWidth {
     DISALLOW_NEW();
     float width;
