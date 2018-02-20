@@ -17839,6 +17839,7 @@ Called by update_net_error_codes.py.-->
   <int value="2370" label="AsyncClipboardAPIWrite"/>
   <int value="2371" label="AsyncClipboardAPIReadText"/>
   <int value="2372" label="AsyncClipboardAPIWriteText"/>
+  <int value="2373" label="OpenerNavigationWithoutGesture"/>
 </enum>
 
 <enum name="FeedbackSource">
