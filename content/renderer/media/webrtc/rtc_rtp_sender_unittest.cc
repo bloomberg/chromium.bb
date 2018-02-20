@@ -125,6 +125,13 @@ TEST_F(RTCRtpSenderTest, CreateSenderWithNullTrack) {
   EXPECT_TRUE(sender_->Track().IsNull());
 }
 
+// This test is flaky on Android and Linux.
+// See crbug.com/800465 for detail.
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+#define MAYBE_ReplaceTrackSetsTrack DISABLED_ReplaceTrackSetsTrack
+#else
+#define MAYBE_ReplaceTrackSetsTrack ReplaceTrackSetsTrack
+#endif
 TEST_F(RTCRtpSenderTest, ReplaceTrackSetsTrack) {
   auto web_track1 = CreateWebTrack("track1");
   sender_ = CreateSender(web_track1);
