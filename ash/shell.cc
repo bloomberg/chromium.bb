@@ -28,6 +28,7 @@
 #include "ash/display/display_shutdown_observer.h"
 #include "ash/display/event_transformation_handler.h"
 #include "ash/display/mouse_cursor_event_filter.h"
+#include "ash/display/persistent_window_controller.h"
 #include "ash/display/projecting_observer_chromeos.h"
 #include "ash/display/resolution_notification_controller.h"
 #include "ash/display/screen_ash.h"
@@ -726,6 +727,8 @@ Shell::~Shell() {
   // Controllers who have WindowObserver added must be deleted
   // before |window_tree_host_manager_| is deleted.
 
+  persistent_window_controller_.reset();
+
   // VideoActivityNotifier must be deleted before |video_detector_| is
   // deleted because it's observing video activity through
   // VideoDetector::Observer interface.
@@ -1166,6 +1169,8 @@ void Shell::InitializeDisplayManager() {
           display_manager_.get(), window_tree_host_manager_.get());
   display_configurator_->Init(shell_port_->CreateNativeDisplayDelegate(),
                               false);
+  persistent_window_controller_ =
+      std::make_unique<PersistentWindowController>();
 
   projecting_observer_ =
       std::make_unique<ProjectingObserver>(display_configurator_.get());

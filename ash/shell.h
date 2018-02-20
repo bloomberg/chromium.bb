@@ -125,6 +125,7 @@ class NoteTakingController;
 class OverlayEventFilter;
 class PartialMagnificationController;
 class PeripheralBatteryNotifier;
+class PersistentWindowController;
 class PowerButtonController;
 class PowerEventObserver;
 class ProjectingObserver;
@@ -696,6 +697,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ui::UserActivityDetector> user_activity_detector_;
   std::unique_ptr<VideoDetector> video_detector_;
   std::unique_ptr<WindowTreeHostManager> window_tree_host_manager_;
+  std::unique_ptr<PersistentWindowController> persistent_window_controller_;
   std::unique_ptr<HighContrastController> high_contrast_controller_;
   std::unique_ptr<MagnificationController> magnification_controller_;
   std::unique_ptr<AutoclickController> autoclick_controller_;
