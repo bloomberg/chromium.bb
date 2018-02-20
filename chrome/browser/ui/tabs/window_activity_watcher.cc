@@ -44,6 +44,8 @@ struct WindowMetrics {
 
 // Sets metric values that are dependent on the current window state.
 void UpdateMetrics(const Browser* browser, WindowMetrics* window_metrics) {
+  DCHECK(browser->window());
+
   if (browser->window()->IsFullscreen())
     window_metrics->show_state = WindowMetricsEvent::SHOW_STATE_FULLSCREEN;
   else if (browser->window()->IsMinimized())
@@ -195,11 +197,19 @@ void WindowActivityWatcher::OnBrowserRemoved(Browser* browser) {
 }
 
 void WindowActivityWatcher::OnBrowserSetLastActive(Browser* browser) {
-  if (ShouldTrackBrowser(browser))
+  // The browser may not have a window yet if activation calls happen during
+  // initialization.
+  // TODO(michaelpg): The browser window check should be unnecessary
+  // (https://crbug.com/811191, https://crbug.com/811243).
+  if (ShouldTrackBrowser(browser) && browser->window())
     browser_watchers_[browser]->MaybeLogWindowMetricsUkmEntry();
 }
 
 void WindowActivityWatcher::OnBrowserNoLongerActive(Browser* browser) {
-  if (ShouldTrackBrowser(browser))
+  // The browser may not have a window yet if activation calls happen during
+  // initialization.
+  // TODO(michaelpg): The browser window check should be unnecessary
+  // (https://crbug.com/811191, https://crbug.com/811243).
+  if (ShouldTrackBrowser(browser) && browser->window())
     browser_watchers_[browser]->MaybeLogWindowMetricsUkmEntry();
 }
