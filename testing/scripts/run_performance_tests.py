@@ -54,8 +54,7 @@ import run_telemetry_benchmark_as_googletest
 
 # Current whitelist of benchmarks outputting histograms
 BENCHMARKS_TO_OUTPUT_HISTOGRAMS = [
-    'dummy_benchmark.noisy_benchmark_1',
-    'dummy_benchmark.stable_benchmark_1',
+    'dummy_benchmark.histogram_benchmark_1',
 ]
 
 # We currently have two different sharding schemes for android
