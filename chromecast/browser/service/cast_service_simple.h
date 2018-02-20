@@ -35,6 +35,11 @@ class CastServiceSimple : public CastService, public CastWebView::Delegate {
   // CastWebView::Delegate implementation:
   void OnPageStopped(int error_code) override;
   void OnLoadingStateChanged(bool loading) override;
+  bool OnAddMessageToConsoleReceived(content::WebContents* source,
+                                     int32_t level,
+                                     const base::string16& message,
+                                     int32_t line_no,
+                                     const base::string16& source_id) override;
 
   // CastContentWindow::Delegate implementation:
   void OnWindowDestroyed() override;

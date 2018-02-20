@@ -47,6 +47,11 @@ class CastBrowserTest : public content::BrowserTestBase, CastWebView::Delegate {
   void OnLoadingStateChanged(bool loading) override;
   void OnWindowDestroyed() override;
   void OnKeyEvent(const ui::KeyEvent& key_event) override;
+  bool OnAddMessageToConsoleReceived(content::WebContents* source,
+                                     int32_t level,
+                                     const base::string16& message,
+                                     int32_t line_no,
+                                     const base::string16& source_id) override;
 
   std::unique_ptr<CastWebContentsManager> web_contents_manager_;
   std::unique_ptr<CastWebView> cast_web_view_;

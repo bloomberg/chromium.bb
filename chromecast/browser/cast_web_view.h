@@ -5,6 +5,9 @@
 #ifndef CHROMECAST_BROWSER_CAST_WEB_VIEW_H_
 #define CHROMECAST_BROWSER_CAST_WEB_VIEW_H_
 
+#include <cstdint>
+
+#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chromecast/browser/cast_content_window.h"
 #include "content/public/browser/web_contents.h"
@@ -26,6 +29,16 @@ class CastWebView {
     // Called during WebContentsDelegate::LoadingStateChanged.
     // |loading| indicates if web_contents_ IsLoading or not.
     virtual void OnLoadingStateChanged(bool loading) = 0;
+
+    // Called when there is console log output from web_contents.
+    // Returning true indicates that the delegate handled the message.
+    // If false is returned the default logging mechanism will be used.
+    virtual bool OnAddMessageToConsoleReceived(
+        content::WebContents* source,
+        int32_t level,
+        const base::string16& message,
+        int32_t line_no,
+        const base::string16& source_id) = 0;
   };
 
   // The parameters used to create a CastWebView instance. Passed to

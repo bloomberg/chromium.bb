@@ -82,6 +82,11 @@ class CastWebViewDefault : public CastWebView,
   bool CheckMediaAccessPermission(content::WebContents* web_contents,
                                   const GURL& security_origin,
                                   content::MediaStreamType type) override;
+  bool DidAddMessageToConsole(content::WebContents* source,
+                              int32_t level,
+                              const base::string16& message,
+                              int32_t line_no,
+                              const base::string16& source_id) override;
   void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
