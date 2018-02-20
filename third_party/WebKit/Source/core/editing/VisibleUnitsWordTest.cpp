@@ -9,21 +9,6 @@
 #include "core/editing/testing/EditingTestBase.h"
 
 namespace blink {
-namespace visible_units_word_test {
-
-VisiblePosition CreateVisiblePositionInDOMTree(
-    Node& anchor,
-    int offset,
-    TextAffinity affinity = TextAffinity::kDownstream) {
-  return CreateVisiblePosition(Position(&anchor, offset), affinity);
-}
-
-VisiblePositionInFlatTree CreateVisiblePositionInFlatTree(
-    Node& anchor,
-    int offset,
-    TextAffinity affinity = TextAffinity::kDownstream) {
-  return CreateVisiblePosition(PositionInFlatTree(&anchor, offset), affinity);
-}
 
 class VisibleUnitsWordTest : public EditingTestBase {
  protected:
@@ -66,6 +51,21 @@ class VisibleUnitsWordTest : public EditingTestBase {
       return GetSelectionTextFromBody(SelectionInDOMTree());
     return GetSelectionTextFromBody(
         SelectionInDOMTree::Builder().Collapse(result).Build());
+  }
+
+  // To avoid name conflict in jumbo build, following functions should be here.
+  static VisiblePosition CreateVisiblePositionInDOMTree(
+      Node& anchor,
+      int offset,
+      TextAffinity affinity = TextAffinity::kDownstream) {
+    return CreateVisiblePosition(Position(&anchor, offset), affinity);
+  }
+
+  static VisiblePositionInFlatTree CreateVisiblePositionInFlatTree(
+      Node& anchor,
+      int offset,
+      TextAffinity affinity = TextAffinity::kDownstream) {
+    return CreateVisiblePosition(PositionInFlatTree(&anchor, offset), affinity);
   }
 };
 
@@ -461,5 +461,4 @@ TEST_F(VisibleUnitsWordTest, PreviousWordBasic) {
   EXPECT_EQ("<p> (1) abc |def</p>", DoPreviousWord("<p> (1) abc def</p>|"));
 }
 
-}  // namespace visible_units_word_test
 }  // namespace blink
