@@ -3366,6 +3366,39 @@ TEST_F(PictureLayerImplTest, OcclusionOnSolidColorPictureLayer) {
   scoped_refptr<FakeRasterSource> pending_raster_source =
       FakeRasterSource::CreateFilledSolidColor(layer_bounds);
   SetupPendingTree(std::move(pending_raster_source), gfx::Size(), Region(),
+                   Layer::LayerMaskType::NOT_MASK);
+  // Device scale factor should not affect a non-mask solid color layer.
+  host_impl()->pending_tree()->SetDeviceScaleFactor(2.f);
+  ActivateTree();
+
+  {
+    SCOPED_TRACE("Scaled occlusion");
+    gfx::Rect occluded(300, 0, 400, 2000);
+    impl.AppendQuadsWithOcclusion(active_layer(), occluded);
+
+    size_t partial_occluded_count = 0;
+    LayerTestCommon::VerifyQuadsAreOccluded(impl.quad_list(), occluded,
+                                            &partial_occluded_count);
+    // Because of the implementation of test helper AppendQuadsWithOcclusion,
+    // the occlusion will have a scale transform resulted from the device scale
+    // factor. However, the AppendQuads function will try to tile a solid color
+    // layer ignoring the scale factor, and its visible layer bounds is 500x500.
+    // So we end up having 4 partially occluded quads.
+    EXPECT_EQ(4u, impl.quad_list().size());
+    EXPECT_EQ(4u, partial_occluded_count);
+  }
+}
+
+TEST_F(PictureLayerImplTest, IgnoreOcclusionOnSolidColorMask) {
+  gfx::Size layer_bounds(1000, 1000);
+  gfx::Size viewport_size(1000, 1000);
+
+  LayerTestCommon::LayerImplTest impl;
+  host_impl()->SetViewportSize(viewport_size);
+
+  scoped_refptr<FakeRasterSource> pending_raster_source =
+      FakeRasterSource::CreateFilledSolidColor(layer_bounds);
+  SetupPendingTree(std::move(pending_raster_source), gfx::Size(), Region(),
                    Layer::LayerMaskType::MULTI_TEXTURE_MASK);
   host_impl()->pending_tree()->SetDeviceScaleFactor(2.f);
   ActivateTree();
@@ -3376,12 +3409,12 @@ TEST_F(PictureLayerImplTest, OcclusionOnSolidColorPictureLayer) {
     impl.AppendQuadsWithOcclusion(active_layer(), occluded);
 
     size_t partial_occluded_count = 0;
-    LayerTestCommon::VerifyQuadsAreOccluded(impl.quad_list(), occluded,
+    LayerTestCommon::VerifyQuadsAreOccluded(impl.quad_list(), gfx::Rect(),
                                             &partial_occluded_count);
-    // None of the quads shall be occluded and half of them are partially
-    // occluded.
+    // None of the quads shall be occluded because mask layers ignores
+    // occlusion.
     EXPECT_EQ(16u, impl.quad_list().size());
-    EXPECT_EQ(8u, partial_occluded_count);
+    EXPECT_EQ(0u, partial_occluded_count);
   }
 }
 
