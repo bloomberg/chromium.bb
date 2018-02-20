@@ -956,40 +956,6 @@ void RenderWidgetCompositor::SetEventListenerProperties(
       static_cast<cc::EventListenerProperties>(properties));
 }
 
-void RenderWidgetCompositor::UpdateEventRectsForSubframeIfNecessary() {
-  if (!is_for_oopif_)
-    return;
-
-  // If this is an oopif sub-frame compositor, we won't be getting TouchRects
-  // from ScrollingCoordinator, so to make sure touch events are handled
-  // properly, mark the entire root layer as a TouchRect.
-  // TODO(wjmaclean): remove this when ScrollingCoordinator is made per-frame,
-  // as opposed to per-page.
-  using blink::WebEventListenerProperties;
-  using blink::WebEventListenerClass;
-
-  WebEventListenerProperties touch_start_properties =
-      EventListenerProperties(WebEventListenerClass::kTouchStartOrMove);
-  WebEventListenerProperties touch_end_cancel_properties =
-      EventListenerProperties(WebEventListenerClass::kTouchEndOrCancel);
-  bool has_touch_handlers =
-      touch_start_properties == WebEventListenerProperties::kBlocking ||
-      touch_start_properties ==
-          WebEventListenerProperties::kBlockingAndPassive ||
-      touch_end_cancel_properties == WebEventListenerProperties::kBlocking ||
-      touch_end_cancel_properties ==
-          WebEventListenerProperties::kBlockingAndPassive;
-
-  cc::Layer* root_layer = layer_tree_host_->root_layer();
-
-  cc::TouchActionRegion touch_event_handler;
-  if (has_touch_handlers) {
-    touch_event_handler.Union(cc::kTouchActionNone,
-                              gfx::Rect(gfx::Point(), root_layer->bounds()));
-  }
-  root_layer->SetTouchActionRegion(std::move(touch_event_handler));
-}
-
 blink::WebEventListenerProperties
 RenderWidgetCompositor::EventListenerProperties(
     blink::WebEventListenerClass event_class) const {

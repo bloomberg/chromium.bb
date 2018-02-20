@@ -3254,14 +3254,6 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
           }
         }
 
-        // This is needed since, at present, the ScrollingCoordinator doesn't
-        // send rects for oopif sub-frames.
-        // TODO(wjmaclean): Remove this pathway when ScrollingCoordinator
-        // operates on a per-frame basis. https://crbug.com/680606
-        GetFrame()
-            .GetPage()
-            ->GetChromeClient()
-            .UpdateEventRectsForSubframeIfNecessary(&frame_->LocalFrameRoot());
         UpdateCompositedSelectionIfNeeded();
 
         // TODO(pdr): prePaint should be under the "Paint" devtools timeline
