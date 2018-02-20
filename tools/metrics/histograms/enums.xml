@@ -32398,7 +32398,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="80" label="IMPORTING">
     The archive is being imported into offline pages model.
   </int>
-  <int value="90" label="FINSIHED">
+  <int value="90" label="FINISHED">
     Item has finished processing, successfully or otherwise, and is waiting to
     be processed for stats reporting to UMA.
   </int>
