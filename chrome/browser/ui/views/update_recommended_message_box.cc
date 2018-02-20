@@ -37,7 +37,7 @@ UpdateRecommendedMessageBox::UpdateRecommendedMessageBox() {
   views::MessageBoxView::InitParams params(
       l10n_util::GetStringUTF16(IDS_UPDATE_RECOMMENDED));
   params.message_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      ChromeDistanceMetric::DISTANCE_BUBBLE_PREFERRED_WIDTH);
+      ChromeDistanceMetric::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
   // Also deleted when the window closes.
   message_box_view_ = new views::MessageBoxView(params);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::UPDATE_RECOMMENDED);
@@ -63,6 +63,10 @@ bool UpdateRecommendedMessageBox::ShouldShowWindowTitle() const {
 #else
   return true;
 #endif
+}
+
+bool UpdateRecommendedMessageBox::ShouldShowCloseButton() const {
+  return false;
 }
 
 base::string16 UpdateRecommendedMessageBox::GetWindowTitle() const {
