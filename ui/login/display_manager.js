@@ -56,6 +56,7 @@
 /** @const */ var ACCELERATOR_APP_LAUNCH_NETWORK_CONFIG =
     'app_launch_network_config';
 /** @const */ var ACCELERATOR_BOOTSTRAPPING_SLAVE = "bootstrapping_slave";
+/** @const */ var ACCELERATOR_DEMO_MODE = "demo_mode";
 
 /* Signin UI state constants. Used to control header bar UI. */
 /** @const */ var SIGNIN_UI_STATE = {
@@ -187,6 +188,15 @@ cr.define('cr.ui.login', function() {
     SCREEN_OOBE_RESET,
   ];
 
+  /**
+   * Group of screens (screen IDs) where demo mode setup invocation is
+   * available.
+   * @type Array<string>
+   * @const
+   */
+  var DEMO_MODE_SETUP_AVAILABLE_SCREEN_GROUP = [
+    SCREEN_GAIA_SIGNIN,
+  ];
 
   /**
    * OOBE screens group index.
@@ -431,6 +441,11 @@ cr.define('cr.ui.login', function() {
           chrome.send('networkConfigRequest');
       } else if (name == ACCELERATOR_BOOTSTRAPPING_SLAVE) {
         chrome.send('setOobeBootstrappingSlave');
+      } else if (name == ACCELERATOR_DEMO_MODE) {
+        if (DEMO_MODE_SETUP_AVAILABLE_SCREEN_GROUP.indexOf(currentStepId) !=
+            -1) {
+          chrome.send('setupDemoMode');
+        }
       }
     },
 
