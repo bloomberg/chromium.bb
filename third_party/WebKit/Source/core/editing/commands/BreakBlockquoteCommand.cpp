@@ -32,6 +32,7 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
+#include "core/editing/commands/DeleteSelectionOptions.h"
 #include "core/editing/commands/EditingCommandsUtilities.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLElement.h"
@@ -96,7 +97,10 @@ void BreakBlockquoteCommand::DoApply(EditingState* editing_state) {
 
   // Delete the current selection.
   if (EndingSelection().IsRange()) {
-    if (!DeleteSelection(editing_state, false, false))
+    if (!DeleteSelection(editing_state, DeleteSelectionOptions::Builder()
+                                            .SetExpandForSpecialElements(true)
+                                            .SetSanitizeMarkup(true)
+                                            .Build()))
       return;
   }
 

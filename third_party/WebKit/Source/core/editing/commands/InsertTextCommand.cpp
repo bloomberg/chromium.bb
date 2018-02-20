@@ -33,6 +33,7 @@
 #include "core/editing/SelectionTemplate.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
+#include "core/editing/commands/DeleteSelectionOptions.h"
 #include "core/editing/commands/EditingCommandsUtilities.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLSpanElement.h"
@@ -162,7 +163,9 @@ void InsertTextCommand::DoApply(EditingState* editing_state) {
     GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
     bool end_of_selection_was_at_start_of_block =
         IsStartOfBlock(EndingVisibleSelection().VisibleEnd());
-    if (!DeleteSelection(editing_state, false, true, false, false))
+    if (!DeleteSelection(editing_state, DeleteSelectionOptions::Builder()
+                                            .SetMergeBlocksAfterDelete(true)
+                                            .Build()))
       return;
     // deleteSelection eventually makes a new endingSelection out of a Position.
     // If that Position doesn't have a layoutObject (e.g. it is on a <frameset>

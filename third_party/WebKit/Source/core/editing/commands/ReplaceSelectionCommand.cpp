@@ -44,6 +44,7 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/commands/ApplyStyleCommand.h"
 #include "core/editing/commands/BreakBlockquoteCommand.h"
+#include "core/editing/commands/DeleteSelectionOptions.h"
 #include "core/editing/commands/EditingCommandsUtilities.h"
 #include "core/editing/commands/SimplifyMarkupCommand.h"
 #include "core/editing/commands/SmartReplace.h"
@@ -1070,8 +1071,11 @@ void ReplaceSelectionCommand::InsertParagraphSeparatorIfNeeds(
                                      IsStartOfBlock(visible_start);
     // FIXME: We should only expand to include fully selected special elements
     // if we are copying a selection and pasting it on top of itself.
-    if (!DeleteSelection(editing_state, false, merge_blocks_after_delete,
-                         false))
+    if (!DeleteSelection(editing_state, DeleteSelectionOptions::Builder()
+                                            .SetMergeBlocksAfterDelete(
+                                                merge_blocks_after_delete)
+                                            .SetSanitizeMarkup(true)
+                                            .Build()))
       return;
     if (fragment.HasInterchangeNewlineAtStart()) {
       GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();

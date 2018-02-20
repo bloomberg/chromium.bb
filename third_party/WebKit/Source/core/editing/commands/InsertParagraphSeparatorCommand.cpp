@@ -34,6 +34,7 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
+#include "core/editing/commands/DeleteSelectionOptions.h"
 #include "core/editing/commands/EditingCommandsUtilities.h"
 #include "core/editing/commands/InsertLineBreakCommand.h"
 #include "core/html/HTMLBRElement.h"
@@ -195,7 +196,7 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
   if (EndingSelection().IsRange()) {
     GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
     CalculateStyleBeforeInsertion(insertion_position);
-    if (!DeleteSelection(editing_state, false, true))
+    if (!DeleteSelection(editing_state, DeleteSelectionOptions::NormalDelete()))
       return;
     const VisibleSelection& visble_selection_after_delete =
         EndingVisibleSelection();
