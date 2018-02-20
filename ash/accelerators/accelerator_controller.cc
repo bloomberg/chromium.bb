@@ -387,7 +387,7 @@ void HandleRotateScreen() {
       Shell::Get()->display_manager()->GetDisplayInfo(display.id());
   Shell::Get()->display_configuration_controller()->SetDisplayRotation(
       display.id(), GetNextRotation(display_info.GetActiveRotation()),
-      display::Display::ROTATION_SOURCE_USER);
+      display::Display::RotationSource::USER);
 }
 
 void HandleRestoreTab() {

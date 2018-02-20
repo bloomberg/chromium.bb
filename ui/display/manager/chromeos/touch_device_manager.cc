@@ -263,7 +263,7 @@ void TouchDeviceManager::AssociateTouchscreens(
   ManagedDisplayInfoList displays;
   for (ManagedDisplayInfo& display : *all_displays) {
     // Reset touch support from the display.
-    display.set_touch_support(Display::TOUCH_SUPPORT_UNAVAILABLE);
+    display.set_touch_support(Display::TouchSupport::UNAVAILABLE);
     displays.push_back(&display);
   }
 
@@ -496,7 +496,7 @@ void TouchDeviceManager::AssociateAnyRemainingDevices(
 
 void TouchDeviceManager::Associate(ManagedDisplayInfo* display,
                                    const ui::TouchscreenDevice& device) {
-  display->set_touch_support(Display::TOUCH_SUPPORT_AVAILABLE);
+  display->set_touch_support(Display::TouchSupport::AVAILABLE);
   active_touch_associations_[TouchDeviceIdentifier::FromDevice(device)] =
       display->id();
 }

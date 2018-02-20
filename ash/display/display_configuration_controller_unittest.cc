@@ -51,15 +51,15 @@ TEST_F(DisplayConfigurationControllerTest, OnlyHasOneAnimator) {
 
   Shell::Get()->display_manager()->SetDisplayRotation(
       display.id(), display::Display::ROTATE_0,
-      display::Display::RotationSource::ROTATION_SOURCE_USER);
+      display::Display::RotationSource::USER);
   old_screen_rotation_animator->Rotate(
-      display::Display::ROTATE_90, display::Display::ROTATION_SOURCE_USER,
+      display::Display::ROTATE_90, display::Display::RotationSource::USER,
       DisplayConfigurationController::ANIMATION_SYNC);
 
   ScreenRotationAnimator* new_screen_rotation_animator =
       testapi.GetScreenRotationAnimatorForDisplay(display.id());
   new_screen_rotation_animator->Rotate(
-      display::Display::ROTATE_180, display::Display::ROTATION_SOURCE_USER,
+      display::Display::ROTATE_180, display::Display::RotationSource::USER,
       DisplayConfigurationController::ANIMATION_SYNC);
   EXPECT_EQ(old_screen_rotation_animator, new_screen_rotation_animator);
 }
@@ -71,7 +71,7 @@ TEST_F(DisplayConfigurationControllerTest, GetTargetRotationWithAnimation) {
   DisplayConfigurationControllerTestApi testapi(controller);
   controller->SetDisplayRotation(
       display.id(), display::Display::ROTATE_180,
-      display::Display::ROTATION_SOURCE_USER,
+      display::Display::RotationSource::USER,
       DisplayConfigurationController::ANIMATION_ASYNC);
   EXPECT_EQ(display::Display::ROTATE_180,
             controller->GetTargetRotation(display.id()));
@@ -86,7 +86,7 @@ TEST_F(DisplayConfigurationControllerSmoothRotationTest,
   DisplayConfigurationControllerTestApi testapi(controller);
   controller->SetDisplayRotation(
       display.id(), display::Display::ROTATE_180,
-      display::Display::ROTATION_SOURCE_USER,
+      display::Display::RotationSource::USER,
       DisplayConfigurationController::ANIMATION_ASYNC);
   EXPECT_EQ(display::Display::ROTATE_180,
             controller->GetTargetRotation(display.id()));

@@ -172,7 +172,7 @@ TEST_F(RootWindowTransformersTest, RotateAndMagnify) {
 
   display_manager()->SetDisplayRotation(
       display1.id(), display::Display::ROTATE_90,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
   // Move the cursor to the center of the first root window.
   generator1.MoveMouseToInHost(59, 100);
 
@@ -199,7 +199,7 @@ TEST_F(RootWindowTransformersTest, RotateAndMagnify) {
 
   display_manager()->SetDisplayRotation(
       display2_id, display::Display::ROTATE_270,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
   // Move the cursor to the center of the second root window.
   generator2.MoveMouseToInHost(151, 199);
 
@@ -220,7 +220,7 @@ TEST_F(RootWindowTransformersTest, RotateAndMagnify) {
 
   display_manager()->SetDisplayRotation(
       display1.id(), display::Display::ROTATE_180,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
   // Move the cursor to the center of the first root window.
   generator1.MoveMouseToInHost(59, 99);
 

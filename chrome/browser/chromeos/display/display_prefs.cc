@@ -479,7 +479,7 @@ void StoreCurrentDisplayProperties(PrefService* local_state) {
       continue;
     property_value->SetInteger("rotation",
                                static_cast<int>(info.GetRotation(
-                                   display::Display::ROTATION_SOURCE_USER)));
+                                   display::Display::RotationSource::USER)));
     property_value->SetInteger(
         "ui-scale", static_cast<int>(info.configured_ui_scale() * 1000));
 
@@ -564,7 +564,7 @@ void StoreCurrentDisplayRotationLockPrefs(PrefService* local_state) {
   display::Display::Rotation rotation =
       GetDisplayManager()
           ->GetDisplayInfo(display::Display::InternalDisplayId())
-          .GetRotation(display::Display::ROTATION_SOURCE_ACCELEROMETER);
+          .GetRotation(display::Display::RotationSource::ACCELEROMETER);
   bool rotation_lock = ash::Shell::Get()
                            ->display_manager()
                            ->registered_internal_display_rotation_lock();

@@ -86,21 +86,21 @@ void ValidateEventTimeClock(base::TimeTicks* timestamp) {
 
 bool ShouldDefaultToNaturalScroll() {
   return GetInternalDisplayTouchSupport() ==
-         display::Display::TOUCH_SUPPORT_AVAILABLE;
+         display::Display::TouchSupport::AVAILABLE;
 }
 
 display::Display::TouchSupport GetInternalDisplayTouchSupport() {
   display::Screen* screen = display::Screen::GetScreen();
   // No screen in some unit tests.
   if (!screen)
-    return display::Display::TOUCH_SUPPORT_UNKNOWN;
+    return display::Display::TouchSupport::UNKNOWN;
   const std::vector<display::Display>& displays = screen->GetAllDisplays();
   for (std::vector<display::Display>::const_iterator it = displays.begin();
        it != displays.end(); ++it) {
     if (it->IsInternal())
       return it->touch_support();
   }
-  return display::Display::TOUCH_SUPPORT_UNAVAILABLE;
+  return display::Display::TouchSupport::UNAVAILABLE;
 }
 
 void ComputeEventLatencyOS(const base::NativeEvent& native_event) {

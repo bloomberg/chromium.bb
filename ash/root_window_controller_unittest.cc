@@ -725,14 +725,14 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
       Shell::Get()->display_manager()->GetSecondaryDisplay();
   display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
       .SetTouchSupport(secondary_display.id(),
-                       display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE);
+                       display::Display::TouchSupport::AVAILABLE);
 
   // The primary display doesn't have touch capability and the secondary display
   // does.
-  ASSERT_NE(display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE,
+  ASSERT_NE(display::Display::TouchSupport::AVAILABLE,
             display::Screen::GetScreen()->GetPrimaryDisplay().touch_support());
   ASSERT_EQ(
-      display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE,
+      display::Display::TouchSupport::AVAILABLE,
       Shell::Get()->display_manager()->GetSecondaryDisplay().touch_support());
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
@@ -777,18 +777,18 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, FollowInputFocus) {
       display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
       .SetTouchSupport(primary_display_id,
-                       display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE);
+                       display::Display::TouchSupport::AVAILABLE);
   const int64_t secondary_display_id =
       Shell::Get()->display_manager()->GetSecondaryDisplay().id();
   display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
       .SetTouchSupport(secondary_display_id,
-                       display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE);
+                       display::Display::TouchSupport::AVAILABLE);
 
   // Both of displays have touch capability.
-  ASSERT_EQ(display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE,
+  ASSERT_EQ(display::Display::TouchSupport::AVAILABLE,
             display::Screen::GetScreen()->GetPrimaryDisplay().touch_support());
   ASSERT_EQ(
-      display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE,
+      display::Display::TouchSupport::AVAILABLE,
       Shell::Get()->display_manager()->GetSecondaryDisplay().touch_support());
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();

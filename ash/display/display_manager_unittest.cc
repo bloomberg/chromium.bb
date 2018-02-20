@@ -1820,10 +1820,10 @@ TEST_F(DisplayManagerTest, Rotate) {
 
   display_manager()->SetDisplayRotation(internal_display_id,
                                         display::Display::ROTATE_90,
-                                        display::Display::ROTATION_SOURCE_USER);
+                                        display::Display::RotationSource::USER);
   display_manager()->SetDisplayRotation(
       internal_display_id, display::Display::ROTATE_0,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
 
   const display::ManagedDisplayInfo info =
       GetDisplayInfoForId(internal_display_id);
@@ -1842,7 +1842,7 @@ TEST_F(DisplayManagerTest, Rotate) {
 
   display_manager()->SetDisplayRotation(
       internal_display_id, display::Display::ROTATE_180,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
   const display::ManagedDisplayInfo& post_rotation_info =
       display::test::DisplayManagerTestApi(display_manager())
           .GetInternalManagedDisplayInfo(internal_display_id);
@@ -2396,7 +2396,7 @@ TEST_F(DisplayManagerTest, RotateInSoftwareMirroring) {
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display_manager()->SetDisplayRotation(
       primary_id, display::Display::ROTATE_180,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
   SetSoftwareMirrorMode(false);
 }
 
@@ -2807,11 +2807,11 @@ TEST_F(DisplayManagerTest, NoRotateUnifiedDesktop) {
   EXPECT_EQ("1150x500", display.size().ToString());
   display_manager()->SetDisplayRotation(
       display.id(), display::Display::ROTATE_90,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
   EXPECT_EQ("1150x500", screen->GetPrimaryDisplay().size().ToString());
   display_manager()->SetDisplayRotation(
       display.id(), display::Display::ROTATE_0,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
   EXPECT_EQ("1150x500", screen->GetPrimaryDisplay().size().ToString());
 
   UpdateDisplay("400x500");
@@ -3355,9 +3355,9 @@ TEST_F(DisplayManagerTest, CheckInitializationOfRotationProperty) {
       display_manager()->GetDisplayInfo(id);
 
   EXPECT_EQ(display::Display::ROTATE_90,
-            info.GetRotation(display::Display::ROTATION_SOURCE_USER));
+            info.GetRotation(display::Display::RotationSource::USER));
   EXPECT_EQ(display::Display::ROTATE_90,
-            info.GetRotation(display::Display::ROTATION_SOURCE_ACTIVE));
+            info.GetRotation(display::Display::RotationSource::ACTIVE));
 }
 
 TEST_F(DisplayManagerTest, RejectInvalidLayoutData) {
@@ -3408,18 +3408,18 @@ TEST_F(DisplayManagerTest, AccelerometerSupport) {
   display::test::DisplayManagerTestApi(display_manager())
       .SetFirstDisplayAsInternalDisplay();
   display::Screen* screen = display::Screen::GetScreen();
-  EXPECT_EQ(display::Display::ACCELEROMETER_SUPPORT_UNAVAILABLE,
+  EXPECT_EQ(display::Display::AccelerometerSupport::UNAVAILABLE,
             screen->GetPrimaryDisplay().accelerometer_support());
 
   display_manager()->set_internal_display_has_accelerometer(true);
   display_manager()->UpdateDisplays();
-  EXPECT_EQ(display::Display::ACCELEROMETER_SUPPORT_AVAILABLE,
+  EXPECT_EQ(display::Display::AccelerometerSupport::AVAILABLE,
             screen->GetPrimaryDisplay().accelerometer_support());
 
   UpdateDisplay("1000x1000,800x800");
-  EXPECT_EQ(display::Display::ACCELEROMETER_SUPPORT_AVAILABLE,
+  EXPECT_EQ(display::Display::AccelerometerSupport::AVAILABLE,
             screen->GetPrimaryDisplay().accelerometer_support());
-  EXPECT_EQ(display::Display::ACCELEROMETER_SUPPORT_UNAVAILABLE,
+  EXPECT_EQ(display::Display::AccelerometerSupport::UNAVAILABLE,
             display_manager()->GetSecondaryDisplay().accelerometer_support());
 
   // Secondary is now primary and should not have accelerometer support.
@@ -3428,7 +3428,7 @@ TEST_F(DisplayManagerTest, AccelerometerSupport) {
       display::CreateDisplayInfo(display_manager()->GetSecondaryDisplay().id(),
                                  gfx::Rect(1, 1, 100, 100)));
   display_manager()->OnNativeDisplaysChanged(display_info_list);
-  EXPECT_EQ(display::Display::ACCELEROMETER_SUPPORT_UNAVAILABLE,
+  EXPECT_EQ(display::Display::AccelerometerSupport::UNAVAILABLE,
             screen->GetPrimaryDisplay().accelerometer_support());
 
   // Re-enable internal display.
@@ -3436,7 +3436,7 @@ TEST_F(DisplayManagerTest, AccelerometerSupport) {
   display_info_list.push_back(display::CreateDisplayInfo(
       display::Display::InternalDisplayId(), gfx::Rect(1, 1, 100, 100)));
   display_manager()->OnNativeDisplaysChanged(display_info_list);
-  EXPECT_EQ(display::Display::ACCELEROMETER_SUPPORT_AVAILABLE,
+  EXPECT_EQ(display::Display::AccelerometerSupport::AVAILABLE,
             screen->GetPrimaryDisplay().accelerometer_support());
 }
 
@@ -3693,7 +3693,7 @@ TEST_F(DisplayManagerOrientationTest, SaveRestoreUserRotationLock) {
   // Rotate to portrait in clamshell.
   configuration_controller->SetDisplayRotation(
       screen->GetPrimaryDisplay().id(), display::Display::ROTATE_270,
-      display::Display::ROTATION_SOURCE_USER);
+      display::Display::RotationSource::USER);
   EXPECT_EQ(display::Display::ROTATE_270,
             screen->GetPrimaryDisplay().rotation());
   EXPECT_FALSE(display_manager->registered_internal_display_rotation_lock());
@@ -3893,7 +3893,7 @@ TEST_F(DisplayManagerOrientationTest, DisplayChangeShouldNotSaveUserRotation) {
   // Emulate that Animator is calling this async when animation is completed.
   display_manager->SetDisplayRotation(
       screen->GetPrimaryDisplay().id(), display::Display::ROTATE_90,
-      display::Display::ROTATION_SOURCE_ACCELEROMETER);
+      display::Display::RotationSource::ACCELEROMETER);
   EXPECT_EQ(display::Display::ROTATE_90,
             screen->GetPrimaryDisplay().rotation());
 

@@ -305,7 +305,7 @@ bool ScreenLayoutObserver::GetDisplayMessageForNotification(
       continue;
     // b) the source is accelerometer.
     if (iter.second.active_rotation_source() ==
-        display::Display::ROTATION_SOURCE_ACCELEROMETER) {
+        display::Display::RotationSource::ACCELEROMETER) {
       continue;
     }
     // c) if the device is in tablet mode, and source is not user.
@@ -313,7 +313,7 @@ bool ScreenLayoutObserver::GetDisplayMessageForNotification(
             ->tablet_mode_controller()
             ->IsTabletModeWindowManagerEnabled() &&
         iter.second.active_rotation_source() !=
-            display::Display::ROTATION_SOURCE_USER) {
+            display::Display::RotationSource::USER) {
       continue;
     }
 

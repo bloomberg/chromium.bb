@@ -130,8 +130,8 @@ TEST(DisplayStructTraitsTest, SetAllDisplayValues) {
   input.set_work_area(work_area);
   input.set_device_scale_factor(2.0f);
   input.set_rotation(Display::ROTATE_270);
-  input.set_touch_support(Display::TOUCH_SUPPORT_AVAILABLE);
-  input.set_accelerometer_support(Display::ACCELEROMETER_SUPPORT_UNAVAILABLE);
+  input.set_touch_support(Display::TouchSupport::AVAILABLE);
+  input.set_accelerometer_support(Display::AccelerometerSupport::UNAVAILABLE);
   input.set_maximum_cursor_size(maximum_cursor_size);
   input.set_color_depth(input.color_depth() + 1);
   input.set_depth_per_component(input.depth_per_component() + 1);

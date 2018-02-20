@@ -411,7 +411,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetRotation) {
 
   GetDisplayManager()->SetDisplayRotation(
       display_id, display::Display::ROTATE_270,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
 
   result = GetAllDisplaysInfo();
 
@@ -423,7 +423,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetRotation) {
 
   GetDisplayManager()->SetDisplayRotation(
       display_id, display::Display::ROTATE_180,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
 
   result = GetAllDisplaysInfo();
 
@@ -435,7 +435,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetRotation) {
 
   GetDisplayManager()->SetDisplayRotation(
       display_id, display::Display::ROTATE_0,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
 
   result = GetAllDisplaysInfo();
 
@@ -1167,7 +1167,7 @@ TEST_F(DisplayInfoProviderChromeosTest, SetRotationBeforeTabletMode) {
   ash::ScreenOrientationControllerTestApi test_api(
       screen_orientation_controller);
   test_api.SetDisplayRotation(display::Display::ROTATE_0,
-                              display::Display::ROTATION_SOURCE_ACTIVE);
+                              display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 
   // Exiting tablet mode should restore the initial rotation

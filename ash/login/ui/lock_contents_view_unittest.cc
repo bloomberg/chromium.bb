@@ -146,21 +146,21 @@ TEST_F(LockContentsViewUnitTest, AutoLayoutAfterRotation) {
     // Start at 0 degrees (landscape).
     display_manager()->SetDisplayRotation(
         display.id(), display::Display::ROTATE_0,
-        display::Display::ROTATION_SOURCE_ACTIVE);
+        display::Display::RotationSource::ACTIVE);
     int distance_0deg = calculate_distance();
     EXPECT_NE(distance_0deg, 0);
 
     // Rotate the display to 90 degrees (portrait).
     display_manager()->SetDisplayRotation(
         display.id(), display::Display::ROTATE_90,
-        display::Display::ROTATION_SOURCE_ACTIVE);
+        display::Display::RotationSource::ACTIVE);
     int distance_90deg = calculate_distance();
     EXPECT_GT(distance_0deg, distance_90deg);
 
     // Rotate the display back to 0 degrees (landscape).
     display_manager()->SetDisplayRotation(
         display.id(), display::Display::ROTATE_0,
-        display::Display::ROTATION_SOURCE_ACTIVE);
+        display::Display::RotationSource::ACTIVE);
     int distance_180deg = calculate_distance();
     EXPECT_EQ(distance_0deg, distance_180deg);
     EXPECT_NE(distance_0deg, distance_90deg);
@@ -186,19 +186,19 @@ TEST_F(LockContentsViewUnitTest, AutoLayoutExtraSmallUsersListAfterRotation) {
   // Start at 0 degrees (landscape).
   display_manager()->SetDisplayRotation(
       display.id(), display::Display::ROTATE_0,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(contents->height(), users_list->height());
 
   // Rotate the display to 90 degrees (portrait).
   display_manager()->SetDisplayRotation(
       display.id(), display::Display::ROTATE_90,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(contents->height(), users_list->height());
 
   // Rotate the display back to 0 degrees (landscape).
   display_manager()->SetDisplayRotation(
       display.id(), display::Display::ROTATE_0,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(contents->height(), users_list->height());
 }
 
@@ -235,21 +235,21 @@ TEST_F(LockContentsViewUnitTest, AutoLayoutSmallUsersListAfterRotation) {
   // Start at 0 degrees (landscape).
   display_manager()->SetDisplayRotation(
       display.id(), display::Display::ROTATE_0,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(top_margin(), bottom_margin());
   EXPECT_EQ(users_list->height(), users_list->contents()->height());
 
   // Rotate the display to 90 degrees (portrait).
   display_manager()->SetDisplayRotation(
       display.id(), display::Display::ROTATE_90,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(top_margin(), bottom_margin());
   EXPECT_EQ(users_list->height(), users_list->contents()->height());
 
   // Rotate the display back to 0 degrees (landscape).
   display_manager()->SetDisplayRotation(
       display.id(), display::Display::ROTATE_0,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(top_margin(), bottom_margin());
   EXPECT_EQ(users_list->height(), users_list->contents()->height());
 }

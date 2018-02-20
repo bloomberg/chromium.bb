@@ -2128,7 +2128,7 @@ TEST_F(WindowSelectorTest, ExtremeWindowBounds) {
   const display::Display& display = screen->GetPrimaryDisplay();
   display_manager()->SetDisplayRotation(
       display.id(), display::Display::ROTATE_90,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
   // Verify that |wide| has its window dimension type updated after the display
   // change.
   EXPECT_EQ(ScopedTransformOverviewWindow::GridWindowFillMode::kNormal,
@@ -3077,7 +3077,7 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewRotationTest) {
 
   // Set the screen orientation to LANDSCAPE_PRIMARY.
   test_api.SetDisplayRotation(display::Display::ROTATE_0,
-                              display::Display::ROTATION_SOURCE_ACTIVE);
+                              display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
             blink::kWebScreenOrientationLockLandscapePrimary);
 
@@ -3109,7 +3109,7 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewRotationTest) {
 
   // Rotate the screen by 270 degree.
   test_api.SetDisplayRotation(display::Display::ROTATE_270,
-                              display::Display::ROTATION_SOURCE_ACTIVE);
+                              display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
             blink::kWebScreenOrientationLockPortraitPrimary);
   ToggleOverview();
@@ -3134,7 +3134,7 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewRotationTest) {
 
   // Rotate the screen by 180 degree.
   test_api.SetDisplayRotation(display::Display::ROTATE_180,
-                              display::Display::ROTATION_SOURCE_ACTIVE);
+                              display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
             blink::kWebScreenOrientationLockLandscapeSecondary);
   ToggleOverview();
@@ -3159,7 +3159,7 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewRotationTest) {
 
   // Rotate the screen by 90 degree.
   test_api.SetDisplayRotation(display::Display::ROTATE_90,
-                              display::Display::ROTATION_SOURCE_ACTIVE);
+                              display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
             blink::kWebScreenOrientationLockPortraitSecondary);
   ToggleOverview();

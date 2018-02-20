@@ -97,7 +97,7 @@ void PointerMetricsRecorderTest::CreateDownEvent(
         Shell::Get()->screen_orientation_controller());
     // Set the screen orientation.
     test_api.SetDisplayRotation(rotation,
-                                display::Display::ROTATION_SOURCE_ACTIVE);
+                                display::Display::RotationSource::ACTIVE);
   }
   pointer_metrics_recorder_->OnPointerEventObserved(pointer_event, gfx::Point(),
                                                     window);

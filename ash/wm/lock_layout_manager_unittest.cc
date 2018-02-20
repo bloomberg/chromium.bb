@@ -251,13 +251,13 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   ShowKeyboard(false);
   display_manager()->SetDisplayRotation(
       primary_display.id(), display::Display::ROTATE_90,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
   primary_display = display::Screen::GetScreen()->GetPrimaryDisplay();
   screen_bounds = primary_display.bounds();
   EXPECT_EQ(screen_bounds.ToString(), window->GetBoundsInScreen().ToString());
   display_manager()->SetDisplayRotation(
       primary_display.id(), display::Display::ROTATE_0,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
 
   // When virtual keyboard overscroll is disabled keyboard bounds do
   // affect window bounds.

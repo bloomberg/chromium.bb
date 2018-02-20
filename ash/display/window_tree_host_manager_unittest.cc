@@ -543,7 +543,7 @@ display::ManagedDisplayInfo
 CreateDisplayInfo(int64_t id, int y, display::Display::Rotation rotation) {
   display::ManagedDisplayInfo info(id, "", false);
   info.SetBounds(gfx::Rect(0, y, 500, 500));
-  info.SetRotation(rotation, display::Display::ROTATION_SOURCE_ACTIVE);
+  info.SetRotation(rotation, display::Display::RotationSource::ACTIVE);
   return info;
 }
 
@@ -668,14 +668,14 @@ TEST_F(WindowTreeHostManagerTest, BoundsUpdated) {
   int64_t primary_id = GetPrimaryDisplay().id();
   display_manager()->SetDisplayRotation(
       primary_id, display::Display::ROTATE_90,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(1, observer.GetRotationChangedCountAndReset());
   EXPECT_EQ(1, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
   display_manager()->SetDisplayRotation(
       primary_id, display::Display::ROTATE_90,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(0, observer.GetRotationChangedCountAndReset());
   EXPECT_EQ(0, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
@@ -1223,7 +1223,7 @@ TEST_F(WindowTreeHostManagerTest, Rotate) {
 
   display_manager()->SetDisplayRotation(
       display1.id(), display::Display::ROTATE_90,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
   EXPECT_EQ("200x120", root_windows[0]->bounds().size().ToString());
   EXPECT_EQ("150x200", root_windows[1]->bounds().size().ToString());
   EXPECT_EQ("200,0 150x200",
@@ -1243,7 +1243,7 @@ TEST_F(WindowTreeHostManagerTest, Rotate) {
 
   display_manager()->SetDisplayRotation(
       display2_id, display::Display::ROTATE_270,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
   EXPECT_EQ("200x120", root_windows[0]->bounds().size().ToString());
   EXPECT_EQ("200x150", root_windows[1]->bounds().size().ToString());
   EXPECT_EQ("50,120 200x150",
@@ -1259,7 +1259,7 @@ TEST_F(WindowTreeHostManagerTest, Rotate) {
   EXPECT_EQ("180,25", event_handler.GetLocationAndReset());
   display_manager()->SetDisplayRotation(
       display1.id(), display::Display::ROTATE_180,
-      display::Display::ROTATION_SOURCE_ACTIVE);
+      display::Display::RotationSource::ACTIVE);
 
   EXPECT_EQ("120x200", root_windows[0]->bounds().size().ToString());
   EXPECT_EQ("200x150", root_windows[1]->bounds().size().ToString());

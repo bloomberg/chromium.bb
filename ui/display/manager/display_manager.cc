@@ -648,9 +648,9 @@ void DisplayManager::RegisterDisplayProperty(
     rotation = Display::ROTATE_0;
 
   display_info_[display_id].SetRotation(rotation,
-                                        Display::ROTATION_SOURCE_USER);
+                                        Display::RotationSource::USER);
   display_info_[display_id].SetRotation(rotation,
-                                        Display::ROTATION_SOURCE_ACTIVE);
+                                        Display::RotationSource::ACTIVE);
   // Just in case the preference file was corrupted.
   // TODO(mukai): register |display_modes_| here as well, so the lookup for the
   // default mode in GetActiveModeForDisplayId() gets much simpler.
@@ -850,9 +850,9 @@ void DisplayManager::OnNativeDisplaysChanged(
       // active again.
       Display::Rotation user_rotation =
           display_info_[Display::InternalDisplayId()].GetRotation(
-              Display::ROTATION_SOURCE_USER);
+              Display::RotationSource::USER);
       display_info_[Display::InternalDisplayId()].SetRotation(
-          user_rotation, Display::ROTATION_SOURCE_USER);
+          user_rotation, Display::RotationSource::USER);
     }
   }
 
@@ -1433,7 +1433,7 @@ void DisplayManager::SetTouchCalibrationData(
   for (const auto& display : active_display_list_) {
     ManagedDisplayInfo info = GetDisplayInfo(display.id());
     if (info.id() == display_id) {
-      info.set_touch_support(Display::TOUCH_SUPPORT_AVAILABLE);
+      info.set_touch_support(Display::TouchSupport::AVAILABLE);
       update_add_support = true;
     } else if (info.id() == previous_display_id) {
       // Since we are reassociating the touch device to another display, we need
@@ -1442,7 +1442,7 @@ void DisplayManager::SetTouchCalibrationData(
       if (!touch_device_manager_
                ->GetAssociatedTouchDevicesForDisplay(previous_display_id)
                .empty()) {
-        info.set_touch_support(Display::TOUCH_SUPPORT_UNAVAILABLE);
+        info.set_touch_support(Display::TouchSupport::UNAVAILABLE);
         update_remove_support = true;
       }
     }
@@ -1452,14 +1452,14 @@ void DisplayManager::SetTouchCalibrationData(
   // Update the non active displays.
   if (!update_add_support) {
     display_info_[display_id].set_touch_support(
-        Display::TOUCH_SUPPORT_AVAILABLE);
+        Display::TouchSupport::AVAILABLE);
   }
   if (!update_remove_support &&
       !touch_device_manager_
            ->GetAssociatedTouchDevicesForDisplay(previous_display_id)
            .empty()) {
     display_info_[previous_display_id].set_touch_support(
-        Display::TOUCH_SUPPORT_UNAVAILABLE);
+        Display::TouchSupport::UNAVAILABLE);
   }
   // Update the active displays.
   if (update_add_support || update_remove_support)
@@ -1992,10 +1992,10 @@ Display DisplayManager::CreateDisplayFromDisplayInfoById(int64_t id) {
 
   if (internal_display_has_accelerometer_ && Display::IsInternalDisplayId(id)) {
     new_display.set_accelerometer_support(
-        Display::ACCELEROMETER_SUPPORT_AVAILABLE);
+        Display::AccelerometerSupport::AVAILABLE);
   } else {
     new_display.set_accelerometer_support(
-        Display::ACCELEROMETER_SUPPORT_UNAVAILABLE);
+        Display::AccelerometerSupport::UNAVAILABLE);
   }
   return new_display;
 }
