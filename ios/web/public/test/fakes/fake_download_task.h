@@ -49,6 +49,7 @@ class FakeDownloadTask : public DownloadTask {
   void SetPercentComplete(int percent_complete);
   void SetContentDisposition(const std::string& content_disposition);
   void SetMimeType(const std::string& mime_type);
+  void SetTransitionType(ui::PageTransition page_transition);
   void SetSuggestedFilename(const base::string16& suggested_file_name);
 
  private:

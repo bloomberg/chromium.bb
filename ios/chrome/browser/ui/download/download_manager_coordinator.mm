@@ -85,6 +85,24 @@
 }
 
 - (void)downloadManagerTabHelper:(nonnull DownloadManagerTabHelper*)tabHelper
+         decidePolicyForDownload:(nonnull web::DownloadTask*)download
+               completionHandler:(nonnull void (^)(NewDownloadPolicy))handler {
+  // TODO(crbug.com/805533): Localize those strings.
+  NSString* message = @"This will stop all progress for your current download.";
+  __weak DownloadManagerCoordinator* weakSelf = self;
+  [self runConfirmationDialogWithTitle:@"Start New Download?"
+                               message:message
+                     completionHandler:^(BOOL confirmed) {
+                       DownloadManagerCoordinator* strongSelf = weakSelf;
+                       if (strongSelf) {
+                         strongSelf->_mediator.SetDownloadTask(nullptr);
+                       }
+                       handler(confirmed ? kNewDownloadPolicyReplace
+                                         : kNewDownloadPolicyDiscard);
+                     }];
+}
+
+- (void)downloadManagerTabHelper:(nonnull DownloadManagerTabHelper*)tabHelper
                  didHideDownload:(nonnull web::DownloadTask*)download {
   if (!_downloadTask) {
     // TODO(crbug.com/805653): This callback can be called multiple times.

@@ -40,7 +40,7 @@ class DownloadManagerTabHelperTest : public PlatformTest {
   FakeDownloadManagerTabHelperDelegate* delegate_;
 };
 
-// Tests that created download has NotStarted statefor visible web state.
+// Tests that created download has NotStarted state for visible web state.
 TEST_F(DownloadManagerTabHelperTest, DownloadCreationForVisibleWebState) {
   web_state_->WasShown();
   ASSERT_FALSE(delegate_.state);
@@ -48,6 +48,76 @@ TEST_F(DownloadManagerTabHelperTest, DownloadCreationForVisibleWebState) {
 
   tab_helper()->Download(std::move(task));
 
+  ASSERT_TRUE(delegate_.state);
+  EXPECT_EQ(web::DownloadTask::State::kNotStarted, *delegate_.state);
+}
+
+// Tests creating the second download while the first download is still in
+// progress. Second download should be rejected because its transition type is
+// not ui::PAGE_TRANSITION_LINK.
+TEST_F(DownloadManagerTabHelperTest, DownloadRejection) {
+  web_state_->WasShown();
+  ASSERT_FALSE(delegate_.state);
+  auto task = std::make_unique<web::FakeDownloadTask>(GURL(kUrl), kMimeType);
+  task->SetDone(true);
+  tab_helper()->Download(std::move(task));
+
+  auto task2 = std::make_unique<web::FakeDownloadTask>(GURL(kUrl), kMimeType);
+  tab_helper()->Download(std::move(task2));
+
+  // The state of the old download task is kComplete.
+  ASSERT_TRUE(delegate_.state);
+  EXPECT_EQ(web::DownloadTask::State::kComplete, *delegate_.state);
+}
+
+// Tests creating the second download while the first download is still in
+// progress. Second download will be rejected by the delegate.
+TEST_F(DownloadManagerTabHelperTest, DownloadRejectionViaDelegate) {
+  web_state_->WasShown();
+  ASSERT_FALSE(delegate_.state);
+  auto task = std::make_unique<web::FakeDownloadTask>(GURL(kUrl), kMimeType);
+  task->SetDone(true);
+  tab_helper()->Download(std::move(task));
+
+  auto task2 = std::make_unique<web::FakeDownloadTask>(GURL(kUrl), kMimeType);
+  const web::FakeDownloadTask* task2_ptr = task2.get();
+  task2->SetTransitionType(ui::PAGE_TRANSITION_LINK);
+  tab_helper()->Download(std::move(task2));
+
+  ASSERT_TRUE(delegate_.state);
+  EXPECT_EQ(web::DownloadTask::State::kComplete, *delegate_.state);
+  EXPECT_EQ(task2_ptr, delegate_.decidingPolicyForDownload);
+  // Ask the delegate to discard the new download.
+  BOOL discarded = [delegate_ decidePolicy:kNewDownloadPolicyDiscard];
+  ASSERT_TRUE(discarded);
+
+  // The state of the old download task is kComplete.
+  ASSERT_TRUE(delegate_.state);
+  EXPECT_EQ(web::DownloadTask::State::kComplete, *delegate_.state);
+}
+
+// Tests creating the second download while the first download is still in
+// progress. Second download will be acccepted by the delegate.
+TEST_F(DownloadManagerTabHelperTest, DownloadReplacingViaDelegate) {
+  web_state_->WasShown();
+  ASSERT_FALSE(delegate_.state);
+  auto task = std::make_unique<web::FakeDownloadTask>(GURL(kUrl), kMimeType);
+  task->SetDone(true);
+  tab_helper()->Download(std::move(task));
+
+  auto task2 = std::make_unique<web::FakeDownloadTask>(GURL(kUrl), kMimeType);
+  const web::FakeDownloadTask* task2_ptr = task2.get();
+  task2->SetTransitionType(ui::PAGE_TRANSITION_LINK);
+  tab_helper()->Download(std::move(task2));
+
+  ASSERT_TRUE(delegate_.state);
+  EXPECT_EQ(web::DownloadTask::State::kComplete, *delegate_.state);
+  EXPECT_EQ(task2_ptr, delegate_.decidingPolicyForDownload);
+  // Ask the delegate to replace the new download.
+  BOOL replaced = [delegate_ decidePolicy:kNewDownloadPolicyReplace];
+  ASSERT_TRUE(replaced);
+
+  // The state of a new download task is kNotStarted.
   ASSERT_TRUE(delegate_.state);
   EXPECT_EQ(web::DownloadTask::State::kNotStarted, *delegate_.state);
 }
