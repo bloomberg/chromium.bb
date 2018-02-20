@@ -57,7 +57,11 @@ const char kOutOfRangeIntegerValue[] =
 
 CBORReader::CBORReader(base::span<const uint8_t>::const_iterator it,
                        const base::span<const uint8_t>::const_iterator end)
-    : it_(it), end_(end), error_code_(DecoderError::CBOR_NO_ERROR) {}
+    : begin_(it),
+      it_(it),
+      end_(end),
+      error_code_(DecoderError::CBOR_NO_ERROR) {}
+
 CBORReader::~CBORReader() {}
 
 // static
@@ -65,7 +69,8 @@ base::Optional<CBORValue> CBORReader::Read(base::span<uint8_t const> data,
                                            DecoderError* error_code_out,
                                            int max_nesting_level) {
   CBORReader reader(data.cbegin(), data.cend());
-  base::Optional<CBORValue> decoded_cbor = reader.DecodeCBOR(max_nesting_level);
+  base::Optional<CBORValue> decoded_cbor =
+      reader.DecodeCompleteDataItem(max_nesting_level);
 
   if (decoded_cbor)
     reader.CheckExtraneousData();
@@ -77,7 +82,29 @@ base::Optional<CBORValue> CBORReader::Read(base::span<uint8_t const> data,
   return decoded_cbor;
 }
 
-base::Optional<CBORValue> CBORReader::DecodeCBOR(int max_nesting_level) {
+// static
+base::Optional<CBORValue> CBORReader::Read(base::span<uint8_t const> data,
+                                           size_t* num_bytes_consumed,
+                                           DecoderError* error_code_out,
+                                           int max_nesting_level) {
+  CBORReader reader(data.cbegin(), data.cend());
+  base::Optional<CBORValue> decoded_cbor =
+      reader.DecodeCompleteDataItem(max_nesting_level);
+
+  if (error_code_out)
+    *error_code_out = reader.GetErrorCode();
+
+  if (reader.GetErrorCode() != DecoderError::CBOR_NO_ERROR) {
+    *num_bytes_consumed = 0;
+    return base::nullopt;
+  }
+
+  *num_bytes_consumed = reader.num_bytes_consumed();
+  return decoded_cbor;
+}
+
+base::Optional<CBORValue> CBORReader::DecodeCompleteDataItem(
+    int max_nesting_level) {
   if (max_nesting_level < 0 || max_nesting_level > kCBORMaxDepth) {
     error_code_ = DecoderError::TOO_MUCH_NESTING;
     return base::nullopt;
@@ -224,7 +251,8 @@ base::Optional<CBORValue> CBORReader::ReadCBORArray(uint64_t length,
                                                     int max_nesting_level) {
   CBORValue::ArrayValue cbor_array;
   while (length-- > 0) {
-    base::Optional<CBORValue> cbor_element = DecodeCBOR(max_nesting_level - 1);
+    base::Optional<CBORValue> cbor_element =
+        DecodeCompleteDataItem(max_nesting_level - 1);
     if (!cbor_element.has_value())
       return base::nullopt;
     cbor_array.push_back(std::move(cbor_element.value()));
@@ -236,8 +264,10 @@ base::Optional<CBORValue> CBORReader::ReadCBORMap(uint64_t length,
                                                   int max_nesting_level) {
   CBORValue::MapValue cbor_map;
   while (length-- > 0) {
-    base::Optional<CBORValue> key = DecodeCBOR(max_nesting_level - 1);
-    base::Optional<CBORValue> value = DecodeCBOR(max_nesting_level - 1);
+    base::Optional<CBORValue> key =
+        DecodeCompleteDataItem(max_nesting_level - 1);
+    base::Optional<CBORValue> value =
+        DecodeCompleteDataItem(max_nesting_level - 1);
     if (!key.has_value() || !value.has_value())
       return base::nullopt;
 

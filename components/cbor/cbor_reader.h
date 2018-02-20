@@ -79,7 +79,17 @@ class CBOR_EXPORT CBORReader {
   // CBOR data- then an empty optional is returned. Optional |error_code_out|
   // can be provided by the caller to obtain additional information about
   // decoding failures.
+  //
+  // Fails if not all the data was consumed and sets |error_code_out| to
+  // EXTRANEOUS_DATA in this case.
   static base::Optional<CBORValue> Read(base::span<const uint8_t> input_data,
+                                        DecoderError* error_code_out = nullptr,
+                                        int max_nesting_level = kCBORMaxDepth);
+
+  // Never fails with EXTRANEOUS_DATA, but informs the caller of how many bytes
+  // were consumed through |num_bytes_consumed|.
+  static base::Optional<CBORValue> Read(base::span<const uint8_t> input_data,
+                                        size_t* num_bytes_consumed,
                                         DecoderError* error_code_out = nullptr,
                                         int max_nesting_level = kCBORMaxDepth);
 
@@ -89,7 +99,7 @@ class CBOR_EXPORT CBORReader {
  private:
   CBORReader(base::span<const uint8_t>::const_iterator it,
              const base::span<const uint8_t>::const_iterator end);
-  base::Optional<CBORValue> DecodeCBOR(int max_nesting_level);
+  base::Optional<CBORValue> DecodeCompleteDataItem(int max_nesting_level);
   base::Optional<CBORValue> DecodeValueToNegative(uint64_t value);
   base::Optional<CBORValue> DecodeValueToUnsigned(uint64_t value);
   base::Optional<CBORValue> ReadSimpleValue(uint8_t additional_info,
@@ -109,6 +119,9 @@ class CBOR_EXPORT CBORReader {
 
   DecoderError GetErrorCode();
 
+  size_t num_bytes_consumed() const { return it_ - begin_; }
+
+  const base::span<const uint8_t>::const_iterator begin_;
   base::span<const uint8_t>::const_iterator it_;
   const base::span<const uint8_t>::const_iterator end_;
   DecoderError error_code_;
