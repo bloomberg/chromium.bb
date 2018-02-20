@@ -463,6 +463,7 @@ FileTable.decorate = function(
   }.bind(self), true);
   self.list.shouldStartDragSelection =
       self.shouldStartDragSelection_.bind(self);
+  self.list.hasDragHitElement = self.hasDragHitElement_.bind(self);
 
   /**
    * Obtains the index list of elements that are hit by the point or the
@@ -635,22 +636,36 @@ FileTable.prototype.setUseModificationByMeTime = function(
 };
 
 /**
+ * Returns whether the drag event is inside a file entry in the list (and not
+ * the background padding area).
+ * @param {MouseEvent} event Drag start event.
+ * @return {boolean} True if the mouse is over an element in the list, False if
+ *                   it is in the background.
+ */
+FileTable.prototype.hasDragHitElement_ = function(event) {
+  var pos = DragSelector.getScrolledPosition(this.list, event);
+  return this.list.getHitElements(pos.x, pos.y).length !== 0;
+};
+
+/**
  * Obtains if the drag selection should be start or not by referring the mouse
  * event.
  * @param {MouseEvent} event Drag start event.
- * @return {boolean} True if the mouse is hit to the background of the list.
+ * @return {boolean} True if the mouse is hit to the background of the list, or
+ *                   certain areas of the inside of the list that would start a
+ *                   drag selection.
  * @private
  */
 FileTable.prototype.shouldStartDragSelection_ = function(event) {
   // If the shift key is pressed, it should starts drag selection.
   if (event.shiftKey)
     return true;
-  // We don't support drag selection by touch.
-  if (event.sourceCapabilities && event.sourceCapabilities.firesTouchEvents)
-    return false;
+
+  // If we're outside of the element list, start the drag selection.
+  if (!this.list.hasDragHitElement(event))
+    return true;
 
   // If the position values are negative, it points the out of list.
-  // It should start the drag selection.
   var pos = DragSelector.getScrolledPosition(this.list, event);
   if (!pos)
     return false;

@@ -994,12 +994,19 @@ FileTransferController.prototype.onDragStart_ = function(list, event) {
     return;
   }
 
-  // Check if a drag selection should be initiated or not.
-  if (list.shouldStartDragSelection(event)) {
+  // If this drag operation is initiated by mouse, check if we should start
+  // selecting area.
+  if (!this.touching_ && list.shouldStartDragSelection(event)) {
     event.preventDefault();
-    // If this drag operation is initiated by mouse, start selecting area.
-    if (!this.touching_)
-      this.dragSelector_.startDragSelection(list, event);
+    this.dragSelector_.startDragSelection(list, event);
+    return;
+  }
+
+  // If the drag starts outside the files list on a touch device, cancel the
+  // drag.
+  if (this.touching_ && !list.hasDragHitElement(event)) {
+    event.preventDefault();
+    list.selectionModel_.unselectAll();
     return;
   }
 
