@@ -108,6 +108,11 @@ class ZeroCopyRasterBufferImpl : public RasterBuffer {
       gl->ProduceTextureDirectCHROMIUM(backing_->texture_id,
                                        backing_->mailbox.name);
       backing_->overlay_candidate = true;
+      // This RasterBufferProvider will modify the resource outside of the
+      // GL command stream. So resources should not become available for reuse
+      // until they are not in use by the gpu anymore, which a fence is used to
+      // determine.
+      backing_->wait_on_fence_required = true;
 
       gl->BindTexture(backing_->texture_target, backing_->texture_id);
       gl->TexParameteri(backing_->texture_target, GL_TEXTURE_MIN_FILTER,

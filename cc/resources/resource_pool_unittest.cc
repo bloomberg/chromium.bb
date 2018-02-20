@@ -541,4 +541,55 @@ TEST_F(ResourcePoolTest, ExactRequestsRespected) {
   CheckAndReturnResource(std::move(resource));
 }
 
+TEST_F(ResourcePoolTest, MetadataSentToDisplayCompositor) {
+  // Limits high enough to not be hit by this test.
+  size_t bytes_limit = 10 * 1024 * 1024;
+  size_t count_limit = 100;
+  resource_pool_->SetResourceUsageLimits(bytes_limit, count_limit);
+
+  // These values are all non-default values so we can tell they are propagated.
+  gfx::Size size(100, 101);
+  viz::ResourceFormat format = viz::ETC1;
+  EXPECT_NE(gfx::BufferFormat::RGBA_8888, viz::BufferFormat(format));
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
+  uint32_t target = 5;
+  gpu::Mailbox mailbox;
+  mailbox.name[0] = 'a';
+  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
+                            gpu::CommandBufferId::FromUnsafeValue(0x123), 7);
+
+  ResourcePool::InUsePoolResource resource =
+      resource_pool_->AcquireResource(size, format, color_space);
+  SetBackingOnResource(resource);
+
+  // More non-default values.
+  resource.gpu_backing()->mailbox = mailbox;
+  resource.gpu_backing()->mailbox_sync_token = sync_token;
+  resource.gpu_backing()->texture_target = target;
+  resource.gpu_backing()->wait_on_fence_required = true;
+  resource.gpu_backing()->overlay_candidate = true;
+
+  resource_pool_->PrepareForExport(resource);
+
+  std::vector<viz::TransferableResource> transfer;
+  resource_provider_->PrepareSendToParent({resource.resource_id_for_export()},
+                                          &transfer);
+
+  // The verified_flush flag will be set by the ResourceProvider when it exports
+  // the resource.
+  sync_token.SetVerifyFlush();
+
+  ASSERT_EQ(transfer.size(), 1u);
+  EXPECT_EQ(transfer[0].id, resource.resource_id_for_export());
+  EXPECT_EQ(transfer[0].mailbox_holder.mailbox, mailbox);
+  EXPECT_EQ(transfer[0].mailbox_holder.sync_token, sync_token);
+  EXPECT_EQ(transfer[0].mailbox_holder.texture_target, target);
+  EXPECT_EQ(transfer[0].format, format);
+  EXPECT_EQ(transfer[0].buffer_format, viz::BufferFormat(format));
+  EXPECT_TRUE(transfer[0].read_lock_fences_enabled);
+  EXPECT_TRUE(transfer[0].is_overlay_candidate);
+
+  resource_pool_->ReleaseResource(std::move(resource));
+}
+
 }  // namespace cc
