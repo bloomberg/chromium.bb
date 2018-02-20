@@ -599,8 +599,10 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   // Pass |url_loader_assets_| to the callback to keep the URL loader related
   // assets alive while the FetchEvent is ongoing in the service worker.
   if (ServiceWorkerUtils::IsServicificationEnabled()) {
-    DCHECK(request_);
-    DCHECK(!legacy_request_);
+    // TODO(shimazu): Change CHECK to DCHECK after the cause of
+    // https://crbug.com/810685 is found.
+    CHECK(request_);
+    CHECK(!legacy_request_);
     auto params = mojom::DispatchFetchEventParams::New();
     params->request = *request_;
     // When S13nServiceWorker is enabled, we come here only for navigations.
@@ -613,8 +615,10 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
                        base::Unretained(version_.get()), event_finish_id,
                        url_loader_assets_));
   } else {
-    DCHECK(!request_);
-    DCHECK(legacy_request_);
+    // TODO(shimazu): Change CHECK to DCHECK after the cause of
+    // https://crbug.com/810685 is found.
+    CHECK(!request_);
+    CHECK(legacy_request_);
     version_->event_dispatcher()->DispatchLegacyFetchEvent(
         *legacy_request_, std::move(preload_handle_),
         std::move(response_callback_ptr),
