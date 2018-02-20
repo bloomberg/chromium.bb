@@ -1918,8 +1918,10 @@ class CipdDependency(Dependency):
       ])
       for p in self._cipd_root.packages(self._cipd_subdir):
         s.extend([
-            '      "package": "%s",' % p.name,
-            '      "version": "%s",' % p.version,
+            '      {',
+            '        "package": "%s",' % p.name,
+            '        "version": "%s",' % p.version,
+            '      },',
         ])
       s.extend([
           '    ],',

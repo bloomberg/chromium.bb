@@ -1116,6 +1116,43 @@ class GClientSmokeGIT(GClientSmokeBase):
       {'url': 'git://127.0.0.1:20000/git/repo_9', 'deps_file': 'DEPS'},
     ], deps_files_contents)
 
+  def testFlattenCipd(self):
+    if not self.enabled:
+      return
+
+    output_deps = os.path.join(self.root_dir, 'DEPS.flattened')
+    self.assertFalse(os.path.exists(output_deps))
+
+    self.gclient(['config', self.git_base + 'repo_14', '--name', 'src'])
+    self.gclient(['sync'])
+    self.gclient(['flatten', '-v', '-v', '-v', '--output-deps', output_deps])
+
+    with open(output_deps) as f:
+      deps_contents = f.read()
+
+    self.maxDiff = None
+    self.assertEqual([
+        'deps = {',
+        '  # src',
+        '  "src": {',
+        '    "url": "git://127.0.0.1:20000/git/repo_14",',
+        '  },',
+        '',
+        '  # src -> src/cipd_dep',
+        '  "src/cipd_dep": {',
+        '    "packages": [',
+        '      {',
+        '        "package": "package0",',
+        '        "version": "0.1",',
+        '      },',
+        '    ],',
+        '    "dep_type": "cipd",',
+        '  },',
+        '',
+        '}',
+        ''
+    ], deps_contents.splitlines())
+
 
 class GClientSmokeGITMutates(GClientSmokeBase):
   """testRevertAndStatus mutates the git repo so move it to its own suite."""

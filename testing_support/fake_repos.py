@@ -15,6 +15,7 @@ import re
 import socket
 import sys
 import tempfile
+import textwrap
 import time
 
 # trial_dir must be first for non-system libraries.
@@ -304,7 +305,7 @@ class FakeReposBase(object):
 
 class FakeRepos(FakeReposBase):
   """Implements populateGit()."""
-  NB_GIT_REPOS = 13
+  NB_GIT_REPOS = 14
 
   def populateGit(self):
     # Testing:
@@ -693,6 +694,22 @@ deps = {
   'src/repo12': '/repo_12@refs/changes/1212',
 }""",
       'origin': 'git/repo_13@2\n',
+    })
+
+    self._commit_git('repo_14', {
+      'DEPS': textwrap.dedent("""\
+        deps = {
+          'src/cipd_dep': {
+            'packages': [
+              {
+                'package': 'package0',
+                'version': '0.1',
+              },
+            ],
+            'dep_type': 'cipd',
+          },
+        }"""),
+      'origin': 'git/repo_14@2\n'
     })
 
 
