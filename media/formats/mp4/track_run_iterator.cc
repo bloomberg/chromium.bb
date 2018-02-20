@@ -396,7 +396,7 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
 
       // Avoid allocating insane sample counts for invalid media.
       const size_t max_sample_count =
-          kDemuxerMemoryLimit / sizeof(decltype(tri.samples)::value_type);
+          GetDemuxerMemoryLimit() / sizeof(decltype(tri.samples)::value_type);
       RCHECK_MEDIA_LOGGED(
           base::strict_cast<size_t>(trun.sample_count) <= max_sample_count,
           media_log_, "Metadata overhead exceeds storage limit.");
