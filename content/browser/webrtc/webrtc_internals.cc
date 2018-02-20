@@ -41,6 +41,10 @@ namespace content {
 
 namespace {
 
+// This is intended to limit DoS attacks against the browser process consisting
+// of many getUserMedia() calls. See https://crbug.com/804440.
+const size_t kMaxGetUserMediaEntries = 1000;
+
 // Makes sure that |dict| has a ListValue under path "log".
 base::ListValue* EnsureLogList(base::DictionaryValue* dict) {
   base::ListValue* log = nullptr;
@@ -243,6 +247,12 @@ void WebRTCInternals::OnGetUserMedia(int rid,
                                      const std::string& audio_constraints,
                                      const std::string& video_constraints) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (get_user_media_requests_.GetList().size() >= kMaxGetUserMediaEntries) {
+    LOG(WARNING) << "Maximum number of tracked getUserMedia() requests reached "
+                    "in webrtc-internals.";
+    return;
+  }
 
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetInteger("rid", rid);
