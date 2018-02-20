@@ -7,7 +7,7 @@
 
 #include "chrome/installer/setup/install_worker.h"
 
-#include <windows.h>  // NOLINT
+#include <windows.h>
 
 #include <atlsecurity.h>
 #include <oaidl.h>
@@ -16,6 +16,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <time.h>
+#include <wrl/client.h>
 
 #include <memory>
 #include <vector>
@@ -173,6 +174,86 @@ void AddFirewallRulesWorkItems(const InstallerState& installer_state,
                  dist,
                  installer_state.target_path().Append(kChromeExe),
                  is_new_install));
+}
+
+// Probes COM machinery to get an instance of notification_helper.exe's
+// NotificationActivator class.
+//
+// This is required so that COM purges its cache of the path to the binary,
+// which changes on updates.
+//
+// This callback unconditionally returns true since an install should not be
+// aborted if the probe fails.
+bool ProbeNotificationActivatorCallback(const CLSID& toast_activator_clsid,
+                                        const CallbackWorkItem& work_item) {
+  DCHECK(toast_activator_clsid != CLSID_NULL);
+
+  // Noop on rollback.
+  if (work_item.IsRollback())
+    return true;
+
+  Microsoft::WRL::ComPtr<IUnknown> notification_activator;
+  HRESULT hr =
+      ::CoCreateInstance(toast_activator_clsid, nullptr, CLSCTX_LOCAL_SERVER,
+                         IID_PPV_ARGS(&notification_activator));
+
+  if (hr != REGDB_E_CLASSNOTREG) {
+    LOG(ERROR) << "Unexpected result creating NotificationActivator; hr=0x"
+               << std::hex << hr;
+  }
+
+  return true;
+}
+
+// Adds work items to |list| to register a COM server with the OS, which is used
+// to handle the toast notification activation.
+void AddNativeNotificationWorkItems(const InstallerState& installer_state,
+                                    const base::FilePath& target_path,
+                                    const base::Version& new_version,
+                                    WorkItemList* list) {
+  base::string16 toast_activator_reg_path = GetToastActivatorRegistryPath();
+
+  if (toast_activator_reg_path.empty()) {
+    LOG(DFATAL) << "Cannot retrieve the toast activator registry path";
+    return;
+  }
+
+  HKEY root = installer_state.root_key();
+
+  // Delete the old registration before adding in the new key to ensure that the
+  // COM probe/flush below does its job. Delete both 64-bit and 32-bit keys to
+  // handle 32-bit -> 64-bit or 64-bit -> 32-bit migration.
+  list->AddDeleteRegKeyWorkItem(root, toast_activator_reg_path,
+                                KEY_WOW64_32KEY);
+
+  list->AddDeleteRegKeyWorkItem(root, toast_activator_reg_path,
+                                KEY_WOW64_64KEY);
+
+  // Force COM to flush its cache containing the path to the old handler.
+  list->AddCallbackWorkItem(
+      base::Bind(&ProbeNotificationActivatorCallback,
+                 install_static::GetToastActivatorClsid()));
+
+  // The path to the exe (in the version directory).
+  base::FilePath notification_helper =
+      target_path.AppendASCII(new_version.GetString())
+          .Append(kNotificationHelperExe);
+
+  // Command-line featuring the quoted path to the exe.
+  base::string16 command(1, L'"');
+  command.append(notification_helper.value()).append(1, L'"');
+
+  toast_activator_reg_path.append(L"\\LocalServer32");
+
+  list->AddCreateRegKeyWorkItem(root, toast_activator_reg_path,
+                                WorkItem::kWow64Default);
+
+  list->AddSetRegValueWorkItem(root, toast_activator_reg_path,
+                               WorkItem::kWow64Default, L"", command, true);
+
+  list->AddSetRegValueWorkItem(root, toast_activator_reg_path,
+                               WorkItem::kWow64Default, L"ServerExecutable",
+                               notification_helper.value(), true);
 }
 
 // This is called when an MSI installation is run. It may be that a user is
@@ -810,6 +891,11 @@ void AddInstallWorkItems(const InstallationState& original_state,
                         install_list);
   AddFirewallRulesWorkItems(installer_state, dist, current_version == nullptr,
                             install_list);
+
+  // We don't have a version check for Win10+ here so that Windows upgrades
+  // work.
+  AddNativeNotificationWorkItems(installer_state, target_path, new_version,
+                                 install_list);
 
   InstallUtil::AddUpdateDowngradeVersionItem(installer_state.system_install(),
                                              current_version, new_version, dist,

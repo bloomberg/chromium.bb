@@ -34,6 +34,9 @@
       "values": {
         "$CHROME_LONG_NAME$USER_SPECIFIC_REGISTRY_SUFFIX": {}
       }
+    },
+    "HKEY_CURRENT_USER\\Software\\Classes\\CLSID\\$CHROME_TOAST_ACTIVATOR_CLSID": {
+      "exists": "forbidden"
     }
   }
 }
