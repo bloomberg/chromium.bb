@@ -261,9 +261,9 @@ bool XmppSignalStrategy::Core::SendStanza(
     return false;
   }
 
-  HOST_DLOG << "Sending outgoing stanza:\n"
-            << stanza->Str()
-            << "\n=========================================================";
+  HOST_LOG << "Sending outgoing stanza:\n"
+           << stanza->Str()
+           << "\n=========================================================";
   SendMessage(stanza->Str());
 
   // Return false if the SendMessage() call above resulted in the SignalStrategy
@@ -400,10 +400,9 @@ void XmppSignalStrategy::Core::OnStanza(
     const std::unique_ptr<buzz::XmlElement> stanza) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-
-  HOST_DLOG << "Received incoming stanza:\n"
-            << stanza->Str()
-            << "\n=========================================================";
+  HOST_LOG << "Received incoming stanza:\n"
+           << stanza->Str()
+           << "\n=========================================================";
 
   for (auto& listener : listeners_) {
     if (listener.OnSignalStrategyIncomingStanza(stanza.get()))
