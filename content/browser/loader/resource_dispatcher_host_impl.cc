@@ -2392,8 +2392,8 @@ void ResourceDispatcherHostImpl::UpdateLoadInfo() {
   // requests), we must go to the UI thread and compare the requests using their
   // WebContents.
   main_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(UpdateLoadStateOnUI, loader_delegate_,
-                                base::Passed(&infos)));
+      FROM_HERE,
+      base::BindOnce(UpdateLoadStateOnUI, loader_delegate_, std::move(infos)));
 }
 
 void ResourceDispatcherHostImpl::RecordOutstandingRequestsStats() {

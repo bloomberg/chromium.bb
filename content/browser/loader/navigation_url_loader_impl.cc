@@ -60,7 +60,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
           base::Unretained(storage_partition->GetURLRequestContext()),
           base::Unretained(storage_partition->GetFileSystemContext()),
           service_worker_handle_core, appcache_handle_core,
-          base::Passed(&request_info), base::Passed(&navigation_ui_data)));
+          std::move(request_info), std::move(navigation_ui_data)));
 }
 
 NavigationURLLoaderImpl::~NavigationURLLoaderImpl() {

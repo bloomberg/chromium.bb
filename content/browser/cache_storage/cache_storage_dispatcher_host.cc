@@ -211,10 +211,9 @@ void CacheStorageDispatcherHost::OnCacheMatch(
       new ServiceWorkerFetchRequest(request.url, request.method,
                                     request.headers, request.referrer,
                                     request.is_reload));
-  cache->Match(
-      std::move(scoped_request), match_params,
-      base::BindOnce(&CacheStorageDispatcherHost::OnCacheMatchCallback, this,
-                     thread_id, request_id, base::Passed(it->second.Clone())));
+  cache->Match(std::move(scoped_request), match_params,
+               base::BindOnce(&CacheStorageDispatcherHost::OnCacheMatchCallback,
+                              this, thread_id, request_id, it->second.Clone()));
 }
 
 void CacheStorageDispatcherHost::OnCacheMatchAll(
@@ -235,8 +234,7 @@ void CacheStorageDispatcherHost::OnCacheMatchAll(
     cache->MatchAll(
         std::unique_ptr<ServiceWorkerFetchRequest>(), match_params,
         base::BindOnce(&CacheStorageDispatcherHost::OnCacheMatchAllCallback,
-                       this, thread_id, request_id,
-                       base::Passed(it->second.Clone())));
+                       this, thread_id, request_id, it->second.Clone()));
     return;
   }
 
@@ -248,15 +246,13 @@ void CacheStorageDispatcherHost::OnCacheMatchAll(
     cache->MatchAll(
         std::move(scoped_request), match_params,
         base::BindOnce(&CacheStorageDispatcherHost::OnCacheMatchAllCallback,
-                       this, thread_id, request_id,
-                       base::Passed(it->second.Clone())));
+                       this, thread_id, request_id, it->second.Clone()));
     return;
   }
-  cache->Match(
-      std::move(scoped_request), match_params,
-      base::BindOnce(
-          &CacheStorageDispatcherHost::OnCacheMatchAllCallbackAdapter, this,
-          thread_id, request_id, base::Passed(it->second.Clone())));
+  cache->Match(std::move(scoped_request), match_params,
+               base::BindOnce(
+                   &CacheStorageDispatcherHost::OnCacheMatchAllCallbackAdapter,
+                   this, thread_id, request_id, it->second.Clone()));
 }
 
 void CacheStorageDispatcherHost::OnCacheKeys(
@@ -277,10 +273,9 @@ void CacheStorageDispatcherHost::OnCacheKeys(
       new ServiceWorkerFetchRequest(request.url, request.method,
                                     request.headers, request.referrer,
                                     request.is_reload));
-  cache->Keys(
-      std::move(request_ptr), match_params,
-      base::BindOnce(&CacheStorageDispatcherHost::OnCacheKeysCallback, this,
-                     thread_id, request_id, base::Passed(it->second.Clone())));
+  cache->Keys(std::move(request_ptr), match_params,
+              base::BindOnce(&CacheStorageDispatcherHost::OnCacheKeysCallback,
+                             this, thread_id, request_id, it->second.Clone()));
 }
 
 void CacheStorageDispatcherHost::OnCacheBatch(
@@ -299,7 +294,7 @@ void CacheStorageDispatcherHost::OnCacheBatch(
   cache->BatchOperation(
       operations,
       base::BindOnce(&CacheStorageDispatcherHost::OnCacheBatchCallback, this,
-                     thread_id, request_id, base::Passed(it->second.Clone())),
+                     thread_id, request_id, it->second.Clone()),
       base::BindOnce(&CacheStorageDispatcherHost::OnBadMessage, this));
 }
 
@@ -343,8 +338,7 @@ void CacheStorageDispatcherHost::OnCacheStorageOpenCallback(
   // Hang on to the cache for a few seconds. This way if the user quickly closes
   // and reopens it the cache backend won't have to be reinitialized.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&StopPreservingCache, base::Passed(cache_handle.Clone())),
+      FROM_HERE, base::BindOnce(&StopPreservingCache, cache_handle.Clone()),
       base::TimeDelta::FromSeconds(kCachePreservationSeconds));
 
   CacheID cache_id = StoreCacheReference(std::move(cache_handle));

@@ -45,7 +45,7 @@ void PaymentAppContextImpl::CreatePaymentManager(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&PaymentAppContextImpl::CreatePaymentManagerOnIO, this,
-                     base::Passed(&request)));
+                     std::move(request)));
 }
 
 void PaymentAppContextImpl::PaymentManagerHadConnectionError(

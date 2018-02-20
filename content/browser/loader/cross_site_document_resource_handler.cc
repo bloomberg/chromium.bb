@@ -163,7 +163,7 @@ void CrossSiteDocumentResourceHandler::LogBlockedResponse(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(
           &CrossSiteDocumentResourceHandler::LogBlockedResponseOnUIThread,
-          base::Passed(resource_request_info->GetWebContentsGetterForRequest()),
+          resource_request_info->GetWebContentsGetterForRequest(),
           needed_sniffing, canonical_mime_type, resource_type,
           http_response_code, content_length));
 }

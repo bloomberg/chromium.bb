@@ -1058,9 +1058,8 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
             // Use OwnsReference instead of Increment/DecrementTaskCount*
             // to handle the cookie store being destroyed and the callback
             // thus not being called.
-            base::BindOnce(
-                &OwnsReference::Callback,
-                base::Passed(std::make_unique<OwnsReference>(this)))));
+            base::BindOnce(&OwnsReference::Callback,
+                           std::make_unique<OwnsReference>(this))));
   }
 
   if (remove_mask_ & REMOVE_DATA_MASK_INDEXEDDB ||

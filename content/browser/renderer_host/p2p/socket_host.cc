@@ -285,9 +285,8 @@ void P2PSocketHost::DumpRtpPacket(const char* packet,
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&P2PSocketHost::DumpRtpPacketOnIOThread,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     base::Passed(&header_buffer), header_length,
-                     rtp_packet_length, incoming));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(header_buffer),
+                     header_length, rtp_packet_length, incoming));
 }
 
 void P2PSocketHost::DumpRtpPacketOnIOThread(
@@ -306,7 +305,7 @@ void P2PSocketHost::DumpRtpPacketOnIOThread(
   // |packet_dump_callback_| must be called on the UI thread.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(packet_dump_callback_, base::Passed(&packet_header),
+      base::BindOnce(packet_dump_callback_, std::move(packet_header),
                      header_length, packet_length, incoming));
 }
 

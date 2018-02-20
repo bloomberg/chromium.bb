@@ -150,8 +150,7 @@ void MediaDevicesDispatcherHost::GetVideoInputCapabilities(
                          ->salt_and_origin_callback(),
                      render_process_id_, render_frame_id_),
       base::BindOnce(&MediaDevicesDispatcherHost::GetDefaultVideoInputDeviceID,
-                     weak_factory_.GetWeakPtr(),
-                     base::Passed(&client_callback)));
+                     weak_factory_.GetWeakPtr(), std::move(client_callback)));
 }
 
 void MediaDevicesDispatcherHost::GetAllVideoInputDeviceFormats(
@@ -178,8 +177,7 @@ void MediaDevicesDispatcherHost::GetAudioInputCapabilities(
                          ->salt_and_origin_callback(),
                      render_process_id_, render_frame_id_),
       base::BindOnce(&MediaDevicesDispatcherHost::GetDefaultAudioInputDeviceID,
-                     weak_factory_.GetWeakPtr(),
-                     base::Passed(&client_callback)));
+                     weak_factory_.GetWeakPtr(), std::move(client_callback)));
 }
 
 void MediaDevicesDispatcherHost::AddMediaDevicesListener(
@@ -284,7 +282,7 @@ void MediaDevicesDispatcherHost::GetVideoInputDeviceFormats(
                      render_process_id_, render_frame_id_),
       base::BindOnce(
           &MediaDevicesDispatcherHost::EnumerateVideoDevicesForFormats,
-          weak_factory_.GetWeakPtr(), base::Passed(&client_callback), device_id,
+          weak_factory_.GetWeakPtr(), std::move(client_callback), device_id,
           try_in_use_first));
 }
 

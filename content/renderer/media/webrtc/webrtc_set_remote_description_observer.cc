@@ -94,7 +94,7 @@ void WebRtcSetRemoteDescriptionObserverHandler::OnSetRemoteDescriptionComplete(
   main_thread_->PostTask(
       FROM_HERE, base::BindOnce(&WebRtcSetRemoteDescriptionObserverHandler::
                                     OnSetRemoteDescriptionCompleteOnMainThread,
-                                this, base::Passed(&states_or_error)));
+                                this, std::move(states_or_error)));
 }
 
 void WebRtcSetRemoteDescriptionObserverHandler::

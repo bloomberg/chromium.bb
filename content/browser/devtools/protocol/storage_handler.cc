@@ -77,9 +77,8 @@ void GotUsageAndQuotaDataCallback(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(ReportUsageAndQuotaDataOnUIThread,
-                     base::Passed(std::move(callback)), code, usage, quota,
-                     std::move(usage_breakdown)));
+      base::BindOnce(ReportUsageAndQuotaDataOnUIThread, std::move(callback),
+                     code, usage, quota, std::move(usage_breakdown)));
 }
 
 void GetUsageAndQuotaOnIOThread(
@@ -334,7 +333,7 @@ void StorageHandler::GetUsageAndQuota(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&GetUsageAndQuotaOnIOThread, base::RetainedRef(manager),
-                     origin_url, base::Passed(std::move(callback))));
+                     origin_url, std::move(callback)));
 }
 
 Response StorageHandler::TrackCacheStorageForOrigin(const std::string& origin) {

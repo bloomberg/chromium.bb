@@ -1043,7 +1043,7 @@ void ServiceWorkerContextWrapper::DidFindRegistrationForNavigationHint(
       ServiceWorkerMetrics::EventType::NAVIGATION_HINT,
       base::BindOnce(
           &ServiceWorkerContextWrapper::DidStartServiceWorkerForNavigationHint,
-          this, registration->pattern(), base::Passed(std::move(callback))));
+          this, registration->pattern(), std::move(callback)));
 }
 
 void ServiceWorkerContextWrapper::DidStartServiceWorkerForNavigationHint(

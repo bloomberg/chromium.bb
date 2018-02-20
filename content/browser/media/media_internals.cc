@@ -256,10 +256,10 @@ void AudioLogImpl::SendWebContentsTitleHelper(
     int render_frame_id) {
   // Page title information can only be retrieved from the UI thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(&SendWebContentsTitleHelper,
-                                           cache_key, base::Passed(&dict),
-                                           render_process_id, render_frame_id));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&SendWebContentsTitleHelper, cache_key, std::move(dict),
+                       render_process_id, render_frame_id));
     return;
   }
 

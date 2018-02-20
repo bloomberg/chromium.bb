@@ -118,7 +118,7 @@ void MediaStreamDispatcherHost::GenerateStream(
                      render_frame_id_),
       base::BindOnce(&MediaStreamDispatcherHost::DoGenerateStream,
                      weak_factory_.GetWeakPtr(), page_request_id, controls,
-                     user_gesture, base::Passed(&callback)));
+                     user_gesture, std::move(callback)));
 }
 
 void MediaStreamDispatcherHost::DoGenerateStream(
@@ -170,7 +170,7 @@ void MediaStreamDispatcherHost::OpenDevice(int32_t page_request_id,
                      render_frame_id_),
       base::BindOnce(&MediaStreamDispatcherHost::DoOpenDevice,
                      weak_factory_.GetWeakPtr(), page_request_id, device_id,
-                     type, base::Passed(&callback)));
+                     type, std::move(callback)));
 }
 
 void MediaStreamDispatcherHost::DoOpenDevice(

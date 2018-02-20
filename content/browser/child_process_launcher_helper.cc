@@ -146,7 +146,7 @@ void ChildProcessLauncherHelper::PostLaunchOnLauncherThread(
   BrowserThread::PostTask(
       client_thread_id_, FROM_HERE,
       base::BindOnce(&ChildProcessLauncherHelper::PostLaunchOnClientThread,
-                     this, base::Passed(&process), launch_result));
+                     this, std::move(process), launch_result));
 }
 
 void ChildProcessLauncherHelper::PostLaunchOnClientThread(
@@ -177,7 +177,7 @@ void ChildProcessLauncherHelper::ForceNormalProcessTerminationAsync(
       BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
       base::BindOnce(
           &ChildProcessLauncherHelper::ForceNormalProcessTerminationSync,
-          base::Passed(&process)));
+          std::move(process)));
 }
 
 }  // namespace internal

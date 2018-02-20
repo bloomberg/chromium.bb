@@ -177,7 +177,7 @@ class Internal : public blink::mojom::ServiceWorkerInstalledScriptsManager {
         std::move(script_info->body), script_info->body_size);
     receivers->Start(base::BindOnce(&Internal::OnScriptReceived,
                                     weak_factory_.GetWeakPtr(),
-                                    base::Passed(&script_info)));
+                                    std::move(script_info)));
     DCHECK(!base::ContainsKey(running_receivers_, script_url));
     running_receivers_[script_url] = std::move(receivers);
   }

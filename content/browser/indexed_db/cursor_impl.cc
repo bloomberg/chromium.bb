@@ -50,10 +50,9 @@ void CursorImpl::Advance(
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
                              std::move(callbacks_info), idb_runner_));
-  idb_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IDBSequenceHelper::Advance, base::Unretained(helper_),
-                     count, base::Passed(&callbacks)));
+  idb_runner_->PostTask(FROM_HERE, base::BindOnce(&IDBSequenceHelper::Advance,
+                                                  base::Unretained(helper_),
+                                                  count, std::move(callbacks)));
 }
 
 void CursorImpl::Continue(
@@ -66,7 +65,7 @@ void CursorImpl::Continue(
   idb_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&IDBSequenceHelper::Continue, base::Unretained(helper_),
-                     key, primary_key, base::Passed(&callbacks)));
+                     key, primary_key, std::move(callbacks)));
 }
 
 void CursorImpl::Prefetch(
@@ -75,10 +74,9 @@ void CursorImpl::Prefetch(
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
                              std::move(callbacks_info), idb_runner_));
-  idb_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IDBSequenceHelper::Prefetch, base::Unretained(helper_),
-                     count, base::Passed(&callbacks)));
+  idb_runner_->PostTask(FROM_HERE, base::BindOnce(&IDBSequenceHelper::Prefetch,
+                                                  base::Unretained(helper_),
+                                                  count, std::move(callbacks)));
 }
 
 void CursorImpl::PrefetchReset(int32_t used_prefetches,

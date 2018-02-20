@@ -1067,7 +1067,7 @@ void RenderWidgetCompositor::CompositeAndReadbackAsync(
                             DidCompositeAndReadback,
                         base::Unretained(callback), result->AsSkBitmap()));
               },
-              callback, base::Passed(&main_thread_task_runner)));
+              callback, std::move(main_thread_task_runner)));
   auto swap_promise =
       delegate_->RequestCopyOfOutputForLayoutTest(std::move(request));
 

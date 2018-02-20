@@ -139,7 +139,7 @@ DownloadResourceHandler::~DownloadResourceHandler() {
   if (tab_info_) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&DeleteOnUIThread, base::Passed(&tab_info_)));
+        base::BindOnce(&DeleteOnUIThread, std::move(tab_info_)));
   }
 }
 
@@ -274,8 +274,8 @@ void DownloadResourceHandler::OnStart(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&StartOnUIThread, base::Passed(&create_info),
-                     base::Passed(&tab_info_), base::Passed(&stream_reader),
+      base::BindOnce(&StartOnUIThread, std::move(create_info),
+                     std::move(tab_info_), std::move(stream_reader),
                      render_process_id, render_frame_id,
                      request_info->frame_tree_node_id(), callback));
 }

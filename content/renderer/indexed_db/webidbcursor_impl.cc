@@ -67,7 +67,7 @@ WebIDBCursorImpl::WebIDBCursorImpl(
   IndexedDBDispatcher::ThreadSpecificInstance()->RegisterCursor(this);
   io_runner_->PostTask(FROM_HERE, base::BindOnce(&IOThreadHelper::Bind,
                                                  base::Unretained(helper_),
-                                                 base::Passed(&cursor_info)));
+                                                 std::move(cursor_info)));
 }
 
 WebIDBCursorImpl::~WebIDBCursorImpl() {
@@ -98,7 +98,7 @@ void WebIDBCursorImpl::Advance(unsigned long count,
   io_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&IOThreadHelper::Advance, base::Unretained(helper_), count,
-                     base::Passed(&callbacks_impl)));
+                     std::move(callbacks_impl)));
 }
 
 void WebIDBCursorImpl::Continue(WebIDBKeyView key,
@@ -127,7 +127,7 @@ void WebIDBCursorImpl::Continue(WebIDBKeyView key,
       io_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(&IOThreadHelper::Prefetch, base::Unretained(helper_),
-                         prefetch_amount_, base::Passed(&callbacks_impl)));
+                         prefetch_amount_, std::move(callbacks_impl)));
 
       // Increase prefetch_amount_ exponentially.
       prefetch_amount_ *= 2;
@@ -153,7 +153,7 @@ void WebIDBCursorImpl::Continue(WebIDBKeyView key,
       base::BindOnce(&IOThreadHelper::Continue, base::Unretained(helper_),
                      IndexedDBKeyBuilder::Build(key),
                      IndexedDBKeyBuilder::Build(primary_key),
-                     base::Passed(&callbacks_impl)));
+                     std::move(callbacks_impl)));
 }
 
 void WebIDBCursorImpl::PostSuccessHandlerCallback() {

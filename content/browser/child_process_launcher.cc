@@ -66,7 +66,7 @@ void ChildProcessLauncher::SetProcessPriority(
       BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
       base::BindOnce(
           &ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread,
-          helper_, base::Passed(&to_pass), priority));
+          helper_, std::move(to_pass), priority));
 }
 
 void ChildProcessLauncher::Notify(

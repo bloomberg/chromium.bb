@@ -527,7 +527,7 @@ void RenderFrameMessageFilter::GetCookies(int render_frame_id,
         url, options,
         base::BindOnce(&RenderFrameMessageFilter::CheckPolicyForCookies, this,
                        render_frame_id, url, site_for_cookies,
-                       base::Passed(&callback)));
+                       std::move(callback)));
     return;
   }
 
@@ -540,7 +540,7 @@ void RenderFrameMessageFilter::GetCookies(int render_frame_id,
       url, options,
       base::BindOnce(&RenderFrameMessageFilter::CheckPolicyForCookies, this,
                      render_frame_id, url, site_for_cookies,
-                     base::Passed(&callback)));
+                     std::move(callback)));
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)

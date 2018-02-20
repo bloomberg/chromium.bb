@@ -140,7 +140,7 @@ PushProvider::PushProvider(const scoped_refptr<base::SingleThreadTaskRunner>&
   if (!main_thread_task_runner->BelongsToCurrentThread()) {
     main_thread_task_runner->PostTask(
         FROM_HERE,
-        base::BindOnce(&PushProvider::GetInterface, base::Passed(&request)));
+        base::BindOnce(&PushProvider::GetInterface, std::move(request)));
   } else {
     GetInterface(std::move(request));
   }
@@ -198,7 +198,7 @@ void PushProvider::Subscribe(
       // Safe to use base::Unretained because |push_messaging_manager_ |is owned
       // by |this|.
       base::BindOnce(&PushProvider::DidSubscribe, base::Unretained(this),
-                     base::Passed(&callbacks)));
+                     std::move(callbacks)));
 }
 
 void PushProvider::DidSubscribe(
@@ -240,7 +240,7 @@ void PushProvider::Unsubscribe(
       // Safe to use base::Unretained because |push_messaging_manager_ |is owned
       // by |this|.
       base::BindOnce(&PushProvider::DidUnsubscribe, base::Unretained(this),
-                     base::Passed(&callbacks)));
+                     std::move(callbacks)));
 }
 
 void PushProvider::DidUnsubscribe(
@@ -273,7 +273,7 @@ void PushProvider::GetSubscription(
       // Safe to use base::Unretained because |push_messaging_manager_ |is owned
       // by |this|.
       base::BindOnce(&PushProvider::DidGetSubscription, base::Unretained(this),
-                     base::Passed(&callbacks)));
+                     std::move(callbacks)));
 }
 
 void PushProvider::DidGetSubscription(

@@ -53,7 +53,7 @@ void InProcessLaunchedVideoCaptureDevice::GetPhotoState(
   device_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&media::VideoCaptureDevice::GetPhotoState,
-                     base::Unretained(device_.get()), base::Passed(&callback)));
+                     base::Unretained(device_.get()), std::move(callback)));
 }
 
 void InProcessLaunchedVideoCaptureDevice::SetPhotoOptions(
@@ -64,10 +64,9 @@ void InProcessLaunchedVideoCaptureDevice::SetPhotoOptions(
   // was scheduled for shutdown and destruction, and because this task is
   // guaranteed to run before the task that destroys the |device|.
   device_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&media::VideoCaptureDevice::SetPhotoOptions,
-                     base::Unretained(device_.get()), base::Passed(&settings),
-                     base::Passed(&callback)));
+      FROM_HERE, base::BindOnce(&media::VideoCaptureDevice::SetPhotoOptions,
+                                base::Unretained(device_.get()),
+                                std::move(settings), std::move(callback)));
 }
 
 void InProcessLaunchedVideoCaptureDevice::TakePhoto(
@@ -79,7 +78,7 @@ void InProcessLaunchedVideoCaptureDevice::TakePhoto(
   device_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&media::VideoCaptureDevice::TakePhoto,
-                     base::Unretained(device_.get()), base::Passed(&callback)));
+                     base::Unretained(device_.get()), std::move(callback)));
 }
 
 void InProcessLaunchedVideoCaptureDevice::MaybeSuspendDevice() {
@@ -123,7 +122,7 @@ void InProcessLaunchedVideoCaptureDevice::SetDesktopCaptureWindowIdAsync(
       FROM_HERE, base::BindOnce(&InProcessLaunchedVideoCaptureDevice::
                                     SetDesktopCaptureWindowIdOnDeviceThread,
                                 base::Unretained(this), device_.get(),
-                                window_id, base::Passed(&done_cb)));
+                                window_id, std::move(done_cb)));
 }
 
 void InProcessLaunchedVideoCaptureDevice::OnUtilizationReport(

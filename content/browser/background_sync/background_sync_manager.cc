@@ -232,8 +232,7 @@ void BackgroundSyncManager::GetRegistrations(
         FROM_HERE,
         base::BindOnce(
             std::move(callback), BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
-            base::Passed(
-                std::vector<std::unique_ptr<BackgroundSyncRegistration>>())));
+            std::vector<std::unique_ptr<BackgroundSyncRegistration>>()));
     return;
   }
 
@@ -330,8 +329,7 @@ void BackgroundSyncManager::InitImpl(base::OnceClosure callback) {
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&GetControllerParameters, service_worker_context_,
-                     base::Passed(std::make_unique<BackgroundSyncParameters>(
-                         *parameters_))),
+                     std::make_unique<BackgroundSyncParameters>(*parameters_)),
       base::BindOnce(&BackgroundSyncManager::InitDidGetControllerParameters,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -536,10 +534,9 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(
-            std::move(callback), BACKGROUND_SYNC_STATUS_OK,
-            base::Passed(std::make_unique<BackgroundSyncRegistration>(
-                *existing_registration))));
+        base::BindOnce(std::move(callback), BACKGROUND_SYNC_STATUS_OK,
+                       std::make_unique<BackgroundSyncRegistration>(
+                           *existing_registration)));
     return;
   }
 
@@ -710,10 +707,9 @@ void BackgroundSyncManager::RegisterDidStore(
   FireReadyEvents();
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback), BACKGROUND_SYNC_STATUS_OK,
-                     base::Passed(std::make_unique<BackgroundSyncRegistration>(
-                         new_registration))));
+      FROM_HERE, base::BindOnce(std::move(callback), BACKGROUND_SYNC_STATUS_OK,
+                                std::make_unique<BackgroundSyncRegistration>(
+                                    new_registration)));
 }
 
 void BackgroundSyncManager::RemoveActiveRegistration(int64_t sw_registration_id,
@@ -820,7 +816,7 @@ void BackgroundSyncManager::GetRegistrationsImpl(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
                                   BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
-                                  base::Passed(&out_registrations)));
+                                  std::move(out_registrations)));
     return;
   }
 
@@ -839,7 +835,7 @@ void BackgroundSyncManager::GetRegistrationsImpl(
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), BACKGROUND_SYNC_STATUS_OK,
-                                base::Passed(&out_registrations)));
+                                std::move(out_registrations)));
 }
 
 bool BackgroundSyncManager::AreOptionConditionsMet(

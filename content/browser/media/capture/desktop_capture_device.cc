@@ -538,7 +538,7 @@ void DesktopCaptureDevice::AllocateAndStart(
   thread_.task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&Core::AllocateAndStart, base::Unretained(core_.get()),
-                     params, base::Passed(&client)));
+                     params, std::move(client)));
 }
 
 void DesktopCaptureDevice::StopAndDeAllocate() {

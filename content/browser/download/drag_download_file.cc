@@ -231,10 +231,10 @@ void DragDownloadFile::Start(ui::DownloadFileObserver* observer) {
   observer_ = observer;
   DCHECK(observer_.get());
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(&DragDownloadFileUI::InitiateDownload,
-                                         base::Unretained(drag_ui_),
-                                         base::Passed(&file_), file_path_));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&DragDownloadFileUI::InitiateDownload,
+                     base::Unretained(drag_ui_), std::move(file_), file_path_));
 }
 
 bool DragDownloadFile::Wait() {

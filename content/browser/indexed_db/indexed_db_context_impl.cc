@@ -503,7 +503,7 @@ IndexedDBContextImpl::~IndexedDBContextImpl() {
   if (factory_.get()) {
     TaskRunner()->PostTask(FROM_HERE,
                            base::BindOnce(&IndexedDBFactory::ContextDestroyed,
-                                          base::Passed(&factory_)));
+                                          std::move(factory_)));
   }
 
   if (data_path_.empty())

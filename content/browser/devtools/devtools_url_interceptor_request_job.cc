@@ -907,7 +907,7 @@ void DevToolsURLInterceptorRequestJob::ContinueInterceptedRequest(
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           base::BindOnce(&ContinueInterceptedRequestCallback::sendFailure,
-                         base::Passed(std::move(callback)),
+                         std::move(callback),
                          protocol::Response::InvalidParams(
                              "Response already processed.")));
       break;
@@ -919,7 +919,7 @@ void DevToolsURLInterceptorRequestJob::ContinueInterceptedRequest(
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
             base::BindOnce(&ContinueInterceptedRequestCallback::sendFailure,
-                           base::Passed(std::move(callback)),
+                           std::move(callback),
                            protocol::Response::InvalidParams(
                                "authChallengeResponse not expected.")));
         break;
@@ -928,7 +928,7 @@ void DevToolsURLInterceptorRequestJob::ContinueInterceptedRequest(
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           base::BindOnce(&ContinueInterceptedRequestCallback::sendSuccess,
-                         base::Passed(std::move(callback))));
+                         std::move(callback)));
       break;
 
     case WaitingForUserResponse::WAITING_FOR_AUTH_ACK:
@@ -936,7 +936,7 @@ void DevToolsURLInterceptorRequestJob::ContinueInterceptedRequest(
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
             base::BindOnce(&ContinueInterceptedRequestCallback::sendFailure,
-                           base::Passed(std::move(callback)),
+                           std::move(callback),
                            protocol::Response::InvalidParams(
                                "authChallengeResponse required.")));
         break;
@@ -945,12 +945,12 @@ void DevToolsURLInterceptorRequestJob::ContinueInterceptedRequest(
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
             base::BindOnce(&ContinueInterceptedRequestCallback::sendSuccess,
-                           base::Passed(std::move(callback))));
+                           std::move(callback)));
       } else {
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
             base::BindOnce(&ContinueInterceptedRequestCallback::sendFailure,
-                           base::Passed(std::move(callback)),
+                           std::move(callback),
                            protocol::Response::InvalidParams(
                                "Unrecognized authChallengeResponse.")));
       }

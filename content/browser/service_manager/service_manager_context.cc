@@ -342,8 +342,8 @@ class ServiceManagerContext::InProcessServiceManagerContext
         ->PostTask(
             FROM_HERE,
             base::BindOnce(&InProcessServiceManagerContext::StartOnIOThread,
-                           this, base::Passed(&manifest_provider),
-                           base::Passed(&packaged_services_service_info)));
+                           this, std::move(manifest_provider),
+                           std::move(packaged_services_service_info)));
   }
 
   void ShutDown() {

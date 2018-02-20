@@ -137,7 +137,7 @@ void MediaStreamVideoTrack::FrameDeliverer::RemoveCallbackOnIO(
       callback.reset(new VideoCaptureDeliverFrameCB(it->second));
       callbacks_.erase(it);
       task_runner->PostTask(
-          FROM_HERE, base::BindOnce(&ResetCallback, base::Passed(&callback)));
+          FROM_HERE, base::BindOnce(&ResetCallback, std::move(callback)));
       return;
     }
   }

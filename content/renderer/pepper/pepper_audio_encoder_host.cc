@@ -489,10 +489,9 @@ void PepperAudioEncoderHost::Close() {
   // Destroy the encoder and the audio/bitstream buffers on the media thread
   // to avoid freeing memory the encoder might still be working on.
   media_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&StopAudioEncoder, base::Passed(std::move(encoder_)),
-                     base::Passed(std::move(audio_buffer_manager_)),
-                     base::Passed(std::move(bitstream_buffer_manager_))));
+      FROM_HERE, base::BindOnce(&StopAudioEncoder, std::move(encoder_),
+                                std::move(audio_buffer_manager_),
+                                std::move(bitstream_buffer_manager_)));
 }
 
 // static

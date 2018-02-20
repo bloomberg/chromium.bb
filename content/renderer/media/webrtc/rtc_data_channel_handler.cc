@@ -106,7 +106,7 @@ void RtcDataChannelHandler::Observer::OnMessage(
       new webrtc::DataBuffer(buffer));
   main_thread_->PostTask(
       FROM_HERE, base::BindOnce(&RtcDataChannelHandler::Observer::OnMessageImpl,
-                                this, base::Passed(&new_buffer)));
+                                this, std::move(new_buffer)));
 }
 
 void RtcDataChannelHandler::Observer::OnStateChangeImpl(

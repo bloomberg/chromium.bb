@@ -101,10 +101,10 @@ void IndexedDBDatabaseCallbacks::OnDatabaseChange(
     ::indexed_db::mojom::ObserverChangesPtr changes) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(io_helper_);
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(&IOThreadHelper::SendChanges,
-                                         base::Unretained(io_helper_.get()),
-                                         base::Passed(&changes)));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&IOThreadHelper::SendChanges,
+                     base::Unretained(io_helper_.get()), std::move(changes)));
 }
 
 IndexedDBDatabaseCallbacks::IOThreadHelper::IOThreadHelper(

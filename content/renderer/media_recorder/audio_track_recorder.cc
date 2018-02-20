@@ -93,7 +93,7 @@ void AudioTrackRecorder::OnData(const media::AudioBus& audio_bus,
 
   encoder_thread_.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&AudioTrackEncoder::EncodeAudio, encoder_,
-                                base::Passed(&audio_data), capture_time));
+                                std::move(audio_data), capture_time));
 }
 
 void AudioTrackRecorder::Pause() {

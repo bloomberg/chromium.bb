@@ -287,7 +287,7 @@ void InputEventFilter::SendInputEventAck(
 void InputEventFilter::SendMessage(std::unique_ptr<IPC::Message> message) {
   CHECK(io_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&InputEventFilter::SendMessageOnIOThread, this,
-                                base::Passed(&message))))
+                                std::move(message))))
       << "PostTask failed";
 }
 

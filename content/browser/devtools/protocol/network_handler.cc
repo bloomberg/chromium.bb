@@ -208,7 +208,7 @@ void ClearCookiesOnIO(net::URLRequestContextGetter* context_getter,
   net::URLRequestContext* request_context =
       context_getter->GetURLRequestContext();
   request_context->cookie_store()->DeleteAllAsync(
-      base::BindOnce(&ClearedCookiesOnIO, base::Passed(std::move(callback))));
+      base::BindOnce(&ClearedCookiesOnIO, std::move(callback)));
 }
 
 void DeletedCookiesOnIO(base::OnceClosure callback, uint32_t num_deleted) {

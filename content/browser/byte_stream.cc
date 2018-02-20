@@ -299,8 +299,8 @@ void ByteStreamWriterImpl::PostToPeer(bool complete, int status) {
   peer_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&ByteStreamReaderImpl::TransferData, peer_lifetime_flag_,
-                     peer_, base::Passed(&transfer_buffer), buffer_size,
-                     complete, status));
+                     peer_, std::move(transfer_buffer), buffer_size, complete,
+                     status));
 }
 
 ByteStreamReaderImpl::ByteStreamReaderImpl(

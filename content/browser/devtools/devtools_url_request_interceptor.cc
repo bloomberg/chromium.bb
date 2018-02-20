@@ -77,7 +77,7 @@ void DevToolsURLRequestInterceptor::ContinueInterceptedRequest(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(
             &ContinueInterceptedRequestCallback::sendFailure,
-            base::Passed(std::move(callback)),
+            std::move(callback),
             protocol::Response::InvalidParams("Invalid InterceptionId.")));
     return;
   }

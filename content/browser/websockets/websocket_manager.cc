@@ -99,7 +99,7 @@ void WebSocketManager::CreateWebSocketWithOrigin(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&WebSocketManager::DoCreateWebSocket,
                      base::Unretained(handle->manager()), frame_id,
-                     std::move(origin), base::Passed(&request)));
+                     std::move(origin), std::move(request)));
 }
 
 WebSocketManager::WebSocketManager(int process_id,

@@ -117,8 +117,8 @@ void ServiceVideoCaptureDeviceLauncher::LaunchDeviceAsync(
           // Use of Unretained |this| is safe, because |done_cb_| guarantees
           // that |this| stays alive.
           &ServiceVideoCaptureDeviceLauncher::OnCreateDeviceCallback,
-          base::Unretained(this), params, base::Passed(&device),
-          std::move(receiver), base::Passed(&connection_lost_cb)));
+          base::Unretained(this), params, std::move(device),
+          std::move(receiver), std::move(connection_lost_cb)));
   state_ = State::DEVICE_START_IN_PROGRESS;
 }
 

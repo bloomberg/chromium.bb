@@ -165,7 +165,7 @@ void VideoCaptureGpuJpegDecoder::DecodeCapturedData(
   // ensure the data pointers remain valid.
   out_frame->AddDestructionObserver(base::BindOnce(
       [](std::unique_ptr<media::VideoCaptureBufferHandle> handle) {},
-      base::Passed(&out_buffer_access)));
+      std::move(out_buffer_access)));
   out_frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
                                    frame_format.frame_rate);
 
