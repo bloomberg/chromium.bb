@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//build/config/jumbo.gni")
 import("//extensions/features/features.gni")
 
 assert(enable_extensions)
@@ -35,7 +36,7 @@ source_set("browser_context_keyed_service_factories") {
   ]
 }
 
-source_set("browser_sources") {
+jumbo_source_set("browser_sources") {
   visibility = [ "./*" ]
 
   sources = [
@@ -479,7 +480,7 @@ source_set("browser_tests") {
   }
 }
 
-source_set("test_support") {
+jumbo_source_set("test_support") {
   testonly = true
   sources = [
     "preload_check_test_util.cc",
