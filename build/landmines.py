@@ -25,7 +25,6 @@ troublesome alternatives.
 
 import difflib
 import errno
-import gyp_environment
 import logging
 import optparse
 import os
@@ -52,7 +51,7 @@ def get_build_dir(src_dir):
     if not output_dir:
       raise Error('CHROMIUM_OUT_DIR environment variable is set but blank!')
   else:
-    output_dir = landmine_utils.gyp_generator_flags().get('output_dir', 'out')
+    output_dir = 'out'
   return os.path.abspath(os.path.join(src_dir, output_dir))
 
 
@@ -131,8 +130,6 @@ def process_options():
 
 def main():
   options = process_options()
-
-  gyp_environment.SetEnvironment()
 
   landmines = []
   for s in options.landmine_scripts:
