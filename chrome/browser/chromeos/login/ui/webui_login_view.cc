@@ -89,6 +89,7 @@ const char kAccelNameDeviceRequisitionShark[] = "device_requisition_shark";
 const char kAccelNameAppLaunchBailout[] = "app_launch_bailout";
 const char kAccelNameAppLaunchNetworkConfig[] = "app_launch_network_config";
 const char kAccelNameBootstrappingSlave[] = "bootstrapping_slave";
+const char kAccelNameDemoMode[] = "demo_mode";
 
 // A class to change arrow key traversal behavior when it's alive.
 class ScopedArrowKeyTraversal {
@@ -174,6 +175,9 @@ WebUILoginView::WebUILoginView(const WebViewSettings& settings)
   accel_map_[ui::Accelerator(
       ui::VKEY_S, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
       kAccelNameBootstrappingSlave;
+
+  accel_map_[ui::Accelerator(
+      ui::VKEY_D, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] = kAccelNameDemoMode;
 
   for (AccelMap::iterator i(accel_map_.begin()); i != accel_map_.end(); ++i) {
     if (!ash_util::IsRunningInMash()) {

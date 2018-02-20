@@ -310,6 +310,9 @@ const char kEnableConsumerKiosk[] = "enable-consumer-kiosk";
 // Enables Data Saver prompt on cellular networks.
 const char kEnableDataSaverPrompt[] = "enable-datasaver-prompt";
 
+// Enables demo mode feature.
+const char kEnableDemoMode[] = "enable-demo-mode";
+
 // Enables the slider in display settings to modify the display size.
 const char kEnableDisplayZoomSetting[] = "enable-display-zoom-setting";
 
