@@ -74,4 +74,25 @@ const CSSValue* CSSTransformValue::ToCSSValue() const {
   return transform_css_value;
 }
 
+bool CSSTransformValue::AnonymousIndexedSetter(
+    unsigned index,
+    const Member<CSSTransformComponent> component,
+    ExceptionState& exception_state) {
+  if (index < transform_components_.size()) {
+    transform_components_[index] = component;
+    return true;
+  }
+
+  if (index == transform_components_.size()) {
+    transform_components_.push_back(component);
+    return true;
+  }
+
+  exception_state.ThrowRangeError(
+      ExceptionMessages::IndexOutsideRange<unsigned>(
+          "index", index, 0, ExceptionMessages::kInclusiveBound,
+          transform_components_.size(), ExceptionMessages::kInclusiveBound));
+  return false;
+}
+
 }  // namespace blink
