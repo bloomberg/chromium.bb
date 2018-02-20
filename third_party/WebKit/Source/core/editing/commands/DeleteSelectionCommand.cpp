@@ -82,14 +82,12 @@ DeleteSelectionCommand::DeleteSelectionCommand(
     InputEvent::InputType input_type,
     const Position& reference_move_position)
     : CompositeEditCommand(document),
+      options_(options),
       has_selection_to_delete_(false),
-      smart_delete_(options.IsSmartDelete()),
       merge_blocks_after_delete_(options.IsMergeBlocksAfterDelete()),
       need_placeholder_(false),
-      expand_for_special_elements_(options.IsExpandForSpecialElements()),
       prune_start_block_if_necessary_(false),
       starts_at_empty_line_(false),
-      sanitize_markup_(options.IsSanitizeMarkup()),
       input_type_(input_type),
       reference_move_position_(reference_move_position),
       start_block_(nullptr),
@@ -102,14 +100,12 @@ DeleteSelectionCommand::DeleteSelectionCommand(
     const DeleteSelectionOptions& options,
     InputEvent::InputType input_type)
     : CompositeEditCommand(*selection.Start().GetDocument()),
+      options_(options),
       has_selection_to_delete_(true),
-      smart_delete_(options.IsSmartDelete()),
       merge_blocks_after_delete_(options.IsMergeBlocksAfterDelete()),
       need_placeholder_(false),
-      expand_for_special_elements_(options.IsExpandForSpecialElements()),
       prune_start_block_if_necessary_(false),
       starts_at_empty_line_(false),
-      sanitize_markup_(options.IsSanitizeMarkup()),
       input_type_(input_type),
       selection_to_delete_(selection),
       start_block_(nullptr),
@@ -139,7 +135,7 @@ void DeleteSelectionCommand::InitializeStartEnd(Position& start,
 
   // FIXME: This is only used so that moveParagraphs can avoid the bugs in
   // special element expansion.
-  if (!expand_for_special_elements_)
+  if (!options_.IsExpandForSpecialElements())
     return;
 
   while (1) {
@@ -322,7 +318,7 @@ void DeleteSelectionCommand::InitializePositionData(
   trailing_whitespace_ = TrailingWhitespacePosition(
       downstream_end_, kNotConsiderNonCollapsibleWhitespace);
 
-  if (smart_delete_) {
+  if (options_.IsSmartDelete()) {
     // skip smart delete if the selection to delete already starts or ends with
     // whitespace
     Position pos =
@@ -1199,7 +1195,7 @@ void DeleteSelectionCommand::DoApply(EditingState* editing_state) {
       need_placeholder_ ? HTMLBRElement::Create(GetDocument()) : nullptr;
 
   if (placeholder) {
-    if (sanitize_markup_) {
+    if (options_.IsSanitizeMarkup()) {
       RemoveRedundantBlocks(editing_state);
       if (editing_state->IsAborted())
         return;

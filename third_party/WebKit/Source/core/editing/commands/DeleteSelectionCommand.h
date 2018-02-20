@@ -88,14 +88,12 @@ class CORE_EXPORT DeleteSelectionCommand final : public CompositeEditCommand {
   void DeleteTextFromNode(Text*, unsigned, unsigned) override;
   void RemoveRedundantBlocks(EditingState*);
 
+  const DeleteSelectionOptions options_;
   bool has_selection_to_delete_;
-  bool smart_delete_;
   bool merge_blocks_after_delete_;
   bool need_placeholder_;
-  bool expand_for_special_elements_;
   bool prune_start_block_if_necessary_;
   bool starts_at_empty_line_;
-  bool sanitize_markup_;
   InputEvent::InputType input_type_;
 
   // This data is transient and should be cleared at the end of the doApply
