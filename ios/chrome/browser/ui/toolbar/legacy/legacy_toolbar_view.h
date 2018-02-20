@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_LEGACY_TOOLBAR_VIEW_H_
-#define IOS_CHROME_BROWSER_UI_TOOLBAR_LEGACY_TOOLBAR_VIEW_H_
+#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_LEGACY_LEGACY_TOOLBAR_VIEW_H_
+#define IOS_CHROME_BROWSER_UI_TOOLBAR_LEGACY_LEGACY_TOOLBAR_VIEW_H_
 
 #import <UIKit/UIKit.h>
 
@@ -16,8 +16,6 @@
                          bundle:(NSBundle*)bundle NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)coder NS_UNAVAILABLE;
 
-// The delegate used to handle frame changes and windows events.
-@property(nonatomic, weak) id<ToolbarViewDelegate> delegate;
 // Records whether or not the toolbar is currently involved in a transition
 // animation.
 @property(nonatomic, assign, getter=isAnimatingTransition)
@@ -25,4 +23,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_LEGACY_TOOLBAR_VIEW_H_
+#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_LEGACY_LEGACY_TOOLBAR_VIEW_H_

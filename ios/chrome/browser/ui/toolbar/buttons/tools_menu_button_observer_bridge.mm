@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/toolbar/tools_menu_button_observer_bridge.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/tools_menu_button_observer_bridge.h"
 
 #include <memory>
 
 #include "base/logging.h"
 #include "components/reading_list/core/reading_list_model.h"
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_tools_menu_button.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

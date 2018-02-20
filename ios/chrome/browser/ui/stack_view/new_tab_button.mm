@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/toolbar/new_tab_button.h"
+#import "ios/chrome/browser/ui/stack_view/new_tab_button.h"
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"

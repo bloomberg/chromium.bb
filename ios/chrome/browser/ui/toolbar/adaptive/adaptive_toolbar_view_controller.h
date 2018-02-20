@@ -7,8 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_type.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_consumer.h"
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_type.h"
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;

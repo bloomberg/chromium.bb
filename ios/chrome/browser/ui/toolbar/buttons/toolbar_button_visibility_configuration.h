@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_BUTTON_VISIBILITY_CONFIGURATION_H_
-#define IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_BUTTON_VISIBILITY_CONFIGURATION_H_
+#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_BUTTONS_TOOLBAR_BUTTON_VISIBILITY_CONFIGURATION_H_
+#define IOS_CHROME_BROWSER_UI_TOOLBAR_BUTTONS_TOOLBAR_BUTTON_VISIBILITY_CONFIGURATION_H_
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_component_options.h"
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_type.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_component_options.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_type.h"
 
 // Toolbar button configuration object giving access to visibility mask for each
 // button.
@@ -50,4 +50,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_BUTTON_VISIBILITY_CONFIGURATION_H_
+#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_BUTTONS_TOOLBAR_BUTTON_VISIBILITY_CONFIGURATION_H_

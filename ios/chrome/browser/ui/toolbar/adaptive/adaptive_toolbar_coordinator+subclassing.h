@@ -7,7 +7,7 @@
 
 #import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_coordinator.h"
 
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_type.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_type.h"
 
 @class ToolbarButtonFactory;
 namespace web {

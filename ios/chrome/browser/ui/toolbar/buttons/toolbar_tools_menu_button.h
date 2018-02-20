@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_TOOLS_MENU_BUTTON_H_
-#define IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_TOOLS_MENU_BUTTON_H_
+#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_BUTTONS_TOOLBAR_TOOLS_MENU_BUTTON_H_
+#define IOS_CHROME_BROWSER_UI_TOOLBAR_BUTTONS_TOOLBAR_TOOLS_MENU_BUTTON_H_
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_button.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
 
 // ColoredButton specialization that updates the tint color when the tools menu
@@ -39,4 +39,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_TOOLS_MENU_BUTTON_H_
+#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_BUTTONS_TOOLBAR_TOOLS_MENU_BUTTON_H_

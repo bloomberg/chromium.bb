@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/toolbar/legacy_toolbar_view.h"
+#import "ios/chrome/browser/ui/toolbar/legacy/legacy_toolbar_view.h"
 
-#import "ios/chrome/browser/ui/toolbar/toolbar_view_delegate.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @implementation LegacyToolbarView
 
-@synthesize delegate = delegate_;
 @synthesize animatingTransition = animatingTransition_;
 @synthesize hitTestBoundsContraintRelaxed = hitTestBoundsContraintRelaxed_;
 
@@ -55,32 +57,12 @@
   return hitView;
 }
 
-- (void)setFrame:(CGRect)frame {
-  [super setFrame:frame];
-  [delegate_ toolbarDidLayout];
-}
-
-- (void)layoutSubviews {
-  [super layoutSubviews];
-  [delegate_ toolbarDidLayout];
-}
-
-- (void)didMoveToWindow {
-  [super didMoveToWindow];
-  [delegate_ windowDidChange];
-}
-
 - (id<CAAction>)actionForLayer:(CALayer*)layer forKey:(NSString*)event {
   // Don't allow UIView block-based animations if we're already performing
   // explicit transition animations.
   if (self.animatingTransition)
     return (id<CAAction>)[NSNull null];
   return [super actionForLayer:layer forKey:event];
-}
-
-- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
-  [super traitCollectionDidChange:previousTraitCollection];
-  [delegate_ traitCollectionDidChange];
 }
 
 @end
