@@ -30,6 +30,7 @@ using base::WeakPtr;
 
 namespace autofill {
 
+#if !defined(OS_MACOSX)
 // static
 WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetOrCreate(
     WeakPtr<AutofillPopupControllerImpl> previous,
@@ -54,6 +55,7 @@ WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetOrCreate(
           text_direction);
   return controller->GetWeakPtr();
 }
+#endif
 
 AutofillPopupControllerImpl::AutofillPopupControllerImpl(
     base::WeakPtr<AutofillPopupDelegate> delegate,

@@ -6,7 +6,8 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
-#import "chrome/browser/ui/cocoa/autofill/autofill_popup_view_cocoa.h"
+#include "chrome/browser/ui/autofill/autofill_popup_controller.h"
+#import "chrome/browser/ui/cocoa/autofill/credit_card_autofill_touch_bar_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "ui/base/cocoa/touch_bar_util.h"
 
@@ -25,41 +26,27 @@
   [super dealloc];
 }
 
-- (void)showCreditCardAutofillForPopupView:(AutofillPopupViewCocoa*)popupView {
-  DCHECK(popupView);
-  DCHECK([popupView window]);
-
-  window_ = [popupView window];
-
-  // Remove any existing notifications before registering for new ones.
-  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-  [center removeObserver:self name:NSWindowWillCloseNotification object:nil];
-
-  [center addObserver:self
-             selector:@selector(popupWindowWillClose:)
-                 name:NSWindowWillCloseNotification
-               object:window_];
-  popupView_ = popupView;
-
-  if ([owner_ respondsToSelector:@selector(setTouchBar:)])
-    [owner_ performSelector:@selector(setTouchBar:) withObject:nil];
+- (void)showCreditCardAutofillWithController:
+    (autofill::AutofillPopupController*)controller {
+  autofillTouchBarController_.reset(
+      [[CreditCardAutofillTouchBarController alloc]
+          initWithController:controller]);
+  [self invalidateTouchBar];
 }
 
-- (void)popupWindowWillClose:(NSNotification*)notif {
-  popupView_ = nil;
+- (void)hideCreditCardAutofillTouchBar {
+  autofillTouchBarController_.reset();
+  [self invalidateTouchBar];
+}
 
+- (void)invalidateTouchBar {
   if ([owner_ respondsToSelector:@selector(setTouchBar:)])
     [owner_ performSelector:@selector(setTouchBar:) withObject:nil];
-
-  [[NSNotificationCenter defaultCenter]
-      removeObserver:self
-                name:NSWindowWillCloseNotification
-              object:window_];
 }
 
 - (NSTouchBar*)makeTouchBar {
-  if (popupView_)
-    return [popupView_ makeTouchBar];
+  if (autofillTouchBarController_)
+    return [autofillTouchBarController_ makeTouchBar];
 
   return nil;
 }

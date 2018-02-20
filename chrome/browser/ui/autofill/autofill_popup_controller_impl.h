@@ -49,11 +49,11 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
       base::i18n::TextDirection text_direction);
 
   // Shows the popup, or updates the existing popup with the given values.
-  void Show(const std::vector<autofill::Suggestion>& suggestions);
+  virtual void Show(const std::vector<autofill::Suggestion>& suggestions);
 
   // Updates the data list values currently shown with the popup.
-  void UpdateDataListValues(const std::vector<base::string16>& values,
-                            const std::vector<base::string16>& labels);
+  virtual void UpdateDataListValues(const std::vector<base::string16>& values,
+                                    const std::vector<base::string16>& labels);
 
   // Hides the popup and destroys the controller. This also invalidates
   // |delegate_|.
