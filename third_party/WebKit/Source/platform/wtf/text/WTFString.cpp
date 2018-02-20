@@ -374,6 +374,52 @@ String String::Format(const char* format, ...) {
   return String(reinterpret_cast<const LChar*>(buffer.data()), length);
 }
 
+String String::EncodeForDebugging() const {
+  if (IsNull())
+    return "<null>";
+
+  String str;
+  str.append('"');
+  for (unsigned index = 0; index < length(); ++index) {
+    // Print shorthands for select cases.
+    UChar character = (*impl_)[index];
+    switch (character) {
+      case '\t':
+        str.append("\\t");
+        break;
+      case '\n':
+        str.append("\\n");
+        break;
+      case '\r':
+        str.append("\\r");
+        break;
+      case '"':
+        str.append("\\\"");
+        break;
+      case '\\':
+        str.append("\\\\");
+        break;
+      default:
+        if (IsASCIIPrintable(character)) {
+          str.append(static_cast<char>(character));
+        } else {
+          // Print "\uXXXX" for control or non-ASCII characters.
+          str.append("\\u");
+          std::stringstream out;
+          out.width(4);
+          out.fill('0');
+          out.setf(std::ios_base::hex, std::ios_base::basefield);
+          out.setf(std::ios::uppercase);
+          out << character;
+          str.append(out.str().c_str());
+        }
+        break;
+    }
+  }
+  str.append('"');
+  return str;
+}
+
 template <typename IntegerType>
 static String IntegerToString(IntegerType input) {
   IntegerToStringConverter<IntegerType> converter(input);
@@ -774,45 +820,7 @@ String String::FromUTF8WithLatin1Fallback(const LChar* string, size_t size) {
 }
 
 std::ostream& operator<<(std::ostream& out, const String& string) {
-  if (string.IsNull())
-    return out << "<null>";
-
-  out << '"';
-  for (unsigned index = 0; index < string.length(); ++index) {
-    // Print shorthands for select cases.
-    UChar character = string[index];
-    switch (character) {
-      case '\t':
-        out << "\\t";
-        break;
-      case '\n':
-        out << "\\n";
-        break;
-      case '\r':
-        out << "\\r";
-        break;
-      case '"':
-        out << "\\\"";
-        break;
-      case '\\':
-        out << "\\\\";
-        break;
-      default:
-        if (IsASCIIPrintable(character)) {
-          out << static_cast<char>(character);
-        } else {
-          // Print "\uXXXX" for control or non-ASCII characters.
-          out << "\\u";
-          out.width(4);
-          out.fill('0');
-          out.setf(std::ios_base::hex, std::ios_base::basefield);
-          out.setf(std::ios::uppercase);
-          out << character;
-        }
-        break;
-    }
-  }
-  return out << '"';
+  return out << string.EncodeForDebugging().Utf8().data();
 }
 
 #ifndef NDEBUG

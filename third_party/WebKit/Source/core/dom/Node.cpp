@@ -1700,9 +1700,8 @@ static void DumpAttributeDesc(const Node& node,
     return;
   builder.Append(' ');
   builder.Append(name.ToString());
-  builder.Append("=\"");
-  builder.Append(value);
-  builder.Append("\"");
+  builder.Append("=");
+  builder.Append(String(value).EncodeForDebugging());
 }
 
 std::ostream& operator<<(std::ostream& ostream, const Node& node) {
@@ -1732,9 +1731,8 @@ String Node::ToString() const {
   StringBuilder builder;
   builder.Append(nodeName());
   if (IsTextNode()) {
-    builder.Append(" \"");
-    builder.Append(nodeValue());
-    builder.Append("\"");
+    builder.Append(" ");
+    builder.Append(nodeValue().EncodeForDebugging());
     return builder.ToString();
   }
   DumpAttributeDesc(*this, HTMLNames::idAttr, builder);

@@ -675,4 +675,34 @@ TEST_F(LayoutObjectTest, DisplayContentsWrapperInTableCell) {
   EXPECT_EQ(cell->GetLayoutObject(), none->GetLayoutObject()->Parent());
 }
 
+TEST_F(LayoutObjectTest, DumpLayoutObject) {
+  // Test dumping for debugging, in particular that newlines and non-ASCII
+  // characters are escaped as expected.
+  SetBodyInnerHTML(String::FromUTF8(R"HTML(
+    <div id='block' style='background:
+lime'>
+      testing Среќен роденден
+</div>
+  )HTML"));
+
+  LayoutObject* block = GetLayoutObjectByElementId("block");
+  ASSERT_TRUE(block);
+  LayoutObject* text = block->SlowFirstChild();
+  ASSERT_TRUE(text);
+
+  StringBuilder result;
+  block->DumpLayoutObject(result, false, 0);
+  EXPECT_EQ(
+      result.ToString(),
+      String("LayoutBlockFlow\tDIV id=\"block\" style=\"background:\\nlime\""));
+
+  result.Clear();
+  text->DumpLayoutObject(result, false, 0);
+  EXPECT_EQ(
+      result.ToString(),
+      String("LayoutText\t#text \"\\n      testing "
+             "\\u0421\\u0440\\u0435\\u045C\\u0435\\u043D "
+             "\\u0440\\u043E\\u0434\\u0435\\u043D\\u0434\\u0435\\u043D\\n\""));
+}
+
 }  // namespace blink
