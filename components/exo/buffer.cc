@@ -55,7 +55,8 @@ GLenum GLInternalFormat(gfx::BufferFormat format) {
       GL_RGB,                              // RGBX_8888
       GL_RGBA,                             // RGBA_8888
       GL_RGB,                              // BGRX_8888
-      GL_RGB,                              // BGRX_1010102
+      GL_RGB10_A2_EXT,                     // BGRX_1010102
+      GL_RGB10_A2_EXT,                     // RGBX_1010102
       GL_BGRA_EXT,                         // BGRA_8888
       GL_RGBA,                             // RGBA_F16
       GL_RGB_YCRCB_420_CHROMIUM,           // YVU_420
