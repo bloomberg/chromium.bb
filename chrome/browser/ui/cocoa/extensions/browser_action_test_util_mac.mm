@@ -95,6 +95,56 @@ BrowserActionButton* GetButton(
   return [GetController(browser, helper) buttonWithIndex:index];
 }
 
+class ExtensionPopupTestManager {
+ public:
+  ExtensionPopupTestManager() = default;
+  virtual ~ExtensionPopupTestManager() = default;
+
+  virtual void DisableAnimations() = 0;
+  virtual gfx::Size GetPopupSize() = 0;
+  virtual void HidePopup() = 0;
+  virtual gfx::Size GetMinPopupSize() = 0;
+  virtual gfx::Size GetMaxPopupSize() = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ExtensionPopupTestManager);
+};
+
+class ExtensionPopupTestManagerCocoa : public ExtensionPopupTestManager {
+ public:
+  ExtensionPopupTestManagerCocoa() = default;
+  ~ExtensionPopupTestManagerCocoa() override = default;
+
+  void DisableAnimations() override {
+    [ExtensionPopupController setAnimationsEnabledForTesting:NO];
+  }
+
+  gfx::Size GetPopupSize() override {
+    NSRect bounds = [[[ExtensionPopupController popup] view] bounds];
+    return gfx::Size(NSSizeToCGSize(bounds.size));
+  }
+
+  void HidePopup() override {
+    ExtensionPopupController* controller = [ExtensionPopupController popup];
+    [controller close];
+  }
+
+  gfx::Size GetMinPopupSize() override {
+    return gfx::Size(NSSizeToCGSize([ExtensionPopupController minPopupSize]));
+  }
+
+  gfx::Size GetMaxPopupSize() override {
+    return gfx::Size(NSSizeToCGSize([ExtensionPopupController maxPopupSize]));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ExtensionPopupTestManagerCocoa);
+};
+
+std::unique_ptr<ExtensionPopupTestManager> GetExtensionPopupTestManager() {
+  return std::make_unique<ExtensionPopupTestManagerCocoa>();
+}
+
 }  // namespace
 
 BrowserActionTestUtil::BrowserActionTestUtil(Browser* browser)
@@ -108,7 +158,7 @@ BrowserActionTestUtil::BrowserActionTestUtil(Browser* browser,
     test_helper_.reset(new TestToolbarActionsBarHelperCocoa(browser, nullptr));
   // We disable animations on extension popups so that tests aren't waiting for
   // a popup to fade out.
-  [ExtensionPopupController setAnimationsEnabledForTesting:NO];
+  GetExtensionPopupTestManager()->DisableAnimations();
 }
 
 BrowserActionTestUtil::~BrowserActionTestUtil() {}
@@ -181,13 +231,11 @@ bool BrowserActionTestUtil::HasPopup() {
 }
 
 gfx::Size BrowserActionTestUtil::GetPopupSize() {
-  NSRect bounds = [[[ExtensionPopupController popup] view] bounds];
-  return gfx::Size(NSSizeToCGSize(bounds.size));
+  return GetExtensionPopupTestManager()->GetPopupSize();
 }
 
 bool BrowserActionTestUtil::HidePopup() {
-  ExtensionPopupController* controller = [ExtensionPopupController popup];
-  [controller close];
+  GetExtensionPopupTestManager()->HidePopup();
   return !HasPopup();
 }
 
@@ -216,12 +264,12 @@ BrowserActionTestUtil::CreateOverflowBar() {
 
 // static
 gfx::Size BrowserActionTestUtil::GetMinPopupSize() {
-  return gfx::Size(NSSizeToCGSize([ExtensionPopupController minPopupSize]));
+  return GetExtensionPopupTestManager()->GetMinPopupSize();
 }
 
 // static
 gfx::Size BrowserActionTestUtil::GetMaxPopupSize() {
-  return gfx::Size(NSSizeToCGSize([ExtensionPopupController maxPopupSize]));
+  return GetExtensionPopupTestManager()->GetMaxPopupSize();
 }
 
 BrowserActionTestUtil::BrowserActionTestUtil(Browser* browser,
