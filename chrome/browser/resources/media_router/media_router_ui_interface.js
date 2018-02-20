@@ -16,6 +16,9 @@ cr.define('media_router.ui', function() {
   // The route-controls element. Is null if the route details view isn't open.
   var routeControls = null;
 
+  // The initial height for |container|.
+  var initialMaxHeight = 0;
+
   /**
    * Handles response of previous create route attempt.
    *
@@ -64,6 +67,11 @@ cr.define('media_router.ui', function() {
   function setElements(mediaRouterContainer, mediaRouterHeader) {
     container = mediaRouterContainer;
     header = mediaRouterHeader;
+
+    if (initialMaxHeight) {
+      container.updateMaxDialogHeight(initialMaxHeight);
+      initialMaxHeight = 0;
+    }
   }
 
   /**
@@ -183,7 +191,12 @@ cr.define('media_router.ui', function() {
    * @param {number} height
    */
   function updateMaxHeight(height) {
-    container.updateMaxDialogHeight(height);
+    if (container) {
+      container.updateMaxDialogHeight(height);
+    } else {
+      // Update the max height once |container| gets set.
+      initialMaxHeight = height;
+    }
   }
 
   /**
