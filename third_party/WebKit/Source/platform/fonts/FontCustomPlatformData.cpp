@@ -170,9 +170,16 @@ void FontCustomPlatformData::ReportWebFontInstantiationResult(
 }
 
 bool FontCustomPlatformData::SupportsFormat(const String& format) {
-  return DeprecatedEqualIgnoringCase(format, "truetype") ||
-         DeprecatedEqualIgnoringCase(format, "opentype") ||
-         WebFontDecoder::SupportsFormat(format);
+  // Support relevant format specifiers from
+  // https://drafts.csswg.org/css-fonts-4/#src-desc
+  return EqualIgnoringASCIICase(format, "woff") ||
+         EqualIgnoringASCIICase(format, "truetype") ||
+         EqualIgnoringASCIICase(format, "opentype") ||
+         EqualIgnoringASCIICase(format, "woff2") ||
+         EqualIgnoringASCIICase(format, "woff-variations") ||
+         EqualIgnoringASCIICase(format, "truetype-variations") ||
+         EqualIgnoringASCIICase(format, "opentype-variations") ||
+         EqualIgnoringASCIICase(format, "woff2-variations");
 }
 
 }  // namespace blink
