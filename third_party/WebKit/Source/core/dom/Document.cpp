@@ -3244,8 +3244,7 @@ void Document::ImplicitClose() {
 
   load_event_progress_ = kLoadEventCompleted;
 
-  if (GetFrame() && GetLayoutView() &&
-      GetSettings()->GetAccessibilityEnabled()) {
+  if (GetFrame() && GetLayoutView()) {
     if (AXObjectCache* cache = GetOrCreateAXObjectCache()) {
       if (this == &AXObjectCacheOwner())
         cache->HandleLoadComplete(this);

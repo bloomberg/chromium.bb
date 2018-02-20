@@ -7,48 +7,104 @@
 #include <stdint.h>
 
 #include "core/dom/DOMException.h"
+#include "core/dom/FrameRequestCallbackCollection.h"
+#include "core/frame/LocalFrame.h"
 #include "platform/bindings/ScriptState.h"
-#include "third_party/WebKit/Source/bindings/core/v8/ScriptPromiseResolver.h"
-#include "third_party/WebKit/Source/core/frame/LocalFrame.h"
+#include "platform/heap/Handle.h"
+#include "platform/scheduler/child/web_scheduler.h"
+#include "public/platform/Platform.h"
+#include "public/web/WebFrameClient.h"
 #include "third_party/WebKit/Source/core/frame/WebLocalFrameImpl.h"
-#include "third_party/WebKit/Source/platform/wtf/text/WTFString.h"
-#include "third_party/WebKit/public/web/WebFrameClient.h"
 
 namespace blink {
 
-ComputedAccessibleNode* ComputedAccessibleNode::Create(Element* element) {
-  return new ComputedAccessibleNode(element);
-}
+class ComputedAccessibleNodePromiseResolver::RequestAnimationFrameCallback final
+    : public FrameRequestCallbackCollection::FrameCallback {
+ public:
+  explicit RequestAnimationFrameCallback(
+      ComputedAccessibleNodePromiseResolver* resolver)
+      : resolver_(resolver) {}
 
-ComputedAccessibleNode::ComputedAccessibleNode(Element* element)
-    : element_(element) {
-  DCHECK(RuntimeEnabledFeatures::AccessibilityObjectModelEnabled());
-  AXObjectCache* cache = element->GetDocument().GetOrCreateAXObjectCache();
-  DCHECK(cache);
-  cache_ = cache;
-
-  LocalFrame* local_frame = element->ownerDocument()->GetFrame();
-  WebFrameClient* client = WebLocalFrameImpl::FromFrame(local_frame)->Client();
-  tree_ = client->GetOrCreateWebComputedAXTree();
-}
-
-ComputedAccessibleNode::~ComputedAccessibleNode() {}
-
-ScriptPromise ComputedAccessibleNode::ComputeAccessibleProperties(
-    ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  ScriptPromise promise = resolver->Promise();
-  // TODO(meredithl): Post this task asynchronously, with a callback into
-  // this->OnSnapshotResponse.
-  if (!tree_->ComputeAccessibilityTree()) {
-    // TODO(meredithl): Change this exception to something relevant to AOM.
-    resolver->Reject(DOMException::Create(kUnknownError));
-  } else {
-    OnSnapshotResponse(resolver);
+  void Invoke(double) override {
+    resolver_->continue_callback_request_id_ = 0;
+    resolver_->UpdateTreeAndResolve();
   }
 
-  return promise;
+  virtual void Trace(blink::Visitor* visitor) {
+    visitor->Trace(resolver_);
+    FrameRequestCallbackCollection::FrameCallback::Trace(visitor);
+  }
+
+ private:
+  Member<ComputedAccessibleNodePromiseResolver> resolver_;
+
+  DISALLOW_COPY_AND_ASSIGN(RequestAnimationFrameCallback);
+};
+
+ComputedAccessibleNodePromiseResolver*
+ComputedAccessibleNodePromiseResolver::Create(ScriptState* script_state,
+                                              Element& element) {
+  return new ComputedAccessibleNodePromiseResolver(script_state, element);
 }
+
+ComputedAccessibleNodePromiseResolver::ComputedAccessibleNodePromiseResolver(
+    ScriptState* script_state,
+    Element& element)
+    : element_(element),
+      resolver_(ScriptPromiseResolver::Create(script_state)) {}
+
+ScriptPromise ComputedAccessibleNodePromiseResolver::Promise() {
+  return resolver_->Promise();
+}
+
+void ComputedAccessibleNodePromiseResolver::Trace(blink::Visitor* visitor) {
+  visitor->Trace(element_);
+  visitor->Trace(resolver_);
+}
+
+void ComputedAccessibleNodePromiseResolver::ComputeAccessibleNode() {
+  DCHECK(RuntimeEnabledFeatures::AccessibilityObjectModelEnabled());
+
+  if (continue_callback_request_id_)
+    return;
+
+  // TODO(aboxhall): Trigger a call when lifecycle is next at kPrePaintClean.
+  RequestAnimationFrameCallback* callback =
+      new RequestAnimationFrameCallback(this);
+  continue_callback_request_id_ =
+      element_->GetDocument().RequestAnimationFrame(callback);
+}
+
+void ComputedAccessibleNodePromiseResolver::UpdateTreeAndResolve() {
+  Document& document = element_->GetDocument();
+  document.View()->UpdateLifecycleToCompositingCleanPlusScrolling();
+  AXObjectCache* cache = element_->GetDocument().GetOrCreateAXObjectCache();
+  DCHECK(cache);
+  AXID ax_id = cache->GetAXID(element_);
+
+  LocalFrame* local_frame = element_->ownerDocument()->GetFrame();
+  WebFrameClient* client = WebLocalFrameImpl::FromFrame(local_frame)->Client();
+  WebComputedAXTree* tree = client->GetOrCreateWebComputedAXTree();
+  tree->ComputeAccessibilityTree();
+
+  ComputedAccessibleNode* accessible_node =
+      ComputedAccessibleNode::Create(ax_id, tree);
+  resolver_->Resolve(accessible_node);
+}
+
+ComputedAccessibleNode* ComputedAccessibleNode::Create(
+    AXID ax_id,
+    WebComputedAXTree* tree) {
+  // TODO(meredithl): Change to GetOrCreate and check cache for existing node
+  // with this ID.
+  return new ComputedAccessibleNode(ax_id, tree);
+}
+
+ComputedAccessibleNode::ComputedAccessibleNode(AXID ax_id,
+                                               WebComputedAXTree* tree)
+    : ax_id_(ax_id), tree_(tree) {}
+
+ComputedAccessibleNode::~ComputedAccessibleNode() {}
 
 ScriptPromise ComputedAccessibleNode::ensureUpToDate(
     ScriptState* script_state) {
@@ -69,7 +125,7 @@ int32_t ComputedAccessibleNode::GetIntAttribute(WebAOMIntAttribute attr,
                                                 bool& is_null) const {
   int32_t out = 0;
   is_null = true;
-  if (tree_->GetIntAttributeForAXNode(cache_->GetAXID(element_), attr, &out)) {
+  if (tree_->GetIntAttributeForAXNode(ax_id_, attr, &out)) {
     is_null = false;
   }
   return out;
@@ -78,8 +134,7 @@ int32_t ComputedAccessibleNode::GetIntAttribute(WebAOMIntAttribute attr,
 const String ComputedAccessibleNode::GetStringAttribute(
     WebAOMStringAttribute attr) const {
   WebString out;
-  if (tree_->GetStringAttributeForAXNode(cache_->GetAXID(element_), attr,
-                                         &out)) {
+  if (tree_->GetStringAttributeForAXNode(ax_id_, attr, &out)) {
     return out;
   }
   return String();
@@ -89,7 +144,7 @@ bool ComputedAccessibleNode::GetBoolAttribute(WebAOMBoolAttribute attr,
                                               bool& is_null) const {
   bool out;
   is_null = true;
-  if (tree_->GetBoolAttributeForAXNode(cache_->GetAXID(element_), attr, &out)) {
+  if (tree_->GetBoolAttributeForAXNode(ax_id_, attr, &out)) {
     is_null = false;
   }
   return out;
@@ -111,7 +166,7 @@ const String ComputedAccessibleNode::placeholder() const {
 
 const String ComputedAccessibleNode::role() const {
   WebString out;
-  if (tree_->GetRoleForAXNode(cache_->GetAXID(element_), &out)) {
+  if (tree_->GetRoleForAXNode(ax_id_, &out)) {
     return out;
   }
   return String();
@@ -162,52 +217,44 @@ int32_t ComputedAccessibleNode::setSize(bool& is_null) const {
   return GetIntAttribute(WebAOMIntAttribute::AOM_ATTR_SET_SIZE, is_null);
 }
 
-ComputedAccessibleNode* ComputedAccessibleNode::GetRelationFromCache(
-    AXID axid) const {
-  Element* element = cache_->GetElementFromAXID(axid);
-  if (!element)
-    return nullptr;
-  return element->GetComputedAccessibleNode();
-}
-
 ComputedAccessibleNode* ComputedAccessibleNode::parent() const {
-  int32_t axid;
-  if (!tree_->GetParentIdForAXNode(cache_->GetAXID(element_), &axid)) {
+  int32_t parent_ax_id;
+  if (!tree_->GetParentIdForAXNode(ax_id_, &parent_ax_id)) {
     return nullptr;
   }
-  return GetRelationFromCache(axid);
+  return ComputedAccessibleNode::Create(parent_ax_id, tree_);
 }
 
 ComputedAccessibleNode* ComputedAccessibleNode::firstChild() const {
-  int32_t axid;
-  if (!tree_->GetFirstChildIdForAXNode(cache_->GetAXID(element_), &axid)) {
+  int32_t child_ax_id;
+  if (!tree_->GetFirstChildIdForAXNode(ax_id_, &child_ax_id)) {
     return nullptr;
   }
-  return GetRelationFromCache(axid);
+  return ComputedAccessibleNode::Create(child_ax_id, tree_);
 }
 
 ComputedAccessibleNode* ComputedAccessibleNode::lastChild() const {
-  int32_t axid;
-  if (!tree_->GetLastChildIdForAXNode(cache_->GetAXID(element_), &axid)) {
+  int32_t child_ax_id;
+  if (!tree_->GetLastChildIdForAXNode(ax_id_, &child_ax_id)) {
     return nullptr;
   }
-  return GetRelationFromCache(axid);
+  return ComputedAccessibleNode::Create(child_ax_id, tree_);
 }
 
 ComputedAccessibleNode* ComputedAccessibleNode::previousSibling() const {
-  int32_t axid;
-  if (!tree_->GetPreviousSiblingIdForAXNode(cache_->GetAXID(element_), &axid)) {
+  int32_t sibling_ax_id;
+  if (!tree_->GetPreviousSiblingIdForAXNode(ax_id_, &sibling_ax_id)) {
     return nullptr;
   }
-  return GetRelationFromCache(axid);
+  return ComputedAccessibleNode::Create(sibling_ax_id, tree_);
 }
 
 ComputedAccessibleNode* ComputedAccessibleNode::nextSibling() const {
-  int32_t axid;
-  if (!tree_->GetNextSiblingIdForAXNode(cache_->GetAXID(element_), &axid)) {
+  int32_t sibling_ax_id;
+  if (!tree_->GetNextSiblingIdForAXNode(ax_id_, &sibling_ax_id)) {
     return nullptr;
   }
-  return GetRelationFromCache(axid);
+  return ComputedAccessibleNode::Create(sibling_ax_id, tree_);
 }
 
 bool ComputedAccessibleNode::atomic(bool& is_null) const {
@@ -233,8 +280,6 @@ void ComputedAccessibleNode::OnUpdateResponse(ScriptPromiseResolver* resolve) {
 
 void ComputedAccessibleNode::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  visitor->Trace(element_);
-  visitor->Trace(cache_);
 }
 
 }  // namespace blink

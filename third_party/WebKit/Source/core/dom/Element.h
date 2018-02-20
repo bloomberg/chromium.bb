@@ -47,7 +47,6 @@ class Attr;
 class Attribute;
 class CSSPropertyValueSet;
 class CSSStyleDeclaration;
-class ComputedAccessibleNode;
 class CustomElementDefinition;
 class DOMRect;
 class DOMRectList;
@@ -296,8 +295,6 @@ class CORE_EXPORT Element : public ContainerNode {
 
   AccessibleNode* ExistingAccessibleNode() const;
   AccessibleNode* accessibleNode();
-
-  ComputedAccessibleNode* GetComputedAccessibleNode();
 
   void DidMoveToNewDocument(Document&) override;
 

@@ -28,7 +28,6 @@
 #include "core/css/cssom/InlineStylePropertyMap.h"
 #include "core/dom/AccessibleNode.h"
 #include "core/dom/Attr.h"
-#include "core/dom/ComputedAccessibleNode.h"
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/DatasetDOMStringMap.h"
 #include "core/dom/ElementShadow.h"
@@ -142,8 +141,6 @@ class ElementRareData : public NodeRareData {
     return accessible_node_;
   }
 
-  ComputedAccessibleNode* EnsureComputedAccessibleNode(Element* owner_element);
-
   AttrNodeList& EnsureAttrNodeList();
   AttrNodeList* GetAttrNodeList() { return attr_node_list_.Get(); }
   void RemoveAttrNodeList() { attr_node_list_.Clear(); }
@@ -200,7 +197,6 @@ class ElementRareData : public NodeRareData {
   Member<PseudoElementData> pseudo_element_data_;
 
   TraceWrapperMember<AccessibleNode> accessible_node_;
-  TraceWrapperMember<ComputedAccessibleNode> computed_accessible_node_;
 
   explicit ElementRareData(NodeRenderingData*);
 };

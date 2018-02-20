@@ -19,13 +19,13 @@ test(function(t) {
     assert_true(internals.runtimeFlags.accessibilityObjectModelEnabled);
 }, "Make sure that Accessibility Object Model is enabled");
 
-test(async function(test) {
+promise_test(async function(test) {
     var element = document.getElementById("button1");
     var computedAXNode = await window.getComputedAccessibleNode(element);
     assert_equals(computedAXNode.role, "button");
 }, "ComputedAccessibleNode.role");
 
-test(async function(test) {
+promise_test(async function(test) {
     var element = document.getElementById("button1");
     var computedAXNode = await window.getComputedAccessibleNode(element);
     assert_equals(computedAXNode.name, "Click");
@@ -37,7 +37,7 @@ test(async function(test) {
 
 <script>
 
-test(async function(test) {
+promise_test(async function(test) {
     var element = document.getElementById("button2");
     var computedAXNode = await window.getComputedAccessibleNode(element);
     assert_equals(computedAXNode.name, "axButton");
@@ -49,7 +49,7 @@ test(async function(test) {
 
 <script>
 
-test(async function(test) {
+promise_test(async function(test) {
     var element = document.getElementById("shortcut");
     var computedAXNode = await window.getComputedAccessibleNode(element);
     assert_equals(computedAXNode.keyShortcuts, "Alt+Shift+P");
@@ -61,7 +61,7 @@ test(async function(test) {
 
 <script>
 
-test(async function(test) {
+promise_test(async function(test) {
     var element = document.getElementById("fullname");
     computedAXNode = await window.getComputedAccessibleNode(element);
     assert_equals(computedAXNode.placeholder, "Jordan Doe");
@@ -73,7 +73,7 @@ test(async function(test) {
 
 <script>
 
-test(async function(test) {
+promise_test(async function(test) {
     var element = document.getElementById("button3");
     computedAXNode = await window.getComputedAccessibleNode(element);
     assert_equals(computedAXNode.role, "button");
@@ -86,7 +86,7 @@ test(async function(test) {
 <input id="no-autocomplete" role="combobox" aria-autocomplete="none"></input>
 <script>
 
-test(async function(test) {
+promise_test(async function(test) {
     var bothElement = document.getElementById("both-autocomplete");
     var noneElement = document.getElementById("no-autocomplete");
     var bothCAXNode = await window.getComputedAccessibleNode(bothElement);
