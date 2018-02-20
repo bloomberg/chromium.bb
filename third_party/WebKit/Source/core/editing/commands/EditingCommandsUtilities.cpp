@@ -164,6 +164,7 @@ static HTMLElement* FirstInSpecialElement(const Position& pos) {
       VisiblePosition first_in_element =
           CreateVisiblePosition(FirstPositionInOrBeforeNode(*special_element));
       if (IsDisplayInsideTable(special_element) &&
+          !IsListItem(v_pos.DeepEquivalent().ComputeContainerNode()) &&
           v_pos.DeepEquivalent() ==
               NextPositionOf(first_in_element).DeepEquivalent())
         return special_element;
