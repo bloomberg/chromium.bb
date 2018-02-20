@@ -281,9 +281,8 @@ Tab::~Tab() {
 }
 
 SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
-  if (!ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
-    return button_color_;
-
+  const bool is_touch_optimized =
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
   // If theme provider is not yet available, return the default button
   // color.
   const ui::ThemeProvider* theme_provider = GetThemeProvider();
@@ -293,13 +292,17 @@ SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
   switch (state) {
     case TabAlertState::AUDIO_PLAYING:
     case TabAlertState::AUDIO_MUTING:
-      return theme_provider->GetColor(ThemeProperties::COLOR_TAB_ALERT_AUDIO);
+      return is_touch_optimized ? theme_provider->GetColor(
+                                      ThemeProperties::COLOR_TAB_ALERT_AUDIO)
+                                : button_color_;
     case TabAlertState::MEDIA_RECORDING:
       return theme_provider->GetColor(
           ThemeProperties::COLOR_TAB_ALERT_RECORDING);
     case TabAlertState::TAB_CAPTURING:
-      return theme_provider->GetColor(
-          ThemeProperties::COLOR_TAB_ALERT_CAPTURING);
+      return is_touch_optimized
+                 ? theme_provider->GetColor(
+                       ThemeProperties::COLOR_TAB_ALERT_CAPTURING)
+                 : button_color_;
     case TabAlertState::BLUETOOTH_CONNECTED:
     case TabAlertState::USB_CONNECTED:
     case TabAlertState::NONE:
