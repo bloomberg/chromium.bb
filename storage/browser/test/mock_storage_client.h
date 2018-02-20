@@ -64,15 +64,15 @@ class MockStorageClient : public QuotaClient {
   void OnQuotaManagerDestroyed() override;
   void GetOriginUsage(const url::Origin& origin,
                       StorageType type,
-                      const GetUsageCallback& callback) override;
+                      GetUsageCallback callback) override;
   void GetOriginsForType(StorageType type,
-                         const GetOriginsCallback& callback) override;
+                         GetOriginsCallback callback) override;
   void GetOriginsForHost(StorageType type,
                          const std::string& host,
-                         const GetOriginsCallback& callback) override;
+                         GetOriginsCallback callback) override;
   void DeleteOriginData(const url::Origin& origin,
                         StorageType type,
-                        const DeletionCallback& callback) override;
+                        DeletionCallback callback) override;
   bool DoesSupport(StorageType type) const override;
 
  private:
@@ -81,15 +81,14 @@ class MockStorageClient : public QuotaClient {
 
   void RunGetOriginUsage(const url::Origin& origin,
                          StorageType type,
-                         const GetUsageCallback& callback);
-  void RunGetOriginsForType(StorageType type,
-                            const GetOriginsCallback& callback);
+                         GetUsageCallback callback);
+  void RunGetOriginsForType(StorageType type, GetOriginsCallback callback);
   void RunGetOriginsForHost(StorageType type,
                             const std::string& host,
-                            const GetOriginsCallback& callback);
+                            GetOriginsCallback callback);
   void RunDeleteOriginData(const url::Origin& origin,
                            StorageType type,
-                           const DeletionCallback& callback);
+                           DeletionCallback callback);
 
   void Populate(const MockOriginData* mock_data, size_t mock_data_size);
 

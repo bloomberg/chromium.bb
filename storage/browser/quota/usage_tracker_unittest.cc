@@ -69,15 +69,15 @@ class MockQuotaClient : public QuotaClient {
 
   void GetOriginUsage(const url::Origin& origin,
                       StorageType type,
-                      const GetUsageCallback& callback) override {
+                      GetUsageCallback callback) override {
     EXPECT_EQ(StorageType::kTemporary, type);
     int64_t usage = GetUsage(origin.GetURL());
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(callback, usage));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), usage));
   }
 
   void GetOriginsForType(StorageType type,
-                         const GetOriginsCallback& callback) override {
+                         GetOriginsCallback callback) override {
     EXPECT_EQ(StorageType::kTemporary, type);
     std::set<url::Origin> origins;
     for (UsageMap::const_iterator itr = usage_map_.begin();
@@ -85,12 +85,12 @@ class MockQuotaClient : public QuotaClient {
       origins.insert(url::Origin::Create(itr->first));
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, origins));
+        FROM_HERE, base::BindOnce(std::move(callback), origins));
   }
 
   void GetOriginsForHost(StorageType type,
                          const std::string& host,
-                         const GetOriginsCallback& callback) override {
+                         GetOriginsCallback callback) override {
     EXPECT_EQ(StorageType::kTemporary, type);
     std::set<url::Origin> origins;
     for (UsageMap::const_iterator itr = usage_map_.begin();
@@ -99,16 +99,16 @@ class MockQuotaClient : public QuotaClient {
         origins.insert(url::Origin::Create(itr->first));
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, origins));
+        FROM_HERE, base::BindOnce(std::move(callback), origins));
   }
 
   void DeleteOriginData(const url::Origin& origin,
                         StorageType type,
-                        const DeletionCallback& callback) override {
+                        DeletionCallback callback) override {
     EXPECT_EQ(StorageType::kTemporary, type);
     usage_map_.erase(origin.GetURL());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, QuotaStatusCode::kOk));
+        FROM_HERE, base::BindOnce(std::move(callback), QuotaStatusCode::kOk));
   }
 
   bool DoesSupport(StorageType type) const override {

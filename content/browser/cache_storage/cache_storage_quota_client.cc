@@ -30,61 +30,58 @@ void CacheStorageQuotaClient::OnQuotaManagerDestroyed() {
 
 void CacheStorageQuotaClient::GetOriginUsage(const url::Origin& origin,
                                              blink::mojom::StorageType type,
-                                             const GetUsageCallback& callback) {
+                                             GetUsageCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!cache_manager_ || !DoesSupport(type)) {
-    callback.Run(0);
+    std::move(callback).Run(0);
     return;
   }
 
-  cache_manager_->GetOriginUsage(origin, callback);
+  cache_manager_->GetOriginUsage(origin, std::move(callback));
 }
 
-void CacheStorageQuotaClient::GetOriginsForType(
-    blink::mojom::StorageType type,
-    const GetOriginsCallback& callback) {
+void CacheStorageQuotaClient::GetOriginsForType(blink::mojom::StorageType type,
+                                                GetOriginsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!cache_manager_ || !DoesSupport(type)) {
-    callback.Run(std::set<url::Origin>());
+    std::move(callback).Run(std::set<url::Origin>());
     return;
   }
 
-  cache_manager_->GetOrigins(callback);
+  cache_manager_->GetOrigins(std::move(callback));
 }
 
-void CacheStorageQuotaClient::GetOriginsForHost(
-    blink::mojom::StorageType type,
-    const std::string& host,
-    const GetOriginsCallback& callback) {
+void CacheStorageQuotaClient::GetOriginsForHost(blink::mojom::StorageType type,
+                                                const std::string& host,
+                                                GetOriginsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!cache_manager_ || !DoesSupport(type)) {
-    callback.Run(std::set<url::Origin>());
+    std::move(callback).Run(std::set<url::Origin>());
     return;
   }
 
-  cache_manager_->GetOriginsForHost(host, callback);
+  cache_manager_->GetOriginsForHost(host, std::move(callback));
 }
 
-void CacheStorageQuotaClient::DeleteOriginData(
-    const url::Origin& origin,
-    blink::mojom::StorageType type,
-    const DeletionCallback& callback) {
+void CacheStorageQuotaClient::DeleteOriginData(const url::Origin& origin,
+                                               blink::mojom::StorageType type,
+                                               DeletionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!cache_manager_) {
-    callback.Run(blink::mojom::QuotaStatusCode::kErrorAbort);
+    std::move(callback).Run(blink::mojom::QuotaStatusCode::kErrorAbort);
     return;
   }
 
   if (!DoesSupport(type)) {
-    callback.Run(blink::mojom::QuotaStatusCode::kOk);
+    std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk);
     return;
   }
 
-  cache_manager_->DeleteOriginData(origin, callback);
+  cache_manager_->DeleteOriginData(origin, std::move(callback));
 }
 
 bool CacheStorageQuotaClient::DoesSupport(

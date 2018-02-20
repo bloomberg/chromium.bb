@@ -41,15 +41,15 @@ class AppCacheQuotaClient : public storage::QuotaClient {
   void OnQuotaManagerDestroyed() override;
   void GetOriginUsage(const url::Origin& origin,
                       blink::mojom::StorageType type,
-                      const GetUsageCallback& callback) override;
+                      GetUsageCallback callback) override;
   void GetOriginsForType(blink::mojom::StorageType type,
-                         const GetOriginsCallback& callback) override;
+                         GetOriginsCallback callback) override;
   void GetOriginsForHost(blink::mojom::StorageType type,
                          const std::string& host,
-                         const GetOriginsCallback& callback) override;
+                         GetOriginsCallback callback) override;
   void DeleteOriginData(const url::Origin& origin,
                         blink::mojom::StorageType type,
-                        const DeletionCallback& callback) override;
+                        DeletionCallback callback) override;
   bool DoesSupport(blink::mojom::StorageType type) const override;
 
  private:
@@ -63,7 +63,7 @@ class AppCacheQuotaClient : public storage::QuotaClient {
   void DidDeleteAppCachesForOrigin(int rv);
   void GetOriginsHelper(blink::mojom::StorageType type,
                         const std::string& opt_host,
-                        const GetOriginsCallback& callback);
+                        GetOriginsCallback callback);
   void ProcessPendingRequests();
   void DeletePendingRequests();
   const AppCacheStorage::UsageMap* GetUsageMap();

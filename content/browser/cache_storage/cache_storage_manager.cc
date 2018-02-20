@@ -43,14 +43,13 @@ bool DeleteDir(const base::FilePath& path) {
   return base::DeleteFile(path, true /* recursive */);
 }
 
-void DeleteOriginDidDeleteDir(
-    const storage::QuotaClient::DeletionCallback& callback,
-    bool rv) {
+void DeleteOriginDidDeleteDir(storage::QuotaClient::DeletionCallback callback,
+                              bool rv) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(callback,
+      base::BindOnce(std::move(callback),
                      rv ? blink::mojom::QuotaStatusCode::kOk
                         : blink::mojom::QuotaStatusCode::kErrorAbort));
 }
@@ -114,7 +113,7 @@ std::set<url::Origin> ListOriginsOnTaskRunner(base::FilePath root_path) {
 
 void GetOriginsForHostDidListOrigins(
     const std::string& host,
-    const storage::QuotaClient::GetOriginsCallback& callback,
+    storage::QuotaClient::GetOriginsCallback callback,
     const std::set<url::Origin>& origins) {
   std::set<url::Origin> out_origins;
   for (const url::Origin& origin : origins) {
@@ -122,18 +121,18 @@ void GetOriginsForHostDidListOrigins(
       out_origins.insert(origin);
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, out_origins));
+      FROM_HERE, base::BindOnce(std::move(callback), out_origins));
 }
 
 void EmptyQuotaStatusCallback(blink::mojom::QuotaStatusCode code) {}
 
 void AllOriginSizesReported(
     std::unique_ptr<std::vector<CacheStorageUsageInfo>> usages,
-    const CacheStorageContext::GetUsageInfoCallback& callback) {
+    CacheStorageContext::GetUsageInfoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, *usages));
+      FROM_HERE, base::BindOnce(std::move(callback), *usages));
 }
 
 void OneOriginSizeReported(base::OnceClosure callback,
@@ -277,7 +276,7 @@ void CacheStorageManager::NotifyCacheContentChanged(const url::Origin& origin,
 }
 
 void CacheStorageManager::GetAllOriginsUsage(
-    const CacheStorageContext::GetUsageInfoCallback& callback) {
+    CacheStorageContext::GetUsageInfoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   std::unique_ptr<std::vector<CacheStorageUsageInfo>> usages(
@@ -289,7 +288,7 @@ void CacheStorageManager::GetAllOriginsUsage(
           CacheStorageUsageInfo(origin_details.first.GetURL(), 0 /* size */,
                                 base::Time() /* last modified */));
     }
-    GetAllOriginsUsageGetSizes(std::move(usages), callback);
+    GetAllOriginsUsageGetSizes(std::move(usages), std::move(callback));
     return;
   }
 
@@ -300,12 +299,12 @@ void CacheStorageManager::GetAllOriginsUsage(
                      root_path_),
       base::BindOnce(&CacheStorageManager::GetAllOriginsUsageGetSizes,
                      weak_ptr_factory_.GetWeakPtr(), std::move(usages),
-                     callback));
+                     std::move(callback)));
 }
 
 void CacheStorageManager::GetAllOriginsUsageGetSizes(
     std::unique_ptr<std::vector<CacheStorageUsageInfo>> usages,
-    const CacheStorageContext::GetUsageInfoCallback& callback) {
+    CacheStorageContext::GetUsageInfoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(usages);
 
@@ -315,13 +314,14 @@ void CacheStorageManager::GetAllOriginsUsageGetSizes(
 
   if (usages->empty()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, *usages));
+        FROM_HERE, base::BindOnce(std::move(callback), *usages));
     return;
   }
 
   base::RepeatingClosure barrier_closure = base::BarrierClosure(
       usages_ptr->size(),
-      base::BindOnce(&AllOriginSizesReported, std::move(usages), callback));
+      base::BindOnce(&AllOriginSizesReported, std::move(usages),
+                     std::move(callback)));
 
   for (CacheStorageUsageInfo& usage : *usages_ptr) {
     if (usage.total_size_bytes != CacheStorage::kSizeUnknown) {
@@ -337,16 +337,16 @@ void CacheStorageManager::GetAllOriginsUsageGetSizes(
 
 void CacheStorageManager::GetOriginUsage(
     const url::Origin& origin,
-    const storage::QuotaClient::GetUsageCallback& callback) {
+    storage::QuotaClient::GetUsageCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   CacheStorage* cache_storage = FindOrCreateCacheStorage(origin);
 
-  cache_storage->Size(callback);
+  cache_storage->Size(std::move(callback));
 }
 
 void CacheStorageManager::GetOrigins(
-    const storage::QuotaClient::GetOriginsCallback& callback) {
+    storage::QuotaClient::GetOriginsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (IsMemoryBacked()) {
@@ -355,18 +355,19 @@ void CacheStorageManager::GetOrigins(
       origins.insert(key_value.first);
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, origins));
+        FROM_HERE, base::BindOnce(std::move(callback), origins));
     return;
   }
 
-  PostTaskAndReplyWithResult(cache_task_runner_.get(), FROM_HERE,
-                             base::Bind(&ListOriginsOnTaskRunner, root_path_),
-                             callback);
+  PostTaskAndReplyWithResult(
+      cache_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&ListOriginsOnTaskRunner, root_path_),
+      std::move(callback));
 }
 
 void CacheStorageManager::GetOriginsForHost(
     const std::string& host,
-    const storage::QuotaClient::GetOriginsCallback& callback) {
+    storage::QuotaClient::GetOriginsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (IsMemoryBacked()) {
@@ -376,19 +377,20 @@ void CacheStorageManager::GetOriginsForHost(
         origins.insert(key_value.first);
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, origins));
+        FROM_HERE, base::BindOnce(std::move(callback), origins));
     return;
   }
 
   PostTaskAndReplyWithResult(
       cache_task_runner_.get(), FROM_HERE,
       base::BindOnce(&ListOriginsOnTaskRunner, root_path_),
-      base::BindOnce(&GetOriginsForHostDidListOrigins, host, callback));
+      base::BindOnce(&GetOriginsForHostDidListOrigins, host,
+                     std::move(callback)));
 }
 
 void CacheStorageManager::DeleteOriginData(
     const url::Origin& origin,
-    const storage::QuotaClient::DeletionCallback& callback) {
+    storage::QuotaClient::DeletionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Create the CacheStorage for the origin if it hasn't been loaded yet.
@@ -402,8 +404,8 @@ void CacheStorageManager::DeleteOriginData(
   cache_storage_map_.erase(origin);
   cache_storage->GetSizeThenCloseAllCaches(
       base::BindOnce(&CacheStorageManager::DeleteOriginDidClose,
-                     weak_ptr_factory_.GetWeakPtr(), origin, callback,
-                     base::WrapUnique(cache_storage)));
+                     weak_ptr_factory_.GetWeakPtr(), origin,
+                     std::move(callback), base::WrapUnique(cache_storage)));
 }
 
 void CacheStorageManager::DeleteOriginData(const url::Origin& origin) {
@@ -413,7 +415,7 @@ void CacheStorageManager::DeleteOriginData(const url::Origin& origin) {
 
 void CacheStorageManager::DeleteOriginDidClose(
     const url::Origin& origin,
-    const storage::QuotaClient::DeletionCallback& callback,
+    storage::QuotaClient::DeletionCallback callback,
     std::unique_ptr<CacheStorage> cache_storage,
     int64_t origin_size) {
   // TODO(jkarlin): Deleting the storage leaves any unfinished operations
@@ -428,15 +430,15 @@ void CacheStorageManager::DeleteOriginDidClose(
 
   if (IsMemoryBacked()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(callback, blink::mojom::QuotaStatusCode::kOk));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  blink::mojom::QuotaStatusCode::kOk));
     return;
   }
 
   PostTaskAndReplyWithResult(
       cache_task_runner_.get(), FROM_HERE,
       base::BindOnce(&DeleteDir, ConstructOriginPath(root_path_, origin)),
-      base::BindOnce(&DeleteOriginDidDeleteDir, callback));
+      base::BindOnce(&DeleteOriginDidDeleteDir, std::move(callback)));
 }
 
 CacheStorageManager::CacheStorageManager(

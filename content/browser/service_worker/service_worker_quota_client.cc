@@ -12,7 +12,7 @@ using storage::QuotaClient;
 
 namespace content {
 namespace {
-void ReportOrigins(const QuotaClient::GetOriginsCallback& callback,
+void ReportOrigins(QuotaClient::GetOriginsCallback callback,
                    bool restrict_on_host,
                    const std::string host,
                    const std::vector<ServiceWorkerUsageInfo>& usage_info) {
@@ -23,25 +23,24 @@ void ReportOrigins(const QuotaClient::GetOriginsCallback& callback,
     }
     origins.insert(url::Origin::Create(info.origin));
   }
-  callback.Run(origins);
+  std::move(callback).Run(origins);
 }
 
-void ReportToQuotaStatus(const QuotaClient::DeletionCallback& callback,
-                         bool status) {
-  callback.Run(status ? blink::mojom::QuotaStatusCode::kOk
-                      : blink::mojom::QuotaStatusCode::kUnknown);
+void ReportToQuotaStatus(QuotaClient::DeletionCallback callback, bool status) {
+  std::move(callback).Run(status ? blink::mojom::QuotaStatusCode::kOk
+                                 : blink::mojom::QuotaStatusCode::kUnknown);
 }
 
-void FindUsageForOrigin(const QuotaClient::GetUsageCallback& callback,
+void FindUsageForOrigin(QuotaClient::GetUsageCallback callback,
                         const GURL& origin,
                         const std::vector<ServiceWorkerUsageInfo>& usage_info) {
   for (const auto& info : usage_info) {
     if (info.origin == origin) {
-      callback.Run(info.total_size_bytes);
+      std::move(callback).Run(info.total_size_bytes);
       return;
     }
   }
-  callback.Run(0);
+  std::move(callback).Run(0);
 }
 }  // namespace
 
@@ -61,49 +60,48 @@ void ServiceWorkerQuotaClient::OnQuotaManagerDestroyed() {
   delete this;
 }
 
-void ServiceWorkerQuotaClient::GetOriginUsage(
-    const url::Origin& origin,
-    StorageType type,
-    const GetUsageCallback& callback) {
+void ServiceWorkerQuotaClient::GetOriginUsage(const url::Origin& origin,
+                                              StorageType type,
+                                              GetUsageCallback callback) {
   if (type != StorageType::kTemporary) {
-    callback.Run(0);
+    std::move(callback).Run(0);
+    return;
+  }
+  context_->GetAllOriginsInfo(base::BindOnce(
+      &FindUsageForOrigin, std::move(callback), origin.GetURL()));
+}
+
+void ServiceWorkerQuotaClient::GetOriginsForType(StorageType type,
+                                                 GetOriginsCallback callback) {
+  if (type != StorageType::kTemporary) {
+    std::move(callback).Run(std::set<url::Origin>());
     return;
   }
   context_->GetAllOriginsInfo(
-      base::Bind(&FindUsageForOrigin, callback, origin.GetURL()));
+      base::BindOnce(&ReportOrigins, std::move(callback), false, ""));
 }
 
-void ServiceWorkerQuotaClient::GetOriginsForType(
-    StorageType type,
-    const GetOriginsCallback& callback) {
+void ServiceWorkerQuotaClient::GetOriginsForHost(StorageType type,
+                                                 const std::string& host,
+                                                 GetOriginsCallback callback) {
   if (type != StorageType::kTemporary) {
-    callback.Run(std::set<url::Origin>());
+    std::move(callback).Run(std::set<url::Origin>());
     return;
   }
-  context_->GetAllOriginsInfo(base::Bind(&ReportOrigins, callback, false, ""));
+  context_->GetAllOriginsInfo(
+      base::BindOnce(&ReportOrigins, std::move(callback), true, host));
 }
 
-void ServiceWorkerQuotaClient::GetOriginsForHost(
-    StorageType type,
-    const std::string& host,
-    const GetOriginsCallback& callback) {
+void ServiceWorkerQuotaClient::DeleteOriginData(const url::Origin& origin,
+                                                StorageType type,
+                                                DeletionCallback callback) {
   if (type != StorageType::kTemporary) {
-    callback.Run(std::set<url::Origin>());
+    std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk);
     return;
   }
-  context_->GetAllOriginsInfo(base::Bind(&ReportOrigins, callback, true, host));
-}
-
-void ServiceWorkerQuotaClient::DeleteOriginData(
-    const url::Origin& origin,
-    StorageType type,
-    const DeletionCallback& callback) {
-  if (type != StorageType::kTemporary) {
-    callback.Run(blink::mojom::QuotaStatusCode::kOk);
-    return;
-  }
-  context_->DeleteForOrigin(origin.GetURL(),
-                            base::Bind(&ReportToQuotaStatus, callback));
+  context_->DeleteForOrigin(
+      origin.GetURL(),
+      base::BindOnce(&ReportToQuotaStatus, std::move(callback)));
 }
 
 bool ServiceWorkerQuotaClient::DoesSupport(StorageType type) const {

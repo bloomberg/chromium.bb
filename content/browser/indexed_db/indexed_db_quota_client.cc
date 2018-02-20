@@ -42,10 +42,10 @@ void GetAllOriginsOnIndexedDBThread(IndexedDBContextImpl* context,
     origins_to_return->insert(origin);
 }
 
-void DidGetOrigins(const IndexedDBQuotaClient::GetOriginsCallback& callback,
+void DidGetOrigins(IndexedDBQuotaClient::GetOriginsCallback callback,
                    const std::set<url::Origin>* origins) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  callback.Run(*origins);
+  std::move(callback).Run(*origins);
 }
 
 void GetOriginsForHostOnIndexedDBThread(
@@ -76,32 +76,31 @@ void IndexedDBQuotaClient::OnQuotaManagerDestroyed() { delete this; }
 
 void IndexedDBQuotaClient::GetOriginUsage(const url::Origin& origin,
                                           StorageType type,
-                                          const GetUsageCallback& callback) {
+                                          GetUsageCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(indexed_db_context_.get());
 
   // IndexedDB is in the temp namespace for now.
   if (type != StorageType::kTemporary) {
-    callback.Run(0);
+    std::move(callback).Run(0);
     return;
   }
 
   base::PostTaskAndReplyWithResult(
       indexed_db_context_->TaskRunner(), FROM_HERE,
-      base::Bind(&GetOriginUsageOnIndexedDBThread,
-                 base::RetainedRef(indexed_db_context_), origin),
-      callback);
+      base::BindOnce(&GetOriginUsageOnIndexedDBThread,
+                     base::RetainedRef(indexed_db_context_), origin),
+      std::move(callback));
 }
 
-void IndexedDBQuotaClient::GetOriginsForType(
-    StorageType type,
-    const GetOriginsCallback& callback) {
+void IndexedDBQuotaClient::GetOriginsForType(StorageType type,
+                                             GetOriginsCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(indexed_db_context_.get());
 
   // All databases are in the temp namespace for now.
   if (type != StorageType::kTemporary) {
-    callback.Run(std::set<url::Origin>());
+    std::move(callback).Run(std::set<url::Origin>());
     return;
   }
 
@@ -111,19 +110,19 @@ void IndexedDBQuotaClient::GetOriginsForType(
       base::BindOnce(&GetAllOriginsOnIndexedDBThread,
                      base::RetainedRef(indexed_db_context_),
                      base::Unretained(origins_to_return)),
-      base::BindOnce(&DidGetOrigins, callback, base::Owned(origins_to_return)));
+      base::BindOnce(&DidGetOrigins, std::move(callback),
+                     base::Owned(origins_to_return)));
 }
 
-void IndexedDBQuotaClient::GetOriginsForHost(
-    StorageType type,
-    const std::string& host,
-    const GetOriginsCallback& callback) {
+void IndexedDBQuotaClient::GetOriginsForHost(StorageType type,
+                                             const std::string& host,
+                                             GetOriginsCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(indexed_db_context_.get());
 
   // All databases are in the temp namespace for now.
   if (type != StorageType::kTemporary) {
-    callback.Run(std::set<url::Origin>());
+    std::move(callback).Run(std::set<url::Origin>());
     return;
   }
 
@@ -133,22 +132,23 @@ void IndexedDBQuotaClient::GetOriginsForHost(
       base::BindOnce(&GetOriginsForHostOnIndexedDBThread,
                      base::RetainedRef(indexed_db_context_), host,
                      base::Unretained(origins_to_return)),
-      base::BindOnce(&DidGetOrigins, callback, base::Owned(origins_to_return)));
+      base::BindOnce(&DidGetOrigins, std::move(callback),
+                     base::Owned(origins_to_return)));
 }
 
 void IndexedDBQuotaClient::DeleteOriginData(const url::Origin& origin,
                                             StorageType type,
-                                            const DeletionCallback& callback) {
+                                            DeletionCallback callback) {
   if (type != StorageType::kTemporary) {
-    callback.Run(blink::mojom::QuotaStatusCode::kOk);
+    std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk);
     return;
   }
 
   base::PostTaskAndReplyWithResult(
       indexed_db_context_->TaskRunner(), FROM_HERE,
-      base::Bind(&DeleteOriginDataOnIndexedDBThread,
-                 base::RetainedRef(indexed_db_context_), origin),
-      callback);
+      base::BindOnce(&DeleteOriginDataOnIndexedDBThread,
+                     base::RetainedRef(indexed_db_context_), origin),
+      std::move(callback));
 }
 
 bool IndexedDBQuotaClient::DoesSupport(StorageType type) const {
