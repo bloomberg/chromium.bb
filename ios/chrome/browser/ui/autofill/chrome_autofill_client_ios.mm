@@ -23,6 +23,7 @@
 #include "ios/chrome/browser/autofill/address_normalizer_factory.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/infobars/infobar_utils.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/ssl/insecure_input_tab_helper.h"
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
@@ -46,6 +47,9 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
           browser_state->GetOriginalChromeBrowserState())),
       web_state_(web_state),
       bridge_(bridge),
+      identity_manager_(
+          IdentityManagerFactory::GetInstance()->GetForBrowserState(
+              browser_state)),
       identity_provider_(std::move(identity_provider)),
       autofill_web_data_service_(
           ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
@@ -76,6 +80,10 @@ PrefService* ChromeAutofillClientIOS::GetPrefs() {
 // TODO(crbug.com/535784): Implement this when adding credit card upload.
 syncer::SyncService* ChromeAutofillClientIOS::GetSyncService() {
   return nullptr;
+}
+
+identity::IdentityManager* ChromeAutofillClientIOS::GetIdentityManager() {
+  return identity_manager_;
 }
 
 IdentityProvider* ChromeAutofillClientIOS::GetIdentityProvider() {

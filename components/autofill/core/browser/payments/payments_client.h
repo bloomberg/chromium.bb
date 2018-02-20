@@ -13,10 +13,13 @@
 #include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/prefs/pref_service.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
-class IdentityProvider;
+namespace identity {
+class IdentityManager;
+class PrimaryAccountAccessTokenFetcher;
+}  // namespace identity
 
 namespace net {
 class URLFetcher;
@@ -59,8 +62,7 @@ class PaymentsClientSaveDelegate {
 // request will cancel a pending request.
 // Tests are located in
 // src/components/autofill/content/browser/payments/payments_client_unittest.cc.
-class PaymentsClient : public net::URLFetcherDelegate,
-                       public OAuth2TokenService::Consumer {
+class PaymentsClient : public net::URLFetcherDelegate {
  public:
   // The names of the fields used to send non-location elements as part of an
   // address. Used in the implementation and in tests which verify that these
@@ -100,11 +102,11 @@ class PaymentsClient : public net::URLFetcherDelegate,
 
   // |context_getter| is reference counted so it has no lifetime or ownership
   // requirements. |pref_service| is used to get the registered preference
-  // value, |identity_provider|, |unmask_delegate| and |save_delegate| must all
+  // value, |identity_manager|, |unmask_delegate| and |save_delegate| must all
   // outlive |this|. Either delegate might be nullptr.
   PaymentsClient(net::URLRequestContextGetter* context_getter,
                  PrefService* pref_service,
-                 IdentityProvider* identity_provider,
+                 identity::IdentityManager* identity_manager,
                  PaymentsClientUnmaskDelegate* unmask_delegate,
                  PaymentsClientSaveDelegate* save_delegate);
 
@@ -162,12 +164,12 @@ class PaymentsClient : public net::URLFetcherDelegate,
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  // OAuth2TokenService::Consumer implementation.
-  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                         const std::string& access_token,
-                         const base::Time& expiration_time) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                         const GoogleServiceAuthError& error) override;
+  // Callback that handles a completed access token request.
+  void AccessTokenFetchFinished(const GoogleServiceAuthError& error,
+                                const std::string& access_token);
+
+  // Handles a completed access token request in the case of failure.
+  void AccessTokenError(const GoogleServiceAuthError& error);
 
   // Creates |url_fetcher_| based on the current state of |request_|.
   void InitializeUrlFetcher();
@@ -184,7 +186,7 @@ class PaymentsClient : public net::URLFetcherDelegate,
   // The pref service for this client.
   PrefService* const pref_service_;
 
-  IdentityProvider* const identity_provider_;
+  identity::IdentityManager* const identity_manager_;
 
   // Delegates for the results of the various requests to Payments. Both must
   // outlive |this|.
@@ -197,8 +199,8 @@ class PaymentsClient : public net::URLFetcherDelegate,
   // The fetcher being used to issue the current request.
   std::unique_ptr<net::URLFetcher> url_fetcher_;
 
-  // The current OAuth2 token request object.
-  std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
+  // The current OAuth2 token fetcher.
+  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;
 
   // The OAuth2 token, or empty if not fetched.
   std::string access_token_;

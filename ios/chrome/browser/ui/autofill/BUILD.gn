@@ -31,6 +31,7 @@ source_set("autofill") {
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/infobars",
+    "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/autofill/cells",

@@ -16,6 +16,7 @@ include_rules = [
   "+google_apis/gaia",
   "+google_apis/google_api_keys.h",
   "+net",
+  "+services/identity/public",
   "+services/metrics/public",
   "+sql",
   "+third_party/fips181",

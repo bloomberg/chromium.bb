@@ -48,6 +48,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   PersonalDataManager* GetPersonalDataManager() override;
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
+  identity::IdentityManager* GetIdentityManager() override;
   IdentityProvider* GetIdentityProvider() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   AddressNormalizer* GetAddressNormalizer() override;
@@ -97,6 +98,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   PersonalDataManager* personal_data_manager_;
   web::WebState* web_state_;
   __weak id<AutofillClientIOSBridge> bridge_;
+  identity::IdentityManager* identity_manager_;
   std::unique_ptr<IdentityProvider> identity_provider_;
   scoped_refptr<AutofillWebDataService> autofill_web_data_service_;
   infobars::InfoBarManager* infobar_manager_;

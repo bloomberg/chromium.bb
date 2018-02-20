@@ -76,7 +76,7 @@ class FullCardRequestTest : public testing::Test,
     autofill_client_.SetPrefs(std::move(pref_service));
     payments_client_ = std::make_unique<PaymentsClient>(
         request_context_.get(), autofill_client_.GetPrefs(),
-        autofill_client_.GetIdentityProvider(), this, nullptr);
+        autofill_client_.GetIdentityManager(), this, nullptr);
     request_ = std::make_unique<FullCardRequest>(
         &autofill_client_, payments_client_.get(), &personal_data_);
     // Silence the warning from PaymentsClient about matching sync and Payments

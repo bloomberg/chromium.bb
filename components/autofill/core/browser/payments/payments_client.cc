@@ -24,13 +24,13 @@
 #include "components/autofill/core/browser/payments/payments_request.h"
 #include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
-#include "google_apis/gaia/identity_provider.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace autofill {
 namespace payments {
@@ -56,7 +56,7 @@ const char kUploadCardRequestFormatWithoutCvc[] =
     "requestContentType=application/json; charset=utf-8&request=%s"
     "&s7e_1_pan=%s";
 
-const char kTokenServiceConsumerId[] = "wallet_client";
+const char kTokenFetchId[] = "wallet_client";
 const char kPaymentsOAuth2Scope[] =
     "https://www.googleapis.com/auth/wallet.chrome";
 
@@ -456,13 +456,12 @@ PaymentsClient::UploadRequestDetails::~UploadRequestDetails() {}
 
 PaymentsClient::PaymentsClient(net::URLRequestContextGetter* context_getter,
                                PrefService* pref_service,
-                               IdentityProvider* identity_provider,
+                               identity::IdentityManager* identity_manager,
                                PaymentsClientUnmaskDelegate* unmask_delegate,
                                PaymentsClientSaveDelegate* save_delegate)
-    : OAuth2TokenService::Consumer(kTokenServiceConsumerId),
-      context_getter_(context_getter),
+    : context_getter_(context_getter),
       pref_service_(pref_service),
-      identity_provider_(identity_provider),
+      identity_manager_(identity_manager),
       unmask_delegate_(unmask_delegate),
       save_delegate_(save_delegate),
       has_retried_authorization_(false),
@@ -581,7 +580,7 @@ void PaymentsClient::InitializeUrlFetcher() {
 void PaymentsClient::CancelRequest() {
   request_.reset();
   url_fetcher_.reset();
-  access_token_request_.reset();
+  token_fetcher_.reset();
   access_token_.clear();
   has_retried_authorization_ = false;
 }
@@ -654,46 +653,52 @@ void PaymentsClient::OnURLFetchComplete(const net::URLFetcher* source) {
   request_->RespondToDelegate(result);
 }
 
-void PaymentsClient::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
-  DCHECK_EQ(request, access_token_request_.get());
+void PaymentsClient::AccessTokenFetchFinished(
+    const GoogleServiceAuthError& error,
+    const std::string& access_token) {
+  // Delete the fetcher only after we leave this method (which is called from
+  // the fetcher itself).
+  DCHECK(token_fetcher_);
+  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+      token_fetcher_deleter(std::move(token_fetcher_));
+
+  if (error.state() != GoogleServiceAuthError::NONE) {
+    AccessTokenError(error);
+    return;
+  }
+
   access_token_ = access_token;
   if (url_fetcher_)
     SetOAuth2TokenAndStartRequest();
-
-  access_token_request_.reset();
 }
 
-void PaymentsClient::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
-    const GoogleServiceAuthError& error) {
-  DCHECK_EQ(request, access_token_request_.get());
+void PaymentsClient::AccessTokenError(const GoogleServiceAuthError& error) {
   VLOG(1) << "Unhandled OAuth2 error: " << error.ToString();
   if (url_fetcher_) {
     url_fetcher_.reset();
     request_->RespondToDelegate(AutofillClient::PERMANENT_FAILURE);
   }
-  access_token_request_.reset();
 }
 
 void PaymentsClient::StartTokenFetch(bool invalidate_old) {
   // We're still waiting for the last request to come back.
-  if (!invalidate_old && access_token_request_)
+  if (!invalidate_old && token_fetcher_)
     return;
 
   OAuth2TokenService::ScopeSet payments_scopes;
   payments_scopes.insert(kPaymentsOAuth2Scope);
   if (invalidate_old) {
     DCHECK(!access_token_.empty());
-    identity_provider_->GetTokenService()->InvalidateAccessToken(
-        identity_provider_->GetActiveAccountId(), payments_scopes,
+    identity_manager_->RemoveAccessTokenFromCache(
+        identity_manager_->GetPrimaryAccountInfo(), payments_scopes,
         access_token_);
   }
   access_token_.clear();
-  access_token_request_ = identity_provider_->GetTokenService()->StartRequest(
-      identity_provider_->GetActiveAccountId(), payments_scopes, this);
+  token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForPrimaryAccount(
+      kTokenFetchId, payments_scopes,
+      base::BindOnce(&PaymentsClient::AccessTokenFetchFinished,
+                     base::Unretained(this)),
+      identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
 }
 
 void PaymentsClient::SetOAuth2TokenAndStartRequest() {

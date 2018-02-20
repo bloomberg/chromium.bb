@@ -10,8 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/risk_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/views/autofill/view_util.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
@@ -25,8 +24,6 @@
 #include "components/grit/components_scaled_resources.h"
 #include "components/payments/content/payment_request_state.h"
 #include "components/payments/core/payment_request_delegate.h"
-#include "components/signin/core/browser/profile_identity_provider.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
@@ -41,20 +38,6 @@
 #include "ui/views/layout/grid_layout.h"
 
 namespace payments {
-
-namespace {
-
-IdentityProvider* CreateIdentityProviderForWebContents(
-    content::WebContents* web_contents) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  return new ProfileIdentityProvider(
-      SigninManagerFactory::GetForProfile(profile),
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-      base::Closure());
-}
-
-}  // namespace
 
 enum class Tags {
   CONFIRM_TAG = static_cast<int>(PaymentRequestCommonTags::PAY_BUTTON_TAG),
@@ -72,13 +55,13 @@ CvcUnmaskViewController::CvcUnmaskViewController(
       year_combobox_model_(credit_card.expiration_year()),
       credit_card_(credit_card),
       web_contents_(web_contents),
-      identity_provider_(CreateIdentityProviderForWebContents(web_contents)),
       payments_client_(
           Profile::FromBrowserContext(web_contents_->GetBrowserContext())
               ->GetRequestContext(),
           Profile::FromBrowserContext(web_contents_->GetBrowserContext())
               ->GetPrefs(),
-          identity_provider_.get(),
+          IdentityManagerFactory::GetInstance()->GetForProfile(
+              Profile::FromBrowserContext(web_contents_->GetBrowserContext())),
           /*unmask_delegate=*/this,
           /*save_delegate=*/nullptr),
       full_card_request_(this,

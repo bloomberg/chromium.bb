@@ -1178,7 +1178,7 @@ AutofillManager::AutofillManager(
       payments_client_(std::make_unique<payments::PaymentsClient>(
           driver->GetURLRequestContext(),
           client->GetPrefs(),
-          client->GetIdentityProvider(),
+          client->GetIdentityManager(),
           /*unmask_delegate=*/this,
           // save_delegate starts out as nullptr and is set up by the
           // CreditCardSaveManager owned by form_data_importer_.
