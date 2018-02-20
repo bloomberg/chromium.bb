@@ -28,6 +28,21 @@
 
 // This function will determine whether or not to create a warped
 // prediction.
+
+static INLINE int get_compound_post_rounding_bits(
+    const MB_MODE_INFO *const mbmi, const ConvolveParams *conv_params) {
+  assert(conv_params->is_compound);
+  int round_bits =
+      2 * FILTER_BITS - conv_params->round_0 - conv_params->round_1;
+  if (is_masked_compound_type(mbmi->interinter_compound_type))
+    return round_bits;
+  round_bits += conv_params->is_compound;
+#if CONFIG_JNT_COMP
+  if (conv_params->use_jnt_comp_avg) round_bits += DIST_PRECISION_BITS - 1;
+#endif  // CONFIG_JNT_COMP
+  return round_bits;
+}
+
 static INLINE int allow_warp(const MODE_INFO *const mi,
                              const WarpTypesAllowed *const warp_types,
                              const WarpedMotionParams *const gm_params,
@@ -96,9 +111,6 @@ static INLINE void av1_make_inter_predictor(
     inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y, sf, w,
                     h, conv_params, interp_filters, xs, ys);
   }
-  // For compound, do_post_rounding is always 1.
-  // For masked compound, this flag will be turned off after the blend stage.
-  conv_params->do_post_rounding = conv_params->is_compound;
 }
 
 #define NSMOOTHERS 1
@@ -792,16 +804,6 @@ void av1_make_masked_inter_predictor(
                                    org_dst_stride, tmp_buf32, tmp_buf_stride,
                                    &comp_data, mi->mbmi.sb_type, h, w);
 
-    const int convolve_rounding_bits =
-        FILTER_BITS * 2 - conv_params->round_0 - conv_params->round_1;
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-      av1_highbd_convolve_rounding(org_dst, org_dst_stride, dst, dst_stride, w,
-                                   h, convolve_rounding_bits, xd->bd);
-    else
-      av1_convolve_rounding(org_dst, org_dst_stride, dst, dst_stride, w, h,
-                            convolve_rounding_bits);
-
-    conv_params->do_post_rounding = 0;
   } else {
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
       build_masked_compound_highbd(dst, dst_stride, dst, dst_stride, tmp_dst,
@@ -1102,15 +1104,10 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
                 xs, ys, xd);
         }  // for (ref = 0; ref < 1 + is_compound; ++ref)
 
-        if (conv_params.do_post_rounding) {
-          assert(!is_masked_compound_type(mi->mbmi.interinter_compound_type));
+        if (conv_params.is_compound) {
           assert(conv_params.dst != NULL);
-          int round_bits = FILTER_BITS * 2 + is_compound - conv_params.round_0 -
-                           conv_params.round_1;
-#if CONFIG_JNT_COMP
-          if (conv_params.use_jnt_comp_avg)
-            round_bits += DIST_PRECISION_BITS - 1;
-#endif  // CONFIG_JNT_COMP
+          int round_bits =
+              get_compound_post_rounding_bits(&mi->mbmi, &conv_params);
           if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
             av1_highbd_convolve_rounding(tmp_dst, tmp_dst_stride, dst,
                                          dst_buf->stride, b4_w, b4_h,
@@ -1244,14 +1241,9 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
     }
 
     // TODO(angiebird): This part needs optimization
-    if (conv_params.do_post_rounding) {
-      assert(!is_masked_compound_type(mi->mbmi.interinter_compound_type));
+    if (conv_params.is_compound) {
       assert(conv_params.dst != NULL);
-      int round_bits = FILTER_BITS * 2 + is_compound - conv_params.round_0 -
-                       conv_params.round_1;
-#if CONFIG_JNT_COMP
-      if (conv_params.use_jnt_comp_avg) round_bits += DIST_PRECISION_BITS - 1;
-#endif  // CONFIG_JNT_COMP
+      int round_bits = get_compound_post_rounding_bits(&mi->mbmi, &conv_params);
       if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
         av1_highbd_convolve_rounding(tmp_dst, MAX_SB_SIZE, dst, dst_buf->stride,
                                      w, h, round_bits, xd->bd);

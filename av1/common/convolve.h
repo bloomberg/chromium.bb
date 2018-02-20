@@ -34,7 +34,6 @@ typedef struct ConvolveParams {
   int round_0;
   int round_1;
   int plane;
-  int do_post_rounding;
   int is_compound;
 #if CONFIG_JNT_COMP
   int use_jnt_comp_avg;
@@ -101,7 +100,6 @@ static INLINE ConvolveParams get_conv_params_round(int ref, int do_average,
   conv_params.round = CONVOLVE_OPT_ROUND;
   conv_params.round_0 = ROUND0_BITS;
   conv_params.round_1 = 0;
-  conv_params.do_post_rounding = 0;
   conv_params.is_compound = 0;
   conv_params.dst = NULL;
   conv_params.dst_stride = 0;
@@ -146,7 +144,6 @@ static INLINE ConvolveParams get_conv_params_no_round(int ref, int do_average,
   conv_params.dst = dst;
   conv_params.dst_stride = dst_stride;
   conv_params.plane = plane;
-  conv_params.do_post_rounding = 0;
   return conv_params;
 }
 
