@@ -97,6 +97,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/autofill/PhoneNumberUtil.java",
   "java/src/org/chromium/chrome/browser/background_task_scheduler/NativeBackgroundTask.java",
   "java/src/org/chromium/chrome/browser/banners/AppBannerManager.java",
+  "java/src/org/chromium/chrome/browser/banners/AppBannerUiDelegateAndroid.java",
   "java/src/org/chromium/chrome/browser/banners/AppData.java",
   "java/src/org/chromium/chrome/browser/banners/AppDetailsDelegate.java",
   "java/src/org/chromium/chrome/browser/banners/InstallerDelegate.java",

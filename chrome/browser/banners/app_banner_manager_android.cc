@@ -13,6 +13,7 @@
 #include "chrome/browser/banners/app_banner_infobar_delegate_android.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
+#include "chrome/browser/banners/app_banner_ui_delegate_android.h"
 #include "chrome/browser/installable/pwa_ambient_badge_manager_android.h"
 #include "content/public/browser/manifest_icon_downloader.h"
 #include "content/public/browser/web_contents.h"
@@ -199,11 +200,14 @@ void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
   DCHECK(contents);
 
   if (native_app_data_.is_null()) {
-    if (AppBannerInfoBarDelegateAndroid::Create(
-            contents, GetWeakPtr(),
+    std::unique_ptr<AppBannerUiDelegateAndroid> ui_delegate =
+        AppBannerUiDelegateAndroid::Create(
+            GetWeakPtr(),
             ShortcutHelper::CreateShortcutInfo(
                 manifest_url_, manifest_, primary_icon_url_, badge_icon_url_),
-            primary_icon_, badge_icon_, install_source, can_install_webapk_)) {
+            primary_icon_, badge_icon_, install_source, can_install_webapk_);
+    if (AppBannerInfoBarDelegateAndroid::Create(contents,
+                                                std::move(ui_delegate))) {
       RecordDidShowBanner("AppBanner.WebApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
       ReportStatus(SHOWING_WEB_APP_BANNER);
@@ -211,9 +215,13 @@ void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
       ReportStatus(FAILED_TO_CREATE_BANNER);
     }
   } else {
-    if (AppBannerInfoBarDelegateAndroid::Create(
-            contents, GetWeakPtr(), native_app_title_, native_app_data_,
-            primary_icon_, native_app_package_, referrer_)) {
+    std::unique_ptr<AppBannerUiDelegateAndroid> ui_delegate =
+        AppBannerUiDelegateAndroid::Create(
+            GetWeakPtr(), native_app_title_,
+            base::android::ScopedJavaLocalRef<jobject>(native_app_data_),
+            primary_icon_, native_app_package_, referrer_);
+    if (AppBannerInfoBarDelegateAndroid::Create(contents,
+                                                std::move(ui_delegate))) {
       RecordDidShowBanner("AppBanner.NativeApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_NATIVE_APP_BANNER_CREATED);
       ReportStatus(SHOWING_NATIVE_APP_BANNER);
