@@ -27,8 +27,8 @@ import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
@@ -448,10 +448,14 @@ public class AndroidScrollIntegrationTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"AndroidWebView"})
+    /**
+     * @SmallTest
+     * @Feature({"AndroidWebView"})
+     * @RetryOnFailure
+     * BUG=813837
+     */
     @SkipCommandLineParameterization // crbug.com/616505
-    @RetryOnFailure
+    @DisabledTest
     public void testTouchScrollCanBeAlteredByUi() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final ScrollTestContainerView testContainerView =
@@ -595,8 +599,12 @@ public class AndroidScrollIntegrationTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"AndroidWebView"})
+    /**
+     * @SmallTest
+     * @Feature({"AndroidWebView"})
+     * BUG=813837
+     */
+    @DisabledTest
     public void testFlingScrollOnPopup() throws Throwable {
         final TestAwContentsClient parentContentsClient = new TestAwContentsClient();
         final ScrollTestContainerView parentContainerView =
