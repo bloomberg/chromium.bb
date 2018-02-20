@@ -30,7 +30,6 @@
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/shared_memory_region.h"
-#include "media/gpu/vaapi/vaapi_decode_surface.h"
 #include "media/gpu/vaapi/vaapi_picture_factory.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/video/picture.h"
@@ -43,7 +42,11 @@ class GLImage;
 namespace media {
 
 class AcceleratedVideoDecoder;
+class VaapiDecodeSurface;
 class VaapiPicture;
+class VaapiH264Accelerator;
+class VaapiVP8Accelerator;
+class VaapiVP9Accelerator;
 
 // Class to provide video decode acceleration for Intel systems with hardware
 // support for it, and on which libva is available.
@@ -83,11 +86,27 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
 
   static VideoDecodeAccelerator::SupportedProfiles GetSupportedProfiles();
 
+  //
+  // Below methods are used by accelerator implementations.
+  //
+  // Decode of |dec_surface| is ready to be submitted and all codec-specific
+  // settings are set in hardware.
+  bool DecodeSurface(const scoped_refptr<VaapiDecodeSurface>& dec_surface);
+  // |dec_surface| is ready to be outputted once decode is finished.
+  // This can be called before decode is actually done in hardware, and this
+  // method is responsible for maintaining the ordering, i.e. the surfaces have
+  // to be outputted in the same order as SurfaceReady is called.
+  // On Intel, we don't have to explicitly maintain the ordering however, as the
+  // driver will maintain ordering, as well as dependencies, and will process
+  // each submitted command in order, and run each command only if its
+  // dependencies are ready.
+  void SurfaceReady(const scoped_refptr<VaapiDecodeSurface>& dec_surface);
+  // Return a new VaapiDecodeSurface for decoding into, or nullptr if not
+  // available.
+  scoped_refptr<VaapiDecodeSurface> CreateSurface();
+
  private:
   friend class VaapiVideoDecodeAcceleratorTest;
-  class VaapiH264Accelerator;
-  class VaapiVP8Accelerator;
-  class VaapiVP9Accelerator;
 
   // An input buffer with id provided by the client and awaiting consumption.
   class InputBuffer;
@@ -171,27 +190,6 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
 
   // Check if the surfaces have been released or post ourselves for later.
   void TryFinishSurfaceSetChange();
-
-  //
-  // Below methods are used by accelerator implementations.
-  //
-  // Decode of |dec_surface| is ready to be submitted and all codec-specific
-  // settings are set in hardware.
-  bool DecodeSurface(const scoped_refptr<VaapiDecodeSurface>& dec_surface);
-
-  // |dec_surface| is ready to be outputted once decode is finished.
-  // This can be called before decode is actually done in hardware, and this
-  // method is responsible for maintaining the ordering, i.e. the surfaces have
-  // to be outputted in the same order as SurfaceReady is called.
-  // On Intel, we don't have to explicitly maintain the ordering however, as the
-  // driver will maintain ordering, as well as dependencies, and will process
-  // each submitted command in order, and run each command only if its
-  // dependencies are ready.
-  void SurfaceReady(const scoped_refptr<VaapiDecodeSurface>& dec_surface);
-
-  // Return a new VaapiDecodeSurface for decoding into, or nullptr if not
-  // available.
-  scoped_refptr<VaapiDecodeSurface> CreateSurface();
 
   // VAVDA state.
   enum State {
