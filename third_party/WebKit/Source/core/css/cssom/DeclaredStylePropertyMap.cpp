@@ -68,6 +68,13 @@ void DeclaredStylePropertyMap::RemoveCustomProperty(
   GetStyleRule()->MutableProperties().RemoveProperty(property_name);
 }
 
+void DeclaredStylePropertyMap::RemoveAllProperties() {
+  if (!GetStyleRule())
+    return;
+  CSSStyleSheet::RuleMutationScope mutation_scope(owner_rule_);
+  GetStyleRule()->MutableProperties().Clear();
+}
+
 void DeclaredStylePropertyMap::ForEachProperty(
     const IterationCallback& callback) {
   if (!GetStyleRule())

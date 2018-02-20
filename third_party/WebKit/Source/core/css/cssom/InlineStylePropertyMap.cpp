@@ -48,6 +48,10 @@ void InlineStylePropertyMap::RemoveCustomProperty(
   owner_element_->RemoveInlineStyleProperty(property_name);
 }
 
+void InlineStylePropertyMap::RemoveAllProperties() {
+  owner_element_->RemoveAllInlineStyleProperties();
+}
+
 void InlineStylePropertyMap::ForEachProperty(
     const IterationCallback& callback) {
   CSSPropertyValueSet& inline_style_set =

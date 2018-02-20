@@ -39,6 +39,7 @@ class CORE_EXPORT DeclaredStylePropertyMap final : public StylePropertyMap {
   void SetCustomProperty(const AtomicString&, const CSSValue&) override;
   void RemoveProperty(CSSPropertyID) override;
   void RemoveCustomProperty(const AtomicString&) override;
+  void RemoveAllProperties() final;
 
  private:
   StyleRule* GetStyleRule() const;
