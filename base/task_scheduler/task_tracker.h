@@ -87,12 +87,14 @@ namespace internal {
 class BASE_EXPORT TaskTracker {
  public:
   // |histogram_label| is used as a suffix for histograms, it must not be empty.
-  // |max_num_scheduled_background_sequences| is the maximum number of
-  // background sequences that can be scheduled concurrently during normal
-  // execution (ignored during shutdown).
+  // The first constructor sets the maximum number of TaskPriority::BACKGROUND
+  // sequences that can be scheduled concurrently to 0 if the
+  // --disable-background-tasks flag is specified, max() otherwise. The second
+  // constructor sets it to |max_num_scheduled_background_sequences|.
+  TaskTracker(StringPiece histogram_label);
   TaskTracker(StringPiece histogram_label,
-              int max_num_scheduled_background_sequences =
-                  std::numeric_limits<int>::max());
+              int max_num_scheduled_background_sequences);
+
   virtual ~TaskTracker();
 
   // Synchronously shuts down the scheduler. Once this is called, only tasks
