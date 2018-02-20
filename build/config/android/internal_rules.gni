@@ -1289,6 +1289,8 @@ if (enable_java_templates) {
         }
         inputs += [ _android_sdk_ijar ]
         args = [
+          "--depfile",
+          rebase_path(depfile, root_build_dir),
           "--input-jar",
           rebase_path(_desugar_input_jar, root_build_dir),
           "--output-jar",
