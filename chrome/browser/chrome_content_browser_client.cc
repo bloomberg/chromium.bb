@@ -881,11 +881,6 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kDisable3DAPIs, false);
   registry->RegisterBooleanPref(prefs::kEnableHyperlinkAuditing, true);
   registry->RegisterListPref(prefs::kEnableDeprecatedWebPlatformFeatures);
-  // Register user prefs for mapping SitePerProcess and IsolateOrigins in
-  // user policy in addition to the same named ones in Local State (which are
-  // used for mapping the command-line flags).
-  registry->RegisterStringPref(prefs::kIsolateOrigins, std::string());
-  registry->RegisterBooleanPref(prefs::kSitePerProcess, false);
 }
 
 // static

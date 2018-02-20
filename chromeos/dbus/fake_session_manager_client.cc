@@ -457,14 +457,12 @@ void FakeSessionManagerClient::StoreDeviceLocalAccountPolicy(
 }
 
 bool FakeSessionManagerClient::SupportsRestartToApplyUserFlags() const {
-  return supports_restart_to_apply_user_flags_;
+  return false;
 }
 
 void FakeSessionManagerClient::SetFlagsForUser(
     const cryptohome::Identification& cryptohome_id,
-    const std::vector<std::string>& flags) {
-  flags_for_user_[cryptohome_id] = flags;
-}
+    const std::vector<std::string>& flags) {}
 
 void FakeSessionManagerClient::GetServerBackedStateKeys(
     StateKeysCallback callback) {
@@ -566,17 +564,6 @@ void FakeSessionManagerClient::NotifyArcInstanceStopped(
     const std::string& container_instance_id) {
   for (auto& observer : observers_)
     observer.ArcInstanceStopped(clean, container_instance_id);
-}
-
-bool FakeSessionManagerClient::GetFlagsForUser(
-    const cryptohome::Identification& cryptohome_id,
-    std::vector<std::string>* out_flags_for_user) const {
-  auto iter = flags_for_user_.find(cryptohome_id);
-  if (iter == flags_for_user_.end())
-    return false;
-
-  *out_flags_for_user = iter->second;
-  return true;
 }
 
 const std::string& FakeSessionManagerClient::device_policy() const {
