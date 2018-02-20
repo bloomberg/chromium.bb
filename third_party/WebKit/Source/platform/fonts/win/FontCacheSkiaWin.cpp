@@ -32,8 +32,10 @@
 #include "platform/fonts/FontCache.h"
 
 #include <memory>
+
 #include "SkFontMgr.h"
 #include "SkTypeface_win.h"
+#include "base/debug/alias.h"
 #include "platform/Language.h"
 #include "platform/fonts/BitmapGlyphsBlacklist.h"
 #include "platform/fonts/FontDescription.h"
@@ -168,6 +170,16 @@ scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
       data = GetFontPlatformData(font_description, create_by_family);
     }
   }
+
+  // In production, these 3 font managers must match.
+  // They don't match in unit tests or in single process mode.
+  // Capture them in minidump for crbug.com/409784
+  SkFontMgr* font_mgr = font_manager_.get();
+  SkFontMgr* static_font_mgr = static_font_manager_;
+  SkFontMgr* skia_default_font_mgr = SkFontMgr::RefDefault().get();
+  base::debug::Alias(&font_mgr);
+  base::debug::Alias(&static_font_mgr);
+  base::debug::Alias(&skia_default_font_mgr);
 
   // Last resort font list : PanUnicode. CJK fonts have a pretty
   // large repertoire. Eventually, we need to scan all the fonts
