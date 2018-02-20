@@ -392,7 +392,7 @@ void PushMessagingManager::DidCheckForExistingRegistration(
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&Core::RegisterOnUI, base::Unretained(ui_core_.get()),
-                       base::Passed(&data)));
+                       std::move(data)));
   } else {
     // There is no existing registration and the sender_info passed in was
     // empty, but perhaps there is a stored sender id we can use.
@@ -416,7 +416,7 @@ void PushMessagingManager::Core::SubscribeDidGetInfoOnUI(
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&PushMessagingManager::SendSubscriptionSuccess,
-                       io_parent_, base::Passed(&data),
+                       io_parent_, std::move(data),
                        mojom::PushRegistrationStatus::SUCCESS_FROM_CACHE,
                        push_subscription_id, p256dh, auth));
   } else {
@@ -428,7 +428,7 @@ void PushMessagingManager::Core::SubscribeDidGetInfoOnUI(
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::BindOnce(&PushMessagingManager::SendSubscriptionError,
-                         io_parent_, base::Passed(&data),
+                         io_parent_, std::move(data),
                          mojom::PushRegistrationStatus::RENDERER_SHUTDOWN));
       return;
     }
@@ -482,7 +482,7 @@ void PushMessagingManager::DidGetSenderIdFromStorage(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&Core::RegisterOnUI, base::Unretained(ui_core_.get()),
-                     base::Passed(&data)));
+                     std::move(data)));
 }
 
 void PushMessagingManager::Core::RegisterOnUI(
@@ -497,7 +497,7 @@ void PushMessagingManager::Core::RegisterOnUI(
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::BindOnce(&PushMessagingManager::SendSubscriptionError,
-                         io_parent_, base::Passed(&data),
+                         io_parent_, std::move(data),
                          mojom::PushRegistrationStatus::SERVICE_NOT_AVAILABLE));
     } else {
       // Prevent websites from detecting incognito mode, by emulating what would
@@ -508,7 +508,7 @@ void PushMessagingManager::Core::RegisterOnUI(
             BrowserThread::IO, FROM_HERE,
             base::BindOnce(
                 &PushMessagingManager::SendSubscriptionError, io_parent_,
-                base::Passed(&data),
+                std::move(data),
                 mojom::PushRegistrationStatus::INCOGNITO_PERMISSION_DENIED));
       } else {
         RenderFrameHost* render_frame_host =
@@ -527,7 +527,7 @@ void PushMessagingManager::Core::RegisterOnUI(
             BrowserThread::PostTask(
                 BrowserThread::IO, FROM_HERE,
                 base::BindOnce(&PushMessagingManager::SendSubscriptionError,
-                               io_parent_, base::Passed(&data),
+                               io_parent_, std::move(data),
                                mojom::PushRegistrationStatus::
                                    INCOGNITO_PERMISSION_DENIED));
 
@@ -578,7 +578,7 @@ void PushMessagingManager::Core::DidRequestPermissionInIncognito(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(
           &PushMessagingManager::SendSubscriptionError, io_parent_,
-          base::Passed(&data),
+          std::move(data),
           mojom::PushRegistrationStatus::INCOGNITO_PERMISSION_DENIED));
 }
 
@@ -593,13 +593,13 @@ void PushMessagingManager::Core::DidRegister(
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&PushMessagingManager::PersistRegistrationOnIO,
-                       io_parent_, base::Passed(&data), push_registration_id,
+                       io_parent_, std::move(data), push_registration_id,
                        p256dh, auth));
   } else {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&PushMessagingManager::SendSubscriptionError, io_parent_,
-                       base::Passed(&data), status));
+                       std::move(data), status));
   }
 }
 
@@ -714,7 +714,7 @@ void PushMessagingManager::UnsubscribeHavingGottenSenderId(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&Core::UnregisterFromService,
-                     base::Unretained(ui_core_.get()), base::Passed(&callback),
+                     base::Unretained(ui_core_.get()), std::move(callback),
                      service_worker_registration_id, requesting_origin,
                      sender_id));
 }
@@ -733,7 +733,7 @@ void PushMessagingManager::Core::UnregisterFromService(
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&PushMessagingManager::DidUnregister, io_parent_,
-                       base::Passed(&callback),
+                       std::move(callback),
                        mojom::PushUnregistrationStatus::SERVICE_NOT_AVAILABLE));
     return;
   }
@@ -755,7 +755,7 @@ void PushMessagingManager::Core::DidUnregisterFromService(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&PushMessagingManager::DidUnregister, io_parent_,
-                     base::Passed(&callback), unregistration_status));
+                     std::move(callback), unregistration_status));
 }
 
 void PushMessagingManager::DidUnregister(

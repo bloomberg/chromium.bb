@@ -43,7 +43,7 @@ void ReadDataPipeInternal(mojo::DataPipeConsumerHandle handle,
         BrowserThread::PostTask(
             BrowserThread::IO, FROM_HERE,
             base::BindOnce(&ReadDataPipeInternal, handle, result,
-                           base::Passed(&quit_closure)));
+                           std::move(quit_closure)));
         return;
       case MOJO_RESULT_OK:
         EXPECT_NE(nullptr, buffer);

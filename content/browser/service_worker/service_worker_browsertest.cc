@@ -2816,10 +2816,9 @@ class CacheStorageSideDataSizeChecker
         new ServiceWorkerFetchRequest());
     scoped_request->url = url_;
     CacheStorageCache* cache = cache_handle.value();
-    cache->Match(
-        std::move(scoped_request), CacheStorageCacheQueryParams(),
-        base::BindOnce(&self::OnCacheStorageCacheMatchCallback, this, result,
-                       continuation, base::Passed(std::move(cache_handle))));
+    cache->Match(std::move(scoped_request), CacheStorageCacheQueryParams(),
+                 base::BindOnce(&self::OnCacheStorageCacheMatchCallback, this,
+                                result, continuation, std::move(cache_handle)));
   }
 
   void OnCacheStorageCacheMatchCallback(

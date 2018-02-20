@@ -85,7 +85,7 @@ class WebRtcSetRemoteDescriptionObserverHandlerTest : public ::testing::Test {
         base::BindOnce(
             &WebRtcSetRemoteDescriptionObserverHandlerTest::
                 InvokeOnSetRemoteDescriptionCompleteOnSignalingThread,
-            base::Unretained(this), base::Passed(&error),
+            base::Unretained(this), std::move(error),
             base::Unretained(&run_loop)));
     run_loop.Run();
   }

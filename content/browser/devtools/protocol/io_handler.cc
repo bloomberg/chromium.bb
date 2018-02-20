@@ -71,10 +71,9 @@ void IOHandler::Read(
     callback->sendFailure(Response::InvalidParams("Invalid stream handle"));
     return;
   }
-  stream->Read(
-      offset.fromMaybe(-1), max_size.fromMaybe(kDefaultChunkSize),
-      base::BindOnce(&IOHandler::ReadComplete, weak_factory_.GetWeakPtr(),
-                     base::Passed(std::move(callback))));
+  stream->Read(offset.fromMaybe(-1), max_size.fromMaybe(kDefaultChunkSize),
+               base::BindOnce(&IOHandler::ReadComplete,
+                              weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void IOHandler::ReadComplete(std::unique_ptr<ReadCallback> callback,

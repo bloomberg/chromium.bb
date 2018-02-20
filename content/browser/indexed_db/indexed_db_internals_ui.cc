@@ -117,7 +117,7 @@ void IndexedDBInternalsUI::GetAllOriginsOnIndexedDBThread(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&IndexedDBInternalsUI::OnOriginsReady,
-                     base::Unretained(this), base::Passed(&info_list),
+                     base::Unretained(this), std::move(info_list),
                      is_incognito ? base::FilePath() : context_path));
 }
 

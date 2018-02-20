@@ -26,7 +26,7 @@ void ServiceLaunchedVideoCaptureDevice::GetPhotoState(
   DCHECK(sequence_checker_.CalledOnValidSequence());
   device_->GetPhotoState(base::BindOnce(
       &ServiceLaunchedVideoCaptureDevice::OnGetPhotoStateResponse,
-      base::Unretained(this), base::Passed(&callback)));
+      base::Unretained(this), std::move(callback)));
 }
 
 void ServiceLaunchedVideoCaptureDevice::SetPhotoOptions(
@@ -37,7 +37,7 @@ void ServiceLaunchedVideoCaptureDevice::SetPhotoOptions(
       std::move(settings),
       base::BindOnce(
           &ServiceLaunchedVideoCaptureDevice::OnSetPhotoOptionsResponse,
-          base::Unretained(this), base::Passed(&callback)));
+          base::Unretained(this), std::move(callback)));
 }
 
 void ServiceLaunchedVideoCaptureDevice::TakePhoto(
@@ -45,7 +45,7 @@ void ServiceLaunchedVideoCaptureDevice::TakePhoto(
   DCHECK(sequence_checker_.CalledOnValidSequence());
   device_->TakePhoto(
       base::BindOnce(&ServiceLaunchedVideoCaptureDevice::OnTakePhotoResponse,
-                     base::Unretained(this), base::Passed(&callback)));
+                     base::Unretained(this), std::move(callback)));
 }
 
 void ServiceLaunchedVideoCaptureDevice::MaybeSuspendDevice() {

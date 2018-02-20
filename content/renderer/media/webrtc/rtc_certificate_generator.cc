@@ -72,7 +72,7 @@ class RTCCertificateGeneratorRequest
         FROM_HERE,
         base::BindOnce(
             &RTCCertificateGeneratorRequest::GenerateCertificateOnWorkerThread,
-            this, key_params, expires_ms, base::Passed(&transition)));
+            this, key_params, expires_ms, std::move(transition)));
   }
 
  private:
@@ -91,10 +91,9 @@ class RTCCertificateGeneratorRequest
 
     main_thread_->PostTask(
         FROM_HERE,
-        base::BindOnce(
-            &RTCCertificateGeneratorRequest::DoCallbackOnMainThread, this,
-            base::Passed(std::move(observer)),
-            base::Passed(std::make_unique<RTCCertificate>(certificate))));
+        base::BindOnce(&RTCCertificateGeneratorRequest::DoCallbackOnMainThread,
+                       this, std::move(observer),
+                       std::make_unique<RTCCertificate>(certificate)));
   }
 
   void DoCallbackOnMainThread(

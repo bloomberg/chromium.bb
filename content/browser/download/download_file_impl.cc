@@ -467,8 +467,7 @@ void DownloadFileImpl::RenameWithRetryInternal(
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&DownloadFileImpl::RenameWithRetryInternal,
-                       weak_factory_.GetWeakPtr(),
-                       base::Passed(std::move(parameters))),
+                       weak_factory_.GetWeakPtr(), std::move(parameters)),
         GetRetryDelayForFailedRename(attempt_number));
     return;
   }
@@ -715,7 +714,7 @@ void DownloadFileImpl::NotifyObserver(SourceStream* source_stream,
           BrowserThread::UI, FROM_HERE,
           base::BindOnce(&DownloadDestinationObserver::DestinationCompleted,
                          observer_, TotalBytesReceived(),
-                         base::Passed(&hash_state)));
+                         std::move(hash_state)));
     }
   }
 }
@@ -851,7 +850,7 @@ void DownloadFileImpl::HandleStreamError(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&DownloadDestinationObserver::DestinationError,
                        observer_, reason, TotalBytesReceived(),
-                       base::Passed(&hash_state)));
+                       std::move(hash_state)));
   }
 }
 

@@ -207,8 +207,7 @@ void PaymentAppDatabase::WritePaymentInstrument(
         icons,
         base::BindOnce(&PaymentAppDatabase::DidFetchedPaymentInstrumentIcon,
                        weak_ptr_factory_.GetWeakPtr(), scope, instrument_key,
-                       base::Passed(std::move(instrument)),
-                       base::Passed(std::move(callback))));
+                       std::move(instrument), std::move(callback)));
   } else {
     service_worker_context_->FindReadyRegistrationForPattern(
         scope,
@@ -413,7 +412,7 @@ void PaymentAppDatabase::SetPaymentAppInfoForRegisteredServiceWorker(
       registration_id,
       base::BindOnce(&PaymentAppDatabase::DidFindRegistrationToSetPaymentApp,
                      weak_ptr_factory_.GetWeakPtr(), instrument_key, name,
-                     enabled_methods, base::Passed(std::move(callback))));
+                     enabled_methods, std::move(callback)));
 }
 
 void PaymentAppDatabase::DidFindRegistrationToSetPaymentApp(

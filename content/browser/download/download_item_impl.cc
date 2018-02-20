@@ -2075,7 +2075,7 @@ void DownloadItemImpl::ReleaseDownloadFile(bool destroy_file) {
     GetDownloadTaskRunner()->PostTask(
         FROM_HERE,
         // Will be deleted at end of task execution.
-        base::BindOnce(&DownloadFileCancel, base::Passed(&download_file_)));
+        base::BindOnce(&DownloadFileCancel, std::move(download_file_)));
     // Avoid attempting to reuse the intermediate file by clearing out
     // current_path_ and received slices.
     destination_info_.current_path.clear();
@@ -2084,7 +2084,7 @@ void DownloadItemImpl::ReleaseDownloadFile(bool destroy_file) {
     GetDownloadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(base::IgnoreResult(&DownloadFileDetach),
                                   // Will be deleted at end of task execution.
-                                  base::Passed(&download_file_)));
+                                  std::move(download_file_)));
   }
   // Don't accept any more messages from the DownloadFile, and null
   // out any previous "all data received".  This also breaks links to

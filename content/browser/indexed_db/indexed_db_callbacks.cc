@@ -62,7 +62,7 @@ class SafeIOThreadConnectionWrapper {
                          [](std::unique_ptr<IndexedDBConnection> connection) {
                            connection->ForceClose();
                          },
-                         base::Passed(&connection_)));
+                         std::move(connection_)));
     }
   }
   SafeIOThreadConnectionWrapper(SafeIOThreadConnectionWrapper&& other) =
@@ -289,7 +289,7 @@ void IndexedDBCallbacks::OnUpgradeNeeded(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&IOThreadHelper::SendUpgradeNeeded,
-                     base::Unretained(io_helper_.get()), base::Passed(&wrapper),
+                     base::Unretained(io_helper_.get()), std::move(wrapper),
                      old_version, data_loss_info.status, data_loss_info.message,
                      metadata));
 
@@ -322,7 +322,7 @@ void IndexedDBCallbacks::OnSuccess(
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::BindOnce(&IOThreadHelper::SendSuccessDatabase,
                                          base::Unretained(io_helper_.get()),
-                                         base::Passed(&wrapper), metadata));
+                                         std::move(wrapper), metadata));
   complete_ = true;
 
   if (!connection_open_start_time_.is_null()) {
@@ -356,8 +356,8 @@ void IndexedDBCallbacks::OnSuccess(std::unique_ptr<IndexedDBCursor> cursor,
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&IOThreadHelper::SendSuccessCursor,
                      base::Unretained(io_helper_.get()),
-                     base::Passed(&cursor_wrapper), key, primary_key,
-                     base::Passed(&mojo_value), base::Passed(&blob_info)));
+                     std::move(cursor_wrapper), key, primary_key,
+                     std::move(mojo_value), std::move(blob_info)));
   complete_ = true;
 }
 
@@ -381,7 +381,7 @@ void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& key,
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&IOThreadHelper::SendSuccessCursorContinue,
                      base::Unretained(io_helper_.get()), key, primary_key,
-                     base::Passed(&mojo_value), base::Passed(&blob_info)));
+                     std::move(mojo_value), std::move(blob_info)));
   complete_ = true;
 }
 
@@ -406,7 +406,7 @@ void IndexedDBCallbacks::OnSuccessWithPrefetch(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&IOThreadHelper::SendSuccessCursorPrefetch,
                      base::Unretained(io_helper_.get()), keys, primary_keys,
-                     base::Passed(&mojo_values), *values));
+                     std::move(mojo_values), *values));
   complete_ = true;
 }
 
@@ -426,8 +426,8 @@ void IndexedDBCallbacks::OnSuccess(IndexedDBReturnValue* value) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&IOThreadHelper::SendSuccessValue,
-                     base::Unretained(io_helper_.get()),
-                     base::Passed(&mojo_value), base::Passed(&blob_info)));
+                     base::Unretained(io_helper_.get()), std::move(mojo_value),
+                     std::move(blob_info)));
   complete_ = true;
 }
 
@@ -447,7 +447,7 @@ void IndexedDBCallbacks::OnSuccessArray(
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::BindOnce(&IOThreadHelper::SendSuccessArray,
                                          base::Unretained(io_helper_.get()),
-                                         base::Passed(&mojo_values), *values));
+                                         std::move(mojo_values), *values));
   complete_ = true;
 }
 

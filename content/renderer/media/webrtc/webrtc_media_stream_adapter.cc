@@ -204,7 +204,7 @@ RemoteWebRtcMediaStreamAdapter::RemoteWebRtcMediaStreamAdapter(
       FROM_HERE,
       base::BindOnce(&RemoteWebRtcMediaStreamAdapter::InitializeOnMainThread,
                      weak_factory_.GetWeakPtr(), webrtc_stream_->label(),
-                     base::Passed(&adapter_refs),
+                     std::move(adapter_refs),
                      webrtc_stream_->GetAudioTracks().size(),
                      webrtc_stream_->GetVideoTracks().size()));
 }

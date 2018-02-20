@@ -59,8 +59,8 @@ VpxEncoder::VpxEncoder(
 VpxEncoder::~VpxEncoder() {
   main_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&VpxEncoder::ShutdownEncoder,
-                     base::Passed(&encoding_thread_), base::Passed(&encoder_)));
+      base::BindOnce(&VpxEncoder::ShutdownEncoder, std::move(encoding_thread_),
+                     std::move(encoder_)));
 }
 
 bool VpxEncoder::CanEncodeAlphaChannel() {
@@ -134,8 +134,8 @@ void VpxEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
   origin_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(OnFrameEncodeCompleted, on_encoded_video_callback_,
-                     video_params, base::Passed(&data),
-                     base::Passed(&alpha_data), capture_timestamp, keyframe));
+                     video_params, std::move(data), std::move(alpha_data),
+                     capture_timestamp, keyframe));
 }
 
 void VpxEncoder::DoEncode(vpx_codec_ctx_t* const encoder,

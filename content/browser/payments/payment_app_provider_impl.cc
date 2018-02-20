@@ -193,9 +193,8 @@ class RespondWithCallbacks
 void DidGetAllPaymentAppsOnIO(
     PaymentAppProvider::GetAllPaymentAppsCallback callback,
     PaymentAppProvider::PaymentApps apps) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(std::move(callback), base::Passed(std::move(apps))));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(std::move(callback), std::move(apps)));
 }
 
 void GetAllPaymentAppsOnIO(

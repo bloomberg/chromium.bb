@@ -195,8 +195,8 @@ AudioOutputDelegateImpl::~AudioOutputDelegateImpl() {
         // removed.
         mirroring_manager->RemoveDiverter(controller.get());
       },
-      mirroring_manager_, base::Passed(&controller_event_handler_),
-      base::Passed(&reader_), controller_));
+      mirroring_manager_, std::move(controller_event_handler_),
+      std::move(reader_), controller_));
 }
 
 int AudioOutputDelegateImpl::GetStreamId() {

@@ -1253,7 +1253,7 @@ class RTCPeerConnectionHandler::Observer
     main_thread_->PostTask(
         FROM_HERE,
         base::BindOnce(&RTCPeerConnectionHandler::Observer::OnDataChannelImpl,
-                       this, base::Passed(&handler)));
+                       this, std::move(handler)));
   }
 
   void OnRenegotiationNeeded() override {
@@ -1826,9 +1826,8 @@ void RTCPeerConnectionHandler::GetStats(
     std::unique_ptr<blink::WebRTCStatsReportCallback> callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   signaling_thread()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&GetRTCStatsOnSignalingThread, task_runner_,
-                     native_peer_connection_, base::Passed(&callback)));
+      FROM_HERE, base::BindOnce(&GetRTCStatsOnSignalingThread, task_runner_,
+                                native_peer_connection_, std::move(callback)));
 }
 
 std::unique_ptr<blink::WebRTCRtpSender> RTCPeerConnectionHandler::AddTrack(

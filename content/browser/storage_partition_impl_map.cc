@@ -521,7 +521,7 @@ void StoragePartitionImplMap::GarbageCollect(
   file_access_runner_->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(&BlockingGarbageCollect, storage_root, file_access_runner_,
-                     base::Passed(&active_paths)),
+                     std::move(active_paths)),
       done);
 }
 

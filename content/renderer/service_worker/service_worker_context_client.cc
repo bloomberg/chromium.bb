@@ -990,7 +990,7 @@ void ServiceWorkerContextClient::WorkerContextDestroyed() {
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&EmbeddedWorkerInstanceClientImpl::WorkerContextDestroyed,
-                     base::Passed(&embedded_worker_client_)));
+                     std::move(embedded_worker_client_)));
 }
 
 void ServiceWorkerContextClient::CountFeature(uint32_t feature) {

@@ -821,7 +821,7 @@ void VideoDecoderShim::DecoderImpl::OnOutputComplete(
 
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VideoDecoderShim::OnOutputComplete, shim_,
-                                base::Passed(&pending_frame)));
+                                std::move(pending_frame)));
 }
 
 void VideoDecoderShim::DecoderImpl::OnResetComplete() {

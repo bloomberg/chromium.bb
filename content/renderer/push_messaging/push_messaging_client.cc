@@ -57,10 +57,10 @@ void PushMessagingClient::Subscribe(
   if (options.application_server_key.IsEmpty()) {
     RenderFrameImpl::FromRoutingID(routing_id())
         ->GetManifestManager()
-        .RequestManifest(
-            base::BindOnce(&PushMessagingClient::DidGetManifest,
-                           base::Unretained(this), service_worker_registration,
-                           options, user_gesture, base::Passed(&callbacks)));
+        .RequestManifest(base::BindOnce(&PushMessagingClient::DidGetManifest,
+                                        base::Unretained(this),
+                                        service_worker_registration, options,
+                                        user_gesture, std::move(callbacks)));
   } else {
     PushSubscriptionOptions content_options;
     content_options.user_visible_only = options.user_visible_only;
@@ -122,7 +122,7 @@ void PushMessagingClient::DoSubscribe(
       // Safe to use base::Unretained because |push_messaging_manager_ |is
       // owned by |this|.
       base::BindOnce(&PushMessagingClient::DidSubscribe, base::Unretained(this),
-                     base::Passed(&callbacks)));
+                     std::move(callbacks)));
 }
 
 void PushMessagingClient::DidSubscribe(

@@ -190,7 +190,7 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::RemoveAndReleaseCallback(
       callbacks_.erase(it);
       renderer_task_runner_->PostTask(
           FROM_HERE, base::BindOnce(&ResetCallbackOnMainRenderThread,
-                                    base::Passed(&callback)));
+                                    std::move(callback)));
 
       return;
     }

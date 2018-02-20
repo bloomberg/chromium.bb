@@ -93,8 +93,7 @@ GpuVideoAcceleratorFactoriesImpl::GpuVideoAcceleratorFactoriesImpl(
       FROM_HERE,
       base::BindOnce(&GpuVideoAcceleratorFactoriesImpl::
                          BindVideoEncodeAcceleratorProviderOnTaskRunner,
-                     base::Unretained(this),
-                     base::Passed(&unbound_vea_provider)));
+                     base::Unretained(this), std::move(unbound_vea_provider)));
 }
 
 GpuVideoAcceleratorFactoriesImpl::~GpuVideoAcceleratorFactoriesImpl() {}

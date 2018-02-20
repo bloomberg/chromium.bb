@@ -116,7 +116,7 @@ void IndexedDBDatabaseCallbacksImpl::Changes(
   callback_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&BuildObservationsAndNotify, base::Unretained(callbacks_),
-                     base::Passed(&changes)));
+                     std::move(changes)));
 }
 
 }  // namespace content

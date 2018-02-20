@@ -346,7 +346,7 @@ void NotifyForEachFrameFromUI(RenderFrameHost* root_frame_host,
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&NotifyRouteChangesOnIO, frame_callback,
-                     base::Passed(std::move(routing_ids))));
+                     std::move(routing_ids)));
 }
 
 void LookupRenderFrameHostOrProxy(int process_id,

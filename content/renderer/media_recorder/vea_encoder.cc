@@ -114,7 +114,7 @@ void VEAEncoder::BitstreamBufferReady(int32_t bitstream_buffer_id,
   origin_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(OnFrameEncodeCompleted, on_encoded_video_callback_,
-                     front_frame.first, base::Passed(&data), nullptr,
+                     front_frame.first, std::move(data), nullptr,
                      front_frame.second, keyframe));
   UseOutputBitstreamBufferId(bitstream_buffer_id);
 }

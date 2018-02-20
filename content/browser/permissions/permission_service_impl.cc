@@ -116,7 +116,7 @@ void PermissionServiceImpl::RequestPermission(
   permissions.push_back(std::move(permission));
   RequestPermissions(std::move(permissions), user_gesture,
                      base::BindOnce(&PermissionRequestResponseCallbackWrapper,
-                                    base::Passed(&callback)));
+                                    std::move(callback)));
 }
 
 void PermissionServiceImpl::RequestPermissions(

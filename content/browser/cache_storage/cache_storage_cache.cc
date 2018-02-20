@@ -474,7 +474,7 @@ void CacheStorageCache::Match(
 
   scheduler_->ScheduleOperation(base::BindOnce(
       &CacheStorageCache::MatchImpl, weak_ptr_factory_.GetWeakPtr(),
-      base::Passed(std::move(request)), match_params,
+      std::move(request), match_params,
       scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
@@ -491,7 +491,7 @@ void CacheStorageCache::MatchAll(
 
   scheduler_->ScheduleOperation(base::BindOnce(
       &CacheStorageCache::MatchAllImpl, weak_ptr_factory_.GetWeakPtr(),
-      base::Passed(std::move(request)), match_params,
+      std::move(request), match_params,
       scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
@@ -681,7 +681,7 @@ void CacheStorageCache::Keys(std::unique_ptr<ServiceWorkerFetchRequest> request,
 
   scheduler_->ScheduleOperation(base::BindOnce(
       &CacheStorageCache::KeysImpl, weak_ptr_factory_.GetWeakPtr(),
-      base::Passed(std::move(request)), options,
+      std::move(request), options,
       scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
@@ -801,10 +801,9 @@ void CacheStorageCache::QueryCache(
     // URL.
     disk_cache::Entry** entry_ptr = &query_cache_context->enumerated_entry;
     net::CompletionCallback open_entry_callback =
-        base::AdaptCallbackForRepeating(
-            base::BindOnce(&CacheStorageCache::QueryCacheDidOpenFastPath,
-                           weak_ptr_factory_.GetWeakPtr(),
-                           base::Passed(std::move(query_cache_context))));
+        base::AdaptCallbackForRepeating(base::BindOnce(
+            &CacheStorageCache::QueryCacheDidOpenFastPath,
+            weak_ptr_factory_.GetWeakPtr(), std::move(query_cache_context)));
     int rv = backend_->OpenEntry(request_ptr->url.spec(), entry_ptr,
                                  open_entry_callback);
     if (rv != net::ERR_IO_PENDING)
@@ -847,10 +846,10 @@ void CacheStorageCache::QueryCacheOpenNextEntry(
   disk_cache::Backend::Iterator& iterator =
       *query_cache_context->backend_iterator;
   disk_cache::Entry** enumerated_entry = &query_cache_context->enumerated_entry;
-  net::CompletionCallback open_entry_callback = base::AdaptCallbackForRepeating(
-      base::BindOnce(&CacheStorageCache::QueryCacheFilterEntry,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     base::Passed(std::move(query_cache_context))));
+  net::CompletionCallback open_entry_callback =
+      base::AdaptCallbackForRepeating(base::BindOnce(
+          &CacheStorageCache::QueryCacheFilterEntry,
+          weak_ptr_factory_.GetWeakPtr(), std::move(query_cache_context)));
 
   int rv = iterator.OpenNextEntry(enumerated_entry, open_entry_callback);
 
@@ -902,11 +901,11 @@ void CacheStorageCache::QueryCacheFilterEntry(
   }
 
   disk_cache::Entry* entry_ptr = entry.get();
-  ReadMetadata(entry_ptr,
-               base::BindOnce(&CacheStorageCache::QueryCacheDidReadMetadata,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              base::Passed(std::move(query_cache_context)),
-                              base::Passed(std::move(entry))));
+  ReadMetadata(
+      entry_ptr,
+      base::BindOnce(&CacheStorageCache::QueryCacheDidReadMetadata,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(query_cache_context), std::move(entry)));
 }
 
 void CacheStorageCache::QueryCacheDidReadMetadata(
@@ -1130,7 +1129,7 @@ void CacheStorageCache::WriteSideDataImpl(ErrorCallback callback,
       base::BindOnce(&CacheStorageCache::WriteSideDataDidOpenEntry,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                      expected_response_time, buffer, buf_len,
-                     base::Passed(std::move(scoped_entry_ptr))));
+                     std::move(scoped_entry_ptr)));
 
   int rv = backend_->OpenEntry(url.spec(), entry_ptr, open_entry_callback);
   if (rv != net::ERR_IO_PENDING)
@@ -1154,7 +1153,7 @@ void CacheStorageCache::WriteSideDataDidOpenEntry(
                base::BindOnce(&CacheStorageCache::WriteSideDataDidReadMetaData,
                               weak_ptr_factory_.GetWeakPtr(),
                               std::move(callback), expected_response_time,
-                              buffer, buf_len, base::Passed(std::move(entry))));
+                              buffer, buf_len, std::move(entry)));
 }
 
 void CacheStorageCache::WriteSideDataDidReadMetaData(
@@ -1181,11 +1180,10 @@ void CacheStorageCache::WriteSideDataDidReadMetaData(
     side_data_size_before_write = entry->GetDataSize(INDEX_SIDE_DATA);
 
   net::CompletionCallback write_side_data_callback =
-      base::AdaptCallbackForRepeating(
-          base::BindOnce(&CacheStorageCache::WriteSideDataDidWrite,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                         base::Passed(std::move(entry)), buf_len,
-                         std::move(response), side_data_size_before_write));
+      base::AdaptCallbackForRepeating(base::BindOnce(
+          &CacheStorageCache::WriteSideDataDidWrite,
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback), std::move(entry),
+          buf_len, std::move(response), side_data_size_before_write));
 
   int rv = temp_entry_ptr->WriteData(
       INDEX_SIDE_DATA, 0 /* offset */, buffer.get(), buf_len,
@@ -1255,9 +1253,9 @@ void CacheStorageCache::Put(const CacheStorageBatchOperation& operation,
       std::move(side_data_blob),
       scheduler_->WrapCallbackToRunNext(std::move(callback)));
 
-  scheduler_->ScheduleOperation(base::BindOnce(
-      &CacheStorageCache::PutImpl, weak_ptr_factory_.GetWeakPtr(),
-      base::Passed(std::move(put_context))));
+  scheduler_->ScheduleOperation(base::BindOnce(&CacheStorageCache::PutImpl,
+                                               weak_ptr_factory_.GetWeakPtr(),
+                                               std::move(put_context)));
 }
 
 void CacheStorageCache::PutImpl(std::unique_ptr<PutContext> put_context) {
@@ -1279,10 +1277,10 @@ void CacheStorageCache::PutImpl(std::unique_ptr<PutContext> put_context) {
   CacheStorageCacheQueryParams query_options;
   query_options.ignore_method = true;
   query_options.ignore_vary = true;
-  DeleteImpl(std::move(delete_request), query_options,
-             base::BindOnce(&CacheStorageCache::PutDidDeleteEntry,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            base::Passed(std::move(put_context))));
+  DeleteImpl(
+      std::move(delete_request), query_options,
+      base::BindOnce(&CacheStorageCache::PutDidDeleteEntry,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(put_context)));
 }
 
 void CacheStorageCache::PutDidDeleteEntry(
@@ -1308,8 +1306,7 @@ void CacheStorageCache::PutDidDeleteEntry(
   net::CompletionCallback create_entry_callback =
       base::AdaptCallbackForRepeating(base::BindOnce(
           &CacheStorageCache::PutDidCreateEntry, weak_ptr_factory_.GetWeakPtr(),
-          base::Passed(std::move(scoped_entry_ptr)),
-          base::Passed(std::move(put_context))));
+          std::move(scoped_entry_ptr), std::move(put_context)));
 
   int rv = backend_ptr->CreateEntry(request_ptr->url.spec(), entry_ptr,
                                     create_entry_callback);
@@ -1379,8 +1376,8 @@ void CacheStorageCache::PutDidCreateEntry(
   net::CompletionCallback write_headers_callback =
       base::AdaptCallbackForRepeating(
           base::BindOnce(&CacheStorageCache::PutDidWriteHeaders,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         base::Passed(std::move(put_context)), buffer->size()));
+                         weak_ptr_factory_.GetWeakPtr(), std::move(put_context),
+                         buffer->size()));
 
   rv = temp_entry_ptr->WriteData(INDEX_HEADERS, 0 /* offset */, buffer.get(),
                                  buffer->size(), write_headers_callback,
@@ -1440,8 +1437,8 @@ void CacheStorageCache::PutWriteBlobToCache(
   blob_to_cache_raw->StreamBlobToCache(
       std::move(entry), disk_cache_body_index, std::move(blob),
       base::BindOnce(&CacheStorageCache::PutDidWriteBlobToCache,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     base::Passed(std::move(put_context)), blob_to_cache_key));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(put_context),
+                     blob_to_cache_key));
 }
 
 void CacheStorageCache::PutDidWriteBlobToCache(
@@ -1532,8 +1529,8 @@ void CacheStorageCache::UpdateCacheSize(base::OnceClosure callback) {
   // completes and runs its callback.
   CalculateCacheSize(base::AdaptCallbackForRepeating(
       base::BindOnce(&CacheStorageCache::UpdateCacheSizeGotSize,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     base::Passed(CreateCacheHandle()), std::move(callback))));
+                     weak_ptr_factory_.GetWeakPtr(), CreateCacheHandle(),
+                     std::move(callback))));
 }
 
 void CacheStorageCache::UpdateCacheSizeGotSize(
@@ -1572,7 +1569,7 @@ void CacheStorageCache::Delete(const CacheStorageBatchOperation& operation,
 
   scheduler_->ScheduleOperation(base::BindOnce(
       &CacheStorageCache::DeleteImpl, weak_ptr_factory_.GetWeakPtr(),
-      base::Passed(std::move(request)), operation.match_params,
+      std::move(request), operation.match_params,
       scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
@@ -1705,7 +1702,7 @@ void CacheStorageCache::CreateBackend(ErrorCallback callback) {
       base::AdaptCallbackForRepeating(
           base::BindOnce(&CacheStorageCache::CreateBackendDidCreate,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                         base::Passed(std::move(backend_ptr))));
+                         std::move(backend_ptr)));
 
   int rv = disk_cache::CreateCacheBackend(
       cache_type, net::CACHE_BACKEND_SIMPLE, path_, kMaxCacheBytes,

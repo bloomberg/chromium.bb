@@ -407,7 +407,7 @@ LayoutTestBluetoothAdapterProvider::GetSecondDiscoveryFindsHeartRateAdapter() {
             base::ThreadTaskRunnerHandle::Get()->PostTask(
                 FROM_HERE,
                 base::BindOnce(&AddDevice, base::WrapRefCounted(adapter_ptr),
-                               base::Passed(GetHeartRateDevice(adapter_ptr))));
+                               GetHeartRateDevice(adapter_ptr)));
             return GetDiscoverySession();
           }));
 
@@ -465,7 +465,7 @@ LayoutTestBluetoothAdapterProvider::GetDeviceEventAdapter() {
               base::ThreadTaskRunnerHandle::Get()->PostTask(
                   FROM_HERE,
                   base::BindOnce(&AddDevice, base::WrapRefCounted(adapter_ptr),
-                                 base::Passed(&glucose_device)));
+                                 std::move(glucose_device)));
 
               // Add uuid and notify of device changed.
               changing_battery_ptr->AddUUID(BluetoothUUID(kBatteryServiceUUID));
@@ -516,7 +516,7 @@ LayoutTestBluetoothAdapterProvider::GetDevicesRemovedAdapter() {
               base::ThreadTaskRunnerHandle::Get()->PostTask(
                   FROM_HERE,
                   base::BindOnce(&AddDevice, base::WrapRefCounted(adapter_ptr),
-                                 base::Passed(&glucose_device)));
+                                 std::move(glucose_device)));
 
               // Post task to remove ConnectedHeartRateDevice.
               base::ThreadTaskRunnerHandle::Get()->PostTask(

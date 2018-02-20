@@ -814,7 +814,7 @@ void RenderFrameDevToolsAgentHost::SignalSynchronousSwapCompositorFrame(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(
             &RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame,
-            dtah.get(), base::Passed(std::move(frame_metadata))));
+            dtah.get(), std::move(frame_metadata)));
   }
 }
 

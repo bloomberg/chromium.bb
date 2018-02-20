@@ -50,7 +50,7 @@ void BackgroundSyncContext::CreateService(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&BackgroundSyncContext::CreateServiceOnIOThread, this,
-                     base::Passed(&request)));
+                     std::move(request)));
 }
 
 void BackgroundSyncContext::ServiceHadConnectionError(

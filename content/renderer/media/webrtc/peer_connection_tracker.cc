@@ -330,7 +330,7 @@ class InternalStatsObserver : public webrtc::StatsObserver {
     if (!list->empty()) {
       main_thread_->PostTask(
           FROM_HERE, base::BindOnce(&InternalStatsObserver::OnCompleteImpl,
-                                    base::Passed(&list), lid_));
+                                    std::move(list), lid_));
     }
   }
 

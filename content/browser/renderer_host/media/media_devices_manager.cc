@@ -268,7 +268,7 @@ void MediaDevicesManager::EnumerateDevices(
       base::BindOnce(&MediaDevicesManager::CheckPermissionsForEnumerateDevices,
                      weak_factory_.GetWeakPtr(), render_process_id,
                      render_frame_id, group_id_salt_base, requested_types,
-                     base::Passed(&callback)));
+                     std::move(callback)));
 }
 
 uint32_t MediaDevicesManager::SubscribeDeviceChangeNotifications(
@@ -418,7 +418,7 @@ void MediaDevicesManager::CheckPermissionsForEnumerateDevices(
       requested_types, render_process_id, render_frame_id,
       base::BindOnce(&MediaDevicesManager::OnPermissionsCheckDone,
                      weak_factory_.GetWeakPtr(), group_id_salt_base,
-                     requested_types, base::Passed(&callback),
+                     requested_types, std::move(callback),
                      salt_and_origin.first, salt_and_origin.second));
 }
 

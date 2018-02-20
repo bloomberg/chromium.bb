@@ -35,7 +35,7 @@ class ChildConnection::IOThreadContext
     child_identity_ = child_identity;
     io_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&IOThreadContext::InitializeOnIOThread, this,
-                                  child_identity, base::Passed(&service_pipe)));
+                                  child_identity, std::move(service_pipe)));
   }
 
   void BindInterface(const std::string& interface_name,
@@ -43,7 +43,7 @@ class ChildConnection::IOThreadContext
     io_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&IOThreadContext::BindInterfaceOnIOThread, this,
-                       interface_name, base::Passed(&interface_pipe)));
+                       interface_name, std::move(interface_pipe)));
   }
 
   void ShutDown() {

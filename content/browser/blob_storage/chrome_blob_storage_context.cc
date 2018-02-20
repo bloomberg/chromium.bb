@@ -120,15 +120,15 @@ ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
       BrowserThread::PostAfterStartupTask(
           FROM_HERE, file_task_runner,
           base::BindOnce(&RemoveOldBlobStorageDirectories,
-                         base::Passed(&blob_storage_parent), blob_storage_dir));
+                         std::move(blob_storage_parent), blob_storage_dir));
     }
 
     if (io_thread_valid) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::BindOnce(&ChromeBlobStorageContext::InitializeOnIOThread, blob,
-                         base::Passed(&blob_storage_dir),
-                         base::Passed(&file_task_runner)));
+                         std::move(blob_storage_dir),
+                         std::move(file_task_runner)));
     }
   }
 

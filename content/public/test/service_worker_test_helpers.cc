@@ -95,7 +95,7 @@ void StopServiceWorkerForPattern(ServiceWorkerContext* context,
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&StopServiceWorkerForPattern, context, pattern,
-                       base::Passed(&completion_callback_ui)));
+                       std::move(completion_callback_ui)));
     return;
   }
   auto* context_wrapper = static_cast<ServiceWorkerContextWrapper*>(context);

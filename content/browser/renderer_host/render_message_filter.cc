@@ -298,9 +298,9 @@ void RenderMessageFilter::OnCacheStorageOpenCallback(
   if (error != CacheStorageError::kSuccess || !cache_handle.value())
     return;
   CacheStorageCache* cache = cache_handle.value();
-  cache->WriteSideData(base::BindOnce(&NoOpCacheStorageErrorCallback,
-                                      base::Passed(std::move(cache_handle))),
-                       url, expected_response_time, buf, buf_len);
+  cache->WriteSideData(
+      base::BindOnce(&NoOpCacheStorageErrorCallback, std::move(cache_handle)),
+      url, expected_response_time, buf, buf_len);
 }
 
 void RenderMessageFilter::OnMediaLogEvents(

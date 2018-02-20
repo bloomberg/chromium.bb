@@ -773,8 +773,7 @@ void InputHandler::SynthesizePinchGesture(
 
   host_->GetRenderWidgetHost()->QueueSyntheticGesture(
       SyntheticGesture::Create(gesture_params),
-      base::BindOnce(&SendSynthesizePinchGestureResponse,
-                     base::Passed(std::move(callback))));
+      base::BindOnce(&SendSynthesizePinchGestureResponse, std::move(callback)));
 }
 
 void InputHandler::SynthesizeScrollGesture(
@@ -854,7 +853,7 @@ void InputHandler::SynthesizeRepeatingScroll(
       base::BindOnce(&InputHandler::OnScrollFinished,
                      weak_factory_.GetWeakPtr(), gesture_params, repeat_count,
                      repeat_delay, interaction_marker_name, id,
-                     base::Passed(std::move(callback))));
+                     std::move(callback)));
 }
 
 void InputHandler::OnScrollFinished(
@@ -876,7 +875,7 @@ void InputHandler::OnScrollFinished(
         base::BindOnce(&InputHandler::SynthesizeRepeatingScroll,
                        weak_factory_.GetWeakPtr(), gesture_params,
                        repeat_count - 1, repeat_delay, interaction_marker_name,
-                       id, base::Passed(std::move(callback))),
+                       id, std::move(callback)),
         repeat_delay);
   } else {
     SendSynthesizeScrollGestureResponse(std::move(callback), result);

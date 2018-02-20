@@ -107,7 +107,7 @@ class UtilityProcessMojoClient {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::BindOnce(&Helper::StartOnIOThread, base::Unretained(this),
-                         mojo_interface_name, base::Passed(&interface_pipe)));
+                         mojo_interface_name, std::move(interface_pipe)));
     }
 
     void set_exposed_directory(const base::FilePath& directory) {

@@ -742,7 +742,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
                        std::move(url_loader_client_endpoints),
                        std::move(ssl_info), std::move(cloned_navigation_data),
                        global_request_id_, is_download, is_stream,
-                       base::Passed(&downloaded_file)));
+                       std::move(downloaded_file)));
   }
 
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
@@ -977,9 +977,8 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
             base::RetainedRef(storage_partition->GetURLRequestContext()),
             base::Unretained(storage_partition->GetFileSystemContext()),
             base::Unretained(service_worker_navigation_handle_core),
-            base::Unretained(appcache_handle_core),
-            base::Passed(std::move(request_info)),
-            base::Passed(std::move(navigation_ui_data))));
+            base::Unretained(appcache_handle_core), std::move(request_info),
+            std::move(navigation_ui_data)));
     return;
   }
 

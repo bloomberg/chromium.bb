@@ -235,7 +235,7 @@ void TestRunnerForSpecificView::CapturePixelsAsyncThen(
           web_view()->MainFrame()->ToWebLocalFrame(),
           base::BindOnce(&TestRunnerForSpecificView::CapturePixelsCallback,
                          weak_factory_.GetWeakPtr(),
-                         base::Passed(std::move(persistent_callback))));
+                         std::move(persistent_callback)));
 }
 
 void TestRunnerForSpecificView::CapturePixelsCallback(
@@ -295,7 +295,7 @@ void TestRunnerForSpecificView::CopyImageAtAndCapturePixelsAsyncThen(
       web_view()->MainFrame()->ToWebLocalFrame(), x, y,
       base::BindOnce(&TestRunnerForSpecificView::CapturePixelsCallback,
                      weak_factory_.GetWeakPtr(),
-                     base::Passed(std::move(persistent_callback))));
+                     std::move(persistent_callback)));
 }
 
 void TestRunnerForSpecificView::GetManifestThen(

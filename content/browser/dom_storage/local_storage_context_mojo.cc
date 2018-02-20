@@ -104,7 +104,7 @@ void MigrateStorageHelper(
         LocalStorageContextMojo::MigrateString(it.second.string());
   }
   reply_task_runner->PostTask(FROM_HERE,
-                              base::BindOnce(callback, base::Passed(&values)));
+                              base::BindOnce(callback, std::move(values)));
 }
 
 // Helper to convert from OnceCallback to Callback.
@@ -919,7 +919,7 @@ void LocalStorageContextMojo::RetrieveStorageUsage(
   database_->GetPrefixed(
       std::vector<uint8_t>(kMetaPrefix, kMetaPrefix + arraysize(kMetaPrefix)),
       base::BindOnce(&LocalStorageContextMojo::OnGotMetaData,
-                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void LocalStorageContextMojo::OnGotMetaData(

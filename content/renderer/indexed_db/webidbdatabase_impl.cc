@@ -171,7 +171,7 @@ WebIDBDatabaseImpl::WebIDBDatabaseImpl(
       callback_runner_(std::move(callback_runner)) {
   io_runner_->PostTask(FROM_HERE, base::BindOnce(&IOThreadHelper::Bind,
                                                  base::Unretained(helper_),
-                                                 base::Passed(&database_info)));
+                                                 std::move(database_info)));
 }
 
 WebIDBDatabaseImpl::~WebIDBDatabaseImpl() {
@@ -275,7 +275,7 @@ void WebIDBDatabaseImpl::Get(long long transaction_id,
       FROM_HERE, base::BindOnce(&IOThreadHelper::Get, base::Unretained(helper_),
                                 transaction_id, object_store_id, index_id,
                                 IndexedDBKeyRangeBuilder::Build(key_range),
-                                key_only, base::Passed(&callbacks_impl)));
+                                key_only, std::move(callbacks_impl)));
 }
 
 void WebIDBDatabaseImpl::GetAll(long long transaction_id,
@@ -296,7 +296,7 @@ void WebIDBDatabaseImpl::GetAll(long long transaction_id,
       base::BindOnce(&IOThreadHelper::GetAll, base::Unretained(helper_),
                      transaction_id, object_store_id, index_id,
                      IndexedDBKeyRangeBuilder::Build(key_range), max_count,
-                     key_only, base::Passed(&callbacks_impl)));
+                     key_only, std::move(callbacks_impl)));
 }
 
 void WebIDBDatabaseImpl::Put(long long transaction_id,
@@ -356,8 +356,8 @@ void WebIDBDatabaseImpl::Put(long long transaction_id,
   io_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&IOThreadHelper::Put, base::Unretained(helper_),
-                     transaction_id, object_store_id, base::Passed(&mojo_value),
-                     key, put_mode, base::Passed(&callbacks_impl),
+                     transaction_id, object_store_id, std::move(mojo_value),
+                     key, put_mode, std::move(callbacks_impl),
                      ConvertWebIndexKeys(index_ids, index_keys)));
 }
 
@@ -381,10 +381,10 @@ void WebIDBDatabaseImpl::SetIndexesReady(
     const WebVector<long long>& web_index_ids) {
   std::vector<int64_t> index_ids(web_index_ids.Data(),
                                  web_index_ids.Data() + web_index_ids.size());
-  io_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&IOThreadHelper::SetIndexesReady,
-                                base::Unretained(helper_), transaction_id,
-                                object_store_id, base::Passed(&index_ids)));
+  io_runner_->PostTask(FROM_HERE,
+                       base::BindOnce(&IOThreadHelper::SetIndexesReady,
+                                      base::Unretained(helper_), transaction_id,
+                                      object_store_id, std::move(index_ids)));
 }
 
 void WebIDBDatabaseImpl::OpenCursor(long long transaction_id,
@@ -406,7 +406,7 @@ void WebIDBDatabaseImpl::OpenCursor(long long transaction_id,
       base::BindOnce(&IOThreadHelper::OpenCursor, base::Unretained(helper_),
                      transaction_id, object_store_id, index_id,
                      IndexedDBKeyRangeBuilder::Build(key_range), direction,
-                     key_only, task_type, base::Passed(&callbacks_impl)));
+                     key_only, task_type, std::move(callbacks_impl)));
 }
 
 void WebIDBDatabaseImpl::Count(long long transaction_id,
@@ -425,7 +425,7 @@ void WebIDBDatabaseImpl::Count(long long transaction_id,
       base::BindOnce(&IOThreadHelper::Count, base::Unretained(helper_),
                      transaction_id, object_store_id, index_id,
                      IndexedDBKeyRangeBuilder::Build(key_range),
-                     base::Passed(&callbacks_impl)));
+                     std::move(callbacks_impl)));
 }
 
 void WebIDBDatabaseImpl::Delete(long long transaction_id,
@@ -443,7 +443,7 @@ void WebIDBDatabaseImpl::Delete(long long transaction_id,
       base::BindOnce(&IOThreadHelper::DeleteRange, base::Unretained(helper_),
                      transaction_id, object_store_id,
                      IndexedDBKeyRangeBuilder::Build(primary_key),
-                     base::Passed(&callbacks_impl)));
+                     std::move(callbacks_impl)));
 }
 
 void WebIDBDatabaseImpl::DeleteRange(long long transaction_id,
@@ -461,7 +461,7 @@ void WebIDBDatabaseImpl::DeleteRange(long long transaction_id,
       base::BindOnce(&IOThreadHelper::DeleteRange, base::Unretained(helper_),
                      transaction_id, object_store_id,
                      IndexedDBKeyRangeBuilder::Build(key_range),
-                     base::Passed(&callbacks_impl)));
+                     std::move(callbacks_impl)));
 }
 
 void WebIDBDatabaseImpl::Clear(long long transaction_id,
@@ -474,10 +474,9 @@ void WebIDBDatabaseImpl::Clear(long long transaction_id,
       base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_,
       callback_runner_);
   io_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IOThreadHelper::Clear, base::Unretained(helper_),
-                     transaction_id, object_store_id,
-                     base::Passed(&callbacks_impl)));
+      FROM_HERE, base::BindOnce(&IOThreadHelper::Clear,
+                                base::Unretained(helper_), transaction_id,
+                                object_store_id, std::move(callbacks_impl)));
 }
 
 void WebIDBDatabaseImpl::CreateIndex(long long transaction_id,

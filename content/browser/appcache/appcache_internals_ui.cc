@@ -249,8 +249,7 @@ void AppCacheInternalsUI::Proxy::OnGroupLoaded(AppCacheGroup* appcache_group,
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&AppCacheInternalsUI::OnAppCacheDetailsReady,
                      appcache_internals_ui_, partition_path_,
-                     manifest_gurl.spec(),
-                     base::Passed(&resource_info_vector)));
+                     manifest_gurl.spec(), std::move(resource_info_vector)));
 }
 
 void AppCacheInternalsUI::Proxy::RequestFileDetails(

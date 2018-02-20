@@ -410,7 +410,7 @@ void CreateSingleSampleMetricsProvider(
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&CreateSingleSampleMetricsProvider, std::move(task_runner),
-                     connector, base::Passed(&request)));
+                     connector, std::move(request)));
 }
 
 class RendererLocalSurfaceIdProvider : public viz::LocalSurfaceIdProvider {

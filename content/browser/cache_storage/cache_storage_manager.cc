@@ -299,8 +299,8 @@ void CacheStorageManager::GetAllOriginsUsage(
       base::BindOnce(&ListOriginsAndLastModifiedOnTaskRunner, usages_ptr,
                      root_path_),
       base::BindOnce(&CacheStorageManager::GetAllOriginsUsageGetSizes,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     base::Passed(std::move(usages)), callback));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(usages),
+                     callback));
 }
 
 void CacheStorageManager::GetAllOriginsUsageGetSizes(
@@ -321,8 +321,7 @@ void CacheStorageManager::GetAllOriginsUsageGetSizes(
 
   base::RepeatingClosure barrier_closure = base::BarrierClosure(
       usages_ptr->size(),
-      base::BindOnce(&AllOriginSizesReported, base::Passed(std::move(usages)),
-                     callback));
+      base::BindOnce(&AllOriginSizesReported, std::move(usages), callback));
 
   for (CacheStorageUsageInfo& usage : *usages_ptr) {
     if (usage.total_size_bytes != CacheStorage::kSizeUnknown) {
@@ -404,7 +403,7 @@ void CacheStorageManager::DeleteOriginData(
   cache_storage->GetSizeThenCloseAllCaches(
       base::BindOnce(&CacheStorageManager::DeleteOriginDidClose,
                      weak_ptr_factory_.GetWeakPtr(), origin, callback,
-                     base::Passed(base::WrapUnique(cache_storage))));
+                     base::WrapUnique(cache_storage)));
 }
 
 void CacheStorageManager::DeleteOriginData(const url::Origin& origin) {

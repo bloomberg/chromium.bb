@@ -80,10 +80,9 @@ class TracingControllerTestEndpoint
     scoped_refptr<base::RefCountedString> chunk_ptr =
         base::RefCountedString::TakeString(&trace_);
 
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(done_callback_, base::Passed(std::move(metadata)),
-                       base::RetainedRef(chunk_ptr)));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(done_callback_, std::move(metadata),
+                                           base::RetainedRef(chunk_ptr)));
   }
 
  protected:

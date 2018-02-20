@@ -25,7 +25,7 @@ void RelatedAppsFetcher::GetManifestRelatedApplications(
         void>> callbacks) {
   manifest_manager_->RequestManifest(
       base::BindOnce(&RelatedAppsFetcher::OnGetManifestForRelatedApplications,
-                     base::Unretained(this), base::Passed(&callbacks)));
+                     base::Unretained(this), std::move(callbacks)));
 }
 
 void RelatedAppsFetcher::OnGetManifestForRelatedApplications(

@@ -94,10 +94,9 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
   base::OnceClosure start_capture_closure;
   // Use of Unretained |this| is safe, because |done_cb| guarantees that |this|
   // stays alive.
-  ReceiveDeviceCallback after_start_capture_callback =
-      media::BindToCurrentLoop(base::BindOnce(
-          &InProcessVideoCaptureDeviceLauncher::OnDeviceStarted,
-          base::Unretained(this), callbacks, base::Passed(&done_cb)));
+  ReceiveDeviceCallback after_start_capture_callback = media::BindToCurrentLoop(
+      base::BindOnce(&InProcessVideoCaptureDeviceLauncher::OnDeviceStarted,
+                     base::Unretained(this), callbacks, std::move(done_cb)));
 
   switch (stream_type) {
     case MEDIA_DEVICE_VIDEO_CAPTURE: {
@@ -108,14 +107,13 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
         NOTREACHED();
         return;
       }
-      start_capture_closure =
-          base::BindOnce(&InProcessVideoCaptureDeviceLauncher::
-                             DoStartDeviceCaptureOnDeviceThread,
-                         base::Unretained(this), device_id, params,
-                         base::Passed(CreateDeviceClient(
-                             kMaxNumberOfBuffers, std::move(receiver),
-                             std::move(receiver_on_io_thread))),
-                         std::move(after_start_capture_callback));
+      start_capture_closure = base::BindOnce(
+          &InProcessVideoCaptureDeviceLauncher::
+              DoStartDeviceCaptureOnDeviceThread,
+          base::Unretained(this), device_id, params,
+          CreateDeviceClient(kMaxNumberOfBuffers, std::move(receiver),
+                             std::move(receiver_on_io_thread)),
+          std::move(after_start_capture_callback));
       break;
     }
 
@@ -156,14 +154,13 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
         break;
       }
 #endif  // !defined(OS_ANDROID)
-      start_capture_closure =
-          base::BindOnce(&InProcessVideoCaptureDeviceLauncher::
-                             DoStartDesktopCaptureOnDeviceThread,
-                         base::Unretained(this), desktop_id, params,
-                         base::Passed(CreateDeviceClient(
-                             kMaxNumberOfBuffers, std::move(receiver),
-                             std::move(receiver_on_io_thread))),
-                         std::move(after_start_capture_callback));
+      start_capture_closure = base::BindOnce(
+          &InProcessVideoCaptureDeviceLauncher::
+              DoStartDesktopCaptureOnDeviceThread,
+          base::Unretained(this), desktop_id, params,
+          CreateDeviceClient(kMaxNumberOfBuffers, std::move(receiver),
+                             std::move(receiver_on_io_thread)),
+          std::move(after_start_capture_callback));
       break;
     }
 #endif  // defined(ENABLE_SCREEN_CAPTURE)

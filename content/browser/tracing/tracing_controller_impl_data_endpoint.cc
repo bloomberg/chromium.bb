@@ -40,7 +40,7 @@ class StringTraceDataEndpoint : public TracingController::TraceDataEndpoint {
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::BindOnce(completion_callback_, base::Passed(std::move(metadata)),
+        base::BindOnce(completion_callback_, std::move(metadata),
                        base::RetainedRef(str)));
   }
 
@@ -139,7 +139,7 @@ class CompressedTraceDataEndpoint
     background_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&CompressedTraceDataEndpoint::CompressOnBackgroundThread,
-                       this, base::Passed(std::move(chunk))));
+                       this, std::move(chunk)));
   }
 
   void ReceiveTraceFinalContents(
@@ -147,7 +147,7 @@ class CompressedTraceDataEndpoint
     background_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&CompressedTraceDataEndpoint::CloseOnBackgroundThread,
-                       this, base::Passed(std::move(metadata))));
+                       this, std::move(metadata)));
   }
 
  private:

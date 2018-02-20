@@ -50,9 +50,8 @@ void DevToolsInterceptorController::ContinueInterceptedRequest(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&DevToolsNetworkInterceptor::ContinueInterceptedRequest,
-                     interceptor_, interception_id,
-                     base::Passed(std::move(modifications)),
-                     base::Passed(std::move(callback))));
+                     interceptor_, interception_id, std::move(modifications),
+                     std::move(callback)));
 }
 
 bool DevToolsInterceptorController::ShouldCancelNavigation(
