@@ -207,34 +207,4 @@ void StylePropertyMap::remove(const String& property_name,
   }
 }
 
-void StylePropertyMap::update(const String& property_name,
-                              V8UpdateFunction* update_function,
-                              ExceptionState& exception_state) {
-  CSSStyleValue* old_value = get(property_name, exception_state);
-  if (exception_state.HadException()) {
-    exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
-    return;
-  }
-
-  const CSSPropertyID property_id = cssPropertyID(property_name);
-
-  const auto& new_value = update_function->Invoke(this, old_value);
-  if (new_value.IsNothing() || !new_value.ToChecked()) {
-    exception_state.ThrowTypeError("Invalid type for property");
-    return;
-  }
-
-  const CSSValue* result = StyleValueToCSSValue(CSSProperty::Get(property_id),
-                                                *new_value.ToChecked());
-  if (!result) {
-    exception_state.ThrowTypeError("Invalid type for property");
-    return;
-  }
-
-  if (property_id == CSSPropertyVariable)
-    SetCustomProperty(AtomicString(property_name), *result);
-  else
-    SetProperty(property_id, *result);
-}
-
 }  // namespace blink

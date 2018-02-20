@@ -6882,7 +6882,6 @@ interface StylePropertyMap : StylePropertyMapReadOnly
     method constructor
     method delete
     method set
-    method update
 interface StylePropertyMapReadOnly
     attribute @@toStringTag
     method @@iterator
