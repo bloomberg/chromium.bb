@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+PASS initialize global state
+PASS same-origin multipart image via SW should be readable
+FAIL cross-origin multipart image via SW with approved CORS should be readable assert_equals: expected 255 but got 0
+PASS cross-origin multipart image with no-cors via SW should not be readable
+PASS cross-origin multipart image via SW with rejected CORS should fail to load
+PASS restore global state
+Harness: the test ran to completion.
+
