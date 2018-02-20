@@ -47,10 +47,9 @@ void Create(const CreateParams& create_params) {
     if (create_params.install_at_exit_manager) {
       g_exit_manager = new base::AtExitManager();
     }
+    base::CommandLine::Init(create_params.argc, create_params.argv);
 
     base::TaskScheduler::Create("Browser");
-
-    base::CommandLine::Init(create_params.argc, create_params.argv);
   });
 }
 
