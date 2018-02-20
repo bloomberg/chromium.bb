@@ -35,11 +35,11 @@
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
+#import "ios/chrome/browser/ui/browser_view_controller_helper.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/page_not_available_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
-#include "ios/chrome/browser/ui/toolbar/test_toolbar_model_ios.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/web/error_page_content.h"
 #import "ios/chrome/browser/web/passkit_dialog_provider.h"
@@ -247,9 +247,7 @@ class BrowserViewControllerTest : public BlockCleanupTest {
         [OCMockObject niceMockForClass:[PKAddPassesViewController class]];
     passKitViewController_ = passKitController;
 
-    // Set up a fake toolbar model for the dependency factory to return.
-    // It will be owned (and destroyed) by the BVC.
-    toolbarModelIOS_ = new TestToolbarModelIOS();
+    bvcHelper_ = [[BrowserViewControllerHelper alloc] init];
 
     // Create fake WTC.
     TestWebToolbarController* testWTC = [[TestWebToolbarController alloc] init];
@@ -257,9 +255,7 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     // Set up a stub dependency factory.
     id factory = [OCMockObject
         mockForClass:[BrowserViewControllerDependencyFactory class]];
-    [[[factory stub] andReturnValue:OCMOCK_VALUE(toolbarModelIOS_)]
-        newToolbarModelIOSWithDelegate:static_cast<ToolbarModelDelegateIOS*>(
-                                           [OCMArg anyPointer])];
+    [[[factory stub] andReturn:bvcHelper_] newBrowserViewControllerHelper];
     [[[factory stub] andReturn:testWTC]
         newToolbarControllerWithDelegate:[OCMArg any]
                                urlLoader:[OCMArg any]
@@ -304,7 +300,7 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   std::unique_ptr<WebStateImpl> webStateImpl_;
   Tab* tab_;
   TabModel* tabModel_;
-  ToolbarModelIOS* toolbarModelIOS_;
+  BrowserViewControllerHelper* bvcHelper_;
   PKAddPassesViewController* passKitViewController_;
   OCMockObject* dependencyFactory_;
   BrowserViewController* bvc_;
@@ -384,7 +380,10 @@ TEST_F(BrowserViewControllerTest,
   OCMockObject* tabMock = static_cast<OCMockObject*>(tab_);
 
   // Have the TestToolbarModel indicate that a page load is in progress.
-  static_cast<TestToolbarModelIOS*>(toolbarModelIOS_)->set_is_loading(true);
+  id partialMock = OCMPartialMock(bvcHelper_);
+  OCMExpect([partialMock isToolbarLoading:static_cast<web::WebState*>(
+                                              [OCMArg anyPointer])])
+      .andReturn(YES);
 
   // The tab should stop loading on iPhones.
   [bvc_ locationBarBeganEdit];

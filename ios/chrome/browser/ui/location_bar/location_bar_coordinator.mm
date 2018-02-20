@@ -29,7 +29,6 @@
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_views.h"
 #import "ios/chrome/browser/ui/toolbar/public/web_toolbar_controller_constants.h"
-#include "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -141,7 +140,7 @@
   if (!_locationBarController)
     return;
   _locationBarController->SetShouldShowHintText(
-      [self.delegate toolbarModelIOS]->ShouldDisplayHintText());
+      [self.delegate shouldDisplayHintText]);
   _locationBarController->OnToolbarUpdated();
 }
 
@@ -261,8 +260,7 @@
 }
 
 - (ToolbarModel*)toolbarModel {
-  ToolbarModelIOS* toolbarModelIOS = [self.delegate toolbarModelIOS];
-  return toolbarModelIOS ? toolbarModelIOS->GetToolbarModel() : nullptr;
+  return [self.delegate toolbarModel];
 }
 
 #pragma mark - private

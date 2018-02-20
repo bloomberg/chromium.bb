@@ -9,6 +9,7 @@
 #import "base/test/ios/wait_util.h"
 #include "base/time/time.h"
 #include "components/toolbar/test_toolbar_model.h"
+#include "components/toolbar/toolbar_model_impl.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
@@ -16,7 +17,6 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator_delegate.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_delegate_ios.h"
-#include "ios/chrome/browser/ui/toolbar/toolbar_model_impl_ios.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -33,6 +33,8 @@
 #endif
 
 namespace {
+
+const size_t kMaxURLDisplayChars = 32 * 1024;
 
 // Descends down a view hierarchy until the first view of |specificClass|
 // is found. Returns nil if a view of |specificClass| cannot be found.
@@ -93,15 +95,15 @@ class OmniboxPerfTest : public PerfTest {
     // Creates the Toolbar for testing and sizes it to the width of the screen.
     toolbar_model_delegate_.reset(
         new ToolbarModelDelegateIOS(web_state_list_.get()));
-    toolbar_model_ios_.reset(
-        new ToolbarModelImplIOS(toolbar_model_delegate_.get()));
+    toolbar_model_ = std::make_unique<ToolbarModelImpl>(
+        toolbar_model_delegate_.get(), kMaxURLDisplayChars);
 
     // The OCMOCK_VALUE macro doesn't like std::unique_ptr, but it works just
     // fine if a temporary variable is used.
-    ToolbarModelIOS* model_for_mock = toolbar_model_ios_.get();
+    ToolbarModel* model_for_mock = toolbar_model_.get();
     id toolbarDelegate = OCMProtocolMock(@protocol(ToolbarCoordinatorDelegate));
     [[[toolbarDelegate stub] andReturnValue:OCMOCK_VALUE(model_for_mock)]
-        toolbarModelIOS];
+        toolbarModel];
 
     coordinator_ = [[ToolbarCoordinator alloc] init];
     coordinator_.delegate = toolbarDelegate;
@@ -221,7 +223,7 @@ class OmniboxPerfTest : public PerfTest {
   FakeWebStateListDelegate web_state_list_delegate_;
   std::unique_ptr<WebStateList> web_state_list_;
   std::unique_ptr<ToolbarModelDelegateIOS> toolbar_model_delegate_;
-  std::unique_ptr<ToolbarModelIOS> toolbar_model_ios_;
+  std::unique_ptr<ToolbarModel> toolbar_model_;
   ToolbarCoordinator* coordinator_;
   UIWindow* window_;
   KeyboardAppearanceListener* keyboard_listener_;

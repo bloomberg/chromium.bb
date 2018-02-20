@@ -40,6 +40,7 @@
 #include "components/payments/core/web_payment_request.h"
 #include "components/payments/mojom/payment_request_data.mojom.h"
 #include "components/prefs/pref_service.h"
+#include "components/toolbar/toolbar_model.h"
 #include "components/url_formatter/elide_url.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/autofill/validation_rules_storage_factory.h"
@@ -55,7 +56,6 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/payments/js_payment_request_manager.h"
 #import "ios/chrome/browser/ui/payments/payment_request_coordinator.h"
-#include "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
 #include "ios/web/public/favicon_status.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/navigation_manager.h"
@@ -899,7 +899,7 @@ paymentRequestFromMessage:(const base::DictionaryValue&)message
     return NO;
   }
 
-  if (!_toolbarModel) {
+  if (!self.toolbarModel) {
     return NO;
   }
 
@@ -925,7 +925,7 @@ paymentRequestFromMessage:(const base::DictionaryValue&)message
   // If the scheme is cryptographic, the SSL certificate must also be valid.
   return !security_state::IsSchemeCryptographic(lastCommittedURL) ||
          security_state::IsSslCertificateValid(
-             _toolbarModel->GetToolbarModel()->GetSecurityLevel(true));
+             self.toolbarModel->GetSecurityLevel(true));
 }
 
 #pragma mark - PaymentRequestUIDelegate

@@ -17,7 +17,7 @@ extern NSString* const kNotAllowedError;
 extern NSString* const kNotSupportedError;
 
 @protocol ApplicationCommands;
-class ToolbarModelIOS;
+class ToolbarModel;
 
 namespace ios {
 class ChromeBrowserState;
@@ -33,9 +33,8 @@ class WebState;
 // interface.
 @interface PaymentRequestManager : NSObject
 
-// IOS specific version of ToolbarModel that is used for grabbing security
-// info.
-@property(nonatomic, assign) ToolbarModelIOS* toolbarModel;
+// ToolbarModel that is used for grabbing security info.
+@property(nonatomic, assign) ToolbarModel* toolbarModel;
 
 // The WebState being observed for invocations of the Payment Request API.
 // Should outlive this instance. May be nullptr.

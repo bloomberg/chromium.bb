@@ -30,7 +30,6 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_view.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/legacy_recent_tabs_table_coordinator.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
-#include "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/web_state/ui/crw_swipe_recognizer_provider.h"

@@ -10,6 +10,7 @@
 @class AlertCoordinator;
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
+@class BrowserViewControllerHelper;
 @class KeyCommandsProvider;
 @class MessageBubbleView;
 @protocol OmniboxFocuser;
@@ -19,8 +20,6 @@
 @protocol Toolbar;
 @protocol ToolbarCommands;
 @protocol ToolbarCoordinatorDelegate;
-class ToolbarModelDelegateIOS;
-class ToolbarModelIOS;
 class WebStateList;
 @protocol UrlLoader;
 
@@ -48,8 +47,7 @@ class ChromeBrowserState;
 - (void)showPassKitErrorInfoBarForManager:
     (infobars::InfoBarManager*)infoBarManager;
 
-- (ToolbarModelIOS*)newToolbarModelIOSWithDelegate:
-    (ToolbarModelDelegateIOS*)delegate;
+- (BrowserViewControllerHelper*)newBrowserViewControllerHelper;
 
 - (id<Toolbar>)newToolbarControllerWithDelegate:
                    (id<ToolbarCoordinatorDelegate>)delegate

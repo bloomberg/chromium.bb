@@ -14,11 +14,11 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
+#import "ios/chrome/browser/ui/browser_view_controller_helper.h"
 #import "ios/chrome/browser/ui/key_commands_provider.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_adapter.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_delegate_ios.h"
-#include "ios/chrome/browser/ui/toolbar/toolbar_model_impl_ios.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -55,9 +55,8 @@
       nullptr, l10n_util::GetStringUTF16(IDS_IOS_GENERIC_PASSKIT_ERROR), true);
 }
 
-- (ToolbarModelIOS*)newToolbarModelIOSWithDelegate:
-    (ToolbarModelDelegateIOS*)delegate {
-  return new ToolbarModelImplIOS(delegate);
+- (BrowserViewControllerHelper*)newBrowserViewControllerHelper {
+  return [[BrowserViewControllerHelper alloc] init];
 }
 
 - (id<Toolbar>)
