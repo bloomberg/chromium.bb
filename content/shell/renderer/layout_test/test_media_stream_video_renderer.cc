@@ -9,6 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/video_frame.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 namespace content {
 
@@ -18,7 +19,7 @@ TestMediaStreamVideoRenderer::TestMediaStreamVideoRenderer(
     const base::TimeDelta& frame_duration,
     const base::Closure& error_cb,
     const MediaStreamVideoRenderer::RepaintCB& repaint_cb)
-    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
+    : task_runner_(blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
       io_task_runner_(io_task_runner),
       size_(size),
       state_(kStopped),
