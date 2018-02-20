@@ -74,6 +74,7 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
   bool HasNonEmptyValue() const;
 
   bool HasCharacterLocations() const;
+  bool HasImage() const;
 
   const char* GetClassName() const;
   base::string16 GetText() const override;

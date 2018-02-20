@@ -247,6 +247,7 @@ void DumpAccessibilityTreeTest::AddDefaultFilters(
   AddFilter(filters, "hint=*");
   AddFilter(filters, "interesting", Filter::DENY);
   AddFilter(filters, "has_character_locations", Filter::DENY);
+  AddFilter(filters, "has_image", Filter::DENY);
 
   //
   // General

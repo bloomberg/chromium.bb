@@ -35,6 +35,9 @@ AX_EXPORT bool IsControl(ax::mojom::Role role);
 // Returns true if this node is a menu or related role.
 AX_EXPORT bool IsMenuRelated(ax::mojom::Role role);
 
+// Returns true if it's an image, graphic, canvas, etc.
+AX_EXPORT bool IsImage(ax::mojom::Role role);
+
 }  // namespace ui
 
 #endif  // UI_ACCESSIBILITY_AX_ROLE_PROPERTIES_H_

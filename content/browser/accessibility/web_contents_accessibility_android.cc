@@ -710,7 +710,8 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
       base::android::ConvertUTF16ToJavaString(env, node->GetRoleDescription()),
       base::android::ConvertUTF16ToJavaString(env, node->GetHint()),
       node->GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart),
-      node->GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd));
+      node->GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd),
+      node->HasImage());
 
   Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoLollipopAttributes(
       env, obj, info, node->CanOpenPopup(), node->IsContentInvalid(),
