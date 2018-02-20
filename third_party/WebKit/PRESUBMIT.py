@@ -101,10 +101,16 @@ def _CheckStyle(input_api, output_api):
     style_checker_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
                                                 'Tools', 'Scripts', 'check-webkit-style')
     args = [input_api.python_executable, style_checker_path, '--diff-files']
-    files = [input_api.os_path.join('..', '..', f.LocalPath())
-             for f in input_api.AffectedFiles()
-             # Filter out files that follow Chromium's coding style.
-             if not re_chromium_style_file.search(f.LocalPath())]
+    files = []
+    for f in input_api.AffectedFiles():
+        file_path = f.LocalPath()
+        # Filter out files that follow Chromium's coding style.
+        if re_chromium_style_file.search(file_path):
+            continue
+        # Filter out changes in LayoutTests.
+        if 'LayoutTests' + input_api.os_path.sep in file_path and 'TestExpectations' not in file_path:
+            continue
+        files.append(input_api.os_path.join('..', '..', file_path))
     # Do not call check-webkit-style with empty affected file list if all
     # input_api.AffectedFiles got filtered.
     if not files:
