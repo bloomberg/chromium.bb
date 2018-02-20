@@ -7,13 +7,14 @@
 
 #include "base/macros.h"
 #include "platform/PlatformExport.h"
-#include "platform/network/HTTPHeaderMap.h"
 #include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURLRequest.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 
 namespace blink {
+
+class HTTPHeaderMap;
+class SecurityOrigin;
 
 // CORS error strings related utility functions.
 namespace CORS {
@@ -59,6 +60,15 @@ struct PLATFORM_EXPORT ErrorParameter {
       const network::mojom::CORSError,
       const HTTPHeaderMap& response_header_map);
 
+  // Creates an ErrorParameter for an error that is related to CORS-preflight
+  // response checks.
+  // |hint| should contain a banned request method for
+  // kMethodDisallowedByPreflightResponse, a banned request header name for
+  // kHeaderDisallowedByPreflightResponse, or can be omitted for others.
+  static ErrorParameter CreateForPreflightResponseCheck(
+      const network::mojom::CORSError,
+      const String& hint);
+
   // Creates an ErrorParameter for CORS::CheckRedirectLocation() returns.
   static ErrorParameter CreateForRedirectCheck(network::mojom::CORSError,
                                                const KURL& request_url,
@@ -73,6 +83,7 @@ struct PLATFORM_EXPORT ErrorParameter {
                  const HTTPHeaderMap&,
                  const SecurityOrigin&,
                  const WebURLRequest::RequestContext,
+                 const String& hint,
                  bool unknown);
 
   // Members that this struct carries.
@@ -83,6 +94,7 @@ struct PLATFORM_EXPORT ErrorParameter {
   const HTTPHeaderMap& header_map;
   const SecurityOrigin& origin;
   const WebURLRequest::RequestContext context;
+  const String& hint;
 
   // Set to true when an ErrorParameter was created in a wrong way. Used in
   // GetErrorString() to be robust for coding errors.

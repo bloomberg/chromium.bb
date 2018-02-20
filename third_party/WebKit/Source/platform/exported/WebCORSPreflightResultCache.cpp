@@ -29,7 +29,9 @@
 #include <memory>
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
+#include "net/http/http_request_headers.h"
 #include "platform/loader/cors/CORS.h"
+#include "platform/loader/cors/CORSErrorString.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/network/http_names.h"
@@ -42,188 +44,34 @@ namespace blink {
 
 namespace {
 
-// These values are at the discretion of the user agent.
+base::Optional<std::string> GetOptionalHeaderValue(
+    const WebHTTPHeaderMap& header_map,
+    const AtomicString& header_name) {
+  const AtomicString& result = header_map.Get(header_name);
+  if (result.IsNull())
+    return base::nullopt;
 
-constexpr TimeDelta kDefaultPreflightCacheTimeout = TimeDelta::FromSeconds(5);
-
-// Should be short enough to minimize the risk of using a poisoned cache after
-// switching to a secure network.
-constexpr TimeDelta kMaxPreflightCacheTimeout = TimeDelta::FromSeconds(600);
-
-bool ParseAccessControlMaxAge(const String& string, TimeDelta& expiry_delta) {
-  // FIXME: this will not do the correct thing for a number starting with a '+'
-  bool ok = false;
-  expiry_delta = TimeDelta::FromSeconds(string.ToUIntStrict(&ok));
-  return ok;
+  return std::string(result.Ascii().data(), result.Ascii().length());
 }
 
-template <class SetType>
-void AddToAccessControlAllowList(const std::string& string,
-                                 unsigned start,
-                                 unsigned end,
-                                 SetType& set) {
-  if (string.empty())
-    return;
-
-  // Skip white space from start.
-  while (start <= end && IsSpaceOrNewline(string.at(start)))
-    ++start;
-
-  // only white space
-  if (start > end)
-    return;
-
-  // Skip white space from end.
-  while (end && IsSpaceOrNewline(string.at(end)))
-    --end;
-
-  set.insert(string.substr(start, end - start + 1));
-}
-
-template <class SetType>
-bool ParseAccessControlAllowList(const std::string& string, SetType& set) {
-  unsigned start = 0;
-  size_t end;
-  while ((end = string.find(',', start)) != kNotFound) {
-    if (start != end)
-      AddToAccessControlAllowList(string, start, end - 1, set);
-    start = end + 1;
+std::unique_ptr<net::HttpRequestHeaders> CreateNetHttpRequestHeaders(
+    const WebHTTPHeaderMap& header_map) {
+  std::unique_ptr<net::HttpRequestHeaders> request_headers =
+      std::make_unique<net::HttpRequestHeaders>();
+  for (const auto& header : header_map.GetHTTPHeaderMap()) {
+    // TODO(toyoshim): Use CHECK() for a while to ensure that these assumptions
+    // are correct. Should be changed to DCHECK before the next branch cut.
+    CHECK(!header.key.IsNull());
+    CHECK(!header.value.IsNull());
+    request_headers->SetHeader(
+        std::string(header.key.Ascii().data(), header.key.Ascii().length()),
+        std::string(header.value.Ascii().data(),
+                    header.value.Ascii().length()));
   }
-  if (start != string.length())
-    AddToAccessControlAllowList(string, start, string.length() - 1, set);
-
-  return true;
+  return request_headers;
 }
 
 }  // namespace
-
-WebCORSPreflightResultCacheItem::WebCORSPreflightResultCacheItem(
-    network::mojom::FetchCredentialsMode credentials_mode,
-    base::TickClock* clock)
-    : credentials_(credentials_mode ==
-                   network::mojom::FetchCredentialsMode::kInclude),
-      clock_(clock) {}
-
-// static
-std::unique_ptr<WebCORSPreflightResultCacheItem>
-WebCORSPreflightResultCacheItem::Create(
-    const network::mojom::FetchCredentialsMode credentials_mode,
-    const WebHTTPHeaderMap& response_header,
-    WebString& error_description,
-    base::TickClock* clock) {
-  std::unique_ptr<WebCORSPreflightResultCacheItem> item =
-      base::WrapUnique(new WebCORSPreflightResultCacheItem(
-          credentials_mode,
-          clock ? clock : base::DefaultTickClock::GetInstance()));
-
-  if (!item->Parse(response_header, error_description))
-    return nullptr;
-
-  return item;
-}
-
-bool WebCORSPreflightResultCacheItem::Parse(
-    const WebHTTPHeaderMap& response_header,
-    WebString& error_description) {
-  methods_.clear();
-
-  const HTTPHeaderMap& response_header_map = response_header.GetHTTPHeaderMap();
-
-  if (!ParseAccessControlAllowList(
-          response_header_map.Get(HTTPNames::Access_Control_Allow_Methods)
-              .Ascii()
-              .data(),
-          methods_)) {
-    error_description =
-        "Cannot parse Access-Control-Allow-Methods response header field in "
-        "preflight response.";
-    return false;
-  }
-
-  headers_.clear();
-  if (!ParseAccessControlAllowList(
-          response_header_map.Get(HTTPNames::Access_Control_Allow_Headers)
-              .Ascii()
-              .data(),
-          headers_)) {
-    error_description =
-        "Cannot parse Access-Control-Allow-Headers response header field in "
-        "preflight response.";
-    return false;
-  }
-
-  TimeDelta expiry_delta;
-  if (ParseAccessControlMaxAge(
-          response_header_map.Get(HTTPNames::Access_Control_Max_Age),
-          expiry_delta)) {
-    if (expiry_delta > kMaxPreflightCacheTimeout)
-      expiry_delta = kMaxPreflightCacheTimeout;
-  } else {
-    expiry_delta = kDefaultPreflightCacheTimeout;
-  }
-
-  absolute_expiry_time_ = clock_->NowTicks() + expiry_delta;
-
-  return true;
-}
-
-bool WebCORSPreflightResultCacheItem::AllowsCrossOriginMethod(
-    const WebString& method,
-    WebString& error_description) const {
-  if (methods_.find(method.Ascii().data()) != methods_.end() ||
-      CORS::IsCORSSafelistedMethod(method)) {
-    return true;
-  }
-
-  if (!credentials_ && methods_.find("*") != methods_.end())
-    return true;
-
-  error_description = WebString::FromASCII("Method " + method.Ascii() +
-                                           " is not allowed by "
-                                           "Access-Control-Allow-Methods "
-                                           "in preflight response.");
-
-  return false;
-}
-
-bool WebCORSPreflightResultCacheItem::AllowsCrossOriginHeaders(
-    const WebHTTPHeaderMap& request_headers,
-    WebString& error_description) const {
-  if (!credentials_ && headers_.find("*") != headers_.end())
-    return true;
-
-  for (const auto& header : request_headers.GetHTTPHeaderMap()) {
-    if (headers_.find(header.key.Ascii().data()) == headers_.end() &&
-        !CORS::IsCORSSafelistedHeader(header.key, header.value) &&
-        !FetchUtils::IsForbiddenHeaderName(header.key)) {
-      error_description = String::Format(
-          "Request header field %s is not allowed by "
-          "Access-Control-Allow-Headers in preflight response.",
-          header.key.GetString().Utf8().data());
-      return false;
-    }
-  }
-  return true;
-}
-
-bool WebCORSPreflightResultCacheItem::AllowsRequest(
-    network::mojom::FetchCredentialsMode credentials_mode,
-    const WebString& method,
-    const WebHTTPHeaderMap& request_headers) const {
-  WebString ignored_explanation;
-
-  if (absolute_expiry_time_ < clock_->NowTicks())
-    return false;
-  if (!credentials_ &&
-      credentials_mode == network::mojom::FetchCredentialsMode::kInclude) {
-    return false;
-  }
-  if (!AllowsCrossOriginMethod(method, ignored_explanation))
-    return false;
-  if (!AllowsCrossOriginHeaders(request_headers, ignored_explanation))
-    return false;
-  return true;
-}
 
 WebCORSPreflightResultCache& WebCORSPreflightResultCache::Shared() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<WebCORSPreflightResultCache>,
@@ -234,10 +82,65 @@ WebCORSPreflightResultCache& WebCORSPreflightResultCache::Shared() {
 WebCORSPreflightResultCache::WebCORSPreflightResultCache() = default;
 WebCORSPreflightResultCache::~WebCORSPreflightResultCache() = default;
 
+bool WebCORSPreflightResultCache::EnsureResultAndMayAppendEntry(
+    const WebHTTPHeaderMap& response_header_map,
+    const WebString& origin,
+    const WebURL& request_url,
+    const WebString& request_method,
+    const WebHTTPHeaderMap& request_header_map,
+    network::mojom::FetchCredentialsMode request_credentials_mode,
+    WebString* error_description) {
+  DCHECK(error_description);
+
+  base::Optional<network::mojom::CORSError> error;
+
+  std::unique_ptr<network::cors::PreflightResult> result =
+      network::cors::PreflightResult::Create(
+          request_credentials_mode,
+          GetOptionalHeaderValue(response_header_map,
+                                 HTTPNames::Access_Control_Allow_Methods),
+          GetOptionalHeaderValue(response_header_map,
+                                 HTTPNames::Access_Control_Allow_Headers),
+          GetOptionalHeaderValue(response_header_map,
+                                 HTTPNames::Access_Control_Max_Age),
+          &error);
+  if (error) {
+    *error_description = CORS::GetErrorString(
+        CORS::ErrorParameter::CreateForPreflightResponseCheck(*error,
+                                                              String()));
+    return false;
+  }
+
+  DCHECK(!request_method.IsNull());
+  error = result->EnsureAllowedCrossOriginMethod(std::string(
+      request_method.Ascii().data(), request_method.Ascii().length()));
+  if (error) {
+    *error_description = CORS::GetErrorString(
+        CORS::ErrorParameter::CreateForPreflightResponseCheck(*error,
+                                                              request_method));
+    return false;
+  }
+
+  std::string detected_error_header;
+  error = result->EnsureAllowedCrossOriginHeaders(
+      *CreateNetHttpRequestHeaders(request_header_map), &detected_error_header);
+  if (error) {
+    *error_description = CORS::GetErrorString(
+        CORS::ErrorParameter::CreateForPreflightResponseCheck(
+            *error, String(detected_error_header.data(),
+                           detected_error_header.length())));
+    return false;
+  }
+
+  DCHECK(!error);
+  AppendEntry(origin, request_url, std::move(result));
+  return true;
+}
+
 void WebCORSPreflightResultCache::AppendEntry(
     const WebString& web_origin,
     const WebURL& web_url,
-    std::unique_ptr<WebCORSPreflightResultCacheItem> preflight_result) {
+    std::unique_ptr<network::cors::PreflightResult> preflight_result) {
   std::string url(web_url.GetString().Ascii());
   std::string origin(web_origin.Ascii());
 
@@ -262,8 +165,11 @@ bool WebCORSPreflightResultCache::CanSkipPreflight(
 
   // both origin and url in cache -> check if still valid and if sufficient to
   // skip redirect:
-  if (preflight_hash_map_[origin][url]->AllowsRequest(credentials_mode, method,
-                                                      request_headers)) {
+  DCHECK(!method.IsNull());
+  if (preflight_hash_map_[origin][url]->EnsureAllowedRequest(
+          credentials_mode,
+          std::string(method.Ascii().data(), method.Ascii().length()),
+          *CreateNetHttpRequestHeaders(request_headers))) {
     return true;
   }
 

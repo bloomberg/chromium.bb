@@ -16,6 +16,8 @@ component("cpp") {
     "cors/cors_url_loader.h",
     "cors/cors_url_loader_factory.cc",
     "cors/cors_url_loader_factory.h",
+    "cors/preflight_result.cc",
+    "cors/preflight_result.h",
     "features.cc",
     "features.h",
     "mutable_network_traffic_annotation_tag_mojom_traits.h",
@@ -102,6 +104,7 @@ source_set("tests") {
 
   sources = [
     "cors/cors_unittest.cc",
+    "cors/preflight_result_unittest.cc",
     "mutable_network_traffic_annotation_tag_mojom_traits_unittest.cc",
     "mutable_partial_network_traffic_annotation_tag_mojom_traits_unittest.cc",
     "network_mojom_traits_unittest.cc",
