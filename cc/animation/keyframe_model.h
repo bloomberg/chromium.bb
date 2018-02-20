@@ -154,7 +154,7 @@ class CC_ANIMATION_EXPORT KeyframeModel {
 
   std::string ToString() const;
 
-  void set_is_impl_only(bool is_impl_only) { is_impl_only_ = is_impl_only; }
+  void SetIsImplOnly();
   bool is_impl_only() const { return is_impl_only_; }
 
   void set_affects_active_elements(bool affects_active_elements) {
@@ -224,6 +224,8 @@ class CC_ANIMATION_EXPORT KeyframeModel {
   // instance on the impl thread is the instance that ultimately controls the
   // values of the animating layer and so we will refer to it as the
   // 'controlling instance'.
+  // Impl only keyframe models are the exception to this rule. They have only a
+  // single instance. We consider this instance as the 'controlling instance'.
   bool is_controlling_instance_;
 
   bool is_impl_only_;

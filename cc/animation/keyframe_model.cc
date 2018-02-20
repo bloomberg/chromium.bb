@@ -256,6 +256,9 @@ base::TimeDelta KeyframeModel::TrimTimeToCurrentIteration(
 
 std::unique_ptr<KeyframeModel> KeyframeModel::CloneAndInitialize(
     RunState initial_run_state) const {
+  // Should never clone a model that is the controlling instance as it ends up
+  // creating multiple controlling instances.
+  DCHECK(!is_controlling_instance_);
   std::unique_ptr<KeyframeModel> to_return(
       new KeyframeModel(curve_->Clone(), id_, group_, target_property_id_));
   to_return->run_state_ = initial_run_state;
@@ -292,4 +295,10 @@ std::string KeyframeModel::ToString() const {
       KeyframeModel::ToString(run_state_).c_str());
 }
 
+void KeyframeModel::SetIsImplOnly() {
+  is_impl_only_ = true;
+  // Impl only animations have a single instance which by definition is the
+  // controlling instance.
+  is_controlling_instance_ = true;
+}
 }  // namespace cc

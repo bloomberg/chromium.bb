@@ -76,8 +76,7 @@ class FakeFloatTransition : public FloatAnimationCurve {
 int AddScrollOffsetAnimationToPlayer(
     SingleKeyframeEffectAnimationPlayer* player,
     gfx::ScrollOffset initial_value,
-    gfx::ScrollOffset target_value,
-    bool impl_only);
+    gfx::ScrollOffset target_value);
 
 int AddAnimatedTransformToPlayer(SingleKeyframeEffectAnimationPlayer* player,
                                  double duration,
