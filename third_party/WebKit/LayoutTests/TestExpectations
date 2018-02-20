@@ -3311,3 +3311,5 @@ crbug.com/812941 [ Win7 ] external/wpt/css/css-multicol/multicol-inherit-003.xht
 crbug.com/812941 [ Win7 ] external/wpt/css/css-multicol/multicol-rule-color-inherit-001.xht [ Failure Pass ]
 crbug.com/812941 [ Win7 ] external/wpt/css/css-multicol/multicol-span-all-margin-nested-firstchild-001.xht [ Failure Pass ]
 crbug.com/812941 [ Win7 ] external/wpt/css/css-multicol/multicol-table-cell-vertical-align-001.xht [ Failure Pass ]
+
+crbug.com/813704 [ Win7 Mac ] http/tests/images/png-partial-load-as-document.html [ Failure Pass ]
