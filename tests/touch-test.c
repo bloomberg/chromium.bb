@@ -27,6 +27,7 @@
 
 #include <time.h>
 
+#include "input-timestamps-helper.h"
 #include "shared/timespec-util.h"
 #include "weston-test-client-helper.h"
 #include "wayland-server-protocol.h"
@@ -34,6 +35,7 @@
 static const struct timespec t1 = { .tv_sec = 1, .tv_nsec = 1000001 };
 static const struct timespec t2 = { .tv_sec = 2, .tv_nsec = 2000001 };
 static const struct timespec t3 = { .tv_sec = 3, .tv_nsec = 3000001 };
+static const struct timespec t_other = { .tv_sec = 123, .tv_nsec = 456 };
 
 static struct client *
 create_touch_test_client(void)
@@ -59,13 +61,63 @@ TEST(touch_events)
 {
 	struct client *client = create_touch_test_client();
 	struct touch *touch = client->input->touch;
+	struct input_timestamps *input_ts =
+		input_timestamps_create_for_touch(client);
 
 	send_touch(client, &t1, WL_TOUCH_DOWN);
 	assert(touch->down_time_msec == timespec_to_msec(&t1));
+	assert(timespec_eq(&touch->down_time_timespec, &t1));
 
 	send_touch(client, &t2, WL_TOUCH_MOTION);
 	assert(touch->motion_time_msec == timespec_to_msec(&t2));
+	assert(timespec_eq(&touch->motion_time_timespec, &t2));
 
 	send_touch(client, &t3, WL_TOUCH_UP);
 	assert(touch->up_time_msec == timespec_to_msec(&t3));
+	assert(timespec_eq(&touch->up_time_timespec, &t3));
+
+	input_timestamps_destroy(input_ts);
+}
+
+TEST(touch_timestamps_stop_after_input_timestamps_object_is_destroyed)
+{
+	struct client *client = create_touch_test_client();
+	struct touch *touch = client->input->touch;
+	struct input_timestamps *input_ts =
+		input_timestamps_create_for_touch(client);
+
+	send_touch(client, &t1, WL_TOUCH_DOWN);
+	assert(touch->down_time_msec == timespec_to_msec(&t1));
+	assert(timespec_eq(&touch->down_time_timespec, &t1));
+
+	input_timestamps_destroy(input_ts);
+
+	send_touch(client, &t2, WL_TOUCH_UP);
+	assert(touch->up_time_msec == timespec_to_msec(&t2));
+	assert(timespec_is_zero(&touch->up_time_timespec));
+}
+
+TEST(touch_timestamps_stop_after_client_releases_wl_touch)
+{
+	struct client *client = create_touch_test_client();
+	struct touch *touch = client->input->touch;
+	struct input_timestamps *input_ts =
+		input_timestamps_create_for_touch(client);
+
+	send_touch(client, &t1, WL_TOUCH_DOWN);
+	assert(touch->down_time_msec == timespec_to_msec(&t1));
+	assert(timespec_eq(&touch->down_time_timespec, &t1));
+
+	wl_touch_release(client->input->touch->wl_touch);
+
+	/* Set input_timestamp to an arbitrary value (different from t1, t2
+	 * and 0) and check that it is not changed by sending the event.
+	 * This is preferred over just checking for 0, since 0 is used
+	 * internally for resetting the timestamp after handling an input
+	 * event and checking for it here may lead to false negatives. */
+	touch->input_timestamp = t_other;
+	send_touch(client, &t2, WL_TOUCH_UP);
+	assert(timespec_eq(&touch->input_timestamp, &t_other));
+
+	input_timestamps_destroy(input_ts);
 }

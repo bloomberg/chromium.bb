@@ -415,6 +415,8 @@ struct weston_touch {
 	wl_fixed_t grab_x, grab_y;
 	uint32_t grab_serial;
 	struct timespec grab_time;
+
+	struct wl_list timestamps_list;
 };
 
 void

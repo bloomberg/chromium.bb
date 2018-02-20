@@ -758,10 +758,14 @@ weston_touch_send_down(struct weston_touch *touch, const struct timespec *time,
 	resource_list = &touch->focus_resource_list;
 	serial = wl_display_next_serial(display);
 	msecs = timespec_to_msec(time);
-	wl_resource_for_each(resource, resource_list)
-			wl_touch_send_down(resource, serial, msecs,
-					   touch->focus->surface->resource,
-					   touch_id, sx, sy);
+	wl_resource_for_each(resource, resource_list) {
+		send_timestamps_for_input_resource(resource,
+						   &touch->timestamps_list,
+						   time);
+		wl_touch_send_down(resource, serial, msecs,
+				   touch->focus->surface->resource,
+				   touch_id, sx, sy);
+	}
 }
 
 static void
@@ -798,8 +802,12 @@ weston_touch_send_up(struct weston_touch *touch, const struct timespec *time,
 	resource_list = &touch->focus_resource_list;
 	serial = wl_display_next_serial(display);
 	msecs = timespec_to_msec(time);
-	wl_resource_for_each(resource, resource_list)
+	wl_resource_for_each(resource, resource_list) {
+		send_timestamps_for_input_resource(resource,
+						   &touch->timestamps_list,
+						   time);
 		wl_touch_send_up(resource, serial, msecs, touch_id);
+	}
 }
 
 static void
@@ -839,6 +847,9 @@ weston_touch_send_motion(struct weston_touch *touch,
 	resource_list = &touch->focus_resource_list;
 	msecs = timespec_to_msec(time);
 	wl_resource_for_each(resource, resource_list) {
+		send_timestamps_for_input_resource(resource,
+						   &touch->timestamps_list,
+						   time);
 		wl_touch_send_motion(resource, msecs,
 				     touch_id, sx, sy);
 	}
@@ -1276,6 +1287,7 @@ weston_touch_create(void)
 	touch->default_grab.touch = touch;
 	touch->grab = &touch->default_grab;
 	wl_signal_init(&touch->focus_signal);
+	wl_list_init(&touch->timestamps_list);
 
 	return touch;
 }
@@ -1297,6 +1309,7 @@ weston_touch_destroy(struct weston_touch *touch)
 	wl_list_remove(&touch->focus_resource_list);
 	wl_list_remove(&touch->focus_view_listener.link);
 	wl_list_remove(&touch->focus_resource_listener.link);
+	wl_list_remove(&touch->timestamps_list);
 	free(touch);
 }
 
@@ -2648,6 +2661,19 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 }
 
 static void
+destroy_touch_resource(struct wl_resource *resource)
+{
+	struct weston_touch *touch = wl_resource_get_user_data(resource);
+
+	wl_list_remove(wl_resource_get_link(resource));
+
+	if (touch) {
+		remove_input_resource_from_timestamps(resource,
+						      &touch->timestamps_list);
+	}
+}
+
+static void
 touch_release(struct wl_client *client, struct wl_resource *resource)
 {
 	wl_resource_destroy(resource);
@@ -2682,7 +2708,7 @@ seat_get_touch(struct wl_client *client, struct wl_resource *resource,
 
 	wl_list_init(wl_resource_get_link(cr));
 	wl_resource_set_implementation(cr, &touch_interface,
-				       touch, unbind_resource);
+				       touch, destroy_touch_resource);
 
 	/* If we don't have a touch_state, the resource is inert, so there
 	 * is nothing more to set up */
@@ -4731,7 +4757,28 @@ input_timestamps_manager_get_touch_timestamps(struct wl_client *client,
 					      uint32_t id,
 					      struct wl_resource *touch_resource)
 {
-	wl_client_post_no_memory(client);
+	struct weston_touch *touch = wl_resource_get_user_data(touch_resource);
+	struct wl_resource *input_ts;
+
+	input_ts = wl_resource_create(client,
+				      &zwp_input_timestamps_v1_interface,
+				      1, id);
+	if (!input_ts) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
+	if (touch) {
+		wl_list_insert(&touch->timestamps_list,
+			       wl_resource_get_link(input_ts));
+	} else {
+		wl_list_init(wl_resource_get_link(input_ts));
+	}
+
+	wl_resource_set_implementation(input_ts,
+				       &input_timestamps_interface,
+				       touch_resource,
+				       unbind_resource);
 }
 
 static const struct zwp_input_timestamps_manager_v1_interface
