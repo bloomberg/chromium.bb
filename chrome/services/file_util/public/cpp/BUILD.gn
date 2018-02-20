@@ -14,6 +14,8 @@ source_set("cpp") {
     sources = [
       "sandboxed_dmg_analyzer_mac.cc",
       "sandboxed_dmg_analyzer_mac.h",
+      "sandboxed_rar_analyzer.cc",
+      "sandboxed_rar_analyzer.h",
       "sandboxed_zip_analyzer.cc",
       "sandboxed_zip_analyzer.h",
     ]
@@ -25,7 +27,9 @@ source_set("cpp") {
     }
 
     #TODO(crbug/750327): This dependency is here temporarily.
-    deps = [ "//third_party/unrar:unrar" ]
+    deps = [
+      "//third_party/unrar:unrar",
+    ]
 
     public_deps += [ "//chrome/common/safe_browsing" ]
   }
