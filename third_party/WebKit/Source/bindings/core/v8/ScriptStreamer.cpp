@@ -597,16 +597,9 @@ void ScriptStreamer::StartStreaming(
   // to arrive: the Content-Length HTTP header is not sent for chunked
   // downloads.
 
-  // Decide what kind of cached data we should produce while streaming. Only
-  // produce parser cache if the non-streaming compile takes advantage of it.
-  v8::ScriptCompiler::CompileOptions compile_option =
-      v8::ScriptCompiler::kNoCompileOptions;
-  if (settings->GetV8CacheOptions() == kV8CacheOptionsParse)
-    compile_option = v8::ScriptCompiler::kProduceParserCache;
-
-  ScriptStreamer* streamer =
-      new ScriptStreamer(script, script_type, script_state, compile_option,
-                         std::move(loading_task_runner));
+  ScriptStreamer* streamer = new ScriptStreamer(
+      script, script_type, script_state, v8::ScriptCompiler::kNoCompileOptions,
+      std::move(loading_task_runner));
 
   // If this script was ready when streaming began, no callbacks will be
   // received to populate the data for the ScriptStreamer, so send them now.

@@ -80,8 +80,6 @@ V8CacheOptions GetV8CacheOptions() {
     v8_cache_options = base::FieldTrialList::FindFullName("V8CacheOptions");
   if (v8_cache_options == "none") {
     return V8_CACHE_OPTIONS_NONE;
-  } else if (v8_cache_options == "parse") {
-    return V8_CACHE_OPTIONS_PARSE;
   } else if (v8_cache_options == "code") {
     return V8_CACHE_OPTIONS_CODE;
   } else {

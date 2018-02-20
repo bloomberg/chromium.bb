@@ -336,14 +336,12 @@ const char* CompileOptionsString(v8::ScriptCompiler::CompileOptions options) {
   switch (options) {
     case v8::ScriptCompiler::kNoCompileOptions:
       return "code";
-    case v8::ScriptCompiler::kProduceParserCache:
-      return "parser";
-    case v8::ScriptCompiler::kConsumeParserCache:
-      return "parser";
     case v8::ScriptCompiler::kConsumeCodeCache:
       return "code";
     case v8::ScriptCompiler::kEagerCompile:
       return "full code";
+    case v8::ScriptCompiler::kProduceParserCache:
+    case v8::ScriptCompiler::kConsumeParserCache:
     case v8::ScriptCompiler::kProduceCodeCache:
     case v8::ScriptCompiler::kProduceFullCodeCache:
       NOTREACHED();
@@ -1055,8 +1053,7 @@ InspectorCompileScriptEvent::V8CacheResult::ProduceResult::ProduceResult(
     v8::ScriptCompiler::CompileOptions produce_options,
     int cache_size)
     : produce_options(produce_options), cache_size(cache_size) {
-  DCHECK(produce_options == v8::ScriptCompiler::kProduceParserCache ||
-         produce_options == v8::ScriptCompiler::kNoCompileOptions ||
+  DCHECK(produce_options == v8::ScriptCompiler::kNoCompileOptions ||
          produce_options == v8::ScriptCompiler::kEagerCompile);
 }
 
@@ -1067,8 +1064,7 @@ InspectorCompileScriptEvent::V8CacheResult::ConsumeResult::ConsumeResult(
     : consume_options(consume_options),
       cache_size(cache_size),
       rejected(rejected) {
-  DCHECK(consume_options == v8::ScriptCompiler::kConsumeParserCache ||
-         consume_options == v8::ScriptCompiler::kConsumeCodeCache);
+  DCHECK_EQ(consume_options, v8::ScriptCompiler::kConsumeCodeCache);
 }
 
 InspectorCompileScriptEvent::V8CacheResult::V8CacheResult(
