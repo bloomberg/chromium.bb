@@ -23,9 +23,6 @@ namespace content {
 //(e.g., ServiceWorkerURLLoaderJob and ServiceWorkerSubresourceLoader).
 class ServiceWorkerLoaderHelpers {
  public:
-  static std::unique_ptr<ServiceWorkerFetchRequest> CreateFetchRequest(
-      const network::ResourceRequest& request);
-
   // Populates |out_head->headers| with the given |status_code|, |status_text|,
   // and |headers|.
   static void SaveResponseHeaders(const int status_code,

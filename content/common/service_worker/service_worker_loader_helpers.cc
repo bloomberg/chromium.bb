@@ -43,38 +43,6 @@ class BlobCompleteCaller : public blink::mojom::BlobReaderClient {
 }  // namespace
 
 // static
-std::unique_ptr<ServiceWorkerFetchRequest>
-ServiceWorkerLoaderHelpers::CreateFetchRequest(
-    const network::ResourceRequest& request) {
-  auto new_request = std::make_unique<ServiceWorkerFetchRequest>();
-  new_request->mode = request.fetch_request_mode;
-  new_request->is_main_resource_load = ServiceWorkerUtils::IsMainResourceType(
-      static_cast<ResourceType>(request.resource_type));
-  new_request->request_context_type =
-      static_cast<RequestContextType>(request.fetch_request_context_type);
-  new_request->frame_type = request.fetch_frame_type;
-  new_request->url = request.url;
-  new_request->method = request.method;
-  // |blob_uuid| and |blob_size| aren't used in MojoBlobs, so just clear them.
-  // The caller is responsible for setting the MojoBlob field |blob| if needed.
-  new_request->blob_uuid.clear();
-  new_request->blob_size = 0;
-  new_request->credentials_mode = request.fetch_credentials_mode;
-  new_request->cache_mode =
-      ServiceWorkerFetchRequest::GetCacheModeFromLoadFlags(request.load_flags);
-  new_request->redirect_mode = request.fetch_redirect_mode;
-  new_request->keepalive = request.keepalive;
-  new_request->is_reload = ui::PageTransitionCoreTypeIs(
-      static_cast<ui::PageTransition>(request.transition_type),
-      ui::PAGE_TRANSITION_RELOAD);
-  new_request->referrer = Referrer(
-      GURL(request.referrer), Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
-                                  request.referrer_policy));
-  new_request->fetch_type = ServiceWorkerFetchType::FETCH;
-  return new_request;
-}
-
-// static
 void ServiceWorkerLoaderHelpers::SaveResponseHeaders(
     const int status_code,
     const std::string& status_text,
