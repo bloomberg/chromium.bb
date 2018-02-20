@@ -58,6 +58,7 @@
 #include "ui/display/manager/chromeos/touch_device_manager.h"
 #else
 #include "chrome/browser/ui/webui/settings/system_handler.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #endif
 
 #if defined(OS_WIN)
@@ -1352,7 +1353,7 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
                           arraysize(localized_strings));
 }
 
-void AddPeopleStrings(content::WebUIDataSource* html_source) {
+void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   LocalizedString localized_strings[] = {
     {"peoplePageTitle", IDS_SETTINGS_PEOPLE},
     {"manageOtherPeople", IDS_SETTINGS_PEOPLE_MANAGE_OTHER_PEOPLE},
@@ -1462,7 +1463,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_PEOPLE_SIGN_IN_PROMPT_SECONDARY},
     {"useAnotherAccount", IDS_SETTINGS_PEOPLE_SYNC_ANOTHER_ACCOUNT},
     {"syncAsName", IDS_SETTINGS_PEOPLE_SYNC_AS_NAME},
-    {"syncedToName", IDS_SETTINGS_PEOPLE_SYNCED_TO_NAME},
+    {"syncedToName", IDS_SETTINGS_PEOPLE_SYNCED_AS_NAME},
     {"turnOffSync", IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF},
 #endif
     {"syncOverview", IDS_SETTINGS_SYNC_OVERVIEW},
@@ -1578,6 +1579,20 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
           IDS_SETTINGS_SYNC_DISCONNECT_MANAGED_PROFILE_EXPLANATION,
           base::ASCIIToUTF16("$1"),
           base::ASCIIToUTF16(sync_dashboard_url)));
+
+  // The syncDisconnect text differs depending on Dice-enabledness.
+  if (signin::IsDiceEnabledForProfile(profile->GetPrefs())) {
+    LocalizedString sync_disconnect_strings[] = {
+        {"syncDisconnect", IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_CONFIRM},
+        {"syncDisconnectTitle", IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_TITLE},
+        {"syncDisconnectDeleteProfile",
+         IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_CHECKBOX},
+        {"syncDisconnectConfirm",
+         IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_MANAGED_CONFIRM},
+    };
+    AddLocalizedStringsBulk(html_source, sync_disconnect_strings,
+                            arraysize(sync_disconnect_strings));
+  }
 #endif
 
   html_source->AddString("syncErrorHelpUrl", chrome::kSyncErrorsHelpURL);
@@ -2275,7 +2290,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddLanguagesStrings(html_source);
   AddOnStartupStrings(html_source);
   AddPasswordsAndFormsStrings(html_source);
-  AddPeopleStrings(html_source);
+  AddPeopleStrings(html_source, profile);
   AddPrintingStrings(html_source);
   AddPrivacyStrings(html_source, profile);
   AddResetStrings(html_source);

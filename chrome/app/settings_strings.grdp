@@ -3093,11 +3093,11 @@
     <message name="IDS_SETTINGS_PEOPLE_SYNC_ANOTHER_ACCOUNT" desc="The label for the button that lets the user choose another account to sync with.">
       Use another account
     </message>
-    <message name="IDS_SETTINGS_PEOPLE_SYNC_AS_NAME" desc="The label for the button that lets the user lock-in the account to sync with.">
+    <message name="IDS_SETTINGS_PEOPLE_SYNC_AS_NAME" desc="The label for the button that lets the user start syncing with the selected account.">
       Sync as <ph name="FULL_NAME">$1<ex>Bob Smith</ex></ph>
     </message>
-    <message name="IDS_SETTINGS_PEOPLE_SYNCED_TO_NAME" desc="The text displayed to the user that the profile is currently synced to a specific account.">
-      Synced to <ph name="FULL_NAME">$1<ex>Bob Smith</ex></ph>
+    <message name="IDS_SETTINGS_PEOPLE_SYNCED_AS_NAME" desc="The text displayed to the user that the profile is currently synced to a specific account.">
+      Synced as <ph name="FULL_NAME">$1<ex>Bob Smith</ex></ph>
     </message>
     <message name="IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF" desc="The label for the button that lets the user turn off profile syncing with their gaia account.">
       Turn off
@@ -3110,6 +3110,18 @@
     </message>
     <message name="IDS_SETTINGS_PROFILE_SHORTCUT_TOGGLE_LABEL" desc="Label of the toggle that creates or removes a desktop shortcut for the profile.">
       Show desktop shortcut
+    </message>
+    <message name="IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_TITLE" desc="The text to display on the title of the dialog to turn off sync.">
+      Turn off sync
+    </message>
+    <message name="IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_CONFIRM" desc="The text to display on the confirm button of the dialog to turn off sync.">
+      Continue
+    </message>
+    <message name="IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_MANAGED_CONFIRM" desc="The text to display on the confirm button of the dialog to turn off sync, when the profile is managed by admin.">
+      Clear and continue
+    </message>
+    <message name="IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_CHECKBOX" desc="The text to display next to the checkbox of the dialog to turn off sync, asking users if they want to clear these data from the device.">
+      Clear bookmarks, history, passwords, and more from this device
     </message>
   </if>
 
