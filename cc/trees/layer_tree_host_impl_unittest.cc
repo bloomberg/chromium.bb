@@ -4519,6 +4519,80 @@ class DidDrawCheckLayer : public LayerImpl {
   bool did_draw_called_;
 };
 
+TEST_F(LayerTreeHostImplTest, DamageShouldNotCareAboutContributingLayers) {
+  host_impl_->SetViewportSize(gfx::Size(10, 10));
+  host_impl_->active_tree()->SetRootLayerForTesting(
+      DidDrawCheckLayer::Create(host_impl_->active_tree(), 1));
+  auto* root =
+      static_cast<DidDrawCheckLayer*>(*host_impl_->active_tree()->begin());
+
+  // Make a child layer that draws.
+  root->test_properties()->AddChild(
+      SolidColorLayerImpl::Create(host_impl_->active_tree(), 2));
+  auto* layer =
+      static_cast<SolidColorLayerImpl*>(root->test_properties()->children[0]);
+  layer->SetBounds(gfx::Size(10, 10));
+  layer->SetDrawsContent(true);
+  layer->SetBackgroundColor(SK_ColorRED);
+
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+
+  {
+    TestFrameData frame;
+    EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+
+    EXPECT_FALSE(frame.has_no_damage);
+    EXPECT_NE(frame.render_passes.size(), 0u);
+    size_t total_quad_count = 0;
+    for (const auto& pass : frame.render_passes)
+      total_quad_count += pass->quad_list.size();
+    EXPECT_NE(total_quad_count, 0u);
+    host_impl_->DrawLayers(&frame);
+    host_impl_->DidDrawAllLayers(frame);
+  }
+
+  // Stops the child layer from drawing. We should have damage from this but
+  // should not have any quads. This should clear the damaged area.
+  layer->SetDrawsContent(false);
+  root->test_properties()->opacity = 0.f;
+
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+  // The background is default to transparent. If the background is opaque, we
+  // would fill the frame with background colour when no layers are contributing
+  // quads. This means we would end up with 0 quad.
+  EXPECT_EQ(host_impl_->active_tree()->background_color(), SK_ColorTRANSPARENT);
+
+  {
+    TestFrameData frame;
+    EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+
+    EXPECT_FALSE(frame.has_no_damage);
+    EXPECT_NE(frame.render_passes.size(), 0u);
+    size_t total_quad_count = 0;
+    for (const auto& pass : frame.render_passes)
+      total_quad_count += pass->quad_list.size();
+    EXPECT_EQ(total_quad_count, 0u);
+    host_impl_->DrawLayers(&frame);
+    host_impl_->DidDrawAllLayers(frame);
+  }
+
+  // Now tries to draw again. Nothing changes, so should have no damage, no
+  // render pass, and no quad.
+  {
+    TestFrameData frame;
+    EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+
+    EXPECT_TRUE(frame.has_no_damage);
+    EXPECT_EQ(frame.render_passes.size(), 0u);
+    size_t total_quad_count = 0;
+    for (const auto& pass : frame.render_passes)
+      total_quad_count += pass->quad_list.size();
+    EXPECT_EQ(total_quad_count, 0u);
+    host_impl_->DrawLayers(&frame);
+    host_impl_->DidDrawAllLayers(frame);
+  }
+}
+
 TEST_F(LayerTreeHostImplTest, WillDrawReturningFalseDoesNotCall) {
   // The root layer is always drawn, so run this test on a child layer that
   // will be masked out by the root layer's bounds.
