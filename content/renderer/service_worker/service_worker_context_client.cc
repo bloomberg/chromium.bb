@@ -336,11 +336,6 @@ base::OnceCallback<void(int /* event_id */)> CreateAbortCallback(MapType* map,
       map, std::forward<Args>(args)..., base::Time::Now());
 }
 
-void OnResponseBlobDispatchDone(
-    const blink::WebServiceWorkerResponse& response) {
-  // This frees the ref to the internal data of |response|.
-}
-
 template <typename Signature>
 class CallbackWrapperOnWorkerThread;
 
@@ -1109,20 +1104,16 @@ void ServiceWorkerContextClient::RespondToFetchEvent(
   const mojom::ServiceWorkerFetchResponseCallbackPtr& response_callback =
       context_->fetch_response_callbacks[fetch_event_id];
 
-  if (response.blob_uuid.size()) {
+  if (!response.blob_uuid.empty()) {
+    // TODO(falken): Can we just keep |response.blob| and call OnResponse
+    // directly?
     blink::mojom::BlobPtr blob_ptr;
-    if (response.blob) {
-      blob_ptr = response.blob->TakeBlobPtr();
-      response.blob = nullptr;
-      response_callback->OnResponseBlob(
-          response, std::move(blob_ptr),
-          base::Time::FromDoubleT(event_dispatch_time));
-    } else {
-      // TODO(kinuko): Remove this hack once kMojoBlobs is enabled by default.
-      response_callback->OnResponseLegacyBlob(
-          response, base::Time::FromDoubleT(event_dispatch_time),
-          base::BindOnce(&OnResponseBlobDispatchDone, web_response));
-    }
+    DCHECK(response.blob);
+    blob_ptr = response.blob->TakeBlobPtr();
+    response.blob = nullptr;
+    response_callback->OnResponseBlob(
+        response, std::move(blob_ptr),
+        base::Time::FromDoubleT(event_dispatch_time));
   } else {
     response_callback->OnResponse(response,
                                   base::Time::FromDoubleT(event_dispatch_time));
