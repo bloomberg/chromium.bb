@@ -41,10 +41,12 @@ class PresubmitTest(unittest.TestCase):
         """
         diff_file_webkit_h = ['some diff']
         diff_file_chromium_h = ['another diff']
+        diff_file_test_expectations = ['more diff']
         mock_input_api = MockInputApi()
         mock_input_api.files = [
             MockAffectedFile('FileWebkit.h', diff_file_webkit_h),
-            MockAffectedFile('file_chromium.h', diff_file_chromium_h)
+            MockAffectedFile('file_chromium.h', diff_file_chromium_h),
+            MockAffectedFile('LayoutTests/TestExpectations', diff_file_test_expectations)
         ]
         # Access to a protected member _CheckStyle
         # pylint: disable=W0212
@@ -52,8 +54,9 @@ class PresubmitTest(unittest.TestCase):
         capture = Capture()
         # pylint: disable=E1101
         subprocess.Popen.assert_called_with(capture, stderr=-1)
-        self.assertEqual(4, len(capture.value))
+        self.assertEqual(5, len(capture.value))
         self.assertEqual('../../FileWebkit.h', capture.value[3])
+        self.assertEqual('../../LayoutTests/TestExpectations', capture.value[4])
 
     @mock.patch('subprocess.Popen')
     def testCheckChangeOnUploadWithEmptyAffectedFileList(self, _):
@@ -62,10 +65,12 @@ class PresubmitTest(unittest.TestCase):
         """
         diff_file_chromium1_h = ['some diff']
         diff_file_chromium2_h = ['another diff']
+        diff_file_layout_test_html = ['more diff']
         mock_input_api = MockInputApi()
         mock_input_api.files = [
             MockAffectedFile('first_file_chromium.h', diff_file_chromium1_h),
-            MockAffectedFile('second_file_chromium.h', diff_file_chromium2_h)
+            MockAffectedFile('second_file_chromium.h', diff_file_chromium2_h),
+            MockAffectedFile('LayoutTests/some_tests.html', diff_file_layout_test_html)
         ]
         # Access to a protected member _CheckStyle
         # pylint: disable=W0212
