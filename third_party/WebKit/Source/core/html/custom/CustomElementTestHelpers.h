@@ -118,8 +118,8 @@ class CreateElement {
     return *this;
   }
 
-  CreateElement& WithIsAttribute(const AtomicString& value) {
-    attributes_.push_back(std::make_pair(HTMLNames::isAttr, value));
+  CreateElement& WithIsValue(const AtomicString& value) {
+    is_value_ = value;
     return *this;
   }
 
@@ -128,8 +128,9 @@ class CreateElement {
     if (!document)
       document = HTMLDocument::CreateForTest();
     NonThrowableExceptionState no_exceptions;
-    Element* element =
-        document->createElementNS(namespace_uri_, local_name_, no_exceptions);
+    Element* element = document->CreateElement(
+        QualifiedName(g_null_atom, local_name_, namespace_uri_),
+        CreateElementFlags::ByCreateElement(), is_value_);
     for (const auto& attribute : attributes_)
       element->setAttribute(attribute.first, attribute.second);
     return element;
@@ -139,6 +140,7 @@ class CreateElement {
   Member<Document> document_;
   AtomicString namespace_uri_;
   AtomicString local_name_;
+  AtomicString is_value_;
   std::vector<std::pair<QualifiedName, AtomicString>> attributes_;
 };
 

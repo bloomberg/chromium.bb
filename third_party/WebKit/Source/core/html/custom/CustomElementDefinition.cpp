@@ -95,7 +95,9 @@ HTMLElement* CustomElementDefinition::CreateElementForConstructor(
   HTMLElement* element =
       HTMLElementFactory::Create(Descriptor().LocalName(), document,
                                  CreateElementFlags::ByCreateElement());
-  if (!element) {
+  if (element) {
+    element->SetIsValue(Descriptor().GetName());
+  } else {
     element =
         HTMLElement::Create(QualifiedName(g_null_atom, Descriptor().LocalName(),
                                           HTMLNames::xhtmlNamespaceURI),
@@ -130,6 +132,7 @@ HTMLElement* CustomElementDefinition::CreateElement(
     // is value set to is, and node document set to document.
     auto* result = document.CreateRawElement(tag_name, flags);
     result->SetCustomElementState(CustomElementState::kUndefined);
+    result->SetIsValue(Descriptor().GetName());
 
     // 5.3. If the synchronous custom elements flag is set, upgrade
     // element using definition.

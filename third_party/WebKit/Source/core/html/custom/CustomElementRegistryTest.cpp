@@ -101,7 +101,7 @@ TEST_F(CustomElementRegistryTest,
   // Does not match: local name is not hello-world
   Element* element_c = CreateElement("button")
                            .InDocument(&GetDocument())
-                           .WithIsAttribute("hello-world");
+                           .WithIsValue("hello-world");
   GetDocument().documentElement()->AppendChild(element_a);
   element_a->AppendChild(element_b);
   element_a->AppendChild(element_c);

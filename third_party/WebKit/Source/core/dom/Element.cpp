@@ -2431,10 +2431,15 @@ CustomElementDefinition* Element::GetCustomElementDefinition() const {
   return nullptr;
 }
 
+void Element::SetIsValue(const AtomicString& is_value) {
+  DCHECK(IsValue().IsNull()) << "SetIsValue() should be called at most once.";
+  EnsureElementRareData().SetIsValue(is_value);
+}
+
 const AtomicString& Element::IsValue() const {
-  // TODO(tkent): "is value" should be a data member of
-  // Element. crbug.com/807871.
-  return FastGetAttribute(HTMLNames::isAttr);
+  if (HasRareData())
+    return GetElementRareData()->IsValue();
+  return g_null_atom;
 }
 
 ShadowRoot* Element::createShadowRoot(const ScriptState* script_state,

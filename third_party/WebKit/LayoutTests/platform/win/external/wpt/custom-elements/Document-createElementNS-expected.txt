@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-PASS autonomous: document.createElementNS should create custom elements with prefixes.
-PASS autonomous: document.createElementNS should check namespaces.
-PASS autonomous: document.createElementNS should not create HTMLUnknownElement for a valid custom element name
-FAIL builtin: document.createElementNS should create custom elements with prefixes. assert_false: expected false got true
-FAIL builtin: document.createElementNS should check namespaces. assert_false: expected false got true
-Harness: the test ran to completion.
-
