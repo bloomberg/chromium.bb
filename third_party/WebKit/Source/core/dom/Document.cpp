@@ -1261,15 +1261,6 @@ Node* Document::importNode(Node* imported_node,
 
   // 2. Return a clone of node, with context object and the clone children flag
   // set if deep is true.
-  if (imported_node->IsAttributeNode()) {
-    // The following code doesn't create an Attr with namespace.  See
-    // crbug.com/812105.
-    return Attr::Create(
-        *this,
-        QualifiedName(g_null_atom, AtomicString(ToAttr(imported_node)->name()),
-                      g_null_atom),
-        ToAttr(imported_node)->value());
-  }
   return imported_node->Clone(
       *this, deep ? CloneChildrenFlag::kClone : CloneChildrenFlag::kSkip);
 }
