@@ -34,6 +34,7 @@
 class AccountId;
 class GURL;
 class PrefRegistrySimple;
+class PrefService;
 class Profile;
 class TokenHandleFetcher;
 
@@ -120,7 +121,8 @@ class UserSessionManager
 
   // Appends additional command switches to the given command line if
   // SitePerProcess/IsolateOrigins policy is present.
-  static void MaybeAppendPolicySwitches(base::CommandLine* user_flags);
+  static void MaybeAppendPolicySwitches(PrefService* user_profile_prefs,
+                                        base::CommandLine* user_flags);
 
   // Invoked after the tmpfs is successfully mounted.
   // Asks session_manager to restart Chrome in Guest session mode.
@@ -428,6 +430,10 @@ class UserSessionManager
   // Controls whether token handle fetching is enabled (used in tests).
   void SetShouldObtainHandleInTests(bool should_obtain_handles);
 
+  // Sets the function which is used to request a chrome restart.
+  void SetAttemptRestartClosureInTests(
+      const base::RepeatingClosure& attempt_restart_closure);
+
   // The user pods display type for histogram.
   enum UserPodsDisplay {
     // User pods enabling or disabling is possible either via local settings or
@@ -542,6 +548,9 @@ class UserSessionManager
   bool easy_unlock_key_ops_finished_ = true;
 
   std::vector<base::OnceClosure> easy_unlock_key_ops_finished_callbacks_;
+
+  // Mapped to |chrome::AttemptRestart|, except in tests.
+  base::RepeatingClosure attempt_restart_closure_;
 
   base::WeakPtrFactory<UserSessionManager> weak_factory_;
 

@@ -223,7 +223,8 @@ void FlagsDOMHandler::HandleRestartBrowser(const base::ListValue* args) {
 
   // Apply additional switches from policy that should not be dropped when
   // applying flags..
-  chromeos::UserSessionManager::MaybeAppendPolicySwitches(&user_flags);
+  chromeos::UserSessionManager::MaybeAppendPolicySwitches(
+      Profile::FromWebUI(web_ui())->GetPrefs(), &user_flags);
 
   base::CommandLine::StringVector flags;
   // argv[0] is the program name |base::CommandLine::NO_PROGRAM|.

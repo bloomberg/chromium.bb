@@ -26,5 +26,10 @@ void UserSessionManagerTestApi::SetShouldObtainTokenHandleInTests(
   session_manager_->SetShouldObtainHandleInTests(should_obtain_handle);
 }
 
+void UserSessionManagerTestApi::SetAttemptRestartClosureInTests(
+    const base::RepeatingClosure& attempt_restart_closure) {
+  session_manager_->SetAttemptRestartClosureInTests(attempt_restart_closure);
+}
+
 }  // namespace test
 }  // namespace chromeos
