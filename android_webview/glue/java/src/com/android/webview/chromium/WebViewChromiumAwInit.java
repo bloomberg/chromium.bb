@@ -105,6 +105,23 @@ class WebViewChromiumAwInit {
             return;
         }
 
+        // Make sure that ResourceProvider is initialized before starting the browser process.
+        final PackageInfo webViewPackageInfo = WebViewFactory.getLoadedPackageInfo();
+        final String webViewPackageName = webViewPackageInfo.packageName;
+        final Context context = ContextUtils.getApplicationContext();
+
+        Thread startUpResourcesThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // Run this in parallel as it takes some time.
+                setUpResources(webViewPackageInfo, context);
+            }
+        });
+        startUpResourcesThread.start();
+
+        // We are rewriting Java resources in the background.
+        // NOTE: Any reference to Java resources will cause a crash.
+
         try {
             LibraryLoader.get(LibraryProcessType.PROCESS_WEBVIEW).ensureInitialized();
         } catch (ProcessInitException e) {
@@ -114,18 +131,21 @@ class WebViewChromiumAwInit {
         PathService.override(PathService.DIR_MODULE, "/system/lib/");
         PathService.override(DIR_RESOURCE_PAKS_ANDROID, "/system/framework/webview/paks");
 
-        // Make sure that ResourceProvider is initialized before starting the browser process.
-        final PackageInfo webViewPackageInfo = WebViewFactory.getLoadedPackageInfo();
-        final String webViewPackageName = webViewPackageInfo.packageName;
-        final Context context = ContextUtils.getApplicationContext();
-        setUpResources(webViewPackageInfo, context);
         initPlatSupportLibrary();
         doNetworkInitializations(context);
-        final boolean isExternalService = true;
+
+        try {
+            startUpResourcesThread.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        // NOTE: Finished writing Java resources. From this point on, it's safe to use them.
+
         // The WebView package name is used to locate the separate Service to which we copy crash
         // minidumps. This package name must be set before a render process has a chance to crash -
         // otherwise we might try to copy a minidump without knowing what process to copy it to.
         // It's also used to determine channel for UMA, so it must be set before initializing UMA.
+        final boolean isExternalService = true;
         AwBrowserProcess.setWebViewPackageName(webViewPackageName);
         AwBrowserProcess.configureChildProcessLauncher(webViewPackageName, isExternalService);
         AwBrowserProcess.start();
