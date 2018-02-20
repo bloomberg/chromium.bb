@@ -725,10 +725,6 @@ void RecordFirstWebContentsMainNavigationStart(base::TimeTicks ticks,
       UMA_HISTOGRAM_LONG_TIMES_100,
       "Startup.FirstWebContents.MainNavigationStart", g_process_creation_ticks,
       ticks);
-  UMA_HISTOGRAM_WITH_TEMPERATURE(
-      UMA_HISTOGRAM_LONG_TIMES_100,
-      "Startup.BrowserMessageLoopStart.To.MainNavigationStart",
-      ticks - g_message_loop_start_ticks);
 
   // Log extra information about this startup's workload. Only added to this
   // histogram as this extra suffix can help making it less noisy but isn't
