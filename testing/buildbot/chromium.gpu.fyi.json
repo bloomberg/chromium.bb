@@ -2670,6 +2670,23 @@
       },
       {
         "args": [
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-384.90",
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "test": "angle_white_box_tests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
           "--use-gpu-in-tests",
           "--use-cmd-decoder=validating"
         ],
@@ -3084,6 +3101,23 @@
       },
       {
         "args": [
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-384.90",
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "test": "angle_white_box_tests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
           "--use-gpu-in-tests",
           "--use-cmd-decoder=validating"
         ],
@@ -3232,6 +3266,23 @@
           ]
         },
         "test": "angle_unittests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6613",
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "test": "angle_white_box_tests",
         "use_xvfb": false
       },
       {
@@ -3690,6 +3741,23 @@
           ]
         },
         "test": "angle_unittests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912",
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "test": "angle_white_box_tests",
         "use_xvfb": false
       },
       {
@@ -4154,6 +4222,23 @@
           ]
         },
         "test": "angle_unittests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-384.90",
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "test": "angle_white_box_tests",
         "use_xvfb": false
       },
       {
@@ -9895,6 +9980,23 @@
       },
       {
         "args": [
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912",
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "test": "angle_white_box_tests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
           "--use-gpu-in-tests"
         ],
         "swarming": {
@@ -10029,6 +10131,23 @@
           ]
         },
         "test": "angle_end2end_tests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-384.90",
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "test": "angle_white_box_tests",
         "use_xvfb": false
       },
       {

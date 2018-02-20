@@ -1466,9 +1466,7 @@ COMMON_GTESTS = {
     'tester_configs': [
       {
         'predicate': Predicates.FYI_AND_OPTIONAL_AND_WIN_ANGLE_AMD,
-        # There are only Windows white box tests for now.
-        # Enable on more configs when there will be relevant tests.
-        'os_types': ['win'],
+        'os_types': ['win', 'linux'],
       },
     ],
     'disabled_tester_configs': [
