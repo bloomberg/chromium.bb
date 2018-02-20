@@ -8,6 +8,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 
 #include "components/viz/service/surfaces/surface_deadline_client.h"
+#include "components/viz/service/viz_service_export.h"
 
 namespace base {
 class TickClock;
@@ -17,7 +18,7 @@ namespace viz {
 
 class FrameDeadline;
 
-class SurfaceDependencyDeadline : public BeginFrameObserver {
+class VIZ_SERVICE_EXPORT SurfaceDependencyDeadline : public BeginFrameObserver {
  public:
   SurfaceDependencyDeadline(SurfaceDeadlineClient* client,
                             BeginFrameSource* begin_frame_source,
