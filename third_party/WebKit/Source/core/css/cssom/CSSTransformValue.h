@@ -38,9 +38,12 @@ class CORE_EXPORT CSSTransformValue final : public CSSStyleValue {
 
   StyleValueType GetType() const override { return kTransformType; }
 
-  CSSTransformComponent* componentAtIndex(uint32_t index) {
+  CSSTransformComponent* AnonymousIndexedGetter(uint32_t index) {
     return transform_components_.at(index);
   }
+  bool AnonymousIndexedSetter(unsigned,
+                              const Member<CSSTransformComponent>,
+                              ExceptionState&);
 
   size_t length() const { return transform_components_.size(); }
 

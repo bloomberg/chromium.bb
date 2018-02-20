@@ -10,7 +10,8 @@
 ] interface CSSTransformValue : CSSStyleValue {
     // https://github.com/w3c/css-houdini-drafts/issues/358
     readonly attribute unsigned long length;
-    [ImplementedAs=componentAtIndex] getter CSSTransformComponent (unsigned long index);
+    getter CSSTransformComponent (unsigned long index);
+    [RaisesException] setter CSSTransformComponent (unsigned long index, CSSTransformComponent val);
     iterable<CSSTransformComponent>;
 
     readonly attribute boolean is2D;
