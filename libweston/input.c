@@ -87,6 +87,42 @@ region_init_infinite(pixman_region32_t *region)
 				  UINT32_MAX, UINT32_MAX);
 }
 
+static void
+send_timestamp(struct wl_resource *resource,
+	       const struct timespec *time)
+{
+	uint32_t tv_sec_hi, tv_sec_lo, tv_nsec;
+
+	timespec_to_proto(time, &tv_sec_hi, &tv_sec_lo, &tv_nsec);
+	zwp_input_timestamps_v1_send_timestamp(resource, tv_sec_hi, tv_sec_lo,
+					       tv_nsec);
+}
+
+static void
+send_timestamps_for_input_resource(struct wl_resource *input_resource,
+				   struct wl_list *list,
+				   const struct timespec *time)
+{
+	struct wl_resource *resource;
+
+	wl_resource_for_each(resource, list) {
+		if (wl_resource_get_user_data(resource) == input_resource)
+			send_timestamp(resource, time);
+	}
+}
+
+static void
+remove_input_resource_from_timestamps(struct wl_resource *input_resource,
+				      struct wl_list *list)
+{
+	struct wl_resource *resource;
+
+	wl_resource_for_each(resource, list) {
+		if (wl_resource_get_user_data(resource) == input_resource)
+			wl_resource_set_user_data(resource, NULL);
+	}
+}
+
 static struct weston_pointer_client *
 weston_pointer_client_create(struct wl_client *client)
 {
@@ -884,8 +920,12 @@ weston_keyboard_send_key(struct weston_keyboard *keyboard,
 	resource_list = &keyboard->focus_resource_list;
 	serial = wl_display_next_serial(display);
 	msecs = timespec_to_msec(time);
-	wl_resource_for_each(resource, resource_list)
+	wl_resource_for_each(resource, resource_list) {
+		send_timestamps_for_input_resource(resource,
+						   &keyboard->timestamps_list,
+						   time);
 		wl_keyboard_send_key(resource, serial, msecs, key, state);
+	}
 };
 
 static void
@@ -1157,6 +1197,7 @@ weston_keyboard_create(void)
 	keyboard->default_grab.keyboard = keyboard;
 	keyboard->grab = &keyboard->default_grab;
 	wl_signal_init(&keyboard->focus_signal);
+	wl_list_init(&keyboard->timestamps_list);
 
 	return keyboard;
 }
@@ -1187,6 +1228,7 @@ weston_keyboard_destroy(struct weston_keyboard *keyboard)
 
 	wl_array_release(&keyboard->keys);
 	wl_list_remove(&keyboard->focus_resource_listener.link);
+	wl_list_remove(&keyboard->timestamps_list);
 	free(keyboard);
 }
 
@@ -2468,6 +2510,19 @@ seat_get_pointer(struct wl_client *client, struct wl_resource *resource,
 }
 
 static void
+destroy_keyboard_resource(struct wl_resource *resource)
+{
+	struct weston_keyboard *keyboard = wl_resource_get_user_data(resource);
+
+	wl_list_remove(wl_resource_get_link(resource));
+
+	if (keyboard) {
+		remove_input_resource_from_timestamps(resource,
+						      &keyboard->timestamps_list);
+	}
+}
+
+static void
 keyboard_release(struct wl_client *client, struct wl_resource *resource)
 {
 	wl_resource_destroy(resource);
@@ -2524,7 +2579,7 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 
 	wl_list_init(wl_resource_get_link(cr));
 	wl_resource_set_implementation(cr, &keyboard_interface,
-				       keyboard, unbind_resource);
+				       keyboard, destroy_keyboard_resource);
 
 	/* If we don't have a keyboard_state, the resource is inert, so there
 	 * is nothing more to set up */
@@ -4571,6 +4626,18 @@ bind_pointer_constraints(struct wl_client *client, void *data,
 }
 
 static void
+input_timestamps_destroy(struct wl_client *client,
+			 struct wl_resource *resource)
+{
+	wl_resource_destroy(resource);
+}
+
+static const struct zwp_input_timestamps_v1_interface
+				input_timestamps_interface = {
+	input_timestamps_destroy,
+};
+
+static void
 input_timestamps_manager_destroy(struct wl_client *client,
 				 struct wl_resource *resource)
 {
@@ -4583,7 +4650,29 @@ input_timestamps_manager_get_keyboard_timestamps(struct wl_client *client,
 						 uint32_t id,
 						 struct wl_resource *keyboard_resource)
 {
-	wl_client_post_no_memory(client);
+	struct weston_keyboard *keyboard =
+		wl_resource_get_user_data(keyboard_resource);
+	struct wl_resource *input_ts;
+
+	input_ts = wl_resource_create(client,
+				      &zwp_input_timestamps_v1_interface,
+				      1, id);
+	if (!input_ts) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
+	if (keyboard) {
+		wl_list_insert(&keyboard->timestamps_list,
+			       wl_resource_get_link(input_ts));
+	} else {
+		wl_list_init(wl_resource_get_link(input_ts));
+	}
+
+	wl_resource_set_implementation(input_ts,
+				       &input_timestamps_interface,
+				       keyboard_resource,
+				       unbind_resource);
 }
 
 static void

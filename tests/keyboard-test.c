@@ -27,11 +27,13 @@
 
 #include <stdint.h>
 
+#include "input-timestamps-helper.h"
 #include "shared/timespec-util.h"
 #include "weston-test-client-helper.h"
 
 static const struct timespec t1 = { .tv_sec = 1, .tv_nsec = 1000001 };
 static const struct timespec t2 = { .tv_sec = 2, .tv_nsec = 2000001 };
+static const struct timespec t_other = { .tv_sec = 123, .tv_nsec = 456 };
 
 static struct client *
 create_client_with_keyboard_focus(void)
@@ -97,10 +99,59 @@ TEST(keyboard_key_event_time)
 {
 	struct client *client = create_client_with_keyboard_focus();
 	struct keyboard *keyboard = client->input->keyboard;
+	struct input_timestamps *input_ts =
+		input_timestamps_create_for_keyboard(client);
 
 	send_key(client, &t1, 1, WL_KEYBOARD_KEY_STATE_PRESSED);
 	assert(keyboard->key_time_msec == timespec_to_msec(&t1));
+	assert(timespec_eq(&keyboard->key_time_timespec, &t1));
 
 	send_key(client, &t2, 1, WL_KEYBOARD_KEY_STATE_RELEASED);
 	assert(keyboard->key_time_msec == timespec_to_msec(&t2));
+	assert(timespec_eq(&keyboard->key_time_timespec, &t2));
+
+	input_timestamps_destroy(input_ts);
+}
+
+TEST(keyboard_timestamps_stop_after_input_timestamps_object_is_destroyed)
+{
+	struct client *client = create_client_with_keyboard_focus();
+	struct keyboard *keyboard = client->input->keyboard;
+	struct input_timestamps *input_ts =
+		input_timestamps_create_for_keyboard(client);
+
+	send_key(client, &t1, 1, WL_KEYBOARD_KEY_STATE_PRESSED);
+	assert(keyboard->key_time_msec == timespec_to_msec(&t1));
+	assert(timespec_eq(&keyboard->key_time_timespec, &t1));
+
+	input_timestamps_destroy(input_ts);
+
+	send_key(client, &t2, 1, WL_KEYBOARD_KEY_STATE_RELEASED);
+	assert(keyboard->key_time_msec == timespec_to_msec(&t2));
+	assert(timespec_is_zero(&keyboard->key_time_timespec));
+}
+
+TEST(keyboard_timestamps_stop_after_client_releases_wl_keyboard)
+{
+	struct client *client = create_client_with_keyboard_focus();
+	struct keyboard *keyboard = client->input->keyboard;
+	struct input_timestamps *input_ts =
+		input_timestamps_create_for_keyboard(client);
+
+	send_key(client, &t1, 1, WL_KEYBOARD_KEY_STATE_PRESSED);
+	assert(keyboard->key_time_msec == timespec_to_msec(&t1));
+	assert(timespec_eq(&keyboard->key_time_timespec, &t1));
+
+	wl_keyboard_release(client->input->keyboard->wl_keyboard);
+
+	/* Set input_timestamp to an arbitrary value (different from t1, t2
+	 * and 0) and check that it is not changed by sending the event.
+	 * This is preferred over just checking for 0, since 0 is used
+	 * internally for resetting the timestamp after handling an input
+	 * event and checking for it here may lead to false negatives. */
+	keyboard->input_timestamp = t_other;
+	send_key(client, &t2, 1, WL_KEYBOARD_KEY_STATE_RELEASED);
+	assert(timespec_eq(&keyboard->input_timestamp, &t_other));
+
+	input_timestamps_destroy(input_ts);
 }

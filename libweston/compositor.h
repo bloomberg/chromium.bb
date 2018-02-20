@@ -605,6 +605,8 @@ struct weston_keyboard {
 		enum weston_led leds;
 	} xkb_state;
 	struct xkb_keymap *pending_keymap;
+
+	struct wl_list timestamps_list;
 };
 
 struct weston_seat {
