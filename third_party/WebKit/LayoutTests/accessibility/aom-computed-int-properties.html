@@ -23,7 +23,7 @@ test(function(t) {
     assert_true(internals.runtimeFlags.accessibilityObjectModelEnabled);
 }, "Make sure that Accessibility Object Model is enabled");
 
-test(async function(test) {
+promise_test(async function(test) {
     var element = document.getElementById("no-int-props");
     computedAXNode = await window.getComputedAccessibleNode(element);
     assert_equals(computedAXNode.role, "button");
@@ -38,7 +38,7 @@ test(async function(test) {
     assert_equals(computedAXNode.setSize, null);
 }, "computedAccessibleNode has nullable int properties.");
 
-test(async function(test) {
+promise_test(async function(test) {
     var listitem = document.getElementById("listitem");
     computedAXNode = await window.getComputedAccessibleNode(listitem);
     assert_equals(computedAXNode.posInSet, 3);
@@ -53,7 +53,7 @@ test(async function(test) {
 
 <script>
 
-test(async function(test) {
+promise_test(async function(test) {
     var heading1 = document.getElementById("first-heading");
     var heading2 = document.getElementById("second-heading");
     var heading3 = document.getElementById("third-heading");
