@@ -4,53 +4,47 @@
 
 #include "chrome/browser/ui/android/infobars/app_banner_infobar_android.h"
 
-#include <memory>
-#include <string>
 #include <utility>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/android/scoped_java_ref.h"
 #include "chrome/browser/banners/app_banner_infobar_delegate_android.h"
+#include "chrome/browser/banners/app_banner_ui_delegate_android.h"
 #include "components/url_formatter/elide_url.h"
 #include "jni/AppBannerInfoBarAndroid_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 
 AppBannerInfoBarAndroid::AppBannerInfoBarAndroid(
-    std::unique_ptr<banners::AppBannerInfoBarDelegateAndroid> delegate,
-    const base::android::ScopedJavaGlobalRef<jobject>& japp_data)
-    : ConfirmInfoBar(std::move(delegate)), japp_data_(japp_data) {}
-
-AppBannerInfoBarAndroid::AppBannerInfoBarAndroid(
-    std::unique_ptr<banners::AppBannerInfoBarDelegateAndroid> delegate,
-    const GURL& app_url)
-    : ConfirmInfoBar(std::move(delegate)), app_url_(app_url) {}
+    std::unique_ptr<banners::AppBannerInfoBarDelegateAndroid> delegate)
+    : ConfirmInfoBar(std::move(delegate)) {}
 
 AppBannerInfoBarAndroid::~AppBannerInfoBarAndroid() {}
 
 base::android::ScopedJavaLocalRef<jobject>
 AppBannerInfoBarAndroid::CreateRenderInfoBar(JNIEnv* env) {
-  banners::AppBannerInfoBarDelegateAndroid* delegate = GetDelegate();
+  const banners::AppBannerUiDelegateAndroid* delegate =
+      GetDelegate()->GetUiDelegate();
 
   base::android::ScopedJavaLocalRef<jstring> app_title =
-      base::android::ConvertUTF16ToJavaString(env, delegate->GetMessageText());
+      base::android::ConvertUTF16ToJavaString(env, delegate->GetAppTitle());
 
   DCHECK(!delegate->GetPrimaryIcon().drawsNothing());
   base::android::ScopedJavaLocalRef<jobject> java_bitmap =
       gfx::ConvertToJavaBitmap(&delegate->GetPrimaryIcon());
 
   base::android::ScopedJavaLocalRef<jobject> infobar;
-  if (!japp_data_.is_null()) {
+  if (delegate->GetType() ==
+      banners::AppBannerUiDelegateAndroid::AppType::NATIVE) {
     infobar.Reset(Java_AppBannerInfoBarAndroid_createNativeAppInfoBar(
-        env, app_title, java_bitmap, japp_data_));
+        env, app_title, java_bitmap, delegate->GetNativeAppData()));
   } else {
     // Trim down the app URL to the origin. Banners only show on secure origins,
     // so elide the scheme.
     base::android::ScopedJavaLocalRef<jstring> app_url =
         base::android::ConvertUTF16ToJavaString(
-            env,
-            url_formatter::FormatUrlForSecurityDisplay(
-                app_url_, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
+            env, url_formatter::FormatUrlForSecurityDisplay(
+                     delegate->GetWebAppUrl(),
+                     url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
 
     infobar.Reset(Java_AppBannerInfoBarAndroid_createWebAppInfoBar(
         env, app_title, java_bitmap, app_url));

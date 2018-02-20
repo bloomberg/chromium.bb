@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_UI_ANDROID_INFOBARS_APP_BANNER_INFOBAR_ANDROID_H_
 #define CHROME_BROWSER_UI_ANDROID_INFOBARS_APP_BANNER_INFOBAR_ANDROID_H_
 
+#include <memory>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
-#include "url/gurl.h"
 
 namespace banners {
 class AppBannerInfoBarDelegateAndroid;
@@ -17,15 +18,8 @@ class AppBannerInfoBarDelegateAndroid;
 
 class AppBannerInfoBarAndroid : public ConfirmInfoBar {
  public:
-  // Constructs an AppBannerInfoBarAndroid promoting a native app.
   AppBannerInfoBarAndroid(
-      std::unique_ptr<banners::AppBannerInfoBarDelegateAndroid> delegate,
-      const base::android::ScopedJavaGlobalRef<jobject>& japp_data);
-
-  // Constructs an AppBannerInfoBarAndroid promoting a web app.
-  AppBannerInfoBarAndroid(
-      std::unique_ptr<banners::AppBannerInfoBarDelegateAndroid> delegate,
-      const GURL& app_url);
+      std::unique_ptr<banners::AppBannerInfoBarDelegateAndroid> delegate);
 
   ~AppBannerInfoBarAndroid() override;
 
@@ -40,12 +34,6 @@ class AppBannerInfoBarAndroid : public ConfirmInfoBar {
   // InfoBarAndroid overrides.
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
-
-  // Native app: Details about the app.
-  base::android::ScopedJavaGlobalRef<jobject> japp_data_;
-
-  // Web app: URL for the app.
-  GURL app_url_;
 
   base::android::ScopedJavaGlobalRef<jobject> java_infobar_;
 
