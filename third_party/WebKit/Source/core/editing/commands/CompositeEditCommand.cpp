@@ -622,8 +622,13 @@ bool CompositeEditCommand::DeleteSelection(EditingState* editing_state,
 
   ApplyCommandToComposite(
       DeleteSelectionCommand::Create(
-          GetDocument(), smart_delete, merge_blocks_after_delete,
-          expand_for_special_elements, sanitize_markup),
+          GetDocument(),
+          DeleteSelectionOptions::Builder()
+              .SetSmartDelete(smart_delete)
+              .SetMergeBlocksAfterDelete(merge_blocks_after_delete)
+              .SetExpandForSpecialElements(expand_for_special_elements)
+              .SetSanitizeMarkup(sanitize_markup)
+              .Build()),
       editing_state);
   if (editing_state->IsAborted())
     return false;

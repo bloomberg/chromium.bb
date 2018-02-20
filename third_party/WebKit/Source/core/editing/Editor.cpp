@@ -388,13 +388,15 @@ void Editor::DeleteSelectionWithSmartDelete(
           .IsNone())
     return;
 
-  const bool kMergeBlocksAfterDelete = true;
-  const bool kExpandForSpecialElements = false;
-  const bool kSanitizeMarkup = true;
   DCHECK(GetFrame().GetDocument());
   DeleteSelectionCommand::Create(
-      *GetFrame().GetDocument(), delete_mode == DeleteMode::kSmart,
-      kMergeBlocksAfterDelete, kExpandForSpecialElements, kSanitizeMarkup,
+      *GetFrame().GetDocument(),
+      DeleteSelectionOptions::Builder()
+          .SetSmartDelete(delete_mode == DeleteMode::kSmart)
+          .SetMergeBlocksAfterDelete(true)
+          .SetExpandForSpecialElements(true)
+          .SetSanitizeMarkup(true)
+          .Build(),
       input_type, reference_move_position)
       ->Apply();
 }

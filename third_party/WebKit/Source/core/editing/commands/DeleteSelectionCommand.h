@@ -28,6 +28,7 @@
 
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/commands/CompositeEditCommand.h"
+#include "core/editing/commands/DeleteSelectionOptions.h"
 
 namespace blink {
 
@@ -38,44 +39,28 @@ class CORE_EXPORT DeleteSelectionCommand final : public CompositeEditCommand {
  public:
   static DeleteSelectionCommand* Create(
       Document& document,
-      bool smart_delete = false,
-      bool merge_blocks_after_delete = true,
-      bool expand_for_special_elements = false,
-      bool sanitize_markup = true,
+      const DeleteSelectionOptions& options,
       InputEvent::InputType input_type = InputEvent::InputType::kNone,
       const Position& reference_move_position = Position()) {
-    return new DeleteSelectionCommand(
-        document, smart_delete, merge_blocks_after_delete,
-        expand_for_special_elements, sanitize_markup, input_type,
-        reference_move_position);
+    return new DeleteSelectionCommand(document, options, input_type,
+                                      reference_move_position);
   }
   static DeleteSelectionCommand* Create(
       const VisibleSelection& selection,
-      bool smart_delete = false,
-      bool merge_blocks_after_delete = true,
-      bool expand_for_special_elements = false,
-      bool sanitize_markup = true,
+      const DeleteSelectionOptions& options,
       InputEvent::InputType input_type = InputEvent::InputType::kNone) {
-    return new DeleteSelectionCommand(
-        selection, smart_delete, merge_blocks_after_delete,
-        expand_for_special_elements, sanitize_markup, input_type);
+    return new DeleteSelectionCommand(selection, options, input_type);
   }
 
   virtual void Trace(blink::Visitor*);
 
  private:
   DeleteSelectionCommand(Document&,
-                         bool smart_delete,
-                         bool merge_blocks_after_delete,
-                         bool expand_for_special_elements,
-                         bool santize_markup,
+                         const DeleteSelectionOptions&,
                          InputEvent::InputType,
                          const Position& reference_move_position);
   DeleteSelectionCommand(const VisibleSelection&,
-                         bool smart_delete,
-                         bool merge_blocks_after_delete,
-                         bool expand_for_special_elements,
-                         bool sanitize_markup,
+                         const DeleteSelectionOptions&,
                          InputEvent::InputType);
 
   void DoApply(EditingState*) override;
