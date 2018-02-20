@@ -54,6 +54,7 @@ const char kValueRequestActiveDirectoryEnrollPlayUser[] =
 const char kValueRequestActiveDirectoryPlayActivity[] =
     "active_directory_play_activity";
 const char kValueRequestCheckDeviceLicense[] = "check_device_license";
+const char kValueRequestAppInstallReport[] = "app_install_report";
 
 const char kChromeDevicePolicyType[] = "google/chromeos/device";
 #if defined(OS_CHROMEOS)

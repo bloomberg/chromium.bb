@@ -53,6 +53,7 @@ const char kResultPayload[] = "output_payload";
 const char kAssetId[] = "fake-asset-id";
 const char kLocation[] = "fake-location";
 const char kGcmID[] = "fake-gcm-id";
+const char kPackageName[] = "com.example.app";
 const int64_t kAgeOfCommand = 123123123;
 const int64_t kLastCommandId = 123456789;
 const int64_t kTimestamp = 987654321;
@@ -206,6 +207,8 @@ class CloudPolicyClientTest : public testing::Test {
     license_two->mutable_license_type()->set_license_type(
         em::LicenseType_LicenseTypeEnum_KIOSK);
     license_two->set_available_licenses(0);
+
+    upload_app_install_report_response_.mutable_app_install_report_response();
   }
 
   void SetUp() override {
@@ -361,6 +364,26 @@ class CloudPolicyClientTest : public testing::Test {
                                    MatchProto(check_device_license_request_)));
   }
 
+  void ExpectUploadAppInstallReport(const em::DeviceManagementRequest& request,
+                                    MockDeviceManagementJob** async_job) {
+    if (async_job) {
+      EXPECT_CALL(
+          service_,
+          CreateJob(DeviceManagementRequestJob::TYPE_UPLOAD_APP_INSTALL_REPORT,
+                    request_context_))
+          .WillOnce(service_.CreateAsyncJob(async_job));
+    } else {
+      EXPECT_CALL(
+          service_,
+          CreateJob(DeviceManagementRequestJob::TYPE_UPLOAD_APP_INSTALL_REPORT,
+                    request_context_))
+          .WillOnce(service_.SucceedJob(upload_app_install_report_response_));
+    }
+    EXPECT_CALL(service_, StartJob(dm_protocol::kValueRequestAppInstallReport,
+                                   std::string(), std::string(), kDMToken,
+                                   client_id_, MatchProto(request)));
+  }
+
   void CheckPolicyResponse() {
     ASSERT_TRUE(client_->GetPolicyFor(policy_type_, std::string()));
     EXPECT_THAT(*client_->GetPolicyFor(policy_type_, std::string()),
@@ -400,6 +423,7 @@ class CloudPolicyClientTest : public testing::Test {
   em::DeviceManagementResponse gcm_id_update_response_;
   em::DeviceManagementResponse check_device_license_response_;
   em::DeviceManagementResponse check_device_license_broken_response_;
+  em::DeviceManagementResponse upload_app_install_report_response_;
 
   base::MessageLoop loop_;
   std::string client_id_;
@@ -1074,6 +1098,78 @@ TEST_F(CloudPolicyClientTest, RequestAvailableLicensesBrokenResponse) {
 
   client_->RequestAvailableLicenses(kOAuthToken, callback);
   EXPECT_EQ(DM_STATUS_RESPONSE_DECODING_ERROR, client_->status());
+}
+
+TEST_F(CloudPolicyClientTest, UploadAppInstallReport) {
+  Register();
+  em::DeviceManagementRequest request;
+  request.mutable_app_install_report_request();
+  ExpectUploadAppInstallReport(request, nullptr /* async_job */);
+  EXPECT_CALL(callback_observer_, OnCallbackComplete(true)).Times(1);
+
+  CloudPolicyClient::StatusCallback callback =
+      base::BindRepeating(&MockStatusCallbackObserver::OnCallbackComplete,
+                          base::Unretained(&callback_observer_));
+
+  em::AppInstallReportRequest app_install_report;
+  client_->UploadAppInstallReport(&app_install_report, callback);
+  EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
+}
+
+TEST_F(CloudPolicyClientTest, CancelUploadAppInstallReport) {
+  Register();
+  em::DeviceManagementRequest request;
+  request.mutable_app_install_report_request();
+  MockDeviceManagementJob* async_job = nullptr;
+  ExpectUploadAppInstallReport(request, &async_job);
+  EXPECT_CALL(callback_observer_, OnCallbackComplete(true)).Times(0);
+
+  CloudPolicyClient::StatusCallback callback =
+      base::BindRepeating(&MockStatusCallbackObserver::OnCallbackComplete,
+                          base::Unretained(&callback_observer_));
+
+  em::AppInstallReportRequest app_install_report;
+  client_->UploadAppInstallReport(&app_install_report, callback);
+  EXPECT_EQ(1, client_->GetActiveRequestCountForTest());
+
+  client_->CancelAppInstallReportUpload();
+  EXPECT_EQ(0, client_->GetActiveRequestCountForTest());
+}
+
+TEST_F(CloudPolicyClientTest, UploadAppInstallReportSupersedesPending) {
+  Register();
+  em::DeviceManagementRequest request;
+  request.mutable_app_install_report_request();
+  MockDeviceManagementJob* async_job = nullptr;
+  ExpectUploadAppInstallReport(request, &async_job);
+  EXPECT_CALL(callback_observer_, OnCallbackComplete(true)).Times(0);
+
+  CloudPolicyClient::StatusCallback callback =
+      base::BindRepeating(&MockStatusCallbackObserver::OnCallbackComplete,
+                          base::Unretained(&callback_observer_));
+
+  em::AppInstallReportRequest app_install_report;
+  client_->UploadAppInstallReport(&app_install_report, callback);
+  EXPECT_EQ(1, client_->GetActiveRequestCountForTest());
+  Mock::VerifyAndClearExpectations(&service_);
+  Mock::VerifyAndClearExpectations(&callback_observer_);
+
+  // Starting another app push-install report upload should cancel the pending
+  // one.
+  request.mutable_app_install_report_request()
+      ->add_app_install_report()
+      ->set_package(kPackageName);
+  ExpectUploadAppInstallReport(request, &async_job);
+  EXPECT_CALL(callback_observer_, OnCallbackComplete(true)).Times(1);
+
+  app_install_report.CopyFrom(request.app_install_report_request());
+  client_->UploadAppInstallReport(&app_install_report, callback);
+  EXPECT_EQ(1, client_->GetActiveRequestCountForTest());
+
+  async_job->SendResponse(DM_STATUS_SUCCESS,
+                          upload_app_install_report_response_);
+  EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
+  EXPECT_EQ(0, client_->GetActiveRequestCountForTest());
 }
 
 }  // namespace policy

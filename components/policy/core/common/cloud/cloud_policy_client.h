@@ -180,6 +180,16 @@ class POLICY_EXPORT CloudPolicyClient {
       const enterprise_management::SessionStatusReportRequest* session_status,
       const StatusCallback& callback);
 
+  // Uploads a report on the status of app push-installs. The client must be in
+  // a registered state. The |callback| will be called when the operation
+  // completes.
+  virtual void UploadAppInstallReport(
+      const enterprise_management::AppInstallReportRequest* app_install_report,
+      const StatusCallback& callback);
+
+  // Cancels the pending app push-install status report upload, if an.
+  virtual void CancelAppInstallReportUpload();
+
   // Attempts to fetch remote commands, with |last_command_id| being the ID of
   // the last command that finished execution and |command_results| being
   // results for previous commands which have not been reported yet. The
@@ -357,8 +367,8 @@ class POLICY_EXPORT CloudPolicyClient {
       int net_error,
       const enterprise_management::DeviceManagementResponse& response);
 
-  // Callback for status upload requests.
-  void OnStatusUploadCompleted(
+  // Callback for several types of status/report upload requests.
+  void OnReportUploadCompleted(
       const DeviceManagementRequestJob* job,
       const StatusCallback& callback,
       DeviceManagementStatus status,
@@ -448,6 +458,10 @@ class POLICY_EXPORT CloudPolicyClient {
   // All of the outstanding non-policy-fetch request jobs. These jobs are
   // silently cancelled if Unregister() is called.
   std::vector<std::unique_ptr<DeviceManagementRequestJob>> request_jobs_;
+
+  // Only one outstanding app push-install report upload is allowed, and it must
+  // be accessible so that it can be canceled.
+  DeviceManagementRequestJob* app_install_report_request_job_ = nullptr;
 
   // The policy responses returned by the last policy fetch operation.
   ResponseMap responses_;
