@@ -8,6 +8,7 @@ stEXTRA_DIST =					\
 	capsword_for_back.yaml			\
 	chr-us-g1_harness.yaml			\
 	compbrlAtCursor_with_equals.yaml	\
+	broken_equals_operand.yaml		\
 	da-dk-g08.yaml				\
 	da-dk-g16-dictionary_harness.yaml	\
 	da-dk-g16-lit.yaml			\

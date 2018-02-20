@@ -123,6 +123,7 @@ dist_yaml_TESTS =				\
 	yaml/capsword_for_back.yaml		\
 	yaml/chr-us-g1_harness.yaml		\
 	yaml/compbrlAtCursor_with_equals.yaml	\
+	yaml/broken_equals_operand.yaml		\
 	yaml/da-dk-g08.yaml			\
 	yaml/da-dk-g16-dictionary_harness.yaml	\
 	yaml/da-dk-g16-lit.yaml			\
