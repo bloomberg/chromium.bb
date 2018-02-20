@@ -63,6 +63,32 @@ static INLINE int get_dqv(const int16_t *dequant, int coeff_idx,
   return dqv;
 }
 
+static INLINE void read_coeffs_reverse_2d(
+    aom_reader *r, TX_SIZE tx_size, int start_si, int end_si,
+    const int16_t *scan, int bwl, uint8_t *levels, base_cdf_arr base_cdf,
+    br_cdf_arr br_cdf, int *num_updates, uint16_t *update_pos) {
+  for (int c = end_si; c >= start_si; --c) {
+    const int pos = scan[c];
+    const int coeff_ctx = get_lower_levels_ctx_2d(levels, pos, bwl, tx_size);
+    const int nsymbs = 4;
+    int level = aom_read_symbol(r, base_cdf[coeff_ctx], nsymbs, ACCT_STR);
+    if (level > NUM_BASE_LEVELS) {
+      const int br_ctx = get_br_ctx_2d(levels, pos, bwl);
+      aom_cdf_prob *cdf = br_cdf[br_ctx];
+      for (int idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
+        const int k = aom_read_symbol(r, cdf, BR_CDF_SIZE, ACCT_STR);
+        level += k;
+        if (k < BR_CDF_SIZE - 1) break;
+      }
+      if (level > NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
+        update_pos[*num_updates] = pos;
+        ++*num_updates;
+      }
+    }
+    levels[get_padded_idx(pos, bwl)] = level;
+  }
+}
+
 static INLINE void read_coeffs_reverse(aom_reader *r, TX_SIZE tx_size,
                                        TX_TYPE tx_type, int start_si,
                                        int end_si, const int16_t *scan, int bwl,
@@ -253,8 +279,14 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   base_cdf_arr base_cdf = ec_ctx->coeff_base_cdf[txs_ctx][plane_type];
   br_cdf_arr br_cdf =
       ec_ctx->coeff_br_cdf[AOMMIN(txs_ctx, TX_32X32)][plane_type];
-  read_coeffs_reverse(r, tx_size, tx_type, 0, *eob - 1 - 1, scan, bwl, levels,
-                      base_cdf, br_cdf, &num_updates, update_pos);
+  const TX_CLASS tx_class = tx_type_to_class[tx_type];
+  if (tx_class == TX_CLASS_2D) {
+    read_coeffs_reverse_2d(r, tx_size, 0, *eob - 1 - 1, scan, bwl, levels,
+                           base_cdf, br_cdf, &num_updates, update_pos);
+  } else {
+    read_coeffs_reverse(r, tx_size, tx_type, 0, *eob - 1 - 1, scan, bwl, levels,
+                        base_cdf, br_cdf, &num_updates, update_pos);
+  }
 
   for (int i = 0; i < num_updates; ++i) {
     const int pos = update_pos[i];

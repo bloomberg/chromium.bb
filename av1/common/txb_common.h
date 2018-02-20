@@ -357,6 +357,23 @@ static INLINE int get_br_ctx_from_count_mag(const int row, const int col,
   return ctx;
 }
 
+static INLINE int get_br_ctx_2d(const uint8_t *const levels,
+                                const int c,  // raster order
+                                const int bwl) {
+  const int row = c >> bwl;
+  const int col = c - (row << bwl);
+  const int stride = (1 << bwl) + TX_PAD_HOR;
+  const int pos = row * stride + col;
+  int mag =
+      AOMMIN(levels[pos + 1], COEFF_BASE_RANGE + NUM_BASE_LEVELS + 1) +
+      AOMMIN(levels[pos + stride], COEFF_BASE_RANGE + NUM_BASE_LEVELS + 1) +
+      AOMMIN(levels[pos + 1 + stride], COEFF_BASE_RANGE + NUM_BASE_LEVELS + 1);
+  mag = AOMMIN((mag + 1) >> 1, 6);
+  if (c == 0) return mag;
+  if ((row < 2) && (col < 2)) return mag + 7;
+  return mag + 14;
+}
+
 static INLINE int get_br_ctx(const uint8_t *const levels,
                              const int c,  // raster order
                              const int bwl, const TX_TYPE tx_type) {
@@ -373,13 +390,13 @@ static INLINE int get_br_ctx(const uint8_t *const levels,
         AOMMIN(nb_mag[2], COEFF_BASE_RANGE + NUM_BASE_LEVELS + 1);
   mag = AOMMIN((mag + 1) >> 1, 6);
   if (c == 0) return mag;
-  if (tx_class == 0) {
+  if (tx_class == TX_CLASS_2D) {
     if ((row < 2) && (col < 2)) return mag + 7;
   } else {
-    if (tx_class == 1) {
+    if (tx_class == TX_CLASS_HORIZ) {
       if (col == 0) return mag + 7;
     } else {
-      if (tx_class == 2) {
+      if (tx_class == TX_CLASS_VERT) {
         if (row == 0) return mag + 7;
       }
     }
@@ -518,6 +535,26 @@ static INLINE int get_lower_levels_ctx_eob(int bwl, int height, int scan_idx) {
   return 3;
 }
 
+static INLINE int get_lower_levels_ctx_2d(const uint8_t *levels, int coeff_idx,
+                                          int bwl, TX_SIZE tx_size) {
+  int mag;
+  // Note: AOMMIN(level, 3) is useless for decoder since level < 3.
+  levels = levels + get_padded_idx(coeff_idx, bwl);
+  mag = AOMMIN(levels[1], 3);                                     // { 0, 1 }
+  mag += AOMMIN(levels[(1 << bwl) + TX_PAD_HOR], 3);              // { 1, 0 }
+  mag += AOMMIN(levels[(1 << bwl) + TX_PAD_HOR + 1], 3);          // { 1, 1 }
+  mag += AOMMIN(levels[2], 3);                                    // { 0, 2 }
+  mag += AOMMIN(levels[(2 << bwl) + (2 << TX_PAD_HOR_LOG2)], 3);  // { 2, 0 }
+
+  const int ctx = AOMMIN((mag + 1) >> 1, 4);
+  if (!coeff_idx) {
+    return 0;
+  } else {
+    const int row = coeff_idx >> bwl;
+    const int col = coeff_idx - (row << bwl);
+    return ctx + av1_nz_map_ctx_offset[tx_size][AOMMIN(row, 4)][AOMMIN(col, 4)];
+  }
+}
 static INLINE int get_lower_levels_ctx(const uint8_t *levels, int coeff_idx,
                                        int bwl, TX_SIZE tx_size,
                                        TX_TYPE tx_type) {
