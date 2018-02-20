@@ -22,14 +22,7 @@ class PnaclUrlLoaderInstance : public pp::Instance {
       command_ = var_message.AsString();
       pp::URLRequestInfo request(this);
       request.SetMethod("GET");
-      if (command_.find("Other") != std::string::npos)
-        request.SetURL("https://www.example.com/echo");
-      else
-        request.SetURL("/echo");
-      if (command_.find("CORS") != std::string::npos)
-        request.SetAllowCrossOriginRequests(true);
-      if (command_.find("Credentials") != std::string::npos)
-        request.SetAllowCredentials(true);
+      request.SetURL("/echo");
       loader_.Open(request,
                    factory_.NewCallback(&PnaclUrlLoaderInstance::OnOpen));
       return;
