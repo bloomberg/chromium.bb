@@ -53,7 +53,7 @@ std::unique_ptr<gltf::Asset> GltfParser::Parse(
   asset_ = std::make_unique<gltf::Asset>();
 
   base::ScopedClosureRunner runner(
-      base::BindRepeating(&GltfParser::Clear, base::Unretained(this)));
+      base::Bind(&GltfParser::Clear, base::Unretained(this)));
 
   if (!ParseInternal(dict, buffers))
     return nullptr;

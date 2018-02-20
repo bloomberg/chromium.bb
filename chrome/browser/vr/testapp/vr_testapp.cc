@@ -120,8 +120,8 @@ class AppWindow : public ui::PlatformWindowDelegate {
 
   void Start() {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&AppWindow::StartOnGpu,
-                                       weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE,
+        base::Bind(&AppWindow::StartOnGpu, weak_ptr_factory_.GetWeakPtr()));
   }
 
   void Quit() { window_manager_->Quit(); }
@@ -226,8 +226,8 @@ void WindowManager::OnConfigurationChanged() {
   }
 
   is_configuring_ = true;
-  delegate_->GetDisplays(base::BindRepeating(&WindowManager::OnDisplaysAquired,
-                                             base::Unretained(this)));
+  delegate_->GetDisplays(
+      base::Bind(&WindowManager::OnDisplaysAquired, base::Unretained(this)));
 }
 
 void WindowManager::OnDisplaySnapshotsInvalidated() {}
@@ -246,9 +246,8 @@ void WindowManager::OnDisplaysAquired(
 
     delegate_->Configure(
         *display, display->native_mode(), origin,
-        base::BindRepeating(&WindowManager::OnDisplayConfigured,
-                            base::Unretained(this),
-                            gfx::Rect(origin, display->native_mode()->size())));
+        base::Bind(&WindowManager::OnDisplayConfigured, base::Unretained(this),
+                   gfx::Rect(origin, display->native_mode()->size())));
     origin.Offset(display->native_mode()->size().width(), 0);
   }
   is_configuring_ = false;
@@ -256,8 +255,8 @@ void WindowManager::OnDisplaysAquired(
   if (should_configure_) {
     should_configure_ = false;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&WindowManager::OnConfigurationChanged,
-                                       base::Unretained(this)));
+        FROM_HERE, base::Bind(&WindowManager::OnConfigurationChanged,
+                              base::Unretained(this)));
   }
 }
 
