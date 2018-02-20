@@ -137,6 +137,11 @@ class ThumbnailDatabase {
   // of the bitmaps for |icon_id| to be out of date.
   bool SetFaviconOutOfDate(favicon_base::FaviconID icon_id);
 
+  // Retrieves the newest |last_updated| time across all bitmaps for |icon_id|.
+  // Returns true if successful and if there is at least one bitmap.
+  bool GetFaviconLastUpdatedTime(favicon_base::FaviconID icon_id,
+                                 base::Time* last_updated);
+
   // Mark all bitmaps of type ON_DEMAND at |icon_url| as requested at |time|.
   // This postpones their automatic eviction from the database. Not all calls
   // end up in a write into the DB:

@@ -199,9 +199,17 @@ class FaviconService : public KeyedService {
       const favicon_base::IconTypeSet& icon_types,
       const base::flat_set<GURL>& page_urls_to_write) = 0;
 
+  // Figures out whether an on-demand favicon can be written for provided
+  // |page_url| and returns the result via |callback|. The result is false if
+  // there is an existing cached favicon for |icon_type| or if there is a
+  // non-expired icon of *any* type for |page_url|.
+  virtual void CanSetOnDemandFavicons(
+      const GURL& page_url,
+      favicon_base::IconType icon_type,
+      base::OnceCallback<void(bool)> callback) const = 0;
+
   // Same as SetFavicons with three differences:
-  // 1) It will be a no-op if there is an existing cached favicon for *any* type
-  //    for |page_url|.
+  // 1) It will be a no-op if CanSetOnDemandFavicons() returns false.
   // 2) If |icon_url| is known to the database, |bitmaps| will be ignored (i.e.
   //    the icon won't be overwritten) but the mappings from |page_url| to
   //    |icon_url| will be stored (conditioned to point 1 above).
@@ -221,7 +229,7 @@ class FaviconService : public KeyedService {
                                    const GURL& icon_url,
                                    favicon_base::IconType icon_type,
                                    const gfx::Image& image,
-                                   base::Callback<void(bool)> callback) = 0;
+                                   base::OnceCallback<void(bool)> callback) = 0;
 
   // Avoid repeated requests to download missing favicon.
   virtual void UnableToDownloadFavicon(const GURL& icon_url) = 0;

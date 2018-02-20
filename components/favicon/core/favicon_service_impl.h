@@ -111,11 +111,15 @@ class FaviconServiceImpl : public FaviconService {
       const GURL& page_url_to_read,
       const favicon_base::IconTypeSet& icon_types,
       const base::flat_set<GURL>& page_urls_to_write) override;
+  void CanSetOnDemandFavicons(
+      const GURL& page_url,
+      favicon_base::IconType icon_type,
+      base::OnceCallback<void(bool)> callback) const override;
   void SetOnDemandFavicons(const GURL& page_url,
                            const GURL& icon_url,
                            favicon_base::IconType icon_type,
                            const gfx::Image& image,
-                           base::Callback<void(bool)> callback) override;
+                           base::OnceCallback<void(bool)> callback) override;
   void UnableToDownloadFavicon(const GURL& icon_url) override;
   bool WasUnableToDownloadFavicon(const GURL& icon_url) const override;
   void ClearUnableToDownloadFavicons() override;

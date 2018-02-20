@@ -250,14 +250,23 @@ void FaviconServiceImpl::CloneFaviconMappingsForPages(
                                                  page_urls_to_write);
 }
 
+void FaviconServiceImpl::CanSetOnDemandFavicons(
+    const GURL& page_url,
+    favicon_base::IconType icon_type,
+    base::OnceCallback<void(bool)> callback) const {
+  history_service_->CanSetOnDemandFavicons(page_url, icon_type,
+                                           std::move(callback));
+}
+
 void FaviconServiceImpl::SetOnDemandFavicons(
     const GURL& page_url,
     const GURL& icon_url,
     favicon_base::IconType icon_type,
     const gfx::Image& image,
-    base::Callback<void(bool)> callback) {
-  history_service_->SetOnDemandFavicons(
-      page_url, icon_type, icon_url, ExtractSkBitmapsToStore(image), callback);
+    base::OnceCallback<void(bool)> callback) {
+  history_service_->SetOnDemandFavicons(page_url, icon_type, icon_url,
+                                        ExtractSkBitmapsToStore(image),
+                                        std::move(callback));
 }
 
 void FaviconServiceImpl::UnableToDownloadFavicon(const GURL& icon_url) {

@@ -112,12 +112,32 @@ class MockFaviconService : public FaviconService {
                void(const GURL& page_url_to_read,
                     const favicon_base::IconTypeSet& icon_types,
                     const base::flat_set<GURL>& page_urls_to_write));
+
+  void CanSetOnDemandFavicons(
+      const GURL& page_url,
+      favicon_base::IconType icon_type,
+      base::OnceCallback<void(bool)> callback) const override {
+    // This is a back to get around Gmock's lack of support for move-only types.
+    return CanSetOnDemandFavicons(page_url, icon_type, &callback);
+  }
+  MOCK_CONST_METHOD3(CanSetOnDemandFavicons,
+                     void(const GURL& page_url,
+                          favicon_base::IconType icon_type,
+                          base::OnceCallback<void(bool)>* callback));
+  void SetOnDemandFavicons(const GURL& page_url,
+                           const GURL& icon_url,
+                           favicon_base::IconType icon_type,
+                           const gfx::Image& image,
+                           base::OnceCallback<void(bool)> callback) override {
+    // This is a back to get around Gmock's lack of support for move-only types.
+    return SetOnDemandFavicons(page_url, icon_url, icon_type, image, &callback);
+  }
   MOCK_METHOD5(SetOnDemandFavicons,
                void(const GURL& page_url,
                     const GURL& icon_url,
                     favicon_base::IconType icon_type,
                     const gfx::Image& image,
-                    base::Callback<void(bool)> callback));
+                    base::OnceCallback<void(bool)>* callback));
   MOCK_METHOD1(UnableToDownloadFavicon, void(const GURL& icon_url));
   MOCK_CONST_METHOD1(WasUnableToDownloadFavicon, bool(const GURL& icon_url));
   MOCK_METHOD0(ClearUnableToDownloadFavicons, void());

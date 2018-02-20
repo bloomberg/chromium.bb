@@ -338,6 +338,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                            const GURL& icon_url,
                            const std::vector<SkBitmap>& bitmaps);
 
+  bool CanSetOnDemandFavicons(const GURL& page_url,
+                              favicon_base::IconType icon_type);
+
   void SetFaviconsOutOfDateForPage(const GURL& page_url);
 
   void TouchOnDemandFavicon(const GURL& icon_url);

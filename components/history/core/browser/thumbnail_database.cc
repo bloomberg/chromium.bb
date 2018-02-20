@@ -660,6 +660,30 @@ bool ThumbnailDatabase::SetFaviconOutOfDate(favicon_base::FaviconID icon_id) {
   return statement.Run();
 }
 
+bool ThumbnailDatabase::GetFaviconLastUpdatedTime(
+    favicon_base::FaviconID icon_id,
+    base::Time* last_updated) {
+  sql::Statement statement(db_.GetCachedStatement(
+      SQL_FROM_HERE,
+      "SELECT MAX(last_updated) FROM favicon_bitmaps WHERE icon_id=?"));
+  statement.BindInt64(0, icon_id);
+
+  if (!statement.Step())
+    return false;
+
+  // Return false also if there there is no bitmap with |icon_id|.
+  if (statement.ColumnType(0) == sql::COLUMN_TYPE_NULL)
+    return false;
+
+  // TODO(jkrcal): Convert other uses of the now deprecated
+  // base::Time::FromInternalValue to make this file consistent again.
+  if (last_updated) {
+    *last_updated = base::Time::FromDeltaSinceWindowsEpoch(
+        base::TimeDelta::FromMicroseconds(statement.ColumnInt64(0)));
+  }
+  return true;
+}
+
 favicon_base::FaviconID ThumbnailDatabase::GetFaviconIDForFaviconURL(
     const GURL& icon_url,
     favicon_base::IconType icon_type) {
