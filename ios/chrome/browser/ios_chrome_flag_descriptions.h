@@ -41,6 +41,10 @@ extern const char kDragAndDropDescription[];
 extern const char kExternalSearchName[];
 extern const char kExternalSearchDescription[];
 
+// Title and description for the flag to enable use of FeedbackKit V2.
+extern const char kFeedbackKitV2Name[];
+extern const char kFeedbackKitV2Description[];
+
 // Title and description for the flag to enable History batch filtering.
 extern const char kHistoryBatchUpdatesFilterName[];
 extern const char kHistoryBatchUpdatesFilterDescription[];
