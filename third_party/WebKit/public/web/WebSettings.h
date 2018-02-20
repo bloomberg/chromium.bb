@@ -65,7 +65,6 @@ class WebSettings {
   enum V8CacheOptions {
     kV8CacheOptionsDefault,
     kV8CacheOptionsNone,
-    kV8CacheOptionsParse,
     kV8CacheOptionsCode,
   };
 

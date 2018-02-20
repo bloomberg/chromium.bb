@@ -42,9 +42,6 @@ class V8ScriptRunnerTest : public ::testing::Test {
   KURL Url() const {
     return KURL(WTF::String::Format("http://bla.com/bla%d", counter_));
   }
-  unsigned TagForParserCache(CachedMetadataHandler* cache_handler) const {
-    return V8ScriptRunner::TagForParserCache(cache_handler);
-  }
   unsigned TagForCodeCache(CachedMetadataHandler* cache_handler) const {
     return V8ScriptRunner::TagForCodeCache(cache_handler);
   }
@@ -123,31 +120,12 @@ TEST_F(V8ScriptRunnerTest, resourcelessShouldPass) {
   EXPECT_TRUE(CompileScript(scope.GetIsolate(), scope.GetScriptState(),
                             source_code, kV8CacheOptionsNone));
   EXPECT_TRUE(CompileScript(scope.GetIsolate(), scope.GetScriptState(),
-                            source_code, kV8CacheOptionsParse));
-  EXPECT_TRUE(CompileScript(scope.GetIsolate(), scope.GetScriptState(),
                             source_code, kV8CacheOptionsCode));
 }
 
 TEST_F(V8ScriptRunnerTest, emptyResourceDoesNotHaveCacheHandler) {
   Resource* resource = CreateEmptyResource();
   EXPECT_FALSE(resource->CacheHandler());
-}
-
-TEST_F(V8ScriptRunnerTest, parseOption) {
-  V8TestingScope scope;
-  ScriptSourceCode source_code(nullptr, CreateResource(UTF8Encoding()));
-  EXPECT_TRUE(CompileScript(scope.GetIsolate(), scope.GetScriptState(),
-                            source_code, kV8CacheOptionsParse));
-  CachedMetadataHandler* cache_handler = source_code.CacheHandler();
-  EXPECT_TRUE(
-      cache_handler->GetCachedMetadata(TagForParserCache(cache_handler)));
-  EXPECT_FALSE(
-      cache_handler->GetCachedMetadata(TagForCodeCache(cache_handler)));
-  // The cached data is associated with the encoding.
-  ScriptResource* another_resource =
-      CreateResource(UTF16LittleEndianEncoding());
-  EXPECT_FALSE(cache_handler->GetCachedMetadata(
-      TagForParserCache(another_resource->CacheHandler())));
 }
 
 TEST_F(V8ScriptRunnerTest, codeOption) {
@@ -159,8 +137,6 @@ TEST_F(V8ScriptRunnerTest, codeOption) {
   EXPECT_TRUE(CompileScript(scope.GetIsolate(), scope.GetScriptState(),
                             source_code, kV8CacheOptionsCode));
 
-  EXPECT_FALSE(
-      cache_handler->GetCachedMetadata(TagForParserCache(cache_handler)));
   EXPECT_TRUE(cache_handler->GetCachedMetadata(TagForCodeCache(cache_handler)));
   // The cached data is associated with the encoding.
   ScriptResource* another_resource =
@@ -180,9 +156,7 @@ TEST_F(V8ScriptRunnerTest, consumeCodeOption) {
   EXPECT_TRUE(CompileScript(scope.GetIsolate(), scope.GetScriptState(),
                             source_code, kV8CacheOptionsCode));
 
-  // Check the produced cache is for code and not parser cache.
-  EXPECT_FALSE(
-      cache_handler->GetCachedMetadata(TagForParserCache(cache_handler)));
+  // Check the produced cache is for code cache.
   EXPECT_TRUE(cache_handler->GetCachedMetadata(TagForCodeCache(cache_handler)));
 
   // Hot run - should consume code cache.

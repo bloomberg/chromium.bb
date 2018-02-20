@@ -1603,7 +1603,6 @@ const char kUseSuggestionsEvenIfFewFeatureDescription[] =
 const char kV8CacheOptionsName[] = "V8 caching mode.";
 const char kV8CacheOptionsDescription[] =
     "Caching mode for the V8 JavaScript engine.";
-const char kV8CacheOptionsParse[] = "Cache V8 parser data.";
 const char kV8CacheOptionsCode[] = "Cache V8 compiler data.";
 
 const char kV8ContextSnapshotName[] = "Use a snapshot to create V8 contexts.";
