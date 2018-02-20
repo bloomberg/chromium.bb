@@ -80,8 +80,10 @@ public class AddToHomescreenManager implements AddToHomescreenDialog.Delegate {
     }
 
     @CalledByNative
-    private void onUserTitleAvailable(String title, String url, boolean isTitleEditable) {
-        mDialog.onUserTitleAvailable(title, url, isTitleEditable);
+    private void onUserTitleAvailable(String title, String url, boolean isWebapp) {
+        // Users may edit the title of bookmark shortcuts, but we respect web app names and do not
+        // let users change them.
+        mDialog.onUserTitleAvailable(title, url, isWebapp);
     }
 
     @CalledByNative

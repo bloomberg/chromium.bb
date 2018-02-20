@@ -132,7 +132,7 @@ void AddToHomescreenManager::OnUserTitleAvailable(
                url, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
   Java_AddToHomescreenManager_onUserTitleAvailable(
       env, java_ref_, j_user_title, j_url,
-      !is_webapk_compatible_ /* isTitleEditable */);
+      is_webapk_compatible_ /* isWebapp */);
 }
 
 void AddToHomescreenManager::OnDataAvailable(const ShortcutInfo& info,

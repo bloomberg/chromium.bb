@@ -143,8 +143,7 @@ public class AddToHomescreenManagerTest {
         public void showDialog() {
             mDialog = new AddToHomescreenDialog(TestAddToHomescreenManager.this) {
                 @Override
-                public void onUserTitleAvailable(
-                        String title, String url, boolean isTitleEditable) {
+                public void onUserTitleAvailable(String title, String url, boolean isWebapp) {
                     if (TextUtils.isEmpty(mTitle)) {
                         mTitle = title;
                     }

@@ -6,6 +6,8 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:gravity="start"
     style="@style/AlertDialogContent" >
+
+    <!-- The icon that will be used on the home screen. -->
     <ImageView
         android:id="@+id/icon"
         android:layout_width="32dp"
@@ -13,11 +15,16 @@
         android:layout_marginTop="10dp"
         android:contentDescription="@null"
         android:visibility="gone" />
+
+    <!-- A spinner used to indicate that data for the add to home screen
+         process is still being downloaded. -->
     <ProgressBar
         android:id="@+id/spinny"
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_marginTop="10dp" />
+
+    <!-- An editable text field for the name of the home screen icon. -->
     <org.chromium.chrome.browser.widget.AlertDialogEditText
         android:id="@+id/text"
         android:inputType="text"
@@ -28,8 +35,10 @@
         android:paddingTop="0dp"
         android:layout_marginTop="10dp"
         android:layout_marginStart="48dp" />
+
+    <!-- The layout used for apps. -->
     <LinearLayout
-        android:id="@+id/read_only_text"
+        android:id="@+id/app_info"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -38,16 +47,22 @@
         android:layout_marginBottom="5dp"
         android:paddingTop="0dp"
         android:visibility="gone" >
+
+        <!-- The name of the web app that will be used on the home screen. Not
+             editable as we preserve the developer's name choice for apps. -->
         <TextView
             android:id="@+id/name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAppearance="@style/BlackTitle1" />
+
+        <!-- The origin of the web app, displayed for security purposes. -->
         <TextView
             android:id="@+id/origin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="2dp"
             android:textAppearance="@style/BlackBody" />
+
     </LinearLayout>
 </FrameLayout>
