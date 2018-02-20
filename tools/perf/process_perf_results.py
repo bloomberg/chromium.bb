@@ -31,9 +31,18 @@ def _upload_perf_results(json_to_upload, name, configuration_name,
       '--got-v8-revision', build_properties['got_v8_revision'],
       '--got-webrtc-revision', build_properties['got_webrtc_revision'],
       '--chromium-checkout-dir', '/b/c/b/obbs_fyi',
-      '--send-as-histograms',
   ]
+  if _is_histogram(json_to_upload):
+    args.append('--send-as-histograms')
+
   upload_results_to_perf_dashboard.main(args)
+
+
+def _is_histogram(json_file):
+  with open(json_file) as f:
+    data = json.load(f)
+    return isinstance(data, list)
+  return False
 
 
 def _merge_json_output(output_json, jsons_to_merge):
