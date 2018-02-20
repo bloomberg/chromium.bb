@@ -219,8 +219,7 @@ std::unique_ptr<AnimationCurve> FakeFloatTransition::Clone() const {
 int AddScrollOffsetAnimationToPlayer(
     SingleKeyframeEffectAnimationPlayer* player,
     gfx::ScrollOffset initial_value,
-    gfx::ScrollOffset target_value,
-    bool impl_only) {
+    gfx::ScrollOffset target_value) {
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
       ScrollOffsetAnimationCurve::Create(
           target_value, CubicBezierTimingFunction::CreatePreset(
@@ -232,7 +231,7 @@ int AddScrollOffsetAnimationToPlayer(
   std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
       std::move(curve), id, AnimationIdProvider::NextGroupId(),
       TargetProperty::SCROLL_OFFSET));
-  keyframe_model->set_is_impl_only(impl_only);
+  keyframe_model->SetIsImplOnly();
 
   player->AddKeyframeModelForKeyframeEffect(std::move(keyframe_model),
                                             player->keyframe_effect()->id());

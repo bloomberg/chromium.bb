@@ -21,10 +21,9 @@ namespace cc {
 namespace {
 
 bool NeedsFinishedEvent(KeyframeModel* keyframe_model) {
-  // The controlling instance (i.e., impl instance), sends the finish event.
-  // Impl only animations don't need any finished notifications either.
-  if (keyframe_model->is_controlling_instance() ||
-      keyframe_model->is_impl_only())
+  // The controlling instance (i.e., impl instance), sends the finish event and
+  // does not need to receive it.
+  if (keyframe_model->is_controlling_instance())
     return false;
 
   return !keyframe_model->received_finished_event();
@@ -939,12 +938,6 @@ void KeyframeEffect::PromoteStartedKeyframeModels(AnimationEvents* events) {
 void KeyframeEffect::MarkKeyframeModelsForDeletion(
     base::TimeTicks monotonic_time,
     AnimationEvents* events) {
-  // TODO(majidvp): The old logic is assuming that the existence of |events| is
-  // a proxy for being on compositor. This is brittle. Instead we should use
-  // |KeyframeModel::is_controlling_instance()|. See:
-  // https://codereview.chromium.org/1151763011
-  bool on_compositor = !!events;
-
   bool marked_keyframe_model_for_deletion = false;
   auto MarkForDeletion = [&](KeyframeModel* keyframe_model) {
     keyframe_model->SetRunState(KeyframeModel::WAITING_FOR_DELETION,
@@ -962,20 +955,21 @@ void KeyframeEffect::MarkKeyframeModelsForDeletion(
     if (keyframe_model->run_state() == KeyframeModel::ABORTED) {
       GenerateEvent(events, *keyframe_model, AnimationEvent::ABORTED,
                     monotonic_time);
-      // If on the compositor or on the main thread and received finish event,
-      // keyframe model can be marked for deletion.
-      if (on_compositor || keyframe_model->received_finished_event())
+      // If this is the controlling instance or it has already received finish
+      // event, keyframe model can be marked for deletion.
+      if (!NeedsFinishedEvent(keyframe_model))
         MarkForDeletion(keyframe_model);
       continue;
     }
 
-    // If running on the compositor and need to complete an aborted
-    // keyframe model on the main thread.
-    if (on_compositor && keyframe_model->run_state() ==
-                             KeyframeModel::ABORTED_BUT_NEEDS_COMPLETION) {
+    // If this is an aborted controlling instance that need completion on the
+    // main thread, generate takeover event.
+    if (keyframe_model->is_controlling_instance() &&
+        keyframe_model->run_state() ==
+            KeyframeModel::ABORTED_BUT_NEEDS_COMPLETION) {
       GenerateTakeoverEventForScrollAnimation(events, *keyframe_model,
                                               monotonic_time);
-      // Remove the keyframe_model from the compositor.
+      // Remove the keyframe model from the impl thread.
       MarkForDeletion(keyframe_model);
       continue;
     }

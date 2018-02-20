@@ -927,7 +927,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransitionOnImplOnly) {
 
   std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
       std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
-  keyframe_model->set_is_impl_only(true);
+  keyframe_model->SetIsImplOnly();
   player_impl_->AddKeyframeModel(std::move(keyframe_model));
 
   player_impl_->Tick(kInitialTickTime);
@@ -966,7 +966,7 @@ TEST_F(ElementAnimationsTest, UpdateStateWithoutAnimate) {
   // Add first scroll offset animation.
   AddScrollOffsetAnimationToPlayer(player_impl_.get(),
                                    gfx::ScrollOffset(100.f, 300.f),
-                                   gfx::ScrollOffset(100.f, 200.f), true);
+                                   gfx::ScrollOffset(100.f, 200.f));
 
   // Calling UpdateState after Animate should promote the animation to running
   // state.
@@ -984,7 +984,7 @@ TEST_F(ElementAnimationsTest, UpdateStateWithoutAnimate) {
   // Add second scroll offset animation.
   AddScrollOffsetAnimationToPlayer(player_impl_.get(),
                                    gfx::ScrollOffset(100.f, 200.f),
-                                   gfx::ScrollOffset(100.f, 100.f), true);
+                                   gfx::ScrollOffset(100.f, 100.f));
 
   // Calling UpdateState without Animate should NOT promote the animation to
   // running state.
@@ -1228,7 +1228,7 @@ TEST_F(ElementAnimationsTest,
   TimeDelta duration = curve->Duration();
   std::unique_ptr<KeyframeModel> to_add(KeyframeModel::Create(
       std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
-  to_add->set_is_impl_only(true);
+  to_add->SetIsImplOnly();
   player_impl_->AddKeyframeModel(std::move(to_add));
 
   EXPECT_FALSE(delegate.started());
@@ -1991,7 +1991,7 @@ TEST_F(ElementAnimationsTest, ImplThreadTakeoverAnimationGetsDeleted) {
   std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
       std::move(curve), keyframe_model_id, 0, TargetProperty::SCROLL_OFFSET));
   keyframe_model->set_start_time(TicksFromSecondsF(123));
-  keyframe_model->set_is_impl_only(true);
+  keyframe_model->SetIsImplOnly();
   player_impl_->AddKeyframeModel(std::move(keyframe_model));
 
   PushProperties();

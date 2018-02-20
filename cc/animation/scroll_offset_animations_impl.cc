@@ -50,7 +50,7 @@ void ScrollOffsetAnimationsImpl::ScrollAnimationCreate(
       std::move(curve), AnimationIdProvider::NextKeyframeModelId(),
       AnimationIdProvider::NextGroupId(), TargetProperty::SCROLL_OFFSET);
   keyframe_model->set_time_offset(animation_start_offset);
-  keyframe_model->set_is_impl_only(true);
+  keyframe_model->SetIsImplOnly();
 
   DCHECK(scroll_offset_animation_player_);
   DCHECK(scroll_offset_animation_player_->animation_timeline());
@@ -134,7 +134,7 @@ void ScrollOffsetAnimationsImpl::ScrollAnimationApplyAdjustment(
       std::move(new_curve), AnimationIdProvider::NextKeyframeModelId(),
       AnimationIdProvider::NextGroupId(), TargetProperty::SCROLL_OFFSET);
   new_keyframe_model->set_start_time(keyframe_model->start_time());
-  new_keyframe_model->set_is_impl_only(true);
+  new_keyframe_model->SetIsImplOnly();
   new_keyframe_model->set_affects_active_elements(false);
 
   // Abort the old animation.
