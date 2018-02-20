@@ -49,7 +49,6 @@ const GURL kTestUrls[] = {
 const UkmMetricMap kBasicMetricValues({
     {TabManager_TabMetrics::kContentTypeName,
      TabMetricsEvent::CONTENT_TYPE_TEXT_HTML},
-    // TODO(michaelpg): Test HasBeforeUnloadHandler in a browser_test.
     {TabManager_TabMetrics::kHasBeforeUnloadHandlerName, 0},
     {TabManager_TabMetrics::kHasFormEntryName, 0},
     {TabManager_TabMetrics::kIsExtensionProtectedName, 0},
