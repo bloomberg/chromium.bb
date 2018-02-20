@@ -112,7 +112,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/chromium_strings.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "chromeos/audio/cras_audio_handler.h"
@@ -179,13 +178,11 @@
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/touch/touch_device.h"
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
 #include "ui/chromeos/events/pref_names.h"
 #include "ui/events/event_utils.h"
 #include "ui/keyboard/content/keyboard.h"
-#include "ui/message_center/message_center.h"
 
 #if BUILDFLAG(ENABLE_RLZ)
 #include "components/rlz/rlz_tracker.h"
@@ -852,11 +849,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     VLOG(1) << "Relaunching browser for user: " << account_id.Serialize()
             << " with hash: " << user_id_hash;
   }
-
-  // Set the system notification source display name ("Chrome OS" or "Chromium
-  // OS").
-  message_center::MessageCenter::Get()->SetSystemNotificationAppName(
-      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME));
 
   g_browser_process->platform_part()->InitializeCrosComponentManager();
 }

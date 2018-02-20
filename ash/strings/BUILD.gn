@@ -9,6 +9,9 @@ assert(is_chromeos)
 
 grit("strings") {
   source = "../ash_strings.grd"
+
+  defines = [ "is_chrome_branded=$is_chrome_branded" ]
+
   outputs = [
     "grit/ash_strings.h",
     "ash_strings_am.pak",

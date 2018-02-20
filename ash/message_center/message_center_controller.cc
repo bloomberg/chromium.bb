@@ -6,7 +6,9 @@
 
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/command_line.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
@@ -111,6 +113,11 @@ MessageCenterController::MessageCenterController()
   message_center::RegisterVectorIcon(kNotificationVpnIcon);
   message_center::RegisterVectorIcon(kNotificationWarningIcon);
   message_center::RegisterVectorIcon(kNotificationWifiOffIcon);
+
+  // Set the system notification source display name ("Chrome OS" or "Chromium
+  // OS").
+  message_center::MessageCenter::Get()->SetSystemNotificationAppName(
+      l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_SYSTEM_APP_NAME));
 }
 
 MessageCenterController::~MessageCenterController() = default;
