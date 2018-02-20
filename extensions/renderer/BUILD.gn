@@ -3,11 +3,12 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//build/config/jumbo.gni")
 import("//extensions/features/features.gni")
 
 assert(enable_extensions)
 
-source_set("renderer") {
+jumbo_source_set("renderer") {
   sources = [
     "activity_log_converter_strategy.cc",
     "activity_log_converter_strategy.h",
@@ -352,7 +353,7 @@ source_set("renderer") {
   }
 }
 
-static_library("unit_test_support") {
+jumbo_static_library("unit_test_support") {
   # Sources that are shared between chrome-based renderer unit tests and
   # top-level extensions renderer unit tests.
   testonly = true
