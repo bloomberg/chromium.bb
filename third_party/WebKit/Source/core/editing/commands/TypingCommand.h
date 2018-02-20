@@ -164,12 +164,7 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
       bool kill_ring,
       EditingState*);
 
-  void DeleteSelectionIfRange(const VisibleSelection&,
-                              EditingState*,
-                              bool smart_delete = false,
-                              bool merge_blocks_after_delete = true,
-                              bool expand_for_special_elements = true,
-                              bool sanitize_markup = true);
+  void DeleteSelectionIfRange(const VisibleSelection&, EditingState*);
 
   void ForwardDeleteKeyPressedInternal(
       const VisibleSelection& selection_to_delete,
