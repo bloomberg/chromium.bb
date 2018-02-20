@@ -158,7 +158,10 @@ enum class TaskType : unsigned {
   // * //media
   kInternalMediaRealTime = 30,
 
-  kCount = 31,
+  // Tasks to execute IPC (legacy IPC and mojo).
+  kInternalIPC = 31,
+
+  kCount = 32,
 };
 
 }  // namespace blink

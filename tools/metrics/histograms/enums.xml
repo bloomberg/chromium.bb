@@ -37395,6 +37395,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="28" label="InternalIndexedDB"/>
   <int value="29" label="InternalMedia"/>
   <int value="30" label="InternalMediaRealTime"/>
+  <int value="31" label="InternalIPC"/>
 </enum>
 
 <enum name="RendererSchedulerThreadType">
