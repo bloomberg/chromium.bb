@@ -881,14 +881,7 @@ void PDFiumEngine::Form_DisplayCaret(FPDF_FORMFILLINFO* param,
                                      double left,
                                      double top,
                                      double right,
-                                     double bottom) {
-  PDFiumEngine* engine = static_cast<PDFiumEngine*>(param);
-  engine->client_->UpdateCursor(PP_CURSORTYPE_IBEAM);
-  std::vector<pp::Rect> tickmarks;
-  pp::Rect rect(left, top, right, bottom);
-  tickmarks.push_back(rect);
-  engine->client_->UpdateTickMarks(tickmarks);
-}
+                                     double bottom) {}
 
 void PDFiumEngine::Form_SetCurrentPage(FPDF_FORMFILLINFO* param,
                                        FPDF_DOCUMENT document,
@@ -2103,6 +2096,19 @@ bool PDFiumEngine::OnMouseMove(const pp::MouseInputEvent& event) {
           case FPDF_FORMFIELD_TEXTFIELD:
             cursor = PP_CURSORTYPE_IBEAM;
             break;
+#if defined(PDF_ENABLE_XFA)
+          case FPDF_FORMFIELD_XFA_CHECKBOX:
+          case FPDF_FORMFIELD_XFA_COMBOBOX:
+          case FPDF_FORMFIELD_XFA_IMAGEFIELD:
+          case FPDF_FORMFIELD_XFA_LISTBOX:
+          case FPDF_FORMFIELD_XFA_PUSHBUTTON:
+          case FPDF_FORMFIELD_XFA_SIGNATURE:
+            cursor = PP_CURSORTYPE_HAND;
+            break;
+          case FPDF_FORMFIELD_XFA_TEXTFIELD:
+            cursor = PP_CURSORTYPE_IBEAM;
+            break;
+#endif
           default:
             cursor = PP_CURSORTYPE_POINTER;
             break;
