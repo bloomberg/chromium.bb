@@ -18,8 +18,9 @@ namespace blink {
 // effect ordering and managing composited animations.
 class SampledEffect : public GarbageCollectedFinalized<SampledEffect> {
  public:
-  static SampledEffect* Create(KeyframeEffectReadOnly* animation) {
-    return new SampledEffect(animation);
+  static SampledEffect* Create(KeyframeEffectReadOnly* effect,
+                               unsigned sequence_number) {
+    return new SampledEffect(effect, sequence_number);
   }
 
   void Clear();
@@ -41,7 +42,7 @@ class SampledEffect : public GarbageCollectedFinalized<SampledEffect> {
   void Trace(blink::Visitor*);
 
  private:
-  SampledEffect(KeyframeEffectReadOnly*);
+  SampledEffect(KeyframeEffectReadOnly*, unsigned sequence_number);
 
   WeakMember<KeyframeEffectReadOnly> effect_;
   Vector<scoped_refptr<Interpolation>> interpolations_;

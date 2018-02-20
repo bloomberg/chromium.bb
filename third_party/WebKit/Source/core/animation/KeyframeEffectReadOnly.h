@@ -84,7 +84,6 @@ class CORE_EXPORT KeyframeEffectReadOnly : public AnimationEffectReadOnly {
   bool HasActiveAnimationsOnCompositor() const;
   bool HasActiveAnimationsOnCompositor(const PropertyHandle&) const;
   bool CancelAnimationOnCompositor();
-  void RestartAnimationOnCompositor();
   void CancelIncompatibleAnimationsOnCompositor();
   void PauseAnimationForTestingOnCompositor(double pause_time);
 
@@ -99,6 +98,9 @@ class CORE_EXPORT KeyframeEffectReadOnly : public AnimationEffectReadOnly {
 
   void DowngradeToNormal() { priority_ = kDefaultPriority; }
 
+  bool HasAnimation() const;
+  bool HasPlayingAnimation() const;
+
  protected:
   KeyframeEffectReadOnly(Element*,
                          KeyframeEffectModelBase*,
@@ -109,9 +111,8 @@ class CORE_EXPORT KeyframeEffectReadOnly : public AnimationEffectReadOnly {
   void ApplyEffects();
   void ClearEffects();
   void UpdateChildrenAndEffects() const override;
-  void Attach(Animation*) override;
+  void Attach(AnimationEffectOwner*) override;
   void Detach() override;
-  void SpecifiedTimingChanged() override;
   double CalculateTimeToEffectChange(
       bool forwards,
       double inherited_time,

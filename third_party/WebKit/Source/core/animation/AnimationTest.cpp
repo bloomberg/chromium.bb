@@ -559,8 +559,8 @@ TEST_F(AnimationAnimationTest, SetEffect) {
   animation->SetCurrentTimeInternal(15);
   animation->setEffect(effect2);
   EXPECT_EQ(15, animation->CurrentTimeInternal());
-  EXPECT_EQ(nullptr, effect1->GetAnimation());
-  EXPECT_EQ(animation, effect2->GetAnimation());
+  EXPECT_EQ(nullptr, effect1->GetAnimationForTesting());
+  EXPECT_EQ(animation, effect2->GetAnimationForTesting());
   EXPECT_EQ(effect2, animation->effect());
 }
 
