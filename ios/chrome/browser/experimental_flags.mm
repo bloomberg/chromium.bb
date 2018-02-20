@@ -24,6 +24,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_feature.h"
+#include "ios/chrome/browser/ui/user_feedback_features.h"
 #include "ios/web/public/web_view_creation_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -108,8 +109,7 @@ bool MustClearApplicationGroupSandbox() {
 }
 
 bool IsNewFeedbackKitEnabled() {
-  return [[NSUserDefaults standardUserDefaults]
-      boolForKey:@"NewFeedbackKitEnabled"];
+  return base::FeatureList::IsEnabled(kFeedbackKitV2);
 }
 
 bool IsThirdPartyKeyboardWorkaroundEnabled() {
