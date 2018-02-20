@@ -34,9 +34,8 @@ bool SurfaceDependencyDeadline::Set(const FrameDeadline& frame_deadline) {
   start_time_ = frame_deadline.frame_start_time();
   deadline_ = start_time_ + frame_deadline.deadline_in_frames() *
                                 frame_deadline.frame_interval();
-  bool deadline_in_future = deadline_ > tick_clock_->NowTicks();
   begin_frame_source_->AddObserver(this);
-  return deadline_in_future;
+  return has_deadline();
 }
 
 base::Optional<base::TimeDelta> SurfaceDependencyDeadline::Cancel() {
