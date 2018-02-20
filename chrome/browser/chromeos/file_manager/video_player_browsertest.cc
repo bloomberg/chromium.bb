@@ -37,7 +37,10 @@ typedef VideoPlayerBrowserTestBase<NOT_IN_GUEST_MODE> VideoPlayerBrowserTest;
 typedef VideoPlayerBrowserTestBase<IN_GUEST_MODE>
     VideoPlayerBrowserTestInGuestMode;
 
-IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, OpenSingleVideoOnDownloads) {
+// TODO(yamaguchi): Enable after removing root cause of the test flakiness.
+// http://crbug.com/804413.
+IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest,
+                       DISABLED_OpenSingleVideoOnDownloads) {
   set_test_case_name("openSingleVideoOnDownloads");
   StartTest();
 }

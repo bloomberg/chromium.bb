@@ -33,7 +33,9 @@ typedef AudioPlayerBrowserTestBase<IN_GUEST_MODE>
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_OpenAudioOnDownloads DISABLED_OpenAudioOnDownloads
 #else
-#define MAYBE_OpenAudioOnDownloads OpenAudioOnDownloads
+// TODO(yamaguchi): Enable after removing root cause of the test flakiness.
+// http://crbug.com/804413.
+#define MAYBE_OpenAudioOnDownloads DISABLED_OpenAudioOnDownloads
 #endif
 IN_PROC_BROWSER_TEST_F(AudioPlayerBrowserTest, MAYBE_OpenAudioOnDownloads) {
   set_test_case_name("openAudioOnDownloads");
@@ -50,7 +52,9 @@ IN_PROC_BROWSER_TEST_F(AudioPlayerBrowserTestInGuestMode,
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_OpenAudioOnDrive DISABLED_OpenAudioOnDrive
 #else
-#define MAYBE_OpenAudioOnDrive OpenAudioOnDrive
+// TODO(yamaguchi): Enable after removing root cause of the test flakiness.
+// http://crbug.com/804413.
+#define MAYBE_OpenAudioOnDrive DISABLED_OpenAudioOnDrive
 #endif
 IN_PROC_BROWSER_TEST_F(AudioPlayerBrowserTest, MAYBE_OpenAudioOnDrive) {
   set_test_case_name("openAudioOnDrive");
@@ -60,7 +64,9 @@ IN_PROC_BROWSER_TEST_F(AudioPlayerBrowserTest, MAYBE_OpenAudioOnDrive) {
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_TogglePlayState DISABLED_TogglePlayState
 #else
-#define MAYBE_TogglePlayState TogglePlayState
+// TODO(yamaguchi): Enable after removing root cause of the test flakiness.
+// http://crbug.com/804413.
+#define MAYBE_TogglePlayState DISABLED_TogglePlayState
 #endif
 IN_PROC_BROWSER_TEST_F(AudioPlayerBrowserTest, MAYBE_TogglePlayState) {
   set_test_case_name("togglePlayState");
@@ -70,7 +76,9 @@ IN_PROC_BROWSER_TEST_F(AudioPlayerBrowserTest, MAYBE_TogglePlayState) {
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_ChangeVolumeLevel DISABLED_ChangeVolumeLevel
 #else
-#define MAYBE_ChangeVolumeLevel ChangeVolumeLevel
+// TODO(yamaguchi): Enable after removing root cause of the test flakiness.
+// http://crbug.com/804413.
+#define MAYBE_ChangeVolumeLevel DISABLED_ChangeVolumeLevel
 #endif
 IN_PROC_BROWSER_TEST_F(AudioPlayerBrowserTest, MAYBE_ChangeVolumeLevel) {
   set_test_case_name("changeVolumeLevel");
