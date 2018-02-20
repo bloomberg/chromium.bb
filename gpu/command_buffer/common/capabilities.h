@@ -183,6 +183,8 @@ struct GPU_EXPORT Capabilities {
 
   bool chromium_gpu_fence = false;
 
+  bool unpremultiply_and_dither_copy = false;
+
   int major_version = 2;
   int minor_version = 0;
 

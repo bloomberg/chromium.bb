@@ -79,9 +79,11 @@ enum {
   NUM_D_FORMAT
 };
 
+const unsigned kAlphaSize = 4;
+const unsigned kDitherSize = 2;
 const unsigned kNumVertexShaders = NUM_SAMPLERS;
 const unsigned kNumFragmentShaders =
-    4 * NUM_SAMPLERS * NUM_S_FORMAT * NUM_D_FORMAT;
+    kAlphaSize * kDitherSize * NUM_SAMPLERS * NUM_S_FORMAT * NUM_D_FORMAT;
 
 typedef unsigned ShaderId;
 
@@ -108,16 +110,19 @@ ShaderId GetVertexShaderId(GLenum target) {
 // the premultiply alpha pixel store settings and target.
 ShaderId GetFragmentShaderId(bool premultiply_alpha,
                              bool unpremultiply_alpha,
+                             bool dither,
                              GLenum target,
                              GLenum source_format,
                              GLenum dest_format) {
   unsigned alphaIndex = 0;
+  unsigned ditherIndex = 0;
   unsigned targetIndex = 0;
   unsigned sourceFormatIndex = 0;
   unsigned destFormatIndex = 0;
 
   alphaIndex = (premultiply_alpha   ? (1 << 0) : 0) |
                (unpremultiply_alpha ? (1 << 1) : 0);
+  ditherIndex = dither ? 1 : 0;
 
   switch (target) {
     case GL_TEXTURE_2D:
@@ -280,8 +285,11 @@ ShaderId GetFragmentShaderId(bool premultiply_alpha,
       break;
   }
 
-  return alphaIndex + targetIndex * 4 + sourceFormatIndex * 4 * NUM_SAMPLERS +
-         destFormatIndex * 4 * NUM_SAMPLERS * NUM_S_FORMAT;
+  return alphaIndex + ditherIndex * kAlphaSize +
+         targetIndex * kAlphaSize * kDitherSize +
+         sourceFormatIndex * kAlphaSize * kDitherSize * NUM_SAMPLERS +
+         destFormatIndex * kAlphaSize * kDitherSize * NUM_SAMPLERS *
+             NUM_S_FORMAT;
 }
 
 const char* kShaderPrecisionPreamble =
@@ -342,6 +350,7 @@ std::string GetVertexShaderSource(const gl::GLVersionInfo& gl_version_info,
 std::string GetFragmentShaderSource(const gl::GLVersionInfo& gl_version_info,
                                     bool premultiply_alpha,
                                     bool unpremultiply_alpha,
+                                    bool dither,
                                     bool nv_egl_stream_consumer_external,
                                     GLenum target,
                                     GLenum source_format,
@@ -439,6 +448,27 @@ std::string GetFragmentShaderSource(const gl::GLVersionInfo& gl_version_info,
     source += "  if (color.a > 0.0) {\n";
     source += "    color.rgb /= color.a;\n";
     source += "  }\n";
+  }
+
+  // Dither after moving us to our desired alpha format.
+  if (dither) {
+    // Simulate a 4x4 dither pattern using mod/step. This code was tested for
+    // performance in Skia.
+    source +=
+        "  float range = 1.0 / 15.0;\n"
+        "  vec4 modValues = mod(gl_FragCoord.xyxy, vec4(2.0, 2.0, 4.0, 4.0));\n"
+        "  vec4 stepValues = step(modValues, vec4(1.0, 1.0, 2.0, 2.0));\n"
+        "  float dither_value = \n"
+        "      dot(stepValues, \n"
+        "          vec4(8.0 / 16.0, 4.0 / 16.0, 2.0 / 16.0, 1.0 / 16.0)) -\n"
+        "      15.0 / 32.0;\n";
+    // Apply the dither offset to the color. Only dither alpha if non-opaque.
+    source +=
+        "  if (color.a < 1.0) {\n"
+        "    color += dither_value * range;\n"
+        "  } else {\n"
+        "    color.rgb += dither_value * range;\n"
+        "  }\n";
   }
 
   source += "  FRAGCOLOR = TextureType(color * ScaleValue);\n";
@@ -928,6 +958,7 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTexture(
     bool flip_y,
     bool premultiply_alpha,
     bool unpremultiply_alpha,
+    bool dither,
     CopyTextureMethod method,
     gpu::gles2::CopyTexImageResourceManager* luma_emulation_blitter) {
   if (method == DIRECT_COPY) {
@@ -968,7 +999,7 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTexture(
                              source_internal_format, dest_target, dest_texture,
                              dest_level, dest_internal_format, width, height,
                              flip_y, premultiply_alpha, unpremultiply_alpha,
-                             kIdentityMatrix, luma_emulation_blitter);
+                             dither, kIdentityMatrix, luma_emulation_blitter);
 
   if (method == DRAW_AND_COPY || method == DRAW_AND_READBACK) {
     source_level = 0;
@@ -1010,6 +1041,7 @@ void CopyTextureCHROMIUMResourceManager::DoCopySubTexture(
     bool flip_y,
     bool premultiply_alpha,
     bool unpremultiply_alpha,
+    bool dither,
     CopyTextureMethod method,
     gpu::gles2::CopyTexImageResourceManager* luma_emulation_blitter) {
   if (method == DIRECT_COPY) {
@@ -1056,7 +1088,7 @@ void CopyTextureCHROMIUMResourceManager::DoCopySubTexture(
       decoder, source_target, source_id, source_level, source_internal_format,
       dest_target, dest_texture, dest_level, dest_internal_format, dest_xoffset,
       dest_yoffset, x, y, width, height, dest_width, dest_height, source_width,
-      source_height, flip_y, premultiply_alpha, unpremultiply_alpha,
+      source_height, flip_y, premultiply_alpha, unpremultiply_alpha, dither,
       kIdentityMatrix, luma_emulation_blitter);
 
   if (method == DRAW_AND_COPY || method == DRAW_AND_READBACK) {
@@ -1101,13 +1133,14 @@ void CopyTextureCHROMIUMResourceManager::DoCopySubTextureWithTransform(
     bool flip_y,
     bool premultiply_alpha,
     bool unpremultiply_alpha,
+    bool dither,
     const GLfloat transform_matrix[16],
     gpu::gles2::CopyTexImageResourceManager* luma_emulation_blitter) {
   DoCopyTextureInternal(
       decoder, source_target, source_id, source_level, source_internal_format,
       dest_target, dest_id, dest_level, dest_internal_format, xoffset, yoffset,
       x, y, width, height, dest_width, dest_height, source_width, source_height,
-      flip_y, premultiply_alpha, unpremultiply_alpha, transform_matrix,
+      flip_y, premultiply_alpha, unpremultiply_alpha, dither, transform_matrix,
       luma_emulation_blitter);
 }
 
@@ -1126,6 +1159,7 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureWithTransform(
     bool flip_y,
     bool premultiply_alpha,
     bool unpremultiply_alpha,
+    bool dither,
     const GLfloat transform_matrix[16],
     gpu::gles2::CopyTexImageResourceManager* luma_emulation_blitter) {
   GLsizei dest_width = width;
@@ -1134,7 +1168,7 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureWithTransform(
       decoder, source_target, source_id, source_level, source_format,
       dest_target, dest_id, dest_level, dest_format, 0, 0, 0, 0, width, height,
       dest_width, dest_height, width, height, flip_y, premultiply_alpha,
-      unpremultiply_alpha, transform_matrix, luma_emulation_blitter);
+      unpremultiply_alpha, dither, transform_matrix, luma_emulation_blitter);
 }
 
 void CopyTextureCHROMIUMResourceManager::DoCopyTextureInternal(
@@ -1160,6 +1194,7 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureInternal(
     bool flip_y,
     bool premultiply_alpha,
     bool unpremultiply_alpha,
+    bool dither,
     const GLfloat transform_matrix[16],
     gpu::gles2::CopyTexImageResourceManager* luma_emulation_blitter) {
   DCHECK(source_target == GL_TEXTURE_2D ||
@@ -1198,9 +1233,9 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureInternal(
 
   ShaderId vertex_shader_id = GetVertexShaderId(source_target);
   DCHECK_LT(static_cast<size_t>(vertex_shader_id), vertex_shaders_.size());
-  ShaderId fragment_shader_id = GetFragmentShaderId(
-      premultiply_alpha, unpremultiply_alpha, source_target,
-      source_format, dest_format);
+  ShaderId fragment_shader_id =
+      GetFragmentShaderId(premultiply_alpha, unpremultiply_alpha, dither,
+                          source_target, source_format, dest_format);
   DCHECK_LT(static_cast<size_t>(fragment_shader_id), fragment_shaders_.size());
 
   ProgramMapKey key(fragment_shader_id);
@@ -1220,7 +1255,7 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureInternal(
     if (!*fragment_shader) {
       *fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
       std::string source = GetFragmentShaderSource(
-          gl_version_info, premultiply_alpha, unpremultiply_alpha,
+          gl_version_info, premultiply_alpha, unpremultiply_alpha, dither,
           nv_egl_stream_consumer_external_, source_target, source_format,
           dest_format);
       CompileShader(*fragment_shader, source.c_str());

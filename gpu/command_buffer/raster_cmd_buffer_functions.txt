@@ -29,6 +29,7 @@ GL_APICALL void         GL_APIENTRY glGenSyncTokenCHROMIUM (GLbyte* sync_token);
 GL_APICALL void         GL_APIENTRY glGenUnverifiedSyncTokenCHROMIUM (GLbyte* sync_token);
 GL_APICALL void         GL_APIENTRY glVerifySyncTokensCHROMIUM (GLbyte** sync_tokens, GLsizei count);
 GL_APICALL void         GL_APIENTRY glWaitSyncTokenCHROMIUM (const GLbyte* sync_token);
+GL_APICALL void         GL_APIENTRY glUnpremultiplyAndDitherCopyCHROMIUM (GLuint source_id, GLuint dest_id, GLint x, GLint y, GLsizei width, GLsizei height);
 
 // Extension KHR_robustness
 GL_APICALL GLenum	GL_APIENTRY glGetGraphicsResetStatusKHR (void);

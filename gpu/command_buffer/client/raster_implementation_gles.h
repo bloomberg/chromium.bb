@@ -126,6 +126,12 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
                               GLboolean unpack_premultiply_alpha,
                               GLboolean unpack_unmultiply_alpha) override;
   void CompressedCopyTextureCHROMIUM(GLuint source_id, GLuint dest_id) override;
+  void UnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,
+                                          GLuint dest_id,
+                                          GLint x,
+                                          GLint y,
+                                          GLsizei width,
+                                          GLsizei height) override;
 
   // Discardable textures.
   void InitializeDiscardableTextureCHROMIUM(GLuint texture_id) override;

@@ -722,6 +722,12 @@ void GenSyncTokenCHROMIUM(GLbyte* sync_token) override;
 void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) override;
 void VerifySyncTokensCHROMIUM(GLbyte** sync_tokens, GLsizei count) override;
 void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override;
+void UnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,
+                                        GLuint dest_id,
+                                        GLint x,
+                                        GLint y,
+                                        GLsizei width,
+                                        GLsizei height) override;
 void DrawBuffersEXT(GLsizei count, const GLenum* bufs) override;
 void DiscardBackbufferCHROMIUM() override;
 void ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,

@@ -1444,6 +1444,15 @@ void GL_APIENTRY GLES2VerifySyncTokensCHROMIUM(GLbyte** sync_tokens,
 void GL_APIENTRY GLES2WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
   gles2::GetGLContext()->WaitSyncTokenCHROMIUM(sync_token);
 }
+void GL_APIENTRY GLES2UnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,
+                                                         GLuint dest_id,
+                                                         GLint x,
+                                                         GLint y,
+                                                         GLsizei width,
+                                                         GLsizei height) {
+  gles2::GetGLContext()->UnpremultiplyAndDitherCopyCHROMIUM(
+      source_id, dest_id, x, y, width, height);
+}
 void GL_APIENTRY GLES2DrawBuffersEXT(GLsizei count, const GLenum* bufs) {
   gles2::GetGLContext()->DrawBuffersEXT(count, bufs);
 }
@@ -2908,6 +2917,11 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glWaitSyncTokenCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glWaitSyncTokenCHROMIUM),
+    },
+    {
+        "glUnpremultiplyAndDitherCopyCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glUnpremultiplyAndDitherCopyCHROMIUM),
     },
     {
         "glDrawBuffersEXT",

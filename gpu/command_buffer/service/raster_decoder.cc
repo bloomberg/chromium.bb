@@ -267,6 +267,14 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
   void DoDeleteTransferCacheEntryINTERNAL(GLuint entry_type, GLuint entry_id) {
     NOTIMPLEMENTED();
   }
+  void DoUnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,
+                                            GLuint dest_id,
+                                            GLint x,
+                                            GLint y,
+                                            GLsizei width,
+                                            GLsizei height) {
+    NOTIMPLEMENTED();
+  }
 
 #if defined(NDEBUG)
   void LogClientServiceMapping(const char* /* function_name */,

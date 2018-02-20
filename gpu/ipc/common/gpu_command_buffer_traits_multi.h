@@ -139,6 +139,7 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::Capabilities)
   IPC_STRUCT_TRAITS_MEMBER(texture_storage_image)
   IPC_STRUCT_TRAITS_MEMBER(supports_oop_raster)
   IPC_STRUCT_TRAITS_MEMBER(chromium_gpu_fence)
+  IPC_STRUCT_TRAITS_MEMBER(unpremultiply_and_dither_copy)
 
   IPC_STRUCT_TRAITS_MEMBER(major_version)
   IPC_STRUCT_TRAITS_MEMBER(minor_version)
