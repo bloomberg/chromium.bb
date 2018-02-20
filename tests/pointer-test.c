@@ -28,12 +28,14 @@
 
 #include <linux/input.h>
 
+#include "input-timestamps-helper.h"
 #include "shared/timespec-util.h"
 #include "weston-test-client-helper.h"
 
 static const struct timespec t0 = { .tv_sec = 0, .tv_nsec = 100000000 };
 static const struct timespec t1 = { .tv_sec = 1, .tv_nsec = 1000001 };
 static const struct timespec t2 = { .tv_sec = 2, .tv_nsec = 2000001 };
+static const struct timespec t_other = { .tv_sec = 123, .tv_nsec = 456 };
 
 static void
 send_motion(struct client *client, const struct timespec *time, int x, int y)
@@ -341,11 +343,16 @@ TEST(pointer_motion_events)
 	struct client *client = create_client_with_pointer_focus(100, 100,
 								 100, 100);
 	struct pointer *pointer = client->input->pointer;
+	struct input_timestamps *input_ts =
+		input_timestamps_create_for_pointer(client);
 
 	send_motion(client, &t1, 150, 150);
 	assert(pointer->x == 50);
 	assert(pointer->y == 50);
 	assert(pointer->motion_time_msec == timespec_to_msec(&t1));
+	assert(timespec_eq(&pointer->motion_time_timespec, &t1));
+
+	input_timestamps_destroy(input_ts);
 }
 
 TEST(pointer_button_events)
@@ -353,6 +360,8 @@ TEST(pointer_button_events)
 	struct client *client = create_client_with_pointer_focus(100, 100,
 								 100, 100);
 	struct pointer *pointer = client->input->pointer;
+	struct input_timestamps *input_ts =
+		input_timestamps_create_for_pointer(client);
 
 	assert(pointer->button == 0);
 	assert(pointer->state == 0);
@@ -361,11 +370,15 @@ TEST(pointer_button_events)
 	assert(pointer->button == BTN_LEFT);
 	assert(pointer->state == WL_POINTER_BUTTON_STATE_PRESSED);
 	assert(pointer->button_time_msec == timespec_to_msec(&t1));
+	assert(timespec_eq(&pointer->button_time_timespec, &t1));
 
 	send_button(client, &t2, BTN_LEFT, WL_POINTER_BUTTON_STATE_RELEASED);
 	assert(pointer->button == BTN_LEFT);
 	assert(pointer->state == WL_POINTER_BUTTON_STATE_RELEASED);
 	assert(pointer->button_time_msec == timespec_to_msec(&t2));
+	assert(timespec_eq(&pointer->button_time_timespec, &t2));
+
+	input_timestamps_destroy(input_ts);
 }
 
 TEST(pointer_axis_events)
@@ -373,13 +386,70 @@ TEST(pointer_axis_events)
 	struct client *client = create_client_with_pointer_focus(100, 100,
 								 100, 100);
 	struct pointer *pointer = client->input->pointer;
+	struct input_timestamps *input_ts =
+		input_timestamps_create_for_pointer(client);
 
 	send_axis(client, &t1, 1, 1.0);
 	assert(pointer->axis == 1);
 	assert(pointer->axis_value == 1.0);
 	assert(pointer->axis_time_msec == timespec_to_msec(&t1));
+	assert(timespec_eq(&pointer->axis_time_timespec, &t1));
 
 	send_axis(client, &t2, 2, 0.0);
 	assert(pointer->axis == 2);
 	assert(pointer->axis_stop_time_msec == timespec_to_msec(&t2));
+	assert(timespec_eq(&pointer->axis_stop_time_timespec, &t2));
+
+	input_timestamps_destroy(input_ts);
+}
+
+TEST(pointer_timestamps_stop_after_input_timestamps_object_is_destroyed)
+{
+	struct client *client = create_client_with_pointer_focus(100, 100,
+								 100, 100);
+	struct pointer *pointer = client->input->pointer;
+	struct input_timestamps *input_ts =
+		input_timestamps_create_for_pointer(client);
+
+	send_button(client, &t1, BTN_LEFT, WL_POINTER_BUTTON_STATE_PRESSED);
+	assert(pointer->button == BTN_LEFT);
+	assert(pointer->state == WL_POINTER_BUTTON_STATE_PRESSED);
+	assert(pointer->button_time_msec == timespec_to_msec(&t1));
+	assert(timespec_eq(&pointer->button_time_timespec, &t1));
+
+	input_timestamps_destroy(input_ts);
+
+	send_button(client, &t2, BTN_LEFT, WL_POINTER_BUTTON_STATE_RELEASED);
+	assert(pointer->button == BTN_LEFT);
+	assert(pointer->state == WL_POINTER_BUTTON_STATE_RELEASED);
+	assert(pointer->button_time_msec == timespec_to_msec(&t2));
+	assert(timespec_is_zero(&pointer->button_time_timespec));
+}
+
+TEST(pointer_timestamps_stop_after_client_releases_wl_pointer)
+{
+	struct client *client = create_client_with_pointer_focus(100, 100,
+								 100, 100);
+	struct pointer *pointer = client->input->pointer;
+	struct input_timestamps *input_ts =
+		input_timestamps_create_for_pointer(client);
+
+	send_motion(client, &t1, 150, 150);
+	assert(pointer->x == 50);
+	assert(pointer->y == 50);
+	assert(pointer->motion_time_msec == timespec_to_msec(&t1));
+	assert(timespec_eq(&pointer->motion_time_timespec, &t1));
+
+	wl_pointer_release(client->input->pointer->wl_pointer);
+
+	/* Set input_timestamp to an arbitrary value (different from t1, t2
+	 * and 0) and check that it is not changed by sending the event.
+	 * This is preferred over just checking for 0, since 0 is used
+	 * internally for resetting the timestamp after handling an input
+	 * event and checking for it here may lead to false negatives. */
+	pointer->input_timestamp = t_other;
+	send_motion(client, &t2, 175, 175);
+	assert(timespec_eq(&pointer->input_timestamp, &t_other));
+
+	input_timestamps_destroy(input_ts);
 }

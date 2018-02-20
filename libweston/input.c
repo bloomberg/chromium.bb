@@ -226,6 +226,8 @@ unbind_pointer_client_resource(struct wl_resource *resource)
 		pointer_client = weston_pointer_get_pointer_client(pointer,
 								   client);
 		assert(pointer_client);
+		remove_input_resource_from_timestamps(resource,
+						      &pointer->timestamps_list);
 		weston_pointer_cleanup_pointer_client(pointer, pointer_client);
 	}
 }
@@ -446,8 +448,12 @@ pointer_send_motion(struct weston_pointer *pointer,
 
 	resource_list = &pointer->focus_client->pointer_resources;
 	msecs = timespec_to_msec(time);
-	wl_resource_for_each(resource, resource_list)
+	wl_resource_for_each(resource, resource_list) {
+		send_timestamps_for_input_resource(resource,
+                                                   &pointer->timestamps_list,
+                                                   time);
 		wl_pointer_send_motion(resource, msecs, sx, sy);
+	}
 }
 
 WL_EXPORT void
@@ -528,8 +534,12 @@ weston_pointer_send_button(struct weston_pointer *pointer,
 	resource_list = &pointer->focus_client->pointer_resources;
 	serial = wl_display_next_serial(display);
 	msecs = timespec_to_msec(time);
-	wl_resource_for_each(resource, resource_list)
+	wl_resource_for_each(resource, resource_list) {
+		send_timestamps_for_input_resource(resource,
+                                                   &pointer->timestamps_list,
+                                                   time);
 		wl_pointer_send_button(resource, serial, msecs, button, state);
+	}
 }
 
 static void
@@ -586,14 +596,21 @@ weston_pointer_send_axis(struct weston_pointer *pointer,
 			wl_pointer_send_axis_discrete(resource, event->axis,
 						      event->discrete);
 
-		if (event->value)
+		if (event->value) {
+			send_timestamps_for_input_resource(resource,
+							   &pointer->timestamps_list,
+							   time);
 			wl_pointer_send_axis(resource, msecs,
 					     event->axis,
 					     wl_fixed_from_double(event->value));
-		else if (wl_resource_get_version(resource) >=
-			 WL_POINTER_AXIS_STOP_SINCE_VERSION)
+		} else if (wl_resource_get_version(resource) >=
+			 WL_POINTER_AXIS_STOP_SINCE_VERSION) {
+			send_timestamps_for_input_resource(resource,
+							   &pointer->timestamps_list,
+							   time);
 			wl_pointer_send_axis_stop(resource, msecs,
 						  event->axis);
+		}
 	}
 }
 
@@ -1128,6 +1145,7 @@ weston_pointer_create(struct weston_seat *seat)
 	wl_signal_init(&pointer->focus_signal);
 	wl_list_init(&pointer->focus_view_listener.link);
 	wl_signal_init(&pointer->destroy_signal);
+	wl_list_init(&pointer->timestamps_list);
 
 	pointer->sprite_destroy_listener.notify = pointer_handle_sprite_destroy;
 
@@ -1165,6 +1183,7 @@ weston_pointer_destroy(struct weston_pointer *pointer)
 	wl_list_remove(&pointer->focus_resource_listener.link);
 	wl_list_remove(&pointer->focus_view_listener.link);
 	wl_list_remove(&pointer->output_destroy_listener.link);
+	wl_list_remove(&pointer->timestamps_list);
 	free(pointer);
 }
 
@@ -4681,7 +4700,29 @@ input_timestamps_manager_get_pointer_timestamps(struct wl_client *client,
 						uint32_t id,
 						struct wl_resource *pointer_resource)
 {
-	wl_client_post_no_memory(client);
+	struct weston_pointer *pointer =
+		wl_resource_get_user_data(pointer_resource);
+	struct wl_resource *input_ts;
+
+	input_ts = wl_resource_create(client,
+				      &zwp_input_timestamps_v1_interface,
+				      1, id);
+	if (!input_ts) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
+	if (pointer) {
+		wl_list_insert(&pointer->timestamps_list,
+			       wl_resource_get_link(input_ts));
+	} else {
+		wl_list_init(wl_resource_get_link(input_ts));
+	}
+
+	wl_resource_set_implementation(input_ts,
+				       &input_timestamps_interface,
+				       pointer_resource,
+				       unbind_resource);
 }
 
 static void

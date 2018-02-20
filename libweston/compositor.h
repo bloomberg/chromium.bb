@@ -391,6 +391,8 @@ struct weston_pointer {
 	uint32_t button_count;
 
 	struct wl_listener output_destroy_listener;
+
+	struct wl_list timestamps_list;
 };
 
 
