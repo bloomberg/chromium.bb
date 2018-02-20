@@ -29,6 +29,7 @@ class UpdateRecommendedMessageBox : public views::DialogDelegate {
 
   // Overridden from views::WidgetDelegate:
   bool ShouldShowWindowTitle() const override;
+  bool ShouldShowCloseButton() const override;
   base::string16 GetWindowTitle() const override;
   void DeleteDelegate() override;
   ui::ModalType GetModalType() const override;
