@@ -203,18 +203,19 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
 
 namespace AV1HighbdWarpFilter {
 
-::testing::internal::ParamGenerator<HighbdWarpTestParam> GetDefaultParams() {
-  const HighbdWarpTestParam defaultParams[] = {
-    make_tuple(4, 4, 100, 8),    make_tuple(8, 8, 100, 8),
-    make_tuple(64, 64, 100, 8),  make_tuple(4, 16, 100, 8),
-    make_tuple(32, 8, 100, 8),   make_tuple(4, 4, 100, 10),
-    make_tuple(8, 8, 100, 10),   make_tuple(64, 64, 100, 10),
-    make_tuple(4, 16, 100, 10),  make_tuple(32, 8, 100, 10),
-    make_tuple(4, 4, 100, 12),   make_tuple(8, 8, 100, 12),
-    make_tuple(64, 64, 100, 12), make_tuple(4, 16, 100, 12),
-    make_tuple(32, 8, 100, 12),
+::testing::internal::ParamGenerator<HighbdWarpTestParam> BuildParams(
+    highbd_warp_affine_func filter) {
+  const HighbdWarpTestParam params[] = {
+    make_tuple(4, 4, 100, 8, filter),    make_tuple(8, 8, 100, 8, filter),
+    make_tuple(64, 64, 100, 8, filter),  make_tuple(4, 16, 100, 8, filter),
+    make_tuple(32, 8, 100, 8, filter),   make_tuple(4, 4, 100, 10, filter),
+    make_tuple(8, 8, 100, 10, filter),   make_tuple(64, 64, 100, 10, filter),
+    make_tuple(4, 16, 100, 10, filter),  make_tuple(32, 8, 100, 10, filter),
+    make_tuple(4, 4, 100, 12, filter),   make_tuple(8, 8, 100, 12, filter),
+    make_tuple(64, 64, 100, 12, filter), make_tuple(4, 16, 100, 12, filter),
+    make_tuple(32, 8, 100, 12, filter),
   };
-  return ::testing::ValuesIn(defaultParams);
+  return ::testing::ValuesIn(params);
 }
 
 AV1HighbdWarpFilterTest::~AV1HighbdWarpFilterTest() {}

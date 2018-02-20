@@ -39,6 +39,8 @@ void av1_highbd_warp_affine_sse4_1(const int32_t *mat, const uint16_t *ref,
     conv_params->do_post_rounding = 1;
   }
   assert(FILTER_BITS == FILTER_BITS);
+  assert(!(bd == 12 && reduce_bits_horiz < 5));
+
 #if CONFIG_JNT_COMP
   const int w0 = conv_params->fwd_offset;
   const int w1 = conv_params->bck_offset;
