@@ -138,6 +138,11 @@ void FakeDownloadTask::SetMimeType(const std::string& mime_type) {
   OnDownloadUpdated();
 }
 
+void FakeDownloadTask::SetTransitionType(ui::PageTransition page_transition) {
+  page_transition_ = page_transition;
+  OnDownloadUpdated();
+}
+
 void FakeDownloadTask::SetSuggestedFilename(
     const base::string16& suggested_file_name) {
   suggested_file_name_ = suggested_file_name;

@@ -268,6 +268,33 @@ TEST_F(DownloadManagerCoordinatorTest, CloseInProgressDownload) {
   }));
 }
 
+// Tests downloadManagerTabHelper:decidePolicyForDownload:completionHandler:.
+// Coordinator should present the confirmation dialog.
+TEST_F(DownloadManagerCoordinatorTest, DecidePolicyForDownload) {
+  web::FakeDownloadTask task(GURL(kTestUrl), kTestMimeType);
+  [coordinator_ downloadManagerTabHelper:&tab_helper_
+                 decidePolicyForDownload:&task
+                       completionHandler:^(NewDownloadPolicy){
+                       }];
+
+  // Verify that UIAlert is presented.
+  ASSERT_TRUE([base_view_controller_.presentedViewController
+      isKindOfClass:[UIAlertController class]]);
+  UIAlertController* alert = base::mac::ObjCCast<UIAlertController>(
+      base_view_controller_.presentedViewController);
+  EXPECT_NSEQ(@"Start New Download?", alert.title);
+  EXPECT_NSEQ(@"This will stop all progress for your current download.",
+              alert.message);
+
+  // Stop to avoid holding a dangling pointer to destroyed task.
+  [coordinator_ stop];
+
+  // |stop| should dismiss the apert.
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout, ^{
+    return !base_view_controller_.presentedViewController;
+  }));
+}
+
 // Tests starting the download. Verifies that download task is started and its
 // file writer is configured to write into download directory.
 TEST_F(DownloadManagerCoordinatorTest, StartDownload) {
