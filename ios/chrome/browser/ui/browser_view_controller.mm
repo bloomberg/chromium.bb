@@ -123,6 +123,7 @@
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/browser_container_view.h"
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
+#import "ios/chrome/browser/ui/browser_view_controller_helper.h"
 #import "ios/chrome/browser/ui/bubble/bubble_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_controller_presenter.h"
 #import "ios/chrome/browser/ui/chrome_web_view_factory.h"
@@ -203,7 +204,6 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_delegate_ios.h"
-#include "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_snapshot_providing.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_ui.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_ui_broadcasting_util.h"
@@ -282,6 +282,8 @@ using bookmarks::BookmarkNode;
 class InfoBarContainerDelegateIOS;
 
 namespace {
+
+const size_t kMaxURLDisplayChars = 32 * 1024;
 
 typedef NS_ENUM(NSInteger, ContextMenuHistogram) {
   // Note: these values must match the ContextMenuOption enum in histograms.xml.
@@ -454,7 +456,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Facade objects used by |_toolbarCoordinator|.
   // Must outlive |_toolbarCoordinator|.
   std::unique_ptr<ToolbarModelDelegateIOS> _toolbarModelDelegate;
-  std::unique_ptr<ToolbarModelIOS> _toolbarModelIOS;
+  std::unique_ptr<ToolbarModel> _toolbarModel;
 
   // Controller for edge swipe gestures for page and tab navigation.
   SideSwipeController* _sideSwipeController;
@@ -672,6 +674,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @property(nonatomic, weak) UIView* tabStripView;
 // Helper for saving images.
 @property(nonatomic, strong) ImageSaver* imageSaver;
+// Helper for the bvc.
+@property(nonatomic, strong) BrowserViewControllerHelper* helper;
 
 // The user agent type used to load the currently visible page. User agent
 // type is NONE if there is no visible page or visible page is a native
@@ -951,6 +955,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 @synthesize footerFullscreenProgress = _footerFullscreenProgress;
 @synthesize toolbarInterface = _toolbarInterface;
 @synthesize imageSaver = _imageSaver;
+@synthesize helper = _helper;
 // DialogPresenterDelegate property
 @synthesize dialogPresenterDelegateIsPresenting =
     _dialogPresenterDelegateIsPresenting;
@@ -1728,7 +1733,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [_toolbarUIUpdater stopUpdating];
     _toolbarUIUpdater = nil;
     _toolbarModelDelegate = nil;
-    _toolbarModelIOS = nil;
+    _toolbarModel = nil;
+    self.helper = nil;
     [self.tabStripCoordinator stop];
     self.tabStripCoordinator = nil;
     self.tabStripView = nil;
@@ -1962,8 +1968,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Create the toolbar model and controller.
   _toolbarModelDelegate.reset(
       new ToolbarModelDelegateIOS([_model webStateList]));
-  _toolbarModelIOS.reset([_dependencyFactory
-      newToolbarModelIOSWithDelegate:_toolbarModelDelegate.get()]);
+  _toolbarModel = std::make_unique<ToolbarModelImpl>(
+      _toolbarModelDelegate.get(), kMaxURLDisplayChars);
+  self.helper = [_dependencyFactory newBrowserViewControllerHelper];
 
   if (IsUIRefreshPhase1Enabled()) {
     PrimaryToolbarCoordinator* topToolbarCoordinator =
@@ -2136,7 +2143,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 // both browser state and tab model are valid.
 - (void)addUIFunctionalityForModelAndBrowserState {
   DCHECK(_browserState);
-  DCHECK(_toolbarModelIOS);
+  DCHECK(_toolbarModel);
   DCHECK(_model);
   DCHECK([self isViewLoaded]);
 
@@ -2207,7 +2214,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
         initWithBaseViewController:self
                       browserState:_browserState
                         dispatcher:self.dispatcher];
-    [_paymentRequestManager setToolbarModel:_toolbarModelIOS.get()];
+    [_paymentRequestManager setToolbarModel:_toolbarModel.get()];
     [_paymentRequestManager setActiveWebState:[_model currentTab].webState];
   }
 }
@@ -2339,7 +2346,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (void)updateToolbar {
   // If the BVC has been partially torn down for low memory, wait for the
   // view rebuild to handle toolbar updates.
-  if (!(_toolbarModelIOS && _browserState))
+  if (!(self.helper && _browserState))
     return;
 
   Tab* tab = [_model currentTab];
@@ -2347,7 +2354,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     return;
   [self.toolbarInterface updateToolsMenu];
 
-  if (_insertedTabWasPrerenderedTab && !_toolbarModelIOS->IsLoading())
+  if (_insertedTabWasPrerenderedTab &&
+      ![self.helper isToolbarLoading:self.currentWebState])
     [self.primaryToolbarCoordinator showPrerenderingAnimation];
 
   auto* findHelper = FindTabHelper::FromWebState(tab.webState);
@@ -4258,7 +4266,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
     _locationBarEditCancelledLoad = NO;
 
     web::WebState* webState = [_model currentTab].webState;
-    if (!_toolbarModelIOS->IsLoading() && webState)
+    if (webState && ![self.helper isToolbarLoading:webState])
       webState->GetNavigationManager()->Reload(web::ReloadType::NORMAL,
                                                false /* check_for_repost */);
   }
@@ -4267,16 +4275,19 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 - (void)locationBarBeganEdit {
   // On handsets, if a page is currently loading it should be stopped.
-  if (!IsIPadIdiom() && _toolbarModelIOS->IsLoading()) {
+  if (!IsIPadIdiom() && [self.helper isToolbarLoading:self.currentWebState]) {
     [self.dispatcher stopLoading];
     _locationBarEditCancelledLoad = YES;
   }
 }
 
-- (ToolbarModelIOS*)toolbarModelIOS {
-  return _toolbarModelIOS.get();
+- (ToolbarModel*)toolbarModel {
+  return _toolbarModel.get();
 }
 
+- (BOOL)shouldDisplayHintText {
+  return [[_model currentTab].webController wantsLocationBarHintText];
+}
 
 #pragma mark - ToolsMenuConfigurationProvider
 
@@ -4337,7 +4348,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 - (BOOL)shouldHighlightBookmarkButtonForToolsMenuCoordinator:
     (ToolsMenuCoordinator*)coordinator {
-  return [_model currentTab] ? _toolbarModelIOS->IsCurrentTabBookmarked() : NO;
+  return [self.helper isWebStateBookmarked:self.currentWebState];
 }
 
 - (BOOL)shouldShowFindBarForToolsMenuCoordinator:
@@ -4351,8 +4362,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (BOOL)isTabLoadingForToolsMenuCoordinator:(ToolsMenuCoordinator*)coordinator {
-  return ([_model currentTab] && !IsIPadIdiom()) ? _toolbarModelIOS->IsLoading()
-                                                 : NO;
+  return ([_model currentTab] && !IsIPadIdiom())
+             ? [self.helper isToolbarLoading:self.currentWebState]
+             : NO;
 }
 
 #pragma mark - BrowserCommands
@@ -4383,7 +4395,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [self initializeBookmarkInteractionController];
   [_bookmarkInteractionController
       presentBookmarkForTab:[_model currentTab]
-        currentlyBookmarked:_toolbarModelIOS->IsCurrentTabBookmarkedByUser()];
+        currentlyBookmarked:
+            [self.helper isWebStateBookmarkedByUser:self.currentWebState]];
 }
 
 - (void)openNewTab:(OpenNewTabCommand*)command {

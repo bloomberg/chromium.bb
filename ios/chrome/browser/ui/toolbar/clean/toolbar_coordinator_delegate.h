@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-class ToolbarModelIOS;
+class ToolbarModel;
 
 // Protocol receiving notification when the some events occur in the
 // ToolbarCoordinator
@@ -20,7 +20,10 @@ class ToolbarModelIOS;
 // Called when the location bar receives a key press.
 - (void)locationBarBeganEdit;
 // Returns the toolbar model.
-- (ToolbarModelIOS*)toolbarModelIOS;
+- (ToolbarModel*)toolbarModel;
+// Whether the hint text should be displayed in the location bar.
+// TODO(crbug.com/800266): This is not needed with the adaptive toolbar.
+- (BOOL)shouldDisplayHintText;
 
 @end
 

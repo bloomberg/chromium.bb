@@ -11,9 +11,6 @@ source_set("toolbar") {
     "toolbar_adapter.mm",
     "toolbar_model_delegate_ios.h",
     "toolbar_model_delegate_ios.mm",
-    "toolbar_model_impl_ios.h",
-    "toolbar_model_impl_ios.mm",
-    "toolbar_model_ios.h",
   ]
   deps = [
     ":resource_macros",
@@ -149,33 +146,14 @@ source_set("resource_macros") {
   ]
 }
 
-source_set("test_support") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "test_toolbar_model_ios.h",
-    "test_toolbar_model_ios.mm",
-  ]
-  deps = [
-    ":toolbar",
-    "//base",
-    "//components/toolbar",
-    "//components/toolbar:test_support",
-    "//ios/chrome/browser/tabs",
-    "//ios/web/public/test/fakes",
-  ]
-}
-
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "legacy_toolbar_ui_updater_unittest.mm",
-    "toolbar_model_impl_ios_unittest.mm",
     "toolbar_ui_broadcasting_util_unittest.mm",
   ]
   deps = [
-    ":test_support",
     ":toolbar",
     ":toolbar_ui",
     ":toolbar_ui_broadcasting_util",

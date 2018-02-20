@@ -6,9 +6,9 @@
 
 #include <memory>
 
+#include "components/toolbar/test_toolbar_model.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator_delegate.h"
-#include "ios/chrome/browser/ui/toolbar/test_toolbar_model_ios.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
@@ -25,7 +25,7 @@
 @end
 
 @implementation TestToolbarCoordinatorDelegate {
-  std::unique_ptr<ToolbarModelIOS> _model;
+  std::unique_ptr<ToolbarModel> _model;
 }
 
 - (void)locationBarDidBecomeFirstResponder {
@@ -35,12 +35,16 @@
 - (void)locationBarBeganEdit {
 }
 
-- (ToolbarModelIOS*)toolbarModelIOS {
+- (ToolbarModel*)toolbarModel {
   if (!_model) {
-    _model = std::make_unique<TestToolbarModelIOS>();
+    _model = std::make_unique<TestToolbarModel>();
   }
 
   return _model.get();
+}
+
+- (BOOL)shouldDisplayHintText {
+  return NO;
 }
 
 @end
