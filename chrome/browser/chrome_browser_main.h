@@ -63,6 +63,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
       const content::MainFunctionParams& parameters);
 
   // content::BrowserMainParts overrides.
+  bool ShouldContentCreateFeatureList() override;
   // These are called in-order by content::BrowserMainLoop.
   // Each stage calls the same stages in any ChromeBrowserMainExtraParts added
   // with AddParts() from ChromeContentBrowserClient::CreateBrowserMainParts.

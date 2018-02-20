@@ -5,7 +5,6 @@
 #include "content/test/test_blink_web_unit_test_support.h"
 
 #include "base/callback.h"
-#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -164,10 +163,6 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
   web_thread_ = renderer_scheduler_->CreateMainThread();
   shared_bitmap_manager_.reset(new cc::TestSharedBitmapManager);
 
-  // Set up a FeatureList instance, so that code using that API will not hit a
-  // an error that it's not set. Cleared by ClearInstanceForTesting() below.
-  base::FeatureList::SetInstance(base::WrapUnique(new base::FeatureList));
-
   // Initialize mojo firstly to enable Blink initialization to use it.
   InitializeMojo();
 
@@ -204,9 +199,6 @@ TestBlinkWebUnitTestSupport::~TestBlinkWebUnitTestSupport() {
   mock_clipboard_.reset();
   if (renderer_scheduler_)
     renderer_scheduler_->Shutdown();
-
-  // Clear the FeatureList that was registered in the constructor.
-  base::FeatureList::ClearInstanceForTesting();
 }
 
 blink::WebBlobRegistry* TestBlinkWebUnitTestSupport::GetBlobRegistry() {
