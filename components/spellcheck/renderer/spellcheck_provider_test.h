@@ -49,30 +49,39 @@ class TestingSpellCheckProvider : public SpellCheckProvider,
   void RequestTextChecking(const base::string16& text,
                            blink::WebTextCheckingCompletion* completion);
 
-  void OnCallSpellingService(const base::string16& text);
-  void ResetResult();
-
   void SetLastResults(
       const base::string16 last_request,
       blink::WebVector<blink::WebTextCheckingResult>& last_results);
   bool SatisfyRequestFromCache(const base::string16& text,
                                blink::WebTextCheckingCompletion* completion);
 
+#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+  void ResetResult();
+
   // Variables logging CallSpellingService() mojo calls.
   base::string16 text_;
-  size_t spelling_service_call_count_;
+  size_t spelling_service_call_count_ = 0;
+#endif
 
+#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   // Variables logging RequestTextCheck() mojo calls.
   using RequestTextCheckParams =
       std::pair<base::string16, RequestTextCheckCallback>;
   std::vector<RequestTextCheckParams> text_check_requests_;
+#endif
 
  private:
   // spellcheck::mojom::SpellCheckHost:
   void RequestDictionary() override;
   void NotifyChecked(const base::string16& word, bool misspelled) override;
+
+#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   void CallSpellingService(const base::string16& text,
                            CallSpellingServiceCallback callback) override;
+  void OnCallSpellingService(const base::string16& text);
+#endif
+
+#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   void RequestTextCheck(const base::string16&,
                         int,
                         RequestTextCheckCallback) override;
@@ -83,6 +92,7 @@ class TestingSpellCheckProvider : public SpellCheckProvider,
                      CheckSpellingCallback) override;
   void FillSuggestionList(const base::string16&,
                           FillSuggestionListCallback) override;
+#endif
 
   // Message loop (if needed) to deliver the SpellCheckHost request flow.
   std::unique_ptr<base::MessageLoop> loop_;
