@@ -232,6 +232,32 @@ bundle_data("resources") {
   ]
 }
 
+source_set("external_files") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "external_file_controller.h",
+    "external_file_controller.mm",
+    "external_file_remover.h",
+    "external_file_remover_factory.h",
+    "external_file_remover_factory.mm",
+    "external_file_remover_impl.h",
+    "external_file_remover_impl.mm",
+  ]
+  deps = [
+    ":ui",
+    "//base",
+    "//components/bookmarks/browser",
+    "//components/keyed_service/core",
+    "//components/keyed_service/ios",
+    "//components/sessions",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/bookmarks",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/sessions",
+    "//ios/chrome/browser/tabs",
+  ]
+}
+
 source_set("ui_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -245,13 +271,6 @@ source_set("ui_internal") {
     "browser_view_controller_helper.mm",
     "chrome_web_view_factory.h",
     "chrome_web_view_factory.mm",
-    "external_file_controller.h",
-    "external_file_controller.mm",
-    "external_file_remover.h",
-    "external_file_remover_factory.h",
-    "external_file_remover_factory.mm",
-    "external_file_remover_impl.h",
-    "external_file_remover_impl.mm",
     "fade_truncated_label.h",
     "fade_truncated_label.mm",
     "key_commands_provider.h",
@@ -281,7 +300,6 @@ source_set("ui_internal") {
     "//components/feature_engagement",
     "//components/image_fetcher/ios",
     "//components/infobars/core",
-    "//components/keyed_service/ios",
     "//components/language/ios/browser",
     "//components/payments/core",
     "//components/prefs",
@@ -414,6 +432,7 @@ source_set("ui_internal") {
     "//ios/chrome/browser/ui/settings",
   ]
   public_deps = [
+    ":external_files",
     "//ios/chrome/browser/ui/side_swipe",
     "//ios/chrome/browser/ui/toolbar",
   ]

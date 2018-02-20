@@ -11,8 +11,6 @@
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 
-@class BrowserViewController;
-
 namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
@@ -29,19 +27,6 @@ class ChromeBrowserState;
                                       mask:(BrowsingDataRemoveMask)mask
                                 timePeriod:(browsing_data::TimePeriod)timePeriod
                          completionHandler:(ProceduralBlock)completionHandler;
-
-// Removes browsing data that iOS has associated with |browserState| and which
-// is not removed when the |browserState| is destroyed. |mask| is obtained from
-// BrowsingDataRemoveMask. |browserState| cannot be null. |completionHandler| is
-// called when this operation finishes. This method finishes removal of the
-// browsing data even if |browserState| is destroyed after this method call.
-- (void)
-removeIOSSpecificIncognitoBrowsingDataFromBrowserState:
-    (ios::ChromeBrowserState*)browserState
-                                                  mask:(BrowsingDataRemoveMask)
-                                                           mask
-                                     completionHandler:
-                                         (ProceduralBlock)completionHandler;
 
 // Called when |browserState| is destroyed.
 - (void)browserStateDestroyed:(ios::ChromeBrowserState*)browserState;

@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/browsing_data/ios_chrome_browsing_data_remover.h"
 
+#import <WebKit/WebKit.h>
+
 #include <set>
 #include <string>
 
@@ -11,17 +13,18 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#import "base/ios/block_types.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/language/core/browser/url_language_histogram.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
+#include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
@@ -37,10 +40,15 @@
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
+#include "ios/chrome/browser/sessions/session_util.h"
+#include "ios/chrome/browser/snapshots/snapshots_util.h"
+#include "ios/chrome/browser/ui/external_file_remover.h"
+#include "ios/chrome/browser/ui/external_file_remover_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/net/http_cache_helper.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/web/public/web_thread.h"
+#import "ios/web/public/web_view_creation_util.h"
+#import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/transport_security_state.h"
@@ -183,13 +191,35 @@ void IOSChromeBrowsingDataRemover::SetRemoving(bool is_removing) {
 }
 
 void IOSChromeBrowsingDataRemover::Remove(browsing_data::TimePeriod time_period,
-                                          BrowsingDataRemoveMask remove_mask,
+                                          BrowsingDataRemoveMask mask,
                                           base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Should always remove something.
+  DCHECK(mask != BrowsingDataRemoveMask::REMOVE_NOTHING);
+
+  // In incognito, only data removal for all time is currently supported.
+  DCHECK(time_period == browsing_data::TimePeriod::ALL_TIME ||
+         !browser_state_->IsOffTheRecord());
+
+  // Cookies and server bound certificates should have the same lifetime.
+  DCHECK_EQ(
+      IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES),
+      IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_CHANNEL_IDS));
+
+  // Partial clearing of downloads is not supported.
+  DCHECK(time_period == browsing_data::TimePeriod::ALL_TIME ||
+         !IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_DOWNLOADS));
+
+  // Removing visited links requires clearing the cookies.
+  DCHECK(
+      IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES) ||
+      !IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_VISITED_LINKS));
+
   browsing_data::RecordDeletionForPeriod(time_period);
   removal_queue_.emplace(browsing_data::CalculateBeginDeleteTime(time_period),
                          browsing_data::CalculateEndDeleteTime(time_period),
-                         remove_mask, std::move(callback));
+                         mask, std::move(callback));
 
   // If this is the only scheduled task, execute it immediately. Otherwise,
   // it will be automatically executed when all tasks scheduled before it
@@ -217,6 +247,48 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(base::Time delete_begin,
 
   scoped_refptr<base::SequencedTaskRunner> current_task_runner =
       base::SequencedTaskRunnerHandle::Get();
+
+  // Note: Before adding any method below, make sure that it can finish clearing
+  // browsing data even if |browser_state)| is destroyed after this method call.
+
+  // If deleting history, clear visited links.
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_HISTORY)) {
+    session_util::DeleteLastSession(browser_state_,
+                                    CreatePendingTaskCompletionClosure());
+
+    // Remove the screenshots taken by the system when backgrounding the
+    // application. Partial removal based on timePeriod is not required.
+    ClearIOSSnapshots(CreatePendingTaskCompletionClosure());
+  }
+
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)) {
+    base::RecordAction(base::UserMetricsAction("ClearBrowsingData_Cookies"));
+    web::WebThread::PostTask(
+        web::WebThread::IO, FROM_HERE,
+        base::BindOnce(
+            &ClearCookies, context_getter_, delete_begin, delete_end,
+            base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
+                           current_task_runner, FROM_HERE,
+                           CreatePendingTaskCompletionClosure())));
+  }
+
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_CHANNEL_IDS)) {
+    base::RecordAction(base::UserMetricsAction("ClearBrowsingData_ChannelIDs"));
+    web::WebThread::PostTask(
+        web::WebThread::IO, FROM_HERE,
+        base::BindOnce(
+            &ClearChannelIDs, context_getter_, delete_begin, delete_end,
+            base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
+                           current_task_runner, FROM_HERE,
+                           CreatePendingTaskCompletionClosure())));
+  }
+
+  // There is no need to clean the remaining types of data for off-the-record
+  // ChromeBrowserStates as no data is saved. Early return to avoid scheduling
+  // unnecessary work.
+  if (browser_state_->IsOffTheRecord()) {
+    return;
+  }
 
   // On other platforms, it is possible to specify different types of origins
   // to clear data for (e.g., unprotected web vs. extensions). On iOS, this
@@ -268,6 +340,8 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(base::Time delete_begin,
       } else if (keywords_model) {
         keywords_model->RemoveAutoGeneratedBetween(delete_begin, delete_end);
       }
+
+      ClipboardRecentContent::GetInstance()->SuppressClipboardContent();
     }
 
     // If the caller is removing history for all hosts, then clear ancillary
@@ -309,31 +383,6 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(base::Time delete_begin,
     if (language_histogram) {
       language_histogram->ClearHistory(delete_begin, delete_end);
     }
-  }
-
-  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)) {
-    base::RecordAction(base::UserMetricsAction("ClearBrowsingData_Cookies"));
-    web::WebThread::PostTask(
-        web::WebThread::IO, FROM_HERE,
-        base::BindOnce(
-            &ClearCookies, context_getter_, delete_begin, delete_end,
-            base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
-                           current_task_runner, FROM_HERE,
-                           CreatePendingTaskCompletionClosure())));
-
-    // TODO(mkwst): If we're not removing passwords, then clear the 'zero-click'
-    // flag for all credentials in the password store.
-  }
-
-  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_CHANNEL_IDS)) {
-    base::RecordAction(base::UserMetricsAction("ClearBrowsingData_ChannelIDs"));
-    web::WebThread::PostTask(
-        web::WebThread::IO, FROM_HERE,
-        base::BindOnce(
-            &ClearChannelIDs, context_getter_, delete_begin, delete_end,
-            base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
-                           current_task_runner, FROM_HERE,
-                           CreatePendingTaskCompletionClosure())));
   }
 
   if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_PASSWORDS)) {
@@ -393,11 +442,24 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(base::Time delete_begin,
                                           std::string());
   }
 
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_DOWNLOADS)) {
+    ExternalFileRemover* external_file_remover =
+        ExternalFileRemoverFactory::GetForBrowserState(browser_state_);
+    if (external_file_remover) {
+      external_file_remover->RemoveAfterDelay(
+          base::TimeDelta::FromSeconds(0),
+          CreatePendingTaskCompletionClosure());
+    }
+  }
+
   // Always wipe accumulated network related data (TransportSecurityState and
   // HttpServerPropertiesManager data).
   browser_state_->ClearNetworkingHistorySince(
       delete_begin,
       AdaptCallbackForRepeating(CreatePendingTaskCompletionClosure()));
+
+  // Remove browsing data stored in WKWebsiteDataStore if necessary.
+  RemoveDataFromWKWebsiteDataStore(delete_begin, delete_end, mask);
 
   // Record the combined deletion of cookies and cache.
   CookieOrCacheDeletionChoice choice;
@@ -414,6 +476,100 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(base::Time delete_begin,
   UMA_HISTOGRAM_ENUMERATION(
       "History.ClearBrowsingData.UserDeletedCookieOrCache", choice,
       MAX_CHOICE_VALUE);
+}
+
+// TODO(crbug.com/619783): removing data from WkWebsiteDataStore should be
+// implemented by //ios/web. Once this is available remove this and use the
+// new API.
+void IOSChromeBrowsingDataRemover::RemoveDataFromWKWebsiteDataStore(
+    base::Time delete_begin,
+    base::Time delete_end,
+    BrowsingDataRemoveMask mask) {
+  // Converts browsing data types from BrowsingDataRemoveMask to
+  // WKWebsiteDataStore strings.
+  NSMutableSet* data_types_to_remove = [[NSMutableSet alloc] init];
+
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_CACHE_STORAGE)) {
+    [data_types_to_remove addObject:WKWebsiteDataTypeDiskCache];
+    [data_types_to_remove addObject:WKWebsiteDataTypeMemoryCache];
+  }
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_APPCACHE)) {
+    [data_types_to_remove
+        addObject:WKWebsiteDataTypeOfflineWebApplicationCache];
+  }
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_LOCAL_STORAGE)) {
+    [data_types_to_remove addObject:WKWebsiteDataTypeSessionStorage];
+    [data_types_to_remove addObject:WKWebsiteDataTypeLocalStorage];
+  }
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_WEBSQL)) {
+    [data_types_to_remove addObject:WKWebsiteDataTypeWebSQLDatabases];
+  }
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_INDEXEDDB)) {
+    [data_types_to_remove addObject:WKWebsiteDataTypeIndexedDBDatabases];
+  }
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)) {
+    [data_types_to_remove addObject:WKWebsiteDataTypeCookies];
+  }
+
+  if (![data_types_to_remove count]) {
+    return;
+  }
+
+  // Blocks don't play well with move-only objects, so wrap the closure as
+  // a repeating closure (this is better than recreating the same API with
+  // blocks).
+  base::RepeatingClosure closure =
+      AdaptCallbackForRepeating(CreatePendingTaskCompletionClosure());
+  ProceduralBlock completion_block = ^{
+    closure.Run();
+  };
+
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_VISITED_LINKS)) {
+    ProceduralBlock previous_completion_block = completion_block;
+    base::WeakPtr<IOSChromeBrowsingDataRemover> weak_ptr = GetWeakPtr();
+
+    // TODO(crbug.com/557963): Purging the WKProcessPool is a workaround for
+    // the fact that there is no public API to clear visited links in
+    // WKWebView. Remove this workaround if/when that API is made public.
+    // Note: Purging the WKProcessPool for clearing visisted links does have
+    // the side-effect of also losing the in-memory cookies of WKWebView but
+    // it is not a problem in practice since there is no UI to only have
+    // visited links be removed but not cookies.
+    completion_block = ^{
+      if (IOSChromeBrowsingDataRemover* strong_ptr = weak_ptr.get()) {
+        web::WKWebViewConfigurationProvider::FromBrowserState(
+            strong_ptr->browser_state_)
+            .Purge();
+      }
+      previous_completion_block();
+    };
+  }
+
+  ProceduralBlock remove_from_wk_website_data_store = ^{
+    NSDate* delete_begin_date =
+        [NSDate dateWithTimeIntervalSince1970:delete_begin.ToDoubleT()];
+    [[WKWebsiteDataStore defaultDataStore]
+        removeDataOfTypes:data_types_to_remove
+            modifiedSince:delete_begin_date
+        completionHandler:completion_block];
+  };
+
+  // TODO(crbug.com/661630): creating a WKWebView and executing javascript
+  // enables the WKWebView to connect to the Networking process. This allow
+  // the -[WKWebsiteDataStore removeDataOfTypes:] API to send an IPC message
+  // to the Networking process to clear cookies. This is a workaround for
+  // https://bugs.webkit.org/show_bug.cgi?id=149078 and has been reverse-
+  // engineered by code inspection on the WebKit2 source code. Remove this
+  // workaround when bug is fixed.
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)) {
+    [web::BuildWKWebView(CGRectZero, browser_state_)
+        evaluateJavaScript:@""
+         completionHandler:^(id, NSError*) {
+           remove_from_wk_website_data_store();
+         }];
+  } else {
+    remove_from_wk_website_data_store();
+  }
 }
 
 void IOSChromeBrowsingDataRemover::OnKeywordsLoaded(
