@@ -16,6 +16,10 @@ extern const char kBrowserTaskSchedulerDescription[];
 extern const char kCaptivePortalName[];
 extern const char kCaptivePortalDescription[];
 
+// Title and description for the flag to enable Captive Portal metrics logging.
+extern const char kCaptivePortalMetricsName[];
+extern const char kCaptivePortalMetricsDescription[];
+
 // Title and description for the flag to enable Omnibox Clipping.
 extern const char kClippingTextfieldName[];
 extern const char kClippingTextfieldDescription[];
