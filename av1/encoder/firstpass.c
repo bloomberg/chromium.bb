@@ -27,9 +27,7 @@
 #include "av1/common/entropymv.h"
 #include "av1/common/quant_common.h"
 #include "av1/common/reconinter.h"  // av1_setup_dst_planes()
-#if CONFIG_LV_MAP
 #include "av1/common/txb_common.h"
-#endif
 #include "av1/encoder/aq_variance.h"
 #include "av1/encoder/av1_quantize.h"
 #include "av1/encoder/block.h"
@@ -578,15 +576,11 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
     p[i].qcoeff = ctx->qcoeff[i];
     pd[i].dqcoeff = ctx->dqcoeff[i];
     p[i].eobs = ctx->eobs[i];
-#if CONFIG_LV_MAP
     p[i].txb_entropy_ctx = ctx->txb_entropy_ctx[i];
-#endif
   }
 
   av1_init_mv_probs(cm);
-#if CONFIG_LV_MAP
   av1_init_lv_map(cm);
-#endif
   av1_initialize_rd_consts(cpi);
 
   // Tiling is ignored in the first pass.

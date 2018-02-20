@@ -51,9 +51,7 @@
 #include "av1/encoder/encodeframe.h"
 #include "av1/encoder/encodemb.h"
 #include "av1/encoder/encodemv.h"
-#if CONFIG_LV_MAP
 #include "av1/encoder/encodetxb.h"
-#endif
 #include "av1/encoder/ethread.h"
 #include "av1/encoder/extend.h"
 #include "av1/encoder/rd.h"
@@ -505,9 +503,7 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     p[i].qcoeff = ctx->qcoeff[i];
     pd[i].dqcoeff = ctx->dqcoeff[i];
     p[i].eobs = ctx->eobs[i];
-#if CONFIG_LV_MAP
     p[i].txb_entropy_ctx = ctx->txb_entropy_ctx[i];
-#endif  // CONFIG_LV_MAP
   }
   for (i = 0; i < 2; ++i) pd[i].color_index_map = ctx->color_index_map[i];
   // Restore the coding context of the MB to that that was in place
@@ -669,9 +665,7 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     p[i].qcoeff = ctx->qcoeff[i];
     pd[i].dqcoeff = ctx->dqcoeff[i];
     p[i].eobs = ctx->eobs[i];
-#if CONFIG_LV_MAP
     p[i].txb_entropy_ctx = ctx->txb_entropy_ctx[i];
-#endif
   }
 
   for (i = 0; i < 2; ++i) pd[i].color_index_map = ctx->color_index_map[i];
@@ -1501,17 +1495,13 @@ static void encode_b(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 #endif
   update_state(cpi, tile_data, td, ctx, mi_row, mi_col, bsize, dry_run);
 
-#if CONFIG_LV_MAP
   av1_set_coeff_buffer(cpi, x, mi_row, mi_col);
-#endif
 
   encode_superblock(cpi, tile_data, td, tp, dry_run, mi_row, mi_col, bsize,
                     rate);
 
-#if CONFIG_LV_MAP
   if (dry_run == 0)
     x->cb_offset += block_size_wide[bsize] * block_size_high[bsize];
-#endif
 
   if (!dry_run) {
 #if CONFIG_EXT_DELTA_Q
@@ -2716,9 +2706,6 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
 #endif  // CONFIG_DIST_8X8
 
   if (bsize == cm->seq_params.sb_size) {
-#if !CONFIG_LV_MAP
-    assert(tp_orig < *tp || (tp_orig == *tp && xd->mi[0]->mbmi.skip));
-#endif
     assert(best_rdc.rate < INT_MAX);
     assert(best_rdc.dist < INT64_MAX);
   } else {
@@ -3565,9 +3552,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   if (best_rdc.rate < INT_MAX && best_rdc.dist < INT64_MAX &&
       pc_tree->index != 3) {
     if (bsize == cm->seq_params.sb_size) {
-#if CONFIG_LV_MAP
       x->cb_offset = 0;
-#endif
 
       encode_sb(cpi, td, tile_data, tp, mi_row, mi_col, OUTPUT_ENABLED, bsize,
                 pc_tree, NULL);
@@ -3586,9 +3571,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #endif  // CONFIG_DIST_8X8
 
   if (bsize == cm->seq_params.sb_size) {
-#if !CONFIG_LV_MAP
-    assert(tp_orig < *tp || (tp_orig == *tp && xd->mi[0]->mbmi.skip));
-#endif
     assert(best_rdc.rate < INT_MAX);
     assert(best_rdc.dist < INT64_MAX);
   } else {
@@ -3644,14 +3626,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
     PC_TREE *const pc_root =
         td->pc_root[cm->seq_params.mib_size_log2 - MIN_MIB_SIZE_LOG2];
 
-#if CONFIG_LV_MAP
     av1_fill_coeff_costs(&td->mb, xd->tile_ctx, num_planes);
-#else
-    av1_fill_token_costs_from_cdf(x->token_head_costs,
-                                  x->e_mbd.tile_ctx->coef_head_cdfs);
-    av1_fill_token_costs_from_cdf(x->token_tail_costs,
-                                  x->e_mbd.tile_ctx->coef_tail_cdfs);
-#endif
     av1_fill_mode_rates(cm, x, xd->tile_ctx);
 
     if (sf->adaptive_pred_interp_filter) {
@@ -4969,13 +4944,8 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     }
 
     mbmi->min_tx_size = mbmi->tx_size;
-#if CONFIG_LV_MAP
     av1_update_txb_context(cpi, td, dry_run, bsize, rate, mi_row, mi_col,
                            tile_data->allow_update_cdf);
-#else   // CONFIG_LV_MAP
-    av1_tokenize_sb(cpi, td, t, dry_run, bsize, rate, mi_row, mi_col,
-                    tile_data->allow_update_cdf);
-#endif  // CONFIG_LV_MAP
   } else {
     int ref;
     const int is_compound = has_second_ref(mbmi);

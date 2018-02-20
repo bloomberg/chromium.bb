@@ -169,15 +169,13 @@ if (NOT BUILD_SHARED_LIBS)
       endif ()
     endif ()
 
-    if (CONFIG_LV_MAP)
-      set(AOM_UNIT_TEST_COMMON_SOURCES
-          ${AOM_UNIT_TEST_COMMON_SOURCES}
-          "${AOM_ROOT}/test/txb_test.cc")
+    set(AOM_UNIT_TEST_COMMON_SOURCES
+        ${AOM_UNIT_TEST_COMMON_SOURCES}
+        "${AOM_ROOT}/test/txb_test.cc")
 
-      set(AOM_UNIT_TEST_ENCODER_SOURCES
-          ${AOM_UNIT_TEST_ENCODER_SOURCES}
-          "${AOM_ROOT}/test/encodetxb_test.cc")
-    endif ()
+    set(AOM_UNIT_TEST_ENCODER_SOURCES
+        ${AOM_UNIT_TEST_ENCODER_SOURCES}
+        "${AOM_ROOT}/test/encodetxb_test.cc")
 
     set(AOM_UNIT_TEST_COMMON_INTRIN_NEON
         ${AOM_UNIT_TEST_COMMON_INTRIN_NEON}
@@ -309,11 +307,7 @@ if (NOT BUILD_SHARED_LIBS)
         "${AOM_ROOT}/test/binary_codes_test.cc"
         "${AOM_ROOT}/test/boolcoder_test.cc"
         "${AOM_ROOT}/test/ec_test.cc")
-	if (NOT CONFIG_LV_MAP)
-	  set(AOM_UNIT_TEST_COMMON_SOURCES
-          ${AOM_UNIT_TEST_COMMON_SOURCES}
-          "${AOM_ROOT}/test/partial_idct_test.cc")
-	endif ()
+
     if (CONFIG_EXT_TILE)
       set(AOM_UNIT_TEST_COMMON_SOURCES
           ${AOM_UNIT_TEST_COMMON_SOURCES}

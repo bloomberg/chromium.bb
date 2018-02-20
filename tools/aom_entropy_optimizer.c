@@ -524,8 +524,6 @@ int main(int argc, const char **argv) {
                      "default_filter_intra_cdfs[TX_SIZES_ALL][CDF_SIZE(2)]");
 #endif
 
-#if CONFIG_LV_MAP
-
   cts_each_dim[0] = TX_SIZES;
   cts_each_dim[1] = TXB_SKIP_CONTEXTS;
   cts_each_dim[2] = 2;
@@ -645,8 +643,6 @@ int main(int argc, const char **argv) {
       "static const aom_cdf_prob "
       "default_coeff_base_eob_multi[TX_SIZES][PLANE_TYPES][SIG_COEF_"
       "CONTEXTS_EOB][CDF_SIZE(NUM_BASE_LEVELS+1)]");
-
-#endif  // CONFIG_LV_MAP
 
 #if CONFIG_EXT_SKIP
   /* Skip mode flag */

@@ -38,9 +38,7 @@
 #include "av1/common/reconintra.h"
 #include "av1/common/scan.h"
 #include "av1/common/seg_common.h"
-#if CONFIG_LV_MAP
 #include "av1/common/txb_common.h"
-#endif
 #include "av1/common/warped_motion.h"
 
 #include "av1/encoder/aq_variance.h"
@@ -49,9 +47,7 @@
 #include "av1/encoder/encodemb.h"
 #include "av1/encoder/encodemv.h"
 #include "av1/encoder/encoder.h"
-#if CONFIG_LV_MAP
 #include "av1/encoder/encodetxb.h"
-#endif
 #include "av1/encoder/hybrid_fwd_txfm.h"
 #include "av1/encoder/mcomp.h"
 #include "av1/encoder/palette.h"
@@ -2089,7 +2085,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 #endif
         RDCOST(x->rdmult, 0, tmp_dist) + args->this_rd < args->best_rd) {
       av1_optimize_b(cpi, x, plane, blk_row, blk_col, block, plane_bsize,
-                     tx_size, a, l, CONFIG_LV_MAP, &rate_cost);
+                     tx_size, a, l, 1, &rate_cost);
 
       const int eob = x->plane[plane].eobs[block];
       if (!eob)
@@ -3792,15 +3788,9 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 
   assert(tx_size < TX_SIZES_ALL);
 
-#if CONFIG_LV_MAP
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
   uint16_t cur_joint_ctx = (txb_ctx.dc_sign_ctx << 8) + txb_ctx.txb_skip_ctx;
-#else
-  const int coeff_ctx = get_entropy_context(tx_size, a, l);
-  const int coeff_ctx_one_byte = combine_entropy_contexts(*a, *l);
-  const uint8_t cur_joint_ctx = (coeff_ctx << 2) + coeff_ctx_one_byte;
-#endif
 
   // Note: tmp below is pixel distortion, not TX domain
   tmp = pixel_diff_dist(x, plane, diff, diff_stride, blk_row, blk_col,
@@ -3826,9 +3816,7 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
     rd_stats->rate += rd_info_array[tx_type].rate;
     rd_stats->skip &= rd_info_array[tx_type].eob == 0;
     p->eobs[block] = rd_info_array[tx_type].eob;
-#if CONFIG_LV_MAP
     p->txb_entropy_ctx[block] = rd_info_array[tx_type].txb_entropy_ctx;
-#endif
     return;
   }
 
@@ -3951,9 +3939,7 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
     rd_info_array[tx_type].dist = cur_dist;
     rd_info_array[tx_type].rate = cur_rate;
     rd_info_array[tx_type].eob = eob;
-#if CONFIG_LV_MAP
     rd_info_array[tx_type].txb_entropy_ctx = p->txb_entropy_ctx[block];
-#endif
   }
 
   rd_stats->dist += cur_dist;
@@ -4008,19 +3994,12 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 
   // TX no split
   {
-#if CONFIG_LV_MAP
     const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
     TXB_CTX txb_ctx;
     get_txb_ctx(plane_bsize, tx_size, plane, pta, ptl, &txb_ctx);
 
     const int zero_blk_rate = x->coeff_costs[txs_ctx][get_plane_type(plane)]
                                   .txb_skip_cost[txb_ctx.txb_skip_ctx][1];
-#else
-    const TX_SIZE tx_size_ctx = get_txsize_entropy_ctx(tx_size);
-    const int coeff_ctx = get_entropy_context(tx_size, pta, ptl);
-    const int zero_blk_rate =
-        x->token_head_costs[tx_size_ctx][pd->plane_type][1][0][coeff_ctx][0];
-#endif
 
     rd_stats->ref_rdcost = ref_best_rd;
     rd_stats->zero_rate = zero_blk_rate;
@@ -4056,11 +4035,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     if (tx_size > TX_4X4 && depth < MAX_VARTX_DEPTH)
       rd_stats->rate += x->txfm_partition_cost[ctx][0];
     this_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
-#if CONFIG_LV_MAP
     tmp_eob = p->txb_entropy_ctx[block];
-#else
-    tmp_eob = p->eobs[block];
-#endif
 
 #if CONFIG_TXK_SEL
     const int txk_idx = (blk_row << MAX_MIB_SIZE_LOG2) + blk_col;
@@ -4225,11 +4200,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
   if (this_rd < sum_rd) {
     const TX_SIZE tx_size_selected = tx_size;
 
-#if CONFIG_LV_MAP
     p->txb_entropy_ctx[block] = tmp_eob;
-#else
-    p->eobs[block] = tmp_eob;
-#endif
 
     av1_set_txb_context(x, plane, block, tx_size_selected, pta, ptl);
 
@@ -4434,19 +4405,12 @@ static void tx_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
   if (tx_size == plane_tx_size || plane) {
     ENTROPY_CONTEXT *ta = above_ctx + blk_col;
     ENTROPY_CONTEXT *tl = left_ctx + blk_row;
-#if CONFIG_LV_MAP
     const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
     TXB_CTX txb_ctx;
     get_txb_ctx(plane_bsize, tx_size, plane, ta, tl, &txb_ctx);
 
     const int zero_blk_rate = x->coeff_costs[txs_ctx][get_plane_type(plane)]
                                   .txb_skip_cost[txb_ctx.txb_skip_ctx][1];
-#else
-    const int coeff_ctx = get_entropy_context(tx_size, ta, tl);
-    const TX_SIZE tx_size_ctx = get_txsize_entropy_ctx(tx_size);
-    const int zero_blk_rate =
-        x->token_head_costs[tx_size_ctx][pd->plane_type][1][0][coeff_ctx][0];
-#endif  // CONFIG_LV_MAP
     rd_stats->zero_rate = zero_blk_rate;
     rd_stats->ref_rdcost = ref_best_rd;
     av1_tx_block_rd_b(cpi, x, tx_size, blk_row, blk_col, plane, block,
@@ -4460,12 +4424,10 @@ static void tx_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
       rd_stats->skip = 1;
       x->blk_skip[plane][blk_row * mi_width + blk_col] = 1;
       x->plane[plane].eobs[block] = 0;
-#if CONFIG_LV_MAP
       x->plane[plane].txb_entropy_ctx[block] = 0;
 #if CONFIG_TXK_SEL
       update_txk_array(mbmi->txk_type, blk_row, blk_col, tx_size, DCT_DCT);
 #endif
-#endif  // CONFIG_LV_MAP
     } else {
       rd_stats->skip = 0;
       x->blk_skip[plane][blk_row * mi_width + blk_col] = 0;
@@ -4906,16 +4868,11 @@ static void set_skip_flag(const AV1_COMP *cpi, MACROBLOCK *x,
   ENTROPY_CONTEXT ctxa[2 * MAX_MIB_SIZE];
   ENTROPY_CONTEXT ctxl[2 * MAX_MIB_SIZE];
   av1_get_entropy_contexts(bsize, 0, &xd->plane[0], ctxa, ctxl);
-#if CONFIG_LV_MAP
   TXB_CTX txb_ctx;
   // Because plane is 0, plane_bsize equal to bsize
   get_txb_ctx(bsize, tx_size, 0, ctxa, ctxl, &txb_ctx);
   int rate = x->coeff_costs[tx_size_ctx][PLANE_TYPE_Y]
                  .txb_skip_cost[txb_ctx.txb_skip_ctx][1];
-#else
-  int coeff_ctx = get_entropy_context(tx_size, ctxa, ctxl);
-  int rate = x->token_head_costs[tx_size_ctx][PLANE_TYPE_Y][1][0][coeff_ctx][0];
-#endif
   if (tx_size > TX_4X4) {
     int ctx = txfm_partition_context(
         xd->above_txfm_context, xd->left_txfm_context, mbmi->sb_type, tx_size);

@@ -154,10 +154,10 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
 #if CONFIG_DUAL_FILTER
     sf->use_fast_interpolation_filter_search = 1;
 #endif  // CONFIG_DUAL_FILTER
-#if 0   // CONFIG_HASH_ME && CONFIG_LV_MAP
+#if 0   // CONFIG_HASH_ME
     // TODO(mfo): Activate feature once it gives positive results.
     sf->use_hash_based_trellis = 1;
-#endif  // CONFIG_HASH_ME && CONFIG_LV_MAP
+#endif  // CONFIG_HASH_ME
     sf->tx_type_search.skip_tx_search = 1;
   }
 

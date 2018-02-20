@@ -81,7 +81,7 @@ specialize qw/av1_highbd_convolve_vert sse4_1/;
 #
 # txb
 #
-if (aom_config("CONFIG_LV_MAP") eq "yes") {
+{
   add_proto qw/void av1_get_br_level_counts/, "const uint8_t *const levels, const int width, const int height, uint8_t *const level_counts";
   specialize qw/av1_get_br_level_counts sse2/;
 }
@@ -414,7 +414,7 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   # End av1_high encoder functions
 
   # txb
-  if (aom_config("CONFIG_LV_MAP") eq "yes") {
+  {
     add_proto qw/void av1_get_nz_map_contexts/, "const uint8_t *const levels, const int16_t *const scan, const uint16_t eob, const TX_SIZE tx_size, const TX_TYPE tx_type, int8_t *const coeff_contexts";
     specialize qw/av1_get_nz_map_contexts sse2/;
   }

@@ -36,9 +36,7 @@
 #include "av1/encoder/encodemb.h"
 #include "av1/encoder/encodemv.h"
 #include "av1/encoder/encoder.h"
-#if CONFIG_LV_MAP
 #include "av1/encoder/encodetxb.h"
-#endif
 #include "av1/encoder/mcomp.h"
 #include "av1/encoder/ratectrl.h"
 #include "av1/encoder/rd.h"
@@ -473,7 +471,6 @@ void av1_set_mvcost(MACROBLOCK *x, MV_REFERENCE_FRAME ref_frame, int ref,
   x->nmvjointcost = x->nmv_vec_cost[nmv_ctx];
 }
 
-#if CONFIG_LV_MAP
 void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc,
                           const int num_planes) {
   const int nplanes = AOMMIN(num_planes, PLANE_TYPES);
@@ -553,7 +550,6 @@ void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc,
     }
   }
 }
-#endif  // CONFIG_LV_MAP
 
 void av1_fill_token_costs_from_cdf(av1_coeff_cost *cost,
                                    coeff_cdf_model (*cdf)[PLANE_TYPES]) {
@@ -733,11 +729,9 @@ static void get_entropy_contexts_plane(
   const ENTROPY_CONTEXT *const above = pd->above_context;
   const ENTROPY_CONTEXT *const left = pd->left_context;
 
-#if CONFIG_LV_MAP
   memcpy(t_above, above, sizeof(ENTROPY_CONTEXT) * num_4x4_w);
   memcpy(t_left, left, sizeof(ENTROPY_CONTEXT) * num_4x4_h);
   return;
-#endif  // CONFIG_LV_MAP
 
   int i;
 

@@ -36,11 +36,9 @@ static void alloc_mode_context(AV1_COMMON *cm, int num_pix,
                     aom_memalign(32, num_pix * sizeof(*ctx->dqcoeff[i])));
     CHECK_MEM_ERROR(cm, ctx->eobs[i],
                     aom_memalign(32, num_blk * sizeof(*ctx->eobs[i])));
-#if CONFIG_LV_MAP
     CHECK_MEM_ERROR(
         cm, ctx->txb_entropy_ctx[i],
         aom_memalign(32, num_blk * sizeof(*ctx->txb_entropy_ctx[i])));
-#endif
   }
 
   if (num_pix <= MAX_PALETTE_SQUARE) {
@@ -65,10 +63,8 @@ static void free_mode_context(PICK_MODE_CONTEXT *ctx, const int num_planes) {
     ctx->dqcoeff[i] = 0;
     aom_free(ctx->eobs[i]);
     ctx->eobs[i] = 0;
-#if CONFIG_LV_MAP
     aom_free(ctx->txb_entropy_ctx[i]);
     ctx->txb_entropy_ctx[i] = 0;
-#endif
   }
 
   for (i = 0; i < 2; ++i) {

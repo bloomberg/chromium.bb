@@ -35,9 +35,7 @@
 #include "av1/encoder/encodeframe.h"
 #include "av1/encoder/encodemv.h"
 #include "av1/encoder/encoder.h"
-#if CONFIG_LV_MAP
 #include "av1/encoder/encodetxb.h"
-#endif
 #include "av1/encoder/ethread.h"
 #include "av1/encoder/firstpass.h"
 #if CONFIG_HASH_ME
@@ -550,9 +548,7 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
 #endif
 
   av1_free_ref_frame_buffers(cm->buffer_pool);
-#if CONFIG_LV_MAP
   av1_free_txb_buf(cpi);
-#endif
   av1_free_context_buffers(cm);
 
   aom_free_frame_buffer(&cpi->last_frame_uf);
@@ -842,9 +838,7 @@ static void alloc_compressor_data(AV1_COMP *cpi) {
 
   av1_alloc_context_buffers(cm, cm->width, cm->height);
 
-#if CONFIG_LV_MAP
   av1_alloc_txb_buf(cpi);
-#endif
 
   alloc_context_buffers_ext(cpi);
 

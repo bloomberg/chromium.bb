@@ -81,7 +81,6 @@ void av1_foreach_transformed_block_in_plane(
   }
 }
 
-#if CONFIG_LV_MAP
 void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
                                    BLOCK_SIZE bsize, int mi_row, int mi_col,
                                    foreach_transformed_block_visitor visit,
@@ -94,7 +93,6 @@ void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
     av1_foreach_transformed_block_in_plane(xd, bsize, plane, visit, arg);
   }
 }
-#endif
 
 void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
                       int plane, TX_SIZE tx_size, int has_eob, int aoff,

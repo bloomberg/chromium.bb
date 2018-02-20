@@ -23,9 +23,7 @@
 
 #include "av1/encoder/cost.h"
 #include "av1/encoder/encoder.h"
-#if CONFIG_LV_MAP
 #include "av1/encoder/encodetxb.h"
-#endif
 #include "av1/encoder/rdopt.h"
 #include "av1/encoder/tokenize.h"
 
@@ -498,7 +496,6 @@ void tokenize_vartx(ThreadData *td, TOKENEXTRA **t, RUN_TYPE dry_run,
 
   if (tx_size == plane_tx_size || plane) {
     plane_bsize = get_plane_block_size(mbmi->sb_type, pd);
-#if CONFIG_LV_MAP
     if (!dry_run) {
       av1_update_and_record_txb_context(plane, block, blk_row, blk_col,
                                         plane_bsize, tx_size, arg);
@@ -509,15 +506,6 @@ void tokenize_vartx(ThreadData *td, TOKENEXTRA **t, RUN_TYPE dry_run,
       printf("DRY_RUN_COSTCOEFFS is not supported yet\n");
       assert(0);
     }
-#else
-    if (!dry_run)
-      tokenize_b(plane, block, blk_row, blk_col, plane_bsize, tx_size, arg);
-    else if (dry_run == DRY_RUN_NORMAL)
-      set_entropy_context_b(plane, block, blk_row, blk_col, plane_bsize,
-                            tx_size, arg);
-    else if (dry_run == DRY_RUN_COSTCOEFFS)
-      cost_coeffs_b(plane, block, blk_row, blk_col, plane_bsize, tx_size, arg);
-#endif
   } else {
     // Half the block size in transform block unit.
     const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
@@ -551,37 +539,19 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-#if CONFIG_LV_MAP
   (void)t;
-#else
-  TOKENEXTRA *t_backup = *t;
-#endif
   struct tokenize_b_args arg = { cpi, td, t, 0, allow_update_cdf };
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
   if (mbmi->skip) {
     av1_reset_skip_context(xd, mi_row, mi_col, bsize, num_planes);
-#if !CONFIG_LV_MAP
-    if (dry_run) *t = t_backup;
-#endif
     return;
   }
-
-#if !CONFIG_LV_MAP
-  else
-    *t = t_backup;
-#endif
 
   for (int plane = 0; plane < num_planes; ++plane) {
     if (!is_chroma_reference(mi_row, mi_col, bsize,
                              xd->plane[plane].subsampling_x,
                              xd->plane[plane].subsampling_y)) {
-#if !CONFIG_LV_MAP
-      if (!dry_run) {
-        (*t)->token = EOSB_TOKEN;
-        (*t)++;
-      }
-#endif
       continue;
     }
     const struct macroblockd_plane *const pd = &xd->plane[plane];
@@ -622,12 +592,6 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
         }
       }
     }
-#if !CONFIG_LV_MAP
-    if (!dry_run) {
-      (*t)->token = EOSB_TOKEN;
-      (*t)++;
-    }
-#endif
   }
   if (rate) *rate += arg.this_rate;
 }

@@ -15,9 +15,7 @@
 #include "av1/common/scan.h"
 #include "av1/common/onyxc_int.h"
 #include "av1/common/seg_common.h"
-#if CONFIG_LV_MAP
 #include "av1/common/txb_common.h"
-#endif
 
 static const aom_cdf_prob default_newmv_cdf[NEWMV_MODE_CONTEXTS][CDF_SIZE(2)] =
     { { AOM_CDF2(128 * 155) }, { AOM_CDF2(128 * 116) }, { AOM_CDF2(128 * 94) },
@@ -1380,9 +1378,7 @@ void av1_setup_past_independence(AV1_COMMON *cm) {
   av1_default_coef_probs(cm);
   init_mode_probs(cm->fc);
   av1_init_mv_probs(cm);
-#if CONFIG_LV_MAP
   av1_init_lv_map(cm);
-#endif
   cm->fc->initialized = 1;
   av1_setup_frame_contexts(cm);
 

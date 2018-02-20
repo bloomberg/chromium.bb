@@ -56,7 +56,6 @@ extern "C" {
 
 #define ENTROPY_NODES 11
 
-#if CONFIG_LV_MAP
 #define TXB_SKIP_CONTEXTS 13
 
 #define EOB_COEF_CONTEXTS 22
@@ -89,8 +88,6 @@ typedef enum TX_CLASS {
   TX_CLASS_VERT = 2,
   TX_CLASSES = 3,
 } TX_CLASS;
-
-#endif
 
 DECLARE_ALIGNED(16, extern const uint8_t, av1_pt_energy_class[ENTROPY_TOKENS]);
 
@@ -171,9 +168,7 @@ static INLINE int av1_get_cat6_extrabits_size(TX_SIZE tx_size,
 struct AV1Common;
 struct frame_contexts;
 void av1_default_coef_probs(struct AV1Common *cm);
-#if CONFIG_LV_MAP
 void av1_adapt_coef_probs(struct AV1Common *cm);
-#endif  // CONFIG_LV_MAP
 
 // This is the index in the scan order beyond which all coefficients for
 // 8x8 transform and above are in the top band.

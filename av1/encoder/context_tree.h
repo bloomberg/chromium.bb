@@ -45,9 +45,7 @@ typedef struct {
   tran_low_t *qcoeff[MAX_MB_PLANE];
   tran_low_t *dqcoeff[MAX_MB_PLANE];
   uint16_t *eobs[MAX_MB_PLANE];
-#if CONFIG_LV_MAP
   uint8_t *txb_entropy_ctx[MAX_MB_PLANE];
-#endif
 
   int num_4x4_blk;
   int skip;

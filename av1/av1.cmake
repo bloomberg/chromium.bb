@@ -352,30 +352,28 @@ if (CONFIG_INTERNAL_STATS)
       "${AOM_ROOT}/av1/encoder/blockiness.c")
 endif ()
 
-if (CONFIG_LV_MAP)
-  set(AOM_AV1_COMMON_SOURCES
-      ${AOM_AV1_COMMON_SOURCES}
-      "${AOM_ROOT}/av1/common/txb_common.c"
-      "${AOM_ROOT}/av1/common/txb_common.h")
+set(AOM_AV1_COMMON_SOURCES
+    ${AOM_AV1_COMMON_SOURCES}
+    "${AOM_ROOT}/av1/common/txb_common.c"
+    "${AOM_ROOT}/av1/common/txb_common.h")
 
-  set(AOM_AV1_COMMON_INTRIN_SSE2
-      ${AOM_AV1_COMMON_INTRIN_SSE2}
-      "${AOM_ROOT}/av1/common/x86/txb_sse2.c")
+set(AOM_AV1_COMMON_INTRIN_SSE2
+    ${AOM_AV1_COMMON_INTRIN_SSE2}
+    "${AOM_ROOT}/av1/common/x86/txb_sse2.c")
 
-  set(AOM_AV1_DECODER_SOURCES
-      ${AOM_AV1_DECODER_SOURCES}
-      "${AOM_ROOT}/av1/decoder/decodetxb.c"
-      "${AOM_ROOT}/av1/decoder/decodetxb.h")
+set(AOM_AV1_DECODER_SOURCES
+    ${AOM_AV1_DECODER_SOURCES}
+    "${AOM_ROOT}/av1/decoder/decodetxb.c"
+    "${AOM_ROOT}/av1/decoder/decodetxb.h")
 
-  set(AOM_AV1_ENCODER_SOURCES
-      ${AOM_AV1_ENCODER_SOURCES}
-      "${AOM_ROOT}/av1/encoder/encodetxb.c"
-      "${AOM_ROOT}/av1/encoder/encodetxb.h")
+set(AOM_AV1_ENCODER_SOURCES
+    ${AOM_AV1_ENCODER_SOURCES}
+    "${AOM_ROOT}/av1/encoder/encodetxb.c"
+    "${AOM_ROOT}/av1/encoder/encodetxb.h")
 
-  set(AOM_AV1_ENCODER_INTRIN_SSE2
-      ${AOM_AV1_ENCODER_INTRIN_SSE2}
-      "${AOM_ROOT}/av1/encoder/x86/encodetxb_sse2.c")
-endif ()
+set(AOM_AV1_ENCODER_INTRIN_SSE2
+    ${AOM_AV1_ENCODER_INTRIN_SSE2}
+    "${AOM_ROOT}/av1/encoder/x86/encodetxb_sse2.c")
 
 if (CONFIG_CFL)
   set(AOM_AV1_COMMON_SOURCES

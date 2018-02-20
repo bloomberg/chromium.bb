@@ -199,14 +199,12 @@ typedef struct BufferPool {
   InternalFrameBufferList int_frame_buffers;
 } BufferPool;
 
-#if CONFIG_LV_MAP
 typedef struct {
   int base_ctx_table[2 /*row*/][2 /*col*/][3 /*sig_map*/]
                     [BASE_CONTEXT_POSITION_NUM + 1];
 } LV_MAP_CTX_TABLE;
 typedef int BASE_CTX_TABLE[2 /*col*/][3 /*sig_map*/]
                           [BASE_CONTEXT_POSITION_NUM + 1];
-#endif
 
 #if CONFIG_REFERENCE_BUFFER
 /* Initial version of sequence header structure */
@@ -600,9 +598,7 @@ typedef struct AV1Common {
   int refresh_mask;
   int invalid_delta_frame_id_minus1;
 #endif  // CONFIG_REFERENCE_BUFFER
-#if CONFIG_LV_MAP
   LV_MAP_CTX_TABLE coeff_ctx_table;
-#endif
 #if CONFIG_MFMV
   TPL_MV_REF *tpl_mvs;
   int tpl_mvs_mem_size;

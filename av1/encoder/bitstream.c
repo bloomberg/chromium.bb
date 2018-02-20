@@ -42,9 +42,7 @@
 #include "av1/encoder/bitstream.h"
 #include "av1/encoder/cost.h"
 #include "av1/encoder/encodemv.h"
-#if CONFIG_LV_MAP
 #include "av1/encoder/encodetxb.h"
-#endif  // CONFIG_LV_MAP
 #include "av1/encoder/mcomp.h"
 #include "av1/encoder/palette.h"
 #include "av1/encoder/segmentation.h"
@@ -385,79 +383,6 @@ static void pack_map_tokens(aom_writer *w, const TOKENEXTRA **tp, int n,
   *tp = p;
 }
 
-#if !CONFIG_LV_MAP
-static INLINE void write_coeff_extra(const aom_cdf_prob *const *cdf, int val,
-                                     int n, aom_writer *w) {
-  // Code the extra bits from LSB to MSB in groups of 4
-  int i = 0;
-  int count = 0;
-  while (count < n) {
-    const int size = AOMMIN(n - count, 4);
-    const int mask = (1 << size) - 1;
-    aom_write_cdf(w, val & mask, cdf[i++], 1 << size);
-    val >>= size;
-    count += size;
-  }
-}
-
-static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
-                           const TOKENEXTRA *const stop,
-                           aom_bit_depth_t bit_depth, const TX_SIZE tx_size,
-                           TOKEN_STATS *token_stats) {
-  const TOKENEXTRA *p = *tp;
-  int count = 0;
-  const int seg_eob = av1_get_max_eob(tx_size);
-
-  while (p < stop && p->token != EOSB_TOKEN) {
-    const int token = p->token;
-    const int8_t eob_val = p->eob_val;
-    if (token == BLOCK_Z_TOKEN) {
-      aom_write_symbol(w, 0, *p->head_cdf, HEAD_TOKENS + 1);
-      p++;
-      break;
-      continue;
-    }
-
-    const av1_extra_bit *const extra_bits = &av1_extra_bits[token];
-    if (eob_val == LAST_EOB) {
-      // Just code a flag indicating whether the value is >1 or 1.
-      aom_write_bit(w, token != ONE_TOKEN);
-    } else {
-      int comb_symb = 2 * AOMMIN(token, TWO_TOKEN) - eob_val + p->first_val;
-      aom_write_symbol(w, comb_symb, *p->head_cdf, HEAD_TOKENS + p->first_val);
-    }
-    if (token > ONE_TOKEN) {
-      aom_write_symbol(w, token - TWO_TOKEN, *p->tail_cdf, TAIL_TOKENS);
-    }
-
-    if (extra_bits->base_val) {
-      const int bit_string = p->extra;
-      const int bit_string_length = extra_bits->len;  // Length of extra bits to
-      const int is_cat6 = (extra_bits->base_val == CAT6_MIN_VAL);
-      // be written excluding
-      // the sign bit.
-      int skip_bits = is_cat6 ? CAT6_BIT_SIZE - av1_get_cat6_extrabits_size(
-                                                    tx_size, bit_depth)
-                              : 0;
-
-      assert(!(bit_string >> (bit_string_length - skip_bits + 1)));
-      if (bit_string_length > 0)
-        write_coeff_extra(extra_bits->cdf, bit_string >> 1,
-                          bit_string_length - skip_bits, w);
-
-      aom_write_bit_record(w, bit_string & 1, token_stats);
-    }
-    ++p;
-
-    ++count;
-    if (eob_val == EARLY_EOB || count == seg_eob) break;
-  }
-
-  *tp = p;
-}
-#endif  // !CONFIG_LV_MAP
-
-#if CONFIG_LV_MAP
 static void pack_txb_tokens(aom_writer *w, AV1_COMMON *cm, MACROBLOCK *const x,
                             const TOKENEXTRA **tp,
                             const TOKENEXTRA *const tok_end, MACROBLOCKD *xd,
@@ -513,56 +438,6 @@ static void pack_txb_tokens(aom_writer *w, AV1_COMMON *cm, MACROBLOCK *const x,
     }
   }
 }
-#else  // CONFIG_LV_MAP
-static void pack_txb_tokens(aom_writer *w, const TOKENEXTRA **tp,
-                            const TOKENEXTRA *const tok_end, MACROBLOCKD *xd,
-                            MB_MODE_INFO *mbmi, int plane,
-                            BLOCK_SIZE plane_bsize, aom_bit_depth_t bit_depth,
-                            int block, int blk_row, int blk_col,
-                            TX_SIZE tx_size, TOKEN_STATS *token_stats) {
-  const struct macroblockd_plane *const pd = &xd->plane[plane];
-  const int tx_row = blk_row >> (1 - pd->subsampling_y);
-  const int tx_col = blk_col >> (1 - pd->subsampling_x);
-  const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
-  const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
-
-  if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
-
-  const TX_SIZE plane_tx_size =
-      plane ? av1_get_uv_tx_size(mbmi, pd->subsampling_x, pd->subsampling_y)
-            : mbmi->inter_tx_size[tx_row][tx_col];
-
-  if (tx_size == plane_tx_size || plane) {
-    TOKEN_STATS tmp_token_stats;
-    init_token_stats(&tmp_token_stats);
-    pack_mb_tokens(w, tp, tok_end, bit_depth, tx_size, &tmp_token_stats);
-#if CONFIG_RD_DEBUG
-    token_stats->txb_coeff_cost_map[blk_row][blk_col] = tmp_token_stats.cost;
-    token_stats->cost += tmp_token_stats.cost;
-#endif
-  } else {
-    const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
-    const int bsw = tx_size_wide_unit[sub_txs];
-    const int bsh = tx_size_high_unit[sub_txs];
-
-    assert(bsw > 0 && bsh > 0);
-
-    for (int r = 0; r < tx_size_high_unit[tx_size]; r += bsh) {
-      for (int c = 0; c < tx_size_wide_unit[tx_size]; c += bsw) {
-        const int offsetr = blk_row + r;
-        const int offsetc = blk_col + c;
-        const int step = bsh * bsw;
-
-        if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
-
-        pack_txb_tokens(w, tp, tok_end, xd, mbmi, plane, plane_bsize, bit_depth,
-                        block, offsetr, offsetc, sub_txs, token_stats);
-        block += step;
-      }
-    }
-  }
-}
-#endif  // CONFIG_LV_MAP
 
 #if CONFIG_SPATIAL_SEGMENTATION
 static int neg_interleave(int x, int ref, int max) {
@@ -1875,12 +1750,9 @@ static void write_inter_txb_coeff(AV1_COMMON *const cm, MACROBLOCK *const x,
        blk_row += bkh) {
     for (blk_col = col >> pd->subsampling_x; blk_col < unit_width;
          blk_col += bkw) {
-      pack_txb_tokens(w,
-#if CONFIG_LV_MAP
-                      cm, x,
-#endif
-                      tok, tok_end, xd, mbmi, plane, plane_bsize, cm->bit_depth,
-                      *block, blk_row, blk_col, max_tx_size, token_stats);
+      pack_txb_tokens(w, cm, x, tok, tok_end, xd, mbmi, plane, plane_bsize,
+                      cm->bit_depth, *block, blk_row, blk_col, max_tx_size,
+                      token_stats);
       *block += step;
     }
   }
@@ -1899,10 +1771,8 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
   int plane;
   int bh, bw;
   MACROBLOCK *const x = &cpi->td.mb;
-#if CONFIG_LV_MAP
   (void)tok;
   (void)tok_end;
-#endif
   xd->mi = cm->mi_grid_visible + mi_offset;
 
   assert(mbmi->sb_type <= cm->seq_params.sb_size ||
@@ -1934,17 +1804,10 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
                                &cols);
       assert(*tok < tok_end);
       pack_map_tokens(w, tok, palette_size_plane, rows * cols);
-#if !CONFIG_LV_MAP
-      assert(*tok < tok_end + mbmi->skip);
-#endif  // !CONFIG_LV_MAP
     }
   }
 
   if (!mbmi->skip) {
-#if !CONFIG_LV_MAP
-    assert(*tok < tok_end);
-#endif
-
     if (!is_inter_block(mbmi))
       av1_write_coeffs_mb(cm, x, mi_row, mi_col, w, mbmi->sb_type);
 
@@ -1975,9 +1838,6 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
             const struct macroblockd_plane *const pd = &xd->plane[plane];
             if (!is_chroma_reference(mi_row, mi_col, mbmi->sb_type,
                                      pd->subsampling_x, pd->subsampling_y)) {
-#if !CONFIG_LV_MAP
-              (*tok)++;
-#endif  // !CONFIG_LV_MAP
               continue;
             }
             write_inter_txb_coeff(cm, x, mbmi, w, tok, tok_end, &token_stats,
@@ -3071,9 +2931,6 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
 
         aom_start_encode(&mode_bc, dst + total_size);
         write_modes(cpi, &tile_info, &mode_bc, &tok, tok_end);
-#if !CONFIG_LV_MAP
-        assert(tok == tok_end);
-#endif  // !CONFIG_LV_MAP
         aom_stop_encode(&mode_bc);
         tile_size = mode_bc.pos;
         assert(tile_size > 0);
@@ -4878,9 +4735,6 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
 
         aom_start_encode(&mode_bc, dst + total_size);
         write_modes(cpi, &tile_info, &mode_bc, &tok, tok_end);
-#if !CONFIG_LV_MAP
-        assert(tok == tok_end);
-#endif  // !CONFIG_LV_MAP
         aom_stop_encode(&mode_bc);
         tile_size = mode_bc.pos;
         assert(tile_size > 0);

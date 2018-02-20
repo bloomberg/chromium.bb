@@ -402,9 +402,7 @@ typedef struct AV1_COMP {
   QUANTS quants;
   ThreadData td;
   MB_MODE_INFO_EXT *mbmi_ext_base;
-#if CONFIG_LV_MAP
   CB_COEFF_BUFFER *coeff_buffer_base;
-#endif
   Dequants dequants;
   AV1_COMMON common;
   AV1EncoderConfig oxcf;
@@ -609,9 +607,7 @@ typedef struct AV1_COMP {
   int arf_pos_in_gf[MAX_EXT_ARFS + 1];
   int arf_pos_for_ovrly[MAX_EXT_ARFS + 1];
   int global_motion_search_done;
-#if CONFIG_LV_MAP
   tran_low_t *tcoeff_buf[MAX_MB_PLANE];
-#endif
 
   int extra_arf_allowed;
   int bwd_ref_allowed;

@@ -57,9 +57,7 @@
 #include "av1/decoder/decodeframe.h"
 #include "av1/decoder/decodemv.h"
 #include "av1/decoder/decoder.h"
-#if CONFIG_LV_MAP
 #include "av1/decoder/decodetxb.h"
-#endif
 #include "av1/decoder/detokenize.h"
 
 #define MAX_AV1_HEADER_SIZE 80
@@ -129,7 +127,6 @@ static void predict_and_reconstruct_intra_block(
     struct aom_usec_timer timer;
     aom_usec_timer_start(&timer);
 #endif
-#if CONFIG_LV_MAP
     int16_t max_scan_line = 0;
     int eob;
     av1_read_coeffs_txb_facade(cm, xd, r, row, col, plane, tx_size,
@@ -137,15 +134,6 @@ static void predict_and_reconstruct_intra_block(
     // tx_type will be read out in av1_read_coeffs_txb_facade
     const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, row, col, tx_size,
                                             cm->reduced_tx_set_used);
-#else   // CONFIG_LV_MAP
-    const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, row, col, tx_size,
-                                            cm->reduced_tx_set_used);
-    const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, mbmi);
-    int16_t max_scan_line = 0;
-    const int eob =
-        av1_decode_block_tokens(cm, xd, plane, scan_order, col, row, tx_size,
-                                tx_type, &max_scan_line, r, mbmi->segment_id);
-#endif  // CONFIG_LV_MAP
 
 #if TXCOEFF_TIMER
     aom_usec_timer_mark(&timer);
@@ -192,7 +180,6 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
     struct aom_usec_timer timer;
     aom_usec_timer_start(&timer);
 #endif
-#if CONFIG_LV_MAP
     int16_t max_scan_line = 0;
     int eob;
     av1_read_coeffs_txb_facade(cm, xd, r, blk_row, blk_col, plane, tx_size,
@@ -200,15 +187,6 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
     // tx_type will be read out in av1_read_coeffs_txb_facade
     const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
                                             tx_size, cm->reduced_tx_set_used);
-#else   // CONFIG_LV_MAP
-    const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
-                                            tx_size, cm->reduced_tx_set_used);
-    const SCAN_ORDER *sc = get_scan(cm, tx_size, tx_type, mbmi);
-    int16_t max_scan_line = 0;
-    const int eob =
-        av1_decode_block_tokens(cm, xd, plane, sc, blk_col, blk_row, tx_size,
-                                tx_type, &max_scan_line, r, mbmi->segment_id);
-#endif  // CONFIG_LV_MAP
 
 #if TXCOEFF_TIMER
     aom_usec_timer_mark(&timer);

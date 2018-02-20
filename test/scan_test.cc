@@ -13,8 +13,6 @@
 #include "av1/common/scan.h"
 #include "av1/common/txb_common.h"
 
-#if CONFIG_LV_MAP
-
 static int scan_test(const int16_t *scan, const int16_t *iscan, int si, int r,
                      int c, int w) {
   if (iscan[r * w + c] != si || scan[si] != r * w + c) {
@@ -136,4 +134,3 @@ TEST(Av1ScanTest, Dependency) {
     }
   }
 }
-#endif

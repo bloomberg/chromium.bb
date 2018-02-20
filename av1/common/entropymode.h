@@ -76,7 +76,6 @@ typedef struct frame_contexts {
   coeff_cdf_model coef_tail_cdfs[TX_SIZES][PLANE_TYPES];
   coeff_cdf_model coef_head_cdfs[TX_SIZES][PLANE_TYPES];
 
-#if CONFIG_LV_MAP
   aom_cdf_prob txb_skip_cdf[TX_SIZES][TXB_SKIP_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob eob_extra_cdf[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS]
                             [CDF_SIZE(2)];
@@ -94,7 +93,6 @@ typedef struct frame_contexts {
                              [CDF_SIZE(4)];
   aom_cdf_prob coeff_br_cdf[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS]
                            [CDF_SIZE(BR_CDF_SIZE)];
-#endif
 
   aom_cdf_prob newmv_cdf[NEWMV_MODE_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob zeromv_cdf[GLOBALMV_MODE_CONTEXTS][CDF_SIZE(2)];
@@ -226,7 +224,6 @@ typedef struct FRAME_COUNTS {
   unsigned int switchable_interp[SWITCHABLE_FILTER_CONTEXTS]
                                 [SWITCHABLE_FILTERS];
 
-#if CONFIG_LV_MAP
 #if CONFIG_ENTROPY_STATS
   unsigned int txb_skip[TX_SIZES][TXB_SKIP_CONTEXTS][2];
   unsigned int eob_extra[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS][2];
@@ -248,7 +245,6 @@ typedef struct FRAME_COUNTS {
                                [NUM_BASE_LEVELS + 2];
   unsigned int coeff_base_eob_multi[TX_SIZES][PLANE_TYPES]
                                    [SIG_COEF_CONTEXTS_EOB][NUM_BASE_LEVELS + 1];
-#endif  // CONFIG_LV_MAP
 
   unsigned int newmv_mode[NEWMV_MODE_CONTEXTS][2];
   unsigned int zeromv_mode[GLOBALMV_MODE_CONTEXTS][2];

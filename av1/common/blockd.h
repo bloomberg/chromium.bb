@@ -1025,12 +1025,10 @@ void av1_foreach_transformed_block_in_plane(
     const MACROBLOCKD *const xd, BLOCK_SIZE bsize, int plane,
     foreach_transformed_block_visitor visit, void *arg);
 
-#if CONFIG_LV_MAP
 void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
                                    BLOCK_SIZE bsize, int mi_row, int mi_col,
                                    foreach_transformed_block_visitor visit,
                                    void *arg, const int num_planes);
-#endif
 
 void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
                       int plane, TX_SIZE tx_size, int has_eob, int aoff,

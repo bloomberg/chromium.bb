@@ -18,9 +18,7 @@
 #include "av1/common/onyxc_int.h"
 #include "av1/common/scan.h"
 #include "av1/common/token_cdfs.h"
-#if CONFIG_LV_MAP
 #include "av1/common/txb_common.h"
-#endif
 
 /* Extra bits coded from LSB to MSB */
 const aom_cdf_prob av1_cat1_cdf0[CDF_SIZE(2)] = { AOM_CDF2(20352) };
@@ -563,7 +561,6 @@ static int get_q_ctx(int q) {
 #endif  // CONFIG_Q_ADAPT_PROBS
 
 void av1_default_coef_probs(AV1_COMMON *cm) {
-#if CONFIG_LV_MAP
 #if CONFIG_Q_ADAPT_PROBS
   const int index = get_q_ctx(cm->base_qindex);
   av1_copy(cm->fc->txb_skip_cdf, av1_default_txb_skip_cdfs[index]);
@@ -595,20 +592,6 @@ void av1_default_coef_probs(AV1_COMMON *cm) {
   av1_copy(cm->fc->eob_flag_cdf512, av1_default_eob_multi512);
   av1_copy(cm->fc->eob_flag_cdf1024, av1_default_eob_multi1024);
 #endif  // CONFIG_Q_ADAPT_PROBS
-#else
-  const int index = AOMMIN(TOKEN_CDF_Q_CTXS - 1, cm->base_qindex / 64);
-  av1_copy(cm->fc->coef_head_cdfs[TX_4X4],
-           (*av1_default_qctx_coef_cdfs[index])[TX_4X4]);
-  av1_copy(cm->fc->coef_head_cdfs[TX_8X8],
-           (*av1_default_qctx_coef_cdfs[index])[TX_8X8]);
-  av1_copy(cm->fc->coef_head_cdfs[TX_16X16],
-           (*av1_default_qctx_coef_cdfs[index])[TX_16X16]);
-  av1_copy(cm->fc->coef_head_cdfs[TX_32X32],
-           (*av1_default_qctx_coef_cdfs[index])[TX_32X32]);
-  av1_copy(cm->fc->coef_head_cdfs[TX_64X64],
-           (*av1_default_qctx_coef_cdfs[index])[TX_32X32]);
-  av1_coef_pareto_cdfs(cm->fc);
-#endif  // CONFIG_LV_MAP
 }
 
 static void av1_average_cdf(aom_cdf_prob *cdf_ptr[], aom_cdf_prob *fc_cdf_ptr,
@@ -646,7 +629,6 @@ void av1_average_tile_coef_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
   aom_cdf_prob *fc_cdf_ptr;
   assert(num_tiles == 1);
 
-#if CONFIG_LV_MAP
   AVERAGE_TILE_CDFS(txb_skip_cdf)
   AVERAGE_TILE_CDFS(eob_extra_cdf)
   AVERAGE_TILE_CDFS(dc_sign_cdf)
@@ -660,10 +642,6 @@ void av1_average_tile_coef_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
   AVERAGE_TILE_CDFS(eob_flag_cdf1024)
   AVERAGE_TILE_CDFS(coeff_base_eob_cdf)
   AVERAGE_TILE_CDFS(coeff_br_cdf)
-#else  // CONFI_LV_MAP
-  AVERAGE_TILE_CDFS(coef_head_cdfs)
-  AVERAGE_TILE_CDFS(coef_tail_cdfs)
-#endif
 }
 
 void av1_average_tile_mv_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],

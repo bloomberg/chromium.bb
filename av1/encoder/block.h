@@ -35,9 +35,7 @@ typedef struct macroblock_plane {
   tran_low_t *qcoeff;
   tran_low_t *coeff;
   uint16_t *eobs;
-#if CONFIG_LV_MAP
   uint8_t *txb_entropy_ctx;
-#endif
   struct buf_2d src;
 
   // Quantizer setings
@@ -56,7 +54,6 @@ typedef struct macroblock_plane {
 typedef int av1_coeff_cost[PLANE_TYPES][REF_TYPES][COEF_BANDS][COEFF_CONTEXTS]
                           [TAIL_TOKENS];
 
-#if CONFIG_LV_MAP
 typedef struct {
   int txb_skip_cost[TXB_SKIP_CONTEXTS][2];
   int base_eob_cost[SIG_COEF_CONTEXTS_EOB][3];
@@ -78,18 +75,15 @@ typedef struct {
   int dc_sign_ctx[MAX_MB_PLANE]
                  [MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
 } CB_COEFF_BUFFER;
-#endif
 
 typedef struct {
   int_mv ref_mvs[MODE_CTX_REF_FRAMES][MAX_MV_REF_CANDIDATES];
   int16_t mode_context[MODE_CTX_REF_FRAMES];
-#if CONFIG_LV_MAP
   // TODO(angiebird): Reduce the buffer size according to sb_type
   tran_low_t *tcoeff[MAX_MB_PLANE];
   uint16_t *eobs[MAX_MB_PLANE];
   uint8_t *txb_skip_ctx[MAX_MB_PLANE];
   int *dc_sign_ctx[MAX_MB_PLANE];
-#endif
   uint8_t ref_mv_count[MODE_CTX_REF_FRAMES];
   CANDIDATE_MV ref_mv_stack[MODE_CTX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];
   int16_t compound_mode_context[MODE_CTX_REF_FRAMES];
@@ -133,15 +127,11 @@ typedef struct {
   int64_t sse;
   int rate;
   uint16_t eob;
-#if CONFIG_LV_MAP
 #if CONFIG_TXK_SEL
   TX_TYPE tx_type;
 #endif
   uint16_t entropy_context;
   uint8_t txb_entropy_ctx;
-#else
-  uint8_t entropy_context;
-#endif
   uint8_t valid;
   uint8_t fast;  // This is not being used now.
 } TX_SIZE_RD_INFO;
@@ -267,11 +257,9 @@ struct macroblock {
   int skip_mode_index;
 #endif  // CONFIG_EXT_SKIP
 
-#if CONFIG_LV_MAP
   LV_MAP_COEFF_COST coeff_costs[TX_SIZES][PLANE_TYPES];
   LV_MAP_EOB_COST eob_costs[7][2];
   uint16_t cb_offset;
-#endif
 
   av1_coeff_cost token_head_costs[TX_SIZES];
   av1_coeff_cost token_tail_costs[TX_SIZES];
