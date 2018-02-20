@@ -969,9 +969,9 @@ jint WebContentsAccessibilityAndroid::FindElementType(
   if (forwards && start_id == g_element_hosting_autofill_popup_unique_id &&
       g_autofill_popup_proxy_node) {
     g_element_after_element_hosting_autofill_popup_unique_id = element_id;
-    auto* android_node =
+    auto* proxy_android_node =
         static_cast<BrowserAccessibilityAndroid*>(g_autofill_popup_proxy_node);
-    return android_node->unique_id();
+    return proxy_android_node->unique_id();
   }
 
   return element_id;
