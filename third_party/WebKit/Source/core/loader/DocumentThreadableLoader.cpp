@@ -866,24 +866,14 @@ void DocumentThreadableLoader::HandlePreflightResponse(
   }
 
   WebString access_control_error_description;
-  std::unique_ptr<WebCORSPreflightResultCacheItem> preflight_result =
-      WebCORSPreflightResultCacheItem::Create(
-          actual_request_.GetFetchCredentialsMode(),
-          response.HttpHeaderFields(), access_control_error_description);
-
-  if (!preflight_result ||
-      !preflight_result->AllowsCrossOriginMethod(
-          actual_request_.HttpMethod(), access_control_error_description) ||
-      !preflight_result->AllowsCrossOriginHeaders(
+  if (!WebCORSPreflightResultCache::Shared().EnsureResultAndMayAppendEntry(
+          response.HttpHeaderFields(), GetSecurityOrigin()->ToString(),
+          actual_request_.Url(), actual_request_.HttpMethod(),
           actual_request_.HttpHeaderFields(),
-          access_control_error_description)) {
+          actual_request_.GetFetchCredentialsMode(),
+          &access_control_error_description)) {
     HandlePreflightFailure(response.Url(), access_control_error_description);
-    return;
   }
-
-  WebCORSPreflightResultCache::Shared().AppendEntry(
-      GetSecurityOrigin()->ToString(), actual_request_.Url(),
-      std::move(preflight_result));
 }
 
 void DocumentThreadableLoader::ReportResponseReceived(

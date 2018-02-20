@@ -4,6 +4,7 @@
 
 #include "public/platform/WebCORSPreflightResultCache.h"
 
+#include "base/strings/stringprintf.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/testing/URLTestHelpers.h"
@@ -42,39 +43,11 @@ class TestWebCORSPreflightResultCache : public WebCORSPreflightResultCache {
 
 class WebCORSPreflightResultCacheTest : public ::testing::Test {
  protected:
-  std::unique_ptr<WebCORSPreflightResultCacheItem> CreateCacheItem(
-      const AtomicString allow_methods,
-      const AtomicString allow_headers,
-      network::mojom::FetchCredentialsMode credentials_mode,
-      const int max_age = -1) {
-    HTTPHeaderMap response_header;
-
-    if (!allow_methods.IsEmpty())
-      response_header.Set("Access-Control-Allow-Methods", allow_methods);
-
-    if (!allow_headers.IsEmpty())
-      response_header.Set("Access-Control-Allow-Headers", allow_headers);
-
-    if (max_age > -1) {
-      response_header.Set("Access-Control-Max-Age",
-                          AtomicString::Number(max_age));
-    }
-
-    WebString error_description;
-    std::unique_ptr<WebCORSPreflightResultCacheItem> item =
-        WebCORSPreflightResultCacheItem::Create(
-            credentials_mode, response_header, error_description, clock());
-
-    EXPECT_TRUE(item);
-
-    return item;
-  }
-
   base::SimpleTestTickClock* clock() { return &clock_; }
 
   // This is by no means a robust parser and works only for the headers strings
   // used in this tests.
-  HTTPHeaderMap ParseHeaderString(std::string headers) {
+  HTTPHeaderMap ParseHeaderString(const std::string& headers) {
     HTTPHeaderMap header_map;
     std::stringstream stream;
     stream.str(headers);
@@ -100,18 +73,21 @@ TEST_F(WebCORSPreflightResultCacheTest, CacheTimeout) {
   WebURL other_url = URLTestHelpers::ToKURL("http://www.test.com/B");
 
   test::TestWebCORSPreflightResultCache cache;
+  network::cors::PreflightResult::SetTickClockForTesting(clock());
 
   // Cache should be empty:
   EXPECT_EQ(0, cache.CacheSize());
 
   cache.AppendEntry(
       origin, url,
-      CreateCacheItem("POST", "",
-                      network::mojom::FetchCredentialsMode::kInclude, 5));
+      network::cors::PreflightResult::Create(
+          network::mojom::FetchCredentialsMode::kInclude, std::string("POST"),
+          base::nullopt, std::string("5"), nullptr));
   cache.AppendEntry(
       origin, other_url,
-      CreateCacheItem("POST", "",
-                      network::mojom::FetchCredentialsMode::kInclude, 5));
+      network::cors::PreflightResult::Create(
+          network::mojom::FetchCredentialsMode::kInclude, std::string("POST"),
+          base::nullopt, std::string("5"), nullptr));
 
   // Cache size should be 3 (counting origins and urls separately):
   EXPECT_EQ(3, cache.CacheSize());
@@ -141,6 +117,8 @@ TEST_F(WebCORSPreflightResultCacheTest, CacheTimeout) {
   // Cache size should be 0, with the expired entry removed by call to
   // CanSkipPreflight():
   EXPECT_EQ(0, cache.CacheSize());
+
+  network::cors::PreflightResult::SetTickClockForTesting(nullptr);
 }
 
 TEST_F(WebCORSPreflightResultCacheTest, CacheSize) {
@@ -156,35 +134,38 @@ TEST_F(WebCORSPreflightResultCacheTest, CacheSize) {
 
   cache.AppendEntry(
       origin, url,
-      CreateCacheItem("POST", "",
-                      network::mojom::FetchCredentialsMode::kInclude));
+      network::cors::PreflightResult::Create(
+          network::mojom::FetchCredentialsMode::kInclude, std::string("POST"),
+          base::nullopt, base::nullopt, nullptr));
 
   // Cache size should be 2 (counting origins and urls separately):
   EXPECT_EQ(2, cache.CacheSize());
 
   cache.AppendEntry(
       origin, other_url,
-      CreateCacheItem("POST", "",
-                      network::mojom::FetchCredentialsMode::kInclude));
+      network::cors::PreflightResult::Create(
+          network::mojom::FetchCredentialsMode::kInclude, std::string("POST"),
+          base::nullopt, base::nullopt, nullptr));
 
   // Cache size should now be 3 (1 origin, 2 urls):
   EXPECT_EQ(3, cache.CacheSize());
 
   cache.AppendEntry(
       other_origin, url,
-      CreateCacheItem("POST", "",
-                      network::mojom::FetchCredentialsMode::kInclude));
+      network::cors::PreflightResult::Create(
+          network::mojom::FetchCredentialsMode::kInclude, std::string("POST"),
+          base::nullopt, base::nullopt, nullptr));
   // Cache size should now be 4 (4 origin, 3 urls):
   EXPECT_EQ(5, cache.CacheSize());
 }
 
 TEST_F(WebCORSPreflightResultCacheTest, CanSkipPreflight) {
   const struct {
-    const AtomicString allow_methods;
-    const AtomicString allow_headers;
+    const std::string allow_methods;
+    const std::string allow_headers;
     const network::mojom::FetchCredentialsMode cache_credentials_mode;
 
-    const AtomicString request_method;
+    const std::string request_method;
     const std::string request_headers;
     const network::mojom::FetchCredentialsMode request_credentials_mode;
 
@@ -248,7 +229,7 @@ TEST_F(WebCORSPreflightResultCacheTest, CanSkipPreflight) {
 
       // Credential mode mismatch:
       {"GET", "", network::mojom::FetchCredentialsMode::kOmit, "GET", "",
-       network::mojom::FetchCredentialsMode::kInclude, false},
+       network::mojom::FetchCredentialsMode::kOmit, true},
       {"GET", "", network::mojom::FetchCredentialsMode::kOmit, "GET", "",
        network::mojom::FetchCredentialsMode::kInclude, false},
   };
@@ -264,9 +245,10 @@ TEST_F(WebCORSPreflightResultCacheTest, CanSkipPreflight) {
     WebString origin("null");
     WebURL url = URLTestHelpers::ToKURL("http://www.test.com/");
 
-    std::unique_ptr<WebCORSPreflightResultCacheItem> item = CreateCacheItem(
-        test.allow_methods, test.allow_headers, test.cache_credentials_mode);
-
+    std::unique_ptr<network::cors::PreflightResult> item =
+        network::cors::PreflightResult::Create(
+            test.cache_credentials_mode, test.allow_methods, test.allow_headers,
+            base::nullopt, nullptr);
     EXPECT_TRUE(item);
 
     test::TestWebCORSPreflightResultCache cache;
@@ -274,7 +256,8 @@ TEST_F(WebCORSPreflightResultCacheTest, CanSkipPreflight) {
     cache.AppendEntry(origin, url, std::move(item));
 
     EXPECT_EQ(cache.CanSkipPreflight(origin, url, test.request_credentials_mode,
-                                     test.request_method,
+                                     String(test.request_method.data(),
+                                            test.request_method.length()),
                                      ParseHeaderString(test.request_headers)),
               test.can_skip_preflight);
   }

@@ -30,6 +30,20 @@ enum CORSError {
   kPreflightMissingAllowExternal,
   kPreflightInvalidAllowExternal,
 
+  // Failed to parse Access-Control-Allow-Methods response header field in
+  // CORS-preflight response.
+  kInvalidAllowMethodsPreflightResponse,
+
+  // Failed to parse Access-Control-Allow-Headers response header field in
+  // CORS-preflight response.
+  kInvalidAllowHeadersPreflightResponse,
+
+  // Not allowed by Access-Control-Allow-Methods in CORS-preflight response.
+  kMethodDisallowedByPreflightResponse,
+
+  // Not allowed by Access-Control-Allow-Headers in CORS-preflight response.
+  kHeaderDisallowedByPreflightResponse,
+
   // Redirect
   kRedirectDisallowedScheme,
   kRedirectContainsCredentials,

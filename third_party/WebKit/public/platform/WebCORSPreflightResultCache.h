@@ -38,54 +38,9 @@
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
-
-namespace base {
-class TickClock;
-}
+#include "services/network/public/cpp/cors/preflight_result.h"
 
 namespace blink {
-
-// Represents an entry of the CORS-preflight cache.
-// See https://fetch.spec.whatwg.org/#concept-cache.
-class BLINK_PLATFORM_EXPORT WebCORSPreflightResultCacheItem {
- public:
-  WebCORSPreflightResultCacheItem(const WebCORSPreflightResultCacheItem&) =
-      delete;
-  WebCORSPreflightResultCacheItem& operator=(
-      const WebCORSPreflightResultCacheItem&) = delete;
-
-  static std::unique_ptr<WebCORSPreflightResultCacheItem> Create(
-      const network::mojom::FetchCredentialsMode,
-      const WebHTTPHeaderMap&,
-      WebString& error_description,
-      base::TickClock* = nullptr);
-
-  bool AllowsCrossOriginMethod(const WebString& method,
-                               WebString& error_description) const;
-  bool AllowsCrossOriginHeaders(const WebHTTPHeaderMap&,
-                                WebString& error_description) const;
-  bool AllowsRequest(network::mojom::FetchCredentialsMode,
-                     const WebString& method,
-                     const WebHTTPHeaderMap& request_headers) const;
-
- private:
-  WebCORSPreflightResultCacheItem(network::mojom::FetchCredentialsMode,
-                                  base::TickClock*);
-
-  bool Parse(const WebHTTPHeaderMap& response_header,
-             WebString& error_description);
-
-  // FIXME: A better solution to holding onto the absolute expiration time might
-  // be to start a timer for the expiration delta that removes this from the
-  // cache when it fires.
-  base::TimeTicks absolute_expiry_time_;
-
-  // Corresponds to the fields of the CORS-preflight cache with the same name.
-  bool credentials_;
-  base::flat_set<std::string> methods_;
-  WebHTTPHeaderSet headers_;
-  base::TickClock* clock_;
-};
 
 class BLINK_PLATFORM_EXPORT WebCORSPreflightResultCache {
  public:
@@ -96,9 +51,26 @@ class BLINK_PLATFORM_EXPORT WebCORSPreflightResultCache {
   // Returns a WebCORSPreflightResultCache which is shared in the same thread.
   static WebCORSPreflightResultCache& Shared();
 
+  // TODO(toyoshim): Move to platform/loader/cors, as
+  // CORS::EnsurePreflightResultAndCacheOnSuccess when
+  // WebCORSPreflightResultCache is ported to network service.
+  bool EnsureResultAndMayAppendEntry(
+      const WebHTTPHeaderMap& response_header_map,
+      const WebString& origin,
+      const WebURL& request_url,
+      const WebString& request_method,
+      const WebHTTPHeaderMap& request_header_map,
+      network::mojom::FetchCredentialsMode request_credentials_mode,
+      WebString* error_description);
+
+  // TODO(toyoshim): Remove the following method that is used only for testing
+  // outside this class implementation.
   void AppendEntry(const WebString& origin,
                    const WebURL&,
-                   std::unique_ptr<WebCORSPreflightResultCacheItem>);
+                   std::unique_ptr<network::cors::PreflightResult>);
+
+  // TODO(toyoshim): Move to platform/loader/cors, as CORS::CanSkipPreflight
+  // when WebCORSPreflightResultCache is ported to network service.
   bool CanSkipPreflight(const WebString& origin,
                         const WebURL&,
                         network::mojom::FetchCredentialsMode,
@@ -113,10 +85,10 @@ class BLINK_PLATFORM_EXPORT WebCORSPreflightResultCache {
 
   typedef std::map<
       std::string,
-      std::map<std::string, std::unique_ptr<WebCORSPreflightResultCacheItem>>>
-      WebCORSPreflightResultHashMap;
+      std::map<std::string, std::unique_ptr<network::cors::PreflightResult>>>
+      PreflightResultHashMap;
 
-  WebCORSPreflightResultHashMap preflight_hash_map_;
+  PreflightResultHashMap preflight_hash_map_;
 };
 
 }  // namespace blink
