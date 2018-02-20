@@ -48,6 +48,10 @@ extern const base::Feature kDispatchSafetyNetCheckOffThread;
 // users if referrer chain is incomplete.
 extern const base::Feature kAppendRecentNavigationEvents;
 
+// Controls whether .rar files downloaded by the user are inspected for being
+// unsafe.
+extern const base::Feature kInspectDownloadedRarFiles;
+
 base::ListValue GetFeatureStatusList();
 
 }  // namespace safe_browsing

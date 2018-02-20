@@ -62,6 +62,9 @@ const base::Feature kDispatchSafetyNetCheckOffThread{
 const base::Feature kAppendRecentNavigationEvents{
     "AppendRecentNavigationEvents", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kInspectDownloadedRarFiles{
+    "InspectDownloadedRarFiles", base::FEATURE_DISABLED_BY_DEFAULT};
+
 namespace {
 // List of experimental features. Boolean value for each list member should be
 // set to true if the experiment is currently running at a probability other
@@ -78,6 +81,7 @@ constexpr struct {
     {&kDispatchSafetyNetCheckOffThread, false},
     {&kGaiaPasswordReuseReporting, true},
     {&kGoogleBrandedPhishingWarning, true},
+    {&kInspectDownloadedRarFiles, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},
 };

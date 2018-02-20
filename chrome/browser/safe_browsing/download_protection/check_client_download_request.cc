@@ -22,6 +22,7 @@
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/safe_browsing/common/utils.h"
+#include "components/safe_browsing/features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/common/service_manager_connection.h"
@@ -361,6 +362,10 @@ void CheckClientDownloadRequest::AnalyzeFile() {
   // are enabled.
   if (item_->GetTargetFilePath().MatchesExtension(FILE_PATH_LITERAL(".zip"))) {
     StartExtractZipFeatures();
+  } else if (item_->GetTargetFilePath().MatchesExtension(
+                 FILE_PATH_LITERAL(".rar")) &&
+             base::FeatureList::IsEnabled(kInspectDownloadedRarFiles)) {
+    StartExtractRarFeatures();
 #if defined(OS_MACOSX)
   } else if (item_->GetTargetFilePath().MatchesExtension(
                  FILE_PATH_LITERAL(".dmg")) ||
@@ -477,18 +482,47 @@ void CheckClientDownloadRequest::ExtractFileFeatures(
   OnFileFeatureExtractionDone();
 }
 
+void CheckClientDownloadRequest::StartExtractRarFeatures() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(item_);  // Called directly from Start(), item should still exist.
+  rar_analysis_start_time_ = base::TimeTicks::Now();
+  // We give the rar analyzer a weak pointer to this object.  Since the
+  // analyzer is refcounted, it might outlive the request.
+  rar_analyzer_ = new SandboxedRarAnalyzer(
+      item_->GetFullPath(),
+      base::BindRepeating(&CheckClientDownloadRequest::OnRarAnalysisFinished,
+                          weakptr_factory_.GetWeakPtr()),
+      content::ServiceManagerConnection::GetForProcess()->GetConnector());
+  rar_analyzer_->Start();
+}
+
+void CheckClientDownloadRequest::OnRarAnalysisFinished(
+    const ArchiveAnalyzerResults& results) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (item_ == nullptr) {
+    PostFinishTask(DownloadCheckResult::UNKNOWN, REASON_REQUEST_CANCELED);
+    return;
+  }
+  if (!service_)
+    return;
+  UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractRarFeaturesTime",
+                      base::TimeTicks::Now() - rar_analysis_start_time_);
+  // TODO(crbug/750327): Use information from |results|.
+  OnFileFeatureExtractionDone();
+}
+
 void CheckClientDownloadRequest::StartExtractZipFeatures() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(item_);  // Called directly from Start(), item should still exist.
   zip_analysis_start_time_ = base::TimeTicks::Now();
   // We give the zip analyzer a weak pointer to this object.  Since the
   // analyzer is refcounted, it might outlive the request.
-  analyzer_ = new SandboxedZipAnalyzer(
+  zip_analyzer_ = new SandboxedZipAnalyzer(
       item_->GetFullPath(),
       base::Bind(&CheckClientDownloadRequest::OnZipAnalysisFinished,
                  weakptr_factory_.GetWeakPtr()),
       content::ServiceManagerConnection::GetForProcess()->GetConnector());
-  analyzer_->Start();
+  zip_analyzer_->Start();
 }
 
 // static

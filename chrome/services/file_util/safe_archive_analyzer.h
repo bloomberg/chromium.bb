@@ -10,6 +10,7 @@
 
 namespace base {
 class File;
+class FilePath;
 }
 
 class SafeArchiveAnalyzer : public chrome::mojom::SafeArchiveAnalyzer {
@@ -25,6 +26,8 @@ class SafeArchiveAnalyzer : public chrome::mojom::SafeArchiveAnalyzer {
                       AnalyzeZipFileCallback callback) override;
   void AnalyzeDmgFile(base::File dmg_file,
                       AnalyzeDmgFileCallback callback) override;
+  void AnalyzeRarFile(const base::FilePath& rar_file_path,
+                      AnalyzeRarFileCallback callback) override;
 
   const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
 

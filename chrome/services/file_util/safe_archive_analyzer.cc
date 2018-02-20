@@ -43,3 +43,16 @@ void SafeArchiveAnalyzer::AnalyzeDmgFile(base::File dmg_file,
   NOTREACHED();
 #endif
 }
+
+void SafeArchiveAnalyzer::AnalyzeRarFile(const base::FilePath& rar_file_path,
+                                         AnalyzeRarFileCallback callback) {
+  DCHECK(!rar_file_path.value().empty());
+
+  safe_browsing::ArchiveAnalyzerResults results;
+  base::File file(rar_file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!file.IsValid()) {
+    results.success = false;
+  }
+  // TODO(crbug/750327): Inspect |file|.
+  std::move(callback).Run(results);
+}

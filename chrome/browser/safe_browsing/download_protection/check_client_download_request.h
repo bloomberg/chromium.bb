@@ -22,6 +22,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
+#include "chrome/services/file_util/public/cpp/sandboxed_rar_analyzer.h"
 #include "chrome/services/file_util/public/cpp/sandboxed_zip_analyzer.h"
 #include "components/download/public/common/download_item.h"
 #include "components/history/core/browser/history_service.h"
@@ -77,6 +78,8 @@ class CheckClientDownloadRequest
   void OnFileFeatureExtractionDone();
   void StartExtractFileFeatures();
   void ExtractFileFeatures(const base::FilePath& file_path);
+  void StartExtractRarFeatures();
+  void OnRarAnalysisFinished(const ArchiveAnalyzerResults& results);
   void StartExtractZipFeatures();
   void OnZipAnalysisFinished(const ArchiveAnalyzerResults& results);
 
@@ -138,7 +141,9 @@ class CheckClientDownloadRequest
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
   const bool pingback_enabled_;
   std::unique_ptr<net::URLFetcher> fetcher_;
-  scoped_refptr<SandboxedZipAnalyzer> analyzer_;
+  scoped_refptr<SandboxedRarAnalyzer> rar_analyzer_;
+  scoped_refptr<SandboxedZipAnalyzer> zip_analyzer_;
+  base::TimeTicks rar_analysis_start_time_;
   base::TimeTicks zip_analysis_start_time_;
 #if defined(OS_MACOSX)
   scoped_refptr<SandboxedDMGAnalyzer> dmg_analyzer_;
