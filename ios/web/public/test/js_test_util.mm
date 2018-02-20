@@ -17,6 +17,10 @@
 #error "This file requires ARC support."
 #endif
 
+using testing::kWaitForJSCompletionTimeout;
+using testing::kWaitForPageLoadTimeout;
+using testing::WaitUntilConditionOrTimeout;
+
 namespace web {
 
 id ExecuteJavaScript(CRWJSInjectionManager* manager, NSString* script) {
@@ -29,10 +33,9 @@ id ExecuteJavaScript(CRWJSInjectionManager* manager, NSString* script) {
              completed = true;
            }];
 
-  BOOL success = testing::WaitUntilConditionOrTimeout(
-      testing::kWaitForJSCompletionTimeout, ^{
-        return completed;
-      });
+  BOOL success = WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return completed;
+  });
   // Log stack trace to provide some context.
   EXPECT_TRUE(success)
       << "CRWJSInjectionManager failed to complete javascript execution.\n"
@@ -64,10 +67,9 @@ id ExecuteJavaScript(WKWebView* web_view,
                block_error = [script_error copy];
                completed = true;
              }];
-  BOOL success = testing::WaitUntilConditionOrTimeout(
-      testing::kWaitForJSCompletionTimeout, ^{
-        return completed;
-      });
+  BOOL success = WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return completed;
+  });
   // Log stack trace to provide some context.
   EXPECT_TRUE(success) << "WKWebView failed to complete javascript execution.\n"
                        << base::SysNSStringToUTF8([[NSThread callStackSymbols]
@@ -76,6 +78,14 @@ id ExecuteJavaScript(WKWebView* web_view,
     *error = block_error;
   }
   return result;
+}
+
+bool LoadHtml(WKWebView* web_view, NSString* html, NSURL* base_url) {
+  [web_view loadHTMLString:html baseURL:base_url];
+
+  return WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return !web_view.loading;
+  });
 }
 
 }  // namespace web

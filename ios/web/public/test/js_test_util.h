@@ -8,6 +8,8 @@
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
 
+#include "base/compiler_specific.h"
+
 @class CRWJSInjectionManager;
 @class CRWJSInjectionReceiver;
 
@@ -34,6 +36,12 @@ id ExecuteJavaScript(WKWebView* web_view,
 // Executes JavaScript on |web_view| and returns the result as an id.
 // Fails if there was an error during script execution.
 id ExecuteJavaScript(WKWebView* web_view, NSString* script);
+
+// Synchronously loads |html| into |web_view|. Returns true is successful or
+// false if the |web_view| never finishes loading.
+bool LoadHtml(WKWebView* web_view,
+              NSString* html,
+              NSURL* base_url) WARN_UNUSED_RESULT;
 
 }  // namespace web
 
