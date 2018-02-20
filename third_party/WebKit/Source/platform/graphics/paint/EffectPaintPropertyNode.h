@@ -13,6 +13,7 @@
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/PaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/text/WTFString.h"
 
 #include <iosfwd>
@@ -64,8 +65,9 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     if (local_transform_space == local_transform_space_ &&
         output_clip == output_clip_ && color_filter == color_filter_ &&
         filter == filter_ && opacity == opacity_ && blend_mode == blend_mode_ &&
-        direct_compositing_reasons == direct_compositing_reasons_ &&
-        compositor_element_id == compositor_element_id_ &&
+        (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+         (direct_compositing_reasons == direct_compositing_reasons_ &&
+          compositor_element_id == compositor_element_id_)) &&
         paint_offset == paint_offset_)
       return parent_changed;
 
@@ -121,8 +123,9 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
            output_clip_ == o.output_clip_ && color_filter_ == o.color_filter_ &&
            filter_ == o.filter_ && opacity_ == o.opacity_ &&
            blend_mode_ == o.blend_mode_ &&
-           direct_compositing_reasons_ == o.direct_compositing_reasons_ &&
-           compositor_element_id_ == o.compositor_element_id_ &&
+           (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+            (direct_compositing_reasons_ == o.direct_compositing_reasons_ &&
+             compositor_element_id_ == o.compositor_element_id_)) &&
            paint_offset_ == o.paint_offset_;
   }
 #endif
