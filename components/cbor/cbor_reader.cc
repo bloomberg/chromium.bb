@@ -55,13 +55,12 @@ const char kOutOfRangeIntegerValue[] =
 
 }  // namespace
 
-CBORReader::CBORReader(base::span<const uint8_t>::const_iterator it,
+CBORReader::CBORReader(base::span<const uint8_t>::const_iterator begin,
                        const base::span<const uint8_t>::const_iterator end)
-    : begin_(it),
-      it_(it),
+    : begin_(begin),
+      it_(begin),
       end_(end),
       error_code_(DecoderError::CBOR_NO_ERROR) {}
-
 CBORReader::~CBORReader() {}
 
 // static
@@ -103,6 +102,26 @@ base::Optional<CBORValue> CBORReader::Read(base::span<uint8_t const> data,
   return decoded_cbor;
 }
 
+// static
+base::Optional<CBORReader::DataItemHeader> CBORReader::ReadDataItemHeader(
+    base::span<const uint8_t> data,
+    size_t* num_bytes_consumed,
+    DecoderError* error_code_out) {
+  CBORReader reader(data.cbegin(), data.cend());
+  base::Optional<DataItemHeader> decoded_header = reader.DecodeDataItemHeader();
+
+  if (error_code_out)
+    *error_code_out = reader.GetErrorCode();
+
+  if (reader.GetErrorCode() != DecoderError::CBOR_NO_ERROR) {
+    *num_bytes_consumed = 0;
+    return base::nullopt;
+  }
+
+  *num_bytes_consumed = reader.num_bytes_consumed();
+  return decoded_header;
+}
+
 base::Optional<CBORValue> CBORReader::DecodeCompleteDataItem(
     int max_nesting_level) {
   if (max_nesting_level < 0 || max_nesting_level > kCBORMaxDepth) {
@@ -110,6 +129,34 @@ base::Optional<CBORValue> CBORReader::DecodeCompleteDataItem(
     return base::nullopt;
   }
 
+  base::Optional<DataItemHeader> header = DecodeDataItemHeader();
+  if (!header.has_value())
+    return base::nullopt;
+
+  switch (header->type) {
+    case CBORValue::Type::UNSIGNED:
+      return DecodeValueToUnsigned(header->value);
+    case CBORValue::Type::NEGATIVE:
+      return DecodeValueToNegative(header->value);
+    case CBORValue::Type::BYTE_STRING:
+      return ReadByteStringContent(*header);
+    case CBORValue::Type::STRING:
+      return ReadStringContent(*header);
+    case CBORValue::Type::ARRAY:
+      return ReadArrayContent(*header, max_nesting_level);
+    case CBORValue::Type::MAP:
+      return ReadMapContent(*header, max_nesting_level);
+    case CBORValue::Type::SIMPLE_VALUE:
+      return DecodeToSimpleValue(*header);
+    case CBORValue::Type::NONE:
+      break;
+  }
+
+  error_code_ = DecoderError::UNSUPPORTED_MAJOR_TYPE;
+  return base::nullopt;
+}
+
+base::Optional<CBORReader::DataItemHeader> CBORReader::DecodeDataItemHeader() {
   if (!CanConsume(1)) {
     error_code_ = DecoderError::INCOMPLETE_CBOR_DATA;
     return base::nullopt;
@@ -123,27 +170,7 @@ base::Optional<CBORValue> CBORReader::DecodeCompleteDataItem(
   if (!ReadVariadicLengthInteger(additional_info, &value))
     return base::nullopt;
 
-  switch (major_type) {
-    case CBORValue::Type::UNSIGNED:
-      return DecodeValueToUnsigned(value);
-    case CBORValue::Type::NEGATIVE:
-      return DecodeValueToNegative(value);
-    case CBORValue::Type::BYTE_STRING:
-      return ReadBytes(value);
-    case CBORValue::Type::STRING:
-      return ReadString(value);
-    case CBORValue::Type::ARRAY:
-      return ReadCBORArray(value, max_nesting_level);
-    case CBORValue::Type::MAP:
-      return ReadCBORMap(value, max_nesting_level);
-    case CBORValue::Type::SIMPLE_VALUE:
-      return ReadSimpleValue(additional_info, value);
-    case CBORValue::Type::NONE:
-      break;
-  }
-
-  error_code_ = DecoderError::UNSUPPORTED_MAJOR_TYPE;
-  return base::nullopt;
+  return DataItemHeader{major_type, additional_info, value};
 }
 
 bool CBORReader::ReadVariadicLengthInteger(uint8_t additional_info,
@@ -198,17 +225,17 @@ base::Optional<CBORValue> CBORReader::DecodeValueToUnsigned(uint64_t value) {
   return CBORValue(unsigned_value.ValueOrDie());
 }
 
-base::Optional<CBORValue> CBORReader::ReadSimpleValue(uint8_t additional_info,
-                                                      uint64_t value) {
+base::Optional<CBORValue> CBORReader::DecodeToSimpleValue(
+    const DataItemHeader& header) {
   // Floating point numbers are not supported.
-  if (additional_info > 24 && additional_info < 28) {
+  if (header.additional_info > 24 && header.additional_info < 28) {
     error_code_ = DecoderError::UNSUPPORTED_FLOATING_POINT_VALUE;
     return base::nullopt;
   }
 
-  CHECK_LE(value, 255u);
+  CHECK_LE(header.value, 255u);
   CBORValue::SimpleValue possibly_unsupported_simple_value =
-      static_cast<CBORValue::SimpleValue>(static_cast<int>(value));
+      static_cast<CBORValue::SimpleValue>(static_cast<int>(header.value));
   switch (possibly_unsupported_simple_value) {
     case CBORValue::SimpleValue::FALSE_VALUE:
     case CBORValue::SimpleValue::TRUE_VALUE:
@@ -221,7 +248,9 @@ base::Optional<CBORValue> CBORReader::ReadSimpleValue(uint8_t additional_info,
   return base::nullopt;
 }
 
-base::Optional<CBORValue> CBORReader::ReadString(uint64_t num_bytes) {
+base::Optional<CBORValue> CBORReader::ReadStringContent(
+    const CBORReader::DataItemHeader& header) {
+  uint64_t num_bytes = header.value;
   if (!CanConsume(num_bytes)) {
     error_code_ = DecoderError::INCOMPLETE_CBOR_DATA;
     return base::nullopt;
@@ -235,7 +264,9 @@ base::Optional<CBORValue> CBORReader::ReadString(uint64_t num_bytes) {
              : base::nullopt;
 }
 
-base::Optional<CBORValue> CBORReader::ReadBytes(uint64_t num_bytes) {
+base::Optional<CBORValue> CBORReader::ReadByteStringContent(
+    const CBORReader::DataItemHeader& header) {
+  uint64_t num_bytes = header.value;
   if (!CanConsume(num_bytes)) {
     error_code_ = DecoderError::INCOMPLETE_CBOR_DATA;
     return base::nullopt;
@@ -247,8 +278,10 @@ base::Optional<CBORValue> CBORReader::ReadBytes(uint64_t num_bytes) {
   return CBORValue(std::move(cbor_byte_string));
 }
 
-base::Optional<CBORValue> CBORReader::ReadCBORArray(uint64_t length,
-                                                    int max_nesting_level) {
+base::Optional<CBORValue> CBORReader::ReadArrayContent(
+    const CBORReader::DataItemHeader& header,
+    int max_nesting_level) {
+  int64_t length = base::checked_cast<int64_t>(header.value);
   CBORValue::ArrayValue cbor_array;
   while (length-- > 0) {
     base::Optional<CBORValue> cbor_element =
@@ -260,8 +293,10 @@ base::Optional<CBORValue> CBORReader::ReadCBORArray(uint64_t length,
   return CBORValue(std::move(cbor_array));
 }
 
-base::Optional<CBORValue> CBORReader::ReadCBORMap(uint64_t length,
-                                                  int max_nesting_level) {
+base::Optional<CBORValue> CBORReader::ReadMapContent(
+    const CBORReader::DataItemHeader& header,
+    int max_nesting_level) {
+  int64_t length = base::checked_cast<int64_t>(header.value);
   CBORValue::MapValue cbor_map;
   while (length-- > 0) {
     base::Optional<CBORValue> key =
