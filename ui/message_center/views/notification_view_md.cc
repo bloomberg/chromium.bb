@@ -1355,7 +1355,7 @@ void NotificationViewMD::AddBackgroundAnimation(const ui::LocatedEvent& event) {
   views::View* target = static_cast<views::View*>(event.target());
   const gfx::Point& location = event.location();
   gfx::Point converted_location(location);
-  View::ConvertPointToWidget(target, &converted_location);
+  View::ConvertPointToTarget(target, this, &converted_location);
   std::unique_ptr<ui::Event> cloned_event = ui::Event::Clone(event);
   ui::LocatedEvent* cloned_located_event = cloned_event->AsLocatedEvent();
   cloned_located_event->set_location(converted_location);
