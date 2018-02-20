@@ -26,7 +26,6 @@
 <translation id="1619887657840448962">Για να κάνουμε το Chrome πιο ασφαλές, απενεργοποιήσαμε τις ακόλουθες επεκτάσεις που δεν αναφέρονται στο <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> και ενδέχεται να έχουν προστεθεί εν αγνοία σας.</translation>
 <translation id="1628000112320670027">Λήψη βοήθειας σχετικά με το Chrome</translation>
 <translation id="163860049029591106">Έναρξη χρήσης του Chrome OS</translation>
-<translation id="1653828314016431939">OK - Επανεκκίνηση τώρα</translation>
 <translation id="1674870198290878346">Άνοιγμα Συνδέσμου σε Παράθυρο ανών&amp;υμης περιήγησης Chrome</translation>
 <translation id="1682634494516646069">Το Google Chrome δεν έχει δυνατότητα ανάγνωσης και εγγραφής στον κατάλογο δεδομένων του:
 
@@ -115,6 +114,7 @@
 <translation id="4028693306634653894">Μεταβείτε ταχύτερα στο Chrome</translation>
 <translation id="4050175100176540509">Στην πιο πρόσφατη έκδοση διατίθενται σημαντικές βελτιώσεις ασφάλειας και νέες λειτουργίες.</translation>
 <translation id="4053720452172726777">Προσαρμογή και έλεγχος του Google Chrome</translation>
+<translation id="4143243756087420366">Όνομα και εικόνα στο Chrome</translation>
 <translation id="4147555960264124640">Είστε συνδεδεμένοι με έναν διαχειριζόμενο λογαριασμό και παραχωρείτε στο διαχειριστή του τον έλεγχο του προφίλ σας στο Google Chrome. Τα δεδομένα σας στο Chrome, όπως οι εφαρμογές, οι σελιδοδείκτες, το ιστορικό, οι κωδικοί πρόσβασης και άλλες ρυθμίσεις θα συνδεθούν μόνιμα με το όνομα χρήστη <ph name="USER_NAME" />. Θα έχετε τη δυνατότητα να διαγράψετε αυτά τα δεδομένα μέσω του Πίνακα ελέγχου των Λογαριασμών Google, αλλά δεν θα μπορείτε να τα συσχετίσετε με άλλο λογαριασμό. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Η αποσυμπίεση του αρχείου από το πρόγραμμα εγκατάστασης απέτυχε. Κατεβάστε το Google Chrome ξανά.</translation>
 <translation id="4251615635259297716">Να συνδεθούν τα δεδομένα σας στο Chrome με αυτόν το λογαριασμό;</translation>
@@ -122,6 +122,7 @@
 <translation id="4309555186815777032">(απαιτείται <ph name="BEGIN_BUTTON" />επανεκκίνηση<ph name="END_BUTTON" /> του Chrome)</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
+<translation id="4343195214584226067">Η επέκταση <ph name="EXTENSION_NAME" /> προστέθηκε στο Chrome</translation>
 <translation id="4407807842708586359">Λειτουργικό σύστημα Google Chrome</translation>
 <translation id="4458285410772214805">Για να εφαρμοστεί αυτή η αλλαγή, αποσυνδεθείτε και συνδεθείτε ξανά.</translation>
 <translation id="4458462641685292929">Μια άλλη λειτουργία βρίσκεται σε εξέλιξη στο Google Chrome. Δοκιμάστε ξανά αργότερα.</translation>
@@ -156,18 +157,17 @@
 <translation id="5193136243808726294">Το Google Chrome OS δεν μπορεί να ανοίξει αυτήν τη σελίδα.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Όροι Παροχής Υπηρεσιών<ph name="END_TERMS_OF_SERVICE_LINK" /> του Google Chrome</translation>
 <translation id="5251420635869119124">Οι επισκέπτες μπορούν να χρησιμοποιούν το Chrome χωρίς να αφήνουν κανένα ίχνος.</translation>
-<translation id="5284703908158630707">{SECONDS,plural, =1{Θα γίνει επανεκκίνηση του Google Chrome σε 1 δευτερόλεπτο.}other{Θα γίνει επανεκκίνηση του Google Chrome σε # δευτερόλεπτα.}}</translation>
 <translation id="532046782124376502">Προειδοποίηση: Το Google Chrome δεν μπορεί να αποτρέψει την καταγραφή του ιστορικού περιήγησής σας από τις επεκτάσεις. Για να απενεργοποιήσετε αυτήν την επέκταση σε κατάσταση ανώνυμης περιήγησης, καταργήστε αυτήν την επιλογή.</translation>
 <translation id="5334545119300433702">Έχει διαπιστωθεί ότι αυτή η λειτουργική μονάδα έρχεται σε διένεξη με το Google Chrome.</translation>
 <translation id="5386244825306882791">Επίσης, ελέγχει τη σελίδα που εμφανίζεται κατά την εκκίνηση του Chrome ή όταν κάνετε αναζήτηση από το κύριο πλαίσιο.</translation>
 <translation id="5430073640787465221">Το αρχείο προτιμήσεών σας είναι κατεστραμμένο ή μη έγκυρο.Το Google Chrome δεν μπορεί να ανακτήσει τις ρυθμίσεις σας.</translation>
-<translation id="5453904507266736060">Να επιτρέπεται στο Google Chrome να εκτελείται στο παρασκήνιο</translation>
 <translation id="5495581687705680288">Στο Google Chrome φορτώθηκαν λειτουργικές μονάδες</translation>
 <translation id="556024056938947818">Το Google Chrome επιχειρεί να εμφανίσει κωδικούς πρόσβασης.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Το αρχείο <ph name="FILE_NAME" /> μπορεί να είναι επικίνδυνο, επομένως έχει αποκλειστεί από το Chrome.</translation>
 <translation id="573759479754913123">Σχετικά με το Chrome OS</translation>
 <translation id="5774845247549698882">Το Chrome OS εμφανίζεται σε αυτήν τη γλώσσα</translation>
+<translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5855036575689098185">Το λογισμικό που εκτελείται στον υπολογιστή δεν είναι συμβατό με το Google Chrome.</translation>
 <translation id="5877064549588274448">Το κανάλι έχει αλλάξει. Επανεκκινήστε τη συσκευή σας για να εφαρμόσετε τις αλλαγές.</translation>
 <translation id="5895138241574237353">Επανεκκίνηση</translation>
@@ -179,6 +179,7 @@
 <translation id="6070348360322141662">Για επιπλέον ασφάλεια, το Google Chrome θα κρυπτογραφήσει τα δεδομένα σας</translation>
 <translation id="6113794647360055231">Το Chrome έγινε ακόμα καλύτερο</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
+<translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome Beta</translation>
 <translation id="61852838583753520">&amp;Ενημέρωση του Chrome OS</translation>
 <translation id="6235018212288296708">Εισερχόμενος κανόνας για το Google Chrome για να επιτρέπεται η κυκλοφορία του mDNS.</translation>
 <translation id="6291089322031436445">Εφαρμογές Chrome Dev</translation>
@@ -186,7 +187,7 @@
 <translation id="6338556085225130112">Ενημέρωση Google Chrome</translation>
 <translation id="6368958679917195344">Το Chrome OS έγινε πραγματικότητα χάρη στην ύπαρξη πρόσθετων <ph name="BEGIN_LINK_CROS_OSS" />λογισμικών ανοικτού κώδικα<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6410540444482791104">Μπορείτε να βοηθήσετε να κάνουμε το Chrome πιο ασφαλές και εύχρηστο, αποστέλλοντας αυτόματα ορισμένες πληροφορίες συστήματος και περιεχόμενο σελίδων στην Google, για να διευκολυνθεί ο εντοπισμός επικίνδυνων εφαρμογών και ιστοτόπων.</translation>
-<translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Μία λήψη βρίσκεται σε εξέλιξη. Θέλετε να ακυρώσετε τη λήψη και να τερματίσετε το Google Chrome;}other{# λήψεις βρίσκονται σε εξέλιξη. Θέλετε να ακυρώσετε τις λήψεις και να τερματίσετε το Google Chrome;}}</translation>
+<translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6566149418543181476">Ενημέρωση του Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Χρησιμοποιείτε το προφίλ <ph name="PROFILE_EMAIL" /> για το συγχρονισμό του περιεχομένου σας στο Chrome. Για να ενημερώσετε τις προτιμήσεις συγχρονισμού ή για να χρησιμοποιήστε το Chrome χωρίς Λογαριασμό Google, μεταβείτε στην περιοχή <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Αντιγράφηκε στο Chrome</translation>
@@ -232,7 +233,6 @@
 <translation id="7890208801193284374">Αν χρησιμοποιείτε έναν υπολογιστή από κοινού με άλλα άτομα, οι φίλοι και τα μέλη της οικογένειάς σας μπορούν να περιηγούνται αυτόνομα και να ρυθμίζουν το Chrome ακριβώς όπως θέλουν.</translation>
 <translation id="7896673875602241923">Κάποιο άτομο συνδέθηκε προηγουμένως στο Chrome σε αυτόν τον υπολογιστή ως <ph name="ACCOUNT_EMAIL_LAST" />. Δημιουργήστε έναν νέο χρήστη Chrome, για να διατηρείτε τις πληροφορίες σας ξεχωριστά.</translation>
 <translation id="7908168227788431038">Η ενημέρωση σχεδόν ολοκληρώθηκε! Εκτελέστε ξανά το Google Chrome για να ολοκληρωθεί η ενημέρωση.</translation>
-<translation id="795025003224538582">Να μην γίνει επανεκκίνηση</translation>
 <translation id="7962410387636238736">Αυτός ο υπολογιστής δεν θα λαμβάνει πια ενημερώσεις Google Chrome, επειδή δεν υποστηρίζονται πλέον τα Windows XP και Windows Vista</translation>
 <translation id="8005540215158006229">Το Chrome είναι σχεδόν έτοιμο.</translation>
 <translation id="8008534537613507642">Επανεγκατάσταση του Chrome</translation>

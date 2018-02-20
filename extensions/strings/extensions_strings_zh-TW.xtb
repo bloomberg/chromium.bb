@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">讀取私密金鑰失敗。</translation>
 <translation id="6391538222494443604">輸入項目目錄必須存在</translation>
 <translation id="641087317769093025">無法將擴充功能解壓縮</translation>
+<translation id="6542618148162044354">「<ph name="APP_NAME" />」要求存取你的一或多個裝置：</translation>
 <translation id="657064425229075395">無法載入背景指令碼「<ph name="BACKGROUND_SCRIPT" />」。</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" /> 的 <ph name="PRODUCT_NAME" /> (序號：<ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">無法建立解壓縮目錄：「<ph name="DIRECTORY_PATH" />」</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">套件無效，詳細資料：<ph name="ERROR_MESSAGE" />。</translation>
 <translation id="8670869118777164560">這個擴充功能無法將網路要求重新導向至 <ph name="ATTEMPTED_REDIRECT_DESTINATION" />，因為其他擴充功能 (<ph name="EXTENSION_NAME" />) 已將要求重新導向至 <ph name="ACTUAL_REDIRECT_DESTINATION" />。</translation>
 <translation id="8712265948125780616">擴充功能解壓縮工具</translation>
+<translation id="8761756413268424715">「<ph name="APP_NAME" />」要求存取你的其中一個裝置：</translation>
 <translation id="8825366169884721447">這個擴充功能無法修改網路要求的「<ph name="HEADER_NAME" />」要求標頭，因為修改動作與其他擴充功能 (<ph name="EXTENSION_NAME" />) 發生衝突。</translation>
 <translation id="8885905466771744233">所指定的擴充功能已有私密金鑰，請使用該金鑰，或先將它刪除。</translation>
 <translation id="907841381057066561">封裝過程中建立暫存壓縮檔失敗。</translation>

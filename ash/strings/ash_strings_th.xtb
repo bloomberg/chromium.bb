@@ -43,6 +43,7 @@
 <translation id="1951012854035635156">ผู้ช่วย</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1995660704900986789">ปิดเครื่อง</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2049639323467105390">อุปกรณ์นี้ได้รับการจัดการโดย <ph name="DOMAIN" /></translation>
 <translation id="2050339315714019657">แนวตั้ง</translation>
@@ -83,6 +84,7 @@
 <translation id="2844169650293029770">อุปกรณ์ USB-C (พอร์ตด้านหน้าซ้าย)</translation>
 <translation id="2865888419503095837">ข้อมูลเครือข่าย</translation>
 <translation id="2872961005593481000">ปิด</translation>
+<translation id="2878884018241093801">ไม่มีรายการล่าสุด</translation>
 <translation id="2903844815300039659">เชื่อมต่อกับ <ph name="NAME" /> <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">คุณกำลังแชร์หน้าจอของตัวเอง</translation>
 <translation id="2942516765047364088">ตำแหน่งของชั้นวาง</translation>
@@ -139,6 +141,8 @@
 <translation id="4072264167173457037">สัญญาณแรงปานกลาง</translation>
 <translation id="4279490309300973883">กำลังแสดงผล</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4331809312908958774">Chrome OS
+</translation>
 <translation id="4338109981321384717">แว่นขยาย</translation>
 <translation id="4351433414020964307">Assistant กำลังโหลด...</translation>
 <translation id="4378551569595875038">กำลังเชื่อมต่อ...</translation>
@@ -183,6 +187,7 @@
 <translation id="5744083938413354016">การแตะลาก</translation>
 <translation id="5777841717266010279">ต้องการหยุดแชร์หน้าจอไหม</translation>
 <translation id="57838592816432529">ปิดเสียง</translation>
+<translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5832805196449965646">เพิ่มบุคคล</translation>
 <translation id="5860033963881614850">ปิด</translation>
 <translation id="5895138241574237353">ปิดแล้วเปิดอีกครั้ง</translation>

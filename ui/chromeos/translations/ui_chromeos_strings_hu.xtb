@@ -36,6 +36,7 @@
 <translation id="2046702855113914483">Rámen</translation>
 <translation id="2080010875307505892">Szerb billentyűzet</translation>
 <translation id="2136953289241069843">Átírás (namaste → नमस्कार)</translation>
+<translation id="2145908266289632567">Szövegszerkesztés</translation>
 <translation id="2164862903024139959">Vietnami billentyűzet (TCVN)</translation>
 <translation id="2168214441502403371">Perzsa billentyűzet</translation>
 <translation id="2198315389084035571">Egyszerűsített kínai</translation>
@@ -57,6 +58,7 @@
 <translation id="2781645665747935084">belga</translation>
 <translation id="2790805296069989825">Orosz billentyűzet</translation>
 <translation id="2870836398458454343">Átírás (marhaban ← مرحبا)</translation>
+<translation id="2872353916818027657">Elsődleges monitor felcserélése</translation>
 <translation id="288024221176729610">cseh</translation>
 <translation id="2894654529758326923">Információ</translation>
 <translation id="2902734494705624966">USA bővített</translation>
@@ -69,8 +71,10 @@
 <translation id="2966459079597787514">Svéd billentyűzet</translation>
 <translation id="3064388234319122767">Átírás (zdravo → здраво)</translation>
 <translation id="3088034400796962477">Átírás (salam ← سلام)</translation>
+<translation id="3105917916468784889">Képernyőkép készítése</translation>
 <translation id="3116361045094675131">Brit billentyűzet</translation>
 <translation id="3126026824346185272">Ctrl</translation>
+<translation id="3140353188828248647">Fókuszálás a címsávra</translation>
 <translation id="3157729859914172001">USA nemzetközi billentyűzet (PC)</translation>
 <translation id="3187212781151025377">Héber billentyűzet</translation>
 <translation id="3197563288998582412">egyesült királyságbeli Dvorak</translation>
@@ -82,12 +86,15 @@
 <translation id="3338239663705455570">Szlovén billentyűzet</translation>
 <translation id="3399597614303179694">Macedón billentyűzet</translation>
 <translation id="3494768541638400973">Google japán beviteli mód (japán billentyűzetre)</translation>
+<translation id="3496213124478423963">Kicsinyítés</translation>
 <translation id="3519867315646775981">Átírás (shalom ← שלום)</translation>
 <translation id="3522708245912499433">portugál</translation>
 <translation id="357479282490346887">litván</translation>
+<translation id="3592821358219525223">Rendszer- és kijelzőbeállítások</translation>
 <translation id="3603385196401704894">kanadai francia</translation>
 <translation id="3606220979431771195">Török F</translation>
 <translation id="3619115746895587757">Cappuccino</translation>
+<translation id="3649256019230929621">Ablak kis méretre állítása</translation>
 <translation id="3678559383040232393">Máltai billentyűzet</translation>
 <translation id="3801082500826908679">feröer-szigeteki</translation>
 <translation id="3809272675881623365">Nyúl</translation>
@@ -95,6 +102,7 @@
 <translation id="3825863595139017598">Mongol billentyűzet</translation>
 <translation id="3833761542219863804">Átírás (mausam → ਮੌਸਮ)</translation>
 <translation id="383652340667548381">szerb</translation>
+<translation id="385051799172605136">Vissza</translation>
 <translation id="3855472144336161447">német Neo 2</translation>
 <translation id="3858678421048828670">Olasz billentyűzet</translation>
 <translation id="3910699493603749297">Khmer billentyűzet</translation>
@@ -144,6 +152,7 @@
 <translation id="5218183485292899140">svájci francia</translation>
 <translation id="5241298539944515331">Vietnami billentyűzet (VIQR)</translation>
 <translation id="5257456363153333584">Szitakötő</translation>
+<translation id="5316716239522500219">Monitorok tükrözése</translation>
 <translation id="5319782540886810524">Lett billentyűzet</translation>
 <translation id="5323213332664049067">latin-amerikai</translation>
 <translation id="5402367795255837559">Braille</translation>
@@ -166,14 +175,18 @@
 <translation id="5819442873484330149">Hangul 3 készlet (végleges)</translation>
 <translation id="5838825566232597749">USA „Workman” nemzetközi</translation>
 <translation id="5892290200158927959">Francia BÉPO-billentyűzet</translation>
+<translation id="5928303187149237472">A képernyőfelbontás módosítása</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">Latin-amerikai billentyűzet</translation>
 <translation id="6012987430370760224">Marathi billentyűzet (fonetikus)</translation>
+<translation id="6022924867608035986">A keresőmezőben lévő szöveg törlése</translation>
 <translation id="60357267506638014">cseh QWERTY</translation>
 <translation id="6054173164583630569">Francia billentyűzet</translation>
 <translation id="6111770213269631447">Átírás (namaskar → নমস্কার)</translation>
+<translation id="6129953537138746214">Szóköz</translation>
 <translation id="6164412158936057769">Pillangók</translation>
 <translation id="6170470584681422115">Szendvics</translation>
+<translation id="6185696379715117369">Lapozás felfelé</translation>
 <translation id="6264347891387618177">Átírás (selam → ሰላም)</translation>
 <translation id="6305012486838822927">Lao billentyűzet</translation>
 <translation id="6339034549827494595">Orosz fonetikus (AATSEEL) billentyűzet</translation>
@@ -186,6 +199,8 @@
 <translation id="6505918941256367791">Tamil billentyűzet (InScript)</translation>
 <translation id="6509122719576673235">norvég</translation>
 <translation id="6650726141019353908">Rózsaszín pillangó</translation>
+<translation id="671928215901716392">Képernyő lezárása</translation>
+<translation id="6727005317916125192">Előző ablaktábla</translation>
 <translation id="6760765581316020278">Vietnami billentyűzet (VNI)</translation>
 <translation id="6795884519221689054">Panda</translation>
 <translation id="6808193438228982088">Róka</translation>
@@ -201,6 +216,7 @@
 <translation id="6939777852457331078">USA „Workman” billentyűzet</translation>
 <translation id="6970230597523682626">bolgár</translation>
 <translation id="6981982820502123353">Kisegítő lehetőségek</translation>
+<translation id="7025325401470358758">Következő ablaktábla</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Átírás (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Észt billentyűzet</translation>
@@ -214,11 +230,13 @@
 <translation id="7434823369735508263">Brit Dvorak billentyűzet</translation>
 <translation id="7460898608667578234">ukrán</translation>
 <translation id="7474889694310679759">Kanadai angol billentyűzet</translation>
+<translation id="7500462265946853476">Oldal és böngésző</translation>
 <translation id="751507702149411736">fehérorosz</translation>
 <translation id="7547811415869834682">holland</translation>
 <translation id="7603724359189955920">Rácsok</translation>
 <translation id="770015031906360009">görög</translation>
 <translation id="7706319470528945664">Portugál billentyűzet</translation>
+<translation id="7724603315864178912">Kivágás</translation>
 <translation id="7774365994322694683">Madár</translation>
 <translation id="7825423931463735974">Tamil billentyűzet (Tamil99)</translation>
 <translation id="7853966320808728790">Francia BÉPO</translation>
@@ -248,6 +266,7 @@
 <translation id="8437209419043462667">USA</translation>
 <translation id="8467473010914675605">Koreai beviteli mód</translation>
 <translation id="8477649328507734757">Pörgés</translation>
+<translation id="8487678622945914333">Nagyítás</translation>
 <translation id="8521441079177373948">egyesült királyságbeli</translation>
 <translation id="8551494947769799688">lett</translation>
 <translation id="8561206103590473338">Elefánt</translation>
@@ -258,6 +277,7 @@
 <translation id="8803496343472038847">Orosz fonetikus billentyűzet</translation>
 <translation id="8808686172382650546">Macska</translation>
 <translation id="885381502874625531">Fehérorosz billentyűzet</translation>
+<translation id="88986195241502842">Lapozás lefelé</translation>
 <translation id="8900820606136623064">magyar</translation>
 <translation id="8901822611024316615">Cseh QWERTY billentyűzet</translation>
 <translation id="8919081441417203123">dán</translation>

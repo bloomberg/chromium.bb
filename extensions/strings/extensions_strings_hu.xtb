@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">A privát kulcs olvasása sikertelen.</translation>
 <translation id="6391538222494443604">Kell lennie beviteli könyvtárnak.</translation>
 <translation id="641087317769093025">Nem sikerült a bővítmény kicsomagolása</translation>
+<translation id="6542618148162044354">A(z) „<ph name="APP_NAME" />” alkalmazás hozzáférést kér egy vagy több eszközéhez.</translation>
 <translation id="657064425229075395">Nem sikerült betölteni a következő háttérszkriptet: "<ph name="BACKGROUND_SCRIPT" />".</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> a következőtől: <ph name="VENDOR_NAME" /> (sorozatszám: <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Nem sikerült könyvtárat létrehozni a kicsomagoláshoz: „<ph name="DIRECTORY_PATH" />”</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">A csomag érvénytelen. Részletek: "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">A bővítmény nem tudta átirányítani a hálózati kérést <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> felé, mivel egy másik bővítmény (<ph name="EXTENSION_NAME" />) átirányította azt a következőre: <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Bővítmény-kicsomagoló</translation>
+<translation id="8761756413268424715">A(z) „<ph name="APP_NAME" />” alkalmazás hozzáférést kér egyik eszközéhez:</translation>
 <translation id="8825366169884721447">A bővítmény nem tudta módosítani egy hálózati kérés „<ph name="HEADER_NAME" />” kérésfejlécét, mert a módosítás ütközik egy másik bővítménnyel (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">A megadott bővítményhez már létezik privát kulcs. Használja újra vagy előbb törölje azt.</translation>
 <translation id="907841381057066561">Nem sikerült az ideiglenes .zip fájl létrehozása a tömörítés során.</translation>

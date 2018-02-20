@@ -89,7 +89,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">Zadajte číslo.</translation>
 <translation id="4975562563186953947">Počet vybraných položiek: <ph name="SELECTED_COUNT" /></translation>
-<translation id="4992066212339426712">Obnoviť zvuk</translation>
+<translation id="4992066212339426712">Zapnúť zvuk</translation>
 <translation id="49969490063480558">Zadajte časť za znakom <ph name="ATSIGN" />. Adresa <ph name="INVALIDADDRESS" /> je neúplná.</translation>
 <translation id="5034860022980953847">indikátor priebehu</translation>
 <translation id="5117590920725113268">Zobraziť ďalší mesiac</translation>
@@ -105,6 +105,7 @@
 <translation id="5537725057119320332">Prenášať</translation>
 <translation id="5546461542133609677">obnoviť zvuk</translation>
 <translation id="561939826962581046">čas</translation>
+<translation id="5630795885300617244">Dvojitým klepnutím doľava alebo doprava preskočíte o 10 s</translation>
 <translation id="5641012560118721995">pozastaviť prehrávanie</translation>
 <translation id="5643186887447432888">tlačidlo</translation>
 <translation id="5677946354068040947">ďalšie možnosti</translation>
@@ -112,7 +113,7 @@
 <translation id="5860033963881614850">Vypnuté</translation>
 <translation id="588258955323874662">Celá obrazovka</translation>
 <translation id="5888666972993069672">Prenáša sa do zariadenia <ph name="DEVICE_FRIENDLY_NAME" /></translation>
-<translation id="5939518447894949180">Obnoviť</translation>
+<translation id="5939518447894949180">Resetovať</translation>
 <translation id="5966707198760109579">Týždeň</translation>
 <translation id="5987525920412732405">tlačidlo otáčania</translation>
 <translation id="6015796118275082299">Rok</translation>
@@ -123,6 +124,7 @@
 <translation id="6404546809543547843">posúvač časovej osi zvuku</translation>
 <translation id="648732519525291180">výber času</translation>
 <translation id="6550675742724504774">Možnosti</translation>
+<translation id="6564313821541007458">Je aktívny režim Obraz v obraze</translation>
 <translation id="658823671542763450">prejsť do režimu celej obrazovky</translation>
 <translation id="663493177488814956">informačný kanál</translation>
 <translation id="6637586476836377253">denník</translation>
@@ -173,6 +175,7 @@
 <translation id="8583702881314752957">zoznam definícií</translation>
 <translation id="8597182159515967513">nadpis</translation>
 <translation id="8613126697340063924">ovládať vzdialené prehrávanie</translation>
+<translation id="8741316211671074806">Obraz v obraze</translation>
 <translation id="8750798805984357768">Vyberte jednu z týchto možností.</translation>
 <translation id="8785498733064193001">začať prehrávanie</translation>
 <translation id="8845239796550121995">Prenáša sa do televízora</translation>

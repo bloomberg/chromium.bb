@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">No s'ha pogut llegir la clau privada.</translation>
 <translation id="6391538222494443604">El directori d'entrada ha d'existir.</translation>
 <translation id="641087317769093025">No s'ha pogut descomprimir l'extensió</translation>
+<translation id="6542618148162044354"><ph name="APP_NAME" /> sol·licita accés a un o més dels teus dispositius:</translation>
 <translation id="657064425229075395">No s'ha pogut carregar l'script en segon pla "<ph name="BACKGROUND_SCRIPT" />".</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> de <ph name="VENDOR_NAME" /> (número de sèrie <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">No s'ha pogut crear un directori per descomprimir: "<ph name="DIRECTORY_PATH" />"</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">El paquet no és vàlid. Detalls: "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">Aquesta extensió no ha pogut redirigir una sol·licitud de xarxa a <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> perquè una altra extensió (<ph name="EXTENSION_NAME" />) l'ha redirigida a <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Eina per desempaquetar extensions</translation>
+<translation id="8761756413268424715"><ph name="APP_NAME" /> sol·licita accés a un dels teus dispositius:</translation>
 <translation id="8825366169884721447">Aquesta extensió no ha pogut modificar la capçalera de la sol·licitud "<ph name="HEADER_NAME" />" d'una sol·licitud de xarxa perquè la modificació entrava en conflicte amb una altra extensió (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Ja existeix una clau privada per a l'extensió especificada. Torneu a utilitzar-la o suprimiu-la primer.</translation>
 <translation id="907841381057066561">No s'ha pogut crear el fitxer ZIP temporal durant l'empaquetament.</translation>

@@ -14,7 +14,6 @@
 <translation id="1502360822835740515">Как сделать Chromium браузером по умолчанию</translation>
 <translation id="151962892725702025">Не удалось синхронизировать данные, поскольку сервис Sync недоступен в вашем домене.</translation>
 <translation id="1585657529869845941">Если появится кнопка <ph name="BEGIN_BOLD" />Изменить<ph name="END_BOLD" />, нажмите ее.</translation>
-<translation id="1653828314016431939">ОК, перезапустить сейчас</translation>
 <translation id="1668054258064581266">После удаления вашего аккаунта из Chromium может понадобиться перезагрузить открытые вкладки, чтобы изменения вступили в силу.</translation>
 <translation id="1688750314291223739">Настройте синхронизацию, чтобы сохранить в облаке персонализированные функции браузера и получить к ним доступ из Chromium с любого компьютера.</translation>
 <translation id="1708666629004767631">Доступна новая, еще более быстрая версия Chromium.</translation>
@@ -33,7 +32,6 @@
 <translation id="2241627712206172106">Если, кроме вас, компьютером пользуется кто-то ещё, например родные или друзья, они тоже смогут настроить Chromium на свой вкус.</translation>
 <translation id="2265088490657775772">скачайте Chromium для iOS</translation>
 <translation id="2347108572062610441">Расширение изменило стартовую страницу Chromium.</translation>
-<translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Идет скачивание. Отменить и выйти из Chromium?}one{Идет скачивание (#). Отменить и выйти из Chromium?}few{Идет скачивание (#). Отменить и выйти из Chromium?}many{Идет скачивание (#). Отменить и выйти из Chromium?}other{Идет скачивание (#). Отменить и выйти из Chromium?}}</translation>
 <translation id="2396765026452590966">Расширение "<ph name="EXTENSION_NAME" />" изменило стартовую страницу Chromium.</translation>
 <translation id="2483889755041906834">В Chromium</translation>
 <translation id="2485422356828889247">Удалить</translation>
@@ -90,7 +88,6 @@
 <translation id="4222580632002216401">Добро пожаловать в Chromium! Синхронизация отключена администратором.</translation>
 <translation id="4224199872375172890">Вы используете актуальную версию Chromium.</translation>
 <translation id="4230135487732243613">Связать данные Chromium с этим аккаунтом?</translation>
-<translation id="4246125976471362530">{SECONDS,plural, =1{Chromium перезапустится через 1 секунду}one{Chromium перезапустится через # секунду}few{Chromium перезапустится через # секунды}many{Chromium перезапустится через # секунд}other{Chromium перезапустится через # секунды}}</translation>
 <translation id="4271805377592243930">Справка Chromium</translation>
 <translation id="4285930937574705105">Установка не удалась из-за неизвестной ошибки. Если Chromium продолжает работать, закройте его и повторите попытку.</translation>
 <translation id="4330585738697551178">Известно, что модуль с таким названием конфликтует с Chromium.</translation>
@@ -122,6 +119,7 @@
 <translation id="5479196819031988440">Chromium OS не может открыть эту страницу</translation>
 <translation id="5480860683791598150">Для этого сайта Chromium запрашивает доступ к данным о вашем местоположении.</translation>
 <translation id="549669000822060376">Подождите, пока Chromium устанавливает последние обновления системы</translation>
+<translation id="5631814766731275228">Имя и изображение профиля Chromium</translation>
 <translation id="5634636535844844681">Для работы Chromium необходима ОС Windows 7 или более поздней версии.</translation>
 <translation id="5680901439334282664">войдите в Chromium</translation>
 <translation id="5698481217667032250">Отображать Chromium на этом языке</translation>
@@ -138,6 +136,7 @@
 <translation id="5987687638152509985">Чтобы начать синхронизацию, обновите Chromium</translation>
 <translation id="6055895534982063517">Доступна новая версия Chromium, которая стала еще быстрее.</translation>
 <translation id="6063093106622310249">&amp;Открыть в Chromium</translation>
+<translation id="6072279588547424923">Расширение "<ph name="EXTENSION_NAME" />" добавлено в Chromium</translation>
 <translation id="608189560609172163">Chromium не удалось синхронизировать данные из-за ошибки входа в систему.</translation>
 <translation id="6096348254544841612">Новая версия Chromium уже вышла!</translation>
 <translation id="6129621093834146363">Chromium заблокировал файл <ph name="FILE_NAME" /> как опасный.</translation>
@@ -203,7 +202,6 @@
 <translation id="7774736947049807614">Ошибка сертификата аутентификации. Войдите в Chromium как <ph name="USER_NAME" /> ещё раз или обратитесь за информацией к администратору. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7867198900892795913">Не удалось установить последнюю версию Chromium, в которой добавлены новые функции и обновления системы безопасности.</translation>
 <translation id="7937630085815544518">Ранее вы входили в Chromium как <ph name="USER_EMAIL_ADDRESS" />. Войдите снова, используя тот же аккаунт.</translation>
-<translation id="795025003224538582">Не перезапускать</translation>
 <translation id="7962572577636132072">Chromium обновляется автоматически, поэтому у вас всегда будет установлена последняя версия.</translation>
 <translation id="7975919845073681630">Это дополнительная установка Chromium. Его нельзя сделать браузером по умолчанию.</translation>
 <translation id="7979877361127045932">Не показывать в меню Chromium</translation>
@@ -225,7 +223,6 @@
 <translation id="8667808506758191620">На устройстве <ph name="DEVICE_TYPE" /> используется последняя версия Chromium OS.</translation>
 <translation id="8697124171261953979">Кроме того, расширение изменило стартовую страницу Chromium и поисковую систему, используемую по умолчанию при вводе запроса в омнибокс.</translation>
 <translation id="8704119203788522458">Ваш персональный Chromium</translation>
-<translation id="872034308864968620">Разрешить Chromium работать в фоновом режиме</translation>
 <translation id="8796602469536043152">Для этого сайта Chromium запрашивает доступ к камере и микрофону.</translation>
 <translation id="8803635938069941624">Условия использования Chromium OS</translation>
 <translation id="8821041990367117597">Chromium не удалось синхронизировать данные, поскольку ваши учетные сведения устарели.</translation>

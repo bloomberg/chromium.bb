@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">Nepavyko nuskaityti privačiojo rakto.</translation>
 <translation id="6391538222494443604">Turi būti įvesties katalogas.</translation>
 <translation id="641087317769093025">Nepavyko išarchyvuoti plėtinio</translation>
+<translation id="6542618148162044354">„<ph name="APP_NAME" />“ prašo leidimo pasiekti vieną ar daugiau jūsų įrenginių:</translation>
 <translation id="657064425229075395">Nepavyko įkelti foninio scenarijaus „<ph name="BACKGROUND_SCRIPT" />“.</translation>
 <translation id="6580950983454333167">„<ph name="PRODUCT_NAME" />“, pardavėjas „<ph name="VENDOR_NAME" />“ (serijos numeris <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Nepavyko sukurti išarchyvavimo katalogo: „<ph name="DIRECTORY_PATH" />“</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">Paketas netinkamas. Išsami informacija: „<ph name="ERROR_MESSAGE" />“.</translation>
 <translation id="8670869118777164560">Šiam plėtiniui peradresuojant tinklo užklausą <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> įvyko klaida, nes kitas plėtinys („<ph name="EXTENSION_NAME" />“) peradresavo ją <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Plėtinių išskleidimo priemonė</translation>
+<translation id="8761756413268424715">„<ph name="APP_NAME" />“ prašo leidimo pasiekti vieną iš jūsų įrenginių:</translation>
 <translation id="8825366169884721447">Šiam plėtiniui keičiant tinklo užklausos antraštę „<ph name="HEADER_NAME" />“ įvyko klaida, nes dėl pakeitimo kilo konfliktas su kitu plėtiniu („<ph name="EXTENSION_NAME" />“).</translation>
 <translation id="8885905466771744233">Privatusis nurodyto plėtinio raktas jau yra. Naudokite šį raktą iš naujo arba pirmiausia jį ištrinkite.</translation>
 <translation id="907841381057066561">Pakuojant nepavyko sukurti laikino talpiojo („zip“) failo.</translation>

@@ -25,7 +25,6 @@
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME" /> do fornecedor <ph name="VENDOR_ID" /> (número de série <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3561217442734750519">O valor inserido para a chave privada deve ser um caminho válido.</translation>
 <translation id="388442998277590542">Não foi possível carregar a página de opções "<ph name="OPTIONS_PAGE" />".</translation>
-<translation id="3978916109400437922">"<ph name="APP_NAME" />" está solicitando acesso a um dos seus dispositivos</translation>
 <translation id="3984413272403535372">Erro ao assinar a extensão.</translation>
 <translation id="4115165561519362854">O administrador desta máquina requer que <ph name="EXTENSION_NAME" /> tenha, no mínimo, a versão <ph name="EXTENSION_VERSION" /> . Ele não pode ser ativado até que tenha sido atualizado para essa versão (ou superior).</translation>
 <translation id="4233778200880751280">Não foi possível carregar a página "Sobre" '<ph name="ABOUT_PAGE" />'.</translation>
@@ -35,11 +34,9 @@
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5098647635849512368">Não é possível encontrar o caminho absoluto para o diretório do pacote.</translation>
 <translation id="5356315618422219272">Visualização do app: <ph name="APPVIEW_TAG_NAME" /></translation>
-<translation id="5387167377635374680">"<ph name="APP_NAME" />" está solicitando acesso a um dos seus dispositivos</translation>
 <translation id="5436430103864390185">Janelas com formas não são suportadas.</translation>
 <translation id="5456409301717116725">Esta extensão inclui o arquivo de chave '<ph name="KEY_PATH" />'. Você provavelmente não quer fazer isso.</translation>
 <translation id="5486326529110362464">O valor inserido para a chave privada deve existir.</translation>
-<translation id="5550192259173147518">"<ph name="APP_NAME" />" está solicitando acesso a um ou mais dos seus dispositivos</translation>
 <translation id="5627523580512561598">extensão <ph name="EXTENSION_NAME" /></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">O administrador desta máquina requer a instalação da extensão <ph name="EXTENSION_NAME" />. Ela não pode ser desinstalada.</translation>
@@ -49,7 +46,7 @@
 <translation id="6322279351188361895">Falha ao ler a chave privada.</translation>
 <translation id="6391538222494443604">O diretório de entrada deve existir.</translation>
 <translation id="641087317769093025">Não foi possível descompactar a extensão</translation>
-<translation id="6507723423832731189">"<ph name="APP_NAME" />" está solicitando acesso a um ou mais dos seus dispositivos</translation>
+<translation id="6542618148162044354">"<ph name="APP_NAME" />" está solicitando acesso a um ou mais dos seus dispositivos:</translation>
 <translation id="657064425229075395">Não foi possível carregar o script de plano de fundo "<ph name="BACKGROUND_SCRIPT" />".</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> de <ph name="VENDOR_NAME" /> (número de série <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Não foi possível criar um diretório para descompactação: ​​'<ph name="DIRECTORY_PATH" />'</translation>
@@ -67,6 +64,7 @@
 <translation id="8636666366616799973">O pacote é inválido. Detalhes "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">Esta extensão falhou ao redirecionar uma solicitação da rede para <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> porque outra extensão (<ph name="EXTENSION_NAME" />) redirecionou a solicitação para <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Descompactador de extensão</translation>
+<translation id="8761756413268424715">"<ph name="APP_NAME" />" está solicitando acesso a um dos seus dispositivos:</translation>
 <translation id="8825366169884721447">Esta extensão falhou ao modificar o cabeçalho da solicitação de rede "<ph name="HEADER_NAME" />" porque a modificação entrou em conflito com outra extensão (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Já existe uma chave privada para a extensão especificada. Reutilize essa chave ou exclua-a primeiro.</translation>
 <translation id="907841381057066561">Falha ao criar arquivo zip temporário durante a compactação.</translation>

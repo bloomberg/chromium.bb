@@ -36,6 +36,7 @@
 <translation id="2046702855113914483">রামেন</translation>
 <translation id="2080010875307505892">সার্বিয় কীবোর্ড</translation>
 <translation id="2136953289241069843">লিপ্যন্তরকরণ (namaste → नमस्कार)</translation>
+<translation id="2145908266289632567">টেক্সট সম্পাদনা</translation>
 <translation id="2164862903024139959">ভিয়েতনামি কীবোর্ড (TCVN)</translation>
 <translation id="2168214441502403371">ফার্সি কীবোর্ড</translation>
 <translation id="2198315389084035571">সরলীকৃত চীনা</translation>
@@ -57,6 +58,7 @@
 <translation id="2781645665747935084">বেলজিয়ান</translation>
 <translation id="2790805296069989825">রাশিয়ান কীবোর্ড</translation>
 <translation id="2870836398458454343">লিপ্যন্তরকরণ (marhaban ← مرحبا)</translation>
+<translation id="2872353916818027657">প্রাথমিক মনিটর অদলবদল করুন</translation>
 <translation id="288024221176729610">চেক</translation>
 <translation id="2894654529758326923">তথ্য</translation>
 <translation id="2902734494705624966">মার্কিন যুক্তরাষ্ট্রীয় বর্ধিত</translation>
@@ -69,8 +71,10 @@
 <translation id="2966459079597787514">সুইডিশ কীবোর্ড</translation>
 <translation id="3064388234319122767">লিপ্যন্তরকরণ (zdravo → здраво)</translation>
 <translation id="3088034400796962477">লিপ্যন্তরকরণ (salam ← سلام)</translation>
+<translation id="3105917916468784889">স্ক্রিনশট নিন</translation>
 <translation id="3116361045094675131">ইউকে কীবোর্ড</translation>
 <translation id="3126026824346185272">Ctrl</translation>
+<translation id="3140353188828248647">ফোকাস ঠিকানা দণ্ড</translation>
 <translation id="3157729859914172001">US ইন্টারন্যাশনাল (PC) কীবোর্ড</translation>
 <translation id="3187212781151025377">হিব্রু কীবোর্ড</translation>
 <translation id="3197563288998582412">যুক্তরাজ্যের দভোরাক</translation>
@@ -82,12 +86,15 @@
 <translation id="3338239663705455570">স্লোভেনিয় কীবোর্ড</translation>
 <translation id="3399597614303179694">ম্যাসেডোনীয় কীবোর্ড</translation>
 <translation id="3494768541638400973">Google জাপানিয় ইনপুট (জাপানি কীবোর্ডের জন্য)</translation>
+<translation id="3496213124478423963">জুম কমান</translation>
 <translation id="3519867315646775981">লিপ্যন্তরকরণ (shalom ← שלום)</translation>
 <translation id="3522708245912499433">পর্তুগিজ</translation>
 <translation id="357479282490346887">লিথুয়ানিয়ান</translation>
+<translation id="3592821358219525223">সিস্টেম এবং ডিসপ্লে সেটিংস</translation>
 <translation id="3603385196401704894">কানাডীয় ফরাসি</translation>
 <translation id="3606220979431771195">তুর্কি-এফ</translation>
 <translation id="3619115746895587757">ক্যাপুচিনো</translation>
+<translation id="3649256019230929621">উইন্ডো সংক্ষিপ্তায়ন করুন</translation>
 <translation id="3678559383040232393">মাল্টাদেশীয় কীবোর্ড</translation>
 <translation id="3801082500826908679">ফেয়ারোইজ</translation>
 <translation id="3809272675881623365">খরগোশ</translation>
@@ -95,6 +102,7 @@
 <translation id="3825863595139017598">মঙ্গোলিয়ান কীবোর্ড</translation>
 <translation id="3833761542219863804">লিপ্যন্তরকরণ (mausam → ਮੌਸਮ)</translation>
 <translation id="383652340667548381">সার্বিয়</translation>
+<translation id="385051799172605136">ফিরুন</translation>
 <translation id="3855472144336161447">জার্মান নিও ২</translation>
 <translation id="3858678421048828670">ইতালিয় কীবোর্ড</translation>
 <translation id="3910699493603749297">খেমের কীবোর্ড</translation>
@@ -144,6 +152,7 @@
 <translation id="5218183485292899140">সুইস ফরাসি</translation>
 <translation id="5241298539944515331">ভিয়েতনামি কীবোর্ড (VIQR)</translation>
 <translation id="5257456363153333584">ফড়িং</translation>
+<translation id="5316716239522500219">আয়না মনিটর</translation>
 <translation id="5319782540886810524">লাটভিও কীবোর্ড</translation>
 <translation id="5323213332664049067">লাতিন আমেরিকান</translation>
 <translation id="5402367795255837559">ব্রেইল</translation>
@@ -166,14 +175,18 @@
 <translation id="5819442873484330149">হাঙ্গুল ৩ সেট (সর্বশেষ)</translation>
 <translation id="5838825566232597749">মার্কিন ওয়ার্কম্যান আন্তর্জাতিক</translation>
 <translation id="5892290200158927959">ফরাসি BÉPO কীবোর্ড</translation>
+<translation id="5928303187149237472">স্ক্রিনের রেজোলিউশন পরিবর্তন করুন</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">লাতিন আমেরিকান কীবোর্ড</translation>
 <translation id="6012987430370760224">মারাঠি কীবোর্ড (ফোনেটিক)</translation>
+<translation id="6022924867608035986">সার্চ বক্সের টেক্সট সাফ করুন</translation>
 <translation id="60357267506638014">চেক QWERTY</translation>
 <translation id="6054173164583630569">ফরাসী কিবোর্ড</translation>
 <translation id="6111770213269631447">লিপ্যন্তরকরণ (namaskar → নমস্কার)</translation>
+<translation id="6129953537138746214">ব্যবধান</translation>
 <translation id="6164412158936057769">প্রজাপতি</translation>
 <translation id="6170470584681422115">স্যান্ডউইচ</translation>
+<translation id="6185696379715117369">পৃষ্ঠায় উপরের দিকে যান</translation>
 <translation id="6264347891387618177">লিপ্যন্তরকরণ (selam → ሰላም)</translation>
 <translation id="6305012486838822927">লাও কীবোর্ড</translation>
 <translation id="6339034549827494595">রাশিয়ান ফোনেটিক (AATSEEL) কীবোর্ড</translation>
@@ -186,6 +199,8 @@
 <translation id="6505918941256367791">তামিল কীবোর্ড (ইনস্ক্রিপ্ট)</translation>
 <translation id="6509122719576673235">নরওয়েয়ীয়</translation>
 <translation id="6650726141019353908">গোলাপি প্রজাপতি</translation>
+<translation id="671928215901716392">স্ক্রিন লক করুন</translation>
+<translation id="6727005317916125192">পূর্ববর্তী ফলক</translation>
 <translation id="6760765581316020278">ভিয়েতনামি কীবোর্ড (VNI)</translation>
 <translation id="6795884519221689054">পান্ডা</translation>
 <translation id="6808193438228982088">শিয়াল</translation>
@@ -201,6 +216,7 @@
 <translation id="6939777852457331078">মার্কিন ওয়ার্কম্যান কীবোর্ড</translation>
 <translation id="6970230597523682626">বুলগেরীয়</translation>
 <translation id="6981982820502123353">অ্যাক্সেযোগ্যতা</translation>
+<translation id="7025325401470358758">পরবর্তী ফলক</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">লিপ্যন্তরকরণ (salam → ሰላም)</translation>
 <translation id="7172053773111046550">এস্তোনীয় কীবোর্ড</translation>
@@ -214,11 +230,13 @@
 <translation id="7434823369735508263">ইউকে দভোরাক কীবোর্ড</translation>
 <translation id="7460898608667578234">ইউক্রেনীয়</translation>
 <translation id="7474889694310679759">কানাডিয় ইংরাজি কীবোর্ড</translation>
+<translation id="7500462265946853476">পৃষ্ঠা এবং ওয়েব ব্রাউজার</translation>
 <translation id="751507702149411736">বেলারুশীয়</translation>
 <translation id="7547811415869834682">ডাচ</translation>
 <translation id="7603724359189955920">গ্রিড</translation>
 <translation id="770015031906360009">গ্রীক</translation>
 <translation id="7706319470528945664">পর্তুগিজ কীবোর্ড</translation>
+<translation id="7724603315864178912">কাটুন</translation>
 <translation id="7774365994322694683">পাখি</translation>
 <translation id="7825423931463735974">তামিল কীবোর্ড (তামিল99)</translation>
 <translation id="7853966320808728790">ফরাসি BÉPO</translation>
@@ -248,6 +266,7 @@
 <translation id="8437209419043462667">মার্কিন যুক্তরাষ্ট্রীয়</translation>
 <translation id="8467473010914675605">কোরিয় ইনপুট পদ্ধতি</translation>
 <translation id="8477649328507734757">ঘোরানো</translation>
+<translation id="8487678622945914333">জুম বাড়ান</translation>
 <translation id="8521441079177373948">যুক্তরাজ্য</translation>
 <translation id="8551494947769799688">লাটভিও</translation>
 <translation id="8561206103590473338">হাতি</translation>
@@ -258,6 +277,7 @@
 <translation id="8803496343472038847">রুশ ফোনেটিক কীবোর্ড</translation>
 <translation id="8808686172382650546">বিড়াল</translation>
 <translation id="885381502874625531">বেলারুশীয় কীবোর্ড</translation>
+<translation id="88986195241502842">পৃষ্ঠায় নীচের দিকে যান</translation>
 <translation id="8900820606136623064">হাঙ্গেরিয়</translation>
 <translation id="8901822611024316615">চেক QWERTY কীবোর্ড</translation>
 <translation id="8919081441417203123">ডেনিশ</translation>

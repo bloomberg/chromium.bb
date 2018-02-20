@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">ไม่สามารถอ่านคีย์ส่วนตัว</translation>
 <translation id="6391538222494443604">ไดเรกทอรีที่ป้อนต้องมีอยู่จริง</translation>
 <translation id="641087317769093025">ไม่สามารถแตกไฟล์ซิปส่วนขยาย</translation>
+<translation id="6542618148162044354">"<ph name="APP_NAME" />" ขอสิทธิ์ในการเข้าถึงอุปกรณ์ของคุณอย่างน้อย 1 เครื่อง:</translation>
 <translation id="657064425229075395">ไม่สามารถโหลดสคริปต์พื้นหลัง "<ph name="BACKGROUND_SCRIPT" />"</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> จาก <ph name="VENDOR_NAME" /> (หมายเลขซีเรียล <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">ไม่สามารถสร้างไดเรกทอรีสำหรับการแตกไฟล์ซิป: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">แพ็กเกจไม่ถูกต้อง รายละเอียด: "<ph name="ERROR_MESSAGE" />"</translation>
 <translation id="8670869118777164560">ส่วนขยายนี้ไม่สามารถเปลี่ยนเส้นทางคำขอเครือข่ายไปยัง <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> เนื่องจากส่วนขยายอื่น (<ph name="EXTENSION_NAME" />) ได้เปลี่ยนเส้นทางคำขอไปยัง <ph name="ACTUAL_REDIRECT_DESTINATION" /></translation>
 <translation id="8712265948125780616">ตัวแตกไฟล์ส่วนขยาย</translation>
+<translation id="8761756413268424715">"<ph name="APP_NAME" />" ขอสิทธิ์ในการเข้าถึงอุปกรณ์เครื่องใดเครื่องหนึ่งของคุณ:</translation>
 <translation id="8825366169884721447">ส่วนขยายนี้ไม่สามารถแก้ไขส่วนหัวคำขอ "<ph name="HEADER_NAME" />" ของคำขอเครือข่ายได้เนื่องจากการแก้ไขขัดแย้งกับส่วนขยายอื่น (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="8885905466771744233">คีย์ส่วนตัวของส่วนขยายที่ระบุมีอยู่แล้ว นำคีย์นั้นมาใช้ซ้ำหรือลบคีย์ออกก่อน</translation>
 <translation id="907841381057066561">ไม่สามารถสร้างซิปไฟล์ชั่วคราวระหว่างการแพ็คเกจ</translation>

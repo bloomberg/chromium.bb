@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">Error al leer la clave privada.</translation>
 <translation id="6391538222494443604">Debe existir el directorio de entrada.</translation>
 <translation id="641087317769093025">No se pudo descomprimir la extensión.</translation>
+<translation id="6542618148162044354">"<ph name="APP_NAME" />" solicita acceso a uno o más de tus dispositivos:</translation>
 <translation id="657064425229075395">No se pudo cargar la secuencia de comandos en segundo plano "<ph name="BACKGROUND_SCRIPT" />".</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> de <ph name="VENDOR_NAME" /> (número de serie: <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">No se pudo crear un directorio para descomprimir "<ph name="DIRECTORY_PATH" />".</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">El paquete no es válido. Detalles: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">Esta extensión no pudo redireccionar una solicitud de red a <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> porque otra extensión (<ph name="EXTENSION_NAME" />) la redireccionó a <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Desempaquetador de extensiones</translation>
+<translation id="8761756413268424715">"<ph name="APP_NAME" />" solicita acceso a uno de tus dispositivos:</translation>
 <translation id="8825366169884721447">Esta extensión no pudo modificar el encabezado de solicitud "<ph name="HEADER_NAME" />" de una solicitud de red porque la modificación entró en conflicto con otra extensión (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Ya existe una clave privada para la extensión especificada. Volver a utilizar esa clave o eliminarla primero.</translation>
 <translation id="907841381057066561">Error al crear el archivo zip temporal durante el empaquetado.</translation>

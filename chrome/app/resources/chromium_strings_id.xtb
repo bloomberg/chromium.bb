@@ -14,11 +14,9 @@
 <translation id="1502360822835740515">Jadikan Chromium sebagai browser default</translation>
 <translation id="151962892725702025">Chromium OS tidak dapat menyinkronkan data Anda karena Sinkronisasi tidak tersedia untuk domain Anda.</translation>
 <translation id="1585657529869845941">Klik <ph name="BEGIN_BOLD" />Ganti saja<ph name="END_BOLD" />, jika muncul</translation>
-<translation id="1653828314016431939">Oke - Mulai ulang sekarang</translation>
 <translation id="1668054258064581266">Setelah membuang akun dari Chromium, Anda mungkin perlu memuat ulang tab terbuka untuk mulai menerapkannya.</translation>
 <translation id="1688750314291223739">Siapkan Sinkronisasi untuk menyimpan fitur browser hasil personalisasi Anda ke web dan mengaksesnya dari Chromium di komputer mana saja.</translation>
 <translation id="1708666629004767631">Tersedia versi Chromium yang baru dan lebih aman.</translation>
-<translation id="1755219581955525058"><ph name="EXTENSION_NAME" /> Telah Ditambahkan ke Chromium</translation>
 <translation id="1774152462503052664">Jalankan Chromium di latar belakang</translation>
 <translation id="1779356040007214683">Agar Chromium lebih aman, kami menonaktifkan beberapa ekstensi yang tidak tercantum dalam <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dan mungkin telah ditambahkan tanpa sepengetahuan Anda.</translation>
 <translation id="1808667845054772817">Instal ulang Chromium</translation>
@@ -34,7 +32,6 @@
 <translation id="2241627712206172106">Jika Anda berbagi komputer, teman dan keluarga bisa menjelajah secara terpisah dan menyiapkan Chromium sesuai keinginannya.</translation>
 <translation id="2265088490657775772">dapatkan Chromium di iPhone</translation>
 <translation id="2347108572062610441">Ekstensi ini telah mengubah apa yang ditampilkan oleh halaman saat Anda memulai Chromium.</translation>
-<translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Download sedang berlangsung. Ingin membatalkan download dan keluar dari Chromium?}other{# download sedang berlangsung. Ingin membatalkan download dan keluar dari Chromium?}}</translation>
 <translation id="2396765026452590966">Ekstensi "<ph name="EXTENSION_NAME" />" telah mengubah apa yang ditampilkan oleh halaman saat Anda memulai Chromium.</translation>
 <translation id="2483889755041906834">Di Chromium</translation>
 <translation id="2485422356828889247">Uninstal</translation>
@@ -93,7 +90,6 @@
 <translation id="4222580632002216401">Sekarang Anda telah masuk ke Chromium! Sinkronisasi dinonaktifkan oleh administrator Anda.</translation>
 <translation id="4224199872375172890">Chromium sudah diperbarui.</translation>
 <translation id="4230135487732243613">Tautkan data Chromium Anda ke akun ini?</translation>
-<translation id="4246125976471362530">{SECONDS,plural, =1{Chromium akan dimulai ulang dalam 1 detik.}other{Chromium akan dimulai ulang dalam # detik.}}</translation>
 <translation id="4271805377592243930">Dapatkan bantuan Chromium</translation>
 <translation id="4285930937574705105">Pemasangan gagal karena kesalahan yang tidak diketahui. Jika Chromium sedang berjalan, tutup, lalu ulang kembali.</translation>
 <translation id="4330585738697551178">Modul ini biasanya konflik dengan Chromium.</translation>
@@ -121,6 +117,7 @@
 <translation id="5386450000063123300">Memperbarui Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Tersedia Chromium versi baru.</translation>
 <translation id="5427571867875391349">Setel Chromium sebagai browser default</translation>
+<translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium Beta</translation>
 <translation id="5466153949126434691">Chromium otomatis diperbarui sehingga Anda selalu memiliki versi terbaru. Saat download ini selesai, Chromium akan dimulai ulang dan siap digunakan.</translation>
 <translation id="5479196819031988440">Chromium OS tidak dapat membuka halaman ini.</translation>
 <translation id="5480860683791598150">Chromium memerlukan akses ke lokasi Anda untuk berbagi lokasi dengan situs ini</translation>
@@ -160,7 +157,6 @@
 <translation id="6485906693002546646">Anda menggunakan <ph name="PROFILE_EMAIL" /> untuk menyinkronkan barang-barang Chromium. Untuk memperbarui preferensi sinkronisasi atau menggunakan Chromium tanpa akun Google, kunjungi <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Uninstal Chromium</translation>
 <translation id="6598877126913850652">Buka setelan notifikasi Chromium</translation>
-<translation id="6630428628961670451">Tautkan Data Chromium Anda ke Akun Ini?</translation>
 <translation id="6676384891291319759">Akses Internet</translation>
 <translation id="6717134281241384636">Profil Anda tidak dapat digunakan karena berasal dari Chromium versi yang lebih baru.
 
@@ -196,6 +192,7 @@ Agar <ph name="NEW_PROFILE_NAME" /> tidak dapat mengakses akun Anda, pastikan pr
 <ph name="BEGIN_LINK_2" />Pelajari lebih lanjut<ph name="END_LINK_2" />
 
 Lihat email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</translation>
+<translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium Dev</translation>
 <translation id="7451052299415159299">Chromium memerlukan izin akses ke kamera untuk situs ini</translation>
 <translation id="7483335560992089831">Tidak dapat memasang Chromium versi yang sama dengan yang sedang Anda jalankan. Tutup Chromium dan coba lagi.</translation>
 <translation id="7549178288319965365">Tentang OS Chromium</translation>
@@ -209,9 +206,9 @@ Lihat email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</tr
 <translation id="7756122083761163394">Data browsing pengguna ini akan dihapus dari perangkat ini. Untuk memulihkan data, login ke Chrome sebagai $2.</translation>
 <translation id="7773960292263897147">Peringatan: Chromium tidak dapat mencegah ekstensi merekam histori browsing Anda. Untuk menonaktifkan ekstensi ini dalam mode penyamaran, jangan pilih opsi ini.</translation>
 <translation id="7774736947049807614">Gagal mengautentikasi sertifikat. Harap login kembali ke Chromium sebagai <ph name="USER_NAME" /> atau hubungi administrator untuk informasi lebih lanjut. <ph name="ADDITIONAL_EXPLANATION" /></translation>
+<translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium tidak dapat diupdate ke versi terbaru, sehingga Anda tidak mendapatkan perbaikan keamanan dan fitur baru.</translation>
 <translation id="7937630085815544518">Anda telah masuk ke Chromium sebagai <ph name="USER_EMAIL_ADDRESS" />. Gunakan akun yang sama untuk masuk kembali.</translation>
-<translation id="795025003224538582">Jangan memulai ulang</translation>
 <translation id="7962572577636132072">Chromium otomatis diperbarui sehingga Anda selalu memiliki versi terbaru.</translation>
 <translation id="7975919845073681630">Ini adalah pemasangan Chromium sekunder, dan tidak dapat digunakan sebagai browser default.</translation>
 <translation id="7979877361127045932">Sembunyikan di menu Chromium</translation>
@@ -233,7 +230,6 @@ Lihat email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</tr
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> Anda sudah diperbarui.</translation>
 <translation id="8697124171261953979">Juga mengontrol halaman apa yang ditampilkan saat Anda memulai Chromium atau menelusuri dari Omnibox.</translation>
 <translation id="8704119203788522458">Ini Chromium Anda</translation>
-<translation id="872034308864968620">Jalankan Chromium di Latar Belakang</translation>
 <translation id="8796602469536043152">Chromium memerlukan izin akses ke kamera dan mikrofon untuk situs ini</translation>
 <translation id="8803635938069941624">Persyaratan Chromium OS</translation>
 <translation id="8821041990367117597">Chromium tidak dapat menyinkronkan data karena detail proses masuk Anda sebelum diperbarui.</translation>

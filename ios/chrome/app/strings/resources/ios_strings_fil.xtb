@@ -39,6 +39,7 @@
 <translation id="1545749641540134597">I-scan ang QR Code</translation>
 <translation id="1580783302095112590">Naipadala na ang mail.</translation>
 <translation id="1612730193129642006">Ipakita ang Grid ng Tab</translation>
+<translation id="1644574205037202324">History</translation>
 <translation id="1646446875146297738">Ang pag-enable sa ‘Huwag Subaybayan’ ay nangangahulugan na may isasamang kahilingan sa iyong trapiko sa pagba-browse. Ang anumang epekto ay nakadepende kung tumutugon man ang website sa kahilingan, at kung paano nabibigyan ng kahulugan ang kahilingan.
 
 Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan ng pagpapakita sa iyo ng mga ad na hindi nakabatay sa iba pang mga website na iyong binisita. Maraming website ang mangongolekta at gagamit pa rin ng iyong data sa pagba-browse - halimbawa, upang mapaigting ang seguridad, upang makapagbigay ng nilalaman, mga serbisyo, ad at rekomendasyon sa kanilang mga website, at upang makabuo ng mga istatistika sa pag-uulat. <ph name="BEGIN_LINK" />Matuto nang higit pa<ph name="END_LINK" /></translation>
@@ -249,6 +250,7 @@ Dapat ding naka-enable ang handoff sa Pangkalahatang seksyon ng Mga Setting, at 
 <translation id="5871497086027727873">1 item ang inilipat</translation>
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5916664084637901428">Naka-on</translation>
+<translation id="5938160824633642847">Malapit nang mapuno ang iyong device. Magbakante ng espasyo at subukang muli.</translation>
 <translation id="5948291296578561264">Binibigyang-daan ka nito na mag-save ng mga larawan sa iyong library ng larawan.</translation>
 <translation id="5955891643922670672">Tinitingnan ang Offline na Bersyon</translation>
 <translation id="5964480694698977962">Gumawa ng bagong tab na incognito.</translation>
@@ -289,6 +291,7 @@ Dapat ding naka-enable ang handoff sa Pangkalahatang seksyon ng Mga Setting, at 
 
 Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name="TIME" />. Ilagay ito upang simulan ang pag-sync.</translation>
 <translation id="6418346271604475326">Ihinahanda ang PDF</translation>
+<translation id="6434591244308415567">Nagkaroon ng error. Subukang muli sa ibang pagkakataon.</translation>
 <translation id="6445051938772793705">Bansa</translation>
 <translation id="6445981559479772097">Napadala na ang mensahe.</translation>
 <translation id="6464071786529933911">Buksan sa Bagong Tab na Incognito</translation>
@@ -299,6 +302,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="6657585470893396449">Password</translation>
 <translation id="667999046851023355">Dokumento</translation>
 <translation id="6713747756340119864">Google Apps</translation>
+<translation id="6730682669179532099">Hindi Ma-export ang Mga Password</translation>
 <translation id="6762156594045689028">Upang baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Zip Code</translation>
 <translation id="6785453220513215166">Nagpapadala ng ulat sa pag-crash...</translation>
@@ -326,6 +330,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="7203585745079012652">Bigkasin ang Mga Sagot</translation>
 <translation id="722055596168483966">I-personalize ang mga serbisyo ng Google</translation>
 <translation id="7272437679830969316">Hindi ma-verify ang iyong pagkakakilanlan. Hindi nakopya ang password.</translation>
+<translation id="7291368939935408496">Inihahanda ang Mga Password...</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> (na) porsyento ang na-download na</translation>
 <translation id="7346909386216857016">Ok, nakuha ko</translation>
 <translation id="7400418766976504921">URL</translation>

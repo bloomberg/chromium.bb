@@ -36,6 +36,7 @@
 <translation id="2046702855113914483">Ramen</translation>
 <translation id="2080010875307505892">Teclat serbi</translation>
 <translation id="2136953289241069843">Transliteració (namaste → नमस्कार)</translation>
+<translation id="2145908266289632567">Edició de text</translation>
 <translation id="2164862903024139959">Teclat vietnamita (TCVN)</translation>
 <translation id="2168214441502403371">Teclat persa</translation>
 <translation id="2198315389084035571">Xinès simplificat</translation>
@@ -57,6 +58,7 @@
 <translation id="2781645665747935084">Belga</translation>
 <translation id="2790805296069989825">Teclat rus</translation>
 <translation id="2870836398458454343">Transliteració (marhaban ← مرحبا)</translation>
+<translation id="2872353916818027657">Canvia el monitor principal</translation>
 <translation id="288024221176729610">Txec</translation>
 <translation id="2894654529758326923">Informació</translation>
 <translation id="2902734494705624966">Nord-americà ampliat</translation>
@@ -69,8 +71,10 @@
 <translation id="2966459079597787514">Teclat suec</translation>
 <translation id="3064388234319122767">Transliteració (zdravo → здраво)</translation>
 <translation id="3088034400796962477">Transliteració (salam ← سلام)</translation>
+<translation id="3105917916468784889">Captura Pantalla</translation>
 <translation id="3116361045094675131">Teclat anglès</translation>
 <translation id="3126026824346185272">Ctrl</translation>
+<translation id="3140353188828248647">Mou el focus a la barra d'adreces</translation>
 <translation id="3157729859914172001">Teclat internacional dels EUA (PC)</translation>
 <translation id="3187212781151025377">Teclat hebreu</translation>
 <translation id="3197563288998582412">Dvorak anglès</translation>
@@ -82,12 +86,15 @@
 <translation id="3338239663705455570">Teclat eslovè</translation>
 <translation id="3399597614303179694">Teclat macedoni</translation>
 <translation id="3494768541638400973">Introducció de japonès de Google (per a teclat japonès)</translation>
+<translation id="3496213124478423963">Redueix</translation>
 <translation id="3519867315646775981">Transliteració (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portuguès</translation>
 <translation id="357479282490346887">Lituà</translation>
+<translation id="3592821358219525223">Configuració del sistema i de la pantalla</translation>
 <translation id="3603385196401704894">Francès canadenc</translation>
 <translation id="3606220979431771195">Turc-F</translation>
 <translation id="3619115746895587757">Caputxino</translation>
+<translation id="3649256019230929621">Minimitza la finestra</translation>
 <translation id="3678559383040232393">Teclat maltès</translation>
 <translation id="3801082500826908679">Feroès</translation>
 <translation id="3809272675881623365">Conill</translation>
@@ -95,6 +102,7 @@
 <translation id="3825863595139017598">Teclat mongol</translation>
 <translation id="3833761542219863804">Transliteració (mausam → ਮੌਸਮ)</translation>
 <translation id="383652340667548381">Serbi</translation>
+<translation id="385051799172605136">Enrere</translation>
 <translation id="3855472144336161447">Neo 2 alemany</translation>
 <translation id="3858678421048828670">Teclat italià</translation>
 <translation id="3910699493603749297">Teclat de khmer</translation>
@@ -144,6 +152,7 @@
 <translation id="5218183485292899140">Francès suís</translation>
 <translation id="5241298539944515331">Teclat vietnamita (VIQR)</translation>
 <translation id="5257456363153333584">Libèl·lula</translation>
+<translation id="5316716239522500219">Replica els monitors</translation>
 <translation id="5319782540886810524">Teclat letó</translation>
 <translation id="5323213332664049067">Espanyol d'Amèrica Llatina</translation>
 <translation id="5402367795255837559">Braille</translation>
@@ -166,14 +175,18 @@
 <translation id="5819442873484330149">Configuració 3 de hangul (final)</translation>
 <translation id="5838825566232597749">Workman nord-americà internacional</translation>
 <translation id="5892290200158927959">Teclat BÉPO francès</translation>
+<translation id="5928303187149237472">Canvia la resolució de pantalla</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">Teclat llatinoamericà</translation>
 <translation id="6012987430370760224">Teclat marathi (fonètic)</translation>
+<translation id="6022924867608035986">Esborra el text del quadre de cerca</translation>
 <translation id="60357267506638014">QWERTY txec</translation>
 <translation id="6054173164583630569">Teclat francès</translation>
 <translation id="6111770213269631447">Transliteració (namaskar → নমস্কার)</translation>
+<translation id="6129953537138746214">Espai</translation>
 <translation id="6164412158936057769">Papallones</translation>
 <translation id="6170470584681422115">Entrepà</translation>
+<translation id="6185696379715117369">Re Pàg</translation>
 <translation id="6264347891387618177">Transliteració (selam → ሰላም)</translation>
 <translation id="6305012486838822927">Teclat de lao</translation>
 <translation id="6339034549827494595">Teclat fonètic rus (AATSEEL)</translation>
@@ -186,6 +199,8 @@
 <translation id="6505918941256367791">Teclat tàmil (InScript)</translation>
 <translation id="6509122719576673235">Noruec</translation>
 <translation id="6650726141019353908">Papallona rosa</translation>
+<translation id="671928215901716392">Bloqueja la pantalla</translation>
+<translation id="6727005317916125192">Subfinestra anterior</translation>
 <translation id="6760765581316020278">Teclat vietnamita (VNI)</translation>
 <translation id="6795884519221689054">Panda</translation>
 <translation id="6808193438228982088">Guineu</translation>
@@ -201,6 +216,7 @@
 <translation id="6939777852457331078">Teclat Workman nord-americà</translation>
 <translation id="6970230597523682626">Búlgar</translation>
 <translation id="6981982820502123353">Accessibilitat</translation>
+<translation id="7025325401470358758">Subfinestra següent</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Transliteració (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Teclat estonià</translation>
@@ -214,11 +230,13 @@
 <translation id="7434823369735508263">Teclat Dvorak anglès</translation>
 <translation id="7460898608667578234">Ucraïnès</translation>
 <translation id="7474889694310679759">Teclat anglès del Canadà</translation>
+<translation id="7500462265946853476">Pàgina i navegador web</translation>
 <translation id="751507702149411736">Bielorús</translation>
 <translation id="7547811415869834682">Neerlandès</translation>
 <translation id="7603724359189955920">Quadrícules</translation>
 <translation id="770015031906360009">Grec</translation>
 <translation id="7706319470528945664">Teclat portuguès</translation>
+<translation id="7724603315864178912">Retalla</translation>
 <translation id="7774365994322694683">Ocell</translation>
 <translation id="7825423931463735974">Teclat tàmil (Tamil99)</translation>
 <translation id="7853966320808728790">BÉPO francès</translation>
@@ -248,6 +266,7 @@
 <translation id="8437209419043462667">Nord-americà</translation>
 <translation id="8467473010914675605">Mètode d'introducció de coreà</translation>
 <translation id="8477649328507734757">Cercles concèntrics</translation>
+<translation id="8487678622945914333">Amplia</translation>
 <translation id="8521441079177373948">Regne Unit</translation>
 <translation id="8551494947769799688">Letó</translation>
 <translation id="8561206103590473338">Elefant</translation>
@@ -258,6 +277,7 @@
 <translation id="8803496343472038847">Teclat rus fonètic</translation>
 <translation id="8808686172382650546">Gat</translation>
 <translation id="885381502874625531">Teclat bielorús</translation>
+<translation id="88986195241502842">Av Pàg</translation>
 <translation id="8900820606136623064">Hongarès</translation>
 <translation id="8901822611024316615">Teclat QWERTY txec</translation>
 <translation id="8919081441417203123">Danès</translation>

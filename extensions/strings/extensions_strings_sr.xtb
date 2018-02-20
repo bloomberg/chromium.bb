@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">Читање приватног кључа није успело.</translation>
 <translation id="6391538222494443604">Улазни каталог мора да постоји.</translation>
 <translation id="641087317769093025">Није могуће распаковати додатак</translation>
+<translation id="6542618148162044354">„<ph name="APP_NAME" />“ захтева приступ једном или више уређаја:</translation>
 <translation id="657064425229075395">Није могуће учитати скрипту у позадини „<ph name="BACKGROUND_SCRIPT" />“.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> продавца <ph name="VENDOR_NAME" /> (серијски број <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Није могуће направити директоријум за распакивање: „<ph name="DIRECTORY_PATH" />“</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">Пакет је неважећи. Детаљи: „<ph name="ERROR_MESSAGE" />“.</translation>
 <translation id="8670869118777164560">Овај додатак није успео да преусмери захтев мреже на <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> пошто га је други додатак (<ph name="EXTENSION_NAME" />) преусмерио на <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Распакивање додатака</translation>
+<translation id="8761756413268424715">„<ph name="APP_NAME" />“ захтева приступ неком од уређаја:</translation>
 <translation id="8825366169884721447">Овај додатак није успео да измени заглавље захтева „<ph name="HEADER_NAME" />“ за захтев мреже јер измена није била у складу са другим додатком (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Приватни кључ за наведени додатак већ постоји. Поново користите тај кључ или га прво избришите.</translation>
 <translation id="907841381057066561">Прављење привремене zip датотеке није успело током паковања.</translation>

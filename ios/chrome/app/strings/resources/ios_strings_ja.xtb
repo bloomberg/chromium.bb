@@ -39,6 +39,7 @@
 <translation id="1545749641540134597">QR コードをスキャンします</translation>
 <translation id="1580783302095112590">メールを送信しました。</translation>
 <translation id="1612730193129642006">タブをグリッド表示</translation>
+<translation id="1644574205037202324">履歴</translation>
 <translation id="1646446875146297738">「トラッキング拒否」を有効にすると、リクエストが閲覧トラフィックに組み込まれます。その効果は、ウェブサイトがそのリクエストに応じるかどうか、およびそのリクエストがどのように解釈されるかによって異なります。
 
 たとえば、一部のウェブサイトでは、その閲覧者のウェブサイト アクセス履歴を基にした広告表示を行わない、という対応をしています。トラッキングを拒否しても、多くのウェブサイトではユーザーの閲覧データが収集され利用されるのが現状です。たとえば、セキュリティの強化、コンテンツ、サービス、広告、ウェブサイトのおすすめ情報の提供、レポート統計情報の作成などにこれらのデータが利用されます。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
@@ -249,6 +250,7 @@
 <translation id="5871497086027727873">1件の項目を移動しました</translation>
 <translation id="5911030830365207728">Google 翻訳</translation>
 <translation id="5916664084637901428">オン</translation>
+<translation id="5938160824633642847">端末の空き容量が少なくなっています。空き容量を増やしてからもう一度お試しください。</translation>
 <translation id="5948291296578561264">フォト ライブラリに写真を保存します。</translation>
 <translation id="5955891643922670672">オフライン版を表示しています</translation>
 <translation id="5964480694698977962">新しいシークレット タブを作成。</translation>
@@ -289,6 +291,7 @@
 
 データは <ph name="TIME" /> に同期パスフレーズで暗号化されました。同期を開始するには、同期パスフレーズを入力してください。</translation>
 <translation id="6418346271604475326">PDF を準備しています</translation>
+<translation id="6434591244308415567">エラーが発生しました。しばらくしてからもう一度お試しください。</translation>
 <translation id="6445051938772793705">国</translation>
 <translation id="6445981559479772097">メッセージ送信完了。</translation>
 <translation id="6464071786529933911">新しいシークレット タブで開く</translation>
@@ -299,6 +302,7 @@
 <translation id="6657585470893396449">パスワード</translation>
 <translation id="667999046851023355">ドキュメント</translation>
 <translation id="6713747756340119864">Google Apps</translation>
+<translation id="6730682669179532099">パスワードをエクスポートできません</translation>
 <translation id="6762156594045689028">この設定を変更するには、<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />します</translation>
 <translation id="6780034285637185932">郵便番号</translation>
 <translation id="6785453220513215166">クラッシュレポートを送信しています...</translation>
@@ -326,6 +330,7 @@
 <translation id="7203585745079012652">回答を音声で聞く</translation>
 <translation id="722055596168483966">Google サービスのカスタマイズ</translation>
 <translation id="7272437679830969316">ユーザー認証に失敗しました。パスワードはコピーされませんでした。</translation>
+<translation id="7291368939935408496">パスワードの準備中...</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" />%ダウンロード</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="7400418766976504921">URL</translation>

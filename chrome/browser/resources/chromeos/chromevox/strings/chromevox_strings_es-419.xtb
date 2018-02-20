@@ -36,6 +36,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Siguiente encabezado de nivel 6</translation>
 <translation id="1275718070701477396">Seleccionado</translation>
+<translation id="1286609444451033486">Presiona la tecla de búsqueda+barra espaciadora para activar o desactivar las opciones.</translation>
 <translation id="1319608975892113573">No hay ninguna etiqueta "blockquote" anterior.</translation>
 <translation id="1321576897702511272">Ocultar ayuda de ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> de <ph name="TOTAL" /></translation>
@@ -371,6 +372,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="4191918948604314587">Un botón</translation>
 <translation id="4202186506458631436">Mover hacia la derecha</translation>
 <translation id="4206289001967551965">Dentro de la tabla</translation>
+<translation id="4209770650650780359">Presiona la flecha hacia arriba o abajo para seleccionar una opción de autocompletado.</translation>
 <translation id="4215733775853809057">Siguiente control deslizante</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{guion}other{# guiones}}</translation>
 <translation id="421884353938374759">selector de color</translation>
@@ -404,6 +406,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="4532633738839459153">{COUNT,plural, =1{barra}other{# barras}}</translation>
 <translation id="4547556996012970016">Siguiente encabezado de nivel 5</translation>
 <translation id="4562381607973973258">Encabezado</translation>
+<translation id="4569941707103739422">Presiona la flecha hacia arriba o abajo para navegar e Intro para activar una opción.</translation>
 <translation id="4570424871453628777">Fin de la palabra con falta de ortografía</translation>
 <translation id="4591507479202817876">, seleccionado</translation>
 <translation id="4597532268155981612">formulario</translation>
@@ -497,6 +500,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="536031132345979795">Saltar atrás durante la lectura continua</translation>
 <translation id="5368000168321181111">Sonido desactivado</translation>
 <translation id="5374320867641260420">No hay ningún botón posterior.</translation>
+<translation id="5376407118396657359">Presiona la tecla de búsqueda+Ctrl+Alt con las flechas para navegar por celda.</translation>
 <translation id="5382299583965267720">No hay ningún encabezado de nivel 1 posterior.</translation>
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5402791055281059602">Una alerta modal</translation>
@@ -505,6 +509,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="5417034931411865818">Haz clic en el elemento que aparece debajo de la clave de enrutamiento $1</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{menor que}other{# signos menor que}}</translation>
 <translation id="5444587279251314700">(activo)</translation>
+<translation id="5446809554778706307">No hay ningún elemento enfocado. Presiona Ctrl+T para abrir una nueva pestaña.</translation>
 <translation id="5451268436205074266">puntos <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Complementario</translation>
 <translation id="5485036206801896268">No hay ningún gráfico anterior.</translation>
@@ -584,6 +589,7 @@ Para abrir el menú del navegador Chrome, presiona Alt + F.</translation>
 <translation id="6006050241733874051">Formulario</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{barra diagonal inversa}other{# barras diagonales inversas}}</translation>
 <translation id="6037602951055904232">Desplazar hacia delante</translation>
+<translation id="6042826534790431634">Presiona la tecla de búsqueda+barra espaciadora para activar una opción.</translation>
 <translation id="6044160928851315051">Oscurece la pantalla</translation>
 <translation id="605761629541007221">Fin del texto en negrita</translation>
 <translation id="6065293622157674001">Inicio del error gramatical</translation>
@@ -860,6 +866,7 @@ Para abrir el menú del navegador Chrome, presiona Alt + F.</translation>
 <translation id="9065283790526219006">+emergente</translation>
 <translation id="9077213568694924680">eliminado de la selección</translation>
 <translation id="9082874451376019682">No hay ningún control deslizante anterior.</translation>
+<translation id="9087707351856729768">Escribe para seleccionar una opción de autocompletado.</translation>
 <translation id="9089864840575085222">Reproducción oral del ciclo de escritura</translation>
 <translation id="9105227991373418255">cortar $1</translation>
 <translation id="9107530006868467849">No hay widgets multimedia anteriores.</translation>

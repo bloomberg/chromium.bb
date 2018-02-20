@@ -39,6 +39,7 @@
 <translation id="1545749641540134597">Scanner le code QR</translation>
 <translation id="1580783302095112590">E-mail envoyé.</translation>
 <translation id="1612730193129642006">Afficher la grille d'onglets</translation>
+<translation id="1644574205037202324">Historique</translation>
 <translation id="1646446875146297738">Si vous activez la fonctionnalité "Interdire le suivi", une demande sera incluse dans le trafic de navigation. Le résultat dépend de l'obtention d'une réponse de la part du site Web, ainsi que de la façon dont celle-ci est interprétée.
 
 Par exemple, certains sites Web peuvent répondre à cette demande en affichant des annonces qui ne sont pas déterminées en fonction des autres sites Web que vous avez consultés. Toutefois, nombre d'entre eux recueillent et utilisent vos données de navigation pour, par exemple, améliorer la sécurité, ou pour afficher du contenu, des services, des annonces et des recommandations, ou encore pour générer des rapports statistiques. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
@@ -249,6 +250,7 @@ Handoff doit également être activé dans la section "Général" des paramètre
 <translation id="5871497086027727873">1 élément déplacé.</translation>
 <translation id="5911030830365207728">Google Traduction</translation>
 <translation id="5916664084637901428">Activé</translation>
+<translation id="5938160824633642847">Votre appareil est presque saturé. Libérez de l'espace et réessayez.</translation>
 <translation id="5948291296578561264">Cela vous permet d'enregistrer des photos dans votre photothèque.</translation>
 <translation id="5955891643922670672">Affichage de la version hors connexion</translation>
 <translation id="5964480694698977962">Créer un onglet de navigation privée</translation>
@@ -289,6 +291,7 @@ Handoff doit également être activé dans la section "Général" des paramètre
 
 Vos données ont été chiffrées avec votre phrase secrète de synchronisation le <ph name="TIME" />. Saisissez-la pour lancer la synchronisation.</translation>
 <translation id="6418346271604475326">PDF en prépa.</translation>
+<translation id="6434591244308415567">Une erreur s'est produite. Réessayez plus tard.</translation>
 <translation id="6445051938772793705">Pays</translation>
 <translation id="6445981559479772097">Message envoyé.</translation>
 <translation id="6464071786529933911">Ouvrir nouvel onglet navigation privée</translation>
@@ -299,6 +302,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="6657585470893396449">Mot de passe</translation>
 <translation id="667999046851023355">Document</translation>
 <translation id="6713747756340119864">Google Apps</translation>
+<translation id="6730682669179532099">Impossible d'exporter les mots de passe</translation>
 <translation id="6762156594045689028">Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchronisation<ph name="END_LINK" />.</translation>
 <translation id="6780034285637185932">Code postal</translation>
 <translation id="6785453220513215166">Envoi du rapport d'erreur en cours…</translation>
@@ -326,6 +330,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7203585745079012652">Énoncer les réponses</translation>
 <translation id="722055596168483966">Personnaliser les services Google</translation>
 <translation id="7272437679830969316">Impossible de confirmer votre identité. Mot de passe non copié.</translation>
+<translation id="7291368939935408496">Préparation des mots de passe…</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> % téléchargés</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="7400418766976504921">URL</translation>

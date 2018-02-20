@@ -36,6 +36,7 @@
 <translation id="2046702855113914483">Ramen</translation>
 <translation id="2080010875307505892">Clavier serbe</translation>
 <translation id="2136953289241069843">Translittération (namaste → नमस्कार)</translation>
+<translation id="2145908266289632567">Modification de texte</translation>
 <translation id="2164862903024139959">Clavier vietnamien (TCVN)</translation>
 <translation id="2168214441502403371">Clavier persan</translation>
 <translation id="2198315389084035571">Chinois simplifié</translation>
@@ -57,6 +58,7 @@
 <translation id="2781645665747935084">Belge</translation>
 <translation id="2790805296069989825">Clavier russe</translation>
 <translation id="2870836398458454343">Translittération (marhaban ← مرحبا)</translation>
+<translation id="2872353916818027657">Changer de moniteur principal</translation>
 <translation id="288024221176729610">Tchèque</translation>
 <translation id="2894654529758326923">Informations</translation>
 <translation id="2902734494705624966">Étendu américain</translation>
@@ -69,8 +71,10 @@
 <translation id="2966459079597787514">Clavier suédois</translation>
 <translation id="3064388234319122767">Translittération (zdravo → здраво)</translation>
 <translation id="3088034400796962477">Translittération (salam ← سلام)</translation>
+<translation id="3105917916468784889">Enregistrer une capture d'écran</translation>
 <translation id="3116361045094675131">Clavier britannique</translation>
 <translation id="3126026824346185272">Ctrl</translation>
+<translation id="3140353188828248647">Activer la barre d'adresse</translation>
 <translation id="3157729859914172001">Clavier international américain (PC)</translation>
 <translation id="3187212781151025377">Clavier hébreu</translation>
 <translation id="3197563288998582412">Dvorak britannique</translation>
@@ -82,12 +86,15 @@
 <translation id="3338239663705455570">Clavier slovène</translation>
 <translation id="3399597614303179694">Clavier macédonien</translation>
 <translation id="3494768541638400973">Mode de saisie Google du japonais (pour clavier japonais)</translation>
+<translation id="3496213124478423963">Zoom arrière</translation>
 <translation id="3519867315646775981">Translittération (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portugais</translation>
 <translation id="357479282490346887">Lituanien</translation>
+<translation id="3592821358219525223">Paramètres du système et de l'affichage</translation>
 <translation id="3603385196401704894">Français canadien</translation>
 <translation id="3606220979431771195">Turc en F</translation>
 <translation id="3619115746895587757">Cappuccino</translation>
+<translation id="3649256019230929621">Réduire la fenêtre</translation>
 <translation id="3678559383040232393">Clavier maltais</translation>
 <translation id="3801082500826908679">Féroïen</translation>
 <translation id="3809272675881623365">Lapin</translation>
@@ -95,6 +102,7 @@
 <translation id="3825863595139017598">Clavier mongole</translation>
 <translation id="3833761542219863804">Translittération (mausam → ਮੌਸਮ)</translation>
 <translation id="383652340667548381">Serbe</translation>
+<translation id="385051799172605136">Retour</translation>
 <translation id="3855472144336161447">Neo 2 allemand</translation>
 <translation id="3858678421048828670">Clavier italien</translation>
 <translation id="3910699493603749297">Clavier khmer</translation>
@@ -144,6 +152,7 @@
 <translation id="5218183485292899140">Français suisse</translation>
 <translation id="5241298539944515331">Clavier vietnamien (VIQR)</translation>
 <translation id="5257456363153333584">Libellule</translation>
+<translation id="5316716239522500219">Mettre en miroir les moniteurs</translation>
 <translation id="5319782540886810524">Clavier letton</translation>
 <translation id="5323213332664049067">Espagnol d'Amérique latine</translation>
 <translation id="5402367795255837559">Braille</translation>
@@ -166,14 +175,18 @@
 <translation id="5819442873484330149">Hangûl sebeol-sik (final)</translation>
 <translation id="5838825566232597749">Clavier Workman international américain</translation>
 <translation id="5892290200158927959">Clavier BÉPO français</translation>
+<translation id="5928303187149237472">Modifier la résolution d'écran</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">Clavier latino-américain</translation>
 <translation id="6012987430370760224">Clavier marathi (phonétique)</translation>
+<translation id="6022924867608035986">Effacer le texte de la zone de recherche</translation>
 <translation id="60357267506638014">QWERTY tchèque</translation>
 <translation id="6054173164583630569">Clavier français</translation>
 <translation id="6111770213269631447">Translittération (namaskar → নমস্কার)</translation>
+<translation id="6129953537138746214">Espace</translation>
 <translation id="6164412158936057769">Papillons</translation>
 <translation id="6170470584681422115">Sandwich</translation>
+<translation id="6185696379715117369">Accéder à la page précédente</translation>
 <translation id="6264347891387618177">Translittération (selam → ሰላም)</translation>
 <translation id="6305012486838822927">Clavier lao</translation>
 <translation id="6339034549827494595">Clavier russe phonétique (AATSEEL)</translation>
@@ -186,6 +199,8 @@
 <translation id="6505918941256367791">Clavier tamoul (InScript)</translation>
 <translation id="6509122719576673235">Norvégien</translation>
 <translation id="6650726141019353908">Papillon rose</translation>
+<translation id="671928215901716392">Verrouillage d'écran</translation>
+<translation id="6727005317916125192">Volet précédent</translation>
 <translation id="6760765581316020278">Clavier vietnamien (VNI)</translation>
 <translation id="6795884519221689054">Panda</translation>
 <translation id="6808193438228982088">Renard</translation>
@@ -201,6 +216,7 @@
 <translation id="6939777852457331078">Clavier Workman américain</translation>
 <translation id="6970230597523682626">Bulgare</translation>
 <translation id="6981982820502123353">Accessibilité</translation>
+<translation id="7025325401470358758">Volet suivant</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Translittération (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Clavier estonien</translation>
@@ -214,11 +230,13 @@
 <translation id="7434823369735508263">Clavier Dvorak britannique</translation>
 <translation id="7460898608667578234">Ukrainien</translation>
 <translation id="7474889694310679759">Clavier anglais canadien</translation>
+<translation id="7500462265946853476">Page et navigateur Web</translation>
 <translation id="751507702149411736">Biélorusse</translation>
 <translation id="7547811415869834682">Néerlandais</translation>
 <translation id="7603724359189955920">Grilles</translation>
 <translation id="770015031906360009">Grec</translation>
 <translation id="7706319470528945664">Clavier portugais</translation>
+<translation id="7724603315864178912">Couper</translation>
 <translation id="7774365994322694683">Oiseau</translation>
 <translation id="7825423931463735974">Clavier tamoul (Tamil99)</translation>
 <translation id="7853966320808728790">BÉPO français</translation>
@@ -248,6 +266,7 @@
 <translation id="8437209419043462667">Américain</translation>
 <translation id="8467473010914675605">Mode de saisie du coréen</translation>
 <translation id="8477649328507734757">Toupie</translation>
+<translation id="8487678622945914333">Zoom avant</translation>
 <translation id="8521441079177373948">Royaume-Uni</translation>
 <translation id="8551494947769799688">Letton</translation>
 <translation id="8561206103590473338">Éléphant</translation>
@@ -258,6 +277,7 @@
 <translation id="8803496343472038847">Clavier russe (phonétique)</translation>
 <translation id="8808686172382650546">Chat</translation>
 <translation id="885381502874625531">Clavier biélorusse</translation>
+<translation id="88986195241502842">Accéder à la page suivante</translation>
 <translation id="8900820606136623064">Hongrois</translation>
 <translation id="8901822611024316615">Clavier QWERTY tchèque</translation>
 <translation id="8919081441417203123">Danois</translation>

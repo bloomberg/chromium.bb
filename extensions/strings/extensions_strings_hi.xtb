@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">निजी कुंजी को पढ़ने में विफल.</translation>
 <translation id="6391538222494443604">इनपुट निर्देशिका मौजूद होनी चाहिए.</translation>
 <translation id="641087317769093025">एक्सटेंशन को अनज़िप नहीं किया जा सका</translation>
+<translation id="6542618148162044354">"<ph name="APP_NAME" />" आपके एक या अधिक डिवाइस के एक्‍सेस का अनुरोध कर रहा है:</translation>
 <translation id="657064425229075395">पृष्ठभूमि स्क्रिप्ट '<ph name="BACKGROUND_SCRIPT" />' लोड नहीं की जा सकी.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" /> का <ph name="PRODUCT_NAME" /> (सीरियल नंबर <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">अनज़िप करने के लिए निर्देशिका नहीं बनाई जा सकी: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">पैकेज अमान्य है. विवरण: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">यह एक्सटेंशन <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> तक नेटवर्क अनुरोध को रीडायरेक्ट करने में विफल रहा क्योंकि एक अन्य एक्सटेंशन (<ph name="EXTENSION_NAME" />) ने इसे <ph name="ACTUAL_REDIRECT_DESTINATION" /> को रीडायरेक्ट कर दिया था.</translation>
 <translation id="8712265948125780616">एक्‍सटेंशन अनपैकर</translation>
+<translation id="8761756413268424715">"<ph name="APP_NAME" />" आपके किसी एक डिवाइस के एक्‍सेस का अनुरोध कर रहा है:</translation>
 <translation id="8825366169884721447">यह एक्सटेंशन किसी नेटवर्क अनुरोध के अनुरोध शीर्षलेख "<ph name="HEADER_NAME" />" को बदलने में विफल रहा क्योंकि बदलाव का एक अन्य एक्सटेंशन (<ph name="EXTENSION_NAME" />) के साथ विरोध हुआ था.</translation>
 <translation id="8885905466771744233">निर्दिष्ट किए गए एक्सटेंशन के लिए कोई निजी कुंजी पहले से मौजूद है. उस कुंजी का फिर से उपयोग करें या पहले इसे हटाएं.</translation>
 <translation id="907841381057066561">पैकेजिंग के दौरान अस्थायी ज़िप फ़ाइल बनाने में विफल.</translation>

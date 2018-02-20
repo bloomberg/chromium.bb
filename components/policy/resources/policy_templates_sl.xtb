@@ -27,6 +27,7 @@
       Če je ta pravilnik nastavljen, bo zaslon za prijavo vedno prikazan v jeziku, ki ga posreduje prva vrednost tega pravilnika (pravilnik je opredeljen kot seznam za združljivost vnaprej). Če ta pravilnik ni nastavljen ali je nastavljen na prazen seznam, je zaslon za prijavo prikazan v jeziku zadnje uporabniške seje. Če je ta pravilnik nastavljen na vrednost, ki ni veljaven jezik, bo zaslon za prijavo prikazan v rezervnem jeziku (trenutno je to ameriška angleščina, en-US).</translation>
 <translation id="1062011392452772310">Omogoči oddaljeno potrditev naprave</translation>
 <translation id="1062407476771304334">Zamenjaj</translation>
+<translation id="109166998561583554">Sprožilec označevanja ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico</translation>
 <translation id="1093082332347834239">Če je ta nastavitev omogočena, se gostitelj za oddaljeno pomoč izvaja v procesu z dovoljenji <ph name="UIACCESS_PERMISSION_NAME" />. Tako lahko oddaljeni uporabniki uporabljajo okna s skrbniškimi pravicami na namizju lokalnega uporabnika.
 
           Če je ta nastavitev onemogočena ali ni konfigurirana, se gostitelj za oddaljeno pomoč izvaja v uporabnikovem kontekstu in oddaljeni uporabniki ne morejo uporabljati oken s skrbniškimi pravicami na namizju.</translation>
@@ -88,6 +89,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 
       Če je ta pravilnik onemogočen, <ph name="PRODUCT_NAME" /> ne dovoli profilov gosta.</translation>
 <translation id="1363275621236827384">Omogoči poizvedbe strežniku Quirks Server za profile strojne opreme.</translation>
+<translation id="1387596372902085462">Ali naj se omogoči zaupanje zastareli infrastrukturi PKI družbe Symantec Corporation</translation>
 <translation id="1393485621820363363">Omogočeni tiskalniki za naprave v podjetjih</translation>
 <translation id="1397855852561539316">Privzeti URL iskalnika za predlog</translation>
 <translation id="1426410128494586442">Da</translation>
@@ -98,6 +100,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultJavaScriptSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
 <translation id="1456822151187621582">Windows (odjemalci s sistemom <ph name="PRODUCT_OS_NAME" />):</translation>
+<translation id="1457305643416399820">Označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico je izklopljeno</translation>
 <translation id="1464848559468748897">Nadzira vedenje uporabnikov v večprofilni seji v napravah s sistemom <ph name="PRODUCT_OS_NAME" />.
 
       Če je ta pravilnik nastavljen na »MultiProfileUserBehaviorUnrestricted«, je lahko uporabnik primarni ali sekundarni uporabnik v večprofilni seji.
@@ -285,11 +288,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 
           Če ta pravilnik ni nastavljen, bodo uporabljeni vsi štirje načini.</translation>
 <translation id="2067011586099792101">Blokira dostop do spletnih mest zunaj paketov vsebine</translation>
-<translation id="2075030897098958514">Nadzira, ali je omogočeno preverjanje pristnosti NTLMv2.
-
-          Vse novejše različice strežnikov Samba in Windows podpirajo NTLMv2. To onemogočite samo za združljivost s prejšnjimi različicami, saj je v tem primeru zmanjšana varnost preverjanja pristnosti.
-
-          Če ta pravilnik ni določen, je privzeta vrednost trenutno onemogočena združljivost s prejšnjimi različicami, vendar bo v prihodnje omogočena.</translation>
 <translation id="2077129598763517140">Uporabi strojno pospeševanje, če je na voljo</translation>
 <translation id="2077273864382355561">Časovni zamik izklopa zaslona ob napajanju iz akumulatorja</translation>
 <translation id="2082205219176343977">Konfiguriranje najmanjše dovoljene različice Chroma za napravo.</translation>
@@ -405,6 +403,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultNotificationsSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
 <translation id="2386362615870139244">Omogočanje zaklepanja preklopa zaslona iz mirovanja</translation>
+<translation id="2411817661175306360">Opozorilo zaščite z geslom je izklopljeno</translation>
 <translation id="2411919772666155530">Blokiraj obvestila na teh mestih</translation>
 <translation id="2418507228189425036">Onemogoči shranjevanje zgodovine brskanja v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom preprečuje spreminjanje te nastavitve.
 
@@ -779,7 +778,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3528000905991875314">Omogoči nadomestne strani za napake</translation>
 <translation id="3547954654003013442">Nastavitve proxyja</translation>
 <translation id="3577251398714997599">Nastavitve oglasov za spletna mesta z vsiljivimi oglasi</translation>
-<translation id="3587482841069643663">Vse</translation>
 <translation id="3591584750136265240">Konfiguriranje preverjanja pristnosti pri prijavi</translation>
 <translation id="3627678165642179114">Omogoči ali onemogoči spletno storitev preverjanja črkovanja</translation>
 <translation id="3646859102161347133">Nastavitev vrste lupe</translation>
@@ -1000,16 +998,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
           Ta pravilnik se upošteva samo, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
 <translation id="4285674129118156176">Omogočanje uporabe ARC-ja nepovezanim uporabnikom</translation>
-<translation id="4294280661005713627">Nastavi ciljno različico za samodejne posodobitve.
-
-      Določi predpono ciljne različice, na katero se posodobi sistem <ph name="PRODUCT_OS_NAME" />. Če je v napravi različica sistema, ki je starejša od določene predpone, se posodobi na najnovejšo različico z določeno predpono. Če je v napravi novejša različica, se ne zgodi nič (ne uporabi se prejšnja različica) in v napravi je še naprej nameščena trenutna različica. Oblika predpone je odvisna od komponente, kot je prikazano v tem primeru:
-
-      »« (ali ni nastavljeno): posodobitev na najnovejšo razpoložljivo različico.
-      »1412.«: posodobitev na podrazličico različice 1412 (npr. 1412.24.34 ali 1412.60.2)
-      »1412.2.«: posodobitev na podrazličico različice 1412.2 (npr. 1412.2.34 ali 1412.2.2)
-      »1412.24.34«: posodobitev samo na to različico
-
-      Opozorilo: ni priporočljivo, da določite omejitve različice, saj tako uporabniki morda ne bodo prejemali posodobitev programske opreme in nujnih varnostnih popravkov. Če posodobitve omejite na določeno predpono različice, so uporabniki morda ogroženi.</translation>
 <translation id="4298509794364745131">Določa seznam aplikacij, ki jih je mogoče omogočiti kot aplikacije za zapiske na zaklenjenem zaslonu sistema <ph name="PRODUCT_OS_NAME" />.
 
       Če je prednostna aplikacija za zapiske omogočena na zaklenjenem zaslonu, je na njem element uporabniškega vmesnika za zagon te aplikacije.
@@ -1033,6 +1021,13 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4347908978527632940">Če je omogočeno in je uporabnik zaščiteni uporabnik, lahko druge aplikacije za Android prek ponudnika vsebine pošljejo poizvedbe o uporabnikovih spletnih omejitvah.
 
           Če ni omogočeno ali ni nastavljeno, ponudnik vsebine ne pošlje podatkov.</translation>
+<translation id="435461861920493948">Vsebuje seznam vzorcev, ki se uporabljajo za nadziranje vidnosti računov v storitvi <ph name="PRODUCT_NAME" />.
+
+      Vsak Google Račun v napravi bo primerjan z vzorci, shranjenimi v tem pravilniku, zaradi vidnosti računa v storitvi <ph name="PRODUCT_NAME" />. Račun bo viden, če se njegovo ime ujema s katerim koli vzorcem na seznamu. V nasprotnem primeru bo račun skrit.
+
+      Če želite, da se ne ujema noben poljubni znak ali da se jih ujema več, uporabite nadomestni znak »*«. Ubežni znak je »\«, zato morate za ujemanje z dejanskima znakoma »*« ali »\« pred njiju dati »\«.
+
+      Če ta pravilnik ni nastavljen, so vsi Google Računi v napravi vidni v storitvi <ph name="PRODUCT_NAME" />.</translation>
 <translation id="436581050240847513">Poročanje o omrežnih vmesnikih naprave</translation>
 <translation id="4372704773119750918">Ne dovoli uporabnikom v podjetjih, da so del večkratnega profila (primarnega ali sekundarnega)</translation>
 <translation id="4377599627073874279">Dovoli vsem mestom, da pokažejo vse slike</translation>
@@ -1105,6 +1100,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
           Celoten opis mogočih nastavitev in struktura tega pravilnika sta na voljo na https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
+<translation id="4554651132977135445">Način obdelave povratnih zank pri uporabniških pravilnikih</translation>
 <translation id="4555850956567117258">Omogoči oddaljeno potrditev za uporabnika</translation>
 <translation id="4557134566541205630">URL novega zavihka s povezavami privzetega iskalnika</translation>
 <translation id="4600786265870346112">Omogoči velik kazalec</translation>
@@ -1394,6 +1390,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če okolje podpira obvestila pravilnika, je zakasnitev osvežitve nastavljena na 24 ur (prezrejo se vse privzete nastavitve in vrednost tega pravilnika), ker je pričakovano, da obvestila pravilnika ob vsakokratni zamenjavi pravilnika samodejno vsilijo osvežitev, zaradi česar so pogostejše osvežitve nepotrebne.</translation>
 <translation id="5530347722229944744">Blokiraj morebitne nevarne prenose</translation>
+<translation id="5530586312297447592">Označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico sproži vnovična uporaba gesla na spletnem mestu z lažnim predstavljanjem</translation>
 <translation id="5535973522252703021">Seznam dovoljenih delegacijskih strežnikov za Kerberos</translation>
 <translation id="555077880566103058">Omogoči vsem spletnim mestom samodejno izvajanje vtičnika <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Ta pravilnik ne vpliva na aplikacije za Android.</translation>
@@ -1533,17 +1530,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="5983708779415553259">Privzeto delovanje za spletna mesta, ki niso v nobenem paketu vsebine</translation>
 <translation id="5997543603646547632">Privzeto uporabi 24-urni čas</translation>
 <translation id="5997846976342452720">Določanje, ali naj bo iskalnik vtičnikov onemogočen (zastarelo)</translation>
-<translation id="6005179188836322782">Omogoča funkcijo Varno brskanje v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom preprečuje spreminjanje te nastavitve.
-
-      Če omogočite to nastavitev, je Varno brskanje vedno dejavno.
-
-      Če onemogočite to nastavitev, ni Varno brskanje nikoli dejavno.
-
-      Če omogočite ali onemogočite to nastavitev, uporabniki ne morejo spremeniti ali preglasiti nastavitve »Omogoči zaščito pred lažnim predstavljanjem in zlonamerno programsko opremo« v brskalniku <ph name="PRODUCT_NAME" />.
-
-      Če ta pravilnik ni nastavljen, bo to omogočeno, vendar bo lahko uporabnik spremenil nastavitev.
-
-      Več informacij o Varnem brskanju je na voljo na https://developers.google.com/safe-browsing.</translation>
 <translation id="6017568866726630990">Namesto predogleda tiskanja prikaže sistemsko pogovorno okno za tiskanje.
 
       Če je ta nastavitev omogočena, <ph name="PRODUCT_NAME" /> pri uporabnikovi zahtevi za tiskanje strani namesto vgrajenega predogleda tiskanja odpre sistemsko pogovorno okno za tiskanje.
@@ -1598,6 +1584,17 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če želite pripeti aplikacije v zaganjalnik, si oglejte PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Privzeti URL iskalnika za dinamično iskanje</translation>
+<translation id="6029950823657977211">
+      OPOMBA: Ta pravilnik je poskusen in lahko povzroči nedelovanje funkcije.
+      Ta pravilnik se nanaša na zaslon za prijavo. Oglejte si tudi pravilnik »IsolateOrigins«, ki se nanaša na uporabniško sejo. Priporočljivo je, da za oba pravilnika nastavite enako vrednost.
+      Če je pravilnik omogočen, bo vsak naveden izvor
+      s seznama, ločenega z vejicami, izvajal svoj proces. S tem bodo osamljeni
+      tudi izvori, ki jih navedejo poddomene; če na primer navedete https://example.com/,
+      bo kot del spletnega mesta https://example.com/ osamljeno tudi
+      spletno mesto https://foo.example.com/.
+      Če je pravilnik onemogočen, se uveljavi logika upravljanja procesov vnaprejšnje osamitve spletnih mest. 
+      Če pravilnik ni konfiguriran, bodo za zaslon za prijavo uporabljene privzete nastavitve osamitve spletnih mest v okolju.
+      </translation>
 <translation id="603410445099326293">Parametri za URL predloga, ki uporablja POST</translation>
 <translation id="6036523166753287175">Omogoči prehod skozi požarni zid iz gostitelja za oddaljeni dostop</translation>
 <translation id="6070667616071269965">Postavitve tipkovnice na zaslonu za prijavo v napravi</translation>
@@ -1766,6 +1763,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če ta pravilnik ni nastavljen, bo omrežno predvidevanje omogočeno, vendar bo lahko uporabnik to spremenil.</translation>
 <translation id="6658245400435704251">Določa število sekund, do katerega lahko naprava naključno odloži prenos posodobitve od trenutka, ko je bila posodobitev prvič na voljo v strežniku. Naprava lahko del tega časa čaka v smislu dejansko pretečenega časa, preostali del pa v smislu števila preverjanj za posodobitve. Razpršitev je v vsakem primeru omejena navzgor na nespremenljiv čas, tako da se ne more zgoditi, da bi naprava neomejen čas čakala na prenos posodobitve.</translation>
 <translation id="6689792153960219308">Poročanje o stanju strojne opreme</translation>
+<translation id="6698071416141001300">Označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico sproži vnovična uporaba gesla</translation>
 <translation id="6699880231565102694">Omogočanje preverjanja pristnosti v dveh korakih za gostitelje oddaljenega dostopa</translation>
 <translation id="6724842112053619797">Če omogočite to nastavitev, se podatki, shranjeni v profilih izdelka <ph name="PRODUCT_NAME" />, kot so zaznamki, podatki samodejnega izpolnjevanja, gesla in drugi podatki, prav tako zapišejo v datoteko, shranjeno v mapo uporabniškega profila za gostovanje ali na lokacijo, ki jo določi skrbnik s pravilnikom <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Če omogočite ta pravilnik, onemogočite sinhronizacijo z oblakom.
 
@@ -2018,6 +2016,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultPopupsSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
 <translation id="7529144158022474049">Faktor razpršitve samodejnega posodabljanja</translation>
 <translation id="7534199150025803530">Ta pravilnik ne vpliva na aplikacijo Google Drive za Android. Če želite preprečiti uporabo Googla Drive prek povezav v mobilnih omrežij, onemogočite namestitev aplikacije Google Drive za Android.</translation>
+<translation id="7547549430720182663">Združi</translation>
 <translation id="7553535237300701827">Če je ta pravilnik nastavljen, je glede na vrednost nastavitve preverjanje pristnosti pri prijavi takšno:
 
       Če je nastavljen na GAIA, je prijava izvedena prek običajnega preverjanja pristnosti GAIA.
@@ -2138,7 +2137,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če tega pravilnika ne nastavite, bo <ph name="PRODUCT_NAME" /> uporabil privzeto vrednost 5000 ms.</translation>
 <translation id="7841880500990419427">Najnižja različica TLS-ja za rezervno uporabo</translation>
 <translation id="7842869978353666042">Konfigurira možnosti storitve Google Drive</translation>
-<translation id="7843525027689416831">Določa zastavice, ki naj se uporabijo za <ph name="PRODUCT_NAME" />, ko se zažene. Izbrane zastavice se uporabijo samo na zaslonu za prijavo. Zastavice, nastavljene prek tega pravilnika, se ne prenesejo v uporabniške seje.</translation>
 <translation id="787125417158068494">Če je pravilnik nastavljen na »SyncDisabled« ali ni konfiguriran, potrdila sistema <ph name="PRODUCT_OS_NAME" /> niso na voljo za aplikacije ARC.
 
       Če je pravilnik nastavljen na »CopyCaCerts«, so vsa potrdila overitelja potrdil, nameščena s pravilnikom ONC in za katera velja <ph name="WEB_TRUSTED_BIT" />, na voljo za aplikacije ARC.</translation>
@@ -2301,9 +2299,17 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
       Če ta pravilnik ni nastavljen ali je onemogočen, se bo za odpiranje datotek PDF uporabljal vtičnik za PDF-je, razen če ga uporabnik onemogoči.</translation>
 <translation id="8402079500086185021">Vedno odpri datoteke PDF v zunanjem pregledovalniku</translation>
 <translation id="8412312801707973447">Ali se izvaja spletni pregled OCSP/CRL</translation>
+<translation id="841977920223099909">Sprožilec opozorila zaščite z geslom</translation>
 <translation id="8424255554404582727">Nastavitev privzetega sukanja zaslona, ki se znova uveljavi pri vsakem vnovičnem zagonu</translation>
 <translation id="8426231401662877819">Sukanje zaslona v smeri urnega kazalca za 90 stopinj</translation>
 <translation id="8451988835943702790">Uporabi stran za nov zavihek kot domačo stran</translation>
+<translation id="8459216513698220096">Določa, ali in kako je obdelan uporabniški pravilnik iz predmeta pravilnika skupine računalnika.
+
+      Če je pravilnik nastavljen na »Default« ali ni nastavljen, je uporabniški pravilnik prebran samo iz predmetov pravilnika skupine uporabnika (predmeti pravilnika skupine računalnika so prezrti).
+
+      Če je pravilnik nastavljen na »Merge«, je uporabniški pravilnik v predmetih pravilnika skupine uporabnika združen z uporabniškim pravilnikom v predmetih pravilnika skupine računalnika (predmeti pravilnika skupine računalnika imajo prednost).
+
+      Če je pravilnik nastavljen na »Replace«, je uporabniški pravilnik v predmetih pravilnika skupine uporabnika nadomeščen z uporabniškim pravilnikom v predmetih pravilnika skupine računalnika (predmeti pravilnika skupine uporabnika so prezrti).</translation>
 <translation id="8465065632133292531">Parametri za takojšnji URL, ki uporablja POST</translation>
 <translation id="847472800012384958">Nobenemu mestu ne dovoli prikaza pojavnih oken</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2352,6 +2358,7 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
           Če tega pravilnika ne nastavite, <ph name="PRODUCT_NAME" /> poskuša zaznati, ali je strežnik v intranetu, in se šele potem odzove na zahteve IWA. Če je strežnik zaznan kot internet, <ph name="PRODUCT_NAME" /> prezre zahteve IWA, poslane iz tega strežnika.</translation>
 <translation id="8672321184841719703">Ciljna različica za samodejne posodobitve</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
+<translation id="8685024486845674965">Opozorilo zaščite z geslom sproži vnovična uporaba gesla</translation>
 <translation id="8693243869659262736">Uporaba vgrajenega odjemalca DNS</translation>
 <translation id="8704831857353097849">Seznam onemogočenih vtičnikov</translation>
 <translation id="8711086062295757690">Določa ključno besedo, ki kot bližnjica v naslovni vrstici sproži iskanje za tega ponudnika.
@@ -2368,6 +2375,7 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
       Če ta nastavitev ni omogočena ali nastavljena, je zgodovino brskanja in zgodovino prenosov mogoče izbrisati
 
       Če je ta nastavitev onemogočena, zgodovine brskanja in zgodovine prenosov ni mogoče izbrisati.</translation>
+<translation id="8759829385824155666">Dovoljene vrste šifriranja Kerberos</translation>
 <translation id="8764119899999036911">Določa, ali ustvarjeni SPN za Kerberos temelji na kanoničnem imenu DNS ali na vnesenem izvirnem imenu.
 
           Če to nastavitev omogočite, bo iskanje CNAME preskočeno in uporabljeno bo vneseno ime strežnika.
@@ -2387,6 +2395,7 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
       Če pravilnik ni nastavljen ali je nastavljen na »False«, lokacija ne bo prijavljena.</translation>
 <translation id="8818768076343557335">Predvidevanje omrežnih dejanj v katerem koli omrežju, ki ni mobilno.
           (Zastarelo v različici 50, odstranjeno v različici 52. Če je vrednost 1 nastavljena, bo po različici 52 obravnavana kot 0 – predvidevanje omrežnih dejanj v poljubni omrežni povezavi.)</translation>
+<translation id="8825782996899863372">Opozorilo zaščite z geslom sproži vnovična uporaba gesla na spletnem mestu z lažnim predstavljanjem</translation>
 <translation id="8828766846428537606">Nastavi privzeto domačo stran za <ph name="PRODUCT_NAME" /> in prepreči, da bi jo uporabniki spreminjali.
 
       Nastavitve domače strani uporabnika so popolnoma zaklenjene, če nastavite, da je stran z novim zavihkom domača stran oziroma izberete URL za domačo stran. Če ne navedete URL-ja domače strani, bo lahko uporabnik z ukazom »chrome://newtab« še vedno nastavil, da je domača stran stran z novim zavihkom.</translation>
@@ -2447,6 +2456,12 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
       Če nastavite ta pravilnik, ga uporabniki ne bodo mogli spremeniti ali preglasiti.
 
       Ta pravilnik ne vpliva na to, ali lahko uporabniki konfigurirajo tiskalnike v posameznih napravah. Namenjen je kot dopolnilo konfiguracijam tiskalnikov, ki jih opravijo posamezni uporabniki.
+      </translation>
+<translation id="8934944553121392674">Nadzira, kateri tiskalniki iz pravilnika <ph name="DEVICE_PRINTERS_POLICY" /> so na voljo uporabnikom.
+
+      Določa, kateri pravilnik o dostopu se uporablja za konfiguracijo tiskalnikov v velikem obsegu. Če je izbrana možnost <ph name="PRINTERS_ALLOW_ALL" />, so prikazani vsi tiskalniki. Če je izbrana možnost <ph name="PRINTERS_BLACKLIST" />, se omeji dostop do določenih tiskalnikov s pravilnikom <ph name="DEVICE_PRINTERS_BLACKLIST" />. Če je izbrana možnost <ph name="PRINTERS_WHITELIST" />, pravilnik <ph name="DEVICE_PRINTERS_WHITELIST" /> določa samo tiste tiskalnike, ki jih je mogoče izbrati.
+
+      Če ta pravilnik ni nastavljen, se predvideva uporaba pravilnika <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="8947415621777543415">Prijava lokacije naprave</translation>
 <translation id="8951350807133946005">Nastavi imenik predpomnilnika diska</translation>
@@ -2528,5 +2543,12 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 <translation id="930930237275114205">Nastavi imenik uporabniških podatkov za <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Omogočanje vsiljene prijave za brskalnik <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Nastavitev velikosti predpomnilnika</translation>
+<translation id="9775893229076211">Omogoča, da nadzirate sprožitev označevanja ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico. Označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico pomeni sporočanje Googlu, da temu računu grozi vdor v račun.
+
+      Če je ta pravilnik nastavljen na »PasswordProtectionRiskOff«, označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico ne bo sproženo.
+      Če je ta pravilnik nastavljen na »PasswordProtectionRiskOnPasswordReuse«, 
+bo označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico sproženo, če uporabniki znova uporabijo gesla za Google na katerem koli spletnem mestu, ki ni uvrščeno na seznam dovoljenih.
+      Če je ta pravilnik nastavljen na »PasswordProtectionRiskOnPhishingReuse«, bo označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico sproženo, če uporabniki znova uporabijo gesla za Google na spletnih mestih z lažnim predstavljanjem.
+      Če ta pravilnik ni nastavljen, bo označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico sproženo, če uporabniki znova uporabijo gesla za Google na spletnih mestih z lažnim predstavljanjem, vendar lahko uporabnik to spremeni.</translation>
 <translation id="982497069985795632">Omogočanje preverjanja črkovanja</translation>
 </translationbundle>

@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">Cheia privată nu a fost citită.</translation>
 <translation id="6391538222494443604">Directorul de intrare trebuie să existe.</translation>
 <translation id="641087317769093025">Extensia nu a putut fi dezarhivată</translation>
+<translation id="6542618148162044354">„<ph name="APP_NAME" />” solicită accesul la cel puțin unul dintre dispozitivele tale:</translation>
 <translation id="657064425229075395">Scriptul de fundal „<ph name="BACKGROUND_SCRIPT" />” nu a putut fi încărcat.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> de la <ph name="VENDOR_NAME" /> (număr de serie <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Nu s-a putut crea directorul pentru dezarhivare: „<ph name="DIRECTORY_PATH" />”</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">Pachetul nu este valid. Detalii: „<ph name="ERROR_MESSAGE" />”.</translation>
 <translation id="8670869118777164560">Această extensie nu a putut redirecționa o solicitare din rețea către <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, deoarece o altă extensie (<ph name="EXTENSION_NAME" />) a redirecționat-o către <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Instrument de despachetare a extensiilor</translation>
+<translation id="8761756413268424715">„<ph name="APP_NAME" />” solicită accesul la unul dintre dispozitivele tale:</translation>
 <translation id="8825366169884721447">Această extensie nu a putut modifica antetul de solicitare „<ph name="HEADER_NAME" />” al unei solicitări din rețea, deoarece modificarea era în conflict cu o altă extensie (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Există deja o cheie privată pentru extensia specificată. Reutilizeaz-o sau șterge-o mai întâi.</translation>
 <translation id="907841381057066561">Crearea fișierului zip temporar în timpul împachetării nu a reușit.</translation>

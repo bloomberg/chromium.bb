@@ -33,7 +33,6 @@
 <translation id="1936717151811561466">Finlandês</translation>
 <translation id="1947424002851288782">Teclado alemão</translation>
 <translation id="1984603991036629094">Teclado fonético armênio</translation>
-<translation id="1989746695744304008">Guia e janelas</translation>
 <translation id="2046702855113914483">Lámen</translation>
 <translation id="2080010875307505892">Teclado sérvio</translation>
 <translation id="2136953289241069843">Transliteração (namaste → नमस्कार)</translation>
@@ -59,6 +58,7 @@
 <translation id="2781645665747935084">Belga</translation>
 <translation id="2790805296069989825">Teclado russo</translation>
 <translation id="2870836398458454343">Transliteração (marhaban ← مرحبا)</translation>
+<translation id="2872353916818027657">Trocar monitor primário</translation>
 <translation id="288024221176729610">Tcheco</translation>
 <translation id="2894654529758326923">Informações</translation>
 <translation id="2902734494705624966">EUA estendido</translation>
@@ -71,8 +71,10 @@
 <translation id="2966459079597787514">Teclado sueco</translation>
 <translation id="3064388234319122767">Transliteração (zdravo → здраво)</translation>
 <translation id="3088034400796962477">Transliteração (salam ← سلام)</translation>
+<translation id="3105917916468784889">Faça uma captura de tela</translation>
 <translation id="3116361045094675131">Teclado do Reino Unido</translation>
 <translation id="3126026824346185272">Ctrl</translation>
+<translation id="3140353188828248647">Foco na barra de endereço</translation>
 <translation id="3157729859914172001">Teclado internacional dos EUA (PC)</translation>
 <translation id="3187212781151025377">Teclado hebraico</translation>
 <translation id="3197563288998582412">Dvorak do Reino Unido</translation>
@@ -84,6 +86,7 @@
 <translation id="3338239663705455570">Teclado esloveno</translation>
 <translation id="3399597614303179694">Teclado macedônio</translation>
 <translation id="3494768541638400973">Inserção de texto japonês do Google (para teclado japonês)</translation>
+<translation id="3496213124478423963">Afastar</translation>
 <translation id="3519867315646775981">Transliteração (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Português</translation>
 <translation id="357479282490346887">Lituano</translation>
@@ -91,6 +94,7 @@
 <translation id="3603385196401704894">Francês canadense</translation>
 <translation id="3606220979431771195">Turco-F</translation>
 <translation id="3619115746895587757">Cappuccino</translation>
+<translation id="3649256019230929621">Minimizar janela</translation>
 <translation id="3678559383040232393">Teclado maltês</translation>
 <translation id="3801082500826908679">Faroês</translation>
 <translation id="3809272675881623365">Coelho</translation>
@@ -98,6 +102,7 @@
 <translation id="3825863595139017598">Teclado mongol</translation>
 <translation id="3833761542219863804">Transliteração (mausam → ਮੌਸਮ)</translation>
 <translation id="383652340667548381">Sérvio</translation>
+<translation id="385051799172605136">Voltar</translation>
 <translation id="3855472144336161447">Alemão (Neo 2)</translation>
 <translation id="3858678421048828670">Teclado italiano</translation>
 <translation id="3910699493603749297">Teclado em khmer</translation>
@@ -147,6 +152,7 @@
 <translation id="5218183485292899140">Francês suíço</translation>
 <translation id="5241298539944515331">Teclado vietnamita (VIQR)</translation>
 <translation id="5257456363153333584">Libélula</translation>
+<translation id="5316716239522500219">Espelhar monitores</translation>
 <translation id="5319782540886810524">Teclado letão</translation>
 <translation id="5323213332664049067">América Latina</translation>
 <translation id="5402367795255837559">Braille</translation>
@@ -173,11 +179,14 @@
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">Teclado da América Latina</translation>
 <translation id="6012987430370760224">Teclado marata (fonético)</translation>
+<translation id="6022924867608035986">Limpar texto da caixa de pesquisa</translation>
 <translation id="60357267506638014">QWERTY Tcheco</translation>
 <translation id="6054173164583630569">Teclado francês</translation>
 <translation id="6111770213269631447">Transliteração (namaskar → নমস্কার)</translation>
+<translation id="6129953537138746214">Espaço</translation>
 <translation id="6164412158936057769">Borboletas</translation>
 <translation id="6170470584681422115">Sanduíche</translation>
+<translation id="6185696379715117369">Página para cima</translation>
 <translation id="6264347891387618177">Transliteração (selam → ሰላም)</translation>
 <translation id="6305012486838822927">Teclado em laosiano</translation>
 <translation id="6339034549827494595">Teclado fonético russo (AATSEEL)</translation>
@@ -189,9 +198,9 @@
 <translation id="6503256918647795660">Teclado suíço (francês)</translation>
 <translation id="6505918941256367791">Teclado tâmil (InScript)</translation>
 <translation id="6509122719576673235">Norueguês</translation>
-<translation id="6629951648264770593"><ph name="MODIFIER" /> + <ph name="KEY" /></translation>
 <translation id="6650726141019353908">Borboleta rosa</translation>
-<translation id="6684986274046026054">Bloquear a tela</translation>
+<translation id="671928215901716392">Bloquear tela</translation>
+<translation id="6727005317916125192">Painel anterior</translation>
 <translation id="6760765581316020278">Teclado vietnamita (VNI)</translation>
 <translation id="6795884519221689054">Panda</translation>
 <translation id="6808193438228982088">Raposa</translation>
@@ -207,11 +216,14 @@
 <translation id="6939777852457331078">Teclado Workman dos EUA</translation>
 <translation id="6970230597523682626">Búlgaro</translation>
 <translation id="6981982820502123353">Acessibilidade</translation>
+<translation id="7020813747703216897">Nenhum resultado correspondente encontrado</translation>
+<translation id="7025325401470358758">Próximo painel</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Transliteração (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Teclado estoniano</translation>
 <translation id="719009910964971313">Teclado Programmer Dvorak americano</translation>
 <translation id="7222624196722476520">Teclado fonético búlgaro</translation>
+<translation id="7272373489634936181">Procurar atalhos</translation>
 <translation id="7348749398828259943">Teclado Workman internacional dos EUA</translation>
 <translation id="7389722738210761877">Teclado tailandês (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Teclado hindi (fonético)</translation>
@@ -226,6 +238,7 @@
 <translation id="7603724359189955920">Grades</translation>
 <translation id="770015031906360009">Grego</translation>
 <translation id="7706319470528945664">Teclado português</translation>
+<translation id="7724603315864178912">Recortar</translation>
 <translation id="7774365994322694683">Pássaro</translation>
 <translation id="7825423931463735974">Teclado tâmil (Tamil99)</translation>
 <translation id="7853966320808728790">BÉPO francês</translation>
@@ -235,6 +248,7 @@
 <translation id="7943385054491506837">Colemak EUA</translation>
 <translation id="7969525169268594403">Esloveno</translation>
 <translation id="7987485481246785146">Teclado curdo sorâni baseado em árabe</translation>
+<translation id="8004192919599017226">Iniciar pesquisa…</translation>
 <translation id="8008366997883261463">Jack Russell Terrier</translation>
 <translation id="8031722894461705849">Teclado eslovaco</translation>
 <translation id="8045462269890919536">Romeno</translation>
@@ -255,6 +269,7 @@
 <translation id="8437209419043462667">EUA</translation>
 <translation id="8467473010914675605">Método de entrada coreano</translation>
 <translation id="8477649328507734757">Giro</translation>
+<translation id="8487678622945914333">Aproximar</translation>
 <translation id="8521441079177373948">Reino Unido</translation>
 <translation id="8551494947769799688">Letão</translation>
 <translation id="8561206103590473338">Elefante</translation>
@@ -264,8 +279,8 @@
 <translation id="874420130893181774">Método de entrada Pinyin tradicional</translation>
 <translation id="8803496343472038847">Teclado fonético russo</translation>
 <translation id="8808686172382650546">Gato</translation>
-<translation id="8839645518696429828"><ph name="CTRL" /> + <ph name="SHIFT" /> e + ou -</translation>
 <translation id="885381502874625531">Teclado bielorrusso</translation>
+<translation id="88986195241502842">Página para baixo</translation>
 <translation id="8900820606136623064">Húngaro</translation>
 <translation id="8901822611024316615">Teclado QWERTY tcheco</translation>
 <translation id="8919081441417203123">Dinamarquês</translation>
@@ -273,6 +288,7 @@
 <translation id="9017798300203431059">Russo fonético</translation>
 <translation id="913758436357682283">Teclado Myanmar Myansan</translation>
 <translation id="9153744823707037316">Método de entrada por array</translation>
+<translation id="9179672198516322668">Atalhos mais usados</translation>
 <translation id="9206487995878691001">Método de entrada Cangjie</translation>
 <translation id="9219908252191632183">Lunar</translation>
 </translationbundle>

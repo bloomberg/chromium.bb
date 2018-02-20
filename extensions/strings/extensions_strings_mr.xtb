@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">खासगी की वाचण्यात अयशस्वी.</translation>
 <translation id="6391538222494443604">इनपुट निर्देशिका विद्यमान असणे आवश्यक आहे.</translation>
 <translation id="641087317769093025">विस्तार अनझिप करणे शक्य झाले नाही</translation>
+<translation id="6542618148162044354"><ph name="APP_NAME" /> आपल्या एका किंवा अधिक डिव्हाइसवर प्रवेशाची विनंती करीत आहे:</translation>
 <translation id="657064425229075395">पार्श्वभूमी स्क्रिप्‍ट '<ph name="BACKGROUND_SCRIPT" />' लोड करू शकले नाही.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" /> (अनुक्रमांक <ph name="SERIAL_NUMBER" />) कडील <ph name="PRODUCT_NAME" /></translation>
 <translation id="6731255991101203740">अनझिप करण्यासाठी निर्देशिका तयार करणे शक्य झाले नाही: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">पॅकेज अवैध आहे. तपशील: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">हा विस्तार <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> वर एक नेटवर्क विनंती पुनर्निर्देशित करण्यात अयशस्वी झाला कारण दुसर्‍या (<ph name="EXTENSION_NAME" />) विस्ताराने तो <ph name="ACTUAL_REDIRECT_DESTINATION" /> वर पुनर्निर्देशित केला.</translation>
 <translation id="8712265948125780616">विस्तार अनपॅकर</translation>
+<translation id="8761756413268424715"><ph name="APP_NAME" /> आपल्या एका डिव्हाइसवर प्रवेशाची विनंती करीत आहे:</translation>
 <translation id="8825366169884721447">हा विस्तार एका नेटवर्क विनंतीचा "<ph name="HEADER_NAME" />" हा विनंती शीर्षलेख सुधारित करण्यात अयशस्वी झाला कारण दुसर्‍या (<ph name="EXTENSION_NAME" />) विस्तारासह सुधारणेचा संघर्ष झाला.</translation>
 <translation id="8885905466771744233">निर्दिष्ट विस्तारासाठी खासगी की यापूर्वीच विद्यमान आहे. ती की पुन्हा वापरा किंवा प्रथम ती हटवा.</translation>
 <translation id="907841381057066561">पॅकेजिंग दरम्यान तात्पुरती zip फाइल तयार करण्यात अयशस्वी.</translation>

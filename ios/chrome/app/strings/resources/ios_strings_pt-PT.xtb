@@ -39,6 +39,7 @@
 <translation id="1545749641540134597">Ler código QR</translation>
 <translation id="1580783302095112590">Correio enviado.</translation>
 <translation id="1612730193129642006">Mostrar grelha de separadores</translation>
+<translation id="1644574205037202324">Histórico</translation>
 <translation id="1646446875146297738">Se ativar a funcionalidade "Não monitorizar", será incluído um pedido no seu tráfego de navegação. Os possíveis efeitos dependerão da resposta ao pedido por parte de um Website e da forma como o pedido é interpretado.
 
 Por exemplo, alguns Sites poderão mostrar anúncios que não sejam baseados noutros Sites visitados por si como resposta a este pedido. Muitos Sites continuarão a recolher e utilizar os seus dados de navegação com o objetivo de melhorar a segurança, fornecer conteúdos, serviços, anúncios e recomendações nos seus Sites e gerar estatísticas de relatórios. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
@@ -249,6 +250,7 @@ A Entrega também tem de estar ativada na secção Geral das Definições e os s
 <translation id="5871497086027727873">1 item movido</translation>
 <translation id="5911030830365207728">Google Tradutor</translation>
 <translation id="5916664084637901428">Ativado</translation>
+<translation id="5938160824633642847">O dispositivo está quase cheio. Liberte espaço e tente novamente.</translation>
 <translation id="5948291296578561264">Isto permite-lhe guardar fotos na sua biblioteca de fotos.</translation>
 <translation id="5955891643922670672">Ver a versão offline</translation>
 <translation id="5964480694698977962">Criar novo separador de navegação anónima</translation>
@@ -289,6 +291,7 @@ A Entrega também tem de estar ativada na secção Geral das Definições e os s
 
 Os dados foram encriptados com a sua frase de acesso de sincronização em <ph name="TIME" />. Introduza-a para iniciar a sincronização.</translation>
 <translation id="6418346271604475326">A preparar PDF</translation>
+<translation id="6434591244308415567">Ocorreu um erro. Tente novamente mais tarde.</translation>
 <translation id="6445051938772793705">País</translation>
 <translation id="6445981559479772097">Mensagem enviada.</translation>
 <translation id="6464071786529933911">Abrir num novo separador de navegação anónima</translation>
@@ -299,6 +302,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="6657585470893396449">Palavra-passe</translation>
 <translation id="667999046851023355">Documento</translation>
 <translation id="6713747756340119864">Google Apps</translation>
+<translation id="6730682669179532099">Não é possível exportar palavras-passe</translation>
 <translation id="6762156594045689028">Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Código postal</translation>
 <translation id="6785453220513215166">A enviar relatório de falha...</translation>
@@ -326,6 +330,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="7203585745079012652">Ouvir Respostas</translation>
 <translation id="722055596168483966">Personalizar os serviços Google</translation>
 <translation id="7272437679830969316">Não é possível validar a sua identidade. Palavra-passe não copiada.</translation>
+<translation id="7291368939935408496">A preparar palavras-passe…</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> por cento transferido</translation>
 <translation id="7346909386216857016">OK, compreendi</translation>
 <translation id="7400418766976504921">URL</translation>

@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">秘密鍵を読み取ることができませんでした。</translation>
 <translation id="6391538222494443604">入力ディレクトリが存在している必要があります。</translation>
 <translation id="641087317769093025">拡張機能を解凍できませんでした</translation>
+<translation id="6542618148162044354">「<ph name="APP_NAME" />」が次のデバイスへのアクセスをリクエストしています:</translation>
 <translation id="657064425229075395">バックグラウンド スクリプト「<ph name="BACKGROUND_SCRIPT" />」を読み込めませんでした。</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" />、提供元 <ph name="VENDOR_NAME" />（シリアル番号 <ph name="SERIAL_NUMBER" />）</translation>
 <translation id="6731255991101203740">解凍用のディレクトリを作成できませんでした: <ph name="DIRECTORY_PATH" /></translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">パッケージが無効です。詳細: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="8670869118777164560">別の拡張機能（<ph name="EXTENSION_NAME" />）がネットワーク リクエストを <ph name="ACTUAL_REDIRECT_DESTINATION" /> にリダイレクトしたため、この拡張機能はリクエストを <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> にリダイレクトできませんでした。</translation>
 <translation id="8712265948125780616">拡張機能の解凍機能</translation>
+<translation id="8761756413268424715">「<ph name="APP_NAME" />」が次のデバイスへのアクセスをリクエストしています:</translation>
 <translation id="8825366169884721447">ネットワーク リクエストのリクエスト ヘッダー「<ph name="HEADER_NAME" />」への変更内容が別の拡張機能（<ph name="EXTENSION_NAME" />）と競合したため、この拡張機能はヘッダーを変更できませんでした。</translation>
 <translation id="8885905466771744233">指定した拡張機能の秘密鍵は既に存在します。その鍵を再利用するか、先に削除してください。</translation>
 <translation id="907841381057066561">パッケージ化の処理中に一時的な zip ファイルを作成できませんでした。</translation>

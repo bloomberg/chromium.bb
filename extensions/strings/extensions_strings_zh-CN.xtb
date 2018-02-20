@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">无法读取私有密钥。</translation>
 <translation id="6391538222494443604">必须存在输入目录。</translation>
 <translation id="641087317769093025">无法解压缩扩展程序</translation>
+<translation id="6542618148162044354">“<ph name="APP_NAME" />”请求访问您的一台或多台设备：</translation>
 <translation id="657064425229075395">无法加载背景脚本“<ph name="BACKGROUND_SCRIPT" />”。</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" />提供的<ph name="PRODUCT_NAME" />（序列号：<ph name="SERIAL_NUMBER" />）</translation>
 <translation id="6731255991101203740">无法创建解压缩目录：“<ph name="DIRECTORY_PATH" />”</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">程序包无效。详细信息：“<ph name="ERROR_MESSAGE" />”。</translation>
 <translation id="8670869118777164560">此扩展程序无法将该网络请求重新定向到 <ph name="ATTEMPTED_REDIRECT_DESTINATION" />，因为其他扩展程序（<ph name="EXTENSION_NAME" />）已将其重新定向到 <ph name="ACTUAL_REDIRECT_DESTINATION" />。</translation>
 <translation id="8712265948125780616">扩展程序解压缩程序</translation>
+<translation id="8761756413268424715">“<ph name="APP_NAME" />”请求访问您的其中一台设备：</translation>
 <translation id="8825366169884721447">此扩展程序无法修改网络请求的请求标头“<ph name="HEADER_NAME" />”，因为这一修改与另一个扩展程序（<ph name="EXTENSION_NAME" />）产生了冲突。</translation>
 <translation id="8885905466771744233">指定扩展程序的私有密钥已存在。请重复使用该密钥，或者先删除它。</translation>
 <translation id="907841381057066561">无法在打包时创建临时 zip 文件</translation>

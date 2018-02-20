@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">Privaatvõtme lugemine ei õnnestunud.</translation>
 <translation id="6391538222494443604">Olemas peab olema sisendkataloog.</translation>
 <translation id="641087317769093025">Ei saanud laiendust lahti pakkida</translation>
+<translation id="6542618148162044354">Rakendus „<ph name="APP_NAME" />” taotleb juurdepääsu ühele või mitmele teie seadmele:</translation>
 <translation id="657064425229075395">Taustaskripti „<ph name="BACKGROUND_SCRIPT" />” ei õnnestunud laadida.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> tootjalt <ph name="VENDOR_NAME" /> (seerianumber <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Lahtipakkimiseks ei saanud kataloogi luua: „<ph name="DIRECTORY_PATH" />”</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">Vale pakett. Üksikasjad: „<ph name="ERROR_MESSAGE" />”.</translation>
 <translation id="8670869118777164560">Laiendusel ei õnnestunud võrgutaotlust ümber suunata asukohta <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, kuna teine laiendus (<ph name="EXTENSION_NAME" />) suunas selle asukohta <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Laienduse lahtipakkija</translation>
+<translation id="8761756413268424715">Rakendus „<ph name="APP_NAME" />” taotleb juurdepääsu ühele teie seadmele:</translation>
 <translation id="8825366169884721447">Laiendusel ei õnnestunud muuta võrgutaotluse päist „<ph name="HEADER_NAME" />”, kuna muudatus sattus vastuollu teise laiendusega (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Määratud laiendusel on juba privaatvõti. Kasutage uuesti seda võtit või kustutage see kõigepealt.</translation>
 <translation id="907841381057066561">Pakkimisel ei õnnestunud luua ajutist ZIP-faili.</translation>

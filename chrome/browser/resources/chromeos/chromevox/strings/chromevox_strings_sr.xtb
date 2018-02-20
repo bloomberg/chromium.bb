@@ -36,6 +36,7 @@
 <translation id="1237866625126425153">група за избор</translation>
 <translation id="1251750620252348585">Следеће заглавље 6. нивоа</translation>
 <translation id="1275718070701477396">Изабрано</translation>
+<translation id="1286609444451033486">Притисните тастер за претрагу + тастер за размак да бисте укључили или искључили ову функцију.</translation>
 <translation id="1319608975892113573">Нема претходног издвојеног цитата.</translation>
 <translation id="1321576897702511272">Скривање помоћи за ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> од <ph name="TOTAL" /></translation>
@@ -371,6 +372,7 @@
 <translation id="4191918948604314587">Дугме</translation>
 <translation id="4202186506458631436">Премештање удесно</translation>
 <translation id="4206289001967551965">Унутар табеле</translation>
+<translation id="4209770650650780359">За аутоматско довршавање притисните стрелицу нагоре или надоле.</translation>
 <translation id="4215733775853809057">Следећи клизач</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{црта}one{# црта}few{# црте}other{# црта}}</translation>
 <translation id="421884353938374759">бирач боја</translation>
@@ -404,6 +406,7 @@
 <translation id="4532633738839459153">{COUNT,plural, =1{коса црта}one{# коса црта}few{# косе црте}other{# косих црта}}</translation>
 <translation id="4547556996012970016">Следеће заглавље 5. нивоа</translation>
 <translation id="4562381607973973258">Заглавље</translation>
+<translation id="4569941707103739422">Притисните стрелицу нагоре или надоле да бисте се кретали. Да бисте активирали, притисните Enter.</translation>
 <translation id="4570424871453628777">Крај погрешно написане речи</translation>
 <translation id="4591507479202817876">, изабрано</translation>
 <translation id="4597532268155981612">образац</translation>
@@ -497,6 +500,7 @@
 <translation id="536031132345979795">Прескакање уназад током непрекидног читања</translation>
 <translation id="5368000168321181111">Звучна обавештења су искључена</translation>
 <translation id="5374320867641260420">Нема следећег дугмета.</translation>
+<translation id="5376407118396657359">Притисните тастер за претрагу + Ctrl + Alt и стрелице да бисте се кретали кроз ћелије.</translation>
 <translation id="5382299583965267720">Нема следећег заглавља 1. нивоа.</translation>
 <translation id="5402367795255837559">Брајева азбука</translation>
 <translation id="5402791055281059602">Модално обавештење</translation>
@@ -505,6 +509,7 @@
 <translation id="5417034931411865818">Кликните на ставку испод тастера за усмеравање $1</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{знак „мање од“}one{# знак „мање од“}few{# знака „мање од“}other{# знакова „мање од“}}</translation>
 <translation id="5444587279251314700">(активна)</translation>
+<translation id="5446809554778706307">Нема фокуса. Притисните Ctrl + T да бисте отворили нову картицу.</translation>
 <translation id="5451268436205074266">тачке <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Комплементарно</translation>
 <translation id="5485036206801896268">Нема претходне слике.</translation>
@@ -584,6 +589,7 @@
 <translation id="6006050241733874051">Образац</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{обрнута коса црта}one{# обрнута коса црта}few{# обрнуте косе црте}other{# обрнутих косих црта}}</translation>
 <translation id="6037602951055904232">Померање унапред</translation>
+<translation id="6042826534790431634">За активирање притисните тастер за претрагу + тастер за размак.</translation>
 <translation id="6044160928851315051">Затамни екран</translation>
 <translation id="605761629541007221">Крај подебљаног текста</translation>
 <translation id="6065293622157674001">Почетак граматичке грешке</translation>
@@ -860,6 +866,7 @@
 <translation id="9065283790526219006">+popup</translation>
 <translation id="9077213568694924680">уклоњено из избора</translation>
 <translation id="9082874451376019682">Нема претходног клизача.</translation>
+<translation id="9087707351856729768">Почните да куцате за аутоматско довршавање.</translation>
 <translation id="9089864840575085222">Циклични одјек уноса</translation>
 <translation id="9105227991373418255">исеци $1.</translation>
 <translation id="9107530006868467849">Не постоји виџет за претходну медијску датотеку.</translation>

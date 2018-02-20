@@ -33,7 +33,6 @@
 <translation id="1936717151811561466">Tiếng Phần Lan</translation>
 <translation id="1947424002851288782">Bàn phím tiếng Đức</translation>
 <translation id="1984603991036629094">Bàn phím ngữ âm Armenia</translation>
-<translation id="1989746695744304008">Tab và cửa sổ</translation>
 <translation id="2046702855113914483">Mỳ tôm</translation>
 <translation id="2080010875307505892">Bàn phím tiếng Serbia</translation>
 <translation id="2136953289241069843">Chuyển ngữ (namaste → नमस्कार)</translation>
@@ -59,6 +58,7 @@
 <translation id="2781645665747935084">Tiếng Bỉ</translation>
 <translation id="2790805296069989825">Bàn phím tiếng Nga</translation>
 <translation id="2870836398458454343">Chuyển ngữ (marhaban ← مرحبا)</translation>
+<translation id="2872353916818027657">Hoán đổi màn hình chính</translation>
 <translation id="288024221176729610">Tiếng Séc</translation>
 <translation id="2894654529758326923">Thông tin</translation>
 <translation id="2902734494705624966">Mở rộng của Hoa Kỳ</translation>
@@ -71,8 +71,10 @@
 <translation id="2966459079597787514">Bàn phím tiếng Thụy Điển</translation>
 <translation id="3064388234319122767">Chuyển ngữ (zdravo → здраво)</translation>
 <translation id="3088034400796962477">Chuyển ngữ (salam ← سلام)</translation>
+<translation id="3105917916468784889">Chụp ảnh màn hình</translation>
 <translation id="3116361045094675131">Bàn phím Vương quốc Anh</translation>
 <translation id="3126026824346185272">Ctrl</translation>
+<translation id="3140353188828248647">Thanh địa chỉ chính</translation>
 <translation id="3157729859914172001">Bàn phím quốc tế Hoa Kỳ (PC)</translation>
 <translation id="3187212781151025377">Bàn phím tiếng Do Thái</translation>
 <translation id="3197563288998582412">Dvorak Vương quốc Anh</translation>
@@ -84,6 +86,7 @@
 <translation id="3338239663705455570">Bàn phím tiếng Slovenia</translation>
 <translation id="3399597614303179694">Bàn phím Macedonia</translation>
 <translation id="3494768541638400973">Phương pháp Nhập tiếng Nhật của Google (dành cho bàn phím Nhật)</translation>
+<translation id="3496213124478423963">Thu Nhỏ</translation>
 <translation id="3519867315646775981">Chuyển ngữ (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Tiếng Bồ Đào Nha</translation>
 <translation id="357479282490346887">Tiếng Lithuania</translation>
@@ -91,6 +94,7 @@
 <translation id="3603385196401704894">Tiếng Pháp ở Canada</translation>
 <translation id="3606220979431771195">Tiếng Thổ Nhĩ Kỳ-F</translation>
 <translation id="3619115746895587757">Cà phê cappuccino</translation>
+<translation id="3649256019230929621">Thu nhỏ cửa sổ</translation>
 <translation id="3678559383040232393">Bàn phím tiếng Malta</translation>
 <translation id="3801082500826908679">Tiếng Faroe</translation>
 <translation id="3809272675881623365">Con thỏ</translation>
@@ -98,6 +102,7 @@
 <translation id="3825863595139017598">Bàn phím chữ Mông Cổ</translation>
 <translation id="3833761542219863804">Chuyển ngữ (mausam → ਮੌਸਮ)</translation>
 <translation id="383652340667548381">Tiếng Serbia</translation>
+<translation id="385051799172605136">Quay lại</translation>
 <translation id="3855472144336161447">Neo 2 tiếng Đức</translation>
 <translation id="3858678421048828670">Bàn phím tiếng Ý</translation>
 <translation id="3910699493603749297">Bàn phím tiếng Khmer</translation>
@@ -147,6 +152,7 @@
 <translation id="5218183485292899140">Tiếng Pháp ở Thụy Sĩ</translation>
 <translation id="5241298539944515331">Bàn phím tiếng Việt (VIQR)</translation>
 <translation id="5257456363153333584">Chuồn chuồn</translation>
+<translation id="5316716239522500219">Phản chiếu màn hình</translation>
 <translation id="5319782540886810524">Bàn phím tiếng Latvia</translation>
 <translation id="5323213332664049067">Tiếng Mỹ Latinh</translation>
 <translation id="5402367795255837559">Chữ nổi</translation>
@@ -173,11 +179,14 @@
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">Bàn phím tiếng Mỹ Latinh</translation>
 <translation id="6012987430370760224">Bàn phím tiếng Maratha (Phiên âm)</translation>
+<translation id="6022924867608035986">Xóa văn bản trong hộp tìm kiếm</translation>
 <translation id="60357267506638014">QWERTY tiếng Séc</translation>
 <translation id="6054173164583630569">Bàn phím tiếng Pháp</translation>
 <translation id="6111770213269631447">Chuyển ngữ (namaskar → নমস্কার)</translation>
+<translation id="6129953537138746214">Dấu cách</translation>
 <translation id="6164412158936057769">Bướm</translation>
 <translation id="6170470584681422115">Sandwich</translation>
+<translation id="6185696379715117369">Trang trên</translation>
 <translation id="6264347891387618177">Chuyển ngữ (selam → ሰላም)</translation>
 <translation id="6305012486838822927">Bàn phím tiếng Lào</translation>
 <translation id="6339034549827494595">Bàn phím ngữ âm tiếng Nga (AATSEEL)</translation>
@@ -189,9 +198,9 @@
 <translation id="6503256918647795660">Bàn phím tiếng Pháp ở Thụy Sĩ</translation>
 <translation id="6505918941256367791">Bàn phím tiếng Tamil (InScript)</translation>
 <translation id="6509122719576673235">Tiếng Na Uy</translation>
-<translation id="6629951648264770593"><ph name="MODIFIER" /> + <ph name="KEY" /></translation>
 <translation id="6650726141019353908">Bướm màu hồng</translation>
-<translation id="6684986274046026054">Khóa màn hình của bạn</translation>
+<translation id="671928215901716392">Khóa màn hình</translation>
+<translation id="6727005317916125192">Ngăn trước đó</translation>
 <translation id="6760765581316020278">Bàn phím tiếng Việt (VNI)</translation>
 <translation id="6795884519221689054">Gấu trúc</translation>
 <translation id="6808193438228982088">Cáo</translation>
@@ -207,6 +216,7 @@
 <translation id="6939777852457331078">Bàn phím Workman Hoa Kỳ</translation>
 <translation id="6970230597523682626">Tiếng Bungary</translation>
 <translation id="6981982820502123353">Truy cập</translation>
+<translation id="7025325401470358758">Ngăn tiếp theo</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Chuyển ngữ (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Bàn phím tiếng Estonia</translation>
@@ -226,6 +236,7 @@
 <translation id="7603724359189955920">Lưới</translation>
 <translation id="770015031906360009">Tiếng Hy Lạp</translation>
 <translation id="7706319470528945664">Bàn phím tiếng Bồ Đào Nha</translation>
+<translation id="7724603315864178912">Cắt</translation>
 <translation id="7774365994322694683">Chim</translation>
 <translation id="7825423931463735974">Bàn phím tiếng Tamil (Tamil99)</translation>
 <translation id="7853966320808728790">BÉPO tiếng Pháp</translation>
@@ -255,6 +266,7 @@
 <translation id="8437209419043462667">Hoa Kỳ</translation>
 <translation id="8467473010914675605">Phương pháp nhập tiếng Hàn</translation>
 <translation id="8477649328507734757">Hình tròn</translation>
+<translation id="8487678622945914333">Phóng To</translation>
 <translation id="8521441079177373948">Vương quốc Anh</translation>
 <translation id="8551494947769799688">Tiếng Lát-vi-a</translation>
 <translation id="8561206103590473338">Voi</translation>
@@ -264,8 +276,8 @@
 <translation id="874420130893181774">Phương thức nhập Bính âm truyền thống</translation>
 <translation id="8803496343472038847">Bàn phím ngữ âm tiếng Nga</translation>
 <translation id="8808686172382650546">Mèo</translation>
-<translation id="8839645518696429828"><ph name="CTRL" /> + <ph name="SHIFT" /> và + hoặc -</translation>
 <translation id="885381502874625531">Bàn phím chữ Belarus</translation>
+<translation id="88986195241502842">Trang dưới</translation>
 <translation id="8900820606136623064">Tiếng Hungary</translation>
 <translation id="8901822611024316615">Bàn phím QWERTY của Séc</translation>
 <translation id="8919081441417203123">Tiếng Đan Mạch</translation>

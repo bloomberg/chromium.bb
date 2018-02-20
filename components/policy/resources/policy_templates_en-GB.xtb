@@ -210,6 +210,7 @@
       The policy should be set to a URL from which <ph name="PRODUCT_OS_NAME" /> can download the Terms of Service. The Terms of Service must be plain text, served as MIME type text/plain. No markup is allowed.</translation>
 <translation id="1750315445671978749">Block all downloads</translation>
 <translation id="1781356041596378058">This policy also controls access to Android Developer Options. If you set this policy to true, users cannot access Developer Options. If you set this policy to false or leave it unset, users can access Developer Options by tapping seven times on the build number in the Android settings app.</translation>
+<translation id="1797233582739332495">Show a recurring prompt to the user indicating that a relaunch is required</translation>
 <translation id="1803646570632580723">List of pinned apps to show in the launcher</translation>
 <translation id="1808715480127969042">Block cookies on these sites</translation>
 <translation id="1827523283178827583">Use fixed proxy servers</translation>
@@ -288,11 +289,11 @@
 
           If this policy is left unset, all four schemes will be used.</translation>
 <translation id="2067011586099792101">Block access to sites outside of content packs</translation>
-<translation id="2075030897098958514">Controls whether NTLMv2 is enabled.
+<translation id="2070270043919235595">Notify users that <ph name="PRODUCT_NAME" /> must be relaunched to apply a pending update.
 
-          All recent versions of Samba and Windows servers support NTLMv2. This should only be disabled for backwards compatibility and reduces the security of authentication.
+      This policy setting enables notifications to inform the user that a browser relaunch is recommended or required. If not set, <ph name="PRODUCT_NAME" /> indicates to the user that a relaunch is needed via subtle changes to its menu. If set to 'Recommended', a recurring warning will be shown to the user that a relaunch is recommended. The user can dismiss this warning to defer the relaunch. If set to 'Required', a recurring warning will be shown to the user indicating that a browser relaunch will be forced once the notification period passes. This period is seven days by default, and may be configured via the <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> policy setting.
 
-          The default value when this policy is not defined is currently false for backwards compatibility, but will change to true in the future.</translation>
+      The user's session is restored following the relaunch.</translation>
 <translation id="2077129598763517140">Use hardware acceleration when available</translation>
 <translation id="2077273864382355561">Screen off delay when running on battery power</translation>
 <translation id="2082205219176343977">Configure minimum allowed Chrome version for the device.</translation>
@@ -337,6 +338,9 @@
           If this setting is configured, users using quick unlock will be requested to enter their passwords on the lock screen depending on this setting.
 
           If this setting is not configured, users using quick unlock will be requested to enter their password on the lock screen every day.</translation>
+<translation id="2188722565665306629">Allows you to set the time period over which <ph name="PRODUCT_NAME" /> relaunch notifications are shown to apply a pending update.
+
+      This policy setting can be used to control the time period, in milliseconds, over which a user is progressively informed that <ph name="PRODUCT_NAME" /> must be relaunched (or <ph name="PRODUCT_OS_NAME" /> must be restarted) for an update. Over this time period, the user will be repeatedly informed of the need for an update based on the setting of the <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> policy. If not set, the default period of 604,800,000 milliseconds (one week) is used.</translation>
 <translation id="2194470398825717446">This policy is deprecated in M61, please use EcryptfsMigrationStrategy instead.
 
       Specifies how a device should behave that shipped with ecryptfs and needs to transition to ext4 encryption.
@@ -541,6 +545,13 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="2682225790874070339">Disables Drive in the <ph name="PRODUCT_OS_NAME" /> Files app</translation>
 <translation id="268577405881275241">Enable the data compression proxy feature</translation>
+<translation id="2726613915126661822">Allows you to control whether virtual machines are allowed to run on Chrome OS.
+
+      If the policy is set to True, the device is allowed to run virtual machines.
+      If the policy is set to False, the device will not be allowed to run virtual machines.
+      When this policy is changed to False, it applies to starting new virtual machines but does not shut down virtual machines which are already running.
+      When this policy is not set on a managed device, the device will not be allowed to run virtual machines.
+      Unmanaged devices are allowed to run virtual machines.</translation>
 <translation id="2731627323327011390">Disable usage of <ph name="PRODUCT_OS_NAME" /> certificates to ARC-apps</translation>
 <translation id="2742843273354638707">Hide the Chrome Web Store app and footer link from the New Tab Page and <ph name="PRODUCT_OS_NAME" /> app launcher.
 
@@ -764,6 +775,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           This policy is optional. If not set, no new tab page will be provided.
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
+<translation id="3465852069254497664">Notify a user that a browser relaunch is recommended or required</translation>
 <translation id="346731943813722404">Specifies whether power management delays and the session length limit should only start running after the first user activity has been observed in a session.
 
           If this policy is set to True, power management delays and the session length limit do not start running until after the first user activity has been observed in a session.
@@ -783,7 +795,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3528000905991875314">Enable alternate error pages</translation>
 <translation id="3547954654003013442">Proxy settings</translation>
 <translation id="3577251398714997599">Ads setting for sites with intrusive ads</translation>
-<translation id="3587482841069643663">All</translation>
 <translation id="3591584750136265240">Configure the login authentication behaviour</translation>
 <translation id="3627678165642179114">Enable or disable spell checking web service</translation>
 <translation id="3646859102161347133">Set screen magnifier type</translation>
@@ -798,6 +809,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3711895659073496551">Suspend</translation>
 <translation id="3736879847913515635">Enable add person in user manager</translation>
 <translation id="3737544779868348650">Device network hostname</translation>
+<translation id="3740754010292550733">Set the period for update relaunch notifications</translation>
 <translation id="3750220015372671395">Block key generation on these sites</translation>
 <translation id="3756011779061588474">Block developer mode</translation>
 <translation id="3758089716224084329">Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and prevents users from changing proxy settings.
@@ -1004,16 +1016,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="4285674129118156176">Allow unaffiliated users to use ARC</translation>
-<translation id="4294280661005713627">Sets a target version for Auto-Updates.
-
-      Specifies the prefix of a target version <ph name="PRODUCT_OS_NAME" /> should update to. If the device is running a version that's before the specified prefix, it will update to the latest version with the given prefix. If the device is already on a later version, there is no effect (i.e. no downgrades are performed) and the device will remain on the current version. The prefix format works component-wise as is demonstrated in the following example:
-
-      "" (or not configured): update to latest version available.
-      "1412.": update to any minor version of 1412 (e.g. 1412.24.34 or 1412.60.2)
-      "1412.2.": update to any minor version of 1412.2 (e.g. 1412.2.34 or 1412.2.2)
-      "1412.24.34": update to this specific version only
-
-      Warning: It is not recommended to configure version restrictions as they may prevent users from receiving software updates and critical security fixes. Restricting updates to a specific version prefix might leave users at risk.</translation>
 <translation id="4298509794364745131">Specifies list of apps that can be enabled as a note-taking app on the <ph name="PRODUCT_OS_NAME" /> lock screen.
 
       If the preferred note-taking app is enabled on the lock screen, the lock screen will contain UI element for launching the preferred note taking app.
@@ -1037,6 +1039,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4347908978527632940">If true and the user is a supervised user, then other Android apps can query the user's web restrictions through a content provider.
 
           If false or unset, then the content provider returns no information.</translation>
+<translation id="435461861920493948">Contains a list of patterns which are used to control the visiblity of accounts in <ph name="PRODUCT_NAME" />.
+
+      Each Google account on the device will be compared to patterns stored in this policy to determine the account visibility in <ph name="PRODUCT_NAME" />. The account will be visible if its name matches any pattern on the list. Otherwise, the account will be hidden.
+
+      Use the wildcard character '*' to match zero or more arbitrary characters. The escape character is '\', so to match actual '*' or '\' characters, put a '\' in front of them.
+
+      If this policy is not set, all Google accounts on the device will be visible in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="436581050240847513">Report device network interfaces</translation>
 <translation id="4372704773119750918">Do not allow enterprise user to be part of multiprofile (primary or secondary)</translation>
 <translation id="4377599627073874279">Allow all sites to show all images</translation>
@@ -1528,6 +1537,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If you set this policy, users can temporarily override it by enabling or disabling the large cursor. However, the user's choice is not persistent and the default is restored whenever the login screen is shown anew or the user remains idle on the login screen for a minute.
 
           If this policy is left unset, the large cursor is disabled when the login screen is first shown. Users can enable or disable the large cursor at any time and its status on the login screen is persisted between users.</translation>
+<translation id="5929855945144989709">Allow devices to run virtual machines on Chrome OS</translation>
 <translation id="5932767795525445337">This policy can also be used to pin Android apps.</translation>
 <translation id="5936622343001856595">Forces queries in Google Web Search to be done with SafeSearch set to active and prevents users from changing this setting.
 
@@ -1542,17 +1552,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5983708779415553259">Default behaviour for sites not in any content pack</translation>
 <translation id="5997543603646547632">Use 24 hour clock by default</translation>
 <translation id="5997846976342452720">Specify whether the plug-in finder should be disabled (deprecated)</translation>
-<translation id="6005179188836322782">Enables <ph name="PRODUCT_NAME" />'s Safe Browsing feature and prevents users from changing this setting.
-
-      If you enable this setting, Safe Browsing is always active.
-
-      If you disable this setting, Safe Browsing is never active.
-
-      If you enable or disable this setting, users cannot change or override the 'Enable phishing and malware protection' setting in <ph name="PRODUCT_NAME" />.
-
-      If this policy is left unset, this will be enabled but the user will be able to change it.
-
-      See https://developers.google.com/safe-browsing for more info on SafeBrowsing.</translation>
 <translation id="6017568866726630990">Show the system print dialogue instead of print preview.
 
       When this setting is enabled, <ph name="PRODUCT_NAME" /> will open the system print dialogue instead of the built-in print preview when a user requests a page to be printed.
@@ -1607,6 +1606,17 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       To pin apps to the launcher, see PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Default search provider instant URL</translation>
+<translation id="6029950823657977211">
+      NOTE: This policy is experimental and may break functionality!
+      This policy applies to the sign-in screen. Please see also the 'IsolateOrigins' policy which applies to the user session. It is recommended to set both policies to the same value.
+      If the policy is enabled, each of the named origins in a
+      comma-separated list will run in its own process. This will also isolate
+      origins named by subdomains, e.g. specifying https://example.com/ will
+      also cause https://foo.example.com/ to be isolated as part of the
+      https://example.com/ site.
+      If the policy is disabled, the per-site isolation process management logic will take effect.
+      If the policy is not configured, the platform default site isolation settings will be used for the sign-in screen.
+      </translation>
 <translation id="603410445099326293">Parameters for suggest URL which uses POST</translation>
 <translation id="6036523166753287175">Enable firewall traversal from remote access host</translation>
 <translation id="6070667616071269965">Device sign-in screen keyboard layouts</translation>
@@ -1779,6 +1789,15 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       The <ph name="SYNC_DISABLED_POLICY_NAME" /> policy disables all data synchronisation, overriding RoamingProfileSupportEnabled.</translation>
 <translation id="6735701345096330595">Force enable spellcheck languages</translation>
+<translation id="673699536430961464">This setting allows users to switch between Google Accounts within the content area of their browser window after they sign in to their <ph name="PRODUCT_OS_NAME" /> device.
+
+      If this policy is set to false, signing in to a different account from non-Incognito browser content area will not be allowed.
+
+      If this policy is unset or set to true, the default behaviour will be used: signing in to a different account from the browser content area will be allowed, except for child accounts where it will be blocked for non-Incognito content area.
+
+      In case signing in to a different account shouldn't be allowed via the Incognito mode, consider blocking that mode using the IncognitoModeAvailability policy.
+
+      Note that users will be able to access Google services in an unauthenticated state by blocking their cookies.</translation>
 <translation id="6757438632136860443">Allows you to set a list of URL patterns that specify sites which are allowed to run the <ph name="FLASH_PLUGIN_NAME" /> plug-in.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultPluginsSetting' policy if it is set, or the user's personal configuration otherwise.</translation>
@@ -1788,6 +1807,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6786967369487349613">Set the roaming profile directory</translation>
 <translation id="6810445994095397827">Block JavaScript on these sites</translation>
 <translation id="681446116407619279">Supported authentication schemes</translation>
+<translation id="6835883744948188639">Show a recurring prompt to the user indicating that a relaunch is recommended</translation>
 <translation id="685769593149966548">Enforce Strict Restricted Mode for YouTube</translation>
 <translation id="687046793986382807">This policy has been retired as of <ph name="PRODUCT_NAME" /> version 35.
 
@@ -2146,7 +2166,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       Leaving this policy not set will make <ph name="PRODUCT_NAME" /> use the default value of 5,000 milliseconds.</translation>
 <translation id="7841880500990419427">Minimum TLS version to fallback to</translation>
 <translation id="7842869978353666042">Configure Google Drive options</translation>
-<translation id="7843525027689416831">Specifies the flags that should be applied to <ph name="PRODUCT_NAME" /> when it starts. The specified flags are applied on the login screen only. Flags that are set via this policy do not propagate into user sessions.</translation>
 <translation id="787125417158068494">If set to SyncDisabled or not configured, <ph name="PRODUCT_OS_NAME" /> certificates are not available for ARC-apps.
 
       If set to CopyCaCerts, all ONC-installed CA certificates with <ph name="WEB_TRUSTED_BIT" /> are available for ARC-apps.</translation>
@@ -2313,6 +2332,13 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="8424255554404582727">Set default display rotation, reapplied on every reboot</translation>
 <translation id="8426231401662877819">Rotate screen clockwise by 90 degrees</translation>
 <translation id="8451988835943702790">Use New Tab Page as homepage</translation>
+<translation id="8459216513698220096">Specifies whether and how user policy from computer GPO is processed.
+
+      If the policy is set to 'Default' or if it is unset, user policy is read only from user GPOs (computer GPOs are ignored).
+
+      If the policy is set to 'Merge', user policy in user GPOs is merged with user policy in computer GPOs (computer GPOs take preference).
+
+      If the policy is set to 'Replace', user policy in user GPOs is replaced by user policy in computer GPOs (user GPOs are ignored).</translation>
 <translation id="8465065632133292531">Parameters for instant URL which uses POST</translation>
 <translation id="847472800012384958">Do not allow any site to show pop-ups</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2460,6 +2486,12 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 
       This policy has no effect on whether users can configure printers on individual devices. It is intended to be supplementary to the configuration of printers by individual users.
       </translation>
+<translation id="8934944553121392674">Controls which printers from the <ph name="DEVICE_PRINTERS_POLICY" /> are available to users.
+
+      Designates which access policy is used for bulk printer configuration. If <ph name="PRINTERS_ALLOW_ALL" /> is selected, all printers are shown. If <ph name="PRINTERS_BLACKLIST" /> is selected, <ph name="DEVICE_PRINTERS_BLACKLIST" /> is used to restrict access to the specified printers. If <ph name="PRINTERS_WHITELIST" /> is selected, <ph name="DEVICE_PRINTERS_WHITELIST" /> designates only those printers which are selectable.
+
+      If this policy is not set, <ph name="PRINTERS_ALLOW_ALL" /> is assumed.
+      </translation>
 <translation id="8947415621777543415">Report device location</translation>
 <translation id="8951350807133946005">Set disk cache directory</translation>
 <translation id="8952317565138994125">Disables data synchronisation in <ph name="PRODUCT_NAME" /> using Google-hosted synchronisation services and prevents users from changing this setting.
@@ -2521,7 +2553,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       If this policy is set to true, <ph name="PRODUCT_OS_NAME" /> will trigger a reboot when the user shuts down the device. <ph name="PRODUCT_OS_NAME" /> replaces all occurrences of shutdown buttons in the UI by reboot buttons. If the user shuts down the device using the power button, it will not automatically reboot, even if the policy is enabled.</translation>
 <translation id="9158929520101169054">Allow Multiple Sign-in Within the Browser</translation>
 <translation id="9187743794267626640">Disable mounting of external storage</translation>
-<translation id="918910591537763102">Legacy</translation>
 <translation id="9197740283131855199">Percentage by which to scale the screen dim delay if the user becomes active after dimming</translation>
 <translation id="9200828125069750521">Parameters for image URL which uses POST</translation>
 <translation id="9213347477683611358">Configure device-level wallpaper image that is shown on the login screen if no user has yet signed in to the device. The policy is set by specifying the URL from which the Chrome OS device can download the wallpaper image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its file size must not exceed 16 MB. The URL must be accessible without any authentication. The wallpaper image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
@@ -2541,5 +2572,11 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="930930237275114205">Set <ph name="PRODUCT_FRAME_NAME" /> user data directory</translation>
 <translation id="934390688529359269">Enables force sign in for <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Set disk cache size</translation>
+<translation id="9775893229076211">Allows you to control the triggering of password protection at-risk account flagging. Password protection at-risk account flagging means informing Google that this account is at risk of being hijacked.
+
+      If this policy is set to 'PasswordProtectionRiskOff', no password protection at-risk account flagging will be triggered.
+      If this policy is set to 'PasswordProtectionRiskOnPasswordReuse', password protection at-risk account flagging will be triggered when users reuse Google passwords on any non-whitelisted sites.
+      If this policy is set to 'PasswordProtectionRiskOnPhishingReuse', password protection at-risk account flagging will be triggered when users reuse Google passwords on phishing sites.
+      If this policy is left unset, password protection at-risk account flagging will be triggered when users reuse Google passwords on phishing sites but the user can change it.</translation>
 <translation id="982497069985795632">Enable spellcheck</translation>
 </translationbundle>

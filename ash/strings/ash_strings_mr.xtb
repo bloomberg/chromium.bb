@@ -43,6 +43,7 @@
 <translation id="1951012854035635156">साहाय्यक</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1995660704900986789">बंद करा</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2049639323467105390"><ph name="DOMAIN" /> याद्वारे हे डिव्हाइस व्यवस्‍थापित केले जाते.</translation>
 <translation id="2050339315714019657">पोर्ट्रेट</translation>
@@ -83,6 +84,7 @@
 <translation id="2844169650293029770">USB-C डिव्‍हाइस (डाव्‍या बाजूचे पुढील पोर्ट)</translation>
 <translation id="2865888419503095837">नेटवर्क माहिती</translation>
 <translation id="2872961005593481000">बंद करा</translation>
+<translation id="2878884018241093801">अलीकडील कोणतेही आयटम नाहीत</translation>
 <translation id="2903844815300039659"><ph name="NAME" />, <ph name="STRENGTH" /> शी कनेक्ट केलेले</translation>
 <translation id="2911940648265863620">तुम्ही तुमची स्क्रीन शेअर करत आहात</translation>
 <translation id="2942516765047364088">शेल्फ स्थिती</translation>
@@ -139,6 +141,7 @@
 <translation id="4072264167173457037">मध्यम सिग्नल</translation>
 <translation id="4279490309300973883">मिररिंग</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">भिंग</translation>
 <translation id="4351433414020964307">साहाय्यक लोड होत आहे...</translation>
 <translation id="4378551569595875038">कनेक्ट करीत आहे...</translation>
@@ -183,6 +186,7 @@
 <translation id="5744083938413354016">टॅप ड्रॅगिंग</translation>
 <translation id="5777841717266010279">स्क्रीन सामायिकरण थांबवायचे?</translation>
 <translation id="57838592816432529">निःशब्द करा</translation>
+<translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5832805196449965646">व्यक्ती जोडा</translation>
 <translation id="5860033963881614850">बंद</translation>
 <translation id="5895138241574237353">रीस्टार्ट करा</translation>
@@ -203,7 +207,7 @@
 <translation id="6047696787498798094">आपण दुसर्‍या वापरकर्त्यावर स्‍विच करता तेव्‍हा स्क्रीन सामायिकरण थांबेल. आपण सुरु ठेवू इच्छिता?</translation>
 <translation id="6062360702481658777">आपल्याला <ph name="LOGOUT_TIME_LEFT" /> मधून स्वयंचलितपणे साइन आउट केले जाईल.</translation>
 <translation id="6064337552080329342">सॉरी, तुमच्या पासवर्डची पडताळणी होऊ शकत नाही. कृपया नंतर पुन्हा प्रयत्न करा.</translation>
-<translation id="607652042414456612">आपला संगणक जवळपासच्या Bluetooth डिव्हाइसेसवर शोधण्यायोग्य आहे आणि <ph name="ADDRESS" /> पत्त्यासह "<ph name="NAME" />" म्हणून दिसेल</translation>
+<translation id="607652042414456612">आपला कॉंप्युटर जवळपासच्या Bluetooth डिव्हाइसेसवर शोधण्यायोग्य आहे आणि <ph name="ADDRESS" /> पत्त्यासह "<ph name="NAME" />" म्हणून दिसेल</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> चार्ज करीत आहे</translation>
 <translation id="615957422585914272">ऑन-स्‍क्रीन कीबोर्ड दर्शवा</translation>
 <translation id="6165508094623778733">अधिक जाणून घ्या</translation>

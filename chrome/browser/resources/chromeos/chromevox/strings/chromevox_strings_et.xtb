@@ -36,6 +36,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Järgmine 6. taseme pealkiri</translation>
 <translation id="1275718070701477396">Valitud</translation>
+<translation id="1286609444451033486">Vahetamiseks vajutage otsinguklahvi + tühikut.</translation>
 <translation id="1319608975892113573">Eelmist plokktsitaati ei ole.</translation>
 <translation id="1321576897702511272">Peida ChromeVoxi abi</translation>
 <translation id="1331702245475014624"><ph name="INDEX" />/<ph name="TOTAL" />-st</translation>
@@ -371,6 +372,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="4191918948604314587">Nupp</translation>
 <translation id="4202186506458631436">Teisalda paremale</translation>
 <translation id="4206289001967551965">Tabelis</translation>
+<translation id="4209770650650780359">Automaatseks täitmiseks vajutage üles- või allanoolt.</translation>
 <translation id="4215733775853809057">Järgmine liugur</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{kriips}other{# kriipsu}}</translation>
 <translation id="421884353938374759">värvivalija</translation>
@@ -404,6 +406,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="4532633738839459153">{COUNT,plural, =1{kaldkriips}other{# kaldkriipsu}}</translation>
 <translation id="4547556996012970016">Järgmine 5. taseme pealkiri</translation>
 <translation id="4562381607973973258">Päis</translation>
+<translation id="4569941707103739422">Navigeerimiseks vajutage üles- või allanoolt, aktiveerimiseks vajutage sisestusklahvi.</translation>
 <translation id="4570424871453628777">Õigekirjaveaga sõna lõpp</translation>
 <translation id="4591507479202817876">, valitud</translation>
 <translation id="4597532268155981612">vorm</translation>
@@ -497,6 +500,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="536031132345979795">Liigub pideva lugemise ajal tagasi</translation>
 <translation id="5368000168321181111">Helisignaalid on väljas</translation>
 <translation id="5374320867641260420">Järgmist nuppu ei ole.</translation>
+<translation id="5376407118396657359">Lahtri kaupa navigeerimiseks vajutage korraga otsinguklahvi + klahve Ctrl + Alt ja nooleklahve.</translation>
 <translation id="5382299583965267720">Järgmist 1. taseme pealkirja ei ole.</translation>
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5402791055281059602">Modaalne teatis</translation>
@@ -505,6 +509,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="5417034931411865818">Klõpsake marsruutimisklahvi $1 all oleval üksusel</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{vähem kui}other{# märki „vähem kui”}}</translation>
 <translation id="5444587279251314700">(aktiivne)</translation>
+<translation id="5446809554778706307">Fookus puudub. Uue vahekaardi avamiseks vajutage klahve Ctrl + T.</translation>
 <translation id="5451268436205074266">punktid <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Täiendav</translation>
 <translation id="5485036206801896268">Eelmist graafikat ei ole.</translation>
@@ -584,6 +589,7 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="6006050241733874051">Vorm</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{kurakriips}other{# kurakaldkriipsu}}</translation>
 <translation id="6037602951055904232">Edasi navigeerimine</translation>
+<translation id="6042826534790431634">Aktiveerimiseks vajutage otsinguklahvi + tühikut.</translation>
 <translation id="6044160928851315051">Ekraanikuva tumendamine</translation>
 <translation id="605761629541007221">Paksu kirja lõpp</translation>
 <translation id="6065293622157674001">Grammatikavea algus</translation>
@@ -860,6 +866,7 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="9065283790526219006">+hüpik</translation>
 <translation id="9077213568694924680">eemaldatakse valikust</translation>
 <translation id="9082874451376019682">Eelmist liugurit ei ole.</translation>
+<translation id="9087707351856729768">Automaatseks täitmiseks hakake teksti sisestama.</translation>
 <translation id="9089864840575085222">Teksti sisestamise kaja tsükkel</translation>
 <translation id="9105227991373418255">lõika $1.</translation>
 <translation id="9107530006868467849">Eelmist meediavidinat pole.</translation>

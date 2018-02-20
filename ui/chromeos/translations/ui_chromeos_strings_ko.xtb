@@ -36,6 +36,7 @@
 <translation id="2046702855113914483">라면</translation>
 <translation id="2080010875307505892">세르비아어 키보드</translation>
 <translation id="2136953289241069843">음역(namaste → नमस्कार)</translation>
+<translation id="2145908266289632567">텍스트 편집</translation>
 <translation id="2164862903024139959">베트남어 키보드(TCVN)</translation>
 <translation id="2168214441502403371">페르시아어 키보드</translation>
 <translation id="2198315389084035571">중국어(간체)</translation>
@@ -57,6 +58,7 @@
 <translation id="2781645665747935084">벨기에어</translation>
 <translation id="2790805296069989825">러시아어 키보드</translation>
 <translation id="2870836398458454343">음역(marhaban ← مرحبا)</translation>
+<translation id="2872353916818027657">기본 모니터 전환</translation>
 <translation id="288024221176729610">체코어</translation>
 <translation id="2894654529758326923">정보</translation>
 <translation id="2902734494705624966">영어(미국) 확장</translation>
@@ -69,8 +71,10 @@
 <translation id="2966459079597787514">스웨덴어 키보드</translation>
 <translation id="3064388234319122767">음역(zdravo → здраво)</translation>
 <translation id="3088034400796962477">음역(salam ← سلام)</translation>
+<translation id="3105917916468784889">화면 캡쳐</translation>
 <translation id="3116361045094675131">영어(영국식) 키보드</translation>
 <translation id="3126026824346185272">Ctrl</translation>
+<translation id="3140353188828248647">주소 표시줄로 이동</translation>
 <translation id="3157729859914172001">미국 국제(PC) 키보드</translation>
 <translation id="3187212781151025377">히브리어 키보드</translation>
 <translation id="3197563288998582412">영어(영국) 드보락</translation>
@@ -82,12 +86,15 @@
 <translation id="3338239663705455570">슬로베니아어 키보드</translation>
 <translation id="3399597614303179694">마케도니아어 키보드</translation>
 <translation id="3494768541638400973">Google 일본어 입력기(일본어 키보드용)</translation>
+<translation id="3496213124478423963">축소</translation>
 <translation id="3519867315646775981">음역(shalom ← שלום)</translation>
 <translation id="3522708245912499433">포르투갈어</translation>
 <translation id="357479282490346887">리투아니아어</translation>
+<translation id="3592821358219525223">시스템 및 디스플레이 설정</translation>
 <translation id="3603385196401704894">프랑스어(캐나다)</translation>
 <translation id="3606220979431771195">터키어-F</translation>
 <translation id="3619115746895587757">카푸치노</translation>
+<translation id="3649256019230929621">창 최소화</translation>
 <translation id="3678559383040232393">몰타어 키보드</translation>
 <translation id="3801082500826908679">페로스어</translation>
 <translation id="3809272675881623365">토끼</translation>
@@ -95,6 +102,7 @@
 <translation id="3825863595139017598">몽골어 키보드</translation>
 <translation id="3833761542219863804">음역(mausam → ਮੌਸਮ)</translation>
 <translation id="383652340667548381">세르비아어</translation>
+<translation id="385051799172605136">뒤로</translation>
 <translation id="3855472144336161447">독일어 Neo 2</translation>
 <translation id="3858678421048828670">이탈리아어 키보드</translation>
 <translation id="3910699493603749297">크메르어 키보드</translation>
@@ -144,6 +152,7 @@
 <translation id="5218183485292899140">프랑스어(스위스)</translation>
 <translation id="5241298539944515331">베트남어 키보드(VIQR)</translation>
 <translation id="5257456363153333584">잠자리</translation>
+<translation id="5316716239522500219">모니터 미러</translation>
 <translation id="5319782540886810524">라트비아어 키보드</translation>
 <translation id="5323213332664049067">남미 언어</translation>
 <translation id="5402367795255837559">점자</translation>
@@ -166,14 +175,18 @@
 <translation id="5819442873484330149">한글 세벌식(최종)</translation>
 <translation id="5838825566232597749">미국 워크맨(국제)</translation>
 <translation id="5892290200158927959">프랑스어 BÉPO 키보드</translation>
+<translation id="5928303187149237472">화면 해상도 변경</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">남미 언어 키보드</translation>
 <translation id="6012987430370760224">마라티어 키보드(음역 방식)</translation>
+<translation id="6022924867608035986">검색창 텍스트 삭제</translation>
 <translation id="60357267506638014">체코어 QWERTY</translation>
 <translation id="6054173164583630569">프랑스어 키보드</translation>
 <translation id="6111770213269631447">음역(namaskar → নমস্কার)</translation>
+<translation id="6129953537138746214">공백</translation>
 <translation id="6164412158936057769">나비</translation>
 <translation id="6170470584681422115">샌드위치</translation>
+<translation id="6185696379715117369">페이지 위로</translation>
 <translation id="6264347891387618177">음역(selam → ሰላም)</translation>
 <translation id="6305012486838822927">라오어 키보드</translation>
 <translation id="6339034549827494595">러시아 표음식(AATSEEL) 키보드</translation>
@@ -186,6 +199,8 @@
 <translation id="6505918941256367791">타밀어 키보드(InScript)</translation>
 <translation id="6509122719576673235">노르웨이어</translation>
 <translation id="6650726141019353908">분홍 나비</translation>
+<translation id="671928215901716392">화면 잠금</translation>
+<translation id="6727005317916125192">이전 창</translation>
 <translation id="6760765581316020278">베트남어 키보드(VNI)</translation>
 <translation id="6795884519221689054">판다</translation>
 <translation id="6808193438228982088">여우</translation>
@@ -201,6 +216,7 @@
 <translation id="6939777852457331078">미국 워크맨 키보드</translation>
 <translation id="6970230597523682626">불가리아어</translation>
 <translation id="6981982820502123353">접근성</translation>
+<translation id="7025325401470358758">다음 창</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">음역(salam → ሰላም)</translation>
 <translation id="7172053773111046550">에스토니아어 키보드</translation>
@@ -214,11 +230,13 @@
 <translation id="7434823369735508263">영어(영국식) 드보락 키보드</translation>
 <translation id="7460898608667578234">우크라이나어</translation>
 <translation id="7474889694310679759">캐나다 영어 키보드</translation>
+<translation id="7500462265946853476">페이지 및 웹브라우저</translation>
 <translation id="751507702149411736">벨로루시어</translation>
 <translation id="7547811415869834682">네덜란드어</translation>
 <translation id="7603724359189955920">격자</translation>
 <translation id="770015031906360009">그리스어</translation>
 <translation id="7706319470528945664">포르투갈어 키보드</translation>
+<translation id="7724603315864178912">잘라내기</translation>
 <translation id="7774365994322694683">새</translation>
 <translation id="7825423931463735974">타밀어 키보드(Tamil99)</translation>
 <translation id="7853966320808728790">프랑스어 BÉPO</translation>
@@ -248,6 +266,7 @@
 <translation id="8437209419043462667">영어(미국)</translation>
 <translation id="8467473010914675605">한국어 입력 방법</translation>
 <translation id="8477649328507734757">회전</translation>
+<translation id="8487678622945914333">확대</translation>
 <translation id="8521441079177373948">영어(영국)</translation>
 <translation id="8551494947769799688">라트비아어</translation>
 <translation id="8561206103590473338">코끼리</translation>
@@ -258,6 +277,7 @@
 <translation id="8803496343472038847">러시아어 표음식 키보드</translation>
 <translation id="8808686172382650546">고양이</translation>
 <translation id="885381502874625531">벨라루스어 키보드</translation>
+<translation id="88986195241502842">페이지 아래로</translation>
 <translation id="8900820606136623064">헝가리어</translation>
 <translation id="8901822611024316615">체코어 QWERTY 키보드</translation>
 <translation id="8919081441417203123">덴마크어</translation>

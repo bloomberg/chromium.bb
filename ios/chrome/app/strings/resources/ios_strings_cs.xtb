@@ -39,6 +39,7 @@
 <translation id="1545749641540134597">Naskenovat QR kód</translation>
 <translation id="1580783302095112590">E-mail byl odeslán.</translation>
 <translation id="1612730193129642006">Zobrazit mřížku karet</translation>
+<translation id="1644574205037202324">Historie</translation>
 <translation id="1646446875146297738">Nastavení „Do Not Track“ (Nesledovat) znamená, že k vašemu provozu při prohlížení bude přidán speciální požadavek. Efekt tohoto požadavku však závisí na tom, zda na něj webové stránky reagují a jak jej interpretují.
 
 Některé webové stránky na tento požadavek mohou reagovat například tím, že při zobrazování reklam nebudou používat informace o tom, které jiné weby jste navštívili. Mnohé weby budou vaše údaje o prohlížení nadále sbírat a používat – např. za účelem zlepšení zabezpečení, poskytování obsahu, služeb, reklam a doporučení na svých webových stránkách a generování přehledových statistik. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
@@ -249,6 +250,7 @@ Funkce Handoff musí být povolena také v Nastavení v sekci Obecné a zaříze
 <translation id="5871497086027727873">Přesunuta 1 položka</translation>
 <translation id="5911030830365207728">Překladač Google</translation>
 <translation id="5916664084637901428">Zapnuto</translation>
+<translation id="5938160824633642847">Zařízení je téměř plné. Uvolněte paměť a zkuste to znovu.</translation>
 <translation id="5948291296578561264">Toto umožňuje ukládat fotky do vaší knihovny fotek.</translation>
 <translation id="5955891643922670672">Zobrazuje se offline verze</translation>
 <translation id="5964480694698977962">Vytvořit novou anonymní kartu</translation>
@@ -289,6 +291,7 @@ Funkce Handoff musí být povolena také v Nastavení v sekci Obecné a zaříze
 
 Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro synchronizaci. Chcete-li zahájit synchronizaci, zadejte ji.</translation>
 <translation id="6418346271604475326">Příprava souboru PDF</translation>
+<translation id="6434591244308415567">Došlo k chybě, zkuste to později.</translation>
 <translation id="6445051938772793705">Země</translation>
 <translation id="6445981559479772097">Zpráva odeslána</translation>
 <translation id="6464071786529933911">Otevřít v nové anonymní kartě</translation>
@@ -299,6 +302,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="6657585470893396449">Heslo</translation>
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6713747756340119864">Aplikace od Googlu</translation>
+<translation id="6730682669179532099">Hesla se nepodařilo exportovat</translation>
 <translation id="6762156594045689028">Chcete-li toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<ph name="END_LINK" />.</translation>
 <translation id="6780034285637185932">PSČ</translation>
 <translation id="6785453220513215166">Odesílání zprávy o selhání...</translation>
@@ -326,6 +330,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="7203585745079012652">Vyslovovat odpovědi</translation>
 <translation id="722055596168483966">Přizpůsobení služeb Google</translation>
 <translation id="7272437679830969316">Vaši totožnost nelze ověřit. Heslo nebylo zkopírováno.</translation>
+<translation id="7291368939935408496">Příprava hesel…</translation>
 <translation id="7336264872878993241">Staženo <ph name="PERCENT" /> %</translation>
 <translation id="7346909386216857016">Dobře, rozumím</translation>
 <translation id="7400418766976504921">Adresa URL</translation>

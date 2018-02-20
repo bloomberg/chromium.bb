@@ -25,7 +25,6 @@
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME" /> daripada vendor <ph name="VENDOR_ID" /> (nombor siri <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3561217442734750519">Nilai input untuk kunci persendirian mestilah laluan yang sah.</translation>
 <translation id="388442998277590542">Tidak dapat memuatkan halaman pilihan '<ph name="OPTIONS_PAGE" />'.</translation>
-<translation id="3978916109400437922">"<ph name="APP_NAME" />" Meminta Akses kepada Salah Satu Peranti Anda</translation>
 <translation id="3984413272403535372">Ralat semasa menandatangani sambungan.</translation>
 <translation id="4115165561519362854">Pentadbir mesin ini memerlukan <ph name="EXTENSION_NAME" /> untuk mempunyai versi minimum <ph name="EXTENSION_VERSION" />. Ia tidak dapat didayakan sehingga ia telah dikemas kini kepada versi itu (atau lebih tinggi).</translation>
 <translation id="4233778200880751280">Tidak dapat memuatkan halaman perihal '<ph name="ABOUT_PAGE" />'.</translation>
@@ -35,11 +34,9 @@
 <translation id="5026754133087629784">Paparan Web: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5098647635849512368">Tidak dapat mencari laluan mutlak ke direktori ke pek.</translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
-<translation id="5387167377635374680">"<ph name="APP_NAME" />" meminta akses kepada salah satu peranti anda</translation>
 <translation id="5436430103864390185">Tetingkap berbentuk tidak disokong.</translation>
 <translation id="5456409301717116725">Sambungan ini merangkumi fail utama ' <ph name="KEY_PATH" /> '. Anda mungkin tidak mahu melakukannya.</translation>
 <translation id="5486326529110362464">Nilai input untuk kekunci peribadi  mesti wujud.</translation>
-<translation id="5550192259173147518">"<ph name="APP_NAME" />" Meminta Akses kepada Satu atau Beberapa Peranti Anda</translation>
 <translation id="5627523580512561598">sambungan <ph name="EXTENSION_NAME" /></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">Pentadbir mesin ini memerlukan <ph name="EXTENSION_NAME" /> dipasang. Sambungan ini tidak boleh dinyahpasang.</translation>
@@ -49,7 +46,7 @@
 <translation id="6322279351188361895">Gagal untuk membaca kunci persendirian.</translation>
 <translation id="6391538222494443604">Direktori input mesti wujud.</translation>
 <translation id="641087317769093025">Tidak boleh menyahzip sambungan</translation>
-<translation id="6507723423832731189">"<ph name="APP_NAME" />" meminta akses kepada satu atau beberapa peranti anda</translation>
+<translation id="6542618148162044354">"<ph name="APP_NAME" />" meminta akses kepada satu atau beberapa peranti anda.</translation>
 <translation id="657064425229075395">Tidak dapat memuatkan skrip latar belakang '<ph name="BACKGROUND_SCRIPT" />'.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> daripada <ph name="VENDOR_NAME" /> (nombor siri <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Tidak dapat mencipta direktori untuk menyahzip: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -67,6 +64,7 @@
 <translation id="8636666366616799973">Pakej adalah tidak sah. Butiran: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">Sambungan ini gagal mengubah hala permintaan rangkaian ke <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> kerana sambungan lain (<ph name="EXTENSION_NAME" />) mengubah halanya ke <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Penyahpadat Sambungan</translation>
+<translation id="8761756413268424715">"<ph name="APP_NAME" />" meminta akses kepada salah satu peranti anda:</translation>
 <translation id="8825366169884721447">Sambungan ini gagal mengubah suai pengatas permintaan "<ph name="HEADER_NAME" />" untuk permintaan rangkaian kerana ubah suai tersebut bercanggah dengan sambungan lain (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Kunci persendirian untuk sambungan yang dinyatakan telah wujud. Gunakan semula kunci tersebut atau padamkannya dahulu.</translation>
 <translation id="907841381057066561">Gagal untuk mencipta fail zip sementara semasa pembungkusan.</translation>

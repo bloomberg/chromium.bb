@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">Kan ikke lese privatnøkkelen.</translation>
 <translation id="6391538222494443604">Inndatakatalogen må eksistere.</translation>
 <translation id="641087317769093025">Kunne ikke pakke ut utvidelsen</translation>
+<translation id="6542618148162044354">«<ph name="APP_NAME" />» ber om tilgang til én eller flere av enhetene dine:</translation>
 <translation id="657064425229075395">Kunne ikke laste inn bakgrunnsskriptet «<ph name="BACKGROUND_SCRIPT" />».</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> fra <ph name="VENDOR_NAME" /> (serienummer <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Kunne ikke opprette katalog for utpakking: «<ph name="DIRECTORY_PATH" />»</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">Pakken er ugyldig. Detaljer: <ph name="ERROR_MESSAGE" />.</translation>
 <translation id="8670869118777164560">Denne utvidelsen kunne ikke viderekoble en nettverksforespørsel til <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> fordi en annen utvidelse (<ph name="EXTENSION_NAME" />) viderekoblet den til <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Extension Unpacker</translation>
+<translation id="8761756413268424715">«<ph name="APP_NAME" />» ber om tilgang til én av enhetene dine:</translation>
 <translation id="8825366169884721447">Denne utvidelsen kunne ikke endre forespørselsoverskriften «<ph name="HEADER_NAME" />» i en nettverksforespørsel fordi endringen kom i konflikt med en annen utvidelse (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Det finnes allerede en privatnøkkel for det angitte etternavnet. Bruk denne nøkkelen eller slett den.</translation>
 <translation id="907841381057066561">Oppretting av midlertidig komprimert fil under pakkingen mislyktes.</translation>

@@ -27,6 +27,7 @@
       Kung nakatakda ang patakarang ito, palaging ipapakita ang screen sa pag-sign in sa lokal na ibinigay ng unang value ng patakarang ito (tinukoy ang patakaran bilang listahan para sa forward compatibility).  Kung hindi nakatakda ang patakarang ito o nakatakda sa isang walang lamang listahan, ipapakita ang screen sa pag-sign in sa lokal ng huling session ng user.  Kung nakatakda ang patakarang ito sa value na isang hindi wastong lokal, ipapakita ang screen sa pag-sign in sa isang fallback na lokal (kasalukuyang en-US).</translation>
 <translation id="1062011392452772310">I-enable ang malayuang pagpapatotoo para sa device</translation>
 <translation id="1062407476771304334">Palitan</translation>
+<translation id="109166998561583554">Trigger sa pag-flag ng account na may nakompromisong proteksyon sa password</translation>
 <translation id="1093082332347834239">Kung naka-enable ang setting na ito, ang host ng remote na tulong ay patatakbuhin sa isang prosesong may mga pahintulot ng <ph name="UIACCESS_PERMISSION_NAME" />.  Bibigyang-daan nito ang mga remote na user upang makipag-ugnayan sa mga elevated window sa desktop ng lokal na user.
 
           Kung naka-disable o hindi naka-configure ang setting na ito, ang host ng remote na tulong ay patatakbuhin sa konteksto ng user at hindi magagawa ng mga remote na user na makipag-ugnayan sa mga elevated window sa desktop.</translation>
@@ -88,6 +89,7 @@
 
       Kung itatakda ang patakarang ito sa false, hindi papayagan ng <ph name="PRODUCT_NAME" /> na magsimula ang mga profile ng bisita.</translation>
 <translation id="1363275621236827384">I-enable ang mga query sa Quirks Server para sa mga profile sa hardware</translation>
+<translation id="1387596372902085462">Kung ie-enable ang pagtitiwala sa Legacy PKI Infrastructure ng Symantec Corporation</translation>
 <translation id="1393485621820363363">Mga naka-enable na printer ng device ng enterprise</translation>
 <translation id="1397855852561539316">Default ng iminumungkahing URL ng provider ng paghahanap</translation>
 <translation id="1426410128494586442">Oo</translation>
@@ -98,6 +100,7 @@
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakaran ng 'DefaultJavaScriptSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
 <translation id="1456822151187621582">Windows (mga <ph name="PRODUCT_OS_NAME" /> client):</translation>
+<translation id="1457305643416399820">Naka-off ang pag-flag ng account na may nakompromisong proteksyon sa password</translation>
 <translation id="1464848559468748897">Kontrolin ang gawi ng user sa isang multiprofile session sa mga <ph name="PRODUCT_OS_NAME" /> device.
 
       Kung itinakda ang patakarang ito sa 'MultiProfileUserBehaviorUnrestricted', ang user ay maaaring maging pangunahin o pangalawang user sa isang multiprofile session.
@@ -205,6 +208,7 @@
       Dapat itakda ang patakaran sa isang URL kung saan maaaring i-download ng <ph name="PRODUCT_OS_NAME" /> ang Mga Tuntunin ng Serbisyo. Dapat ay plain text ang Mga Tuntunin ng Serbisyo, na ihahatid bilang MIME type text/plain. Hindi pinapayagan ang markup.</translation>
 <translation id="1750315445671978749">I-block ang lahat ng pag-download</translation>
 <translation id="1781356041596378058">Kinokontrol ng patakarang ito ang access sa Mga Opsyon ng Developer sa Android. Kung itatakda mo ang patakarang ito sa true, hindi maa-access ng mga user ang Mga Opsyon ng Developer. Kung itatakda mo ang patakarang ito sa false o iiwan itong hindi nakatakda, maa-access ng mga user ang Mga Opsyon ng Developer sa pamamagitan ng pag-tap nang pitong beses sa app na Mga setting ng Android.</translation>
+<translation id="1797233582739332495">Magpakita sa user ng umuulit na prompt na nagsasaad na kinakailangan ang muling paglulunsad</translation>
 <translation id="1803646570632580723">Listahan ng mga na-pin na app na ipapakita sa launcher</translation>
 <translation id="1808715480127969042">I-block ang cookies sa mga site na ito</translation>
 <translation id="1827523283178827583">Gumamit ng mga nakapirming proxy server</translation>
@@ -283,11 +287,11 @@
 
           Kung hindi itatakda ang patakarang ito, gagamitin ang lahat ng apat na scheme.</translation>
 <translation id="2067011586099792101">I-block ang access sa mga site na nasa labas ng mga pack ng nilalaman</translation>
-<translation id="2075030897098958514">Kinokontrol kung naka-enable ang NTLMv2.
+<translation id="2070270043919235595">Nag-aabiso sa mga user na dapat muling ilunsad ang <ph name="PRODUCT_NAME" /> upang malapat ang nakabinbing pag-update.
 
-          Sinusuportahan ng lahat ng kamakailang bersyon ng mga server ng Samba at Windows ang NTLMv2. Dapat lang itong i-disable para sa backwards compatibility at binabawasan nito ang seguridad ng pag-authenticate.
+      Ine-enable ng setting ng patakarang ito ang mga notification upang ipaalam sa user na inirerekomenda o kinakailangan ang muling paglulunsad ng browser. Kung hindi nakatakda, ipapaalam ng <ph name="PRODUCT_NAME" /> sa user na kinakailangan ang muling paglulunsad sa pamamagitan ng maliliit na pagbabago sa menu nito. Kung nakatakda sa 'Inirerekomenda,' magpapakita ng umuulit na babala sa user na inirerekomenda ang muling paglulunsad. Maaaring i-dismiss ng user ang babalang ito upang ipagpaliban ang muling paglulunsad. Kung nakatakda sa 'Kinakailangan,' magpapakita ng umuulit na babala sa user na nagsasaad na sapilitang magsasagawa ng muling paglulunsad ng browser kapag lumampas na sa panahon ng notification. Bilang default, may pitong araw ang panahong ito at maaari itong i-configure sa pamamagitan ng setting ng patakarang <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
-          Ang default na value kapag hindi tinukoy ang patakarang ito ay kasalukuyang false para sa backwards compatibility, ngunit magiging true ito sa hinaharap.</translation>
+      Ire-restore ang session ng user pagkatapos ng muling paglulunsad.</translation>
 <translation id="2077129598763517140">Gamitin ang pagpapabilis ng hardware kapag available</translation>
 <translation id="2077273864382355561">Delay ng pag-off ng screen kapag tumatakbo gamit ang power ng baterya</translation>
 <translation id="2082205219176343977">I-configure ang minimum na pinapayagang bersyon ng Chrome para sa device.</translation>
@@ -332,6 +336,9 @@
           Kung naka-configure ang setting na ito, hihilingin sa mga user na gumagamit ng mabilisang pag-unlock na ilagay ang password nila sa lock screen depende sa setting na ito.
 
           Kung hindi naka-configure ang setting na ito, hihilingin sa mga user na gumagamit ng mabilisang pag-unlock na ilagay ang password nila sa lock screen araw-araw.</translation>
+<translation id="2188722565665306629">Nagbibigay-daan sa iyong itakda ang yugto ng panahon kung kailan ipapakita ang mga notification ng muling paglulunsad ng <ph name="PRODUCT_NAME" /> upang malapat ang nakabinbing pag-update.
+
+      Magagamit ang setting ng patakarang ito upang makontrol ang yugto ng panahon, sa mga millisecond, kung kailan unti-unting sasabihan ang user na dapat muling ilunsad ang <ph name="PRODUCT_NAME" /> (o dapat i-restart ang <ph name="PRODUCT_OS_NAME" />) para sa pag-update. Sa loob ng yugto ng panahong ito, paulit-ulit na sasabihan ang user tungkol sa pangangailangang mag-update batay sa setting ng patakarang <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Kung hindi nakatakda, ang default na panahong 604800000 millisecond (isang linggo) ang gagamitin.</translation>
 <translation id="2194470398825717446">Hindi na ginagamit ang patakarang ito sa M61, pakigamit na lang ang EcryptfsMigrationStrategy.
 
       Tinutukoy kung paano dapat kumilos ang isang device na naipadala nang may ecryptfs at kinakailangang lumipat sa ext4 na pag-encrpyt.
@@ -401,6 +408,7 @@
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultNotificationsSetting' kung hindi ito nakatakda, o kung hindi man ay sa personal na configuration ng user.</translation>
 <translation id="2386362615870139244">Payagan ang mga lock ng pagpapagana ng screen</translation>
+<translation id="2411817661175306360">Naka-off ang babala ng proteksyon sa password</translation>
 <translation id="2411919772666155530">I-block ang mga notification sa mga site na ito</translation>
 <translation id="2418507228189425036">Dini-disable ang pagse-save ng history ng browser sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user sa pagbabago sa setting na ito.
 
@@ -533,6 +541,13 @@
           Kinikilala lamang ang patakarang ito kung pinagana ang patakaran ng 'DefaultSearchProviderEnabled.'</translation>
 <translation id="2682225790874070339">Dini-disable ang Drive sa <ph name="PRODUCT_OS_NAME" /> Files app</translation>
 <translation id="268577405881275241">Ine-enable ang feature na proxy ng compression ng data</translation>
+<translation id="2726613915126661822">Nagbibigay-daan sa iyong pamahalaan kung papayagan ang mga virtual machine na tumakbo sa Chrome OS.
+
+      Kung nakatakda sa True ang patakaran, papayagan ang device na magpatakbo ng mga virtual machine.
+      Kung nakatakda sa False ang patakaran, hindi papayagan ang device na magpatakbo ng mga virtual machine.
+      Kapag ginawang False ang patakarang ito, ilalapat ito sa pagsisimula ng mga bagong virtual machine ngunit hindi nito isa-shut down ang mga tumatakbo nang virtual machine.
+      Kapag hindi nakatakda ang patakarang ito sa isang pinamamahalaang device, hindi papayagan ang device na magpatakbo ng mga virtual machine.
+      Pinapayagan ang mga hindi pinamamahalaang device na magpatakbo ng mga virtual machine.</translation>
 <translation id="2731627323327011390">I-disable ang paggamit ng mga certificate ng <ph name="PRODUCT_OS_NAME" /> sa mga ARC app</translation>
 <translation id="2742843273354638707">Itago ang Chrome Web Store app at link ng footer mula sa Page ng Bagong Tab at sa app launcher ng <ph name="PRODUCT_OS_NAME" />.
 
@@ -755,6 +770,7 @@
           Opsyonal ang patakarang ito. Kung hindi nakatakda, walang ibibigay na pahina ng bagong tab.
 
           Gagamitin lang ang patakarang ito kung naka-enable ang patakarang 'DefaultSearchProviderEnabled.'</translation>
+<translation id="3465852069254497664">Abisuhan ang user na inirerekomenda o kinakailangang muling ilunsad ang browser</translation>
 <translation id="346731943813722404">Tinutukoy kung dapat lang magsimulang tumakbo ang mga pagkaantala sa pamamahala sa power at ang limitasyon sa haba ng session pagkatapos makita ang unang aktibidad ng user sa isang session.
 
           Kung nakatakda ang patakarang ito sa True, hindi magsisimulang tumakbo ang mga pagkaantala sa pamamahala sa power management at ang limitasyon sa haba ng session hanggang makita ang unang aktibidad ng user sa isang session.
@@ -774,7 +790,6 @@
 <translation id="3528000905991875314">Paganahin ang mga kahaliling pahina ng error</translation>
 <translation id="3547954654003013442">Mga setting ng proxy</translation>
 <translation id="3577251398714997599">Setting ng mga ad para sa mga site na may mga nakakasagabal na ad</translation>
-<translation id="3587482841069643663">Lahat</translation>
 <translation id="3591584750136265240">I-configure ang gawi sa pagpapatotoo sa pag-log in</translation>
 <translation id="3627678165642179114">Paganahin o huwag paganahin ang spell checking na serbisyo sa web</translation>
 <translation id="3646859102161347133">Itakda ang uri ng magnifier sa screen</translation>
@@ -789,6 +804,7 @@
 <translation id="3711895659073496551">Suspendihin</translation>
 <translation id="3736879847913515635">I-enable ang magdagdag ng tao sa user manager</translation>
 <translation id="3737544779868348650">Hostname ng network ng device</translation>
+<translation id="3740754010292550733">Itakda ang panahon ng mga notification ng muling paglulunsad para sa pag-update</translation>
 <translation id="3750220015372671395">I-block ang pagbuo ng key sa mga site na ito</translation>
 <translation id="3756011779061588474">I-block ang mode ng developer</translation>
 <translation id="3758089716224084329">Binibigyang-daan kang tukuyin ang proxy server na ginamit ng <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang mga setting ng proxy.
@@ -989,16 +1005,6 @@
 
           Iginagalang lang ang patakarang ito kung naka-enable ang patakarang 'DefaultSearchProviderEnabled.'</translation>
 <translation id="4285674129118156176">Nagpapahintulot sa mga hindi affiliate na user na gamitin ang ARC</translation>
-<translation id="4294280661005713627">Nagtatakda ng target na bersyon para sa Mga Awtomatikong Pag-update.
-
-      Tinutukoy ang prefix ng isang target na bersyon kung saan dapat mag-update ang <ph name="PRODUCT_OS_NAME" />. Kung ang device ay nagpapatakbo ng bersyon na mas luma sa tinukoy na prefix, mag-a-update ito sa pinakabagong bersyon gamit ang nasabing prefix. Kung nasa mas bagong bersyon na ang device, wala itong epekto (ibig sabihin, walang gagawing pag-downgrade) at mananatili ang device sa kasalukuyang bersyon. Ang format ng prefix ay gumagana ayon sa mga bahagi gaya ng ipinapakita sa sumusunod na halimbawa:
-
-      "" (o hindi naka-configure): mag-update sa pinakabagong bersyon na available.
-      "1412.": mag-update sa anumang mas maliit na bersyon ng 1412 (hal. 1412.24.34 o 1412.60.2)
-      "1412.2.": mag-update sa anumang mas maliit na bersyon ng 1412.2 (hal 1412.2.34 o 1412.2.2)
-      "1412.24.34": mag-update sa partikular na bersyon lang na ito
-
-      Babala: Hindi inirerekomenda na i-configure ang mga paghihigpit ng bersyon dahil maaari nitong pigilan ang pagtanggap ng mga user ng mga update sa software at kritikal na pag-aayos sa seguridad. Maaaring malagay sa peligro ang mga user kung paghihigpitan ang mga update sa isang partikular na prefix ng bersyon.</translation>
 <translation id="4298509794364745131">Tumutukoy ng listahan ng mga app na maaaring i-enable bilang app sa paggawa ng tala sa lock screen ng <ph name="PRODUCT_OS_NAME" />.
 
       Kung naka-enable sa lock screen ang piniling app sa paggawa ng tala, maglalaman ang lock screen ng elemento ng UI para sa paglulunsad ng piniling app sa paggawa ng tala.
@@ -1022,6 +1028,13 @@
 <translation id="4347908978527632940">Kung true at ang user ay isang pinangangasiwaang user, maaaring i-query ng iba pang mga Android app ang mga paghihigpit ng user sa web sa pamamagitan ng isang content provider.
 
           Kung false o hindi naka-set, walang ibibigay na impormasyon ang content provider.</translation>
+<translation id="435461861920493948">May listahan ng mga pattern na ginagamit upang kontrolin ang visiblity ng mga account sa <ph name="PRODUCT_NAME" />.
+
+      Ihahambing ang bawat Google account sa device sa mga pattern na naka-store sa patakarang ito upang matukoy ang visibility ng account sa <ph name="PRODUCT_NAME" />. Makikita ang account kung tugma ang pangalan nito sa anumang pattern sa listahan. Kung hindi, itatago ang account.
+
+      Gamitin ang wildcard character na '*' upang itugma ang zero o higit pang arbitrary character. Ang escape character ay '\', kaya upang itugma ang mga aktwal na character na '*' o '\', maglagay ng '\' sa unahan ng mga ito.
+
+      Kung hindi nakatakda ang patakarang ito, makikita ang lahat ng Google account sa device sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="436581050240847513">I-ulat ang mga interface ng network ng device</translation>
 <translation id="4372704773119750918">Hindi pinapayagan ang enterprise user na maging bahagi ng multiprofile (pangunahin o pangalawa)</translation>
 <translation id="4377599627073874279">Payagan ang lahat ng mga site na ipakita ang lahat ng mga larawan</translation>
@@ -1094,6 +1107,7 @@
 
           Para sa kumpletong paglalarawan ng mga posibleng setting at istruktura ng patakarang ito, pakibisita ang https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
+<translation id="4554651132977135445">loopback processing mode ng patakaran ng user</translation>
 <translation id="4555850956567117258">I-enable ang malayuang pagpapatotoo para sa user</translation>
 <translation id="4557134566541205630">URL ng pahina ng bagong tab ng default na search provider</translation>
 <translation id="4600786265870346112">I-enable ang malaking cursor</translation>
@@ -1382,6 +1396,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Tandaan na kung sinusuportahan ng platform ang mga notification ng patakaran, itatakda ang pagkaantala ng pag-refresh sa 24 na oras (nang hindi pinapansin ang lahat ng default at value ng patakarang ito) dahil inaasahan na ang mga notification ng patakaran ay magpipilit ng awtomatikong pag-refresh sa tuwing magbabago ang patakaran, kaya hindi na kailangang madalas na mag-refresh.</translation>
 <translation id="5530347722229944744">I-block ang mga potensyal na mapanganib na pag-download</translation>
+<translation id="5530586312297447592">Ang pag-flag ng account na may nakompromisong proteksyon sa password ay nati-trigger ng muling paggamit ng password sa page na may phishing</translation>
 <translation id="5535973522252703021">Whitelist ng server ng paglalaan ng Kerberos</translation>
 <translation id="555077880566103058">Pahintulutan ang lahat ng site na awtomatikong patakbuhin ang plugin na <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Walang epekto ang patakarang ito sa mga Android app.</translation>
@@ -1507,6 +1522,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung itatakda ang patakarang ito, maaaring palitan ito nang pansamantala ng mga user sa pamamagitan ng pag-e-enable o pagdi-disable ng malaking cursor. Gayunpaman, hindi mananaig ang napili ng user at mababalik ang default sa tuwing ipapakitang muli ang screen sa pag-login o kung manatiling idle ang user sa screen sa pag-login sa loob ng isang minuto.
 
           Kung hahayaang hindi nakatakda ang patakarang ito, madi-disable ang malaking cursor kapag unang ipinakita ang screen sa pag-login. Maaaring i-enable o i-disable ng mga user ang malaking cursor anumang oras at mananatili ang katayuan nito sa screen sa pag-login sa pagitan ng mga user.</translation>
+<translation id="5929855945144989709">Payagan ang mga device na magpatakbo ng mga virtual machine sa Chrome OS</translation>
 <translation id="5932767795525445337">Maaari ding gamitin ang patakarang ito upang mag-pin ng mga Android app.</translation>
 <translation id="5936622343001856595">Pinupuwersa na gawin ang mga query sa Paghahanap sa Web ng Google nang nakatakda ang SafeSearch sa aktibo at pinipigilan ang mga user na baguhin ang setting na ito.
 
@@ -1521,17 +1537,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="5983708779415553259">Default na pagkilos para sa mga site na wala sa anumang pack ng nilalaman</translation>
 <translation id="5997543603646547632">Gamitin ang 24 na oras na orasan bilang default</translation>
 <translation id="5997846976342452720">Tumutukoy kung dapat i-disable ang finder ng plugin (hindi na ginagamit)</translation>
-<translation id="6005179188836322782">Ine-enable ang feature na Ligtas na Pag-browse ng <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang setting na ito.
-
-      Kung ie-enable mo ang setting na ito, palaging magiging aktibo ang Ligtas na Pag-browse.
-
-      Kung idi-disable mo ang setting na ito, hindi magiging aktibo ang Ligtas na Pag-browse.
-
-      Kung ie-enable o idi-disable ang setting na ito, hindi mababago o mao-override ng mga user ang setting na "I-enable ang proteksyon sa phishing at malware" sa <ph name="PRODUCT_NAME" />.
-
-      Kung hahayaang hindi nakatakda ang patakarang ito, mae-enable ito ngunit mababago ito ng user.
-
-      Tingnan ang https://developers.google.com/safe-browsing para sa higit pang impormasyon tungkol sa Ligtas na Pag-browse.</translation>
 <translation id="6017568866726630990">Ipakita ang dialog ng system sa pag-print sa halip na ang preview sa pag-print.
 
       Kapag pinagana ang setting na ito, bubuksan ng <ph name="PRODUCT_NAME" /> ang dialog ng system sa pag-print sa halip na ang built-in na preview sa pag-print kapag humihiling ang isang user na mag-print ng isang pahina.
@@ -1586,6 +1591,17 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Upang mag-pin ng mga app sa launcher, tingnan ang PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Instant na URL ng default na provider ng paghahanap</translation>
+<translation id="6029950823657977211">
+      TANDAAN: Pang-eksperimento ang patakarang ito at maaaring lumabag sa functionality!
+      Nalalapat ang patakarang ito sa screen ng pag-sign in. Pakitingnan din ang patakarang 'IsolateOrigins' na nalalapat sa session ng user. Inirerekomendang itakda ang dalawang patakaran sa iisang value.
+      Kung naka-enable ang patakaran, tatakbo sa sarili nitong proseso ang bawat isa sa mga pinangalanang pinagmulan sa isang
+      comma-separated list. Ia-isolate din nito ang
+      mga pinagmulang pinangalanan ng mga subdomain; hal., kapag tinukoy ang https://example.com/,
+      maa-isolate din ang https://foo.example.com/ bilang bahagi ng
+      https://example.com/ site.
+      Kung naka-disable ang patakaran, magkakabisa ang logic sa pamamahala ng proseso ng Pag-isolate ng Bawat Site.
+      Kung hindi na-configure ang patakaran, gagamitin ang mga default na setting ng pag-isolate ng site ng platform para sa screen ng pag-sign in.
+      </translation>
 <translation id="603410445099326293">Mga parameter para sa URL ng mungkahi na ginagamit ang POST</translation>
 <translation id="6036523166753287175">Paganahin ang firewall traversal mula sa host ng malayuang pag-access</translation>
 <translation id="6070667616071269965">Mga layout ng keyboard sa screen ng pag-sign in ng device</translation>
@@ -1755,6 +1771,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung maiiwang hindi nakatakda ang patakaran na ito, mae-enable ang panghuhula ng network ngunit magagawa ng user na baguhin ito.</translation>
 <translation id="6658245400435704251">Tinutukoy ang bilang ng mga segundo kung kailan maaaring random na antalahin ng device ang pag-download ng isang update mula sa panahon kung kailan unang na-push out ang update sa server. Maaaring hintayin ng device ang isang bahagi ng panahong ito sa pamamagitan ng oras sa orasan at ng mga natitirang bahagi sa pamamagitan ng dami ng mga pagtingin ng update. Sa anumang sitwasyon, ang scatter ay nililimitahan sa itaas sa iisang parehong tagal ng panahon upang hindi maantala nang matagal ang isang device sa paghihintay na mag-download ng isang update.</translation>
 <translation id="6689792153960219308">Iulat ang status ng hardware</translation>
+<translation id="6698071416141001300">Ang pag-flag ng account na may nakompromisong proteksyon sa password ay nati-trigger ng muling paggamit ng password</translation>
 <translation id="6699880231565102694">Paganahin ang pagpapatotoong may dalawang salik para sa mga host ng malayuang pag-access</translation>
 <translation id="6724842112053619797">Kung ie-enable mo ang setting na ito, ang mga setting na naka-store sa mga profile sa <ph name="PRODUCT_NAME" /> tulad ng mga bookmark, data ng autofill, mga password, atbp. ay ira-write din sa isang file na naka-store sa folder ng profile ng user ng Roaming o sa isang lokasyong tinukoy ng Administrator sa pamamagitan ng patakarang <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Madi-disable ang pag-sync sa cloud kapag na-enable ang patakarang ito.
 
@@ -1762,6 +1779,15 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Dini-disable ng patakarang <ph name="SYNC_DISABLED_POLICY_NAME" /> ang lahat ng pag-synchronize ng data, na nag-o-override sa RoamingProfileSupportEnabled.</translation>
 <translation id="6735701345096330595">Puwersahang ine-enable ang mga wika ng spellcheck</translation>
+<translation id="673699536430961464">Nagbibigay-daan ang setting na ito sa mga user na lumipat ng Google account sa lugar ng content ng window ng kanilang browser pagkatapos nilang mag-sign in sa kanilang <ph name="PRODUCT_OS_NAME" /> device.
+
+      Kung nakatakda sa false ang patakarang ito, hindi papayagan ang pag-sign in sa ibang account mula sa lugar ng content ng hindi Incognito browser.
+
+      Kung hindi nakatakda ang patakarang ito o nakatakda ito sa true, gagamitin ang default na gawi: papayagan ang pag-sign in sa ibang account mula sa lugar ng content ng browser, maliban sa mga account ng bata kung saan iba-block ito para sa hindi Incognito na lugar ng content.
+
+      Kung sakaling hindi dapat payagan ang pag-sign in sa ibang account sa pamamagitan ng Incognito mode, pag-isipang i-block ang mode na iyon gamit ang patakarang IncognitoModeAvailability.
+
+      Tandaang maa-access ng mga user ang mga serbisyo ng Google sa hindi na-authenticate na status sa pamamagitan ng pag-block sa cookies ng mga ito.</translation>
 <translation id="6757438632136860443">Nagbibigay-daan sa iyo na magtakda ng isang listahan ng mga pattern ng url na tumutukoy sa mga site na pinapahintulutang magpatakbo sa plugin na <ph name="FLASH_PLUGIN_NAME" />.
 
           Kung hahayaang hindi nakatakda ang patakarang ito, ang pangkalahatang default na value ang gagamitin para sa lahat ng site na magmumula sa patakarang 'DefaultPluginsSetting' kung nakatakda ito, o kung hindi, sa personal na configuration ng user.</translation>
@@ -1771,6 +1797,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6786967369487349613">Itakda ang direktoryo ng roaming na profile</translation>
 <translation id="6810445994095397827">I-block ang JavaScript sa mga site na ito</translation>
 <translation id="681446116407619279">Mga suportadong scheme ng pagpapatotoo</translation>
+<translation id="6835883744948188639">Magpakita sa user ng umuulit na prompt na nagsasaad na inirerekomenda ang muling paglulunsad</translation>
 <translation id="685769593149966548">Ipatupad ang Mahigpit na Restricted Mode para sa YouTube</translation>
 <translation id="687046793986382807">Itinigil na ang patakarang ito simula noong bersyon 35 ng <ph name="PRODUCT_NAME" />.
 
@@ -2007,6 +2034,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakaran ng 'DefaultPopupsSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
 <translation id="7529144158022474049">Awtomatikong i-update ang scatter factor</translation>
 <translation id="7534199150025803530">Walang epekto ang patakarang ito sa Google Drive app sa Android. Kung gusto mong pigilan ang paggamit ng Google Drive sa pamamagitan ng mga cellular na koneksyon, hindi mo dapat payagan ang pag-install ng Google Drive app sa Android.</translation>
+<translation id="7547549430720182663">I-merge</translation>
 <translation id="7553535237300701827">Kapag itinakda ang patakarang ito, ang daloy ng pagpapatotoo sa impormasyon sa pag-log in ay magiging isa sa mga sumusunod na paraan, depende sa value ng setting:
 
       Kung itatakda sa GAIA, gagawin ang pag-log in sa pamamagitan ng normal na daloy ng pagpapatotoo ng GAIA.
@@ -2129,7 +2157,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Ang pag-iiwan sa patakarang ito na hindi nakatakda ay magdudulot na gagamitin ng <ph name="PRODUCT_NAME" /> ang default na value na 5000 millisecond.</translation>
 <translation id="7841880500990419427">Minimum na bersyon ng TLB na babalikan</translation>
 <translation id="7842869978353666042">I-configure ang mga pagpipilian sa Google Drive</translation>
-<translation id="7843525027689416831">Tinutukoy ang mga flag na dapat ilapat sa <ph name="PRODUCT_NAME" /> kapag nagsimula ito. Inilalapat ang mga flag sa screen ng pag-log in lang. Ang mga flag na sine-set sa pamamagitan ng patakarang ito ay hindi nalilipat sa mga session ng user.</translation>
 <translation id="787125417158068494">Kung nakatakda sa SyncDisabled o hindi naka-configure, hindi available ang mga certificate ng <ph name="PRODUCT_OS_NAME" /> para sa mga ARC app.
 
       Kung nakatakda sa CopyCaCerts, available para sa mga ARC app ang lahat ng CA certificate na may <ph name="WEB_TRUSTED_BIT" /> na na-install ng ONC.</translation>
@@ -2292,9 +2319,17 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
       Kung iiwanang hindi nakatakda o naka-disable ang patakarang ito, gagamitin ang PDF plugin upang magbukas ng mga PDF file maliban na lang kung idi-disable ito ng user.</translation>
 <translation id="8402079500086185021">Palaging Magbukas ng mga PDF file nang external</translation>
 <translation id="8412312801707973447">Kung isinasagawa ang mga online na pagsusuri sa OCSP/CRL</translation>
+<translation id="841977920223099909">Trigger sa babala ng proteksyon sa password</translation>
 <translation id="8424255554404582727">Itakda ang default na pag-rotate ng display, muling ilalapat sa bawat pag-reboot</translation>
 <translation id="8426231401662877819">I-rotate ang screen pakanan nang 90 degrees</translation>
 <translation id="8451988835943702790">Gamitin ang Pahina ng Bagong Tab bilang homepage</translation>
+<translation id="8459216513698220096">Tinutukoy kung naproseso o kung paano naproseso ang patakaran ng user mula sa GPO ng computer.
+
+      Kung nakatakda ang patakaran sa 'Default' o hindi ito nakatakda, mababasa lang ang patakaran ng user mula sa mga GPO ng user (babalewalain ang mga GPO ng computer).
+
+      Kung nakatakda ang patakaran sa 'I-merge,' ime-merge ang patakaran ng user sa mga GPO ng user sa patakaran ng user sa mga GPO ng computer (ang mga GPO ng computer ang pipili).
+
+      Kung nakatakda ang patakaran sa 'Palitan,' papalitan ang patakaran ng user sa mga GPO ng user ng patakaran ng user sa mga GPO ng computer (babalewalain ang mga GPO ng user).</translation>
 <translation id="8465065632133292531">Mga parameter para sa instant na URL na ginagamit ang POST</translation>
 <translation id="847472800012384958">Huwag payagang magpakita ng mga popup ang anumang site</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2343,6 +2378,7 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
           Kung iiwanan mong hindi nakatakda ang patakarang ito, susubukan ng <ph name="PRODUCT_NAME" /> na i-detect kung nasa Intranet ang server, at kung oo ay doon lang ito tutugon sa mga kahilingan ng IWA.  Kung na-detect ang server bilang Internet, babalewalain ng <ph name="PRODUCT_NAME" /> ang mga kahilingan ng IWA mula dito.</translation>
 <translation id="8672321184841719703">Target Auto Update Na Bersyon</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
+<translation id="8685024486845674965">Ang babala ng proteksyon sa password ay nati-trigger ng muling paggamit ng password</translation>
 <translation id="8693243869659262736">Gamitin ang built-in na DNS client</translation>
 <translation id="8704831857353097849">Listahan ng mga hindi pinaganang plugin</translation>
 <translation id="8711086062295757690">Tinutukoy ang keyword, ang shortcut na ginamit sa omnibox upang i-trigger ang paghahanap para sa provider na ito.
@@ -2359,6 +2395,7 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
       Kung pinagana ang setting na ito o hindi nakatakda, maaaring matanggal ang kasaysayan sa pagba-browse at pag-download.
 
       Kung hindi pinagana ang setting na ito, hindi maaaring matanggal ang kasaysayan sa pagba-browse at pag-download.</translation>
+<translation id="8759829385824155666">Mga pinapayagang uri ng pag-encrypt na Kerberos</translation>
 <translation id="8764119899999036911">Tinutukoy kung ang binuong Kerberos SPN ay nakabatay sa canonical na pangalan ng DNS o sa orihinal na pangalang inilagay.
 
           Kung pinagana mo ang setting na ito, lalaktawan ang paghahanap ng CNAME at gagamitin ang pangalan ng server tulad ng inilagay.
@@ -2378,6 +2415,7 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
       Kung hindi naitakda ang patakaran, o naitakda sa false, hindi ma-uulat ang lokasyon.</translation>
 <translation id="8818768076343557335">Hulaan ang mga pagkilos sa network sa anumang network na hindi cellular.
           (Hindi na gagamitin sa 50, aalisin sa 52. Pagkatapos ng 52, kung matatakda ang value 1, ituturing itong 0 - hulaan ang mga pagkilos sa network sa anumang koneksyon sa network.)</translation>
+<translation id="8825782996899863372">Ang babala ng proteksyon sa password ay nati-trigger ng muling paggamit ng password sa page na may phishing</translation>
 <translation id="8828766846428537606">I-configure ang default na home page sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user sa pagbabago nito. Ang mga setting ng home page ng user ay lubos na naka-lock down lamang, kung pinili mo ang home page upang maging ang pahina ng bagong tab, o itakda ito upang maging URL at tumukoy ng URL ng home page. Kung hindi mo tutukuyin ang URL ng home page, maitatakda pa rin ung ser ang home page sa pahina ng bagong tab sa pamamagitan ng pagtukoy sa 'chrome://newtab'.</translation>
 <translation id="8833109046074170275">Pagpapatotoo sa pamamagitan ng default na daloy ng GAIA</translation>
 <translation id="8838303810937202360">Nagka-cache ang <ph name="PRODUCT_OS_NAME" /> ng Mga App at Extension para sa pag-install ng maraming user ng iisang device upang maiwasan ang pagda-download muli para sa bawat user.
@@ -2436,6 +2474,12 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
       Kung itatakda mo ang patakarang ito, hindi ito mababago o mao-override ng mga user.
 
       Walang epekto ang patakarang ito sa kung maaaring mag-configure ng mga printer ang mga user sa mga indibidwal na device.  Nakalaan itong maging dagdag sa pag-configure ng mga indibidwal na user sa mga printer.
+      </translation>
+<translation id="8934944553121392674">Kumokontrol sa kung aling mga printer mula sa <ph name="DEVICE_PRINTERS_POLICY" /> ang available sa mga user.
+
+      Nagtatalaga kung aling patakaran sa pag-access ang gagamitin para sa maramihang pag-configure ng printer. Kung pinili ang <ph name="PRINTERS_ALLOW_ALL" />, ipapakita ang lahat ng printer. Kung pinili ang <ph name="PRINTERS_BLACKLIST" />, gagamitin ang <ph name="DEVICE_PRINTERS_BLACKLIST" /> upang paghigpitan ang access sa mga natukoy na printer.  Kung pinili ang <ph name="PRINTERS_WHITELIST" />, itatalaga lang ng <ph name="DEVICE_PRINTERS_WHITELIST" /> ang mga printer na mapipili.
+
+      Kung hindi nakatakda ang patakaran, ipagpapalagay ang <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="8947415621777543415">I-ulat ang lokasyon ng device</translation>
 <translation id="8951350807133946005">Itakda ang direktoryo ng cache ng disk</translation>
@@ -2517,5 +2561,11 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="930930237275114205">Itakda ang direktoryo ng data ng user ng <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Ine-enable ang pwersahang pag-sign in para sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Itakda ang laki ng cache ng disk</translation>
+<translation id="9775893229076211">Pinapayagan kang kontrolin ang pag-trigger sa pag-flag ng account na may nakompromisong proteksyon sa password. Ang pag-flag ng account na may nakompromisong proteksyon sa password ay nangangahulugang pagbibigay-alam sa Google na nanganganib na ma-hijack ang account na ito.
+
+      Kung nakatakda ang patakarang ito sa 'PasswordProtectionRiskOff,' walang mati-trigger na pag-flag ng account na may nakompromisong proteksyon sa password.
+      Kung nakatakda ang patakarang ito sa 'PasswordProtectionRiskOnPasswordReuse,' mati-trigger ang pag-flag ng account na may nakompromisong proteksyon sa password kapag muling ginamit ng mga user ang mga password sa Google sa anumang hindi naka-whitelist na site.
+      Kung nakatakda ang patakarang ito sa 'PasswordProtectionRiskOnPhishingReuse,' mati-trigger ang pag-flag ng account na may nakompromisong proteksyon sa password kapag muling ginamit ng mga user ang mga password sa Google sa mga phishing site.
+      Kung hinayaang hindi nakatakda ang patakaran, mati-trigger ang pag-flag ng account na may nakompromisong proteksyon sa password kapag muling ginamit ng mga user ang mga password sa Google sa mga phishing site ngunit mababago ito ng user.</translation>
 <translation id="982497069985795632">Ine-enable ang spellcheck</translation>
 </translationbundle>

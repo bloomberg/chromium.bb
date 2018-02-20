@@ -36,6 +36,7 @@
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Следващото заглавие от шесто ниво</translation>
 <translation id="1275718070701477396">Избрано</translation>
+<translation id="1286609444451033486">За превключване натиснете клавиша „търсене“ + интервал.</translation>
 <translation id="1319608975892113573">Няма предишен блоков цитат.</translation>
 <translation id="1321576897702511272">Скриване на помощта за ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> от <ph name="TOTAL" /></translation>
@@ -370,6 +371,7 @@
 <translation id="4191918948604314587">Бутон</translation>
 <translation id="4202186506458631436">Преместване надясно</translation>
 <translation id="4206289001967551965">В таблицата сте.</translation>
+<translation id="4209770650650780359">За автоматични довършвания натиснете клавиша със стрелка нагоре или надолу.</translation>
 <translation id="4215733775853809057">Следващият плъзгач</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{тире}other{# тирета}}</translation>
 <translation id="421884353938374759">инструмент за избор на цветове</translation>
@@ -403,6 +405,7 @@
 <translation id="4532633738839459153">{COUNT,plural, =1{наклонена черта}other{# наклонени черти}}</translation>
 <translation id="4547556996012970016">Следващото заглавие от пето ниво</translation>
 <translation id="4562381607973973258">Горен колонтитул</translation>
+<translation id="4569941707103739422">За придвижване натиснете клавиша със стрелка нагоре или надолу, за активиране използвайте Enter.</translation>
 <translation id="4570424871453628777">Край на неправилно изписаната дума</translation>
 <translation id="4591507479202817876">, избрано</translation>
 <translation id="4597532268155981612">формуляр</translation>
@@ -496,6 +499,7 @@
 <translation id="536031132345979795">Превъртане назад при непрекъснато четене</translation>
 <translation id="5368000168321181111">Звуковите сигнали са изключени</translation>
 <translation id="5374320867641260420">Няма следващ бутон.</translation>
+<translation id="5376407118396657359">За придвижване между клетките натиснете клавиша „търсене“ + Ctrl + Alt и клавишите със стрелки.</translation>
 <translation id="5382299583965267720">Няма следващо заглавие от първо ниво.</translation>
 <translation id="5402367795255837559">Брайлово писмо</translation>
 <translation id="5402791055281059602">Модален сигнал</translation>
@@ -504,6 +508,7 @@
 <translation id="5417034931411865818">Кликване върху елемента под ключ за пренасочване $1</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{знак за по-малко}other{# знака за по-малко}}</translation>
 <translation id="5444587279251314700">(активен раздел)</translation>
+<translation id="5446809554778706307">Няма откроен елемент. Натиснете Ctrl + T, за да отворите нов раздел.</translation>
 <translation id="5451268436205074266">точки <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Допълнение</translation>
 <translation id="5485036206801896268">Няма предишна графика.</translation>
@@ -583,6 +588,7 @@
 <translation id="6006050241733874051">Формуляр</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{обратна наклонена черта}other{# обратни наклонени черти}}</translation>
 <translation id="6037602951055904232">Панорамно придвижване напред</translation>
+<translation id="6042826534790431634">За активиране натиснете клавиша „търсене“ + интервал.</translation>
 <translation id="6044160928851315051">Потъмняване на екрана</translation>
 <translation id="605761629541007221">Край на удебеления текст</translation>
 <translation id="6065293622157674001">Начало на граматичната грешка</translation>
@@ -859,6 +865,7 @@
 <translation id="9065283790526219006">+изскачащ прозорец</translation>
 <translation id="9077213568694924680">премахнати от открояването</translation>
 <translation id="9082874451376019682">Няма предишен плъзгач.</translation>
+<translation id="9087707351856729768">Въведете текст за автоматично довършване.</translation>
 <translation id="9089864840575085222">Цикъл на ехото при въвеждане</translation>
 <translation id="9105227991373418255">Изрязване на $1.</translation>
 <translation id="9107530006868467849">Няма предишно приспособление за мултимедия.</translation>

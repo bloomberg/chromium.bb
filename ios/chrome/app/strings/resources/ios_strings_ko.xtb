@@ -39,6 +39,7 @@
 <translation id="1545749641540134597">QR 코드 스캔</translation>
 <translation id="1580783302095112590">메일이 전송되었습니다.</translation>
 <translation id="1612730193129642006">탭을 격자로 보기</translation>
+<translation id="1644574205037202324">방문 기록</translation>
 <translation id="1646446875146297738">'추적 안함'을 사용 설정하면 요청이 탐색 트래픽에 포함됩니다. 웹사이트가 요청에 응답하는지 여부와 요청이 어떻게 해석되는가에 따라 결과가 달라집니다.
 
 예를 들어, 일부 웹사이트는 사용자의 웹사이트 방문 기록과 관계없는 광고를 표시하여 요청에 응답할 수 있습니다. 상당수의 웹사이트는 보안 강화, 웹사이트에 콘텐츠, 서비스, 광고 및 추천 정보 제공, 보고서 통계 생성 등과 같은 용도로 여전히 인터넷 사용 기록을 수집하고 이용합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
@@ -249,6 +250,7 @@
 <translation id="5871497086027727873">1개 항목 이동함</translation>
 <translation id="5911030830365207728">Google 번역</translation>
 <translation id="5916664084637901428">사용</translation>
+<translation id="5938160824633642847">기기 용량이 거의 가득 찼습니다. 여유 공간을 확보한 후 다시 시도하세요.</translation>
 <translation id="5948291296578561264">이렇게 하면 사진 라이브러리에 사진을 저장할 수 있습니다.</translation>
 <translation id="5955891643922670672">오프라인 버전 보는 중</translation>
 <translation id="5964480694698977962">새 시크릿 탭 만들기</translation>
@@ -289,6 +291,7 @@
 
 <ph name="TIME" />에 동기화 암호로 데이터가 암호화되었습니다. 동기화를 시작하려면 입력하세요.</translation>
 <translation id="6418346271604475326">PDF 준비 중</translation>
+<translation id="6434591244308415567">오류가 발생했습니다. 나중에 다시 시도하세요.</translation>
 <translation id="6445051938772793705">국가</translation>
 <translation id="6445981559479772097">메시지가 전송되었습니다.</translation>
 <translation id="6464071786529933911">새 시크릿 탭에서 열기</translation>
@@ -299,6 +302,7 @@
 <translation id="6657585470893396449">비밀번호</translation>
 <translation id="667999046851023355">문서</translation>
 <translation id="6713747756340119864">Google Apps</translation>
+<translation id="6730682669179532099">비밀번호를 내보낼 수 없음</translation>
 <translation id="6762156594045689028">이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />합니다.</translation>
 <translation id="6780034285637185932">우편번호</translation>
 <translation id="6785453220513215166">비정상 종료 보고서 보내는 중...</translation>
@@ -326,6 +330,7 @@
 <translation id="7203585745079012652">음성 응답</translation>
 <translation id="722055596168483966">Google 서비스 맞춤설정</translation>
 <translation id="7272437679830969316">신원을 인증할 수 없습니다. 비밀번호가 복사되지 않았습니다.</translation>
+<translation id="7291368939935408496">비밀번호 준비 중...</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" />% 다운로드됨</translation>
 <translation id="7346909386216857016">확인</translation>
 <translation id="7400418766976504921">URL</translation>

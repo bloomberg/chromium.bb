@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">Den personlige nøgle kunne ikke læses.</translation>
 <translation id="6391538222494443604">Indtastningsindeks skal eksistere.</translation>
 <translation id="641087317769093025">Udvidelsen kunne ikke udpakkes</translation>
+<translation id="6542618148162044354">"<ph name="APP_NAME" />" anmoder om adgang til en eller flere af dine enheder:</translation>
 <translation id="657064425229075395">Baggrundsscriptet  "<ph name="BACKGROUND_SCRIPT" />" kunne ikke indlæses.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> fra <ph name="VENDOR_NAME" /> (serienummer <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Mappen til udpakning kunne ikke oprettet: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">Pakken er ugyldig. Oplysninger: "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">Denne udvidelse kunne ikke omdirigere en netværksanmodning til <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, fordi en anden udvidelse (<ph name="EXTENSION_NAME" />) omdirigerede den til <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Værktøj til udpakning af udvidelser</translation>
+<translation id="8761756413268424715">"<ph name="APP_NAME" />" anmoder om adgang til en af dine enheder:</translation>
 <translation id="8825366169884721447">Denne udvidelse kunne ikke ændre anmodningsheaderen "<ph name="HEADER_NAME" />" for en netværksanmodning, fordi ændringen var i strid med en anden udvidelse. (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Der findes allerede en personlig nøgle til den angivne udvidelse. Genbrug denne nøgle, eller slet den først.</translation>
 <translation id="907841381057066561">Den midlertidige zip-fil kunne ikke oprettes under pakning.</translation>

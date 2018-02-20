@@ -36,6 +36,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Sonraki 6. düzey başlık</translation>
 <translation id="1275718070701477396">Seçili</translation>
+<translation id="1286609444451033486">Geçiş yapmak için Arama+Boşluk tuşlarına basın.</translation>
 <translation id="1319608975892113573">Önceki blok alıntı yok.</translation>
 <translation id="1321576897702511272">ChromeVox yardımını gizle</translation>
 <translation id="1331702245475014624">toplam: <ph name="TOTAL" />, öğe: <ph name="INDEX" /></translation>
@@ -370,6 +371,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="4191918948604314587">Düğme</translation>
 <translation id="4202186506458631436">Sağa git</translation>
 <translation id="4206289001967551965">Tablo içinde</translation>
+<translation id="4209770650650780359">Otomatik tamamlamalar için yukarı veya aşağı ok tuşuna basın.</translation>
 <translation id="4215733775853809057">Sonraki kaydırma çubuğu</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{kısa çizgi}other{# kısa çizgi}}</translation>
 <translation id="421884353938374759">renk seçici</translation>
@@ -403,6 +405,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="4532633738839459153">{COUNT,plural, =1{eğik çizgi}other{# eğik çizgi}}</translation>
 <translation id="4547556996012970016">Sonraki 5. düzey başlık</translation>
 <translation id="4562381607973973258">Üst bilgi</translation>
+<translation id="4569941707103739422">Gezinmek için yukarı veya aşağı ok; etkinleştirmek için Enter tuşuna basın.</translation>
 <translation id="4570424871453628777">Yazım hatası sonu</translation>
 <translation id="4591507479202817876">, seçili</translation>
 <translation id="4597532268155981612">form</translation>
@@ -496,6 +499,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="536031132345979795">Sürekli okuma sırasında geriye doğru atla</translation>
 <translation id="5368000168321181111">Ses sinyalleri kapalı</translation>
 <translation id="5374320867641260420">Sonraki düğme yok.</translation>
+<translation id="5376407118396657359">Hücreden hücreye gitmek için Arama+Ctrl+Alt ve ok tuşlarına basın.</translation>
 <translation id="5382299583965267720">Sonraki 1. düzey başlık yok.</translation>
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5402791055281059602">Modal uyarı</translation>
@@ -504,6 +508,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="5417034931411865818">$1 yönlendirme tuşunun altındaki öğeyi tıklayın</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{küçüktür işareti}other{# küçüktür işareti}}</translation>
 <translation id="5444587279251314700">(etkin)</translation>
+<translation id="5446809554778706307">Odak yok. Yeni bir sekme açmak için Ctrl+T tuşlarına basın.</translation>
 <translation id="5451268436205074266">noktalar <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Tamamlayıcı</translation>
 <translation id="5485036206801896268">Önceki grafik yok.</translation>
@@ -583,6 +588,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="6006050241733874051">Form</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{ters eğik çizgi}other{# ters eğik çizgi}}</translation>
 <translation id="6037602951055904232">İleri kaydır</translation>
+<translation id="6042826534790431634">Etkinleştirmek için Arama+Boşluk tuşlarına basın.</translation>
 <translation id="6044160928851315051">Ekranı kapat</translation>
 <translation id="605761629541007221">Kalın metin sonu</translation>
 <translation id="6065293622157674001">Dil bilgisi hatası başlangıcı</translation>
@@ -859,6 +865,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="9065283790526219006">+popup</translation>
 <translation id="9077213568694924680">seçimden kaldırıldı</translation>
 <translation id="9082874451376019682">Önceki kaydırma çubuğu yok.</translation>
+<translation id="9087707351856729768">Otomatik tamamlama için yazmaya başlayın.</translation>
 <translation id="9089864840575085222">Yazma yansıtmayı döngüsel yap</translation>
 <translation id="9105227991373418255">kes: $1.</translation>
 <translation id="9107530006868467849">Önceki media widget'ı yok.</translation>

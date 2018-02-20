@@ -43,6 +43,7 @@
 <translation id="1951012854035635156">小幫手</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1995660704900986789">關閉</translation>
 <translation id="2012624427112548395">Ctrl 鍵 + 搜尋鍵 + H 鍵</translation>
 <translation id="2049639323467105390">這個裝置由 <ph name="DOMAIN" /> 管理。</translation>
 <translation id="2050339315714019657">縱向</translation>
@@ -83,6 +84,7 @@
 <translation id="2844169650293029770">USB-C 裝置 (左前方連接埠)</translation>
 <translation id="2865888419503095837">網路資訊</translation>
 <translation id="2872961005593481000">關閉</translation>
+<translation id="2878884018241093801">最近沒有任何項目</translation>
 <translation id="2903844815300039659">已連上 <ph name="NAME" />，<ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">你正在分享螢幕畫面</translation>
 <translation id="2942516765047364088">檔案櫃位置</translation>
@@ -95,7 +97,7 @@
 <translation id="3077734595579995578">Shift</translation>
 <translation id="3087734570205094154">置底</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (藍牙)</translation>
-<translation id="3126069444801937830">重新啟用即可更新</translation>
+<translation id="3126069444801937830">重新啟動即可更新</translation>
 <translation id="3147142846278915599">啟動器 (正在同步處理應用程式...)</translation>
 <translation id="315116470104423982">行動數據</translation>
 <translation id="3153444934357957346">使用多帳戶登入功能時，一次最多只能登入 <ph name="MULTI_PROFILE_USER_LIMIT" /> 個帳戶。</translation>
@@ -139,6 +141,7 @@
 <translation id="4072264167173457037">訊號中等</translation>
 <translation id="4279490309300973883">鏡像</translation>
 <translation id="4321179778687042513">Ctrl</translation>
+<translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">放大鏡</translation>
 <translation id="4351433414020964307">正在載入小幫手…</translation>
 <translation id="4378551569595875038">連線中…</translation>
@@ -183,6 +186,7 @@
 <translation id="5744083938413354016">輕觸拖曳</translation>
 <translation id="5777841717266010279">停止共用螢幕？</translation>
 <translation id="57838592816432529">靜音</translation>
+<translation id="5820394555380036790">Chromium 作業系統</translation>
 <translation id="5832805196449965646">新增使用者</translation>
 <translation id="5860033963881614850">關閉</translation>
 <translation id="5895138241574237353">重新啟動</translation>

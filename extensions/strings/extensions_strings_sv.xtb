@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">Det gick inte att läsa den privata nyckeln.</translation>
 <translation id="6391538222494443604">Indatakatalog måste finnas.</translation>
 <translation id="641087317769093025">Det gick inte att packa upp tillägget</translation>
+<translation id="6542618148162044354"><ph name="APP_NAME" /> begär åtkomst till en eller flera av dina enheter:</translation>
 <translation id="657064425229075395">Det gick inte att läsa in bakgrundsskriptet <ph name="BACKGROUND_SCRIPT" />.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> från <ph name="VENDOR_NAME" /> (serienummer <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Det gick inte att skapa en katalog för uppackning: <ph name="DIRECTORY_PATH" /></translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">Paketet är ogiltigt. Information: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="8670869118777164560">Det gick inte att omdirigera nätverksbegäran till <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> eftersom ett annat tillägg (<ph name="EXTENSION_NAME" />) omdirigerade det till <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Uppackare för tillägg</translation>
+<translation id="8761756413268424715"><ph name="APP_NAME" /> begär åtkomst till en av dina enheter:</translation>
 <translation id="8825366169884721447">Det här tillägget kunde inte ändra begäranderubriken <ph name="HEADER_NAME" /> för ett nätverk eftersom det uppstod en konflikt mellan ändringen och ett annat tillägg (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Det finns redan en privat nyckel för det angivna tillägget. Återanvänd den nyckeln eller ta bort den först.</translation>
 <translation id="907841381057066561">Det gick inte att skapa en tillfällig ZIP-fil under packningen.</translation>

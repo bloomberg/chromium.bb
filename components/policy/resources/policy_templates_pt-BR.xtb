@@ -204,6 +204,7 @@
       A política deve ser definida para um URL a partir do qual o <ph name="PRODUCT_OS_NAME" /> possa fazer o download dos Termos de Serviço. Os Termos de Serviço devem estar em texto sem formação, com tipo de texto MIME text/plain. Não são permitidas marcações.</translation>
 <translation id="1750315445671978749">Bloquear todos os downloads</translation>
 <translation id="1781356041596378058">Esta política também controla o acesso às Opções do desenvolvedor do Android. Se você configurar essa política como true, os usuários não poderão acessar as Opções do desenvolvedor. Se configurá-la como false ou deixá-la sem definição, os usuários poderão acessar as Opções do desenvolvedor tocado sete vezes no número da versão no app Config. do Android.</translation>
+<translation id="1797233582739332495">Mostrar um prompt recorrente ao usuário indicando que é necessário reiniciar</translation>
 <translation id="1803646570632580723">Lista de aplicativos fixados a serem mostrados no iniciador</translation>
 <translation id="1808715480127969042">Bloquear cookies nestes sites</translation>
 <translation id="1827523283178827583">Usar servidores proxy fixos</translation>
@@ -276,11 +277,11 @@
 
           Se esta política não for definida, os quatro esquemas serão utilizados.</translation>
 <translation id="2067011586099792101">Bloquear acesso a sites fora de pacotes de conteúdo</translation>
-<translation id="2075030897098958514">Controla se NTLMv2 está ativada.
+<translation id="2070270043919235595">Informe aos usuários que o <ph name="PRODUCT_NAME" /> precisa ser reiniciado para aplicar uma atualização pendente.
 
-          Todas as versões recentes dos servidores Samba e Windows são compatíveis com NTLMv2. Ela deve ser desativada apenas para compatibilidade reversa e reduz a segurança da autenticação.
+      A definição desta política ativa notificações para informar ao usuário que a reinicialização do navegador é recomendada ou necessária. Se a política não for definida, o <ph name="PRODUCT_NAME" /> indicará ao usuário que a reinicialização precisa ser feita por meio de alterações sutis no menu. Se definida como "Recomendado", um aviso recorrente será exibido ao usuário indicando que a reinicialização é recomendada. O usuário pode dispensar esse aviso para adiar a reinicialização. Se definida como "Obrigatório", um aviso recorrente será exibido ao usuário indicando que a reinicialização do navegador será forçada assim que o período de notificação passar. Esse período tem, por padrão, sete dias e pode ser definido na configuração da política <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
-          O valor padrão quando esta política não está definida atualmente é falso para compatibilidade com versões anteriores, mas será alterado para verdadeiro no futuro.</translation>
+      A sessão do usuário é restaurada após a reinicialização.</translation>
 <translation id="2077129598763517140">Usar aceleração de hardware quando disponível</translation>
 <translation id="2077273864382355561">Intervalo de desligamento da tela no funcionamento com energia da bateria</translation>
 <translation id="2082205219176343977">Configurar a versão mínima permitida do Chrome para o dispositivo.</translation>
@@ -325,6 +326,9 @@
           Se esta configuração for definida, os usuários que utilizam o desbloqueio rápido terão que informar as respectivas senhas na tela de bloqueio de acordo com esta configuração.
 
           Se esta configuração não for definida, os usuários que utilizam o desbloqueio rápido terão que informar as respectivas senhas na tela de bloqueio todos os dias.</translation>
+<translation id="2188722565665306629">Permite definir o período em que as notificações de reinicialização do <ph name="PRODUCT_NAME" /> são exibidas para aplicar uma atualização pendente.
+
+      A definição desta política pode ser usada para controlar o período, em milissegundos, em que o usuário é informado progressivamente de que o <ph name="PRODUCT_NAME" /> precisa ser reiniciado (ou que o <ph name="PRODUCT_OS_NAME" /> precisa ser reiniciado) para a aplicação de uma atualização. Nesse período, o usuário será informado várias vezes sobre a necessidade de uma atualização com base na definição da política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Se a política não for definida, o período padrão de 604.800.000 milissegundos (uma semana) será usado.</translation>
 <translation id="2194470398825717446">O uso desta política foi suspenso no M61. Substitua-a por EcryptfsMigrationStrategy.
 
       Especifica como um dispositivo deve se comportar tendo sido embarcado com ecryptfs e precisando fazer a transição para criptografia ext4.
@@ -510,6 +514,13 @@
 <translation id="267596348720209223">Especifica a codificação de caracteres suportados pelo mecanismo de pesquisa. Codificações são nomes de código da página como UTF-8, GB2312 e ISO-8859-1. Eles são testados na ordem fornecida. Esta política é opcional. Se não for definida, será utilizado o padrão, UTF-8. Esta política só é respeitada se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="2682225790874070339">Desativa o Google Drive no aplicativo Arquivos do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Ativar o recurso de proxy de compactação de dados</translation>
+<translation id="2726613915126661822">Permite controlar se máquinas virtuais podem ser executadas no Chrome OS.
+
+      Se a política for definida como verdadeiro, o dispositivo poderá executar máquinas virtuais.
+      Se a política for definida como falso, o dispositivo não poderá executar máquinas virtuais.
+      Quando esta política é alterada para falso, ela é aplicada à inicialização de novas máquinas virtuais, mas não ao encerramento das máquinas virtuais que já estejam em execução.
+      Quando esta política não é definida em um dispositivo gerenciado, o dispositivo não pode executar máquinas virtuais.
+      Dispositivos não gerenciados podem executar máquinas virtuais.</translation>
 <translation id="2731627323327011390">Desativar o uso de certificados do <ph name="PRODUCT_OS_NAME" /> para apps Arc</translation>
 <translation id="2742843273354638707">Oculta o link do aplicativo e do rodapé da Chrome Web Store na página "Nova guia" e no iniciador de aplicativos do <ph name="PRODUCT_OS_NAME" />.
 
@@ -725,6 +736,7 @@
           Esta política é opcional. Se não for definida, nenhuma página "Nova guia" será exibida.
 
           Esta política somente é respeitada se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
+<translation id="3465852069254497664">Informar ao usuário que a reinicialização do navegador é recomendada ou necessária</translation>
 <translation id="346731943813722404">Especifica se os intervalos de gerenciamento de energia e o limite de duração da sessão só devem começar a ser contados após a atividade do usuário ser detectada em uma sessão.
 
           Se esta política for definida como verdadeira, os intervalos de gerenciamento de energia e o limite de duração da sessão só começarão a ser contados depois que a primeira atividade do usuário for detectada em uma sessão.
@@ -744,7 +756,6 @@
 <translation id="3528000905991875314">Ativar páginas de erro alternativas</translation>
 <translation id="3547954654003013442">Configurações de proxy</translation>
 <translation id="3577251398714997599">Configurações de anúncios para sites com anúncios invasivos</translation>
-<translation id="3587482841069643663">Tudo</translation>
 <translation id="3591584750136265240">Configura o comportamento de autenticação de login</translation>
 <translation id="3627678165642179114">Ativar ou desativar serviço da web de verificação ortográfica</translation>
 <translation id="3646859102161347133">Definir tipo de lupa</translation>
@@ -759,6 +770,7 @@
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3736879847913515635">Ativar adição de uma pessoa no gerenciador de usuários</translation>
 <translation id="3737544779868348650">Nome de host da rede do dispositivo</translation>
+<translation id="3740754010292550733">Definir o período para notificações de reinicialização de atualização</translation>
 <translation id="3750220015372671395">Bloquear a geração de chaves nesses sites</translation>
 <translation id="3756011779061588474">Bloquear modo de desenvolvedor</translation>
 <translation id="3758089716224084329">Permite que você especifique o servidor proxy usado pelo <ph name="PRODUCT_NAME" /> e impede que os usuários alterem as configurações de proxy.
@@ -955,16 +967,6 @@
 
           Esta política só é seguida se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="4285674129118156176">Permitir que usuários sem afiliação utilizem o ARC</translation>
-<translation id="4294280661005713627">Define uma versão de destino para atualizações automáticas.
-
-      Especifica o prefixo de uma versão de destino para a qual o <ph name="PRODUCT_OS_NAME" /> deve ser atualizado. Se o dispositivo estiver executando uma versão anterior ao prefixo especificado, ele será atualizado para a versão mais recente com esse mesmo prefixo. Se o dispositivo já estiver em uma versão posterior, não haverá nenhum efeito (ou seja, nenhum downgrade será realizado), e o dispositivo permanecerá na versão atual. O formato do prefixo funciona como um componente, conforme demonstrado no seguinte exemplo:
-
-      "" (ou não configurada): atualiza para a versão mais recente disponível.
-      "1412.": atualiza para qualquer versão anterior à 1412 (por exemplo, 1412.24.34 ou 1412.60.2)
-      "1412.2.": atualiza para qualquer versão anterior à 1412.2 (por exemplo, 1412.2.34 ou 1412.2.2)
-      "1412.24.34": atualiza somente para esta versão específica
-
-      Aviso: não é recomendado configurar restrições de versão, pois elas podem impedir que os usuários recebam atualizações de software e correções de segurança críticas. Atualizações de restrição para um prefixo de versão específico podem colocar os usuários em risco.</translation>
 <translation id="4298509794364745131">Especifica uma lista de apps que podem ser ativados como apps de anotação na tela de bloqueio do <ph name="PRODUCT_OS_NAME" />.
 
       Se o app de anotação preferencial for permitido na tela de bloqueio, essa tela mostrará o elemento de IU para abrir o app de anotação preferencial.
@@ -988,6 +990,13 @@
 <translation id="4347908978527632940">Se essa política for definida como "true", e o usuário for um usuário supervisionado, outros apps do Android poderão consultar restrições da Web do usuário por meio de um provedor de conteúdo.
 
           Se for definida como "false" ou não for definida, o provedor de conteúdo não retornará nenhuma informação.</translation>
+<translation id="435461861920493948">Contém uma lista de padrões que são usados para controlar a visibilidade de contas no <ph name="PRODUCT_NAME" />.
+
+      Cada Conta do Google no dispositivo será comparada aos padrões armazenados nesta política para determinar a visibilidade da conta no <ph name="PRODUCT_NAME" />. A conta será visível se o nome dela corresponder a qualquer padrão na lista. Caso contrário, a conta ficará oculta.
+
+      Use o caractere curinga "*" para corresponder a zero ou mais caracteres arbitrários. O caractere de escape é "\". Portanto, para corresponder aos caracteres "*" ou "\" de fato, coloque um "\" na frente deles.
+
+      Se esta política não for definida, todas as Contas do Google no dispositivo estarão visíveis no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="436581050240847513">Relatar interfaces de redes de dispositivos</translation>
 <translation id="4372704773119750918">Não permitir que o usuário corporativo faça parte de diversos perfis (primários ou secundários)</translation>
 <translation id="4377599627073874279">Permitir que todos os sites exibam todas as imagens</translation>
@@ -1431,6 +1440,7 @@
           Se você definir esta política, os usuários poderão substituí-la temporariamente ativando ou desativando o cursor grande. No entanto, a escolha do usuário não é permanente e o padrão será restaurado sempre que a tela de login for exibida novamente ou quando o usuário permanecer inativo na tela de login por um minuto.
 
           Se esta política não for definida, o cursor grande será desativado quando a tela de login for exibida pela primeira vez. Os usuários podem ativar ou desativar o cursor grande a qualquer momento e seu status na tela de login continuará entre os usuários.</translation>
+<translation id="5929855945144989709">Permitir que os dispositivos executem máquinas virtuais no Chrome OS</translation>
 <translation id="5932767795525445337">Esta política também pode ser usada para fixar apps Android.</translation>
 <translation id="5936622343001856595">Força as consultas na Pesquisa Google na Web a serem feitas com o SafeSearch ativado e impede que os usuários alterem esta configuração.
 
@@ -1445,17 +1455,6 @@
 <translation id="5983708779415553259">Comportamento padrão para sites fora de pacotes de conteúdo</translation>
 <translation id="5997543603646547632">Usar relógido de 24 horas por padrão</translation>
 <translation id="5997846976342452720">Especifica se o localizador de plug-ins deve ser desativado (uso suspenso)</translation>
-<translation id="6005179188836322782">Ativa o recurso "Navegação segura" do <ph name="PRODUCT_NAME" /> e impede os usuários de alterarem essa configuração.
-
-      Se você ativar essa configuração, o "Navegação segura" estará sempre ativo.
-
-      Se você desativar essa configuração, o "Navegação segura" nunca estará ativo.
-
-      Se você ativar ou desativar essa configuração, os usuários não poderão alterar ou modificar a configuração Ativar proteção contra phishing e malware no <ph name="PRODUCT_NAME" />.
-
-      Se esta política não for definida, ela ficará ativada, mas o usuário poderá alterá-la.
-
-      Consulte https://developers.google.com/safe-browsing (em inglês) para ver mais informações sobre o recurso "Navegação segura".</translation>
 <translation id="6017568866726630990">Mostrar a caixa de diálogo de impressão do sistema em vez da visualização de impressão.
 
       Quando esta configuração estiver ativada, o <ph name="PRODUCT_NAME" /> abrirá a caixa de diálogo de impressão do sistema em vez da visualização de impressão integrada, quando um usuário solicitar a impressão de uma página.
@@ -1510,6 +1509,17 @@
 
       Para fixar aplicativos na tela de início, consulte PinnedLauncherApps.</translation>
 <translation id="602728333950205286">URL instantâneo do provedor de pesquisa padrão</translation>
+<translation id="6029950823657977211">
+      NOTA: esta política é experimental e pode interromper a funcionalidade.
+      Esta política se aplica à tela de login. Veja também a política "IsolateOrigins" que se aplica à sessão do usuário. É recomendável definir as duas políticas com o mesmo valor.
+      Se a política for ativada, cada uma das origens nomeadas em uma
+      lista separada por vírgulas será executada no próprio processo. Isso isolará
+      as origens nomeadas pelos subdomínios, por exemplo, especificar https://example.com/
+      também fará com que https://foo.example.com/ seja isolado como parte do
+      site https://example.com/.
+      Se a política for desativada, a lógica de gerenciamento do processo de isolamento de sites entrará em vigor.
+      Se a política não for definida, as configurações de isolamento de sites padrão da plataforma serão usadas para a tela de login.
+      </translation>
 <translation id="603410445099326293">Parâmetros para URL de sugestões que usa POST</translation>
 <translation id="6036523166753287175">Habilitar passagem de firewall a partir do host de acesso remoto</translation>
 <translation id="6070667616071269965">Layouts de teclado da tela de login do dispositivo</translation>
@@ -1674,6 +1684,15 @@
 
       A política <ph name="SYNC_DISABLED_POLICY_NAME" /> desativa a sincronização de todos os dados por meio da modificação de RoamingProfileSupportEnabled.</translation>
 <translation id="6735701345096330595">Forçar a ativação da correção ortográfica de idiomas</translation>
+<translation id="673699536430961464">Essa definição permite que os usuários alternem entre Contas do Google na área de conteúdo da janela do navegador depois de fazer login no dispositivo <ph name="PRODUCT_OS_NAME" />.
+
+      Se esta política for definida como falso, não será permitido fazer login em uma conta diferente na área de conteúdo do navegador que não seja no modo sem rastros.
+
+      Se esta política não for definida ou for definida como verdadeiro, o comportamento padrão será usado: será permitido fazer login em uma conta diferente na área de conteúdo do navegador, exceto para contas filhas, em que isso não será permitido para área de conteúdo que não estejam no modo sem rastros.
+
+      Caso o login em uma conta diferente não seja permitido no modo de navegação anônima, avalie a possibilidade de bloquear esse modo usando a política IncognitoModeAvailability.
+
+      Os usuários poderão acessar serviços do Google em um estado não autenticado bloqueando os cookies.</translation>
 <translation id="6757438632136860443">Permite definir uma lista de padrões de URL que especificam sites autorizados a executar o plug-in <ph name="FLASH_PLUGIN_NAME" />.
 
           Se esta política não for definida, o valor padrão global será usado para todos os sites, seja a partir da política "DefaultPluginsSetting", caso esta tenha sido definida, ou da configuração pessoal do usuário, caso não tenha sido definida.</translation>
@@ -1683,6 +1702,7 @@
 <translation id="6786967369487349613">Configurar o diretório do perfil de roaming</translation>
 <translation id="6810445994095397827">Bloquear o JavaScript nestes sites</translation>
 <translation id="681446116407619279">Esquemas de autenticação compatíveis</translation>
+<translation id="6835883744948188639">Mostrar um prompt recorrente ao usuário indicando que a reinicialização é necessária</translation>
 <translation id="685769593149966548">Aplicar o Modo restrito rigoroso para o YouTube</translation>
 <translation id="687046793986382807">Esta política foi desativada a partir da versão 35 do <ph name="PRODUCT_NAME" />.
 
@@ -2016,7 +2036,6 @@
       Se esta política não estiver definida, o <ph name="PRODUCT_NAME" /> usa o valor padrão de 5.000 milissegundos.</translation>
 <translation id="7841880500990419427">Versão TLS mínima para substituição</translation>
 <translation id="7842869978353666042">Configurar opções do Google Drive</translation>
-<translation id="7843525027689416831">Especifica as sinalizações que devem ser aplicadas a <ph name="PRODUCT_NAME" /> quando ele é iniciado. As sinalizações especificadas são aplicadas apenas na tela de login. As sinalizações definidas por esta política não se propagam para as sessões do usuário.</translation>
 <translation id="787125417158068494">Se ela for definida para SyncDisabled ou não for configurada, os certificados do <ph name="PRODUCT_OS_NAME" /> não ficarão disponíveis para apps ARC.
 
       Se ela for definida para CopyCaCerts, todos os certificados CA instalados por ONC com <ph name="WEB_TRUSTED_BIT" /> ficarão disponíveis para apps ARC.</translation>
@@ -2174,6 +2193,13 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8424255554404582727">Definir rotação padrão da tela, reaplicada em cada reinicialização</translation>
 <translation id="8426231401662877819">Girar tela no sentido horário em 90 graus</translation>
 <translation id="8451988835943702790">Usar a página "Nova guia" como página inicial</translation>
+<translation id="8459216513698220096">Especifica se e como a política de usuário da GPO de computador é processada.
+
+      Se a política for definida como "Padrão" ou se não for definida, a política de usuário será lida somente a partir das GPOs de usuário (as GPOs do computador serão ignoradas).
+
+      Se a política for definida como "Mesclar", a política de usuário nas GPOs de usuário será mesclada com a política de usuário nas GPOs de computador (as GPOs de computador terão prioridade).
+
+      Se a política for definida como "Substituir", a política de usuário nas GPOs será substituída pela política de usuário nas GPOs de computador (as GPOs de usuário serão ignoradas).</translation>
 <translation id="8465065632133292531">Parâmetros para URL de instantâneos que usa POST</translation>
 <translation id="847472800012384958">Não permite que nenhum site exiba pop-ups</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2311,6 +2337,12 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 
       Esta política não afeta a possibilidade de os usuários configurarem ou não impressoras em dispositivos individuais. Ela se destina a complementar a configuração de impressoras por usuários individuais.
       </translation>
+<translation id="8934944553121392674">Controla quais impressoras da <ph name="DEVICE_PRINTERS_POLICY" /> estão disponíveis para os usuários.
+
+      Determina qual política de acesso é usada para a configuração de impressoras em massa. Se a opção <ph name="PRINTERS_ALLOW_ALL" /> for selecionada, todas as impressoras serão mostradas. Se a opção <ph name="PRINTERS_BLACKLIST" /> for selecionada, <ph name="DEVICE_PRINTERS_BLACKLIST" /> será usada para restringir o acesso às impressoras especificadas. Se <ph name="PRINTERS_WHITELIST" /> for selecionada, <ph name="DEVICE_PRINTERS_WHITELIST" /> determinará apenas as impressoras que podem ser selecionadas.
+
+      Se esta política não for definida, <ph name="PRINTERS_ALLOW_ALL" /> será adotada.
+      </translation>
 <translation id="8947415621777543415">Informar a localização do dispositivo</translation>
 <translation id="8951350807133946005">Definir o diretório de cache de disco</translation>
 <translation id="8952317565138994125">Desativa a sincronização de dados no <ph name="PRODUCT_NAME" /> usando os serviços de sincronização hospedados no Google e impede que os usuários alterem esta configuração.
@@ -2365,7 +2397,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
       Se esta política é definida como "true", o <ph name="PRODUCT_OS_NAME" /> aciona uma reinicialização quando o usuário desliga o dispositivo. O <ph name="PRODUCT_OS_NAME" /> substitui todas as ocorrências de botões de desligamento da interface de usuário por botões de reinicialização. Se o usuário desliga o dispositivo no botão liga/desliga, ele não é reinicializado automaticamente, mesmo que a política esteja ativa.</translation>
 <translation id="9158929520101169054">Permitir login múltiplo no navegador</translation>
 <translation id="9187743794267626640">Desativa a montagem de armazenamento externo</translation>
-<translation id="918910591537763102">Legado</translation>
 <translation id="9197740283131855199">Percentual pelo qual calcular o intervalo de escurecimento da tela se o usuário ficar ativo após o escurecimento</translation>
 <translation id="9200828125069750521">Parâmetros para URL de imagens que usa POST</translation>
 <translation id="9213347477683611358">Configura a imagem de plano de fundo do dispositivo que é exibida na tela de login se nenhum usuário está conectado ao dispositivo. A política é definida pela especificação do URL no qual o dispositivo Chrome OS pode fazer o download da imagem de plano de fundo e de um hash criptográfico usado para verificar a integridade do download. A imagem deve estar no formato JPEG, e seu tamanho não deve ultrapassar 16 MB. O URL deve ser acessado sem nenhuma autenticação. A imagem de plano de fundo é transferida por download e armazenada em cash. Sempre que o URL ou o hash muda, o download é feito novamente.
@@ -2385,5 +2416,11 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="930930237275114205">Configura o diretório de dados do usuário do <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Ativa o login forçado no <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Definir o tamanho do disco de cache</translation>
+<translation id="9775893229076211">Permite que você controle o acionamento da sinalização de conta em risco para proteção de senha. Sinalizar a conta em risco para proteção de senha significa informar ao Google que a conta está correndo o risco de ser invadida.
+
+      Se esta política for definida como "PasswordProtectionRiskOff", nenhuma sinalização de conta em risco para proteção de senha será acionada.
+      Se esta política for definida como "PasswordProtectionRiskOnPasswordReuse" a sinalização de conta em risco para proteção de senha será acionada quando os usuários reutilizarem senhas do Google em qualquer site que não esteja na lista de permissões.
+      Se esta política for definida como "PasswordProtectionRiskOnPhishingReuse", a sinalização de conta em risco para proteção de senha será acionada quando os usuários reutilizarem senhas do Google em sites de phishing.
+      Se a política não for configurada, a sinalização de conta em risco da proteção de senha será acionada quando os usuários reutilizarem senhas do Google em sites de phishing, mas o usuário puder alterá-la.</translation>
 <translation id="982497069985795632">Ativar verificação ortográfica</translation>
 </translationbundle>

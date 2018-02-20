@@ -46,6 +46,7 @@
 <translation id="6322279351188361895">Operazione di lettura della chiave privata non riuscita.</translation>
 <translation id="6391538222494443604">La directory di input deve essere esistente.</translation>
 <translation id="641087317769093025">Impossibile decomprimere l'estensione</translation>
+<translation id="6542618148162044354">"<ph name="APP_NAME" />" richiede l'accesso a uno o più dispositivi:</translation>
 <translation id="657064425229075395">Impossibile caricare lo script in background "<ph name="BACKGROUND_SCRIPT" />".</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> di <ph name="VENDOR_NAME" /> (numero di serie: <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Impossibile creare la directory per la decompressione: "<ph name="DIRECTORY_PATH" />"</translation>
@@ -63,6 +64,7 @@
 <translation id="8636666366616799973">Il pacchetto non è valido. Dettagli: "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">Questa estensione non è riuscita a reindirizzare una richiesta di rete a <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> perché un'altra estensione (<ph name="EXTENSION_NAME" />) l'ha reindirizzata a <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Extension Unpacker</translation>
+<translation id="8761756413268424715">"<ph name="APP_NAME" />" richiede l'accesso a un dispositivo:</translation>
 <translation id="8825366169884721447">Questa estensione non è riuscita a modificare l'intestazione della richiesta "<ph name="HEADER_NAME" />" di una richiesta di rete perché la modifica era in conflitto con un'altra estensione (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Esiste già una chiave privata per l'estensione specificata. Riutilizza tale chiave o prima eliminala.</translation>
 <translation id="907841381057066561">Operazione di creazione di un file zip temporaneo durante la creazione del pacchetto non riuscita.</translation>

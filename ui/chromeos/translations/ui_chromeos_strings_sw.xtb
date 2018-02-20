@@ -33,7 +33,6 @@
 <translation id="1936717151811561466">Kifinlandi</translation>
 <translation id="1947424002851288782">Kibodi ya Kijerumani</translation>
 <translation id="1984603991036629094">Kibodi ya Kifonetiki ya Kiarmenia</translation>
-<translation id="1989746695744304008">Vichupo na Madirisha</translation>
 <translation id="2046702855113914483">Rameni</translation>
 <translation id="2080010875307505892">Kibodi ya Kiserbia</translation>
 <translation id="2136953289241069843">Unukuzi wa mfumo wa kuandika (namaste → नमस्कार)</translation>
@@ -59,6 +58,7 @@
 <translation id="2781645665747935084">Kibelgiji</translation>
 <translation id="2790805296069989825">Kibodi ya Kirusi</translation>
 <translation id="2870836398458454343">Unukuzi wa mfumo wa kuandika (marhaban ← مرحبا)</translation>
+<translation id="2872353916818027657">Papasa kiwambo msingi</translation>
 <translation id="288024221176729610">Kicheki</translation>
 <translation id="2894654529758326923">Maelezo</translation>
 <translation id="2902734494705624966">Kimarekani kilichopanuliwa</translation>
@@ -71,8 +71,10 @@
 <translation id="2966459079597787514">Kibodi ya Kiswidi</translation>
 <translation id="3064388234319122767">Unukuzi wa mfumo wa kuandika (zdravo → здраво)</translation>
 <translation id="3088034400796962477">Unukuzi wa mfumo wa kuandika (salam ← سلام)</translation>
+<translation id="3105917916468784889">Piga picha kiwamba</translation>
 <translation id="3116361045094675131">Kibodi ya Uingereza</translation>
 <translation id="3126026824346185272">Ctrl</translation>
+<translation id="3140353188828248647">Lenga upau anwani</translation>
 <translation id="3157729859914172001">Kibodi ya Kimataifa ya Marekani (PC)</translation>
 <translation id="3187212781151025377">Kibodi ya Kiyahudi</translation>
 <translation id="3197563288998582412">Dvorak ya Uingereza</translation>
@@ -84,6 +86,7 @@
 <translation id="3338239663705455570">Kibodi ya Kislovenia</translation>
 <translation id="3399597614303179694">Kibodi ya Kimasedonia</translation>
 <translation id="3494768541638400973">Kibodi ya Google ya Kijapani (ya kibodi ya Kijapani)</translation>
+<translation id="3496213124478423963">Kuza</translation>
 <translation id="3519867315646775981">Unukuzi wa mfumo wa kuandika (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Kireno</translation>
 <translation id="357479282490346887">Kilithuania</translation>
@@ -91,6 +94,7 @@
 <translation id="3603385196401704894">Kifaransa cha Kanada</translation>
 <translation id="3606220979431771195">Kituruki-F</translation>
 <translation id="3619115746895587757">Kapuchino</translation>
+<translation id="3649256019230929621">Punguza dirisha</translation>
 <translation id="3678559383040232393">Kibodi ya Kimalta</translation>
 <translation id="3801082500826908679">Kifaroe</translation>
 <translation id="3809272675881623365">Sungura</translation>
@@ -98,6 +102,7 @@
 <translation id="3825863595139017598">Kibodi ya Kimongolia</translation>
 <translation id="3833761542219863804">Unukuzi wa mfumo wa kuandika (mausam → ਮੌਸਮ)</translation>
 <translation id="383652340667548381">Kiserbia</translation>
+<translation id="385051799172605136">Nyuma</translation>
 <translation id="3855472144336161447">Kijerumani Neo 2</translation>
 <translation id="3858678421048828670">Kibodi ya Kiitaliano</translation>
 <translation id="3910699493603749297">Kibodi ya Khmer</translation>
@@ -147,6 +152,7 @@
 <translation id="5218183485292899140">Kifaransa cha Uswisi</translation>
 <translation id="5241298539944515331">Kibodi ya Kivietnamu (VIQR)</translation>
 <translation id="5257456363153333584">Kereng'ende</translation>
+<translation id="5316716239522500219">Viwambo vya kioo</translation>
 <translation id="5319782540886810524">Kibodi ya Kilatvia</translation>
 <translation id="5323213332664049067">Amerika ya Kusini</translation>
 <translation id="5402367795255837559">Breli</translation>
@@ -173,11 +179,14 @@
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">Kibodi ya Amerika Kusini</translation>
 <translation id="6012987430370760224">Kibodi ya Kimarathi (Fonetiki)</translation>
+<translation id="6022924867608035986">Futa maandishi ya kisanduku cha utafutaji</translation>
 <translation id="60357267506638014">QWERTY ya Kicheki</translation>
 <translation id="6054173164583630569">Kibodi ya Kifaransa</translation>
 <translation id="6111770213269631447">Unukuzi wa mfumo wa kuandika (namaskar → নমস্কার)</translation>
+<translation id="6129953537138746214">Nafasi</translation>
 <translation id="6164412158936057769">Vipepeo</translation>
 <translation id="6170470584681422115">Sandiwichi</translation>
+<translation id="6185696379715117369">Ukurasa mmoja juu</translation>
 <translation id="6264347891387618177">Unukuzi wa mfumo wa kuandika (selam → ሰላም)</translation>
 <translation id="6305012486838822927">Kibodi ya Kilao</translation>
 <translation id="6339034549827494595">Kibodi ya Fonetiki (AATSEEL) ya Kirusi</translation>
@@ -189,9 +198,9 @@
 <translation id="6503256918647795660">Kibodi ya Kifaransa cha Uswizi</translation>
 <translation id="6505918941256367791">Kibodi ya Kitamil (InScript)</translation>
 <translation id="6509122719576673235">Kinorwei</translation>
-<translation id="6629951648264770593"><ph name="MODIFIER" /> + <ph name="KEY" /></translation>
 <translation id="6650726141019353908">Kipepeo wa waridi</translation>
-<translation id="6684986274046026054">Funga skrini yako</translation>
+<translation id="671928215901716392">Funga skrini</translation>
+<translation id="6727005317916125192">Dirisha lililotangulia</translation>
 <translation id="6760765581316020278">Kibodi ya Kivietnamu (VNI)</translation>
 <translation id="6795884519221689054">Panda</translation>
 <translation id="6808193438228982088">Mbweha</translation>
@@ -207,11 +216,14 @@
 <translation id="6939777852457331078">Kibodi ya US Workman</translation>
 <translation id="6970230597523682626">Kibulgaria</translation>
 <translation id="6981982820502123353">Upatikanaji</translation>
+<translation id="7020813747703216897">Haikupata matokeo yoyote yanayolingana</translation>
+<translation id="7025325401470358758">Kidirisha kinachofuata</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Unukuzi wa mfumo wa kuandika (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Kibodi ya Kiestoni</translation>
 <translation id="719009910964971313">Kibodi ya Programmer Dvorak, Marekani</translation>
 <translation id="7222624196722476520">Kibodi ya Fonetiki ya Kibulgaria</translation>
+<translation id="7272373489634936181">Tafuta njia za mkato</translation>
 <translation id="7348749398828259943">Kibodi ya US Workman ya kimataifa</translation>
 <translation id="7389722738210761877">Kibodi ya Kithai (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Kibodi ya Kihindi (Fonetiki)</translation>
@@ -226,6 +238,7 @@
 <translation id="7603724359189955920">Gridi</translation>
 <translation id="770015031906360009">Kigiriki</translation>
 <translation id="7706319470528945664">Kibodi ya Kireno</translation>
+<translation id="7724603315864178912">Kata</translation>
 <translation id="7774365994322694683">Ndege</translation>
 <translation id="7825423931463735974">Kibodi ya Kitamil (Tamil99)</translation>
 <translation id="7853966320808728790">BÉPO ya Kifaransa</translation>
@@ -235,6 +248,7 @@
 <translation id="7943385054491506837">Colemak ya Marekani</translation>
 <translation id="7969525169268594403">Kislovenia</translation>
 <translation id="7987485481246785146">Kibodi inayolingana na Kiarabu cha Kurdu ya Sorani</translation>
+<translation id="8004192919599017226">Anza kutafuta...</translation>
 <translation id="8008366997883261463">Mbwa</translation>
 <translation id="8031722894461705849">Kibodi ya Kislovakia</translation>
 <translation id="8045462269890919536">Kiromania</translation>
@@ -255,6 +269,7 @@
 <translation id="8437209419043462667">Kimarekani</translation>
 <translation id="8467473010914675605">Mbinu ingizo ya Kikorea</translation>
 <translation id="8477649328507734757">Duara za kati moja</translation>
+<translation id="8487678622945914333">Kuza</translation>
 <translation id="8521441079177373948">Kiingereza cha Uingereza</translation>
 <translation id="8551494947769799688">Kilatvia</translation>
 <translation id="8561206103590473338">Tembo</translation>
@@ -264,8 +279,8 @@
 <translation id="874420130893181774">Mbinu ya kuingiza data ya Pinyin ya Jadi</translation>
 <translation id="8803496343472038847">Kibodi ya Fonetiki ya Kirusi</translation>
 <translation id="8808686172382650546">Paka</translation>
-<translation id="8839645518696429828"><ph name="CTRL" /> + <ph name="SHIFT" /> na + au -</translation>
 <translation id="885381502874625531">Kibodi ya Kibelarusi</translation>
+<translation id="88986195241502842">Ukurasa mmoja chini</translation>
 <translation id="8900820606136623064">Kihungari</translation>
 <translation id="8901822611024316615">Kibodi ya QWERTY ya Kicheki</translation>
 <translation id="8919081441417203123">Kidenmarki</translation>
@@ -273,6 +288,7 @@
 <translation id="9017798300203431059">Fonetiki ya Kirusi</translation>
 <translation id="913758436357682283">Kibodi ya Myanmar Myansan</translation>
 <translation id="9153744823707037316">Mbinu ya kuingiza data ya Array</translation>
+<translation id="9179672198516322668">Njia Maarufu za Mkato</translation>
 <translation id="9206487995878691001">Mbinu ya kuingiza data ya Cangjie</translation>
 <translation id="9219908252191632183">Mandhari ya mwezi mwandamo</translation>
 </translationbundle>

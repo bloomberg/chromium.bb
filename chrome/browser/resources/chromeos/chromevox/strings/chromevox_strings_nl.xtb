@@ -36,6 +36,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Volgende kop voor niveau 6</translation>
 <translation id="1275718070701477396">Geselecteerd</translation>
+<translation id="1286609444451033486">Druk op de zoektoets en de spatiebalk om in/uit te schakelen.</translation>
 <translation id="1319608975892113573">Geen vorig blok met geciteerde tekst.</translation>
 <translation id="1321576897702511272">Help van ChromeVox verbergen</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> van <ph name="TOTAL" /></translation>
@@ -370,6 +371,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="4191918948604314587">Een knop</translation>
 <translation id="4202186506458631436">Naar rechts verplaatsen</translation>
 <translation id="4206289001967551965">In tabel</translation>
+<translation id="4209770650650780359">Druk op de pijl-omhoog of -omlaag voor automatisch aanvullen.</translation>
 <translation id="4215733775853809057">Volgende scrollbar</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{streepje}other{# streepjes}}</translation>
 <translation id="421884353938374759">kleurkiezer</translation>
@@ -403,6 +405,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="4532633738839459153">{COUNT,plural, =1{slash}other{# slashes}}</translation>
 <translation id="4547556996012970016">Volgende kop voor niveau 5</translation>
 <translation id="4562381607973973258">Koptekst</translation>
+<translation id="4569941707103739422">Druk op de pijl-omhoog of -omlaag om te navigeren of druk op Enter om te activeren.</translation>
 <translation id="4570424871453628777">Einde van spelfout</translation>
 <translation id="4591507479202817876">, geselecteerd</translation>
 <translation id="4597532268155981612">formulier</translation>
@@ -496,6 +499,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="536031132345979795">Achteruit springen tijdens doorlopend lezen</translation>
 <translation id="5368000168321181111">Earcons uit</translation>
 <translation id="5374320867641260420">Geen volgende knop.</translation>
+<translation id="5376407118396657359">Druk op de zoektoets en op Ctrl+Alt in combinatie met de pijltoetsen om van cel naar cel te navigeren.</translation>
 <translation id="5382299583965267720">Geen volgende kop voor niveau 1.</translation>
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5402791055281059602">Een melding die in een modaal dialoogvenster wordt weergegeven</translation>
@@ -504,6 +508,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="5417034931411865818">Klik op het item onder de routeringstoets $1</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{kleiner-dan-teken}other{# kleiner-dan-tekens}}</translation>
 <translation id="5444587279251314700">(actief)</translation>
+<translation id="5446809554778706307">Geen focus. Druk op Ctrl+T om een nieuw tabblad te openen.</translation>
 <translation id="5451268436205074266">punten <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Aanvullend</translation>
 <translation id="5485036206801896268">Geen vorige afbeelding.</translation>
@@ -583,6 +588,7 @@ Druk op Alt + F om het menu van de Chrome-browser te openen.</translation>
 <translation id="6006050241733874051">Formulier</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{backslash}other{# backslashes}}</translation>
 <translation id="6037602951055904232">Vooruit schuiven</translation>
+<translation id="6042826534790431634">Druk op de zoektoets in combinatie met de spatiebalk om te activeren.</translation>
 <translation id="6044160928851315051">Scherm donkerder maken</translation>
 <translation id="605761629541007221">Einde van vetgedrukte tekst</translation>
 <translation id="6065293622157674001">Begin van grammaticafout</translation>
@@ -859,6 +865,7 @@ Druk op Alt + F om het menu van de Chrome-browser te openen.</translation>
 <translation id="9065283790526219006">+pop-up</translation>
 <translation id="9077213568694924680">uit selectie verwijderd</translation>
 <translation id="9082874451376019682">Geen vorige schuifregelaar.</translation>
+<translation id="9087707351856729768">Begin met typen voor automatisch aanvullen.</translation>
 <translation id="9089864840575085222">Typecho doorlopen</translation>
 <translation id="9105227991373418255">$1 knippen.</translation>
 <translation id="9107530006868467849">Geen vorige mediawidget.</translation>

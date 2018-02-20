@@ -27,6 +27,7 @@
       Hvis denne regelen er spesifisert, vises påloggingsskjermen alltid med lokaliteten som er angitt av den første verdien i denne regelen. (Regelen defineres som en liste for fremoverkompatibilitet.) Hvis regelen ikke er spesifisert eller den er angitt som en tom liste, vises påloggingsskjermen med lokaliteten for den forrige brukerøkten. Hvis regelen er angitt som en verdi som ikke er noen gyldig lokalitet, vises påloggingsskjermen med en reservelokalitet (som for øyeblikket er en-US).</translation>
 <translation id="1062011392452772310">Slå på ekstern attestasjon for enheten</translation>
 <translation id="1062407476771304334">Erstatt</translation>
+<translation id="109166998561583554">Utløser som kontrollerer hvordan tjenesten for passordbeskyttelse merker brukerkontoer som er i fare</translation>
 <translation id="1093082332347834239">Hvis denne innstillingen er slått på, kjøres verten for fjernhjelp i en prosess med <ph name="UIACCESS_PERMISSION_NAME" />-tillatelser. Dette tillater at eksterne brukere kommuniserer via uthevede vinduer i på skrivebordet til den lokale brukeren.
 
           Hvis denne innstillingen er slått av eller ikke er angitt, kjøres verten for fjernhjelp i brukerens kontekst. Eksterne brukere kan i så fall ikke kommunisere via uthevede vinduer på skrivebordet.</translation>
@@ -88,6 +89,7 @@
 
       Hvis denne regelen settes til false (usann), tillater ikke <ph name="PRODUCT_NAME" /> at gjesteprofiler startes.</translation>
 <translation id="1363275621236827384">Slå på forespørsler til Quirks Server for maskinvareprofiler</translation>
+<translation id="1387596372902085462">Angir om Symantec Corporations eldre PKI-infrastruktur skal klareres eller ikke</translation>
 <translation id="1393485621820363363">Aktiverte bedriftsskrivere</translation>
 <translation id="1397855852561539316">Foreslått nettadresse for standard søkeleverandør</translation>
 <translation id="1426410128494586442">Ja</translation>
@@ -98,6 +100,7 @@
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultJavaScriptSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis nevnte retningslinje ikke er angitt.</translation>
 <translation id="1456822151187621582">Windows (<ph name="PRODUCT_OS_NAME" />-klienter):</translation>
+<translation id="1457305643416399820">Merking av kontoer der passordbeskyttelse er i fare, er slått av</translation>
 <translation id="1464848559468748897">Kontrollér brukeratferden i flerprofiløkter på <ph name="PRODUCT_OS_NAME" />-enheter.
 
       Hvis denne innstillingen angis til «MultiProfileUserBehaviorUnrestricted», kan brukeren enten være en primær eller sekundær bruker i en flerprofiløkt.
@@ -283,11 +286,6 @@
 
           Hvis denne regelen ikke angis, brukes alle de fire skjemaene.</translation>
 <translation id="2067011586099792101">Blokkér tilgang til nettsteder som ikke inngår i innholdspakker</translation>
-<translation id="2075030897098958514">Kontrollerer om NTLMv2 er aktivert.
-
-          Alle nylige versjoner av Samba- og Windows-tjenere støtter NTLMv2. Mv2 må bare slås av for bakoverkompatibilitet, siden sikkerheten for autentisering reduseres.
-
-          Standardverdien når denne regelen ikke er definert, er for øyeblikket «usann» for bakoverkompatibilitet, men skal endres til «sann» senere.</translation>
 <translation id="2077129598763517140">Bruk maskinvareakselerasjon når det er tilgjengelig</translation>
 <translation id="2077273864382355561">Forsinkelse for avslått skjerm når enheten kjører på batteristrøm</translation>
 <translation id="2082205219176343977">Konfigurer minimum tillatt Chrome-versjon for enheten.</translation>
@@ -395,6 +393,7 @@
       Innstillingen må angis i millisekunder.</translation>
 <translation id="237494535617297575">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som får vise varsler. Hvis denne retningslinjen ikke angis, brukes den globale verdien for alle nettsteder, enten fra retningslinjen DefaultNotificationsSetting hvis den er angitt, eller av brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>
 <translation id="2386362615870139244">Tillat låser for skjermaktivering</translation>
+<translation id="2411817661175306360">Advarsel om passordbeskyttelse er slått av</translation>
 <translation id="2411919772666155530">Blokkér varsler på disse nettstedene</translation>
 <translation id="2418507228189425036">Slår av lagringen av nettleserloggen i <ph name="PRODUCT_NAME" /> og hindrer brukerne i å endre denne innstillingen.
 
@@ -758,7 +757,6 @@
 <translation id="3528000905991875314">Aktiver alternative feilsider</translation>
 <translation id="3547954654003013442">Innstillinger for proxy-tjener</translation>
 <translation id="3577251398714997599">Annonseinnstillinger for nettsteder med forstyrrende annonser</translation>
-<translation id="3587482841069643663">Alle</translation>
 <translation id="3591584750136265240">Konfigurer autentiseringsatferden ved pålogging</translation>
 <translation id="3627678165642179114">Aktiver eller deaktiver nett-tjeneste for stavekontroll</translation>
 <translation id="3646859102161347133">Angi skjermforstørrelsestype</translation>
@@ -972,16 +970,6 @@
 
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er aktivert.</translation>
 <translation id="4285674129118156176">Tillat at brukere uten tilknytning bruker ARC</translation>
-<translation id="4294280661005713627">Angir en målversjon for automatiske oppdateringer.
-
-     Angir prefikset for en målversjon som <ph name="PRODUCT_OS_NAME" /> skal oppdateres til. Hvis enheten kjører en versjon før det angitte prefikset, oppdateres enheten til den siste versjonen med det gitte prefikset. Hvis enheten allerede bruker en nyere versjon, skjer det ikke noe (enheten blir med andre ord ikke nedgradert), og enheten beholder den nåværende versjonen. Prefiksformatet fungerer komponentvis, som demonstrert i det følgende eksemplet:
-
-      "" (eller ikke konfigurert): Oppdater til den siste tilgjengelige versjonen.
-      "1412.": Oppdater til en underversjon av 1412 (f.eks. 1412.24.34 eller 1412.60.2)
-      "1412.2.": Oppdater til en underversjon av 1412.2 (f.eks. 1412.2.34 eller 1412.2.2)
-      "1412.24.34": Oppdater bare til denne spesifikke versjonen
-
-      Advarsel: Det er ikke anbefalt å konfigurere versjonsbegrensninger, siden de kan hindre brukere i å motta programvareoppdateringer og kritiske sikkerhetsløsninger. Hvis oppdateringer begrenses til prefikset for en spesifikk versjon, kan brukerne bli utsatt for risiko.</translation>
 <translation id="4298509794364745131">Angir en liste over apper som kan aktiveres som notatapper på låseskjermen for <ph name="PRODUCT_OS_NAME" />.
 
       Hvis den foretrukne notatappen er aktivert på låseskjermen, inneholder låseskjermen et UI-element for å starte den aktuelle appen.
@@ -1005,6 +993,13 @@
 <translation id="4347908978527632940">Hvis verdien er «true» (sann) og brukeren er en administrert bruker, kan andre Android-apper sende forespørsler om brukerens nettbegrensninger gjennom en innholdsleverandør.
 
           Hvis verdien er «false» (usann) eller ikke spesifisert, returnerer innholdsleverandøren ingen informasjon.</translation>
+<translation id="435461861920493948">Inneholder en liste over mønstre som brukes til å styre synligheten for kontoer i <ph name="PRODUCT_NAME" />.
+
+      Alle Google-kontoer på enheten sammenlignes med mønstrene som er lagret i denne regelen, for å avgjøre synligheten for kontoene i <ph name="PRODUCT_NAME" />. En konto er synlig hvis kontonavnet stemmer overens med et av mønstrene på listen. Ellers er den skjult.
+
+      Bruk jokertegnet «*» for å få treff på ingen eller flere vilkårlige tegn. Escape-tegnet er «\», så for å få treff på «*» eller «\» som faktiske tegn, må du sette en «\» foran dem.
+
+      Hvis denne regelen ikke er angitt, er alle Google-kontoer synlige i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="436581050240847513">Rapportér nettverksgrensesnitt for enheten</translation>
 <translation id="4372704773119750918">Ikke tilllat bedriftsbrukeren å være en del av flerprofilen (primær eller sekundær)</translation>
 <translation id="4377599627073874279">La alle nettsteder vise alle bilder</translation>
@@ -1075,6 +1070,7 @@
 
           For å få en fullstendig beskrivelse over mulige innstilinger samt strukturen i denne regelen, gå til https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
+<translation id="4554651132977135445">Behandlingsmodus med tilbakekobling for brukerretningslinjer</translation>
 <translation id="4555850956567117258">Slå på ekstern attestasjon for brukeren</translation>
 <translation id="4557134566541205630">Nettadresse for ny fane for standard søkeleverandør</translation>
 <translation id="4600786265870346112">Aktiver stor markør</translation>
@@ -1350,6 +1346,7 @@
 
       Merk: Hvis plattformen støtter varsler om brudd på reglene, angis forsinkelsen for ny innlasting til 24 timer (dette ignorerer alle standarder og verdien denne regelen er satt til), fordi det forventes at varsler om brudd på reglene fremtvinger ny innlasting automatisk når regelen endres. Dette gjør at det ikke er nødvendig med hyppige nye innlastinger.</translation>
 <translation id="5530347722229944744">Blokkér potensielt farlige nedlastinger</translation>
+<translation id="5530586312297447592">Tjenesten for passordbeskyttelse merker brukerkontoer som i fare ved gjenbruk av passord på sider som driver med nettfisking</translation>
 <translation id="5535973522252703021">Godkjenningsliste for delegasjonstjener for Kerberos</translation>
 <translation id="555077880566103058">Tillat at <ph name="FLASH_PLUGIN_NAME" />-programtillegget kan kjøres automatisk på alle nettsteder</translation>
 <translation id="5559079916187891399">Denne regelen har ingen innvirkning på Android-apper.</translation>
@@ -1489,17 +1486,6 @@
 <translation id="5983708779415553259">Standard atferd for nettsteder som ikke inngår i noen innholdspakker.</translation>
 <translation id="5997543603646547632">Bruk 24-timersklokken som standard</translation>
 <translation id="5997846976342452720">Angi om programtilleggssøket skal deaktiveres (avviklet)</translation>
-<translation id="6005179188836322782">Slår på Safe Browsing-funksjonen for <ph name="PRODUCT_NAME" /> og hindrer brukerne i å endre denne innstillingen.
-
-      Hvis du slår på denne innstillingen, er Safe Browsing alltid aktiv.
-
-      Hvis du slår av denne innstillingen, er Safe Browsing aldri aktiv.
-
-      Hvis du slår denne innstillingen av eller på, kan ikke brukeren endre eller overstyre innstillingen for beskyttelse mot nettfisking og skadelig programvare for <ph name="PRODUCT_NAME" />.
-
-      Hvis innstillingen ikke angis, aktiveres dette, men brukeren kan endre det.
-
-      Gå til https://developers.google.com/safe-browsing for å få mer informasjon om Safe Browsing.</translation>
 <translation id="6017568866726630990">Vis utskriftsdialogen for systemet i stedet for utskriftsforhåndsvisning.
 
       Når denne innstillingen aktiveres, åpner <ph name="PRODUCT_NAME" /> utskriftsdialogen for systemet i stedet for den innebygde utskriftsforhåndsvisningen når en bruker ber om å skrive ut en side.
@@ -1554,6 +1540,17 @@
 
       For å feste apper til appoversikten, se PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Umiddelbar nettadresse for standard søkeleverandør</translation>
+<translation id="6029950823657977211">
+      MERK: Dette er en eksperimentell regel som kan føre til at funksjonaliteten ikke fungerer som den skal!
+      Denne regelen gjelder for påloggingsskjermen. Se også «IsolateOrigins»-regelen, som gjelder for brukerøkten. Vi anbefaler å bruke samme verdi for begge reglene..
+      Hvis regelen er aktivert, kjøres hver av de navngitte opprinnelsene
+      i en kommadelt liste i sin egen prosess. Da isoleres også
+      opprinnelser som har navn basert på underdomener. Hvis for eksempel
+      http://example.com/ spesifiseres, blir også https://foo.example.com/ isolert
+      som en del av nettstedet https://example.com/.
+      Hvis regelen er deaktivert, gjelder logikken for administrering av nettstedsisolering på prosessbasis.
+      Hvis regelen ikke er konfigurert, brukes plattformens standardinnstillinger for nettstedsisolering for påloggingsskjermen.
+      </translation>
 <translation id="603410445099326293">Parametere for forslagsnettadressser som bruker POST</translation>
 <translation id="6036523166753287175">Muliggjør kryssing av brannmur fra ekstern tilgangsvert</translation>
 <translation id="6070667616071269965">Tastaturoppsett for påloggingsskjermen på enheten</translation>
@@ -1723,6 +1720,7 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
       Hvis denne regelen ikke spesifiseres, er nettverksforutsigelse slått på, men brukeren kan endre innstillingen.</translation>
 <translation id="6658245400435704251">Angir grensen for hvor mange sekunder en enhet tilfeldig kan utsette nedlastingen av en oppdatering, fra tidspunktet oppdateringen første ble sendt til tjeneren. Enheten kan sette av en del av denne tiden i form av faktisk ventetid, og den gjenværende delen i form av antall oppdateringer som skal kontrolleres. I alle tilfelle er det den øvre grensen for spredning knyttet til en konstant tidsmengde, slik at enheten aldri blir stående fast og vente på å laste ned en oppdatering for alltid.</translation>
 <translation id="6689792153960219308">Rapportér maskinvarestatus</translation>
+<translation id="6698071416141001300">Tjenesten for passordbeskyttelse merker brukerkontoer som i fare ved gjenbruk av passord</translation>
 <translation id="6699880231565102694">Aktiver to-delt autentisering for verter med ekstern adgang</translation>
 <translation id="6724842112053619797">Hvis du slår på denne innstillingen, blir innstillingene som er lagret i <ph name="PRODUCT_NAME" />-profiler (for eksempel bokmerker, autofylldata, passord også videre), også skrevet til en fil som lagres i mappen for roaming-brukerprofilen, eller på et sted som bestemmes av administratoren via regelen <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Når du slår på denne regelen, deaktiveres skysynkronisering.
 
@@ -1969,6 +1967,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder fra retningslinjen DefaultPopupsSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>
 <translation id="7529144158022474049">Automatisk oppdatering av spredningsfaktor</translation>
 <translation id="7534199150025803530">Denne regelen har ingen innvirkning på Google Disk-appen for Android. Hvis du vil forhindre bruk av Google Disk via mobiltilkoblinger, bør du ikke tillate installasjon av Google Disk-appen for Android.</translation>
+<translation id="7547549430720182663">Slå sammen</translation>
 <translation id="7553535237300701827">Når denne regelen er angitt, blir autentiseringsprosessen ved pålogging ett av de følgende alternativene, avhengig av verdien for innstillingen:
 
       Hvis den settes til GAIA, gjøres påloggingen via den normale GAIA-autentiseringsprosessen.
@@ -2090,7 +2089,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis du ikke angir denne innstillingen, bruker <ph name="PRODUCT_NAME" /> standardverdien på 5 000 millisekunder.</translation>
 <translation id="7841880500990419427">Laveste TLS-versjon som kan brukes som reserve</translation>
 <translation id="7842869978353666042">Konfigurer Google Disk-alternativer</translation>
-<translation id="7843525027689416831">Spesifiserer flaggene som skal gjelde for <ph name="PRODUCT_NAME" /> når det startes opp. De spesifiserte flaggene brukes bare på påloggingsskjermen. Flagg som angis via denne regelen, videreføres ikke til brukerøkter.</translation>
 <translation id="787125417158068494">Hvis denne er angitt som SyncDisabled eller ikke er konfigurert, er ikke <ph name="PRODUCT_OS_NAME" />-sertifikater tilgjengelige for ARC-apper.
 
       Hvis denne er angitt som CopyCaCerts, er alle ONC-installerte CA-sertifikater med <ph name="WEB_TRUSTED_BIT" /> tilgjengelige for ARC-apper.</translation>
@@ -2249,9 +2247,17 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
     Hvis disse retningslinjene slås av eller ikke angis, åpnes PDF-filer i PDF-programtillegget frem til brukeren eventuelt slår det av.</translation>
 <translation id="8402079500086185021">Åpne alltid PDF-filer eksternt</translation>
 <translation id="8412312801707973447">Angir om OCSP/CRL-kontroller utføres på nettet</translation>
+<translation id="841977920223099909">Utløser for advarsel om passordbeskyttelse</translation>
 <translation id="8424255554404582727">Angi standardverdien for skjermrotasjon. Denne brukes hver gang enheten starter på nytt</translation>
 <translation id="8426231401662877819">Rotér skjermen 90 grader med klokken</translation>
 <translation id="8451988835943702790">Bruk siden Ny fane som startside</translation>
+<translation id="8459216513698220096">Angir om og hvordan brukerinnstillinger fra datamaskin-GPO-er behandles.
+
+      Hvis regelen er angitt som «Default» (Standard), eller hvis den ikke er angitt, leses brukerinnstillingene bare fra bruker-GPO-ene (datamaskin-GPO-ene ignoreres).
+
+      Hvis regelen er angitt som «Merge» (Slå sammen), slås brukerinnstillingene i bruker-GPO-ene sammen med brukerinnstillingene i datamaskin-GPO-ene (datamaskin-GPO-ene har prioritet).
+
+      Hvis regelen er angitt som «Replace» (Erstatt), erstattes brukerinnstillingene i bruker-GPO-ene med brukerinnstillingene i datamaskin-GPO-ene (bruker-GPO-ene ignoreres).</translation>
 <translation id="8465065632133292531">Parametere for Instant-nettadresser som bruker POST</translation>
 <translation id="847472800012384958">Ikke la noen nettsteder vise forgrunnsvinduer</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2300,6 +2306,7 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
           Hvis du ikke spesifiserer denne regelen, forsøker <ph name="PRODUCT_NAME" /> å oppdage om en tjener er på intranett og bare svare på IWA-forespørsler hvis den er det. Hvis en tjener registreres som Internett, ignorerer <ph name="PRODUCT_NAME" /> IWA-forespørsler fra tjeneren.</translation>
 <translation id="8672321184841719703">Målversjon for automatiske oppdateringer</translation>
 <translation id="867410340948518937">Universal tofaktor-autentisering (U2F)</translation>
+<translation id="8685024486845674965">Advarselen om passordbeskyttelse utløses ved gjenbruk av passord</translation>
 <translation id="8693243869659262736">Bruk innebygd DNS-klient</translation>
 <translation id="8704831857353097849">Liste over deaktiverte programtillegg</translation>
 <translation id="8711086062295757690">Angir nøkkelordet, som er snarveien som brukes i søkefeltet for å utløse søket for denne leverandøren.
@@ -2316,6 +2323,7 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
       Hvis denne innstillingen er aktivert eller ikke angitt, kan nettleser- og nedlastingsloggen slettes.
 
       Hvis innstillingen deaktiveres, kan ikke nettleser- og nedlastingsloggen slettes.</translation>
+<translation id="8759829385824155666">Tillatte Kerberos-krypteringstyper</translation>
 <translation id="8764119899999036911">Angir om generert Kerberos-SPN er basert på det kanoniske DNS-navnet eller på det angitte originalnavnet. Hvis du aktiverer denne innstillingen, droppes CNAME-oppslag, og tjenernavnet brukes som angitt. Hvis du deaktiverer denne innstillingen eller ikke angir den, bestemmes tjenerens kanoniske navn ved hjelp av CNAME-oppslag.</translation>
 <translation id="87812015706645271">Krever at navnet på den lokale brukeren samsvarer med verten for ekstern tilgang</translation>
 <translation id="8782750230688364867">Angir prosentandelen for hvordan forsinkelsen til skjermdemping skaleres når enheten er i presentasjonsmodus.
@@ -2331,6 +2339,7 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
       Hvis denne innstillingen ikke er angitt, eller er satt til «false», blir ikke posisjonen rapportert.</translation>
 <translation id="8818768076343557335">Forutsi nettverkshandlinger på et hvilket som helst nettverk som ikke er et mobilnettverk.
           (Avviklet i 50, fjernet i 52. Etter 52 behandles verdien som 0 – Forutsi nettverkshandlinger på alle nettverkstilkoblinger – selv om verdien er satt til 1.)</translation>
+<translation id="8825782996899863372">Advarselen om passordbeskyttelse utløses ved gjenbruk av passord på sider som driver med nettfisking</translation>
 <translation id="8828766846428537606">Angir standard startside i <ph name="PRODUCT_NAME" /> og forhindrer brukerne i å endre den. Brukerens innstillinger for startside blir kun fullstendig overstyrt dersom du enten angir nettstedet på siden Ny fane som startside, eller angir den til å være en spesifikk nettadresse du velger. Hvis du ikke spesifiserer nettadressen for startsiden, kan brukeren fremdeles angi nettstedet på siden Ny fane som startside ved å spesifisere «chrome://newtab».</translation>
 <translation id="8833109046074170275">Autentisering via den normale GAIA-prosessen</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> bufrer apper og utvidelser som skal installeres av flere brukere på én enkelt enhet, for å unngå å laste dem ned på nytt for hver bruker.
@@ -2389,6 +2398,12 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
       Hvis du angir denne regelen, kan ikke brukere endre eller overstyre den.
 
       Denne regelen har ingen effekt på hvorvidt brukere kan konfigurere skrivere på enkeltenheter. Den er ment å supplere konfigurering av skrivere utført av enkeltbrukere.
+      </translation>
+<translation id="8934944553121392674">Styrer hvilke skrivere fra <ph name="DEVICE_PRINTERS_POLICY" /> som er tilgjengelige for brukere.
+
+      Bestemmer hvilken tilgangsregel som brukes for konfigurering av flere skrivere om gangen. Hvis <ph name="PRINTERS_ALLOW_ALL" /> er valgt, vises alle skrivere. Hvis <ph name="PRINTERS_BLACKLIST" /> er valgt, brukes <ph name="DEVICE_PRINTERS_BLACKLIST" /> til å begrense tilgangen til de angitte skriverne. Hvis <ph name="PRINTERS_WHITELIST" /> er valgt, angir <ph name="DEVICE_PRINTERS_WHITELIST" /> bare hvilke skrivere som kan velges.
+
+      Hvis regelen ikke er angitt, brukes <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="8947415621777543415">Rapportering av enhetsposisjonen</translation>
 <translation id="8951350807133946005">Angi katalog for diskbufring</translation>
@@ -2470,5 +2485,11 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="930930237275114205">Angi <ph name="PRODUCT_FRAME_NAME" />-katalog for brukerdata</translation>
 <translation id="934390688529359269">Slår på tvunget pålogging for <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Angi størrelse på diskbuffer</translation>
+<translation id="9775893229076211">Lar deg styre hva som utløser kontorapportering om passordbeskyttelse i fare. Merking om kontoer der passordbeskyttelse er i fare, betyr at Google informeres om at denne kontoen står i fare for å bli kapret.
+
+      Hvis denne regelen er angitt som «PasswordProtectionRiskOff», blir det ikke utløst noen merking av kontoer der passordbeskyttelsen er i fare.
+      Hvis denne regelen er angitt som «PasswordProtectionRiskOnPasswordReuse», blir det utløst merking av kontoer der passordbeskyttelsen er i fare, når brukerne bruker Google-passord om igjen på nettsteder som ikke er på godkjenningslisten.
+      Hvis denne regelen er angitt som «PasswordProtectionRiskOnPhishingReuse», blir det utløst merking av kontoer der passordbeskyttelsen er i fare, når brukerne bruker Google-passord om igjen på nettsteder som driver med nettfisking.
+      Hvis denne regelen ikke er angitt, blir det utløst merking av kontoer der passordbeskyttelsen er i fare, når brukerne bruker Google-passord om igjen på nettsteder som driver med nettfisking. Men brukerne kan endre dette.</translation>
 <translation id="982497069985795632">Aktiver stavekontrollen</translation>
 </translationbundle>
