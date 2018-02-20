@@ -110,9 +110,9 @@ NSImage* GetCreditCardTouchBarImage(int iconId) {
 }
 
 - (NSColor*)touchBarSubtextColor {
-  return [NSColor colorWithCalibratedRed:180.0 / 255.0
-                                   green:180.0 / 255.0
-                                    blue:180.0 / 255.0
+  return [NSColor colorWithCalibratedRed:206.0 / 255.0
+                                   green:206.0 / 255.0
+                                    blue:206.0 / 255.0
                                    alpha:1.0];
 }
 
