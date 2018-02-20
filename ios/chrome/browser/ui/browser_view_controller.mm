@@ -1574,6 +1574,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   UIViewAutoresizing initialViewAutoresizing =
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
+  // Clip the content to the bounds of the view. This prevents the WebView to
+  // overflow outside of the BVC, which is particularly visible during rotation.
+  // The WebView is overflowing its bounds to be displayed below the toolbars.
+  self.view.clipsToBounds = YES;
+
   self.contentArea =
       [[BrowserContainerView alloc] initWithFrame:initialViewsRect];
   self.contentArea.autoresizingMask = initialViewAutoresizing;
