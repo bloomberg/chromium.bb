@@ -110,6 +110,14 @@ class VariableExpander:
         * $VERSION_[XP/SERVER_2003/VISTA/WIN7/WIN8/WIN8_1/WIN10]: a 2-tuple
             representing the version of the corresponding OS.
         * $WINDOWS_VERSION: a 2-tuple representing the current Windows version.
+        * $CHROME_TOAST_ACTIVATOR_CLSID: NotificationActivator's CLSID for
+            Chrome.
+        * $CHROME_TOAST_ACTIVATOR_CLSID_BETA: NotificationActivator's CLSID for
+            Chrome Beta.
+        * $CHROME_TOAST_ACTIVATOR_CLSID_DEV: NotificationActivator's CLSID for
+            Chrome Dev.
+        * $CHROME_TOAST_ACTIVATOR_CLSID_SXS: NotificationActivator's CLSID for
+            Chrome SxS.
 
     Args:
       mini_installer_path: The path to a mini_installer.
@@ -163,6 +171,8 @@ class VariableExpander:
           'CHROME_CLIENT_STATE_KEY': (
             'Software\\Google\\Update\\ClientState\\'
             '{8A69D345-D564-463c-AFF1-A69D9E530F96}'),
+          'CHROME_TOAST_ACTIVATOR_CLSID': (
+            '{A2C6CB58-C076-425C-ACB7-6D19D64428CD}'),
           'CHROME_DIR_BETA': 'Google\\Chrome Beta',
           'CHROME_DIR_DEV': 'Google\\Chrome Dev',
           'CHROME_DIR_SXS': 'Google\\Chrome SxS',
@@ -183,7 +193,13 @@ class VariableExpander:
             '{4ea16ac7-fd5a-47c3-875b-dbf4a2008c20}'),
           'LAUNCHER_UPDATE_REGISTRY_SUBKEY': (
             'Software\\Google\\Update\\Clients\\'
-            '{FDA71E6F-AC4C-4a00-8B70-9958A68906BF}')
+            '{FDA71E6F-AC4C-4a00-8B70-9958A68906BF}'),
+          'CHROME_TOAST_ACTIVATOR_CLSID_BETA': (
+            '{B89B137F-96AA-4AE2-98C4-6373EAA1EA4D}'),
+          'CHROME_TOAST_ACTIVATOR_CLSID_DEV': (
+            '{F01C03EB-D431-4C83-8D7A-902771E732FA}'),
+          'CHROME_TOAST_ACTIVATOR_CLSID_SXS': (
+            '{FA372A6E-149F-4E95-832D-8F698D40AD7F}'),
       })
     elif mini_installer_product_name == 'Chromium Installer':
       self._variable_mapping.update({
@@ -195,6 +211,8 @@ class VariableExpander:
           'CHROME_SHORT_NAME': 'Chromium',
           'CHROME_UPDATE_REGISTRY_SUBKEY': 'Software\\Chromium',
           'CHROME_CLIENT_STATE_KEY': 'Software\\Chromium',
+          'CHROME_TOAST_ACTIVATOR_CLSID': (
+            '{635EFA6F-08D6-4EC9-BD14-8A0FDE975159}'),
       })
     else:
       raise KeyError("Unknown mini_installer product name '%s'" %

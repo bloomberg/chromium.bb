@@ -28,6 +28,9 @@
       "values": {
         "$CHROME_LONG_NAME_BETA$USER_SPECIFIC_REGISTRY_SUFFIX": {}
       }
+    },
+    "HKEY_CURRENT_USER\\Software\\Classes\\CLSID\\$CHROME_TOAST_ACTIVATOR_CLSID_BETA": {
+      "exists": "forbidden"
     }
   }
 }
