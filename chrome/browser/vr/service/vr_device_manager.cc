@@ -188,11 +188,12 @@ void VRDeviceManager::InitializeProviders() {
     return;
 
   for (const auto& provider : providers_) {
-    provider->Initialize(
-        base::Bind(&VRDeviceManager::AddDevice, base::Unretained(this)),
-        base::Bind(&VRDeviceManager::RemoveDevice, base::Unretained(this)),
-        base::BindOnce(&VRDeviceManager::OnProviderInitialized,
-                       base::Unretained(this)));
+    provider->Initialize(base::BindRepeating(&VRDeviceManager::AddDevice,
+                                             base::Unretained(this)),
+                         base::BindRepeating(&VRDeviceManager::RemoveDevice,
+                                             base::Unretained(this)),
+                         base::BindOnce(&VRDeviceManager::OnProviderInitialized,
+                                        base::Unretained(this)));
   }
 
   providers_initialized_ = true;
