@@ -261,6 +261,13 @@ class GclientWrappersTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
         [self.fake_gclient, 'sync', '--with_branch_heads', '--with_tags'],
         cwd=self.cwd)
 
+    gclient.Sync(self.fake_gclient, self.cwd, nohooks=False, verbose=False,
+                 ignore_locks=True)
+    self.assertCommandCalled(
+        [self.fake_gclient, 'sync', '--with_branch_heads', '--with_tags',
+         '--ignore_locks'],
+        cwd=self.cwd)
+
   def testSyncWithRunArgs(self):
     """Test gclient.Sync() with run_args.
 

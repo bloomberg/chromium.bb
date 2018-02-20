@@ -2596,12 +2596,13 @@ def SyncChrome(build_root, chrome_root, useflags, tag=None, revision=None):
     tag: If supplied, the Chrome tag to sync.
     revision: If supplied, the Chrome revision to sync.
   """
+  sync_chrome = os.path.join(build_root, 'chromite', 'bin', 'sync_chrome')
+  internal = constants.USE_CHROME_INTERNAL in useflags
   # --reset tells sync_chrome to blow away local changes and to feel
   # free to delete any directories that get in the way of syncing. This
   # is needed for unattended operation.
-  sync_chrome = os.path.join(build_root, 'chromite', 'bin', 'sync_chrome')
-  internal = constants.USE_CHROME_INTERNAL in useflags
-  cmd = [sync_chrome, '--reset']
+  # --ignore-locks tells sync_chrome to ignore git-cache locks.
+  cmd = [sync_chrome, '--reset', '--ignore_locks']
   cmd += ['--internal'] if internal else []
   cmd += ['--tag', tag] if tag is not None else []
   cmd += ['--revision', revision] if revision is not None else []

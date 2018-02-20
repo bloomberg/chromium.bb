@@ -231,7 +231,7 @@ def Revert(gclient, cwd):
 
 
 def Sync(gclient, cwd, reset=False, nohooks=True, verbose=True,
-         run_args=None):
+         run_args=None, ignore_locks=False):
   """Sync the specified directory using gclient.
 
   Args:
@@ -241,6 +241,7 @@ def Sync(gclient, cwd, reset=False, nohooks=True, verbose=True,
     nohooks: If set, add '--nohooks' argument.
     verbose: If set, add '--verbose' argument.
     run_args: If set (dict), pass to RunCommand as kwargs.
+    ignore_locks: If set, add '--ignore_locks' argument.
 
   Returns:
     A CommandResult object.
@@ -255,5 +256,7 @@ def Sync(gclient, cwd, reset=False, nohooks=True, verbose=True,
     cmd.append('--nohooks')
   if verbose:
     cmd.append('--verbose')
+  if ignore_locks:
+    cmd.append('--ignore_locks')
 
   return cros_build_lib.RunCommand(cmd, cwd=cwd, **run_args)
