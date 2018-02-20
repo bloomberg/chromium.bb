@@ -175,11 +175,11 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
   ETypingCommand command_type_;
   String text_to_insert_;
   bool open_for_more_typing_;
-  bool select_inserted_text_;
+  const bool select_inserted_text_;
   bool smart_delete_;
-  TextGranularity granularity_;
+  const TextGranularity granularity_;
   TextCompositionType composition_type_;
-  bool kill_ring_;
+  const bool kill_ring_;
   bool preserves_typing_style_;
 
   // Undoing a series of backward deletes will restore a selection around all of
