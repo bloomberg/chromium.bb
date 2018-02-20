@@ -164,7 +164,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
   // been received and there are no trailers.
   bool FinishedReadingTrailers() const;
 
-  virtual SpdyPriority priority() const;
+  SpdyPriority priority() const;
 
   // Sets priority_ to priority.  This should only be called before bytes are
   // written to the server.
