@@ -799,31 +799,32 @@ class MockSpellCheckHost : spellcheck::mojom::SpellCheckHost {
   // spellcheck::mojom::SpellCheckHost:
   void RequestDictionary() override {}
   void NotifyChecked(const base::string16& word, bool misspelled) override {}
+
+#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+  void CallSpellingService(const base::string16& text,
+                           CallSpellingServiceCallback callback) override {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    std::move(callback).Run(true, std::vector<SpellCheckResult>());
+    TextReceived(text);
+  }
+#endif
+
+#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+  void RequestTextCheck(const base::string16& text,
+                        int route_id,
+                        RequestTextCheckCallback callback) override {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    std::move(callback).Run(std::vector<SpellCheckResult>());
+    TextReceived(text);
+  }
+
   void ToggleSpellCheck(bool, bool) override {}
   void CheckSpelling(const base::string16& word,
                      int,
                      CheckSpellingCallback) override {}
   void FillSuggestionList(const base::string16& word,
                           FillSuggestionListCallback) override {}
-
-  void CallSpellingService(const base::string16& text,
-                           CallSpellingServiceCallback callback) override {
-#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    std::move(callback).Run(true, std::vector<SpellCheckResult>());
-    TextReceived(text);
 #endif
-  }
-
-  void RequestTextCheck(const base::string16& text,
-                        int route_id,
-                        RequestTextCheckCallback callback) override {
-#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    std::move(callback).Run(std::vector<SpellCheckResult>());
-    TextReceived(text);
-#endif
-  }
 
   content::RenderProcessHost* process_host_;
   bool text_received_ = false;
