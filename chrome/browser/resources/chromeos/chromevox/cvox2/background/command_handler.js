@@ -238,10 +238,8 @@ CommandHandler.onCommand = function(command) {
   }
 
   // Require a current range.
-  if (!ChromeVoxState.instance.currentRange_) {
-    new Output().format('@warning_no_current_range').go();
+  if (!ChromeVoxState.instance.currentRange_)
     return true;
-  }
 
   var current = ChromeVoxState.instance.currentRange_;
 
