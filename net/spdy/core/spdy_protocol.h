@@ -118,7 +118,6 @@ enum SpdyDataFlags {
 enum SpdyControlFlags {
   CONTROL_FLAG_NONE = 0x00,
   CONTROL_FLAG_FIN = 0x01,
-  CONTROL_FLAG_UNIDIRECTIONAL = 0x02,
 };
 
 enum SpdyPingFlags {
