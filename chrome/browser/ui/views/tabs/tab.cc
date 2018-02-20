@@ -611,9 +611,10 @@ void Tab::PaintChildren(const views::PaintInfo& info) {
   // except when the tab is too narrow to completely show even one icon, at
   // which point this serves to clip the favicon.
   ui::ClipRecorder clip_recorder(info.context());
-  clip_recorder.ClipPathWithAntiAliasing(
-      GetInteriorPath(info.context().device_scale_factor(), size(),
-                      GetTabEndcapWidth(), 1 /* padding */));
+  // The paint recording scale for tabs is consistent along the x and y axis.
+  const float paint_recording_scale = info.paint_recording_scale_x();
+  clip_recorder.ClipPathWithAntiAliasing(GetInteriorPath(
+      paint_recording_scale, size(), GetTabEndcapWidth(), 1 /* padding */));
   View::PaintChildren(info);
 }
 
