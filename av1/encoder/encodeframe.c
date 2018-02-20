@@ -967,7 +967,9 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
 #if CONFIG_LOOPFILTER_LEVEL
     if (cm->delta_lf_present_flag) {
       if (cm->delta_lf_multi) {
-        for (int lf_id = 0; lf_id < FRAME_LF_COUNT; ++lf_id) {
+        const int frame_lf_count =
+            av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
+        for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id) {
           const int delta_lf =
               (mbmi->curr_delta_lf[lf_id] - xd->prev_delta_lf[lf_id]) /
               cm->delta_lf_res;
@@ -1509,7 +1511,10 @@ static void encode_b(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     if (bsize == cpi->common.seq_params.sb_size && mbmi->skip == 1 &&
         cpi->common.delta_lf_present_flag) {
 #if CONFIG_LOOPFILTER_LEVEL
-      for (int lf_id = 0; lf_id < FRAME_LF_COUNT; ++lf_id)
+      const int frame_lf_count = av1_num_planes(&cpi->common) > 1
+                                     ? FRAME_LF_COUNT
+                                     : FRAME_LF_COUNT - 2;
+      for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
         mbmi->curr_delta_lf[lf_id] = xd->prev_delta_lf[lf_id];
 #endif  // CONFIG_LOOPFILTER_LEVEL
       mbmi->current_delta_lf_from_base = xd->prev_delta_lf_from_base;
@@ -3603,9 +3608,12 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
 #if CONFIG_EXT_DELTA_Q
   if (cm->delta_lf_present_flag) {
 #if CONFIG_LOOPFILTER_LEVEL
-    if (mi_row == tile_info->mi_row_start)
-      for (int lf_id = 0; lf_id < FRAME_LF_COUNT; ++lf_id)
+    if (mi_row == tile_info->mi_row_start) {
+      const int frame_lf_count =
+          av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
+      for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
         xd->prev_delta_lf[lf_id] = 0;
+    }
 #endif  // CONFIG_LOOPFILTER_LEVEL
     if (mi_row == tile_info->mi_row_start) xd->prev_delta_lf_from_base = 0;
   }
@@ -3701,7 +3709,9 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
                 .mbmi.current_delta_lf_from_base = clamp(
                 current_delta_lf_from_base, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
 #if CONFIG_LOOPFILTER_LEVEL
-            for (int lf_id = 0; lf_id < FRAME_LF_COUNT; ++lf_id) {
+            const int frame_lf_count =
+                av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
+            for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id) {
               cm->mi[(mi_row + j) * cm->mi_stride + (mi_col + k)]
                   .mbmi.curr_delta_lf[lf_id] =
                   clamp(current_delta_lf_from_base, -MAX_LOOP_FILTER,

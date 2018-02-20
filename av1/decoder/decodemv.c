@@ -123,7 +123,9 @@ static int read_delta_lflevel(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
       read_delta_lf_flag) {
 #if CONFIG_LOOPFILTER_LEVEL
     if (cm->delta_lf_multi) {
-      assert(lf_id >= 0 && lf_id < FRAME_LF_COUNT);
+      assert(lf_id >= 0 &&
+             lf_id < (av1_num_planes(cm) > 1 ? FRAME_LF_COUNT
+                                             : FRAME_LF_COUNT - 2));
       abs = aom_read_symbol(r, ec_ctx->delta_lf_multi_cdf[lf_id],
                             DELTA_LF_PROBS + 1, ACCT_STR);
     } else {
@@ -989,7 +991,9 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
     if (cm->delta_lf_present_flag) {
 #if CONFIG_LOOPFILTER_LEVEL
       if (cm->delta_lf_multi) {
-        for (int lf_id = 0; lf_id < FRAME_LF_COUNT; ++lf_id) {
+        const int frame_lf_count =
+            av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
+        for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id) {
           const int tmp_lvl =
               xd->prev_delta_lf[lf_id] +
               read_delta_lflevel(cm, xd, r, lf_id, mbmi, mi_col, mi_row) *
@@ -2089,7 +2093,9 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
     if (cm->delta_lf_present_flag) {
 #if CONFIG_LOOPFILTER_LEVEL
       if (cm->delta_lf_multi) {
-        for (int lf_id = 0; lf_id < FRAME_LF_COUNT; ++lf_id) {
+        const int frame_lf_count =
+            av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
+        for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id) {
           const int tmp_lvl =
               xd->prev_delta_lf[lf_id] +
               read_delta_lflevel(cm, xd, r, lf_id, mbmi, mi_col, mi_row) *

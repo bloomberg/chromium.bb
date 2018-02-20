@@ -3292,7 +3292,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         cm->delta_lf_res = 1 << aom_rb_read_literal(rb, 2);
 #if CONFIG_LOOPFILTER_LEVEL
         cm->delta_lf_multi = aom_rb_read_bit(rb);
-        for (int lf_id = 0; lf_id < FRAME_LF_COUNT; ++lf_id)
+        const int frame_lf_count =
+            av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
+        for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
           xd->prev_delta_lf[lf_id] = 0;
 #endif  // CONFIG_LOOPFILTER_LEVEL
       }

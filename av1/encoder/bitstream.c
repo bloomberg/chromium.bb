@@ -346,7 +346,8 @@ static void write_delta_lflevel(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
 #if CONFIG_LOOPFILTER_LEVEL
   if (cm->delta_lf_multi) {
-    assert(lf_id >= 0 && lf_id < FRAME_LF_COUNT);
+    assert(lf_id >= 0 && lf_id < (av1_num_planes(cm) > 1 ? FRAME_LF_COUNT
+                                                         : FRAME_LF_COUNT - 2));
     aom_write_symbol(w, AOMMIN(abs, DELTA_LF_SMALL),
                      ec_ctx->delta_lf_multi_cdf[lf_id], DELTA_LF_PROBS + 1);
   } else {
@@ -1120,7 +1121,9 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 #if CONFIG_LOOPFILTER_LEVEL
       if (cm->delta_lf_present_flag) {
         if (cm->delta_lf_multi) {
-          for (int lf_id = 0; lf_id < FRAME_LF_COUNT; ++lf_id) {
+          const int frame_lf_count =
+              av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
+          for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id) {
             int reduced_delta_lflevel =
                 (mbmi->curr_delta_lf[lf_id] - xd->prev_delta_lf[lf_id]) /
                 cm->delta_lf_res;
@@ -1463,7 +1466,9 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
 #if CONFIG_LOOPFILTER_LEVEL
       if (cm->delta_lf_present_flag) {
         if (cm->delta_lf_multi) {
-          for (int lf_id = 0; lf_id < FRAME_LF_COUNT; ++lf_id) {
+          const int frame_lf_count =
+              av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
+          for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id) {
             int reduced_delta_lflevel =
                 (mbmi->curr_delta_lf[lf_id] - xd->prev_delta_lf[lf_id]) /
                 cm->delta_lf_res;
@@ -2035,7 +2040,9 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
 #if CONFIG_EXT_DELTA_Q
     if (cpi->common.delta_lf_present_flag) {
 #if CONFIG_LOOPFILTER_LEVEL
-      for (int lf_id = 0; lf_id < FRAME_LF_COUNT; ++lf_id)
+      const int frame_lf_count =
+          av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
+      for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
         xd->prev_delta_lf[lf_id] = 0;
 #endif  // CONFIG_LOOPFILTER_LEVEL
       xd->prev_delta_lf_from_base = 0;
@@ -3789,7 +3796,9 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
           xd->prev_delta_lf_from_base = 0;
 #if CONFIG_LOOPFILTER_LEVEL
           aom_wb_write_bit(wb, cm->delta_lf_multi);
-          for (int lf_id = 0; lf_id < FRAME_LF_COUNT; ++lf_id)
+          const int frame_lf_count =
+              av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
+          for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
             xd->prev_delta_lf[lf_id] = 0;
 #endif  // CONFIG_LOOPFILTER_LEVEL
         }
@@ -4202,7 +4211,9 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
           xd->prev_delta_lf_from_base = 0;
 #if CONFIG_LOOPFILTER_LEVEL
           aom_wb_write_bit(wb, cm->delta_lf_multi);
-          for (int lf_id = 0; lf_id < FRAME_LF_COUNT; ++lf_id)
+          const int frame_lf_count =
+              av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
+          for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
             xd->prev_delta_lf[lf_id] = 0;
 #endif  // CONFIG_LOOPFILTER_LEVEL
         }
