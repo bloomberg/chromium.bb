@@ -63,6 +63,10 @@ void ResizeObserver::unobserve(Element* target) {
   auto observation = observer_map->find(this);
   if (observation != observer_map->end()) {
     observations_.erase((*observation).value);
+    auto index = active_observations_.Find((*observation).value);
+    if (index != kNotFound) {
+      active_observations_.EraseAt(index);
+    }
     observer_map->erase(observation);
   }
 }
@@ -103,7 +107,7 @@ void ResizeObserver::DeliverObservations() {
   // We can only clear this flag after all observations have been
   // broadcast.
   element_size_changed_ = skipped_observations_;
-  if (active_observations_.size() == 0)
+  if (active_observations_.IsEmpty())
     return;
 
   HeapVector<Member<ResizeObserverEntry>> entries;
