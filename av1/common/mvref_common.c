@@ -391,7 +391,8 @@ static int has_top_right(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   // not have a top right as it is decoded before the right hand
   // rectangle of the partition
   if (xd->mi[0]->mbmi.partition == PARTITION_VERT_A) {
-    if (mask_row & bs) has_tr = 0;
+    if (xd->n8_w == xd->n8_h)
+      if (mask_row & bs) has_tr = 0;
   }
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
