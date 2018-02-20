@@ -1705,6 +1705,7 @@ crbug.com/803200 external/wpt/websockets/opening-handshake/005.html?wss [ Pass F
 crbug.com/805463 external/wpt/acid/acid3/numbered-tests.html [ Skip ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Retina ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-006v.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-06.xht [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-001v.html [ Failure ]
