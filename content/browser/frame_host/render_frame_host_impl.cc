@@ -51,7 +51,7 @@
 #include "content/browser/installedapp/installed_app_provider_impl_default.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/keyboard_lock/keyboard_lock_service_impl.h"
-#include "content/browser/loader/prefetch_url_loader_factory.h"
+#include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_scheduler_filter.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
@@ -3237,9 +3237,17 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
     StoragePartitionImpl* storage_partition =
         static_cast<StoragePartitionImpl*>(BrowserContext::GetStoragePartition(
             GetSiteInstance()->GetBrowserContext(), GetSiteInstance()));
-    registry_->AddInterface(base::BindRepeating(
-        &PrefetchURLLoaderFactory::ConnectToService,
-        base::RetainedRef(storage_partition->GetPrefetchURLLoaderFactory())));
+    // TODO(https://crbug.com/813479): Investigate why we need to explicitly
+    // specify task runner for BrowserThread::IO here.
+    // Bind calls to the BindRegistry should come on to the IO thread by
+    // default, but it looks we need this in browser tests (but not in full
+    // chrome build), i.e. in content/browser/loader/prefetch_browsertest.cc.
+    registry_->AddInterface(
+        base::BindRepeating(
+            &PrefetchURLLoaderService::ConnectToService,
+            base::RetainedRef(storage_partition->GetPrefetchURLLoaderService()),
+            frame_tree_node_->frame_tree_node_id()),
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   }
 }
 

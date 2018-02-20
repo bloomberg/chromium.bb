@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
-#include "content/browser/loader/prefetch_url_loader_factory.h"
+#include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_requester_info.h"
 #include "content/browser/loader/url_loader_factory_impl.h"
@@ -34,7 +34,7 @@ ResourceMessageFilter::ResourceMessageFilter(
     ChromeBlobStorageContext* blob_storage_context,
     storage::FileSystemContext* file_system_context,
     ServiceWorkerContextWrapper* service_worker_context,
-    PrefetchURLLoaderFactory* prefetch_url_loader_factory,
+    PrefetchURLLoaderService* prefetch_url_loader_service,
     const GetContextsCallback& get_contexts_callback,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_runner)
     : BrowserMessageFilter(ResourceMsgStart),
@@ -47,7 +47,7 @@ ResourceMessageFilter::ResourceMessageFilter(
                                                    file_system_context,
                                                    service_worker_context,
                                                    get_contexts_callback)),
-      prefetch_url_loader_factory_(prefetch_url_loader_factory),
+      prefetch_url_loader_service_(prefetch_url_loader_service),
       io_thread_task_runner_(io_thread_runner),
       weak_ptr_factory_(this) {}
 
@@ -65,7 +65,7 @@ void ResourceMessageFilter::OnFilterAdded(IPC::Channel*) {
 void ResourceMessageFilter::OnChannelClosing() {
   DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
 
-  prefetch_url_loader_factory_ = nullptr;
+  prefetch_url_loader_service_ = nullptr;
   url_loader_factory_ = nullptr;
 
   // Unhook us from all pending network requests so they don't get sent to a
@@ -118,8 +118,8 @@ void ResourceMessageFilter::CreateLoaderAndStart(
   // doesn't need to be paired up with SignedExchange feature.
   if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange) &&
       url_request.resource_type == RESOURCE_TYPE_PREFETCH &&
-      prefetch_url_loader_factory_) {
-    prefetch_url_loader_factory_->CreateLoaderAndStart(
+      prefetch_url_loader_service_) {
+    prefetch_url_loader_service_->CreateLoaderAndStart(
         std::move(request), routing_id, request_id, options, url_request,
         std::move(client), traffic_annotation, url_loader_factory_.get());
     return;

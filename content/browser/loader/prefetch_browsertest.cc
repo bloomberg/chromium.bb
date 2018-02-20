@@ -11,7 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "content/browser/loader/prefetch_url_loader_factory.h"
+#include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
@@ -72,8 +72,8 @@ class PrefetchBrowserTest
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         BindOnce(
-            &PrefetchURLLoaderFactory::RegisterPrefetchLoaderCallbackForTest,
-            base::RetainedRef(partition->GetPrefetchURLLoaderFactory()),
+            &PrefetchURLLoaderService::RegisterPrefetchLoaderCallbackForTest,
+            base::RetainedRef(partition->GetPrefetchURLLoaderService()),
             base::BindRepeating(&PrefetchBrowserTest::OnPrefetchURLLoaderCalled,
                                 base::Unretained(this))));
   }

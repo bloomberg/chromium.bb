@@ -1724,7 +1724,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       blob_storage_context.get(),
       storage_partition_impl_->GetFileSystemContext(),
       storage_partition_impl_->GetServiceWorkerContext(),
-      storage_partition_impl_->GetPrefetchURLLoaderFactory(),
+      storage_partition_impl_->GetPrefetchURLLoaderService(),
       get_contexts_callback,
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 

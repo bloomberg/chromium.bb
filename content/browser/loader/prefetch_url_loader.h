@@ -15,7 +15,14 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace content {
+
+class ResourceContext;
+class URLLoaderThrottle;
 
 // PrefetchURLLoader which basically just keeps draining the data.
 class CONTENT_EXPORT PrefetchURLLoader
@@ -23,6 +30,13 @@ class CONTENT_EXPORT PrefetchURLLoader
       public network::mojom::URLLoaderClient,
       public mojo::common::DataPipeDrainer::Client {
  public:
+  using URLLoaderThrottlesGetter = base::RepeatingCallback<
+      std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;
+
+  // |url_loader_throttles_getter|, |resource_context| and
+  // |request_context_getter| may be used when a prefetch handler
+  // needs to additionally create a request (e.g. for fetching certificate
+  // if the prefetch was for a signed exchange).
   PrefetchURLLoader(
       int32_t routing_id,
       int32_t request_id,
@@ -30,7 +44,10 @@ class CONTENT_EXPORT PrefetchURLLoader
       const network::ResourceRequest& resource_request,
       network::mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      network::mojom::URLLoaderFactory* network_loader_factory);
+      network::mojom::URLLoaderFactory* network_loader_factory,
+      URLLoaderThrottlesGetter url_loader_throttles_getter,
+      ResourceContext* resource_context,
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter);
   ~PrefetchURLLoader() override;
 
  private:
@@ -72,6 +89,12 @@ class CONTENT_EXPORT PrefetchURLLoader
 
   // To be a URLLoader for the client.
   network::mojom::URLLoaderClientPtr forwarding_client_;
+
+  // |url_loader_throttles_getter_| and |resource_context_| should be
+  // valid as far as |request_context_getter_| returns non-null value.
+  URLLoaderThrottlesGetter url_loader_throttles_getter_;
+  ResourceContext* resource_context_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   std::unique_ptr<mojo::common::DataPipeDrainer> pipe_drainer_;
 

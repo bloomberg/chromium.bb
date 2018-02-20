@@ -4,6 +4,8 @@
 
 #include "content/browser/loader/prefetch_url_loader.h"
 
+#include "net/url_request/url_request_context_getter.h"
+
 namespace content {
 
 PrefetchURLLoader::PrefetchURLLoader(
@@ -13,9 +15,21 @@ PrefetchURLLoader::PrefetchURLLoader(
     const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    network::mojom::URLLoaderFactory* network_loader_factory)
-    : network_client_binding_(this), forwarding_client_(std::move(client)) {
+    network::mojom::URLLoaderFactory* network_loader_factory,
+    URLLoaderThrottlesGetter url_loader_throttles_getter,
+    ResourceContext* resource_context,
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter)
+    : network_client_binding_(this),
+      forwarding_client_(std::move(client)),
+      url_loader_throttles_getter_(url_loader_throttles_getter),
+      resource_context_(resource_context),
+      request_context_getter_(std::move(request_context_getter)) {
   DCHECK(network_loader_factory);
+
+  // TODO(kinuko): Hook up the Web Package code that uses these fields.
+  // (https://crbug.com/803776)
+  DCHECK(resource_context_);
+  DCHECK(request_context_getter_);
 
   network::mojom::URLLoaderClientPtr network_client;
   network_client_binding_.Bind(mojo::MakeRequest(&network_client));
