@@ -307,7 +307,6 @@ if (NOT BUILD_SHARED_LIBS)
         "${AOM_ROOT}/test/ethread_test.cc"
         "${AOM_ROOT}/test/coding_path_sync.cc"
         "${AOM_ROOT}/test/idct8x8_test.cc"
-        "${AOM_ROOT}/test/partial_idct_test.cc"
         "${AOM_ROOT}/test/superframe_test.cc"
         "${AOM_ROOT}/test/tile_independence_test.cc")
 
@@ -316,7 +315,11 @@ if (NOT BUILD_SHARED_LIBS)
         "${AOM_ROOT}/test/binary_codes_test.cc"
         "${AOM_ROOT}/test/boolcoder_test.cc"
         "${AOM_ROOT}/test/ec_test.cc")
-
+	if (NOT CONFIG_LV_MAP)
+	  set(AOM_UNIT_TEST_COMMON_SOURCES
+          ${AOM_UNIT_TEST_COMMON_SOURCES}
+          "${AOM_ROOT}/test/partial_idct_test.cc")
+	endif ()
     if (CONFIG_EXT_TILE)
       set(AOM_UNIT_TEST_COMMON_SOURCES
           ${AOM_UNIT_TEST_COMMON_SOURCES}
