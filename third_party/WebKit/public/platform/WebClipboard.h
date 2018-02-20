@@ -37,7 +37,7 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
-#include "third_party/WebKit/common/clipboard/clipboard.mojom-shared.h"
+#include "third_party/WebKit/public/mojom/clipboard/clipboard.mojom-shared.h"
 
 namespace blink {
 

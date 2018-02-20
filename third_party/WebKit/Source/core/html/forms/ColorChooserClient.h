@@ -36,7 +36,7 @@
 #include "platform/graphics/Color.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Vector.h"
-#include "third_party/WebKit/common/color_chooser/color_chooser.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/color_chooser/color_chooser.mojom-blink.h"
 
 namespace blink {
 

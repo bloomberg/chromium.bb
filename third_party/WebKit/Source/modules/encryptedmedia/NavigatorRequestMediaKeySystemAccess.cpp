@@ -32,7 +32,7 @@
 #include "public/platform/WebMediaKeySystemConfiguration.h"
 #include "public/platform/WebMediaKeySystemMediaCapability.h"
 #include "public/platform/WebVector.h"
-#include "third_party/WebKit/common/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 
 namespace blink {
 

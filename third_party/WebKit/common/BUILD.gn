@@ -50,7 +50,6 @@ jumbo_component("blink_common") {
     "../public/common/client_hints/client_hints.h",
     "../public/common/device_memory/approximated_device_memory.h",
     "../public/common/feature_policy/feature_policy.h",
-    "../public/common/feature_policy/feature_policy.h",
     "../public/common/frame/frame_policy.h",
     "../public/common/frame/sandbox_flags.h",
     "../public/common/message_port/cloneable_message.h",
@@ -120,10 +119,6 @@ mojom("mojo_platform_bindings") {
   sources = [
     # NOTE: Consider adding new mojom files under public/mojom, this target
     # will be deprecated.
-    "array_buffer/array_buffer_contents.mojom",
-    "clipboard/clipboard.mojom",
-    "color_chooser/color_chooser.mojom",
-    "feature_policy/feature_policy.mojom",
     "loader/prefetch_url_loader_service.mojom",
     "net/ip_address_space.mojom",
     "page/page_visibility_state.mojom",
@@ -143,10 +138,14 @@ mojom("mojo_platform_bindings") {
 
     # TODO(kinuko): Create a separate BUILD.gn in public/mojom (or have the
     # target in public/BUILD.gn).
+    "../public/mojom/array_buffer/array_buffer_contents.mojom",
     "../public/mojom/blob/blob.mojom",
     "../public/mojom/blob/blob_registry.mojom",
     "../public/mojom/blob/blob_url_store.mojom",
     "../public/mojom/blob/serialized_blob.mojom",
+    "../public/mojom/clipboard/clipboard.mojom",
+    "../public/mojom/color_chooser/color_chooser.mojom",
+    "../public/mojom/feature_policy/feature_policy.mojom",
   ]
 
   public_deps = [

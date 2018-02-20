@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "third_party/WebKit/common/clipboard/clipboard.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/clipboard/clipboard.mojom-blink.h"
 #include "third_party/WebKit/public/platform/WebClipboard.h"
 
 namespace blink {

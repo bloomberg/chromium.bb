@@ -21,7 +21,7 @@
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/window_container_type.mojom.h"
-#include "third_party/WebKit/common/color_chooser/color_chooser.mojom.h"
+#include "third_party/WebKit/public/mojom/color_chooser/color_chooser.mojom.h"
 #include "third_party/WebKit/public/platform/WebDisplayMode.h"
 #include "third_party/WebKit/public/platform/WebDragOperation.h"
 #include "third_party/WebKit/public/platform/WebSecurityStyle.h"

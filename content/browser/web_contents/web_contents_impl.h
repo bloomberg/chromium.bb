@@ -53,7 +53,7 @@
 #include "services/device/public/interfaces/geolocation_context.mojom.h"
 #include "services/device/public/interfaces/wake_lock.mojom.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-#include "third_party/WebKit/common/color_chooser/color_chooser.mojom.h"
+#include "third_party/WebKit/public/mojom/color_chooser/color_chooser.mojom.h"
 #include "third_party/WebKit/public/platform/WebDragOperation.h"
 #include "ui/accessibility/ax_modes.h"
 #include "ui/base/page_transition_types.h"

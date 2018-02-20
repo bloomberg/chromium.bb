@@ -89,7 +89,7 @@
 #include "platform/wtf/text/CString.h"
 #include "public/platform/WebCORS.h"
 #include "public/platform/WebURLRequest.h"
-#include "third_party/WebKit/common/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 
 namespace blink {
 

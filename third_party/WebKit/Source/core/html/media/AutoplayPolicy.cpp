@@ -17,7 +17,7 @@
 #include "platform/wtf/Assertions.h"
 #include "public/platform/WebMediaPlayer.h"
 #include "public/web/WebSettings.h"
-#include "third_party/WebKit/common/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 
 namespace blink {
 

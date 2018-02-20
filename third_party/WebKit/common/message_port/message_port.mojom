@@ -4,7 +4,7 @@
 
 module blink.mojom;
 
-import "third_party/WebKit/common/array_buffer/array_buffer_contents.mojom";
+import "third_party/WebKit/public/mojom/array_buffer/array_buffer_contents.mojom";
 import "third_party/WebKit/public/mojom/blob/serialized_blob.mojom";
 import "skia/public/interfaces/bitmap.mojom";
 
