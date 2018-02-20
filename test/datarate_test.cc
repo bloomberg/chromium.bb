@@ -215,6 +215,7 @@ TEST_P(DatarateTestLarge, ChangingDropFrameThresh) {
   cfg_.rc_end_usage = AOM_CBR;
   cfg_.rc_target_bitrate = 200;
   cfg_.g_lag_in_frames = 0;
+  cfg_.g_error_resilient = 1;
   // TODO(marpan): Investigate datarate target failures with a smaller keyframe
   // interval (128).
   cfg_.kf_max_dist = 9999;
