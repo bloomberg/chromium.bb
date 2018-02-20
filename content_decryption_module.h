@@ -325,21 +325,6 @@ struct KeyInformation {
 };
 CHECK_TYPE(KeyInformation, 16, 24);
 
-enum MediaPathMode : uint32_t {
-  kNotSupported = 0,         // Cannot handle the input.
-  kCdmDecryptAndDecode = 1,  // The CDM can decrypt and decode the input.
-  kCdmDecrypt = 2,           // The CDM can decrypt the input into cleartext.
-  // The CDM can transcrypt (decrypt then re-encrypt) the input into what
-  // CdmProxy can decrypt and decode.
-  kCdmTranscryptForCdmProxy = 3,
-  // The CdmProxy (with supporting decoder) can decrypt and decode the input.
-  kCdmProxyDecryptAndDecode = 4,
-  // The CdmProxy (with supporting decryptor) can decrypt the input into
-  // cleartext.
-  kCdmProxyDecrypt = 5,
-};
-CHECK_TYPE(MediaPathMode, 4, 4);
-
 // Supported output protection methods for use with EnableOutputProtection() and
 // returned by OnQueryOutputProtectionStatus().
 enum OutputProtectionMethods : uint32_t {
@@ -908,8 +893,12 @@ class CDM_CLASS_API ContentDecryptionModule_10 {
   // even in an encrypted form.
   // If |allow_persistent_state| is false, the CDM must not attempt to
   // persist state. Calls to CreateFileIO() will fail.
+  // If |use_hw_secure_codecs| is true, the CDM must ensure the decryption key
+  // and video buffers (compressed and uncompressed) are securely protected by
+  // hardware.
   virtual void Initialize(bool allow_distinctive_identifier,
-                          bool allow_persistent_state) = 0;
+                          bool allow_persistent_state,
+                          bool use_hw_secure_codecs) = 0;
 
   // Gets the key status if the CDM has a hypothetical key with the |policy|.
   // The CDM must respond by calling either Host::OnResolveKeyStatusPromise()
@@ -981,24 +970,6 @@ class CDM_CLASS_API ContentDecryptionModule_10 {
   // Performs scheduled operation with |context| when the timer fires.
   virtual void TimerExpired(void* context) = 0;
 
-  // Initializes the CDM audio path with |audio_decoder_config|. The CDM must
-  // respond by calling Host::OnMediaPathInitialized() with kStreamTypeAudio and
-  // supported |mode| for that path. No Decrypt() for audio or
-  // DecryptAndDecodeSamples() will be called by the host before the response is
-  // received. The host may call this method multiple times upon audio config
-  // change.
-  virtual void InitializeAudioPath(
-      const AudioDecoderConfig& audio_decoder_config) = 0;
-
-  // Initializes the CDM video path with |video_decoder_config|. The CDM must
-  // respond by calling Host::OnMediaPathInitialized() with kStreamTypeVideo and
-  // supported |mode| for that path. No Decrypt() for video or
-  // DecryptAndDecodeFrame() will be called by the host before the response is
-  // received. The host may call this method multiple times upon video config
-  // change.
-  virtual void InitializeVideoPath(
-      const VideoDecoderConfig& video_decoder_config) = 0;
-
   // Decrypts the |encrypted_buffer|.
   //
   // Returns kSuccess if decryption succeeded, in which case the callee
@@ -1009,9 +980,34 @@ class CDM_CLASS_API ContentDecryptionModule_10 {
   // Returns kDecryptError if any other error happened.
   // If the return value is not kSuccess, |decrypted_buffer| should be ignored
   // by the caller.
-  virtual Status Decrypt(StreamType stream_type,
-                         const InputBuffer& encrypted_buffer,
+  virtual Status Decrypt(const InputBuffer& encrypted_buffer,
                          DecryptedBlock* decrypted_buffer) = 0;
+
+  // Initializes the CDM audio decoder with |audio_decoder_config|. This
+  // function must be called before DecryptAndDecodeSamples() is called.
+  //
+  // Returns kSuccess if the |audio_decoder_config| is supported and the CDM
+  // audio decoder is successfully initialized.
+  // Returns kInitializationError if |audio_decoder_config| is not supported.
+  // The CDM may still be able to do Decrypt().
+  // Returns kDeferredInitialization if the CDM is not ready to initialize the
+  // decoder at this time. Must call Host::OnDeferredInitializationDone() once
+  // initialization is complete.
+  virtual Status InitializeAudioDecoder(
+      const AudioDecoderConfig& audio_decoder_config) = 0;
+
+  // Initializes the CDM video decoder with |video_decoder_config|. This
+  // function must be called before DecryptAndDecodeFrame() is called.
+  //
+  // Returns kSuccess if the |video_decoder_config| is supported and the CDM
+  // video decoder is successfully initialized.
+  // Returns kInitializationError if |video_decoder_config| is not supported.
+  // The CDM may still be able to do Decrypt().
+  // Returns kDeferredInitialization if the CDM is not ready to initialize the
+  // decoder at this time. Must call Host::OnDeferredInitializationDone() once
+  // initialization is complete.
+  virtual Status InitializeVideoDecoder(
+      const VideoDecoderConfig& video_decoder_config) = 0;
 
   // De-initializes the CDM decoder and sets it to an uninitialized state. The
   // caller can initialize the decoder again after this call to re-initialize
@@ -1479,15 +1475,6 @@ class CDM_CLASS_API Host_10 {
   virtual void OnSessionClosed(const char* session_id,
                                uint32_t session_id_size) = 0;
 
-  // Must be called by the CDM as the response to InitializeAudioPath() and
-  // InitializeVideoPath() with |stream_type| set to kStreamTypeAudio and
-  // kStreamTypeVideo, respectively, and with the selected |mode|. If the |mode|
-  // is kCdmDecryptAndDecode, kCdmDecrypt, or kCdmTranscryptForCdmProxy, the
-  // corresponding decryptor and/or decoder in the CDM has been successfully
-  // initialized for the config.
-  virtual void OnMediaPathInitialized(StreamType stream_type,
-                                      MediaPathMode mode) = 0;
-
   // The following are optional methods that may not be implemented on all
   // platforms.
 
@@ -1510,6 +1497,11 @@ class CDM_CLASS_API Host_10 {
   // Requests the current output protection status. Once the host has the status
   // it will call ContentDecryptionModule::OnQueryOutputProtectionStatus().
   virtual void QueryOutputProtectionStatus() = 0;
+
+  // Must be called by the CDM if it returned kDeferredInitialization during
+  // InitializeAudioDecoder() or InitializeVideoDecoder().
+  virtual void OnDeferredInitializationDone(StreamType stream_type,
+                                            Status decoder_status) = 0;
 
   // Creates a FileIO object from the host to do file IO operation. Returns NULL
   // if a FileIO object cannot be obtained. Once a valid FileIO object is
