@@ -46,7 +46,7 @@ const static uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMA
 						  DRM_FORMAT_XRGB8888 };
 
 const static uint32_t texture_source_formats[] = { DRM_FORMAT_GR88, DRM_FORMAT_R8, DRM_FORMAT_NV21,
-						   DRM_FORMAT_NV12 };
+						   DRM_FORMAT_NV12, DRM_FORMAT_YVU420_ANDROID };
 
 static int amdgpu_set_metadata(int fd, uint32_t handle, struct amdgpu_bo_metadata *info)
 {
@@ -359,6 +359,8 @@ static int amdgpu_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint
 
 	if (format == DRM_FORMAT_NV12 || format == DRM_FORMAT_NV21) {
 		drv_bo_from_format(bo, ALIGN(width, 64), height, format);
+	} else if (format == DRM_FORMAT_YVU420_ANDROID) {
+		drv_bo_from_format(bo, ALIGN(width, 128), height, format);
 	} else {
 		if (amdgpu_addrlib_compute(addrlib, width, height, format, use_flags, &tiling_flags,
 					   &addr_out) < 0)
