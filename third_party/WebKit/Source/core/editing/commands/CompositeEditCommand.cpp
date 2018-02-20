@@ -612,24 +612,14 @@ void CompositeEditCommand::InsertNodeAtTabSpanPosition(
   InsertNodeAt(node, PositionOutsideTabSpan(pos), editing_state);
 }
 
-bool CompositeEditCommand::DeleteSelection(EditingState* editing_state,
-                                           bool smart_delete,
-                                           bool merge_blocks_after_delete,
-                                           bool expand_for_special_elements,
-                                           bool sanitize_markup) {
+bool CompositeEditCommand::DeleteSelection(
+    EditingState* editing_state,
+    const DeleteSelectionOptions& options) {
   if (!EndingSelection().IsRange())
     return true;
 
   ApplyCommandToComposite(
-      DeleteSelectionCommand::Create(
-          GetDocument(),
-          DeleteSelectionOptions::Builder()
-              .SetSmartDelete(smart_delete)
-              .SetMergeBlocksAfterDelete(merge_blocks_after_delete)
-              .SetExpandForSpecialElements(expand_for_special_elements)
-              .SetSanitizeMarkup(sanitize_markup)
-              .Build()),
-      editing_state);
+      DeleteSelectionCommand::Create(GetDocument(), options), editing_state);
   if (editing_state->IsAborted())
     return false;
 
@@ -1332,7 +1322,9 @@ void CompositeEditCommand::MoveParagraphWithClones(
 
   SetEndingSelection(SelectionForUndoStep::From(
       SelectionInDOMTree::Builder().Collapse(start).Extend(end).Build()));
-  if (!DeleteSelection(editing_state, false, false, false))
+  if (!DeleteSelection(
+          editing_state,
+          DeleteSelectionOptions::Builder().SetSanitizeMarkup(true).Build()))
     return;
 
   // There are bugs in deletion when it removes a fully selected table/list.
@@ -1512,7 +1504,9 @@ void CompositeEditCommand::MoveParagraphs(
       SelectionInDOMTree::Builder().Collapse(start).Extend(end).Build());
   SetEndingSelection(
       SelectionForUndoStep::From(selection_to_delete.AsSelection()));
-  if (!DeleteSelection(editing_state, false, false, false))
+  if (!DeleteSelection(
+          editing_state,
+          DeleteSelectionOptions::Builder().SetSanitizeMarkup(true).Build()))
     return;
 
   DCHECK(destination.DeepEquivalent().IsConnected()) << destination;

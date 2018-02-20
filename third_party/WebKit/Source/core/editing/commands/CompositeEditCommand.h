@@ -36,6 +36,7 @@
 
 namespace blink {
 
+class DeleteSelectionOptions;
 class EditingStyle;
 class Element;
 class HTMLBRElement;
@@ -98,11 +99,7 @@ class CORE_EXPORT CompositeEditCommand : public EditCommand {
   void ApplyStyledElement(Element*, EditingState*);
   void RemoveStyledElement(Element*, EditingState*);
   // Returns |false| if the EditingState has been aborted.
-  bool DeleteSelection(EditingState*,
-                       bool smart_delete = false,
-                       bool merge_blocks_after_delete = true,
-                       bool expand_for_special_elements = true,
-                       bool sanitize_markup = true);
+  bool DeleteSelection(EditingState*, const DeleteSelectionOptions&);
   virtual void DeleteTextFromNode(Text*, unsigned offset, unsigned count);
   bool IsRemovableBlock(const Node*);
   void InsertNodeAfter(Node*, Node* ref_child, EditingState*);
