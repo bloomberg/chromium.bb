@@ -480,6 +480,11 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
           seg->update_map ? cpi->segmentation_map : cm->last_frame_seg_map;
       mbmi->segment_id = get_segment_id(cm, map, bsize, mi_row, mi_col);
       reset_tx_size(xd, mbmi, cm->tx_mode);
+#if CONFIG_TXK_SEL
+      memset(mbmi->txk_type, DCT_DCT,
+             sizeof(mbmi->txk_type[0]) *
+                 (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
+#endif
     }
     // Else for cyclic refresh mode update the segment map, set the segment id
     // and then update the quantizer.
@@ -487,6 +492,11 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
       av1_cyclic_refresh_update_segment(cpi, mbmi, mi_row, mi_col, bsize,
                                         ctx->rate, ctx->dist, x->skip);
       reset_tx_size(xd, mbmi, cm->tx_mode);
+#if CONFIG_TXK_SEL
+      memset(mbmi->txk_type, DCT_DCT,
+             sizeof(mbmi->txk_type[0]) *
+                 (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
+#endif
     }
   }
 
