@@ -91,6 +91,9 @@ class RulesRegistryService : public BrowserContextKeyedAPI,
     return content_rules_registry_;
   }
 
+  // Indicates whether any registry has rules registered.
+  bool HasAnyRegisteredRules() const;
+
   // For testing.
   void SimulateExtensionUninstalled(const Extension* extension);
 

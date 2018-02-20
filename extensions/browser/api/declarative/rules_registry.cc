@@ -38,12 +38,12 @@ const char kDuplicateRuleId[] = "Duplicate rule ID: %s";
 const char kErrorCannotRemoveManifestRules[] =
     "Rules declared in the 'event_rules' manifest field cannot be removed";
 
-std::unique_ptr<base::Value> RulesToValue(
+base::Value RulesToValue(
     const std::vector<linked_ptr<api::events::Rule>>& rules) {
-  std::unique_ptr<base::ListValue> list(new base::ListValue());
+  base::Value value(base::Value::Type::LIST);
   for (size_t i = 0; i < rules.size(); ++i)
-    list->Append(rules[i]->ToValue());
-  return std::move(list);
+    value.GetList().push_back(std::move(*rules[i]->ToValue()));
+  return value;
 }
 
 std::vector<linked_ptr<api::events::Rule>> RulesFromValue(
@@ -339,8 +339,8 @@ void RulesRegistry::ProcessChangedRules(const std::string& extension_id) {
   GetRules(extension_id, rules_, &new_rules);
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&RulesCacheDelegate::WriteToStorage, cache_delegate_,
-                 extension_id, base::Passed(RulesToValue(new_rules))));
+      base::BindOnce(&RulesCacheDelegate::UpdateRules, cache_delegate_,
+                     extension_id, RulesToValue(new_rules)));
 }
 
 void RulesRegistry::MaybeProcessChangedRules(const std::string& extension_id) {

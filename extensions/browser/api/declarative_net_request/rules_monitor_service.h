@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_RULES_MONITOR_SERVICE_H_
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_RULES_MONITOR_SERVICE_H_
 
+#include <set>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
@@ -33,6 +35,8 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   static BrowserContextKeyedAPIFactory<RulesMonitorService>*
   GetFactoryInstance();
 
+  bool HasAnyRegisteredRulesets() const;
+
  private:
   friend class BrowserContextKeyedAPIFactory<RulesMonitorService>;
 
@@ -56,6 +60,8 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       registry_observer_;
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
+
+  std::set<const Extension*> extensions_with_rulesets_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesMonitorService);
 };
