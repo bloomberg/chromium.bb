@@ -68,10 +68,9 @@ class VRDeviceManagerTest : public testing::Test {
     device::mojom::VRServiceClientPtr proxy;
     device::FakeVRServiceClient client(mojo::MakeRequest(&proxy));
     auto service = base::WrapUnique(new VRServiceImplForTesting());
-    service->SetClient(
-        std::move(proxy),
-        base::BindRepeating(&VRDeviceManagerTest::onDisplaySynced,
-                            base::Unretained(this)));
+    service->SetClient(std::move(proxy),
+                       base::Bind(&VRDeviceManagerTest::onDisplaySynced,
+                                  base::Unretained(this)));
     return service;
   }
 

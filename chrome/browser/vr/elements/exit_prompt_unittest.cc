@@ -58,10 +58,10 @@ class TestExitPrompt : public ExitPrompt {
 
 TestExitPrompt::TestExitPrompt()
     : ExitPrompt(512,
-                 base::BindRepeating(&TestExitPrompt::OnPrimaryButtonPressed,
-                                     base::Unretained(this)),
-                 base::BindRepeating(&TestExitPrompt::OnSecondaryButtonPressed,
-                                     base::Unretained(this))) {}
+                 base::Bind(&TestExitPrompt::OnPrimaryButtonPressed,
+                            base::Unretained(this)),
+                 base::Bind(&TestExitPrompt::OnSecondaryButtonPressed,
+                            base::Unretained(this))) {}
 
 TEST(ExitPromptTest, PrimaryButtonCallbackCalled) {
   TestExitPrompt prompt;
