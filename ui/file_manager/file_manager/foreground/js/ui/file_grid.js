@@ -555,12 +555,12 @@ FileGrid.prototype.decorateThumbnail_ = function(li, entry) {
 
   var isDirectory = entry && entry.isDirectory;
   if (!isDirectory) {
-    var active_checkmark = li.ownerDocument.createElement('div');
-    active_checkmark.className = 'checkmark active';
-    frame.appendChild(active_checkmark);
-    var inactive_checkmark = li.ownerDocument.createElement('div');
-    inactive_checkmark.className = 'checkmark inactive';
-    frame.appendChild(inactive_checkmark);
+    var activeCheckmark = li.ownerDocument.createElement('div');
+    activeCheckmark.className = 'checkmark active';
+    frame.appendChild(activeCheckmark);
+    var inactiveCheckmark = li.ownerDocument.createElement('div');
+    inactiveCheckmark.className = 'checkmark inactive';
+    frame.appendChild(inactiveCheckmark);
   }
 
   var badge = li.ownerDocument.createElement('div');
@@ -814,14 +814,26 @@ FileGrid.Item.prototype.decorate = function() {
 };
 
 /**
+ * Returns whether the drag event is inside a file entry in the list (and not
+ * the background padding area).
+ * @param {MouseEvent} event Drag start event.
+ * @return {boolean} True if the mouse is over an element in the list, False if
+ *                   it is in the background.
+ */
+FileGrid.prototype.hasDragHitElement = function(event) {
+  var pos = DragSelector.getScrolledPosition(this, event);
+  return this.getHitElements(pos.x, pos.y).length !== 0;
+};
+
+/**
  * Obtains if the drag selection should be start or not by referring the mouse
  * event.
  * @param {MouseEvent} event Drag start event.
  * @return {boolean} True if the mouse is hit to the background of the list.
  */
 FileGrid.prototype.shouldStartDragSelection = function(event) {
-  var pos = DragSelector.getScrolledPosition(this, event);
-  return this.getHitElements(pos.x, pos.y).length === 0;
+  // Start dragging area if the drag starts outside of the contents of the grid.
+  return !this.hasDragHitElement(event);
 };
 
 /**
