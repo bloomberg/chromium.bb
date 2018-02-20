@@ -124,6 +124,7 @@
 #include "extensions/common/features/feature_session_type.h"
 #include "net/cert/sth_distributor.h"
 #include "rlz/features/features.h"
+#include "third_party/cros_system_api/switches/chrome_switches.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
@@ -274,7 +275,8 @@ base::CommandLine CreatePerSessionCommandLine(Profile* profile) {
   about_flags::ConvertFlagsToSwitches(&flags_storage_, &user_flags,
                                       flags_ui::kAddSentinels);
 
-  UserSessionManager::MaybeAppendPolicySwitches(&user_flags);
+  UserSessionManager::MaybeAppendPolicySwitches(profile->GetPrefs(),
+                                                &user_flags);
 
   return user_flags;
 }
@@ -291,19 +293,8 @@ bool NeedRestartToApplyPerSessionFlags(
   if (user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser())
     return false;
 
-  // TODO: Remove this special handling for site isolation and isolate origins.
   auto* current_command_line = base::CommandLine::ForCurrentProcess();
-  if (current_command_line->HasSwitch(::switches::kSitePerProcess) !=
-      user_flags.HasSwitch(::switches::kSitePerProcess)) {
-    out_command_line_difference->insert(::switches::kSitePerProcess);
-  }
-  if (current_command_line->GetSwitchValueASCII(::switches::kIsolateOrigins) !=
-      user_flags.GetSwitchValueASCII(::switches::kIsolateOrigins)) {
-    out_command_line_difference->insert(::switches::kIsolateOrigins);
-  }
-
-  if (out_command_line_difference->empty() &&
-      about_flags::AreSwitchesIdenticalToCurrentCommandLine(
+  if (about_flags::AreSwitchesIdenticalToCurrentCommandLine(
           user_flags, *current_command_line, out_command_line_difference)) {
     return false;
   }
@@ -352,10 +343,16 @@ void LogCustomSwitches(const std::set<std::string>& switches) {
   }
 }
 
-void RestartOnTimeout() {
+// Calls the real AttemptRestart method. This is used to avoid taking a function
+// pointer to chrome::AttemptRestart directly.
+void CallChromeAttemptRestart() {
+  chrome::AttemptRestart();
+}
+
+void RestartOnTimeout(const base::RepeatingClosure& attempt_restart_closure) {
   LOG(WARNING) << "Restarting Chrome because the time out was reached."
                   "The session restore has not finished.";
-  chrome::AttemptRestart();
+  attempt_restart_closure.Run();
 }
 
 bool IsRunningTest() {
@@ -406,17 +403,49 @@ void UserSessionManager::RegisterPrefs(PrefRegistrySimple* registry) {
 
 // static
 void UserSessionManager::MaybeAppendPolicySwitches(
+    PrefService* user_profile_prefs,
     base::CommandLine* user_flags) {
+  // Get target values for --site-per-process and --isolate-origins for the user
+  // session according to policy. Values from command-line flags should not be
+  // honored at this point, so check |IsManaged()|.
+  const PrefService::Preference* site_per_process_pref =
+      user_profile_prefs->FindPreference(prefs::kSitePerProcess);
+  const PrefService::Preference* isolate_origins_pref =
+      user_profile_prefs->FindPreference(prefs::kIsolateOrigins);
+  bool site_per_process = site_per_process_pref->IsManaged() &&
+                          site_per_process_pref->GetValue()->GetBool();
+  std::string isolate_origins =
+      isolate_origins_pref->IsManaged()
+          ? isolate_origins_pref->GetValue()->GetString()
+          : std::string();
+
+  // Append sentinels indicating that these values originate from policy.
+  // This is important, because only command-line switches between the
+  // |"--policy-switches-begin"| / |"--policy-switches-end"| and the
+  // |"--flag-switches-begin"| / |"--flag-switches-end"| sentinels will be
+  // compared when comparing the current command line and the user session
+  // command line in order to decide if chrome should be restarted.
+  // We use the policy-style sentinels because these values originate from
+  // policy, and because login_manager uses the same sentinels when adding the
+  // login-screen site isolation flags.
+  bool use_policy_sentinels = site_per_process || !isolate_origins.empty();
+  if (use_policy_sentinels)
+    user_flags->AppendSwitch(chromeos::switches::kPolicySwitchesBegin);
+
   // Inject site isolation and isolate origins command line switch from
   // user policy.
-  auto* local_state = g_browser_process->local_state();
-  if (local_state->GetBoolean(prefs::kSitePerProcess)) {
+  if (site_per_process) {
     user_flags->AppendSwitch(::switches::kSitePerProcess);
   }
-  if (local_state->HasPrefPath(prefs::kIsolateOrigins)) {
+
+  if (!isolate_origins.empty()) {
     user_flags->AppendSwitchASCII(
         ::switches::kIsolateOrigins,
-        local_state->GetString(prefs::kIsolateOrigins));
+        user_profile_prefs->GetString(prefs::kIsolateOrigins));
+  }
+
+  if (use_policy_sentinels) {
+    user_flags->AppendSwitch(chromeos::switches::kPolicySwitchesEnd);
   }
 }
 
@@ -433,6 +462,7 @@ UserSessionManager::UserSessionManager()
       should_obtain_handles_(true),
       should_launch_browser_(true),
       waiting_for_child_account_status_(false),
+      attempt_restart_closure_(base::BindRepeating(&CallChromeAttemptRestart)),
       weak_factory_(this) {
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
@@ -457,6 +487,11 @@ void UserSessionManager::SetShouldObtainHandleInTests(
   if (!should_obtain_handles_) {
     token_handle_fetcher_.reset();
   }
+}
+
+void UserSessionManager::SetAttemptRestartClosureInTests(
+    const base::RepeatingClosure& attempt_restart_closure) {
+  attempt_restart_closure_ = attempt_restart_closure;
 }
 
 void UserSessionManager::CompleteGuestSessionLogin(const GURL& start_url) {
@@ -826,7 +861,7 @@ bool UserSessionManager::RestartToApplyPerSessionFlagsIfNeed(
       cryptohome::Identification(
           user_manager::UserManager::Get()->GetActiveUser()->GetAccountId()),
       flags);
-  AttemptRestart(profile);
+  attempt_restart_closure_.Run();
   return true;
 }
 
@@ -915,7 +950,7 @@ void UserSessionManager::OnSessionRestoreStateChanged(
 
     // We need to restart cleanly in this case to make sure OAuth2 RT is
     // actually saved.
-    chrome::AttemptRestart();
+    attempt_restart_closure_.Run();
   } else {
     // Schedule another flush after session restore for non-ephemeral profile
     // if not restarting.
@@ -1762,7 +1797,7 @@ void UserSessionManager::AttemptRestart(Profile* profile) {
   // Restart unconditionally in case if we are stuck somewhere in a session
   // restore process. http://crbug.com/520346.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::BindOnce(RestartOnTimeout),
+      FROM_HERE, base::BindOnce(RestartOnTimeout, attempt_restart_closure_),
       base::TimeDelta::FromSeconds(kMaxRestartDelaySeconds));
 
   if (running_easy_unlock_key_ops_) {
@@ -1773,7 +1808,7 @@ void UserSessionManager::AttemptRestart(Profile* profile) {
 
   if (session_restore_strategy_ !=
       OAuth2LoginManager::RESTORE_FROM_COOKIE_JAR) {
-    chrome::AttemptRestart();
+    attempt_restart_closure_.Run();
     return;
   }
 
@@ -1784,7 +1819,7 @@ void UserSessionManager::AttemptRestart(Profile* profile) {
   if (login_manager->state() != OAuth2LoginManager::SESSION_RESTORE_PREPARING &&
       login_manager->state() !=
           OAuth2LoginManager::SESSION_RESTORE_IN_PROGRESS) {
-    chrome::AttemptRestart();
+    attempt_restart_closure_.Run();
     return;
   }
 
