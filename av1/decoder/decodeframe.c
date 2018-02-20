@@ -2987,7 +2987,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       }
 
 #if CONFIG_FRAME_REFS_SIGNALING
-      cm->frame_refs_short_signaling = aom_rb_read_bit(rb);
+      // Frame refs short signaling is off when error resilient mode is on.
+      if (!cm->error_resilient_mode)
+        cm->frame_refs_short_signaling = aom_rb_read_bit(rb);
 
       if (cm->frame_refs_short_signaling) {
         // == LAST_FRAME ==
