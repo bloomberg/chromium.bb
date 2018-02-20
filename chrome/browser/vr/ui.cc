@@ -25,6 +25,7 @@
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_scene_creator.h"
 #include "chrome/common/chrome_features.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace vr {
 

@@ -120,9 +120,6 @@
   "chrome/browser/resources/translate_internals_resources.grd": {
     "includes": [12680],
   },
-  "chrome/browser/resources/vr_shell_resources.grd": {
-    "includes": [12690],
-  },
   "chrome/browser/resources/webapks_ui_resources.grd": {
     "includes": [12700],
   },

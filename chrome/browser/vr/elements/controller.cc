@@ -26,8 +26,9 @@ constexpr float kBodyAlphaStops[] = {
 constexpr float kTopAlphaStops[] = {
     0.1f, 0.0f, 0.2f, 0.95f, 1.0f, 1.0f,
 };
-constexpr size_t kNumRings = 20;
-constexpr size_t kNumSectors = 20;
+constexpr size_t kBodyNumRings = 10;
+constexpr size_t kTopNumRings = 20;
+constexpr size_t kNumSectors = 10;
 const gfx::Vector3dF kUpVector(0.0f, 1.0f, 0.0f);
 constexpr float kUnitLength = 1.0f;
 constexpr float kUnitRadius = kUnitLength / 2;
@@ -251,10 +252,7 @@ void AddSquare(size_t num_rings,
 
 }  // namespace
 
-Controller::Controller() {
-  SetName(kController);
-  SetVisible(true);
-}
+Controller::Controller() = default;
 
 Controller::~Controller() = default;
 
@@ -265,6 +263,10 @@ void Controller::Render(UiElementRenderer* renderer,
 }
 
 gfx::Transform Controller::LocalTransform() const {
+  return local_transform_;
+}
+
+gfx::Transform Controller::GetTargetLocalTransform() const {
   return local_transform_;
 }
 
@@ -285,43 +287,43 @@ Controller::Renderer::Renderer()
   transform.Scale3d(kControllerWidth, kControllerHeight * 2, kControllerWidth);
   transform.RotateAboutXAxis(180);
   transform.RotateAboutYAxis(90);
-  AddSphere(kNumRings, kNumSectors, 0.5f, 0.5f, transform, *body_alpha_curve,
-            &vertices_, &colors_, &indices_);
+  AddSphere(kBodyNumRings, kNumSectors, 0.5f, 0.5f, transform,
+            *body_alpha_curve, &vertices_, &colors_, &indices_);
 
   transform.MakeIdentity();
   transform.Translate3d(0.0, 0.0, -(kControllerLength - kControllerWidth) / 2);
   transform.Scale3d(kControllerWidth, kControllerHeight * 2, kControllerWidth);
   transform.RotateAboutXAxis(180);
   transform.RotateAboutYAxis(-90);
-  AddSphere(kNumRings, kNumSectors, 0.5f, 0.5f, transform, *body_alpha_curve,
-            &vertices_, &colors_, &indices_);
+  AddSphere(kBodyNumRings, kNumSectors, 0.5f, 0.5f, transform,
+            *body_alpha_curve, &vertices_, &colors_, &indices_);
 
   transform.MakeIdentity();
   transform.Scale3d(kControllerWidth, kControllerHeight * 2,
                     kControllerLength - kControllerWidth);
   transform.RotateAboutXAxis(180);
   transform.RotateAboutYAxis(90);
-  AddCylinder(kCylinderNumRings, kNumRings * 2, 0.5f, transform,
+  AddCylinder(kCylinderNumRings, kBodyNumRings * 2, 0.5f, transform,
               *body_alpha_curve, &vertices_, &colors_, &indices_);
 
   transform.MakeIdentity();
   transform.Translate3d(0.0, 0.0, (kControllerLength - kControllerWidth) / 2);
   transform.Scale3d(kControllerWidth, 1.0, kControllerWidth);
   transform.RotateAboutYAxis(-90);
-  AddCircle(kNumRings / 2, kNumSectors, 0.5, transform, *top_alpha_curve,
+  AddCircle(kTopNumRings / 2, kNumSectors, 0.5, transform, *top_alpha_curve,
             &vertices_, &colors_, &indices_);
 
   transform.MakeIdentity();
   transform.Translate3d(0.0, 0.0, -(kControllerLength - kControllerWidth) / 2);
   transform.Scale3d(kControllerWidth, 1.0, kControllerWidth);
   transform.RotateAboutYAxis(90);
-  AddCircle(kNumRings / 2, kNumSectors, 0.5, transform, *top_alpha_curve,
+  AddCircle(kTopNumRings / 2, kNumSectors, 0.5, transform, *top_alpha_curve,
             &vertices_, &colors_, &indices_);
 
   transform.MakeIdentity();
   transform.Scale3d(kControllerWidth, 1.0,
                     kControllerLength - kControllerWidth);
-  AddSquare(kNumRings, kSquareNumSectors, transform, *top_alpha_curve,
+  AddSquare(kTopNumRings, kSquareNumSectors, transform, *top_alpha_curve,
             &vertices_, &colors_, &indices_);
 
   glGenBuffersARB(1, &vertex_buffer_);

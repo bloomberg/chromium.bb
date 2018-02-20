@@ -99,7 +99,5 @@ per-file site_per_process_interactive_browsertest.cc=file://content/OWNERS
 
 per-file unload_browsertest.cc=file://content/OWNERS
 
-per-file vr_shell_resources.grdp=file://chrome/browser/android/vr_shell/OWNERS
-
 per-file web_bluetooth*=jyasskin@chromium.org
 per-file web_bluetooth*=ortuno@chromium.org

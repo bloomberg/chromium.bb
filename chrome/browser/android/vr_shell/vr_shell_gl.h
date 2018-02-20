@@ -20,7 +20,6 @@
 #include "chrome/browser/android/vr_shell/vr_dialog.h"
 #include "chrome/browser/vr/assets_load_status.h"
 #include "chrome/browser/vr/content_input_delegate.h"
-#include "chrome/browser/vr/controller_mesh.h"
 #include "chrome/browser/vr/fps_meter.h"
 #include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/sliding_average.h"
@@ -107,8 +106,6 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void UIBoundsChanged(int width, int height);
 
   base::WeakPtr<VrShellGl> GetWeakPtr();
-
-  void SetControllerMesh(std::unique_ptr<ControllerMesh> mesh);
 
   void ConnectPresentingService(
       device::mojom::VRSubmitFrameClientPtrInfo submit_client_info,

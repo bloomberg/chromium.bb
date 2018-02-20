@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "chrome/browser/vr/assets_load_status.h"
-#include "chrome/browser/vr/controller_mesh.h"
 #include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
@@ -354,9 +353,6 @@ void VrTestContext::OnGlInitialized() {
 
   keyboard_delegate_->Initialize(ui_->scene()->SurfaceProviderForTesting(),
                                  ui_->ui_element_renderer());
-
-  ui_->ui_element_renderer()->SetUpController(
-      ControllerMesh::LoadFromResources());
 }
 
 unsigned int VrTestContext::CreateFakeContentTexture() {

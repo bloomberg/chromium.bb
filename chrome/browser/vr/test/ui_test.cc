@@ -80,6 +80,7 @@ void UiTest::CreateScene(const UiInitialState& state) {
                              nullptr, state);
   scene_ = ui_->scene();
   model_ = ui_->model_for_test();
+  model_->controller.transform.Translate3d(kStartControllerPosition);
 
   OnBeginFrame();
 }

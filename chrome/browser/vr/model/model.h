@@ -48,9 +48,6 @@ struct Model {
   bool background_available = false;
   bool can_apply_new_background = false;
   bool background_loaded = false;
-  // TODO(crbug.com/799606): Use procedural controller model once we have the
-  // proper button icons.
-  bool procedural_controller_enabled = false;
   bool supports_selection = true;
 
   // WebVR state.

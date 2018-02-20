@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "chrome/browser/vr/controller_mesh.h"
 #include "chrome/browser/vr/platform_controller.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"

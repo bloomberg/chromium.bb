@@ -4,8 +4,6 @@
 
 #include "chrome/browser/vr/elements/keyboard.h"
 
-#include "chrome/browser/vr/controller_mesh.h"
-#include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
 
 namespace vr {
