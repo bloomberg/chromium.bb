@@ -928,10 +928,14 @@ static Node* NextNodeWithShadowDOMInMind(const Node& current,
                                          const Node* stay_within,
                                          bool include_user_agent_shadow_dom) {
   // At first traverse the subtree.
-
-  if (ShadowRoot* shadow_root = current.GetShadowRoot()) {
-    if (!shadow_root->IsUserAgent() || include_user_agent_shadow_dom)
-      return shadow_root;
+  if (current.IsElementNode()) {
+    const Element& element = ToElement(current);
+    ElementShadow* element_shadow = element.Shadow();
+    if (element_shadow) {
+      ShadowRoot& shadow_root = element_shadow->GetShadowRoot();
+      if (!shadow_root.IsUserAgent() || include_user_agent_shadow_dom)
+        return &shadow_root;
+    }
   }
   if (current.hasChildren())
     return current.firstChild();
@@ -1462,11 +1466,13 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
         value->setFrameId(IdentifiersFactory::FrameId(frame));
     }
 
-    if (ShadowRoot* root = element->GetShadowRoot()) {
+    ElementShadow* shadow = element->Shadow();
+    if (shadow) {
       std::unique_ptr<protocol::Array<protocol::DOM::Node>> shadow_roots =
           protocol::Array<protocol::DOM::Node>::create();
-      shadow_roots->addItem(BuildObjectForNode(root, pierce ? depth : 0, pierce,
-                                               nodes_map, flatten_result));
+      ShadowRoot& root = shadow->GetShadowRoot();
+      shadow_roots->addItem(BuildObjectForNode(
+          &root, pierce ? depth : 0, pierce, nodes_map, flatten_result));
       value->setShadowRoots(std::move(shadow_roots));
       force_push_children = true;
     }
@@ -1750,9 +1756,10 @@ void InspectorDOMAgent::CollectNodes(
       }
     }
 
-    ShadowRoot* root = element->GetShadowRoot();
-    if (pierce && root)
-      CollectNodes(root, depth, pierce, filter, result);
+    ElementShadow* shadow = element->Shadow();
+    if (pierce && shadow) {
+      CollectNodes(&shadow->GetShadowRoot(), depth, pierce, filter, result);
+    }
 
     if (auto* link_element = ToHTMLLinkElementOrNull(*element)) {
       if (link_element->IsImport() && link_element->import() &&

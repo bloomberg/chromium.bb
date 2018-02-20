@@ -28,6 +28,7 @@
 
 #include "core/dom/Element.h"
 #include "core/dom/ElementShadow.h"
+#include "core/dom/ng/flat_tree_traversal_ng.h"
 #include "core/html/HTMLShadowElement.h"
 #include "core/html/HTMLSlotElement.h"
 
@@ -35,10 +36,12 @@ namespace blink {
 
 Node* FlatTreeTraversal::TraverseChild(const Node& node,
                                        TraversalDirection direction) {
-  if (ShadowRoot* shadow_root = node.GetShadowRoot()) {
+  ElementShadow* shadow = ShadowFor(node);
+  if (shadow) {
+    ShadowRoot& shadow_root = shadow->GetShadowRoot();
     return ResolveDistributionStartingAt(direction == kTraversalDirectionForward
-                                             ? shadow_root->firstChild()
-                                             : shadow_root->lastChild(),
+                                             ? shadow_root.firstChild()
+                                             : shadow_root.lastChild(),
                                          direction);
   }
   return ResolveDistributionStartingAt(direction == kTraversalDirectionForward

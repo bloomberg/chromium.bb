@@ -132,12 +132,13 @@ static CSSPropertyValueSet* RightToLeftDeclaration() {
 static void CollectScopedResolversForHostedShadowTrees(
     const Element& element,
     HeapVector<Member<ScopedStyleResolver>, 8>& resolvers) {
-  ShadowRoot* root = element.GetShadowRoot();
-  if (!root)
+  ElementShadow* shadow = element.Shadow();
+  if (!shadow)
     return;
 
   // Adding scoped resolver for active shadow roots for shadow host styling.
-  if (ScopedStyleResolver* resolver = root->GetScopedStyleResolver())
+  ShadowRoot& shadow_root = shadow->GetShadowRoot();
+  if (ScopedStyleResolver* resolver = shadow_root.GetScopedStyleResolver())
     resolvers.push_back(resolver);
 }
 
@@ -189,11 +190,12 @@ static inline ScopedStyleResolver* ScopedResolverFor(const Element& element) {
 
 static void MatchHostRules(const Element& element,
                            ElementRuleCollector& collector) {
-  ShadowRoot* shadow_root = element.GetShadowRoot();
-  if (!shadow_root)
+  ElementShadow* shadow = element.Shadow();
+  if (!shadow)
     return;
 
-  if (ScopedStyleResolver* resolver = shadow_root->GetScopedStyleResolver()) {
+  ShadowRoot& shadow_root = shadow->GetShadowRoot();
+  if (ScopedStyleResolver* resolver = shadow_root.GetScopedStyleResolver()) {
     collector.ClearMatchedRules();
     resolver->CollectMatchingShadowHostRules(collector);
     collector.SortAndTransferMatchedRules();

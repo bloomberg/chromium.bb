@@ -764,7 +764,9 @@ Node* Internals::effectiveRootScroller(Document* document) {
 
 ShadowRoot* Internals::shadowRoot(Element* host) {
   DCHECK(host);
-  return host->GetShadowRoot();
+  if (ElementShadow* shadow = host->Shadow())
+    return &shadow->GetShadowRoot();
+  return nullptr;
 }
 
 String Internals::shadowRootType(const Node* root,
