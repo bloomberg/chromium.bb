@@ -128,6 +128,14 @@ class CHROMEOS_EXPORT SmbProviderClient : public DBusClient {
                                bool recursive,
                                StatusCallback callback) = 0;
 
+  // Calls MoveEntry. Using the corresponding |mount_id|, this moves the entry
+  // at |source_path| to |target_path|. This operation will fail if the
+  // target already exists.
+  virtual void MoveEntry(int32_t mount_id,
+                         const base::FilePath& source_path,
+                         const base::FilePath& target_path,
+                         StatusCallback callback) = 0;
+
  protected:
   // Create() should be used instead.
   SmbProviderClient();

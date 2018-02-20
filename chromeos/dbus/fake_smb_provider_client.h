@@ -66,6 +66,11 @@ class CHROMEOS_EXPORT FakeSmbProviderClient : public SmbProviderClient {
                        bool recursive,
                        StatusCallback callback) override;
 
+  void MoveEntry(int32_t mount_id,
+                 const base::FilePath& source_path,
+                 const base::FilePath& target_path,
+                 StatusCallback callback) override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeSmbProviderClient);
 };
