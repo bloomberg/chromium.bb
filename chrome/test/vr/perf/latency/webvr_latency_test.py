@@ -140,6 +140,11 @@ class WebVrLatencyTest(object):
         num_retries += 1
         if num_retries > MOTOPHO_THREAD_RETRIES:
           self._ReportSummaryResult(False, url)
+          # Raising an exception with another thread still alive causes the
+          # test to hang until the swarming timeout is hit, so kill the thread
+          # before raising.
+          motopho_thread.Terminate()
+          motopho_thread.join(MOTOPHO_THREAD_TERMINATION_TIMEOUT)
           raise RuntimeError(
               'Motopho thread failed more than %d times, aborting' % (
                   MOTOPHO_THREAD_RETRIES))
