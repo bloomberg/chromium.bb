@@ -49,6 +49,7 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_clipping_feature.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
+#include "ios/chrome/browser/ui/user_feedback_features.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/web/public/features.h"
@@ -243,6 +244,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"tab-switcher-tab-grid", flag_descriptions::kTabSwitcherTabGridName,
      flag_descriptions::kTabSwitcherTabGridDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kTabSwitcherTabGrid)},
+    {"feedback-kit-v2", flag_descriptions::kFeedbackKitV2Name,
+     flag_descriptions::kFeedbackKitV2Description, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kFeedbackKitV2)},
 };
 
 // Add all switches from experimental flags to |command_line|.

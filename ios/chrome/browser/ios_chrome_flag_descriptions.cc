@@ -47,6 +47,9 @@ const char kDragAndDropDescription[] = "Enable support for drag and drop.";
 const char kExternalSearchName[] = "External Search";
 const char kExternalSearchDescription[] = "Enable support for External Search.";
 
+const char kFeedbackKitV2Name[] = "FeedbackKit V2";
+const char kFeedbackKitV2Description[] = "Enable use of FeedbackKit V2.";
+
 const char kHistoryBatchUpdatesFilterName[] = "History Single Batch Filtering";
 const char kHistoryBatchUpdatesFilterDescription[] =
     "When enabled History inserts and deletes history items in the same "
