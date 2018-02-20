@@ -32,7 +32,7 @@ class URLRequestContext;
 namespace content {
 class ChromeAppCacheService;
 class ChromeBlobStorageContext;
-class PrefetchURLLoaderFactory;
+class PrefetchURLLoaderService;
 class ResourceContext;
 class ResourceRequesterInfo;
 class ServiceWorkerContextWrapper;
@@ -61,7 +61,7 @@ class CONTENT_EXPORT ResourceMessageFilter
       ChromeBlobStorageContext* blob_storage_context,
       storage::FileSystemContext* file_system_context,
       ServiceWorkerContextWrapper* service_worker_context,
-      PrefetchURLLoaderFactory* prefetch_url_loader_factory,
+      PrefetchURLLoaderService* prefetch_url_loader_service,
       const GetContextsCallback& get_contexts_callback,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_runner);
 
@@ -117,7 +117,7 @@ class CONTENT_EXPORT ResourceMessageFilter
 
   std::unique_ptr<network::mojom::URLLoaderFactory> url_loader_factory_;
 
-  scoped_refptr<PrefetchURLLoaderFactory> prefetch_url_loader_factory_;
+  scoped_refptr<PrefetchURLLoaderService> prefetch_url_loader_service_;
 
   // Task runner for the IO thead.
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;

@@ -49,7 +49,7 @@ namespace content {
 class BackgroundFetchContext;
 class BlobRegistryWrapper;
 class BlobURLLoaderFactory;
-class PrefetchURLLoaderFactory;
+class PrefetchURLLoaderService;
 
 class CONTENT_EXPORT StoragePartitionImpl
     : public StoragePartition,
@@ -144,7 +144,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   BluetoothAllowedDevicesMap* GetBluetoothAllowedDevicesMap();
   BlobURLLoaderFactory* GetBlobURLLoaderFactory();
   BlobRegistryWrapper* GetBlobRegistry();
-  PrefetchURLLoaderFactory* GetPrefetchURLLoaderFactory();
+  PrefetchURLLoaderService* GetPrefetchURLLoaderService();
 
   // mojom::StoragePartitionService interface.
   void OpenLocalStorage(
@@ -310,7 +310,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   scoped_refptr<BluetoothAllowedDevicesMap> bluetooth_allowed_devices_map_;
   scoped_refptr<BlobURLLoaderFactory> blob_url_loader_factory_;
   scoped_refptr<BlobRegistryWrapper> blob_registry_;
-  scoped_refptr<PrefetchURLLoaderFactory> prefetch_url_loader_factory_;
+  scoped_refptr<PrefetchURLLoaderService> prefetch_url_loader_service_;
 
   // BindingSet for StoragePartitionService, using the process id as the
   // binding context type. The process id can subsequently be used during

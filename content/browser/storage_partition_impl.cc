@@ -25,7 +25,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/gpu/shader_cache_factory.h"
-#include "content/browser/loader/prefetch_url_loader_factory.h"
+#include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/browser/browser_context.h"
@@ -688,8 +688,8 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   partition->appcache_service_->set_url_loader_factory_getter(
       partition->url_loader_factory_getter_.get());
 
-  partition->prefetch_url_loader_factory_ =
-      base::MakeRefCounted<PrefetchURLLoaderFactory>(
+  partition->prefetch_url_loader_service_ =
+      base::MakeRefCounted<PrefetchURLLoaderService>(
           partition->url_loader_factory_getter_);
 
   return partition;
@@ -840,8 +840,8 @@ BlobRegistryWrapper* StoragePartitionImpl::GetBlobRegistry() {
   return blob_registry_.get();
 }
 
-PrefetchURLLoaderFactory* StoragePartitionImpl::GetPrefetchURLLoaderFactory() {
-  return prefetch_url_loader_factory_.get();
+PrefetchURLLoaderService* StoragePartitionImpl::GetPrefetchURLLoaderService() {
+  return prefetch_url_loader_service_.get();
 }
 
 void StoragePartitionImpl::OpenLocalStorage(
