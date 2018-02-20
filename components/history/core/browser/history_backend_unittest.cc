@@ -2223,7 +2223,7 @@ TEST_F(HistoryBackendTest, MergeFaviconPageURLNotInDB) {
                          kSmallSize);
 
   // |page_url| should now be mapped to |icon_url| and the favicon bitmap should
-  // not be expired.
+  // be expired.
   std::vector<IconMapping> icon_mappings;
   EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
       page_url, &icon_mappings));
@@ -2232,7 +2232,7 @@ TEST_F(HistoryBackendTest, MergeFaviconPageURLNotInDB) {
 
   FaviconBitmap favicon_bitmap;
   EXPECT_TRUE(GetOnlyFaviconBitmap(icon_mappings[0].icon_id, &favicon_bitmap));
-  EXPECT_NE(base::Time(), favicon_bitmap.last_updated);
+  EXPECT_EQ(base::Time(), favicon_bitmap.last_updated);
   EXPECT_TRUE(BitmapDataEqual('a', favicon_bitmap.bitmap_data));
   EXPECT_EQ(kSmallSize, favicon_bitmap.pixel_size);
 
@@ -2336,7 +2336,7 @@ TEST_F(HistoryBackendTest, MergeFaviconPageURLInDB) {
   std::vector<FaviconBitmap> favicon_bitmaps;
   EXPECT_TRUE(GetSortedFaviconBitmaps(icon_mappings[0].icon_id,
                                       &favicon_bitmaps));
-  EXPECT_NE(base::Time(), favicon_bitmaps[0].last_updated);
+  EXPECT_EQ(base::Time(), favicon_bitmaps[0].last_updated);
   EXPECT_TRUE(BitmapDataEqual('c', favicon_bitmaps[0].bitmap_data));
   EXPECT_EQ(kTinySize, favicon_bitmaps[0].pixel_size);
   EXPECT_EQ(base::Time(), favicon_bitmaps[1].last_updated);
@@ -2366,7 +2366,7 @@ TEST_F(HistoryBackendTest, MergeFaviconPageURLInDB) {
   EXPECT_EQ(kTinySize, favicon_bitmaps[0].pixel_size);
   // The favicon being merged should take precedence over the preexisting
   // favicon bitmaps.
-  EXPECT_NE(base::Time(), favicon_bitmaps[1].last_updated);
+  EXPECT_EQ(base::Time(), favicon_bitmaps[1].last_updated);
   EXPECT_TRUE(BitmapDataEqual('d', favicon_bitmaps[1].bitmap_data));
   EXPECT_EQ(kSmallSize, favicon_bitmaps[1].pixel_size);
 }

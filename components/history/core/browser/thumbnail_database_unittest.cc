@@ -290,6 +290,49 @@ TEST_F(ThumbnailDatabaseTest, AddFaviconBitmapCreatesCorrectTimestamps) {
   EXPECT_EQ(base::Time(), last_requested);
 }
 
+TEST_F(ThumbnailDatabaseTest,
+       GetFaviconLastUpdatedTimeReturnsFalseForNoBitmaps) {
+  ThumbnailDatabase db(nullptr);
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
+  db.BeginTransaction();
+
+  GURL url("http://google.com");
+  favicon_base::FaviconID icon =
+      db.AddFavicon(url, favicon_base::IconType::kFavicon);
+  ASSERT_NE(0, icon);
+
+  base::Time last_updated;
+  ASSERT_FALSE(db.GetFaviconLastUpdatedTime(icon, &last_updated));
+}
+
+TEST_F(ThumbnailDatabaseTest, GetFaviconLastUpdatedTimeReturnsMaxTime) {
+  ThumbnailDatabase db(nullptr);
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
+  db.BeginTransaction();
+
+  base::Time add_time1;
+  ASSERT_TRUE(
+      base::Time::FromUTCExploded({2017, 5, 0, 1, 0, 0, 0, 0}, &add_time1));
+  base::Time add_time2 = add_time1 - base::TimeDelta::FromSeconds(1);
+  std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
+  scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
+
+  GURL url("http://google.com");
+  favicon_base::FaviconID icon =
+      db.AddFavicon(url, favicon_base::IconType::kFavicon);
+  ASSERT_NE(0, icon);
+  FaviconBitmapID bitmap1 = db.AddFaviconBitmap(
+      icon, favicon, FaviconBitmapType::ON_VISIT, add_time1, gfx::Size());
+  ASSERT_NE(0, bitmap1);
+  FaviconBitmapID bitmap2 = db.AddFaviconBitmap(
+      icon, favicon, FaviconBitmapType::ON_VISIT, add_time2, gfx::Size());
+  ASSERT_NE(0, bitmap2);
+
+  base::Time last_updated;
+  ASSERT_TRUE(db.GetFaviconLastUpdatedTime(icon, &last_updated));
+  EXPECT_EQ(add_time1, last_updated);
+}
+
 TEST_F(ThumbnailDatabaseTest, TouchUpdatesOnDemandFavicons) {
   ThumbnailDatabase db(nullptr);
   ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));

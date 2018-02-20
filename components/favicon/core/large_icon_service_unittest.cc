@@ -64,8 +64,8 @@ ACTION_P2(PostFetchReplyWithMetadata, p0, p1) {
 }
 
 ACTION_P(PostBoolReply, p0) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(arg4, p0));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(*arg4), p0));
 }
 
 SkBitmap CreateTestSkBitmap(int w, int h, SkColor color) {
