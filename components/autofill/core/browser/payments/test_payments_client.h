@@ -17,7 +17,7 @@ class TestPaymentsClient : public payments::PaymentsClient {
  public:
   TestPaymentsClient(net::URLRequestContextGetter* context_getter,
                      PrefService* pref_service,
-                     IdentityProvider* identity_provider,
+                     identity::IdentityManager* identity_manager,
                      payments::PaymentsClientUnmaskDelegate* unmask_delegate,
                      payments::PaymentsClientSaveDelegate* save_delegate);
 

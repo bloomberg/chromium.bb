@@ -69,6 +69,8 @@ void MakePrimaryAccountAvailable(SigninManagerForTest* signin_manager,
                                  ProfileOAuth2TokenService* token_service,
                                  IdentityManager* identity_manager,
                                  const std::string& email) {
+  DCHECK(!signin_manager->IsAuthenticated());
+  DCHECK(!identity_manager->HasPrimaryAccount());
   std::string gaia_id = "gaia_id_for_" + email;
   std::string refresh_token = "refresh_token_for_" + email;
 

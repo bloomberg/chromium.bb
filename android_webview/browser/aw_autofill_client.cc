@@ -74,6 +74,10 @@ syncer::SyncService* AwAutofillClient::GetSyncService() {
   return nullptr;
 }
 
+identity::IdentityManager* AwAutofillClient::GetIdentityManager() {
+  return nullptr;
+}
+
 IdentityProvider* AwAutofillClient::GetIdentityProvider() {
   return nullptr;
 }

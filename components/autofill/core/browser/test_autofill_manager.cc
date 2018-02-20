@@ -23,7 +23,7 @@ TestAutofillManager::TestAutofillManager(AutofillDriver* driver,
       personal_data_(personal_data),
       context_getter_(driver->GetURLRequestContext()) {
   set_payments_client(new payments::PaymentsClient(
-      context_getter_, client->GetPrefs(), client->GetIdentityProvider(),
+      context_getter_, client->GetPrefs(), client->GetIdentityManager(),
       /*unmask_delegate=*/this,
       /*save_delegate=*/nullptr));
 }

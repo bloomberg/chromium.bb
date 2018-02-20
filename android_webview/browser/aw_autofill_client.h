@@ -64,6 +64,7 @@ class AwAutofillClient : public autofill::AutofillClient,
   scoped_refptr<autofill::AutofillWebDataService> GetDatabase() override;
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
+  identity::IdentityManager* GetIdentityManager() override;
   IdentityProvider* GetIdentityProvider() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   autofill::AddressNormalizer* GetAddressNormalizer() override;

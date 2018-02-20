@@ -17,6 +17,7 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo_util.h"
@@ -126,6 +127,12 @@ syncer::SyncService* ChromeAutofillClient::GetSyncService() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   return ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+}
+
+identity::IdentityManager* ChromeAutofillClient::GetIdentityManager() {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  return IdentityManagerFactory::GetInstance()->GetForProfile(profile);
 }
 
 IdentityProvider* ChromeAutofillClient::GetIdentityProvider() {

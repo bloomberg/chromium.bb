@@ -22,12 +22,14 @@ WebViewAutofillClientIOS::WebViewAutofillClientIOS(
     PersonalDataManager* personal_data_manager,
     web::WebState* web_state,
     id<AutofillClientIOSBridge> bridge,
+    identity::IdentityManager* identity_manager,
     std::unique_ptr<IdentityProvider> identity_provider,
     scoped_refptr<AutofillWebDataService> autofill_web_data_service)
     : pref_service_(pref_service),
       personal_data_manager_(personal_data_manager),
       web_state_(web_state),
       bridge_(bridge),
+      identity_manager_(identity_manager),
       identity_provider_(std::move(identity_provider)),
       autofill_web_data_service_(autofill_web_data_service) {}
 
@@ -46,6 +48,10 @@ PrefService* WebViewAutofillClientIOS::GetPrefs() {
 // TODO(crbug.com/535784): Implement this when adding credit card upload.
 syncer::SyncService* WebViewAutofillClientIOS::GetSyncService() {
   return nullptr;
+}
+
+identity::IdentityManager* WebViewAutofillClientIOS::GetIdentityManager() {
+  return identity_manager_;
 }
 
 IdentityProvider* WebViewAutofillClientIOS::GetIdentityProvider() {

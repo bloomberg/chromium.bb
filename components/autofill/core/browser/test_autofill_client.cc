@@ -38,6 +38,10 @@ syncer::SyncService* TestAutofillClient::GetSyncService() {
   return nullptr;
 }
 
+identity::IdentityManager* TestAutofillClient::GetIdentityManager() {
+  return identity_test_env_.identity_manager();
+}
+
 IdentityProvider* TestAutofillClient::GetIdentityProvider() {
   return identity_provider_.get();
 }

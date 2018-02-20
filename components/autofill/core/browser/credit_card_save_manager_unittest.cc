@@ -99,7 +99,7 @@ class CreditCardSaveManagerTest : public testing::Test {
     autofill_driver_->SetURLRequestContext(request_context_.get());
     payments_client_ = new payments::TestPaymentsClient(
         autofill_driver_->GetURLRequestContext(), autofill_client_.GetPrefs(),
-        autofill_client_.GetIdentityProvider(),
+        autofill_client_.GetIdentityManager(),
         /*unmask_delegate=*/nullptr,
         // Will be set by CreditCardSaveManager's ctor
         /*save_delegate=*/nullptr);

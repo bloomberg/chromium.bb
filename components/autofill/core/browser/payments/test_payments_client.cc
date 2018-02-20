@@ -12,12 +12,12 @@ namespace payments {
 TestPaymentsClient::TestPaymentsClient(
     net::URLRequestContextGetter* context_getter,
     PrefService* pref_service,
-    IdentityProvider* identity_provider,
+    identity::IdentityManager* identity_manager,
     payments::PaymentsClientUnmaskDelegate* unmask_delegate,
     payments::PaymentsClientSaveDelegate* save_delegate)
     : PaymentsClient(context_getter,
                      pref_service,
-                     identity_provider,
+                     identity_manager,
                      unmask_delegate,
                      save_delegate),
       save_delegate_(save_delegate) {}

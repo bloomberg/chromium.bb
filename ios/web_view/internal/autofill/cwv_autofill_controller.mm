@@ -26,6 +26,7 @@
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
 #import "ios/web_view/internal/autofill/web_view_autofill_client_ios.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
+#include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_manager_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -92,7 +93,10 @@
         browserState->GetPrefs(),
         ios_web_view::WebViewPersonalDataManagerFactory::GetForBrowserState(
             browserState),
-        _webState, self, std::move(identityProvider),
+        _webState, self,
+        ios_web_view::WebViewIdentityManagerFactory::GetInstance()
+            ->GetForBrowserState(browserState),
+        std::move(identityProvider),
         ios_web_view::WebViewWebDataServiceWrapperFactory::
             GetAutofillWebDataForBrowserState(
                 browserState, ServiceAccessType::EXPLICIT_ACCESS)));

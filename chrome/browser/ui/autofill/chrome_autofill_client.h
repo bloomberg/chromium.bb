@@ -51,6 +51,7 @@ class ChromeAutofillClient
   scoped_refptr<AutofillWebDataService> GetDatabase() override;
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
+  identity::IdentityManager* GetIdentityManager() override;
   IdentityProvider* GetIdentityProvider() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   AddressNormalizer* GetAddressNormalizer() override;

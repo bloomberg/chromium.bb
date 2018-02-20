@@ -29,6 +29,10 @@ namespace gfx {
 class RectF;
 }
 
+namespace identity {
+class IdentityManager;
+}
+
 namespace syncer {
 class SyncService;
 }
@@ -102,7 +106,11 @@ class AutofillClient : public RiskDataLoader {
   // Gets the sync service associated with the client.
   virtual syncer::SyncService* GetSyncService() = 0;
 
+  // Gets the IdentityManager associated with the client.
+  virtual identity::IdentityManager* GetIdentityManager() = 0;
+
   // Gets the IdentityProvider associated with the client (for OAuth2).
+  // TODO(https://crbug.com/809435): Remove.
   virtual IdentityProvider* GetIdentityProvider() = 0;
 
   // Gets the UKM service associated with this client (for metrics).
