@@ -52,7 +52,8 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   void RemoveOutputDeviceChangeListener(AudioDeviceListener* listener) override;
 
   std::unique_ptr<AudioLog> CreateAudioLog(
-      AudioLogFactory::AudioComponent component) override;
+      AudioLogFactory::AudioComponent component,
+      int component_id) override;
 
   void SetMaxStreamCountForTesting(int max_input, int max_output) final;
 

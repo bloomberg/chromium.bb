@@ -13,9 +13,9 @@
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/common/content_export.h"
 #include "media/audio/audio_input_delegate.h"
+#include "media/mojo/interfaces/audio_logging.mojom.h"
 
 namespace media {
-class AudioLog;
 class AudioManager;
 class AudioInputController;
 class AudioInputSyncWriter;
@@ -43,7 +43,7 @@ class CONTENT_EXPORT AudioInputDelegateImpl : public media::AudioInputDelegate {
       int render_process_id,
       int render_frame_id,
       AudioInputDeviceManager* audio_input_device_manager,
-      media::AudioLog* audio_log,
+      media::mojom::AudioLogPtr audio_log,
       AudioInputDeviceManager::KeyboardMicRegistration
           keyboard_mic_registration,
       uint32_t shared_memory_count,
@@ -65,8 +65,7 @@ class CONTENT_EXPORT AudioInputDelegateImpl : public media::AudioInputDelegate {
       media::UserInputMonitor* user_input_monitor,
       const media::AudioParameters& audio_parameters,
       int render_process_id,
-      int render_frame_id,
-      media::AudioLog* audio_log,
+      media::mojom::AudioLogPtr audio_log,
       AudioInputDeviceManager::KeyboardMicRegistration
           keyboard_mic_registration,
       int stream_id,
@@ -91,7 +90,7 @@ class CONTENT_EXPORT AudioInputDelegateImpl : public media::AudioInputDelegate {
   std::unique_ptr<ControllerEventHandler> controller_event_handler_;
   std::unique_ptr<media::AudioInputSyncWriter> writer_;
   std::unique_ptr<base::CancelableSyncSocket> foreign_socket_;
-  media::AudioLog* const audio_log_;
+  media::mojom::AudioLogPtr const audio_log_;
   scoped_refptr<media::AudioInputController> controller_;
   const AudioInputDeviceManager::KeyboardMicRegistration
       keyboard_mic_registration_;

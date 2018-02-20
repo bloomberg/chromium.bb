@@ -58,7 +58,6 @@ class CancelableSyncSocket;
 }
 
 namespace media {
-class AudioLog;
 class AudioManager;
 class AudioParameters;
 class AudioSystem;
@@ -199,8 +198,6 @@ class CONTENT_EXPORT AudioRendererHost
   std::map<int, std::pair<bool, std::string>> authorizations_;
 
   AudioOutputAuthorizationHandler authorization_handler_;
-
-  const std::unique_ptr<media::AudioLog> audio_log_;
 
   // A list of the current open streams.
   AudioOutputDelegateVector delegates_;

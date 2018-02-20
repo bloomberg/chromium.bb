@@ -30,6 +30,7 @@
 #include "media/audio/audio_logging.h"
 #include "media/base/audio_bus.h"
 #include "media/base/limits.h"
+#include "media/mojo/interfaces/audio_logging.mojom.h"
 #include "media/mojo/interfaces/audio_output_stream.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
@@ -69,11 +70,8 @@ AudioRendererHost::AudioRendererHost(int render_process_id,
       media_stream_manager_(media_stream_manager),
       authorization_handler_(audio_system,
                              media_stream_manager,
-                             render_process_id_),
-      audio_log_(MediaInternals::GetInstance()->CreateAudioLog(
-          media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER)) {
+                             render_process_id_) {
   DCHECK(audio_manager_);
-  DCHECK(audio_log_);
 }
 
 AudioRendererHost::~AudioRendererHost() {
@@ -286,16 +284,19 @@ void AudioRendererHost::OnCreateStream(int stream_id,
   MediaObserver* const media_observer =
       GetContentClient()->browser()->GetMediaObserver();
 
-  audio_log_->OnCreated(stream_id, params, device_unique_id);
-  MediaInternals::GetInstance()->SetWebContentsTitleForAudioLogEntry(
-      stream_id, render_process_id_, render_frame_id, audio_log_.get());
-  media::mojom::AudioOutputStreamObserverPtr observer_ptr;
+  media::mojom::AudioLogPtr audio_log_ptr =
+      MediaInternals::GetInstance()->CreateMojoAudioLog(
+          media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER, stream_id,
+          render_process_id_, render_frame_id);
+  audio_log_ptr->OnCreated(params, device_unique_id);
 
+  media::mojom::AudioOutputStreamObserverPtr observer_ptr;
   mojo::MakeStrongBinding(std::make_unique<AudioOutputStreamObserverImpl>(
                               render_process_id_, render_frame_id, stream_id),
                           mojo::MakeRequest(&observer_ptr));
+
   auto delegate = AudioOutputDelegateImpl::Create(
-      this, audio_manager_, audio_log_.get(), mirroring_manager_,
+      this, audio_manager_, std::move(audio_log_ptr), mirroring_manager_,
       media_observer, stream_id, render_frame_id, render_process_id_, params,
       std::move(observer_ptr), device_unique_id);
   if (delegate)

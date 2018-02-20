@@ -11,6 +11,7 @@ mojom("interfaces") {
   sources = [
     "audio_decoder.mojom",
     "audio_input_stream.mojom",
+    "audio_logging.mojom",
     "audio_output_stream.mojom",
     "audio_parameters.mojom",
     "cdm_proxy.mojom",

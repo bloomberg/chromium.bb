@@ -56,7 +56,8 @@ class MockAudioManager : public AudioManager {
   void RemoveOutputDeviceChangeListener(AudioDeviceListener* listener) override;
 
   std::unique_ptr<AudioLog> CreateAudioLog(
-      AudioLogFactory::AudioComponent component) override;
+      AudioLogFactory::AudioComponent component,
+      int component_id) override;
 
   void InitializeDebugRecording() override;
   AudioDebugRecordingManager* GetAudioDebugRecordingManager() override;

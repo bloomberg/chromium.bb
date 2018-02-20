@@ -171,7 +171,8 @@ class MEDIA_EXPORT AudioManager {
   // Create a new AudioLog object for tracking the behavior for one or more
   // instances of the given component.  See AudioLogFactory for more details.
   virtual std::unique_ptr<AudioLog> CreateAudioLog(
-      AudioLogFactory::AudioComponent component) = 0;
+      AudioLogFactory::AudioComponent component,
+      int component_id) = 0;
 
   // Get debug recording manager. This can only be called on AudioManager's
   // thread (GetTaskRunner()).

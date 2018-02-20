@@ -47,9 +47,7 @@ AudioInputRendererHost::AudioInputRendererHost(
       audio_manager_(audio_manager),
       media_stream_manager_(media_stream_manager),
       audio_mirroring_manager_(audio_mirroring_manager),
-      user_input_monitor_(user_input_monitor),
-      audio_log_(MediaInternals::GetInstance()->CreateAudioLog(
-          media::AudioLogFactory::AUDIO_INPUT_CONTROLLER)) {}
+      user_input_monitor_(user_input_monitor) {}
 
 AudioInputRendererHost::~AudioInputRendererHost() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -176,14 +174,19 @@ void AudioInputRendererHost::DoCreateStream(
     return;
   }
 
+  media::mojom::AudioLogPtr audio_log_ptr =
+      MediaInternals::GetInstance()->CreateMojoAudioLog(
+          media::AudioLogFactory::AUDIO_INPUT_CONTROLLER, stream_id,
+          render_process_id_, render_frame_id);
+
   std::unique_ptr<media::AudioInputDelegate> delegate =
       AudioInputDelegateImpl::Create(
           audio_manager_, audio_mirroring_manager_, user_input_monitor_,
           render_process_id_, render_frame_id,
-          media_stream_manager_->audio_input_device_manager(), audio_log_.get(),
-          std::move(keyboard_mic_registration), config.shared_memory_count,
-          stream_id, session_id, config.automatic_gain_control, config.params,
-          this);
+          media_stream_manager_->audio_input_device_manager(),
+          std::move(audio_log_ptr), std::move(keyboard_mic_registration),
+          config.shared_memory_count, stream_id, session_id,
+          config.automatic_gain_control, config.params, this);
 
   if (!delegate) {
     // Error was logged by AudioInputDelegateImpl::Create.

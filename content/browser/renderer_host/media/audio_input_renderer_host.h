@@ -38,7 +38,6 @@
 
 namespace media {
 class AudioManager;
-class AudioLog;
 class UserInputMonitor;
 }
 
@@ -192,8 +191,6 @@ class CONTENT_EXPORT AudioInputRendererHost
 
   // Raw pointer of the UserInputMonitor.
   media::UserInputMonitor* const user_input_monitor_;
-
-  std::unique_ptr<media::AudioLog> audio_log_;
 
   // A map of stream IDs to audio sources.
   AudioInputDelegateMap delegates_;

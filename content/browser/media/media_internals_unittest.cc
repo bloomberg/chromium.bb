@@ -232,7 +232,8 @@ class MediaInternalsAudioLogTest
                               base::Unretained(this))),
         test_params_(MakeAudioParams()),
         test_component_(GetParam()),
-        audio_log_(media_internals_->CreateAudioLog(test_component_)) {
+        audio_log_(media_internals_->CreateAudioLog(test_component_,
+                                                    kTestComponentID)) {
     media_internals_->AddUpdateCallback(update_cb_);
   }
 
@@ -257,7 +258,7 @@ class MediaInternalsAudioLogTest
 };
 
 TEST_P(MediaInternalsAudioLogTest, AudioLogCreateStartStopErrorClose) {
-  audio_log_->OnCreated(kTestComponentID, test_params_, kTestDeviceID);
+  audio_log_->OnCreated(test_params_, kTestDeviceID);
   base::RunLoop().RunUntilIdle();
 
   ExpectString("channel_layout",
@@ -272,12 +273,12 @@ TEST_P(MediaInternalsAudioLogTest, AudioLogCreateStartStopErrorClose) {
   ExpectStatus("created");
 
   // Verify OnStarted().
-  audio_log_->OnStarted(kTestComponentID);
+  audio_log_->OnStarted();
   base::RunLoop().RunUntilIdle();
   ExpectStatus("started");
 
   // Verify OnStopped().
-  audio_log_->OnStopped(kTestComponentID);
+  audio_log_->OnStopped();
   base::RunLoop().RunUntilIdle();
   ExpectStatus("stopped");
 
@@ -285,22 +286,22 @@ TEST_P(MediaInternalsAudioLogTest, AudioLogCreateStartStopErrorClose) {
   const char kErrorKey[] = "error_occurred";
   std::string no_value;
   ASSERT_FALSE(update_data_.GetString(kErrorKey, &no_value));
-  audio_log_->OnError(kTestComponentID);
+  audio_log_->OnError();
   base::RunLoop().RunUntilIdle();
   ExpectString(kErrorKey, "true");
 
   // Verify OnClosed().
-  audio_log_->OnClosed(kTestComponentID);
+  audio_log_->OnClosed();
   base::RunLoop().RunUntilIdle();
   ExpectStatus("closed");
 }
 
 TEST_P(MediaInternalsAudioLogTest, AudioLogCreateClose) {
-  audio_log_->OnCreated(kTestComponentID, test_params_, kTestDeviceID);
+  audio_log_->OnCreated(test_params_, kTestDeviceID);
   base::RunLoop().RunUntilIdle();
   ExpectStatus("created");
 
-  audio_log_->OnClosed(kTestComponentID);
+  audio_log_->OnClosed();
   base::RunLoop().RunUntilIdle();
   ExpectStatus("closed");
 }
