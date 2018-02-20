@@ -34,18 +34,15 @@ class IndexedDBQuotaClient : public storage::QuotaClient {
   void OnQuotaManagerDestroyed() override;
   CONTENT_EXPORT void GetOriginUsage(const url::Origin& origin,
                                      blink::mojom::StorageType type,
-                                     const GetUsageCallback& callback) override;
-  CONTENT_EXPORT void GetOriginsForType(
-      blink::mojom::StorageType type,
-      const GetOriginsCallback& callback) override;
-  CONTENT_EXPORT void GetOriginsForHost(
-      blink::mojom::StorageType type,
-      const std::string& host,
-      const GetOriginsCallback& callback) override;
-  CONTENT_EXPORT void DeleteOriginData(
-      const url::Origin& origin,
-      blink::mojom::StorageType type,
-      const DeletionCallback& callback) override;
+                                     GetUsageCallback callback) override;
+  CONTENT_EXPORT void GetOriginsForType(blink::mojom::StorageType type,
+                                        GetOriginsCallback callback) override;
+  CONTENT_EXPORT void GetOriginsForHost(blink::mojom::StorageType type,
+                                        const std::string& host,
+                                        GetOriginsCallback callback) override;
+  CONTENT_EXPORT void DeleteOriginData(const url::Origin& origin,
+                                       blink::mojom::StorageType type,
+                                       DeletionCallback callback) override;
   bool DoesSupport(blink::mojom::StorageType type) const override;
 
  private:

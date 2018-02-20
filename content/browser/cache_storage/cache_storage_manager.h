@@ -117,26 +117,23 @@ class CONTENT_EXPORT CacheStorageManager {
   CacheStorage* FindOrCreateCacheStorage(const url::Origin& origin);
 
   // QuotaClient and Browsing Data Deletion support
-  void GetAllOriginsUsage(
-      const CacheStorageContext::GetUsageInfoCallback& callback);
+  void GetAllOriginsUsage(CacheStorageContext::GetUsageInfoCallback callback);
   void GetAllOriginsUsageGetSizes(
       std::unique_ptr<std::vector<CacheStorageUsageInfo>> usage_info,
-      const CacheStorageContext::GetUsageInfoCallback& callback);
+      CacheStorageContext::GetUsageInfoCallback callback);
 
   void GetOriginUsage(const url::Origin& origin_url,
-                      const storage::QuotaClient::GetUsageCallback& callback);
-  void GetOrigins(const storage::QuotaClient::GetOriginsCallback& callback);
-  void GetOriginsForHost(
-      const std::string& host,
-      const storage::QuotaClient::GetOriginsCallback& callback);
+                      storage::QuotaClient::GetUsageCallback callback);
+  void GetOrigins(storage::QuotaClient::GetOriginsCallback callback);
+  void GetOriginsForHost(const std::string& host,
+                         storage::QuotaClient::GetOriginsCallback callback);
   void DeleteOriginData(const url::Origin& origin,
-                        const storage::QuotaClient::DeletionCallback& callback);
+                        storage::QuotaClient::DeletionCallback callback);
   void DeleteOriginData(const url::Origin& origin);
-  void DeleteOriginDidClose(
-      const url::Origin& origin,
-      const storage::QuotaClient::DeletionCallback& callback,
-      std::unique_ptr<CacheStorage> cache_storage,
-      int64_t origin_size);
+  void DeleteOriginDidClose(const url::Origin& origin,
+                            storage::QuotaClient::DeletionCallback callback,
+                            std::unique_ptr<CacheStorage> cache_storage,
+                            int64_t origin_size);
 
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter()
       const {

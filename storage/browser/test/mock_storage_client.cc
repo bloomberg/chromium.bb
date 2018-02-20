@@ -94,35 +94,37 @@ void MockStorageClient::OnQuotaManagerDestroyed() {
 
 void MockStorageClient::GetOriginUsage(const url::Origin& origin,
                                        StorageType type,
-                                       const GetUsageCallback& callback) {
+                                       GetUsageCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&MockStorageClient::RunGetOriginUsage,
+                                weak_factory_.GetWeakPtr(), origin, type,
+                                std::move(callback)));
+}
+
+void MockStorageClient::GetOriginsForType(StorageType type,
+                                          GetOriginsCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&MockStorageClient::RunGetOriginUsage,
-                 weak_factory_.GetWeakPtr(), origin, type, callback));
+      base::BindOnce(&MockStorageClient::RunGetOriginsForType,
+                     weak_factory_.GetWeakPtr(), type, std::move(callback)));
 }
 
-void MockStorageClient::GetOriginsForType(
-    StorageType type, const GetOriginsCallback& callback) {
+void MockStorageClient::GetOriginsForHost(StorageType type,
+                                          const std::string& host,
+                                          GetOriginsCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&MockStorageClient::RunGetOriginsForType,
-                            weak_factory_.GetWeakPtr(), type, callback));
-}
-
-void MockStorageClient::GetOriginsForHost(
-    StorageType type, const std::string& host,
-    const GetOriginsCallback& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&MockStorageClient::RunGetOriginsForHost,
-                            weak_factory_.GetWeakPtr(), type, host, callback));
+      FROM_HERE, base::BindOnce(&MockStorageClient::RunGetOriginsForHost,
+                                weak_factory_.GetWeakPtr(), type, host,
+                                std::move(callback)));
 }
 
 void MockStorageClient::DeleteOriginData(const url::Origin& origin,
                                          StorageType type,
-                                         const DeletionCallback& callback) {
+                                         DeletionCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&MockStorageClient::RunDeleteOriginData,
-                 weak_factory_.GetWeakPtr(), origin, type, callback));
+      FROM_HERE, base::BindOnce(&MockStorageClient::RunDeleteOriginData,
+                                weak_factory_.GetWeakPtr(), origin, type,
+                                std::move(callback)));
 }
 
 bool MockStorageClient::DoesSupport(StorageType type) const {
@@ -131,29 +133,29 @@ bool MockStorageClient::DoesSupport(StorageType type) const {
 
 void MockStorageClient::RunGetOriginUsage(const url::Origin& origin,
                                           StorageType type,
-                                          const GetUsageCallback& callback) {
+                                          GetUsageCallback callback) {
   OriginDataMap::iterator find = origin_data_.find(make_pair(origin, type));
   if (find == origin_data_.end()) {
-    callback.Run(0);
+    std::move(callback).Run(0);
   } else {
-    callback.Run(find->second);
+    std::move(callback).Run(find->second);
   }
 }
 
-void MockStorageClient::RunGetOriginsForType(
-    StorageType type, const GetOriginsCallback& callback) {
+void MockStorageClient::RunGetOriginsForType(StorageType type,
+                                             GetOriginsCallback callback) {
   std::set<url::Origin> origins;
   for (OriginDataMap::iterator iter = origin_data_.begin();
        iter != origin_data_.end(); ++iter) {
     if (type == iter->first.second)
       origins.insert(iter->first.first);
   }
-  callback.Run(origins);
+  std::move(callback).Run(origins);
 }
 
-void MockStorageClient::RunGetOriginsForHost(
-    StorageType type, const std::string& host,
-    const GetOriginsCallback& callback) {
+void MockStorageClient::RunGetOriginsForHost(StorageType type,
+                                             const std::string& host,
+                                             GetOriginsCallback callback) {
   std::set<url::Origin> origins;
   for (OriginDataMap::iterator iter = origin_data_.begin();
        iter != origin_data_.end(); ++iter) {
@@ -162,16 +164,17 @@ void MockStorageClient::RunGetOriginsForHost(
     if (type == iter->first.second && host == host_or_spec)
       origins.insert(iter->first.first);
   }
-  callback.Run(origins);
+  std::move(callback).Run(origins);
 }
 
 void MockStorageClient::RunDeleteOriginData(const url::Origin& origin,
                                             StorageType type,
-                                            const DeletionCallback& callback) {
+                                            DeletionCallback callback) {
   ErrorOriginSet::iterator itr_error =
       error_origins_.find(make_pair(origin, type));
   if (itr_error != error_origins_.end()) {
-    callback.Run(blink::mojom::QuotaStatusCode::kErrorInvalidModification);
+    std::move(callback).Run(
+        blink::mojom::QuotaStatusCode::kErrorInvalidModification);
     return;
   }
 
@@ -183,7 +186,7 @@ void MockStorageClient::RunDeleteOriginData(const url::Origin& origin,
     origin_data_.erase(itr);
   }
 
-  callback.Run(blink::mojom::QuotaStatusCode::kOk);
+  std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk);
 }
 
 }  // namespace content
