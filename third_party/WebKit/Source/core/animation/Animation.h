@@ -41,6 +41,7 @@
 #include "bindings/core/v8/ScriptPromiseProperty.h"
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
+#include "core/animation/AnimationEffectOwner.h"
 #include "core/animation/AnimationEffectReadOnly.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/DocumentTimeline.h"
@@ -63,7 +64,8 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
                                     public ActiveScriptWrappable<Animation>,
                                     public ContextLifecycleObserver,
                                     public CompositorAnimationDelegate,
-                                    public CompositorAnimationPlayerClient {
+                                    public CompositorAnimationPlayerClient,
+                                    public AnimationEffectOwner {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Animation);
 
@@ -93,6 +95,12 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
 
   // Returns whether the animation is finished.
   bool Update(TimingUpdateReason);
+
+  // AnimationEffectOwner:
+  void UpdateIfNecessary() override;
+  void SpecifiedTimingChanged() override;
+  bool IsEventDispatchAllowed() const override;
+  Animation* GetAnimation() override { return this; }
 
   // timeToEffectChange returns:
   //  infinity  - if this animation is no longer in effect
@@ -206,7 +214,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
     return animation1->SequenceNumber() < animation2->SequenceNumber();
   }
 
-  bool EffectSuppressed() const { return effect_suppressed_; }
+  bool EffectSuppressed() const override { return effect_suppressed_; }
   void SetEffectSuppressed(bool);
 
   void InvalidateKeyframeEffect(const TreeScope&);

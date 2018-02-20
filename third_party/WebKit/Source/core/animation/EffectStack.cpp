@@ -90,10 +90,8 @@ EffectStack::EffectStack() = default;
 bool EffectStack::HasActiveAnimationsOnCompositor(
     const PropertyHandle& property) const {
   for (const auto& sampled_effect : sampled_effects_) {
-    // TODO(dstockwell): move the playing check into AnimationEffectReadOnly and
-    // expose both hasAnimations and hasActiveAnimations
     if (sampled_effect->Effect() &&
-        sampled_effect->Effect()->GetAnimation()->Playing() &&
+        sampled_effect->Effect()->HasPlayingAnimation() &&
         sampled_effect->Effect()->HasActiveAnimationsOnCompositor(property))
       return true;
   }
@@ -127,6 +125,8 @@ ActiveInterpolationsMap EffectStack::ActiveInterpolations(
     effect_stack->RemoveRedundantSampledEffects();
     for (const auto& sampled_effect : sampled_effects) {
       if (sampled_effect->GetPriority() != priority ||
+          // TODO(majidvp): Instead of accessing the effect's animation move the
+          // check inside KeyframeEffectReadOnly. http://crbug.com/812410
           (suppressed_animations && sampled_effect->Effect() &&
            suppressed_animations->Contains(
                sampled_effect->Effect()->GetAnimation())))

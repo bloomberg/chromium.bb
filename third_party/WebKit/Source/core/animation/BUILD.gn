@@ -12,6 +12,7 @@ blink_core_sources("animation") {
     "Animation.h",
     "AnimationClock.cpp",
     "AnimationClock.h",
+    "AnimationEffectOwner.h",
     "AnimationEffectReadOnly.cpp",
     "AnimationEffectReadOnly.h",
     "AnimationEffectTiming.cpp",

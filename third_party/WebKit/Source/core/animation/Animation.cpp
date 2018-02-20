@@ -928,8 +928,11 @@ void Animation::CancelAnimationOnCompositor() {
 }
 
 void Animation::RestartAnimationOnCompositor() {
-  if (HasActiveAnimationsOnCompositor())
-    ToKeyframeEffectReadOnly(content_.Get())->RestartAnimationOnCompositor();
+  if (!HasActiveAnimationsOnCompositor())
+    return;
+
+  if (ToKeyframeEffectReadOnly(content_.Get())->CancelAnimationOnCompositor())
+    SetCompositorPending(true);
 }
 
 void Animation::CancelIncompatibleAnimationsOnCompositor() {
@@ -998,6 +1001,22 @@ bool Animation::Update(TimingUpdateReason reason) {
   }
   DCHECK(!outdated_);
   return !finished_ || std::isfinite(TimeToEffectChange());
+}
+
+void Animation::UpdateIfNecessary() {
+  if (Outdated())
+    Update(kTimingUpdateOnDemand);
+  DCHECK(!Outdated());
+}
+
+void Animation::SpecifiedTimingChanged() {
+  SetOutdated();
+  // FIXME: Needs to consider groups when added.
+  SetCompositorPending(true);
+}
+
+bool Animation::IsEventDispatchAllowed() const {
+  return Paused() || HasStartTime();
 }
 
 double Animation::TimeToEffectChange() {
