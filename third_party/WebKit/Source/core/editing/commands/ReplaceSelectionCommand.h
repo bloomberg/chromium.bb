@@ -145,14 +145,14 @@ class CORE_EXPORT ReplaceSelectionCommand final : public CompositeEditCommand {
   Position start_of_inserted_content_;
   Position end_of_inserted_content_;
   Member<EditingStyle> insertion_style_;
-  bool select_replacement_;
-  bool smart_replace_;
+  const bool select_replacement_;
+  const bool smart_replace_;
   bool match_style_;
   Member<DocumentFragment> document_fragment_;
   bool prevent_nesting_;
-  bool moving_paragraph_;
+  const bool moving_paragraph_;
   InputEvent::InputType input_type_;
-  bool sanitize_fragment_;
+  const bool sanitize_fragment_;
   bool should_merge_end_;
 
   Position start_of_inserted_range_;
