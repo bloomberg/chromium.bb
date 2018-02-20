@@ -126,7 +126,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
     void OnPromiseHeaderList(QuicStreamId promised_id,
                              size_t frame_len,
                              const QuicHeaderList& header_list);
-    SpdyPriority priority() const;
     bool can_migrate();
 
     const NetLogWithSource& net_log() const;
@@ -185,7 +184,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
     bool is_done_reading_;
     bool is_first_stream_;
     size_t num_bytes_consumed_;
-    SpdyPriority priority_;
 
     int net_error_;
 
@@ -221,7 +219,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
                       bool fin,
                       QuicReferenceCountedPointer<QuicAckListenerInterface>
                           ack_listener) override;
-  SpdyPriority priority() const override;
 
   // While the server's set_priority shouldn't be called externally, the creator
   // of client-side streams should be able to set the priority.
