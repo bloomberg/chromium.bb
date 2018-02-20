@@ -26,57 +26,55 @@
  *
  * Note: We don't need to worry about going over the active area, as long as we
  * stay inside the CfL prediction buffer.
- *
- * Note: For 4:2:0 luma subsampling, the width will never be greater than 16.
  */
-static void cfl_luma_subsampling_420_lbd_ssse3(const uint8_t *input,
-                                               int input_stride,
-                                               int16_t *pred_buf_q3, int width,
-                                               int height) {
-  const __m128i twos = _mm_set1_epi8(2);  // Sixteen twos
-
-  // Sixteen int8 values fit in one __m128i register. If this is enough to do
-  // the entire row, the next value is two rows down, otherwise we move to the
-  // next sixteen values.
-  const int next = (width == 32) ? 16 : input_stride << 1;
-
-  // Values in the prediction buffer are subsampled, so we only need to move
-  // down one row or forward by eight values.
-  const int next_chroma = (width == 32) ? 8 : CFL_BUF_LINE;
-
-  // When the width is less than 16, we double the stride, because we process
-  // four lines by iteration (instead of two).
-  const int luma_stride = input_stride << (1 + (width < 32));
-  const int chroma_stride = CFL_BUF_LINE << (width < 32);
-
+static INLINE void cfl_luma_subsampling_420_lbd_ssse3(const uint8_t *input,
+                                                      int input_stride,
+                                                      int16_t *pred_buf_q3,
+                                                      int width, int height) {
+  const __m128i twos = _mm_set1_epi8(2);
   const int16_t *end = pred_buf_q3 + (height >> 1) * CFL_BUF_LINE;
+  const int luma_stride = input_stride << 1;
+
+  __m128i top, bot, next_top, next_bot, top_16x8, bot_16x8, next_top_16x8,
+      next_bot_16x8, sum_16x8, next_sum_16x8;
   do {
-    // Load 16 values for the top and bottom rows.
-    // t_0, t_1, ... t_15
-    __m128i top = _mm_loadu_si128((__m128i *)(input));
-    // b_0, b_1, ... b_15
-    __m128i bot = _mm_loadu_si128((__m128i *)(input + input_stride));
+    if (width == 4) {
+      top = _mm_cvtsi32_si128(*((int *)input));
+      bot = _mm_cvtsi32_si128(*((int *)(input + input_stride)));
+    } else if (width == 8) {
+      top = _mm_loadl_epi64((__m128i *)input);
+      bot = _mm_loadl_epi64((__m128i *)(input + input_stride));
+    } else {
+      top = _mm_loadu_si128((__m128i *)input);
+      bot = _mm_loadu_si128((__m128i *)(input + input_stride));
+      if (width == 32) {
+        next_top = _mm_loadu_si128((__m128i *)(input + 16));
+        next_bot = _mm_loadu_si128((__m128i *)(input + 16 + input_stride));
+      }
+    }
 
-    // Load either the next line or the next 16 values
-    __m128i next_top = _mm_loadu_si128((__m128i *)(input + next));
-    __m128i next_bot =
-        _mm_loadu_si128((__m128i *)(input + next + input_stride));
+    top_16x8 = _mm_maddubs_epi16(top, twos);
+    bot_16x8 = _mm_maddubs_epi16(bot, twos);
+    sum_16x8 = _mm_add_epi16(top_16x8, bot_16x8);
+    if (width == 32) {
+      next_top_16x8 = _mm_maddubs_epi16(next_top, twos);
+      next_bot_16x8 = _mm_maddubs_epi16(next_bot, twos);
+      next_sum_16x8 = _mm_add_epi16(next_top_16x8, next_bot_16x8);
+    }
 
-    // Horizontal add of the 16 values into 8 values that are multiplied by 2
-    // (t_0 + t_1) * 2, (t_2 + t_3) * 2, ... (t_14 + t_15) *2
-    top = _mm_maddubs_epi16(top, twos);
-    next_top = _mm_maddubs_epi16(next_top, twos);
-    // (b_0 + b_1) * 2, (b_2 + b_3) * 2, ... (b_14 + b_15) *2
-    bot = _mm_maddubs_epi16(bot, twos);
-    next_bot = _mm_maddubs_epi16(next_bot, twos);
-
-    // Add the 8 values in top with the 8 values in bottom
-    _mm_storeu_si128((__m128i *)pred_buf_q3, _mm_add_epi16(top, bot));
-    _mm_storeu_si128((__m128i *)(pred_buf_q3 + next_chroma),
-                     _mm_add_epi16(next_top, next_bot));
+    if (width == 4) {
+      *((int *)pred_buf_q3) = _mm_cvtsi128_si32(sum_16x8);
+    } else if (width == 8) {
+      _mm_storel_epi64((__m128i *)pred_buf_q3, sum_16x8);
+    } else {
+      _mm_storeu_si128((__m128i *)pred_buf_q3, sum_16x8);
+      if (width == 32) {
+        _mm_storeu_si128((__m128i *)(pred_buf_q3 + 8), next_sum_16x8);
+      }
+    }
 
     input += luma_stride;
-    pred_buf_q3 += chroma_stride;
+    pred_buf_q3 += CFL_BUF_LINE;
   } while (pred_buf_q3 < end);
 }
 

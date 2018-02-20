@@ -32,33 +32,53 @@ static void cfl_luma_subsampling_420_lbd_avx2(const uint8_t *input,
                                               int input_stride,
                                               int16_t *pred_buf_q3, int width,
                                               int height) {
-  (void)width;  // Max chroma width is 16, so all widths fit in one __m256i
-
+  (void)width;                               // Forever 32
   const __m256i twos = _mm256_set1_epi8(2);  // Thirty two twos
   const int luma_stride = input_stride << 1;
-  const int16_t *end = pred_buf_q3 + (height >> 1) * CFL_BUF_LINE;
+  __m256i *row = (__m256i *)pred_buf_q3;
+  const __m256i *row_end = row + (height >> 1) * CFL_BUF_LINE_I256;
   do {
-    // Load 32 values for the top and bottom rows.
-    // t_0, t_1, ... t_31
-    __m256i top = _mm256_loadu_si256((__m256i *)(input));
-    // b_0, b_1, ... b_31
+    __m256i top = _mm256_loadu_si256((__m256i *)input);
     __m256i bot = _mm256_loadu_si256((__m256i *)(input + input_stride));
 
-    // Horizontal add of the 32 values into 16 values that are multiplied by 2
-    // (t_0 + t_1) * 2, (t_2 + t_3) * 2, ... (t_30 + t_31) *2
-    top = _mm256_maddubs_epi16(top, twos);
-    // (b_0 + b_1) * 2, (b_2 + b_3) * 2, ... (b_30 + b_31) *2
-    bot = _mm256_maddubs_epi16(bot, twos);
+    __m256i top_16x16 = _mm256_maddubs_epi16(top, twos);
+    __m256i bot_16x16 = _mm256_maddubs_epi16(bot, twos);
+    __m256i sum_16x16 = _mm256_add_epi16(top_16x16, bot_16x16);
 
-    // Add the 16 values in top with the 16 values in bottom
-    _mm256_storeu_si256((__m256i *)pred_buf_q3, _mm256_add_epi16(top, bot));
+    _mm256_storeu_si256(row, sum_16x16);
 
     input += luma_stride;
-    pred_buf_q3 += CFL_BUF_LINE;
-  } while (pred_buf_q3 < end);
+  } while ((row += CFL_BUF_LINE_I256) < row_end);
 }
 
-CFL_GET_SUBSAMPLE_FUNCTION(avx2)
+CFL_SUBSAMPLE(avx2, 420, lbd, 32, 32)
+CFL_SUBSAMPLE(avx2, 420, lbd, 32, 16)
+CFL_SUBSAMPLE(avx2, 420, lbd, 32, 8)
+
+cfl_subsample_lbd_fn cfl_get_luma_subsampling_420_lbd_avx2(TX_SIZE tx_size) {
+  static const cfl_subsample_lbd_fn subfn_420[TX_SIZES_ALL] = {
+    subsample_lbd_420_4x4_ssse3,   /* 4x4 */
+    subsample_lbd_420_8x8_ssse3,   /* 8x8 */
+    subsample_lbd_420_16x16_ssse3, /* 16x16 */
+    subsample_lbd_420_32x32_avx2,  /* 32x32 */
+    cfl_subsample_lbd_null,        /* 64x64 (invalid CFL size) */
+    subsample_lbd_420_4x8_ssse3,   /* 4x8 */
+    subsample_lbd_420_8x4_ssse3,   /* 8x4 */
+    subsample_lbd_420_8x16_ssse3,  /* 8x16 */
+    subsample_lbd_420_16x8_ssse3,  /* 16x8 */
+    subsample_lbd_420_16x32_ssse3, /* 16x32 */
+    subsample_lbd_420_32x16_avx2,  /* 32x16 */
+    cfl_subsample_lbd_null,        /* 32x64 (invalid CFL size) */
+    cfl_subsample_lbd_null,        /* 64x32 (invalid CFL size) */
+    subsample_lbd_420_4x16_ssse3,  /* 4x16  */
+    subsample_lbd_420_16x4_ssse3,  /* 16x4  */
+    subsample_lbd_420_8x32_ssse3,  /* 8x32  */
+    subsample_lbd_420_32x8_avx2,   /* 32x8  */
+    cfl_subsample_lbd_null,        /* 16x64 (invalid CFL size) */
+    cfl_subsample_lbd_null,        /* 64x16 (invalid CFL size) */
+  };
+  return subfn_420[tx_size];
+}
 
 static INLINE __m256i predict_unclipped(const __m256i *input, __m256i alpha_q12,
                                         __m256i alpha_sign, __m256i dc_q0) {
