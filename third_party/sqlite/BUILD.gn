@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/dcheck_always_on.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
 # Compile-time options passed to SQLite.
@@ -135,6 +136,12 @@ config("chromium_sqlite3_compile_options") {
     if (use_fuzzing_engine) {
       defines += [ "SQLITE_MAX_PAGE_COUNT=16384" ]
     }
+  }
+
+  if (is_debug || dcheck_always_on) {
+    # Check preconditions when SQLite APIs are called. See
+    # https://sqlite.org/compile.html#enable_api_armor
+    defines += [ "SQLITE_ENABLE_API_ARMOR" ]
   }
 }
 
