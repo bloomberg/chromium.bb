@@ -69,8 +69,6 @@ class TabContentManager : public ThumbnailCacheObserver {
   // make sure all live layers are detached.
   void DetachLiveLayer(int tab_id, scoped_refptr<cc::Layer> layer);
 
-  // Callback for when the thumbnail decompression for tab_id is done.
-  void OnFinishDecompressThumbnail(int tab_id, bool success, SkBitmap bitmap);
   // JNI methods.
   jboolean HasFullCachedThumbnail(
       JNIEnv* env,
