@@ -1185,9 +1185,10 @@ autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
 
   autofill::SaveCardBubbleViews* bubble = new autofill::SaveCardBubbleViews(
       anchor_view, gfx::Point(), web_contents, controller);
-  views::BubbleDialogDelegateView::CreateBubble(bubble);
+  views::Widget* bubble_widget =
+      views::BubbleDialogDelegateView::CreateBubble(bubble);
   if (card_view)
-    card_view->OnBubbleCreated(bubble);
+    card_view->OnBubbleWidgetCreated(bubble_widget);
   bubble->Show(user_gesture ? autofill::SaveCardBubbleViews::USER_GESTURE
                             : autofill::SaveCardBubbleViews::AUTOMATIC);
   return bubble;

@@ -274,7 +274,7 @@ void ToolbarView::ShowIntentPickerBubble(
         intent_picker_view, GetWebContents(), app_info,
         false /* disable_stay_in_chrome */, callback);
     if (bubble_widget && intent_picker_view)
-      bubble_widget->AddObserver(intent_picker_view);
+      intent_picker_view->OnBubbleWidgetCreated(bubble_widget);
   }
 }
 #endif  // defined(OS_CHROMEOS)
@@ -284,7 +284,7 @@ void ToolbarView::ShowBookmarkBubble(
     bool already_bookmarked,
     bookmarks::BookmarkBubbleObserver* observer) {
   views::View* anchor_view = location_bar();
-  StarView* star_view = location_bar()->star_view();
+  BubbleIconView* const star_view = location_bar()->star_view();
   if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
     if (star_view && star_view->visible())
       anchor_view = star_view;
@@ -297,10 +297,8 @@ void ToolbarView::ShowBookmarkBubble(
   views::Widget* bubble_widget = BookmarkBubbleView::ShowBubble(
       anchor_view, gfx::Rect(), nullptr, observer, std::move(delegate),
       browser_->profile(), url, already_bookmarked);
-  if (bubble_widget && star_view) {
-    star_view->SetHighlighted();
-    bubble_widget->AddObserver(star_view);
-  }
+  if (bubble_widget && star_view)
+    star_view->OnBubbleWidgetCreated(bubble_widget);
 }
 
 void ToolbarView::ShowTranslateBubble(
@@ -322,7 +320,7 @@ void ToolbarView::ShowTranslateBubble(
       is_user_gesture ? TranslateBubbleView::USER_GESTURE
                       : TranslateBubbleView::AUTOMATIC);
   if (bubble_widget && translate_icon_view)
-    bubble_widget->AddObserver(translate_icon_view);
+    translate_icon_view->OnBubbleWidgetCreated(bubble_widget);
 }
 
 int ToolbarView::GetMaxBrowserActionsWidth() const {

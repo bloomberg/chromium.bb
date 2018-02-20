@@ -30,12 +30,6 @@ StarView::StarView(CommandUpdater* command_updater, Browser* browser)
 
 StarView::~StarView() {}
 
-void StarView::SetHighlighted() {
-  views::InkDrop* ink_drop = GetInkDrop();
-  if (ink_drop && !ink_drop->IsHighlightFadingInOrVisible())
-    AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
-}
-
 void StarView::SetToggled(bool on) {
   BubbleIconView::SetActiveInternal(on);
   SetTooltipText(l10n_util::GetStringUTF16(
@@ -45,10 +39,11 @@ void StarView::SetToggled(bool on) {
 void StarView::ShowPromo() {
   BookmarkPromoBubbleView* bookmark_promo_bubble =
       BookmarkPromoBubbleView::CreateOwned(this);
+
+  OnBubbleWidgetCreated(bookmark_promo_bubble->GetWidget());
   if (!bookmark_promo_observer_.IsObserving(
           bookmark_promo_bubble->GetWidget())) {
     bookmark_promo_observer_.Add(bookmark_promo_bubble->GetWidget());
-    AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
     SetActiveInternal(false);
     UpdateIcon();
   }
@@ -100,7 +95,6 @@ SkColor StarView::GetInkDropBaseColor() const {
 void StarView::OnWidgetDestroying(views::Widget* widget) {
   if (bookmark_promo_observer_.IsObserving(widget)) {
     bookmark_promo_observer_.Remove(widget);
-    AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
     SetActiveInternal(false);
     UpdateIcon();
   }
