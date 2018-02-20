@@ -248,7 +248,7 @@ bool SVGPaintContext::PaintForLayoutObject(
   if (paint_info.IsRenderingClipPathAsMaskImage()) {
     if (resource_mode == kApplyToStrokeMode)
       return false;
-    flags.setColor(SVGComputedStyle::InitialFillPaintColor().Rgb());
+    flags.setColor(SK_ColorBLACK);
     flags.setShader(nullptr);
     return true;
   }
