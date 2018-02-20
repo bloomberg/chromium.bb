@@ -36,6 +36,7 @@
 #include "content/public/common/resource_type.h"
 #include "extensions/browser/api/activity_log/web_request_constants.h"
 #include "extensions/browser/api/declarative/rules_registry_service.h"
+#include "extensions/browser/api/declarative_net_request/rules_monitor_service.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/api/declarative_webrequest/request_stage.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
@@ -413,8 +414,15 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
     bool is_navigation,
     network::mojom::URLLoaderFactoryRequest* factory_request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  const auto* rules_registry_service =
+      BrowserContextKeyedAPIFactory<RulesRegistryService>::Get(
+          browser_context_);
+  const auto* rules_monitor_service = BrowserContextKeyedAPIFactory<
+      declarative_net_request::RulesMonitorService>::Get(browser_context_);
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      listener_count_ == 0) {
+      (listener_count_ == 0 &&
+       !rules_registry_service->HasAnyRegisteredRules() &&
+       !rules_monitor_service->HasAnyRegisteredRulesets())) {
     return false;
   }
 

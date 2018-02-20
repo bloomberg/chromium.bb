@@ -39,12 +39,12 @@ namespace extensions {
 const char RulesCacheDelegate::kRulesStoredKey[] =
     "has_declarative_rules";
 
-RulesCacheDelegate::RulesCacheDelegate(bool log_storage_init_delay)
-    : browser_context_(NULL),
+RulesCacheDelegate::RulesCacheDelegate(Type type, bool log_storage_init_delay)
+    : type_(type),
+      browser_context_(nullptr),
       log_storage_init_delay_(log_storage_init_delay),
       notified_registry_(false),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 RulesCacheDelegate::~RulesCacheDelegate() {}
 
@@ -68,49 +68,60 @@ void RulesCacheDelegate::Init(RulesRegistry* registry) {
   // WARNING: The first use of |registry_| will bind it to the calling thread
   // so don't use this here.
   registry_ = registry->GetWeakPtr();
-
-  browser_context_ = registry->browser_context();
-  storage_key_ =
-      GetDeclarativeRuleStorageKey(registry->event_name(),
-                                   browser_context_->IsOffTheRecord());
-  rules_stored_key_ = GetRulesStoredKey(registry->event_name(),
-                                        browser_context_->IsOffTheRecord());
   rules_registry_thread_ = registry->owner_thread();
-
-  ExtensionSystem& system = *ExtensionSystem::Get(browser_context_);
-  StateStore* store = system.rules_store();
-  if (store)
-    store->RegisterKey(storage_key_);
+  browser_context_ = registry->browser_context();
 
   if (browser_context_->IsOffTheRecord())
     log_storage_init_delay_ = false;
 
-  system.ready().Post(
-      FROM_HERE,
-      base::Bind(&RulesCacheDelegate::ReadRulesForInstalledExtensions,
-                 weak_ptr_factory_.GetWeakPtr()));
+  ExtensionSystem& system = *ExtensionSystem::Get(browser_context_);
+
+  if (type_ == Type::kPersistent) {
+    storage_key_ = GetDeclarativeRuleStorageKey(
+        registry->event_name(), browser_context_->IsOffTheRecord());
+    rules_stored_key_ = GetRulesStoredKey(registry->event_name(),
+                                          browser_context_->IsOffTheRecord());
+
+    StateStore* store = system.rules_store();
+    if (store)
+      store->RegisterKey(storage_key_);
+
+    system.ready().Post(
+        FROM_HERE, base::BindRepeating(
+                       &RulesCacheDelegate::ReadRulesForInstalledExtensions,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
   system.ready().Post(FROM_HERE,
-                      base::Bind(&RulesCacheDelegate::CheckIfReady,
-                                 weak_ptr_factory_.GetWeakPtr()));
+                      base::BindRepeating(&RulesCacheDelegate::CheckIfReady,
+                                          weak_ptr_factory_.GetWeakPtr()));
 }
 
-void RulesCacheDelegate::WriteToStorage(const std::string& extension_id,
-                                        std::unique_ptr<base::Value> value) {
+void RulesCacheDelegate::UpdateRules(const std::string& extension_id,
+                                     base::Value value) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!browser_context_)
     return;
 
-  const base::ListValue* rules = NULL;
-  CHECK(value->GetAsList(&rules));
+  DCHECK(value.is_list());
+  has_nonempty_ruleset_ = !value.GetList().empty();
+  if (type_ == Type::kEphemeral)
+    return;
+
   bool rules_stored_previously = GetDeclarativeRulesStored(extension_id);
-  bool store_rules = !rules->empty();
-  SetDeclarativeRulesStored(extension_id, store_rules);
-  if (!rules_stored_previously && !store_rules)
+  SetDeclarativeRulesStored(extension_id, has_nonempty_ruleset_);
+  if (!rules_stored_previously && !has_nonempty_ruleset_)
     return;
 
   StateStore* store = ExtensionSystem::Get(browser_context_)->rules_store();
-  if (store)
-    store->SetExtensionValue(extension_id, storage_key_, std::move(value));
+  if (store) {
+    store->SetExtensionValue(extension_id, storage_key_,
+                             std::make_unique<base::Value>(std::move(value)));
+  }
+}
+
+bool RulesCacheDelegate::HasRules() const {
+  return has_nonempty_ruleset_;
 }
 
 void RulesCacheDelegate::CheckIfReady() {
@@ -131,6 +142,7 @@ void RulesCacheDelegate::ReadRulesForInstalledExtensions() {
   // In an OTR context, we start on top of a normal context already, so the
   // extension service should be ready.
   DCHECK(!browser_context_->IsOffTheRecord() || is_ready);
+  DCHECK_EQ(Type::kPersistent, type_);
   if (is_ready) {
     const ExtensionSet& extensions =
         ExtensionRegistry::Get(browser_context_)->enabled_extensions();
@@ -155,6 +167,7 @@ void RulesCacheDelegate::ReadRulesForInstalledExtensions() {
 
 void RulesCacheDelegate::ReadFromStorage(const std::string& extension_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(Type::kPersistent, type_);
   if (!browser_context_)
     return;
 
@@ -184,6 +197,7 @@ void RulesCacheDelegate::ReadFromStorageCallback(
     const std::string& extension_id,
     std::unique_ptr<base::Value> value) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(Type::kPersistent, type_);
   content::BrowserThread::PostTask(
       rules_registry_thread_,
       FROM_HERE,
@@ -203,6 +217,7 @@ void RulesCacheDelegate::ReadFromStorageCallback(
 bool RulesCacheDelegate::GetDeclarativeRulesStored(
     const std::string& extension_id) const {
   CHECK(browser_context_);
+  DCHECK_EQ(Type::kPersistent, type_);
   const ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(browser_context_);
 
   bool rules_stored = true;
@@ -219,6 +234,7 @@ void RulesCacheDelegate::SetDeclarativeRulesStored(
     const std::string& extension_id,
     bool rules_stored) {
   CHECK(browser_context_);
+  DCHECK_EQ(Type::kPersistent, type_);
   DCHECK(ExtensionRegistry::Get(browser_context_)
              ->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING));
 

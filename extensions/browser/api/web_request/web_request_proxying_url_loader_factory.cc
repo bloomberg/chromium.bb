@@ -81,6 +81,11 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::Restart() {
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::FollowRedirect() {
+  if (ignore_next_follow_redirect_) {
+    ignore_next_follow_redirect_ = false;
+    return;
+  }
+
   if (target_loader_.is_bound())
     target_loader_->FollowRedirect();
   Restart();
@@ -288,6 +293,42 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     return;
   }
 
+  std::string redirect_location;
+  if (override_headers_ && override_headers_->IsRedirect(&redirect_location)) {
+    // The response headers may have been overridden by an |onHeadersReceived|
+    // handler and may have been changed to a redirect. We handle that here
+    // instead of acting like regular request completion.
+    //
+    // Note that we can't actually change how the Network Service handles the
+    // original request at this point, so our "redirect" is really just
+    // generating an artificial |onBeforeRedirect| event and starting a new
+    // request to the Network Service. Our client shouldn't know the difference.
+    GURL new_url(redirect_location);
+
+    net::RedirectInfo redirect_info;
+    redirect_info.status_code = override_headers_->response_code();
+    redirect_info.new_method = request_.method;
+    redirect_info.new_url = new_url;
+    redirect_info.new_site_for_cookies = new_url;
+
+    current_response_.headers = override_headers_;
+
+    // These will get re-bound when a new request is initiated after Restart()
+    // below.
+    proxied_client_binding_.Close();
+    target_loader_.reset();
+
+    // The client will send a |FollowRedirect()| in response to the impending
+    // |OnReceiveRedirect()| we send it. We don't want that to get forwarded to
+    // the backing URLLoader since it knows nothing about any such redirect and
+    // would have no idea how to comply.
+    ignore_next_follow_redirect_ = true;
+
+    ContinueToBeforeRedirect(redirect_info, net::OK);
+    Restart();
+    return;
+  }
+
   info_->AddResponseInfoFromResourceResponse(current_response_);
 
   proxied_client_binding_.ResumeIncomingMethodCallProcessing();
@@ -321,6 +362,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     HandleResponseOrRedirectHeaders(
         const net::CompletionCallback& continuation) {
+  override_headers_ = nullptr;
   if (request_.url.SchemeIsHTTPOrHTTPS()) {
     int result =
         ExtensionWebRequestEventRouter::GetInstance()->OnHeadersReceived(

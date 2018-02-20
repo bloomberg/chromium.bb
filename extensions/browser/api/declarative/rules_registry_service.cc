@@ -4,7 +4,9 @@
 
 #include "extensions/browser/api/declarative/rules_registry_service.h"
 
+#include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -69,23 +71,27 @@ void RulesRegistryService::EnsureDefaultRulesRegistriesRegistered(
     return;
   RulesRegistryKey key(declarative_webrequest_constants::kOnRequest,
                        rules_registry_id);
+
   // If we can find the key in the |rule_registries_| then we have already
   // installed the default registries.
   if (ContainsKey(rule_registries_, key))
     return;
 
-  // Only cache rules for regular pages.
-  RulesCacheDelegate* web_request_cache_delegate = NULL;
-  if (rules_registry_id == kDefaultRulesRegistryID) {
-    // Create a RulesCacheDelegate.
-    web_request_cache_delegate =
-        new RulesCacheDelegate(true /*log_storage_init_delay*/);
-    cache_delegates_.push_back(base::WrapUnique(web_request_cache_delegate));
-  }
-  scoped_refptr<WebRequestRulesRegistry> web_request_rules_registry(
-      new WebRequestRulesRegistry(browser_context_, web_request_cache_delegate,
-                                  rules_registry_id));
+  // We create at least an ephemeral WebRequest cache for all registries, but we
+  // only persist the cache if it pertains to regular pages (i.e., not
+  // webviews).
+  RulesCacheDelegate::Type web_request_cache_delegate_type =
+      rules_registry_id == kDefaultRulesRegistryID
+          ? RulesCacheDelegate::Type::kPersistent
+          : RulesCacheDelegate::Type::kEphemeral;
 
+  auto web_request_cache_delegate = std::make_unique<RulesCacheDelegate>(
+      web_request_cache_delegate_type, true /* log_storage_init_delay */);
+  auto web_request_rules_registry =
+      base::MakeRefCounted<WebRequestRulesRegistry>(
+          browser_context_, web_request_cache_delegate.get(),
+          rules_registry_id);
+  cache_delegates_.push_back(std::move(web_request_cache_delegate));
   RegisterRulesRegistry(web_request_rules_registry);
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
@@ -95,13 +101,14 @@ void RulesRegistryService::EnsureDefaultRulesRegistriesRegistered(
 
   // Only create a ContentRulesRegistry for regular pages.
   if (rules_registry_id == kDefaultRulesRegistryID) {
-    RulesCacheDelegate* content_rules_cache_delegate =
-        new RulesCacheDelegate(false /*log_storage_init_delay*/);
-    cache_delegates_.push_back(base::WrapUnique(content_rules_cache_delegate));
+    auto content_rules_cache_delegate = std::make_unique<RulesCacheDelegate>(
+        RulesCacheDelegate::Type::kPersistent,
+        false /* log_storage_init_delay */);
     scoped_refptr<ContentRulesRegistry> content_rules_registry =
         ExtensionsAPIClient::Get()->CreateContentRulesRegistry(
-            browser_context_, content_rules_cache_delegate);
-    if (content_rules_registry.get() != nullptr) {
+            browser_context_, content_rules_cache_delegate.get());
+    cache_delegates_.push_back(std::move(content_rules_cache_delegate));
+    if (content_rules_registry) {
       RegisterRulesRegistry(content_rules_registry);
       content_rules_registry_ = content_rules_registry.get();
     }
@@ -182,6 +189,13 @@ void RulesRegistryService::RemoveRulesRegistriesByID(int rules_registry_id) {
        it != registries_to_delete.end(); ++it) {
     rule_registries_.erase(*it);
   }
+}
+
+bool RulesRegistryService::HasAnyRegisteredRules() const {
+  return std::any_of(cache_delegates_.begin(), cache_delegates_.end(),
+                     [](const std::unique_ptr<RulesCacheDelegate>& delegate) {
+                       return delegate->HasRules();
+                     });
 }
 
 void RulesRegistryService::SimulateExtensionUninstalled(

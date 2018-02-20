@@ -123,6 +123,10 @@ class WebRequestProxyingURLLoaderFactory
     GURL redirect_url_;
     GURL allowed_unsafe_redirect_url_;
 
+    // Iff |true| we will ignore the next incoming |FollowRedirect()| call from
+    // our client.
+    bool ignore_next_follow_redirect_ = false;
+
     base::WeakPtrFactory<InProgressRequest> weak_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(InProgressRequest);
