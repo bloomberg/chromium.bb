@@ -75,8 +75,6 @@ class ASH_EXPORT MessageCenterView
   void OnWillChangeFocus(views::View* before, views::View* now) override {}
   void OnDidChangeFocus(views::View* before, views::View* now) override;
 
-  void UpdateScrollerShadowVisibility();
-
   static const size_t kMaxVisibleNotifications;
 
  protected:
@@ -152,7 +150,6 @@ class ASH_EXPORT MessageCenterView
   // Child views.
   views::ScrollView* scroller_ = nullptr;
   std::unique_ptr<MessageListView> message_list_view_;
-  views::View* scroller_shadow_ = nullptr;
   NotifierSettingsView* settings_view_ = nullptr;
   views::View* no_notifications_view_ = nullptr;
   MessageCenterButtonBar* button_bar_ = nullptr;
