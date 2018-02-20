@@ -3458,6 +3458,7 @@ error::Error GLES2DecoderPassthroughImpl::DoRequestExtensionCHROMIUM(
   // Make sure newly enabled extensions are exposed and usable.
   context_->ReinitializeDynamicBindings();
   feature_info_->Initialize(feature_info_->context_type(),
+                            true /* is_passthrough_cmd_decoder */,
                             feature_info_->disallowed_features());
 
   return error::kNoError;
@@ -4722,6 +4723,17 @@ error::Error GLES2DecoderPassthroughImpl::DoDestroyGpuFenceCHROMIUM(
     return error::kUnknownCommand;
   if (!GetGpuFenceManager()->RemoveGpuFence(gpu_fence_id))
     return error::kInvalidArguments;
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderPassthroughImpl::DoUnpremultiplyAndDitherCopyCHROMIUM(
+    GLuint src_texture,
+    GLuint dst_texture,
+    GLint x,
+    GLint y,
+    GLsizei width,
+    GLsizei height) {
+  NOTIMPLEMENTED();
   return error::kNoError;
 }
 

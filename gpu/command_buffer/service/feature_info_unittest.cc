@@ -43,7 +43,11 @@ enum MockedGLVersionKind {
   ES2_on_Version3_0,
   ES2_on_Version3_2Compatibility,
   ES3_on_Version3_0,
-  ES3_on_Version3_2Compatibility
+  ES3_on_Version3_2Compatibility,
+
+  // Currently, nothing cares about both ES version and passthrough, so just
+  // create one representative passthrough case.
+  ES2_on_Version3_0_Passthrough
 };
 
 class FeatureInfoTest
@@ -58,6 +62,7 @@ class FeatureInfoTest
     // OpenGL compatibility profile.
     switch (GetParam()) {
       case ES2_on_Version3_0:
+      case ES2_on_Version3_0_Passthrough:
       case ES3_on_Version3_0:
         SetupInitExpectationsWithGLVersion(extensions_str.c_str(), "", "3.0");
         break;
@@ -77,6 +82,7 @@ class FeatureInfoTest
   ContextType GetContextType() {
     switch (GetParam()) {
       case ES2_on_Version3_0:
+      case ES2_on_Version3_0_Passthrough:
       case ES2_on_Version3_2Compatibility:
         return CONTEXT_TYPE_OPENGLES2;
       case ES3_on_Version3_0:
@@ -88,13 +94,29 @@ class FeatureInfoTest
     }
   }
 
+  bool IsPassthroughCmdDecoder() {
+    switch (GetParam()) {
+      case ES2_on_Version3_0_Passthrough:
+        return true;
+      case ES2_on_Version3_0:
+      case ES2_on_Version3_2Compatibility:
+      case ES3_on_Version3_0:
+      case ES3_on_Version3_2Compatibility:
+        return false;
+      default:
+        NOTREACHED();
+        return false;
+    }
+  }
+
   void SetupInitExpectationsWithGLVersion(
       const char* extensions, const char* renderer, const char* version) {
     GpuServiceTest::SetUpWithGLVersion(version, extensions);
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
         gl_.get(), extensions, renderer, version, GetContextType());
     info_ = new FeatureInfo();
-    info_->Initialize(GetContextType(), DisallowedFeatures());
+    info_->Initialize(GetContextType(), IsPassthroughCmdDecoder(),
+                      DisallowedFeatures());
   }
 
   void SetupInitExpectationsWithGLVersionAndDisallowedFeatures(
@@ -106,7 +128,8 @@ class FeatureInfoTest
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
         gl_.get(), extensions, renderer, version, GetContextType());
     info_ = new FeatureInfo();
-    info_->Initialize(GetContextType(), disallowed_features);
+    info_->Initialize(GetContextType(), IsPassthroughCmdDecoder(),
+                      disallowed_features);
   }
 
   void SetupWithWorkarounds(const gpu::GpuDriverBugWorkarounds& workarounds) {
@@ -121,7 +144,8 @@ class FeatureInfoTest
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
         gl_.get(), extensions, "", "", GetContextType());
     info_ = new FeatureInfo(workarounds);
-    info_->Initialize(GetContextType(), DisallowedFeatures());
+    info_->Initialize(GetContextType(), IsPassthroughCmdDecoder(),
+                      DisallowedFeatures());
   }
 
   void SetupWithoutInit() {
@@ -1684,6 +1708,25 @@ TEST_P(FeatureInfoTest, InitializeEXT_texture_norm16) {
 TEST_P(FeatureInfoTest, InitializeCHROMIUM_ycbcr_422_imageTrue) {
   SetupInitExpectations("GL_APPLE_ycbcr_422");
   EXPECT_TRUE(info_->feature_flags().chromium_image_ycbcr_422);
+}
+
+TEST_P(FeatureInfoTest, InitializeCHROMIUM_unpremultiply_and_dither_copy) {
+  SetupInitExpectations("");
+  switch (GetParam()) {
+    case ES2_on_Version3_0_Passthrough:
+      EXPECT_FALSE(info_->feature_flags().unpremultiply_and_dither_copy);
+      EXPECT_FALSE(gl::HasExtension(
+          info_->extensions(), "GL_CHROMIUM_unpremultiply_and_dither_copy"));
+      break;
+    case ES2_on_Version3_0:
+    case ES2_on_Version3_2Compatibility:
+    case ES3_on_Version3_0:
+    case ES3_on_Version3_2Compatibility:
+      EXPECT_TRUE(info_->feature_flags().unpremultiply_and_dither_copy);
+      EXPECT_TRUE(gl::HasExtension(
+          info_->extensions(), "GL_CHROMIUM_unpremultiply_and_dither_copy"));
+      break;
+  }
 }
 
 }  // namespace gles2

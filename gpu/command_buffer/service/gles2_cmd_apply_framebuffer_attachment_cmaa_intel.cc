@@ -282,7 +282,7 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::
                                  GL_RGBA8, GL_TEXTURE_2D, source_texture, 0,
                                  internal_format, 0, 0, 0, 0, width_, height_,
                                  width_, height_, width_, height_, false, false,
-                                 false, method, nullptr);
+                                 false, false, method, nullptr);
       } else {
         ApplyCMAAEffectTexture(source_texture, source_texture, do_copy);
       }

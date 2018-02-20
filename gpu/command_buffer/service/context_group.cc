@@ -163,7 +163,8 @@ gpu::ContextResult ContextGroup::Initialize(
   DisallowedFeatures adjusted_disallowed_features =
       AdjustDisallowedFeatures(context_type, disallowed_features);
 
-  feature_info_->Initialize(context_type, adjusted_disallowed_features);
+  feature_info_->Initialize(context_type, use_passthrough_cmd_decoder_,
+                            adjusted_disallowed_features);
 
   const GLint kMinRenderbufferSize = 512;  // GL says 1 pixel!
   GLint max_renderbuffer_size = 0;

@@ -252,23 +252,28 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
 }
 
 void FeatureInfo::Initialize(ContextType context_type,
+                             bool is_passthrough_cmd_decoder,
                              const DisallowedFeatures& disallowed_features) {
   disallowed_features_ = disallowed_features;
   context_type_ = context_type;
+  is_passthrough_cmd_decoder_ = is_passthrough_cmd_decoder;
   InitializeFeatures();
 }
 
 void FeatureInfo::InitializeForTesting(
     const DisallowedFeatures& disallowed_features) {
-  Initialize(CONTEXT_TYPE_OPENGLES2, disallowed_features);
+  Initialize(CONTEXT_TYPE_OPENGLES2, false /* is_passthrough_cmd_decoder */,
+             disallowed_features);
 }
 
 void FeatureInfo::InitializeForTesting() {
-  Initialize(CONTEXT_TYPE_OPENGLES2, DisallowedFeatures());
+  Initialize(CONTEXT_TYPE_OPENGLES2, false /* is_passthrough_cmd_decoder */,
+             DisallowedFeatures());
 }
 
 void FeatureInfo::InitializeForTesting(ContextType context_type) {
-  Initialize(context_type, DisallowedFeatures());
+  Initialize(context_type, false /* is_passthrough_cmd_decoder */,
+             DisallowedFeatures());
 }
 
 bool IsGL_REDSupportedOnFBOs() {
@@ -1460,6 +1465,11 @@ void FeatureInfo::InitializeFeatures() {
   feature_flags_.angle_robust_resource_initialization =
       gl::HasExtension(extensions, "GL_ANGLE_robust_resource_initialization");
   feature_flags_.nv_fence = gl::HasExtension(extensions, "GL_NV_fence");
+
+  // UnpremultiplyAndDitherCopyCHROMIUM is only implemented on the full decoder.
+  feature_flags_.unpremultiply_and_dither_copy = !is_passthrough_cmd_decoder_;
+  if (feature_flags_.unpremultiply_and_dither_copy)
+    AddExtensionString("GL_CHROMIUM_unpremultiply_and_dither_copy");
 }
 
 void FeatureInfo::InitializeFloatAndHalfFloatFeatures(

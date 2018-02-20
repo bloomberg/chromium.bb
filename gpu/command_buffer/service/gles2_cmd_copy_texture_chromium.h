@@ -67,6 +67,7 @@ class GPU_GLES2_EXPORT CopyTextureCHROMIUMResourceManager {
                      bool flip_y,
                      bool premultiply_alpha,
                      bool unpremultiply_alpha,
+                     bool dither,
                      CopyTextureMethod method,
                      CopyTexImageResourceManager* luma_emulation_blitter);
 
@@ -92,6 +93,7 @@ class GPU_GLES2_EXPORT CopyTextureCHROMIUMResourceManager {
                         bool flip_y,
                         bool premultiply_alpha,
                         bool unpremultiply_alpha,
+                        bool dither,
                         CopyTextureMethod method,
                         CopyTexImageResourceManager* luma_emulation_blitter);
 
@@ -118,6 +120,7 @@ class GPU_GLES2_EXPORT CopyTextureCHROMIUMResourceManager {
       bool flip_y,
       bool premultiply_alpha,
       bool unpremultiply_alpha,
+      bool dither,
       const GLfloat transform_matrix[16],
       CopyTexImageResourceManager* luma_emulation_blitter);
 
@@ -140,6 +143,7 @@ class GPU_GLES2_EXPORT CopyTextureCHROMIUMResourceManager {
       bool flip_y,
       bool premultiply_alpha,
       bool unpremultiply_alpha,
+      bool dither,
       const GLfloat transform_matrix[16],
       CopyTexImageResourceManager* luma_emulation_blitter);
 
@@ -196,6 +200,7 @@ class GPU_GLES2_EXPORT CopyTextureCHROMIUMResourceManager {
       bool flip_y,
       bool premultiply_alpha,
       bool unpremultiply_alpha,
+      bool dither,
       const GLfloat transform_matrix[16],
       CopyTexImageResourceManager* luma_emulation_blitter);
 

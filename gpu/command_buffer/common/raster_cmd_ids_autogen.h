@@ -27,15 +27,16 @@
   OP(CompressedCopyTextureCHROMIUM)        /* 268 */ \
   OP(LoseContextCHROMIUM)                  /* 269 */ \
   OP(WaitSyncTokenCHROMIUM)                /* 270 */ \
-  OP(InitializeDiscardableTextureCHROMIUM) /* 271 */ \
-  OP(UnlockDiscardableTextureCHROMIUM)     /* 272 */ \
-  OP(LockDiscardableTextureCHROMIUM)       /* 273 */ \
-  OP(BeginRasterCHROMIUM)                  /* 274 */ \
-  OP(RasterCHROMIUM)                       /* 275 */ \
-  OP(EndRasterCHROMIUM)                    /* 276 */ \
-  OP(CreateTransferCacheEntryINTERNAL)     /* 277 */ \
-  OP(DeleteTransferCacheEntryINTERNAL)     /* 278 */ \
-  OP(UnlockTransferCacheEntryINTERNAL)     /* 279 */
+  OP(UnpremultiplyAndDitherCopyCHROMIUM)   /* 271 */ \
+  OP(InitializeDiscardableTextureCHROMIUM) /* 272 */ \
+  OP(UnlockDiscardableTextureCHROMIUM)     /* 273 */ \
+  OP(LockDiscardableTextureCHROMIUM)       /* 274 */ \
+  OP(BeginRasterCHROMIUM)                  /* 275 */ \
+  OP(RasterCHROMIUM)                       /* 276 */ \
+  OP(EndRasterCHROMIUM)                    /* 277 */ \
+  OP(CreateTransferCacheEntryINTERNAL)     /* 278 */ \
+  OP(DeleteTransferCacheEntryINTERNAL)     /* 279 */ \
+  OP(UnlockTransferCacheEntryINTERNAL)     /* 280 */
 
 enum CommandId {
   kOneBeforeStartPoint =
