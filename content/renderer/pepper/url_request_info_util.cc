@@ -178,6 +178,12 @@ bool CreateWebURLRequest(PP_Instance instance,
 
   dest->SetSiteForCookies(frame->GetDocument().SiteForCookies());
 
+  // Plug-ins should not load via service workers as plug-ins may have their own
+  // origin checking logic that may get confused if service workers respond with
+  // resources from another origin.
+  // https://w3c.github.io/ServiceWorker/#implementer-concerns
+  dest->SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kNone);
+
   const std::string& headers = data->headers;
   if (!headers.empty()) {
     net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\n\r");

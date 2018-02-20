@@ -257,12 +257,10 @@ int32_t PepperURLLoaderHost::InternalOnHostMsgOpen(
   web_request.SetRequestContext(WebURLRequest::kRequestContextPlugin);
   web_request.SetPluginChildID(renderer_ppapi_host_->GetPluginChildId());
 
-  // The requests from the plugins with private permission which can bypass same
-  // origin must skip the ServiceWorker.
-  web_request.SetServiceWorkerMode(
-      host()->permissions().HasPermission(ppapi::PERMISSION_PRIVATE)
-          ? WebURLRequest::ServiceWorkerMode::kNone
-          : WebURLRequest::ServiceWorkerMode::kAll);
+  // Requests from plug-ins must skip service workers, see the comment in
+  // CreateWebURLRequest.
+  DCHECK_EQ(web_request.GetServiceWorkerMode(),
+            WebURLRequest::ServiceWorkerMode::kNone);
 
   WebAssociatedURLLoaderOptions options;
   if (!has_universal_access_) {

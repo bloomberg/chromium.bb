@@ -395,6 +395,13 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerManifestFetchTest,
 }
 
 #if BUILDFLAG(ENABLE_NACL)
+// This test registers a service worker and then loads a controlled iframe that
+// creates a PNaCl plugin in an <embed> element. Once loaded, the PNaCl plugin
+// is ordered to do a resource request for "/echo". The service worker records
+// all the fetch events it sees. Since requests for plug-ins and requests
+// initiated by plug-ins should not be interecepted by service workers, we
+// expect that the the service worker only see the navigation request for the
+// iframe.
 class ChromeServiceWorkerFetchPPAPITest : public ChromeServiceWorkerFetchTest {
  protected:
   ChromeServiceWorkerFetchPPAPITest() {}
@@ -410,12 +417,8 @@ class ChromeServiceWorkerFetchPPAPITest : public ChromeServiceWorkerFetchTest {
     test_page_url_ = GetURL("/pnacl_url_loader.html");
   }
 
-  std::string GetRequestStringForPNACL(const std::string& fragment) const {
-    return RequestString(test_page_url_ + fragment, "navigate", "include") +
-           RequestString(GetURL("/pnacl_url_loader.nmf"), "same-origin",
-                         "same-origin") +
-           RequestString(GetURL("/pnacl_url_loader_newlib_pnacl.pexe"),
-                         "same-origin", "same-origin");
+  std::string GetNavigationRequestString(const std::string& fragment) const {
+    return RequestString(test_page_url_ + fragment, "navigate", "include");
   }
 
   std::string ExecutePNACLUrlLoaderTest(const std::string& mode) {
@@ -435,153 +438,17 @@ class ChromeServiceWorkerFetchPPAPITest : public ChromeServiceWorkerFetchTest {
   DISALLOW_COPY_AND_ASSIGN(ChromeServiceWorkerFetchPPAPITest);
 };
 
-IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPITest, SameOrigin) {
-  // In pnacl_url_loader.cc:
-  //   request.SetMethod("GET");
-  //   request.SetURL("/echo");
-  EXPECT_EQ(GetRequestStringForPNACL("#Same") +
-                RequestString(GetURL("/echo"), "same-origin", "include"),
-            ExecutePNACLUrlLoaderTest("Same"));
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPITest, SameOriginCORS) {
-  // In pnacl_url_loader.cc:
-  //   request.SetMethod("GET");
-  //   request.SetURL("/echo");
-  //   request.SetAllowCrossOriginRequests(true);
-  EXPECT_EQ(GetRequestStringForPNACL("#SameCORS") +
-                RequestString(GetURL("/echo"), "cors", "omit"),
-            ExecutePNACLUrlLoaderTest("SameCORS"));
-}
-
 IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPITest,
-                       SameOriginCredentials) {
-  // In pnacl_url_loader.cc:
-  //   request.SetMethod("GET");
-  //   request.SetURL("/echo");
-  //   request.SetAllowCredentials(true);
-  EXPECT_EQ(GetRequestStringForPNACL("#SameCredentials") +
-                RequestString(GetURL("/echo"), "same-origin", "include"),
-            ExecutePNACLUrlLoaderTest("SameCredentials"));
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPITest,
-                       SameOriginCORSCredentials) {
-  // In pnacl_url_loader.cc:
-  //   request.SetMethod("GET");
-  //   request.SetURL("/echo");
-  //   request.SetAllowCrossOriginRequests(true);
-  //   request.SetAllowCredentials(true);
-  EXPECT_EQ(GetRequestStringForPNACL("#SameCORSCredentials") +
-                RequestString(GetURL("/echo"), "cors", "include"),
-            ExecutePNACLUrlLoaderTest("SameCORSCredentials"));
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPITest, OtherOrigin) {
-  // In pnacl_url_loader.cc:
-  //   request.SetMethod("GET");
-  //   request.SetURL("https://www.example.com/echo");
-  // This request fails because AllowCrossOriginRequests is not set.
-  EXPECT_EQ(GetRequestStringForPNACL("#Other"),
-            ExecutePNACLUrlLoaderTest("Other"));
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPITest, OtherOriginCORS) {
-  // In pnacl_url_loader.cc:
-  //   request.SetMethod("GET");
-  //   request.SetURL("https://www.example.com/echo");
-  //   request.SetAllowCrossOriginRequests(true);
-  EXPECT_EQ(GetRequestStringForPNACL("#OtherCORS") +
-                RequestString("https://www.example.com/echo", "cors", "omit"),
-            ExecutePNACLUrlLoaderTest("OtherCORS"));
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPITest,
-                       OtherOriginCredentials) {
-  // In pnacl_url_loader.cc:
-  //   request.SetMethod("GET");
-  //   request.SetURL("https://www.example.com/echo");
-  //   request.SetAllowCredentials(true);
-  // This request fails because AllowCrossOriginRequests is not set.
-  EXPECT_EQ(GetRequestStringForPNACL("#OtherCredentials"),
-            ExecutePNACLUrlLoaderTest("OtherCredentials"));
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPITest,
-                       OtherOriginCORSCredentials) {
-  // In pnacl_url_loader.cc:
-  //   request.SetMethod("GET");
-  //   request.SetURL("https://www.example.com/echo");
-  //   request.SetAllowCrossOriginRequests(true);
-  //   request.SetAllowCredentials(true);
-  EXPECT_EQ(
-      GetRequestStringForPNACL("#OtherCORSCredentials") +
-          RequestString("https://www.example.com/echo", "cors", "include"),
-      ExecutePNACLUrlLoaderTest("OtherCORSCredentials"));
-}
-
-class ChromeServiceWorkerFetchPPAPIPrivateTest
-    : public ChromeServiceWorkerFetchPPAPITest {
- protected:
-  ChromeServiceWorkerFetchPPAPIPrivateTest() {}
-  ~ChromeServiceWorkerFetchPPAPIPrivateTest() override {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ChromeServiceWorkerFetchPPAPITest::SetUpCommandLine(command_line);
-    // Sets this flag to test that the fetch request from the plugins with
-    // private permission (PERMISSION_PRIVATE) should not go to the service
-    // worker.
-    command_line->AppendSwitch(switches::kEnablePepperTesting);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeServiceWorkerFetchPPAPIPrivateTest);
-};
-
-IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPIPrivateTest, SameOrigin) {
-  EXPECT_EQ(GetRequestStringForPNACL("#Same"),
-            ExecutePNACLUrlLoaderTest("Same"));
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPIPrivateTest,
-                       SameOriginCORS) {
-  EXPECT_EQ(GetRequestStringForPNACL("#SameCORS"),
-            ExecutePNACLUrlLoaderTest("SameCORS"));
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPIPrivateTest,
-                       SameOriginCredentials) {
-  EXPECT_EQ(GetRequestStringForPNACL("#SameCredentials"),
-            ExecutePNACLUrlLoaderTest("SameCredentials"));
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPIPrivateTest,
-                       SameOriginCORSCredentials) {
-  EXPECT_EQ(GetRequestStringForPNACL("#SameCORSCredentials"),
-            ExecutePNACLUrlLoaderTest("SameCORSCredentials"));
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPIPrivateTest, OtherOrigin) {
-  EXPECT_EQ(GetRequestStringForPNACL("#Other"),
-            ExecutePNACLUrlLoaderTest("Other"));
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPIPrivateTest,
-                       OtherOriginCORS) {
-  EXPECT_EQ(GetRequestStringForPNACL("#OtherCORS"),
-            ExecutePNACLUrlLoaderTest("OtherCORS"));
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPIPrivateTest,
-                       OtherOriginCredentials) {
-  EXPECT_EQ(GetRequestStringForPNACL("#OtherCredentials"),
-            ExecutePNACLUrlLoaderTest("OtherCredentials"));
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPIPrivateTest,
-                       OtherOriginCORSCredentials) {
-  EXPECT_EQ(GetRequestStringForPNACL("#OtherCORSCredentials"),
-            ExecutePNACLUrlLoaderTest("OtherCORSCredentials"));
+                       NotInterceptedByServiceWorker) {
+  // Only the navigation to the iframe should be intercepted by the service
+  // worker. The request for the PNaCl manifest ("/pnacl_url_loader.nmf"),
+  // the request for the compiled code ("/pnacl_url_loader_newlib_pnacl.pexe"),
+  // and any other requests initiated by the plug-in ("/echo") should not be
+  // seen by the service worker.
+  const std::string fragment =
+      "NotIntercepted";  // this string is not important.
+  EXPECT_EQ(GetNavigationRequestString("#" + fragment),
+            ExecutePNACLUrlLoaderTest(fragment));
 }
 #endif  // BUILDFLAG(ENABLE_NACL)
 
