@@ -26,6 +26,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -764,3 +765,66 @@ TEST_F(ProfileInfoCacheTest,
       GetCache()->GetIndexOfProfileWithPath(path_4)));
 }
 #endif
+
+TEST_F(ProfileInfoCacheTest, RemoveProfileByAccountId) {
+  EXPECT_EQ(0u, GetCache()->GetNumberOfProfiles());
+
+  base::FilePath path_1 = GetProfilePath("path_1");
+  const AccountId account_id_1(
+      AccountId::FromUserEmailGaiaId("email1", "111111"));
+  base::string16 name_1 = ASCIIToUTF16("name_1");
+  GetCache()->AddProfileToCache(path_1, name_1, account_id_1.GetGaiaId(),
+                                UTF8ToUTF16(account_id_1.GetUserEmail()), 0,
+                                std::string());
+  EXPECT_EQ(1u, GetCache()->GetNumberOfProfiles());
+
+  base::FilePath path_2 = GetProfilePath("path_2");
+  base::string16 name_2 = ASCIIToUTF16("name_2");
+  const AccountId account_id_2(
+      AccountId::FromUserEmailGaiaId("email2", "222222"));
+  GetCache()->AddProfileToCache(path_2, name_2, account_id_2.GetGaiaId(),
+                                UTF8ToUTF16(account_id_2.GetUserEmail()), 0,
+                                std::string());
+  EXPECT_EQ(2u, GetCache()->GetNumberOfProfiles());
+
+  base::FilePath path_3 = GetProfilePath("path_3");
+  base::string16 name_3 = ASCIIToUTF16("name_3");
+  const AccountId account_id_3(
+      AccountId::FromUserEmailGaiaId("email3", "333333"));
+  GetCache()->AddProfileToCache(path_3, name_3, account_id_3.GetGaiaId(),
+                                UTF8ToUTF16(account_id_3.GetUserEmail()), 0,
+                                std::string());
+  EXPECT_EQ(3u, GetCache()->GetNumberOfProfiles());
+
+  base::FilePath path_4 = GetProfilePath("path_4");
+  base::string16 name_4 = ASCIIToUTF16("name_4");
+  const AccountId account_id_4(
+      AccountId::FromUserEmailGaiaId("email4", "444444"));
+  GetCache()->AddProfileToCache(path_4, name_4, account_id_4.GetGaiaId(),
+                                UTF8ToUTF16(account_id_4.GetUserEmail()), 0,
+                                std::string());
+  EXPECT_EQ(4u, GetCache()->GetNumberOfProfiles());
+
+  GetCache()->RemoveProfileByAccountId(account_id_3);
+  EXPECT_EQ(3u, GetCache()->GetNumberOfProfiles());
+  EXPECT_EQ(name_1, GetCache()->GetNameOfProfileAtIndex(0));
+
+  GetCache()->RemoveProfileByAccountId(account_id_1);
+  EXPECT_EQ(2u, GetCache()->GetNumberOfProfiles());
+  EXPECT_EQ(name_2, GetCache()->GetNameOfProfileAtIndex(0));
+
+  // this profile is already deleted.
+  GetCache()->RemoveProfileByAccountId(account_id_3);
+  EXPECT_EQ(2u, GetCache()->GetNumberOfProfiles());
+  EXPECT_EQ(name_2, GetCache()->GetNameOfProfileAtIndex(0));
+
+  // Remove profile by partial match
+  GetCache()->RemoveProfileByAccountId(
+      AccountId::FromUserEmail(account_id_2.GetUserEmail()));
+  EXPECT_EQ(1u, GetCache()->GetNumberOfProfiles());
+  EXPECT_EQ(name_4, GetCache()->GetNameOfProfileAtIndex(0));
+
+  // Remove last profile
+  GetCache()->RemoveProfileByAccountId(account_id_4);
+  EXPECT_EQ(0u, GetCache()->GetNumberOfProfiles());
+}

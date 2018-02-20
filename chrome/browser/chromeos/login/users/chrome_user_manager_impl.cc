@@ -59,6 +59,8 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/supervised_user/chromeos/manager_password_service_factory.h"
 #include "chrome/browser/supervised_user/chromeos/supervised_user_password_service_factory.h"
@@ -471,6 +473,9 @@ void ChromeUserManagerImpl::RemoveUserInternal(
     // Owner is not allowed to be removed from the device.
     return;
   }
+  g_browser_process->profile_manager()
+      ->GetProfileAttributesStorage()
+      .RemoveProfileByAccountId(account_id);
   RemoveNonOwnerUserInternal(account_id, delegate);
 }
 
