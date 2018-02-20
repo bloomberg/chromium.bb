@@ -49,7 +49,6 @@ bool IsMemoryDebuggingEnabled();
 bool IsStartupCrashEnabled();
 
 // Whether a new version of FeedbackKit is the preferred feedback UI provider.
-// DEPRECATED: This will be replaced by base::FeatureList kFeedbackKitV2.
 bool IsNewFeedbackKitEnabled();
 
 // Whether the 3rd party keyboard omnibox workaround is enabled.
