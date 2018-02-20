@@ -427,11 +427,11 @@ if (aom_config("CONFIG_LOOP_RESTORATION") eq "yes") {
 #
 # Loopfilter
 #
-add_proto qw/void aom_lpf_vertical_16/, "uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh";
-specialize qw/aom_lpf_vertical_16 sse2/;
+add_proto qw/void aom_lpf_vertical_14/, "uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh";
+specialize qw/aom_lpf_vertical_14 sse2/;
 
-add_proto qw/void aom_lpf_vertical_16_dual/, "uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh";
-specialize qw/aom_lpf_vertical_16_dual sse2/;
+add_proto qw/void aom_lpf_vertical_14_dual/, "uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh";
+specialize qw/aom_lpf_vertical_14_dual sse2/;
 
 add_proto qw/void aom_lpf_vertical_6/, "uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh";
 specialize qw/aom_lpf_vertical_6 sse2/;
@@ -446,11 +446,11 @@ specialize qw/aom_lpf_vertical_4 sse2/;
 
 add_proto qw/void aom_lpf_vertical_4_dual/, "uint8_t *s, int pitch, const uint8_t *blimit0, const uint8_t *limit0, const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1, const uint8_t *thresh1";
 
-add_proto qw/void aom_lpf_horizontal_16/, "uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh";
-specialize qw/aom_lpf_horizontal_16 sse2/;
+add_proto qw/void aom_lpf_horizontal_14/, "uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh";
+specialize qw/aom_lpf_horizontal_14 sse2/;
 
-add_proto qw/void aom_lpf_horizontal_16_dual/, "uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh";
-specialize qw/aom_lpf_horizontal_16_dual sse2/;
+add_proto qw/void aom_lpf_horizontal_14_dual/, "uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh";
+specialize qw/aom_lpf_horizontal_14_dual sse2/;
 
 add_proto qw/void aom_lpf_horizontal_6/, "uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh";
 specialize qw/aom_lpf_horizontal_6 sse2/;
@@ -465,11 +465,11 @@ specialize qw/aom_lpf_horizontal_4 sse2/;
 
 add_proto qw/void aom_lpf_horizontal_4_dual/, "uint8_t *s, int pitch, const uint8_t *blimit0, const uint8_t *limit0, const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1, const uint8_t *thresh1";
 
-add_proto qw/void aom_highbd_lpf_vertical_16/, "uint16_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh, int bd";
-specialize qw/aom_highbd_lpf_vertical_16 sse2/;
+add_proto qw/void aom_highbd_lpf_vertical_14/, "uint16_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh, int bd";
+specialize qw/aom_highbd_lpf_vertical_14 sse2/;
 
-add_proto qw/void aom_highbd_lpf_vertical_16_dual/, "uint16_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh,   int bd";
-specialize qw/aom_highbd_lpf_vertical_16_dual sse2 avx2/;
+add_proto qw/void aom_highbd_lpf_vertical_14_dual/, "uint16_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh,   int bd";
+specialize qw/aom_highbd_lpf_vertical_14_dual sse2 avx2/;
 
 add_proto qw/void aom_highbd_lpf_vertical_8/, "uint16_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh, int bd";
 specialize qw/aom_highbd_lpf_vertical_8 sse2/;
@@ -483,11 +483,11 @@ specialize qw/aom_highbd_lpf_vertical_4 sse2/;
 add_proto qw/void aom_highbd_lpf_vertical_4_dual/, "uint16_t *s, int pitch, const uint8_t *blimit0, const uint8_t *limit0, const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1, const uint8_t *thresh1, int bd";
 specialize qw/aom_highbd_lpf_vertical_4_dual sse2 avx2/;
 
-add_proto qw/void aom_highbd_lpf_horizontal_16/, "uint16_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh, int bd";
-specialize qw/aom_highbd_lpf_horizontal_16 sse2/;
+add_proto qw/void aom_highbd_lpf_horizontal_14/, "uint16_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh, int bd";
+specialize qw/aom_highbd_lpf_horizontal_14 sse2/;
 
-add_proto qw/void aom_highbd_lpf_horizontal_16_dual/, "uint16_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh, int bd";
-specialize qw/aom_highbd_lpf_horizontal_16_dual sse2 avx2/;
+add_proto qw/void aom_highbd_lpf_horizontal_14_dual/, "uint16_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh, int bd";
+specialize qw/aom_highbd_lpf_horizontal_14_dual sse2 avx2/;
 
 add_proto qw/void aom_highbd_lpf_horizontal_8/, "uint16_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh, int bd";
 specialize qw/aom_highbd_lpf_horizontal_8 sse2/;

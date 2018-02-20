@@ -422,14 +422,14 @@ static INLINE void highbd_lpf_horz_edge_8_8p(uint16_t *s, int pitch,
   highbd_lpf_horz_edge_8_internal(s, pitch, blt, lt, thr, bd, EIGHT_PIXELS);
 }
 
-void aom_highbd_lpf_horizontal_16_sse2(uint16_t *s, int p,
+void aom_highbd_lpf_horizontal_14_sse2(uint16_t *s, int p,
                                        const uint8_t *_blimit,
                                        const uint8_t *_limit,
                                        const uint8_t *_thresh, int bd) {
   highbd_lpf_horz_edge_8_4p(s, p, _blimit, _limit, _thresh, bd);
 }
 
-void aom_highbd_lpf_horizontal_16_dual_sse2(uint16_t *s, int p,
+void aom_highbd_lpf_horizontal_14_dual_sse2(uint16_t *s, int p,
                                             const uint8_t *_blimit,
                                             const uint8_t *_limit,
                                             const uint8_t *_thresh, int bd) {
@@ -952,7 +952,7 @@ void aom_highbd_lpf_vertical_8_dual_sse2(
   highbd_transpose(src, 16, dst, p, 2);
 }
 
-void aom_highbd_lpf_vertical_16_sse2(uint16_t *s, int p, const uint8_t *blimit,
+void aom_highbd_lpf_vertical_14_sse2(uint16_t *s, int p, const uint8_t *blimit,
                                      const uint8_t *limit,
                                      const uint8_t *thresh, int bd) {
   DECLARE_ALIGNED(16, uint16_t, t_dst[8 * 16]);
@@ -968,7 +968,7 @@ void aom_highbd_lpf_vertical_16_sse2(uint16_t *s, int p, const uint8_t *blimit,
   highbd_transpose(src, p, dst, 8, 2);
 
   // Loop filtering
-  aom_highbd_lpf_horizontal_16_sse2(t_dst + 8 * 8, 8, blimit, limit, thresh,
+  aom_highbd_lpf_horizontal_14_sse2(t_dst + 8 * 8, 8, blimit, limit, thresh,
                                     bd);
   src[0] = t_dst;
   src[1] = t_dst + 8 * 8;
@@ -979,7 +979,7 @@ void aom_highbd_lpf_vertical_16_sse2(uint16_t *s, int p, const uint8_t *blimit,
   highbd_transpose(src, 8, dst, p, 2);
 }
 
-void aom_highbd_lpf_vertical_16_dual_sse2(uint16_t *s, int p,
+void aom_highbd_lpf_vertical_14_dual_sse2(uint16_t *s, int p,
                                           const uint8_t *blimit,
                                           const uint8_t *limit,
                                           const uint8_t *thresh, int bd) {

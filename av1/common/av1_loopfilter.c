@@ -484,12 +484,12 @@ static void filter_selectively_vert_row2(int subsampling_factor, uint8_t *s,
     if (mask & 1) {
       if ((mask_16x16_0 | mask_16x16_1) & 1) {
         if ((mask_16x16_0 & mask_16x16_1) & 1) {
-          aom_lpf_vertical_16_dual(s, pitch, lfi0->mblim, lfi0->lim,
+          aom_lpf_vertical_14_dual(s, pitch, lfi0->mblim, lfi0->lim,
                                    lfi0->hev_thr);
         } else if (mask_16x16_0 & 1) {
-          aom_lpf_vertical_16(s, pitch, lfi0->mblim, lfi0->lim, lfi0->hev_thr);
+          aom_lpf_vertical_14(s, pitch, lfi0->mblim, lfi0->lim, lfi0->hev_thr);
         } else {
-          aom_lpf_vertical_16(s + 8 * pitch, pitch, lfi1->mblim, lfi1->lim,
+          aom_lpf_vertical_14(s + 8 * pitch, pitch, lfi1->mblim, lfi1->lim,
                               lfi1->hev_thr);
         }
       }
@@ -576,13 +576,13 @@ static void highbd_filter_selectively_vert_row2(
     if (mask & 1) {
       if ((mask_16x16_0 | mask_16x16_1) & 1) {
         if ((mask_16x16_0 & mask_16x16_1) & 1) {
-          aom_highbd_lpf_vertical_16_dual(s, pitch, lfi0->mblim, lfi0->lim,
+          aom_highbd_lpf_vertical_14_dual(s, pitch, lfi0->mblim, lfi0->lim,
                                           lfi0->hev_thr, bd);
         } else if (mask_16x16_0 & 1) {
-          aom_highbd_lpf_vertical_16(s, pitch, lfi0->mblim, lfi0->lim,
+          aom_highbd_lpf_vertical_14(s, pitch, lfi0->mblim, lfi0->lim,
                                      lfi0->hev_thr, bd);
         } else {
-          aom_highbd_lpf_vertical_16(s + 8 * pitch, pitch, lfi1->mblim,
+          aom_highbd_lpf_vertical_14(s + 8 * pitch, pitch, lfi1->mblim,
                                      lfi1->lim, lfi1->hev_thr, bd);
         }
       }
@@ -658,11 +658,11 @@ static void filter_selectively_horiz(
     if (mask & 1) {
       if (mask_16x16 & 1) {
         if ((mask_16x16 & 3) == 3) {
-          aom_lpf_horizontal_16_dual(s, pitch, lfi->mblim, lfi->lim,
+          aom_lpf_horizontal_14_dual(s, pitch, lfi->mblim, lfi->lim,
                                      lfi->hev_thr);
           count = 2;
         } else {
-          aom_lpf_horizontal_16(s, pitch, lfi->mblim, lfi->lim, lfi->hev_thr);
+          aom_lpf_horizontal_14(s, pitch, lfi->mblim, lfi->lim, lfi->hev_thr);
         }
       } else if (mask_8x8 & 1) {
         if ((mask_8x8 & 3) == 3) {
@@ -751,11 +751,11 @@ static void highbd_filter_selectively_horiz(
     if (mask & 1) {
       if (mask_16x16 & 1) {
         if ((mask_16x16 & 3) == 3) {
-          aom_highbd_lpf_horizontal_16_dual(s, pitch, lfi->mblim, lfi->lim,
+          aom_highbd_lpf_horizontal_14_dual(s, pitch, lfi->mblim, lfi->lim,
                                             lfi->hev_thr, bd);
           count = 2;
         } else {
-          aom_highbd_lpf_horizontal_16(s, pitch, lfi->mblim, lfi->lim,
+          aom_highbd_lpf_horizontal_14(s, pitch, lfi->mblim, lfi->lim,
                                        lfi->hev_thr, bd);
         }
       } else if (mask_8x8 & 1) {
@@ -1289,7 +1289,7 @@ static void filter_selectively_vert(
 
     if (mask & 1) {
       if (mask_16x16 & 1) {
-        aom_lpf_vertical_16(s, pitch, lfi->mblim, lfi->lim, lfi->hev_thr);
+        aom_lpf_vertical_14(s, pitch, lfi->mblim, lfi->lim, lfi->hev_thr);
       } else if (mask_8x8 & 1) {
         aom_lpf_vertical_8(s, pitch, lfi->mblim, lfi->lim, lfi->hev_thr);
       } else if (mask_4x4 & 1) {
@@ -1319,7 +1319,7 @@ static void highbd_filter_selectively_vert(
 
     if (mask & 1) {
       if (mask_16x16 & 1) {
-        aom_highbd_lpf_vertical_16(s, pitch, lfi->mblim, lfi->lim, lfi->hev_thr,
+        aom_highbd_lpf_vertical_14(s, pitch, lfi->mblim, lfi->lim, lfi->hev_thr,
                                    bd);
       } else if (mask_8x8 & 1) {
         aom_highbd_lpf_vertical_8(s, pitch, lfi->mblim, lfi->lim, lfi->hev_thr,
@@ -2102,7 +2102,7 @@ static void set_lpf_parameters(
               else
                 params->filter_length = 8;
             } else {
-              params->filter_length = 16;
+              params->filter_length = 14;
               // No wide filtering for chroma plane
               if (plane != 0) {
                 params->filter_length = 6;
@@ -2185,14 +2185,14 @@ static void av1_filter_block_plane_vert(
             aom_lpf_vertical_8(p, dst_stride, params.mblim, params.lim,
                                params.hev_thr);
           break;
-        // apply 16-tap filtering
-        case 16:
+        // apply 14-tap filtering
+        case 14:
           if (cm->use_highbitdepth)
-            aom_highbd_lpf_vertical_16(CONVERT_TO_SHORTPTR(p), dst_stride,
+            aom_highbd_lpf_vertical_14(CONVERT_TO_SHORTPTR(p), dst_stride,
                                        params.mblim, params.lim, params.hev_thr,
                                        cm->bit_depth);
           else
-            aom_lpf_vertical_16(p, dst_stride, params.mblim, params.lim,
+            aom_lpf_vertical_14(p, dst_stride, params.mblim, params.lim,
                                 params.hev_thr);
           break;
         // no filtering
@@ -2263,14 +2263,14 @@ static void av1_filter_block_plane_horz(
             aom_lpf_horizontal_8(p, dst_stride, params.mblim, params.lim,
                                  params.hev_thr);
           break;
-        // apply 16-tap filtering
-        case 16:
+        // apply 14-tap filtering
+        case 14:
           if (cm->use_highbitdepth)
-            aom_highbd_lpf_horizontal_16(CONVERT_TO_SHORTPTR(p), dst_stride,
+            aom_highbd_lpf_horizontal_14(CONVERT_TO_SHORTPTR(p), dst_stride,
                                          params.mblim, params.lim,
                                          params.hev_thr, cm->bit_depth);
           else
-            aom_lpf_horizontal_16(p, dst_stride, params.mblim, params.lim,
+            aom_lpf_horizontal_14(p, dst_stride, params.mblim, params.lim,
                                   params.hev_thr);
           break;
         // no filtering

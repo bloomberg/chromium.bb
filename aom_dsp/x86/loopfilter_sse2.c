@@ -241,7 +241,7 @@ static INLINE void store_buffer_horz_8(__m128i x, int p, int num, uint8_t *s) {
   xx_storel_32(s + num * p, _mm_srli_si128(x, 8));
 }
 
-void aom_lpf_horizontal_16_sse2(unsigned char *s, int p,
+void aom_lpf_horizontal_14_sse2(unsigned char *s, int p,
                                 const unsigned char *_blimit,
                                 const unsigned char *_limit,
                                 const unsigned char *_thresh) {
@@ -968,12 +968,12 @@ void aom_lpf_horizontal_8_sse2(unsigned char *s, int p,
   xx_storel_32(s + 2 * p, q2);
 }
 
-void aom_lpf_horizontal_16_dual_sse2(unsigned char *s, int p,
+void aom_lpf_horizontal_14_dual_sse2(unsigned char *s, int p,
                                      const unsigned char *_blimit,
                                      const unsigned char *_limit,
                                      const unsigned char *_thresh) {
-  aom_lpf_horizontal_16_sse2(s, p, _blimit, _limit, _thresh);
-  aom_lpf_horizontal_16_sse2(s + 4, p, _blimit, _limit, _thresh);
+  aom_lpf_horizontal_14_sse2(s, p, _blimit, _limit, _thresh);
+  aom_lpf_horizontal_14_sse2(s + 4, p, _blimit, _limit, _thresh);
 }
 
 void aom_lpf_horizontal_8_dual_sse2(uint8_t *s, int p, const uint8_t *_blimit0,
@@ -1669,7 +1669,7 @@ void aom_lpf_vertical_8_dual_sse2(uint8_t *s, int p, const uint8_t *blimit0,
   transpose8x8(src, 16, dst, p, 2);
 }
 
-void aom_lpf_vertical_16_sse2(unsigned char *s, int p,
+void aom_lpf_vertical_14_sse2(unsigned char *s, int p,
                               const unsigned char *blimit,
                               const unsigned char *limit,
                               const unsigned char *thresh) {
@@ -1686,7 +1686,7 @@ void aom_lpf_vertical_16_sse2(unsigned char *s, int p,
   transpose8x8(src, p, dst, 8, 2);
 
   // Loop filtering
-  aom_lpf_horizontal_16_sse2(t_dst + 8 * 8, 8, blimit, limit, thresh);
+  aom_lpf_horizontal_14_sse2(t_dst + 8 * 8, 8, blimit, limit, thresh);
 
   src[0] = t_dst;
   src[1] = t_dst + 8 * 8;
@@ -1697,7 +1697,7 @@ void aom_lpf_vertical_16_sse2(unsigned char *s, int p,
   transpose8x8(src, 8, dst, p, 2);
 }
 
-void aom_lpf_vertical_16_dual_sse2(unsigned char *s, int p,
+void aom_lpf_vertical_14_dual_sse2(unsigned char *s, int p,
                                    const uint8_t *blimit, const uint8_t *limit,
                                    const uint8_t *thresh) {
   DECLARE_ALIGNED(16, unsigned char, t_dst[256]);
@@ -1707,7 +1707,7 @@ void aom_lpf_vertical_16_dual_sse2(unsigned char *s, int p,
   transpose8x16(s, s + 8 * p, p, t_dst + 8 * 16, 16);
 
   // Loop filtering
-  aom_lpf_horizontal_16_dual_sse2(t_dst + 8 * 16, 16, blimit, limit, thresh);
+  aom_lpf_horizontal_14_dual_sse2(t_dst + 8 * 16, 16, blimit, limit, thresh);
 
   // Transpose back
   transpose8x16(t_dst, t_dst + 8 * 16, 16, s - 8, p);

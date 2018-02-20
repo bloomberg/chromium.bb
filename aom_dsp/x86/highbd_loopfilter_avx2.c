@@ -16,17 +16,17 @@
 #include "aom_dsp/x86/lpf_common_sse2.h"
 #include "aom/aom_integer.h"
 
-void aom_highbd_lpf_horizontal_16_dual_avx2(uint16_t *s, int p,
+void aom_highbd_lpf_horizontal_14_dual_avx2(uint16_t *s, int p,
                                             const uint8_t *blt,
                                             const uint8_t *lt,
                                             const uint8_t *thr, int bd) {
-  aom_highbd_lpf_horizontal_16_dual_sse2(s, p, blt, lt, thr, bd);
+  aom_highbd_lpf_horizontal_14_dual_sse2(s, p, blt, lt, thr, bd);
 }
 
-void aom_highbd_lpf_vertical_16_dual_avx2(uint16_t *s, int p,
+void aom_highbd_lpf_vertical_14_dual_avx2(uint16_t *s, int p,
                                           const uint8_t *blt, const uint8_t *lt,
                                           const uint8_t *thr, int bd) {
-  aom_highbd_lpf_vertical_16_dual_sse2(s, p, blt, lt, thr, bd);
+  aom_highbd_lpf_vertical_14_dual_sse2(s, p, blt, lt, thr, bd);
 }
 
 void aom_highbd_lpf_horizontal_4_dual_avx2(

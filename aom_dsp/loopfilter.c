@@ -378,12 +378,12 @@ static void mb_lpf_horizontal_edge_w(uint8_t *s, int p, const uint8_t *blimit,
   }
 }
 
-void aom_lpf_horizontal_16_c(uint8_t *s, int p, const uint8_t *blimit,
+void aom_lpf_horizontal_14_c(uint8_t *s, int p, const uint8_t *blimit,
                              const uint8_t *limit, const uint8_t *thresh) {
   mb_lpf_horizontal_edge_w(s, p, blimit, limit, thresh, 1);
 }
 
-void aom_lpf_horizontal_16_dual_c(uint8_t *s, int p, const uint8_t *blimit,
+void aom_lpf_horizontal_14_dual_c(uint8_t *s, int p, const uint8_t *blimit,
                                   const uint8_t *limit, const uint8_t *thresh) {
   mb_lpf_horizontal_edge_w(s, p, blimit, limit, thresh, 2);
 }
@@ -409,12 +409,12 @@ static void mb_lpf_vertical_edge_w(uint8_t *s, int p, const uint8_t *blimit,
   }
 }
 
-void aom_lpf_vertical_16_c(uint8_t *s, int p, const uint8_t *blimit,
+void aom_lpf_vertical_14_c(uint8_t *s, int p, const uint8_t *blimit,
                            const uint8_t *limit, const uint8_t *thresh) {
   mb_lpf_vertical_edge_w(s, p, blimit, limit, thresh, 4);
 }
 
-void aom_lpf_vertical_16_dual_c(uint8_t *s, int p, const uint8_t *blimit,
+void aom_lpf_vertical_14_dual_c(uint8_t *s, int p, const uint8_t *blimit,
                                 const uint8_t *limit, const uint8_t *thresh) {
   mb_lpf_vertical_edge_w(s, p, blimit, limit, thresh, 8);
 }
@@ -825,13 +825,13 @@ static void highbd_mb_lpf_horizontal_edge_w(uint16_t *s, int p,
   }
 }
 
-void aom_highbd_lpf_horizontal_16_c(uint16_t *s, int p, const uint8_t *blimit,
+void aom_highbd_lpf_horizontal_14_c(uint16_t *s, int p, const uint8_t *blimit,
                                     const uint8_t *limit, const uint8_t *thresh,
                                     int bd) {
   highbd_mb_lpf_horizontal_edge_w(s, p, blimit, limit, thresh, 1, bd);
 }
 
-void aom_highbd_lpf_horizontal_16_dual_c(uint16_t *s, int p,
+void aom_highbd_lpf_horizontal_14_dual_c(uint16_t *s, int p,
                                          const uint8_t *blimit,
                                          const uint8_t *limit,
                                          const uint8_t *thresh, int bd) {
@@ -868,13 +868,13 @@ static void highbd_mb_lpf_vertical_edge_w(uint16_t *s, int p,
   }
 }
 
-void aom_highbd_lpf_vertical_16_c(uint16_t *s, int p, const uint8_t *blimit,
+void aom_highbd_lpf_vertical_14_c(uint16_t *s, int p, const uint8_t *blimit,
                                   const uint8_t *limit, const uint8_t *thresh,
                                   int bd) {
   highbd_mb_lpf_vertical_edge_w(s, p, blimit, limit, thresh, 4, bd);
 }
 
-void aom_highbd_lpf_vertical_16_dual_c(uint16_t *s, int p,
+void aom_highbd_lpf_vertical_14_dual_c(uint16_t *s, int p,
                                        const uint8_t *blimit,
                                        const uint8_t *limit,
                                        const uint8_t *thresh, int bd) {
