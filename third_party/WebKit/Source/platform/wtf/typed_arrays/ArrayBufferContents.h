@@ -27,6 +27,7 @@
 #ifndef ArrayBufferContents_h
 #define ArrayBufferContents_h
 
+#include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "platform/wtf/Allocator.h"
@@ -98,7 +99,7 @@ class WTF_EXPORT ArrayBufferContents {
           deleter_(data_);
           return;
         case AllocationKind::kReservation:
-          ReleaseReservedMemory(allocation_base_, allocation_length_);
+          base::FreePages(allocation_base_, allocation_length_);
           return;
       }
     }
@@ -177,9 +178,7 @@ class WTF_EXPORT ArrayBufferContents {
   void CopyTo(ArrayBufferContents& other);
 
   static void* AllocateMemoryOrNull(size_t, InitializationPolicy);
-  static void* ReserveMemory(size_t);
   static void FreeMemory(void*);
-  static void ReleaseReservedMemory(void*, size_t);
   static DataHandle CreateDataHandle(size_t, InitializationPolicy);
   static void Initialize(
       AdjustAmountOfExternalAllocatedMemoryFunction function) {
