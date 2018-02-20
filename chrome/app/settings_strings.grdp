@@ -3081,6 +3081,9 @@
     <message name="IDS_SETTINGS_PEOPLE_DOMAIN_MANAGED_PROFILE" desc="Provides the domain information for domain-managed accounts.">
       Managed by <ph name="DOMAIN">$1<ex>example.com</ex></ph>
     </message>
+    <message name="IDS_SETTINGS_PEOPLE_SIGN_IN" desc="The label of the button that lets user sign-in to chrome.">
+      Sign in
+    </message>
     <message name="IDS_SETTINGS_PEOPLE_SIGN_IN_PROMPT" desc="The text displayed to prompt users to sign in to chrome.">
       Web browsing with Google smarts
     </message>

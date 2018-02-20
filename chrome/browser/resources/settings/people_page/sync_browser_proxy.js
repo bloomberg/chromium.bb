@@ -111,6 +111,12 @@ settings.PageStatus = {
 };
 
 cr.define('settings', function() {
+  /**
+   * Key to be used with localStorage.
+   * @type {string}
+   */
+  const PROMO_IMPRESSION_COUNT_KEY = 'signin-promo-count';
+
   /** @interface */
   class SyncBrowserProxy {
     // <if expr="not chromeos">
@@ -130,6 +136,16 @@ cr.define('settings', function() {
      * Opens the multi-profile user manager.
      */
     manageOtherPeople() {}
+
+    /**
+     * @return {number} the number of times the sync account promo was shown.
+     */
+    getPromoImpressionCount() {}
+
+    /**
+     * Increment the number of times the sync account promo was shown.
+     */
+    incrementPromoImpressionCount() {}
 
     // </if>
 
@@ -210,6 +226,20 @@ cr.define('settings', function() {
     /** @override */
     manageOtherPeople() {
       chrome.send('SyncSetupManageOtherPeople');
+    }
+
+    /** @override */
+    getPromoImpressionCount() {
+      return parseInt(
+                 window.localStorage.getItem(PROMO_IMPRESSION_COUNT_KEY), 10) ||
+          0;
+    }
+
+    /** @override */
+    incrementPromoImpressionCount() {
+      window.localStorage.setItem(
+          PROMO_IMPRESSION_COUNT_KEY,
+          (this.getPromoImpressionCount() + 1).toString());
     }
 
     // </if>

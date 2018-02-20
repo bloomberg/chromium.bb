@@ -1456,6 +1456,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
     {"showShortcutLabel", IDS_SETTINGS_PROFILE_SHORTCUT_TOGGLE_LABEL},
 #endif  // defined(OS_CHROMEOS)
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
+    {"peopleSignIn", IDS_SETTINGS_PEOPLE_SIGN_IN},
     {"peopleSignInPrompt", IDS_SETTINGS_PEOPLE_SIGN_IN_PROMPT},
     {"peopleSignInPromptSecondary",
      IDS_SETTINGS_PEOPLE_SIGN_IN_PROMPT_SECONDARY},
