@@ -95,7 +95,7 @@
 #include "url/origin.h"
 
 #if defined(OS_MACOSX)
-#include "third_party/WebKit/common/clipboard/clipboard.mojom.h"
+#include "third_party/WebKit/public/mojom/clipboard/clipboard.mojom.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)

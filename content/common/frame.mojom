@@ -13,7 +13,7 @@ import "mojo/common/unguessable_token.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
-import "third_party/WebKit/common/feature_policy/feature_policy.mojom";
+import "third_party/WebKit/public/mojom/feature_policy/feature_policy.mojom";
 import "third_party/WebKit/public/platform/referrer.mojom";
 import "third_party/WebKit/public/web/commit_result.mojom";
 import "third_party/WebKit/public/web/window_features.mojom";

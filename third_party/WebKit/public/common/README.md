@@ -6,4 +6,7 @@ outside the WebKit directory (e.g. from `//content` and `//chrome`).
 
 Anything in this directory should **NOT** depend on other WebKit headers.
 
+Corresponding .cc code normally lives in `WebKit/common`, and public
+`.mojom` files live in `WebKit/public/mojom`.
+
 See `DEPS` and `WebKit/common/README.md` for more details.

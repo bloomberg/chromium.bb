@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_COMMON_FEATURE_POLICY_FEATURE_POLICY_STRUCT_TRAITS_H_
-#define THIRD_PARTY_WEBKIT_COMMON_FEATURE_POLICY_FEATURE_POLICY_STRUCT_TRAITS_H_
+#ifndef THIRD_PARTY_WEBKIT_COMMON_FEATURE_POLICY_FEATURE_POLICY_MOJOM_TRAITS_H_
+#define THIRD_PARTY_WEBKIT_COMMON_FEATURE_POLICY_FEATURE_POLICY_MOJOM_TRAITS_H_
 
 #include <vector>
 
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "third_party/WebKit/common/common_export.h"
-#include "third_party/WebKit/common/feature_policy/feature_policy.mojom-shared.h"
 #include "third_party/WebKit/public/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/public/common/frame/sandbox_flags.h"
+#include "third_party/WebKit/public/mojom/feature_policy/feature_policy.mojom-shared.h"
 
 namespace mojo {
 
@@ -94,4 +94,4 @@ class BLINK_COMMON_EXPORT
 
 }  // namespace mojo
 
-#endif  // THIRD_PARTY_WEBKIT_COMMON_FEATURE_POLICY_FEATURE_POLICY_STRUCT_TRAITS_H_
+#endif  // THIRD_PARTY_WEBKIT_COMMON_FEATURE_POLICY_FEATURE_POLICY_MOJOM_TRAITS_H_

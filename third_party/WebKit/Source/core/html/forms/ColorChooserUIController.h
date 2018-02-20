@@ -32,7 +32,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/PlatformLocale.h"
-#include "third_party/WebKit/common/color_chooser/color_chooser.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/color_chooser/color_chooser.mojom-blink.h"
 
 namespace blink {
 

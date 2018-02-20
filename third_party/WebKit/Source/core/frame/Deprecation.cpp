@@ -19,7 +19,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/reporting.mojom-blink.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/WebKit/common/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 
 using blink::WebFeature;
 
