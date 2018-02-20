@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -114,6 +115,7 @@ void CloudPolicyClient::SetupRegistration(const std::string& dm_token,
   dm_token_ = dm_token;
   client_id_ = client_id;
   request_jobs_.clear();
+  app_install_report_request_job_ = nullptr;
   policy_fetch_request_job_.reset();
   responses_.clear();
 
@@ -383,11 +385,44 @@ void CloudPolicyClient::UploadDeviceStatus(
     *request->mutable_session_status_report_request() = *session_status;
 
   const DeviceManagementRequestJob::Callback job_callback =
-      base::Bind(&CloudPolicyClient::OnStatusUploadCompleted,
-                 weak_ptr_factory_.GetWeakPtr(), request_job.get(), callback);
+      base::AdaptCallbackForRepeating(base::BindOnce(
+          &CloudPolicyClient::OnReportUploadCompleted,
+          weak_ptr_factory_.GetWeakPtr(), request_job.get(), callback));
 
   request_jobs_.push_back(std::move(request_job));
   request_jobs_.back()->Start(job_callback);
+}
+
+void CloudPolicyClient::UploadAppInstallReport(
+    const em::AppInstallReportRequest* app_install_report,
+    const StatusCallback& callback) {
+  CHECK(is_registered());
+  DCHECK(app_install_report);
+
+  std::unique_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
+      DeviceManagementRequestJob::TYPE_UPLOAD_APP_INSTALL_REPORT,
+      GetRequestContext()));
+  request_job->SetDMToken(dm_token_);
+  request_job->SetClientID(client_id_);
+
+  *request_job->GetRequest()->mutable_app_install_report_request() =
+      *app_install_report;
+
+  const DeviceManagementRequestJob::Callback job_callback =
+      base::AdaptCallbackForRepeating(base::BindOnce(
+          &CloudPolicyClient::OnReportUploadCompleted,
+          weak_ptr_factory_.GetWeakPtr(), request_job.get(), callback));
+
+  CancelAppInstallReportUpload();
+  app_install_report_request_job_ = request_job.get();
+  request_jobs_.push_back(std::move(request_job));
+  request_jobs_.back()->Start(job_callback);
+}
+
+void CloudPolicyClient::CancelAppInstallReportUpload() {
+  if (app_install_report_request_job_) {
+    RemoveJob(app_install_report_request_job_);
+  }
 }
 
 void CloudPolicyClient::FetchRemoteCommands(
@@ -702,6 +737,7 @@ void CloudPolicyClient::OnUnregisterCompleted(
     dm_token_.clear();
     // Cancel all outstanding jobs.
     request_jobs_.clear();
+    app_install_report_request_job_ = nullptr;
     NotifyRegistrationStateChanged();
   } else {
     NotifyClientError();
@@ -819,6 +855,9 @@ void CloudPolicyClient::OnAvailableLicensesRequested(
 }
 
 void CloudPolicyClient::RemoveJob(const DeviceManagementRequestJob* job) {
+  if (app_install_report_request_job_ == job) {
+    app_install_report_request_job_ = nullptr;
+  }
   for (auto it = request_jobs_.begin(); it != request_jobs_.end(); ++it) {
     if (it->get() == job) {
       request_jobs_.erase(it);
@@ -830,7 +869,7 @@ void CloudPolicyClient::RemoveJob(const DeviceManagementRequestJob* job) {
   NOTREACHED();
 }
 
-void CloudPolicyClient::OnStatusUploadCompleted(
+void CloudPolicyClient::OnReportUploadCompleted(
     const DeviceManagementRequestJob* job,
     const CloudPolicyClient::StatusCallback& callback,
     DeviceManagementStatus status,

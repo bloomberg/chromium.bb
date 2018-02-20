@@ -330,6 +330,9 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       response = self.ProcessCheckAndroidManagementRequest(
           rmsg.check_android_management_request,
           str(self.GetUniqueParam('oauth_token')))
+    elif request_type == 'app_install_report':
+      response = self.ProcessAppInstallReportRequest(
+          rmsg.app_install_report_request)
     else:
       return (400, 'Invalid request parameter')
 
@@ -724,6 +727,18 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       return (200, response)
     else:
       return (403, response)
+
+  def ProcessAppInstallReportRequest(self, app_install_report):
+    """Handles a push-installed app report upload request.
+
+    Returns:
+      A tuple of HTTP status code and response data to send to the client.
+    """
+    app_install_report_response = dm.AppInstallReportResponse()
+    response = dm.DeviceManagementResponse()
+    response.app_install_report_response.CopyFrom(app_install_report_response)
+
+    return (200, response)
 
   def SetProtoRepeatedField(self, group_message, field, field_value):
     assert type(field_value) == list

@@ -46,6 +46,7 @@ POLICY_EXPORT extern const char kValueRequestCertBasedRegister[];
 POLICY_EXPORT extern const char kValueRequestActiveDirectoryEnrollPlayUser[];
 POLICY_EXPORT extern const char kValueRequestActiveDirectoryPlayActivity[];
 POLICY_EXPORT extern const char kValueRequestCheckDeviceLicense[];
+POLICY_EXPORT extern const char kValueRequestAppInstallReport[];
 
 // Policy type strings for the policy_type field in PolicyFetchRequest.
 POLICY_EXPORT extern const char kChromeDevicePolicyType[];

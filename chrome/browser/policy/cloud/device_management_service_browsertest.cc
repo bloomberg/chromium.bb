@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -60,6 +61,8 @@ void ConstructResponse(const char* request_data,
     response.mutable_policy_response()->add_response();
   } else if (request.has_auto_enrollment_request()) {
     response.mutable_auto_enrollment_response();
+  } else if (request.has_app_install_report_request()) {
+    response.mutable_app_install_report_response();
   } else {
     FAIL() << "Failed to parse request.";
   }
@@ -258,6 +261,26 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, AutoEnrollment) {
   job->GetRequest()->mutable_auto_enrollment_request()->set_modulus(1);
   job->Start(base::Bind(&DeviceManagementServiceIntegrationTest::OnJobDone,
                         base::Unretained(this)));
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest,
+                       AppInstallReport) {
+  PerformRegistration();
+
+  ExpectRequest();
+  base::RunLoop run_loop;
+  EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::QuitWhenIdle));
+  std::unique_ptr<DeviceManagementRequestJob> job(service_->CreateJob(
+      DeviceManagementRequestJob::TYPE_UPLOAD_APP_INSTALL_REPORT,
+      g_browser_process->system_request_context()));
+  job->SetDMToken(token_);
+  job->SetClientID("testid");
+  job->GetRequest()->mutable_app_install_report_request();
+  job->Start(base::AdaptCallbackForRepeating(
+      base::BindOnce(&DeviceManagementServiceIntegrationTest::OnJobDone,
+                     base::Unretained(this))));
   run_loop.Run();
 }
 
