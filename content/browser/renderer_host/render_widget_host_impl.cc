@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/hash_tables.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -2729,17 +2730,24 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
   if (local_surface_id == last_local_surface_id_ &&
       SurfacePropertiesMismatch(new_surface_properties,
                                 last_surface_properties_)) {
+    std::string error = base::StringPrintf(
+        "[OOPIF? %d] %s\n", view_ && view_->IsRenderWidgetHostViewChildFrame(),
+        new_surface_properties.ToDiffString(last_surface_properties_).c_str());
+    LOG(ERROR) << "Surface invariants violation: " << error;
+
     static auto* crash_key = base::debug::AllocateCrashKeyString(
         "surface-invariants-violation", base::debug::CrashKeySize::Size256);
-    base::debug::ScopedCrashKeyString key_value(
-        crash_key,
-        base::StringPrintf(
-            "[OOPIF? %d] %s\n",
-            view_ && view_->IsRenderWidgetHostViewChildFrame(),
-            new_surface_properties.ToDiffString(last_surface_properties_)
-                .c_str()));
-    bad_message::ReceivedBadMessage(
-        GetProcess(), bad_message::RWH_SURFACE_INVARIANTS_VIOLATION);
+    base::debug::ScopedCrashKeyString key_value(crash_key, error);
+    base::debug::DumpWithoutCrashing();
+
+    if (view_) {
+      frame.metadata.begin_frame_ack.has_damage = false;
+      view_->OnDidNotProduceFrame(frame.metadata.begin_frame_ack);
+    }
+    std::vector<viz::ReturnedResource> resources =
+        viz::TransferableResource::ReturnResources(frame.resource_list);
+    renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources);
+
     return;
   }
 
