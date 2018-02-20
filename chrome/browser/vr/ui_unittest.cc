@@ -60,7 +60,6 @@ const std::set<UiElementName> kElementsVisibleInBrowsing = {
     kController,
     kReticle,
     kLaser,
-    kVoiceSearchButton,
     kControllerTouchpadButton,
     kControllerAppButton,
     kControllerHomeButton,
@@ -253,6 +252,7 @@ TEST_F(UiTest, UiUpdatesForIncognito) {
 TEST_F(UiTest, VoiceSearchHiddenInIncognito) {
   CreateScene(kNotInCct, kNotInWebVr);
 
+  model_->push_mode(kModeEditingOmnibox);
   EXPECT_TRUE(OnBeginFrame());
   EXPECT_TRUE(IsVisible(kVoiceSearchButton));
 
@@ -264,6 +264,7 @@ TEST_F(UiTest, VoiceSearchHiddenInIncognito) {
 TEST_F(UiTest, VoiceSearchHiddenWhenCantAskForPermission) {
   CreateScene(kNotInCct, kNotInWebVr);
 
+  model_->push_mode(kModeEditingOmnibox);
   model_->speech.has_or_can_request_audio_permission = true;
   EXPECT_TRUE(OnBeginFrame());
   EXPECT_TRUE(IsVisible(kVoiceSearchButton));
@@ -276,6 +277,7 @@ TEST_F(UiTest, VoiceSearchHiddenWhenCantAskForPermission) {
 TEST_F(UiTest, VoiceSearchHiddenWhenContentCapturingAudio) {
   CreateScene(kNotInCct, kNotInWebVr);
 
+  model_->push_mode(kModeEditingOmnibox);
   model_->speech.has_or_can_request_audio_permission = true;
   model_->capturing_state.audio_capture_enabled = false;
   EXPECT_TRUE(OnBeginFrame());
@@ -347,19 +349,6 @@ TEST_F(UiTest, UiModeOmniboxEditing) {
   EXPECT_EQ(model_->ui_modes.size(), 1u);
   EXPECT_EQ(model_->ui_modes.back(), kModeBrowsing);
   VerifyOnlyElementsVisible("Browsing", kElementsVisibleInBrowsing);
-}
-
-TEST_F(UiTest, OmniboxVoiceIconHiddenWhileIncognito) {
-  CreateScene(kNotInCct, kNotInWebVr);
-
-  model_->push_mode(kModeEditingOmnibox);
-  EXPECT_TRUE(IsVisible(kOmniboxVoiceSearchButton));
-
-  ui_->SetIncognito(true);
-  EXPECT_FALSE(IsVisible(kOmniboxVoiceSearchButton));
-
-  ui_->SetIncognito(false);
-  EXPECT_TRUE(IsVisible(kOmniboxVoiceSearchButton));
 }
 
 TEST_F(UiTest, UiModeVoiceSearchFromOmnibox) {

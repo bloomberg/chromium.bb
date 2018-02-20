@@ -151,16 +151,11 @@ static constexpr float kSceneSize = 25.0f;
 static constexpr float kSceneHeight = 4.0f;
 static constexpr int kFloorGridlineCount = 40;
 
-static constexpr float kVoiceSearchUIGroupButtonDMM = 0.096f;
-static constexpr float kVoiceSearchButtonDiameterDMM =
-    kVoiceSearchUIGroupButtonDMM;
-static constexpr float kVoiceSearchButtonYOffsetDMM = 0.032f;
-static constexpr float kVoiceSearchCloseButtonWidth =
-    kVoiceSearchUIGroupButtonDMM * kContentDistance;
-static constexpr float kVoiceSearchCloseButtonHeight =
-    kVoiceSearchCloseButtonWidth;
+static constexpr float kVoiceSearchCloseButtonDiameterDMM = 0.096f;
+static constexpr float kVoiceSearchCloseButtonDiameter =
+    kVoiceSearchCloseButtonDiameterDMM * kContentDistance;
 static constexpr float kVoiceSearchCloseButtonYOffset =
-    0.316f * kContentDistance + 0.5f * kVoiceSearchCloseButtonWidth;
+    0.316f * kContentDistance + 0.5f * kVoiceSearchCloseButtonDiameter;
 static constexpr float kVoiceSearchRecognitionResultTextHeight =
     0.026f * kContentDistance;
 static constexpr float kVoiceSearchRecognitionResultTextWidth =
@@ -169,8 +164,7 @@ static constexpr float kVoiceSearchRecognitionResultTextWidth =
 static constexpr float kUnderDevelopmentNoticeFontHeightDMM = 0.02f;
 static constexpr float kUnderDevelopmentNoticeHeightDMM = 0.1f;
 static constexpr float kUnderDevelopmentNoticeWidthDMM = 0.44f;
-static constexpr float kUnderDevelopmentNoticeVerticalOffsetDMM =
-    kVoiceSearchButtonYOffsetDMM + kVoiceSearchButtonDiameterDMM * 1.5f + 0.04f;
+static constexpr float kUnderDevelopmentNoticeVerticalOffsetDMM = 0.2f;
 static constexpr float kUnderDevelopmentNoticeRotationRad = -0.78f;
 
 static constexpr float kTimeoutScreenDisatance = 2.5f;

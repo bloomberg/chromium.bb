@@ -1203,27 +1203,6 @@ void UiSceneCreator::CreateViewportAwareRoot() {
 }
 
 void UiSceneCreator::CreateVoiceSearchUiGroup() {
-  auto voice_search_button = Create<DiscButton>(
-      kVoiceSearchButton, kPhaseForeground,
-      base::BindRepeating(&UiBrowserInterface::SetVoiceSearchActive,
-                          base::Unretained(browser_), true),
-      vector_icons::kMicIcon);
-  voice_search_button->SetSize(kVoiceSearchButtonDiameterDMM,
-                               kVoiceSearchButtonDiameterDMM);
-  voice_search_button->set_hover_offset(kButtonZOffsetHoverDMM);
-  voice_search_button->SetTranslate(0.f, -kVoiceSearchButtonYOffsetDMM, 0.f);
-  voice_search_button->set_y_anchoring(BOTTOM);
-  voice_search_button->set_y_centering(TOP);
-  voice_search_button->set_contributes_to_parent_bounds(false);
-  VR_BIND_VISIBILITY(voice_search_button,
-                     model->speech.has_or_can_request_audio_permission &&
-                         !model->incognito &&
-                         !model->capturing_state.audio_capture_enabled);
-  VR_BIND_BUTTON_COLORS(model_, voice_search_button.get(),
-                        &ColorScheme::button_colors,
-                        &DiscButton::SetButtonColors);
-  scene_->AddUiElement(kUrlBar, std::move(voice_search_button));
-
   auto speech_recognition_root = std::make_unique<UiElement>();
   speech_recognition_root->SetName(kSpeechRecognitionRoot);
   speech_recognition_root->SetTranslate(0.f, 0.f, -kContentDistance);
@@ -1353,8 +1332,8 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
       base::BindRepeating(&UiBrowserInterface::SetVoiceSearchActive,
                           base::Unretained(browser_), false),
       vector_icons::kClose16Icon);
-  close_button->SetSize(kVoiceSearchCloseButtonWidth,
-                        kVoiceSearchCloseButtonHeight);
+  close_button->SetSize(kVoiceSearchCloseButtonDiameter,
+                        kVoiceSearchCloseButtonDiameter);
   close_button->set_hover_offset(kButtonZOffsetHoverDMM * kContentDistance);
   close_button->SetTranslate(0, -kVoiceSearchCloseButtonYOffset, 0);
   close_button->SetRotate(
@@ -1979,7 +1958,7 @@ void UiSceneCreator::CreateOmnibox() {
                 &VectorIcon::SetColor);
 
   auto mic_icon_box = Create<Button>(
-      kNone, kPhaseForeground,
+      kVoiceSearchButton, kPhaseForeground,
       base::BindRepeating(
           [](UiBrowserInterface* b, Ui* ui) { b->SetVoiceSearchActive(true); },
           base::Unretained(browser_), base::Unretained(ui_)));
@@ -1987,9 +1966,11 @@ void UiSceneCreator::CreateOmnibox() {
   mic_icon_box->SetSize(kOmniboxTextFieldIconButtonSizeDMM,
                         kOmniboxTextFieldIconButtonSizeDMM);
   mic_icon_box->set_corner_radius(kOmniboxTextFieldIconButtonRadiusDMM);
-  VR_BIND_VISIBILITY(
-      mic_icon_box,
-      !model->incognito && model->speech.has_or_can_request_audio_permission);
+  VR_BIND_VISIBILITY(mic_icon_box,
+                     model->speech.has_or_can_request_audio_permission &&
+                         !model->incognito &&
+                         !model->capturing_state.audio_capture_enabled);
+
   VR_BIND_BUTTON_COLORS(model_, mic_icon_box.get(),
                         &ColorScheme::omnibox_voice_search_button_colors,
                         &Button::SetButtonColors);
