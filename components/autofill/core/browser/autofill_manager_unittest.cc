@@ -1852,10 +1852,16 @@ TEST_F(AutofillManagerTest, WillFillCreditCardNumber) {
   number_field->value.clear();
   EXPECT_TRUE(WillFillCreditCardNumber(form, *name_field));
 
-  // When part of the section is Autofilled, only fill the initiating field.
-  month_field->is_autofilled = true;
+  // When the number is already autofilled, we won't fill it.
+  number_field->is_autofilled = true;
   EXPECT_FALSE(WillFillCreditCardNumber(form, *name_field));
   EXPECT_TRUE(WillFillCreditCardNumber(form, *number_field));
+
+  // If another field is filled, we would still fill other non-filled fields in
+  // the section.
+  number_field->is_autofilled = false;
+  name_field->is_autofilled = true;
+  EXPECT_TRUE(WillFillCreditCardNumber(form, *name_field));
 }
 
 // Test that we correctly log FIELD_WAS_AUTOFILLED event in UserHappiness.
@@ -2448,7 +2454,7 @@ TEST_F(AutofillManagerTest, FillCreditCardForm_ExpiredCard) {
 }
 
 // Test that non-focusable field is ignored while inferring boundaries between
-// sections: http://crbug.com/231160
+// sections, but not filled.
 TEST_F(AutofillManagerTest, FillFormWithNonFocusableFields) {
   // Create a form with both focusable and non-focusable fields.
   FormData form;
@@ -2488,8 +2494,8 @@ TEST_F(AutofillManagerTest, FillFormWithNonFocusableFields) {
                                      MakeFrontendID(std::string(), guid),
                                      &response_page_id, &response_data);
 
-  // The whole form should be filled as all the fields belong to the same
-  // logical section.
+  // All the visible fields should be filled as all the fields belong to the
+  // same logical section.
   ASSERT_EQ(6U, response_data.fields.size());
   ExpectFilledField("First Name", "firstname", "Elvis", "text",
                     response_data.fields[0]);
@@ -2498,8 +2504,7 @@ TEST_F(AutofillManagerTest, FillFormWithNonFocusableFields) {
                     response_data.fields[2]);
   ExpectFilledField("Phone Number", "phonenumber", "12345678901", "tel",
                     response_data.fields[3]);
-  ExpectFilledField("", "email_", "theking@gmail.com", "text",
-                    response_data.fields[4]);
+  ExpectFilledField("", "email_", "", "text", response_data.fields[4]);
   ExpectFilledField("Country", "country", "United States", "text",
                     response_data.fields[5]);
 }
@@ -2761,8 +2766,12 @@ TEST_F(AutofillManagerTest, FillAutofilledForm) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  // Mark one of the address fields as autofilled.
-  form.fields[4].is_autofilled = true;
+  // Mark the address fields as autofilled.
+  for (std::vector<FormFieldData>::iterator iter = form.fields.begin();
+       iter != form.fields.end(); ++iter) {
+    iter->is_autofilled = true;
+  }
+
   CreateTestCreditCardFormData(&form, true, false);
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
@@ -2814,10 +2823,55 @@ TEST_F(AutofillManagerTest, FillAutofilledForm) {
   }
 }
 
+// Test that we correctly fill a previously partly auto-filled form.
+TEST_F(AutofillManagerTest, FillPartlyAutofilledForm) {
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  // Mark couple of the address fields as autofilled.
+  form.fields[3].is_autofilled = true;
+  form.fields[4].is_autofilled = true;
+  form.fields[5].is_autofilled = true;
+  form.fields[6].is_autofilled = true;
+  form.fields[10].is_autofilled = true;
+
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // First fill the address data.
+  const char guid[] = "00000000-0000-0000-0000-000000000001";
+  int response_page_id = 0;
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
+                                     MakeFrontendID(std::string(), guid),
+                                     &response_page_id, &response_data);
+  {
+    SCOPED_TRACE("Address");
+    ExpectFilledForm(response_page_id, response_data, kDefaultPageID, "Elvis",
+                     "Aaron", "Presley", "", "", "", "", "38116",
+                     "United States", "12345678901", "", "", "", "", "", true,
+                     true, false);
+  }
+
+  // Now fill the credit card data.
+  const int kPageID2 = 2;
+  const char guid2[] = "00000000-0000-0000-0000-000000000004";
+  response_page_id = 0;
+  FillAutofillFormDataAndSaveResults(kPageID2, form, form.fields.back(),
+                                     MakeFrontendID(guid2, std::string()),
+                                     &response_page_id, &response_data);
+  {
+    SCOPED_TRACE("Credit card 1");
+    ExpectFilledCreditCardFormElvis(response_page_id, response_data, kPageID2,
+                                    true);
+  }
+}
+
 // Test that we correctly fill a phone number split across multiple fields.
 TEST_F(AutofillManagerTest, FillPhoneNumber) {
-  // In one form, rely on the maxlength attribute to imply US phone number
-  // parts. In the other form, rely on the autocompletetype attribute.
+  // In one form, rely on the max length attribute to imply US phone number
+  // parts. In the other form, rely on the autocomplete type attribute.
   FormData form_with_us_number_max_length;
   form_with_us_number_max_length.name = ASCIIToUTF16("MyMaxlengthPhoneForm");
   form_with_us_number_max_length.origin =
@@ -3555,7 +3609,7 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_HiddenFieldShouldNotCount) {
     ASSERT_EQ(4U, response_data.fields.size());
     EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
               response_data.fields[0].value);
-    EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[1].value);
+    EXPECT_EQ(ASCIIToUTF16(""), response_data.fields[1].value);
     EXPECT_EQ(base::string16(), response_data.fields[2].value);
     EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[3].value);
   }
@@ -3765,6 +3819,79 @@ TEST_F(AutofillManagerTest, FormChangesAddField) {
                                      &response_page_id, &response_data);
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
                                false);
+}
+
+// Test that we can still fill a form when the visibility of some fields
+// changes.
+TEST_F(AutofillManagerTest, FormChangesVisibilityOfFields) {
+  // Set up our form data.
+  FormData form;
+  FormFieldData field;
+
+  // Default is zero, have to set to a number autofill can process.
+  field.max_length = 10;
+  form.name = ASCIIToUTF16("multiple_groups_fields");
+  test::CreateTestFormField("First Name", "first_name", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Last Name", "last_name", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Address", "address", "", "text", &field);
+  form.fields.push_back(field);
+
+  test::CreateTestFormField("Postal Code", "postal_code", "", "text", &field);
+  field.is_focusable = false;
+  form.fields.push_back(field);
+
+  test::CreateTestFormField("Country", "country", "", "text", &field);
+  field.is_focusable = false;
+  form.fields.push_back(field);
+
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // Fill the form with the first profile. The hidden fields will not get
+  // filled.
+  const char guid[] = "00000000-0000-0000-0000-000000000001";
+  int response_page_id = 0;
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
+                                     MakeFrontendID(std::string(), guid),
+                                     &response_page_id, &response_data);
+
+  ASSERT_EQ(5U, response_data.fields.size());
+  ExpectFilledField("First Name", "first_name", "Elvis", "text",
+                    response_data.fields[0]);
+  ExpectFilledField("Last Name", "last_name", "Presley", "text",
+                    response_data.fields[1]);
+  ExpectFilledField("Address", "address", "3734 Elvis Presley Blvd.", "text",
+                    response_data.fields[2]);
+  ExpectFilledField("Postal Code", "postal_code", "", "text",
+                    response_data.fields[3]);
+  ExpectFilledField("Country", "country", "", "text", response_data.fields[4]);
+
+  // Two other fields will show up. Select the second profile. The fields that
+  // were already filled, would be left unchanged, and the rest would be filled
+  // with the second profile. (Two different profiles are selected, to make sure
+  // the right fields are getting filled.)
+  response_data.fields[3].is_focusable = true;
+  response_data.fields[4].is_focusable = true;
+  FormData later_response_data;
+  const char guid2[] = "00000000-0000-0000-0000-000000000002";
+  FillAutofillFormDataAndSaveResults(kDefaultPageID, response_data,
+                                     response_data.fields[4],
+                                     MakeFrontendID(std::string(), guid2),
+                                     &response_page_id, &later_response_data);
+  ASSERT_EQ(5U, later_response_data.fields.size());
+  ExpectFilledField("First Name", "first_name", "Elvis", "text",
+                    later_response_data.fields[0]);
+  ExpectFilledField("Last Name", "last_name", "Presley", "text",
+                    later_response_data.fields[1]);
+  ExpectFilledField("Address", "address", "3734 Elvis Presley Blvd.", "text",
+                    later_response_data.fields[2]);
+  ExpectFilledField("Postal Code", "postal_code", "79401", "text",
+                    later_response_data.fields[3]);
+  ExpectFilledField("Country", "country", "United States", "text",
+                    later_response_data.fields[4]);
 }
 
 // Test that we are able to save form data when forms are submitted.
