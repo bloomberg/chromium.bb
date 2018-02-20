@@ -54,8 +54,8 @@ cmd.extend(['-l%s/usr/lib' % sysroot, '-O', '-e', binary])
 
 proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                         cwd=sysroot)
-exit_code = proc.wait()
 (stdout, stderr) = proc.communicate()
+exit_code = proc.wait()
 if exit_code != 0:
   print 'dpkg-shlibdeps failed with exit code ' + str(exit_code)
   print 'stderr was ' + stderr
