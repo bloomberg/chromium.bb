@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 8
+// Next MinVersion: 9
 
 module arc.mojom;
 
@@ -40,7 +40,13 @@ interface ImeHost {
   OnTextInputTypeChanged@0(TextInputType type);
 
   // Notifies Chrome that the cursor poisition has changed.
-  OnCursorRectChanged@1(Rect rect);
+  //
+  // |rect| describes the coordinates in physical pixels.
+  // If |is_screen_coordinates| is set to true, its origin (0,0) is the top-left
+  // of the primary display. Otherwise it is the top-left of the window that has
+  // the IME focus.
+  OnCursorRectChanged@1(Rect rect,
+                        [MinVersion=8] bool is_screen_coordinates);
 
   // Notifies Chrome that the current composition is canceled.
   [MinVersion=1] OnCancelComposition@2();
@@ -51,16 +57,23 @@ interface ImeHost {
   // Notifies Chrome that the cursor position has changed and
   // also sends surrounding text.
   //
+  // |rect| describes the coordinates in physical pixels.
+  // If |is_screen_coordinates| is set to true, its origin (0,0) is the top-left
+  // of the primary display. Otherwise it is the top-left of the window that has
+  // the IME focus.
+  //
   // |text_range|, |text_in_range| and |selection_range| are piggy-backed
   // into this method because Chrome OS IME tries to retrieve these information
   // synchronously, so we need to update them all at once to keep consistency.
   [MinVersion=5] OnCursorRectChangedWithSurroundingText@4(
-      Rect rect,             // The cursor position.
-      Range text_range,      // The range of |text_in_range| in the current
-                                 // text in the editor.
-      string text_in_range,      // The text around the cursor.
-      Range selection_range  // The range of the selected text
-                                 // in the current text in the editor.
+      Rect rect,              // The cursor position.
+      Range text_range,       // The range of |text_in_range| in the current
+                                  // text in the editor.
+      string text_in_range,       // The text around the cursor.
+      Range selection_range,  // The range of the selected text
+                                  // in the current text in the editor.
+      [MinVersion=8] bool is_screen_coordinates  // Whether or not the |rect|
+                                                 // are in screen coordinates.
       );
 };
 
