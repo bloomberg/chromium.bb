@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/strings/string_piece.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/auth.h"
@@ -2055,7 +2056,7 @@ TEST_F(SpdyNetworkTransactionTest, TestRawHeaderSizeSuccessfullRequest) {
   SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
 
   SpdySerializedFrame response_body_frame(
-      spdy_util_.ConstructSpdyDataFrame(1, "should not include", 18, true));
+      spdy_util_.ConstructSpdyDataFrame(1, "should not include", true));
 
   MockRead response_headers(CreateMockRead(resp, 1));
   MockRead reads[] = {
@@ -2107,7 +2108,7 @@ TEST_F(SpdyNetworkTransactionTest,
 
   SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame response_body_frame(
-      spdy_util_.ConstructSpdyDataFrame(1, "should not include", 18, true));
+      spdy_util_.ConstructSpdyDataFrame(1, "should not include", true));
 
   SpdyHeaderBlock push_headers;
   push_headers[":method"] = "GET";
@@ -2120,8 +2121,8 @@ TEST_F(SpdyNetworkTransactionTest,
   SpdySerializedFrame push_headers_frame(
       spdy_util_.ConstructSpdyPushHeaders(2, nullptr, 0));
 
-  SpdySerializedFrame push_body_frame(spdy_util_.ConstructSpdyDataFrame(
-      2, "should not include either", 25, false));
+  SpdySerializedFrame push_body_frame(
+      spdy_util_.ConstructSpdyDataFrame(2, "should not include either", false));
 
   MockRead push_init_read(CreateMockRead(push_init_frame, 1));
   MockRead response_headers(CreateMockRead(resp, 5));
@@ -2347,8 +2348,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushSingleDataFrame) {
       nullptr, 0, 2, 1, "https://www.example.org/foo.dat"));
   SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
   const char kPushedData[] = "pushed";
-  SpdySerializedFrame stream2_body(spdy_util_.ConstructSpdyDataFrame(
-      2, kPushedData, strlen(kPushedData), true));
+  SpdySerializedFrame stream2_body(
+      spdy_util_.ConstructSpdyDataFrame(2, kPushedData, true));
   MockRead reads[] = {
       CreateMockRead(stream1_reply, 1),         CreateMockRead(stream2_syn, 2),
       CreateMockRead(stream1_body, 4),          CreateMockRead(stream2_body, 5),
@@ -2520,8 +2521,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushBeforeHeaders) {
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
   const char kPushedData[] = "pushed";
-  SpdySerializedFrame stream2_body(spdy_util_.ConstructSpdyDataFrame(
-      2, kPushedData, strlen(kPushedData), true));
+  SpdySerializedFrame stream2_body(
+      spdy_util_.ConstructSpdyDataFrame(2, kPushedData, true));
   MockRead reads[] = {
       CreateMockRead(stream2_syn, 1),
       CreateMockRead(stream1_reply, 3),
@@ -2562,8 +2563,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushSingleDataFrame2) {
   SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
       nullptr, 0, 2, 1, "https://www.example.org/foo.dat"));
   const char kPushedData[] = "pushed";
-  SpdySerializedFrame stream2_body(spdy_util_.ConstructSpdyDataFrame(
-      2, kPushedData, strlen(kPushedData), true));
+  SpdySerializedFrame stream2_body(
+      spdy_util_.ConstructSpdyDataFrame(2, kPushedData, true));
   SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {
       CreateMockRead(stream1_reply, 1),
@@ -2769,8 +2770,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushDuplicate) {
 
   const char kPushedData[] = "pushed";
   SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
-  SpdySerializedFrame stream2_body(spdy_util_.ConstructSpdyDataFrame(
-      2, kPushedData, strlen(kPushedData), true));
+  SpdySerializedFrame stream2_body(
+      spdy_util_.ConstructSpdyDataFrame(2, kPushedData, true));
 
   MockRead reads[] = {
       CreateMockRead(stream1_reply, 1),
@@ -2812,9 +2813,9 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushMultipleDataFrame) {
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
       nullptr, 0, 2, 1, "https://www.example.org/foo.dat"));
-  static const char kPushedData[] = "pushed my darling hello my baby";
-  SpdySerializedFrame stream2_body_base(spdy_util_.ConstructSpdyDataFrame(
-      2, kPushedData, strlen(kPushedData), true));
+  static const char kPushedData[] = "pushed payload for chunked test";
+  SpdySerializedFrame stream2_body_base(
+      spdy_util_.ConstructSpdyDataFrame(2, kPushedData, true));
   const size_t kChunkSize = strlen(kPushedData) / 4;
   SpdySerializedFrame stream2_body1(stream2_body_base.data(), kChunkSize,
                                     false);
@@ -2839,7 +2840,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushMultipleDataFrame) {
 
   HttpResponseInfo response;
   HttpResponseInfo response2;
-  SpdyString expected_push_result("pushed my darling hello my baby");
+  SpdyString expected_push_result(kPushedData);
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
   RunServerPushTest(&data, &response, &response2, kPushedData);
 
@@ -2865,9 +2866,9 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushMultipleDataFrameInterrupted) {
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
       nullptr, 0, 2, 1, "https://www.example.org/foo.dat"));
-  static const char kPushedData[] = "pushed my darling hello my baby";
-  SpdySerializedFrame stream2_body_base(spdy_util_.ConstructSpdyDataFrame(
-      2, kPushedData, strlen(kPushedData), true));
+  static const char kPushedData[] = "pushed payload for chunked test";
+  SpdySerializedFrame stream2_body_base(
+      spdy_util_.ConstructSpdyDataFrame(2, kPushedData, true));
   const size_t kChunkSize = strlen(kPushedData) / 4;
   SpdySerializedFrame stream2_body1(stream2_body_base.data(), kChunkSize,
                                     false);
@@ -3098,8 +3099,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushOnClosedPushedStream) {
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
   const char kPushedData[] = "pushed";
-  SpdySerializedFrame stream2_body(spdy_util_.ConstructSpdyDataFrame(
-      2, kPushedData, strlen(kPushedData), true));
+  SpdySerializedFrame stream2_body(
+      spdy_util_.ConstructSpdyDataFrame(2, kPushedData, true));
   SpdySerializedFrame stream3_syn(spdy_util_.ConstructSpdyPush(
       nullptr, 0, 4, 2, "https://www.example.org/bar.dat"));
 
@@ -3269,9 +3270,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerCancelsCrossOriginPush) {
   MockWrite writes2[] = {CreateMockWrite(req2, 0)};
 
   SpdySerializedFrame reply2(spdy_util2.ConstructSpdyGetReply(nullptr, 0, 1));
-  base::StringPiece kData("Response on the second connection.");
-  SpdySerializedFrame body2(
-      spdy_util2.ConstructSpdyDataFrame(1, kData.data(), kData.size(), true));
+  SpdySerializedFrame body2(spdy_util2.ConstructSpdyDataFrame(
+      1, "Response on the second connection.", true));
   MockRead reads2[] = {CreateMockRead(reply2, 1), CreateMockRead(body2, 2),
                        MockRead(ASYNC, 0, 3)};
 
@@ -3865,14 +3865,14 @@ TEST_F(SpdyNetworkTransactionTest, BufferFull) {
 
   // 2 data frames in a single read.
   SpdySerializedFrame data_frame_1(
-      spdy_util_.ConstructSpdyDataFrame(1, "goodby", 6, /*fin=*/false));
+      spdy_util_.ConstructSpdyDataFrame(1, "goodby", /*fin=*/false));
   SpdySerializedFrame data_frame_2(
-      spdy_util_.ConstructSpdyDataFrame(1, "e worl", 6, /*fin=*/false));
+      spdy_util_.ConstructSpdyDataFrame(1, "e worl", /*fin=*/false));
   SpdySerializedFrame combined_data_frames =
       CombineFrames({&data_frame_1, &data_frame_2});
 
   SpdySerializedFrame last_frame(
-      spdy_util_.ConstructSpdyDataFrame(1, "d", 1, /*fin=*/true));
+      spdy_util_.ConstructSpdyDataFrame(1, "d", /*fin=*/true));
 
   SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   MockRead reads[] = {
@@ -3948,9 +3948,9 @@ TEST_F(SpdyNetworkTransactionTest, Buffering) {
 
   // 4 data frames in a single read.
   SpdySerializedFrame data_frame(
-      spdy_util_.ConstructSpdyDataFrame(1, "message", 7, /*fin=*/false));
+      spdy_util_.ConstructSpdyDataFrame(1, "message", /*fin=*/false));
   SpdySerializedFrame data_frame_fin(
-      spdy_util_.ConstructSpdyDataFrame(1, "message", 7, /*fin=*/true));
+      spdy_util_.ConstructSpdyDataFrame(1, "message", /*fin=*/true));
   SpdySerializedFrame combined_data_frames =
       CombineFrames({&data_frame, &data_frame, &data_frame, &data_frame_fin});
 
@@ -4029,9 +4029,9 @@ TEST_F(SpdyNetworkTransactionTest, BufferedAll) {
   // 5 data frames in a single read.
   SpdySerializedFrame reply(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame data_frame(
-      spdy_util_.ConstructSpdyDataFrame(1, "message", 7, /*fin=*/false));
+      spdy_util_.ConstructSpdyDataFrame(1, "message", /*fin=*/false));
   SpdySerializedFrame data_frame_fin(
-      spdy_util_.ConstructSpdyDataFrame(1, "message", 7, /*fin=*/true));
+      spdy_util_.ConstructSpdyDataFrame(1, "message", /*fin=*/true));
   SpdySerializedFrame combined_frames = CombineFrames(
       {&reply, &data_frame, &data_frame, &data_frame, &data_frame_fin});
 
@@ -4103,7 +4103,7 @@ TEST_F(SpdyNetworkTransactionTest, BufferedClosed) {
   // All data frames in a single read.
   // NOTE: We don't FIN the stream.
   SpdySerializedFrame data_frame(
-      spdy_util_.ConstructSpdyDataFrame(1, "message", 7, /*fin=*/false));
+      spdy_util_.ConstructSpdyDataFrame(1, "message", /*fin=*/false));
   SpdySerializedFrame combined_data_frames =
       CombineFrames({&data_frame, &data_frame, &data_frame, &data_frame});
   SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
@@ -4180,7 +4180,7 @@ TEST_F(SpdyNetworkTransactionTest, BufferedCancelled) {
 
   // NOTE: We don't FIN the stream.
   SpdySerializedFrame data_frame(
-      spdy_util_.ConstructSpdyDataFrame(1, "message", 7, /*fin=*/false));
+      spdy_util_.ConstructSpdyDataFrame(1, "message", /*fin=*/false));
 
   SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   MockRead reads[] = {
@@ -4951,8 +4951,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushWithHeaders) {
   SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
 
   const char kPushedData[] = "pushed";
-  SpdySerializedFrame stream2_body(spdy_util_.ConstructSpdyDataFrame(
-      2, kPushedData, strlen(kPushedData), true));
+  SpdySerializedFrame stream2_body(
+      spdy_util_.ConstructSpdyDataFrame(2, kPushedData, true));
 
   MockRead reads[] = {
       CreateMockRead(stream1_reply, 1),
@@ -5007,8 +5007,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushClaimBeforeHeaders) {
   SpdySerializedFrame stream2_headers(spdy_util_.ConstructSpdyResponseHeaders(
       2, std::move(late_headers), false));
   const char kPushedData[] = "pushed";
-  SpdySerializedFrame stream2_body(spdy_util_.ConstructSpdyDataFrame(
-      2, kPushedData, strlen(kPushedData), true));
+  SpdySerializedFrame stream2_body(
+      spdy_util_.ConstructSpdyDataFrame(2, kPushedData, true));
   MockRead reads[] = {
       CreateMockRead(stream1_reply, 1),   CreateMockRead(stream2_syn, 2),
       CreateMockRead(stream1_body, 4),    MockRead(ASYNC, ERR_IO_PENDING, 5),
@@ -5188,8 +5188,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushCrossOriginCorrectness) {
     SpdySerializedFrame stream2_syn(
         spdy_test_util.ConstructSpdyPush(nullptr, 0, 2, 1, url_to_push));
     const char kPushedData[] = "pushed";
-    SpdySerializedFrame stream2_body(spdy_test_util.ConstructSpdyDataFrame(
-        2, kPushedData, strlen(kPushedData), true));
+    SpdySerializedFrame stream2_body(
+        spdy_test_util.ConstructSpdyDataFrame(2, kPushedData, true));
     SpdySerializedFrame rst(
         spdy_test_util.ConstructSpdyRstStream(2, ERROR_CODE_CANCEL));
 
@@ -5272,8 +5272,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOrigin) {
       spdy_util_.ConstructSpdyPush(nullptr, 0, 2, 1, url_to_push));
   SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   const char kPushedData[] = "pushed";
-  SpdySerializedFrame pushed_body(spdy_util_.ConstructSpdyDataFrame(
-      2, kPushedData, strlen(kPushedData), true));
+  SpdySerializedFrame pushed_body(
+      spdy_util_.ConstructSpdyDataFrame(2, kPushedData, true));
   MockRead reads[] = {
       CreateMockRead(reply, 1),
       CreateMockRead(push, 2, SYNCHRONOUS),
@@ -5360,7 +5360,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
   SpdySerializedFrame reply0(spdy_util_0.ConstructSpdyGetReply(nullptr, 0, 1));
   const char kData0[] = "first";
   SpdySerializedFrame body0(
-      spdy_util_0.ConstructSpdyDataFrame(1, kData0, strlen(kData0), true));
+      spdy_util_0.ConstructSpdyDataFrame(1, kData0, true));
   MockRead reads0[] = {CreateMockRead(reply0, 1), CreateMockRead(body0, 2),
                        MockRead(SYNCHRONOUS, ERR_IO_PENDING, 3)};
 
@@ -5383,10 +5383,10 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
       spdy_util_1.ConstructSpdyPush(nullptr, 0, 2, 1, url_to_push));
   const char kData1[] = "second";
   SpdySerializedFrame body1(
-      spdy_util_1.ConstructSpdyDataFrame(1, kData1, strlen(kData1), true));
+      spdy_util_1.ConstructSpdyDataFrame(1, kData1, true));
   const char kPushedData[] = "pushed";
-  SpdySerializedFrame pushed_body(spdy_util_1.ConstructSpdyDataFrame(
-      2, kPushedData, strlen(kPushedData), true));
+  SpdySerializedFrame pushed_body(
+      spdy_util_1.ConstructSpdyDataFrame(2, kPushedData, true));
 
   MockRead reads1[] = {
       CreateMockRead(reply1, 1),
@@ -5526,8 +5526,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushInvalidCrossOrigin) {
       spdy_util_.ConstructSpdyPush(nullptr, 0, 2, 1, url_to_push));
   SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   const char kPushedData[] = "pushed";
-  SpdySerializedFrame pushed_body(spdy_util_.ConstructSpdyDataFrame(
-      2, kPushedData, strlen(kPushedData), true));
+  SpdySerializedFrame pushed_body(
+      spdy_util_.ConstructSpdyDataFrame(2, kPushedData, true));
   MockRead reads[] = {
       CreateMockRead(reply, 1),
       CreateMockRead(push, 2, SYNCHRONOUS),
@@ -5708,14 +5708,14 @@ TEST_F(SpdyNetworkTransactionTest, OutOfOrderHeaders) {
 // fail under specific circumstances.
 TEST_F(SpdyNetworkTransactionTest, WindowUpdateReceived) {
   static int kFrameCount = 2;
-  auto content = std::make_unique<SpdyString>(kMaxSpdyFrameChunkSize, 'a');
+  std::string content(kMaxSpdyFrameChunkSize, 'a');
   SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kMaxSpdyFrameChunkSize * kFrameCount, LOWEST, nullptr,
       0));
-  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(
-      1, content->c_str(), content->size(), false));
-  SpdySerializedFrame body_end(spdy_util_.ConstructSpdyDataFrame(
-      1, content->c_str(), content->size(), true));
+  SpdySerializedFrame body(
+      spdy_util_.ConstructSpdyDataFrame(1, content, false));
+  SpdySerializedFrame body_end(
+      spdy_util_.ConstructSpdyDataFrame(1, content, true));
 
   MockWrite writes[] = {
       CreateMockWrite(req, 0), CreateMockWrite(body, 1),
@@ -5748,7 +5748,7 @@ TEST_F(SpdyNetworkTransactionTest, WindowUpdateReceived) {
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   for (int i = 0; i < kFrameCount; ++i) {
     element_readers.push_back(std::make_unique<UploadBytesElementReader>(
-        content->c_str(), content->size()));
+        content.data(), content.size()));
   }
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
@@ -5851,8 +5851,8 @@ TEST_F(SpdyNetworkTransactionTest, WindowUpdateSent) {
   const SpdyString body_data(kChunkSize, 'x');
   for (size_t remaining = kTargetSize; remaining != 0;) {
     size_t frame_size = std::min(remaining, body_data.size());
-    body_frames.push_back(spdy_util_.ConstructSpdyDataFrame(1, body_data.data(),
-                                                            frame_size, false));
+    body_frames.push_back(spdy_util_.ConstructSpdyDataFrame(
+        1, base::StringPiece(body_data.data(), frame_size), false));
     reads.push_back(
         CreateMockRead(body_frames.back(), writes.size() + reads.size()));
     remaining -= frame_size;
@@ -5933,12 +5933,12 @@ TEST_F(SpdyNetworkTransactionTest, WindowUpdateOverflow) {
   // set content-length header correctly)
   static int kFrameCount = 3;
 
-  auto content = std::make_unique<SpdyString>(kMaxSpdyFrameChunkSize, 'a');
+  std::string content(kMaxSpdyFrameChunkSize, 'a');
   SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kMaxSpdyFrameChunkSize * kFrameCount, LOWEST, nullptr,
       0));
-  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(
-      1, content->c_str(), content->size(), false));
+  SpdySerializedFrame body(
+      spdy_util_.ConstructSpdyDataFrame(1, content, false));
   SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, ERROR_CODE_FLOW_CONTROL_ERROR));
 
@@ -5961,7 +5961,7 @@ TEST_F(SpdyNetworkTransactionTest, WindowUpdateOverflow) {
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   for (int i = 0; i < kFrameCount; ++i) {
     element_readers.push_back(std::make_unique<UploadBytesElementReader>(
-        content->c_str(), content->size()));
+        content.data(), content.size()));
   }
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
@@ -6051,17 +6051,21 @@ TEST_F(SpdyNetworkTransactionTest, FlowControlStallResume) {
       LOWEST, nullptr, 0));
 
   // Full frames.
-  SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(
-      1, content.c_str(), content.size(), false));
+  SpdySerializedFrame body1(
+      spdy_util_.ConstructSpdyDataFrame(1, content, false));
 
   // Last frame in each upload data buffer.
   SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(
-      1, content.c_str(), kBufferSize % kMaxSpdyFrameChunkSize, false));
+      1,
+      base::StringPiece(content.data(), kBufferSize % kMaxSpdyFrameChunkSize),
+      false));
 
   // The very last frame before the stalled frames.
   SpdySerializedFrame body3(spdy_util_.ConstructSpdyDataFrame(
-      1, content.c_str(),
-      initial_window_size % kBufferSize % kMaxSpdyFrameChunkSize, false));
+      1,
+      base::StringPiece(content.data(), initial_window_size % kBufferSize %
+                                            kMaxSpdyFrameChunkSize),
+      false));
 
   // Data frames to be sent once WINDOW_UPDATE frame is received.
 
@@ -6069,8 +6073,8 @@ TEST_F(SpdyNetworkTransactionTest, FlowControlStallResume) {
   // we need one additional frame to send the rest of 'a'.
   SpdyString last_body(kBufferSize * num_upload_buffers - initial_window_size,
                        'a');
-  SpdySerializedFrame body4(spdy_util_.ConstructSpdyDataFrame(
-      1, last_body.c_str(), last_body.size(), false));
+  SpdySerializedFrame body4(
+      spdy_util_.ConstructSpdyDataFrame(1, last_body, false));
 
   // Also send a "hello!" after WINDOW_UPDATE.
   SpdySerializedFrame body5(spdy_util_.ConstructSpdyDataFrame(1, true));
@@ -6198,17 +6202,21 @@ TEST_F(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
       LOWEST, nullptr, 0));
 
   // Full frames.
-  SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(
-      1, content.c_str(), content.size(), false));
+  SpdySerializedFrame body1(
+      spdy_util_.ConstructSpdyDataFrame(1, content, false));
 
   // Last frame in each upload data buffer.
   SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(
-      1, content.c_str(), kBufferSize % kMaxSpdyFrameChunkSize, false));
+      1,
+      base::StringPiece(content.data(), kBufferSize % kMaxSpdyFrameChunkSize),
+      false));
 
   // The very last frame before the stalled frames.
   SpdySerializedFrame body3(spdy_util_.ConstructSpdyDataFrame(
-      1, content.c_str(),
-      initial_window_size % kBufferSize % kMaxSpdyFrameChunkSize, false));
+      1,
+      base::StringPiece(content.data(), initial_window_size % kBufferSize %
+                                            kMaxSpdyFrameChunkSize),
+      false));
 
   // Data frames to be sent once WINDOW_UPDATE frame is received.
 
@@ -6216,8 +6224,8 @@ TEST_F(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
   // we need one additional frame to send the rest of 'a'.
   SpdyString last_body(kBufferSize * num_upload_buffers - initial_window_size,
                        'a');
-  SpdySerializedFrame body4(spdy_util_.ConstructSpdyDataFrame(
-      1, last_body.c_str(), last_body.size(), false));
+  SpdySerializedFrame body4(
+      spdy_util_.ConstructSpdyDataFrame(1, last_body, false));
 
   // Also send a "hello!" after WINDOW_UPDATE.
   SpdySerializedFrame body5(spdy_util_.ConstructSpdyDataFrame(1, true));
@@ -6357,17 +6365,21 @@ TEST_F(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
       LOWEST, nullptr, 0));
 
   // Full frames.
-  SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(
-      1, content.c_str(), content.size(), false));
+  SpdySerializedFrame body1(
+      spdy_util_.ConstructSpdyDataFrame(1, content, false));
 
   // Last frame in each upload data buffer.
   SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(
-      1, content.c_str(), kBufferSize % kMaxSpdyFrameChunkSize, false));
+      1,
+      base::StringPiece(content.data(), kBufferSize % kMaxSpdyFrameChunkSize),
+      false));
 
   // The very last frame before the stalled frames.
   SpdySerializedFrame body3(spdy_util_.ConstructSpdyDataFrame(
-      1, content.c_str(),
-      initial_window_size % kBufferSize % kMaxSpdyFrameChunkSize, false));
+      1,
+      base::StringPiece(content.data(), initial_window_size % kBufferSize %
+                                            kMaxSpdyFrameChunkSize),
+      false));
 
   // Data frames to be sent once WINDOW_UPDATE frame is received.
 
@@ -6375,8 +6387,8 @@ TEST_F(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
   // we need one additional frame to send the rest of 'a'.
   SpdyString last_body(kBufferSize * num_upload_buffers - initial_window_size,
                        'a');
-  SpdySerializedFrame body4(spdy_util_.ConstructSpdyDataFrame(
-      1, last_body.c_str(), last_body.size(), false));
+  SpdySerializedFrame body4(
+      spdy_util_.ConstructSpdyDataFrame(1, last_body, false));
 
   // Also send a "hello!" after WINDOW_UPDATE.
   SpdySerializedFrame body5(spdy_util_.ConstructSpdyDataFrame(1, true));

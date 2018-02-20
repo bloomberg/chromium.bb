@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
+#include "base/strings/string_piece.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -2954,9 +2955,9 @@ TEST_F(SpdySessionTest, ReadDataWithoutYielding) {
   test_stream.GetBytes(payload_data, kPayloadSize);
 
   SpdySerializedFrame partial_data_frame(spdy_util_.ConstructSpdyDataFrame(
-      1, payload_data, kPayloadSize, /*fin=*/false));
+      1, base::StringPiece(payload_data, kPayloadSize), /*fin=*/false));
   SpdySerializedFrame finish_data_frame(spdy_util_.ConstructSpdyDataFrame(
-      1, payload_data, kPayloadSize - 1, /*fin=*/true));
+      1, base::StringPiece(payload_data, kPayloadSize - 1), /*fin=*/true));
 
   SpdySerializedFrame resp1(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
 
@@ -3086,9 +3087,9 @@ TEST_F(SpdySessionTest, TestYieldingSlowSynchronousReads) {
   };
 
   SpdySerializedFrame partial_data_frame(
-      spdy_util_.ConstructSpdyDataFrame(1, "foo ", 4, /*fin=*/false));
+      spdy_util_.ConstructSpdyDataFrame(1, "foo ", /*fin=*/false));
   SpdySerializedFrame finish_data_frame(
-      spdy_util_.ConstructSpdyDataFrame(1, "bar", 3, /*fin=*/true));
+      spdy_util_.ConstructSpdyDataFrame(1, "bar", /*fin=*/true));
 
   SpdySerializedFrame resp1(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
 
@@ -3161,9 +3162,9 @@ TEST_F(SpdySessionTest, TestYieldingDuringReadData) {
   test_stream.GetBytes(payload_data, kPayloadSize);
 
   SpdySerializedFrame partial_data_frame(spdy_util_.ConstructSpdyDataFrame(
-      1, payload_data, kPayloadSize, /*fin=*/false));
+      1, base::StringPiece(payload_data, kPayloadSize), /*fin=*/false));
   SpdySerializedFrame finish_data_frame(
-      spdy_util_.ConstructSpdyDataFrame(1, "h", 1, /*fin=*/true));
+      spdy_util_.ConstructSpdyDataFrame(1, "h", /*fin=*/true));
 
   SpdySerializedFrame resp1(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
 
@@ -3258,11 +3259,13 @@ TEST_F(SpdySessionTest, TestYieldingDuringAsyncReadData) {
   test_stream2.GetBytes(twok_payload_data, kTwoKPayloadSize);
 
   SpdySerializedFrame eightk_data_frame(spdy_util_.ConstructSpdyDataFrame(
-      1, eightk_payload_data, kEightKPayloadSize, /*fin=*/false));
+      1, base::StringPiece(eightk_payload_data, kEightKPayloadSize),
+      /*fin=*/false));
   SpdySerializedFrame twok_data_frame(spdy_util_.ConstructSpdyDataFrame(
-      1, twok_payload_data, kTwoKPayloadSize, /*fin=*/false));
+      1, base::StringPiece(twok_payload_data, kTwoKPayloadSize),
+      /*fin=*/false));
   SpdySerializedFrame finish_data_frame(
-      spdy_util_.ConstructSpdyDataFrame(1, "h", 1, /*fin=*/true));
+      spdy_util_.ConstructSpdyDataFrame(1, "h", /*fin=*/true));
 
   SpdySerializedFrame resp1(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
 
@@ -3919,8 +3922,8 @@ TEST_F(SpdySessionTest, SessionFlowControlPadding) {
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   const int padding_length = 42;
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyDataFrame(
-      1, kUploadData, kUploadDataSize, false, padding_length));
+  SpdySerializedFrame resp(
+      spdy_util_.ConstructSpdyDataFrame(1, kUploadData, false, padding_length));
   MockRead reads[] = {
       CreateMockRead(resp, 0), MockRead(ASYNC, ERR_IO_PENDING, 1),
       MockRead(ASYNC, 0, 2)  // EOF
@@ -3961,8 +3964,8 @@ TEST_F(SpdySessionTest, StreamFlowControlTooMuchData) {
 
   SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   const SpdyString payload(data_frame_size, 'a');
-  SpdySerializedFrame data_frame(spdy_util_.ConstructSpdyDataFrame(
-      1, payload.data(), data_frame_size, false));
+  SpdySerializedFrame data_frame(
+      spdy_util_.ConstructSpdyDataFrame(1, payload, false));
   MockRead reads[] = {
       CreateMockRead(resp, 1),       MockRead(ASYNC, ERR_IO_PENDING, 2),
       CreateMockRead(data_frame, 3), MockRead(ASYNC, ERR_IO_PENDING, 5),
@@ -4035,11 +4038,11 @@ TEST_F(SpdySessionTest, SessionFlowControlTooMuchDataTwoDataFrames) {
   };
 
   const SpdyString first_data_frame(first_data_frame_size, 'a');
-  SpdySerializedFrame first(spdy_util_.ConstructSpdyDataFrame(
-      1, first_data_frame.data(), first_data_frame_size, false));
+  SpdySerializedFrame first(
+      spdy_util_.ConstructSpdyDataFrame(1, first_data_frame, false));
   const SpdyString second_data_frame(second_data_frame_size, 'b');
-  SpdySerializedFrame second(spdy_util_.ConstructSpdyDataFrame(
-      1, second_data_frame.data(), second_data_frame_size, false));
+  SpdySerializedFrame second(
+      spdy_util_.ConstructSpdyDataFrame(1, second_data_frame, false));
   MockRead reads[] = {
       CreateMockRead(first, 0), MockRead(ASYNC, ERR_IO_PENDING, 1),
       CreateMockRead(second, 2), MockRead(ASYNC, 0, 3),
@@ -4093,11 +4096,11 @@ TEST_F(SpdySessionTest, StreamFlowControlTooMuchDataTwoDataFrames) {
 
   SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   const SpdyString first_data_frame(first_data_frame_size, 'a');
-  SpdySerializedFrame first(spdy_util_.ConstructSpdyDataFrame(
-      1, first_data_frame.data(), first_data_frame_size, false));
+  SpdySerializedFrame first(
+      spdy_util_.ConstructSpdyDataFrame(1, first_data_frame, false));
   const SpdyString second_data_frame(second_data_frame_size, 'b');
-  SpdySerializedFrame second(spdy_util_.ConstructSpdyDataFrame(
-      1, second_data_frame.data(), second_data_frame_size, false));
+  SpdySerializedFrame second(
+      spdy_util_.ConstructSpdyDataFrame(1, second_data_frame, false));
   MockRead reads[] = {
       CreateMockRead(resp, 1),   MockRead(ASYNC, ERR_IO_PENDING, 2),
       CreateMockRead(first, 3),  MockRead(ASYNC, ERR_IO_PENDING, 4),
@@ -4177,15 +4180,15 @@ TEST_F(SpdySessionTest, SessionFlowControlNoReceiveLeaks) {
 
   SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kMsgDataSize, MEDIUM, nullptr, 0));
-  SpdySerializedFrame msg(spdy_util_.ConstructSpdyDataFrame(
-      1, msg_data.data(), kMsgDataSize, false));
+  SpdySerializedFrame msg(
+      spdy_util_.ConstructSpdyDataFrame(1, msg_data, false));
   MockWrite writes[] = {
       CreateMockWrite(req, 0), CreateMockWrite(msg, 2),
   };
 
   SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
-  SpdySerializedFrame echo(spdy_util_.ConstructSpdyDataFrame(
-      1, msg_data.data(), kMsgDataSize, false));
+  SpdySerializedFrame echo(
+      spdy_util_.ConstructSpdyDataFrame(1, msg_data, false));
   SpdySerializedFrame window_update(spdy_util_.ConstructSpdyWindowUpdate(
       kSessionFlowControlStreamId, kMsgDataSize));
   MockRead reads[] = {
@@ -4319,15 +4322,15 @@ TEST_F(SpdySessionTest, SessionFlowControlEndToEnd) {
 
   SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kMsgDataSize, MEDIUM, nullptr, 0));
-  SpdySerializedFrame msg(spdy_util_.ConstructSpdyDataFrame(
-      1, msg_data.data(), kMsgDataSize, false));
+  SpdySerializedFrame msg(
+      spdy_util_.ConstructSpdyDataFrame(1, msg_data, false));
   MockWrite writes[] = {
       CreateMockWrite(req, 0), CreateMockWrite(msg, 2),
   };
 
   SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
-  SpdySerializedFrame echo(spdy_util_.ConstructSpdyDataFrame(
-      1, msg_data.data(), kMsgDataSize, false));
+  SpdySerializedFrame echo(
+      spdy_util_.ConstructSpdyDataFrame(1, msg_data, false));
   SpdySerializedFrame window_update(spdy_util_.ConstructSpdyWindowUpdate(
       kSessionFlowControlStreamId, kMsgDataSize));
   MockRead reads[] = {
@@ -4424,14 +4427,14 @@ void SpdySessionTest::RunResumeAfterUnstallTest(
   SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kBodyDataSize, LOWEST, nullptr, 0));
   SpdySerializedFrame body(
-      spdy_util_.ConstructSpdyDataFrame(1, kBodyData, kBodyDataSize, true));
+      spdy_util_.ConstructSpdyDataFrame(1, kBodyDataStringPiece, true));
   MockWrite writes[] = {
       CreateMockWrite(req, 0), CreateMockWrite(body, 1),
   };
 
   SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame echo(
-      spdy_util_.ConstructSpdyDataFrame(1, kBodyData, kBodyDataSize, false));
+      spdy_util_.ConstructSpdyDataFrame(1, kBodyDataStringPiece, false));
   MockRead reads[] = {
       CreateMockRead(resp, 2), MockRead(ASYNC, 0, 3)  // EOF
   };
@@ -4547,9 +4550,9 @@ TEST_F(SpdySessionTest, ResumeByPriorityAfterSendWindowSizeIncrease) {
   SpdySerializedFrame req2(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 3, kBodyDataSize, MEDIUM, nullptr, 0));
   SpdySerializedFrame body1(
-      spdy_util_.ConstructSpdyDataFrame(1, kBodyData, kBodyDataSize, true));
+      spdy_util_.ConstructSpdyDataFrame(1, kBodyDataStringPiece, true));
   SpdySerializedFrame body2(
-      spdy_util_.ConstructSpdyDataFrame(3, kBodyData, kBodyDataSize, true));
+      spdy_util_.ConstructSpdyDataFrame(3, kBodyDataStringPiece, true));
   MockWrite writes[] = {
       CreateMockWrite(req1, 0), CreateMockWrite(req2, 1),
       CreateMockWrite(body2, 2), CreateMockWrite(body1, 3),
@@ -4655,9 +4658,9 @@ TEST_F(SpdySessionTest, ResumeSessionWithStalledStream) {
   SpdySerializedFrame req2(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 3, kBodyDataSize, LOWEST, nullptr, 0));
   SpdySerializedFrame body1(
-      spdy_util_.ConstructSpdyDataFrame(3, kBodyData, kBodyDataSize, true));
+      spdy_util_.ConstructSpdyDataFrame(3, kBodyDataStringPiece, true));
   SpdySerializedFrame body2(
-      spdy_util_.ConstructSpdyDataFrame(1, kBodyData, kBodyDataSize, true));
+      spdy_util_.ConstructSpdyDataFrame(1, kBodyDataStringPiece, true));
   MockWrite writes[] = {CreateMockWrite(req1, 0), CreateMockWrite(req2, 1),
                         CreateMockWrite(body1, 2), CreateMockWrite(body2, 3)};
 
@@ -4797,7 +4800,7 @@ TEST_F(SpdySessionTest, SendWindowSizeIncreaseWithDeletedStreams) {
   SpdySerializedFrame req3(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 5, kBodyDataSize, LOWEST, nullptr, 0));
   SpdySerializedFrame body2(
-      spdy_util_.ConstructSpdyDataFrame(3, kBodyData, kBodyDataSize, true));
+      spdy_util_.ConstructSpdyDataFrame(3, kBodyDataStringPiece, true));
   MockWrite writes[] = {
       CreateMockWrite(req1, 0), CreateMockWrite(req2, 1),
       CreateMockWrite(req3, 2), CreateMockWrite(body2, 3),
@@ -4934,7 +4937,7 @@ TEST_F(SpdySessionTest, SendWindowSizeIncreaseWithDeletedSession) {
   SpdySerializedFrame req2(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 3, kBodyDataSize, LOWEST, nullptr, 0));
   SpdySerializedFrame body1(
-      spdy_util_.ConstructSpdyDataFrame(1, kBodyData, kBodyDataSize, false));
+      spdy_util_.ConstructSpdyDataFrame(1, kBodyDataStringPiece, false));
   MockWrite writes[] = {
       CreateMockWrite(req1, 0), CreateMockWrite(req2, 1),
   };

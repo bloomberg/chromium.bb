@@ -14,6 +14,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_piece.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"
 #include "net/base/completion_once_callback.h"
@@ -448,14 +449,12 @@ class SpdyTestUtil {
 
   // Constructs a single SPDY data frame with the given content.
   SpdySerializedFrame ConstructSpdyDataFrame(int stream_id,
-                                             const char* data,
-                                             uint32_t len,
+                                             base::StringPiece data,
                                              bool fin);
 
   // Constructs a single SPDY data frame with the given content and padding.
   SpdySerializedFrame ConstructSpdyDataFrame(int stream_id,
-                                             const char* data,
-                                             uint32_t len,
+                                             base::StringPiece data,
                                              bool fin,
                                              int padding_length);
 

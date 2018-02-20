@@ -993,26 +993,22 @@ SpdySerializedFrame SpdyTestUtil::ConstructSpdyPostReply(
 
 SpdySerializedFrame SpdyTestUtil::ConstructSpdyDataFrame(int stream_id,
                                                          bool fin) {
-  SpdyDataIR data_ir(stream_id, SpdyStringPiece(kUploadData, kUploadDataSize));
-  data_ir.set_fin(fin);
-  return SpdySerializedFrame(headerless_spdy_framer_.SerializeData(data_ir));
+  return ConstructSpdyDataFrame(stream_id, kUploadData, fin);
 }
 
 SpdySerializedFrame SpdyTestUtil::ConstructSpdyDataFrame(int stream_id,
-                                                         const char* data,
-                                                         uint32_t len,
+                                                         base::StringPiece data,
                                                          bool fin) {
-  SpdyDataIR data_ir(stream_id, SpdyStringPiece(data, len));
+  SpdyDataIR data_ir(stream_id, data);
   data_ir.set_fin(fin);
   return SpdySerializedFrame(headerless_spdy_framer_.SerializeData(data_ir));
 }
 
 SpdySerializedFrame SpdyTestUtil::ConstructSpdyDataFrame(int stream_id,
-                                                         const char* data,
-                                                         uint32_t len,
+                                                         base::StringPiece data,
                                                          bool fin,
                                                          int padding_length) {
-  SpdyDataIR data_ir(stream_id, SpdyStringPiece(data, len));
+  SpdyDataIR data_ir(stream_id, data);
   data_ir.set_fin(fin);
   data_ir.set_padding_len(padding_length);
   return SpdySerializedFrame(headerless_spdy_framer_.SerializeData(data_ir));
@@ -1021,7 +1017,8 @@ SpdySerializedFrame SpdyTestUtil::ConstructSpdyDataFrame(int stream_id,
 SpdySerializedFrame SpdyTestUtil::ConstructWrappedSpdyFrame(
     const SpdySerializedFrame& frame,
     int stream_id) {
-  return ConstructSpdyDataFrame(stream_id, frame.data(), frame.size(), false);
+  return ConstructSpdyDataFrame(
+      stream_id, base::StringPiece(frame.data(), frame.size()), false);
 }
 
 SpdySerializedFrame SpdyTestUtil::SerializeFrame(const SpdyFrameIR& frame_ir) {

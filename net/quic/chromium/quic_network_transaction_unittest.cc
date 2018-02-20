@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "net/base/chunked_upload_data_stream.h"
@@ -6232,7 +6233,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectSpdyServer) {
       QuicStringPiece(resp_frame.data(), resp_frame.size())));
 
   SpdySerializedFrame data_frame =
-      spdy_util.ConstructSpdyDataFrame(1, "0123456789", 10, true);
+      spdy_util.ConstructSpdyDataFrame(1, "0123456789", true);
   mock_quic_data.AddSynchronousRead(ConstructServerDataPacket(
       3, GetNthClientInitiatedStreamId(0), false, false, resp_frame.size(),
       QuicStringPiece(data_frame.data(), data_frame.size())));
@@ -6453,7 +6454,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseQuicSession) {
       QuicStringPiece(resp_frame.data(), resp_frame.size())));
 
   SpdySerializedFrame data_frame =
-      spdy_util.ConstructSpdyDataFrame(1, "0123456", 7, true);
+      spdy_util.ConstructSpdyDataFrame(1, "0123456", true);
   mock_quic_data.AddRead(ConstructServerDataPacket(
       6, GetNthClientInitiatedStreamId(1), false, false, resp_frame.size(),
       QuicStringPiece(data_frame.data(), data_frame.size())));

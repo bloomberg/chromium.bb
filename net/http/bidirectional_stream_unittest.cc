@@ -13,7 +13,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
 #include "net/base/load_timing_info.h"
@@ -48,6 +47,7 @@ namespace {
 
 const char kBodyData[] = "Body data";
 const size_t kBodyDataSize = arraysize(kBodyData);
+const std::string kBodyDataString(kBodyData, kBodyDataSize);
 // Size of the buffer to be allocated for each read.
 const size_t kReadBufferSize = 4096;
 
@@ -459,8 +459,8 @@ TEST_F(BidirectionalStreamTest, CreateInsecureStream) {
 TEST_F(BidirectionalStreamTest, SimplePostRequest) {
   SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kBodyDataSize, LOW, nullptr, 0));
-  SpdySerializedFrame data_frame(spdy_util_.ConstructSpdyDataFrame(
-      1, kBodyData, kBodyDataSize, /*fin=*/true));
+  SpdySerializedFrame data_frame(
+      spdy_util_.ConstructSpdyDataFrame(1, kBodyDataString, /*fin=*/true));
   MockWrite writes[] = {
       CreateMockWrite(req, 0), CreateMockWrite(data_frame, 3),
   };
@@ -486,9 +486,8 @@ TEST_F(BidirectionalStreamTest, SimplePostRequest) {
   delegate->Start(std::move(request_info), http_session_.get());
   sequenced_data_->RunUntilPaused();
 
-  scoped_refptr<StringIOBuffer> write_buffer(
-      new StringIOBuffer(std::string(kBodyData, kBodyDataSize)));
-  delegate->SendData(write_buffer.get(), write_buffer->size(), true);
+  scoped_refptr<StringIOBuffer> buf(new StringIOBuffer(kBodyDataString));
+  delegate->SendData(buf.get(), buf->size(), true);
   sequenced_data_->Resume();
   base::RunLoop().RunUntilIdle();
   LoadTimingInfo load_timing_info;
@@ -664,8 +663,8 @@ TEST_F(BidirectionalStreamTest, TestReadDataAfterClose) {
 TEST_F(BidirectionalStreamTest, TestNetLogContainEntries) {
   SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kBodyDataSize * 3, LOWEST, nullptr, 0));
-  SpdySerializedFrame data_frame(spdy_util_.ConstructSpdyDataFrame(
-      1, kBodyData, kBodyDataSize, /*fin=*/true));
+  SpdySerializedFrame data_frame(
+      spdy_util_.ConstructSpdyDataFrame(1, kBodyDataString, /*fin=*/true));
   MockWrite writes[] = {
       CreateMockWrite(req, 0), CreateMockWrite(data_frame, 3),
   };
@@ -712,8 +711,7 @@ TEST_F(BidirectionalStreamTest, TestNetLogContainEntries) {
   sequenced_data_->RunUntilPaused();
   EXPECT_FALSE(timer->IsRunning());
 
-  scoped_refptr<StringIOBuffer> buf(
-      new StringIOBuffer(std::string(kBodyData, kBodyDataSize)));
+  scoped_refptr<StringIOBuffer> buf(new StringIOBuffer(kBodyDataString));
   // Send a DATA frame.
   delegate->SendData(buf, buf->size(), true);
   // ReadData returns asynchronously because no data is buffered.
@@ -808,12 +806,12 @@ TEST_F(BidirectionalStreamTest, TestNetLogContainEntries) {
 TEST_F(BidirectionalStreamTest, TestInterleaveReadDataAndSendData) {
   SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kBodyDataSize * 3, LOWEST, nullptr, 0));
-  SpdySerializedFrame data_frame1(spdy_util_.ConstructSpdyDataFrame(
-      1, kBodyData, kBodyDataSize, /*fin=*/false));
-  SpdySerializedFrame data_frame2(spdy_util_.ConstructSpdyDataFrame(
-      1, kBodyData, kBodyDataSize, /*fin=*/false));
-  SpdySerializedFrame data_frame3(spdy_util_.ConstructSpdyDataFrame(
-      1, kBodyData, kBodyDataSize, /*fin=*/true));
+  SpdySerializedFrame data_frame1(
+      spdy_util_.ConstructSpdyDataFrame(1, kBodyDataString, /*fin=*/false));
+  SpdySerializedFrame data_frame2(
+      spdy_util_.ConstructSpdyDataFrame(1, kBodyDataString, /*fin=*/false));
+  SpdySerializedFrame data_frame3(
+      spdy_util_.ConstructSpdyDataFrame(1, kBodyDataString, /*fin=*/true));
   MockWrite writes[] = {
       CreateMockWrite(req, 0), CreateMockWrite(data_frame1, 3),
       CreateMockWrite(data_frame2, 6), CreateMockWrite(data_frame3, 9),
@@ -857,8 +855,7 @@ TEST_F(BidirectionalStreamTest, TestInterleaveReadDataAndSendData) {
   EXPECT_FALSE(timer->IsRunning());
 
   // Send a DATA frame.
-  scoped_refptr<StringIOBuffer> buf(
-      new StringIOBuffer(std::string(kBodyData, kBodyDataSize)));
+  scoped_refptr<StringIOBuffer> buf(new StringIOBuffer(kBodyDataString));
 
   // Send a DATA frame.
   delegate->SendData(buf, buf->size(), false);
@@ -911,8 +908,8 @@ TEST_F(BidirectionalStreamTest, TestCoalesceSmallDataBuffers) {
   SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kBodyDataSize * 1, LOWEST, nullptr, 0));
   std::string body_data = "some really long piece of data";
-  SpdySerializedFrame data_frame1(spdy_util_.ConstructSpdyDataFrame(
-      1, body_data.c_str(), body_data.size(), /*fin=*/true));
+  SpdySerializedFrame data_frame1(
+      spdy_util_.ConstructSpdyDataFrame(1, body_data, /*fin=*/true));
   MockWrite writes[] = {
       CreateMockWrite(req, 0), CreateMockWrite(data_frame1, 1),
   };
@@ -1020,7 +1017,7 @@ TEST_F(BidirectionalStreamTest, TestCompleteAsyncRead) {
   SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
 
   SpdySerializedFrame response_body_frame(
-      spdy_util_.ConstructSpdyDataFrame(1, nullptr, 0, true));
+      spdy_util_.ConstructSpdyDataFrame(1, "", true));
 
   MockRead reads[] = {
       CreateMockRead(resp, 1),
@@ -1216,8 +1213,8 @@ TEST_F(BidirectionalStreamTest, TestBufferingWithTrailers) {
 TEST_F(BidirectionalStreamTest, DeleteStreamAfterSendData) {
   SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kBodyDataSize * 3, LOWEST, nullptr, 0));
-  SpdySerializedFrame data_frame(spdy_util_.ConstructSpdyDataFrame(
-      1, kBodyData, kBodyDataSize, /*fin=*/false));
+  SpdySerializedFrame data_frame(
+      spdy_util_.ConstructSpdyDataFrame(1, kBodyDataString, /*fin=*/false));
   SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, ERROR_CODE_CANCEL));
 
@@ -1255,8 +1252,7 @@ TEST_F(BidirectionalStreamTest, DeleteStreamAfterSendData) {
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
 
   // Send a DATA frame.
-  scoped_refptr<StringIOBuffer> buf(
-      new StringIOBuffer(std::string(kBodyData, kBodyDataSize)));
+  scoped_refptr<StringIOBuffer> buf(new StringIOBuffer(kBodyDataString));
   delegate->SendData(buf, buf->size(), false);
   sequenced_data_->Resume();
   base::RunLoop().RunUntilIdle();

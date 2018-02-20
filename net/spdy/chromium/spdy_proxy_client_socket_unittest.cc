@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/address_list.h"
 #include "net/base/test_completion_callback.h"
@@ -366,7 +367,8 @@ SpdyProxyClientSocketTest::ConstructConnectErrorReplyFrame() {
 SpdySerializedFrame SpdyProxyClientSocketTest::ConstructBodyFrame(
     const char* data,
     int length) {
-  return spdy_util_.ConstructSpdyDataFrame(kStreamId, data, length,
+  return spdy_util_.ConstructSpdyDataFrame(kStreamId,
+                                           base::StringPiece(data, length),
                                            /*fin=*/false);
 }
 
