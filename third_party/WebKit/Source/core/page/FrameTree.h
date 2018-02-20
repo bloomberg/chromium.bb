@@ -62,6 +62,11 @@ class CORE_EXPORT FrameTree final {
   unsigned ChildCount() const;
 
   Frame* ScopedChild(unsigned index) const;
+  // https://whatwg.org/C/window-object.html#named-access-on-the-window-object
+  // This implements the steps needed for looking up a child browsing context
+  // that matches |name|. If |name.IsEmpty()| is true, this is guaranteed to
+  // return null: the spec specifically states that browsing contexts with a
+  // name are never considered.
   Frame* ScopedChild(const AtomicString& name) const;
   unsigned ScopedChildCount() const;
   void InvalidateScopedChildCount();

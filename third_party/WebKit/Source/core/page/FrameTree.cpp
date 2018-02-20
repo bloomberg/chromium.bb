@@ -139,6 +139,9 @@ Frame* FrameTree::ScopedChild(unsigned index) const {
 }
 
 Frame* FrameTree::ScopedChild(const AtomicString& name) const {
+  if (name.IsEmpty())
+    return nullptr;
+
   for (Frame* child = FirstChild(); child;
        child = child->Tree().NextSibling()) {
     if (child->Client()->InShadowTree())
