@@ -132,6 +132,8 @@ class ElementRareData : public NodeRareData {
   CustomElementDefinition* GetCustomElementDefinition() const {
     return custom_element_definition_.Get();
   }
+  void SetIsValue(const AtomicString& is_value) { is_value_ = is_value; }
+  const AtomicString& IsValue() const { return is_value_; }
 
   AccessibleNode* GetAccessibleNode() const { return accessible_node_.Get(); }
   AccessibleNode* EnsureAccessibleNode(Element* owner_element) {
@@ -193,6 +195,7 @@ class ElementRareData : public NodeRareData {
   // TODO(davaajav):remove this field when v0 custom elements are deprecated
   Member<V0CustomElementDefinition> v0_custom_element_definition_;
   Member<CustomElementDefinition> custom_element_definition_;
+  AtomicString is_value_;
 
   Member<PseudoElementData> pseudo_element_data_;
 

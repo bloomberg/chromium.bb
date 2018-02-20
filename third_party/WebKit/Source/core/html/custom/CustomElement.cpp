@@ -133,8 +133,11 @@ Element* CustomElement::CreateUncustomizedOrUndefinedElementTemplate(
     // 7.1. Let interface be the element interface for localName and namespace.
     // 7.2. Set result to a new element that implements interface, with ...
     element = document.CreateRawElement(tag_name, flags);
-    if (level == kCheckAll && !is_value.IsEmpty() && flags.IsCustomElementsV0())
-      V0CustomElementRegistrationContext::SetTypeExtension(element, is_value);
+    if (level == kCheckAll && !is_value.IsEmpty()) {
+      element->SetIsValue(is_value);
+      if (flags.IsCustomElementsV0())
+        V0CustomElementRegistrationContext::SetTypeExtension(element, is_value);
+    }
   }
 
   // 7.3. If namespace is the HTML namespace, and either localName is a

@@ -48,13 +48,13 @@ TEST(CustomElementDescriptorTest, matches_autonomous) {
 TEST(CustomElementDescriptorTest,
      matches_autonomous_shouldNotMatchCustomizedBuiltInElement) {
   CustomElementDescriptor descriptor("a-b", "a-b");
-  Element* element = CreateElement("futuretag").WithIsAttribute("a-b");
+  Element* element = CreateElement("futuretag").WithIsValue("a-b");
   EXPECT_FALSE(descriptor.Matches(*element));
 }
 
 TEST(CustomElementDescriptorTest, matches_customizedBuiltIn) {
   CustomElementDescriptor descriptor("a-b", "button");
-  Element* element = CreateElement("button").WithIsAttribute("a-b");
+  Element* element = CreateElement("button").WithIsValue("a-b");
   EXPECT_TRUE(descriptor.Matches(*element));
 }
 

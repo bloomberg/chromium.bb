@@ -11,7 +11,6 @@
 // 1. If localName does not match the Name production, then throw an InvalidCharacterError
 // 2. If context object is an HTML document, let localName be converted to ASCII lowercase
 // 5. If 'is' is non-null and definition is null, then throw a NotFoundError
-// 6. If 'is' is non-null, then set is attribute to 'is'
 
 // https://dom.spec.whatwg.org/#internal-createelementns-steps
 // 4. If 'is' is non-null and definition is null, then throw a NotFoundError
@@ -70,12 +69,6 @@ test_with_window((w) => {
   assert_equals(w.document.createElement('div', {}).constructor, w.HTMLDivElement,
                 'There is no custom element definition named with null');
 }, 'createElement   5. If \'is\' is non-null and definition is null, then throw a NotFoundError');
-
-test_with_window((w) => {
-  setup(w);
-  assert_equals(w.document.createElement('a-a').getAttribute('is'), null);
-  assert_equals(w.document.createElement('div', {is : 'b-b'}).getAttribute('is'), 'b-b');
-}, 'createElement   6. If \'is\' is non-null, then set is-attribute to \'is\'');
 
 test_with_window((w) => {
   setup(w);

@@ -989,7 +989,7 @@ Element* Document::CreateElementForBinding(
                     should_create_builtin ? is : g_null_atom);
 
   // 8. If 'is' is non-null, set 'is' attribute
-  if (!is.IsEmpty())
+  if (!is_v1 && !is.IsEmpty())
     element->setAttribute(HTMLNames::isAttr, is);
 
   return element;
@@ -1070,7 +1070,7 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
                     should_create_builtin ? is : g_null_atom);
 
   // 4. If 'is' is non-null, set 'is' attribute
-  if (!is.IsEmpty())
+  if (!is_v1 && !is.IsEmpty())
     element->setAttribute(HTMLNames::isAttr, is);
 
   return element;

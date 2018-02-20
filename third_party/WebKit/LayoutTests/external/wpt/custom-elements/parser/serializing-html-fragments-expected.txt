@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 FAIL "is" value should be serialized if the custom element has no "is" content attribute assert_equals: expected "<p is=\"my-p\" class=\"foo\"></p>" but got "<p class=\"foo\"></p>"
-PASS "is" value should be serialized even for an undefined element
+FAIL "is" value should be serialized even for an undefined element assert_equals: expected "<p is=\"your-p\"></p>" but got "<p></p>"
 PASS "is" content attribute should be serialized even if the element is a customized built-in element
 Harness: the test ran to completion.
 
