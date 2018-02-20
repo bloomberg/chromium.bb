@@ -1024,6 +1024,9 @@ TEST_P(PaintPropertyTreeUpdateTest, WillTransformChangeAboveFixed) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, CompositingReasonForAnimation) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
   SetBodyInnerHTML(R"HTML(
     <style>
       #target {
