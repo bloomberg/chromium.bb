@@ -1559,18 +1559,8 @@ TEST_P(QuicHttpStreamTest, Priority) {
             stream_->InitializeStream(&request_, true, MEDIUM, net_log_.bound(),
                                       callback_.callback()));
 
-  // Check that priority is highest.
-  QuicChromiumClientStream::Handle* reliable_stream =
-      QuicHttpStreamPeer::GetQuicChromiumClientStream(stream_.get());
-  DCHECK(reliable_stream);
-  DCHECK_EQ(kV3HighestPriority, reliable_stream->priority());
-
   EXPECT_EQ(OK,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
-
-  // Check that priority has now dropped back to MEDIUM.
-  DCHECK_EQ(MEDIUM,
-            ConvertQuicPriorityToRequestPriority(reliable_stream->priority()));
 
   // Ack the request.
   ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));

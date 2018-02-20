@@ -336,12 +336,6 @@ void QuicChromiumClientStream::Handle::OnPromiseHeaderList(
   stream_->OnPromiseHeaderList(promised_id, frame_len, header_list);
 }
 
-SpdyPriority QuicChromiumClientStream::Handle::priority() const {
-  if (!stream_)
-    return priority_;
-  return stream_->priority();
-}
-
 bool QuicChromiumClientStream::Handle::can_migrate() {
   if (!stream_)
     return false;
@@ -364,7 +358,6 @@ void QuicChromiumClientStream::Handle::SaveState() {
   is_first_stream_ = stream_->IsFirstStream();
   stream_bytes_read_ = stream_->stream_bytes_read();
   stream_bytes_written_ = stream_->stream_bytes_written();
-  priority_ = stream_->priority();
 }
 
 void QuicChromiumClientStream::Handle::SetCallback(
@@ -521,17 +514,11 @@ size_t QuicChromiumClientStream::WriteHeaders(
   }
   net_log_.AddEvent(
       NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
-      base::Bind(&QuicRequestNetLogCallback, id(), &header_block,
-                 QuicSpdyStream::priority()));
+      base::Bind(&QuicRequestNetLogCallback, id(), &header_block, priority()));
   size_t len = QuicSpdyStream::WriteHeaders(std::move(header_block), fin,
                                             std::move(ack_listener));
   initial_headers_sent_ = true;
   return len;
-}
-
-SpdyPriority QuicChromiumClientStream::priority() const {
-  return initial_headers_sent_ ? QuicSpdyStream::priority()
-                               : kV3HighestPriority;
 }
 
 bool QuicChromiumClientStream::WriteStreamData(QuicStringPiece data, bool fin) {
