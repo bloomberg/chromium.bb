@@ -54,9 +54,6 @@ declare_args() {
   # Override to dynamically link the cras (ChromeOS audio) library.
   use_cras = false
 
-  # Use low-memory buffers on cast builds.
-  use_low_memory_buffer = is_chromecast
-
   # Enables AC3/EAC3 audio demuxing. This is enabled only on Chromecast, since
   # it only provides demuxing, and is only useful for AC3/EAC3 audio
   # pass-through to HDMI sink on Chromecast.

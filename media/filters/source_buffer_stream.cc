@@ -197,7 +197,7 @@ SourceBufferStream<RangeClass>::SourceBufferStream(
       highest_output_buffer_timestamp_(kNoDecodeTimestamp()),
       max_interbuffer_distance_(
           base::TimeDelta::FromMilliseconds(kMinimumInterbufferDistanceInMs)),
-      memory_limit_(kDemuxerStreamAudioMemoryLimit) {
+      memory_limit_(GetDemuxerStreamAudioMemoryLimit()) {
   DCHECK(audio_config.IsValidConfig());
   audio_configs_.push_back(audio_config);
 }
@@ -213,7 +213,7 @@ SourceBufferStream<RangeClass>::SourceBufferStream(
       highest_output_buffer_timestamp_(kNoDecodeTimestamp()),
       max_interbuffer_distance_(
           base::TimeDelta::FromMilliseconds(kMinimumInterbufferDistanceInMs)),
-      memory_limit_(kDemuxerStreamVideoMemoryLimit) {
+      memory_limit_(GetDemuxerStreamVideoMemoryLimit()) {
   DCHECK(video_config.IsValidConfig());
   video_configs_.push_back(video_config);
 }
@@ -230,7 +230,7 @@ SourceBufferStream<RangeClass>::SourceBufferStream(
       highest_output_buffer_timestamp_(kNoDecodeTimestamp()),
       max_interbuffer_distance_(
           base::TimeDelta::FromMilliseconds(kMinimumInterbufferDistanceInMs)),
-      memory_limit_(kDemuxerStreamAudioMemoryLimit) {}
+      memory_limit_(GetDemuxerStreamAudioMemoryLimit()) {}
 
 template <typename RangeClass>
 SourceBufferStream<RangeClass>::~SourceBufferStream() = default;
