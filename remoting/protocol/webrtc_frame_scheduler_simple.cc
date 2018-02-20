@@ -41,9 +41,13 @@ const int kBigFrameThresholdPixels = 300000;
 // encoded "big" frame may be too large to be delivered to the client quickly.
 const int kEstimatedBytesPerMegapixel = 100000;
 
-// Minimum interval between frames needed to keep the connection alive.
+// Minimum interval between frames needed to keep the connection alive. The
+// client will request a key-frame if it does not receive any frames for a
+// 3-second period. This is effectively a minimum frame-rate, so the value
+// should not be too small, otherwise the client may waste CPU cycles on
+// processing and rendering lots of identical frames.
 constexpr base::TimeDelta kKeepAliveInterval =
-    base::TimeDelta::FromMilliseconds(200);
+    base::TimeDelta::FromMilliseconds(2000);
 
 int64_t GetRegionArea(const webrtc::DesktopRegion& region) {
   int64_t result = 0;

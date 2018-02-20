@@ -91,7 +91,7 @@ TEST_F(WebrtcFrameSchedulerTest, EmptyFrameUpdate_ShouldNotBeSentImmediately) {
   EXPECT_FALSE(result);
 };
 
-TEST_F(WebrtcFrameSchedulerTest, EmptyFrameUpdate_ShouldBeSentAfter200ms) {
+TEST_F(WebrtcFrameSchedulerTest, EmptyFrameUpdate_ShouldBeSentAfter2000ms) {
   // Identical to the previous test, except it waits a short amount of time
   // before the empty frame update.
   auto video_channel_observer =
@@ -103,9 +103,9 @@ TEST_F(WebrtcFrameSchedulerTest, EmptyFrameUpdate_ShouldBeSentAfter200ms) {
   // Initial capture, full frame.
   frame.mutable_updated_region()->SetRect(DesktopRect::MakeWH(1, 1));
   scheduler_->OnFrameCaptured(&frame, &out_params);
-  // Wait more than 200ms.
+  // Wait more than 2000ms.
   scheduler_->SetCurrentTimeForTest(now_ +
-                                    base::TimeDelta::FromMilliseconds(300));
+                                    base::TimeDelta::FromMilliseconds(3000));
   // Empty frame.
   frame.mutable_updated_region()->Clear();
   bool result = scheduler_->OnFrameCaptured(&frame, &out_params);
