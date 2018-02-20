@@ -101,6 +101,9 @@ public class DownloadLocationDialogBridge implements ModalDialogView.Controller 
         mLocationDialog = null;
     }
 
+    @Override
+    public void onDismiss() {}
+
     /**
      * Pass along information from location dialog to native.
      *

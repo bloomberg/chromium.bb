@@ -532,6 +532,9 @@ public class ModalDialogManagerTest {
                 public void onCancel() {}
 
                 @Override
+                public void onDismiss() {}
+
+                @Override
                 public void onClick(int buttonType) {
                     switch (buttonType) {
                         case ModalDialogView.BUTTON_POSITIVE:

@@ -184,7 +184,7 @@ public class ModalDialogManager {
 
         if (!isShowing()) return;
         assert dialog == mCurrentPresenter.getModalDialog();
-
+        dialog.getController().onDismiss();
         mCurrentPresenter.setModalDialog(null, null);
         mCurrentPresenter = null;
         showNextDialog();
