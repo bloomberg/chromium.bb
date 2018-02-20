@@ -2176,11 +2176,9 @@ void av1_set_quantizer(AV1_COMMON *cm, int q) {
   cm->qm_u = aom_get_qmlevel(cm->base_qindex + cm->u_ac_delta_q,
                              cm->min_qmlevel, cm->max_qmlevel);
 
-#if CONFIG_EXT_QM
   if (!cm->separate_uv_delta_q)
     cm->qm_v = cm->qm_u;
   else
-#endif
     cm->qm_v = aom_get_qmlevel(cm->base_qindex + cm->v_ac_delta_q,
                                cm->min_qmlevel, cm->max_qmlevel);
 #endif

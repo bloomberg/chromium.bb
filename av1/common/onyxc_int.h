@@ -357,9 +357,8 @@ typedef struct AV1Common {
   int u_ac_delta_q;
   int v_ac_delta_q;
 
-#if CONFIG_EXT_QM
   int separate_uv_delta_q;
-#endif
+
   // The dequantizers below are true dequntizers used only in the
   // dequantization process.  They have the same coefficient
   // shift/scale as TX.

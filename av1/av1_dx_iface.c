@@ -293,9 +293,7 @@ static int parse_bitdepth_colorspace_sampling(BITSTREAM_PROFILE profile,
     }
 #endif  // CONFIG_COLORSPACE_HEADERS
   }
-#if CONFIG_EXT_QM
   rb->bit_offset += 1;  // separate_uv_delta_q
-#endif                  // CONFIG_EXT_QM
 #if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
   parse_timing_info_header(rb);
 #endif

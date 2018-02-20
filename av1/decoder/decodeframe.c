@@ -1057,9 +1057,7 @@ static void setup_quantization(AV1_COMMON *const cm,
   cm->y_dc_delta_q = read_delta_q(rb);
   if (num_planes > 1) {
     int diff_uv_delta = 0;
-#if CONFIG_EXT_QM
     if (cm->separate_uv_delta_q) diff_uv_delta = aom_rb_read_bit(rb);
-#endif
     cm->u_dc_delta_q = read_delta_q(rb);
     cm->u_ac_delta_q = read_delta_q(rb);
     if (diff_uv_delta) {
@@ -1077,11 +1075,9 @@ static void setup_quantization(AV1_COMMON *const cm,
 #if CONFIG_AOM_QM_EXT
     cm->qm_y = aom_rb_read_literal(rb, QM_LEVEL_BITS);
     cm->qm_u = aom_rb_read_literal(rb, QM_LEVEL_BITS);
-#if CONFIG_EXT_QM
     if (!cm->separate_uv_delta_q)
       cm->qm_v = cm->qm_u;
     else
-#endif
       cm->qm_v = aom_rb_read_literal(rb, QM_LEVEL_BITS);
 #else
     cm->min_qmlevel = aom_rb_read_literal(rb, QM_LEVEL_BITS);
@@ -2341,9 +2337,7 @@ void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
 #if CONFIG_COLORSPACE_HEADERS
     cm->chroma_sample_position = AOM_CSP_UNKNOWN;
 #endif  // CONFIG_COLORSPACE_HEADERS
-#if CONFIG_EXT_QM
     cm->separate_uv_delta_q = 0;
-#endif  // CONFIG_EXT_QM
     return;
   }
 #endif  // CONFIG_MONO_VIDEO
@@ -2390,9 +2384,7 @@ void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
     }
 #endif  // CONFIG_COLORSPACE_HEADERS
   }
-#if CONFIG_EXT_QM
   cm->separate_uv_delta_q = aom_rb_read_bit(rb);
-#endif  // CONFIG_EXT_QM
 }
 
 #if CONFIG_TIMING_INFO_IN_SEQ_HEADERS

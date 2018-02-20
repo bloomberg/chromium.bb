@@ -2459,11 +2459,7 @@ static void encode_quantization(const AV1_COMMON *const cm,
   if (num_planes > 1) {
     int diff_uv_delta = (cm->u_dc_delta_q != cm->v_dc_delta_q) ||
                         (cm->u_ac_delta_q != cm->v_ac_delta_q);
-#if CONFIG_EXT_QM
     if (cm->separate_uv_delta_q) aom_wb_write_bit(wb, diff_uv_delta);
-#else
-    assert(!diff_uv_delta);
-#endif
     write_delta_q(wb, cm->u_dc_delta_q);
     write_delta_q(wb, cm->u_ac_delta_q);
     if (diff_uv_delta) {
@@ -2477,11 +2473,9 @@ static void encode_quantization(const AV1_COMMON *const cm,
 #if CONFIG_AOM_QM_EXT
     aom_wb_write_literal(wb, cm->qm_y, QM_LEVEL_BITS);
     aom_wb_write_literal(wb, cm->qm_u, QM_LEVEL_BITS);
-#if CONFIG_EXT_QM
     if (!cm->separate_uv_delta_q)
       assert(cm->qm_u == cm->qm_v);
     else
-#endif
       aom_wb_write_literal(wb, cm->qm_v, QM_LEVEL_BITS);
 #else
     aom_wb_write_literal(wb, cm->min_qmlevel, QM_LEVEL_BITS);
@@ -3318,10 +3312,7 @@ static void write_bitdepth_colorspace_sampling(
     }
 #endif
   }
-
-#if CONFIG_EXT_QM
   aom_wb_write_bit(wb, cm->separate_uv_delta_q);
-#endif
 }
 
 #if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
