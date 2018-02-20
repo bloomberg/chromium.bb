@@ -761,6 +761,8 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   // Set up a request for reading the blob.
   // |body_as_blob| must be kept around until we call this to ensure that
   // it's alive.
+  // TODO(falken): Can we just read |body_as_blob| directly like in
+  // ServiceWorkerURLLoaderJob?
   if (!response.blob_uuid.empty() && blob_storage_context_) {
     SetResponseBodyType(BLOB);
     std::unique_ptr<storage::BlobDataHandle> blob_data_handle =

@@ -111,7 +111,16 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   ServiceWorkerFetchType fetch_type = ServiceWorkerFetchType::FETCH;
 };
 
-// Represents a response to a fetch.
+// Roughly corresponds to the Fetch API's Response type. This struct has several
+// users:
+// - Service Worker API: The renderer sends the browser this type to
+// represent the response a service worker provided to FetchEvent#respondWith.
+// - Background Fetch API: Uses this type to represent responses to background
+// fetches.
+// - Cache Storage API: Uses this type to represent responses to requests.
+// Note that the Fetch API does not use this type; it uses ResourceResponse
+// instead.
+// TODO(falken): Can everyone just use ResourceResponse?
 struct CONTENT_EXPORT ServiceWorkerResponse {
   ServiceWorkerResponse();
   ServiceWorkerResponse(
@@ -144,7 +153,6 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
   // ServiceWorkerFetchResponseCallback.
   std::string blob_uuid;
   uint64_t blob_size;
-  // |blob| is only used when features::kMojoBlobs is enabled.
   scoped_refptr<storage::BlobHandle> blob;
   blink::mojom::ServiceWorkerResponseError error;
   base::Time response_time;
