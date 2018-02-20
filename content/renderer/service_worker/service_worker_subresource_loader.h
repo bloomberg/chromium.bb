@@ -17,9 +17,9 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "third_party/WebKit/common/service_worker/service_worker_event_status.mojom.h"
-#include "third_party/WebKit/common/service_worker/service_worker_stream_handle.mojom.h"
 #include "third_party/WebKit/public/mojom/blob/blob.mojom.h"
+#include "third_party/WebKit/public/mojom/service_worker/service_worker_event_status.mojom.h"
+#include "third_party/WebKit/public/mojom/service_worker/service_worker_stream_handle.mojom.h"
 
 namespace content {
 

@@ -8,7 +8,7 @@
 #include "base/containers/queue.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/WebKit/common/service_worker/service_worker_installed_scripts_manager.mojom.h"
+#include "third_party/WebKit/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
 
 namespace content {
 

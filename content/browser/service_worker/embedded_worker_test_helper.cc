@@ -39,7 +39,7 @@
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "storage/common/blob_storage/blob_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/common/service_worker/service_worker_event_status.mojom.h"
+#include "third_party/WebKit/public/mojom/service_worker/service_worker_event_status.mojom.h"
 
 namespace content {
 

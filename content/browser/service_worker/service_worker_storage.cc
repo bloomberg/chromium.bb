@@ -30,8 +30,8 @@
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "third_party/WebKit/common/quota/quota_types.mojom.h"
-#include "third_party/WebKit/common/service_worker/service_worker_object.mojom.h"
-#include "third_party/WebKit/common/service_worker/service_worker_registration.mojom.h"
+#include "third_party/WebKit/public/mojom/service_worker/service_worker_object.mojom.h"
+#include "third_party/WebKit/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/WebKit/public/platform/web_feature.mojom.h"
 
 using std::swap;

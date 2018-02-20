@@ -7,7 +7,7 @@
 
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/text/WTFString.h"
-#include "third_party/WebKit/common/service_worker/service_worker_error_type.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/service_worker/service_worker_error_type.mojom-blink.h"
 
 namespace blink {
 

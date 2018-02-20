@@ -14,7 +14,7 @@
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
-#include "third_party/WebKit/common/service_worker/service_worker_error_type.mojom-shared.h"
+#include "third_party/WebKit/public/mojom/service_worker/service_worker_error_type.mojom-shared.h"
 
 #if INSIDE_BLINK
 #include "platform/wtf/Forward.h"
