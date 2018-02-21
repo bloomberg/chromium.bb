@@ -90,6 +90,10 @@ class OfflinePageModelTaskified : public OfflinePageModel,
                               const DeletePageCallback& callback) override;
   void DeletePagesByClientIds(const std::vector<ClientId>& client_ids,
                               const DeletePageCallback& callback) override;
+  void DeletePagesByClientIdsAndOrigin(
+      const std::vector<ClientId>& client_ids,
+      const std::string& origin,
+      const DeletePageCallback& callback) override;
   void DeleteCachedPagesByURLPredicate(
       const UrlPredicate& predicate,
       const DeletePageCallback& callback) override;

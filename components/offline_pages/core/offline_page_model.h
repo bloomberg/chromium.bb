@@ -150,6 +150,13 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
   virtual void DeletePagesByClientIds(const std::vector<ClientId>& client_ids,
                                       const DeletePageCallback& callback) = 0;
 
+  // Deletes all pages associated with any of the |client_ids| provided the page
+  // also was created by origin.
+  virtual void DeletePagesByClientIdsAndOrigin(
+      const std::vector<ClientId>& client_ids,
+      const std::string& origin,
+      const DeletePageCallback& callback) = 0;
+
   // Deletes cached offline pages matching the URL predicate.
   virtual void DeleteCachedPagesByURLPredicate(
       const UrlPredicate& predicate,

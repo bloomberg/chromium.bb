@@ -34,6 +34,10 @@ class StubOfflinePageModel : public OfflinePageModel {
                               const DeletePageCallback& callback) override;
   void DeletePagesByClientIds(const std::vector<ClientId>& client_ids,
                               const DeletePageCallback& callback) override;
+  void DeletePagesByClientIdsAndOrigin(
+      const std::vector<ClientId>& client_ids,
+      const std::string& origin,
+      const DeletePageCallback& callback) override;
   void GetPagesByClientIds(
       const std::vector<ClientId>& client_ids,
       const MultipleOfflinePageItemCallback& callback) override;
