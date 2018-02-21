@@ -283,7 +283,7 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
                            {mojom::FeaturePolicyFeature::kUnsizedMedia,
                             FeaturePolicy::FeatureDefault::EnableForAll},
                            {mojom::FeaturePolicyFeature::kPictureInPicture,
-                            FeaturePolicy::FeatureDefault::EnableForSelf}}));
+                            FeaturePolicy::FeatureDefault::EnableForAll}}));
   return default_feature_list;
 }
 
