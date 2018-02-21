@@ -650,10 +650,7 @@ void SingleThreadProxy::ClearHistoryOnNavigation() {
 
 void SingleThreadProxy::SetRenderFrameObserver(
     std::unique_ptr<RenderFrameMetadataObserver> observer) {
-  // TODO(jonross): this is used in some tests. Find a way to not attempt to
-  // create/set the RenderFrameMetadataObserver while in those tests.
-  // The browser does not produce RenderFrameMetadata.
-  NOTIMPLEMENTED();
+  host_impl_->SetRenderFrameObserver(std::move(observer));
 }
 
 bool SingleThreadProxy::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
