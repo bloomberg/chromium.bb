@@ -804,8 +804,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     """Writes the GLES2 Implemention."""
     impl_func = func.GetInfo('impl_func', True)
     if func.can_auto_generate and impl_func:
-      f.write("%s GLES2Implementation::%s(%s) {\n" %
-                 (func.return_type, func.original_name,
+      f.write("%s %sImplementation::%s(%s) {\n" %
+                 (func.return_type, _prefix,  func.original_name,
                   func.MakeTypedOriginalArgString("")))
       f.write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
       self.WriteClientGLCallLog(func, f)
@@ -847,7 +847,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     client_test = func.GetInfo('client_test', True)
     if func.can_auto_generate and client_test:
       code = """
-TEST_F(GLES2ImplementationTest, %(name)s) {
+TEST_F(%(prefix)sImplementationTest, %(name)s) {
   struct Cmds {
     cmds::%(name)s cmd;
   };
@@ -867,6 +867,7 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
       ]
 
       f.write(code % {
+            'prefix' : _prefix,
             'name': func.name,
             'args': ", ".join(gl_arg_strings),
             'cmd_args': ", ".join(cmd_arg_strings),
@@ -877,7 +878,8 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
       constants = [arg for arg in func.GetOriginalArgs() if arg.IsConstant()]
       if constants:
         code = """
-TEST_F(GLES2ImplementationTest, %(name)sInvalidConstantArg%(invalid_index)d) {
+TEST_F(%(prefix)sImplementationTest,
+    %(name)sInvalidConstantArg%(invalid_index)d) {
   gl_->%(name)s(%(args)s);
   EXPECT_TRUE(NoCommandsWritten());
   EXPECT_EQ(%(gl_error)s, CheckError());
@@ -893,6 +895,7 @@ TEST_F(GLES2ImplementationTest, %(name)sInvalidConstantArg%(invalid_index)d) {
               gl_arg_strings.append(arg.GetValidClientSideArg(func))
 
           f.write(code % {
+            'prefix' : _prefix,
             'name': func.name,
             'invalid_index': func.GetOriginalArgs().index(invalid_arg),
             'args': ", ".join(gl_arg_strings),
@@ -905,8 +908,8 @@ TEST_F(GLES2ImplementationTest, %(name)sInvalidConstantArg%(invalid_index)d) {
       arg.WriteDestinationInitalizationValidation(f, func)
 
   def WriteTraceEvent(self, func, f):
-    f.write('  TRACE_EVENT0("gpu", "GLES2Implementation::%s");\n' %
-               func.original_name)
+    f.write('  TRACE_EVENT0("gpu", "%sImplementation::%s");\n' %
+               (_prefix, func.original_name))
 
   def WriteImmediateCmdComputeSize(self, _func, f):
     """Writes the size computation code for the immediate version of a cmd."""
@@ -935,7 +938,7 @@ TEST_F(GLES2ImplementationTest, %(name)sInvalidConstantArg%(invalid_index)d) {
   def WriteCmdHelper(self, func, f):
     """Writes the cmd helper definition for a cmd."""
     code = """  void %(name)s(%(typed_args)s) {
-    gles2::cmds::%(name)s* c = GetCmdSpace<gles2::cmds::%(name)s>();
+    %(lp)s::cmds::%(name)s* c = GetCmdSpace<%(lp)s::cmds::%(name)s>();
     if (c) {
       c->Init(%(args)s);
     }
@@ -943,6 +946,7 @@ TEST_F(GLES2ImplementationTest, %(name)sInvalidConstantArg%(invalid_index)d) {
 
 """
     f.write(code % {
+          "lp" : _lower_prefix,
           "name": func.name,
           "typed_args": func.MakeTypedCmdArgString(""),
           "args": func.MakeCmdArgString(""),
@@ -952,8 +956,8 @@ TEST_F(GLES2ImplementationTest, %(name)sInvalidConstantArg%(invalid_index)d) {
     """Writes the cmd helper definition for the immediate version of a cmd."""
     code = """  void %(name)s(%(typed_args)s) {
     const uint32_t s = 0;
-    gles2::cmds::%(name)s* c =
-        GetImmediateCmdSpaceTotalSize<gles2::cmds::%(name)s>(s);
+    %(lp)s::cmds::%(name)s* c =
+        GetImmediateCmdSpaceTotalSize<%(lp)s::cmds::%(name)s>(s);
     if (c) {
       c->Init(%(args)s);
     }
@@ -961,6 +965,7 @@ TEST_F(GLES2ImplementationTest, %(name)sInvalidConstantArg%(invalid_index)d) {
 
 """
     f.write(code % {
+           "lp" : _lower_prefix,
            "name": func.name,
            "typed_args": func.MakeTypedCmdArgString(""),
            "args": func.MakeCmdArgString(""),
@@ -1487,8 +1492,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
     impl_func = func.GetInfo('impl_func', True)
     if func.can_auto_generate and impl_func:
-      f.write("%s GLES2Implementation::%s(%s) {\n" %
-                 (func.return_type, func.original_name,
+      f.write("%s %sImplementation::%s(%s) {\n" %
+                 (func.return_type, _prefix, func.original_name,
                   func.MakeTypedOriginalArgString("")))
       f.write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
       func.WriteDestinationInitalizationValidation(f)
@@ -1520,7 +1525,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     if not client_test:
       return
     code = """
-TEST_F(GLES2ImplementationTest, %(name)s) {
+TEST_F(%(prefix)sImplementationTest, %(name)s) {
   struct Cmds {
     cmds::%(name)s cmd;
   };
@@ -1545,6 +1550,7 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
     ]
 
     f.write(code % {
+          'prefix' : _prefix,
           'name': func.name,
           'args': ", ".join(gl_arg_strings),
           'cmd_args': ", ".join(cmd_arg_strings),
@@ -1600,6 +1606,7 @@ class GENnHandler(TypeHandler):
     args = {
         'log_code': log_code,
         'return_type': func.return_type,
+        'prefix' : _prefix,
         'name': func.original_name,
         'typed_args': func.MakeTypedOriginalArgString(""),
         'args': func.MakeOriginalArgString(""),
@@ -1607,7 +1614,8 @@ class GENnHandler(TypeHandler):
         'count_name': func.GetOriginalArgs()[0].name,
       }
     f.write(
-        "%(return_type)s GLES2Implementation::%(name)s(%(typed_args)s) {\n" %
+        "%(return_type)s %(prefix)sImplementation::"
+        "%(name)s(%(typed_args)s) {\n" %
         args)
     func.WriteDestinationInitalizationValidation(f)
     self.WriteClientGLCallLog(func, f)
@@ -1648,7 +1656,7 @@ class GENnHandler(TypeHandler):
   def WriteGLES2ImplementationUnitTest(self, func, f):
     """Overrriden from TypeHandler."""
     code = """
-TEST_F(GLES2ImplementationTest, %(name)s) {
+TEST_F(%(prefix)sImplementationTest, %(name)s) {
   GLuint ids[2] = { 0, };
   struct Cmds {
     cmds::%(name)sImmediate gen;
@@ -1665,6 +1673,7 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
 }
 """
     f.write(code % {
+          'prefix' : _prefix,
           'name': func.name,
           'types': func.GetInfo('resource_types'),
         })
@@ -1780,9 +1789,9 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs) {
   def WriteImmediateCmdHelper(self, func, f):
     """Overrriden from TypeHandler."""
     code = """  void %(name)s(%(typed_args)s) {
-    const uint32_t size = gles2::cmds::%(name)s::ComputeSize(n);
-    gles2::cmds::%(name)s* c =
-        GetImmediateCmdSpaceTotalSize<gles2::cmds::%(name)s>(size);
+    const uint32_t size = %(lp)s::cmds::%(name)s::ComputeSize(n);
+    %(lp)s::cmds::%(name)s* c =
+        GetImmediateCmdSpaceTotalSize<%(lp)s::cmds::%(name)s>(size);
     if (c) {
       c->Init(%(args)s);
     }
@@ -1790,6 +1799,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs) {
 
 """
     f.write(code % {
+          "lp" : _lower_prefix,
           "name": func.name,
           "typed_args": func.MakeTypedOriginalArgString(""),
           "args": func.MakeOriginalArgString(""),
@@ -1921,8 +1931,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
   def WriteGLES2Implementation(self, func, f):
     """Overrriden from TypeHandler."""
-    f.write("%s GLES2Implementation::%s(%s) {\n" %
-               (func.return_type, func.original_name,
+    f.write("%s %sImplementation::%s(%s) {\n" %
+               (func.return_type, _prefix, func.original_name,
                 func.MakeTypedOriginalArgString("")))
     f.write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
     func.WriteDestinationInitalizationValidation(f)
@@ -1972,8 +1982,8 @@ class DeleteHandler(TypeHandler):
 
   def WriteGLES2Implementation(self, func, f):
     """Overrriden from TypeHandler."""
-    f.write("%s GLES2Implementation::%s(%s) {\n" %
-               (func.return_type, func.original_name,
+    f.write("%s %sImplementation::%s(%s) {\n" %
+               (func.return_type, _prefix, func.original_name,
                 func.MakeTypedOriginalArgString("")))
     f.write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
     func.WriteDestinationInitalizationValidation(f)
@@ -2018,7 +2028,7 @@ class DELnHandler(TypeHandler):
   def WriteGLES2ImplementationUnitTest(self, func, f):
     """Overrriden from TypeHandler."""
     code = """
-TEST_F(GLES2ImplementationTest, %(name)s) {
+TEST_F(%(prefix)sImplementationTest, %(name)s) {
   GLuint ids[2] = { k%(types)sStartId, k%(types)sStartId + 1 };
   struct Cmds {
     cmds::%(name)sImmediate del;
@@ -2033,6 +2043,7 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
 }
 """
     f.write(code % {
+          'prefix' : _prefix,
           'name': func.name,
           'types': func.GetInfo('resource_types'),
         })
@@ -2120,6 +2131,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs) {
     if impl_func:
       args = {
           'return_type': func.return_type,
+          'prefix' : _prefix,
           'name': func.original_name,
           'typed_args': func.MakeTypedOriginalArgString(""),
           'args': func.MakeOriginalArgString(""),
@@ -2127,7 +2139,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs) {
           'count_name': func.GetOriginalArgs()[0].name,
         }
       f.write(
-          "%(return_type)s GLES2Implementation::%(name)s(%(typed_args)s) {\n" %
+          "%(return_type)s %(prefix)sImplementation::"
+          "%(name)s(%(typed_args)s) {\n" %
           args)
       f.write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
       func.WriteDestinationInitalizationValidation(f)
@@ -2206,9 +2219,9 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs) {
   def WriteImmediateCmdHelper(self, func, f):
     """Overrriden from TypeHandler."""
     code = """  void %(name)s(%(typed_args)s) {
-    const uint32_t size = gles2::cmds::%(name)s::ComputeSize(n);
-    gles2::cmds::%(name)s* c =
-        GetImmediateCmdSpaceTotalSize<gles2::cmds::%(name)s>(size);
+    const uint32_t size = %(lp)s::cmds::%(name)s::ComputeSize(n);
+    %(lp)s::cmds::%(name)s* c =
+        GetImmediateCmdSpaceTotalSize<%(lp)s::cmds::%(name)s>(size);
     if (c) {
       c->Init(%(args)s);
     }
@@ -2216,6 +2229,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs) {
 
 """
     f.write(code % {
+          "lp" : _lower_prefix,
           "name": func.name,
           "typed_args": func.MakeTypedOriginalArgString(""),
           "args": func.MakeOriginalArgString(""),
@@ -2361,8 +2375,8 @@ class GETnHandler(TypeHandler):
     """Overrriden from TypeHandler."""
     impl_func = func.GetInfo('impl_func', True)
     if impl_func:
-      f.write("%s GLES2Implementation::%s(%s) {\n" %
-                 (func.return_type, func.original_name,
+      f.write("%s %sImplementation::%s(%s) {\n" %
+                 (func.return_type, _prefix, func.original_name,
                   func.MakeTypedOriginalArgString("")))
       f.write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
       func.WriteDestinationInitalizationValidation(f)
@@ -2425,7 +2439,7 @@ class GETnHandler(TypeHandler):
   def WriteGLES2ImplementationUnitTest(self, func, f):
     """Writes the GLES2 Implemention unit test."""
     code = """
-TEST_F(GLES2ImplementationTest, %(name)s) {
+TEST_F(%(prefix)sImplementationTest, %(name)s) {
   struct Cmds {
     cmds::%(name)s cmd;
   };
@@ -2458,6 +2472,7 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
       gl_arg_strings.append(arg.GetValidClientSideArg(func))
 
     f.write(code % {
+          'prefix' : _prefix,
           'name': func.name,
           'args': ", ".join(gl_arg_strings),
           'cmd_args': ", ".join(cmd_arg_strings),
@@ -2701,8 +2716,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     impl_func = func.GetInfo('impl_func')
     if (impl_func != None and impl_func != True):
       return;
-    f.write("%s GLES2Implementation::%s(%s) {\n" %
-               (func.return_type, func.original_name,
+    f.write("%s %sImplementation::%s(%s) {\n" %
+               (func.return_type, _prefix, func.original_name,
                 func.MakeTypedOriginalArgString("")))
     f.write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
     func.WriteDestinationInitalizationValidation(f)
@@ -2731,7 +2746,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     if not client_test:
       return;
     code = """
-TEST_F(GLES2ImplementationTest, %(name)s) {
+TEST_F(%(prefix)sImplementationTest, %(name)s) {
   %(type)s data[%(count)d] = {0};
   struct Cmds {
     cmds::%(name)sImmediate cmd;
@@ -2755,6 +2770,7 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
     ]
 
     f.write(code % {
+          'prefix' : _prefix,
           'name': func.name,
           'type': self.GetArrayType(func),
           'count': self.GetArrayCount(func),
@@ -2838,9 +2854,9 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
   def WriteImmediateCmdHelper(self, func, f):
     """Overrriden from TypeHandler."""
     code = """  void %(name)s(%(typed_args)s) {
-    const uint32_t size = gles2::cmds::%(name)s::ComputeSize();
-    gles2::cmds::%(name)s* c =
-        GetImmediateCmdSpaceTotalSize<gles2::cmds::%(name)s>(size);
+    const uint32_t size = %(lp)s::cmds::%(name)s::ComputeSize();
+    %(lp)s::cmds::%(name)s* c =
+        GetImmediateCmdSpaceTotalSize<%(lp)s::cmds::%(name)s>(size);
     if (c) {
       c->Init(%(args)s);
     }
@@ -2848,6 +2864,7 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
 
 """
     f.write(code % {
+          "lp" : _lower_prefix,
           "name": func.name,
           "typed_args": func.MakeTypedOriginalArgString(""),
           "args": func.MakeOriginalArgString(""),
@@ -2996,8 +3013,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     impl_func = func.GetInfo('impl_func')
     if (impl_func != None and impl_func != True):
       return;
-    f.write("%s GLES2Implementation::%s(%s) {\n" %
-               (func.return_type, func.original_name,
+    f.write("%s %sImplementation::%s(%s) {\n" %
+               (func.return_type, _prefix, func.original_name,
                 func.MakeTypedOriginalArgString("")))
     f.write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
     func.WriteDestinationInitalizationValidation(f)
@@ -3027,7 +3044,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
       return;
 
     code = """
-TEST_F(GLES2ImplementationTest, %(name)s) {
+TEST_F(%(prefix)sImplementationTest, %(name)s) {
   %(type)s data[%(count_param)d][%(count)d] = {{0}};
   struct Cmds {
     cmds::%(name)sImmediate cmd;
@@ -3064,6 +3081,7 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
       if arg.name == "count":
         count_param = int(valid_value)
     f.write(code % {
+          'prefix' : _prefix,
           'name': func.name,
           'type': self.GetArrayType(func),
           'count': self.GetArrayCount(func),
@@ -3081,7 +3099,8 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
       return
 
     code = """
-TEST_F(GLES2ImplementationTest, %(name)sInvalidConstantArg%(invalid_index)d) {
+TEST_F(%(prefix)sImplementationTest,
+       %(name)sInvalidConstantArg%(invalid_index)d) {
   %(type)s data[%(count_param)d][%(count)d] = {{0}};
   for (int ii = 0; ii < %(count_param)d; ++ii) {
     for (int jj = 0; jj < %(count)d; ++jj) {
@@ -3108,6 +3127,7 @@ TEST_F(GLES2ImplementationTest, %(name)sInvalidConstantArg%(invalid_index)d) {
             count_param = int(valid_value)
 
       f.write(code % {
+        'prefix' : _prefix,
         'name': func.name,
         'invalid_index': func.GetOriginalArgs().index(invalid_arg),
         'type': self.GetArrayType(func),
@@ -3170,9 +3190,9 @@ TEST_F(GLES2ImplementationTest, %(name)sInvalidConstantArg%(invalid_index)d) {
   def WriteImmediateCmdHelper(self, func, f):
     """Overrriden from TypeHandler."""
     code = """  void %(name)s(%(typed_args)s) {
-    const uint32_t size = gles2::cmds::%(name)s::ComputeSize(count);
-    gles2::cmds::%(name)s* c =
-        GetImmediateCmdSpaceTotalSize<gles2::cmds::%(name)s>(size);
+    const uint32_t size = %(lp)s::cmds::%(name)s::ComputeSize(count);
+    %(lp)s::cmds::%(name)s* c =
+        GetImmediateCmdSpaceTotalSize<%(lp)s::cmds::%(name)s>(size);
     if (c) {
       c->Init(%(args)s);
     }
@@ -3180,6 +3200,7 @@ TEST_F(GLES2ImplementationTest, %(name)sInvalidConstantArg%(invalid_index)d) {
 
 """
     f.write(code % {
+          "lp" : _lower_prefix,
           "name": func.name,
           "typed_args": func.MakeTypedInitString(""),
           "args": func.MakeInitString("")
@@ -3250,8 +3271,8 @@ class PUTSTRHandler(ArrayArgTypeHandler):
 
   def WriteGLES2Implementation(self, func, f):
     """Overrriden from TypeHandler."""
-    f.write("%s GLES2Implementation::%s(%s) {\n" %
-               (func.return_type, func.original_name,
+    f.write("%s %sImplementation::%s(%s) {\n" %
+               (func.return_type, _prefix, func.original_name,
                 func.MakeTypedOriginalArgString("")))
     f.write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
     func.WriteDestinationInitalizationValidation(f)
@@ -3314,8 +3335,8 @@ class PUTSTRHandler(ArrayArgTypeHandler):
   def WriteGLES2ImplementationUnitTest(self, func, f):
     """Overrriden from TypeHandler."""
     code = """
-TEST_F(GLES2ImplementationTest, %(name)s) {
-  const uint32_t kBucketId = GLES2Implementation::kResultBucketId;
+TEST_F(%(prefix)sImplementationTest, %(name)s) {
+  const uint32_t kBucketId = %(prefix)sImplementation::kResultBucketId;
   const char* kString1 = "happy";
   const char* kString2 = "ending";
   const size_t kString1Size = ::strlen(kString1) + 1;
@@ -3377,6 +3398,7 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
         gl_args.append(arg.GetValidClientSideArg(func))
         bucket_args.append(arg.GetValidClientSideArg(func))
     f.write(code % {
+        'prefix' : _prefix,
         'name': func.name,
         'gl_args': ", ".join(gl_args),
         'bucket_args': ", ".join(bucket_args),
@@ -3385,8 +3407,8 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
     if self.__GetLengthArg(func) == None:
       return
     code = """
-TEST_F(GLES2ImplementationTest, %(name)sWithLength) {
-  const uint32_t kBucketId = GLES2Implementation::kResultBucketId;
+TEST_F(%(prefix)sImplementationTest, %(name)sWithLength) {
+  const uint32_t kBucketId = %(prefix)sImplementation::kResultBucketId;
   const char* kString = "foobar******";
   const size_t kStringSize = 6;  // We only need "foobar".
   const size_t kHeaderSize = sizeof(GLint) * 2;
@@ -3435,6 +3457,7 @@ TEST_F(GLES2ImplementationTest, %(name)sWithLength) {
       else:
         gl_args.append(arg.GetValidClientSideArg(func))
     f.write(code % {
+        'prefix' : _prefix,
         'name': func.name,
         'gl_args': ", ".join(gl_args),
         'bucket_args': ", ".join(bucket_args),
@@ -3659,8 +3682,8 @@ class GLcharHandler(CustomHandler):
     """Overrriden from TypeHandler."""
     code = """  void %(name)s(%(typed_args)s) {
     const uint32_t data_size = strlen(name);
-    gles2::cmds::%(name)s* c =
-        GetImmediateCmdSpace<gles2::cmds::%(name)s>(data_size);
+    %(lp)s::cmds::%(name)s* c =
+        GetImmediateCmdSpace<%(lp)s::cmds::%(name)s>(data_size);
     if (c) {
       c->Init(%(args)s, data_size);
     }
@@ -3668,6 +3691,7 @@ class GLcharHandler(CustomHandler):
 
 """
     f.write(code % {
+          "lp" : _lower_prefix,
           "name": func.name,
           "typed_args": func.MakeTypedOriginalArgString(""),
           "args": func.MakeOriginalArgString(""),
@@ -3859,8 +3883,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
     impl_func = func.GetInfo('impl_func', True)
     if impl_func:
       error_value = func.GetInfo("error_value") or "GL_FALSE"
-      f.write("%s GLES2Implementation::%s(%s) {\n" %
-                 (func.return_type, func.original_name,
+      f.write("%s %sImplementation::%s(%s) {\n" %
+                 (func.return_type, _prefix, func.original_name,
                   func.MakeTypedOriginalArgString("")))
       f.write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
       self.WriteTraceEvent(func, f)
@@ -3896,7 +3920,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
     client_test = func.GetInfo('client_test', True)
     if client_test:
       code = """
-TEST_F(GLES2ImplementationTest, %(name)s) {
+TEST_F(%(prefix)sImplementationTest, %(name)s) {
   struct Cmds {
     cmds::%(name)s cmd;
   };
@@ -3918,6 +3942,7 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
       args = func.GetOriginalArgs()
       assert len(args) == 1
       f.write(code % {
+          'prefix' : _prefix,
           'name': func.name,
           'cmd_id_value': args[0].GetValidClientSideCmdArg(func),
           'gl_id_value': args[0].GetValidClientSideArg(func) })
@@ -3946,7 +3971,8 @@ class STRnHandler(TypeHandler):
 
   def WriteGLES2Implementation(self, func, f):
     """Overrriden from TypeHandler."""
-    code_1 = """%(return_type)s GLES2Implementation::%(func_name)s(%(args)s) {
+    code_1 = """%(return_type)s %(prefix)sImplementation::%(func_name)s(
+    %(args)s) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
 """
     code_2 = """  GPU_CLIENT_LOG("[" << GetLogPrefix()
@@ -3976,6 +4002,7 @@ class STRnHandler(TypeHandler):
 """
     args = func.GetOriginalArgs()
     str_args = {
+      'prefix' : _prefix,
       'return_type': func.return_type,
       'func_name': func.original_name,
       'args': func.MakeTypedOriginalArgString(""),
@@ -6396,8 +6423,8 @@ extern const NameToFunc g_gles2_function_table[] = {
   def WriteGLES2ImplementationHeader(self, filename):
     """Writes the GLES2 Implementation header."""
     comment = \
-      ("// This file is included by gles2_implementation.h to declare the\n"
-       "// GL api functions.\n")
+      ("// This file is included by %s_implementation.h to declare the\n"
+       "// GL api functions.\n" % _lower_prefix)
     with CHeaderWriter(filename, self.year, comment) as f:
       for func in self.original_functions:
         func.WriteGLES2ImplementationHeader(f)
@@ -6406,8 +6433,8 @@ extern const NameToFunc g_gles2_function_table[] = {
   def WriteGLES2Implementation(self, filename):
     """Writes the GLES2 Implementation."""
     comment = \
-      ("// This file is included by gles2_implementation.cc to define the\n"
-       "// GL api functions.\n")
+      ("// This file is included by %s_implementation.cc to define the\n"
+       "// GL api functions.\n" % _lower_prefix)
     with CHeaderWriter(filename, self.year, comment) as f:
       for func in self.original_functions:
         func.WriteGLES2Implementation(f)
@@ -6432,8 +6459,8 @@ extern const NameToFunc g_gles2_function_table[] = {
   def WriteGLES2ImplementationUnitTests(self, filename):
     """Writes the GLES2 helper header."""
     comment = \
-      ("// This file is included by gles2_implementation.h to declare the\n"
-       "// GL api functions.\n")
+      ("// This file is included by %s_implementation.h to declare the\n"
+       "// GL api functions.\n" % _lower_prefix)
     with CHeaderWriter(filename, self.year, comment) as f:
       for func in self.original_functions:
         func.WriteGLES2ImplementationUnitTest(f)

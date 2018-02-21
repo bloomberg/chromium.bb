@@ -45,15 +45,53 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 
-#if defined(GPU_CLIENT_DEBUG)
-#include "base/command_line.h"
-#include "gpu/command_buffer/client/gpu_switches.h"
-#endif
-
 #if !defined(__native_client__)
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
 #endif
+
+#if defined(GPU_CLIENT_DEBUG)
+#define GPU_CLIENT_SINGLE_THREAD_CHECK() SingleThreadChecker checker(this);
+#else  // !defined(GPU_CLIENT_DEBUG)
+#define GPU_CLIENT_SINGLE_THREAD_CHECK()
+#endif  // defined(GPU_CLIENT_DEBUG)
+
+// Check that destination pointers point to initialized memory.
+// When the context is lost, calling GL function has no effect so if destination
+// pointers point to initialized memory it can often lead to crash bugs. eg.
+//
+// GLsizei len;
+// glGetShaderSource(shader, max_size, &len, buffer);
+// std::string src(buffer, buffer + len);  // len can be uninitialized here!!!
+//
+// Because this check is not official GL this check happens only on Chrome code,
+// not Pepper.
+//
+// If it was up to us we'd just always write to the destination but the OpenGL
+// spec defines the behavior of OpenGL functions, not us. :-(
+#if defined(__native_client__) || defined(GLES2_CONFORMANCE_TESTS)
+#define GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION_ASSERT(v)
+#define GPU_CLIENT_DCHECK(v)
+#elif defined(GPU_DCHECK)
+#define GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION_ASSERT(v) GPU_DCHECK(v)
+#define GPU_CLIENT_DCHECK(v) GPU_DCHECK(v)
+#elif defined(DCHECK)
+#define GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION_ASSERT(v) DCHECK(v)
+#define GPU_CLIENT_DCHECK(v) DCHECK(v)
+#else
+#define GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION_ASSERT(v) ASSERT(v)
+#define GPU_CLIENT_DCHECK(v) ASSERT(v)
+#endif
+
+#define GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION(type, ptr) \
+  GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION_ASSERT(          \
+      ptr &&                                                     \
+      (ptr[0] == static_cast<type>(0) || ptr[0] == static_cast<type>(-1)));
+
+#define GPU_CLIENT_VALIDATE_DESTINATION_OPTIONAL_INITALIZATION(type, ptr) \
+  GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION_ASSERT(                   \
+      !ptr ||                                                             \
+      (ptr[0] == static_cast<type>(0) || ptr[0] == static_cast<type>(-1)));
 
 namespace gpu {
 namespace gles2 {
@@ -95,11 +133,6 @@ uint32_t GenerateNextFlushId() {
 
 }  // anonymous namespace
 
-#if !defined(_MSC_VER)
-const size_t GLES2Implementation::kMaxSizeOfSimpleResult;
-const unsigned int GLES2Implementation::kStartingOffset;
-#endif
-
 GLES2Implementation::GLStaticState::GLStaticState() = default;
 
 GLES2Implementation::GLStaticState::~GLStaticState() = default;
@@ -124,8 +157,8 @@ GLES2Implementation::GLES2Implementation(
     bool lose_context_when_out_of_memory,
     bool support_client_side_arrays,
     GpuControl* gpu_control)
-    : helper_(helper),
-      transfer_buffer_(transfer_buffer),
+    : ImplementationBase(helper, transfer_buffer, gpu_control),
+      helper_(helper),
       chromium_framebuffer_multisample_(kUnknownExtensionStatus),
       pack_alignment_(4),
       pack_row_length_(0),
@@ -156,16 +189,12 @@ GLES2Implementation::GLES2Implementation(
       use_count_(0),
       flush_id_(0),
       max_extra_transfer_buffer_size_(0),
-      transfer_cache_(this),
       current_trace_stack_(0),
-      gpu_control_(gpu_control),
       capabilities_(gpu_control->GetCapabilities()),
       aggressively_free_resources_(false),
       cached_extension_string_(nullptr),
       weak_ptr_factory_(this) {
   DCHECK(helper);
-  DCHECK(transfer_buffer);
-  DCHECK(gpu_control);
 
   std::stringstream ss;
   ss << std::hex << this;
@@ -184,27 +213,12 @@ GLES2Implementation::GLES2Implementation(
 gpu::ContextResult GLES2Implementation::Initialize(
     const SharedMemoryLimits& limits) {
   TRACE_EVENT0("gpu", "GLES2Implementation::Initialize");
-  DCHECK_GE(limits.start_transfer_buffer_size, limits.min_transfer_buffer_size);
-  DCHECK_LE(limits.start_transfer_buffer_size, limits.max_transfer_buffer_size);
-  DCHECK_GE(limits.min_transfer_buffer_size, kStartingOffset);
-
-  gpu_control_->SetGpuControlClient(this);
-
-  if (!transfer_buffer_->Initialize(
-          limits.start_transfer_buffer_size, kStartingOffset,
-          limits.min_transfer_buffer_size, limits.max_transfer_buffer_size,
-          kAlignment, kSizeToFlush)) {
-    // TransferBuffer::Initialize doesn't fail for transient reasons such as if
-    // the context was lost. See http://crrev.com/c/720269
-    LOG(ERROR) << "ContextResult::kFatalFailure: "
-               << "TransferBuffer::Initailize() failed";
-    return gpu::ContextResult::kFatalFailure;
+  auto result = ImplementationBase::Initialize(limits);
+  if (result != gpu::ContextResult::kSuccess) {
+    return result;
   }
 
   max_extra_transfer_buffer_size_ = limits.max_mapped_memory_for_texture_upload;
-  mapped_memory_ = std::make_unique<MappedMemoryManager>(
-      helper_, limits.mapped_memory_reclaim_limit);
-  mapped_memory_->set_chunk_size_multiple(limits.mapped_memory_chunk_size);
 
   GLStaticState::ShaderPrecisionMap* shader_precisions =
       &static_state_.shader_precisions;
@@ -223,7 +237,6 @@ gpu::ContextResult GLES2Implementation::Initialize(
   texture_units_ = std::make_unique<TextureUnit[]>(
       capabilities_.max_combined_texture_image_units);
 
-  query_tracker_ = std::make_unique<QueryTracker>(mapped_memory_.get());
   buffer_tracker_ = std::make_unique<BufferTracker>(mapped_memory_.get());
 
   for (int i = 0; i < static_cast<int>(IdNamespaces::kNumIdNamespaces); ++i)
@@ -260,6 +273,7 @@ GLES2Implementation::~GLES2Implementation() {
   // by the queries. The GPU process when validating that memory is still
   // shared will fail and abort (ie, it will stop running).
   WaitForCmd();
+
   query_tracker_.reset();
 
   // GLES2Implementation::Initialize() could fail before allocating
@@ -279,10 +293,6 @@ GLES2Implementation::~GLES2Implementation() {
 
   // Make sure the commands make it the service.
   WaitForCmd();
-
-  // The gpu_control_ outlives this class, so clear the client on it before we
-  // self-destruct.
-  gpu_control_->SetGpuControlClient(nullptr);
 }
 
 GLES2CmdHelper* GLES2Implementation::helper() const {
@@ -309,8 +319,9 @@ void GLES2Implementation::OnGpuControlLostContext() {
   DCHECK(!lost_context_callback_run_);
   lost_context_callback_run_ = true;
   share_group_->Lose();
-  if (!lost_context_callback_.is_null())
-    lost_context_callback_.Run();
+  if (!lost_context_callback_.is_null()) {
+    std::move(lost_context_callback_).Run();
+  }
 }
 
 void GLES2Implementation::OnGpuControlLostContextMaybeReentrant() {
@@ -326,77 +337,8 @@ void GLES2Implementation::OnGpuControlErrorMessage(const char* message,
     error_message_callback_.Run(message, id);
 }
 
-void* GLES2Implementation::GetResultBuffer() {
-  return transfer_buffer_->GetResultBuffer();
-}
-
-int32_t GLES2Implementation::GetResultShmId() {
-  return transfer_buffer_->GetShmId();
-}
-
-uint32_t GLES2Implementation::GetResultShmOffset() {
-  return transfer_buffer_->GetResultOffset();
-}
-
-void GLES2Implementation::FreeUnusedSharedMemory() {
-  mapped_memory_->FreeUnused();
-}
-
-void GLES2Implementation::FreeEverything() {
-  query_tracker_->Shrink(helper_);
-  FreeUnusedSharedMemory();
-  transfer_buffer_->Free();
-  helper_->FreeRingBuffer();
-}
-
 void GLES2Implementation::FreeSharedMemory(void* mem) {
   mapped_memory_->FreePendingToken(mem, helper_->InsertToken());
-}
-
-void GLES2Implementation::RunIfContextNotLost(base::OnceClosure callback) {
-  if (!lost_context_callback_run_)
-    std::move(callback).Run();
-}
-
-void GLES2Implementation::FlushPendingWork() {
-  gpu_control_->FlushPendingWork();
-}
-
-void GLES2Implementation::SignalSyncToken(const gpu::SyncToken& sync_token,
-                                          base::OnceClosure callback) {
-  SyncToken verified_sync_token;
-  if (sync_token.HasData() &&
-      GetVerifiedSyncTokenForIPC(sync_token, &verified_sync_token)) {
-    // We can only send verified sync tokens across IPC.
-    gpu_control_->SignalSyncToken(
-        verified_sync_token,
-        base::Bind(&GLES2Implementation::RunIfContextNotLost,
-                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
-  } else {
-    // Invalid sync token, just call the callback immediately.
-    std::move(callback).Run();
-  }
-}
-
-// This may be called from any thread. It's safe to access gpu_control_ without
-// the lock because it is const.
-bool GLES2Implementation::IsSyncTokenSignaled(
-    const gpu::SyncToken& sync_token) {
-  // Check that the sync token belongs to this context.
-  DCHECK_EQ(gpu_control_->GetNamespaceID(), sync_token.namespace_id());
-  DCHECK_EQ(gpu_control_->GetCommandBufferID(), sync_token.command_buffer_id());
-  return gpu_control_->IsFenceSyncReleased(sync_token.release_count());
-}
-
-void GLES2Implementation::SignalQuery(uint32_t query,
-                                      base::OnceClosure callback) {
-  // Flush previously entered commands to ensure ordering with any
-  // glBeginQueryEXT() calls that may have been put into the context.
-  ShallowFlushCHROMIUM();
-  gpu_control_->SignalQuery(
-      query,
-      base::Bind(&GLES2Implementation::RunIfContextNotLost,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
 
 GLuint GLES2Implementation::CreateGpuFenceCHROMIUM() {
@@ -434,15 +376,6 @@ GLuint GLES2Implementation::CreateClientGpuFenceCHROMIUM(
   return client_id;
 }
 
-void GLES2Implementation::GetGpuFence(
-    uint32_t gpu_fence_id,
-    base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)> callback) {
-  // This ShallowFlush is required to ensure that the GetGpuFence
-  // call is processed after the preceding CreateGpuFenceCHROMIUM call.
-  ShallowFlushCHROMIUM();
-  gpu_control_->GetGpuFence(gpu_fence_id, std::move(callback));
-}
-
 void GLES2Implementation::DestroyGpuFenceCHROMIUMHelper(GLuint client_id) {
   if (GetIdAllocator(IdNamespaces::kGpuFences)->InUse(client_id)) {
     GetIdAllocator(IdNamespaces::kGpuFences)->FreeID(client_id);
@@ -469,53 +402,6 @@ void GLES2Implementation::SetAggressivelyFreeResources(
   } else {
     ShallowFlushCHROMIUM();
   }
-}
-
-bool GLES2Implementation::OnMemoryDump(
-    const base::trace_event::MemoryDumpArgs& args,
-    base::trace_event::ProcessMemoryDump* pmd) {
-  using base::trace_event::MemoryAllocatorDump;
-  using base::trace_event::MemoryDumpLevelOfDetail;
-
-  // Dump owned MappedMemoryManager memory as well.
-  mapped_memory_->OnMemoryDump(args, pmd);
-
-  if (!transfer_buffer_->HaveBuffer())
-    return true;
-
-  const uint64_t tracing_process_id =
-      base::trace_event::MemoryDumpManager::GetInstance()
-          ->GetTracingProcessId();
-
-  MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(base::StringPrintf(
-      "gpu/transfer_buffer_memory/buffer_%d", transfer_buffer_->GetShmId()));
-  dump->AddScalar(MemoryAllocatorDump::kNameSize,
-                  MemoryAllocatorDump::kUnitsBytes,
-                  transfer_buffer_->GetSize());
-
-  if (args.level_of_detail != MemoryDumpLevelOfDetail::BACKGROUND) {
-    dump->AddScalar("free_size", MemoryAllocatorDump::kUnitsBytes,
-                    transfer_buffer_->GetFragmentedFreeSize());
-    auto shared_memory_guid =
-        transfer_buffer_->shared_memory_handle().GetGUID();
-    const int kImportance = 2;
-    if (!shared_memory_guid.is_empty()) {
-      pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_memory_guid,
-                                           kImportance);
-    } else {
-      auto guid = GetBufferGUIDForTracing(tracing_process_id,
-                                          transfer_buffer_->GetShmId());
-      pmd->CreateSharedGlobalAllocatorDump(guid);
-      pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
-    }
-  }
-
-  return true;
-}
-
-void GLES2Implementation::WaitForCmd() {
-  TRACE_EVENT0("gpu", "GLES2::WaitForCmd");
-  helper_->CommandBufferHelper::Finish();
 }
 
 bool GLES2Implementation::IsExtensionAvailable(const char* ext) {
@@ -633,109 +519,6 @@ void GLES2Implementation::SetGLErrorInvalidEnum(
   SetGLError(GL_INVALID_ENUM, function_name,
              (std::string(label) + " was " +
               GLES2Util::GetStringEnum(value)).c_str());
-}
-
-bool GLES2Implementation::GetBucketContents(uint32_t bucket_id,
-                                            std::vector<int8_t>* data) {
-  TRACE_EVENT0("gpu", "GLES2::GetBucketContents");
-  DCHECK(data);
-  const uint32_t kStartSize = 32 * 1024;
-  ScopedTransferBufferPtr buffer(kStartSize, helper_, transfer_buffer_);
-  if (!buffer.valid()) {
-    return false;
-  }
-  typedef cmd::GetBucketStart::Result Result;
-  Result* result = GetResultAs<Result*>();
-  if (!result) {
-    return false;
-  }
-  *result = 0;
-  helper_->GetBucketStart(
-      bucket_id, GetResultShmId(), GetResultShmOffset(),
-      buffer.size(), buffer.shm_id(), buffer.offset());
-  WaitForCmd();
-  uint32_t size = *result;
-  data->resize(size);
-  if (size > 0u) {
-    uint32_t offset = 0;
-    while (size) {
-      if (!buffer.valid()) {
-        buffer.Reset(size);
-        if (!buffer.valid()) {
-          return false;
-        }
-        helper_->GetBucketData(
-            bucket_id, offset, buffer.size(), buffer.shm_id(), buffer.offset());
-        WaitForCmd();
-      }
-      uint32_t size_to_copy = std::min(size, buffer.size());
-      memcpy(&(*data)[offset], buffer.address(), size_to_copy);
-      offset += size_to_copy;
-      size -= size_to_copy;
-      buffer.Release();
-    }
-    // Free the bucket. This is not required but it does free up the memory.
-    // and we don't have to wait for the result so from the client's perspective
-    // it's cheap.
-    helper_->SetBucketSize(bucket_id, 0);
-  }
-  return true;
-}
-
-void GLES2Implementation::SetBucketContents(uint32_t bucket_id,
-                                            const void* data,
-                                            size_t size) {
-  DCHECK(data);
-  helper_->SetBucketSize(bucket_id, size);
-  if (size > 0u) {
-    uint32_t offset = 0;
-    while (size) {
-      ScopedTransferBufferPtr buffer(size, helper_, transfer_buffer_);
-      if (!buffer.valid()) {
-        return;
-      }
-      memcpy(buffer.address(), static_cast<const int8_t*>(data) + offset,
-             buffer.size());
-      helper_->SetBucketData(
-          bucket_id, offset, buffer.size(), buffer.shm_id(), buffer.offset());
-      offset += buffer.size();
-      size -= buffer.size();
-    }
-  }
-}
-
-void GLES2Implementation::SetBucketAsCString(uint32_t bucket_id,
-                                             const char* str) {
-  // NOTE: strings are passed NULL terminated. That means the empty
-  // string will have a size of 1 and no-string will have a size of 0
-  if (str) {
-    SetBucketContents(bucket_id, str, strlen(str) + 1);
-  } else {
-    helper_->SetBucketSize(bucket_id, 0);
-  }
-}
-
-bool GLES2Implementation::GetBucketAsString(uint32_t bucket_id,
-                                            std::string* str) {
-  DCHECK(str);
-  std::vector<int8_t> data;
-  // NOTE: strings are passed NULL terminated. That means the empty
-  // string will have a size of 1 and no-string will have a size of 0
-  if (!GetBucketContents(bucket_id, &data)) {
-    return false;
-  }
-  if (data.empty()) {
-    return false;
-  }
-  str->assign(&data[0], &data[0] + data.size() - 1);
-  return true;
-}
-
-void GLES2Implementation::SetBucketAsString(uint32_t bucket_id,
-                                            const std::string& str) {
-  // NOTE: strings are passed NULL terminated. That means the empty
-  // string will have a size of 1 and no-string will have a size of 0
-  SetBucketContents(bucket_id, str.c_str(), str.size() + 1);
 }
 
 void GLES2Implementation::Disable(GLenum cap) {
@@ -1429,11 +1212,15 @@ void GLES2Implementation::Flush() {
   FlushHelper();
 }
 
-void GLES2Implementation::ShallowFlushCHROMIUM() {
+void GLES2Implementation::IssueShallowFlush() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glShallowFlushCHROMIUM()");
   flush_id_ = GenerateNextFlushId();
   FlushHelper();
+}
+
+void GLES2Implementation::ShallowFlushCHROMIUM() {
+  IssueShallowFlush();
 }
 
 void GLES2Implementation::FlushHelper() {
@@ -6137,38 +5924,6 @@ bool GLES2Implementation::ThreadsafeDiscardableTextureIsDeletedForTracing(
   return manager->TextureIsDeletedForTracing(texture_id);
 }
 
-void* GLES2Implementation::MapTransferCacheEntry(size_t serialized_size) {
-  return transfer_cache_.MapEntry(mapped_memory_.get(), serialized_size);
-}
-
-void GLES2Implementation::UnmapAndCreateTransferCacheEntry(uint32_t type,
-                                                           uint32_t id) {
-  transfer_cache_.UnmapAndCreateEntry(type, id);
-}
-
-bool GLES2Implementation::ThreadsafeLockTransferCacheEntry(uint32_t type,
-                                                           uint32_t id) {
-  return transfer_cache_.LockEntry(type, id);
-}
-
-void GLES2Implementation::UnlockTransferCacheEntries(
-    const std::vector<std::pair<uint32_t, uint32_t>>& entries) {
-  transfer_cache_.UnlockEntries(entries);
-}
-
-void GLES2Implementation::DeleteTransferCacheEntry(uint32_t type, uint32_t id) {
-  transfer_cache_.DeleteEntry(type, id);
-}
-
-unsigned int GLES2Implementation::GetTransferBufferFreeSize() const {
-  return transfer_buffer_->GetFreeSize();
-}
-
-void GLES2Implementation::SetLostContextCallback(
-    const base::Closure& callback) {
-  lost_context_callback_ = callback;
-}
-
 void GLES2Implementation::GenSyncTokenCHROMIUM(GLbyte* sync_token) {
   if (!sync_token) {
     SetGLError(GL_INVALID_VALUE, "glGenSyncTokenCHROMIUM", "empty sync_token");
@@ -6259,21 +6014,6 @@ void GLES2Implementation::WaitSyncTokenCHROMIUM(const GLbyte* sync_token_data) {
   // Enqueue sync token in flush after inserting command so that it's not
   // included in an automatic flush.
   gpu_control_->WaitSyncTokenHint(verified_sync_token);
-}
-
-bool GLES2Implementation::GetVerifiedSyncTokenForIPC(
-    const SyncToken& sync_token,
-    SyncToken* verified_sync_token) {
-  DCHECK(sync_token.HasData());
-  DCHECK(verified_sync_token);
-
-  if (!sync_token.verified_flush() &&
-      !gpu_control_->CanWaitUnverifiedSyncToken(sync_token))
-    return false;
-
-  *verified_sync_token = sync_token;
-  verified_sync_token->SetVerifyFlush();
-  return true;
 }
 
 namespace {

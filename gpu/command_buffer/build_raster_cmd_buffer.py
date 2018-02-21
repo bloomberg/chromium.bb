@@ -754,6 +754,14 @@ _FUNCTION_INFO = {
     'type': 'NoCommand',
     'extension': 'CHROMIUM_ordering_barrier',
   },
+  'InsertFenceSyncCHROMIUM': {
+    'type': 'Custom',
+    'internal': True,
+    'impl_func': False,
+    'cmd_args': 'GLuint64 release_count',
+    'extension': "CHROMIUM_sync_point",
+    'trace_level': 1,
+  },
   'LoseContextCHROMIUM': {
     'decoder_func': 'DoLoseContextCHROMIUM',
     'unit_test': False,
@@ -864,7 +872,7 @@ _FUNCTION_INFO = {
     'impl_func': True,
     'extension': 'CHROMIUM_unpremultiply_and_dither_copy',
     'extension_flag': 'unpremultiply_and_dither_copy',
-  }
+  },
 }
 
 
@@ -907,20 +915,20 @@ def main(argv):
   #   "gpu/command_buffer/client/raster_interface_stub_autogen.h")
   # gen.WriteGLES2InterfaceStubImpl(
   #     "gpu/command_buffer/client/raster_interface_stub_impl_autogen.h")
-  # gen.WriteGLES2ImplementationHeader(
-  #   "gpu/command_buffer/client/raster_implementation_autogen.h")
-  # gen.WriteGLES2Implementation(
-  #   "gpu/command_buffer/client/raster_implementation_impl_autogen.h")
+  gen.WriteGLES2ImplementationHeader(
+    "gpu/command_buffer/client/raster_implementation_autogen.h")
+  gen.WriteGLES2Implementation(
+    "gpu/command_buffer/client/raster_implementation_impl_autogen.h")
   # gen.WriteGLES2ImplementationUnitTests(
-  #     "gpu/command_buffer/client/raster_implementation_unittest_autogen.h")
+  #   "gpu/command_buffer/client/raster_implementation_unittest_autogen.h")
   # gen.WriteGLES2TraceImplementationHeader(
   #     "gpu/command_buffer/client/raster_trace_implementation_autogen.h")
   # gen.WriteGLES2TraceImplementation(
   #     "gpu/command_buffer/client/raster_trace_implementation_impl_autogen.h")
   # gen.WriteGLES2CLibImplementation(
   #   "gpu/command_buffer/client/raster_c_lib_autogen.h")
-  # gen.WriteCmdHelperHeader(
-  #   "gpu/command_buffer/client/raster_cmd_helper_autogen.h")
+  gen.WriteCmdHelperHeader(
+     "gpu/command_buffer/client/raster_cmd_helper_autogen.h")
   gen.WriteServiceImplementation(
     "gpu/command_buffer/service/raster_decoder_autogen.h")
   gen.WriteServiceUnitTests(

@@ -899,6 +899,13 @@ error::Error RasterDecoderImpl::HandleLockDiscardableTextureCHROMIUM(
   return error::kNoError;
 }
 
+error::Error RasterDecoderImpl::HandleInsertFenceSyncCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  NOTIMPLEMENTED();
+  return error::kNoError;
+}
+
 void RasterDecoderImpl::DoFinish() {
   api()->glFinishFn();
   ProcessPendingQueries(true);
