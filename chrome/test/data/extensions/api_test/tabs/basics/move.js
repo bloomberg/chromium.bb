@@ -7,6 +7,13 @@ var secondWindowId;
 var moveTabIds = {};
 var kChromeUINewTabURL = "chrome://newtab/";
 
+var newTabUrls = [
+  kChromeUINewTabURL,
+  // The tab URL will be redirected to the Local New Tab Page if
+  // features::kUseGoogleLocalNtp is not enabled.
+  'chrome-search://local-ntp/local-ntp.html',
+];
+
 chrome.test.runTests([
   // Do a series of moves and removes so that we get the following
   //
@@ -32,7 +39,8 @@ chrome.test.runTests([
       }));
       chrome.tabs.getAllInWindow(firstWindowId, pass(function(tabs) {
         assertEq(pages.length, tabs.length);
-        for (var i in tabs) {
+        assertTrue(newTabUrls.includes(tabs[0].url));
+        for (var i = 1; i < tabs.length; i++) {
           assertEq(pages[i], tabs[i].url);
         }
       }));
@@ -44,7 +52,7 @@ chrome.test.runTests([
     function checkMoveResults() {
       chrome.tabs.getAllInWindow(firstWindowId, pass(function(tabs) {
         assertEq(4, tabs.length);
-        assertEq(kChromeUINewTabURL, tabs[0].url);
+        assertTrue(newTabUrls.includes(tabs[0].url));
         assertEq(pageUrl("a"), tabs[1].url);
         assertEq(pageUrl("e"), tabs[2].url);
         assertEq(pageUrl("c"), tabs[3].url);
@@ -52,7 +60,7 @@ chrome.test.runTests([
         chrome.tabs.getAllInWindow(secondWindowId, pass(function(tabs) {
           assertEq(3, tabs.length);
           assertEq(pageUrl("b"), tabs[0].url);
-          assertEq(kChromeUINewTabURL, tabs[1].url);
+          assertTrue(newTabUrls.includes(tabs[1].url));
           assertEq(pageUrl("d"), tabs[2].url);
         }));
       }));
@@ -78,14 +86,14 @@ chrome.test.runTests([
     function checkMoveResults() {
       chrome.tabs.getAllInWindow(firstWindowId, pass(function(tabs) {
         assertEq(3, tabs.length);
-        assertEq(kChromeUINewTabURL, tabs[0].url);
+        assertTrue(newTabUrls.includes(tabs[0].url));
         assertEq(pageUrl("a"), tabs[1].url);
         assertEq(pageUrl("c"), tabs[2].url);
 
         chrome.tabs.getAllInWindow(secondWindowId, pass(function(tabs) {
           assertEq(4, tabs.length);
           assertEq(pageUrl("b"), tabs[0].url);
-          assertEq(kChromeUINewTabURL, tabs[1].url);
+          assertTrue(newTabUrls.includes(tabs[1].url));
           assertEq(pageUrl("d"), tabs[2].url);
           assertEq(pageUrl("e"), tabs[3].url);
         }));
@@ -106,7 +114,7 @@ chrome.test.runTests([
                                  pass(function(tabs) {
         assertEq(3, tabs.length);
         assertEq(pageUrl("b"), tabs[0].url);
-        assertEq(kChromeUINewTabURL, tabs[1].url);
+        assertTrue(newTabUrls.includes(tabs[1].url));
         assertEq(pageUrl("e"), tabs[2].url);
       }));
     }));
@@ -135,7 +143,7 @@ chrome.test.runTests([
         assertEq(3, tabs.length);
         assertEq(pageUrl("b"), tabs[0].url);
         assertEq(pageUrl("a"), tabs[1].url);
-        assertEq(kChromeUINewTabURL, tabs[2].url);
+        assertTrue(newTabUrls.includes(tabs[2].url));
       }));
     }));
   },

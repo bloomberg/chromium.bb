@@ -2,12 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var newTabUrls = [
+  'chrome://newtab/',
+  // The tab URL will be redirected to the Local New Tab Page if
+  // features::kUseGoogleLocalNtp is not enabled.
+  'chrome-search://local-ntp/local-ntp.html',
+];
+
 function testExecuteScriptInNewTab() {
   // Create a new tab to chrome://newtab and wait for the loading to complete.
   // Then, try to inject a script into that tab. The injection should fail.
   chrome.tabs.onUpdated.addListener(function listener(tabId, changeInfo, tab) {
-    if (tab.url != 'chrome://newtab/' || changeInfo.status != 'complete')
+    if (!newTabUrls.includes(tab.url) || changeInfo.status != 'complete') {
       return;
+    }
     chrome.tabs.onUpdated.removeListener(listener);
     chrome.tabs.executeScript(tab.id, {file: 'script.js'}, function() {
       chrome.test.assertTrue(!!chrome.runtime.lastError);

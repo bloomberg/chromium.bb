@@ -420,13 +420,6 @@
 -ExtensionRequestLimitingThrottleBrowserTest.ThrottleRequest_RedirectCached
 -ExtensionRequestLimitingThrottleCommandLineBrowserTest.ThrottleRequestDisabled
 
-# Redirect responses using NavigationThrottle or by hooking
-# NavigationURLLoaderNetworkService::URLLoaderRequestController
-# instead of net::URLRequestInterceptor.
--NewTabPageInterceptorTest.204Interception
--NewTabPageInterceptorTest.404Interception
--NewTabPageInterceptorTest.FailedRequestInterception
-
 # This requires that InterceptNetworkTransactions works
 -ErrorPageNavigationCorrectionsFailTest.StaleCacheStatusFailedCorrections
 
