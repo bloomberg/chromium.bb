@@ -211,9 +211,4 @@ std::string GetPathForAndroidLocalePakWithinApk(const std::string& locale) {
   return base::android::ConvertJavaStringToUTF8(env, ret.obj());
 }
 
-float GetPrimaryDisplayScale() {
-  return Java_ResourceBundle_getPrimaryDisplayScale(
-      base::android::AttachCurrentThread());
-}
-
 }  // namespace ui
