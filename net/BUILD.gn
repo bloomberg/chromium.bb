@@ -2564,6 +2564,7 @@ static_library("test_support") {
     "cert/mock_client_cert_verifier.h",
     "cookies/cookie_monster_store_test.cc",
     "cookies/cookie_monster_store_test.h",
+    "cookies/cookie_store_change_unittest.h",
     "cookies/cookie_store_test_callbacks.cc",
     "cookies/cookie_store_test_callbacks.h",
     "cookies/cookie_store_test_helpers.cc",

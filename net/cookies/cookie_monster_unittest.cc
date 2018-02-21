@@ -31,6 +31,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_monster_store_test.h"  // For CookieStore mock
+#include "net/cookies/cookie_store_change_unittest.h"
 #include "net/cookies/cookie_store_unittest.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
@@ -107,6 +108,8 @@ struct CookieMonsterTestTraits {
     return std::make_unique<CookieMonster>(nullptr);
   }
 
+  static void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
+
   static const bool supports_http_only = true;
   static const bool supports_non_dotted_domains = true;
   static const bool preserves_trailing_dots = true;
@@ -114,11 +117,16 @@ struct CookieMonsterTestTraits {
   static const bool has_path_prefix_bug = false;
   static const bool forbids_setting_empty_name = false;
   static const bool supports_global_cookie_tracking = true;
+  static const bool supports_named_cookie_tracking = true;
+  static const bool supports_multiple_tracking_callbacks = true;
   static const int creation_time_granularity_in_ms = 0;
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(CookieMonster,
                               CookieStoreTest,
+                              CookieMonsterTestTraits);
+INSTANTIATE_TYPED_TEST_CASE_P(CookieMonster,
+                              CookieStoreChangeTest,
                               CookieMonsterTestTraits);
 
 template <typename T>
@@ -3124,157 +3132,6 @@ void RecordCookieChanges(std::vector<CanonicalCookie>* out_cookies,
   out_cookies->push_back(cookie);
   if (out_causes)
     out_causes->push_back(cause);
-}
-
-TEST_F(CookieMonsterNotificationTest, NoNotifyWithNoCookie) {
-  std::vector<CanonicalCookie> cookies;
-  std::unique_ptr<CookieStore::CookieChangedSubscription> sub(
-      monster()->AddCallbackForCookie(
-          test_url_, "abc",
-          base::Bind(&RecordCookieChanges, &cookies, nullptr)));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0U, cookies.size());
-}
-
-TEST_F(CookieMonsterNotificationTest, NoNotifyWithInitialCookie) {
-  std::vector<CanonicalCookie> cookies;
-  SetCookie(monster(), test_url_, "abc=def");
-  base::RunLoop().RunUntilIdle();
-  std::unique_ptr<CookieStore::CookieChangedSubscription> sub(
-      monster()->AddCallbackForCookie(
-          test_url_, "abc",
-          base::Bind(&RecordCookieChanges, &cookies, nullptr)));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0U, cookies.size());
-}
-
-TEST_F(CookieMonsterNotificationTest, NotifyOnSet) {
-  std::vector<CanonicalCookie> cookies;
-  std::vector<CookieStore::ChangeCause> causes;
-  std::unique_ptr<CookieStore::CookieChangedSubscription> sub(
-      monster()->AddCallbackForCookie(
-          test_url_, "abc",
-          base::Bind(&RecordCookieChanges, &cookies, &causes)));
-  SetCookie(monster(), test_url_, "abc=def");
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1U, cookies.size());
-  EXPECT_EQ(1U, causes.size());
-
-  EXPECT_EQ("abc", cookies[0].Name());
-  EXPECT_EQ("def", cookies[0].Value());
-  EXPECT_EQ(CookieStore::ChangeCause::INSERTED, causes[0]);
-}
-
-TEST_F(CookieMonsterNotificationTest, NotifyOnDelete) {
-  std::vector<CanonicalCookie> cookies;
-  std::vector<CookieStore::ChangeCause> causes;
-  std::unique_ptr<CookieStore::CookieChangedSubscription> sub(
-      monster()->AddCallbackForCookie(
-          test_url_, "abc",
-          base::Bind(&RecordCookieChanges, &cookies, &causes)));
-  SetCookie(monster(), test_url_, "abc=def");
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1U, cookies.size());
-  EXPECT_EQ(1U, causes.size());
-
-  DeleteCookie(monster(), test_url_, "abc");
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2U, cookies.size());
-  EXPECT_EQ(2U, causes.size());
-
-  EXPECT_EQ("abc", cookies[1].Name());
-  EXPECT_EQ("def", cookies[1].Value());
-  EXPECT_EQ(CookieStore::ChangeCause::EXPLICIT, causes[1]);
-}
-
-TEST_F(CookieMonsterNotificationTest, NotifyOnUpdate) {
-  std::vector<CanonicalCookie> cookies;
-  std::vector<CookieStore::ChangeCause> causes;
-  std::unique_ptr<CookieStore::CookieChangedSubscription> sub(
-      monster()->AddCallbackForCookie(
-          test_url_, "abc",
-          base::Bind(&RecordCookieChanges, &cookies, &causes)));
-  SetCookie(monster(), test_url_, "abc=def");
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1U, cookies.size());
-
-  // Replacing an existing cookie is actually a two-phase delete + set
-  // operation, so we get an extra notification.
-  SetCookie(monster(), test_url_, "abc=ghi");
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(3U, cookies.size());
-  EXPECT_EQ(3U, causes.size());
-
-  EXPECT_EQ("abc", cookies[1].Name());
-  EXPECT_EQ("def", cookies[1].Value());
-  EXPECT_EQ(CookieStore::ChangeCause::OVERWRITE, causes[1]);
-
-  EXPECT_EQ("abc", cookies[2].Name());
-  EXPECT_EQ("ghi", cookies[2].Value());
-  EXPECT_EQ(CookieStore::ChangeCause::INSERTED, causes[2]);
-}
-
-TEST_F(CookieMonsterNotificationTest, NotifyDestroyRace) {
-  std::vector<CanonicalCookie> cookies;
-  std::unique_ptr<CookieStore::CookieChangedSubscription> sub(
-      monster()->AddCallbackForCookie(
-          test_url_, "abc",
-          base::Bind(&RecordCookieChanges, &cookies, nullptr)));
-  SetCookie(monster(), test_url_, "abc=def");
-
-  // If the notification is synchronous, there's nothing to test.
-  if (1u == cookies.size())
-    return;
-
-  // At this point a task has been posted to execute the callback,
-  // but the callback has not yet been executed.  If the subscription was
-  // alive when the callback was executed, that would also be valid
-  // behavior.  If the subscription is destroyed, and the posted task is
-  // let run, and the callback actually happens, that is invalid behavior.
-  sub.reset();
-  base::RunLoop().RunUntilIdle();
-
-  // Subscription reset should have blocked delivery.
-  EXPECT_EQ(0u, cookies.size());
-}
-
-TEST_F(CookieMonsterNotificationTest, MultipleNotifies) {
-  std::vector<CanonicalCookie> cookies0;
-  std::vector<CanonicalCookie> cookies1;
-  std::unique_ptr<CookieStore::CookieChangedSubscription> sub0(
-      monster()->AddCallbackForCookie(
-          test_url_, "abc",
-          base::Bind(&RecordCookieChanges, &cookies0, nullptr)));
-  std::unique_ptr<CookieStore::CookieChangedSubscription> sub1(
-      monster()->AddCallbackForCookie(
-          test_url_, "def",
-          base::Bind(&RecordCookieChanges, &cookies1, nullptr)));
-  SetCookie(monster(), test_url_, "abc=def");
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1U, cookies0.size());
-  EXPECT_EQ(0U, cookies1.size());
-  SetCookie(monster(), test_url_, "def=abc");
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1U, cookies0.size());
-  EXPECT_EQ(1U, cookies1.size());
-}
-
-TEST_F(CookieMonsterNotificationTest, MultipleSameNotifies) {
-  std::vector<CanonicalCookie> cookies0;
-  std::vector<CanonicalCookie> cookies1;
-  std::unique_ptr<CookieStore::CookieChangedSubscription> sub0(
-      monster()->AddCallbackForCookie(
-          test_url_, "abc",
-          base::Bind(&RecordCookieChanges, &cookies0, nullptr)));
-  std::unique_ptr<CookieStore::CookieChangedSubscription> sub1(
-      monster()->AddCallbackForCookie(
-          test_url_, "abc",
-          base::Bind(&RecordCookieChanges, &cookies1, nullptr)));
-  SetCookie(monster(), test_url_, "abc=def");
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1U, cookies0.size());
-  EXPECT_EQ(1U, cookies1.size());
 }
 
 TEST_F(CookieMonsterNotificationTest, GlobalNotBroadcast) {
