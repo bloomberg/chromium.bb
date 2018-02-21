@@ -75,9 +75,7 @@ content::RenderWidgetHost* HungPagesTableModel::GetRenderWidgetHost() {
 void HungPagesTableModel::InitForWebContents(
     WebContents* contents,
     content::RenderWidgetHost* render_widget_host) {
-  if (render_widget_host_)
-    process_observer_.Remove(render_widget_host_->GetProcess());
-
+  process_observer_.RemoveAll();
   render_widget_host_ = render_widget_host;
   tab_observers_.clear();
 
