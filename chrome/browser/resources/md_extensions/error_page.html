@@ -177,10 +177,10 @@
         <div id="heading">
           <button id="close-button" is="paper-icon-button-light"
               aria-label="$i18n{back}"
-              class="icon-arrow-back no-overlap" on-tap="onCloseButtonTap_">
+              class="icon-arrow-back no-overlap" on-click="onCloseButtonTap_">
           </button>
           <span>$i18n{errorsPageHeading}</span>
-          <paper-button on-tap="onClearAllTap_" hidden="[[!entries_.length]]">
+          <paper-button on-click="onClearAllTap_" hidden="[[!entries_.length]]">
             $i18n{clearAll}
           </paper-button>
         </div>
@@ -190,7 +190,7 @@
               <div class="item-container">
                 <div class$="error-item
                     [[computeErrorClass_(item, selectedEntry_)]]">
-                  <div actionable class=" start" on-tap="onErrorItemAction_"
+                  <div actionable class=" start" on-click="onErrorItemAction_"
                       on-keydown="onErrorItemAction_" tabindex="0"
                       role="button">
                     <iron-icon icon$="[[computeErrorIcon_(item)]]"
@@ -204,7 +204,7 @@
                   </div>
                   <div class="separator"></div>
                   <button is="paper-icon-button-light" class="icon-delete-gray"
-                      on-tap="onDeleteErrorAction_"
+                      on-click="onDeleteErrorAction_"
                       aria-describedby$="[[item.id]]"
                       aria-label="$i18n{clearEntry}"
                       on-keydown="onDeleteErrorAction_">
@@ -226,7 +226,7 @@
                       </div>
                       <ul class="stack-trace-container">
                         <template is="dom-repeat" items="[[item.stackTrace]]">
-                          <li on-tap="onStackFrameTap_"
+                          <li on-click="onStackFrameTap_"
                               hidden="[[!shouldDisplayFrame_(item.url)]]"
                               class$="[[getStackFrameClass_(item,
                                   selectedStackFrame_)]]">
@@ -244,7 +244,7 @@
                     <paper-button class="devtool-button action-button"
                         hidden$="[[!computeIsRuntimeError_(item)]]"
                         disabled="[[!item.canInspect]]"
-                        on-tap="onDevToolButtonTap_">
+                        on-click="onDevToolButtonTap_">
                       $i18n{openInDevtool}
                     </paper-button>
                   </div>

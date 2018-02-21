@@ -95,13 +95,13 @@
               </div>
               <div class="item-controls">
                 <paper-button hidden="[[!canEditAutoLaunch_]]"
-                    on-tap="onAutoLaunchButtonTap_">
+                    on-click="onAutoLaunchButtonTap_">
                   [[getAutoLaunchButtonLabel_(item.autoLaunch,
                       '$i18nPolymer{kioskDisableAutoLaunch}',
                       '$i18nPolymer{kioskEnableAutoLaunch}')]]
                 </paper-button>
                 <button is="paper-icon-button-light" class="icon-delete-gray"
-                    on-tap="onDeleteAppTap_"></button>
+                    on-click="onDeleteAppTap_"></button>
               </div>
             </div>
           </template>
@@ -114,7 +114,7 @@
                   '$i18nPolymer{kioskInvalidApp}', errorAppId_)]]"
               on-keydown="clearInputInvalid_">
           </paper-input>
-          <paper-button id="add-button" on-tap="onAddAppTap_"
+          <paper-button id="add-button" on-click="onAddAppTap_"
               disabled="[[!addAppInput_]]">
             $i18n{add}
           </paper-button>
@@ -126,7 +126,7 @@
         </paper-checkbox>
       </div>
       <div slot="button-container">
-        <paper-button class="action-button" on-tap="onDoneTap_">
+        <paper-button class="action-button" on-click="onDoneTap_">
           $i18n{done}
         </paper-button>
       </div>
@@ -136,10 +136,12 @@
       <div slot="title">$i18n{kioskDisableBailoutWarningTitle}</div>
       <div slot="body">$i18n{kioskDisableBailoutWarningBody}</div>
       <div slot="button-container">
-        <paper-button class="cancel-button" on-tap="onBailoutDialogCancelTap_">
+        <paper-button class="cancel-button"
+            on-click="onBailoutDialogCancelTap_">
           $i18n{cancel}
         </paper-button>
-        <paper-button class="action-button" on-tap="onBailoutDialogConfirmTap_">
+        <paper-button class="action-button"
+            on-click="onBailoutDialogConfirmTap_">
           $i18n{confirm}
         </paper-button>
       </div>

@@ -61,7 +61,7 @@
       <div id="no-items" class="empty-list-message"
           hidden$="[[!shouldShowEmptyItemsMessage_(
               apps.length, extensions.length)]]">
-        <span on-tap="onNoExtensionsTap_">$i18nRaw{noExtensionsOrApps}</span>
+        <span on-click="onNoExtensionsTap_">$i18nRaw{noExtensionsOrApps}</span>
       </div>
       <div id="no-search-results" class="empty-list-message"
           hidden$="[[!shouldShowEmptySearchMessage_(

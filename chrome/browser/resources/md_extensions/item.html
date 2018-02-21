@@ -292,12 +292,12 @@
                   </span>
                   <a class="clippable-flex-text" is="action-link"
                       title="[[computeFirstInspectTitle_(data.views)]]"
-                      on-tap="onInspectTap_">
+                      on-click="onInspectTap_">
                     [[computeFirstInspectLabel_(data.views)]]
                   </a>
                   <a is="action-link"
                       hidden$="[[computeExtraViewsHidden_(data.views)]]"
-                      on-tap="onExtraInspectTap_">
+                      on-click="onExtraInspectTap_">
                     [[computeExtraInspectLabel_(data.views)]]
                   </a>
                 </div>
@@ -308,17 +308,17 @@
       </div>
       <div id="button-strip" class="layout horizontal center">
         <div class="layout flex horizontal center">
-          <paper-button id="details-button" on-tap="onDetailsTap_"
+          <paper-button id="details-button" on-click="onDetailsTap_"
               aria-describedby="a11yAssociation">
             $i18n{itemDetails}
           </paper-button>
-          <paper-button id="remove-button" on-tap="onRemoveTap_"
+          <paper-button id="remove-button" on-click="onRemoveTap_"
               aria-describedby="a11yAssociation"
               hidden="[[isControlled_(data.controlledInfo)]]">
             $i18n{itemRemove}
           </paper-button>
           <template is="dom-if" if="[[shouldShowErrorsButton_(data.*)]]">
-            <paper-button id="errors-button" on-tap="onErrorsTap_"
+            <paper-button id="errors-button" on-click="onErrorsTap_"
                 aria-describedby="a11yAssociation">
               $i18n{itemErrors}
             </paper-button>
@@ -327,17 +327,17 @@
         <template is="dom-if" if="[[!computeDevReloadButtonHidden_(data.*)]]">
           <button id="dev-reload-button" is="paper-icon-button-light"
               aria-label="$i18n{itemReload}" aria-describedby="a11yAssociation"
-              class="icon-refresh no-overlap" on-tap="onReloadTap_">
+              class="icon-refresh no-overlap" on-click="onReloadTap_">
           </button>
         </template>
         <template is="dom-if" if="[[data.disableReasons.corruptInstall]]">
           <paper-button id="repair-button" class="action-button"
-              aria-describedby="a11yAssociation" on-tap="onRepairTap_">
+              aria-describedby="a11yAssociation" on-click="onRepairTap_">
             $i18n{itemRepair}
           </paper-button>
         </template>
         <template is="dom-if" if="[[isTerminated_(data.state)]]">
-          <paper-button id="terminated-reload-button" on-tap="onReloadTap_"
+          <paper-button id="terminated-reload-button" on-click="onReloadTap_"
               aria-describedby="a11yAssociation" class="action-button">
             $i18n{itemReload}
           </paper-button>

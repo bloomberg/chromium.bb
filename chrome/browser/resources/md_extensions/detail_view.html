@@ -195,7 +195,7 @@
         <div id="top-bar">
           <button id="close-button" is="paper-icon-button-light"
               aria-label="$i18n{back}" class="icon-arrow-back no-overlap"
-              on-tap="onCloseButtonTap_"></button>
+              on-click="onCloseButtonTap_"></button>
           <img id="icon" src="[[data.iconUrl]]"
               alt$="[[appOrExtension(
                   data.type,
@@ -247,7 +247,7 @@
               <span>$i18n{itemCorruptInstall}</span>
             </div>
             <paper-button id="repair-button" class="action-button"
-                on-tap="onRepairTap_">
+                on-click="onRepairTap_">
               $i18n{itemRepair}
             </paper-button>
           </div>
@@ -299,7 +299,7 @@
                 <template is="dom-repeat" items="[[data.views]]">
                   <li>
                     <a is="action-link" class="inspectable-view"
-                        on-tap="onInspectTap_">
+                        on-click="onInspectTap_">
                       [[computeInspectLabel_(item)]]
                     </a>
                   </li>
@@ -382,15 +382,15 @@
             disabled="[[!isEnabled_(data.state)]]"
             hidden="[[!shouldShowOptionsLink_(data.*)]]"
             icon-class="icon-external" label="$i18n{itemOptions}"
-            on-tap="onExtensionOptionsTap_">
+            on-click="onExtensionOptionsTap_">
         </button>
         <button class="hr" hidden="[[!data.manifestHomePageUrl.length]]"
             is="cr-link-row" icon-class="icon-external" id="extensionWebsite"
-            label="$i18n{extensionWebsite}" on-tap="onExtensionWebSiteTap_">
+            label="$i18n{extensionWebsite}" on-click="onExtensionWebSiteTap_">
         </button>
         <button class="hr" hidden="[[!data.webStoreUrl.length]]"
             is="cr-link-row" icon-class="icon-external" id="viewInStore"
-            label="$i18n{viewInStore}" on-tap="onViewInStoreTap_">
+            label="$i18n{viewInStore}" on-click="onViewInStoreTap_">
         </button>
         <div class="section block">
           <div class="section-title">$i18n{itemSource}</div>
@@ -400,7 +400,7 @@
           <div id="load-path" class="section-content"
               hidden$="[[!data.prettifiedPath]]">
             <span>$i18n{itemExtensionPath}</span>
-            <a is="action-link" on-tap="onLoadPathTap_">
+            <a is="action-link" on-click="onLoadPathTap_">
               [[data.prettifiedPath]]
             </a>
           </div>
@@ -408,7 +408,7 @@
         <button class="hr" is="cr-link-row"
             hidden="[[isControlled_(data.controlledInfo)]]"
             icon-class="subpage-arrow" id="remove-extension"
-            label="$i18n{itemRemoveExtension}" on-tap="onRemoveTap_">
+            label="$i18n{itemRemoveExtension}" on-click="onRemoveTap_">
         </button>
       </div>
     </div>
