@@ -10,9 +10,11 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 
@@ -30,6 +32,22 @@ constexpr int kDividerVerticalPadding = 10;
 int GetDividerAndArrowReservedWidth() {
   return 2 * kDividerHorizontalPadding + kDividerWidth +
          kDropDownArrowButtonWidth;
+}
+
+// Sizes |image| to 40x40, adds a white background in case it is transparent and
+// shapes it circular.
+gfx::ImageSkia PrepareAvatarImage(const gfx::Image& image) {
+  // Add white background.
+  SkBitmap mask;
+  mask.allocN32Pixels(image.Width(), image.Height());
+  mask.eraseARGB(255, 255, 255, 0);
+  SkBitmap opaque_bitmap = SkBitmapOperations::CreateButtonBackground(
+      SK_ColorWHITE, image.AsBitmap(), mask);
+  // Size and shape.
+  return profiles::GetSizedAvatarIcon(
+             gfx::Image::CreateFrom1xBitmap(opaque_bitmap), true, 40, 40,
+             profiles::SHAPE_CIRCLE)
+      .AsImageSkia();
 }
 
 }  // namespace
@@ -89,10 +107,8 @@ DiceSigninButton::DiceSigninButton(const AccountInfo& account,
   SetProminent(true);
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-  // Set the image
-  gfx::Image profile_photo_circular = profiles::GetSizedAvatarIcon(
-      account_icon, true, 40, 40, profiles::SHAPE_CIRCLE);
-  SetImage(views::Button::STATE_NORMAL, *profile_photo_circular.ToImageSkia());
+  // Set the image.
+  SetImage(views::Button::STATE_NORMAL, PrepareAvatarImage(account_icon));
 }
 
 DiceSigninButton::~DiceSigninButton() = default;
