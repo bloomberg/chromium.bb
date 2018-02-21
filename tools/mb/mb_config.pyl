@@ -151,7 +151,7 @@
       'ToTWin64(dll)': 'clang_tot_shared_release_dcheck',
       'ToTWinCFI': 'clang_tot_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_x86',
       'ToTWinCFI64': 'clang_tot_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on',
-      'ToTWinLibcxx64': 'clang_tot_official_minimal_symbols_static_release_libcxx',
+      'ToTWinLibcxx64': 'clang_tot_official_optimize_minimal_symbols_static_release_libcxx',
       'ToTWinThinLTO64': 'clang_tot_official_full_symbols_thin_lto_static_use_lld',
       'ToTiOS': 'ios',
       'UBSanVptr Linux': 'ubsan_vptr_release_bot',
@@ -1196,8 +1196,8 @@
       'clang_tot', 'official', 'minimal_symbols', 'static', 'release', 'x86',
     ],
 
-    'clang_tot_official_minimal_symbols_static_release_libcxx': [
-      'clang_tot', 'official', 'minimal_symbols', 'static', 'release', 'libcxx',
+    'clang_tot_official_optimize_minimal_symbols_static_release_libcxx': [
+      'clang_tot', 'official_optimize', 'minimal_symbols', 'static', 'release', 'libcxx',
     ],
 
     'clang_tot_release_minimal_symbols_thin_lto_static_use_lld': [
