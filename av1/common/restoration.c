@@ -27,7 +27,10 @@
 #include "aom_ports/mem.h"
 
 const sgr_params_type sgr_params[SGRPROJ_PARAMS] = {
-  // r1, eps1, r2, eps2
+// r1, eps1, r2, eps2
+#if CONFIG_SKIP_SGR
+// Setting r = 0 skips the filter
+#endif  // CONFIG_SKIP_SGR
   { 2, 12, 1, 4 },  { 2, 15, 1, 6 },  { 2, 18, 1, 8 },  { 2, 20, 1, 9 },
   { 2, 22, 1, 10 }, { 2, 25, 1, 11 }, { 2, 35, 1, 12 }, { 2, 45, 1, 13 },
   { 2, 55, 1, 14 }, { 2, 65, 1, 15 }, { 2, 75, 1, 16 }, { 2, 30, 1, 6 },
@@ -1049,6 +1052,40 @@ void av1_selfguided_restoration_c(const uint8_t *dgd8, int width, int height,
     }
   }
 
+#if CONFIG_SKIP_SGR
+  // If params->r == 0 we skip the corresponding filter. We only allow one of
+  // the radii to be 0, as having both equal to 0 would be equivalent to
+  // skipping SGR entirely.
+  assert(!(params->r1 == 0 && params->r2 == 0));
+
+#if CONFIG_FAST_SGR
+  if (params->r1 > 0) {
+    // r == 2 filter
+    assert(params->r1 == 2);
+    av1_selfguided_restoration_fast_internal(dgd32, width, height, dgd32_stride,
+                                             flt1, flt_stride, bit_depth,
+                                             params->r1, params->e1);
+  }
+
+  if (params->r2 > 0) {
+    // r == 1 filter
+    assert(params->r2 == 1);
+    av1_selfguided_restoration_internal(dgd32, width, height, dgd32_stride,
+                                        flt2, flt_stride, bit_depth, params->r2,
+                                        params->e2);
+  }
+#else
+  if (params->r1 > 0)
+    av1_selfguided_restoration_internal(dgd32, width, height, dgd32_stride,
+                                        flt1, flt_stride, bit_depth, params->r1,
+                                        params->e1);
+
+  if (params->r2 > 0)
+    av1_selfguided_restoration_internal(dgd32, width, height, dgd32_stride,
+                                        flt2, flt_stride, bit_depth, params->r2,
+                                        params->e2);
+#endif  // CONFIG_FAST_SGR
+#else   // CONFIG_SKIP_SGR
 #if CONFIG_FAST_SGR
   // r == 2 filter
   av1_selfguided_restoration_fast_internal(dgd32, width, height, dgd32_stride,
@@ -1066,6 +1103,7 @@ void av1_selfguided_restoration_c(const uint8_t *dgd8, int width, int height,
                                       flt_stride, bit_depth, params->r2,
                                       params->e2);
 #endif  // CONFIG_FAST_SGR
+#endif  // CONFIG_SKIP_SGR
 }
 
 void apply_selfguided_restoration_c(const uint8_t *dat8, int width, int height,
@@ -1077,8 +1115,15 @@ void apply_selfguided_restoration_c(const uint8_t *dat8, int width, int height,
   int32_t *flt1 = tmpbuf;
   int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
   assert(width * height <= RESTORATION_TILEPELS_MAX);
+
+#if CONFIG_SKIP_SGR
+  const sgr_params_type *params = &sgr_params[eps];
+  av1_selfguided_restoration_c(dat8, width, height, stride, flt1, flt2, width,
+                               params, bit_depth, highbd);
+#else   // CONFIG_SKIP_SGR
   av1_selfguided_restoration_c(dat8, width, height, stride, flt1, flt2, width,
                                &sgr_params[eps], bit_depth, highbd);
+#endif  // CONFIG_SKIP_SGR
   decode_xq(xqd, xq);
   for (int i = 0; i < height; ++i) {
     for (int j = 0; j < width; ++j) {
@@ -1088,9 +1133,17 @@ void apply_selfguided_restoration_c(const uint8_t *dat8, int width, int height,
 
       const uint16_t pre_u = highbd ? *CONVERT_TO_SHORTPTR(dat8ij) : *dat8ij;
       const int32_t u = (int32_t)pre_u << SGRPROJ_RST_BITS;
+#if CONFIG_SKIP_SGR
+      int32_t v = u << SGRPROJ_PRJ_BITS;
+      // If params->r == 0 then we skipped the filtering in
+      // av1_selfguided_restoration_c, i.e. flt[k] == u
+      if (params->r1 > 0) v += xq[0] * (flt1[k] - u);
+      if (params->r2 > 0) v += xq[1] * (flt2[k] - u);
+#else   // CONFIG_SKIP_SGR
       const int32_t f1 = flt1[k] - u;
       const int32_t f2 = flt2[k] - u;
       const int32_t v = xq[0] * f1 + xq[1] * f2 + (u << SGRPROJ_PRJ_BITS);
+#endif  // CONFIG_SKIP_SGR
       const int16_t w =
           (int16_t)ROUND_POWER_OF_TWO(v, SGRPROJ_PRJ_BITS + SGRPROJ_RST_BITS);
 
