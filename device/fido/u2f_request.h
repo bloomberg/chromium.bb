@@ -79,6 +79,7 @@ class U2fRequest : public U2fDiscovery::Observer {
   FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestBasicMachine);
   FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestAlreadyPresentDevice);
   FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestMultipleDiscoveries);
+  FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestSlowDiscovery);
   FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestMultipleDiscoveriesWithFailures);
 
   // U2fDiscovery::Observer

@@ -26,6 +26,12 @@ bool MockU2fDiscovery::RemoveDevice(base::StringPiece device_id) {
   return U2fDiscovery::RemoveDevice(device_id);
 }
 
+void MockU2fDiscovery::AddDeviceWithoutNotification(
+    std::unique_ptr<U2fDevice> device) {
+  std::string device_id = device->GetId();
+  devices_.emplace(std::move(device_id), std::move(device));
+}
+
 base::ObserverList<U2fDiscovery::Observer>& MockU2fDiscovery::GetObservers() {
   return observers_;
 }
