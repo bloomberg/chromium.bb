@@ -42,6 +42,7 @@ public class BaseRobolectricTestRunner extends LocalRobolectricTestRunner {
         super(testClass);
     }
 
+    @Override
     protected Class<? extends TestLifecycle> getTestLifecycleClass() {
         return BaseTestLifecycle.class;
     }

@@ -89,6 +89,7 @@ public class FontPreloadingWorkaround {
             mRealPackageManager = realPackageManager;
         }
 
+        @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             Object result;
             try {

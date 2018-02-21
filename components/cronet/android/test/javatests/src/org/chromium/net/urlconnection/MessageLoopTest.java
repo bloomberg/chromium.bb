@@ -37,6 +37,7 @@ public class MessageLoopTest {
     private final ExecutorService mExecutorService =
             Executors.newSingleThreadExecutor(new ExecutorThreadFactory());
     private class ExecutorThreadFactory implements ThreadFactory {
+        @Override
         public Thread newThread(Runnable r) {
             mTestThread = new Thread(r);
             return mTestThread;

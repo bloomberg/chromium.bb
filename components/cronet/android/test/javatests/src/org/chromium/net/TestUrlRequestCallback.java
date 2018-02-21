@@ -72,6 +72,7 @@ public class TestUrlRequestCallback extends UrlRequest.Callback {
     private int mBufferPositionBeforeRead;
 
     private class ExecutorThreadFactory implements ThreadFactory {
+        @Override
         public Thread newThread(final Runnable r) {
             mExecutorThread = new Thread(new Runnable() {
                 @Override
@@ -327,6 +328,7 @@ public class TestUrlRequestCallback extends UrlRequest.Callback {
             throw new IllegalStateException("Listener Exception.");
         }
         Runnable task = new Runnable() {
+            @Override
             public void run() {
                 request.cancel();
             }

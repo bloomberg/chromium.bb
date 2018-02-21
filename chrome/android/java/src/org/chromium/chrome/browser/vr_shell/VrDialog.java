@@ -43,6 +43,7 @@ public class VrDialog extends FrameLayout {
      */
     public void initVrDialog() {
         addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
                 mVrDialogManager.setDialogSize(getWidth(), getHeight());

@@ -74,6 +74,7 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
     private final DirectExecutor mDirectExecutor;
 
     private class ExecutorThreadFactory implements ThreadFactory {
+        @Override
         public Thread newThread(Runnable r) {
             mExecutorThread = new Thread(r);
             return mExecutorThread;
@@ -388,6 +389,7 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
             throw new IllegalStateException("Callback Exception.");
         }
         Runnable task = new Runnable() {
+            @Override
             public void run() {
                 stream.cancel();
             }

@@ -126,6 +126,7 @@ public class BidirectionalStreamBuilderImpl extends ExperimentalBidirectionalStr
         return this;
     }
 
+    @Override
     @SuppressLint("WrongConstant") // TODO(jbudorick): Remove this after rolling to the N SDK.
     public ExperimentalBidirectionalStream build() {
         return mCronetEngine.createBidirectionalStream(mUrl, mCallback, mExecutor, mHttpMethod,
