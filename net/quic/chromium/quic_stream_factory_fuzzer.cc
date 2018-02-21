@@ -26,6 +26,7 @@
 #include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/gtest_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 
 namespace net {
 
@@ -163,6 +164,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   HttpRequestInfo request_info;
   request_info.method = kMethod;
   request_info.url = GURL(kUrl);
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY, env->net_log,
                            CompletionOnceCallback());
 
