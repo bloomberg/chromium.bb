@@ -2615,23 +2615,14 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 - (void)setUpForTestingWithCompletionHandler:
     (ProceduralBlock)completionHandler {
   self.currentBVC = self.mainBVC;
-
-  scoped_refptr<CallbackCounter> callbackCounter =
-      new CallbackCounter(base::BindBlockArc(^{
-        [self setUpCurrentBVCForTesting];
-        if (completionHandler) {
-          completionHandler();
-        }
-      }));
-  id decrementCallbackCounterCount = ^{
-    callbackCounter->DecrementCount();
-  };
-
-  callbackCounter->IncrementCount();
   [self removeBrowsingDataFromBrowserState:_mainBrowserState
                                       mask:BrowsingDataRemoveMask::REMOVE_ALL
                                 timePeriod:browsing_data::TimePeriod::ALL_TIME
-                         completionHandler:decrementCallbackCounterCount];
+                         completionHandler:^{
+                           [self setUpCurrentBVCForTesting];
+                           if (completionHandler)
+                             completionHandler();
+                         }];
 }
 
 @end
