@@ -19,14 +19,6 @@
 
 namespace policy {
 
-namespace {
-
-// Determines the time, measured from the time of issue, after which the command
-// queue will consider this command expired if the command has not been started.
-const int kCommandExpirationTimeInMinutes = 10;
-
-}  // namespace
-
 DeviceCommandFetchStatusJob::DeviceCommandFetchStatusJob() {}
 
 DeviceCommandFetchStatusJob::~DeviceCommandFetchStatusJob() {}
@@ -34,14 +26,6 @@ DeviceCommandFetchStatusJob::~DeviceCommandFetchStatusJob() {}
 enterprise_management::RemoteCommand_Type
 DeviceCommandFetchStatusJob::GetType() const {
   return enterprise_management::RemoteCommand_Type_DEVICE_FETCH_STATUS;
-}
-
-base::TimeDelta DeviceCommandFetchStatusJob::GetCommmandTimeout() const {
-  return base::TimeDelta::FromMinutes(kCommandExpirationTimeInMinutes);
-}
-
-bool DeviceCommandFetchStatusJob::IsExpired(base::TimeTicks now) {
-  return now > issued_time() + GetCommmandTimeout();
 }
 
 void DeviceCommandFetchStatusJob::RunImpl(

@@ -80,7 +80,7 @@ void RemoteCommandsQueue::ScheduleNextJob() {
   incoming_commands_.pop();
 
   execution_timeout_timer_.Start(FROM_HERE,
-                                 running_command_->GetCommmandTimeout(), this,
+                                 running_command_->GetCommandTimeout(), this,
                                  &RemoteCommandsQueue::OnCommandTimeout);
 
   if (running_command_->Run(clock_->NowTicks(),

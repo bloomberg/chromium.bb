@@ -13,7 +13,10 @@ namespace policy {
 
 namespace {
 
-const int kDefaultCommandTimeoutInMinutes = 3;
+constexpr base::TimeDelta kDefaultCommandTimeout =
+    base::TimeDelta::FromMinutes(10);
+constexpr base::TimeDelta kDefaultCommandExpirationTime =
+    base::TimeDelta::FromMinutes(10);
 
 }  // namespace
 
@@ -141,8 +144,8 @@ void RemoteCommandJob::Terminate() {
     finished_callback_.Run();
 }
 
-base::TimeDelta RemoteCommandJob::GetCommmandTimeout() const {
-  return base::TimeDelta::FromMinutes(kDefaultCommandTimeoutInMinutes);
+base::TimeDelta RemoteCommandJob::GetCommandTimeout() const {
+  return kDefaultCommandTimeout;
 }
 
 bool RemoteCommandJob::IsExecutionFinished() const {
@@ -168,7 +171,7 @@ bool RemoteCommandJob::ParseCommandPayload(const std::string& command_payload) {
 }
 
 bool RemoteCommandJob::IsExpired(base::TimeTicks now) {
-  return false;
+  return now > issued_time() + kDefaultCommandExpirationTime;
 }
 
 void RemoteCommandJob::TerminateImpl() {

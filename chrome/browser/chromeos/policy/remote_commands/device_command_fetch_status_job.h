@@ -19,11 +19,9 @@ class DeviceCommandFetchStatusJob : public RemoteCommandJob {
 
   // RemoteCommandJob:
   enterprise_management::RemoteCommand_Type GetType() const override;
-  base::TimeDelta GetCommmandTimeout() const override;
 
  protected:
   // RemoteCommandJob:
-  bool IsExpired(base::TimeTicks now) override;
   void RunImpl(const CallbackWithResult& succeeded_callback,
                const CallbackWithResult& failed_callback) override;
 

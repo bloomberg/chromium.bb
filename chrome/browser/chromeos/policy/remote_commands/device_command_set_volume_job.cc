@@ -19,10 +19,6 @@ namespace policy {
 
 namespace {
 
-// Determines the time, measured from the time of issue, after which the command
-// queue will consider this command expired if the command has not been started.
-const int kCommandExpirationTimeInMinutes = 10;
-
 const char kVolumeFieldName[] = "volume";
 
 }  // namespace
@@ -34,10 +30,6 @@ DeviceCommandSetVolumeJob::~DeviceCommandSetVolumeJob() {}
 enterprise_management::RemoteCommand_Type DeviceCommandSetVolumeJob::GetType()
     const {
   return enterprise_management::RemoteCommand_Type_DEVICE_SET_VOLUME;
-}
-
-base::TimeDelta DeviceCommandSetVolumeJob::GetCommmandTimeout() const {
-  return base::TimeDelta::FromMinutes(kCommandExpirationTimeInMinutes);
 }
 
 bool DeviceCommandSetVolumeJob::ParseCommandPayload(
@@ -54,11 +46,6 @@ bool DeviceCommandSetVolumeJob::ParseCommandPayload(
   if (volume_ < 0 || volume_ > 100)
     return false;
   return true;
-}
-
-bool DeviceCommandSetVolumeJob::IsExpired(base::TimeTicks now) {
-  return now > issued_time() + base::TimeDelta::FromMinutes(
-                                   kCommandExpirationTimeInMinutes);
 }
 
 void DeviceCommandSetVolumeJob::RunImpl(
