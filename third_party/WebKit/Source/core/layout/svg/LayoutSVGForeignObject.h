@@ -79,6 +79,7 @@ class LayoutSVGForeignObject final : public LayoutSVGBlock {
   void ComputeLogicalHeight(LayoutUnit logical_height,
                             LayoutUnit logical_top,
                             LogicalExtentComputedValues&) const override;
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 
   bool needs_transform_update_;
 };

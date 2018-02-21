@@ -50,7 +50,7 @@ void SVGForeignObjectPainter::Paint(const PaintInfo& paint_info) {
   // apply clip manually. See LayoutSVGBlock::allowsOverflowClip() for details.
   Optional<FloatClipRecorder> clip_recorder;
   Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
-  if (SVGLayoutSupport::IsOverflowHidden(&layout_svg_foreign_object_)) {
+  if (SVGLayoutSupport::IsOverflowHidden(layout_svg_foreign_object_)) {
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       const auto* fragment =
           paint_info.FragmentToPaint(layout_svg_foreign_object_);

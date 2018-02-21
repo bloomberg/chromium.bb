@@ -81,11 +81,23 @@ bool LayoutSVGViewportContainer::NodeAtFloatPoint(
     const FloatPoint& point_in_parent,
     HitTestAction action) {
   // Respect the viewport clip which is in parent coordinates.
-  if (SVGLayoutSupport::IsOverflowHidden(this)) {
+  if (SVGLayoutSupport::IsOverflowHidden(*this)) {
     if (!viewport_.Contains(point_in_parent))
       return false;
   }
   return LayoutSVGContainer::NodeAtFloatPoint(result, point_in_parent, action);
+}
+
+void LayoutSVGViewportContainer::StyleDidChange(
+    StyleDifference diff,
+    const ComputedStyle* old_style) {
+  LayoutSVGContainer::StyleDidChange(diff, old_style);
+
+  if (old_style && (SVGLayoutSupport::IsOverflowHidden(*old_style) !=
+                    SVGLayoutSupport::IsOverflowHidden(StyleRef()))) {
+    // See NeedsOverflowClip() in PaintPropertyTreeBuilder for the reason.
+    SetNeedsPaintPropertyUpdate();
+  }
 }
 
 }  // namespace blink

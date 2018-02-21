@@ -68,6 +68,8 @@ class LayoutSVGBlock : public LayoutBlockFlow {
     return type == kLayoutObjectSVG || LayoutBlockFlow::IsOfType(type);
   }
 
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
+
  private:
   LayoutRect AbsoluteVisualRect() const final;
 
@@ -77,7 +79,6 @@ class LayoutSVGBlock : public LayoutBlockFlow {
                      const LayoutPoint& accumulated_offset) const final;
 
   void UpdateFromStyle() final;
-  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) final;
 
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation& location_in_container,

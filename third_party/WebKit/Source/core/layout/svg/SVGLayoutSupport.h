@@ -60,7 +60,8 @@ class CORE_EXPORT SVGLayoutSupport {
   static void LayoutResourcesIfNeeded(const LayoutObject&);
 
   // Helper function determining whether overflow is hidden.
-  static bool IsOverflowHidden(const LayoutObject*);
+  static bool IsOverflowHidden(const LayoutObject&);
+  static bool IsOverflowHidden(const ComputedStyle&);
 
   // Adjusts the visualRect in combination with filter, clipper and masker
   // in local coordinates.
