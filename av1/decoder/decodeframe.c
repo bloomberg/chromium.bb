@@ -2617,7 +2617,6 @@ static void show_existing_frame_reset(AV1Decoder *const pbi) {
   RefCntBuffer *const frame_bufs = pool->frame_bufs;
 
   cm->frame_type = KEY_FRAME;
-  cm->current_video_frame = 0;
   cm->frame_offset = cm->current_video_frame;
 
   pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
@@ -2879,7 +2878,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #endif  // CONFIG_FRAME_REFS_SIGNALING
 
   if (cm->frame_type == KEY_FRAME) {
-    cm->current_video_frame = 0;
 #if !CONFIG_OBU
     av1_read_bitdepth_colorspace_sampling(cm, rb, pbi->allow_lowbitdepth);
 #if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
