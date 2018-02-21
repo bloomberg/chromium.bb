@@ -105,7 +105,7 @@ TEST_F(LoginPasswordViewTest, PasswordSubmitIncludesPasswordText) {
   generator.PressKey(ui::KeyboardCode::VKEY_1, 0);
   generator.PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
 
-  EXPECT_TRUE(password_.has_value());
+  ASSERT_TRUE(password_.has_value());
   EXPECT_EQ(base::ASCIIToUTF16("abc1"), *password_);
 }
 
@@ -122,7 +122,7 @@ TEST_F(LoginPasswordViewTest, PasswordSubmitViaButton) {
       test_api.submit_button()->GetBoundsInScreen().CenterPoint());
   generator.ClickLeftButton();
 
-  EXPECT_TRUE(password_.has_value());
+  ASSERT_TRUE(password_.has_value());
   EXPECT_EQ(base::ASCIIToUTF16("abc1"), *password_);
 }
 
@@ -137,7 +137,7 @@ TEST_F(LoginPasswordViewTest, PasswordSubmitClearsPassword) {
   EXPECT_FALSE(is_password_field_empty_);
   generator.PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
   EXPECT_FALSE(is_password_field_empty_);
-  EXPECT_TRUE(password_.has_value());
+  ASSERT_TRUE(password_.has_value());
   EXPECT_EQ(base::ASCIIToUTF16("a"), *password_);
 
   // Clear password.
@@ -150,7 +150,7 @@ TEST_F(LoginPasswordViewTest, PasswordSubmitClearsPassword) {
   EXPECT_FALSE(is_password_field_empty_);
   generator.PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
   EXPECT_FALSE(is_password_field_empty_);
-  EXPECT_TRUE(password_.has_value());
+  ASSERT_TRUE(password_.has_value());
   // The submitted password is 'b' instead of "ab".
   EXPECT_EQ(base::ASCIIToUTF16("b"), *password_);
 }
@@ -204,4 +204,5 @@ TEST_F(LoginPasswordViewTest, EasyUnlockMouseHover) {
   // Icon was not tapped.
   EXPECT_FALSE(easy_unlock_icon_tapped_called_);
 }
+
 }  // namespace ash

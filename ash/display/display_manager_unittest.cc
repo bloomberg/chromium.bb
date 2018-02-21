@@ -1041,7 +1041,7 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
                                        gfx::Insets(13, 12, 11, 10));
 
   std::vector<display::Display> changed_displays = changed();
-  EXPECT_EQ(1u, changed_displays.size());
+  ASSERT_EQ(1u, changed_displays.size());
   EXPECT_EQ(display_info2.id(), changed_displays[0].id());
   EXPECT_EQ("0,0 500x500", GetDisplayInfoAt(0).bounds_in_native().ToString());
   display::ManagedDisplayInfo updated_display_info2 = GetDisplayInfoAt(1);
@@ -1164,12 +1164,12 @@ TEST_F(DisplayManagerTest, ZeroOverscanInsets) {
 
   reset();
   display_manager()->SetOverscanInsets(display2_id, gfx::Insets(1, 0, 0, 0));
-  EXPECT_EQ(1u, changed().size());
+  ASSERT_EQ(1u, changed().size());
   EXPECT_EQ(display2_id, changed()[0].id());
 
   reset();
   display_manager()->SetOverscanInsets(display2_id, gfx::Insets(0, 0, 0, 0));
-  EXPECT_EQ(1u, changed().size());
+  ASSERT_EQ(1u, changed().size());
   EXPECT_EQ(display2_id, changed()[0].id());
 }
 
@@ -2343,7 +2343,7 @@ TEST_F(DisplayManagerTest, SoftwareMirroring) {
       "0,0 300x400",
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds().ToString());
   std::vector<aura::WindowTreeHost*> hosts = test_api.GetHosts();
-  EXPECT_EQ(1U, hosts.size());
+  ASSERT_EQ(1U, hosts.size());
   EXPECT_EQ("400x500", hosts[0]->GetBoundsInPixels().size().ToString());
   EXPECT_EQ("300x400", hosts[0]->window()->bounds().size().ToString());
   EXPECT_TRUE(display_manager()->IsInMirrorMode());
@@ -2691,7 +2691,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopWith2xDSF) {
   UpdateDisplay("400x500,1000x800*2");
   display::ManagedDisplayInfo info =
       display_manager()->GetDisplayInfo(screen->GetPrimaryDisplay().id());
-  EXPECT_EQ(2u, info.display_modes().size());
+  ASSERT_EQ(2u, info.display_modes().size());
   EXPECT_EQ("1640x800", info.display_modes()[0].size().ToString());
   EXPECT_EQ(2.0f, info.display_modes()[0].device_scale_factor());
   EXPECT_EQ("1025x500", info.display_modes()[1].size().ToString());
@@ -2710,7 +2710,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopWith2xDSF) {
   // 1st display is 2x.
   UpdateDisplay("1200x800*2,1000x1000");
   info = display_manager()->GetDisplayInfo(screen->GetPrimaryDisplay().id());
-  EXPECT_EQ(2u, info.display_modes().size());
+  ASSERT_EQ(2u, info.display_modes().size());
   EXPECT_EQ("2000x800", info.display_modes()[0].size().ToString());
   EXPECT_EQ(2.0f, info.display_modes()[0].device_scale_factor());
   EXPECT_EQ("2500x1000", info.display_modes()[1].size().ToString());
@@ -2730,7 +2730,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopWith2xDSF) {
   // 1st display is 2x.
   UpdateDisplay("1200x800*2,1000x1000*2");
   info = display_manager()->GetDisplayInfo(screen->GetPrimaryDisplay().id());
-  EXPECT_EQ(2u, info.display_modes().size());
+  ASSERT_EQ(2u, info.display_modes().size());
   EXPECT_EQ("2000x800", info.display_modes()[0].size().ToString());
   EXPECT_EQ(2.0f, info.display_modes()[0].device_scale_factor());
   EXPECT_EQ("2500x1000", info.display_modes()[1].size().ToString());
@@ -2748,7 +2748,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopWith2xDSF) {
   // being 2x.
   UpdateDisplay("1000x800*2,300x800");
   info = display_manager()->GetDisplayInfo(screen->GetPrimaryDisplay().id());
-  EXPECT_EQ(2u, info.display_modes().size());
+  ASSERT_EQ(2u, info.display_modes().size());
   EXPECT_EQ("1300x800", info.display_modes()[0].size().ToString());
   EXPECT_EQ(2.0f, info.display_modes()[0].device_scale_factor());
   EXPECT_EQ("1300x800", info.display_modes()[1].size().ToString());
@@ -2765,7 +2765,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopWith2xDSF) {
   // Both displays have the same physical height, with the second display
   // being 2x.
   UpdateDisplay("1000x800,300x800*2");
-  EXPECT_EQ(2u, info.display_modes().size());
+  ASSERT_EQ(2u, info.display_modes().size());
   EXPECT_EQ("1300x800", info.display_modes()[0].size().ToString());
   EXPECT_EQ(2.0f, info.display_modes()[0].device_scale_factor());
   EXPECT_EQ("1300x800", info.display_modes()[1].size().ToString());
@@ -3929,7 +3929,7 @@ TEST_F(DisplayManagerTest, HardwareMirrorMode) {
 
   const display::DisplayIdList id_list =
       display_manager()->GetMirroringDestinationDisplayIdList();
-  EXPECT_EQ(2U, id_list.size());
+  ASSERT_EQ(2U, id_list.size());
   EXPECT_EQ(11U, id_list[0]);
   EXPECT_EQ(12U, id_list[1]);
 
@@ -3955,7 +3955,7 @@ TEST_F(DisplayManagerTest, SoftwareMirrorModeBasics) {
             display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
 
   std::vector<aura::WindowTreeHost*> host_list = test_api.GetHosts();
-  EXPECT_EQ(2U, host_list.size());
+  ASSERT_EQ(2U, host_list.size());
   EXPECT_EQ(gfx::Size(400, 500), host_list[0]->GetBoundsInPixels().size());
   EXPECT_EQ(gfx::Size(300, 400), host_list[0]->window()->bounds().size());
   EXPECT_EQ(gfx::Size(500, 600), host_list[1]->GetBoundsInPixels().size());
