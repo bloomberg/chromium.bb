@@ -180,6 +180,9 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
   // State of Start() calls before OnDeviceAuthorized() is called.
   bool start_on_authorized_;
 
+  // For UMA stats. May only be accessed on the IO thread.
+  bool had_callback_error_ = false;
+
   // State of Play() / Pause() calls before OnStreamCreated() is called.
   bool play_on_start_;
 
