@@ -8,13 +8,10 @@
 [
     RuntimeEnabled=AccessibilityObjectModel
 ] interface ComputedAccessibleNode {
-    readonly attribute DOMString? autocomplete;
-    readonly attribute DOMString? keyShortcuts;
-    readonly attribute DOMString? name;
-    readonly attribute DOMString? placeholder;
-    readonly attribute DOMString? role;
-    readonly attribute DOMString? roleDescription;
-    readonly attribute DOMString? valueText;
+
+    readonly attribute boolean? atomic;
+    readonly attribute boolean? busy;
+    readonly attribute boolean? modal;
 
     readonly attribute long? colCount;
     readonly attribute unsigned long? colIndex;
@@ -26,15 +23,19 @@
     readonly attribute unsigned long? rowSpan;
     readonly attribute long? setSize;
 
+    readonly attribute DOMString? autocomplete;
+    readonly attribute DOMString? keyShortcuts;
+    readonly attribute DOMString? name;
+    readonly attribute DOMString? placeholder;
+    readonly attribute DOMString? role;
+    readonly attribute DOMString? roleDescription;
+    readonly attribute DOMString? valueText;
+
     readonly attribute ComputedAccessibleNode? parent;
     readonly attribute ComputedAccessibleNode? firstChild;
     readonly attribute ComputedAccessibleNode? lastChild;
     readonly attribute ComputedAccessibleNode? previousSibling;
     readonly attribute ComputedAccessibleNode? nextSibling;
-
-    readonly attribute boolean? atomic;
-    readonly attribute boolean? busy;
-    readonly attribute boolean? modal;
 
     [CallWith=ScriptState] Promise ensureUpToDate();
 };

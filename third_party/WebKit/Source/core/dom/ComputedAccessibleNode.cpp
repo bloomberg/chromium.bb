@@ -106,48 +106,16 @@ ComputedAccessibleNode::ComputedAccessibleNode(AXID ax_id,
 
 ComputedAccessibleNode::~ComputedAccessibleNode() {}
 
-ScriptPromise ComputedAccessibleNode::ensureUpToDate(
-    ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  ScriptPromise promise = resolver->Promise();
-  // TODO(meredithl): Post this task asynchronously, with a callback into
-  // this->OnSnapshotResponse.
-  if (!tree_->ComputeAccessibilityTree()) {
-    // TODO(meredithl): Change this exception to something relevant to AOM.
-    resolver->Reject(DOMException::Create(kUnknownError));
-  } else {
-    OnUpdateResponse(resolver);
-  }
-  return promise;
+bool ComputedAccessibleNode::atomic(bool& is_null) const {
+  return GetBoolAttribute(WebAOMBoolAttribute::AOM_ATTR_ATOMIC, is_null);
 }
 
-int32_t ComputedAccessibleNode::GetIntAttribute(WebAOMIntAttribute attr,
-                                                bool& is_null) const {
-  int32_t out = 0;
-  is_null = true;
-  if (tree_->GetIntAttributeForAXNode(ax_id_, attr, &out)) {
-    is_null = false;
-  }
-  return out;
+bool ComputedAccessibleNode::busy(bool& is_null) const {
+  return GetBoolAttribute(WebAOMBoolAttribute::AOM_ATTR_BUSY, is_null);
 }
 
-const String ComputedAccessibleNode::GetStringAttribute(
-    WebAOMStringAttribute attr) const {
-  WebString out;
-  if (tree_->GetStringAttributeForAXNode(ax_id_, attr, &out)) {
-    return out;
-  }
-  return String();
-}
-
-bool ComputedAccessibleNode::GetBoolAttribute(WebAOMBoolAttribute attr,
-                                              bool& is_null) const {
-  bool out;
-  is_null = true;
-  if (tree_->GetBoolAttributeForAXNode(ax_id_, attr, &out)) {
-    is_null = false;
-  }
-  return out;
+bool ComputedAccessibleNode::modal(bool& is_null) const {
+  return GetBoolAttribute(WebAOMBoolAttribute::AOM_ATTR_MODAL, is_null);
 }
 
 const String ComputedAccessibleNode::autocomplete() const {
@@ -257,16 +225,19 @@ ComputedAccessibleNode* ComputedAccessibleNode::nextSibling() const {
   return ComputedAccessibleNode::Create(sibling_ax_id, tree_);
 }
 
-bool ComputedAccessibleNode::atomic(bool& is_null) const {
-  return GetBoolAttribute(WebAOMBoolAttribute::AOM_ATTR_ATOMIC, is_null);
-}
-
-bool ComputedAccessibleNode::busy(bool& is_null) const {
-  return GetBoolAttribute(WebAOMBoolAttribute::AOM_ATTR_BUSY, is_null);
-}
-
-bool ComputedAccessibleNode::modal(bool& is_null) const {
-  return GetBoolAttribute(WebAOMBoolAttribute::AOM_ATTR_MODAL, is_null);
+ScriptPromise ComputedAccessibleNode::ensureUpToDate(
+    ScriptState* script_state) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+  // TODO(aboxhall): Post this task asynchronously, with a callback into
+  // this->OnSnapshotResponse.
+  if (!tree_->ComputeAccessibilityTree()) {
+    // TODO(meredithl): Change this exception to something relevant to AOM.
+    resolver->Reject(DOMException::Create(kUnknownError));
+  } else {
+    OnUpdateResponse(resolver);
+  }
+  return promise;
 }
 
 void ComputedAccessibleNode::OnSnapshotResponse(
@@ -276,6 +247,35 @@ void ComputedAccessibleNode::OnSnapshotResponse(
 
 void ComputedAccessibleNode::OnUpdateResponse(ScriptPromiseResolver* resolve) {
   resolve->Resolve();
+}
+
+bool ComputedAccessibleNode::GetBoolAttribute(WebAOMBoolAttribute attr,
+                                              bool& is_null) const {
+  bool out;
+  is_null = true;
+  if (tree_->GetBoolAttributeForAXNode(ax_id_, attr, &out)) {
+    is_null = false;
+  }
+  return out;
+}
+
+int32_t ComputedAccessibleNode::GetIntAttribute(WebAOMIntAttribute attr,
+                                                bool& is_null) const {
+  int32_t out = 0;
+  is_null = true;
+  if (tree_->GetIntAttributeForAXNode(ax_id_, attr, &out)) {
+    is_null = false;
+  }
+  return out;
+}
+
+const String ComputedAccessibleNode::GetStringAttribute(
+    WebAOMStringAttribute attr) const {
+  WebString out;
+  if (tree_->GetStringAttributeForAXNode(ax_id_, attr, &out)) {
+    return out;
+  }
+  return String();
 }
 
 void ComputedAccessibleNode::Trace(Visitor* visitor) {
