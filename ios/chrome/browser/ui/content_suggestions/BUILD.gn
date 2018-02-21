@@ -128,6 +128,7 @@ source_set("content_suggestions_ui") {
     "//ios/chrome/browser/ui/ntp:ntp_header",
     "//ios/chrome/browser/ui/overscroll_actions",
     "//ios/chrome/browser/ui/toolbar:toolbar_ui",
+    "//ios/chrome/browser/ui/toolbar/buttons:buttons",
     "//ios/chrome/browser/ui/util:util",
     "//ui/base",
   ]

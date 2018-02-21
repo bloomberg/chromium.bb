@@ -9,7 +9,11 @@
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_snapshot_providing.h"
+#import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ui/gfx/ios/uikit_util.h"
 
@@ -18,10 +22,19 @@
 #endif
 
 @interface ContentSuggestionsHeaderView ()<ToolbarSnapshotProviding>
+
+// Layout constraints for fake omnibox background image.
+@property(nonatomic, strong) NSLayoutConstraint* backgroundHeightConstraint;
+@property(nonatomic, strong) NSLayoutConstraint* backgroundLeadingConstraint;
+@property(nonatomic, strong) NSLayoutConstraint* backgroundTrailingConstraint;
+
 @end
 
 @implementation ContentSuggestionsHeaderView
 
+@synthesize backgroundHeightConstraint = _backgroundHeightConstraint;
+@synthesize backgroundLeadingConstraint = _backgroundLeadingConstraint;
+@synthesize backgroundTrailingConstraint = _backgroundTrailingConstraint;
 @synthesize toolBarView = _toolBarView;
 
 #pragma mark - Public
@@ -56,6 +69,36 @@
 }
 
 - (void)addViewsToSearchField:(UIView*)searchField {
+  UIBlurEffect* blurEffect = [[ToolbarButtonFactory alloc] initWithStyle:NORMAL]
+                                 .toolbarConfiguration.blurEffect;
+  UIVisualEffectView* blur =
+      [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+  blur.layer.cornerRadius = kAdaptiveLocationBarCornerRadius;
+  [searchField insertSubview:blur atIndex:0];
+  blur.translatesAutoresizingMaskIntoConstraints = NO;
+  AddSameConstraints(blur, searchField);
+
+  UIView* backgroundContainer = [[UIView alloc] init];
+  backgroundContainer.userInteractionEnabled = NO;
+  backgroundContainer.backgroundColor =
+      [UIColor colorWithWhite:0 alpha:kAdaptiveLocationBarBackgroundAlpha];
+  backgroundContainer.layer.cornerRadius = kAdaptiveLocationBarCornerRadius;
+  [searchField addSubview:backgroundContainer];
+  backgroundContainer.translatesAutoresizingMaskIntoConstraints = NO;
+  self.backgroundLeadingConstraint = [backgroundContainer.leadingAnchor
+      constraintEqualToAnchor:searchField.leadingAnchor];
+  self.backgroundTrailingConstraint = [backgroundContainer.trailingAnchor
+      constraintEqualToAnchor:searchField.trailingAnchor];
+  self.backgroundHeightConstraint =
+      [backgroundContainer.heightAnchor constraintEqualToConstant:0];
+  [NSLayoutConstraint activateConstraints:@[
+    [backgroundContainer.centerYAnchor
+        constraintEqualToAnchor:searchField.centerYAnchor],
+    self.backgroundLeadingConstraint,
+    self.backgroundTrailingConstraint,
+    self.backgroundHeightConstraint,
+  ]];
+
   // TODO(crbug.com/805644) Update fake omnibox theme.
 }
 
@@ -88,8 +131,8 @@
 
   // Calculate the amount to grow the width and height of searchField so that
   // its frame covers the entire toolbar area.
-  CGFloat maxXInset = ui::AlignValueToUpperPixel(
-      (searchFieldNormalWidth - screenWidth) / 2 - 1);
+  CGFloat maxXInset =
+      ui::AlignValueToUpperPixel((searchFieldNormalWidth - screenWidth) / 2);
   CGFloat maxHeightDiff =
       ntp_header::kToolbarHeight - content_suggestions::kSearchFieldHeight;
 
@@ -98,6 +141,26 @@
                                  ntp_header::kMaxTopMarginDiff * percent;
   heightConstraint.constant =
       content_suggestions::kSearchFieldHeight + maxHeightDiff * percent;
+
+  // Calculate the amount to shrink the width and height of background so that
+  // it's where the focused adapative toolbar focuses.
+  self.backgroundLeadingConstraint.constant =
+      (safeAreaInsets.left + kAdaptiveToolbarHorizontalMargin) * percent;
+  // TODO(crbug.com/805636) Placeholder for specifications. For now using hard
+  // coded size of cancel button of 64pt.
+  CGFloat kCancelButtonWidth = 64;
+  self.backgroundTrailingConstraint.constant =
+      -(safeAreaInsets.right + kAdaptiveToolbarHorizontalMargin +
+        kCancelButtonWidth) *
+      percent;
+  // TODO(crbug.com/805636) Placeholder for specifications. For now using hard
+  // coded height of location bar, which is 42 or
+  // kToolbarHeight - 2 * kLocationBarVerticalMargin
+  CGFloat kLocationBarHeight = 42;
+  CGFloat minHeightDiff =
+      kLocationBarHeight - content_suggestions::kSearchFieldHeight;
+  self.backgroundHeightConstraint.constant =
+      content_suggestions::kSearchFieldHeight + minHeightDiff * percent;
 
   // Adjust the position of the search field's subviews by adjusting their
   // constraint constant value.
