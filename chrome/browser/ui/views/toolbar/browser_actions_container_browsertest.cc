@@ -24,6 +24,7 @@
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/views/test/test_views.h"
 #include "ui/views/view.h"
 
 // TODO(devlin): Continue moving any tests that should be platform independent
@@ -293,7 +294,7 @@ void BrowserActionsContainerOverflowTest::SetUpOnMainThread() {
   BrowserActionsBarBrowserTest::SetUpOnMainThread();
   main_bar_ = BrowserView::GetBrowserViewForBrowser(browser())
                   ->toolbar()->browser_actions();
-  overflow_parent_.reset(new views::View());
+  overflow_parent_.reset(new views::ResizeAwareParentView());
   overflow_parent_->set_owned_by_client();
   overflow_bar_ = new BrowserActionsContainer(browser(), main_bar_);
   overflow_parent_->AddChildView(overflow_bar_);

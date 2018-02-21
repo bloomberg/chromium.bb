@@ -136,6 +136,7 @@ void ToolbarView::Init() {
   if (!is_display_mode_normal()) {
     AddChildView(location_bar_);
     location_bar_->Init();
+    initialized_ = true;
     return;
   }
 
@@ -221,10 +222,10 @@ void ToolbarView::Init() {
 
   location_bar_->Init();
 
-  show_home_button_.Init(prefs::kShowHomeButton,
-                         browser_->profile()->GetPrefs(),
-                         base::Bind(&ToolbarView::OnShowHomeButtonChanged,
-                                    base::Unretained(this)));
+  show_home_button_.Init(
+      prefs::kShowHomeButton, browser_->profile()->GetPrefs(),
+      base::BindRepeating(&ToolbarView::OnShowHomeButtonChanged,
+                          base::Unretained(this)));
 
   // Accessibility specific tooltip text.
   if (content::BrowserAccessibilityState::GetInstance()->
@@ -234,6 +235,8 @@ void ToolbarView::Init() {
     forward_->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_ACCNAME_TOOLTIP_FORWARD));
   }
+
+  initialized_ = true;
 }
 
 void ToolbarView::Update(WebContents* tab) {
@@ -447,7 +450,7 @@ gfx::Size ToolbarView::GetMinimumSize() const {
 
 void ToolbarView::Layout() {
   // If we have not been initialized yet just do nothing.
-  if (!location_bar_)
+  if (!initialized_)
     return;
 
   if (!is_display_mode_normal()) {
@@ -572,6 +575,10 @@ bool ToolbarView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   if (focused_view && (focused_view->id() == VIEW_ID_OMNIBOX))
     return false;  // Let the omnibox handle all accelerator events.
   return AccessiblePaneView::AcceleratorPressed(accelerator);
+}
+
+void ToolbarView::ChildPreferredSizeChanged(views::View* child) {
+  Layout();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -22,38 +22,24 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
+#include "ui/views/test/test_views.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
-
-// The BrowserActionsContainer expects to have a parent (and be added to the
-// view hierarchy), so wrap it in a shell view that will set the container's
-// bounds to be its preferred bounds.
-class ContainerParent : public views::View {
- public:
-  explicit ContainerParent(BrowserActionsContainer* container)
-      : container_(container) {
-    AddChildView(container_);
-  }
-  ~ContainerParent() override {}
-
-  void Layout() override {
-    container_->SizeToPreferredSize();
-  }
-
- private:
-  BrowserActionsContainer* container_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContainerParent);
-};
 
 // The views-specific implementation of the TestToolbarActionsBarHelper, which
 // creates and owns a BrowserActionsContainer.
 class TestToolbarActionsBarHelperViews : public TestToolbarActionsBarHelper {
  public:
   TestToolbarActionsBarHelperViews(Browser* browser,
-                                   BrowserActionsContainer* main_bar);
-  ~TestToolbarActionsBarHelperViews() override;
+                                   BrowserActionsContainer* main_bar)
+      : browser_actions_container_(
+            new BrowserActionsContainer(browser, main_bar)) {
+    container_parent_.set_owned_by_client();
+    container_parent_.SetSize(gfx::Size(1000, 1000));
+    container_parent_.Layout();
+    container_parent_.AddChildView(browser_actions_container_);
+  }
 
   BrowserActionsContainer* browser_actions_container() {
     return browser_actions_container_;
@@ -65,24 +51,10 @@ class TestToolbarActionsBarHelperViews : public TestToolbarActionsBarHelper {
 
   // The parent of the BrowserActionsContainer, which directly owns the
   // container as part of the views hierarchy.
-  ContainerParent container_parent_;
+  views::ResizeAwareParentView container_parent_;
 
   DISALLOW_COPY_AND_ASSIGN(TestToolbarActionsBarHelperViews);
 };
-
-TestToolbarActionsBarHelperViews::TestToolbarActionsBarHelperViews(
-    Browser* browser,
-    BrowserActionsContainer* main_bar)
-    : browser_actions_container_(
-          new BrowserActionsContainer(browser, main_bar)),
-      container_parent_(browser_actions_container_) {
-  container_parent_.set_owned_by_client();
-  container_parent_.SetSize(gfx::Size(1000, 1000));
-  container_parent_.Layout();
-}
-
-TestToolbarActionsBarHelperViews::~TestToolbarActionsBarHelperViews() {
-}
 
 BrowserActionsContainer* GetContainer(Browser* browser,
                                       TestToolbarActionsBarHelper* helper) {

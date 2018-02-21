@@ -115,6 +115,19 @@ class EventCountView : public View {
   DISALLOW_COPY_AND_ASSIGN(EventCountView);
 };
 
+// A view which reacts to PreferredSizeChanged() from its children and calls
+// Layout().
+class ResizeAwareParentView : public View {
+ public:
+  ResizeAwareParentView();
+
+  // Overridden from View:
+  void ChildPreferredSizeChanged(View* child) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ResizeAwareParentView);
+};
+
 }  // namespace views
 
 #endif  // UI_VIEWS_TEST_TEST_VIEWS_H_

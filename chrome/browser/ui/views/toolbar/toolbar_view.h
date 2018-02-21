@@ -148,6 +148,7 @@ class ToolbarView : public views::AccessiblePaneView,
   void OnThemeChanged() override;
   const char* GetClassName() const override;
   bool AcceleratorPressed(const ui::Accelerator& acc) override;
+  void ChildPreferredSizeChanged(views::View* child) override;
 
  protected:
   // AccessiblePaneView:
@@ -212,6 +213,9 @@ class ToolbarView : public views::AccessiblePaneView,
 
   // The display mode used when laying out the toolbar.
   const DisplayMode display_mode_;
+
+  // Whether this toolbar has been initialized.
+  bool initialized_ = false;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ToolbarView);
 };
