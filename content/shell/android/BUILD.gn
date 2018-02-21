@@ -148,6 +148,7 @@ android_assets("content_shell_assets") {
 
 android_apk("content_shell_apk") {
   testonly = true
+  enable_multidex = true
   deps = [
     ":content_shell_apk_java",
     ":content_shell_assets",
@@ -227,6 +228,7 @@ if (current_cpu != "x64") {
 
   android_apk(_linker_test_apk_target_name) {
     testonly = true
+    enable_multidex = true
     deps = [
       ":content_shell_assets",
       ":content_shell_java",
