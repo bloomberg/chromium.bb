@@ -446,14 +446,13 @@ void ServiceWorkerScriptURLLoader::CommitCompleted(
   AdvanceState(State::kCompleted);
   net::Error error_code = static_cast<net::Error>(status.error_code);
   int bytes_written = -1;
-  std::string status_message;
   if (error_code == net::OK) {
     // If all the calls to WriteHeaders/WriteData succeeded, but the incumbent
     // entry wasn't actually replaced because the new entry was equivalent, the
     // new version didn't actually install because it already exists.
     if (!cache_writer_->did_replace()) {
       version_->SetStartWorkerStatusCode(SERVICE_WORKER_ERROR_EXISTS);
-      status_message = ServiceWorkerWriteToCacheJob::kIdenticalScriptError;
+      error_code = ServiceWorkerWriteToCacheJob::kIdenticalScriptError;
     }
     bytes_written = cache_writer_->bytes_written();
   } else {
@@ -465,10 +464,10 @@ void ServiceWorkerScriptURLLoader::CommitCompleted(
     // handling mechanism in URLLoader.
     version_->embedded_worker()->AddMessageToConsole(
         blink::WebConsoleMessage::kLevelError, kFetchScriptError);
-    // TODO(nhiroki): Set |status_message| to notify the error reason.
   }
   version_->script_cache_map()->NotifyFinishedCaching(
-      request_url_, bytes_written, error_code, status_message);
+      request_url_, bytes_written, error_code,
+      std::string() /* status_message */);
 
   // TODO(nhiroki): Record ServiceWorkerMetrics::CountWriteResponseResult().
   // (https://crbug.com/762357)
