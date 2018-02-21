@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-PASS check XMLSerializer.serializeToString method could parsing xmldoc to string
-PASS Check if the default namespace is correctly reset.
-PASS Check if there is no redundant empty namespace declaration.
-FAIL check XMLSerializer.serializeToString escapes attribute values for roundtripping assert_equals: expected "<root><child1 attr1=\"value1&#9;value2&#xD;&#xA;\">value1</child1></root>" but got "<root><child1 attr1=\"value1&#9;value2&#13;&#10;\">value1</child1></root>"
-Harness: the test ran to completion.
-
