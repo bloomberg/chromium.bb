@@ -393,7 +393,9 @@ class TestGenerator(unittest.TestCase):
     class InnerClass {}
 
     @CalledByNative
-    InnerClass showConfirmInfoBar(int nativeInfoBar,
+    @SomeOtherA
+    @SomeOtherB
+    public InnerClass showConfirmInfoBar(int nativeInfoBar,
             String buttonOk, String buttonCancel, String title, Bitmap icon) {
         InfoBar infobar = new ConfirmInfoBar(nativeInfoBar, mContext,
                                              buttonOk, buttonCancel,
