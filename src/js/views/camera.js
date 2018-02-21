@@ -373,6 +373,13 @@ camera.views.Camera = function(context, router) {
   this.ribbonInitialization_ = true;
 
   /**
+   * Whether the camera is in video recording mode.
+   * @type {boolean}
+   * @private
+   */
+  this.is_recording_mode_ = false;
+
+  /**
    * Scroller for the ribbon with effects.
    * @type {camera.util.SmoothScroller}
    * @private
@@ -1002,15 +1009,7 @@ camera.views.Camera.prototype.onToggleCameraClicked_ = function(event) {
       this.videoDeviceId_ = deviceIds[index];
     }
 
-    // Add the initialization layer (if it's not there yet).
-    document.body.classList.add('initializing');
-
-    // Stop the camera stream to kick retrying opening the camera stream on the
-    // new device.
-
-    // TODO(mtomasz): Prevent blink. Clear somehow the video tag.
-    if (this.stream_)
-      this.stream_.getVideoTracks()[0].stop();
+    this.stop_();
   }.bind(this));
 };
 
@@ -1024,14 +1023,13 @@ camera.views.Camera.prototype.onToggleRecordClicked_ = function(event) {
     return;
 
   var label;
-  var recordEnabled;
   var toggleRecord = document.querySelector('#toggle-record');
-  if (toggleRecord.classList.contains('toggle-off')) {
-    recordEnabled = false;
+  if (this.is_recording_mode_) {
+    this.is_recording_mode_ = false;
     toggleRecord.classList.remove('toggle-off');
     label = 'toggleRecordOnButton';
   } else {
-    recordEnabled = true;
+    this.is_recording_mode_ = true;
     toggleRecord.classList.add('toggle-off');
     label = 'toggleRecordOffButton';
   }
@@ -1039,7 +1037,7 @@ camera.views.Camera.prototype.onToggleRecordClicked_ = function(event) {
   toggleRecord.setAttribute('aria-label', chrome.i18n.getMessage(label));
 
   var takePictureButton = document.querySelector('#take-picture');
-  if (recordEnabled) {
+  if (this.is_recording_mode_) {
     takePictureButton.classList.add('motion-picture');
     label = 'recordVideoButton';
   } else {
@@ -1051,18 +1049,20 @@ camera.views.Camera.prototype.onToggleRecordClicked_ = function(event) {
 
   // Disable effects as recording with effects is not supported yet.
   var toggleFilters = document.querySelector('#toolbar #filters-toggle');
-  toggleFilters.disabled = recordEnabled;
-  this.mainProcessor_.effectDisabled = recordEnabled;
-  this.mainPreviewProcessor_.effectDisabled = recordEnabled;
-  this.mainFastProcessor_.effectDisabled = recordEnabled;
+  toggleFilters.disabled = this.is_recording_mode_;
+  this.mainProcessor_.effectDisabled = this.is_recording_mode_;
+  this.mainPreviewProcessor_.effectDisabled = this.is_recording_mode_;
+  this.mainFastProcessor_.effectDisabled = this.is_recording_mode_;
   if (toggleFilters.disabled) {
     this.setExpanded_(false);
   }
 
-  document.querySelector('#toggle-multi').hidden = recordEnabled;
-  document.querySelector('#toggle-timer').hidden = recordEnabled;
-  this.showToastMessage_(chrome.i18n.getMessage(recordEnabled ?
+  document.querySelector('#toggle-multi').hidden = this.is_recording_mode_;
+  document.querySelector('#toggle-timer').hidden = this.is_recording_mode_;
+  this.showToastMessage_(chrome.i18n.getMessage(this.is_recording_mode_ ?
       'recordVideoActiveMessage' : 'takePictureActiveMessage'));
+
+  this.stop_();
 };
 
 /**
@@ -1659,12 +1659,11 @@ camera.views.Camera.prototype.takePicture_ = function() {
 
   var toggleTimer = document.querySelector('#toggle-timer');
   var toggleMulti = document.querySelector('#toggle-multi');
-  var toggleRecord = document.querySelector('#toggle-record');
-  var recordEnabled = toggleRecord.classList.contains('toggle-off');
 
   toggleTimer.disabled = true;
   toggleMulti.disabled = true;
-  toggleRecord.disabled = true;
+  document.querySelector('#toggle-camera').disabled = true;
+  document.querySelector('#toggle-record').disabled = true;
   document.querySelector('#take-picture').disabled = true;
 
   var tickCounter = (!toggleTimer.hidden && toggleTimer.checked) ? 6 : 1;
@@ -1674,7 +1673,7 @@ camera.views.Camera.prototype.takePicture_ = function() {
       var multiEnabled = !toggleMulti.hidden && toggleMulti.checked;
       var multiShotCounter = 3;
       var takePicture = function() {
-        if (recordEnabled) {
+        if (this.is_recording_mode_) {
           // Play a sound before recording started, and don't end recording
           // until another take-picture click.
           this.recordStartSound_.onended = function() {
@@ -1733,8 +1732,8 @@ camera.views.Camera.prototype.endTakePicture_ = function() {
   toggleTimer.disabled = false;
   document.querySelector('#take-picture').disabled = false;
   document.querySelector('#toggle-multi').disabled = false;
-  document.querySelector('#toggle-record').disabled =
-      (this.mediaRecorder_ == null);
+  document.querySelector('#toggle-camera').disabled = false;
+  document.querySelector('#toggle-record').disabled = false;
 };
 
 /**
@@ -1821,16 +1820,23 @@ camera.views.Camera.prototype.takePictureImmediately_ = function(motionPicture) 
 };
 
 /**
- * Resolutions to be probed on the camera. Format: [[width, height], ...].
+ * Resolutions to be probed for photo taking. Format: [[width, height], ...].
  * TODO(mtomasz): Remove this list and always use the highest available
  * resolution.
  *
  * @type {Array.<Array.<number>>}
  * @const
  */
-camera.views.Camera.RESOLUTIONS =
+camera.views.Camera.PHOTO_RESOLUTIONS =
     [[2560, 1920], [2048, 1536], [1920, 1080], [1280, 720], [800, 600],
      [640, 480]];
+
+/**
+ * Resolutions to be probed for video recording.
+ * @type {Array.<Array.<number>>}
+ * @const
+ */
+camera.views.Camera.RECORDING_RESOLUTIONS = [[1280, 720], [640, 480]];
 
 /**
  * Synchronizes video size with the window's current size.
@@ -1900,16 +1906,15 @@ camera.views.Camera.prototype.createMediaRecorder_ = function(stream) {
   if (!window.MediaRecorder) {
     return null;
   }
-  var options = {mimeType: ''};
-  var mimeTypes = ['video/webm; codecs=vp9', 'video/webm; codecs=vp8',
-      'video/webm'];
-  for (var i = 0; i < mimeTypes.length; i++) {
-    if (MediaRecorder.isTypeSupported(mimeTypes[i])) {
-      options = {mimeType: mimeTypes[i]};
-      break;
-    }
+
+  // Webm with H264 is the only preferred MediaRecorder video recording format.
+  var type = 'video/webm; codecs=h264';
+  if (!MediaRecorder.isTypeSupported(type)) {
+    console.error('MediaRecorder does not support mimeType: ' + type);
+    return null;
   }
   try {
+    var options = {mimeType: type};
     return new MediaRecorder(stream, options);
   } catch (e) {
     console.error('Unable to create MediaRecorder: ' + e + '. mimeType: ' +
@@ -1941,6 +1946,16 @@ camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
  camera.views.Camera.prototype.startWithConstraints_ =
      function(constraints, onSuccess, onFailure, onDisconnected) {
   navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
+    if (this.is_recording_mode_) {
+      // Create MediaRecorder for video-recording mode and try next constraints
+      // if it fails.
+      this.mediaRecorder_ = this.createMediaRecorder_(stream);
+      if (this.mediaRecorder_ == null) {
+        onFailure();
+        return;
+      }
+    }
+
     // Mute to avoid echo from the captured audio.
     this.video_.muted = true;
     this.video_.src = window.URL.createObjectURL(stream);
@@ -1961,9 +1976,7 @@ camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
           this.watchdog_ = null;
         }
       }.bind(this), 100);
-      this.mediaRecorder_ = this.createMediaRecorder_(stream);
-      document.querySelector('#toggle-record').disabled =
-          (this.mediaRecorder_ == null);
+
       // Disable audio stream unless it's video recording.
       this.enableAudio_(false);
       this.capturing_ = true;
@@ -2139,6 +2152,19 @@ camera.views.Camera.prototype.collectVideoDevices_ = function() {
 };
 
 /**
+ * Stops the camera stream so it retries opening the camera stream
+ * on new device or with new constraints.
+ */
+camera.views.Camera.prototype.stop_ = function() {
+  // Add the initialization layer (if it's not there yet).
+  document.body.classList.add('initializing');
+
+  // TODO(mtomasz): Prevent blink. Clear somehow the video tag.
+  if (this.stream_)
+    this.stream_.getVideoTracks()[0].stop();
+};
+
+/**
  * Starts capturing the camera with the highest possible resolution.
  * Can be called only once.
  * @private
@@ -2207,6 +2233,13 @@ camera.views.Camera.prototype.start_ = function() {
       return;
     }
     if (index >= constraintsCandidates.length) {
+      if (this.is_recording_mode_) {
+        // The recording mode can't be started because none of the
+        // constraints is supported. Fall back to photo mode.
+        // TODO(shenghao): show a toast message for unable to start video
+        // recording before switching back to photo mode.
+        this.onToggleRecordClicked_();
+      }
       onFailure();
       return;
     }
@@ -2262,14 +2295,17 @@ camera.views.Camera.prototype.start_ = function() {
         sortedDeviceIds.unshift(null);
     }
 
+    var resolutions = this.is_recording_mode_ ?
+        camera.views.Camera.RECORDING_RESOLUTIONS :
+        camera.views.Camera.PHOTO_RESOLUTIONS;
     // TODO(mtomasz): Remove this when support for advanced (multiple)
     // constraints is added to Chrome. For now try to obtain stream with
     // each candidate separately.
     sortedDeviceIds.forEach(function(deviceId) {
-      camera.views.Camera.RESOLUTIONS.forEach(function(resolution) {
+      resolutions.forEach(function(resolution) {
         if (deviceId) {
           constraintsCandidates.push({
-            audio: true,  // Need to capture audio for recording video.
+            audio: this.is_recording_mode_,
             video: {
               deviceId: { exact: deviceId },
               width: { min: resolution[0] },
@@ -2279,7 +2315,7 @@ camera.views.Camera.prototype.start_ = function() {
         } else {
           // As a default camera use the one which is facing the user.
           constraintsCandidates.push({
-            audio: true,  // Need to capture audio for recording video.
+            audio: this.is_recording_mode_,
             video: {
               width: { min: resolution[0] },
               height: { min: resolution[1] },
@@ -2287,8 +2323,8 @@ camera.views.Camera.prototype.start_ = function() {
             }
           });
         }
-      });
-    });
+      }.bind(this));
+    }.bind(this));
 
     tryStartWithConstraints(0);
   }.bind(this)).catch(function(error) {
