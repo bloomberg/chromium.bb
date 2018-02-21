@@ -34,6 +34,8 @@ net::RedirectInfo CreateRedirectInfo(const GURL& new_url) {
 
 constexpr static int kDefaultBufferSize = 64 * 1024;
 
+SignedExchangeHandlerFactory* g_signed_exchange_factory_for_testing_ = nullptr;
+
 }  // namespace
 
 class WebPackageLoader::ResponseTimingInfo {
@@ -154,6 +156,16 @@ void WebPackageLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
 
 void WebPackageLoader::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
+  if (g_signed_exchange_factory_for_testing_) {
+    signed_exchange_handler_ = g_signed_exchange_factory_for_testing_->Create(
+        std::make_unique<DataPipeToSourceStream>(std::move(body)),
+        base::BindOnce(&WebPackageLoader::OnHTTPExchangeFound,
+                       weak_factory_.GetWeakPtr()),
+        std::move(request_initiator_), std::move(url_loader_factory_),
+        std::move(url_loader_throttles_getter_));
+    return;
+  }
+
   signed_exchange_handler_ = std::make_unique<SignedExchangeHandler>(
       std::make_unique<DataPipeToSourceStream>(std::move(body)),
       base::BindOnce(&WebPackageLoader::OnHTTPExchangeFound,
@@ -218,7 +230,6 @@ void WebPackageLoader::OnHTTPExchangeFound(
   forwarding_client_->OnReceiveRedirect(
       CreateRedirectInfo(request_url),
       std::move(original_response_timing_info_)->CreateRedirectResponseHead());
-  forwarding_client_->OnComplete(network::URLLoaderCompletionStatus(net::OK));
   forwarding_client_.reset();
 
   if (ssl_info &&
@@ -273,6 +284,11 @@ void WebPackageLoader::FinishReadingBody(int result) {
 
   // This will eventually delete |this|.
   client_->OnComplete(status);
+}
+
+void WebPackageLoader::SetSignedExchangeHandlerFactoryForTest(
+    SignedExchangeHandlerFactory* factory) {
+  g_signed_exchange_factory_for_testing_ = factory;
 }
 
 }  // namespace content

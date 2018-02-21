@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
+#include "content/common/content_export.h"
 #include "content/public/common/shared_url_loader_factory.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/completion_callback.h"
@@ -31,7 +32,7 @@ class MerkleIntegritySourceStream;
 // IMPORTANT: Currenly SignedExchangeHandler doesn't implement any verifying
 // logic.
 // TODO(https://crbug.com/803774): Implement verifying logic.
-class SignedExchangeHandler final {
+class CONTENT_EXPORT SignedExchangeHandler {
  public:
   // TODO(https://crbug.com/803774): Add verification status here.
   using ExchangeHeadersCallback =
@@ -57,6 +58,9 @@ class SignedExchangeHandler final {
       scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter);
   ~SignedExchangeHandler();
+
+ protected:
+  SignedExchangeHandler();
 
  private:
   void ReadLoop();
@@ -93,6 +97,20 @@ class SignedExchangeHandler final {
   base::WeakPtrFactory<SignedExchangeHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeHandler);
+};
+
+// Used only for testing.
+class SignedExchangeHandlerFactory {
+ public:
+  virtual ~SignedExchangeHandlerFactory() {}
+
+  virtual std::unique_ptr<SignedExchangeHandler> Create(
+      std::unique_ptr<net::SourceStream> body,
+      SignedExchangeHandler::ExchangeHeadersCallback headers_callback,
+      url::Origin request_initiator,
+      scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
+      SignedExchangeHandler::URLLoaderThrottlesGetter
+          url_loader_throttles_getter) = 0;
 };
 
 }  // namespace content

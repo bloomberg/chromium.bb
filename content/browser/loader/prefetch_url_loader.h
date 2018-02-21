@@ -22,7 +22,9 @@ class URLRequestContextGetter;
 namespace content {
 
 class ResourceContext;
+class SharedURLLoaderFactory;
 class URLLoaderThrottle;
+class WebPackagePrefetchHandler;
 
 // PrefetchURLLoader which basically just keeps draining the data.
 class CONTENT_EXPORT PrefetchURLLoader
@@ -44,7 +46,7 @@ class CONTENT_EXPORT PrefetchURLLoader
       const network::ResourceRequest& resource_request,
       network::mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      network::mojom::URLLoaderFactory* network_loader_factory,
+      scoped_refptr<SharedURLLoaderFactory> network_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
       ResourceContext* resource_context,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter);
@@ -83,12 +85,16 @@ class CONTENT_EXPORT PrefetchURLLoader
 
   void OnNetworkConnectionError();
 
+  scoped_refptr<SharedURLLoaderFactory> network_loader_factory_;
+
   // For the actual request.
-  network::mojom::URLLoaderPtr network_loader_;
-  mojo::Binding<network::mojom::URLLoaderClient> network_client_binding_;
+  network::mojom::URLLoaderPtr loader_;
+  mojo::Binding<network::mojom::URLLoaderClient> client_binding_;
 
   // To be a URLLoader for the client.
   network::mojom::URLLoaderClientPtr forwarding_client_;
+
+  url::Origin request_initiator_;
 
   // |url_loader_throttles_getter_| and |resource_context_| should be
   // valid as far as |request_context_getter_| returns non-null value.
@@ -97,6 +103,8 @@ class CONTENT_EXPORT PrefetchURLLoader
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   std::unique_ptr<mojo::common::DataPipeDrainer> pipe_drainer_;
+
+  std::unique_ptr<WebPackagePrefetchHandler> web_package_prefetch_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchURLLoader);
 };

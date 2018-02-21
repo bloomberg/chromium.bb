@@ -7,7 +7,7 @@
 #include "base/feature_list.h"
 #include "content/browser/loader/prefetch_url_loader.h"
 #include "content/browser/url_loader_factory_getter.h"
-#include "content/common/wrapper_shared_url_loader_factory.h"
+#include "content/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
@@ -60,7 +60,15 @@ class PrefetchURLLoaderFactory : public network::mojom::URLLoaderFactory,
     }
     service_->CreateLoaderAndStart(
         std::move(request), routing_id, request_id, options, resource_request,
-        std::move(client), traffic_annotation, network_loader_factory_.get(),
+        std::move(client), traffic_annotation,
+        // NOTE: This should be fine in most cases, where the loader
+        // factory may become invalid if Network Service process is killed
+        // and restarted. The load can just fail in the case here, but if
+        // we want to be extra sure this should create a SharedURLLoaderFactory
+        // that internally holds a ref to the URLLoaderFactoryGetter so that
+        // it can re-obtain the factory if necessary.
+        base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
+            network_loader_factory_.get()),
         frame_tree_node_id_);
   }
 
@@ -120,7 +128,7 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
     const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    network::mojom::URLLoaderFactory* network_loader_factory,
+    scoped_refptr<SharedURLLoaderFactory> network_loader_factory,
     int frame_tree_node_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(RESOURCE_TYPE_PREFETCH, resource_request.resource_type);
@@ -136,7 +144,7 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
   mojo::MakeStrongBinding(
       std::make_unique<PrefetchURLLoader>(
           routing_id, request_id, options, resource_request, std::move(client),
-          traffic_annotation, network_loader_factory,
+          traffic_annotation, std::move(network_loader_factory),
           base::BindRepeating(
               &PrefetchURLLoaderService::CreateURLLoaderThrottles, this,
               resource_request, frame_tree_node_id),

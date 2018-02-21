@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_WEB_PACKAGE_WEB_PACKAGE_LOADER_H_
 
 #include "base/optional.h"
+#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/ssl/ssl_info.h"
@@ -21,8 +22,9 @@ class SourceStream;
 namespace content {
 
 class SharedURLLoaderFactory;
-class URLLoaderThrottle;
 class SignedExchangeHandler;
+class SignedExchangeHandlerFactory;
+class URLLoaderThrottle;
 class SourceStreamToDataPipe;
 
 // WebPackageLoader handles an origin-signed HTTP exchange response. It is
@@ -73,6 +75,10 @@ class WebPackageLoader final : public network::mojom::URLLoaderClient,
   void ResumeReadingBodyFromNet() override;
 
   void ConnectToClient(network::mojom::URLLoaderClientPtr client);
+
+  // Set nullptr to reset the mocking.
+  CONTENT_EXPORT static void SetSignedExchangeHandlerFactoryForTest(
+      SignedExchangeHandlerFactory* factory);
 
  private:
   class ResponseTimingInfo;
