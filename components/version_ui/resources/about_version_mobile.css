@@ -3,6 +3,7 @@
  * found in the LICENSE file. */
 
 #outer {
+  min-width: 0;  /* Wrap content to screen on mobile. */
   text-align: left;
   width: 90%;
 }
