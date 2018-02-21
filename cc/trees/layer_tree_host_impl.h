@@ -606,9 +606,8 @@ class CC_EXPORT LayerTreeHostImpl
   bool SupportsImplScrolling() const;
   bool CommitToActiveTree() const;
 
-  virtual void CreateResourceAndRasterBufferProvider(
-      std::unique_ptr<RasterBufferProvider>* raster_buffer_provider,
-      std::unique_ptr<ResourcePool>* resource_pool);
+  // Virtual so tests can inject their own.
+  virtual std::unique_ptr<RasterBufferProvider> CreateRasterBufferProvider();
 
   bool prepare_tiles_needed() const { return tile_priorities_dirty_; }
 

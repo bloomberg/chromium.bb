@@ -184,6 +184,11 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
   // RasterBufferProvider::AcquireBufferForRaster().
   void PrepareForExport(const InUsePoolResource& resource);
 
+  // Marks any resources in the pool as invalid, preventing their reuse. Call if
+  // previous resources were allocated in one way, but future resources should
+  // be allocated in a different way.
+  void InvalidateResources();
+
   // Called when a resource's content has been fully replaced (and is completely
   // valid). Updates the resource's content ID to its new value.
   void OnContentReplaced(const ResourcePool::InUsePoolResource& in_use_resource,
@@ -259,6 +264,9 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
       invalidated_rect_ = invalidated_rect;
     }
 
+    bool avoid_reuse() const { return avoid_reuse_; }
+    void mark_avoid_reuse() { avoid_reuse_ = true; }
+
     void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                       const LayerTreeResourceProvider* resource_provider,
                       bool is_free) const;
@@ -272,6 +280,10 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
     uint64_t content_id_ = 0;
     base::TimeTicks last_usage_;
     gfx::Rect invalidated_rect_;
+
+    // Set to true for resources that should be destroyed instead of returned to
+    // the pool for reuse.
+    bool avoid_reuse_ = false;
 
     // An id used to name the backing for transfer to the display compositor.
     viz::ResourceId resource_id_ = 0;

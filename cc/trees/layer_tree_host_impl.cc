@@ -2570,8 +2570,7 @@ void LayerTreeHostImpl::RecreateTileResources() {
 }
 
 void LayerTreeHostImpl::CreateTileManagerResources() {
-  CreateResourceAndRasterBufferProvider(&raster_buffer_provider_,
-                                        &resource_pool_);
+  raster_buffer_provider_ = CreateRasterBufferProvider();
 
   if (use_gpu_rasterization_) {
     image_decode_cache_ = std::make_unique<GpuImageDecodeCache>(
@@ -2609,34 +2608,17 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
 }
 
-void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
-    std::unique_ptr<RasterBufferProvider>* raster_buffer_provider,
-    std::unique_ptr<ResourcePool>* resource_pool) {
+std::unique_ptr<RasterBufferProvider>
+LayerTreeHostImpl::CreateRasterBufferProvider() {
   DCHECK(GetTaskRunner());
-  // TODO(vmpstr): Make this a DCHECK (or remove) when crbug.com/419086 is
-  // resolved.
-  CHECK(resource_provider_);
 
   viz::ContextProvider* compositor_context_provider =
       layer_tree_frame_sink_->context_provider();
   if (!compositor_context_provider) {
-    // This ResourcePool will vend software resources.
-    *resource_pool = std::make_unique<ResourcePool>(
-        resource_provider_.get(), GetTaskRunner(),
-        ResourcePool::kDefaultExpirationDelay, ResourcePool::Mode::kSoftware,
-        settings_.disallow_non_exact_resource_reuse);
-
-    *raster_buffer_provider = std::make_unique<BitmapRasterBufferProvider>(
+    return std::make_unique<BitmapRasterBufferProvider>(
         resource_provider_.get(),
         layer_tree_frame_sink_->shared_bitmap_manager());
-    return;
   }
-
-  // The ResourcePool will vend gpu resources.
-  *resource_pool = std::make_unique<ResourcePool>(
-      resource_provider_.get(), GetTaskRunner(),
-      ResourcePool::kDefaultExpirationDelay, ResourcePool::Mode::kGpu,
-      settings_.disallow_non_exact_resource_reuse);
 
   viz::RasterContextProvider* worker_context_provider =
       layer_tree_frame_sink_->worker_context_provider();
@@ -2653,12 +2635,11 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
           worker_context_provider->ContextCapabilities().supports_oop_raster;
     }
 
-    *raster_buffer_provider = std::make_unique<GpuRasterBufferProvider>(
+    return std::make_unique<GpuRasterBufferProvider>(
         compositor_context_provider, worker_context_provider,
         resource_provider_.get(), settings_.use_distance_field_text,
         settings_.resource_settings.use_gpu_memory_buffer_resources,
         msaa_sample_count, settings_.preferred_tile_format, oop_raster_enabled);
-    return;
   }
 
   bool use_zero_copy = settings_.use_zero_copy;
@@ -2671,17 +2652,16 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
   }
 
   if (use_zero_copy) {
-    *raster_buffer_provider = std::make_unique<ZeroCopyRasterBufferProvider>(
+    return std::make_unique<ZeroCopyRasterBufferProvider>(
         resource_provider_.get(),
         layer_tree_frame_sink_->gpu_memory_buffer_manager(),
         compositor_context_provider, settings_.preferred_tile_format);
-    return;
   }
 
   const int max_copy_texture_chromium_size =
       compositor_context_provider->ContextCapabilities()
           .max_copy_texture_chromium_size;
-  *raster_buffer_provider = std::make_unique<OneCopyRasterBufferProvider>(
+  return std::make_unique<OneCopyRasterBufferProvider>(
       GetTaskRunner(), compositor_context_provider, worker_context_provider,
       resource_provider_.get(), max_copy_texture_chromium_size,
       settings_.use_partial_raster,
@@ -2746,12 +2726,12 @@ void LayerTreeHostImpl::DidChangeScrollbarVisibility() {
 
 void LayerTreeHostImpl::CleanUpTileManagerResources() {
   tile_manager_.FinishTasksAndCleanUp();
-  // TODO(crbug.com/810925): If the ResourceProvider isn't being destroyed,
-  // instead of destroying the pool, just invalidate reuse of existing
-  // resources.
-  resource_pool_ = nullptr;
   single_thread_synchronous_task_graph_runner_ = nullptr;
   image_decode_cache_ = nullptr;
+  // Any resources that were allocated previously should be considered not good
+  // for reuse, as the RasterBufferProvider will be replaced and it may choose
+  // to allocate future resources differently.
+  resource_pool_->InvalidateResources();
 
   // We've potentially just freed a large number of resources on our various
   // contexts. Flushing now helps ensure these are cleaned up quickly
@@ -2784,6 +2764,7 @@ void LayerTreeHostImpl::ReleaseLayerTreeFrameSink() {
 
   // Note: ui resource cleanup uses the |resource_provider_|.
   CleanUpTileManagerResources();
+  resource_pool_ = nullptr;
   ClearUIResources();
   resource_provider_ = nullptr;
 
@@ -2822,6 +2803,19 @@ bool LayerTreeHostImpl::InitializeRenderer(
       layer_tree_frame_sink_->gpu_memory_buffer_manager(),
       layer_tree_frame_sink_->capabilities().delegated_sync_points_required,
       settings_.resource_settings);
+  if (!layer_tree_frame_sink_->context_provider()) {
+    // This ResourcePool will vend software resources.
+    resource_pool_ = std::make_unique<ResourcePool>(
+        resource_provider_.get(), GetTaskRunner(),
+        ResourcePool::kDefaultExpirationDelay, ResourcePool::Mode::kSoftware,
+        settings_.disallow_non_exact_resource_reuse);
+  } else {
+    // The ResourcePool will vend gpu resources.
+    resource_pool_ = std::make_unique<ResourcePool>(
+        resource_provider_.get(), GetTaskRunner(),
+        ResourcePool::kDefaultExpirationDelay, ResourcePool::Mode::kGpu,
+        settings_.disallow_non_exact_resource_reuse);
+  }
 
   // Since the new context may be capable of MSAA, update status here. We don't
   // need to check the return value since we are recreating all resources
