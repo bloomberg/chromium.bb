@@ -585,6 +585,16 @@ TEST_F(SupervisedUserURLFilterTest, ChromeWebstoreDownloadsAreAlwaysAllowed) {
 }
 #endif
 
+TEST_F(SupervisedUserURLFilterTest, GoogleFamiliesAlwaysAllowed) {
+  filter_.SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
+  EXPECT_TRUE(IsURLWhitelisted("https://families.google.com/"));
+  EXPECT_TRUE(IsURLWhitelisted("https://families.google.com"));
+  EXPECT_TRUE(IsURLWhitelisted("https://families.google.com/something"));
+  EXPECT_FALSE(IsURLWhitelisted("http://families.google.com/"));
+  EXPECT_FALSE(IsURLWhitelisted("https://families.google.com:8080/"));
+  EXPECT_FALSE(IsURLWhitelisted("https://subdomain.families.google.com/"));
+}
+
 TEST_F(SupervisedUserURLFilterTest, GetEmbeddedURLAmpCache) {
   // Base case.
   EXPECT_EQ(GURL("http://example.com"),
