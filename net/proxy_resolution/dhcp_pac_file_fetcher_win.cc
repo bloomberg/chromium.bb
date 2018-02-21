@@ -9,8 +9,12 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/queue.h"
 #include "base/memory/free_deleter.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/synchronization/lock.h"
+#include "base/task_runner.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "net/base/net_errors.h"
 #include "net/proxy_resolution/dhcp_pac_file_adapter_fetcher_win.h"
 
@@ -19,8 +23,8 @@
 
 namespace {
 
-// How many threads to use at maximum to do DHCP lookups. This is
-// chosen based on the following UMA data:
+// Maximum number of DHCP lookup tasks running concurrently. This is chosen
+// based on the following UMA data:
 // - When OnWaitTimer fires, ~99.8% of users have 6 or fewer network
 //   adapters enabled for DHCP in total.
 // - At the same measurement point, ~99.7% of users have 3 or fewer pending
@@ -29,21 +33,112 @@ namespace {
 //   systems reporting up to 100+ adapters (this must be some very weird
 //   OS bug (?), probably the cause of http://crbug.com/240034).
 //
-// The maximum number of threads is chosen such that even systems that
-// report a huge number of network adapters should not run out of
-// memory from this number of threads, while giving a good chance of
-// getting back results for any responsive adapters.
-//
-// The ~99.8% of systems that have 6 or fewer network adapters will
-// not grow the thread pool to its maximum size (rather, they will
-// grow it to 6 or fewer threads) so setting the limit lower would not
-// improve performance or memory usage on those systems.
-const int kMaxDhcpLookupThreads = 12;
+// Th value is chosen such that DHCP lookup tasks don't prevent other tasks from
+// running even on systems that report a huge number of network adapters, while
+// giving a good chance of getting back results for any responsive adapters.
+constexpr int kMaxConcurrentDhcpLookupTasks = 12;
 
 // How long to wait at maximum after we get results (a PAC file or
 // knowledge that no PAC file is configured) from whichever network
 // adapter finishes first.
-const int kMaxWaitAfterFirstResultMs = 400;
+constexpr base::TimeDelta kMaxWaitAfterFirstResult =
+    base::TimeDelta::FromMilliseconds(400);
+
+// A TaskRunner that never schedules more than |kMaxConcurrentDhcpLookupTasks|
+// tasks concurrently.
+class TaskRunnerWithCap : public base::TaskRunner {
+ public:
+  TaskRunnerWithCap() = default;
+
+  bool PostDelayedTask(const base::Location& from_here,
+                       base::OnceClosure task,
+                       base::TimeDelta delay) override {
+    // Delayed tasks are not supported.
+    DCHECK(delay.is_zero());
+
+    // Wrap the task in a callback that runs |task|, then tries to schedule a
+    // task from |pending_tasks_|.
+    base::OnceClosure wrapped_task =
+        base::BindOnce(&TaskRunnerWithCap::RunTaskAndSchedulePendingTask, this,
+                       std::move(task));
+
+    {
+      base::AutoLock auto_lock(lock_);
+
+      // If |kMaxConcurrentDhcpLookupTasks| tasks are scheduled, move the task
+      // to |pending_tasks_|.
+      DCHECK_LE(num_scheduled_tasks_, kMaxConcurrentDhcpLookupTasks);
+      if (num_scheduled_tasks_ == kMaxConcurrentDhcpLookupTasks) {
+        pending_tasks_.emplace(from_here, std::move(wrapped_task));
+        return true;
+      }
+
+      // If less than |kMaxConcurrentDhcpLookupTasks| tasks are scheduled,
+      // increment |num_scheduled_tasks_| and schedule the task.
+      ++num_scheduled_tasks_;
+    }
+
+    task_runner_->PostTask(from_here, std::move(wrapped_task));
+    return true;
+  }
+
+  bool RunsTasksInCurrentSequence() const override {
+    return task_runner_->RunsTasksInCurrentSequence();
+  }
+
+ private:
+  struct LocationAndTask {
+    LocationAndTask() = default;
+    LocationAndTask(const base::Location& from_here, base::OnceClosure task)
+        : from_here(from_here), task(std::move(task)) {}
+    base::Location from_here;
+    base::OnceClosure task;
+  };
+
+  ~TaskRunnerWithCap() override = default;
+
+  void RunTaskAndSchedulePendingTask(base::OnceClosure task) {
+    // Run |task|.
+    std::move(task).Run();
+
+    // If |pending_tasks_| is non-empty, schedule a task from it. Otherwise,
+    // decrement |num_scheduled_tasks_|.
+    LocationAndTask task_to_schedule;
+
+    {
+      base::AutoLock auto_lock(lock_);
+
+      DCHECK_GT(num_scheduled_tasks_, 0);
+      if (pending_tasks_.empty()) {
+        --num_scheduled_tasks_;
+        return;
+      }
+
+      task_to_schedule = std::move(pending_tasks_.front());
+      pending_tasks_.pop();
+    }
+
+    DCHECK(task_to_schedule.task);
+    task_runner_->PostTask(task_to_schedule.from_here,
+                           std::move(task_to_schedule.task));
+  }
+
+  const scoped_refptr<base::TaskRunner> task_runner_ =
+      base::CreateTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
+           base::TaskPriority::USER_VISIBLE});
+
+  // Synchronizes access to members below.
+  base::Lock lock_;
+
+  // Number of tasks that are currently scheduled.
+  int num_scheduled_tasks_ = 0;
+
+  // Tasks that are waiting to be scheduled.
+  base::queue<LocationAndTask> pending_tasks_;
+
+  DISALLOW_COPY_AND_ASSIGN(TaskRunnerWithCap);
+};
 
 }  // namespace
 
@@ -54,19 +149,15 @@ DhcpProxyScriptFetcherWin::DhcpProxyScriptFetcherWin(
     : state_(STATE_START),
       num_pending_fetchers_(0),
       destination_string_(NULL),
-      url_request_context_(url_request_context) {
+      url_request_context_(url_request_context),
+      task_runner_(base::MakeRefCounted<TaskRunnerWithCap>()) {
   DCHECK(url_request_context_);
-
-  worker_pool_ = new base::SequencedWorkerPool(
-      kMaxDhcpLookupThreads, "PacDhcpLookup", base::TaskPriority::USER_VISIBLE);
 }
 
 DhcpProxyScriptFetcherWin::~DhcpProxyScriptFetcherWin() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Count as user-initiated if we are not yet in STATE_DONE.
   Cancel();
-
-  worker_pool_->Shutdown();
 }
 
 int DhcpProxyScriptFetcherWin::Fetch(base::string16* utf16_text,
@@ -85,15 +176,13 @@ int DhcpProxyScriptFetcherWin::Fetch(base::string16* utf16_text,
   destination_string_ = utf16_text;
 
   last_query_ = ImplCreateAdapterQuery();
-  GetTaskRunner()->PostTaskAndReply(
+  task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(
           &DhcpProxyScriptFetcherWin::AdapterQuery::GetCandidateAdapterNames,
           last_query_.get()),
-      base::Bind(
-          &DhcpProxyScriptFetcherWin::OnGetCandidateAdapterNamesDone,
-          AsWeakPtr(),
-          last_query_));
+      base::Bind(&DhcpProxyScriptFetcherWin::OnGetCandidateAdapterNamesDone,
+                 AsWeakPtr(), last_query_));
 
   return ERR_IO_PENDING;
 }
@@ -284,14 +373,12 @@ URLRequestContext* DhcpProxyScriptFetcherWin::url_request_context() const {
 }
 
 scoped_refptr<base::TaskRunner> DhcpProxyScriptFetcherWin::GetTaskRunner() {
-  return worker_pool_->GetTaskRunnerWithShutdownBehavior(
-      base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+  return task_runner_;
 }
 
 DhcpProxyScriptAdapterFetcher*
     DhcpProxyScriptFetcherWin::ImplCreateAdapterFetcher() {
-  return new DhcpProxyScriptAdapterFetcher(url_request_context_,
-                                           GetTaskRunner());
+  return new DhcpProxyScriptAdapterFetcher(url_request_context_, task_runner_);
 }
 
 DhcpProxyScriptFetcherWin::AdapterQuery*
@@ -300,7 +387,7 @@ DhcpProxyScriptFetcherWin::AdapterQuery*
 }
 
 base::TimeDelta DhcpProxyScriptFetcherWin::ImplGetMaxWait() {
-  return base::TimeDelta::FromMilliseconds(kMaxWaitAfterFirstResultMs);
+  return kMaxWaitAfterFirstResult;
 }
 
 bool DhcpProxyScriptFetcherWin::GetCandidateAdapterNames(
@@ -318,6 +405,8 @@ bool DhcpProxyScriptFetcherWin::GetCandidateAdapterNames(
   do {
     adapters.reset(static_cast<IP_ADAPTER_ADDRESSES*>(malloc(adapters_size)));
     // Return only unicast addresses, and skip information we do not need.
+    base::ScopedBlockingCall scoped_blocking_call(
+        base::BlockingType::MAY_BLOCK);
     error = GetAdaptersAddresses(AF_UNSPEC,
                                  GAA_FLAG_SKIP_ANYCAST |
                                  GAA_FLAG_SKIP_MULTICAST |

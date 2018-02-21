@@ -6,8 +6,9 @@
 
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/test/test_timeouts.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
 #include "net/base/net_errors.h"
@@ -79,7 +80,11 @@ class MockDhcpProxyScriptAdapterFetcher
     std::string ImplGetPacURLFromDhcp(
         const std::string& adapter_name) override {
       base::ElapsedTimer timer;
-      test_finished_event_.TimedWait(dhcp_delay_);
+      {
+        base::ScopedAllowBaseSyncPrimitivesForTesting
+            scoped_allow_base_sync_primitives;
+        test_finished_event_.TimedWait(dhcp_delay_);
+      }
       return configured_url_;
     }
 
@@ -142,18 +147,11 @@ class FetcherClient {
  public:
   FetcherClient()
       : url_request_context_(new TestURLRequestContext()),
-        worker_pool_(
-            new base::SequencedWorkerPool(4,
-                                          "DhcpAdapterFetcherTest",
-                                          base::TaskPriority::USER_VISIBLE)),
         fetcher_(new MockDhcpProxyScriptAdapterFetcher(
             url_request_context_.get(),
-            worker_pool_->GetTaskRunnerWithShutdownBehavior(
-                base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN))) {}
-
-  ~FetcherClient() {
-    worker_pool_->Shutdown();
-  }
+            base::CreateSequencedTaskRunnerWithTraits(
+                {base::MayBlock(),
+                 base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))) {}
 
   void WaitForResult(int expected_error) {
     EXPECT_EQ(expected_error, callback_.WaitForResult());
@@ -170,7 +168,6 @@ class FetcherClient {
 
   TestCompletionCallback callback_;
   std::unique_ptr<URLRequestContext> url_request_context_;
-  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
   std::unique_ptr<MockDhcpProxyScriptAdapterFetcher> fetcher_;
   base::string16 pac_text_;
 };
@@ -299,12 +296,11 @@ TEST(DhcpProxyScriptAdapterFetcher, MockDhcpRealFetch) {
 
   FetcherClient client;
   TestURLRequestContext url_request_context;
-  scoped_refptr<base::TaskRunner> runner =
-      client.worker_pool_->GetTaskRunnerWithShutdownBehavior(
-          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
-  client.fetcher_.reset(
-      new MockDhcpRealFetchProxyScriptAdapterFetcher(
-          &url_request_context, runner));
+  client.fetcher_.reset(new MockDhcpRealFetchProxyScriptAdapterFetcher(
+      &url_request_context,
+      base::CreateTaskRunnerWithTraits(
+          {base::MayBlock(),
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})));
   client.fetcher_->configured_url_ = configured_url.spec();
   client.RunTest();
   client.WaitForResult(OK);

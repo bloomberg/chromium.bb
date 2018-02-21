@@ -19,7 +19,6 @@
 #include "net/proxy_resolution/dhcp_pac_file_fetcher.h"
 
 namespace base {
-class SequencedWorkerPool;
 class TaskRunner;
 }
 
@@ -174,8 +173,8 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcherWin
   // Time |Fetch()| was last called, 0 if never.
   base::TimeTicks fetch_start_time_;
 
-  // Worker pool we use for all DHCP lookup tasks.
-  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
+  // TaskRunner used for all DHCP lookup tasks.
+  const scoped_refptr<base::TaskRunner> task_runner_;
 
   THREAD_CHECKER(thread_checker_);
 
