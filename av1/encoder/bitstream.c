@@ -2187,6 +2187,39 @@ static void write_wiener_filter(int wiener_win, const WienerInfo *wiener_info,
   memcpy(ref_wiener_info, wiener_info, sizeof(*wiener_info));
 }
 
+#if CONFIG_SKIP_SGR
+static void write_sgrproj_filter(const SgrprojInfo *sgrproj_info,
+                                 SgrprojInfo *ref_sgrproj_info,
+                                 aom_writer *wb) {
+  aom_write_literal(wb, sgrproj_info->ep, SGRPROJ_PARAMS_BITS);
+  const sgr_params_type *params = &sgr_params[sgrproj_info->ep];
+
+  if (params->r1 == 0) {
+    assert(sgrproj_info->xqd[0] == 0);
+    aom_write_primitive_refsubexpfin(
+        wb, SGRPROJ_PRJ_MAX1 - SGRPROJ_PRJ_MIN1 + 1, SGRPROJ_PRJ_SUBEXP_K,
+        ref_sgrproj_info->xqd[1] - SGRPROJ_PRJ_MIN1,
+        sgrproj_info->xqd[1] - SGRPROJ_PRJ_MIN1);
+  } else if (params->r2 == 0) {
+    aom_write_primitive_refsubexpfin(
+        wb, SGRPROJ_PRJ_MAX0 - SGRPROJ_PRJ_MIN0 + 1, SGRPROJ_PRJ_SUBEXP_K,
+        ref_sgrproj_info->xqd[0] - SGRPROJ_PRJ_MIN0,
+        sgrproj_info->xqd[0] - SGRPROJ_PRJ_MIN0);
+    assert(sgrproj_info->xqd[1] == 0);
+  } else {
+    aom_write_primitive_refsubexpfin(
+        wb, SGRPROJ_PRJ_MAX0 - SGRPROJ_PRJ_MIN0 + 1, SGRPROJ_PRJ_SUBEXP_K,
+        ref_sgrproj_info->xqd[0] - SGRPROJ_PRJ_MIN0,
+        sgrproj_info->xqd[0] - SGRPROJ_PRJ_MIN0);
+    aom_write_primitive_refsubexpfin(
+        wb, SGRPROJ_PRJ_MAX1 - SGRPROJ_PRJ_MIN1 + 1, SGRPROJ_PRJ_SUBEXP_K,
+        ref_sgrproj_info->xqd[1] - SGRPROJ_PRJ_MIN1,
+        sgrproj_info->xqd[1] - SGRPROJ_PRJ_MIN1);
+  }
+
+  memcpy(ref_sgrproj_info, sgrproj_info, sizeof(*sgrproj_info));
+}
+#else   // CONFIG_SKIP_SGR
 static void write_sgrproj_filter(const SgrprojInfo *sgrproj_info,
                                  SgrprojInfo *ref_sgrproj_info,
                                  aom_writer *wb) {
@@ -2201,6 +2234,7 @@ static void write_sgrproj_filter(const SgrprojInfo *sgrproj_info,
                                    sgrproj_info->xqd[1] - SGRPROJ_PRJ_MIN1);
   memcpy(ref_sgrproj_info, sgrproj_info, sizeof(*sgrproj_info));
 }
+#endif  // CONFIG_SKIP_SGR
 
 static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
                                              MACROBLOCKD *xd,

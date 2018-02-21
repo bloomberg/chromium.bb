@@ -29,12 +29,17 @@
 const sgr_params_type sgr_params[SGRPROJ_PARAMS] = {
 // r1, eps1, r2, eps2
 #if CONFIG_SKIP_SGR
-// Setting r = 0 skips the filter
-#endif  // CONFIG_SKIP_SGR
+  // Setting r = 0 skips the filter
   { 2, 12, 1, 4 },  { 2, 15, 1, 6 },  { 2, 18, 1, 8 },  { 2, 20, 1, 9 },
   { 2, 22, 1, 10 }, { 2, 25, 1, 11 }, { 2, 35, 1, 12 }, { 2, 45, 1, 13 },
   { 2, 55, 1, 14 }, { 2, 65, 1, 15 }, { 2, 75, 1, 16 }, { 2, 30, 1, 6 },
   { 2, 50, 1, 12 }, { 2, 60, 1, 13 }, { 2, 70, 1, 14 }, { 2, 80, 1, 15 },
+#else   // CONFIG_SKIP_SGR
+  { 2, 12, 1, 4 },  { 2, 15, 1, 6 },  { 2, 18, 1, 8 },  { 2, 20, 1, 9 },
+  { 2, 22, 1, 10 }, { 2, 25, 1, 11 }, { 2, 35, 1, 12 }, { 2, 45, 1, 13 },
+  { 2, 55, 1, 14 }, { 2, 65, 1, 15 }, { 2, 75, 1, 16 }, { 2, 30, 1, 6 },
+  { 2, 50, 1, 12 }, { 2, 60, 1, 13 }, { 2, 70, 1, 14 }, { 2, 80, 1, 15 },
+#endif  // CONFIG_SKIP_SGR
 };
 
 // Count horizontal or vertical units per tile (use a width or height for
@@ -740,10 +745,27 @@ static void boxsum(int32_t *src, int width, int height, int src_stride, int r,
     assert(0 && "Invalid value of r in self-guided filter");
 }
 
+#if CONFIG_SKIP_SGR
+void decode_xq(const int *xqd, int *xq, const sgr_params_type *params) {
+  if (params->r1 == 0) {
+    assert(xqd[0] == 0);
+    xq[0] = 0;
+    xq[1] = (1 << SGRPROJ_PRJ_BITS) - xqd[1];
+  } else if (params->r2 == 0) {
+    assert(xqd[1] == 0);
+    xq[0] = xqd[0];
+    xq[1] = 0;
+  } else {
+    xq[0] = xqd[0];
+    xq[1] = (1 << SGRPROJ_PRJ_BITS) - xq[0] - xqd[1];
+  }
+}
+#else   // CONFIG_SKIP_SGR
 void decode_xq(const int *xqd, int *xq) {
   xq[0] = xqd[0];
   xq[1] = (1 << SGRPROJ_PRJ_BITS) - xq[0] - xqd[1];
 }
+#endif  // CONFIG_SKIP_SGR
 
 const int32_t x_by_xplus1[256] = {
   // Special case: Map 0 -> 1 (corresponding to a value of 1/256)
@@ -1059,21 +1081,14 @@ void av1_selfguided_restoration_c(const uint8_t *dgd8, int width, int height,
   assert(!(params->r1 == 0 && params->r2 == 0));
 
 #if CONFIG_FAST_SGR
-  if (params->r1 > 0) {
-    // r == 2 filter
-    assert(params->r1 == 2);
+  if (params->r1 > 0)
     av1_selfguided_restoration_fast_internal(dgd32, width, height, dgd32_stride,
                                              flt1, flt_stride, bit_depth,
                                              params->r1, params->e1);
-  }
-
-  if (params->r2 > 0) {
-    // r == 1 filter
-    assert(params->r2 == 1);
+  if (params->r2 > 0)
     av1_selfguided_restoration_internal(dgd32, width, height, dgd32_stride,
                                         flt2, flt_stride, bit_depth, params->r2,
                                         params->e2);
-  }
 #else
   if (params->r1 > 0)
     av1_selfguided_restoration_internal(dgd32, width, height, dgd32_stride,
@@ -1111,7 +1126,6 @@ void apply_selfguided_restoration_c(const uint8_t *dat8, int width, int height,
                                     uint8_t *dst8, int dst_stride,
                                     int32_t *tmpbuf, int bit_depth,
                                     int highbd) {
-  int xq[2];
   int32_t *flt1 = tmpbuf;
   int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
   assert(width * height <= RESTORATION_TILEPELS_MAX);
@@ -1120,11 +1134,14 @@ void apply_selfguided_restoration_c(const uint8_t *dat8, int width, int height,
   const sgr_params_type *params = &sgr_params[eps];
   av1_selfguided_restoration_c(dat8, width, height, stride, flt1, flt2, width,
                                params, bit_depth, highbd);
+  int xq[2];
+  decode_xq(xqd, xq, params);
 #else   // CONFIG_SKIP_SGR
   av1_selfguided_restoration_c(dat8, width, height, stride, flt1, flt2, width,
                                &sgr_params[eps], bit_depth, highbd);
-#endif  // CONFIG_SKIP_SGR
+  int xq[2];
   decode_xq(xqd, xq);
+#endif  // CONFIG_SKIP_SGR
   for (int i = 0; i < height; ++i) {
     for (int j = 0; j < width; ++j) {
       const int k = i * width + j;

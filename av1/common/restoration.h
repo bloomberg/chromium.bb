@@ -273,7 +273,11 @@ void av1_free_restoration_struct(RestorationInfo *rst_info);
 
 void extend_frame(uint8_t *data, int width, int height, int stride,
                   int border_horz, int border_vert, int highbd);
+#if CONFIG_SKIP_SGR
+void decode_xq(const int *xqd, int *xq, const sgr_params_type *params);
+#else   // CONFIG_SKIP_SGR
 void decode_xq(const int *xqd, int *xq);
+#endif  // CONFIG_SKIP_SGR
 
 // Filter a single loop restoration unit.
 //

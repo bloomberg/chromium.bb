@@ -594,8 +594,6 @@ void av1_selfguided_restoration_avx2(const uint8_t *dgd8, int width, int height,
   assert(params->r2 < AOMMIN(SGRPROJ_BORDER_VERT, SGRPROJ_BORDER_HORZ));
 
   if (params->r1 > 0) {
-    // r == 2 filter
-    assert(params->r1 == 2);
     calc_ab_fast(A, B, C, D, width, height, buf_stride, params->e1, bit_depth,
                  params->r1);
     final_filter_fast(flt1, flt_stride, A, B, buf_stride, dgd8, dgd_stride,
@@ -603,8 +601,6 @@ void av1_selfguided_restoration_avx2(const uint8_t *dgd8, int width, int height,
   }
 
   if (params->r2 > 0) {
-    // r == 1 filter
-    assert(params->r2 == 1);
     calc_ab(A, B, C, D, width, height, buf_stride, params->e2, bit_depth,
             params->r2);
     final_filter(flt2, flt_stride, A, B, buf_stride, dgd8, dgd_stride, width,
@@ -670,13 +666,14 @@ void apply_selfguided_restoration_avx2(const uint8_t *dat8, int width,
   const sgr_params_type *params = &sgr_params[eps];
   av1_selfguided_restoration_avx2(dat8, width, height, stride, flt1, flt2,
                                   width, params, bit_depth, highbd);
+  int xq[2];
+  decode_xq(xqd, xq, params);
 #else   // CONFIG_SKIP_SGR
   av1_selfguided_restoration_avx2(dat8, width, height, stride, flt1, flt2,
                                   width, &sgr_params[eps], bit_depth, highbd);
-#endif  // CONFIG_SKIP_SGR
-
   int xq[2];
   decode_xq(xqd, xq);
+#endif  // CONFIG_SKIP_SGR
 
   __m256i xq0 = _mm256_set1_epi32(xq[0]);
   __m256i xq1 = _mm256_set1_epi32(xq[1]);
