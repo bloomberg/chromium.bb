@@ -61,8 +61,6 @@ TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURL) {
         GURL(chrome_prefix + chrome::kChromeUIVersionHost)},
        {GURL(chrome_prefix + chrome::kChromeUIAboutHost),
         GURL(chrome_prefix + chrome::kChromeUIChromeURLsHost)},
-       {GURL(chrome_prefix + chrome::kChromeUICacheHost),
-        GURL(chrome_prefix + content::kChromeUINetworkViewCacheHost)},
        {GURL(chrome_prefix + chrome::kChromeUISignInInternalsHost),
         GURL(chrome_prefix + chrome::kChromeUISignInInternalsHost)},
        {GURL(chrome_prefix + chrome::kChromeUISyncHost),

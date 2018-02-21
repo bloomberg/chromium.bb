@@ -24,7 +24,6 @@ const char kChromeUIAppsURL[] = "chrome://apps/";
 const char kChromeUIBluetoothInternalsHost[] = "bluetooth-internals";
 const char kChromeUIBookmarksHost[] = "bookmarks";
 const char kChromeUIBookmarksURL[] = "chrome://bookmarks/";
-const char kChromeUICacheHost[] = "cache";
 const char kChromeUICertificateViewerDialogHost[] = "view-cert-dialog";
 const char kChromeUICertificateViewerDialogURL[] = "chrome://view-cert-dialog/";
 const char kChromeUICertificateViewerHost[] = "view-cert";
@@ -299,7 +298,6 @@ const char kExtensionConfigureCommandsSubPage[] = "configureCommands";
 const char* const kChromeHostURLs[] = {
     kChromeUIAboutHost,
     kChromeUIBluetoothInternalsHost,
-    kChromeUICacheHost,
     kChromeUIChromeURLsHost,
     kChromeUIComponentsHost,
     kChromeUICrashesHost,
@@ -351,7 +349,6 @@ const char* const kChromeHostURLs[] = {
     content::kChromeUIMediaInternalsHost,
     content::kChromeUINetworkErrorHost,
     content::kChromeUINetworkErrorsListingHost,
-    content::kChromeUINetworkViewCacheHost,
     content::kChromeUIServiceWorkerInternalsHost,
 #if !defined(OS_ANDROID)
     content::kChromeUITracingHost,

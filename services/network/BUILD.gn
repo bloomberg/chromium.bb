@@ -10,8 +10,6 @@ import("//services/service_manager/public/tools/test/service_test.gni")
 
 component("network_service") {
   sources = [
-    "cache_url_loader.cc",
-    "cache_url_loader.h",
     "cookie_manager.cc",
     "cookie_manager.h",
     "data_pipe_element_reader.cc",

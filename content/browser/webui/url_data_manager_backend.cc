@@ -28,7 +28,6 @@
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/histogram_internals_request_job.h"
 #include "content/browser/net/view_blob_internals_job_factory.h"
-#include "content/browser/net/view_http_cache_job_factory.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/webui/shared_resources_data_source.h"
 #include "content/browser/webui/url_data_source_impl.h"
@@ -353,11 +352,6 @@ class ChromeProtocolHandler
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
     DCHECK(request);
-
-    // Check for chrome://view-http-cache/*, which uses its own job type.
-    if (ViewHttpCacheJobFactory::IsSupportedURL(request->url()))
-      return ViewHttpCacheJobFactory::CreateJobForRequest(request,
-                                                          network_delegate);
 
     // Next check for chrome://blob-internals/, which uses its own job type.
     if (ViewBlobInternalsJobFactory::IsSupportedURL(request->url())) {

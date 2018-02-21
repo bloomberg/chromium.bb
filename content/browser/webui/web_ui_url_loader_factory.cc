@@ -247,12 +247,6 @@ class WebUIURLLoaderFactory : public network::mojom::URLLoaderFactory,
       return;
     }
 
-    if (request.url.host_piece() == kChromeUINetworkViewCacheHost) {
-      GetStoragePartition()->GetNetworkContext()->HandleViewCacheRequest(
-          request.url, std::move(client));
-      return;
-    }
-
     if (request.url.host_piece() == kChromeUIBlobInternalsHost) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,

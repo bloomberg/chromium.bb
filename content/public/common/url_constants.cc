@@ -30,7 +30,6 @@ const char kChromeUIGpuHost[] = "gpu";
 const char kChromeUIHistogramHost[] = "histograms";
 const char kChromeUIMediaInternalsHost[] = "media-internals";
 const char kChromeUIMemoryExhaustHost[] = "memory-exhaust";
-const char kChromeUINetworkViewCacheHost[] = "view-http-cache";
 const char kChromeUINetworkErrorHost[] = "network-error";
 const char kChromeUINetworkErrorsListingHost[] = "network-errors";
 const char kChromeUIResourcesHost[] = "resources";
@@ -74,7 +73,6 @@ const char kChromeUICrashDcheckURL[] = "chrome://crash/dcheck";
 // have a chrome:// scheme that might let it be confused with a WebUI page.
 const char kUnreachableWebDataURL[] = "chrome-error://chromewebdata/";
 
-const char kChromeUINetworkViewCacheURL[] = "chrome://view-http-cache/";
 const char kChromeUIResourcesURL[] = "chrome://resources/";
 const char kChromeUIShorthangURL[] = "chrome://shorthang/";
 

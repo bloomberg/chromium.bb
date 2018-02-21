@@ -38,7 +38,6 @@
 #include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
-#include "services/network/cache_url_loader.h"
 #include "services/network/http_server_properties_pref_delegate.h"
 #include "services/network/ignore_errors_cert_verifier.h"
 #include "services/network/network_service.h"
@@ -186,11 +185,6 @@ void NetworkContext::CreateURLLoaderFactory(
   }
   CreateURLLoaderFactory(std::move(request), process_id,
                          std::move(resource_scheduler_client));
-}
-
-void NetworkContext::HandleViewCacheRequest(const GURL& url,
-                                            mojom::URLLoaderClientPtr client) {
-  StartCacheURLLoader(url, GetURLRequestContext(), std::move(client));
 }
 
 void NetworkContext::GetCookieManager(mojom::CookieManagerRequest request) {
