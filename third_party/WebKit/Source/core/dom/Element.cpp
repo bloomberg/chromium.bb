@@ -274,7 +274,9 @@ Element* Element::CloneElementWithChildren(Document* nullable_factory) {
   // copied.  This is a sanity check as HTML overloads some of the DOM methods.
   DCHECK_EQ(IsHTMLElement(), clone->IsHTMLElement());
 
-  clone->CloneDataFromElement(*this, CloneChildrenFlag::kClone);
+  clone->CloneAttributesFromElement(*this);
+  clone->CopyNonAttributePropertiesFromElement(*this,
+                                               CloneChildrenFlag::kClone);
   clone->CloneChildNodesFrom(*this);
   return clone;
 }
@@ -286,7 +288,8 @@ Element* Element::CloneElementWithoutChildren(Document* nullable_factory) {
   // copied.  This is a sanity check as HTML overloads some of the DOM methods.
   DCHECK_EQ(IsHTMLElement(), clone->IsHTMLElement());
 
-  clone->CloneDataFromElement(*this, CloneChildrenFlag::kSkip);
+  clone->CloneAttributesFromElement(*this);
+  clone->CopyNonAttributePropertiesFromElement(*this, CloneChildrenFlag::kSkip);
   return clone;
 }
 
@@ -4407,12 +4410,6 @@ void Element::CloneAttributesFromElement(const Element& other) {
 
   if (other.nonce() != g_null_atom)
     setNonce(other.nonce());
-}
-
-void Element::CloneDataFromElement(const Element& other,
-                                   CloneChildrenFlag flag) {
-  CloneAttributesFromElement(other);
-  CopyNonAttributePropertiesFromElement(other, flag);
 }
 
 void Element::CreateUniqueElementData() {
