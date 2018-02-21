@@ -24,6 +24,11 @@ const char kDeadlineToSynchronizeSurfaces[] =
 // by the parent compositor.
 const char kEnableSurfaceSynchronization[] = "enable-surface-synchronization";
 
+// Effectively disables pipelining of compositor frame production stages by
+// waiting for each stage to finish before completing a frame.
+const char kRunAllCompositorStagesBeforeDraw[] =
+    "run-all-compositor-stages-before-draw";
+
 // Enables the viz hit-test logic (HitTestAggregator and HitTestQuery), with
 // hit-test data coming from draw quad.
 const char kUseVizHitTestDrawQuad[] = "use-viz-hit-test-draw-quad";
@@ -33,8 +38,13 @@ const char kUseVizHitTestDrawQuad[] = "use-viz-hit-test-draw-quad";
 const char kUseVizHitTestSurfaceLayer[] = "use-viz-hit-test-surface-layer";
 
 base::Optional<uint32_t> GetDeadlineToSynchronizeSurfaces() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kRunAllCompositorStagesBeforeDraw)) {
+    // In full-pipeline mode, surface deadlines should always be unlimited.
+    return base::nullopt;
+  }
   std::string deadline_to_synchronize_surfaces_string =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      command_line->GetSwitchValueASCII(
           switches::kDeadlineToSynchronizeSurfaces);
   if (deadline_to_synchronize_surfaces_string.empty())
     return kDefaultActivationDeadlineInFrames;

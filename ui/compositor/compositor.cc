@@ -35,6 +35,7 @@
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/resource_settings.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
+#include "components/viz/common/switches.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/host/renderer_settings_creation.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -178,8 +179,7 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   settings.disallow_non_exact_resource_reuse =
       command_line->HasSwitch(switches::kDisallowNonExactResourceReuse);
 
-  if (command_line->HasSwitch(
-          cc::switches::kRunAllCompositorStagesBeforeDraw)) {
+  if (command_line->HasSwitch(switches::kRunAllCompositorStagesBeforeDraw)) {
     settings.wait_for_all_pipeline_stages_before_draw = true;
     settings.enable_latency_recovery = false;
   }

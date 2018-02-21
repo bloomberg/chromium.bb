@@ -52,6 +52,7 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/resources/single_release_callback.h"
+#include "components/viz/common/switches.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/layer_tree_settings_factory.h"
 #include "content/common/render_frame_metadata.mojom.h"
@@ -588,7 +589,7 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   settings.disallow_non_exact_resource_reuse = true;
 #endif
 
-  if (cmd.HasSwitch(cc::switches::kRunAllCompositorStagesBeforeDraw)) {
+  if (cmd.HasSwitch(switches::kRunAllCompositorStagesBeforeDraw)) {
     settings.wait_for_all_pipeline_stages_before_draw = true;
     settings.enable_latency_recovery = false;
   }
