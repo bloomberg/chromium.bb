@@ -153,10 +153,9 @@
       var selectedPage = this.selectedItem || this._valueToItem(this.selected);
       this.resizerShouldNotify = function(element) {
         return element == selectedPage;
-      }
+      };
       this.notifyResize();
     }
-
   })
 
 })();

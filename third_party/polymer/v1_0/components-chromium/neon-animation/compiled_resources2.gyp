@@ -28,15 +28,11 @@
     },
     {
       'target_name': 'neon-animation-behavior-extracted',
-      'dependencies': [
-        '../iron-meta/compiled_resources2.gyp:iron-meta-extracted',
-      ],
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'neon-animation-runner-behavior-extracted',
       'dependencies': [
-        '../iron-meta/compiled_resources2.gyp:iron-meta-extracted',
         'neon-animatable-behavior-extracted',
       ],
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],

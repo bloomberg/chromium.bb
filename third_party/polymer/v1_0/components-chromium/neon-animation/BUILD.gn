@@ -25,15 +25,11 @@ js_library("neon-animated-pages-extracted") {
 }
 
 js_library("neon-animation-behavior-extracted") {
-  deps = [
-    "../iron-meta:iron-meta-extracted",
-  ]
 }
 
 js_library("neon-animation-runner-behavior-extracted") {
   deps = [
     ":neon-animatable-behavior-extracted",
-    "../iron-meta:iron-meta-extracted",
   ]
 }
 

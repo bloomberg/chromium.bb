@@ -33,6 +33,13 @@
     // configure: function(config) {
     // },
 
+    created: function() {
+      if (!document.body.animate) {
+        console.warn('No web animations detected. This element will not' +
+            ' function without a web animations polyfill.');
+      }
+    },
+
     /**
      * Returns the animation timing by mixing in properties from `config` to the defaults defined
      * by the animation.
