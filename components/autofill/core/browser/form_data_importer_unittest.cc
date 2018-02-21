@@ -43,9 +43,6 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_signin_manager.h"
-#include "components/signin/core/browser/test_signin_client.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_database_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -120,8 +117,7 @@ class FormDataImporterTestBase {
     personal_data_manager_.reset(new PersonalDataManager("en"));
     personal_data_manager_->Init(
         scoped_refptr<AutofillWebDataService>(autofill_database_service_),
-        prefs_.get(), account_tracker_.get(), signin_manager_.get(),
-        is_incognito);
+        prefs_.get(), nullptr, nullptr, is_incognito);
     personal_data_manager_->AddObserver(&personal_data_observer_);
     personal_data_manager_->OnSyncServiceInitialized(nullptr);
 
@@ -132,8 +128,6 @@ class FormDataImporterTestBase {
   }
 
   void EnableWalletCardImport() {
-    signin_manager_->SetAuthenticatedAccountInfo("12345",
-                                                 "syncuser@example.com");
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableOfferStoreUnmaskedWalletCards);
   }
@@ -220,9 +214,6 @@ class FormDataImporterTestBase {
   base::ScopedTempDir temp_dir_;
   base::MessageLoopForUI message_loop_;
   std::unique_ptr<PrefService> prefs_;
-  std::unique_ptr<AccountTrackerService> account_tracker_;
-  std::unique_ptr<FakeSigninManagerBase> signin_manager_;
-  std::unique_ptr<TestSigninClient> signin_client_;
   scoped_refptr<AutofillWebDataService> autofill_database_service_;
   scoped_refptr<WebDatabaseService> web_database_;
   AutofillTable* autofill_table_;  // weak ref
@@ -241,14 +232,6 @@ class FormDataImporterTest : public FormDataImporterTestBase,
     web_database_ =
         new WebDatabaseService(path, base::ThreadTaskRunnerHandle::Get(),
                                base::ThreadTaskRunnerHandle::Get());
-
-    // Set up account tracker.
-    signin_client_.reset(new TestSigninClient(prefs_.get()));
-    account_tracker_.reset(new AccountTrackerService());
-    account_tracker_->Initialize(signin_client_.get());
-    signin_manager_.reset(new FakeSigninManagerBase(signin_client_.get(),
-                                                    account_tracker_.get()));
-    signin_manager_->Initialize(prefs_.get());
 
     // Hacky: hold onto a pointer but pass ownership.
     autofill_table_ = new AutofillTable;
@@ -278,13 +261,6 @@ class FormDataImporterTest : public FormDataImporterTestBase,
   void TearDown() override {
     // Order of destruction is important as AutofillManager relies on
     // PersonalDataManager to be around when it gets destroyed.
-    signin_manager_->Shutdown();
-    signin_manager_.reset();
-
-    account_tracker_->Shutdown();
-    account_tracker_.reset();
-    signin_client_.reset();
-
     test::ReenableSystemServices();
     OSCryptMocker::TearDown();
   }
