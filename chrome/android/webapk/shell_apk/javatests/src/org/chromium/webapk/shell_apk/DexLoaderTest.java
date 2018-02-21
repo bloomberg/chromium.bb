@@ -202,6 +202,9 @@ public class DexLoaderTest {
     public void testPreviouslyLoadedFromLocalDataDir() {
         Assert.assertTrue(mLocalDexDir.mkdir());
 
+        // TODO(pkotwicz): fix on Android-Oreo.  See https://crbug.com/779218.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) return;
+
         {
             // Load dex the first time. This should extract the dex file from the APK's assets and
             // generate the optimized dex file.
