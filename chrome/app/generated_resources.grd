@@ -3296,7 +3296,10 @@ are declared in build/common.gypi.
         </message>
       </if>
       <message name="IDS_UTILITY_PROCESS_PATCH_NAME" desc="The name of the utility process used for patching file operations.">
-          Patch Service
+        Patch Service
+      </message>
+      <message name="IDS_UTILITY_PROCESS_UNZIP_NAME" desc="The name of the utility process used for unzipping files.">
+        Unzip Service
       </message>
 
       <!-- Theme preview infobar -->

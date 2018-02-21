@@ -4,7 +4,8 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "requires": {
-        "identity": [ "identity_manager" ]
+        "identity": [ "identity_manager" ],
+        "unzip": [ "unzip_file" ]
       }
     }
   }

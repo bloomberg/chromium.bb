@@ -60,6 +60,7 @@
           "input_device_controller",
           "window_manager"
         ],
+        "unzip": [ "unzip_file" ],
         "util_win" : [ "shell_util_win" ],
         "wifi_util_win": [ "wifi_credentials" ]
       }

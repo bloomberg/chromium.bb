@@ -180,6 +180,7 @@ source_set("web_internal") {
     "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/static_content",
+    "//ios/chrome/browser/unzip",
     "//ios/chrome/browser/web",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/voice",

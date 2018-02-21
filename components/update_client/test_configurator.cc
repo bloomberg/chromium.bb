@@ -10,11 +10,20 @@
 #include "base/version.h"
 #include "components/patch_service/file_patcher_impl.h"
 #include "components/patch_service/patch_service.h"
+#include "components/patch_service/public/interfaces/constants.mojom.h"
 #include "components/patch_service/public/interfaces/file_patcher.mojom.h"
 #include "components/prefs/pref_service.h"
+#include "components/unzip_service/public/interfaces/constants.mojom.h"
+#include "components/unzip_service/public/interfaces/unzipper.mojom.h"
+#include "components/unzip_service/unzip_service.h"
+#include "components/unzip_service/unzipper_impl.h"
 #include "components/update_client/activity_data_service.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_context.h"
+#include "services/service_manager/public/mojom/connector.mojom.h"
 #include "url/gurl.h"
 
 namespace update_client {
@@ -28,6 +37,93 @@ std::vector<GURL> MakeDefaultUrls() {
   return urls;
 }
 
+class TestConnector : public service_manager::mojom::Connector {
+ public:
+  TestConnector()
+      : patch_context_(std::make_unique<patch::PatchService>(),
+                       mojo::MakeRequest(&patch_ptr_)),
+        unzip_context_(std::make_unique<unzip::UnzipService>(),
+                       mojo::MakeRequest(&unzip_ptr_)) {
+    const service_manager::Identity service_id("TestConnector");
+    patch_ptr_->OnStart(service_id,
+                        base::BindOnce(&TestConnector::OnStartCallback,
+                                       base::Unretained(this)));
+    unzip_ptr_->OnStart(service_id,
+                        base::BindOnce(&TestConnector::OnStartCallback,
+                                       base::Unretained(this)));
+  }
+
+  ~TestConnector() override = default;
+
+  void BindInterface(const service_manager::Identity& target,
+                     const std::string& interface_name,
+                     mojo::ScopedMessagePipeHandle interface_pipe,
+                     BindInterfaceCallback callback) override {
+    service_manager::mojom::ServicePtr* service_ptr = nullptr;
+    if (interface_name == "patch::mojom::FilePatcher") {
+      service_ptr = &patch_ptr_;
+    } else if (interface_name == "unzip::mojom::Unzipper") {
+      service_ptr = &unzip_ptr_;
+    } else {
+      LOG(ERROR) << "Requested " << interface_name << " from the TestConnector"
+                 << ", but no such instance was bound.";
+      return;
+    }
+    (*service_ptr)
+        ->OnBindInterface(service_manager::BindSourceInfo(
+                              service_manager::Identity("TestConnector"),
+                              service_manager::CapabilitySet()),
+                          interface_name, std::move(interface_pipe),
+                          base::BindRepeating(&base::DoNothing));
+    std::move(callback).Run(service_manager::mojom::ConnectResult::SUCCEEDED,
+                            service_manager::Identity());
+  }
+
+  void StartService(const service_manager::Identity& target,
+                    StartServiceCallback callback) override {
+    NOTREACHED();
+  }
+
+  void QueryService(const service_manager::Identity& target,
+                    QueryServiceCallback callback) override {
+    NOTREACHED();
+  }
+
+  void StartServiceWithProcess(
+      const service_manager::Identity& identity,
+      mojo::ScopedMessagePipeHandle service,
+      service_manager::mojom::PIDReceiverRequest pid_receiver_request,
+      StartServiceWithProcessCallback callback) override {
+    NOTREACHED();
+  }
+
+  void Clone(service_manager::mojom::ConnectorRequest request) override {
+    bindings_.AddBinding(this, std::move(request));
+  }
+
+  void FilterInterfaces(
+      const std::string& spec,
+      const service_manager::Identity& source,
+      service_manager::mojom::InterfaceProviderRequest source_request,
+      service_manager::mojom::InterfaceProviderPtr target) override {
+    NOTREACHED();
+  }
+
+ private:
+  void OnStartCallback(
+      service_manager::mojom::ConnectorRequest request,
+      service_manager::mojom::ServiceControlAssociatedRequest control_request) {
+  }
+
+  service_manager::mojom::ServicePtr patch_ptr_;
+  service_manager::mojom::ServicePtr unzip_ptr_;
+  service_manager::ServiceContext patch_context_;
+  service_manager::ServiceContext unzip_context_;
+  mojo::BindingSet<service_manager::mojom::Connector> bindings_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestConnector);
+};
+
 }  // namespace
 
 TestConfigurator::TestConfigurator()
@@ -36,12 +132,13 @@ TestConfigurator::TestConfigurator()
       ondemand_time_(0),
       enabled_cup_signing_(false),
       enabled_component_updates_(true),
-      connector_factory_(
-          service_manager::TestConnectorFactory::CreateForUniqueService(
-              std::make_unique<patch::PatchService>())),
-      connector_(connector_factory_->CreateConnector()),
+      connector_mojo_(base::MakeUnique<TestConnector>()),
       context_(base::MakeRefCounted<net::TestURLRequestContextGetter>(
-          base::ThreadTaskRunnerHandle::Get())) {}
+          base::ThreadTaskRunnerHandle::Get())) {
+  service_manager::mojom::ConnectorPtr proxy;
+  connector_mojo_->Clone(mojo::MakeRequest(&proxy));
+  connector_ = base::MakeUnique<service_manager::Connector>(std::move(proxy));
+}
 
 TestConfigurator::~TestConfigurator() {
 }

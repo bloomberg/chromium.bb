@@ -79,6 +79,8 @@ const uint32 kFlagWrite = 0x40;
 const uint32 kFlagAppend = 0x80;
 // Deletes the file when closed.
 const uint32 kDeleteOnClose = 0x2000;
+// May change modified time of the file (used on Windows only).
+const uint32 kFlagWriteAttributes = 0x4000;
 
 // File types.
 //

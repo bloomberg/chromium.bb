@@ -3272,9 +3272,11 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
     base::RunLoop runloop;
     base::OnceClosure quit_closure = runloop.QuitClosure();
 
+    auto config = base::MakeRefCounted<TestConfigurator>();
     scoped_refptr<ComponentUnpacker> component_unpacker = new ComponentUnpacker(
         std::vector<uint8_t>(std::begin(gjpm_hash), std::end(gjpm_hash)),
-        TestFilePath("runaction_test_win.crx3"), nullptr, nullptr);
+        TestFilePath("runaction_test_win.crx3"), nullptr,
+        config->CreateServiceManagerConnector());
 
     component_unpacker->Unpack(base::BindOnce(
         [](base::FilePath* unpack_path, base::OnceClosure quit_closure,

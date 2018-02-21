@@ -183,6 +183,7 @@
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/task_scheduler_util/common/variations_util.h"
 #include "components/translate/core/common/translate_switches.h"
+#include "components/unzip_service/public/interfaces/constants.mojom.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/variations/variations_switches.h"
@@ -3240,6 +3241,9 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
 
   (*services)[patch::mojom::kServiceName] =
       l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PATCH_NAME);
+
+  (*services)[unzip::mojom::kServiceName] =
+      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_UNZIP_NAME);
 
 #if defined(OS_CHROMEOS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kMash))

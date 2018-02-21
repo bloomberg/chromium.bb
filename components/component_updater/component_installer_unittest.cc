@@ -217,9 +217,10 @@ void ComponentInstallerTest::RunThreads() {
 }
 
 void ComponentInstallerTest::Unpack(const base::FilePath& crx_path) {
+  auto config = base::MakeRefCounted<TestConfigurator>();
   auto component_unpacker = base::MakeRefCounted<ComponentUnpacker>(
       std::vector<uint8_t>(std::begin(kSha256Hash), std::end(kSha256Hash)),
-      crx_path, nullptr, nullptr);
+      crx_path, nullptr, config->CreateServiceManagerConnector());
   component_unpacker->Unpack(base::BindOnce(
       &ComponentInstallerTest::UnpackComplete, base::Unretained(this)));
   RunThreads();
