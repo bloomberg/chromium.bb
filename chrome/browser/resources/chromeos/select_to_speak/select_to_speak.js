@@ -88,8 +88,8 @@ function getNodeState(node) {
  */
 function shouldIgnoreNode(node, includeOffscreen) {
   return (
-      !node.name || !node.location || node.state.invisible ||
-      (node.state.offscreen && !includeOffscreen));
+      !node.name || isWhitespace(node.name) || !node.location ||
+      node.state.invisible || (node.state.offscreen && !includeOffscreen));
 }
 
 /**
@@ -561,8 +561,14 @@ SelectToSpeak.prototype = {
         break;
       }
     }
-
-    this.startSpeechQueue_(nodes, firstPosition.offset, lastPosition.offset);
+    if (lastPosition.node !== nodes[nodes.length - 1]) {
+      // The node at the last position was not added to the list, perhaps it
+      // was whitespace or invisible. Clear the ending offset because it
+      // relates to a node that doesn't exist.
+      this.startSpeechQueue_(nodes, firstPosition.offset);
+    } else {
+      this.startSpeechQueue_(nodes, firstPosition.offset, lastPosition.offset);
+    }
 
     this.recordStartEvent_(START_SPEECH_METHOD_KEYSTROKE);
   },
@@ -652,7 +658,7 @@ SelectToSpeak.prototype = {
         // Must check opt_startIndex in its own if statement to make the
         // Closure compiler happy.
         if (opt_startIndex !== undefined) {
-          if (nodeGroup.nodes[0].hasInlineText) {
+          if (nodeGroup.nodes.length > 0 && nodeGroup.nodes[0].hasInlineText) {
             // The first node is inlineText type. Find the start index in
             // its staticText parent.
             let startIndexInParent = getStartCharIndexInParent(nodes[0]);
