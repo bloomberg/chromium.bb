@@ -218,16 +218,16 @@ TEST_F(RemoteCommandsQueueTest, SingleFailedCommand) {
 }
 
 TEST_F(RemoteCommandsQueueTest, SingleTerminatedCommand) {
-  // Initialize a job expected to fail after 200 seconds, from a protobuf with
+  // Initialize a job expected to fail after 600 seconds, from a protobuf with
   // |kUniqueID|, |kPayload| and |test_start_time_| as command issued time.
   std::unique_ptr<RemoteCommandJob> job(
-      new TestRemoteCommandJob(false, base::TimeDelta::FromSeconds(200)));
+      new TestRemoteCommandJob(false, base::TimeDelta::FromSeconds(600)));
   InitializeJob(job.get(), kUniqueID, test_start_time_, kPayload);
 
   AddJobAndVerifyRunningAfter(std::move(job),
-                              base::TimeDelta::FromSeconds(179));
+                              base::TimeDelta::FromSeconds(599));
 
-  // After 181 seconds, the job is expected to be terminated (3 minutes is the
+  // After 601 seconds, the job is expected to be terminated (10 minutes is the
   // timeout duration).
   EXPECT_CALL(observer_, OnJobFinished(Property(&RemoteCommandJob::status,
                                                 RemoteCommandJob::TERMINATED)));

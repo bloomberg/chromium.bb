@@ -26,10 +26,6 @@ namespace policy {
 
 namespace {
 
-// Determines the time, measured from the time of issue, after which the command
-// queue will consider this command expired if the command has not been started.
-const int kCommandExpirationTimeInMinutes = 10;
-
 // String constant identifying the result field in the result payload.
 const char* const kResultFieldName = "result";
 
@@ -131,11 +127,6 @@ void DeviceCommandScreenshotJob::OnFailure(UploadJob::ErrorCode error_code) {
       FROM_HERE,
       base::BindOnce(failed_callback_,
                      base::Passed(std::make_unique<Payload>(result_code))));
-}
-
-bool DeviceCommandScreenshotJob::IsExpired(base::TimeTicks now) {
-  return now > issued_time() + base::TimeDelta::FromMinutes(
-                                   kCommandExpirationTimeInMinutes);
 }
 
 bool DeviceCommandScreenshotJob::ParseCommandPayload(

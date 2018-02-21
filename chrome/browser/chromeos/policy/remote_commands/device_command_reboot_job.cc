@@ -20,14 +20,6 @@
 
 namespace policy {
 
-namespace {
-
-// Determines the time, measured from the time of issue, after which the command
-// queue will consider this command expired if the command has not been started.
-const int kCommandExpirationTimeInMinutes = 10;
-
-}  // namespace
-
 DeviceCommandRebootJob::DeviceCommandRebootJob(
     chromeos::PowerManagerClient* power_manager_client)
     : power_manager_client_(power_manager_client) {
@@ -40,11 +32,6 @@ DeviceCommandRebootJob::~DeviceCommandRebootJob() {
 enterprise_management::RemoteCommand_Type DeviceCommandRebootJob::GetType()
     const {
   return enterprise_management::RemoteCommand_Type_DEVICE_REBOOT;
-}
-
-bool DeviceCommandRebootJob::IsExpired(base::TimeTicks now) {
-  return now > issued_time() + base::TimeDelta::FromMinutes(
-                                   kCommandExpirationTimeInMinutes);
 }
 
 void DeviceCommandRebootJob::RunImpl(
@@ -71,10 +58,6 @@ void DeviceCommandRebootJob::RunImpl(
   SYSLOG(INFO) << "Rebooting immediately.";
   power_manager_client_->RequestRestart(power_manager::REQUEST_RESTART_OTHER,
                                         "policy device command");
-}
-
-base::TimeDelta DeviceCommandRebootJob::GetCommmandTimeout() const {
-  return base::TimeDelta::FromMinutes(kCommandExpirationTimeInMinutes);
 }
 
 }  // namespace policy

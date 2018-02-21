@@ -103,7 +103,6 @@ class DeviceCommandScreenshotJob : public RemoteCommandJob,
   void OnFailure(UploadJob::ErrorCode error_code) override;
 
   // RemoteCommandJob:
-  bool IsExpired(base::TimeTicks now) override;
   bool ParseCommandPayload(const std::string& command_payload) override;
   void RunImpl(const CallbackWithResult& succeeded_callback,
                const CallbackWithResult& failed_callback) override;

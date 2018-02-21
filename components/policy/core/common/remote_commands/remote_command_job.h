@@ -76,7 +76,7 @@ class POLICY_EXPORT RemoteCommandJob {
 
   // Returns the remote command timeout. If the command takes longer than the
   // returned time interval to execute, the command queue will kill it.
-  virtual base::TimeDelta GetCommmandTimeout() const;
+  virtual base::TimeDelta GetCommandTimeout() const;
 
   // Helpful accessors.
   UniqueIDType unique_id() const { return unique_id_; }
@@ -119,7 +119,6 @@ class POLICY_EXPORT RemoteCommandJob {
   // checking. |now| is the current time obtained from a clock. Implementations
   // are usually expected to compare |now| to the issued_time(), which is the
   // timestamp when the command was issued on the server.
-  // The default implementation always returns false.
   virtual bool IsExpired(base::TimeTicks now);
 
   // Subclasses should implement this method for actual command execution logic.
