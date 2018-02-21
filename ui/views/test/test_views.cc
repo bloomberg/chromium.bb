@@ -5,6 +5,7 @@
 #include "ui/views/test/test_views.h"
 
 #include "ui/events/event.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget.h"
 
@@ -108,6 +109,14 @@ void EventCountView::RecordEvent(ui::Event* event) {
   last_flags_ = event->flags();
   if (handle_mode_ == CONSUME_EVENTS)
     event->SetHandled();
+}
+
+ResizeAwareParentView::ResizeAwareParentView() {
+  SetLayoutManager(std::make_unique<BoxLayout>(BoxLayout::kHorizontal));
+}
+
+void ResizeAwareParentView::ChildPreferredSizeChanged(View* child) {
+  Layout();
 }
 
 }  // namespace views

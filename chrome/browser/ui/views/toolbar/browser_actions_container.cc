@@ -553,7 +553,7 @@ void BrowserActionsContainer::OnResize(int resize_amount, bool done_resizing) {
 
   if (!done_resizing) {
     resize_amount_ = resize_amount;
-    parent()->Layout();
+    PreferredSizeChanged();
     return;
   }
 
@@ -573,7 +573,7 @@ void BrowserActionsContainer::AnimationProgressed(
   DCHECK_EQ(resize_animation_.get(), animation);
   resize_amount_ = static_cast<int>(resize_animation_->GetCurrentValue() *
       (resize_starting_width_ - animation_target_size_));
-  parent()->Layout();
+  PreferredSizeChanged();
 }
 
 void BrowserActionsContainer::AnimationCanceled(
@@ -585,7 +585,7 @@ void BrowserActionsContainer::AnimationEnded(const gfx::Animation* animation) {
   animation_target_size_ = 0;
   resize_amount_ = 0;
   resize_starting_width_ = -1;
-  parent()->Layout();
+  PreferredSizeChanged();
 
   toolbar_actions_bar_->OnAnimationEnded();
 }
