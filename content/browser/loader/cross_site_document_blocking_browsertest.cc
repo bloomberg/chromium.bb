@@ -413,6 +413,7 @@ class CrossSiteDocumentBlockingServiceWorkerTest : public ContentBrowserTest {
         "/cross_site_document_blocking/request.html");
     ASSERT_TRUE(NavigateToURL(shell(), url));
 
+    // Register the service worker.
     bool is_script_done;
     std::string script = R"(
         navigator.serviceWorker
@@ -425,6 +426,17 @@ class CrossSiteDocumentBlockingServiceWorkerTest : public ContentBrowserTest {
             }); )";
     ASSERT_TRUE(ExecuteScriptAndExtractBool(shell(), script, &is_script_done));
     ASSERT_TRUE(is_script_done);
+
+    // Navigate again to the same URL - the service worker should be 1) active
+    // at this time (because of waiting for |navigator.serviceWorker.ready|
+    // above) and 2) controlling the current page (because of the reload).
+    ASSERT_TRUE(NavigateToURL(shell(), url));
+    bool is_controlled_by_service_worker;
+    ASSERT_TRUE(ExecuteScriptAndExtractBool(
+        shell(),
+        "domAutomationController.send(!!navigator.serviceWorker.controller)",
+        &is_controlled_by_service_worker));
+    ASSERT_TRUE(is_controlled_by_service_worker);
   }
 
  private:
@@ -439,12 +451,6 @@ class CrossSiteDocumentBlockingServiceWorkerTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(CrossSiteDocumentBlockingServiceWorkerTest);
 };
 
-// TODO(lukasza): https://crbug.com/809735: Flaky on Android and Linux CFI.
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_NoNetwork DISABLED_NoNetwork
-#else
-#define MAYBE_NoNetwork NoNetwork
-#endif
 // Issue a cross-origin request that will be handled entirely within a service
 // worker (without reaching the network - the cross-origin response will be
 // "faked" within the same-origin service worker, because the service worker
@@ -456,8 +462,7 @@ class CrossSiteDocumentBlockingServiceWorkerTest : public ContentBrowserTest {
 //
 // TODO(lukasza): https://crbug.com/715640: This test might become invalid
 // after servicification of service workers.
-IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingServiceWorkerTest,
-                       MAYBE_NoNetwork) {
+IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingServiceWorkerTest, NoNetwork) {
   SetUpServiceWorker();
 
   base::HistogramTester histograms;
@@ -485,14 +490,8 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingServiceWorkerTest,
                     RESOURCE_TYPE_XHR);
 }
 
-// TODO(lukasza): https://crbug.com/809735: Flaky on Android and Linux CFI.
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_NetworkAndOpaqueResponse DISABLED_NetworkAndOpaqueResponse
-#else
-#define MAYBE_NetworkAndOpaqueResponse NetworkAndOpaqueResponse
-#endif
 IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingServiceWorkerTest,
-                       MAYBE_NetworkAndOpaqueResponse) {
+                       NetworkAndOpaqueResponse) {
   SetUpServiceWorker();
 
   // Build a script for XHR-ing a cross-origin, nosniff HTML document.
