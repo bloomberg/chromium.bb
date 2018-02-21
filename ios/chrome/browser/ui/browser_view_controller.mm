@@ -1096,7 +1096,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     Tab* currentTab = [_model currentTab];
     // Force loading the view in case it was not loaded yet.
     [self loadViewIfNeeded];
-    if (_expectingForegroundTab) {
+    if (currentTab && _expectingForegroundTab) {
       PagePlaceholderTabHelper::FromWebState(currentTab.webState)
           ->AddPlaceholderForNextNavigation();
     }
