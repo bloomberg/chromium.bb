@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/process/process.h"
-#include "base/trace_event/memory_dump_provider.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiling_host/background_profiling_triggers.h"
 #include "chrome/common/chrome_features.h"
@@ -57,8 +56,7 @@ extern const char kOOPHeapProfilingFeatureMode[];
 // TODO(ajwong): This host class seems over kill at this point. Can this be
 // fully subsumed by the ProfilingService class?
 class ProfilingProcessHost : public content::BrowserChildProcessObserver,
-                             content::NotificationObserver,
-                             base::trace_event::MemoryDumpProvider {
+                             content::NotificationObserver {
  public:
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
@@ -143,17 +141,16 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
       base::OnceCallback<void(bool success, std::string trace_json)>;
 
   // This method must be called from the UI thread. |callback| will be called
-  // asynchronously on the UI thread. If
-  // |stop_immediately_after_heap_dump_for_tests| is true, then |callback| will
-  // be called as soon as the heap dump is added to the trace. Otherwise,
-  // |callback| will be called after 10s. This gives time for the
-  // MemoryDumpProviders to dump to the trace, which is asynchronous and has no
-  // finish notification. This intentionally avoids waiting for the heap-dump
-  // finished signal, in case there's a problem with the profiling process and
-  // the heap-dump is never added to the trace.
+  // asynchronously on the UI thread.
+  //
+  // This function does the following:
+  //   1. Starts tracing with no categories enabled.
+  //   2. Requests and waits for memory_instrumentation service to dump to
+  //   trace.
+  //   3. Stops tracing.
+  //
   // Public for testing.
   void RequestTraceWithHeapDump(TraceFinishedCallback callback,
-                                bool stop_immediately_after_heap_dump_for_tests,
                                 bool anonymize);
 
   // Returns the pids of all profiled processes. The callback is posted on the
@@ -169,6 +166,10 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   // a renderer that is already being profiled is a no-op [the new request is
   // dropped by the profiling service].
   void StartProfilingRenderersForTesting();
+
+  // Public for testing. Controls whether the profiling service keeps small
+  // allocations in heap dumps.
+  void SetKeepSmallAllocations(bool keep_small_allocations);
 
  private:
   friend struct base::DefaultSingletonTraits<ProfilingProcessHost>;
@@ -200,24 +201,11 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // base::trace_event::MemoryDumpProvider
-  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
-                    base::trace_event::ProcessMemoryDump* pmd) override;
-  void OnMemoryDumpOnIOThread(uint64_t dump_guid);
-
-  void OnDumpProcessesForTracingCallback(
-      uint64_t guid,
-      std::vector<profiling::mojom::SharedBufferWithSizePtr> buffers);
-
   // Starts the profiling process.
   void LaunchAsService();
 
   // Called on the UI thread after the heap dump has been added to the trace.
   void DumpProcessFinishedUIThread();
-
-  // Must be called on the UI thread.
-  // Called after the MDPs have been given time to emit memory dumps.
-  void OnMinimumTimeHasElapsed();
 
   // Sends the end of the data pipe to the profiling service.
   void AddClientToProfilingService(profiling::mojom::ProfilingClientPtr client,
@@ -293,22 +281,12 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   // simplicity, it's easier to just track this variable in this process.
   std::unordered_set<void*> profiled_renderers_;
 
-  // Must only ever be used from the UI thread. Will be called after the
-  // profiling process dumps heaps into the trace log and MDPs have been given
-  // time to do the same.
-  base::OnceClosure finish_tracing_callback_;
-
   // True if the instance is attempting to take a trace to upload to the crash
   // servers. Pruning of small allocations is always enabled for these traces.
   bool taking_trace_for_upload_ = false;
 
   // Guards |taking_trace_for_upload_|.
   base::Lock taking_trace_for_upload_lock_;
-
-  // If the instance has started a trace, the trace should be stopped when both
-  // members become true. Both members must only be accessed on the UI thread.
-  bool minimum_time_has_elapsed_ = false;
-  bool heap_dump_has_been_added_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ProfilingProcessHost);
 };

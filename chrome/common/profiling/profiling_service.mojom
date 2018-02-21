@@ -5,15 +5,8 @@
 module profiling.mojom;
 
 import "chrome/common/profiling/profiling_client.mojom";
-import "mojo/common/file.mojom";
 import "mojo/common/process_id.mojom";
 import "mojo/common/values.mojom";
-
-struct SharedBufferWithSize {
-  handle<shared_buffer> buffer;
-  uint32 size;
-  mojo.common.mojom.ProcessId pid;
-};
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -44,18 +37,9 @@ interface ProfilingService {
                      ProcessType process_type,
                      ProfilingParams params);
 
-  // Dumps the memory log of all profiled processes into shared buffers. The
-  // contents of each shared buffer is a JSON string compatible with
-  // TRACE_EVENT* macros. Processes that fail to dump will be omitted from
-  // |buffers|. When |strip_path_from_mapped_files| is true, only the base name
-  // of mapped files is emitted. This prevents usernames from sneaking into the
-  // trace.
-  // |strip_path_from_mapped_files| should only be true for traces that will be
-  // uploaded to the crash servers - this strips potential PII, but prevents
-  // symbolization of local builds.
-  DumpProcessesForTracing(bool keep_small_allocations,
-                          bool strip_path_from_mapped_files) =>
-      (array<SharedBufferWithSize> buffers);
+  // |keep_small_allocations| controls whether small allocations are emitted in
+  // heap dumps.
+  SetKeepSmallAllocations(bool keep_small_allocations);
 
   // Returns the pids of all profiled processes.
   GetProfiledPids() => (array<mojo.common.mojom.ProcessId> pids);

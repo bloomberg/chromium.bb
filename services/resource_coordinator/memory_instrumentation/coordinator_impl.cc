@@ -42,6 +42,21 @@ namespace {
 
 memory_instrumentation::CoordinatorImpl* g_coordinator_impl;
 
+constexpr base::TimeDelta kHeapDumpTimeout = base::TimeDelta::FromSeconds(60);
+
+// A wrapper classes that allows a string to be exported as JSON in a trace
+// event.
+class StringWrapper : public base::trace_event::ConvertableToTraceFormat {
+ public:
+  explicit StringWrapper(std::string json) : json_(std::move(json)) {}
+
+  void AppendAsTraceFormat(std::string* out) const override {
+    out->append(json_);
+  }
+
+  std::string json_;
+};
+
 }  // namespace
 
 
@@ -148,6 +163,12 @@ void CoordinatorImpl::RequestGlobalMemoryDumpAndAppendToTrace(
   QueuedRequest::Args args(dump_type, level_of_detail, {},
                            true /* add_to_trace */, base::kNullProcessId);
   RequestGlobalMemoryDumpInternal(args, base::BindRepeating(adapter, callback));
+}
+
+void CoordinatorImpl::RegisterHeapProfiler(
+    mojom::HeapProfilerPtr heap_profiler) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  heap_profiler_ = std::move(heap_profiler);
 }
 
 void CoordinatorImpl::GetVmRegionsForHeapProfiler(
@@ -298,6 +319,24 @@ void CoordinatorImpl::OnQueuedRequestTimedOut(uint64_t dump_guid) {
   FinalizeGlobalMemoryDumpIfAllManagersReplied();
 }
 
+void CoordinatorImpl::OnHeapDumpTimeOut(uint64_t dump_guid) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  QueuedRequest* request = GetCurrentRequest();
+
+  // TODO(lalitm): add metrics for how often this happens.
+
+  // Only consider the current request timed out if we fired off this
+  // delayed callback in association with this request.
+  if (!request || request->dump_guid != dump_guid)
+    return;
+
+  // Fail all remaining dumps being waited upon and clear the vector.
+  if (request->heap_dump_in_progress) {
+    request->heap_dump_in_progress = false;
+    FinalizeGlobalMemoryDumpIfAllManagersReplied();
+  }
+}
+
 void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   QueuedRequest* request = GetCurrentRequest();
@@ -326,6 +365,29 @@ void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
       base::BindOnce(&CoordinatorImpl::OnQueuedRequestTimedOut,
                      base::Unretained(this), request->dump_guid),
       client_process_timeout_);
+
+  if (request->args.add_to_trace && heap_profiler_) {
+    request->heap_dump_in_progress = true;
+
+    // |IsArgumentFilterEnabled| is the round-about way of asking to anonymize
+    // the trace. The only way that PII gets leaked is if the full path is
+    // emitted for mapped files. Passing |strip_path_from_mapped_files|
+    // is all that is necessary to anonymize the trace.
+    bool strip_path_from_mapped_files =
+        base::trace_event::TraceLog::GetInstance()
+            ->GetCurrentTraceConfig()
+            .IsArgumentFilterEnabled();
+    heap_profiler_->DumpProcessesForTracing(
+        strip_path_from_mapped_files,
+            base::BindRepeating(&CoordinatorImpl::OnDumpProcessesForTracing,
+                           base::Unretained(this), request->dump_guid));
+
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&CoordinatorImpl::OnHeapDumpTimeOut,
+                       base::Unretained(this), request->dump_guid),
+        kHeapDumpTimeout);
+  }
 
   // Run the callback in case there are no client processes registered.
   FinalizeGlobalMemoryDumpIfAllManagersReplied();
@@ -427,6 +489,54 @@ void CoordinatorImpl::FinalizeVmRegionDumpIfAllManagersReplied(
   in_progress_vm_region_requests_.erase(it);
 }
 
+void CoordinatorImpl::OnDumpProcessesForTracing(
+    uint64_t dump_guid,
+    std::vector<mojom::SharedBufferWithSizePtr> buffers) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  QueuedRequest* request = GetCurrentRequest();
+  if (!request || request->dump_guid != dump_guid) {
+    return;
+  }
+
+  request->heap_dump_in_progress = false;
+
+  for (auto& buffer_ptr : buffers) {
+    mojo::ScopedSharedBufferHandle& buffer = buffer_ptr->buffer;
+    uint32_t size = buffer_ptr->size;
+
+    if (!buffer->is_valid())
+      continue;
+
+    mojo::ScopedSharedBufferMapping mapping = buffer->Map(size);
+    if (!mapping) {
+      DLOG(ERROR) << "Failed to map buffer";
+      continue;
+    }
+
+    const char* char_buffer = static_cast<const char*>(mapping.get());
+    std::string json(char_buffer, char_buffer + size);
+
+    const int kTraceEventNumArgs = 1;
+    const char* const kTraceEventArgNames[] = {"dumps"};
+    const unsigned char kTraceEventArgTypes[] = {TRACE_VALUE_TYPE_CONVERTABLE};
+    std::unique_ptr<base::trace_event::ConvertableToTraceFormat> wrapper(
+        new StringWrapper(std::move(json)));
+
+    // Using the same id merges all of the heap dumps into a single detailed
+    // dump node in the UI.
+    TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_PROCESS_ID(
+        TRACE_EVENT_PHASE_MEMORY_DUMP,
+        base::trace_event::TraceLog::GetCategoryGroupEnabled(
+            base::trace_event::MemoryDumpManager::kTraceCategory),
+        "periodic_interval", trace_event_internal::kGlobalScope, dump_guid,
+        buffer_ptr->pid, kTraceEventNumArgs, kTraceEventArgNames,
+        kTraceEventArgTypes, nullptr /* arg_values */, &wrapper,
+        TRACE_EVENT_FLAG_HAS_ID);
+  }
+
+  FinalizeGlobalMemoryDumpIfAllManagersReplied();
+}
+
 void CoordinatorImpl::RemovePendingResponse(
     mojom::ClientProcess* client,
     QueuedRequest::PendingResponse::Type type) {
@@ -449,8 +559,10 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
   DCHECK(!queued_memory_dump_requests_.empty());
 
   QueuedRequest* request = &queued_memory_dump_requests_.front();
-  if (!request->dump_in_progress || request->pending_responses.size() > 0)
+  if (!request->dump_in_progress || request->pending_responses.size() > 0 ||
+      request->heap_dump_in_progress) {
     return;
+  }
 
   QueuedRequestDispatcher::Finalize(request, tracing_observer_.get());
 

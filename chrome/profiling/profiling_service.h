@@ -24,7 +24,11 @@ class MemlogImpl;
 //
 // This class lives in the I/O thread of the Utility process.
 class ProfilingService : public service_manager::Service,
-                         public mojom::ProfilingService {
+                         public mojom::ProfilingService,
+                         public memory_instrumentation::mojom::HeapProfiler {
+  using DumpProcessesForTracingCallback = memory_instrumentation::mojom::
+      HeapProfiler::DumpProcessesForTracingCallback;
+
  public:
   ProfilingService();
   ~ProfilingService() override;
@@ -45,27 +49,35 @@ class ProfilingService : public service_manager::Service,
                           mojo::ScopedHandle memlog_pipe_receiver,
                           mojom::ProcessType process_type,
                           mojom::ProfilingParamsPtr params) override;
-  void DumpProcessesForTracing(
-      bool keep_small_allocations,
-      bool strip_path_from_mapped_files,
-      DumpProcessesForTracingCallback callback) override;
+  void SetKeepSmallAllocations(bool keep_small_allocations) override;
   void GetProfiledPids(GetProfiledPidsCallback callback) override;
+
+  // HeapProfiler implementation.
+  void DumpProcessesForTracing(
+      bool strip_path_from_mapped_files,
+      const DumpProcessesForTracingCallback& callback) override;
 
  private:
   void OnProfilingServiceRequest(
       mojom::ProfilingServiceRequest request);
+  void OnHeapProfilerRequest(
+      memory_instrumentation::mojom::HeapProfilerRequest request);
 
   void OnGetVmRegionsCompleteForDumpProcessesForTracing(
-      bool keep_small_allocations,
       bool strip_path_from_mapped_files,
-      mojom::ProfilingService::DumpProcessesForTracingCallback callback,
+      const DumpProcessesForTracingCallback& callback,
       VmRegions vm_regions);
 
   service_manager::BinderRegistry registry_;
   mojo::Binding<mojom::ProfilingService> binding_;
 
+  mojo::Binding<memory_instrumentation::mojom::HeapProfiler>
+      heap_profiler_binding_;
+
   memory_instrumentation::mojom::HeapProfilerHelperPtr helper_;
   MemlogConnectionManager connection_manager_;
+
+  bool keep_small_allocations_ = false;
 
   // Must be last.
   base::WeakPtrFactory<ProfilingService> weak_factory_;

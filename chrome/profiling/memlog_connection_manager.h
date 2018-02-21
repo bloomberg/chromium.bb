@@ -44,7 +44,9 @@ using VmRegions =
 // This object is constructed on the UI thread, but the rest of the usage
 // (including deletion) is on the IO thread.
 class MemlogConnectionManager {
- private:
+  using DumpProcessesForTracingCallback = memory_instrumentation::mojom::
+      HeapProfiler::DumpProcessesForTracingCallback;
+
  public:
   MemlogConnectionManager();
   ~MemlogConnectionManager();
@@ -68,11 +70,10 @@ class MemlogConnectionManager {
   // Dumping is asynchronous so will not be complete when this function
   // returns. The dump is complete when the callback provided in the args is
   // fired.
-  void DumpProcessesForTracing(
-      bool keep_small_allocations,
-      bool strip_path_from_mapped_files,
-      mojom::ProfilingService::DumpProcessesForTracingCallback callback,
-      VmRegions vm_regions);
+  void DumpProcessesForTracing(bool keep_small_allocations,
+                               bool strip_path_from_mapped_files,
+                               DumpProcessesForTracingCallback callback,
+                               VmRegions vm_regions);
 
   void OnNewConnection(base::ProcessId pid,
                        mojom::ProfilingClientPtr client,

@@ -11,6 +11,7 @@
 
 #include "base/allocator/features.h"
 #include "base/base_switches.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/metrics/field_trial_params.h"
@@ -51,6 +52,8 @@
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
+#include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
 #include "third_party/zlib/zlib.h"
 
 #if defined(OS_WIN)
@@ -58,19 +61,6 @@
 #endif
 
 namespace {
-
-// A wrapper classes that allows a string to be exported as JSON in a trace
-// event.
-class StringWrapper : public base::trace_event::ConvertableToTraceFormat {
- public:
-  explicit StringWrapper(std::string string) : json_(std::move(string)) {}
-
-  void AppendAsTraceFormat(std::string* out) const override {
-    out->append(json_);
-  }
-
-  std::string json_;
-};
 
 base::trace_event::TraceConfig GetBackgroundTracingConfig(bool anonymize) {
   // Disable all categories other than memory-infra.
@@ -82,19 +72,6 @@ base::trace_event::TraceConfig GetBackgroundTracingConfig(bool anonymize) {
   if (anonymize)
     trace_config.EnableArgumentFilter();
 
-  // Trigger a background memory dump exactly once by setting a time-delta
-  // between dumps of 2**29.
-  base::trace_event::TraceConfig::MemoryDumpConfig memory_config;
-  memory_config.allowed_dump_modes.insert(
-      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND);
-  base::trace_event::TraceConfig::MemoryDumpConfig::Trigger trigger;
-  trigger.min_time_between_dumps_ms = 1 << 30;
-  trigger.level_of_detail =
-      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND;
-  trigger.trigger_type = base::trace_event::MemoryDumpType::PERIODIC_INTERVAL;
-  memory_config.triggers.clear();
-  memory_config.triggers.push_back(trigger);
-  trace_config.ResetMemoryDumpConfig(memory_config);
   return trace_config;
 }
 
@@ -264,88 +241,6 @@ void ProfilingProcessHost::Observe(
       ShouldProfileNewRenderer(host)) {
     StartProfilingRenderer(host);
   }
-}
-
-bool ProfilingProcessHost::OnMemoryDump(
-    const base::trace_event::MemoryDumpArgs& args,
-    base::trace_event::ProcessMemoryDump* pmd) {
-  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
-      ->PostTask(FROM_HERE,
-                 base::BindOnce(&ProfilingProcessHost::OnMemoryDumpOnIOThread,
-                                base::Unretained(this), args.dump_guid));
-  return true;
-}
-
-void ProfilingProcessHost::OnMemoryDumpOnIOThread(uint64_t dump_guid) {
-  bool force_prune = TakingTraceForUpload();
-  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  bool keep_small_allocations =
-      !force_prune && cmdline->HasSwitch(switches::kMemlogKeepSmallAllocations);
-
-  bool strip_path_from_mapped_files = base::trace_event::TraceLog::GetInstance()
-                                          ->GetCurrentTraceConfig()
-                                          .IsArgumentFilterEnabled();
-  profiling_service_->DumpProcessesForTracing(
-      keep_small_allocations, strip_path_from_mapped_files,
-      base::BindOnce(&ProfilingProcessHost::OnDumpProcessesForTracingCallback,
-                     base::Unretained(this), dump_guid));
-}
-
-void ProfilingProcessHost::OnDumpProcessesForTracingCallback(
-    uint64_t guid,
-    std::vector<profiling::mojom::SharedBufferWithSizePtr> buffers) {
-  for (auto& buffer_ptr : buffers) {
-    mojo::ScopedSharedBufferHandle& buffer = buffer_ptr->buffer;
-    uint32_t size = buffer_ptr->size;
-
-    if (!buffer->is_valid())
-      return;
-
-    mojo::ScopedSharedBufferMapping mapping = buffer->Map(size);
-    if (!mapping) {
-      DLOG(ERROR) << "Failed to map buffer";
-      return;
-    }
-
-    const char* char_buffer = static_cast<const char*>(mapping.get());
-    std::string json(char_buffer, char_buffer + size);
-
-    const int kTraceEventNumArgs = 1;
-    const char* const kTraceEventArgNames[] = {"dumps"};
-    const unsigned char kTraceEventArgTypes[] = {TRACE_VALUE_TYPE_CONVERTABLE};
-    std::unique_ptr<base::trace_event::ConvertableToTraceFormat> wrapper(
-        new StringWrapper(std::move(json)));
-
-    // Using the same id merges all of the heap dumps into a single detailed
-    // dump node in the UI.
-    TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_PROCESS_ID(
-        TRACE_EVENT_PHASE_MEMORY_DUMP,
-        base::trace_event::TraceLog::GetCategoryGroupEnabled(
-            base::trace_event::MemoryDumpManager::kTraceCategory),
-        "periodic_interval", trace_event_internal::kGlobalScope, guid,
-        buffer_ptr->pid, kTraceEventNumArgs, kTraceEventArgNames,
-        kTraceEventArgTypes, nullptr /* arg_values */, &wrapper,
-        TRACE_EVENT_FLAG_HAS_ID);
-  }
-
-  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
-      ->PostTask(FROM_HERE,
-                 base::Bind(&ProfilingProcessHost::DumpProcessFinishedUIThread,
-                            base::Unretained(this)));
-}
-
-void ProfilingProcessHost::DumpProcessFinishedUIThread() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  heap_dump_has_been_added_ = true;
-  if (minimum_time_has_elapsed_ && !finish_tracing_callback_.is_null())
-    std::move(finish_tracing_callback_).Run();
-}
-
-void ProfilingProcessHost::OnMinimumTimeHasElapsed() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  minimum_time_has_elapsed_ = true;
-  if (heap_dump_has_been_added_ && !finish_tracing_callback_.is_null())
-    std::move(finish_tracing_callback_).Run();
 }
 
 void ProfilingProcessHost::AddClientToProfilingService(
@@ -568,7 +463,6 @@ void ProfilingProcessHost::SaveTraceWithHeapDumpToFile(
       },
       std::move(dest), std::move(done));
   RequestTraceWithHeapDump(std::move(finish_trace_callback),
-                           stop_immediately_after_heap_dump_for_tests,
                            false /* anonymize */);
 }
 
@@ -602,13 +496,11 @@ void ProfilingProcessHost::RequestProcessReport(std::string trigger_name) {
       base::Unretained(this), std::move(trigger_name),
       should_sample_ ? sampling_rate_ : 1);
   RequestTraceWithHeapDump(std::move(finish_report_callback),
-                           false /* keep_small_allocations */,
                            true /* anonymize */);
 }
 
 void ProfilingProcessHost::RequestTraceWithHeapDump(
     TraceFinishedCallback callback,
-    bool stop_immediately_after_heap_dump_for_tests,
     bool anonymize) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -620,58 +512,47 @@ void ProfilingProcessHost::RequestTraceWithHeapDump(
     return;
   }
 
-  bool result = content::TracingController::GetInstance()->StartTracing(
-      GetBackgroundTracingConfig(anonymize), base::Closure());
-  if (!result) {
+  if (content::TracingController::GetInstance()->IsTracing()) {
     DLOG(ERROR) << "Requesting heap dump when tracing has already started.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), false, std::string()));
     return;
   }
 
-  // Once the trace has stopped, run |callback| on the UI thread. At this point,
-  // ownership of |callback| has been transfered to |finish_sink_callback|.
-  auto finish_sink_callback = base::Bind(
-      [](TraceFinishedCallback callback,
-         std::unique_ptr<const base::DictionaryValue> metadata,
-         base::RefCountedString* in) {
-        std::string result;
-        result.swap(in->data());
-        content::BrowserThread::GetTaskRunnerForThread(
-            content::BrowserThread::UI)
-            ->PostTask(FROM_HERE, base::BindOnce(std::move(callback), true,
-                                                 std::move(result)));
+  auto finished_dump_callback = base::BindOnce(
+      [](TraceFinishedCallback callback, bool success, uint64_t dump_guid) {
+        // Once the trace has stopped, run |callback| on the UI thread.
+        auto finish_sink_callback = base::Bind(
+            [](TraceFinishedCallback callback,
+               std::unique_ptr<const base::DictionaryValue> metadata,
+               base::RefCountedString* in) {
+              std::string result;
+              result.swap(in->data());
+              content::BrowserThread::GetTaskRunnerForThread(
+                  content::BrowserThread::UI)
+                  ->PostTask(FROM_HERE,
+                             base::BindOnce(std::move(callback), true,
+                                            std::move(result)));
+            },
+            base::Passed(std::move(callback)));
+        scoped_refptr<content::TracingController::TraceDataEndpoint> sink =
+            content::TracingController::CreateStringEndpoint(
+                std::move(finish_sink_callback));
+        content::TracingController::GetInstance()->StopTracing(sink);
       },
-      base::Passed(std::move(callback)));
+      std::move(callback));
 
-  scoped_refptr<content::TracingController::TraceDataEndpoint> sink =
-      content::TracingController::CreateStringEndpoint(
-          std::move(finish_sink_callback));
-  base::OnceClosure stop_tracing_closure = base::BindOnce(
-      base::IgnoreResult<bool (content::TracingController::*)(  // NOLINT
-          const scoped_refptr<content::TracingController::TraceDataEndpoint>&)>(
-          &content::TracingController::StopTracing),
-      base::Unretained(content::TracingController::GetInstance()), sink);
+  memory_instrumentation::MemoryInstrumentation::GetInstance()
+      ->RequestGlobalDumpAndAppendToTrace(
+          base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
+          base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND,
+          base::AdaptCallbackForRepeating(std::move(finished_dump_callback)));
 
-  // There is no race condition between setting
-  // |finish_tracing_callback_| and starting tracing, since
-  // the callback is only ever accessed on the UI thread.
-  DCHECK(!finish_tracing_callback_);
-  finish_tracing_callback_ = std::move(stop_tracing_closure);
-
-  heap_dump_has_been_added_ = false;
-  if (stop_immediately_after_heap_dump_for_tests) {
-    minimum_time_has_elapsed_ = true;
-  } else {
-    minimum_time_has_elapsed_ = false;
-
-    // Give the MDPs 10 seconds to emit their memory dumps to the trace.
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&ProfilingProcessHost::OnMinimumTimeHasElapsed,
-                       base::Unretained(this)),
-        base::TimeDelta::FromSeconds(10));
-  }
+  // The only reason this should return false is if tracing is already enabled,
+  // which we've already checked.
+  bool result = content::TracingController::GetInstance()->StartTracing(
+      GetBackgroundTracingConfig(anonymize), base::Closure());
+  DCHECK(result);
 }
 
 void ProfilingProcessHost::GetProfiledPids(GetProfiledPidsCallback callback) {
@@ -741,6 +622,22 @@ void ProfilingProcessHost::StartProfilingRenderersForTesting() {
   }
 }
 
+void ProfilingProcessHost::SetKeepSmallAllocations(
+    bool keep_small_allocations) {
+  // May get called on different threads, we need to be on the IO thread to
+  // work.
+  if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
+    content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
+        ->PostTask(
+            FROM_HERE,
+            base::BindOnce(&ProfilingProcessHost::SetKeepSmallAllocations,
+                           base::Unretained(this), keep_small_allocations));
+    return;
+  }
+
+  profiling_service_->SetKeepSmallAllocations(keep_small_allocations);
+}
+
 void ProfilingProcessHost::StartProfilingPidOnIOThread(base::ProcessId pid) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
@@ -786,15 +683,25 @@ void ProfilingProcessHost::LaunchAsService() {
     return;
   }
 
-  // No need to unregister since ProfilingProcessHost is never destroyed.
-  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, "OutOfProcessHeapProfilingDumpProvider",
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::IO));
-
   // Bind to the memlog service. This will start it if it hasn't started
   // already.
-  connector_->BindInterface(mojom::kServiceName, &profiling_service_);
+  connector_->BindInterface(profiling::mojom::kServiceName,
+                            &profiling_service_);
+
+  // Set some state for heap dumps.
+  bool keep_small_allocations =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kMemlogKeepSmallAllocations);
+  SetKeepSmallAllocations(keep_small_allocations);
+
+  // Grab a HeapProfiler InterfacePtr and pass that to memory instrumentation.
+  memory_instrumentation::mojom::HeapProfilerPtr heap_profiler;
+  connector_->BindInterface(profiling::mojom::kServiceName, &heap_profiler);
+
+  memory_instrumentation::mojom::CoordinatorPtr coordinator;
+  connector_->BindInterface(resource_coordinator::mojom::kServiceName,
+                            &coordinator);
+  coordinator->RegisterHeapProfiler(std::move(heap_profiler));
 
   // Start profiling the browser if the mode allows.
   if (ShouldProfileNonRendererProcessType(

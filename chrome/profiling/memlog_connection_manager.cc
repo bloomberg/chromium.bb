@@ -53,13 +53,13 @@ struct MemlogConnectionManager::DumpProcessesForTracingTracking
   size_t waiting_responses = 0;
 
   // Callback to issue when dumps are complete.
-  mojom::ProfilingService::DumpProcessesForTracingCallback callback;
+  DumpProcessesForTracingCallback callback;
 
   // Info about the request.
   VmRegions vm_regions;
 
   // Collects the results.
-  std::vector<profiling::mojom::SharedBufferWithSizePtr> results;
+  std::vector<memory_instrumentation::mojom::SharedBufferWithSizePtr> results;
 
  private:
   friend class base::RefCountedThreadSafe<DumpProcessesForTracingTracking>;
@@ -234,14 +234,14 @@ void MemlogConnectionManager::OnConnectionCompleteThunk(
 void MemlogConnectionManager::DumpProcessesForTracing(
     bool keep_small_allocations,
     bool strip_path_from_mapped_files,
-    mojom::ProfilingService::DumpProcessesForTracingCallback callback,
+    DumpProcessesForTracingCallback callback,
     VmRegions vm_regions) {
   base::AutoLock lock(connections_lock_);
 
   // Early out if there are no connections.
   if (connections_.empty()) {
     std::move(callback).Run(
-        std::vector<profiling::mojom::SharedBufferWithSizePtr>());
+        std::vector<memory_instrumentation::mojom::SharedBufferWithSizePtr>());
     return;
   }
 
@@ -337,8 +337,8 @@ void MemlogConnectionManager::DoDumpOneProcessForTracing(
           } else {
             memcpy(mapping.get(), reply.c_str(), reply.size());
 
-            profiling::mojom::SharedBufferWithSizePtr result =
-                profiling::mojom::SharedBufferWithSize::New();
+            memory_instrumentation::mojom::SharedBufferWithSizePtr result =
+                memory_instrumentation::mojom::SharedBufferWithSize::New();
             result->buffer = std::move(buffer);
             result->size = reply.size();
             result->pid = pid;
