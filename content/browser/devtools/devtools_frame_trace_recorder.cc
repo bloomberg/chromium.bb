@@ -26,7 +26,6 @@ namespace content {
 
 namespace {
 
-static int kMaximumNumberOfScreenshots = 450;
 static size_t kFrameAreaLimit = 256000;
 
 void FrameCaptured(base::TimeTicks timestamp, const SkBitmap& bitmap,
@@ -34,7 +33,7 @@ void FrameCaptured(base::TimeTicks timestamp, const SkBitmap& bitmap,
   if (response != READBACK_SUCCESS)
     return;
   if (DevToolsTraceableScreenshot::GetNumberOfInstances() >=
-      kMaximumNumberOfScreenshots) {
+      DevToolsFrameTraceRecorder::kMaximumNumberOfScreenshots) {
     return;
   }
   if (bitmap.drawsNothing())
@@ -53,7 +52,7 @@ void CaptureFrame(RenderFrameHostImpl* host,
   if (!view)
     return;
   if (DevToolsTraceableScreenshot::GetNumberOfInstances() >=
-      kMaximumNumberOfScreenshots) {
+      DevToolsFrameTraceRecorder::kMaximumNumberOfScreenshots) {
     return;
   }
 
