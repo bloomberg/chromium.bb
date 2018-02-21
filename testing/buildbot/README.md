@@ -118,6 +118,11 @@ generated JSON file. Commonly used arguments include:
     * `can_use_on_swarming_builders`: if set to False, disables running this
       test on Swarming on any bot.
 
+* `experiment_percentage`: an integer indicating that the test should be run
+  as an experiment in the given percentage of builds. Tests running as
+  experiments will not cause the containing builds to fail. Values should be
+  in `[0, 100]` and will be clamped accordingly.
+
 * `android_swarming`: Swarming parameters to be applied only on Android bots.
   (This feature was added mainly to match the original handwritten JSON files,
   and further use is discouraged. Ideally it should be removed.)
