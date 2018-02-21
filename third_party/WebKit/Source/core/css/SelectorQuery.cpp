@@ -310,13 +310,9 @@ void SelectorQuery::ExecuteSlow(
 static ShadowRoot* AuthorShadowRootOf(const ContainerNode& node) {
   if (!node.IsElementNode())
     return nullptr;
-  ElementShadow* shadow = ToElement(node).Shadow();
-  if (!shadow)
-    return nullptr;
-
-  ShadowRoot& shadow_root = shadow->GetShadowRoot();
-  if (shadow_root.IsOpenOrV0())
-    return &shadow_root;
+  ShadowRoot* root = node.GetShadowRoot();
+  if (root && root->IsOpenOrV0())
+    return root;
   return nullptr;
 }
 
