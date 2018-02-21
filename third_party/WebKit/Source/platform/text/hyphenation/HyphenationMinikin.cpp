@@ -9,12 +9,39 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
 #include "platform/LayoutLocale.h"
+#include "platform/text/Character.h"
 #include "platform/text/hyphenation/HyphenatorAOSP.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/hyphenation/hyphenation.mojom-blink.h"
 
 namespace blink {
+
+namespace {
+
+template <typename CharType>
+StringView SkipLeadingSpaces(const CharType* text,
+                             unsigned length,
+                             unsigned* num_leading_spaces_out) {
+  const CharType* begin = text;
+  const CharType* end = text + length;
+  while (text != end && Character::TreatAsSpace(*text))
+    text++;
+  *num_leading_spaces_out = text - begin;
+  return StringView(text, end - text);
+}
+
+StringView SkipLeadingSpaces(const StringView& text,
+                             unsigned* num_leading_spaces_out) {
+  if (text.Is8Bit()) {
+    return SkipLeadingSpaces(text.Characters8(), text.length(),
+                             num_leading_spaces_out);
+  }
+  return SkipLeadingSpaces(text.Characters16(), text.length(),
+                           num_leading_spaces_out);
+}
+
+}  // namespace
 
 using Hyphenator = android::Hyphenator;
 
@@ -70,36 +97,44 @@ std::vector<uint8_t> HyphenationMinikin::Hyphenate(
 
 size_t HyphenationMinikin::LastHyphenLocation(const StringView& text,
                                               size_t before_index) const {
-  if (text.length() < kMinimumPrefixLength + kMinimumSuffixLength ||
+  unsigned num_leading_spaces;
+  StringView word = SkipLeadingSpaces(text, &num_leading_spaces);
+  if (before_index <= num_leading_spaces)
+    return 0;
+  before_index = std::min<size_t>(before_index - num_leading_spaces,
+                                  word.length() - kMinimumSuffixLength);
+
+  if (word.length() < kMinimumPrefixLength + kMinimumSuffixLength ||
       before_index <= kMinimumPrefixLength)
     return 0;
 
-  std::vector<uint8_t> result = Hyphenate(text);
-  before_index =
-      std::min<size_t>(before_index, text.length() - kMinimumSuffixLength);
+  std::vector<uint8_t> result = Hyphenate(word);
   CHECK_LE(before_index, result.size());
   CHECK_GE(before_index, 1u);
   static_assert(kMinimumPrefixLength >= 1, "|beforeIndex - 1| can underflow");
   for (size_t i = before_index - 1; i >= kMinimumPrefixLength; i--) {
     if (result[i])
-      return i;
+      return i + num_leading_spaces;
   }
   return 0;
 }
 
 Vector<size_t, 8> HyphenationMinikin::HyphenLocations(
     const StringView& text) const {
+  unsigned num_leading_spaces;
+  StringView word = SkipLeadingSpaces(text, &num_leading_spaces);
+
   Vector<size_t, 8> hyphen_locations;
-  if (text.length() < kMinimumPrefixLength + kMinimumSuffixLength)
+  if (word.length() < kMinimumPrefixLength + kMinimumSuffixLength)
     return hyphen_locations;
 
-  std::vector<uint8_t> result = Hyphenate(text);
+  std::vector<uint8_t> result = Hyphenate(word);
   static_assert(kMinimumPrefixLength >= 1,
                 "Change the 'if' above if this fails");
-  for (size_t i = text.length() - kMinimumSuffixLength - 1;
+  for (size_t i = word.length() - kMinimumSuffixLength - 1;
        i >= kMinimumPrefixLength; i--) {
     if (result[i])
-      hyphen_locations.push_back(i);
+      hyphen_locations.push_back(i + num_leading_spaces);
   }
   return hyphen_locations;
 }
