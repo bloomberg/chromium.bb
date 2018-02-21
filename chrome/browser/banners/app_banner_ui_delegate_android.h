@@ -71,6 +71,11 @@ class AppBannerUiDelegateAndroid {
   void CreateInstallerDelegate(
       base::android::ScopedJavaLocalRef<jobject> jobserver);
 
+  // Called through the JNI to add the app described by this class to home
+  // screen.
+  void AddToHomescreen(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& obj);
+
   // Installs the app referenced by the data in this object. Returns |true| if
   // the installation UI should be dismissed.
   bool InstallApp(content::WebContents* web_contents);
@@ -83,12 +88,24 @@ class AppBannerUiDelegateAndroid {
   // installation.
   void OnNativeAppInstallFinished(bool success);
 
+  // Called through the JNI to indicate that the user has dismissed the
+  // installation UI.
+  void OnUiCancelled(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj);
+
   // Called by the UI layer to indicate that the user has dismissed the
   // installation UI.
-  void OnUiDismissed(content::WebContents* web_contents);
+  void OnUiCancelled();
+
+  // Called to show a modal app banner. Returns true if the dialog is
+  // successfully shown.
+  bool ShowDialog();
 
   // Called by the UI layer to display the details for a native app.
-  void ShowNativeAppDetails(content::WebContents* web_contents);
+  void ShowNativeAppDetails();
+
+  void ShowNativeAppDetails(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>& obj);
 
  private:
   // Delegate for promoting a web app.
@@ -108,8 +125,10 @@ class AppBannerUiDelegateAndroid {
       const std::string& native_app_package_name,
       const std::string& referrer);
 
+  bool IsForNativeApp() const { return GetType() == AppType::NATIVE; }
+
   void CreateJavaDelegate();
-  bool InstallOrOpenNativeApp(content::WebContents* web_contents);
+  bool InstallOrOpenNativeApp();
   void InstallWebApk(content::WebContents* web_contents);
   void InstallLegacyWebApp(content::WebContents* web_contents);
 

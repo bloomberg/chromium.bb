@@ -20,6 +20,8 @@ class PwaAmbientBadgeManagerAndroid;
 
 namespace banners {
 
+class AppBannerUiDelegateAndroid;
+
 // Extends the AppBannerManager to support native Android apps. This class owns
 // a Java-side AppBannerManager which interfaces with the Java runtime to fetch
 // native app data and install them when requested.
@@ -112,6 +114,8 @@ class AppBannerManagerAndroid
                                        const std::string& id);
 
   std::unique_ptr<PwaAmbientBadgeManagerAndroid> ambient_badge_manager_;
+
+  std::unique_ptr<AppBannerUiDelegateAndroid> ui_delegate_;
 
   // The URL of the badge icon.
   GURL badge_icon_url_;

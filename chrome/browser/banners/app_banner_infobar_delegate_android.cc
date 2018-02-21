@@ -103,8 +103,7 @@ AppBannerInfoBarDelegateAndroid::GetIdentifier() const {
 }
 
 void AppBannerInfoBarDelegateAndroid::InfoBarDismissed() {
-  ui_delegate_->OnUiDismissed(
-      InfoBarService::WebContentsFromInfoBar(infobar()));
+  ui_delegate_->OnUiCancelled();
 }
 
 int AppBannerInfoBarDelegateAndroid::GetButtons() const {
@@ -113,11 +112,7 @@ int AppBannerInfoBarDelegateAndroid::GetButtons() const {
 
 bool AppBannerInfoBarDelegateAndroid::LinkClicked(
     WindowOpenDisposition disposition) {
-  content::WebContents* web_contents =
-      InfoBarService::WebContentsFromInfoBar(infobar());
-
-  if (web_contents)
-    ui_delegate_->ShowNativeAppDetails(web_contents);
+  ui_delegate_->ShowNativeAppDetails();
 
   return true;
 }

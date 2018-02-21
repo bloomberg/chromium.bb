@@ -193,6 +193,7 @@ void AppBannerManagerAndroid::ResetCurrentPageData() {
   AppBannerManager::ResetCurrentPageData();
   native_app_data_.Reset();
   native_app_package_ = "";
+  ui_delegate_ = nullptr;
 }
 
 void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
@@ -200,34 +201,38 @@ void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
   DCHECK(contents);
 
   if (native_app_data_.is_null()) {
-    std::unique_ptr<AppBannerUiDelegateAndroid> ui_delegate =
-        AppBannerUiDelegateAndroid::Create(
-            GetWeakPtr(),
-            ShortcutHelper::CreateShortcutInfo(
-                manifest_url_, manifest_, primary_icon_url_, badge_icon_url_),
-            primary_icon_, badge_icon_, install_source, can_install_webapk_);
-    if (AppBannerInfoBarDelegateAndroid::Create(contents,
-                                                std::move(ui_delegate))) {
+    ui_delegate_ = AppBannerUiDelegateAndroid::Create(
+        GetWeakPtr(),
+        ShortcutHelper::CreateShortcutInfo(manifest_url_, manifest_,
+                                           primary_icon_url_, badge_icon_url_),
+        primary_icon_, badge_icon_, install_source, can_install_webapk_);
+  } else {
+    ui_delegate_ = AppBannerUiDelegateAndroid::Create(
+        GetWeakPtr(), native_app_title_,
+        base::android::ScopedJavaLocalRef<jobject>(native_app_data_),
+        primary_icon_, native_app_package_, referrer_);
+  }
+
+  bool banner_shown = false;
+  if (IsExperimentalAppBannersEnabled()) {
+    banner_shown = ui_delegate_->ShowDialog();
+  } else {
+    banner_shown = AppBannerInfoBarDelegateAndroid::Create(
+        contents, std::move(ui_delegate_));
+  }
+
+  if (banner_shown) {
+    if (native_app_data_.is_null()) {
       RecordDidShowBanner("AppBanner.WebApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
       ReportStatus(SHOWING_WEB_APP_BANNER);
     } else {
-      ReportStatus(FAILED_TO_CREATE_BANNER);
-    }
-  } else {
-    std::unique_ptr<AppBannerUiDelegateAndroid> ui_delegate =
-        AppBannerUiDelegateAndroid::Create(
-            GetWeakPtr(), native_app_title_,
-            base::android::ScopedJavaLocalRef<jobject>(native_app_data_),
-            primary_icon_, native_app_package_, referrer_);
-    if (AppBannerInfoBarDelegateAndroid::Create(contents,
-                                                std::move(ui_delegate))) {
       RecordDidShowBanner("AppBanner.NativeApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_NATIVE_APP_BANNER_CREATED);
       ReportStatus(SHOWING_NATIVE_APP_BANNER);
-    } else {
-      ReportStatus(FAILED_TO_CREATE_BANNER);
     }
+  } else {
+    ReportStatus(FAILED_TO_CREATE_BANNER);
   }
 }
 

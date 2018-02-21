@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import org.chromium.base.VisibleForTesting;
@@ -29,7 +30,7 @@ import org.chromium.chrome.browser.banners.AppBannerManager;
  * not yet fetched, and accepting the dialog is disabled until all data is available and in its
  * place on the screen.
  */
-public class AddToHomescreenDialog {
+public class AddToHomescreenDialog implements View.OnClickListener {
     /**
      * The delegate for which this dialog is displayed. Used by the dialog to indicate when the user
      * accedes to adding to home screen, and when the dialog is dismissed.
@@ -41,7 +42,17 @@ public class AddToHomescreenDialog {
         void addToHomescreen(String title);
 
         /**
-         * Called when the dialog's lifetime is over and it is dismissed from the screen.
+         * Called when the dialog is explicitly cancelled by the user.
+         */
+        void onDialogCancelled();
+
+        /**
+         * Called when the user wants to view a native app in the Play Store.
+         */
+        void onNativeAppDetailsRequested();
+
+        /**
+         * Called when the dialog's lifetime is over and it disappears from the screen.
          */
         void onDialogDismissed();
     }
@@ -52,19 +63,23 @@ public class AddToHomescreenDialog {
 
     /**
      * The {@mShortcutTitleInput} and the {@mAppLayout} are mutually exclusive, depending on whether
-     * the home screen item is a bookmark shortcut or a web app.
+     * the home screen item is a bookmark shortcut or a web/native app.
      */
     private EditText mShortcutTitleInput;
     private LinearLayout mAppLayout;
 
     private TextView mAppNameView;
     private TextView mAppOriginView;
+    private RatingBar mAppRatingBar;
+    private ImageView mPlayLogoView;
 
+    private Activity mActivity;
     private Delegate mDelegate;
 
     private boolean mHasIcon;
 
-    public AddToHomescreenDialog(Delegate delegate) {
+    public AddToHomescreenDialog(Activity activity, Delegate delegate) {
+        mActivity = activity;
         mDelegate = delegate;
     }
 
@@ -77,15 +92,15 @@ public class AddToHomescreenDialog {
      * Shows the dialog for adding a shortcut to the home screen.
      * @param activity The current activity in which to create the dialog.
      */
-    public void show(final Activity activity) {
-        View view = activity.getLayoutInflater().inflate(
-                R.layout.add_to_homescreen_dialog, null);
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialogTheme)
-                .setTitle(AppBannerManager.getHomescreenLanguageOption())
-                .setNegativeButton(R.string.cancel,
-                        new DialogInterface.OnClickListener() {
+    public void show() {
+        View view = mActivity.getLayoutInflater().inflate(R.layout.add_to_homescreen_dialog, null);
+        AlertDialog.Builder builder =
+                new AlertDialog.Builder(mActivity, R.style.AlertDialogTheme)
+                        .setTitle(AppBannerManager.getHomescreenLanguageOption())
+                        .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int id) {
+                                mDelegate.onDialogCancelled();
                                 dialog.cancel();
                             }
                         });
@@ -102,6 +117,8 @@ public class AddToHomescreenDialog {
 
         mAppNameView = (TextView) mAppLayout.findViewById(R.id.name);
         mAppOriginView = (TextView) mAppLayout.findViewById(R.id.origin);
+        mAppRatingBar = (RatingBar) mAppLayout.findViewById(R.id.control_rating);
+        mPlayLogoView = (ImageView) view.findViewById(R.id.play_logo);
 
         // The dialog's text field is disabled till the "user title" is fetched,
         mShortcutTitleInput.setVisibility(View.INVISIBLE);
@@ -139,7 +156,7 @@ public class AddToHomescreenDialog {
 
         mDialog.setView(view);
         mDialog.setButton(DialogInterface.BUTTON_POSITIVE,
-                activity.getResources().getString(R.string.add),
+                mActivity.getResources().getString(R.string.add),
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
@@ -176,12 +193,30 @@ public class AddToHomescreenDialog {
             mShortcutTitleInput.setVisibility(View.GONE);
             mAppNameView.setText(title);
             mAppOriginView.setText(url);
+            mAppRatingBar.setVisibility(View.GONE);
+            mPlayLogoView.setVisibility(View.GONE);
             mAppLayout.setVisibility(View.VISIBLE);
             return;
         }
 
         mShortcutTitleInput.setText(title);
         mShortcutTitleInput.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Called when the home screen icon title and app rating are available. Used for native apps.
+     */
+    public void onUserTitleAvailable(String title, float rating) {
+        mShortcutTitleInput.setVisibility(View.GONE);
+        mAppNameView.setText(title);
+        mAppOriginView.setVisibility(View.GONE);
+        mAppRatingBar.setRating(rating);
+        mPlayLogoView.setImageResource(R.drawable.google_play);
+        mAppLayout.setVisibility(View.VISIBLE);
+
+        // Clicking on the app title or the icon will open the Play Store for more details.
+        mAppNameView.setOnClickListener(this);
+        mIconView.setOnClickListener(this);
     }
 
     /**
@@ -195,6 +230,14 @@ public class AddToHomescreenDialog {
 
         mHasIcon = true;
         updateAddButtonEnabledState();
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v == mAppNameView || v == mIconView) {
+            mDelegate.onNativeAppDetailsRequested();
+            mDialog.cancel();
+        }
     }
 
     void updateAddButtonEnabledState() {
