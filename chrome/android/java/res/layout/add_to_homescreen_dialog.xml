@@ -10,8 +10,8 @@
     <!-- The icon that will be used on the home screen. -->
     <ImageView
         android:id="@+id/icon"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
         android:layout_marginTop="10dp"
         android:contentDescription="@null"
         android:visibility="gone" />
@@ -54,6 +54,7 @@
             android:id="@+id/name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textSize="20sp"
             android:textAppearance="@style/BlackTitle1" />
 
         <!-- The origin of the web app, displayed for security purposes. -->
@@ -64,5 +65,31 @@
             android:paddingBottom="2dp"
             android:textAppearance="@style/BlackBody" />
 
+        <!-- The rating bar used for Play Store app ratings for native apps.
+             Displayed in place of the origin. -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <RatingBar
+                android:id="@+id/control_rating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:importantForAccessibility="no"
+                android:isIndicator="true"
+                android:minHeight="16dp"
+                android:maxHeight="16dp"
+                android:numStars="5"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp"
+                android:progressDrawable="@drawable/rating_bar"
+                android:stepSize="0.5" />
+        </FrameLayout>
+
+        <!-- The Play Store icon for native apps. -->
+        <ImageView
+            android:id="@+id/play_logo"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:contentDescription="@null" />
     </LinearLayout>
 </FrameLayout>

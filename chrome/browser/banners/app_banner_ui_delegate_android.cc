@@ -19,6 +19,7 @@
 #include "chrome/browser/browser_process.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
+#include "components/url_formatter/elide_url.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/AppBannerUiDelegateAndroid_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -106,6 +107,15 @@ const GURL& AppBannerUiDelegateAndroid::GetWebAppUrl() const {
   return shortcut_info_->url;
 }
 
+void AppBannerUiDelegateAndroid::AddToHomescreen(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  if (!weak_manager_.get())
+    return;
+
+  InstallApp(weak_manager_->web_contents());
+}
+
 bool AppBannerUiDelegateAndroid::InstallApp(
     content::WebContents* web_contents) {
   has_user_interaction_ = true;
@@ -118,7 +128,7 @@ bool AppBannerUiDelegateAndroid::InstallApp(
   bool should_close_banner = true;
   switch (GetType()) {
     case AppType::NATIVE:
-      should_close_banner = InstallOrOpenNativeApp(web_contents);
+      should_close_banner = InstallOrOpenNativeApp();
       break;
     case AppType::WEBAPK:
       InstallWebApk(web_contents);
@@ -151,14 +161,21 @@ void AppBannerUiDelegateAndroid::OnNativeAppInstallFinished(bool success) {
     TrackDismissEvent(DISMISS_EVENT_INSTALL_TIMEOUT);
 }
 
-void AppBannerUiDelegateAndroid::OnUiDismissed(
-    content::WebContents* web_contents) {
+void AppBannerUiDelegateAndroid::OnUiCancelled(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  OnUiCancelled();
+}
+
+void AppBannerUiDelegateAndroid::OnUiCancelled() {
+  if (!weak_manager_.get())
+    return;
+
+  weak_manager_->SendBannerDismissed();
   has_user_interaction_ = true;
+  content::WebContents* web_contents = weak_manager_->web_contents();
 
-  if (weak_manager_)
-    weak_manager_->SendBannerDismissed();
-
-  if (GetType() == AppType::NATIVE) {
+  if (IsForNativeApp()) {
     DCHECK(!package_name_.empty());
     TrackUserResponse(USER_RESPONSE_NATIVE_APP_DISMISSED);
     AppBannerSettingsHelper::RecordBannerDismissEvent(
@@ -174,19 +191,49 @@ void AppBannerUiDelegateAndroid::OnUiDismissed(
   }
 }
 
-void AppBannerUiDelegateAndroid::ShowNativeAppDetails(
-    content::WebContents* web_contents) {
+bool AppBannerUiDelegateAndroid::ShowDialog() {
+  if (!weak_manager_.get())
+    return false;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jstring> java_app_title =
+      base::android::ConvertUTF16ToJavaString(env, app_title_);
+
+  DCHECK(!primary_icon_.drawsNothing());
+  base::android::ScopedJavaLocalRef<jobject> java_bitmap =
+      gfx::ConvertToJavaBitmap(&primary_icon_);
+
+  if (IsForNativeApp()) {
+    return Java_AppBannerUiDelegateAndroid_showNativeAppDialog(
+        env, java_delegate_, java_app_title, java_bitmap, native_app_data_);
+  }
+
+  // Trim down the app URL to the origin. Banners only show on secure origins,
+  // so elide the scheme.
+  base::android::ScopedJavaLocalRef<jstring> java_app_url =
+      base::android::ConvertUTF16ToJavaString(
+          env, url_formatter::FormatUrlForSecurityDisplay(
+                   shortcut_info_->url,
+                   url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
+
+  return Java_AppBannerUiDelegateAndroid_showWebAppDialog(
+      env, java_delegate_, java_app_title, java_bitmap, java_app_url);
+}
+
+void AppBannerUiDelegateAndroid::ShowNativeAppDetails() {
   if (native_app_data_.is_null())
     return;
 
-  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
-  DCHECK(tab);
-
   Java_AppBannerUiDelegateAndroid_showAppDetails(
-      base::android::AttachCurrentThread(), java_delegate_,
-      tab->GetJavaObject(), native_app_data_);
+      base::android::AttachCurrentThread(), java_delegate_, native_app_data_);
 
   TrackDismissEvent(DISMISS_EVENT_BANNER_CLICK);
+}
+
+void AppBannerUiDelegateAndroid::ShowNativeAppDetails(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  ShowNativeAppDetails();
 }
 
 AppBannerUiDelegateAndroid::AppBannerUiDelegateAndroid(
@@ -241,23 +288,23 @@ void AppBannerUiDelegateAndroid::CreateInstallerDelegate(
 }
 
 void AppBannerUiDelegateAndroid::CreateJavaDelegate() {
+  TabAndroid* tab = TabAndroid::FromWebContents(weak_manager_->web_contents());
+
   java_delegate_.Reset(Java_AppBannerUiDelegateAndroid_create(
-      base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this)));
+      base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
+      tab->GetJavaObject()));
 }
 
-bool AppBannerUiDelegateAndroid::InstallOrOpenNativeApp(
-    content::WebContents* web_contents) {
-  DCHECK_EQ(AppType::NATIVE, GetType());
+bool AppBannerUiDelegateAndroid::InstallOrOpenNativeApp() {
+  DCHECK(IsForNativeApp());
   TrackUserResponse(USER_RESPONSE_NATIVE_APP_ACCEPTED);
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
-  DCHECK(tab);
   base::android::ScopedJavaLocalRef<jstring> jreferrer(
       base::android::ConvertUTF8ToJavaString(env, referrer_));
 
   bool was_opened = Java_AppBannerUiDelegateAndroid_installOrOpenNativeApp(
-      env, java_delegate_, tab->GetJavaObject(), native_app_data_, jreferrer);
+      env, java_delegate_, native_app_data_, jreferrer);
 
   if (was_opened)
     TrackDismissEvent(DISMISS_EVENT_APP_OPEN);
@@ -301,7 +348,7 @@ void AppBannerUiDelegateAndroid::SendBannerAccepted() {
   // this is fired *before* the installation actually takes place (which can be
   // a significant amount of time later, especially if using WebAPKs).
   // TODO(mgiuca): Fire the event *after* the installation is completed.
-  bool is_native = GetType() == AppType::NATIVE;
+  bool is_native = IsForNativeApp();
   weak_manager_->OnInstall(is_native, is_native
                                           ? blink::kWebDisplayModeUndefined
                                           : shortcut_info_->display);

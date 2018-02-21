@@ -141,7 +141,7 @@ public class AddToHomescreenManagerTest {
 
         @Override
         public void showDialog() {
-            mDialog = new AddToHomescreenDialog(TestAddToHomescreenManager.this) {
+            mDialog = new AddToHomescreenDialog(mActivity, TestAddToHomescreenManager.this) {
                 @Override
                 public void onUserTitleAvailable(String title, String url, boolean isWebapp) {
                     if (TextUtils.isEmpty(mTitle)) {
