@@ -61,8 +61,19 @@ class ReauthenticationModuleTest : public ::testing::Test {
   ReauthenticationModule* reauthentication_module_;
 };
 
+// Tests that reauthentication is not reused when reuse is not permitted
+// even if the time interval since the previous reauthentication is less
+// than 60 seconds.
 TEST_F(ReauthenticationModuleTest, ReauthReuseNotPermitted) {
-  [time_accessor_ updateSuccessfulReauthTime];
+  const int kIntervalFromFakePreviousAuthInSeconds = 20;
+  NSDate* lastReauthTime = [NSDate date];
+  [time_accessor_ updateSuccessfulReauthTime:lastReauthTime];
+  NSDate* newReauthTime =
+      [NSDate dateWithTimeInterval:kIntervalFromFakePreviousAuthInSeconds
+                         sinceDate:lastReauthTime];
+
+  id nsDateMock = OCMClassMock([NSDate class]);
+  OCMStub([nsDateMock date]).andReturn(newReauthTime);
 
   OCMExpect([auth_context_ evaluatePolicy:LAPolicyDeviceOwnerAuthentication
                           localizedReason:[OCMArg any]
@@ -75,9 +86,19 @@ TEST_F(ReauthenticationModuleTest, ReauthReuseNotPermitted) {
   EXPECT_OCMOCK_VERIFY(auth_context_);
 }
 
+// Tests that the previous reauthentication is reused when reuse is permitted
+// and the last successful reauthentication occured less than 60 seconds
+// before the current attempt.
 TEST_F(ReauthenticationModuleTest, ReauthReusePermittedLessThanSixtySeconds) {
-  [time_accessor_ updateSuccessfulReauthTime];
+  const int kIntervalFromFakePreviousAuthInSeconds = 20;
+  NSDate* lastReauthTime = [NSDate date];
+  [time_accessor_ updateSuccessfulReauthTime:lastReauthTime];
+  NSDate* newReauthTime =
+      [NSDate dateWithTimeInterval:kIntervalFromFakePreviousAuthInSeconds
+                         sinceDate:lastReauthTime];
 
+  id nsDateMock = OCMClassMock([NSDate class]);
+  OCMStub([nsDateMock date]).andReturn(newReauthTime);
   [[auth_context_ reject] evaluatePolicy:LAPolicyDeviceOwnerAuthentication
                          localizedReason:[OCMArg any]
                                    reply:[OCMArg any]];
@@ -97,11 +118,19 @@ TEST_F(ReauthenticationModuleTest, ReauthReusePermittedLessThanSixtySeconds) {
   }
 }
 
+// Tests that the previous reauthentication is not reused when reuse is
+// permitted, but the last successful reauthentication occured more than 60
+// seconds before the current attempt.
 TEST_F(ReauthenticationModuleTest, ReauthReusePermittedMoreThanSixtySeconds) {
-  const int kIntervalForFakePreviousAuthInSeconds = -70;
-  [time_accessor_ updateSuccessfulReauthTime:
-                      [NSDate dateWithTimeIntervalSinceNow:
-                                  kIntervalForFakePreviousAuthInSeconds]];
+  const int kIntervalFromFakePreviousAuthInSeconds = 70;
+  NSDate* lastReauthTime = [NSDate date];
+  [time_accessor_ updateSuccessfulReauthTime:lastReauthTime];
+  NSDate* newReauthTime =
+      [NSDate dateWithTimeInterval:kIntervalFromFakePreviousAuthInSeconds
+                         sinceDate:lastReauthTime];
+
+  id nsDateMock = OCMClassMock([NSDate class]);
+  OCMStub([nsDateMock date]).andReturn(newReauthTime);
 
   OCMExpect([auth_context_ evaluatePolicy:LAPolicyDeviceOwnerAuthentication
                           localizedReason:[OCMArg any]
