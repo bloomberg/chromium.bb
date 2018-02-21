@@ -52,12 +52,12 @@ Polymer({
        'settings.pages.value, state)'],
 
   /** @private */
-  onPrintTap_: function() {
+  onPrintClick_: function() {
     this.fire('print-requested');
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onCancelClick_: function() {
     this.fire('cancel-requested');
   },
 
