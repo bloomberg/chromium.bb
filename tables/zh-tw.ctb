@@ -1,7 +1,7 @@
-# Chinese braille table
+# Bopomofo-based Chinese Braille Table
 #
-#  Copyright (C) 2004-2006 JJB Software, Inc. www.jjb-software.com
-#  Copyright (C) 2015-2017 Coscell Kao <coscell@gmail.com>
+#  Copyright (C) 2008-2017 Coscell Kao <coscell@gmail.com>
+#  Copyright (C) 2017-2018 nvda-tw <https://groups.io/g/nvda-tw>
 #
 #  This file is part of liblouis.
 #
@@ -19,7 +19,9 @@
 #  License along with liblouis. If not, see
 #  <http://www.gnu.org/licenses/>.
 
-# Chinese braille table by Coscell Kao <coscell@gmail.com> and users in Taiwan (C) 2017-11
+# Currently maintained by Sponge Jhan <school510587@yahoo.com.tw>
+# Version: 2018-02
+#
 # This table mainly conforms to the rules listed in the
 # following Wikipedia page to braille Han characters:
 # <https://en.wikipedia.org/wiki/Taiwanese_Braille>
@@ -70,12 +72,16 @@ letter \x00C0 456-17
 letter \x00C1 457-17
 letter \x00C2 346-17
 letter \x00C3 45-17
-letter \x00C4 36-17
+letter \x00C4 567
 letter \x00C5 4-6-1
 letter \x00C6 17-157
+letter \x00D6 358
 math \x00D7 4-16
+letter \x00DC 2368
+letter \x00DF 34568
 letter \x00E0 17-256
 letter \x00E1 17-23
+letter \x00E4 3458
 letter \x00E8 157-256
 letter \x00E9 157-23
 letter \x00EC 247-256
@@ -83,9 +89,11 @@ letter \x00ED 247-23
 letter \x00EF 4-24
 letter \x00F2 1357-256
 letter \x00F3 1357-23
+letter \x00F6 2468
 math \x00F7 46-34
 letter \x00F9 1367-256
 letter \x00FA 1367-23
+letter \x00FC 12568
 #end Latin-1 Supplement
 
 #begin Latin Extended-A (U+0100-U+017F)
@@ -199,7 +207,7 @@ punctuation \x2033 3-3
 punctuation \x2034 3-3-3
 punctuation \x2035 3
 sign \x2038 457
-sign \x203B 46-16
+sign \x203B 4-3456
 punctuation \x203C 2346-2346
 punctuation \x203D 1456-2346
 sign \x203E 23467-578
@@ -207,7 +215,7 @@ sign \x2041 457
 sign \x2042 16-16-16
 sign \x2043 36
 math \x2044 34
-punctuation \x2047 5
+punctuation \x2047 1456-1456
 punctuation \x2048 1456-2346
 punctuation \x2049 2346-1456
 sign \x204E 16
@@ -283,6 +291,22 @@ letter \x212B 4-6-1
 #end Letterlike Symbols
 
 #begin Number Forms (U+2150-U+218F)
+sign \x2150 2-34-2356
+sign \x2151 2-34-35
+sign \x2152 2-34-2-356
+sign \x2153 2-34-25
+sign \x2154 23-34-25
+sign \x2155 2-34-26
+sign \x2156 23-34-26
+sign \x2157 25-34-26
+sign \x2158 256-34-26
+sign \x2159 2-34-235
+sign \x215A 26-34-235
+sign \x215B 2-34-236
+sign \x215C 25-34-236
+sign \x215D 26-34-236
+sign \x215E 2356-34-236
+sign \x215F 2-34
 letter \x2160 247
 letter \x2161 247-247
 letter \x2162 247-247-247
@@ -295,7 +319,10 @@ letter \x2168 247-13467
 letter \x2169 13467
 letter \x216A 13467-247
 letter \x216B 13467-247-247
-letter \x216C 13467-12367
+letter \x216C 1237
+letter \x216D 147
+letter \x216E 1457
+letter \x216F 1347
 letter \x2170 24
 letter \x2171 24-24
 letter \x2172 24-24-24
@@ -308,7 +335,10 @@ letter \x2178 24-1346
 letter \x2179 1346
 letter \x217A 1346-24
 letter \x217B 1346-24-24
-letter \x217C 1346-1236
+letter \x217C 123
+letter \x217D 14
+letter \x217E 145
+letter \x217F 134
 #end Number Forms
 
 #begin Arrows (U+2190-U+21FF)
@@ -412,10 +442,12 @@ math \x220F 46-6-1234
 math \x2211 46-6-234
 sign \x2212 36
 sign \x2213 36-346
+math \x2214 5-346-126-16-12456
 math \x2215 456-34
 sign \x2216 12467-127
 math \x2217 4-3456
 sign \x2218 45-46-16
+math \x2219 16
 math \x221A 345-12456
 math \x221B 126-25-345-12456
 math \x221C 126-256-345-12456
@@ -720,7 +752,7 @@ sign \x25BD 46-1246
 sign \x25C6 1246-456-145
 sign \x25C7 1246-145
 sign \x25CB 1246-14
-sign \x25CE 246-246-135-135
+sign \x25CE 246-135
 sign \x25CF 1246-456-14
 sign \x25E2 1246-456-2345-46-1235-12456
 sign \x25E3 1246-456-2345-46-1235-12456
@@ -922,6 +954,8 @@ sign \x2BD2 4-12356-4-1246-246-25-25-12456
 #end Miscellaneous Symbols and Arrows
 
 #begin Supplemental Punctuation (U+2E00-U+2E7F)
+punctuation \x2E1B 5-4-156-126-46-16-12456
+punctuation \x2E1E 5-4-156-126-16-12456
 punctuation \x2E1F 5-4-156-146-16-12456
 sign \x2E38 456-12456
 #end Supplemental Punctuation
@@ -1262,13 +1296,15 @@ letter \x308C 1245
 letter \x308D 245
 letter \x308E 34678-136
 letter \x308F 3
-letter \x3090 34678-2456
-letter \x3091 34678-1346
+letter \x3090 23
+letter \x3091 235
 letter \x3092 35
 letter \x3093 356
-letter \x3094 235678-257
+letter \x3094 5-14
 letter \x3095 16
 letter \x3096 1246
+sign \x3099 5
+sign \x309A 6
 #end Hiragana
 
 #begin Katakana (U+30A0-U+30FF)
@@ -1351,17 +1387,17 @@ letter \x30EC 1245
 letter \x30ED 245
 letter \x30EE 34678-238
 letter \x30EF 3
-letter \x30F0 34678-2368
-letter \x30F1 34678-1468
+letter \x30F0 23
+letter \x30F1 235
 letter \x30F2 35
 letter \x30F3 356
 letter \x30F4 5-14
 letter \x30F5 34678-468
 letter \x30F6 34678-358
-letter \x30F7 235678-37
-letter \x30F8 235678-567
-letter \x30F9 235678-2357
-letter \x30FA 235678-467
+letter \x30F7 5-3
+letter \x30F8 5-23
+letter \x30F9 5-235
+letter \x30FA 5-35
 punctuation \x30FB 5
 letter \x30FC 25
 letter \x30FD 378-15678
@@ -1429,6 +1465,7 @@ sign \x319F 1245-136-2
 #begin Katakana Phonetic Extensions (U+31F0-U+31FF)
 letter \x31F0 146
 letter \x31F1 1256
+letter \x31F2 1456
 letter \x31F3 2345
 letter \x31F4 134
 letter \x31F5 136
@@ -1788,11 +1825,11 @@ letter \x3473 1-12356-5
 letter \x3474 245-1456-3
 letter \x3475 1235-1236-5
 letter \x3476 15-16-5
-letter \x3477 124-3456-5
+letter \x3477 124-2456-5
 letter \x3478 2456-4
 letter \x3479 1235-1246-5
 letter \x347A 13-256-5
-letter \x347B 1345-3
+letter \x347B 134-345-5
 letter \x347C 14-236-5
 letter \x347D 124-1346-2
 letter \x347E 15-246-2
@@ -1966,7 +2003,7 @@ letter \x3560 24-456-3
 letter \x3561 1235-2346-2
 letter \x3562 13-2456-5
 letter \x3563 2345-4
-letter \x3564 45-234-2
+letter \x3564 245-234-2
 letter \x3565 16-4
 letter \x3566 1235-35-5
 letter \x3568 1235-1236-5
@@ -1976,7 +2013,7 @@ letter \x356B 12345-1346-4
 letter \x356C 15-12346-5
 letter \x356D 146-5
 letter \x356E 12345-34-4
-letter \x356F 1245-356-5
+letter \x356F 1345-345-5
 letter \x3570 1235-2346-5
 letter \x3571 234-2
 letter \x3572 1235-35-2
@@ -1997,7 +2034,7 @@ letter \x3585 15-1256-5
 letter \x3586 245-1256-2
 letter \x3587 156-2
 letter \x358A 15-256-2
-letter \x358F 1346-356-5
+letter \x358F 1345-346-5
 letter \x3590 1246-4
 letter \x3591 15-346-5
 letter \x3592 124-16-2
@@ -3053,7 +3090,7 @@ letter \x3AF1 1345-1236-4
 letter \x3AF2 1234-356-5
 letter \x3AF3 12-136-2
 letter \x3AF4 15-246-5
-letter \x3AF6 245-12356-4
+letter \x3AF6 1-12356-4
 letter \x3AF8 245-346-5
 letter \x3AF9 145-2456-5
 letter \x3AFB 123-123456-5
@@ -3743,7 +3780,7 @@ letter \x3EAE 1256-2
 letter \x3EB1 1245-1356-2
 letter \x3EB2 1345-234-4
 letter \x3EB3 134-356-2
-letter \x3EB5 13-234-2
+letter \x3EB5 13-234-4
 letter \x3EB7 15-1256-5
 letter \x3EB8 1234-13456-2
 letter \x3EB9 135-2345-5
@@ -5585,7 +5622,7 @@ letter \x47C9 1-34-2
 letter \x47CA 245-1256-2
 letter \x47CB 1-1236-4
 letter \x47CC 13-16-2
-letter \x47CD 145-2345-2
+letter \x47CD 135-2345-3
 letter \x47CF 14-16-5
 letter \x47D0 14-16-5
 letter \x47D1 14-345-4
@@ -5641,7 +5678,7 @@ letter \x4808 124-34-2
 letter \x4809 1235-35-5
 letter \x480A 12345-356-5
 letter \x480B 135-16-4
-letter \x480D 245-23456-2
+letter \x480D 15-23456-3
 letter \x480E 25-5
 letter \x480F 13-16-5
 letter \x4810 245-1256-5
@@ -5881,7 +5918,7 @@ letter \x4928 1234-16-5
 letter \x4929 12-345-2
 letter \x492A 145-25-4
 letter \x492B 12-1236-2
-letter \x492D 123-12456-5
+letter \x492D 24-156-5
 letter \x492E 24-2346-5
 letter \x492F 15-13456-2
 letter \x4930 12346-4
@@ -6830,7 +6867,7 @@ letter \x4DB5 12-156-2
 #begin CJK Unified Ideographs (U+4E00-U+9FFF)
 letter \x4E00 16-3
 letter \x4E01 145-13456-3
-letter \x4E02 123-146-2
+letter \x4E02 123-146-4
 letter \x4E03 245-16-3
 letter \x4E04 24-1346-5
 letter \x4E05 15-23456-5
@@ -6881,7 +6918,7 @@ letter \x4E31 13-12456-5
 letter \x4E32 12-12456-5
 letter \x4E33 12-1236-4
 letter \x4E34 14-1456-2
-letter \x4E35 1-25-4
+letter \x4E35 1-25-2
 letter \x4E36 1-34-4
 letter \x4E37 135-345-3
 letter \x4E38 12456-2
@@ -6942,7 +6979,7 @@ letter \x4E6E 134-12356-4
 letter \x4E6F 1235-34-3
 letter \x4E70 134-2456-4
 letter \x4E71 14-12456-5
-letter \x4E72 245-345-2
+letter \x4E72 125-156-3
 letter \x4E73 1245-34-4
 letter \x4E74 15-236-2
 letter \x4E75 2345-4
@@ -7180,7 +7217,7 @@ letter \x4F5C 125-25-5
 letter \x4F5D 13-12356-3
 letter \x4F5E 1345-13456-5
 letter \x4F5F 124-12346-2
-letter \x4F60 1345-16-4
+letter \x4F60 13457-16-4
 letter \x4F61 15-45-3
 letter \x4F62 245-1256-2
 letter \x4F63 235-5
@@ -7685,17 +7722,17 @@ letter \x5155 15-156-5
 letter \x5156 2345-4
 letter \x5157 2345-4
 letter \x5158 24-156-4
-letter \x5159 2-356-1245
+letter \x5159 248-156-2-1238-2346-5
 letter \x515A 145-1346-4
-letter \x515B 13-1245
+letter \x515B 2458-2345-3-1238-2346-5
 letter \x515C 145-12356-3
-letter \x515D 14-134
-letter \x515E 134-1245
+letter \x515D 123458-136-3-1238-2346-5
+letter \x515E 1348-146-2-1238-2346-5
 letter \x515F 24-136-3
 letter \x5160 145-12356-3
-letter \x5161 2-356-356-1245
+letter \x5161 1358-2456-4-1238-2346-5
 letter \x5162 13-13456-3
-letter \x5163 134-134
+letter \x5163 148-16-2-1238-2346-5
 letter \x5164 1235-456-2
 letter \x5165 1245-34-5
 letter \x5166 456-2
@@ -7985,7 +8022,7 @@ letter \x5281 245-246-3
 letter \x5282 13-236-2
 letter \x5283 1235-35-5
 letter \x5284 1-345-2
-letter \x5285 1-25-5
+letter \x5285 1-25-2
 letter \x5286 14-2345-2
 letter \x5287 13-1256-5
 letter \x5288 1234-16-3
@@ -8497,7 +8534,7 @@ letter \x5481 13-1236-3
 letter \x5482 125-345-3
 letter \x5483 124-25-3
 letter \x5484 145-25-3
-letter \x5485 1234-12356-5
+letter \x5485 1234-12356-4
 letter \x5486 1234-146-2
 letter \x5487 135-16-5
 letter \x5488 12345-34-2
@@ -8586,7 +8623,7 @@ letter \x54DA 145-25-4
 letter \x54DB 1234-34-2
 letter \x54DC 13-16-5
 letter \x54DD 1345-12346-2
-letter \x54DE 134-12356-3
+letter \x54DE 134-12356-2
 letter \x54DF 356-3
 letter \x54E0 1235-146-5
 letter \x54E1 45-2
@@ -8594,7 +8631,7 @@ letter \x54E2 14-12346-5
 letter \x54E3 1234-12356-4
 letter \x54E4 134-1346-2
 letter \x54E5 13-2346-3
-letter \x54E6 2346-2
+letter \x54E6 126-2
 letter \x54E7 12-156-3
 letter \x54E8 24-146-5
 letter \x54E9 14-16-4
@@ -8731,7 +8768,7 @@ letter \x556B 1-2346-4
 letter \x556C 15-2346-5
 letter \x556D 1-12456-5
 letter \x556E 1345-346-5
-letter \x556F 13-25-1
+letter \x556F 13-25-3
 letter \x5570 14-25-3
 letter \x5571 2345-3
 letter \x5572 145-16-5
@@ -8798,7 +8835,7 @@ letter \x55AE 145-1236-3
 letter \x55AF 1234-136-3
 letter \x55B0 245-1236-3
 letter \x55B1 14-16-2
-letter \x55B2 356-1
+letter \x55B2 246-3
 letter \x55B3 1-345-3
 letter \x55B4 1246-3
 letter \x55B5 134-246-3
@@ -8851,7 +8888,7 @@ letter \x55E3 15-156-5
 letter \x55E4 12-156-3
 letter \x55E5 1235-146-2
 letter \x55E6 15-25-3
-letter \x55E7 36-1245-1-123-36
+letter \x55E7 138-23456-3-148-123456-2
 letter \x55E8 1235-2456-5
 letter \x55E9 15-25-4
 letter \x55EA 245-1456-2
@@ -8862,7 +8899,7 @@ letter \x55EE 15-2456-5
 letter \x55EF 136-4
 letter \x55F0 13-2346-5
 letter \x55F1 1345-345-2
-letter \x55F2 145-23456-4
+letter \x55F2 145-346-3
 letter \x55F3 2456-5
 letter \x55F4 245-46-3
 letter \x55F5 124-12346-3
@@ -9428,7 +9465,7 @@ letter \x5824 124-16-2
 letter \x5825 134-12356-2
 letter \x5826 13-346-3
 letter \x5827 1245-12456-2
-letter \x5828 156-2
+letter \x5828 346-5
 letter \x5829 13-1356-5
 letter \x582A 123-1236-3
 letter \x582B 125-12346-3
@@ -9823,7 +9860,7 @@ letter \x59AF 1-12356-2
 letter \x59B0 1-25-2
 letter \x59B1 1-146-3
 letter \x59B2 145-345-2
-letter \x59B3 13457-16-4
+letter \x59B3 13458-16-4
 letter \x59B4 45-5
 letter \x59B5 124-12356-4
 letter \x59B6 15-45-2
@@ -9951,7 +9988,7 @@ letter \x5A2F 1256-2
 letter \x5A30 15-156-5
 letter \x5A31 1256-2
 letter \x5A32 35-3
-letter \x5A33 14-15-5
+letter \x5A33 14-16-5
 letter \x5A34 15-2345-2
 letter \x5A35 13-1256-3
 letter \x5A36 245-1256-4
@@ -10543,7 +10580,7 @@ letter \x5C7F 1256-4
 letter \x5C80 12-34-3
 letter \x5C81 15-1246-5
 letter \x5C82 245-16-4
-letter \x5C83 1246-136-5
+letter \x5C83 1245-136-5
 letter \x5C84 236-5
 letter \x5C85 135-1236-4
 letter \x5C86 246-4
@@ -10704,7 +10741,7 @@ letter \x5D20 145-12346-3
 letter \x5D21 1235-1236-2
 letter \x5D22 1-1356-3
 letter \x5D23 1246-4
-letter \x5D24 146-2
+letter \x5D24 246-2
 letter \x5D25 1234-16-4
 letter \x5D26 2345-3
 letter \x5D27 15-12346-3
@@ -11494,10 +11531,10 @@ letter \x6036 1234-16-3
 letter \x6037 24-34-5
 letter \x6038 15-16-3
 letter \x6039 124-1236-3
-letter \x603A 235-1
+letter \x603A 235-4
 letter \x603B 125-12346-4
 letter \x603C 145-1246-5
-letter \x603D 134-236-5
+letter \x603D 134-126-5
 letter \x603E 135-16-4
 letter \x603F 16-5
 letter \x6040 12-156-4
@@ -11710,7 +11747,7 @@ letter \x610E 135-16-5
 letter \x610F 16-5
 letter \x6110 134-2345-4
 letter \x6111 235-4
-letter \x6112 123-2456-4
+letter \x6112 123-2456-5
 letter \x6113 145-1346-5
 letter \x6114 1456-3
 letter \x6115 2346-5
@@ -12049,7 +12086,7 @@ letter \x6261 1235-34-3
 letter \x6262 13-2346-3
 letter \x6263 123-12356-5
 letter \x6264 34-5
-letter \x6265 145-136-5
+letter \x6265 145-123456-5
 letter \x6266 245-2345-3
 letter \x6267 1-156-2
 letter \x6268 1245-136-5
@@ -12132,7 +12169,7 @@ letter \x62B4 16-5
 letter \x62B5 145-16-4
 letter \x62B6 12-156-5
 letter \x62B7 1234-16-3
-letter \x62B8 13-23456-3
+letter \x62B8 125-345-3
 letter \x62B9 134-126-4
 letter \x62BA 134-356-5
 letter \x62BB 12-136-3
@@ -12148,7 +12185,7 @@ letter \x62C4 1-34-4
 letter \x62C5 145-1236-3
 letter \x62C6 12-2456-3
 letter \x62C7 134-34-4
-letter \x62C8 1345-2345-3
+letter \x62C8 1345-2345-2
 letter \x62C9 14-345-3
 letter \x62CA 12345-34-4
 letter \x62CB 1234-146-3
@@ -12279,7 +12316,7 @@ letter \x6347 1235-25-5
 letter \x6348 124-34-2
 letter \x6349 1-25-3
 letter \x634A 1234-12356-2
-letter \x634B 14-1245-4
+letter \x634B 14-1256-4
 letter \x634C 135-345-3
 letter \x634D 1235-1236-5
 letter \x634E 24-146-3
@@ -12321,7 +12358,7 @@ letter \x6371 2456-2
 letter \x6372 13-45-4
 letter \x6373 236-5
 letter \x6374 125-12346-4
-letter \x6375 12-346-3
+letter \x6375 12-136-3
 letter \x6376 12-1246-2
 letter \x6377 13-346-2
 letter \x6378 124-34-3
@@ -12385,7 +12422,7 @@ letter \x63B1 24-12356-4
 letter \x63B2 13-346-3
 letter \x63B3 14-34-4
 letter \x63B4 13-25-2
-letter \x63B5 134-1456-5
+letter \x63B5 134-13456-5
 letter \x63B6 13-346-2
 letter \x63B7 1-156-5
 letter \x63B8 145-1236-4
@@ -12446,7 +12483,7 @@ letter \x63EE 1235-1246-3
 letter \x63EF 13-1356-3
 letter \x63F0 12-12346-5
 letter \x63F1 15-246-3
-letter \x63F2 145-236-2
+letter \x63F2 24-2346-2
 letter \x63F3 15-346-5
 letter \x63F4 45-2
 letter \x63F5 245-2345-2
@@ -12707,7 +12744,7 @@ letter \x64F3 13-346-2
 letter \x64F4 123-25-5
 letter \x64F5 134-126-2
 letter \x64F6 13-2345-5
-letter \x64F7 15-346-2
+letter \x64F7 13-346-2
 letter \x64F8 14-346-5
 letter \x64F9 124-1236-3
 letter \x64FA 135-2456-4
@@ -13113,7 +13150,7 @@ letter \x6689 1235-1246-3
 letter \x668A 12345-34-4
 letter \x668B 134-1456-4
 letter \x668C 123-1246-2
-letter \x668D 346-3
+letter \x668D 1235-2346-5
 letter \x668E 13456-5
 letter \x668F 145-34-4
 letter \x6690 1246-4
@@ -13765,7 +13802,7 @@ letter \x6915 135-1456-3
 letter \x6916 1234-1356-2
 letter \x6917 145-13456-5
 letter \x6918 12-34-4
-letter \x6919 12-356-3
+letter \x6919 12-1346-3
 letter \x691A 134-136-3
 letter \x691B 12345-345-3
 letter \x691C 13-2345-4
@@ -13789,7 +13826,7 @@ letter \x692D 124-25-4
 letter \x692E 15-136-3
 letter \x692F 145-25-4
 letter \x6930 346-3
-letter \x6931 12345-12356-5
+letter \x6931 12345-34-5
 letter \x6932 1246-4
 letter \x6933 1246-3
 letter \x6934 145-12456-5
@@ -14036,7 +14073,7 @@ letter \x6A24 124-246-2
 letter \x6A25 1234-1356-2
 letter \x6A26 1-34-5
 letter \x6A27 24-345-3
-letter \x6A28 15-56-3
+letter \x6A28 15-16-3
 letter \x6A29 245-45-2
 letter \x6A2A 1235-1356-2
 letter \x6A2B 13-2345-3
@@ -14264,7 +14301,7 @@ letter \x6B08 1246-2
 letter \x6B09 245-12346-5
 letter \x6B0A 245-45-2
 letter \x6B0B 245-1256-2
-letter \x6B0C 245-13462
+letter \x6B0C 245-1346-2
 letter \x6B0D 13-234-4
 letter \x6B0E 1256-5
 letter \x6B0F 14-25-2
@@ -14308,7 +14345,7 @@ letter \x6B34 14-1346-2
 letter \x6B35 123-12456-4
 letter \x6B36 24-25-5
 letter \x6B37 15-16-3
-letter \x6B38 2456-1
+letter \x6B38 356-5
 letter \x6B39 245-16-3
 letter \x6B3A 245-16-3
 letter \x6B3B 12-35-3
@@ -14689,7 +14726,7 @@ letter \x6CB1 124-25-2
 letter \x6CB2 124-25-2
 letter \x6CB3 1235-2346-2
 letter \x6CB4 14-16-5
-letter \x6CB5 1346-16-4
+letter \x6CB5 134-16-4
 letter \x6CB6 16-2
 letter \x6CB7 12345-345-3
 letter \x6CB8 12345-356-5
@@ -15675,7 +15712,7 @@ letter \x708B 1234-16-3
 letter \x708C 123-2456-5
 letter \x708D 1234-1236-5
 letter \x708E 2345-2
-letter \x708F 12345-2
+letter \x708F 123-2456-5
 letter \x7090 1234-1346-5
 letter \x7091 134-34-5
 letter \x7092 12-146-4
@@ -15722,7 +15759,7 @@ letter \x70BA 1246-2
 letter \x70BB 24-156-2
 letter \x70BC 14-2345-5
 letter \x70BD 12-156-5
-letter \x70BE 123-346-4
+letter \x70BE 1235-456-4
 letter \x70BF 1-12356-3
 letter \x70C0 1235-34-3
 letter \x70C1 24-25-5
@@ -15885,7 +15922,7 @@ letter \x715D 134-356-5
 letter \x715E 24-345-5
 letter \x715F 1246-5
 letter \x7160 346-5
-letter \x7161 15-1456-5
+letter \x7161 13-1456-5
 letter \x7162 245-235-2
 letter \x7163 1245-12356-2
 letter \x7164 134-356-2
@@ -16223,7 +16260,7 @@ letter \x72AF 12345-1236-5
 letter \x72B0 245-234-2
 letter \x72B1 13-16-4
 letter \x72B2 245-2456-2
-letter \x72B3 12-25-2
+letter \x72B3 1-25-2
 letter \x72B4 1235-1236-3
 letter \x72B5 13-2346-3
 letter \x72B6 1-456-5
@@ -16787,16 +16824,16 @@ letter \x74E3 135-1236-5
 letter \x74E4 1245-1346-2
 letter \x74E5 14-16-5
 letter \x74E6 35-4
-letter \x74E7 2-356-2456
+letter \x74E7 248-156-2-358-4
 letter \x74E8 15-46-2
-letter \x74E9 13-2456
+letter \x74E9 2458-2345-3-358-4
 letter \x74EA 12345-1236-4
 letter \x74EB 1234-136-2
 letter \x74EC 12345-1346-4
 letter \x74ED 145-1236-4
 letter \x74EE 12346-5
 letter \x74EF 12356-3
-letter \x74F0 34-2456
+letter \x74F0 123458-136-3-358-4
 letter \x74F1 134-2456
 letter \x74F2 35-4
 letter \x74F3 1235-34-2
@@ -16804,11 +16841,11 @@ letter \x74F4 14-13456-2
 letter \x74F5 16-2
 letter \x74F6 1234-13456-2
 letter \x74F7 245-156-2
-letter \x74F8 2-356-356-2456
+letter \x74F8 1358-2456-4-358-4
 letter \x74F9 13-45-5
 letter \x74FA 12-1346-2
 letter \x74FB 12-156-3
-letter \x74FC 14-2456
+letter \x74FC 148-16-4-358-4
 letter \x74FD 145-1346-5
 letter \x74FE 35-3
 letter \x74FF 135-34-5
@@ -16817,7 +16854,7 @@ letter \x7501 1234-13456-2
 letter \x7502 135-2345-3
 letter \x7503 1-12356-5
 letter \x7504 1-136-3
-letter \x7505 14-2456
+letter \x7505 148-16-2-358-4
 letter \x7506 245-156-2
 letter \x7507 13456-3
 letter \x7508 245-16-5
@@ -16895,7 +16932,7 @@ letter \x754F 1246-5
 letter \x7550 12345-34-2
 letter \x7551 124-2345-2
 letter \x7552 134-34-4
-letter \x7553 23
+letter \x7553 145-25-3
 letter \x7554 1234-1236-5
 letter \x7555 13-46-3
 letter \x7556 35-3
@@ -16908,7 +16945,7 @@ letter \x755C 12-34-5
 letter \x755D 134-34-4
 letter \x755E 134-34-4
 letter \x755F 245-2346-5
-letter \x7560 124-2356-2
+letter \x7560 124-2345-2
 letter \x7561 13-2456-3
 letter \x7562 135-16-5
 letter \x7563 145-345-2
@@ -17780,7 +17817,7 @@ letter \x78C4 124-1346-2
 letter \x78C5 135-1346-5
 letter \x78C6 1235-35-2
 letter \x78C7 1234-16-3
-letter \x78C8 1246-4
+letter \x78C8 123-1246-4
 letter \x78C9 15-1346-4
 letter \x78CA 14-356-4
 letter \x78CB 245-25-3
@@ -17875,7 +17912,7 @@ letter \x7923 134-346-5
 letter \x7924 245-345-4
 letter \x7925 15-2345-2
 letter \x7926 123-456-5
-letter \x7927 14-356-2
+letter \x7927 14-356-4
 letter \x7928 14-356-4
 letter \x7929 1-156-5
 letter \x792A 14-16-5
@@ -17934,7 +17971,7 @@ letter \x795E 24-136-2
 letter \x795F 15-1246-5
 letter \x7960 245-156-2
 letter \x7961 12-2456-2
-letter \x7962 134-16-2
+letter \x7962 1345-16-4
 letter \x7963 14-1256-4
 letter \x7964 1256-4
 letter \x7965 15-46-2
@@ -18298,7 +18335,7 @@ letter \x7ACA 245-346-5
 letter \x7ACB 14-16-5
 letter \x7ACC 12-34-5
 letter \x7ACD 24-156-2
-letter \x7ACE 12345-12356-5
+letter \x7ACE 12345-34-5
 letter \x7ACF 245-2345-3
 letter \x7AD0 12-34-5
 letter \x7AD1 1235-12346-2
@@ -18810,7 +18847,7 @@ letter \x7CCA 1235-34-2
 letter \x7CCB 13-2345-5
 letter \x7CCC 125-1236-3
 letter \x7CCD 245-156-2
-letter \x7CCE 14-134
+letter \x7CCE 138-12346-3-123458-136-3
 letter \x7CCF 15-346-5
 letter \x7CD0 12345-34-3
 letter \x7CD1 1345-16-5
@@ -18906,7 +18943,7 @@ letter \x7D2A 245-156-4
 letter \x7D2B 125-156-4
 letter \x7D2C 12-12356-2
 letter \x7D2D 1235-12346-2
-letter \x7D2E 1-345-3
+letter \x7D2E 125-345-3
 letter \x7D2F 14-356-5
 letter \x7D30 15-16-5
 letter \x7D31 12345-34-2
@@ -19034,7 +19071,7 @@ letter \x7DAA 245-2345-5
 letter \x7DAB 15-2345-5
 letter \x7DAC 24-12356-5
 letter \x7DAD 1246-2
-letter \x7DAE 245-1456-5
+letter \x7DAE 245-13456-5
 letter \x7DAF 124-146-2
 letter \x7DB0 12456-4
 letter \x7DB1 13-1346-3
@@ -19192,7 +19229,7 @@ letter \x7E48 245-46-4
 letter \x7E49 1235-123456-2
 letter \x7E4A 15-2345-3
 letter \x7E4B 15-16-5
-letter \x7E4C 125-2356-3
+letter \x7E4C 24-345-1
 letter \x7E4D 15-234-5
 letter \x7E4E 1245-1236-2
 letter \x7E4F 15-45-5
@@ -19270,7 +19307,7 @@ letter \x7E96 15-2345-3
 letter \x7E97 125-1246-5
 letter \x7E98 125-12456-4
 letter \x7E99 14-25-5
-letter \x7E9A 15-16-4
+letter \x7E9A 24-156-4
 letter \x7E9B 145-146-5
 letter \x7E9C 14-1236-4
 letter \x7E9D 14-356-2
@@ -20376,7 +20413,7 @@ letter \x82E8 1345-16-4
 letter \x82E9 135-126-2
 letter \x82EA 135-13456-4
 letter \x82EB 24-1236-3
-letter \x82EC 15-234-2
+letter \x82EC 245-234-2
 letter \x82ED 246-4
 letter \x82EE 15-2345-3
 letter \x82EF 135-136-4
@@ -21232,7 +21269,7 @@ letter \x8640 13-16-3
 letter \x8641 123-1246-2
 letter \x8642 14-34-5
 letter \x8643 13-2345-3
-letter \x8644 15-345-2
+letter \x8644 15-345-5
 letter \x8645 124-1356-2
 letter \x8646 14-356-2
 letter \x8647 245-45-4
@@ -21998,7 +22035,7 @@ letter \x893E 135-246-4
 letter \x893F 245-146-2
 letter \x8940 13-16-3
 letter \x8941 245-46-4
-letter \x8942 15-136-3
+letter \x8942 24-1236-3
 letter \x8943 135-146-3
 letter \x8944 15-46-3
 letter \x8945 145-16-5
@@ -22275,7 +22312,7 @@ letter \x8A53 245-1256-4
 letter \x8A54 1-146-5
 letter \x8A55 1234-13456-2
 letter \x8A56 135-16-5
-letter \x8A57 15-235-4
+letter \x8A57 15-235-5
 letter \x8A58 245-1256-3
 letter \x8A59 135-345-2
 letter \x8A5A 145-345-2
@@ -24381,7 +24418,7 @@ letter \x928D 1-156-5
 letter \x928E 245-235-2
 letter \x928F 24-1236-5
 letter \x9290 12-156-5
-letter \x9291 15-165-4
+letter \x9291 15-2345-4
 letter \x9292 15-13456-2
 letter \x9293 245-45-2
 letter \x9294 1234-16-3
@@ -24950,7 +24987,7 @@ letter \x94C6 134-146-4
 letter \x94C7 135-146-5
 letter \x94C8 24-156-5
 letter \x94C9 15-45-5
-letter \x94CA 124-234-3
+letter \x94CA 124-345-3
 letter \x94CB 135-16-5
 letter \x94CC 1345-16-4
 letter \x94CD 1234-16-2
@@ -24982,7 +25019,7 @@ letter \x94E6 15-2345-3
 letter \x94E7 1235-35-2
 letter \x94E8 245-45-2
 letter \x94E9 24-345-3
-letter \x94EA 12345-234-3
+letter \x94EA 1235-345-3
 letter \x94EB 124-246-5
 letter \x94EC 13-2346-5
 letter \x94ED 134-13456-2
@@ -25370,7 +25407,7 @@ letter \x966A 1234-356-2
 letter \x966B 1234-356-2
 letter \x966C 125-12356-3
 letter \x966D 16-3
-letter \x966E 145-1246-4
+letter \x966E 145-1246-5
 letter \x966F 14-123456-2
 letter \x9670 1456-3
 letter \x9671 13-1256-3
@@ -26078,7 +26115,7 @@ letter \x992E 124-346-5
 letter \x992F 1235-1246-5
 letter \x9930 13-2345-3
 letter \x9931 1235-12356-2
-letter \x9932 2456-1
+letter \x9932 2456-5
 letter \x9933 124-1346-2
 letter \x9934 12345-136-3
 letter \x9935 1246-5
@@ -27091,7 +27128,7 @@ letter \x9D23 13-34-3
 letter \x9D24 1-12346-3
 letter \x9D25 1256-5
 letter \x9D26 46-3
-letter \x9D27 1245-12346-5
+letter \x9D27 1256-5
 letter \x9D28 23456-3
 letter \x9D29 145-346-3
 letter \x9D2A 1256-5
@@ -27631,7 +27668,7 @@ letter \x9F3F 34-3
 letter \x9F40 34-5
 letter \x9F41 1235-12356-3
 letter \x9F42 15-16-5
-letter \x9F43 1235-2346-2
+letter \x9F43 2346-5
 letter \x9F44 1-345-3
 letter \x9F45 15-234-5
 letter \x9F46 12346-5
@@ -27671,7 +27708,7 @@ letter \x9F67 1345-346-5
 letter \x9F68 13-234-5
 letter \x9F69 246-4
 letter \x9F6A 12-25-5
-letter \x9F6B 256-4
+letter \x9F6B 45-4
 letter \x9F6C 1256-4
 letter \x9F6D 12-34-4
 letter \x9F6E 16-4
@@ -27679,7 +27716,7 @@ letter \x9F6F 1345-16-2
 letter \x9F70 125-2346-2
 letter \x9F71 125-12356-3
 letter \x9F72 245-1256-4
-letter \x9F73 1345-136-4
+letter \x9F73 45-4
 letter \x9F74 2345-4
 letter \x9F75 12356-2
 letter \x9F76 2346-5
@@ -27763,8 +27800,8 @@ letter \xF911 14-25-2
 letter \xF912 14-25-4
 letter \xF913 14-25-2
 letter \xF914 14-2346-5
-letter \xF915 14-146-5
-letter \xF916 14-25-5
+letter \xF915 14-25-5
+letter \xF916 14-146-5
 letter \xF917 14-25-5
 letter \xF918 14-25-5
 letter \xF919 14-146-5
@@ -27825,7 +27862,7 @@ letter \xF94F 14-356-5
 letter \xF950 14-1256-4
 letter \xF951 14-12356-5
 letter \xF952 14-2346-5
-letter \xF953 14-356-5
+letter \xF953 14-2346-5
 letter \xF954 14-1456-4
 letter \xF955 14-13456-2
 letter \xF956 14-1356-2
@@ -27850,7 +27887,7 @@ letter \xF968 134-16-5
 letter \xF969 24-34-5
 letter \xF96A 15-25-4
 letter \xF96B 245-1236-3
-letter \xF96C 15-2346-5
+letter \xF96C 15-2456-5
 letter \xF96D 24-1356-4
 letter \xF96E 346-5
 letter \xF96F 24-25-3
@@ -27914,7 +27951,7 @@ letter \xF9A8 14-13456-5
 letter \xF9A9 14-13456-2
 letter \xF9AA 1345-13456-2
 letter \xF9AB 14-13456-4
-letter \xF9AC 14-2345-2
+letter \xF9AC 14-13456-2
 letter \xF9AD 14-13456-2
 letter \xF9AE 13456-2
 letter \xF9AF 14-13456-2
@@ -27994,7 +28031,7 @@ letter \xF9F8 14-16-5
 letter \xF9F9 14-16-5
 letter \xF9FA 1-456-5
 letter \xF9FB 1-156-5
-letter \xF9FC 24-156-2
+letter \xF9FC 24-156-5
 letter \xF9FD 24-156-2
 letter \xF9FE 12-345-2
 letter \xF9FF 245-156-5
@@ -28079,7 +28116,7 @@ letter \xFA51 1-34-5
 letter \xFA52 1235-25-5
 letter \xFA53 1-136-3
 letter \xFA54 13-34-4
-letter \xFA55 124-34-3
+letter \xFA55 124-34-2
 letter \xFA56 13-346-2
 letter \xFA57 14-2345-5
 letter \xFA58 13-1456-5
@@ -28096,7 +28133,7 @@ letter \xFA62 346-5
 letter \xFA63 13-1456-4
 letter \xFA64 135-1456-3
 letter \xFA65 125-1356-5
-letter \xFA66 1-156-3
+letter \xFA66 12-25-5
 letter \xFA67 16-5
 letter \xFA68 1345-1236-2
 letter \xFA69 15-46-4
@@ -28117,7 +28154,7 @@ letter \xFA7B 35-5
 letter \xFA7C 1-12346-4
 letter \xFA7D 12345-136-2
 letter \xFA7E 2345-4
-letter \xFA7F 135-136-5
+letter \xFA7F 135-136-3
 letter \xFA80 135-16-5
 letter \xFA81 245-156-2
 letter \xFA82 146-2
@@ -28145,7 +28182,7 @@ letter \xFA97 14-234-2
 letter \xFA98 1456-2
 letter \xFA99 125-156-3
 letter \xFA9A 1235-1236-5
-letter \xFA9B 13-1456-5
+letter \xFA9B 13-13456-5
 letter \xFA9C 1-34-4
 letter \xFA9D 245-246-2
 letter \xFA9E 13-236-2
@@ -28153,7 +28190,7 @@ letter \xFA9F 12345-1236-5
 letter \xFAA0 1-34-3
 letter \xFAA1 124-2345-5
 letter \xFAA2 245-156-2
-letter \xFAA3 13-35-5
+letter \xFAA3 1235-35-5
 letter \xFAA4 13-12456-3
 letter \xFAA5 123456-3
 letter \xFAA6 16-5
@@ -28161,17 +28198,17 @@ letter \xFAA7 24-1356-5
 letter \xFAA8 1-156-2
 letter \xFAA9 13-45-5
 letter \xFAAA 1-2346-1
-letter \xFAAB 1-136-3
+letter \xFAAB 124-2345-2
 letter \xFAAC 124-246-5
 letter \xFAAD 13-346-2
 letter \xFAAE 14-356-5
 letter \xFAAF 124-146-3
 letter \xFAB0 14-2345-5
-letter \xFAB1 124-13456-2
+letter \xFAB1 1234-13456-2
 letter \xFAB2 1-2346-4
 letter \xFAB3 1235-456-3
 letter \xFAB4 1235-35-2
-letter \xFAB5 1456-3
+letter \xFAB5 256-3
 letter \xFAB6 245-46-4
 letter \xFAB7 12345-34-5
 letter \xFAB8 24-156-5
@@ -28193,7 +28230,7 @@ letter \xFAC7 1345-1236-2
 letter \xFAC8 13-13456-5
 letter \xFAC9 135-356-5
 letter \xFACA 15-46-4
-letter \xFACB 145-34-5
+letter \xFACB 13-34-5
 letter \xFACC 1234-1456-2
 letter \xFACD 1-136-4
 letter \xFACE 13-1246-3
@@ -28202,7 +28239,7 @@ letter \xFAD3 15-16-2
 letter \xFAD4 13-23456-2
 letter \xFAD5 245-25-5
 letter \xFAD7 13-346-2
-letter \xFAD8 13-2346-2
+letter \xFAD8 1235-2346-2
 letter \xFAD9 1234-1346-2
 #end CJK Compatibility Ideographs
 
@@ -28246,7 +28283,7 @@ punctuation \xFE51 6-0
 punctuation \xFE52 36-0
 punctuation \xFE54 56-0
 punctuation \xFE55 156-0
-punctuation \xFE56 135-0
+punctuation \xFE56 1456-0
 punctuation \xFE57 2346-0
 punctuation \xFE59 12356
 punctuation \xFE5A 23456
@@ -28330,6 +28367,7 @@ letter \xFF3A 13567-0
 punctuation \xFF3B 2467-0
 sign \xFF3C 12567-0
 punctuation \xFF3D 124567-0
+sign \xFF3E 457-0
 sign \xFF3F 456-0
 punctuation \xFF40 4-0
 letter \xFF41 1-0
@@ -28369,6 +28407,7 @@ punctuation \xFF62 126
 punctuation \xFF63 345
 punctuation \xFF64 6
 punctuation \xFF65 256
+letter \xFF66 35
 letter \xFF67 1
 letter \xFF68 12
 letter \xFF69 14
@@ -28377,7 +28416,8 @@ letter \xFF6B 24
 letter \xFF6C 34
 letter \xFF6D 346
 letter \xFF6E 345
-punctuation \xFF70 25
+letter \xFF6F 2
+letter \xFF70 25
 letter \xFF71 1
 letter \xFF72 12
 letter \xFF73 14
@@ -28390,6 +28430,7 @@ letter \xFF79 1246
 letter \xFF7A 246
 letter \xFF7B 156
 letter \xFF7C 1256
+letter \xFF7D 1456
 letter \xFF7E 12456
 letter \xFF7F 2456
 letter \xFF80 135
@@ -28424,14 +28465,14 @@ letter \xFF9C 3
 letter \xFF9D 356
 letter \xFF9E 25
 letter \xFF9F 2
-sign \xFFE0 36-14-36
-sign \xFFE1 36-1237-36
+sign \xFFE0 4-14
+sign \xFFE1 4-123
 sign \xFFE5 36-134567-157-13457-36
-sign \xFFE9 126-36
-sign \xFFEA 1246-126-135
-sign \xFFEB 36-345
-sign \xFFEC 1246-146-135
-sign \xFFEE 246-135
+sign \xFFE9 1246-246-25
+sign \xFFEA 1246-126-25-135
+sign \xFFEB 1246-25-135
+sign \xFFEC 1246-146-25-135
+sign \xFFEE 1246-14
 #end Halfwidth and Fullwidth Forms
 
 #Chinese phrases
@@ -28785,7 +28826,6 @@ always \x5B89\x5206 1236-3-12345-136-5
 always \x5B8F\x90FD 1235-12346-2-145-34-3
 always \x5B98\x9577 13-12456-3-1-1346-4
 always \x5B9A\x7701 145-13456-5-15-13456-4
-always \x5B9A\x90FD 145-13456-5-145-34-3
 always \x5BB0\x76F8 125-2456-4-15-46-5
 always \x5BB3\x81CA 1235-2456-5-15-146-5
 always \x5BB6\x5B50 13-23456-3-125-156-1
@@ -29464,6 +29504,7 @@ always \x7981\x4E0D 13-1456-3-135-34-5
 always \x798F\x76F8 12345-34-2-15-46-5
 always \x79AA\x8B93 24-1236-5-1245-1346-5
 always \x79AE\x6A02 14-16-4-236-5
+always \x79B0\x8861 134-16-2-1235-1356-2
 always \x79BF\x5B50 124-34-3-125-156-1
 always \x79D1\x9577 123-2346-3-1-1346-4
 always \x7A31\x8077 12-1356-5-1-156-2
@@ -29535,7 +29576,6 @@ always \x7D2F\x8D05 14-356-4-1-1246-5
 always \x7D2F\x9032 14-356-4-13-1456-5
 always \x7D42\x4E86 1-12346-3-14-246-4
 always \x7D44\x9577 125-34-4-1-1346-4
-always \x7D50\x5BE6 13-346-3-24-156-2
 always \x7D50\x5DF4 13-346-3-135-345-3
 always \x7D66\x4ED8 13-16-4-12345-34-5
 always \x7D68\x5462 1245-12346-2-1345-16-2
@@ -29673,6 +29713,7 @@ always \x84FC\x83AA 14-34-5-2346-2
 always \x8584\x8377 135-126-5-1235-2346-2
 always \x8584\x884C 135-126-2-15-13456-5
 always \x85C9\x85C9 13-16-2-13-16-2
+always \x85CF\x6587 125-1346-5-123456-2
 always \x85E4\x5B50 124-1356-2-125-156-1
 always \x85E5\x884C 246-5-1235-1346-2
 always \x85E5\x92EA 246-5-1234-34-5
@@ -29738,6 +29779,7 @@ always \x8932\x5B50 123-34-5-125-156-1
 always \x893B\x73A9 15-346-5-12456-5
 always \x896A\x5B50 35-5-125-156-1
 always \x897F\x6A02 15-16-3-236-5
+always \x897F\x85CF 15-16-3-125-1346-5
 always \x8981\x633E 246-3-15-346-2
 always \x8981\x6C42 246-3-245-234-2
 always \x8981\x8105 246-3-15-346-2
@@ -29907,6 +29949,7 @@ always \x91CD\x7F6E 12-12346-2-1-156-5
 always \x91CD\x8003 12-12346-2-123-146-4
 always \x91CD\x8907 12-12346-2-12345-34-5
 always \x91CD\x8A2D 12-12346-2-24-2346-5
+always \x91CD\x8A66 12-12346-2-24-156-5
 always \x91CD\x8E48 12-12346-2-145-146-5
 always \x91CD\x8FD4 12-12346-2-12345-1236-4
 always \x91CD\x8FF0 12-12346-2-24-34-5
@@ -30034,6 +30077,7 @@ always \x9996\x9577 24-12356-4-1-1346-4
 always \x99AC\x5B50 134-345-4-125-156-1
 always \x99AC\x864E 134-345-4-1235-34-3
 always \x99AE\x6CB3 1234-13456-2-1235-2346-2
+always \x99D0\x7D2E 1-34-5-1-345-2
 always \x9A0E\x5175 13-16-5-135-13456-3
 always \x9A19\x5B50 1234-2345-5-125-156-1
 always \x9A3E\x5B50 14-25-2-125-156-1
@@ -30073,6 +30117,7 @@ always \x304D\x3047 4-1246
 always \x304D\x3083 4-16
 always \x304D\x3085 4-146
 always \x304D\x3087 4-246
+always \x304E\x3047 45-1246
 always \x304E\x3083 45-16
 always \x304E\x3085 45-146
 always \x304E\x3087 45-246
