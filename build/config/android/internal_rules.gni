@@ -1182,9 +1182,14 @@ if (enable_java_templates) {
     if (defined(invoker.jar_excluded_patterns)) {
       _jar_excluded_patterns = invoker.jar_excluded_patterns
     }
+    _jar_included_patterns = []
+    if (defined(invoker.jar_included_patterns)) {
+      _jar_included_patterns = invoker.jar_included_patterns
+    }
     _strip_resource_classes = defined(invoker.strip_resource_classes) &&
                               invoker.strip_resource_classes
-    _filter_jar = _jar_excluded_patterns != [] || _strip_resource_classes
+    _filter_jar = _jar_excluded_patterns != [] ||
+                  _jar_included_patterns != [] || _strip_resource_classes
 
     _deps = []
     _previous_output_jar = _input_jar_path
@@ -1333,6 +1338,7 @@ if (enable_java_templates) {
           "--jar-path",
           rebase_path(_filter_output_jar, root_build_dir),
           "--excluded-classes=$_jar_excluded_patterns",
+          "--included-classes=$_jar_included_patterns",
         ]
         if (_strip_resource_classes) {
           args += [ "--strip-resource-classes-for=@FileArg($_rebased_build_config:javac:resource_packages)" ]
@@ -2589,6 +2595,7 @@ if (enable_java_templates) {
                                  "alternative_android_sdk_ijar_dep",
                                  "alternative_android_sdk_jar",
                                  "jar_excluded_patterns",
+                                 "jar_included_patterns",
                                ])
         supports_android = _supports_android
         enable_build_hooks = _enable_build_hooks

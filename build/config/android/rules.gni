@@ -1235,8 +1235,10 @@ if (enable_java_templates) {
   #   enable_incremental_javac_override: Overrides the global
   #     enable_incremental_javac.
   #
-  #   jar_excluded_patterns: List of patterns of .class files to exclude from the
-  #     final jar.
+  #   jar_excluded_patterns: List of patterns of .class files to exclude.
+  #   jar_included_patterns: List of patterns of .class files to include.
+  #     When omitted, all classes not matched by jar_excluded_patterns are
+  #     included. When specified, all non-matching .class files are stripped.
   #
   #   output_name: File name for the output .jar (not including extension).
   #     Defaults to the input .jar file name.
@@ -1273,7 +1275,7 @@ if (enable_java_templates) {
   #       ":foo_generated_enum"
   #     ]
   #     jar_excluded_patterns = [
-  #       "*/FooService.class", "*/FooService\$*.class"
+  #       "*/FooService.class", "org/chromium/FooService\$*.class"
   #     ]
   #   }
   template("java_library") {
@@ -1606,7 +1608,7 @@ if (enable_java_templates) {
   #       ":foo_generated_enum"
   #     ]
   #     jar_excluded_patterns = [
-  #       "*/FooService.class", "*/FooService\$*.class"
+  #       "*/FooService.class", "org/chromium/FooService\$*.class"
   #     ]
   #   }
   template("android_library") {
@@ -3268,6 +3270,7 @@ if (enable_java_templates) {
         forward_variables_from(invoker,
                                [
                                  "jar_excluded_patterns",
+                                 "jar_included_patterns",
                                  "requires_android",
                                ])
         deps = [
@@ -3292,6 +3295,7 @@ if (enable_java_templates) {
                                  "deps",
                                  "input_jars_paths",
                                  "jar_excluded_patterns",
+                                 "jar_included_patterns",
                                  "proguard_configs",
                                  "requires_android",
                                  "testonly",
