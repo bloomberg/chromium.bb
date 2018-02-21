@@ -66,8 +66,7 @@ class AdjustAndMarkTrait<T, false> {
   STATIC_ONLY(AdjustAndMarkTrait);
 
  public:
-  template <typename VisitorDispatcher>
-  static NOINLINE_GXX_ONLY void Mark(VisitorDispatcher visitor, const T* t) {
+  static NOINLINE_GXX_ONLY void Mark(MarkingVisitor* visitor, const T* t) {
 #if DCHECK_IS_ON()
     AssertObjectHasGCInfo(const_cast<T*>(t), GCInfoTrait<T>::Index());
 #endif
@@ -123,8 +122,7 @@ class AdjustAndMarkTrait<T, true> {
   STATIC_ONLY(AdjustAndMarkTrait);
 
  public:
-  template <typename VisitorDispatcher>
-  static void Mark(VisitorDispatcher visitor, const T* self) {
+  static void Mark(MarkingVisitor* visitor, const T* self) {
     if (!self)
       return;
     self->AdjustAndMark(visitor);
@@ -244,9 +242,10 @@ class TraceTrait {
   static void TraceMarkedWrapper(const ScriptWrappableVisitor*, const void*);
   static HeapObjectHeader* GetHeapObjectHeader(const void*);
 
-  template <typename VisitorDispatcher>
-  static void Mark(VisitorDispatcher visitor, const T* t) {
-    AdjustAndMarkTrait<T>::Mark(visitor, t);
+  static void Mark(Visitor* visitor, void* t) {
+    // TODO(mlippautz): Remove cast.
+    AdjustAndMarkTrait<T>::Mark(reinterpret_cast<MarkingVisitor*>(visitor),
+                                reinterpret_cast<T*>(t));
   }
 
  private:
@@ -295,9 +294,11 @@ struct TraceTrait<HeapVectorBacking<T, Traits>> {
     }
   }
 
-  template <typename VisitorDispatcher>
-  static void Mark(VisitorDispatcher visitor, const Backing* backing) {
-    AdjustAndMarkTrait<Backing>::Mark(visitor, backing);
+  static void Mark(Visitor* visitor, void* backing) {
+    // TODO(mlippautz): Remove cast.
+    AdjustAndMarkTrait<Backing>::Mark(
+        reinterpret_cast<MarkingVisitor*>(visitor),
+        reinterpret_cast<Backing*>(backing));
   }
 };
 
@@ -322,9 +323,11 @@ struct TraceTrait<HeapHashTableBacking<Table>> {
     }
   }
 
-  template <typename VisitorDispatcher>
-  static void Mark(VisitorDispatcher visitor, const Backing* backing) {
-    AdjustAndMarkTrait<Backing>::Mark(visitor, backing);
+  static void Mark(Visitor* visitor, void* backing) {
+    // TODO(mlippautz): Remove cast.
+    AdjustAndMarkTrait<Backing>::Mark(
+        reinterpret_cast<MarkingVisitor*>(visitor),
+        reinterpret_cast<Backing*>(backing));
   }
 };
 
@@ -696,7 +699,9 @@ struct TraceInCollectionTrait<
         // the contents, and there is no need to trace the next and
         // prev fields since iterating over the hash table backing will
         // find the whole chain.
-        visitor->MarkNoTracing(array[i]);
+        // TODO(mlippautz): Remove cast.
+        reinterpret_cast<blink::MarkingVisitor*>(visitor)->MarkNoTracing(
+            array[i]);
       }
     }
     return false;

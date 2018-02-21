@@ -227,7 +227,7 @@ class PLATFORM_EXPORT ThreadHeap {
   CallbackStack* EphemeronStack() const { return ephemeron_stack_.get(); }
 
   void VisitPersistentRoots(Visitor*);
-  void VisitStackRoots(Visitor*);
+  void VisitStackRoots(MarkingVisitor*);
   void EnterSafePoint(ThreadState*);
   void LeaveSafePoint();
 
@@ -352,9 +352,9 @@ class PLATFORM_EXPORT ThreadHeap {
 
   // Conservatively checks whether an address is a pointer in any of the
   // thread heaps.  If so marks the object pointed to as live.
-  Address CheckAndMarkPointer(Visitor*, Address);
+  Address CheckAndMarkPointer(MarkingVisitor*, Address);
 #if DCHECK_IS_ON()
-  Address CheckAndMarkPointer(Visitor*,
+  Address CheckAndMarkPointer(MarkingVisitor*,
                               Address,
                               MarkedPointerCallbackForTesting);
 #endif

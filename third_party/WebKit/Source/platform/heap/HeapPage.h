@@ -388,9 +388,9 @@ class BasePage {
   //
   // This is used during conservative stack scanning to conservatively mark all
   // objects that could be referenced from the stack.
-  virtual void CheckAndMarkPointer(Visitor*, Address) = 0;
+  virtual void CheckAndMarkPointer(MarkingVisitor*, Address) = 0;
 #if DCHECK_IS_ON()
-  virtual void CheckAndMarkPointer(Visitor*,
+  virtual void CheckAndMarkPointer(MarkingVisitor*,
                                    Address,
                                    MarkedPointerCallbackForTesting) = 0;
 #endif
@@ -532,9 +532,9 @@ class PLATFORM_EXPORT NormalPage final : public BasePage {
 #if defined(ADDRESS_SANITIZER)
   void PoisonUnmarkedObjects() override;
 #endif
-  void CheckAndMarkPointer(Visitor*, Address) override;
+  void CheckAndMarkPointer(MarkingVisitor*, Address) override;
 #if DCHECK_IS_ON()
-  void CheckAndMarkPointer(Visitor*,
+  void CheckAndMarkPointer(MarkingVisitor*,
                            Address,
                            MarkedPointerCallbackForTesting) override;
 #endif
@@ -628,9 +628,9 @@ class LargeObjectPage final : public BasePage {
 #if defined(ADDRESS_SANITIZER)
   void PoisonUnmarkedObjects() override;
 #endif
-  void CheckAndMarkPointer(Visitor*, Address) override;
+  void CheckAndMarkPointer(MarkingVisitor*, Address) override;
 #if DCHECK_IS_ON()
-  void CheckAndMarkPointer(Visitor*,
+  void CheckAndMarkPointer(MarkingVisitor*,
                            Address,
                            MarkedPointerCallbackForTesting) override;
 #endif

@@ -12,12 +12,17 @@
 
 namespace blink {
 
-std::unique_ptr<Visitor> Visitor::Create(ThreadState* state, MarkingMode mode) {
-  return std::make_unique<Visitor>(state, mode);
+Visitor::Visitor(ThreadState* state) : state_(state) {}
+
+Visitor::~Visitor() = default;
+
+std::unique_ptr<MarkingVisitor> MarkingVisitor::Create(ThreadState* state,
+                                                       MarkingMode mode) {
+  return std::make_unique<MarkingVisitor>(state, mode);
 }
 
-Visitor::Visitor(ThreadState* state, MarkingMode marking_mode)
-    : state_(state), marking_mode_(marking_mode) {
+MarkingVisitor::MarkingVisitor(ThreadState* state, MarkingMode marking_mode)
+    : Visitor(state), marking_mode_(marking_mode) {
   // See ThreadState::runScheduledGC() why we need to already be in a
   // GCForbiddenScope before any safe point is entered.
   DCHECK(state->IsGCForbidden());
@@ -26,10 +31,11 @@ Visitor::Visitor(ThreadState* state, MarkingMode marking_mode)
 #endif
 }
 
-Visitor::~Visitor() = default;
+MarkingVisitor::~MarkingVisitor() = default;
 
-void Visitor::MarkNoTracingCallback(Visitor* visitor, void* object) {
-  visitor->MarkNoTracing(object);
+void MarkingVisitor::MarkNoTracingCallback(Visitor* visitor, void* object) {
+  // TODO(mlippautz): Remove cast;
+  reinterpret_cast<MarkingVisitor*>(visitor)->MarkNoTracing(object);
 }
 
 }  // namespace blink

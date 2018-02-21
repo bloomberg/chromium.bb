@@ -60,6 +60,7 @@ class IncrementalMarkingScope;
 }  // namespace incremental_marking_test
 
 class GarbageCollectedMixinConstructorMarkerBase;
+class MarkingVisitor;
 class PersistentNode;
 class PersistentRegion;
 class ThreadHeap;
@@ -417,11 +418,11 @@ class PLATFORM_EXPORT ThreadState {
   }
 
   // Visit local thread stack and trace all pointers conservatively.
-  void VisitStack(Visitor*);
+  void VisitStack(MarkingVisitor*);
 
   // Visit the asan fake stack frame corresponding to a slot on the
   // real machine stack if there is one.
-  void VisitAsanFakeStackForPointer(Visitor*, Address);
+  void VisitAsanFakeStackForPointer(MarkingVisitor*, Address);
 
   // Visit all non-weak persistents allocated on this thread.
   void VisitPersistents(Visitor*);
@@ -533,7 +534,7 @@ class PLATFORM_EXPORT ThreadState {
 
   int GcAge() const { return gc_age_; }
 
-  Visitor* CurrentVisitor() { return current_gc_data_.visitor.get(); }
+  MarkingVisitor* CurrentVisitor() { return current_gc_data_.visitor.get(); }
 
  private:
   // Needs to set up visitor for testing purposes.
@@ -683,7 +684,7 @@ class PLATFORM_EXPORT ThreadState {
     BlinkGC::GCReason reason;
     double marking_time_in_milliseconds;
     size_t marked_object_size;
-    std::unique_ptr<Visitor> visitor;
+    std::unique_ptr<MarkingVisitor> visitor;
   };
   GCData current_gc_data_;
 

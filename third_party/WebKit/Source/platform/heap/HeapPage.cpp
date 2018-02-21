@@ -1617,7 +1617,7 @@ static bool IsUninitializedMemory(void* object_pointer, size_t object_size) {
 }
 #endif
 
-static void MarkPointer(Visitor* visitor, HeapObjectHeader* header) {
+static void MarkPointer(MarkingVisitor* visitor, HeapObjectHeader* header) {
   const GCInfo* gc_info = ThreadHeap::GcInfo(header->GcInfoIndex());
   if (gc_info->HasVTable() && !VTableInitialized(header->Payload())) {
     // We hit this branch when a GC strikes before GarbageCollected<>'s
@@ -1640,7 +1640,7 @@ static void MarkPointer(Visitor* visitor, HeapObjectHeader* header) {
   }
 }
 
-void NormalPage::CheckAndMarkPointer(Visitor* visitor, Address address) {
+void NormalPage::CheckAndMarkPointer(MarkingVisitor* visitor, Address address) {
 #if DCHECK_IS_ON()
   DCHECK(Contains(address));
 #endif
@@ -1651,7 +1651,7 @@ void NormalPage::CheckAndMarkPointer(Visitor* visitor, Address address) {
 }
 
 #if DCHECK_IS_ON()
-void NormalPage::CheckAndMarkPointer(Visitor* visitor,
+void NormalPage::CheckAndMarkPointer(MarkingVisitor* visitor,
                                      Address address,
                                      MarkedPointerCallbackForTesting callback) {
   DCHECK(Contains(address));
@@ -1760,7 +1760,8 @@ void LargeObjectPage::PoisonUnmarkedObjects() {
 }
 #endif
 
-void LargeObjectPage::CheckAndMarkPointer(Visitor* visitor, Address address) {
+void LargeObjectPage::CheckAndMarkPointer(MarkingVisitor* visitor,
+                                          Address address) {
 #if DCHECK_IS_ON()
   DCHECK(Contains(address));
 #endif
@@ -1771,7 +1772,7 @@ void LargeObjectPage::CheckAndMarkPointer(Visitor* visitor, Address address) {
 
 #if DCHECK_IS_ON()
 void LargeObjectPage::CheckAndMarkPointer(
-    Visitor* visitor,
+    MarkingVisitor* visitor,
     Address address,
     MarkedPointerCallbackForTesting callback) {
   DCHECK(Contains(address));

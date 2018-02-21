@@ -853,9 +853,9 @@ class Foo : public Bar {
 
   virtual void Trace(blink::Visitor* visitor) {
     if (points_to_foo_)
-      visitor->Mark(static_cast<Foo*>(bar_));
+      visitor->Trace(static_cast<Foo*>(bar_));
     else
-      visitor->Mark(bar_);
+      visitor->Trace(bar_);
   }
 
  private:
@@ -3995,7 +3995,8 @@ TEST(HeapTest, CheckAndMarkPointer) {
   {
     ThreadState::GCForbiddenScope gc_scope(ThreadState::Current());
     TestGCScope scope(BlinkGC::kHeapPointersOnStack);
-    Visitor visitor(ThreadState::Current(), Visitor::kGlobalMarking);
+    MarkingVisitor visitor(ThreadState::Current(),
+                           MarkingVisitor::kGlobalMarking);
     heap.FlushHeapDoesNotContainCache();
     for (size_t i = 0; i < object_addresses.size(); i++) {
       EXPECT_TRUE(heap.CheckAndMarkPointer(&visitor, object_addresses[i],
@@ -4019,7 +4020,8 @@ TEST(HeapTest, CheckAndMarkPointer) {
   {
     ThreadState::GCForbiddenScope gc_scope(ThreadState::Current());
     TestGCScope scope(BlinkGC::kHeapPointersOnStack);
-    Visitor visitor(ThreadState::Current(), Visitor::kGlobalMarking);
+    MarkingVisitor visitor(ThreadState::Current(),
+                           MarkingVisitor::kGlobalMarking);
     heap.FlushHeapDoesNotContainCache();
     for (size_t i = 0; i < object_addresses.size(); i++) {
       // We would like to assert that checkAndMarkPointer returned false

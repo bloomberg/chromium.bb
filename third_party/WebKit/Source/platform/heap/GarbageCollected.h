@@ -72,16 +72,16 @@ struct IsGarbageCollectedMixin {
 class PLATFORM_EXPORT GarbageCollectedMixin {
  public:
   typedef int IsGarbageCollectedMixinMarker;
-  virtual void AdjustAndMark(Visitor*) const = 0;
+  virtual void AdjustAndMark(MarkingVisitor*) const = 0;
   virtual void Trace(Visitor*) {}
   virtual HeapObjectHeader* GetHeapObjectHeader() const = 0;
   virtual void AdjustAndTraceMarkedWrapper(
       const ScriptWrappableVisitor*) const = 0;
 };
 
-#define DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(VISITOR, TYPE)                 \
+#define DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(TYPE)                          \
  public:                                                                      \
-  void AdjustAndMark(VISITOR visitor) const override {                        \
+  void AdjustAndMark(blink::MarkingVisitor* visitor) const override {         \
     typedef WTF::IsSubclassOfTemplate<typename std::remove_const<TYPE>::type, \
                                       blink::GarbageCollected>                \
         IsSubclassOfGarbageCollected;                                         \
@@ -166,9 +166,9 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
 // when the "operator new" for B runs, and leaving the forbidden GC scope
 // when the constructor of the recorded GarbageCollectedMixinConstructorMarker
 // runs.
-#define USING_GARBAGE_COLLECTED_MIXIN(TYPE)                     \
-  IS_GARBAGE_COLLECTED_TYPE();                                  \
-  DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(blink::Visitor*, TYPE) \
+#define USING_GARBAGE_COLLECTED_MIXIN(TYPE)    \
+  IS_GARBAGE_COLLECTED_TYPE();                 \
+  DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(TYPE) \
   DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE)
 
 // An empty class with a constructor that's arranged invoked when all derived
@@ -210,7 +210,7 @@ class GarbageCollectedMixinConstructorMarker
 //  };
 #define MERGE_GARBAGE_COLLECTED_MIXINS()                          \
  public:                                                          \
-  void AdjustAndMark(Visitor*) const override = 0;                \
+  void AdjustAndMark(MarkingVisitor*) const override = 0;         \
   HeapObjectHeader* GetHeapObjectHeader() const override = 0;     \
   void AdjustAndTraceMarkedWrapper(const ScriptWrappableVisitor*) \
       const override = 0;                                         \

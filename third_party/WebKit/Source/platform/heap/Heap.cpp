@@ -161,7 +161,8 @@ ThreadHeap::~ThreadHeap() {
     delete arenas_[i];
 }
 
-Address ThreadHeap::CheckAndMarkPointer(Visitor* visitor, Address address) {
+Address ThreadHeap::CheckAndMarkPointer(MarkingVisitor* visitor,
+                                        Address address) {
   DCHECK(thread_state_->IsInGC());
 
 #if !DCHECK_IS_ON()
@@ -193,7 +194,7 @@ Address ThreadHeap::CheckAndMarkPointer(Visitor* visitor, Address address) {
 // into the heap, provide a checkAndMarkPointer() version with an
 // extra notification argument.
 Address ThreadHeap::CheckAndMarkPointer(
-    Visitor* visitor,
+    MarkingVisitor* visitor,
     Address address,
     MarkedPointerCallbackForTesting callback) {
   DCHECK(thread_state_->IsInGC());
@@ -523,7 +524,7 @@ void ThreadHeap::VisitPersistentRoots(Visitor* visitor) {
   thread_state_->VisitPersistents(visitor);
 }
 
-void ThreadHeap::VisitStackRoots(Visitor* visitor) {
+void ThreadHeap::VisitStackRoots(MarkingVisitor* visitor) {
   DCHECK(thread_state_->IsInGC());
   TRACE_EVENT0("blink_gc", "ThreadHeap::visitStackRoots");
   thread_state_->VisitStack(visitor);
