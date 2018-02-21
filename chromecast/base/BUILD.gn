@@ -271,9 +271,22 @@ if (is_android) {
   android_library("base_java") {
     java_src_dir = "//chromecast/base/java/src"
     java_files = [
+      "$java_src_dir/org/chromium/chromecast/base/Both.java",
+      "$java_src_dir/org/chromium/chromecast/base/CircularBuffer.java",
+      "$java_src_dir/org/chromium/chromecast/base/Controller.java",
+      "$java_src_dir/org/chromium/chromecast/base/Consumer.java",
+      "$java_src_dir/org/chromium/chromecast/base/Function.java",
+      "$java_src_dir/org/chromium/chromecast/base/Itertools.java",
+      "$java_src_dir/org/chromium/chromecast/base/Observable.java",
+      "$java_src_dir/org/chromium/chromecast/base/ReactiveUtils.java",
+      "$java_src_dir/org/chromium/chromecast/base/ScopeFactories.java",
+      "$java_src_dir/org/chromium/chromecast/base/ScopeFactory.java",
+      "$java_src_dir/org/chromium/chromecast/base/Unit.java",
+      "$java_src_dir/org/chromium/chromecast/base/VoidScopeFactory.java",
+
+      # TODO(sanfin): Move these files to another target.
       "$java_src_dir/org/chromium/chromecast/base/CastSettingsManager.java",
       "$java_src_dir/org/chromium/chromecast/base/ChromecastConfigAndroid.java",
-      "$java_src_dir/org/chromium/chromecast/base/CircularBuffer.java",
       "$java_src_dir/org/chromium/chromecast/base/DumpstateWriter.java",
       "$java_src_dir/org/chromium/chromecast/base/SystemTimeChangeNotifierAndroid.java",
     ]
@@ -286,7 +299,14 @@ if (is_android) {
   junit_binary("cast_base_junit_tests") {
     java_test_dir = "//chromecast/base/java/test"
     java_files = [
+      "$java_test_dir/org/chromium/chromecast/base/BothTest.java",
       "$java_test_dir/org/chromium/chromecast/base/CircularBufferTest.java",
+      "$java_test_dir/org/chromium/chromecast/base/ItertoolsTest.java",
+      "$java_test_dir/org/chromium/chromecast/base/ObservableAndControllerTest.java",
+      "$java_test_dir/org/chromium/chromecast/base/ReactiveUtilsTest.java",
+      "$java_test_dir/org/chromium/chromecast/base/ScopeFactoriesTest.java",
+      "$java_test_dir/org/chromium/chromecast/base/TestUtils.java",
+      "$java_test_dir/org/chromium/chromecast/base/UnitTest.java",
     ]
     deps = [
       ":base_java",
