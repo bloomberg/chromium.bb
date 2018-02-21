@@ -89,7 +89,6 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
   static void UpdateSelectionIfDifferentFromCurrentSelection(TypingCommand*,
                                                              LocalFrame*);
 
-  void InsertText(const String& text, bool select_inserted_text, EditingState*);
   void InsertTextRunWithoutNewlines(const String& text,
                                     EditingState*);
   void InsertLineBreak(EditingState*);
@@ -142,6 +141,10 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
   void SetSmartDelete(bool smart_delete) { smart_delete_ = smart_delete; }
   bool IsOpenForMoreTyping() const { return open_for_more_typing_; }
   void CloseTyping() { open_for_more_typing_ = false; }
+
+  void InsertTextInternal(const String& text,
+                          bool select_inserted_text,
+                          EditingState*);
 
   void DoApply(EditingState*) override;
   InputEvent::InputType GetInputType() const override;

@@ -405,8 +405,8 @@ void TypingCommand::InsertText(
     last_typing_command->input_type_ = input_type;
 
     EventQueueScope event_queue_scope;
-    last_typing_command->InsertText(new_text, options & kSelectInsertedText,
-                                    editing_state);
+    last_typing_command->InsertTextInternal(
+        new_text, options & kSelectInsertedText, editing_state);
     return;
   }
 
@@ -528,7 +528,7 @@ void TypingCommand::DoApply(EditingState* editing_state) {
       InsertParagraphSeparatorInQuotedContent(editing_state);
       return;
     case kInsertText:
-      InsertText(text_to_insert_, select_inserted_text_, editing_state);
+      InsertTextInternal(text_to_insert_, select_inserted_text_, editing_state);
       return;
   }
 
@@ -579,9 +579,9 @@ void TypingCommand::TypingAddedToOpenCommand(
   frame->GetEditor().AppliedEditing(this);
 }
 
-void TypingCommand::InsertText(const String& text,
-                               bool select_inserted_text,
-                               EditingState* editing_state) {
+void TypingCommand::InsertTextInternal(const String& text,
+                                       bool select_inserted_text,
+                                       EditingState* editing_state) {
   text_to_insert_ = text;
 
   if (text.IsEmpty()) {
