@@ -240,10 +240,6 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       const FirstSessionDescription& remote);
 
   std::vector<std::unique_ptr<RTCRtpSender>>::iterator FindSender(uintptr_t id);
-  std::vector<
-      std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>::iterator
-  FindRemoteStreamAdapter(
-      const scoped_refptr<webrtc::MediaStreamInterface>& webrtc_stream);
 
   scoped_refptr<base::SingleThreadTaskRunner> signaling_thread() const;
 
@@ -286,8 +282,6 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // when a component (such as a sender or receiver) needs to reference it, and
   // automatically disposed when there are no longer any components referencing
   // it.
-  // TODO(hbos): Update and use the map for the |remote_streams_| case too.
-  // crbug.com/705901
   scoped_refptr<WebRtcMediaStreamAdapterMap> stream_adapter_map_;
   // Remote stream adapters. Every stream that is in use by the peer connection
   // has an associated blink and webrtc layer representation of it. This vector

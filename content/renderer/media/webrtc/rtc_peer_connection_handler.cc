@@ -2119,13 +2119,9 @@ void RTCPeerConnectionHandler::OnAddRemoteTrack(
 
   for (const auto& remote_stream_adapter_ref : remote_stream_adapter_refs) {
     // New remote stream?
-    if (FindRemoteStreamAdapter(
-            remote_stream_adapter_ref->adapter().webrtc_stream()) ==
-        remote_streams_.end()) {
-      // TODO(hbos): Define getRemoteStreams() in terms of streams of receivers
-      // and remove |remote_streams_|. https://crbug.com/741618
-      remote_streams_.push_back(remote_stream_adapter_ref->Copy());
-
+    if (GetRemoteStreamUsageCount(
+            rtp_receivers_,
+            remote_stream_adapter_ref->adapter().webrtc_stream().get()) == 0) {
       // Update metrics.
       // TODO(hbos): Update metrics to correspond to track added/removed events,
       // not streams. https://crbug.com/765170
@@ -2177,12 +2173,6 @@ void RTCPeerConnectionHandler::OnRemoveRemoteTrack(
     if (GetRemoteStreamUsageCount(
             rtp_receivers_,
             remote_stream_adapter_ref->adapter().webrtc_stream().get()) == 0) {
-      // Remove from |remote_streams_|.
-      auto it = FindRemoteStreamAdapter(
-          remote_stream_adapter_ref->adapter().webrtc_stream());
-      DCHECK(it != remote_streams_.end());
-      remote_streams_.erase(it);
-
       // Update metrics.
       track_metrics_.RemoveStream(
           MediaStreamTrackMetrics::RECEIVED_STREAM,
@@ -2292,19 +2282,6 @@ RTCPeerConnectionHandler::FindSender(uintptr_t id) {
       return it;
   }
   return rtp_senders_.end();
-}
-
-std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>::iterator
-RTCPeerConnectionHandler::FindRemoteStreamAdapter(
-    const scoped_refptr<webrtc::MediaStreamInterface>& webrtc_stream) {
-  return std::find_if(
-      remote_streams_.begin(), remote_streams_.end(),
-      [webrtc_stream](
-          const std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>&
-              adapter_ref) {
-        return adapter_ref->adapter().webrtc_stream().get() ==
-               webrtc_stream.get();
-      });
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
