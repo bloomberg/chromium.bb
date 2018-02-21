@@ -31,7 +31,8 @@ base::string16 GetStringForCategory(ShortcutCategory category);
 // TODO(https://crbug.com/803502): Get strings for non US keyboard layout.
 base::string16 GetStringForKeyboardCode(ui::KeyboardCode key_code);
 
-// Get the VectorIcon if this |key_code| need to be displayed in icon.
+// Returns the VectorIcon if |key_code| need to be represented as an icon.
+// Returns nullptr if |key_code| should not be represented as an icon.
 const gfx::VectorIcon* GetVectorIconForKeyboardCode(ui::KeyboardCode key_code);
 
 }  // namespace keyboard_shortcut_viewer

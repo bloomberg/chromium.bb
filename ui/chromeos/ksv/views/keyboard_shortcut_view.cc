@@ -85,20 +85,26 @@ KeyboardShortcutView::~KeyboardShortcutView() {
 
 // static
 views::Widget* KeyboardShortcutView::Show(gfx::NativeWindow context) {
-  constexpr int kKSVWindowWidth = 768;
-  constexpr int kKSVWindowHeight = 512;
-
   if (g_ksv_view) {
     // If there is a KeyboardShortcutView window open already, just activate it.
     g_ksv_view->GetWidget()->Activate();
   } else {
+    constexpr gfx::Size kKSVWindowSize(768, 512);
+    gfx::Point offset;
+    if (context) {
+      gfx::Rect root_bounds(context->GetRootWindow()->bounds());
+      offset.SetPoint((root_bounds.width() - kKSVWindowSize.width()) / 2,
+                      (root_bounds.height() - kKSVWindowSize.height()) / 2);
+    }
     views::Widget::CreateWindowWithContextAndBounds(
-        new KeyboardShortcutView(), context,
-        gfx::Rect(0, 0, kKSVWindowWidth, kKSVWindowHeight));
+        new KeyboardShortcutView(), context, gfx::Rect(offset, kKSVWindowSize));
+
+    // Set frame view Active and Inactive colors, both are SK_ColorWHITE.
     g_ksv_view->GetWidget()->GetNativeWindow()->SetProperty(
         ash::kFrameActiveColorKey, SK_ColorWHITE);
     g_ksv_view->GetWidget()->GetNativeWindow()->SetProperty(
         ash::kFrameInactiveColorKey, SK_ColorWHITE);
+
     g_ksv_view->GetWidget()->Show();
     g_ksv_view->RequestFocusForActiveTab();
   }

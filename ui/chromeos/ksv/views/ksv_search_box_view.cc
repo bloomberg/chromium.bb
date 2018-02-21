@@ -13,6 +13,8 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/textfield/textfield.h"
 
+namespace keyboard_shortcut_viewer {
+
 namespace {
 
 constexpr SkColor kDefaultSearchBoxBackgroundColor =
@@ -24,8 +26,6 @@ constexpr int kIconSize = 20;
 constexpr int kBorderCornerRadius = 32;
 
 }  // namespace
-
-namespace keyboard_shortcut_viewer {
 
 KSVSearchBoxView::KSVSearchBoxView(search_box::SearchBoxViewDelegate* delegate)
     : search_box::SearchBoxViewBase(delegate) {
