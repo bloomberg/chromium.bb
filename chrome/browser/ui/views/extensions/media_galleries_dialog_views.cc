@@ -218,6 +218,10 @@ base::string16 MediaGalleriesDialogViews::GetWindowTitle() const {
   return controller_->GetHeader();
 }
 
+bool MediaGalleriesDialogViews::ShouldShowCloseButton() const {
+  return false;
+}
+
 void MediaGalleriesDialogViews::DeleteDelegate() {
   controller_->DialogFinished(accepted_);
 }
