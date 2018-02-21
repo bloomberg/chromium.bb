@@ -10435,11 +10435,18 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         memset(x->blk_skip[0], rd_stats_y.skip,
                sizeof(uint8_t) * xd->n8_h * xd->n8_w * 4);
       }
-
-      inter_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX, 0);
+      if (num_planes > 1) {
+        inter_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX, 0);
+      } else {
+        av1_init_rd_stats(&rd_stats_uv);
+      }
     } else {
       super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
-      super_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
+      if (num_planes > 1) {
+        super_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
+      } else {
+        av1_init_rd_stats(&rd_stats_uv);
+      }
     }
 
     if (RDCOST(x->rdmult, rd_stats_y.rate + rd_stats_uv.rate,
