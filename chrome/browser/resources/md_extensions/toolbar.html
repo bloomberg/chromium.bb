@@ -111,18 +111,18 @@
     <div id="devDrawer" expanded$="[[expanded_]]">
       <div id="button-strip">
         <paper-button hidden$="[[!canLoadUnpacked]]" id="load-unpacked"
-            on-tap="onLoadUnpackedTap_">
+            on-click="onLoadUnpackedTap_">
           $i18n{toolbarLoadUnpacked}
         </paper-button>
-        <paper-button id="pack-extensions" on-tap="onPackTap_">
+        <paper-button id="pack-extensions" on-click="onPackTap_">
           $i18n{toolbarPack}
         </paper-button>
-        <paper-button id="update-now" on-tap="onUpdateNowTap_"
+        <paper-button id="update-now" on-click="onUpdateNowTap_"
             title="$i18n{toolbarUpdateNowTooltip}">
           $i18n{toolbarUpdateNow}
         </paper-button>
 <if expr="chromeos">
-        <paper-button id="kiosk-extensions" on-tap="onKioskTap_"
+        <paper-button id="kiosk-extensions" on-click="onKioskTap_"
             hidden$="[[!kioskEnabled]]">
           $i18n{manageKioskApp}
         </paper-button>

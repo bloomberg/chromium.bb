@@ -36,7 +36,7 @@
           <paper-input id="root-dir" label="$i18n{packDialogExtensionRoot}"
               always-float-label value="{{packDirectory_}}">
           </paper-input>
-          <paper-button id="root-dir-browse" on-tap="onRootBrowse_">
+          <paper-button id="root-dir-browse" on-click="onRootBrowse_">
             $i18n{packDialogBrowse}
           </paper-button>
         </div>
@@ -44,16 +44,16 @@
           <paper-input id="key-file" label="$i18n{packDialogKeyFile}"
               always-float-label value="{{keyFile_}}">
           </paper-input>
-          <paper-button id="key-file-browse" on-tap="onKeyBrowse_">
+          <paper-button id="key-file-browse" on-click="onKeyBrowse_">
             $i18n{packDialogBrowse}
           </paper-button>
         </div>
       </div>
       <div slot="button-container">
-        <paper-button class="cancel-button" on-tap="onCancelTap_">
+        <paper-button class="cancel-button" on-click="onCancelTap_">
           $i18n{cancel}
         </paper-button>
-        <paper-button class="action-button" on-tap="onConfirmTap_"
+        <paper-button class="action-button" on-click="onConfirmTap_"
             disabled="[[!packDirectory_]]">
           $i18n{packDialogConfirm}
         </paper-button>

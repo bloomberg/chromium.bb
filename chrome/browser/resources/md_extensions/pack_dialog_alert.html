@@ -22,10 +22,10 @@
       <div class="body" slot="body">[[model.message]]</div>
       <div class="button-container" slot="button-container">
         <paper-button class$="[[getCancelButtonClass_(confirmLabel_)]]"
-            on-tap="onCancelTap_" hidden="[[!cancelLabel_]]">
+            on-click="onCancelTap_" hidden="[[!cancelLabel_]]">
           [[cancelLabel_]]
         </paper-button>
-        <paper-button class="action-button" on-tap="onConfirmTap_"
+        <paper-button class="action-button" on-click="onConfirmTap_"
             hidden="[[!confirmLabel_]]">
           [[confirmLabel_]]
         </paper-button>
