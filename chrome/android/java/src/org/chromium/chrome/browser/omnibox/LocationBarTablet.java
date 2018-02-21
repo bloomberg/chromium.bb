@@ -80,7 +80,6 @@ public class LocationBarTablet extends LocationBarLayout {
     private View mLocationBarIcon;
     private View mBookmarkButton;
     private View mSaveOfflineButton;
-    private float mUrlFocusChangePercent;
     private Animator mUrlFocusChangeAnimator;
     private View[] mTargets;
     private final Rect mCachedTargetBounds = new Rect();
