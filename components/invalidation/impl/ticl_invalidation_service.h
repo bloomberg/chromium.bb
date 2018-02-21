@@ -82,7 +82,6 @@ class TiclInvalidationService : public InvalidationService,
   InvalidationLogger* GetInvalidationLogger() override;
   void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> caller) const override;
-  IdentityProvider* GetIdentityProvider() override;
 
   void RequestAccessToken();
 

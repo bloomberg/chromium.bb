@@ -47,7 +47,6 @@ class InvalidationServiceAndroid : public InvalidationService {
   InvalidationLogger* GetInvalidationLogger() override;
   void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> caller) const override;
-  IdentityProvider* GetIdentityProvider() override;
 
   void Invalidate(JNIEnv* env,
                   const base::android::JavaParamRef<jobject>& obj,

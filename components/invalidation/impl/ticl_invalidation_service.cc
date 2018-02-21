@@ -175,10 +175,6 @@ InvalidationLogger* TiclInvalidationService::GetInvalidationLogger() {
   return &logger_;
 }
 
-IdentityProvider* TiclInvalidationService::GetIdentityProvider() {
-  return identity_provider_.get();
-}
-
 void TiclInvalidationService::RequestDetailedStatus(
     base::Callback<void(const base::DictionaryValue&)> return_callback) const {
   if (IsStarted()) {

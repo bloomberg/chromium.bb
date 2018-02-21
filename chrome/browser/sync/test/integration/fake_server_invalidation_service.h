@@ -11,10 +11,8 @@
 #include "base/macros.h"
 #include "components/invalidation/impl/invalidator_registrar.h"
 #include "components/invalidation/public/invalidation_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/test/fake_server/fake_server.h"
-#include "google_apis/gaia/fake_identity_provider.h"
 
 namespace invalidation {
 class InvalidationLogger;
@@ -41,7 +39,6 @@ class FakeServerInvalidationService : public invalidation::InvalidationService,
   invalidation::InvalidationLogger* GetInvalidationLogger() override;
   void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> caller) const override;
-  IdentityProvider* GetIdentityProvider() override;
 
   // Functions to enable or disable sending of self-notifications.  In the real
   // world, clients do not receive notifications of their own commits.
@@ -57,8 +54,6 @@ class FakeServerInvalidationService : public invalidation::InvalidationService,
   bool self_notify_;
 
   syncer::InvalidatorRegistrar invalidator_registrar_;
-  FakeProfileOAuth2TokenService token_service_;
-  FakeIdentityProvider identity_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeServerInvalidationService);
 };
