@@ -14,6 +14,20 @@
 
 namespace {
 
+ax::mojom::BoolAttribute GetCorrespondingAXAttribute(
+    blink::WebAOMBoolAttribute attr) {
+  switch (attr) {
+    case blink::WebAOMBoolAttribute::AOM_ATTR_ATOMIC:
+      return ax::mojom::BoolAttribute::kLiveAtomic;
+    case blink::WebAOMBoolAttribute::AOM_ATTR_BUSY:
+      return ax::mojom::BoolAttribute::kBusy;
+    case blink::WebAOMBoolAttribute::AOM_ATTR_MODAL:
+      return ax::mojom::BoolAttribute::kModal;
+    default:
+      return ax::mojom::BoolAttribute::kNone;
+  }
+}
+
 ax::mojom::IntAttribute GetCorrespondingAXAttribute(
     blink::WebAOMIntAttribute attr) {
   switch (attr) {
@@ -60,20 +74,6 @@ ax::mojom::StringAttribute GetCorrespondingAXAttribute(
   }
 }
 
-ax::mojom::BoolAttribute GetCorrespondingAXAttribute(
-    blink::WebAOMBoolAttribute attr) {
-  switch (attr) {
-    case blink::WebAOMBoolAttribute::AOM_ATTR_ATOMIC:
-      return ax::mojom::BoolAttribute::kLiveAtomic;
-    case blink::WebAOMBoolAttribute::AOM_ATTR_BUSY:
-      return ax::mojom::BoolAttribute::kBusy;
-    case blink::WebAOMBoolAttribute::AOM_ATTR_MODAL:
-      return ax::mojom::BoolAttribute::kModal;
-    default:
-      return ax::mojom::BoolAttribute::kNone;
-  }
-}
-
 }  // namespace
 
 namespace content {
@@ -100,13 +100,25 @@ bool AomContentAxTree::ComputeAccessibilityTree() {
   return tree_.Unserialize(tree_update);
 }
 
-bool AomContentAxTree::GetRoleForAXNode(int32_t ax_id,
-                                        blink::WebString* out_param) {
+bool AomContentAxTree::GetBoolAttributeForAXNode(
+    int32_t ax_id,
+    blink::WebAOMBoolAttribute attr,
+    bool* out_param) {
   ui::AXNode* node = tree_.GetFromId(ax_id);
   if (!node)
     return false;
-  *out_param = blink::WebString::FromUTF8(ui::ToString(node->data().role));
-  return true;
+  ax::mojom::BoolAttribute ax_attr = GetCorrespondingAXAttribute(attr);
+  return node->data().GetBoolAttribute(ax_attr, out_param);
+}
+
+bool AomContentAxTree::GetIntAttributeForAXNode(int32_t ax_id,
+                                                blink::WebAOMIntAttribute attr,
+                                                int32_t* out_param) {
+  ui::AXNode* node = tree_.GetFromId(ax_id);
+  if (!node)
+    return false;
+  ax::mojom::IntAttribute ax_attr = GetCorrespondingAXAttribute(attr);
+  return node->data().GetIntAttribute(ax_attr, out_param);
 }
 
 bool AomContentAxTree::GetStringAttributeForAXNode(
@@ -125,14 +137,13 @@ bool AomContentAxTree::GetStringAttributeForAXNode(
   return false;
 }
 
-bool AomContentAxTree::GetIntAttributeForAXNode(int32_t ax_id,
-                                                blink::WebAOMIntAttribute attr,
-                                                int32_t* out_param) {
+bool AomContentAxTree::GetRoleForAXNode(int32_t ax_id,
+                                        blink::WebString* out_param) {
   ui::AXNode* node = tree_.GetFromId(ax_id);
   if (!node)
     return false;
-  ax::mojom::IntAttribute ax_attr = GetCorrespondingAXAttribute(attr);
-  return node->data().GetIntAttribute(ax_attr, out_param);
+  *out_param = blink::WebString::FromUTF8(ui::ToString(node->data().role));
+  return true;
 }
 
 bool AomContentAxTree::GetParentIdForAXNode(int32_t ax_id, int32_t* out_param) {
@@ -201,17 +212,6 @@ bool AomContentAxTree::GetNextSiblingIdForAXNode(int32_t ax_id,
   DCHECK(sibling);
   *out_param = sibling->id();
   return true;
-}
-
-bool AomContentAxTree::GetBoolAttributeForAXNode(
-    int32_t ax_id,
-    blink::WebAOMBoolAttribute attr,
-    bool* out_param) {
-  ui::AXNode* node = tree_.GetFromId(ax_id);
-  if (!node)
-    return false;
-  ax::mojom::BoolAttribute ax_attr = GetCorrespondingAXAttribute(attr);
-  return node->data().GetBoolAttribute(ax_attr, out_param);
 }
 
 }  // namespace content

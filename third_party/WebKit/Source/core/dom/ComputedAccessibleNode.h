@@ -51,16 +51,10 @@ class ComputedAccessibleNode : public ScriptWrappable {
 
   void Trace(Visitor*);
 
-  // Starts computation of the accessibility properties of the stored element.
-  ScriptPromise ComputeAccessibleProperties(ScriptState*);
-
-  const String autocomplete() const;
-  const String keyShortcuts() const;
-  const String name() const;
-  const String placeholder() const;
-  const String role() const;
-  const String roleDescription() const;
-  const String valueText() const;
+  // TODO(meredithl): add accessors for state and restriction properties.
+  bool atomic(bool& is_null) const;
+  bool busy(bool& is_null) const;
+  bool modal(bool& is_null) const;
 
   int32_t colCount(bool& is_null) const;
   int32_t colIndex(bool& is_null) const;
@@ -72,17 +66,21 @@ class ComputedAccessibleNode : public ScriptWrappable {
   int32_t rowSpan(bool& is_null) const;
   int32_t setSize(bool& is_null) const;
 
+  const String autocomplete() const;
+  const String keyShortcuts() const;
+  const String name() const;
+  const String placeholder() const;
+  const String role() const;
+  const String roleDescription() const;
+  const String valueText() const;
+
   ComputedAccessibleNode* parent() const;
   ComputedAccessibleNode* firstChild() const;
   ComputedAccessibleNode* lastChild() const;
   ComputedAccessibleNode* previousSibling() const;
   ComputedAccessibleNode* nextSibling() const;
-  ScriptPromise ensureUpToDate(ScriptState*);
 
-  // TODO(meredithl): add accessors for state and restriction properties.
-  bool atomic(bool& is_null) const;
-  bool busy(bool& is_null) const;
-  bool modal(bool& is_null) const;
+  ScriptPromise ensureUpToDate(ScriptState*);
 
  private:
   ComputedAccessibleNode(AXID, WebComputedAXTree*);
@@ -90,11 +88,9 @@ class ComputedAccessibleNode : public ScriptWrappable {
   // content::ComputedAXTree callback.
   void OnSnapshotResponse(ScriptPromiseResolver*);
   void OnUpdateResponse(ScriptPromiseResolver*);
-
+  bool GetBoolAttribute(WebAOMBoolAttribute, bool& is_null) const;
   int32_t GetIntAttribute(WebAOMIntAttribute, bool& is_null) const;
   const String GetStringAttribute(WebAOMStringAttribute) const;
-  bool GetBoolAttribute(WebAOMBoolAttribute, bool& is_null) const;
-  ComputedAccessibleNode* GetRelationFromCache(AXID) const;
 
   AXID ax_id_;
 
