@@ -192,3 +192,12 @@ message CopyEntryOptionsProto {
   // (e.g. "/testfolder/dog.jpg")
   optional string target_path = 3;
 }
+
+message GetDeleteListOptionsProto {
+  optional int32 mount_id = 1;
+  optional string entry_path = 2;
+}
+
+message DeleteListProto {
+  repeated string entries = 1;
+}
