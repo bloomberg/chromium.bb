@@ -627,7 +627,6 @@
       'linux_chromium_ozone_compile_only_ng': 'ozone_linux_release_trybot_compile_only',
       'linux_chromium_rel_ng': 'gpu_tests_release_trybot',
       'linux_chromium_tsan_rel_ng': 'tsan_disable_nacl_release_trybot',
-      'linux_chromium_ubsan_rel_ng': 'ubsan_vptr_release_trybot',
       'linux_layout_tests_layout_ng': 'release_trybot',
       'linux_layout_tests_root_layer_scrolls': 'release_trybot',
       'linux_layout_tests_slimming_paint_v2': 'release_trybot',
@@ -725,10 +724,6 @@
       'win_clang': 'win_clang_release_bot',
       'win-msvc-rel': 'win_msvc_release_bot_compile_only',
       'win-msvc-dbg': 'win_msvc_debug_bot_compile_only',
-      'win_clang_dbg': 'clang_debug_trybot_x86',
-      'win_clang_rel': 'clang_official_release_trybot_x86',
-      'win_clang_x64_dbg': 'win_clang_debug_bot',
-      'win_clang_x64_rel': 'clang_official_release_trybot',
       'win_mojo': 'release_trybot_x86',
       'win_nacl_sdk': 'release_bot_x86_minimal_symbols',
       'win_nacl_sdk_build': 'release_bot_x86_minimal_symbols',
@@ -1105,21 +1100,8 @@
       'chromeos_with_codecs', 'release_trybot', 'use_vaapi',
     ],
 
-    'clang_debug_trybot_x86': [
-      'clang', 'debug_trybot', 'x86',
-    ],
-
     'clang_release_bot_minimal_symbols_x86': [
       'clang', 'release_bot', 'minimal_symbols', 'x86',
-    ],
-
-
-    'clang_official_release_trybot': [
-      'clang', 'official', 'release_trybot',
-    ],
-
-    'clang_official_release_trybot_x86': [
-      'clang', 'official', 'release_trybot', 'x86',
     ],
 
     'clang_tot_asan_lsan_static_release': [
@@ -1619,10 +1601,6 @@
       'ubsan_vptr', 'ubsan_no_recover_hack', 'release_bot',
     ],
 
-    'ubsan_vptr_release_trybot': [
-      'ubsan_vptr', 'ubsan_no_recover_hack', 'release_trybot',
-    ],
-
     'v8_future_debug_bot': [
       'v8_future', 'debug_bot',
     ],
@@ -1637,13 +1615,6 @@
 
     'vr_release_trybot': [
       'vr', 'release_trybot', 'ozone',
-    ],
-
-    'win_clang_debug_bot': [
-      # Now that the default win bots use clang, use a "clang" bot to make sure
-      # things stay compilable with msvc. TODO(thakis): Having a "clang" bot
-      # check that is very confusing, so rename the bot to "msvc".
-      'no_clang', 'debug_bot', 'minimal_symbols',
     ],
 
     'win_clang_release_bot': [
