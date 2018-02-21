@@ -60,6 +60,9 @@ void IntersectionObserverController::DeliverIntersectionObservations() {
     pending_intersection_observers_.clear();
     return;
   }
+  // TODO(yukishiino): Remove this CHECK once https://crbug.com/809784 gets
+  // resolved.
+  CHECK(!context->IsContextDestroyed());
   if (context->IsContextPaused()) {
     callback_fired_while_suspended_ = true;
     return;
