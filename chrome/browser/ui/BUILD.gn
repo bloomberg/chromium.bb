@@ -269,6 +269,8 @@ split_static_library("ui") {
       "cocoa/extensions/extension_keybinding_registry_cocoa.mm",
       "cocoa/extensions/extension_popup_controller.h",
       "cocoa/extensions/extension_popup_controller.mm",
+      "cocoa/extensions/extension_popup_views_mac.h",
+      "cocoa/extensions/extension_popup_views_mac.mm",
       "cocoa/extensions/extension_uninstall_dialog_cocoa.mm",
       "cocoa/extensions/extension_view_mac.h",
       "cocoa/extensions/extension_view_mac.mm",
@@ -3606,6 +3608,10 @@ split_static_library("ui") {
       "extensions/installation_error_infobar_delegate.h",
       "extensions/settings_api_bubble_helpers.cc",
       "extensions/settings_api_bubble_helpers.h",
+      "views/extensions/extension_popup.cc",
+      "views/extensions/extension_popup.h",
+      "views/extensions/extension_view_views.cc",
+      "views/extensions/extension_view_views.h",
       "webui/extensions/extension_basic_info.cc",
       "webui/extensions/extension_basic_info.h",
       "webui/extensions/extension_icon_source.cc",
@@ -3625,10 +3631,6 @@ split_static_library("ui") {
         "views/extensions/extension_dialog.h",
         "views/extensions/extension_dialog_observer.cc",
         "views/extensions/extension_dialog_observer.h",
-        "views/extensions/extension_popup.cc",
-        "views/extensions/extension_popup.h",
-        "views/extensions/extension_view_views.cc",
-        "views/extensions/extension_view_views.h",
         "views/extensions/media_galleries_dialog_views.cc",
         "views/extensions/media_galleries_dialog_views.h",
         "views/extensions/media_gallery_checkbox_view.cc",
@@ -3839,7 +3841,7 @@ static_library("test_support") {
       }
     } else {
       sources += [
-        "cocoa/extensions/browser_action_test_util_mac.mm",
+        "cocoa/extensions/browser_action_test_util_views_mac.mm",
         "cocoa/find_bar/find_bar_host_unittest_util_cocoa.mm",
       ]
     }

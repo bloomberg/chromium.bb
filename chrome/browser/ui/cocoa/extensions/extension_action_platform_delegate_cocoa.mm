@@ -14,10 +14,12 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/app_menu/app_menu_controller.h"
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
+#import "chrome/browser/ui/cocoa/extensions/extension_popup_views_mac.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
@@ -26,7 +28,11 @@
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
+#import "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/ui_features.h"
+#include "ui/gfx/geometry/point.h"
+#import "ui/gfx/mac/coordinate_conversion.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace {
 
@@ -81,12 +87,28 @@ void ExtensionActionPlatformDelegateCocoa::ShowPopup(
     std::unique_ptr<extensions::ExtensionViewHost> host,
     bool grant_tab_permissions,
     ExtensionActionViewController::PopupShowAction show_action) {
-  BOOL devMode =
-      show_action == ExtensionActionViewController::SHOW_POPUP_AND_INSPECT;
-  [ExtensionPopupController host:std::move(host)
-                       inBrowser:controller_->browser()
-                      anchoredAt:GetPopupPoint()
-                         devMode:devMode];
+  if (!chrome::ShowAllDialogsWithViewsToolkit()) {
+    BOOL devMode =
+        show_action == ExtensionActionViewController::SHOW_POPUP_AND_INSPECT;
+    [ExtensionPopupController host:std::move(host)
+                         inBrowser:controller_->browser()
+                        anchoredAt:GetPopupPoint()
+                           devMode:devMode];
+    return;
+  }
+
+  ExtensionPopup::ShowAction popupShowAction =
+      show_action == ExtensionActionViewController::SHOW_POPUP
+          ? ExtensionPopup::SHOW
+          : ExtensionPopup::SHOW_AND_INSPECT;
+  gfx::NativeWindow containingWindow =
+      controller_->browser()->window()->GetNativeWindow();
+  NSPoint pointWindow = GetPopupPoint();
+  NSPoint pointScreen =
+      ui::ConvertPointFromWindowToScreen(containingWindow, pointWindow);
+  gfx::Point viewsScreenPoint = gfx::ScreenPointFromNSPoint(pointScreen);
+  ExtensionPopupViewsMac::ShowPopup(std::move(host), containingWindow,
+                                    viewsScreenPoint, popupShowAction);
 }
 
 void ExtensionActionPlatformDelegateCocoa::CloseOverflowMenu() {
