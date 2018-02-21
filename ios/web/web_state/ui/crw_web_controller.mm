@@ -1418,12 +1418,18 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 
   // Add or update pending url.
-  if (self.navigationManagerImpl->GetPendingItem()) {
+  web::NavigationItem* item = self.navigationManagerImpl->GetPendingItem();
+  if (item) {
     // Update the existing pending entry.
     // Typically on PAGE_TRANSITION_CLIENT_REDIRECT.
     // Don't update if request is a placeholder entry because the pending item
     // should have the original target URL.
-    if (!IsPlaceholderUrl(requestURL)) {
+    // Don't update if pending URL has a different origin, because client
+    // redirects can not change the origin. It is possible to have more than one
+    // pending navigations, so the redirect does not necesserily belong to the
+    // pending navigation item.
+    if (!IsPlaceholderUrl(requestURL) &&
+        item->GetURL().GetOrigin() == requestURL.GetOrigin()) {
       self.navigationManagerImpl->UpdatePendingItemUrl(requestURL);
     }
   } else {
@@ -1431,9 +1437,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
         requestURL, referrer, transition,
         web::NavigationInitiationType::RENDERER_INITIATED,
         web::NavigationManager::UserAgentOverrideOption::INHERIT);
+    item = self.navigationManagerImpl->GetPendingItem();
   }
 
-  web::NavigationItem* item = self.navigationManagerImpl->GetPendingItem();
   bool isRendererInitiated =
       item ? (static_cast<web::NavigationItemImpl*>(item)
                   ->NavigationInitiationType() ==
