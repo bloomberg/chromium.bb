@@ -45,11 +45,11 @@ bool ShowAllDialogsWithViewsToolkit() {
              features::kShowAllDialogsWithViewsToolkit);
 }
 
-void ShowPageInfoBubbleViews(
-    Browser* browser,
-    content::WebContents* web_contents,
-    const GURL& virtual_url,
-    const security_state::SecurityInfo& security_info) {
+void ShowPageInfoBubbleViews(Browser* browser,
+                             content::WebContents* web_contents,
+                             const GURL& virtual_url,
+                             const security_state::SecurityInfo& security_info,
+                             bubble_anchor_util::Anchor anchor) {
   // Don't show the bubble again if it's already showing. A second click on the
   // location icon in the omnibox will dismiss an open bubble. This behaviour is
   // consistent with the non-Mac views implementation.
@@ -63,8 +63,8 @@ void ShowPageInfoBubbleViews(
   }
 
   views::BubbleDialogDelegateView* bubble =
-      PageInfoBubbleView::CreatePageInfoBubble(browser, web_contents,
-                                               virtual_url, security_info);
+      PageInfoBubbleView::CreatePageInfoBubble(
+          browser, web_contents, virtual_url, security_info, anchor);
   bubble->GetWidget()->Show();
   KeepBubbleAnchored(
       bubble, GetPageInfoDecoration(browser->window()->GetNativeWindow()));

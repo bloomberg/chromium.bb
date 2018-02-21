@@ -10,7 +10,8 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 
-bool ShowPageInfoDialog(content::WebContents* web_contents) {
+bool ShowPageInfoDialog(content::WebContents* web_contents,
+                        bubble_anchor_util::Anchor anchor) {
   if (!web_contents)
     return false;
 
@@ -29,6 +30,15 @@ bool ShowPageInfoDialog(content::WebContents* web_contents) {
   helper->GetSecurityInfo(&security_info);
 
   ShowPageInfoDialogImpl(browser, web_contents, entry->GetVirtualURL(),
-                         security_info);
+                         security_info, anchor);
+
+  if (GetPageInfoDialogCreatedCallbackForTesting())
+    std::move(GetPageInfoDialogCreatedCallbackForTesting()).Run();
+
   return true;
+}
+
+base::OnceClosure& GetPageInfoDialogCreatedCallbackForTesting() {
+  CR_DEFINE_STATIC_LOCAL(base::OnceClosure, closure, ());
+  return closure;
 }

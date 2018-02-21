@@ -26,7 +26,7 @@ gfx::Rect GetPageInfoAnchorRect(Browser* browser) {
   return GetPageInfoAnchorRectCocoa(browser);
 }
 
-views::View* GetPageInfoAnchorView(Browser* browser) {
+views::View* GetPageInfoAnchorView(Browser* browser, Anchor anchor) {
   return nullptr;
 }
 #endif

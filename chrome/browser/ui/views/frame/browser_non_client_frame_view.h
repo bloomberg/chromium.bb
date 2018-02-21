@@ -64,6 +64,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Returns the profile switcher button, if this frame has any.
   virtual views::View* GetProfileSwitcherView() const;
 
+  // Returns the hosted app menu, asserts that it is present.
+  virtual views::View* GetHostedAppMenuView();
+
   // Provided for mus. Updates the client-area of the WindowTreeHostMus.
   virtual void UpdateClientArea();
 

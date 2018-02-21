@@ -20,6 +20,9 @@ HostedAppMenuModel::HostedAppMenuModel(ui::AcceleratorProvider* provider,
 HostedAppMenuModel::~HostedAppMenuModel() {}
 
 void HostedAppMenuModel::Build() {
+  AddItemWithStringId(IDC_HOSTED_APP_MENU_APP_INFO,
+                      IDS_APP_CONTEXT_MENU_SHOW_INFO);
+  AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(IDC_COPY_URL, IDS_COPY_URL);
   AddItemWithStringId(IDC_OPEN_IN_CHROME, IDS_OPEN_IN_CHROME);
   CreateActionToolbarOverflowMenu();
@@ -30,7 +33,6 @@ void HostedAppMenuModel::Build() {
     AddItemWithStringId(IDC_ROUTE_MEDIA, IDS_MEDIA_ROUTER_MENU_ITEM_TITLE);
   CreateCutCopyPasteMenu();
   AddItemWithStringId(IDC_SITE_SETTINGS, IDS_SITE_SETTINGS);
-  AddItemWithStringId(IDC_APP_INFO, IDS_APP_CONTEXT_MENU_SHOW_INFO);
 }
 
 void HostedAppMenuModel::LogMenuAction(AppMenuAction action_id) {
