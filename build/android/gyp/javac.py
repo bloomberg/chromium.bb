@@ -41,8 +41,6 @@ ERRORPRONE_WARNINGS_TO_TURN_OFF = [
   'JUnitAmbiguousTestClass',
   # TODO(crbug.com/803486): Follow steps in bug.
   'AssertionFailureIgnored',
-  # TODO(crbug.com/803587): Follow steps in bug.
-  'MissingOverride',
   # TODO(crbug.com/803589): Follow steps in bug.
   'MissingFail',
   # TODO(crbug.com/803625): Follow steps in bug.
@@ -103,6 +101,7 @@ ERRORPRONE_WARNINGS_TO_TURN_OFF = [
 ERRORPRONE_WARNINGS_TO_ERROR = [
   # Add warnings to this after fixing/suppressing all instances in our codebase.
   'FloatingPointLiteralPrecision',
+  'MissingOverride',
   'ParameterName',
   'StaticQualifiedUsingExpression',
 ]

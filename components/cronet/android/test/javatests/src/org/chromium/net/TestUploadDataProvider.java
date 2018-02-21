@@ -172,6 +172,7 @@ class TestUploadDataProvider extends UploadDataProvider {
         }
     }
 
+    @Override
     public void rewind(final UploadDataSink uploadDataSink) throws IOException {
         ++mNumRewindCalls;
         if (mClosed.get()) {

@@ -374,9 +374,11 @@ public class OfflinePageUtils {
         final String tabUrl = tab.getUrl();
         final File offlinePageFile = new File(offlinePage.getFilePath());
         AsyncTask<Void, Void, Uri> task = new AsyncTask<Void, Void, Uri>() {
+            @Override
             protected Uri doInBackground(Void... v) {
                 return ChromeFileProvider.generateUri(activity, offlinePageFile);
             }
+            @Override
             protected void onPostExecute(Uri uri) {
                 ShareParams shareParams = new ShareParams.Builder(activity, tabTitle, tabUrl)
                                                   .setShareDirectly(false)

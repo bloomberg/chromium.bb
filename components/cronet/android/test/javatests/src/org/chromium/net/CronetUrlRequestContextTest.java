@@ -1239,6 +1239,7 @@ public class CronetUrlRequestContextTest {
         // Fetch deltas on a different thread the second time to make sure this is permitted.
         // See crbug.com/719448
         FutureTask<byte[]> task = new FutureTask<byte[]>(new Callable<byte[]>() {
+            @Override
             public byte[] call() {
                 return testFramework.mCronetEngine.getGlobalMetricsDeltas();
             }
@@ -1280,6 +1281,7 @@ public class CronetUrlRequestContextTest {
     private static class TestBadLibraryLoader extends CronetEngine.Builder.LibraryLoader {
         private boolean mWasCalled = false;
 
+        @Override
         public void loadLibrary(String libName) {
             // Report that this method was called, but don't load the library
             mWasCalled = true;
@@ -1329,16 +1331,19 @@ public class CronetUrlRequestContextTest {
         final ConditionVariable otherThreadDone = new ConditionVariable();
         final ConditionVariable uiThreadDone = new ConditionVariable();
         new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
             public void run() {
                 final ExperimentalCronetEngine.Builder builder =
                         new ExperimentalCronetEngine.Builder(getContext());
                 new Thread() {
+                    @Override
                     public void run() {
                         CronetEngine cronetEngine = builder.build();
                         otherThreadDone.open();
                         cronetEngine.shutdown();
                     }
-                }.start();
+                }
+                        .start();
                 otherThreadDone.block();
                 builder.build().shutdown();
                 uiThreadDone.open();
@@ -1410,6 +1415,7 @@ public class CronetUrlRequestContextTest {
      */
     private int getThreadPriority(CronetEngine engine) throws Exception {
         FutureTask<Integer> task = new FutureTask<Integer>(new Callable<Integer>() {
+            @Override
             public Integer call() {
                 return Process.getThreadPriority(Process.myTid());
             }

@@ -461,6 +461,7 @@ public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
     @CalledByNative
     private void onStreamReady(final boolean requestHeadersSent) {
         postTaskToExecutor(new Runnable() {
+            @Override
             public void run() {
                 synchronized (mNativeStreamLock) {
                     if (isDoneLocked()) {
@@ -500,6 +501,7 @@ public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
             return;
         }
         postTaskToExecutor(new Runnable() {
+            @Override
             public void run() {
                 synchronized (mNativeStreamLock) {
                     if (isDoneLocked()) {
@@ -574,6 +576,7 @@ public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
         final UrlResponseInfo.HeaderBlock trailersBlock =
                 new UrlResponseInfoImpl.HeaderBlockImpl(headersListFromStrings(trailers));
         postTaskToExecutor(new Runnable() {
+            @Override
             public void run() {
                 synchronized (mNativeStreamLock) {
                     if (isDoneLocked()) {
@@ -614,6 +617,7 @@ public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
     @CalledByNative
     private void onCanceled() {
         postTaskToExecutor(new Runnable() {
+            @Override
             public void run() {
                 try {
                     mCallback.onCanceled(CronetBidirectionalStream.this, mResponseInfo);
@@ -783,6 +787,7 @@ public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
      */
     private void failWithException(final CronetException exception) {
         postTaskToExecutor(new Runnable() {
+            @Override
             public void run() {
                 failWithExceptionOnExecutor(exception);
             }

@@ -32,6 +32,7 @@ public class KeyboardEdit {
         mNewCursorPosition = newCursorPosition;
     }
 
+    @Override
     public String toString() {
         return String.format(Locale.US, "KeyboardEdit {[%d] Text[%s] Cursor[%d]}", mType, mText,
                 mNewCursorPosition);

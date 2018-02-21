@@ -136,90 +136,108 @@ public final class CronetMetrics extends RequestFinishedInfo.Metrics {
     }
 
     @Nullable
+    @Override
     public Date getRequestStart() {
         return toDate(mRequestStartMs);
     }
 
     @Nullable
+    @Override
     public Date getDnsStart() {
         return toDate(mDnsStartMs);
     }
 
     @Nullable
+    @Override
     public Date getDnsEnd() {
         return toDate(mDnsEndMs);
     }
 
     @Nullable
+    @Override
     public Date getConnectStart() {
         return toDate(mConnectStartMs);
     }
 
     @Nullable
+    @Override
     public Date getConnectEnd() {
         return toDate(mConnectEndMs);
     }
 
     @Nullable
+    @Override
     public Date getSslStart() {
         return toDate(mSslStartMs);
     }
 
     @Nullable
+    @Override
     public Date getSslEnd() {
         return toDate(mSslEndMs);
     }
 
     @Nullable
+    @Override
     public Date getSendingStart() {
         return toDate(mSendingStartMs);
     }
 
     @Nullable
+    @Override
     public Date getSendingEnd() {
         return toDate(mSendingEndMs);
     }
 
     @Nullable
+    @Override
     public Date getPushStart() {
         return toDate(mPushStartMs);
     }
 
     @Nullable
+    @Override
     public Date getPushEnd() {
         return toDate(mPushEndMs);
     }
 
     @Nullable
+    @Override
     public Date getResponseStart() {
         return toDate(mResponseStartMs);
     }
 
     @Nullable
+    @Override
     public Date getRequestEnd() {
         return toDate(mRequestEndMs);
     }
 
+    @Override
     public boolean getSocketReused() {
         return mSocketReused;
     }
 
     @Nullable
+    @Override
     public Long getTtfbMs() {
         return mTtfbMs;
     }
 
     @Nullable
+    @Override
     public Long getTotalTimeMs() {
         return mTotalTimeMs;
     }
 
     @Nullable
+    @Override
     public Long getSentByteCount() {
         return mSentByteCount;
     }
 
     @Nullable
+    @Override
     public Long getReceivedByteCount() {
         return mReceivedByteCount;
     }

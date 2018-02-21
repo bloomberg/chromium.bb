@@ -83,6 +83,7 @@ public class CronetSampleActivity extends Activity {
             final String url = info.getUrl();
             final String text = "Completed " + url + " (" + info.getHttpStatusCode() + ")";
             CronetSampleActivity.this.runOnUiThread(new Runnable() {
+                @Override
                 public void run() {
                     mResultText.setText(text);
                     mReceiveDataText.setText(receivedData);
@@ -98,6 +99,7 @@ public class CronetSampleActivity extends Activity {
             final String url = mUrl;
             final String text = "Failed " + mUrl + " (" + error.getMessage() + ")";
             CronetSampleActivity.this.runOnUiThread(new Runnable() {
+                @Override
                 public void run() {
                     mResultText.setText(text);
                     promptForURL(url);
@@ -140,6 +142,7 @@ public class CronetSampleActivity extends Activity {
         alert.setView(alertView);
 
         alert.setPositiveButton("Load", new DialogInterface.OnClickListener() {
+            @Override
             public void onClick(DialogInterface dialog, int button) {
                 String url = urlInput.getText().toString();
                 String postData = postInput.getText().toString();
