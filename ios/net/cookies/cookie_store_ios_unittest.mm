@@ -18,6 +18,7 @@
 #import "ios/net/cookies/cookie_store_ios_test_util.h"
 #import "ios/net/cookies/ns_http_system_cookie_store.h"
 #import "net/base/mac/url_conversions.h"
+#include "net/cookies/cookie_store_change_unittest.h"
 #include "net/cookies/cookie_store_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -46,6 +47,8 @@ struct CookieStoreIOSTestTraits {
         std::make_unique<NSHTTPSystemCookieStore>());
   }
 
+  static void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
+
   static const bool supports_http_only = false;
   static const bool supports_non_dotted_domains = false;
   static const bool preserves_trailing_dots = false;
@@ -53,6 +56,9 @@ struct CookieStoreIOSTestTraits {
   static const bool has_path_prefix_bug = true;
   static const bool forbids_setting_empty_name = true;
   static const bool supports_global_cookie_tracking = false;
+  // TODO(crbug.com/813931): Fix the bugs uncovered by these tests.
+  static const bool supports_named_cookie_tracking = false;
+  static const bool supports_multiple_tracking_callbacks = false;
   static const int creation_time_granularity_in_ms = 1000;
 
   base::MessageLoop loop_;
@@ -61,7 +67,9 @@ struct CookieStoreIOSTestTraits {
 INSTANTIATE_TYPED_TEST_CASE_P(CookieStoreIOS,
                               CookieStoreTest,
                               CookieStoreIOSTestTraits);
-
+INSTANTIATE_TYPED_TEST_CASE_P(CookieStoreIOS,
+                              CookieStoreChangeTest,
+                              CookieStoreIOSTestTraits);
 
 namespace {
 

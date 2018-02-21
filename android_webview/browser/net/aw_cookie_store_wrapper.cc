@@ -82,7 +82,7 @@ class SubscriptionWrapper {
     ~NestedSubscription() {}
 
     void Subscribe(const GURL& url, const std::string& name) {
-      GetCookieStore()->AddCallbackForCookie(
+      subscription_ = GetCookieStore()->AddCallbackForCookie(
           url, name, base::Bind(&NestedSubscription::OnChanged, this));
     }
 

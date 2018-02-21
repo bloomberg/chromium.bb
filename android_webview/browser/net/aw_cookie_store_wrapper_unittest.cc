@@ -8,7 +8,10 @@
 
 #include <memory>
 
+#include "android_webview/browser/net/init_native_callback.h"
+#include "base/run_loop.h"
 #include "net/cookies/cookie_store.h"
+#include "net/cookies/cookie_store_change_unittest.h"
 #include "net/cookies/cookie_store_test_callbacks.h"
 #include "net/cookies/cookie_store_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,18 +20,29 @@ namespace android_webview {
 
 struct AwCookieStoreWrapperTestTraits {
   static std::unique_ptr<net::CookieStore> Create() {
-    std::unique_ptr<net::CookieStore> cookie_store(new AwCookieStoreWrapper());
+    auto cookie_store = std::make_unique<AwCookieStoreWrapper>();
 
     // Android Webview can run multiple tests without restarting the binary,
     // so have to delete any cookies the global store may have from an earlier
     // test.
     net::ResultSavingCookieCallback<uint32_t> callback;
     cookie_store->DeleteAllAsync(
-        base::Bind(&net::ResultSavingCookieCallback<uint32_t>::Run,
-                   base::Unretained(&callback)));
+        base::BindOnce(&net::ResultSavingCookieCallback<uint32_t>::Run,
+                       base::Unretained(&callback)));
     callback.WaitUntilDone();
 
     return cookie_store;
+  }
+
+  static void RunUntilIdle() {
+    base::RunLoop run_loop;
+    GetCookieStoreTaskRunner()->PostTaskAndReply(
+        FROM_HERE, base::BindOnce([] { base::RunLoop().RunUntilIdle(); }),
+        base::BindOnce([](base::RunLoop* run_loop) { run_loop->Quit(); },
+                       base::Unretained(&run_loop)));
+    run_loop.Run();
+
+    base::RunLoop().RunUntilIdle();
   }
 
   static const bool supports_http_only = true;
@@ -38,6 +52,8 @@ struct AwCookieStoreWrapperTestTraits {
   static const bool has_path_prefix_bug = false;
   static const bool forbids_setting_empty_name = false;
   static const bool supports_global_cookie_tracking = false;
+  static const bool supports_named_cookie_tracking = true;
+  static const bool supports_multiple_tracking_callbacks = false;
   static const int creation_time_granularity_in_ms = 0;
 };
 
@@ -48,5 +64,8 @@ struct AwCookieStoreWrapperTestTraits {
 namespace net {
 INSTANTIATE_TYPED_TEST_CASE_P(AwCookieStoreWrapper,
                               CookieStoreTest,
+                              android_webview::AwCookieStoreWrapperTestTraits);
+INSTANTIATE_TYPED_TEST_CASE_P(AwCookieStoreWrapper,
+                              CookieStoreChangeTest,
                               android_webview::AwCookieStoreWrapperTestTraits);
 }  // namespace net
