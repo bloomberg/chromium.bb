@@ -600,15 +600,15 @@ RE_SCOPED_JNI_TYPES = re.compile('jobject|jclass|jstring|jthrowable|.*Array')
 
 # Regex to match a string like "@CalledByNative public void foo(int bar)".
 RE_CALLED_BY_NATIVE = re.compile(
-    '@CalledByNative(?P<Unchecked>(Unchecked)*?)(?:\("(?P<annotation>.*)"\))?'
-    '\s+(?P<prefix>('
-    '(private|protected|public|static|abstract|final|default|synchronized)'
-    '\s*)*)'
-    '(:?\s*@\w+)?'  # Ignore annotations in return types.
-    '\s*(?P<return_type>\S*?)'
-    '\s*(?P<name>\w+)'
-    '\s*\((?P<params>[^\)]*)\)')
-
+    r'@CalledByNative(?P<Unchecked>(?:Unchecked)?)(?:\("(?P<annotation>.*)"\))?'
+    r'(?:\s+@\w+(?:\(.*\))?)*'  # Ignore any other annotations.
+    r'\s+(?P<prefix>('
+    r'(private|protected|public|static|abstract|final|default|synchronized)'
+    r'\s*)*)'
+    r'(?:\s*@\w+)?'  # Ignore annotations in return types.
+    r'\s*(?P<return_type>\S*?)'
+    r'\s*(?P<name>\w+)'
+    r'\s*\((?P<params>[^\)]*)\)')
 
 # Removes empty lines that are indented (i.e. start with 2x spaces).
 def RemoveIndentedEmptyLines(string):
