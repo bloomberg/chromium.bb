@@ -52,6 +52,8 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/window/non_client_view.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/shadow.h"
+#include "ui/wm/core/shadow_types.h"
 
 namespace ash {
 
@@ -142,6 +144,8 @@ constexpr SkColor kCloseButtonInkDropRippleHighlightColor =
 
 // The font delta of the overview window title.
 constexpr int kLabelFontDelta = 2;
+
+constexpr int kShadowElevation = 16;
 
 // Convenience method to fade in a Window with predefined animation settings.
 // Note: The fade in animation will occur after a delay where the delay is how
@@ -850,6 +854,26 @@ void WindowSelectorItem::ResetDraggedWindowGesture() {
   window_selector_->ResetDraggedWindowGesture();
 }
 
+void WindowSelectorItem::SetShadowBounds(
+    base::Optional<gfx::Rect> bounds_in_screen) {
+  if (!IsNewOverviewUi())
+    return;
+
+  DCHECK(shadow_);
+
+  if (bounds_in_screen == base::nullopt) {
+    shadow_->layer()->SetVisible(false);
+    return;
+  }
+
+  shadow_->layer()->SetVisible(true);
+  gfx::Rect bounds_in_item = caption_container_view_->GetLocalBounds();
+  bounds_in_item.Inset(kWindowSelectorMargin, kWindowSelectorMargin);
+  bounds_in_item.Inset(0, close_button_->GetPreferredSize().height(), 0, 0);
+  bounds_in_item.ClampToCenteredSize(bounds_in_screen.value().size());
+  shadow_->SetContentBounds(bounds_in_item);
+}
+
 bool WindowSelectorItem::ShouldAnimateWhenEntering() const {
   if (!IsNewOverviewAnimationsEnabled())
     return true;
@@ -982,6 +1006,10 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   if (IsNewOverviewUi()) {
     label_view_->SetFontList(gfx::FontList().Derive(
         kLabelFontDelta, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
+
+    shadow_ = std::make_unique<::wm::Shadow>();
+    shadow_->Init(kShadowElevation);
+    item_widget_->GetLayer()->Add(shadow_->layer());
   }
 
   cannot_snap_label_view_ = new views::Label(

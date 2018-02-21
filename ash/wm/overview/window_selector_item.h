@@ -26,6 +26,10 @@ namespace views {
 class ImageButton;
 }
 
+namespace wm {
+class Shadow;
+}
+
 namespace ash {
 
 class WindowSelector;
@@ -160,6 +164,10 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   void HandleDragEvent(const gfx::Point& location_in_screen);
   void ActivateDraggedWindow();
   void ResetDraggedWindowGesture();
+
+  // Sets the bounds of the window shadow. If |bounds_in_screen| is nullopt,
+  // the shadow is hidden.
+  void SetShadowBounds(base::Optional<gfx::Rect> bounds_in_screen);
 
   void set_should_animate_when_entering(bool should_animate) {
     should_animate_when_entering_ = should_animate;
@@ -312,6 +320,11 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // layer-transform pairs to the observer until this contained window completes
   // its exiting animation.
   bool should_be_observed_when_exiting_ = false;
+
+  // The shadow around the overview window. Shadows the original window, not
+  // |item_widget_|. Done here instead of on the original window because of the
+  // rounded edges mask applied on entering overview window.
+  std::unique_ptr<::wm::Shadow> shadow_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorItem);
 };
