@@ -37,6 +37,11 @@ class MockU2fDiscovery : public U2fDiscovery {
   bool AddDevice(std::unique_ptr<U2fDevice> device) override;
   bool RemoveDevice(base::StringPiece device_id) override;
 
+  // AddDeviceWithoutNotification adds |device| to the list of devices, but
+  // doesn't notify observers. This can be used before |StartSuccess| to mock
+  // devices that are discovered as soon as the discovery is started.
+  void AddDeviceWithoutNotification(std::unique_ptr<U2fDevice> device);
+
   base::ObserverList<Observer>& GetObservers();
 
   void StartSuccess();

@@ -195,6 +195,86 @@ TEST_F(U2fRequestTest, TestMultipleDiscoveries) {
   EXPECT_EQ(nullptr, request.current_device_);
 }
 
+TEST_F(U2fRequestTest, TestSlowDiscovery) {
+  // Create a fake request with two different discoveries that start at
+  // different times.
+  FakeU2fRequest request(kTestRelyingPartyId);
+  MockU2fDiscovery* fast_discovery;
+  MockU2fDiscovery* slow_discovery;
+  std::tie(fast_discovery, slow_discovery) =
+      SetMockDiscoveries(&request, std::make_unique<MockU2fDiscovery>(),
+                         std::make_unique<MockU2fDiscovery>());
+
+  EXPECT_CALL(*fast_discovery, Start())
+      .WillOnce(
+          testing::Invoke(fast_discovery, &MockU2fDiscovery::StartSuccess));
+  // slow_discovery does not succeed immediately.
+  EXPECT_CALL(*slow_discovery, Start());
+
+  // Let each discovery find a device.
+  auto fast_device = std::make_unique<MockU2fDevice>();
+  auto slow_device = std::make_unique<MockU2fDevice>();
+  EXPECT_CALL(*fast_device, GetId())
+      .WillRepeatedly(testing::Return("fast_device"));
+  EXPECT_CALL(*slow_device, GetId())
+      .WillRepeatedly(testing::Return("slow_device"));
+
+  bool fast_winked = false;
+  EXPECT_CALL(*fast_device, TryWinkRef(_))
+      .WillOnce(testing::DoAll(testing::Assign(&fast_winked, true),
+                               testing::Invoke(MockU2fDevice::WinkDoNothing)))
+      .WillRepeatedly(testing::Invoke(MockU2fDevice::WinkDoNothing));
+  bool slow_winked = false;
+  EXPECT_CALL(*slow_device, TryWinkRef(_))
+      .WillOnce(testing::DoAll(testing::Assign(&slow_winked, true),
+                               testing::Invoke(MockU2fDevice::WinkDoNothing)));
+  auto* fast_device_ptr = fast_device.get();
+  auto* slow_device_ptr = slow_device.get();
+  fast_discovery->AddDeviceWithoutNotification(std::move(fast_device));
+
+  EXPECT_EQ(nullptr, request.current_device_);
+  request.state_ = U2fRequest::State::INIT;
+
+  // The discoveries will be started and |fast_discovery| will succeed
+  // immediately with a device already found.
+  EXPECT_FALSE(fast_winked);
+  request.Start();
+
+  EXPECT_TRUE(fast_winked);
+  EXPECT_EQ(fast_device_ptr, request.current_device_);
+  EXPECT_EQ(U2fRequest::State::BUSY, request.state_);
+
+  // There are no more devices at this time.
+  request.state_ = U2fRequest::State::IDLE;
+  request.Transition();
+  EXPECT_EQ(nullptr, request.current_device_);
+  EXPECT_EQ(U2fRequest::State::OFF, request.state_);
+
+  // All devices have been tried and have been re-enqueued to try again in the
+  // future. Now |slow_discovery| starts:
+
+  slow_discovery->AddDeviceWithoutNotification(std::move(slow_device));
+  slow_discovery->StartSuccess();
+
+  // |fast_device| is already enqueued and will be retried immediately.
+  EXPECT_EQ(fast_device_ptr, request.current_device_);
+  EXPECT_EQ(U2fRequest::State::BUSY, request.state_);
+
+  // Next the newly found |slow_device| will be tried.
+  request.state_ = U2fRequest::State::IDLE;
+  EXPECT_FALSE(slow_winked);
+  request.Transition();
+  EXPECT_TRUE(slow_winked);
+  EXPECT_EQ(slow_device_ptr, request.current_device_);
+  EXPECT_EQ(U2fRequest::State::BUSY, request.state_);
+
+  // All discoveries are complete so the request transitions to |OFF|.
+  request.state_ = U2fRequest::State::IDLE;
+  request.Transition();
+  EXPECT_EQ(nullptr, request.current_device_);
+  EXPECT_EQ(U2fRequest::State::OFF, request.state_);
+}
+
 TEST_F(U2fRequestTest, TestMultipleDiscoveriesWithFailures) {
   {
     // Create a fake request with two different discoveries that both start up

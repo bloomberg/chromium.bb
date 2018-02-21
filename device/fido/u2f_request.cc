@@ -54,7 +54,7 @@ U2fRequest::~U2fRequest() {
 
 void U2fRequest::Start() {
   if (state_ == State::INIT) {
-    state_ = State::BUSY;
+    state_ = State::IDLE;
     for (auto& discovery : discoveries_)
       discovery->Start();
   }
@@ -112,11 +112,13 @@ void U2fRequest::DiscoveryStarted(U2fDiscovery* discovery, bool success) {
         });
   }
 
-  if (++started_count_ < discoveries_.size())
-    return;
+  started_count_++;
 
-  state_ = State::IDLE;
-  Transition();
+  if ((state_ == State::IDLE || state_ == State::OFF) &&
+      (success || started_count_ == discoveries_.size())) {
+    state_ = State::IDLE;
+    Transition();
+  }
 }
 
 void U2fRequest::DiscoveryStopped(U2fDiscovery* discovery, bool success) {}
