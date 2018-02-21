@@ -133,7 +133,8 @@ int main(int argc, char **argv) {
     die_codec(&codec, "Input is not a valid obu file");
 
   // peak sequence header OBU to get enhancement layer count, if any
-  fread(tmpbuf, 1, 32, inputfile);
+  const size_t ret = fread(tmpbuf, 1, 32, inputfile);
+  if (ret != 32) die_codec(&codec, "Input is not a valid obu file");
   if (aom_codec_peek_stream_info(decoder->codec_interface(), tmpbuf, 32, &si)) {
     die_codec(&codec, "Input is not a valid obu file");
   }

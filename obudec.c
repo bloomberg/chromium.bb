@@ -33,7 +33,7 @@ int obu_read_temporal_unit(FILE *infile, uint8_t **buffer, size_t *bytes_read,
   size_t ret;
   const size_t obu_length_header_size =
       PRE_OBU_SIZE_BYTES + OBU_HEADER_SIZE_BYTES;
-  uint32_t obu_size = 0;
+  uint64_t obu_size = 0;
   uint8_t *data = NULL;
 
   if (feof(infile)) {
@@ -71,10 +71,15 @@ int obu_read_temporal_unit(FILE *infile, uint8_t **buffer, size_t *bytes_read,
     // break if obu_extension_flag is found and enhancement_id change
     if ((data[PRE_OBU_SIZE_BYTES] & 0x1)) {
       uint8_t obu_extension_header;
-      int total_obu_header_size =
+      const int total_obu_header_size =
           (int)obu_length_header_size + OBU_HEADER_EXTENSION_SIZE_BYTES;
       int curr_layer_id;
-      fread(&obu_extension_header, 1, OBU_HEADER_EXTENSION_SIZE_BYTES, infile);
+      ret = fread(&obu_extension_header, 1, OBU_HEADER_EXTENSION_SIZE_BYTES,
+                  infile);
+      if (ret != OBU_HEADER_EXTENSION_SIZE_BYTES) {
+        warn("Failed to read OBU Header Extension\n");
+        return 1;
+      }
       curr_layer_id = (obu_extension_header >> 3) & 0x3;
       if (curr_layer_id && (curr_layer_id > last_layer_id)) {
         // new enhancement layer
@@ -114,7 +119,7 @@ int obu_read_temporal_unit(FILE *infile, uint8_t **buffer, size_t *bytes_read,
 
 int file_is_obu(struct AvxInputContext *input_ctx) {
   uint8_t obutd[PRE_OBU_SIZE_BYTES + OBU_HEADER_SIZE_BYTES];
-  uint32_t size;
+  uint64_t size;
 
 #if !CONFIG_OBU
   warn("obudec.c requires CONFIG_OBU");
@@ -122,7 +127,13 @@ int file_is_obu(struct AvxInputContext *input_ctx) {
 #endif
 
   // Reading the first OBU TD to enable TU end detection at TD start.
-  fread(obutd, 1, PRE_OBU_SIZE_BYTES + OBU_HEADER_SIZE_BYTES, input_ctx->file);
+  const size_t obu_length_header_size =
+      PRE_OBU_SIZE_BYTES + OBU_HEADER_SIZE_BYTES;
+  const size_t ret = fread(obutd, 1, obu_length_header_size, input_ctx->file);
+  if (ret != obu_length_header_size) {
+    warn("Failed to read OBU Header\n");
+    return 0;
+  }
 
 #if CONFIG_OBU_SIZING
   aom_uleb_decode(obutd, PRE_OBU_SIZE_BYTES, &size);
