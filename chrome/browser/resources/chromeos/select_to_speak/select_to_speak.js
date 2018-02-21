@@ -15,6 +15,15 @@ const START_SPEECH_METHOD_KEYSTROKE = 1;
 // be kept in sync with the enum count in tools/metrics/histograms/enums.xml.
 const START_SPEECH_METHOD_COUNT = 2;
 
+// Number of milliseconds to wait after requesting a clipboard read
+// before clipboard change and paste events are ignored.
+const CLIPBOARD_READ_MAX_DELAY_MS = 1000;
+
+// Matches one of the known Drive apps which need the clipboard to find and read
+// selected text. Includes sandbox and non-sandbox versions.
+const DRIVE_APP_REGEXP =
+    /^https:\/\/docs\.(?:sandbox\.)?google\.com\/(?:(?:presentation)|(?:document)|(?:spreadsheets)|(?:drawings)){1}\//;
+
 /**
  * Node state. Nodes can be on-screen like normal, or they may
  * be invisible if they are in a tab that is not in the foreground
@@ -176,6 +185,25 @@ function getDeepEquivalentForSelection(parent, offset) {
 }
 
 /**
+ * Determines if a node is in one of the known Google Drive apps that needs
+ * special case treatment for speaking selected text. Not all Google Drive pages
+ * are included, because some are not known to have a problem with selection:
+ * Forms is not included since it's relatively similar to any HTML page, for
+ * example.
+ * @param {AutomationNode=}  node The node to check
+ * @return {?AutomationNode} The Drive App root node, or null if none is
+ *     found.
+ */
+function getDriveAppRoot(node) {
+  while (node !== undefined && node.root !== undefined) {
+    if (node.root.url !== undefined && DRIVE_APP_REGEXP.exec(node.root.url))
+      return node.root;
+    node = node.root.parent;
+  }
+  return null;
+}
+
+/**
  * @constructor
  */
 var SelectToSpeak = function() {
@@ -264,6 +292,15 @@ var SelectToSpeak = function() {
 
   /** @private {boolean} */
   this.scrollToSpokenNode_ = false;
+
+  /**
+   * The timestamp at which clipboard data read was requested by the user
+   * doing a "read selection" keystroke on a Google Docs app. If a
+   * clipboard change event comes in within CLIPBOARD_READ_MAX_DELAY_MS,
+   * Select-to-Speak will read that text out loud.
+   * @private {number}
+   */
+  this.readClipboardDataTimeMs_ = -1;
 
   /**
    * The interval ID from a call to setInterval, which is set whenever
@@ -376,6 +413,25 @@ SelectToSpeak.prototype = {
     // onAutomationHitTest_.
     this.desktop_.hitTest(ctrX, ctrY, EventType.MOUSE_RELEASED);
     return false;
+  },
+
+  onClipboardDataChanged_: function() {
+    if (Date.now() - this.readClipboardDataTimeMs_ <
+        CLIPBOARD_READ_MAX_DELAY_MS) {
+      // The data has changed, and we are ready to read it.
+      // Get it using a paste.
+      document.execCommand('paste');
+    }
+  },
+
+  onClipboardPaste_: function(evt) {
+    if (Date.now() - this.readClipboardDataTimeMs_ <
+        CLIPBOARD_READ_MAX_DELAY_MS) {
+      // Read the current clipboard data.
+      evt.preventDefault();
+      this.startSpeech_(evt.clipboardData.getData('text/plain'));
+      this.readClipboardDataTimeMs_ = -1;
+    }
   },
 
   /**
@@ -564,13 +620,34 @@ SelectToSpeak.prototype = {
         break;
       }
     }
-    if (lastPosition.node !== nodes[nodes.length - 1]) {
-      // The node at the last position was not added to the list, perhaps it
-      // was whitespace or invisible. Clear the ending offset because it
-      // relates to a node that doesn't exist.
-      this.startSpeechQueue_(nodes, firstPosition.offset);
+    if (nodes.length > 0) {
+      if (lastPosition.node !== nodes[nodes.length - 1]) {
+        // The node at the last position was not added to the list, perhaps it
+        // was whitespace or invisible. Clear the ending offset because it
+        // relates to a node that doesn't exist.
+        this.startSpeechQueue_(nodes, firstPosition.offset);
+      } else {
+        this.startSpeechQueue_(
+            nodes, firstPosition.offset, lastPosition.offset);
+      }
     } else {
-      this.startSpeechQueue_(nodes, firstPosition.offset, lastPosition.offset);
+      let driveAppRootNode = getDriveAppRoot(focusedNode);
+      if (!driveAppRootNode)
+        return;
+      chrome.tabs.query({active: true}, (tabs) => {
+        if (tabs.length == 0) {
+          return;
+        }
+        let tab = tabs[0];
+        this.readClipboardDataTimeMs_ = Date.now();
+        this.currentNode_ = new NodeGroupItem(driveAppRootNode, 0, false);
+        chrome.tabs.executeScript(tab.id, {
+          allFrames: true,
+          matchAboutBlank: true,
+          code: 'document.execCommand("copy");'
+        });
+      });
+      return;
     }
     this.initializeScrollingToOffscreenNodes_(focusedNode.root);
     this.recordStartEvent_(START_SPEECH_METHOD_KEYSTROKE);
@@ -649,6 +726,30 @@ SelectToSpeak.prototype = {
     document.addEventListener('mousedown', this.onMouseDown_.bind(this));
     document.addEventListener('mousemove', this.onMouseMove_.bind(this));
     document.addEventListener('mouseup', this.onMouseUp_.bind(this));
+    chrome.clipboard.onClipboardDataChanged.addListener(
+        this.onClipboardDataChanged_.bind(this));
+    document.addEventListener('paste', this.onClipboardPaste_.bind(this));
+  },
+
+  /**
+   * Enqueue speech for the single given string. The string is not associated
+   * with any particular nodes, so this does not do any work around drawing
+   * focus rings, unlike startSpeechQueue_ below.
+   * @param {string} text The text to speak.
+   */
+  startSpeech_: function(text) {
+    this.prepareForSpeech_();
+    let options = this.speechOptions_();
+    options.onEvent = (event) => {
+      if (event.type == 'start') {
+        this.testCurrentNode_();
+      } else if (
+          event.type == 'end' || event.type == 'interrupted' ||
+          event.type == 'cancelled') {
+        this.clearFocusRingAndNode_();
+      }
+    };
+    chrome.tts.speak(text, options);
   },
 
   /**
@@ -660,13 +761,7 @@ SelectToSpeak.prototype = {
    * at which to end speech. If this is not passed, will stop at the end.
    */
   startSpeechQueue_: function(nodes, opt_startIndex, opt_endIndex) {
-    chrome.tts.stop();
-    if (this.intervalRef_ !== undefined) {
-      clearInterval(this.intervalRef_);
-    }
-    this.intervalRef_ = setInterval(
-        this.testCurrentNode_.bind(this),
-        SelectToSpeak.NODE_STATE_TEST_INTERVAL_MS);
+    this.prepareForSpeech_();
     for (var i = 0; i < nodes.length; i++) {
       let node = nodes[i];
       let nodeGroup = buildNodeGroup(nodes, i);
@@ -710,96 +805,111 @@ SelectToSpeak.prototype = {
         continue;
       }
 
-      let options = {
-        rate: this.speechRate_,
-        pitch: this.speechPitch_,
-        'enqueue': true,
-        onEvent:
-            (event) => {
-              if (event.type == 'start' && nodeGroup.nodes.length > 0) {
-                this.currentBlockParent_ = nodeGroup.blockParent;
-                this.currentNodeGroupIndex_ = 0;
-                this.currentNode_ =
-                    nodeGroup.nodes[this.currentNodeGroupIndex_];
-                if (this.wordHighlight_) {
-                  // At 'start', find the first word and highlight that.
-                  // Clear the previous word in the node.
-                  this.currentNodeWord_ = null;
-                  // If this is the first nodeGroup, pass the opt_startIndex.
-                  // If this is the last nodeGroup, pass the opt_endIndex.
-                  this.updateNodeHighlight_(
-                      nodeGroup.text, event.charIndex,
-                      isFirst ? opt_startIndex : undefined,
-                      isLast ? opt_endIndex : undefined);
-                } else {
-                  this.testCurrentNode_();
-                }
-              } else if (
-                  event.type == 'interrupted' || event.type == 'cancelled') {
-                this.clearFocusRingAndNode_();
-              } else if (event.type == 'end') {
-                if (isLast) {
-                  this.clearFocusRingAndNode_();
-                }
-              } else if (event.type == 'word') {
-                console.debug(
-                    nodeGroup.text + ' (index ' + event.charIndex + ')');
-                console.debug('-'.repeat(event.charIndex) + '^');
-                if (this.currentNodeGroupIndex_ + 1 < nodeGroup.nodes.length) {
-                  let next = nodeGroup.nodes[this.currentNodeGroupIndex_ + 1];
-                  // Check if we've reached this next node yet using the
-                  // character index of the event. Add 1 for the space character
-                  // between words, and another to make it to the start of the
-                  // next node name.
-                  if (event.charIndex + 2 >= next.startChar) {
-                    // Move to the next node.
-                    this.currentNodeGroupIndex_ += 1;
-                    this.currentNode_ = next;
-                    this.currentNodeWord_ = null;
-                    if (!this.wordHighlight_) {
-                      // If we are doing a per-word highlight, we will test the
-                      // node after figuring out what the currently highlighted
-                      // word is.
-                      this.testCurrentNode_();
-                    }
-                  }
-                }
-                if (this.wordHighlight_) {
-                  this.updateNodeHighlight_(
-                      nodeGroup.text, event.charIndex, undefined,
-                      isLast ? opt_endIndex : undefined);
-                } else {
-                  this.currentNodeWord_ = null;
-                }
+      let options = this.speechOptions_();
+      options.onEvent = (event) => {
+        if (event.type == 'start' && nodeGroup.nodes.length > 0) {
+          this.currentBlockParent_ = nodeGroup.blockParent;
+          this.currentNodeGroupIndex_ = 0;
+          this.currentNode_ = nodeGroup.nodes[this.currentNodeGroupIndex_];
+          if (this.wordHighlight_) {
+            // At 'start', find the first word and highlight that.
+            // Clear the previous word in the node.
+            this.currentNodeWord_ = null;
+            // If this is the first nodeGroup, pass the opt_startIndex.
+            // If this is the last nodeGroup, pass the opt_endIndex.
+            this.updateNodeHighlight_(
+                nodeGroup.text, event.charIndex,
+                isFirst ? opt_startIndex : undefined,
+                isLast ? opt_endIndex : undefined);
+          } else {
+            this.testCurrentNode_();
+          }
+        } else if (event.type == 'interrupted' || event.type == 'cancelled') {
+          this.clearFocusRingAndNode_();
+        } else if (event.type == 'end') {
+          if (isLast) {
+            this.clearFocusRingAndNode_();
+          }
+        } else if (event.type == 'word') {
+          console.debug(nodeGroup.text + ' (index ' + event.charIndex + ')');
+          console.debug('-'.repeat(event.charIndex) + '^');
+          if (this.currentNodeGroupIndex_ + 1 < nodeGroup.nodes.length) {
+            let next = nodeGroup.nodes[this.currentNodeGroupIndex_ + 1];
+            // Check if we've reached this next node yet using the
+            // character index of the event. Add 1 for the space character
+            // between words, and another to make it to the start of the
+            // next node name.
+            if (event.charIndex + 2 >= next.startChar) {
+              // Move to the next node.
+              this.currentNodeGroupIndex_ += 1;
+              this.currentNode_ = next;
+              this.currentNodeWord_ = null;
+              if (!this.wordHighlight_) {
+                // If we are doing a per-word highlight, we will test the
+                // node after figuring out what the currently highlighted
+                // word is.
+                this.testCurrentNode_();
               }
             }
+          }
+          if (this.wordHighlight_) {
+            this.updateNodeHighlight_(
+                nodeGroup.text, event.charIndex, undefined,
+                isLast ? opt_endIndex : undefined);
+          } else {
+            this.currentNodeWord_ = null;
+          }
+        }
       };
-
-      // Pick the voice name from prefs first, or the one that matches
-      // the locale next, but don't pick a voice that isn't currently
-      // loaded. If no voices are found, leave the voiceName option
-      // unset to let the browser try to route the speech request
-      // anyway if possible.
-      console.debug('Pref: ' + this.voiceNameFromPrefs_);
-      console.debug('Locale: ' + this.voiceNameFromLocale_);
-      var valid = '';
-      this.validVoiceNames_.forEach(function(voiceName) {
-        if (valid)
-          valid += ',';
-        valid += voiceName;
-      });
-      console.debug('Valid: ' + valid);
-      if (this.voiceNameFromPrefs_ &&
-          this.validVoiceNames_.has(this.voiceNameFromPrefs_)) {
-        options['voiceName'] = this.voiceNameFromPrefs_;
-      } else if (
-          this.voiceNameFromLocale_ &&
-          this.validVoiceNames_.has(this.voiceNameFromLocale_)) {
-        options['voiceName'] = this.voiceNameFromLocale_;
-      }
-
       chrome.tts.speak(nodeGroup.text || '', options);
     }
+  },
+
+  /**
+   * Prepares for speech. Call once before chrome.tts.speak is called.
+   */
+  prepareForSpeech_: function() {
+    chrome.tts.stop();
+    if (this.intervalRef_ !== undefined) {
+      clearInterval(this.intervalRef_);
+    }
+    this.intervalRef_ = setInterval(
+        this.testCurrentNode_.bind(this),
+        SelectToSpeak.NODE_STATE_TEST_INTERVAL_MS);
+  },
+
+  /**
+   * Generates the basic speech options for Select-to-Speak based on user
+   * preferences. Call for each chrome.tts.speak.
+   * @return {Object} options The TTS options.
+   */
+  speechOptions_: function() {
+    let options = {
+      rate: this.speechRate_,
+      pitch: this.speechPitch_,
+      enqueue: true
+    };
+
+    // Pick the voice name from prefs first, or the one that matches
+    // the locale next, but don't pick a voice that isn't currently
+    // loaded. If no voices are found, leave the voiceName option
+    // unset to let the browser try to route the speech request
+    // anyway if possible.
+    var valid = '';
+    this.validVoiceNames_.forEach(function(voiceName) {
+      if (valid)
+        valid += ',';
+      valid += voiceName;
+    });
+    if (this.voiceNameFromPrefs_ &&
+        this.validVoiceNames_.has(this.voiceNameFromPrefs_)) {
+      options['voiceName'] = this.voiceNameFromPrefs_;
+    } else if (
+        this.voiceNameFromLocale_ &&
+        this.validVoiceNames_.has(this.voiceNameFromLocale_)) {
+      options['voiceName'] = this.voiceNameFromLocale_;
+    }
+    return options;
   },
 
   /**
@@ -921,7 +1031,6 @@ SelectToSpeak.prototype = {
 
     chrome.tts.getVoices(
         (function(voices) {
-          console.debug('updateDefaultVoice_ voices: ' + voices.length);
           this.validVoiceNames_ = new Set();
 
           if (voices.length == 0)

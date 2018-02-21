@@ -15,6 +15,7 @@
 	'<(EXTERNS_GYP):accessibility_private',
 	'<(EXTERNS_GYP):automation',
 	'<(EXTERNS_GYP):chrome_extensions',
+	'<(EXTERNS_GYP):clipboard',
 	'<(EXTERNS_GYP):command_line_private',
 	'<(EXTERNS_GYP):metrics_private',
        ],
