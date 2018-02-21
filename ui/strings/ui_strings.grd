@@ -334,6 +334,22 @@ need to be translated for each locale.-->
         <message name="IDS_SELECT_UPLOAD_FOLDER_BUTTON_TITLE" desc="The name of the Select button in the folder selection dialog for uploading.">
           Upload
         </message>
+
+        <!-- Edit::Speech submenu -->
+        <message name="IDS_SPEECH_MAC" desc="The Mac menu item for the 'Speech' submenu in the edit and context menu. To translate, launch /Applications/TextEdit.app in an appropriately localized version of OS X, open the Edit menu and use the translation from there.">
+          Speech
+        </message>
+        <message name="IDS_SPEECH_START_SPEAKING_MAC" desc="The Mac menu item for the 'Start Speaking' item from the 'Speech' submenu in edit and context menu. To translate, launch /Applications/TextEdit.app in an appropriately localized version of OS X, open the Edit menu and use the translation from there.">
+          Start Speaking
+        </message>
+        <message name="IDS_SPEECH_STOP_SPEAKING_MAC" desc="The Mac menu item for the 'Stop Speaking' item from the 'Speech' submenu in edit and context menu. To translate, launch /Applications/TextEdit.app in an appropriately localized version of OS X, open the Edit menu and use the translation from there.">
+          Stop Speaking
+        </message>
+
+        <message name="IDS_CONTENT_CONTEXT_LOOK_UP" desc="The name of the 'Look Up “string”' item in the content area context menu. To translate, launch /Applications/TextEdit.app in an appropriately localized version of OS X, right-click on the text entry area and use the translation from there.">
+          Look Up “<ph name="LOOKUP_STRING">$1<ex>orthogonal</ex></ph>”
+        </message>
+
       </if>
 
       <!-- File chooser dialog default titles (only used on Linux) -->

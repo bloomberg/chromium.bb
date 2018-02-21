@@ -43,6 +43,7 @@ namespace views {
 class Label;
 class MenuRunner;
 class TextfieldController;
+class ViewsTextServicesContextMenu;
 
 // A views/skia textfield implementation. No platform-specific code is used.
 class VIEWS_EXPORT Textfield : public View,
@@ -563,6 +564,7 @@ class VIEWS_EXPORT Textfield : public View,
 
   // Context menu related members.
   std::unique_ptr<ui::SimpleMenuModel> context_menu_contents_;
+  std::unique_ptr<ViewsTextServicesContextMenu> text_services_context_menu_;
   std::unique_ptr<views::MenuRunner> context_menu_runner_;
 
   // View containing the text cursor.

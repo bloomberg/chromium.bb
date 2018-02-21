@@ -46,6 +46,7 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/views/controls/views_text_services_context_menu.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/native_cursor.h"
@@ -2137,7 +2138,11 @@ void Textfield::UpdateContextMenu() {
     // IsCommandIdEnabled() as appropriate, for the commands added.
     if (controller_)
       controller_->UpdateContextMenu(context_menu_contents_.get());
+
+    text_services_context_menu_ = ViewsTextServicesContextMenu::Create(
+        context_menu_contents_.get(), this);
   }
+
   context_menu_runner_.reset(
       new MenuRunner(context_menu_contents_.get(),
                      MenuRunner::HAS_MNEMONICS | MenuRunner::CONTEXT_MENU));
