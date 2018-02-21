@@ -26,7 +26,6 @@
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
@@ -147,6 +146,10 @@ constexpr int kLabelFontDelta = 2;
 
 constexpr int kShadowElevation = 16;
 
+// Values of the backdrop.
+constexpr int kBackdropRoundingDp = 4;
+constexpr SkColor kBackdropColor = SkColorSetARGBMacro(0x24, 0xFF, 0xFF, 0xFF);
+
 // Convenience method to fade in a Window with predefined animation settings.
 // Note: The fade in animation will occur after a delay where the delay is how
 // long the lay out animations take.
@@ -157,6 +160,15 @@ void SetupFadeInAfterLayout(views::Widget* widget) {
       OverviewAnimationType::OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
       window);
   window->layer()->SetOpacity(1.0f);
+}
+
+std::unique_ptr<views::Widget> CreateBackdropWidget(aura::Window* parent) {
+  auto widget = CreateBackgroundWidget(
+      /*root_window=*/nullptr, ui::LAYER_TEXTURED, kBackdropColor,
+      /*border_thickness=*/0, kBackdropRoundingDp, kBackdropColor,
+      /*initial_opacity=*/1.f, parent,
+      /*stack_on_top=*/false);
+  return widget;
 }
 
 // A Button that has a listener and listens to mouse / gesture events on the
@@ -500,6 +512,8 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
 
   ShieldButton* listener_button() { return listener_button_; }
 
+  gfx::Rect backdrop_bounds() const { return backdrop_bounds_; }
+
   void SetCloseButtonVisibility(bool visible) {
     AnimateLayerOpacity(close_button_->layer(), visible);
   }
@@ -535,6 +549,8 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
         std::max(label_size.height(), kSplitviewLabelPreferredHeightDp));
 
     const int visible_height = close_button_->GetPreferredSize().height();
+    backdrop_bounds_ = bounds;
+    backdrop_bounds_.Inset(0, visible_height, 0, 0);
 
     // Center the cannot snap label in the middle of the item, minus the title.
     gfx::Rect cannot_snap_bounds = GetLocalBounds();
@@ -611,6 +627,7 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
   views::Label* cannot_snap_label_;
   RoundedRectView* cannot_snap_container_;
   views::ImageButton* close_button_;
+  gfx::Rect backdrop_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptionContainerView);
 };
@@ -631,6 +648,10 @@ WindowSelectorItem::WindowSelectorItem(aura::Window* window,
       window_grid_(window_grid) {
   CreateWindowLabel(window->GetTitle());
   GetWindow()->AddObserver(this);
+  if (GetWindowDimensionsType() !=
+      ScopedTransformOverviewWindow::GridWindowFillMode::kNormal) {
+    backdrop_widget_ = CreateBackdropWidget(window->parent());
+  }
 }
 
 WindowSelectorItem::~WindowSelectorItem() {
@@ -714,6 +735,8 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
   // SetItemBounds is called before UpdateHeaderLayout so the header can
   // properly use the updated windows bounds.
   UpdateHeaderLayout(HeaderFadeInMode::UPDATE, animation_type);
+
+  UpdateBackdropBounds();
 }
 
 void WindowSelectorItem::SetSelected(bool selected) {
@@ -780,6 +803,43 @@ WindowSelectorItem::GetWindowDimensionsType() const {
 
 void WindowSelectorItem::UpdateWindowDimensionsType() {
   transform_window_.UpdateWindowDimensionsType();
+  if (GetWindowDimensionsType() ==
+      ScopedTransformOverviewWindow::GridWindowFillMode::kNormal) {
+    // Delete the backdrop widget, if it exists for normal windows.
+    if (backdrop_widget_)
+      backdrop_widget_.reset();
+  } else {
+    // Create the backdrop widget if needed.
+    if (!backdrop_widget_) {
+      backdrop_widget_ =
+          CreateBackdropWidget(transform_window_.window()->parent());
+    }
+  }
+}
+
+void WindowSelectorItem::EnableBackdropIfNeeded() {
+  if (GetWindowDimensionsType() ==
+      ScopedTransformOverviewWindow::GridWindowFillMode::kNormal) {
+    DisableBackdrop();
+    return;
+  }
+
+  UpdateBackdropBounds();
+}
+
+void WindowSelectorItem::DisableBackdrop() {
+  if (backdrop_widget_)
+    backdrop_widget_->Hide();
+}
+
+void WindowSelectorItem::UpdateBackdropBounds() {
+  if (!backdrop_widget_)
+    return;
+
+  gfx::Rect backdrop_bounds = caption_container_view_->backdrop_bounds();
+  ::wm::ConvertRectToScreen(item_widget_->GetNativeWindow(), &backdrop_bounds);
+  backdrop_widget_->SetBounds(backdrop_bounds);
+  backdrop_widget_->Show();
 }
 
 void WindowSelectorItem::SetDimmed(bool dimmed) {

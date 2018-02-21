@@ -144,6 +144,12 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // |window_|'s bounds change.
   void UpdateWindowDimensionsType();
 
+  // Enable or disable the backdrop. If the window is not letter or pillar
+  // boxed, nothing will happen.
+  void EnableBackdropIfNeeded();
+  void DisableBackdrop();
+  void UpdateBackdropBounds();
+
   // Sets if the item is dimmed in the overview. Changing the value will also
   // change the visibility of the transform windows.
   void SetDimmed(bool dimmed);
@@ -275,6 +281,11 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // |caption_container_view_| as its contents view. The widget is backed by a
   // NOT_DRAWN layer since most of its surface is transparent.
   std::unique_ptr<views::Widget> item_widget_;
+
+  // A widget that is available if the window is letter or pillar boxed. It is
+  // stacked below |transform_window_|'s window. This is nullptr when the window
+  // is normal boxed.
+  std::unique_ptr<views::Widget> backdrop_widget_;
 
   // Container view that owns a Button view covering the |transform_window_|.
   // That button serves as an event shield to receive all events such as clicks

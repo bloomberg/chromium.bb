@@ -376,6 +376,10 @@ class WindowSelectorTest : public AshTestBase {
     return item->transform_window_.minimized_widget();
   }
 
+  views::Widget* backdrop_widget(WindowSelectorItem* item) {
+    return item->backdrop_widget_.get();
+  }
+
  private:
   aura::test::TestWindowDelegate delegate_;
   NonActivatableActivationDelegate non_activatable_activation_delegate_;
@@ -2480,6 +2484,49 @@ TEST_F(WindowSelectorTest, OverviewWidgetStackingOrder) {
             index_of(widget3->GetNativeWindow(), parent));
   EXPECT_GT(index_of(widget3->GetNativeWindow(), parent),
             index_of(widget1->GetNativeWindow(), parent));
+}
+
+// Verify that a windows which enter overview mode have a visible backdrop, if
+// the window is to be letter or pillar fitted.
+TEST_F(WindowSelectorTest, Backdrop) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshEnableNewOverviewUi);
+
+  // Add three windows which in overview mode will be considered wide, tall and
+  // normal. Window |wide|, with size (400, 160) will be resized to (200, 160)
+  // when the 400x200 is rotated to 200x400, and should be considered a normal
+  // overview window after display change.
+  UpdateDisplay("400x200");
+  std::unique_ptr<aura::Window> wide(CreateWindow(gfx::Rect(10, 10, 400, 160)));
+  std::unique_ptr<aura::Window> tall(CreateWindow(gfx::Rect(10, 10, 50, 200)));
+  std::unique_ptr<aura::Window> normal(
+      CreateWindow(gfx::Rect(10, 10, 200, 200)));
+
+  ToggleOverview();
+  RunAllPendingInMessageLoop();
+  WindowSelectorItem* wide_item = GetWindowItemForWindow(0, wide.get());
+  WindowSelectorItem* tall_item = GetWindowItemForWindow(0, tall.get());
+  WindowSelectorItem* normal_item = GetWindowItemForWindow(0, normal.get());
+
+  // Only very tall and very wide windows will have a backdrop.
+  EXPECT_TRUE(backdrop_widget(wide_item));
+  EXPECT_TRUE(backdrop_widget(tall_item));
+  EXPECT_FALSE(backdrop_widget(normal_item));
+
+  display::Screen* screen = display::Screen::GetScreen();
+  const display::Display& display = screen->GetPrimaryDisplay();
+  display_manager()->SetDisplayRotation(
+      display.id(), display::Display::ROTATE_90,
+      display::Display::RotationSource::ACTIVE);
+
+  // After rotation the former wide window will be a normal window and lose its
+  // backdrop.
+  EXPECT_FALSE(backdrop_widget(wide_item));
+  EXPECT_TRUE(backdrop_widget(tall_item));
+  EXPECT_FALSE(backdrop_widget(normal_item));
+
+  // Test that leaving overview mode cleans up properly.
+  ToggleOverview();
 }
 
 class SplitViewWindowSelectorTest : public WindowSelectorTest {

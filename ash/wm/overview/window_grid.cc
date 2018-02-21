@@ -29,32 +29,24 @@
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "ash/wm/overview/window_selector_item.h"
-#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/i18n/string_search.h"
 #include "base/strings/string_number_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/pathops/SkPathOps.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
-#include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
-#include "ui/gfx/scoped_canvas.h"
-#include "ui/views/background.h"
-#include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/painter.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/shadow.h"
-#include "ui/wm/core/window_animations.h"
 
 namespace ash {
 namespace {
@@ -118,69 +110,6 @@ constexpr SkColor kNoItemsIndicatorBackgroundColor = SK_ColorBLACK;
 constexpr SkColor kNoItemsIndicatorTextColor = SK_ColorWHITE;
 constexpr float kNoItemsIndicatorBackgroundOpacity = 0.8f;
 
-// BackgroundWith1PxBorder renders a solid background color, with a one pixel
-// border with rounded corners. This accounts for the scaling of the canvas, so
-// that the border is 1 pixel thick regardless of display scaling.
-class BackgroundWith1PxBorder : public views::Background {
- public:
-  BackgroundWith1PxBorder(SkColor background,
-                          SkColor border_color,
-                          int border_thickness,
-                          int corner_radius)
-      : border_color_(border_color),
-        border_thickness_(border_thickness),
-        corner_radius_(corner_radius) {
-    SetNativeControlColor(background);
-  }
-
-  // views::Background:
-  void Paint(gfx::Canvas* canvas, views::View* view) const override {
-    gfx::RectF border_rect_f(view->GetContentsBounds());
-
-    gfx::ScopedCanvas scoped_canvas(canvas);
-    const float scale = canvas->UndoDeviceScaleFactor();
-    border_rect_f.Inset(border_thickness_, border_thickness_);
-    border_rect_f = gfx::ScaleRect(border_rect_f, scale);
-
-    SkPath path;
-    const SkScalar scaled_corner_radius =
-        SkFloatToScalar(corner_radius_ * scale + 0.5f);
-    path.addRoundRect(gfx::RectFToSkRect(border_rect_f), scaled_corner_radius,
-                      scaled_corner_radius);
-
-    cc::PaintFlags flags;
-    flags.setStyle(cc::PaintFlags::kStroke_Style);
-    flags.setStrokeWidth(1);
-    flags.setAntiAlias(true);
-
-    SkPath stroke_path;
-    flags.getFillPath(path, &stroke_path);
-
-    SkPath fill_path;
-    Op(path, stroke_path, kDifference_SkPathOp, &fill_path);
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setColor(get_color());
-    canvas->sk_canvas()->drawPath(fill_path, flags);
-
-    if (border_thickness_ > 0) {
-      flags.setColor(border_color_);
-      canvas->sk_canvas()->drawPath(stroke_path, flags);
-    }
-  }
-
- private:
-  // Color for the one pixel border.
-  SkColor border_color_;
-
-  // Thickness of border inset.
-  int border_thickness_;
-
-  // Corner radius of the inside edge of the roundrect border stroke.
-  int corner_radius_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundWith1PxBorder);
-};
-
 // Returns the vector for the fade in animation.
 gfx::Vector2d GetSlideVectorForFadeIn(WindowSelector::Direction direction,
                                       const gfx::Rect& bounds) {
@@ -196,54 +125,6 @@ gfx::Vector2d GetSlideVectorForFadeIn(WindowSelector::Direction direction,
       break;
   }
   return vector;
-}
-
-// Creates and returns a background translucent widget parented in
-// |root_window|'s default container and having |background_color|.
-// When |border_thickness| is non-zero, a border is created having
-// |border_color|, otherwise |border_color| parameter is ignored.
-// The new background widget starts with |initial_opacity| and then fades in.
-views::Widget* CreateBackgroundWidget(aura::Window* root_window,
-                                      ui::LayerType layer_type,
-                                      SkColor background_color,
-                                      int border_thickness,
-                                      int border_radius,
-                                      SkColor border_color,
-                                      float initial_opacity) {
-  views::Widget* widget = new views::Widget;
-  views::Widget::InitParams params;
-  params.type = views::Widget::InitParams::TYPE_POPUP;
-  params.keep_on_top = false;
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.layer_type = layer_type;
-  params.accept_events = false;
-  widget->set_focus_on_creation(false);
-  // Parenting in kShellWindowId_WallpaperContainer allows proper layering of
-  // the shield and selection widgets. Since that container is created with
-  // USE_LOCAL_COORDINATES BoundsInScreenBehavior local bounds in |root_window_|
-  // need to be provided.
-  params.parent = root_window->GetChildById(kShellWindowId_WallpaperContainer);
-  widget->Init(params);
-  aura::Window* widget_window = widget->GetNativeWindow();
-  // Disable the "bounce in" animation when showing the window.
-  ::wm::SetWindowVisibilityAnimationTransition(widget_window,
-                                               ::wm::ANIMATE_NONE);
-  // The background widget should not activate the shelf when passing under it.
-  wm::GetWindowState(widget_window)->set_ignored_by_shelf(true);
-  if (params.layer_type == ui::LAYER_SOLID_COLOR) {
-    widget_window->layer()->SetColor(background_color);
-  } else {
-    views::View* content_view =
-        new RoundedRectView(border_radius, SK_ColorTRANSPARENT);
-    content_view->SetBackground(std::make_unique<BackgroundWith1PxBorder>(
-        background_color, border_color, border_thickness, border_radius));
-    widget->SetContentsView(content_view);
-  }
-  widget_window->parent()->StackChildAtTop(widget_window);
-  widget->Show();
-  widget_window->layer()->SetOpacity(initial_opacity);
-  return widget;
 }
 
 }  // namespace
@@ -836,10 +717,11 @@ void WindowGrid::InitShieldWidget() {
                                                          dark_muted_color);
     }
   }
-  shield_widget_.reset(CreateBackgroundWidget(
+  shield_widget_ = CreateBackgroundWidget(
       root_window_, ui::LAYER_SOLID_COLOR,
       IsNewOverviewUi() ? SK_ColorTRANSPARENT : shield_color, 0, 0,
-      SK_ColorTRANSPARENT, initial_opacity));
+      SK_ColorTRANSPARENT, initial_opacity, /*parent=*/nullptr,
+      /*stack_on_top=*/true);
   aura::Window* widget_window = shield_widget_->GetNativeWindow();
   const gfx::Rect bounds = widget_window->parent()->bounds();
   widget_window->SetBounds(bounds);
@@ -865,14 +747,16 @@ void WindowGrid::InitShieldWidget() {
 
 void WindowGrid::InitSelectionWidget(WindowSelector::Direction direction) {
   if (IsNewOverviewUi()) {
-    selection_widget_.reset(CreateBackgroundWidget(
+    selection_widget_ = CreateBackgroundWidget(
         root_window_, ui::LAYER_TEXTURED, kWindowSelectionColor, 0,
-        kWindowSelectionRadius, SK_ColorTRANSPARENT, 0.f));
+        kWindowSelectionRadius, SK_ColorTRANSPARENT, 0.f, /*parent=*/nullptr,
+        /*stack_on_top=*/true);
   } else {
-    selection_widget_.reset(CreateBackgroundWidget(
+    selection_widget_ = CreateBackgroundWidget(
         root_window_, ui::LAYER_TEXTURED, kOldWindowSelectionColor,
         kWindowSelectionBorderThickness, kOldWindowSelectionRadius,
-        kWindowSelectionBorderColor, 0.f));
+        kWindowSelectionBorderColor, 0.f, /*parent=*/nullptr,
+        /*stack_on_top=*/true);
   }
   aura::Window* widget_window = selection_widget_->GetNativeWindow();
   gfx::Rect target_bounds = SelectedWindow()->target_bounds();
