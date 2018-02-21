@@ -330,6 +330,7 @@ void ScopedTransformOverviewWindow::BeginScopedAnimation(
   // animation type is layouting selector items.
   if (IsNewOverviewUi()) {
     mask_.reset();
+    selector_item_->SetShadowBounds(base::nullopt);
     if (window_->GetProperty(aura::client::kShowStateKey) !=
         ui::SHOW_STATE_MINIMIZED) {
       window_->layer()->SetMaskLayer(original_mask_layer_);
@@ -643,16 +644,19 @@ void ScopedTransformOverviewWindow::EnsureVisible() {
 }
 
 void ScopedTransformOverviewWindow::OnImplicitAnimationsCompleted() {
-  // Add the mask which gives the window selector items rounded corners.
+  // Add the mask which gives the window selector items rounded corners, and add
+  // the shadow around the window.
   ui::Layer* layer = minimized_widget_
                          ? minimized_widget_->GetContentsView()->layer()
                          : window_->layer();
   if (!minimized_widget_)
     original_mask_layer_ = window_->layer()->layer_mask_layer();
+
   mask_ = std::make_unique<WindowMask>(GetOverviewWindow());
   mask_->layer()->SetBounds(layer->bounds());
   mask_->set_top_inset(GetTopInset());
   layer->SetMaskLayer(mask_->layer());
+  selector_item_->SetShadowBounds(base::make_optional(GetTransformedBounds()));
 }
 
 aura::Window*
