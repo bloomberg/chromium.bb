@@ -8,9 +8,11 @@
 #include <vector>
 
 #include "base/containers/span.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "ui/chromeos/ksv/ksv_export.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/vector_icon_types.h"
 
 namespace keyboard_shortcut_viewer {
 
@@ -28,6 +30,9 @@ base::string16 GetStringForCategory(ShortcutCategory category);
 // meaning or character of |dom_key| based on the corresponding keyboard layout.
 // TODO(https://crbug.com/803502): Get strings for non US keyboard layout.
 base::string16 GetStringForKeyboardCode(ui::KeyboardCode key_code);
+
+// Get the VectorIcon if this |key_code| need to be displayed in icon.
+const gfx::VectorIcon* GetVectorIconForKeyboardCode(ui::KeyboardCode key_code);
 
 }  // namespace keyboard_shortcut_viewer
 

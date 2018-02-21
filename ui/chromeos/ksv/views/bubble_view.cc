@@ -22,9 +22,6 @@ namespace keyboard_shortcut_viewer {
 
 namespace {
 
-constexpr SkColor kBubbleContentsColor =
-    SkColorSetARGBMacro(0xFF, 0x5F, 0x63, 0x68);
-
 constexpr int kIconTextSpacing = 6;
 
 }  // namespace
@@ -59,15 +56,17 @@ void BubbleView::SetIcon(const gfx::VectorIcon& icon) {
     AddChildViewAt(icon_, 0);
   }
 
-  constexpr int kIconSize = 12;
-  icon_->SetImage(gfx::CreateVectorIcon(icon, kBubbleContentsColor));
+  constexpr int kIconSize = 18;
+  constexpr SkColor kIconColor = SkColorSetARGBMacro(0xFF, 0x5C, 0x5D, 0x60);
+  icon_->SetImage(gfx::CreateVectorIcon(icon, kIconColor));
   icon_->SetImageSize(gfx::Size(kIconSize, kIconSize));
 }
 
 void BubbleView::SetText(const base::string16& text) {
   if (!text_) {
     text_ = new views::Label();
-    text_->SetEnabledColor(kBubbleContentsColor);
+    constexpr SkColor kTextColor = SkColorSetARGBMacro(0xFF, 0x5F, 0x63, 0x68);
+    text_->SetEnabledColor(kTextColor);
     text_->SetElideBehavior(gfx::NO_ELIDE);
     constexpr int kLabelFontSizeDelta = 1;
     text_->SetFontList(

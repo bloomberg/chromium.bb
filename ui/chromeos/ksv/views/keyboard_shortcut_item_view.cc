@@ -43,12 +43,15 @@ std::unique_ptr<views::View> CreateSeparatorView() {
 }
 
 // Creates the bubble view for modifiers and key.
-std::unique_ptr<views::View> CreateBubbleView(
-    const base::string16& bubble_text) {
+std::unique_ptr<views::View> CreateBubbleView(const base::string16& bubble_text,
+                                              ui::KeyboardCode key_code) {
   auto bubble_view = std::make_unique<BubbleView>();
   bubble_view->set_owned_by_client();
-  // TODO(wutao): add icons for keys.
-  bubble_view->SetText(bubble_text);
+  const gfx::VectorIcon* vector_icon = GetVectorIconForKeyboardCode(key_code);
+  if (vector_icon)
+    bubble_view->SetIcon(*vector_icon);
+  else
+    bubble_view->SetText(bubble_text);
   return bubble_view;
 }
 
@@ -99,7 +102,7 @@ KeyboardShortcutItemView::KeyboardShortcutItemView(
     std::unique_ptr<views::View> custom_view =
         replacement_string == separator_string
             ? CreateSeparatorView()
-            : CreateBubbleView(replacement_string);
+            : CreateBubbleView(replacement_string, item.shortcut_key_codes[i]);
     style_info.custom_view = custom_view.get();
     shortcut_label_view_->AddCustomView(std::move(custom_view));
     shortcut_label_view_->AddStyleRange(
