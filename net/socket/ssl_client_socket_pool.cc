@@ -43,16 +43,14 @@ SSLSocketParams::SSLSocketParams(
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
     PrivacyMode privacy_mode,
-    int load_flags,
-    bool expect_spdy)
+    int load_flags)
     : direct_params_(direct_params),
       socks_proxy_params_(socks_proxy_params),
       http_proxy_params_(http_proxy_params),
       host_and_port_(host_and_port),
       ssl_config_(ssl_config),
       privacy_mode_(privacy_mode),
-      load_flags_(load_flags),
-      expect_spdy_(expect_spdy) {
+      load_flags_(load_flags) {
   // Only one set of lower level pool params should be non-NULL.
   DCHECK((direct_params_ && !socks_proxy_params_ && !http_proxy_params_) ||
          (!direct_params_ && socks_proxy_params_ && !http_proxy_params_) ||
@@ -350,12 +348,6 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
     server_address_ = IPEndPoint();
   }
 
-  // If we want SPDY over ALPN, make sure it succeeded.
-  if (params_->expect_spdy() &&
-      ssl_socket_->GetNegotiatedProtocol() != kProtoHTTP2) {
-    return ERR_ALPN_NEGOTIATION_FAILED;
-  }
-
   // Perform a TLS 1.3 version interference probe on various connection
   // errors. The retry will never produce a successful connection but may map
   // errors to ERR_SSL_VERSION_INTERFERENCE, which signals a probable
@@ -395,14 +387,6 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
     DCHECK(!connect_timing_.ssl_start.is_null());
     base::TimeDelta connect_duration =
         connect_timing_.ssl_end - connect_timing_.ssl_start;
-    if (params_->expect_spdy()) {
-      UMA_HISTOGRAM_CUSTOM_TIMES("Net.SpdyConnectionLatency_2",
-                                 connect_duration,
-                                 base::TimeDelta::FromMilliseconds(1),
-                                 base::TimeDelta::FromMinutes(1),
-                                 100);
-    }
-
     UMA_HISTOGRAM_CUSTOM_TIMES("Net.SSL_Connection_Latency_2",
                                connect_duration,
                                base::TimeDelta::FromMilliseconds(1),
