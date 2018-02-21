@@ -7,6 +7,7 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/compositor/surface_utils.h"
+#include "content/browser/devtools/devtools_frame_trace_recorder.h"
 #include "content/browser/devtools/devtools_traceable_screenshot.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
 
@@ -14,7 +15,6 @@ namespace content {
 
 namespace {
 
-static constexpr int kMaximumNumberOfScreenshots = 450;
 static constexpr gfx::Size kMaxFrameSize = gfx::Size(500, 500);
 
 }  // namespace
@@ -105,7 +105,8 @@ void DevToolsFrameTraceRecorderForViz::OnFrameCaptured(
           new DevToolsTraceableScreenshot(skbitmap)));
 
   ++number_of_screenshots_;
-  if (number_of_screenshots_ >= kMaximumNumberOfScreenshots)
+  if (number_of_screenshots_ >=
+      DevToolsFrameTraceRecorder::kMaximumNumberOfScreenshots)
     StopCapture();
 }
 

@@ -32,6 +32,8 @@ class DevToolsFrameTraceRecorder {
       RenderFrameHostImpl* host,
       const viz::CompositorFrameMetadata& frame_metadata);
 
+  static constexpr int kMaximumNumberOfScreenshots = 450;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DevToolsFrameTraceRecorder);
   std::unique_ptr<viz::CompositorFrameMetadata> last_metadata_;
