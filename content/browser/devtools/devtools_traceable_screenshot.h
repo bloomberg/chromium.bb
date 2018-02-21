@@ -1,0 +1,31 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "base/macros.h"
+#include "base/trace_event/trace_event_impl.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+
+namespace content {
+
+class DevToolsTraceableScreenshot
+    : public base::trace_event::ConvertableToTraceFormat {
+ public:
+  static base::subtle::Atomic32 GetNumberOfInstances();
+
+  DevToolsTraceableScreenshot(const SkBitmap& bitmap);
+
+  // base::trace_event::ConvertableToTraceFormat implementation.
+  void AppendAsTraceFormat(std::string* out) const override;
+
+ private:
+  static base::subtle::Atomic32 number_of_instances_;
+
+  ~DevToolsTraceableScreenshot() override;
+
+  SkBitmap frame_;
+
+  DISALLOW_COPY_AND_ASSIGN(DevToolsTraceableScreenshot);
+};
+
+}  // namespace content

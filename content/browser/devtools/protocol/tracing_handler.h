@@ -29,6 +29,7 @@ class Timer;
 namespace content {
 
 class DevToolsAgentHostImpl;
+class DevToolsFrameTraceRecorderForViz;
 class DevToolsIOContext;
 
 namespace protocol {
@@ -43,6 +44,9 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
 
   static std::vector<TracingHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
 
+  // DevToolsDomainHandler implementation.
+  void SetRenderer(int process_host_id,
+                   RenderFrameHostImpl* frame_host) override;
   void Wire(UberDispatcher* dispatcher) override;
   Response Disable() override;
 
@@ -113,6 +117,7 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
   bool return_as_stream_;
   bool gzip_compression_;
   TraceDataBufferState trace_data_buffer_state_;
+  std::unique_ptr<DevToolsFrameTraceRecorderForViz> frame_trace_recorder_;
   base::WeakPtrFactory<TracingHandler> weak_factory_;
 
   FRIEND_TEST_ALL_PREFIXES(TracingHandlerTest,
