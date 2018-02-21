@@ -91,9 +91,9 @@ class CORE_EXPORT DeleteSelectionCommand final : public CompositeEditCommand {
   const DeleteSelectionOptions options_;
   const bool has_selection_to_delete_;
   bool merge_blocks_after_delete_;
-  bool need_placeholder_;
-  bool prune_start_block_if_necessary_;
-  bool starts_at_empty_line_;
+  bool need_placeholder_ = false;
+  bool prune_start_block_if_necessary_ = false;
+  bool starts_at_empty_line_ = false;
   const InputEvent::InputType input_type_;
 
   // This data is transient and should be cleared at the end of the doApply
