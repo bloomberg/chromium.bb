@@ -118,10 +118,14 @@ class UserActivityLoggerTest : public testing::Test {
     session_manager_.SetSessionState(session_manager::SessionState::LOCKED);
   }
 
-  void ReportIdleSleep() { fake_power_manager_client_.SendSuspendDone(); }
+  void ReportSuspend(power_manager::SuspendImminent::Reason reason,
+                     base::TimeDelta sleep_duration) {
+    fake_power_manager_client_.SendSuspendImminent(reason);
+    fake_power_manager_client_.SendSuspendDone(sleep_duration);
+  }
 
-  void ReportInactivityDelays(const base::TimeDelta& screen_dim_delay,
-                              const base::TimeDelta& screen_off_delay) {
+  void ReportInactivityDelays(base::TimeDelta screen_dim_delay,
+                              base::TimeDelta screen_off_delay) {
     power_manager::PowerManagementPolicy::Delays proto;
     proto.set_screen_dim_ms(screen_dim_delay.InMilliseconds());
     proto.set_screen_off_ms(screen_off_delay.InMilliseconds());
@@ -236,13 +240,7 @@ TEST_F(UserActivityLoggerTest, UserCloseLid) {
   GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(2));
   ReportLidEvent(chromeos::PowerManagerClient::LidState::CLOSED);
   const auto& events = delegate_.events();
-  ASSERT_EQ(1U, events.size());
-
-  UserActivityEvent::Event expected_event;
-  expected_event.set_type(UserActivityEvent::Event::OFF);
-  expected_event.set_reason(UserActivityEvent::Event::LID_CLOSED);
-  expected_event.set_log_duration_sec(2);
-  EqualEvent(expected_event, events[0].event());
+  EXPECT_TRUE(events.empty());
 }
 
 TEST_F(UserActivityLoggerTest, PowerChangeActivity) {
@@ -295,8 +293,8 @@ TEST_F(UserActivityLoggerTest, SystemIdle) {
   UserActivityEvent::Event expected_event;
   expected_event.set_type(UserActivityEvent::Event::TIMEOUT);
   expected_event.set_reason(UserActivityEvent::Event::SCREEN_OFF);
-  // Idle timeout is 10 seconds.
-  expected_event.set_log_duration_sec(10);
+  expected_event.set_log_duration_sec(
+      UserActivityLogger::kIdleDelay.InSeconds());
   EqualEvent(expected_event, events[0].event());
 }
 
@@ -339,18 +337,102 @@ TEST_F(UserActivityLoggerTest, ScreenLock) {
   EqualEvent(expected_event, events[0].event());
 }
 
-TEST_F(UserActivityLoggerTest, IdleSleep) {
+TEST_F(UserActivityLoggerTest, SuspendIdle) {
   // Trigger an idle event.
   base::Time now = base::Time::UnixEpoch();
   ReportIdleEvent({now, now});
 
-  ReportIdleSleep();
+  ReportSuspend(power_manager::SuspendImminent_Reason_IDLE,
+                2 * UserActivityLogger::kMinSuspendDuration);
   const auto& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   UserActivityEvent::Event expected_event;
   expected_event.set_type(UserActivityEvent::Event::TIMEOUT);
   expected_event.set_reason(UserActivityEvent::Event::IDLE_SLEEP);
+  EqualEvent(expected_event, events[0].event());
+}
+
+TEST_F(UserActivityLoggerTest, SuspendIdleCancelled) {
+  // Trigger an idle event.
+  base::Time now = base::Time::UnixEpoch();
+  ReportIdleEvent({now, now});
+
+  ReportSuspend(power_manager::SuspendImminent_Reason_IDLE,
+                UserActivityLogger::kMinSuspendDuration -
+                    base::TimeDelta::FromSeconds(2));
+  const auto& events = delegate_.events();
+  ASSERT_EQ(1U, events.size());
+
+  UserActivityEvent::Event expected_event;
+  expected_event.set_type(UserActivityEvent::Event::REACTIVATE);
+  expected_event.set_reason(UserActivityEvent::Event::USER_ACTIVITY);
+  EqualEvent(expected_event, events[0].event());
+}
+
+TEST_F(UserActivityLoggerTest, SuspendLidClosed) {
+  // Trigger an idle event.
+  base::Time now = base::Time::UnixEpoch();
+  ReportIdleEvent({now, now});
+
+  ReportSuspend(power_manager::SuspendImminent_Reason_LID_CLOSED,
+                2 * UserActivityLogger::kMinSuspendDuration);
+  const auto& events = delegate_.events();
+  ASSERT_EQ(1U, events.size());
+
+  UserActivityEvent::Event expected_event;
+  expected_event.set_type(UserActivityEvent::Event::OFF);
+  expected_event.set_reason(UserActivityEvent::Event::LID_CLOSED);
+  EqualEvent(expected_event, events[0].event());
+}
+
+TEST_F(UserActivityLoggerTest, SuspendLidClosedCancelled) {
+  // Trigger an idle event.
+  base::Time now = base::Time::UnixEpoch();
+  ReportIdleEvent({now, now});
+
+  ReportSuspend(power_manager::SuspendImminent_Reason_LID_CLOSED,
+                UserActivityLogger::kMinSuspendDuration -
+                    base::TimeDelta::FromSeconds(2));
+  const auto& events = delegate_.events();
+  ASSERT_EQ(1U, events.size());
+
+  UserActivityEvent::Event expected_event;
+  expected_event.set_type(UserActivityEvent::Event::REACTIVATE);
+  expected_event.set_reason(UserActivityEvent::Event::USER_ACTIVITY);
+  EqualEvent(expected_event, events[0].event());
+}
+
+TEST_F(UserActivityLoggerTest, SuspendOther) {
+  // Trigger an idle event.
+  base::Time now = base::Time::UnixEpoch();
+  ReportIdleEvent({now, now});
+
+  ReportSuspend(power_manager::SuspendImminent_Reason_OTHER,
+                UserActivityLogger::kMinSuspendDuration);
+  const auto& events = delegate_.events();
+  ASSERT_EQ(1U, events.size());
+
+  UserActivityEvent::Event expected_event;
+  expected_event.set_type(UserActivityEvent::Event::OFF);
+  expected_event.set_reason(UserActivityEvent::Event::MANUAL_SLEEP);
+  EqualEvent(expected_event, events[0].event());
+}
+
+TEST_F(UserActivityLoggerTest, SuspendOtherCancelled) {
+  // Trigger an idle event.
+  base::Time now = base::Time::UnixEpoch();
+  ReportIdleEvent({now, now});
+
+  ReportSuspend(power_manager::SuspendImminent_Reason_OTHER,
+                UserActivityLogger::kMinSuspendDuration -
+                    base::TimeDelta::FromSeconds(2));
+  const auto& events = delegate_.events();
+  ASSERT_EQ(1U, events.size());
+
+  UserActivityEvent::Event expected_event;
+  expected_event.set_type(UserActivityEvent::Event::REACTIVATE);
+  expected_event.set_reason(UserActivityEvent::Event::USER_ACTIVITY);
   EqualEvent(expected_event, events[0].event());
 }
 

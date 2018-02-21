@@ -204,12 +204,12 @@ void FakePowerManagerClient::SendSuspendImminent(
     render_process_manager_delegate_->SuspendImminent();
 }
 
-void FakePowerManagerClient::SendSuspendDone() {
+void FakePowerManagerClient::SendSuspendDone(base::TimeDelta sleep_duration) {
   if (render_process_manager_delegate_)
     render_process_manager_delegate_->SuspendDone();
 
   for (auto& observer : observers_)
-    observer.SuspendDone(base::TimeDelta());
+    observer.SuspendDone(sleep_duration);
 }
 
 void FakePowerManagerClient::SendDarkSuspendImminent() {
