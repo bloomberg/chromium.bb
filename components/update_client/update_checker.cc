@@ -60,6 +60,7 @@ class UpdateCheckerImpl : public UpdateChecker {
                        const IdToComponentPtrMap& components,
                        const std::string& additional_attributes,
                        bool enabled_component_updates,
+                       bool is_foreground,
                        UpdateCheckCallback update_check_callback) override;
 
  private:
@@ -67,7 +68,8 @@ class UpdateCheckerImpl : public UpdateChecker {
   void CheckForUpdatesHelper(const std::string& session_id,
                              const IdToComponentPtrMap& components,
                              const std::string& additional_attributes,
-                             bool enabled_component_updates);
+                             bool enabled_component_updates,
+                             bool is_foreground);
   void OnRequestSenderComplete(const IdToComponentPtrMap& components,
                                int error,
                                const std::string& response,
@@ -105,6 +107,7 @@ void UpdateCheckerImpl::CheckForUpdates(
     const IdToComponentPtrMap& components,
     const std::string& additional_attributes,
     bool enabled_component_updates,
+    bool is_foreground,
     UpdateCheckCallback update_check_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -118,7 +121,7 @@ void UpdateCheckerImpl::CheckForUpdates(
       base::BindOnce(&UpdateCheckerImpl::CheckForUpdatesHelper,
                      base::Unretained(this), session_id,
                      base::ConstRef(components), additional_attributes,
-                     enabled_component_updates));
+                     enabled_component_updates, is_foreground));
 }
 
 // This function runs on the blocking pool task runner.
@@ -139,7 +142,8 @@ void UpdateCheckerImpl::CheckForUpdatesHelper(
     const std::string& session_id,
     const IdToComponentPtrMap& components,
     const std::string& additional_attributes,
-    bool enabled_component_updates) {
+    bool enabled_component_updates,
+    bool is_foreground) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   auto urls(config_->UpdateUrl());
@@ -153,7 +157,7 @@ void UpdateCheckerImpl::CheckForUpdatesHelper(
                               metadata_, additional_attributes,
                               enabled_component_updates,
                               updater_state_attributes_),
-      urls,
+      base::make_optional(is_foreground), urls,
       base::BindOnce(&UpdateCheckerImpl::OnRequestSenderComplete,
                      base::Unretained(this), base::ConstRef(components)));
 }

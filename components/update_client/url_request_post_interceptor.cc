@@ -49,6 +49,7 @@ class URLRequestMockJob : public net::URLRequestSimpleJob {
     mime_type->assign("text/plain");
     charset->assign("US-ASCII");
     data->assign(response_body_);
+
     return net::OK;
   }
 
@@ -119,21 +120,25 @@ int URLRequestPostInterceptor::GetCount() const {
   return static_cast<int>(requests_.size());
 }
 
-std::vector<std::string> URLRequestPostInterceptor::GetRequests() const {
+std::vector<URLRequestPostInterceptor::InterceptedRequest>
+URLRequestPostInterceptor::GetRequests() const {
   base::AutoLock auto_lock(interceptor_lock_);
   return requests_;
 }
 
+std::string URLRequestPostInterceptor::GetRequestBody(size_t n) const {
+  base::AutoLock auto_lock(interceptor_lock_);
+  return requests_[n].first;
+}
+
 std::string URLRequestPostInterceptor::GetRequestsAsString() const {
-  std::vector<std::string> requests(GetRequests());
+  const std::vector<InterceptedRequest> requests = GetRequests();
 
   std::string s = "Requests are:";
 
   int i = 0;
-  for (std::vector<std::string>::const_iterator it = requests.begin();
-       it != requests.end(); ++it) {
-    s.append(base::StringPrintf("\n  (%d): %s", ++i, it->c_str()));
-  }
+  for (auto it = requests.cbegin(); it != requests.cend(); ++it)
+    s.append(base::StringPrintf("\n  [%d]: %s", ++i, it->first.c_str()));
 
   return s;
 }
@@ -212,7 +217,8 @@ class URLRequestPostInterceptor::Delegate : public net::URLRequestInterceptor {
 
     {
       base::AutoLock auto_lock(interceptor->interceptor_lock_);
-      interceptor->requests_.push_back(request_body);
+      interceptor->requests_.push_back(
+          {request_body, request->extra_request_headers()});
       if (interceptor->expectations_.empty())
         return nullptr;
       const URLRequestPostInterceptor::Expectation& expectation(

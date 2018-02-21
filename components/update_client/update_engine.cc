@@ -161,7 +161,7 @@ void UpdateEngine::DoUpdateCheck(const UpdateContextIterator it) {
   update_context->update_checker->CheckForUpdates(
       update_context->session_id, update_context->ids,
       update_context->components, config_->ExtraRequestParams(),
-      update_context->enabled_component_updates,
+      update_context->enabled_component_updates, update_context->is_foreground,
       base::BindOnce(&UpdateEngine::UpdateCheckDone, base::Unretained(this),
                      it));
 }
