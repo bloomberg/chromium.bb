@@ -184,6 +184,9 @@ blink::WebServiceWorkerClientInfo ToWebServiceWorkerClientInfo(
 }
 
 void ToWebServiceWorkerRequest(const network::ResourceRequest& request,
+                               const std::string request_body_blob_uuid,
+                               uint64_t request_body_blob_size,
+                               blink::mojom::BlobPtrInfo request_body_blob,
                                const std::string& client_id,
                                blink::WebServiceWorkerRequest* web_request) {
   DCHECK(web_request);
@@ -195,12 +198,23 @@ void ToWebServiceWorkerRequest(const network::ResourceRequest& request,
                              blink::WebString::FromUTF8(it.value()));
     }
   }
-  if (request.request_body) {
+
+  // Non-S13nServiceWorker: The body is provided as a blob.
+  if (request_body_blob) {
+    DCHECK(!ServiceWorkerUtils::IsServicificationEnabled());
+    mojo::ScopedMessagePipeHandle blob_pipe = request_body_blob.PassHandle();
+    web_request->SetBlob(blink::WebString::FromASCII(request_body_blob_uuid),
+                         request_body_blob_size, std::move(blob_pipe));
+  }
+  // S13nServiceWorker: The body is provided in |request|.
+  else if (request.request_body) {
+    DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
     blink::WebHTTPBody body =
         GetWebHTTPBodyForRequestBody(*request.request_body);
     body.SetUniqueBoundary();
     web_request->SetBody(body);
   }
+
   web_request->SetReferrer(blink::WebString::FromUTF8(request.referrer.spec()),
                            Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
                                request.referrer_policy));
@@ -1590,36 +1604,6 @@ void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
       WebServiceWorkerImpl::CreateHandle(worker));
 }
 
-// Non-S13nServiceWorker
-void ServiceWorkerContextClient::DispatchLegacyFetchEvent(
-    const ServiceWorkerFetchRequest& request,
-    mojom::FetchEventPreloadHandlePtr preload_handle,
-    mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-    DispatchLegacyFetchEventCallback callback) {
-  int event_id = context_->timeout_timer->StartEvent(
-      CreateAbortCallback(&context_->fetch_event_callbacks));
-  context_->fetch_event_callbacks.emplace(event_id, std::move(callback));
-  context_->fetch_response_callbacks.emplace(event_id,
-                                             std::move(response_callback));
-
-  // This TRACE_EVENT is used for perf benchmark to confirm if all of fetch
-  // events have completed. (crbug.com/736697)
-  TRACE_EVENT1("ServiceWorker",
-               "ServiceWorkerContextClient::DispatchFetchEvent", "event_id",
-               event_id);
-
-  // Set up for navigation preload (FetchEvent#preloadResponse) if needed.
-  const bool navigation_preload_sent = !!preload_handle;
-  if (navigation_preload_sent) {
-    SetupNavigationPreload(event_id, request.url, std::move(preload_handle));
-  }
-
-  // Dispatch the event to the service worker execution context.
-  blink::WebServiceWorkerRequest web_request;
-  ToWebServiceWorkerRequest(request, &web_request);
-  proxy_->DispatchFetchEvent(event_id, web_request, navigation_preload_sent);
-}
-
 // S13nServiceWorker
 void ServiceWorkerContextClient::DispatchFetchEvent(
     mojom::DispatchFetchEventParamsPtr params,
@@ -1646,8 +1630,10 @@ void ServiceWorkerContextClient::DispatchFetchEvent(
 
   // Dispatch the event to the service worker execution context.
   blink::WebServiceWorkerRequest web_request;
-  ToWebServiceWorkerRequest(std::move(params->request), params->client_id,
-                            &web_request);
+  ToWebServiceWorkerRequest(
+      std::move(params->request), params->request_body_blob_uuid,
+      params->request_body_blob_size, std::move(params->request_body_blob),
+      params->client_id, &web_request);
   proxy_->DispatchFetchEvent(event_id, web_request, navigation_preload_sent);
 }
 

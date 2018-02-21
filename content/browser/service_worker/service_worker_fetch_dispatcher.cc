@@ -455,14 +455,21 @@ class ServiceWorkerFetchDispatcher::URLLoaderAssets
   DISALLOW_COPY_AND_ASSIGN(URLLoaderAssets);
 };
 
-// S13nServiceWorker
 ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
     std::unique_ptr<network::ResourceRequest> request,
+    const std::string& request_body_blob_uuid,
+    uint64_t request_body_blob_size,
+    blink::mojom::BlobPtr request_body_blob,
+    const std::string& client_id,
     scoped_refptr<ServiceWorkerVersion> version,
     const net::NetLogWithSource& net_log,
     base::OnceClosure prepare_callback,
     FetchCallback fetch_callback)
     : request_(std::move(request)),
+      request_body_blob_uuid_(request_body_blob_uuid),
+      request_body_blob_size_(request_body_blob_size),
+      request_body_blob_(std::move(request_body_blob)),
+      client_id_(client_id),
       version_(std::move(version)),
       resource_type_(static_cast<ResourceType>(request_->resource_type)),
       net_log_(net_log),
@@ -470,28 +477,12 @@ ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
       fetch_callback_(std::move(fetch_callback)),
       did_complete_(false),
       weak_factory_(this) {
-  net_log_.BeginEvent(net::NetLogEventType::SERVICE_WORKER_DISPATCH_FETCH_EVENT,
-                      net::NetLog::StringCallback(
-                          "event_type", ServiceWorkerMetrics::EventTypeToString(
-                                            GetEventType())));
-}
-
-// Non-S13nServiceWorker
-ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
-    std::unique_ptr<ServiceWorkerFetchRequest> legacy_request,
-    scoped_refptr<ServiceWorkerVersion> version,
-    ResourceType resource_type,
-    const net::NetLogWithSource& net_log,
-    base::OnceClosure prepare_callback,
-    FetchCallback fetch_callback)
-    : legacy_request_(std::move(legacy_request)),
-      version_(std::move(version)),
-      resource_type_(resource_type),
-      net_log_(net_log),
-      prepare_callback_(std::move(prepare_callback)),
-      fetch_callback_(std::move(fetch_callback)),
-      did_complete_(false),
-      weak_factory_(this) {
+#if DCHECK_IS_ON()
+  if (ServiceWorkerUtils::IsServicificationEnabled()) {
+    DCHECK((request_body_blob_uuid_.empty() && request_body_blob_size_ == 0 &&
+            !request_body_blob_ && client_id_.empty()));
+  }
+#endif  // DCHECK_IS_ON()
   net_log_.BeginEvent(net::NetLogEventType::SERVICE_WORKER_DISPATCH_FETCH_EVENT,
                       net::NetLog::StringCallback(
                           "event_type", ServiceWorkerMetrics::EventTypeToString(
@@ -594,38 +585,22 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   }
 
   // Dispatch the fetch event.
+  auto params = mojom::DispatchFetchEventParams::New();
+  params->request = *request_;
+  params->request_body_blob_uuid = request_body_blob_uuid_;
+  params->request_body_blob_size = request_body_blob_size_;
+  params->request_body_blob = request_body_blob_.PassInterface();
+  params->client_id = client_id_;
+  params->preload_handle = std::move(preload_handle_);
   // |event_dispatcher| is owned by |version_|. So it is safe to pass the
   // unretained raw pointer of |version_| to OnFetchEventFinished callback.
   // Pass |url_loader_assets_| to the callback to keep the URL loader related
   // assets alive while the FetchEvent is ongoing in the service worker.
-  if (ServiceWorkerUtils::IsServicificationEnabled()) {
-    // TODO(shimazu): Change CHECK to DCHECK after the cause of
-    // https://crbug.com/810685 is found.
-    CHECK(request_);
-    CHECK(!legacy_request_);
-    auto params = mojom::DispatchFetchEventParams::New();
-    params->request = *request_;
-    // When S13nServiceWorker is enabled, we come here only for navigations.
-    // FetchEvent#clientId should be the empty string for a navigation, so we
-    // don't need to set |params->client_id| here.
-    params->preload_handle = std::move(preload_handle_);
-    version_->event_dispatcher()->DispatchFetchEvent(
-        std::move(params), std::move(response_callback_ptr),
-        base::BindOnce(&ServiceWorkerFetchDispatcher::OnFetchEventFinished,
-                       base::Unretained(version_.get()), event_finish_id,
-                       url_loader_assets_));
-  } else {
-    // TODO(shimazu): Change CHECK to DCHECK after the cause of
-    // https://crbug.com/810685 is found.
-    CHECK(!request_);
-    CHECK(legacy_request_);
-    version_->event_dispatcher()->DispatchLegacyFetchEvent(
-        *legacy_request_, std::move(preload_handle_),
-        std::move(response_callback_ptr),
-        base::BindOnce(&ServiceWorkerFetchDispatcher::OnFetchEventFinished,
-                       base::Unretained(version_.get()), event_finish_id,
-                       url_loader_assets_));
-  }
+  version_->event_dispatcher()->DispatchFetchEvent(
+      std::move(params), std::move(response_callback_ptr),
+      base::BindOnce(&ServiceWorkerFetchDispatcher::OnFetchEventFinished,
+                     base::Unretained(version_.get()), event_finish_id,
+                     url_loader_assets_));
 }
 
 void ServiceWorkerFetchDispatcher::DidFailToDispatch(
@@ -671,6 +646,7 @@ void ServiceWorkerFetchDispatcher::Complete(
            std::move(body_as_blob), version_);
 }
 
+// Non-S13nServiceWorker
 bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
     net::URLRequest* original_request,
     base::OnceClosure on_response) {
@@ -681,7 +657,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   if (!version_->navigation_preload_state().enabled)
     return false;
   // TODO(horo): Currently NavigationPreload doesn't support request body.
-  if (!legacy_request_->blob_uuid.empty())
+  if (request_body_blob_)
     return false;
 
   ResourceRequestInfoImpl* original_info =
@@ -838,9 +814,8 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreloadWithURLLoader(
 }
 
 ServiceWorkerFetchType ServiceWorkerFetchDispatcher::GetFetchType() const {
-  if (ServiceWorkerUtils::IsServicificationEnabled())
-    return ServiceWorkerFetchType::FETCH;
-  return legacy_request_->fetch_type;
+  // TODO(falken): Remove FetchType, as the only type is FETCH.
+  return ServiceWorkerFetchType::FETCH;
 }
 
 ServiceWorkerMetrics::EventType ServiceWorkerFetchDispatcher::GetEventType()

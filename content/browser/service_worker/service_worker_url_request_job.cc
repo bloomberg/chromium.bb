@@ -554,54 +554,42 @@ void ServiceWorkerURLRequestJob::StartRequest() {
   NOTREACHED();
 }
 
-std::unique_ptr<ServiceWorkerFetchRequest>
-ServiceWorkerURLRequestJob::CreateFetchRequest() {
-  std::string blob_uuid;
-  uint64_t blob_size = 0;
-  if (HasRequestBody())
-    CreateRequestBodyBlob(&blob_uuid, &blob_size);
-  auto request = std::make_unique<ServiceWorkerFetchRequest>();
-  request->mode = request_mode_;
-  request->is_main_resource_load = IsMainResourceLoad();
-  request->request_context_type = request_context_type_;
-  request->frame_type = frame_type_;
+std::unique_ptr<network::ResourceRequest>
+ServiceWorkerURLRequestJob::CreateResourceRequest() {
+  // The network::ResourceRequest will be passed to the renderer and be
+  // converted to blink::WebServiceWorkerRequest in
+  // ServiceWorkerContextClient::ToWebServiceWorkerRequest. So make sure the
+  // fields set here are consistent with the fields read there.
+  auto request = std::make_unique<network::ResourceRequest>();
   request->url = request_->url();
   request->method = request_->method();
-  const net::HttpRequestHeaders& headers = request_->extra_request_headers();
-  for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext();) {
-    if (ServiceWorkerContext::IsExcludedHeaderNameForFetchEvent(it.name()))
-      continue;
-    request->headers[it.name()] = it.value();
+
+  for (net::HttpRequestHeaders::Iterator it(request_->extra_request_headers());
+       it.GetNext();) {
+    if (!ServiceWorkerContext::IsExcludedHeaderNameForFetchEvent(it.name()))
+      request->headers.SetHeader(it.name(), it.value());
   }
-  request->blob_uuid = blob_uuid;
-  request->blob_size = blob_size;
-  request->blob = request_body_blob_handle_;
-  request->credentials_mode = credentials_mode_;
-  request->cache_mode = ServiceWorkerFetchRequest::GetCacheModeFromLoadFlags(
-      request_->load_flags());
-  request->redirect_mode = redirect_mode_;
-  request->integrity = integrity_;
-  request->keepalive = keepalive_;
-  request->client_id = client_id_;
+
+  request->referrer = GURL(request_->referrer());
+  request->referrer_policy = request_->referrer_policy();
+  request->fetch_request_mode = request_mode_;
+  request->resource_type = resource_type_;
+  request->fetch_credentials_mode = credentials_mode_;
+  request->load_flags = request_->load_flags();
+  request->fetch_redirect_mode = redirect_mode_;
+  request->fetch_request_context_type = request_context_type_;
+  request->fetch_frame_type = frame_type_;
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
-  if (info) {
-    request->is_reload = ui::PageTransitionCoreTypeIs(
-        info->GetPageTransition(), ui::PAGE_TRANSITION_RELOAD);
-    request->referrer =
-        Referrer(GURL(request_->referrer()), info->GetReferrerPolicy());
-  } else {
-    CHECK(
-        request_->referrer_policy() ==
-        net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE);
-    request->referrer =
-        Referrer(GURL(request_->referrer()), blink::kWebReferrerPolicyDefault);
-  }
-  request->fetch_type = fetch_type_;
+  if (info)
+    request->transition_type = info->GetPageTransition();
+  request->fetch_integrity = integrity_;
+  request->keepalive = keepalive_;
   return request;
 }
 
-void ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
-                                                       uint64_t* blob_size) {
+blink::mojom::BlobPtr ServiceWorkerURLRequestJob::CreateRequestBodyBlob(
+    std::string* blob_uuid,
+    uint64_t* blob_size) {
   DCHECK(HasRequestBody());
   auto blob_builder =
       std::make_unique<storage::BlobDataBuilder>(base::GenerateGUID());
@@ -619,8 +607,7 @@ void ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
   storage::BlobImpl::Create(std::make_unique<storage::BlobDataHandle>(
                                 *request_body_blob_data_handle_),
                             MakeRequest(&blob_ptr));
-  request_body_blob_handle_ =
-      base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
+  return blob_ptr;
 }
 
 bool ServiceWorkerURLRequestJob::ShouldRecordNavigationMetrics(
@@ -989,10 +976,22 @@ void ServiceWorkerURLRequestJob::RequestBodyFileSizesResolved(bool success) {
       active_worker->status() == ServiceWorkerVersion::ACTIVATED;
   initial_worker_status_ = active_worker->running_status();
 
+  std::unique_ptr<network::ResourceRequest> resource_request =
+      CreateResourceRequest();
+  std::string blob_uuid;
+  uint64_t blob_size = 0;
+  blink::mojom::BlobPtr blob;
+  if (HasRequestBody()) {
+    // TODO(falken): Could we just set |resource_request->request_body| to
+    // |body_| directly, and not construct a new blob? But I think the
+    // renderer-side might need to know the size of the body.
+    blob = CreateRequestBodyBlob(&blob_uuid, &blob_size);
+  }
+
   DCHECK(!fetch_dispatcher_);
   fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
-      CreateFetchRequest(), base::WrapRefCounted(active_worker), resource_type_,
-      request()->net_log(),
+      std::move(resource_request), blob_uuid, blob_size, std::move(blob),
+      client_id_, base::WrapRefCounted(active_worker), request()->net_log(),
       base::BindOnce(&ServiceWorkerURLRequestJob::DidPrepareFetchEvent,
                      weak_factory_.GetWeakPtr(),
                      base::WrapRefCounted(active_worker)),

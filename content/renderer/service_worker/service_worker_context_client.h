@@ -298,11 +298,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   void DispatchExtendableMessageEvent(
       mojom::ExtendableMessageEventPtr event,
       DispatchExtendableMessageEventCallback callback) override;
-  void DispatchLegacyFetchEvent(
-      const ServiceWorkerFetchRequest& request,
-      mojom::FetchEventPreloadHandlePtr preload_handle,
-      mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      DispatchFetchEventCallback callback) override;
   void DispatchFetchEvent(
       mojom::DispatchFetchEventParamsPtr params,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,

@@ -54,18 +54,14 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
                               blink::mojom::BlobPtr,
                               scoped_refptr<ServiceWorkerVersion>)>;
 
-  // S13nServiceWorker
+  // |request_body_*| and |client_id| are used in non-S13nServiceWorker only.
   ServiceWorkerFetchDispatcher(
       std::unique_ptr<network::ResourceRequest> request,
+      const std::string& request_body_blob_uuid,
+      uint64_t request_body_blob_size,
+      blink::mojom::BlobPtr request_body_blob,
+      const std::string& client_id,
       scoped_refptr<ServiceWorkerVersion> version,
-      const net::NetLogWithSource& net_log,
-      base::OnceClosure prepare_callback,
-      FetchCallback fetch_callback);
-  // Non-S13nServiceWorker
-  ServiceWorkerFetchDispatcher(
-      std::unique_ptr<ServiceWorkerFetchRequest> request,
-      scoped_refptr<ServiceWorkerVersion> version,
-      ResourceType resource_type,
       const net::NetLogWithSource& net_log,
       base::OnceClosure prepare_callback,
       FetchCallback fetch_callback);
@@ -121,10 +117,14 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
   ServiceWorkerFetchType GetFetchType() const;
   ServiceWorkerMetrics::EventType GetEventType() const;
 
-  // S13nServiceWorker
   std::unique_ptr<network::ResourceRequest> request_;
-  // Non-S13nServiceWorker
-  std::unique_ptr<ServiceWorkerFetchRequest> legacy_request_;
+
+  // Non-S13nServiceWorker uses these. ///////////////////////////////
+  std::string request_body_blob_uuid_;
+  uint64_t request_body_blob_size_ = 0;
+  blink::mojom::BlobPtr request_body_blob_;
+  std::string client_id_;
+  ///////////////////////////////////////////////////////////////////
 
   scoped_refptr<ServiceWorkerVersion> version_;
   ResourceType resource_type_;

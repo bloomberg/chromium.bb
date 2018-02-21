@@ -5,6 +5,7 @@
 module content.mojom;
 
 import "services/network/public/mojom/url_loader.mojom";
+import "third_party/WebKit/public/mojom/blob/blob.mojom";
 
 // Used for service worker navigation preload, to create
 // FetchEvent#preloadResponse.
@@ -17,6 +18,14 @@ struct FetchEventPreloadHandle {
 struct DispatchFetchEventParams {
   // FetchEvent#request.
   network.mojom.URLRequest request;
+
+  // For Non-S13nServiceWorker these |request_body_*| fields are used to create
+  // FetchEvent#request#body.  For S13nServiceWorker, the body is provided in
+  // |request.request_body|, and these fields are not used.
+  string request_body_blob_uuid;
+  uint64 request_body_blob_size;
+  blink.mojom.Blob? request_body_blob;
+
   // FetchEvent#clientId.
   string client_id;
   // FetchEvent#preloadResponse.
