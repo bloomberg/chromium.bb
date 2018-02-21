@@ -89,15 +89,9 @@ enum class ObserverListPolicy {
 };
 
 // When check_empty is true, assert that the list is empty on destruction.
-// When allow_reentrancy is false, iterating throught the list while already in
-// the iteration loop will result in DCHECK failure.
-// TODO(oshima): Change the default to non reentrant. https://crbug.com/812109
-template <class ObserverType,
-          bool check_empty = false,
-          bool allow_reentrancy = true>
+template <class ObserverType, bool check_empty = false>
 class ObserverList
-    : public SupportsWeakPtr<
-          ObserverList<ObserverType, check_empty, allow_reentrancy>> {
+    : public SupportsWeakPtr<ObserverList<ObserverType, check_empty>> {
  public:
   // An iterator class that can be used to access the list of observers.
   class Iter {
@@ -117,7 +111,6 @@ class ObserverList
                          ? std::numeric_limits<size_t>::max()
                          : list->observers_.size()) {
       DCHECK(list_);
-      DCHECK(allow_reentrancy || !list_->live_iterator_count_);
       EnsureValidIndex();
       ++list_->live_iterator_count_;
     }
@@ -298,9 +291,6 @@ class ObserverList
 
   DISALLOW_COPY_AND_ASSIGN(ObserverList);
 };
-
-template <class ObserverType, bool check_empty = false>
-using ReentrantObserverList = ObserverList<ObserverType, check_empty, true>;
 
 }  // namespace base
 
