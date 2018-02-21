@@ -19,6 +19,7 @@
 #include "base/process/process_iterator.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -177,12 +178,12 @@ void UploadTraceToCrashServer(std::string file_contents,
   rule.SetKey("rule", base::Value("MEMLOG"));
   rule.SetKey("trigger_name", base::Value(std::move(trigger_name)));
   rule.SetKey("category", base::Value("BENCHMARK_MEMORY_HEAVY"));
-  rule.SetKey("sampling_rate",
-              base::Value(base::saturated_cast<int>(sampling_rate)));
   rules_list.GetList().push_back(std::move(rule));
 
+  std::string sampling_mode = base::StringPrintf("SAMPLING_%u", sampling_rate);
+
   base::Value configs(base::Value::Type::DICTIONARY);
-  configs.SetKey("mode", base::Value("REACTIVE_TRACING_MODE"));
+  configs.SetKey("mode", base::Value(sampling_mode));
   configs.SetKey("category", base::Value("MEMLOG"));
   configs.SetKey("configs", std::move(rules_list));
 
