@@ -10,16 +10,15 @@
 #include <atlwin.h>  // NOLINT
 #endif
 
-#include "base/macros.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 
 #include <limits.h>
 
 #include <algorithm>  // NOLINT
-#include <memory>
 
 #include "base/feature_list.h"
 #include "base/i18n/bidi_line_iterator.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/ui/layout_constants.h"

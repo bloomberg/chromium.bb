@@ -6,6 +6,8 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
@@ -335,7 +337,8 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
   // Third-party software such as DigitalPersona identity verification can hook
   // the underlying window creation methods and use SendMessage to synchronously
   // change focus/activation, resulting in the popup being destroyed by the time
-  // control returns here.  Bail out in this case to avoid a NULL dereference.
+  // control returns here.  Bail out in this case to avoid a nullptr
+  // dereference.
   if (!popup_)
     return;
 
