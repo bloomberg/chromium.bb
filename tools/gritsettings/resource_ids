@@ -271,11 +271,15 @@
   "ash/ash_strings.grd": {
     "messages": [23520],
   },
-  "ash/resources/ash_resources.grd": {
-    "structures": [23920],
+  "ash/components/ash_components_strings.grd": {
+    "messages": [23950],
   },
-
-  # //blimp used to have IDs from 24200-24299, which are now free to use.
+  "ash/components/resources/ash_components_resources.grd": {
+    "structures": [24250],
+  },
+  "ash/resources/ash_resources.grd": {
+    "structures": [24260],
+  },
 
   "chromecast/browser/cast_browser_resources.grd": {
     "includes": [24300],
