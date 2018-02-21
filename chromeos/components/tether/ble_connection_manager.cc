@@ -51,23 +51,6 @@ std::string StateChangeDetailToString(
 const int64_t BleConnectionManager::kAdvertisingTimeoutMillis = 12000;
 const int64_t BleConnectionManager::kFailImmediatelyTimeoutMillis = 0;
 
-// static
-std::string BleConnectionManager::MessageTypeToString(
-    const MessageType& reason) {
-  switch (reason) {
-    case MessageType::TETHER_AVAILABILITY_REQUEST:
-      return "[TetherAvailabilityRequest]";
-    case MessageType::CONNECT_TETHERING_REQUEST:
-      return "[ConnectTetheringRequest]";
-    case MessageType::KEEP_ALIVE_TICKLE:
-      return "[KeepAliveTickle]";
-    case MessageType::DISCONNECT_TETHERING_REQUEST:
-      return "[DisconnectTetheringRequest]";
-    default:
-      return "[invalid MessageType]";
-  }
-}
-
 BleConnectionManager::ConnectionMetadata::ConnectionMetadata(
     const std::string& device_id,
     std::unique_ptr<base::Timer> timer,
@@ -80,18 +63,18 @@ BleConnectionManager::ConnectionMetadata::ConnectionMetadata(
 BleConnectionManager::ConnectionMetadata::~ConnectionMetadata() = default;
 
 void BleConnectionManager::ConnectionMetadata::RegisterConnectionReason(
-    const MessageType& connection_reason) {
+    const ConnectionReason& connection_reason) {
   active_connection_reasons_.insert(connection_reason);
 }
 
 void BleConnectionManager::ConnectionMetadata::UnregisterConnectionReason(
-    const MessageType& connection_reason) {
+    const ConnectionReason& connection_reason) {
   active_connection_reasons_.erase(connection_reason);
 }
 
 ConnectionPriority
 BleConnectionManager::ConnectionMetadata::GetConnectionPriority() {
-  return HighestPriorityForMessageTypes(active_connection_reasons_);
+  return HighestPriorityForConnectionReasons(active_connection_reasons_);
 }
 
 bool BleConnectionManager::ConnectionMetadata::HasReasonForConnection() const {
@@ -251,7 +234,7 @@ BleConnectionManager::~BleConnectionManager() {
 
 void BleConnectionManager::RegisterRemoteDevice(
     const std::string& device_id,
-    const MessageType& connection_reason) {
+    const ConnectionReason& connection_reason) {
   if (!has_registered_observer_) {
     ble_scanner_->AddObserver(this);
   }
@@ -259,7 +242,7 @@ void BleConnectionManager::RegisterRemoteDevice(
 
   PA_LOG(INFO) << "Register - Device ID: \""
                << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
-               << "\", Reason: " << MessageTypeToString(connection_reason);
+               << "\", Reason: " << ConnectionReasonToString(connection_reason);
 
   ConnectionMetadata* connection_metadata = GetConnectionMetadata(device_id);
   if (!connection_metadata)
@@ -271,20 +254,21 @@ void BleConnectionManager::RegisterRemoteDevice(
 
 void BleConnectionManager::UnregisterRemoteDevice(
     const std::string& device_id,
-    const MessageType& connection_reason) {
+    const ConnectionReason& connection_reason) {
   ConnectionMetadata* connection_metadata = GetConnectionMetadata(device_id);
   if (!connection_metadata) {
     PA_LOG(WARNING) << "Tried to unregister device, but was not registered - "
                     << "Device ID: \""
                     << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(
                            device_id)
-                    << "\", Reason: " << MessageTypeToString(connection_reason);
+                    << "\", Reason: "
+                    << ConnectionReasonToString(connection_reason);
     return;
   }
 
   PA_LOG(INFO) << "Unregister - Device ID: \""
                << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
-               << "\", Reason: " << MessageTypeToString(connection_reason);
+               << "\", Reason: " << ConnectionReasonToString(connection_reason);
 
   connection_metadata->UnregisterConnectionReason(connection_reason);
   if (!connection_metadata->HasReasonForConnection()) {

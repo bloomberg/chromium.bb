@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/metrics/histogram_macros.h"
+#include "chromeos/components/tether/connection_reason.h"
 #include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/timer_factory.h"
 #include "components/proximity_auth/logging/logging.h"
@@ -85,8 +86,9 @@ void MessageTransferOperation::Initialize() {
   OnOperationStarted();
 
   for (const auto& remote_device : remote_devices_) {
-    connection_manager_->RegisterRemoteDevice(remote_device.GetDeviceId(),
-                                              message_type_for_connection_);
+    connection_manager_->RegisterRemoteDevice(
+        remote_device.GetDeviceId(),
+        MessageTypeToConnectionReason(message_type_for_connection_));
 
     cryptauth::SecureChannel::Status status;
     if (connection_manager_->GetStatusForDevice(remote_device.GetDeviceId(),
@@ -168,8 +170,9 @@ void MessageTransferOperation::UnregisterDevice(
                         remote_devices_.end());
   StopTimerForDeviceIfRunning(remote_device_copy);
 
-  connection_manager_->UnregisterRemoteDevice(remote_device_copy.GetDeviceId(),
-                                              message_type_for_connection_);
+  connection_manager_->UnregisterRemoteDevice(
+      remote_device_copy.GetDeviceId(),
+      MessageTypeToConnectionReason(message_type_for_connection_));
 
   if (!shutting_down_ && remote_devices_.empty())
     OnOperationFinished();
