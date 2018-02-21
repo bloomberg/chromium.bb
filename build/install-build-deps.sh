@@ -298,61 +298,61 @@ else
   dbg_list="${dbg_list} libstdc++6-4.8-dbg"
 fi
 if package_exists libgtk-3-0-dbgsym; then
-  lib_list="${lib_list} libgtk-3-0-dbgsym"
+  dbg_list="${dbg_list} libgtk-3-0-dbgsym"
 elif package_exists libgtk-3-0-dbg; then
-  lib_list="${lib_list} libgtk-3-0-dbg"
+  dbg_list="${dbg_list} libgtk-3-0-dbg"
 fi
 if package_exists libatk1.0-0-dbgsym; then
-  lib_list="${lib_list} libatk1.0-0-dbgsym"
+  dbg_list="${dbg_list} libatk1.0-0-dbgsym"
 elif package_exists libatk1.0-dbg; then
-  lib_list="${lib_list} libatk1.0-dbg"
+  dbg_list="${dbg_list} libatk1.0-dbg"
 fi
 if package_exists libcairo2-dbgsym; then
-  lib_list="${lib_list} libcairo2-dbgsym"
+  dbg_list="${dbg_list} libcairo2-dbgsym"
 elif package_exists libcairo2-dbg; then
-  lib_list="${lib_list} libcairo2-dbg"
+  dbg_list="${dbg_list} libcairo2-dbg"
 fi
 if package_exists libfontconfig1-dbgsym; then
-  lib_list="${lib_list} libfontconfig1-dbgsym"
+  dbg_list="${dbg_list} libfontconfig1-dbgsym"
 else
-  lib_list="${lib_list} libfontconfig1-dbg"
+  dbg_list="${dbg_list} libfontconfig1-dbg"
 fi
 if package_exists libxdamage1-dbgsym; then
-  lib_list="${lib_list} libxdamage1-dbgsym"
+  dbg_list="${dbg_list} libxdamage1-dbgsym"
 elif package_exists libxdamage1-dbg; then
-  lib_list="${lib_list} libxdamage1-dbg"
+  dbg_list="${dbg_list} libxdamage1-dbg"
 fi
 if package_exists libpango1.0-dev-dbgsym; then
-  lib_list="${lib_list} libpango1.0-dev-dbgsym"
+  dbg_list="${dbg_list} libpango1.0-dev-dbgsym"
 elif package_exists libpango1.0-0-dbg; then
-  lib_list="${lib_list} libpango1.0-0-dbg"
+  dbg_list="${dbg_list} libpango1.0-0-dbg"
 fi
 if package_exists libx11-6-dbg; then
-    lib_list="${lib_list} libx11-6-dbg"
+  dbg_list="${dbg_list} libx11-6-dbg"
 fi
 if package_exists libx11-xcb1-dbg; then
-    lib_list="${lib_list} libx11-xcb1-dbg"
+  dbg_list="${dbg_list} libx11-xcb1-dbg"
 fi
 if package_exists libxfixes3-dbg; then
-    lib_list="${lib_list} libxfixes3-dbg"
+  dbg_list="${dbg_list} libxfixes3-dbg"
 fi
 if package_exists libxi6-dbg; then
-    lib_list="${lib_list} libxi6-dbg"
+  dbg_list="${dbg_list} libxi6-dbg"
 fi
 if package_exists libxrandr2-dbg; then
-    lib_list="${lib_list} libxrandr2-dbg"
+  dbg_list="${dbg_list} libxrandr2-dbg"
 fi
 if package_exists libxrender1-dbg; then
-    lib_list="${lib_list} libxrender1-dbg"
+  dbg_list="${dbg_list} libxrender1-dbg"
 fi
 if package_exists libxtst6-dbg; then
-    lib_list="${lib_list} libxtst6-dbg"
+  dbg_list="${dbg_list} libxtst6-dbg"
 fi
 if package_exists libglib2.0-0-dbg; then
-    lib_list="${lib_list} libglib2.0-0-dbg"
+  dbg_list="${dbg_list} libglib2.0-0-dbg"
 fi
 if package_exists libxcursor1-dbg; then
-    lib_list="${lib_list} libxcursor1-dbg"
+  dbg_list="${dbg_list} libxcursor1-dbg"
 fi
 
 # 32-bit libraries needed e.g. to compile V8 snapshot for Android or armhf
