@@ -103,7 +103,6 @@ enum UiElementName {
   kBackgroundRight,
   kBackgroundTop,
   kBackgroundBottom,
-  kUnderDevelopmentNotice,
   kWebVrTimeoutRoot,
   kWebVrTimeoutSpinner,
   kWebVrBackground,

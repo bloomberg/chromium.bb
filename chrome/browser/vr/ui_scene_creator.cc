@@ -550,7 +550,6 @@ void UiSceneCreator::CreateScene() {
   CreateOmnibox();
   CreateCloseButton();
   CreateFullscreenToast();
-  CreateUnderDevelopmentNotice();
   CreateVoiceSearchUiGroup();
   CreateContentRepositioningAffordance();
   CreateExitWarning();
@@ -1076,22 +1075,6 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
   scaler->AddChild(std::move(timeout_message));
   scaler->AddChild(std::move(spinner));
   scene_->AddUiElement(kWebVrViewportAwareRoot, std::move(scaler));
-}
-
-void UiSceneCreator::CreateUnderDevelopmentNotice() {
-  auto text = std::make_unique<Text>(kUnderDevelopmentNoticeFontHeightDMM);
-  VR_BIND_COLOR(model_, text.get(), &ColorScheme::world_background_text,
-                &Text::SetColor);
-  text->SetText(l10n_util::GetStringUTF16(IDS_VR_UNDER_DEVELOPMENT_NOTICE));
-  text->SetName(kUnderDevelopmentNotice);
-  text->SetDrawPhase(kPhaseForeground);
-  text->SetSize(kUnderDevelopmentNoticeWidthDMM,
-                kUnderDevelopmentNoticeHeightDMM);
-  text->SetTranslate(0, -kUnderDevelopmentNoticeVerticalOffsetDMM, 0);
-  text->SetRotate(1, 0, 0, kUnderDevelopmentNoticeRotationRad);
-  text->set_y_anchoring(BOTTOM);
-  text->set_contributes_to_parent_bounds(false);
-  scene_->AddUiElement(kUrlBar, std::move(text));
 }
 
 void UiSceneCreator::CreateBackground() {

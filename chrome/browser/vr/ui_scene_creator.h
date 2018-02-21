@@ -39,7 +39,6 @@ class UiSceneCreator {
   void CreateWebVrRoot();
   void CreateSystemIndicators();
   void CreateContentQuad();
-  void CreateUnderDevelopmentNotice();
   void CreateBackground();
   void CreateViewportAwareRoot();
   void CreateUrlBar();

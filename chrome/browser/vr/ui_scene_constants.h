@@ -161,12 +161,6 @@ static constexpr float kVoiceSearchRecognitionResultTextHeight =
 static constexpr float kVoiceSearchRecognitionResultTextWidth =
     0.4f * kContentDistance;
 
-static constexpr float kUnderDevelopmentNoticeFontHeightDMM = 0.02f;
-static constexpr float kUnderDevelopmentNoticeHeightDMM = 0.1f;
-static constexpr float kUnderDevelopmentNoticeWidthDMM = 0.44f;
-static constexpr float kUnderDevelopmentNoticeVerticalOffsetDMM = 0.2f;
-static constexpr float kUnderDevelopmentNoticeRotationRad = -0.78f;
-
 static constexpr float kTimeoutScreenDisatance = 2.5f;
 static constexpr float kTimeoutSpinnerSizeDMM = 0.088f;
 static constexpr float kTimeoutSpinnerVerticalOffsetDMM =

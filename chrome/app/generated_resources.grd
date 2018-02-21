@@ -10950,9 +10950,6 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
       <message name="IDS_VR_BROWSER_UNSUPPORTED_PAGE" desc="This text is displayed as a large toast to inform the user that they cannot currently browse the current page in VR and they will soon exit VR mode.">
         This page contains features not yet supported in VR. Exiting...
       </message>
-      <message name="IDS_VR_UNDER_DEVELOPMENT_NOTICE" desc="Text to be shown below the URL bar to announce that this is under development.">
-        This is an early release. Some features, like search and text entry, are not yet available.
-      </message>
       <message name="IDS_VR_WEB_VR_TIMEOUT_MESSAGE" desc="A message that is shown to the user when the WebVR experience is taking too long to start up.">
         The page isn't responding. You can wait for it or exit.
       </message>
