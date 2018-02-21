@@ -169,10 +169,6 @@ const base::Feature kCaptureThumbnailOnNavigatingAway{
 const base::Feature kChangePictureVideoMode{"ChangePictureVideoMode",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Whether to trigger app banner installability checks on page load.
-const base::Feature kCheckInstallabilityForBannerOnLoad{
-    "CheckInstallabilityForBannerOnLoad", base::FEATURE_DISABLED_BY_DEFAULT};
-
 #if defined(OS_ANDROID)
 // Enables clearing of browsing data which is older than given time period.
 const base::Feature kClearOldBrowsingData{"ClearOldBrowsingData",
