@@ -127,6 +127,8 @@ gles2_implementation_source_files = [
   "gles2_trace_implementation_impl_autogen.h",
   "gpu_switches.cc",
   "gpu_switches.h",
+  "implementation_base.cc",
+  "implementation_base.h",
   "logging.cc",
   "logging.h",
   "program_info_manager.cc",
@@ -199,6 +201,7 @@ source_set("raster_sources") {
   configs += [ "//gpu:raster_implementation" ]
   deps = [
     ":client",
+    ":gles2_implementation",
     ":gles2_interface",
     ":raster_interface",
     "//base",
@@ -206,13 +209,21 @@ source_set("raster_sources") {
     "//components/viz/common:resource_format",
     "//gpu/command_buffer/common",
     "//gpu/command_buffer/common:gles2",
+    "//gpu/command_buffer/common:gles2_utils",
     "//ui/gfx:color_space",
     "//ui/gfx/geometry",
     "//ui/gfx/ipc/color",
   ]
   sources = [
+    "raster_cmd_helper.cc",
+    "raster_cmd_helper.h",
+    "raster_cmd_helper_autogen.h",
+    "raster_implementation.cc",
+    "raster_implementation.h",
+    "raster_implementation_autogen.h",
     "raster_implementation_gles.cc",
     "raster_implementation_gles.h",
+    "raster_implementation_impl_autogen.h",
   ]
 }
 

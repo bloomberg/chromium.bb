@@ -203,6 +203,17 @@ TEST_F(RasterFormatTest, LoseContextCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(RasterFormatTest, InsertFenceSyncCHROMIUM) {
+  cmds::InsertFenceSyncCHROMIUM& cmd =
+      *GetBufferAs<cmds::InsertFenceSyncCHROMIUM>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint64>(11));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::InsertFenceSyncCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint64>(11), cmd.release_count());
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(RasterFormatTest, WaitSyncTokenCHROMIUM) {
   cmds::WaitSyncTokenCHROMIUM& cmd =
       *GetBufferAs<cmds::WaitSyncTokenCHROMIUM>();

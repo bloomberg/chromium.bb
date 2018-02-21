@@ -26,17 +26,18 @@
   OP(EndQueryEXT)                          /* 267 */ \
   OP(CompressedCopyTextureCHROMIUM)        /* 268 */ \
   OP(LoseContextCHROMIUM)                  /* 269 */ \
-  OP(WaitSyncTokenCHROMIUM)                /* 270 */ \
-  OP(UnpremultiplyAndDitherCopyCHROMIUM)   /* 271 */ \
-  OP(InitializeDiscardableTextureCHROMIUM) /* 272 */ \
-  OP(UnlockDiscardableTextureCHROMIUM)     /* 273 */ \
-  OP(LockDiscardableTextureCHROMIUM)       /* 274 */ \
-  OP(BeginRasterCHROMIUM)                  /* 275 */ \
-  OP(RasterCHROMIUM)                       /* 276 */ \
-  OP(EndRasterCHROMIUM)                    /* 277 */ \
-  OP(CreateTransferCacheEntryINTERNAL)     /* 278 */ \
-  OP(DeleteTransferCacheEntryINTERNAL)     /* 279 */ \
-  OP(UnlockTransferCacheEntryINTERNAL)     /* 280 */
+  OP(InsertFenceSyncCHROMIUM)              /* 270 */ \
+  OP(WaitSyncTokenCHROMIUM)                /* 271 */ \
+  OP(UnpremultiplyAndDitherCopyCHROMIUM)   /* 272 */ \
+  OP(InitializeDiscardableTextureCHROMIUM) /* 273 */ \
+  OP(UnlockDiscardableTextureCHROMIUM)     /* 274 */ \
+  OP(LockDiscardableTextureCHROMIUM)       /* 275 */ \
+  OP(BeginRasterCHROMIUM)                  /* 276 */ \
+  OP(RasterCHROMIUM)                       /* 277 */ \
+  OP(EndRasterCHROMIUM)                    /* 278 */ \
+  OP(CreateTransferCacheEntryINTERNAL)     /* 279 */ \
+  OP(DeleteTransferCacheEntryINTERNAL)     /* 280 */ \
+  OP(UnlockTransferCacheEntryINTERNAL)     /* 281 */
 
 enum CommandId {
   kOneBeforeStartPoint =
