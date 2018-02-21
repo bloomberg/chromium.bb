@@ -88,6 +88,7 @@ const int kMaxOAuth2Attempts = 3;
 
 const char kNotFromWebstoreInstallSource[] = "notfromwebstore";
 const char kDefaultInstallSource[] = "";
+const char kDefaultInstallLocation[] = "";
 const char kReinstallInstallSource[] = "reinstall";
 
 const char kGoogleDotCom[] = "google.com";
@@ -238,14 +239,16 @@ bool ExtensionDownloader::AddExtension(
   if (!ManifestURL::UpdatesFromGallery(&extension))
     extra.update_url_data = delegate_->GetUpdateUrlData(extension.id());
 
-  return AddExtensionData(
-      extension.id(), extension.version(), extension.GetType(),
-      ManifestURL::GetUpdateURL(&extension), extra, request_id, fetch_priority);
+  return AddExtensionData(extension.id(), extension.version(),
+                          extension.GetType(), extension.location(),
+                          ManifestURL::GetUpdateURL(&extension), extra,
+                          request_id, fetch_priority);
 }
 
 bool ExtensionDownloader::AddPendingExtension(
     const std::string& id,
     const GURL& update_url,
+    Manifest::Location install_location,
     bool is_corrupt_reinstall,
     int request_id,
     ManifestFetchData::FetchPriority fetch_priority) {
@@ -258,8 +261,8 @@ bool ExtensionDownloader::AddPendingExtension(
   if (is_corrupt_reinstall)
     extra.is_corrupt_reinstall = true;
 
-  return AddExtensionData(id, version, Manifest::TYPE_UNKNOWN, update_url,
-                          extra, request_id, fetch_priority);
+  return AddExtensionData(id, version, Manifest::TYPE_UNKNOWN, install_location,
+                          update_url, extra, request_id, fetch_priority);
 }
 
 void ExtensionDownloader::StartAllPending(ExtensionCache* cache) {
@@ -299,6 +302,7 @@ void ExtensionDownloader::StartBlacklistUpdate(
   DCHECK(blacklist_fetch->base_url().SchemeIsCryptographic());
   blacklist_fetch->AddExtension(kBlacklistAppID, version, &ping_data,
                                 std::string(), kDefaultInstallSource,
+                                kDefaultInstallLocation,
                                 ManifestFetchData::FetchPriority::BACKGROUND);
   StartUpdateCheck(std::move(blacklist_fetch));
 }
@@ -318,6 +322,7 @@ bool ExtensionDownloader::AddExtensionData(
     const std::string& id,
     const base::Version& version,
     Manifest::Type extension_type,
+    Manifest::Location extension_location,
     const GURL& extension_update_url,
     const ExtraParams& extra,
     int request_id,
@@ -381,6 +386,9 @@ bool ExtensionDownloader::AddExtensionData(
   if (extra.is_corrupt_reinstall)
     install_source = kReinstallInstallSource;
 
+  const std::string install_location =
+      ManifestFetchData::GetSimpleLocationString(extension_location);
+
   ManifestFetchData::PingData ping_data;
   ManifestFetchData::PingData* optional_ping_data = NULL;
   if (delegate_->GetPingDataForExtension(id, &ping_data))
@@ -394,9 +402,9 @@ bool ExtensionDownloader::AddExtensionData(
       !existing_iter->second.empty()) {
     // Try to add to the ManifestFetchData at the end of the list.
     ManifestFetchData* existing_fetch = existing_iter->second.back().get();
-    if (existing_fetch->AddExtension(id, version.GetString(),
-                                     optional_ping_data, extra.update_url_data,
-                                     install_source, fetch_priority)) {
+    if (existing_fetch->AddExtension(
+            id, version.GetString(), optional_ping_data, extra.update_url_data,
+            install_source, install_location, fetch_priority)) {
       added = true;
     }
   }
@@ -410,7 +418,7 @@ bool ExtensionDownloader::AddExtensionData(
         std::move(fetch));
     added = fetch_ptr->AddExtension(id, version.GetString(), optional_ping_data,
                                     extra.update_url_data, install_source,
-                                    fetch_priority);
+                                    install_location, fetch_priority);
     DCHECK(added);
   }
 
