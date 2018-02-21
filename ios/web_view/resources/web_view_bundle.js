@@ -6,3 +6,4 @@
 goog.provide('__crWeb.webViewBundle');
 
 goog.require('__crWeb.autofill');
+goog.require('__crWeb.fill');

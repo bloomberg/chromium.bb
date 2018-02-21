@@ -92,6 +92,13 @@ template("js_compile_bundle") {
 #   deps (optional)
 #     List of targets required by this target.
 #
+#   js_modules
+#     List of JS files defining modules that are required by the sources.
+#     The list must be sorted in dependency order.
+#     This is based on
+#     https://github.com/google/closure-compiler/wiki/JS-Modules
+#     https://stackoverflow.com/questions/10395810/how-do-i-split-my-javascript-into-modules-using-googles-closure-compiler/10401030#10401030
+#
 #   visibility (optional)
 #     Visibility restrictions.
 #
@@ -109,6 +116,15 @@ template("js_compile_checked") {
       visibility = [ ":$_target_name" ]
       script = closure_compiler_path
       sources = invoker.sources
+      _js_modules = [
+        "//ios/web/web_state/js/resources/base.js",
+        "//ios/web/web_state/js/resources/common.js",
+        "//ios/web/web_state/js/resources/message.js",
+      ]
+      if (defined(invoker.js_modules)) {
+        _js_modules += invoker.js_modules
+      }
+      inputs = _js_modules
       outputs = [
         "$target_gen_dir/{{source_file_part}}",
       ]
@@ -136,24 +152,23 @@ template("js_compile_checked") {
         "--jscomp_error=visibility",
         "--module_output_path_prefix",
         rebase_path(target_gen_dir, root_build_dir) + "/",
-        "--js",
-        rebase_path("//ios/web/web_state/js/resources/base.js", root_build_dir),
-        "--module",
-        "base_module:1",
-        "--js",
-        rebase_path("//ios/web/web_state/js/resources/common.js",
-                    root_build_dir),
-        "--module",
-        "common_module:1:base_module",
-        "--js",
-        rebase_path("//ios/web/web_state/js/resources/message.js",
-                    root_build_dir),
-        "--module",
-        "message_module:1:common_module",
+      ]
+      last_dependency = ""
+      foreach(_js_module, _js_modules) {
+        _js_module_name = get_path_info(_js_module, "name")
+        args += [
+          "--js",
+          rebase_path(_js_module, root_build_dir),
+          "--module",
+          "$_js_module_name:1$last_dependency",
+        ]
+        last_dependency = ":$_js_module_name"
+      }
+      args += [
         "--js",
         "{{source}}",
         "--module",
-        "{{source_name_part}}:1:common_module:message_module",
+        "{{source_name_part}}:1$last_dependency",
       ]
     }
 

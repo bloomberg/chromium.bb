@@ -129,7 +129,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
    */
   var findInputByFieldIdentifier_ = function(inputs, identifier) {
     for (var i = 0; i < inputs.length; ++i) {
-      if (identifier == __gCrWeb.common.getFieldIdentifier(inputs[i])) {
+      if (identifier == __gCrWeb.form.getFieldIdentifier(inputs[i])) {
         return inputs[i];
       }
     }
@@ -144,7 +144,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
    * @return {HTMLFormElement} The password form.
    */
   var getPasswordFormElement_ = function(win, identifier) {
-    var el = win.__gCrWeb.common.getFormElementFromIdentifier(identifier);
+    var el = win.__gCrWeb.form.getFormElementFromIdentifier(identifier);
     if (el) return el;
     var frames = getSameOriginFrames_(win);
     for (var i = 0; i < frames.length; ++i) {
@@ -161,7 +161,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
    * @return {Array<HTMLInputElement>}
    */
   var getFormInputElements_ = function(form) {
-    return __gCrWeb.common.getFormControlElements(form).filter(function(
+    return __gCrWeb.form.getFormControlElements(form).filter(function(
         element) {
       return element.tagName === 'INPUT';
     });
@@ -318,7 +318,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
       var input = inputs[j];
 
       fields.push({
-        'element': __gCrWeb.common.getFieldIdentifier(input),
+        'element': __gCrWeb.form.getFieldIdentifier(input),
         'type': input.type
       });
 
@@ -327,7 +327,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
           firstPasswordIndex = j;
         }
         passwords.push({
-          'element': __gCrWeb.common.getFieldIdentifier(input),
+          'element': __gCrWeb.form.getFieldIdentifier(input),
           'value': input.value
         });
       }
@@ -340,7 +340,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
     for (var j = firstPasswordIndex - 1; j >= 0; j--) {
       var input = inputs[j];
       if (!input.disabled && __gCrWeb.common.isTextField(input)) {
-        usernameElement = __gCrWeb.common.getFieldIdentifier(input);
+        usernameElement = __gCrWeb.form.getFieldIdentifier(input);
         usernameValue = input.value;
         break;
       }
@@ -351,7 +351,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
 
     return {
       'action': getCanonicalActionForForm_(formElement),
-      'name': __gCrWeb.common.getFormIdentifier(formElement),
+      'name': __gCrWeb.form.getFormIdentifier(formElement),
       'origin': origin,
       'fields': fields,
       'usernameElement': usernameElement,

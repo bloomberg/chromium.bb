@@ -22,7 +22,8 @@ class PasswordControllerJsTest
     : public web::WebJsTest<web::WebTestWithWebState> {
  public:
   PasswordControllerJsTest()
-      : web::WebJsTest<web::WebTestWithWebState>(@[ @"password_controller" ]) {}
+      : web::WebJsTest<web::WebTestWithWebState>(
+            @[ @"chrome_bundle", @"password_controller" ]) {}
 };
 
 // IDs used in the Username and Password <input> elements.

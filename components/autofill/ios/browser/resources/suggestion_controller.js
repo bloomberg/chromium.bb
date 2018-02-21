@@ -282,7 +282,7 @@ __gCrWeb.suggestion.getTabOrder = function(element) {
  * @return {Element} The element if found, otherwise null.
  */
 __gCrWeb.suggestion.getFormElement = function(formName, fieldName) {
-  var form = __gCrWeb.common.getFormElementFromIdentifier(formName);
+  var form = __gCrWeb.form.getFormElementFromIdentifier(formName);
   if (!form) return null;
   return getElementByNameWithParent_(form, fieldName);
 };
