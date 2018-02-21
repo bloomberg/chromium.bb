@@ -302,10 +302,10 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { H_PRED, { INTRA_FRAME, NONE_FRAME } },
   { V_PRED, { INTRA_FRAME, NONE_FRAME } },
   { D135_PRED, { INTRA_FRAME, NONE_FRAME } },
-  { D207_PRED, { INTRA_FRAME, NONE_FRAME } },
-  { D153_PRED, { INTRA_FRAME, NONE_FRAME } },
-  { D63_PRED, { INTRA_FRAME, NONE_FRAME } },
-  { D117_PRED, { INTRA_FRAME, NONE_FRAME } },
+  { D203_PRED, { INTRA_FRAME, NONE_FRAME } },
+  { D157_PRED, { INTRA_FRAME, NONE_FRAME } },
+  { D67_PRED, { INTRA_FRAME, NONE_FRAME } },
+  { D113_PRED, { INTRA_FRAME, NONE_FRAME } },
   { D45_PRED, { INTRA_FRAME, NONE_FRAME } },
 
 #if CONFIG_EXT_COMP_REFS
@@ -345,16 +345,16 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
 
 static const PREDICTION_MODE intra_rd_search_mode_order[INTRA_MODES] = {
   DC_PRED,       H_PRED,        V_PRED,    SMOOTH_PRED, PAETH_PRED,
-  SMOOTH_V_PRED, SMOOTH_H_PRED, D135_PRED, D207_PRED,   D153_PRED,
-  D63_PRED,      D117_PRED,     D45_PRED,
+  SMOOTH_V_PRED, SMOOTH_H_PRED, D135_PRED, D203_PRED,   D157_PRED,
+  D67_PRED,      D113_PRED,     D45_PRED,
 };
 
 #if CONFIG_CFL
 static const UV_PREDICTION_MODE uv_rd_search_mode_order[UV_INTRA_MODES] = {
   UV_DC_PRED,     UV_CFL_PRED,   UV_H_PRED,        UV_V_PRED,
   UV_SMOOTH_PRED, UV_PAETH_PRED, UV_SMOOTH_V_PRED, UV_SMOOTH_H_PRED,
-  UV_D135_PRED,   UV_D207_PRED,  UV_D153_PRED,     UV_D63_PRED,
-  UV_D117_PRED,   UV_D45_PRED,
+  UV_D135_PRED,   UV_D203_PRED,  UV_D157_PRED,     UV_D67_PRED,
+  UV_D113_PRED,   UV_D45_PRED,
 };
 #else
 #define uv_rd_search_mode_order intra_rd_search_mode_order
@@ -2828,16 +2828,16 @@ static int intra_mode_info_cost_uv(const AV1_COMP *cpi, const MACROBLOCK *x,
 
 static int conditional_skipintra(PREDICTION_MODE mode,
                                  PREDICTION_MODE best_intra_mode) {
-  if (mode == D117_PRED && best_intra_mode != V_PRED &&
+  if (mode == D113_PRED && best_intra_mode != V_PRED &&
       best_intra_mode != D135_PRED)
     return 1;
-  if (mode == D63_PRED && best_intra_mode != V_PRED &&
+  if (mode == D67_PRED && best_intra_mode != V_PRED &&
       best_intra_mode != D45_PRED)
     return 1;
-  if (mode == D207_PRED && best_intra_mode != H_PRED &&
+  if (mode == D203_PRED && best_intra_mode != H_PRED &&
       best_intra_mode != D45_PRED)
     return 1;
-  if (mode == D153_PRED && best_intra_mode != H_PRED &&
+  if (mode == D157_PRED && best_intra_mode != H_PRED &&
       best_intra_mode != D135_PRED)
     return 1;
   return 0;

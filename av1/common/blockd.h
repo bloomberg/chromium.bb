@@ -188,7 +188,7 @@ typedef struct {
 } FILTER_INTRA_MODE_INFO;
 
 static const PREDICTION_MODE fimode_to_intradir[FILTER_INTRA_MODES] = {
-  DC_PRED, V_PRED, H_PRED, D153_PRED, DC_PRED
+  DC_PRED, V_PRED, H_PRED, D157_PRED, DC_PRED
 };
 #endif  // CONFIG_FILTER_INTRA
 
@@ -334,10 +334,10 @@ static INLINE PREDICTION_MODE get_uv_mode(UV_PREDICTION_MODE mode) {
     H_PRED,         // UV_H_PRED
     D45_PRED,       // UV_D45_PRED
     D135_PRED,      // UV_D135_PRED
-    D117_PRED,      // UV_D117_PRED
-    D153_PRED,      // UV_D153_PRED
-    D207_PRED,      // UV_D207_PRED
-    D63_PRED,       // UV_D63_PRED
+    D113_PRED,      // UV_D113_PRED
+    D157_PRED,      // UV_D157_PRED
+    D203_PRED,      // UV_D203_PRED
+    D67_PRED,       // UV_D67_PRED
     SMOOTH_PRED,    // UV_SMOOTH_PRED
     SMOOTH_V_PRED,  // UV_SMOOTH_V_PRED
     SMOOTH_H_PRED,  // UV_SMOOTH_H_PRED

@@ -434,12 +434,12 @@ typedef enum ATTRIBUTE_PACKED {
   DC_PRED,        // Average of above and left pixels
   V_PRED,         // Vertical
   H_PRED,         // Horizontal
-  D45_PRED,       // Directional 45  deg = round(arctan(1/1) * 180/pi)
-  D135_PRED,      // Directional 135 deg = 180 - 45
-  D117_PRED,      // Directional 117 deg = 180 - 63
-  D153_PRED,      // Directional 153 deg = 180 - 27
-  D207_PRED,      // Directional 207 deg = 180 + 27
-  D63_PRED,       // Directional 63  deg = round(arctan(2/1) * 180/pi)
+  D45_PRED,       // Directional 45  degree
+  D135_PRED,      // Directional 135 degree
+  D113_PRED,      // Directional 113 degree
+  D157_PRED,      // Directional 157 degree
+  D203_PRED,      // Directional 203 degree
+  D67_PRED,       // Directional 67  degree
   SMOOTH_PRED,    // Combination of horizontal and vertical interpolation
   SMOOTH_V_PRED,  // Vertical interpolation
   SMOOTH_H_PRED,  // Horizontal interpolation
@@ -468,12 +468,12 @@ typedef enum ATTRIBUTE_PACKED {
   UV_DC_PRED,        // Average of above and left pixels
   UV_V_PRED,         // Vertical
   UV_H_PRED,         // Horizontal
-  UV_D45_PRED,       // Directional 45  deg = round(arctan(1/1) * 180/pi)
-  UV_D135_PRED,      // Directional 135 deg = 180 - 45
-  UV_D117_PRED,      // Directional 117 deg = 180 - 63
-  UV_D153_PRED,      // Directional 153 deg = 180 - 27
-  UV_D207_PRED,      // Directional 207 deg = 180 + 27
-  UV_D63_PRED,       // Directional 63  deg = round(arctan(2/1) * 180/pi)
+  UV_D45_PRED,       // Directional 45  degree
+  UV_D135_PRED,      // Directional 135 degree
+  UV_D113_PRED,      // Directional 113 degree
+  UV_D157_PRED,      // Directional 157 degree
+  UV_D203_PRED,      // Directional 203 degree
+  UV_D67_PRED,       // Directional 67  degree
   UV_SMOOTH_PRED,    // Combination of horizontal and vertical interpolation
   UV_SMOOTH_V_PRED,  // Vertical interpolation
   UV_SMOOTH_H_PRED,  // Horizontal interpolation

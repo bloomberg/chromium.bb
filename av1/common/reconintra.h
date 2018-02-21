@@ -51,9 +51,9 @@ static INLINE int av1_is_directional_mode(PREDICTION_MODE mode,
                                           BLOCK_SIZE bsize) {
 #if CONFIG_INTRA_EDGE
   (void)bsize;
-  return mode >= V_PRED && mode <= D63_PRED;
+  return mode >= V_PRED && mode <= D67_PRED;
 #else
-  return mode >= V_PRED && mode <= D63_PRED && bsize >= BLOCK_8X8;
+  return mode >= V_PRED && mode <= D67_PRED && bsize >= BLOCK_8X8;
 #endif
 }
 

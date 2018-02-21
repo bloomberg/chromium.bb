@@ -45,10 +45,10 @@ static const uint8_t extend_modes[INTRA_MODES] = {
   NEED_LEFT,                                // H
   NEED_ABOVE | NEED_ABOVERIGHT,             // D45
   NEED_LEFT | NEED_ABOVE | NEED_ABOVELEFT,  // D135
-  NEED_LEFT | NEED_ABOVE | NEED_ABOVELEFT,  // D117
-  NEED_LEFT | NEED_ABOVE | NEED_ABOVELEFT,  // D153
-  NEED_LEFT | NEED_BOTTOMLEFT,              // D207
-  NEED_ABOVE | NEED_ABOVERIGHT,             // D63
+  NEED_LEFT | NEED_ABOVE | NEED_ABOVELEFT,  // D113
+  NEED_LEFT | NEED_ABOVE | NEED_ABOVELEFT,  // D157
+  NEED_LEFT | NEED_BOTTOMLEFT,              // D203
+  NEED_ABOVE | NEED_ABOVERIGHT,             // D67
   NEED_LEFT | NEED_ABOVE,                   // SMOOTH
   NEED_LEFT | NEED_ABOVE,                   // SMOOTH_V
   NEED_LEFT | NEED_ABOVE,                   // SMOOTH_H
@@ -611,12 +611,12 @@ static void av1_init_intra_predictors_internal(void) {
 
   INIT_ALL_SIZES(pred[V_PRED], v);
   INIT_ALL_SIZES(pred[H_PRED], h);
-  INIT_ALL_SIZES(pred[D207_PRED], d207e);
+  INIT_ALL_SIZES(pred[D203_PRED], d207e);
   INIT_ALL_SIZES(pred[D45_PRED], d45e);
-  INIT_ALL_SIZES(pred[D63_PRED], d63e);
-  INIT_ALL_SIZES(pred[D117_PRED], d117);
+  INIT_ALL_SIZES(pred[D67_PRED], d63e);
+  INIT_ALL_SIZES(pred[D113_PRED], d117);
   INIT_ALL_SIZES(pred[D135_PRED], d135);
-  INIT_ALL_SIZES(pred[D153_PRED], d153);
+  INIT_ALL_SIZES(pred[D157_PRED], d153);
 
   INIT_ALL_SIZES(pred[PAETH_PRED], paeth);
   INIT_ALL_SIZES(pred[SMOOTH_PRED], smooth);
@@ -630,12 +630,12 @@ static void av1_init_intra_predictors_internal(void) {
 
   INIT_ALL_SIZES(pred_high[V_PRED], highbd_v);
   INIT_ALL_SIZES(pred_high[H_PRED], highbd_h);
-  INIT_ALL_SIZES(pred_high[D207_PRED], highbd_d207e);
+  INIT_ALL_SIZES(pred_high[D203_PRED], highbd_d207e);
   INIT_ALL_SIZES(pred_high[D45_PRED], highbd_d45e);
-  INIT_ALL_SIZES(pred_high[D63_PRED], highbd_d63e);
-  INIT_ALL_SIZES(pred_high[D117_PRED], highbd_d117);
+  INIT_ALL_SIZES(pred_high[D67_PRED], highbd_d63e);
+  INIT_ALL_SIZES(pred_high[D113_PRED], highbd_d117);
   INIT_ALL_SIZES(pred_high[D135_PRED], highbd_d135);
-  INIT_ALL_SIZES(pred_high[D153_PRED], highbd_d153);
+  INIT_ALL_SIZES(pred_high[D157_PRED], highbd_d153);
 
   INIT_ALL_SIZES(pred_high[PAETH_PRED], highbd_paeth);
   INIT_ALL_SIZES(pred_high[SMOOTH_PRED], highbd_smooth);
