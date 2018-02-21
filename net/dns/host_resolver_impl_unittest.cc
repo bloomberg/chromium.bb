@@ -2746,4 +2746,154 @@ TEST_F(HostResolverImplTest, ResolveLocalHostname) {
       ResolveLocalHostname("foo.localhoste", kLocalhostLookupPort, &addresses));
 }
 
+TEST_F(HostResolverImplDnsTest, AddDnsOverHttpsServerAfterConfig) {
+  resolver_ = nullptr;
+  test::ScopedMockNetworkChangeNotifier notifier;
+  CreateSerialResolver();  // To guarantee order of resolutions.
+  notifier.mock_network_change_notifier()->SetConnectionType(
+      NetworkChangeNotifier::CONNECTION_WIFI);
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  resolver_->SetDnsClientEnabled(true);
+  std::string spec("https://dns.example.com/");
+  resolver_->AddDnsOverHttpsServer(spec, true);
+  base::DictionaryValue* config;
+
+  auto value = resolver_->GetDnsConfigAsValue();
+  EXPECT_TRUE(value);
+  if (!value)
+    return;
+  value->GetAsDictionary(&config);
+  base::ListValue* doh_servers;
+  config->GetListWithoutPathExpansion("doh_servers", &doh_servers);
+  EXPECT_TRUE(doh_servers);
+  if (!doh_servers)
+    return;
+  EXPECT_EQ(doh_servers->GetSize(), 1u);
+  base::DictionaryValue* server_method;
+  EXPECT_TRUE(doh_servers->GetDictionary(0, &server_method));
+  bool use_post;
+  EXPECT_TRUE(server_method->GetBoolean("use_post", &use_post));
+  EXPECT_TRUE(use_post);
+  std::string server_spec;
+  EXPECT_TRUE(server_method->GetString("server", &server_spec));
+  EXPECT_EQ(server_spec, spec);
+}
+
+TEST_F(HostResolverImplDnsTest, AddDnsOverHttpsServerBeforeConfig) {
+  resolver_ = nullptr;
+  test::ScopedMockNetworkChangeNotifier notifier;
+  CreateSerialResolver();  // To guarantee order of resolutions.
+  resolver_->SetDnsClientEnabled(true);
+  std::string spec("https://dns.example.com/");
+  resolver_->AddDnsOverHttpsServer(spec, true);
+
+  notifier.mock_network_change_notifier()->SetConnectionType(
+      NetworkChangeNotifier::CONNECTION_WIFI);
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  base::DictionaryValue* config;
+  auto value = resolver_->GetDnsConfigAsValue();
+  EXPECT_TRUE(value);
+  if (!value)
+    return;
+  value->GetAsDictionary(&config);
+  base::ListValue* doh_servers;
+  config->GetListWithoutPathExpansion("doh_servers", &doh_servers);
+  EXPECT_TRUE(doh_servers);
+  if (!doh_servers)
+    return;
+  EXPECT_EQ(doh_servers->GetSize(), 1u);
+  base::DictionaryValue* server_method;
+  EXPECT_TRUE(doh_servers->GetDictionary(0, &server_method));
+  bool use_post;
+  EXPECT_TRUE(server_method->GetBoolean("use_post", &use_post));
+  EXPECT_TRUE(use_post);
+  std::string server_spec;
+  EXPECT_TRUE(server_method->GetString("server", &server_spec));
+  EXPECT_EQ(server_spec, spec);
+}
+
+TEST_F(HostResolverImplDnsTest, AddDnsOverHttpsServerBeforeClient) {
+  resolver_ = nullptr;
+  test::ScopedMockNetworkChangeNotifier notifier;
+  CreateSerialResolver();  // To guarantee order of resolutions.
+  std::string spec("https://dns.example.com/");
+  resolver_->AddDnsOverHttpsServer(spec, true);
+
+  notifier.mock_network_change_notifier()->SetConnectionType(
+      NetworkChangeNotifier::CONNECTION_WIFI);
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  resolver_->SetDnsClientEnabled(true);
+
+  base::DictionaryValue* config;
+  auto value = resolver_->GetDnsConfigAsValue();
+  EXPECT_TRUE(value);
+  if (!value)
+    return;
+  value->GetAsDictionary(&config);
+  base::ListValue* doh_servers;
+  config->GetListWithoutPathExpansion("doh_servers", &doh_servers);
+  EXPECT_TRUE(doh_servers);
+  if (!doh_servers)
+    return;
+  EXPECT_EQ(doh_servers->GetSize(), 1u);
+  base::DictionaryValue* server_method;
+  EXPECT_TRUE(doh_servers->GetDictionary(0, &server_method));
+  bool use_post;
+  EXPECT_TRUE(server_method->GetBoolean("use_post", &use_post));
+  EXPECT_TRUE(use_post);
+  std::string server_spec;
+  EXPECT_TRUE(server_method->GetString("server", &server_spec));
+  EXPECT_EQ(server_spec, spec);
+}
+
+TEST_F(HostResolverImplDnsTest, AddDnsOverHttpsServerAndThenRemove) {
+  resolver_ = nullptr;
+  test::ScopedMockNetworkChangeNotifier notifier;
+  CreateSerialResolver();  // To guarantee order of resolutions.
+  std::string spec("https://dns.example.com/");
+  resolver_->AddDnsOverHttpsServer(spec, true);
+
+  notifier.mock_network_change_notifier()->SetConnectionType(
+      NetworkChangeNotifier::CONNECTION_WIFI);
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  resolver_->SetDnsClientEnabled(true);
+
+  base::DictionaryValue* config;
+  auto value = resolver_->GetDnsConfigAsValue();
+  EXPECT_TRUE(value);
+  if (!value)
+    return;
+  value->GetAsDictionary(&config);
+  base::ListValue* doh_servers;
+  config->GetListWithoutPathExpansion("doh_servers", &doh_servers);
+  EXPECT_TRUE(doh_servers);
+  if (!doh_servers)
+    return;
+  EXPECT_EQ(doh_servers->GetSize(), 1u);
+  base::DictionaryValue* server_method;
+  EXPECT_TRUE(doh_servers->GetDictionary(0, &server_method));
+  bool use_post;
+  EXPECT_TRUE(server_method->GetBoolean("use_post", &use_post));
+  EXPECT_TRUE(use_post);
+  std::string server_spec;
+  EXPECT_TRUE(server_method->GetString("server", &server_spec));
+  EXPECT_EQ(server_spec, spec);
+
+  resolver_->ClearDnsOverHttpsServers();
+  value = resolver_->GetDnsConfigAsValue();
+  EXPECT_TRUE(value);
+  if (!value)
+    return;
+  value->GetAsDictionary(&config);
+  config->GetListWithoutPathExpansion("doh_servers", &doh_servers);
+  EXPECT_TRUE(doh_servers);
+  if (!doh_servers)
+    return;
+  EXPECT_EQ(doh_servers->GetSize(), 0u);
+}
+
 }  // namespace net

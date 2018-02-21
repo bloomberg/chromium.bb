@@ -134,7 +134,9 @@ void DnsSession::UpdateTimeouts(NetworkChangeNotifier::ConnectionType type) {
 
 void DnsSession::InitializeServerStats() {
   server_stats_.clear();
-  for (size_t i = 0; i < config_.nameservers.size(); ++i) {
+  for (size_t i = 0;
+       i < config_.nameservers.size() + config_.dns_over_https_servers.size();
+       ++i) {
     server_stats_.push_back(std::make_unique<ServerStats>(
         initial_timeout_, rtt_buckets_.Pointer()));
   }
@@ -162,6 +164,8 @@ unsigned DnsSession::NextFirstServerIndex() {
 }
 
 unsigned DnsSession::NextGoodServerIndex(unsigned server_index) {
+  DCHECK_GE(server_index, 0u);
+  DCHECK_LT(server_index, config_.nameservers.size());
   unsigned index = server_index;
   base::Time oldest_server_failure(base::Time::Now());
   unsigned oldest_server_failure_index = 0;
@@ -179,6 +183,37 @@ unsigned DnsSession::NextGoodServerIndex(unsigned server_index) {
       oldest_server_failure_index = index;
     }
     index = (index + 1) % config_.nameservers.size();
+  } while (index != server_index);
+
+  // If we are here it means that there are no successful servers, so we have
+  // to use one that has failed oldest.
+  return oldest_server_failure_index;
+}
+
+unsigned DnsSession::NextGoodDnsOverHttpsServerIndex(unsigned server_index) {
+  DCHECK_GE(server_index, config_.nameservers.size());
+  DCHECK_LT(server_index,
+            config_.nameservers.size() + config_.dns_over_https_servers.size());
+  unsigned index = server_index;
+  base::Time oldest_server_failure(base::Time::Now());
+  unsigned oldest_server_failure_index = config_.nameservers.size();
+
+  do {
+    base::Time cur_server_failure = server_stats_[index]->last_failure;
+    // If number of failures on this server doesn't exceed number of allowed
+    // attempts, return its index.
+    if (server_stats_[index]->last_failure_count < config_.attempts) {
+      return index;
+    }
+    // Track oldest failed server.
+    if (cur_server_failure < oldest_server_failure) {
+      oldest_server_failure = cur_server_failure;
+      oldest_server_failure_index = index;
+    }
+    // Index of dns over https servers begins at nameservers.size().
+    unsigned doh_index = index - config_.nameservers.size();
+    doh_index = ((doh_index + 1) % config_.dns_over_https_servers.size());
+    index = doh_index + config_.nameservers.size();
   } while (index != server_index);
 
   // If we are here it means that there are no successful servers, so we have

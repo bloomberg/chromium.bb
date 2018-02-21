@@ -83,9 +83,24 @@ std::unique_ptr<base::Value> DnsConfig::ToValue() const {
   dict->SetBoolean("edns0", edns0);
   dict->SetBoolean("use_local_ipv6", use_local_ipv6);
   dict->SetInteger("num_hosts", hosts.size());
+  list = std::make_unique<base::ListValue>();
+  for (auto& server : dns_over_https_servers) {
+    base::Value val(base::Value::Type::DICTIONARY);
+    base::DictionaryValue* dict;
+    val.GetAsDictionary(&dict);
+    dict->SetString("server", server.server.spec());
+    dict->SetBoolean("use_post", server.use_post);
+    list->GetList().push_back(std::move(val));
+  }
+  dict->Set("doh_servers", std::move(list));
 
   return std::move(dict);
 }
+
+DnsConfig::DnsOverHttpsServerConfig::DnsOverHttpsServerConfig(
+    const GURL& server,
+    bool use_post)
+    : server(server), use_post(use_post) {}
 
 DnsConfigService::DnsConfigService()
     : watch_failed_(false),

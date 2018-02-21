@@ -280,6 +280,10 @@ class IOThread : public content::BrowserThreadDelegate {
 
   BooleanPrefMember pac_https_url_stripping_enabled_;
 
+  StringListPrefMember dns_over_https_servers_;
+
+  StringListPrefMember dns_over_https_server_methods_;
+
   // Store HTTP Auth-related policies in this thread.
   // TODO(aberent) Make the list of auth schemes a PrefMember, so that the
   // policy can change after startup (https://crbug/549273).

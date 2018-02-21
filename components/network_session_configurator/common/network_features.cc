@@ -9,4 +9,7 @@ namespace features {
 const base::Feature kTokenBinding{"token-binding",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kDnsOverHttps{"dns-over-https",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features

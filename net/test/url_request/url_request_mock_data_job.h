@@ -57,9 +57,11 @@ class URLRequestMockDataJob : public URLRequestJob {
                                          const std::string& data,
                                          int repeat_count);
 
+ protected:
+  ~URLRequestMockDataJob() override;
+
  private:
   void GetResponseInfoConst(HttpResponseInfo* info) const;
-  ~URLRequestMockDataJob() override;
 
   void StartAsync();
 
