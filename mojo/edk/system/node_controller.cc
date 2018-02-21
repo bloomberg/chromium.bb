@@ -57,28 +57,6 @@ ports::NodeName GetRandomNodeName() {
   return name;
 }
 
-void RecordPeerCount(size_t count) {
-  DCHECK_LE(count, static_cast<size_t>(std::numeric_limits<int32_t>::max()));
-
-  // 8k is the maximum number of file descriptors allowed in Chrome.
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Mojo.System.Node.ConnectedPeers",
-                              static_cast<int32_t>(count),
-                              1 /* min */,
-                              8000 /* max */,
-                              50 /* bucket count */);
-}
-
-void RecordPendingChildCount(size_t count) {
-  DCHECK_LE(count, static_cast<size_t>(std::numeric_limits<int32_t>::max()));
-
-  // 8k is the maximum number of file descriptors allowed in Chrome.
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Mojo.System.Node.PendingChildren",
-                              static_cast<int32_t>(count),
-                              1 /* min */,
-                              8000 /* max */,
-                              50 /* bucket count */);
-}
-
 Channel::MessagePtr SerializeEventMessage(ports::ScopedEvent event) {
   if (event->type() == ports::Event::Type::kUserMessage) {
     // User message events must already be partially serialized.
@@ -236,15 +214,13 @@ void NodeController::AcceptBrokerClientInvitation(
   // synchronously as the first message from the broker.
   base::ElapsedTimer timer;
   broker_.reset(new Broker(connection_params.TakeChannelHandle()));
-  ScopedPlatformHandle platform_handle = broker_->GetParentPlatformHandle();
-  UMA_HISTOGRAM_TIMES("Mojo.System.GetParentPlatformHandleSyncTime",
-                      timer.Elapsed());
+  ScopedPlatformHandle platform_handle = broker_->GetInviterPlatformHandle();
 
   if (!platform_handle.is_valid()) {
-    // Most likely the browser side of the channel has already been closed and
+    // Most likely the inviter's side of the channel has already been closed and
     // the broker was unable to negotiate a NodeChannel pipe. In this case we
-    // can cancel parent connection.
-    DVLOG(1) << "Cannot connect to invalid parent channel.";
+    // can cancel our connection to our inviter.
+    DVLOG(1) << "Cannot connect to invalid inviter channel.";
     CancelPendingPortMerges();
     return;
   }
@@ -295,20 +271,20 @@ int NodeController::SendUserMessage(
   return node_->SendUserMessage(port, std::move(message));
 }
 
-void NodeController::MergePortIntoParent(const std::string& name,
-                                         const ports::PortRef& port) {
-  scoped_refptr<NodeChannel> parent;
+void NodeController::MergePortIntoInviter(const std::string& name,
+                                          const ports::PortRef& port) {
+  scoped_refptr<NodeChannel> inviter;
   bool reject_merge = false;
   {
-    // Hold |pending_port_merges_lock_| while getting |parent|. Otherwise,
-    // there is a race where the parent can be set, and |pending_port_merges_|
-    // be processed between retrieving |parent| and adding the merge to
+    // Hold |pending_port_merges_lock_| while getting |inviter|. Otherwise,
+    // there is a race where the inviter can be set, and |pending_port_merges_|
+    // be processed between retrieving |inviter| and adding the merge to
     // |pending_port_merges_|.
     base::AutoLock lock(pending_port_merges_lock_);
-    parent = GetParentChannel();
+    inviter = GetInviterChannel();
     if (reject_pending_merges_) {
       reject_merge = true;
-    } else if (!parent) {
+    } else if (!inviter) {
       pending_port_merges_.push_back(std::make_pair(name, port));
       return;
     }
@@ -316,11 +292,11 @@ void NodeController::MergePortIntoParent(const std::string& name,
   if (reject_merge) {
     node_->ClosePort(port);
     DVLOG(2) << "Rejecting port merge for name " << name
-             << " due to closed parent channel.";
+             << " due to closed inviter channel.";
     return;
   }
 
-  parent->RequestPortMerge(port.name(), name);
+  inviter->RequestPortMerge(port.name(), name);
 }
 
 int NodeController::MergeLocalPorts(const ports::PortRef& port0,
@@ -395,19 +371,18 @@ void NodeController::SendBrokerClientInvitationOnIOThread(
                           process_error_callback);
 #endif  // !defined(OS_MACOSX) && !defined(OS_NACL)
 
-  // We set up the child channel with a temporary name so it can be identified
-  // as a pending child if it writes any messages to the channel. We may start
+  // We set up the invitee channel with a temporary name so it can be identified
+  // as a pending invitee if it writes any messages to the channel. We may start
   // receiving messages from it (though we shouldn't) as soon as Start() is
   // called below.
 
   pending_invitations_.insert(std::make_pair(temporary_node_name, channel));
-  RecordPendingChildCount(pending_invitations_.size());
 
   channel->SetRemoteNodeName(temporary_node_name);
   channel->SetRemoteProcessHandle(target_process);
   channel->Start();
 
-  channel->AcceptChild(name_, temporary_node_name);
+  channel->AcceptInvitee(name_, temporary_node_name);
 }
 
 void NodeController::AcceptBrokerClientInvitationOnIOThread(
@@ -415,23 +390,21 @@ void NodeController::AcceptBrokerClientInvitationOnIOThread(
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   {
-    base::AutoLock lock(parent_lock_);
-    DCHECK(parent_name_ == ports::kInvalidNodeName);
+    base::AutoLock lock(inviter_lock_);
+    DCHECK(inviter_name_ == ports::kInvalidNodeName);
 
-    // At this point we don't know the parent's name, so we can't yet insert it
+    // At this point we don't know the inviter's name, so we can't yet insert it
     // into our |peers_| map. That will happen as soon as we receive an
-    // AcceptChild message from them.
-    bootstrap_parent_channel_ =
+    // AcceptInvitee message from them.
+    bootstrap_inviter_channel_ =
         NodeChannel::Create(this, std::move(connection_params), io_task_runner_,
                             ProcessErrorCallback());
-    // Prevent the parent pipe handle from being closed on shutdown. Pipe
-    // closure is used by the parent to detect the child process has exited.
-    // Relying on message pipes to be closed is not enough because the parent
-    // may see the message pipe closure before the child is dead, causing the
-    // child process to be unexpectedly SIGKILL'd.
-    bootstrap_parent_channel_->LeakHandleOnShutdown();
+    // Prevent the inviter pipe handle from being closed on shutdown. Pipe
+    // closure may be used by the inviter to detect the invitee process has
+    // exited.
+    bootstrap_inviter_channel_->LeakHandleOnShutdown();
   }
-  bootstrap_parent_channel_->Start();
+  bootstrap_inviter_channel_->Start();
 }
 
 void NodeController::ConnectToPeerOnIOThread(uint64_t peer_connection_id,
@@ -476,13 +449,13 @@ scoped_refptr<NodeChannel> NodeController::GetPeerChannel(
   return it->second;
 }
 
-scoped_refptr<NodeChannel> NodeController::GetParentChannel() {
-  ports::NodeName parent_name;
+scoped_refptr<NodeChannel> NodeController::GetInviterChannel() {
+  ports::NodeName inviter_name;
   {
-    base::AutoLock lock(parent_lock_);
-    parent_name = parent_name_;
+    base::AutoLock lock(inviter_lock_);
+    inviter_name = inviter_name_;
   }
-  return GetPeerChannel(parent_name);
+  return GetPeerChannel(inviter_name);
 }
 
 scoped_refptr<NodeChannel> NodeController::GetBrokerChannel() {
@@ -523,8 +496,6 @@ void NodeController::AddPeer(const ports::NodeName& name,
 
     DVLOG(2) << "Accepting new peer " << name << " on node " << name_;
 
-    RecordPeerCount(peers_.size());
-
     auto it = pending_peer_messages_.find(name);
     if (it != pending_peer_messages_.end()) {
       std::swap(pending_messages, it->second);
@@ -558,9 +529,6 @@ void NodeController::DropPeer(const ports::NodeName& name,
 
     pending_peer_messages_.erase(name);
     pending_invitations_.erase(name);
-
-    RecordPeerCount(peers_.size());
-    RecordPendingChildCount(pending_invitations_.size());
   }
 
   std::vector<ports::PortRef> ports_to_close;
@@ -575,16 +543,17 @@ void NodeController::DropPeer(const ports::NodeName& name,
     }
   }
 
-  bool is_parent;
+  bool is_inviter;
   {
-    base::AutoLock lock(parent_lock_);
-    is_parent = (name == parent_name_ || channel == bootstrap_parent_channel_);
+    base::AutoLock lock(inviter_lock_);
+    is_inviter =
+        (name == inviter_name_ || channel == bootstrap_inviter_channel_);
   }
 
-  // If the error comes from the parent channel, we also need to cancel any
+  // If the error comes from the inviter channel, we also need to cancel any
   // port merge requests, so that errors can be propagated to the message
   // pipes.
-  if (is_parent)
+  if (is_inviter)
     CancelPendingPortMerges();
 
   auto peer = peer_connections_.find(name);
@@ -610,7 +579,7 @@ void NodeController::SendPeerEvent(const ports::NodeName& name,
 #if defined(OS_WIN)
   if (event_message->has_handles()) {
     // If we're sending a message with handles we aren't the destination
-    // node's parent or broker (i.e. we don't know its process handle), ask
+    // node's inviter or broker (i.e. we don't know its process handle), ask
     // the broker to relay for us.
     scoped_refptr<NodeChannel> broker = GetBrokerChannel();
     if (!peer || !peer->HasRemoteProcessHandle()) {
@@ -629,9 +598,9 @@ void NodeController::SendPeerEvent(const ports::NodeName& name,
     // if the broker process is the intended recipient.
     bool use_broker = false;
     if (!GetConfiguration().is_broker_process) {
-      base::AutoLock lock(parent_lock_);
-      use_broker = (bootstrap_parent_channel_ ||
-                    parent_name_ != ports::kInvalidNodeName);
+      base::AutoLock lock(inviter_lock_);
+      use_broker = (bootstrap_inviter_channel_ ||
+                    inviter_name_ != ports::kInvalidNodeName);
     }
 
     if (use_broker) {
@@ -688,15 +657,15 @@ void NodeController::DropAllPeers() {
 
   std::vector<scoped_refptr<NodeChannel>> all_peers;
   {
-    base::AutoLock lock(parent_lock_);
-    if (bootstrap_parent_channel_) {
-      // |bootstrap_parent_channel_| isn't null'd here becuase we rely on its
+    base::AutoLock lock(inviter_lock_);
+    if (bootstrap_inviter_channel_) {
+      // |bootstrap_inviter_channel_| isn't null'd here becuase we rely on its
       // existence to determine whether or not this is the root node. Once
-      // bootstrap_parent_channel_->ShutDown() has been called,
-      // |bootstrap_parent_channel_| is essentially a dead object and it doesn't
-      // matter if it's deleted now or when |this| is deleted.
-      // Note: |bootstrap_parent_channel_| is only modified on the IO thread.
-      all_peers.push_back(bootstrap_parent_channel_);
+      // bootstrap_inviter_channel_->ShutDown() has been called,
+      // |bootstrap_inviter_channel_| is essentially a dead object and it
+      // doesn't matter if it's deleted now or when |this| is deleted. Note:
+      // |bootstrap_inviter_channel_| is only modified on the IO thread.
+      all_peers.push_back(bootstrap_inviter_channel_);
     }
   }
 
@@ -754,44 +723,46 @@ void NodeController::PortStatusChanged(const ports::PortRef& port) {
   }
 }
 
-void NodeController::OnAcceptChild(const ports::NodeName& from_node,
-                                   const ports::NodeName& parent_name,
-                                   const ports::NodeName& token) {
+void NodeController::OnAcceptInvitee(const ports::NodeName& from_node,
+                                     const ports::NodeName& inviter_name,
+                                     const ports::NodeName& token) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
-  scoped_refptr<NodeChannel> parent;
+  scoped_refptr<NodeChannel> inviter;
   {
-    base::AutoLock lock(parent_lock_);
-    if (bootstrap_parent_channel_ && parent_name_ == ports::kInvalidNodeName) {
-      parent_name_ = parent_name;
-      parent = bootstrap_parent_channel_;
+    base::AutoLock lock(inviter_lock_);
+    if (bootstrap_inviter_channel_ &&
+        inviter_name_ == ports::kInvalidNodeName) {
+      inviter_name_ = inviter_name;
+      inviter = bootstrap_inviter_channel_;
     }
   }
 
-  if (!parent) {
-    DLOG(ERROR) << "Unexpected AcceptChild message from " << from_node;
+  if (!inviter) {
+    DLOG(ERROR) << "Unexpected AcceptInvitee message from " << from_node;
     DropPeer(from_node, nullptr);
     return;
   }
 
-  parent->SetRemoteNodeName(parent_name);
-  parent->AcceptParent(token, name_);
+  inviter->SetRemoteNodeName(inviter_name);
+  inviter->AcceptInvitation(token, name_);
 
-  // NOTE: The child does not actually add its parent as a peer until
-  // receiving an AcceptBrokerClient message from the broker. The parent
-  // will request that said message be sent upon receiving AcceptParent.
+  // NOTE: The invitee does not actually add its inviter as a peer until
+  // receiving an AcceptBrokerClient message from the broker. The inviter will
+  // request that said message be sent upon receiving AcceptInvitation.
 
-  DVLOG(1) << "Child " << name_ << " accepting parent " << parent_name;
+  DVLOG(1) << "Broker client " << name_ << " accepting invitation from "
+           << inviter_name;
 }
 
-void NodeController::OnAcceptParent(const ports::NodeName& from_node,
-                                    const ports::NodeName& token,
-                                    const ports::NodeName& child_name) {
+void NodeController::OnAcceptInvitation(const ports::NodeName& from_node,
+                                        const ports::NodeName& token,
+                                        const ports::NodeName& invitee_name) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   auto it = pending_invitations_.find(from_node);
   if (it == pending_invitations_.end() || token != from_node) {
-    DLOG(ERROR) << "Received unexpected AcceptParent message from "
+    DLOG(ERROR) << "Received unexpected AcceptInvitation message from "
                 << from_node;
     DropPeer(from_node, nullptr);
     return;
@@ -803,7 +774,8 @@ void NodeController::OnAcceptParent(const ports::NodeName& from_node,
     if (it != reserved_ports_.end()) {
       // Swap the temporary node name's reserved ports into an entry keyed by
       // the real node name.
-      auto result = reserved_ports_.emplace(child_name, std::move(it->second));
+      auto result =
+          reserved_ports_.emplace(invitee_name, std::move(it->second));
       DCHECK(result.second);
       reserved_ports_.erase(it);
     }
@@ -814,34 +786,34 @@ void NodeController::OnAcceptParent(const ports::NodeName& from_node,
 
   DCHECK(channel);
 
-  DVLOG(1) << "Parent " << name_ << " accepted child " << child_name;
+  DVLOG(1) << "Node " << name_ << " accepted invitee " << invitee_name;
 
-  AddPeer(child_name, channel, false /* start_channel */);
+  AddPeer(invitee_name, channel, false /* start_channel */);
 
-  // TODO(rockot/amistry): We could simplify child initialization if we could
+  // TODO(rockot): We could simplify invitee initialization if we could
   // synchronously get a new async broker channel from the broker. For now we do
   // it asynchronously since it's only used to facilitate handle passing, not
   // handle creation.
   scoped_refptr<NodeChannel> broker = GetBrokerChannel();
   if (broker) {
-    // Inform the broker of this new child.
-    broker->AddBrokerClient(child_name, channel->CopyRemoteProcessHandle());
+    // Inform the broker of this new client.
+    broker->AddBrokerClient(invitee_name, channel->CopyRemoteProcessHandle());
   } else {
     // If we have no broker, either we need to wait for one, or we *are* the
     // broker.
-    scoped_refptr<NodeChannel> parent = GetParentChannel();
-    if (!parent) {
-      base::AutoLock lock(parent_lock_);
-      parent = bootstrap_parent_channel_;
+    scoped_refptr<NodeChannel> inviter = GetInviterChannel();
+    if (!inviter) {
+      base::AutoLock lock(inviter_lock_);
+      inviter = bootstrap_inviter_channel_;
     }
 
-    if (!parent) {
-      // Yes, we're the broker. We can initialize the child directly.
+    if (!inviter) {
+      // Yes, we're the broker. We can initialize the client directly.
       channel->AcceptBrokerClient(name_, ScopedPlatformHandle());
     } else {
       // We aren't the broker, so wait for a broker connection.
       base::AutoLock lock(broker_lock_);
-      pending_broker_clients_.push(child_name);
+      pending_broker_clients_.push(invitee_name);
     }
   }
 }
@@ -898,7 +870,7 @@ void NodeController::OnBrokerClientAdded(const ports::NodeName& from_node,
                                          ScopedPlatformHandle broker_channel) {
   scoped_refptr<NodeChannel> client = GetPeerChannel(client_name);
   if (!client) {
-    DLOG(ERROR) << "BrokerClientAdded for unknown child " << client_name;
+    DLOG(ERROR) << "BrokerClientAdded for unknown client " << client_name;
     return;
   }
 
@@ -908,7 +880,7 @@ void NodeController::OnBrokerClientAdded(const ports::NodeName& from_node,
     return;
   }
 
-  DVLOG(1) << "Child " << client_name << " accepted by broker " << from_node;
+  DVLOG(1) << "Client " << client_name << " accepted by broker " << from_node;
 
   client->AcceptBrokerClient(from_node, std::move(broker_channel));
 }
@@ -918,17 +890,17 @@ void NodeController::OnAcceptBrokerClient(const ports::NodeName& from_node,
                                           ScopedPlatformHandle broker_channel) {
   DCHECK(!GetConfiguration().is_broker_process);
 
-  // This node should already have a parent in bootstrap mode.
-  ports::NodeName parent_name;
-  scoped_refptr<NodeChannel> parent;
+  // This node should already have an inviter in bootstrap mode.
+  ports::NodeName inviter_name;
+  scoped_refptr<NodeChannel> inviter;
   {
-    base::AutoLock lock(parent_lock_);
-    parent_name = parent_name_;
-    parent = bootstrap_parent_channel_;
-    bootstrap_parent_channel_ = nullptr;
+    base::AutoLock lock(inviter_lock_);
+    inviter_name = inviter_name_;
+    inviter = bootstrap_inviter_channel_;
+    bootstrap_inviter_channel_ = nullptr;
   }
-  DCHECK(parent_name == from_node);
-  DCHECK(parent);
+  DCHECK(inviter_name == from_node);
+  DCHECK(inviter);
 
   base::queue<ports::NodeName> pending_broker_clients;
   std::unordered_map<ports::NodeName, OutgoingMessageQueue>
@@ -941,12 +913,12 @@ void NodeController::OnAcceptBrokerClient(const ports::NodeName& from_node,
   }
   DCHECK(broker_name != ports::kInvalidNodeName);
 
-  // It's now possible to add both the broker and the parent as peers.
-  // Note that the broker and parent may be the same node.
+  // It's now possible to add both the broker and the inviter as peers.
+  // Note that the broker and inviter may be the same node.
   scoped_refptr<NodeChannel> broker;
-  if (broker_name == parent_name) {
+  if (broker_name == inviter_name) {
     DCHECK(!broker_channel.is_valid());
-    broker = parent;
+    broker = inviter;
   } else {
     DCHECK(broker_channel.is_valid());
     broker = NodeChannel::Create(
@@ -956,22 +928,23 @@ void NodeController::OnAcceptBrokerClient(const ports::NodeName& from_node,
     AddPeer(broker_name, broker, true /* start_channel */);
   }
 
-  AddPeer(parent_name, parent, false /* start_channel */);
+  AddPeer(inviter_name, inviter, false /* start_channel */);
 
   {
-    // Complete any port merge requests we have waiting for the parent.
+    // Complete any port merge requests we have waiting for the inviter.
     base::AutoLock lock(pending_port_merges_lock_);
     for (const auto& request : pending_port_merges_)
-      parent->RequestPortMerge(request.second.name(), request.first);
+      inviter->RequestPortMerge(request.second.name(), request.first);
     pending_port_merges_.clear();
   }
 
-  // Feed the broker any pending children of our own.
+  // Feed the broker any pending invitees of our own.
   while (!pending_broker_clients.empty()) {
-    const ports::NodeName& child_name = pending_broker_clients.front();
-    auto it = pending_invitations_.find(child_name);
+    const ports::NodeName& invitee_name = pending_broker_clients.front();
+    auto it = pending_invitations_.find(invitee_name);
     DCHECK(it != pending_invitations_.end());
-    broker->AddBrokerClient(child_name, it->second->CopyRemoteProcessHandle());
+    broker->AddBrokerClient(invitee_name,
+                            it->second->CopyRemoteProcessHandle());
     pending_broker_clients.pop();
   }
 
@@ -987,7 +960,7 @@ void NodeController::OnAcceptBrokerClient(const ports::NodeName& from_node,
   }
 #endif
 
-  DVLOG(1) << "Child " << name_ << " accepted by broker " << broker_name;
+  DVLOG(1) << "Client " << name_ << " accepted by broker " << broker_name;
 }
 
 void NodeController::OnEventMessage(const ports::NodeName& from_node,
@@ -1086,7 +1059,7 @@ void NodeController::OnIntroduce(const ports::NodeName& from_node,
       ConnectionParams(TransportProtocol::kLegacy, std::move(channel_handle)),
       io_task_runner_, ProcessErrorCallback());
 
-  DVLOG(1) << "Adding new peer " << name << " via parent introduction.";
+  DVLOG(1) << "Adding new peer " << name << " via broker introduction.";
   AddPeer(name, channel, true /* start_channel */);
 }
 
@@ -1133,12 +1106,12 @@ void NodeController::OnRelayEventMessage(const ports::NodeName& from_node,
     return;
   }
 
-  // The parent should always know which process this came from.
+  // The broker should always know which process this came from.
   DCHECK(from_process != base::kNullProcessHandle);
 
 #if defined(OS_WIN)
-  // Rewrite the handles to this (the parent) process. If the message is
-  // destined for another child process, the handles will be rewritten to that
+  // Rewrite the handles to this (the broker) process. If the message is
+  // destined for another client process, the handles will be rewritten to that
   // process before going out (see NodeChannel::WriteChannelMessage).
   //
   // TODO: We could avoid double-duplication.
@@ -1253,9 +1226,9 @@ void NodeController::OnChannelError(const ports::NodeName& from_node,
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 MachPortRelay* NodeController::GetMachPortRelay() {
   {
-    base::AutoLock lock(parent_lock_);
+    base::AutoLock lock(inviter_lock_);
     // Return null if we're not the root.
-    if (bootstrap_parent_channel_ || parent_name_ != ports::kInvalidNodeName)
+    if (bootstrap_inviter_channel_ || inviter_name_ != ports::kInvalidNodeName)
       return nullptr;
   }
 

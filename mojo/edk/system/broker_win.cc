@@ -90,12 +90,12 @@ Broker::Broker(ScopedPlatformHandle handle) : sync_channel_(std::move(handle)) {
   Channel::MessagePtr message =
       WaitForBrokerMessage(sync_channel_.get(), BrokerMessageType::INIT);
 
-  // If we fail to read a message (broken pipe), just return early. The parent
+  // If we fail to read a message (broken pipe), just return early. The inviter
   // handle will be null and callers must handle this gracefully.
   if (!message)
     return;
 
-  if (!TakeHandlesFromBrokerMessage(message.get(), 1, &parent_channel_)) {
+  if (!TakeHandlesFromBrokerMessage(message.get(), 1, &inviter_channel_)) {
     // If the message has no handles, we expect it to carry pipe name instead.
     const BrokerMessageHeader* header =
         static_cast<const BrokerMessageHeader*>(message->payload());
@@ -108,15 +108,15 @@ Broker::Broker(ScopedPlatformHandle handle) : sync_channel_(std::move(handle)) {
     const base::char16* name_data =
         reinterpret_cast<const base::char16*>(data + 1);
     CHECK(data->pipe_name_length);
-    parent_channel_ = CreateClientHandle(NamedPlatformHandle(
+    inviter_channel_ = CreateClientHandle(NamedPlatformHandle(
         base::StringPiece16(name_data, data->pipe_name_length)));
   }
 }
 
 Broker::~Broker() {}
 
-ScopedPlatformHandle Broker::GetParentPlatformHandle() {
-  return std::move(parent_channel_);
+ScopedPlatformHandle Broker::GetInviterPlatformHandle() {
+  return std::move(inviter_channel_);
 }
 
 scoped_refptr<PlatformSharedBuffer> Broker::GetSharedBuffer(size_t num_bytes) {
