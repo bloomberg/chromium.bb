@@ -121,7 +121,9 @@ void ResourceMessageFilter::CreateLoaderAndStart(
       prefetch_url_loader_service_) {
     prefetch_url_loader_service_->CreateLoaderAndStart(
         std::move(request), routing_id, request_id, options, url_request,
-        std::move(client), traffic_annotation, url_loader_factory_.get());
+        std::move(client), traffic_annotation,
+        base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
+            url_loader_factory_.get()));
     return;
   }
 

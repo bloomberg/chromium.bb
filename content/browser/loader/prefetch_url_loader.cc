@@ -4,7 +4,12 @@
 
 #include "content/browser/loader/prefetch_url_loader.h"
 
+#include "base/feature_list.h"
+#include "content/browser/web_package/web_package_prefetch_handler.h"
+#include "content/public/common/content_features.h"
+#include "content/public/common/shared_url_loader_factory.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/features.h"
 
 namespace content {
 
@@ -15,59 +20,77 @@ PrefetchURLLoader::PrefetchURLLoader(
     const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    network::mojom::URLLoaderFactory* network_loader_factory,
+    scoped_refptr<SharedURLLoaderFactory> network_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
     ResourceContext* resource_context,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter)
-    : network_client_binding_(this),
+    : network_loader_factory_(std::move(network_loader_factory)),
+      client_binding_(this),
       forwarding_client_(std::move(client)),
       url_loader_throttles_getter_(url_loader_throttles_getter),
       resource_context_(resource_context),
       request_context_getter_(std::move(request_context_getter)) {
-  DCHECK(network_loader_factory);
+  DCHECK(network_loader_factory_);
 
-  // TODO(kinuko): Hook up the Web Package code that uses these fields.
-  // (https://crbug.com/803776)
-  DCHECK(resource_context_);
-  DCHECK(request_context_getter_);
+  if (resource_request.request_initiator)
+    request_initiator_ = *resource_request.request_initiator;
 
   network::mojom::URLLoaderClientPtr network_client;
-  network_client_binding_.Bind(mojo::MakeRequest(&network_client));
-  network_client_binding_.set_connection_error_handler(base::BindOnce(
+  client_binding_.Bind(mojo::MakeRequest(&network_client));
+  client_binding_.set_connection_error_handler(base::BindOnce(
       &PrefetchURLLoader::OnNetworkConnectionError, base::Unretained(this)));
-  network_loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&network_loader_), routing_id, request_id, options,
+  network_loader_factory_->CreateLoaderAndStart(
+      mojo::MakeRequest(&loader_), routing_id, request_id, options,
       resource_request, std::move(network_client), traffic_annotation);
 }
 
 PrefetchURLLoader::~PrefetchURLLoader() = default;
 
 void PrefetchURLLoader::FollowRedirect() {
-  network_loader_->FollowRedirect();
+  if (web_package_prefetch_handler_) {
+    // Rebind |client_binding_| and |loader_|.
+    client_binding_.Bind(web_package_prefetch_handler_->FollowRedirect(
+        mojo::MakeRequest(&loader_)));
+    return;
+  }
+
+  loader_->FollowRedirect();
 }
 
 void PrefetchURLLoader::ProceedWithResponse() {
-  network_loader_->ProceedWithResponse();
+  loader_->ProceedWithResponse();
 }
 
 void PrefetchURLLoader::SetPriority(net::RequestPriority priority,
                                     int intra_priority_value) {
-  network_loader_->SetPriority(priority, intra_priority_value);
+  loader_->SetPriority(priority, intra_priority_value);
 }
 
 void PrefetchURLLoader::PauseReadingBodyFromNet() {
-  network_loader_->PauseReadingBodyFromNet();
+  loader_->PauseReadingBodyFromNet();
 }
 
 void PrefetchURLLoader::ResumeReadingBodyFromNet() {
-  network_loader_->ResumeReadingBodyFromNet();
+  loader_->ResumeReadingBodyFromNet();
 }
 
 void PrefetchURLLoader::OnReceiveResponse(
-    const network::ResourceResponseHead& head,
+    const network::ResourceResponseHead& response,
     const base::Optional<net::SSLInfo>& ssl_info,
     network::mojom::DownloadedTempFilePtr downloaded_file) {
-  forwarding_client_->OnReceiveResponse(head, ssl_info,
+  if (WebPackagePrefetchHandler::IsResponseForWebPackage(response)) {
+    DCHECK(!web_package_prefetch_handler_);
+
+    // Note that after this point this doesn't directly get upcalls from the
+    // network. (Until |this| calls the handler's FollowRedirect.)
+    web_package_prefetch_handler_ = std::make_unique<WebPackagePrefetchHandler>(
+        response, std::move(loader_), client_binding_.Unbind(),
+        network_loader_factory_, request_initiator_,
+        url_loader_throttles_getter_, resource_context_,
+        request_context_getter_, this);
+    return;
+  }
+  forwarding_client_->OnReceiveResponse(response, ssl_info,
                                         std::move(downloaded_file));
 }
 

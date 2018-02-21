@@ -88,6 +88,8 @@ SignedExchangeHandler::SignedExchangeHandler(
 
 SignedExchangeHandler::~SignedExchangeHandler() = default;
 
+SignedExchangeHandler::SignedExchangeHandler() : weak_factory_(this) {}
+
 void SignedExchangeHandler::ReadLoop() {
   DCHECK(headers_callback_);
   DCHECK(read_buf_);

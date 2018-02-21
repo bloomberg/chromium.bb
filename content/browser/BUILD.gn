@@ -1701,6 +1701,8 @@ jumbo_source_set("browser") {
     "web_package/signed_exchange_url_loader_factory_for_non_network_service.h",
     "web_package/web_package_loader.cc",
     "web_package/web_package_loader.h",
+    "web_package/web_package_prefetch_handler.cc",
+    "web_package/web_package_prefetch_handler.h",
     "web_package/web_package_request_handler.cc",
     "web_package/web_package_request_handler.h",
     "websockets/websocket_handshake_request_info_impl.cc",

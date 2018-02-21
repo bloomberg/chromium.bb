@@ -1,0 +1,121 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "content/browser/web_package/web_package_prefetch_handler.h"
+
+#include "content/browser/web_package/signed_exchange_url_loader_factory_for_non_network_service.h"
+#include "content/browser/web_package/web_package_loader.h"
+#include "content/browser/web_package/web_package_request_handler.h"
+#include "content/common/weak_wrapper_shared_url_loader_factory.h"
+#include "content/public/common/content_features.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
+
+namespace content {
+
+bool WebPackagePrefetchHandler::IsResponseForWebPackage(
+    const network::ResourceResponseHead& response) {
+  std::string mime_type;
+  if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange) &&
+      !response.was_fetched_via_service_worker && response.headers &&
+      response.headers->GetMimeType(&mime_type) &&
+      WebPackageRequestHandler::IsSupportedMimeType(mime_type)) {
+    return true;
+  }
+  return false;
+}
+
+WebPackagePrefetchHandler::WebPackagePrefetchHandler(
+    const network::ResourceResponseHead& response,
+    network::mojom::URLLoaderPtr network_loader,
+    network::mojom::URLLoaderClientRequest network_client_request,
+    scoped_refptr<SharedURLLoaderFactory> network_loader_factory,
+    url::Origin request_initiator,
+    URLLoaderThrottlesGetter loader_throttles_getter,
+    ResourceContext* resource_context,
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    network::mojom::URLLoaderClient* forwarding_client)
+    : loader_client_binding_(this), forwarding_client_(forwarding_client) {
+  network::mojom::URLLoaderClientEndpointsPtr endpoints =
+      network::mojom::URLLoaderClientEndpoints::New(
+          std::move(network_loader).PassInterface(),
+          std::move(network_client_request));
+  network::mojom::URLLoaderClientPtr client;
+  loader_client_binding_.Bind(mojo::MakeRequest(&client));
+  scoped_refptr<SharedURLLoaderFactory> url_loader_factory;
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    url_loader_factory = base::MakeRefCounted<
+        SignedExchangeURLLoaderFactoryForNonNetworkService>(
+        resource_context, request_context_getter.get());
+  } else {
+    url_loader_factory = std::move(network_loader_factory);
+  }
+  web_package_loader_ = std::make_unique<WebPackageLoader>(
+      response, std::move(client), std::move(endpoints),
+      std::move(request_initiator), network::mojom::kURLLoadOptionNone,
+      std::move(url_loader_factory), loader_throttles_getter);
+}
+
+WebPackagePrefetchHandler::~WebPackagePrefetchHandler() = default;
+
+network::mojom::URLLoaderClientRequest
+WebPackagePrefetchHandler::FollowRedirect(
+    network::mojom::URLLoaderRequest loader_request) {
+  DCHECK(web_package_loader_);
+  network::mojom::URLLoaderClientPtr client;
+  auto pending_request = mojo::MakeRequest(&client);
+  web_package_loader_->ConnectToClient(std::move(client));
+  mojo::MakeStrongBinding(std::move(web_package_loader_),
+                          std::move(loader_request));
+  return pending_request;
+}
+
+void WebPackagePrefetchHandler::OnReceiveResponse(
+    const network::ResourceResponseHead& head,
+    const base::Optional<net::SSLInfo>& ssl_info,
+    network::mojom::DownloadedTempFilePtr downloaded_file) {
+  NOTREACHED();
+}
+
+void WebPackagePrefetchHandler::OnReceiveRedirect(
+    const net::RedirectInfo& redirect_info,
+    const network::ResourceResponseHead& head) {
+  forwarding_client_->OnReceiveRedirect(redirect_info, head);
+}
+
+void WebPackagePrefetchHandler::OnDataDownloaded(int64_t data_length,
+                                                 int64_t encoded_length) {
+  NOTREACHED();
+}
+
+void WebPackagePrefetchHandler::OnUploadProgress(
+    int64_t current_position,
+    int64_t total_size,
+    base::OnceCallback<void()> callback) {
+  NOTREACHED();
+}
+
+void WebPackagePrefetchHandler::OnReceiveCachedMetadata(
+    const std::vector<uint8_t>& data) {
+  NOTREACHED();
+}
+
+void WebPackagePrefetchHandler::OnTransferSizeUpdated(
+    int32_t transfer_size_diff) {
+  NOTREACHED();
+}
+
+void WebPackagePrefetchHandler::OnStartLoadingResponseBody(
+    mojo::ScopedDataPipeConsumerHandle body) {
+  NOTREACHED();
+}
+
+void WebPackagePrefetchHandler::OnComplete(
+    const network::URLLoaderCompletionStatus& status) {
+  forwarding_client_->OnComplete(status);
+}
+
+}  // namespace content
