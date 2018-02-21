@@ -2337,8 +2337,6 @@
                         "UIVerticalMargin": "8"
                     },
                     "enable_features": [
-                        "OmniboxUIExperimentHideSuggestionUrlScheme",
-                        "OmniboxUIExperimentHideSuggestionUrlTrivialSubdomains",
                         "OmniboxUIExperimentShowSuggestionFavicons",
                         "OmniboxUIExperimentSwapTitleAndUrl",
                         "OmniboxUIExperimentVerticalMargin"
