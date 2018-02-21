@@ -21,14 +21,17 @@ class GURL;
 
 namespace base {
 class FilePath;
-}
+}  // namespace base
+
+namespace download {
+struct DownloadCreateInfo;
+class DownloadRequestHandleInterface;
+}  // namespace download
 
 namespace content {
 
 class DownloadItemImpl;
 class DownloadItemImplDelegate;
-class DownloadRequestHandleInterface;
-struct DownloadCreateInfo;
 
 class DownloadItemFactory {
 public:
@@ -66,7 +69,7 @@ public:
   virtual DownloadItemImpl* CreateActiveItem(
       DownloadItemImplDelegate* delegate,
       uint32_t download_id,
-      const DownloadCreateInfo& info) = 0;
+      const download::DownloadCreateInfo& info) = 0;
 
   virtual DownloadItemImpl* CreateSavePageItem(
       DownloadItemImplDelegate* delegate,
@@ -74,7 +77,8 @@ public:
       const base::FilePath& path,
       const GURL& url,
       const std::string& mime_type,
-      std::unique_ptr<DownloadRequestHandleInterface> request_handle) = 0;
+      std::unique_ptr<download::DownloadRequestHandleInterface>
+          request_handle) = 0;
 };
 
 }  // namespace content

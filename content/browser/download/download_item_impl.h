@@ -17,18 +17,21 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/resume_mode.h"
 #include "content/browser/download/download_destination_observer.h"
-#include "content/browser/download/download_request_handle.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
 namespace content {
+class BrowserContext;
 class DownloadFile;
 class DownloadItemImplDelegate;
 class DownloadJob;
+class WebContents;
 
 // See download_item.h for usage.
 class CONTENT_EXPORT DownloadItemImpl : public download::DownloadItem,
@@ -182,7 +185,7 @@ class CONTENT_EXPORT DownloadItemImpl : public download::DownloadItem,
   // |net_log| is constructed externally for our use.
   DownloadItemImpl(DownloadItemImplDelegate* delegate,
                    uint32_t id,
-                   const DownloadCreateInfo& info);
+                   const download::DownloadCreateInfo& info);
 
   // Constructing for the "Save Page As..." feature:
   // |net_log| is constructed externally for our use.
@@ -192,7 +195,7 @@ class CONTENT_EXPORT DownloadItemImpl : public download::DownloadItem,
       const base::FilePath& path,
       const GURL& url,
       const std::string& mime_type,
-      std::unique_ptr<DownloadRequestHandleInterface> request_handle);
+      std::unique_ptr<download::DownloadRequestHandleInterface> request_handle);
 
   ~DownloadItemImpl() override;
 
@@ -287,9 +290,10 @@ class CONTENT_EXPORT DownloadItemImpl : public download::DownloadItem,
   // parameters. It may be different from the DownloadCreateInfo used to create
   // the download::DownloadItem if Start() is being called in response for a
   // download resumption request.
-  virtual void Start(std::unique_ptr<DownloadFile> download_file,
-                     std::unique_ptr<DownloadRequestHandleInterface> req_handle,
-                     const DownloadCreateInfo& new_create_info);
+  virtual void Start(
+      std::unique_ptr<DownloadFile> download_file,
+      std::unique_ptr<download::DownloadRequestHandleInterface> req_handle,
+      const download::DownloadCreateInfo& new_create_info);
 
   // Needed because of intertwining with DownloadManagerImpl -------------------
 
@@ -592,7 +596,7 @@ class CONTENT_EXPORT DownloadItemImpl : public download::DownloadItem,
   // Update origin information based on the response to a download resumption
   // request. Should only be called if the resumption request was successful.
   virtual void UpdateValidatorsOnResumption(
-      const DownloadCreateInfo& new_create_info);
+      const download::DownloadCreateInfo& new_create_info);
 
   // Notify observers that this item is being removed by the user.
   void NotifyRemoved();
@@ -601,9 +605,6 @@ class CONTENT_EXPORT DownloadItemImpl : public download::DownloadItem,
   // last_reason_ to be set, but doesn't require the download to be in
   // INTERRUPTED state.
   download::ResumeMode GetResumeMode() const;
-
-  // Helper method to attach additional information to the DownloadItem.
-  void AttachDownloadItemData();
 
   // Helper method to get WebContents and BrowserContext of the DownloadItem.
   WebContents* GetWebContents() const;

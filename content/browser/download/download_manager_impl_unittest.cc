@@ -24,15 +24,15 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_request_handle_interface.h"
 #include "content/browser/byte_stream.h"
-#include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_item_factory.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_item_impl_delegate.h"
-#include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/mock_download_file.h"
 #include "content/browser/download/mock_download_item_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -70,12 +70,6 @@ namespace content {
 class ByteStreamReader;
 
 namespace {
-
-// Matches a DownloadCreateInfo* that points to the same object as |info| and
-// has a |default_download_directory| that matches |download_directory|.
-MATCHER_P2(DownloadCreateInfoWithDefaultPath, info, download_directory, "") {
-  return arg == info && arg->default_download_directory == download_directory;
-}
 
 class MockDownloadManagerDelegate : public DownloadManagerDelegate {
  public:
@@ -160,16 +154,18 @@ class MockDownloadItemFactory
       bool transient,
       const std::vector<download::DownloadItem::ReceivedSlice>& received_slices)
       override;
-  DownloadItemImpl* CreateActiveItem(DownloadItemImplDelegate* delegate,
-                                     uint32_t download_id,
-                                     const DownloadCreateInfo& info) override;
+  DownloadItemImpl* CreateActiveItem(
+      DownloadItemImplDelegate* delegate,
+      uint32_t download_id,
+      const download::DownloadCreateInfo& info) override;
   DownloadItemImpl* CreateSavePageItem(
       DownloadItemImplDelegate* delegate,
       uint32_t download_id,
       const base::FilePath& path,
       const GURL& url,
       const std::string& mime_type,
-      std::unique_ptr<DownloadRequestHandleInterface> request_handle) override;
+      std::unique_ptr<download::DownloadRequestHandleInterface> request_handle)
+      override;
 
  private:
   std::map<uint32_t, MockDownloadItemImpl*> items_;
@@ -250,7 +246,7 @@ DownloadItemImpl* MockDownloadItemFactory::CreatePersistedItem(
 DownloadItemImpl* MockDownloadItemFactory::CreateActiveItem(
     DownloadItemImplDelegate* delegate,
     uint32_t download_id,
-    const DownloadCreateInfo& info) {
+    const download::DownloadCreateInfo& info) {
   DCHECK(items_.find(download_id) == items_.end());
 
   MockDownloadItemImpl* result =
@@ -280,7 +276,7 @@ DownloadItemImpl* MockDownloadItemFactory::CreateSavePageItem(
     const base::FilePath& path,
     const GURL& url,
     const std::string& mime_type,
-    std::unique_ptr<DownloadRequestHandleInterface> request_handle) {
+    std::unique_ptr<download::DownloadRequestHandleInterface> request_handle) {
   DCHECK(items_.find(download_id) == items_.end());
 
   MockDownloadItemImpl* result =
@@ -458,20 +454,19 @@ class DownloadManagerTest : public testing::Test {
 
   // Returns download id.
   MockDownloadItemImpl& AddItemToManager() {
-    DownloadCreateInfo info;
+    download::DownloadCreateInfo info;
 
     // Args are ignored except for download id, so everything else can be
     // null.
     uint32_t id = next_download_id_;
     ++next_download_id_;
-    info.request_handle.reset(new DownloadRequestHandle);
     download_manager_->CreateActiveItem(id, info);
     DCHECK(mock_download_item_factory_->GetItem(id));
     MockDownloadItemImpl& item(*mock_download_item_factory_->GetItem(id));
     // Satisfy expectation.  If the item is created in StartDownload(),
     // we call Start on it immediately, so we need to set that expectation
     // in the factory.
-    std::unique_ptr<DownloadRequestHandleInterface> req_handle;
+    std::unique_ptr<download::DownloadRequestHandleInterface> req_handle;
     item.Start(std::unique_ptr<DownloadFile>(), std::move(req_handle), info);
     DCHECK(id < download_urls_.size());
     EXPECT_CALL(item, GetURL()).WillRepeatedly(ReturnRef(download_urls_[id]));
@@ -554,7 +549,8 @@ class DownloadManagerTest : public testing::Test {
 TEST_F(DownloadManagerTest, StartDownload) {
   SetHasObserverCalls(true);
 
-  std::unique_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
+  std::unique_ptr<download::DownloadCreateInfo> info(
+      new download::DownloadCreateInfo);
   std::unique_ptr<ByteStreamReader> stream(new MockByteStreamReader);
   uint32_t local_id(5);  // Random value
   base::FilePath download_path(FILE_PATH_LITERAL("download/path"));

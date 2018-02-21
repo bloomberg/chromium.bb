@@ -32,11 +32,14 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
+namespace download {
+class DownloadRequestHandleInterface;
+}
+
 namespace content {
 class DownloadFileFactory;
 class DownloadItemFactory;
 class DownloadItemImpl;
-class DownloadRequestHandleInterface;
 class ResourceContext;
 
 class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
@@ -61,7 +64,9 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       const base::FilePath& main_file_path,
       const GURL& page_url,
       const std::string& mime_type,
-      std::unique_ptr<DownloadRequestHandleInterface> request_handle,
+      int render_process_id,
+      int render_frame_id,
+      std::unique_ptr<download::DownloadRequestHandleInterface> request_handle,
       const ukm::SourceId ukm_source_id,
       const DownloadItemImplCreated& item_created);
 
@@ -70,7 +75,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   DownloadManagerDelegate* GetDelegate() const override;
   void Shutdown() override;
   void GetAllDownloads(DownloadVector* result) override;
-  void StartDownload(std::unique_ptr<DownloadCreateInfo> info,
+  void StartDownload(std::unique_ptr<download::DownloadCreateInfo> info,
                      std::unique_ptr<DownloadManager::InputStream> stream,
                      const download::DownloadUrlParameters::OnStartedCallback&
                          on_started) override;
@@ -124,7 +129,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
 
   // UrlDownloadHandler::Delegate implementation.
   void OnUrlDownloadStarted(
-      std::unique_ptr<DownloadCreateInfo> download_create_info,
+      std::unique_ptr<download::DownloadCreateInfo> download_create_info,
       std::unique_ptr<DownloadManager::InputStream> stream,
       const download::DownloadUrlParameters::OnStartedCallback& callback)
       override;
@@ -168,7 +173,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   friend class DownloadTest;
 
   void StartDownloadWithId(
-      std::unique_ptr<DownloadCreateInfo> info,
+      std::unique_ptr<download::DownloadCreateInfo> info,
       std::unique_ptr<DownloadManager::InputStream> stream,
       const download::DownloadUrlParameters::OnStartedCallback& on_started,
       bool new_download,
@@ -178,19 +183,21 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       const base::FilePath& main_file_path,
       const GURL& page_url,
       const std::string& mime_type,
-      std::unique_ptr<DownloadRequestHandleInterface> request_handle,
+      int render_process_id,
+      int render_frame_id,
+      std::unique_ptr<download::DownloadRequestHandleInterface> request_handle,
       const ukm::SourceId ukm_source_id,
       const DownloadItemImplCreated& on_started,
       uint32_t id);
 
   // Intercepts the download to another system if applicable. Returns true if
   // the download was intercepted.
-  bool InterceptDownload(const DownloadCreateInfo& info);
+  bool InterceptDownload(const download::DownloadCreateInfo& info);
 
   // Create a new active item based on the info.  Separate from
   // StartDownload() for testing.
   DownloadItemImpl* CreateActiveItem(uint32_t id,
-                                     const DownloadCreateInfo& info);
+                                     const download::DownloadCreateInfo& info);
 
   // Get next download id. |callback| is called on the UI thread and may
   // be called synchronously.
@@ -243,8 +250,9 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   // regular document loader. Must be called on the IO thread.
   static void CreateDownloadHandlerForNavigation(
       base::WeakPtr<DownloadManagerImpl> download_manager,
-      ResourceRequestInfo::WebContentsGetter web_contents_getter,
       std::unique_ptr<network::ResourceRequest> resource_request,
+      int render_process_id,
+      int render_frame_id,
       std::vector<GURL> url_chain,
       const base::Optional<std::string>& suggested_filename,
       scoped_refptr<network::ResourceResponse> response,

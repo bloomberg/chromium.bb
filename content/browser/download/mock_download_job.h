@@ -38,7 +38,6 @@ class MockDownloadJob : public DownloadJob {
   MOCK_CONST_METHOD0(PercentComplete, int());
   MOCK_CONST_METHOD0(CurrentSpeed, int64_t());
   MOCK_CONST_METHOD1(TimeRemaining, bool(base::TimeDelta* remaining));
-  MOCK_CONST_METHOD0(GetWebContents, WebContents*());
   MOCK_CONST_METHOD1(DebugString, std::string(bool));
 };
 

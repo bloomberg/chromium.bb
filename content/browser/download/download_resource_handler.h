@@ -15,9 +15,14 @@
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/download/download_request_core.h"
 #include "content/browser/loader/resource_handler.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+
+namespace download {
+struct DownloadCreateInfo;
+}  // namespace download
 
 namespace net {
 class URLRequest;
@@ -25,7 +30,6 @@ class URLRequest;
 
 namespace content {
 class ByteStreamReader;
-struct DownloadCreateInfo;
 class ResourceController;
 
 // Forwards data to the download thread.
@@ -101,10 +105,11 @@ class CONTENT_EXPORT DownloadResourceHandler
   ~DownloadResourceHandler() override;
 
   // DownloadRequestCore::Delegate
-  void OnStart(std::unique_ptr<DownloadCreateInfo> download_create_info,
-               std::unique_ptr<ByteStreamReader> stream_reader,
-               const download::DownloadUrlParameters::OnStartedCallback&
-                   callback) override;
+  void OnStart(
+      std::unique_ptr<download::DownloadCreateInfo> download_create_info,
+      std::unique_ptr<ByteStreamReader> stream_reader,
+      const download::DownloadUrlParameters::OnStartedCallback& callback)
+      override;
   void OnReadyToRead() override;
 
   // Stores information about the download that must be acquired on the UI

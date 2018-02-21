@@ -4,8 +4,8 @@
 
 #include "content/public/test/mock_download_manager.h"
 
+#include "components/download/public/common/download_create_info.h"
 #include "content/browser/byte_stream.h"
-#include "content/browser/download/download_create_info.h"
 
 namespace content {
 
@@ -109,7 +109,7 @@ MockDownloadManager::MockDownloadManager() {}
 MockDownloadManager::~MockDownloadManager() {}
 
 void MockDownloadManager::StartDownload(
-    std::unique_ptr<DownloadCreateInfo> info,
+    std::unique_ptr<download::DownloadCreateInfo> info,
     std::unique_ptr<DownloadManager::InputStream> stream,
     const download::DownloadUrlParameters::OnStartedCallback& callback) {
   MockStartDownload(info.get(), stream.get());

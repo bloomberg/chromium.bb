@@ -4,8 +4,9 @@
 
 #include "content/browser/download/download_worker.h"
 
+#include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
-#include "content/browser/download/download_create_info.h"
+#include "content/browser/byte_stream.h"
 #include "content/browser/download/download_utils.h"
 #include "content/browser/download/resource_downloader.h"
 #include "content/public/browser/web_contents.h"
@@ -34,10 +35,6 @@ class CompletedByteStreamReader : public ByteStreamReader {
   int status_;
 };
 
-WebContents* GetEmptyWebContents() {
-  return nullptr;
-}
-
 std::unique_ptr<UrlDownloadHandler, BrowserThread::DeleteOnIOThread>
 CreateUrlDownloadHandler(
     std::unique_ptr<download::DownloadUrlParameters> params,
@@ -51,9 +48,8 @@ CreateUrlDownloadHandler(
     return std::unique_ptr<ResourceDownloader, BrowserThread::DeleteOnIOThread>(
         ResourceDownloader::BeginDownload(
             delegate, std::move(params), std::move(request),
-            url_loader_factory_getter->GetNetworkFactory(),
-            base::BindRepeating(&GetEmptyWebContents), GURL(), GURL(), GURL(),
-            download::DownloadItem::kInvalidId, true)
+            url_loader_factory_getter->GetNetworkFactory(), GURL(), GURL(),
+            GURL(), download::DownloadItem::kInvalidId, true)
             .release());
   } else {
     // Build the URLRequest, BlobDataHandle is hold in original request for
@@ -118,7 +114,7 @@ void DownloadWorker::Cancel(bool user_cancel) {
 }
 
 void DownloadWorker::OnUrlDownloadStarted(
-    std::unique_ptr<DownloadCreateInfo> create_info,
+    std::unique_ptr<download::DownloadCreateInfo> create_info,
     std::unique_ptr<DownloadManager::InputStream> input_stream,
     const download::DownloadUrlParameters::OnStartedCallback& callback) {
   // |callback| is not used in subsequent requests.

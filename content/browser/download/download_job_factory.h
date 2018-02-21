@@ -8,21 +8,24 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "content/browser/download/download_create_info.h"
+#include "components/download/public/common/download_create_info.h"
+
+namespace download {
+class DownloadRequestHandleInterface;
+}
 
 namespace content {
 
 class DownloadItemImpl;
 class DownloadJob;
-class DownloadRequestHandleInterface;
 
 // Factory class to create different kinds of DownloadJob.
 class DownloadJobFactory {
  public:
   static std::unique_ptr<DownloadJob> CreateJob(
       DownloadItemImpl* download_item,
-      std::unique_ptr<DownloadRequestHandleInterface> req_handle,
-      const DownloadCreateInfo& create_info,
+      std::unique_ptr<download::DownloadRequestHandleInterface> req_handle,
+      const download::DownloadCreateInfo& create_info,
       bool is_save_package_download);
 
  private:

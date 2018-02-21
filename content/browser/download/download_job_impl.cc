@@ -8,7 +8,7 @@ namespace content {
 
 DownloadJobImpl::DownloadJobImpl(
     DownloadItemImpl* download_item,
-    std::unique_ptr<DownloadRequestHandleInterface> request_handle,
+    std::unique_ptr<download::DownloadRequestHandleInterface> request_handle,
     bool is_parallizable)
     : DownloadJob(download_item, std::move(request_handle)),
       is_parallizable_(is_parallizable) {}

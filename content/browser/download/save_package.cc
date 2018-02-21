@@ -24,6 +24,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "components/download/public/common/download_request_handle_interface.h"
 #include "components/filename_generation/filename_generation.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/bad_message.h"
@@ -124,19 +125,16 @@ bool CanSaveAsComplete(const std::string& contents_mime_type) {
 
 // Request handle for SavePackage downloads. Currently doesn't support
 // pause/resume, but returns a WebContents.
-class SavePackageRequestHandle : public DownloadRequestHandleInterface {
+class SavePackageRequestHandle
+    : public download::DownloadRequestHandleInterface {
  public:
   explicit SavePackageRequestHandle(base::WeakPtr<SavePackage> save_package)
       : save_package_(save_package) {}
 
   // DownloadRequestHandleInterface
-  WebContents* GetWebContents() const override {
-    return save_package_.get() ? save_package_->web_contents() : nullptr;
-  }
-  DownloadManager* GetDownloadManager() const override { return nullptr; }
-  void PauseRequest() const override {}
-  void ResumeRequest() const override {}
-  void CancelRequest(bool user_cancel) const override {
+  void PauseRequest() override {}
+  void ResumeRequest() override {}
+  void CancelRequest(bool user_cancel) override {
     if (save_package_.get() && !save_package_->canceled())
       save_package_->Cancel(user_cancel, false);
   }
@@ -276,17 +274,20 @@ bool SavePackage::Init(
     return false;
   }
 
-  std::unique_ptr<DownloadRequestHandleInterface> request_handle(
+  std::unique_ptr<download::DownloadRequestHandleInterface> request_handle(
       new SavePackageRequestHandle(AsWeakPtr()));
 
   // The download manager keeps ownership but adds us as an observer.
   ukm::SourceId ukm_source_id = ukm::UkmRecorder::GetNewSourceID();
   DownloadUkmHelper::UpdateSourceURL(ukm::UkmRecorder::Get(), ukm_source_id,
                                      web_contents());
+
+  RenderFrameHost* frame_host = web_contents()->GetMainFrame();
   download_manager_->CreateSavePackageDownloadItem(
       saved_main_file_path_, page_url_,
       ((save_type_ == SAVE_PAGE_TYPE_AS_MHTML) ? "multipart/related"
                                                : "text/html"),
+      frame_host->GetProcess()->GetID(), frame_host->GetRoutingID(),
       std::move(request_handle), std::move(ukm_source_id),
       base::Bind(&SavePackage::InitWithDownloadItem, AsWeakPtr(),
                  download_created_callback));

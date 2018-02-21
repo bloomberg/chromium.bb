@@ -21,7 +21,7 @@ namespace content {
 namespace {
 
 // Returns if the download can be parallelized.
-bool IsParallelizableDownload(const DownloadCreateInfo& create_info,
+bool IsParallelizableDownload(const download::DownloadCreateInfo& create_info,
                               DownloadItemImpl* download_item) {
   // To enable parallel download, following conditions need to be satisfied.
   // 1. Feature |kParallelDownloading| enabled.
@@ -92,8 +92,8 @@ bool IsParallelizableDownload(const DownloadCreateInfo& create_info,
 // static
 std::unique_ptr<DownloadJob> DownloadJobFactory::CreateJob(
     DownloadItemImpl* download_item,
-    std::unique_ptr<DownloadRequestHandleInterface> req_handle,
-    const DownloadCreateInfo& create_info,
+    std::unique_ptr<download::DownloadRequestHandleInterface> req_handle,
+    const download::DownloadCreateInfo& create_info,
     bool is_save_package_download) {
   if (is_save_package_download) {
     return std::make_unique<SavePackageDownloadJob>(download_item,

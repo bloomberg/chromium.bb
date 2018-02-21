@@ -12,8 +12,6 @@
 
 namespace content {
 
-DownloadRequestHandleInterface::~DownloadRequestHandleInterface() {}
-
 DownloadRequestHandle::DownloadRequestHandle(
     const DownloadRequestHandle& other) = default;
 
@@ -32,29 +30,19 @@ WebContents* DownloadRequestHandle::GetWebContents() const {
   return web_contents_getter_.is_null() ? nullptr : web_contents_getter_.Run();
 }
 
-DownloadManager* DownloadRequestHandle::GetDownloadManager() const {
-  WebContents* web_contents = GetWebContents();
-  if (web_contents == nullptr)
-    return nullptr;
-  BrowserContext* context = web_contents->GetBrowserContext();
-  if (context == nullptr)
-    return nullptr;
-  return BrowserContext::GetDownloadManager(context);
-}
-
-void DownloadRequestHandle::PauseRequest() const {
+void DownloadRequestHandle::PauseRequest() {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&DownloadResourceHandler::PauseRequest, handler_));
 }
 
-void DownloadRequestHandle::ResumeRequest() const {
+void DownloadRequestHandle::ResumeRequest() {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&DownloadResourceHandler::ResumeRequest, handler_));
 }
 
-void DownloadRequestHandle::CancelRequest(bool user_cancel) const {
+void DownloadRequestHandle::CancelRequest(bool user_cancel) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&DownloadResourceHandler::CancelRequest, handler_));

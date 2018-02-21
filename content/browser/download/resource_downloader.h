@@ -7,12 +7,11 @@
 
 #include "content/browser/download/download_response_handler.h"
 #include "content/browser/download/url_download_handler.h"
-#include "content/browser/url_loader_factory_getter.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/ssl_status.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {
 
@@ -26,7 +25,6 @@ class ResourceDownloader : public UrlDownloadHandler,
       std::unique_ptr<download::DownloadUrlParameters> download_url_parameters,
       std::unique_ptr<network::ResourceRequest> request,
       network::mojom::URLLoaderFactory* url_loader_factory,
-      const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
       const GURL& site_url,
       const GURL& tab_url,
       const GURL& tab_referrer_url,
@@ -39,26 +37,27 @@ class ResourceDownloader : public UrlDownloadHandler,
   static std::unique_ptr<ResourceDownloader> InterceptNavigationResponse(
       base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
       std::unique_ptr<network::ResourceRequest> resource_request,
-      const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+      int render_process_id,
+      int render_frame_id,
       std::vector<GURL> url_chain,
       const base::Optional<std::string>& suggested_filename,
       const scoped_refptr<network::ResourceResponse>& response,
       net::CertStatus cert_status,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
 
-  ResourceDownloader(
-      base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
-      std::unique_ptr<network::ResourceRequest> resource_request,
-      const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
-      const GURL& site_url,
-      const GURL& tab_url,
-      const GURL& tab_referrer_url,
-      uint32_t download_id);
+  ResourceDownloader(base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
+                     std::unique_ptr<network::ResourceRequest> resource_request,
+                     int render_process_id,
+                     int render_frame_id,
+                     const GURL& site_url,
+                     const GURL& tab_url,
+                     const GURL& tab_referrer_url,
+                     uint32_t download_id);
   ~ResourceDownloader() override;
 
   // DownloadResponseHandler::Delegate
   void OnResponseStarted(
-      std::unique_ptr<DownloadCreateInfo> download_create_info,
+      std::unique_ptr<download::DownloadCreateInfo> download_create_info,
       download::mojom::DownloadStreamHandlePtr stream_handle) override;
   void OnReceiveRedirect() override;
 
@@ -102,8 +101,9 @@ class ResourceDownloader : public UrlDownloadHandler,
   // Callback to run after download starts.
   download::DownloadUrlParameters::OnStartedCallback callback_;
 
-  // Used to get WebContents in browser process.
-  ResourceRequestInfo::WebContentsGetter web_contents_getter_;
+  // Frame and process id associated with the request.
+  int render_process_id_;
+  int render_frame_id_;
 
   // Site URL for the site instance that initiated the download.
   GURL site_url_;

@@ -9,7 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/blob_storage/blob_url_loader_factory.h"
 #include "content/browser/download/download_utils.h"
-#include "content/public/browser/render_frame_host.h"
+
 #include "content/public/browser/web_contents.h"
 
 namespace network {
@@ -58,44 +58,20 @@ void URLLoaderStatusMonitor::OnComplete(
   std::move(callback_).Run(status);
 }
 
-// This class is only used for providing the WebContents to DownloadItemImpl.
-class RequestHandle : public DownloadRequestHandleInterface {
- public:
-  explicit RequestHandle(const ResourceRequestInfo::WebContentsGetter& getter)
-      : web_contents_getter_(getter) {}
-  RequestHandle(RequestHandle&& other)
-      : web_contents_getter_(other.web_contents_getter_) {}
-
-  // DownloadRequestHandleInterface
-  WebContents* GetWebContents() const override {
-    return web_contents_getter_.Run();
-  }
-
-  DownloadManager* GetDownloadManager() const override { return nullptr; }
-  void PauseRequest() const override {}
-  void ResumeRequest() const override {}
-  void CancelRequest(bool user_cancel) const override {}
-
- private:
-  ResourceRequestInfo::WebContentsGetter web_contents_getter_;
-
-  DISALLOW_COPY_AND_ASSIGN(RequestHandle);
-};
-
 // static
 std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
     base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
     std::unique_ptr<download::DownloadUrlParameters> params,
     std::unique_ptr<network::ResourceRequest> request,
     network::mojom::URLLoaderFactory* url_loader_factory,
-    const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const GURL& site_url,
     const GURL& tab_url,
     const GURL& tab_referrer_url,
     uint32_t download_id,
     bool is_parallel_request) {
   auto downloader = std::make_unique<ResourceDownloader>(
-      delegate, std::move(request), web_contents_getter, site_url, tab_url,
+      delegate, std::move(request), params->render_process_host_id(),
+      params->render_frame_host_routing_id(), site_url, tab_url,
       tab_referrer_url, download_id);
 
   downloader->Start(url_loader_factory, std::move(params), is_parallel_request);
@@ -107,15 +83,16 @@ std::unique_ptr<ResourceDownloader>
 ResourceDownloader::InterceptNavigationResponse(
     base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
     std::unique_ptr<network::ResourceRequest> resource_request,
-    const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    int render_process_id,
+    int render_frame_id,
     std::vector<GURL> url_chain,
     const base::Optional<std::string>& suggested_filename,
     const scoped_refptr<network::ResourceResponse>& response,
     net::CertStatus cert_status,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints) {
   auto downloader = std::make_unique<ResourceDownloader>(
-      delegate, std::move(resource_request), web_contents_getter, GURL(),
-      GURL(), GURL(), download::DownloadItem::kInvalidId);
+      delegate, std::move(resource_request), render_process_id, render_frame_id,
+      GURL(), GURL(), GURL(), download::DownloadItem::kInvalidId);
   downloader->InterceptResponse(std::move(response), std::move(url_chain),
                                 suggested_filename, cert_status,
                                 std::move(url_loader_client_endpoints));
@@ -125,7 +102,8 @@ ResourceDownloader::InterceptNavigationResponse(
 ResourceDownloader::ResourceDownloader(
     base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
     std::unique_ptr<network::ResourceRequest> resource_request,
-    const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    int render_process_id,
+    int render_frame_id,
     const GURL& site_url,
     const GURL& tab_url,
     const GURL& tab_referrer_url,
@@ -133,7 +111,8 @@ ResourceDownloader::ResourceDownloader(
     : delegate_(delegate),
       resource_request_(std::move(resource_request)),
       download_id_(download_id),
-      web_contents_getter_(web_contents_getter),
+      render_process_id_(render_process_id),
+      render_frame_id_(render_frame_id),
       site_url_(site_url),
       tab_url_(tab_url),
       tab_referrer_url_(tab_referrer_url),
@@ -210,15 +189,15 @@ void ResourceDownloader::InterceptResponse(
 }
 
 void ResourceDownloader::OnResponseStarted(
-    std::unique_ptr<DownloadCreateInfo> download_create_info,
+    std::unique_ptr<download::DownloadCreateInfo> download_create_info,
     download::mojom::DownloadStreamHandlePtr stream_handle) {
   download_create_info->download_id = download_id_;
   download_create_info->guid = guid_;
   download_create_info->site_url = site_url_;
   download_create_info->tab_url = tab_url_;
   download_create_info->tab_referrer_url = tab_referrer_url_;
-  download_create_info->request_handle.reset(
-      new RequestHandle(web_contents_getter_));
+  download_create_info->render_process_id = render_process_id_;
+  download_create_info->render_frame_id = render_frame_id_;
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

@@ -31,14 +31,12 @@ namespace content {
 
 namespace {
 
-class MockDownloadRequestHandle : public DownloadRequestHandleInterface {
+class MockDownloadRequestHandle
+    : public download::DownloadRequestHandleInterface {
  public:
-  MOCK_CONST_METHOD0(GetWebContents, WebContents*());
-  MOCK_CONST_METHOD0(GetDownloadManager, DownloadManager*());
-  MOCK_CONST_METHOD0(PauseRequest, void());
-  MOCK_CONST_METHOD0(ResumeRequest, void());
-  MOCK_CONST_METHOD1(CancelRequest, void(bool));
-  MOCK_CONST_METHOD0(DebugString, std::string());
+  MOCK_METHOD0(PauseRequest, void());
+  MOCK_METHOD0(ResumeRequest, void());
+  MOCK_METHOD1(CancelRequest, void(bool));
 };
 
 class MockDownloadDestinationObserver : public DownloadDestinationObserver {
@@ -72,8 +70,8 @@ class ParallelDownloadJobForTest : public ParallelDownloadJob {
  public:
   ParallelDownloadJobForTest(
       DownloadItemImpl* download_item,
-      std::unique_ptr<DownloadRequestHandleInterface> request_handle,
-      const DownloadCreateInfo& create_info,
+      std::unique_ptr<download::DownloadRequestHandleInterface> request_handle,
+      const download::DownloadCreateInfo& create_info,
       int request_count,
       int64_t min_slice_size,
       int min_remaining_time)
@@ -144,7 +142,7 @@ class ParallelDownloadJobTest : public testing::Test {
     EXPECT_CALL(*download_item_, GetReceivedSlices())
         .WillRepeatedly(ReturnRef(received_slices_));
 
-    DownloadCreateInfo info;
+    download::DownloadCreateInfo info;
     info.offset = initial_request_offset;
     info.total_bytes = content_length;
     std::unique_ptr<MockDownloadRequestHandle> request_handle =
@@ -177,8 +175,8 @@ class ParallelDownloadJobTest : public testing::Test {
       std::unique_ptr<MockDownloadRequestHandle> request_handle) {
     UrlDownloadHandler::Delegate* delegate =
         static_cast<UrlDownloadHandler::Delegate*>(worker);
-    std::unique_ptr<DownloadCreateInfo> create_info =
-        std::make_unique<DownloadCreateInfo>();
+    std::unique_ptr<download::DownloadCreateInfo> create_info =
+        std::make_unique<download::DownloadCreateInfo>();
     create_info->request_handle = std::move(request_handle);
     delegate->OnUrlDownloadStarted(
         std::move(create_info),

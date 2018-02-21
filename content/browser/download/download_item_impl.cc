@@ -43,7 +43,6 @@
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_url_parameters.h"
-#include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_interrupt_reasons_utils.h"
 #include "content/browser/download/download_item_impl_delegate.h"
@@ -355,13 +354,12 @@ DownloadItemImpl::DownloadItemImpl(
          state_ == CANCELLED_INTERNAL);
   DCHECK(base::IsValidGUID(guid_));
   Init(false /* not actively downloading */, TYPE_HISTORY_IMPORT);
-  AttachDownloadItemData();
 }
 
 // Constructing for a regular download:
 DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
                                    uint32_t download_id,
-                                   const DownloadCreateInfo& info)
+                                   const download::DownloadCreateInfo& info)
     : request_info_(info.url_chain,
                     info.referrer_url,
                     info.site_url,
@@ -409,7 +407,7 @@ DownloadItemImpl::DownloadItemImpl(
     const base::FilePath& path,
     const GURL& url,
     const std::string& mime_type,
-    std::unique_ptr<DownloadRequestHandleInterface> request_handle)
+    std::unique_ptr<download::DownloadRequestHandleInterface> request_handle)
     : request_info_(url),
       guid_(base::GenerateGUID()),
       download_id_(download_id),
@@ -422,10 +420,9 @@ DownloadItemImpl::DownloadItemImpl(
       is_updating_observers_(false),
       weak_ptr_factory_(this) {
   job_ = DownloadJobFactory::CreateJob(this, std::move(request_handle),
-                                       DownloadCreateInfo(), true);
+                                       download::DownloadCreateInfo(), true);
   delegate_->Attach();
   Init(true /* actively downloading */, TYPE_SAVE_PAGE_AS);
-  AttachDownloadItemData();
 }
 
 DownloadItemImpl::~DownloadItemImpl() {
@@ -1167,10 +1164,6 @@ download::ResumeMode DownloadItemImpl::GetResumeMode() const {
   return download::ResumeMode::IMMEDIATE_CONTINUE;
 }
 
-void DownloadItemImpl::AttachDownloadItemData() {
-  DownloadItemUtils::AttachInfo(this, GetBrowserContext(), GetWebContents());
-}
-
 BrowserContext* DownloadItemImpl::GetBrowserContext() const {
   return delegate_->GetBrowserContext();
 }
@@ -1180,13 +1173,11 @@ WebContents* DownloadItemImpl::GetWebContents() const {
   // paths that might be used by download::DownloadItems created from history
   // import. Currently such items have null request_handle_s, where other items
   // (regular and SavePackage downloads) have actual objects off the pointer.
-  if (job_)
-    return job_->GetWebContents();
-  return nullptr;
+  return DownloadItemUtils::GetWebContents(this);
 }
 
 void DownloadItemImpl::UpdateValidatorsOnResumption(
-    const DownloadCreateInfo& new_create_info) {
+    const download::DownloadCreateInfo& new_create_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(RESUMING_INTERNAL, state_);
   DCHECK(!new_create_info.url_chain.empty());
@@ -1410,8 +1401,8 @@ void DownloadItemImpl::Init(
 // We're starting the download.
 void DownloadItemImpl::Start(
     std::unique_ptr<DownloadFile> file,
-    std::unique_ptr<DownloadRequestHandleInterface> req_handle,
-    const DownloadCreateInfo& new_create_info) {
+    std::unique_ptr<download::DownloadRequestHandleInterface> req_handle,
+    const download::DownloadCreateInfo& new_create_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!download_file_.get());
   DVLOG(20) << __func__ << "() this=" << DebugString(true);
@@ -1423,7 +1414,6 @@ void DownloadItemImpl::Start(
   if (job_->IsParallelizable()) {
     RecordParallelizableDownloadCount(START_COUNT, IsParallelDownloadEnabled());
   }
-  AttachDownloadItemData();
 
   deferred_interrupt_reason_ = download::DOWNLOAD_INTERRUPT_REASON_NONE;
 

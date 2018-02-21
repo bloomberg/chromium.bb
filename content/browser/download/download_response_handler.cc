@@ -113,12 +113,12 @@ void DownloadResponseHandler::OnReceiveResponse(
     OnResponseStarted(download::mojom::DownloadStreamHandlePtr());
 }
 
-std::unique_ptr<DownloadCreateInfo>
+std::unique_ptr<download::DownloadCreateInfo>
 DownloadResponseHandler::CreateDownloadCreateInfo(
     const network::ResourceResponseHead& head) {
   // TODO(qinmin): instead of using NetLogWithSource, introduce new logging
   // class for download.
-  auto create_info = std::make_unique<DownloadCreateInfo>(
+  auto create_info = std::make_unique<download::DownloadCreateInfo>(
       base::Time::Now(), std::move(save_info_));
 
   download::DownloadInterruptReason result =

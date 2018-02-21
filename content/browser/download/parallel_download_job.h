@@ -25,8 +25,8 @@ class CONTENT_EXPORT ParallelDownloadJob : public DownloadJobImpl,
  public:
   ParallelDownloadJob(
       DownloadItemImpl* download_item,
-      std::unique_ptr<DownloadRequestHandleInterface> request_handle,
-      const DownloadCreateInfo& create_info);
+      std::unique_ptr<download::DownloadRequestHandleInterface> request_handle,
+      const download::DownloadCreateInfo& create_info);
   ~ParallelDownloadJob() override;
 
   // DownloadJobImpl implementation.
