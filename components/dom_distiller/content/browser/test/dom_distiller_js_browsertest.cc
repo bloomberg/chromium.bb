@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -18,6 +19,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/shell/browser/shell.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -100,6 +102,16 @@ class DomDistillerJsTest : public content::ContentBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(DomDistillerJsTest, RunJsTests) {
+  // TODO(jaebaek): Revisit this code when the --use-zoom-for-dsf feature on
+  // Android is done. If we remove this code (i.e., enable --use-zoom-for-dsf),
+  // HTMLImageElement::LayoutBoxWidth() returns a value that has a small error
+  // from the real one (i.e., the real is 38, but it returns 37) and it results
+  // in the failure of
+  // EmbedExtractorTest.testImageExtractorWithAttributesCSSHeightCM (See
+  // crrev.com/c/916021). We must solve this precision issue.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnableUseZoomForDSF, "false");
+
   // Load the test file in content shell and wait until it has fully loaded.
   content::WebContents* web_contents = shell()->web_contents();
   dom_distiller::WebContentsMainFrameObserver::CreateForWebContents(
