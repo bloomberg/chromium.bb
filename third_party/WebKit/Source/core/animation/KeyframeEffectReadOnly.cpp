@@ -93,7 +93,7 @@ KeyframeEffectReadOnly* KeyframeEffectReadOnly::Create(
     ExceptionState& exception_state) {
   Timing new_timing = source->SpecifiedTiming();
   KeyframeEffectModelBase* model = source->Model()->Clone();
-  return new KeyframeEffectReadOnly(source->Target(), model, new_timing,
+  return new KeyframeEffectReadOnly(source->target(), model, new_timing,
                                     source->GetPriority(),
                                     source->GetEventDelegate());
 }

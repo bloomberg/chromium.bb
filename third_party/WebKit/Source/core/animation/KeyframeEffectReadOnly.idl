@@ -15,4 +15,5 @@ enum CompositeOperation { "replace", "add", "accumulate" };
 ] interface KeyframeEffectReadOnly : AnimationEffectReadOnly {
   readonly attribute CompositeOperation composite;
   [CallWith=ScriptState] sequence<object> getKeyframes();
+  readonly attribute Element? target;
 };

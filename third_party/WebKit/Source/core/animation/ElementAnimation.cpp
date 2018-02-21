@@ -70,7 +70,7 @@ HeapVector<Member<Animation>> ElementAnimation::getAnimations(
   for (const auto& animation :
        element.GetDocument().Timeline().getAnimations()) {
     DCHECK(animation->effect());
-    if (ToKeyframeEffectReadOnly(animation->effect())->Target() == element &&
+    if (ToKeyframeEffectReadOnly(animation->effect())->target() == element &&
         (animation->effect()->IsCurrent() || animation->effect()->IsInEffect()))
       animations.push_back(animation);
   }

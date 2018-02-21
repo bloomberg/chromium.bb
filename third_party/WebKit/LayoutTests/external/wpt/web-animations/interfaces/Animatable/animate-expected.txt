@@ -119,7 +119,7 @@ PASS Element.animate() correctly sets the id attribute
 PASS Element.animate() correctly sets the Animation's timeline
 PASS Element.animate() correctly sets the Animation's timeline when triggered on an element in a different document
 FAIL Element.animate() calls play on the Animation assert_equals: expected "running" but got "pending"
-FAIL CSSPseudoElement.animate() creates an Animation object Cannot read property 'parentElement' of undefined
-FAIL CSSPseudoElement.animate() creates an Animation object targeting to the correct CSSPseudoElement object Cannot read property 'parentElement' of undefined
+FAIL CSSPseudoElement.animate() creates an Animation object assert_equals: expected Element node <div class="pseudo"></div> but got null
+FAIL CSSPseudoElement.animate() creates an Animation object targeting to the correct CSSPseudoElement object assert_equals: expected Element node <div class="pseudo"></div> but got null
 Harness: the test ran to completion.
 

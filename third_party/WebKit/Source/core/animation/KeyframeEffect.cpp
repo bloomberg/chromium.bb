@@ -106,7 +106,7 @@ KeyframeEffect* KeyframeEffect::Create(ScriptState* script_state,
                                        ExceptionState& exception_state) {
   Timing new_timing = source->SpecifiedTiming();
   KeyframeEffectModelBase* model = source->Model()->Clone();
-  return new KeyframeEffect(source->Target(), model, new_timing,
+  return new KeyframeEffect(source->target(), model, new_timing,
                             source->GetPriority(), source->GetEventDelegate());
 }
 
