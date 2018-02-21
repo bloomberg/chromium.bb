@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/ui/orchestrator/omnibox_focus_orchestrator.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_coordinator+subclassing.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_view_controller.h"
+#import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/public/web_toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -31,7 +32,8 @@
 #error "This file requires ARC support."
 #endif
 
-@interface PrimaryToolbarCoordinator ()<OmniboxPopupPositioner> {
+@interface PrimaryToolbarCoordinator ()<OmniboxPopupPositioner,
+                                        PrimaryToolbarViewControllerDelegate> {
   // Observer that updates |toolbarViewController| for fullscreen events.
   std::unique_ptr<FullscreenControllerObserver> _fullscreenObserver;
 }
@@ -59,6 +61,7 @@
   self.viewController = [[PrimaryToolbarViewController alloc] init];
   self.viewController.buttonFactory = [self buttonFactoryWithType:PRIMARY];
   self.viewController.dispatcher = self.dispatcher;
+  self.viewController.delegate = self;
 
   self.orchestrator = [[OmniboxFocusOrchestrator alloc] init];
   self.orchestrator.toolbarAnimatee = self.viewController;
@@ -109,11 +112,21 @@
 }
 
 - (void)transitionToLocationBarFocusedState:(BOOL)focused {
-  if (!IsSplitToolbarMode()) {
-    // No animation when the toolbar is unsplit.
-    return;
-  }
-  [self.orchestrator transitionToStateFocused:focused animated:YES];
+  [self.orchestrator
+      transitionToStateOmniboxFocused:focused
+                      toolbarExpanded:focused && IsSplitToolbarMode()
+                             animated:YES];
+}
+
+#pragma mark - PrimaryToolbarViewControllerDelegate
+
+- (void)viewControllerTraitCollectionDidChange:
+    (UITraitCollection*)previousTraitCollection {
+  BOOL omniboxFocused = self.isOmniboxFirstResponder;
+  [self.orchestrator
+      transitionToStateOmniboxFocused:omniboxFocused
+                      toolbarExpanded:omniboxFocused && IsSplitToolbarMode()
+                             animated:NO];
 }
 
 #pragma mark - FakeboxFocuser
