@@ -27,15 +27,13 @@ class RemoteDebuggingServer;
 }
 
 class CastExtensionHost;
-class CastWebContentsManager;
 
 // A simplified interface for loading and displaying WebContents in cast_shell.
-class CastWebViewExtension : public CastWebView {
+class CastWebViewExtension : public CastWebView, content::WebContentsObserver {
  public:
   // |delegate| and |browser_context| should outlive the lifetime of this
   // object.
   CastWebViewExtension(const CreateParams& params,
-                       CastWebContentsManager* web_contents_manager,
                        content::BrowserContext* browser_context,
                        scoped_refptr<content::SiteInstance> site_instance,
                        const extensions::Extension* extension,
@@ -52,6 +50,11 @@ class CastWebViewExtension : public CastWebView {
   void Show(CastWindowManager* window_manager) override;
 
  private:
+  // WebContentsObserver implementation:
+  void WebContentsDestroyed() override;
+  void RenderProcessGone(base::TerminationStatus status) override;
+
+  Delegate* const delegate_;
   const std::unique_ptr<shell::CastContentWindow> window_;
   const std::unique_ptr<CastExtensionHost> extension_host_;
   shell::RemoteDebuggingServer* remote_debugging_server_;

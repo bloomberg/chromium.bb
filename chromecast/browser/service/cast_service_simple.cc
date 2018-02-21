@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/time/time.h"
 #include "chromecast/browser/cast_web_contents_manager.h"
+#include "chromecast/browser/cast_web_view_factory.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/filename_util.h"
@@ -41,8 +42,10 @@ CastServiceSimple::CastServiceSimple(content::BrowserContext* browser_context,
                                      CastWindowManager* window_manager)
     : CastService(browser_context, pref_service),
       window_manager_(window_manager),
+      web_view_factory_(std::make_unique<CastWebViewFactory>(browser_context)),
       web_contents_manager_(
-          std::make_unique<CastWebContentsManager>(browser_context)) {
+          std::make_unique<CastWebContentsManager>(browser_context,
+                                                   web_view_factory_.get())) {
   DCHECK(window_manager_);
 }
 
