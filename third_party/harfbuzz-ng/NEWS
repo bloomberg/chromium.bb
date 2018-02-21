@@ -1,3 +1,19 @@
+Overview of changes leading to 1.7.5
+Tuesday, January 30, 2018
+====================================
+
+- Separate Khmer shaper from Indic.
+- First stab at AAT morx. Not hooked up.
+- Misc bug fixes.
+
+
+Overview of changes leading to 1.7.4
+Wednesday, December 20, 2017
+====================================
+
+- Fix collect_glyphs() regression caused by hb_set_t changes.
+
+
 Overview of changes leading to 1.7.3
 Monday, December 18, 2017
 ====================================

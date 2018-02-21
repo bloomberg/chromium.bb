@@ -1,8 +1,8 @@
 Name: harfbuzz-ng
 Short Name: harfbuzz-ng
 URL: http://harfbuzz.org
-Version: 1.7.3
-Date: 20171220
+Version: 1.7.5 + 0c66043a..0bff6991
+Date: 20180219
 Security Critical: yes
 License: MIT
 License File: COPYING
@@ -19,5 +19,29 @@ for removed or added files and update our build recipes in BUILD.gn and
 harfbuzz.gyp accordingly, update the NEWS file from HarfBuzz' release notes, and
 bump the version numbers in README.chromium.
 
-Cherry-pick 2fe5f885..a9432bde on top of 1.7.3 to incorporate hb_set
-regression fixes.
+Currently the following files from HarfBuzz are unused and not copied:
+	dump-indic-data.cc
+	dump-khmer-data.cc
+	dump-myanmar-data.cc
+	dump-use-data.cc
+	hb-aat-layout-common-private.hh
+	hb-aat-layout-kerx-table.hh
+	hb-aat-layout-morx-table.hh
+	hb-aat-layout-private.hh
+	hb-aat-layout.cc
+	hb-directwrite.cc
+	hb-directwrite.h
+	hb-fallback-shape.cc
+	hb-subset-glyf.cc
+	hb-subset-glyf.hh
+	hb-subset-input.cc
+	hb-subset-plan.cc
+	hb-subset-private.hh
+	hb-subset.cc
+	hb-uniscribe.cc
+	hb-uniscribe.h
+
+Cherry-pick 0c66043a..0bff6991 to test hb_set optimizations and page size
+change.
+
+Patch hb-ot-shape.cc to not include any aat headers yet.
