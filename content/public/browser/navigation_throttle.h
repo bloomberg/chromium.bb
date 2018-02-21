@@ -19,10 +19,12 @@ class CONTENT_EXPORT NavigationThrottle {
   // Represents what a NavigationThrottle can decide to do to a navigation. Note
   // that this enum is implicitly convertable to ThrottleCheckResult.
   enum ThrottleAction {
+    FIRST = 0,
+
     // The action proceeds. This can either mean the navigation continues (e.g.
     // for WillStartRequest) or that the navigation fails (e.g. for
     // WillFailRequest).
-    PROCEED,
+    PROCEED = FIRST,
 
     // Defers the navigation until the NavigationThrottle calls
     // NavigationHandle::Resume or NavigationHandle::CancelDeferredRequest. If
@@ -54,6 +56,8 @@ class CONTENT_EXPORT NavigationThrottle {
     // embedding restrictions like 'X-Frame-Options'). This result will only
     // be returned from WillProcessResponse.
     BLOCK_RESPONSE,
+
+    LAST = BLOCK_RESPONSE,
   };
 
   // ThrottleCheckResult, the return value for NavigationThrottle decision
