@@ -200,7 +200,8 @@ bool HeadlessDevToolsClientImpl::DispatchEvent(
     renderer_crashed_ = true;
   EventHandlerMap::const_iterator it = event_handlers_.find(method);
   if (it == event_handlers_.end()) {
-    NOTREACHED() << "Unknown event: " << method;
+    if (method != "Inspector.targetCrashed")
+      NOTREACHED() << "Unknown event: " << method;
     return false;
   }
   if (!it->second.is_null()) {
