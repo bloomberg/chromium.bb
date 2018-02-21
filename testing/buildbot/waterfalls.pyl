@@ -2036,6 +2036,26 @@
   {
     'name': 'tryserver.webrtc',
     'machines': {
+      'win_chromium_compile': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'mac_chromium_compile': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'linux_chromium_compile': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'android_chromium_compile': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
       'win_chromium_webrtc_compile_rel_ng': {
         'additional_compile_targets': [
           'all',
