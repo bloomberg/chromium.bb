@@ -7402,7 +7402,7 @@ I don't think this site should be blocked!
         Sign in
       </message>
       <message name="IDS_PROFILES_DICE_SIGNIN_FIRST_ACCOUNT_BUTTON" desc="Button to sign in and turn on Sync for a specific web account.">
-        Sync to <ph name="ACCOUNT_FULL_NAME">$1<ex>John Doe</ex></ph>
+        Sync as <ph name="ACCOUNT_FULL_NAME">$1<ex>John Doe</ex></ph>
       </message>
       <message name="IDS_PROFILES_DICE_SIGNIN_FIRST_ACCOUNT_BUTTON_NO_NAME" desc="Button to sign in and turn on Sync for a web account when the name is empty.">
         Sync to your account
