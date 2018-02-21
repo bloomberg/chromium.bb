@@ -106,6 +106,30 @@ class EpicStylizedRenderer(EpicPageSet):
     super(EpicStylizedRenderer, self).__init__(
         page_set=page_set, url=url, name='WasmStylizedRenderer')
 
+class EpicZenGardenAsm(page_module.Page):
+
+  def __init__(self, page_set):
+    url = ("https://s3.amazonaws.com/unrealengine/HTML5/TestBuilds/Release-4."
+           "17.1-CL-3637171/Zen-HTML5-Shipping.html")
+    super(EpicZenGardenAsm, self).__init__(
+        url=url,
+        page_set=page_set,
+        shared_page_state_class=(
+            webgl_supported_shared_state.WebGLSupportedSharedState),
+        name='AsmJsZenGarden')
+
+  @property
+  def skipped_gpus(self):
+    # Unity WebGL is not supported on mobile
+    return ['arm', 'qualcomm']
+
+  def RunPageInteractions(self, action_runner):
+    action_runner.WaitForJavaScriptCondition(
+        """document.getElementsByClassName('emscripten').length != 0""")
+    action_runner.WaitForJavaScriptCondition(
+        """document.getElementsByClassName('emscripten')[0].style['display']
+          != 'none'""")
+
 class WasmRealWorldPagesStorySet(story.StorySet):
   """Top apps, used to monitor web assembly apps."""
 
@@ -119,3 +143,4 @@ class WasmRealWorldPagesStorySet(story.StorySet):
     self.AddStory(EpicZenGarden(self))
     self.AddStory(EpicSunTemple(self))
     self.AddStory(EpicStylizedRenderer(self))
+    self.AddStory(EpicZenGardenAsm(self))
