@@ -100,7 +100,6 @@
       'CrWinAsan(dll) tester',
       'CrWinAsanCov tester',
       'Out of Process Profiling Windows',
-      'UBSanVptr Linux',
       'Win 10 Fast Ring',
       # chromium.memory
       'Linux ASan LSan Tests (1)',
@@ -355,7 +354,6 @@
       'ToTLinuxUBSanVptr',
       # chromium.fyi
       'CrWinAsanCov tester',
-      'UBSanVptr Linux',
       # chromium.memory
       'Linux TSan Tests',
     ],
@@ -914,7 +912,6 @@
     'remove_from': [
       # chromium.clang
       'ToTLinuxUBSanVptr',
-      'UBSanVptr Linux',
       # On chromium.linux, unclear why these aren't run on the Cast bots.
       'Cast Audio Linux',
       'Cast Linux',
@@ -1660,7 +1657,6 @@
       # chromium.fyi
       'Out of Process Profiling Linux',
       'ThinLTO Linux ToT',
-      'UBSanVptr Linux',
       # chromium.memory
       'Linux ASan LSan Tests (1)',
       'Linux CFI',
@@ -2093,7 +2089,6 @@
       'Out of Process Profiling Android',
       'Out of Process Profiling Linux',
       'ThinLTO Linux ToT',
-      'UBSanVptr Linux',
       # On chromium.linux, unclear why these aren't run.
       'Linux Tests',
       'Linux Tests (dbg)(1)',
@@ -2531,7 +2526,6 @@
       'ToTLinuxUBSanVptr',
       # chromium.fyi
       'ThinLTO Linux ToT',
-      'UBSanVptr Linux',
       # chromium.memory
       'Linux Chromium OS ASan LSan Tests (1)',
     ],
@@ -2943,7 +2937,6 @@
       'CrWinAsan(dll) tester',
       'CrWinAsanCov tester',
       'ThinLTO Linux ToT',
-      'UBSanVptr Linux',
       'Win 10 Fast Ring',
       # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
@@ -3207,7 +3200,6 @@
       # chromium.fyi
       'Out of Process Profiling Mac',
       'ThinLTO Linux ToT',
-      'UBSanVptr Linux',
     ],
     'modifications': {
       # chromium.android
@@ -3590,7 +3582,6 @@
       'Out of Process Profiling Android',
       'Out of Process Profiling Linux',
       'ThinLTO Linux ToT',
-      'UBSanVptr Linux',
       # chromium.win
       'Win10 Tests x64',
       # chromium.memory
