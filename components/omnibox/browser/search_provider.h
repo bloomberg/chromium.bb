@@ -101,9 +101,9 @@ class SearchProvider : public BaseSearchProvider,
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, DoTrimHttpScheme);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest,
                            DontTrimHttpSchemeIfInputHasScheme);
-  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, DontTrimHttpsScheme);
-  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, DontTrimHttpsSchemeDespiteFlag);
-  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, DoTrimHttpsSchemeIfFlag);
+  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest,
+                           DontTrimHttpsSchemeIfInputHasScheme);
+  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, DoTrimHttpsScheme);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedPrefetchTest, ClearPrefetchedResults);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedPrefetchTest, SetPrefetchQuery);
 

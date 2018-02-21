@@ -437,17 +437,18 @@ TEST_F(BookmarkProviderTest, StripHttpAndAdjustOffsets) {
     // |expected_contents_class| is in format offset:style,offset:style,...
     const std::string expected_contents_class;
   } query_data[] = {
-    { "foo",       "www.foobar.com",             "0:1,4:3,7:1"           },
-    { "www foo",   "www.foobar.com",             "0:3,3:1,4:3,7:1"       },
-    { "foo www",   "www.foobar.com",             "0:3,3:1,4:3,7:1"       },
-    { "foo http",  "http://www.foobar.com",      "0:3,4:1,11:3,14:1"     },
-    { "blah",      "blah.com",                   "0:3,4:1"               },
-    { "http blah", "http://blah.com",            "0:3,4:1,7:3,11:1"      },
-    { "dom",       "www.domain.com/http/",       "0:1,4:3,7:1"           },
-    { "dom http",  "http://www.domain.com/http/",
-      "0:3,4:1,11:3,14:1,22:3,26:1"                                      },
-    { "rep",       "www.repeat.com/1/repeat/2/", "0:1,4:3,7:1,17:3,20:1" },
-    { "versi",     "chrome://version",           "0:1,9:3,14:1"          }
+      // clang-format off
+    { "foo",       "foobar.com",              "0:3,3:1"                    },
+    { "www foo",   "www.foobar.com",          "0:3,3:1,4:3,7:1"            },
+    { "foo www",   "www.foobar.com",          "0:3,3:1,4:3,7:1"            },
+    { "foo http",  "http://foobar.com",       "0:3,4:1,7:3,10:1"           },
+    { "blah",      "blah.com",                "0:3,4:1"                    },
+    { "http blah", "http://blah.com",         "0:3,4:1,7:3,11:1"           },
+    { "dom",       "domain.com/http/",        "0:3,3:1"                    },
+    { "dom http",  "http://domain.com/http/", "0:3,4:1,7:3,10:1,18:3,22:1" },
+    { "rep",       "repeat.com/1/repeat/2/",  "0:3,3:1,13:3,16:1"          },
+    { "versi",     "chrome://version",        "0:1,9:3,14:1"               },
+      // clang-format on
   };
 
   for (size_t i = 0; i < arraysize(query_data); ++i) {

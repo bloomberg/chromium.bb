@@ -1528,6 +1528,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
     const KeywordFetcherMatch matches[6];
     const std::string inline_autocompletion;
   } cases[] = {
+    // clang-format off
     // Ensure that suggest relevance scores reorder matches and that
     // the keyword verbatim (lacking a suggested verbatim score) beats
     // the default provider verbatim.
@@ -1804,9 +1805,9 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
     { "[\"a\",[\"https://a/\"],[],[],"
        "{\"google:suggesttype\":[\"NAVIGATION\"],"
         "\"google:suggestrelevance\":[9999]}]",
-      { { "a",         true,  true },
-        { "https://a", false, false },
-        { "k a",       false, false },
+      { { "a",   true,  true },
+        { "a",   false, false },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
     // Check when navsuggest scores more than verbatim and there is query
@@ -1923,6 +1924,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
         { "k a",    false, false },
         kEmptyMatch },
       "3" },
+    // clang-format on
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
@@ -2351,6 +2353,7 @@ TEST_F(SearchProviderTest, DefaultProviderSuggestRelevanceScoringUrlInput) {
     const std::string json;
     const DefaultFetcherUrlInputMatch output[4];
   } cases[] = {
+    // clang-format off
     // Ensure NAVIGATION matches are allowed to be listed first for URL input.
     // Non-inlineable matches should not be allowed to be the default match.
     // Note that the top-scoring inlineable match is moved to the top
@@ -2364,8 +2367,8 @@ TEST_F(SearchProviderTest, DefaultProviderSuggestRelevanceScoringUrlInput) {
     { "a.com", "[\"a.com\",[\"https://b.com\"],[],[],"
                 "{\"google:suggesttype\":[\"NAVIGATION\"],"
                  "\"google:suggestrelevance\":[9999]}]",
-      { { "a.com",         AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, true },
-        { "https://b.com", AutocompleteMatchType::NAVSUGGEST,           false },
+      { { "a.com",   AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, true },
+        { "b.com",   AutocompleteMatchType::NAVSUGGEST,            false },
         kEmptyMatch, kEmptyMatch } },
     { "a.com", "[\"a.com\",[\"http://a.com/a\"],[],[],"
                 "{\"google:suggesttype\":[\"NAVIGATION\"],"
@@ -2376,8 +2379,8 @@ TEST_F(SearchProviderTest, DefaultProviderSuggestRelevanceScoringUrlInput) {
     { "a.com", "[\"a.com\",[\"https://a.com\"],[],[],"
                 "{\"google:suggesttype\":[\"NAVIGATION\"],"
                  "\"google:suggestrelevance\":[9999]}]",
-      { { "https://a.com", AutocompleteMatchType::NAVSUGGEST,            true },
-        { "a.com",         AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, true },
+      { { "a.com",   AutocompleteMatchType::NAVSUGGEST,            true },
+        { "a.com",   AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, true },
         kEmptyMatch, kEmptyMatch } },
 
     // Ensure topmost inlineable SUGGEST matches are NOT allowed for URL
@@ -2437,6 +2440,7 @@ TEST_F(SearchProviderTest, DefaultProviderSuggestRelevanceScoringUrlInput) {
         { "http://a.com",   AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
                                                                  true  },
         kEmptyMatch } },
+    // clang-format on
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
@@ -2800,20 +2804,17 @@ TEST_F(SearchProviderTest, NavigationInlineDomainClassify) {
   EXPECT_EQ(ASCIIToUTF16("ow.com"), match.inline_autocompletion);
   EXPECT_TRUE(match.allowed_to_be_default_match);
   EXPECT_EQ(ASCIIToUTF16("www.wow.com"), match.fill_into_edit);
-  EXPECT_EQ(ASCIIToUTF16("www.wow.com"), match.contents);
+  EXPECT_EQ(ASCIIToUTF16("wow.com"), match.contents);
 
   // Ensure that the match for input "w" is marked on "wow" and not "www".
-  ASSERT_EQ(3U, match.contents_class.size());
+  ASSERT_EQ(2U, match.contents_class.size());
   EXPECT_EQ(0U, match.contents_class[0].offset);
-  EXPECT_EQ(AutocompleteMatch::ACMatchClassification::URL,
-            match.contents_class[0].style);
-  EXPECT_EQ(4U, match.contents_class[1].offset);
   EXPECT_EQ(AutocompleteMatch::ACMatchClassification::URL |
-            AutocompleteMatch::ACMatchClassification::MATCH,
-            match.contents_class[1].style);
-  EXPECT_EQ(5U, match.contents_class[2].offset);
+                AutocompleteMatch::ACMatchClassification::MATCH,
+            match.contents_class[0].style);
+  EXPECT_EQ(1U, match.contents_class[1].offset);
   EXPECT_EQ(AutocompleteMatch::ACMatchClassification::URL,
-            match.contents_class[2].style);
+            match.contents_class[1].style);
 }
 
 // Verifies that "http://" is trimmed in the general case.
@@ -2825,10 +2826,9 @@ TEST_F(SearchProviderTest, DoTrimHttpScheme) {
       AutocompleteMatchType::NAVSUGGEST, 0, base::string16(), std::string(),
       false, 0, false, input);
 
-  // Generate the contents and check for the presence of a scheme.
   QueryForInput(input, false, false);
   AutocompleteMatch match_inline(provider_->NavigationToMatch(result));
-  EXPECT_EQ(ASCIIToUTF16("www.facebook.com"), match_inline.contents);
+  EXPECT_EQ(ASCIIToUTF16("facebook.com"), match_inline.contents);
 }
 
 // Verifies that "http://" is not trimmed for input that has a scheme, even if
@@ -2841,34 +2841,14 @@ TEST_F(SearchProviderTest, DontTrimHttpSchemeIfInputHasScheme) {
       AutocompleteMatchType::NAVSUGGEST, 0, base::string16(), std::string(),
       false, 0, false, input);
 
-  // Generate the contents and check for the presence of a scheme.
   QueryForInput(input, false, false);
   AutocompleteMatch match_inline(provider_->NavigationToMatch(result));
-  EXPECT_EQ(url, match_inline.contents);
-}
-
-// Verifies that "https://" is not trimmed for input in the general case.
-TEST_F(SearchProviderTest, DontTrimHttpsScheme) {
-  const base::string16 input(ASCIIToUTF16("face book"));
-  const base::string16 url(ASCIIToUTF16("https://www.facebook.com"));
-  SearchSuggestionParser::NavigationResult result(
-      ChromeAutocompleteSchemeClassifier(&profile_), GURL(url),
-      AutocompleteMatchType::NAVSUGGEST, 0, base::string16(), std::string(),
-      false, 0, false, input);
-
-  // Generate the contents and check for the presence of a scheme.
-  QueryForInput(input, false, false);
-  AutocompleteMatch match_inline(provider_->NavigationToMatch(result));
-  EXPECT_EQ(url, match_inline.contents);
+  EXPECT_EQ(ASCIIToUTF16("http://facebook.com"), match_inline.contents);
 }
 
 // Verifies that "https://" is not trimmed for input that has a (non-matching)
-// scheme, even if flag requests it.
-TEST_F(SearchProviderTest, DontTrimHttpsSchemeDespiteFlag) {
-  auto feature_list = std::make_unique<base::test::ScopedFeatureList>();
-  feature_list->InitAndEnableFeature(
-      omnibox::kUIExperimentHideSuggestionUrlScheme);
-
+// scheme.
+TEST_F(SearchProviderTest, DontTrimHttpsSchemeIfInputHasScheme) {
   const base::string16 input(ASCIIToUTF16("http://face book"));
   const base::string16 url(ASCIIToUTF16("https://www.facebook.com"));
   SearchSuggestionParser::NavigationResult result(
@@ -2876,19 +2856,13 @@ TEST_F(SearchProviderTest, DontTrimHttpsSchemeDespiteFlag) {
       AutocompleteMatchType::NAVSUGGEST, 0, base::string16(), std::string(),
       false, 0, false, input);
 
-  // Generate the contents and check for the presence of a scheme.
   QueryForInput(input, false, false);
   AutocompleteMatch match_inline(provider_->NavigationToMatch(result));
-  EXPECT_EQ(url, match_inline.contents);
+  EXPECT_EQ(ASCIIToUTF16("https://facebook.com"), match_inline.contents);
 }
 
-// Verifies that "https://" is trimmed if the flag requests it, and
-// nothing else would prevent it.
-TEST_F(SearchProviderTest, DoTrimHttpsSchemeIfFlag) {
-  auto feature_list = std::make_unique<base::test::ScopedFeatureList>();
-  feature_list->InitAndEnableFeature(
-      omnibox::kUIExperimentHideSuggestionUrlScheme);
-
+// Verifies that "https://" is trimmed in the general case.
+TEST_F(SearchProviderTest, DoTrimHttpsScheme) {
   const base::string16 input(ASCIIToUTF16("face book"));
   const base::string16 url(ASCIIToUTF16("https://www.facebook.com"));
   SearchSuggestionParser::NavigationResult result(
@@ -2896,10 +2870,9 @@ TEST_F(SearchProviderTest, DoTrimHttpsSchemeIfFlag) {
       AutocompleteMatchType::NAVSUGGEST, 0, base::string16(), std::string(),
       false, 0, false, input);
 
-  // Generate the contents and check for the presence of a scheme.
   QueryForInput(input, false, false);
   AutocompleteMatch match_inline(provider_->NavigationToMatch(result));
-  EXPECT_EQ(ASCIIToUTF16("www.facebook.com"), match_inline.contents);
+  EXPECT_EQ(ASCIIToUTF16("facebook.com"), match_inline.contents);
 }
 
 #if !defined(OS_WIN)
@@ -3226,7 +3199,8 @@ TEST_F(SearchProviderTest, ParseDeletionUrl) {
        const std::string input_text;
        const std::string response_json;
        const Match matches[5];
-     } cases[] = {
+   } cases[] = {
+       // clang-format off
        // A deletion URL on a personalized query should be reflected in the
        // resulting AutocompleteMatch.
        { "a",
@@ -3242,7 +3216,7 @@ TEST_F(SearchProviderTest, ParseDeletionUrl) {
          { { "a", "", AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED },
            { "ab", url[0], AutocompleteMatchType::SEARCH_SUGGEST },
            { "ac", "", AutocompleteMatchType::SEARCH_SUGGEST },
-           { "www.amazon.com", url[1],
+           { "amazon.com", url[1],
               AutocompleteMatchType::NAVSUGGEST_PERSONALIZED },
            kEmptyMatch,
          },
@@ -3258,7 +3232,7 @@ TEST_F(SearchProviderTest, ParseDeletionUrl) {
          { { "a", "", AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED },
            { "ac", "", AutocompleteMatchType::SEARCH_SUGGEST },
            { "ab", "", AutocompleteMatchType::SEARCH_SUGGEST },
-           { "www.amazon.com", "",
+           { "amazon.com", "",
               AutocompleteMatchType::NAVSUGGEST_PERSONALIZED },
            kEmptyMatch,
          },
@@ -3273,11 +3247,12 @@ TEST_F(SearchProviderTest, ParseDeletionUrl) {
          { { "a", "", AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED },
            { "ac", "", AutocompleteMatchType::SEARCH_SUGGEST },
            { "ab", "", AutocompleteMatchType::SEARCH_SUGGEST },
-           { "www.amazon.com", "",
+           { "amazon.com", "",
               AutocompleteMatchType::NAVSUGGEST_PERSONALIZED },
            kEmptyMatch,
          },
        },
+       // clang-format on
      };
 
      for (size_t i = 0; i < arraysize(cases); ++i) {

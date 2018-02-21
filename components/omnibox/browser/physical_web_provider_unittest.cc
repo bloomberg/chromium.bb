@@ -292,7 +292,7 @@ TEST_F(PhysicalWebProviderTest, TestSingleMetadataItemCreatesOneMatch) {
   EXPECT_EQ(1U, provider_->matches().size());
   const AutocompleteMatch& metadata_match = provider_->matches().front();
   EXPECT_EQ(AutocompleteMatchType::PHYSICAL_WEB, metadata_match.type);
-  ValidateMatch(metadata_match, resolved_url, resolved_url, title, false);
+  ValidateMatch(metadata_match, resolved_url, "example.com/0", title, false);
 
   // Run the test again with a URL in the omnibox input. An additional match
   // should be added as a default match.
@@ -302,7 +302,7 @@ TEST_F(PhysicalWebProviderTest, TestSingleMetadataItemCreatesOneMatch) {
   size_t default_match_count = 0;
   for (const auto& match : provider_->matches()) {
     if (match.type == AutocompleteMatchType::PHYSICAL_WEB) {
-      ValidateMatch(match, resolved_url, resolved_url, title, false);
+      ValidateMatch(match, resolved_url, "example.com/0", title, false);
       ++metadata_match_count;
     } else {
       EXPECT_TRUE(match.allowed_to_be_default_match);
