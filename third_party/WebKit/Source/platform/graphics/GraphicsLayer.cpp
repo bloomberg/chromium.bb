@@ -872,6 +872,12 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerAsJSONInternal(
                    std::move(contents_clipping_mask_layer_json));
   }
 
+  if (layer_state_ && (flags & (kLayerTreeIncludesDebugInfo |
+                                kLayerTreeIncludesPaintRecords))) {
+    json->SetString("layerState", layer_state_->state.ToString());
+    json->SetValue("layerOffset", PointAsJSONArray(layer_state_->offset));
+  }
+
 #ifndef NDEBUG
   if (DrawsContent() && (flags & kLayerTreeIncludesPaintRecords))
     json->SetValue("paintRecord", RecordAsJSON(*CapturePaintRecord()));

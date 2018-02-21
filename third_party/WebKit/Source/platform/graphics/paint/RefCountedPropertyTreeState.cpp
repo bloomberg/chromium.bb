@@ -38,14 +38,4 @@ const CompositorElementId RefCountedPropertyTreeState::GetCompositorElementId(
   return CompositorElementId();
 }
 
-#if DCHECK_IS_ON()
-
-String RefCountedPropertyTreeState::ToTreeString() const {
-  return "transform:\n" + (Transform() ? Transform()->ToTreeString() : "null") +
-         "\nclip:\n" + (Clip() ? Clip()->ToTreeString() : "null") +
-         "\neffect:\n" + (Effect() ? Effect()->ToTreeString() : "null");
-}
-
-#endif
-
 }  // namespace blink
