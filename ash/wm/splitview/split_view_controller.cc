@@ -208,9 +208,11 @@ void SplitViewController::SwapWindows() {
 
   aura::Window* new_left_window = right_window_;
   aura::Window* new_right_window = left_window_;
+  left_window_ = new_left_window;
+  right_window_ = new_right_window;
 
-  SnapWindow(new_left_window, LEFT);
-  SnapWindow(new_right_window, RIGHT);
+  MoveDividerToClosestFixedPosition();
+  UpdateSnappedWindowsAndDividerBounds();
 
   base::RecordAction(
       base::UserMetricsAction("SplitView_DoubleTapDividerSwapWindows"));

@@ -575,8 +575,8 @@ TEST_F(SplitViewControllerTest, SwapWindows) {
   EXPECT_EQ(split_view_controller()->left_window(), window1.get());
   EXPECT_EQ(split_view_controller()->right_window(), window2.get());
 
-  const gfx::Rect left_bounds = window1->GetBoundsInScreen();
-  const gfx::Rect right_bounds = window2->GetBoundsInScreen();
+  gfx::Rect left_bounds = window1->GetBoundsInScreen();
+  gfx::Rect right_bounds = window2->GetBoundsInScreen();
 
   // Verify that after swapping windows, the windows and their bounds have been
   // swapped.
@@ -586,6 +586,24 @@ TEST_F(SplitViewControllerTest, SwapWindows) {
   EXPECT_EQ(left_bounds, window2->GetBoundsInScreen());
   EXPECT_EQ(right_bounds, window1->GetBoundsInScreen());
 
+  // End split view mode and snap the window to RIGHT first, verify the function
+  // SwapWindows() still works properly.
+  EndSplitView();
+  split_view_controller()->SnapWindow(window1.get(),
+                                      SplitViewController::RIGHT);
+  split_view_controller()->SnapWindow(window2.get(), SplitViewController::LEFT);
+  EXPECT_EQ(split_view_controller()->right_window(), window1.get());
+  EXPECT_EQ(split_view_controller()->left_window(), window2.get());
+
+  left_bounds = window2->GetBoundsInScreen();
+  right_bounds = window1->GetBoundsInScreen();
+
+  split_view_controller()->SwapWindows();
+  EXPECT_EQ(split_view_controller()->left_window(), window1.get());
+  EXPECT_EQ(split_view_controller()->right_window(), window2.get());
+  EXPECT_EQ(left_bounds, window1->GetBoundsInScreen());
+  EXPECT_EQ(right_bounds, window2->GetBoundsInScreen());
+
   // Perform a double tap on the divider center.
   const gfx::Point divider_center =
       split_view_divider()
@@ -594,8 +612,10 @@ TEST_F(SplitViewControllerTest, SwapWindows) {
   GetEventGenerator().set_current_location(divider_center);
   GetEventGenerator().DoubleClickLeftButton();
 
-  EXPECT_EQ(split_view_controller()->left_window(), window1.get());
-  EXPECT_EQ(split_view_controller()->right_window(), window2.get());
+  EXPECT_EQ(split_view_controller()->left_window(), window2.get());
+  EXPECT_EQ(split_view_controller()->right_window(), window1.get());
+  EXPECT_EQ(left_bounds, window2->GetBoundsInScreen());
+  EXPECT_EQ(right_bounds, window1->GetBoundsInScreen());
 }
 
 // Verifies that by long pressing on the overview button tray, split view gets
