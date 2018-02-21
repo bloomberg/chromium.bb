@@ -131,6 +131,19 @@ class PLATFORM_EXPORT TaskQueueImpl {
     EnqueueOrder enqueue_order_;
   };
 
+  // A result retuned by PostDelayedTask. When scheduler failed to post a task
+  // due to being shutdown a task is returned to be destroyed outside the lock.
+  struct PostTaskResult {
+    PostTaskResult();
+    PostTaskResult(bool success, TaskQueue::PostedTask task);
+
+    static PostTaskResult Success();
+    static PostTaskResult Fail(TaskQueue::PostedTask task);
+
+    bool success = false;
+    TaskQueue::PostedTask task;
+  };
+
   using OnNextWakeUpChangedCallback = base::Callback<void(base::TimeTicks)>;
   using OnTaskStartedHandler =
       base::RepeatingCallback<void(const TaskQueue::Task&, base::TimeTicks)>;
@@ -143,7 +156,7 @@ class PLATFORM_EXPORT TaskQueueImpl {
   // TaskQueue implementation.
   const char* GetName() const;
   bool RunsTasksInCurrentSequence() const;
-  bool PostDelayedTask(TaskQueue::PostedTask task);
+  PostTaskResult PostDelayedTask(TaskQueue::PostedTask task);
   // Require a reference to enclosing task queue for lifetime control.
   std::unique_ptr<TaskQueue::QueueEnabledVoter> CreateQueueEnabledVoter(
       scoped_refptr<TaskQueue> owning_task_queue);
@@ -331,8 +344,8 @@ class PLATFORM_EXPORT TaskQueueImpl {
     bool is_enabled_for_test;
   };
 
-  bool PostImmediateTaskImpl(TaskQueue::PostedTask task);
-  bool PostDelayedTaskImpl(TaskQueue::PostedTask task);
+  PostTaskResult PostImmediateTaskImpl(TaskQueue::PostedTask task);
+  PostTaskResult PostDelayedTaskImpl(TaskQueue::PostedTask task);
 
   // Push the task onto the |delayed_incoming_queue|. Lock-free main thread
   // only fast path.

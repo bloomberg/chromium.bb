@@ -3391,6 +3391,61 @@ TEST_F(TaskQueueManagerTest, TaskQueueDeletedOnAnotherThread) {
   thread->Stop();
 }
 
+namespace {
+
+void DoNothing() {}
+
+class PostTaskInDestructor {
+ public:
+  explicit PostTaskInDestructor(scoped_refptr<TaskQueue> task_queue)
+      : task_queue_(task_queue) {}
+
+  ~PostTaskInDestructor() {
+    task_queue_->PostTask(FROM_HERE, base::BindOnce(&DoNothing));
+  }
+
+  void Do() {}
+
+ private:
+  scoped_refptr<TaskQueue> task_queue_;
+};
+
+}  // namespace
+
+TEST_F(TaskQueueManagerTest, TaskQueueUsedInTaskDestructorAfterShutdown) {
+  // This test checks that when a task is posted to a shutdown queue and
+  // destroyed, it can try to post a task to the same queue without deadlocks.
+  Initialize(0u);
+  test_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+
+  scoped_refptr<TestTaskQueue> main_tq = CreateTaskQueue();
+
+  base::WaitableEvent test_executed(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+  std::unique_ptr<base::Thread> thread =
+      std::make_unique<base::Thread>("test thread");
+  thread->StartAndWaitForTesting();
+
+  manager_.reset();
+
+  thread->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](scoped_refptr<base::SingleThreadTaskRunner> task_queue,
+             std::unique_ptr<PostTaskInDestructor> test_object,
+             base::WaitableEvent* test_executed) {
+            task_queue->PostTask(
+                FROM_HERE,
+                base::BindOnce(&PostTaskInDestructor::Do,
+                               base::Passed(std::move(test_object))));
+            test_executed->Signal();
+          },
+          main_tq, std::make_unique<PostTaskInDestructor>(main_tq),
+          &test_executed));
+  test_executed.Wait();
+}
+
 }  // namespace task_queue_manager_unittest
 }  // namespace scheduler
 }  // namespace blink
