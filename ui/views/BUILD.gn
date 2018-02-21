@@ -167,6 +167,7 @@ jumbo_component("views") {
     "controls/tree/tree_view.h",
     "controls/tree/tree_view_controller.h",
     "controls/tree/tree_view_drawing_provider.h",
+    "controls/views_text_services_context_menu.h",
     "debug_utils.h",
     "drag_controller.h",
     "drag_utils.h",
@@ -355,6 +356,8 @@ jumbo_component("views") {
     "controls/tree/tree_view.cc",
     "controls/tree/tree_view_controller.cc",
     "controls/tree/tree_view_drawing_provider.cc",
+    "controls/views_text_services_context_menu.cc",
+    "controls/views_text_services_context_menu_mac.mm",
     "debug_utils.cc",
     "drag_utils.cc",
     "drag_utils_mac.mm",
@@ -683,6 +686,7 @@ jumbo_component("views") {
   }
 
   if (is_mac) {
+    sources -= [ "controls/views_text_services_context_menu.cc" ]
     deps += [
       "//components/crash/core/common",
       "//ui/accelerated_widget_mac",

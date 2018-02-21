@@ -22,6 +22,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/strings/grit/ui_strings.h"
 
 using content::WebContents;
 

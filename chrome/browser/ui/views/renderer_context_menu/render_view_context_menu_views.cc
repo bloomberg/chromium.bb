@@ -25,6 +25,7 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/widget/widget.h"
 
 using content::WebContents;
