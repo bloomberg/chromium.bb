@@ -30,6 +30,9 @@ class AndroidPageLoadMetricsObserver
   void OnFirstContentfulPaintInPage(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+  void OnFirstMeaningfulPaintInMainFrameDocument(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   void OnLoadEventStart(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
@@ -53,6 +56,9 @@ class AndroidPageLoadMetricsObserver
 
   virtual void ReportFirstContentfulPaint(int64_t navigation_start_tick,
                                           int64_t first_contentful_paint_ms);
+
+  virtual void ReportFirstMeaningfulPaint(int64_t navigation_start_tick,
+                                          int64_t first_meaningful_paint_ms);
 
   virtual void ReportLoadEventStart(int64_t navigation_start_tick,
                                     int64_t load_event_start_ms);
