@@ -2412,6 +2412,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'scarlet',
       'sentry',
       'stout',
+      'tatl',
       'tidus',
       'tricky',
       'veyron_jaq',
@@ -2462,7 +2463,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'macchiato-ground', # contact:jemele@
       'octavius', # contact:dpjacques@
       'romer', # contact:michaelho@
-      'tatl', # Still volatile - contact:smbarber@ - crbug.com/705598
       'terra', # contact:yunlian@ (Testing thinlto)
       'whirlwind', # contact:mxt@ (crbug.com/794242, crbug.com/819287)
       'wooten', # contact:icoolidge@
