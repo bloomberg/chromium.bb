@@ -138,11 +138,11 @@ class OmniboxEditModel {
   // of the selection e.g. min(selection_start, selection_end). |text| is the
   // currently selected text. If |is_all_selected| is true all the text in the
   // edit is selected. If the url should be copied to the clipboard |write_url|
-  // is set to true and |url| set to the url to write.
+  // is set to true and |url_from_text| set to the url to write.
   void AdjustTextForCopy(int sel_min,
                          bool is_all_selected,
                          base::string16* text,
-                         GURL* url,
+                         GURL* url_from_text,
                          bool* write_url);
 
   bool user_input_in_progress() const { return user_input_in_progress_; }

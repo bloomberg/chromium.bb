@@ -84,13 +84,17 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
     const bool write_url;
     const char* expected_url;
   } input[] = {
-      // Test that http:// is inserted if all text is selected.
+      // Test that http:// and https:// are inserted if all text is selected.
       {"a.de/b", 0, true, "", false, "a.de/b", "http://a.de/b", true,
        "http://a.de/b"},
+      {"https://a.de/b", 0, true, "", false, "a.de/b", "https://a.de/b", true,
+       "https://a.de/b"},
 
-      // Test that http:// is inserted if the host is selected.
+      // Test that http:// and https:// are inserted if the host is selected.
       {"a.de/b", 0, false, "", false, "a.de/", "http://a.de/", true,
        "http://a.de/"},
+      {"https://a.de/b", 0, false, "", false, "https://a.de/", "https://a.de/",
+       true, "https://a.de/"},
 
       // Tests that http:// is inserted if the path is modified.
       {"a.de/b", 0, false, "", false, "a.de/c", "http://a.de/c", true,
@@ -105,16 +109,24 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
       // Tests that http:// isn't inserted if a portion of the host is selected.
       {"a.de/", 0, false, "", false, "a.d", "a.d", false, ""},
 
-      // Tests that http:// isn't inserted for an https url after the user nukes
-      // https.
-      {"https://a.com/", 0, false, "", false, "a.com/", "a.com/", false, ""},
-
       // Tests that http:// isn't inserted if the user adds to the host.
       {"a.de/", 0, false, "", false, "a.de.com/", "a.de.com/", false, ""},
 
-      // Tests that we don't get double http if the user manually inserts http.
+      // Tests that we don't get double schemes if the user manually inserts
+      // a scheme.
       {"a.de/", 0, false, "", false, "http://a.de/", "http://a.de/", true,
        "http://a.de/"},
+      {"a.de/", 0, false, "", false, "HTtp://a.de/", "HTtp://a.de/", true,
+       "http://a.de/"},
+      {"https://a.de/", 0, false, "", false, "https://a.de/", "https://a.de/",
+       true, "https://a.de/"},
+
+      // Test that we don't get double schemes or revert the change if the user
+      // manually changes the scheme from 'http://' to 'https://' or vice versa.
+      {"a.de/", 0, false, "", false, "https://a.de/", "https://a.de/", true,
+       "https://a.de/"},
+      {"https://a.de/", 0, false, "", false, "http://a.de/", "http://a.de/",
+       true, "http://a.de/"},
 
       // Makes sure intranet urls get 'http://' prefixed to them.
       {"b/foo", 0, true, "", false, "b/foo", "http://b/foo", true,
@@ -123,11 +135,13 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
       // Verifies a search term 'foo' doesn't end up with http.
       {"www.google.com/search?", 0, false, "", false, "foo", "foo", false, ""},
 
-      // Verifies that http:// is inserted for a match in a popup.
-      {"a.com", 0, true, "http://b.com", true, "b.com/foo", "http://b.com/foo",
-       true, "http://b.com/foo"},
+      // Verifies that http:// and https:// are inserted for a match in a popup.
+      {"a.com", 0, true, "http://b.com/foo", true, "b.com/foo",
+       "http://b.com/foo", true, "http://b.com/foo"},
+      {"a.com", 0, true, "https://b.com/foo", true, "b.com/foo",
+       "https://b.com/foo", true, "https://b.com/foo"},
 
-      // Verifies that http:// isn't inserted if there is no valid match.
+      // Verifies that no scheme is inserted if there is no valid match.
       {"a.com", 0, true, "", true, "b.com/foo", "b.com/foo", false, ""},
   };
 
@@ -153,12 +167,6 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
     if (write_url)
       EXPECT_EQ(input[i].expected_url, url.spec()) << " @" << i;
   }
-
-  // AdjustTextForCopy does not currently account for HTTPS elision. This
-  // assertion reminds us to update AdjustTextForCopy before enabling that
-  // feature by default.
-  ASSERT_EQ(0U, AutocompleteMatch::GetFormatTypes(false, false, false) &
-                    url_formatter::kFormatUrlOmitHTTPS);
 }
 
 TEST_F(OmniboxEditModelTest, InlineAutocompleteText) {
