@@ -716,14 +716,6 @@ def DefaultSettings():
       # current commit queue run.
       do_not_apply_cq_patches=False,
 
-      # Applies only to master builders. List of the names of slave builders
-      # to be treated as sanity checkers. If only sanity check builders fail,
-      # then the master will ignore the failures. In a CQ run, if any of the
-      # sanity check builders fail and other builders fail as well, the master
-      # will treat the build as failed, but will not reset the ready bit of
-      # the tested patches.
-      sanity_check_slaves=None,
-
       # emerge use flags to use while setting up the board, building packages,
       # making images, etc.
       useflags=[],

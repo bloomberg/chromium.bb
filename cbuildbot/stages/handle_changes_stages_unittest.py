@@ -41,10 +41,6 @@ class CommitQueueHandleChangesStageTests(
     self.partial_submit_changes = ['A', 'B']
     self.other_changes = ['C', 'D']
     self.changes = self.other_changes + self.partial_submit_changes
-    self.tot_sanity_mock = self.PatchObject(
-        handle_changes_stages.CommitQueueHandleChangesStage,
-        '_ToTSanity',
-        return_value=True)
     self.PatchObject(builder_status_lib, 'GetFailedMessages')
     self.PatchObject(relevant_changes.RelevantChanges,
                      '_GetSlaveMappingAndCLActions',

@@ -234,16 +234,6 @@ class MasterSlaveSyncCompletionStageTest(
     self.assertTrue(stage._IsFailureFatal(set(), set(['test5']), set()))
     self.assertTrue(stage._IsFailureFatal(set(), set(), set(['test1'])))
 
-    # Test behavior where there is a sanity check builder
-    stage._run.config.sanity_check_slaves = ['sanity']
-    self.assertTrue(stage._IsFailureFatal(set(['test5']), set(['sanity']),
-                                          set()))
-    self.assertFalse(stage._IsFailureFatal(set(), set(['sanity']), set()))
-    self.assertTrue(stage._IsFailureFatal(set(), set(['sanity']),
-                                          set(['test1'])))
-    self.assertFalse(stage._IsFailureFatal(set(), set(),
-                                           set(['sanity'])))
-
   def testExceptionHandler(self):
     """Verify _HandleStageException is sane."""
     stage = self.ConstructStage()
@@ -710,30 +700,6 @@ class MasterCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
     """Test stage when important builds in no_stat."""
     self.VerifyStage(no_stat=['foo'])
 
-  def testOnlySanityFailing(self):
-    """Test stage when only the sanity builder in failing."""
-    stage = self.ConstructStage()
-    stage._run.config.sanity_check_slaves = ['sanity']
-    self.VerifyStage(failing=['sanity'], build_passed=True)
-
-  def testOnlySanityInflight(self):
-    """Test stage when only the sanity builder in inflight."""
-    stage = self.ConstructStage()
-    stage._run.config.sanity_check_slaves = ['sanity']
-    self.VerifyStage(inflight=['sanity'], build_passed=True)
-
-  def testOnlySanityNostat(self):
-    """Test stage when only the sanity builder in no_stat."""
-    stage = self.ConstructStage()
-    stage._run.config.sanity_check_slaves = ['sanity']
-    self.VerifyStage(no_stat=['sanity'], build_passed=True)
-
-  def testImportantAndSanityBuildsFailing(self):
-    """Test stage when important and sanity builders are in failing."""
-    stage = self.ConstructStage()
-    stage._run.config.sanity_check_slaves = ['sanity']
-    self.VerifyStage(failing=['foo', 'sanity'])
-
   def testFailingBuildersWithInfraFail(self):
     """Alert when the failing builders have infra failure messages."""
     self.PatchObject(completion_stages.CommitQueueCompletionStage,
@@ -801,9 +767,6 @@ class MasterCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
 
     self.assertFalse(stage._IsFailureFatal(
         {'slave-1'}, {'slave-2'}, {'slave-3'}, True))
-
-    self.assertFalse(stage._IsFailureFatal(
-        set(self._run.config.sanity_check_slaves), set(), set(), True))
 
     self.assertTrue(stage._IsFailureFatal(
         {'slave-1', 'slave-4'}, {'slave-2'}, {'slave-3'}, True))

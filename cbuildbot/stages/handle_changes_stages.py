@@ -72,23 +72,6 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
       m = metrics.Counter(constants.MON_CQ_WALL_CLOCK_SECS)
       m.increment_by(elapsed_seconds, fields=fields)
 
-  @staticmethod
-  def _ToTSanity(sanity_check_slaves, slave_statuses):
-    """Returns False if any sanity check slaves failed.
-
-    Args:
-      sanity_check_slaves: Names of slave builders that are "sanity check"
-        builders for the current master.
-      slave_statuses: Dict of builder_status_lib.BuilderStatus objects by
-        builder name keys.
-
-    Returns:
-      True if no sanity builders ran and failed.
-    """
-    sanity_check_slaves = sanity_check_slaves or []
-    return not any([x in slave_statuses and slave_statuses[x].Failed() for
-                    x in sanity_check_slaves])
-
   def _GetBuildsPassedSyncStage(self, build_id, db, slave_buildbucket_ids):
     """Get builds which passed the sync stages.
 
@@ -127,16 +110,7 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
     Returns:
       A boolean indicating whether ToT is sane.
     """
-    sanity_check_slaves = set(self._run.config.sanity_check_slaves)
-    tot_sanity = self._ToTSanity(sanity_check_slaves,
-                                 self.completion_stage.GetSlaveStatuses())
-
-    if not tot_sanity:
-      # Sanity check slave failure may have been caused by bug(s)
-      # in ToT or broken infrastructure. In any of those cases, we
-      # should not reject any changes.
-      logging.warning('Detected that a sanity-check builder failed. '
-                      'Will not reject any changes.')
+    tot_sanity = True
 
     # If the tree was not open when we acquired a pool, do not assume that
     # tot was sane.

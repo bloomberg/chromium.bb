@@ -93,7 +93,6 @@
         "push_image": false,
         "push_overlays": null,
         "rootfs_verification": true,
-        "sanity_check_slaves": null,
         "sanity_check_threshold": 0,
         "separate_debug_symbols": true,
         "shared_user_password": null,

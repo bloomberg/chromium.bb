@@ -285,7 +285,6 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       True if any of the failing, inflight or no_stat builders are not sanity
       checker builders and not ignored by self-destruction; else, False.
     """
-    sanity_builders = set(self._run.config.sanity_check_slaves or [])
     not_passed_builders = failing | inflight | no_stat
 
     if self_destructed:
@@ -305,8 +304,8 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         # Ignore the slaves aborted by self-destruction.
         not_passed_builders -= aborted_slaves
 
-    # Not fatal if all the not passed builders are sanity check builders.
-    return not sanity_builders.issuperset(not_passed_builders)
+    # Fatal if any not_passed_builders remain.
+    return bool(not_passed_builders)
 
   def _PrintBuildMessage(self, text, url=None):
     """Print the build message.
