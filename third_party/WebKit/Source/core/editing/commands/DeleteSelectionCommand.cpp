@@ -85,15 +85,8 @@ DeleteSelectionCommand::DeleteSelectionCommand(
       options_(options),
       has_selection_to_delete_(false),
       merge_blocks_after_delete_(options.IsMergeBlocksAfterDelete()),
-      need_placeholder_(false),
-      prune_start_block_if_necessary_(false),
-      starts_at_empty_line_(false),
       input_type_(input_type),
-      reference_move_position_(reference_move_position),
-      start_block_(nullptr),
-      end_block_(nullptr),
-      typing_style_(nullptr),
-      delete_into_blockquote_style_(nullptr) {}
+      reference_move_position_(reference_move_position) {}
 
 DeleteSelectionCommand::DeleteSelectionCommand(
     const VisibleSelection& selection,
@@ -103,15 +96,8 @@ DeleteSelectionCommand::DeleteSelectionCommand(
       options_(options),
       has_selection_to_delete_(true),
       merge_blocks_after_delete_(options.IsMergeBlocksAfterDelete()),
-      need_placeholder_(false),
-      prune_start_block_if_necessary_(false),
-      starts_at_empty_line_(false),
       input_type_(input_type),
-      selection_to_delete_(selection),
-      start_block_(nullptr),
-      end_block_(nullptr),
-      typing_style_(nullptr),
-      delete_into_blockquote_style_(nullptr) {}
+      selection_to_delete_(selection) {}
 
 void DeleteSelectionCommand::InitializeStartEnd(Position& start,
                                                 Position& end) {
