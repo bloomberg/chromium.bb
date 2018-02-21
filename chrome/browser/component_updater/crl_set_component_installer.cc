@@ -17,7 +17,6 @@
 #include "components/component_updater/component_installer.h"
 #include "components/component_updater/component_updater_service.h"
 #include "net/cert/crl_set.h"
-#include "net/cert/crl_set_storage.h"
 #include "net/ssl/ssl_config_service.h"
 
 namespace component_updater {
@@ -37,7 +36,7 @@ void LoadCRLSet(const base::FilePath& crl_path) {
   scoped_refptr<net::CRLSet> crl_set;
   std::string crl_set_bytes;
   if (!base::ReadFileToString(crl_path, &crl_set_bytes) ||
-      !net::CRLSetStorage::Parse(crl_set_bytes, &crl_set)) {
+      !net::CRLSet::Parse(crl_set_bytes, &crl_set)) {
     return;
   }
   net::SSLConfigService::SetCRLSetIfNewer(crl_set);

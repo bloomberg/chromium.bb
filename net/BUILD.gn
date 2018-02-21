@@ -538,8 +538,6 @@ component("net") {
       "cert/cert_verify_proc_nss.h",
       "cert/cert_verify_proc_win.cc",
       "cert/cert_verify_proc_win.h",
-      "cert/crl_set_storage.cc",
-      "cert/crl_set_storage.h",
       "cert/ct_log_response_parser.cc",
       "cert/ct_log_response_parser.h",
       "cert/ct_log_verifier.cc",
@@ -2856,20 +2854,6 @@ if (!is_ios && !is_android) {
     deps = [
       ":net",
       ":test_support",
-      "//base",
-      "//build/config:exe_and_shlib_deps",
-      "//build/win:default_exe_manifest",
-    ]
-  }
-
-  executable("crl_set_dump") {
-    testonly = true
-    sources = [
-      "tools/crl_set_dump/crl_set_dump.cc",
-    ]
-
-    deps = [
-      ":net",
       "//base",
       "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",

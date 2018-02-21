@@ -24,7 +24,6 @@
 #include "net/cert/cert_verify_proc_builtin.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/crl_set.h"
-#include "net/cert/crl_set_storage.h"
 #include "net/cert/ev_root_ca_metadata.h"
 #include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/test_root_certs.h"
@@ -1850,7 +1849,7 @@ TEST_P(CertVerifyProcInternalTest, CRLSet) {
   EXPECT_TRUE(base::ReadFileToString(
       GetTestCertsDirectory().AppendASCII("crlset_by_leaf_spki.raw"),
       &crl_set_bytes));
-  ASSERT_TRUE(CRLSetStorage::Parse(crl_set_bytes, &crl_set));
+  ASSERT_TRUE(CRLSet::Parse(crl_set_bytes, &crl_set));
 
   error = Verify(cert.get(), "127.0.0.1", flags, crl_set.get(),
                  CertificateList(), &verify_result);
@@ -1862,7 +1861,7 @@ TEST_P(CertVerifyProcInternalTest, CRLSet) {
   EXPECT_TRUE(base::ReadFileToString(
       GetTestCertsDirectory().AppendASCII("crlset_by_root_serial.raw"),
       &crl_set_bytes));
-  ASSERT_TRUE(CRLSetStorage::Parse(crl_set_bytes, &crl_set));
+  ASSERT_TRUE(CRLSet::Parse(crl_set_bytes, &crl_set));
 
   error = Verify(cert.get(), "127.0.0.1", flags, crl_set.get(),
                  CertificateList(), &verify_result);
@@ -1911,7 +1910,7 @@ TEST_P(CertVerifyProcInternalTest, CRLSetLeafSerial) {
   ASSERT_TRUE(base::ReadFileToString(
       GetTestCertsDirectory().AppendASCII("crlset_by_intermediate_serial.raw"),
       &crl_set_bytes));
-  ASSERT_TRUE(CRLSetStorage::Parse(crl_set_bytes, &crl_set));
+  ASSERT_TRUE(CRLSet::Parse(crl_set_bytes, &crl_set));
 
   error = Verify(leaf.get(), "127.0.0.1", flags, crl_set.get(),
                  CertificateList(), &verify_result);
@@ -1951,7 +1950,7 @@ TEST_P(CertVerifyProcInternalTest, CRLSetRevokedBySubject) {
   ASSERT_TRUE(base::ReadFileToString(
       GetTestCertsDirectory().AppendASCII("crlset_by_leaf_subject_no_spki.raw"),
       &crl_set_bytes));
-  ASSERT_TRUE(CRLSetStorage::Parse(crl_set_bytes, &crl_set));
+  ASSERT_TRUE(CRLSet::Parse(crl_set_bytes, &crl_set));
 
   error = Verify(leaf.get(), "127.0.0.1", flags, crl_set.get(),
                  CertificateList(), &verify_result);
@@ -1961,7 +1960,7 @@ TEST_P(CertVerifyProcInternalTest, CRLSetRevokedBySubject) {
   ASSERT_TRUE(base::ReadFileToString(
       GetTestCertsDirectory().AppendASCII("crlset_by_root_subject_no_spki.raw"),
       &crl_set_bytes));
-  ASSERT_TRUE(CRLSetStorage::Parse(crl_set_bytes, &crl_set));
+  ASSERT_TRUE(CRLSet::Parse(crl_set_bytes, &crl_set));
 
   error = Verify(leaf.get(), "127.0.0.1", flags, crl_set.get(),
                  CertificateList(), &verify_result);
@@ -1972,7 +1971,7 @@ TEST_P(CertVerifyProcInternalTest, CRLSetRevokedBySubject) {
   ASSERT_TRUE(base::ReadFileToString(
       GetTestCertsDirectory().AppendASCII("crlset_by_root_subject.raw"),
       &crl_set_bytes));
-  ASSERT_TRUE(CRLSetStorage::Parse(crl_set_bytes, &crl_set));
+  ASSERT_TRUE(CRLSet::Parse(crl_set_bytes, &crl_set));
 
   error = Verify(leaf.get(), "127.0.0.1", flags, crl_set.get(),
                  CertificateList(), &verify_result);
@@ -2060,7 +2059,7 @@ TEST_P(CertVerifyProcInternalTest, CRLSetDuringPathBuilding) {
     std::string crl_set_bytes;
     EXPECT_TRUE(base::ReadFileToString(
         GetTestCertsDirectory().AppendASCII(testcase.crlset), &crl_set_bytes));
-    ASSERT_TRUE(CRLSetStorage::Parse(crl_set_bytes, &crl_set));
+    ASSERT_TRUE(CRLSet::Parse(crl_set_bytes, &crl_set));
 
     int flags = 0;
     CertVerifyResult verify_result;
