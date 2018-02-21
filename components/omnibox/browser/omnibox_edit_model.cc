@@ -294,7 +294,7 @@ AutocompleteMatch::Type OmniboxEditModel::CurrentTextType() const {
 void OmniboxEditModel::AdjustTextForCopy(int sel_min,
                                          bool is_all_selected,
                                          base::string16* text,
-                                         GURL* url,
+                                         GURL* url_from_text,
                                          bool* write_url) {
   *write_url = false;
 
@@ -324,8 +324,8 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
     // It's safe to copy the underlying URL.  These lines ensure that if the
     // scheme was stripped it's added back, and the URL is unescaped (we escape
     // parts of it for display).
-    *url = PermanentURL();
-    *text = base::UTF8ToUTF16(url->spec());
+    *url_from_text = PermanentURL();
+    *text = base::UTF8ToUTF16(url_from_text->spec());
     *write_url = true;
     return;
   }
@@ -339,31 +339,41 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
                                                  &match_from_text, nullptr);
   if (AutocompleteMatch::IsSearchType(match_from_text.type))
     return;
-  *url = match_from_text.destination_url;
+  *url_from_text = match_from_text.destination_url;
 
-  // Prefix the text with 'http://' if the text doesn't start with 'http://',
-  // the text parses as a url with a scheme of http, the user selected the
-  // entire host, and the user hasn't edited the host or manually removed the
-  // scheme.
-  GURL reference_url = PermanentURL();
-  // If the popup is open, and the user is in input mode, and has a current
-  // match, use the destination URL as the reference URL instead.
+  GURL current_page_url = PermanentURL();
   if (PopupIsOpen() && user_input_in_progress_) {
     AutocompleteMatch current_match = CurrentMatch(nullptr);
     if (!AutocompleteMatch::IsSearchType(current_match.type) &&
         current_match.destination_url.is_valid()) {
-      reference_url = current_match.destination_url;
+      // If the popup is open and a valid match is selected, treat that as the
+      // current page, since the URL in the Omnibox will be from that match.
+      current_page_url = current_match.destination_url;
+      *url_from_text = current_match.destination_url;
     }
   }
 
-  if (reference_url.SchemeIs(url::kHttpScheme) &&
-      url->SchemeIs(url::kHttpScheme) &&
-      reference_url.host_piece() == url->host_piece()) {
+  // Only if the user has not altered the host piece of the Omnibox text, then
+  // we can infer the correct scheme from the current page's URL, and prepend it
+  // to the selected text on-copy. Otherwise, we cannot guess at user intent, so
+  // we copy the Omnibox contents as plain text.
+  if (current_page_url.SchemeIsHTTPOrHTTPS() &&
+      url_from_text->SchemeIsHTTPOrHTTPS() &&
+      current_page_url.host_piece() == url_from_text->host_piece()) {
     *write_url = true;
+
     base::string16 http = base::ASCIIToUTF16(url::kHttpScheme) +
-        base::ASCIIToUTF16(url::kStandardSchemeSeparator);
-    if (text->compare(0, http.length(), http) != 0)
-      *text = http + *text;
+                          base::ASCIIToUTF16(url::kStandardSchemeSeparator);
+    base::string16 https = base::ASCIIToUTF16(url::kHttpsScheme) +
+                           base::ASCIIToUTF16(url::kStandardSchemeSeparator);
+    const base::string16& current_page_url_prefix =
+        current_page_url.SchemeIs(url::kHttpScheme) ? http : https;
+
+    // Only prepend a scheme if the text doesn't already have a scheme.
+    if (!base::StartsWith(*text, http, base::CompareCase::INSENSITIVE_ASCII) &&
+        !base::StartsWith(*text, https, base::CompareCase::INSENSITIVE_ASCII)) {
+      *text = current_page_url_prefix + *text;
+    }
   }
 }
 
