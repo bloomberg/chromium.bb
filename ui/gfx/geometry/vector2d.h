@@ -39,6 +39,9 @@ class GFX_EXPORT Vector2d {
   // Subtract the components of the |other| vector from the current vector.
   void Subtract(const Vector2d& other);
 
+  constexpr bool operator==(const Vector2d& other) const {
+    return x_ == other.x_ && y_ == other.y_;
+  }
   void operator+=(const Vector2d& other) { Add(other); }
   void operator-=(const Vector2d& other) { Subtract(other); }
 
@@ -70,11 +73,7 @@ class GFX_EXPORT Vector2d {
   int y_;
 };
 
-inline bool operator==(const Vector2d& lhs, const Vector2d& rhs) {
-  return lhs.x() == rhs.x() && lhs.y() == rhs.y();
-}
-
-inline Vector2d operator-(const Vector2d& v) {
+inline constexpr Vector2d operator-(const Vector2d& v) {
   return Vector2d(-v.x(), -v.y());
 }
 

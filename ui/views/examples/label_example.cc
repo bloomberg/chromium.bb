@@ -101,7 +101,7 @@ void LabelExample::CreateExampleView(View* container) {
   label->SetFontList(gfx::FontList("Courier, 18px"));
   gfx::ShadowValues shadows(1,
                             gfx::ShadowValue(gfx::Vector2d(), 1, SK_ColorRED));
-  gfx::ShadowValue shadow(gfx::Vector2d(2, 2), 0, SK_ColorGRAY);
+  constexpr gfx::ShadowValue shadow(gfx::Vector2d(2, 2), 0, SK_ColorGRAY);
   shadows.push_back(shadow);
   label->SetShadows(shadows);
   container->AddChildView(label);

@@ -13,45 +13,49 @@
 namespace gfx {
 
 TEST(ShadowValueTest, GetMargin) {
-  const struct TestCase {
+  constexpr struct TestCase {
     Insets expected_margin;
     size_t shadow_count;
     ShadowValue shadows[2];
   } kTestCases[] = {
-    {
-      Insets(), 0, {},
-    },
-    {
-      Insets(-2, -2, -2, -2),
-      1,
-      { ShadowValue(gfx::Vector2d(0, 0), 4, 0), },
-    },
-    {
-      Insets(0, -1, -4, -3),
-      1,
-      { ShadowValue(gfx::Vector2d(1, 2), 4, 0), },
-    },
-    {
-      Insets(-4, -3, 0, -1),
-      1,
-      { ShadowValue(gfx::Vector2d(-1, -2), 4, 0), },
-    },
-    {
-      Insets(0, -1, -5, -4),
-      2,
       {
-        ShadowValue(gfx::Vector2d(1, 2), 4, 0),
-        ShadowValue(gfx::Vector2d(2, 3), 4, 0),
+          Insets(), 0, {},
       },
-    },
-    {
-      Insets(-4, -3, -5, -4),
-      2,
       {
-        ShadowValue(gfx::Vector2d(-1, -2), 4, 0),
-        ShadowValue(gfx::Vector2d(2, 3), 4, 0),
+          Insets(-2, -2, -2, -2),
+          1,
+          {
+              {gfx::Vector2d(0, 0), 4, 0},
+          },
       },
-    },
+      {
+          Insets(0, -1, -4, -3),
+          1,
+          {
+              {gfx::Vector2d(1, 2), 4, 0},
+          },
+      },
+      {
+          Insets(-4, -3, 0, -1),
+          1,
+          {
+              {gfx::Vector2d(-1, -2), 4, 0},
+          },
+      },
+      {
+          Insets(0, -1, -5, -4),
+          2,
+          {
+              {gfx::Vector2d(1, 2), 4, 0}, {gfx::Vector2d(2, 3), 4, 0},
+          },
+      },
+      {
+          Insets(-4, -3, -5, -4),
+          2,
+          {
+              {gfx::Vector2d(-1, -2), 4, 0}, {gfx::Vector2d(2, 3), 4, 0},
+          },
+      },
   };
 
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {
