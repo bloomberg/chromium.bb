@@ -436,8 +436,16 @@ StackSamplingProfiler::SamplingThread::GetOrCreateTaskRunnerForAdd() {
   }
 
   if (thread_execution_state_ == EXITING) {
-    // The previous instance has only been partially cleaned up. It is necessary
-    // to call Stop() before Start().
+    // StopSoon() was previously called to shut down the thread
+    // asynchonously. Stop() must now be called before calling Start() again to
+    // reset the thread state.
+    //
+    // We must allow blocking here to satisfy the Thread implementation, but in
+    // practice the Stop() call is unlikely to actually block. For this to
+    // happen a new profiling request would have to be made within the narrow
+    // window between StopSoon() and thread exit following the end of the 60
+    // second idle period.
+    ScopedAllowBlocking allow_blocking;
     Stop();
   }
 

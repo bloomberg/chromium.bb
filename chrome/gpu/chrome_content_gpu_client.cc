@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/public/child/child_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -66,6 +67,8 @@ void ChromeContentGpuClient::GpuServiceInitialized(
                      base::Unretained(protected_buffer_manager_.get())));
 #endif
 
+  main_thread_profiler_->SetMainThreadTaskRunner(
+      base::ThreadTaskRunnerHandle::Get());
   ThreadProfiler::SetServiceManagerConnectorForChildProcess(
       content::ChildThread::Get()->GetConnector());
 }
