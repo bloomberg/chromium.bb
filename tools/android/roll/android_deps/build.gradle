@@ -1,0 +1,28 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+apply plugin: ChromiumPlugin
+
+repositories {
+    mavenCentral()
+    maven {
+        url 'https://maven.google.com'
+    }
+}
+
+dependencies {
+    // Note about the configuration names: they are defined in buildSrc/ChromiumPlugin
+
+    // Insert here dependencies that will be added to the APKs.
+    // For example: `compile 'com.google.dagger:dagger:2.13'`
+}
+
+task setUpRepository(type: BuildConfigGenerator) {
+    // Paths are relative to the chromium source root.
+    repositoryPath 'third_party/android_deps'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.3.1'
+}
