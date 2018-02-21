@@ -125,11 +125,10 @@ cr.define('settings_people_page', function() {
         }).then(function(deleteProfile) {
           assertFalse(deleteProfile);
 
-          cr.webUIListenerCallback('sync-status-changed', {
+          sync_test_util.simulateSyncStatus({
             signedIn: true,
             domain: 'example.com',
           });
-          Polymer.dom.flush();
 
           assertFalse(!!peoplePage.$$('#disconnectDialog'));
           MockInteractions.tap(disconnectButton);
@@ -246,7 +245,7 @@ cr.define('settings_people_page', function() {
                 listenOnce(window, 'popstate', resolve);
               });
 
-              cr.webUIListenerCallback('sync-status-changed', {
+              sync_test_util.simulateSyncStatus({
                 signedIn: false,
               });
 
@@ -267,7 +266,7 @@ cr.define('settings_people_page', function() {
         assertFalse(!!peoplePage.$$('#sync-status'));
 
         return browserProxy.whenCalled('getSyncStatus').then(function() {
-          cr.webUIListenerCallback('sync-status-changed', {
+          sync_test_util.simulateSyncStatus({
             signedIn: true,
             syncSystemEnabled: true,
           });
@@ -277,7 +276,7 @@ cr.define('settings_people_page', function() {
           assertTrue(!!syncStatusContainer);
           assertTrue(syncStatusContainer.hasAttribute('actionable'));
 
-          cr.webUIListenerCallback('sync-status-changed', {
+          sync_test_util.simulateSyncStatus({
             managed: true,
             signedIn: true,
             syncSystemEnabled: true,
@@ -294,7 +293,7 @@ cr.define('settings_people_page', function() {
         assertFalse(!!peoplePage.$$('#sync-status'));
 
         return browserProxy.whenCalled('getSyncStatus').then(function() {
-          cr.webUIListenerCallback('sync-status-changed', {
+          sync_test_util.simulateSyncStatus({
             hasError: true,
             statusAction: settings.StatusAction.NO_ACTION,
             signedIn: true,
@@ -306,7 +305,7 @@ cr.define('settings_people_page', function() {
           assertTrue(!!syncStatusContainer);
           assertFalse(syncStatusContainer.hasAttribute('actionable'));
 
-          cr.webUIListenerCallback('sync-status-changed', {
+          sync_test_util.simulateSyncStatus({
             hasError: true,
             statusAction: settings.StatusAction.UPGRADE_CLIENT,
             signedIn: true,
@@ -352,8 +351,41 @@ cr.define('settings_people_page', function() {
         peoplePage.remove();
       });
 
-      test('ManageProfileRow', function() {
-        assertTrue(!!peoplePage.$$('#edit-profile'));
+      test('ShowCorrectRows', function() {
+        return browserProxy.whenCalled('getSyncStatus').then(function() {
+          // The correct /manageProfile link row is shown.
+          assertTrue(!!peoplePage.$$('#edit-profile'));
+          assertFalse(!!peoplePage.$$('#picture-subpage-trigger'));
+
+          // Sync-overview row should not exist when diceEnabled is true, even
+          // if syncStatus values would've warranted the row otherwise.
+          sync_test_util.simulateSyncStatus({
+            signedIn: false,
+            signinAllowed: true,
+            syncSystemEnabled: true,
+          });
+          assertFalse(!!peoplePage.$$('#sync-overview'));
+
+          // The control element should exist when policy allows.
+          const accountControl = peoplePage.$$('settings-sync-account-control');
+          assertTrue(
+              window.getComputedStyle(accountControl)['display'] != 'none');
+
+          // Control element doesn't exist when policy forbids sync or sign-in.
+          sync_test_util.simulateSyncStatus({
+            signinAllowed: false,
+            syncSystemEnabled: true,
+          });
+          assertEquals(
+              window.getComputedStyle(accountControl)['display'], 'none');
+
+          sync_test_util.simulateSyncStatus({
+            signinAllowed: true,
+            syncSystemEnabled: false,
+          });
+          assertEquals(
+              window.getComputedStyle(accountControl)['display'], 'none');
+        });
       });
     });
   }

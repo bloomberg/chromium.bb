@@ -36,7 +36,7 @@
         padding: 12px;
       }
 
-      #menu .dropdown-item .email {
+      #menu .dropdown-item span {
         -webkit-margin-start: 8px;
       }
 
@@ -135,7 +135,7 @@
       </paper-button>
     </div>
     <template is="dom-if" if="[[shouldShowAvatarRow_]]">
-      <div class="settings-box first two-line">
+      <div class="settings-box first two-line" id="avatar-row">
         <div id="avatar-container">
           <img class="account-icon"
               src="[[getAccountImageSrc_(shownAccount_.avatarImage)]]">
@@ -144,7 +144,7 @@
           </div>
         </div>
         <div class="middle two-line no-min-width">
-          <div class="flex text-elide">
+          <div class="flex text-elide" id="user-info">
             <span>
               [[getNameDisplay_('$i18nPolymer{syncedToName}',
                   shownAccount_.fullName, syncStatus.signedIn)]]
@@ -152,7 +152,7 @@
             <div class="secondary">[[shownAccount_.email]]</div>
           </div>
           <div class="separator" hidden="[[syncStatus.signedIn]]"></div>
-          <button is="paper-icon-button-light" id="dots"
+          <button is="paper-icon-button-light" id="dropdown-arrow"
               on-click="onMenuButtonTap_" title="$i18n{moreActions}"
               class="icon-arrow-dropdown" hidden="[[syncStatus.signedIn]]">
           </button>
@@ -175,14 +175,14 @@
             <button class="dropdown-item" on-click="onAccountTap_" slot="item">
               <img class="account-icon small"
                   src="[[getAccountImageSrc_(item.avatarImage)]]">
-              <span class="email">[[item.email]]</span>
+              <span>[[item.email]]</span>
             </button>
           </template>
           <button class="dropdown-item" on-click="onSigninTap_" slot="item"
-              disabled="[[syncStatus.setupInProgress]]">
+              disabled="[[syncStatus.setupInProgress]]" id="sign-in-item">
             <img class="account-icon small"
                 src="chrome://theme/IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE">
-            <span class="email">$i18n{useAnotherAccount}</span>
+            <span>$i18n{useAnotherAccount}</span>
           </button>
         </dialog>
       </template>

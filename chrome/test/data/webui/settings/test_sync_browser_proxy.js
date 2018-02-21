@@ -9,7 +9,14 @@ class TestSyncBrowserProxy extends TestBrowserProxy {
       'getSyncStatus',
       'getStoredAccounts',
       'signOut',
+      'startSignIn',
+      'startSyncingWithEmail',
+      'getPromoImpressionCount',
+      'incrementPromoImpressionCount',
     ]);
+
+    /** @private {number} */
+    this.impressionCount_ = 0;
   }
 
   /** @override */
@@ -30,5 +37,30 @@ class TestSyncBrowserProxy extends TestBrowserProxy {
   /** @override */
   signOut(deleteProfile) {
     this.methodCalled('signOut', deleteProfile);
+  }
+
+  /** @override */
+  startSignIn() {
+    this.methodCalled('startSignIn');
+  }
+
+  /** @override */
+  startSyncingWithEmail(email) {
+    this.methodCalled('startSyncingWithEmail', email);
+  }
+
+  setImpressionCount(count) {
+    this.impressionCount_ = count;
+  }
+
+  /** @override */
+  getPromoImpressionCount() {
+    this.methodCalled('getPromoImpressionCount');
+    return this.impressionCount_;
+  }
+
+  /** @override */
+  incrementPromoImpressionCount() {
+    this.methodCalled('incrementPromoImpressionCount');
   }
 }

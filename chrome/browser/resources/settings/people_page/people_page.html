@@ -163,7 +163,7 @@
 <if expr="not chromeos">
           <template is="dom-if" if="[[!diceEnabled_]]">
 </if>
-            <div class="settings-box two-line"
+            <div class="settings-box two-line" id="sync-overview"
                 hidden="[[!syncStatus.signinAllowed]]">
               <div class="start">
                 $i18n{syncOverview}
