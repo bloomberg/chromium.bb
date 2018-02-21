@@ -10,6 +10,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::ElementsAre;
 using testing::ElementsAreArray;
 
 #if defined(OS_ANDROID)
@@ -105,6 +106,36 @@ TEST_F(HyphenationTest, HyphenLocations) {
   }
   locations.Reverse();
   EXPECT_THAT(actual, ElementsAreArray(locations));
+}
+
+TEST_F(HyphenationTest, LeadingSpaces) {
+  scoped_refptr<Hyphenation> hyphenation = GetHyphenation("en-us");
+#if defined(OS_ANDROID)
+  // Hyphenation is available only for Android M MR1 or later.
+  if (!hyphenation)
+    return;
+#endif
+  ASSERT_TRUE(hyphenation) << "Cannot find the hyphenation for en-us";
+
+  String leading_space(" principle");
+  EXPECT_THAT(hyphenation->HyphenLocations(leading_space), ElementsAre(7, 5));
+  EXPECT_EQ(5u, hyphenation->LastHyphenLocation(leading_space, 6));
+
+  String multi_leading_spaces("   principle");
+  EXPECT_THAT(hyphenation->HyphenLocations(multi_leading_spaces),
+              ElementsAre(9, 7));
+  EXPECT_EQ(7u, hyphenation->LastHyphenLocation(multi_leading_spaces, 8));
+
+  // Line breaker is not supposed to pass only spaces, no locations.
+  String only_spaces("   ");
+  EXPECT_THAT(hyphenation->HyphenLocations(only_spaces), ElementsAre());
+  EXPECT_EQ(0u, hyphenation->LastHyphenLocation(only_spaces, 3));
+
+  // Line breaker is not supposed to pass with trailing spaces.
+  String trailing_space("principle ");
+  EXPECT_THAT(hyphenation->HyphenLocations(trailing_space),
+              testing::AnyOf(ElementsAre(), ElementsAre(6, 4)));
+  EXPECT_EQ(0u, hyphenation->LastHyphenLocation(trailing_space, 10));
 }
 
 TEST_F(HyphenationTest, English) {
