@@ -155,6 +155,7 @@ public class VrShellDelegate
     // Best effort whether or not the system was in VR when Chrome launched.
     private Boolean mInVrAtChromeLaunch;
     private boolean mShowingDaydreamDoff;
+    private boolean mShowingExitVrPrompt;
     private boolean mDoffOptional;
     // Listener to be called once we exited VR due to to an unsupported mode, e.g. the user clicked
     // the URL bar security icon.
@@ -452,16 +453,11 @@ public class VrShellDelegate
         }
     }
 
-    public static void showDoffAndExitVr(boolean optional) {
-        assert sInstance != null;
-        sInstance.showDoffAndExitVrInternal(optional);
-    }
-
     public static void requestToExitVr(
             OnExitVrRequestListener listener, @UiUnsupportedMode int reason) {
-        assert listener != null;
-        if (sInstance == null) {
-            listener.onDenied();
+        // If we're not in VR, just say that we've successfully exited VR.
+        if (sInstance == null || !sInstance.mInVr) {
+            listener.onSucceeded();
             return;
         }
         sInstance.requestToExitVrInternal(listener, reason);
@@ -1239,12 +1235,13 @@ public class VrShellDelegate
     private void requestToExitVrInternal(
             OnExitVrRequestListener listener, @UiUnsupportedMode int reason) {
         assert listener != null;
-        // If we are currently processing another request or we are not in VR, deny the request.
-        if (sInstance.mOnExitVrRequestListener != null || !sInstance.mInVr) {
+        // If we are currently processing another request, deny the request.
+        if (mOnExitVrRequestListener != null) {
             listener.onDenied();
             return;
         }
         mOnExitVrRequestListener = listener;
+        mShowingExitVrPrompt = true;
         mVrShell.requestToExitVr(reason);
     }
 
@@ -1456,23 +1453,29 @@ public class VrShellDelegate
         return true;
     }
 
-    private boolean showDoff(boolean optional) {
+    /**
+     * @return Whether the user is currently seeing the DOFF screen.
+     */
+    /* package */ boolean showDoff(boolean optional) {
+        assert !mShowingDaydreamDoff;
         if (!isDaydreamCurrentViewer()) return false;
-        if (mAutopresentWebVr) {
-            // To avoid taking the user out of VR mode when started for auto-presentation, just
-            // bail to Daydream if we're being asked to show DOFF and exit.
-            mVrDaydreamApi.launchVrHomescreen();
-            return true;
+
+        // To avoid taking the user out of VR mode when started for auto-presentation, never show
+        // DOFF and bail to Daydream if we're forced to leave Chrome.
+        if (!mAutopresentWebVr) {
+            try {
+                if (mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) {
+                    mShowingDaydreamDoff = true;
+                    mDoffOptional = optional;
+                    return true;
+                }
+            } catch (IllegalArgumentException | SecurityException e) {
+                // DOFF calls can unpredictably throw exceptions if VrCore doesn't think Chrome is
+                // the active component, for example.
+            }
         }
-        try {
-            if (!mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) return false;
-        } catch (IllegalArgumentException e) {
-            mVrDaydreamApi.launchVrHomescreen();
-            return true;
-        }
-        mShowingDaydreamDoff = true;
-        mDoffOptional = optional;
-        return true;
+        if (!optional) mVrDaydreamApi.launchVrHomescreen();
+        return false;
     }
 
     private void onExitVrResult(boolean success) {
@@ -1483,20 +1486,18 @@ public class VrShellDelegate
         // real DOFF flow calls us back.
         if (!mShowingDaydreamDoff) return;
 
-        // If Doff is not optional and user backed out, keep trying to exit.
-        if (!mDoffOptional && !success && showDoff(false /* optional */)) return;
+        // If Doff is not optional and user backed out, launch DD home. We can't re-trigger doff
+        // here because we're not yet the active VR component and Daydream will throw a Security
+        // Exception.
+        if (!mDoffOptional && !success) mVrDaydreamApi.launchVrHomescreen();
 
         mShowingDaydreamDoff = false;
         if (success) {
-            // If DOFF didn't succeed(for example, user clicked back button at DOFF screen), we
-            // don't know if user really intends to exit VR or not at this point. So we shouldn't
-            // call callOnExitVrRequestListener to tell the listener that the exit VR request has
-            // succeeded or been denied.
-            callOnExitVrRequestListener(success);
             shutdownVr(true /* disableVrMode */, !mExitingCct /* stayingInChrome */);
             if (mExitingCct) ((CustomTabActivity) mActivity).finishAndClose(false);
         }
         mExitingCct = false;
+        callOnExitVrRequestListener(success);
     }
 
     private boolean isDaydreamCurrentViewer() {
@@ -1570,11 +1571,9 @@ public class VrShellDelegate
 
         promptForFeedbackIfNeeded(stayingInChrome);
 
-        // Listener may not have been handled yet at this point due to other reasons (e.g back/close
-        // button was pressed while at exit prompt UI in VR), failure should be reported despite
-        // that we are exiting VR.
-        callOnExitVrRequestListener(false);
-        assert mOnExitVrRequestListener == null;
+        // User exited VR (via something like the system back button) while looking at the exit VR
+        // prompt.
+        if (mShowingExitVrPrompt) callOnExitVrRequestListener(true);
 
         for (VrModeObserver observer : sVrModeObservers) observer.onExitVr();
     }
@@ -1590,34 +1589,24 @@ public class VrShellDelegate
         mOnExitVrRequestListener = null;
     }
 
-    private void showDoffAndExitVrInternal(boolean optional) {
-        if (mShowingDaydreamDoff) return;
-        if (showDoff(optional)) return;
-        shutdownVr(true /* disableVrMode */, true /* stayingInChrome */);
-    }
-
     /* package */ void onExitVrRequestResult(boolean shouldExit) {
         assert mOnExitVrRequestListener != null;
+        mShowingExitVrPrompt = false;
         if (shouldExit) {
             mExitedDueToUnsupportedMode = true;
-            showDoffAndExitVrInternal(true);
+            if (!showDoff(true /* optional */)) callOnExitVrRequestListener(false);
         } else {
             callOnExitVrRequestListener(false);
         }
     }
 
-    /* package */ void exitCct() {
-        if (mShowingDaydreamDoff) return;
+    /* package */ void exitCctFromUi() {
         CustomTabActivity customTabActivity = (CustomTabActivity) mActivity;
-        if (mAutopresentWebVr || (mInVrAtChromeLaunch != null && mInVrAtChromeLaunch)) {
+        if (!isDaydreamCurrentViewer() || (mInVrAtChromeLaunch != null && mInVrAtChromeLaunch)) {
             customTabActivity.finishAndClose(false);
             return;
         }
-        if (showDoff(true /* optional */)) {
-            mExitingCct = true;
-        } else {
-            customTabActivity.finishAndClose(false);
-        }
+        if (showDoff(true /* optional */)) mExitingCct = true;
     }
 
     /**
@@ -1654,7 +1643,7 @@ public class VrShellDelegate
         if (!mAutopresentWebVr) return false;
         // Should only autopresent CustomTabActivity for now.
         assert mActivity instanceof CustomTabActivity;
-        exitCct();
+        ((CustomTabActivity) mActivity).finishAndClose(false);
         return true;
     }
 

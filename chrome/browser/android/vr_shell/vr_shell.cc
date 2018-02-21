@@ -557,7 +557,7 @@ void VrShell::SetHistoryButtonsEnabled(JNIEnv* env,
 void VrShell::RequestToExitVr(JNIEnv* env,
                               const JavaParamRef<jobject>& obj,
                               int reason) {
-  ui_->SetExitVrPromptEnabled(true, static_cast<UiUnsupportedMode>(reason));
+  ui_->ShowExitVrPrompt(static_cast<UiUnsupportedMode>(reason));
 }
 
 void VrShell::ContentSurfaceCreated(jobject surface,
@@ -750,7 +750,6 @@ void VrShell::OnExitVrPromptResult(UiUnsupportedMode reason,
   switch (choice) {
     case ExitVrPromptChoice::CHOICE_NONE:
     case ExitVrPromptChoice::CHOICE_STAY:
-      ui_->SetExitVrPromptEnabled(false, UiUnsupportedMode::kCount);
       should_exit = false;
       break;
     case ExitVrPromptChoice::CHOICE_EXIT:

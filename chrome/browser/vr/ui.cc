@@ -140,18 +140,9 @@ void Ui::SetLocationAccessEnabled(bool enabled) {
   model_->capturing_state.location_access_enabled = enabled;
 }
 
-void Ui::SetExitVrPromptEnabled(bool enabled, UiUnsupportedMode reason) {
-  if (!enabled) {
-    DCHECK_EQ(reason, UiUnsupportedMode::kCount);
-    model_->active_modal_prompt_type = kModalPromptTypeNone;
-    return;
-  }
-
-  if (model_->active_modal_prompt_type != kModalPromptTypeNone) {
-    browser_->OnExitVrPromptResult(
-        ExitVrPromptChoice::CHOICE_NONE,
-        GetReasonForPrompt(model_->active_modal_prompt_type));
-  }
+void Ui::ShowExitVrPrompt(UiUnsupportedMode reason) {
+  // Shouldn't request to exit VR when we're already prompting to exit VR.
+  CHECK(model_->active_modal_prompt_type == kModalPromptTypeNone);
 
   switch (reason) {
     case UiUnsupportedMode::kUnhandledCodePoint:

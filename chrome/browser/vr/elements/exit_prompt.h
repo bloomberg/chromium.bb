@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/vr/elements/textured_element.h"
+#include "chrome/browser/vr/exit_vr_prompt_choice.h"
 #include "chrome/browser/vr/ui_unsupported_mode.h"
 
 namespace vr {
@@ -19,15 +20,17 @@ struct ButtonColors;
 
 class ExitPrompt : public TexturedElement {
  public:
-  typedef typename base::Callback<void(UiUnsupportedMode)> Callback;
-  ExitPrompt(int preferred_width,
-             const Callback& primary_button_callback,
-             const Callback& secondary_buttton_callback);
+  enum Button { NONE, PRIMARY, SECONDARY };
+
+  typedef typename base::RepeatingCallback<void(Button, UiUnsupportedMode)>
+      ExitPromptCallback;
+
+  ExitPrompt(int preferred_width, const ExitPromptCallback& result_callback);
   ~ExitPrompt() override;
 
   void SetContentMessageId(int message_id);
 
-  void SetTextureForTesting(ExitPromptTexture* texture);
+  void SetTextureForTesting(std::unique_ptr<ExitPromptTexture> texture);
 
   void set_reason(UiUnsupportedMode reason) { reason_ = reason; }
 
@@ -43,9 +46,16 @@ class ExitPrompt : public TexturedElement {
   void ClickPrimaryButtonForTesting();
   void ClickSecondaryButtonForTesting();
 
- private:
+  void Cancel();
+
+ protected:
+  ExitPrompt(int preferred_width,
+             const ExitPromptCallback& result_callback,
+             std::unique_ptr<ExitPromptTexture> texture);
+
   UiTexture* GetTexture() const override;
 
+ private:
   void OnStateUpdated(const gfx::PointF& position);
 
   bool primary_down_ = false;
@@ -54,8 +64,7 @@ class ExitPrompt : public TexturedElement {
 
   std::unique_ptr<ExitPromptTexture> texture_;
 
-  Callback primary_button_callback_;
-  Callback secondary_button_callback_;
+  ExitPromptCallback result_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ExitPrompt);
 };

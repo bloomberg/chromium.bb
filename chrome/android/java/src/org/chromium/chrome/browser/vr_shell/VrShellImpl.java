@@ -453,7 +453,7 @@ public class VrShellImpl
     // Exits VR, telling the user to remove their headset, and returning to Chromium.
     @CalledByNative
     public void forceExitVr() {
-        VrShellDelegate.showDoffAndExitVr(false);
+        mDelegate.showDoff(false);
     }
 
     // Called because showing PageInfo isn't supported in VR. This happens when the user clicks on
@@ -504,7 +504,7 @@ public class VrShellImpl
     // Exits CCT, returning to the app that opened it.
     @CalledByNative
     public void exitCct() {
-        mDelegate.exitCct();
+        mDelegate.exitCctFromUi();
     }
 
     // Close the current hosted Dialog in VR

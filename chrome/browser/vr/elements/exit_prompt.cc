@@ -9,12 +9,17 @@
 namespace vr {
 
 ExitPrompt::ExitPrompt(int preferred_width,
-                       const ExitPrompt::Callback& primary_button_callback,
-                       const ExitPrompt::Callback& secondary_button_callback)
+                       const ExitPromptCallback& result_callback)
     : TexturedElement(preferred_width),
       texture_(std::make_unique<ExitPromptTexture>()),
-      primary_button_callback_(primary_button_callback),
-      secondary_button_callback_(secondary_button_callback) {}
+      result_callback_(result_callback) {}
+
+ExitPrompt::ExitPrompt(int preferred_width,
+                       const ExitPromptCallback& result_callback,
+                       std::unique_ptr<ExitPromptTexture> texture)
+    : TexturedElement(preferred_width),
+      texture_(std::move(texture)),
+      result_callback_(result_callback) {}
 
 ExitPrompt::~ExitPrompt() = default;
 
@@ -22,8 +27,9 @@ void ExitPrompt::SetContentMessageId(int message_id) {
   texture_->SetContentMessageId(message_id);
 }
 
-void ExitPrompt::SetTextureForTesting(ExitPromptTexture* texture) {
-  texture_.reset(texture);
+void ExitPrompt::SetTextureForTesting(
+    std::unique_ptr<ExitPromptTexture> texture) {
+  texture_ = std::move(texture);
 }
 
 void ExitPrompt::OnHoverEnter(const gfx::PointF& position) {
@@ -49,9 +55,9 @@ void ExitPrompt::OnButtonDown(const gfx::PointF& position) {
 
 void ExitPrompt::OnButtonUp(const gfx::PointF& position) {
   if (primary_down_ && texture_->HitsPrimaryButton(position))
-    primary_button_callback_.Run(reason_);
+    result_callback_.Run(PRIMARY, reason_);
   else if (secondary_down_ && texture_->HitsSecondaryButton(position))
-    secondary_button_callback_.Run(reason_);
+    result_callback_.Run(SECONDARY, reason_);
 
   primary_down_ = false;
   secondary_down_ = false;
@@ -68,11 +74,15 @@ void ExitPrompt::SetSecondaryButtonColors(const ButtonColors& colors) {
 }
 
 void ExitPrompt::ClickPrimaryButtonForTesting() {
-  primary_button_callback_.Run(reason_);
+  result_callback_.Run(PRIMARY, reason_);
 }
 
 void ExitPrompt::ClickSecondaryButtonForTesting() {
-  secondary_button_callback_.Run(reason_);
+  result_callback_.Run(SECONDARY, reason_);
+}
+
+void ExitPrompt::Cancel() {
+  result_callback_.Run(NONE, reason_);
 }
 
 void ExitPrompt::OnStateUpdated(const gfx::PointF& position) {

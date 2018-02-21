@@ -144,51 +144,6 @@ void AudioPermissionPromptTexture::Draw(SkCanvas* sk_canvas,
   canvas->Restore();
 }
 
-float AudioPermissionPromptTexture::ToPixels(float meters) const {
-  return meters * size_.width() / kWidth;
-}
-
-gfx::PointF AudioPermissionPromptTexture::PercentToPixels(
-    const gfx::PointF& percent) const {
-  return gfx::PointF(percent.x() * size_.width(), percent.y() * size_.height());
-}
-
-bool AudioPermissionPromptTexture::HitsPrimaryButton(
-    const gfx::PointF& position) const {
-  return primary_button_rect_.Contains(PercentToPixels(position));
-}
-
-bool AudioPermissionPromptTexture::HitsSecondaryButton(
-    const gfx::PointF& position) const {
-  return secondary_button_rect_.Contains(PercentToPixels(position));
-}
-
-void AudioPermissionPromptTexture::SetPrimaryButtonHovered(bool hovered) {
-  SetAndDirty(&primary_hovered_, hovered);
-}
-
-void AudioPermissionPromptTexture::SetPrimaryButtonPressed(bool pressed) {
-  SetAndDirty(&primary_pressed_, pressed);
-}
-
-void AudioPermissionPromptTexture::SetSecondaryButtonHovered(bool hovered) {
-  SetAndDirty(&secondary_hovered_, hovered);
-}
-
-void AudioPermissionPromptTexture::SetSecondaryButtonPressed(bool pressed) {
-  SetAndDirty(&secondary_pressed_, pressed);
-}
-
-void AudioPermissionPromptTexture::SetPrimaryButtonColors(
-    const ButtonColors& colors) {
-  SetAndDirty(&primary_button_colors_, colors);
-}
-
-void AudioPermissionPromptTexture::SetSecondaryButtonColors(
-    const ButtonColors& colors) {
-  SetAndDirty(&secondary_button_colors_, colors);
-}
-
 void AudioPermissionPromptTexture::SetIconColor(SkColor color) {
   SetAndDirty(&icon_color_, color);
 }
@@ -198,8 +153,8 @@ gfx::Size AudioPermissionPromptTexture::GetPreferredTextureSize(
   return gfx::Size(maximum_width, maximum_width * kHeight / kWidth);
 }
 
-gfx::SizeF AudioPermissionPromptTexture::GetDrawnSize() const {
-  return size_;
+void AudioPermissionPromptTexture::SetContentMessageId(int message_id) {
+  NOTREACHED();
 }
 
 }  // namespace vr

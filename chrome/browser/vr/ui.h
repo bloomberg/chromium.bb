@@ -86,7 +86,7 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
   void SetAudioCaptureEnabled(bool enabled) override;
   void SetBluetoothConnected(bool enabled) override;
   void SetLocationAccessEnabled(bool enabled) override;
-  void SetExitVrPromptEnabled(bool enabled, UiUnsupportedMode reason) override;
+  void ShowExitVrPrompt(UiUnsupportedMode reason) override;
   void SetSpeechRecognitionEnabled(bool enabled) override;
   void SetRecognitionResult(const base::string16& result) override;
   void OnSpeechRecognitionStateChanged(int new_state) override;

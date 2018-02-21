@@ -27,7 +27,7 @@ class ExitPromptTexture : public UiTexture {
   void SetPrimaryButtonPressed(bool pressed);
   void SetSecondaryButtonHovered(bool hovered);
   void SetSecondaryButtonPressed(bool pressed);
-  void SetContentMessageId(int message_id);
+  virtual void SetContentMessageId(int message_id);
 
   virtual bool HitsSecondaryButton(const gfx::PointF& position) const;
   virtual bool HitsPrimaryButton(const gfx::PointF& position) const;
@@ -35,9 +35,7 @@ class ExitPromptTexture : public UiTexture {
   void SetPrimaryButtonColors(const ButtonColors& colors);
   void SetSecondaryButtonColors(const ButtonColors& colors);
 
- private:
-  void Draw(SkCanvas* sk_canvas, const gfx::Size& texture_size) override;
-
+ protected:
   float ToPixels(float meters) const;
   gfx::PointF PercentToPixels(const gfx::PointF& percent) const;
 
@@ -49,10 +47,14 @@ class ExitPromptTexture : public UiTexture {
   bool primary_pressed_ = false;
   bool secondary_hovered_ = false;
   bool secondary_pressed_ = false;
-  int content_message_id_ = -1;
 
   ButtonColors primary_button_colors_;
   ButtonColors secondary_button_colors_;
+
+ private:
+  void Draw(SkCanvas* sk_canvas, const gfx::Size& texture_size) override;
+
+  int content_message_id_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(ExitPromptTexture);
 };

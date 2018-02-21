@@ -549,7 +549,7 @@ TEST_F(UiTest, BackplaneClickTriggersOnExitPrompt) {
 
   // Initial state.
   VerifyOnlyElementsVisible("Initial", kElementsVisibleInBrowsing);
-  ui_->SetExitVrPromptEnabled(true, UiUnsupportedMode::kUnhandledPageInfo);
+  ui_->ShowExitVrPrompt(UiUnsupportedMode::kUnhandledPageInfo);
 
   VerifyOnlyElementsVisible("Prompt visible", kElementsVisibleWithExitPrompt);
 
@@ -560,10 +560,6 @@ TEST_F(UiTest, BackplaneClickTriggersOnExitPrompt) {
                                    UiUnsupportedMode::kUnhandledPageInfo));
   scene_->GetUiElementByName(kExitPromptBackplane)->OnButtonUp(gfx::PointF());
 
-  // This would usually get called by the browser, but since it is mocked we
-  // will call it explicitly here and check that the UI responds as we would
-  // expect.
-  ui_->SetExitVrPromptEnabled(false, UiUnsupportedMode::kCount);
   VerifyOnlyElementsVisible("Prompt cleared", kElementsVisibleInBrowsing);
 }
 
@@ -575,14 +571,13 @@ TEST_F(UiTest, PrimaryButtonClickTriggersOnExitPrompt) {
   model_->active_modal_prompt_type = kModalPromptTypeExitVRForSiteInfo;
   OnBeginFrame();
 
-  // Click on 'OK' should trigger UI browser interface but not close prompt.
+  // Click on 'OK' should trigger UI browser interface and close prompt.
   EXPECT_CALL(*browser_,
               OnExitVrPromptResult(ExitVrPromptChoice::CHOICE_STAY,
                                    UiUnsupportedMode::kUnhandledPageInfo));
   static_cast<ExitPrompt*>(scene_->GetUiElementByName(kExitPrompt))
       ->ClickPrimaryButtonForTesting();
-  VerifyOnlyElementsVisible("Prompt still visible",
-                            kElementsVisibleWithExitPrompt);
+  VerifyOnlyElementsVisible("Prompt cleared", kElementsVisibleInBrowsing);
 }
 
 TEST_F(UiTest, SecondaryButtonClickTriggersOnExitPrompt) {
@@ -593,16 +588,14 @@ TEST_F(UiTest, SecondaryButtonClickTriggersOnExitPrompt) {
   model_->active_modal_prompt_type = kModalPromptTypeExitVRForSiteInfo;
   OnBeginFrame();
 
-  // Click on 'Exit VR' should trigger UI browser interface but not close
-  // prompt.
+  // Click on 'Exit VR' should trigger UI browser interface and close prompt.
   EXPECT_CALL(*browser_,
               OnExitVrPromptResult(ExitVrPromptChoice::CHOICE_EXIT,
                                    UiUnsupportedMode::kUnhandledPageInfo));
 
   static_cast<ExitPrompt*>(scene_->GetUiElementByName(kExitPrompt))
       ->ClickSecondaryButtonForTesting();
-  VerifyOnlyElementsVisible("Prompt still visible",
-                            kElementsVisibleWithExitPrompt);
+  VerifyOnlyElementsVisible("Prompt cleared", kElementsVisibleInBrowsing);
 }
 
 TEST_F(UiTest, UiUpdatesForWebVR) {
@@ -1021,18 +1014,6 @@ TEST_F(UiTest, CloseButtonColorBindings) {
     VerifyButtonColor(button, scheme.button_colors.foreground,
                       scheme.button_colors.background, "up");
   }
-}
-
-TEST_F(UiTest, SecondExitPromptTriggersOnExitPrompt) {
-  CreateScene(kNotInCct, kNotInWebVr);
-  ui_->SetExitVrPromptEnabled(true, UiUnsupportedMode::kUnhandledPageInfo);
-  // Initiating another exit VR prompt while a previous one was in flight should
-  // result in a call to the UiBrowserInterface.
-  EXPECT_CALL(*browser_,
-              OnExitVrPromptResult(ExitVrPromptChoice::CHOICE_NONE,
-                                   UiUnsupportedMode::kUnhandledPageInfo));
-  ui_->SetExitVrPromptEnabled(
-      true, UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission);
 }
 
 TEST_F(UiTest, ExitPresentAndFullscreenOnAppButtonClick) {

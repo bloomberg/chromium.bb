@@ -45,11 +45,17 @@ class TestExitPrompt : public ExitPrompt {
   bool secondary_button_pressed() const { return secondary_button_pressed_; }
 
  private:
-  void OnPrimaryButtonPressed(UiUnsupportedMode reason) {
-    primary_button_pressed_ = true;
-  }
-  void OnSecondaryButtonPressed(UiUnsupportedMode reason) {
-    secondary_button_pressed_ = true;
+  void OnButtonPressed(ExitPrompt::Button button, UiUnsupportedMode reason) {
+    switch (button) {
+      case ExitPrompt::NONE:
+        break;
+      case ExitPrompt::PRIMARY:
+        primary_button_pressed_ = true;
+        break;
+      case ExitPrompt::SECONDARY:
+        secondary_button_pressed_ = true;
+        break;
+    }
   }
 
   bool primary_button_pressed_ = false;
@@ -58,14 +64,12 @@ class TestExitPrompt : public ExitPrompt {
 
 TestExitPrompt::TestExitPrompt()
     : ExitPrompt(512,
-                 base::Bind(&TestExitPrompt::OnPrimaryButtonPressed,
-                            base::Unretained(this)),
-                 base::Bind(&TestExitPrompt::OnSecondaryButtonPressed,
-                            base::Unretained(this))) {}
+                 base::BindRepeating(&TestExitPrompt::OnButtonPressed,
+                                     base::Unretained(this))) {}
 
 TEST(ExitPromptTest, PrimaryButtonCallbackCalled) {
   TestExitPrompt prompt;
-  MockExitPromptTexture* texture = new MockExitPromptTexture();
+  auto texture = std::make_unique<MockExitPromptTexture>();
   // Called twice from OnButtonDown and twice from OnButtonUp.
   EXPECT_CALL(*texture, HitsPrimaryButton(gfx::PointF()))
       .Times(4)
@@ -85,7 +89,7 @@ TEST(ExitPromptTest, PrimaryButtonCallbackCalled) {
 
 TEST(ExitPromptTest, SecondaryButtonCallbackCalled) {
   TestExitPrompt prompt;
-  MockExitPromptTexture* texture = new MockExitPromptTexture();
+  auto texture = std::make_unique<MockExitPromptTexture>();
   // Called twice from OnButtonDown and once from OnButtonUp.
   EXPECT_CALL(*texture, HitsPrimaryButton(gfx::PointF()))
       .Times(3)
