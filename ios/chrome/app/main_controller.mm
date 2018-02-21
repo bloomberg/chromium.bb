@@ -110,7 +110,6 @@
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
-#import "ios/chrome/browser/ui/chrome_web_view_factory.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/clear_browsing_data_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
@@ -1671,14 +1670,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                                           mask:mask
                                     timePeriod:timePeriod
                              completionHandler:[command completionBlock]];
-
-      if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)) {
-        base::Time beginDeleteTime =
-            browsing_data::CalculateBeginDeleteTime(timePeriod);
-        [ChromeWebViewFactory clearExternalCookies:browserState
-                                          fromTime:beginDeleteTime
-                                            toTime:base::Time::Max()];
-      }
       break;
     }
     default:

@@ -38,7 +38,6 @@
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
-#import "ios/chrome/browser/ui/chrome_web_view_factory.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
@@ -540,14 +539,6 @@ const int kMaxTimesHistoryNoticeShown = 1;
                        completionHandler:^{
                          [self.dispatcher browsingDataWasRemoved];
                        }];
-
-  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)) {
-    base::Time beginDeleteTime =
-        browsing_data::CalculateBeginDeleteTime(_timePeriod);
-    [ChromeWebViewFactory clearExternalCookies:_browserState
-                                      fromTime:beginDeleteTime
-                                        toTime:base::Time::Max()];
-  }
 
   // Send the "Cleared Browsing Data" event to the feature_engagement::Tracker
   // when the user initiates a clear browsing data action. No event is sent if
