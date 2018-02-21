@@ -153,6 +153,9 @@ class MEDIA_EXPORT AudioInputDevice : public AudioCapturerSource,
   // State enum above.
   State state_;
 
+  // For UMA stats. May only be accessed on the IO thread.
+  bool had_callback_error_ = false;
+
   // The media session ID used to identify which input device to be started.
   // Only modified in Initialize() and ShutDownOnIOThread().
   int session_id_;

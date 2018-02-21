@@ -123,13 +123,13 @@ void AudioInputDevice::InitializeOnIOThread(const AudioParameters& params,
 }
 
 void AudioInputDevice::Start() {
-  DVLOG(1) << "Start()";
+  TRACE_EVENT0("audio", "AudioInputDevice::Start");
   task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&AudioInputDevice::StartUpOnIOThread, this));
 }
 
 void AudioInputDevice::Stop() {
-  DVLOG(1) << "Stop()";
+  TRACE_EVENT0("audio", "AudioInputDevice::Stop");
 
   {
     base::AutoLock auto_lock(audio_thread_lock_);
@@ -142,6 +142,8 @@ void AudioInputDevice::Stop() {
 }
 
 void AudioInputDevice::SetVolume(double volume) {
+  TRACE_EVENT1("audio", "AudioInputDevice::SetVolume", "volume", volume);
+
   if (volume < 0 || volume > 1.0) {
     DLOG(ERROR) << "Invalid volume value specified";
     return;
@@ -153,7 +155,9 @@ void AudioInputDevice::SetVolume(double volume) {
 }
 
 void AudioInputDevice::SetAutomaticGainControl(bool enabled) {
-  DVLOG(1) << "SetAutomaticGainControl(enabled=" << enabled << ")";
+  TRACE_EVENT1("audio", "AudioInputDevice::SetAutomaticGainControl", "enabled",
+               enabled);
+
   task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&AudioInputDevice::SetAutomaticGainControlOnIOThread, this,
@@ -163,6 +167,7 @@ void AudioInputDevice::SetAutomaticGainControl(bool enabled) {
 void AudioInputDevice::OnStreamCreated(base::SharedMemoryHandle handle,
                                        base::SyncSocket::Handle socket_handle,
                                        bool initially_muted) {
+  TRACE_EVENT0("audio", "AudioInputDevice::OnStreamCreated");
   DCHECK(task_runner()->BelongsToCurrentThread());
   DCHECK(base::SharedMemory::IsHandleValid(handle));
 #if defined(OS_WIN)
@@ -226,13 +231,15 @@ void AudioInputDevice::OnStreamCreated(base::SharedMemoryHandle handle,
 }
 
 void AudioInputDevice::OnError() {
+  TRACE_EVENT0("audio", "AudioInputDevice::OnError");
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   // Do nothing if the stream has been closed.
   if (state_ < CREATING_STREAM)
     return;
 
-  DLOG(WARNING) << "AudioInputDevice::OnStateChanged(ERROR)";
+  had_callback_error_ = true;
+
   if (state_ == CREATING_STREAM) {
     // At this point, we haven't attempted to start the audio thread.
     // Accessing the hardware might have failed or we may have reached
@@ -256,7 +263,9 @@ void AudioInputDevice::OnError() {
 }
 
 void AudioInputDevice::OnMuted(bool is_muted) {
+  TRACE_EVENT0("audio", "AudioInputDevice::OnMuted");
   DCHECK(task_runner()->BelongsToCurrentThread());
+
   // Do nothing if the stream has been closed.
   if (state_ < CREATING_STREAM)
     return;
@@ -264,7 +273,9 @@ void AudioInputDevice::OnMuted(bool is_muted) {
 }
 
 void AudioInputDevice::OnIPCClosed() {
+  TRACE_EVENT0("audio", "AudioInputDevice::OnIPCClosed");
   DCHECK(task_runner()->BelongsToCurrentThread());
+
   state_ = IPC_CLOSED;
   ipc_.reset();
 }
@@ -306,6 +317,9 @@ void AudioInputDevice::ShutDownOnIOThread() {
   UMA_HISTOGRAM_BOOLEAN(
       "Media.Audio.Capture.DetectedMissingCallbacks",
       alive_checker_ ? alive_checker_->DetectedDead() : false);
+
+  UMA_HISTOGRAM_BOOLEAN("Media.Audio.Capture.StreamCallbackError",
+                        had_callback_error_);
 
   // Close the stream, if we haven't already.
   if (state_ >= CREATING_STREAM) {
