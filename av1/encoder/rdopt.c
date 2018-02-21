@@ -2372,8 +2372,10 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   const int is_inter = is_inter_block(mbmi);
   const int tx_select =
       cm->tx_mode == TX_MODE_SELECT && block_signals_txsize(mbmi->sb_type);
-
-  const int r_tx_size = tx_size_cost(cm, x, bs, tx_size);
+  int ctx = txfm_partition_context(
+      xd->above_txfm_context, xd->left_txfm_context, mbmi->sb_type, tx_size);
+  const int r_tx_size = is_inter ? x->txfm_partition_cost[ctx][0]
+                                 : tx_size_cost(cm, x, bs, tx_size);
 
   assert(IMPLIES(is_rect_tx(tx_size), is_rect_tx_allowed_bsize(bs)));
 
