@@ -1313,6 +1313,12 @@ const char kServiceWorkerPaymentAppsName[] = "Service Worker payment apps";
 const char kServiceWorkerPaymentAppsDescription[] =
     "Enable Service Worker applications to integrate as payment apps";
 
+extern const char kServiceWorkerServicificationName[] =
+    "Servicified service workers";
+extern const char kServiceWorkerServicificationDescription[] =
+    "Enable the servicified service workers. A servicified service worker can "
+    "have direct connection from its clients, so that fetch events can be "
+    "dispatched through the connection without hopping to the browser process.";
 
 const char kServiceWorkerScriptFullCodeCacheName[] =
     "Service worker script full code cache.";
