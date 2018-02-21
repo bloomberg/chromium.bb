@@ -2519,7 +2519,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisable2dCanvasImageChromium,
     switches::kDisableAcceleratedJpegDecoding,
     switches::kDisableAcceleratedVideoDecode,
-    switches::kDisableBackgroundTasks,
     switches::kDisableBackgroundTimerThrottling,
     switches::kDisableBreakpad,
     switches::kDisableCompositorUkmForTests,

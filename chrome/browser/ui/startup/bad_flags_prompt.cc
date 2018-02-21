@@ -120,15 +120,7 @@ void ShowBadFlagsPrompt(Browser* browser) {
 
     // This flag allows sites to access protected media identifiers without
     // getting the user's permission.
-    switches::kUnsafelyAllowProtectedMediaIdentifierForDomain,
-
-    // This flag delays execution of base::TaskPriority::BACKGROUND tasks until
-    // shutdown. The queue of base::TaskPriority::BACKGROUND tasks can increase
-    // memory usage. Also, while it should be possible to use Chrome almost
-    // normally with this flag, it is expected that some non-visible operations
-    // such as writing user data to disk, cleaning caches, reporting metrics or
-    // updating components won't be performed until shutdown.
-    switches::kDisableBackgroundTasks,
+    switches::kUnsafelyAllowProtectedMediaIdentifierForDomain
   };
 
   for (const char* flag : kBadFlags) {

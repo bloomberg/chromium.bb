@@ -8,9 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/base_switches.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -102,16 +100,6 @@ void RecordNumBlockShutdownTasksPostedDuringShutdown(
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "TaskScheduler.BlockShutdownTasksPostedDuringShutdown", value, 1,
       kMaxBlockShutdownTasksPostedDuringShutdown, 50);
-}
-
-// Returns the maximum number of TaskPriority::BACKGROUND sequences that can be
-// scheduled concurrently based on command line flags.
-int GetMaxNumScheduledBackgroundSequences() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableBackgroundTasks)) {
-    return 0;
-  }
-  return std::numeric_limits<int>::max();
 }
 
 }  // namespace
@@ -234,9 +222,6 @@ struct TaskTracker::PreemptedBackgroundSequence {
  private:
   DISALLOW_COPY_AND_ASSIGN(PreemptedBackgroundSequence);
 };
-
-TaskTracker::TaskTracker(StringPiece histogram_label)
-    : TaskTracker(histogram_label, GetMaxNumScheduledBackgroundSequences()) {}
 
 TaskTracker::TaskTracker(StringPiece histogram_label,
                          int max_num_scheduled_background_sequences)
