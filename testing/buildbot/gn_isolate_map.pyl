@@ -675,6 +675,11 @@
     "type": "raw",
     "args": [],
   },
+  "ios_remoting_unittests": {
+    "label": "//remoting/ios:ios_remoting_unittests",
+    "type": "raw",
+    "args": [],
+  },
   "ios_showcase_egtests": {
     "label": "//ios/showcase:ios_showcase_egtests",
     "type": "raw",
