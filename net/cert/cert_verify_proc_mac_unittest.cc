@@ -15,7 +15,6 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/crl_set.h"
-#include "net/cert/crl_set_storage.h"
 #include "net/cert/test_keychain_search_list_mac.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
@@ -103,7 +102,7 @@ TEST(CertVerifyProcMacTest, MacCRLIntermediate) {
   EXPECT_TRUE(base::ReadFileToString(
       GetTestCertsDirectory().AppendASCII("multi-root-crlset-C.raw"),
       &crl_set_bytes));
-  ASSERT_TRUE(CRLSetStorage::Parse(crl_set_bytes, &crl_set));
+  ASSERT_TRUE(CRLSet::Parse(crl_set_bytes, &crl_set));
 
   int flags = 0;
   CertVerifyResult verify_result;

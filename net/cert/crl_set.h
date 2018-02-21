@@ -32,6 +32,10 @@ class NET_EXPORT CRLSet : public base::RefCountedThreadSafe<CRLSet> {
     GOOD,     // the certificate is not listed.
   };
 
+  // Parses the bytes in |data| and, on success, puts a new CRLSet in
+  // |out_crl_set| and returns true.
+  static bool Parse(base::StringPiece data, scoped_refptr<CRLSet>* out_crl_set);
+
   // CheckSPKI checks whether the given SPKI has been listed as blocked.
   //   spki_hash: the SHA256 of the SubjectPublicKeyInfo of the certificate.
   Result CheckSPKI(const base::StringPiece& spki_hash) const;
@@ -95,7 +99,6 @@ class NET_EXPORT CRLSet : public base::RefCountedThreadSafe<CRLSet> {
   ~CRLSet();
 
   friend class base::RefCountedThreadSafe<CRLSet>;
-  friend class CRLSetStorage;
 
   uint32_t sequence_;
   CRLList crls_;

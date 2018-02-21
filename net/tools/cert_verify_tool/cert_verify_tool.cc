@@ -18,7 +18,6 @@
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/cert_verify_proc_builtin.h"
 #include "net/cert/crl_set.h"
-#include "net/cert/crl_set_storage.h"
 #include "net/cert_net/cert_net_fetcher_impl.h"
 #include "net/tools/cert_verify_tool/cert_verify_tool_util.h"
 #include "net/tools/cert_verify_tool/verify_using_cert_verify_proc.h"
@@ -251,7 +250,7 @@ int main(int argc, char** argv) {
     std::string crl_set_bytes;
     if (!ReadFromFile(crlset_path, &crl_set_bytes))
       return 1;
-    if (!net::CRLSetStorage::Parse(crl_set_bytes, &crl_set)) {
+    if (!net::CRLSet::Parse(crl_set_bytes, &crl_set)) {
       std::cerr << "Error parsing CRLSet\n";
       return 1;
     }
