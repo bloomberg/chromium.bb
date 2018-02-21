@@ -62,6 +62,7 @@ class FakeWebViewScheduler : public WebViewScheduler {
   void SetVirtualTimePolicy(VirtualTimePolicy policy) override {}
   void AddVirtualTimeObserver(VirtualTimeObserver* observer) override {}
   void RemoveVirtualTimeObserver(VirtualTimeObserver* observer) override {}
+  void SetInitialVirtualTimeOffset(base::TimeDelta offset) override {}
   void GrantVirtualTimeBudget(base::TimeDelta budget,
                               base::OnceClosure callback) override {}
   void SetMaxVirtualTimeTaskStarvationCount(int count) override {}

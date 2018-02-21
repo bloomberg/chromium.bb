@@ -71,6 +71,9 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
                       int render_frame_id,
                       const net::CookieOptions& options) override;
 
+  bool DoesSiteRequireDedicatedProcess(content::BrowserContext* browser_context,
+                                       const GURL& effective_site_url) override;
+
  private:
   std::unique_ptr<base::Value> GetBrowserServiceManifestOverlay();
   std::unique_ptr<base::Value> GetRendererServiceManifestOverlay();

@@ -172,6 +172,11 @@ Builder& Builder::SetIncognitoMode(bool incognito_mode) {
   return *this;
 }
 
+Builder& Builder::SetSitePerProcess(bool site_per_process) {
+  options_.site_per_process = site_per_process;
+  return *this;
+}
+
 Builder& Builder::SetBlockNewWebContents(bool block_new_web_contents) {
   options_.block_new_web_contents = block_new_web_contents;
   return *this;

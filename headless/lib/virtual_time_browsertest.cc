@@ -779,4 +779,141 @@ class JavascriptTimeAlwaysAdvancesTest : public VirtualTimeBrowserTest,
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(JavascriptTimeAlwaysAdvancesTest);
 
+namespace {
+static constexpr char kSiteA[] = R"(
+<html>
+<body>
+<script>
+setTimeout(function() {
+  window.location.href = "http://b.com/";
+}, 1000);
+</script>
+</body>
+</html>
+)";
+
+static constexpr char kSiteB[] = R"(
+<html>
+<body>
+<script>
+setTimeout(function() {
+  window.location.href = "http://c.com/";
+}, 1000);
+</script>
+</body>
+</html>
+)";
+
+static constexpr char kSiteC[] = R"(
+<html>
+<body>
+<script>
+setTimeout(function() {
+  window.location.href = "http://d.com/";
+}, 1000);
+</script>
+</body>
+</html>
+)";
+
+static constexpr char kSiteD[] = R"(
+<html>
+<body>
+</body>
+</html>
+)";
+}  // namespace
+
+class CrossOriginNavigationVirtualTimeTest
+    : public VirtualTimeBrowserTest,
+      public TestInMemoryProtocolHandler::RequestDeferrer {
+ public:
+  CrossOriginNavigationVirtualTimeTest() { SetInitialURL("http://a.com/"); }
+
+  ProtocolHandlerMap GetProtocolHandlers() override {
+    ProtocolHandlerMap protocol_handlers;
+    std::unique_ptr<TestInMemoryProtocolHandler> http_handler(
+        new TestInMemoryProtocolHandler(browser()->BrowserIOThread(), this));
+    http_handler_ = http_handler.get();
+    http_handler->InsertResponse("http://a.com/", {kSiteA, "text/html"});
+    http_handler->InsertResponse("http://b.com/", {kSiteB, "text/html"});
+    http_handler->InsertResponse("http://c.com/", {kSiteC, "text/html"});
+    http_handler->InsertResponse("http://d.com/", {kSiteD, "text/html"});
+    protocol_handlers[url::kHttpScheme] = std::move(http_handler);
+    return protocol_handlers;
+  }
+
+  void RunDevTooledTest() override {
+    http_handler_->SetHeadlessBrowserContext(browser_context_);
+    VirtualTimeBrowserTest::RunDevTooledTest();
+  }
+
+  void CustomizeHeadlessBrowserContext(
+      HeadlessBrowserContext::Builder& builder) override {
+    // Make sure the navigations spawn new processes.
+    builder.SetSitePerProcess(true);
+  }
+
+  void SetVirtualTimePolicy() override {
+    devtools_client_->GetEmulation()->GetExperimental()->SetVirtualTimePolicy(
+        emulation::SetVirtualTimePolicyParams::Builder()
+            .SetPolicy(
+                emulation::VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING)
+            .SetBudget(100)
+            .SetWaitForNavigation(true)
+            .Build(),
+        base::BindRepeating(&VirtualTimeBrowserTest::SetVirtualTimePolicyDone,
+                            base::Unretained(this)));
+  }
+
+  void OnRequest(const GURL& url,
+                 base::RepeatingClosure complete_request) override {
+    log_.push_back(
+        base::StringPrintf("url: %s @ %f", url.spec().c_str(), virtual_time_));
+    complete_request.Run();
+  }
+
+  void OnVirtualTimeAdvanced(
+      const emulation::VirtualTimeAdvancedParams& params) override {
+    virtual_time_ = params.GetVirtualTimeElapsed();
+  }
+
+  void OnVirtualTimePaused(
+      const emulation::VirtualTimePausedParams& params) override {
+    virtual_time_ = params.GetVirtualTimeElapsed();
+  }
+
+  // emulation::Observer implementation:
+  void OnVirtualTimeBudgetExpired(
+      const emulation::VirtualTimeBudgetExpiredParams& params) override {
+    // Issue virtual time in chunks of 100 virtual ms. We do this because that's
+    // how virtual time is used in reality, but also because this wouldn't work
+    // otherwise. The state of the Emulation domain (like every domain) is only
+    // serialized in a protocol command response so if we didn't do this,
+    // progress would be lost and the loads would happen at the wrong virtual
+    // time offsets.
+    if (++count_ < 50) {
+      devtools_client_->GetEmulation()->GetExperimental()->SetVirtualTimePolicy(
+          emulation::SetVirtualTimePolicyParams::Builder()
+              .SetPolicy(emulation::VirtualTimePolicy::
+                             PAUSE_IF_NETWORK_FETCHES_PENDING)
+              .SetBudget(100)
+              .Build());
+    } else {
+      EXPECT_THAT(log_, ElementsAre("url: http://a.com/ @ 0.000000",
+                                    "url: http://b.com/ @ 1010.000000",
+                                    "url: http://c.com/ @ 2010.000000",
+                                    "url: http://d.com/ @ 3010.000000"));
+      FinishAsynchronousTest();
+    }
+  }
+
+  TestInMemoryProtocolHandler* http_handler_;  // NOT OWNED
+  std::vector<std::string> log_;
+  double virtual_time_ = 0;
+  int count_ = 0;
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(CrossOriginNavigationVirtualTimeTest);
+
 }  // namespace headless

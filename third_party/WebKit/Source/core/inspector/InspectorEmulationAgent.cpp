@@ -78,27 +78,32 @@ void InspectorEmulationAgent::Restore() {
                     &navigator_platform);
   setNavigatorOverrides(navigator_platform);
 
-  double virtual_time_base_ms;
   String virtual_time_policy;
   if (state_->getString(EmulationAgentState::kVirtualTimePolicy,
                         &virtual_time_policy)) {
-    // Initially pause virtual time to ensure virtual time budget isn't consumed
-    // while we wait for the IPC to tell the renderer to navigate to arrive.
-    setVirtualTimePolicy(protocol::Emulation::VirtualTimePolicyEnum::Pause, 0,
-                         0, false, &virtual_time_base_ms);
-
-    double budget_remaining =
-        state_->getDouble(EmulationAgentState::kVirtualTimeBudget, 0) +
-        state_->getDouble(EmulationAgentState::kVirtualTimeBudgetInitalOffset,
-                          0) -
-        state_->getDouble(EmulationAgentState::kVirtualTimeOffset, 0);
+    double budget = 0;
+    double inital_offset = 0;
+    double offset = 0;
+    state_->getDouble(EmulationAgentState::kVirtualTimeBudget, &budget);
+    state_->getDouble(EmulationAgentState::kVirtualTimeBudgetInitalOffset,
+                      &inital_offset);
+    state_->getDouble(EmulationAgentState::kVirtualTimeOffset, &offset);
+    double budget_remaining = budget + inital_offset - offset;
     DCHECK_GE(budget_remaining, 0);
-    // Reinstate the stored policy. If it's PauseIfNetworkFetchesPending then
-    // wait until the navigation to load the page has started.
+
+    int starvation_count = 0;
+    state_->getInteger(EmulationAgentState::kVirtualTimeTaskStarvationCount,
+                       &starvation_count);
+
+    // Tell the scheduler about the saved virtual time progress to ensure that
+    // virtual time monotonically advances despite the cross origin navigation.
+    web_local_frame_->View()->Scheduler()->SetInitialVirtualTimeOffset(
+        base::TimeDelta::FromMillisecondsD(offset));
+
+    // Reinstate the stored policy.
+    double virtual_time_base_ms;
     setVirtualTimePolicy(
-        virtual_time_policy, budget_remaining,
-        state_->getInteger(EmulationAgentState::kVirtualTimeTaskStarvationCount,
-                           0),
+        virtual_time_policy, budget_remaining, starvation_count,
         virtual_time_policy == protocol::Emulation::VirtualTimePolicyEnum::
                                    PauseIfNetworkFetchesPending,
         &virtual_time_base_ms);
