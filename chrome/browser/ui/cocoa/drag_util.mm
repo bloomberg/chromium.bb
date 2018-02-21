@@ -40,9 +40,6 @@ BOOL IsSupportedFileURL(Profile* profile, const GURL& url) {
   std::string mime_type;
   net::GetMimeTypeFromFile(full_path, &mime_type);
 
-  // This logic mirrors |BufferedResourceHandler::ShouldDownload()|.
-  // TODO(asvitkine): Refactor this out to a common location instead of
-  //                  duplicating code.
   if (blink::IsSupportedMimeType(mime_type))
     return YES;
 
