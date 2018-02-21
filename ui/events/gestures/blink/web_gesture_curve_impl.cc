@@ -24,6 +24,10 @@
 #include "ui/events/android/scroller.h"
 #endif
 
+#if !defined(OS_ANDROID) && defined(CHROMECAST_BUILD)
+#include "ui/events/chromecast/scroller.h"
+#endif
+
 using blink::WebGestureCurve;
 
 namespace ui {
@@ -37,7 +41,7 @@ std::unique_ptr<GestureCurve> CreateDefaultPlatformCurve(
                                                 base::TimeTicks());
   }
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(CHROMECAST_BUILD)
   auto scroller = std::make_unique<Scroller>(Scroller::Config());
   scroller->Fling(0,
                   0,

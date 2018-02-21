@@ -99,6 +99,13 @@ component("events_base") {
       "Carbon.framework",
     ]
   }
+
+  if (is_chromecast && !is_android) {
+    sources += [
+      "chromecast/scroller.cc",
+      "chromecast/scroller.h",
+    ]
+  }
 }
 
 component("events") {
@@ -486,6 +493,10 @@ if (!is_ios) {
 
     if (is_win) {
       sources += [ "blink/web_input_event_builders_win_unittest.cc" ]
+    }
+
+    if (is_chromecast && !is_android) {
+      sources += [ "chromecast/scroller_unittest.cc" ]
     }
   }
 }
