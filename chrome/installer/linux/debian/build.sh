@@ -110,6 +110,7 @@ do_package() {
   log_cmd echo "Packaging ${ARCHITECTURE}..."
   PREDEPENDS="$COMMON_PREDEPS"
   DEPENDS="${COMMON_DEPS}"
+  RECOMMENDS="${COMMON_RECOMMENDS}"
   PROVIDES="www-browser"
   gen_changelog
   process_template "${SCRIPTDIR}/control.template" "${DEB_CONTROL}"
@@ -267,6 +268,7 @@ export DEBEMAIL="${MAINTMAIL}"
 DEB_COMMON_DEPS="${BUILDDIR}/deb_common.deps"
 COMMON_DEPS=$(sed ':a;N;$!ba;s/\n/, /g' "${DEB_COMMON_DEPS}")
 COMMON_PREDEPS="dpkg (>= 1.14.0)"
+COMMON_RECOMMENDS="libu2f-udev"
 
 
 # Make everything happen in the OUTPUTDIR.
