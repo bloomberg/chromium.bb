@@ -4661,7 +4661,7 @@ static int find_tx_size_rd_records(MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
   uint8_t child_idx_buf[MAX_MIB_SIZE * MAX_MIB_SIZE] = { 0 };
   const int hash_dc_level = 1 << x->e_mbd.bd;
 
-  TX_SIZE cur_tx_size = max_txsize_rect_lookup[1][bsize];
+  TX_SIZE cur_tx_size = max_txsize_rect_lookup[bsize];
   while (cur_tx_depth <= MAX_VARTX_DEPTH) {
     const int cur_tx_bw = tx_size_wide[cur_tx_size];
     const int cur_tx_bh = tx_size_high[cur_tx_size];
@@ -4907,7 +4907,7 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   TX_TYPE tx_type, best_tx_type = DCT_DCT;
   const int is_inter = is_inter_block(mbmi);
   TX_SIZE best_tx_size[INTER_TX_SIZE_BUF_LEN] = { 0 };
-  TX_SIZE best_tx = max_txsize_rect_lookup[1][bsize];
+  TX_SIZE best_tx = max_txsize_rect_lookup[bsize];
   TX_SIZE best_min_tx_size = TX_SIZES_ALL;
   uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
   TX_TYPE txk_start = DCT_DCT;
@@ -4918,8 +4918,7 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
 #endif
   const int n4 = bsize_to_num_blk(bsize);
   // Get the tx_size 1 level down
-  const TX_SIZE min_tx_size =
-      sub_tx_size_map[1][max_txsize_rect_lookup[1][bsize]];
+  const TX_SIZE min_tx_size = sub_tx_size_map[1][max_txsize_rect_lookup[bsize]];
   const TxSetType tx_set_type = get_ext_tx_set_type(
       min_tx_size, bsize, is_inter, cm->reduced_tx_set_used);
   int within_border = mi_row >= xd->tile.mi_row_start &&
@@ -10603,7 +10602,7 @@ PALETTE_EXIT:
       // Set up tx_size related variables for skip-specific loop filtering.
       best_mbmode.tx_size = block_signals_txsize(bsize)
                                 ? tx_size_from_tx_mode(bsize, cm->tx_mode, 1)
-                                : max_txsize_rect_lookup[1][bsize];
+                                : max_txsize_rect_lookup[bsize];
       memset(best_mbmode.inter_tx_size, best_mbmode.tx_size,
              sizeof(best_mbmode.inter_tx_size));
       best_mbmode.min_tx_size = best_mbmode.tx_size;

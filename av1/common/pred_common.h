@@ -340,7 +340,8 @@ static INLINE aom_cdf_prob *av1_get_pred_cdf_single_ref_p6(
 // The prediction flags in these dummy entries are initialized to 0.
 static INLINE int get_tx_size_context(const MACROBLOCKD *xd, int is_inter) {
   const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
-  const TX_SIZE max_tx_size = max_txsize_rect_lookup[is_inter][mbmi->sb_type];
+  (void)is_inter;
+  const TX_SIZE max_tx_size = max_txsize_rect_lookup[mbmi->sb_type];
   const int max_tx_wide = tx_size_wide[max_tx_size];
   const int max_tx_high = tx_size_high[max_tx_size];
   const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;

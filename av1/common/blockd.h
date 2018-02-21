@@ -788,7 +788,8 @@ static INLINE int get_ext_tx_types(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter,
 #define TXSIZEMIN(t1, t2) (tx_size_2d[(t1)] <= tx_size_2d[(t2)] ? (t1) : (t2))
 
 static INLINE TX_SIZE get_max_rect_tx_size(BLOCK_SIZE bsize, int is_inter) {
-  return max_txsize_rect_lookup[is_inter][bsize];
+  (void)is_inter;
+  return max_txsize_rect_lookup[bsize];
 }
 
 static INLINE TX_SIZE tx_size_from_tx_mode(BLOCK_SIZE bsize, TX_MODE tx_mode,
@@ -872,7 +873,7 @@ get_plane_block_size(BLOCK_SIZE bsize, const struct macroblockd_plane *pd) {
 
 static INLINE int av1_get_txb_size_index(BLOCK_SIZE bsize, int blk_row,
                                          int blk_col) {
-  TX_SIZE txs = max_txsize_rect_lookup[1][bsize];
+  TX_SIZE txs = max_txsize_rect_lookup[bsize];
   for (int level = 0; level < MAX_VARTX_DEPTH - 1; ++level)
     txs = sub_tx_size_map[1][txs];
   const int tx_w = tx_size_wide_unit[txs];
@@ -982,7 +983,8 @@ static INLINE TX_SIZE av1_get_max_uv_txsize(BLOCK_SIZE bsize, int is_inter,
                                             int ss_x, int ss_y) {
   const BLOCK_SIZE plane_bsize = ss_size_lookup[bsize][ss_x][ss_y];
   assert(plane_bsize < BLOCK_SIZES_ALL);
-  TX_SIZE uv_tx = max_txsize_rect_lookup[is_inter][plane_bsize];
+  (void)is_inter;
+  TX_SIZE uv_tx = max_txsize_rect_lookup[plane_bsize];
   switch (uv_tx) {
     case TX_64X64:
     case TX_64X32:
