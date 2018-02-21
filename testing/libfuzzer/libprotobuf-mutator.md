@@ -104,7 +104,7 @@ is configured properly looks like:
 proto_library("my_proto") {
   ... // These lines (probably) dont need to be changed.
 
-  if (use_libfuzzer) {
+  if (use_libfuzzer && current_toolchain == host_toolchain) {
     generator_plugin_label =
       "//third_party/libprotobuf-mutator:override_lite_runtime_plugin"
     generator_plugin_suffix = ".pb"
@@ -116,8 +116,8 @@ proto_library("my_proto") {
 }
 ```
 
-Note that this will not have any affects on the proto_library in production, since
-the plugin is only used when `use_libfuzzer == true`.
+Note that this will not have any affects on the proto_library in production,
+since the plugin is only used when `use_libfuzzer == true`.
 And with that we have completed writing a libprotobuf-mutator fuzz target for
 Chromium code that accepts protobufs.
 

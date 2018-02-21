@@ -67,13 +67,13 @@ if (current_toolchain == host_toolchain) {
   # the proto_library definition (note the "=" in second to last line in the
   # comment will need to be changed to "+=" if you have already defined
   # deps):
-  # if (use_libfuzzer) {
+  # if (use_libfuzzer && current_toolchain == host_toolchain) {
   #   generator_plugin_label =
   #     "//third_party/libprotobuf-mutator:override_lite_runtime_plugin"
   #   generator_plugin_suffix = ".pb"
   #   # The plugin will generate cc, so don't ask for it to be done by protoc.
   #   generate_cc = false
-  #   deps = ["//third_party/libprotobuf-mutator:lpm_protoc_plugin"]
+  #   deps = ["//third_party/libprotobuf-mutator:protoc_plugin"]
   # }
 }
 
@@ -105,7 +105,10 @@ proto_library("override_lite_runtime_plugin_test_fuzzer_proto") {
     "protoc_plugin/imported_publicly.proto",
     "protoc_plugin/test_fuzzer_input.proto",
   ]
-  if (use_libfuzzer) {
+
+  # TODO(metzman): Figure out how we can avoid using this toolchain check
+  # (maybe remove compilation from the plugin).
+  if (use_libfuzzer && current_toolchain == host_toolchain) {
     generator_plugin_label =
         "//third_party/libprotobuf-mutator:override_lite_runtime_plugin"
     generator_plugin_suffix = ".pb"
