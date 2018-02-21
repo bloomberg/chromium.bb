@@ -28,9 +28,6 @@
 #include "av1/encoder/aq_cyclicrefresh.h"
 #include "av1/encoder/aq_variance.h"
 #include "av1/encoder/bitstream.h"
-#if CONFIG_BGSPRITE
-#include "av1/encoder/bgsprite.h"
-#endif  // CONFIG_BGSPRITE
 #include "av1/encoder/context_tree.h"
 #include "av1/encoder/encodeframe.h"
 #include "av1/encoder/encodemv.h"
@@ -6823,17 +6820,8 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
       cpi->alt_ref_source = source;
 
       if (oxcf->arnr_max_frames > 0) {
-// Produce the filtered ARF frame.
-#if CONFIG_BGSPRITE
-        int bgsprite_ret = av1_background_sprite(cpi, arf_src_index);
-        // Do temporal filter if bgsprite not generated.
-        if (bgsprite_ret != 0)
-#endif  // CONFIG_BGSPRITE
-          av1_temporal_filter(cpi,
-#if CONFIG_BGSPRITE
-                              NULL, &cpi->alt_ref_buffer,
-#endif  // CONFIG_BGSPRITE
-                              arf_src_index);
+        // Produce the filtered ARF frame.
+        av1_temporal_filter(cpi, arf_src_index);
         aom_extend_frame_borders(&cpi->alt_ref_buffer, num_planes);
         force_src_buffer = &cpi->alt_ref_buffer;
       }
@@ -6874,11 +6862,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 
       if (oxcf->arnr_max_frames > 0) {
         // Produce the filtered ARF frame.
-        av1_temporal_filter(cpi,
-#if CONFIG_BGSPRITE
-                            NULL, NULL,
-#endif  // CONFIG_BGSPRITE
-                            arf_src_index);
+        av1_temporal_filter(cpi, arf_src_index);
         aom_extend_frame_borders(&cpi->alt_ref_buffer, num_planes);
         force_src_buffer = &cpi->alt_ref_buffer;
       }

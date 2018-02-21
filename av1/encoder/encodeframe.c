@@ -4628,14 +4628,9 @@ void av1_encode_frame(AV1_COMP *cpi) {
     int64_t *const mode_thrs = rd_opt->prediction_type_threshes[frame_type];
     const int is_alt_ref = frame_type == ALTREF_FRAME;
 
-/* prediction (compound, single or hybrid) mode selection */
-#if CONFIG_BGSPRITE
-    (void)is_alt_ref;
-    if (!cpi->allow_comp_inter_inter)
-#else
+    /* prediction (compound, single or hybrid) mode selection */
     // NOTE: "is_alt_ref" is true only for OVERLAY/INTNL_OVERLAY frames
     if (is_alt_ref || !cpi->allow_comp_inter_inter)
-#endif  // CONFIG_BGSPRITE
       cm->reference_mode = SINGLE_REFERENCE;
     else
       cm->reference_mode = REFERENCE_MODE_SELECT;

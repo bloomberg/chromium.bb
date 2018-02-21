@@ -2585,10 +2585,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   double avg_sr_coded_error = 0;
   double avg_raw_err_stdev = 0;
   int non_zero_stdev_count = 0;
-#if CONFIG_BGSPRITE
-  double avg_pcnt_second_ref = 0;
-  int non_zero_pcnt_second_ref_count = 0;
-#endif
 
   i = 0;
   while (i < rc->static_scene_max_gf_interval && i < rc->frames_to_key) {
@@ -2619,12 +2615,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
       non_zero_stdev_count++;
       avg_raw_err_stdev += next_frame.raw_error_stdev;
     }
-#if CONFIG_BGSPRITE
-    if (this_frame->pcnt_second_ref) {
-      avg_pcnt_second_ref += this_frame->pcnt_second_ref;
-    }
-    non_zero_pcnt_second_ref_count++;
-#endif  // CONFIG_BGSPRITE
 
     // Accumulate the effect of prediction quality decay.
     if (!flash_detected) {
@@ -2701,17 +2691,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
          (zero_motion_accumulator < 0.995))
             ? 1
             : 0;
-#if CONFIG_BGSPRITE
-    if (non_zero_pcnt_second_ref_count) {
-      avg_pcnt_second_ref /= non_zero_pcnt_second_ref_count;
-    }
-
-    cpi->bgsprite_allowed = 1;
-    if (abs_mv_in_out_accumulator > 0.30 || decay_accumulator < 0.90 ||
-        avg_sr_coded_error / num_mbs < 20 || avg_pcnt_second_ref < 0.30) {
-      cpi->bgsprite_allowed = 0;
-    }
-#endif  // CONFIG_BGSPRITE
   } else {
     rc->gfu_boost = AOMMAX((int)boost_score, MIN_ARF_GF_BOOST);
     rc->source_alt_ref_pending = 0;

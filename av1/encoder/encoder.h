@@ -613,9 +613,6 @@ typedef struct AV1_COMP {
   int extra_arf_allowed;
   int bwd_ref_allowed;
 
-#if CONFIG_BGSPRITE
-  int bgsprite_allowed;
-#endif  // CONFIG_BGSPRITE
 #if CONFIG_INTRABC
   // A flag to indicate if intrabc is ever used in current frame.
   int intrabc_used;

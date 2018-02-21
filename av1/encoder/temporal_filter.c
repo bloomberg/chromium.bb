@@ -289,9 +289,6 @@ static int temporal_filter_find_matching_mb_c(AV1_COMP *cpi,
 }
 
 static void temporal_filter_iterate_c(AV1_COMP *cpi,
-#if CONFIG_BGSPRITE
-                                      YV12_BUFFER_CONFIG *target,
-#endif  // CONFIG_BGSPRITE
                                       YV12_BUFFER_CONFIG **frames,
                                       int frame_count, int alt_ref_index,
                                       int strength,
@@ -424,17 +421,9 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
       if (mbd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
         uint16_t *dst1_16;
         uint16_t *dst2_16;
-#if CONFIG_BGSPRITE
-        dst1 = target->y_buffer;
-#else
-          dst1 = cpi->alt_ref_buffer.y_buffer;
-#endif  // CONFIG_BGSPRITE
+        dst1 = cpi->alt_ref_buffer.y_buffer;
         dst1_16 = CONVERT_TO_SHORTPTR(dst1);
-#if CONFIG_BGSPRITE
-        stride = target->y_stride;
-#else
-          stride = cpi->alt_ref_buffer.y_stride;
-#endif  // CONFIG_BGSPRITE
+        stride = cpi->alt_ref_buffer.y_stride;
         byte = mb_y_offset;
         for (i = 0, k = 0; i < 16; i++) {
           for (j = 0; j < 16; j++, k++) {
@@ -473,13 +462,8 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
           byte += stride - mb_uv_width;
         }
       } else {
-#if CONFIG_BGSPRITE
-        dst1 = target->y_buffer;
-        stride = target->y_stride;
-#else
-          dst1 = cpi->alt_ref_buffer.y_buffer;
-          stride = cpi->alt_ref_buffer.y_stride;
-#endif  // CONFIG_BGSPRITE
+        dst1 = cpi->alt_ref_buffer.y_buffer;
+        stride = cpi->alt_ref_buffer.y_stride;
         byte = mb_y_offset;
         for (i = 0, k = 0; i < 16; i++) {
           for (j = 0; j < 16; j++, k++) {
@@ -491,15 +475,9 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
           }
           byte += stride - 16;
         }
-#if CONFIG_BGSPRITE
-        dst1 = target->u_buffer;
-        dst2 = target->v_buffer;
-        stride = target->uv_stride;
-#else
-          dst1 = cpi->alt_ref_buffer.u_buffer;
-          dst2 = cpi->alt_ref_buffer.v_buffer;
-          stride = cpi->alt_ref_buffer.uv_stride;
-#endif  // CONFIG_BGSPRITE
+        dst1 = cpi->alt_ref_buffer.u_buffer;
+        dst2 = cpi->alt_ref_buffer.v_buffer;
+        stride = cpi->alt_ref_buffer.uv_stride;
         byte = mb_uv_offset;
         for (i = 0, k = 256; i < mb_uv_height; i++) {
           for (j = 0; j < mb_uv_width; j++, k++) {
@@ -589,11 +567,7 @@ static void adjust_arnr_filter(AV1_COMP *cpi, int distance, int group_boost,
   *arnr_strength = strength;
 }
 
-void av1_temporal_filter(AV1_COMP *cpi,
-#if CONFIG_BGSPRITE
-                         YV12_BUFFER_CONFIG *bg, YV12_BUFFER_CONFIG *target,
-#endif  // CONFIG_BGSPRITE
-                         int distance) {
+void av1_temporal_filter(AV1_COMP *cpi, int distance) {
   RATE_CONTROL *const rc = &cpi->rc;
   int frame;
   int frames_to_blur;
@@ -646,18 +620,9 @@ void av1_temporal_filter(AV1_COMP *cpi,
   // Setup frame pointers, NULL indicates frame not included in filter.
   for (frame = 0; frame < frames_to_blur; ++frame) {
     const int which_buffer = start_frame - frame;
-#if CONFIG_BGSPRITE
-    if (frame == frames_to_blur_backward && bg != NULL) {
-      // Insert bg into frames at ARF index.
-      frames[frames_to_blur - 1 - frame] = bg;
-    } else {
-#endif  // CONFIG_BGSPRITE
-      struct lookahead_entry *buf =
-          av1_lookahead_peek(cpi->lookahead, which_buffer);
-      frames[frames_to_blur - 1 - frame] = &buf->img;
-#if CONFIG_BGSPRITE
-    }
-#endif  // CONFIG_BGSPRITE
+    struct lookahead_entry *buf =
+        av1_lookahead_peek(cpi->lookahead, which_buffer);
+    frames[frames_to_blur - 1 - frame] = &buf->img;
   }
 
   if (frames_to_blur > 0) {
@@ -670,10 +635,6 @@ void av1_temporal_filter(AV1_COMP *cpi,
         cpi->common.use_highbitdepth);
   }
 
-  temporal_filter_iterate_c(cpi,
-#if CONFIG_BGSPRITE
-                            target,
-#endif  // CONFIG_BGSPRITE
-                            frames, frames_to_blur, frames_to_blur_backward,
-                            strength, &sf);
+  temporal_filter_iterate_c(cpi, frames, frames_to_blur,
+                            frames_to_blur_backward, strength, &sf);
 }
