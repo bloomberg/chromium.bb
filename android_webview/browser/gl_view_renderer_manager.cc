@@ -5,6 +5,7 @@
 #include "android_webview/browser/gl_view_renderer_manager.h"
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/threading/platform_thread.h"
 
 namespace android_webview {
@@ -32,8 +33,7 @@ GLViewRendererManager::Key GLViewRendererManager::NullKey() {
 
 GLViewRendererManager::Key GLViewRendererManager::PushBack(RendererType view) {
   AutoLock auto_lock(lock_);
-  DCHECK(mru_list_.end() ==
-         std::find(mru_list_.begin(), mru_list_.end(), view));
+  DCHECK(!base::ContainsValue(mru_list_, view));
   mru_list_.push_back(view);
   Key back = mru_list_.end();
   back--;

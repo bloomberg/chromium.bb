@@ -12,6 +12,7 @@
 #include "android_webview/browser/aw_render_thread_context_provider.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/browser/parent_output_surface.h"
+#include "base/stl_util.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
@@ -118,8 +119,7 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
                                    const gfx::Size& frame_size,
                                    const viz::SurfaceId& child_id,
                                    float device_scale_factor) {
-  DCHECK(std::find(child_ids_.begin(), child_ids_.end(), child_id) !=
-         child_ids_.end());
+  DCHECK(base::ContainsValue(child_ids_, child_id));
 
   // Create a frame with a single SurfaceDrawQuad referencing the child
   // Surface and transformed using the given transform.
@@ -165,8 +165,7 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
 }
 
 void SurfacesInstance::AddChildId(const viz::SurfaceId& child_id) {
-  DCHECK(std::find(child_ids_.begin(), child_ids_.end(), child_id) ==
-         child_ids_.end());
+  DCHECK(!base::ContainsValue(child_ids_, child_id));
   child_ids_.push_back(child_id);
   if (root_id_.is_valid())
     SetSolidColorRootFrame();
