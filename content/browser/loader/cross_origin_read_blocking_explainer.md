@@ -549,6 +549,14 @@ CORB has no impact on the following scenarios:
     responses without changing the service worker's behavior ('opaque' responses
     have a non-accessible body even without CORB).
 
+* **Blob and File API**
+  * Fetching cross-origin blob URLs is blocked even without CORB
+    (see https://github.com/whatwg/fetch/issues/666).
+  * WPT test: `script-html-via-cross-origin-blob-url.sub.html`
+    (and also tests for navigation requests covered by the
+    [commit here](https://github.com/mkruisselbrink/web-platform-tests/commit/9524a71919340eacc8aaa6e55ffe0b5aa72f9bfd)).
+
+
 * **Content scripts and plugins**
   * TODO...
 
