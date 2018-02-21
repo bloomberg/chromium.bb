@@ -86,8 +86,6 @@ extern const base::Feature kCaptureThumbnailOnNavigatingAway;
 
 extern const base::Feature kChangePictureVideoMode;
 
-extern const base::Feature kCheckInstallabilityForBannerOnLoad;
-
 #if defined(OS_ANDROID)
 extern const base::Feature kClearOldBrowsingData;
 #endif

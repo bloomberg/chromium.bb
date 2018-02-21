@@ -488,11 +488,9 @@ void AppBannerManager::DidFinishLoad(
   }
 
   // Start the pipeline immediately if we pass (or bypass) the engagement check,
-  // or if the feature to run the installability check on page load is enabled.
+  // or if the experimental app banners feature is active.
   if (state_ == State::INACTIVE &&
-      (has_sufficient_engagement_ ||
-       base::FeatureList::IsEnabled(
-           features::kCheckInstallabilityForBannerOnLoad))) {
+      (has_sufficient_engagement_ || IsExperimentalAppBannersEnabled())) {
     RequestAppBanner(validated_url, false /* is_debug_mode */);
   }
 }

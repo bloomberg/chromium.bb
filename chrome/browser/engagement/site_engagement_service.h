@@ -27,7 +27,7 @@ class Clock;
 
 namespace banners {
 FORWARD_DECLARE_TEST(AppBannerManagerBrowserTest,
-                     CheckOnLoadWithoutSufficientEngagement);
+                     ExperimentalFlowWebAppBannerNeedsEngagement);
 }
 
 namespace content {
@@ -202,7 +202,7 @@ class SiteEngagementService : public KeyedService,
                            IncognitoEngagementService);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetScoreFromSettings);
   FRIEND_TEST_ALL_PREFIXES(banners::AppBannerManagerBrowserTest,
-                           CheckOnLoadWithoutSufficientEngagement);
+                           ExperimentalFlowWebAppBannerNeedsEngagement);
   FRIEND_TEST_ALL_PREFIXES(AppBannerSettingsHelperTest, SiteEngagementTrigger);
   FRIEND_TEST_ALL_PREFIXES(HostedAppPWAOnlyTest, EngagementHistogram);
 
