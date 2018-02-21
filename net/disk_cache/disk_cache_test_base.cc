@@ -326,6 +326,8 @@ void DiskCacheTestWithCache::CreateBackend(uint32_t flags) {
     runner = nullptr;  // let the backend sort it out.
 
   if (simple_cache_mode_) {
+    DCHECK(!use_current_thread_)
+        << "Using current thread unsupported by SimpleCache";
     net::TestCompletionCallback cb;
     // We limit ourselves to 64 fds since OS X by default gives us 256.
     // (Chrome raises the number on startup, but the test fixture doesn't).
@@ -335,8 +337,7 @@ void DiskCacheTestWithCache::CreateBackend(uint32_t flags) {
     std::unique_ptr<disk_cache::SimpleBackendImpl> simple_backend =
         std::make_unique<disk_cache::SimpleBackendImpl>(
             cache_path_, /* cleanup_tracker = */ nullptr,
-            simple_file_tracker_.get(), size_, type_, runner,
-            /*net_log = */ nullptr);
+            simple_file_tracker_.get(), size_, type_, /*net_log = */ nullptr);
     int rv = simple_backend->Init(cb.callback());
     ASSERT_THAT(cb.GetResult(rv), IsOk());
     simple_cache_impl_ = simple_backend.get();

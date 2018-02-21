@@ -106,9 +106,9 @@ int CacheCreator::Run() {
       (backend_type_ == net::CACHE_BACKEND_DEFAULT &&
        kSimpleBackendIsDefault)) {
     disk_cache::SimpleBackendImpl* simple_cache =
-        new disk_cache::SimpleBackendImpl(
-            path_, cleanup_tracker_.get(), /* file_tracker = */ nullptr,
-            max_bytes_, type_, /* cache_thread = */ nullptr, net_log_);
+        new disk_cache::SimpleBackendImpl(path_, cleanup_tracker_.get(),
+                                          /* file_tracker = */ nullptr,
+                                          max_bytes_, type_, net_log_);
     created_cache_.reset(simple_cache);
     return simple_cache->Init(
         base::Bind(&CacheCreator::OnIOComplete, base::Unretained(this)));
