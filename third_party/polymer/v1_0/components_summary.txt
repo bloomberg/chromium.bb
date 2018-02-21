@@ -132,15 +132,15 @@ Tree link: https://github.com/PolymerElements/iron-overlay-behavior/tree/v2.3.2
 
 Name: iron-pages
 Repository: https://github.com/PolymerElements/iron-pages.git
-Tree: v1.0.8
-Revision: 1399d2d51a0ce50edd2c79a6d37419967509bf2c
-Tree link: https://github.com/PolymerElements/iron-pages/tree/v1.0.8
+Tree: v2.0.1
+Revision: ea551b48282f944b45710747d25c461d471bf2b9
+Tree link: https://github.com/PolymerElements/iron-pages/tree/v2.0.1
 
 Name: iron-range-behavior
 Repository: https://github.com/PolymerElements/iron-range-behavior.git
-Tree: v1.0.6
-Revision: 1317604307387599725b80b63cbd293102ea2db0
-Tree link: https://github.com/PolymerElements/iron-range-behavior/tree/v1.0.6
+Tree: v2.0.0
+Revision: 2f0c735c57e6e376ee498f6c3f1957a751b628fe
+Tree link: https://github.com/PolymerElements/iron-range-behavior/tree/v2.0.0
 
 Name: iron-resizable-behavior
 Repository: https://github.com/PolymerElements/iron-resizable-behavior.git
