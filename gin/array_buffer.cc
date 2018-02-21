@@ -43,88 +43,8 @@ void* ArrayBufferAllocator::AllocateUninitialized(size_t length) {
   return malloc(length);
 }
 
-void* ArrayBufferAllocator::Reserve(size_t length) {
-#if BUILDFLAG(USE_PARTITION_ALLOC)
-  const bool commit = false;
-  return base::AllocPages(nullptr, length, base::kPageAllocationGranularity,
-                          base::PageInaccessible, base::PageTag::kChromium,
-                          commit);
-#elif defined(OS_POSIX)
-  int const access_flag = PROT_NONE;
-  void* const ret =
-      mmap(nullptr, length, access_flag, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-  if (ret == MAP_FAILED) {
-    return nullptr;
-  }
-  return ret;
-#else
-  DWORD const access_flag = PAGE_NOACCESS;
-  return VirtualAlloc(hint, length, MEM_RESERVE, access_flag);
-#endif
-}
-
 void ArrayBufferAllocator::Free(void* data, size_t length) {
   free(data);
-}
-
-void ArrayBufferAllocator::Free(void* data,
-                                size_t length,
-                                AllocationMode mode) {
-  switch (mode) {
-    case AllocationMode::kNormal:
-      Free(data, length);
-      return;
-    case AllocationMode::kReservation:
-#if BUILDFLAG(USE_PARTITION_ALLOC)
-      base::FreePages(data, length);
-#elif defined(OS_POSIX)
-      CHECK(!munmap(data, length));
-#else
-      CHECK(VirtualFree(data, 0, MEM_RELEASE));
-#endif
-      return;
-    default:
-      NOTREACHED();
-  }
-}
-
-void ArrayBufferAllocator::SetProtection(void* data,
-                                         size_t length,
-                                         Protection protection) {
-#if BUILDFLAG(USE_PARTITION_ALLOC)
-  switch (protection) {
-    case Protection::kNoAccess:
-      CHECK(base::SetSystemPagesAccess(data, length, base::PageInaccessible));
-      break;
-    case Protection::kReadWrite:
-      CHECK(base::SetSystemPagesAccess(data, length, base::PageReadWrite));
-      break;
-    default:
-      NOTREACHED();
-  }
-#elif defined(OS_POSIX)
-  switch (protection) {
-    case Protection::kNoAccess:
-      CHECK_EQ(0, mprotect(data, length, PROT_NONE));
-      break;
-    case Protection::kReadWrite:
-      CHECK_EQ(0, mprotect(data, length, PROT_READ | PROT_WRITE));
-      break;
-    default:
-      NOTREACHED();
-  }
-#else   // !defined(OS_POSIX)
-  switch (protection) {
-    case Protection::kNoAccess:
-      CHECK_NE(0, VirtualFree(data, length, MEM_DECOMMIT));
-      break;
-    case Protection::kReadWrite:
-      CHECK_NE(nullptr, VirtualAlloc(data, length, MEM_COMMIT, PAGE_READWRITE));
-      break;
-    default:
-      NOTREACHED();
-  }
-#endif  // !defined(OS_POSIX)
 }
 
 ArrayBufferAllocator* ArrayBufferAllocator::SharedInstance() {
@@ -198,11 +118,13 @@ ArrayBuffer::Private::Private(v8::Isolate* isolate,
   // Take ownership of the array buffer.
   CHECK(!array->IsExternal());
   v8::ArrayBuffer::Contents contents = array->Externalize();
+  // We shouldn't receive large page-allocated array buffers.
+  CHECK_NE(v8::ArrayBuffer::Allocator::AllocationMode::kReservation,
+           contents.AllocationMode());
   buffer_ = contents.Data();
   length_ = contents.ByteLength();
   allocation_base_ = contents.AllocationBase();
   allocation_length_ = contents.AllocationLength();
-  allocation_mode_ = contents.AllocationMode();
 
   DCHECK(reinterpret_cast<uintptr_t>(allocation_base_) <=
          reinterpret_cast<uintptr_t>(buffer_));
@@ -219,8 +141,8 @@ ArrayBuffer::Private::Private(v8::Isolate* isolate,
 }
 
 ArrayBuffer::Private::~Private() {
-  PerIsolateData::From(isolate_)->allocator()->Free(
-      allocation_base_, allocation_length_, allocation_mode_);
+  PerIsolateData::From(isolate_)->allocator()->Free(allocation_base_,
+                                                    allocation_length_);
 }
 
 void ArrayBuffer::Private::FirstWeakCallback(
