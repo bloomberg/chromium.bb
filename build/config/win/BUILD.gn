@@ -378,6 +378,9 @@ config("windowed") {
 
 incremental_linking_on_switch = [ "/INCREMENTAL" ]
 incremental_linking_off_switch = [ "/INCREMENTAL:NO" ]
+if (use_lld) {
+  incremental_linking_on_switch += [ "/OPT:NOREF" ]
+}
 
 # Disable incremental linking for syzyasan, enable for debug builds and all
 # component builds - any builds where performance is not job one.
