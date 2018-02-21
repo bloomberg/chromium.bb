@@ -8,6 +8,7 @@
 #include "base/mac/foundation_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
@@ -167,7 +168,9 @@ newUserFeedbackController:(ios::ChromeBrowserState*)browserState
       initWithRootViewController:controller
                     browserState:browserState
                         delegate:delegate];
-  [controller navigationItem].rightBarButtonItem = [nc cancelButton];
+  if (!experimental_flags::IsNewFeedbackKitEnabled()) {
+    [controller navigationItem].rightBarButtonItem = [nc cancelButton];
+  }
   return nc;
 }
 
