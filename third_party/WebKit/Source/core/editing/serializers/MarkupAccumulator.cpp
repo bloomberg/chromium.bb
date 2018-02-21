@@ -111,9 +111,19 @@ bool MarkupAccumulator::ShouldIgnoreElement(const Element& element) const {
 void MarkupAccumulator::AppendElement(StringBuilder& result,
                                       const Element& element,
                                       Namespaces* namespaces) {
+  // https://html.spec.whatwg.org/multipage/parsing.html#html-fragment-serialisation-algorithm
   AppendOpenTag(result, element, namespaces);
 
   AttributeCollection attributes = element.Attributes();
+  if (SerializeAsHTMLDocument(element)) {
+    // 3.2. Element: If current node's is value is not null, and the
+    // element does not have an is attribute in its attribute list, ...
+    const AtomicString& is_value = element.IsValue();
+    if (!is_value.IsNull() && !attributes.Find(HTMLNames::isAttr)) {
+      AppendAttribute(result, element, Attribute(HTMLNames::isAttr, is_value),
+                      namespaces);
+    }
+  }
   for (const auto& attribute : attributes) {
     if (!ShouldIgnoreAttribute(element, attribute))
       AppendAttribute(result, element, attribute, namespaces);
