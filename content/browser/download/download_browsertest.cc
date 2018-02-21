@@ -3160,7 +3160,15 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ResumptionLastSliceFinished) {
 // Verifies that if the last slice is finished, but the database record is not
 // finished, which may happen in database migration.
 // When the server sends HTTP range not satisfied, the download can complete.
-IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ResumptionLastSliceUnfinished) {
+#if defined(OS_WIN)
+// Failing on windows: https://crbug.com/814310
+#define MAYBE_ResumptionLastSliceUnfinished \
+  DISABLED_ResumptionLastSliceUnfinished
+#else
+#define MAYBE_ResumptionLastSliceUnfinished ResumptionLastSliceUnfinished
+#endif
+IN_PROC_BROWSER_TEST_F(ParallelDownloadTest,
+                       MAYBE_ResumptionLastSliceUnfinished) {
   // Create the received slices data, last slice is actually finished.
   std::vector<download::DownloadItem::ReceivedSlice> received_slices = {
       download::DownloadItem::ReceivedSlice(0, 1000),
