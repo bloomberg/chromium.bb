@@ -1031,7 +1031,7 @@ void ShowPageInfoDialogImpl(Browser* browser,
     // Use the Cocoa code path for showing the Views page info dialog so that it
     // anchors properly.
     return chrome::ShowPageInfoBubbleViews(browser, web_contents, virtual_url,
-                                           security_info);
+                                           security_info, anchor);
   }
 #endif
   views::BubbleDialogDelegateView* bubble =
