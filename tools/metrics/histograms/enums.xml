@@ -23200,6 +23200,14 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="7" label="Unknown error"/>
 </enum>
 
+<enum name="InstantAppsBanner">
+  <int value="0" label="Shows the banner"/>
+  <int value="1" label="Not shown because app is installed"/>
+  <int value="2" label="Not shown because user recently dismissed"/>
+  <int value="3" label="Not shown because user recently ignored"/>
+  <int value="4" label="Not shown because in-domain navigation"/>
+</enum>
+
 <enum name="InstantAppsCallSource">
   <int value="1" label="Loading screen"/>
   <int value="2" label="Notification"/>

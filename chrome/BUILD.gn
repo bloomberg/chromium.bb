@@ -1782,6 +1782,12 @@ if (is_android) {
     ]
   }
 
+  java_cpp_enum("instant_apps_reasons_enum_javagen") {
+    sources = [
+      "browser/android/instantapps/instant_apps_settings.cc",
+    ]
+  }
+
   source_set("chrome_android_core") {
     sources = [
       "app/android/chrome_android_initializer.cc",

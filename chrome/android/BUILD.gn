@@ -284,6 +284,7 @@ android_library("chrome_java") {
     "//chrome:credit_card_javagen",
     "//chrome:data_use_ui_message_enum_javagen",
     "//chrome:download_enum_javagen",
+    "//chrome:instant_apps_reasons_enum_javagen",
     "//chrome:offline_pages_enum_javagen",
     "//chrome:page_info_connection_type_javagen",
     "//chrome:page_info_action_javagen",
