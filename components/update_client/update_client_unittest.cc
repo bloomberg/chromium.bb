@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/task_scheduler/post_task.h"
@@ -247,6 +248,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
+                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       EXPECT_FALSE(session_id.empty());
       EXPECT_TRUE(enabled_component_updates);
@@ -361,6 +363,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
+                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       /*
       Fake the following response:
@@ -574,6 +577,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
+                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       /*
       Fake the following response:
@@ -846,6 +850,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
+                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       /*
       Fake the following response:
@@ -1117,6 +1122,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
+                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       EXPECT_FALSE(session_id.empty());
 
@@ -1448,6 +1454,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
+                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       /*
       Fake the following response:
@@ -1640,6 +1647,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
+                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       EXPECT_FALSE(session_id.empty());
 
@@ -1946,6 +1954,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
+                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       EXPECT_FALSE(session_id.empty());
       EXPECT_TRUE(enabled_component_updates);
@@ -2059,6 +2068,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
+                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       /*
       Fake the following response:
@@ -2254,6 +2264,7 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
+                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       EXPECT_FALSE(session_id.empty());
       EXPECT_TRUE(enabled_component_updates);
@@ -2360,6 +2371,7 @@ TEST_F(UpdateClientTest, EmptyIdList) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
+                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       NOTREACHED();
     }
@@ -2421,6 +2433,7 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
+                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       NOTREACHED();
     }
@@ -2524,6 +2537,7 @@ TEST_F(UpdateClientTest, RetryAfter) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
+                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       EXPECT_FALSE(session_id.empty());
 
@@ -2702,6 +2716,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
+                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       /*
       Fake the following response:
@@ -2951,6 +2966,7 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
+                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       EXPECT_FALSE(session_id.empty());
       EXPECT_TRUE(enabled_component_updates);
@@ -3035,6 +3051,7 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
+                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       /*
       Fake the following response:
@@ -3200,6 +3217,7 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
+                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       /*
       Fake the following response:

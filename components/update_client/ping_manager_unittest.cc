@@ -126,12 +126,17 @@ TEST_F(PingManagerTest, SendPing) {
 
     EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
     EXPECT_NE(string::npos,
-              interceptor->GetRequests()[0].find(
+              interceptor->GetRequestBody(0).find(
                   "<app appid=\"abc\">"
                   "<event eventtype=\"3\" eventresult=\"1\" "
                   "previousversion=\"1.0\" nextversion=\"2.0\"/></app>"))
         << interceptor->GetRequestsAsString();
-    EXPECT_NE(string::npos, interceptor->GetRequests()[0].find(" sessionid="));
+    EXPECT_NE(string::npos, interceptor->GetRequestBody(0).find(" sessionid="));
+
+    // Check the ping request does not carry the interactivity header.
+    EXPECT_FALSE(interceptor->GetRequests()[0].second.HasHeader(
+        "X-GoogleUpdate-Interactivity"));
+
     interceptor->Reset();
   }
 
@@ -150,7 +155,7 @@ TEST_F(PingManagerTest, SendPing) {
 
     EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
     EXPECT_NE(string::npos,
-              interceptor->GetRequests()[0].find(
+              interceptor->GetRequestBody(0).find(
                   "<app appid=\"abc\">"
                   "<event eventtype=\"3\" eventresult=\"0\" "
                   "previousversion=\"1.0\" nextversion=\"2.0\"/></app>"))
@@ -182,7 +187,7 @@ TEST_F(PingManagerTest, SendPing) {
 
     EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
     EXPECT_NE(string::npos,
-              interceptor->GetRequests()[0].find(
+              interceptor->GetRequestBody(0).find(
                   "<app appid=\"abc\">"
                   "<event eventtype=\"3\" eventresult=\"0\" errorcat=\"1\" "
                   "errorcode=\"2\" extracode1=\"-1\" diffresult=\"0\" "
@@ -209,7 +214,7 @@ TEST_F(PingManagerTest, SendPing) {
 
     EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
     EXPECT_NE(string::npos,
-              interceptor->GetRequests()[0].find(
+              interceptor->GetRequestBody(0).find(
                   "<app appid=\"abc\"><event eventtype=\"3\" eventresult=\"0\" "
                   "previousversion=\"1.0\"/></app>"))
         << interceptor->GetRequestsAsString();
@@ -229,7 +234,7 @@ TEST_F(PingManagerTest, SendPing) {
 
     EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
     EXPECT_NE(string::npos,
-              interceptor->GetRequests()[0].find(
+              interceptor->GetRequestBody(0).find(
                   "<app appid=\"abc\">"
                   "<event eventtype=\"4\" eventresult=\"1\" "
                   "previousversion=\"1.2.3.4\" nextversion=\"0\"/></app>"))
@@ -272,7 +277,7 @@ TEST_F(PingManagerTest, SendPing) {
     EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
     EXPECT_NE(
         string::npos,
-        interceptor->GetRequests()[0].find(
+        interceptor->GetRequestBody(0).find(
             "<app appid=\"abc\">"
             "<event eventtype=\"3\" eventresult=\"1\" previousversion=\"1.0\" "
             "nextversion=\"2.0\"/>"

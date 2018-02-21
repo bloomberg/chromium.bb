@@ -22,15 +22,20 @@ class FilePath;
 class SequencedTaskRunner;
 }
 
+namespace net {
+class HttpRequestHeaders;
+}
+
 namespace update_client {
 
 // Intercepts requests to a file path, counts them, and captures the body of
 // the requests. Optionally, for each request, it can return a canned response
 // from a given file. The class maintains a queue of expectations, and returns
-// one and only one response for each request that matches and it is
-// intercepted.
+// one and only one response for each request that matches the expectation.
+// Then, the expectation is removed from the queue.
 class URLRequestPostInterceptor {
  public:
+  using InterceptedRequest = std::pair<std::string, net::HttpRequestHeaders>;
   // Allows a generic string maching interface when setting up expectations.
   class RequestMatcher {
    public:
@@ -61,9 +66,12 @@ class URLRequestPostInterceptor {
   int GetCount() const;
 
   // Returns all requests that have been intercepted, matched or not.
-  std::vector<std::string> GetRequests() const;
+  std::vector<InterceptedRequest> GetRequests() const;
 
-  // Returns all requests as a string for debugging purposes.
+  // Return the body of the n-th request, zero-based.
+  std::string GetRequestBody(size_t n) const;
+
+  // Returns the joined bodies of all requests for debugging purposes.
   std::string GetRequestsAsString() const;
 
   // Resets the state of the interceptor so that new expectations can be set.
@@ -95,9 +103,16 @@ class URLRequestPostInterceptor {
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
   mutable base::Lock interceptor_lock_;
-  mutable int hit_count_;
-  mutable std::vector<std::string> requests_;
-  mutable base::queue<Expectation> expectations_;
+
+  // Contains the count of the request matching expectations.
+  int hit_count_;
+
+  // Contains the request body and the extra headers of the intercepted
+  // requests.
+  std::vector<InterceptedRequest> requests_;
+
+  // Contains the expectations which this interceptor tries to match.
+  base::queue<Expectation> expectations_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestPostInterceptor);
 };
