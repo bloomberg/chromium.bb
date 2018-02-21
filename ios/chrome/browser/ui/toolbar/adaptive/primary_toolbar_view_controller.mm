@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_constants.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_view_controller+subclassing.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_view.h"
+#import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
@@ -31,6 +32,7 @@
 
 @implementation PrimaryToolbarViewController
 
+@synthesize delegate = _delegate;
 @dynamic view;
 
 #pragma mark - Public
@@ -96,6 +98,12 @@
 - (void)didMoveToParentViewController:(UIViewController*)parent {
   [super didMoveToParentViewController:parent];
   ConstrainNamedGuideToView(kOmniboxGuide, self.view.locationBarContainer);
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  [self.delegate
+      viewControllerTraitCollectionDidChange:previousTraitCollection];
 }
 
 #pragma mark - Property accessors

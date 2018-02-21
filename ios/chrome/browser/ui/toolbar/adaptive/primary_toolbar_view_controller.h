@@ -11,6 +11,8 @@
 #import "ios/chrome/browser/ui/orchestrator/toolbar_animatee.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_view_controller.h"
 
+@protocol PrimaryToolbarViewControllerDelegate;
+
 // ViewController for the primary toobar part of the adaptive toolbar. It is the
 // part always displayed and containing the location bar.
 @interface PrimaryToolbarViewController
@@ -18,6 +20,8 @@
                                     FullscreenUIElement,
                                     TabHistoryUIUpdater,
                                     ToolbarAnimatee>
+
+@property(nonatomic, weak) id<PrimaryToolbarViewControllerDelegate> delegate;
 
 // Sets the location bar view, containing the omnibox.
 - (void)setLocationBarView:(UIView*)locationBarView;

@@ -15,18 +15,22 @@
 
 @synthesize toolbarAnimatee = _toolbarAnimatee;
 
-- (void)transitionToStateFocused:(BOOL)focused animated:(BOOL)animated {
-  if (focused) {
-    [self focusOmniboxAnimated:animated];
+- (void)transitionToStateOmniboxFocused:(BOOL)omniboxFocused
+                        toolbarExpanded:(BOOL)toolbarExpanded
+                               animated:(BOOL)animated {
+  // TODO(crbug.com/805485): manage the changes in the location bar.
+  if (toolbarExpanded) {
+    [self updateUIToExpandedState:animated];
   } else {
-    [self unfocusOmniboxAnimated:animated];
+    [self updateUIToContractedState:animated];
   }
 }
 
 #pragma mark - Private
 
-// Updates the UI elements reflect the omnibox focused state, |animated| or not.
-- (void)focusOmniboxAnimated:(BOOL)animated {
+// Updates the UI elements reflect the toolbar expanded state, |animated| or
+// not.
+- (void)updateUIToExpandedState:(BOOL)animated {
   void (^expansion)() = ^{
     [self.toolbarAnimatee expandLocationBar];
     [self.toolbarAnimatee showCancelButton];
@@ -55,9 +59,9 @@
   }
 }
 
-// Updates the UI elements reflect the omnibox unfocused state, |animated| or
+// Updates the UI elements reflect the toolbar contracted state, |animated| or
 // not.
-- (void)unfocusOmniboxAnimated:(BOOL)animated {
+- (void)updateUIToContractedState:(BOOL)animated {
   void (^contraction)() = ^{
     [self.toolbarAnimatee contractLocationBar];
   };
