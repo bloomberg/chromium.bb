@@ -22,7 +22,6 @@ import java.util.Map;
 class TypeUtils {
     static final String ASSERTION_ERROR = "java/lang/AssertionError";
     static final String ASSET_MANAGER = "android/content/res/AssetManager";
-    static final String BASE_CHROMIUM_APPLICATION = "org/chromium/base/BaseChromiumApplication";
     static final String BUILD_HOOKS = "org/chromium/build/BuildHooks";
     static final String BUILD_HOOKS_ANDROID = "org/chromium/build/BuildHooksAndroid";
     static final String CONFIGURATION = "android/content/res/Configuration";

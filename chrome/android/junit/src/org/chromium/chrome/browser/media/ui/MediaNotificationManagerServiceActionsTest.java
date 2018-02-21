@@ -19,7 +19,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.blink.mojom.MediaSessionAction;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager.ListenerService;
@@ -29,7 +28,7 @@ import org.chromium.chrome.browser.media.ui.MediaNotificationManager.ListenerSer
  * correctly.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
+@Config(manifest = Config.NONE,
         shadows = {MediaNotificationTestShadowResources.class,
                 MediaNotificationTestShadowNotificationManager.class})
 public class MediaNotificationManagerServiceActionsTest extends MediaNotificationManagerTestBase {

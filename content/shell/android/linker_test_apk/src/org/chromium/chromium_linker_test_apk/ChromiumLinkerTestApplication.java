@@ -4,21 +4,26 @@
 
 package org.chromium.chromium_linker_test_apk;
 
+import android.app.Application;
 import android.content.Context;
 
-import org.chromium.base.BaseChromiumApplication;
+import org.chromium.base.BuildConfig;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
+import org.chromium.base.multidex.ChromiumMultiDexInstaller;
 
 /**
  * Application for testing the Chromium Linker
  */
-public class ChromiumLinkerTestApplication extends BaseChromiumApplication {
+public class ChromiumLinkerTestApplication extends Application {
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chromium_linker_test";
 
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
+        if (BuildConfig.isMultidexEnabled()) {
+            ChromiumMultiDexInstaller.install(this);
+        }
         ContextUtils.initApplicationContext(this);
     }
 

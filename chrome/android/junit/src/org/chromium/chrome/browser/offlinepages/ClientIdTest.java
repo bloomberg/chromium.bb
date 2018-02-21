@@ -13,7 +13,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.multidex.ShadowMultiDex;
 
-import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -23,8 +22,7 @@ import org.chromium.components.bookmarks.BookmarkType;
  * Unit tests for ClientId.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
-        shadows = {ShadowMultiDex.class})
+@Config(manifest = Config.NONE, shadows = {ShadowMultiDex.class})
 public class ClientIdTest {
     private static final long INVALID_BOOKMARK_ID = -1;
     private static final long TEST_BOOKMARK_ID = 42;
