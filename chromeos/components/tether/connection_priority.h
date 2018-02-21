@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "chromeos/components/tether/connection_reason.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
 
 namespace chromeos {
@@ -33,9 +34,10 @@ enum class ConnectionPriority {
   CONNECTION_PRIORITY_HIGH = 3
 };
 
-ConnectionPriority PriorityForMessageType(MessageType message_type);
-ConnectionPriority HighestPriorityForMessageTypes(
-    std::set<MessageType> message_types);
+ConnectionPriority PriorityForConnectionReason(
+    ConnectionReason connection_reason);
+ConnectionPriority HighestPriorityForConnectionReasons(
+    std::set<ConnectionReason> connection_reasons);
 
 }  // namespace tether
 

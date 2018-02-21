@@ -10,26 +10,28 @@ namespace chromeos {
 
 namespace tether {
 
-ConnectionPriority PriorityForMessageType(MessageType message_type) {
-  switch (message_type) {
-    case CONNECT_TETHERING_REQUEST:
-    case DISCONNECT_TETHERING_REQUEST:
+ConnectionPriority PriorityForConnectionReason(
+    ConnectionReason connection_reason) {
+  switch (connection_reason) {
+    case ConnectionReason::CONNECT_TETHERING_REQUEST:
+    case ConnectionReason::DISCONNECT_TETHERING_REQUEST:
       return ConnectionPriority::CONNECTION_PRIORITY_HIGH;
-    case KEEP_ALIVE_TICKLE:
+    case ConnectionReason::KEEP_ALIVE_TICKLE:
       return ConnectionPriority::CONNECTION_PRIORITY_MEDIUM;
     default:
       return ConnectionPriority::CONNECTION_PRIORITY_LOW;
   }
 }
 
-ConnectionPriority HighestPriorityForMessageTypes(
-    std::set<MessageType> message_types) {
-  DCHECK(!message_types.empty());
+ConnectionPriority HighestPriorityForConnectionReasons(
+    std::set<ConnectionReason> connection_reasons) {
+  DCHECK(!connection_reasons.empty());
 
   ConnectionPriority highest_priority =
       ConnectionPriority::CONNECTION_PRIORITY_LOW;
-  for (const auto& message_type : message_types) {
-    ConnectionPriority priority_for_type = PriorityForMessageType(message_type);
+  for (const auto& connection_reason : connection_reasons) {
+    ConnectionPriority priority_for_type =
+        PriorityForConnectionReason(connection_reason);
     if (priority_for_type > highest_priority)
       highest_priority = priority_for_type;
   }

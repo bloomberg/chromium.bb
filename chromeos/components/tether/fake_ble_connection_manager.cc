@@ -11,16 +11,16 @@ namespace chromeos {
 
 namespace tether {
 
-FakeBleConnectionManager::StatusAndRegisteredMessageTypes::
-    StatusAndRegisteredMessageTypes()
+FakeBleConnectionManager::StatusAndRegisteredConnectionReasons::
+    StatusAndRegisteredConnectionReasons()
     : status(cryptauth::SecureChannel::Status::DISCONNECTED) {}
 
-FakeBleConnectionManager::StatusAndRegisteredMessageTypes::
-    StatusAndRegisteredMessageTypes(
-        const StatusAndRegisteredMessageTypes& other) = default;
+FakeBleConnectionManager::StatusAndRegisteredConnectionReasons::
+    StatusAndRegisteredConnectionReasons(
+        const StatusAndRegisteredConnectionReasons& other) = default;
 
-FakeBleConnectionManager::StatusAndRegisteredMessageTypes::
-    ~StatusAndRegisteredMessageTypes() = default;
+FakeBleConnectionManager::StatusAndRegisteredConnectionReasons::
+    ~StatusAndRegisteredConnectionReasons() = default;
 
 FakeBleConnectionManager::FakeBleConnectionManager()
     : BleConnectionManager(nullptr,
@@ -95,15 +95,15 @@ bool FakeBleConnectionManager::IsRegistered(const std::string& device_id) {
 
 void FakeBleConnectionManager::RegisterRemoteDevice(
     const std::string& device_id,
-    const MessageType& connection_reason) {
-  StatusAndRegisteredMessageTypes& value = device_id_map_[device_id];
+    const ConnectionReason& connection_reason) {
+  StatusAndRegisteredConnectionReasons& value = device_id_map_[device_id];
   value.registered_message_types.insert(connection_reason);
 }
 
 void FakeBleConnectionManager::UnregisterRemoteDevice(
     const std::string& device_id,
-    const MessageType& connection_reason) {
-  StatusAndRegisteredMessageTypes& value = device_id_map_[device_id];
+    const ConnectionReason& connection_reason) {
+  StatusAndRegisteredConnectionReasons& value = device_id_map_[device_id];
   value.registered_message_types.erase(connection_reason);
   if (value.registered_message_types.empty())
     device_id_map_.erase(device_id);

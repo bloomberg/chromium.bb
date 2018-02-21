@@ -55,9 +55,10 @@ class FakeBleConnectionManager : public BleConnectionManager {
 
   // BleConnectionManager:
   void RegisterRemoteDevice(const std::string& device_id,
-                            const MessageType& connection_reason) override;
-  void UnregisterRemoteDevice(const std::string& device_id,
-                              const MessageType& connection_reason) override;
+                            const ConnectionReason& connection_reason) override;
+  void UnregisterRemoteDevice(
+      const std::string& device_id,
+      const ConnectionReason& connection_reason) override;
   int SendMessage(const std::string& device_id,
                   const std::string& message) override;
   bool GetStatusForDevice(
@@ -65,18 +66,18 @@ class FakeBleConnectionManager : public BleConnectionManager {
       cryptauth::SecureChannel::Status* status) const override;
 
  private:
-  struct StatusAndRegisteredMessageTypes {
-    StatusAndRegisteredMessageTypes();
-    StatusAndRegisteredMessageTypes(
-        const StatusAndRegisteredMessageTypes& other);
-    ~StatusAndRegisteredMessageTypes();
+  struct StatusAndRegisteredConnectionReasons {
+    StatusAndRegisteredConnectionReasons();
+    StatusAndRegisteredConnectionReasons(
+        const StatusAndRegisteredConnectionReasons& other);
+    ~StatusAndRegisteredConnectionReasons();
 
     cryptauth::SecureChannel::Status status;
-    std::set<MessageType> registered_message_types;
+    std::set<ConnectionReason> registered_message_types;
   };
 
   int next_sequence_number_ = 0;
-  std::map<std::string, StatusAndRegisteredMessageTypes> device_id_map_;
+  std::map<std::string, StatusAndRegisteredConnectionReasons> device_id_map_;
   std::vector<SentMessage> sent_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeBleConnectionManager);
