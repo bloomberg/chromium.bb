@@ -141,8 +141,16 @@ IN_PROC_BROWSER_TEST_P(WebRtcCaptureFromElementBrowserTest,
       kVideoAudioHtmlFile);
 }
 
+// Disable the test until flakiness is resolved, see https://crbug.com/812186.
+#if defined(OS_MACOSX)
+#define MAYBE_CaptureFromCanvas2DHandlesContextLoss \
+  DISABLED_CaptureFromCanvas2DHandlesContextLoss
+#else
+#define MAYBE_CaptureFromCanvas2DHandlesContextLoss \
+  CaptureFromCanvas2DHandlesContextLoss
+#endif  // defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
-                       CaptureFromCanvas2DHandlesContextLoss) {
+                       MAYBE_CaptureFromCanvas2DHandlesContextLoss) {
   MakeTypicalCall("testCanvas2DContextLoss(true);",
                   kCanvasCaptureColorTestHtmlFile);
 }
