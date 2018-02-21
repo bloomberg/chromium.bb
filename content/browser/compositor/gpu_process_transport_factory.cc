@@ -18,7 +18,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/base/histograms.h"
-#include "cc/base/switches.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/raster/task_graph_runner.h"
 #include "components/viz/common/features.h"
@@ -27,6 +26,7 @@
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
+#include "components/viz/common/switches.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/host/renderer_settings_creation.h"
 #include "components/viz/service/display/display.h"
@@ -197,7 +197,7 @@ GpuProcessTransportFactory::GpuProcessTransportFactory(
     }
   }
 
-  if (command_line->HasSwitch(cc::switches::kRunAllCompositorStagesBeforeDraw))
+  if (command_line->HasSwitch(switches::kRunAllCompositorStagesBeforeDraw))
     wait_for_all_pipeline_stages_before_draw_ = true;
 
   task_graph_runner_->Start("CompositorTileWorker1",

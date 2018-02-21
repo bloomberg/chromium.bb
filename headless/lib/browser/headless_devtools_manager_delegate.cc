@@ -11,8 +11,8 @@
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "build/build_config.h"
-#include "cc/base/switches.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_frontend_host.h"
@@ -951,7 +951,7 @@ void HeadlessDevToolsManagerDelegate::BeginFrame(
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          cc::switches::kRunAllCompositorStagesBeforeDraw) &&
+          switches::kRunAllCompositorStagesBeforeDraw) &&
       headless_contents->HasPendingFrame()) {
     LOG(WARNING) << "A BeginFrame is already in flight. In "
                     "--run-all-compositor-stages-before-draw mode, only a "

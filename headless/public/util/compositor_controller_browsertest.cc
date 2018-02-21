@@ -98,7 +98,7 @@ class CompositorControllerBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     HeadlessAsyncDevTooledBrowserTest::SetUpCommandLine(command_line);
     // See bit.ly/headless-rendering for why we use these flags.
-    command_line->AppendSwitch(cc::switches::kRunAllCompositorStagesBeforeDraw);
+    command_line->AppendSwitch(switches::kRunAllCompositorStagesBeforeDraw);
     command_line->AppendSwitch(switches::kDisableNewContentRenderingTimeout);
     command_line->AppendSwitch(cc::switches::kDisableCheckerImaging);
     command_line->AppendSwitch(cc::switches::kDisableThreadedAnimation);
@@ -281,15 +281,11 @@ class CompositorControllerSurfaceSyncBrowserTest
     // With surface sync enabled, we should have waited for the renderer's
     // CompositorFrame in the first BeginFrame.
     EXPECT_EQ(1, begin_frame_counter_->begin_frame_count());
-    // TODO(eseckler, fsamuel): This seems flaky. This depends on the deadline
-    // set, I think.
-    // EXPECT_EQ(1, begin_frame_counter_->main_frame_update_count());
+    EXPECT_EQ(1, begin_frame_counter_->main_frame_update_count());
   }
 };
 
-// Flaky: https://crbug.com/811288
-DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_P(
-    CompositorControllerSurfaceSyncBrowserTest);
+HEADLESS_ASYNC_DEVTOOLED_TEST_P(CompositorControllerSurfaceSyncBrowserTest);
 
 // Instantiate test case for both software and gpu compositing modes.
 INSTANTIATE_TEST_CASE_P(CompositorControllerSurfaceSyncBrowserTests,

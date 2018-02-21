@@ -12,7 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
-#include "cc/base/switches.h"
+#include "components/viz/common/switches.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
@@ -1083,7 +1083,7 @@ class HeadlessWebContentsBeginFrameControlTest
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     HeadlessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(cc::switches::kRunAllCompositorStagesBeforeDraw);
+    command_line->AppendSwitch(switches::kRunAllCompositorStagesBeforeDraw);
     command_line->AppendSwitch(switches::kDisableNewContentRenderingTimeout);
   }
 
