@@ -137,7 +137,7 @@ Polymer({
   },
 
   /** @private */
-  onCancelButtonTap_: function() {
+  onCancelButtonClick_: function() {
     this.$.dialog.cancel();
   },
 

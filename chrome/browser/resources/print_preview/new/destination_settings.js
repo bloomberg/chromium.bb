@@ -58,7 +58,7 @@ Polymer({
   },
 
   /** @private */
-  onChangeButtonTap_: function() {
+  onChangeButtonClick_: function() {
     this.destinationStore.startLoadAllDestinations();
     const dialog = this.$.destinationDialog.get();
     // This async() call is a workaround to prevent a DCHECK - see

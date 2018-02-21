@@ -73,8 +73,8 @@
         inner-h-t-m-l="[[summary_]]">
     </span>
     <div id="button-strip">
-      <button class="cancel" on-tap="onCancelTap_">$i18n{cancel}</button>
-      <button class="print default" on-tap="onPrintTap_"
+      <button class="cancel" on-click="onCancelClick_">$i18n{cancel}</button>
+      <button class="print default" on-click="onPrintClick_"
           disabled$="[[!printButtonEnabled_]]">
         [[getPrintButton_(destination.id)]]
       </button>

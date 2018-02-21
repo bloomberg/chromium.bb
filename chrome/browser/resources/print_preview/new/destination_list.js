@@ -120,7 +120,7 @@ Polymer({
   },
 
   /** @private */
-  onActionLinkTap_: function() {
+  onActionLinkClick_: function() {
     print_preview.NativeLayer.getInstance().managePrinters();
   },
 

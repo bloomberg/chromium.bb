@@ -79,7 +79,7 @@
         [[i18n('destinationCount', matchingDestinationsCount_)]]
       </span>
       <a is="action-link" class="action-link" hidden$="[[!hasActionLink]]"
-          on-tap="onActionLinkTap_">
+          on-click="onActionLinkClick_">
         $i18n{manage}
       </a>
       <div class="throbber-container" hidden$="[[!loadingDestinations]]">
@@ -90,7 +90,7 @@
         on-dom-change="updateIfNeeded_">
       <print-preview-destination-list-item class="list-item"
           search-query="[[searchQuery]]" destination="[[item]]"
-          on-tap="onDestinationSelected_">
+          on-click="onDestinationSelected_">
       </print-preview-destination-list-item>
     </template>
     <div class="no-destinations-message" hidden$="[[hasDestinations_]]">
