@@ -2304,6 +2304,47 @@ TEST_F(WindowSelectorTest, HandleOverviewWindowAnimationObserverWasDeleted) {
   EXPECT_FALSE(window3->layer()->GetAnimator()->is_animating());
 }
 
+// Tests can handle |gained_active| window is not in the |window_grid| when
+// OnWindowActivated.
+TEST_F(WindowSelectorTest, HandleActiveWindowNotInWindowGrid) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshEnableNewOverviewAnimations);
+
+  gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+  wm::ActivateWindow(window3.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
+
+  EXPECT_FALSE(wm::GetWindowState(window1.get())->IsFullscreen());
+  EXPECT_FALSE(wm::GetWindowState(window2.get())->IsFullscreen());
+  EXPECT_FALSE(wm::GetWindowState(window3.get())->IsFullscreen());
+
+  const wm::WMEvent toggle_fullscreen_event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  wm::GetWindowState(window2.get())->OnWMEvent(&toggle_fullscreen_event);
+  wm::GetWindowState(window3.get())->OnWMEvent(&toggle_fullscreen_event);
+  EXPECT_FALSE(wm::GetWindowState(window1.get())->IsFullscreen());
+  EXPECT_TRUE(wm::GetWindowState(window2.get())->IsFullscreen());
+  EXPECT_TRUE(wm::GetWindowState(window3.get())->IsFullscreen());
+
+  // Enter overview.
+  ToggleOverview();
+
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  // Create and active a new window should exit overview without error.
+  auto widget =
+      CreateTestWidget(nullptr, kShellWindowId_StatusContainer, bounds);
+  ClickWindow(widget->GetNativeWindow());
+
+  // |window1| and |window2| should animate.
+  EXPECT_TRUE(window1->layer()->GetAnimator()->is_animating());
+  EXPECT_TRUE(window2->layer()->GetAnimator()->is_animating());
+  EXPECT_FALSE(window3->layer()->GetAnimator()->is_animating());
+}
+
 // Verify that the window selector items titlebar and close button change
 // visibility when a item is being dragged.
 TEST_F(WindowSelectorTest, WindowItemTitleCloseVisibilityOnDrag) {
