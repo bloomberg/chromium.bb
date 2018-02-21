@@ -49,7 +49,6 @@ function onSessionStarted(session) {
     gl.clearColor(0.0, 1.0, 0.0, 1.0);
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   }
 
   session.baseLayer = new XRWebGLLayer(session, gl);
@@ -89,14 +88,14 @@ function onXRFrame(t, frame) {
   // If in an exclusive session, set canvas to blue. Otherwise, red.
   if (session.exclusive) {
     if (onExclusiveXRFrameCallback) {
-      onExclusiveXRFrameCallback(session, frame);
+      onExclusiveXRFrameCallback(session);
     }
     gl.clearColor(0.0, 0.0, 1.0, 1.0);
   } else {
     if (onMagicWindowXRFrameCallback) {
-      onMagicWindowXRFrameCallback(session, frame);
+      onMagicWindowXRFrameCallback(session);
     }
-    gl.clearColor(1.0, 0.0, 0.0, 1.0);
+    gl.clearcolor(1.0, 0.0, 0.0, 1.0);
   }
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 }
@@ -111,11 +110,14 @@ if (navigator.xr) {
     // Set up the device to have a non-exclusive session (magic window) drawing
     // into the full screen canvas on the page
     let ctx = webglCanvas.getContext('xrpresent');
-    device.requestSession({outputContext: ctx}).then( (session) => {
+    // TODO(bsheedy): Enable and test this once non-exclusive session support
+    // is actually added to the implementation.
+    /*device.requestSession({outputContext: ctx}).then( (session) => {
       onSessionStarted(session);
     }).then( () => {
       initializationSteps['magicWindowStarted'] = true;
-    });
+    });*/
+    initializationSteps['magicWindowStarted'] = true;
   }).then( () => {
     initializationSteps['getXRDevice'] = true;
   });

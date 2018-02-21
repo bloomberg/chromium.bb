@@ -47,19 +47,17 @@ public class WebVrDeviceTest {
     @Rule
     public RuleChain mRuleChain;
 
-    private ChromeActivityTestRule mTestRule;
+    private ChromeActivityTestRule mVrTestRule;
     private VrTestFramework mVrTestFramework;
-    private XrTestFramework mXrTestFramework;
 
     public WebVrDeviceTest(Callable<ChromeActivityTestRule> callable) throws Exception {
-        mTestRule = callable.call();
-        mRuleChain = VrTestRuleUtils.wrapRuleInVrActivityRestrictionRule(mTestRule);
+        mVrTestRule = callable.call();
+        mRuleChain = VrTestRuleUtils.wrapRuleInVrActivityRestrictionRule(mVrTestRule);
     }
 
     @Before
     public void setUp() throws Exception {
-        mVrTestFramework = new VrTestFramework(mTestRule);
-        mXrTestFramework = new XrTestFramework(mTestRule);
+        mVrTestFramework = new VrTestFramework(mVrTestRule);
     }
 
     /**
@@ -98,21 +96,5 @@ public class WebVrDeviceTest {
         VrTestFramework.executeStepAndWait("stepCheckDeviceCapabilities('VR Orientation Device')",
                 mVrTestFramework.getFirstTabWebContents());
         VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
-    }
-
-    /**
-     * Tests that reported WebXR capabilities match expectations.
-     */
-    @Test
-    @MediumTest
-    @CommandLineFlags.Remove({"enable-webvr"})
-    @CommandLineFlags.Add({"enable-features=WebXR"})
-    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
-    public void testWebXrCapabilities() throws InterruptedException {
-        mXrTestFramework.loadUrlAndAwaitInitialization(
-                XrTestFramework.getHtmlTestFile("test_webxr_capabilities"), PAGE_LOAD_TIMEOUT_S);
-        XrTestFramework.executeStepAndWait(
-                "stepCheckCapabilities('Daydream')", mXrTestFramework.getFirstTabWebContents());
-        XrTestFramework.endTest(mXrTestFramework.getFirstTabWebContents());
     }
 }

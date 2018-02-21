@@ -43,19 +43,17 @@ public class WebVrTabTest {
     @Rule
     public RuleChain mRuleChain;
 
-    private ChromeActivityTestRule mTestRule;
+    private ChromeActivityTestRule mVrTestRule;
     private VrTestFramework mVrTestFramework;
-    private XrTestFramework mXrTestFramework;
 
     public WebVrTabTest(Callable<ChromeActivityTestRule> callable) throws Exception {
-        mTestRule = callable.call();
-        mRuleChain = VrTestRuleUtils.wrapRuleInVrActivityRestrictionRule(mTestRule);
+        mVrTestRule = callable.call();
+        mRuleChain = VrTestRuleUtils.wrapRuleInVrActivityRestrictionRule(mVrTestRule);
     }
 
     @Before
     public void setUp() throws Exception {
-        mVrTestFramework = new VrTestFramework(mTestRule);
-        mXrTestFramework = new XrTestFramework(mTestRule);
+        mVrTestFramework = new VrTestFramework(mVrTestRule);
     }
 
     /**
@@ -64,33 +62,16 @@ public class WebVrTabTest {
     @Test
     @MediumTest
     public void testPoseDataUnfocusedTab() throws InterruptedException {
-        testPoseDataUnfocusedTabImpl(
-                VrTestFramework.getHtmlTestFile("test_pose_data_unfocused_tab"), mVrTestFramework);
-    }
+        mVrTestFramework.loadUrlAndAwaitInitialization(
+                VrTestFramework.getHtmlTestFile("test_pose_data_unfocused_tab"),
+                PAGE_LOAD_TIMEOUT_S);
+        VrTestFramework.executeStepAndWait(
+                "stepCheckFrameDataWhileFocusedTab()", mVrTestFramework.getFirstTabWebContents());
 
-    /**
-     * Tests that non-focused tabs don't get WebXR rAFs called.
-     */
-    @Test
-    @MediumTest
-    @CommandLineFlags.Remove({"enable-webvr"})
-    @CommandLineFlags.Add({"enable-features=WebXR"})
-    public void testPoseDataUnfocusedTab_WebXr() throws InterruptedException {
-        testPoseDataUnfocusedTabImpl(
-                XrTestFramework.getHtmlTestFile("webxr_test_pose_data_unfocused_tab"),
-                mXrTestFramework);
-    }
+        mVrTestRule.loadUrlInNewTab("about:blank");
 
-    private void testPoseDataUnfocusedTabImpl(String url, TestFramework framework)
-            throws InterruptedException {
-        framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
-        TestFramework.executeStepAndWait(
-                "stepCheckFrameDataWhileFocusedTab()", framework.getFirstTabWebContents());
-
-        mTestRule.loadUrlInNewTab("about:blank");
-
-        TestFramework.executeStepAndWait(
-                "stepCheckFrameDataWhileNonFocusedTab()", framework.getFirstTabWebContents());
-        TestFramework.endTest(framework.getFirstTabWebContents());
+        VrTestFramework.executeStepAndWait("stepCheckFrameDataWhileNonFocusedTab()",
+                mVrTestFramework.getFirstTabWebContents());
+        VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
     }
 }
