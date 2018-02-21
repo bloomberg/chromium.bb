@@ -134,7 +134,7 @@ class CookieStoreIOS : public net::CookieStore,
 
   net::CookieMonster* cookie_monster() { return cookie_monster_.get(); }
 
-  const base::ThreadChecker& thread_checker() { return thread_checker_; }
+  THREAD_CHECKER(thread_checker_);
 
  private:
   // Cookie filter for DeleteCookiesWithFilter().
@@ -162,8 +162,6 @@ class CookieStoreIOS : public net::CookieStore,
   std::unique_ptr<SystemCookieStore> system_store_;
   bool metrics_enabled_;
   base::CancelableClosure flush_closure_;
-
-  base::ThreadChecker thread_checker_;
 
   // Cookie notification methods.
   // The cookie cache is updated from both the system store and the
