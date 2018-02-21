@@ -1,0 +1,4 @@
+include_rules = [
+  "+components/unzip_service",
+  "+services/service_manager/embedder",
+]

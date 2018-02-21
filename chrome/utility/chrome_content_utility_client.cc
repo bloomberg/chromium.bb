@@ -19,6 +19,8 @@
 #include "chrome/profiling/profiling_service.h"
 #include "components/patch_service/patch_service.h"
 #include "components/patch_service/public/interfaces/constants.mojom.h"
+#include "components/unzip_service/public/interfaces/constants.mojom.h"
+#include "components/unzip_service/unzip_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/simple_connection_filter.h"
@@ -239,6 +241,13 @@ void ChromeContentUtilityClient::RegisterServices(
     service_manager::EmbeddedServiceInfo service_info;
     service_info.factory = base::Bind(&patch::PatchService::CreateService);
     services->emplace(patch::mojom::kServiceName, service_info);
+  }
+
+  {
+    service_manager::EmbeddedServiceInfo service_info;
+    service_info.factory =
+        base::BindRepeating(&unzip::UnzipService::CreateService);
+    services->emplace(unzip::mojom::kServiceName, service_info);
   }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

@@ -48,6 +48,7 @@ class ChromeWebClient : public web::WebClient {
       const GURL& request_url,
       bool overridable,
       const base::Callback<void(bool)>& callback) override;
+  void RegisterServices(StaticServiceMap* services) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeWebClient);

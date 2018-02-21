@@ -27,6 +27,7 @@
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/ssl/ios_ssl_error_handler.h"
 #import "ios/chrome/browser/ui/chrome_web_view_factory.h"
+#include "ios/chrome/browser/unzip/unzip_service_creator.h"
 #include "ios/chrome/grit/ios_resources.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/voice/audio_session_controller.h"
@@ -209,4 +210,9 @@ void ChromeWebClient::AllowCertificateError(
   // or web_state used to fetch offline content in Reading List.
   IOSSSLErrorHandler::HandleSSLError(web_state, cert_error, info, request_url,
                                      overridable, callback);
+}
+
+void ChromeWebClient::RegisterServices(StaticServiceMap* services) {
+  // The Unzip service is used by the component updater.
+  RegisterUnzipService(services);
 }
