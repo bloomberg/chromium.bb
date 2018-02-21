@@ -47,6 +47,8 @@ cast_source_set("browser") {
     "cast_web_view.h",
     "cast_web_view_default.cc",
     "cast_web_view_default.h",
+    "cast_web_view_factory.cc",
+    "cast_web_view_factory.h",
     "devtools/cast_devtools_manager_delegate.cc",
     "devtools/cast_devtools_manager_delegate.h",
     "devtools/remote_debugging_server.cc",

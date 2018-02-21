@@ -19,6 +19,7 @@ class WebContents;
 namespace chromecast {
 
 class CastWebContentsManager;
+class CastWebViewFactory;
 
 namespace shell {
 
@@ -53,6 +54,7 @@ class CastBrowserTest : public content::BrowserTestBase, CastWebView::Delegate {
                                      int32_t line_no,
                                      const base::string16& source_id) override;
 
+  std::unique_ptr<CastWebViewFactory> web_view_factory_;
   std::unique_ptr<CastWebContentsManager> web_contents_manager_;
   std::unique_ptr<CastWebView> cast_web_view_;
 

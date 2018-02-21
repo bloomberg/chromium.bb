@@ -47,6 +47,9 @@ class CastWebView {
     // The delegate for the CastWebView. Must be non-null.
     Delegate* delegate = nullptr;
 
+    // Identifies the activity that is hosted by this CastWebView.
+    std::string activity_id = "";
+
     // Whether this CastWebView has a transparent background.
     bool transparent = false;
 

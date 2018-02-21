@@ -15,6 +15,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chromecast/browser/cast_web_view_default.h"
+#include "chromecast/browser/cast_web_view_factory.h"
 #include "chromecast/chromecast_features.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/web_contents.h"
@@ -26,11 +27,14 @@
 namespace chromecast {
 
 CastWebContentsManager::CastWebContentsManager(
-    content::BrowserContext* browser_context)
+    content::BrowserContext* browser_context,
+    CastWebViewFactory* web_view_factory)
     : browser_context_(browser_context),
+      web_view_factory_(web_view_factory),
       task_runner_(base::SequencedTaskRunnerHandle::Get()),
       weak_factory_(this) {
   DCHECK(browser_context_);
+  DCHECK(web_view_factory_);
   DCHECK(task_runner_);
 }
 
@@ -42,14 +46,8 @@ std::unique_ptr<CastWebView> CastWebContentsManager::CreateWebView(
     const extensions::Extension* extension,
     const GURL& initial_url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
-  if (extension) {
-    return std::make_unique<CastWebViewExtension>(
-        params, this, browser_context_, site_instance, extension, initial_url);
-  }
-#endif
-  return std::make_unique<CastWebViewDefault>(params, this, browser_context_,
-                                              site_instance);
+  return web_view_factory_->CreateWebView(
+      params, this, std::move(site_instance), extension, initial_url);
 }
 
 void CastWebContentsManager::DelayWebContentsDeletion(
