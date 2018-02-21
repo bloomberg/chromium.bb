@@ -883,7 +883,7 @@ VTTCueBox* VTTCue::GetDisplayTree() {
   CreateVTTNodeTree();
 
   cue_background_box_->RemoveChildren();
-  vtt_node_tree_->CloneChildNodes(cue_background_box_.Get());
+  cue_background_box_->CloneChildNodesFrom(*vtt_node_tree_);
 
   if (!region()) {
     VTTDisplayParameters display_parameters = CalculateDisplayParameters();

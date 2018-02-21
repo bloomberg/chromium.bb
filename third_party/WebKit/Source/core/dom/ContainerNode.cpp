@@ -973,11 +973,9 @@ void ContainerNode::ChildrenChanged(const ChildrenChange& change) {
   }
 }
 
-void ContainerNode::CloneChildNodes(ContainerNode* clone) {
-  for (Node* n = firstChild(); n; n = n->nextSibling()) {
-    clone->AppendChild(
-        n->Clone(clone->GetDocument(), CloneChildrenFlag::kClone));
-  }
+void ContainerNode::CloneChildNodesFrom(const ContainerNode& node) {
+  for (Node& child : NodeTraversal::ChildrenOf(node))
+    AppendChild(child.Clone(GetDocument(), CloneChildrenFlag::kClone));
 }
 
 LayoutRect ContainerNode::BoundingBox() const {

@@ -4251,7 +4251,7 @@ Node* Document::Clone(Document& factory, CloneChildrenFlag flag) {
   Document* clone = CloneDocumentWithoutChildren();
   clone->CloneDataFromDocument(*this);
   if (flag == CloneChildrenFlag::kClone)
-    CloneChildNodes(clone);
+    clone->CloneChildNodesFrom(*this);
   return clone;
 }
 
