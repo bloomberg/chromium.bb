@@ -121,8 +121,15 @@ class TouchActionBrowserTest : public ContentBrowserTest {
     return value;
   }
 
-  int GetScrollTop() {
-    return ExecuteScriptAndExtractInt("document.scrollingElement.scrollTop");
+  double ExecuteScriptAndExtractDouble(const std::string& script) {
+    double value = 0;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractDouble(
+        shell(), "domAutomationController.send(" + script + ")", &value));
+    return value;
+  }
+
+  double GetScrollTop() {
+    return ExecuteScriptAndExtractDouble("document.scrollingElement.scrollTop");
   }
 
   // Generate touch events for a synthetic scroll from |point| for |distance|.
@@ -166,7 +173,7 @@ class TouchActionBrowserTest : public ContentBrowserTest {
     }
 
     // Check the scroll offset
-    int scroll_top = GetScrollTop();
+    double scroll_top = GetScrollTop();
     if (scroll_top == 0)
       return false;
 
