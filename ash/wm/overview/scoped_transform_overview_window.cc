@@ -331,6 +331,8 @@ void ScopedTransformOverviewWindow::BeginScopedAnimation(
   if (IsNewOverviewUi()) {
     mask_.reset();
     selector_item_->SetShadowBounds(base::nullopt);
+    selector_item_->DisableBackdrop();
+
     if (window_->GetProperty(aura::client::kShowStateKey) !=
         ui::SHOW_STATE_MINIMIZED) {
       window_->layer()->SetMaskLayer(original_mask_layer_);
@@ -646,6 +648,8 @@ void ScopedTransformOverviewWindow::EnsureVisible() {
 void ScopedTransformOverviewWindow::OnImplicitAnimationsCompleted() {
   // Add the mask which gives the window selector items rounded corners, and add
   // the shadow around the window.
+  DCHECK(IsNewOverviewUi());
+
   ui::Layer* layer = minimized_widget_
                          ? minimized_widget_->GetContentsView()->layer()
                          : window_->layer();
@@ -657,6 +661,7 @@ void ScopedTransformOverviewWindow::OnImplicitAnimationsCompleted() {
   mask_->set_top_inset(GetTopInset());
   layer->SetMaskLayer(mask_->layer());
   selector_item_->SetShadowBounds(base::make_optional(GetTransformedBounds()));
+  selector_item_->EnableBackdropIfNeeded();
 }
 
 aura::Window*
