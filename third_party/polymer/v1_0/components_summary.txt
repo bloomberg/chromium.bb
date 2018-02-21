@@ -180,9 +180,9 @@ Tree link: https://github.com/PolymerElements/iron-validatable-behavior/tree/v1.
 
 Name: neon-animation
 Repository: https://github.com/PolymerElements/neon-animation.git
-Tree: v1.2.4
-Revision: bd4f50c9a84023363e80513e10456a18232b21a7
-Tree link: https://github.com/PolymerElements/neon-animation/tree/v1.2.4
+Tree: v2.1.0
+Revision: e49c5715dd27f8f13dfa4c480b049827ddff4e51
+Tree link: https://github.com/PolymerElements/neon-animation/tree/v2.1.0
 
 Name: paper-behaviors
 Repository: https://github.com/PolymerElements/paper-behaviors.git

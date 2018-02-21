@@ -98,7 +98,7 @@
               if (cachedConfig) {
                 // merge configurations with the same id, making a clone lazily
                 if (!cachedConfig.isClone) {
-                  map[config.id] = this._cloneConfig(cachedConfig)
+                  map[config.id] = this._cloneConfig(cachedConfig);
                   cachedConfig = map[config.id];
                 }
                 this._copyProperties(cachedConfig, config);

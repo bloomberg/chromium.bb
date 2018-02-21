@@ -31,7 +31,7 @@
         return null;
       };
 
-      var from = fromPage.sharedElements[config.id]
+      var from = fromPage.sharedElements[config.id];
       var to = toPage.sharedElements[config.id];
 
       if (!from || !to) {
