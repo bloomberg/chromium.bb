@@ -515,6 +515,28 @@ public class OfflinePageBridge {
     }
 
     /**
+     * Deletes offline pages based on the list of provided client IDs only if they originate
+     * from the same origin. Calls the callback when operation is complete. Requires that the
+     * model is already loaded.
+     *
+     * @param clientIds A list of Client IDs for which the offline pages will be deleted.
+     * @param callback A callback that will be called once operation is completed.
+     */
+    public void deletePagesByClientIdAndOrigin(
+            List<ClientId> clientIds, String origin, Callback<Integer> callback) {
+        String[] namespaces = new String[clientIds.size()];
+        String[] ids = new String[clientIds.size()];
+
+        for (int i = 0; i < clientIds.size(); i++) {
+            namespaces[i] = clientIds.get(i).getNamespace();
+            ids[i] = clientIds.get(i).getId();
+        }
+
+        nativeDeletePagesByClientIdAndOrigin(
+                mNativeOfflinePageBridge, namespaces, ids, origin, callback);
+    }
+
+    /**
      * Deletes offline pages based on the list of offline IDs. Calls the callback
      * when operation is complete. Note that offline IDs are not intended to be saved across
      * restarts of Chrome; they should be obtained by querying the model for the appropriate client
@@ -774,6 +796,8 @@ public class OfflinePageBridge {
     @VisibleForTesting
     native void nativeDeletePagesByClientId(long nativeOfflinePageBridge, String[] namespaces,
             String[] ids, Callback<Integer> callback);
+    native void nativeDeletePagesByClientIdAndOrigin(long nativeOfflinePageBridge,
+            String[] namespaces, String[] ids, String origin, Callback<Integer> callback);
     @VisibleForTesting
     native void nativeDeletePagesByOfflineId(
             long nativeOfflinePageBridge, long[] offlineIds, Callback<Integer> callback);

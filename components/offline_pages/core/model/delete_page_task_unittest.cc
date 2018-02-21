@@ -270,7 +270,6 @@ TEST_F(DeletePageTaskTest, DeletePageByClientId) {
 }
 
 TEST_F(DeletePageTaskTest, DeletePageByClientIdNotFound) {
-  // Add 3 pages and try to delete 2 of them using client id.
   generator()->SetNamespace(kTestNamespace);
   OfflinePageItem page1 = generator()->CreateItemWithTempFile();
   OfflinePageItem page2 = generator()->CreateItemWithTempFile();
@@ -287,6 +286,77 @@ TEST_F(DeletePageTaskTest, DeletePageByClientIdNotFound) {
   std::vector<ClientId> client_ids({kTestClientIdNoMatch});
   auto task = DeletePageTask::CreateTaskMatchingClientIds(
       store(), delete_page_callback(), client_ids);
+  runner()->RunTask(std::move(task));
+
+  EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());
+  EXPECT_EQ(0UL, last_deleted_page_infos().size());
+  EXPECT_EQ(3LL, store_test_util()->GetPageCount());
+  histogram_tester()->ExpectTotalCount(
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
+                                      "OfflinePages.PageLifetime"),
+      0);
+  histogram_tester()->ExpectTotalCount(
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
+                                      "OfflinePages.AccessCount"),
+      0);
+}
+
+TEST_F(DeletePageTaskTest, DeletePageByClientIdAndOrigin) {
+  // Add 3 pages and try to delete 2 of them using client id and origin
+  // Page1: {test namespace, random id, abc.xyz}
+  // Page2: {test namespace, foo, abc.xyz}
+  // Page3: {test namespace, foo, <none>}
+  generator()->SetNamespace(kTestNamespace);
+  generator()->SetRequestOrigin("abc.xyz");
+  OfflinePageItem page1 = generator()->CreateItemWithTempFile();
+  generator()->SetId("foo");
+  OfflinePageItem page2 = generator()->CreateItemWithTempFile();
+  generator()->SetRequestOrigin("");
+  OfflinePageItem page3 = generator()->CreateItemWithTempFile();
+  store_test_util()->InsertItem(page1);
+  store_test_util()->InsertItem(page2);
+  store_test_util()->InsertItem(page3);
+
+  std::vector<ClientId> client_ids({page1.client_id, page2.client_id});
+  auto task = DeletePageTask::CreateTaskMatchingClientIdsAndOrigin(
+      store(), delete_page_callback(), client_ids, "abc.xyz");
+  runner()->RunTask(std::move(task));
+
+  EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());
+  EXPECT_EQ(2UL, last_deleted_page_infos().size());
+  EXPECT_EQ(1LL, store_test_util()->GetPageCount());
+  EXPECT_TRUE(CheckPageDeleted(page1));
+  EXPECT_TRUE(CheckPageDeleted(page2));
+  EXPECT_FALSE(CheckPageDeleted(page3));
+  histogram_tester()->ExpectTotalCount(
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
+                                      "OfflinePages.PageLifetime"),
+      2);
+  histogram_tester()->ExpectTotalCount(
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
+                                      "OfflinePages.AccessCount"),
+      2);
+}
+
+TEST_F(DeletePageTaskTest, DeletePageByClientIdAndOriginNotFound) {
+  generator()->SetNamespace(kTestNamespace);
+  OfflinePageItem page1 = generator()->CreateItemWithTempFile();
+  OfflinePageItem page2 = generator()->CreateItemWithTempFile();
+  OfflinePageItem page3 = generator()->CreateItemWithTempFile();
+  store_test_util()->InsertItem(page1);
+  store_test_util()->InsertItem(page2);
+  store_test_util()->InsertItem(page3);
+
+  EXPECT_EQ(3LL, store_test_util()->GetPageCount());
+
+  // The pages with the client ids will be removed from the store given that
+  // their origin matches. But since the origin isn't in the store, there will
+  // be no pages deleted and the result will be success since there's no
+  // NOT_FOUND anymore.
+  std::vector<ClientId> client_ids(
+      {page1.client_id, page2.client_id, page3.client_id});
+  auto task = DeletePageTask::CreateTaskMatchingClientIdsAndOrigin(
+      store(), delete_page_callback(), client_ids, "abc.xyz");
   runner()->RunTask(std::move(task));
 
   EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());

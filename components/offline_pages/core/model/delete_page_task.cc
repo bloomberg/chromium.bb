@@ -242,6 +242,59 @@ DeletePageTaskResult DeletePagesByClientIdsSync(
   return result;
 }
 
+// Gets page infos for |client_id|, returning a vector of
+// DeletedPageInfoWrappers because ClientId can refer to multiple pages.
+std::vector<DeletedPageInfoWrapper>
+GetDeletedPageInfoWrappersByClientIdAndOriginSync(sql::Connection* db,
+                                                  ClientId client_id,
+                                                  const std::string& origin) {
+  std::vector<DeletedPageInfoWrapper> info_wrappers;
+  static const char kSql[] =
+      "SELECT " INFO_WRAPPER_FIELDS " FROM " OFFLINE_PAGES_TABLE_NAME
+      " WHERE client_namespace = ? AND client_id = ? AND request_origin = ?";
+  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+  statement.BindString(0, client_id.name_space);
+  statement.BindString(1, client_id.id);
+  statement.BindString(2, origin);
+
+  while (statement.Step())
+    info_wrappers.emplace_back(CreateInfoWrapper(statement));
+
+  return info_wrappers;
+}
+
+DeletePageTaskResult DeletePagesByClientIdsAndOriginSync(
+    const std::vector<ClientId> client_ids,
+    const std::string& origin,
+    sql::Connection* db) {
+  std::vector<DeletedPageInfoWrapper> infos;
+
+  if (!db)
+    return DeletePageTaskResult(DeletePageResult::STORE_FAILURE, {});
+  if (client_ids.empty())
+    return DeletePageTaskResult(DeletePageResult::SUCCESS, {});
+
+  // If you create a transaction but dont Commit() it is automatically
+  // rolled back by its destructor when it falls out of scope.
+  sql::Transaction transaction(db);
+  if (!transaction.Begin())
+    return DeletePageTaskResult(DeletePageResult::STORE_FAILURE, {});
+
+  for (ClientId client_id : client_ids) {
+    std::vector<DeletedPageInfoWrapper> temp_infos =
+        GetDeletedPageInfoWrappersByClientIdAndOriginSync(db, client_id,
+                                                          origin);
+    infos.insert(infos.end(), temp_infos.begin(), temp_infos.end());
+  }
+
+  DeletePageTaskResult result =
+      DeletePagesByDeletedPageInfoWrappersSync(db, infos);
+
+  if (!transaction.Commit())
+    return DeletePageTaskResult(DeletePageResult::STORE_FAILURE, {});
+  return result;
+}
+
 // Gets the page information of pages that are within the provided temporary
 // namespaces and satisfy the provided URL predicate.
 std::vector<DeletedPageInfoWrapper>
@@ -384,6 +437,19 @@ std::unique_ptr<DeletePageTask> DeletePageTask::CreateTaskMatchingClientIds(
     const std::vector<ClientId>& client_ids) {
   return std::unique_ptr<DeletePageTask>(new DeletePageTask(
       store, base::BindOnce(&DeletePagesByClientIdsSync, client_ids),
+      std::move(callback)));
+}
+
+// static
+std::unique_ptr<DeletePageTask>
+DeletePageTask::CreateTaskMatchingClientIdsAndOrigin(
+    OfflinePageMetadataStoreSQL* store,
+    DeletePageTask::DeletePageTaskCallback callback,
+    const std::vector<ClientId>& client_ids,
+    const std::string& origin) {
+  return std::unique_ptr<DeletePageTask>(new DeletePageTask(
+      store,
+      base::BindOnce(&DeletePagesByClientIdsAndOriginSync, client_ids, origin),
       std::move(callback)));
 }
 

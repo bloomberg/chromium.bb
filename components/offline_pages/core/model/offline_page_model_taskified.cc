@@ -237,6 +237,18 @@ void OfflinePageModelTaskified::DeletePagesByClientIds(
   task_queue_.AddTask(std::move(task));
 }
 
+void OfflinePageModelTaskified::DeletePagesByClientIdsAndOrigin(
+    const std::vector<ClientId>& client_ids,
+    const std::string& origin,
+    const DeletePageCallback& callback) {
+  auto task = DeletePageTask::CreateTaskMatchingClientIdsAndOrigin(
+      store_.get(),
+      base::BindOnce(&OfflinePageModelTaskified::OnDeleteDone,
+                     weak_ptr_factory_.GetWeakPtr(), callback),
+      client_ids, origin);
+  task_queue_.AddTask(std::move(task));
+}
+
 void OfflinePageModelTaskified::DeleteCachedPagesByURLPredicate(
     const UrlPredicate& predicate,
     const DeletePageCallback& callback) {

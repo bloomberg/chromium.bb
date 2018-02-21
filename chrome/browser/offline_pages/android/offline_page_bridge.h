@@ -68,6 +68,14 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
       const base::android::JavaParamRef<jobjectArray>& j_ids_array,
       const base::android::JavaParamRef<jobject>& j_callback_obj);
 
+  void DeletePagesByClientIdAndOrigin(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobjectArray>& j_namespaces_array,
+      const base::android::JavaParamRef<jobjectArray>& j_ids_array,
+      const base::android::JavaParamRef<jstring>& j_origin,
+      const base::android::JavaParamRef<jobject>& j_callback_obj);
+
   void DeletePagesByOfflineId(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

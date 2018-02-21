@@ -454,6 +454,22 @@ void OfflinePageBridge::DeletePagesByClientId(
       client_ids, base::Bind(&DeletePageCallback, j_callback_ref));
 }
 
+void OfflinePageBridge::DeletePagesByClientIdAndOrigin(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jobjectArray>& j_namespaces_array,
+    const base::android::JavaParamRef<jobjectArray>& j_ids_array,
+    const base::android::JavaParamRef<jstring>& j_origin,
+    const base::android::JavaParamRef<jobject>& j_callback_obj) {
+  ScopedJavaGlobalRef<jobject> j_callback_ref;
+  j_callback_ref.Reset(env, j_callback_obj);
+  std::vector<ClientId> client_ids =
+      getClientIdsFromObjectArrays(env, j_namespaces_array, j_ids_array);
+  offline_page_model_->DeletePagesByClientIdsAndOrigin(
+      client_ids, ConvertJavaStringToUTF8(j_origin),
+      base::Bind(&DeletePageCallback, j_callback_ref));
+}
+
 void OfflinePageBridge::DeletePagesByOfflineId(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
