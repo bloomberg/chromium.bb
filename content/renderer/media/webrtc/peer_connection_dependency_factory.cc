@@ -68,6 +68,7 @@
 #include "third_party/webrtc/api/video_codecs/video_encoder_factory.h"
 #include "third_party/webrtc/api/videosourceproxy.h"
 #include "third_party/webrtc/media/engine/convert_legacy_video_factory.h"
+#include "third_party/webrtc/media/engine/multiplexcodecfactory.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
 #include "third_party/webrtc/rtc_base/refcountedobject.h"
 #include "third_party/webrtc/rtc_base/ssladapter.h"
@@ -261,13 +262,25 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
   // interface and let Chromium be responsible in what order video codecs are
   // listed, instead of using
   // cricket::ConvertVideoEncoderFactory/cricket::ConvertVideoDecoderFactory.
+  std::unique_ptr<webrtc::VideoEncoderFactory> webrtc_encoder_factory =
+      ConvertVideoEncoderFactory(std::move(encoder_factory));
+  std::unique_ptr<webrtc::VideoDecoderFactory> webrtc_decoder_factory =
+      ConvertVideoDecoderFactory(std::move(decoder_factory));
+
+  // Enable Multiplex codec in SDP optionally.
+  if (base::FeatureList::IsEnabled(features::kWebRtcMultiplexCodec)) {
+    webrtc_encoder_factory = base::MakeUnique<webrtc::MultiplexEncoderFactory>(
+        std::move(webrtc_encoder_factory));
+    webrtc_decoder_factory = base::MakeUnique<webrtc::MultiplexDecoderFactory>(
+        std::move(webrtc_decoder_factory));
+  }
+
   pc_factory_ = webrtc::CreatePeerConnectionFactory(
       worker_thread_ /* network thread */, worker_thread_, signaling_thread_,
       audio_device_.get(), CreateWebrtcAudioEncoderFactory(),
-      CreateWebrtcAudioDecoderFactory(),
-      cricket::ConvertVideoEncoderFactory(std::move(encoder_factory)),
-      cricket::ConvertVideoDecoderFactory(std::move(decoder_factory)),
-      nullptr /* audio_mixer */, nullptr /* audio_processing */);
+      CreateWebrtcAudioDecoderFactory(), std::move(webrtc_encoder_factory),
+      std::move(webrtc_decoder_factory), nullptr /* audio_mixer */,
+      nullptr /* audio_processing */);
   CHECK(pc_factory_.get());
 
   webrtc::PeerConnectionFactoryInterface::Options factory_options;

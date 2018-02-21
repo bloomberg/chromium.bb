@@ -441,10 +441,6 @@ const base::Feature kWebPayments{"WebPayments",
 const base::Feature kWebRtcEcdsaDefault{"WebRTC-EnableWebRtcEcdsa",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Use GpuMemoryBuffer backed VideoFrames in media streams.
-const base::Feature kWebRtcUseGpuMemoryBufferVideoFrames{
-    "WebRTC-UseGpuMemoryBufferVideoFrames", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables HW H264 encoding on Android.
 const base::Feature kWebRtcHWH264Encoding{"WebRtcHWH264Encoding",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
@@ -459,6 +455,10 @@ const base::Feature kWebRtcHWVP8Encoding {
 #endif
 };
 
+// Enables negotiation of experimental multiplex codec in SDP.
+const base::Feature kWebRtcMultiplexCodec{"WebRTC-MultiplexCodec",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Fallback from hardware encoder (if available) to software, for WebRTC
 // screensharing that uses temporal scalability.
 const base::Feature kWebRtcScreenshareSwEncoding{
@@ -469,6 +469,10 @@ const base::Feature kWebRtcScreenshareSwEncoding{
 // toggle which echo canceller should be used.
 const base::Feature kWebRtcUseEchoCanceller3{"WebRtcUseEchoCanceller3",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Use GpuMemoryBuffer backed VideoFrames in media streams.
+const base::Feature kWebRtcUseGpuMemoryBufferVideoFrames{
+    "WebRTC-UseGpuMemoryBufferVideoFrames", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether the WebUSB API is enabled:
 // https://wicg.github.io/webusb
