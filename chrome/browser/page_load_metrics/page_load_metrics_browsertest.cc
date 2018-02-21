@@ -1219,6 +1219,40 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       UseCounterFeaturesMixedContent) {
+  // UseCounterFeaturesInMainFrame loads the test file on a loopback
+  // address. Loopback is treated as a secure origin in most ways, but it
+  // doesn't count as mixed content when it loads http://
+  // subresources. Therefore, this test loads the test file on a real HTTPS
+  // server.
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  auto waiter = CreatePageLoadMetricsWaiter();
+  waiter->AddPageExpectation(TimingField::LOAD_EVENT);
+  ui_test_utils::NavigateToURL(
+      browser(),
+      https_server.GetURL("/page_load_metrics/use_counter_features.html"));
+  waiter->Wait();
+  NavigateToUntrackedUrl();
+
+  histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramName,
+      static_cast<int32_t>(WebFeature::kMixedContentAudio), 1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramName,
+      static_cast<int32_t>(WebFeature::kMixedContentImage), 1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramName,
+      static_cast<int32_t>(WebFeature::kMixedContentVideo), 1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramName,
+      static_cast<int32_t>(WebFeature::kPageVisits), 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                        UseCounterFeaturesInNonSecureMainFrame) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1284,6 +1318,46 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
           static_cast<int64_t>(WebFeature::kDataUriHasOctothorpe),
           static_cast<int64_t>(
               WebFeature::kApplicationCacheManifestSelectSecureOrigin)));
+}
+
+// Test UseCounter UKM mixed content features observed.
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       UseCounterUkmMixedContentFeaturesLogged) {
+  // As with UseCounterFeaturesMixedContent, load on a real HTTPS server to
+  // trigger mixed content.
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  auto waiter = CreatePageLoadMetricsWaiter();
+  waiter->AddPageExpectation(TimingField::LOAD_EVENT);
+  GURL url =
+      https_server.GetURL("/page_load_metrics/use_counter_features.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  waiter->Wait();
+  NavigateToUntrackedUrl();
+
+  const auto& entries =
+      test_ukm_recorder_->GetEntriesByName(internal::kUkmUseCounterEventName);
+  EXPECT_EQ(6u, entries.size());
+  std::vector<int64_t> ukm_features;
+  for (const auto* entry : entries) {
+    test_ukm_recorder_->ExpectEntrySourceHasUrl(entry, url);
+    const auto* metric =
+        test_ukm_recorder_->FindMetric(entry, internal::kUkmUseCounterFeature);
+    EXPECT_TRUE(metric);
+    ukm_features.push_back(metric->value);
+  }
+  EXPECT_THAT(ukm_features,
+              UnorderedElementsAre(
+                  static_cast<int64_t>(WebFeature::kNavigatorVibrate),
+                  static_cast<int64_t>(WebFeature::kDataUriHasOctothorpe),
+                  static_cast<int64_t>(
+                      WebFeature::kApplicationCacheManifestSelectSecureOrigin),
+                  static_cast<int64_t>(WebFeature::kMixedContentImage),
+                  static_cast<int64_t>(WebFeature::kMixedContentAudio),
+                  static_cast<int64_t>(WebFeature::kMixedContentVideo)));
 }
 
 // Test UseCounter Features observed in a child frame are recorded, exactly
