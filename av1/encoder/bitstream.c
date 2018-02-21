@@ -4027,6 +4027,10 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   aom_wb_write_bit(wb, frame_size_override_flag);
 #endif
 
+#if CONFIG_FRAME_REFS_SIGNALING
+  cm->frame_refs_short_signaling = 0;
+#endif  // CONFIG_FRAME_REFS_SIGNALING
+
   if (cm->frame_type == KEY_FRAME) {
 #if CONFIG_FRAME_SIZE
     write_frame_size(cm, frame_size_override_flag, wb);
@@ -4103,10 +4107,34 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       cm->is_reference_frame = 0;
     }
 
+#if CONFIG_FRAME_REFS_SIGNALING
+    // TODO(zoeliu@google.com): To complete the encoder-side implementation
+    // for the scenario cm->frame_refs_short_signaling == 1.
+    assert(cm->frame_refs_short_signaling == 0);
+    // NOTE: Error resilient mode turns off frame_refs_short_signaling
+    //       automatically.
+    if (!cm->error_resilient_mode)
+      aom_wb_write_bit(wb, cm->frame_refs_short_signaling);
+    else
+      assert(cm->frame_refs_short_signaling == 0);
+
+    if (cm->frame_refs_short_signaling) {
+      assert(get_ref_frame_map_idx(cpi, LAST_FRAME) != INVALID_IDX);
+      aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, LAST_FRAME),
+                           REF_FRAMES_LOG2);
+      assert(get_ref_frame_map_idx(cpi, GOLDEN_FRAME) != INVALID_IDX);
+      aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, GOLDEN_FRAME),
+                           REF_FRAMES_LOG2);
+    }
+#endif  // CONFIG_FRAME_REFS_SIGNALING
+
     for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
       assert(get_ref_frame_map_idx(cpi, ref_frame) != INVALID_IDX);
-      aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, ref_frame),
-                           REF_FRAMES_LOG2);
+#if CONFIG_FRAME_REFS_SIGNALING
+      if (!cm->frame_refs_short_signaling)
+#endif  // CONFIG_FRAME_REFS_SIGNALING
+        aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, ref_frame),
+                             REF_FRAMES_LOG2);
       if (cm->frame_type == S_FRAME) {
         assert(cm->ref_frame_sign_bias[ref_frame] == 0);
       }
