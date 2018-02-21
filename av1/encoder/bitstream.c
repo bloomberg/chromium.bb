@@ -3869,7 +3869,8 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
 #endif
 }
 
-#else
+#else  // CONFIG_OBU
+
 // New function based on HLS R18
 static void write_uncompressed_header_obu(AV1_COMP *cpi,
 #if CONFIG_EXT_TILE
@@ -4043,8 +4044,9 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       aom_wb_write_literal(wb, cm->cdf_update_mode, 2);
 #endif  // CONFIG_CDF_UPDATE_MODE
     }
-  } else if (cm->frame_type == INTER_FRAME) {
+  } else if (cm->frame_type == INTER_FRAME || cm->frame_type == S_FRAME) {
     MV_REFERENCE_FRAME ref_frame;
+
 #if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
     if (!cm->error_resilient_mode) {
       aom_wb_write_bit(wb, cm->reset_frame_context != RESET_FRAME_CONTEXT_NONE);
@@ -4054,8 +4056,10 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     }
 #endif
 
-    cpi->refresh_frame_mask = get_refresh_mask(cpi);
-    aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
+    if (cm->frame_type == INTER_FRAME) {
+      cpi->refresh_frame_mask = get_refresh_mask(cpi);
+      aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
+    }
 
     if (!cpi->refresh_frame_mask) {
       // NOTE: "cpi->refresh_frame_mask == 0" indicates that the coded frame
@@ -4067,6 +4071,9 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       assert(get_ref_frame_map_idx(cpi, ref_frame) != INVALID_IDX);
       aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, ref_frame),
                            REF_FRAMES_LOG2);
+      if (cm->frame_type == S_FRAME) {
+        assert(cm->ref_frame_sign_bias[ref_frame] == 0);
+      }
 #if CONFIG_REFERENCE_BUFFER
       if (cm->seq_params.frame_id_numbers_present_flag) {
         int i = get_ref_frame_map_idx(cpi, ref_frame);
@@ -4104,64 +4111,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 #else
     aom_wb_write_bit(wb, cm->allow_high_precision_mv);
 #endif
-    fix_interp_filter(cm, cpi->td.counts);
-    write_frame_interp_filter(cm->interp_filter, wb);
-    if (frame_might_use_prev_frame_mvs(cm)) {
-      aom_wb_write_bit(wb, cm->use_ref_frame_mvs);
-    }
-  } else if (cm->frame_type == S_FRAME) {
-    MV_REFERENCE_FRAME ref_frame;
-
-#if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
-    if (!cm->error_resilient_mode) {
-      aom_wb_write_bit(wb, cm->reset_frame_context != RESET_FRAME_CONTEXT_NONE);
-      if (cm->reset_frame_context != RESET_FRAME_CONTEXT_NONE)
-        aom_wb_write_bit(wb,
-                         cm->reset_frame_context == RESET_FRAME_CONTEXT_ALL);
-    }
-#endif
-
-    if (!cpi->refresh_frame_mask) {
-      // NOTE: "cpi->refresh_frame_mask == 0" indicates that the coded frame
-      //       will not be used as a reference
-      cm->is_reference_frame = 0;
-    }
-
-    for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-      assert(get_ref_frame_map_idx(cpi, ref_frame) != INVALID_IDX);
-      aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, ref_frame),
-                           REF_FRAMES_LOG2);
-      assert(cm->ref_frame_sign_bias[ref_frame] == 0);
-#if CONFIG_REFERENCE_BUFFER
-      if (cm->seq_params.frame_id_numbers_present_flag) {
-        int i = get_ref_frame_map_idx(cpi, ref_frame);
-        int frame_id_len = cm->seq_params.frame_id_length;
-        int diff_len = cm->seq_params.delta_frame_id_length;
-        int delta_frame_id_minus1 =
-            ((cm->current_frame_id - cm->ref_frame_id[i] +
-              (1 << frame_id_len)) %
-             (1 << frame_id_len)) -
-            1;
-        if (delta_frame_id_minus1 < 0 ||
-            delta_frame_id_minus1 >= (1 << diff_len))
-          cm->invalid_delta_frame_id_minus1 = 1;
-        aom_wb_write_literal(wb, delta_frame_id_minus1, diff_len);
-      }
-#endif  // CONFIG_REFERENCE_BUFFER
-    }
-
-#if CONFIG_FRAME_SIZE
-    if (cm->error_resilient_mode == 0 && frame_size_override_flag) {
-      write_frame_size_with_refs(cpi, wb);
-    } else {
-      write_frame_size(cm, frame_size_override_flag, wb);
-    }
-#else
-    write_frame_size_with_refs(cpi, wb);
-#endif
-
-    aom_wb_write_bit(wb, cm->allow_high_precision_mv);
-
     fix_interp_filter(cm, cpi->td.counts);
     write_frame_interp_filter(cm->interp_filter, wb);
     if (frame_might_use_prev_frame_mvs(cm)) {
