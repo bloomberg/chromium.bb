@@ -984,6 +984,9 @@ void GraphicsLayer::SetSize(const FloatSize& size) {
 
   size_ = clamped_size;
 
+  // Invalidate the layer as a DisplayItemClient.
+  SetDisplayItemsUncached();
+
   layer_->Layer()->SetBounds(FlooredIntSize(size_));
   // Note that we don't resize m_contentsLayer. It's up the caller to do that.
 }
