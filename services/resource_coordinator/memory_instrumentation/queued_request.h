@@ -105,6 +105,10 @@ struct QueuedRequest {
   int failed_memory_dump_count = 0;
   bool dump_in_progress = false;
 
+  // This field is set to |true| before a heap dump is requested, and set to
+  // |false| after the heap dump has been added to the trace.
+  bool heap_dump_in_progress = false;
+
   // The time we started handling the request (does not including queuing
   // time).
   base::Time start_time;

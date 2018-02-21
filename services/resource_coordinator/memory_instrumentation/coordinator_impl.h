@@ -70,6 +70,7 @@ class CoordinatorImpl : public Coordinator,
       base::trace_event::MemoryDumpType,
       base::trace_event::MemoryDumpLevelOfDetail,
       const RequestGlobalMemoryDumpAndAppendToTraceCallback&) override;
+  void RegisterHeapProfiler(mojom::HeapProfilerPtr heap_profiler) override;
 
   // mojom::HeapProfilerHelper implementation.
   void GetVmRegionsForHeapProfiler(
@@ -129,10 +130,16 @@ class CoordinatorImpl : public Coordinator,
 
   void FinalizeVmRegionDumpIfAllManagersReplied(uint64_t dump_guid);
 
+  // Callback of DumpProcessesForTracing.
+  void OnDumpProcessesForTracing(
+      uint64_t dump_guid,
+      std::vector<mojom::SharedBufferWithSizePtr> buffers);
+
   void RemovePendingResponse(mojom::ClientProcess*,
                              QueuedRequest::PendingResponse::Type);
 
   void OnQueuedRequestTimedOut(uint64_t dump_guid);
+  void OnHeapDumpTimeOut(uint64_t dump_guid);
 
   void PerformNextQueuedGlobalMemoryDump();
   void FinalizeGlobalMemoryDumpIfAllManagersReplied();
@@ -186,6 +193,9 @@ class CoordinatorImpl : public Coordinator,
 
   // Timeout for registered client processes to respond to dump requests.
   base::TimeDelta client_process_timeout_;
+
+  // When not null, can be queried for heap dumps.
+  mojom::HeapProfilerPtr heap_profiler_;
 
   THREAD_CHECKER(thread_checker_);
   DISALLOW_COPY_AND_ASSIGN(CoordinatorImpl);

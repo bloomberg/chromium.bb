@@ -14,7 +14,8 @@
 
 namespace profiling {
 
-ProfilingService::ProfilingService() : binding_(this), weak_factory_(this) {}
+ProfilingService::ProfilingService()
+    : binding_(this), heap_profiler_binding_(this), weak_factory_(this) {}
 
 ProfilingService::~ProfilingService() {}
 
@@ -25,6 +26,8 @@ std::unique_ptr<service_manager::Service> ProfilingService::CreateService() {
 void ProfilingService::OnStart() {
   registry_.AddInterface(base::Bind(
       &ProfilingService::OnProfilingServiceRequest, base::Unretained(this)));
+  registry_.AddInterface(base::Bind(&ProfilingService::OnHeapProfilerRequest,
+                                    base::Unretained(this)));
 }
 
 void ProfilingService::OnBindInterface(
@@ -37,6 +40,11 @@ void ProfilingService::OnBindInterface(
 void ProfilingService::OnProfilingServiceRequest(
     mojom::ProfilingServiceRequest request) {
   binding_.Bind(std::move(request));
+}
+
+void ProfilingService::OnHeapProfilerRequest(
+    memory_instrumentation::mojom::HeapProfilerRequest request) {
+  heap_profiler_binding_.Bind(std::move(request));
 }
 
 void ProfilingService::AddProfilingClient(
@@ -52,10 +60,17 @@ void ProfilingService::AddProfilingClient(
                                       process_type, std::move(params));
 }
 
+void ProfilingService::SetKeepSmallAllocations(bool keep_small_allocations) {
+  keep_small_allocations_ = keep_small_allocations;
+}
+
+void ProfilingService::GetProfiledPids(GetProfiledPidsCallback callback) {
+  std::move(callback).Run(connection_manager_.GetConnectionPids());
+}
+
 void ProfilingService::DumpProcessesForTracing(
-    bool keep_small_allocations,
     bool strip_path_from_mapped_files,
-    DumpProcessesForTracingCallback callback) {
+    const DumpProcessesForTracingCallback& callback) {
   if (!helper_) {
     context()->connector()->BindInterface(
         resource_coordinator::mojom::kServiceName, &helper_);
@@ -65,7 +80,7 @@ void ProfilingService::DumpProcessesForTracing(
       connection_manager_.GetConnectionPidsThatNeedVmRegions();
   if (pids.empty()) {
     connection_manager_.DumpProcessesForTracing(
-        keep_small_allocations, strip_path_from_mapped_files,
+        keep_small_allocations_, strip_path_from_mapped_files,
         std::move(callback), VmRegions());
   } else {
     // Need a memory map to make sense of the dump. The dump will be triggered
@@ -74,23 +89,18 @@ void ProfilingService::DumpProcessesForTracing(
         pids,
         base::Bind(
             &ProfilingService::OnGetVmRegionsCompleteForDumpProcessesForTracing,
-            weak_factory_.GetWeakPtr(), keep_small_allocations,
-            strip_path_from_mapped_files, base::Passed(&callback)));
+            weak_factory_.GetWeakPtr(), strip_path_from_mapped_files,
+            callback));
   }
 }
 
-void ProfilingService::GetProfiledPids(GetProfiledPidsCallback callback) {
-  std::move(callback).Run(connection_manager_.GetConnectionPids());
-}
-
 void ProfilingService::OnGetVmRegionsCompleteForDumpProcessesForTracing(
-    bool keep_small_allocations,
     bool strip_path_from_mapped_files,
-    mojom::ProfilingService::DumpProcessesForTracingCallback callback,
+    const DumpProcessesForTracingCallback& callback,
     VmRegions vm_regions) {
   connection_manager_.DumpProcessesForTracing(
-      keep_small_allocations, strip_path_from_mapped_files, std::move(callback),
-      std::move(vm_regions));
+      keep_small_allocations_, strip_path_from_mapped_files,
+      std::move(callback), std::move(vm_regions));
 }
 
 }  // namespace profiling
