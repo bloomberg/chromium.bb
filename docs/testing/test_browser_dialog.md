@@ -77,16 +77,16 @@ List the available pieces of UI with
 E.g. `FooUiTest.InvokeUi_default` should be listed. To show the UI
 interactively, run
 
-    $ ./browser_tests --gtest_filter=BrowserUiTest.Invoke --interactive \
-      --ui=FooUiTest.InvokeUi_default
+    $ ./browser_tests --gtest_filter=BrowserUiTest.Invoke \
+      --test-launcher-interactive --ui=FooUiTest.InvokeUi_default
 
 ### Implementation
 
 `BrowserUiTest.Invoke` searches for gtests that have "`InvokeUi_`"  in their
 names, so they can be collected in a list. Providing a `--ui` argument will
-invoke that test case in a subprocess. Including `--interactive` will set up an
-environment for that subprocess that allows interactivity, e.g., to take
-screenshots. The test ends once the UI is dismissed.
+invoke that test case in a subprocess. Including `--test-launcher-interactive`
+will set up an environment for that subprocess that allows interactivity, e.g.,
+to take screenshots. The test ends once the UI is dismissed.
 
 The `FooUiTest.InvokeUi_default` test case **will still be run in the usual
 browser_tests test suite**. Ensure it passes, and isn’t flaky. This will
@@ -274,7 +274,8 @@ SUCCESS: all tests passed.
 ```
 
 **$ ./out/gn_Debug/browser_tests --gtest_filter=BrowserUiTest.Invoke
---dialog=CardUnmaskPromptViewBrowserTest.InvokeUi_expired --interactive**
+--ui=CardUnmaskPromptViewBrowserTest.InvokeUi_expired
+--test-launcher-interactive**
 ```
 /*
  * Output as above, except the test are not interleaved, and the browser window
