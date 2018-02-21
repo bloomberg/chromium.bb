@@ -110,9 +110,6 @@ class MockNetworkContext final : public network::mojom::NetworkContext {
   // network::mojom::NetworkContext implementation:
   void CreateURLLoaderFactory(network::mojom::URLLoaderFactoryRequest request,
                               uint32_t process_id) override {}
-  void HandleViewCacheRequest(
-      const GURL& url,
-      network::mojom::URLLoaderClientPtr client) override {}
   void GetCookieManager(network::mojom::CookieManagerRequest request) override {
   }
   void GetRestrictedCookieManager(

@@ -95,8 +95,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // mojom::NetworkContext implementation:
   void CreateURLLoaderFactory(mojom::URLLoaderFactoryRequest request,
                               uint32_t process_id) override;
-  void HandleViewCacheRequest(const GURL& url,
-                              mojom::URLLoaderClientPtr client) override;
   void GetCookieManager(mojom::CookieManagerRequest request) override;
   void GetRestrictedCookieManager(mojom::RestrictedCookieManagerRequest request,
                                   int32_t render_process_id,

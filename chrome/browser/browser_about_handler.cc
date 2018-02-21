@@ -65,11 +65,8 @@ bool WillHandleBrowserAboutURL(GURL* url,
   if (host == chrome::kDeprecatedChromeUIHistoryFrameHost)
     host = chrome::kChromeUIHistoryHost;
 
-  // Replace cache with view-http-cache.
-  if (host == chrome::kChromeUICacheHost) {
-    host = content::kChromeUINetworkViewCacheHost;
-  // Replace sync with sync-internals (for legacy reasons).
-  } else if (host == chrome::kChromeUISyncHost) {
+  if (host == chrome::kChromeUISyncHost) {
+    // Replace sync with sync-internals (for legacy reasons).
     host = chrome::kChromeUISyncInternalsHost;
 // Redirect chrome://extensions, chrome://extensions-frame, and
 // chrome://settings/extensions all to chrome://extensions and forward path.

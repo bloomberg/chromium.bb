@@ -31,7 +31,6 @@ extern const char kChromeUIAppsURL[];
 extern const char kChromeUIBluetoothInternalsHost[];
 extern const char kChromeUIBookmarksHost[];
 extern const char kChromeUIBookmarksURL[];
-extern const char kChromeUICacheHost[];
 extern const char kChromeUICertificateViewerDialogHost[];
 extern const char kChromeUICertificateViewerDialogURL[];
 extern const char kChromeUICertificateViewerHost[];
