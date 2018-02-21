@@ -473,7 +473,12 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source,
 #if defined(OS_CHROMEOS)
   if (AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile)) {
     clear_cookies_summary_msg_id =
-        IDS_SETTINGS_CLEAR_COOKIES_AND_SITE_DATA_MIRROR_SUMMARY_BASIC;
+        IDS_SETTINGS_CLEAR_COOKIES_AND_SITE_DATA_SUMMARY_BASIC_WITH_EXCEPTION;
+  }
+#else  // !defined(OS_CHROMEOS)
+  if (signin::IsDiceEnabledForProfile(profile->GetPrefs())) {
+    clear_cookies_summary_msg_id =
+        IDS_SETTINGS_CLEAR_COOKIES_AND_SITE_DATA_SUMMARY_BASIC_WITH_EXCEPTION;
   }
 #endif
 
