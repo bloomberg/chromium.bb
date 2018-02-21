@@ -30,6 +30,9 @@ static int div_mult[64] = {
 // TODO(jingning): Consider the use of lookup table for (num / den)
 // altogether.
 static void get_mv_projection(MV *output, MV ref, int num, int den) {
+  den = AOMMIN(den, MAX_FRAME_DISTANCE);
+  num = num > 0 ? AOMMIN(num, MAX_FRAME_DISTANCE)
+                : AOMMAX(num, -MAX_FRAME_DISTANCE);
   output->row =
       (int16_t)(ROUND_POWER_OF_TWO_SIGNED(ref.row * num * div_mult[den], 14));
   output->col =
@@ -1651,9 +1654,16 @@ static int motion_field_projection(AV1_COMMON *cm, MV_REFERENCE_FRAME ref_frame,
         int mi_r, mi_c;
         const int ref_frame_offset = ref_offset[mv_ref->ref_frame[dir & 0x01]];
 
-        get_mv_projection(&this_mv.as_mv, fwd_mv, ref_to_cur, ref_frame_offset);
-        int pos_valid = get_block_position(cm, &mi_r, &mi_c, blk_row, blk_col,
-                                           this_mv.as_mv, dir >> 1);
+        int pos_valid = abs(ref_frame_offset) < MAX_FRAME_DISTANCE &&
+                        abs(ref_to_cur) < MAX_FRAME_DISTANCE;
+
+        if (pos_valid) {
+          get_mv_projection(&this_mv.as_mv, fwd_mv, ref_to_cur,
+                            ref_frame_offset);
+          pos_valid = get_block_position(cm, &mi_r, &mi_c, blk_row, blk_col,
+                                         this_mv.as_mv, dir >> 1);
+        }
+
         if (pos_valid) {
           int mi_offset = mi_r * (cm->mi_stride >> 1) + mi_c;
 
