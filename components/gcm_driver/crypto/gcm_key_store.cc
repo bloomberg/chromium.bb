@@ -22,6 +22,9 @@ namespace gcm {
 
 namespace {
 
+using EntryVectorType =
+    leveldb_proto::ProtoDatabase<EncryptionData>::KeyEntryVector;
+
 // Statistics are logged to UMA with this string as part of histogram name. They
 // can all be found under LevelDB.*.GCMKeyStore. Changing this needs to
 // synchronize with histograms.xml, AND will also become incompatible with older
@@ -164,9 +167,6 @@ void GCMKeyStore::CreateKeysAfterInitialize(
   // {Get/Create/Remove}Keys can see them.
   key_data_[app_id][authorized_entity] = {key->Copy(), auth_secret};
 
-  using EntryVectorType =
-      leveldb_proto::ProtoDatabase<EncryptionData>::KeyEntryVector;
-
   std::unique_ptr<EntryVectorType> entries_to_save(new EntryVectorType());
   std::unique_ptr<std::vector<std::string>> keys_to_remove(
       new std::vector<std::string>());
@@ -187,7 +187,7 @@ void GCMKeyStore::DidStoreKeys(std::unique_ptr<crypto::ECPrivateKey> pair,
   UMA_HISTOGRAM_BOOLEAN("GCM.Crypto.CreateKeySuccessRate", success);
 
   if (!success) {
-    LOG(ERROR) << "Unable to store the created key in the GCM Key Store.";
+    DVLOG(1) << "Unable to store the created key in the GCM Key Store.";
 
     // Our cache is now inconsistent. Reject requests until restarted.
     state_ = State::FAILED;
@@ -218,9 +218,6 @@ void GCMKeyStore::RemoveKeysAfterInitialize(
     std::move(callback).Run();
     return;
   }
-
-  using EntryVectorType =
-      leveldb_proto::ProtoDatabase<EncryptionData>::KeyEntryVector;
 
   std::unique_ptr<EntryVectorType> entries_to_save(new EntryVectorType());
   std::unique_ptr<std::vector<std::string>> keys_to_remove(
@@ -260,13 +257,27 @@ void GCMKeyStore::DidRemoveKeys(base::OnceClosure callback, bool success) {
   UMA_HISTOGRAM_BOOLEAN("GCM.Crypto.RemoveKeySuccessRate", success);
 
   if (!success) {
-    LOG(ERROR) << "Unable to delete a key from the GCM Key Store.";
+    DVLOG(1) << "Unable to delete a key from the GCM Key Store.";
 
     // Our cache is now inconsistent. Reject requests until restarted.
     state_ = State::FAILED;
   }
 
   std::move(callback).Run();
+}
+
+void GCMKeyStore::DidUpgradeDatabase(bool success) {
+  UMA_HISTOGRAM_BOOLEAN("GCM.Crypto.GCMDatabaseUpgradeResult", success);
+  if (!success) {
+    DVLOG(1) << "Unable to upgrade the GCM Key Store database.";
+    // Our cache is now inconsistent. Reject requests until restarted.
+    state_ = State::FAILED;
+    delayed_task_controller_.SetReady();
+    return;
+  }
+
+  database_->LoadEntries(
+      base::BindOnce(&GCMKeyStore::DidLoadKeys, weak_factory_.GetWeakPtr()));
 }
 
 void GCMKeyStore::LazyInitialize(base::OnceClosure done_closure) {
@@ -305,6 +316,41 @@ void GCMKeyStore::DidInitialize(bool success) {
       base::BindOnce(&GCMKeyStore::DidLoadKeys, weak_factory_.GetWeakPtr()));
 }
 
+void GCMKeyStore::UpgradeDatabase(
+    std::unique_ptr<std::vector<EncryptionData>> entries) {
+  std::unique_ptr<EntryVectorType> entries_to_save =
+      std::make_unique<EntryVectorType>();
+  std::unique_ptr<std::vector<std::string>> keys_to_remove =
+      std::make_unique<std::vector<std::string>>();
+
+  // Loop over entries, create list of database entries to overwrite.
+  for (EncryptionData& entry : *entries) {
+    if (!entry.keys_size())
+      continue;
+    std::string decrypted_private_key;
+    if (!DecryptPrivateKey(entry.keys(0).private_key(),
+                           &decrypted_private_key)) {
+      DVLOG(1) << "Unable to decrypt private key: "
+               << entry.keys(0).private_key();
+      state_ = State::FAILED;
+      delayed_task_controller_.SetReady();
+      UMA_HISTOGRAM_BOOLEAN("GCM.Crypto.GCMDatabaseUpgradeResult",
+                            false /* sucess */);
+      return;
+    }
+
+    entry.set_private_key(decrypted_private_key);
+    entry.clear_keys();
+    entries_to_save->push_back(std::make_pair(
+        DatabaseKey(entry.app_id(), entry.authorized_entity()), entry));
+  }
+
+  database_->UpdateEntries(std::move(entries_to_save),
+                           std::move(keys_to_remove),
+                           base::BindOnce(&GCMKeyStore::DidUpgradeDatabase,
+                                          weak_factory_.GetWeakPtr()));
+}
+
 void GCMKeyStore::DidLoadKeys(
     bool success,
     std::unique_ptr<std::vector<EncryptionData>> entries) {
@@ -323,19 +369,18 @@ void GCMKeyStore::DidLoadKeys(
       authorized_entity = entry.authorized_entity();
     std::unique_ptr<crypto::ECPrivateKey> key;
 
-    // TODO(nator): Remove the old format EncryptionData from the database
-    // and update with the new format.
     // The old format of EncryptionData has a KeyPair in it. Previously
     // we used to cache the key pair and auth secret in key_data_.
     // The new code adds the pair {ECPrivateKey, auth_secret} to
     // key_data_ instead.
     if (entry.keys_size()) {
-      // Old format of EncryptionData. Create an ECPrivateKey from it.
-      std::string private_key_str = entry.keys(0).private_key();
-      key = crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
-          std::vector<uint8_t>(
-              private_key_str.data(),
-              private_key_str.data() + private_key_str.size()));
+      if (state_ == State::FAILED)
+        return;
+
+      // Old format of EncryptionData. Upgrade database so there are no such
+      // entries. We'll reload keys from the database once this is done.
+      UpgradeDatabase(std::move(entries));
+      return;
     } else {
       std::string private_key_str = entry.private_key();
       if (private_key_str.empty())
@@ -352,6 +397,22 @@ void GCMKeyStore::DidLoadKeys(
   state_ = State::INITIALIZED;
 
   delayed_task_controller_.SetReady();
+}
+
+bool GCMKeyStore::DecryptPrivateKey(const std::string& to_decrypt,
+                                    std::string* decrypted) {
+  DCHECK(decrypted);
+  std::vector<uint8_t> to_decrypt_vector(to_decrypt.begin(), to_decrypt.end());
+  std::unique_ptr<crypto::ECPrivateKey> key_to_decrypt =
+      crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
+          to_decrypt_vector);
+  if (!key_to_decrypt)
+    return false;
+  std::vector<uint8_t> decrypted_vector;
+  if (!key_to_decrypt->ExportPrivateKey(&decrypted_vector))
+    return false;
+  decrypted->assign(decrypted_vector.begin(), decrypted_vector.end());
+  return true;
 }
 
 }  // namespace gcm
