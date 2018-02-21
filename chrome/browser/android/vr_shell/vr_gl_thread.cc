@@ -359,12 +359,11 @@ void VrGLThread::SetIsExiting() {
       base::Bind(&BrowserUiInterface::SetIsExiting, weak_browser_ui_));
 }
 
-void VrGLThread::SetExitVrPromptEnabled(bool enabled,
-                                        UiUnsupportedMode reason) {
+void VrGLThread::ShowExitVrPrompt(UiUnsupportedMode reason) {
   DCHECK(OnMainThread());
-  task_runner()->PostTask(
-      FROM_HERE, base::Bind(&BrowserUiInterface::SetExitVrPromptEnabled,
-                            weak_browser_ui_, enabled, reason));
+  task_runner()->PostTask(FROM_HERE,
+                          base::BindOnce(&BrowserUiInterface::ShowExitVrPrompt,
+                                         weak_browser_ui_, reason));
 }
 
 void VrGLThread::SetSpeechRecognitionEnabled(bool enabled) {

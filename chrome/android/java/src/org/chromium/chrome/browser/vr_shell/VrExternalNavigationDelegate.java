@@ -18,9 +18,7 @@ public class VrExternalNavigationDelegate extends ExternalNavigationDelegateImpl
     }
 
     @Override
-    public void startActivity(Intent intent, boolean proxy) {
-        VrShellDelegate.showDoffAndExitVr(false);
-    }
+    public void startActivity(Intent intent, boolean proxy) {}
 
     @Override
     public boolean startActivityIfNeeded(Intent intent, boolean proxy) {
@@ -30,13 +28,10 @@ public class VrExternalNavigationDelegate extends ExternalNavigationDelegateImpl
     @Override
     public boolean startIncognitoIntent(Intent intent, String referrerUrl, String fallbackUrl,
             Tab tab, boolean needsToCloseTab, boolean proxy) {
-        VrShellDelegate.showDoffAndExitVr(false);
         return true;
     }
 
     @Override
     public void startFileIntent(
-            Intent intent, String referrerUrl, Tab tab, boolean needsToCloseTab) {
-        VrShellDelegate.showDoffAndExitVr(false);
-    }
+            Intent intent, String referrerUrl, Tab tab, boolean needsToCloseTab) {}
 }

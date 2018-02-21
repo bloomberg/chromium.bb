@@ -32,8 +32,7 @@ class MockBrowserUiInterface : public BrowserUiInterface {
   MOCK_METHOD1(SetAudioCaptureEnabled, void(bool enabled));
   MOCK_METHOD1(SetBluetoothConnected, void(bool enabled));
   MOCK_METHOD1(SetLocationAccessEnabled, void(bool enabled));
-  MOCK_METHOD2(SetExitVrPromptEnabled,
-               void(bool enabled, UiUnsupportedMode reason));
+  MOCK_METHOD1(ShowExitVrPrompt, void(UiUnsupportedMode reason));
   MOCK_METHOD1(SetSpeechRecognitionEnabled, void(bool enabled));
   MOCK_METHOD1(SetRecognitionResult, void(const base::string16& result));
   MOCK_METHOD1(OnSpeechRecognitionStateChanged, void(int new_state));

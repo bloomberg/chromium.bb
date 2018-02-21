@@ -461,7 +461,7 @@ void VrTestContext::ExitCct() {}
 void VrTestContext::OnUnsupportedMode(vr::UiUnsupportedMode mode) {
   if (mode == UiUnsupportedMode::kUnhandledPageInfo ||
       mode == UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission) {
-    ui_->SetExitVrPromptEnabled(true, mode);
+    ui_->ShowExitVrPrompt(mode);
   }
 }
 
@@ -473,7 +473,6 @@ void VrTestContext::OnExitVrPromptResult(vr::ExitVrPromptChoice choice,
       choice == CHOICE_EXIT) {
     voice_search_enabled_ = true;
   }
-  ui_->SetExitVrPromptEnabled(false, UiUnsupportedMode::kCount);
 }
 
 void VrTestContext::OnContentScreenBoundsChanged(const gfx::SizeF& bounds) {}

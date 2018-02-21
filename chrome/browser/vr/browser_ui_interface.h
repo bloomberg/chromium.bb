@@ -32,8 +32,7 @@ class BrowserUiInterface {
   virtual void SetAudioCaptureEnabled(bool enabled) = 0;
   virtual void SetBluetoothConnected(bool enabled) = 0;
   virtual void SetLocationAccessEnabled(bool enabled) = 0;
-  virtual void SetExitVrPromptEnabled(bool enabled,
-                                      UiUnsupportedMode reason) = 0;
+  virtual void ShowExitVrPrompt(UiUnsupportedMode reason) = 0;
   virtual void SetSpeechRecognitionEnabled(bool enabled) = 0;
   virtual void SetRecognitionResult(const base::string16& result) = 0;
   virtual void OnSpeechRecognitionStateChanged(int new_state) = 0;
