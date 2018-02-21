@@ -415,6 +415,7 @@ CrSettingsPeoplePageTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
+    'sync_test_util.js',
     'test_profile_info_browser_proxy.js',
     'test_sync_browser_proxy.js',
     'people_page_test.js',
@@ -424,6 +425,36 @@ CrSettingsPeoplePageTest.prototype = {
 TEST_F('CrSettingsPeoplePageTest', 'All', function() {
   mocha.run();
 });
+
+GEN('#if !defined(OS_CHROMEOS)');
+/**
+ * Test fixture for
+ * chrome/browser/resources/settings/people_page/sync_account_control.html.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsPeoplePageSyncAccountControlTest() {}
+
+CrSettingsPeoplePageSyncAccountControlTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/people_page/sync_account_control.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_browser_proxy.js',
+    'sync_test_util.js',
+    'test_sync_browser_proxy.js',
+    'sync_account_control_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsPeoplePageSyncAccountControlTest', 'All', function() {
+  mocha.run();
+});
+
+GEN('#endif  // !defined(OS_CHROMEOS)');
 
 /**
  * Test fixture for

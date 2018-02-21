@@ -6,6 +6,11 @@
  * 'settings-sync-account-section' is the settings page containing sign-in
  * settings.
  */
+cr.exportPath('settings');
+
+/** @const {number} */
+settings.MAX_SIGNIN_PROMO_IMPRESSION = 10;
+
 Polymer({
   is: 'settings-sync-account-control',
   behaviors: [WebUIListenerBehavior],
@@ -84,7 +89,8 @@ Polymer({
   /** @private */
   onSignedInChanged_: function() {
     if (!this.showingPromo && !this.syncStatus.signedIn &&
-        this.syncBrowserProxy_.getPromoImpressionCount() < 10) {
+        this.syncBrowserProxy_.getPromoImpressionCount() <
+            settings.MAX_SIGNIN_PROMO_IMPRESSION) {
       this.showingPromo = true;
       this.syncBrowserProxy_.incrementPromoImpressionCount();
     } else {
@@ -176,7 +182,7 @@ Polymer({
   onMenuButtonTap_: function() {
     const actionMenu =
         /** @type {!CrActionMenuElement} */ (this.$$('#menu'));
-    actionMenu.showAt(assert(this.$$('#dots')), {
+    actionMenu.showAt(assert(this.$$('#dropdown-arrow')), {
       anchorAlignmentY: AnchorAlignment.AFTER_END,
     });
   },
