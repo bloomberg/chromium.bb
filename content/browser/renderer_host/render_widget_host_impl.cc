@@ -1571,8 +1571,7 @@ void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
   WasResized();
 
   if (touch_emulator_) {
-    touch_emulator_->SetDeviceScaleFactor(
-        view_.get() ? content::GetScaleFactorForView(view_.get()) : 1.0f);
+    touch_emulator_->SetDeviceScaleFactor(GetScaleFactorForView(view_.get()));
   }
 }
 
@@ -2124,9 +2123,8 @@ void RenderWidgetHostImpl::OnAutoscrollEnd() {
 
 TouchEmulator* RenderWidgetHostImpl::GetTouchEmulator() {
   if (!touch_emulator_) {
-    touch_emulator_.reset(new TouchEmulator(
-        this,
-        view_.get() ? content::GetScaleFactorForView(view_.get()) : 1.0f));
+    touch_emulator_.reset(
+        new TouchEmulator(this, GetScaleFactorForView(view_.get())));
   }
   return touch_emulator_.get();
 }
@@ -2917,8 +2915,7 @@ void RenderWidgetHostImpl::SetupInputRouter() {
   }
 
   if (IsUseZoomForDSFEnabled()) {
-    input_router_->SetDeviceScaleFactor(
-        view_.get() ? content::GetScaleFactorForView(view_.get()) : 1.0f);
+    input_router_->SetDeviceScaleFactor(GetScaleFactorForView(view_.get()));
   }
 }
 

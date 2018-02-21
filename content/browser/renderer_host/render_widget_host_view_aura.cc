@@ -456,7 +456,7 @@ void RenderWidgetHostViewAura::InitAsChild(gfx::NativeView parent_view) {
   if (parent_view)
     parent_view->AddChild(GetNativeView());
 
-  device_scale_factor_ = ui::GetScaleFactorForNativeView(window_);
+  device_scale_factor_ = GetDeviceScaleFactor();
 }
 
 void RenderWidgetHostViewAura::InitAsPopup(
@@ -507,7 +507,7 @@ void RenderWidgetHostViewAura::InitAsPopup(
 
   event_filter_for_popup_exit_.reset(new EventFilterForPopupExit(this));
 
-  device_scale_factor_ = ui::GetScaleFactorForNativeView(window_);
+  device_scale_factor_ = GetDeviceScaleFactor();
 }
 
 void RenderWidgetHostViewAura::InitAsFullscreen(
@@ -535,7 +535,7 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
   Show();
   Focus();
 
-  device_scale_factor_ = ui::GetScaleFactorForNativeView(window_);
+  device_scale_factor_ = GetDeviceScaleFactor();
 }
 
 void RenderWidgetHostViewAura::Show() {

@@ -16,8 +16,8 @@ class Size;
 namespace content {
 class RenderWidgetHostView;
 
-// Returns scale factor of the display nearest to |view|.
-// Returns 1.0f if the platform does not support DIP.
+// This is the same as view->GetDeviceScaleFactor(), but will return a best
+// guess when |view| is nullptr.
 CONTENT_EXPORT float GetScaleFactorForView(const RenderWidgetHostView* view);
 
 // Utility functions that convert point/size/rect between DIP and pixel

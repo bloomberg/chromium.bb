@@ -52,6 +52,12 @@ void DisplayUtil::DisplayToScreenInfo(ScreenInfo* screen_info,
 
 // static
 void DisplayUtil::GetDefaultScreenInfo(ScreenInfo* screen_info) {
+  // Some tests are run with no Screen initialized.
+  display::Screen* screen = display::Screen::GetScreen();
+  if (!screen) {
+    *screen_info = ScreenInfo();
+    return;
+  }
 #if defined(OS_MACOSX) || defined(USE_AURA)
   // On macOS, we use the display nearest the nullptr view to return the most
   // recently active screen, instead of the primary screen
@@ -59,10 +65,9 @@ void DisplayUtil::GetDefaultScreenInfo(ScreenInfo* screen_info) {
   // On Aura, this decision may or may not have been taken intentionally, and
   // may or may not have any effect.
   gfx::NativeView null_native_view = nullptr;
-  display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestView(null_native_view);
+  display::Display display = screen->GetDisplayNearestView(null_native_view);
 #else
-  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  display::Display display = screen->GetPrimaryDisplay();
 #endif
   DisplayToScreenInfo(screen_info, display);
 }
@@ -70,15 +75,19 @@ void DisplayUtil::GetDefaultScreenInfo(ScreenInfo* screen_info) {
 // static
 void DisplayUtil::GetNativeViewScreenInfo(ScreenInfo* screen_info,
                                           gfx::NativeView native_view) {
+  // Some tests are run with no Screen initialized.
+  display::Screen* screen = display::Screen::GetScreen();
+  if (!screen) {
+    *screen_info = ScreenInfo();
+    return;
+  }
 #if defined(OS_MACOSX)
   // See previous comment regarding https://crbug.com/357443
-  display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestView(native_view);
+  display::Display display = screen->GetDisplayNearestView(native_view);
 #else
-  display::Display display =
-      native_view
-          ? display::Screen::GetScreen()->GetDisplayNearestView(native_view)
-          : display::Screen::GetScreen()->GetPrimaryDisplay();
+  display::Display display = native_view
+                                 ? screen->GetDisplayNearestView(native_view)
+                                 : screen->GetPrimaryDisplay();
 #endif
   DisplayToScreenInfo(screen_info, display);
 }

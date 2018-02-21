@@ -213,7 +213,6 @@ component("base") {
     "l10n/time_format.h",
     "layout.cc",
     "layout.h",
-    "layout_mac.mm",
     "material_design/material_design_controller.cc",
     "material_design/material_design_controller.h",
     "models/button_menu_item_model.cc",

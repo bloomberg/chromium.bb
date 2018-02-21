@@ -72,8 +72,8 @@ class WebContentsVideoCaptureDevice::FrameTracker
     // that has a different device scale factor while being captured.
     gfx::Size preferred_size;
     if (auto* view = GetCurrentView()) {
-      preferred_size = gfx::ConvertSizeToDIP(
-          ui::GetScaleFactorForNativeView(view->GetNativeView()), capture_size);
+      preferred_size =
+          gfx::ConvertSizeToDIP(view->GetDeviceScaleFactor(), capture_size);
     }
     if (preferred_size.IsEmpty()) {
       preferred_size = capture_size;

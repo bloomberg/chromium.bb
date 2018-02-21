@@ -96,9 +96,8 @@ void RenderWidgetHostViewBase::SetBackgroundColorToDefault() {
 }
 
 gfx::Size RenderWidgetHostViewBase::GetPhysicalBackingSize() const {
-  return gfx::ScaleToCeiledSize(
-      GetRequestedRendererSize(),
-      ui::GetScaleFactorForNativeView(GetNativeView()));
+  return gfx::ScaleToCeiledSize(GetRequestedRendererSize(),
+                                GetDeviceScaleFactor());
 }
 
 bool RenderWidgetHostViewBase::DoBrowserControlsShrinkBlinkSize() const {
@@ -306,6 +305,12 @@ void RenderWidgetHostViewBase::FocusedNodeTouched(
 
 void RenderWidgetHostViewBase::GetScreenInfo(ScreenInfo* screen_info) const {
   DisplayUtil::GetNativeViewScreenInfo(screen_info, GetNativeView());
+}
+
+float RenderWidgetHostViewBase::GetDeviceScaleFactor() const {
+  ScreenInfo screen_info;
+  GetScreenInfo(&screen_info);
+  return screen_info.device_scale_factor;
 }
 
 uint32_t RenderWidgetHostViewBase::RendererFrameNumber() {

@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/dip_util.h"
 
+#include "content/browser/renderer_host/display_util.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -17,8 +18,11 @@
 namespace content {
 
 float GetScaleFactorForView(const RenderWidgetHostView* view) {
-  return ui::GetScaleFactorForNativeView(view ? view->GetNativeView()
-                                              : nullptr);
+  if (view)
+    return view->GetDeviceScaleFactor();
+  ScreenInfo screen_info;
+  DisplayUtil::GetDefaultScreenInfo(&screen_info);
+  return screen_info.device_scale_factor;
 }
 
 gfx::Point ConvertViewPointToDIP(const RenderWidgetHostView* view,
