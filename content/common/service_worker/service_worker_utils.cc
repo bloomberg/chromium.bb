@@ -143,7 +143,8 @@ bool ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(
 
 // static
 bool ServiceWorkerUtils::IsServicificationEnabled() {
-  return base::FeatureList::IsEnabled(network::features::kNetworkService);
+  return base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+         base::FeatureList::IsEnabled(features::kServiceWorkerServicification);
 }
 
 // static
