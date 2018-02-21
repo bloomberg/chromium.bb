@@ -100,9 +100,9 @@ void ArcMidisBridge::Connect(mojom::MidisServerRequest request,
       ->GetArcMidisClient()
       ->BootstrapMojoConnection(
           std::move(fd),
-          base::Bind(&ArcMidisBridge::OnBootstrapMojoConnection,
-                     weak_factory_.GetWeakPtr(), base::Passed(&request),
-                     base::Passed(&client_ptr)));
+          base::BindOnce(&ArcMidisBridge::OnBootstrapMojoConnection,
+                         weak_factory_.GetWeakPtr(), std::move(request),
+                         std::move(client_ptr)));
 }
 
 }  // namespace arc

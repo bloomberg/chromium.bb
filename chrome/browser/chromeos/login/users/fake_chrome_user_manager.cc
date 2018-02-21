@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 
 #include <set>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -363,7 +364,7 @@ base::string16 FakeChromeUserManager::GetResourceStringUTF16(
 
 void FakeChromeUserManager::ScheduleResolveLocale(
     const std::string& locale,
-    const base::Closure& on_resolved_callback,
+    base::OnceClosure on_resolved_callback,
     std::string* out_resolved_locale) const {
   NOTIMPLEMENTED();
   return;

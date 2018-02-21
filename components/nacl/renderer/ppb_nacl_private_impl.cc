@@ -268,7 +268,7 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
         process_type_ != kPNaClTranslatorProcessType) {
       // Return an error.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(callback, base::Passed(base::File()), 0, 0));
+          FROM_HERE, base::BindOnce(callback, base::File(), 0, 0));
       return;
     }
 
@@ -284,7 +284,7 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
     if (!ManifestResolveKey(pp_instance_, is_helper_process, key, &url,
                             &pnacl_options)) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(callback, base::Passed(base::File()), 0, 0));
+          FROM_HERE, base::BindOnce(callback, base::File(), 0, 0));
       return;
     }
 

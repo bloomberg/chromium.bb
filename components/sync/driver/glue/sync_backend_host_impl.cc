@@ -71,8 +71,8 @@ void SyncBackendHostImpl::Initialize(InitParams params) {
   registrar_ = params.registrar.get();
 
   sync_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SyncBackendHostCore::DoInitialize, core_,
-                            base::Passed(&params)));
+      FROM_HERE, base::BindOnce(&SyncBackendHostCore::DoInitialize, core_,
+                                std::move(params)));
 }
 
 void SyncBackendHostImpl::TriggerRefresh(const ModelTypeSet& types) {
@@ -162,8 +162,8 @@ void SyncBackendHostImpl::ConfigureDataTypes(ConfigureParams params) {
       base::Bind(&SyncBackendHostCore::DoPurgeDisabledTypes, core_,
                  params.to_purge, params.to_journal, params.to_unapply));
   sync_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SyncBackendHostCore::DoConfigureSyncer, core_,
-                            base::Passed(&params)));
+      FROM_HERE, base::BindOnce(&SyncBackendHostCore::DoConfigureSyncer, core_,
+                                std::move(params)));
 }
 
 void SyncBackendHostImpl::RegisterDirectoryDataType(ModelType type,

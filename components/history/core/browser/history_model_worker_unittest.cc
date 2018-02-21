@@ -35,10 +35,11 @@ class HistoryServiceMock : public history::HistoryService {
     history::HistoryDBTask* task_raw = task.get();
     history_thread_->PostTaskAndReply(
         from_here,
-        base::Bind(base::IgnoreResult(&history::HistoryDBTask::RunOnDBThread),
-                   base::Unretained(task_raw), nullptr, nullptr),
-        base::Bind(&history::HistoryDBTask::DoneRunOnMainThread,
-                   base::Passed(std::move(task))));
+        base::BindOnce(
+            base::IgnoreResult(&history::HistoryDBTask::RunOnDBThread),
+            base::Unretained(task_raw), nullptr, nullptr),
+        base::BindOnce(&history::HistoryDBTask::DoneRunOnMainThread,
+                       std::move(task)));
     return base::CancelableTaskTracker::kBadTaskId;  // Unused.
   }
 
@@ -79,9 +80,9 @@ class HistoryModelWorkerTest : public testing::Test {
   void DoWorkAndWaitUntilDoneOnSyncThread(base::Closure work) {
     sync_thread_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             base::IgnoreResult(&HistoryModelWorker::DoWorkAndWaitUntilDone),
-            worker_, base::Passed(ClosureToWorkCallback(work))));
+            worker_, ClosureToWorkCallback(work)));
     sync_thread_.task_runner()->PostTask(
         FROM_HERE, base::Bind(&base::AtomicFlag::Set,
                               base::Unretained(&sync_thread_unblocked_)));

@@ -108,8 +108,8 @@ ClientDiscardableSharedMemoryManager::ClientDiscardableSharedMemoryManager(
       base::ThreadTaskRunnerHandle::Get());
   mojom::DiscardableSharedMemoryManagerPtrInfo info = manager.PassInterface();
   io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&InitManagerMojoOnIO, manager_mojo_.get(),
-                            base::Passed(&info)));
+      FROM_HERE, base::BindOnce(&InitManagerMojoOnIO, manager_mojo_.get(),
+                                std::move(info)));
 }
 
 ClientDiscardableSharedMemoryManager::~ClientDiscardableSharedMemoryManager() {
@@ -363,9 +363,10 @@ ClientDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
   base::ScopedClosureRunner event_signal_runner(
       base::Bind(&base::WaitableEvent::Signal, base::Unretained(&event)));
   io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ClientDiscardableSharedMemoryManager::AllocateOnIO,
-                            base::Unretained(this), size, id, &handle,
-                            base::Passed(&event_signal_runner)));
+      FROM_HERE,
+      base::BindOnce(&ClientDiscardableSharedMemoryManager::AllocateOnIO,
+                     base::Unretained(this), size, id, &handle,
+                     std::move(event_signal_runner)));
   // Waiting until IPC has finished on the IO thread.
   event.Wait();
   auto memory = std::make_unique<base::DiscardableSharedMemory>(handle);
@@ -382,9 +383,9 @@ void ClientDiscardableSharedMemoryManager::AllocateOnIO(
   (*manager_mojo_)
       ->AllocateLockedDiscardableSharedMemory(
           static_cast<uint32_t>(size), id,
-          base::Bind(
+          base::BindOnce(
               &ClientDiscardableSharedMemoryManager::AllocateCompletedOnIO,
-              base::Unretained(this), handle, base::Passed(&closure_runner)));
+              base::Unretained(this), handle, std::move(closure_runner)));
 }
 
 void ClientDiscardableSharedMemoryManager::AllocateCompletedOnIO(

@@ -126,7 +126,7 @@ class MockTest : public testing::Test {
     message_loop_.task_runner()->PostTask(
         FROM_HERE,
         base::BindOnce(&MockTest::RunResponseCallback, base::Unretained(this),
-                       std::move(*response_callback), base::Passed(&response)));
+                       std::move(*response_callback), std::move(response)));
   }
 
   // Runs the given response callback with the given response.

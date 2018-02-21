@@ -105,9 +105,8 @@ void WebDataRequestManager::RequestCompleted(
   // effectively does a std::move() on |request|!
   scoped_refptr<base::SequencedTaskRunner> task_runner =
       request->GetTaskRunner();
-  auto task =
-      base::BindOnce(&WebDataRequestManager::RequestCompletedOnThread, this,
-                     base::Passed(&request), base::Passed(&result));
+  auto task = base::BindOnce(&WebDataRequestManager::RequestCompletedOnThread,
+                             this, std::move(request), std::move(result));
   if (task_runner)
     task_runner->PostTask(FROM_HERE, std::move(task));
   else

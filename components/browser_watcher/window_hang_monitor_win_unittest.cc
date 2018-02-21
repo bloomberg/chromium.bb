@@ -5,6 +5,7 @@
 #include "components/browser_watcher/window_hang_monitor_win.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/base_paths.h"
 #include "base/base_switches.h"
@@ -266,9 +267,9 @@ class HangMonitorThread {
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     if (!thread_.task_runner()->PostTask(
             FROM_HERE,
-            base::Bind(&HangMonitorThread::StartupOnThread,
-                       base::Unretained(this), base::Passed(std::move(process)),
-                       base::Unretained(&complete)))) {
+            base::BindOnce(&HangMonitorThread::StartupOnThread,
+                           base::Unretained(this), std::move(process),
+                           base::Unretained(&complete)))) {
       return false;
     }
 

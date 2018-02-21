@@ -201,8 +201,8 @@ void ComponentCloudPolicyService::Backend::InitIfNeeded() {
   std::unique_ptr<PolicyBundle> bundle(std::make_unique<PolicyBundle>());
   bundle->CopyFrom(store_.policy());
   service_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ComponentCloudPolicyService::SetPolicy, service_,
-                            base::Passed(&bundle)));
+      FROM_HERE, base::BindOnce(&ComponentCloudPolicyService::SetPolicy,
+                                service_, std::move(bundle)));
 
   initialized_ = true;
 
@@ -232,8 +232,8 @@ void ComponentCloudPolicyService::Backend::
   std::unique_ptr<PolicyBundle> bundle(std::make_unique<PolicyBundle>());
   bundle->CopyFrom(store_.policy());
   service_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ComponentCloudPolicyService::SetPolicy, service_,
-                            base::Passed(&bundle)));
+      FROM_HERE, base::BindOnce(&ComponentCloudPolicyService::SetPolicy,
+                                service_, std::move(bundle)));
 }
 
 void ComponentCloudPolicyService::Backend::UpdateWithLastFetchedPolicy() {
@@ -462,9 +462,9 @@ void ComponentCloudPolicyService::UpdateFromClient() {
   }
 
   backend_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&Backend::SetFetchedPolicy, base::Unretained(backend_.get()),
-                 base::Passed(&valid_responses)));
+      FROM_HERE, base::BindOnce(&Backend::SetFetchedPolicy,
+                                base::Unretained(backend_.get()),
+                                std::move(valid_responses)));
 }
 
 void ComponentCloudPolicyService::UpdateFromSchemaRegistry() {

@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -128,9 +129,9 @@ class TestPreviewsOptOutStore : public PreviewsOptOutStore {
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&RunLoadCallback, callback,
-                   base::Passed(&black_list_item_map_),
-                   base::Passed(&host_indifferent_black_list_item_)));
+        base::BindOnce(&RunLoadCallback, callback,
+                       std::move(black_list_item_map_),
+                       std::move(host_indifferent_black_list_item_)));
   }
 
   void ClearBlackList(base::Time begin_time, base::Time end_time) override {

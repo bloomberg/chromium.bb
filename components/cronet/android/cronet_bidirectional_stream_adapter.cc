@@ -5,6 +5,7 @@
 #include "cronet_bidirectional_stream_adapter.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -112,7 +113,7 @@ void CronetBidirectionalStreamAdapter::SendRequestHeaders(
     const base::android::JavaParamRef<jobject>& jcaller) {
   context_->PostTaskToNetworkThread(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &CronetBidirectionalStreamAdapter::SendRequestHeadersOnNetworkThread,
           base::Unretained(this)));
 }
@@ -150,8 +151,8 @@ jint CronetBidirectionalStreamAdapter::Start(
 
   context_->PostTaskToNetworkThread(
       FROM_HERE,
-      base::Bind(&CronetBidirectionalStreamAdapter::StartOnNetworkThread,
-                 base::Unretained(this), base::Passed(&request_info)));
+      base::BindOnce(&CronetBidirectionalStreamAdapter::StartOnNetworkThread,
+                     base::Unretained(this), std::move(request_info)));
   return 0;
 }
 
@@ -174,8 +175,8 @@ jboolean CronetBidirectionalStreamAdapter::ReadData(
 
   context_->PostTaskToNetworkThread(
       FROM_HERE,
-      base::Bind(&CronetBidirectionalStreamAdapter::ReadDataOnNetworkThread,
-                 base::Unretained(this), read_buffer, remaining_capacity));
+      base::BindOnce(&CronetBidirectionalStreamAdapter::ReadDataOnNetworkThread,
+                     base::Unretained(this), read_buffer, remaining_capacity));
   return JNI_TRUE;
 }
 
@@ -221,9 +222,9 @@ jboolean CronetBidirectionalStreamAdapter::WritevData(
 
   context_->PostTaskToNetworkThread(
       FROM_HERE,
-      base::Bind(&CronetBidirectionalStreamAdapter::WritevDataOnNetworkThread,
-                 base::Unretained(this),
-                 base::Passed(std::move(pending_write_data))));
+      base::BindOnce(
+          &CronetBidirectionalStreamAdapter::WritevDataOnNetworkThread,
+          base::Unretained(this), std::move(pending_write_data)));
   return JNI_TRUE;
 }
 
@@ -238,8 +239,8 @@ void CronetBidirectionalStreamAdapter::Destroy(
   // network thread with the adapter pointer.
   context_->PostTaskToNetworkThread(
       FROM_HERE,
-      base::Bind(&CronetBidirectionalStreamAdapter::DestroyOnNetworkThread,
-                 base::Unretained(this), jsend_on_canceled));
+      base::BindOnce(&CronetBidirectionalStreamAdapter::DestroyOnNetworkThread,
+                     base::Unretained(this), jsend_on_canceled));
 }
 
 void CronetBidirectionalStreamAdapter::OnStreamReady(

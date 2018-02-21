@@ -5,6 +5,7 @@
 #include "components/feature_engagement/internal/in_memory_event_store.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -44,7 +45,7 @@ void InMemoryEventStore::DeleteEvent(const std::string& event_name) {
 void InMemoryEventStore::HandleLoadResult(const OnLoadedCallback& callback,
                                           bool success) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, success, base::Passed(&events_)));
+      FROM_HERE, base::BindOnce(callback, success, std::move(events_)));
   ready_ = success;
 }
 

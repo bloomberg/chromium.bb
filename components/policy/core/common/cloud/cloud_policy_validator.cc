@@ -180,9 +180,9 @@ void CloudPolicyValidatorBase::PostValidationTask(
   const auto task_runner = validator->background_task_runner_;
   task_runner->PostTask(
       FROM_HERE,
-      base::Bind(&CloudPolicyValidatorBase::PerformValidation,
-                 base::Passed(&validator), base::ThreadTaskRunnerHandle::Get(),
-                 completion_callback));
+      base::BindOnce(&CloudPolicyValidatorBase::PerformValidation,
+                     std::move(validator), base::ThreadTaskRunnerHandle::Get(),
+                     completion_callback));
 }
 
 // static
@@ -195,10 +195,8 @@ void CloudPolicyValidatorBase::PerformValidation(
 
   // Report completion on |task_runner|.
   task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(&CloudPolicyValidatorBase::ReportCompletion,
-                 base::Passed(&self),
-                 completion_callback));
+      FROM_HERE, base::BindOnce(&CloudPolicyValidatorBase::ReportCompletion,
+                                std::move(self), completion_callback));
 }
 
 // static

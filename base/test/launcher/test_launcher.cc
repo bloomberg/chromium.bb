@@ -641,7 +641,7 @@ void TestLauncher::LaunchChildGTestProcess(
       FROM_HERE, {MayBlock(), TaskShutdownBehavior::BLOCK_SHUTDOWN},
       BindOnce(&DoLaunchChildTestProcess, new_command_line, timeout, options,
                redirect_stdio, RetainedRef(ThreadTaskRunnerHandle::Get()),
-               base::Passed(std::move(observer))));
+               std::move(observer)));
 }
 
 void TestLauncher::OnTestFinished(const TestResult& original_result) {

@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/barrier_closure.h"
@@ -120,7 +121,7 @@ void OnReadConfigDescriptorHeader(scoped_refptr<UsbDeviceHandle> device_handle,
         UsbControlTransferRecipient::DEVICE, kGetDescriptorRequest,
         kConfigurationDescriptorType << 8 | index, 0, buffer,
         kControlTransferTimeoutMs,
-        base::Bind(&OnReadConfigDescriptor, desc, base::Passed(&closure)));
+        base::BindOnce(&OnReadConfigDescriptor, desc, std::move(closure)));
   } else {
     LOG(ERROR) << "Failed to read length for configuration "
                << static_cast<int>(index) << ".";
@@ -205,7 +206,7 @@ void ReadStringDescriptor(
       UsbControlTransferRecipient::DEVICE, kGetDescriptorRequest,
       kStringDescriptorType << 8 | index, language_id, buffer,
       kControlTransferTimeoutMs,
-      base::Bind(&OnReadStringDescriptor, base::Passed(&callback)));
+      base::BindOnce(&OnReadStringDescriptor, std::move(callback)));
 }
 
 void OnReadLanguageIds(scoped_refptr<UsbDeviceHandle> device_handle,
@@ -500,8 +501,8 @@ void ReadUsbDescriptors(
       UsbTransferDirection::INBOUND, UsbControlTransferType::STANDARD,
       UsbControlTransferRecipient::DEVICE, kGetDescriptorRequest,
       kDeviceDescriptorType << 8, 0, buffer, kControlTransferTimeoutMs,
-      base::Bind(&OnReadDeviceDescriptor, device_handle,
-                 base::Passed(&callback)));
+      base::BindOnce(&OnReadDeviceDescriptor, device_handle,
+                     std::move(callback)));
 }
 
 bool ParseUsbStringDescriptor(const std::vector<uint8_t>& descriptor,

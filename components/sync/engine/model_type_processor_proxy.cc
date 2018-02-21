@@ -21,8 +21,8 @@ ModelTypeProcessorProxy::~ModelTypeProcessorProxy() {}
 
 void ModelTypeProcessorProxy::ConnectSync(std::unique_ptr<CommitQueue> worker) {
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ModelTypeProcessor::ConnectSync, processor_,
-                            base::Passed(std::move(worker))));
+      FROM_HERE, base::BindOnce(&ModelTypeProcessor::ConnectSync, processor_,
+                                std::move(worker)));
 }
 
 void ModelTypeProcessorProxy::DisconnectSync() {

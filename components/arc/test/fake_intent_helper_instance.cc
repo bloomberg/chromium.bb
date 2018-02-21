@@ -103,8 +103,7 @@ void FakeIntentHelperInstance::RequestIntentHandlerList(
   }
   // Post the reply to run asynchronously to match the real implementation.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback), base::Passed(std::move(handlers))));
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(handlers)));
 }
 
 void FakeIntentHelperInstance::RequestUrlHandlerList(

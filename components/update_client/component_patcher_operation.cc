@@ -193,8 +193,8 @@ UnpackerError DeltaUpdateOpPatch::DoParseArguments(
 void DeltaUpdateOpPatch::DoRun(ComponentPatcher::Callback callback) {
   patch::Patch(connector_, operation_, input_abs_path_, patch_abs_path_,
                output_abs_path_,
-               base::Bind(&DeltaUpdateOpPatch::DonePatching, this,
-                          base::Passed(&callback)));
+               base::BindOnce(&DeltaUpdateOpPatch::DonePatching, this,
+                              std::move(callback)));
 }
 
 void DeltaUpdateOpPatch::DonePatching(ComponentPatcher::Callback callback,

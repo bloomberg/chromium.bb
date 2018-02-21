@@ -7,6 +7,7 @@
 
 #include "components/safe_browsing/db/v4_local_database_manager.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind_helpers.h"
@@ -764,9 +765,9 @@ void V4LocalDatabaseManager::ScheduleFullHashCheck(
   // Post on the IO thread to enforce async behavior.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&V4LocalDatabaseManager::PerformFullHashCheck,
-                 weak_factory_.GetWeakPtr(), base::Passed(std::move(check)),
-                 full_hash_to_store_and_hash_prefixes));
+      base::BindOnce(&V4LocalDatabaseManager::PerformFullHashCheck,
+                     weak_factory_.GetWeakPtr(), std::move(check),
+                     full_hash_to_store_and_hash_prefixes));
 }
 
 bool V4LocalDatabaseManager::HandleHashSynchronously(

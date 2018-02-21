@@ -185,7 +185,7 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
     bridge_ = std::make_unique<DeviceInfoSyncBridge>(
         provider_.get(),
         base::BindOnce(&ModelTypeStoreTestUtil::MoveStoreToCallback,
-                       base::Passed(&store_)),
+                       std::move(store_)),
         RecordingModelTypeChangeProcessor::FactoryForBridgeTest(&processor_));
     bridge_->AddObserver(this);
   }

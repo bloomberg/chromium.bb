@@ -5,6 +5,7 @@
 #include "components/viz/service/display/texture_deleter.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -72,8 +73,8 @@ std::unique_ptr<SingleReleaseCallback> TextureDeleter::GetReleaseCallback(
   std::unique_ptr<SingleReleaseCallback> main_callback;
   if (impl_task_runner_) {
     main_callback = SingleReleaseCallback::Create(
-        base::Bind(&PostTaskFromMainToImplThread, impl_task_runner_,
-                   base::Passed(&run_impl_callback)));
+        base::BindOnce(&PostTaskFromMainToImplThread, impl_task_runner_,
+                       std::move(run_impl_callback)));
   } else {
     main_callback = SingleReleaseCallback::Create(std::move(run_impl_callback));
   }

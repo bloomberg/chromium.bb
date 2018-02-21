@@ -244,8 +244,7 @@ void ProtoDatabaseImpl<T>::Destroy(
 
   bool* success = new bool(false);
   task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(DestroyFromTaskRunner, base::Passed(std::move(db_)), success),
+      FROM_HERE, base::BindOnce(DestroyFromTaskRunner, std::move(db_), success),
       base::BindOnce(RunDestroyCallback<T>, std::move(callback),
                      base::Owned(success)));
 }
@@ -278,9 +277,9 @@ void ProtoDatabaseImpl<T>::UpdateEntries(
   bool* success = new bool(false);
   task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(UpdateEntriesFromTaskRunner<T>, base::Unretained(db_.get()),
-                 base::Passed(&entries_to_save), base::Passed(&keys_to_remove),
-                 success),
+      base::BindOnce(UpdateEntriesFromTaskRunner<T>,
+                     base::Unretained(db_.get()), std::move(entries_to_save),
+                     std::move(keys_to_remove), success),
       base::BindOnce(RunUpdateCallback<T>, std::move(callback),
                      base::Owned(success)));
 }
@@ -292,15 +291,15 @@ void ProtoDatabaseImpl<T>::LoadEntries(
   bool* success = new bool(false);
 
   std::unique_ptr<std::vector<T>> entries(new std::vector<T>());
-  // Get this pointer before entries is base::Passed() so we can use it below.
+  // Get this pointer before entries is std::move()'d so we can use it below.
   std::vector<T>* entries_ptr = entries.get();
 
   task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(LoadEntriesFromTaskRunner<T>, base::Unretained(db_.get()),
-                 entries_ptr, success),
+      base::BindOnce(LoadEntriesFromTaskRunner<T>, base::Unretained(db_.get()),
+                     entries_ptr, success),
       base::BindOnce(RunLoadCallback<T>, std::move(callback),
-                     base::Owned(success), base::Passed(&entries)));
+                     base::Owned(success), std::move(entries)));
 }
 
 template <typename T>
@@ -315,7 +314,7 @@ void ProtoDatabaseImpl<T>::LoadKeys(
   task_runner_->PostTaskAndReply(
       FROM_HERE, load_task,
       base::BindOnce(RunLoadKeysCallback<T>, std::move(callback),
-                     base::Passed(&success), base::Passed(&keys)));
+                     std::move(success), std::move(keys)));
 }
 
 template <typename T>
@@ -327,16 +326,16 @@ void ProtoDatabaseImpl<T>::GetEntry(
   bool* found = new bool(false);
 
   std::unique_ptr<T> entry(new T());
-  // Get this pointer before entry is base::Passed() so we can use it below.
+  // Get this pointer before entry is std::move()'d so we can use it below.
   T* entry_ptr = entry.get();
 
   task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(GetEntryFromTaskRunner<T>, base::Unretained(db_.get()), key,
-                 entry_ptr, found, success),
+      base::BindOnce(GetEntryFromTaskRunner<T>, base::Unretained(db_.get()),
+                     key, entry_ptr, found, success),
       base::BindOnce(RunGetCallback<T>, std::move(callback),
                      base::Owned(success), base::Owned(found),
-                     base::Passed(&entry)));
+                     std::move(entry)));
 }
 
 }  // namespace leveldb_proto

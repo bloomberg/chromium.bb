@@ -4,6 +4,8 @@
 
 #include "components/viz/host/server_gpu_memory_buffer_manager.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -60,10 +62,11 @@ void ServerGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
       pending_buffers_.insert(client_id);
       gpu_service_->CreateGpuMemoryBuffer(
           id, size, format, usage, client_id, surface_handle,
-          base::Bind(&ServerGpuMemoryBufferManager::OnGpuMemoryBufferAllocated,
-                     weak_ptr_, client_id,
-                     gfx::BufferSizeForBufferFormat(size, format),
-                     base::Passed(std::move(callback))));
+          base::BindOnce(
+              &ServerGpuMemoryBufferManager::OnGpuMemoryBufferAllocated,
+              weak_ptr_, client_id,
+              gfx::BufferSizeForBufferFormat(size, format),
+              std::move(callback)));
       return;
     }
   }

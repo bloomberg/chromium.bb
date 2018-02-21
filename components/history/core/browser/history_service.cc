@@ -124,8 +124,8 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
       std::unique_ptr<InMemoryHistoryBackend> backend) override {
     // Send the backend to the history service on the main thread.
     service_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&HistoryService::SetInMemoryBackend,
-                              history_service_, base::Passed(&backend)));
+        FROM_HERE, base::BindOnce(&HistoryService::SetInMemoryBackend,
+                                  history_service_, std::move(backend)));
   }
 
   void NotifyFaviconsChanged(const std::set<GURL>& page_urls,
@@ -318,9 +318,10 @@ base::CancelableTaskTracker::TaskId HistoryService::ScheduleDBTask(
   // the current message loop so that we can forward the call to the method
   // HistoryDBTask::DoneRunOnMainThread() in the correct thread.
   backend_task_runner_->PostTask(
-      from_here, base::Bind(&HistoryBackend::ProcessDBTask, history_backend_,
-                            base::Passed(&task),
-                            base::ThreadTaskRunnerHandle::Get(), is_canceled));
+      from_here,
+      base::BindOnce(&HistoryBackend::ProcessDBTask, history_backend_,
+                     std::move(task), base::ThreadTaskRunnerHandle::Get(),
+                     is_canceled));
   return task_id;
 }
 
@@ -790,13 +791,13 @@ void HistoryService::QueryDownloads(const DownloadQueryCallback& callback) {
   std::vector<DownloadRow>* rows = new std::vector<DownloadRow>();
   std::unique_ptr<std::vector<DownloadRow>> scoped_rows(rows);
   // Beware! The first Bind() does not simply |scoped_rows.get()| because
-  // base::Passed(&scoped_rows) nullifies |scoped_rows|, and compilers do not
+  // std::move(scoped_rows) nullifies |scoped_rows|, and compilers do not
   // guarantee that the first Bind's arguments are evaluated before the second
   // Bind's arguments.
   backend_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&HistoryBackend::QueryDownloads, history_backend_, rows),
-      base::Bind(callback, base::Passed(&scoped_rows)));
+      base::BindOnce(&HistoryBackend::QueryDownloads, history_backend_, rows),
+      base::BindOnce(callback, std::move(scoped_rows)));
 }
 
 // Handle updates for a particular download. This is a 'fire and forget'

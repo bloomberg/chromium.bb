@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -767,9 +768,9 @@ void ThreatDetails::OnCacheCollectionReady() {
 
   BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&WebUIInfoSingleton::AddToReportsSent,
-                 base::Unretained(WebUIInfoSingleton::GetInstance()),
-                 base::Passed(&report_)));
+      base::BindOnce(&WebUIInfoSingleton::AddToReportsSent,
+                     base::Unretained(WebUIInfoSingleton::GetInstance()),
+                     std::move(report_)));
   ui_manager_->SendSerializedThreatDetails(serialized);
 
   AllDone();

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 
+#include <utility>
+
 #include "base/task_runner.h"
 #include "chrome/browser/chromeos/login/users/fake_supervised_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -75,6 +77,13 @@ UserImageManager* MockUserManager::GetUserImageManager(
 
 SupervisedUserManager* MockUserManager::GetSupervisedUserManager() {
   return supervised_user_manager_.get();
+}
+
+void MockUserManager::ScheduleResolveLocale(
+    const std::string& locale,
+    base::OnceClosure on_resolved_callback,
+    std::string* out_resolved_locale) const {
+  DoScheduleResolveLocale(locale, &on_resolved_callback, out_resolved_locale);
 }
 
 // Creates a new User instance.

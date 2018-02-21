@@ -1117,14 +1117,15 @@ void UserManagerBase::UpdateUserAccountLocale(const AccountId& account_id,
                                               const std::string& locale) {
   std::unique_ptr<std::string> resolved_locale(new std::string());
   if (!locale.empty() && locale != GetApplicationLocale()) {
-    // base::Passed will nullptr out |resolved_locale|, so cache the underlying
+    // std::move will nullptr out |resolved_locale|, so cache the underlying
     // ptr.
     std::string* raw_resolved_locale = resolved_locale.get();
-    ScheduleResolveLocale(locale,
-                          base::Bind(&UserManagerBase::DoUpdateAccountLocale,
-                                     weak_factory_.GetWeakPtr(), account_id,
-                                     base::Passed(&resolved_locale)),
-                          raw_resolved_locale);
+    ScheduleResolveLocale(
+        locale,
+        base::BindOnce(&UserManagerBase::DoUpdateAccountLocale,
+                       weak_factory_.GetWeakPtr(), account_id,
+                       std::move(resolved_locale)),
+        raw_resolved_locale);
   } else {
     resolved_locale.reset(new std::string(locale));
     DoUpdateAccountLocale(account_id, std::move(resolved_locale));

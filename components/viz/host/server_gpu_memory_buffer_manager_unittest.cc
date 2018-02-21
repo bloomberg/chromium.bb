@@ -4,6 +4,8 @@
 
 #include "components/viz/host/server_gpu_memory_buffer_manager.h"
 
+#include <utility>
+
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -314,8 +316,9 @@ TEST_F(ServerGpuMemoryBufferManagerTest,
   base::Thread diff_thread("DestroyThread");
   ASSERT_TRUE(diff_thread.Start());
   diff_thread.task_runner()->PostTask(
-      FROM_HERE, base::Bind([](std::unique_ptr<gfx::GpuMemoryBuffer> buffer) {},
-                            base::Passed(&buffer)));
+      FROM_HERE,
+      base::BindOnce([](std::unique_ptr<gfx::GpuMemoryBuffer> buffer) {},
+                     std::move(buffer)));
   diff_thread.Stop();
 }
 

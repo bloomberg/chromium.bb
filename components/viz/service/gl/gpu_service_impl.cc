@@ -5,6 +5,7 @@
 #include "components/viz/service/gl/gpu_service_impl.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -221,8 +222,8 @@ void GpuServiceImpl::Bind(mojom::GpuServiceRequest request) {
   if (main_runner_->BelongsToCurrentThread()) {
     bind_task_tracker_.PostTask(
         io_runner_.get(), FROM_HERE,
-        base::Bind(&GpuServiceImpl::Bind, base::Unretained(this),
-                   base::Passed(std::move(request))));
+        base::BindOnce(&GpuServiceImpl::Bind, base::Unretained(this),
+                       std::move(request)));
     return;
   }
   bindings_->AddBinding(this, std::move(request));

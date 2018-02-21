@@ -4,6 +4,8 @@
 
 #include "components/download/internal/background_service/blob_task_proxy.h"
 
+#include <utility>
+
 #include "base/guid.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -64,10 +66,9 @@ void BlobTaskProxy::SaveAsBlobOnIO(std::unique_ptr<std::string> data,
       blob_storage_context_->AddFinishedBlob(std::move(builder));
 
   // Wait for blob data construction complete.
-  auto cb = base::BindRepeating(&BlobTaskProxy::BlobSavedOnIO,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                base::Passed(std::move(callback)));
-  blob_data_handle_->RunOnConstructionComplete(cb);
+  auto cb = base::BindOnce(&BlobTaskProxy::BlobSavedOnIO,
+                           weak_ptr_factory_.GetWeakPtr(), std::move(callback));
+  blob_data_handle_->RunOnConstructionComplete(std::move(cb));
 }
 
 void BlobTaskProxy::BlobSavedOnIO(BlobDataHandleCallback callback,
@@ -75,8 +76,8 @@ void BlobTaskProxy::BlobSavedOnIO(BlobDataHandleCallback callback,
   io_task_runner_->BelongsToCurrentThread();
 
   // Relay BlobDataHandle and |status| back to main thread.
-  auto cb = base::BindOnce(std::move(callback),
-                           base::Passed(std::move(blob_data_handle_)), status);
+  auto cb =
+      base::BindOnce(std::move(callback), std::move(blob_data_handle_), status);
   main_task_runner_->PostTask(FROM_HERE, std::move(cb));
 }
 

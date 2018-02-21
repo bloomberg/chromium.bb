@@ -102,7 +102,7 @@ int BidirectionalStream::Start(const char* url,
   write_end_of_stream_ = end_of_stream;
   PostToNetworkThread(FROM_HERE,
                       base::BindOnce(&BidirectionalStream::StartOnNetworkThread,
-                                     weak_this_, base::Passed(&request_info)));
+                                     weak_this_, std::move(request_info)));
   return 0;
 }
 

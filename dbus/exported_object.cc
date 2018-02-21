@@ -220,12 +220,10 @@ DBusHandlerResult ExportedObject::HandleMessage(
   const base::TimeTicks start_time = base::TimeTicks::Now();
   if (bus_->HasDBusThread()) {
     // Post a task to run the method in the origin thread.
-    bus_->GetOriginTaskRunner()->PostTask(FROM_HERE,
-                                          base::Bind(&ExportedObject::RunMethod,
-                                                     this,
-                                                     iter->second,
-                                                     base::Passed(&method_call),
-                                                     start_time));
+    bus_->GetOriginTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&ExportedObject::RunMethod, this, iter->second,
+                       std::move(method_call), start_time));
   } else {
     // If the D-Bus thread is not used, just call the method directly.
     MethodCall* method = method_call.get();
@@ -259,12 +257,9 @@ void ExportedObject::SendResponse(base::TimeTicks start_time,
   DCHECK(method_call);
   if (bus_->HasDBusThread()) {
     bus_->GetDBusTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&ExportedObject::OnMethodCompleted,
-                   this,
-                   base::Passed(&method_call),
-                   base::Passed(&response),
-                   start_time));
+        FROM_HERE, base::BindOnce(&ExportedObject::OnMethodCompleted, this,
+                                  std::move(method_call), std::move(response),
+                                  start_time));
   } else {
     OnMethodCompleted(std::move(method_call), std::move(response), start_time);
   }

@@ -86,8 +86,7 @@ void DelayedTaskManager::AddDelayedTaskNow(
   // TODO(fdoray): Use |task->delayed_run_time| on the service thread
   // MessageLoop rather than recomputing it from |delay|.
   service_thread_task_runner_->PostDelayedTask(
-      FROM_HERE,
-      BindOnce(std::move(post_task_now_callback), Passed(std::move(task))),
+      FROM_HERE, BindOnce(std::move(post_task_now_callback), std::move(task)),
       delay);
 }
 

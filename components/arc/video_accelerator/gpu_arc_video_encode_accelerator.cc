@@ -176,8 +176,8 @@ void GpuArcVideoEncodeAccelerator::Encode(
   // the shared memory as well as notifies |client_| about the end of processing
   // the |frame|.
   frame->AddDestructionObserver(
-      base::Bind(&DropShareMemoryAndVideoFrameDoneNotifier, base::Passed(&shm),
-                 base::Passed(&notifier)));
+      base::BindOnce(&DropShareMemoryAndVideoFrameDoneNotifier, std::move(shm),
+                     std::move(notifier)));
 
   accelerator_->Encode(frame, force_keyframe);
 }

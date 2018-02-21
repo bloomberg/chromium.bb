@@ -268,15 +268,13 @@ CancelCallback DriveUploader::StartUploadFile(
 
   UploadFileInfo* info_ptr = upload_file_info.get();
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&base::GetFileSize,
-                 info_ptr->file_path,
-                 &info_ptr->content_length),
-      base::Bind(&DriveUploader::StartUploadFileAfterGetFileSize,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&upload_file_info),
-                 start_initiate_upload_callback));
+      blocking_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&base::GetFileSize, info_ptr->file_path,
+                     &info_ptr->content_length),
+      base::BindOnce(&DriveUploader::StartUploadFileAfterGetFileSize,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(upload_file_info),
+                     start_initiate_upload_callback));
   return info_ptr->GetCancelCallback();
 }
 

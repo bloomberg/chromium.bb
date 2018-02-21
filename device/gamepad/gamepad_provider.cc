@@ -216,8 +216,8 @@ void GamepadProvider::Initialize(std::unique_ptr<GamepadDataFetcher> fetcher) {
 void GamepadProvider::AddGamepadDataFetcher(
     std::unique_ptr<GamepadDataFetcher> fetcher) {
   polling_thread_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&GamepadProvider::DoAddGamepadDataFetcher,
-                            base::Unretained(this), base::Passed(&fetcher)));
+      FROM_HERE, base::BindOnce(&GamepadProvider::DoAddGamepadDataFetcher,
+                                base::Unretained(this), std::move(fetcher)));
 }
 
 void GamepadProvider::RemoveSourceGamepadDataFetcher(GamepadSource source) {

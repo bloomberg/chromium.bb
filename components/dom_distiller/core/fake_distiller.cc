@@ -74,8 +74,8 @@ void FakeDistiller::RunDistillerUpdateCallback(
 void FakeDistiller::PostDistillerCallback(
     std::unique_ptr<DistilledArticleProto> proto) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FakeDistiller::RunDistillerCallbackInternal,
-                            base::Unretained(this), base::Passed(&proto)));
+      FROM_HERE, base::BindOnce(&FakeDistiller::RunDistillerCallbackInternal,
+                                base::Unretained(this), std::move(proto)));
 }
 
 void FakeDistiller::RunDistillerCallbackInternal(

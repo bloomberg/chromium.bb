@@ -122,9 +122,9 @@ CancelableTaskTracker::TaskId CancelableTaskTracker::NewTrackedTaskId(
 
   // Will always run |untrack_and_delete_flag| on current sequence.
   ScopedClosureRunner* untrack_and_delete_flag_runner =
-      new ScopedClosureRunner(Bind(
+      new ScopedClosureRunner(BindOnce(
           &RunOrPostToTaskRunner, RetainedRef(SequencedTaskRunnerHandle::Get()),
-          Passed(&untrack_and_delete_flag)));
+          std::move(untrack_and_delete_flag)));
 
   *is_canceled_cb =
       Bind(&IsCanceled, flag, Owned(untrack_and_delete_flag_runner));

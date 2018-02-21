@@ -6,6 +6,7 @@
 
 #include <map>
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -91,8 +92,8 @@ class ReadingListStoreTest : public testing::Test,
       : store_(syncer::ModelTypeStoreTestUtil::CreateInMemoryStoreForTest()) {
     ClearState();
     reading_list_store_ = std::make_unique<ReadingListStore>(
-        base::Bind(&syncer::ModelTypeStoreTestUtil::MoveStoreToCallback,
-                   base::Passed(&store_)),
+        base::BindOnce(&syncer::ModelTypeStoreTestUtil::MoveStoreToCallback,
+                       std::move(store_)),
         base::Bind(&ReadingListStoreTest::CreateModelTypeChangeProcessor,
                    base::Unretained(this)));
     auto clock = std::make_unique<base::SimpleTestClock>();

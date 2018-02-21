@@ -112,7 +112,7 @@ class ChromeUserManagerImpl
   const gfx::ImageSkia& GetResourceImagekiaNamed(int id) const override;
   base::string16 GetResourceStringUTF16(int string_id) const override;
   void ScheduleResolveLocale(const std::string& locale,
-                             const base::Closure& on_resolved_callback,
+                             base::OnceClosure on_resolved_callback,
                              std::string* out_resolved_locale) const override;
   bool IsValidDefaultUserImageId(int image_index) const override;
 

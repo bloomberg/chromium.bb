@@ -449,11 +449,11 @@ void LogoTracker::OnURLFetchComplete(const net::URLFetcher* source) {
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::Bind(parse_logo_response_func_, base::Passed(&response),
-                 response_time, parsing_failed),
-      base::Bind(&LogoTracker::OnFreshLogoParsed,
-                 weak_ptr_factory_.GetWeakPtr(), base::Owned(parsing_failed),
-                 from_http_cache));
+      base::BindOnce(parse_logo_response_func_, std::move(response),
+                     response_time, parsing_failed),
+      base::BindOnce(&LogoTracker::OnFreshLogoParsed,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::Owned(parsing_failed), from_http_cache));
 }
 
 void LogoTracker::OnURLFetchDownloadProgress(const net::URLFetcher* source,

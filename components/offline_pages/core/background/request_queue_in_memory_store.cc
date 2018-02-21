@@ -5,6 +5,7 @@
 #include "components/offline_pages/core/background/request_queue_in_memory_store.h"
 
 #include <unordered_set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -40,8 +41,7 @@ void RequestQueueInMemoryStore::GetRequests(
     result_requests.push_back(std::move(request));
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, true, base::Passed(std::move(result_requests))));
+      FROM_HERE, base::BindOnce(callback, true, std::move(result_requests)));
 }
 
 void RequestQueueInMemoryStore::GetRequestsByIds(
@@ -69,7 +69,7 @@ void RequestQueueInMemoryStore::GetRequestsByIds(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, base::Passed(&result)));
+      FROM_HERE, base::BindOnce(callback, std::move(result)));
 }
 
 void RequestQueueInMemoryStore::AddRequest(const SavePageRequest& request,
@@ -110,7 +110,7 @@ void RequestQueueInMemoryStore::UpdateRequests(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, base::Passed(&result)));
+      FROM_HERE, base::BindOnce(callback, std::move(result)));
 }
 
 void RequestQueueInMemoryStore::RemoveRequests(
@@ -136,7 +136,7 @@ void RequestQueueInMemoryStore::RemoveRequests(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, base::Passed(&result)));
+      FROM_HERE, base::BindOnce(callback, std::move(result)));
 }
 
 void RequestQueueInMemoryStore::Reset(const ResetCallback& callback) {

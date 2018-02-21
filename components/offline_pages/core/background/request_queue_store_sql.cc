@@ -5,6 +5,7 @@
 #include "components/offline_pages/core/background/request_queue_store_sql.h"
 
 #include <unordered_set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -260,7 +261,7 @@ void PostStoreUpdateResultForIds(
       new UpdateRequestsResult(store_state));
   for (const auto& item_id : item_ids)
     result->item_statuses.push_back(std::make_pair(item_id, action_status));
-  runner->PostTask(FROM_HERE, base::Bind(callback, base::Passed(&result)));
+  runner->PostTask(FROM_HERE, base::BindOnce(callback, std::move(result)));
 }
 
 void PostStoreErrorForAllRequests(
@@ -313,8 +314,8 @@ void GetRequestsSync(sql::Connection* db,
   while (statement.Step())
     requests.push_back(MakeSavePageRequest(statement));
 
-  runner->PostTask(FROM_HERE, base::Bind(callback, statement.Succeeded(),
-                                         base::Passed(&requests)));
+  runner->PostTask(FROM_HERE, base::BindOnce(callback, statement.Succeeded(),
+                                             std::move(requests)));
 }
 
 void GetRequestsByIdsSync(sql::Connection* db,
@@ -351,7 +352,7 @@ void GetRequestsByIdsSync(sql::Connection* db,
     return;
   }
 
-  runner->PostTask(FROM_HERE, base::Bind(callback, base::Passed(&result)));
+  runner->PostTask(FROM_HERE, base::BindOnce(callback, std::move(result)));
 }
 
 void AddRequestSync(sql::Connection* db,
@@ -388,7 +389,7 @@ void UpdateRequestsSync(sql::Connection* db,
     return;
   }
 
-  runner->PostTask(FROM_HERE, base::Bind(callback, base::Passed(&result)));
+  runner->PostTask(FROM_HERE, base::BindOnce(callback, std::move(result)));
 }
 
 void RemoveRequestsSync(sql::Connection* db,
@@ -421,7 +422,7 @@ void RemoveRequestsSync(sql::Connection* db,
     return;
   }
 
-  runner->PostTask(FROM_HERE, base::Bind(callback, base::Passed(&result)));
+  runner->PostTask(FROM_HERE, base::BindOnce(callback, std::move(result)));
 }
 
 void OpenConnectionSync(sql::Connection* db,
@@ -477,7 +478,7 @@ void RequestQueueStoreSQL::GetRequests(const GetRequestsCallback& callback) {
   if (!CheckDb()) {
     std::vector<std::unique_ptr<SavePageRequest>> requests;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, false, base::Passed(&requests)));
+        FROM_HERE, base::BindOnce(callback, false, std::move(requests)));
     return;
   }
 

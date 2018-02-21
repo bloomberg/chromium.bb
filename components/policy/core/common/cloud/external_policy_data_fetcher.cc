@@ -35,7 +35,7 @@ void ForwardJobFinished(
     ExternalPolicyDataFetcher::Result result,
     std::unique_ptr<std::string> data) {
   task_runner->PostTask(FROM_HERE,
-                        base::Bind(callback, job, result, base::Passed(&data)));
+                        base::BindOnce(callback, job, result, std::move(data)));
 }
 
 // Helper that forwards a job cancelation confirmation from the thread that the

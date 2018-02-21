@@ -199,8 +199,7 @@ void FakeFileSystemInstance::OpenFileToRead(const std::string& url,
   auto iter = files_.find(url);
   if (iter == files_.end()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  base::Passed(mojo::ScopedHandle())));
+        FROM_HERE, base::BindOnce(std::move(callback), mojo::ScopedHandle()));
     return;
   }
   const File& file = iter->second;
@@ -216,8 +215,8 @@ void FakeFileSystemInstance::OpenFileToRead(const std::string& url,
   DCHECK_EQ(MOJO_RESULT_OK, result);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(std::move(callback), base::Passed(mojo::ScopedHandle(
-                                              mojo::Handle(wrapped_handle)))));
+      base::BindOnce(std::move(callback),
+                     mojo::ScopedHandle(mojo::Handle(wrapped_handle))));
 }
 
 void FakeFileSystemInstance::GetDocument(const std::string& authority,
@@ -227,13 +226,12 @@ void FakeFileSystemInstance::GetDocument(const std::string& authority,
   auto iter = documents_.find(DocumentKey(authority, document_id));
   if (iter == documents_.end()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  base::Passed(mojom::DocumentPtr())));
+        FROM_HERE, base::BindOnce(std::move(callback), mojom::DocumentPtr()));
     return;
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback),
-                                base::Passed(MakeDocument(iter->second))));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), MakeDocument(iter->second)));
 }
 
 void FakeFileSystemInstance::GetChildDocuments(
@@ -256,9 +254,8 @@ void FakeFileSystemInstance::GetChildDocuments(
     children.emplace_back(MakeDocument(doc_iter->second));
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback),
-                     base::Passed(base::make_optional(std::move(children)))));
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                base::make_optional(std::move(children))));
 }
 
 void FakeFileSystemInstance::GetRecentDocuments(

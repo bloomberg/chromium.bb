@@ -95,8 +95,8 @@ void WebDatabaseService::ScheduleDBTask(const base::Location& from_here,
   std::unique_ptr<WebDataRequest> request =
       web_db_backend_->request_manager()->NewRequest(nullptr);
   db_task_runner_->PostTask(
-      from_here, Bind(&WebDatabaseBackend::DBWriteTaskWrapper, web_db_backend_,
-                      task, base::Passed(&request)));
+      from_here, BindOnce(&WebDatabaseBackend::DBWriteTaskWrapper,
+                          web_db_backend_, task, std::move(request)));
 }
 
 WebDataServiceBase::Handle WebDatabaseService::ScheduleDBTaskWithResult(
@@ -109,8 +109,8 @@ WebDataServiceBase::Handle WebDatabaseService::ScheduleDBTaskWithResult(
       web_db_backend_->request_manager()->NewRequest(consumer);
   WebDataServiceBase::Handle handle = request->GetHandle();
   db_task_runner_->PostTask(
-      from_here, Bind(&WebDatabaseBackend::DBReadTaskWrapper, web_db_backend_,
-                      task, base::Passed(&request)));
+      from_here, BindOnce(&WebDatabaseBackend::DBReadTaskWrapper,
+                          web_db_backend_, task, std::move(request)));
   return handle;
 }
 

@@ -397,7 +397,7 @@ int StackSamplingProfiler::SamplingThread::Add(
 
   task_runner->PostTask(
       FROM_HERE, BindOnce(&SamplingThread::AddCollectionTask, Unretained(this),
-                          Passed(&collection)));
+                          std::move(collection)));
 
   return id;
 }

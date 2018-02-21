@@ -97,7 +97,7 @@ void ArcCrashCollectorBridge::DumpCrash(const std::string& type,
   base::PostTaskWithTraits(
       FROM_HERE, {base::WithBaseSyncPrimitives()},
       base::BindOnce(&RunCrashReporter, type, device_, board_, cpu_abi_,
-                     base::Passed(std::move(pipe_handle))));
+                     std::move(pipe_handle)));
 }
 
 void ArcCrashCollectorBridge::SetBuildProperties(const std::string& device,

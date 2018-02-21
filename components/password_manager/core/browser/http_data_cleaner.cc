@@ -8,6 +8,7 @@
 #include <iterator>
 #include <memory>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -208,9 +209,9 @@ void WaitUntilCleaningIsDone(std::unique_ptr<ObsoleteHttpCleaner> cleaner,
     const auto post_to_thread =
         [](std::unique_ptr<ObsoleteHttpCleaner> cleaner, PrefService* prefs,
            scoped_refptr<base::SequencedTaskRunner> thread_runner) {
-          thread_runner->PostTask(
-              FROM_HERE, base::Bind(&WaitUntilCleaningIsDone,
-                                    base::Passed(std::move(cleaner)), prefs));
+          thread_runner->PostTask(FROM_HERE,
+                                  base::BindOnce(&WaitUntilCleaningIsDone,
+                                                 std::move(cleaner), prefs));
         };
 
     // Calling |ScheduleTask| through the raw pointer is necessary, because

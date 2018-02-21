@@ -38,7 +38,7 @@ class FileHelper {
        proxy_->SetFile(std::move(file_));
      else if (file_.IsValid())
        task_runner_->PostTask(FROM_HERE,
-                              BindOnce(&FileDeleter, Passed(&file_)));
+                              BindOnce(&FileDeleter, std::move(file_)));
    }
 
  protected:
@@ -236,7 +236,7 @@ FileProxy::FileProxy(TaskRunner* task_runner) : task_runner_(task_runner) {
 
 FileProxy::~FileProxy() {
   if (file_.IsValid())
-    task_runner_->PostTask(FROM_HERE, BindOnce(&FileDeleter, Passed(&file_)));
+    task_runner_->PostTask(FROM_HERE, BindOnce(&FileDeleter, std::move(file_)));
 }
 
 bool FileProxy::CreateOrOpen(const FilePath& file_path,

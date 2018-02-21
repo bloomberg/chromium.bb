@@ -74,8 +74,8 @@ TEST(DiscardableSharedMemoryHeapTest, SearchFreeLists) {
           heap.SearchFreeLists(random_blocks[i], slack);
       if (span) {
         spans.push_back(std::make_unique<base::ScopedClosureRunner>(
-            base::Bind(&DiscardableSharedMemoryHeap::MergeIntoFreeLists,
-                       base::Unretained(&heap), base::Passed(&span))));
+            base::BindOnce(&DiscardableSharedMemoryHeap::MergeIntoFreeLists,
+                           base::Unretained(&heap), std::move(span))));
       } else if (!spans.empty()) {
         // Merge a random span back into the free list.
         std::swap(spans[random_span[i] % spans.size()], spans.back());

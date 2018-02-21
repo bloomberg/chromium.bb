@@ -5,6 +5,7 @@
 #include "components/previews/content/previews_io_data.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -111,9 +112,9 @@ void PreviewsIOData::Initialize(
 
   // Set up the IO thread portion of |this|.
   io_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&PreviewsIOData::InitializeOnIOThread, base::Unretained(this),
-                 base::Passed(&previews_opt_out_store)));
+      FROM_HERE, base::BindOnce(&PreviewsIOData::InitializeOnIOThread,
+                                base::Unretained(this),
+                                std::move(previews_opt_out_store)));
 }
 
 void PreviewsIOData::OnNewBlacklistedHost(const std::string& host,
@@ -174,9 +175,9 @@ void PreviewsIOData::LogPreviewDecisionMade(
     uint64_t page_id) const {
   LogPreviewsEligibilityReason(reason, type);
   ui_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PreviewsUIService::LogPreviewDecisionMade,
-                            previews_ui_service_, reason, url, time, type,
-                            base::Passed(std::move(passed_reasons)), page_id));
+      FROM_HERE, base::BindOnce(&PreviewsUIService::LogPreviewDecisionMade,
+                                previews_ui_service_, reason, url, time, type,
+                                std::move(passed_reasons), page_id));
 }
 
 void PreviewsIOData::AddPreviewNavigation(const GURL& url,

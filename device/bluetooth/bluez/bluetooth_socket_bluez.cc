@@ -364,8 +364,8 @@ void BluetoothSocketBlueZ::NewConnection(
 
     socket_thread()->task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&BluetoothSocketBlueZ::DoNewConnection, this, device_path_,
-                   base::Passed(&fd), options, callback));
+        base::BindOnce(&BluetoothSocketBlueZ::DoNewConnection, this,
+                       device_path_, std::move(fd), options, callback));
   } else {
     linked_ptr<ConnectionRequest> request(new ConnectionRequest());
     request->device_path = device_path;
@@ -437,11 +437,11 @@ void BluetoothSocketBlueZ::AcceptConnectionRequest() {
 
   socket_thread()->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&BluetoothSocketBlueZ::DoNewConnection, client_socket,
-                 request->device_path, base::Passed(&request->fd),
-                 request->options,
-                 base::Bind(&BluetoothSocketBlueZ::OnNewConnection, this,
-                            client_socket, request->callback)));
+      base::BindOnce(
+          &BluetoothSocketBlueZ::DoNewConnection, client_socket,
+          request->device_path, std::move(request->fd), request->options,
+          base::BindRepeating(&BluetoothSocketBlueZ::OnNewConnection, this,
+                              client_socket, request->callback)));
 }
 
 void BluetoothSocketBlueZ::DoNewConnection(

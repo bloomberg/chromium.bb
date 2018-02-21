@@ -60,7 +60,7 @@ void PasswordManagerExporter::PreparePasswordsForExport() {
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
       base::BindOnce(&password_manager::PasswordCSVWriter::SerializePasswords,
-                     base::Passed(std::move(password_list))),
+                     std::move(password_list)),
       base::BindOnce(&PasswordManagerExporter::SetSerialisedPasswordList,
                      weak_factory_.GetWeakPtr(), password_list_size));
 }

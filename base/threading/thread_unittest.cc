@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -314,7 +315,7 @@ TEST_F(ThreadTest, TransferOwnershipAndStop) {
                        thread_to_stop->Stop();
                        event_to_signal->Signal();
                      },
-                     base::Passed(&a), base::Unretained(&event)));
+                     std::move(a), base::Unretained(&event)));
 
   event.Wait();
 }

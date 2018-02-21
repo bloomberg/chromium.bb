@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/safe_browsing/db/v4_database.h"
+
 #include <memory>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/files/file_util.h"
@@ -10,7 +13,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/safe_browsing/db/v4_database.h"
 #include "components/safe_browsing/proto/webui.pb.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -108,7 +110,7 @@ void V4Database::CreateOnTaskRunner(
   // Database is done loading, pass it to the new_db_callback on the caller's
   // thread. This would unblock resource loads.
   callback_task_runner->PostTask(
-      FROM_HERE, base::Bind(new_db_callback, base::Passed(&v4_database)));
+      FROM_HERE, base::BindOnce(new_db_callback, std::move(v4_database)));
 
   UMA_HISTOGRAM_TIMES("SafeBrowsing.V4DatabaseOpen.Time",
                       TimeTicks::Now() - create_start_time);
@@ -176,10 +178,10 @@ void V4Database::ApplyUpdate(
             base::Bind(&V4Database::UpdatedStoreReady,
                        weak_factory_on_io_.GetWeakPtr(), identifier);
         db_task_runner_->PostTask(
-            FROM_HERE,
-            base::Bind(&V4Store::ApplyUpdate, base::Unretained(old_store.get()),
-                       base::Passed(std::move(response)), current_task_runner,
-                       store_ready_callback));
+            FROM_HERE, base::BindOnce(&V4Store::ApplyUpdate,
+                                      base::Unretained(old_store.get()),
+                                      std::move(response), current_task_runner,
+                                      store_ready_callback));
       }
     } else {
       NOTREACHED() << "Got update for unexpected identifier: " << identifier;

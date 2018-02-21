@@ -122,8 +122,8 @@ void FakeDB<T>::LoadEntries(typename ProtoDatabase<T>::LoadCallback callback) {
   for (const auto& pair : *db_)
     entries->push_back(pair.second);
 
-  load_callback_ = base::BindOnce(RunLoadCallback, std::move(callback),
-                                  base::Passed(&entries));
+  load_callback_ =
+      base::BindOnce(RunLoadCallback, std::move(callback), std::move(entries));
 }
 
 template <typename T>
@@ -133,8 +133,8 @@ void FakeDB<T>::LoadKeys(typename ProtoDatabase<T>::LoadKeysCallback callback) {
   for (const auto& pair : *db_)
     keys->push_back(pair.first);
 
-  load_keys_callback_ = base::BindOnce(RunLoadKeysCallback, std::move(callback),
-                                       base::Passed(&keys));
+  load_keys_callback_ =
+      base::BindOnce(RunLoadKeysCallback, std::move(callback), std::move(keys));
 }
 
 template <typename T>
@@ -146,7 +146,7 @@ void FakeDB<T>::GetEntry(const std::string& key,
     entry.reset(new T(it->second));
 
   get_callback_ =
-      base::BindOnce(RunGetCallback, std::move(callback), base::Passed(&entry));
+      base::BindOnce(RunGetCallback, std::move(callback), std::move(entry));
 }
 
 template <typename T>

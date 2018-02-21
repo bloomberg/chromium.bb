@@ -57,9 +57,9 @@ ScopedClosureRunner ThreadTaskRunnerHandle::OverrideForTesting(
   if (!IsSet()) {
     auto top_level_ttrh = std::make_unique<ThreadTaskRunnerHandle>(
         std::move(overriding_task_runner));
-    return ScopedClosureRunner(base::Bind(
+    return ScopedClosureRunner(base::BindOnce(
         [](std::unique_ptr<ThreadTaskRunnerHandle> ttrh_to_release) {},
-        base::Passed(&top_level_ttrh)));
+        std::move(top_level_ttrh)));
   }
 
   ThreadTaskRunnerHandle* ttrh = thread_task_runner_tls.Pointer()->Get();
@@ -72,7 +72,7 @@ ScopedClosureRunner ThreadTaskRunnerHandle::OverrideForTesting(
           ? nullptr
           : std::make_unique<RunLoop::ScopedDisallowRunningForTesting>();
 
-  return ScopedClosureRunner(base::Bind(
+  return ScopedClosureRunner(base::BindOnce(
       [](scoped_refptr<SingleThreadTaskRunner> task_runner_to_restore,
          SingleThreadTaskRunner* expected_task_runner_before_restore,
          std::unique_ptr<RunLoop::ScopedDisallowRunningForTesting>
@@ -85,9 +85,9 @@ ScopedClosureRunner ThreadTaskRunnerHandle::OverrideForTesting(
 
         ttrh->task_runner_.swap(task_runner_to_restore);
       },
-      base::Passed(&overriding_task_runner),
+      std::move(overriding_task_runner),
       base::Unretained(ttrh->task_runner_.get()),
-      base::Passed(&no_running_during_override)));
+      std::move(no_running_during_override)));
 }
 
 ThreadTaskRunnerHandle::ThreadTaskRunnerHandle(

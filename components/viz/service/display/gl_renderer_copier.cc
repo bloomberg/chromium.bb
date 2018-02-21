@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -426,7 +427,7 @@ void GLRendererCopier::StartReadbackFromFramebuffer(
       GetOptimalReadbackFormat());
   const GLuint query = workflow->query();
   context_provider_->ContextSupport()->SignalQuery(
-      query, base::Bind(&ReadPixelsWorkflow::Finish, base::Passed(&workflow)));
+      query, base::BindOnce(&ReadPixelsWorkflow::Finish, std::move(workflow)));
 }
 
 void GLRendererCopier::SendTextureResult(

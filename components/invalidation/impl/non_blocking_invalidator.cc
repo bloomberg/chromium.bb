@@ -93,7 +93,7 @@ void CallbackProxy::Run(const base::DictionaryValue& value) {
   std::unique_ptr<base::DictionaryValue> copied(value.DeepCopy());
   running_thread_->PostTask(
       FROM_HERE,
-      base::Bind(&CallbackProxy::DoRun, callback_, base::Passed(&copied)));
+      base::BindOnce(&CallbackProxy::DoRun, callback_, std::move(copied)));
 }
 }
 

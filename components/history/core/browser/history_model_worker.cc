@@ -79,9 +79,9 @@ HistoryModelWorker::~HistoryModelWorker() {
 }
 
 void HistoryModelWorker::ScheduleWork(base::OnceClosure work) {
-  ui_thread_->PostTask(FROM_HERE, base::Bind(&PostWorkerTask, history_service_,
-                                             base::Passed(std::move(work)),
-                                             cancelable_tracker_.get()));
+  ui_thread_->PostTask(
+      FROM_HERE, base::BindOnce(&PostWorkerTask, history_service_,
+                                std::move(work), cancelable_tracker_.get()));
 }
 
 }  // namespace browser_sync

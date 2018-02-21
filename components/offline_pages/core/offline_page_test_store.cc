@@ -5,6 +5,7 @@
 #include "components/offline_pages/core/offline_page_test_store.h"
 
 #include <map>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -90,7 +91,7 @@ void OfflinePageTestStore::UpdateOfflinePages(
   }
   if (!callback.is_null())
     task_runner_->PostTask(FROM_HERE,
-                           base::Bind(callback, base::Passed(&result)));
+                           base::BindOnce(callback, std::move(result)));
 }
 
 void OfflinePageTestStore::RemoveOfflinePages(
@@ -123,7 +124,7 @@ void OfflinePageTestStore::RemoveOfflinePages(
   }
 
   task_runner_->PostTask(FROM_HERE,
-                         base::Bind(callback, base::Passed(&result)));
+                         base::BindOnce(callback, std::move(result)));
 }
 
 void OfflinePageTestStore::Reset(const ResetCallback& callback) {

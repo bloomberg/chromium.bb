@@ -467,9 +467,8 @@ TEST_F(SyncAsyncDirectoryTypeControllerTest, OnUnrecoverableError) {
   SyncError error(FROM_HERE, SyncError::DATATYPE_ERROR, "error",
                   non_ui_dtc_->type());
   backend_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&DataTypeErrorHandler::OnUnrecoverableError,
-                 base::Passed(non_ui_dtc_->CreateErrorHandler()), error));
+      FROM_HERE, base::BindOnce(&DataTypeErrorHandler::OnUnrecoverableError,
+                                non_ui_dtc_->CreateErrorHandler(), error));
   WaitForDTC();
 }
 

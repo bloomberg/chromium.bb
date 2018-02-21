@@ -348,8 +348,8 @@ void DataReductionProxyIOData::UpdateContentLengths(
 void DataReductionProxyIOData::AddEvent(std::unique_ptr<base::Value> event) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   ui_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DataReductionProxyService::AddEvent, service_,
-                            base::Passed(&event)));
+      FROM_HERE, base::BindOnce(&DataReductionProxyService::AddEvent, service_,
+                                std::move(event)));
 }
 
 void DataReductionProxyIOData::AddEnabledEvent(
@@ -357,8 +357,8 @@ void DataReductionProxyIOData::AddEnabledEvent(
     bool enabled) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   ui_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DataReductionProxyService::AddEnabledEvent,
-                            service_, base::Passed(&event), enabled));
+      FROM_HERE, base::BindOnce(&DataReductionProxyService::AddEnabledEvent,
+                                service_, std::move(event), enabled));
 }
 
 void DataReductionProxyIOData::AddEventAndSecureProxyCheckState(
@@ -367,8 +367,9 @@ void DataReductionProxyIOData::AddEventAndSecureProxyCheckState(
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DataReductionProxyService::AddEventAndSecureProxyCheckState,
-                 service_, base::Passed(&event), state));
+      base::BindOnce(
+          &DataReductionProxyService::AddEventAndSecureProxyCheckState,
+          service_, std::move(event), state));
 }
 
 void DataReductionProxyIOData::AddAndSetLastBypassEvent(
@@ -377,8 +378,8 @@ void DataReductionProxyIOData::AddAndSetLastBypassEvent(
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DataReductionProxyService::AddAndSetLastBypassEvent, service_,
-                 base::Passed(&event), expiration_ticks));
+      base::BindOnce(&DataReductionProxyService::AddAndSetLastBypassEvent,
+                     service_, std::move(event), expiration_ticks));
 }
 
 void DataReductionProxyIOData::SetUnreachable(bool unreachable) {

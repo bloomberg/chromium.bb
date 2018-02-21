@@ -5,6 +5,7 @@
 #include "components/viz/service/main/viz_main_impl.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
@@ -253,8 +254,8 @@ void VizMainImpl::CreateFrameSinkManagerInternal(
 
   compositor_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&VizMainImpl::CreateFrameSinkManagerOnCompositorThread,
-                 base::Unretained(this), base::Passed(&params)));
+      base::BindOnce(&VizMainImpl::CreateFrameSinkManagerOnCompositorThread,
+                     base::Unretained(this), std::move(params)));
 }
 
 void VizMainImpl::CreateFrameSinkManagerOnCompositorThread(
