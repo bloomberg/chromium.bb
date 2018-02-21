@@ -1,4 +1,4 @@
-Tests that navigation instrumentation doesn't fail with a long async stack chain.
+Tests that network instrumentation indicates HTTP 200 status for data: URLs.
 Navigation status: 200 (OK)
 Fetch status: 200 (OK)
 

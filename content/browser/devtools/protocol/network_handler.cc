@@ -638,7 +638,11 @@ std::unique_ptr<Network::ResourceTiming> GetTiming(
 std::unique_ptr<Object> GetHeaders(const base::StringPairs& pairs) {
   std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
   for (const auto& pair : pairs) {
-    headers_dict->setString(pair.first, pair.second);
+    std::string value;
+    bool merge_with_another = headers_dict->getString(pair.first, &value);
+    headers_dict->setString(pair.first, merge_with_another
+                                            ? value + '\n' + pair.second
+                                            : pair.second);
   }
   return Object::fromValue(headers_dict.get(), nullptr);
 }
@@ -1140,8 +1144,12 @@ std::unique_ptr<Network::Response> BuildResponse(
     size_t iterator = 0;
     std::string name;
     std::string value;
-    while (info.headers->EnumerateHeaderLines(&iterator, &name, &value))
-      headers_dict->setString(name, value);
+    while (info.headers->EnumerateHeaderLines(&iterator, &name, &value)) {
+      std::string old_value;
+      bool merge_with_another = headers_dict->getString(name, &old_value);
+      headers_dict->setString(
+          name, merge_with_another ? old_value + '\n' + value : value);
+    }
     status = info.headers->response_code();
     status_text = info.headers->GetStatusText();
   } else if (url.SchemeIs(url::kDataScheme)) {

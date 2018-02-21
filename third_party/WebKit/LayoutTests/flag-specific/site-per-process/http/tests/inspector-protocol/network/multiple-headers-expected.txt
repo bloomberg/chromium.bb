@@ -1,0 +1,5 @@
+Tests that multiple HTTP headers with same name are correctly folded into one LF-separated line.
+Link header of fetch of http://localhost:8000/inspector-protocol/network/resources/multiple-headers.php?fetch=1: <http://www.example.com/downloads/white-paper.pdf>; rel="canonical", <http://example.com>;rel="alternate";hreflang="xx"
+Link header of navigation to http://localhost:8000/inspector-protocol/network/resources/multiple-headers.php: <http://www.example.com/downloads/white-paper.pdf>; rel="canonical"
+<http://example.com>;rel="alternate";hreflang="xx"
+
