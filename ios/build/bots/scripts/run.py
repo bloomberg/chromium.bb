@@ -149,7 +149,7 @@ def parse_args():
   parser.add_argument(
     '-s',
     '--shards',
-    help='Number of shards to split test cases. (Not implemented yet)',
+    help='Number of shards to split test cases.',
     metavar='n',
     type=int,
   )
