@@ -8,6 +8,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSValueList.h"
+#include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/cssom/CSSStyleValue.h"
 #include "core/css/cssom/CSSUnparsedValue.h"
 #include "core/css/cssom/StyleValueFactory.h"
@@ -106,17 +107,6 @@ bool StylePropertyMapReadOnly::has(const String& property_name,
   return !getAll(property_name, exception_state).IsEmpty();
 }
 
-Vector<String> StylePropertyMapReadOnly::getProperties() {
-  Vector<String> result;
-
-  ForEachProperty([&result](const String& name, const CSSValue&) {
-    result.push_back(name);
-  });
-
-  std::sort(result.begin(), result.end(), ComparePropertyNames);
-  return result;
-}
-
 StylePropertyMapReadOnly::IterationSource*
 StylePropertyMapReadOnly::StartIteration(ScriptState*, ExceptionState&) {
   HeapVector<StylePropertyMapReadOnly::StylePropertyMapEntry> result;
@@ -124,20 +114,15 @@ StylePropertyMapReadOnly::StartIteration(ScriptState*, ExceptionState&) {
   ForEachProperty([&result](const String& property_name,
                             const CSSValue& css_value) {
     const auto property_id = cssPropertyID(property_name);
+
     CSSStyleValueOrCSSStyleValueSequence value;
-    if (property_id == CSSPropertyVariable) {
-      const CSSCustomPropertyDeclaration& decl =
-          ToCSSCustomPropertyDeclaration(css_value);
-      DCHECK(decl.Value());
-      value.SetCSSStyleValue(CSSUnparsedValue::FromCSSValue(*decl.Value()));
-    } else {
-      auto style_value_vector =
-          StyleValueFactory::CssValueToStyleValueVector(property_id, css_value);
-      if (style_value_vector.size() == 1)
-        value.SetCSSStyleValue(style_value_vector[0]);
-      else
-        value.SetCSSStyleValueSequence(style_value_vector);
-    }
+    const auto style_value_vector =
+        StyleValueFactory::CssValueToStyleValueVector(property_id, css_value);
+    if (style_value_vector.size() == 1)
+      value.SetCSSStyleValue(style_value_vector[0]);
+    else
+      value.SetCSSStyleValueSequence(style_value_vector);
+
     result.emplace_back(property_name, value);
   });
 

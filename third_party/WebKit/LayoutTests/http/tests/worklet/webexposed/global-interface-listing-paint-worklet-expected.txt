@@ -262,7 +262,6 @@ CONSOLE MESSAGE: line 147:     method entries
 CONSOLE MESSAGE: line 147:     method forEach
 CONSOLE MESSAGE: line 147:     method get
 CONSOLE MESSAGE: line 147:     method getAll
-CONSOLE MESSAGE: line 147:     method getProperties
 CONSOLE MESSAGE: line 147:     method has
 CONSOLE MESSAGE: line 147:     method keys
 CONSOLE MESSAGE: line 147:     method values
@@ -545,7 +544,6 @@ CONSOLE MESSAGE: line 147:     method entries
 CONSOLE MESSAGE: line 147:     method forEach
 CONSOLE MESSAGE: line 147:     method get
 CONSOLE MESSAGE: line 147:     method getAll
-CONSOLE MESSAGE: line 147:     method getProperties
 CONSOLE MESSAGE: line 147:     method has
 CONSOLE MESSAGE: line 147:     method keys
 CONSOLE MESSAGE: line 147:     method values

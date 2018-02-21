@@ -6891,7 +6891,6 @@ interface StylePropertyMapReadOnly
     method forEach
     method get
     method getAll
-    method getProperties
     method has
     method keys
     method values
