@@ -3061,18 +3061,21 @@ class TestGitCl(TestCase):
       body = json.loads(kw['body'])
       self.assertEqual(len(body['builds']), 2)
 
-      first_build_params = json.loads(body['builds'][0]['parameters_json'])
-      self.assertEqual(first_build_params['builder_name'], 'builder1')
-      self.assertEqual(first_build_params['properties']['master'], 'master1')
+      self.assertEqual(body['builds'][0]['bucket'], 'bucket1')
+      params = json.loads(body['builds'][0]['parameters_json'])
+      self.assertEqual(params['builder_name'], 'builder1')
 
-      first_build_params = json.loads(body['builds'][1]['parameters_json'])
-      self.assertEqual(first_build_params['builder_name'], 'builder2')
-      self.assertEqual(first_build_params['properties']['master'], 'master2')
+      self.assertEqual(body['builds'][1]['bucket'], 'bucket2')
+      params = json.loads(body['builds'][1]['parameters_json'])
+      self.assertEqual(params['builder_name'], 'builder2')
 
     self.mock(git_cl, '_buildbucket_retry', _buildbucket_retry)
 
     self.mock(git_cl.urllib2, 'urlopen', lambda _: StringIO.StringIO(
-      json.dumps({'builder1': ['master1'], 'builder2': ['master2']})))
+      json.dumps({
+        'builder1': {'bucket': 'bucket1'},
+        'builder2': {'bucket': 'bucket2'},
+      })))
 
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self.assertEqual(
@@ -3080,9 +3083,9 @@ class TestGitCl(TestCase):
     self.assertEqual(
         git_cl.sys.stdout.getvalue(),
         'Tried jobs on:\n'
-        'Bucket: master.master1\n'
+        'Bucket: bucket1\n'
         '  builder1: []\n'
-        'Bucket: master.master2\n'
+        'Bucket: bucket2\n'
         '  builder2: []\n'
         'To see results here, run:        git cl try-results\n'
         'To see results in browser, run:  git cl web\n')
