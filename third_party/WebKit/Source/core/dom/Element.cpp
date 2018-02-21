@@ -2297,8 +2297,8 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
 void Element::RebuildShadowRootLayoutTree(
     WhitespaceAttacher& whitespace_attacher) {
   DCHECK(IsShadowHost(this));
-  if (ShadowRoot* root = GetShadowRoot())
-    root->RebuildLayoutTree(whitespace_attacher);
+  ShadowRoot* root = GetShadowRoot();
+  root->RebuildLayoutTree(whitespace_attacher);
   RebuildNonDistributedChildren();
 }
 
@@ -2584,12 +2584,9 @@ ShadowRoot* Element::AuthorShadowRoot() const {
 }
 
 ShadowRoot* Element::UserAgentShadowRoot() const {
-  if (ElementShadow* element_shadow = Shadow()) {
-    ShadowRoot& root = element_shadow->GetShadowRoot();
-    DCHECK(root.IsUserAgent());
-    return &root;
-  }
-  return nullptr;
+  ShadowRoot* root = GetShadowRoot();
+  DCHECK(!root || root->IsUserAgent());
+  return root;
 }
 
 ShadowRoot& Element::EnsureUserAgentShadowRoot() {

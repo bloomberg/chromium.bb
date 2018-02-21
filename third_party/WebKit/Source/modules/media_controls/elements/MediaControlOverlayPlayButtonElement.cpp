@@ -5,6 +5,7 @@
 #include "modules/media_controls/elements/MediaControlOverlayPlayButtonElement.h"
 
 #include "core/dom/ElementShadow.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/dom/events/Event.h"
 #include "core/events/MouseEvent.h"
 #include "core/geometry/DOMRect.h"
@@ -116,7 +117,7 @@ MediaControlOverlayPlayButtonElement::MediaControlOverlayPlayButtonElement(
   SetShadowPseudoId(AtomicString("-webkit-media-controls-overlay-play-button"));
 
   if (MediaControlsImpl::IsModern()) {
-    ShadowRoot& shadow_root = Shadow()->GetShadowRoot();
+    ShadowRoot* shadow_root = GetShadowRoot();
 
     // This stylesheet element and will contain rules that are specific to the
     // loading panel. The shadow DOM protects these rules from the parent DOM
@@ -124,16 +125,16 @@ MediaControlOverlayPlayButtonElement::MediaControlOverlayPlayButtonElement(
     auto* style = HTMLStyleElement::Create(GetDocument(), CreateElementFlags());
     style->setTextContent(
         MediaControlsResourceLoader::GetOverlayPlayStyleSheet());
-    shadow_root.AppendChild(style);
+    shadow_root->AppendChild(style);
 
     left_jump_arrow_ = new MediaControlOverlayPlayButtonElement::AnimatedArrow(
-        "left-arrow", shadow_root);
+        "left-arrow", *shadow_root);
 
     internal_button_ = MediaControlElementsHelper::CreateDiv(
-        "-internal-media-controls-overlay-play-button-internal", &shadow_root);
+        "-internal-media-controls-overlay-play-button-internal", shadow_root);
 
     right_jump_arrow_ = new MediaControlOverlayPlayButtonElement::AnimatedArrow(
-        "right-arrow", shadow_root);
+        "right-arrow", *shadow_root);
   }
 }
 
