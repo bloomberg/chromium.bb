@@ -46,6 +46,7 @@
 #include "chrome/browser/resource_coordinator/resource_coordinator_web_contents_observer.h"
 #include "chrome/browser/safe_browsing/trigger_creator.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/ssl/connection_help_tab_helper.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "chrome/browser/sync/sessions/sync_sessions_router_tab_helper.h"
@@ -204,6 +205,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   }
   ChromeTranslateClient::CreateForWebContents(web_contents);
   ClientHintsObserver::CreateForWebContents(web_contents);
+  ConnectionHelpTabHelper::CreateForWebContents(web_contents);
   CoreTabHelper::CreateForWebContents(web_contents);
   data_use_measurement::DataUseWebContentsObserver::CreateForWebContents(
       web_contents);

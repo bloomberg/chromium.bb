@@ -41191,6 +41191,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="12" label="OS_REPORTS_CAPTIVE_PORTAL"/>
 </enum>
 
+<enum name="SSLErrorLearnMoreNavigationResult">
+  <int value="0" label="Navigation Succeeded"/>
+  <int value="1" label="Navigation Failed with Interstitial"/>
+  <int value="2" label="Navigation Failed with Other Error"/>
+</enum>
+
 <enum name="SSLErrorTypes">
   <int value="0" label="CERT_COMMON_NAME_INVALID"/>
   <int value="1" label="CERT_DATE_INVALID"/>
