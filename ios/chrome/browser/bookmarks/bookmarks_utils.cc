@@ -35,13 +35,12 @@ bool RemoveAllUserBookmarksIOS(ios::ChromeBrowserState* browser_state) {
     if (!bookmark_model->client()->CanBeEditedByUser(
             bookmark_model->root_node()->GetChild(i)))
       continue;
-    CHECK(bookmark_model->root_node()->GetChild(i)->empty())
-        << "Failed to remove all user bookmarks.";
+    if (!bookmark_model->root_node()->GetChild(i)->empty())
+      return false;
   }
 
   // The default save folder is reset to the generic one.
   browser_state->GetPrefs()->SetInt64(prefs::kIosBookmarkFolderDefault, -1);
-
   return true;
 }
 
