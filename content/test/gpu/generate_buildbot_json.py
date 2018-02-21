@@ -58,6 +58,9 @@ class Types(object):
   # The experimental try servers are meant to test new driver versions
   # and OS flavors.
   EXPERIMENTAL = 'experimental'
+  # This deliberately doesn't match any predicate, and is used to
+  # completely disable a particular trybot.
+  NOOP = 'noop'
 
 # The predicate functions receive a list of types as input and
 # determine whether the test should run on the given bot.
@@ -69,7 +72,8 @@ class Predicates(object):
     # tryservers, not on the client.v8.fyi waterfall, nor on the Win
     # ANGLE AMD tryserver.
     return Types.DEQP not in x and Types.OPTIONAL not in x and \
-      Types.V8_FYI not in x and Types.WIN_ANGLE_AMD_TRYSERVER not in x
+      Types.V8_FYI not in x and Types.WIN_ANGLE_AMD_TRYSERVER not in x and \
+      Types.NOOP not in x
 
   @staticmethod
   def FYI_ONLY(x):
@@ -77,8 +81,8 @@ class Predicates(object):
     # tryservers and the Win ANGLE AMD tryserver are considered to be
     # on the chromium.gpu.fyi waterfall.
     return Types.GPU_FYI in x and Types.DEQP not in x and \
-      Types.OPTIONAL not in x and \
-      Types.WIN_ANGLE_AMD_TRYSERVER not in x
+      Types.OPTIONAL not in x and Types.WIN_ANGLE_AMD_TRYSERVER not in x and \
+      Types.NOOP not in x
 
   @staticmethod
   def FYI_AND_OPTIONAL(x):
@@ -113,6 +117,10 @@ class Predicates(object):
   @staticmethod
   def EXPERIMENTAL_CONDITIONALLY(x):
     return Types.EXPERIMENTAL in x
+
+  @staticmethod
+  def EXPERIMENTAL_CONDITIONALLY_OR_NOOP(x):
+    return Types.EXPERIMENTAL in x or Types.NOOP in x
 
 # Most of the bots live in the Chrome-GPU pool as defined here (Google
 # employees only, sorry):
@@ -909,6 +917,19 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'linux',
       'type': Types.OPTIONAL,
+    },
+    'Optional Android Release (Nexus 5X)': {
+      'swarming_dimensions': [
+        {
+          'device_type': 'bullhead',
+          'device_os': 'MMB29Q',
+          'os': 'Android'
+        },
+      ],
+      'build_config': 'android-chromium',
+      'swarming': True,
+      'os_type': 'android',
+      'type': Types.NOOP,
     },
     # This tryserver doesn't actually exist; it's a separate
     # configuration from the Win AMD bot on this waterfall because we
@@ -1954,7 +1975,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'tester_configs': [
       {
         # Only run the noop sleep test on experimental configs.
-        'predicate': Predicates.EXPERIMENTAL_CONDITIONALLY,
+        'predicate': Predicates.EXPERIMENTAL_CONDITIONALLY_OR_NOOP,
         'disabled_instrumentation_types': ['tsan'],
       },
     ],
@@ -2575,7 +2596,8 @@ def is_test_config_experimental_conditionally(test_config):
   if 'tester_configs' in test_config:
     for tc in test_config['tester_configs']:
       pred = tc.get('predicate', Predicates.DEFAULT)
-      if (pred == Predicates.EXPERIMENTAL_CONDITIONALLY):
+      if (pred == Predicates.EXPERIMENTAL_CONDITIONALLY or \
+          pred == Predicates.EXPERIMENTAL_CONDITIONALLY_OR_NOOP):
         return True
   return False
 

@@ -9958,6 +9958,36 @@
       }
     ]
   },
+  "Optional Android Release (Nexus 5X)": {
+    "gtest_tests": [],
+    "isolated_scripts": [
+      {
+        "args": [
+          "noop_sleep",
+          "--show-stdout",
+          "--browser=android-chromium",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "name": "noop_sleep_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_integration_test"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ]
+        }
+      }
+    ]
+  },
   "Optional Linux Release (Intel HD 630)": {
     "gtest_tests": [
       {
