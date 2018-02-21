@@ -216,6 +216,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class cronet::CronetURLRequestContext;
   friend class resource_coordinator::TabManagerDelegate;  // crbug.com/778703
   friend class ScopedAllowBlockingForTesting;
+  friend class StackSamplingProfiler;
 
   ScopedAllowBlocking() EMPTY_BODY_IF_DCHECK_IS_OFF;
   ~ScopedAllowBlocking() EMPTY_BODY_IF_DCHECK_IS_OFF;
