@@ -61,7 +61,7 @@ void HTMLTemplateElement::CopyNonAttributePropertiesFromElement(
   if (flag == CloneChildrenFlag::kSkip)
     return;
   if (ToHTMLTemplateElement(source).content_)
-    ToHTMLTemplateElement(source).content()->CloneChildNodes(content());
+    content()->CloneChildNodesFrom(*ToHTMLTemplateElement(source).content());
 }
 
 void HTMLTemplateElement::DidMoveToNewDocument(Document& old_document) {

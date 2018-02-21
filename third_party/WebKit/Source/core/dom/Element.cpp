@@ -275,7 +275,7 @@ Element* Element::CloneElementWithChildren(Document* nullable_factory) {
   DCHECK_EQ(IsHTMLElement(), clone->IsHTMLElement());
 
   clone->CloneDataFromElement(*this, CloneChildrenFlag::kClone);
-  CloneChildNodes(clone);
+  clone->CloneChildNodesFrom(*this);
   return clone;
 }
 

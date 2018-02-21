@@ -141,7 +141,7 @@ class CORE_EXPORT ContainerNode : public Node {
   void RemoveChildren(
       SubtreeModificationAction = kDispatchSubtreeModifiedEvent);
 
-  void CloneChildNodes(ContainerNode* clone);
+  void CloneChildNodesFrom(const ContainerNode&);
 
   void AttachLayoutTree(AttachContext&) override;
   void DetachLayoutTree(const AttachContext& = AttachContext()) override;
