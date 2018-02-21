@@ -133,6 +133,10 @@ SadTabView::SadTabView(content::WebContents* web_contents, SadTabKind kind)
   layout->AddPaddingRow(2, provider->GetDistanceMetric(
                                views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
 
+  // Needed to ensure this View is drawn even if a sibling (such as dev tools)
+  // has a z-order.
+  SetPaintToLayer();
+
   AttachToWebView();
 
   // Make the accessibility role of this view an alert dialog, and
