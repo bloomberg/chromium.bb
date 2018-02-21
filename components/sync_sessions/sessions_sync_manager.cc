@@ -138,7 +138,6 @@ SessionsSyncManager::SessionsSyncManager(
       local_session_header_node_id_(TabNodePool::kInvalidTabNodeID),
       stale_session_threshold_days_(kDefaultStaleSessionThresholdDays),
       local_event_router_(router),
-      page_revisit_broadcaster_(this, sessions_client),
       sessions_updated_callback_(sessions_updated_callback),
       datatype_refresh_callback_(datatype_refresh_callback),
       task_tracker_(std::make_unique<TaskTracker>()) {}
@@ -518,8 +517,6 @@ void SessionsSyncManager::AssociateTab(SyncedTabDelegate* const tab_delegate,
   if (new_url != old_url) {
     favicon_cache_.OnFaviconVisited(
         new_url, tab_delegate->GetFaviconURLAtIndex(current_index));
-    page_revisit_broadcaster_.OnPageVisit(
-        new_url, tab_delegate->GetTransitionAtIndex(current_index));
   }
 }
 

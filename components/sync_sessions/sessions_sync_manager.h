@@ -28,7 +28,6 @@
 #include "components/sync_sessions/local_session_event_router.h"
 #include "components/sync_sessions/lost_navigations_recorder.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
-#include "components/sync_sessions/revisit/page_revisit_broadcaster.h"
 #include "components/sync_sessions/sessions_global_id_mapper.h"
 #include "components/sync_sessions/synced_session.h"
 #include "components/sync_sessions/synced_session_tracker.h"
@@ -335,9 +334,6 @@ class SessionsSyncManager : public syncer::SyncableService,
   int stale_session_threshold_days_;
 
   LocalSessionEventRouter* local_event_router_;
-
-  // Owns revisiting instrumentation logic for page visit events.
-  PageRevisitBroadcaster page_revisit_broadcaster_;
 
   std::unique_ptr<sync_sessions::LostNavigationsRecorder>
       lost_navigations_recorder_;
