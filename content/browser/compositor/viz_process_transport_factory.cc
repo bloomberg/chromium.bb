@@ -148,8 +148,15 @@ void VizProcessTransportFactory::ConnectHostFrameSinkManager() {
       [](viz::mojom::FrameSinkManagerRequest request,
          viz::mojom::FrameSinkManagerClientPtrInfo client,
          viz::mojom::CompositingModeWatcherPtrInfo mode_watcher) {
-        GpuProcessHost::Get()->ConnectFrameSinkManager(
-            std::move(request), std::move(client), std::move(mode_watcher));
+        // There should always be a GpuProcessHost instance, and GPU process,
+        // for running the compositor thread. The exception is during shutdown
+        // the GPU process won't be restarted and GpuProcessHost::Get() can
+        // return null.
+        auto* gpu_process_host = GpuProcessHost::Get();
+        if (gpu_process_host) {
+          gpu_process_host->ConnectFrameSinkManager(
+              std::move(request), std::move(client), std::move(mode_watcher));
+        }
       };
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
