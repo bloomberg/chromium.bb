@@ -185,6 +185,10 @@ void WebViewSchedulerImpl::SetVirtualTimePolicy(VirtualTimePolicy policy) {
   renderer_scheduler_->SetVirtualTimePolicy(policy);
 }
 
+void WebViewSchedulerImpl::SetInitialVirtualTimeOffset(base::TimeDelta offset) {
+  renderer_scheduler_->SetInitialVirtualTimeOffset(offset);
+}
+
 bool WebViewSchedulerImpl::VirtualTimeAllowedToAdvance() const {
   return renderer_scheduler_->VirtualTimeAllowedToAdvance();
 }

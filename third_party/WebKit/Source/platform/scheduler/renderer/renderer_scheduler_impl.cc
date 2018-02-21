@@ -1803,8 +1803,11 @@ base::TimeTicks RendererSchedulerImpl::EnableVirtualTime(
   if (main_thread_only().initial_virtual_time_ticks.is_null())
     main_thread_only().initial_virtual_time_ticks = tick_clock()->NowTicks();
   virtual_time_domain_.reset(new AutoAdvancingVirtualTimeDomain(
-      main_thread_only().initial_virtual_time,
-      main_thread_only().initial_virtual_time_ticks, &helper_, policy));
+      main_thread_only().initial_virtual_time +
+          main_thread_only().initial_virtual_time_offset,
+      main_thread_only().initial_virtual_time_ticks +
+          main_thread_only().initial_virtual_time_offset,
+      &helper_, policy));
   RegisterTimeDomain(virtual_time_domain_.get());
   virtual_time_domain_->SetObserver(this);
 
@@ -1924,6 +1927,11 @@ void RendererSchedulerImpl::MaybeAdvanceVirtualTime(
 void RendererSchedulerImpl::SetVirtualTimePolicy(VirtualTimePolicy policy) {
   main_thread_only().virtual_time_policy = policy;
   ApplyVirtualTimePolicy();
+}
+
+void RendererSchedulerImpl::SetInitialVirtualTimeOffset(
+    base::TimeDelta offset) {
+  main_thread_only().initial_virtual_time_offset = offset;
 }
 
 void RendererSchedulerImpl::AddVirtualTimeObserver(

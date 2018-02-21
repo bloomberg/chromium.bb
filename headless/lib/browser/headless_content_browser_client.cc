@@ -365,4 +365,12 @@ bool HeadlessContentBrowserClient::AllowSetCookie(
   return browser_context->options()->allow_cookies();
 }
 
+bool HeadlessContentBrowserClient::DoesSiteRequireDedicatedProcess(
+    content::BrowserContext* browser_context,
+    const GURL& effective_site_url) {
+  return HeadlessBrowserContextImpl::From(browser_context)
+      ->options()
+      ->site_per_process();
+}
+
 }  // namespace headless

@@ -191,6 +191,9 @@ struct HEADLESS_EXPORT HeadlessBrowser::Options {
   // (experimental).
   bool enable_begin_frame_control = false;
 
+  // Whether or not all sites should have a dedicated process.
+  bool site_per_process = false;
+
   // Set a callback that is invoked to override WebPreferences for RenderViews
   // created within the HeadlessBrowser. Called whenever the WebPreferences of a
   // RenderView change. Executed on the browser main thread.
@@ -266,6 +269,7 @@ class HEADLESS_EXPORT HeadlessBrowser::Options::Builder {
   Builder& SetWindowSize(const gfx::Size& window_size);
   Builder& SetUserDataDir(const base::FilePath& user_data_dir);
   Builder& SetIncognitoMode(bool incognito_mode);
+  Builder& SetSitePerProcess(bool site_per_process);
   Builder& SetBlockNewWebContents(bool block_new_web_contents);
   Builder& SetInitialVirtualTime(base::Time initial_virtual_time);
   Builder& SetAllowCookies(bool allow_cookies);

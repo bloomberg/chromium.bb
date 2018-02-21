@@ -233,6 +233,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   // Returns true if virtual time is not paused.
   bool VirtualTimeAllowedToAdvance() const;
   void SetVirtualTimePolicy(VirtualTimePolicy virtual_time_policy);
+  void SetInitialVirtualTimeOffset(base::TimeDelta offset);
   void SetMaxVirtualTimeTaskStarvationCount(int max_task_starvation_count);
   void AddVirtualTimeObserver(VirtualTimeObserver*);
   void RemoveVirtualTimeObserver(VirtualTimeObserver*);
@@ -723,6 +724,10 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     base::ObserverList<VirtualTimeObserver> virtual_time_observers;
     base::Time initial_virtual_time;
     base::TimeTicks initial_virtual_time_ticks;
+
+    // This is used for cross origin navigations to account for virtual time
+    // advancing in the previous renderer.
+    base::TimeDelta initial_virtual_time_offset;
     VirtualTimePolicy virtual_time_policy;
 
     // In VirtualTimePolicy::kDeterministicLoading virtual time is only allowed

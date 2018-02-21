@@ -80,6 +80,8 @@ class PLATFORM_EXPORT WebViewScheduler {
     kDeterministicLoading,
   };
 
+  virtual void SetInitialVirtualTimeOffset(base::TimeDelta offset) = 0;
+
   // Sets the virtual time policy, which is applied imemdiatly to all child
   // WebFrameSchedulers.
   virtual void SetVirtualTimePolicy(VirtualTimePolicy) = 0;
