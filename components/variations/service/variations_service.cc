@@ -416,7 +416,7 @@ void VariationsService::EnableForTesting() {
 }
 
 void VariationsService::DoActualFetch() {
-  DoFetchFromURL(variations_server_url_);
+  DoFetchFromURL(variations_server_url_, false);
 }
 
 bool VariationsService::StoreSeed(const std::string& seed_data,
@@ -451,7 +451,7 @@ VariationsService::CreateLowEntropyProvider() {
   return state_manager_->CreateLowEntropyProvider();
 }
 
-bool VariationsService::DoFetchFromURL(const GURL& url) {
+bool VariationsService::DoFetchFromURL(const GURL& url, bool is_http_retry) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsFetchingEnabled());
 
@@ -499,9 +499,8 @@ bool VariationsService::DoFetchFromURL(const GURL& url) {
     // Tell the server that delta-compressed seeds are supported.
     enable_deltas = true;
     // Get the seed only if its serial number doesn't match what we have.
-    // If the fetch is being done over HTTP, encrypt the If-None-Match header.
-    if (!url.SchemeIs(url::kHttpsScheme) &&
-        base::FeatureList::IsEnabled(kHttpRetryFeature)) {
+    // If the fetch is an HTTP retry, encrypt the If-None-Match header.
+    if (is_http_retry) {
       if (!EncryptString(serial_number, &serial_number)) {
         pending_seed_request_.reset();
         return false;
@@ -614,7 +613,7 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
     if (was_https && !insecure_variations_server_url_.is_empty()) {
       // When re-trying via HTTP, return immediately. OnURLFetchComplete() will
       // be called with the result of that retry.
-      if (DoFetchFromURL(insecure_variations_server_url_))
+      if (DoFetchFromURL(insecure_variations_server_url_, true))
         return;
     }
     // It's common for the very first fetch attempt to fail (e.g. the network
