@@ -39,6 +39,8 @@ source_set("bookmarks") {
 
 source_set("bookmarks_utils") {
   sources = [
+    "bookmark_remover_helper.cc",
+    "bookmark_remover_helper.h",
     "bookmarks_utils.cc",
     "bookmarks_utils.h",
   ]
