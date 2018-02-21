@@ -15,13 +15,14 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
-#include "chrome/browser/media/router/discovery/dial/dial_media_sink_service.h"
+#include "chrome/browser/media/router/media_sinks_observer.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/media_source.h"
 #include "url/origin.h"
 
 namespace media_router {
 
+class DialMediaSinkService;
 class CastMediaSinkService;
 
 // This class uses DialMediaSinkService and CastMediaSinkService to discover

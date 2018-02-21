@@ -104,11 +104,10 @@ DeviceDescriptionService::DeviceDescriptionService(
     const DeviceDescriptionParseErrorCallback& error_cb)
     : success_cb_(success_cb),
       error_cb_(error_cb),
-      device_description_parser_(connector) {
-  DETACH_FROM_THREAD(thread_checker_);
-}
+      device_description_parser_(connector) {}
 
 DeviceDescriptionService::~DeviceDescriptionService() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (pending_device_count_ > 0) {
     DLOG(WARNING) << "Fail to finish parsing " << pending_device_count_
                   << " devices.";
@@ -116,9 +115,8 @@ DeviceDescriptionService::~DeviceDescriptionService() {
 }
 
 void DeviceDescriptionService::GetDeviceDescriptions(
-    const std::vector<DialDeviceData>& devices,
-    net::URLRequestContextGetter* request_context) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+    const std::vector<DialDeviceData>& devices) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::map<std::string, std::unique_ptr<DeviceDescriptionFetcher>>
       existing_fetcher_map;
@@ -148,7 +146,7 @@ void DeviceDescriptionService::GetDeviceDescriptions(
       continue;
     }
 
-    FetchDeviceDescription(device_data, request_context);
+    FetchDeviceDescription(device_data);
   }
 
   // Start a clean up timer.
@@ -161,7 +159,7 @@ void DeviceDescriptionService::GetDeviceDescriptions(
 }
 
 void DeviceDescriptionService::CleanUpCacheEntries() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::Time now = GetNow();
 
   DVLOG(2) << "Before clean up, cache size: " << description_cache_.size();
@@ -178,24 +176,21 @@ void DeviceDescriptionService::CleanUpCacheEntries() {
 }
 
 void DeviceDescriptionService::FetchDeviceDescription(
-    const DialDeviceData& device_data,
-    net::URLRequestContextGetter* request_context) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+    const DialDeviceData& device_data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Existing Fetcher.
   const auto& it = device_description_fetcher_map_.find(device_data.label());
   if (it != device_description_fetcher_map_.end())
     return;
 
-  auto device_description_fetcher =
-      base::WrapUnique(new DeviceDescriptionFetcher(
-          device_data.device_description_url(), request_context,
-          base::BindOnce(
-              &DeviceDescriptionService::OnDeviceDescriptionFetchComplete,
-              base::Unretained(this), device_data),
-          base::BindOnce(
-              &DeviceDescriptionService::OnDeviceDescriptionFetchError,
-              base::Unretained(this), device_data)));
+  auto device_description_fetcher = std::make_unique<DeviceDescriptionFetcher>(
+      device_data.device_description_url(),
+      base::BindOnce(
+          &DeviceDescriptionService::OnDeviceDescriptionFetchComplete,
+          base::Unretained(this), device_data),
+      base::BindOnce(&DeviceDescriptionService::OnDeviceDescriptionFetchError,
+                     base::Unretained(this), device_data));
 
   device_description_fetcher->Start();
   device_description_fetcher_map_.insert(std::make_pair(
@@ -236,7 +231,7 @@ void DeviceDescriptionService::OnParsedDeviceDescription(
     const DialDeviceData& device_data,
     const ParsedDialDeviceDescription& device_description,
     SafeDialDeviceDescriptionParser::ParsingError parsing_error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   pending_device_count_--;
 
@@ -285,7 +280,7 @@ void DeviceDescriptionService::OnParsedDeviceDescription(
 void DeviceDescriptionService::OnDeviceDescriptionFetchComplete(
     const DialDeviceData& device_data,
     const DialDeviceDescriptionData& description_data) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   ParseDeviceDescription(device_data, description_data);
 
@@ -300,7 +295,7 @@ void DeviceDescriptionService::OnDeviceDescriptionFetchComplete(
 void DeviceDescriptionService::OnDeviceDescriptionFetchError(
     const DialDeviceData& device_data,
     const std::string& error_message) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << "OnDeviceDescriptionFetchError [label]: " << device_data.label();
 
   error_cb_.Run(device_data, error_message);

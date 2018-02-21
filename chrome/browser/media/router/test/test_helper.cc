@@ -50,14 +50,10 @@ MockPresentationConnectionProxy::MockPresentationConnectionProxy() {}
 MockPresentationConnectionProxy::~MockPresentationConnectionProxy() {}
 
 #if !defined(OS_ANDROID)
-MockDialMediaSinkService::MockDialMediaSinkService(
-    const scoped_refptr<net::URLRequestContextGetter>& request_context)
-    : DialMediaSinkService(request_context) {}
+MockDialMediaSinkService::MockDialMediaSinkService() : DialMediaSinkService() {}
 MockDialMediaSinkService::~MockDialMediaSinkService() = default;
 
-MockCastMediaSinkService::MockCastMediaSinkService(
-    const scoped_refptr<net::URLRequestContextGetter>& request_context)
-    : CastMediaSinkService(request_context) {}
+MockCastMediaSinkService::MockCastMediaSinkService() : CastMediaSinkService() {}
 MockCastMediaSinkService::~MockCastMediaSinkService() = default;
 #endif  // !defined(OS_ANDROID)
 

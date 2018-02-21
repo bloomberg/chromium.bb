@@ -8,7 +8,6 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/default_clock.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/media_sink.h"
@@ -19,8 +18,6 @@
 #include "components/net_log/chrome_net_log.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/net_errors.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace {
 
@@ -169,14 +166,11 @@ constexpr int CastMediaSinkServiceImpl::kMaxDialSinkFailureCount;
 CastMediaSinkServiceImpl::CastMediaSinkServiceImpl(
     const OnSinksDiscoveredCallback& callback,
     cast_channel::CastSocketService* cast_socket_service,
-    DiscoveryNetworkMonitor* network_monitor,
-    const scoped_refptr<net::URLRequestContextGetter>&
-        url_request_context_getter)
+    DiscoveryNetworkMonitor* network_monitor)
     : MediaSinkServiceBase(callback),
       cast_socket_service_(cast_socket_service),
       network_monitor_(network_monitor),
       task_runner_(cast_socket_service_->task_runner()),
-      url_request_context_getter_(url_request_context_getter),
       clock_(base::DefaultClock::GetInstance()),
       weak_ptr_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -407,11 +401,10 @@ CastMediaSinkServiceImpl::CreateCastSocketOpenParams(
                  kMaxLivenessTimeoutInSeconds);
   }
 
+  // TODO(crbug.com/814419): Switching cast socket implementation to use network
+  // service will allow us to get back NetLog.
   return cast_channel::CastSocketOpenParams(
-      ip_endpoint,
-      url_request_context_getter_.get()
-          ? url_request_context_getter_->GetURLRequestContext()->net_log()
-          : nullptr,
+      ip_endpoint, nullptr,
       base::TimeDelta::FromSeconds(connect_timeout_in_seconds),
       base::TimeDelta::FromSeconds(liveness_timeout_in_seconds),
       base::TimeDelta::FromSeconds(open_params_.ping_interval_in_seconds),
@@ -605,19 +598,8 @@ void CastMediaSinkServiceImpl::AttemptConnection(
 }
 
 OnDialSinkAddedCallback CastMediaSinkServiceImpl::GetDialSinkAddedCallback() {
-  return base::BindRepeating(
-      &CastMediaSinkServiceImpl::InvokeOnDialSinkAddedOnTaskRunner,
-      GetWeakPtr(), task_runner_);
-}
-
-// static
-void CastMediaSinkServiceImpl::InvokeOnDialSinkAddedOnTaskRunner(
-    const base::WeakPtr<CastMediaSinkServiceImpl>& impl,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    const MediaSinkInternal& dial_sink) {
-  task_runner->PostTask(
-      FROM_HERE, base::BindOnce(&CastMediaSinkServiceImpl::OnDialSinkAdded,
-                                impl, dial_sink));
+  return base::BindRepeating(&CastMediaSinkServiceImpl::OnDialSinkAdded,
+                             base::Unretained(this));
 }
 
 CastMediaSinkServiceImpl::RetryParams::RetryParams()

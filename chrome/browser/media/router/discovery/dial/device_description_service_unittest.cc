@@ -6,11 +6,11 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_task_environment.h"
 #include "chrome/browser/media/router/discovery/dial/device_description_fetcher.h"
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
 #include "chrome/browser/media/router/discovery/dial/parsed_dial_device_description.h"
 #include "chrome/browser/media/router/discovery/dial/safe_dial_device_description_parser.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -68,8 +68,7 @@ class DeviceDescriptionServiceTest : public ::testing::Test {
                                     mock_error_cb_.Get()),
         fetcher_map_(
             device_description_service_.device_description_fetcher_map_),
-        description_cache_(device_description_service_.description_cache_),
-        thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+        description_cache_(device_description_service_.description_cache_) {}
 
   TestDeviceDescriptionService* device_description_service() {
     return &device_description_service_;
@@ -106,6 +105,7 @@ class DeviceDescriptionServiceTest : public ::testing::Test {
   }
 
  protected:
+  base::test::ScopedTaskEnvironment environment_;
   base::MockCallback<
       DeviceDescriptionService::DeviceDescriptionParseSuccessCallback>
       mock_success_cb_;
@@ -118,9 +118,6 @@ class DeviceDescriptionServiceTest : public ::testing::Test {
       fetcher_map_;
   std::map<std::string, DeviceDescriptionService::CacheEntry>&
       description_cache_;
-
-  const content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
 };
 
 TEST_F(DeviceDescriptionServiceTest, TestGetDeviceDescriptionFromCache) {
@@ -131,7 +128,7 @@ TEST_F(DeviceDescriptionServiceTest, TestGetDeviceDescriptionFromCache) {
   AddToCache(device_data.label(), description_data, false /* expired */);
 
   std::vector<DialDeviceData> devices = {device_data};
-  device_description_service()->GetDeviceDescriptions(devices, nullptr);
+  device_description_service()->GetDeviceDescriptions(devices);
 }
 
 TEST_F(DeviceDescriptionServiceTest, TestGetDeviceDescriptionFetchURL) {
@@ -140,8 +137,7 @@ TEST_F(DeviceDescriptionServiceTest, TestGetDeviceDescriptionFetchURL) {
 
   // Create Fetcher
   EXPECT_TRUE(fetcher_map_.empty());
-  device_description_service()->GetDeviceDescriptions(
-      devices, profile_.GetRequestContext());
+  device_description_service()->GetDeviceDescriptions(devices);
   EXPECT_EQ(size_t(1), fetcher_map_.size());
 
   // Remove fetcher.
@@ -166,8 +162,7 @@ TEST_F(DeviceDescriptionServiceTest, TestGetDeviceDescriptionFetchURLError) {
 
   // Create Fetcher
   EXPECT_TRUE(fetcher_map_.empty());
-  device_description_service()->GetDeviceDescriptions(
-      devices, profile_.GetRequestContext());
+  device_description_service()->GetDeviceDescriptions(devices);
   EXPECT_EQ(size_t(1), fetcher_map_.size());
 
   EXPECT_CALL(mock_error_cb_, Run(device_data, ""));
@@ -187,8 +182,7 @@ TEST_F(DeviceDescriptionServiceTest,
   devices.push_back(device_data_2);
 
   // insert fetchers
-  device_description_service()->GetDeviceDescriptions(
-      devices, profile_.GetRequestContext());
+  device_description_service()->GetDeviceDescriptions(devices);
 
   // Keep fetchers non exist in current device list and remove fetchers with
   // different description url.
@@ -198,8 +192,7 @@ TEST_F(DeviceDescriptionServiceTest,
   devices.clear();
   devices.push_back(device_data_2);
   devices.push_back(device_data_3);
-  device_description_service()->GetDeviceDescriptions(
-      devices, profile_.GetRequestContext());
+  device_description_service()->GetDeviceDescriptions(devices);
 
   EXPECT_EQ(size_t(3), fetcher_map_.size());
 

@@ -10,7 +10,6 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/media/router/discovery/dial/device_description_service.h"
 #include "chrome/browser/media/router/discovery/dial/dial_app_discovery_service.h"
@@ -42,18 +41,15 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
   // |dial_sink_added_cb|: If not null, callback to invoke when a DIAL sink has
   // been discovered.
   // Note that both callbacks are invoked on |task_runner|.
-  // |request_context|: Used for network requests.
   // |task_runner|: The SequencedTaskRunner this class runs in.
   DialMediaSinkServiceImpl(
       std::unique_ptr<service_manager::Connector> connector,
       const OnSinksDiscoveredCallback& on_sinks_discovered_cb,
       const OnDialSinkAddedCallback& dial_sink_added_cb,
       const OnAvailableSinksUpdatedCallback& available_sinks_updated_callback,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~DialMediaSinkServiceImpl() override;
 
-  // Marked virtual for tests.
   virtual void Start();
 
   void OnUserGesture();
@@ -164,8 +160,10 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
   // Connector to ServiceManager for safe XML parsing requests.
   std::unique_ptr<service_manager::Connector> connector_;
 
+  // Initialized in |Start()|.
   std::unique_ptr<DeviceDescriptionService> description_service_;
 
+  // Initialized in |Start()|.
   std::unique_ptr<DialAppDiscoveryService> app_discovery_service_;
 
   OnDialSinkAddedCallback dial_sink_added_cb_;
@@ -190,8 +188,6 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
 
   // Set of registered app names.
   base::flat_set<std::string> registered_apps_;
-
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

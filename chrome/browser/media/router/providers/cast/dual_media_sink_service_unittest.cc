@@ -5,8 +5,6 @@
 #include "chrome/browser/media/router/providers/cast/dual_media_sink_service.h"
 
 #include "chrome/browser/media/router/test/test_helper.h"
-#include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,10 +13,8 @@ namespace media_router {
 class DualMediaSinkServiceTest : public testing::Test {
  public:
   DualMediaSinkServiceTest() {
-    auto cast_media_sink_service = std::make_unique<MockCastMediaSinkService>(
-        profile_.GetRequestContext());
-    auto dial_media_sink_service = std::make_unique<MockDialMediaSinkService>(
-        profile_.GetRequestContext());
+    auto cast_media_sink_service = std::make_unique<MockCastMediaSinkService>();
+    auto dial_media_sink_service = std::make_unique<MockDialMediaSinkService>();
     cast_media_sink_service_ = cast_media_sink_service.get();
     dial_media_sink_service_ = dial_media_sink_service.get();
     dual_media_sink_service_ = std::unique_ptr<DualMediaSinkService>(
@@ -43,8 +39,6 @@ class DualMediaSinkServiceTest : public testing::Test {
                     const std::vector<MediaSinkInternal>& sinks));
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
   MockCastMediaSinkService* cast_media_sink_service_;
   MockDialMediaSinkService* dial_media_sink_service_;
   std::unique_ptr<DualMediaSinkService> dual_media_sink_service_;

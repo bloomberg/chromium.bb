@@ -4,16 +4,18 @@
 
 #include "chrome/browser/media/router/discovery/dial/dial_app_info_fetcher.h"
 
-#include "chrome/browser/profiles/profile.h"
+#include "base/strings/stringprintf.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/system_network_context_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
-
-using content::BrowserThread;
+#include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 constexpr int kMaxRetries = 3;
 // DIAL devices are unlikely to expose uPnP functions other than DIAL, so 256kb
@@ -22,29 +24,10 @@ constexpr int kMaxAppInfoSizeBytes = 262144;
 
 namespace media_router {
 
-DialAppInfoFetcher::DialAppInfoFetcher(
-    const GURL& app_url,
-    net::URLRequestContextGetter* request_context,
-    base::OnceCallback<void(const std::string&)> success_cb,
-    base::OnceCallback<void(int, const std::string&)> error_cb)
-    : app_url_(app_url),
-      request_context_(request_context),
-      success_cb_(std::move(success_cb)),
-      error_cb_(std::move(error_cb)) {
-  DCHECK(request_context_);
-  DCHECK(app_url_.is_valid());
-}
+namespace {
 
-DialAppInfoFetcher::~DialAppInfoFetcher() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-}
-
-void DialAppInfoFetcher::Start() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!fetcher_);
-
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("dial_get_app_info", R"(
+constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("dial_get_app_info", R"(
         semantics {
           sender: "DIAL"
           description:
@@ -72,30 +55,64 @@ void DialAppInfoFetcher::Start() {
             }
           }
         })");
-  // DIAL returns app info via GET request.
-  fetcher_ =
-      net::URLFetcher::Create(kURLFetcherIDForTest, app_url_,
-                              net::URLFetcher::GET, this, traffic_annotation);
+
+void BindURLLoaderFactoryRequestOnUIThread(
+    network::mojom::URLLoaderFactoryRequest request) {
+  network::mojom::URLLoaderFactory* factory =
+      g_browser_process->system_network_context_manager()
+          ->GetURLLoaderFactory();
+  factory->Clone(std::move(request));
+}
+
+}  // namespace
+
+DialAppInfoFetcher::DialAppInfoFetcher(
+    const GURL& app_url,
+    base::OnceCallback<void(const std::string&)> success_cb,
+    base::OnceCallback<void(int, const std::string&)> error_cb)
+    : app_url_(app_url),
+      success_cb_(std::move(success_cb)),
+      error_cb_(std::move(error_cb)) {
+  DCHECK(app_url_.is_valid());
+}
+
+DialAppInfoFetcher::~DialAppInfoFetcher() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+void DialAppInfoFetcher::Start() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!loader_);
+
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = app_url_;
 
   // net::LOAD_BYPASS_PROXY: Proxies almost certainly hurt more cases than they
   //     help.
   // net::LOAD_DISABLE_CACHE: The request should not touch the cache.
   // net::LOAD_DO_NOT_{SAVE,SEND}_COOKIES: The request should not touch cookies.
   // net::LOAD_DO_NOT_SEND_AUTH_DATA: The request should not send auth data.
-  fetcher_->SetLoadFlags(net::LOAD_BYPASS_PROXY | net::LOAD_DISABLE_CACHE |
-                         net::LOAD_DO_NOT_SAVE_COOKIES |
-                         net::LOAD_DO_NOT_SEND_COOKIES |
-                         net::LOAD_DO_NOT_SEND_AUTH_DATA);
+  request->load_flags = net::LOAD_BYPASS_PROXY | net::LOAD_DISABLE_CACHE |
+                        net::LOAD_DO_NOT_SAVE_COOKIES |
+                        net::LOAD_DO_NOT_SEND_COOKIES |
+                        net::LOAD_DO_NOT_SEND_AUTH_DATA;
 
-  // Section 5.4 of the DIAL spec prohibits redirects.
-  fetcher_->SetStopOnRedirect(true);
+  loader_ =
+      network::SimpleURLLoader::Create(std::move(request), kTrafficAnnotation);
 
   // Allow the fetcher to retry on 5XX responses and ERR_NETWORK_CHANGED.
-  fetcher_->SetMaxRetriesOn5xx(kMaxRetries);
-  fetcher_->SetAutomaticallyRetryOnNetworkChanges(kMaxRetries);
+  loader_->SetRetryOptions(
+      kMaxRetries,
+      network::SimpleURLLoader::RetryMode::RETRY_ON_5XX |
+          network::SimpleURLLoader::RetryMode::RETRY_ON_NETWORK_CHANGE);
 
-  fetcher_->SetRequestContext(request_context_.get());
-  fetcher_->Start();
+  // Section 5.4 of the DIAL spec prohibits redirects.
+  // In practice, the callback will only get called once, since |loader_| will
+  // be deleted.
+  loader_->SetOnRedirectCallback(base::BindRepeating(
+      &DialAppInfoFetcher::ReportRedirectError, base::Unretained(this)));
+
+  StartDownload();
 }
 
 void DialAppInfoFetcher::ReportError(int response_code,
@@ -103,34 +120,55 @@ void DialAppInfoFetcher::ReportError(int response_code,
   std::move(error_cb_).Run(response_code, message);
 }
 
-void DialAppInfoFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK_EQ(fetcher_.get(), source);
+void DialAppInfoFetcher::ReportRedirectError(
+    const net::RedirectInfo& redirect_info,
+    const network::ResourceResponseHead& response_head) {
+  // Cancel the request.
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  loader_.reset();
 
-  int response_code = source->GetResponseCode();
-  if (response_code != net::HTTP_OK) {
+  // Returning |OK| on error will be treated as unavailable.
+  ReportError(net::Error::OK, "Redirect not allowed");
+}
+
+void DialAppInfoFetcher::StartDownload() {
+  // Bind the request to the system URLLoaderFactory obtained on UI thread.
+  // Currently this is the only way to guarantee a live URLLoaderFactory.
+  // TOOD(mmenke): Figure out a way to do this transparently on IO thread.
+  network::mojom::URLLoaderFactoryPtr loader_factory;
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&BindURLLoaderFactoryRequestOnUIThread,
+                     mojo::MakeRequest(&loader_factory)));
+
+  loader_->DownloadToString(loader_factory.get(),
+                            base::BindOnce(&DialAppInfoFetcher::ProcessResponse,
+                                           base::Unretained(this)),
+                            kMaxAppInfoSizeBytes);
+}
+
+void DialAppInfoFetcher::ProcessResponse(
+    std::unique_ptr<std::string> response) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  int response_code = loader_->NetError();
+  if (response_code != net::Error::OK) {
     ReportError(response_code,
                 base::StringPrintf("HTTP %d: Unable to fetch DIAL app info",
                                    response_code));
     return;
   }
 
-  if (source->GetReceivedResponseContentLength() > kMaxAppInfoSizeBytes) {
-    ReportError(response_code, "Response too large");
-    return;
-  }
-
-  std::string app_info_xml;
-  if (!source->GetResponseAsString(&app_info_xml) || app_info_xml.empty()) {
+  if (!response || response->empty()) {
     ReportError(response_code, "Missing or empty response");
     return;
   }
 
-  if (!base::IsStringUTF8(app_info_xml)) {
+  if (!base::IsStringUTF8(*response)) {
     ReportError(response_code, "Invalid response encoding");
     return;
   }
 
-  std::move(success_cb_).Run(std::string(app_info_xml));
+  std::move(success_cb_).Run(*response);
 }
 
 }  // namespace media_router
