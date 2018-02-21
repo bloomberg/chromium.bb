@@ -202,9 +202,9 @@ def _FixTempPathsInIncrementalMetadata(pdb_path, temp_dir):
       fileobj.write(re.sub(r'/tmp/[^/]*', temp_dir, pdb_data))
 
 
-def _CheckPathMatchesClassName(java_file):
+def _ParsePackageAndClassNames(java_file):
   package_name = ''
-  class_name = None
+  class_names = []
   with open(java_file) as f:
     for l in f:
       # Strip unindented comments.
@@ -220,17 +220,11 @@ def _CheckPathMatchesClassName(java_file):
       # In order to not match nested classes, it just checks for lack of indent.
       m = re.match(r'(?:\S.*?)?(?:class|@?interface|enum)\s+(.+?)\b', l)
       if m:
-        if class_name:
-          raise Exception(('File defines multiple top-level classes:\n    %s\n'
-                           'This confuses compiles with '
-                           'enable_incremental_javac=true.\n'
-                           'classes=%s,%s\n') %
-                          (java_file, class_name, m.groups(1)))
-        class_name = m.group(1)
+        class_names.append(m.group(1))
+  return package_name, class_names
 
-  if class_name is None:
-    raise Exception('Unable to find a class within %s' % java_file)
 
+def _CheckPathMatchesClassName(java_file, package_name, class_name):
   parts = package_name.split('.') + [class_name + '.java']
   expected_path_suffix = os.path.sep.join(parts)
   if not java_file.endswith(expected_path_suffix):
@@ -239,17 +233,39 @@ def _CheckPathMatchesClassName(java_file):
                     (java_file, expected_path_suffix))
 
 
+def _CreateInfoFile(java_files, options, srcjar_files):
+  """Writes a jar_path.info file.
+
+  This maps fully qualified names for classes to either the java file that they
+  are defined in or the path of the srcjar that they came from.
+  """
+  info_data = dict()
+  for java_file in java_files:
+    package_name, class_names = _ParsePackageAndClassNames(java_file)
+    for class_name in class_names:
+      fully_qualified_name = '{}.{}'.format(package_name, class_name)
+      info_data[fully_qualified_name] = java_file
+    # Skip aidl srcjars since they don't indent code correctly.
+    source = srcjar_files.get(java_file, java_file)
+    if source.endswith('_aidl.srcjar'):
+      continue
+    assert not options.chromium_code or len(class_names) == 1, (
+        'Chromium java files must only have one class: {}'.format(source))
+    if options.chromium_code:
+      _CheckPathMatchesClassName(java_file, package_name, class_names[0])
+  with open(options.jar_path + '.info', 'w') as info_file:
+    for fully_qualified_name, path in info_data.iteritems():
+      if path in srcjar_files:
+        path = srcjar_files[path]
+      assert not path.startswith('/tmp'), (
+          'Java file path should not be in temp dir: {}'.format(path))
+      info_file.write('{},{}\n'.format(fully_qualified_name, path))
+
+
 def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
                 classpath):
-  incremental = options.incremental
-  # Don't bother enabling incremental compilation for third_party code, since
-  # _CheckPathMatchesClassName() fails on some of it, and it's not really much
-  # benefit.
-  for java_file in java_files:
-    if 'third_party' in java_file or not options.chromium_code:
-      incremental = False
-    else:
-      _CheckPathMatchesClassName(java_file)
+  # Don't bother enabling incremental compilation for non-chromium code.
+  incremental = options.incremental and options.chromium_code
 
   with build_utils.TempDir() as temp_dir:
     srcjars = options.java_srcjars
@@ -286,6 +302,7 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
       if srcjars:
         _FixTempPathsInIncrementalMetadata(pdb_path, temp_dir)
 
+    srcjar_files = dict()
     if srcjars:
       java_dir = os.path.join(temp_dir, 'java')
       os.makedirs(java_dir)
@@ -293,7 +310,10 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
         if changed_paths:
           changed_paths.update(os.path.join(java_dir, f)
                                for f in changes.IterChangedSubpaths(srcjar))
-        build_utils.ExtractAll(srcjar, path=java_dir, pattern='*.java')
+        extracted_files = build_utils.ExtractAll(
+            srcjar, path=java_dir, pattern='*.java')
+        for path in extracted_files:
+          srcjar_files[path] = srcjar
       jar_srcs = build_utils.FindInDirectory(java_dir, '*.java')
       java_files.extend(jar_srcs)
       if changed_paths:
@@ -301,6 +321,8 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
         # files to tell jmake which files are stale.
         for path in jar_srcs:
           os.utime(path, (0, 0))
+
+    _CreateInfoFile(java_files, options, srcjar_files)
 
     if java_files:
       if changed_paths:
@@ -555,6 +577,7 @@ def main(argv):
 
   output_paths = [
       options.jar_path,
+      options.jar_path + '.info',
   ]
   if options.incremental:
     output_paths.append(options.jar_path + '.pdb')

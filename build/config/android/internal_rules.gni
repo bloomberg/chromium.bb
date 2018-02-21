@@ -2211,6 +2211,7 @@ if (enable_java_templates) {
       outputs = [
         invoker.javac_jar_path,
         invoker.javac_jar_path + ".md5.stamp",
+        invoker.javac_jar_path + ".info",
       ]
       inputs = invoker.java_files + _java_srcjars + [ _build_config ]
       if (invoker.java_files != []) {
