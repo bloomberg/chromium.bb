@@ -451,8 +451,10 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
   [cocoa_view_ setLayer:background_layer_];
   [cocoa_view_ setWantsLayer:YES];
 
-  viz::FrameSinkId frame_sink_id =
-      render_widget_host_->AllocateFrameSinkId(is_guest_view_hack_);
+  viz::FrameSinkId frame_sink_id = is_guest_view_hack_
+                                       ? AllocateFrameSinkIdForGuestViewHack()
+                                       : render_widget_host_->GetFrameSinkId();
+
   browser_compositor_.reset(
       new BrowserCompositorMac(this, this, render_widget_host_->is_hidden(),
                                [cocoa_view_ window], frame_sink_id));
@@ -1723,6 +1725,14 @@ void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
       render_widget_host_->auto_resize_enabled());
   render_widget_host_->PauseForPendingResizeOrRepaints();
   browser_compositor_->EndPauseForFrame();
+}
+
+// static
+viz::FrameSinkId
+RenderWidgetHostViewMac::AllocateFrameSinkIdForGuestViewHack() {
+  return ImageTransportFactory::GetInstance()
+      ->GetContextFactoryPrivate()
+      ->AllocateFrameSinkId();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

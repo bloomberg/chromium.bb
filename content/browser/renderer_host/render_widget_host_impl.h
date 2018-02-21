@@ -161,7 +161,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   RenderWidgetHostOwnerDelegate* owner_delegate() { return owner_delegate_; }
 
-  viz::FrameSinkId AllocateFrameSinkId(bool is_guest_view_hack);
+  // Returns the viz::FrameSinkId that this object uses to put things on screen.
+  // This value is constant throughout the lifetime of this object. Note that
+  // until a RenderWidgetHostView is created, initialized, and assigned to this
+  // object, viz may not be aware of this FrameSinkId.
+  const viz::FrameSinkId& GetFrameSinkId() const;
 
   // RenderWidgetHost implementation.
   void UpdateTextDirection(blink::WebTextDirection direction) override;
@@ -1087,6 +1091,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   bool next_resize_needs_resize_ack_ = false;
 
   std::unique_ptr<RenderFrameMetadataProvider> render_frame_metadata_provider_;
+
+  const viz::FrameSinkId frame_sink_id_;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 
