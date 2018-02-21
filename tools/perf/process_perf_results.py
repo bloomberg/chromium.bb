@@ -88,6 +88,10 @@ def _process_perf_results(output_json, configuration_name,
 
   test_results_list = []
   for directory in benchmark_directory_list:
+    if '.reference' in directory:
+      # We don't need to upload reference build data to the
+      # flakiness dashboard since we don't monitor the ref build
+      continue
     with open(join(directory, 'test_results.json')) as json_data:
       test_results_list.append(json.load(json_data))
   _merge_json_output(output_json, test_results_list)
