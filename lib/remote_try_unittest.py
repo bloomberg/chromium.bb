@@ -388,11 +388,11 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
   def testGetRequestBody(self):
     """Test GetRequestBody."""
     remote_try_job = remote_try.RemoteTryJob(
-        ['lumpy-pre-cq', 'lumpy-paladin'],
+        ['eve-pre-cq', 'eve-paladin'],
         'display_label',
         remote_description='description')
-    body = remote_try_job._GetRequestBody('lumpy-pre-cq')
+    body = remote_try_job._GetRequestBody('eve-pre-cq')
     self.assertTrue('build_type:pre_cq' in body['tags'])
 
-    body = remote_try_job._GetRequestBody('lumpy-paladin')
+    body = remote_try_job._GetRequestBody('eve-paladin')
     self.assertFalse('build_type:pre_cq' in body['tags'])

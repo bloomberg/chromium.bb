@@ -144,7 +144,7 @@ class FindConfigsForBoardTest(cros_test_lib.TestCase):
 
   def testInternal(self):
     """Test finding of a release builder."""
-    self._CheckFullConfig('lumpy', internal_expected='lumpy-release')
+    self._CheckFullConfig('eve', internal_expected='eve-release')
 
   def testBoth(self):
     """Both an external and internal config exist for board."""
@@ -162,7 +162,7 @@ class FindConfigsForBoardTest(cros_test_lib.TestCase):
 
   def testAFDOCanonicalResolution(self):
     """Test prefer non-AFDO over AFDO builder."""
-    self._CheckCanonicalConfig('lumpy', 'release')
+    self._CheckCanonicalConfig('eve', 'release')
 
   def testOneFullConfigPerBoard(self):
     """There is at most one 'full' config for a board."""

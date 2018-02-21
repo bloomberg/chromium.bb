@@ -159,7 +159,7 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
   def testRunStagesDefaultBuildHwTests(self):
     """Verify RunStages for boards w/hwtests"""
     extra_argv = ['--hwtest']
-    builder_run = self._initConfig('lumpy-release', extra_argv=extra_argv)
+    builder_run = self._initConfig('eve-release', extra_argv=extra_argv)
     builder_run.attrs.chrome_version = 'TheChromeVersion'
     simple_builders.SimpleBuilder(builder_run).RunStages()
 
@@ -171,10 +171,10 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     """
     extra_argv = ['--hwtest']
     builder_run_without_blocking = self._initConfig(
-        'lumpy-release', extra_argv=extra_argv,
+        'eve-release', extra_argv=extra_argv,
         override_hw_test_config=dict(blocking=False))
     builder_run_with_blocking = self._initConfig(
-        'lumpy-release', extra_argv=extra_argv,
+        'eve-release', extra_argv=extra_argv,
         override_hw_test_config=dict(blocking=True))
     builder_run_without_blocking.attrs.chrome_version = 'TheChromeVersion'
     builder_run_with_blocking.attrs.chrome_version = 'TheChromeVersion'
@@ -190,7 +190,7 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     """Verify hwtests run for model fanout with unified builds"""
     extra_argv = ['--hwtest']
     unified_build = self._initConfig(
-        'lumpy-release',
+        'eve-release',
         extra_argv=extra_argv,
         models=[config_lib.ModelTestConfig('model1', 'model1'),
                 config_lib.ModelTestConfig(
@@ -202,7 +202,7 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     """Verify hwtests are filtered correctly on a per-model basis"""
     extra_argv = ['--hwtest']
     unified_build = self._initConfig(
-        'lumpy-release',
+        'eve-release',
         extra_argv=extra_argv)
     unified_build.attrs.chrome_version = 'TheChromeVersion'
 
@@ -214,7 +214,7 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
 
     hw_stage = simple_builders.SimpleBuilder(unified_build)._GetHWTestStage(
         unified_build,
-        'lumpy',
+        'eve',
         model1,
         test_phase1)
     self.assertIsNotNone(hw_stage)
@@ -222,14 +222,14 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
 
     hw_stage = simple_builders.SimpleBuilder(unified_build)._GetHWTestStage(
         unified_build,
-        'lumpy',
+        'eve',
         model2,
         test_phase1)
     self.assertIsNone(hw_stage)
 
     hw_stage = simple_builders.SimpleBuilder(unified_build)._GetHWTestStage(
         unified_build,
-        'lumpy',
+        'eve',
         model2,
         test_phase2)
     self.assertIsNotNone(hw_stage)

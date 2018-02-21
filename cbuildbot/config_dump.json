@@ -8472,426 +8472,6 @@
             "chrome_internal"
         ]
     },
-    "butterfly-chrome-pfq": {
-        "_template": "chrome_pfq",
-        "boards": [
-            "butterfly"
-        ],
-        "important": false,
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
-    "butterfly-chrome-pfq-tryjob": {
-        "_template": "chrome_pfq",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "butterfly"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "hw_tests_override": null,
-        "important": false,
-        "manifest": "official.xml",
-        "uprev": true,
-        "vm_tests": []
-    },
-    "butterfly-chromium-pfq": {
-        "_template": "chromium_pfq",
-        "boards": [
-            "butterfly"
-        ],
-        "important": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "butterfly-chromium-pfq-tryjob": {
-        "_template": "chromium_pfq",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "butterfly"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "hw_tests_override": null,
-        "important": false,
-        "uprev": true,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "butterfly-compile-only-pre-cq": {
-        "_template": "compile_only_pre_cq",
-        "boards": [
-            "butterfly"
-        ],
-        "hw_tests_override": null,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
-    "butterfly-factory": {
-        "_template": "factory",
-        "boards": [
-            "butterfly"
-        ]
-    },
-    "butterfly-factory-tryjob": {
-        "_template": "factory",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "butterfly"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests_override": null,
-        "push_image": false
-    },
-    "butterfly-firmware": {
-        "_template": "firmware",
-        "boards": [
-            "butterfly"
-        ],
-        "manifest": "official.xml"
-    },
-    "butterfly-firmware-tryjob": {
-        "_template": "firmware",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "butterfly"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "manifest": "official.xml",
-        "push_image": false
-    },
-    "butterfly-full": {
-        "_template": "full",
-        "boards": [
-            "butterfly"
-        ],
-        "hw_tests_override": null,
-        "prebuilts": "public",
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "butterfly-llvm-next-toolchain": {
-        "_template": "llvm_next_toolchain",
-        "boards": [
-            "butterfly"
-        ]
-    },
-    "butterfly-llvm-next-toolchain-tryjob": {
-        "_template": "llvm_next_toolchain",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "butterfly"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests_override": null
-    },
-    "butterfly-llvm-toolchain": {
-        "_template": "llvm_toolchain",
-        "boards": [
-            "butterfly"
-        ]
-    },
-    "butterfly-llvm-toolchain-tryjob": {
-        "_template": "llvm_toolchain",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "butterfly"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests_override": null
-    },
-    "butterfly-no-vmtest-pre-cq": {
-        "_template": "no_vmtest_pre_cq",
-        "boards": [
-            "butterfly"
-        ],
-        "hw_tests_override": null,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
-    "butterfly-paladin": {
-        "_template": "paladin",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "butterfly"
-        ],
-        "chroot_replace": true,
-        "description": "Commit Queue (internal)",
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "private",
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "butterfly-paladin-tryjob": {
-        "_template": "paladin",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "butterfly"
-        ],
-        "chroot_replace": true,
-        "debug": true,
-        "description": "Commit Queue (internal)",
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"provision\",\n    \"suite_args\": {\n        \"num_required\": 1\n    },\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}"
-        ],
-        "hw_tests_override": null,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "private",
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "butterfly-payloads": {
-        "_template": "payloads",
-        "boards": [
-            "butterfly"
-        ],
-        "hw_tests_override": null
-    },
-    "butterfly-pre-cq": {
-        "_template": "pre_cq",
-        "boards": [
-            "butterfly"
-        ],
-        "hw_tests_override": null,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "butterfly-release": {
-        "_template": "release",
-        "boards": [
-            "butterfly"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "butterfly-release-afdo": {
-        "_template": "release_afdo_generate",
-        "boards": [
-            "butterfly"
-        ],
-        "child_configs": [
-            {
-                "_template": "release_afdo_generate",
-                "boards": [
-                    "butterfly"
-                ],
-                "grouped": true,
-                "name": "butterfly-release-afdo-generate",
-                "vm_tests": [],
-                "vm_tests_override": null
-            },
-            {
-                "_template": "release_afdo_use",
-                "boards": [
-                    "butterfly"
-                ],
-                "grouped": true,
-                "name": "butterfly-release-afdo-use",
-                "vm_tests": [],
-                "vm_tests_override": null
-            }
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "butterfly-release-afdo-generate": {
-        "_template": "release_afdo_generate",
-        "boards": [
-            "butterfly"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "butterfly-release-afdo-generate-tryjob": {
-        "_template": "release_afdo_generate",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "butterfly"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"AFDO_record\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 6000,\n    \"warn_only\": true\n}"
-        ],
-        "hw_tests_override": null,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "butterfly-release-afdo-tryjob": {
-        "_template": "release_afdo_generate",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "butterfly"
-        ],
-        "child_configs": [
-            {
-                "_template": "release_afdo_generate",
-                "boards": [
-                    "butterfly"
-                ],
-                "grouped": true,
-                "name": "butterfly-release-afdo-generate",
-                "vm_tests": [],
-                "vm_tests_override": null
-            },
-            {
-                "_template": "release_afdo_use",
-                "boards": [
-                    "butterfly"
-                ],
-                "grouped": true,
-                "name": "butterfly-release-afdo-use",
-                "vm_tests": [],
-                "vm_tests_override": null
-            }
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"AFDO_record\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 6000,\n    \"warn_only\": true\n}"
-        ],
-        "hw_tests_override": null,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "butterfly-release-afdo-use": {
-        "_template": "release_afdo_use",
-        "boards": [
-            "butterfly"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "butterfly-release-afdo-use-tryjob": {
-        "_template": "release_afdo_use",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "butterfly"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "hw_tests_override": null,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "butterfly-release-tryjob": {
-        "_template": "release",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "butterfly"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "hw_tests_override": null,
-        "paygen": false,
-        "push_image": false,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "butterfly-tot-chrome-pfq-informational": {
-        "_template": "chrome_pfq_informational",
-        "boards": [
-            "butterfly"
-        ],
-        "hw_tests_override": null,
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
-    "butterfly-tot-chromium-pfq-informational": {
-        "_template": "chromium_pfq_informational",
-        "boards": [
-            "butterfly"
-        ],
-        "hw_tests_override": null,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "butterfly-unittest-stress": {
-        "_template": "unittest_stress",
-        "boards": [
-            "butterfly"
-        ],
-        "hw_tests_override": null,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
     "candy-chrome-pfq": {
         "_template": "chrome_pfq",
         "boards": [
@@ -17886,6 +17466,7 @@
             "eve"
         ],
         "chrome_sdk_build_chrome": false,
+        "critical_for_chrome": true,
         "important": true,
         "useflags": [
             "-cros-debug",
@@ -18020,6 +17601,7 @@
             "eve"
         ],
         "chrome_sdk_build_chrome": false,
+        "critical_for_chrome": true,
         "debug": true,
         "display_label": "tryjob",
         "hw_tests": [
@@ -26814,6 +26396,55 @@
             "chrome_internal"
         ]
     },
+    "incremental-paladin": {
+        "_template": "paladin",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "reef"
+        ],
+        "build_before_patching": true,
+        "compilecheck": true,
+        "description": "Commit Queue (internal)",
+        "hw_tests_override": [],
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": false,
+        "unittests": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "incremental-paladin-tryjob": {
+        "_template": "paladin",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "reef"
+        ],
+        "build_before_patching": true,
+        "chroot_replace": true,
+        "compilecheck": true,
+        "debug": true,
+        "description": "Commit Queue (internal)",
+        "display_label": "tryjob",
+        "hw_tests_override": null,
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": false,
+        "unittests": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
     "jadeite-chrome-pfq": {
         "_template": "chrome_pfq",
         "boards": [
@@ -34791,500 +34422,6 @@
         ],
         "vm_tests": []
     },
-    "lumpy-chrome-perf": {
-        "_template": "chrome_perf",
-        "boards": [
-            "lumpy"
-        ],
-        "hw_tests_override": null,
-        "manifest": "official.xml",
-        "trybot_list": true
-    },
-    "lumpy-chrome-pfq": {
-        "_template": "chrome_pfq",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "lumpy"
-        ],
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 5,\n    \"minimum_duts\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 5,\n    \"minimum_duts\": 4,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"provision\",\n    \"suite_args\": {\n        \"num_required\": 1\n    },\n    \"suite_min_duts\": 3,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 5,\n    \"minimum_duts\": 4,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 3,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 5,\n    \"minimum_duts\": 4,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 3,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 5,\n    \"minimum_duts\": 4,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 3,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
-    "lumpy-chrome-pfq-tryjob": {
-        "_template": "chrome_pfq",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "lumpy"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "hw_tests_override": null,
-        "manifest": "official.xml",
-        "uprev": true,
-        "vm_tests": []
-    },
-    "lumpy-chromium-pfq": {
-        "_template": "chromium_pfq",
-        "boards": [
-            "lumpy"
-        ],
-        "important": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "lumpy-chromium-pfq-tryjob": {
-        "_template": "chromium_pfq",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "lumpy"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "hw_tests_override": null,
-        "important": false,
-        "uprev": true,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "lumpy-compile-only-pre-cq": {
-        "_template": "compile_only_pre_cq",
-        "boards": [
-            "lumpy"
-        ],
-        "hw_tests_override": null,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
-    "lumpy-factory": {
-        "_template": "factory",
-        "boards": [
-            "lumpy"
-        ]
-    },
-    "lumpy-factory-tryjob": {
-        "_template": "factory",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "lumpy"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests_override": null,
-        "push_image": false
-    },
-    "lumpy-firmware": {
-        "_template": "firmware",
-        "boards": [
-            "lumpy"
-        ],
-        "manifest": "official.xml"
-    },
-    "lumpy-firmware-tryjob": {
-        "_template": "firmware",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "lumpy"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "manifest": "official.xml",
-        "push_image": false
-    },
-    "lumpy-full": {
-        "_template": "full",
-        "boards": [
-            "lumpy"
-        ],
-        "hw_tests_override": null,
-        "prebuilts": "public",
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "lumpy-incremental-paladin": {
-        "_template": "paladin",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "lumpy"
-        ],
-        "build_before_patching": true,
-        "compilecheck": true,
-        "description": "Commit Queue (internal)",
-        "important": false,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": false,
-        "unittests": false,
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "lumpy-incremental-paladin-tryjob": {
-        "_template": "paladin",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "lumpy"
-        ],
-        "build_before_patching": true,
-        "chroot_replace": true,
-        "compilecheck": true,
-        "debug": true,
-        "description": "Commit Queue (internal)",
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"provision\",\n    \"suite_args\": {\n        \"num_required\": 1\n    },\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}"
-        ],
-        "hw_tests_override": null,
-        "important": false,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": false,
-        "unittests": false,
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "lumpy-llvm-next-toolchain": {
-        "_template": "llvm_next_toolchain",
-        "boards": [
-            "lumpy"
-        ]
-    },
-    "lumpy-llvm-next-toolchain-tryjob": {
-        "_template": "llvm_next_toolchain",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "lumpy"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests_override": null
-    },
-    "lumpy-llvm-toolchain": {
-        "_template": "llvm_toolchain",
-        "boards": [
-            "lumpy"
-        ]
-    },
-    "lumpy-llvm-toolchain-tryjob": {
-        "_template": "llvm_toolchain",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "lumpy"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests_override": null
-    },
-    "lumpy-no-vmtest-pre-cq": {
-        "_template": "no_vmtest_pre_cq",
-        "boards": [
-            "lumpy"
-        ],
-        "hw_tests_override": null,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
-    "lumpy-paladin": {
-        "_template": "paladin",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "lumpy"
-        ],
-        "description": "Commit Queue (internal)",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 4,\n    \"offload_failures_only\": false,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"provision\",\n    \"suite_args\": {\n        \"num_required\": 1\n    },\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 4,\n    \"offload_failures_only\": false,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}"
-        ],
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "private",
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "lumpy-paladin-tryjob": {
-        "_template": "paladin",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "lumpy"
-        ],
-        "chroot_replace": true,
-        "debug": true,
-        "description": "Commit Queue (internal)",
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"provision\",\n    \"suite_args\": {\n        \"num_required\": 1\n    },\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}"
-        ],
-        "hw_tests_override": null,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "private",
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "lumpy-payloads": {
-        "_template": "payloads",
-        "boards": [
-            "lumpy"
-        ],
-        "hw_tests_override": null
-    },
-    "lumpy-pre-cq": {
-        "_template": "pre_cq",
-        "boards": [
-            "lumpy"
-        ],
-        "hw_tests_override": null,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "lumpy-release": {
-        "_template": "release",
-        "boards": [
-            "lumpy"
-        ],
-        "critical_for_chrome": true,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "lumpy-release-afdo": {
-        "_template": "release_afdo_generate",
-        "boards": [
-            "lumpy"
-        ],
-        "child_configs": [
-            {
-                "_template": "release_afdo_generate",
-                "boards": [
-                    "lumpy"
-                ],
-                "grouped": true,
-                "name": "lumpy-release-afdo-generate",
-                "vm_tests": [],
-                "vm_tests_override": null
-            },
-            {
-                "_template": "release_afdo_use",
-                "boards": [
-                    "lumpy"
-                ],
-                "grouped": true,
-                "name": "lumpy-release-afdo-use",
-                "vm_tests": [],
-                "vm_tests_override": null
-            }
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "lumpy-release-afdo-generate": {
-        "_template": "release_afdo_generate",
-        "boards": [
-            "lumpy"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "lumpy-release-afdo-generate-tryjob": {
-        "_template": "release_afdo_generate",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "lumpy"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"AFDO_record\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 6000,\n    \"warn_only\": true\n}"
-        ],
-        "hw_tests_override": null,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "lumpy-release-afdo-tryjob": {
-        "_template": "release_afdo_generate",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "lumpy"
-        ],
-        "child_configs": [
-            {
-                "_template": "release_afdo_generate",
-                "boards": [
-                    "lumpy"
-                ],
-                "grouped": true,
-                "name": "lumpy-release-afdo-generate",
-                "vm_tests": [],
-                "vm_tests_override": null
-            },
-            {
-                "_template": "release_afdo_use",
-                "boards": [
-                    "lumpy"
-                ],
-                "grouped": true,
-                "name": "lumpy-release-afdo-use",
-                "vm_tests": [],
-                "vm_tests_override": null
-            }
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"AFDO_record\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 6000,\n    \"warn_only\": true\n}"
-        ],
-        "hw_tests_override": null,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "lumpy-release-afdo-use": {
-        "_template": "release_afdo_use",
-        "boards": [
-            "lumpy"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "lumpy-release-afdo-use-tryjob": {
-        "_template": "release_afdo_use",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "lumpy"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "hw_tests_override": null,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "lumpy-release-tryjob": {
-        "_template": "release",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "lumpy"
-        ],
-        "critical_for_chrome": true,
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "hw_tests_override": null,
-        "paygen": false,
-        "push_image": false,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "lumpy-tot-chrome-pfq-informational": {
-        "_template": "chrome_pfq_informational",
-        "boards": [
-            "lumpy"
-        ],
-        "hw_tests_override": null,
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
-    "lumpy-tot-chromium-pfq-informational": {
-        "_template": "chromium_pfq_informational",
-        "boards": [
-            "lumpy"
-        ],
-        "hw_tests_override": null,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "lumpy-unittest-stress": {
-        "_template": "unittest_stress",
-        "boards": [
-            "lumpy"
-        ],
-        "hw_tests_override": null,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
     "macchiato-ground-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
         "boards": [
@@ -35621,7 +34758,6 @@
             "daisy-chromium-pfq",
             "daisy_skate-chrome-pfq",
             "hana-chrome-pfq",
-            "lumpy-chrome-pfq",
             "nyan_big-chrome-pfq",
             "peach_pit-chrome-pfq",
             "peppy-chrome-pfq",
@@ -35669,7 +34805,6 @@
             "daisy-chromium-pfq",
             "daisy_skate-chrome-pfq",
             "hana-chrome-pfq",
-            "lumpy-chrome-pfq",
             "nyan_big-chrome-pfq",
             "peach_pit-chrome-pfq",
             "peppy-chrome-pfq",
@@ -35796,7 +34931,6 @@
             "betty-arc64-paladin",
             "betty-paladin",
             "bob-paladin",
-            "butterfly-paladin",
             "capri-paladin",
             "capri-zfpga-paladin",
             "caroline-paladin",
@@ -35825,6 +34959,7 @@
             "guado-paladin",
             "guado_moblab-paladin",
             "hana-paladin",
+            "incremental-paladin",
             "kahlee-paladin",
             "kevin-paladin",
             "kip-paladin",
@@ -35835,8 +34970,6 @@
             "lasilla-sky-paladin",
             "leon-paladin",
             "link-paladin",
-            "lumpy-incremental-paladin",
-            "lumpy-paladin",
             "macchiato-ground-paladin",
             "moblab-generic-vm-paladin",
             "monroe-paladin",
@@ -35848,7 +34981,6 @@
             "octavius-paladin",
             "octopus-paladin",
             "panther-paladin",
-            "parrot-paladin",
             "peach_pit-paladin",
             "peppy-paladin",
             "poppy-paladin",
@@ -35860,7 +34992,6 @@
             "scarlet-paladin",
             "sentry-paladin",
             "stout-paladin",
-            "stumpy-paladin",
             "tatl-paladin",
             "tidus-paladin",
             "tricky-paladin",
@@ -35918,7 +35049,6 @@
             "betty-arc64-paladin",
             "betty-paladin",
             "bob-paladin",
-            "butterfly-paladin",
             "capri-paladin",
             "capri-zfpga-paladin",
             "caroline-paladin",
@@ -35947,6 +35077,7 @@
             "guado-paladin",
             "guado_moblab-paladin",
             "hana-paladin",
+            "incremental-paladin",
             "kahlee-paladin",
             "kevin-paladin",
             "kip-paladin",
@@ -35957,8 +35088,6 @@
             "lasilla-sky-paladin",
             "leon-paladin",
             "link-paladin",
-            "lumpy-incremental-paladin",
-            "lumpy-paladin",
             "macchiato-ground-paladin",
             "moblab-generic-vm-paladin",
             "monroe-paladin",
@@ -35970,7 +35099,6 @@
             "octavius-paladin",
             "octopus-paladin",
             "panther-paladin",
-            "parrot-paladin",
             "peach_pit-paladin",
             "peppy-paladin",
             "poppy-paladin",
@@ -35982,7 +35110,6 @@
             "scarlet-paladin",
             "sentry-paladin",
             "stout-paladin",
-            "stumpy-paladin",
             "tatl-paladin",
             "tidus-paladin",
             "tricky-paladin",
@@ -44323,448 +43450,6 @@
             "chrome_internal"
         ]
     },
-    "parrot-chrome-perf": {
-        "_template": "chrome_perf",
-        "boards": [
-            "parrot"
-        ],
-        "hw_tests_override": null,
-        "manifest": "official.xml",
-        "trybot_list": true
-    },
-    "parrot-chrome-pfq": {
-        "_template": "chrome_pfq",
-        "boards": [
-            "parrot"
-        ],
-        "important": false,
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
-    "parrot-chrome-pfq-tryjob": {
-        "_template": "chrome_pfq",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "parrot"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "hw_tests_override": null,
-        "important": false,
-        "manifest": "official.xml",
-        "uprev": true,
-        "vm_tests": []
-    },
-    "parrot-chromium-pfq": {
-        "_template": "chromium_pfq",
-        "boards": [
-            "parrot"
-        ],
-        "important": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "parrot-chromium-pfq-tryjob": {
-        "_template": "chromium_pfq",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "parrot"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "hw_tests_override": null,
-        "important": false,
-        "uprev": true,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "parrot-compile-only-pre-cq": {
-        "_template": "compile_only_pre_cq",
-        "boards": [
-            "parrot"
-        ],
-        "hw_tests_override": null,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
-    "parrot-factory": {
-        "_template": "factory",
-        "boards": [
-            "parrot"
-        ]
-    },
-    "parrot-factory-tryjob": {
-        "_template": "factory",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "parrot"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests_override": null,
-        "push_image": false
-    },
-    "parrot-firmware": {
-        "_template": "firmware",
-        "boards": [
-            "parrot"
-        ],
-        "manifest": "official.xml"
-    },
-    "parrot-firmware-tryjob": {
-        "_template": "firmware",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "parrot"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "manifest": "official.xml",
-        "push_image": false
-    },
-    "parrot-full": {
-        "_template": "full",
-        "boards": [
-            "parrot"
-        ],
-        "hw_tests_override": null,
-        "prebuilts": "public",
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "parrot-llvm-next-toolchain": {
-        "_template": "llvm_next_toolchain",
-        "boards": [
-            "parrot"
-        ]
-    },
-    "parrot-llvm-next-toolchain-tryjob": {
-        "_template": "llvm_next_toolchain",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "parrot"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests_override": null
-    },
-    "parrot-llvm-toolchain": {
-        "_template": "llvm_toolchain",
-        "boards": [
-            "parrot"
-        ]
-    },
-    "parrot-llvm-toolchain-tryjob": {
-        "_template": "llvm_toolchain",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "parrot"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests_override": null
-    },
-    "parrot-no-vmtest-pre-cq": {
-        "_template": "no_vmtest_pre_cq",
-        "boards": [
-            "parrot"
-        ],
-        "hw_tests_override": null,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
-    "parrot-paladin": {
-        "_template": "paladin",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "parrot"
-        ],
-        "description": "Commit Queue (internal)",
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "private",
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "parrot-paladin-tryjob": {
-        "_template": "paladin",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "parrot"
-        ],
-        "chroot_replace": true,
-        "debug": true,
-        "description": "Commit Queue (internal)",
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"provision\",\n    \"suite_args\": {\n        \"num_required\": 1\n    },\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}"
-        ],
-        "hw_tests_override": null,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "private",
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "parrot-payloads": {
-        "_template": "payloads",
-        "boards": [
-            "parrot"
-        ],
-        "hw_tests_override": null
-    },
-    "parrot-pre-cq": {
-        "_template": "pre_cq",
-        "boards": [
-            "parrot"
-        ],
-        "hw_tests_override": null,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "parrot-release": {
-        "_template": "release",
-        "boards": [
-            "parrot"
-        ],
-        "critical_for_chrome": true,
-        "useflags": [
-            "-cros-debug",
-            "afdo_chrome_exp1",
-            "afdo_use",
-            "chrome_internal"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "parrot-release-afdo": {
-        "_template": "release_afdo_generate",
-        "boards": [
-            "parrot"
-        ],
-        "child_configs": [
-            {
-                "_template": "release_afdo_generate",
-                "boards": [
-                    "parrot"
-                ],
-                "grouped": true,
-                "name": "parrot-release-afdo-generate",
-                "vm_tests": [],
-                "vm_tests_override": null
-            },
-            {
-                "_template": "release_afdo_use",
-                "boards": [
-                    "parrot"
-                ],
-                "grouped": true,
-                "name": "parrot-release-afdo-use",
-                "vm_tests": [],
-                "vm_tests_override": null
-            }
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "parrot-release-afdo-generate": {
-        "_template": "release_afdo_generate",
-        "boards": [
-            "parrot"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "parrot-release-afdo-generate-tryjob": {
-        "_template": "release_afdo_generate",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "parrot"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"AFDO_record\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 6000,\n    \"warn_only\": true\n}"
-        ],
-        "hw_tests_override": null,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "parrot-release-afdo-tryjob": {
-        "_template": "release_afdo_generate",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "parrot"
-        ],
-        "child_configs": [
-            {
-                "_template": "release_afdo_generate",
-                "boards": [
-                    "parrot"
-                ],
-                "grouped": true,
-                "name": "parrot-release-afdo-generate",
-                "vm_tests": [],
-                "vm_tests_override": null
-            },
-            {
-                "_template": "release_afdo_use",
-                "boards": [
-                    "parrot"
-                ],
-                "grouped": true,
-                "name": "parrot-release-afdo-use",
-                "vm_tests": [],
-                "vm_tests_override": null
-            }
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"AFDO_record\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 6000,\n    \"warn_only\": true\n}"
-        ],
-        "hw_tests_override": null,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "parrot-release-afdo-use": {
-        "_template": "release_afdo_use",
-        "boards": [
-            "parrot"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "parrot-release-afdo-use-tryjob": {
-        "_template": "release_afdo_use",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "parrot"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "hw_tests_override": null,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "parrot-release-tryjob": {
-        "_template": "release",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "parrot"
-        ],
-        "critical_for_chrome": true,
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "hw_tests_override": null,
-        "paygen": false,
-        "push_image": false,
-        "useflags": [
-            "-cros-debug",
-            "afdo_chrome_exp1",
-            "afdo_use",
-            "chrome_internal"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "parrot-tot-chrome-pfq-informational": {
-        "_template": "chrome_pfq_informational",
-        "boards": [
-            "parrot"
-        ],
-        "hw_tests_override": null,
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
-    "parrot-tot-chromium-pfq-informational": {
-        "_template": "chromium_pfq_informational",
-        "boards": [
-            "parrot"
-        ],
-        "hw_tests_override": null,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "parrot-unittest-stress": {
-        "_template": "unittest_stress",
-        "boards": [
-            "parrot"
-        ],
-        "hw_tests_override": null,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
     "parrot_ivb-chrome-pfq": {
         "_template": "chrome_pfq",
         "boards": [
@@ -49148,6 +47833,15 @@
         "push_overlays": null,
         "sync_chrome": true,
         "vm_tests_override": null
+    },
+    "reef-chrome-perf": {
+        "_template": "chrome_perf",
+        "boards": [
+            "reef"
+        ],
+        "hw_tests_override": null,
+        "manifest": "official.xml",
+        "trybot_list": true
     },
     "reef-chrome-pfq": {
         "_template": "chrome_pfq",
@@ -56603,452 +55297,6 @@
             "chrome_internal"
         ]
     },
-    "stumpy-chrome-pfq": {
-        "_template": "chrome_pfq",
-        "boards": [
-            "stumpy"
-        ],
-        "important": false,
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
-    "stumpy-chrome-pfq-tryjob": {
-        "_template": "chrome_pfq",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "stumpy"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "hw_tests_override": null,
-        "important": false,
-        "manifest": "official.xml",
-        "uprev": true,
-        "vm_tests": []
-    },
-    "stumpy-chromium-pfq": {
-        "_template": "chromium_pfq",
-        "boards": [
-            "stumpy"
-        ],
-        "important": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "stumpy-chromium-pfq-tryjob": {
-        "_template": "chromium_pfq",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "stumpy"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "hw_tests_override": null,
-        "important": false,
-        "uprev": true,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "stumpy-compile-only-pre-cq": {
-        "_template": "compile_only_pre_cq",
-        "boards": [
-            "stumpy"
-        ],
-        "hw_tests_override": null,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
-    "stumpy-factory": {
-        "_template": "factory",
-        "boards": [
-            "stumpy"
-        ]
-    },
-    "stumpy-factory-tryjob": {
-        "_template": "factory",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "stumpy"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests_override": null,
-        "push_image": false
-    },
-    "stumpy-firmware": {
-        "_template": "firmware",
-        "boards": [
-            "stumpy"
-        ],
-        "manifest": "official.xml"
-    },
-    "stumpy-firmware-tryjob": {
-        "_template": "firmware",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "stumpy"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "manifest": "official.xml",
-        "push_image": false
-    },
-    "stumpy-full": {
-        "_template": "full",
-        "boards": [
-            "stumpy"
-        ],
-        "hw_tests_override": null,
-        "prebuilts": "public",
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "stumpy-llvm-next-toolchain": {
-        "_template": "llvm_next_toolchain",
-        "boards": [
-            "stumpy"
-        ]
-    },
-    "stumpy-llvm-next-toolchain-tryjob": {
-        "_template": "llvm_next_toolchain",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "stumpy"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests_override": null
-    },
-    "stumpy-llvm-toolchain": {
-        "_template": "llvm_toolchain",
-        "boards": [
-            "stumpy"
-        ]
-    },
-    "stumpy-llvm-toolchain-tryjob": {
-        "_template": "llvm_toolchain",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "stumpy"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests_override": null
-    },
-    "stumpy-no-vmtest-pre-cq": {
-        "_template": "no_vmtest_pre_cq",
-        "boards": [
-            "stumpy"
-        ],
-        "hw_tests_override": null,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
-    "stumpy-paladin": {
-        "_template": "paladin",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "stumpy"
-        ],
-        "description": "Commit Queue (internal)",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 4,\n    \"offload_failures_only\": false,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"provision\",\n    \"suite_args\": {\n        \"num_required\": 1\n    },\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 4,\n    \"offload_failures_only\": false,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}"
-        ],
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "private",
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "stumpy-paladin-tryjob": {
-        "_template": "paladin",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "stumpy"
-        ],
-        "chroot_replace": true,
-        "debug": true,
-        "description": "Commit Queue (internal)",
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"provision\",\n    \"suite_args\": {\n        \"num_required\": 1\n    },\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}"
-        ],
-        "hw_tests_override": null,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "private",
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "stumpy-payloads": {
-        "_template": "payloads",
-        "boards": [
-            "stumpy"
-        ],
-        "hw_tests_override": null
-    },
-    "stumpy-pre-cq": {
-        "_template": "pre_cq",
-        "boards": [
-            "stumpy"
-        ],
-        "hw_tests_override": null,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "stumpy-release": {
-        "_template": "release",
-        "boards": [
-            "stumpy"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "stumpy-release-afdo": {
-        "_template": "release_afdo_generate",
-        "boards": [
-            "stumpy"
-        ],
-        "child_configs": [
-            {
-                "_template": "release_afdo_generate",
-                "boards": [
-                    "stumpy"
-                ],
-                "grouped": true,
-                "name": "stumpy-release-afdo-generate",
-                "vm_tests": [],
-                "vm_tests_override": null
-            },
-            {
-                "_template": "release_afdo_use",
-                "boards": [
-                    "stumpy"
-                ],
-                "grouped": true,
-                "name": "stumpy-release-afdo-use",
-                "vm_tests": [],
-                "vm_tests_override": null
-            }
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "stumpy-release-afdo-generate": {
-        "_template": "release_afdo_generate",
-        "boards": [
-            "stumpy"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "stumpy-release-afdo-generate-tryjob": {
-        "_template": "release_afdo_generate",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "stumpy"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"AFDO_record\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 6000,\n    \"warn_only\": true\n}"
-        ],
-        "hw_tests_override": null,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "stumpy-release-afdo-tryjob": {
-        "_template": "release_afdo_generate",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "stumpy"
-        ],
-        "child_configs": [
-            {
-                "_template": "release_afdo_generate",
-                "boards": [
-                    "stumpy"
-                ],
-                "grouped": true,
-                "name": "stumpy-release-afdo-generate",
-                "vm_tests": [],
-                "vm_tests_override": null
-            },
-            {
-                "_template": "release_afdo_use",
-                "boards": [
-                    "stumpy"
-                ],
-                "grouped": true,
-                "name": "stumpy-release-afdo-use",
-                "vm_tests": [],
-                "vm_tests_override": null
-            }
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"AFDO_record\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 6000,\n    \"warn_only\": true\n}"
-        ],
-        "hw_tests_override": null,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "stumpy-release-afdo-use": {
-        "_template": "release_afdo_use",
-        "boards": [
-            "stumpy"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "stumpy-release-afdo-use-tryjob": {
-        "_template": "release_afdo_use",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "stumpy"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "hw_tests_override": null,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "stumpy-release-tryjob": {
-        "_template": "release",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "stumpy"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "hw_tests_override": null,
-        "paygen": false,
-        "push_image": false,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "stumpy-test-ap": {
-        "_template": "test_ap",
-        "boards": [
-            "stumpy"
-        ]
-    },
-    "stumpy-test-ap-tryjob": {
-        "_template": "test_ap",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "stumpy"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "hw_tests_override": null
-    },
-    "stumpy-tot-chrome-pfq-informational": {
-        "_template": "chrome_pfq_informational",
-        "boards": [
-            "stumpy"
-        ],
-        "hw_tests_override": null,
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
-    "stumpy-tot-chromium-pfq-informational": {
-        "_template": "chromium_pfq_informational",
-        "boards": [
-            "stumpy"
-        ],
-        "hw_tests_override": null,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "stumpy-unittest-stress": {
-        "_template": "unittest_stress",
-        "boards": [
-            "stumpy"
-        ],
-        "hw_tests_override": null,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
     "success-build": {
         "boards": [],
         "builder_class_name": "test_builders.SucessBuilder",
@@ -58959,17 +57207,9 @@
     "test-ap-group": {
         "_template": "test_ap",
         "boards": [
-            "stumpy"
+            "panther"
         ],
         "child_configs": [
-            {
-                "_template": "test_ap",
-                "boards": [
-                    "stumpy"
-                ],
-                "grouped": true,
-                "name": "stumpy-test-ap"
-            },
             {
                 "_template": "test_ap",
                 "boards": [
@@ -58993,17 +57233,9 @@
         "_template": "test_ap",
         "active_waterfall": "chromiumos.tryserver",
         "boards": [
-            "stumpy"
+            "panther"
         ],
         "child_configs": [
-            {
-                "_template": "test_ap",
-                "boards": [
-                    "stumpy"
-                ],
-                "grouped": true,
-                "name": "stumpy-test-ap"
-            },
             {
                 "_template": "test_ap",
                 "boards": [

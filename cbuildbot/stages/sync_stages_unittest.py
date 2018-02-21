@@ -644,7 +644,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     """Test _GetFailedPreCQConfigs."""
     change = self._patch_factory.MockPatch()
     pre_cq_1 = self.fake_db.InsertBuild(
-        'lumpy-pre-cq', constants.WATERFALL_TRYBOT, 0, 'lumpy-pre-cq',
+        'eve-pre-cq', constants.WATERFALL_TRYBOT, 0, 'eve-pre-cq',
         'bot hostname')
     self.fake_db.InsertCLActions(
         pre_cq_1,
@@ -652,7 +652,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
             change, constants.CL_ACTION_PICKED_UP)])
 
     pre_cq_2 = self.fake_db.InsertBuild(
-        'cyan-pre-cq', constants.WATERFALL_TRYBOT, 1, 'lumpy-pre-cq',
+        'cyan-pre-cq', constants.WATERFALL_TRYBOT, 1, 'eve-pre-cq',
         'bot hostname', status=constants.BUILDER_STATUS_FAILED)
     self.fake_db.InsertCLActions(
         pre_cq_2,
@@ -662,41 +662,41 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     action_history = self.fake_db.GetActionsForChanges([change])
 
     failed_configs = self.sync_stage._GetFailedPreCQConfigs(action_history)
-    self.assertItemsEqual(failed_configs, ['lumpy-pre-cq'])
+    self.assertItemsEqual(failed_configs, ['eve-pre-cq'])
 
   def testFailureStreakCounterExceedsThreshold(self):
     """Test FailureStreakCounterExceedsThreshold."""
     pre_cq_1 = self.fake_db.InsertBuild(
-        'lumpy-pre-cq', constants.WATERFALL_TRYBOT, 0, 'lumpy-pre-cq',
+        'eve-pre-cq', constants.WATERFALL_TRYBOT, 0, 'eve-pre-cq',
         'bot hostname')
     pre_cq_2 = self.fake_db.InsertBuild(
-        'lumpy-pre-cq', constants.WATERFALL_TRYBOT, 1, 'lumpy-pre-cq',
+        'eve-pre-cq', constants.WATERFALL_TRYBOT, 1, 'eve-pre-cq',
         'bot hostname')
     pre_cq_3 = self.fake_db.InsertBuild(
-        'lumpy-pre-cq', constants.WATERFALL_TRYBOT, 2, 'lumpy-pre-cq',
+        'eve-pre-cq', constants.WATERFALL_TRYBOT, 2, 'eve-pre-cq',
         'bot hostname')
     self.fake_db.FinishBuild(pre_cq_1, status=constants.BUILDER_STATUS_PASSED)
     self.fake_db.FinishBuild(pre_cq_2, status=constants.BUILDER_STATUS_FAILED)
     self.fake_db.FinishBuild(pre_cq_3, status=constants.BUILDER_STATUS_FAILED)
 
-    build_history = self.fake_db.GetBuildHistory('lumpy-pre-cq', -1, final=True)
+    build_history = self.fake_db.GetBuildHistory('eve-pre-cq', -1, final=True)
     self.assertFalse(self.sync_stage. _FailureStreakCounterExceedsThreshold(
-        'lumpy-pre-cq', build_history))
+        'eve-pre-cq', build_history))
 
     pre_cq_4 = self.fake_db.InsertBuild(
-        'lumpy-pre-cq', constants.WATERFALL_TRYBOT, 2, 'lumpy-pre-cq',
+        'eve-pre-cq', constants.WATERFALL_TRYBOT, 2, 'eve-pre-cq',
         'bot hostname')
     self.fake_db.FinishBuild(pre_cq_4, status=constants.BUILDER_STATUS_FAILED)
 
-    build_history = self.fake_db.GetBuildHistory('lumpy-pre-cq', -1, final=True)
+    build_history = self.fake_db.GetBuildHistory('eve-pre-cq', -1, final=True)
     self.assertTrue(self.sync_stage. _FailureStreakCounterExceedsThreshold(
-        'lumpy-pre-cq', build_history))
+        'eve-pre-cq', build_history))
 
   def testGetBuildConfigsToSanityCheck(self):
     """Test _GetBuildConfigsToSanityCheck."""
-    build_configs = {'lumpy-pre-cq', 'cyan-pre-cq', 'betty-pre-cq'}
+    build_configs = {'eve-pre-cq', 'cyan-pre-cq', 'betty-pre-cq'}
 
-    for build_config in ('lumpy-pre-cq', 'cyan-pre-cq'):
+    for build_config in ('eve-pre-cq', 'cyan-pre-cq'):
       for _ in range(0, 3):
         pre_cq = self.fake_db.InsertBuild(
             build_config, constants.WATERFALL_TRYBOT, 0, build_config,
@@ -704,7 +704,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
         self.fake_db.FinishBuild(pre_cq, status=constants.BUILDER_STATUS_FAILED)
 
     build_req_1 = build_requests.BuildRequest(
-        None, self.build_id, 'lumpy-pre-cq', None, 'bb_id_1', 'sanity-pre-cq',
+        None, self.build_id, 'eve-pre-cq', None, 'bb_id_1', 'sanity-pre-cq',
         datetime.datetime.now())
     build_req_2 = build_requests.BuildRequest(
         None, self.build_id, 'cyan-pre-cq', None, 'bb_id_2', 'sanity-pre-cq',
@@ -719,7 +719,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
   def testLaunchSanityCheckPreCQsIfNeeded(self):
     """Test _LaunchSanityCheckPreCQsIfNeeded."""
     mock_pool = mock.Mock()
-    configs = {'lumpy-pre-cq', 'cyan-pre-cq'}
+    configs = {'eve-pre-cq', 'cyan-pre-cq'}
     self.PatchObject(sync_stages.PreCQLauncherStage, '_GetFailedPreCQConfigs',
                      return_value=configs)
     self.PatchObject(sync_stages.PreCQLauncherStage,
@@ -740,7 +740,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     mock_pool = mock.Mock()
     change = MockPatch()
 
-    configs = ['cyan-pre-cq', 'lumpy-pre-cq']
+    configs = ['cyan-pre-cq', 'eve-pre-cq']
     self.assertDictEqual(self.sync_stage._LaunchTrybots(mock_pool, configs), {})
     self.assertDictEqual(self.sync_stage._LaunchTrybots(
         mock_pool, configs, sanity_check_build=True), {})
@@ -748,7 +748,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     self.assertDictEqual(self.sync_stage._LaunchTrybots(
         mock_pool, configs, plan=[change]), {})
 
-    configs = ['test-pre-cq', 'lumpy-pre-cq']
+    configs = ['test-pre-cq', 'eve-pre-cq']
     self.assertDictEqual(self.sync_stage._LaunchTrybots(mock_pool, configs), {})
     mock_pool.HandleNoConfigTargetFailure.assert_not_called()
 
@@ -830,32 +830,32 @@ Third line.
 pre-cq-configs: insect-pre-cq
 """)
     self.PatchObject(cq_config.CQConfigParser, 'GetOption',
-                     return_value='lumpy-pre-cq')
+                     return_value='eve-pre-cq')
     self.assertItemsEqual(self.sync_stage.VerificationsForChange(change),
-                          ['lumpy-pre-cq'])
+                          ['eve-pre-cq'])
 
   def testVerificationsForChangeFromCommitMessage(self):
     change = MockPatch(commit_message="""First line.
 
 Third line.
-pre-cq-configs: stumpy-pre-cq
+pre-cq-configs: chell-pre-cq
 """)
     self.PatchObject(cq_config.CQConfigParser, 'GetOption',
-                     return_value='lumpy-pre-cq')
+                     return_value='eve-pre-cq')
     self.assertItemsEqual(self.sync_stage.VerificationsForChange(change),
-                          ['stumpy-pre-cq'])
+                          ['chell-pre-cq'])
 
   def testMultiVerificationsForChangeFromCommitMessage(self):
     change = MockPatch(commit_message="""First line.
 
 Third line.
-pre-cq-configs: stumpy-pre-cq
+pre-cq-configs: chell-pre-cq
 pre-cq-configs: link-pre-cq
 """)
     self.PatchObject(cq_config.CQConfigParser, 'GetOption',
-                     return_value='lumpy-pre-cq')
+                     return_value='eve-pre-cq')
     self.assertItemsEqual(self.sync_stage.VerificationsForChange(change),
-                          ['stumpy-pre-cq', 'link-pre-cq'])
+                          ['chell-pre-cq', 'link-pre-cq'])
 
   def _PrepareChangesWithPendingVerifications(self, verifications=None):
     """Prepare changes and pending verifications for them.
@@ -971,7 +971,7 @@ pre-cq-configs: link-pre-cq
     change_count = (
         sync_stages.PreCQLauncherStage.MAX_LAUNCHES_PER_CYCLE_DERIVATIVE * 4)
     changes = self._PrepareChangesWithPendingVerifications(
-        [['lumpy-pre-cq']] * change_count)
+        [['eve-pre-cq']] * change_count)
     for c in changes:
       c.approval_timestamp = 0
 
@@ -981,7 +981,7 @@ pre-cq-configs: link-pre-cq
           [a for a in action_history
            if a.action == constants.CL_ACTION_TRYBOT_LAUNCHING])
 
-    self.mockLaunchTrybots(configs=['lumpy-pre-cq'])
+    self.mockLaunchTrybots(configs=['eve-pre-cq'])
 
     # After one cycle of the launcher, exactly MAX_LAUNCHES_PER_CYCLE_DERIVATIVE
     # should have launched.
@@ -1424,10 +1424,10 @@ pre-cq-configs: link-pre-cq
     self.PatchObject(cq_config.CQConfigParser, 'GetUnionPreCQSubConfigsFlag',
                      return_value=False)
     self.PatchObject(cq_config.CQConfigParser, 'GetPreCQConfigs',
-                     return_value={'default', 'binhost-pre-cq', 'lumpy-pre-cq'})
+                     return_value={'default', 'binhost-pre-cq', 'eve-pre-cq'})
     pre_cqs = self.sync_stage._GetPreCQConfigsFromOptions(change)
     expected_pre_cq = set(constants.PRE_CQ_DEFAULT_CONFIGS +
-                          ['binhost-pre-cq', 'lumpy-pre-cq'])
+                          ['binhost-pre-cq', 'eve-pre-cq'])
     self.assertItemsEqual(pre_cqs, expected_pre_cq)
 
     pre_cqs = self.sync_stage._GetPreCQConfigsFromOptions(
@@ -1442,11 +1442,11 @@ pre-cq-configs: link-pre-cq
     self.PatchObject(cq_config.CQConfigParser, 'GetUnionPreCQSubConfigsFlag',
                      return_value=True)
     self.PatchObject(cq_config.CQConfigParser, 'GetUnionedPreCQConfigs',
-                     return_value={'default', 'binhost-pre-cq', 'lumpy-pre-cq'})
+                     return_value={'default', 'binhost-pre-cq', 'eve-pre-cq'})
     pre_cqs = self.sync_stage._GetPreCQConfigsFromOptions(change)
 
     expected_pre_cq = set(constants.PRE_CQ_DEFAULT_CONFIGS +
-                          ['binhost-pre-cq', 'lumpy-pre-cq'])
+                          ['binhost-pre-cq', 'eve-pre-cq'])
     self.assertItemsEqual(pre_cqs, expected_pre_cq)
 
     self.assertRaises(sync_stages.ExceedUnionPreCQLimitException,

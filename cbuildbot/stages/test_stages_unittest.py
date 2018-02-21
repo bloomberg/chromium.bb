@@ -337,7 +337,7 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def testPerformStageOnCQ(self):
     """Test PerformStage on CQ."""
-    self._Prepare('lumpy-paladin')
+    self._Prepare('eve-paladin')
     stage = self.ConstructStage()
     mock_report = self.PatchObject(
         test_stages.HWTestStage, 'ReportHWTestResults')

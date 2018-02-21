@@ -123,12 +123,12 @@ class TryjobTestParsing(TryjobTest):
         'local_patches': [],
         'passthrough': None,
         'passthrough_raw': None,
-        'build_configs': ['lumpy-pre-cq'],
+        'build_configs': ['eve-pre-cq'],
     }
 
   def testMinimalParsing(self):
     """Tests flow for an interactive session."""
-    self.SetupCommandMock(['lumpy-pre-cq'])
+    self.SetupCommandMock(['eve-pre-cq'])
     options = self.cmd_mock.inst.options
 
     self.assertDictContainsSubset(self.expected, vars(options))
@@ -148,7 +148,7 @@ class TryjobTestParsing(TryjobTest):
         '--debug-cidb',
         '--pass-through=--cbuild-arg', '--pass-through', 'bar',
         '--list',
-        'lumpy-pre-cq', 'lumpy-release',
+        'eve-pre-cq', 'eve-release',
     ])
     options = self.cmd_mock.inst.options
 
@@ -168,7 +168,7 @@ class TryjobTestParsing(TryjobTest):
             '--debug-cidb',
         ],
         'passthrough_raw': ['--cbuild-arg', 'bar'],
-        'build_configs': ['lumpy-pre-cq', 'lumpy-release'],
+        'build_configs': ['eve-pre-cq', 'eve-release'],
     })
 
     self.assertDictContainsSubset(self.expected, vars(options))
@@ -188,7 +188,7 @@ class TryjobTestParsing(TryjobTest):
         '--debug-cidb',
         '--pass-through=--cbuild-arg', '--pass-through', 'bar',
         '--list',
-        'lumpy-pre-cq', 'lumpy-release',
+        'eve-pre-cq', 'eve-release',
     ])
     options = self.cmd_mock.inst.options
 
@@ -208,7 +208,7 @@ class TryjobTestParsing(TryjobTest):
             '--debug-cidb',
         ],
         'passthrough_raw': ['--cbuild-arg', 'bar'],
-        'build_configs': ['lumpy-pre-cq', 'lumpy-release'],
+        'build_configs': ['eve-pre-cq', 'eve-release'],
     })
 
     self.assertDictContainsSubset(self.expected, vars(options))
@@ -227,7 +227,7 @@ class TryjobTestParsing(TryjobTest):
         '--debug-cidb',
         '--pass-through=--cbuild-arg', '--pass-through', 'bar',
         '--list',
-        'lumpy-paladin', 'lumpy-release',
+        'eve-paladin', 'eve-release',
     ])
     options = self.cmd_mock.inst.options
 
@@ -247,7 +247,7 @@ class TryjobTestParsing(TryjobTest):
             '--debug-cidb',
         ],
         'passthrough_raw': ['--cbuild-arg', 'bar'],
-        'build_configs': ['lumpy-paladin', 'lumpy-release'],
+        'build_configs': ['eve-paladin', 'eve-release'],
     })
 
     self.assertDictContainsSubset(self.expected, vars(options))
@@ -265,7 +265,7 @@ class TryjobTestParsing(TryjobTest):
         '--chrome_version', 'chrome_git_hash',
         '--pass-through=--cbuild-arg', '--pass-through', 'bar',
         '--list',
-        'lumpy-pre-cq', 'lumpy-release',
+        'eve-pre-cq', 'eve-release',
     ])
     options = self.cmd_mock.inst.options
 
@@ -284,7 +284,7 @@ class TryjobTestParsing(TryjobTest):
             '--chrome_version', 'chrome_git_hash',
         ],
         'passthrough_raw': ['--cbuild-arg', 'bar'],
-        'build_configs': ['lumpy-pre-cq', 'lumpy-release'],
+        'build_configs': ['eve-pre-cq', 'eve-release'],
     })
 
     self.assertDictContainsSubset(self.expected, vars(options))
@@ -292,13 +292,13 @@ class TryjobTestParsing(TryjobTest):
   def testPayloadsParsing(self):
     """Tests flow for an interactive session."""
     self.SetupCommandMock([
-        '--version', '9795.0.0', '--channel', 'canary', 'lumpy-payloads'
+        '--version', '9795.0.0', '--channel', 'canary', 'eve-payloads'
     ])
     options = self.cmd_mock.inst.options
 
     self.expected.update({
         'passthrough': ['--version', '9795.0.0', '--channel', 'canary'],
-        'build_configs': ['lumpy-payloads'],
+        'build_configs': ['eve-payloads'],
     })
 
     self.assertDictContainsSubset(self.expected, vars(options))
@@ -409,7 +409,7 @@ class TryjobTestVerifyOptions(TryjobTest):
         '--committer-email', 'foo@bar',
         '--version', '1.2.3', '--channel', 'chan',
         '--pass-through=--cbuild-arg', '--pass-through=bar',
-        'lumpy-pre-cq', 'lumpy-release-tryjob',
+        'eve-pre-cq', 'eve-release-tryjob',
     ])
     cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
 
@@ -425,7 +425,7 @@ class TryjobTestVerifyOptions(TryjobTest):
         '--committer-email', 'foo@bar',
         '--version', '1.2.3', '--channel', 'chan',
         '--pass-through=--cbuild-arg', '--pass-through=bar',
-        'lumpy-paladin', 'lumpy-release',
+        'eve-paladin', 'eve-release',
     ])
     cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
 
@@ -442,7 +442,7 @@ class TryjobTestVerifyOptions(TryjobTest):
         '--committer-email', 'foo@bar',
         '--version', '1.2.3', '--channel', 'chan',
         '--pass-through=--cbuild-arg', '--pass-through=bar',
-        'lumpy-pre-cq', 'lumpy-release-tryjob',
+        'eve-pre-cq', 'eve-release-tryjob',
     ])
     cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
 
@@ -472,7 +472,7 @@ class TryjobTestVerifyOptions(TryjobTest):
     """Test option verification with production/no patches."""
     self.SetupCommandMock([
         '--production',
-        'lumpy-pre-cq', 'lumpy-release'
+        'eve-pre-cq', 'eve-release'
     ])
     cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
 
@@ -481,7 +481,7 @@ class TryjobTestVerifyOptions(TryjobTest):
     self.SetupCommandMock([
         '--production',
         '--gerrit-patches', '123', '-g', '*123', '-g', '123..456',
-        'lumpy-pre-cq', 'lumpy-release'
+        'eve-pre-cq', 'eve-release'
     ])
 
     with self.assertRaises(cros_build_lib.DieSystemExit) as cm:
@@ -491,7 +491,7 @@ class TryjobTestVerifyOptions(TryjobTest):
   def testRemoteTryjobProductionConfig(self):
     """Test option verification remote tryjob w/production config."""
     self.SetupCommandMock([
-        'lumpy-pre-cq', 'lumpy-release'
+        'eve-pre-cq', 'eve-release'
     ])
 
     with self.assertRaises(cros_build_lib.DieSystemExit) as cm:
@@ -501,7 +501,7 @@ class TryjobTestVerifyOptions(TryjobTest):
   def testLocalTryjobProductionConfig(self):
     """Test option verification local tryjob w/production config."""
     self.SetupCommandMock([
-        '--local', 'lumpy-pre-cq', 'lumpy-release'
+        '--local', 'eve-pre-cq', 'eve-release'
     ])
 
     with self.assertRaises(cros_build_lib.DieSystemExit) as cm:
@@ -511,7 +511,7 @@ class TryjobTestVerifyOptions(TryjobTest):
   def testRemoteTryjobBranchProductionConfig(self):
     """Test a tryjob on a branch for a production config w/confirm."""
     self.SetupCommandMock([
-        '--yes', '--branch', 'foo', 'lumpy-pre-cq', 'lumpy-release'
+        '--yes', '--branch', 'foo', 'eve-pre-cq', 'eve-release'
     ])
 
     cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
@@ -519,7 +519,7 @@ class TryjobTestVerifyOptions(TryjobTest):
   def testRemoteProductionBranchProductionConfig(self):
     """Test a production job on a branch for a production config wo/confirm."""
     self.SetupCommandMock([
-        '--production', '--branch', 'foo', 'lumpy-pre-cq', 'lumpy-release'
+        '--production', '--branch', 'foo', 'eve-pre-cq', 'eve-release'
     ])
 
     cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
@@ -603,7 +603,7 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--branch-name', 'test_branch', '--rename-to', 'new_branch',
         '--delete-branch', '--force-create', '--skip-remote-push',
         '--pass-through=--cbuild-arg', '--pass-through=bar',
-        'lumpy-pre-cq', 'lumpy-release',
+        'eve-pre-cq', 'eve-release',
     ]
 
     args_out = self.helperOptionsToCbuildbotArgs(args_in)
@@ -636,7 +636,7 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--branch-name', 'test_branch', '--rename-to', 'new_branch',
         '--delete-branch', '--force-create', '--skip-remote-push',
         '--pass-through=--cbuild-arg', '--pass-through=bar',
-        'lumpy-pre-cq', 'lumpy-release',
+        'eve-pre-cq', 'eve-release',
     ]
 
     args_out = self.helperOptionsToCbuildbotArgs(args_in)
@@ -670,7 +670,7 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--branch-name', 'test_branch', '--rename-to', 'new_branch',
         '--delete-branch', '--force-create', '--skip-remote-push',
         '--pass-through=--cbuild-arg', '--pass-through=bar',
-        'lumpy-paladin', 'lumpy-release',
+        'eve-paladin', 'eve-release',
     ]
 
     args_out = self.helperOptionsToCbuildbotArgs(args_in)
@@ -725,11 +725,11 @@ class TryjobTestDisplayLabel(TryjobTest):
     return cros_tryjob.DisplayLabel(site_config, options, config_name)
 
   def testMasterTryjob(self):
-    label = self.FindLabel(['lumpy-paladin-tryjob'])
+    label = self.FindLabel(['eve-paladin-tryjob'])
     self.assertEqual(label, 'tryjob')
 
   def testMasterPreCQ(self):
-    label = self.FindLabel(['lumpy-pre-cq'])
+    label = self.FindLabel(['eve-pre-cq'])
     self.assertEqual(label, 'pre_cq')
 
   def testMasterUnknown(self):
@@ -737,7 +737,7 @@ class TryjobTestDisplayLabel(TryjobTest):
     self.assertEqual(label, 'tryjob')
 
   def testMasterKnownProduction(self):
-    label = self.FindLabel(['--production', 'lumpy-paladin'])
+    label = self.FindLabel(['--production', 'eve-paladin'])
     self.assertEqual(label, 'cq')
 
   def testMasterUnknownProduction(self):
@@ -745,10 +745,10 @@ class TryjobTestDisplayLabel(TryjobTest):
     self.assertEqual(label, 'production_tryjob')
 
   def testBranchTryjob(self):
-    label = self.FindLabel(['--branch=test-branch', 'lumpy-pre-cq'])
+    label = self.FindLabel(['--branch=test-branch', 'eve-pre-cq'])
     self.assertEqual(label, 'tryjob')
 
   def testBranchProduction(self):
     label = self.FindLabel(['--production', '--branch=test-branch',
-                            'lumpy-pre-cq'])
+                            'eve-pre-cq'])
     self.assertEqual(label, 'production_tryjob')

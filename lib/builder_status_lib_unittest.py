@@ -645,7 +645,7 @@ class BuilderStatusesFetcherTests(cros_test_lib.MockTestCase):
     self.db = fake_cidb.FakeCIDBConnection()
     self.site_config = config_lib.GetConfig()
     self.config = self.site_config['master-paladin']
-    self.slave_config = self.site_config['lumpy-paladin']
+    self.slave_config = self.site_config['eve-paladin']
     self.message = 'build message'
     self.metadata = metadata_lib.CBuildbotMetadata()
     self.buildbucket_client = mock.Mock()
@@ -726,7 +726,7 @@ class BuilderStatusesFetcherTests(cros_test_lib.MockTestCase):
     important_statuses, experimental_statuses = fetcher.GetBuilderStatuses()
     self.assertEqual(len(important_statuses), 1)
     self.assertEqual(len(experimental_statuses), 0)
-    self.assertTrue(important_statuses['lumpy-paladin'].Passed())
+    self.assertTrue(important_statuses['eve-paladin'].Passed())
 
   def testGetBuilderStatusesOnMasters(self):
     """Test GetBuilderStatuses on masters."""

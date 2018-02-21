@@ -35,7 +35,7 @@ def _ParseCommandLine(argv):
 class InterfaceTest(cros_test_lib.OutputTestCase):
   """Tests the commandline interface of the script."""
 
-  BOARD = 'lumpy'
+  BOARD = 'eve'
 
   def testGsLocalPathUnSpecified(self):
     """Test no chrome path specified."""
@@ -92,7 +92,7 @@ class InterfaceTest(cros_test_lib.OutputTestCase):
   def testSshIdentityOptionSetsOption(self):
     argv = list(_REGULAR_TO) + ['--private-key', '/foo/bar/key',
                                 '--board', 'cedar',
-                                '--build-dir', '/path/to/nowhere' ]
+                                '--build-dir', '/path/to/nowhere']
     options = _ParseCommandLine(argv)
     self.assertEqual(options.private_key, '/foo/bar/key')
 
@@ -232,7 +232,7 @@ class StagingTest(cros_test_lib.MockTempDirTestCase):
     self.staging_dir = os.path.join(self.tempdir, 'staging')
     self.build_dir = os.path.join(self.tempdir, 'build_dir')
     self.common_flags = ['--build-dir', self.build_dir,
-                         '--board=lumpy', '--staging-only', '--cache-dir',
+                         '--board=eve', '--staging-only', '--cache-dir',
                          self.tempdir]
     self.sdk_mock = self.StartPatcher(cros_chrome_sdk_unittest.SDKFetcherMock())
     self.PatchObject(
@@ -276,7 +276,7 @@ class DeployTestBuildDir(cros_test_lib.MockTempDirTestCase):
     self.deploy_mock = self.StartPatcher(DeployChromeMock())
     self.deploy = self._GetDeployChrome(
         list(_REGULAR_TO) + ['--build-dir', self.build_dir,
-                             '--board=lumpy', '--staging-only', '--cache-dir',
+                             '--board=eve', '--staging-only', '--cache-dir',
                              self.tempdir, '--sloppy'])
 
   def getCopyPath(self, source_path):

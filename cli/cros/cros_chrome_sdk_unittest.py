@@ -419,7 +419,7 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
   FULL_VERSION_RECENT = 'R55-%s' % RECENT_VERSION_FOUND
   NON_CANARY_VERSION = '3543.2.1'
   FULL_VERSION_NON_CANARY = 'R55-%s' % NON_CANARY_VERSION
-  BOARD = 'lumpy'
+  BOARD = 'eve'
 
   VERSION_BASE = ('gs://chromeos-image-archive/%s-release/LATEST-%s'
                   % (BOARD, VERSION))

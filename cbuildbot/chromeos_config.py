@@ -542,7 +542,6 @@ _x86_internal_release_boards = frozenset([
     'betty',
     'betty-arc64',
     'buddy',
-    'butterfly',
     'candy',
     'caroline',
     'cave',
@@ -586,7 +585,6 @@ _x86_internal_release_boards = frozenset([
     'leon',
     'link',
     'lulu',
-    'lumpy',
     'mccloud',
     'meowth',
     'monroe',
@@ -599,7 +597,6 @@ _x86_internal_release_boards = frozenset([
     'octopus',
     'orco',
     'panther',
-    'parrot',
     'parrot_ivb',
     'peppy',
     'plaso',
@@ -620,7 +617,6 @@ _x86_internal_release_boards = frozenset([
     'soraka',
     'squawks',
     'stout',
-    'stumpy',
     'sumo',
     'swanky',
     'terra',
@@ -2424,7 +2420,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'betty',
       'betty-arc64',
       'bob',
-      'butterfly',
       'caroline',
       'cave',
       'chell',
@@ -2451,14 +2446,12 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'lakitu-st',
       'leon',
       'link',
-      'lumpy',
       'moblab-generic-vm',
       'monroe',
       'nyan_big',
       'nyan_kitty',
       'oak',
       'panther',
-      'parrot',
       'peach_pit',
       'peppy',
       'poppy',
@@ -2469,7 +2462,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'scarlet',
       'sentry',
       'stout',
-      'stumpy',
       'tidus',
       'tricky',
       'veyron_jaq',
@@ -2557,7 +2549,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _paladin_chroot_replace_boards = frozenset([
-      'butterfly',
       'daisy_spring',
   ])
 
@@ -2714,7 +2705,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # pylint: disable=bad-whitespace
   _paladin_hwtest_assignments = frozenset([
     # bvt-inline        bvt-cq           bvt-arc           family
-    ('lumpy',          'stumpy',         None),            # sandybridge
     ('link',           None,             None),            # ivybridge
     (None,             None,             None),            # daisy (Exynos5250)
     ('wolf',           'peppy',          None),            # slippy (HSW)
@@ -2771,10 +2761,11 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       ),
 
       site_config.Add(
-          'lumpy-incremental-paladin',
+          'incremental-paladin',
           site_config.templates.paladin,
           site_config.templates.internal_paladin,
-          boards=['lumpy'],
+          site_config.templates.no_hwtest_builder,
+          boards=['reef'],
           build_before_patching=True,
           prebuilts=False,
           compilecheck=True,
@@ -3124,8 +3115,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
 
   _chrome_perf_boards = frozenset([
       'daisy',
-      'lumpy',
-      'parrot',
+      'reef',
   ])
 
   site_config.AddForBoards(
@@ -3234,7 +3224,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'coral',
       'cyan',
       'daisy_skate',
-      'lumpy',
       'peach_pit',
       'peppy',
       'reef',
@@ -3387,10 +3376,10 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
 
   ### Release configs.
 
+  # These currently do not support unified build boards.
   _critical_for_chrome_boards = frozenset([
       'daisy',
-      'lumpy',
-      'parrot',
+      'eve',
   ])
 
   site_config.AddForBoards(
@@ -3719,10 +3708,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'useflags': append_useflags(['thinlto']),
       },
 
-      'lumpy-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolPFQ(),
-      },
-
       'chell-chrome-pfq': {
           'afdo_generate': True,
           'archive_build_debug': True,
@@ -3810,7 +3795,7 @@ def EnrollBoardsForCWPBasedAFDO(site_config):
                  waterfall values updated.
   """
   cwp_afdo_boards = ['cyan', 'auron_yuna', 'snappy', 'falco', 'parrot_ivb',
-                     'eve', 'parrot', 'kip', 'cave', 'elm', 'kevin',
+                     'eve', 'kip', 'cave', 'elm', 'kevin',
                      'nyan_blaze', 'veyron_minnie', 'daisy']
 
   for board in cwp_afdo_boards:
@@ -3972,9 +3957,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
 
   site_config.AddGroup(
       'test-ap-group',
-      site_config.Add('stumpy-test-ap',
-                      site_config.templates.test_ap,
-                      boards=['stumpy']),
       site_config.Add('panther-test-ap',
                       site_config.templates.test_ap,
                       boards=['panther']),
