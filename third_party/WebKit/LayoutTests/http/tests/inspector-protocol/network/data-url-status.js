@@ -1,7 +1,7 @@
 (async function(testRunner) {
   var {page, session, dp} = await testRunner.startURL(
       '../resources/test-page.html',
-      `Tests that navigation instrumentation doesn't fail with a long async stack chain.`);
+      `Tests that network instrumentation indicates HTTP 200 status for data: URLs.`);
 
   dp.Network.enable();
   dp.Page.enable();
