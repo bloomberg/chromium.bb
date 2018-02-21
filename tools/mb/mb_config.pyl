@@ -174,7 +174,7 @@
       'Linux Builder Goma Canary': 'release_bot',
       'Linux x64 Goma Canary (clobber)': 'release_bot',
       'Linux x64 Goma Canary LocalOutputCache': 'release_bot',
-      'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang',
+      'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang_cxx11',
 
       'Chromium Mac 10.10 MacViews': 'mac_views_browser_release_bot',
       'Chromium Mac 10.11': 'release_bot',
@@ -1569,6 +1569,10 @@
       'release_bot', 'x86', 'minimal_symbols', 'no_clang',
     ],
 
+    'release_bot_x86_minimal_symbols_no_clang_cxx11': [
+      'release_bot', 'x86', 'minimal_symbols', 'no_clang', 'use_cxx11',
+    ],
+
     'syzyasan_no_pch_release_x86': [
       'syzyasan', 'no_pch', 'release', 'x86',
       # The SyzyASAN build may default dcheck_always_on to true to produce
@@ -1777,6 +1781,10 @@
 
     'no_clang': {
       'gn_args': 'is_clang=false',
+    },
+
+    'use_cxx11': {
+      'gn_args': 'use_cxx11=true',
     },
 
     'compile_only': {
