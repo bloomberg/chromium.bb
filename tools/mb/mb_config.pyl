@@ -306,6 +306,7 @@
       'GPU FYI Win x64 dEQP Builder': 'deqp_release_no_clang_trybot',
       'Linux FYI GPU TSAN Release': 'gpu_fyi_tests_release_trybot_tsan',
       'Mac FYI GPU ASAN Release': 'gpu_fyi_tests_release_trybot_asan',
+      'Optional Android Release (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64',
     },
 
     'chromium.infra.codesearch': {
