@@ -114,3 +114,7 @@ Description of the patches:
 - 0018-fallthrough.patch
 
   Cherry-picks upstream https://github.com/google/protobuf/commit/b8e47830d
+
+- 0019-rename-a-shadowed-variable.patch
+
+  Cherry-picks upstream https://github.com/google/protobuf/commit/af3813cd7
