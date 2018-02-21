@@ -387,10 +387,6 @@ void BrowserChildProcessHostImpl::TerminateOnBadMessageReceived(
   child_process_->GetProcess().Terminate(RESULT_CODE_KILLED_BAD_MESSAGE, false);
 }
 
-bool BrowserChildProcessHostImpl::CanShutdown() {
-  return delegate_->CanShutdown();
-}
-
 void BrowserChildProcessHostImpl::OnChannelInitialized(IPC::Channel* channel) {
   channel_ = channel;
 }

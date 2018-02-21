@@ -80,7 +80,6 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   service_manager::mojom::ServiceRequest TakeInProcessServiceRequest() override;
 
   // ChildProcessHostDelegate implementation:
-  bool CanShutdown() override;
   void OnChannelInitialized(IPC::Channel* channel) override;
   void OnChildDisconnected() override;
   const base::Process& GetProcess() const override;
