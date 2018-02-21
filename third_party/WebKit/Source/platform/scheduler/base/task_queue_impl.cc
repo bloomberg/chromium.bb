@@ -64,6 +64,23 @@ TaskQueueImpl::~TaskQueueImpl() {
 #endif
 }
 
+TaskQueueImpl::PostTaskResult::PostTaskResult()
+    : task(base::OnceClosure(), base::Location()) {}
+
+TaskQueueImpl::PostTaskResult::PostTaskResult(bool success,
+                                              TaskQueue::PostedTask task)
+    : success(success), task(std::move(task)) {}
+
+TaskQueueImpl::PostTaskResult TaskQueueImpl::PostTaskResult::Success() {
+  return PostTaskResult(
+      true, TaskQueue::PostedTask(base::OnceClosure(), base::Location()));
+}
+
+TaskQueueImpl::PostTaskResult TaskQueueImpl::PostTaskResult::Fail(
+    TaskQueue::PostedTask task) {
+  return PostTaskResult(false, std::move(task));
+}
+
 TaskQueueImpl::Task::Task(TaskQueue::PostedTask task,
                           base::TimeTicks desired_run_time,
                           EnqueueOrder sequence_number)
@@ -169,20 +186,22 @@ bool TaskQueueImpl::RunsTasksInCurrentSequence() const {
   return base::PlatformThread::CurrentId() == thread_id_;
 }
 
-bool TaskQueueImpl::PostDelayedTask(TaskQueue::PostedTask task) {
+TaskQueueImpl::PostTaskResult TaskQueueImpl::PostDelayedTask(
+    TaskQueue::PostedTask task) {
   if (task.delay.is_zero())
     return PostImmediateTaskImpl(std::move(task));
 
   return PostDelayedTaskImpl(std::move(task));
 }
 
-bool TaskQueueImpl::PostImmediateTaskImpl(TaskQueue::PostedTask task) {
+TaskQueueImpl::PostTaskResult TaskQueueImpl::PostImmediateTaskImpl(
+    TaskQueue::PostedTask task) {
   // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
   // for details.
   CHECK(task.callback);
   base::AutoLock lock(any_thread_lock_);
   if (!any_thread().task_queue_manager)
-    return false;
+    return PostTaskResult::Fail(std::move(task));
 
   EnqueueOrder sequence_number =
       any_thread().task_queue_manager->GetNextSequenceNumber();
@@ -190,10 +209,11 @@ bool TaskQueueImpl::PostImmediateTaskImpl(TaskQueue::PostedTask task) {
   PushOntoImmediateIncomingQueueLocked(Task(std::move(task),
                                             any_thread().time_domain->Now(),
                                             sequence_number, sequence_number));
-  return true;
+  return PostTaskResult::Success();
 }
 
-bool TaskQueueImpl::PostDelayedTaskImpl(TaskQueue::PostedTask task) {
+TaskQueueImpl::PostTaskResult TaskQueueImpl::PostDelayedTaskImpl(
+    TaskQueue::PostedTask task) {
   // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
   // for details.
   CHECK(task.callback);
@@ -201,7 +221,7 @@ bool TaskQueueImpl::PostDelayedTaskImpl(TaskQueue::PostedTask task) {
   if (base::PlatformThread::CurrentId() == thread_id_) {
     // Lock-free fast path for delayed tasks posted from the main thread.
     if (!main_thread_only().task_queue_manager)
-      return false;
+      return PostTaskResult::Fail(std::move(task));
 
     EnqueueOrder sequence_number =
         main_thread_only().task_queue_manager->GetNextSequenceNumber();
@@ -218,7 +238,7 @@ bool TaskQueueImpl::PostDelayedTaskImpl(TaskQueue::PostedTask task) {
     // assumption prove to be false in future, we may need to revisit this.
     base::AutoLock lock(any_thread_lock_);
     if (!any_thread().task_queue_manager)
-      return false;
+      return PostTaskResult::Fail(std::move(task));
 
     EnqueueOrder sequence_number =
         any_thread().task_queue_manager->GetNextSequenceNumber();
@@ -228,7 +248,7 @@ bool TaskQueueImpl::PostDelayedTaskImpl(TaskQueue::PostedTask task) {
     PushOntoDelayedIncomingQueueLocked(
         Task(std::move(task), time_domain_delayed_run_time, sequence_number));
   }
-  return true;
+  return PostTaskResult::Success();
 }
 
 void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
