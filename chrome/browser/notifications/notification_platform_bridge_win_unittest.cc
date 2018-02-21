@@ -33,7 +33,7 @@ using message_center::Notification;
 
 namespace {
 
-const char kEncodedId[] = "0|Default|0|https://example.com/|notification_id";
+const char kLaunchId[] = "0|Default|0|https://example.com/|notification_id";
 const char kOrigin[] = "https://www.google.com/";
 const char kNotificationId[] = "id";
 const char kProfileId[] = "Default";
@@ -59,7 +59,7 @@ class NotificationPlatformBridgeWinTest : public testing::Test {
     notification->set_renotify(renotify);
     MockNotificationImageRetainer image_retainer;
     std::unique_ptr<NotificationTemplateBuilder> builder =
-        NotificationTemplateBuilder::Build(&image_retainer, kEncodedId,
+        NotificationTemplateBuilder::Build(&image_retainer, kLaunchId,
                                            kProfileId, *notification);
 
     mswr::ComPtr<winui::Notifications::IToastNotification> toast;
@@ -98,7 +98,7 @@ TEST_F(NotificationPlatformBridgeWinTest, EncodeDecode) {
   bool incognito = false;
   GURL origin_url("http://www.google.com/");
 
-  std::string encoded = notification_platform_bridge_win_->EncodeTemplateId(
+  std::string launch_id = notification_platform_bridge_win_->EncodeLaunchId(
       notification_type, notification_id, profile_id, incognito, origin_url);
 
   NotificationHandler::Type decoded_notification_type;
@@ -108,13 +108,13 @@ TEST_F(NotificationPlatformBridgeWinTest, EncodeDecode) {
   GURL decoded_origin_url;
 
   // Empty string.
-  EXPECT_FALSE(notification_platform_bridge_win_->DecodeTemplateId(
+  EXPECT_FALSE(notification_platform_bridge_win_->DecodeLaunchId(
       "", &decoded_notification_type, &decoded_notification_id,
       &decoded_profile_id, &decoded_incognito, &decoded_origin_url));
 
   // Actual data.
-  EXPECT_TRUE(notification_platform_bridge_win_->DecodeTemplateId(
-      encoded, &decoded_notification_type, &decoded_notification_id,
+  EXPECT_TRUE(notification_platform_bridge_win_->DecodeLaunchId(
+      launch_id, &decoded_notification_type, &decoded_notification_id,
       &decoded_profile_id, &decoded_incognito, &decoded_origin_url));
 
   EXPECT_EQ(decoded_notification_type, notification_type);
@@ -124,20 +124,20 @@ TEST_F(NotificationPlatformBridgeWinTest, EncodeDecode) {
   EXPECT_EQ(decoded_origin_url, origin_url);
 
   // Actual data, but only notification_id is requested.
-  EXPECT_TRUE(notification_platform_bridge_win_->DecodeTemplateId(
-      encoded, nullptr /* notification_type */, &decoded_notification_id,
+  EXPECT_TRUE(notification_platform_bridge_win_->DecodeLaunchId(
+      launch_id, nullptr /* notification_type */, &decoded_notification_id,
       nullptr /* profile_id */, nullptr /* incognito */,
       nullptr /* origin_url */));
   EXPECT_EQ(decoded_notification_id, notification_id);
 
   // Throw in a few extra separators (becomes part of the notification id).
   std::string extra = "|Extra|Data|";
-  encoded += extra;
+  launch_id += extra;
   // Update the expected output as well.
   notification_id += extra;
 
-  EXPECT_TRUE(notification_platform_bridge_win_->DecodeTemplateId(
-      encoded, &decoded_notification_type, &decoded_notification_id,
+  EXPECT_TRUE(notification_platform_bridge_win_->DecodeLaunchId(
+      launch_id, &decoded_notification_type, &decoded_notification_id,
       &decoded_profile_id, &decoded_incognito, &decoded_origin_url));
 
   EXPECT_EQ(decoded_notification_type, notification_type);

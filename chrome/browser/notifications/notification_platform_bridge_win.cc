@@ -276,11 +276,11 @@ class NotificationPlatformBridgeWinImpl
       return;
     }
 
-    std::string encoded_id = NotificationPlatformBridgeWin::EncodeTemplateId(
+    std::string launch_id = NotificationPlatformBridgeWin::EncodeLaunchId(
         notification_type, notification->id(), profile_id, incognito,
         notification->origin_url());
     std::unique_ptr<NotificationTemplateBuilder> notification_template =
-        NotificationTemplateBuilder::Build(image_retainer_.get(), encoded_id,
+        NotificationTemplateBuilder::Build(image_retainer_.get(), launch_id,
                                            profile_id, *notification);
     mswr::ComPtr<winui::Notifications::IToastNotification> toast;
     HRESULT hr = GetToastNotification(*notification, *notification_template,
@@ -449,12 +449,12 @@ class NotificationPlatformBridgeWinImpl
     auto displayed_notifications = std::make_unique<std::set<std::string>>();
     for (winui::Notifications::IToastNotification* notification :
          notifications) {
-      std::string toast_id = GetNotificationId(notification);
+      std::string launch_id = GetNotificationLaunchId(notification);
       std::string decoded_notification_id;
       std::string decoded_profile_id;
       bool decoded_incognito;
-      if (!NotificationPlatformBridgeWin::DecodeTemplateId(
-              toast_id, nullptr, &decoded_notification_id, &decoded_profile_id,
+      if (!NotificationPlatformBridgeWin::DecodeLaunchId(
+              launch_id, nullptr, &decoded_notification_id, &decoded_profile_id,
               &decoded_incognito, nullptr)) {
         LOG(ERROR) << "Failed to decode notification ID";
         continue;
@@ -486,11 +486,11 @@ class NotificationPlatformBridgeWinImpl
     bool incognito;
     GURL origin_url;
 
-    std::string toast_id = GetNotificationId(notification);
-    if (!NotificationPlatformBridgeWin::DecodeTemplateId(
-            toast_id, &notification_type, &notification_id, &profile_id,
+    std::string launch_id = GetNotificationLaunchId(notification);
+    if (!NotificationPlatformBridgeWin::DecodeLaunchId(
+            launch_id, &notification_type, &notification_id, &profile_id,
             &incognito, &origin_url)) {
-      LOG(ERROR) << "Failed to decode template ID for operation " << operation;
+      LOG(ERROR) << "Failed to decode launch ID for operation " << operation;
       return;
     }
 
@@ -544,7 +544,7 @@ class NotificationPlatformBridgeWinImpl
     return base::UintToString16(base::Hash(notification_id));
   }
 
-  std::string GetNotificationId(
+  std::string GetNotificationLaunchId(
       winui::Notifications::IToastNotification* notification) const {
     mswr::ComPtr<winxml::Dom::IXmlDocument> document;
     HRESULT hr = notification->get_Content(&document);
@@ -786,8 +786,8 @@ HRESULT NotificationPlatformBridgeWin::GetToastNotificationForTesting(
 }
 
 // static
-bool NotificationPlatformBridgeWin::DecodeTemplateId(
-    const std::string& encoded,
+bool NotificationPlatformBridgeWin::DecodeLaunchId(
+    const std::string& launch_id,
     NotificationHandler::Type* notification_type,
     std::string* notification_id,
     std::string* profile_id,
@@ -797,7 +797,7 @@ bool NotificationPlatformBridgeWin::DecodeTemplateId(
   const char kDelimiter[] = "|";
   const int kMinVectorSize = 5;
   std::vector<std::string> split = base::SplitString(
-      encoded, kDelimiter, base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+      launch_id, kDelimiter, base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
   if (split.size() < kMinVectorSize)
     return false;
 
@@ -829,7 +829,7 @@ bool NotificationPlatformBridgeWin::DecodeTemplateId(
 }
 
 // static
-std::string NotificationPlatformBridgeWin::EncodeTemplateId(
+std::string NotificationPlatformBridgeWin::EncodeLaunchId(
     NotificationHandler::Type notification_type,
     const std::string& notification_id,
     const std::string& profile_id,
