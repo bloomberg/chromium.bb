@@ -10,12 +10,10 @@
 #include <cmath>
 #include <limits>
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "ui/base/touch/touch_device.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/image/image_skia.h"
@@ -104,7 +102,6 @@ ScopedSetSupportedScaleFactors::~ScopedSetSupportedScaleFactors() {
 
 }  // namespace test
 
-#if !defined(OS_MACOSX)
 float GetScaleFactorForNativeView(gfx::NativeView view) {
   // A number of unit tests do not setup the screen.
   if (!display::Screen::GetScreen())
@@ -114,6 +111,5 @@ float GetScaleFactorForNativeView(gfx::NativeView view) {
   DCHECK(display.is_valid());
   return display.device_scale_factor();
 }
-#endif  // !defined(OS_MACOSX)
 
 }  // namespace ui

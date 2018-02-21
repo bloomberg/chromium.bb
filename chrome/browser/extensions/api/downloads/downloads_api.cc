@@ -1558,10 +1558,8 @@ bool DownloadsGetFileIconFunction::RunAsync() {
   float scale = 1.0;
   content::WebContents* web_contents =
       dispatcher()->GetVisibleWebContents();
-  if (web_contents) {
-    scale = ui::GetScaleFactorForNativeView(
-        web_contents->GetRenderWidgetHostView()->GetNativeView());
-  }
+  if (web_contents && web_contents->GetRenderWidgetHostView())
+    scale = web_contents->GetRenderWidgetHostView()->GetDeviceScaleFactor();
   EXTENSION_FUNCTION_VALIDATE(icon_extractor_->ExtractIconURLForPath(
       download_item->GetTargetFilePath(),
       scale,

@@ -212,6 +212,9 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // screen yet), then a default best-guess will be used.
   virtual void GetScreenInfo(ScreenInfo* screen_info) const = 0;
 
+  // This must always return the same device scale factor as GetScreenInfo.
+  virtual float GetDeviceScaleFactor() const = 0;
+
 #if defined(OS_MACOSX)
   // Set the view's active state (i.e., tint state of controls).
   virtual void SetActive(bool active) = 0;

@@ -295,8 +295,7 @@ void ThumbnailTabHelper::StartThumbnailCaptureIfNecessary(
   thumbnailing_context_ = new ThumbnailingContext(url, at_top, load_completed);
 
   ui::ScaleFactor scale_factor =
-      ui::GetSupportedScaleFactor(
-          ui::GetScaleFactorForNativeView(view->GetNativeView()));
+      ui::GetSupportedScaleFactor(view->GetDeviceScaleFactor());
   thumbnailing_context_->clip_result = thumbnails::GetCanvasCopyInfo(
       copy_rect.size(), scale_factor,
       gfx::Size(kThumbnailWidth, kThumbnailHeight), &copy_rect,

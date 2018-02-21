@@ -282,8 +282,7 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
     // TODO(kenrb): Add the short circuit to avoid hit testing when there is
     // only one RenderWidgetHostView in the map. It is absent right now to
     // make it easier to test the Viz hit testing code in development.
-    float device_scale_factor =
-        ui::GetScaleFactorForNativeView(root_view->GetNativeView());
+    float device_scale_factor = root_view->GetDeviceScaleFactor();
     DCHECK(device_scale_factor != 0.0f);
     gfx::Point point_in_root_in_pixels =
         gfx::ConvertPointToPixel(device_scale_factor, point_in_root);

@@ -1434,12 +1434,11 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadWithUrlAnchor) {
 
   double expected = 100;
   if (IsUseZoomForDSFEnabled()) {
-    WebContentsView* view =
-        static_cast<WebContentsImpl*>(shell()->web_contents())->GetView();
-    ScreenInfo screen_info;
-    DisplayUtil::GetNativeViewScreenInfo(&screen_info, view->GetNativeView());
-    expected = floor(screen_info.device_scale_factor * expected) /
-               screen_info.device_scale_factor;
+    float device_scale_factor = shell()
+                                    ->web_contents()
+                                    ->GetRenderWidgetHostView()
+                                    ->GetDeviceScaleFactor();
+    expected = floor(device_scale_factor * expected) / device_scale_factor;
   }
   EXPECT_FLOAT_EQ(expected, value);
 
@@ -1475,16 +1474,16 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   double expected_div_scroll_top = 100;
   double expected_window_scroll_y = 10;
   if (IsUseZoomForDSFEnabled()) {
-    WebContentsView* view =
-        static_cast<WebContentsImpl*>(shell()->web_contents())->GetView();
-    ScreenInfo screen_info;
-    DisplayUtil::GetNativeViewScreenInfo(&screen_info, view->GetNativeView());
+    float device_scale_factor = shell()
+                                    ->web_contents()
+                                    ->GetRenderWidgetHostView()
+                                    ->GetDeviceScaleFactor();
     expected_div_scroll_top =
-        floor(screen_info.device_scale_factor * expected_div_scroll_top) /
-        screen_info.device_scale_factor;
+        floor(device_scale_factor * expected_div_scroll_top) /
+        device_scale_factor;
     expected_window_scroll_y =
-        floor(screen_info.device_scale_factor * expected_window_scroll_y) /
-        screen_info.device_scale_factor;
+        floor(device_scale_factor * expected_window_scroll_y) /
+        device_scale_factor;
   }
   EXPECT_FLOAT_EQ(expected_div_scroll_top, div_scroll_top);
   EXPECT_FLOAT_EQ(expected_window_scroll_y, window_scroll_y);
