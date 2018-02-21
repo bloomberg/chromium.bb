@@ -12948,6 +12948,7 @@ Called by update_net_error_codes.py.-->
   <int value="0" label="Successful"/>
   <int value="1" label="Canceled by the user"/>
   <int value="2" label="Write failed"/>
+  <int value="3" label="No app could consume the exported data"/>
 </enum>
 
 <enum name="ExtensionBackgroundPageType">

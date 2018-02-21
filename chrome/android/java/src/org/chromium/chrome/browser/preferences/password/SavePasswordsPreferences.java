@@ -60,6 +60,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.nio.charset.Charset;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The "Save passwords" screen in Settings, which allows the user to enable or disable password
@@ -129,6 +130,26 @@ public class SavePasswordsPreferences
     private static final String HISTOGRAM_SEARCH_TRIGGERED =
             "PasswordManager.Android.PasswordSearchTriggered";
 
+    // Potential values of the histogram recording the result of exporting. This needs to match
+    // ExportPasswordsResult from
+    // //components/password_manager/core/browser/password_manager_metrics_util.h.
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({EXPORT_RESULT_SUCCESS, EXPORT_RESULT_USER_ABORTED, EXPORT_RESULT_WRITE_FAILED,
+            EXPORT_RESULT_NO_CONSUMER})
+    @VisibleForTesting
+    public @interface HistogramExportResult {}
+    @VisibleForTesting
+    public static final int EXPORT_RESULT_SUCCESS = 0;
+    @VisibleForTesting
+    public static final int EXPORT_RESULT_USER_ABORTED = 1;
+    @VisibleForTesting
+    public static final int EXPORT_RESULT_WRITE_FAILED = 2;
+    @VisibleForTesting
+    public static final int EXPORT_RESULT_NO_CONSUMER = 3;
+    // If you add new values to HistogramExportResult, also update EXPORT_RESULT_COUNT to match its
+    // new size.
+    private static final int EXPORT_RESULT_COUNT = 4;
+
     private static final int ORDER_SWITCH = 0;
     private static final int ORDER_AUTO_SIGNIN_CHECKBOX = 1;
     private static final int ORDER_MANAGE_ACCOUNT_LINK = 2;
@@ -150,7 +171,12 @@ public class SavePasswordsPreferences
     @Nullable
     private Uri mExportFileUri;
 
+    // Just before the exporting flow requests the passwords to be serialized by the native code,
+    // this timestamp is assigned the result of System.currentTimeMillis().
+    private Long mExportPreparationStart;
+
     private MenuItem mHelpItem;
+
     private String mSearchQuery;
     private Preference mLinkPref;
     private ChromeSwitchPreference mSavePasswordsSwitch;
@@ -310,6 +336,13 @@ public class SavePasswordsPreferences
             @Override
             protected ExportResult doInBackground(String... serializedPasswords) {
                 assert serializedPasswords.length == 1;
+                // Record the time it took to read and serialise the passwords. This excludes the
+                // time to write them into a file, to be consistent with desktop (where writing is
+                // blocked on the user choosing a file destination).
+                RecordHistogram.recordMediumTimesHistogram(
+                        "PasswordManager.TimeReadingExportedPasswords",
+                        System.currentTimeMillis() - mExportPreparationStart,
+                        TimeUnit.MILLISECONDS);
                 return exportPasswordsIntoFile(serializedPasswords[0]);
             }
 
@@ -320,7 +353,7 @@ public class SavePasswordsPreferences
 
                 if (result.mError != null) {
                     showExportErrorAndAbort(R.string.save_password_preferences_export_tips,
-                            result.mError, R.string.try_again);
+                            result.mError, R.string.try_again, EXPORT_RESULT_WRITE_FAILED);
                 } else {
                     mExportFileUri = result.mUri;
                     tryExporting();
@@ -344,6 +377,7 @@ public class SavePasswordsPreferences
         // reauthenticating and reading the warning message. If the user cancels the export or
         // fails the reauthentication, the serialised passwords will simply get ignored when
         // they arrive.
+        mExportPreparationStart = System.currentTimeMillis();
         PasswordManagerHandlerProvider.getInstance().getPasswordManagerHandler().serializePasswords(
                 new Callback<String>() {
                     @Override
@@ -402,6 +436,10 @@ public class SavePasswordsPreferences
                             } else {
                                 tryExporting();
                             }
+                        } else if (which == AlertDialog.BUTTON_NEGATIVE) {
+                            RecordHistogram.recordEnumeratedHistogram(
+                                    "PasswordManager.ExportPasswordsToCSVResult",
+                                    EXPORT_RESULT_USER_ABORTED, EXPORT_RESULT_COUNT);
                         }
                     }
 
@@ -449,6 +487,9 @@ public class SavePasswordsPreferences
                         public void onClick(DialogInterface dialog, int which) {
                             if (which == AlertDialog.BUTTON_NEGATIVE) {
                                 mExportState = EXPORT_STATE_INACTIVE;
+                                RecordHistogram.recordEnumeratedHistogram(
+                                        "PasswordManager.ExportPasswordsToCSVResult",
+                                        EXPORT_RESULT_USER_ABORTED, EXPORT_RESULT_COUNT);
                             }
                         }
                     });
@@ -469,14 +510,18 @@ public class SavePasswordsPreferences
      * dialog.
      */
     @VisibleForTesting
-    public void showExportErrorAndAbort(
-            int descriptionId, @Nullable String detailedDescription, int positiveButtonLabelId) {
+    public void showExportErrorAndAbort(int descriptionId, @Nullable String detailedDescription,
+            int positiveButtonLabelId, @HistogramExportResult int histogramExportResult) {
         assert mErrorDialogParams == null;
         if (mProgressBarDialogFragment != null) mProgressBarDialogFragment.dismiss();
+
+        RecordHistogram.recordEnumeratedHistogram("PasswordManager.ExportPasswordsToCSVResult",
+                histogramExportResult, EXPORT_RESULT_COUNT);
 
         mErrorDialogParams = new ExportErrorDialogFragment.ErrorDialogParams();
         mErrorDialogParams.positiveButtonLabelId = positiveButtonLabelId;
         mErrorDialogParams.description = getActivity().getResources().getString(descriptionId);
+
         if (detailedDescription != null) {
             mErrorDialogParams.detailedDescription = getActivity().getResources().getString(
                     R.string.save_password_preferences_export_error_details, detailedDescription);
@@ -573,9 +618,12 @@ public class SavePasswordsPreferences
             Intent chooser = Intent.createChooser(send, null);
             chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             ContextUtils.getApplicationContext().startActivity(chooser);
+            RecordHistogram.recordEnumeratedHistogram("PasswordManager.ExportPasswordsToCSVResult",
+                    EXPORT_RESULT_SUCCESS, EXPORT_RESULT_COUNT);
         } catch (ActivityNotFoundException e) {
             showExportErrorAndAbort(R.string.save_password_preferences_export_no_app, null,
-                    R.string.save_password_preferences_export_learn_google_drive);
+                    R.string.save_password_preferences_export_learn_google_drive,
+                    EXPORT_RESULT_NO_CONSUMER);
         }
         mExportFileUri = null;
     }
@@ -755,6 +803,9 @@ public class SavePasswordsPreferences
                         ReauthenticationManager.REAUTH_SCOPE_BULK)) {
                 exportAfterReauth();
             } else {
+                RecordHistogram.recordEnumeratedHistogram(
+                        "PasswordManager.ExportPasswordsToCSVResult", EXPORT_RESULT_USER_ABORTED,
+                        EXPORT_RESULT_COUNT);
                 mExportState = EXPORT_STATE_INACTIVE;
             }
         }
