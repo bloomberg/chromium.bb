@@ -45,7 +45,7 @@ void SetupSearchIllustrationView(views::View* illustration_view,
                                  int message_id) {
   constexpr int kSearchIllustrationIconSize = 150;
   constexpr SkColor kSearchIllustrationIconColor =
-      SkColorSetARGBMacro(0xFF, 0xCA, 0xCA, 0xCA);
+      SkColorSetARGBMacro(0xFF, 0xDA, 0xDC, 0xE0);
 
   illustration_view->set_owned_by_client();
   views::BoxLayout* layout = illustration_view->SetLayoutManager(
@@ -62,9 +62,10 @@ void SetupSearchIllustrationView(views::View* illustration_view,
       SkColorSetARGBMacro(0xFF, 0x20, 0x21, 0x24);
   views::Label* text = new views::Label(l10n_util::GetStringUTF16(message_id));
   text->SetEnabledColor(kSearchIllustrationTextColor);
+  constexpr int kLabelFontSizeDelta = 1;
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   text->SetFontList(rb.GetFontListWithDelta(
-      ui::kLabelFontSizeDelta, gfx::Font::NORMAL, gfx::Font::Weight::BOLD));
+      kLabelFontSizeDelta, gfx::Font::NORMAL, gfx::Font::Weight::BOLD));
   illustration_view->AddChildView(text);
 }
 

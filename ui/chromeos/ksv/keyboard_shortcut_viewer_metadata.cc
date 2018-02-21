@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
@@ -134,6 +133,39 @@ base::string16 GetStringForKeyboardCode(ui::KeyboardCode key_code) {
       dom_code, 0 /* flags */, &dom_key, &keycode_ignored);
   DCHECK(has_mapping);
   return base::UTF8ToUTF16(ui::KeycodeConverter::DomKeyToKeyString(dom_key));
+}
+
+const gfx::VectorIcon* GetVectorIconForKeyboardCode(ui::KeyboardCode key_code) {
+  switch (key_code) {
+    case ui::VKEY_BROWSER_BACK:
+      return &kKsvBrowserBackIcon;
+    case ui::VKEY_BROWSER_REFRESH:
+      return &kKsvReloadIcon;
+    case ui::VKEY_MEDIA_LAUNCH_APP2:
+      return &kKsvFullscreenIcon;
+    case ui::VKEY_MEDIA_LAUNCH_APP1:
+      return &kKsvOverviewIcon;
+    case ui::VKEY_BRIGHTNESS_DOWN:
+      return &kKsvBrightnessDownIcon;
+    case ui::VKEY_BRIGHTNESS_UP:
+      return &kKsvBrightnessUpIcon;
+    case ui::VKEY_VOLUME_MUTE:
+      return &kKsvMuteIcon;
+    case ui::VKEY_VOLUME_DOWN:
+      return &kKsvVolumeDownIcon;
+    case ui::VKEY_VOLUME_UP:
+      return &kKsvVolumeUpIcon;
+    case ui::VKEY_UP:
+      return &kKsvArrowUpIcon;
+    case ui::VKEY_DOWN:
+      return &kKsvArrowDownIcon;
+    case ui::VKEY_LEFT:
+      return &kKsvArrowLeftIcon;
+    case ui::VKEY_RIGHT:
+      return &kKsvArrowRightIcon;
+    default:
+      return nullptr;
+  }
 }
 
 const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
