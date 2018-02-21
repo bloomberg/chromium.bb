@@ -101,6 +101,7 @@ class DiskCacheTestWithCache : public DiskCacheTest {
   }
 
   void SetSimpleCacheMode() {
+    DCHECK(!use_current_thread_);
     simple_cache_mode_ = true;
   }
 
@@ -132,7 +133,9 @@ class DiskCacheTestWithCache : public DiskCacheTest {
     integrity_ = false;
   }
 
+  // This is only supported for blockfile cache.
   void UseCurrentThread() {
+    DCHECK(!simple_cache_mode_);
     use_current_thread_ = true;
   }
 

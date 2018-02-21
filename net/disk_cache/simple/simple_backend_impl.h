@@ -65,7 +65,6 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
       SimpleFileTracker* file_tracker,
       int max_bytes,
       net::CacheType cache_type,
-      const scoped_refptr<base::SequencedTaskRunner>& cache_runner,
       net::NetLog* net_log);
 
   ~SimpleBackendImpl() override;
@@ -246,7 +245,12 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   const base::FilePath path_;
   const net::CacheType cache_type_;
   std::unique_ptr<SimpleIndex> index_;
+
+  // This is only used for initial open (including potential format upgrade)
+  // and index load/save.
   const scoped_refptr<base::SequencedTaskRunner> cache_runner_;
+
+  // This is used for all the entry I/O.
   scoped_refptr<base::TaskRunner> worker_pool_;
 
   int orig_max_size_;

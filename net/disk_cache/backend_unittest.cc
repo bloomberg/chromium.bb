@@ -183,7 +183,7 @@ class DiskCacheBackendTest : public DiskCacheTestWithCache {
 };
 
 int DiskCacheBackendTest::GeneratePendingIO(net::TestCompletionCallback* cb) {
-  if (!use_current_thread_) {
+  if (!use_current_thread_ && !simple_cache_mode_) {
     ADD_FAILURE();
     return net::ERR_FAILED;
   }
@@ -768,7 +768,8 @@ void DiskCacheBackendTest::BackendShutdownWithPendingFileIO(bool fast) {
   if (!fast)
     flags |= disk_cache::kNoRandom;
 
-  UseCurrentThread();
+  if (!simple_cache_mode_)
+    UseCurrentThread();
   CreateBackend(flags);
 
   net::TestCompletionCallback cb;
@@ -3909,7 +3910,7 @@ TEST_F(DiskCacheBackendTest, SimpleCacheOverBlockfileCache) {
   // Check that the |SimpleBackendImpl| does not favor this structure.
   disk_cache::SimpleBackendImpl* simple_cache =
       new disk_cache::SimpleBackendImpl(cache_path_, nullptr, nullptr, 0,
-                                        net::DISK_CACHE, nullptr, nullptr);
+                                        net::DISK_CACHE, nullptr);
   net::TestCompletionCallback cb;
   int rv = simple_cache->Init(cb.callback());
   EXPECT_NE(net::OK, cb.GetResult(rv));

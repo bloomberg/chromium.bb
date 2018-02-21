@@ -397,32 +397,29 @@ TEST_F(SimpleIndexFileTest, SimpleCacheUpgrade) {
       disk_cache::UpgradeSimpleCacheOnDisk(cache_path, SimpleExperiment()));
 
   // Create the backend and initiate index flush by destroying the backend.
-  base::Thread cache_thread("CacheThread");
-  ASSERT_TRUE(cache_thread.StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
+  scoped_refptr<disk_cache::BackendCleanupTracker> cleanup_tracker =
+      disk_cache::BackendCleanupTracker::TryCreate(cache_path,
+                                                   base::OnceClosure());
+  ASSERT_TRUE(cleanup_tracker != nullptr);
+
+  net::TestClosure post_cleanup;
+  cleanup_tracker->AddPostCleanupCallback(post_cleanup.closure());
+
   disk_cache::SimpleBackendImpl* simple_cache =
       new disk_cache::SimpleBackendImpl(
-          cache_path, /* cleanup_tracker = */ nullptr,
-          /* file_tracker = */ nullptr, 0, net::DISK_CACHE,
-          cache_thread.task_runner(), /* net_log = */ nullptr);
+          cache_path, cleanup_tracker, /* file_tracker = */ nullptr, 0,
+          net::DISK_CACHE, /* net_log = */ nullptr);
   net::TestCompletionCallback cb;
   int rv = simple_cache->Init(cb.callback());
   EXPECT_THAT(cb.GetResult(rv), IsOk());
   rv = simple_cache->index()->ExecuteWhenReady(cb.callback());
   EXPECT_THAT(cb.GetResult(rv), IsOk());
   delete simple_cache;
+  cleanup_tracker = nullptr;
 
-  // The backend flushes the index on destruction and does so on the cache
-  // thread, wait for the flushing to finish by posting a callback to the cache
-  // thread after that.
-  // TODO(morlovich): Convert this test to post-cleanup callback API once it's
-  // there.
-  MessageLoopHelper helper;
-  CallbackTest cb_shutdown(&helper, false);
-  cache_thread.task_runner()->PostTaskAndReply(
-      FROM_HERE, base::Bind(&base::DoNothing),
-      base::Bind(&CallbackTest::Run, base::Unretained(&cb_shutdown), net::OK));
-  helper.WaitUntilCacheIoFinished(1);
+  // The backend flushes the index on destruction; it will run the post-cleanup
+  // callback set on the cleanup_tracker once that finishes.
+  post_cleanup.WaitForResult();
 
   // Verify that the index file exists.
   const base::FilePath& index_file_path =
