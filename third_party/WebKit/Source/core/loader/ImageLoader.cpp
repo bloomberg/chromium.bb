@@ -413,6 +413,16 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
       resource_request.SetRequestContext(WebURLRequest::kRequestContextPing);
     }
 
+    // Plug-ins should not load via service workers as plug-ins may have their
+    // own origin checking logic that may get confused if service workers
+    // respond with resources from another origin.
+    // https://w3c.github.io/ServiceWorker/#implementer-concerns
+    if (GetElement()->IsHTMLElement() &&
+        ToHTMLElement(GetElement())->IsPluginElement()) {
+      resource_request.SetServiceWorkerMode(
+          WebURLRequest::ServiceWorkerMode::kNone);
+    }
+
     FetchParameters params(resource_request, resource_loader_options);
     ConfigureRequest(params, bypass_behavior, *element_,
                      document.GetClientHintsPreferences());
