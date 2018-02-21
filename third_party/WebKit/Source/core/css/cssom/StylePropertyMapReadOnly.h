@@ -30,8 +30,6 @@ class CORE_EXPORT StylePropertyMapReadOnly
   CSSStyleValueVector getAll(const String& property_name, ExceptionState&);
   bool has(const String& property_name, ExceptionState&);
 
-  Vector<String> getProperties();
-
  protected:
   StylePropertyMapReadOnly() = default;
 

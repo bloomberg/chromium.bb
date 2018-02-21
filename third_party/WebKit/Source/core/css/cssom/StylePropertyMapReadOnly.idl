@@ -9,5 +9,4 @@
     [RaisesException] sequence<CSSStyleValue> getAll(DOMString property);
     [RaisesException] boolean has(DOMString property);
     iterable<DOMString, (CSSStyleValue or sequence<CSSStyleValue>)>;
-    sequence<DOMString> getProperties();
 };
