@@ -128,6 +128,12 @@ _CONFIG = [
         ],
     },
     {
+        'paths': ['third_party/WebKit/Source/core/inspector/InspectorMemoryAgent.cpp'],
+        'allowed': [
+            'base::SamplingHeapProfiler',
+        ],
+    },
+    {
         'paths': [
             'third_party/WebKit/Source/modules/device_orientation/',
             'third_party/WebKit/Source/modules/gamepad/',

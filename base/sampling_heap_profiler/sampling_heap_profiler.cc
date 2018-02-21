@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/WebKit/public/common/sampling_heap_profiler/sampling_heap_profiler.h"
+#include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 
 #include <algorithm>
 #include <cmath>
@@ -13,11 +13,12 @@
 #include "base/atomicops.h"
 #include "base/debug/alias.h"
 #include "base/debug/stack_trace.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/rand_util.h"
+#include "base/sampling_heap_profiler/sampling_heap_profiler_flags.h"
 #include "build/build_config.h"
 
-namespace blink {
+namespace base {
 
 using base::allocator::AllocatorDispatch;
 using base::subtle::Atomic32;
@@ -28,18 +29,36 @@ namespace {
 // Control how many top frames to skip when recording call stack.
 // These frames correspond to the profiler own frames.
 const uint32_t kSkipBaseAllocatorFrames = 4;
-const uint32_t kSkipPartitionAllocFrames = 2;
 
 const size_t kDefaultSamplingIntervalBytes = 128 * 1024;
 
+// Controls if sample intervals should not be randomized. Used for testing.
 bool g_deterministic;
+
+// A positive value if profiling is running, otherwise it's zero.
 Atomic32 g_running;
+
+// Number of lock-free safe (not causing rehashing) accesses to samples_ map
+// currently being performed.
 Atomic32 g_operations_in_flight;
+
+// Controls if new incoming lock-free accesses are allowed.
+// When set to true, threads should not enter lock-free paths.
 Atomic32 g_fast_path_is_closed;
+
+// Number of bytes left to form the sample being collected.
 AtomicWord g_bytes_left;
+
+// Current sample size to be accumulated. Basically:
+// <bytes accumulated toward sample> == g_current_interval - g_bytes_left
 AtomicWord g_current_interval;
+
+// Sampling interval parameter, the mean value for intervals between samples.
 AtomicWord g_sampling_interval = kDefaultSamplingIntervalBytes;
+
+// Last generated sample ordinal number.
 uint32_t g_last_sample_ordinal = 0;
+
 SamplingHeapProfiler* g_instance;
 
 void* AllocFn(const AllocatorDispatch* self, size_t size, void* context) {
@@ -137,7 +156,10 @@ AllocatorDispatch g_allocator_dispatch = {&AllocFn,
                                           &FreeDefiniteSizeFn,
                                           nullptr};
 
+#if BUILDFLAG(USE_PARTITION_ALLOC) && !defined(OS_NACL)
+
 void PartitionAllocHook(void* address, size_t size, const char*) {
+  const uint32_t kSkipPartitionAllocFrames = 2;
   SamplingHeapProfiler::MaybeRecordAlloc(address, size,
                                          kSkipPartitionAllocFrames);
 }
@@ -146,12 +168,18 @@ void PartitionFreeHook(void* address) {
   SamplingHeapProfiler::MaybeRecordFree(address);
 }
 
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC) && !defined(OS_NACL)
+
 }  // namespace
 
 SamplingHeapProfiler::Sample::Sample(size_t size,
                                      size_t count,
                                      uint32_t ordinal)
     : size(size), count(count), ordinal(ordinal) {}
+
+SamplingHeapProfiler::Sample::Sample(const Sample&) = default;
+
+SamplingHeapProfiler::Sample::~Sample() = default;
 
 SamplingHeapProfiler::SamplingHeapProfiler() {
   g_instance = this;
@@ -173,8 +201,10 @@ bool SamplingHeapProfiler::InstallAllocatorHooks() {
       << "base::allocator shims are not available for memory sampling.";
 #endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
 
+#if BUILDFLAG(USE_PARTITION_ALLOC) && !defined(OS_NACL)
   base::PartitionAllocHooks::SetAllocationHook(&PartitionAllocHook);
   base::PartitionAllocHooks::SetFreeHook(&PartitionFreeHook);
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC) && !defined(OS_NACL)
 
   return true;
 }
@@ -257,7 +287,7 @@ void SamplingHeapProfiler::MaybeRecordAlloc(void* address,
 
   // Put the next sampling interval to g_bytes_left, thus allowing threads to
   // start accumulating bytes towards the next sample.
-  // Simulateneously extract the current value (which is negative or zero)
+  // Simultaneously extract the current value (which is negative or zero)
   // and take it into account when calculating the number of bytes
   // accumulated for the current sample.
   accumulated -=
@@ -268,6 +298,7 @@ void SamplingHeapProfiler::MaybeRecordAlloc(void* address,
 
 void SamplingHeapProfiler::RecordStackTrace(Sample* sample,
                                             uint32_t skip_frames) {
+#if !defined(OS_NACL)
   // TODO(alph): Consider using debug::TraceStackFramePointers. It should be
   // somewhat faster than base::debug::StackTrace.
   base::debug::StackTrace trace;
@@ -277,6 +308,7 @@ void SamplingHeapProfiler::RecordStackTrace(Sample* sample,
   sample->stack.insert(
       sample->stack.end(), &addresses[skip_frames],
       &addresses[std::max(count, static_cast<size_t>(skip_frames))]);
+#endif
 }
 
 void SamplingHeapProfiler::RecordAlloc(size_t total_allocated,
@@ -302,11 +334,11 @@ void SamplingHeapProfiler::RecordAlloc(size_t total_allocated,
     while (base::subtle::NoBarrier_Load(&g_operations_in_flight)) {
     }
   }
-  for (auto observer : observers_)
+  for (auto* observer : observers_)
     observer->SampleAdded(sample.ordinal, size, count);
   // TODO(alph): We can do better by keeping the fast-path open when
   // we know insert won't cause rehashing.
-  samples_.insert(std::make_pair(address, std::move(sample)));
+  samples_.emplace(address, std::move(sample));
   base::subtle::Release_Store(&g_fast_path_is_closed, 0);
 
   entered_.Set(false);
@@ -330,7 +362,7 @@ void SamplingHeapProfiler::RecordFree(void* address) {
   entered_.Set(true);
   auto it = samples_.find(address);
   if (it != samples_.end()) {
-    for (auto observer : observers_)
+    for (auto* observer : observers_)
       observer->SampleRemoved(it->second.ordinal);
     samples_.erase(it);
   }
@@ -339,9 +371,8 @@ void SamplingHeapProfiler::RecordFree(void* address) {
 
 // static
 SamplingHeapProfiler* SamplingHeapProfiler::GetInstance() {
-  return base::Singleton<
-      SamplingHeapProfiler,
-      base::LeakySingletonTraits<SamplingHeapProfiler>>::get();
+  static base::NoDestructor<SamplingHeapProfiler> instance;
+  return instance.get();
 }
 
 // static
@@ -378,4 +409,4 @@ std::vector<SamplingHeapProfiler::Sample> SamplingHeapProfiler::GetSamples(
   return samples;
 }
 
-}  // namespace blink
+}  // namespace base

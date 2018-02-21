@@ -42,7 +42,6 @@ jumbo_component("blink_common") {
     "origin_manifest/origin_manifest.cc",
     "origin_trials/trial_token.cc",
     "origin_trials/trial_token_validator.cc",
-    "sampling_heap_profiler/sampling_heap_profiler.cc",
 
     # TODO(kinuko): Split out the target for public headers.
     "../public/common/associated_interfaces/associated_interface_provider.h",
@@ -60,7 +59,6 @@ jumbo_component("blink_common") {
     "../public/common/origin_trials/trial_token.h",
     "../public/common/origin_trials/trial_token_validator.h",
     "../public/common/page/launching_process_state.h",
-    "../public/common/sampling_heap_profiler/sampling_heap_profiler.h",
   ]
 
   public_deps = [
@@ -98,7 +96,6 @@ jumbo_source_set("blink_common_unittests_sources") {
     "origin_manifest/origin_manifest_unittest.cc",
     "origin_trials/trial_token_unittest.cc",
     "origin_trials/trial_token_validator_unittest.cc",
-    "sampling_heap_profiler/sampling_heap_profiler_unittest.cc",
     "test/run_all_unittests.cc",
   ]
 

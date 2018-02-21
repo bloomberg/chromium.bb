@@ -2,24 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/WebKit/public/common/sampling_heap_profiler/sampling_heap_profiler.h"
+#include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 
-#include <memory>
+#include <stdlib.h>
 
+#include "base/allocator/allocator_shim.h"
 #include "base/debug/stack_trace.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace blink {
+namespace base {
 namespace {
 
-class SamplingHeapProfilerTest : public ::testing::Test {};
+class SamplingHeapProfilerTest : public ::testing::Test {
+#if defined(OS_MACOSX)
+  void SetUp() override { allocator::InitializeAllocatorShim(); }
+#endif
+};
 
 class SamplesCollector : public SamplingHeapProfiler::SamplesObserver {
  public:
   explicit SamplesCollector(size_t watch_size) : watch_size_(watch_size) {}
 
   void SampleAdded(uint32_t id, size_t size, size_t count) override {
-    if (size < watch_size_ || !count)
+    if (sample_added || size != watch_size_ || !count)
       return;
     sample_id_ = id;
     sample_added = true;
@@ -39,14 +45,14 @@ class SamplesCollector : public SamplingHeapProfiler::SamplesObserver {
 };
 
 TEST_F(SamplingHeapProfilerTest, CollectSamples) {
-  SamplesCollector collector(sizeof(testing::Message));
+  SamplesCollector collector(10000);
   SamplingHeapProfiler* profiler = SamplingHeapProfiler::GetInstance();
   profiler->SuppressRandomnessForTest();
-  profiler->SetSamplingInterval(256);
+  profiler->SetSamplingInterval(1024);
   profiler->Start();
   profiler->AddSamplesObserver(&collector);
-  std::unique_ptr<testing::Message> data(new testing::Message());
-  data.reset();
+  void* volatile p = malloc(10000);
+  free(p);
   profiler->Stop();
   profiler->RemoveSamplesObserver(&collector);
   CHECK(collector.sample_added);
@@ -54,4 +60,4 @@ TEST_F(SamplingHeapProfilerTest, CollectSamples) {
 }
 
 }  // namespace
-}  // namespace blink
+}  // namespace base
