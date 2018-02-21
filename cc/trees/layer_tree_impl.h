@@ -48,7 +48,6 @@ class LayerTreeResourceProvider;
 class LayerTreeSettings;
 class MemoryHistory;
 class PictureLayerImpl;
-class RenderFrameMetadata;
 class TaskRunnerProvider;
 class TileManager;
 class UIResourceRequest;
@@ -447,9 +446,7 @@ class CC_EXPORT LayerTreeImpl {
       std::vector<std::unique_ptr<SwapPromise>> new_swap_promises);
   void AppendSwapPromises(
       std::vector<std::unique_ptr<SwapPromise>> new_swap_promises);
-  void FinishSwapPromises(
-      viz::CompositorFrameMetadata* compositor_frame_metadata,
-      RenderFrameMetadata* render_frame_metadata);
+  void FinishSwapPromises(viz::CompositorFrameMetadata* metadata);
   void ClearSwapPromises();
   void BreakSwapPromises(SwapPromise::DidNotSwapReason reason);
 

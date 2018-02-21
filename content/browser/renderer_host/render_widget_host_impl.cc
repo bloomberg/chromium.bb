@@ -617,8 +617,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FrameSwapMessages,
                         OnFrameSwapMessagesReceived)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_OnRenderFrameSubmitted,
-                        OnRenderFrameMetadata)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -2969,11 +2967,6 @@ void RenderWidgetHostImpl::DidReceiveFirstFrameAfterNavigation() {
 void RenderWidgetHostImpl::StopFling() {
   if (input_router_)
     input_router_->StopFling();
-}
-
-void RenderWidgetHostImpl::OnRenderFrameMetadata(
-    const cc::RenderFrameMetadata& metadata) {
-  last_render_frame_metadata_ = metadata;
 }
 
 void RenderWidgetHostImpl::SetScreenOrientationForTesting(

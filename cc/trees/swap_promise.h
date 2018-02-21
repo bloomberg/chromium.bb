@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "cc/cc_export.h"
-#include "cc/trees/render_frame_metadata.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 
 namespace cc {
@@ -62,8 +61,7 @@ class CC_EXPORT SwapPromise {
   virtual ~SwapPromise() {}
 
   virtual void DidActivate() = 0;
-  virtual void WillSwap(viz::CompositorFrameMetadata* compositor_frame_metadata,
-                        RenderFrameMetadata* render_frame_metadata) = 0;
+  virtual void WillSwap(viz::CompositorFrameMetadata* metadata) = 0;
   virtual void DidSwap() = 0;
   // Return |KEEP_ACTIVE| if this promise should remain active (should not be
   // broken by the owner).

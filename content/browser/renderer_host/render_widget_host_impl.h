@@ -80,7 +80,6 @@ class WebMouseEvent;
 
 namespace cc {
 struct BeginFrameAck;
-class RenderFrameMetadata;
 }  // namespace cc
 
 namespace gfx {
@@ -825,8 +824,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       uint32_t last_shared_bitmap_sequence_number) override;
   void SetupInputRouter();
 
-  void OnRenderFrameMetadata(const cc::RenderFrameMetadata& metadata);
-
   bool SurfacePropertiesMismatch(
       const RenderWidgetSurfaceProperties& first,
       const RenderWidgetSurfaceProperties& second) const;
@@ -1053,7 +1050,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   base::OnceCallback<void(const viz::FrameSinkId&)> create_frame_sink_callback_;
 
   viz::CompositorFrameMetadata last_frame_metadata_;
-  cc::RenderFrameMetadata last_render_frame_metadata_;
 
   // Last non-zero frame token received from the renderer. Any swap messsages
   // having a token less than or equal to this value will be processed.
