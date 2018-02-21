@@ -935,12 +935,6 @@ TEST_F(TrafficAnnotationAuditorTest, AnnotationsDownstreamUnittests) {
   EXPECT_EQ(0, tests_result);
 }
 
-// Tests if AnnotationInstance::GetClangLibraryPath finds a path.
-TEST_F(TrafficAnnotationAuditorTest, GetClangLibraryPath) {
-  base::FilePath clang_library = auditor().GetClangLibraryPath();
-  EXPECT_FALSE(clang_library.empty());
-}
-
 // Tests if 'annotations.xml' is read and has at least one item.
 TEST_F(TrafficAnnotationAuditorTest, AnnotationsXMLLines) {
   TrafficAnnotationExporter exporter(source_path());
