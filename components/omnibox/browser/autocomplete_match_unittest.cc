@@ -274,14 +274,15 @@ TEST(AutocompleteMatchTest, FormatUrlForSuggestionDisplay) {
   };
 
   FormatUrlTestData normal_cases[] = {
-      // Test trim_scheme parameter without any feature flags.
-      {"http://google.com", false, true, true, L"google.com"},
-      {"https://google.com", false, true, true, L"https://google.com"},
-      {"http://google.com", true, true, true, L"http://google.com"},
-      {"https://google.com", true, true, true, L"https://google.com"},
+      // Test the |preserve_scheme| parameter.
+      {"http://google.com", false, false, false, L"google.com"},
+      {"https://google.com", false, false, false, L"google.com"},
+      {"http://google.com", true, false, false, L"http://google.com"},
+      {"https://google.com", true, false, false, L"https://google.com"},
 
-      // Verify that trivial subdomains are preserved in the normal case.
-      {"http://www.google.com", false, false, false, L"www.google.com"},
+      // Test the |preserve_subdomain| parameter.
+      {"http://www.m.google.com", false, false, false, L"google.com"},
+      {"http://www.m.google.com", false, true, false, L"www.m.google.com"},
 
       // Test that paths are preserved in the default case.
       {"http://google.com/foobar", false, false, false, L"google.com/foobar"},
@@ -289,37 +290,9 @@ TEST(AutocompleteMatchTest, FormatUrlForSuggestionDisplay) {
   for (FormatUrlTestData& test_case : normal_cases)
     test_case.Validate();
 
-  // Test the hide-scheme feature flag with the trim_scheme parameter.
-  std::unique_ptr<base::test::ScopedFeatureList> feature_list(
-      new base::test::ScopedFeatureList);
-  feature_list->InitAndEnableFeature(
-      omnibox::kUIExperimentHideSuggestionUrlScheme);
-
-  FormatUrlTestData omit_scheme_cases[] = {
-      {"http://google.com", false, false, false, L"google.com"},
-      {"https://google.com", false, false, false, L"google.com"},
-      {"http://google.com", true, false, false, L"http://google.com"},
-      {"https://google.com", true, false, false, L"https://google.com"},
-  };
-  for (FormatUrlTestData& test_case : omit_scheme_cases)
-    test_case.Validate();
-
-  // Test the trim trivial subdomains feature flag.
-  feature_list.reset(new base::test::ScopedFeatureList);
-  feature_list->InitAndEnableFeature(
-      omnibox::kUIExperimentHideSuggestionUrlTrivialSubdomains);
-
-  FormatUrlTestData trim_trivial_subdomains_cases[] = {
-      {"http://www.m.google.com", false, false, false, L"google.com"},
-      {"http://www.m.google.com", false, true, false, L"www.m.google.com"},
-  };
-
-  for (FormatUrlTestData& test_case : trim_trivial_subdomains_cases)
-    test_case.Validate();
-
   // Test the elide-after-host feature flag.
-  feature_list.reset(new base::test::ScopedFeatureList);
-  feature_list->InitAndEnableFeature(
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
       omnibox::kUIExperimentElideSuggestionUrlAfterHost);
 
   FormatUrlTestData hide_path_cases[] = {

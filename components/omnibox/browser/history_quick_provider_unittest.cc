@@ -17,7 +17,6 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
@@ -766,7 +765,7 @@ TEST_F(HistoryQuickProviderTest, DoTrimHttpScheme) {
       BuildScoredHistoryMatch("http://www.facebook.com");
 
   AutocompleteMatch match = provider().QuickMatchToACMatch(history_match, 100);
-  EXPECT_EQ(ASCIIToUTF16("www.facebook.com"), match.contents);
+  EXPECT_EQ(ASCIIToUTF16("facebook.com"), match.contents);
 }
 
 // Don't trim the http:// scheme from the match contents if
@@ -780,7 +779,7 @@ TEST_F(HistoryQuickProviderTest, DontTrimHttpSchemeIfInputHasScheme) {
       BuildScoredHistoryMatch("http://www.facebook.com");
 
   AutocompleteMatch match = provider().QuickMatchToACMatch(history_match, 100);
-  EXPECT_EQ(ASCIIToUTF16("http://www.facebook.com"), match.contents);
+  EXPECT_EQ(ASCIIToUTF16("http://facebook.com"), match.contents);
 }
 
 // Don't trim the http:// scheme from the match contents if
@@ -794,29 +793,12 @@ TEST_F(HistoryQuickProviderTest, DontTrimHttpSchemeIfInputMatches) {
   history_match.match_in_scheme = true;
 
   AutocompleteMatch match = provider().QuickMatchToACMatch(history_match, 100);
-  EXPECT_EQ(ASCIIToUTF16("http://www.facebook.com"), match.contents);
+  EXPECT_EQ(ASCIIToUTF16("http://facebook.com"), match.contents);
 }
 
-// Don't trim the https:// scheme from the match contents in the general case.
-TEST_F(HistoryQuickProviderTest, DontTrimHttpsScheme) {
-  AutocompleteInput input(ASCIIToUTF16("face"),
-                          metrics::OmniboxEventProto::OTHER,
-                          TestSchemeClassifier());
-  provider().Start(input, false);
-  ScoredHistoryMatch history_match =
-      BuildScoredHistoryMatch("https://www.facebook.com");
-
-  AutocompleteMatch match = provider().QuickMatchToACMatch(history_match, 100);
-  EXPECT_EQ(ASCIIToUTF16("https://www.facebook.com"), match.contents);
-}
-
-// Don't trim the https:// scheme from the match contents, if the feature
-// to do so is enabled, if the user input included a scheme.
-TEST_F(HistoryQuickProviderTest, DontTrimHttpsSchemeDespiteFlag) {
-  auto feature_list = std::make_unique<base::test::ScopedFeatureList>();
-  feature_list->InitAndEnableFeature(
-      omnibox::kUIExperimentHideSuggestionUrlScheme);
-
+// Don't trim the https:// scheme from the match contents if the user input
+// included a scheme.
+TEST_F(HistoryQuickProviderTest, DontTrimHttpsSchemeIfInputHasScheme) {
   AutocompleteInput input(ASCIIToUTF16("https://face"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
@@ -825,16 +807,11 @@ TEST_F(HistoryQuickProviderTest, DontTrimHttpsSchemeDespiteFlag) {
       BuildScoredHistoryMatch("https://www.facebook.com");
 
   AutocompleteMatch match = provider().QuickMatchToACMatch(history_match, 100);
-  EXPECT_EQ(ASCIIToUTF16("https://www.facebook.com"), match.contents);
+  EXPECT_EQ(ASCIIToUTF16("https://facebook.com"), match.contents);
 }
 
-// Trim the https:// scheme from the match contents, if the feature
-// to do so is enabled, and nothing else prevents it.
-TEST_F(HistoryQuickProviderTest, DoTrimHttpsSchemeIfFlag) {
-  auto feature_list = std::make_unique<base::test::ScopedFeatureList>();
-  feature_list->InitAndEnableFeature(
-      omnibox::kUIExperimentHideSuggestionUrlScheme);
-
+// Trim the https:// scheme from the match contents if nothing prevents it.
+TEST_F(HistoryQuickProviderTest, DoTrimHttpsScheme) {
   AutocompleteInput input(ASCIIToUTF16("face"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
@@ -843,7 +820,7 @@ TEST_F(HistoryQuickProviderTest, DoTrimHttpsSchemeIfFlag) {
       BuildScoredHistoryMatch("https://www.facebook.com");
 
   AutocompleteMatch match = provider().QuickMatchToACMatch(history_match, 100);
-  EXPECT_EQ(ASCIIToUTF16("www.facebook.com"), match.contents);
+  EXPECT_EQ(ASCIIToUTF16("facebook.com"), match.contents);
 }
 
 // HQPOrderingTest -------------------------------------------------------------

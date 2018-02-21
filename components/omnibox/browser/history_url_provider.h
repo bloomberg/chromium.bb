@@ -234,10 +234,9 @@ class HistoryURLProvider : public HistoryProvider {
                            DontTrimHttpSchemeIfInputHasScheme);
   FRIEND_TEST_ALL_PREFIXES(HistoryURLProviderTest,
                            DontTrimHttpSchemeIfInputMatchesInScheme);
-  FRIEND_TEST_ALL_PREFIXES(HistoryURLProviderTest, DontTrimHttpsScheme);
   FRIEND_TEST_ALL_PREFIXES(HistoryURLProviderTest,
-                           DontTrimHttpsSchemeDespiteFlag);
-  FRIEND_TEST_ALL_PREFIXES(HistoryURLProviderTest, DoTrimHttpsSchemeIfFlag);
+                           DontTrimHttpsSchemeIfInputMatchesInScheme);
+  FRIEND_TEST_ALL_PREFIXES(HistoryURLProviderTest, DoTrimHttpsScheme);
 
   enum MatchType {
     NORMAL,
