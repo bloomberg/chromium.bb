@@ -813,11 +813,6 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreloadWithURLLoader(
   return true;
 }
 
-ServiceWorkerFetchType ServiceWorkerFetchDispatcher::GetFetchType() const {
-  // TODO(falken): Remove FetchType, as the only type is FETCH.
-  return ServiceWorkerFetchType::FETCH;
-}
-
 ServiceWorkerMetrics::EventType ServiceWorkerFetchDispatcher::GetEventType()
     const {
   return ResourceTypeToEventType(resource_type_);

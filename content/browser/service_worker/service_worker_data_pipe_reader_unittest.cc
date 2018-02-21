@@ -45,7 +45,6 @@ class MockServiceWorkerURLRequestJob : public ServiceWorkerURLRequestJob {
             REQUEST_CONTEXT_TYPE_HYPERLINK,
             network::mojom::RequestContextFrameType::kTopLevel,
             scoped_refptr<network::ResourceRequestBody>(),
-            ServiceWorkerFetchType::FETCH,
             delegate),
         is_response_started_(false) {}
 

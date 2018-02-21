@@ -90,12 +90,6 @@ struct StructTraits<::blink::mojom::FetchAPIRequestDataView,
     return request.IsReload();
   }
 
-  // The |fetch_type| is not used by ::blink yet.
-  static ::blink::mojom::blink::ServiceWorkerFetchType fetch_type(
-      const ::blink::WebServiceWorkerRequest& request) {
-    return ::blink::mojom::blink::ServiceWorkerFetchType::FETCH;
-  }
-
   static bool Read(::blink::mojom::FetchAPIRequestDataView,
                    ::blink::WebServiceWorkerRequest* output);
 };

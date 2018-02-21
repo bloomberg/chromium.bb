@@ -124,8 +124,7 @@ class MockProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
         std::string() /* integrity */, false /* keepalive */, resource_type_,
         REQUEST_CONTEXT_TYPE_HYPERLINK,
         network::mojom::RequestContextFrameType::kTopLevel,
-        scoped_refptr<network::ResourceRequestBody>(),
-        ServiceWorkerFetchType::FETCH, delegate_);
+        scoped_refptr<network::ResourceRequestBody>(), delegate_);
     if (simulate_navigation_preload_) {
       job_->set_simulate_navigation_preload_for_test();
     }
