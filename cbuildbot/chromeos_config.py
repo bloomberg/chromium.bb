@@ -2586,7 +2586,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       # build_internals/masters/master.chromeos/board_config.py.
       # TODO(mtennant): Fix this.  There should be some amount of auto-
       # configuration in the board_config.py code.
-      sanity_check_slaves=['wolf-tot-paladin'],
       trybot_list=False,
       auto_reboot=True,  # TODO(dgarrett): Disable chroot.img stable.
   )
@@ -2600,23 +2599,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # Something like the following:
   # master_paladin = site_config.AddConfig(internal_paladin, ...)
   # master_paladin.AddSlave(site_config.AddConfig(internal_paladin, ...))
-
-  # Sanity check builder, part of the CQ but builds without the patches
-  # under test.
-  master_config.AddSlave(
-      site_config.Add(
-          'wolf-tot-paladin',
-          site_config.templates.paladin,
-          site_config.templates.internal_paladin,
-          boards=['wolf'],
-          do_not_apply_cq_patches=True,
-          # Temporarily (?) marked as experimental due to crbug.com/765565
-          important=False,
-          prebuilts=False,
-          hw_tests=hw_test_list.SharedPoolCQ(),
-          active_waterfall=waterfall.WATERFALL_INTERNAL,
-      )
-  )
 
   for board in _paladin_boards:
     assert board in board_configs, '%s not in board_configs' % board
