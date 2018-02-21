@@ -255,7 +255,7 @@ void DialFetchDeviceDescriptionFunction::MaybeStartFetch(const GURL& url) {
   }
 
   device_description_fetcher_ = std::make_unique<DeviceDescriptionFetcher>(
-      url, Profile::FromBrowserContext(browser_context())->GetRequestContext(),
+      url,
       base::BindOnce(&DialFetchDeviceDescriptionFunction::OnFetchComplete,
                      this),
       base::BindOnce(&DialFetchDeviceDescriptionFunction::OnFetchError, this));

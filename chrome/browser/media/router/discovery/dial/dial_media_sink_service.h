@@ -12,18 +12,13 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/sequence_checker.h"
-#include "base/sequenced_task_runner_helpers.h"
+#include "base/sequenced_task_runner.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/discovery/media_sink_service_util.h"
-#include "content/public/browser/browser_thread.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "url/origin.h"
-
-namespace net {
-class URLRequestContextGetter;
-}
 
 namespace media_router {
 
@@ -37,8 +32,7 @@ using OnDialSinkAddedCallback =
 // SequencedTaskRunner.
 class DialMediaSinkService {
  public:
-  explicit DialMediaSinkService(
-      const scoped_refptr<net::URLRequestContextGetter>& request_context);
+  DialMediaSinkService();
   virtual ~DialMediaSinkService();
 
   // Starts discovery of DIAL sinks. Can only be called once.
@@ -66,11 +60,9 @@ class DialMediaSinkService {
 
   // Marked virtual for tests.
   virtual std::unique_ptr<DialMediaSinkServiceImpl, base::OnTaskRunnerDeleter>
-  CreateImpl(
-      const OnSinksDiscoveredCallback& sink_discovery_cb,
-      const OnDialSinkAddedCallback& dial_sink_added_cb,
-      const OnAvailableSinksUpdatedCallback& available_sinks_updated_cb,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context);
+  CreateImpl(const OnSinksDiscoveredCallback& sink_discovery_cb,
+             const OnDialSinkAddedCallback& dial_sink_added_cb,
+             const OnAvailableSinksUpdatedCallback& available_sinks_updated_cb);
 
   void RunSinksDiscoveredCallback(
       const OnSinksDiscoveredCallback& sinks_discovered_cb,
@@ -86,9 +78,6 @@ class DialMediaSinkService {
 
   // Created on the UI thread, used and destroyed on its SequencedTaskRunner.
   std::unique_ptr<DialMediaSinkServiceImpl, base::OnTaskRunnerDeleter> impl_;
-
-  // Passed to |impl_| when |Start| is called.
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   // Map of media sink observers, keyed by app name
   base::flat_map<std::string,

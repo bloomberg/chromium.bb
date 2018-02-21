@@ -113,8 +113,7 @@ class MockPresentationConnectionProxy
 #if !defined(OS_ANDROID)
 class MockDialMediaSinkService : public DialMediaSinkService {
  public:
-  explicit MockDialMediaSinkService(
-      const scoped_refptr<net::URLRequestContextGetter>& request_context);
+  MockDialMediaSinkService();
   ~MockDialMediaSinkService() override;
 
   MOCK_METHOD2(Start,
@@ -125,8 +124,7 @@ class MockDialMediaSinkService : public DialMediaSinkService {
 
 class MockCastMediaSinkService : public CastMediaSinkService {
  public:
-  explicit MockCastMediaSinkService(
-      const scoped_refptr<net::URLRequestContextGetter>& request_context);
+  MockCastMediaSinkService();
   ~MockCastMediaSinkService() override;
 
   MOCK_METHOD1(Start, void(const OnSinksDiscoveredCallback&));

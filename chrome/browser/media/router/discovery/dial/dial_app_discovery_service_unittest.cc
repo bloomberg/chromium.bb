@@ -10,9 +10,7 @@
 #include "chrome/browser/media/router/discovery/dial/parsed_dial_device_description.h"
 #include "chrome/browser/media/router/discovery/dial/safe_dial_app_info_parser.h"
 #include "chrome/browser/media/router/test/test_helper.h"
-#include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
-#include "net/url_request/test_url_fetcher_factory.h"
+#include "net/http/http_status_code.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -81,81 +79,50 @@ class DialAppDiscoveryServiceTest : public ::testing::Test {
 
   TestSafeDialAppInfoParser* test_parser_;
   DialAppDiscoveryService dial_app_discovery_service_;
-  const content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
-  const net::TestURLFetcherFactory factory_;
 };
 
 TEST_F(DialAppDiscoveryServiceTest, TestFetchDialAppInfoFetchURL) {
   MediaSinkInternal dial_sink = CreateDialSink(1);
   EXPECT_CALL(mock_completed_cb_, Run(dial_sink.sink().id(), kYouTubeName,
                                       SinkAppStatus::kAvailable));
-  dial_app_discovery_service_.FetchDialAppInfo(dial_sink, kYouTubeName,
-                                               profile_.GetRequestContext());
-
   EXPECT_CALL(*test_parser_, ParseInternal(_))
       .WillOnce(Invoke([&](const std::string& xml_text) {
         test_parser_->InvokeParseCallback(
             CreateParsedDialAppInfo(kYouTubeName, DialAppState::kRunning),
             SafeDialAppInfoParser::ParsingResult::kSuccess);
       }));
-  net::TestURLFetcher* test_fetcher =
-      factory_.GetFetcherByID(DialAppInfoFetcher::kURLFetcherIDForTest);
-  GURL expected_url("http://192.168.0.101/apps/YouTube");
-  EXPECT_EQ(expected_url, test_fetcher->GetOriginalURL());
-  test_fetcher->set_response_code(net::HTTP_OK);
-  test_fetcher->SetResponseString("<xml>appInfo</xml>");
-  test_fetcher->delegate()->OnURLFetchComplete(test_fetcher);
+  dial_app_discovery_service_.OnDialAppInfoFetchComplete(
+      dial_sink.sink().id(), kYouTubeName, "<xml>appInfo</xml>");
 }
 
 TEST_F(DialAppDiscoveryServiceTest,
        TestFetchDialAppInfoFetchURLTransientError) {
   MediaSinkInternal dial_sink = CreateDialSink(1);
   EXPECT_CALL(mock_completed_cb_, Run(_, _, _)).Times(0);
-  dial_app_discovery_service_.FetchDialAppInfo(dial_sink, kYouTubeName,
-                                               profile_.GetRequestContext());
-
-  net::TestURLFetcher* test_fetcher =
-      factory_.GetFetcherByID(DialAppInfoFetcher::kURLFetcherIDForTest);
-  test_fetcher->set_response_code(net::HTTP_TEMPORARY_REDIRECT);
-  test_fetcher->delegate()->OnURLFetchComplete(test_fetcher);
+  dial_app_discovery_service_.OnDialAppInfoFetchError(
+      dial_sink.sink().id(), kYouTubeName, net::HTTP_TEMPORARY_REDIRECT,
+      "Temporary redirect");
 }
 
 TEST_F(DialAppDiscoveryServiceTest, TestFetchDialAppInfoFetchURLError) {
   MediaSinkInternal dial_sink = CreateDialSink(1);
   EXPECT_CALL(mock_completed_cb_, Run(dial_sink.sink().id(), kYouTubeName,
                                       SinkAppStatus::kUnavailable));
-  dial_app_discovery_service_.FetchDialAppInfo(dial_sink, kYouTubeName,
-                                               profile_.GetRequestContext());
-
-  net::TestURLFetcher* test_fetcher =
-      factory_.GetFetcherByID(DialAppInfoFetcher::kURLFetcherIDForTest);
-  test_fetcher->set_response_code(net::HTTP_NOT_FOUND);
-  test_fetcher->delegate()->OnURLFetchComplete(test_fetcher);
-
-  EXPECT_CALL(mock_completed_cb_, Run(_, _, SinkAppStatus::kUnavailable))
-      .Times(0);
-  dial_app_discovery_service_.FetchDialAppInfo(dial_sink, kYouTubeName,
-                                               profile_.GetRequestContext());
+  dial_app_discovery_service_.OnDialAppInfoFetchError(
+      dial_sink.sink().id(), kYouTubeName, net::HTTP_NOT_FOUND, "Not found");
 }
 
 TEST_F(DialAppDiscoveryServiceTest, TestFetchDialAppInfoParseError) {
   MediaSinkInternal dial_sink = CreateDialSink(1);
   EXPECT_CALL(mock_completed_cb_, Run(dial_sink.sink().id(), kYouTubeName,
                                       SinkAppStatus::kUnavailable));
-  dial_app_discovery_service_.FetchDialAppInfo(dial_sink, kYouTubeName,
-                                               profile_.GetRequestContext());
-
   EXPECT_CALL(*test_parser_, ParseInternal(_))
       .WillOnce(Invoke([&](const std::string& xml_text) {
         test_parser_->InvokeParseCallback(
             nullptr, SafeDialAppInfoParser::ParsingResult::kMissingName);
       }));
-  net::TestURLFetcher* test_fetcher =
-      factory_.GetFetcherByID(DialAppInfoFetcher::kURLFetcherIDForTest);
-  test_fetcher->set_response_code(net::HTTP_OK);
-  test_fetcher->SetResponseString("<xml>appInfo</xml>");
-  test_fetcher->delegate()->OnURLFetchComplete(test_fetcher);
+  dial_app_discovery_service_.OnDialAppInfoFetchComplete(
+      dial_sink.sink().id(), kYouTubeName, "<xml>appInfo</xml>");
 }
 
 TEST_F(DialAppDiscoveryServiceTest, TestGetAvailabilityFromAppInfoAvailable) {

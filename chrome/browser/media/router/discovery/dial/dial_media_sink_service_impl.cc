@@ -8,13 +8,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
-#include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/browser_thread.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/service_manager/public/cpp/connector.h"
-
-using content::BrowserThread;
 
 namespace media_router {
 
@@ -23,27 +17,13 @@ DialMediaSinkServiceImpl::DialMediaSinkServiceImpl(
     const OnSinksDiscoveredCallback& on_sinks_discovered_cb,
     const OnDialSinkAddedCallback& dial_sink_added_cb,
     const OnAvailableSinksUpdatedCallback& available_sinks_updated_callback,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : MediaSinkServiceBase(on_sinks_discovered_cb),
       connector_(std::move(connector)),
-      description_service_(std::make_unique<DeviceDescriptionService>(
-          connector_.get(),
-          base::Bind(&DialMediaSinkServiceImpl::OnDeviceDescriptionAvailable,
-                     base::Unretained(this)),
-          base::Bind(&DialMediaSinkServiceImpl::OnDeviceDescriptionError,
-                     base::Unretained(this)))),
-      app_discovery_service_(std::make_unique<DialAppDiscoveryService>(
-          connector_.get(),
-          base::BindRepeating(
-              &DialMediaSinkServiceImpl::OnAppInfoParseCompleted,
-              base::Unretained(this)))),
       dial_sink_added_cb_(dial_sink_added_cb),
       available_sinks_updated_callback_(available_sinks_updated_callback),
-      request_context_(request_context),
       task_runner_(task_runner) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
-  DCHECK(request_context_);
 }
 
 DialMediaSinkServiceImpl::~DialMediaSinkServiceImpl() {
@@ -60,10 +40,21 @@ void DialMediaSinkServiceImpl::Start() {
   if (dial_registry_)
     return;
 
+  description_service_ = std::make_unique<DeviceDescriptionService>(
+      connector_.get(),
+      base::BindRepeating(
+          &DialMediaSinkServiceImpl::OnDeviceDescriptionAvailable,
+          base::Unretained(this)),
+      base::BindRepeating(&DialMediaSinkServiceImpl::OnDeviceDescriptionError,
+                          base::Unretained(this)));
+
+  app_discovery_service_ = std::make_unique<DialAppDiscoveryService>(
+      connector_.get(),
+      base::BindRepeating(&DialMediaSinkServiceImpl::OnAppInfoParseCompleted,
+                          base::Unretained(this)));
+
   dial_registry_ =
       test_dial_registry_ ? test_dial_registry_ : DialRegistry::GetInstance();
-  dial_registry_->SetNetLog(
-      request_context_->GetURLRequestContext()->net_log());
   dial_registry_->RegisterObserver(this);
   dial_registry_->OnListenerAdded();
   MediaSinkServiceBase::StartTimer();
@@ -135,7 +126,7 @@ void DialMediaSinkServiceImpl::OnDialDeviceEvent(
   current_sinks_.clear();
   current_devices_ = devices;
 
-  description_service_->GetDeviceDescriptions(devices, request_context_.get());
+  description_service_->GetDeviceDescriptions(devices);
 }
 
 void DialMediaSinkServiceImpl::OnDialError(DialRegistry::DialErrorCode type) {
@@ -229,8 +220,7 @@ void DialMediaSinkServiceImpl::FetchAppInfoForSink(
   if (app_status != SinkAppStatus::kUnknown)
     return;
 
-  app_discovery_service_->FetchDialAppInfo(dial_sink, app_name,
-                                           request_context_.get());
+  app_discovery_service_->FetchDialAppInfo(dial_sink, app_name);
 }
 
 void DialMediaSinkServiceImpl::RescanAppInfo() {

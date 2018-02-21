@@ -20,7 +20,6 @@
 #include "components/cast_channel/cast_channel_enum.h"
 #include "components/cast_channel/cast_socket.h"
 #include "net/base/backoff_entry.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace cast_channel {
 class CastSocketService;
@@ -50,13 +49,9 @@ class CastMediaSinkServiceImpl
   // discovered devices.
   // |network_monitor|: DiscoveryNetworkMonitor to use to listen for network
   // changes.
-  // |url_request_context_getter|: URLRequestContextGetter used for making
-  // network requests.
   CastMediaSinkServiceImpl(const OnSinksDiscoveredCallback& callback,
                            cast_channel::CastSocketService* cast_socket_service,
-                           DiscoveryNetworkMonitor* network_monitor,
-                           const scoped_refptr<net::URLRequestContextGetter>&
-                               url_request_context_getter);
+                           DiscoveryNetworkMonitor* network_monitor);
   ~CastMediaSinkServiceImpl() override;
 
   // Returns the SequencedTaskRunner that should be used to invoke methods on
@@ -92,8 +87,11 @@ class CastMediaSinkServiceImpl
   void AttemptConnection(const std::vector<MediaSinkInternal>& cast_sinks);
 
   // Returns a callback to |this| when a DIAL sink is added (e.g., in order
-  // to perform dual discovery). It is safe to invoke this callback after |this|
-  // is destroyed.
+  // to perform dual discovery). This callback must be invoked on |impl_|'s
+  // sequence.
+  // It is NOT safe to invoke this callback after |this| is destroyed; the
+  // assumption is that |this| will outlive the invoker
+  // (DialMediaSinkServiceImpl), and that they run on the same sequence.
   OnDialSinkAddedCallback GetDialSinkAddedCallback();
 
  private:
@@ -197,14 +195,6 @@ class CastMediaSinkServiceImpl
 
     static OpenParams GetFromFieldTrialParam();
   };
-
-  // Invokes |impl->OnDialSinkAdded| with |dial_sink| on |task_runner|. This
-  // method may be called on any thread, and may be called after |impl| is
-  // destroyed.
-  static void InvokeOnDialSinkAddedOnTaskRunner(
-      const base::WeakPtr<CastMediaSinkServiceImpl>& impl,
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-      const MediaSinkInternal& dial_sink);
 
   // Marked virtual for testing.
   virtual void OpenChannels(const std::vector<MediaSinkInternal>& cast_sinks,
@@ -336,10 +326,6 @@ class CastMediaSinkServiceImpl
   // The SequencedTaskRunner on which methods are run. This shares the
   // same SequencedTaskRunner as the one used by |cast_socket_service_|.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
-  // This is a temporary workaround to get access to the net::NetLog* from the
-  // NetworkService.
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   base::Clock* clock_;
 

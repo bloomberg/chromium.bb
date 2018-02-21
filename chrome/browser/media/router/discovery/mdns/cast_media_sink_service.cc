@@ -18,7 +18,6 @@
 #include "components/cast_channel/cast_socket_service.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace media_router {
 
@@ -92,17 +91,12 @@ ErrorType CreateCastMediaSink(const DnsSdService& service,
 // static
 const char CastMediaSinkService::kCastServiceType[] = "_googlecast._tcp.local";
 
-CastMediaSinkService::CastMediaSinkService(
-    const scoped_refptr<net::URLRequestContextGetter>& request_context)
+CastMediaSinkService::CastMediaSinkService()
     : impl_(nullptr, base::OnTaskRunnerDeleter(nullptr)),
-      request_context_(request_context),
-      weak_ptr_factory_(this) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(request_context_);
-}
+      weak_ptr_factory_(this) {}
 
 CastMediaSinkService::~CastMediaSinkService() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (dns_sd_registry_) {
     dns_sd_registry_->UnregisterDnsSdListener(kCastServiceType);
     dns_sd_registry_->RemoveObserver(this);
@@ -112,7 +106,7 @@ CastMediaSinkService::~CastMediaSinkService() {
 
 void CastMediaSinkService::Start(
     const OnSinksDiscoveredCallback& sinks_discovered_cb) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!impl_);
 
   // |sinks_discovered_cb| should only be invoked on the current sequence.
@@ -142,8 +136,7 @@ CastMediaSinkService::CreateImpl(
       cast_socket_service->task_runner();
   return std::unique_ptr<CastMediaSinkServiceImpl, base::OnTaskRunnerDeleter>(
       new CastMediaSinkServiceImpl(sinks_discovered_cb, cast_socket_service,
-                                   DiscoveryNetworkMonitor::GetInstance(),
-                                   request_context_),
+                                   DiscoveryNetworkMonitor::GetInstance()),
       base::OnTaskRunnerDeleter(task_runner));
 }
 
@@ -160,7 +153,7 @@ void CastMediaSinkService::StartMdnsDiscovery() {
 }
 
 void CastMediaSinkService::OnUserGesture() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (dns_sd_registry_)
     dns_sd_registry_->ForceDiscovery();
 
@@ -181,8 +174,7 @@ void CastMediaSinkService::SetDnsSdRegistryForTest(DnsSdRegistry* registry) {
 void CastMediaSinkService::OnDnsSdEvent(
     const std::string& service_type,
     const DnsSdRegistry::DnsSdServiceList& services) {
-  // TODO(crbug.com/749305): Migrate the discovery code to use sequences.
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << "CastMediaSinkService::OnDnsSdEvent found " << services.size()
            << " services";
 
@@ -211,16 +203,10 @@ OnDialSinkAddedCallback CastMediaSinkService::GetDialSinkAddedCallback() {
   return impl_->GetDialSinkAddedCallback();
 }
 
-void CastMediaSinkService::OnDialSinkAdded(const MediaSinkInternal& sink) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  impl_->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&CastMediaSinkServiceImpl::OnDialSinkAdded,
-                                base::Unretained(impl_.get()), sink));
-}
-
 void CastMediaSinkService::RunSinksDiscoveredCallback(
     const OnSinksDiscoveredCallback& sinks_discovered_cb,
     std::vector<MediaSinkInternal> sinks) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sinks_discovered_cb.Run(std::move(sinks));
 }
 

@@ -46,17 +46,15 @@ DialAppDiscoveryService::DialAppDiscoveryService(
     service_manager::Connector* connector,
     const DialAppInfoParseCompletedCallback& parse_completed_cb)
     : parse_completed_cb_(parse_completed_cb),
-      parser_(std::make_unique<SafeDialAppInfoParser>(connector)) {
-  DETACH_FROM_SEQUENCE(sequence_checker_);
+      parser_(std::make_unique<SafeDialAppInfoParser>(connector)) {}
+
+DialAppDiscoveryService::~DialAppDiscoveryService() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-DialAppDiscoveryService::~DialAppDiscoveryService() = default;
-
 // Always query the device to get current app status.
-void DialAppDiscoveryService::FetchDialAppInfo(
-    const MediaSinkInternal& sink,
-    const std::string& app_name,
-    net::URLRequestContextGetter* request_context) {
+void DialAppDiscoveryService::FetchDialAppInfo(const MediaSinkInternal& sink,
+                                               const std::string& app_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::string sink_id = sink.sink().id();
@@ -66,7 +64,7 @@ void DialAppDiscoveryService::FetchDialAppInfo(
 
   std::unique_ptr<DialAppInfoFetcher> fetcher =
       std::make_unique<DialAppInfoFetcher>(
-          app_url, request_context,
+          app_url,
           base::BindOnce(&DialAppDiscoveryService::OnDialAppInfoFetchComplete,
                          base::Unretained(this), sink_id, app_name),
           base::BindOnce(&DialAppDiscoveryService::OnDialAppInfoFetchError,

@@ -17,7 +17,6 @@
 #include "chrome/browser/media/router/discovery/mdns/dns_sd_registry.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/discovery/media_sink_service_util.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace media_router {
 
@@ -31,15 +30,13 @@ class CastMediaSinkService : public DnsSdRegistry::DnsSdObserver {
   // mDNS service types.
   static const char kCastServiceType[];
 
-  explicit CastMediaSinkService(
-      const scoped_refptr<net::URLRequestContextGetter>& request_context);
-
+  CastMediaSinkService();
   ~CastMediaSinkService() override;
 
   // Returns a callback to |impl_| when a DIAL sink is added (e.g., in order
-  // to perform dual discovery). The callback must be run on the sequence given
-  // by |GetImplTaskRunner()|. It is safe to invoke this callback after |this|
-  // is destroyed.
+  // to perform dual discovery). The callback must be run on the same sequence
+  // as |impl_| and must not be run after |impl_| is destroyed.
+  // This method can only be called after |Start()| is called.
   OnDialSinkAddedCallback GetDialSinkAddedCallback();
 
   // Starts Cast sink discovery. No-ops if already started.
@@ -77,7 +74,6 @@ class CastMediaSinkService : public DnsSdRegistry::DnsSdObserver {
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceTest, TestOnDnsSdEvent);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceTest, TestTimer);
 
-  void OnDialSinkAdded(const MediaSinkInternal& sink);
   void RunSinksDiscoveredCallback(
       const OnSinksDiscoveredCallback& sinks_discovered_cb,
       std::vector<MediaSinkInternal> sinks);
@@ -96,8 +92,7 @@ class CastMediaSinkService : public DnsSdRegistry::DnsSdObserver {
   // List of cast sinks found in current round of mDNS discovery.
   std::vector<MediaSinkInternal> cast_sinks_;
 
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
-
+  SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<CastMediaSinkService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMediaSinkService);

@@ -78,8 +78,7 @@ class CastMediaSinkServiceImplTest : public ::testing::Test {
             new cast_channel::MockCastSocketService(mock_time_task_runner_)),
         media_sink_service_impl_(mock_sink_discovered_cb_.Get(),
                                  mock_cast_socket_service_.get(),
-                                 discovery_network_monitor_.get(),
-                                 nullptr /* url_request_context_getter */) {
+                                 discovery_network_monitor_.get()) {
     mock_cast_socket_service_->SetTaskRunnerForTest(mock_time_task_runner_);
   }
 

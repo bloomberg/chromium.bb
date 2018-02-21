@@ -11,7 +11,6 @@
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service_impl.h"
 #include "chrome/browser/media/router/test/mock_dns_sd_registry.h"
 #include "chrome/browser/media/router/test/test_helper.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/cast_socket_service.h"
 #include "components/cast_channel/cast_test_util.h"
@@ -61,8 +60,7 @@ class MockCastMediaSinkServiceImpl : public CastMediaSinkServiceImpl {
       DiscoveryNetworkMonitor* network_monitor)
       : CastMediaSinkServiceImpl(callback,
                                  cast_socket_service,
-                                 network_monitor,
-                                 nullptr /* url_request_context_getter */),
+                                 network_monitor),
         sinks_discovered_cb_(callback) {}
   ~MockCastMediaSinkServiceImpl() override {}
 
@@ -82,12 +80,9 @@ class MockCastMediaSinkServiceImpl : public CastMediaSinkServiceImpl {
 
 class TestCastMediaSinkService : public CastMediaSinkService {
  public:
-  TestCastMediaSinkService(
-      const scoped_refptr<net::URLRequestContextGetter>& request_context,
-      cast_channel::CastSocketService* cast_socket_service,
-      DiscoveryNetworkMonitor* network_monitor)
-      : CastMediaSinkService(request_context),
-        cast_socket_service_(cast_socket_service),
+  TestCastMediaSinkService(cast_channel::CastSocketService* cast_socket_service,
+                           DiscoveryNetworkMonitor* network_monitor)
+      : cast_socket_service_(cast_socket_service),
         network_monitor_(network_monitor) {}
   ~TestCastMediaSinkService() override = default;
 
@@ -118,7 +113,6 @@ class CastMediaSinkServiceTest : public ::testing::Test {
         mock_cast_socket_service_(
             new cast_channel::MockCastSocketService(task_runner_)),
         media_sink_service_(new TestCastMediaSinkService(
-            profile_.GetRequestContext(),
             mock_cast_socket_service_.get(),
             DiscoveryNetworkMonitor::GetInstance())),
         test_dns_sd_registry_(media_sink_service_.get()) {}
@@ -148,8 +142,6 @@ class CastMediaSinkServiceTest : public ::testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-
-  TestingProfile profile_;
 
   base::MockCallback<OnSinksDiscoveredCallback> mock_sink_discovered_ui_cb_;
   std::unique_ptr<cast_channel::MockCastSocketService>

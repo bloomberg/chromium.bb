@@ -107,9 +107,10 @@ CastSocketImpl::CastSocketImpl(const CastSocketOpenParams& open_params,
       ready_state_(ReadyState::NONE),
       auth_delegate_(nullptr) {
   DCHECK(open_params.ip_endpoint.address().IsValid());
-  DCHECK(open_params_.net_log);
-  net_log_source_.type = net::NetLogSourceType::SOCKET;
-  net_log_source_.id = open_params_.net_log->NextID();
+  if (open_params_.net_log) {
+    net_log_source_.type = net::NetLogSourceType::SOCKET;
+    net_log_source_.id = open_params_.net_log->NextID();
+  }
 }
 
 CastSocketImpl::~CastSocketImpl() {

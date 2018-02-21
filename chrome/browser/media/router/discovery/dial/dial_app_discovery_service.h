@@ -18,10 +18,6 @@
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace service_manager {
 class Connector;
 }
@@ -39,9 +35,7 @@ enum SinkAppStatus { kUnknown = 0, kAvailable, kUnavailable };
 // separate utility process via SafeDialAppInfoParser instead of in this class.
 // During shutdown, this class aborts all pending requests and no callbacks get
 // invoked.
-// This class may be created on any thread. All methods, unless otherwise noted,
-// must be invoked on the SequencedTaskRunner given by
-// |DialMediaSinkServiceImpl::task_runner()|.
+// This class is not sequence safe.
 class DialAppDiscoveryService {
  public:
   // Called if parsing app info XML in utility process finishes.
@@ -66,10 +60,8 @@ class DialAppDiscoveryService {
   // http://127.0.0.1/apps/YouTube. "http://127.0.0.1/apps/" is the base part
   // which comes from |sink|; "YouTube" suffix is the app name part which comes
   // from |app_name|.
-  // |request_context|: Used by the background URLFetchers.
   virtual void FetchDialAppInfo(const MediaSinkInternal& sink,
-                                const std::string& app_name,
-                                net::URLRequestContextGetter* request_context);
+                                const std::string& app_name);
 
  private:
   friend class DialAppDiscoveryServiceTest;
@@ -83,6 +75,14 @@ class DialAppDiscoveryService {
                            TestGetAvailabilityFromAppInfoAvailable);
   FRIEND_TEST_ALL_PREFIXES(DialAppDiscoveryServiceTest,
                            TestGetAvailabilityFromAppInfoUnavailable);
+  FRIEND_TEST_ALL_PREFIXES(DialAppDiscoveryServiceTest,
+                           TestFetchDialAppInfoFetchURL);
+  FRIEND_TEST_ALL_PREFIXES(DialAppDiscoveryServiceTest,
+                           TestFetchDialAppInfoFetchURLTransientError);
+  FRIEND_TEST_ALL_PREFIXES(DialAppDiscoveryServiceTest,
+                           TestFetchDialAppInfoFetchURLError);
+  FRIEND_TEST_ALL_PREFIXES(DialAppDiscoveryServiceTest,
+                           TestFetchDialAppInfoParseError);
 
   // Used by unit test.
   void SetParserForTest(std::unique_ptr<SafeDialAppInfoParser> parser);
@@ -127,6 +127,7 @@ class DialAppDiscoveryService {
   std::unique_ptr<SafeDialAppInfoParser> parser_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+  DISALLOW_COPY_AND_ASSIGN(DialAppDiscoveryService);
 };
 
 }  // namespace media_router
