@@ -413,7 +413,9 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
       event_handler_(new RenderWidgetHostViewEventHandler(host_, this, this)),
       frame_sink_id_(switches::IsMusHostingViz()
                          ? viz::FrameSinkId()
-                         : host_->AllocateFrameSinkId(is_guest_view_hack_)),
+                         : is_guest_view_hack_
+                               ? AllocateFrameSinkIdForGuestViewHack()
+                               : host_->GetFrameSinkId()),
       weak_ptr_factory_(this) {
   if (!is_guest_view_hack_)
     host_->SetView(this);
@@ -2500,6 +2502,14 @@ void RenderWidgetHostViewAura::DidNavigate() {
   WasResized(cc::DeadlinePolicy::UseExistingDeadline());
   if (delegated_frame_host_)
     delegated_frame_host_->DidNavigate();
+}
+
+// static
+viz::FrameSinkId
+RenderWidgetHostViewAura::AllocateFrameSinkIdForGuestViewHack() {
+  return ImageTransportFactory::GetInstance()
+      ->GetContextFactoryPrivate()
+      ->AllocateFrameSinkId();
 }
 
 }  // namespace content

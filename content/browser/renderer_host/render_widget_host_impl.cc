@@ -114,10 +114,6 @@
 
 #if defined(OS_ANDROID)
 #include "ui/android/view_android.h"
-#else
-#include "content/browser/compositor/image_transport_factory.h"
-// nogncheck as dependency of "ui/compositor" is on non-Android platforms only.
-#include "ui/compositor/compositor.h"  // nogncheck
 #endif
 
 #if defined(OS_MACOSX)
@@ -364,6 +360,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       current_content_source_id_(0),
       monitoring_composition_info_(false),
       compositor_frame_sink_binding_(this),
+      frame_sink_id_(base::checked_cast<uint32_t>(process_->GetID()),
+                     base::checked_cast<uint32_t>(routing_id_)),
       weak_factory_(this) {
   CHECK(delegate_);
   CHECK_NE(MSG_ROUTING_NONE, routing_id_);
@@ -506,21 +504,8 @@ RenderWidgetHostViewBase* RenderWidgetHostImpl::GetView() const {
   return view_.get();
 }
 
-viz::FrameSinkId RenderWidgetHostImpl::AllocateFrameSinkId(
-    bool is_guest_view_hack) {
-// GuestViews have two RenderWidgetHostViews and so we need to make sure
-// we don't have FrameSinkId collisions.
-// The FrameSinkId generated here must not conflict with FrameSinkId allocated
-// in viz::FrameSinkIdAllocator.
-#if !defined(OS_ANDROID)
-  if (is_guest_view_hack) {
-    ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    return factory->GetContextFactoryPrivate()->AllocateFrameSinkId();
-  }
-#endif
-  return viz::FrameSinkId(
-      base::checked_cast<uint32_t>(this->GetProcess()->GetID()),
-      base::checked_cast<uint32_t>(this->GetRoutingID()));
+const viz::FrameSinkId& RenderWidgetHostImpl::GetFrameSinkId() const {
+  return frame_sink_id_;
 }
 
 void RenderWidgetHostImpl::ResetSizeAndRepaintPendingFlags() {
