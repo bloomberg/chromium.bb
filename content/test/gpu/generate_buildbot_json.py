@@ -118,10 +118,6 @@ class Predicates(object):
   def EXPERIMENTAL_CONDITIONALLY(x):
     return Types.EXPERIMENTAL in x
 
-  @staticmethod
-  def EXPERIMENTAL_CONDITIONALLY_OR_NOOP(x):
-    return Types.EXPERIMENTAL in x or Types.NOOP in x
-
 # Most of the bots live in the Chrome-GPU pool as defined here (Google
 # employees only, sorry):
 # https://chrome-internal.googlesource.com/infradata/config/+/master/configs/
@@ -1975,7 +1971,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'tester_configs': [
       {
         # Only run the noop sleep test on experimental configs.
-        'predicate': Predicates.EXPERIMENTAL_CONDITIONALLY_OR_NOOP,
+        'predicate': Predicates.EXPERIMENTAL_CONDITIONALLY,
         'disabled_instrumentation_types': ['tsan'],
       },
     ],
@@ -2596,8 +2592,7 @@ def is_test_config_experimental_conditionally(test_config):
   if 'tester_configs' in test_config:
     for tc in test_config['tester_configs']:
       pred = tc.get('predicate', Predicates.DEFAULT)
-      if (pred == Predicates.EXPERIMENTAL_CONDITIONALLY or \
-          pred == Predicates.EXPERIMENTAL_CONDITIONALLY_OR_NOOP):
+      if pred == Predicates.EXPERIMENTAL_CONDITIONALLY:
         return True
   return False
 
