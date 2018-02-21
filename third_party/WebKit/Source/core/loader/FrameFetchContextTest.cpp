@@ -1209,6 +1209,17 @@ TEST_F(FrameFetchContextSubresourceFilterTest, WouldDisallow) {
   EXPECT_EQ(0, GetFilteredLoadCallCount());
 }
 
+// Tests that if a subresource is allowed as per subresource filter ruleset but
+// is fetched from a frame that is tagged as an ad, then the subresource should
+// be tagged as well.
+TEST_F(FrameFetchContextSubresourceFilterTest, AdTaggingBasedOnFrame) {
+  SetFilterPolicy(WebDocumentSubresourceFilter::kAllow);
+  document->Loader()->GetSubresourceFilter()->SetIsAdSubframe(true);
+
+  EXPECT_EQ(ResourceRequestBlockedReason::kNone, CanRequestAndVerifyIsAd(true));
+  EXPECT_EQ(0, GetFilteredLoadCallCount());
+}
+
 TEST_F(FrameFetchContextTest, AddAdditionalRequestHeadersWhenDetached) {
   const KURL document_url("https://www2.example.com/fuga/hoge.html");
   const String origin = "https://www2.example.com";

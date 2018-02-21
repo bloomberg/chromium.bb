@@ -99,7 +99,10 @@ bool SubresourceFilter::IsAdResource(
     load_policy =
         subresource_filter_->GetLoadPolicy(resource_url, request_context);
   }
-  return load_policy != WebDocumentSubresourceFilter::kAllow;
+
+  // If the subresource cannot be identified as an ad via load_policy, check if
+  // its frame is identified as an ad.
+  return load_policy != WebDocumentSubresourceFilter::kAllow || is_ad_subframe_;
 }
 
 void SubresourceFilter::ReportLoad(
