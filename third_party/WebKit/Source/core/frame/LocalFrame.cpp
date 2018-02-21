@@ -62,6 +62,7 @@
 #include "core/html/PluginDocument.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutEmbeddedContent.h"
@@ -287,6 +288,7 @@ void LocalFrame::Detach(FrameDetachType type) {
   idleness_detector_->Shutdown();
   if (inspector_trace_events_)
     probe_sink_->removeInspectorTraceEvents(inspector_trace_events_);
+  inspector_task_runner_->Dispose();
 
   PluginScriptForbiddenScope forbid_plugin_destructor_scripting;
   loader_.StopAllLoaders();
@@ -528,6 +530,10 @@ bool LocalFrame::IsCrossOriginSubframe() const {
       GetSecurityContext()->GetSecurityOrigin();
   return !security_origin->CanAccess(
       Tree().Top().GetSecurityContext()->GetSecurityOrigin());
+}
+
+scoped_refptr<InspectorTaskRunner> LocalFrame::GetInspectorTaskRunner() {
+  return inspector_task_runner_;
 }
 
 void LocalFrame::SetPrinting(bool printing,
@@ -795,6 +801,8 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
       page_zoom_factor_(ParentPageZoomFactor(this)),
       text_zoom_factor_(ParentTextZoomFactor(this)),
       in_view_source_mode_(false),
+      inspector_task_runner_(
+          InspectorTaskRunner::Create(GetTaskRunner(TaskType::kUnthrottled))),
       interface_registry_(interface_registry) {
   if (IsLocalRoot()) {
     probe_sink_ = new CoreProbeSink();
@@ -810,6 +818,7 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
     performance_monitor_ = LocalFrameRoot().performance_monitor_;
   }
   idleness_detector_ = new IdlenessDetector(this);
+  inspector_task_runner_->InitIsolate(V8PerIsolateData::MainThreadIsolate());
 }
 
 WebFrameScheduler* LocalFrame::FrameScheduler() {

@@ -155,7 +155,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   }
 
   // Only callable on the main thread.
-  void AppendDebuggerTask(CrossThreadClosure) LOCKS_EXCLUDED(mutex_);
+  void AppendDebuggerTask(CrossThreadClosure);
 
   // Only callable on the main thread.
   const base::UnguessableToken& GetDevToolsWorkerToken() const {
@@ -278,10 +278,6 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   void PrepareForShutdownOnWorkerThread() LOCKS_EXCLUDED(mutex_);
   void PerformShutdownOnWorkerThread() LOCKS_EXCLUDED(mutex_);
 
-  void PerformDebuggerTaskOnWorkerThread(CrossThreadClosure)
-      LOCKS_EXCLUDED(mutex_);
-  void PerformDebuggerTaskDontWaitOnWorkerThread();
-
   void SetThreadState(ThreadState) EXCLUSIVE_LOCKS_REQUIRED(mutex_);
   void SetExitCode(ExitCode) EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
@@ -296,15 +292,12 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // Accessed only on the worker thread.
   bool paused_in_debugger_ = false;
 
-  // Set on the worker thread.
-  bool running_debugger_task_ GUARDED_BY(mutex_) = false;
-
   ThreadState thread_state_ GUARDED_BY(mutex_) = ThreadState::kNotStarted;
   ExitCode exit_code_ GUARDED_BY(mutex_) = ExitCode::kNotTerminated;
 
   TimeDelta forcible_termination_delay_;
 
-  std::unique_ptr<InspectorTaskRunner> inspector_task_runner_;
+  scoped_refptr<InspectorTaskRunner> inspector_task_runner_;
   base::UnguessableToken devtools_worker_token_;
 
   // Created on the main thread, passed to the worker thread but should kept

@@ -115,6 +115,9 @@ void WorkerThread::Start(
                       CrossThreadUnretained(&waitable_event)));
   waitable_event.Wait();
 
+  inspector_task_runner_ =
+      InspectorTaskRunner::Create(GetTaskRunner(TaskType::kUnthrottled));
+
   GetWorkerBackingThread().BackingThread().PostTask(
       FROM_HERE,
       CrossThreadBind(&WorkerThread::InitializeOnWorkerThread,
@@ -163,7 +166,7 @@ void WorkerThread::Terminate() {
   ScheduleToTerminateScriptExecution();
 
   worker_thread_lifecycle_context_->NotifyContextDestroyed();
-  inspector_task_runner_->Kill();
+  inspector_task_runner_->Dispose();
 
   GetWorkerBackingThread().BackingThread().PostTask(
       FROM_HERE,
@@ -241,20 +244,7 @@ ThreadableLoadingContext* WorkerThread::GetLoadingContext() {
 
 void WorkerThread::AppendDebuggerTask(CrossThreadClosure task) {
   DCHECK(IsMainThread());
-  if (CheckRequestedToTerminate())
-    return;
-  inspector_task_runner_->AppendTask(CrossThreadBind(
-      &WorkerThread::PerformDebuggerTaskOnWorkerThread,
-      CrossThreadUnretained(this), WTF::Passed(std::move(task))));
-  {
-    MutexLocker lock(mutex_);
-    if (GetIsolate() && thread_state_ != ThreadState::kReadyToShutdown)
-      inspector_task_runner_->InterruptAndRunAllTasksDontWait(GetIsolate());
-  }
-  PostCrossThreadTask(
-      *GetTaskRunner(TaskType::kUnthrottled), FROM_HERE,
-      CrossThreadBind(&WorkerThread::PerformDebuggerTaskDontWaitOnWorkerThread,
-                      CrossThreadUnretained(this)));
+  inspector_task_runner_->AppendTask(std::move(task));
 }
 
 void WorkerThread::StartRunningDebuggerTasksOnPauseOnWorkerThread() {
@@ -262,16 +252,11 @@ void WorkerThread::StartRunningDebuggerTasksOnPauseOnWorkerThread() {
   if (worker_inspector_controller_)
     worker_inspector_controller_->FlushProtocolNotifications();
   paused_in_debugger_ = true;
-  ThreadDebugger::IdleStarted(GetIsolate());
   do {
-    CrossThreadClosure task =
-        inspector_task_runner_->TakeNextTask(InspectorTaskRunner::kWaitForTask);
-    if (!task)
+    if (!inspector_task_runner_->WaitForAndRunSingleTask())
       break;
-    std::move(task).Run();
     // Keep waiting until execution is resumed.
   } while (paused_in_debugger_);
-  ThreadDebugger::IdleFinished(GetIsolate());
 }
 
 void WorkerThread::StopRunningDebuggerTasksOnPauseOnWorkerThread() {
@@ -331,7 +316,6 @@ WorkerThread::WorkerThread(ThreadableLoadingContext* loading_context,
     : time_origin_(CurrentTimeTicksInSeconds()),
       worker_thread_id_(GetNextWorkerThreadId()),
       forcible_termination_delay_(kForcibleTerminationDelay),
-      inspector_task_runner_(std::make_unique<InspectorTaskRunner>()),
       devtools_worker_token_(base::UnguessableToken::Create()),
       loading_context_(loading_context),
       worker_reporting_proxy_(worker_reporting_proxy),
@@ -364,7 +348,7 @@ bool WorkerThread::ShouldTerminateScriptExecution() {
       // Terminating during debugger task may lead to crash due to heavy use
       // of v8 api in debugger. Any debugger task is guaranteed to finish, so
       // we can wait for the completion.
-      return !running_debugger_task_;
+      return !inspector_task_runner_->IsRunningTask();
     case ThreadState::kReadyToShutdown:
       // Shutdown sequence will surely start soon. Don't have to schedule a
       // termination task.
@@ -425,6 +409,13 @@ void WorkerThread::InitializeOnWorkerThread(
     worker_reporting_proxy_.DidCreateWorkerGlobalScope(GlobalScope());
     worker_inspector_controller_ = WorkerInspectorController::Create(this);
 
+    // Since context initialization below may fail, we should notify debugger
+    // about the new worker thread separately, so that it can resolve it by id
+    // at any moment.
+    if (WorkerThreadDebugger* debugger =
+            WorkerThreadDebugger::From(GetIsolate()))
+      debugger->WorkerThreadCreated(this);
+
     // TODO(nhiroki): Handle a case where the script controller fails to
     // initialize the context.
     if (GlobalScope()->ScriptController()->InitializeContextIfNeeded(
@@ -435,9 +426,15 @@ void WorkerThread::InitializeOnWorkerThread(
           GlobalScope()->ScriptController()->GetContext());
     }
 
+    inspector_task_runner_->InitIsolate(GetIsolate());
     SetThreadState(ThreadState::kRunning);
   }
 
+  // It is important that no code is run on the Isolate between
+  // initializing InspectorTaskRunner and pausing on start.
+  // Otherwise, InspectorTaskRunner might interrupt isolate execution
+  // from another thread and try to resume "pause on start" before
+  // we even paused.
   if (pause_on_start == WorkerInspectorProxy::PauseOnWorkerStart::kPause)
     StartRunningDebuggerTasksOnPauseOnWorkerThread();
 
@@ -484,7 +481,7 @@ void WorkerThread::PrepareForShutdownOnWorkerThread() {
       SetExitCode(ExitCode::kGracefullyTerminated);
   }
 
-  inspector_task_runner_->Kill();
+  inspector_task_runner_->Dispose();
   GetWorkerReportingProxy().WillDestroyWorkerGlobalScope();
   probe::AllAsyncTasksCanceled(GlobalScope());
 
@@ -496,6 +493,9 @@ void WorkerThread::PrepareForShutdownOnWorkerThread() {
   global_scope_scheduler_->Dispose();
   GlobalScope()->Dispose();
   global_scope_ = nullptr;
+
+  if (WorkerThreadDebugger* debugger = WorkerThreadDebugger::From(GetIsolate()))
+    debugger->WorkerThreadDestroyed(this);
 
   console_message_storage_.Clear();
   loading_context_.Clear();
@@ -522,32 +522,6 @@ void WorkerThread::PerformShutdownOnWorkerThread() {
   GetWorkerReportingProxy().DidTerminateWorkerThread();
 
   shutdown_event_->Signal();
-}
-
-void WorkerThread::PerformDebuggerTaskOnWorkerThread(CrossThreadClosure task) {
-  DCHECK(IsCurrentThread());
-  InspectorTaskRunner::IgnoreInterruptsScope scope(
-      inspector_task_runner_.get());
-  {
-    MutexLocker lock(mutex_);
-    DCHECK_EQ(ThreadState::kRunning, thread_state_);
-    running_debugger_task_ = true;
-  }
-  ThreadDebugger::IdleFinished(GetIsolate());
-  std::move(task).Run();
-  ThreadDebugger::IdleStarted(GetIsolate());
-  {
-    MutexLocker lock(mutex_);
-    running_debugger_task_ = false;
-  }
-}
-
-void WorkerThread::PerformDebuggerTaskDontWaitOnWorkerThread() {
-  DCHECK(IsCurrentThread());
-  CrossThreadClosure task = inspector_task_runner_->TakeNextTask(
-      InspectorTaskRunner::kDontWaitForTask);
-  if (task)
-    std::move(task).Run();
 }
 
 void WorkerThread::SetThreadState(ThreadState next_thread_state) {

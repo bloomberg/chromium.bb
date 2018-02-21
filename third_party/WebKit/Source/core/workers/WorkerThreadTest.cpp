@@ -7,6 +7,7 @@
 #include <memory>
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/frame/Settings.h"
+#include "core/inspector/InspectorTaskRunner.h"
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThreadTestHelper.h"
@@ -147,6 +148,8 @@ class WorkerThreadTest : public ::testing::Test {
 TEST_F(WorkerThreadTest, ShouldTerminateScriptExecution) {
   using ThreadState = WorkerThread::ThreadState;
 
+  worker_thread_->inspector_task_runner_ = InspectorTaskRunner::Create(nullptr);
+
   // SetExitCode() and ShouldTerminateScriptExecution() require the lock.
   MutexLocker dummy_lock(worker_thread_->mutex_);
 
@@ -154,11 +157,7 @@ TEST_F(WorkerThreadTest, ShouldTerminateScriptExecution) {
   EXPECT_FALSE(worker_thread_->ShouldTerminateScriptExecution());
 
   worker_thread_->SetThreadState(ThreadState::kRunning);
-  EXPECT_FALSE(worker_thread_->running_debugger_task_);
   EXPECT_TRUE(worker_thread_->ShouldTerminateScriptExecution());
-
-  worker_thread_->running_debugger_task_ = true;
-  EXPECT_FALSE(worker_thread_->ShouldTerminateScriptExecution());
 
   worker_thread_->SetThreadState(ThreadState::kReadyToShutdown);
   EXPECT_FALSE(worker_thread_->ShouldTerminateScriptExecution());
@@ -324,7 +323,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
 
   // Wait for the debugger task.
   testing::EnterRunLoop();
-  EXPECT_TRUE(worker_thread_->running_debugger_task_);
+  EXPECT_TRUE(worker_thread_->inspector_task_runner_->IsRunningTask());
 
   // Terminate() schedules a forcible termination task.
   worker_thread_->Terminate();
@@ -366,7 +365,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunning) {
 
   // Wait for the debugger task.
   testing::EnterRunLoop();
-  EXPECT_TRUE(worker_thread_->running_debugger_task_);
+  EXPECT_TRUE(worker_thread_->inspector_task_runner_->IsRunningTask());
 
   // Terminate() schedules a forcible termination task.
   worker_thread_->Terminate();

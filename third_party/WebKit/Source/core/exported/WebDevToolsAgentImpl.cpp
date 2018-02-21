@@ -260,11 +260,11 @@ class WebDevToolsAgentImpl::Session::IOSession
     : public mojom::blink::DevToolsSession {
  public:
   IOSession(scoped_refptr<base::SingleThreadTaskRunner> session_task_runner,
-            scoped_refptr<base::SingleThreadTaskRunner> agent_task_runner,
+            scoped_refptr<InspectorTaskRunner> inspector_task_runner,
             CrossThreadWeakPersistent<WebDevToolsAgentImpl::Session> session,
             mojom::blink::DevToolsSessionRequest request)
       : session_task_runner_(session_task_runner),
-        agent_task_runner_(agent_task_runner),
+        inspector_task_runner_(inspector_task_runner),
         session_(std::move(session)),
         binding_(this) {
     session_task_runner->PostTask(
@@ -289,19 +289,14 @@ class WebDevToolsAgentImpl::Session::IOSession
     // Crash renderer.
     if (method == "Page.crash")
       CHECK(false);
-
-    MainThreadDebugger::InterruptMainThreadAndRun(CrossThreadBind(
-        &WebDevToolsAgentImpl::Session::DispatchProtocolCommandInternal,
-        session_, call_id, method, message));
-    PostCrossThreadTask(
-        *agent_task_runner_, FROM_HERE,
+    inspector_task_runner_->AppendTask(
         CrossThreadBind(&WebDevToolsAgentImpl::Session::DispatchProtocolCommand,
                         session_, call_id, method, message));
   }
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> session_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> agent_task_runner_;
+  scoped_refptr<InspectorTaskRunner> inspector_task_runner_;
   CrossThreadWeakPersistent<WebDevToolsAgentImpl::Session> session_;
   mojo::Binding<mojom::blink::DevToolsSession> binding_;
 
@@ -319,7 +314,7 @@ WebDevToolsAgentImpl::Session::Session(
       binding_(this, std::move(request)) {
   io_session_ =
       new IOSession(Platform::Current()->GetIOTaskRunner(),
-                    frame_->GetFrame()->GetTaskRunner(TaskType::kUnthrottled),
+                    frame_->GetFrame()->GetInspectorTaskRunner(),
                     WrapCrossThreadWeakPersistent(this), std::move(io_request));
 
   host_ptr_.Bind(std::move(host_ptr_info));
@@ -354,16 +349,6 @@ void WebDevToolsAgentImpl::Session::Detach() {
   inspector_session_->Dispose();
 }
 
-void WebDevToolsAgentImpl::Session::DispatchProtocolCommand(
-    int call_id,
-    const String& method,
-    const String& message) {
-  if (ShouldInterruptForMethod(method))
-    MainThreadDebugger::Instance()->TaskRunner()->RunAllTasksDontWait();
-  else
-    DispatchProtocolCommandInternal(call_id, method, message);
-}
-
 void WebDevToolsAgentImpl::Session::SendProtocolResponse(int session_id,
                                                          int call_id,
                                                          const String& response,
@@ -384,7 +369,7 @@ void WebDevToolsAgentImpl::Session::SendProtocolNotification(
   host_ptr_->DispatchProtocolNotification(message);
 }
 
-void WebDevToolsAgentImpl::Session::DispatchProtocolCommandInternal(
+void WebDevToolsAgentImpl::Session::DispatchProtocolCommand(
     int call_id,
     const String& method,
     const String& message) {
@@ -401,7 +386,7 @@ void WebDevToolsAgentImpl::Session::DispatchProtocolCommandInternal(
   if (detached_)
     return;
   InspectorTaskRunner::IgnoreInterruptsScope scope(
-      MainThreadDebugger::Instance()->TaskRunner());
+      frame_->GetFrame()->GetInspectorTaskRunner());
   inspector_session_->DispatchProtocolMessage(method, message);
 }
 

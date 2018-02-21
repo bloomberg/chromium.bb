@@ -68,6 +68,7 @@ class InputMethodController;
 class InspectorTraceEvents;
 class CoreProbeSink;
 class IdlenessDetector;
+class InspectorTaskRunner;
 class InterfaceRegistry;
 class IntSize;
 class LayoutView;
@@ -173,6 +174,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   bool IsCrossOriginSubframe() const;
 
   CoreProbeSink* GetProbeSink() { return probe_sink_.Get(); }
+  scoped_refptr<InspectorTaskRunner> GetInspectorTaskRunner();
 
   // =========================================================================
   // All public functions below this point are candidates to move out of
@@ -366,6 +368,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   bool in_view_source_mode_;
 
   Member<CoreProbeSink> probe_sink_;
+  scoped_refptr<InspectorTaskRunner> inspector_task_runner_;
   Member<PerformanceMonitor> performance_monitor_;
   Member<IdlenessDetector> idleness_detector_;
   Member<InspectorTraceEvents> inspector_trace_events_;

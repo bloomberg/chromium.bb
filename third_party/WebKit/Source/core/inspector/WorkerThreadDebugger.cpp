@@ -88,17 +88,27 @@ int WorkerThreadDebugger::ContextGroupId(WorkerThread* worker_thread) {
   return worker_thread->GetWorkerThreadId();
 }
 
+void WorkerThreadDebugger::WorkerThreadCreated(WorkerThread* worker_thread) {
+  int worker_context_group_id = ContextGroupId(worker_thread);
+  DCHECK(!worker_threads_.Contains(worker_context_group_id));
+  worker_threads_.insert(worker_context_group_id, worker_thread);
+}
+
+void WorkerThreadDebugger::WorkerThreadDestroyed(WorkerThread* worker_thread) {
+  int worker_context_group_id = ContextGroupId(worker_thread);
+  DCHECK(worker_threads_.Contains(worker_context_group_id));
+  worker_threads_.erase(worker_context_group_id);
+}
+
 void WorkerThreadDebugger::ContextCreated(WorkerThread* worker_thread,
                                           v8::Local<v8::Context> context) {
   int worker_context_group_id = ContextGroupId(worker_thread);
+  DCHECK(worker_threads_.Contains(worker_context_group_id));
   v8_inspector::V8ContextInfo context_info(context, worker_context_group_id,
                                            v8_inspector::StringView());
   String origin = worker_thread->GlobalScope()->Url().GetString();
   context_info.origin = ToV8InspectorStringView(origin);
   GetV8Inspector()->contextCreated(context_info);
-
-  DCHECK(!worker_threads_.Contains(worker_context_group_id));
-  worker_threads_.insert(worker_context_group_id, worker_thread);
 }
 
 void WorkerThreadDebugger::ContextWillBeDestroyed(
@@ -106,7 +116,6 @@ void WorkerThreadDebugger::ContextWillBeDestroyed(
     v8::Local<v8::Context> context) {
   int worker_context_group_id = ContextGroupId(worker_thread);
   DCHECK(worker_threads_.Contains(worker_context_group_id));
-  worker_threads_.erase(worker_context_group_id);
   GetV8Inspector()->contextDestroyed(context);
 }
 
