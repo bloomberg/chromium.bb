@@ -80,8 +80,13 @@ class GCMKeyStore {
                   base::OnceClosure callback);
 
  private:
+  friend class GCMKeyStoreTest;
   // Initializes the database if necessary, and runs |done_closure| when done.
   void LazyInitialize(base::OnceClosure done_closure);
+
+  // Upgrades the stored encryption keys from pairs including deprecated PKCS #8
+  // EncryptedPrivateKeyInfo blocks, to storing a single PrivateKeyInfo block.
+  void UpgradeDatabase(std::unique_ptr<std::vector<EncryptionData>> entries);
 
   void DidInitialize(bool success);
   void DidLoadKeys(bool success,
@@ -90,6 +95,7 @@ class GCMKeyStore {
                     const std::string& auth_secret,
                     KeysCallback callback,
                     bool success);
+  void DidUpgradeDatabase(bool success);
 
   void DidRemoveKeys(base::OnceClosure callback, bool success);
 
@@ -106,6 +112,10 @@ class GCMKeyStore {
   void RemoveKeysAfterInitialize(const std::string& app_id,
                                  const std::string& authorized_entity,
                                  base::OnceClosure callback);
+
+  // Converts private key from old deprecated format (where it is encrypted with
+  // and empty string) to the new format, where it's unencrypted.
+  bool DecryptPrivateKey(const std::string& to_decrypt, std::string* decrypted);
 
   // Path in which the key store database will be saved.
   base::FilePath key_store_path_;

@@ -65,6 +65,8 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/gcm_driver/common",
+    "//components/gcm_driver/crypto/proto",
+    "//components/leveldb_proto",
     "//crypto",
     "//crypto:platform",
     "//net:test_support",

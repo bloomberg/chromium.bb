@@ -5,7 +5,10 @@
 import("//third_party/protobuf/proto_library.gni")
 
 proto_library("proto") {
-  visibility = [ "//components/gcm_driver/crypto" ]
+  visibility = [
+    "//components/gcm_driver/crypto:crypto",
+    "//components/gcm_driver/crypto:unit_tests",
+  ]
 
   sources = [
     "gcm_encryption_data.proto",
