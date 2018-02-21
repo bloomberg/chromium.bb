@@ -650,27 +650,49 @@ static const aom_cdf_prob
     };
 #endif
 
-static const aom_cdf_prob
-    default_tx_size_cdf[MAX_TX_CATS][TX_SIZE_CONTEXTS][CDF_SIZE(MAX_TX_DEPTH +
-                                                                1)] = {
+static const aom_cdf_prob default_tx_size_cdf[MAX_TX_CATS][TX_SIZE_CONTEXTS]
+                                             [CDF_SIZE(MAX_TX_DEPTH + 1)] = {
 #if MAX_TX_DEPTH == 2
-      { { AOM_CDF2(19968) }, { AOM_CDF2(24320) } },
-      { { AOM_CDF3(12272, 30172) }, { AOM_CDF3(18677, 30848) } },
-      { { AOM_CDF3(12986, 15180) }, { AOM_CDF3(24302, 25602) } },
-      { { AOM_CDF3(5782, 11475) }, { AOM_CDF3(16803, 22759) } },
+                                               { { AOM_CDF2(19968) },
+                                                 { AOM_CDF2(19968) },
+                                                 { AOM_CDF2(24320) } },
+                                               { { AOM_CDF3(12272, 30172) },
+                                                 { AOM_CDF3(12272, 30172) },
+                                                 { AOM_CDF3(18677, 30848) } },
+                                               { { AOM_CDF3(12986, 15180) },
+                                                 { AOM_CDF3(12986, 15180) },
+                                                 { AOM_CDF3(24302, 25602) } },
+                                               { { AOM_CDF3(5782, 11475) },
+                                                 { AOM_CDF3(5782, 11475) },
+                                                 { AOM_CDF3(16803, 22759) } },
 #elif MAX_TX_DEPTH == 3
-      { { AOM_CDF2(19968) }, { AOM_CDF2(24320) } },
-      { { AOM_CDF3(12272, 30172) }, { AOM_CDF3(18677, 30848) } },
-      { { AOM_CDF4(12986, 15180, 32384) }, { AOM_CDF4(24302, 25602, 32128) } },
-      { { AOM_CDF4(5782, 11475, 24480) }, { AOM_CDF4(16803, 22759, 28560) } },
+                                               { { AOM_CDF2(19968) },
+                                                 { AOM_CDF2(24320) } },
+                                               { { AOM_CDF3(12272, 30172) },
+                                                 { AOM_CDF3(18677, 30848) } },
+                                               { { AOM_CDF4(12986, 15180,
+                                                            32384) },
+                                                 { AOM_CDF4(24302, 25602,
+                                                            32128) } },
+                                               { { AOM_CDF4(5782, 11475,
+                                                            24480) },
+                                                 { AOM_CDF4(16803, 22759,
+                                                            28560) } },
 #else
-      { { AOM_CDF2(19968) }, { AOM_CDF2(24320) } },
-      { { AOM_CDF3(12272, 30172) }, { AOM_CDF3(18677, 30848) } },
-      { { AOM_CDF4(12986, 15180, 32384) }, { AOM_CDF4(24302, 25602, 32128) } },
-      { { AOM_CDF5(5782, 11475, 24480, 32640) },
-        { AOM_CDF5(16803, 22759, 28560, 32640) } },
+                                               { { AOM_CDF2(19968) },
+                                                 { AOM_CDF2(24320) } },
+                                               { { AOM_CDF3(12272, 30172) },
+                                                 { AOM_CDF3(18677, 30848) } },
+                                               { { AOM_CDF4(12986, 15180,
+                                                            32384) },
+                                                 { AOM_CDF4(24302, 25602,
+                                                            32128) } },
+                                               { { AOM_CDF5(5782, 11475, 24480,
+                                                            32640) },
+                                                 { AOM_CDF5(16803, 22759, 28560,
+                                                            32640) } },
 #endif  // MAX_TX_DEPTH == 2
-    };
+                                             };
 
 static const aom_cdf_prob
     default_if_y_mode_cdf[BLOCK_SIZE_GROUPS][CDF_SIZE(INTRA_MODES)] = {

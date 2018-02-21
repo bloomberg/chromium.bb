@@ -24,7 +24,7 @@ extern "C" {
 
 #define BLOCK_SIZE_GROUPS 4
 
-#define TX_SIZE_CONTEXTS 2
+#define TX_SIZE_CONTEXTS 3
 
 #define INTER_OFFSET(mode) ((mode)-NEARESTMV)
 #define INTER_COMPOUND_OFFSET(mode) ((mode)-NEAREST_NEARESTMV)

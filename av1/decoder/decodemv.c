@@ -1029,13 +1029,12 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   mbmi->filter_intra_mode_info.use_filter_intra = 0;
 #endif  // CONFIG_FILTER_INTRA
 
+  xd->above_txfm_context =
+      cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
+  xd->left_txfm_context = xd->left_txfm_context_buffer +
+                          ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
+
 #if CONFIG_INTRABC
-  if (cm->allow_screen_content_tools) {
-    xd->above_txfm_context =
-        cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
-    xd->left_txfm_context = xd->left_txfm_context_buffer +
-                            ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
-  }
   if (av1_allow_intrabc(cm)) {
     read_intrabc_info(cm, xd, mi_row, mi_col, r);
     if (is_intrabc_block(mbmi)) return;
@@ -1043,11 +1042,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 #endif  // CONFIG_INTRABC
 
   mbmi->tx_size = read_tx_size(cm, xd, 0, 1, r);
-#if CONFIG_INTRABC
-  if (cm->allow_screen_content_tools)
-    set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
-#endif  // CONFIG_INTRABC
-
+  set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
   mbmi->mode = read_intra_mode(r, get_y_mode_cdf(ec_ctx, above_mi, left_mi));
 
   const int use_angle_delta = av1_use_angle_delta(bsize);

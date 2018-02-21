@@ -772,18 +772,6 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
   (void)counts;
   const BLOCK_SIZE bsize = mbmi->sb_type;
 
-  // Update intra tx size cdf
-  if (block_signals_txsize(bsize) && !xd->lossless[mbmi->segment_id] &&
-      allow_update_cdf) {
-    const TX_SIZE tx_size = mbmi->tx_size;
-    const int tx_size_ctx = get_tx_size_context(xd, 0);
-    const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize, 0);
-    const int depth = tx_size_to_depth(tx_size, bsize, 0);
-    const int max_depths = bsize_to_max_depth(bsize, 0);
-    update_cdf(fc->tx_size_cdf[tx_size_cat][tx_size_ctx], depth,
-               max_depths + 1);
-  }
-
   if (intraonly) {
 #if CONFIG_ENTROPY_STATS
     const PREDICTION_MODE above = av1_above_block_mode(above_mi);
@@ -5015,6 +5003,15 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
         }
       } else {
         intra_tx_size = tx_size;
+        if (block_signals_txsize(bsize) && !xd->lossless[mbmi->segment_id] &&
+            tile_data->allow_update_cdf) {
+          const int tx_size_ctx = get_tx_size_context(xd, 0);
+          const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize, 0);
+          const int depth = tx_size_to_depth(tx_size, bsize, 0);
+          const int max_depths = bsize_to_max_depth(bsize, 0);
+          update_cdf(xd->tile_ctx->tx_size_cdf[tx_size_cat][tx_size_ctx], depth,
+                     max_depths + 1);
+        }
       }
 
       for (j = 0; j < mi_height; j++)
