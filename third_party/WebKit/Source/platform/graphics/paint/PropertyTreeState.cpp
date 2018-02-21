@@ -38,6 +38,10 @@ const CompositorElementId PropertyTreeState::GetCompositorElementId(
   return CompositorElementId();
 }
 
+String PropertyTreeState::ToString() const {
+  return String::Format("t:%p c:%p e:%p", Transform(), Clip(), Effect());
+}
+
 #if DCHECK_IS_ON()
 
 String PropertyTreeState::ToTreeString() const {

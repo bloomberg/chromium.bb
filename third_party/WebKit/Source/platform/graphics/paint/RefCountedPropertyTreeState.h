@@ -65,9 +65,10 @@ class PLATFORM_EXPORT RefCountedPropertyTreeState {
     Effect()->ClearChangedToRoot();
   }
 
+  String ToString() const { return GetPropertyTreeState().ToString(); }
 #if DCHECK_IS_ON()
   // Dumps the tree from this state up to the root as a string.
-  String ToTreeString() const;
+  String ToTreeString() const { return GetPropertyTreeState().ToTreeString(); }
 #endif
 
  private:

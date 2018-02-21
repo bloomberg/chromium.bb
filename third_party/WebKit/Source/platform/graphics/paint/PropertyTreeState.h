@@ -52,6 +52,7 @@ class PLATFORM_EXPORT PropertyTreeState {
     Effect()->ClearChangedToRoot();
   }
 
+  String ToString() const;
 #if DCHECK_IS_ON()
   // Dumps the tree from this state up to the root as a string.
   String ToTreeString() const;

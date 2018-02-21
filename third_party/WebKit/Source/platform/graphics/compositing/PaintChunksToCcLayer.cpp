@@ -160,9 +160,14 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
   const ClipPaintPropertyNode* lca_clip =
       &LowestCommonAncestor(*target_clip, *current_clip_);
   while (current_clip_ != lca_clip) {
+#if DCHECK_IS_ON()
     DCHECK(state_stack_.size() &&
            state_stack_.back().type == StateEntry::PairedType::kClip)
-        << "Error: Chunk has a clip that escaped its effect's clip.";
+        << "Error: Chunk has a clip that escaped its layer's or effect's clip."
+        << "\ntarget_clip:\n"
+        << target_clip->ToTreeString().Utf8().data() << "current_clip_:\n"
+        << current_clip_->ToTreeString().Utf8().data();
+#endif
     if (!state_stack_.size() ||
         state_stack_.back().type != StateEntry::PairedType::kClip)
       break;
@@ -232,8 +237,13 @@ void ConversionContext::SwitchToEffect(
   const EffectPaintPropertyNode* lca_effect =
       &LowestCommonAncestor(*target_effect, *current_effect_);
   while (current_effect_ != lca_effect) {
-    DCHECK(state_stack_.size()) << "Error: Chunk layerized into a layer with "
-                                   "an effect that's too deep.";
+#if DCHECK_IS_ON()
+    DCHECK(state_stack_.size())
+        << "Error: Chunk has an effect that escapes layer's effect.\n"
+        << "target_effect:\n"
+        << target_effect->ToTreeString().Utf8().data() << "current_effect_:\n"
+        << current_effect_->ToTreeString().Utf8().data();
+#endif
     if (!state_stack_.size())
       break;
 
