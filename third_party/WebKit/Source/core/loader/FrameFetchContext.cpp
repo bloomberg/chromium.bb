@@ -1329,6 +1329,12 @@ ResourceLoadPriority FrameFetchContext::ModifyPriorityForExperiments(
                        static_cast<int>(ResourceLoadPriority::kHighest) + 1));
   iframe_priority_histogram.Count(static_cast<int>(priority));
   // When enabled, the priority of all resources in subframe is dropped.
+  // Non-delayable resources are assigned a priority of kLow, and the rest of
+  // them are assigned a priority of kLowest. This ensures that if the webpage
+  // fetches most of its primary content using iframes, then high priority
+  // requests within the iframe go on the network first.
+  if (priority >= ResourceLoadPriority::kHigh)
+    return ResourceLoadPriority::kLow;
   return ResourceLoadPriority::kLowest;
 }
 
