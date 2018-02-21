@@ -1961,6 +1961,8 @@ config("symbols") {
     }
 
     if (is_win_fastlink) {
+      assert(!use_lld, "is_win_fastlink=true cannot be used with use_lld=true.")
+
       # Tell VS 2015+ to create a PDB that references debug
       # information in .obj and .lib files instead of copying
       # it all. This flag is incompatible with /PROFILE
