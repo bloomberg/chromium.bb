@@ -19,6 +19,9 @@
       "app": "ios_net_unittests"
     },
     {
+      "app": "ios_remoting_unittests"
+    },
+    {
       "app": "net_unittests"
     },
     {
