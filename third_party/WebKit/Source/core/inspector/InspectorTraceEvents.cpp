@@ -1285,7 +1285,7 @@ std::unique_ptr<TracedValue> InspectorAnimationEvent::Data(
   if (const AnimationEffectReadOnly* effect = animation.effect()) {
     value->SetString("name", animation.id());
     if (effect->IsKeyframeEffectReadOnly()) {
-      if (Element* target = ToKeyframeEffectReadOnly(effect)->Target())
+      if (Element* target = ToKeyframeEffectReadOnly(effect)->target())
         SetNodeInfo(value.get(), target, "nodeId", "nodeName");
     }
   }

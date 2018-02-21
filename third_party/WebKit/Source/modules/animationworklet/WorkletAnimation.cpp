@@ -53,15 +53,15 @@ bool ConvertAnimationEffects(
 
   // TODO(crbug.com/781816): Allow using effects with no target.
   for (const auto& effect : keyframe_effects) {
-    if (!effect->Target()) {
+    if (!effect->target()) {
       error_string = "All effect targets must exist";
       return false;
     }
   }
 
-  Document& target_document = keyframe_effects.at(0)->Target()->GetDocument();
+  Document& target_document = keyframe_effects.at(0)->target()->GetDocument();
   for (const auto& effect : keyframe_effects) {
-    if (effect->Target()->GetDocument() != target_document) {
+    if (effect->target()->GetDocument() != target_document) {
       error_string = "All effects must target elements in the same document";
       return false;
     }
@@ -167,7 +167,7 @@ WorkletAnimation* WorkletAnimation::Create(
     return nullptr;
   }
 
-  Document& document = keyframe_effects.at(0)->Target()->GetDocument();
+  Document& document = keyframe_effects.at(0)->target()->GetDocument();
   WorkletAnimation* animation = new WorkletAnimation(
       animator_name, document, keyframe_effects, timeline, std::move(options));
 
@@ -215,7 +215,7 @@ void WorkletAnimation::cancel() {
 bool WorkletAnimation::StartOnCompositor(String* failure_message) {
   DCHECK(IsMainThread());
   KeyframeEffectReadOnly* target_effect = effects_.at(0);
-  Element& target = *target_effect->Target();
+  Element& target = *target_effect->target();
 
   // CheckCanStartAnimationOnCompositor requires that the property-specific
   // keyframe groups have been created. To ensure this we manually snapshot the

@@ -126,8 +126,8 @@ BuildObjectForAnimationEffect(KeyframeEffectReadOnly* effect,
           .setFill(computed_timing.fill())
           .setEasing(easing)
           .build();
-  if (effect->Target())
-    animation_object->setBackendNodeId(DOMNodeIds::IdForNode(effect->Target()));
+  if (effect->target())
+    animation_object->setBackendNodeId(DOMNodeIds::IdForNode(effect->target()));
   return animation_object;
 }
 
@@ -178,7 +178,7 @@ InspectorAnimationAgent::BuildObjectForAnimation(blink::Animation& animation) {
     animation_type = AnimationType::WebAnimation;
   } else {
     const Element* element =
-        ToKeyframeEffectReadOnly(animation.effect())->Target();
+        ToKeyframeEffectReadOnly(animation.effect())->target();
     std::unique_ptr<protocol::Animation::KeyframesRule> keyframe_rule;
 
     if (!element) {
@@ -315,7 +315,7 @@ blink::Animation* InspectorAnimationAgent::AnimationClone(
     }
 
     KeyframeEffect* new_effect = KeyframeEffect::Create(
-        old_effect->Target(), new_model, old_effect->SpecifiedTiming());
+        old_effect->target(), new_model, old_effect->SpecifiedTiming());
     is_cloning_ = true;
     blink::Animation* clone =
         blink::Animation::Create(new_effect, animation->timeline());
@@ -421,7 +421,7 @@ Response InspectorAnimationAgent::resolveAnimation(
   if (id_to_animation_clone_.at(animation_id))
     animation = id_to_animation_clone_.at(animation_id);
   const Element* element =
-      ToKeyframeEffectReadOnly(animation->effect())->Target();
+      ToKeyframeEffectReadOnly(animation->effect())->target();
   Document* document = element->ownerDocument();
   LocalFrame* frame = document ? document->GetFrame() : nullptr;
   ScriptState* script_state =
@@ -474,7 +474,7 @@ String InspectorAnimationAgent::CreateCSSId(blink::Animation& animation) {
     css_properties.push_back(&CSSProperty::Get(cssPropertyID(animation.id())));
   }
 
-  Element* element = effect->Target();
+  Element* element = effect->target();
   HeapVector<Member<CSSStyleDeclaration>> styles =
       css_agent_->MatchingStyles(element);
   std::unique_ptr<WebCryptoDigestor> digestor =

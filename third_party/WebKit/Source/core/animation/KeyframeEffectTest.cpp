@@ -101,7 +101,7 @@ TEST_F(AnimationKeyframeEffectV8Test, CanCreateAnAnimation) {
   KeyframeEffect* animation =
       CreateAnimation(script_state, element.Get(), js_keyframes, 0);
 
-  Element* target = animation->Target();
+  Element* target = animation->target();
   EXPECT_EQ(*element.Get(), *target);
 
   const KeyframeVector keyframes = animation->Model()->GetFrames();

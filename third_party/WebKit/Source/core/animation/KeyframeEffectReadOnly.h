@@ -55,6 +55,7 @@ class CORE_EXPORT KeyframeEffectReadOnly : public AnimationEffectReadOnly {
   // IDL implementation.
   String composite() const;
   Vector<ScriptValue> getKeyframes(ScriptState*);
+  Element* target() const { return target_; }
 
   EffectModel::CompositeOperation compositeInternal() const {
     return model_->Composite();
@@ -68,7 +69,6 @@ class CORE_EXPORT KeyframeEffectReadOnly : public AnimationEffectReadOnly {
     model_ = model;
   }
   Priority GetPriority() const { return priority_; }
-  Element* Target() const { return target_; }
 
   void NotifySampledEffectRemovedFromEffectStack();
 

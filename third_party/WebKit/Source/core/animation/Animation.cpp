@@ -446,7 +446,7 @@ bool Animation::Affects(const Element& element,
 
   const KeyframeEffectReadOnly* effect =
       ToKeyframeEffectReadOnly(content_.Get());
-  return (effect->Target() == &element) &&
+  return (effect->target() == &element) &&
          effect->Affects(PropertyHandle(property));
 }
 
@@ -845,7 +845,7 @@ Animation::CheckCanStartAnimationOnCompositorInternal(
   if (composited_element_ids.has_value()) {
     DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
     Element* target_element =
-        ToKeyframeEffectReadOnly(content_.Get())->Target();
+        ToKeyframeEffectReadOnly(content_.Get())->target();
     if (!target_element) {
       return CompositorAnimations::FailureCode::Actionable(
           "Animation is not attached to an element");
@@ -1260,7 +1260,7 @@ void Animation::InvalidateKeyframeEffect(const TreeScope& tree_scope) {
   if (!content_ || !content_->IsKeyframeEffectReadOnly())
     return;
 
-  Element* target = ToKeyframeEffectReadOnly(content_.Get())->Target();
+  Element* target = ToKeyframeEffectReadOnly(content_.Get())->target();
 
   // TODO(alancutter): Remove dependency of this function on CSSAnimations.
   // This function makes the incorrect assumption that the animation uses
