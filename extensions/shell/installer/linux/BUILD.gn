@@ -25,7 +25,7 @@ group("linux") {
   deps = [
     # TODO(michaelpg): Add beta/stable once we verify the unstable installer is
     # building and installing properly.
-    ":unstable",
+    ":app_shell_unstable",
   ]
 }
 
@@ -214,6 +214,7 @@ template("linux_package") {
 }
 
 # Standard packages.
-linux_package("unstable") {
+# Prefixed with "app_shell_" to not conflict with Chrome's installer targets.
+linux_package("app_shell_unstable") {
   channel = "unstable"
 }

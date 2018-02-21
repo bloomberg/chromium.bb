@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/util/process_version.gni")
 import("//extensions/features/features.gni")
@@ -10,7 +11,8 @@ assert(enable_extensions)
 
 declare_args() {
   enable_app_shell_installer =
-      is_desktop_linux && is_chrome_branded && current_cpu == "x64"
+      is_desktop_linux && is_chrome_branded && current_cpu == "x64" &&
+      !is_component_build && !using_sanitizer
 }
 
 # Meta-target that forwards to the installer of the correct type (if any).
