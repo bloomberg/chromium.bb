@@ -128,6 +128,9 @@ void DevToolsEmulator::SetDeviceScaleAdjustment(float device_scale_adjustment) {
 }
 
 void DevToolsEmulator::SetPreferCompositingToLCDTextEnabled(bool enabled) {
+  if (embedder_prefer_compositing_to_lcd_text_enabled_ == enabled)
+    return;
+
   embedder_prefer_compositing_to_lcd_text_enabled_ = enabled;
   bool emulate_mobile_enabled =
       device_metrics_enabled_ && emulate_mobile_enabled_;

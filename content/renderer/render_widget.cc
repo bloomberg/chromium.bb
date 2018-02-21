@@ -649,10 +649,8 @@ void RenderWidget::SetLocalSurfaceIdForAutoResize(
   bool screen_info_changed = screen_info_ != screen_info;
 
   screen_info_ = screen_info;
-  if (device_scale_factor_ != screen_info_.device_scale_factor) {
-    device_scale_factor_ = screen_info_.device_scale_factor;
-    OnDeviceScaleFactorChanged();
-  }
+  device_scale_factor_ = screen_info_.device_scale_factor;
+  OnDeviceScaleFactorChanged();
 
   if (screen_info_changed) {
     for (auto& observer : render_frame_proxies_)
@@ -1388,10 +1386,8 @@ void RenderWidget::Resize(const ResizeParams& params) {
   if (render_thread)
     render_thread->SetRenderingColorSpace(screen_info_.color_space);
 
-  if (device_scale_factor_ != screen_info_.device_scale_factor) {
-    device_scale_factor_ = screen_info_.device_scale_factor;
-    OnDeviceScaleFactorChanged();
-  }
+  device_scale_factor_ = screen_info_.device_scale_factor;
+  OnDeviceScaleFactorChanged();
 
   if (resizing_mode_selector_->NeverUsesSynchronousResize()) {
     // A resize ack shouldn't be requested if we have not ACK'd the previous
