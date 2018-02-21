@@ -12,10 +12,8 @@
 namespace invalidation {
 
 FakeInvalidationService::FakeInvalidationService()
-    : client_id_(GenerateInvalidatorClientId()),
-      identity_provider_(&token_service_) {
+    : client_id_(GenerateInvalidatorClientId()) {
   invalidator_registrar_.UpdateInvalidatorState(syncer::INVALIDATIONS_ENABLED);
-  token_service_.set_auto_post_fetch_response_on_message_loop(true);
 }
 
 FakeInvalidationService::~FakeInvalidationService() {
@@ -53,10 +51,6 @@ void FakeInvalidationService::RequestDetailedStatus(
     base::Callback<void(const base::DictionaryValue&)> caller) const {
   base::DictionaryValue value;
   caller.Run(value);
-}
-
-IdentityProvider* FakeInvalidationService::GetIdentityProvider() {
-  return &identity_provider_;
 }
 
 void FakeInvalidationService::SetInvalidatorState(

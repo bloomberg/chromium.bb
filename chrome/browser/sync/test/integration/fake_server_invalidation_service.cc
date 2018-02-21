@@ -13,8 +13,7 @@ namespace fake_server {
 
 FakeServerInvalidationService::FakeServerInvalidationService()
     : client_id_(invalidation::GenerateInvalidatorClientId()),
-      self_notify_(true),
-      identity_provider_(&token_service_) {
+      self_notify_(true) {
   invalidator_registrar_.UpdateInvalidatorState(syncer::INVALIDATIONS_ENABLED);
 }
 
@@ -55,10 +54,6 @@ void FakeServerInvalidationService::RequestDetailedStatus(
     base::Callback<void(const base::DictionaryValue&)> caller) const {
   base::DictionaryValue value;
   caller.Run(value);
-}
-
-IdentityProvider* FakeServerInvalidationService::GetIdentityProvider() {
-  return &identity_provider_;
 }
 
 void FakeServerInvalidationService::EnableSelfNotifications() {

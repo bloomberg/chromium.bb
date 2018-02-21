@@ -9,8 +9,6 @@
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/invalidator_state.h"
 
-class IdentityProvider;
-
 namespace syncer {
 class InvalidationHandler;
 }  // namespace syncer
@@ -106,9 +104,6 @@ class InvalidationService {
   // Triggers requests of internal status.
   virtual void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> post_caller) const = 0;
-
-  // Returns the identity provider.
-  virtual IdentityProvider* GetIdentityProvider() = 0;
 };
 
 }  // namespace invalidation

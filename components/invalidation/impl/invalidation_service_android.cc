@@ -108,10 +108,6 @@ void InvalidationServiceAndroid::RequestDetailedStatus(
     base::Callback<void(const base::DictionaryValue&)> return_callback) const {
 }
 
-IdentityProvider* InvalidationServiceAndroid::GetIdentityProvider() {
-  return NULL;
-}
-
 void InvalidationServiceAndroid::TriggerStateChangeForTest(
     syncer::InvalidatorState state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
