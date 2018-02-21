@@ -448,6 +448,7 @@ TEST_F(MessageTest, ReadSerializedMessageAsMessageWithContext) {
                                   MOJO_GET_MESSAGE_CONTEXT_FLAG_RELEASE));
   MojoClose(a);
   MojoClose(b);
+  EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message_handle));
 }
 
 TEST_F(MessageTest, ForceSerializeMessageWithContext) {
@@ -602,6 +603,8 @@ TEST_F(MessageTest, ExtendMessagePayload) {
   EXPECT_EQ(kTestMessageCombined2.size(), payload_size);
   EXPECT_EQ(0, memcmp(payload, kTestMessageCombined2.data(),
                       kTestMessageCombined2.size()));
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
 }
 
 TEST_F(MessageTest, ExtendMessageWithHandlesPayload) {
@@ -650,6 +653,7 @@ TEST_F(MessageTest, ExtendMessageWithHandlesPayload) {
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(handles[0]));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(handles[1]));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
 }
 
 TEST_F(MessageTest, ExtendMessagePayloadLarge) {
@@ -726,6 +730,7 @@ TEST_F(MessageTest, ExtendMessagePayloadLarge) {
 
     EXPECT_EQ(MOJO_RESULT_OK, MojoClose(handles[0]));
     EXPECT_EQ(MOJO_RESULT_OK, MojoClose(handles[1]));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
   }
 }
 
@@ -781,6 +786,7 @@ TEST_F(MessageTest, CommitInvalidMessageContents) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoCommitSerializedMessageContents(
                                 message, 0, &buffer, &buffer_size));
   UserMessageImpl::FailHandleSerializationForTesting(false);
+  EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
 }
 
 #if !defined(OS_IOS)
