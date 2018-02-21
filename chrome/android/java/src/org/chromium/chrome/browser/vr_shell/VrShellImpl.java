@@ -48,9 +48,11 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.vr_shell.keyboard.VrInputMethodManagerWrapper;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.newtab.NewTabButton;
 import org.chromium.content_public.browser.ContentViewCore;
+import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.PermissionCallback;
@@ -61,7 +63,9 @@ import org.chromium.ui.display.VirtualDisplayAndroid;
  * This view extends from GvrLayout which wraps a GLSurfaceView that renders VR shell.
  */
 @JNINamespace("vr")
-public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Callback {
+public class VrShellImpl
+        extends GvrLayout implements VrShell, SurfaceHolder.Callback,
+                                     VrInputMethodManagerWrapper.BrowserKeyboardInterface {
     private static final String TAG = "VrShellImpl";
     private static final float INCHES_TO_METERS = 0.0254f;
 
@@ -393,6 +397,25 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         mNonVrTabRedirectHandler = mTab.getTabRedirectHandler();
         mTab.setTabRedirectHandler(mTabRedirectHandler);
         assert mTab.getWindowAndroid() == mContentVrWindowAndroid;
+        initializeImeForVr();
+    }
+
+    private void initializeImeForVr() {
+        assert mTab != null;
+        ImeAdapter imeAdapter = ImeAdapter.fromWebContents(mTab.getWebContents());
+        if (imeAdapter != null) {
+            imeAdapter.setInputMethodManagerWrapper(
+                    new VrInputMethodManagerWrapper(mActivity, this));
+        }
+    }
+
+    private void uninitializeImeForVr() {
+        assert mTab != null;
+        ImeAdapter imeAdapter = ImeAdapter.fromWebContents(mTab.getWebContents());
+        if (imeAdapter != null) {
+            imeAdapter.setInputMethodManagerWrapper(
+                    ImeAdapter.createDefaultInputMethodManagerWrapper(mActivity));
+        }
     }
 
     private void restoreTabFromVR() {
@@ -400,6 +423,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         mTab.setInterceptNavigationDelegate(mNonVrInterceptNavigationDelegate);
         mTab.setTabRedirectHandler(mNonVrTabRedirectHandler);
         mNonVrTabRedirectHandler = null;
+        uninitializeImeForVr();
     }
 
     private void reparentAllTabs(WindowAndroid window) {
@@ -617,6 +641,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         if (mTab != null) {
             mTab.removeObserver(mTabObserver);
             restoreTabFromVR();
+            uninitializeImeForVr();
             if (mTab.getContentViewCore() != null) {
                 View parent = mTab.getContentViewCore().getContainerView();
                 mTab.getWebContents().setSize(parent.getWidth(), parent.getHeight());
@@ -934,6 +959,20 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         return mPresentationView;
     }
 
+    @Override
+    public void showSoftInput(boolean show) {
+        assert mNativeVrShell != 0;
+        nativeShowSoftInput(mNativeVrShell, show);
+    }
+
+    @Override
+    public void updateIndices(
+            int selectionStart, int selectionEnd, int compositionStart, int compositionEnd) {
+        assert mNativeVrShell != 0;
+        nativeUpdateWebInputIndices(
+                mNativeVrShell, selectionStart, selectionEnd, compositionStart, compositionEnd);
+    }
+
     private native long nativeInit(VrShellDelegate delegate, boolean forWebVR,
             boolean webVrAutopresentationExpected, boolean inCct, boolean browsingDisabled,
             boolean hasOrCanRequestAudioPermission, long gvrApi, boolean reprojectedRendering,
@@ -968,4 +1007,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     private native void nativeRequestToExitVr(long nativeVrShell, @UiUnsupportedMode int reason);
     private native void nativeLogUnsupportedModeUserMetric(
             long nativeVrShell, @UiUnsupportedMode int mode);
+    private native void nativeShowSoftInput(long nativeVrShell, boolean show);
+    private native void nativeUpdateWebInputIndices(long nativeVrShell, int selectionStart,
+            int selectionEnd, int compositionStart, int compositionEnd);
 }

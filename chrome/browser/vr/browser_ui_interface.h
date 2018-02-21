@@ -43,11 +43,10 @@ class BrowserUiInterface {
 
   // Web contents text input related.
   virtual void ShowSoftInput(bool show) = 0;
-  virtual void UpdateWebInputSelectionIndices(int selection_start,
-                                              int selection_end) = 0;
-  virtual void UpdateWebInputCompositionIndices(int composition_start,
-                                                int composition_end) = 0;
-  virtual void UpdateWebInputText(const base::string16& text) = 0;
+  virtual void UpdateWebInputIndices(int selection_start,
+                                     int selection_end,
+                                     int composition_start,
+                                     int composition_end) = 0;
 
   // Tab handling.
   virtual void AppendToTabList(bool incognito,

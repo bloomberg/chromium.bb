@@ -215,21 +215,17 @@ void Ui::ShowSoftInput(bool show) {
   model_->editing_web_input = show;
 }
 
-void Ui::UpdateWebInputSelectionIndices(int selection_start,
-                                        int selection_end) {
-  model_->web_input_text_field_info.current.selection_start = selection_start;
-  model_->web_input_text_field_info.current.selection_end = selection_end;
-}
-
-void Ui::UpdateWebInputCompositionIndices(int composition_start,
-                                          int composition_end) {
-  model_->web_input_text_field_info.current.composition_start =
-      composition_start;
-  model_->web_input_text_field_info.current.composition_end = composition_end;
-}
-
-void Ui::UpdateWebInputText(const base::string16& text) {
-  model_->web_input_text_field_info.current.text = text;
+void Ui::UpdateWebInputIndices(int selection_start,
+                               int selection_end,
+                               int composition_start,
+                               int composition_end) {
+  content_input_delegate_->OnWebInputIndicesChanged(
+      selection_start, selection_end, composition_start, composition_end,
+      base::BindOnce(
+          [](TextInputInfo* model, const TextInputInfo& new_state) {
+            *model = new_state;
+          },
+          base::Unretained(&model_->web_input_text_field_info.current)));
 }
 
 void Ui::SetAlertDialogEnabled(bool enabled,

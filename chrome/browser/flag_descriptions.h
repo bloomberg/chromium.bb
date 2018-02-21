@@ -1768,6 +1768,9 @@ extern const char kVrBrowsingDescription[];
 extern const char kVrBrowserKeyboardName[];
 extern const char kVrBrowserKeyboardDescription[];
 
+extern const char kVrWebInputEditingName[];
+extern const char kVrWebInputEditingDescription[];
+
 extern const char kVrBrowsingExperimentalFeaturesName[];
 extern const char kVrBrowsingExperimentalFeaturesDescription[];
 

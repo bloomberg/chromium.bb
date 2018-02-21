@@ -771,7 +771,8 @@ void RenderWidgetHostViewAndroid::OnUpdateTextInputStateCalled(
           ? *GetTextInputManager()->GetTextInputState()
           : TextInputState();
 
-  if (!ime_adapter_android_ || is_in_vr_)
+  if (!ime_adapter_android_ || (is_in_vr_ && !base::FeatureList::IsEnabled(
+                                                 features::kVrWebInputEditing)))
     return;
 
   ime_adapter_android_->UpdateState(state);
@@ -2011,7 +2012,7 @@ void RenderWidgetHostViewAndroid::SendGestureEvent(
 
 bool RenderWidgetHostViewAndroid::ShowSelectionMenu(
     const ContextMenuParams& params) {
-  if (!selection_popup_controller_)
+  if (!selection_popup_controller_ || is_in_vr_)
     return false;
 
   return selection_popup_controller_->ShowSelectionMenu(params,

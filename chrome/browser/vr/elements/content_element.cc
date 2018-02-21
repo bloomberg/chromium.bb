@@ -69,11 +69,11 @@ void ContentElement::OnFocusChanged(bool focused) {
 }
 
 void ContentElement::OnInputEdited(const EditedText& info) {
-  delegate_->OnWebInputEdited(info.current, false);
+  delegate_->OnWebInputEdited(info, false);
 }
 
 void ContentElement::OnInputCommitted(const EditedText& info) {
-  delegate_->OnWebInputEdited(info.current, true);
+  delegate_->OnWebInputEdited(info, true);
 }
 
 void ContentElement::OnHoverEnter(const gfx::PointF& position) {

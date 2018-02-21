@@ -27,6 +27,7 @@ class Version;
 
 namespace vr {
 
+class VrInputConnection;
 class VrShell;
 class VrShellGl;
 
@@ -46,6 +47,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
 
   ~VrGLThread() override;
   base::WeakPtr<VrShellGl> GetVrShellGl();
+  void SetInputConnection(base::WeakPtr<VrInputConnection> weak_connection);
 
   // GlBrowserInterface implementation (GL calling to VrShell).
   void ContentSurfaceCreated(jobject surface,
@@ -65,8 +67,9 @@ class VrGLThread : public base::android::JavaHandlerThread,
   // ContentInputForwarder
   void ForwardEvent(std::unique_ptr<blink::WebInputEvent> event,
                     int content_id) override;
-  void OnWebInputEdited(const TextInputInfo& info, bool commit) override;
   void ForwardDialogEvent(std::unique_ptr<blink::WebInputEvent> event) override;
+  void OnWebInputEdited(const std::vector<KeyboardEdit>& edits) override;
+  void RequestWebInputText(TextStateUpdateCallback callback) override;
 
   // UiBrowserInterface implementation (UI calling to VrShell).
   void ExitPresent() override;
@@ -106,11 +109,10 @@ class VrGLThread : public base::android::JavaHandlerThread,
       std::unique_ptr<OmniboxSuggestions> result) override;
   void OnAssetsComponentReady() override;
   void ShowSoftInput(bool show) override;
-  void UpdateWebInputSelectionIndices(int selection_start,
-                                      int selection_end) override;
-  void UpdateWebInputCompositionIndices(int composition_start,
-                                        int composition_end) override;
-  void UpdateWebInputText(const base::string16& text) override;
+  void UpdateWebInputIndices(int selection_start,
+                             int selection_end,
+                             int composition_start,
+                             int composition_end) override;
 
  protected:
   void Init() override;
@@ -130,7 +132,8 @@ class VrGLThread : public base::android::JavaHandlerThread,
   std::unique_ptr<TextInputDelegate> text_input_delegate_;
 
   base::WeakPtr<VrShell> weak_vr_shell_;
-  base::WeakPtr<BrowserUiInterface> browser_ui_;
+  base::WeakPtr<BrowserUiInterface> weak_browser_ui_;
+  base::WeakPtr<VrInputConnection> weak_input_connection_;
 
   // This state is used for initializing vr_shell_gl_.
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;

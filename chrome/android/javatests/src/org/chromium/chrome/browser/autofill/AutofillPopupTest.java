@@ -158,7 +158,7 @@ public class AutofillPopupTest {
         final ViewGroup view = viewCore.getContainerView();
         final ImeAdapter imeAdapter = ImeAdapter.fromWebContents(webContents);
         TestInputMethodManagerWrapper immw = TestInputMethodManagerWrapper.create(imeAdapter);
-        imeAdapter.setInputMethodManagerWrapperForTest(immw);
+        imeAdapter.setInputMethodManagerWrapper(immw);
 
         // Add an Autofill profile.
         AutofillProfile profile = new AutofillProfile(

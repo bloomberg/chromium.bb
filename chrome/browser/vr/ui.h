@@ -106,11 +106,10 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
   bool CanSendWebVrVSync();
 
   void ShowSoftInput(bool show) override;
-  void UpdateWebInputSelectionIndices(int selection_start,
-                                      int selection_end) override;
-  void UpdateWebInputCompositionIndices(int composition_start,
-                                        int composition_end) override;
-  void UpdateWebInputText(const base::string16& text) override;
+  void UpdateWebInputIndices(int selection_start,
+                             int selection_end,
+                             int composition_start,
+                             int composition_end) override;
 
   void SetAlertDialogEnabled(bool enabled,
                              ContentInputDelegate* delegate,
@@ -146,6 +145,9 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
   Model* model_for_test() { return model_.get(); }
 
   void ReinitializeForTest(const UiInitialState& ui_initial_state);
+  ContentInputDelegate* GetContentInputDelegateForTest() {
+    return content_input_delegate_.get();
+  }
 
   void Dump(bool include_bindings);
 

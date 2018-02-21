@@ -12,6 +12,7 @@ import android.view.inputmethod.EditorInfo;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.content_public.browser.InputMethodManagerWrapper;
 
 /**
  * A factory class for {@link ThreadedInputConnection}. The class also includes triggering

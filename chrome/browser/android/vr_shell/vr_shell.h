@@ -52,6 +52,7 @@ class AndroidUiGestureTarget;
 class AutocompleteController;
 class ToolbarHelper;
 class VrGLThread;
+class VrInputConnection;
 class VrMetricsHelper;
 class VrShellDelegate;
 class VrWebContentsObserver;
@@ -147,7 +148,16 @@ class VrShell : device::GvrGamepadDataProvider,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       int mode);
-  void OnWebInputEdited(TextInputInfo info, bool commit);
+
+  void ShowSoftInput(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj,
+                     bool show);
+  void UpdateWebInputIndices(JNIEnv* env,
+                             const base::android::JavaParamRef<jobject>& obj,
+                             int selection_start,
+                             int selection_end,
+                             int composition_start,
+                             int composition_end);
 
   void ContentWebContentsDestroyed();
 
@@ -253,6 +263,7 @@ class VrShell : device::GvrGamepadDataProvider,
   base::android::ScopedJavaGlobalRef<jobject> j_motion_event_synthesizer_;
 
   std::unique_ptr<VrWebContentsObserver> vr_web_contents_observer_;
+  std::unique_ptr<VrInputConnection> vr_input_connection_;
 
   VrShellDelegate* delegate_provider_ = nullptr;
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_;

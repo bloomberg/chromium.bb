@@ -4,6 +4,9 @@
 
 #include "chrome/browser/vr/model/text_input_info.h"
 
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/vr/keyboard_edit.h"
+
 namespace vr {
 
 TextInputInfo::TextInputInfo()
@@ -63,6 +66,32 @@ void EditedText::Update(const TextInputInfo& info) {
 
 std::string EditedText::ToString() const {
   return current.ToString() + ", previously " + previous.ToString();
+}
+
+std::vector<KeyboardEdit> EditedText::GetKeyboardEditList() const {
+  std::vector<KeyboardEdit> edits;
+
+  if (current == previous)
+    return edits;
+
+  // TODO(ymalik): Support composition.
+  if (current.composition_start != current.composition_end)
+    return edits;
+
+  int commit_start = previous.selection_start;
+  int commit_len = current.selection_start - commit_start;
+  if (commit_len < 0) {
+    KeyboardEdit edit(KeyboardEditType::DELETE_TEXT, base::ASCIIToUTF16(""),
+                      commit_len);
+    edits.push_back(edit);
+  } else {
+    KeyboardEdit edit(KeyboardEditType::COMMIT_TEXT,
+                      current.text.substr(commit_start, commit_len),
+                      commit_len);
+    edits.push_back(edit);
+  }
+
+  return edits;
 }
 
 static_assert(sizeof(base::string16) + 16 == sizeof(TextInputInfo),

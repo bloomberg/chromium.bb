@@ -7,7 +7,9 @@
 #include <utility>
 
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string16.h"
 #include "base/version.h"
+#include "chrome/browser/android/vr_shell/vr_input_connection.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "chrome/browser/android/vr_shell/vr_shell_gl.h"
 #include "chrome/browser/vr/assets_loader.h"
@@ -44,6 +46,12 @@ base::WeakPtr<VrShellGl> VrGLThread::GetVrShellGl() {
   return vr_shell_gl_->GetWeakPtr();
 }
 
+void VrGLThread::SetInputConnection(
+    base::WeakPtr<VrInputConnection> weak_connection) {
+  DCHECK(OnGlThread());
+  weak_input_connection_ = weak_connection;
+}
+
 void VrGLThread::Init() {
   bool keyboard_enabled =
       base::FeatureList::IsEnabled(features::kVrBrowserKeyboard) &&
@@ -77,7 +85,7 @@ void VrGLThread::Init() {
       this, std::move(ui), gvr_api_, reprojected_rendering_, daydream_support_,
       ui_initial_state_.in_web_vr);
 
-  browser_ui_ = vr_shell_gl_->GetBrowserUiWeakPtr();
+  weak_browser_ui_ = vr_shell_gl_->GetBrowserUiWeakPtr();
 
   vr_shell_gl_->Initialize();
 }
@@ -134,11 +142,16 @@ void VrGLThread::ForwardEvent(std::unique_ptr<blink::WebInputEvent> event,
                             base::Passed(std::move(event)), content_id));
 }
 
-void VrGLThread::OnWebInputEdited(const TextInputInfo& info, bool commit) {
+void VrGLThread::OnWebInputEdited(const std::vector<vr::KeyboardEdit>& edits) {
   DCHECK(OnGlThread());
-  main_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VrShell::OnWebInputEdited, weak_vr_shell_, info, commit));
+  DCHECK(weak_input_connection_);
+  weak_input_connection_->OnKeyboardEdit(edits);
+}
+
+void VrGLThread::RequestWebInputText(vr::TextStateUpdateCallback callback) {
+  DCHECK(OnGlThread());
+  DCHECK(weak_input_connection_);
+  weak_input_connection_->RequestTextState(std::move(callback));
 }
 
 void VrGLThread::ForwardDialogEvent(
@@ -257,16 +270,16 @@ void VrGLThread::LoadAssets() {
 
 void VrGLThread::SetFullscreen(bool enabled) {
   DCHECK(OnMainThread());
-  task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&BrowserUiInterface::SetFullscreen, browser_ui_, enabled));
+  task_runner()->PostTask(FROM_HERE,
+                          base::Bind(&BrowserUiInterface::SetFullscreen,
+                                     weak_browser_ui_, enabled));
 }
 
 void VrGLThread::SetIncognito(bool incognito) {
   DCHECK(OnMainThread());
   task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&BrowserUiInterface::SetIncognito, browser_ui_, incognito));
+      FROM_HERE, base::Bind(&BrowserUiInterface::SetIncognito, weak_browser_ui_,
+                            incognito));
 }
 
 void VrGLThread::SetHistoryButtonsEnabled(bool can_go_back,
@@ -274,33 +287,33 @@ void VrGLThread::SetHistoryButtonsEnabled(bool can_go_back,
   DCHECK(OnMainThread());
   task_runner()->PostTask(
       FROM_HERE, base::Bind(&BrowserUiInterface::SetHistoryButtonsEnabled,
-                            browser_ui_, can_go_back, can_go_forward));
+                            weak_browser_ui_, can_go_back, can_go_forward));
 }
 
 void VrGLThread::SetLoadProgress(float progress) {
   DCHECK(OnMainThread());
-  task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&BrowserUiInterface::SetLoadProgress, browser_ui_, progress));
+  task_runner()->PostTask(FROM_HERE,
+                          base::Bind(&BrowserUiInterface::SetLoadProgress,
+                                     weak_browser_ui_, progress));
 }
 
 void VrGLThread::SetLoading(bool loading) {
   DCHECK(OnMainThread());
   task_runner()->PostTask(FROM_HERE, base::Bind(&BrowserUiInterface::SetLoading,
-                                                browser_ui_, loading));
+                                                weak_browser_ui_, loading));
 }
 
 void VrGLThread::SetToolbarState(const ToolbarState& state) {
   DCHECK(OnMainThread());
-  task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&BrowserUiInterface::SetToolbarState, browser_ui_, state));
+  task_runner()->PostTask(FROM_HERE,
+                          base::Bind(&BrowserUiInterface::SetToolbarState,
+                                     weak_browser_ui_, state));
 }
 
 void VrGLThread::SetWebVrMode(bool enabled, bool show_toast) {
   DCHECK(OnMainThread());
   task_runner()->PostTask(
-      FROM_HERE, base::Bind(&BrowserUiInterface::SetWebVrMode, browser_ui_,
+      FROM_HERE, base::Bind(&BrowserUiInterface::SetWebVrMode, weak_browser_ui_,
                             enabled, show_toast));
 }
 
@@ -308,41 +321,42 @@ void VrGLThread::SetAudioCaptureEnabled(bool enabled) {
   DCHECK(OnMainThread());
   task_runner()->PostTask(
       FROM_HERE, base::Bind(&BrowserUiInterface::SetAudioCaptureEnabled,
-                            browser_ui_, enabled));
+                            weak_browser_ui_, enabled));
 }
 
 void VrGLThread::SetLocationAccessEnabled(bool enabled) {
   DCHECK(OnMainThread());
   task_runner()->PostTask(
       FROM_HERE, base::Bind(&BrowserUiInterface::SetLocationAccessEnabled,
-                            browser_ui_, enabled));
+                            weak_browser_ui_, enabled));
 }
 
 void VrGLThread::SetVideoCaptureEnabled(bool enabled) {
   DCHECK(OnMainThread());
   task_runner()->PostTask(
       FROM_HERE, base::Bind(&BrowserUiInterface::SetVideoCaptureEnabled,
-                            browser_ui_, enabled));
+                            weak_browser_ui_, enabled));
 }
 
 void VrGLThread::SetScreenCaptureEnabled(bool enabled) {
   DCHECK(OnMainThread());
   task_runner()->PostTask(
       FROM_HERE, base::Bind(&BrowserUiInterface::SetScreenCaptureEnabled,
-                            browser_ui_, enabled));
+                            weak_browser_ui_, enabled));
 }
 
 void VrGLThread::SetBluetoothConnected(bool enabled) {
   DCHECK(OnMainThread());
   task_runner()->PostTask(FROM_HERE,
                           base::Bind(&BrowserUiInterface::SetBluetoothConnected,
-                                     browser_ui_, enabled));
+                                     weak_browser_ui_, enabled));
 }
 
 void VrGLThread::SetIsExiting() {
   DCHECK(OnMainThread());
   task_runner()->PostTask(
-      FROM_HERE, base::Bind(&BrowserUiInterface::SetIsExiting, browser_ui_));
+      FROM_HERE,
+      base::Bind(&BrowserUiInterface::SetIsExiting, weak_browser_ui_));
 }
 
 void VrGLThread::SetExitVrPromptEnabled(bool enabled,
@@ -350,21 +364,21 @@ void VrGLThread::SetExitVrPromptEnabled(bool enabled,
   DCHECK(OnMainThread());
   task_runner()->PostTask(
       FROM_HERE, base::Bind(&BrowserUiInterface::SetExitVrPromptEnabled,
-                            browser_ui_, enabled, reason));
+                            weak_browser_ui_, enabled, reason));
 }
 
 void VrGLThread::SetSpeechRecognitionEnabled(bool enabled) {
   DCHECK(OnMainThread());
   task_runner()->PostTask(
       FROM_HERE, base::Bind(&BrowserUiInterface::SetSpeechRecognitionEnabled,
-                            browser_ui_, enabled));
+                            weak_browser_ui_, enabled));
 }
 
 void VrGLThread::SetRecognitionResult(const base::string16& result) {
   DCHECK(OnMainThread());
   task_runner()->PostTask(FROM_HERE,
                           base::Bind(&BrowserUiInterface::SetRecognitionResult,
-                                     browser_ui_, result));
+                                     weak_browser_ui_, result));
 }
 
 void VrGLThread::OnSpeechRecognitionStateChanged(int new_state) {
@@ -372,54 +386,42 @@ void VrGLThread::OnSpeechRecognitionStateChanged(int new_state) {
   task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&BrowserUiInterface::OnSpeechRecognitionStateChanged,
-                 browser_ui_, new_state));
+                 weak_browser_ui_, new_state));
 }
 
 void VrGLThread::SetOmniboxSuggestions(
     std::unique_ptr<OmniboxSuggestions> suggestions) {
   DCHECK(OnMainThread());
   task_runner()->PostTask(
-      FROM_HERE, base::Bind(&BrowserUiInterface::SetOmniboxSuggestions,
-                            browser_ui_, base::Passed(std::move(suggestions))));
+      FROM_HERE,
+      base::Bind(&BrowserUiInterface::SetOmniboxSuggestions, weak_browser_ui_,
+                 base::Passed(std::move(suggestions))));
 }
 
 void VrGLThread::OnAssetsComponentReady() {
   DCHECK(OnMainThread());
   task_runner()->PostTask(
-      FROM_HERE, base::BindRepeating(
-                     &BrowserUiInterface::OnAssetsComponentReady, browser_ui_));
+      FROM_HERE,
+      base::BindRepeating(&BrowserUiInterface::OnAssetsComponentReady,
+                          weak_browser_ui_));
 }
 
 void VrGLThread::ShowSoftInput(bool show) {
   DCHECK(OnMainThread());
   task_runner()->PostTask(
       FROM_HERE, base::BindRepeating(&BrowserUiInterface::ShowSoftInput,
-                                     browser_ui_, show));
+                                     weak_browser_ui_, show));
 }
 
-void VrGLThread::UpdateWebInputSelectionIndices(int selection_start,
-                                                int selection_end) {
-  DCHECK(OnMainThread());
+void VrGLThread::UpdateWebInputIndices(int selection_start,
+                                       int selection_end,
+                                       int composition_start,
+                                       int composition_end) {
   task_runner()->PostTask(
       FROM_HERE,
-      base::BindRepeating(&BrowserUiInterface::UpdateWebInputSelectionIndices,
-                          browser_ui_, selection_start, selection_end));
-}
-
-void VrGLThread::UpdateWebInputCompositionIndices(int composition_start,
-                                                  int composition_end) {
-  DCHECK(OnMainThread());
-  task_runner()->PostTask(
-      FROM_HERE,
-      base::BindRepeating(&BrowserUiInterface::UpdateWebInputCompositionIndices,
-                          browser_ui_, composition_start, composition_end));
-}
-
-void VrGLThread::UpdateWebInputText(const base::string16& text) {
-  DCHECK(OnMainThread());
-  task_runner()->PostTask(
-      FROM_HERE, base::BindRepeating(&BrowserUiInterface::UpdateWebInputText,
-                                     browser_ui_, text));
+      base::BindRepeating(&BrowserUiInterface::UpdateWebInputIndices,
+                          weak_browser_ui_, selection_start, selection_end,
+                          composition_start, composition_end));
 }
 
 bool VrGLThread::OnMainThread() const {

@@ -104,6 +104,7 @@ CONTENT_EXPORT extern const base::Feature kUserActivationV2;
 CONTENT_EXPORT extern const base::Feature kV8ContextSnapshot;
 CONTENT_EXPORT extern const base::Feature kV8BackgroundCompile;
 CONTENT_EXPORT extern const base::Feature kV8VmFuture;
+CONTENT_EXPORT extern const base::Feature kVrWebInputEditing;
 CONTENT_EXPORT extern const base::Feature kCodeCacheAfterExecute;
 CONTENT_EXPORT extern const base::Feature kVibrateRequiresUserGesture;
 CONTENT_EXPORT extern const base::Feature kWebAssembly;
