@@ -68,6 +68,7 @@ const char* MinimalCTest(void) {
             MojoGetMessageContext(message, &context,
                                   MOJO_GET_MESSAGE_CONTEXT_FLAG_RELEASE));
   EXPECT_EQ(42, context);
+  EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(handle0));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(handle1));
