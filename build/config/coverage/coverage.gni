@@ -16,11 +16,10 @@ declare_args() {
 assert(!use_clang_coverage || is_clang,
        "Clang Source-based Code Coverage requires clang.")
 
-assert(!(use_clang_coverage && is_debug && is_component_build),
-       "If use_clang_coverage is true and is_debug is true (is_debug " +
-           "defaults to true), then is_component_build must be false.$0x0A" +
-           "Try adding is_component_build=false to your GN args.")
-
 assert(
     !(use_clang_coverage && is_component_build),
-    "Clang Source-based Code Coverage is incompatible with is_component_build.")
+    "Clang Source-based Code Coverage requires \"is_component_build=false\" " +
+        "flag because: There will be no coverage info for libraries in " +
+        "component builds and \"is_component_build\" is set to true by " +
+        "\"is_debug\" unless it is explicitly set to false.$0x0ATry adding " +
+        "\"is_component_build=false\" to your GN args.")
