@@ -770,6 +770,7 @@ test("content_browsertests") {
     "../browser/net_info_browsertest.cc",
     "../browser/network_service_browsertest.cc",
     "../browser/network_service_restart_browsertest.cc",
+    "../browser/oop_browsertest.cc",
     "../browser/payments/payment_app_browsertest.cc",
     "../browser/pointer_lock_browsertest.cc",
     "../browser/pointer_lock_browsertest.h",
