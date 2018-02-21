@@ -25,6 +25,7 @@ class PLATFORM_EXPORT LazyNow {
 
   explicit LazyNow(base::TickClock* tick_clock) : tick_clock_(tick_clock) {}
 
+  // Result will not be updated on any subsesequent calls.
   base::TimeTicks Now();
 
  private:

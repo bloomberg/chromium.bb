@@ -5,7 +5,6 @@
 #include "platform/scheduler/base/lazy_now.h"
 
 #include "base/time/tick_clock.h"
-#include "platform/scheduler/base/task_queue_manager.h"
 
 namespace blink {
 namespace scheduler {
