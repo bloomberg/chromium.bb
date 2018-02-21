@@ -189,7 +189,7 @@ class BrowserContextServiceManagerConnectionHolder
   DISALLOW_COPY_AND_ASSIGN(BrowserContextServiceManagerConnectionHolder);
 };
 
-base::WeakPtr<storage::BlobStorageContext> BlobStorageContextGetter(
+base::WeakPtr<storage::BlobStorageContext> BlobStorageContextGetterForBrowser(
     scoped_refptr<ChromeBlobStorageContext> blob_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return blob_context->context()->AsWeakPtr();
@@ -365,7 +365,8 @@ BrowserContext::BlobContextGetter BrowserContext::GetBlobStorageContext(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_refptr<ChromeBlobStorageContext> chrome_blob_context =
       ChromeBlobStorageContext::GetFor(browser_context);
-  return base::BindRepeating(&BlobStorageContextGetter, chrome_blob_context);
+  return base::BindRepeating(&BlobStorageContextGetterForBrowser,
+                             chrome_blob_context);
 }
 
 // static
