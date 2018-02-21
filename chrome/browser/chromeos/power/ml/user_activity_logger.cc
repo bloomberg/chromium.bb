@@ -15,8 +15,6 @@ namespace chromeos {
 namespace power {
 namespace ml {
 
-constexpr int kIdleDelaySeconds = 10;
-
 UserActivityLogger::UserActivityLogger(
     UserActivityLoggerDelegate* delegate,
     IdleEventNotifier* idle_event_notifier,
@@ -34,7 +32,6 @@ UserActivityLogger::UserActivityLogger(
       session_manager_(session_manager),
       binding_(this, std::move(request)),
       user_manager_(user_manager),
-      idle_delay_(base::TimeDelta::FromSeconds(kIdleDelaySeconds)),
       weak_ptr_factory_(this) {
   DCHECK(logger_delegate_);
   DCHECK(idle_event_notifier);
@@ -74,10 +71,6 @@ void UserActivityLogger::LidEventReceived(
     chromeos::PowerManagerClient::LidState state,
     const base::TimeTicks& /* timestamp */) {
   lid_state_ = state;
-  if (lid_state_ == chromeos::PowerManagerClient::LidState::CLOSED) {
-    MaybeLogEvent(UserActivityEvent::Event::OFF,
-                  UserActivityEvent::Event::LID_CLOSED);
-  }
 }
 
 void UserActivityLogger::PowerChanged(
@@ -108,17 +101,55 @@ void UserActivityLogger::ScreenIdleStateChanged(
     const power_manager::ScreenIdleState& proto) {
   if (proto.off()) {
     screen_idle_timer_.Start(
-        FROM_HERE, idle_delay_,
+        FROM_HERE, kIdleDelay,
         base::Bind(&UserActivityLogger::MaybeLogEvent, base::Unretained(this),
                    UserActivityEvent::Event::TIMEOUT,
                    UserActivityEvent::Event::SCREEN_OFF));
   }
 }
 
-void UserActivityLogger::SuspendDone(
-    const base::TimeDelta& /* sleep_duration */) {
-  MaybeLogEvent(UserActivityEvent::Event::TIMEOUT,
-                UserActivityEvent::Event::IDLE_SLEEP);
+void UserActivityLogger::SuspendImminent(
+    power_manager::SuspendImminent::Reason reason) {
+  suspend_reason_ = reason;
+}
+
+void UserActivityLogger::SuspendDone(const base::TimeDelta& sleep_duration) {
+  if (!suspend_reason_)
+    return;
+
+  if (sleep_duration < kMinSuspendDuration) {
+    // 1. If reason_ is IDLE: user quickly woke up the computer hence
+    // it's not a TIMEOUT event but a REACTIVATE event.
+    // 2. If reason_ is LID_CLOSED: user closed the lid and then
+    // quickly opened it hence it's not an OFF event but a REACTIVATE event.
+    // 3. If reason_ is OTHER: user initiated a suspend and then cancelled
+    // it hence it's not an OFF event but a REACTIVATE event.
+    // In any case, when sleep duration is short, we treat the event as a
+    // REACTIVATE event.
+    MaybeLogEvent(UserActivityEvent::Event::REACTIVATE,
+                  UserActivityEvent::Event::USER_ACTIVITY);
+    return;
+  }
+
+  switch (suspend_reason_.value()) {
+    case power_manager::SuspendImminent_Reason_IDLE:
+      MaybeLogEvent(UserActivityEvent::Event::TIMEOUT,
+                    UserActivityEvent::Event::IDLE_SLEEP);
+      break;
+    case power_manager::SuspendImminent_Reason_LID_CLOSED:
+      MaybeLogEvent(UserActivityEvent::Event::OFF,
+                    UserActivityEvent::Event::LID_CLOSED);
+      break;
+    case power_manager::SuspendImminent_Reason_OTHER:
+      MaybeLogEvent(UserActivityEvent::Event::OFF,
+                    UserActivityEvent::Event::MANUAL_SLEEP);
+      break;
+    default:
+      // We don't track other suspend reason.
+      break;
+  }
+
+  suspend_reason_ = base::nullopt;
 }
 
 void UserActivityLogger::InactivityDelaysChanged(
@@ -146,6 +177,12 @@ void UserActivityLogger::OnSessionStateChanged() {
                   UserActivityEvent::Event::SCREEN_LOCK);
   }
 }
+
+// static
+constexpr base::TimeDelta UserActivityLogger::kIdleDelay;
+
+// static
+constexpr base::TimeDelta UserActivityLogger::kMinSuspendDuration;
 
 void UserActivityLogger::OnReceiveSwitchStates(
     base::Optional<chromeos::PowerManagerClient::SwitchStates> switch_states) {

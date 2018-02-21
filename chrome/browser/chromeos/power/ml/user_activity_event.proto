@@ -46,6 +46,7 @@ message UserActivityEvent {
       SCREEN_OFF = 7;
       SCREEN_LOCK = 8;
       IDLE_SLEEP = 9;
+      MANUAL_SLEEP = 10;
     }
     optional Reason reason = 2;
 
