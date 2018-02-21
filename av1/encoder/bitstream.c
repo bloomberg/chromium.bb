@@ -3223,11 +3223,12 @@ static void write_film_grain_params(AV1_COMMON *const cm,
     aom_wb_write_literal(wb, pars->scaling_points_y[i][1], 8);
   }
 
-  aom_wb_write_bit(wb, pars->chroma_scaling_from_luma);
+  if (!cm->seq_params.monochrome)
+    aom_wb_write_bit(wb, pars->chroma_scaling_from_luma);
 
-  if (pars->chroma_scaling_from_luma) {
-    assert(pars->num_cb_points == 0);
-    assert(pars->num_cr_points == 0);
+  if (cm->seq_params.monochrome || pars->chroma_scaling_from_luma) {
+    pars->num_cb_points = 0;
+    pars->num_cr_points = 0;
   } else {
     aom_wb_write_literal(wb, pars->num_cb_points, 4);  // max 10
     for (int i = 0; i < pars->num_cb_points; i++) {
@@ -3251,7 +3252,8 @@ static void write_film_grain_params(AV1_COMMON *const cm,
   aom_wb_write_literal(wb, pars->ar_coeff_lag, 2);
 
   int num_pos_luma = 2 * pars->ar_coeff_lag * (pars->ar_coeff_lag + 1);
-  int num_pos_chroma = num_pos_luma + 1;
+  int num_pos_chroma = num_pos_luma;
+  if (pars->num_y_points > 0) ++num_pos_chroma;
 
   if (pars->num_y_points)
     for (int i = 0; i < num_pos_luma; i++)

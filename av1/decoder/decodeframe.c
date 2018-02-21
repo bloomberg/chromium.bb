@@ -2207,9 +2207,10 @@ void av1_read_film_grain_params(AV1_COMMON *cm,
     pars->scaling_points_y[i][1] = aom_rb_read_literal(rb, 8);
   }
 
-  pars->chroma_scaling_from_luma = aom_rb_read_bit(rb);
+  if (!cm->seq_params.monochrome)
+    pars->chroma_scaling_from_luma = aom_rb_read_bit(rb);
 
-  if (pars->chroma_scaling_from_luma) {
+  if (cm->seq_params.monochrome || pars->chroma_scaling_from_luma) {
     pars->num_cb_points = 0;
     pars->num_cr_points = 0;
   } else {
@@ -2253,7 +2254,8 @@ void av1_read_film_grain_params(AV1_COMMON *cm,
   pars->ar_coeff_lag = aom_rb_read_literal(rb, 2);
 
   int num_pos_luma = 2 * pars->ar_coeff_lag * (pars->ar_coeff_lag + 1);
-  int num_pos_chroma = num_pos_luma + 1;
+  int num_pos_chroma = num_pos_luma;
+  if (pars->num_y_points > 0) ++num_pos_chroma;
 
   if (pars->num_y_points)
     for (int i = 0; i < num_pos_luma; i++)

@@ -246,7 +246,8 @@ static void init_arrays(aom_film_grain_t *params, int luma_stride,
   memset(scaling_lut_cr, 0, sizeof(*scaling_lut_cr) * 256);
 
   int num_pos_luma = 2 * params->ar_coeff_lag * (params->ar_coeff_lag + 1);
-  int num_pos_chroma = num_pos_luma + 1;
+  int num_pos_chroma = num_pos_luma;
+  if (params->num_y_points > 0) ++num_pos_chroma;
 
   int **pred_pos_luma;
   int **pred_pos_chroma;
@@ -292,9 +293,11 @@ static void init_arrays(aom_film_grain_t *params, int luma_stride,
     ++pos_ar_index;
   }
 
-  pred_pos_chroma[pos_ar_index][0] = 0;
-  pred_pos_chroma[pos_ar_index][1] = 0;
-  pred_pos_chroma[pos_ar_index][2] = 1;
+  if (params->num_y_points > 0) {
+    pred_pos_chroma[pos_ar_index][0] = 0;
+    pred_pos_chroma[pos_ar_index][1] = 0;
+    pred_pos_chroma[pos_ar_index][2] = 1;
+  }
 
   *pred_pos_luma_p = pred_pos_luma;
   *pred_pos_chroma_p = pred_pos_chroma;
@@ -385,6 +388,8 @@ static void generate_luma_grain_block(
     aom_film_grain_t *params, int **pred_pos_luma, int *luma_grain_block,
     int luma_block_size_y, int luma_block_size_x, int luma_grain_stride,
     int left_pad, int top_pad, int right_pad, int bottom_pad) {
+  if (params->num_y_points == 0) return;
+
   int bit_depth = params->bit_depth;
   int gauss_sec_shift = 12 - bit_depth + params->grain_scale_shift;
 
@@ -424,20 +429,22 @@ static void generate_chroma_grain_blocks(
   int bit_depth = params->bit_depth;
   int gauss_sec_shift = 12 - bit_depth + params->grain_scale_shift;
 
-  int num_pos_chroma =
-      2 * params->ar_coeff_lag * (params->ar_coeff_lag + 1) + 1;
+  int num_pos_chroma = 2 * params->ar_coeff_lag * (params->ar_coeff_lag + 1);
+  if (params->num_y_points > 0) ++num_pos_chroma;
   int rounding_offset = (1 << (params->ar_coeff_shift - 1));
 
   for (int i = 0; i < chroma_block_size_y; i++)
     for (int j = 0; j < chroma_block_size_x; j++) {
-      cb_grain_block[i * chroma_grain_stride + j] =
-          (gaussian_sequence[get_random_number(gauss_bits)] +
-           ((1 << gauss_sec_shift) >> 1)) >>
-          gauss_sec_shift;
-      cr_grain_block[i * chroma_grain_stride + j] =
-          (gaussian_sequence[get_random_number(gauss_bits)] +
-           ((1 << gauss_sec_shift) >> 1)) >>
-          gauss_sec_shift;
+      if (params->num_cb_points)
+        cb_grain_block[i * chroma_grain_stride + j] =
+            (gaussian_sequence[get_random_number(gauss_bits)] +
+             ((1 << gauss_sec_shift) >> 1)) >>
+            gauss_sec_shift;
+      if (params->num_cr_points)
+        cr_grain_block[i * chroma_grain_stride + j] =
+            (gaussian_sequence[get_random_number(gauss_bits)] +
+             ((1 << gauss_sec_shift) >> 1)) >>
+            gauss_sec_shift;
     }
 
   for (int i = top_pad; i < chroma_block_size_y - bottom_pad; i++)
@@ -480,14 +487,16 @@ static void generate_chroma_grain_blocks(
           exit(1);
         }
       }
-      cb_grain_block[i * chroma_grain_stride + j] =
-          clamp(cb_grain_block[i * chroma_grain_stride + j] +
-                    ((wsum_cb + rounding_offset) >> params->ar_coeff_shift),
-                grain_min, grain_max);
-      cr_grain_block[i * chroma_grain_stride + j] =
-          clamp(cr_grain_block[i * chroma_grain_stride + j] +
-                    ((wsum_cr + rounding_offset) >> params->ar_coeff_shift),
-                grain_min, grain_max);
+      if (params->num_cb_points)
+        cb_grain_block[i * chroma_grain_stride + j] =
+            clamp(cb_grain_block[i * chroma_grain_stride + j] +
+                      ((wsum_cb + rounding_offset) >> params->ar_coeff_shift),
+                  grain_min, grain_max);
+      if (params->num_cr_points)
+        cr_grain_block[i * chroma_grain_stride + j] =
+            clamp(cr_grain_block[i * chroma_grain_stride + j] +
+                      ((wsum_cr + rounding_offset) >> params->ar_coeff_shift),
+                  grain_min, grain_max);
     }
 }
 
@@ -545,6 +554,10 @@ static void add_noise_to_block(aom_film_grain_t *params, uint8_t *luma,
 
   int rounding_offset = (1 << (params->scaling_shift - 1));
 
+  int apply_y = params->num_y_points > 0 ? 1 : 0;
+  int apply_cb = params->num_cb_points > 0 ? 1 : 0;
+  int apply_cr = params->num_cr_points > 0 ? 1 : 0;
+
   if (params->chroma_scaling_from_luma) {
     cb_mult = 0;        // fixed scale
     cb_luma_mult = 64;  // fixed scale
@@ -573,71 +586,78 @@ static void add_noise_to_block(aom_film_grain_t *params, uint8_t *luma,
       int average_luma = (luma[(i << 1) * luma_stride + (j << 1)] +
                           luma[((i << 1)) * luma_stride + (j << 1) + 1] + 1) >>
                          1;
+      if (apply_y) {
+        luma[((i) << 1) * luma_stride + ((j) << 1)] = clamp(
+            luma[((i) << 1) * luma_stride + ((j) << 1)] +
+                ((scale_LUT(scaling_lut_y,
+                            luma[((i) << 1) * luma_stride + ((j) << 1)], 8) *
+                      luma_grain[(i << 1) * luma_grain_stride + (j << 1)] +
+                  rounding_offset) >>
+                 params->scaling_shift),
+            min_luma, max_luma);
+        luma[(((i) << 1) + 1) * luma_stride + ((j) << 1)] = clamp(
+            luma[(((i) << 1) + 1) * luma_stride + ((j) << 1)] +
+                ((scale_LUT(scaling_lut_y,
+                            luma[(((i) << 1) + 1) * luma_stride + ((j) << 1)],
+                            8) *
+                      luma_grain[((i << 1) + 1) * luma_grain_stride +
+                                 (j << 1)] +
+                  rounding_offset) >>
+                 params->scaling_shift),
+            min_luma, max_luma);
+        luma[(((i) << 1)) * luma_stride + ((j) << 1) + 1] = clamp(
+            luma[(((i) << 1)) * luma_stride + ((j) << 1) + 1] +
+                ((scale_LUT(scaling_lut_y,
+                            luma[(((i) << 1)) * luma_stride + ((j) << 1) + 1],
+                            8) *
+                      luma_grain[(i << 1) * luma_grain_stride + (j << 1) + 1] +
+                  rounding_offset) >>
+                 params->scaling_shift),
+            min_luma, max_luma);
+        luma[(((i) << 1) + 1) * luma_stride + ((j) << 1) + 1] = clamp(
+            luma[(((i) << 1) + 1) * luma_stride + ((j) << 1) + 1] +
+                ((scale_LUT(
+                      scaling_lut_y,
+                      luma[(((i) << 1) + 1) * luma_stride + ((j) << 1) + 1],
+                      8) *
+                      luma_grain[((i << 1) + 1) * luma_grain_stride + (j << 1) +
+                                 1] +
+                  rounding_offset) >>
+                 params->scaling_shift),
+            min_luma, max_luma);
+      }
 
-      luma[((i) << 1) * luma_stride + ((j) << 1)] = clamp(
-          luma[((i) << 1) * luma_stride + ((j) << 1)] +
-              ((scale_LUT(scaling_lut_y,
-                          luma[((i) << 1) * luma_stride + ((j) << 1)], 8) *
-                    luma_grain[(i << 1) * luma_grain_stride + (j << 1)] +
-                rounding_offset) >>
-               params->scaling_shift),
-          min_luma, max_luma);
-      luma[(((i) << 1) + 1) * luma_stride + ((j) << 1)] = clamp(
-          luma[(((i) << 1) + 1) * luma_stride + ((j) << 1)] +
-              ((scale_LUT(scaling_lut_y,
-                          luma[(((i) << 1) + 1) * luma_stride + ((j) << 1)],
-                          8) *
-                    luma_grain[((i << 1) + 1) * luma_grain_stride + (j << 1)] +
-                rounding_offset) >>
-               params->scaling_shift),
-          min_luma, max_luma);
-      luma[(((i) << 1)) * luma_stride + ((j) << 1) + 1] = clamp(
-          luma[(((i) << 1)) * luma_stride + ((j) << 1) + 1] +
-              ((scale_LUT(scaling_lut_y,
-                          luma[(((i) << 1)) * luma_stride + ((j) << 1) + 1],
-                          8) *
-                    luma_grain[(i << 1) * luma_grain_stride + (j << 1) + 1] +
-                rounding_offset) >>
-               params->scaling_shift),
-          min_luma, max_luma);
-      luma[(((i) << 1) + 1) * luma_stride + ((j) << 1) + 1] = clamp(
-          luma[(((i) << 1) + 1) * luma_stride + ((j) << 1) + 1] +
-              ((scale_LUT(scaling_lut_y,
-                          luma[(((i) << 1) + 1) * luma_stride + ((j) << 1) + 1],
-                          8) *
-                    luma_grain[((i << 1) + 1) * luma_grain_stride + (j << 1) +
-                               1] +
-                rounding_offset) >>
-               params->scaling_shift),
-          min_luma, max_luma);
+      if (apply_cb) {
+        cb[i * chroma_stride + j] = clamp(
+            cb[i * chroma_stride + j] +
+                ((scale_LUT(scaling_lut_cb,
+                            clamp(((average_luma * cb_luma_mult +
+                                    cb_mult * cb[i * chroma_stride + j]) >>
+                                   6) +
+                                      cb_offset,
+                                  0, (256 << (bit_depth - 8)) - 1),
+                            8) *
+                      cb_grain[i * chroma_grain_stride + j] +
+                  rounding_offset) >>
+                 params->scaling_shift),
+            min_chroma, max_chroma);
+      }
 
-      cb[i * chroma_stride + j] =
-          clamp(cb[i * chroma_stride + j] +
-                    ((scale_LUT(scaling_lut_cb,
-                                clamp(((average_luma * cb_luma_mult +
-                                        cb_mult * cb[i * chroma_stride + j]) >>
-                                       6) +
-                                          cb_offset,
-                                      0, (256 << (bit_depth - 8)) - 1),
-                                8) *
-                          cb_grain[i * chroma_grain_stride + j] +
-                      rounding_offset) >>
-                     params->scaling_shift),
-                min_chroma, max_chroma);
-
-      cr[i * chroma_stride + j] =
-          clamp(cr[i * chroma_stride + j] +
-                    ((scale_LUT(scaling_lut_cr,
-                                clamp(((average_luma * cr_luma_mult +
-                                        cr_mult * cr[i * chroma_stride + j]) >>
-                                       6) +
-                                          cr_offset,
-                                      0, (256 << (bit_depth - 8)) - 1),
-                                8) *
-                          cr_grain[i * chroma_grain_stride + j] +
-                      rounding_offset) >>
-                     params->scaling_shift),
-                min_chroma, max_chroma);
+      if (apply_cr) {
+        cr[i * chroma_stride + j] = clamp(
+            cr[i * chroma_stride + j] +
+                ((scale_LUT(scaling_lut_cr,
+                            clamp(((average_luma * cr_luma_mult +
+                                    cr_mult * cr[i * chroma_stride + j]) >>
+                                   6) +
+                                      cr_offset,
+                                  0, (256 << (bit_depth - 8)) - 1),
+                            8) *
+                      cr_grain[i * chroma_grain_stride + j] +
+                  rounding_offset) >>
+                 params->scaling_shift),
+            min_chroma, max_chroma);
+      }
     }
   }
 }
@@ -660,6 +680,10 @@ static void add_noise_to_block_hbd(aom_film_grain_t *params, uint16_t *luma,
   int cr_offset = (params->cr_offset << (bit_depth - 8)) - (1 << bit_depth);
 
   int rounding_offset = (1 << (params->scaling_shift - 1));
+
+  int apply_y = params->num_y_points > 0 ? 1 : 0;
+  int apply_cb = params->num_cb_points > 0 ? 1 : 0;
+  int apply_cr = params->num_cr_points > 0 ? 1 : 0;
 
   if (params->chroma_scaling_from_luma) {
     cb_mult = 0;        // fixed scale
@@ -689,72 +713,77 @@ static void add_noise_to_block_hbd(aom_film_grain_t *params, uint16_t *luma,
       int average_luma = (luma[(i << 1) * luma_stride + (j << 1)] +
                           luma[((i << 1)) * luma_stride + (j << 1) + 1] + 1) >>
                          1;
-
-      luma[((i) << 1) * luma_stride + ((j) << 1)] =
-          clamp(luma[((i) << 1) * luma_stride + ((j) << 1)] +
-                    ((scale_LUT(scaling_lut_y,
-                                luma[((i) << 1) * luma_stride + ((j) << 1)],
-                                bit_depth) *
-                          luma_grain[(i << 1) * luma_grain_stride + (j << 1)] +
-                      rounding_offset) >>
-                     params->scaling_shift),
-                min_luma, max_luma);
-      luma[(((i) << 1) + 1) * luma_stride + ((j) << 1)] = clamp(
-          luma[(((i) << 1) + 1) * luma_stride + ((j) << 1)] +
-              ((scale_LUT(scaling_lut_y,
-                          luma[(((i) << 1) + 1) * luma_stride + ((j) << 1)],
-                          bit_depth) *
-                    luma_grain[((i << 1) + 1) * luma_grain_stride + (j << 1)] +
-                rounding_offset) >>
-               params->scaling_shift),
-          min_luma, max_luma);
-      luma[(((i) << 1)) * luma_stride + ((j) << 1) + 1] = clamp(
-          luma[(((i) << 1)) * luma_stride + ((j) << 1) + 1] +
-              ((scale_LUT(scaling_lut_y,
-                          luma[(((i) << 1)) * luma_stride + ((j) << 1) + 1],
-                          bit_depth) *
-                    luma_grain[(i << 1) * luma_grain_stride + (j << 1) + 1] +
-                rounding_offset) >>
-               params->scaling_shift),
-          min_luma, max_luma);
-      luma[(((i) << 1) + 1) * luma_stride + ((j) << 1) + 1] = clamp(
-          luma[(((i) << 1) + 1) * luma_stride + ((j) << 1) + 1] +
-              ((scale_LUT(scaling_lut_y,
-                          luma[(((i) << 1) + 1) * luma_stride + ((j) << 1) + 1],
-                          bit_depth) *
-                    luma_grain[((i << 1) + 1) * luma_grain_stride + (j << 1) +
-                               1] +
-                rounding_offset) >>
-               params->scaling_shift),
-          min_luma, max_luma);
-
-      cb[i * chroma_stride + j] =
-          clamp(cb[i * chroma_stride + j] +
-                    ((scale_LUT(scaling_lut_cb,
-                                clamp(((average_luma * cb_luma_mult +
-                                        cb_mult * cb[i * chroma_stride + j]) >>
-                                       6) +
-                                          cb_offset,
-                                      0, (256 << (bit_depth - 8)) - 1),
-                                bit_depth) *
-                          cb_grain[i * chroma_grain_stride + j] +
-                      rounding_offset) >>
-                     params->scaling_shift),
-                min_chroma, max_chroma);
-
-      cr[i * chroma_stride + j] =
-          clamp(cr[i * chroma_stride + j] +
-                    ((scale_LUT(scaling_lut_cr,
-                                clamp(((average_luma * cr_luma_mult +
-                                        cr_mult * cr[i * chroma_stride + j]) >>
-                                       6) +
-                                          cr_offset,
-                                      0, (256 << (bit_depth - 8)) - 1),
-                                bit_depth) *
-                          cr_grain[i * chroma_grain_stride + j] +
-                      rounding_offset) >>
-                     params->scaling_shift),
-                min_chroma, max_chroma);
+      if (apply_y) {
+        luma[((i) << 1) * luma_stride + ((j) << 1)] = clamp(
+            luma[((i) << 1) * luma_stride + ((j) << 1)] +
+                ((scale_LUT(scaling_lut_y,
+                            luma[((i) << 1) * luma_stride + ((j) << 1)],
+                            bit_depth) *
+                      luma_grain[(i << 1) * luma_grain_stride + (j << 1)] +
+                  rounding_offset) >>
+                 params->scaling_shift),
+            min_luma, max_luma);
+        luma[(((i) << 1) + 1) * luma_stride + ((j) << 1)] = clamp(
+            luma[(((i) << 1) + 1) * luma_stride + ((j) << 1)] +
+                ((scale_LUT(scaling_lut_y,
+                            luma[(((i) << 1) + 1) * luma_stride + ((j) << 1)],
+                            bit_depth) *
+                      luma_grain[((i << 1) + 1) * luma_grain_stride +
+                                 (j << 1)] +
+                  rounding_offset) >>
+                 params->scaling_shift),
+            min_luma, max_luma);
+        luma[(((i) << 1)) * luma_stride + ((j) << 1) + 1] = clamp(
+            luma[(((i) << 1)) * luma_stride + ((j) << 1) + 1] +
+                ((scale_LUT(scaling_lut_y,
+                            luma[(((i) << 1)) * luma_stride + ((j) << 1) + 1],
+                            bit_depth) *
+                      luma_grain[(i << 1) * luma_grain_stride + (j << 1) + 1] +
+                  rounding_offset) >>
+                 params->scaling_shift),
+            min_luma, max_luma);
+        luma[(((i) << 1) + 1) * luma_stride + ((j) << 1) + 1] = clamp(
+            luma[(((i) << 1) + 1) * luma_stride + ((j) << 1) + 1] +
+                ((scale_LUT(
+                      scaling_lut_y,
+                      luma[(((i) << 1) + 1) * luma_stride + ((j) << 1) + 1],
+                      bit_depth) *
+                      luma_grain[((i << 1) + 1) * luma_grain_stride + (j << 1) +
+                                 1] +
+                  rounding_offset) >>
+                 params->scaling_shift),
+            min_luma, max_luma);
+      }
+      if (apply_cb) {
+        cb[i * chroma_stride + j] = clamp(
+            cb[i * chroma_stride + j] +
+                ((scale_LUT(scaling_lut_cb,
+                            clamp(((average_luma * cb_luma_mult +
+                                    cb_mult * cb[i * chroma_stride + j]) >>
+                                   6) +
+                                      cb_offset,
+                                  0, (256 << (bit_depth - 8)) - 1),
+                            bit_depth) *
+                      cb_grain[i * chroma_grain_stride + j] +
+                  rounding_offset) >>
+                 params->scaling_shift),
+            min_chroma, max_chroma);
+      }
+      if (apply_cr) {
+        cr[i * chroma_stride + j] = clamp(
+            cr[i * chroma_stride + j] +
+                ((scale_LUT(scaling_lut_cr,
+                            clamp(((average_luma * cr_luma_mult +
+                                    cr_mult * cr[i * chroma_stride + j]) >>
+                                   6) +
+                                      cr_offset,
+                                  0, (256 << (bit_depth - 8)) - 1),
+                            bit_depth) *
+                      cr_grain[i * chroma_grain_stride + j] +
+                  rounding_offset) >>
+                 params->scaling_shift),
+            min_chroma, max_chroma);
+      }
     }
   }
 }
