@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+PASS Can set 'transform' to CSS-wide keywords
 PASS Can set 'transform' to the 'none' keyword
 FAIL Can set 'transform' to a transform assert_equals: expected "CSSTransformValue" but got "CSSKeywordValue"
 PASS Setting 'transform' to a length throws TypeError
