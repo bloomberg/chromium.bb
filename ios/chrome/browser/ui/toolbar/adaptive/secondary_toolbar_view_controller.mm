@@ -33,4 +33,9 @@
   self.view.toolsMenuButton.guideName = kTabSwitcherGuide;
 }
 
+- (void)didMoveToParentViewController:(UIViewController*)parent {
+  [super didMoveToParentViewController:parent];
+  ConstrainNamedGuideToView(kSecondaryToolbar, self.view);
+}
+
 @end
