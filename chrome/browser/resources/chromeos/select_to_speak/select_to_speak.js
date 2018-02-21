@@ -262,6 +262,9 @@ var SelectToSpeak = function() {
   /** @private {boolean} */
   this.visible_ = true;
 
+  /** @private {boolean} */
+  this.scrollToSpokenNode_ = false;
+
   /**
    * The interval ID from a call to setInterval, which is set whenever
    * speech is in progress.
@@ -569,8 +572,24 @@ SelectToSpeak.prototype = {
     } else {
       this.startSpeechQueue_(nodes, firstPosition.offset, lastPosition.offset);
     }
-
+    this.initializeScrollingToOffscreenNodes_(focusedNode.root);
     this.recordStartEvent_(START_SPEECH_METHOD_KEYSTROKE);
+  },
+
+  initializeScrollingToOffscreenNodes_: function(root) {
+    this.scrollToSpokenNode_ = true;
+    let listener = (event) => {
+      if (event.eventFrom != 'action') {
+        // User initiated event. Cancel all future scrolling to spoken nodes.
+        // If the user wants a certain scroll position we will respect that.
+        this.scrollToSpokenNode_ = false;
+
+        // Now remove this event listener, we no longer need it.
+        root.removeEventListener(
+            EventType.SCROLL_POSITION_CHANGED, listener, false);
+      }
+    };
+    root.addEventListener(EventType.SCROLL_POSITION_CHANGED, listener, false);
   },
 
   /**
@@ -606,6 +625,7 @@ SelectToSpeak.prototype = {
     this.currentNodeWord_ = null;
     clearInterval(this.intervalId_);
     this.intervalId_ = undefined;
+    this.scrollToSpokenNode_ = false;
   },
 
   /**
@@ -982,6 +1002,9 @@ SelectToSpeak.prototype = {
         findInlineTextNodeByCharacterIndex(
             nodeGroupItem.node, this.currentNodeWord_.start) :
         nodeGroupItem.node;
+    if (this.scrollToSpokenNode_ && node.state.offscreen) {
+      node.makeVisible();
+    }
     if (this.wordHighlight_ && this.currentNodeWord_ != null) {
       // Only show the highlight if this is an inline text box.
       // Otherwise we'd be highlighting entire nodes, like images.
