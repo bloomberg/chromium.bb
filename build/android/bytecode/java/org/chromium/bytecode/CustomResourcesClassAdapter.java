@@ -20,7 +20,6 @@ import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
 import static org.objectweb.asm.Opcodes.RETURN;
 
 import static org.chromium.bytecode.TypeUtils.ASSET_MANAGER;
-import static org.chromium.bytecode.TypeUtils.BASE_CHROMIUM_APPLICATION;
 import static org.chromium.bytecode.TypeUtils.BOOLEAN;
 import static org.chromium.bytecode.TypeUtils.BUILD_HOOKS_ANDROID;
 import static org.chromium.bytecode.TypeUtils.CONFIGURATION;
@@ -74,8 +73,7 @@ class CustomResourcesClassAdapter extends ClassVisitor {
             TypeUtils.getMethodSignature("setTheme", VOID, INT));
 
     private static final List<String> EXCEPTED_CLASS_METHODS = Arrays.asList(
-            DISPLAY_LEAK_ACTIVITY + TypeUtils.getMethodSignature("setTheme", VOID, INT),
-            BASE_CHROMIUM_APPLICATION + TypeUtils.getMethodSignature("getResources", RESOURCES));
+            DISPLAY_LEAK_ACTIVITY + TypeUtils.getMethodSignature("setTheme", VOID, INT));
 
     private boolean mShouldTransform;
     private String mClassName;

@@ -5,18 +5,21 @@
 package org.chromium.chrome.browser;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.BaseChromiumApplication;
+import org.chromium.base.BuildConfig;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.DiscardableReferencePool;
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.multidex.ChromiumMultiDexInstaller;
 import org.chromium.build.BuildHooks;
 import org.chromium.build.BuildHooksAndroid;
 import org.chromium.build.BuildHooksConfig;
@@ -36,7 +39,7 @@ import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
  * chrome layer.
  */
 @MainDex
-public class ChromeApplication extends BaseChromiumApplication {
+public class ChromeApplication extends Application {
     private static final String COMMAND_LINE_FILE = "chrome-command-line";
     private static final String TAG = "ChromiumApplication";
 
@@ -49,6 +52,10 @@ public class ChromeApplication extends BaseChromiumApplication {
     protected void attachBaseContext(Context context) {
         UmaUtils.recordMainEntryPointTime();
         super.attachBaseContext(context);
+        checkAppBeingReplaced();
+        if (BuildConfig.isMultidexEnabled()) {
+            ChromiumMultiDexInstaller.install(this);
+        }
         ContextUtils.initApplicationContext(this);
 
         if (ContextUtils.isMainProcess()) {
@@ -80,6 +87,17 @@ public class ChromeApplication extends BaseChromiumApplication {
                 BuildHooks.setReportAssertionCallback(
                         PureJavaExceptionReporter::reportJavaException);
             }
+        }
+    }
+
+    /** Ensure this application object is not out-of-date. */
+    private void checkAppBeingReplaced() {
+        // During app update the old apk can still be triggered by broadcasts and spin up an
+        // out-of-date application. Kill old applications in this bad state. See
+        // http://crbug.com/658130 for more context and http://b.android.com/56296 for the bug.
+        if (getResources() == null) {
+            Log.e(TAG, "getResources() null, closing app.");
+            System.exit(0);
         }
     }
 

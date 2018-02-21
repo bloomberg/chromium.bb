@@ -42,7 +42,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.multidex.ShadowMultiDex;
 import org.robolectric.util.ReflectionHelpers;
 
-import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
@@ -51,7 +50,7 @@ import org.chromium.chrome.browser.media.remote.MediaRouteController.UiListener;
 
 /** Tests for {@link AbstractMediaRouteController}. */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
+@Config(manifest = Config.NONE,
         shadows = {AbstractMediaRouteControllerTest.ShadowMediaRouter.class, ShadowMultiDex.class})
 public class AbstractMediaRouteControllerTest {
     /** Reset the environment before each test. */

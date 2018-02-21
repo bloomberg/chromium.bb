@@ -58,7 +58,6 @@ import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.multidex.ShadowMultiDex;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.net.HttpNegotiateAuthenticator.GetAccountsCallback;
 import org.chromium.net.HttpNegotiateAuthenticator.RequestData;
@@ -70,7 +69,7 @@ import java.util.List;
  * Robolectric tests for HttpNegotiateAuthenticator
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
+@Config(manifest = Config.NONE,
         shadows = {HttpNegotiateAuthenticatorTest.ExtendedShadowAccountManager.class,
                 ShadowMultiDex.class})
 public class HttpNegotiateAuthenticatorTest {
