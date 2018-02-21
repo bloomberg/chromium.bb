@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -35,10 +36,6 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_signin_manager.h"
-#include "components/signin/core/browser/signin_pref_names.h"
-#include "components/signin/core/browser/test_signin_client.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/ukm/ukm_source.h"
 #include "components/webdata/common/web_data_results.h"
@@ -207,7 +204,6 @@ class AutofillMetricsTest : public testing::Test {
   void TearDown() override;
 
  protected:
-  void EnableWalletSync();
   void CreateAmbiguousProfiles();
 
   // Removes all existing profiles and creates one profile.
@@ -226,9 +222,6 @@ class AutofillMetricsTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
   MockAutofillClient autofill_client_;
-  std::unique_ptr<AccountTrackerService> account_tracker_;
-  std::unique_ptr<FakeSigninManagerBase> signin_manager_;
-  std::unique_ptr<TestSigninClient> signin_client_;
   std::unique_ptr<TestAutofillDriver> autofill_driver_;
   std::unique_ptr<TestAutofillManager> autofill_manager_;
   std::unique_ptr<TestPersonalDataManager> personal_data_;
@@ -248,21 +241,9 @@ AutofillMetricsTest::~AutofillMetricsTest() {
 void AutofillMetricsTest::SetUp() {
   autofill_client_.SetPrefs(test::PrefServiceForTesting());
 
-  // Set up identity services.
-  signin_client_ =
-      std::make_unique<TestSigninClient>(autofill_client_.GetPrefs());
-  account_tracker_ = std::make_unique<AccountTrackerService>();
-  account_tracker_->Initialize(signin_client_.get());
-
-  signin_manager_ = std::make_unique<FakeSigninManagerBase>(
-      signin_client_.get(), account_tracker_.get());
-  signin_manager_->Initialize(autofill_client_.GetPrefs());
-
   personal_data_ = std::make_unique<TestPersonalDataManager>();
   personal_data_->set_database(autofill_client_.GetDatabase());
   personal_data_->SetPrefService(autofill_client_.GetPrefs());
-  personal_data_->set_account_tracker(account_tracker_.get());
-  personal_data_->set_signin_manager(signin_manager_.get());
   autofill_driver_ = std::make_unique<TestAutofillDriver>();
   autofill_manager_ = std::make_unique<TestAutofillManager>(
       autofill_driver_.get(), &autofill_client_, personal_data_.get());
@@ -281,17 +262,8 @@ void AutofillMetricsTest::TearDown() {
   autofill_manager_.reset();
   autofill_driver_.reset();
   personal_data_.reset();
-  signin_manager_->Shutdown();
-  signin_manager_.reset();
-  account_tracker_->Shutdown();
-  account_tracker_.reset();
-  signin_client_.reset();
   test::ReenableSystemServices();
   test_ukm_recorder_.Purge();
-}
-
-void AutofillMetricsTest::EnableWalletSync() {
-  signin_manager_->SetAuthenticatedAccountInfo("12345", "syncuser@example.com");
 }
 
 void AutofillMetricsTest::CreateAmbiguousProfiles() {
@@ -2462,8 +2434,7 @@ TEST_F(AutofillMetricsTest, AutofillIsEnabledAtStartup) {
   base::HistogramTester histogram_tester;
   personal_data_->SetAutofillEnabled(true);
   personal_data_->Init(autofill_client_.GetDatabase(),
-                       autofill_client_.GetPrefs(), account_tracker_.get(),
-                       signin_manager_.get(), false);
+                       autofill_client_.GetPrefs(), nullptr, nullptr, false);
   histogram_tester.ExpectUniqueSample("Autofill.IsEnabled.Startup", true, 1);
 }
 
@@ -2472,8 +2443,7 @@ TEST_F(AutofillMetricsTest, AutofillIsDisabledAtStartup) {
   base::HistogramTester histogram_tester;
   personal_data_->SetAutofillEnabled(false);
   personal_data_->Init(autofill_client_.GetDatabase(),
-                       autofill_client_.GetPrefs(), account_tracker_.get(),
-                       signin_manager_.get(), false);
+                       autofill_client_.GetPrefs(), nullptr, nullptr, false);
   histogram_tester.ExpectUniqueSample("Autofill.IsEnabled.Startup", false, 1);
 }
 
@@ -3139,7 +3109,6 @@ TEST_F(AutofillMetricsTest, CreditCardShownFormEvents) {
 
 // Test that we log selected form event for credit cards.
 TEST_F(AutofillMetricsTest, CreditCardSelectedFormEvents) {
-  EnableWalletSync();
   // Creating all kinds of cards.
   RecreateCreditCards(true /* include_local_credit_card */,
                       true /* include_masked_server_credit_card */,
@@ -3381,7 +3350,6 @@ TEST_F(AutofillMetricsTest, CreditCardFilledFormEvents) {
 
 // Test that we log submitted form events for credit cards.
 TEST_F(AutofillMetricsTest, CreditCardGetRealPanDuration) {
-  EnableWalletSync();
   // Creating masked card
   RecreateCreditCards(false /* include_local_credit_card */,
                       true /* include_masked_server_credit_card */,
@@ -3453,7 +3421,6 @@ TEST_F(AutofillMetricsTest, CreditCardGetRealPanDuration) {
 
 TEST_F(AutofillMetricsTest,
        CreditCardSubmittedWithoutSelectingSuggestionsNoCard) {
-  EnableWalletSync();
   // Create a local card for testing, card number is 4111111111111111.
   RecreateCreditCards(true /* include_local_credit_card */,
                       false /* include_masked_server_credit_card */,
@@ -3496,7 +3463,6 @@ TEST_F(AutofillMetricsTest,
 
 TEST_F(AutofillMetricsTest,
        CreditCardSubmittedWithoutSelectingSuggestionsWrongSizeCard) {
-  EnableWalletSync();
   // Create a local card for testing, card number is 4111111111111111.
   RecreateCreditCards(true /* include_local_credit_card */,
                       false /* include_masked_server_credit_card */,
@@ -3538,7 +3504,6 @@ TEST_F(AutofillMetricsTest,
 
 TEST_F(AutofillMetricsTest,
        CreditCardSubmittedWithoutSelectingSuggestionsFailLuhnCheckCard) {
-  EnableWalletSync();
   // Create a local card for testing, card number is 4111111111111111.
   RecreateCreditCards(true /* include_local_credit_card */,
                       false /* include_masked_server_credit_card */,
@@ -3581,7 +3546,6 @@ TEST_F(AutofillMetricsTest,
 
 TEST_F(AutofillMetricsTest,
        CreditCardSubmittedWithoutSelectingSuggestionsUnknownCard) {
-  EnableWalletSync();
   // Create a local card for testing, card number is 4111111111111111.
   RecreateCreditCards(true /* include_local_credit_card */,
                       false /* include_masked_server_credit_card */,
@@ -3626,7 +3590,6 @@ TEST_F(AutofillMetricsTest,
 
 TEST_F(AutofillMetricsTest,
        CreditCardSubmittedWithoutSelectingSuggestionsKnownCard) {
-  EnableWalletSync();
   // Create a local card for testing, card number is 4111111111111111.
   RecreateCreditCards(true /* include_local_credit_card */,
                       false /* include_masked_server_credit_card */,
@@ -3671,7 +3634,6 @@ TEST_F(AutofillMetricsTest,
 
 TEST_F(AutofillMetricsTest,
        ShouldNotLogSubmitWithoutSelectingSuggestionsIfSuggestionFilled) {
-  EnableWalletSync();
   // Create a local card for testing, card number is 4111111111111111.
   RecreateCreditCards(true /* include_local_credit_card */,
                       false /* include_masked_server_credit_card */,
@@ -3729,7 +3691,6 @@ TEST_F(AutofillMetricsTest,
 }
 
 TEST_F(AutofillMetricsTest, ShouldNotLogFormEventNoCardForAddressForm) {
-  EnableWalletSync();
   // Create a profile.
   RecreateProfile();
   // Set up our form data.
@@ -3769,7 +3730,6 @@ TEST_F(AutofillMetricsTest, ShouldNotLogFormEventNoCardForAddressForm) {
 
 // Test that we log submitted form events for credit cards.
 TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
-  EnableWalletSync();
   // Creating all kinds of cards.
   RecreateCreditCards(true /* include_local_credit_card */,
                       true /* include_masked_server_credit_card */,
@@ -4115,7 +4075,6 @@ TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
 // Test that we log "will submit" and "submitted" form events for credit
 // cards.
 TEST_F(AutofillMetricsTest, CreditCardWillSubmitFormEvents) {
-  EnableWalletSync();
   // Creating all kinds of cards.
   RecreateCreditCards(true /* include_local_credit_card */,
                       true /* include_masked_server_credit_card */,
@@ -4392,7 +4351,6 @@ TEST_F(AutofillMetricsTest, AddressInteractedFormEvents) {
 
 // Test that we log suggestion shown form events for address.
 TEST_F(AutofillMetricsTest, AddressShownFormEvents) {
-  EnableWalletSync();
   // Create a profile.
   RecreateProfile();
   // Set up our form data.
@@ -4483,7 +4441,6 @@ TEST_F(AutofillMetricsTest, AddressShownFormEvents) {
 
 // Test that we log filled form events for address.
 TEST_F(AutofillMetricsTest, AddressFilledFormEvents) {
-  EnableWalletSync();
   // Create a profile.
   RecreateProfile();
   // Set up our form data.
@@ -4550,7 +4507,6 @@ TEST_F(AutofillMetricsTest, AddressFilledFormEvents) {
 
 // Test that we log submitted form events for address.
 TEST_F(AutofillMetricsTest, AddressSubmittedFormEvents) {
-  EnableWalletSync();
   // Create a profile.
   RecreateProfile();
   // Set up our form data.
@@ -4750,7 +4706,6 @@ TEST_F(AutofillMetricsTest, AddressSubmittedFormEvents) {
 
 // Test that we log "will submit" and "submitted" form events for address.
 TEST_F(AutofillMetricsTest, AddressWillSubmitFormEvents) {
-  EnableWalletSync();
   // Create a profile.
   RecreateProfile();
   // Set up our form data.
@@ -4924,8 +4879,6 @@ TEST_F(AutofillMetricsTest, AddressWillSubmitFormEvents) {
 
 // Test that we log interacted form event for credit cards only once.
 TEST_F(AutofillMetricsTest, CreditCardFormEventsAreSegmented) {
-  EnableWalletSync();
-
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
@@ -5029,8 +4982,6 @@ TEST_F(AutofillMetricsTest, CreditCardFormEventsAreSegmented) {
 
 // Test that we log interacted form event for address only once.
 TEST_F(AutofillMetricsTest, AddressFormEventsAreSegmented) {
-  EnableWalletSync();
-
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
