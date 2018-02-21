@@ -619,11 +619,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // is used to determine whether the pre-rendering animation should be played
   // or not.
   BOOL _insertedTabWasPrerenderedTab;
-
-  // A pointer to the most recently presented UIDocumentMenuViewController.
-  // Used to work around https://crbug.com/801165.
-  __weak UIDocumentMenuViewController*
-      _lastPresentedUIDocumentMenuViewController;
 }
 
 // The browser's side swipe controller.  Lazily instantiated on the first call.
@@ -1779,18 +1774,21 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)dismissViewControllerAnimated:(BOOL)flag
                            completion:(void (^)())completion {
-  if (!base::ios::IsRunningOnIOS11OrLater() &&
-      _lastPresentedUIDocumentMenuViewController &&
-      !self.presentedViewController) {
+  if (TabSwitcherPresentsBVCEnabled() && !self.presentedViewController) {
     // TODO(crbug.com/801165): On iOS10, UIDocumentMenuViewController and
     // WKFileUploadPanel somehow combine to call dismiss twice instead of once.
     // The second call would dismiss the BVC itself, so look for that case and
     // return early.
+    //
+    // TODO(crbug.com/811671): A similar bug exists on all iOS versions with
+    // WKFileUploadPanel and UIDocumentPickerViewController.
+    //
+    // To make M65 as safe as possible, return early whenever this method is
+    // invoked but no VC appears to be presented.  These cases will always end
+    // up dismissing the BVC itself, which would put the app into an
+    // unresponsive state.
     return;
   }
-
-  // It is an error to call this method when no VC is being presented.
-  DCHECK(!TabSwitcherPresentsBVCEnabled() || self.presentedViewController);
 
   // Some calling code invokes |dismissViewControllerAnimated:completion:|
   // multiple times.  When the BVC is displayed using VC containment, multiple
@@ -1873,20 +1871,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   self.dialogPresenterDelegateIsPresenting = YES;
   if ([self.sideSwipeController inSwipe]) {
     [self.sideSwipeController resetContentView];
-  }
-
-  // TODO(crbug.com/801165): Workaround for an iOS10 bug.
-  // UIDocumentMenuViewController, when used via WKFileUploadPanel,
-  // over-dismisses itself, which triggers a DCHECK in
-  // dismissViewController:animated:.  If a UIDocumentMenuViewController is
-  // being presented here, save a weak pointer that can be tested later when
-  // dismiss is called.
-  if (!base::ios::IsRunningOnIOS11OrLater() &&
-      [viewControllerToPresent
-          isKindOfClass:[UIDocumentMenuViewController class]]) {
-    _lastPresentedUIDocumentMenuViewController =
-        base::mac::ObjCCastStrict<UIDocumentMenuViewController>(
-            viewControllerToPresent);
   }
 
   [super presentViewController:viewControllerToPresent
