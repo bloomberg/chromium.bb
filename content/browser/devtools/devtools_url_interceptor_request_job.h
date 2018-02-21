@@ -12,6 +12,8 @@
 #include "content/browser/devtools/protocol/network.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/resource_type.h"
+#include "net/http/http_raw_request_headers.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 
@@ -56,6 +58,9 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob {
 
   void SetAuth(const net::AuthCredentials& credentials) override;
   void CancelAuth() override;
+  void SetRequestHeadersCallback(net::RequestHeadersCallback callback) override;
+  void SetResponseHeadersCallback(
+      net::ResponseHeadersCallback callback) override;
 
   // Must be called on IO thread.
   void StopIntercepting();
@@ -154,6 +159,8 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob {
   std::vector<std::unique_ptr<GetResponseBodyForInterceptionCallback>>
       pending_body_requests_;
 
+  net::RequestHeadersCallback request_headers_callback_;
+  net::ResponseHeadersCallback response_headers_callback_;
   base::WeakPtrFactory<DevToolsURLInterceptorRequestJob> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsURLInterceptorRequestJob);

@@ -115,6 +115,10 @@ DevToolsURLInterceptorRequestJob::SubRequest::SubRequest(
   request_->SetExtraRequestHeaders(request_details.extra_request_headers);
   request_->SetReferrer(request_details.referrer);
   request_->set_referrer_policy(request_details.referrer_policy);
+  request_->SetRequestHeadersCallback(
+      devtools_interceptor_request_job->request_headers_callback_);
+  request_->SetResponseHeadersCallback(
+      devtools_interceptor_request_job->response_headers_callback_);
 
   // Mimic the ResourceRequestInfoImpl of the original request.
   const ResourceRequestInfoImpl* resource_request_info =
@@ -1152,6 +1156,16 @@ bool DevToolsURLInterceptorRequestJob::ProcessAuthRespose(
   }
 
   return false;
+}
+
+void DevToolsURLInterceptorRequestJob::SetRequestHeadersCallback(
+    net::RequestHeadersCallback callback) {
+  request_headers_callback_ = callback;
+}
+
+void DevToolsURLInterceptorRequestJob::SetResponseHeadersCallback(
+    net::ResponseHeadersCallback callback) {
+  response_headers_callback_ = callback;
 }
 
 DevToolsURLInterceptorRequestJob::RequestDetails::RequestDetails(
