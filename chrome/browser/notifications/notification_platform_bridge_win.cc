@@ -510,8 +510,12 @@ class NotificationPlatformBridgeWinImpl
 
     ScopedHString arguments_scoped(arguments);
     std::string arguments_str = arguments_scoped.GetAsUTF8();
+    std::vector<std::string> tokens = base::SplitString(
+        arguments_str, "$", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    std::string button_index = tokens[0];
+
     std::vector<std::string> parts = base::SplitString(
-        arguments_str, "=", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+        button_index, "=", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
     if (parts.size() < 2 || base::CompareCaseInsensitiveASCII(
                                 parts[0], kNotificationButtonIndex) != 0)
       return base::nullopt;
