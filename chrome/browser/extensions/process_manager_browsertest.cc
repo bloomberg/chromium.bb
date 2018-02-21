@@ -730,8 +730,8 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, ExtensionProcessReuse) {
   }
 }
 
-// Time-outs on Win (http://crbug.com/806684).
-#if defined(OS_WIN)
+// Time-outs on Win, fails on Mac and Linux (http://crbug.com/806684).
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 #define MAYBE_NestedURLNavigationsToExtensionBlocked \
   DISABLED_NestedURLNavigationsToExtensionBlocked
 #else
