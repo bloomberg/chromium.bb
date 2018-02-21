@@ -74,9 +74,11 @@ namespace prerender {
 class PrerenderDispatcher;
 }
 
+#if defined(FULL_SAFE_BROWSING)
 namespace safe_browsing {
 class PhishingClassifierFilter;
 }
+#endif
 
 namespace subresource_filter {
 class UnverifiedRulesetDealer;
@@ -314,7 +316,9 @@ class ChromeContentRendererClient
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   std::unique_ptr<SpellCheck> spellcheck_;
 #endif
+#if defined(FULL_SAFE_BROWSING)
   std::unique_ptr<safe_browsing::PhishingClassifierFilter> phishing_classifier_;
+#endif
   std::unique_ptr<subresource_filter::UnverifiedRulesetDealer>
       subresource_filter_ruleset_dealer_;
   std::unique_ptr<prerender::PrerenderDispatcher> prerender_dispatcher_;

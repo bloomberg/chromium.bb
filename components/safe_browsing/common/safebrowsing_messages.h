@@ -14,16 +14,6 @@
 
 #define IPC_MESSAGE_START SafeBrowsingMsgStart
 
-#if defined(FULL_SAFE_BROWSING)
-// Inform the browser that the client-side phishing detector running in the
-// renderer is done classifying the current URL.  If the URL is phishing
-// the request proto will have |is_phishing()| set to true.
-// TODO(noelutz): we may want to create custom ParamTraits for MessageLite to
-// have a generic way to send protocol messages over IPC.
-IPC_MESSAGE_ROUTED1(SafeBrowsingHostMsg_PhishingDetectionDone,
-                    std::string /* encoded ClientPhishingRequest proto */)
-#endif
-
 // SafeBrowsing client-side detection messages sent from the browser to the
 // renderer.
 
@@ -34,8 +24,4 @@ IPC_MESSAGE_ROUTED1(SafeBrowsingHostMsg_PhishingDetectionDone,
 IPC_MESSAGE_CONTROL1(SafeBrowsingMsg_SetPhishingModel,
                      std::string /* encoded ClientSideModel proto */)
 
-// Tells the renderer to begin phishing detection for the given toplevel URL
-// which it has started loading.
-IPC_MESSAGE_ROUTED1(SafeBrowsingMsg_StartPhishingDetection,
-                    GURL)
 #endif

@@ -103,3 +103,20 @@ interface ThreatReporter {
   // Renderer returns part of the DOM to be used in a threat report.
   GetThreatDOMDetails() => (array<ThreatDOMDetailsNode> nodes);
 };
+
+[EnableIf=full_safe_browsing]
+interface PhishingDetector {
+  // Tells the renderer to begin phishing detection for the given toplevel URL
+  // which it has started loading
+  StartPhishingDetection(url.mojom.Url url);
+};
+
+[EnableIf=full_safe_browsing]
+interface PhishingDetectorClient {
+  // Inform the browser that the client-side phishing detector running in the
+  // renderer is done classifying the current URL.  If the URL is phishing
+  // the request proto will have |is_phishing()| set to true.
+  // TODO(noelutz): we may want to create custom ParamTraits for MessageLite to
+  // have a generic way to send protocol messages over IPC.
+  PhishingDetectionDone(string request_proto);
+};

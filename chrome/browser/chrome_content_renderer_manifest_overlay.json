@@ -23,6 +23,7 @@
           "dom_distiller::mojom::DistillerPageNotifierService",
           "extensions::mojom::AppWindow",
           "safe_browsing::mojom::ThreatReporter",
+          "safe_browsing::mojom::PhishingDetector",
           "spellcheck::mojom::SpellCheckPanel"
         ]
       }
