@@ -117,6 +117,7 @@ MimeSniffingResourceHandler::MimeSniffingResourceHandler(
       must_download_is_set_(false),
       read_buffer_size_(0),
       bytes_read_(0),
+      need_to_replay_extra_eof_packet_(false),
       parent_read_buffer_(nullptr),
       parent_read_buffer_size_(nullptr),
       intercepting_handler_(intercepting_handler),
@@ -246,6 +247,12 @@ void MimeSniffingResourceHandler::OnReadCompleted(
     return;
   }
 
+  // After getting a 0-sized, eof-indicating packet when buffering, the packet
+  // (i.e. the OnReadCompleted(0) call) needs to be replayed against the
+  // downstream handler (unless replaying the buffered data will act as one if
+  // |bytes_read_ == 0| - the first part of the condition below).
+  need_to_replay_extra_eof_packet_ = (bytes_read_ != 0) && (bytes_read == 0);
+
   HoldController(std::move(controller));
   AdvanceState();
 }
@@ -309,6 +316,12 @@ void MimeSniffingResourceHandler::AdvanceState() {
       case STATE_REPLAYING_RESPONSE_RECEIVED:
         ReplayReadCompleted();
         break;
+      case STATE_REPLAYING_EOF_WILL_READ:
+        ReplayWillReadEof();
+        break;
+      case STATE_REPLAYING_EOF_READ_COMPLETED:
+        ReplayReadCompletedEof();
+        break;
       case STATE_STARTING:
       case STATE_STREAMING:
         Resume();
@@ -370,7 +383,10 @@ void MimeSniffingResourceHandler::ReplayResponseReceived() {
 void MimeSniffingResourceHandler::ReplayReadCompleted() {
   DCHECK_EQ(STATE_REPLAYING_RESPONSE_RECEIVED, state_);
 
-  state_ = STATE_STREAMING;
+  if (need_to_replay_extra_eof_packet_)
+    state_ = STATE_REPLAYING_EOF_WILL_READ;
+  else
+    state_ = STATE_STREAMING;
 
   if (!read_buffer_.get()) {
     ResumeInternal();
@@ -385,6 +401,27 @@ void MimeSniffingResourceHandler::ReplayReadCompleted() {
 
   next_handler_->OnReadCompleted(bytes_read,
                                  std::make_unique<Controller>(this));
+}
+
+void MimeSniffingResourceHandler::ReplayWillReadEof() {
+  DCHECK_EQ(STATE_REPLAYING_EOF_WILL_READ, state_);
+
+  state_ = STATE_REPLAYING_EOF_READ_COMPLETED;
+  DCHECK(!read_buffer_);
+  DCHECK_EQ(0, read_buffer_size_);
+  DCHECK_EQ(0, bytes_read_);
+  next_handler_->OnWillRead(&read_buffer_, &read_buffer_size_,
+                            std::make_unique<Controller>(this));
+}
+
+void MimeSniffingResourceHandler::ReplayReadCompletedEof() {
+  DCHECK_EQ(STATE_REPLAYING_EOF_READ_COMPLETED, state_);
+
+  state_ = STATE_STREAMING;
+  read_buffer_ = nullptr;
+  read_buffer_size_ = 0;
+  bytes_read_ = 0;
+  next_handler_->OnReadCompleted(0, std::make_unique<Controller>(this));
 }
 
 bool MimeSniffingResourceHandler::MaybeStartInterception() {
