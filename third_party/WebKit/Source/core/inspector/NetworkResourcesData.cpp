@@ -112,6 +112,11 @@ size_t NetworkResourcesData::ResourceData::RemoveContent() {
     result = content_.CharactersSizeInBytes();
     content_ = String();
   }
+
+  if (post_data_ && post_data_->SizeInBytes()) {
+    result += post_data_->SizeInBytes();
+    post_data_ = nullptr;
+  }
   return result;
 }
 
@@ -432,8 +437,7 @@ void NetworkResourcesData::EnsureNoDataForRequestId(const String& request_id) {
   ResourceData* resource_data = ResourceDataForRequestId(request_id);
   if (!resource_data)
     return;
-  if (resource_data->HasContent() || resource_data->HasData())
-    content_size_ -= resource_data->EvictContent();
+  content_size_ -= resource_data->EvictContent();
   request_id_to_resource_data_map_.erase(request_id);
 }
 
