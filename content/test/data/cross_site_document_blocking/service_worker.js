@@ -5,10 +5,6 @@
 // This service worker is used by the CrossSiteDocumentBlockingServiceWorkerTest
 // browser test - please see the comments there for more details.
 
-self.addEventListener('activate', function(event) {
-  event.waitUntil(self.clients.claim()); // Become available to all pages
-});
-
 function createHtmlNoSniffResponse() {
   var headers = new Headers();
   headers.append('Content-Type', 'text/html');
@@ -30,7 +26,8 @@ self.addEventListener('fetch', function(event) {
 
   // This handles response to the first request in the
   // CrossSiteDocumentBlockingServiceWorkerTest.NetworkAndOpaqueResponse test.
-  if (previousUrl != event.request.url || !previousResponse) {
+  if (event.request.url.endsWith('nosniff.html') &&
+      (previousUrl != event.request.url || !previousResponse)) {
     event.respondWith(new Promise(function(resolve, reject) {
         fetch(event.request)
             .then(function(response) {
@@ -52,4 +49,7 @@ self.addEventListener('fetch', function(event) {
     event.respondWith(previousResponse.clone());
     return;
   }
+
+  // Let the request go to the network in all the other cases (e.g. when
+  // reloading the test page at cross_site_document_blocking/request.html).
 });
