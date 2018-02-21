@@ -244,8 +244,9 @@ class VariationsService
   };
 
   // Attempts a seed fetch from the set |url|. Returns true if the fetch was
-  // started successfully, false otherwise.
-  bool DoFetchFromURL(const GURL& url);
+  // started successfully, false otherwise. |is_http_retry| should be true if
+  // this is a retry over HTTP, false otherwise.
+  bool DoFetchFromURL(const GURL& url, bool is_http_retry);
 
   // Calls FetchVariationsSeed once and repeats this periodically. See
   // implementation for details on the period.
