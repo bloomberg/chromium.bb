@@ -23,12 +23,6 @@ class ChildProcessHostDelegate : public IPC::Listener {
  public:
   ~ChildProcessHostDelegate() override {}
 
-  // Delegates return true if it's ok to shut down the child process (which is
-  // the default return value). The exception is if the host is in the middle of
-  // sending a request to the process, in which case the other side might think
-  // it's ok to shutdown, when really it's not.
-  CONTENT_EXPORT virtual bool CanShutdown();
-
   // Called when the IPC channel for the child process is initialized.
   virtual void OnChannelInitialized(IPC::Channel* channel) {}
 
