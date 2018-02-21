@@ -74,11 +74,16 @@ class NET_EXPORT_PRIVATE DnsSession
   // Return the index of the first configured server to use on first attempt.
   unsigned NextFirstServerIndex();
 
-  // Start with |server_index| and find the index of the next known good server
-  // to use on this attempt. Returns |server_index| if this server has no
-  // recorded failures, or if there are no other servers that have not failed
-  // or have failed longer time ago.
+  // Start with |server_index| and find the index of the next known
+  // good non-dns-over-https server to use on this attempt. Returns
+  // |server_index| if this server has no recorded failures, or if
+  // there are no other servers that have not failed or have failed
+  // longer time ago.
   unsigned NextGoodServerIndex(unsigned server_index);
+
+  // Same as above, but for DNS over HTTPS servers and ignoring
+  // non-dns-over-https servers
+  unsigned NextGoodDnsOverHttpsServerIndex(unsigned server_index);
 
   // Record that server failed to respond (due to SRV_FAIL or timeout).
   void RecordServerFailure(unsigned server_index);
@@ -146,7 +151,10 @@ class NET_EXPORT_PRIVATE DnsSession
 
   struct ServerStats;
 
-  // Track runtime statistics of each DNS server.
+  // Track runtime statistics of each DNS server. This combines both
+  // dns-over-https servers and non-dns-over-https servers.
+  // non-dns-over-https servers come first and dns-over-https servers
+  // started at the index of nameservers.size().
   std::vector<std::unique_ptr<ServerStats>> server_stats_;
 
   // Buckets shared for all |ServerStats::rtt_histogram|.

@@ -20,7 +20,7 @@ namespace net {
 
 class AddressList;
 class DnsQuery;
-class IOBufferWithSize;
+class IOBuffer;
 
 namespace dns_protocol {
 struct Header;
@@ -108,6 +108,9 @@ class NET_EXPORT_PRIVATE DnsResponse {
   // Constructs a response buffer of given length. Used for TCP transactions.
   explicit DnsResponse(size_t length);
 
+  // Constructs a response taking ownership of the passed buffer.
+  DnsResponse(IOBuffer* buffer, size_t size);
+
   // Constructs a response from |data|. Used for testing purposes only!
   DnsResponse(const void* data, size_t length, size_t answer_offset);
 
@@ -115,15 +118,18 @@ class NET_EXPORT_PRIVATE DnsResponse {
 
   // Internal buffer accessor into which actual bytes of response will be
   // read.
-  IOBufferWithSize* io_buffer() { return io_buffer_.get(); }
+  IOBuffer* io_buffer() { return io_buffer_.get(); }
+
+  // Size of the internal buffer.
+  size_t io_buffer_size() const { return io_buffer_size_; }
 
   // Assuming the internal buffer holds |nbytes| bytes, returns true iff the
   // packet matches the |query| id and question.
-  bool InitParse(int nbytes, const DnsQuery& query);
+  bool InitParse(size_t nbytes, const DnsQuery& query);
 
   // Assuming the internal buffer holds |nbytes| bytes, initialize the parser
   // without matching it against an existing query.
-  bool InitParseWithoutQuery(int nbytes);
+  bool InitParseWithoutQuery(size_t nbytes);
 
   // Returns true if response is valid, that is, after successful InitParse.
   bool IsValid() const;
@@ -158,7 +164,10 @@ class NET_EXPORT_PRIVATE DnsResponse {
   const dns_protocol::Header* header() const;
 
   // Buffer into which response bytes are read.
-  scoped_refptr<IOBufferWithSize> io_buffer_;
+  scoped_refptr<IOBuffer> io_buffer_;
+
+  // Size of the buffer.
+  size_t io_buffer_size_;
 
   // Iterator constructed after InitParse positioned at the answer section.
   // It is never updated afterwards, so can be used in accessors.

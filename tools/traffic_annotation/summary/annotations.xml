@@ -75,6 +75,7 @@ Refer to README.md for content description and update process.
  <item id="devtools_network_resource" hash_code="129652775" type="0" content_hash_code="24059212" os_list="linux,windows" file_path="chrome/browser/devtools/devtools_ui_bindings.cc"/>
  <item id="dial_get_app_info" hash_code="15952025" type="0" content_hash_code="90542080" os_list="linux,windows" file_path="chrome/browser/media/router/discovery/dial/dial_app_info_fetcher.cc"/>
  <item id="dial_get_device_description" hash_code="50422598" type="0" content_hash_code="129827780" os_list="linux,windows" file_path="chrome/browser/media/router/discovery/dial/device_description_fetcher.cc"/>
+ <item id="dns_over_https" hash_code="79895226" type="0" content_hash_code="45123510" os_list="linux,windows" file_path="net/dns/dns_transaction.cc"/>
  <item id="dns_transaction" hash_code="79227717" type="0" content_hash_code="132206495" os_list="linux,windows" file_path="net/dns/dns_transaction.cc"/>
  <item id="dom_distiller" hash_code="3989826" type="0" content_hash_code="106153970" os_list="linux,windows" file_path="components/dom_distiller/core/distiller_url_fetcher.cc"/>
  <item id="domain_reliability_report_upload" hash_code="108804096" type="0" content_hash_code="35902036" os_list="linux,windows" file_path="components/domain_reliability/uploader.cc"/>

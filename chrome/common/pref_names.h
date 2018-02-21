@@ -685,6 +685,8 @@ extern const char kNtlmV2Enabled[];
 #endif  // defined(OS_POSIX)
 
 extern const char kBuiltInDnsClientEnabled[];
+extern const char kDnsOverHttpsServers[];
+extern const char kDnsOverHttpsServerMethods[];
 
 extern const char kRegisteredProtocolHandlers[];
 extern const char kIgnoredProtocolHandlers[];

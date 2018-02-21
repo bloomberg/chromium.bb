@@ -148,6 +148,9 @@ class MockTransaction : public DnsTransaction,
     }
   }
 
+  void SetRequestContext(URLRequestContext*) override {}
+  void SetRequestPriority(RequestPriority priority) override {}
+
   MockDnsClientRule::Result result_;
   const std::string hostname_;
   const uint16_t qtype_;
@@ -213,6 +216,10 @@ void MockDnsClient::SetConfig(const DnsConfig& config) {
 }
 
 const DnsConfig* MockDnsClient::GetConfig() const {
+  if (!config_.IsValid())
+    printf("invalid config\n");
+  else
+    printf("valid config\n");
   return config_.IsValid() ? &config_ : NULL;
 }
 

@@ -11,11 +11,9 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "net/base/address_family.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/net_export.h"
 #include "net/base/prioritized_dispatcher.h"
 #include "net/base/request_priority.h"
 #include "net/dns/host_cache.h"
@@ -28,9 +26,9 @@ namespace net {
 
 class AddressList;
 class HostResolverImpl;
-class HostResolverProc;
 class NetLog;
 class NetLogWithSource;
+class URLRequestContext;
 
 // This class represents the task of resolving hostnames (or IP address
 // literal) to an AddressList object.
@@ -224,6 +222,10 @@ class NET_EXPORT HostResolver {
   // connection. See https://crbug.com/696569 for further context.
   virtual void SetNoIPv6OnWifi(bool no_ipv6_on_wifi);
   virtual bool GetNoIPv6OnWifi();
+
+  virtual void SetRequestContext(URLRequestContext* request_context) {}
+  virtual void AddDnsOverHttpsServer(std::string spec, bool use_post) {}
+  virtual void ClearDnsOverHttpsServers() {}
 
   // Creates a HostResolver implementation that queries the underlying system.
   // (Except if a unit-test has changed the global HostResolverProc using

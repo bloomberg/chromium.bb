@@ -51,6 +51,7 @@
 #include "components/data_use_measurement/core/data_use_ascriber.h"
 #include "components/metrics/metrics_service.h"
 #include "components/net_log/chrome_net_log.h"
+#include "components/network_session_configurator/common/network_features.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -86,6 +87,7 @@
 #include "net/net_features.h"
 #include "net/nqe/external_estimate_provider.h"
 #include "net/nqe/network_quality_estimator_params.h"
+//#include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy_resolution/pac_file_fetcher_impl.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_service.h"
@@ -373,6 +375,31 @@ IOThread::IOThread(
                                       base::Unretained(this)));
   dns_client_enabled_.MoveToThread(io_thread_proxy);
 
+  if (base::FeatureList::IsEnabled(features::kDnsOverHttps)) {
+    base::Value specs(base::Value::Type::LIST);
+    base::Value methods(base::Value::Type::LIST);
+    base::Value spec(variations::GetVariationParamValueByFeature(
+        features::kDnsOverHttps, "server"));
+    base::Value method(variations::GetVariationParamValueByFeature(
+        features::kDnsOverHttps, "method"));
+    if (spec.GetString().size() > 0) {
+      specs.GetList().push_back(std::move(spec));
+      methods.GetList().push_back(std::move(method));
+      local_state->SetDefaultPrefValue(prefs::kDnsOverHttpsServers,
+                                       std::move(specs));
+      local_state->SetDefaultPrefValue(prefs::kDnsOverHttpsServerMethods,
+                                       std::move(methods));
+    }
+  }
+  dns_over_https_servers_.Init(
+      prefs::kDnsOverHttpsServers, local_state,
+      base::Bind(&IOThread::UpdateDnsClientEnabled, base::Unretained(this)));
+  dns_over_https_server_methods_.Init(
+      prefs::kDnsOverHttpsServerMethods, local_state,
+      base::Bind(&IOThread::UpdateDnsClientEnabled, base::Unretained(this)));
+  dns_over_https_servers_.MoveToThread(io_thread_proxy);
+  dns_over_https_server_methods_.MoveToThread(io_thread_proxy);
+
 #if defined(OS_POSIX)
   local_state->SetDefaultPrefValue(
       prefs::kNtlmV2Enabled,
@@ -626,6 +653,8 @@ void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kEnableReferrers, true);
   data_reduction_proxy::RegisterPrefs(registry);
   registry->RegisterBooleanPref(prefs::kBuiltInDnsClientEnabled, true);
+  registry->RegisterListPref(prefs::kDnsOverHttpsServers);
+  registry->RegisterListPref(prefs::kDnsOverHttpsServerMethods);
   registry->RegisterBooleanPref(prefs::kQuickCheckEnabled, true);
   registry->RegisterBooleanPref(prefs::kPacHttpsUrlStrippingEnabled, true);
 #if defined(OS_POSIX)
@@ -724,7 +753,21 @@ void IOThread::ChangedToOnTheRecordOnIOThread() {
 
 void IOThread::UpdateDnsClientEnabled() {
   globals()->system_request_context->host_resolver()->SetDnsClientEnabled(
-      *dns_client_enabled_);
+      *dns_client_enabled_ || (*dns_over_https_servers_).size() > 0);
+
+  net::HostResolver* resolver =
+      globals()->system_request_context->host_resolver();
+  if ((*dns_over_https_servers_).size()) {
+    resolver->SetRequestContext(globals_->system_request_context);
+  }
+  DCHECK((*dns_over_https_servers_).size() ==
+         (*dns_over_https_server_methods_).size());
+  resolver->ClearDnsOverHttpsServers();
+  for (unsigned int i = 0; i < (*dns_over_https_servers_).size(); i++) {
+    resolver->AddDnsOverHttpsServer(
+        (*dns_over_https_servers_)[i],
+        (*dns_over_https_server_methods_)[i].compare("POST") == 0);
+  }
 }
 
 void IOThread::RegisterSTHObserver(net::ct::STHObserver* observer) {

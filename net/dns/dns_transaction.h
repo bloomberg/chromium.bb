@@ -10,16 +10,16 @@
 #include <memory>
 #include <string>
 
-#include "base/callback_forward.h"
-#include "base/compiler_specific.h"
-#include "net/base/net_export.h"
+#include "net/base/request_priority.h"
 #include "net/dns/record_rdata.h"
+#include "url/gurl.h"
 
 namespace net {
 
 class DnsResponse;
 class DnsSession;
 class NetLogWithSource;
+class URLRequestContext;
 
 // DnsTransaction implements a stub DNS resolver as defined in RFC 1034.
 // The DnsTransaction takes care of retransmissions, name server fallback (or
@@ -39,6 +39,10 @@ class NET_EXPORT_PRIVATE DnsTransaction {
 
   // Starts the transaction.  Always completes asynchronously.
   virtual void Start() = 0;
+
+  virtual void SetRequestContext(URLRequestContext*) = 0;
+
+  virtual void SetRequestPriority(RequestPriority priority) = 0;
 };
 
 // Creates DnsTransaction which performs asynchronous DNS search.

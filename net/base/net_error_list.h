@@ -901,3 +901,6 @@ NET_ERROR(DNS_SEARCH_EMPTY, -805)
 
 // Failed to sort addresses according to RFC3484.
 NET_ERROR(DNS_SORT_ERROR, -806)
+
+// Failed to resolve over HTTP, fallback to legacy
+NET_ERROR(DNS_HTTP_FAILED, -807)
