@@ -2841,6 +2841,19 @@
       "features": [
         "dont_use_loops_to_initialize_variables"
       ]
+    },
+    {
+      "id": 259,
+      "description": "8x MSAA is slow for alpha:false WebGL contexts on Mac Intel",
+      "cr_bugs": [812071],
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x8086",
+      "multi_gpu_category": "primary",
+      "features": [
+        "max_msaa_sample_count_4"
+      ]
     }
   ]
 }

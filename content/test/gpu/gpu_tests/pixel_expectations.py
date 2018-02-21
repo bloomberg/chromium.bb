@@ -126,3 +126,19 @@ class PixelExpectations(GpuTestExpectations):
     # Needs rebaseline. See crbug.com/806313
     self.Fail('Pixel_CSSFilterEffects', ['mac'])
     self.Fail('Pixel_CSSFilterEffects_NoOverlays', ['mac'])
+
+    # TODO(kainino): temporary suppressions for pixel test rebaseline
+    self.Fail('Pixel_2DCanvasWebGL', bug=812071)
+    self.Fail('Pixel_IOSurface2DCanvasWebGL', bug=812071)
+    self.Fail('Pixel_OffscreenCanvasTransferAfterStyleResize', bug=812071)
+    self.Fail('Pixel_OffscreenCanvasTransferBeforeStyleResize', bug=812071)
+    self.Fail('Pixel_OffscreenCanvasWebGLDefault', bug=812071)
+    self.Fail('Pixel_OffscreenCanvasWebGLDefaultWorker', bug=812071)
+    self.Fail('Pixel_OffscreenCanvasWebGLSoftwareCompositing', bug=812071)
+    self.Fail('Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker', bug=812071)
+    self.Fail('Pixel_OffscreenCanvasWebglResizeOnWorker', bug=812071)
+    self.Fail('Pixel_WebGLGreenTriangle_AA_Alpha', bug=812071)
+    self.Fail('Pixel_WebGLGreenTriangle_AA_Alpha_SwiftShader', bug=812071)
+    self.Fail('Pixel_WebGLGreenTriangle_AA_NoAlpha', bug=812071)
+    self.Fail('Pixel_WebGLGreenTriangle_NonChromiumImage_AA_Alpha', bug=812071)
+    self.Fail('Pixel_WebGLGreenTriangle_NonChromiumImage_AA_NoAlpha', bug=812071)
