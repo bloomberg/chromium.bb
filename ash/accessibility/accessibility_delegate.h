@@ -36,23 +36,12 @@ class ASH_EXPORT AccessibilityDelegate {
   // Returns true when the accessibility menu should be shown.
   virtual bool ShouldShowAccessibilityMenu() const = 0;
 
-  // Cancel all current and queued speech immediately.
-  virtual void SilenceSpokenFeedback() const = 0;
-
   // Saves the zoom scale of the full screen magnifier.
   virtual void SaveScreenMagnifierScale(double scale) = 0;
 
   // Gets a saved value of the zoom scale of full screen magnifier. If a value
   // is not saved, return a negative value.
   virtual double GetSavedScreenMagnifierScale() = 0;
-
-  // Called when we first detect two fingers are held down, which can be
-  // used to toggle spoken feedback on some touch-only devices.
-  virtual void OnTwoFingerTouchStart() {}
-
-  // Called when the user is no longer holding down two fingers (including
-  // releasing one, holding down three, or moving them).
-  virtual void OnTwoFingerTouchStop() {}
 
   // NOTE: Prefer adding methods to AccessibilityController, see class comment.
 };

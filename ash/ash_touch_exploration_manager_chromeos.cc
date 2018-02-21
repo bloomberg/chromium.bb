@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "ash/accessibility/accessibility_controller.h"
-#include "ash/accessibility/accessibility_delegate.h"
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
 #include "ash/accessibility/touch_exploration_controller.h"
 #include "ash/keyboard/keyboard_observer_register.h"
@@ -77,7 +76,7 @@ void AshTouchExplorationManager::SetOutputLevel(int volume) {
 
 void AshTouchExplorationManager::SilenceSpokenFeedback() {
   if (GetA11yController()->IsSpokenFeedbackEnabled())
-    Shell::Get()->accessibility_delegate()->SilenceSpokenFeedback();
+    GetA11yController()->SilenceSpokenFeedback();
 }
 
 void AshTouchExplorationManager::PlayVolumeAdjustEarcon() {
@@ -117,13 +116,11 @@ void AshTouchExplorationManager::OnDisplayMetricsChanged(
 }
 
 void AshTouchExplorationManager::OnTwoFingerTouchStart() {
-  AccessibilityDelegate* delegate = Shell::Get()->accessibility_delegate();
-  delegate->OnTwoFingerTouchStart();
+  GetA11yController()->OnTwoFingerTouchStart();
 }
 
 void AshTouchExplorationManager::OnTwoFingerTouchStop() {
-  AccessibilityDelegate* delegate = Shell::Get()->accessibility_delegate();
-  delegate->OnTwoFingerTouchStop();
+  GetA11yController()->OnTwoFingerTouchStop();
 }
 
 void AshTouchExplorationManager::PlaySpokenFeedbackToggleCountdown(

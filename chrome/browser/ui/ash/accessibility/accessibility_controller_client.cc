@@ -7,6 +7,7 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/service_manager_connection.h"
@@ -120,6 +121,18 @@ void AccessibilityControllerClient::HandleAccessibilityGesture(
 
 void AccessibilityControllerClient::ToggleDictation() {
   chromeos::AccessibilityManager::Get()->ToggleDictation();
+}
+
+void AccessibilityControllerClient::SilenceSpokenFeedback() {
+  TtsController::GetInstance()->Stop();
+}
+
+void AccessibilityControllerClient::OnTwoFingerTouchStart() {
+  chromeos::AccessibilityManager::Get()->OnTwoFingerTouchStart();
+}
+
+void AccessibilityControllerClient::OnTwoFingerTouchStop() {
+  chromeos::AccessibilityManager::Get()->OnTwoFingerTouchStop();
 }
 
 void AccessibilityControllerClient::ShouldToggleSpokenFeedbackViaTouch(

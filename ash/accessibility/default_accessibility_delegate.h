@@ -22,7 +22,6 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
   void SetTapDraggingEnabled(bool enabled) override;
   bool IsTapDraggingEnabled() const override;
   bool ShouldShowAccessibilityMenu() const override;
-  void SilenceSpokenFeedback() const override;
   void SaveScreenMagnifierScale(double scale) override;
   double GetSavedScreenMagnifierScale() override;
 

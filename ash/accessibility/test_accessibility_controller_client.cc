@@ -43,6 +43,12 @@ void TestAccessibilityControllerClient::HandleAccessibilityGesture(
 
 void TestAccessibilityControllerClient::ToggleDictation() {}
 
+void TestAccessibilityControllerClient::SilenceSpokenFeedback() {}
+
+void TestAccessibilityControllerClient::OnTwoFingerTouchStart() {}
+
+void TestAccessibilityControllerClient::OnTwoFingerTouchStop() {}
+
 void TestAccessibilityControllerClient::ShouldToggleSpokenFeedbackViaTouch(
     ShouldToggleSpokenFeedbackViaTouchCallback callback) {
   std::move(callback).Run(true);  // Passing true for testing.
