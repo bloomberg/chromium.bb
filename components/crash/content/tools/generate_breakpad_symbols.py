@@ -212,11 +212,10 @@ def GenerateSymbols(options, binaries):
         with print_lock:
           print "Generating symbols for %s" % binary
 
-      syms = GetCommandOutput([dump_syms, '-r', binary])
       mkdir_p(os.path.dirname(output_path))
       try:
         with open(output_path, 'wb') as f:
-          f.write(syms)
+          subprocess.check_call([dump_syms, '-r', binary], stdout=f)
       except Exception, e:
         # Not much we can do about this.
         with print_lock:
