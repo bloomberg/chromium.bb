@@ -217,5 +217,26 @@ chrome.test.runTests([
 
       chrome.debugger.attach(debuggee, protocolVersion, onAttach);
     });
+  },
+
+  function sendCommandToDataUri() {
+    chrome.tabs.create({url:"data:text/html,<h1>hi</h1>"}, function(tab) {
+      var debuggee = {tabId: tab.id};
+
+      function checkError() {
+        if (chrome.runtime.lastError) {
+          chrome.test.fail(chrome.runtime.lastError.message);
+        } else {
+          chrome.tabs.remove(tab.id);
+          chrome.test.succeed();
+        }
+      }
+
+      function onAttach() {
+        chrome.debugger.sendCommand(debuggee, "Page.enable", null, checkError);
+      }
+
+      chrome.debugger.attach(debuggee, protocolVersion, onAttach);
+    });
   }
 ]);

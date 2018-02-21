@@ -24,14 +24,14 @@ const char URLPattern::kAllUrlsPattern[] = "<all_urls>";
 
 namespace {
 
-// TODO(aa): What about more obscure schemes like data: and javascript: ?
+// TODO(aa): What about more obscure schemes like javascript: ?
 // Note: keep this array in sync with kValidSchemeMasks.
 const char* const kValidSchemes[] = {
     url::kHttpScheme,         url::kHttpsScheme,
     url::kFileScheme,         url::kFtpScheme,
     content::kChromeUIScheme, extensions::kExtensionScheme,
     url::kFileSystemScheme,   url::kWsScheme,
-    url::kWssScheme,
+    url::kWssScheme,          url::kDataScheme,
 };
 
 const int kValidSchemeMasks[] = {
@@ -39,7 +39,7 @@ const int kValidSchemeMasks[] = {
     URLPattern::SCHEME_FILE,       URLPattern::SCHEME_FTP,
     URLPattern::SCHEME_CHROMEUI,   URLPattern::SCHEME_EXTENSION,
     URLPattern::SCHEME_FILESYSTEM, URLPattern::SCHEME_WS,
-    URLPattern::SCHEME_WSS,
+    URLPattern::SCHEME_WSS,        URLPattern::SCHEME_DATA,
 };
 
 static_assert(arraysize(kValidSchemes) == arraysize(kValidSchemeMasks),
