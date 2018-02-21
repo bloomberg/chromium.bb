@@ -3,6 +3,7 @@ include_rules = [
   # easy to be migrated to a completely independent mojo app under mustash.
   "-ash",
   "-chrome",
+  "+ash/public/cpp",
   "+cc/paint",
   "+ui/events/keycodes"
 ]

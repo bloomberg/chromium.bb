@@ -6,7 +6,9 @@
 
 #include <algorithm>
 
+#include "ash/public/cpp/window_properties.h"
 #include "base/i18n/string_search.h"
+#include "ui/aura/window.h"
 #include "ui/base/default_style.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -92,6 +94,10 @@ views::Widget* KeyboardShortcutView::Show(gfx::NativeWindow context) {
     views::Widget::CreateWindowWithContextAndBounds(
         new KeyboardShortcutView(), context,
         gfx::Rect(0, 0, kKSVWindowWidth, kKSVWindowHeight));
+    g_ksv_view->GetWidget()->GetNativeWindow()->SetProperty(
+        ash::kFrameActiveColorKey, SK_ColorWHITE);
+    g_ksv_view->GetWidget()->GetNativeWindow()->SetProperty(
+        ash::kFrameInactiveColorKey, SK_ColorWHITE);
     g_ksv_view->GetWidget()->Show();
     g_ksv_view->RequestFocusForActiveTab();
   }

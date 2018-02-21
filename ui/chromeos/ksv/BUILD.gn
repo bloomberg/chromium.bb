@@ -26,8 +26,10 @@ source_set("ksv") {
   defines = [ "KSV_IMPLEMENTATION" ]
 
   deps = [
+    "//ash/public/cpp",
     "//base:i18n",
     "//cc/paint",
+    "//ui/aura",
     "//ui/chromeos/events",
     "//ui/chromeos/ksv/vector_icons",
     "//ui/chromeos/search_box",
