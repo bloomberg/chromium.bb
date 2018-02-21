@@ -181,11 +181,12 @@ std::string PolicyToText(std::string debug_string) {
     }
   }
 
-  // Trim trailing spaces and curly bracket.
+  // Trim trailing spaces and at most one curly bracket.
   base::TrimString(output, " ", &output);
   DCHECK(!output.empty());
   if (output[output.length() - 1] == '}')
     output.pop_back();
+  base::TrimString(output, " ", &output);
 
   return output;
 }
