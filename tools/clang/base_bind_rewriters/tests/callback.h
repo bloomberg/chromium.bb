@@ -2,15 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <type_traits>
 #include <utility>
 
 namespace base {
 namespace internal {
 
-enum class CopyMode { MoveOnly, Copyable };
-enum class RepeatMode { Once, Repeating };
+template <typename T>
+class PassedWrapper {
+ public:
+  explicit PassedWrapper(T&& scoper) {}
+  PassedWrapper(PassedWrapper&& other) {}
+};
 
 }  // namespace internal
+
+template <typename T,
+          std::enable_if_t<!std::is_lvalue_reference<T>::value>* = nullptr>
+internal::PassedWrapper<T> Passed(T&& scoper) {
+  return internal::PassedWrapper<T>(std::move(scoper));
+}
+
+template <typename T>
+internal::PassedWrapper<T> Passed(T* scoper) {
+  return internal::PassedWrapper<T>(std::move(*scoper));
+}
 
 template <typename Signature>
 class OnceCallback;
