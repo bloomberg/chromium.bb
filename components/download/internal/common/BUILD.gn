@@ -10,6 +10,7 @@ source_set("internal") {
   ]
 
   sources = [
+    "download_create_info.cc",
     "download_interrupt_reasons_impl.cc",
     "download_utils.cc",
     "rate_estimator.cc",
@@ -17,6 +18,7 @@ source_set("internal") {
 
   deps = [
     "//base",
+    "//net",
   ]
 }
 

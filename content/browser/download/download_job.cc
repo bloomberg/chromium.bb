@@ -14,7 +14,7 @@ namespace content {
 
 DownloadJob::DownloadJob(
     DownloadItemImpl* download_item,
-    std::unique_ptr<DownloadRequestHandleInterface> request_handle)
+    std::unique_ptr<download::DownloadRequestHandleInterface> request_handle)
     : download_item_(download_item),
       request_handle_(std::move(request_handle)),
       is_paused_(false),
@@ -58,10 +58,6 @@ void DownloadJob::Resume(bool resume_request) {
 
   if (request_handle_)
     request_handle_->ResumeRequest();
-}
-
-WebContents* DownloadJob::GetWebContents() const {
-  return request_handle_ ? request_handle_->GetWebContents() : nullptr;
 }
 
 void DownloadJob::Start(

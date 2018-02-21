@@ -16,7 +16,7 @@ class CONTENT_EXPORT DownloadJobImpl : public DownloadJob {
  public:
   DownloadJobImpl(
       DownloadItemImpl* download_item,
-      std::unique_ptr<DownloadRequestHandleInterface> request_handle,
+      std::unique_ptr<download::DownloadRequestHandleInterface> request_handle,
       bool is_parallizable);
   ~DownloadJobImpl() override;
 

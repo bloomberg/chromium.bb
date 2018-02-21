@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "content/browser/download/download_create_info.h"
+#include "components/download/public/common/download_create_info.h"
+#include "components/download/public/common/download_request_handle_interface.h"
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_item_impl.h"
-#include "content/browser/download/download_request_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
@@ -49,13 +49,15 @@ class MockDownloadItemImpl : public DownloadItemImpl {
     NOTREACHED();
   }
   MOCK_METHOD0(OnDownloadedFileRemoved, void());
-  void Start(std::unique_ptr<DownloadFile> download_file,
-             std::unique_ptr<DownloadRequestHandleInterface> req_handle,
-             const DownloadCreateInfo& create_info) override {
+  void Start(
+      std::unique_ptr<DownloadFile> download_file,
+      std::unique_ptr<download::DownloadRequestHandleInterface> req_handle,
+      const download::DownloadCreateInfo& create_info) override {
     MockStart(download_file.get(), req_handle.get());
   }
 
-  MOCK_METHOD2(MockStart, void(DownloadFile*, DownloadRequestHandleInterface*));
+  MOCK_METHOD2(MockStart,
+               void(DownloadFile*, download::DownloadRequestHandleInterface*));
 
   MOCK_METHOD0(Remove, void());
   MOCK_CONST_METHOD1(TimeRemaining, bool(base::TimeDelta*));

@@ -10,7 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
-#include "content/browser/download/download_create_info.h"
+#include "components/download/public/common/download_create_info.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/download_utils.h"
 #include "content/browser/download/parallel_download_utils.h"
@@ -29,8 +29,8 @@ const int kDownloadJobVerboseLevel = 1;
 
 ParallelDownloadJob::ParallelDownloadJob(
     DownloadItemImpl* download_item,
-    std::unique_ptr<DownloadRequestHandleInterface> request_handle,
-    const DownloadCreateInfo& create_info)
+    std::unique_ptr<download::DownloadRequestHandleInterface> request_handle,
+    const download::DownloadCreateInfo& create_info)
     : DownloadJobImpl(download_item, std::move(request_handle), true),
       initial_request_offset_(create_info.offset),
       initial_received_slices_(download_item->GetReceivedSlices()),

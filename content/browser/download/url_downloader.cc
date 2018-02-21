@@ -9,11 +9,11 @@
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/byte_stream.h"
-#include "content/browser/download/download_create_info.h"
-#include "content/browser/download/download_request_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
@@ -24,7 +24,8 @@
 
 namespace content {
 
-class UrlDownloader::RequestHandle : public DownloadRequestHandleInterface {
+class UrlDownloader::RequestHandle
+    : public download::DownloadRequestHandleInterface {
  public:
   RequestHandle(base::WeakPtr<UrlDownloader> downloader,
                 scoped_refptr<base::SequencedTaskRunner> downloader_task_runner)
@@ -40,17 +41,15 @@ class UrlDownloader::RequestHandle : public DownloadRequestHandleInterface {
   }
 
   // DownloadRequestHandleInterface
-  WebContents* GetWebContents() const override { return nullptr; }
-  DownloadManager* GetDownloadManager() const override { return nullptr; }
-  void PauseRequest() const override {
+  void PauseRequest() override {
     downloader_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&UrlDownloader::PauseRequest, downloader_));
   }
-  void ResumeRequest() const override {
+  void ResumeRequest() override {
     downloader_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&UrlDownloader::ResumeRequest, downloader_));
   }
-  void CancelRequest(bool user_cancel) const override {
+  void CancelRequest(bool user_cancel) override {
     downloader_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&UrlDownloader::CancelRequest, downloader_));
   }
@@ -218,7 +217,7 @@ void UrlDownloader::ResponseCompleted(int net_error) {
 }
 
 void UrlDownloader::OnStart(
-    std::unique_ptr<DownloadCreateInfo> create_info,
+    std::unique_ptr<download::DownloadCreateInfo> create_info,
     std::unique_ptr<ByteStreamReader> stream_reader,
     const download::DownloadUrlParameters::OnStartedCallback& callback) {
   create_info->request_handle.reset(new RequestHandle(

@@ -11,10 +11,10 @@
 #include "base/task_scheduler/post_task.h"
 #include "components/download/downloader/in_progress/download_entry.h"
 #include "components/download/downloader/in_progress/in_progress_cache.h"
+#include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_save_info.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
-#include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_interrupt_reasons_utils.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/loader/upload_data_stream_builder.h"
@@ -396,7 +396,7 @@ download::DownloadInterruptReason HandleSuccessfulServerResponse(
 }
 
 void HandleResponseHeaders(const net::HttpResponseHeaders* headers,
-                           DownloadCreateInfo* create_info) {
+                           download::DownloadCreateInfo* create_info) {
   if (!headers)
     return;
 

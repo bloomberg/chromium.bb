@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_CREATE_INFO_H_
-#define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_CREATE_INFO_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_CREATE_INFO_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_CREATE_INFO_H_
 
 #include <stdint.h>
 
@@ -15,11 +15,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/download_save_info.h"
 #include "components/download/public/common/download_source.h"
-#include "content/browser/download/download_request_handle.h"
-#include "content/common/content_export.h"
 #include "net/http/http_response_info.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/page_transition_types.h"
@@ -29,13 +30,13 @@ namespace net {
 class HttpResponseHeaders;
 }
 
-namespace content {
+namespace download {
 
 // Used for informing the download manager of a new download, since we don't
 // want to pass |DownloadItem|s between threads.
-struct CONTENT_EXPORT DownloadCreateInfo {
+struct COMPONENTS_DOWNLOAD_EXPORT DownloadCreateInfo {
   DownloadCreateInfo(const base::Time& start_time,
-                     std::unique_ptr<download::DownloadSaveInfo> save_info);
+                     std::unique_ptr<DownloadSaveInfo> save_info);
   DownloadCreateInfo();
   ~DownloadCreateInfo();
 
@@ -96,12 +97,19 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   // If the download is initially created in an interrupted state (because the
   // response was in error), then |result| would be something other than
   // INTERRUPT_REASON_NONE.
-  download::DownloadInterruptReason result;
+  DownloadInterruptReason result;
 
   // The download file save info.
-  std::unique_ptr<download::DownloadSaveInfo> save_info;
+  std::unique_ptr<DownloadSaveInfo> save_info;
+
+  // The render process id that initiates this download.
+  int render_process_id;
+
+  // The render frame id that initiates this download.
+  int render_frame_id;
 
   // The handle to the URLRequest sourcing this download.
+  // TODO(qinmin): remove this when network service is fully enabled.
   std::unique_ptr<DownloadRequestHandleInterface> request_handle;
 
   // ---------------------------------------------------------------------------
@@ -151,12 +159,12 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   std::string request_origin;
 
   // Source of the download, used in metrics.
-  download::DownloadSource download_source = download::DownloadSource::UNKNOWN;
+  DownloadSource download_source = DownloadSource::UNKNOWN;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadCreateInfo);
 };
 
-}  // namespace content
+}  // namespace download
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_CREATE_INFO_H_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_CREATE_INFO_H_

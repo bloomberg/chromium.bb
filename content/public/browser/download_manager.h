@@ -46,12 +46,15 @@
 
 class GURL;
 
+namespace download {
+struct DownloadCreateInfo;
+}  // namespace download
+
 namespace content {
 
 class BrowserContext;
 class ByteStreamReader;
 class DownloadManagerDelegate;
-struct DownloadCreateInfo;
 
 // Browser's download manager: manages all downloads and destination view.
 class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
@@ -124,7 +127,7 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
   // Returns the id assigned to the download.  If the DownloadCreateInfo
   // specifies an id, that id will be used.
   virtual void StartDownload(
-      std::unique_ptr<DownloadCreateInfo> info,
+      std::unique_ptr<download::DownloadCreateInfo> info,
       std::unique_ptr<InputStream> stream,
       const download::DownloadUrlParameters::OnStartedCallback& on_started) = 0;
 

@@ -13,6 +13,7 @@
 #include "net/http/http_response_headers.h"
 
 namespace download {
+struct DownloadCreateInfo;
 struct DownloadEntry;
 struct DownloadSaveInfo;
 class DownloadUrlParameters;
@@ -34,7 +35,6 @@ namespace content {
 
 class BrowserContext;
 class ResourceContext;
-struct DownloadCreateInfo;
 
 // Handle the url request completion status and return the interrupt reasons.
 // |cert_status| is ignored if error_code is not net::ERR_ABORTED.
@@ -63,7 +63,7 @@ HandleSuccessfulServerResponse(const net::HttpResponseHeaders& http_headers,
 // Parse response headers and update |create_info| accordingly.
 CONTENT_EXPORT void HandleResponseHeaders(
     const net::HttpResponseHeaders* headers,
-    DownloadCreateInfo* create_info);
+    download::DownloadCreateInfo* create_info);
 
 // Get the entry based on |guid| from in progress cache.
 CONTENT_EXPORT base::Optional<download::DownloadEntry> GetInProgressEntry(

@@ -17,9 +17,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_item.h"
 #include "content/browser/byte_stream.h"
-#include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_interrupt_reasons_utils.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_request_handle.h"
@@ -210,13 +210,14 @@ DownloadRequestCore::~DownloadRequestCore() {
     stream_writer_->RegisterCallback(base::Closure());
 }
 
-std::unique_ptr<DownloadCreateInfo>
+std::unique_ptr<download::DownloadCreateInfo>
 DownloadRequestCore::CreateDownloadCreateInfo(
     download::DownloadInterruptReason result) {
   DCHECK(!started_);
   started_ = true;
-  std::unique_ptr<DownloadCreateInfo> create_info(
-      new DownloadCreateInfo(base::Time::Now(), std::move(save_info_)));
+  std::unique_ptr<download::DownloadCreateInfo> create_info(
+      new download::DownloadCreateInfo(base::Time::Now(),
+                                       std::move(save_info_)));
 
   if (result == download::DOWNLOAD_INTERRUPT_REASON_NONE)
     create_info->remote_address = request()->GetSocketAddress().host();
@@ -253,7 +254,7 @@ bool DownloadRequestCore::OnResponseStarted(
         request()->response_headers()->response_code());
   }
 
-  std::unique_ptr<DownloadCreateInfo> create_info =
+  std::unique_ptr<download::DownloadCreateInfo> create_info =
       CreateDownloadCreateInfo(result);
   if (result != download::DOWNLOAD_INTERRUPT_REASON_NONE) {
     delegate_->OnStart(std::move(create_info),
@@ -428,7 +429,7 @@ void DownloadRequestCore::OnResponseCompleted(
   // OnResponseCompleted() called without OnResponseStarted(). This should only
   // happen when the request was aborted.
   DCHECK_NE(reason, download::DOWNLOAD_INTERRUPT_REASON_NONE);
-  std::unique_ptr<DownloadCreateInfo> create_info =
+  std::unique_ptr<download::DownloadCreateInfo> create_info =
       CreateDownloadCreateInfo(reason);
   std::unique_ptr<ByteStreamReader> empty_byte_stream;
   delegate_->OnStart(std::move(create_info), std::move(empty_byte_stream),

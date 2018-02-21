@@ -691,8 +691,6 @@ jumbo_source_set("browser") {
     "download/base_file.h",
     "download/base_file_posix.cc",
     "download/base_file_win.cc",
-    "download/download_create_info.cc",
-    "download/download_create_info.h",
     "download/download_destination_observer.h",
     "download/download_file.h",
     "download/download_file_factory.cc",

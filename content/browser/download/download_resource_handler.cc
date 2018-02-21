@@ -11,9 +11,9 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "content/browser/byte_stream.h"
-#include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_interrupt_reasons_utils.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_request_handle.h"
@@ -43,7 +43,7 @@ namespace {
 // Static function in order to prevent any accidental accesses to
 // DownloadResourceHandler members from the UI thread.
 static void StartOnUIThread(
-    std::unique_ptr<DownloadCreateInfo> info,
+    std::unique_ptr<download::DownloadCreateInfo> info,
     std::unique_ptr<DownloadResourceHandler::DownloadTabInfo> tab_info,
     std::unique_ptr<ByteStreamReader> stream,
     int render_process_id,
@@ -64,8 +64,12 @@ static void StartOnUIThread(
       frame_host = frame_tree_node->current_frame_host();
   }
 
-  DownloadManager* download_manager =
-      info->request_handle->GetDownloadManager();
+  DownloadManager* download_manager = nullptr;
+  if (frame_host) {
+    download_manager = BrowserContext::GetDownloadManager(
+        frame_host->GetProcess()->GetBrowserContext());
+  }
+
   if (!download_manager || !frame_host) {
     // NULL in unittests or if the page closed right after starting the
     // download.
@@ -82,6 +86,8 @@ static void StartOnUIThread(
   info->tab_referrer_url = tab_info->tab_referrer_url;
   info->ukm_source_id = tab_info->ukm_source_id;
   info->site_url = frame_host->GetSiteInstance()->GetSiteURL();
+  info->render_process_id = frame_host->GetProcess()->GetID();
+  info->render_frame_id = frame_host->GetRoutingID();
 
   download_manager->StartDownload(
       std::move(info),
@@ -246,7 +252,7 @@ void DownloadResourceHandler::ResumeRequest() {
 }
 
 void DownloadResourceHandler::OnStart(
-    std::unique_ptr<DownloadCreateInfo> create_info,
+    std::unique_ptr<download::DownloadCreateInfo> create_info,
     std::unique_ptr<ByteStreamReader> stream_reader,
     const download::DownloadUrlParameters::OnStartedCallback& callback) {
   // If the user cancels the download, then don't call start. Instead ignore the

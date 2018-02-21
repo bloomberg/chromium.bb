@@ -16,10 +16,12 @@ config("components_download_implementation") {
 component("public") {
   sources = [
     "download_content.h",
+    "download_create_info.h",
     "download_danger_type.h",
     "download_interrupt_reason_values.h",
     "download_interrupt_reasons.h",
     "download_item.h",
+    "download_request_handle_interface.h",
     "download_save_info.cc",
     "download_save_info.h",
     "download_source.h",
@@ -40,6 +42,7 @@ component("public") {
     "//components/download/internal/common:internal",
     "//crypto",
     "//net",
+    "//services/metrics/public/cpp:metrics_cpp",
     "//services/network/public/cpp",
     "//storage/browser",
     "//ui/base",

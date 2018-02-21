@@ -7,8 +7,8 @@
 
 #include <vector>
 
+#include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_item.h"
-#include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/common/content_export.h"
 

@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/download_url_parameters.h"
-#include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/url_downloader.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/content_export.h"
@@ -55,7 +55,7 @@ class CONTENT_EXPORT DownloadWorker : public UrlDownloadHandler::Delegate {
  private:
   // UrlDownloader::Delegate implementation.
   void OnUrlDownloadStarted(
-      std::unique_ptr<DownloadCreateInfo> create_info,
+      std::unique_ptr<download::DownloadCreateInfo> create_info,
       std::unique_ptr<DownloadManager::InputStream> input_stream,
       const download::DownloadUrlParameters::OnStartedCallback& callback)
       override;
@@ -79,7 +79,7 @@ class CONTENT_EXPORT DownloadWorker : public UrlDownloadHandler::Delegate {
   bool is_user_cancel_;
 
   // Used to control the network request. Live on UI thread.
-  std::unique_ptr<DownloadRequestHandleInterface> request_handle_;
+  std::unique_ptr<download::DownloadRequestHandleInterface> request_handle_;
 
   // Used to handle the url request. Live and die on IO thread.
   std::unique_ptr<UrlDownloadHandler, BrowserThread::DeleteOnIOThread>

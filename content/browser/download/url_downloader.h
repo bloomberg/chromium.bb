@@ -17,9 +17,12 @@
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
 
+namespace download {
+struct DownloadCreateInfo;
+}  // namespace download
+
 namespace content {
 class ByteStreamReader;
-struct DownloadCreateInfo;
 
 class UrlDownloader : public net::URLRequest::Delegate,
                       public DownloadRequestCore::Delegate,
@@ -54,10 +57,11 @@ class UrlDownloader : public net::URLRequest::Delegate,
   void ResponseCompleted(int net_error);
 
   // DownloadRequestCore::Delegate
-  void OnStart(std::unique_ptr<DownloadCreateInfo> download_create_info,
-               std::unique_ptr<ByteStreamReader> stream_reader,
-               const download::DownloadUrlParameters::OnStartedCallback&
-                   callback) override;
+  void OnStart(
+      std::unique_ptr<download::DownloadCreateInfo> download_create_info,
+      std::unique_ptr<ByteStreamReader> stream_reader,
+      const download::DownloadUrlParameters::OnStartedCallback& callback)
+      override;
   void OnReadyToRead() override;
 
   void PauseRequest();

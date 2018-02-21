@@ -22,14 +22,14 @@
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
+#include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/byte_stream.h"
-#include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_destination_observer.h"
 #include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_item_impl_delegate.h"
-#include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/mock_download_file.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
@@ -121,14 +121,11 @@ class MockDelegate : public DownloadItemImplDelegate {
   std::unique_ptr<TestBrowserContext> browser_context_;
 };
 
-class MockRequestHandle : public DownloadRequestHandleInterface {
+class MockRequestHandle : public download::DownloadRequestHandleInterface {
  public:
-  MOCK_CONST_METHOD0(GetWebContents, WebContents*());
-  MOCK_CONST_METHOD0(GetDownloadManager, DownloadManager*());
-  MOCK_CONST_METHOD0(PauseRequest, void());
-  MOCK_CONST_METHOD0(ResumeRequest, void());
-  MOCK_CONST_METHOD1(CancelRequest, void(bool));
-  MOCK_CONST_METHOD0(DebugString, std::string());
+  MOCK_METHOD0(PauseRequest, void());
+  MOCK_METHOD0(ResumeRequest, void());
+  MOCK_METHOD1(CancelRequest, void(bool));
 };
 
 class TestDownloadItemObserver : public download::DownloadItem::Observer {
@@ -268,7 +265,7 @@ class DownloadItemTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::UI,
             base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
         next_download_id_(download::DownloadItem::kInvalidId + 1) {
-    create_info_.reset(new DownloadCreateInfo());
+    create_info_.reset(new download::DownloadCreateInfo());
     create_info_->save_info = std::unique_ptr<download::DownloadSaveInfo>(
         new download::DownloadSaveInfo());
     create_info_->save_info->prompt_for_save_location = false;
@@ -277,7 +274,7 @@ class DownloadItemTest : public testing::Test {
   }
 
   DownloadItemImpl* CreateDownloadItemWithCreateInfo(
-      std::unique_ptr<DownloadCreateInfo> info) {
+      std::unique_ptr<download::DownloadCreateInfo> info) {
     DownloadItemImpl* download = new DownloadItemImpl(
         mock_delegate(), next_download_id_++, *(info.get()));
     allocated_downloads_[download] = base::WrapUnique(download);
@@ -407,7 +404,7 @@ class DownloadItemTest : public testing::Test {
     *return_path = path;
   }
 
-  DownloadCreateInfo* create_info() { return create_info_.get(); }
+  download::DownloadCreateInfo* create_info() { return create_info_.get(); }
 
   BrowserContext* browser_context() { return &browser_context_; }
 
@@ -418,7 +415,7 @@ class DownloadItemTest : public testing::Test {
   StrictMock<MockDelegate> mock_delegate_;
   std::map<download::DownloadItem*, std::unique_ptr<download::DownloadItem>>
       allocated_downloads_;
-  std::unique_ptr<DownloadCreateInfo> create_info_;
+  std::unique_ptr<download::DownloadCreateInfo> create_info_;
   uint32_t next_download_id_ = download::DownloadItem::kInvalidId + 1;
   TestBrowserContext browser_context_;
 };
@@ -613,7 +610,7 @@ TEST_F(DownloadItemTest, NotificationAfterTogglePause) {
   TestDownloadItemObserver observer(item);
   MockDownloadFile* mock_download_file(new MockDownloadFile);
   std::unique_ptr<DownloadFile> download_file(mock_download_file);
-  std::unique_ptr<DownloadRequestHandleInterface> request_handle(
+  std::unique_ptr<download::DownloadRequestHandleInterface> request_handle(
       new NiceMock<MockRequestHandle>);
 
   EXPECT_CALL(*mock_download_file, Initialize(_, _, _, _));
@@ -1166,7 +1163,7 @@ TEST_F(DownloadItemTest, Start) {
   std::unique_ptr<DownloadFile> download_file(mock_download_file);
   DownloadItemImpl* item = CreateDownloadItem();
   EXPECT_CALL(*mock_download_file, Initialize(_, _, _, _));
-  std::unique_ptr<DownloadRequestHandleInterface> request_handle(
+  std::unique_ptr<download::DownloadRequestHandleInterface> request_handle(
       new NiceMock<MockRequestHandle>);
   EXPECT_CALL(*mock_delegate(), DetermineDownloadTarget(item, _));
   item->Start(std::move(download_file), std::move(request_handle),
@@ -1228,7 +1225,7 @@ TEST_F(DownloadItemTest, StartFailedDownload) {
   // DownloadFile and DownloadRequestHandleInterface objects aren't created for
   // failed downloads.
   std::unique_ptr<DownloadFile> null_download_file;
-  std::unique_ptr<DownloadRequestHandleInterface> null_request_handle;
+  std::unique_ptr<download::DownloadRequestHandleInterface> null_request_handle;
   DownloadTargetCallback download_target_callback;
   EXPECT_CALL(*mock_delegate(), DetermineDownloadTarget(item, _))
       .WillOnce(SaveArg<1>(&download_target_callback));
@@ -2244,8 +2241,6 @@ class DownloadItemDestinationUpdateRaceTest
         file_(new ::testing::StrictMock<MockDownloadFile>()),
         request_handle_(new ::testing::StrictMock<MockRequestHandle>()) {
     DCHECK_EQ(GetParam().size(), static_cast<unsigned>(kEventCount));
-    EXPECT_CALL(*request_handle_, GetWebContents())
-        .WillRepeatedly(Return(nullptr));
   }
 
  protected:

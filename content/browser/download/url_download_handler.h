@@ -9,9 +9,11 @@
 #include "content/browser/byte_stream.h"
 #include "content/public/browser/download_manager.h"
 
-namespace content {
-
+namespace download {
 struct DownloadCreateInfo;
+}  // namespace download
+
+namespace content {
 
 // Class for handling the download of a url. Implemented by child classes.
 class CONTENT_EXPORT UrlDownloadHandler {
@@ -20,7 +22,7 @@ class CONTENT_EXPORT UrlDownloadHandler {
   class CONTENT_EXPORT Delegate {
    public:
     virtual void OnUrlDownloadStarted(
-        std::unique_ptr<DownloadCreateInfo> download_create_info,
+        std::unique_ptr<download::DownloadCreateInfo> download_create_info,
         std::unique_ptr<DownloadManager::InputStream> input_stream,
         const download::DownloadUrlParameters::OnStartedCallback& callback) = 0;
     // Called after the connection is cancelled or finished.
