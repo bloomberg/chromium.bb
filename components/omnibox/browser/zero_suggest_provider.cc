@@ -573,11 +573,8 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
                ? ResultType::MOST_VISITED
                : ResultType::DEFAULT_SERP;
 
-  // The const-cast allows the non-const AutocompleteProviderClient::GetPrefs()
-  // function to be called. OmniboxFieldTrial does not modify prefs, so the
-  // cast is safe in this application.
   if (OmniboxFieldTrial::InZeroSuggestMostVisitedWithoutSerpFieldTrial(
-          const_cast<AutocompleteProviderClient*>(client())->GetPrefs()) &&
+          client()->GetPrefs()) &&
       client()
           ->GetTemplateURLService()
           ->IsSearchResultsPageFromDefaultSearchProvider(current_url))
