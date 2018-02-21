@@ -28,6 +28,9 @@
 #include "build/build_config.h"
 
 #include <string.h>
+#if defined(OS_LINUX)
+#include "sandbox/linux/services/resource_limits.h"  // nogncheck
+#endif
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/allocator/Partitions.h"
@@ -121,8 +124,47 @@ void* ArrayBufferContents::AllocateMemoryOrNull(size_t size,
   return AllocateMemoryWithFlags(size, policy, base::PartitionAllocReturnNull);
 }
 
+// This method is used by V8's WebAssembly implementation to reserve a large
+// amount of inaccessible address space. This is used to enforce memory safety
+// in Wasm programs.
+void* ArrayBufferContents::ReserveMemory(size_t size) {
+  void* const hint = nullptr;
+  const size_t align = 64 << 10;  // Wasm page size
+
+#if defined(OS_LINUX)
+  // Linux by default has a small address space limit, which we chew up pretty
+  // quickly with large memory reservations. To mitigate this, we bump up the
+  // limit for array buffer reservations. See https://crbug.com/750378
+  //
+  // In general, returning nullptr is dangerous, as unsuspecting code may do an
+  // offset-from-null and end up with an accessible but incorrect address.  This
+  // function (ReserveMemory) is only used in contexts that expect allocation
+  // may fail and explicitly handle the nullptr return case. This code is also
+  // only used on 64-bit to create guard regions, which provides further
+  // protection.
+  if (!sandbox::ResourceLimits::AdjustCurrent(RLIMIT_AS, size)) {
+    return nullptr;
+  }
+#endif
+
+  constexpr bool commit = true;
+  return base::AllocPages(hint, size, align, base::PageInaccessible,
+                          base::PageTag::kChromium, !commit);
+}
+
 void ArrayBufferContents::FreeMemory(void* data) {
   Partitions::ArrayBufferPartition()->Free(data);
+}
+
+void ArrayBufferContents::ReleaseReservedMemory(void* data, size_t size) {
+#if defined(OS_LINUX)
+  // Linux by default has a small address space limit, which we chew up pretty
+  // quickly with large memory reservations. To mitigate this, we bump up the
+  // limit for array buffer reservations. Here we need to lower it back down.
+  // See https://crbug.com/750378
+  CHECK(sandbox::ResourceLimits::AdjustCurrent(RLIMIT_AS, -size));
+#endif
+  base::FreePages(data, size);
 }
 
 ArrayBufferContents::DataHandle ArrayBufferContents::CreateDataHandle(
