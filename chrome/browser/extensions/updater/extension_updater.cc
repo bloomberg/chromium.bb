@@ -362,7 +362,7 @@ void ExtensionUpdater::CheckNow(const CheckParams& params) {
         continue;
       }
       if (downloader_->AddPendingExtension(
-              *iter, info->update_url(),
+              *iter, info->update_url(), info->install_source(),
               pending_extension_manager->IsPolicyReinstallForCorruptionExpected(
                   *iter),
               request_id, params.fetch_priority))

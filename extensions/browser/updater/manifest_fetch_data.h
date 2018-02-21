@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "extensions/common/manifest.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -80,6 +81,11 @@ class ManifestFetchData {
           disable_reasons(reasons) {}
   };
 
+  // Returns a string to use for reporting an extension's install location.
+  // Some locations with a common purpose, such as the external locations, are
+  // grouped together and will return the same string.
+  static std::string GetSimpleLocationString(Manifest::Location loc);
+
   ManifestFetchData(const GURL& update_url,
                     int request_id,
                     const std::string& brand_code,
@@ -97,6 +103,7 @@ class ManifestFetchData {
                     const PingData* ping_data,
                     const std::string& update_url_data,
                     const std::string& install_source,
+                    const std::string& install_location,
                     FetchPriority fetch_priority);
 
   const GURL& base_url() const { return base_url_; }

@@ -29,6 +29,7 @@
 #include "extensions/browser/updater/extension_downloader.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
+#include "extensions/common/manifest.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace chromeos {
@@ -285,8 +286,8 @@ void ExternalCacheImpl::CheckCache() {
 
       if (update_url.is_valid()) {
         downloader_->AddPendingExtension(
-            entry.first, update_url, false, 0,
-            extensions::ManifestFetchData::FetchPriority::BACKGROUND);
+            entry.first, update_url, extensions::Manifest::EXTERNAL_POLICY,
+            false, 0, extensions::ManifestFetchData::FetchPriority::BACKGROUND);
       }
     }
 
