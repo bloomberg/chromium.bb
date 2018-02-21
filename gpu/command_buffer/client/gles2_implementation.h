@@ -29,6 +29,7 @@
 #include "gpu/command_buffer/client/gles2_impl_export.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_control_client.h"
+#include "gpu/command_buffer/client/logging.h"
 #include "gpu/command_buffer/client/mapped_memory.h"
 #include "gpu/command_buffer/client/query_tracker.h"
 #include "gpu/command_buffer/client/ref_counted.h"
@@ -39,27 +40,10 @@
 #include "gpu/command_buffer/common/context_result.h"
 #include "gpu/command_buffer/common/debug_marker_manager.h"
 
-#if DCHECK_IS_ON() && !defined(__native_client__) && \
-    !defined(GLES2_CONFORMANCE_TESTS)
-  #if defined(GLES2_INLINE_OPTIMIZATION)
-    // TODO(gman): Replace with macros that work with inline optmization.
-    #define GPU_CLIENT_SINGLE_THREAD_CHECK()
-    #define GPU_CLIENT_LOG(args)
-    #define GPU_CLIENT_LOG_CODE_BLOCK(code)
-    #define GPU_CLIENT_DCHECK_CODE_BLOCK(code)
-  #else
-    #include "base/logging.h"
-    #define GPU_CLIENT_SINGLE_THREAD_CHECK() SingleThreadChecker checker(this);
-    #define GPU_CLIENT_LOG(args)  DLOG_IF(INFO, debug_) << args;
-    #define GPU_CLIENT_LOG_CODE_BLOCK(code) code
-    #define GPU_CLIENT_DCHECK_CODE_BLOCK(code) code
-    #define GPU_CLIENT_DEBUG
-  #endif
+#if defined(GPU_CLIENT_DEBUG)
+#define GPU_CLIENT_SINGLE_THREAD_CHECK() SingleThreadChecker checker(this);
 #else
   #define GPU_CLIENT_SINGLE_THREAD_CHECK()
-  #define GPU_CLIENT_LOG(args)
-  #define GPU_CLIENT_LOG_CODE_BLOCK(code)
-  #define GPU_CLIENT_DCHECK_CODE_BLOCK(code)
 #endif
 
 #if defined(GPU_CLIENT_DEBUG)
@@ -813,8 +797,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   // Current GL error bits.
   uint32_t error_bits_;
 
-  // Whether or not to print debugging info.
-  bool debug_;
+  LogSettings log_settings_;
 
   // When true, the context is lost when a GL_OUT_OF_MEMORY error occurs.
   const bool lose_context_when_out_of_memory_;

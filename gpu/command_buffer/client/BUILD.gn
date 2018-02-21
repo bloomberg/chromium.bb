@@ -127,6 +127,8 @@ gles2_implementation_source_files = [
   "gles2_trace_implementation_impl_autogen.h",
   "gpu_switches.cc",
   "gpu_switches.h",
+  "logging.cc",
+  "logging.h",
   "program_info_manager.cc",
   "program_info_manager.h",
   "query_tracker.cc",

@@ -151,7 +151,6 @@ GLES2Implementation::GLES2Implementation(
       bound_pixel_pack_transfer_buffer_id_(0),
       bound_pixel_unpack_transfer_buffer_id_(0),
       error_bits_(0),
-      debug_(false),
       lose_context_when_out_of_memory_(lose_context_when_out_of_memory),
       support_client_side_arrays_(support_client_side_arrays),
       use_count_(0),
@@ -171,11 +170,6 @@ GLES2Implementation::GLES2Implementation(
   std::stringstream ss;
   ss << std::hex << this;
   this_in_hex_ = ss.str();
-
-  GPU_CLIENT_LOG_CODE_BLOCK({
-    debug_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableGPUClientLogging);
-  });
 
   share_group_ =
       (share_group ? std::move(share_group)
