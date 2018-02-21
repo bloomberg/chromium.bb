@@ -211,11 +211,8 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
                           std::move(image_worker_task_runner)),
         test_hooks_(test_hooks) {}
 
-  void CreateResourceAndRasterBufferProvider(
-      std::unique_ptr<RasterBufferProvider>* raster_buffer_provider,
-      std::unique_ptr<ResourcePool>* resource_pool) override {
-    test_hooks_->CreateResourceAndRasterBufferProvider(
-        this, raster_buffer_provider, resource_pool);
+  std::unique_ptr<RasterBufferProvider> CreateRasterBufferProvider() override {
+    return test_hooks_->CreateRasterBufferProvider(this);
   }
 
   bool WillBeginImplFrame(const viz::BeginFrameArgs& args) override {

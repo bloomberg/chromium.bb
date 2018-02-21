@@ -258,7 +258,7 @@ void ResourcePool::OnResourceReleased(size_t unique_id,
   DCHECK(busy_it != busy_resources_.end());
 
   PoolResource* resource = busy_it->get();
-  if (lost || evict_busy_resources_when_unused_) {
+  if (lost || evict_busy_resources_when_unused_ || resource->avoid_reuse()) {
     DeleteResource(std::move(*busy_it));
     busy_resources_.erase(busy_it);
     return;
@@ -301,6 +301,15 @@ void ResourcePool::PrepareForExport(const InUsePoolResource& resource) {
       viz::SingleReleaseCallback::Create(base::BindOnce(
           &ResourcePool::OnResourceReleased, weak_ptr_factory_.GetWeakPtr(),
           resource.resource_->unique_id()))));
+}
+
+void ResourcePool::InvalidateResources() {
+  while (!unused_resources_.empty())
+    DeleteResource(PopBack(&unused_resources_));
+  for (auto& pool_resource : busy_resources_)
+    pool_resource->mark_avoid_reuse();
+  for (auto& pair : in_use_resources_)
+    pair.second->mark_avoid_reuse();
 }
 
 void ResourcePool::ReleaseResource(InUsePoolResource in_use_resource) {
@@ -348,20 +357,27 @@ void ResourcePool::ReleaseResource(InUsePoolResource in_use_resource) {
   in_use_memory_usage_bytes_ -= ResourceUtil::UncheckedSizeInBytes<size_t>(
       pool_resource->size(), pool_resource->format());
 
+  // Save the ResourceId since the |pool_resource| can be deleted in the next
+  // step.
+  viz::ResourceId resource_id = pool_resource->resource_id();
+
   // Transfer resource to |unused_resources_| or |busy_resources_|, depending if
   // it was exported to the ResourceProvider via PrepareForExport(). If not,
-  // then we can immediately make the resource available to be reused.
-  if (!pool_resource->resource_id())
-    DidFinishUsingResource(std::move(it->second));
-  else
+  // then we can immediately make the resource available to be reused, unless it
+  // was marked not for reuse.
+  if (resource_id)
     busy_resources_.push_front(std::move(it->second));
+  else if (pool_resource->avoid_reuse())
+    DeleteResource(std::move(it->second));  // This deletes |pool_resource|.
+  else
+    DidFinishUsingResource(std::move(it->second));
   in_use_resources_.erase(it);
 
   // If the resource was exported, then it has a resource id. By removing the
   // resource id, we will be notified in the ReleaseCallback when the resource
   // is no longer exported and can be reused.
-  if (pool_resource->resource_id())
-    resource_provider_->RemoveImportedResource(pool_resource->resource_id());
+  if (resource_id)
+    resource_provider_->RemoveImportedResource(resource_id);
 
   // Now that we have evictable resources, schedule an eviction call for this
   // resource if necessary.

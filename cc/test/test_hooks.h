@@ -25,10 +25,8 @@ class TestHooks : public AnimationDelegate {
   ~TestHooks() override;
 
   // Compositor thread hooks.
-  virtual void CreateResourceAndRasterBufferProvider(
-      LayerTreeHostImpl* host_impl,
-      std::unique_ptr<RasterBufferProvider>* raster_buffer_provider,
-      std::unique_ptr<ResourcePool>* resource_pool);
+  virtual std::unique_ptr<RasterBufferProvider> CreateRasterBufferProvider(
+      LayerTreeHostImpl* host_impl);
   virtual void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
                                           const viz::BeginFrameArgs& args) {}
   virtual void DidFinishImplFrameOnThread(LayerTreeHostImpl* host_impl) {}
