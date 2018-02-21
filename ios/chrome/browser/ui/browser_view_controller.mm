@@ -214,6 +214,7 @@
 #import "ios/chrome/browser/ui/translate/language_selection_coordinator.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_player.h"
@@ -713,6 +714,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Height constraint for the secondary toolbar.
 @property(nonatomic, strong)
     NSLayoutConstraint* secondaryToolbarHeightConstraint;
+// Height constraint for the frame the secondary toolbar would have if
+// fullscreen was disabled.
+@property(nonatomic, strong)
+    NSLayoutConstraint* secondaryToolbarNoFullscreenHeightConstraint;
 // Current Fullscreen progress for the footers.
 @property(nonatomic, assign) CGFloat footerFullscreenProgress;
 // Y-dimension offset for placement of the header.
@@ -952,6 +957,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
 @synthesize primaryToolbarHeightConstraint = _primaryToolbarHeightConstraint;
 @synthesize secondaryToolbarHeightConstraint =
     _secondaryToolbarHeightConstraint;
+@synthesize secondaryToolbarNoFullscreenHeightConstraint =
+    _secondaryToolbarNoFullscreenHeightConstraint;
 @synthesize footerFullscreenProgress = _footerFullscreenProgress;
 @synthesize toolbarInterface = _toolbarInterface;
 @synthesize imageSaver = _imageSaver;
@@ -1633,6 +1640,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       [self primaryToolbarHeightWithInset];
   self.secondaryToolbarHeightConstraint.constant =
       [self secondaryToolbarHeightWithInset];
+  self.secondaryToolbarNoFullscreenHeightConstraint.constant =
+      [self secondaryToolbarHeightWithInset];
 }
 
 - (void)viewDidLayoutSubviews {
@@ -1754,6 +1763,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self updateVoiceSearchBarVisibilityAnimated:NO];
   // Change the height of the secondary toolbar to show/hide it.
   self.secondaryToolbarHeightConstraint.constant =
+      [self secondaryToolbarHeightWithInset];
+  self.secondaryToolbarNoFullscreenHeightConstraint.constant =
       [self secondaryToolbarHeightWithInset];
   [self updateFootersForFullscreenProgress:self.footerFullscreenProgress];
 }
@@ -2125,16 +2136,21 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
         self.secondaryToolbarCoordinator.viewController.view;
     self.secondaryToolbarHeightConstraint = [secondaryView.heightAnchor
         constraintEqualToConstant:[self secondaryToolbarHeightWithInset]];
+    self.secondaryToolbarHeightConstraint.active = YES;
 
-    [NSLayoutConstraint activateConstraints:@[
-      self.secondaryToolbarHeightConstraint,
-      [secondaryView.leadingAnchor
-          constraintEqualToAnchor:self.view.leadingAnchor],
-      [secondaryView.trailingAnchor
-          constraintEqualToAnchor:self.view.trailingAnchor],
-      [secondaryView.bottomAnchor
-          constraintEqualToAnchor:self.view.bottomAnchor],
-    ]];
+    AddSameConstraintsToSides(
+        self.view, secondaryView,
+        LayoutSides::kBottom | LayoutSides::kLeading | LayoutSides::kTrailing);
+
+    UILayoutGuide* guide =
+        AddNamedGuide(kSecondaryToolbarNoFullscreen, self.view);
+    self.secondaryToolbarNoFullscreenHeightConstraint = [guide.heightAnchor
+        constraintEqualToConstant:[self secondaryToolbarHeightWithInset]];
+    self.secondaryToolbarNoFullscreenHeightConstraint.active = YES;
+
+    AddSameConstraintsToSides(
+        self.view, guide,
+        LayoutSides::kBottom | LayoutSides::kLeading | LayoutSides::kTrailing);
   }
   [[self view] layoutIfNeeded];
 }
@@ -2259,6 +2275,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     AddNamedGuide(kForwardButtonGuide, self.view);
     AddNamedGuide(kToolsMenuGuide, self.view);
     AddNamedGuide(kTabSwitcherGuide, self.view);
+    AddNamedGuide(kSecondaryToolbar, self.view);
   }
   if (initialLayout) {
     [self.primaryToolbarCoordinator.viewController
@@ -3908,6 +3925,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
   if (IsUIRefreshPhase1Enabled()) {
     self.secondaryToolbarHeightConstraint.constant =
         [self secondaryToolbarHeightWithInset] * progress;
+
+    // Resize the infobars to take into account the changes in the toolbar.
+    [self infoBarContainerStateDidChangeAnimated:NO];
   } else {
     if (![_model currentTab].isVoiceSearchResultsTab)
       return;
@@ -5075,17 +5095,23 @@ bubblePresenterForFeature:(const base::Feature&)feature
   CGFloat height = [infoBarContainerView topmostVisibleInfoBarHeight];
   containerFrame.origin.y = CGRectGetMaxY(_contentArea.frame) - height;
   containerFrame.size.height = height;
+
   BOOL isViewVisible = self.visible;
-  [UIView animateWithDuration:0.1
-      animations:^{
-        [infoBarContainerView setFrame:containerFrame];
-      }
-      completion:^(BOOL finished) {
-        if (!isViewVisible)
-          return;
-        UIAccessibilityPostNotification(
-            UIAccessibilityLayoutChangedNotification, infoBarContainerView);
-      }];
+  ProceduralBlock animation = ^{
+    [infoBarContainerView setFrame:containerFrame];
+  };
+  void (^completion)(BOOL) = ^(BOOL finished) {
+    if (!isViewVisible)
+      return;
+    UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
+                                    infoBarContainerView);
+  };
+  if (animated) {
+    [UIView animateWithDuration:0.1 animations:animation completion:completion];
+  } else {
+    animation();
+    completion(YES);
+  }
 }
 
 #pragma mark - UIGestureRecognizerDelegate

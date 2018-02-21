@@ -18,6 +18,7 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -616,9 +617,22 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
   // Take into account the bottom safe area.
   // The top safe area is ignored because at rest (i.e. not during animations)
   // the infobar is aligned to the bottom of the screen, and thus should not
-  // have its top intersect whith any safe area.
+  // have its top intersect with any safe area.
   CGFloat bottomSafeAreaInset = SafeAreaInsetsForView(self).bottom;
   requiredHeight += bottomSafeAreaInset;
+
+  UILayoutGuide* guide = FindNamedGuide(kSecondaryToolbar, self);
+  UILayoutGuide* guideNoFullscreen =
+      FindNamedGuide(kSecondaryToolbarNoFullscreen, self);
+  if (guide && guideNoFullscreen) {
+    CGFloat toolbarHeightCurrent = guide.layoutFrame.size.height;
+    CGFloat toolbarHeightMax = guideNoFullscreen.layoutFrame.size.height;
+    if (toolbarHeightMax > 0) {
+      CGFloat fullscreenProgress = toolbarHeightCurrent / toolbarHeightMax;
+      CGFloat toolbarHeightInSafeArea = toolbarHeightMax - bottomSafeAreaInset;
+      requiredHeight += fullscreenProgress * toolbarHeightInSafeArea;
+    }
+  }
 
   return requiredHeight;
 }

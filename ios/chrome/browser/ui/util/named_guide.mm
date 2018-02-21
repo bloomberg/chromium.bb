@@ -12,6 +12,9 @@
 #endif
 
 // Named guide constants.
+GuideName* const kSecondaryToolbar = @"kSecondaryToolbar";
+GuideName* const kSecondaryToolbarNoFullscreen =
+    @"kSecondaryToolbarNoFullscreen";
 GuideName* const kOmniboxGuide = @"kOmniboxGuide";
 GuideName* const kBackButtonGuide = @"kBackButtonGuide";
 GuideName* const kForwardButtonGuide = @"kForwardButtonGuide";

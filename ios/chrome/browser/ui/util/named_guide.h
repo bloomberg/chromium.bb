@@ -13,6 +13,11 @@ typedef NSString GuideName;
 // The list of well-known UILayoutGuides.  When adding a new guide to the app,
 // create a constant for it below.
 
+// A guide that is constrained to match the frame of the secondary toolbar.
+extern GuideName* const kSecondaryToolbar;
+// A guide that is constrained to match the frame the secondary toolbar would
+// have if fullscreen was disabled.
+extern GuideName* const kSecondaryToolbarNoFullscreen;
 // A guide that is constrained to match the frame of the omnibox.
 extern GuideName* const kOmniboxGuide;
 // A guide that is constrained to match the frame of the back button's image.
