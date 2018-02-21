@@ -30,12 +30,14 @@
 #import "ios/chrome/browser/passwords/js_password_manager.h"
 #import "ios/chrome/browser/passwords/password_form_filler.h"
 #include "ios/chrome/browser/passwords/test_helpers.h"
+#include "ios/chrome/browser/web/chrome_web_client.h"
+#import "ios/chrome/browser/web/chrome_web_test.h"
 #import "ios/testing/wait_util.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/ssl_status.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
-#import "ios/web/public/test/web_test_with_web_state.h"
+#import "ios/web/public/test/web_js_test.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -156,15 +158,16 @@ PasswordController* CreatePasswordController(
 
 @end
 
-class PasswordControllerTest : public web::WebTestWithWebState {
+class PasswordControllerTest : public ChromeWebTest {
  public:
   PasswordControllerTest()
-      : store_(new testing::NiceMock<password_manager::MockPasswordStore>()) {}
+      : ChromeWebTest(std::make_unique<ChromeWebClient>()),
+        store_(new testing::NiceMock<password_manager::MockPasswordStore>()) {}
 
   ~PasswordControllerTest() override { store_->ShutdownOnUIThread(); }
 
   void SetUp() override {
-    web::WebTestWithWebState::SetUp();
+    ChromeWebTest::SetUp();
     passwordController_ =
         CreatePasswordController(web_state(), store_.get(), &weak_client_);
     @autoreleasepool {
@@ -198,7 +201,7 @@ class PasswordControllerTest : public web::WebTestWithWebState {
   // Returns an identifier for the |form_number|th form in the page.
   std::string FormName(int form_number) {
     NSString* kFormNamingScript =
-        @"__gCrWeb.common.getFormIdentifier("
+        @"__gCrWeb.form.getFormIdentifier("
          "    document.querySelectorAll('form')[%d]);";
     return base::SysNSStringToUTF8(ExecuteJavaScript(
         [NSString stringWithFormat:kFormNamingScript, form_number]));

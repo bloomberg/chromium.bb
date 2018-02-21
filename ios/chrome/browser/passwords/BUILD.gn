@@ -141,6 +141,8 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/web:test_support",
+    "//ios/chrome/browser/web:web_internal",
     "//ios/testing:ios_test_support",
     "//ios/testing:ocmock_support",
     "//ios/web",
@@ -188,5 +190,9 @@ js_compile_checked("injected_js") {
   visibility = [ ":passwords" ]
   sources = [
     "resources/password_controller.js",
+  ]
+  js_modules = [
+    "//ios/web/web_state/js/resources/form.js",
+    "//components/autofill/ios/fill/resources/fill.js",
   ]
 }
