@@ -24,8 +24,12 @@
 #include "base/trace_event/trace_event_impl.h"
 #include "base/trace_event/tracing_agent.h"
 #include "components/tracing/common/trace_config_file.h"
+#include "components/viz/common/features.h"
+#include "content/browser/devtools/devtools_frame_trace_recorder_for_viz.h"
 #include "content/browser/devtools/devtools_io_context.h"
 #include "content/browser/devtools/devtools_session.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
@@ -151,7 +155,12 @@ TracingHandler::TracingHandler(TracingHandler::Target target,
       did_initiate_recording_(false),
       return_as_stream_(false),
       gzip_compression_(false),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
+    frame_trace_recorder_ =
+        std::make_unique<DevToolsFrameTraceRecorderForViz>();
+  }
+}
 
 TracingHandler::~TracingHandler() {
 }
@@ -161,6 +170,14 @@ std::vector<TracingHandler*> TracingHandler::ForAgentHost(
     DevToolsAgentHostImpl* host) {
   return DevToolsSession::HandlersForAgentHost<TracingHandler>(
       host, Tracing::Metainfo::domainName);
+}
+
+void TracingHandler::SetRenderer(int process_host_id,
+                                 RenderFrameHostImpl* frame_host) {
+  if (!frame_trace_recorder_ || !frame_host)
+    return;
+  frame_trace_recorder_->SetFrameSinkId(
+      frame_host->GetRenderWidgetHost()->GetFrameSinkId());
 }
 
 void TracingHandler::Wire(UberDispatcher* dispatcher) {
@@ -381,6 +398,12 @@ void TracingHandler::OnRecordingEnabled(
                        "frameTreeNodeId", frame_tree_node_id_);
   if (target_ != Renderer)
     callback->sendSuccess();
+
+  bool screenshot_enabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+      TRACE_DISABLED_BY_DEFAULT("devtools.screenshot"), &screenshot_enabled);
+  if (frame_trace_recorder_ && screenshot_enabled)
+    frame_trace_recorder_->StartCapture();
 }
 
 void TracingHandler::OnBufferUsage(float percent_full,
@@ -455,6 +478,8 @@ void TracingHandler::StopTracing(
   buffer_usage_poll_timer_.reset();
   TracingController::GetInstance()->StopTracing(endpoint, agent_label);
   did_initiate_recording_ = false;
+  if (frame_trace_recorder_)
+    frame_trace_recorder_->StopCapture();
 }
 
 bool TracingHandler::IsTracing() const {
