@@ -260,16 +260,20 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
     }
     levels[get_padded_idx(pos, bwl)] = level;
   }
-  base_cdf_arr base_cdf = ec_ctx->coeff_base_cdf[txs_ctx][plane_type];
-  br_cdf_arr br_cdf =
-      ec_ctx->coeff_br_cdf[AOMMIN(txs_ctx, TX_32X32)][plane_type];
-  const TX_CLASS tx_class = tx_type_to_class[tx_type];
-  if (tx_class == TX_CLASS_2D) {
-    read_coeffs_reverse_2d(r, tx_size, 0, *eob - 1 - 1, scan, bwl, levels,
-                           base_cdf, br_cdf);
-  } else {
-    read_coeffs_reverse(r, tx_size, tx_type, 0, *eob - 1 - 1, scan, bwl, levels,
-                        base_cdf, br_cdf);
+  if (*eob > 1) {
+    base_cdf_arr base_cdf = ec_ctx->coeff_base_cdf[txs_ctx][plane_type];
+    br_cdf_arr br_cdf =
+        ec_ctx->coeff_br_cdf[AOMMIN(txs_ctx, TX_32X32)][plane_type];
+    const TX_CLASS tx_class = tx_type_to_class[tx_type];
+    if (tx_class == TX_CLASS_2D) {
+      read_coeffs_reverse_2d(r, tx_size, 1, *eob - 1 - 1, scan, bwl, levels,
+                             base_cdf, br_cdf);
+      read_coeffs_reverse(r, tx_size, tx_type, 0, 0, scan, bwl, levels,
+                          base_cdf, br_cdf);
+    } else {
+      read_coeffs_reverse(r, tx_size, tx_type, 0, *eob - 1 - 1, scan, bwl,
+                          levels, base_cdf, br_cdf);
+    }
   }
 
   // Loop to decode all signs in the transform block,
