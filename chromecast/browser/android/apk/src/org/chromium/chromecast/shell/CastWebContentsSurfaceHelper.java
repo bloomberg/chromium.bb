@@ -5,8 +5,6 @@
 package org.chromium.chromecast.shell;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
@@ -19,6 +17,7 @@ import android.widget.FrameLayout;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chromecast.base.Controller;
 import org.chromium.content.browser.ActivityContentVideoViewEmbedder;
 import org.chromium.content.browser.ContentVideoViewEmbedder;
 import org.chromium.content.browser.ContentView;
@@ -46,6 +45,9 @@ class CastWebContentsSurfaceHelper {
 
     private static final int TEARDOWN_GRACE_PERIOD_TIMEOUT_MILLIS = 300;
 
+    private final Controller<WebContents> mHasWebContentsState = new Controller<>();
+    private final Controller<Uri> mHasUriState = new Controller<>();
+
     private final Activity mHostActivity;
     private final boolean mShowInFragment;
     private final Handler mHandler;
@@ -54,9 +56,6 @@ class CastWebContentsSurfaceHelper {
 
     private Uri mUri;
     private String mInstanceId;
-    private BroadcastReceiver mWindowDestroyedBroadcastReceiver;
-    private BroadcastReceiver mScreenOffBroadcastReceiver;
-    private BroadcastReceiver mInternalStopReceiver;
     private ContentViewRenderView mContentViewRenderView;
     private WindowAndroid mWindow;
     private ContentViewCore mContentViewCore;
@@ -77,6 +76,31 @@ class CastWebContentsSurfaceHelper {
         mCastWebContentsLayout = castWebContentsLayout;
         mHandler = new Handler();
         mAudioManager = CastAudioManager.getAudioManager(getActivity());
+
+        // Receive broadcasts indicating the screen turned off while we have active WebContents.
+        mHasWebContentsState.watch(() -> {
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(CastIntents.ACTION_SCREEN_OFF);
+            return new LocalBroadcastReceiverScope(filter, (Intent intent) -> {
+                detachWebContentsIfAny();
+                maybeFinishLater();
+            });
+        });
+        // Receive broadcasts requesting to tear down this app while we have a valid URI.
+        mHasUriState.watch((Uri uri) -> {
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(CastIntents.ACTION_STOP_WEB_CONTENT);
+            return new LocalBroadcastReceiverScope(filter, (Intent intent) -> {
+                Log.d(TAG, "Intent action=" + intent.getAction());
+                String intentUri = intent.getStringExtra(CastWebContentsComponent.INTENT_EXTRA_URI);
+                if (!uri.toString().equals(intentUri)) {
+                    Log.d(TAG, "Current URI=" + uri + "; intent URI=" + intentUri);
+                    return;
+                }
+                detachWebContentsIfAny();
+                maybeFinishLater();
+            });
+        });
     }
 
     void onNewWebContents(
@@ -98,51 +122,8 @@ class CastWebContentsSurfaceHelper {
         // http://developer.android.com/training/managing-audio/volume-playback.html
         mHostActivity.setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
-        if (mWindowDestroyedBroadcastReceiver != null) {
-            getLocalBroadcastManager().unregisterReceiver(mWindowDestroyedBroadcastReceiver);
-        }
-
-        if (mScreenOffBroadcastReceiver != null) {
-            getLocalBroadcastManager().unregisterReceiver(mScreenOffBroadcastReceiver);
-        }
-
-        mScreenOffBroadcastReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                detachWebContentsIfAny();
-                maybeFinishLater();
-            }
-        };
-
-        IntentFilter screenOffIntentFilter = new IntentFilter();
-        screenOffIntentFilter.addAction(CastIntents.ACTION_SCREEN_OFF);
-        getLocalBroadcastManager().registerReceiver(
-                mScreenOffBroadcastReceiver, screenOffIntentFilter);
-
-        if (mInternalStopReceiver != null) {
-            getLocalBroadcastManager().unregisterReceiver(mWindowDestroyedBroadcastReceiver);
-        }
-        mInternalStopReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                Log.d(TAG, "Intent action=" + intent.getAction());
-                if (mUri == null
-                        || !mUri.toString().equals(intent.getStringExtra(
-                                   CastWebContentsComponent.INTENT_EXTRA_URI))) {
-                    Log.d(TAG,
-                            "Current URI=" + mUri + "; intent URI="
-                                    + intent.getStringExtra(
-                                              CastWebContentsComponent.INTENT_EXTRA_URI));
-                    return;
-                }
-                detachWebContentsIfAny();
-                maybeFinishLater();
-            }
-        };
-        IntentFilter internalStopReceiverFilter = new IntentFilter();
-        internalStopReceiverFilter.addAction(CastIntents.ACTION_STOP_WEB_CONTENT);
-        getLocalBroadcastManager().registerReceiver(
-                mInternalStopReceiver, internalStopReceiverFilter);
+        mHasUriState.set(mUri);
+        mHasWebContentsState.set(webContents);
 
         showWebContents(webContents);
     }
@@ -160,7 +141,8 @@ class CastWebContentsSurfaceHelper {
                         Intent in = new Intent();
                         in.setAction(CastIntents.ACTION_ON_WEB_CONTENT_STOPPED);
                         in.putExtra(CastWebContentsComponent.INTENT_EXTRA_URI, mUri.toString());
-                        getLocalBroadcastManager().sendBroadcastSync(in);
+                        LocalBroadcastManager.getInstance(ContextUtils.getApplicationContext())
+                                .sendBroadcastSync(in);
                     } else {
                         mHostActivity.finish();
                     }
@@ -279,18 +261,8 @@ class CastWebContentsSurfaceHelper {
     // Destroys all resources. After calling this method, this object must be dropped.
     void onDestroy() {
         detachWebContentsIfAny();
-
-        if (mWindowDestroyedBroadcastReceiver != null) {
-            getLocalBroadcastManager().unregisterReceiver(mWindowDestroyedBroadcastReceiver);
-        }
-
-        if (mScreenOffBroadcastReceiver != null) {
-            getLocalBroadcastManager().unregisterReceiver(mScreenOffBroadcastReceiver);
-        }
-
-        if (mInternalStopReceiver != null) {
-            getLocalBroadcastManager().unregisterReceiver(mInternalStopReceiver);
-        }
+        mHasWebContentsState.reset();
+        mHasUriState.reset();
     }
 
     String getInstanceId() {
@@ -299,10 +271,6 @@ class CastWebContentsSurfaceHelper {
 
     boolean isTouchInputEnabled() {
         return mTouchInputEnabled;
-    }
-
-    private LocalBroadcastManager getLocalBroadcastManager() {
-        return LocalBroadcastManager.getInstance(ContextUtils.getApplicationContext());
     }
 
     private native void nativeSetContentVideoViewEmbedder(
