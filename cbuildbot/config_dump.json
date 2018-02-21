@@ -7959,6 +7959,7 @@
     },
     "branch-util": {
         "active_waterfall": "chromiumos.tryserver",
+        "archive": false,
         "boards": [],
         "build_type": null,
         "builder_class_name": "release_builders.CreateBranchBuilder",
@@ -7992,6 +7993,7 @@
     },
     "branch-util-tryjob": {
         "active_waterfall": "chromiumos.tryserver",
+        "archive": false,
         "boards": [],
         "build_type": null,
         "builder_class_name": "release_builders.CreateBranchBuilder",

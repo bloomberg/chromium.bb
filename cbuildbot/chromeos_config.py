@@ -3895,6 +3895,9 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       builder_class_name='release_builders.CreateBranchBuilder',
       description='Used for creating/deleting branches (TPMs only)',
       active_waterfall=waterfall.WATERFALL_TRYBOT,
+      # This very weird tryjob is only run locally. It should never upload
+      # build artifacts.
+      archive=False,
   )
 
   site_config.AddWithoutTemplate(
