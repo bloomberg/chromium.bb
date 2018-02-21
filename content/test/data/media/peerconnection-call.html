@@ -223,9 +223,8 @@
     setOfferSdpTransform(removeVideoCodec);
 
     setOnLocalDescriptionError(function(error) {
-      var expectedMsg = 'Failed to set local offer sdp:' +
-          ' Session error code: ERROR_CONTENT. Session error description:' +
-          ' Failed to set local video description recv parameters..';
+      var expectedMsg = 'Failed to set local offer sdp: Failed to set local' +
+          ' video description recv parameters.';
       assertEquals(expectedMsg, error.message);
       reportTestSuccess();
     });
