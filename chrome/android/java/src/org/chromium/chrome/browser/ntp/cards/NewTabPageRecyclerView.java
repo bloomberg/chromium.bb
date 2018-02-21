@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.util.ViewUtils;
+import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * Simple wrapper on top of a RecyclerView that will acquire focus when tapped.  Ensures the
@@ -94,11 +95,14 @@ public class NewTabPageRecyclerView extends SuggestionsRecyclerView {
 
     @Override
     protected boolean getTouchEnabled() {
+        if (!super.getTouchEnabled()) return false;
+
+        if (DeviceFormFactor.isTablet()) return true;
+
         // The RecyclerView should not accept touch events while the URL bar is focused. This
         // prevents the RecyclerView from requesting focus during the URL focus animation, which
         // would cause the focus animation to be canceled. See https://crbug.com/798084.
-        return super.getTouchEnabled()
-                && (mFakeboxDelegate == null || !mFakeboxDelegate.isUrlBarFocused());
+        return mFakeboxDelegate == null || !mFakeboxDelegate.isUrlBarFocused();
     }
 
     private void scrollToFirstCard() {
