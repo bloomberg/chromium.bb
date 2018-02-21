@@ -303,7 +303,7 @@ All other options can be passed using `libfuzzer_options` property.
 [ClusterFuzz status]: clusterfuzz.md#Status-Links
 [Corpus GCS Bucket]: https://console.cloud.google.com/storage/clusterfuzz-corpus/libfuzzer
 [issue 638836]: https://bugs.chromium.org/p/chromium/issues/detail?id=638836
-[coverage script]: https://cs.chromium.org/chromium/src/testing/libfuzzer/coverage.py
+[coverage script]: https://cs.chromium.org/chromium/src/tools/code_coverage/coverage.py
 [gsutil]: https://cloud.google.com/storage/docs/gsutil
 [libFuzzer options]: https://llvm.org/docs/LibFuzzer.html#options
 [startup initialization]: https://llvm.org/docs/LibFuzzer.html#startup-initialization
