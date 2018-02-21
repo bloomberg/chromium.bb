@@ -22,6 +22,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge.AboutVersionStrings;
@@ -56,9 +57,11 @@ public class DataReductionPromoUtilsTest {
     @Test
     @SmallTest
     @UiThreadTest
-    @CommandLineFlags.Add("force-fieldtrials=DataCompressionProxyPromoVisibility/Enabled")
+    @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+            "force-fieldtrials=DataCompressionProxyPromoVisibility/Enabled"})
     @Feature({"DataReduction"})
-    public void testCanShowPromos() throws Throwable {
+    public void
+    testCanShowPromos() throws Throwable {
         if (DataReductionProxySettings.getInstance().isDataReductionProxyManaged()) return;
         Assert.assertFalse(DataReductionProxySettings.getInstance().isDataReductionProxyEnabled());
         Assert.assertTrue(DataReductionPromoUtils.canShowPromos());
