@@ -28,10 +28,6 @@ print <<EOF
 #include "av1/common/restoration.h"
 #endif
 
-#if CONFIG_CFL
-#include "av1/common/cfl.h"
-#endif
-
 struct macroblockd;
 
 /* Encoder forward decls */
@@ -42,6 +38,25 @@ struct search_site_config;
 struct mv;
 union int_mv;
 struct yv12_buffer_config;
+
+#if CONFIG_CFL
+/* Function pointers return by CfL functions */
+typedef void (*cfl_subsample_lbd_fn)(const uint8_t *input, int input_stride,
+                                     int16_t *output_q3, int width, int height);
+
+typedef void (*cfl_subsample_hbd_fn)(const uint16_t *input, int input_stride,
+                                     int16_t *output_q3, int width, int height);
+
+typedef void (*cfl_subtract_average_fn)(int16_t *pred_buf_q3);
+
+typedef void (*cfl_predict_lbd_fn)(const int16_t *pred_buf_q3, uint8_t *dst,
+                                   int dst_stride, TX_SIZE tx_size,
+                                   int alpha_q3);
+
+typedef void (*cfl_predict_hbd_fn)(const int16_t *pred_buf_q3, uint16_t *dst,
+                                   int dst_stride, TX_SIZE tx_size,
+                                   int alpha_q3, int bd);
+#endif
 EOF
 }
 forward_decls qw/av1_common_forward_decls/;

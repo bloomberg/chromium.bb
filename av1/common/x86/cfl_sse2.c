@@ -11,6 +11,7 @@
 
 #include <emmintrin.h>
 
+#include "av1/common/cfl.h"
 #include "./av1_rtcd.h"
 
 static INLINE __m128i fill_sum_epi32(__m128i l0) {
