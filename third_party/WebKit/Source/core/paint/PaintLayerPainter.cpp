@@ -343,12 +343,15 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       paint_flags & kPaintLayerPaintingCompositingDecorationPhase;
   bool is_painting_overflow_contents =
       paint_flags & kPaintLayerPaintingOverflowContents;
+  bool is_painting_mask = paint_flags & kPaintLayerPaintingCompositingMaskPhase;
+
   // Outline always needs to be painted even if we have no visible content.
   // It is painted as part of the decoration phase which paints content that
   // is not scrolled and should be above scrolled content.
   bool should_paint_self_outline =
       is_self_painting_layer && !is_painting_overlay_scrollbars &&
-      (is_painting_composited_decoration || !is_painting_scrolling_content) &&
+      (is_painting_composited_decoration ||
+       (!is_painting_scrolling_content && !is_painting_mask)) &&
       paint_layer_.GetLayoutObject().StyleRef().HasOutline();
 
   if (paint_flags & kPaintLayerPaintingRootBackgroundOnly &&
@@ -405,8 +408,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   // construction, so they are nested properly.
   Optional<ClipPathClipper> clip_path_clipper;
   bool should_paint_clip_path =
-      paint_layer_.GetLayoutObject().HasClipPath() &&
-      (paint_flags & kPaintLayerPaintingCompositingMaskPhase);
+      is_painting_mask && paint_layer_.GetLayoutObject().HasClipPath();
   if (should_paint_clip_path) {
     LayoutPoint visual_offset_from_root =
         paint_layer_.EnclosingPaginationLayer()
@@ -644,22 +646,18 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     }
   }  // FilterPainter block
 
-  bool should_paint_mask =
-      (paint_flags & kPaintLayerPaintingCompositingMaskPhase) &&
-      should_paint_content && paint_layer_.GetLayoutObject().HasMask() &&
-      !selection_only;
+  bool should_paint_mask = is_painting_mask && should_paint_content &&
+                           paint_layer_.GetLayoutObject().HasMask() &&
+                           !selection_only;
   if (should_paint_mask) {
     PaintMaskForFragments(layer_fragments, context, local_painting_info,
                           paint_flags);
-  }
-  bool is_painting_composited_mask_layer =
-      !RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
-      !(painting_info.GetGlobalPaintFlags() &
-        kGlobalPaintFlattenCompositingLayers) &&
-      paint_layer_.GetCompositedLayerMapping() &&
-      paint_layer_.GetCompositedLayerMapping()->MaskLayer() &&
-      (paint_flags & kPaintLayerPaintingCompositingMaskPhase);
-  if (is_painting_composited_mask_layer && !should_paint_mask) {
+  } else if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+             is_painting_mask &&
+             !(painting_info.GetGlobalPaintFlags() &
+               kGlobalPaintFlattenCompositingLayers) &&
+             paint_layer_.GetCompositedLayerMapping() &&
+             paint_layer_.GetCompositedLayerMapping()->MaskLayer()) {
     // In SPv1 it is possible for CompositedLayerMapping to create a mask layer
     // for just CSS clip-path but without a CSS mask. In that case we need to
     // paint a fully filled mask (which will subsequently clipped by the
