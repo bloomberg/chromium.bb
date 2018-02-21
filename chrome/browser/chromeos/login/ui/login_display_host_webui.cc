@@ -166,9 +166,21 @@ class AnimationObserver : public ui::ImplicitAnimationObserver {
   DISALLOW_COPY_AND_ASSIGN(AnimationObserver);
 };
 
+// Even if oobe is complete we may still want to show it, for example, if there
+// are no users registered then the user may want to enterprise enroll.
+bool IsOobeComplete() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+
+  // Oobe is completed and we have a user or we are enterprise enrolled.
+  return chromeos::StartupUtils::IsOobeCompleted() &&
+         (!user_manager::UserManager::Get()->GetUsers().empty() ||
+          connector->IsEnterpriseManaged());
+}
+
 bool ShouldShowSigninScreen(chromeos::OobeScreen first_screen) {
   return (first_screen == chromeos::OobeScreen::SCREEN_UNKNOWN &&
-          chromeos::StartupUtils::IsOobeCompleted()) ||
+          IsOobeComplete()) ||
          first_screen == chromeos::OobeScreen::SCREEN_SPECIAL_LOGIN;
 }
 
@@ -1183,9 +1195,8 @@ void ShowLoginWizard(OobeScreen first_screen) {
           switches::kNaturalScrollDefault));
 
   session_manager::SessionManager::Get()->SetSessionState(
-      StartupUtils::IsOobeCompleted()
-          ? session_manager::SessionState::LOGIN_PRIMARY
-          : session_manager::SessionState::OOBE);
+      IsOobeComplete() ? session_manager::SessionState::LOGIN_PRIMARY
+                       : session_manager::SessionState::OOBE);
 
   bool show_app_launch_splash_screen =
       (first_screen == OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
