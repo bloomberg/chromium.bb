@@ -20,6 +20,7 @@
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "specifics_translation.h"
 
 namespace chromeos {
 
@@ -326,7 +327,7 @@ bool PrintersSyncBridge::UpdatePrinterLocked(
 
   // Modify the printer in-place then notify the change processor.
   sync_pb::PrinterSpecifics* merged = iter->second.get();
-  merged->MergeFrom(*printer);
+  MergePrinterToSpecifics(*SpecificsToPrinter(*printer), merged);
   merged->set_updated_timestamp(base::Time::Now().ToJavaTime());
   CommitPrinterPut(*merged);
 
