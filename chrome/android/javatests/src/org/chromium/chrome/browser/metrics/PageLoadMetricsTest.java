@@ -122,15 +122,6 @@ public class PageLoadMetricsTest {
         public long getNavigationId() {
             return mNavigationId;
         }
-
-        @Override
-        public void onLoadedMainResource(WebContents webContents, long navigationId,
-                long dnsStartMs, long dnsEndMs, long connectStartMs, long connectEndMs,
-                long requestStartMs, long sendStartMs, long sendEndMs) {}
-
-        @Override
-        public void onNetworkQualityEstimate(WebContents webContents, long navigationId,
-                int effectiveConnectionType, long httpRttMs, long transportRttMs) {}
     }
 
     @Test
