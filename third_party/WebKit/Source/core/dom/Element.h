@@ -1014,9 +1014,6 @@ class CORE_EXPORT Element : public ContainerNode {
   // CloneElementWithoutChildren are used instead.
   Node* Clone(Document&, CloneChildrenFlag) override;
   virtual Element* CloneElementWithoutAttributesAndChildren(Document& factory);
-  // Clones all attribute-derived data, including subclass specifics (through
-  // CopyNonAttributePropertiesFromElement.)
-  void CloneDataFromElement(const Element&, CloneChildrenFlag);
 
   QualifiedName tag_name_;
 
