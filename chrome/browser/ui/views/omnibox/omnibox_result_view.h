@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_RESULT_VIEW_H_
 
 #include <stddef.h>
+#include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "components/omnibox/browser/autocomplete_match.h"
