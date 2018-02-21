@@ -4,8 +4,9 @@
 
 #include "chrome/browser/vr/content_input_delegate.h"
 
+#include "base/callback_helpers.h"
 #include "base/time/time.h"
-#include "chrome/browser/vr/model/text_input_info.h"
+#include "chrome/browser/vr/keyboard_edit.h"
 #include "chrome/browser/vr/platform_controller.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebMouseEvent.h"
@@ -17,6 +18,8 @@ namespace {
 static constexpr gfx::PointF kOutOfBoundsPoint = {-0.5f, -0.5f};
 
 }  // namespace
+
+ContentInputDelegate::ContentInputDelegate() {}
 
 ContentInputDelegate::ContentInputDelegate(ContentInputForwarder* content)
     : content_(content) {}
@@ -57,11 +60,22 @@ void ContentInputDelegate::OnContentUp(
       MakeMouseEvent(blink::WebInputEvent::kMouseUp, normalized_hit_point));
 }
 
-void ContentInputDelegate::OnWebInputEdited(const TextInputInfo& info,
+void ContentInputDelegate::OnWebInputEdited(const EditedText& info,
                                             bool commit) {
   if (!content_)
     return;
-  content_->OnWebInputEdited(info, commit);
+
+  last_keyboard_edit_ = info;
+
+  std::vector<vr::KeyboardEdit> edits;
+  if (commit) {
+    KeyboardEdit edit(KeyboardEditType::SUBMIT, base::ASCIIToUTF16(""), 0);
+    edits.push_back(edit);
+  } else {
+    edits = info.GetKeyboardEditList();
+  }
+
+  content_->OnWebInputEdited(edits);
 }
 
 
@@ -130,6 +144,68 @@ bool ContentInputDelegate::ContentGestureIsLocked(
 void ContentInputDelegate::OnContentBoundsChanged(int width, int height) {
   content_tex_css_width_ = width;
   content_tex_css_height_ = height;
+}
+
+void ContentInputDelegate::OnWebInputIndicesChanged(
+    int selection_start,
+    int selection_end,
+    int composition_start,
+    int composition_end,
+    base::OnceCallback<void(const TextInputInfo&)> callback) {
+  // The purpose of this method is to determine if we need to query content for
+  // the text surrounding the currently focused web input field.
+
+  // If the changed indices match with that from the last keyboard edit, then
+  // this is called in response to the user entering text using the keyboard, so
+  // we already know the text and don't need to ask content for it.
+  TextInputInfo i = last_keyboard_edit_.current;
+  if (i.selection_start == selection_start &&
+      i.selection_end == selection_end &&
+      i.composition_start == composition_start &&
+      i.composition_end == composition_end) {
+    base::ResetAndReturn(&callback).Run(i);
+    return;
+  }
+
+  // If the changed indices are the same as the previous ones, this is probably
+  // called as a side-effect of us requesting the text state below, so it's safe
+  // to ignore this update. If this is not called as a side-effect of us
+  // requesting the text state below, and the indices just happen to match the
+  // previous state, it's still okay to ignore this update. Consider the
+  // following scenario: 1) State after last request for web input state:
+  //     This is a test|
+  // 2) JS on the page changed the web input state to:
+  //     This blah test|
+  // In this case, 2) will trigger this function and we'll ignore it. The next
+  // time user types something, we'll calculate the diff from our stale version
+  // of the web input state, but because we're committing the delta between the
+  // previous and the current keyboard state, the update to content will still
+  // be correct. That is, even if the keyboard works with the incorrect version
+  // of the text state, the end result is still correct from the user's point of
+  // view. This is also how android IME works (it only requests text state when
+  // the indices actually change).
+  i = pending_text_input_info_;
+  if (i.selection_start == selection_start &&
+      i.selection_end == selection_end &&
+      i.composition_start == composition_start &&
+      i.composition_end == composition_end) {
+    return;
+  }
+
+  // The indices changed and we need to query the update state.
+  pending_text_input_info_.selection_start = selection_start;
+  pending_text_input_info_.selection_end = selection_end;
+  pending_text_input_info_.composition_start = composition_start;
+  pending_text_input_info_.composition_end = composition_end;
+  update_state_callback_ = std::move(callback);
+  content_->RequestWebInputText(base::BindOnce(
+      &ContentInputDelegate::OnWebInputTextChanged, base::Unretained(this)));
+}
+
+void ContentInputDelegate::OnWebInputTextChanged(const base::string16& text) {
+  pending_text_input_info_.text = text;
+  DCHECK(!update_state_callback_.is_null());
+  base::ResetAndReturn(&update_state_callback_).Run(pending_text_input_info_);
 }
 
 std::unique_ptr<blink::WebMouseEvent> ContentInputDelegate::MakeMouseEvent(

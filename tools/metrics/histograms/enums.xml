@@ -25574,6 +25574,7 @@ from previous Chrome versions.
       label="OmniboxSpeculativeServiceWorkerStartOnQueryInput:enabled"/>
   <int value="-1779753607" label="VizDisplayCompositor:disabled"/>
   <int value="-1778993296" label="ContextualSearchMlTapSuppression:disabled"/>
+  <int value="-1774818943" label="VrWebInputEditing:enabled"/>
   <int value="-1772172557" label="enable-osk-overscroll"/>
   <int value="-1768672408" label="ChromeDuplex:disabled"/>
   <int value="-1767470652" label="out-of-process-pdf"/>
@@ -26155,6 +26156,7 @@ from previous Chrome versions.
   <int value="-326083626" label="AppBanners:disabled"/>
   <int value="-323964300" label="ArcVpn:enabled"/>
   <int value="-323831744" label="token-binding:enabled"/>
+  <int value="-323508281" label="VrWebInputEditing:disabled"/>
   <int value="-322937746" label="disable-desktop-capture-picker-new-ui"/>
   <int value="-322827131" label="tab-management-experiment-type-basil"/>
   <int value="-320820051" label="enable-zero-copy"/>

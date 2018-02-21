@@ -5,6 +5,7 @@
 package org.chromium.content.browser.input;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Rect;
@@ -43,6 +44,7 @@ import org.chromium.content.browser.webcontents.WebContentsUserData;
 import org.chromium.content.browser.webcontents.WebContentsUserData.UserDataFactory;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.ImeEventObserver;
+import org.chromium.content_public.browser.InputMethodManagerWrapper;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.base.ime.TextInputType;
@@ -193,6 +195,14 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
     }
 
     /**
+     * Returns an instance of the default {@link InputMethodManagerWrapper}
+     */
+    public static InputMethodManagerWrapper createDefaultInputMethodManagerWrapper(
+            Context context) {
+        return new InputMethodManagerWrapperImpl(context);
+    }
+
+    /**
      * Create {@link ImeAdapterImpl} instance.
      * @param webContents WebContents instance.
      */
@@ -241,6 +251,11 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
             mCursorAnchorInfoController = null;
         }
         mNativeImeAdapterAndroid = nativeInit(mWebContents);
+    }
+
+    @Override
+    public InputConnection getActiveInputConnection() {
+        return mInputConnection;
     }
 
     @Override
@@ -342,10 +357,10 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
     }
 
     @Override
-    public void setInputMethodManagerWrapperForTest(InputMethodManagerWrapper immw) {
+    public void setInputMethodManagerWrapper(InputMethodManagerWrapper immw) {
         mInputMethodManagerWrapper = immw;
         if (mCursorAnchorInfoController != null) {
-            mCursorAnchorInfoController.setInputMethodManagerWrapperForTest(immw);
+            mCursorAnchorInfoController.setInputMethodManagerWrapper(immw);
         }
     }
 

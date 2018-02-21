@@ -1,0 +1,69 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/android/vr_shell/vr_input_connection.h"
+
+#include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
+#include "base/callback_helpers.h"
+#include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/vr/keyboard_edit.h"
+#include "chrome/browser/vr/model/text_input_info.h"
+#include "content/public/browser/web_contents.h"
+#include "jni/KeyboardEdit_jni.h"
+#include "jni/VrInputConnection_jni.h"
+
+using base::android::AttachCurrentThread;
+using base::android::JavaParamRef;
+
+namespace vr {
+
+VrInputConnection::VrInputConnection(content::WebContents* web_contents)
+    : weak_ptr_factory_(this) {
+  DCHECK(web_contents);
+  JNIEnv* env = AttachCurrentThread();
+  j_object_.Reset(Java_VrInputConnection_create(
+      env, reinterpret_cast<jlong>(this), web_contents->GetJavaWebContents()));
+}
+
+VrInputConnection::~VrInputConnection() {}
+
+base::WeakPtr<VrInputConnection> VrInputConnection::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
+void VrInputConnection::OnKeyboardEdit(
+    const std::vector<vr::KeyboardEdit>& edits) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  auto java_edit_array = Java_KeyboardEdit_createArray(env, edits.size());
+  int index = 0;
+  for (const auto& edit : edits) {
+    auto text = base::android::ConvertUTF16ToJavaString(env, edit.text());
+    auto java_edit = Java_KeyboardEdit_Constructor(env, edit.type(), text,
+                                                   edit.cursor_position());
+    env->SetObjectArrayElement(java_edit_array.obj(), index, java_edit.obj());
+    index++;
+  }
+  return Java_VrInputConnection_onKeyboardEdit(env, j_object_, java_edit_array);
+}
+
+void VrInputConnection::RequestTextState(vr::TextStateUpdateCallback callback) {
+  text_state_update_callback_ = std::move(callback);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_VrInputConnection_requestTextState(env, j_object_);
+}
+
+void VrInputConnection::UpdateTextState(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jstring jtext) {
+  DCHECK(!text_state_update_callback_.is_null());
+  std::string text;
+  base::android::ConvertJavaStringToUTF8(env, jtext, &text);
+  base::ResetAndReturn(&text_state_update_callback_)
+      .Run(base::UTF8ToUTF16(text));
+}
+
+}  // namespace vr

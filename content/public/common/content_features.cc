@@ -488,6 +488,10 @@ const char kIsolateOriginsFieldTrialParamName[] = "OriginsList";
 const base::Feature kKeepAliveRendererForKeepaliveRequests{
     "KeepAliveRendererForKeepaliveRequests", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether editing web input fields is enabled in VR.
+const base::Feature kVrWebInputEditing{"VrWebInputEditing",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether WebVR VSync-aligned render loop timing is enabled.
 const base::Feature kWebVrVsyncAlign{"WebVrVsyncAlign",
                                      base::FEATURE_ENABLED_BY_DEFAULT};

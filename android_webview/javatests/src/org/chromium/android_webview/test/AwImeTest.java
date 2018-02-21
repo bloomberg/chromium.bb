@@ -67,7 +67,7 @@ public class AwImeTest {
                     mTestJavascriptInterface, "test");
             // Let's not test against real input method.
             ImeAdapter imeAdapter = ImeAdapter.fromWebContents(mTestContainerView.getWebContents());
-            imeAdapter.setInputMethodManagerWrapperForTest(
+            imeAdapter.setInputMethodManagerWrapper(
                     TestInputMethodManagerWrapper.create(imeAdapter));
         });
     }

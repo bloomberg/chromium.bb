@@ -70,11 +70,10 @@ void UiTest::SetUp() {
   browser_ = std::make_unique<testing::NiceMock<MockUiBrowserInterface>>();
 }
 
-void UiTest::CreateScene(const UiInitialState& state) {
-  auto content_input_delegate =
-      std::make_unique<testing::NiceMock<MockContentInputDelegate>>();
+void UiTest::CreateSceneInternal(
+    const UiInitialState& state,
+    std::unique_ptr<MockContentInputDelegate> content_input_delegate) {
   content_input_delegate_ = content_input_delegate.get();
-
   ui_ = std::make_unique<Ui>(std::move(browser_.get()),
                              std::move(content_input_delegate), nullptr,
                              nullptr, state);
@@ -83,6 +82,12 @@ void UiTest::CreateScene(const UiInitialState& state) {
   model_->controller.transform.Translate3d(kStartControllerPosition);
 
   OnBeginFrame();
+}
+
+void UiTest::CreateScene(const UiInitialState& state) {
+  auto content_input_delegate =
+      std::make_unique<testing::NiceMock<MockContentInputDelegate>>();
+  CreateSceneInternal(state, std::move(content_input_delegate));
 }
 
 void UiTest::CreateScene(InCct in_cct, InWebVr in_web_vr) {

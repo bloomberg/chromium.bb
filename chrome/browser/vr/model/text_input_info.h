@@ -5,11 +5,15 @@
 #ifndef CHROME_BROWSER_VR_MODEL_TEXT_INPUT_INFO_H_
 #define CHROME_BROWSER_VR_MODEL_TEXT_INPUT_INFO_H_
 
+#include <vector>
+
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace vr {
+
+class KeyboardEdit;
 
 // Represents the state of an editable text field.
 struct TextInputInfo {
@@ -63,6 +67,8 @@ struct EditedText {
   bool operator!=(const EditedText& other) const { return !(*this == other); }
 
   void Update(const TextInputInfo& info);
+
+  std::vector<KeyboardEdit> GetKeyboardEditList() const;
 
   std::string ToString() const;
 

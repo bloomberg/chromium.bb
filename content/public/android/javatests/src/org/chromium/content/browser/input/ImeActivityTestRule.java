@@ -101,7 +101,7 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
                 }
             }
         };
-        getImeAdapter().setInputMethodManagerWrapperForTest(mInputMethodManagerWrapper);
+        getImeAdapter().setInputMethodManagerWrapper(mInputMethodManagerWrapper);
         Assert.assertEquals(0, mInputMethodManagerWrapper.getShowSoftInputCounter());
         mConnectionFactory =
                 new TestInputConnectionFactory(getImeAdapter().getInputConnectionFactoryForTest());

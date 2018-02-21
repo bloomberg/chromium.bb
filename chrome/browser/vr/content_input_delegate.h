@@ -6,9 +6,13 @@
 #define CHROME_BROWSER_VR_CONTENT_INPUT_DELEGATE_H_
 
 #include <memory>
+#include <vector>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/vr/macros.h"
+#include "chrome/browser/vr/model/text_input_info.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 
 namespace blink {
@@ -22,17 +26,22 @@ class PointF;
 
 namespace vr {
 
-struct TextInputInfo;
+class KeyboardEdit;
+
+typedef typename base::OnceCallback<void(const base::string16&)>
+    TextStateUpdateCallback;
 
 class ContentInputForwarder {
  public:
   virtual ~ContentInputForwarder() {}
   virtual void ForwardEvent(std::unique_ptr<blink::WebInputEvent> event,
                             int content_id) = 0;
-  // Text input specific.
-  virtual void OnWebInputEdited(const TextInputInfo& info, bool commit) = 0;
   virtual void ForwardDialogEvent(
       std::unique_ptr<blink::WebInputEvent> event) = 0;
+
+  // Text input specific.
+  virtual void OnWebInputEdited(const std::vector<KeyboardEdit>& edits) = 0;
+  virtual void RequestWebInputText(TextStateUpdateCallback callback) = 0;
 };
 
 class PlatformController;
@@ -40,7 +49,7 @@ class PlatformController;
 // Receives interaction events with the web content.
 class ContentInputDelegate {
  public:
-  ContentInputDelegate() {}
+  ContentInputDelegate();
   explicit ContentInputDelegate(ContentInputForwarder* content);
   virtual ~ContentInputDelegate();
 
@@ -51,7 +60,7 @@ class ContentInputDelegate {
   virtual void OnContentUp(const gfx::PointF& normalized_hit_point);
 
   // Text Input specific.
-  void OnWebInputEdited(const TextInputInfo& info, bool commit);
+  void OnWebInputEdited(const EditedText& info, bool commit);
 
   // The following functions are virtual so that they may be overridden in the
   // MockContentInputDelegate.
@@ -72,8 +81,27 @@ class ContentInputDelegate {
 
   void OnContentBoundsChanged(int width, int height);
 
+  // This should be called in reponse to selection and composition changes.
+  // The given callback will may be called asynchronously with the updated text
+  // state. This is because we may have to query content for the text after the
+  // index change.
+  VIRTUAL_FOR_MOCKS void OnWebInputIndicesChanged(
+      int selection_start,
+      int selection_end,
+      int composition_start,
+      int compositon_end,
+      base::OnceCallback<void(const TextInputInfo&)> callback);
+
   void OnPlatformControllerInitialized(PlatformController* controller) {
     controller_ = controller;
+  }
+
+  void SetContentInputForwarderForTest(ContentInputForwarder* content) {
+    content_ = content;
+  }
+
+  void OnWebInputTextChangedForTest(const base::string16& text) {
+    OnWebInputTextChanged(text);
   }
 
  private:
@@ -84,6 +112,7 @@ class ContentInputDelegate {
       blink::WebInputEvent::Type type,
       const gfx::PointF& normalized_web_content_location);
   bool ContentGestureIsLocked(blink::WebInputEvent::Type type);
+  void OnWebInputTextChanged(const base::string16& text);
 
   int content_tex_css_width_ = 0;
   int content_tex_css_height_ = 0;
@@ -92,6 +121,10 @@ class ContentInputDelegate {
 
   ContentInputForwarder* content_ = nullptr;
   PlatformController* controller_ = nullptr;
+
+  EditedText last_keyboard_edit_;
+  TextInputInfo pending_text_input_info_;
+  base::OnceCallback<void(const TextInputInfo&)> update_state_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentInputDelegate);
 };

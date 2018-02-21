@@ -51,6 +51,10 @@ class UiTest : public testing::Test {
   void CreateSceneForAutoPresentation();
 
  protected:
+  void CreateSceneInternal(
+      const UiInitialState& state,
+      std::unique_ptr<MockContentInputDelegate> content_input_delegate);
+
   void SetIncognito(bool incognito);
 
   // Check whether a named element is visible. In this test, visibilility is the

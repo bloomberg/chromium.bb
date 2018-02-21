@@ -124,6 +124,8 @@ static_library("vr_common") {
     "ganesh_surface_provider.cc",
     "ganesh_surface_provider.h",
     "keyboard_delegate.h",
+    "keyboard_edit.cc",
+    "keyboard_edit.h",
     "keyboard_ui_interface.h",
     "macros.h",
     "metrics_helper.cc",

@@ -41,9 +41,7 @@ class MockBrowserUiInterface : public BrowserUiInterface {
   MOCK_METHOD0(OnAssetsComponentReady, void());
 
   MOCK_METHOD1(ShowSoftInput, void(bool));
-  MOCK_METHOD2(UpdateWebInputSelectionIndices, void(int, int));
-  MOCK_METHOD2(UpdateWebInputCompositionIndices, void(int, int));
-  MOCK_METHOD1(UpdateWebInputText, void(const base::string16&));
+  MOCK_METHOD4(UpdateWebInputIndices, void(int, int, int, int));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBrowserUiInterface);
