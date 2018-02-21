@@ -74,6 +74,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   // not a control or ARIA control.
   bool IsGenericFocusableElement() const;
   AXObject* MenuButtonForMenu() const;
+  AXObject* MenuButtonForMenuIfExists() const;
   Element* MenuItemElementForMenu() const;
   Element* MouseButtonListener() const;
   bool IsNativeCheckboxOrRadio() const;
