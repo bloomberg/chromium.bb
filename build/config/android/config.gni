@@ -263,6 +263,8 @@ if (is_android) {
   # Path to the SDK's android.jar
   android_sdk_jar = "$android_sdk/android.jar"
 
+  zipalign_path = "$android_sdk_build_tools/zipalign"
+
   # Subdirectories inside android_ndk_root that contain the sysroot for the
   # associated platform.
   x86_android_sysroot_subdir =
