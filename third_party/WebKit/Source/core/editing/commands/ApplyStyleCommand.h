@@ -193,15 +193,15 @@ class CORE_EXPORT ApplyStyleCommand final : public CompositeEditCommand {
   Position StartPosition();
   Position EndPosition();
 
-  Member<EditingStyle> style_;
-  InputEvent::InputType input_type_;
-  EPropertyLevel property_level_;
+  const Member<EditingStyle> style_;
+  const InputEvent::InputType input_type_;
+  const EPropertyLevel property_level_;
   Position start_;
   Position end_;
   bool use_ending_selection_;
-  Member<Element> styled_inline_element_;
-  bool remove_only_;
-  IsInlineElementToRemoveFunction is_inline_element_to_remove_function_;
+  const Member<Element> styled_inline_element_;
+  const bool remove_only_;
+  IsInlineElementToRemoveFunction const is_inline_element_to_remove_function_;
 };
 
 enum ShouldStyleAttributeBeEmpty {
