@@ -44,6 +44,22 @@ void WontCompile() {
   ([](Optional<Test> param) {})(Optional<int>(in_place, 1));
 }
 
+#elif defined(NCTEST_EXPLICIT_VALUE_FORWARD_CONSTRUCTOR)  // [r"fatal error: no matching function for call to object of type"]
+
+// Optional<T>(U&&) constructor is marked explicit if T is not convertible
+// from U&&.
+void WontCompile() {
+  struct Test {
+    // Declares as explicit so that Test is still constructible from int,
+    // but not convertible.
+    explicit Test(int a) {}
+  };
+
+  static_assert(!std::is_convertible<int&&, Test>::value,
+                "int&& to Test is convertible");
+  ([](Optional<Test> param) {})(1);
+}
+
 #endif
 
 }  // namespace base

@@ -465,6 +465,83 @@ TEST(OptionalTest, ConstructorForwardInitListAndArguments) {
   }
 }
 
+TEST(OptionalTest, ForwardConstructor) {
+  {
+    Optional<double> a(1);
+    EXPECT_TRUE(a.has_value());
+    EXPECT_EQ(1.0, a.value());
+  }
+
+  // Test that default type of 'U' is value_type.
+  {
+    struct TestData {
+      int a;
+      double b;
+      bool c;
+    };
+
+    Optional<TestData> a({1, 2.0, true});
+    EXPECT_TRUE(a.has_value());
+    EXPECT_EQ(1, a->a);
+    EXPECT_EQ(2.0, a->b);
+    EXPECT_TRUE(a->c);
+  }
+
+  // If T has a constructor with a param Optional<U>, and another ctor with a
+  // param U, then T(Optional<U>) should be used for Optional<T>(Optional<U>)
+  // constructor.
+  {
+    enum class ParamType {
+      DEFAULT_CONSTRUCTED,
+      COPY_CONSTRUCTED,
+      MOVE_CONSTRUCTED,
+      INT,
+      IN_PLACE,
+      OPTIONAL_INT,
+    };
+    struct Test {
+      Test() : param_type(ParamType::DEFAULT_CONSTRUCTED) {}
+      Test(const Test& param) : param_type(ParamType::COPY_CONSTRUCTED) {}
+      Test(Test&& param) : param_type(ParamType::MOVE_CONSTRUCTED) {}
+      explicit Test(int param) : param_type(ParamType::INT) {}
+      explicit Test(in_place_t param) : param_type(ParamType::IN_PLACE) {}
+      explicit Test(Optional<int> param)
+          : param_type(ParamType::OPTIONAL_INT) {}
+
+      ParamType param_type;
+    };
+
+    // Overload resolution with copy-conversion constructor.
+    {
+      const Optional<int> arg(in_place, 1);
+      Optional<Test> testee(arg);
+      EXPECT_EQ(ParamType::OPTIONAL_INT, testee->param_type);
+    }
+
+    // Overload resolution with move conversion constructor.
+    {
+      Optional<Test> testee(Optional<int>(in_place, 1));
+      EXPECT_EQ(ParamType::OPTIONAL_INT, testee->param_type);
+    }
+
+    // Default constructor should be used.
+    {
+      Optional<Test> testee(in_place);
+      EXPECT_EQ(ParamType::DEFAULT_CONSTRUCTED, testee->param_type);
+    }
+  }
+
+  {
+    struct Test {
+      Test(int a) {}  // NOLINT(runtime/explicit)
+    };
+    // If T is convertible from U, it is not marked as explicit.
+    static_assert(std::is_convertible<int, Test>::value,
+                  "Int should be convertible to Test.");
+    ([](Optional<Test> param) {})(1);
+  }
+}
+
 TEST(OptionalTest, NulloptConstructor) {
   constexpr Optional<int> a(base::nullopt);
   EXPECT_FALSE(a);
