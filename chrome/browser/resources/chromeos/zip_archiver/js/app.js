@@ -243,8 +243,10 @@ unpacker.app = {
     }
 
     return unpacker.app.moduleLoadedPromise.then(function() {
-      if (!unpacker.app.volumeLoadedPromises[fileSystemId])
-        return Promise.reject(fileSystemId + ' requested before mounting');
+      if (!unpacker.app.volumeLoadedPromises[fileSystemId]) {
+        console.error(fileSystemId + ' requested before mounting');
+        return Promise.reject('NOT_FOUND');
+      }
 
       // Decrement the counter when the mounting process ends.
       unpacker.app.volumeLoadedPromises[fileSystemId]
