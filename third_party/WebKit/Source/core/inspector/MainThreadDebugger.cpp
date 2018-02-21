@@ -57,7 +57,6 @@
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectedFrames.h"
-#include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/V8InspectorString.h"
 #include "core/page/Page.h"
 #include "core/timing/MemoryInfo.h"
@@ -93,7 +92,6 @@ MainThreadDebugger* MainThreadDebugger::instance_ = nullptr;
 
 MainThreadDebugger::MainThreadDebugger(v8::Isolate* isolate)
     : ThreadDebugger(isolate),
-      task_runner_(std::make_unique<InspectorTaskRunner>()),
       paused_(false) {
   MutexLocker locker(CreationMutex());
   DCHECK(!instance_);
@@ -219,16 +217,6 @@ MainThreadDebugger* MainThreadDebugger::Instance() {
       ThreadDebugger::From(V8PerIsolateData::MainThreadIsolate());
   DCHECK(debugger && !debugger->IsWorker());
   return static_cast<MainThreadDebugger*>(debugger);
-}
-
-void MainThreadDebugger::InterruptMainThreadAndRun(
-    InspectorTaskRunner::Task task) {
-  MutexLocker locker(CreationMutex());
-  if (instance_) {
-    instance_->task_runner_->AppendTask(std::move(task));
-    instance_->task_runner_->InterruptAndRunAllTasksDontWait(
-        instance_->isolate_);
-  }
 }
 
 // In the test, we just assume that we hit a devtool's break point during the

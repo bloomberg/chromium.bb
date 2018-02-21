@@ -44,6 +44,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/DocumentNameCollection.h"
 #include "core/html/HTMLIFrameElement.h"
+#include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/MainThreadDebugger.h"
 #include "core/loader/FrameLoader.h"
 #include "core/script/Modulator.h"
@@ -131,7 +132,7 @@ void LocalWindowProxy::Initialize() {
   // evaluation is forbiden during creating of snapshot, we should ignore any
   // inspector interruption to avoid JavaScript execution.
   InspectorTaskRunner::IgnoreInterruptsScope inspector_ignore_interrupts(
-      MainThreadDebugger::Instance()->TaskRunner());
+      GetFrame()->GetInspectorTaskRunner());
   v8::HandleScope handle_scope(GetIsolate());
 
   CreateContext();

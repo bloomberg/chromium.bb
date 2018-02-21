@@ -50,6 +50,8 @@ class CORE_EXPORT WorkerThreadDebugger final : public ThreadDebugger {
   bool IsWorker() override { return true; }
 
   int ContextGroupId(WorkerThread*);
+  void WorkerThreadCreated(WorkerThread*);
+  void WorkerThreadDestroyed(WorkerThread*);
   void ContextCreated(WorkerThread*, v8::Local<v8::Context>);
   void ContextWillBeDestroyed(WorkerThread*, v8::Local<v8::Context>);
   void ExceptionThrown(WorkerThread*, ErrorEvent*);
