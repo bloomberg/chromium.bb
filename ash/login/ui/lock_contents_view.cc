@@ -339,9 +339,15 @@ void LockContentsView::OnUsersChanged(
   opt_secondary_auth_ = nullptr;
   users_list_ = nullptr;
   rotation_actions_.clear();
+  users_.clear();
+
+  // If there are no users we have no UI to build.
+  if (users.empty()) {
+    LOG(ERROR) << "Empty user list received";
+    return;
+  }
 
   // Build user state list.
-  users_.clear();
   for (const mojom::LoginUserInfoPtr& user : users)
     users_.push_back(UserState{user->basic_user_info->account_id});
 
