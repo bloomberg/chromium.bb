@@ -4750,18 +4750,10 @@ static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
 
   if (!frame_is_intra_only(cm)) {
 #if CONFIG_AMVR
-#if CONFIG_EIGHTH_PEL_MV_ONLY
-    set_high_precision_mv(cpi, 1, cpi->common.cur_frame_force_integer_mv);
-#else
     set_high_precision_mv(cpi, (*q) < HIGH_PRECISION_MV_QTHRESH,
                           cpi->common.cur_frame_force_integer_mv);
-#endif  // CONFIG_EIGHTH_PEL_MV_ONLY
-#else
-#if CONFIG_EIGHTH_PEL_MV_ONLY
-    set_high_precision_mv(cpi, 1);
 #else
     set_high_precision_mv(cpi, (*q) < HIGH_PRECISION_MV_QTHRESH);
-#endif  // CONFIG_EIGHTH_PEL_MV_ONLY
 #endif
   }
 
@@ -6702,17 +6694,9 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   aom_usec_timer_start(&cmptimer);
 
 #if CONFIG_AMVR
-#if CONFIG_EIGHTH_PEL_MV_ONLY
-  set_high_precision_mv(cpi, 1, 0);
-#else
   set_high_precision_mv(cpi, ALTREF_HIGH_PRECISION_MV, 0);
-#endif  // CONFIG_EIGHTH_PEL_MV_ONLY
-#else
-#if CONFIG_EIGHTH_PEL_MV_ONLY
-  set_high_precision_mv(cpi, 1);
 #else
   set_high_precision_mv(cpi, ALTREF_HIGH_PRECISION_MV);
-#endif  // CONFIG_EIGHTH_PEL_MV_ONLY
 #endif
 
   // Is multi-arf enabled.

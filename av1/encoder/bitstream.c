@@ -3742,14 +3742,10 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
       if (cm->cur_frame_force_integer_mv) {
         cm->allow_high_precision_mv = 0;
       } else {
-#if !CONFIG_EIGHTH_PEL_MV_ONLY
         aom_wb_write_bit(wb, cm->allow_high_precision_mv);
-#endif  // !CONFIG_EIGHTH_PEL_MV_ONLY
       }
 #else
-#if !CONFIG_EIGHTH_PEL_MV_ONLY
       aom_wb_write_bit(wb, cm->allow_high_precision_mv);
-#endif  // !CONFIG_EIGHTH_PEL_MV_ONLY
 #endif
       fix_interp_filter(cm, cpi->td.counts);
       write_frame_interp_filter(cm->interp_filter, wb);
