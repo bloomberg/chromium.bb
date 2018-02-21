@@ -35,8 +35,8 @@ OffscreenCanvasSurfaceImpl::~OffscreenCanvasSurfaceImpl() {
   if (has_created_compositor_frame_sink_) {
     host_frame_sink_manager_->UnregisterFrameSinkHierarchy(
         parent_frame_sink_id_, frame_sink_id_);
-    host_frame_sink_manager_->InvalidateFrameSinkId(frame_sink_id_);
   }
+  host_frame_sink_manager_->InvalidateFrameSinkId(frame_sink_id_);
 }
 
 void OffscreenCanvasSurfaceImpl::CreateCompositorFrameSink(
