@@ -255,7 +255,8 @@ bool InputMethodEngine::IsSpecialPage(ui::InputMethod* input_method) {
   // Checks if the last committed url is whitelisted url.
   url::Origin origin = url::Origin::Create(url);
   std::vector<GURL> whitelist_urls{GURL(url::kAboutBlankURL),
-                                   GURL(chrome::kChromeUINewTabURL)};
+                                   GURL(chrome::kChromeUINewTabURL),
+                                   GURL(chrome::kChromeSearchLocalNtpUrl)};
   for (const GURL& whitelist_url : whitelist_urls) {
     if (url::Origin::Create(whitelist_url).IsSameOriginWith(origin))
       return false;

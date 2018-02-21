@@ -324,6 +324,7 @@
 #include "chrome/browser/payments/payment_request_factory.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
+#include "chrome/browser/ui/search/new_tab_page_navigation_throttle.h"
 #include "chrome/common/importer/profile_import.mojom.h"
 #endif
 
@@ -3528,6 +3529,11 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       DevToolsWindow::MaybeCreateNavigationThrottle(handle);
   if (devtools_throttle)
     throttles.push_back(std::move(devtools_throttle));
+
+  std::unique_ptr<content::NavigationThrottle> new_tab_page_throttle =
+      NewTabPageNavigationThrottle::MaybeCreateThrottleFor(handle);
+  if (new_tab_page_throttle)
+    throttles.push_back(std::move(new_tab_page_throttle));
 #endif
 
   return throttles;

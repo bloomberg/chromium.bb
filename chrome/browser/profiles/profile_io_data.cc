@@ -126,9 +126,6 @@
 
 #if defined(OS_ANDROID)
 #include "content/public/browser/android/content_protocol_handler.h"
-#else
-#include "chrome/browser/ui/search/new_tab_page_interceptor_service.h"
-#include "chrome/browser/ui/search/new_tab_page_interceptor_service_factory.h"
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
@@ -456,15 +453,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   // later delivery to the job factory in Init().
   params->protocol_handler_interceptor =
       protocol_handler_registry->CreateJobInterceptorFactory();
-
-#if !defined(OS_ANDROID)
-  NewTabPageInterceptorService* new_tab_interceptor_service =
-      NewTabPageInterceptorServiceFactory::GetForProfile(profile);
-  if (new_tab_interceptor_service) {
-    params->new_tab_page_interceptor =
-        new_tab_interceptor_service->CreateInterceptor();
-  }
-#endif
 
 #if defined(OS_CHROMEOS)
   // Enable client certificates for the Chrome OS sign-in frame, if this feature

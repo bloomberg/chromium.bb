@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
+#include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/md_bookmarks/md_bookmarks_ui.h"
 #include "chrome/common/url_constants.h"
@@ -72,7 +73,12 @@ class ExtensionURLRewriteBrowserTest : public ExtensionBrowserTest {
   void TestURLNotShown(const GURL& url) {
     ui_test_utils::NavigateToURL(browser(), url);
     EXPECT_EQ("", GetLocationBarText());
-    EXPECT_EQ(url, GetNavigationEntry()->GetVirtualURL());
+    if (url == chrome::kChromeUINewTabURL) {
+      EXPECT_EQ(local_ntp_test_utils::GetFinalNtpUrl(browser()->profile()),
+                GetNavigationEntry()->GetVirtualURL());
+    } else {
+      EXPECT_EQ(url, GetNavigationEntry()->GetVirtualURL());
+    }
   }
 };
 

@@ -32,6 +32,12 @@ void SetUserSelectedDefaultSearchProvider(Profile* profile,
                                           const std::string& base_url,
                                           const std::string& ntp_url);
 
+// Get the URL that WebContents->GetVisibleURL() will return after navigating to
+// chrome://newtab/.  While this should typically be chrome://newtab/, in a test
+// environment where there is no network connection, it may be
+// chrome-search://local-ntp/local-ntp.html.
+GURL GetFinalNtpUrl(Profile* profile);
+
 }  // namespace local_ntp_test_utils
 
 #endif  // CHROME_BROWSER_UI_SEARCH_LOCAL_NTP_TEST_UTILS_H_
