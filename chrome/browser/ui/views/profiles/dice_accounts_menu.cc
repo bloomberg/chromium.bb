@@ -84,8 +84,8 @@ DiceAccountsMenu::DiceAccountsMenu(const std::vector<AccountInfo>& accounts,
 
 void DiceAccountsMenu::Show(views::View* anchor_view) {
   DCHECK(!runner_);
-  runner_ =
-      std::make_unique<views::MenuRunner>(&menu_, views::MenuRunner::COMBOBOX);
+  runner_ = std::make_unique<views::MenuRunner>(
+      &menu_, views::MenuRunner::COMBOBOX | views::MenuRunner::ALWAYS_VIEWS);
   runner_->RunMenuAt(anchor_view->GetWidget(), nullptr,
                      anchor_view->GetBoundsInScreen(),
                      views::MENU_ANCHOR_BUBBLE_BELOW, ui::MENU_SOURCE_MOUSE);
