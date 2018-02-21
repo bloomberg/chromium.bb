@@ -286,6 +286,21 @@ void AccessibilityController::ToggleDictation() {
     client_->ToggleDictation();
 }
 
+void AccessibilityController::SilenceSpokenFeedback() {
+  if (client_)
+    client_->SilenceSpokenFeedback();
+}
+
+void AccessibilityController::OnTwoFingerTouchStart() {
+  if (client_)
+    client_->OnTwoFingerTouchStart();
+}
+
+void AccessibilityController::OnTwoFingerTouchStop() {
+  if (client_)
+    client_->OnTwoFingerTouchStop();
+}
+
 void AccessibilityController::ShouldToggleSpokenFeedbackViaTouch(
     base::OnceCallback<void(bool)> callback) {
   if (client_)

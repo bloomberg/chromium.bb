@@ -37,7 +37,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_error_notifier_factory_ash.h"
-#include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/sync/sync_error_notifier_factory_ash.h"
 #include "chrome/browser/ui/ash/chrome_keyboard_ui.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
@@ -122,10 +121,6 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     return AccessibilityManager::Get()->ShouldShowAccessibilityMenu();
   }
 
-  void SilenceSpokenFeedback() const override {
-    TtsController::GetInstance()->Stop();
-  }
-
   void SaveScreenMagnifierScale(double scale) override {
     if (chromeos::MagnificationManager::Get())
       chromeos::MagnificationManager::Get()->SaveScreenMagnifierScale(scale);
@@ -137,16 +132,6 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
           ->GetSavedScreenMagnifierScale();
     }
     return std::numeric_limits<double>::min();
-  }
-
-  void OnTwoFingerTouchStart() override {
-    DCHECK(AccessibilityManager::Get());
-    AccessibilityManager::Get()->OnTwoFingerTouchStart();
-  }
-
-  void OnTwoFingerTouchStop() override {
-    DCHECK(AccessibilityManager::Get());
-    AccessibilityManager::Get()->OnTwoFingerTouchStop();
   }
 
  private:

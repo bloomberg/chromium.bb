@@ -42,8 +42,6 @@ bool DefaultAccessibilityDelegate::ShouldShowAccessibilityMenu() const {
          controller->IsHighContrastEnabled();
 }
 
-void DefaultAccessibilityDelegate::SilenceSpokenFeedback() const {}
-
 void DefaultAccessibilityDelegate::SaveScreenMagnifierScale(double scale) {}
 
 double DefaultAccessibilityDelegate::GetSavedScreenMagnifierScale() {
