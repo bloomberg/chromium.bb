@@ -56,6 +56,13 @@ typedef struct TableRecord
   int cmp (Tag t) const
   { return t.cmp (tag); }
 
+  static int cmp (const void *pa, const void *pb)
+  {
+    const TableRecord *a = (const TableRecord *) pa;
+    const TableRecord *b = (const TableRecord *) pb;
+    return b->cmp (a->tag);
+  }
+
   inline bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -64,9 +71,9 @@ typedef struct TableRecord
 
   Tag		tag;		/* 4-byte identifier. */
   CheckSum	checkSum;	/* CheckSum for this table. */
-  UINT32		offset;		/* Offset from beginning of TrueType font
+  Offset32	offset;		/* Offset from beginning of TrueType font
 				 * file. */
-  UINT32		length;		/* Length of this table. */
+  HBUINT32	length;		/* Length of this table. */
   public:
   DEFINE_SIZE_STATIC (16);
 } OpenTypeTable;
@@ -81,7 +88,7 @@ typedef struct OffsetTable
   {
     return tables[i];
   }
-  inline unsigned int get_table_tags (unsigned int start_offset,
+  inline unsigned int get_table_tags (unsigned int  start_offset,
 				      unsigned int *table_count, /* IN/OUT */
 				      hb_tag_t     *table_tags /* OUT */) const
   {
@@ -118,6 +125,50 @@ typedef struct OffsetTable
   }
 
   public:
+
+  inline bool serialize (hb_serialize_context_t *c,
+			 hb_tag_t sfnt_tag,
+			 Supplier<hb_tag_t> &tags,
+			 Supplier<hb_blob_t *> &blobs,
+			 unsigned int table_count)
+  {
+    TRACE_SERIALIZE (this);
+    /* alloc 12 for the OTHeader */
+    if (unlikely (!c->extend_min (*this))) return_trace (false);
+    /* write sfntVersion (bytes 0..3) */
+    sfnt_version.set (sfnt_tag);
+    /* take space for numTables, searchRange, entrySelector, RangeShift
+     * and the TableRecords themselves
+     */
+    if (unlikely (!tables.serialize (c, table_count))) return_trace (false);
+
+    /* write OffsetTables, alloc for and write actual table blobs */
+    for (unsigned int i = 0; i < table_count; i++)
+    {
+      TableRecord &rec = tables.array[i];
+      hb_blob_t *blob = blobs[i];
+      rec.tag.set (tags[i]);
+      rec.length.set (hb_blob_get_length (blob));
+      rec.checkSum.set_for_data (hb_blob_get_data (blob, nullptr), rec.length);
+      rec.offset.serialize (c, this);
+      // take room for the table
+      void *p = c->allocate_size<void> (rec.length);
+      if (unlikely (!p)) {return false;}
+      /* copy the actual table */
+      memcpy (p, hb_blob_get_data (blob, nullptr), rec.length);
+      /* 4-byte allignment */
+      if (rec.length % 4)
+	p = c->allocate_size<void> (4 - rec.length % 4);
+    }
+    tags += table_count;
+    blobs += table_count;
+
+    /* TODO: update head table checkSumAdjustment. */
+
+    tables.qsort ();
+    return_trace (true);
+  }
+
   inline bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -154,7 +205,7 @@ struct TTCHeaderVersion1
   Tag		ttcTag;		/* TrueType Collection ID string: 'ttcf' */
   FixedVersion<>version;	/* Version of the TTC Header (1.0),
 				 * 0x00010000u */
-  ArrayOf<LOffsetTo<OffsetTable>, UINT32>
+  ArrayOf<LOffsetTo<OffsetTable>, HBUINT32>
 		table;		/* Array of offsets to the OffsetTable for each font
 				 * from the beginning of the file */
   public:
@@ -247,6 +298,18 @@ struct OpenTypeFontFile
     case TTCTag:	return u.ttcHeader.get_face (i);
     default:		return Null(OpenTypeFontFace);
     }
+  }
+
+  inline bool serialize_single (hb_serialize_context_t *c,
+				hb_tag_t sfnt_tag,
+			        Supplier<hb_tag_t> &tags,
+			        Supplier<hb_blob_t *> &blobs,
+			        unsigned int table_count)
+  {
+    TRACE_SERIALIZE (this);
+    assert (sfnt_tag != TTCTag);
+    if (unlikely (!c->extend_min (*this))) return_trace (false);
+    return_trace (u.fontFace.serialize (c, sfnt_tag, tags, blobs, table_count));
   }
 
   inline bool sanitize (hb_sanitize_context_t *c) const
