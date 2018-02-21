@@ -1057,7 +1057,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 
   const int use_angle_delta = av1_use_angle_delta(bsize);
   mbmi->angle_delta[PLANE_TYPE_Y] =
-      (use_angle_delta && av1_is_directional_mode(mbmi->mode, bsize))
+      (use_angle_delta && av1_is_directional_mode(mbmi->mode))
           ? read_angle_delta(r, ec_ctx->angle_delta_cdf[mbmi->mode - V_PRED])
           : 0;
 
@@ -1084,8 +1084,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
     }
 #endif  // !CONFIG_CFL
     mbmi->angle_delta[PLANE_TYPE_UV] =
-        (use_angle_delta &&
-         av1_is_directional_mode(get_uv_mode(mbmi->uv_mode), bsize))
+        (use_angle_delta && av1_is_directional_mode(get_uv_mode(mbmi->uv_mode)))
             ? read_angle_delta(r,
                                ec_ctx->angle_delta_cdf[mbmi->uv_mode - V_PRED])
             : 0;
@@ -1377,7 +1376,7 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
   mbmi->mode = read_intra_mode(r, ec_ctx->y_mode_cdf[size_group_lookup[bsize]]);
 
   mbmi->angle_delta[PLANE_TYPE_Y] =
-      use_angle_delta && av1_is_directional_mode(mbmi->mode, bsize)
+      use_angle_delta && av1_is_directional_mode(mbmi->mode)
           ? read_angle_delta(r, ec_ctx->angle_delta_cdf[mbmi->mode - V_PRED])
           : 0;
 #if CONFIG_MONO_VIDEO
@@ -1403,8 +1402,7 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
     }
 #endif  // !CONFIG_CFL
     mbmi->angle_delta[PLANE_TYPE_UV] =
-        use_angle_delta &&
-                av1_is_directional_mode(get_uv_mode(mbmi->uv_mode), bsize)
+        use_angle_delta && av1_is_directional_mode(get_uv_mode(mbmi->uv_mode))
             ? read_angle_delta(r,
                                ec_ctx->angle_delta_cdf[mbmi->uv_mode - V_PRED])
             : 0;

@@ -47,14 +47,8 @@ static const INTERINTRA_MODE intra_to_interintra_mode[INTRA_MODES] = {
 
 #define CONFIG_USE_ANGLE_DELTA_SUB8X8 0
 
-static INLINE int av1_is_directional_mode(PREDICTION_MODE mode,
-                                          BLOCK_SIZE bsize) {
-#if CONFIG_INTRA_EDGE
-  (void)bsize;
+static INLINE int av1_is_directional_mode(PREDICTION_MODE mode) {
   return mode >= V_PRED && mode <= D67_PRED;
-#else
-  return mode >= V_PRED && mode <= D67_PRED && bsize >= BLOCK_8X8;
-#endif
 }
 
 static INLINE int av1_use_angle_delta(BLOCK_SIZE bsize) {

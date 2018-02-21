@@ -840,8 +840,7 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
   }
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_EXT_INTRA_MOD
-  if (av1_is_directional_mode(mbmi->mode, bsize) &&
-      av1_use_angle_delta(bsize)) {
+  if (av1_is_directional_mode(mbmi->mode) && av1_use_angle_delta(bsize)) {
 #if CONFIG_ENTROPY_STATS
     ++counts->angle_delta[mbmi->mode - V_PRED]
                          [mbmi->angle_delta[PLANE_TYPE_Y] + MAX_ANGLE_DELTA];
@@ -859,7 +858,7 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
                            xd->plane[AOM_PLANE_U].subsampling_y))
     return;
 #if CONFIG_EXT_INTRA_MOD
-  if (av1_is_directional_mode(get_uv_mode(mbmi->uv_mode), bsize) &&
+  if (av1_is_directional_mode(get_uv_mode(mbmi->uv_mode)) &&
       av1_use_angle_delta(bsize)) {
 #if CONFIG_ENTROPY_STATS
     ++counts->angle_delta[mbmi->uv_mode - V_PRED]

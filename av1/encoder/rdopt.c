@@ -2750,7 +2750,7 @@ static int intra_mode_info_cost_y(const AV1_COMP *cpi, const MACROBLOCK *x,
     }
   }
 #endif  // CONFIG_FILTER_INTRA
-  if (av1_is_directional_mode(mbmi->mode, bsize)) {
+  if (av1_is_directional_mode(mbmi->mode)) {
     if (av1_use_angle_delta(bsize)) {
 #if CONFIG_EXT_INTRA_MOD
       total_rate += x->angle_delta_cost[mbmi->mode - V_PRED]
@@ -2806,7 +2806,7 @@ static int intra_mode_info_cost_uv(const AV1_COMP *cpi, const MACROBLOCK *x,
       total_rate += palette_mode_cost;
     }
   }
-  if (av1_is_directional_mode(get_uv_mode(mode), mbmi->sb_type)) {
+  if (av1_is_directional_mode(get_uv_mode(mode))) {
     if (av1_use_angle_delta(bsize)) {
 #if CONFIG_EXT_INTRA_MOD
       total_rate +=
@@ -2870,8 +2870,7 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
   // RD estimation.
   model_rd_for_sb(cpi, bsize, x, xd, 0, 0, &this_rd_stats.rate,
                   &this_rd_stats.dist, &this_rd_stats.skip, &temp_sse);
-  if (av1_is_directional_mode(mbmi->mode, bsize) &&
-      av1_use_angle_delta(bsize)) {
+  if (av1_is_directional_mode(mbmi->mode) && av1_use_angle_delta(bsize)) {
 #if CONFIG_EXT_INTRA_MOD
     mode_cost +=
         x->angle_delta_cost[mbmi->mode - V_PRED]
@@ -3408,7 +3407,7 @@ static void angle_estimation(const uint8_t *src, int src_stride, int rows,
   uint64_t hist_sum = 0;
   for (i = 0; i < DIRECTIONAL_MODES; ++i) hist_sum += hist[i];
   for (i = 0; i < INTRA_MODES; ++i) {
-    if (av1_is_directional_mode(i, bsize)) {
+    if (av1_is_directional_mode(i)) {
       const uint8_t angle_bin = mode_to_angle_bin[i];
       uint64_t score = 2 * hist[angle_bin];
       int weight = 2;
@@ -3463,7 +3462,7 @@ static void highbd_angle_estimation(const uint8_t *src8, int src_stride,
   uint64_t hist_sum = 0;
   for (i = 0; i < DIRECTIONAL_MODES; ++i) hist_sum += hist[i];
   for (i = 0; i < INTRA_MODES; ++i) {
-    if (av1_is_directional_mode(i, bsize)) {
+    if (av1_is_directional_mode(i)) {
       const uint8_t angle_bin = mode_to_angle_bin[i];
       uint64_t score = 2 * hist[angle_bin];
       int weight = 2;
@@ -3580,7 +3579,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
         this_model_rd > best_model_rd + (best_model_rd >> 1))
       continue;
     if (this_model_rd < best_model_rd) best_model_rd = this_model_rd;
-    is_directional_mode = av1_is_directional_mode(mbmi->mode, bsize);
+    is_directional_mode = av1_is_directional_mode(mbmi->mode);
     if (is_directional_mode && directional_mode_skip_mask[mbmi->mode]) continue;
     if (is_directional_mode && av1_use_angle_delta(bsize)) {
       this_rd_stats.rate = INT_MAX;
@@ -5561,8 +5560,7 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     int this_rate;
     RD_STATS tokenonly_rd_stats;
     UV_PREDICTION_MODE mode = uv_rd_search_mode_order[mode_idx];
-    const int is_directional_mode =
-        av1_is_directional_mode(get_uv_mode(mode), mbmi->sb_type);
+    const int is_directional_mode = av1_is_directional_mode(get_uv_mode(mode));
     if (!(cpi->sf.intra_uv_mode_mask[txsize_sqr_up_map[max_tx_size]] &
           (1 << mode)))
       continue;
@@ -9815,7 +9813,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     if (ref_frame == INTRA_FRAME) {
       RD_STATS rd_stats_y;
       TX_SIZE uv_tx;
-      is_directional_mode = av1_is_directional_mode(mbmi->mode, bsize);
+      is_directional_mode = av1_is_directional_mode(mbmi->mode);
       if (is_directional_mode && av1_use_angle_delta(bsize)) {
         int rate_dummy;
         int64_t model_rd = INT64_MAX;

@@ -1648,7 +1648,7 @@ static void build_intra_predictors_high(const MACROBLOCKD *xd,
   const uint16_t *above_ref = ref - ref_stride;
   const uint16_t *left_ref = ref - 1;
   int p_angle = 0;
-  const int is_dr_mode = av1_is_directional_mode(mode, xd->mi[0]->mbmi.sb_type);
+  const int is_dr_mode = av1_is_directional_mode(mode);
 #if CONFIG_FILTER_INTRA
   const int use_filter_intra =
       plane > 0 ? 0 : xd->mi[0]->mbmi.filter_intra_mode_info.use_filter_intra;
@@ -1874,8 +1874,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   int need_above = extend_modes[mode] & NEED_ABOVE;
   int need_above_left = extend_modes[mode] & NEED_ABOVELEFT;
   int p_angle = 0;
-  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  const int is_dr_mode = av1_is_directional_mode(mode, mbmi->sb_type);
+  const int is_dr_mode = av1_is_directional_mode(mode);
 #if CONFIG_FILTER_INTRA
   const int use_filter_intra =
       plane > 0 ? 0 : xd->mi[0]->mbmi.filter_intra_mode_info.use_filter_intra;
