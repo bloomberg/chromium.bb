@@ -2303,6 +2303,19 @@
         "args": [
           "--jobs=1"
         ],
+        "experiment_percentage": 100,
+        "isolate_name": "telemetry_perf_unittests",
+        "name": "telemetry_perf_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "hard_timeout": 960,
+          "shards": 20
+        }
+      },
+      {
+        "args": [
+          "--jobs=1"
+        ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
         "swarming": {
