@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
-#include "chrome/browser/ui/views_mode_controller.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -24,6 +23,10 @@
 
 #if defined(USE_AURA)
 #include "ui/base/cursor/cursor.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #endif
 
 ExtensionViewViews::ExtensionViewViews(extensions::ExtensionHost* host,
@@ -141,9 +144,10 @@ namespace extensions {
 std::unique_ptr<ExtensionView> ExtensionViewHost::CreateExtensionView(
     ExtensionViewHost* host,
     Browser* browser) {
-#if defined(OS_MACOSX) && BUILDFLAG(MAC_VIEWS_BROWSER)
-  if (views_mode_controller::IsViewsBrowserCocoa())
+#if defined(OS_MACOSX)
+  if (!chrome::ShowAllDialogsWithViewsToolkit()) {
     return CreateExtensionViewCocoa(host, browser);
+  }
 #endif
   std::unique_ptr<ExtensionViewViews> view(
       new ExtensionViewViews(host, browser));

@@ -109,12 +109,4 @@ std::unique_ptr<ExtensionView> ExtensionViewHost::CreateExtensionViewCocoa(
   return std::make_unique<ExtensionViewMac>(host, browser);
 }
 
-#if !BUILDFLAG(MAC_VIEWS_BROWSER)
-std::unique_ptr<ExtensionView> ExtensionViewHost::CreateExtensionView(
-    ExtensionViewHost* host,
-    Browser* browser) {
-  return CreateExtensionViewCocoa(host, browser);
-}
-#endif
-
 }  // namespace extensions

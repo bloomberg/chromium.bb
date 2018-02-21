@@ -39,7 +39,7 @@ class ExtensionActionPlatformDelegateCocoa
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // Returns the point at which the popup should be shown.
+  // Returns the point at which the popup should be shown in window coordinates.
   NSPoint GetPopupPoint() const;
 
   // The main controller for this extension action.

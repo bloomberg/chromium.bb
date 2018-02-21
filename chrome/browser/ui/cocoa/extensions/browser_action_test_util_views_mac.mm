@@ -13,12 +13,14 @@
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
+#include "chrome/browser/ui/cocoa/extensions/extension_popup_views_mac.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
@@ -30,6 +32,8 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 
@@ -101,8 +105,8 @@ class ExtensionPopupTestManager {
   virtual ~ExtensionPopupTestManager() = default;
 
   virtual void DisableAnimations() = 0;
-  virtual gfx::Size GetPopupSize() = 0;
-  virtual void HidePopup() = 0;
+  virtual gfx::Size GetPopupSize(BrowserActionTestUtil* test_util) = 0;
+  virtual void HidePopup(BrowserActionTestUtil* test_util) = 0;
   virtual gfx::Size GetMinPopupSize() = 0;
   virtual gfx::Size GetMaxPopupSize() = 0;
 
@@ -119,12 +123,12 @@ class ExtensionPopupTestManagerCocoa : public ExtensionPopupTestManager {
     [ExtensionPopupController setAnimationsEnabledForTesting:NO];
   }
 
-  gfx::Size GetPopupSize() override {
+  gfx::Size GetPopupSize(BrowserActionTestUtil* test_util) override {
     NSRect bounds = [[[ExtensionPopupController popup] view] bounds];
     return gfx::Size(NSSizeToCGSize(bounds.size));
   }
 
-  void HidePopup() override {
+  void HidePopup(BrowserActionTestUtil* test_util) override {
     ExtensionPopupController* controller = [ExtensionPopupController popup];
     [controller close];
   }
@@ -141,8 +145,43 @@ class ExtensionPopupTestManagerCocoa : public ExtensionPopupTestManager {
   DISALLOW_COPY_AND_ASSIGN(ExtensionPopupTestManagerCocoa);
 };
 
+class ExtensionPopupTestManagerViews : public ExtensionPopupTestManager {
+ public:
+  ExtensionPopupTestManagerViews() = default;
+
+  ~ExtensionPopupTestManagerViews() override = default;
+
+  void DisableAnimations() override {}
+
+  gfx::Size GetPopupSize(BrowserActionTestUtil* test_util) override {
+    gfx::NativeView popup = test_util->GetPopupNativeView();
+    views::Widget* widget = views::Widget::GetWidgetForNativeView(popup);
+    return widget->GetWindowBoundsInScreen().size();
+  }
+
+  void HidePopup(BrowserActionTestUtil* test_util) override {
+    test_util->GetToolbarActionsBar()->HideActivePopup();
+  }
+
+  gfx::Size GetMinPopupSize() override {
+    return gfx::Size(ExtensionPopupViewsMac::kMinWidth,
+                     ExtensionPopupViewsMac::kMinHeight);
+  }
+
+  gfx::Size GetMaxPopupSize() override {
+    return gfx::Size(ExtensionPopupViewsMac::kMaxWidth,
+                     ExtensionPopupViewsMac::kMaxHeight);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ExtensionPopupTestManagerViews);
+};
+
 std::unique_ptr<ExtensionPopupTestManager> GetExtensionPopupTestManager() {
-  return std::make_unique<ExtensionPopupTestManagerCocoa>();
+  if (!chrome::ShowAllDialogsWithViewsToolkit()) {
+    return std::make_unique<ExtensionPopupTestManagerCocoa>();
+  }
+  return std::make_unique<ExtensionPopupTestManagerViews>();
 }
 
 }  // namespace
@@ -231,11 +270,11 @@ bool BrowserActionTestUtil::HasPopup() {
 }
 
 gfx::Size BrowserActionTestUtil::GetPopupSize() {
-  return GetExtensionPopupTestManager()->GetPopupSize();
+  return GetExtensionPopupTestManager()->GetPopupSize(this);
 }
 
 bool BrowserActionTestUtil::HidePopup() {
-  GetExtensionPopupTestManager()->HidePopup();
+  GetExtensionPopupTestManager()->HidePopup(this);
   return !HasPopup();
 }
 
