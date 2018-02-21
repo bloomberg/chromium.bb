@@ -233,6 +233,19 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // on the minimum size of current snapped windows.
   void GetDividerOptionalPositionRatios(std::vector<float>* positionRatios);
 
+  // Selects the window that needs the quick/smooth resize. It's needed as
+  // Android only supports smooth resize for one app window at a time. If there
+  // are two snapped Arc app windows, always return the one who stacked above
+  // the other.
+  aura::Window* GetWindowForSmoothResize();
+  // Gets the expected window component depending on current screen orientation
+  // for resizing purpose.
+  int GetWindowComponentForResize(aura::Window* window);
+  // Gets the expected end drag position for |window| depending on current
+  // screen orientation and split divider position.
+  gfx::Point GetEndDragLocationInScreen(aura::Window* window,
+                                        const gfx::Point& location_in_screen);
+
   // Starts/Ends overview mode if the overview mode is inactive/active.
   void StartOverview();
   void EndOverview();
@@ -283,6 +296,13 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
 
   // The time when splitview starts. Used for metric collection purpose.
   base::Time splitview_start_time_;
+
+  // The window that needs smooth resize. It's needed as Android only supports
+  // smooth resize for one app window at a time. It's always the snapped Arc app
+  // window if there is one. And if there are two snapped Arc app windows, it's
+  // the one who stacked above the other, see GetWindowForSmoothResize() for
+  // details.
+  aura::Window* smooth_resize_window_ = nullptr;
 
   base::ObserverList<Observer> observers_;
 
