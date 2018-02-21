@@ -8,13 +8,13 @@
   https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
 
   In order to generate code coverage report, you need to first add
-  "use_clang_coverage=true" GN flag to args.gn file in your build
-  output directory (e.g. out/coverage).
+  "use_clang_coverage=true" and "is_component_build=false" GN flags to args.gn
+  file in your build output directory (e.g. out/coverage).
 
-  It is recommended to add "is_component_build=false" flag as well because:
-  1. It is incompatible with other sanitizer flags (like "is_asan", "is_msan")
-     and others like "optimize_for_fuzzing".
-  2. If it is not set explicitly, "is_debug" overrides it to true.
+  Clang Source-based Code Coverage requires "is_component_build=false" flag
+  because: There will be no coverage info for libraries in component builds and
+  "is_component_build" is set to true by "is_debug" unless it is explicitly set
+  to false.
 
   Example usage:
 
