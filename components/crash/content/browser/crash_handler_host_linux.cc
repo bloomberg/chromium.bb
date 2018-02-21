@@ -330,21 +330,16 @@ void CrashHandlerHostLinux::FindCrashingThreadAndDump(
     LOG(WARNING) << "Could not translate tid, attempt = " << attempt
                  << " retry ...";
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&CrashHandlerHostLinux::FindCrashingThreadAndDump,
-                 base::Unretained(this),
-                 crashing_pid,
-                 expected_syscall_data,
-                 base::Passed(&crash_context),
-                 base::Passed(&crash_keys),
+        FROM_HERE,
+        base::BindOnce(&CrashHandlerHostLinux::FindCrashingThreadAndDump,
+                       base::Unretained(this), crashing_pid,
+                       expected_syscall_data, std::move(crash_context),
+                       std::move(crash_keys),
 #if defined(ADDRESS_SANITIZER)
-                 base::Passed(&asan_report),
+                       std::move(asan_report),
 #endif
-                 uptime,
-                 oom_size,
-                 signal_fd,
-                 attempt),
-      base::TimeDelta::FromMilliseconds(kRetryIntervalTranslatingTidInMs));
+                       uptime, oom_size, signal_fd, attempt),
+        base::TimeDelta::FromMilliseconds(kRetryIntervalTranslatingTidInMs));
     return;
   }
 
@@ -396,10 +391,10 @@ void CrashHandlerHostLinux::FindCrashingThreadAndDump(
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(&CrashHandlerHostLinux::WriteDumpFile,
-                     base::Unretained(this), info_ptr,
-                     base::Passed(&crash_context), crashing_pid),
+                     base::Unretained(this), info_ptr, std::move(crash_context),
+                     crashing_pid),
       base::BindOnce(&CrashHandlerHostLinux::QueueCrashDumpTask,
-                     base::Unretained(this), base::Passed(&info), signal_fd));
+                     base::Unretained(this), std::move(info), signal_fd));
 }
 
 void CrashHandlerHostLinux::WriteDumpFile(BreakpadInfo* info,
@@ -477,7 +472,7 @@ void CrashHandlerHostLinux::QueueCrashDumpTask(
 
   uploader_thread_->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&CrashDumpTask, base::Unretained(this), base::Passed(&info)));
+      base::BindOnce(&CrashDumpTask, base::Unretained(this), std::move(info)));
 }
 
 void CrashHandlerHostLinux::WillDestroyCurrentMessageLoop() {

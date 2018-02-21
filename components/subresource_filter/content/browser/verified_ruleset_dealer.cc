@@ -4,6 +4,8 @@
 
 #include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file.h"
@@ -79,8 +81,8 @@ void VerifiedRulesetDealer::Handle::SetRulesetFile(base::File file) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&VerifiedRulesetDealer::SetRulesetFile,
-                 base::Unretained(dealer_.get()), base::Passed(&file)));
+      base::BindOnce(&VerifiedRulesetDealer::SetRulesetFile,
+                     base::Unretained(dealer_.get()), std::move(file)));
 }
 
 // VerifiedRuleset and its Handle. ---------------------------------------------

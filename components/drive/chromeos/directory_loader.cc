@@ -351,20 +351,13 @@ void DirectoryLoader::ReadDirectoryAfterGetAboutResource(
   ResourceEntry* entry = new ResourceEntry;
   int64_t* local_changestamp = new int64_t;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&CheckLocalState,
-                 resource_metadata_,
-                 *about_resource_ptr,
-                 local_id,
-                 entry,
-                 local_changestamp),
-      base::Bind(&DirectoryLoader::ReadDirectoryAfterCheckLocalState,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&about_resource),
-                 local_id,
-                 base::Owned(entry),
-                 base::Owned(local_changestamp)));
+      blocking_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&CheckLocalState, resource_metadata_, *about_resource_ptr,
+                     local_id, entry, local_changestamp),
+      base::BindOnce(&DirectoryLoader::ReadDirectoryAfterCheckLocalState,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(about_resource),
+                     local_id, base::Owned(entry),
+                     base::Owned(local_changestamp)));
 }
 
 void DirectoryLoader::ReadDirectoryAfterCheckLocalState(

@@ -363,13 +363,9 @@ void BluetoothSocketWin::OnAcceptOnSocketThread(
   }
 
   ui_task_runner()->PostTask(
-    FROM_HERE,
-    base::Bind(&BluetoothSocketWin::OnAcceptOnUI,
-               this,
-               base::Passed(&accept_socket_),
-               accept_address_,
-               success_callback,
-               error_callback));
+      FROM_HERE, base::BindOnce(&BluetoothSocketWin::OnAcceptOnUI, this,
+                                std::move(accept_socket_), accept_address_,
+                                success_callback, error_callback));
 }
 
 void BluetoothSocketWin::OnAcceptOnUI(

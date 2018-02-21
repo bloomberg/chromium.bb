@@ -83,7 +83,7 @@ void AssetLinkRetriever::OnURLFetchComplete(const net::URLFetcher* source) {
         base::BindOnce(&AssetLinkData::Parse, base::Unretained(data_raw),
                        std::move(response_string)),
         base::BindOnce(&AssetLinkRetriever::OnResponseParsed, this,
-                       base::Passed(&data)));
+                       std::move(data)));
   }
   fetcher_.reset();
 }

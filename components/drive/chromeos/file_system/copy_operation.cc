@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <utility>
 
 #include "base/task_runner_util.h"
 #include "components/drive/chromeos/file_cache.h"
@@ -577,18 +578,12 @@ void CopyOperation::UpdateAfterServerSideOperation(
   // metadata.
   base::FilePath* file_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&UpdateLocalStateForServerSideOperation,
-                 metadata_,
-                 base::Passed(&entry),
-                 resource_entry,
-                 file_path),
-      base::Bind(&CopyOperation::UpdateAfterLocalStateUpdate,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback,
-                 base::Owned(file_path),
-                 base::Owned(resource_entry)));
+      blocking_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&UpdateLocalStateForServerSideOperation, metadata_,
+                     std::move(entry), resource_entry, file_path),
+      base::BindOnce(&CopyOperation::UpdateAfterLocalStateUpdate,
+                     weak_ptr_factory_.GetWeakPtr(), callback,
+                     base::Owned(file_path), base::Owned(resource_entry)));
 }
 
 void CopyOperation::UpdateAfterLocalStateUpdate(

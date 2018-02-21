@@ -229,9 +229,9 @@ void NetExportFileWriter::StopNetLog(
   if (context_getter) {
     base::PostTaskAndReplyWithResult(
         net_task_runner_.get(), FROM_HERE,
-        base::Bind(&AddNetInfo, context_getter, base::Passed(&polled_data)),
-        base::Bind(&NetExportFileWriter::StopNetLogAfterAddNetInfo,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&AddNetInfo, context_getter, std::move(polled_data)),
+        base::BindOnce(&NetExportFileWriter::StopNetLogAfterAddNetInfo,
+                       weak_ptr_factory_.GetWeakPtr()));
   } else {
     StopNetLogAfterAddNetInfo(std::move(polled_data));
   }

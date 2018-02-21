@@ -4,6 +4,8 @@
 
 #include "components/viz/service/frame_sinks/video_capture/frame_sink_video_capturer_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/optional.h"
@@ -134,7 +136,7 @@ class MockConsumer : public mojom::FrameSinkVideoConsumer {
     frames_.push_back(std::move(frame));
     done_callbacks_.push_back(
         base::BindOnce(&mojom::FrameSinkVideoConsumerFrameCallbacks::Done,
-                       base::Passed(&callbacks)));
+                       std::move(callbacks)));
   }
 
   mojo::Binding<mojom::FrameSinkVideoConsumer> binding_;
@@ -210,7 +212,7 @@ class FakeCapturableFrameSink : public CapturableFrameSink {
            std::unique_ptr<CopyOutputResult> result) {
           request->SendResult(std::move(result));
         },
-        base::Passed(&request), base::Passed(&result)));
+        std::move(request), std::move(result)));
   }
 
   void SetCopyOutputColor(YUVColor color) { color_ = color; }

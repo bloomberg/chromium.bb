@@ -6,6 +6,8 @@
 
 #include <math.h>
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "base/numerics/math_constants.h"
 #include "build/build_config.h"
@@ -106,14 +108,13 @@ void OculusDevice::RequestPresent(
 
   auto on_request_present_result =
       base::BindOnce(&OculusDevice::OnRequestPresentResult,
-                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback));
   render_loop_->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&OculusRenderLoop::RequestPresent,
-                     render_loop_->GetWeakPtr(),
-                     base::Passed(submit_client.PassInterface()),
-                     base::Passed(&request), std::move(present_options),
-                     base::Passed(&on_request_present_result)));
+      FROM_HERE, base::BindOnce(&OculusRenderLoop::RequestPresent,
+                                render_loop_->GetWeakPtr(),
+                                std::move(submit_client.PassInterface()),
+                                std::move(request), std::move(present_options),
+                                std::move(on_request_present_result)));
 }
 
 void OculusDevice::OnRequestPresentResult(

@@ -4,6 +4,8 @@
 
 #include "base/sequenced_task_runner.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/gtest_prod_util.h"
 #include "base/message_loop/message_loop.h"
@@ -71,7 +73,7 @@ TEST_F(SequencedTaskRunnerTest, OnTaskRunnerDeleterOnMainThread) {
       OnTaskRunnerDeleter(main_runner_));
   EXPECT_FALSE(deleted_on_main_thread);
   foreign_runner_->PostTask(
-      FROM_HERE, BindOnce([](SequenceBoundUniquePtr) {}, Passed(&ptr)));
+      FROM_HERE, BindOnce([](SequenceBoundUniquePtr) {}, std::move(ptr)));
 
   {
     RunLoop run_loop;

@@ -112,14 +112,14 @@ SyncerError ModelSafeWorker::DoWorkAndWaitUntilDone(WorkCallback work) {
 
   SyncerError error = UNSET;
   bool did_run = false;
-  ScheduleWork(base::BindOnce(
-      &ModelSafeWorker::DoWork, this, base::Passed(std::move(work)),
-      base::Passed(base::ScopedClosureRunner(base::Bind(
-          [](scoped_refptr<ModelSafeWorker> worker) {
-            worker->work_done_or_abandoned_.Signal();
-          },
-          base::WrapRefCounted(this)))),
-      base::Unretained(&error), base::Unretained(&did_run)));
+  ScheduleWork(base::BindOnce(&ModelSafeWorker::DoWork, this, std::move(work),
+                              base::ScopedClosureRunner(base::BindOnce(
+                                  [](scoped_refptr<ModelSafeWorker> worker) {
+                                    worker->work_done_or_abandoned_.Signal();
+                                  },
+                                  base::WrapRefCounted(this))),
+                              base::Unretained(&error),
+                              base::Unretained(&did_run)));
 
   // Unblocked when the task runs or is deleted or when RequestStop() is called
   // before the task starts running.

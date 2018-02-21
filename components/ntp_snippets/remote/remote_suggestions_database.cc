@@ -178,10 +178,9 @@ void RemoteSuggestionsDatabase::DeleteImages(
 void RemoteSuggestionsDatabase::GarbageCollectImages(
     std::unique_ptr<std::set<std::string>> alive_snippet_ids) {
   DCHECK(image_database_initialized_);
-  image_database_->LoadKeys(
-      base::Bind(&RemoteSuggestionsDatabase::DeleteUnreferencedImages,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(std::move(alive_snippet_ids))));
+  image_database_->LoadKeys(base::BindOnce(
+      &RemoteSuggestionsDatabase::DeleteUnreferencedImages,
+      weak_ptr_factory_.GetWeakPtr(), std::move(alive_snippet_ids)));
 }
 
 void RemoteSuggestionsDatabase::OnDatabaseInited(bool success) {

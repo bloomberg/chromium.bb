@@ -292,10 +292,10 @@ void SearchMetadata(
   MetadataSearchResultVector* results_ptr = results.get();
   base::PostTaskAndReplyWithResult(
       blocking_task_runner.get(), FROM_HERE,
-      base::Bind(&SearchMetadataOnBlockingPool, resource_metadata, query,
-                 predicate, at_most_num_matches, order, results_ptr),
-      base::Bind(&RunSearchMetadataCallback, callback, start_time,
-                 base::Passed(&results)));
+      base::BindOnce(&SearchMetadataOnBlockingPool, resource_metadata, query,
+                     predicate, at_most_num_matches, order, results_ptr),
+      base::BindOnce(&RunSearchMetadataCallback, callback, start_time,
+                     std::move(results)));
 }
 
 bool MatchesType(int options, const ResourceEntry& entry) {

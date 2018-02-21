@@ -1496,7 +1496,7 @@ void GlobalActivityTracker::RecordProcessExit(ProcessId process_id,
     task_runner->PostTask(
         FROM_HERE,
         BindOnce(&GlobalActivityTracker::CleanupAfterProcess, Unretained(this),
-                 pid, now_stamp, exit_code, Passed(&command_line)));
+                 pid, now_stamp, exit_code, std::move(command_line)));
     return;
   }
 

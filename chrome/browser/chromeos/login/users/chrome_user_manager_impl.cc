@@ -1423,13 +1423,13 @@ base::string16 ChromeUserManagerImpl::GetResourceStringUTF16(
 
 void ChromeUserManagerImpl::ScheduleResolveLocale(
     const std::string& locale,
-    const base::Closure& on_resolved_callback,
+    base::OnceClosure on_resolved_callback,
     std::string* out_resolved_locale) const {
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::BindOnce(ResolveLocale, locale,
                      base::Unretained(out_resolved_locale)),
-      on_resolved_callback);
+      std::move(on_resolved_callback));
 }
 
 bool ChromeUserManagerImpl::IsValidDefaultUserImageId(int image_index) const {

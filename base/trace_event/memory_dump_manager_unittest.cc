@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/allocator/features.h"
@@ -812,10 +813,9 @@ TEST_F(MemoryDumpManagerTest, UnregisterAndDeleteDumpProviderSoonDuringDump) {
     TestIOThread thread_for_unregistration(TestIOThread::kAutoStart);
     PostTaskAndWait(
         FROM_HERE, thread_for_unregistration.task_runner().get(),
-        base::BindOnce(
-            &MemoryDumpManager::UnregisterAndDeleteDumpProviderSoon,
-            base::Unretained(MemoryDumpManager::GetInstance()),
-            base::Passed(std::unique_ptr<MemoryDumpProvider>(std::move(mdp)))));
+        base::BindOnce(&MemoryDumpManager::UnregisterAndDeleteDumpProviderSoon,
+                       base::Unretained(MemoryDumpManager::GetInstance()),
+                       std::move(mdp)));
     thread_for_unregistration.Stop();
     return true;
   };

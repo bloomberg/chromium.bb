@@ -268,10 +268,10 @@ void AboutResourceLoader::GetAboutResource(
   if (cached_about_resource_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             callback, google_apis::HTTP_NO_CONTENT,
-            base::Passed(std::unique_ptr<google_apis::AboutResource>(
-                new google_apis::AboutResource(*cached_about_resource_)))));
+            std::unique_ptr<google_apis::AboutResource>(
+                new google_apis::AboutResource(*cached_about_resource_))));
   } else {
     UpdateAboutResource(callback);
   }

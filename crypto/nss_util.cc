@@ -325,7 +325,7 @@ class NSSInitSingleton {
                        system_slot_id, tpm_args_ptr),
         base::BindOnce(&NSSInitSingleton::OnInitializedTPMTokenAndSystemSlot,
                        base::Unretained(this),  // NSSInitSingleton is leaky
-                       callback, base::Passed(&tpm_args)));
+                       callback, std::move(tpm_args)));
     initializing_tpm_token_ = true;
   }
 
@@ -488,7 +488,7 @@ class NSSInitSingleton {
                        slot_id, tpm_args_ptr),
         base::BindOnce(&NSSInitSingleton::OnInitializedTPMForChromeOSUser,
                        base::Unretained(this),  // NSSInitSingleton is leaky
-                       username_hash, base::Passed(&tpm_args)));
+                       username_hash, std::move(tpm_args)));
   }
 
   void OnInitializedTPMForChromeOSUser(
@@ -538,7 +538,7 @@ class NSSInitSingleton {
       DVLOG(2) << "empty username_hash";
       if (!callback.is_null()) {
         base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::Bind(callback, base::Passed(ScopedPK11Slot())));
+            FROM_HERE, base::BindOnce(callback, ScopedPK11Slot()));
       }
       return ScopedPK11Slot();
     }

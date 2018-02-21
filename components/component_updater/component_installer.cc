@@ -183,7 +183,7 @@ void ComponentInstaller::Install(const base::FilePath& unpack_path,
   // returned.
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&ComponentInstaller::ComponentReady, this,
-                                base::Passed(std::move(manifest))));
+                                std::move(manifest)));
   main_task_runner_->PostTask(FROM_HERE,
                               base::BindOnce(std::move(callback), result));
 }

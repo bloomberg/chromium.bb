@@ -392,7 +392,7 @@ class USER_MANAGER_EXPORT UserManager {
   // |on_resolved_callback| as reply callback.
   virtual void ScheduleResolveLocale(
       const std::string& locale,
-      const base::Closure& on_resolved_callback,
+      base::OnceClosure on_resolved_callback,
       std::string* out_resolved_locale) const = 0;
 
   // Returns true if |image_index| is a valid default user image index.

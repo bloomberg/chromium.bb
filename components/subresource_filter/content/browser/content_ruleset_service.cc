@@ -41,7 +41,7 @@ void CloseFileOnFileThread(base::File* file) {
     return;
   base::PostTaskWithTraits(FROM_HERE,
                            {base::TaskPriority::BACKGROUND, base::MayBlock()},
-                           base::Bind(&CloseFile, base::Passed(file)));
+                           base::BindOnce(&CloseFile, std::move(*file)));
 }
 
 }  // namespace

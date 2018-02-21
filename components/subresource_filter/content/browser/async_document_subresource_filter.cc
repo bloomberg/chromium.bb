@@ -111,11 +111,11 @@ AsyncDocumentSubresourceFilter::AsyncDocumentSubresourceFilter(
   // below task is posted.
   base::PostTaskAndReplyWithResult(
       task_runner_, FROM_HERE,
-      base::Bind(&Core::Initialize, base::Unretained(core_.get()),
-                 base::Passed(&params), ruleset_handle->ruleset_.get()),
-      base::Bind(&AsyncDocumentSubresourceFilter::OnActivateStateCalculated,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 std::move(activation_state_callback)));
+      base::BindOnce(&Core::Initialize, base::Unretained(core_.get()),
+                     std::move(params), ruleset_handle->ruleset_.get()),
+      base::BindOnce(&AsyncDocumentSubresourceFilter::OnActivateStateCalculated,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(activation_state_callback)));
 }
 
 AsyncDocumentSubresourceFilter::~AsyncDocumentSubresourceFilter() {

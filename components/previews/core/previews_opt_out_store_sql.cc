@@ -361,8 +361,8 @@ void LoadBlackListFromDataBase(
   }
 
   runner->PostTask(FROM_HERE,
-                   base::Bind(callback, base::Passed(&black_list_item_map),
-                              base::Passed(&host_indifferent_black_list_item)));
+                   base::BindOnce(callback, std::move(black_list_item_map),
+                                  std::move(host_indifferent_black_list_item)));
 }
 
 // Synchronous implementations, these are run on the background thread
@@ -453,9 +453,9 @@ void PreviewsOptOutStoreSQL::LoadBlackList(LoadBlackListCallback callback) {
   std::unique_ptr<PreviewsTypeList> enabled_previews =
       std::make_unique<PreviewsTypeList>(*enabled_previews_);
   background_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&LoadBlackListSync, db_.get(), db_file_path_,
-                            base::Passed(std::move(enabled_previews)),
-                            base::ThreadTaskRunnerHandle::Get(), callback));
+      FROM_HERE, base::BindOnce(&LoadBlackListSync, db_.get(), db_file_path_,
+                                std::move(enabled_previews),
+                                base::ThreadTaskRunnerHandle::Get(), callback));
 }
 
 }  // namespace previews

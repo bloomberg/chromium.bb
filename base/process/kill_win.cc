@@ -144,13 +144,13 @@ void EnsureProcessTerminated(Process process) {
   PostDelayedTaskWithTraits(
       FROM_HERE,
       {TaskPriority::BACKGROUND, TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      Bind(
+      BindOnce(
           [](Process process) {
             if (CheckForProcessExitAndReport(process))
               return;
             process.Terminate(win::kProcessKilledExitCode, false);
           },
-          Passed(&process)),
+          std::move(process)),
       TimeDelta::FromSeconds(2));
 }
 

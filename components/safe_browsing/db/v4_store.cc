@@ -4,6 +4,8 @@
 
 #include "components/safe_browsing/db/v4_store.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -393,7 +395,7 @@ void V4Store::ApplyUpdate(
   // happens, the old store will get destoyed and can lead to use-after-free in
   // this function.
   callback_task_runner->PostTask(
-      FROM_HERE, base::Bind(callback, base::Passed(&new_store)));
+      FROM_HERE, base::BindOnce(callback, std::move(new_store)));
 }
 
 ApplyUpdateResult V4Store::UpdateHashPrefixMapFromAdditions(

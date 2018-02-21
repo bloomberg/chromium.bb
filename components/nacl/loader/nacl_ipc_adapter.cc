@@ -779,9 +779,9 @@ bool NaClIPCAdapter::SendCompleteMessage(const char* buffer,
     msg = std::move(new_msg);
 
   // Actual send must be done on the I/O thread.
-  task_runner_->PostTask(FROM_HERE,
-      base::Bind(&NaClIPCAdapter::SendMessageOnIOThread, this,
-                 base::Passed(&msg)));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&NaClIPCAdapter::SendMessageOnIOThread, this,
+                                std::move(msg)));
   return true;
 }
 

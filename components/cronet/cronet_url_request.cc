@@ -109,15 +109,14 @@ void CronetURLRequest::Start() {
       base::BindOnce(&CronetURLRequest::NetworkTasks::Start,
                      base::Unretained(&network_tasks_),
                      base::Unretained(context_), initial_method_,
-                     base::Passed(std::move(initial_request_headers_)),
-                     base::Passed(std::move(upload_))));
+                     std::move(initial_request_headers_), std::move(upload_)));
 }
 
 void CronetURLRequest::GetStatus(OnStatusCallback callback) const {
   context_->PostTaskToNetworkThread(
-      FROM_HERE, base::BindOnce(&CronetURLRequest::NetworkTasks::GetStatus,
-                                base::Unretained(&network_tasks_),
-                                base::Passed(&callback)));
+      FROM_HERE,
+      base::BindOnce(&CronetURLRequest::NetworkTasks::GetStatus,
+                     base::Unretained(&network_tasks_), std::move(callback)));
 }
 
 void CronetURLRequest::FollowDeferredRedirect() {

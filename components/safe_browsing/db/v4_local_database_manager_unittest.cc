@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "components/safe_browsing/db/v4_local_database_manager.h"
+
+#include <utility>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
@@ -105,10 +108,10 @@ class FakeV4Database : public V4Database {
     const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner =
         base::MessageLoop::current()->task_runner();
     db_task_runner->PostTask(
-        FROM_HERE,
-        base::Bind(&FakeV4Database::CreateOnTaskRunner, db_task_runner,
-                   base::Passed(&store_map), store_and_hash_prefixes,
-                   callback_task_runner, new_db_callback, stores_available));
+        FROM_HERE, base::BindOnce(&FakeV4Database::CreateOnTaskRunner,
+                                  db_task_runner, std::move(store_map),
+                                  store_and_hash_prefixes, callback_task_runner,
+                                  new_db_callback, stores_available));
   }
 
   // V4Database implementation
@@ -151,7 +154,7 @@ class FakeV4Database : public V4Database {
                            store_and_hash_prefixes, stores_available));
     callback_task_runner->PostTask(
         FROM_HERE,
-        base::Bind(new_db_callback, base::Passed(&fake_v4_database)));
+        base::BindOnce(new_db_callback, std::move(fake_v4_database)));
   }
 
   FakeV4Database(const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,

@@ -118,9 +118,9 @@ class MockUserManager : public ChromeUserManager {
   MOCK_METHOD1(OnUserRemoved, void(const AccountId&));
   MOCK_CONST_METHOD1(GetResourceImagekiaNamed, const gfx::ImageSkia&(int));
   MOCK_CONST_METHOD1(GetResourceStringUTF16, base::string16(int));
-  MOCK_CONST_METHOD3(ScheduleResolveLocale,
+  MOCK_CONST_METHOD3(DoScheduleResolveLocale,
                      void(const std::string&,
-                          const base::Closure&,
+                          base::OnceClosure*,
                           std::string*));
   MOCK_CONST_METHOD1(IsValidDefaultUserImageId, bool(int));
 
@@ -146,6 +146,13 @@ class MockUserManager : public ChromeUserManager {
                     const chromeos::AffiliationIDSet& user_affiliation_ids));
 
   bool ShouldReportUser(const std::string& user_id) const override;
+
+  // We cannot mock ScheduleResolveLocale directly because of
+  // base::OnceClosure's removed deleter. This is a trampoline to the actual
+  // mock.
+  void ScheduleResolveLocale(const std::string& locale,
+                             base::OnceClosure on_resolved_callback,
+                             std::string* out_resolved_locale) const override;
 
   // Sets a new User instance. Users previously created by this MockUserManager
   // become invalid.

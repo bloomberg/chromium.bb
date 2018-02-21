@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -318,9 +319,9 @@ class TestPreviewsOptOutStore : public PreviewsOptOutStore {
     std::unique_ptr<PreviewsBlackListItem> host_indifferent_black_list_item =
         PreviewsBlackList::CreateHostIndifferentBlackListItem();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&RunLoadCallback, callback,
-                              base::Passed(&black_list_item_map),
-                              base::Passed(&host_indifferent_black_list_item)));
+        FROM_HERE, base::BindOnce(&RunLoadCallback, callback,
+                                  std::move(black_list_item_map),
+                                  std::move(host_indifferent_black_list_item)));
   }
 
   void ClearBlackList(base::Time begin_time, base::Time end_time) override {}

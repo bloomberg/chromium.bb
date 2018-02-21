@@ -5,6 +5,7 @@
 #include "components/cdm/browser/media_drm_storage_impl.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/run_loop.h"
 #include "base/unguessable_token.h"
@@ -135,7 +136,7 @@ class MediaDrmStorageImplTest : public content::RenderViewHostTestHarness {
       std::unique_ptr<SessionData> expected_session_data) {
     return base::BindOnce(&MediaDrmStorageImplTest::CheckLoadedSession,
                           base::Unretained(this),
-                          base::Passed(&expected_session_data));
+                          std::move(expected_session_data));
   }
 
   void CheckResult(bool expected_result, bool result) {

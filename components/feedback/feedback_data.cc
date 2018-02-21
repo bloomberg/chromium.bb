@@ -86,10 +86,10 @@ void FeedbackData::SetAndCompressHistograms(
   ++pending_op_count_;
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::Bind(&FeedbackData::CompressFile, this,
-                 base::FilePath(kHistogramsFilename), kHistogramsAttachmentName,
-                 base::Passed(&histograms)),
-      base::Bind(&FeedbackData::OnCompressComplete, this));
+      base::BindOnce(&FeedbackData::CompressFile, this,
+                     base::FilePath(kHistogramsFilename),
+                     kHistogramsAttachmentName, std::move(histograms)),
+      base::BindOnce(&FeedbackData::OnCompressComplete, this));
 }
 
 void FeedbackData::AttachAndCompressFileData(
@@ -103,9 +103,9 @@ void FeedbackData::AttachAndCompressFileData(
                   base::FilePath::FromUTF8Unsafe(attached_filename_);
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::Bind(&FeedbackData::CompressFile, this, attached_file,
-                 std::string(), base::Passed(&attached_filedata)),
-      base::Bind(&FeedbackData::OnCompressComplete, this));
+      base::BindOnce(&FeedbackData::CompressFile, this, attached_file,
+                     std::string(), std::move(attached_filedata)),
+      base::BindOnce(&FeedbackData::OnCompressComplete, this));
 }
 
 void FeedbackData::OnGetTraceData(

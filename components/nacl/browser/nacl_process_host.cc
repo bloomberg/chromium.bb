@@ -274,16 +274,16 @@ NaClProcessHost::~NaClProcessHost() {
     // handles.
     base::File file(IPC::PlatformFileForTransitToFile(
         prefetched_resource_files_[i].file));
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
-        base::Bind(&CloseFile, base::Passed(std::move(file))));
+    base::PostTaskWithTraits(FROM_HERE,
+                             {base::TaskPriority::BACKGROUND, base::MayBlock()},
+                             base::BindOnce(&CloseFile, std::move(file)));
   }
 #endif
   // Open files need to be closed on the blocking pool.
   if (nexe_file_.IsValid()) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
-        base::Bind(&CloseFile, base::Passed(std::move(nexe_file_))));
+    base::PostTaskWithTraits(FROM_HERE,
+                             {base::TaskPriority::BACKGROUND, base::MayBlock()},
+                             base::BindOnce(&CloseFile, std::move(nexe_file_)));
   }
 
   if (reply_msg_) {
@@ -846,9 +846,9 @@ void NaClProcessHost::StartNaClFileResolved(
   if (checked_nexe_file.IsValid()) {
     // Release the file received from the renderer. This has to be done on a
     // thread where IO is permitted, though.
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
-        base::Bind(&CloseFile, base::Passed(std::move(nexe_file_))));
+    base::PostTaskWithTraits(FROM_HERE,
+                             {base::TaskPriority::BACKGROUND, base::MayBlock()},
+                             base::BindOnce(&CloseFile, std::move(nexe_file_)));
     params.nexe_file_path_metadata = file_path;
     params.nexe_file =
         IPC::TakePlatformFileForTransit(std::move(checked_nexe_file));

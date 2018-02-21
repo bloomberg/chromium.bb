@@ -228,7 +228,7 @@ void CronetURLRequestContext::InitRequestContextOnInitThread() {
       base::BindOnce(&CronetURLRequestContext::NetworkTasks::Initialize,
                      base::Unretained(network_tasks_), GetNetworkTaskRunner(),
                      GetFileThread()->task_runner(),
-                     base::Passed(&proxy_config_service)));
+                     std::move(proxy_config_service)));
 }
 
 void CronetURLRequestContext::NetworkTasks::
@@ -482,7 +482,7 @@ void CronetURLRequestContext::PostTaskToNetworkThread(
       posted_from,
       base::BindOnce(
           &CronetURLRequestContext::NetworkTasks::RunTaskAfterContextInit,
-          base::Unretained(network_tasks_), base::Passed(std::move(callback))));
+          base::Unretained(network_tasks_), std::move(callback)));
 }
 
 void CronetURLRequestContext::NetworkTasks::RunTaskAfterContextInit(

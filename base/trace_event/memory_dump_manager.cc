@@ -734,7 +734,7 @@ void MemoryDumpManager::FinishAsyncProcessDump(
         pmd_async_state->callback_task_runner;
     callback_task_runner->PostTask(
         FROM_HERE, BindOnce(&MemoryDumpManager::FinishAsyncProcessDump,
-                            Unretained(this), Passed(&pmd_async_state)));
+                            Unretained(this), std::move(pmd_async_state)));
     return;
   }
 

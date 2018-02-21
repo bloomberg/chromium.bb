@@ -654,14 +654,10 @@ void FileSystem::GetResourceEntryAfterRead(
   std::unique_ptr<ResourceEntry> entry(new ResourceEntry);
   ResourceEntry* entry_ptr = entry.get();
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&GetLocallyStoredResourceEntry,
-                 resource_metadata_,
-                 cache_,
-                 file_path,
-                 entry_ptr),
-      base::Bind(&RunGetResourceEntryCallback, callback, base::Passed(&entry)));
+      blocking_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&GetLocallyStoredResourceEntry, resource_metadata_, cache_,
+                     file_path, entry_ptr),
+      base::BindOnce(&RunGetResourceEntryCallback, callback, std::move(entry)));
 }
 
 void FileSystem::ReadDirectory(

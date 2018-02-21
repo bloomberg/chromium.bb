@@ -94,10 +94,10 @@ void AffiliatedMatchHelper::InjectAffiliationAndBrandingInformation(
     if (IsValidAndroidCredential(PasswordStore::FormDigest(*form)))
       android_credentials.push_back(form.get());
   }
-  base::Closure on_get_all_realms(
-      base::Bind(result_callback, base::Passed(&forms)));
-  base::Closure barrier_closure =
-      base::BarrierClosure(android_credentials.size(), on_get_all_realms);
+  base::OnceClosure on_get_all_realms(
+      base::BindOnce(result_callback, std::move(forms)));
+  base::RepeatingClosure barrier_closure = base::BarrierClosure(
+      android_credentials.size(), std::move(on_get_all_realms));
   for (auto* form : android_credentials) {
     affiliation_service_->GetAffiliationsAndBranding(
         FacetURI::FromPotentiallyInvalidSpec(form->signon_realm),

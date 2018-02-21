@@ -218,8 +218,8 @@ net::URLRequestContext* CronetURLRequestContextAdapter::GetURLRequestContext() {
 
 void CronetURLRequestContextAdapter::PostTaskToNetworkThread(
     const base::Location& posted_from,
-    const base::Closure& callback) {
-  context_->PostTaskToNetworkThread(posted_from, callback);
+    base::OnceClosure callback) {
+  context_->PostTaskToNetworkThread(posted_from, std::move(callback));
 }
 
 bool CronetURLRequestContextAdapter::IsOnNetworkThread() const {

@@ -265,8 +265,8 @@ void ModelTypeController::PostBridgeTask(const base::Location& location,
                                          BridgeTask task) {
   DCHECK(model_thread_);
   model_thread_->PostTask(
-      location, base::Bind(&RunBridgeTask, base::Passed(GetBridgeProvider()),
-                           base::Passed(std::move(task))));
+      location,
+      base::BindOnce(&RunBridgeTask, GetBridgeProvider(), std::move(task)));
 }
 
 }  // namespace syncer

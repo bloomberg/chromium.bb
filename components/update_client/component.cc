@@ -314,8 +314,7 @@ void Component::State::TransitionState(std::unique_ptr<State> next_state) {
     is_final_ = true;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback_), base::Passed(&next_state)));
+      FROM_HERE, base::BindOnce(std::move(callback_), std::move(next_state)));
 }
 
 Component::StateNew::StateNew(Component* component)
@@ -618,7 +617,7 @@ void Component::StateUpdatingDiff::DoHandle() {
               base::ThreadTaskRunnerHandle::Get(),
               component.crx_component_.pk_hash, component.crx_path_,
               component.next_fp_, component.crx_component_.installer,
-              base::Passed(&connector),
+              std::move(connector),
               base::BindOnce(&Component::StateUpdatingDiff::InstallComplete,
                              base::Unretained(this))));
 }
@@ -681,7 +680,7 @@ void Component::StateUpdating::DoHandle() {
                      base::ThreadTaskRunnerHandle::Get(),
                      component.crx_component_.pk_hash, component.crx_path_,
                      component.next_fp_, component.crx_component_.installer,
-                     base::Passed(&connector),
+                     std::move(connector),
                      base::BindOnce(&Component::StateUpdating::InstallComplete,
                                     base::Unretained(this))));
 }

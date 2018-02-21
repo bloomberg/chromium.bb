@@ -91,10 +91,10 @@ void ChildCallStackProfileCollector::CollectImpl(
        base::ThreadTaskRunnerHandle::Get() != task_runner_)) {
     // Post back to the thread that owns the the parent interface.
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ChildCallStackProfileCollector::CollectImpl,
-                              // This class has lazy instance lifetime.
-                              base::Unretained(this), params, start_timestamp,
-                              base::Passed(std::move(profiles))));
+        FROM_HERE, base::BindOnce(&ChildCallStackProfileCollector::CollectImpl,
+                                  // This class has lazy instance lifetime.
+                                  base::Unretained(this), params,
+                                  start_timestamp, std::move(profiles)));
     return;
   }
 

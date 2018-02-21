@@ -114,9 +114,9 @@ void LoadCallback(const base::FilePath& path,
                         TimeTicks::Now() - start_time);
   }
 
-  task_runner->PostTask(FROM_HERE,
-                        base::Bind(&BookmarkStorage::OnLoadFinished, storage,
-                                   base::Passed(&details)));
+  task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&BookmarkStorage::OnLoadFinished, storage,
+                                std::move(details)));
 }
 
 }  // namespace
@@ -172,8 +172,8 @@ void BookmarkStorage::LoadBookmarks(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
   sequenced_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&LoadCallback, writer_.path(), weak_factory_.GetWeakPtr(),
-                 base::Passed(&details), base::RetainedRef(task_runner)));
+      base::BindOnce(&LoadCallback, writer_.path(), weak_factory_.GetWeakPtr(),
+                     std::move(details), base::RetainedRef(task_runner)));
 }
 
 void BookmarkStorage::ScheduleSave() {

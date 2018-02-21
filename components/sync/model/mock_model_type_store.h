@@ -30,7 +30,7 @@ namespace syncer {
 //   record_list->push_back(ModelTypeStore::Record("id1", "value1"));
 //   base::ThreadTaskRunnerHandle::Get()->PostTask(
 //       FROM_HERE, base::BindOnce(callback, /*error=*/base::nullopt,
-//                                 base::Passed(record_list)));
+//                                 std::move(record_list)));
 // }
 //
 // MockModelTypeStore mock_model_type_store;

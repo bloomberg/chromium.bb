@@ -6,6 +6,7 @@
 
 #include <math.h>
 #include <algorithm>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
@@ -163,9 +164,9 @@ void GvrDevice::RequestPresent(
   delegate_provider->RequestWebVRPresent(
       std::move(submit_client), std::move(request), GetVRDisplayInfo(),
       std::move(present_options),
-      base::Bind(&GvrDevice::OnRequestPresentResult,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback),
-                 base::Unretained(display)));
+      base::BindOnce(&GvrDevice::OnRequestPresentResult,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     base::Unretained(display)));
 }
 
 void GvrDevice::OnRequestPresentResult(

@@ -948,7 +948,7 @@ void TraceLog::FinishFlush(int generation, bool discard_events) {
         {MayBlock(), TaskPriority::BACKGROUND,
          TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         BindOnce(&TraceLog::ConvertTraceEventsToTraceFormat,
-                 Passed(&previous_logged_events), flush_output_callback,
+                 std::move(previous_logged_events), flush_output_callback,
                  argument_filter_predicate));
     return;
   }

@@ -194,8 +194,8 @@ void SafeBrowsingApiHandlerBridge::StartURLCheck(
   api_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&SafeBrowsingApiHandlerBridge::Core::StartURLCheck,
-                     base::Unretained(core_.get()), base::Passed(&callback),
-                     url, threat_types));
+                     base::Unretained(core_.get()), std::move(callback), url,
+                     threat_types));
 }
 
 SafeBrowsingApiHandlerBridge::Core::Core() {

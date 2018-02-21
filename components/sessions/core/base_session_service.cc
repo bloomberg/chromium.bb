@@ -39,7 +39,7 @@ void PostOrRunInternalGetCommandsCallback(
     callback.Run(std::move(commands));
   } else {
     task_runner->PostTask(FROM_HERE,
-                          base::Bind(callback, base::Passed(&commands)));
+                          base::BindOnce(callback, std::move(commands)));
   }
 }
 
@@ -139,9 +139,8 @@ void BaseSessionService::Save() {
   // We create a new vector which will receive all elements from the
   // current commands. This will also clear the current list.
   RunTaskOnBackendThread(
-      FROM_HERE,
-      base::BindOnce(&SessionBackend::AppendCommands, backend_,
-                     base::Passed(&pending_commands_), pending_reset_));
+      FROM_HERE, base::BindOnce(&SessionBackend::AppendCommands, backend_,
+                                std::move(pending_commands_), pending_reset_));
 
   if (pending_reset_) {
     commands_since_reset_ = 0;
