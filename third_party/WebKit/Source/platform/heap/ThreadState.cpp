@@ -228,7 +228,8 @@ void ThreadState::RunTerminationGC() {
 }
 
 NO_SANITIZE_ADDRESS
-void ThreadState::VisitAsanFakeStackForPointer(Visitor* visitor, Address ptr) {
+void ThreadState::VisitAsanFakeStackForPointer(MarkingVisitor* visitor,
+                                               Address ptr) {
 #if defined(ADDRESS_SANITIZER)
   Address* start = reinterpret_cast<Address*>(start_of_stack_);
   Address* end = reinterpret_cast<Address*>(end_of_stack_);
@@ -256,7 +257,7 @@ void ThreadState::VisitAsanFakeStackForPointer(Visitor* visitor, Address ptr) {
 // other threads that use this stack.
 NO_SANITIZE_ADDRESS
 NO_SANITIZE_THREAD
-void ThreadState::VisitStack(Visitor* visitor) {
+void ThreadState::VisitStack(MarkingVisitor* visitor) {
   if (stack_state_ == BlinkGC::kNoHeapPointersOnStack)
     return;
 
@@ -1320,17 +1321,19 @@ void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
   current_gc_data_.marking_time_in_milliseconds = 0;
 
   if (gc_type == BlinkGC::kTakeSnapshot) {
-    current_gc_data_.visitor = Visitor::Create(this, Visitor::kSnapshotMarking);
+    current_gc_data_.visitor =
+        MarkingVisitor::Create(this, MarkingVisitor::kSnapshotMarking);
   } else {
     DCHECK(gc_type == BlinkGC::kGCWithSweep ||
            gc_type == BlinkGC::kGCWithoutSweep);
     if (Heap().Compaction()->ShouldCompact(&Heap(), stack_state, gc_type,
                                            reason)) {
       Heap().Compaction()->Initialize(this);
-      current_gc_data_.visitor =
-          Visitor::Create(this, Visitor::kGlobalMarkingWithCompaction);
+      current_gc_data_.visitor = MarkingVisitor::Create(
+          this, MarkingVisitor::kGlobalMarkingWithCompaction);
     } else {
-      current_gc_data_.visitor = Visitor::Create(this, Visitor::kGlobalMarking);
+      current_gc_data_.visitor =
+          MarkingVisitor::Create(this, MarkingVisitor::kGlobalMarking);
     }
   }
 

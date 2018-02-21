@@ -14,12 +14,14 @@
 
 namespace blink {
 
+class MarkingVisitor;
 class Visitor;
 
 using Address = uint8_t*;
 
 using FinalizationCallback = void (*)(void*);
-using VisitorCallback = void (*)(Visitor*, void* self);
+using VisitorCallback = void (*)(Visitor*, void*);
+using MarkingVisitorCallback = void (*)(MarkingVisitor*, void*);
 using TraceCallback = VisitorCallback;
 using WeakCallback = VisitorCallback;
 using EphemeronCallback = VisitorCallback;
@@ -110,4 +112,4 @@ class PLATFORM_EXPORT BlinkGC final {
 
 }  // namespace blink
 
-#endif
+#endif  // BlinkGC_h
