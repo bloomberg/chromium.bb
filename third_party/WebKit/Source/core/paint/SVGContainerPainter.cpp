@@ -47,7 +47,7 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
     Optional<FloatClipRecorder> clip_recorder;
     Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
     if (layout_svg_container_.IsSVGViewportContainer() &&
-        SVGLayoutSupport::IsOverflowHidden(&layout_svg_container_)) {
+        SVGLayoutSupport::IsOverflowHidden(layout_svg_container_)) {
       if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
         const auto* fragment =
             paint_info.FragmentToPaint(layout_svg_container_);

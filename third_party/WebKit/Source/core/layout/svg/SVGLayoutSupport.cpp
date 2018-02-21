@@ -370,13 +370,16 @@ void SVGLayoutSupport::LayoutResourcesIfNeeded(const LayoutObject& object) {
     resources->LayoutIfNeeded();
 }
 
-bool SVGLayoutSupport::IsOverflowHidden(const LayoutObject* object) {
+bool SVGLayoutSupport::IsOverflowHidden(const LayoutObject& object) {
   // LayoutSVGRoot should never query for overflow state - it should always clip
   // itself to the initial viewport size.
-  DCHECK(!object->IsDocumentElement());
+  DCHECK(!object.IsDocumentElement());
+  return IsOverflowHidden(object.StyleRef());
+}
 
-  return object->Style()->OverflowX() == EOverflow::kHidden ||
-         object->Style()->OverflowX() == EOverflow::kScroll;
+bool SVGLayoutSupport::IsOverflowHidden(const ComputedStyle& style) {
+  return style.OverflowX() == EOverflow::kHidden ||
+         style.OverflowX() == EOverflow::kScroll;
 }
 
 void SVGLayoutSupport::AdjustVisualRectWithResources(

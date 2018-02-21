@@ -1068,4 +1068,54 @@ TEST_P(PaintPropertyTreeUpdateTest, CompositingReasonForAnimation) {
   EXPECT_TRUE(filter->RequiresCompositingForAnimation());
 }
 
+TEST_P(PaintPropertyTreeUpdateTest, SVGViewportContainerOverflowChange) {
+  SetBodyInnerHTML(R"HTML(
+    <svg>
+      <svg id='target' width='30' height='40'></svg>
+    </svg>
+  )HTML");
+
+  const auto* properties = PaintPropertiesForElement("target");
+  ASSERT_NE(nullptr, properties);
+  EXPECT_EQ(FloatRect(0, 0, 30, 40),
+            properties->OverflowClip()->ClipRect().Rect());
+
+  GetDocument().getElementById("target")->setAttribute("overflow", "visible");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(nullptr, PaintPropertiesForElement("target"));
+
+  GetDocument().getElementById("target")->setAttribute("overflow", "hidden");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  properties = PaintPropertiesForElement("target");
+  ASSERT_NE(nullptr, properties);
+  EXPECT_EQ(FloatRect(0, 0, 30, 40),
+            properties->OverflowClip()->ClipRect().Rect());
+}
+
+TEST_P(PaintPropertyTreeUpdateTest, SVGForeignObjectOverflowChange) {
+  SetBodyInnerHTML(R"HTML(
+    <svg>
+      <foreignObject id='target' x='10' y='20' width='30' height='40'
+          overflow='hidden'>
+      </foreignObject>
+    </svg>
+  )HTML");
+
+  const auto* properties = PaintPropertiesForElement("target");
+  ASSERT_NE(nullptr, properties);
+  EXPECT_EQ(FloatRect(10, 20, 30, 40),
+            properties->OverflowClip()->ClipRect().Rect());
+
+  GetDocument().getElementById("target")->setAttribute("overflow", "visible");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(nullptr, PaintPropertiesForElement("target"));
+
+  GetDocument().getElementById("target")->setAttribute("overflow", "hidden");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  properties = PaintPropertiesForElement("target");
+  ASSERT_NE(nullptr, properties);
+  EXPECT_EQ(FloatRect(10, 20, 30, 40),
+            properties->OverflowClip()->ClipRect().Rect());
+}
+
 }  // namespace blink

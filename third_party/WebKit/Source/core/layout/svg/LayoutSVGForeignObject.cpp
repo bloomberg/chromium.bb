@@ -138,7 +138,7 @@ bool LayoutSVGForeignObject::NodeAtFloatPoint(HitTestResult& result,
   FloatPoint local_point = local_transform.Inverse().MapPoint(point_in_parent);
 
   // Early exit if local point is not contained in clipped viewport area
-  if (SVGLayoutSupport::IsOverflowHidden(this) &&
+  if (SVGLayoutSupport::IsOverflowHidden(*this) &&
       !FrameRect().Contains(LayoutPoint(local_point)))
     return false;
 
@@ -150,6 +150,17 @@ bool LayoutSVGForeignObject::NodeAtFloatPoint(HitTestResult& result,
                                   kHitTestFloat) ||
          LayoutBlock::NodeAtPoint(result, hit_test_location, LayoutPoint(),
                                   kHitTestChildBlockBackgrounds);
+}
+
+void LayoutSVGForeignObject::StyleDidChange(StyleDifference diff,
+                                            const ComputedStyle* old_style) {
+  LayoutSVGBlock::StyleDidChange(diff, old_style);
+
+  if (old_style && (SVGLayoutSupport::IsOverflowHidden(*old_style) !=
+                    SVGLayoutSupport::IsOverflowHidden(StyleRef()))) {
+    // See NeedsOverflowClip() in PaintPropertyTreeBuilder for the reason.
+    SetNeedsPaintPropertyUpdate();
+  }
 }
 
 }  // namespace blink

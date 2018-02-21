@@ -1014,7 +1014,7 @@ static bool NeedsOverflowClip(const LayoutObject& object) {
   // See LayoutSVGBlock::AllowsOverflowClip().
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
       (object.IsSVGForeignObject() || object.IsSVGViewportContainer()) &&
-      SVGLayoutSupport::IsOverflowHidden(&object))
+      SVGLayoutSupport::IsOverflowHidden(object))
     return true;
 
   return object.IsBox() && ToLayoutBox(object).ShouldClipOverflow() &&

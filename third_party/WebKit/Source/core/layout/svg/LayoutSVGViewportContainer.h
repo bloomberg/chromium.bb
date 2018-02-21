@@ -60,6 +60,8 @@ class LayoutSVGViewportContainer final : public LayoutSVGContainer {
                         const FloatPoint& point_in_parent,
                         HitTestAction) override;
 
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
+
   FloatRect viewport_;
   mutable AffineTransform local_to_parent_transform_;
   bool is_layout_size_changed_ : 1;
