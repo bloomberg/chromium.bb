@@ -34,6 +34,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "storage/common/blob_storage/blob_storage_constants.h"
@@ -168,15 +169,17 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   void MaybeStartRequest();
   void StartRequest();
 
-  // Creates ServiceWorkerFetchRequest from |request_| and |body_|.
-  std::unique_ptr<ServiceWorkerFetchRequest> CreateFetchRequest();
+  // Creates a ResourceRequest from |request_|. Does not populate the request
+  // body.
+  std::unique_ptr<network::ResourceRequest> CreateResourceRequest();
 
   // Creates BlobDataHandle of the request body from |body_|. This handle
   // |request_body_blob_data_handle_| will be deleted when
   // ServiceWorkerURLRequestJob is deleted.
   // This must not be called until all files in |body_| with unknown size have
   // their sizes populated.
-  void CreateRequestBodyBlob(std::string* blob_uuid, uint64_t* blob_size);
+  blink::mojom::BlobPtr CreateRequestBodyBlob(std::string* blob_uuid,
+                                              uint64_t* blob_size);
 
   // Returns true if this job performed a navigation that should be logged to
   // performance-related UMA. It returns false in certain cases that are not
@@ -324,7 +327,6 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   // using the userdata mechanism. So we have to keep it not to free the blobs.
   scoped_refptr<network::ResourceRequestBody> body_;
   std::unique_ptr<storage::BlobDataHandle> request_body_blob_data_handle_;
-  scoped_refptr<storage::BlobHandle> request_body_blob_handle_;
   ServiceWorkerFetchType fetch_type_;
 
   ResponseBodyType response_body_type_ = UNKNOWN;

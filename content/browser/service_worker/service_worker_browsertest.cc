@@ -876,23 +876,15 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     base::OnceClosure prepare_callback = CreatePrepareReceiver(prepare_result);
     ServiceWorkerFetchDispatcher::FetchCallback fetch_callback =
         CreateResponseReceiver(done, blob_context_.get(), result);
-    if (ServiceWorkerUtils::IsServicificationEnabled()) {
-      auto request = std::make_unique<network::ResourceRequest>();
-      request->url = url;
-      request->method = "GET";
-      request->resource_type = resource_type;
-      fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
-          std::move(request), version_, net::NetLogWithSource(),
-          std::move(prepare_callback), std::move(fetch_callback));
-    } else {
-      auto legacy_request = std::make_unique<ServiceWorkerFetchRequest>(
-          url, "GET", ServiceWorkerHeaderMap(), Referrer(),
-          false /* is_reload */);
-      fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
-          std::move(legacy_request), version_, resource_type,
-          net::NetLogWithSource(), std::move(prepare_callback),
-          std::move(fetch_callback));
-    }
+    auto request = std::make_unique<network::ResourceRequest>();
+    request->url = url;
+    request->method = "GET";
+    request->resource_type = resource_type;
+    fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
+        std::move(request), std::string() /* request_body_blob_uuid */,
+        0 /* request_body_blob_size */, nullptr /* request_body_blob */,
+        std::string() /* client_id */, version_, net::NetLogWithSource(),
+        std::move(prepare_callback), std::move(fetch_callback));
     fetch_dispatcher_->Run();
   }
 

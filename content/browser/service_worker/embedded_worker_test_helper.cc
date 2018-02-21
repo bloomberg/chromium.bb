@@ -227,18 +227,6 @@ class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
                                           std::move(callback));
   }
 
-  void DispatchLegacyFetchEvent(
-      const ServiceWorkerFetchRequest& request,
-      mojom::FetchEventPreloadHandlePtr preload_handle,
-      mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      DispatchFetchEventCallback callback) override {
-    if (!helper_)
-      return;
-    helper_->OnLegacyFetchEventStub(
-        thread_id_, request, std::move(preload_handle),
-        std::move(response_callback), std::move(callback));
-  }
-
   void DispatchFetchEvent(
       mojom::DispatchFetchEventParamsPtr params,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
@@ -633,16 +621,7 @@ void EmbeddedWorkerTestHelper::OnFetchEvent(
     mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     mojom::ServiceWorkerEventDispatcher::DispatchFetchEventCallback
         finish_callback) {
-  OnFetchEventCommon(std::move(response_callback), std::move(finish_callback));
-}
-
-void EmbeddedWorkerTestHelper::OnLegacyFetchEvent(
-    int /* embedded_worker_id */,
-    const ServiceWorkerFetchRequest& /* request */,
-    mojom::FetchEventPreloadHandlePtr /* preload_handle */,
-    mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-    mojom::ServiceWorkerEventDispatcher::DispatchFetchEventCallback
-        finish_callback) {
+  // TODO(falken): In-line common into here.
   OnFetchEventCommon(std::move(response_callback), std::move(finish_callback));
 }
 
@@ -922,21 +901,6 @@ void EmbeddedWorkerTestHelper::OnFetchEventStub(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&EmbeddedWorkerTestHelper::OnFetchEvent, AsWeakPtr(),
-                     thread_id_embedded_worker_id_map_[thread_id], request,
-                     std::move(preload_handle), std::move(response_callback),
-                     std::move(finish_callback)));
-}
-
-void EmbeddedWorkerTestHelper::OnLegacyFetchEventStub(
-    int thread_id,
-    const ServiceWorkerFetchRequest& request,
-    mojom::FetchEventPreloadHandlePtr preload_handle,
-    mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-    mojom::ServiceWorkerEventDispatcher::DispatchFetchEventCallback
-        finish_callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&EmbeddedWorkerTestHelper::OnLegacyFetchEvent, AsWeakPtr(),
                      thread_id_embedded_worker_id_map_[thread_id], request,
                      std::move(preload_handle), std::move(response_callback),
                      std::move(finish_callback)));

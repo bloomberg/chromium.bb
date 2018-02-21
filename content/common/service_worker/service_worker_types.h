@@ -69,7 +69,10 @@ using ServiceWorkerHeaderMap =
 
 using ServiceWorkerHeaderList = std::vector<std::string>;
 
-// To dispatch fetch request from browser to child process.
+// Roughly corresponds to Fetch API's Request type. This struct is no longer
+// used by the core Service Worker API. Background Fetch and Cache Storage APIs
+// use it.
+// TODO(falken): Move this out of service_worker_types.h and rename it.
 struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   ServiceWorkerFetchRequest();
   ServiceWorkerFetchRequest(const GURL& url,
