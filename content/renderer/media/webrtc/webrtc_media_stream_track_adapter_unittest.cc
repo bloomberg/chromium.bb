@@ -156,7 +156,7 @@ TEST_F(WebRtcMediaStreamTrackAdapterTest, RemoteAudioTrack) {
       FROM_HERE,
       base::BindOnce(
           &WebRtcMediaStreamTrackAdapterTest::CreateRemoteTrackAdapter,
-          base::Unretained(this), webrtc_track.get()));
+          base::Unretained(this), base::Unretained(webrtc_track.get())));
   RunMessageLoopsUntilIdle();
   DCHECK(track_adapter_);
   EXPECT_TRUE(track_adapter_->is_initialized());
@@ -180,7 +180,7 @@ TEST_F(WebRtcMediaStreamTrackAdapterTest, RemoteVideoTrack) {
       FROM_HERE,
       base::BindOnce(
           &WebRtcMediaStreamTrackAdapterTest::CreateRemoteTrackAdapter,
-          base::Unretained(this), webrtc_track.get()));
+          base::Unretained(this), base::Unretained(webrtc_track.get())));
   RunMessageLoopsUntilIdle();
   DCHECK(track_adapter_);
   EXPECT_TRUE(track_adapter_->is_initialized());

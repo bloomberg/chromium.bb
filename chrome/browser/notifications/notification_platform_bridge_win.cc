@@ -466,8 +466,8 @@ class NotificationPlatformBridgeWinImpl
 
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(callback, base::Passed(&displayed_notifications),
-                   true /* supports_synchronization */));
+        base::BindOnce(callback, std::move(displayed_notifications),
+                       true /* supports_synchronization */));
   }
 
   void SetReadyCallback(
@@ -721,10 +721,10 @@ void NotificationPlatformBridgeWin::Display(
       notification, /*include_body_image=*/true, /*include_small_image=*/true,
       /*include_icon_images=*/true);
 
-  PostTaskToTaskRunnerThread(base::BindOnce(
-      &NotificationPlatformBridgeWinImpl::Display, impl_, notification_type,
-      profile_id, is_incognito, base::Passed(&notification_copy),
-      base::Passed(&metadata)));
+  PostTaskToTaskRunnerThread(
+      base::BindOnce(&NotificationPlatformBridgeWinImpl::Display, impl_,
+                     notification_type, profile_id, is_incognito,
+                     std::move(notification_copy), std::move(metadata)));
 }
 
 void NotificationPlatformBridgeWin::Close(const std::string& profile_id,
@@ -749,7 +749,7 @@ void NotificationPlatformBridgeWin::SetReadyCallback(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   PostTaskToTaskRunnerThread(
       base::BindOnce(&NotificationPlatformBridgeWinImpl::SetReadyCallback,
-                     impl_, base::Passed(&callback)));
+                     impl_, std::move(callback)));
 }
 
 void NotificationPlatformBridgeWin::PostTaskToTaskRunnerThread(
@@ -766,7 +766,8 @@ void NotificationPlatformBridgeWin::ForwardHandleEventForTesting(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   PostTaskToTaskRunnerThread(base::BindOnce(
       &NotificationPlatformBridgeWinImpl::ForwardHandleEventForTesting, impl_,
-      operation, notification, args, by_user));
+      operation, base::Unretained(notification), base::Unretained(args),
+      by_user));
 }
 
 void NotificationPlatformBridgeWin::SetDisplayedNotificationsForTesting(

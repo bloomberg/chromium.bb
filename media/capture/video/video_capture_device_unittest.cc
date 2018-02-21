@@ -179,7 +179,7 @@ class MockVideoCaptureClient : public VideoCaptureDevice::Client {
                               int frame_feedback_id) override {
     ASSERT_GT(length, 0);
     ASSERT_TRUE(data);
-    main_thread_->PostTask(FROM_HERE, base::Bind(frame_cb_, format));
+    main_thread_->PostTask(FROM_HERE, base::BindOnce(frame_cb_, format));
   }
 
   // Trampoline methods to workaround GMOCK problems with std::unique_ptr<>.
@@ -790,9 +790,9 @@ WRAPPED_TEST_P(VideoCaptureDeviceTest, CheckPhotoCallbackRelease) {
   EXPECT_CALL(*callback, DoRelease()).WillOnce(Return(1U));
   EXPECT_CALL(*callback, DoOnSample(_)).WillOnce(Return(S_OK));
   static_cast<VideoCaptureDeviceMFWin*>(device.get())
-      ->set_create_mf_photo_callback_for_testing(
-          base::BindRepeating(&VideoCaptureDeviceTest::CreateMockPhotoCallback,
-                              base::Unretained(this), callback));
+      ->set_create_mf_photo_callback_for_testing(base::BindRepeating(
+          &VideoCaptureDeviceTest::CreateMockPhotoCallback,
+          base::Unretained(this), base::Unretained(callback)));
 
   VideoCaptureDevice::TakePhotoCallback scoped_callback = base::BindOnce(
       &MockImageCaptureClient::DoOnPhotoTaken, image_capture_client_);

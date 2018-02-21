@@ -482,7 +482,8 @@ class MidiManagerWinrt::MidiPortManager {
                   kComTaskRunner,
                   base::BindOnce(
                       &MidiPortManager::OnCompletedGetPortFromIdAsync,
-                      base::Unretained(port_manager), async_op));
+                      base::Unretained(port_manager),
+                      base::Unretained(async_op)));
 
               return S_OK;
             })

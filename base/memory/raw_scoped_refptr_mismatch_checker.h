@@ -7,7 +7,7 @@
 
 #include <type_traits>
 
-#include "base/memory/ref_counted.h"
+#include "base/template_util.h"
 
 // It is dangerous to post a task with a T* argument where T is a subtype of
 // RefCounted(Base|ThreadSafeBase), since by the time the parameter is used, the
@@ -22,6 +22,13 @@ namespace base {
 // Not for public consumption, so we wrap it in namespace internal.
 namespace internal {
 
+template <typename T, typename = void>
+struct IsRefCountedType : std::false_type {};
+
+template <typename T>
+struct IsRefCountedType<T, void_t<decltype(&T::AddRef), decltype(&T::Release)>>
+    : std::true_type {};
+
 template <typename T>
 struct NeedsScopedRefptrButGetsRawPtr {
   static_assert(!std::is_reference<T>::value,
@@ -31,11 +38,8 @@ struct NeedsScopedRefptrButGetsRawPtr {
     // Human readable translation: you needed to be a scoped_refptr if you are a
     // raw pointer type and are convertible to a RefCounted(Base|ThreadSafeBase)
     // type.
-    value =
-        (std::is_pointer<T>::value &&
-         (std::is_convertible<T, const subtle::RefCountedBase*>::value ||
-          std::is_convertible<T,
-                              const subtle::RefCountedThreadSafeBase*>::value))
+    value = std::is_pointer<T>::value &&
+            IsRefCountedType<std::remove_pointer_t<T>>::value
   };
 };
 

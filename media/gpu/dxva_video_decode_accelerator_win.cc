@@ -1156,8 +1156,8 @@ void DXVAVideoDecodeAccelerator::Decode(
       "Failed to associate input buffer id with sample", PLATFORM_FAILURE, );
 
   decoder_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::DecodeInternal,
-                            base::Unretained(this), sample));
+      FROM_HERE, base::BindOnce(&DXVAVideoDecodeAccelerator::DecodeInternal,
+                                base::Unretained(this), sample));
 }
 
 void DXVAVideoDecodeAccelerator::AssignPictureBuffers(
@@ -1204,8 +1204,8 @@ void DXVAVideoDecodeAccelerator::AssignPictureBuffers(
   ProcessPendingSamples();
   if (pending_flush_ || processing_config_changed_) {
     decoder_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::FlushInternal,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&DXVAVideoDecodeAccelerator::FlushInternal,
+                                  base::Unretained(this)));
   }
 }
 
@@ -1235,8 +1235,9 @@ void DXVAVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
                                    INVALID_ARGUMENT, );
       main_thread_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&DXVAVideoDecodeAccelerator::DeferredDismissStaleBuffer,
-                     weak_ptr_, picture_buffer_id));
+          base::BindOnce(
+              &DXVAVideoDecodeAccelerator::DeferredDismissStaleBuffer,
+              weak_ptr_, picture_buffer_id));
     }
     return;
   }
@@ -1265,8 +1266,8 @@ void DXVAVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
     ProcessPendingSamples();
     if (pending_flush_) {
       decoder_thread_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::FlushInternal,
-                                base::Unretained(this)));
+          FROM_HERE, base::BindOnce(&DXVAVideoDecodeAccelerator::FlushInternal,
+                                    base::Unretained(this)));
     }
   } else {
     it->second->ResetReuseFence();
@@ -1294,8 +1295,9 @@ void DXVAVideoDecodeAccelerator::WaitForOutputBuffer(int32_t picture_buffer_id,
                                PLATFORM_FAILURE, );
   if (count <= kMaxIterationsForANGLEReuseFlush && !fence->HasCompleted()) {
     main_thread_task_runner_->PostDelayedTask(
-        FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::WaitForOutputBuffer,
-                              weak_ptr_, picture_buffer_id, count + 1),
+        FROM_HERE,
+        base::BindOnce(&DXVAVideoDecodeAccelerator::WaitForOutputBuffer,
+                       weak_ptr_, picture_buffer_id, count + 1),
         base::TimeDelta::FromMilliseconds(kFlushDecoderSurfaceTimeoutMs));
     return;
   }
@@ -1306,8 +1308,8 @@ void DXVAVideoDecodeAccelerator::WaitForOutputBuffer(int32_t picture_buffer_id,
   ProcessPendingSamples();
   if (pending_flush_ || processing_config_changed_) {
     decoder_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::FlushInternal,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&DXVAVideoDecodeAccelerator::FlushInternal,
+                                  base::Unretained(this)));
   }
 }
 
@@ -1339,8 +1341,8 @@ void DXVAVideoDecodeAccelerator::Flush() {
   processing_config_changed_ = false;
 
   decoder_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::FlushInternal,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&DXVAVideoDecodeAccelerator::FlushInternal,
+                                base::Unretained(this)));
 }
 
 void DXVAVideoDecodeAccelerator::Reset() {
@@ -1386,12 +1388,12 @@ void DXVAVideoDecodeAccelerator::Reset() {
 
   main_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DXVAVideoDecodeAccelerator::NotifyInputBuffersDropped,
-                 weak_ptr_, std::move(pending_input_buffers_)));
+      base::BindOnce(&DXVAVideoDecodeAccelerator::NotifyInputBuffersDropped,
+                     weak_ptr_, std::move(pending_input_buffers_)));
   pending_input_buffers_.clear();
   main_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DXVAVideoDecodeAccelerator::NotifyResetDone, weak_ptr_));
+      base::BindOnce(&DXVAVideoDecodeAccelerator::NotifyResetDone, weak_ptr_));
 
   RETURN_AND_NOTIFY_ON_FAILURE(StartDecoderThread(),
                                "Failed to start decoder thread.",
@@ -1958,8 +1960,8 @@ bool DXVAVideoDecodeAccelerator::ProcessOutputSample(
     DVLOG(1) << "Waiting for picture slots from the client.";
     main_thread_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&DXVAVideoDecodeAccelerator::ProcessPendingSamples,
-                   weak_ptr_));
+        base::BindOnce(&DXVAVideoDecodeAccelerator::ProcessPendingSamples,
+                       weak_ptr_));
     return true;
   }
 
@@ -1972,8 +1974,9 @@ bool DXVAVideoDecodeAccelerator::ProcessOutputSample(
 
   // Go ahead and request picture buffers.
   main_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::RequestPictureBuffers,
-                            weak_ptr_, width, height));
+      FROM_HERE,
+      base::BindOnce(&DXVAVideoDecodeAccelerator::RequestPictureBuffers,
+                     weak_ptr_, width, height));
 
   pictures_requested_ = true;
   return true;
@@ -2027,10 +2030,11 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
       if (index->second->CanBindSamples()) {
         main_thread_task_runner_->PostTask(
             FROM_HERE,
-            base::Bind(&DXVAVideoDecodeAccelerator::BindPictureBufferToSample,
-                       weak_ptr_, pending_sample->output_sample,
-                       pending_sample->picture_buffer_id,
-                       pending_sample->input_buffer_id));
+            base::BindOnce(
+                &DXVAVideoDecodeAccelerator::BindPictureBufferToSample,
+                weak_ptr_, pending_sample->output_sample,
+                pending_sample->picture_buffer_id,
+                pending_sample->input_buffer_id));
         continue;
       }
 
@@ -2072,8 +2076,8 @@ void DXVAVideoDecodeAccelerator::StopOnError(
     VideoDecodeAccelerator::Error error) {
   if (!main_thread_task_runner_->BelongsToCurrentThread()) {
     main_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&DXVAVideoDecodeAccelerator::StopOnError, weak_ptr_, error));
+        FROM_HERE, base::BindOnce(&DXVAVideoDecodeAccelerator::StopOnError,
+                                  weak_ptr_, error));
     return;
   }
 
@@ -2272,11 +2276,11 @@ void DXVAVideoDecodeAccelerator::FlushInternal() {
   if (!processing_config_changed_ && !pending_input_buffers_.empty()) {
     decoder_thread_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&DXVAVideoDecodeAccelerator::DecodePendingInputBuffers,
-                   base::Unretained(this)));
+        base::BindOnce(&DXVAVideoDecodeAccelerator::DecodePendingInputBuffers,
+                       base::Unretained(this)));
     decoder_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::FlushInternal,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&DXVAVideoDecodeAccelerator::FlushInternal,
+                                  base::Unretained(this)));
     return;
   }
 
@@ -2304,13 +2308,13 @@ void DXVAVideoDecodeAccelerator::FlushInternal() {
     SetState(kFlushing);
 
     main_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&DXVAVideoDecodeAccelerator::NotifyFlushDone, weak_ptr_));
+        FROM_HERE, base::BindOnce(&DXVAVideoDecodeAccelerator::NotifyFlushDone,
+                                  weak_ptr_));
   } else {
     processing_config_changed_ = false;
     main_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::ConfigChanged,
-                              weak_ptr_, config_));
+        FROM_HERE, base::BindOnce(&DXVAVideoDecodeAccelerator::ConfigChanged,
+                                  weak_ptr_, config_));
   }
 
   SetState(kNormal);
@@ -2389,8 +2393,8 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
       pending_input_buffers_.push_back(sample);
       decoder_thread_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&DXVAVideoDecodeAccelerator::DecodePendingInputBuffers,
-                     base::Unretained(this)));
+          base::BindOnce(&DXVAVideoDecodeAccelerator::DecodePendingInputBuffers,
+                         base::Unretained(this)));
       return;
     }
   }
@@ -2420,19 +2424,22 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
   // http://code.google.com/p/chromium/issues/detail?id=108121
   // http://code.google.com/p/chromium/issues/detail?id=150925
   main_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::NotifyInputBufferRead,
-                            weak_ptr_, input_buffer_id));
+      FROM_HERE,
+      base::BindOnce(&DXVAVideoDecodeAccelerator::NotifyInputBufferRead,
+                     weak_ptr_, input_buffer_id));
 }
 
 void DXVAVideoDecodeAccelerator::HandleResolutionChanged(int width,
                                                          int height) {
   main_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::DismissStaleBuffers,
-                            weak_ptr_, false));
+      FROM_HERE,
+      base::BindOnce(&DXVAVideoDecodeAccelerator::DismissStaleBuffers,
+                     weak_ptr_, false));
 
   main_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::RequestPictureBuffers,
-                            weak_ptr_, width, height));
+      FROM_HERE,
+      base::BindOnce(&DXVAVideoDecodeAccelerator::RequestPictureBuffers,
+                     weak_ptr_, width, height));
 }
 
 void DXVAVideoDecodeAccelerator::DismissStaleBuffers(bool force) {
@@ -2481,8 +2488,8 @@ DXVAVideoDecodeAccelerator::State DXVAVideoDecodeAccelerator::GetState() {
 void DXVAVideoDecodeAccelerator::SetState(State new_state) {
   if (!main_thread_task_runner_->BelongsToCurrentThread()) {
     main_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::SetState, weak_ptr_,
-                              new_state));
+        FROM_HERE, base::BindOnce(&DXVAVideoDecodeAccelerator::SetState,
+                                  weak_ptr_, new_state));
     return;
   }
 
@@ -2516,9 +2523,11 @@ void DXVAVideoDecodeAccelerator::CopySurface(
   TRACE_EVENT0("media", "DXVAVideoDecodeAccelerator::CopySurface");
   if (!decoder_thread_task_runner_->BelongsToCurrentThread()) {
     decoder_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::CopySurface,
-                              base::Unretained(this), src_surface, dest_surface,
-                              picture_buffer_id, input_buffer_id, color_space));
+        FROM_HERE,
+        base::BindOnce(&DXVAVideoDecodeAccelerator::CopySurface,
+                       base::Unretained(this), base::Unretained(src_surface),
+                       base::Unretained(dest_surface), picture_buffer_id,
+                       input_buffer_id, color_space));
     return;
   }
 
@@ -2575,18 +2584,22 @@ void DXVAVideoDecodeAccelerator::CopySurface(
   // complete.
   if (using_angle_device_) {
     main_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::CopySurfaceComplete,
-                              weak_ptr_, src_surface, dest_surface,
-                              picture_buffer_id, input_buffer_id));
+        FROM_HERE,
+        base::BindOnce(&DXVAVideoDecodeAccelerator::CopySurfaceComplete,
+                       weak_ptr_, base::Unretained(src_surface),
+                       base::Unretained(dest_surface), picture_buffer_id,
+                       input_buffer_id));
     return;
   }
 
   // Flush the decoder device to ensure that the decoded frame is copied to the
   // target surface.
   decoder_thread_task_runner_->PostDelayedTask(
-      FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::FlushDecoder,
-                            base::Unretained(this), 0, src_surface,
-                            dest_surface, picture_buffer_id, input_buffer_id),
+      FROM_HERE,
+      base::BindOnce(&DXVAVideoDecodeAccelerator::FlushDecoder,
+                     base::Unretained(this), 0, base::Unretained(src_surface),
+                     base::Unretained(dest_surface), picture_buffer_id,
+                     input_buffer_id),
       base::TimeDelta::FromMilliseconds(kFlushDecoderSurfaceTimeoutMs));
 }
 
@@ -2634,14 +2647,14 @@ void DXVAVideoDecodeAccelerator::CopySurfaceComplete(
 
   if (pending_flush_ || processing_config_changed_) {
     decoder_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::FlushInternal,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&DXVAVideoDecodeAccelerator::FlushInternal,
+                                  base::Unretained(this)));
     return;
   }
   decoder_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DXVAVideoDecodeAccelerator::DecodePendingInputBuffers,
-                 base::Unretained(this)));
+      base::BindOnce(&DXVAVideoDecodeAccelerator::DecodePendingInputBuffers,
+                     base::Unretained(this)));
 }
 
 void DXVAVideoDecodeAccelerator::BindPictureBufferToSample(
@@ -2688,14 +2701,14 @@ void DXVAVideoDecodeAccelerator::BindPictureBufferToSample(
 
   if (pending_flush_ || processing_config_changed_) {
     decoder_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::FlushInternal,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&DXVAVideoDecodeAccelerator::FlushInternal,
+                                  base::Unretained(this)));
     return;
   }
   decoder_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DXVAVideoDecodeAccelerator::DecodePendingInputBuffers,
-                 base::Unretained(this)));
+      base::BindOnce(&DXVAVideoDecodeAccelerator::DecodePendingInputBuffers,
+                     base::Unretained(this)));
 }
 
 void DXVAVideoDecodeAccelerator::CopyTexture(
@@ -2741,10 +2754,11 @@ void DXVAVideoDecodeAccelerator::CopyTexture(
 
   decoder_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread,
-                 base::Unretained(this), dest_texture, dest_keyed_mutex,
-                 keyed_mutex_value, input_sample_for_conversion,
-                 picture_buffer_id, input_buffer_id));
+      base::BindOnce(&DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread,
+                     base::Unretained(this), base::Unretained(dest_texture),
+                     dest_keyed_mutex, keyed_mutex_value,
+                     input_sample_for_conversion, picture_buffer_id,
+                     input_buffer_id));
 }
 
 void DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread(
@@ -2829,18 +2843,18 @@ void DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread(
 
     main_thread_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&DXVAVideoDecodeAccelerator::CopySurfaceComplete, weak_ptr_,
-                   nullptr, nullptr, picture_buffer_id, input_buffer_id));
+        base::BindOnce(&DXVAVideoDecodeAccelerator::CopySurfaceComplete,
+                       weak_ptr_, nullptr, nullptr, picture_buffer_id,
+                       input_buffer_id));
   } else {
     d3d11_device_context_->Flush();
     d3d11_device_context_->End(d3d11_query_.Get());
 
     decoder_thread_task_runner_->PostDelayedTask(
-        FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::FlushDecoder,
-                              base::Unretained(this), 0,
-                              reinterpret_cast<IDirect3DSurface9*>(NULL),
-                              reinterpret_cast<IDirect3DSurface9*>(NULL),
-                              picture_buffer_id, input_buffer_id),
+        FROM_HERE,
+        base::BindOnce(&DXVAVideoDecodeAccelerator::FlushDecoder,
+                       base::Unretained(this), 0, nullptr, nullptr,
+                       picture_buffer_id, input_buffer_id),
         base::TimeDelta::FromMilliseconds(kFlushDecoderSurfaceTimeoutMs));
   }
 }
@@ -2880,17 +2894,21 @@ void DXVAVideoDecodeAccelerator::FlushDecoder(int iterations,
 
   if ((hr == S_FALSE) && (++iterations < kMaxIterationsForD3DFlush)) {
     decoder_thread_task_runner_->PostDelayedTask(
-        FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::FlushDecoder,
-                              base::Unretained(this), iterations, src_surface,
-                              dest_surface, picture_buffer_id, input_buffer_id),
+        FROM_HERE,
+        base::BindOnce(
+            &DXVAVideoDecodeAccelerator::FlushDecoder, base::Unretained(this),
+            iterations, base::Unretained(src_surface),
+            base::Unretained(dest_surface), picture_buffer_id, input_buffer_id),
         base::TimeDelta::FromMilliseconds(kFlushDecoderSurfaceTimeoutMs));
     return;
   }
 
   main_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::CopySurfaceComplete,
-                            weak_ptr_, src_surface, dest_surface,
-                            picture_buffer_id, input_buffer_id));
+      FROM_HERE,
+      base::BindOnce(&DXVAVideoDecodeAccelerator::CopySurfaceComplete,
+                     weak_ptr_, base::Unretained(src_surface),
+                     base::Unretained(dest_surface), picture_buffer_id,
+                     input_buffer_id));
 }
 
 bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
@@ -3102,8 +3120,8 @@ void DXVAVideoDecodeAccelerator::ConfigChanged(const Config& config) {
   Initialize(config_, client_);
   decoder_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DXVAVideoDecodeAccelerator::DecodePendingInputBuffers,
-                 base::Unretained(this)));
+      base::BindOnce(&DXVAVideoDecodeAccelerator::DecodePendingInputBuffers,
+                     base::Unretained(this)));
 }
 
 uint32_t DXVAVideoDecodeAccelerator::GetTextureTarget() const {

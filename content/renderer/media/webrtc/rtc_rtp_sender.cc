@@ -106,7 +106,8 @@ class RTCRtpSender::RTCRtpSenderInternal
         FROM_HERE,
         base::BindOnce(
             &RTCRtpSender::RTCRtpSenderInternal::ReplaceTrackOnSignalingThread,
-            this, std::move(track_ref), webrtc_track, std::move(callback)));
+            this, std::move(track_ref), base::Unretained(webrtc_track),
+            std::move(callback)));
   }
 
   bool RemoveFromPeerConnection(webrtc::PeerConnectionInterface* pc) {

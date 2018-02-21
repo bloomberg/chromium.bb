@@ -114,7 +114,7 @@ class MediaStreamTrackMetricsTest : public testing::Test {
         FROM_HERE,
         base::BindOnce(
             base::IgnoreResult<AddTrack>(&MediaStreamInterface::AddTrack),
-            stream_, track),
+            stream_, base::Unretained(track)),
         run_loop.QuitClosure());
     run_loop.Run();
   }
@@ -129,7 +129,7 @@ class MediaStreamTrackMetricsTest : public testing::Test {
         FROM_HERE,
         base::BindOnce(
             base::IgnoreResult<RemoveTrack>(&MediaStreamInterface::RemoveTrack),
-            stream_, track),
+            stream_, base::Unretained(track)),
         run_loop.QuitClosure());
     run_loop.Run();
   }

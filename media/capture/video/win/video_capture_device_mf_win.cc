@@ -443,7 +443,7 @@ HRESULT VideoCaptureDeviceMFWin::GetDeviceStreamCount(IMFCaptureSource* source,
       [](IMFCaptureSource* source, DWORD* count) {
         return source->GetDeviceStreamCount(count);
       },
-      source, count));
+      base::Unretained(source), count));
 }
 
 HRESULT VideoCaptureDeviceMFWin::GetDeviceStreamCategory(
@@ -457,7 +457,7 @@ HRESULT VideoCaptureDeviceMFWin::GetDeviceStreamCategory(
          MF_CAPTURE_ENGINE_STREAM_CATEGORY* stream_category) {
         return source->GetDeviceStreamCategory(stream_index, stream_category);
       },
-      source, stream_index, stream_category));
+      base::Unretained(source), stream_index, stream_category));
 }
 
 HRESULT VideoCaptureDeviceMFWin::GetAvailableDeviceMediaType(
@@ -473,7 +473,7 @@ HRESULT VideoCaptureDeviceMFWin::GetAvailableDeviceMediaType(
         return source->GetAvailableDeviceMediaType(stream_index,
                                                    media_type_index, type);
       },
-      source, stream_index, media_type_index, type));
+      base::Unretained(source), stream_index, media_type_index, type));
 }
 
 HRESULT VideoCaptureDeviceMFWin::FillCapabilities(

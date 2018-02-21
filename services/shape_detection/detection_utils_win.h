@@ -74,7 +74,8 @@ class AsyncOperation {
           // outside.  This is happening on an OS thread.
           task_runner->PostTask(
               FROM_HERE, base::BindOnce(&AsyncOperation::AsyncCallbackInternal,
-                                        std::move(weak_ptr), async_op, status));
+                                        std::move(weak_ptr),
+                                        base::Unretained(async_op), status));
 
           return S_OK;
         });
