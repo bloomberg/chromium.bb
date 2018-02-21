@@ -34,6 +34,7 @@ http://ftp.us.debian.org/debian/pool/main/e/elfutils/libelf-dev_0.170-0.3_mipsel
 http://ftp.us.debian.org/debian/pool/main/e/expat/libexpat1_2.2.5-3_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/e/expat/libexpat1-dev_2.2.5-3_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/f/flac/libflac8_1.3.2-1_mipsel.deb
+http://ftp.us.debian.org/debian/pool/main/f/flac/libflac-dev_1.3.2-1_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/f/fontconfig/libfontconfig1_2.12.6-0.1_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/f/fontconfig/libfontconfig1-dev_2.12.6-0.1_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/f/freetype/libfreetype6_2.8.1-2_mipsel.deb
@@ -151,6 +152,12 @@ http://ftp.us.debian.org/debian/pool/main/libv/libva/libva-wayland2_2.0.0-2_mips
 http://ftp.us.debian.org/debian/pool/main/libv/libva/libva-x11-2_2.0.0-2_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/libv/libvorbis/libvorbis0a_1.3.5-4.1_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/libv/libvorbis/libvorbisenc2_1.3.5-4.1_mipsel.deb
+http://ftp.us.debian.org/debian/pool/main/libv/libvpx/libvpx4_1.6.1-3_mipsel.deb
+http://ftp.us.debian.org/debian/pool/main/libv/libvpx/libvpx-dev_1.6.1-3_mipsel.deb
+http://ftp.us.debian.org/debian/pool/main/libw/libwebp/libwebp6_0.6.0-4_mipsel.deb
+http://ftp.us.debian.org/debian/pool/main/libw/libwebp/libwebpdemux2_0.6.0-4_mipsel.deb
+http://ftp.us.debian.org/debian/pool/main/libw/libwebp/libwebp-dev_0.6.0-4_mipsel.deb
+http://ftp.us.debian.org/debian/pool/main/libw/libwebp/libwebpmux3_0.6.0-4_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/libx/libx11/libx11-6_1.6.4-3_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/libx/libx11/libx11-dev_1.6.4-3_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/libx/libx11/libx11-xcb1_1.6.4-3_mipsel.deb
@@ -193,6 +200,8 @@ http://ftp.us.debian.org/debian/pool/main/libx/libxrandr/libxrandr-dev_1.5.1-1_m
 http://ftp.us.debian.org/debian/pool/main/libx/libxrender/libxrender1_0.9.10-1_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/libx/libxrender/libxrender-dev_0.9.10-1_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/libx/libxshmfence/libxshmfence1_1.2-1+b2_mipsel.deb
+http://ftp.us.debian.org/debian/pool/main/libx/libxslt/libxslt1.1_1.1.29-5_mipsel.deb
+http://ftp.us.debian.org/debian/pool/main/libx/libxslt/libxslt1-dev_1.1.29-5_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/libx/libxss/libxss1_1.2.2-1+b2_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/libx/libxss/libxss-dev_1.2.2-1+b2_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/libx/libxt/libxt6_1.1.5-1_mipsel.deb
@@ -222,6 +231,8 @@ http://ftp.us.debian.org/debian/pool/main/n/nss/libnss3-dev_3.35-2_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/o/openssl1.0/libssl1.0.2_1.0.2n-1_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/o/openssl/libssl1.1_1.1.0g-2_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/o/openssl/libssl-dev_1.1.0g-2_mipsel.deb
+http://ftp.us.debian.org/debian/pool/main/o/opus/libopus0_1.2.1-1_mipsel.deb
+http://ftp.us.debian.org/debian/pool/main/o/opus/libopus-dev_1.2.1-1_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/o/orbit2/liborbit-2-0_2.14.19-4_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/o/orbit2/liborbit2_2.14.19-4_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/p/p11-kit/libp11-kit0_0.23.9-2_mipsel.deb
@@ -245,6 +256,10 @@ http://ftp.us.debian.org/debian/pool/main/p/pixman/libpixman-1-dev_0.34.0-2_mips
 http://ftp.us.debian.org/debian/pool/main/p/pulseaudio/libpulse0_11.1-4_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/p/pulseaudio/libpulse-dev_11.1-4_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/p/pulseaudio/libpulse-mainloop-glib0_11.1-4_mipsel.deb
+http://ftp.us.debian.org/debian/pool/main/r/re2/libre2-3_20170101+dfsg-1_mipsel.deb
+http://ftp.us.debian.org/debian/pool/main/r/re2/libre2-dev_20170101+dfsg-1_mipsel.deb
+http://ftp.us.debian.org/debian/pool/main/s/snappy/libsnappy1v5_1.1.7-1_mipsel.deb
+http://ftp.us.debian.org/debian/pool/main/s/snappy/libsnappy-dev_1.1.7-1_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/s/speech-dispatcher/libspeechd2_0.8.8-1_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/s/speech-dispatcher/libspeechd-dev_0.8.8-1_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/s/speech-dispatcher/speech-dispatcher_0.8.8-1_mipsel.deb
@@ -258,6 +273,7 @@ http://ftp.us.debian.org/debian/pool/main/u/unbound/libunbound2_1.6.7-1_mipsel.d
 http://ftp.us.debian.org/debian/pool/main/u/util-linux/libblkid1_2.31.1-0.1_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/u/util-linux/libmount1_2.31.1-0.1_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/u/util-linux/libuuid1_2.31.1-0.1_mipsel.deb
+http://ftp.us.debian.org/debian/pool/main/u/util-linux/uuid-dev_2.31.1-0.1_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/w/wayland/libwayland-client0_1.14.0-1+b1_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/w/wayland/libwayland-cursor0_1.14.0-1+b1_mipsel.deb
 http://ftp.us.debian.org/debian/pool/main/w/wayland/libwayland-dev_1.14.0-1+b1_mipsel.deb

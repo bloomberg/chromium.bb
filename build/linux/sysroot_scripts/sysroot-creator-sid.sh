@@ -94,6 +94,7 @@ DEBIAN_PACKAGES="\
   libexpat1-dev
   libffi-dev
   libffi6
+  libflac-dev
   libflac8
   libfontconfig1
   libfontconfig1-dev
@@ -144,8 +145,8 @@ DEBIAN_PACKAGES="\
   libice6
   libicu57
   libidl-2-0
-  libidn2-0
   libidn11
+  libidn2-0
   libindicator3-7
   libindicator7
   libjbig0
@@ -176,6 +177,8 @@ DEBIAN_PACKAGES="\
   libnss3-dev
   libogg0
   libopengl0
+  libopus-dev
+  libopus0
   liborbit-2-0
   liborbit2
   libp11-kit0
@@ -203,9 +206,13 @@ DEBIAN_PACKAGES="\
   libpulse-dev
   libpulse-mainloop-glib0
   libpulse0
+  libre2-3
+  libre2-dev
   librest-0.7-0
   libselinux1
   libsm6
+  libsnappy-dev
+  libsnappy1v5
   libsndfile1
   libsoup-gnome2.4-1
   libsoup2.4-1
@@ -234,11 +241,17 @@ DEBIAN_PACKAGES="\
   libva2
   libvorbis0a
   libvorbisenc2
+  libvpx-dev
+  libvpx4
   libwayland-client0
   libwayland-cursor0
   libwayland-dev
   libwayland-egl1-mesa
   libwayland-server0
+  libwebp-dev
+  libwebp6
+  libwebpdemux2
+  libwebpmux3
   libwrap0
   libx11-6
   libx11-dev
@@ -283,6 +296,8 @@ DEBIAN_PACKAGES="\
   libxrender-dev
   libxrender1
   libxshmfence1
+  libxslt1-dev
+  libxslt1.1
   libxss-dev
   libxss1
   libxt-dev
@@ -293,6 +308,7 @@ DEBIAN_PACKAGES="\
   linux-libc-dev
   mesa-common-dev
   speech-dispatcher
+  uuid-dev
   wayland-protocols
   x11proto-composite-dev
   x11proto-core-dev
