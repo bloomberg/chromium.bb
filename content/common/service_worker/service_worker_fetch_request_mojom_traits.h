@@ -24,16 +24,6 @@ struct EnumTraits<blink::mojom::RequestContextType,
 };
 
 template <>
-struct EnumTraits<blink::mojom::ServiceWorkerFetchType,
-                  content::ServiceWorkerFetchType> {
-  static blink::mojom::ServiceWorkerFetchType ToMojom(
-      content::ServiceWorkerFetchType input);
-
-  static bool FromMojom(blink::mojom::ServiceWorkerFetchType input,
-                        content::ServiceWorkerFetchType* out);
-};
-
-template <>
 struct StructTraits<blink::mojom::FetchAPIRequestDataView,
                     content::ServiceWorkerFetchRequest> {
   static network::mojom::FetchRequestMode mode(
@@ -124,11 +114,6 @@ struct StructTraits<blink::mojom::FetchAPIRequestDataView,
 
   static bool is_reload(const content::ServiceWorkerFetchRequest& request) {
     return request.is_reload;
-  }
-
-  static content::ServiceWorkerFetchType fetch_type(
-      const content::ServiceWorkerFetchRequest& request) {
-    return request.fetch_type;
   }
 
   static bool Read(blink::mojom::FetchAPIRequestDataView data,

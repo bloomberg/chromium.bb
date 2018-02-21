@@ -114,7 +114,6 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
       blink::mojom::ServiceWorkerEventStatus status,
       base::Time dispatch_event_time);
 
-  ServiceWorkerFetchType GetFetchType() const;
   ServiceWorkerMetrics::EventType GetEventType() const;
 
   std::unique_ptr<network::ResourceRequest> request_;

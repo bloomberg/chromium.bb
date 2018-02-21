@@ -167,8 +167,7 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
           request, network_delegate, provider_host_->client_uuid(),
           blob_storage_context_, resource_context, request_mode_,
           credentials_mode_, redirect_mode_, integrity_, keepalive_,
-          resource_type_, request_context_type_, frame_type_, body_,
-          ServiceWorkerFetchType::FETCH, this));
+          resource_type_, request_context_type_, frame_type_, body_, this));
   url_job_ = std::make_unique<ServiceWorkerURLJobWrapper>(job->GetWeakPtr());
 
   resource_context_ = resource_context;

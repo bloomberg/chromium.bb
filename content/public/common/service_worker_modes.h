@@ -10,11 +10,6 @@ namespace content {
 // Indicates no service worker provider.
 static const int kInvalidServiceWorkerProviderId = -1;
 
-// Whether this is a regular fetch, or a foreign fetch request (now removed).
-// Duplicate of blink::mojom::ServiceWorkerFetchType.
-// TODO(falken): Remove this since it's always FETCH.
-enum class ServiceWorkerFetchType { FETCH, LAST = FETCH };
-
 // Indicates whether service workers will receive fetch events for this request.
 // TODO(falken): This enum made more sense when there was a foreign fetch mode.
 // Find better names or fold this into a boolean.

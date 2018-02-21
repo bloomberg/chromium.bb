@@ -86,12 +86,6 @@ enum FetchCacheMode {
   kUnspecifiedForceCacheMiss,
 };
 
-// Whether this is a regular fetch, or a foreign fetch request (now removed).
-// TODO(falken): Remove this since it's always FETCH.
-enum ServiceWorkerFetchType {
-  FETCH,
-};
-
 struct FetchAPIRequest {
   network.mojom.FetchRequestMode mode;
   bool is_main_resource_load;
@@ -111,5 +105,4 @@ struct FetchAPIRequest {
   bool keepalive;
   string? client_id;
   bool is_reload;
-  ServiceWorkerFetchType fetch_type;
 };

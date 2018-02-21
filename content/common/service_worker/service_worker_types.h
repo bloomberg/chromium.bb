@@ -111,7 +111,6 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   bool keepalive = false;
   std::string client_id;
   bool is_reload = false;
-  ServiceWorkerFetchType fetch_type = ServiceWorkerFetchType::FETCH;
 };
 
 // Roughly corresponds to the Fetch API's Response type. This struct has several

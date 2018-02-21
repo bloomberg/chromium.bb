@@ -11,7 +11,6 @@
 namespace mojo {
 
 using blink::mojom::RequestContextType;
-using blink::mojom::ServiceWorkerFetchType;
 using network::mojom::FetchRequestMode;
 
 RequestContextType
@@ -203,30 +202,6 @@ bool EnumTraits<RequestContextType, content::RequestContextType>::FromMojom(
   return false;
 }
 
-ServiceWorkerFetchType
-EnumTraits<ServiceWorkerFetchType, content::ServiceWorkerFetchType>::ToMojom(
-    content::ServiceWorkerFetchType input) {
-  switch (input) {
-    case content::ServiceWorkerFetchType::FETCH:
-      return ServiceWorkerFetchType::FETCH;
-  }
-
-  NOTREACHED();
-  return ServiceWorkerFetchType::FETCH;
-}
-
-bool EnumTraits<ServiceWorkerFetchType, content::ServiceWorkerFetchType>::
-    FromMojom(ServiceWorkerFetchType input,
-              content::ServiceWorkerFetchType* out) {
-  switch (input) {
-    case ServiceWorkerFetchType::FETCH:
-      *out = content::ServiceWorkerFetchType::FETCH;
-      return true;
-  }
-
-  return false;
-}
-
 bool StructTraits<blink::mojom::FetchAPIRequestDataView,
                   content::ServiceWorkerFetchRequest>::
     Read(blink::mojom::FetchAPIRequestDataView data,
@@ -241,8 +216,7 @@ bool StructTraits<blink::mojom::FetchAPIRequestDataView,
       !data.ReadCredentialsMode(&out->credentials_mode) ||
       !data.ReadRedirectMode(&out->redirect_mode) ||
       !data.ReadIntegrity(&out->integrity) ||
-      !data.ReadClientId(&out->client_id) ||
-      !data.ReadFetchType(&out->fetch_type)) {
+      !data.ReadClientId(&out->client_id)) {
     return false;
   }
 
