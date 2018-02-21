@@ -2,35 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_PUBLIC_COMMON_SAMPLING_HEAP_PROFILER_SAMPLING_HEAP_PROFILER_H
-#define THIRD_PARTY_WEBKIT_PUBLIC_COMMON_SAMPLING_HEAP_PROFILER_SAMPLING_HEAP_PROFILER_H
+#ifndef BASE_SAMPLING_HEAP_PROFILER_SAMPLING_HEAP_PROFILER_H
+#define BASE_SAMPLING_HEAP_PROFILER_SAMPLING_HEAP_PROFILER_H
 
 #include <unordered_map>
 #include <vector>
 
+#include "base/base_export.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_local.h"
-#include "third_party/WebKit/common/common_export.h"
 
 namespace base {
+
 template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
+class NoDestructor;
 
-namespace blink {
-
-// The class implements sampling of native memory heap.
-// It hooks on three basic allocators:
-//   - base::allocator
-//   - base::PartitionAlloc
-//   - Blink GC
-// When started it records allocation samples based on the sampling_interval
-// parameter. The recorded samples can be retrieve using GetSamples method.
-class BLINK_COMMON_EXPORT SamplingHeapProfiler {
+// The class implements sampling profiling of native memory heap.
+// It hooks on base::allocator and base::PartitionAlloc.
+// When started it selects and records allocation samples based on
+// the sampling_interval parameter.
+// The recorded samples can then be retrieved using GetSamples method.
+class BASE_EXPORT SamplingHeapProfiler {
  public:
-  class Sample {
+  class BASE_EXPORT Sample {
    public:
+    Sample(const Sample&);
+    ~Sample();
+
     size_t size;
     size_t count;
     std::vector<void*> stack;
@@ -67,6 +66,7 @@ class BLINK_COMMON_EXPORT SamplingHeapProfiler {
 
  private:
   SamplingHeapProfiler();
+  ~SamplingHeapProfiler() = delete;
 
   static void InstallAllocatorHooksOnce();
   static bool InstallAllocatorHooks();
@@ -84,11 +84,11 @@ class BLINK_COMMON_EXPORT SamplingHeapProfiler {
   std::unordered_map<void*, Sample> samples_;
   std::vector<SamplesObserver*> observers_;
 
-  friend struct base::DefaultSingletonTraits<SamplingHeapProfiler>;
+  friend class base::NoDestructor<SamplingHeapProfiler>;
 
   DISALLOW_COPY_AND_ASSIGN(SamplingHeapProfiler);
 };
 
-}  // namespace blink
+}  // namespace base
 
-#endif  // THIRD_PARTY_WEBKIT_PUBLIC_COMMON_SAMPLING_HEAP_PROFILER_SAMPLING_HEAP_PROFILER_H
+#endif  // BASE_SAMPLING_HEAP_PROFILER_SAMPLING_HEAP_PROFILER_H

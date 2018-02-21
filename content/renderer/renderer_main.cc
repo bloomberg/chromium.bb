@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/pending_task.h"
 #include "base/run_loop.h"
+#include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
@@ -32,7 +33,6 @@
 #include "content/renderer/renderer_main_platform_delegate.h"
 #include "media/media_features.h"
 #include "ppapi/features/features.h"
-#include "third_party/WebKit/public/common/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/base/ui_base_switches.h"
@@ -99,8 +99,8 @@ int RendererMain(const MainFunctionParams& parameters) {
   const base::CommandLine& command_line = parameters.command_line;
 
   if (command_line.HasSwitch(switches::kSamplingHeapProfiler)) {
-    blink::SamplingHeapProfiler* profiler =
-        blink::SamplingHeapProfiler::GetInstance();
+    base::SamplingHeapProfiler* profiler =
+        base::SamplingHeapProfiler::GetInstance();
     unsigned sampling_interval = 0;
     bool parsed = base::StringToUint(
         command_line.GetSwitchValueASCII(switches::kSamplingHeapProfiler),

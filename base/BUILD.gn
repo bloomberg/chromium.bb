@@ -720,6 +720,8 @@ jumbo_component("base") {
     "rand_util_win.cc",
     "run_loop.cc",
     "run_loop.h",
+    "sampling_heap_profiler/sampling_heap_profiler.cc",
+    "sampling_heap_profiler/sampling_heap_profiler.h",
     "scoped_clear_errno.h",
     "scoped_generic.h",
     "scoped_native_library.cc",
@@ -1168,6 +1170,7 @@ jumbo_component("base") {
     ":cfi_flags",
     ":debugging_flags",
     ":protected_memory_flags",
+    ":sampling_heap_profiler_flags",
     ":synchronization_flags",
     "//base/numerics:base_numerics",
   ]
@@ -1804,6 +1807,13 @@ buildflag_header("anchor_functions_flags") {
     "USE_LLD=$use_lld",
     "SUPPORTS_CODE_ORDERING=$_supports_code_ordering",
   ]
+}
+
+buildflag_header("sampling_heap_profiler_flags") {
+  header = "sampling_heap_profiler_flags.h"
+  header_dir = "base/sampling_heap_profiler"
+
+  flags = [ "USE_PARTITION_ALLOC=$use_partition_alloc" ]
 }
 
 # This is the subset of files from base that should not be used with a dynamic
@@ -2532,7 +2542,10 @@ test("base_unittests") {
   }
 
   if (use_allocator_shim) {
-    sources += [ "allocator/allocator_shim_unittest.cc" ]
+    sources += [
+      "allocator/allocator_shim_unittest.cc",
+      "sampling_heap_profiler/sampling_heap_profiler_unittest.cc",
+    ]
   }
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
