@@ -157,17 +157,11 @@ class HttpProxyClientSocketPoolTest
       return NULL;
     return new SSLSocketParams(
         new TransportSocketParams(
-            HostPortPair(kHttpsProxyHost, 443),
-            false,
+            HostPortPair(kHttpsProxyHost, 443), false,
             OnHostResolutionCallback(),
             TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT),
-        NULL,
-        NULL,
-        HostPortPair(kHttpsProxyHost, 443),
-        SSLConfig(),
-        PRIVACY_MODE_DISABLED,
-        0,
-        false);
+        NULL, NULL, HostPortPair(kHttpsProxyHost, 443), SSLConfig(),
+        PRIVACY_MODE_DISABLED, 0);
   }
 
   // Returns the a correctly constructed HttpProxyParms

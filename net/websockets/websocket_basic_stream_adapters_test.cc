@@ -76,8 +76,7 @@ class WebSocketClientSocketHandleAdapterTest : public Test {
                                                           host_port_pair_,
                                                           SSLConfig(),
                                                           PRIVACY_MODE_DISABLED,
-                                                          0,
-                                                          false)) {}
+                                                          0)) {}
 
   ~WebSocketClientSocketHandleAdapterTest() override = default;
 

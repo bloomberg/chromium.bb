@@ -264,7 +264,7 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxy) {
 
   scoped_refptr<SSLSocketParams> ssl_params =
       new SSLSocketParams(transport_params, nullptr, nullptr, proxy_host_port_,
-                          SSLConfig(), privacy_mode_, 0, false);
+                          SSLConfig(), privacy_mode_, 0);
   transport_params = nullptr;
 
   client_socket_wrapper_.reset(new HttpProxyClientSocketWrapper(
@@ -312,7 +312,7 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxySocketTag) {
 
   scoped_refptr<SSLSocketParams> ssl_params =
       new SSLSocketParams(transport_params, nullptr, nullptr, proxy_host_port_,
-                          SSLConfig(), privacy_mode_, 0, false);
+                          SSLConfig(), privacy_mode_, 0);
   transport_params = nullptr;
   SocketTag tag(getuid(), 0x87654321);
 

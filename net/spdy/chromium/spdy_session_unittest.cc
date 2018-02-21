@@ -1511,7 +1511,7 @@ TEST_F(SpdySessionTest, CancelPushAfterExpired) {
 
   auto ssl_params = base::MakeRefCounted<SSLSocketParams>(
       transport_params, nullptr, nullptr, key_.host_port_pair(), SSLConfig(),
-      key_.privacy_mode(), 0, false);
+      key_.privacy_mode(), 0);
   int rv = connection->Init(
       key_.host_port_pair().ToString(), ssl_params, MEDIUM, SocketTag(),
       ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
@@ -1619,7 +1619,7 @@ TEST_F(SpdySessionTest, ClaimPushedStreamBeforeExpires) {
 
   auto ssl_params = base::MakeRefCounted<SSLSocketParams>(
       transport_params, nullptr, nullptr, key_.host_port_pair(), SSLConfig(),
-      key_.privacy_mode(), 0, false);
+      key_.privacy_mode(), 0);
   int rv = connection->Init(
       key_.host_port_pair().ToString(), ssl_params, MEDIUM, SocketTag(),
       ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
