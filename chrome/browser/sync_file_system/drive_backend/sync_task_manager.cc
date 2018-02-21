@@ -253,7 +253,7 @@ void SyncTaskManager::NotifyTaskDoneBody(std::unique_ptr<SyncTaskToken> token,
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&SyncTaskManager::MaybeStartNextForegroundTask,
-                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(token)));
 }
 
 void SyncTaskManager::UpdateTaskBlockerBody(

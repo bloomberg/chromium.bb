@@ -426,7 +426,7 @@ void ProfileAttributesStorage::SaveAvatarImageAtPath(
                    key, profile_path);
     file_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&SaveBitmap, base::Passed(&data), image_path, callback));
+        base::BindOnce(&SaveBitmap, std::move(data), image_path, callback));
   }
 }
 

@@ -106,7 +106,7 @@ class ResourceRequestDetectorClient
       incident_data->set_digest(threat_hash);
       content::BrowserThread::PostTask(
           content::BrowserThread::UI, FROM_HERE,
-          base::BindOnce(callback_, base::Passed(&incident_data)));
+          base::BindOnce(callback_, std::move(incident_data)));
     }
     Release();  // Balanced in StartCheck.
   }

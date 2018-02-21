@@ -819,7 +819,7 @@ TEST(CommandsTest, ErrorNotifyingCommandListeners) {
   auto listener = base::MakeUnique<FailingCommandListener>();
   thread->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&AddListenerToSessionIfSessionExists,
-                                base::Passed(&listener)));
+                                std::move(listener)));
 
   base::DictionaryValue params;
   // The command should never be executed if BeforeCommand fails for a listener.

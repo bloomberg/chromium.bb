@@ -856,7 +856,7 @@ class TestBrowserClientForSpellCheck : public ChromeContentBrowserClient {
         FROM_HERE,
         base::BindOnce(
             &TestBrowserClientForSpellCheck::BindSpellCheckHostRequest,
-            base::Unretained(this), base::Passed(&request), remote_info));
+            base::Unretained(this), std::move(request), remote_info));
   }
 
   // Retrieves the registered MockSpellCheckHost for the given

@@ -78,14 +78,14 @@ void CastReceiverSession::Start(
       FROM_HERE, base::BindOnce(&CastReceiverSessionDelegate::Start,
                                 base::Unretained(delegate_.get()), audio_config,
                                 video_config, local_endpoint, remote_endpoint,
-                                base::Passed(&options), format_,
+                                std::move(options), format_,
                                 media::BindToCurrentLoop(error_callback)));
   scoped_refptr<media::AudioCapturerSource> audio(
       new CastReceiverSession::AudioCapturerSource(this));
   std::unique_ptr<media::VideoCapturerSource> video(
       new CastReceiverSession::VideoCapturerSource(this));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(start_callback, audio, base::Passed(&video)));
+      FROM_HERE, base::BindOnce(start_callback, audio, std::move(video)));
 }
 
 void CastReceiverSession::StartAudio(

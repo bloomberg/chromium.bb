@@ -171,8 +171,8 @@ void ImageDecoder::StartWithOptionsImpl(
   // implementation.
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&DecodeImage, base::Passed(&image_data), codec,
-                     shrink_to_fit, desired_image_frame_size, callback,
+      base::BindOnce(&DecodeImage, std::move(image_data), codec, shrink_to_fit,
+                     desired_image_frame_size, callback,
                      base::WrapRefCounted(image_request->task_runner())));
 }
 

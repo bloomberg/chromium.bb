@@ -135,8 +135,8 @@ void CastRemotingSender::FindAndBind(
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(
-            &CastRemotingSender::FindAndBind, rtp_stream_id,
-            base::Passed(&pipe), base::Passed(&request),
+            &CastRemotingSender::FindAndBind, rtp_stream_id, std::move(pipe),
+            std::move(request),
             // Using media::BindToCurrentLoop() so the |error_callback|
             // is trampolined back to the original thread.
             media::BindToCurrentLoop(error_callback)));

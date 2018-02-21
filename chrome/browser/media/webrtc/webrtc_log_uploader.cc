@@ -171,7 +171,7 @@ void WebRtcLogUploader::PrepareMultipartPostData(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&WebRtcLogUploader::UploadCompressedLog,
                      base::Unretained(this), upload_done_data,
-                     base::Passed(&post_data)));
+                     std::move(post_data)));
 }
 
 void WebRtcLogUploader::UploadStoredLog(

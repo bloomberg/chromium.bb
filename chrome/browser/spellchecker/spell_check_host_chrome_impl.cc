@@ -83,7 +83,7 @@ void SpellCheckHostChromeImpl::CallSpellingService(
   client_.RequestTextCheck(
       context, SpellingServiceClient::SPELLCHECK, text,
       base::BindOnce(&SpellCheckHostChromeImpl::CallSpellingServiceDone,
-                     weak_factory_.GetWeakPtr(), base::Passed(&callback)));
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void SpellCheckHostChromeImpl::CallSpellingServiceDone(

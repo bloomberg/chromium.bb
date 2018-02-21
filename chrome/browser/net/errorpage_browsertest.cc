@@ -538,7 +538,7 @@ class DNSErrorPageTest : public ErrorPageTest {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::BindOnce(&InstallMockInterceptors, search_term_url_,
-                         base::Passed(&owned_interceptor)));
+                         std::move(owned_interceptor)));
     }
   }
 
@@ -1213,7 +1213,7 @@ class ErrorPageAutoReloadTest : public InProcessBrowserTest {
       // URLRequestFilter::ClearHandlers(), |interceptor_| can become invalid.
       BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                               base::BindOnce(&AddInterceptorForURL, url,
-                                             base::Passed(&owned_interceptor)));
+                                             std::move(owned_interceptor)));
     }
   }
 

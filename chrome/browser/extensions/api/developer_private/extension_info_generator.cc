@@ -262,7 +262,7 @@ void ExtensionInfoGenerator::CreateExtensionInfo(
   if (pending_image_loads_ == 0) {
     // Don't call the callback re-entrantly.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, base::Passed(&list_)));
+        FROM_HERE, base::BindOnce(callback, std::move(list_)));
     list_.clear();
   } else {
     callback_ = callback;
@@ -300,7 +300,7 @@ void ExtensionInfoGenerator::CreateExtensionsInfo(
   if (pending_image_loads_ == 0) {
     // Don't call the callback re-entrantly.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, base::Passed(&list_)));
+        FROM_HERE, base::BindOnce(callback, std::move(list_)));
     list_.clear();
   } else {
     callback_ = callback;

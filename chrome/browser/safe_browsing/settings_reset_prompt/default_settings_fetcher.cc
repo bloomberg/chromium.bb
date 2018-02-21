@@ -87,7 +87,7 @@ void DefaultSettingsFetcher::PostCallbackAndDeleteSelf(
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(std::move(callback_), base::Passed(&default_settings)));
+      base::BindOnce(std::move(callback_), std::move(default_settings)));
   delete this;
 }
 

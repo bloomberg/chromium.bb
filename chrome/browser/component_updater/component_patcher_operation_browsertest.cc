@@ -102,7 +102,7 @@ class PatchTest : public InProcessBrowserTest {
         ->PostTask(
             FROM_HERE,
             base::BindOnce(&PatchTest::PatchAsyncSequencedTaskRunner,
-                           base::Unretained(this), base::Passed(&connector),
+                           base::Unretained(this), std::move(connector),
                            operation, input, patch, output, expected_result));
     run_loop.Run();
     EXPECT_TRUE(done_called_);

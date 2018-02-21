@@ -89,7 +89,7 @@ void InstantiatePersistentHistograms() {
       {base::MayBlock(), base::TaskPriority::BACKGROUND,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                     base::Passed(&active_file), /*recursive=*/false));
+                     std::move(active_file), /*recursive=*/false));
 
   // This is used to report results to an UMA histogram.
   enum InitResult {
@@ -141,7 +141,7 @@ void InstantiatePersistentHistograms() {
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::BindOnce(base::IgnoreResult(
                            &base::GlobalHistogramAllocator::CreateSpareFile),
-                       base::Passed(&spare_file), kAllocSize),
+                       std::move(spare_file), kAllocSize),
         base::TimeDelta::FromSeconds(kSpareFileCreateDelaySeconds));
   } else if (storage == "LocalMemory") {
     // Use local memory for storage even though it will not persist across

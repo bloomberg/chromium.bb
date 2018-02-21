@@ -246,7 +246,7 @@ void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&BrowserFeatureExtractor::StartExtractFeatures,
-                     weak_factory_.GetWeakPtr(), base::Passed(&req), callback));
+                     weak_factory_.GetWeakPtr(), std::move(req), callback));
 }
 
 void BrowserFeatureExtractor::ExtractMalwareFeatures(
@@ -273,8 +273,8 @@ void BrowserFeatureExtractor::ExtractMalwareFeatures(
       base::BindOnce(&FilterBenignIpsOnIOThread, host_->database_manager(),
                      ips_ptr),
       base::BindOnce(&BrowserFeatureExtractor::FinishExtractMalwareFeatures,
-                     weak_factory_.GetWeakPtr(), base::Passed(&ips), callback,
-                     base::Passed(&req)));
+                     weak_factory_.GetWeakPtr(), std::move(ips), callback,
+                     std::move(req)));
 }
 
 void BrowserFeatureExtractor::ExtractBrowseInfoFeatures(

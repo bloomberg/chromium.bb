@@ -73,7 +73,7 @@ void ScheduleTask(std::unique_ptr<AfterStartupTask> queued_task) {
   scoped_refptr<base::TaskRunner> target_runner = queued_task->task_runner;
   base::Location from_here = queued_task->from_here;
   target_runner->PostDelayedTask(
-      from_here, base::BindOnce(&RunTask, base::Passed(std::move(queued_task))),
+      from_here, base::BindOnce(&RunTask, std::move(queued_task)),
       base::TimeDelta::FromSeconds(base::RandInt(kMinDelaySec, kMaxDelaySec)));
 }
 
@@ -85,9 +85,8 @@ void QueueTask(std::unique_ptr<AfterStartupTask> queued_task) {
   CHECK(queued_task->task);
 
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(QueueTask, base::Passed(std::move(queued_task))));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(QueueTask, std::move(queued_task)));
     return;
   }
 

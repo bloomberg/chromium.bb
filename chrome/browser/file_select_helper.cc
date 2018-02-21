@@ -481,7 +481,7 @@ void FileSelectHelper::RunFileChooser(
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock()},
       base::BindOnce(&FileSelectHelper::GetFileTypesInThreadPool, this,
-                     base::Passed(&params)));
+                     std::move(params)));
 
   // Because this class returns notifications to the RenderViewHost, it is
   // difficult for callers to know how long to keep a reference to this
@@ -501,7 +501,7 @@ void FileSelectHelper::GetFileTypesInThreadPool(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&FileSelectHelper::GetSanitizedFilenameOnUIThread, this,
-                     base::Passed(&params)));
+                     std::move(params)));
 }
 
 void FileSelectHelper::GetSanitizedFilenameOnUIThread(

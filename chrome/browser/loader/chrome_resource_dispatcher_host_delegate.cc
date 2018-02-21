@@ -790,7 +790,7 @@ void ChromeResourceDispatcherHostDelegate::OnStreamCreated(
   bool embedded = info->GetResourceType() != content::RESOURCE_TYPE_MAIN_FRAME;
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&SendExecuteMimeTypeHandlerEvent, base::Passed(&stream),
+      base::BindOnce(&SendExecuteMimeTypeHandlerEvent, std::move(stream),
                      request->GetExpectedContentSize(), ix->second.extension_id,
                      ix->second.view_id, embedded, info->GetFrameTreeNodeId(),
                      info->GetChildID(), info->GetRenderFrameID()));

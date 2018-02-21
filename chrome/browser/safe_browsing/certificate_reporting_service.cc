@@ -238,7 +238,7 @@ void CertificateReportingService::Shutdown() {
   url_request_context_ = nullptr;
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&CleanupOnIOThread, base::Passed(std::move(reporter_))));
+      base::BindOnce(&CleanupOnIOThread, std::move(reporter_)));
 }
 
 void CertificateReportingService::Send(const std::string& serialized_report) {

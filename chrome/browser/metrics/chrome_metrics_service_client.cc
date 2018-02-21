@@ -268,7 +268,7 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
           {base::MayBlock(), base::TaskPriority::BACKGROUND,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
           base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                         base::Passed(&browser_metrics_upload_dir),
+                         std::move(browser_metrics_upload_dir),
                          /*recursive=*/true));
     }
   }

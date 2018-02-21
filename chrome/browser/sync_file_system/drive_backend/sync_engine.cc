@@ -354,7 +354,7 @@ void SyncEngine::InitializeInternal(
   worker_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SyncWorkerInterface::Initialize,
                                 base::Unretained(sync_worker_.get()),
-                                base::Passed(&sync_engine_context)));
+                                std::move(sync_engine_context)));
   if (remote_change_processor_)
     SetRemoteChangeProcessor(remote_change_processor_);
 

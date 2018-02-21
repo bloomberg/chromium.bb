@@ -230,7 +230,7 @@ void SpellcheckHunspellDictionary::OnURLFetchComplete(
 
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
-      base::BindOnce(&SaveDictionaryData, base::Passed(&data),
+      base::BindOnce(&SaveDictionaryData, std::move(data),
                      dictionary_file_.path),
       base::BindOnce(&SpellcheckHunspellDictionary::SaveDictionaryDataComplete,
                      weak_ptr_factory_.GetWeakPtr()));

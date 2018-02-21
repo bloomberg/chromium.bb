@@ -48,7 +48,7 @@ void LoadProtoFromDisk(const base::FilePath& pb_path) {
   content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
       ->PostTask(FROM_HERE,
                  base::BindOnce(&SSLErrorHandler::SetErrorAssistantProto,
-                                base::Passed(std::move(proto))));
+                                std::move(proto)));
 }
 
 }  // namespace

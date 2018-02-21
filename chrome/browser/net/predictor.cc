@@ -206,9 +206,8 @@ void Predictor::InitNetworkPredictor(PrefService* user_prefs,
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&Predictor::FinalizeInitializationOnIOThread,
-                     base::Unretained(this), urls,
-                     base::Passed(std::move(referral_list)), io_thread,
-                     profile_io_data));
+                     base::Unretained(this), urls, std::move(referral_list),
+                     io_thread, profile_io_data));
 }
 
 void Predictor::AnticipateOmniboxUrl(const GURL& url, bool preconnectable) {
@@ -745,9 +744,8 @@ void Predictor::SaveStateForNextStartup() {
       base::BindOnce(&Predictor::WriteDnsPrefetchState, base::Unretained(this),
                      startup_list_raw, referral_list_raw),
       base::BindOnce(&Predictor::UpdatePrefsOnUIThread,
-                     ui_weak_factory_->GetWeakPtr(),
-                     base::Passed(std::move(startup_list)),
-                     base::Passed(std::move(referral_list))));
+                     ui_weak_factory_->GetWeakPtr(), std::move(startup_list),
+                     std::move(referral_list)));
 }
 
 void Predictor::UpdatePrefsOnUIThread(

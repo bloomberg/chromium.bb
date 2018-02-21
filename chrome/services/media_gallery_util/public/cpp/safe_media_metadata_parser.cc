@@ -64,7 +64,7 @@ void SafeMediaMetadataParser::Start(service_manager::Connector* connector,
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(&SafeMediaMetadataParser::StartOnIOThread, this,
-                     base::Passed(&connector_ptr), callback));
+                     std::move(connector_ptr), callback));
 }
 
 SafeMediaMetadataParser::~SafeMediaMetadataParser() = default;
@@ -103,8 +103,8 @@ void SafeMediaMetadataParser::ParseMediaMetadataFailed() {
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(callback_, false, base::Passed(&metadata_dictionary),
-                     base::Passed(&attached_images)));
+      base::BindOnce(callback_, false, std::move(metadata_dictionary),
+                     std::move(attached_images)));
 }
 
 void SafeMediaMetadataParser::ParseMediaMetadataDone(
@@ -123,9 +123,8 @@ void SafeMediaMetadataParser::ParseMediaMetadataDone(
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(callback_, parse_success,
-                     base::Passed(&metadata_dictionary),
-                     base::Passed(&attached_images_copy)));
+      base::BindOnce(callback_, parse_success, std::move(metadata_dictionary),
+                     std::move(attached_images_copy)));
 }
 
 void SafeMediaMetadataParser::StartBlobRequest(
