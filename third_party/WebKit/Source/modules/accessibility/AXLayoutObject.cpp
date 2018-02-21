@@ -1550,7 +1550,7 @@ AXObject* AXLayoutObject::ComputeParentIfExists() const {
   // menuButton and its corresponding menu are DOM siblings, but Accessibility
   // needs them to be parent/child.
   if (AriaRoleAttribute() == kMenuRole) {
-    AXObject* parent = MenuButtonForMenu();
+    AXObject* parent = MenuButtonForMenuIfExists();
     if (parent)
       return parent;
   }

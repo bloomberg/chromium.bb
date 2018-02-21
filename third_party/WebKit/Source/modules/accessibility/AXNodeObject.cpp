@@ -654,6 +654,19 @@ AXObject* AXNodeObject::MenuButtonForMenu() const {
   return nullptr;
 }
 
+AXObject* AXNodeObject::MenuButtonForMenuIfExists() const {
+  Element* menu_item = MenuItemElementForMenu();
+
+  if (menu_item) {
+    // ARIA just has generic menu items. AppKit needs to know if this is a top
+    // level items like MenuBarButton or MenuBarItem
+    AXObject* menu_item_ax = AXObjectCache().Get(menu_item);
+    if (menu_item_ax && menu_item_ax->IsMenuButton())
+      return menu_item_ax;
+  }
+  return nullptr;
+}
+
 static Element* SiblingWithAriaRole(String role, Node* node) {
   Node* parent = node->parentNode();
   if (!parent)
