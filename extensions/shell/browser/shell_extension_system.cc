@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "apps/launcher.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
@@ -14,7 +15,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "extensions/browser/api/app_runtime/app_runtime_api.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/info_map.h"
@@ -25,7 +25,6 @@
 #include "extensions/browser/runtime_data.h"
 #include "extensions/browser/service_worker_manager.h"
 #include "extensions/browser/value_store/value_store_factory_impl.h"
-#include "extensions/common/api/app_runtime.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/file_util.h"
 
@@ -110,8 +109,7 @@ void ShellExtensionSystem::LaunchApp(const ExtensionId& extension_id) {
   const Extension* extension = ExtensionRegistry::Get(browser_context_)
                                    ->enabled_extensions()
                                    .GetByID(extension_id);
-  AppRuntimeEventRouter::DispatchOnLaunchedEvent(browser_context_, extension,
-                                                 SOURCE_UNTRACKED, nullptr);
+  apps::LaunchPlatformApp(browser_context_, extension, SOURCE_UNTRACKED);
 }
 
 void ShellExtensionSystem::Shutdown() {
