@@ -22,6 +22,8 @@ bool IsAllowedUkmFeature(blink::mojom::WebFeature feature) {
           WebFeature::kDataUriHasOctothorpe,
           WebFeature::kApplicationCacheManifestSelectInsecureOrigin,
           WebFeature::kApplicationCacheManifestSelectSecureOrigin,
+          WebFeature::kMixedContentAudio, WebFeature::kMixedContentImage,
+          WebFeature::kMixedContentVideo, WebFeature::kMixedContentPlugin,
       }));
   return opt_in_features.count(feature);
 }
