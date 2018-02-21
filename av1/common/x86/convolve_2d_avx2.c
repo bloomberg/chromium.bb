@@ -126,9 +126,10 @@ void av1_convolve_2d_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
           const __m256i res_bx =
               _mm256_permute2x128_si256(res_a_round, res_b_round, 0x31);
 
-          add_store_aligned(&dst[i * dst_stride + j], &res_ax, &avg_mask);
+          add_store_aligned(&dst[i * dst_stride + j], &res_ax, &avg_mask,
+                            conv_params->do_average);
           add_store_aligned(&dst[i * dst_stride + j + dst_stride], &res_bx,
-                            &avg_mask);
+                            &avg_mask, conv_params->do_average);
         } else {
           const __m128i res_ax = _mm256_extracti128_si256(res_a_round, 0);
           const __m128i res_bx = _mm256_extracti128_si256(res_a_round, 1);
@@ -140,6 +141,10 @@ void av1_convolve_2d_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
           r1 = _mm_and_si128(r1, _mm256_extracti128_si256(avg_mask, 0));
           r0 = _mm_add_epi32(r0, res_ax);
           r1 = _mm_add_epi32(r1, res_bx);
+          if (conv_params->do_average) {
+            r0 = _mm_srai_epi32(r0, 1);
+            r1 = _mm_srai_epi32(r1, 1);
+          }
           _mm_store_si128((__m128i *)&dst[i * dst_stride + j], r0);
           _mm_store_si128((__m128i *)&dst[i * dst_stride + j + dst_stride], r1);
         }

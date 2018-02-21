@@ -76,23 +76,28 @@ static INLINE __m128i convolve_hi_y(const __m128i *const s,
 }
 
 static INLINE void add_store(CONV_BUF_TYPE *const dst, const __m128i *const res,
-                             const __m128i *const avg_mask) {
+                             const __m128i *const avg_mask, int shift) {
   __m128i d;
   d = _mm_load_si128((__m128i *)dst);
   d = _mm_and_si128(d, *avg_mask);
   d = _mm_add_epi32(d, *res);
+  if (shift) d = _mm_srai_epi32(d, 1);
   _mm_store_si128((__m128i *)dst, d);
 }
 
 #if CONFIG_JNT_COMP
 static INLINE void mult_add_store(CONV_BUF_TYPE *const dst,
                                   const __m128i *const res,
-                                  const __m128i *const avg_mask,
-                                  const __m128i *const wt) {
+                                  const __m128i *const wt0,
+                                  const __m128i *const wt1, int do_average) {
   __m128i d;
-  d = _mm_load_si128((__m128i *)dst);
-  d = _mm_and_si128(d, *avg_mask);
-  d = _mm_add_epi32(d, _mm_mullo_epi32(*res, *wt));
+  if (do_average) {
+    d = _mm_load_si128((__m128i *)dst);
+    d = _mm_add_epi32(_mm_mullo_epi32(d, *wt0), _mm_mullo_epi32(*res, *wt1));
+    d = _mm_srai_epi32(d, DIST_PRECISION_BITS);
+  } else {
+    d = *res;
+  }
   _mm_store_si128((__m128i *)dst, d);
 }
 
@@ -111,7 +116,6 @@ void av1_jnt_convolve_y_sse4_1(const uint8_t *src, int src_stride,
   const __m128i avg_mask = _mm_set1_epi32(conv_params->do_average ? -1 : 0);
   const __m128i wt0 = _mm_set1_epi32(conv_params->fwd_offset);
   const __m128i wt1 = _mm_set1_epi32(conv_params->bck_offset);
-  const __m128i wt = conv_params->do_average ? wt1 : wt0;
   const __m128i round_const = _mm_set1_epi32((1 << conv_params->round_1) >> 1);
   const __m128i round_shift = _mm_cvtsi32_si128(conv_params->round_1);
   __m128i coeffs[4];
@@ -156,9 +160,9 @@ void av1_jnt_convolve_y_sse4_1(const uint8_t *src, int src_stride,
       res_shift =
           _mm_sra_epi32(_mm_add_epi32(res_shift, round_const), round_shift);
       if (conv_params->use_jnt_comp_avg)
-        mult_add_store(dst, &res_shift, &avg_mask, &wt);
+        mult_add_store(dst, &res_shift, &wt0, &wt1, conv_params->do_average);
       else
-        add_store(dst, &res_shift, &avg_mask);
+        add_store(dst, &res_shift, &avg_mask, conv_params->do_average);
       src_ptr += src_stride;
       dst += dst_stride;
 
@@ -167,9 +171,9 @@ void av1_jnt_convolve_y_sse4_1(const uint8_t *src, int src_stride,
       res_shift =
           _mm_sra_epi32(_mm_add_epi32(res_shift, round_const), round_shift);
       if (conv_params->use_jnt_comp_avg)
-        mult_add_store(dst, &res_shift, &avg_mask, &wt);
+        mult_add_store(dst, &res_shift, &wt0, &wt1, conv_params->do_average);
       else
-        add_store(dst, &res_shift, &avg_mask);
+        add_store(dst, &res_shift, &avg_mask, conv_params->do_average);
       src_ptr += src_stride;
       dst += dst_stride;
 
@@ -225,13 +229,15 @@ void av1_jnt_convolve_y_sse4_1(const uint8_t *src, int src_stride,
         res_hi_shift = _mm_sra_epi32(_mm_add_epi32(res_hi_shift, round_const),
                                      round_shift);
         if (conv_params->use_jnt_comp_avg) {
-          mult_add_store(dst + i * dst_stride + j + 0, &res_lo_shift, &avg_mask,
-                         &wt);
-          mult_add_store(dst + i * dst_stride + j + 4, &res_hi_shift, &avg_mask,
-                         &wt);
+          mult_add_store(dst + i * dst_stride + j + 0, &res_lo_shift, &wt0,
+                         &wt1, conv_params->do_average);
+          mult_add_store(dst + i * dst_stride + j + 4, &res_hi_shift, &wt0,
+                         &wt1, conv_params->do_average);
         } else {
-          add_store(dst + i * dst_stride + j + 0, &res_lo_shift, &avg_mask);
-          add_store(dst + i * dst_stride + j + 4, &res_hi_shift, &avg_mask);
+          add_store(dst + i * dst_stride + j + 0, &res_lo_shift, &avg_mask,
+                    conv_params->do_average);
+          add_store(dst + i * dst_stride + j + 4, &res_hi_shift, &avg_mask,
+                    conv_params->do_average);
         }
         i++;
 
@@ -244,13 +250,15 @@ void av1_jnt_convolve_y_sse4_1(const uint8_t *src, int src_stride,
         res_hi_shift = _mm_sra_epi32(_mm_add_epi32(res_hi_shift, round_const),
                                      round_shift);
         if (conv_params->use_jnt_comp_avg) {
-          mult_add_store(dst + i * dst_stride + j + 0, &res_lo_shift, &avg_mask,
-                         &wt);
-          mult_add_store(dst + i * dst_stride + j + 4, &res_hi_shift, &avg_mask,
-                         &wt);
+          mult_add_store(dst + i * dst_stride + j + 0, &res_lo_shift, &wt0,
+                         &wt1, conv_params->do_average);
+          mult_add_store(dst + i * dst_stride + j + 4, &res_hi_shift, &wt0,
+                         &wt1, conv_params->do_average);
         } else {
-          add_store(dst + i * dst_stride + j + 0, &res_lo_shift, &avg_mask);
-          add_store(dst + i * dst_stride + j + 4, &res_hi_shift, &avg_mask);
+          add_store(dst + i * dst_stride + j + 0, &res_lo_shift, &avg_mask,
+                    conv_params->do_average);
+          add_store(dst + i * dst_stride + j + 4, &res_hi_shift, &avg_mask,
+                    conv_params->do_average);
         }
         i++;
 
@@ -285,7 +293,6 @@ void av1_jnt_convolve_x_sse4_1(const uint8_t *src, int src_stride,
   const int w1 = conv_params->bck_offset;
   const __m128i wt0 = _mm_set1_epi32(w0);
   const __m128i wt1 = _mm_set1_epi32(w1);
-  const __m128i wt = conv_params->do_average ? wt1 : wt0;
   __m128i coeffs[4];
 
   (void)filter_params_y;
@@ -314,9 +321,9 @@ void av1_jnt_convolve_x_sse4_1(const uint8_t *src, int src_stride,
 
       // Accumulate values into the destination buffer
       if (conv_params->use_jnt_comp_avg)
-        mult_add_store(dst, &res_lo_shift, &avg_mask, &wt);
+        mult_add_store(dst, &res_lo_shift, &wt0, &wt1, conv_params->do_average);
       else
-        add_store(dst, &res_lo_shift, &avg_mask);
+        add_store(dst, &res_lo_shift, &avg_mask, conv_params->do_average);
       src_ptr += src_stride;
       dst += dst_stride;
     } while (--h);
@@ -356,13 +363,15 @@ void av1_jnt_convolve_x_sse4_1(const uint8_t *src, int src_stride,
 
         // Accumulate values into the destination buffer
         if (conv_params->use_jnt_comp_avg) {
-          mult_add_store(dst + i * dst_stride + j + 0, &res_lo_shift, &avg_mask,
-                         &wt);
-          mult_add_store(dst + i * dst_stride + j + 4, &res_hi_shift, &avg_mask,
-                         &wt);
+          mult_add_store(dst + i * dst_stride + j + 0, &res_lo_shift, &wt0,
+                         &wt1, conv_params->do_average);
+          mult_add_store(dst + i * dst_stride + j + 4, &res_hi_shift, &wt0,
+                         &wt1, conv_params->do_average);
         } else {
-          add_store(dst + i * dst_stride + j + 0, &res_lo_shift, &avg_mask);
-          add_store(dst + i * dst_stride + j + 4, &res_hi_shift, &avg_mask);
+          add_store(dst + i * dst_stride + j + 0, &res_lo_shift, &avg_mask,
+                    conv_params->do_average);
+          add_store(dst + i * dst_stride + j + 4, &res_hi_shift, &avg_mask,
+                    conv_params->do_average);
         }
         j += 8;
       } while (j < w);
@@ -553,24 +562,34 @@ void av1_jnt_convolve_2d_sse4_1(const uint8_t *src, int src_stride,
           // original c function at: av1/common/convolve.c: av1_convolve_2d_c
           __m128i *const p = (__m128i *)&dst[i * dst_stride + j];
           if (do_average) {
-            _mm_storeu_si128(p + 0,
-                             _mm_add_epi32(_mm_loadu_si128(p + 0),
-                                           _mm_mullo_epi32(res_lo_round, wt1)));
-            _mm_storeu_si128(p + 1,
-                             _mm_add_epi32(_mm_loadu_si128(p + 1),
-                                           _mm_mullo_epi32(res_hi_round, wt1)));
+            _mm_storeu_si128(
+                p + 0,
+                _mm_srai_epi32(
+                    _mm_add_epi32(_mm_mullo_epi32(_mm_loadu_si128(p + 0), wt0),
+                                  _mm_mullo_epi32(res_lo_round, wt1)),
+                    DIST_PRECISION_BITS));
+            _mm_storeu_si128(
+                p + 1,
+                _mm_srai_epi32(
+                    _mm_add_epi32(_mm_mullo_epi32(_mm_loadu_si128(p + 1), wt0),
+                                  _mm_mullo_epi32(res_hi_round, wt1)),
+                    DIST_PRECISION_BITS));
           } else {
-            _mm_storeu_si128(p + 0, _mm_mullo_epi32(res_lo_round, wt0));
-            _mm_storeu_si128(p + 1, _mm_mullo_epi32(res_hi_round, wt0));
+            _mm_storeu_si128(p + 0, res_lo_round);
+            _mm_storeu_si128(p + 1, res_hi_round);
           }
         } else {
           // Accumulate values into the destination buffer
           __m128i *const p = (__m128i *)&dst[i * dst_stride + j];
           if (do_average) {
             _mm_storeu_si128(
-                p + 0, _mm_add_epi32(_mm_loadu_si128(p + 0), res_lo_round));
+                p + 0,
+                _mm_srai_epi32(
+                    _mm_add_epi32(_mm_loadu_si128(p + 0), res_lo_round), 1));
             _mm_storeu_si128(
-                p + 1, _mm_add_epi32(_mm_loadu_si128(p + 1), res_hi_round));
+                p + 1,
+                _mm_srai_epi32(
+                    _mm_add_epi32(_mm_loadu_si128(p + 1), res_hi_round), 1));
           } else {
             _mm_storeu_si128(p + 0, res_lo_round);
             _mm_storeu_si128(p + 1, res_hi_round);

@@ -75,11 +75,12 @@ static INLINE __m128i convolve_hi_y(const __m128i *const s,
 }
 
 static INLINE void add_store(CONV_BUF_TYPE *const dst, const __m128i *const res,
-                             const __m128i *const avg_mask) {
+                             const __m128i *const avg_mask, int shift) {
   __m128i d;
   d = _mm_load_si128((__m128i *)dst);
   d = _mm_and_si128(d, *avg_mask);
   d = _mm_add_epi32(d, *res);
+  if (shift) d = _mm_srai_epi32(d, 1);
   _mm_store_si128((__m128i *)dst, d);
 }
 
@@ -141,7 +142,7 @@ void av1_convolve_y_sse2(const uint8_t *src, int src_stride,
       res_shift = _mm_sll_epi32(res, left_shift);
       res_shift =
           _mm_sra_epi32(_mm_add_epi32(res_shift, round_const), round_shift);
-      add_store(dst, &res_shift, &avg_mask);
+      add_store(dst, &res_shift, &avg_mask, conv_params->do_average);
       src_ptr += src_stride;
       dst += dst_stride;
 
@@ -149,7 +150,7 @@ void av1_convolve_y_sse2(const uint8_t *src, int src_stride,
       res_shift = _mm_sll_epi32(res, left_shift);
       res_shift =
           _mm_sra_epi32(_mm_add_epi32(res_shift, round_const), round_shift);
-      add_store(dst, &res_shift, &avg_mask);
+      add_store(dst, &res_shift, &avg_mask, conv_params->do_average);
       src_ptr += src_stride;
       dst += dst_stride;
 
@@ -204,8 +205,10 @@ void av1_convolve_y_sse2(const uint8_t *src, int src_stride,
                                      round_shift);
         res_hi_shift = _mm_sra_epi32(_mm_add_epi32(res_hi_shift, round_const),
                                      round_shift);
-        add_store(dst + i * dst_stride + j + 0, &res_lo_shift, &avg_mask);
-        add_store(dst + i * dst_stride + j + 4, &res_hi_shift, &avg_mask);
+        add_store(dst + i * dst_stride + j + 0, &res_lo_shift, &avg_mask,
+                  conv_params->do_average);
+        add_store(dst + i * dst_stride + j + 4, &res_hi_shift, &avg_mask,
+                  conv_params->do_average);
         i++;
 
         res_lo = convolve_lo_y(s + 1, coeffs);  // Filter low index pixels
@@ -216,8 +219,10 @@ void av1_convolve_y_sse2(const uint8_t *src, int src_stride,
                                      round_shift);
         res_hi_shift = _mm_sra_epi32(_mm_add_epi32(res_hi_shift, round_const),
                                      round_shift);
-        add_store(dst + i * dst_stride + j + 0, &res_lo_shift, &avg_mask);
-        add_store(dst + i * dst_stride + j + 4, &res_hi_shift, &avg_mask);
+        add_store(dst + i * dst_stride + j + 0, &res_lo_shift, &avg_mask,
+                  conv_params->do_average);
+        add_store(dst + i * dst_stride + j + 4, &res_hi_shift, &avg_mask,
+                  conv_params->do_average);
         i++;
 
         s[0] = s[2];
@@ -276,7 +281,7 @@ void av1_convolve_x_sse2(const uint8_t *src, int src_stride,
       const __m128i res_lo_shift = _mm_sll_epi32(res_lo_round, left_shift);
 
       // Accumulate values into the destination buffer
-      add_store(dst, &res_lo_shift, &avg_mask);
+      add_store(dst, &res_lo_shift, &avg_mask, conv_params->do_average);
       src_ptr += src_stride;
       dst += dst_stride;
     } while (--h);
@@ -315,8 +320,10 @@ void av1_convolve_x_sse2(const uint8_t *src, int src_stride,
         const __m128i res_hi_shift = _mm_sll_epi32(res_hi_round, left_shift);
 
         // Accumulate values into the destination buffer
-        add_store(dst + i * dst_stride + j + 0, &res_lo_shift, &avg_mask);
-        add_store(dst + i * dst_stride + j + 4, &res_hi_shift, &avg_mask);
+        add_store(dst + i * dst_stride + j + 0, &res_lo_shift, &avg_mask,
+                  conv_params->do_average);
+        add_store(dst + i * dst_stride + j + 4, &res_hi_shift, &avg_mask,
+                  conv_params->do_average);
         j += 8;
       } while (j < w);
     } while (++i < h);

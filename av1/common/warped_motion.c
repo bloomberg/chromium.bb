@@ -508,21 +508,30 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
 #if CONFIG_JNT_COMP
             if (conv_params->use_jnt_comp_avg) {
               if (conv_params->do_average) {
-                *p += sum * conv_params->bck_offset;
+                int32_t tmp32 = *p;
+                tmp32 = tmp32 * conv_params->fwd_offset +
+                        sum * conv_params->bck_offset;
+                *p = tmp32 >> DIST_PRECISION_BITS;
               } else {
-                *p = sum * conv_params->fwd_offset;
+                *p = sum;
               }
             } else {
-              if (conv_params->do_average)
-                *p += sum;
-              else
+              if (conv_params->do_average) {
+                int32_t tmp32 = *p;
+                tmp32 += sum;
+                *p = tmp32 >> 1;
+              } else {
                 *p = sum;
+              }
             }
 #else
-            if (conv_params->do_average)
-              *p += sum;
-            else
+            if (conv_params->do_average) {
+              int32_t tmp32 = *p;
+              tmp32 += sum;
+              *p = tmp32 >> 1;
+            } else {
               *p = sum;
+            }
 #endif  // CONFIG_JNT_COMP
           } else {
             uint16_t *p =
@@ -802,21 +811,30 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
 #if CONFIG_JNT_COMP
             if (conv_params->use_jnt_comp_avg) {
               if (conv_params->do_average) {
-                *p += sum * conv_params->bck_offset;
+                int32_t tmp32 = *p;
+                tmp32 = tmp32 * conv_params->fwd_offset +
+                        sum * conv_params->bck_offset;
+                *p = tmp32 >> DIST_PRECISION_BITS;
               } else {
-                *p = sum * conv_params->fwd_offset;
+                *p = sum;
               }
             } else {
-              if (conv_params->do_average)
-                *p += sum;
-              else
+              if (conv_params->do_average) {
+                int32_t tmp32 = *p;
+                tmp32 += sum;
+                *p = tmp32 >> 1;
+              } else {
                 *p = sum;
+              }
             }
 #else
-            if (conv_params->do_average)
-              *p += sum;
-            else
+            if (conv_params->do_average) {
+              int32_t tmp32 = *p;
+              tmp32 += sum;
+              *p = tmp32 >> 1;
+            } else {
               *p = sum;
+            }
 #endif  // CONFIG_JNT_COMP
           } else {
             uint8_t *p =

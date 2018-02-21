@@ -201,23 +201,35 @@ void av1_highbd_jnt_convolve_2d_sse4_1(
         __m128i *const p = (__m128i *)&dst[i * dst_stride + j];
         if (conv_params->use_jnt_comp_avg) {
           if (do_average) {
-            const __m128i jnt_sum_lo = _mm_add_epi32(
-                _mm_loadu_si128(p + 0), _mm_mullo_epi32(res_lo_round, wt1));
-            const __m128i jnt_sum_hi = _mm_add_epi32(
-                _mm_loadu_si128(p + 1), _mm_mullo_epi32(res_hi_round, wt1));
+            const __m128i tmp_lo = _mm_loadu_si128(p + 0);
+            const __m128i tmp_hi = _mm_loadu_si128(p + 1);
+            const __m128i jnt_sum_lo =
+                _mm_add_epi32(_mm_mullo_epi32(tmp_lo, wt0),
+                              _mm_mullo_epi32(res_lo_round, wt1));
+            const __m128i jnt_sum_hi =
+                _mm_add_epi32(_mm_mullo_epi32(tmp_hi, wt0),
+                              _mm_mullo_epi32(res_hi_round, wt1));
+            const __m128i final_lo =
+                _mm_srai_epi32(jnt_sum_lo, DIST_PRECISION_BITS);
+            const __m128i final_hi =
+                _mm_srai_epi32(jnt_sum_hi, DIST_PRECISION_BITS);
 
-            _mm_storeu_si128(p + 0, jnt_sum_lo);
-            _mm_storeu_si128(p + 1, jnt_sum_hi);
+            _mm_storeu_si128(p + 0, final_lo);
+            _mm_storeu_si128(p + 1, final_hi);
           } else {
-            _mm_storeu_si128(p + 0, _mm_mullo_epi32(res_lo_round, wt0));
-            _mm_storeu_si128(p + 1, _mm_mullo_epi32(res_hi_round, wt0));
+            _mm_storeu_si128(p + 0, res_lo_round);
+            _mm_storeu_si128(p + 1, res_hi_round);
           }
         } else {
           if (do_average) {
             _mm_storeu_si128(
-                p + 0, _mm_add_epi32(_mm_loadu_si128(p + 0), res_lo_round));
+                p + 0,
+                _mm_srai_epi32(
+                    _mm_add_epi32(_mm_loadu_si128(p + 0), res_lo_round), 1));
             _mm_storeu_si128(
-                p + 1, _mm_add_epi32(_mm_loadu_si128(p + 1), res_hi_round));
+                p + 1,
+                _mm_srai_epi32(
+                    _mm_add_epi32(_mm_loadu_si128(p + 1), res_hi_round), 1));
           } else {
             _mm_storeu_si128(p + 0, res_lo_round);
             _mm_storeu_si128(p + 1, res_hi_round);

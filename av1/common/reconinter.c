@@ -30,17 +30,9 @@
 // prediction.
 
 static INLINE int get_compound_post_rounding_bits(
-    const MB_MODE_INFO *const mbmi, const ConvolveParams *conv_params) {
+    const ConvolveParams *conv_params) {
   assert(conv_params->is_compound);
-  int round_bits =
-      2 * FILTER_BITS - conv_params->round_0 - conv_params->round_1;
-  if (is_masked_compound_type(mbmi->interinter_compound_type))
-    return round_bits;
-  round_bits += conv_params->is_compound;
-#if CONFIG_JNT_COMP
-  if (conv_params->use_jnt_comp_avg) round_bits += DIST_PRECISION_BITS - 1;
-#endif  // CONFIG_JNT_COMP
-  return round_bits;
+  return 2 * FILTER_BITS - conv_params->round_0 - conv_params->round_1;
 }
 
 static INLINE int allow_warp(const MODE_INFO *const mi,
@@ -1105,8 +1097,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
         if (conv_params.is_compound) {
           assert(conv_params.dst != NULL);
-          int round_bits =
-              get_compound_post_rounding_bits(&mi->mbmi, &conv_params);
+          int round_bits = get_compound_post_rounding_bits(&conv_params);
           if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
             av1_highbd_convolve_rounding(tmp_dst, tmp_dst_stride, dst,
                                          dst_buf->stride, b4_w, b4_h,
@@ -1242,7 +1233,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
     // TODO(angiebird): This part needs optimization
     if (conv_params.is_compound) {
       assert(conv_params.dst != NULL);
-      int round_bits = get_compound_post_rounding_bits(&mi->mbmi, &conv_params);
+      int round_bits = get_compound_post_rounding_bits(&conv_params);
       if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
         av1_highbd_convolve_rounding(tmp_dst, MAX_SB_SIZE, dst, dst_buf->stride,
                                      w, h, round_bits, xd->bd);

@@ -452,7 +452,8 @@ void av1_convolve_y_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
           _mm256_add_epi32(res_lo_0_shift, round_const), round_shift);
 
       // Accumulate values into the destination buffer
-      add_store_aligned(&dst[i * dst_stride + j], &res_lo_0_round, &avg_mask);
+      add_store_aligned(&dst[i * dst_stride + j], &res_lo_0_round, &avg_mask,
+                        conv_params->do_average);
 
       const __m256i res_lo_1_32b =
           _mm256_cvtepi16_epi32(_mm256_extracti128_si256(res_lo, 1));
@@ -462,7 +463,7 @@ void av1_convolve_y_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
           _mm256_add_epi32(res_lo_1_shift, round_const), round_shift);
 
       add_store_aligned(&dst[i * dst_stride + j + dst_stride], &res_lo_1_round,
-                        &avg_mask);
+                        &avg_mask, conv_params->do_average);
 
       if (w - j > 8) {
         const __m256i res_hi = convolve_lowbd(s + 4, coeffs);
@@ -475,7 +476,7 @@ void av1_convolve_y_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
             _mm256_add_epi32(res_hi_0_shift, round_const), round_shift);
 
         add_store_aligned(&dst[i * dst_stride + j + 8], &res_hi_0_round,
-                          &avg_mask);
+                          &avg_mask, conv_params->do_average);
 
         const __m256i res_hi_1_32b =
             _mm256_cvtepi16_epi32(_mm256_extracti128_si256(res_hi, 1));
@@ -485,7 +486,7 @@ void av1_convolve_y_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
             _mm256_add_epi32(res_hi_1_shift, round_const), round_shift);
 
         add_store_aligned(&dst[i * dst_stride + j + 8 + dst_stride],
-                          &res_hi_1_round, &avg_mask);
+                          &res_hi_1_round, &avg_mask, conv_params->do_average);
       }
       s[0] = s[1];
       s[1] = s[2];
@@ -711,10 +712,11 @@ void av1_convolve_x_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
       const __m256i res_hi_shift = _mm256_slli_epi32(res_hi_round, bits);
 
       // Accumulate values into the destination buffer
-      add_store_aligned(&dst[i * dst_stride + j], &res_lo_shift, &avg_mask);
+      add_store_aligned(&dst[i * dst_stride + j], &res_lo_shift, &avg_mask,
+                        conv_params->do_average);
       if (w - j > 8) {
         add_store_aligned(&dst[i * dst_stride + j + 8], &res_hi_shift,
-                          &avg_mask);
+                          &avg_mask, conv_params->do_average);
       }
     }
   }

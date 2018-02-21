@@ -193,10 +193,14 @@ void av1_convolve_2d_sse2(const uint8_t *src, int src_stride, uint8_t *dst0,
         // Accumulate values into the destination buffer
         __m128i *const p = (__m128i *)&dst[i * dst_stride + j];
         if (do_average) {
-          _mm_storeu_si128(p + 0,
-                           _mm_add_epi32(_mm_loadu_si128(p + 0), res_lo_round));
-          _mm_storeu_si128(p + 1,
-                           _mm_add_epi32(_mm_loadu_si128(p + 1), res_hi_round));
+          _mm_storeu_si128(
+              p + 0,
+              _mm_srai_epi32(
+                  _mm_add_epi32(_mm_loadu_si128(p + 0), res_lo_round), 1));
+          _mm_storeu_si128(
+              p + 1,
+              _mm_srai_epi32(
+                  _mm_add_epi32(_mm_loadu_si128(p + 1), res_hi_round), 1));
         } else {
           _mm_storeu_si128(p + 0, res_lo_round);
           _mm_storeu_si128(p + 1, res_hi_round);
@@ -444,10 +448,18 @@ void av1_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
 
         __m128i *const p = (__m128i *)&dst[j];
         if (do_average) {
-          _mm_storeu_si128(p + 0, _mm_add_epi32(_mm_loadu_si128(p + 0), d32_0));
-          _mm_storeu_si128(p + 1, _mm_add_epi32(_mm_loadu_si128(p + 1), d32_1));
-          _mm_storeu_si128(p + 2, _mm_add_epi32(_mm_loadu_si128(p + 2), d32_2));
-          _mm_storeu_si128(p + 3, _mm_add_epi32(_mm_loadu_si128(p + 3), d32_3));
+          _mm_storeu_si128(
+              p + 0,
+              _mm_srai_epi32(_mm_add_epi32(_mm_loadu_si128(p + 0), d32_0), 1));
+          _mm_storeu_si128(
+              p + 1,
+              _mm_srai_epi32(_mm_add_epi32(_mm_loadu_si128(p + 1), d32_1), 1));
+          _mm_storeu_si128(
+              p + 2,
+              _mm_srai_epi32(_mm_add_epi32(_mm_loadu_si128(p + 2), d32_2), 1));
+          _mm_storeu_si128(
+              p + 3,
+              _mm_srai_epi32(_mm_add_epi32(_mm_loadu_si128(p + 3), d32_3), 1));
         } else {
           _mm_storeu_si128(p + 0, d32_0);
           _mm_storeu_si128(p + 1, d32_1);
@@ -471,8 +483,12 @@ void av1_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
 
         __m128i *const p = (__m128i *)&dst[j];
         if (do_average) {
-          _mm_storeu_si128(p + 0, _mm_add_epi32(_mm_loadu_si128(p + 0), d32_0));
-          _mm_storeu_si128(p + 1, _mm_add_epi32(_mm_loadu_si128(p + 1), d32_1));
+          _mm_storeu_si128(
+              p + 0,
+              _mm_srai_epi32(_mm_add_epi32(_mm_loadu_si128(p + 0), d32_0), 1));
+          _mm_storeu_si128(
+              p + 1,
+              _mm_srai_epi32(_mm_add_epi32(_mm_loadu_si128(p + 1), d32_1), 1));
         } else {
           _mm_storeu_si128(p + 0, d32_0);
           _mm_storeu_si128(p + 1, d32_1);
@@ -491,7 +507,8 @@ void av1_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
         d32_0 = _mm_sll_epi32(d32_0, left_shift);
         __m128i *const p = (__m128i *)&dst[j];
         if (do_average) {
-          _mm_storeu_si128(p, _mm_add_epi32(_mm_loadu_si128(p), d32_0));
+          _mm_storeu_si128(
+              p, _mm_srai_epi32(_mm_add_epi32(_mm_loadu_si128(p), d32_0), 1));
         } else {
           _mm_storeu_si128(p, d32_0);
         }
@@ -509,7 +526,8 @@ void av1_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
         d32_0 = _mm_sll_epi32(d32_0, left_shift);
         __m128i *const p = (__m128i *)&dst[j];
         if (do_average) {
-          _mm_storel_epi64(p, _mm_add_epi32(_mm_loadl_epi64(p), d32_0));
+          _mm_storel_epi64(
+              p, _mm_srai_epi32(_mm_add_epi32(_mm_loadl_epi64(p), d32_0), 1));
         } else {
           _mm_storel_epi64(p, d32_0);
         }
@@ -707,39 +725,52 @@ void av1_jnt_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
           if (do_average) {
             __m128i mul = _mm_mullo_epi16(d32_0, wt1);
             __m128i weighted_res = _mm_sll_epi32(mul, left_shift);
-            __m128i sum = _mm_add_epi32(_mm_loadu_si128(p + 0), weighted_res);
-            d32_0 = sum;
+            __m128i tmp = _mm_loadu_si128(p + 0);
+            __m128i sum =
+                _mm_add_epi32(_mm_mullo_epi16(tmp, wt0), weighted_res);
+            d32_0 = _mm_srai_epi32(sum, DIST_PRECISION_BITS);
 
             mul = _mm_mullo_epi16(d32_1, wt1);
             weighted_res = _mm_sll_epi32(mul, left_shift);
-            sum = _mm_add_epi32(_mm_loadu_si128(p + 1), weighted_res);
-            d32_1 = sum;
+            tmp = _mm_loadu_si128(p + 1);
+            sum = _mm_add_epi32(_mm_mullo_epi16(tmp, wt0), weighted_res);
+            d32_1 = _mm_srai_epi32(sum, DIST_PRECISION_BITS);
 
             mul = _mm_mullo_epi16(d32_2, wt1);
             weighted_res = _mm_sll_epi32(mul, left_shift);
-            sum = _mm_add_epi32(_mm_loadu_si128(p + 2), weighted_res);
-            d32_2 = sum;
+            tmp = _mm_loadu_si128(p + 2);
+            sum = _mm_add_epi32(_mm_mullo_epi16(tmp, wt0), weighted_res);
+            d32_2 = _mm_srai_epi32(sum, DIST_PRECISION_BITS);
 
             mul = _mm_mullo_epi16(d32_3, wt1);
             weighted_res = _mm_sll_epi32(mul, left_shift);
-            sum = _mm_add_epi32(_mm_loadu_si128(p + 3), weighted_res);
-            d32_3 = sum;
+            tmp = _mm_loadu_si128(p + 3);
+            sum = _mm_add_epi32(_mm_mullo_epi16(tmp, wt0), weighted_res);
+            d32_3 = _mm_srai_epi32(sum, DIST_PRECISION_BITS);
           } else {
-            d32_0 = _mm_sll_epi32(_mm_mullo_epi16(d32_0, wt0), left_shift);
-            d32_1 = _mm_sll_epi32(_mm_mullo_epi16(d32_1, wt0), left_shift);
-            d32_2 = _mm_sll_epi32(_mm_mullo_epi16(d32_2, wt0), left_shift);
-            d32_3 = _mm_sll_epi32(_mm_mullo_epi16(d32_3, wt0), left_shift);
+            d32_0 = _mm_sll_epi32(d32_0, left_shift);
+            d32_1 = _mm_sll_epi32(d32_1, left_shift);
+            d32_2 = _mm_sll_epi32(d32_2, left_shift);
+            d32_3 = _mm_sll_epi32(d32_3, left_shift);
           }
         } else {
           if (do_average) {
-            d32_0 = _mm_add_epi32(_mm_loadu_si128(p + 0),
-                                  _mm_sll_epi32(d32_0, left_shift));
-            d32_1 = _mm_add_epi32(_mm_loadu_si128(p + 1),
-                                  _mm_sll_epi32(d32_1, left_shift));
-            d32_2 = _mm_add_epi32(_mm_loadu_si128(p + 2),
-                                  _mm_sll_epi32(d32_2, left_shift));
-            d32_3 = _mm_add_epi32(_mm_loadu_si128(p + 3),
-                                  _mm_sll_epi32(d32_3, left_shift));
+            d32_0 =
+                _mm_srai_epi32(_mm_add_epi32(_mm_loadu_si128(p + 0),
+                                             _mm_sll_epi32(d32_0, left_shift)),
+                               1);
+            d32_1 =
+                _mm_srai_epi32(_mm_add_epi32(_mm_loadu_si128(p + 1),
+                                             _mm_sll_epi32(d32_1, left_shift)),
+                               1);
+            d32_2 =
+                _mm_srai_epi32(_mm_add_epi32(_mm_loadu_si128(p + 2),
+                                             _mm_sll_epi32(d32_2, left_shift)),
+                               1);
+            d32_3 =
+                _mm_srai_epi32(_mm_add_epi32(_mm_loadu_si128(p + 3),
+                                             _mm_sll_epi32(d32_3, left_shift)),
+                               1);
           } else {
             d32_0 = _mm_sll_epi32(d32_0, left_shift);
             d32_1 = _mm_sll_epi32(d32_1, left_shift);
@@ -769,23 +800,30 @@ void av1_jnt_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
           if (do_average) {
             __m128i mul = _mm_mullo_epi16(d32_0, wt1);
             __m128i weighted_res = _mm_sll_epi32(mul, left_shift);
-            __m128i sum = _mm_add_epi32(_mm_loadu_si128(p + 0), weighted_res);
-            d32_0 = sum;
+            __m128i tmp = _mm_loadu_si128(p + 0);
+            __m128i sum =
+                _mm_add_epi32(_mm_mullo_epi16(tmp, wt0), weighted_res);
+            d32_0 = _mm_srai_epi32(sum, DIST_PRECISION_BITS);
 
             mul = _mm_mullo_epi16(d32_1, wt1);
             weighted_res = _mm_sll_epi32(mul, left_shift);
-            sum = _mm_add_epi32(_mm_loadu_si128(p + 1), weighted_res);
-            d32_1 = sum;
+            tmp = _mm_loadu_si128(p + 1);
+            sum = _mm_add_epi32(_mm_mullo_epi16(tmp, wt0), weighted_res);
+            d32_1 = _mm_srai_epi32(sum, DIST_PRECISION_BITS);
           } else {
-            d32_0 = _mm_sll_epi32(_mm_mullo_epi16(d32_0, wt0), left_shift);
-            d32_1 = _mm_sll_epi32(_mm_mullo_epi16(d32_1, wt0), left_shift);
+            d32_0 = _mm_sll_epi32(d32_0, left_shift);
+            d32_1 = _mm_sll_epi32(d32_1, left_shift);
           }
         } else {
           if (do_average) {
-            d32_0 = _mm_add_epi32(_mm_loadu_si128(p + 0),
-                                  _mm_sll_epi32(d32_0, left_shift));
-            d32_1 = _mm_add_epi32(_mm_loadu_si128(p + 1),
-                                  _mm_sll_epi32(d32_1, left_shift));
+            d32_0 =
+                _mm_srai_epi32(_mm_add_epi32(_mm_loadu_si128(p + 0),
+                                             _mm_sll_epi32(d32_0, left_shift)),
+                               1);
+            d32_1 =
+                _mm_srai_epi32(_mm_add_epi32(_mm_loadu_si128(p + 1),
+                                             _mm_sll_epi32(d32_1, left_shift)),
+                               1);
           } else {
             d32_0 = _mm_sll_epi32(d32_0, left_shift);
             d32_1 = _mm_sll_epi32(d32_1, left_shift);
@@ -810,15 +848,19 @@ void av1_jnt_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
           if (do_average) {
             __m128i mul = _mm_mullo_epi16(d32_0, wt1);
             __m128i weighted_res = _mm_sll_epi32(mul, left_shift);
-            __m128i sum = _mm_add_epi32(_mm_loadu_si128(p + 0), weighted_res);
-            d32_0 = sum;
+            __m128i tmp = _mm_loadu_si128(p + 0);
+            __m128i sum =
+                _mm_add_epi32(_mm_mullo_epi16(tmp, wt0), weighted_res);
+            d32_0 = _mm_srai_epi32(sum, DIST_PRECISION_BITS);
           } else {
-            d32_0 = _mm_sll_epi32(_mm_mullo_epi16(d32_0, wt0), left_shift);
+            d32_0 = _mm_sll_epi32(d32_0, left_shift);
           }
         } else {
           if (do_average) {
-            d32_0 = _mm_add_epi32(_mm_loadu_si128(p + 0),
-                                  _mm_sll_epi32(d32_0, left_shift));
+            d32_0 =
+                _mm_srai_epi32(_mm_add_epi32(_mm_loadu_si128(p + 0),
+                                             _mm_sll_epi32(d32_0, left_shift)),
+                               1);
           } else {
             d32_0 = _mm_sll_epi32(d32_0, left_shift);
           }
@@ -841,15 +883,19 @@ void av1_jnt_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
           if (do_average) {
             __m128i mul = _mm_mullo_epi16(d32_0, wt1);
             __m128i weighted_res = _mm_sll_epi32(mul, left_shift);
-            __m128i sum = _mm_add_epi32(_mm_loadl_epi64(p), weighted_res);
-            d32_0 = sum;
+            __m128i tmp = _mm_loadl_epi64(p);
+            __m128i sum =
+                _mm_add_epi32(_mm_mullo_epi16(tmp, wt0), weighted_res);
+            d32_0 = _mm_srai_epi32(sum, DIST_PRECISION_BITS);
           } else {
-            d32_0 = _mm_sll_epi32(_mm_mullo_epi16(d32_0, wt0), left_shift);
+            d32_0 = _mm_sll_epi32(d32_0, left_shift);
           }
         } else {
           if (do_average) {
-            d32_0 = _mm_add_epi32(_mm_loadl_epi64(p),
-                                  _mm_sll_epi32(d32_0, left_shift));
+            d32_0 =
+                _mm_srai_epi32(_mm_add_epi32(_mm_loadl_epi64(p),
+                                             _mm_sll_epi32(d32_0, left_shift)),
+                               1);
           } else {
             d32_0 = _mm_sll_epi32(d32_0, left_shift);
           }

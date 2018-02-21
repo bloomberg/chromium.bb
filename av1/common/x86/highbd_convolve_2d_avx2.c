@@ -374,18 +374,26 @@ void av1_highbd_convolve_2d_avx2(const uint16_t *src, int src_stride,
         __m128i *const p = (__m128i *)&dst[i * dst_stride + j];
         if (do_average) {
           _mm_storeu_si128(
-              p + 0, _mm_add_epi32(_mm_loadu_si128(p + 0),
-                                   _mm256_extractf128_si256(res_lo_round, 0)));
+              p + 0, _mm_srai_epi32(_mm_add_epi32(_mm_loadu_si128(p + 0),
+                                                  _mm256_extractf128_si256(
+                                                      res_lo_round, 0)),
+                                    1));
           _mm_storeu_si128(
-              p + 1, _mm_add_epi32(_mm_loadu_si128(p + 1),
-                                   _mm256_extractf128_si256(res_hi_round, 0)));
+              p + 1, _mm_srai_epi32(_mm_add_epi32(_mm_loadu_si128(p + 1),
+                                                  _mm256_extractf128_si256(
+                                                      res_hi_round, 0)),
+                                    1));
           if (w - j > 8) {
-            _mm_storeu_si128(p + 2, _mm_add_epi32(_mm_loadu_si128(p + 2),
-                                                  _mm256_extractf128_si256(
-                                                      res_lo_round, 1)));
-            _mm_storeu_si128(p + 3, _mm_add_epi32(_mm_loadu_si128(p + 3),
-                                                  _mm256_extractf128_si256(
-                                                      res_hi_round, 1)));
+            _mm_storeu_si128(
+                p + 2, _mm_srai_epi32(_mm_add_epi32(_mm_loadu_si128(p + 2),
+                                                    _mm256_extractf128_si256(
+                                                        res_lo_round, 1)),
+                                      1));
+            _mm_storeu_si128(
+                p + 3, _mm_srai_epi32(_mm_add_epi32(_mm_loadu_si128(p + 3),
+                                                    _mm256_extractf128_si256(
+                                                        res_hi_round, 1)),
+                                      1));
           }
         } else {
           _mm_storeu_si128(p + 0, _mm256_extractf128_si256(res_lo_round, 0));

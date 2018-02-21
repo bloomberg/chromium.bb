@@ -122,11 +122,12 @@ static INLINE __m256i convolve_lowbd_x(const __m256i data,
 
 static INLINE void add_store_aligned(CONV_BUF_TYPE *const dst,
                                      const __m256i *const res,
-                                     const __m256i *const avg_mask) {
+                                     const __m256i *const avg_mask, int shift) {
   __m256i d;
   d = _mm256_load_si256((__m256i *)dst);
   d = _mm256_and_si256(d, *avg_mask);
   d = _mm256_add_epi32(d, *res);
+  if (shift) d = _mm256_srai_epi32(d, 1);
   _mm256_store_si256((__m256i *)dst, d);
 }
 

@@ -192,10 +192,14 @@ void av1_highbd_convolve_2d_ssse3(const uint16_t *src, int src_stride,
         // Accumulate values into the destination buffer
         __m128i *const p = (__m128i *)&dst[i * dst_stride + j];
         if (do_average) {
-          _mm_storeu_si128(p + 0,
-                           _mm_add_epi32(_mm_loadu_si128(p + 0), res_lo_round));
-          _mm_storeu_si128(p + 1,
-                           _mm_add_epi32(_mm_loadu_si128(p + 1), res_hi_round));
+          _mm_storeu_si128(
+              p + 0,
+              _mm_srai_epi32(
+                  _mm_add_epi32(_mm_loadu_si128(p + 0), res_lo_round), 1));
+          _mm_storeu_si128(
+              p + 1,
+              _mm_srai_epi32(
+                  _mm_add_epi32(_mm_loadu_si128(p + 1), res_hi_round), 1));
         } else {
           _mm_storeu_si128(p + 0, res_lo_round);
           _mm_storeu_si128(p + 1, res_hi_round);
