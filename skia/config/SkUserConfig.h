@@ -212,10 +212,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_SVG_ARC_TO
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_DASH_CULL_PATH
-#define SK_SUPPORT_LEGACY_DASH_CULL_PATH
-#endif
-
 // Max. verb count for paths rendered by the edge-AA tessellating path renderer.
 #define GR_AA_TESSELLATOR_MAX_VERB_COUNT 10
 
