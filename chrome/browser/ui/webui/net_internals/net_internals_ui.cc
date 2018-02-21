@@ -1133,9 +1133,9 @@ void NetInternalsMessageHandler::IOThreadImpl::OnSetCaptureMode(
 // can be called from ANY THREAD.
 void NetInternalsMessageHandler::IOThreadImpl::OnAddEntry(
     const net::NetLogEntry& entry) {
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(&IOThreadImpl::AddEntryToQueue, this,
-                                         base::Passed(entry.ToValue())));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&IOThreadImpl::AddEntryToQueue, this, entry.ToValue()));
 }
 
 // Note that this can be called from ANY THREAD.
@@ -1153,7 +1153,7 @@ void NetInternalsMessageHandler::IOThreadImpl::SendJavascriptCommand(
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::BindOnce(&IOThreadImpl::SendJavascriptCommand,
-                                         this, command, base::Passed(&arg)));
+                                         this, command, std::move(arg)));
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::AddEntryToQueue(

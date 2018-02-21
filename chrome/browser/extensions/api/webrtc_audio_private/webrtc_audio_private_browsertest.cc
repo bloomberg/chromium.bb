@@ -78,7 +78,7 @@ void GetAudioDeviceDescriptions(bool for_input,
             *result = std::move(received);
             finished_callback.Run();
           },
-          base::Passed(run_loop.QuitClosure()), device_descriptions));
+          run_loop.QuitClosure(), device_descriptions));
   run_loop.Run();
 }
 

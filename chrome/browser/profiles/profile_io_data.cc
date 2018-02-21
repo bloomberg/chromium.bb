@@ -1427,9 +1427,8 @@ void ProfileIOData::SetUpJobFactoryDefaultsForBuilder(
   builder->SetInterceptors(std::move(request_interceptors));
 
   if (protocol_handler_interceptor) {
-    builder->set_create_intercepting_job_factory(
-        base::BindOnce(&CreateURLRequestJobFactory,
-                       base::Passed(std::move(protocol_handler_interceptor))));
+    builder->set_create_intercepting_job_factory(base::BindOnce(
+        &CreateURLRequestJobFactory, std::move(protocol_handler_interceptor)));
   }
 }
 
@@ -1465,7 +1464,7 @@ void ProfileIOData::ShutdownOnUIThread(
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::BindOnce(&NotifyContextGettersOfShutdownOnIO,
-                         base::Passed(&context_getters)));
+                         std::move(context_getters)));
     }
   }
 

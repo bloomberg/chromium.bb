@@ -68,7 +68,7 @@ void BudgetDatabase::GetBudgetDetails(const url::Origin& origin,
                                       GetBudgetCallback callback) {
   SyncCache(origin, base::BindOnce(&BudgetDatabase::GetBudgetAfterSync,
                                    weak_ptr_factory_.GetWeakPtr(), origin,
-                                   base::Passed(&callback)));
+                                   std::move(callback)));
 }
 
 void BudgetDatabase::SpendBudget(const url::Origin& origin,
@@ -76,7 +76,7 @@ void BudgetDatabase::SpendBudget(const url::Origin& origin,
                                  SpendBudgetCallback callback) {
   SyncCache(origin, base::BindOnce(&BudgetDatabase::SpendBudgetAfterSync,
                                    weak_ptr_factory_.GetWeakPtr(), origin,
-                                   amount, base::Passed(&callback)));
+                                   amount, std::move(callback)));
 }
 
 void BudgetDatabase::SetClockForTesting(std::unique_ptr<base::Clock> clock) {
@@ -287,7 +287,7 @@ void BudgetDatabase::SyncCache(const url::Origin& origin,
     db_->GetEntry(origin.Serialize(),
                   base::BindOnce(&BudgetDatabase::AddToCache,
                                  weak_ptr_factory_.GetWeakPtr(), origin,
-                                 base::Passed(&add_callback)));
+                                 std::move(add_callback)));
     return;
   }
   SyncLoadedCache(origin, std::move(callback), true /* success */);

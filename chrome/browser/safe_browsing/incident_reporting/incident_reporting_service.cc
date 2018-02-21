@@ -242,7 +242,7 @@ void IncidentReportingService::Receiver::AddIncidentForProcess(
         FROM_HERE,
         base::BindOnce(
             &IncidentReportingService::Receiver::AddIncidentOnMainThread,
-            service_, nullptr, base::Passed(&incident)));
+            service_, nullptr, std::move(incident)));
   }
 }
 
@@ -255,7 +255,7 @@ void IncidentReportingService::Receiver::ClearIncidentForProcess(
         FROM_HERE,
         base::BindOnce(
             &IncidentReportingService::Receiver::ClearIncidentOnMainThread,
-            service_, nullptr, base::Passed(&incident)));
+            service_, nullptr, std::move(incident)));
   }
 }
 
@@ -692,7 +692,7 @@ void IncidentReportingService::BeginEnvironmentCollection() {
           base::BindOnce(collect_environment_data_fn_, environment_data),
           base::BindOnce(&IncidentReportingService::OnEnvironmentDataCollected,
                          weak_ptr_factory_.GetWeakPtr(),
-                         base::Passed(base::WrapUnique(environment_data))));
+                         base::WrapUnique(environment_data)));
 
   // Posting the task will fail if the runner has been shut down. This should
   // never happen since the blocking pool is shut down after this service.

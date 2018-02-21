@@ -238,7 +238,7 @@ bool WebrtcLoggingPrivateSetMetaDataFunction::RunAsync() {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::BindOnce(&WebRtcLoggingHandlerHost::SetMetaData,
                                          webrtc_logging_handler_host,
-                                         base::Passed(&meta_data), callback));
+                                         std::move(meta_data), callback));
 
   return true;
 }

@@ -137,8 +137,8 @@ void SendResponseOnCmdThread(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     const HttpResponseSenderFunc& send_response_on_io_func,
     std::unique_ptr<net::HttpServerResponseInfo> response) {
-  io_task_runner->PostTask(FROM_HERE, base::BindOnce(send_response_on_io_func,
-                                                     base::Passed(&response)));
+  io_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(send_response_on_io_func, std::move(response)));
 }
 
 void HandleRequestOnCmdThread(

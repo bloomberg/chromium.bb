@@ -107,7 +107,7 @@ void LoadingPredictorObserver::OnRequestStarted(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&LoadingPredictorObserver::OnRequestStartedOnUIThread,
-                     base::Unretained(this), base::Passed(std::move(summary)),
+                     base::Unretained(this), std::move(summary),
                      web_contents_getter, request->site_for_cookies(),
                      request->creation_time()));
 
@@ -141,7 +141,7 @@ void LoadingPredictorObserver::OnRequestRedirected(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&LoadingPredictorObserver::OnRequestRedirectedOnUIThread,
-                     base::Unretained(this), base::Passed(std::move(summary)),
+                     base::Unretained(this), std::move(summary),
                      web_contents_getter, request->site_for_cookies(),
                      request->creation_time()));
 
@@ -176,7 +176,7 @@ void LoadingPredictorObserver::OnResponseStarted(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&LoadingPredictorObserver::OnResponseStartedOnUIThread,
-                     base::Unretained(this), base::Passed(std::move(summary)),
+                     base::Unretained(this), std::move(summary),
                      web_contents_getter, request->site_for_cookies(),
                      request->creation_time()));
 

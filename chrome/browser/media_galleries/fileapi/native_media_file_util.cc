@@ -155,7 +155,7 @@ void NativeMediaFileUtil::CreateDirectory(
   const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&NativeMediaFileUtil::CreateDirectoryOnTaskRunnerThread,
-                     weak_factory_.GetWeakPtr(), base::Passed(&context), url,
+                     weak_factory_.GetWeakPtr(), std::move(context), url,
                      exclusive, recursive, callback));
   DCHECK(success);
 }
@@ -170,7 +170,7 @@ void NativeMediaFileUtil::GetFileInfo(
   const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&NativeMediaFileUtil::GetFileInfoOnTaskRunnerThread,
-                     weak_factory_.GetWeakPtr(), base::Passed(&context), url,
+                     weak_factory_.GetWeakPtr(), std::move(context), url,
                      callback));
   DCHECK(success);
 }
@@ -184,7 +184,7 @@ void NativeMediaFileUtil::ReadDirectory(
   const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&NativeMediaFileUtil::ReadDirectoryOnTaskRunnerThread,
-                     weak_factory_.GetWeakPtr(), base::Passed(&context), url,
+                     weak_factory_.GetWeakPtr(), std::move(context), url,
                      callback));
   DCHECK(success);
 }
@@ -221,7 +221,7 @@ void NativeMediaFileUtil::CopyFileLocal(
       FROM_HERE,
       base::BindOnce(
           &NativeMediaFileUtil::CopyOrMoveFileLocalOnTaskRunnerThread,
-          weak_factory_.GetWeakPtr(), base::Passed(&context), src_url, dest_url,
+          weak_factory_.GetWeakPtr(), std::move(context), src_url, dest_url,
           option, true /* copy */, callback));
   DCHECK(success);
 }
@@ -238,7 +238,7 @@ void NativeMediaFileUtil::MoveFileLocal(
       FROM_HERE,
       base::BindOnce(
           &NativeMediaFileUtil::CopyOrMoveFileLocalOnTaskRunnerThread,
-          weak_factory_.GetWeakPtr(), base::Passed(&context), src_url, dest_url,
+          weak_factory_.GetWeakPtr(), std::move(context), src_url, dest_url,
           option, false /* copy */, callback));
   DCHECK(success);
 }
@@ -253,7 +253,7 @@ void NativeMediaFileUtil::CopyInForeignFile(
   const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&NativeMediaFileUtil::CopyInForeignFileOnTaskRunnerThread,
-                     weak_factory_.GetWeakPtr(), base::Passed(&context),
+                     weak_factory_.GetWeakPtr(), std::move(context),
                      src_file_path, dest_url, callback));
   DCHECK(success);
 }
@@ -267,7 +267,7 @@ void NativeMediaFileUtil::DeleteFile(
   const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&NativeMediaFileUtil::DeleteFileOnTaskRunnerThread,
-                     weak_factory_.GetWeakPtr(), base::Passed(&context), url,
+                     weak_factory_.GetWeakPtr(), std::move(context), url,
                      callback));
   DCHECK(success);
 }
@@ -282,7 +282,7 @@ void NativeMediaFileUtil::DeleteDirectory(
   const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&NativeMediaFileUtil::DeleteDirectoryOnTaskRunnerThread,
-                     weak_factory_.GetWeakPtr(), base::Passed(&context), url,
+                     weak_factory_.GetWeakPtr(), std::move(context), url,
                      callback));
   DCHECK(success);
 }
@@ -304,7 +304,7 @@ void NativeMediaFileUtil::CreateSnapshotFile(
   const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&NativeMediaFileUtil::CreateSnapshotFileOnTaskRunnerThread,
-                     weak_factory_.GetWeakPtr(), base::Passed(&context), url,
+                     weak_factory_.GetWeakPtr(), std::move(context), url,
                      callback));
   DCHECK(success);
 }

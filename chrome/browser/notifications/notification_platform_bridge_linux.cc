@@ -288,7 +288,7 @@ class NotificationPlatformBridgeLinuxImpl
     PostTaskToTaskRunnerThread(base::BindOnce(
         &NotificationPlatformBridgeLinuxImpl::DisplayOnTaskRunner, this,
         notification_type, profile_id, is_incognito,
-        base::Passed(&notification_copy)));
+        std::move(notification_copy)));
   }
 
   void Close(const std::string& profile_id,

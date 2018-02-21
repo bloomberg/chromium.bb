@@ -290,7 +290,7 @@ void SyncWorker::RecordTaskLog(std::unique_ptr<TaskLogger::TaskLog> task_log) {
   context_->GetUITaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&TaskLogger::RecordLog, context_->GetTaskLogger(),
-                     base::Passed(&task_log)));
+                     std::move(task_log)));
 }
 
 void SyncWorker::ActivateService(RemoteServiceState service_state,

@@ -307,7 +307,7 @@ void WebRtcLoggingHandlerHost::OnRtpPacket(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&WebRtcLoggingHandlerHost::DumpRtpPacketOnIOThread, this,
-                     base::Passed(&packet_header), header_length, packet_length,
+                     std::move(packet_header), header_length, packet_length,
                      incoming));
 }
 
@@ -448,8 +448,8 @@ void WebRtcLoggingHandlerHost::StoreLogInDirectory(
   log_uploader_->background_task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&WebRtcLogUploader::LoggingStoppedDoStore,
                                 base::Unretained(log_uploader_), *log_paths,
-                                log_id, base::Passed(&log_buffer),
-                                base::Passed(&meta_data), done_callback));
+                                log_id, std::move(log_buffer),
+                                std::move(meta_data), done_callback));
 }
 
 void WebRtcLoggingHandlerHost::DoUploadLogAndRtpDumps(
@@ -479,8 +479,8 @@ void WebRtcLoggingHandlerHost::DoUploadLogAndRtpDumps(
   log_uploader_->background_task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcLogUploader::LoggingStoppedDoUpload,
-                     base::Unretained(log_uploader_), base::Passed(&log_buffer),
-                     base::Passed(&meta_data), upload_done_data));
+                     base::Unretained(log_uploader_), std::move(log_buffer),
+                     std::move(meta_data), upload_done_data));
 }
 
 void WebRtcLoggingHandlerHost::CreateRtpDumpHandlerAndStart(

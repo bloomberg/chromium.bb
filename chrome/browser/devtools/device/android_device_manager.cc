@@ -85,7 +85,7 @@ static void PostHttpUpgradeCallback(
     std::unique_ptr<net::StreamSocket> socket) {
   response_task_runner->PostTask(
       FROM_HERE, base::BindOnce(callback, result, extensions, body_head,
-                                base::Passed(&socket)));
+                                std::move(socket)));
 }
 
 class HttpRequest {
@@ -357,7 +357,7 @@ class DevicesRequest : public base::RefCountedThreadSafe<DevicesRequest> {
   friend class base::RefCountedThreadSafe<DevicesRequest>;
   ~DevicesRequest() {
     response_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(callback_, base::Passed(&descriptors_)));
+        FROM_HERE, base::BindOnce(callback_, std::move(descriptors_)));
   }
 
   typedef std::vector<std::string> Serials;

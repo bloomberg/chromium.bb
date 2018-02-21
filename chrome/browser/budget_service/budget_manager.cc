@@ -47,7 +47,7 @@ void BudgetManager::GetBudget(const url::Origin& origin,
   }
   db_.GetBudgetDetails(origin, base::BindOnce(&BudgetManager::DidGetBudget,
                                               weak_ptr_factory_.GetWeakPtr(),
-                                              base::Passed(&callback)));
+                                              std::move(callback)));
 }
 
 void BudgetManager::Reserve(const url::Origin& origin,

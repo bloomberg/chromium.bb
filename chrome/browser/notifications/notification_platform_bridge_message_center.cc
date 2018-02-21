@@ -150,7 +150,7 @@ void NotificationPlatformBridgeMessageCenter::GetDisplayed(
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(callback, base::Passed(&displayed_notifications),
+      base::BindOnce(callback, std::move(displayed_notifications),
                      true /* supports_synchronization */));
 }
 

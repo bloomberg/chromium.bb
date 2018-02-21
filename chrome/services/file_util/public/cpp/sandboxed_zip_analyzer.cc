@@ -61,8 +61,8 @@ void SandboxedZipAnalyzer::PrepareFileToAnalyze() {
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&SandboxedZipAnalyzer::AnalyzeFile, this,
-                     base::Passed(&file), base::Passed(&temp_file)));
+      base::BindOnce(&SandboxedZipAnalyzer::AnalyzeFile, this, std::move(file),
+                     std::move(temp_file)));
 }
 
 void SandboxedZipAnalyzer::ReportFileFailure() {

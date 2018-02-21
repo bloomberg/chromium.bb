@@ -524,12 +524,11 @@ void AndroidUsbDevice::ParseHeader(UsbTransferStatus status,
   if (data_length == 0) {
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&AndroidUsbDevice::HandleIncoming, this,
-                                  base::Passed(&message)));
+                                  std::move(message)));
   } else {
     task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&AndroidUsbDevice::ReadBody, this,
-                       base::Passed(&message), data_length, data_check));
+        FROM_HERE, base::BindOnce(&AndroidUsbDevice::ReadBody, this,
+                                  std::move(message), data_length, data_check));
   }
 }
 
@@ -559,9 +558,8 @@ void AndroidUsbDevice::ParseBody(std::unique_ptr<AdbMessage> message,
 
   if (status == UsbTransferStatus::TIMEOUT) {
     task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&AndroidUsbDevice::ReadBody, this,
-                       base::Passed(&message), data_length, data_check));
+        FROM_HERE, base::BindOnce(&AndroidUsbDevice::ReadBody, this,
+                                  std::move(message), data_length, data_check));
     return;
   }
 
@@ -580,7 +578,7 @@ void AndroidUsbDevice::ParseBody(std::unique_ptr<AdbMessage> message,
 
   task_runner_->PostTask(FROM_HERE,
                          base::BindOnce(&AndroidUsbDevice::HandleIncoming, this,
-                                        base::Passed(&message)));
+                                        std::move(message)));
 }
 
 void AndroidUsbDevice::HandleIncoming(std::unique_ptr<AdbMessage> message) {

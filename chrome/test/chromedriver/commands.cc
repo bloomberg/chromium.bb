@@ -71,8 +71,7 @@ void ExecuteCreateSession(
   }
 
   thread->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&SetThreadLocalSession, base::Passed(&session)));
+      FROM_HERE, base::BindOnce(&SetThreadLocalSession, std::move(session)));
   session_thread_map
       ->insert(std::make_pair(new_id, make_linked_ptr(thread.release())));
   init_session_cmd.Run(params, new_id, callback);
@@ -213,8 +212,7 @@ void ExecuteSessionCommandOnSessionThread(
         FROM_HERE,
         base::BindOnce(callback_on_cmd,
                        Status(return_ok_without_session ? kOk : kNoSuchSession),
-                       base::Passed(std::unique_ptr<base::Value>()),
-                       std::string(), false));
+                       std::unique_ptr<base::Value>(), std::string(), false));
     return;
   }
 
@@ -290,7 +288,7 @@ void ExecuteSessionCommandOnSessionThread(
   }
 
   cmd_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(callback_on_cmd, status, base::Passed(&value),
+      FROM_HERE, base::BindOnce(callback_on_cmd, status, std::move(value),
                                 session->id, session->w3c_compliant));
 
   if (session->quit) {
@@ -319,7 +317,7 @@ void ExecuteSessionCommand(
         FROM_HERE,
         base::BindOnce(&ExecuteSessionCommandOnSessionThread, command_name,
                        command, return_ok_without_session,
-                       base::Passed(base::WrapUnique(params.DeepCopy())),
+                       base::WrapUnique(params.DeepCopy()),
                        base::ThreadTaskRunnerHandle::Get(), callback,
                        base::Bind(&TerminateSessionThreadOnCommandThread,
                                   session_thread_map, session_id)));

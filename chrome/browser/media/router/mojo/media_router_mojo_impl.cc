@@ -199,7 +199,7 @@ void MediaRouterMojoImpl::CreateRoute(
   std::string presentation_id = MediaRouterBase::CreatePresentationId();
   auto callback = base::BindOnce(
       &MediaRouterMojoImpl::RouteResponseReceived, weak_factory_.GetWeakPtr(),
-      presentation_id, provider_id, incognito, base::Passed(&callbacks), false);
+      presentation_id, provider_id, incognito, std::move(callbacks), false);
   media_route_providers_[provider_id]->CreateRoute(
       source_id, sink_id, presentation_id, origin, tab_id, timeout, incognito,
       std::move(callback));
@@ -231,7 +231,7 @@ void MediaRouterMojoImpl::JoinRoute(
   int tab_id = SessionTabHelper::IdForTab(web_contents);
   auto callback = base::BindOnce(
       &MediaRouterMojoImpl::RouteResponseReceived, weak_factory_.GetWeakPtr(),
-      presentation_id, *provider_id, incognito, base::Passed(&callbacks), true);
+      presentation_id, *provider_id, incognito, std::move(callbacks), true);
   media_route_providers_[*provider_id]->JoinRoute(
       source_id, presentation_id, origin, tab_id, timeout, incognito,
       std::move(callback));
@@ -259,7 +259,7 @@ void MediaRouterMojoImpl::ConnectRouteByRouteId(
   std::string presentation_id = MediaRouterBase::CreatePresentationId();
   auto callback = base::BindOnce(
       &MediaRouterMojoImpl::RouteResponseReceived, weak_factory_.GetWeakPtr(),
-      presentation_id, *provider_id, incognito, base::Passed(&callbacks), true);
+      presentation_id, *provider_id, incognito, std::move(callbacks), true);
   media_route_providers_[*provider_id]->ConnectRouteByRouteId(
       source_id, route_id, presentation_id, origin, tab_id, timeout, incognito,
       std::move(callback));

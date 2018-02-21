@@ -203,7 +203,7 @@ class BackgroundTask : public SyncTask {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&BackgroundTask::CompleteTask,
-                       weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(token)));
   }
 
   void CompleteTask(std::unique_ptr<SyncTaskToken> token) {
@@ -273,7 +273,7 @@ class BlockerUpdateTestHelper : public SyncTask {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&BlockerUpdateTestHelper::UpdateBlocker,
-                       weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(token)));
   }
 
   std::string name_;

@@ -168,8 +168,7 @@ void PerformanceMonitor::GatherMetricsMapOnIOThread(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&PerformanceMonitor::MarkProcessesAsAliveOnUIThread,
-                     base::Unretained(this),
-                     base::Passed(std::move(process_data_list)),
+                     base::Unretained(this), std::move(process_data_list),
                      current_update_sequence));
 }
 

@@ -227,8 +227,8 @@ void NativeProcessLauncherImpl::Core::PostErrorResult(
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(&NativeProcessLauncherImpl::Core::CallCallbackOnIOThread,
-                     this, callback, error, Passed(base::Process()),
-                     Passed(base::File()), Passed(base::File())));
+                     this, callback, error, base::Process(), base::File(),
+                     base::File()));
 }
 
 void NativeProcessLauncherImpl::Core::PostResult(
@@ -239,8 +239,8 @@ void NativeProcessLauncherImpl::Core::PostResult(
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(&NativeProcessLauncherImpl::Core::CallCallbackOnIOThread,
-                     this, callback, RESULT_SUCCESS, Passed(&process),
-                     Passed(&read_file), Passed(&write_file)));
+                     this, callback, RESULT_SUCCESS, std::move(process),
+                     std::move(read_file), std::move(write_file)));
 }
 
 NativeProcessLauncherImpl::NativeProcessLauncherImpl(

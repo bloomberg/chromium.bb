@@ -435,7 +435,7 @@ void SpellcheckCustomDictionary::OnLoaded(
     // Save cleaned up data only after startup.
     fix_invalid_file_.Reset(
         base::BindOnce(&SpellcheckCustomDictionary::FixInvalidFile,
-                       weak_ptr_factory_.GetWeakPtr(), base::Passed(&result)));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(result)));
     BrowserThread::PostAfterStartupTask(
         FROM_HERE, BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
         fix_invalid_file_.callback());
@@ -458,7 +458,7 @@ void SpellcheckCustomDictionary::FixInvalidFile(
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&SavePassedWordsToDictionaryFileReliably,
-                     custom_dictionary_path_, base::Passed(&load_file_result)));
+                     custom_dictionary_path_, std::move(load_file_result)));
 }
 
 void SpellcheckCustomDictionary::Save(
@@ -468,8 +468,7 @@ void SpellcheckCustomDictionary::Save(
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&SpellcheckCustomDictionary::UpdateDictionaryFile,
-                     base::Passed(&dictionary_change),
-                     custom_dictionary_path_));
+                     std::move(dictionary_change), custom_dictionary_path_));
 }
 
 syncer::SyncError SpellcheckCustomDictionary::Sync(

@@ -443,7 +443,7 @@ void AppBannerManager::SendBannerPromptRequest() {
   controller_ptr->BannerPromptRequest(
       std::move(banner_proxy), mojo::MakeRequest(&event_), {GetBannerType()},
       base::BindOnce(&AppBannerManager::OnBannerPromptReply, GetWeakPtr(),
-                     base::Passed(&controller)));
+                     std::move(controller)));
 }
 
 void AppBannerManager::UpdateState(State state) {

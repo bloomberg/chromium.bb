@@ -143,7 +143,7 @@ void ResourcePrefetcher::TryToLaunchPrefetchRequests() {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
         base::BindOnce(&Delegate::ResourcePrefetcherFinished, delegate_, this,
-                       base::Passed(std::move(stats_))));
+                       std::move(stats_)));
   }
 }
 

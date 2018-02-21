@@ -75,7 +75,7 @@ void TabIdAnnotator::Annotate(net::URLRequest* request,
       request->GetUserData(TabIdProvider::kTabIdProviderUserDataKey));
   if (existing_tab_id_provider) {
     existing_tab_id_provider->ProvideTabId(
-        base::BindOnce(&AnnotateDataUse, base::Passed(&data_use), callback));
+        base::BindOnce(&AnnotateDataUse, std::move(data_use), callback));
     return;
   }
 
@@ -104,7 +104,7 @@ void TabIdAnnotator::Annotate(net::URLRequest* request,
                         base::BindOnce(&GetTabInfoForRequest, render_process_id,
                                        render_frame_id, global_request_id)));
   tab_id_provider->ProvideTabId(
-      base::BindOnce(&AnnotateDataUse, base::Passed(&data_use), callback));
+      base::BindOnce(&AnnotateDataUse, std::move(data_use), callback));
 
   request->SetUserData(TabIdProvider::kTabIdProviderUserDataKey,
                        std::move(tab_id_provider));

@@ -396,8 +396,7 @@ void DownloadMetadataManager::GetDownloadDetails(
       FROM_HERE,
       base::BindOnce(&ReadMetadataInBackground,
                      GetMetadataPath(browser_context), metadata),
-      base::BindOnce(&ReturnResults, callback,
-                     base::Passed(base::WrapUnique(metadata))));
+      base::BindOnce(&ReturnResults, callback, base::WrapUnique(metadata)));
 }
 
 content::DownloadManager*
@@ -557,8 +556,7 @@ void DownloadMetadataManager::ManagerContext::ReadMetadata() {
       FROM_HERE,
       base::BindOnce(&ReadMetadataInBackground, metadata_path_, metadata),
       base::BindOnce(&DownloadMetadataManager::ManagerContext::OnMetadataReady,
-                     weak_factory_.GetWeakPtr(),
-                     base::Passed(base::WrapUnique(metadata))));
+                     weak_factory_.GetWeakPtr(), base::WrapUnique(metadata)));
 }
 
 void DownloadMetadataManager::ManagerContext::WriteMetadata() {

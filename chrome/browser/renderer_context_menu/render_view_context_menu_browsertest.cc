@@ -1138,7 +1138,7 @@ class LoadImageBrowserTest : public InProcessBrowserTest {
         base::BindOnce(&LoadImageBrowserTest::AddInterceptorForURL,
                        base::Unretained(this),
                        GURL(embedded_test_server()->GetURL(image_path).spec()),
-                       base::Passed(&owned_interceptor)));
+                       std::move(owned_interceptor)));
   }
 
   void AttemptLoadImage() {

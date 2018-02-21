@@ -863,7 +863,7 @@ void LocalFileSyncContext::PromoteDemotedChangesForURLs(
         FROM_HERE,
         base::BindOnce(&LocalFileSyncContext::PromoteDemotedChangesForURLs,
                        this, base::RetainedRef(file_system_context),
-                       base::Passed(&urls)));
+                       std::move(urls)));
     return;
   }
 
@@ -966,9 +966,9 @@ void LocalFileSyncContext::DidGetWritingStatusForSync(
                        url, true /* for_snapshot_sync */));
   }
 
-  ui_task_runner_->PostTask(FROM_HERE,
-                            base::BindOnce(callback, status, sync_file_info,
-                                           base::Passed(&snapshot)));
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(callback, status, sync_file_info, std::move(snapshot)));
 }
 
 void LocalFileSyncContext::ClearSyncFlagOnIOThread(

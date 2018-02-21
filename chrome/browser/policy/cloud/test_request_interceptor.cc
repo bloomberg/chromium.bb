@@ -225,7 +225,7 @@ net::URLRequestJob* TestRequestInterceptor::Delegate::MaybeInterceptRequest(
     callbacks->swap(request_serviced_callbacks_);
     io_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&Delegate::InvokeRequestServicedCallbacks,
-                                  base::Passed(&callbacks)));
+                                  std::move(callbacks)));
   }
 
   JobCallback callback = pending_job_callbacks_.front();

@@ -618,7 +618,7 @@ void LocalSafeBrowsingDatabaseManager::AddChunks(
   safe_browsing_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&LocalSafeBrowsingDatabaseManager::AddDatabaseChunks, this,
-                     list, base::Passed(&chunks), callback));
+                     list, std::move(chunks), callback));
 }
 
 void LocalSafeBrowsingDatabaseManager::DeleteChunks(
@@ -628,7 +628,7 @@ void LocalSafeBrowsingDatabaseManager::DeleteChunks(
   safe_browsing_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&LocalSafeBrowsingDatabaseManager::DeleteDatabaseChunks,
-                     this, base::Passed(&chunk_deletes)));
+                     this, std::move(chunk_deletes)));
 }
 
 void LocalSafeBrowsingDatabaseManager::UpdateStarted() {

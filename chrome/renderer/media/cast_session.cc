@@ -100,7 +100,7 @@ void CastSession::StartUDP(const net::IPEndPoint& remote_endpoint,
       FROM_HERE,
       base::BindOnce(&CastSessionDelegate::StartUDP,
                      base::Unretained(delegate_.get()), net::IPEndPoint(),
-                     remote_endpoint, base::Passed(&options),
+                     remote_endpoint, std::move(options),
                      media::BindToCurrentLoop(error_callback)));
 }
 

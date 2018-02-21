@@ -398,8 +398,8 @@ void CertificateReportingServiceTestHelper::SetUpInterceptor() {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(&SetUpURLHandlersOnIOThread,
-                     base::Passed(std::unique_ptr<net::URLRequestInterceptor>(
-                         url_request_interceptor_))));
+                     std::unique_ptr<net::URLRequestInterceptor>(
+                         url_request_interceptor_)));
 }
 
 void CertificateReportingServiceTestHelper::SetFailureMode(

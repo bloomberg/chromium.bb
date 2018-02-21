@@ -403,8 +403,8 @@ class IncidentReportingServiceTest : public testing::Test {
             callback) {
       // Post a task to run the callback.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(callback, base::Passed(&binary_download),
-                                    base::Passed(&non_binary_download)));
+          FROM_HERE, base::BindOnce(callback, std::move(binary_download),
+                                    std::move(non_binary_download)));
       return std::unique_ptr<safe_browsing::LastDownloadFinder>(
           new FakeDownloadFinder(on_deleted));
     }

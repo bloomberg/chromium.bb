@@ -250,7 +250,7 @@ void DownloadSuggestionsProvider::Fetch(
           ntp_snippets::Status(
               ntp_snippets::StatusCode::PERMANENT_ERROR,
               "DownloadSuggestionsProvider has no |Fetch| functionality!"),
-          base::Passed(std::vector<ContentSuggestion>())));
+          std::vector<ContentSuggestion>()));
 }
 
 void DownloadSuggestionsProvider::ClearHistory(

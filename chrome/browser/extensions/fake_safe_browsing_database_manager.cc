@@ -120,7 +120,7 @@ bool FakeSafeBrowsingDatabaseManager::CheckExtensionIDs(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&FakeSafeBrowsingDatabaseManager::OnSafeBrowsingResult,
-                     this, base::Passed(&safe_browsing_check)));
+                     this, std::move(safe_browsing_check)));
   return false;
 }
 

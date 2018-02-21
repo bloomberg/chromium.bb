@@ -845,8 +845,7 @@ void DownloadTargetDeterminer::ScheduleCallbackAndDeleteSelf(
   target_info->is_filetype_handled_safely = is_filetype_handled_safely_;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(completion_callback_, base::Passed(&target_info)));
+      FROM_HERE, base::BindOnce(completion_callback_, std::move(target_info)));
   completion_callback_.Reset();
   delete this;
 }

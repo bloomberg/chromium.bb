@@ -439,8 +439,7 @@ void LogApiActivity(content::BrowserContext* browser_context,
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&LogApiActivityOnUI, browser_context, extension_id,
-                       activity_name, base::Passed(args.CreateDeepCopy()),
-                       type));
+                       activity_name, args.CreateDeepCopy(), type));
     return;
   }
   LogApiActivityOnUI(browser_context, extension_id, activity_name,
@@ -502,7 +501,7 @@ void LogWebRequestActivity(content::BrowserContext* browser_context,
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&LogWebRequestActivityOnUI, browser_context,
                        extension_id, url, is_incognito, api_call,
-                       base::Passed(&details)));
+                       std::move(details)));
     return;
   }
   LogWebRequestActivityOnUI(browser_context, extension_id, url, is_incognito,
