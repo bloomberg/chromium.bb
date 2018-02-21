@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/queue.h"
@@ -325,6 +326,20 @@ bool ServiceUtilityProcessHost::StartProcess(bool sandbox) {
 
 bool ServiceUtilityProcessHost::Launch(base::CommandLine* cmd_line,
                                        bool sandbox) {
+  const base::CommandLine& service_command_line =
+      *base::CommandLine::ForCurrentProcess();
+  static const char* const kForwardSwitches[] = {
+      switches::kDisableLogging,
+      switches::kEnableLogging,
+      switches::kIPCConnectionTimeout,
+      switches::kLoggingLevel,
+      switches::kUtilityStartupDialog,
+      switches::kV,
+      switches::kVModule,
+  };
+  cmd_line->CopySwitchesFrom(service_command_line, kForwardSwitches,
+                             arraysize(kForwardSwitches));
+
   mojo::edk::ScopedPlatformHandle parent_handle;
   bool success = false;
   if (sandbox) {
