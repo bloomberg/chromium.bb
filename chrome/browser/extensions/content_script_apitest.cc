@@ -407,14 +407,7 @@ IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptExtensionAPIs) {
   EXPECT_TRUE(catcher.GetNextResult());
 }
 
-// Flaky on Windows. http://crbug.com/248418
-#if defined(OS_WIN)
-#define MAYBE_ContentScriptPermissionsApi DISABLED_ContentScriptPermissionsApi
-#else
-#define MAYBE_ContentScriptPermissionsApi ContentScriptPermissionsApi
-#endif
-IN_PROC_BROWSER_TEST_P(ContentScriptApiTest,
-                       MAYBE_ContentScriptPermissionsApi) {
+IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptPermissionsApi) {
   extensions::PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
   extensions::PermissionsRequestFunction::SetAutoConfirmForTests(true);
   ASSERT_TRUE(StartEmbeddedTestServer());
