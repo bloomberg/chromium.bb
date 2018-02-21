@@ -980,7 +980,7 @@ TEST_F(FrameFetchContextTest, ModifyPriorityForLowPriorityIframes) {
                 ResourceLoadPriority::kVeryHigh));
   // Low priority iframes enabled, everything in child frame should be low
   // priority.
-  EXPECT_EQ(ResourceLoadPriority::kVeryLow,
+  EXPECT_EQ(ResourceLoadPriority::kLow,
             childFetchContext->ModifyPriorityForExperiments(
                 ResourceLoadPriority::kVeryHigh));
   EXPECT_EQ(ResourceLoadPriority::kVeryLow,
