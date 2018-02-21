@@ -27,8 +27,8 @@ namespace {
 
 // NOTE: Please ONLY append messages to the end of this enum.
 enum class MessageType : uint32_t {
-  ACCEPT_CHILD,
-  ACCEPT_PARENT,
+  ACCEPT_INVITEE,
+  ACCEPT_INVITATION,
   ADD_BROKER_CLIENT,
   BROKER_CLIENT_ADDED,
   ACCEPT_BROKER_CLIENT,
@@ -54,14 +54,14 @@ struct Header {
 static_assert(IsAlignedForChannelMessage(sizeof(Header)),
               "Invalid header size.");
 
-struct AcceptChildData {
-  ports::NodeName parent_name;
+struct AcceptInviteeData {
+  ports::NodeName inviter_name;
   ports::NodeName token;
 };
 
-struct AcceptParentData {
+struct AcceptInvitationData {
   ports::NodeName token;
-  ports::NodeName child_name;
+  ports::NodeName invitee_name;
 };
 
 struct AcceptPeerData {
@@ -92,7 +92,7 @@ struct BrokerClientAddedData {
 };
 
 // This data may be followed by a platform channel handle to the broker. If not,
-// then the parent is the broker and its channel should be used as such.
+// then the inviter is the broker and its channel should be used as such.
 struct AcceptBrokerClientData {
   ports::NodeName broker_name;
 };
@@ -253,7 +253,7 @@ base::ProcessHandle NodeChannel::CopyRemoteProcessHandle() {
   base::AutoLock lock(remote_process_handle_lock_);
 #if defined(OS_WIN)
   if (remote_process_handle_ != base::kNullProcessHandle) {
-    // Privileged nodes use this to pass their childrens' process handles to the
+    // Privileged nodes use this to pass their invitees' process handles to the
     // broker on launch.
     HANDLE handle = remote_process_handle_;
     BOOL result = DuplicateHandle(
@@ -274,23 +274,23 @@ void NodeChannel::SetRemoteNodeName(const ports::NodeName& name) {
   remote_node_name_ = name;
 }
 
-void NodeChannel::AcceptChild(const ports::NodeName& parent_name,
-                              const ports::NodeName& token) {
-  AcceptChildData* data;
+void NodeChannel::AcceptInvitee(const ports::NodeName& inviter_name,
+                                const ports::NodeName& token) {
+  AcceptInviteeData* data;
   Channel::MessagePtr message = CreateMessage(
-      MessageType::ACCEPT_CHILD, sizeof(AcceptChildData), 0, &data);
-  data->parent_name = parent_name;
+      MessageType::ACCEPT_INVITEE, sizeof(AcceptInviteeData), 0, &data);
+  data->inviter_name = inviter_name;
   data->token = token;
   WriteChannelMessage(std::move(message));
 }
 
-void NodeChannel::AcceptParent(const ports::NodeName& token,
-                               const ports::NodeName& child_name) {
-  AcceptParentData* data;
+void NodeChannel::AcceptInvitation(const ports::NodeName& token,
+                                   const ports::NodeName& invitee_name) {
+  AcceptInvitationData* data;
   Channel::MessagePtr message = CreateMessage(
-      MessageType::ACCEPT_PARENT, sizeof(AcceptParentData), 0, &data);
+      MessageType::ACCEPT_INVITATION, sizeof(AcceptInvitationData), 0, &data);
   data->token = token;
-  data->child_name = child_name;
+  data->invitee_name = invitee_name;
   WriteChannelMessage(std::move(message));
 }
 
@@ -406,7 +406,7 @@ void NodeChannel::RelayEventMessage(const ports::NodeName& destination,
 
   // Note that this is only used on Windows, and on Windows all platform
   // handles are included in the message data. We blindly copy all the data
-  // here and the relay node (the parent) will duplicate handles as needed.
+  // here and the relay node (the broker) will duplicate handles as needed.
   size_t num_bytes = sizeof(RelayEventMessageData) + message->data_num_bytes();
   RelayEventMessageData* data;
   Channel::MessagePtr relay_message =
@@ -414,10 +414,15 @@ void NodeChannel::RelayEventMessage(const ports::NodeName& destination,
   data->destination = destination;
   memcpy(data + 1, message->data(), message->data_num_bytes());
 
-  // When the handles are duplicated in the parent, the source handles will
-  // be closed. If the parent never receives this message then these handles
+  // When the handles are duplicated in the broker, the source handles will
+  // be closed. If the broker never receives this message then these handles
   // will leak, but that means something else has probably broken and the
   // sending process won't likely be around much longer.
+  //
+  // TODO(https://crbug.com/813112): We would like to be able to violate the
+  // above stated assumption. We should not leak handles in cases where we
+  // outlive the broker, as we may continue existing and eventually accept a new
+  // broker invitation.
   std::vector<ScopedPlatformHandle> handles = message->TakeHandles();
   for (auto& handle : handles)
     ignore_result(handle.release());
@@ -533,21 +538,21 @@ void NodeChannel::OnChannelMessage(const void* payload,
 
   const Header* header = static_cast<const Header*>(payload);
   switch (header->type) {
-    case MessageType::ACCEPT_CHILD: {
-      const AcceptChildData* data;
+    case MessageType::ACCEPT_INVITEE: {
+      const AcceptInviteeData* data;
       if (GetMessagePayload(payload, payload_size, &data)) {
-        delegate_->OnAcceptChild(remote_node_name_, data->parent_name,
-                                 data->token);
+        delegate_->OnAcceptInvitee(remote_node_name_, data->inviter_name,
+                                   data->token);
         return;
       }
       break;
     }
 
-    case MessageType::ACCEPT_PARENT: {
-      const AcceptParentData* data;
+    case MessageType::ACCEPT_INVITATION: {
+      const AcceptInvitationData* data;
       if (GetMessagePayload(payload, payload_size, &data)) {
-        delegate_->OnAcceptParent(remote_node_name_, data->token,
-                                  data->child_name);
+        delegate_->OnAcceptInvitation(remote_node_name_, data->token,
+                                      data->invitee_name);
         return;
       }
       break;
@@ -838,7 +843,7 @@ void NodeChannel::WriteChannelMessage(Channel::MessagePtr message) {
   // privileged node should contain handles on Windows. If an unprivileged
   // node needs to send handles, it should do so via RelayEventMessage which
   // stashes the handles in the message in such a way that they go undetected
-  // here (they'll be unpacked and duplicated by a privileged parent.)
+  // here (they'll be unpacked and duplicated by the broker).
 
   if (message->has_handles()) {
     base::ProcessHandle remote_process_handle;
@@ -866,7 +871,7 @@ void NodeChannel::WriteChannelMessage(Channel::MessagePtr message) {
       base::ProcessHandle remote_process_handle;
       {
         base::AutoLock lock(remote_process_handle_lock_);
-        // Expect that the receiving node is a child.
+        // Expect that the receiving node is a known process.
         DCHECK(remote_process_handle_ != base::kNullProcessHandle);
         remote_process_handle = remote_process_handle_;
       }
