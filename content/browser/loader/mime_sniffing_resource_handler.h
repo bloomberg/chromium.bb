@@ -81,6 +81,12 @@ class CONTENT_EXPORT MimeSniffingResourceHandler
     // OnResponseStarted event to the downstream ResourceHandlers.
     STATE_REPLAYING_RESPONSE_RECEIVED,
 
+    // In these states, the MimeSniffingResourceHandler is replaying the pair of
+    // OnWillRead + OnReadCompleted(0) calls that indicates end of the response
+    // body.  See also |need_to_replay_extra_eof_packet_|.
+    STATE_REPLAYING_EOF_WILL_READ,
+    STATE_REPLAYING_EOF_READ_COMPLETED,
+
     // In this state, the MimeSniffingResourceHandler is just a blind
     // pass-through
     // ResourceHandler.
@@ -128,6 +134,13 @@ class CONTENT_EXPORT MimeSniffingResourceHandler
   // Replays OnReadCompleted on the downstreams handlers.
   void ReplayReadCompleted();
 
+  // Replays OnWillRead if needed to notify the downstream handler about EOF.
+  void ReplayWillReadEof();
+
+  // Replays OnReadCompleted(0) if needed to notify the downstream handler about
+  // EOF.
+  void ReplayReadCompletedEof();
+
   // --------------------------------------------------------------------------
 
   // Checks whether this request should be intercepted as a stream or a
@@ -174,6 +187,7 @@ class CONTENT_EXPORT MimeSniffingResourceHandler
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_size_;
   int bytes_read_;
+  bool need_to_replay_extra_eof_packet_;
 
   // Pointers to parent-owned read buffer and its size.  Only used for first
   // OnWillRead call.

@@ -191,6 +191,7 @@ void TestResourceHandler::OnReadCompleted(
   ScopedCallDepthTracker call_depth_tracker(&call_depth_);
 
   ++on_read_completed_called_;
+  EXPECT_EQ(on_read_completed_called_, on_will_read_called_);
   if (bytes_read == 0)
     ++on_read_eof_called_;
 

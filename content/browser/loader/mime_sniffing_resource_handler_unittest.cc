@@ -928,4 +928,160 @@ TEST_F(MimeSniffingResourceHandlerTest, FetchShouldDisableMimeSniffing) {
   content::RunAllPendingInMessageLoop();
 }
 
+// The test verifies that MimeSniffingResourceHandler can properly handle a
+// non-empty network response that ends before it is able to determine the mime
+// type.  In particular, when replaying the buffered payload after reaching EOF,
+// we need to make sure that the downstream handler receives *two*
+// OnReadCompleted calls (one with the buffered payload and one indicating EOF)
+// - this is verified by test assertions in
+// TestResourceHandler::OnResponseCompleted that require
+// EXPECT_EQ(1, on_read_eof_called_);
+TEST_F(MimeSniffingResourceHandlerTest, NonEmptyPayloadEndsBeforeDecision) {
+  net::URLRequestContext context;
+  std::unique_ptr<net::URLRequest> request(context.CreateRequest(
+      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
+  ResourceRequestInfo::AllocateForTesting(request.get(), RESOURCE_TYPE_SCRIPT,
+                                          nullptr,       // context
+                                          0,             // render_process_id
+                                          0,             // render_view_id
+                                          0,             // render_frame_id
+                                          false,         // is_main_frame
+                                          false,         // allow_download
+                                          true,          // is_async
+                                          PREVIEWS_OFF,  // previews_state
+                                          nullptr);      // navigation_ui_data
+
+  TestResourceDispatcherHost host(false);
+
+  TestFakePluginService plugin_service(false, false);
+  std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
+      new InterceptingResourceHandler(std::make_unique<TestResourceHandler>(),
+                                      nullptr));
+
+  std::unique_ptr<TestResourceHandler> scoped_test_handler(
+      new TestResourceHandler());
+  TestResourceHandler* test_handler = scoped_test_handler.get();
+  MimeSniffingResourceHandler mime_sniffing_handler(
+      std::move(scoped_test_handler), &host, &plugin_service,
+      intercepting_handler.get(), request.get(),
+      REQUEST_CONTEXT_TYPE_UNSPECIFIED);
+
+  MockResourceLoader mock_loader(&mime_sniffing_handler);
+
+  // Call OnWillStart and OnResponseStarted.
+  EXPECT_EQ(MockResourceLoader::Status::IDLE,
+            mock_loader.OnWillStart(request->url()));
+  scoped_refptr<network::ResourceResponse> response(
+      new network::ResourceResponse);
+  response->head.mime_type = "text/plain";
+  EXPECT_EQ(MockResourceLoader::Status::IDLE,
+            mock_loader.OnResponseStarted(std::move(response)));
+
+  // Send a small, non-empty packet to OnWillRead and OnReadCompleted.
+  EXPECT_EQ(MockResourceLoader::Status::IDLE, mock_loader.OnWillRead());
+  EXPECT_EQ(MockResourceLoader::Status::IDLE,
+            mock_loader.OnReadCompleted("var x = 3;"));
+
+  // Verify that the mime sniffer didn't yet made the final sniffing decision.
+  // This is not really a verification of product code functionality, but rather
+  // verification that the test covers the desired part of the product code.
+  EXPECT_EQ(0, test_handler->on_response_started_called());
+  EXPECT_EQ(0, test_handler->on_read_completed_called());
+
+  // Send a 0-sized, EOF-indicating packet to OnWillRead and OnReadCompleted.
+  EXPECT_EQ(MockResourceLoader::Status::IDLE, mock_loader.OnWillRead());
+  EXPECT_EQ(MockResourceLoader::Status::IDLE, mock_loader.OnReadCompleted(""));
+
+  // Call OnResponseCompleted to report the final response status.
+  EXPECT_EQ(MockResourceLoader::Status::IDLE,
+            mock_loader.OnResponseCompleted(
+                net::URLRequestStatus::FromError(net::OK)));
+
+  // Verify that the test handler got all the expected calls.
+  EXPECT_EQ(1, test_handler->on_response_started_called());
+  EXPECT_EQ(2, test_handler->on_will_read_called());
+  EXPECT_EQ(2, test_handler->on_read_completed_called());
+  EXPECT_EQ(1, test_handler->on_read_eof_called());
+  EXPECT_EQ(1, test_handler->on_response_completed_called());
+  EXPECT_EQ("var x = 3;", test_handler->body());
+  EXPECT_TRUE(test_handler->final_status().is_success());
+  EXPECT_EQ("text/plain", test_handler->resource_response()->head.mime_type);
+
+  // Process all messages to ensure proper test teardown.
+  content::RunAllPendingInMessageLoop();
+}
+
+// The test verifies that MimeSniffingResourceHandler can properly handle an
+// empty network response.
+TEST_F(MimeSniffingResourceHandlerTest, EmptyPayload) {
+  net::URLRequestContext context;
+  std::unique_ptr<net::URLRequest> request(context.CreateRequest(
+      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
+  ResourceRequestInfo::AllocateForTesting(request.get(), RESOURCE_TYPE_SCRIPT,
+                                          nullptr,       // context
+                                          0,             // render_process_id
+                                          0,             // render_view_id
+                                          0,             // render_frame_id
+                                          false,         // is_main_frame
+                                          false,         // allow_download
+                                          true,          // is_async
+                                          PREVIEWS_OFF,  // previews_state
+                                          nullptr);      // navigation_ui_data
+
+  TestResourceDispatcherHost host(false);
+
+  TestFakePluginService plugin_service(false, false);
+  std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
+      new InterceptingResourceHandler(std::make_unique<TestResourceHandler>(),
+                                      nullptr));
+
+  std::unique_ptr<TestResourceHandler> scoped_test_handler(
+      new TestResourceHandler());
+  TestResourceHandler* test_handler = scoped_test_handler.get();
+  MimeSniffingResourceHandler mime_sniffing_handler(
+      std::move(scoped_test_handler), &host, &plugin_service,
+      intercepting_handler.get(), request.get(),
+      REQUEST_CONTEXT_TYPE_UNSPECIFIED);
+
+  MockResourceLoader mock_loader(&mime_sniffing_handler);
+
+  // Call OnWillStart and OnResponseStarted.
+  EXPECT_EQ(MockResourceLoader::Status::IDLE,
+            mock_loader.OnWillStart(request->url()));
+  scoped_refptr<network::ResourceResponse> response(
+      new network::ResourceResponse);
+  response->head.mime_type = "text/plain";
+  EXPECT_EQ(MockResourceLoader::Status::IDLE,
+            mock_loader.OnResponseStarted(std::move(response)));
+
+  // Verify that the mime sniffer didn't yet made the sniffing decision
+  // (since no payload data has been sent to the sniffer yet).
+  EXPECT_EQ(0, test_handler->on_response_started_called());
+  EXPECT_EQ(0, test_handler->on_read_completed_called());
+
+  // Send a 0-sized, EOF-indicating packet to OnWillRead and OnReadCompleted.
+  EXPECT_EQ(MockResourceLoader::Status::IDLE, mock_loader.OnWillRead());
+  EXPECT_EQ(MockResourceLoader::Status::IDLE, mock_loader.OnReadCompleted(""));
+
+  // Call OnResponseCompleted to report the final response status.
+  EXPECT_EQ(MockResourceLoader::Status::IDLE,
+            mock_loader.OnResponseCompleted(
+                net::URLRequestStatus::FromError(net::OK)));
+
+  // Verify that the test handler got all the expected calls.
+  EXPECT_EQ(1, test_handler->on_response_started_called());
+  EXPECT_EQ(1, test_handler->on_will_read_called());
+  EXPECT_EQ(1, test_handler->on_read_completed_called());
+  EXPECT_EQ(1, test_handler->on_read_eof_called());
+  EXPECT_EQ(1, test_handler->on_response_completed_called());
+  EXPECT_EQ("", test_handler->body());
+  EXPECT_TRUE(test_handler->final_status().is_success());
+  EXPECT_EQ("text/plain", test_handler->resource_response()->head.mime_type);
+
+  // Process all messages to ensure proper test teardown.
+  content::RunAllPendingInMessageLoop();
+}
+
 }  // namespace content
