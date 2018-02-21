@@ -222,7 +222,6 @@ void BrowserChildProcessHostImpl::Launch(
       *base::CommandLine::ForCurrentProcess();
   static const char* const kForwardSwitches[] = {
       service_manager::switches::kDisableInProcessStackTraces,
-      switches::kDisableBackgroundTasks,
       switches::kDisableLogging,
       switches::kEnableLogging,
       switches::kIPCConnectionTimeout,

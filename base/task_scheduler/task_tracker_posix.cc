@@ -11,7 +11,9 @@
 namespace base {
 namespace internal {
 
-TaskTrackerPosix::TaskTrackerPosix(StringPiece name) : TaskTracker(name) {}
+TaskTrackerPosix::TaskTrackerPosix(StringPiece name,
+                                   int max_num_scheduled_background_sequences)
+    : TaskTracker(name, max_num_scheduled_background_sequences) {}
 TaskTrackerPosix::~TaskTrackerPosix() = default;
 
 void TaskTrackerPosix::RunOrSkipTask(Task task,
