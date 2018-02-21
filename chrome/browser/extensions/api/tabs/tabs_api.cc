@@ -99,7 +99,10 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "chrome/browser/ui/browser_command_controller.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "ui/aura/window.h"
+#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_types.h"
 #endif
 
 using content::BrowserThread;
@@ -256,19 +259,28 @@ bool IsValidStateForWindowsCreateFunction(
 }
 
 #if defined(OS_CHROMEOS)
-void SetWindowTrustedPinned(ui::BaseWindow* base_window, bool trusted_pinned) {
-  aura::Window* window = base_window->GetNativeWindow();
-  // TRUSTED_PINNED is used here because that one locks the window fullscreen
-  // without allowing the user to exit (as opposed to regular PINNED).
-  window->SetProperty(ash::kWindowPinTypeKey,
-                      trusted_pinned ? ash::mojom::WindowPinType::TRUSTED_PINNED
-                                     : ash::mojom::WindowPinType::NONE);
-}
-
 bool ExtensionHasLockedFullscreenPermission(const Extension* extension) {
   return extension->permissions_data()->HasAPIPermission(
       APIPermission::kLockWindowFullscreenPrivate);
 }
+
+void SetLockedFullscreenState(Browser* browser, bool enabled) {
+  aura::Window* window = browser->window()->GetNativeWindow();
+  // TRUSTED_PINNED is used here because that one locks the window fullscreen
+  // without allowing the user to exit (as opposed to regular PINNED).
+  window->SetProperty(ash::kWindowPinTypeKey,
+                      enabled ? ash::mojom::WindowPinType::TRUSTED_PINNED
+                              : ash::mojom::WindowPinType::NONE);
+
+  // Update the set of available browser commands.
+  browser->command_controller()->LockedFullscreenStateChanged();
+
+  // Reset the clipboard and kill dev tools when entering or exiting locked
+  // fullscreen (security concerns).
+  ui::Clipboard::GetForCurrentThread()->Clear(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  content::DevToolsAgentHost::DetachAllClients();
+}
+
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace
@@ -648,8 +660,7 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
   // (otherwise the tabstrip is empty).
   if (create_data &&
       create_data->state == windows::WINDOW_STATE_LOCKED_FULLSCREEN) {
-    SetWindowTrustedPinned(new_window->window(), true);
-    new_window->command_controller()->LockedFullscreenStateChanged();
+    SetLockedFullscreenState(new_window, true);
   }
 #endif
 
@@ -706,13 +717,11 @@ ExtensionFunction::ResponseAction WindowsUpdateFunction::Run() {
   if (is_window_trusted_pinned &&
       params->update_info.state != windows::WINDOW_STATE_LOCKED_FULLSCREEN &&
       params->update_info.state != windows::WINDOW_STATE_NONE) {
-    SetWindowTrustedPinned(browser->window(), false);
-    browser->command_controller()->LockedFullscreenStateChanged();
+    SetLockedFullscreenState(browser, false);
   } else if (!is_window_trusted_pinned &&
              params->update_info.state ==
                  windows::WINDOW_STATE_LOCKED_FULLSCREEN) {
-    SetWindowTrustedPinned(browser->window(), true);
-    browser->command_controller()->LockedFullscreenStateChanged();
+    SetLockedFullscreenState(browser, true);
   }
 #endif
 
