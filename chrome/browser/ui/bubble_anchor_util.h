@@ -15,6 +15,13 @@ class Browser;
 
 namespace bubble_anchor_util {
 
+// Indicates which browser component to use as an anchor.
+// Used as a parameter of GetPageInfoAnchorView().
+enum Anchor {
+  kLocationBar,
+  kHostedAppMenu,
+};
+
 // Offset from the window edge to show bubbles when there is no location bar.
 // E.g., when in fullscreen or in a Hosted App window. Don't center, since that
 // could obscure a fullscreen bubble.

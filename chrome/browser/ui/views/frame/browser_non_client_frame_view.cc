@@ -80,6 +80,11 @@ views::View* BrowserNonClientFrameView::GetProfileSwitcherView() const {
   return nullptr;
 }
 
+views::View* BrowserNonClientFrameView::GetHostedAppMenuView() {
+  NOTREACHED();
+  return nullptr;
+}
+
 void BrowserNonClientFrameView::UpdateClientArea() {}
 
 void BrowserNonClientFrameView::UpdateMinimumSize() {}

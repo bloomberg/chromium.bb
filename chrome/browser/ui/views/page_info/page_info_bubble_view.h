@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/page_info/page_info_ui.h"
+#include "chrome/browser/ui/views/bubble_anchor_util_views.h"
 #include "chrome/browser/ui/views/page_info/chosen_object_view_observer.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view_base.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row.h"
@@ -81,7 +82,8 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
       Browser* browser,
       content::WebContents* web_contents,
       const GURL& url,
-      const security_state::SecurityInfo& security_info);
+      const security_state::SecurityInfo& security_info,
+      bubble_anchor_util::Anchor);
 
  private:
   friend class PageInfoBubbleViewBrowserTest;

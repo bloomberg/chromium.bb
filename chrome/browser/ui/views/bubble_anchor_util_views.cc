@@ -16,7 +16,7 @@
 
 namespace bubble_anchor_util {
 
-views::View* GetPageInfoAnchorView(Browser* browser) {
+views::View* GetPageInfoAnchorView(Browser* browser, Anchor anchor) {
 #if defined(OS_MACOSX)
   if (views_mode_controller::IsViewsBrowserCocoa())
     return nullptr;
@@ -25,7 +25,16 @@ views::View* GetPageInfoAnchorView(Browser* browser) {
     return nullptr;  // Fall back to GetAnchorPoint().
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  return browser_view->GetLocationBarView()->GetSecurityBubbleAnchorView();
+
+  if (anchor == kLocationBar)
+    return browser_view->GetLocationBarView()->GetSecurityBubbleAnchorView();
+  if (anchor == kHostedAppMenu) {
+    auto* frame_view = static_cast<BrowserNonClientFrameView*>(
+        browser_view->GetWidget()->non_client_view()->frame_view());
+    return frame_view->GetHostedAppMenuView();
+  }
+  NOTREACHED();
+  return nullptr;
 }
 
 gfx::Rect GetPageInfoAnchorRect(Browser* browser) {

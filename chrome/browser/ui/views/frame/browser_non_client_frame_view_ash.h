@@ -42,6 +42,7 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   int GetThemeBackgroundXInset() const override;
   void UpdateThrobber(bool running) override;
   void UpdateMinimumSize() override;
+  views::View* GetHostedAppMenuView() override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;

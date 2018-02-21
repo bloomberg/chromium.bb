@@ -18,13 +18,13 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
-#include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
+#include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_features.h"
@@ -459,8 +459,10 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, OpenInChrome) {
   ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
 }
 
+// This feature is only available for ChromeOS at the moment.
+#if defined(OS_CHROMEOS)
 // Check the 'App info' menu button for Hosted App windows.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, AppInfo) {
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, AppInfoOpensPageInfo) {
   WebApplicationInfo web_app_info;
   web_app_info.app_url = GURL(kExampleURL);
   const extensions::Extension* app = InstallBookmarkApp(web_app_info);
@@ -468,17 +470,18 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, AppInfo) {
 
   bool dialog_created = false;
 
-  GetAppInfoDialogCreatedCallbackForTesting() = base::BindOnce(
+  GetPageInfoDialogCreatedCallbackForTesting() = base::BindOnce(
       [](bool* dialog_created) { *dialog_created = true; }, &dialog_created);
 
-  chrome::ExecuteCommand(app_browser, IDC_APP_INFO);
+  chrome::ExecuteCommand(app_browser, IDC_HOSTED_APP_MENU_APP_INFO);
 
   EXPECT_TRUE(dialog_created);
 
   // The test closure should have run. But clear the global in case it hasn't.
-  EXPECT_FALSE(GetAppInfoDialogCreatedCallbackForTesting());
-  GetAppInfoDialogCreatedCallbackForTesting().Reset();
+  EXPECT_FALSE(GetPageInfoDialogCreatedCallbackForTesting());
+  GetPageInfoDialogCreatedCallbackForTesting().Reset();
 }
+#endif
 
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, EngagementHistogram) {
   base::HistogramTester histograms;

@@ -15,9 +15,9 @@ class Browser;
 
 namespace bubble_anchor_util {
 
-// Returns the PageInfo anchor View for |browser|, or null if it should not be
+// Returns the PageInfo |anchor| View for |browser|, or null if it should not be
 // used.
-views::View* GetPageInfoAnchorView(Browser* browser);
+views::View* GetPageInfoAnchorView(Browser* browser, Anchor = kLocationBar);
 
 }  // namespace bubble_anchor_util
 

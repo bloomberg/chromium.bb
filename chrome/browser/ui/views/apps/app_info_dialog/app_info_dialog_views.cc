@@ -108,13 +108,6 @@ void ShowAppInfoInNativeDialog(content::WebContents* web_contents,
         constrained_window::CreateBrowserModalDialogViews(dialog, window);
     dialog_widget->Show();
   }
-  if (GetAppInfoDialogCreatedCallbackForTesting())
-    std::move(GetAppInfoDialogCreatedCallbackForTesting()).Run();
-}
-
-base::OnceClosure& GetAppInfoDialogCreatedCallbackForTesting() {
-  CR_DEFINE_STATIC_LOCAL(base::OnceClosure, closure, ());
-  return closure;
 }
 
 AppInfoDialog::AppInfoDialog(Profile* profile, const extensions::Extension* app)

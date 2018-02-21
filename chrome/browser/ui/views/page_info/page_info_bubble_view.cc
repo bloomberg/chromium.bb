@@ -526,8 +526,9 @@ views::BubbleDialogDelegateView* PageInfoBubbleView::CreatePageInfoBubble(
     Browser* browser,
     content::WebContents* web_contents,
     const GURL& url,
-    const security_state::SecurityInfo& security_info) {
-  views::View* anchor_view = GetPageInfoAnchorView(browser);
+    const security_state::SecurityInfo& security_info,
+    bubble_anchor_util::Anchor anchor) {
+  views::View* anchor_view = GetPageInfoAnchorView(browser, anchor);
   gfx::Rect anchor_rect =
       anchor_view ? gfx::Rect() : GetPageInfoAnchorRect(browser);
   gfx::NativeView parent_window =
@@ -1023,7 +1024,8 @@ void PageInfoBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,
 void ShowPageInfoDialogImpl(Browser* browser,
                             content::WebContents* web_contents,
                             const GURL& virtual_url,
-                            const security_state::SecurityInfo& security_info) {
+                            const security_state::SecurityInfo& security_info,
+                            bubble_anchor_util::Anchor anchor) {
 #if defined(OS_MACOSX)
   if (views_mode_controller::IsViewsBrowserCocoa()) {
     // Use the Cocoa code path for showing the Views page info dialog so that it
@@ -1033,8 +1035,8 @@ void ShowPageInfoDialogImpl(Browser* browser,
   }
 #endif
   views::BubbleDialogDelegateView* bubble =
-      PageInfoBubbleView::CreatePageInfoBubble(browser, web_contents,
-                                               virtual_url, security_info);
+      PageInfoBubbleView::CreatePageInfoBubble(
+          browser, web_contents, virtual_url, security_info, anchor);
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   bubble->GetWidget()->AddObserver(
       browser_view->GetLocationBarView()->location_icon_view());

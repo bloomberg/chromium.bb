@@ -266,3 +266,6 @@
 # Access aura window shadow layer. http://crbug.com/811859
 -OmniboxPopupContentsViewTest.PopupAlignment/Rounded
 -RoundedOmniboxPopupContentsViewTest.*
+
+# HostedAppMenu needs porting to BrowserNonClientFrameViewMus crbug.com/813666
+-HostedAppPWAOnlyTest.AppInfoOpensPageInfo*

@@ -1501,10 +1501,11 @@ void PageInfoUIBridge::DidFinishNavigation(
 void ShowPageInfoDialogImpl(Browser* browser,
                             content::WebContents* web_contents,
                             const GURL& virtual_url,
-                            const security_state::SecurityInfo& security_info) {
+                            const security_state::SecurityInfo& security_info,
+                            bubble_anchor_util::Anchor anchor) {
   if (chrome::ShowAllDialogsWithViewsToolkit()) {
     chrome::ShowPageInfoBubbleViews(browser, web_contents, virtual_url,
-                                    security_info);
+                                    security_info, anchor);
     return;
   }
 
