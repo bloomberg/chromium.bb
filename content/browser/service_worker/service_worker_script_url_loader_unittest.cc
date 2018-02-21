@@ -44,9 +44,9 @@ class MockHTTPServer {
     bool has_certificate_error = false;
   };
 
-  void Add(const GURL& url, const Response& response) {
-    auto result = responses_.emplace(std::make_pair(url, response));
-    ASSERT_TRUE(result.second);
+  void Set(const GURL& url, const Response& response) {
+    responses_.erase(url);
+    responses_.emplace(url, response);
   }
 
   const Response& Get(const GURL& url) {
@@ -137,13 +137,15 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
         mock_server_(std::make_unique<MockHTTPServer>()) {}
   ~ServiceWorkerScriptURLLoaderTest() override = default;
 
+  ServiceWorkerContextCore* context() { return helper_->context(); }
+
   void SetUp() override {
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(
         base::FilePath(), base::MakeRefCounted<URLLoaderFactoryGetter>());
 
     InitializeStorage();
 
-    mock_server_->Add(GURL(kNormalScriptURL),
+    mock_server_->Set(GURL(kNormalScriptURL),
                       MockHTTPServer::Response(
                           std::string("HTTP/1.1 200 OK\n"
                                       "Content-Type: text/javascript\n\n"),
@@ -159,8 +161,7 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
 
   void InitializeStorage() {
     base::RunLoop run_loop;
-    helper_->context()->storage()->LazyInitializeForTest(
-        run_loop.QuitClosure());
+    context()->storage()->LazyInitializeForTest(run_loop.QuitClosure());
     run_loop.Run();
   }
 
@@ -170,9 +171,11 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = scope;
     registration_ = base::MakeRefCounted<ServiceWorkerRegistration>(
-        options, 1L, helper_->context()->AsWeakPtr());
+        options, context()->storage()->NewRegistrationId(),
+        context()->AsWeakPtr());
     version_ = base::MakeRefCounted<ServiceWorkerVersion>(
-        registration_.get(), script_url, 1L, helper_->context()->AsWeakPtr());
+        registration_.get(), script_url, context()->storage()->NewVersionId(),
+        helper_->context()->AsWeakPtr());
     version_->SetStatus(ServiceWorkerVersion::NEW);
   }
 
@@ -180,6 +183,29 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
   // scope.
   void SetUpRegistration(const GURL& script_url) {
     SetUpRegistration(script_url, script_url.GetWithoutFilename());
+  }
+
+  // Creates an active worker in |registration_|. After this is called,
+  // |version_| will be a new, uninstalled version. The next time DoRequest() is
+  // called, |version_| will attempt to update, comparing against the active
+  // worker.
+  void SetUpActivatedWorker(const GURL& script_url) {
+    DoRequest(script_url);
+    client_->RunUntilComplete();
+    EXPECT_EQ(net::OK, client_->completion_status().error_code);
+    loader_.reset();
+    client_.reset();
+
+    version_->set_fetch_handler_existence(
+        ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST);
+    version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+    registration_->SetActiveVersion(version_);
+
+    version_ = base::MakeRefCounted<ServiceWorkerVersion>(
+        registration_.get(), script_url, context()->storage()->NewVersionId(),
+        context()->AsWeakPtr());
+    version_->SetStatus(ServiceWorkerVersion::NEW);
+    version_->set_pause_after_download(true);
   }
 
   void DoRequest(const GURL& request_url) {
@@ -198,8 +224,10 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
     request.resource_type = RESOURCE_TYPE_SERVICE_WORKER;
 
     DCHECK(!loader_);
+    DCHECK(!client_);
+    client_ = std::make_unique<network::TestURLLoaderClient>();
     loader_ = std::make_unique<ServiceWorkerScriptURLLoader>(
-        routing_id, request_id, options, request, client_.CreateInterfacePtr(),
+        routing_id, request_id, options, request, client_->CreateInterfacePtr(),
         version_, helper_->url_loader_factory_getter(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   }
@@ -214,8 +242,7 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
     size_t response_data_size = 0;
     {
       std::unique_ptr<ServiceWorkerResponseReader> reader =
-          helper_->context()->storage()->CreateResponseReader(
-              cache_resource_id);
+          context()->storage()->CreateResponseReader(cache_resource_id);
       auto info_buffer = base::MakeRefCounted<HttpResponseInfoIOBuffer>();
       net::TestCompletionCallback cb;
       reader->ReadInfo(info_buffer.get(), cb.callback());
@@ -231,8 +258,7 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
     {
       const std::string& expected_body = mock_server_->Get(url).body;
       std::unique_ptr<ServiceWorkerResponseReader> reader =
-          helper_->context()->storage()->CreateResponseReader(
-              cache_resource_id);
+          context()->storage()->CreateResponseReader(cache_resource_id);
       auto buffer =
           base::MakeRefCounted<net::IOBufferWithSize>(response_data_size);
       net::TestCompletionCallback cb;
@@ -262,22 +288,22 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
   std::unique_ptr<ServiceWorkerScriptURLLoader> loader_;
   std::unique_ptr<MockHTTPServer> mock_server_;
 
-  network::TestURLLoaderClient client_;
+  std::unique_ptr<network::TestURLLoaderClient> client_;
 };
 
 TEST_F(ServiceWorkerScriptURLLoaderTest, Success) {
   const GURL kScriptURL(kNormalScriptURL);
   SetUpRegistration(kScriptURL);
   DoRequest(kScriptURL);
-  client_.RunUntilComplete();
-  EXPECT_EQ(net::OK, client_.completion_status().error_code);
+  client_->RunUntilComplete();
+  EXPECT_EQ(net::OK, client_->completion_status().error_code);
 
   // The client should have received the response.
-  EXPECT_TRUE(client_.has_received_response());
-  EXPECT_TRUE(client_.response_body().is_valid());
+  EXPECT_TRUE(client_->has_received_response());
+  EXPECT_TRUE(client_->response_body().is_valid());
   std::string response;
   EXPECT_TRUE(mojo::common::BlockingCopyToString(
-      client_.response_body_release(), &response));
+      client_->response_body_release(), &response));
   EXPECT_EQ(mock_server_->Get(kScriptURL).body, response);
 
   // The response should also be stored in the storage.
@@ -286,22 +312,22 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Success) {
 
 TEST_F(ServiceWorkerScriptURLLoaderTest, Success_EmptyBody) {
   const GURL kScriptURL("https://example.com/empty.js");
-  mock_server_->Add(
+  mock_server_->Set(
       kScriptURL,
       MockHTTPServer::Response(std::string("HTTP/1.1 200 OK\n"
                                            "Content-Type: text/javascript\n\n"),
                                std::string()));
   SetUpRegistration(kScriptURL);
   DoRequest(kScriptURL);
-  client_.RunUntilComplete();
-  EXPECT_EQ(net::OK, client_.completion_status().error_code);
+  client_->RunUntilComplete();
+  EXPECT_EQ(net::OK, client_->completion_status().error_code);
 
   // The client should have received the response.
-  EXPECT_TRUE(client_.has_received_response());
-  EXPECT_TRUE(client_.response_body().is_valid());
+  EXPECT_TRUE(client_->has_received_response());
+  EXPECT_TRUE(client_->response_body().is_valid());
   std::string response;
   EXPECT_TRUE(mojo::common::BlockingCopyToString(
-      client_.response_body_release(), &response));
+      client_->response_body_release(), &response));
   EXPECT_TRUE(response.empty());
 
   // The response should also be stored in the storage.
@@ -316,22 +342,22 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Success_LargeBody) {
   const uint32_t kBodySize =
       ServiceWorkerScriptURLLoader::kReadBufferSize * 1.6;
   const GURL kScriptURL("https://example.com/large-body.js");
-  mock_server_->Add(
+  mock_server_->Set(
       kScriptURL,
       MockHTTPServer::Response(std::string("HTTP/1.1 200 OK\n"
                                            "Content-Type: text/javascript\n\n"),
                                std::string(kBodySize, 'a')));
   SetUpRegistration(kScriptURL);
   DoRequest(kScriptURL);
-  client_.RunUntilComplete();
-  EXPECT_EQ(net::OK, client_.completion_status().error_code);
+  client_->RunUntilComplete();
+  EXPECT_EQ(net::OK, client_->completion_status().error_code);
 
   // The client should have received the response.
-  EXPECT_TRUE(client_.has_received_response());
-  EXPECT_TRUE(client_.response_body().is_valid());
+  EXPECT_TRUE(client_->has_received_response());
+  EXPECT_TRUE(client_->response_body().is_valid());
   std::string response;
   EXPECT_TRUE(mojo::common::BlockingCopyToString(
-      client_.response_body_release(), &response));
+      client_->response_body_release(), &response));
   EXPECT_EQ(mock_server_->Get(kScriptURL).body, response);
 
   // The response should also be stored in the storage.
@@ -340,16 +366,16 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Success_LargeBody) {
 
 TEST_F(ServiceWorkerScriptURLLoaderTest, Error_404) {
   const GURL kScriptURL("https://example.com/nonexistent.js");
-  mock_server_->Add(kScriptURL, MockHTTPServer::Response(
+  mock_server_->Set(kScriptURL, MockHTTPServer::Response(
                                     std::string("HTTP/1.1 404 Not Found\n\n"),
                                     std::string()));
   SetUpRegistration(kScriptURL);
   DoRequest(kScriptURL);
-  client_.RunUntilComplete();
+  client_->RunUntilComplete();
 
   // The request should be failed because of the 404 response.
-  EXPECT_EQ(net::ERR_INVALID_RESPONSE, client_.completion_status().error_code);
-  EXPECT_FALSE(client_.has_received_response());
+  EXPECT_EQ(net::ERR_INVALID_RESPONSE, client_->completion_status().error_code);
+  EXPECT_FALSE(client_->has_received_response());
 
   // The response shouldn't be stored in the storage.
   EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
@@ -357,17 +383,17 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_404) {
 
 TEST_F(ServiceWorkerScriptURLLoaderTest, Error_Redirect) {
   const GURL kScriptURL("https://example.com/redirect.js");
-  mock_server_->Add(
+  mock_server_->Set(
       kScriptURL,
       MockHTTPServer::Response(
           std::string("HTTP/1.1 307 Temporary Redirect\n\n"), std::string()));
   SetUpRegistration(kScriptURL);
   DoRequest(kScriptURL);
-  client_.RunUntilComplete();
+  client_->RunUntilComplete();
 
   // The request should be failed because of the redirected response.
-  EXPECT_EQ(net::ERR_UNSAFE_REDIRECT, client_.completion_status().error_code);
-  EXPECT_FALSE(client_.has_received_response());
+  EXPECT_EQ(net::ERR_UNSAFE_REDIRECT, client_->completion_status().error_code);
+  EXPECT_FALSE(client_->has_received_response());
 
   // The response shouldn't be stored in the storage.
   EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
@@ -379,15 +405,16 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_CertificateError) {
   MockHTTPServer::Response response(std::string("HTTP/1.1 200 OK\n\n"),
                                     std::string("body"));
   response.has_certificate_error = true;
-  mock_server_->Add(kScriptURL, response);
+  mock_server_->Set(kScriptURL, response);
   SetUpRegistration(kScriptURL);
   DoRequest(kScriptURL);
-  client_.RunUntilComplete();
+  client_->RunUntilComplete();
 
   // The request should be failed because of the response with the certificate
   // error.
-  EXPECT_EQ(net::ERR_CERT_DATE_INVALID, client_.completion_status().error_code);
-  EXPECT_FALSE(client_.has_received_response());
+  EXPECT_EQ(net::ERR_CERT_DATE_INVALID,
+            client_->completion_status().error_code);
+  EXPECT_FALSE(client_->has_received_response());
 
   // The response shouldn't be stored in the storage.
   EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
@@ -395,16 +422,17 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_CertificateError) {
 
 TEST_F(ServiceWorkerScriptURLLoaderTest, Error_NoMimeType) {
   const GURL kScriptURL("https://example.com/no-mime-type.js");
-  mock_server_->Add(kScriptURL, MockHTTPServer::Response(
+  mock_server_->Set(kScriptURL, MockHTTPServer::Response(
                                     std::string("HTTP/1.1 200 OK\n\n"),
                                     std::string("body with no MIME type")));
   SetUpRegistration(kScriptURL);
   DoRequest(kScriptURL);
-  client_.RunUntilComplete();
+  client_->RunUntilComplete();
 
   // The request should be failed because of the response with no MIME type.
-  EXPECT_EQ(net::ERR_INSECURE_RESPONSE, client_.completion_status().error_code);
-  EXPECT_FALSE(client_.has_received_response());
+  EXPECT_EQ(net::ERR_INSECURE_RESPONSE,
+            client_->completion_status().error_code);
+  EXPECT_FALSE(client_->has_received_response());
 
   // The response shouldn't be stored in the storage.
   EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
@@ -412,18 +440,19 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_NoMimeType) {
 
 TEST_F(ServiceWorkerScriptURLLoaderTest, Error_BadMimeType) {
   const GURL kScriptURL("https://example.com/bad-mime-type.js");
-  mock_server_->Add(kScriptURL, MockHTTPServer::Response(
+  mock_server_->Set(kScriptURL, MockHTTPServer::Response(
                                     std::string("HTTP/1.1 200 OK\n"
                                                 "Content-Type: text/css\n\n"),
                                     std::string("body with bad MIME type")));
   SetUpRegistration(kScriptURL);
   DoRequest(kScriptURL);
-  client_.RunUntilComplete();
+  client_->RunUntilComplete();
 
   // The request should be failed because of the response with the bad MIME
   // type.
-  EXPECT_EQ(net::ERR_INSECURE_RESPONSE, client_.completion_status().error_code);
-  EXPECT_FALSE(client_.has_received_response());
+  EXPECT_EQ(net::ERR_INSECURE_RESPONSE,
+            client_->completion_status().error_code);
+  EXPECT_FALSE(client_->has_received_response());
 
   // The response shouldn't be stored in the storage.
   EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
@@ -434,7 +463,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Success_PathRestriction) {
   // Service-Worker-Allowed header allows it.
   const GURL kScriptURL("https://example.com/out-of-scope/normal.js");
   const GURL kScope("https://example.com/in-scope/");
-  mock_server_->Add(kScriptURL,
+  mock_server_->Set(kScriptURL,
                     MockHTTPServer::Response(
                         std::string("HTTP/1.1 200 OK\n"
                                     "Content-Type: text/javascript\n"
@@ -442,15 +471,15 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Success_PathRestriction) {
                         std::string()));
   SetUpRegistration(kScriptURL, kScope);
   DoRequest(kScriptURL);
-  client_.RunUntilComplete();
-  EXPECT_EQ(net::OK, client_.completion_status().error_code);
+  client_->RunUntilComplete();
+  EXPECT_EQ(net::OK, client_->completion_status().error_code);
 
   // The client should have received the response.
-  EXPECT_TRUE(client_.has_received_response());
-  EXPECT_TRUE(client_.response_body().is_valid());
+  EXPECT_TRUE(client_->has_received_response());
+  EXPECT_TRUE(client_->response_body().is_valid());
   std::string response;
   EXPECT_TRUE(mojo::common::BlockingCopyToString(
-      client_.response_body_release(), &response));
+      client_->response_body_release(), &response));
   EXPECT_EQ(mock_server_->Get(kScriptURL).body, response);
 
   // The response should also be stored in the storage.
@@ -462,18 +491,19 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_PathRestriction) {
   // Service-Worker-Allowed header is not specified.
   const GURL kScriptURL("https://example.com/out-of-scope/normal.js");
   const GURL kScope("https://example.com/in-scope/");
-  mock_server_->Add(
+  mock_server_->Set(
       kScriptURL,
       MockHTTPServer::Response(std::string("HTTP/1.1 200 OK\n"
                                            "Content-Type: text/javascript\n\n"),
                                std::string()));
   SetUpRegistration(kScriptURL, kScope);
   DoRequest(kScriptURL);
-  client_.RunUntilComplete();
+  client_->RunUntilComplete();
 
   // The request should be failed because the scope is not allowed.
-  EXPECT_EQ(net::ERR_INSECURE_RESPONSE, client_.completion_status().error_code);
-  EXPECT_FALSE(client_.has_received_response());
+  EXPECT_EQ(net::ERR_INSECURE_RESPONSE,
+            client_->completion_status().error_code);
+  EXPECT_FALSE(client_->has_received_response());
 
   // The response shouldn't be stored in the storage.
   EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
@@ -488,14 +518,50 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_RedundantWorker) {
   version_->Doom();
   ASSERT_TRUE(version_->is_redundant());
 
-  client_.RunUntilComplete();
+  client_->RunUntilComplete();
 
   // The request should be aborted.
-  EXPECT_EQ(net::ERR_FAILED, client_.completion_status().error_code);
-  EXPECT_FALSE(client_.has_received_response());
+  EXPECT_EQ(net::ERR_FAILED, client_->completion_status().error_code);
+  EXPECT_FALSE(client_->has_received_response());
 
   // The response shouldn't be stored in the storage.
   EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
+}
+
+TEST_F(ServiceWorkerScriptURLLoaderTest, Update) {
+  // Set up a registration with an incumbent.
+  const GURL kScriptURL(kNormalScriptURL);
+  SetUpRegistration(kScriptURL);
+  SetUpActivatedWorker(kScriptURL);
+
+  // Change the script on the server.
+  mock_server_->Set(
+      kScriptURL,
+      MockHTTPServer::Response(std::string("HTTP/1.1 200 OK\n"
+                                           "Content-Type: text/javascript\n\n"),
+                               std::string("this is the updated body")));
+
+  // Attempt to update.
+  DoRequest(kScriptURL);
+  client_->RunUntilComplete();
+  EXPECT_EQ(net::OK, client_->completion_status().error_code);
+  // |version_| should have installed.
+  EXPECT_EQ(1UL, version_->script_cache_map()->size());
+}
+
+TEST_F(ServiceWorkerScriptURLLoaderTest, Update_IdenticalScript) {
+  // Set up a registration with an incumbent.
+  const GURL kScriptURL(kNormalScriptURL);
+  SetUpRegistration(kScriptURL);
+  SetUpActivatedWorker(kScriptURL);
+
+  // Attempt to update.
+  DoRequest(kScriptURL);
+  client_->RunUntilComplete();
+  EXPECT_EQ(net::OK, client_->completion_status().error_code);
+  // The byte-to-byte check should detect the identical script, so the
+  // |version_| should not have installed.
+  EXPECT_EQ(0UL, version_->script_cache_map()->size());
 }
 
 }  // namespace content
