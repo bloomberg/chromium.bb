@@ -42,7 +42,6 @@ typedef enum ATTRIBUTE_PACKED {
 // setting a (pair of) filters.
 //
 // Without CONFIG_DUAL_FILTER,
-#if CONFIG_DUAL_FILTER
 typedef uint32_t InterpFilters;
 static INLINE InterpFilter av1_extract_interp_filter(InterpFilters filters,
                                                      int x_filter) {
@@ -59,21 +58,6 @@ static INLINE InterpFilters av1_make_interp_filters(InterpFilter y_filter,
 static INLINE InterpFilters av1_broadcast_interp_filter(InterpFilter filter) {
   return av1_make_interp_filters(filter, filter);
 }
-#else
-typedef InterpFilter InterpFilters;
-static INLINE InterpFilter av1_extract_interp_filter(InterpFilters filters,
-                                                     int x_filter) {
-#ifdef NDEBUG
-  (void)x_filter;
-#endif
-  assert(!x_filter);
-  return filters;
-}
-
-static INLINE InterpFilters av1_broadcast_interp_filter(InterpFilter filter) {
-  return filter;
-}
-#endif
 
 static INLINE InterpFilter av1_unswitchable_filter(InterpFilter filter) {
   return filter == SWITCHABLE ? EIGHTTAP_REGULAR : filter;
@@ -82,14 +66,10 @@ static INLINE InterpFilter av1_unswitchable_filter(InterpFilter filter) {
 #define LOG_SWITCHABLE_FILTERS \
   2 /* (1 << LOG_SWITCHABLE_FILTERS) > SWITCHABLE_FILTERS */
 
-#if CONFIG_DUAL_FILTER
 #define MAX_SUBPEL_TAPS 12
 #define SWITCHABLE_FILTER_CONTEXTS ((SWITCHABLE_FILTERS + 1) * 4)
 #define INTER_FILTER_COMP_OFFSET (SWITCHABLE_FILTERS + 1)
 #define INTER_FILTER_DIR_OFFSET ((SWITCHABLE_FILTERS + 1) * 2)
-#else  // CONFIG_DUAL_FILTER
-#define SWITCHABLE_FILTER_CONTEXTS (SWITCHABLE_FILTERS + 1)
-#endif  // CONFIG_DUAL_FILTER
 
 typedef struct InterpFilterParams {
   const int16_t *filter_ptr;

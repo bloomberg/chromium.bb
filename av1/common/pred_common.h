@@ -162,11 +162,7 @@ static INLINE int av1_get_skip_context(const MACROBLOCKD *xd) {
   return above_skip + left_skip;
 }
 
-#if CONFIG_DUAL_FILTER
 int av1_get_pred_context_switchable_interp(const MACROBLOCKD *xd, int dir);
-#else
-int av1_get_pred_context_switchable_interp(const MACROBLOCKD *xd);
-#endif
 
 // Get a list of palette base colors that are used in the above and left blocks,
 // referred to as "color cache". The return value is the number of colors in the

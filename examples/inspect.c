@@ -94,10 +94,8 @@ static const arg_def_t dump_cdef_arg = ARG_DEF("c", "cdef", 0, "Dump CDEF");
 static const arg_def_t dump_cfl_arg =
     ARG_DEF("cfl", "chroma_from_luma", 0, "Dump Chroma from Luma Alphas");
 #endif
-#if CONFIG_DUAL_FILTER
 static const arg_def_t dump_dual_filter_type_arg =
     ARG_DEF("df", "dualFilterType", 0, "Dump Dual Filter Type");
-#endif
 static const arg_def_t dump_reference_frame_arg =
     ARG_DEF("r", "referenceFrame", 0, "Dump Reference Frame");
 static const arg_def_t dump_delta_q_arg =
@@ -120,9 +118,7 @@ static const arg_def_t *main_args[] = { &limit_arg,
                                         &dump_skip_arg,
                                         &dump_filter_arg,
                                         &dump_cdef_arg,
-#if CONFIG_DUAL_FILTER
                                         &dump_dual_filter_type_arg,
-#endif
 #if CONFIG_CFL
                                         &dump_cfl_arg,
 #endif
@@ -189,13 +185,11 @@ const map_entry tx_type_map[] = { ENUM(DCT_DCT),
                                   ENUM(V_FLIPADST),
                                   ENUM(H_FLIPADST),
                                   LAST_ENUM };
-#if CONFIG_DUAL_FILTER
 const map_entry dual_filter_map[] = { ENUM(REG_REG),       ENUM(REG_SMOOTH),
                                       ENUM(REG_SHARP),     ENUM(SMOOTH_REG),
                                       ENUM(SMOOTH_SMOOTH), ENUM(SMOOTH_SHARP),
                                       ENUM(SHARP_REG),     ENUM(SHARP_SMOOTH),
                                       ENUM(SHARP_SHARP),   LAST_ENUM };
-#endif
 
 const map_entry prediction_mode_map[] = {
   ENUM(DC_PRED),     ENUM(V_PRED),        ENUM(H_PRED),
@@ -534,12 +528,10 @@ void inspect(void *pbi, void *data) {
     buf += put_block_info(buf, tx_type_map, "transformType",
                           offsetof(insp_mi_data, tx_type), 0);
   }
-#if CONFIG_DUAL_FILTER
   if (layers & DUAL_FILTER_LAYER) {
     buf += put_block_info(buf, dual_filter_map, "dualFilterType",
                           offsetof(insp_mi_data, dual_filter_type), 0);
   }
-#endif
   if (layers & MODE_LAYER) {
     buf += put_block_info(buf, prediction_mode_map, "mode",
                           offsetof(insp_mi_data, mode), 0);
@@ -553,13 +545,8 @@ void inspect(void *pbi, void *data) {
         put_block_info(buf, skip_map, "skip", offsetof(insp_mi_data, skip), 0);
   }
   if (layers & FILTER_LAYER) {
-#if CONFIG_DUAL_FILTER
     buf +=
         put_block_info(buf, NULL, "filter", offsetof(insp_mi_data, filter), 2);
-#else
-    buf +=
-        put_block_info(buf, NULL, "filter", offsetof(insp_mi_data, filter), 0);
-#endif
   }
   if (layers & CDEF_LAYER) {
     buf += put_block_info(buf, NULL, "cdef_level",
@@ -733,10 +720,8 @@ static void parse_args(char **argv) {
       layers |= REFERENCE_FRAME_LAYER;
     else if (arg_match(&arg, &dump_motion_vectors_arg, argi))
       layers |= MOTION_VECTORS_LAYER;
-#if CONFIG_DUAL_FILTER
     else if (arg_match(&arg, &dump_dual_filter_type_arg, argi))
       layers |= DUAL_FILTER_LAYER;
-#endif
     else if (arg_match(&arg, &dump_delta_q_arg, argi))
       layers |= Q_INDEX_LAYER;
     else if (arg_match(&arg, &dump_seg_id_arg, argi))

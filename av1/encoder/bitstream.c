@@ -692,7 +692,6 @@ static void write_mb_interp_filter(AV1_COMP *cpi, const MACROBLOCKD *xd,
     return;
   }
   if (cm->interp_filter == SWITCHABLE) {
-#if CONFIG_DUAL_FILTER
     int dir;
     for (dir = 0; dir < 2; ++dir) {
       if (has_subpel_mv_component(xd->mi[0], xd, dir) ||
@@ -709,15 +708,6 @@ static void write_mb_interp_filter(AV1_COMP *cpi, const MACROBLOCKD *xd,
                EIGHTTAP_REGULAR);
       }
     }
-#else
-    {
-      const int ctx = av1_get_pred_context_switchable_interp(xd);
-      InterpFilter filter = av1_extract_interp_filter(mbmi->interp_filters, 0);
-      aom_write_symbol(w, filter, ec_ctx->switchable_interp_cdf[ctx],
-                       SWITCHABLE_FILTERS);
-      ++cpi->interp_filter_selected[0][filter];
-    }
-#endif  // CONFIG_DUAL_FILTER
   }
 }
 

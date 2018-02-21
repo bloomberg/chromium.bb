@@ -16,7 +16,6 @@
 #include "av1/common/seg_common.h"
 
 // Returns a context number for the given MB prediction signal
-#if CONFIG_DUAL_FILTER
 static InterpFilter get_ref_filter_type(const MODE_INFO *mi,
                                         const MACROBLOCKD *xd, int dir,
                                         MV_REFERENCE_FRAME ref_frame) {
@@ -67,36 +66,6 @@ int av1_get_pred_context_switchable_interp(const MACROBLOCKD *xd, int dir) {
 
   return filter_type_ctx;
 }
-#else
-int av1_get_pred_context_switchable_interp(const MACROBLOCKD *xd) {
-  // Note:
-  // The mode info data structure has a one element border above and to the
-  // left of the entries corresponding to real macroblocks.
-  // The prediction flags in these dummy entries are initialized to 0.
-  const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;
-  const int left_type =
-      xd->left_available && is_inter_block(left_mbmi)
-          ? av1_extract_interp_filter(left_mbmi->interp_filters, 0)
-          : SWITCHABLE_FILTERS;
-  const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
-  const int above_type =
-      xd->up_available && is_inter_block(above_mbmi)
-          ? av1_extract_interp_filter(above_mbmi->interp_filters, 0)
-          : SWITCHABLE_FILTERS;
-
-  if (left_type == above_type) {
-    return left_type;
-  } else if (left_type == SWITCHABLE_FILTERS) {
-    assert(above_type != SWITCHABLE_FILTERS);
-    return above_type;
-  } else if (above_type == SWITCHABLE_FILTERS) {
-    assert(left_type != SWITCHABLE_FILTERS);
-    return left_type;
-  } else {
-    return SWITCHABLE_FILTERS;
-  }
-}
-#endif
 
 static void palette_add_to_cache(uint16_t *cache, int *n, uint16_t val) {
   // Do not add an already existing value

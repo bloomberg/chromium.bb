@@ -41,12 +41,8 @@ struct insp_mi_data {
   int16_t sb_type;
   int16_t skip;
   int16_t segment_id;
-#if CONFIG_DUAL_FILTER
   int16_t dual_filter_type;
   int16_t filter[2];
-#else
-  int16_t filter;
-#endif
   int16_t tx_type;
   int16_t tx_size;
   int16_t cdef_level;

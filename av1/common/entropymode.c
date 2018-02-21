@@ -621,7 +621,6 @@ static const aom_cdf_prob
       { AOM_CDF2(128 * 128) }, { AOM_CDF2(128 * 128) }, { AOM_CDF2(128 * 128) }
     };
 
-#if CONFIG_DUAL_FILTER
 static const aom_cdf_prob
     default_switchable_interp_cdf[SWITCHABLE_FILTER_CONTEXTS][CDF_SIZE(
         SWITCHABLE_FILTERS)] = {
@@ -634,16 +633,6 @@ static const aom_cdf_prob
       { AOM_CDF3(31616, 31787) }, { AOM_CDF3(4224, 32433) },
       { AOM_CDF3(128, 256) },     { AOM_CDF3(17408, 18248) }
     };
-#else   // CONFIG_DUAL_FILTER
-static const aom_cdf_prob
-    default_switchable_interp_cdf[SWITCHABLE_FILTER_CONTEXTS]
-                                 [CDF_SIZE(SWITCHABLE_FILTERS)] = {
-                                   { AOM_CDF3(30080, 31781) },
-                                   { AOM_CDF3(4608, 32658) },
-                                   { AOM_CDF3(4352, 4685) },
-                                   { AOM_CDF3(19072, 26776) },
-                                 };
-#endif  // CONFIG_DUAL_FILTER
 
 #if CONFIG_SPATIAL_SEGMENTATION
 static const aom_cdf_prob

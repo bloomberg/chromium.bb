@@ -960,7 +960,6 @@ YV12_BUFFER_CONFIG *av1_get_scaled_ref_frame(const AV1_COMP *cpi,
              : NULL;
 }
 
-#if CONFIG_DUAL_FILTER
 int av1_get_switchable_rate(const AV1_COMMON *const cm, MACROBLOCK *x,
                             const MACROBLOCKD *xd) {
   if (cm->interp_filter == SWITCHABLE) {
@@ -983,20 +982,6 @@ int av1_get_switchable_rate(const AV1_COMMON *const cm, MACROBLOCK *x,
     return 0;
   }
 }
-#else
-int av1_get_switchable_rate(const AV1_COMMON *const cm, MACROBLOCK *x,
-                            const MACROBLOCKD *xd) {
-  if (cm->interp_filter == SWITCHABLE) {
-    const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-    const int ctx = av1_get_pred_context_switchable_interp(xd);
-    const InterpFilter filter =
-        av1_extract_interp_filter(mbmi->interp_filters, 0);
-    return SWITCHABLE_INTERP_RATE_FACTOR *
-           x->switchable_interp_costs[ctx][filter];
-  }
-  return 0;
-}
-#endif
 
 void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
   int i;

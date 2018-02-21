@@ -1337,7 +1337,6 @@ static INLINE void read_mb_interp_filter(AV1_COMMON *const cm,
   if (cm->interp_filter != SWITCHABLE) {
     mbmi->interp_filters = av1_broadcast_interp_filter(cm->interp_filter);
   } else {
-#if CONFIG_DUAL_FILTER
     InterpFilter ref0_filter[2] = { EIGHTTAP_REGULAR, EIGHTTAP_REGULAR };
     for (int dir = 0; dir < 2; ++dir) {
       if (has_subpel_mv_component(xd->mi[0], xd, dir) ||
@@ -1352,12 +1351,6 @@ static INLINE void read_mb_interp_filter(AV1_COMMON *const cm,
     // The index system works as: (0, 1) -> (vertical, horizontal) filter types
     mbmi->interp_filters =
         av1_make_interp_filters(ref0_filter[0], ref0_filter[1]);
-#else   // CONFIG_DUAL_FILTER
-    const int ctx = av1_get_pred_context_switchable_interp(xd);
-    InterpFilter filter = (InterpFilter)aom_read_symbol(
-        r, ec_ctx->switchable_interp_cdf[ctx], SWITCHABLE_FILTERS, ACCT_STR);
-    mbmi->interp_filters = av1_broadcast_interp_filter(filter);
-#endif  // CONFIG_DUAL_FILTER
   }
 }
 
