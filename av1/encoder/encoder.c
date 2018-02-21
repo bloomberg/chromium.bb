@@ -389,19 +389,19 @@ static void setup_frame(AV1_COMP *cpi) {
 
 static void enc_setup_mi(AV1_COMMON *cm) {
   int i;
-  cm->mi = cm->mip + cm->mi_stride + 1;
-  memset(cm->mip, 0, cm->mi_stride * (cm->mi_rows + 1) * sizeof(*cm->mip));
-  cm->prev_mi = cm->prev_mip + cm->mi_stride + 1;
+  cm->mi = cm->mip;
+  memset(cm->mip, 0, cm->mi_stride * cm->mi_rows * sizeof(*cm->mip));
+  cm->prev_mi = cm->prev_mip;
   // Clear top border row
   memset(cm->prev_mip, 0, sizeof(*cm->prev_mip) * cm->mi_stride);
   // Clear left border column
-  for (i = 1; i < cm->mi_rows + 1; ++i)
+  for (i = 0; i < cm->mi_rows; ++i)
     memset(&cm->prev_mip[i * cm->mi_stride], 0, sizeof(*cm->prev_mip));
-  cm->mi_grid_visible = cm->mi_grid_base + cm->mi_stride + 1;
-  cm->prev_mi_grid_visible = cm->prev_mi_grid_base + cm->mi_stride + 1;
+  cm->mi_grid_visible = cm->mi_grid_base;
+  cm->prev_mi_grid_visible = cm->prev_mi_grid_base;
 
   memset(cm->mi_grid_base, 0,
-         cm->mi_stride * (cm->mi_rows + 1) * sizeof(*cm->mi_grid_base));
+         cm->mi_stride * cm->mi_rows * sizeof(*cm->mi_grid_base));
 
   memset(cm->boundary_info, 0,
          cm->boundary_info_alloc_size * sizeof(*cm->boundary_info));
@@ -443,13 +443,13 @@ static void swap_mi_and_prev_mi(AV1_COMMON *cm) {
   cm->mip = temp;
 
   // Update the upper left visible macroblock ptrs.
-  cm->mi = cm->mip + cm->mi_stride + 1;
-  cm->prev_mi = cm->prev_mip + cm->mi_stride + 1;
+  cm->mi = cm->mip;
+  cm->prev_mi = cm->prev_mip;
 
   cm->prev_mi_grid_base = cm->mi_grid_base;
   cm->mi_grid_base = temp_base;
-  cm->mi_grid_visible = cm->mi_grid_base + cm->mi_stride + 1;
-  cm->prev_mi_grid_visible = cm->prev_mi_grid_base + cm->mi_stride + 1;
+  cm->mi_grid_visible = cm->mi_grid_base;
+  cm->prev_mi_grid_visible = cm->prev_mi_grid_base;
 }
 
 void av1_initialize_enc(void) {

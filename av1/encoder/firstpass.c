@@ -617,6 +617,9 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
 
       aom_clear_system_state();
 
+      const int idx_str = xd->mi_stride * mb_row * mb_scale + mb_col * mb_scale;
+      xd->mi = cm->mi_grid_visible + idx_str;
+      xd->mi[0] = cm->mi + idx_str;
       xd->plane[0].dst.buf = new_yv12->y_buffer + recon_yoffset;
       xd->plane[1].dst.buf = new_yv12->u_buffer + recon_uvoffset;
       xd->plane[2].dst.buf = new_yv12->v_buffer + recon_uvoffset;
