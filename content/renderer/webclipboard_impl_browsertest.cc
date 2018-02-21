@@ -44,13 +44,7 @@ IN_PROC_BROWSER_TEST_F(WebClipboardImplTest, ImageCopy) {
   clipboard.SetText("");
 
   base::string16 expected_types;
-#if !defined(OS_MACOSX)
-  // See comments in WebClipboardImpl::WriteImage for why the expected types
-  // are platform-specific.
   expected_types = base::ASCIIToUTF16("file;image/png string;text/html");
-#else
-  expected_types = base::ASCIIToUTF16("file;image/png");
-#endif
 
   NavigateToURL(shell(), GetTestUrl(".", "image_copy_types.html"));
   WebContents* web_contents = shell()->web_contents();
