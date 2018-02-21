@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import copy
+import os
 
 from chromite.lib.const import waterfall
 from chromite.lib import config_lib
@@ -3898,6 +3899,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       # This very weird tryjob is only run locally. It should never upload
       # build artifacts.
       archive=False,
+      gs_path=os.path.join(constants.TRASH_BUCKET, 'branch-util-noise/')
   )
 
   site_config.AddWithoutTemplate(

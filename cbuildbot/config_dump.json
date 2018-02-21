@@ -7969,6 +7969,7 @@
         "description": "Used for creating/deleting branches (TPMs only)",
         "display_label": "utility",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "gs_path": "gs://chromeos-throw-away-bucket/branch-util-noise/",
         "hw_tests_override": [],
         "image_test": true,
         "images": [
@@ -8003,6 +8004,7 @@
         "description": "Used for creating/deleting branches (TPMs only)",
         "display_label": "tryjob",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "gs_path": "gs://chromeos-throw-away-bucket/branch-util-noise/",
         "image_test": true,
         "images": [
             "base",
