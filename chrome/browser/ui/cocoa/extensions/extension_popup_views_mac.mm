@@ -4,8 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/extensions/extension_popup_views_mac.h"
 
-#import <AppKit/NSWindow.h>
-#import <Foundation/NSNotification.h>
+#import <AppKit/AppKit.h>
 
 #include "chrome/browser/extensions/extension_view_host.h"
 #import "chrome/browser/ui/cocoa/bubble_anchor_helper_views.h"
@@ -22,7 +21,7 @@ ExtensionPopupViewsMac::~ExtensionPopupViewsMac() {
 ExtensionPopupViewsMac* ExtensionPopupViewsMac::ShowPopup(
     std::unique_ptr<extensions::ExtensionViewHost> host,
     gfx::NativeWindow parent_window,
-    gfx::Point anchor_point,
+    const gfx::Point& anchor_point,
     ExtensionPopup::ShowAction show_action) {
   // We can't use std::make_unique here as the constructor is private.
   std::unique_ptr<ExtensionPopupViewsMac> popup_owned(
@@ -47,7 +46,7 @@ ExtensionPopupViewsMac* ExtensionPopupViewsMac::ShowPopup(
 
 ExtensionPopupViewsMac::ExtensionPopupViewsMac(
     std::unique_ptr<extensions::ExtensionViewHost> host,
-    gfx::Point anchor_point,
+    const gfx::Point& anchor_point,
     ExtensionPopup::ShowAction show_action)
     : ExtensionPopup(host.release(),
                      nullptr,

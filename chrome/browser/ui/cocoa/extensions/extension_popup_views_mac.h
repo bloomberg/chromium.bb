@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_POPUP_VIEWS_MAC_H_
 #define CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_POPUP_VIEWS_MAC_H_
 
-#import <Foundation/NSArray.h>
+#import <Foundation/Foundation.h>
 
 #include <memory>
 
@@ -29,12 +29,12 @@ class ExtensionPopupViewsMac : public ExtensionPopup {
   static ExtensionPopupViewsMac* ShowPopup(
       std::unique_ptr<extensions::ExtensionViewHost> host,
       gfx::NativeWindow parent_window,
-      gfx::Point anchor_point,
+      const gfx::Point& anchor_point,
       ExtensionPopup::ShowAction show_action);
 
  private:
   ExtensionPopupViewsMac(std::unique_ptr<extensions::ExtensionViewHost> host,
-                         gfx::Point anchor_point,
+                         const gfx::Point& anchor_point,
                          ExtensionPopup::ShowAction show_action);
 
   base::scoped_nsobject<NSMutableArray> observer_tokens_;
