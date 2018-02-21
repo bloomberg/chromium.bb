@@ -6,6 +6,7 @@
 #define UI_GFX_SHADOW_VALUE_H_
 
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "third_party/skia/include/core/SkColor.h"
@@ -23,15 +24,20 @@ typedef std::vector<ShadowValue> ShadowValues;
 // shadow's offset, blur amount and color.
 class GFX_EXPORT ShadowValue {
  public:
-  ShadowValue();
-  ShadowValue(const gfx::Vector2d& offset, double blur, SkColor color);
-  ~ShadowValue();
+  constexpr ShadowValue() = default;
+  constexpr ShadowValue(const gfx::Vector2d& offset, double blur, SkColor color)
+      : offset_(offset), blur_(blur), color_(color) {}
 
-  int x() const { return offset_.x(); }
-  int y() const { return offset_.y(); }
-  const gfx::Vector2d& offset() const { return offset_; }
-  double blur() const { return blur_; }
-  SkColor color() const { return color_; }
+  constexpr int x() const { return offset_.x(); }
+  constexpr int y() const { return offset_.y(); }
+  constexpr const gfx::Vector2d& offset() const { return offset_; }
+  constexpr double blur() const { return blur_; }
+  constexpr SkColor color() const { return color_; }
+
+  constexpr bool operator==(const ShadowValue& other) const {
+    return offset_ == other.offset_ && blur_ == other.blur_ &&
+           color_ == other.color_;
+  }
 
   ShadowValue Scale(float scale) const;
 
@@ -63,15 +69,10 @@ class GFX_EXPORT ShadowValue {
   // amount of 4.0 means to have a blurry shadow edge of 4 pixels that
   // transitions from full shadow color to fully transparent and with 2 pixels
   // inside the shadow and 2 pixels goes beyond the edge.
-  double blur_;
+  double blur_ = 0.;
 
-  SkColor color_;
+  SkColor color_ = SK_ColorTRANSPARENT;
 };
-
-inline bool operator==(const ShadowValue& lhs, const ShadowValue& rhs) {
-  return lhs.offset() == rhs.offset() && lhs.blur() == rhs.blur() &&
-         lhs.color() == rhs.color();
-}
 
 }  // namespace gfx
 

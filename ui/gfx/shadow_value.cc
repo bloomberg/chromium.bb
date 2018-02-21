@@ -10,6 +10,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
 namespace gfx {
@@ -28,8 +29,7 @@ Insets GetInsets(const ShadowValues& shadows, bool include_inner_blur) {
     double blur = shadow.blur();
     if (!include_inner_blur)
       blur /= 2;
-    // Add 0.5 to round up to the next integer.
-    int blur_length = static_cast<int>(blur + 0.5);
+    int blur_length = ToRoundedInt(blur);
 
     left = std::max(left, blur_length - shadow.x());
     top = std::max(top, blur_length - shadow.y());
@@ -41,16 +41,6 @@ Insets GetInsets(const ShadowValues& shadows, bool include_inner_blur) {
 }
 
 }  // namespace
-
-ShadowValue::ShadowValue() : blur_(0), color_(0) {}
-
-ShadowValue::ShadowValue(const gfx::Vector2d& offset,
-                         double blur,
-                         SkColor color)
-    : offset_(offset), blur_(blur), color_(color) {
-}
-
-ShadowValue::~ShadowValue() {}
 
 ShadowValue ShadowValue::Scale(float scale) const {
   gfx::Vector2d scaled_offset =

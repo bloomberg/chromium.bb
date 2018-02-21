@@ -67,15 +67,15 @@ class GFX_EXPORT Vector2dF {
   float y_;
 };
 
-inline bool operator==(const Vector2dF& lhs, const Vector2dF& rhs) {
+inline constexpr bool operator==(const Vector2dF& lhs, const Vector2dF& rhs) {
   return lhs.x() == rhs.x() && lhs.y() == rhs.y();
 }
 
-inline bool operator!=(const Vector2dF& lhs, const Vector2dF& rhs) {
+inline constexpr bool operator!=(const Vector2dF& lhs, const Vector2dF& rhs) {
   return !(lhs == rhs);
 }
 
-inline Vector2dF operator-(const Vector2dF& v) {
+inline constexpr Vector2dF operator-(const Vector2dF& v) {
   return Vector2dF(-v.x(), -v.y());
 }
 
