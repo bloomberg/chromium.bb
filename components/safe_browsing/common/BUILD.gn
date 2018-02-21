@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chrome/common/features.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 source_set("common") {
@@ -66,4 +67,9 @@ mojom("interfaces") {
     "//services/network/public/mojom",
     "//url/mojom:url_mojom_gurl",
   ]
+
+  enabled_features = []
+  if (safe_browsing_mode == 1) {
+    enabled_features += [ "full_safe_browsing" ]
+  }
 }

@@ -15,6 +15,7 @@
           "mojom::ModuleEventSink",
           "rappor::mojom::RapporRecorder",
           "safe_browsing::mojom::SafeBrowsing",
+          "safe_browsing::mojom::PhishingDetectorClient",
           "translate::mojom::ContentTranslateDriver"
         ],
         "gpu": [

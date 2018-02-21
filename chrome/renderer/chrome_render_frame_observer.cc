@@ -24,7 +24,6 @@
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
-#include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/web_apps.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/translate/content/renderer/translate_helper.h"
@@ -57,6 +56,10 @@
 #if !defined(OS_ANDROID)
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 #endif  // !defined(OS_ANDROID)
+
+#if defined(FULL_SAFE_BROWSING)
+#include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
+#endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "components/printing/common/print_messages.h"
