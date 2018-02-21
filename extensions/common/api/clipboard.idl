@@ -49,6 +49,6 @@ namespace clipboard {
     static void setImageData(ArrayBuffer imageData,
                              ImageType type,
                              optional AdditionalDataItem[] additionalItems,
-                             SetImageDataCallback callback);
+                             optional SetImageDataCallback callback);
   };
 };

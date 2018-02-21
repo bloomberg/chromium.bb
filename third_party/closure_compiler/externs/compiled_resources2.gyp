@@ -1,4 +1,4 @@
-# Copyright 2017 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -38,6 +38,10 @@
     },
     {
       'target_name': 'chrome_send',
+      'includes': ['../include_js.gypi'],
+    },
+    {
+      'target_name': 'clipboard',
       'includes': ['../include_js.gypi'],
     },
     {
@@ -85,6 +89,10 @@
       'includes': ['../include_js.gypi'],
     },
     {
+      'target_name': 'pending',
+      'includes': ['../include_js.gypi'],
+    },
+    {
       'target_name': 'polymer-1.0',
       'includes': ['../include_js.gypi'],
     },
@@ -110,10 +118,6 @@
     },
     {
       'target_name': 'web_animations',
-      'includes': ['../include_js.gypi'],
-    },
-    {
-      'target_name': 'pending',
       'includes': ['../include_js.gypi'],
     },
   ],
