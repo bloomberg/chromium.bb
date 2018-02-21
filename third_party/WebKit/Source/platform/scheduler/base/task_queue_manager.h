@@ -199,7 +199,6 @@ class PLATFORM_EXPORT TaskQueueManager
   explicit TaskQueueManager(
       std::unique_ptr<internal::ThreadController> controller);
 
-  friend class LazyNow;
   friend class internal::TaskQueueImpl;
   friend class task_queue_manager_unittest::TaskQueueManagerTest;
 
