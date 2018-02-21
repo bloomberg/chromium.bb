@@ -1920,13 +1920,10 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
       frame->use_default_lower_bound_deadline);
 
   metadata.activation_dependencies = std::move(frame->activation_dependencies);
-
-  RenderFrameMetadata render_frame_metadata = MakeRenderFrameMetadata();
-
-  // TODO(jonross): remove passing RenderFrameMetadata to SwapPromises.
-  active_tree()->FinishSwapPromises(&metadata, &render_frame_metadata);
+  active_tree()->FinishSwapPromises(&metadata);
 
   if (render_frame_metadata_observer_) {
+    RenderFrameMetadata render_frame_metadata = MakeRenderFrameMetadata();
     render_frame_metadata_observer_->OnRenderFrameSubmission(
         render_frame_metadata);
   }

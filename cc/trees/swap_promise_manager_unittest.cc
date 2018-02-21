@@ -31,8 +31,7 @@ class MockSwapPromise : public SwapPromise {
   ~MockSwapPromise() override = default;
 
   void DidActivate() override {}
-  void WillSwap(viz::CompositorFrameMetadata* compositor_frame_metadata,
-                RenderFrameMetadata* render_frame_metadata) override {}
+  void WillSwap(viz::CompositorFrameMetadata* metadata) override {}
   void DidSwap() override {}
   DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {
     return DidNotSwapAction::BREAK_PROMISE;

@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
-#include "cc/trees/render_frame_metadata.h"
 #include "cc/trees/swap_promise.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
@@ -146,8 +145,7 @@ class QueueMessageSwapPromiseTest : public testing::Test {
     for (const auto& promise : promises_) {
       if (promise.get()) {
         promise->DidActivate();
-        promise->WillSwap(&dummy_compositor_frame_metadata_,
-                          &dummy_render_frame_metadata_);
+        promise->WillSwap(&dummy_metadata_);
         promise->DidSwap();
       }
     }
@@ -162,7 +160,7 @@ class QueueMessageSwapPromiseTest : public testing::Test {
   scoped_refptr<TestSyncMessageFilter> sync_message_filter_;
   std::vector<IPC::Message> messages_;
   std::vector<std::unique_ptr<cc::SwapPromise>> promises_;
-  viz::CompositorFrameMetadata dummy_compositor_frame_metadata_;
+  viz::CompositorFrameMetadata dummy_metadata_;
   cc::RenderFrameMetadata dummy_render_frame_metadata_;
 
  private:
@@ -180,8 +178,7 @@ TEST_F(QueueMessageSwapPromiseTest, NextSwapPolicySchedulesMessageForNextSwap) {
 
   ASSERT_TRUE(promises_[0].get());
   promises_[0]->DidActivate();
-  promises_[0]->WillSwap(&dummy_compositor_frame_metadata_,
-                         &dummy_render_frame_metadata_);
+  promises_[0]->WillSwap(&dummy_metadata_);
   promises_[0]->DidSwap();
 
   EXPECT_TRUE(DirectSendMessages().empty());
@@ -286,13 +283,12 @@ TEST_F(QueueMessageSwapPromiseTest, VisualStateSwapPromiseDidActivate) {
   QueueMessages(data, arraysize(data));
 
   promises_[0]->DidActivate();
-  promises_[0]->WillSwap(&dummy_compositor_frame_metadata_,
-                         &dummy_render_frame_metadata_);
+  promises_[0]->WillSwap(&dummy_metadata_);
   promises_[0]->DidSwap();
   ASSERT_FALSE(promises_[1].get());
   std::vector<std::unique_ptr<IPC::Message>> messages;
   messages.swap(LastSwapMessages());
-  EXPECT_EQ(3u, messages.size());
+  EXPECT_EQ(2u, messages.size());
   EXPECT_TRUE(ContainsMessage(messages, messages_[0]));
   EXPECT_TRUE(ContainsMessage(messages, messages_[1]));
   EXPECT_FALSE(ContainsMessage(messages, messages_[2]));

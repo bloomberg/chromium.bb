@@ -426,10 +426,9 @@ class AlwaysDrawSwapPromise : public cc::SwapPromise {
 
   void DidActivate() override {}
 
-  void WillSwap(viz::CompositorFrameMetadata* compositor_frame_metadata,
-                cc::RenderFrameMetadata* render_frame_metadata) override {
+  void WillSwap(viz::CompositorFrameMetadata* metadata) override {
     DCHECK(!latency_info_.terminated());
-    compositor_frame_metadata->latency_info.push_back(latency_info_);
+    metadata->latency_info.push_back(latency_info_);
   }
 
   void DidSwap() override {}
