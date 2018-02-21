@@ -33,10 +33,12 @@
 -CursorWindowControllerTest.ShouldEnableCursorCompositing
 -CursorWindowControllerTest.VisibilityTest
 
-# TODO: wire up mirroring and unified display. http://crbug.com/770243.
+# TODO: wire up mirroring and unified display. http://crbug.com/813978
+-DisplayManagerTest.CompositingCursorInMultiSoftwareMirroring
 -DisplayManagerTest.SoftwareMirroring
--DisplayManagerTest.SoftwareMirroringWithCompositingCursor
--DisplayManagerTest.SingleDisplayToSoftwareMirroring
+-DisplayManagerTest.SoftwareMirrorModeBasics
+-DisplayManagerTest.UpdateMouseCursorAfterRotateZoom
+-DisplayManagerTestDisableMultiMirroring.SoftwareMirroringWithCompositingCursor
 
 # TODO: CursorManagerTestApi. http://crbug.com/780637
 -DragWindowResizerTest.CursorDeviceScaleFactor
@@ -93,14 +95,20 @@
 -ImmersiveFullscreenControllerTest.RevealViaGestureChildConsumesEvents
 -ImmersiveFullscreenControllerTest.Transient
 
-# TODO: http://crbug.com/725257
--LockScreenSanityTest.PasswordSubmitClearsPasswordAfterAuthentication
-
-# TODO: Triage
--LoginMetricsRecorderTest.UnlockAttempts
+# Input event or IME problem, keystrokes not delivered to password field.
+# http://crbug.com/725257
+-LockScreenSanityTest.PasswordSubmitClearsPasswordAfterFailedAuthentication
 -LoginPasswordViewTest.PasswordSubmitClearsPassword
 -LoginPasswordViewTest.PasswordSubmitIncludesPasswordText
 -LoginPasswordViewTest.PasswordSubmitViaButton
+-LoginPasswordViewTest.SubmitButtonUpdatesUiState
+
+# Ash.Login.Lock.AuthMethod.Used.ClamShellMode histogram count is wrong,
+# possible TabletModeController problem. http://crbug.com/814009
+-LoginMetricsRecorderTest.UnlockAttempts
+
+# Focus doesn't move. Possible EventGenerator problem. http://crbug.com/814011
+-LoginShelfViewTest.TabGoesFromShelfToStatusAreaAndBackToShelf
 
 # TODO: Triage
 -MagnificationControllerTest.CenterTextCaretInViewport
@@ -154,6 +162,12 @@
 -PanelWindowResizerTest.DetachThenAttachToSecondDisplay
 -PanelWindowResizerTest.DetachThenDragAcrossDisplays
 
+# "Host widget" for magnifier is null. http://crbug.com/814014
+-PartialMagnificationControllerTest.ActiveOnPointerDown
+-PartialMagnificationControllerTest.DisablingDisablesActive
+-PartialMagnificationControllerTest.MagnifierFollowsPointer
+-PartialMagnificationControllerTest.MultipleDisplays
+
 # TODO: Needs cursor manager support. http://crbug.com/698033
 -PartialScreenshotControllerTest.CursorVisibilityTest
 -PartialScreenshotControllerTest.LargeCursor
@@ -169,6 +183,10 @@
 -ResizeShadowAndCursorTest.MouseHover
 -ResizeShadowAndCursorTest.Touch
 
+# shelf_view.cc(366) Check failed: TYPE_APP_LIST != model_->items()[index].type
+# http://crbug.com/814015
+-RootWindowControllerTest.MoveWindows_Basic
+
 # TODO: Triage
 -ShelfLayoutManagerTest.SwipingUpOnShelfInLaptopModeForFullscreenAppList
 -ShelfLayoutManagerTest.SwipingUpOnShelfInTabletModeForFullscreenAppList
@@ -178,6 +196,9 @@
 
 # TODO: Probably event filter problem. http://crbug.com/695758
 -ShellTest.TestPreTargetHandlerOrder
+
+# Focus traversal problem. http://crbug.com/814019
+-StatusAreaWidgetFocusTest.FocusOutObserver
 
 # TODO: Needs virtual keyboard. http://crbug.com/698892
 -SystemModalContainerLayoutManagerTest.SystemModalDialogGetPushedButNotCroppedFromKeyboard
@@ -231,18 +252,28 @@
 -WindowCycleControllerTest.TabKeyNotLeaked
 
 # TODO: Needs CursorManager. http://crbug.com/631103
+-WindowManagerTest.ActivateOnMouse
+-WindowManagerTest.ActivateOnPointerWindowProperty
+-WindowManagerTest.ActivateOnTouch
+-WindowManagerTest.AdditionalFilters
+-WindowManagerTest.Focus
 -WindowManagerTest.MouseEventCursors
--WindowManagerTest.UpdateCursorVisibility
--WindowManagerTest.UpdateCursorVisibilityOnKeyEvent
--WindowManagerTest.UpdateCursorVisibilityAccelerator
+-WindowManagerTest.PanelActivation
 -WindowManagerTest.TestCursorClientObserver
+-WindowManagerTest.TransformActivate
+-WindowManagerTest.UpdateCursorVisibility
+-WindowManagerTest.UpdateCursorVisibilityAccelerator
+-WindowManagerTest.UpdateCursorVisibilityOnKeyEvent
 
 # TODO: Crashes in bounds_animator.cc. http://crbug.com/730759
 -WindowSelectorTest.MultipleDisplays
 -WindowSelectorTest.RemoveDisplay
 -WindowSelectorTest.RemoveDisplayWithAnimation
 
-# TODO: CursorManagerTestApi. http://crbug.com/780637
+# Needs CursorManager/CursorManagerTestApi. http://crbug.com/780637
+-WindowTreeHostManagerTest.DontUpdateInvisibleCursorLocationAfterDisplayChange
+-WindowTreeHostManagerTest.UpdateMouseLocationAfterDisplayChange
+-WindowTreeHostManagerTest.UpdateMouseLocationAfterDisplayChange_2ndOnLeft
 -WindowTreeHostManagerTest.UpdateMouseLocationAfterDisplayChange_PrimaryDisconnected
 -WindowTreeHostManagerTest.UpdateMouseLocationAfterDisplayChange_SwapPrimary
 
@@ -267,31 +298,5 @@
 # TODO: Needs CursorManager. http://crbug.com/631103
 -WorkspaceWindowResizerTest.MouseMoveWithTouchDrag
 
-# TODO: these all crash/fail because we weren't running ash_unittests --mash
-# for a period of time. The crashes need to be understood and more specific
-# bugs filed. http://crbug.com/813115.
--DisplayManagerTest.CompositingCursorInMultiSoftwareMirroring
--DisplayManagerTestDisableMultiMirroring.SoftwareMirroringWithCompositingCursor
--DisplayManagerTest.SoftwareMirrorModeBasics
--DisplayManagerTest.UpdateMouseCursorAfterRotateZoom
--LockScreenSanityTest.PasswordSubmitClearsPasswordAfterFailedAuthentication
--LoginPasswordViewTest.SubmitButtonUpdatesUiState
--LoginShelfViewTest.TabGoesFromShelfToStatusAreaAndBackToShelf
--PartialMagnificationControllerTest.ActiveOnPointerDown
--PartialMagnificationControllerTest.DisablingDisablesActive
--PartialMagnificationControllerTest.MagnifierFollowsPointer
--PartialMagnificationControllerTest.MultipleDisplays
--RootWindowControllerTest.MoveWindows_Basic
--StatusAreaWidgetFocusTest.FocusOutObserver
--WindowManagerTest.ActivateOnMouse
--WindowManagerTest.ActivateOnPointerWindowProperty
--WindowManagerTest.ActivateOnTouch
--WindowManagerTest.AdditionalFilters
--WindowManagerTest.Focus
--WindowManagerTest.PanelActivation
--WindowManagerTest.TransformActivate
--WindowTreeHostManagerTest.DontUpdateInvisibleCursorLocationAfterDisplayChange
--WindowTreeHostManagerTest.UpdateMouseLocationAfterDisplayChange
--WindowTreeHostManagerTest.UpdateMouseLocationAfterDisplayChange_2ndOnLeft
-
 # Keep alphabetized. See comment at top of file.
+

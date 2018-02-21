@@ -81,6 +81,7 @@ namespace ash {
 class WindowManagerTest : public AshTestBase {
  public:
   WindowManagerTest() = default;
+  ~WindowManagerTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();
