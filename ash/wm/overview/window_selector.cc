@@ -746,7 +746,8 @@ void WindowSelector::OnWindowActivated(ActivationReason reason,
 
   // Don't restore focus on exit if a window was just activated.
   ResetFocusRestoreWindow(false);
-  selected_item_ = iter->get();
+  if (iter != windows.end())
+    selected_item_ = iter->get();
   CancelSelection();
 }
 
