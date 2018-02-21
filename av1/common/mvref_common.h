@@ -59,10 +59,10 @@ static const int mode_2_counter[] = {
   9,  // H_PRED
   9,  // D45_PRED
   9,  // D135_PRED
-  9,  // D117_PRED
-  9,  // D153_PRED
-  9,  // D207_PRED
-  9,  // D63_PRED
+  9,  // D113_PRED
+  9,  // D157_PRED
+  9,  // D203_PRED
+  9,  // D67_PRED
   9,  // SMOOTH_PRED
   9,  // SMOOTH_V_PRED
   9,  // SMOOTH_H_PRED

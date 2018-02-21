@@ -541,10 +541,10 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
         THR_H_PRED /*H_PRED*/,
         THR_D45_PRED /*D45_PRED*/,
         THR_D135_PRED /*D135_PRED*/,
-        THR_D117_PRED /*D117_PRED*/,
-        THR_D153_PRED /*D153_PRED*/,
-        THR_D207_PRED /*D207_PRED*/,
-        THR_D63_PRED /*D63_PRED*/,
+        THR_D113_PRED /*D113_PRED*/,
+        THR_D157_PRED /*D157_PRED*/,
+        THR_D203_PRED /*D203_PRED*/,
+        THR_D67_PRED /*D67_PRED*/,
         THR_SMOOTH,   /*SMOOTH_PRED*/
         THR_SMOOTH_V, /*SMOOTH_V_PRED*/
         THR_SMOOTH_H, /*SMOOTH_H_PRED*/

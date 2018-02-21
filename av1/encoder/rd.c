@@ -1171,10 +1171,10 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
   rd->thresh_mult[THR_H_PRED] += 2000;
   rd->thresh_mult[THR_V_PRED] += 2000;
   rd->thresh_mult[THR_D135_PRED] += 2500;
-  rd->thresh_mult[THR_D207_PRED] += 2500;
-  rd->thresh_mult[THR_D153_PRED] += 2500;
-  rd->thresh_mult[THR_D63_PRED] += 2500;
-  rd->thresh_mult[THR_D117_PRED] += 2500;
+  rd->thresh_mult[THR_D203_PRED] += 2500;
+  rd->thresh_mult[THR_D157_PRED] += 2500;
+  rd->thresh_mult[THR_D67_PRED] += 2500;
+  rd->thresh_mult[THR_D113_PRED] += 2500;
   rd->thresh_mult[THR_D45_PRED] += 2500;
 
 #if CONFIG_EXT_COMP_REFS

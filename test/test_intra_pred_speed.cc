@@ -37,7 +37,7 @@ const int kNumAv1IntraFuncs = INTRA_MODES + 3;  // 4 DC predictor variants.
 const char *kAv1IntraPredNames[kNumAv1IntraFuncs] = {
   "DC_PRED",    "DC_LEFT_PRED", "DC_TOP_PRED",   "DC_128_PRED",
   "V_PRED",     "H_PRED",       "D45_PRED",      "D135_PRED",
-  "D117_PRED",  "D153_PRED",    "D207_PRED",     "D63_PRED",
+  "D113_PRED",  "D157_PRED",    "D203_PRED",     "D67_PRED",
   "PAETH_PRED", "SMOOTH_PRED",  "SMOOTH_V_PRED", "SMOOTH_H_PRED",
 };
 

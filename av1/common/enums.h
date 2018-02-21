@@ -428,7 +428,7 @@ typedef enum ATTRIBUTE_PACKED {
   PALETTE_COLORS
 } PALETTE_COLOR;
 
-// Note: All directional predictors must be between V_PRED and D63_PRED (both
+// Note: All directional predictors must be between V_PRED and D67_PRED (both
 // inclusive).
 typedef enum ATTRIBUTE_PACKED {
   DC_PRED,        // Average of above and left pixels
