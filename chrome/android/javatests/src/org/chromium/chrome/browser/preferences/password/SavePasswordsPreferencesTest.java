@@ -295,8 +295,12 @@ public class SavePasswordsPreferencesTest {
             public void run() {
                 SavePasswordsPreferences fragment =
                         (SavePasswordsPreferences) preferences.getFragmentForTest();
+                // To show an error, the error type for UMA needs to be specified. Because it is not
+                // relevant for cases when the error is forcibly displayed in tests,
+                // EXPORT_RESULT_NO_CONSUMER is passed as an arbitrarily chosen value.
                 fragment.showExportErrorAndAbort(R.string.save_password_preferences_export_no_app,
-                        null, positiveButtonLabelId);
+                        null, positiveButtonLabelId,
+                        SavePasswordsPreferences.EXPORT_RESULT_NO_CONSUMER);
             }
         });
     }
@@ -606,8 +610,18 @@ public class SavePasswordsPreferencesTest {
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
                 .perform(click());
 
+        // Check that the warning dialog is displayed.
         Espresso.onView(withText(R.string.settings_passwords_export_description))
                 .check(matches(isDisplayed()));
+
+        MetricsUtils.HistogramDelta userAbortedDelta =
+                new MetricsUtils.HistogramDelta("PasswordManager.ExportPasswordsToCSVResult",
+                        SavePasswordsPreferences.EXPORT_RESULT_USER_ABORTED);
+
+        // Hit the Cancel button to cancel the flow.
+        Espresso.onView(withText(R.string.cancel)).perform(click());
+
+        Assert.assertEquals(1, userAbortedDelta.getDelta());
     }
 
     /**
@@ -731,6 +745,10 @@ public class SavePasswordsPreferencesTest {
         intending(hasAction(equalTo(Intent.ACTION_CHOOSER)))
                 .respondWith(new Instrumentation.ActivityResult(Activity.RESULT_OK, null));
 
+        MetricsUtils.HistogramDelta successDelta =
+                new MetricsUtils.HistogramDelta("PasswordManager.ExportPasswordsToCSVResult",
+                        SavePasswordsPreferences.EXPORT_RESULT_SUCCESS);
+
         // Confirm the export warning to fire the sharing intent.
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
                 .perform(click());
@@ -740,6 +758,8 @@ public class SavePasswordsPreferencesTest {
                         allOf(hasAction(equalTo(Intent.ACTION_SEND)), hasType("text/csv"))))));
 
         Intents.release();
+
+        Assert.assertEquals(1, successDelta.getDelta());
     }
 
     /**
@@ -884,12 +904,18 @@ public class SavePasswordsPreferencesTest {
         Espresso.onView(withText(R.string.settings_passwords_preparing_export))
                 .check(matches(isDisplayed()));
 
+        MetricsUtils.HistogramDelta userAbortedDelta =
+                new MetricsUtils.HistogramDelta("PasswordManager.ExportPasswordsToCSVResult",
+                        SavePasswordsPreferences.EXPORT_RESULT_USER_ABORTED);
+
         // Hit the Cancel button.
         Espresso.onView(withText(R.string.cancel)).perform(click());
 
         // Check that the cancellation succeeded by checking that the export menu is available and
         // enabled.
         checkExportMenuItemState(MENU_ITEM_STATE_ENABLED);
+
+        Assert.assertEquals(1, userAbortedDelta.getDelta());
     }
 
     /**

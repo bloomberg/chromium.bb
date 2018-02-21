@@ -274,11 +274,12 @@ enum class CertificateError {
   COUNT
 };
 
-// Metric: PasswordManager.ExportPasswordToCSVResult
+// Metric: PasswordManager.ExportPasswordsToCSVResult
 enum class ExportPasswordsResult {
   SUCCESS = 0,
   USER_ABORTED = 1,
   WRITE_FAILED = 2,
+  NO_CONSUMER = 3,  // Only used on Android.
   COUNT,
 };
 
