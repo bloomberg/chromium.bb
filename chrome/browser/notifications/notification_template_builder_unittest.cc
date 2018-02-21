@@ -139,8 +139,8 @@ TEST_F(NotificationTemplateBuilderTest, Buttons) {
   </binding>
  </visual>
  <actions>
-  <action activationType="foreground" content="Button1" arguments="buttonIndex=0"/>
-  <action activationType="foreground" content="Button2" arguments="buttonIndex=1"/>
+  <action activationType="foreground" content="Button1" arguments="buttonIndex=0$0|Default|0|https://example.com/|notification_id"/>
+  <action activationType="foreground" content="Button2" arguments="buttonIndex=1$0|Default|0|https://example.com/|notification_id"/>
   <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
  </actions>
 </toast>
@@ -171,8 +171,8 @@ TEST_F(NotificationTemplateBuilderTest, InlineReplies) {
  </visual>
  <actions>
   <input id="userResponse" type="text" placeHolderContent="Reply here"/>
-  <action activationType="foreground" content="Button1" arguments="buttonIndex=0"/>
-  <action activationType="foreground" content="Button2" arguments="buttonIndex=1"/>
+  <action activationType="foreground" content="Button1" arguments="buttonIndex=0$0|Default|0|https://example.com/|notification_id"/>
+  <action activationType="foreground" content="Button2" arguments="buttonIndex=1$0|Default|0|https://example.com/|notification_id"/>
   <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
  </actions>
 </toast>
@@ -205,8 +205,8 @@ TEST_F(NotificationTemplateBuilderTest, InlineRepliesDoubleInput) {
  </visual>
  <actions>
   <input id="userResponse" type="text" placeHolderContent="Reply here"/>
-  <action activationType="foreground" content="Button1" arguments="buttonIndex=0"/>
-  <action activationType="foreground" content="Button2" arguments="buttonIndex=1"/>
+  <action activationType="foreground" content="Button1" arguments="buttonIndex=0$0|Default|0|https://example.com/|notification_id"/>
+  <action activationType="foreground" content="Button2" arguments="buttonIndex=1$0|Default|0|https://example.com/|notification_id"/>
   <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
  </actions>
 </toast>
@@ -237,8 +237,8 @@ TEST_F(NotificationTemplateBuilderTest, InlineRepliesTextTypeNotFirst) {
  </visual>
  <actions>
   <input id="userResponse" type="text" placeHolderContent="Reply here"/>
-  <action activationType="foreground" content="Button1" arguments="buttonIndex=0"/>
-  <action activationType="foreground" content="Button2" arguments="buttonIndex=1"/>
+  <action activationType="foreground" content="Button1" arguments="buttonIndex=0$0|Default|0|https://example.com/|notification_id"/>
+  <action activationType="foreground" content="Button2" arguments="buttonIndex=1$0|Default|0|https://example.com/|notification_id"/>
   <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
  </actions>
 </toast>
@@ -290,7 +290,7 @@ TEST_F(NotificationTemplateBuilderTest, RequireInteraction) {
   </binding>
  </visual>
  <actions>
-  <action activationType="foreground" content="Button1" arguments="buttonIndex=0"/>
+  <action activationType="foreground" content="Button1" arguments="buttonIndex=0$0|Default|0|https://example.com/|notification_id"/>
   <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
  </actions>
 </toast>
@@ -383,7 +383,7 @@ TEST_F(NotificationTemplateBuilderTest, Images) {
  </visual>
  <actions>
   <input id="userResponse" type="text" placeHolderContent="Reply here"/>
-  <action activationType="foreground" content="Button1" arguments="buttonIndex=0" imageUri="c:\temp\img2.tmp"/>
+  <action activationType="foreground" content="Button1" arguments="buttonIndex=0$0|Default|0|https://example.com/|notification_id" imageUri="c:\temp\img2.tmp"/>
   <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
  </actions>
 </toast>

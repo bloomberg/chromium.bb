@@ -129,7 +129,7 @@ std::unique_ptr<NotificationTemplateBuilder> NotificationTemplateBuilder::Build(
 
   builder->StartActionsElement();
   if (!notification.buttons().empty())
-    builder->AddActions(notification);
+    builder->AddActions(notification, launch_attribute);
   builder->AddContextMenu();
   builder->EndActionsElement();
 
@@ -289,7 +289,8 @@ void NotificationTemplateBuilder::WriteProgressElement(
 }
 
 void NotificationTemplateBuilder::AddActions(
-    const message_center::Notification& notification) {
+    const message_center::Notification& notification,
+    const std::string& launch_attribute) {
   const std::vector<message_center::ButtonInfo>& buttons =
       notification.buttons();
   bool inline_reply = false;
@@ -312,7 +313,8 @@ void NotificationTemplateBuilder::AddActions(
   }
 
   for (size_t i = 0; i < buttons.size(); ++i)
-    WriteActionElement(buttons[i], i, notification.origin_url());
+    WriteActionElement(buttons[i], i, notification.origin_url(),
+                       launch_attribute);
 }
 
 void NotificationTemplateBuilder::AddContextMenu() {
@@ -340,12 +342,14 @@ void NotificationTemplateBuilder::WriteAudioSilentElement() {
 void NotificationTemplateBuilder::WriteActionElement(
     const message_center::ButtonInfo& button,
     int index,
-    const GURL& origin) {
+    const GURL& origin,
+    const std::string& launch_attribute) {
   xml_writer_->StartElement(kActionElement);
   xml_writer_->AddAttribute(kActivationType, kForeground);
   xml_writer_->AddAttribute(kContent, base::UTF16ToUTF8(button.title));
-  std::string param =
-      std::string(kNotificationButtonIndex) + "=" + base::IntToString(index);
+  std::string param = base::StringPrintf("%s=%s$%s", kNotificationButtonIndex,
+                                         base::IntToString(index).c_str(),
+                                         launch_attribute.c_str());
   xml_writer_->AddAttribute(kArguments, param);
 
   if (!button.icon.IsEmpty()) {

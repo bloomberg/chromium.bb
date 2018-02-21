@@ -120,10 +120,12 @@ class NotificationTemplateBuilder {
 
   // Fills in the details for the actions (the buttons the notification
   // contains).
-  void AddActions(const message_center::Notification& notification);
+  void AddActions(const message_center::Notification& notification,
+                  const std::string& launch_attribute);
   void WriteActionElement(const message_center::ButtonInfo& button,
                           int index,
-                          const GURL& origin);
+                          const GURL& origin,
+                          const std::string& launch_attribute);
 
   // Adds context menu actions to the notification sent by |origin|.
   void AddContextMenu();
