@@ -2,33 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
+#import "ios/chrome/browser/ui/toolbar/legacy/toolbar_controller_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-const CGFloat kToolbarHeight = 56;
-const CGFloat kToolbarHeightFullscreen = 35;
-
 const int64_t kNonInitialImageAdditionDelayNanosec = 500000LL;
-
-NSString* const kToolbarToolsMenuButtonIdentifier =
-    @"kToolbarToolsMenuButtonIdentifier";
-NSString* const kToolbarStackButtonIdentifier =
-    @"kToolbarStackButtonIdentifier";
-NSString* const kToolbarShareButtonIdentifier =
-    @"kToolbarShareButtonIdentifier";
-NSString* const kToolbarOmniboxButtonIdentifier =
-    @"kToolbarOmniboxButtonIdentifier";
-
-const NSInteger kStackButtonMaxTabCount = 99;
-
-const NSInteger kFontSizeFewerThanTenTabs = 11;
-const NSInteger kFontSizeTenTabsOrMore = 9;
-
-const CGFloat kToolbarShadowHeight = 2;
-const CGFloat kToolbarFullBleedShadowHeight = 10;
 
 // Macros for creating CGRects of height H, origin (0,0), with the portrait
 // width of phone/pad devices.

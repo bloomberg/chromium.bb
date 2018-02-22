@@ -11,6 +11,8 @@ source_set("legacy") {
     "toolbar_controller+protected.h",
     "toolbar_controller.h",
     "toolbar_controller.mm",
+    "toolbar_controller_constants.h",
+    "toolbar_controller_constants.mm",
     "toolbar_utils.h",
     "toolbar_utils.mm",
   ]

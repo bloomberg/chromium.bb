@@ -10,6 +10,7 @@
 
 const CGFloat kToolbarBackgroundColor = 0xF2F2F2;
 const CGFloat kIncognitoToolbarBackgroundColor = 0x505050;
+const CGFloat kNTPBackgroundColorBrightnessIncognito = 34.0 / 255.0;
 
 const CGFloat kLocationBarVerticalMargin = 7.0f;
 const CGFloat kExpandedLocationBarVerticalMargin = 2.0f;
@@ -49,3 +50,23 @@ const CGFloat kAdaptiveToolbarHorizontalMargin = 8;
 const CGFloat kAdaptiveLocationBarCornerRadius = 11;
 const CGFloat kIcongnitoAdaptiveLocationBackgroundColor = 0x6A6A6A;
 const CGFloat kAdaptiveLocationBarBackgroundAlpha = 0.12;
+
+const CGFloat kToolbarHeight = 56;
+const CGFloat kToolbarHeightFullscreen = 35;
+
+NSString* const kToolbarToolsMenuButtonIdentifier =
+    @"kToolbarToolsMenuButtonIdentifier";
+NSString* const kToolbarStackButtonIdentifier =
+    @"kToolbarStackButtonIdentifier";
+NSString* const kToolbarShareButtonIdentifier =
+    @"kToolbarShareButtonIdentifier";
+NSString* const kToolbarOmniboxButtonIdentifier =
+    @"kToolbarOmniboxButtonIdentifier";
+
+const NSInteger kStackButtonMaxTabCount = 99;
+
+const NSInteger kFontSizeFewerThanTenTabs = 11;
+const NSInteger kFontSizeTenTabsOrMore = 9;
+
+const CGFloat kToolbarShadowHeight = 2;
+const CGFloat kToolbarFullBleedShadowHeight = 10;

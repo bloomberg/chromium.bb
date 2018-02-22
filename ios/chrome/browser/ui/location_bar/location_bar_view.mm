@@ -7,7 +7,7 @@
 #import "ios/chrome/browser/ui/animation_util.h"
 #import "ios/chrome/browser/ui/omnibox/clipping_textfield_container.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
-#import "ios/chrome/browser/ui/toolbar/public/web_toolbar_controller_constants.h"
+#include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/common/material_timing.h"
@@ -27,6 +27,9 @@ const CGFloat kLeadingButtonEdgeOffset = 9;
 const CGFloat kTextFieldLeadingOffsetNoImage = 16;
 // Space between the leading button and the textfield when a button is shown.
 const CGFloat kTextFieldLeadingOffsetImage = 6;
+// The default position animation is 10 pixels toward the trailing side, so
+// that's a negative leading offset.
+const LayoutOffset kPositionAnimationLeadingOffset = -10;
 }  // namespace
 
 @interface OmniboxTextFieldIOS ()

@@ -5,12 +5,19 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_updater.h"
 
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
-#import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/voice/voice_search_notification_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+enum ToolbarButtonMode {
+  ToolbarButtonModeNormal,
+  ToolbarButtonModeReversed,
+};
+}  // namespace
 
 @interface ToolbarButtonUpdater ()
 
