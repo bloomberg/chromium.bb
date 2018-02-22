@@ -15,8 +15,6 @@
 
 namespace content {
 
-struct ResourceRequest;
-
 class CONTENT_EXPORT FileURLLoaderObserver
     : public mojo::FileDataPipeProducer::Observer {
  public:
