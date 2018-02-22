@@ -1438,7 +1438,7 @@ void RenderWidgetHostViewMac::SubmitCompositorFrame(
       frame.metadata.page_scale_factor == frame.metadata.min_page_scale_factor;
 
   browser_compositor_->GetDelegatedFrameHost()->SubmitCompositorFrame(
-      local_surface_id, std::move(frame), nullptr);
+      local_surface_id, std::move(frame), std::move(hit_test_region_list));
 
   UpdateDisplayVSyncParameters();
 }
