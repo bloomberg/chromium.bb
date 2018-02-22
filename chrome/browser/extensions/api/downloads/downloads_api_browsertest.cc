@@ -29,6 +29,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/net/url_request_mock_util.h"
+#include "chrome/browser/platform_util_internal.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -1122,6 +1123,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadsShowDefaultFolderFunction) {
+  platform_util::internal::DisableShellOperationsForTesting();
   ScopedCancellingItem item(CreateFirstSlowTestDownload());
   ASSERT_TRUE(item.get());
 
