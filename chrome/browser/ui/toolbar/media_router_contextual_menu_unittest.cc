@@ -8,6 +8,8 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/load_error_reporter.h"
+#include "chrome/browser/media/router/media_router_factory.h"
+#include "chrome/browser/media/router/test/mock_media_router.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/extensions/browser_action_test_util.h"
@@ -61,6 +63,11 @@ class MediaRouterContextualMenuUnitTest : public BrowserWithTestWindowTest {
     action_.reset();
     browser_action_test_util_.reset();
     BrowserWithTestWindowTest::TearDown();
+  }
+
+  TestingProfile::TestingFactories GetTestingFactories() override {
+    return {{media_router::MediaRouterFactory::GetInstance(),
+             &media_router::MockMediaRouter::Create}};
   }
 
  protected:

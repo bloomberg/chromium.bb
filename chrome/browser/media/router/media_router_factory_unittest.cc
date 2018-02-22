@@ -14,19 +14,15 @@
 
 namespace media_router {
 
-namespace {
-
-std::unique_ptr<KeyedService> CreateMockMediaRouter(
-    content::BrowserContext* context) {
-  return base::WrapUnique(new MockMediaRouter);
-}
-
-}  // namespace
-
 class MediaRouterFactoryTest : public testing::Test {
  protected:
   MediaRouterFactoryTest() {}
   ~MediaRouterFactoryTest() override {}
+
+  void SetUp() override {
+    MediaRouterFactory::GetInstance()->SetTestingFactory(
+        profile(), &MockMediaRouter::Create);
+  }
 
   Profile* profile() { return &profile_; }
 
@@ -53,9 +49,6 @@ TEST_F(MediaRouterFactoryTest, CreateForIncognitoProfile) {
 }
 
 TEST_F(MediaRouterFactoryTest, IncognitoBrowserContextShutdown) {
-  MediaRouterFactory::GetInstance()->SetTestingFactory(profile(),
-                                                       &CreateMockMediaRouter);
-
   // Creates an incognito profile.
   profile()->GetOffTheRecordProfile();
   MockMediaRouter* router = static_cast<MockMediaRouter*>(
