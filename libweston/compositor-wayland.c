@@ -1858,6 +1858,11 @@ input_handle_keyboard_enter(void *data,
 			weston_output_schedule_repaint(&focus->base);
 	}
 
+	if (!surface) {
+		input->keyboard_focus = NULL;
+		return;
+	}
+
 	input->keyboard_focus = wl_surface_get_user_data(surface);
 	input->keyboard_focus->keyboard_count++;
 
@@ -1906,6 +1911,9 @@ input_handle_key(void *data, struct wl_keyboard *keyboard,
 {
 	struct wayland_input *input = data;
 	struct timespec ts;
+
+	if (!input->keyboard_focus)
+		return;
 
 	timespec_from_msec(&ts, time);
 
