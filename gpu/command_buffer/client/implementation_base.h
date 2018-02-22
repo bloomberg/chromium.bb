@@ -57,6 +57,9 @@ class GLES2_IMPL_EXPORT ImplementationBase
   // Alignment of allocations.
   static const unsigned int kAlignment = 16;
 
+  // The bucket used for results. Public for testing only.
+  static const uint32_t kResultBucketId = 1;
+
   ImplementationBase(CommandBufferHelper* helper,
                      TransferBufferInterface* transfer_buffer,
                      GpuControl* gpu_control);

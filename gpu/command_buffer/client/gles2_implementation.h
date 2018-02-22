@@ -72,9 +72,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
     ShaderPrecisionMap shader_precisions;
   };
 
-  // The bucket used for results. Public for testing only.
-  static const uint32_t kResultBucketId = 1;
-
   // GL names for the buffers used to emulate client side buffers.
   static const GLuint kClientSideArrayId = 0xFEDCBA98u;
   static const GLuint kClientSideElementArrayId = 0xFEDCBA99u;
