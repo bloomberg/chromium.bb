@@ -182,8 +182,6 @@ IPC_STRUCT_TRAITS_BEGIN(viz::CompositorFrameMetadata)
   IPC_STRUCT_TRAITS_MEMBER(root_layer_size)
   IPC_STRUCT_TRAITS_MEMBER(min_page_scale_factor)
   IPC_STRUCT_TRAITS_MEMBER(max_page_scale_factor)
-  IPC_STRUCT_TRAITS_MEMBER(root_overflow_x_hidden)
-  IPC_STRUCT_TRAITS_MEMBER(root_overflow_y_hidden)
   IPC_STRUCT_TRAITS_MEMBER(root_overflow_y_hidden)
   IPC_STRUCT_TRAITS_MEMBER(may_contain_video)
   IPC_STRUCT_TRAITS_MEMBER(

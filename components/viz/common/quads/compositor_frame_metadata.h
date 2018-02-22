@@ -47,7 +47,6 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
   gfx::SizeF root_layer_size;
   float min_page_scale_factor = 0.f;
   float max_page_scale_factor = 0.f;
-  bool root_overflow_x_hidden = false;
   bool root_overflow_y_hidden = false;
   bool may_contain_video = false;
 

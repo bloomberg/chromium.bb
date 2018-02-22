@@ -1813,8 +1813,6 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
   active_tree_->GetViewportSelection(&metadata.selection);
 
   if (const auto* outer_viewport_scroll_node = OuterViewportScrollNode()) {
-    metadata.root_overflow_x_hidden =
-        !outer_viewport_scroll_node->user_scrollable_horizontal;
     metadata.root_overflow_y_hidden =
         !outer_viewport_scroll_node->user_scrollable_vertical;
   }
@@ -1831,8 +1829,6 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
   if (!inner_viewport_scroll_node)
     return metadata;
 
-  metadata.root_overflow_x_hidden |=
-      !inner_viewport_scroll_node->user_scrollable_horizontal;
   metadata.root_overflow_y_hidden |=
       !inner_viewport_scroll_node->user_scrollable_vertical;
 
