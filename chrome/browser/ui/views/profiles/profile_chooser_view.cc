@@ -117,6 +117,9 @@ constexpr int kMenuEdgeMargin = 16;
 
 constexpr int kVerticalSpacing = 16;
 
+// Number of times the Dice sign-in promo illustration should be shown.
+constexpr int kDiceSigninPromoIllustrationShowCountMax = 10;
+
 bool IsProfileChooser(profiles::BubbleViewMode mode) {
   return mode == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
 }
@@ -1032,13 +1035,15 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
 }
 
 views::View* ProfileChooserView::CreateDiceSigninView() {
+  IncrementDiceSigninPromoShowCount();
   // Fetch signed in GAIA web accounts.
   dice_sync_promo_accounts_ =
       signin_ui_util::GetAccountsForDicePromos(browser_->profile());
 
   // Create a view that holds an illustration, a promo text and a button to turn
-  // on Sync.
-  const int promotext_top_spacing = 24;
+  // on Sync. The promo illustration is only shown the first 10 times per
+  // profile.
+  int promotext_top_spacing = 16;
   const int additional_bottom_spacing =
       dice_sync_promo_accounts_.empty() ? 0 : 8;
   views::View* view = new views::View();
@@ -1046,14 +1051,17 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
       views::BoxLayout::kVertical,
       gfx::Insets(0, 0, additional_bottom_spacing, 0)));
 
-  // Add the illustration.
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  views::ImageView* illustration = new views::ImageView();
-  illustration->SetImage(
-      *rb.GetNativeImageNamed(IDR_PROFILES_TURN_ON_SYNC_ILLUSTRATION)
-           .ToImageSkia());
-  view->AddChildView(illustration);
-
+  if (GetDiceSigninPromoShowCount() <=
+      kDiceSigninPromoIllustrationShowCountMax) {
+    // Add the illustration.
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    views::ImageView* illustration = new views::ImageView();
+    illustration->SetImage(
+        *rb.GetNativeImageNamed(IDR_PROFILES_DICE_TURN_ON_SYNC).ToImageSkia());
+    view->AddChildView(illustration);
+    // Adjust the spacing between illustration and promo text.
+    promotext_top_spacing = 24;
+  }
   // Add the promo text.
   views::Label* promo = new views::Label(
       l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_PROMO));
@@ -1424,4 +1432,14 @@ void ProfileChooserView::EnableSync(
     signin_ui_util::EnableSync(browser_, account.value(), access_point_);
   else
     ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN);
+}
+
+int ProfileChooserView::GetDiceSigninPromoShowCount() const {
+  return browser_->profile()->GetPrefs()->GetInteger(
+      prefs::kDiceSigninUserMenuPromoCount);
+}
+
+void ProfileChooserView::IncrementDiceSigninPromoShowCount() {
+  browser_->profile()->GetPrefs()->SetInteger(
+      prefs::kDiceSigninUserMenuPromoCount, GetDiceSigninPromoShowCount() + 1);
 }

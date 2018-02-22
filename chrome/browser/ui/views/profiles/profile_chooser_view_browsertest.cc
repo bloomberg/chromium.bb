@@ -250,6 +250,10 @@ class ProfileChooserViewExtensionsTest
     return ProfileChooserView::profile_bubble_->signin_current_profile_button_;
   }
 
+  int GetDiceSigninPromoShowCount() {
+    return current_profile_bubble()->GetDiceSigninPromoShowCount();
+  }
+
  private:
   std::unique_ptr<content::WindowedNotificationObserver> window_close_observer_;
 
@@ -521,4 +525,26 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
                        InvokeUi_SupervisedUser) {
   ShowAndVerifyUi();
+}
+
+// Open the profile chooser to increment the Dice sign-in promo show counter
+// below the threshold.
+IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
+                       IncrementDiceSigninPromoShowCounter) {
+  signin::ScopedAccountConsistencyDice scoped_dice;
+  browser()->profile()->GetPrefs()->SetInteger(
+      prefs::kDiceSigninUserMenuPromoCount, 7);
+  ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
+  EXPECT_EQ(GetDiceSigninPromoShowCount(), 8);
+}
+
+// The DICE sync illustration is shown only the first 10 times. This test
+// ensures that the profile chooser is shown correctly above this threshold.
+IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
+                       DiceSigninPromoWithoutIllustration) {
+  signin::ScopedAccountConsistencyDice scoped_dice;
+  browser()->profile()->GetPrefs()->SetInteger(
+      prefs::kDiceSigninUserMenuPromoCount, 10);
+  ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
+  EXPECT_EQ(GetDiceSigninPromoShowCount(), 11);
 }

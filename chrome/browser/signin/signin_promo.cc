@@ -386,6 +386,7 @@ void RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kSignInPromoUserSkipped, false);
   registry->RegisterBooleanPref(prefs::kSignInPromoShowOnFirstRunAllowed, true);
   registry->RegisterBooleanPref(prefs::kSignInPromoShowNTPBubble, false);
+  registry->RegisterIntegerPref(prefs::kDiceSigninUserMenuPromoCount, 0);
 }
 
 }  // namespace signin
