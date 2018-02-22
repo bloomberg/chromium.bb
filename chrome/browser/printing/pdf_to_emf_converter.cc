@@ -212,6 +212,14 @@ class PdfConverterImpl : public PdfConverter {
                    StartCallback start_callback);
   ~PdfConverterImpl() override;
 
+  static void set_fail_when_creating_temp_file_for_tests(bool fail) {
+    simulate_failure_creating_temp_file_ = fail;
+  }
+
+  static bool fail_when_creating_temp_file_for_tests() {
+    return simulate_failure_creating_temp_file_;
+  }
+
  private:
   class GetPageCallbackData {
    public:
@@ -287,8 +295,13 @@ class PdfConverterImpl : public PdfConverter {
 
   base::WeakPtrFactory<PdfConverterImpl> weak_ptr_factory_;
 
+  static bool simulate_failure_creating_temp_file_;
+
   DISALLOW_COPY_AND_ASSIGN(PdfConverterImpl);
 };
+
+// static
+bool PdfConverterImpl::simulate_failure_creating_temp_file_ = false;
 
 std::unique_ptr<MetafilePlayer> PdfConverterImpl::GetFileFromTemp(
     ScopedTempFile temp_file) {
@@ -302,6 +315,9 @@ std::unique_ptr<MetafilePlayer> PdfConverterImpl::GetFileFromTemp(
 }
 
 ScopedTempFile CreateTempFile(scoped_refptr<RefCountedTempDir>* temp_dir) {
+  if (PdfConverterImpl::fail_when_creating_temp_file_for_tests())
+    return ScopedTempFile();
+
   if (!temp_dir->get())
     *temp_dir = base::MakeRefCounted<RefCountedTempDir>();
   ScopedTempFile file;
@@ -540,7 +556,7 @@ void PdfConverterImpl::OnFailed(const std::string& error_message) {
   LOG(ERROR) << "Failed to convert PDF: " << error_message;
   base::WeakPtr<PdfConverterImpl> weak_this = weak_ptr_factory_.GetWeakPtr();
   if (!start_callback_.is_null()) {
-    OnPageCount(mojom::PdfToEmfConverterPtr(), 0);
+    std::move(start_callback_).Run(/*page_count=*/0);
     if (!weak_this)
       return;  // Protect against the |start_callback_| deleting |this|.
   }
@@ -568,6 +584,16 @@ std::unique_ptr<PdfConverter> PdfConverter::StartPdfConverter(
     StartCallback start_callback) {
   return std::make_unique<PdfConverterImpl>(data, conversion_settings,
                                             std::move(start_callback));
+}
+
+ScopedSimulateFailureCreatingTempFileForTests::
+    ScopedSimulateFailureCreatingTempFileForTests() {
+  PdfConverterImpl::set_fail_when_creating_temp_file_for_tests(true);
+}
+
+ScopedSimulateFailureCreatingTempFileForTests::
+    ~ScopedSimulateFailureCreatingTempFileForTests() {
+  PdfConverterImpl::set_fail_when_creating_temp_file_for_tests(false);
 }
 
 }  // namespace printing

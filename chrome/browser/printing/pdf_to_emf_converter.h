@@ -38,6 +38,16 @@ class PdfConverter {
   virtual void GetPage(int page_number,
                        const GetPageCallback& get_page_callback) = 0;
 };
+
+// Object used by tests to exercise the temporary file creation failure code
+// path. As long as this object is alive, the PdfConverter will fail when
+// creating temporary files.
+class ScopedSimulateFailureCreatingTempFileForTests {
+ public:
+  ScopedSimulateFailureCreatingTempFileForTests();
+  ~ScopedSimulateFailureCreatingTempFileForTests();
+};
+
 }  // namespace printing
 
 #endif  // CHROME_BROWSER_PRINTING_PDF_TO_EMF_CONVERTER_H_
