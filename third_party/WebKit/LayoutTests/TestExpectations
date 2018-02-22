@@ -3273,7 +3273,8 @@ crbug.com/807110 external/wpt/media-source/mediasource-config-change-mp4-av-vide
 crbug.com/807110 external/wpt/media-source/mediasource-config-change-mp4-v-bitrate.html [ Failure Pass ]
 crbug.com/807110 external/wpt/media-source/mediasource-config-change-mp4-v-framerate.html [ Failure Pass ]
 crbug.com/807110 external/wpt/media-source/mediasource-config-change-mp4-v-framesize.html [ Failure Pass ]
-crbug.com/807110 external/wpt/media-source/mediasource-endofstream.html [ Failure Pass ]
+# Failure and Pass for crbug.com/807110 and Timeout for crbug.com/727252.
+crbug.com/727252 external/wpt/media-source/mediasource-endofstream.html [ Failure Pass Timeout ]
 crbug.com/807110 external/wpt/media-source/mediasource-is-type-supported.html [ Failure Pass ]
 crbug.com/807110 external/wpt/media-source/mediasource-sequencemode-append-buffer.html [ Failure Pass ]
 crbug.com/807110 external/wpt/media-source/mediasource-sourcebuffer-mode-timestamps.html [ Failure Pass ]
