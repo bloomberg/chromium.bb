@@ -120,3 +120,10 @@ interface PhishingDetectorClient {
   // have a generic way to send protocol messages over IPC.
   PhishingDetectionDone(string request_proto);
 };
+
+interface PhishingModelSetter {
+  // A classification model for client-side phishing detection.
+  // The string is an encoded safe_browsing::ClientSideModel protocol buffer, or
+  // empty to disable client-side phishing detection for this renderer.
+  SetPhishingModel(string model);
+};

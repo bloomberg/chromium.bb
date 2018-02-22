@@ -426,7 +426,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
     InitSpellCheck();
 #endif
 #if defined(FULL_SAFE_BROWSING)
-  phishing_classifier_.reset(safe_browsing::PhishingClassifierFilter::Create());
+  registry_.AddInterface(
+      base::BindRepeating(&safe_browsing::PhishingClassifierFilter::Create));
 #endif
   prerender_dispatcher_.reset(new prerender::PrerenderDispatcher());
   subresource_filter_ruleset_dealer_.reset(
@@ -437,9 +438,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 #endif
 
   thread->AddObserver(chrome_observer_.get());
-#if defined(FULL_SAFE_BROWSING)
-  thread->AddObserver(phishing_classifier_.get());
-#endif
   thread->AddObserver(prerender_dispatcher_.get());
   thread->AddObserver(subresource_filter_ruleset_dealer_.get());
 
