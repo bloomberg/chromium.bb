@@ -401,6 +401,9 @@ List Examples:
         help='The manifest branch to test.  The branch to '
              'check the buildroot out to.')
     parser.add_argument(
+        '--profile', dest='passthrough', action='append_option_value',
+        help='Name of profile to sub-specify board variant.')
+    parser.add_argument(
         '--yes', action='store_true', default=False,
         help='Never prompt to confirm.')
     parser.add_argument(
