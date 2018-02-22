@@ -12,6 +12,8 @@ source_set("tab_grid") {
     "sc_image_view_controller.mm",
     "sc_tab_grid_coordinator.h",
     "sc_tab_grid_coordinator.mm",
+    "sc_toolbars_view_controller.h",
+    "sc_toolbars_view_controller.mm",
   ]
   deps = [
     "//base",

@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_bottom_toolbar.h"
 
+#include "base/logging.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -16,6 +18,7 @@ const CGFloat kRoundButtonDiameter = 44.0f;
 }  // namespace
 
 @implementation TabGridBottomToolbar
+@synthesize theme = _theme;
 @synthesize leadingButton = _leadingButton;
 @synthesize trailingButton = _trailingButton;
 @synthesize roundButton = _roundButton;
@@ -31,22 +34,16 @@ const CGFloat kRoundButtonDiameter = 44.0f;
 
     UIButton* leadingButton = [UIButton buttonWithType:UIButtonTypeSystem];
     leadingButton.translatesAutoresizingMaskIntoConstraints = NO;
-    leadingButton.tintColor = [UIColor whiteColor];
+
     [leadingButton setTitle:@"Button" forState:UIControlStateNormal];
 
     UIButton* trailingButton = [UIButton buttonWithType:UIButtonTypeSystem];
     trailingButton.translatesAutoresizingMaskIntoConstraints = NO;
-    trailingButton.tintColor = [UIColor whiteColor];
     [trailingButton setTitle:@"Button" forState:UIControlStateNormal];
 
     UIButton* roundButton = [UIButton buttonWithType:UIButtonTypeSystem];
     roundButton.translatesAutoresizingMaskIntoConstraints = NO;
-    roundButton.tintColor = [UIColor whiteColor];
     [roundButton setTitle:@"Btn" forState:UIControlStateNormal];
-    roundButton.backgroundColor = [UIColor colorWithRed:63 / 255.0f
-                                                  green:81 / 255.0f
-                                                   blue:181 / 255.0f
-                                                  alpha:1.0f];
     roundButton.layer.cornerRadius = 22.f;
     roundButton.layer.masksToBounds = YES;
 
@@ -82,6 +79,44 @@ const CGFloat kRoundButtonDiameter = 44.0f;
 
 - (CGSize)intrinsicContentSize {
   return CGSizeMake(UIViewNoIntrinsicMetric, kToolbarHeight);
+}
+
+#pragma mark - Public
+
+- (void)setTheme:(TabGridBottomToolbarTheme)theme {
+  if (_theme == theme)
+    return;
+  switch (theme) {
+    case TabGridBottomToolbarThemeWhiteRoundButton:
+      self.trailingButton.enabled = YES;
+      self.roundButton.enabled = YES;
+      self.roundButton.backgroundColor = [UIColor whiteColor];
+      self.roundButton.tintColor = [UIColor blackColor];
+      self.leadingButton.tintColor = [UIColor whiteColor];
+      self.trailingButton.tintColor = [UIColor whiteColor];
+      break;
+    case TabGridBottomToolbarThemeBlueRoundButton:
+      self.trailingButton.enabled = YES;
+      self.roundButton.enabled = YES;
+      self.roundButton.backgroundColor =
+          [UIColor colorWithRed:0.0 green:122.0 / 255.0 blue:1.0 alpha:1.0];
+      self.roundButton.tintColor = [UIColor whiteColor];
+      self.leadingButton.tintColor = [UIColor whiteColor];
+      self.trailingButton.tintColor = [UIColor whiteColor];
+      break;
+    case TabGridBottomToolbarThemePartiallyDisabled:
+      self.trailingButton.enabled = NO;
+      self.roundButton.enabled = NO;
+      self.roundButton.backgroundColor = [UIColor grayColor];
+      self.roundButton.tintColor = [UIColor blackColor];
+      self.leadingButton.tintColor = [UIColor whiteColor];
+      self.trailingButton.tintColor = [UIColor whiteColor];
+      break;
+    default:
+      NOTREACHED() << "Invalid theme for TabGridBottomToolbar.";
+      break;
+  }
+  _theme = theme;
 }
 
 @end
