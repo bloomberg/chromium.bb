@@ -23,13 +23,13 @@ import org.chromium.chrome.browser.widget.accessibility.AccessibleTextView;
 /**
  * An ambient infobar to tell the user that the current site they are visiting is a PWA.
  */
-public class PwaAmbientBadgeInfoBar extends InfoBar implements View.OnClickListener {
+public class InstallableAmbientBadgeInfoBar extends InfoBar implements View.OnClickListener {
     private boolean mIsHiding;
 
     @CalledByNative
     private static InfoBar show(int enumeratedIconId, Bitmap iconBitmap) {
         int drawableId = ResourceId.mapToDrawableId(enumeratedIconId);
-        return new PwaAmbientBadgeInfoBar(drawableId, iconBitmap);
+        return new InstallableAmbientBadgeInfoBar(drawableId, iconBitmap);
     }
 
     @Override
@@ -81,9 +81,9 @@ public class PwaAmbientBadgeInfoBar extends InfoBar implements View.OnClickListe
      * @param iconBitmap        Bitmap of the icon to display in the infobar
      * @param messageText       Message to display in the infobar.
      */
-    private PwaAmbientBadgeInfoBar(int iconDrawableId, Bitmap iconBitmap) {
+    private InstallableAmbientBadgeInfoBar(int iconDrawableId, Bitmap iconBitmap) {
         super(iconDrawableId, iconBitmap, null);
     }
 
-    private native void nativeAddToHomescreen(long nativePwaAmbientBadgeInfoBar);
+    private native void nativeAddToHomescreen(long nativeInstallableAmbientBadgeInfoBar);
 }

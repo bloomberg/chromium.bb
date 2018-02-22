@@ -16,8 +16,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
 
-class PwaAmbientBadgeManagerAndroid;
-
 namespace banners {
 
 class AppBannerUiDelegateAndroid;
@@ -74,6 +72,9 @@ class AppBannerManagerAndroid
   // AppBannerManager overrides.
   void RequestAppBanner(const GURL& validated_url, bool is_debug_mode) override;
 
+  // InstallableAmbientBadgeInfoBarAndroid::Client overrides.
+  void AddToHomescreenFromBadge() override;
+
  protected:
   // AppBannerManager overrides.
   std::string GetAppIdentifier() override;
@@ -87,11 +88,8 @@ class AppBannerManagerAndroid
   void OnDidPerformInstallableCheck(const InstallableData& result) override;
   void OnAppIconFetched(const SkBitmap& bitmap) override;
   void ResetCurrentPageData() override;
+  void SendBannerPromptRequest() override;
   void ShowBannerUi(WebappInstallSource install_source) override;
-
-  // content::WebContentsObserver overrides.
-  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                     const GURL& validated_url) override;
 
  private:
   friend class content::WebContentsUserData<AppBannerManagerAndroid>;
@@ -113,7 +111,9 @@ class AppBannerManagerAndroid
                                        const GURL& url,
                                        const std::string& id);
 
-  std::unique_ptr<PwaAmbientBadgeManagerAndroid> ambient_badge_manager_;
+  // Shows the ambient badge if the current page advertises a native app or is
+  // a PWA.
+  void ShowAmbientBadge();
 
   std::unique_ptr<AppBannerUiDelegateAndroid> ui_delegate_;
 

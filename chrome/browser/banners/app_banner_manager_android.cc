@@ -14,7 +14,6 @@
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/banners/app_banner_ui_delegate_android.h"
-#include "chrome/browser/installable/pwa_ambient_badge_manager_android.h"
 #include "content/public/browser/manifest_icon_downloader.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/AppBannerManager_jni.h"
@@ -32,9 +31,7 @@ namespace banners {
 
 AppBannerManagerAndroid::AppBannerManagerAndroid(
     content::WebContents* web_contents)
-    : AppBannerManager(web_contents),
-      ambient_badge_manager_(
-          std::make_unique<PwaAmbientBadgeManagerAndroid>(web_contents)) {
+    : AppBannerManager(web_contents) {
   can_install_webapk_ = ChromeWebApkHost::CanInstallWebApk();
   CreateJavaBannerManager();
 }
@@ -97,6 +94,11 @@ void AppBannerManagerAndroid::RequestAppBanner(const GURL& validated_url,
     return;
 
   AppBannerManager::RequestAppBanner(validated_url, is_debug_mode);
+}
+
+void AppBannerManagerAndroid::AddToHomescreenFromBadge() {
+  ShowBannerUi(InstallableMetrics::GetInstallSource(
+      web_contents(), InstallTrigger::AMBIENT_BADGE));
 }
 
 std::string AppBannerManagerAndroid::GetAppIdentifier() {
@@ -189,11 +191,23 @@ void AppBannerManagerAndroid::OnAppIconFetched(const SkBitmap& bitmap) {
   SendBannerPromptRequest();
 }
 
+void AppBannerManagerAndroid::ShowAmbientBadge() {
+  InstallableAmbientBadgeInfoBarDelegate::Create(web_contents(), GetWeakPtr(),
+                                                 primary_icon_);
+}
+
 void AppBannerManagerAndroid::ResetCurrentPageData() {
   AppBannerManager::ResetCurrentPageData();
   native_app_data_.Reset();
   native_app_package_ = "";
   ui_delegate_ = nullptr;
+}
+
+void AppBannerManagerAndroid::SendBannerPromptRequest() {
+  AppBannerManager::SendBannerPromptRequest();
+
+  if (IsExperimentalAppBannersEnabled())
+    ShowAmbientBadge();
 }
 
 void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
@@ -234,14 +248,6 @@ void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
   } else {
     ReportStatus(FAILED_TO_CREATE_BANNER);
   }
-}
-
-void AppBannerManagerAndroid::DidFinishLoad(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url) {
-  if (IsExperimentalAppBannersEnabled())
-    ambient_badge_manager_->MaybeShowBadge();
-  AppBannerManager::DidFinishLoad(render_frame_host, validated_url);
 }
 
 InstallableStatusCode AppBannerManagerAndroid::QueryNativeApp(

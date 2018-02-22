@@ -1,0 +1,44 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/android/infobars/installable_ambient_badge_infobar.h"
+
+#include <utility>
+
+#include "base/android/jni_string.h"
+#include "chrome/browser/installable/installable_ambient_badge_infobar_delegate.h"
+#include "jni/InstallableAmbientBadgeInfoBar_jni.h"
+#include "ui/gfx/android/java_bitmap.h"
+
+InstallableAmbientBadgeInfoBar::InstallableAmbientBadgeInfoBar(
+    std::unique_ptr<InstallableAmbientBadgeInfoBarDelegate> delegate)
+    : InfoBarAndroid(std::move(delegate)) {}
+
+InstallableAmbientBadgeInfoBar::~InstallableAmbientBadgeInfoBar() {}
+
+InstallableAmbientBadgeInfoBarDelegate*
+InstallableAmbientBadgeInfoBar::GetDelegate() {
+  return static_cast<InstallableAmbientBadgeInfoBarDelegate*>(delegate());
+}
+
+void InstallableAmbientBadgeInfoBar::AddToHomescreen(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  GetDelegate()->AddToHomescreen();
+  RemoveSelf();
+}
+
+base::android::ScopedJavaLocalRef<jobject>
+InstallableAmbientBadgeInfoBar::CreateRenderInfoBar(JNIEnv* env) {
+  InstallableAmbientBadgeInfoBarDelegate* delegate = GetDelegate();
+
+  DCHECK(!delegate->GetPrimaryIcon().drawsNothing());
+  base::android::ScopedJavaLocalRef<jobject> java_bitmap =
+      gfx::ConvertToJavaBitmap(&delegate->GetPrimaryIcon());
+
+  return Java_InstallableAmbientBadgeInfoBar_show(env, delegate->GetIconId(),
+                                                  java_bitmap);
+}
+
+void InstallableAmbientBadgeInfoBar::ProcessButton(int action) {}
