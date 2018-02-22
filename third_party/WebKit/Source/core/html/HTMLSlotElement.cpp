@@ -104,7 +104,7 @@ const HeapVector<Member<Node>>& HTMLSlotElement::AssignedNodes() const {
     return assigned_nodes_;
   }
   if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled()) {
-    ContainingShadowRoot()->GetSlotAssignment().ResolveAssignmentNg();
+    ContainingShadowRoot()->GetSlotAssignment().RecalcAssignmentNg();
     return assigned_nodes_;
   }
 
@@ -201,7 +201,7 @@ void HTMLSlotElement::AppendAssignedNode(Node& host_child) {
   assigned_nodes_.push_back(&host_child);
 }
 
-void HTMLSlotElement::ResolveDistributedNodes() {
+void HTMLSlotElement::RecalcDistributedNodes() {
   for (auto& node : assigned_nodes_) {
     DCHECK(node->IsSlotable());
     if (HTMLSlotElement* slot =
@@ -255,7 +255,7 @@ void HTMLSlotElement::DispatchSlotChangeEvent() {
 Node* HTMLSlotElement::AssignedNodeNextTo(const Node& node) const {
   DCHECK(SupportsAssignment());
   if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled())
-    ContainingShadowRoot()->GetSlotAssignment().ResolveAssignmentNg();
+    ContainingShadowRoot()->GetSlotAssignment().RecalcAssignmentNg();
   else
     DCHECK(!NeedsDistributionRecalc());
   // TODO(crbug.com/776656): Use {node -> index} map to avoid O(N) lookup
@@ -269,7 +269,7 @@ Node* HTMLSlotElement::AssignedNodeNextTo(const Node& node) const {
 Node* HTMLSlotElement::AssignedNodePreviousTo(const Node& node) const {
   DCHECK(SupportsAssignment());
   if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled())
-    ContainingShadowRoot()->GetSlotAssignment().ResolveAssignmentNg();
+    ContainingShadowRoot()->GetSlotAssignment().RecalcAssignmentNg();
   else
     DCHECK(!NeedsDistributionRecalc());
   // TODO(crbug.com/776656): Use {node -> index} map to avoid O(N) lookup

@@ -37,7 +37,7 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
   // Instead, provide alternative, HTMLSlotElement::hasAssignedNodesSlow()
   // so that slotchange can be detected.
 
-  void ResolveDistribution();
+  void RecalcDistribution();
   const HeapVector<Member<HTMLSlotElement>>& Slots();
 
   void DidAddSlot(HTMLSlotElement&);
@@ -54,7 +54,7 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
   }
 
   // For Incremental Shadow DOM
-  void ResolveAssignmentNg();
+  void RecalcAssignmentNg();
 
   void Trace(blink::Visitor*);
 
@@ -72,7 +72,7 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
   HTMLSlotElement* GetCachedFirstSlotWithoutAccessingNodeTree(
       const AtomicString& slot_name);
 
-  void ResolveAssignment();
+  void RecalcAssignment();
 
   void DidAddSlotInternal(HTMLSlotElement&);
   void DidRemoveSlotInternal(HTMLSlotElement&,
