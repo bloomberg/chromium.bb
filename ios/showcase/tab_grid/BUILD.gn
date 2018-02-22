@@ -8,6 +8,8 @@ source_set("tab_grid") {
     "sc_grid_cell_view_controller.mm",
     "sc_grid_coordinator.h",
     "sc_grid_coordinator.mm",
+    "sc_image_view_controller.h",
+    "sc_image_view_controller.mm",
     "sc_tab_grid_coordinator.h",
     "sc_tab_grid_coordinator.mm",
   ]

@@ -44,6 +44,8 @@ source_set("tab_grid_ui") {
     "tab_grid_transition_state_provider.h",
     "tab_grid_view_controller.h",
     "tab_grid_view_controller.mm",
+    "top_aligned_image_view.h",
+    "top_aligned_image_view.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
