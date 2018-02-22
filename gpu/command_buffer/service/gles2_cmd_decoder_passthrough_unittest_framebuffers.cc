@@ -349,12 +349,10 @@ TEST_F(GLES2DecoderPassthroughTest, ReadPixelsAsyncError) {
   uint32_t pixels_shm_id = shared_memory_id_;
   uint32_t pixels_shm_offset = kSharedMemoryOffset + sizeof(Result);
 
-  // Inject an INVALID_OPERATION error on the call to ReadPixels
-  InjectGLError(GL_NO_ERROR);
-  InjectGLError(GL_INVALID_OPERATION);
-
+  // Provide parameters that will cause glReadPixels to fail with
+  // GL_INVALID_OPERATION
   ReadPixels cmd;
-  cmd.Init(0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels_shm_id,
+  cmd.Init(0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_SHORT, pixels_shm_id,
            pixels_shm_offset, result_shm_id, result_shm_offset, true);
   result->success = 0;
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));

@@ -921,7 +921,6 @@ class GLES2DecoderPassthroughTestBase : public testing::Test,
   }
 
   GLint GetGLError();
-  void InjectGLError(GLenum error);
 
  protected:
   void DoRequestExtension(const char* extension);

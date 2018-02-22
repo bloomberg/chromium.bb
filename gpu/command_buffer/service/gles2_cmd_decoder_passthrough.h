@@ -305,6 +305,13 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
                  gl::GLImage* image,
                  bool can_bind_to_sampler) override;
 
+  void OnDebugMessage(GLenum source,
+                      GLenum type,
+                      GLuint id,
+                      GLenum severity,
+                      GLsizei length,
+                      const GLchar* message);
+
  private:
   // Allow unittests to inspect internal state tracking
   friend class GLES2DecoderPassthroughTestBase;
@@ -362,10 +369,6 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   void InsertError(GLenum error, const std::string& message);
   GLenum PopError();
   bool FlushErrors();
-
-  // Inject a driver-level GL error that will replace the result of the next
-  // call to glGetError
-  void InjectDriverError(GLenum error);
 
   bool IsRobustnessSupported();
 
@@ -559,8 +562,12 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   base::circular_deque<PendingReadPixels> pending_read_pixels_;
 
   // Error state
-  base::circular_deque<GLenum> injected_driver_errors_;
   std::set<GLenum> errors_;
+
+  // Checks if an error has been generated since the last call to
+  // CheckErrorCallbackState
+  bool CheckErrorCallbackState();
+  bool had_error_callback_ = false;
 
   // Default framebuffer emulation
   struct EmulatedDefaultFramebufferFormat {

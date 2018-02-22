@@ -80,7 +80,16 @@ const char* GetServiceVersionString(const FeatureInfo* feature_info);
 const char* GetServiceShadingLanguageVersionString(
     const FeatureInfo* feature_info);
 
-void InitializeGLDebugLogging(bool log_non_errors, Logger* error_logger);
+void LogGLDebugMessage(GLenum source,
+                       GLenum type,
+                       GLuint id,
+                       GLenum severity,
+                       GLsizei length,
+                       const GLchar* message,
+                       Logger* error_logger);
+void InitializeGLDebugLogging(bool log_non_errors,
+                              GLDEBUGPROC callback,
+                              const void* user_param);
 
 bool ValidContextLostReason(GLenum reason);
 error::ContextLostReason GetContextLostReasonFromResetStatus(

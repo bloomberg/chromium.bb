@@ -2452,10 +2452,6 @@ GLint GLES2DecoderPassthroughTestBase::GetGLError() {
   return static_cast<GLint>(*GetSharedMemoryAs<GLenum*>());
 }
 
-void GLES2DecoderPassthroughTestBase::InjectGLError(GLenum error) {
-  decoder_->InjectDriverError(error);
-}
-
 void GLES2DecoderPassthroughTestBase::DoRequestExtension(
     const char* extension) {
   DCHECK(extension != nullptr);
