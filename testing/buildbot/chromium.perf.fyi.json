@@ -445,7 +445,9 @@
         "merge": {
           "args": [
             "--configuration-name",
-            "buildbot-test"
+            "buildbot-test",
+            "--service-account-file",
+            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
           ],
           "script": "//tools/perf/process_perf_results.py"
         },
