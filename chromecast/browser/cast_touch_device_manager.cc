@@ -25,9 +25,21 @@ ui::TouchDeviceTransform GetDeviceTransform(
   touch_device_transform.device_id = touchscreen.id;
   touch_device_transform.transform.Translate(display_bounds.x(),
                                              display_bounds.y());
+
+  float touchscreen_width = touchscreen_size.width();
+  float touchscreen_height = touchscreen_size.height();
+
+  // If the display orientation is rotated between portrait and landscape,
+  // the width and height of the touchscreen must be swapped as well.
+  if (display.rotation() == display::Display::Rotation::ROTATE_90 ||
+      display.rotation() == display::Display::Rotation::ROTATE_270) {
+    touchscreen_width = touchscreen_size.height();
+    touchscreen_height = touchscreen_size.width();
+  }
+
   touch_device_transform.transform.Scale(
-      display_bounds.width() / touchscreen_size.width(),
-      display_bounds.height() / touchscreen_size.height());
+      display_bounds.width() / touchscreen_width,
+      display_bounds.height() / touchscreen_height);
 
   return touch_device_transform;
 }
