@@ -7,12 +7,17 @@ var MIN_VERSION_TARGET_ID = 26;
 var MIN_VERSION_NEW_TAB = 29;
 var MIN_VERSION_TAB_ACTIVATE = 30;
 var WEBRTC_SERIAL = 'WEBRTC';
+var HOST_CHROME_VERSION;
 
 var queryParamsObject = {};
 var browserInspector;
 var browserInspectorTitle;
 
 (function() {
+var chromeMatch = navigator.userAgent.match(/(?:^|\W)Chrome\/(\S+)/);
+if (chromeMatch && chromeMatch.length > 1)
+  HOST_CHROME_VERSION = chromeMatch[1].split('.').map(s => Number(s) || 0);
+
 var queryParams = window.location.search;
 if (!queryParams)
   return;
@@ -30,6 +35,21 @@ if ('trace' in queryParamsObject || 'tracing' in queryParamsObject) {
   browserInspectorTitle = 'inspect';
 }
 })();
+
+function isVersionNewerThanHost(version) {
+  if (!HOST_CHROME_VERSION)
+    return false;
+  version = version.split('.').map(s => Number(s) || 0);
+  for (var i = 0; i < HOST_CHROME_VERSION.length; i++) {
+    if (i > version.length)
+      return false;
+    if (HOST_CHROME_VERSION[i] > version[i])
+      return false;
+    if (HOST_CHROME_VERSION[i] < version[i])
+      return true;
+  }
+  return false;
+}
 
 function sendCommand(command, args) {
   chrome.send(command, Array.prototype.slice.call(arguments, 1));
@@ -295,6 +315,8 @@ function populateRemoteTargets(devices) {
       var majorChromeVersion = browser.adbBrowserChromeVersion;
       var pageList;
       var browserSection = $(browser.id);
+      var browserNeedsFallback =
+          isVersionNewerThanHost(browser.adbBrowserVersion);
       if (browserSection) {
         pageList = browserSection.querySelector('.pages');
       } else {
@@ -319,6 +341,15 @@ function populateRemoteTargets(devices) {
           browserHeader.appendChild(browserUser);
         }
         browserSection.appendChild(browserHeader);
+
+        if (browserNeedsFallback) {
+          var browserFallbackNote = document.createElement('div');
+          browserFallbackNote.className = 'browser-fallback-note';
+          browserFallbackNote.textContent =
+              '\u26A0 Remote browser is newer than client browser. ' +
+              'Try `inspect fallback` if inspection fails.';
+          browserSection.appendChild(browserFallbackNote);
+        }
 
         if (majorChromeVersion >= MIN_VERSION_NEW_TAB) {
           var newPage = document.createElement('div');
@@ -400,6 +431,12 @@ function populateRemoteTargets(devices) {
             addActionLink(
                 row, 'close', sendTargetCommand.bind(null, 'close', page),
                 false);
+          }
+          if (browserNeedsFallback) {
+            addActionLink(
+                row, 'inspect fallback',
+                sendTargetCommand.bind(null, 'inspect-fallback', page),
+                page.hasNoUniqueId || page.adbAttachedForeign);
           }
         }
       }

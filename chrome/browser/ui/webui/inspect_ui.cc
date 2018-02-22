@@ -40,6 +40,7 @@ namespace {
 
 const char kInitUICommand[]  = "init-ui";
 const char kInspectCommand[]  = "inspect";
+const char kInspectFallbackCommand[] = "inspect-fallback";
 const char kInspectAdditionalCommand[] = "inspect-additional";
 const char kActivateCommand[]  = "activate";
 const char kCloseCommand[] = "close";
@@ -90,6 +91,7 @@ class InspectMessageHandler : public WebUIMessageHandler {
 
   void HandleInitUICommand(const base::ListValue* args);
   void HandleInspectCommand(const base::ListValue* args);
+  void HandleInspectFallbackCommand(const base::ListValue* args);
   void HandleInspectAdditionalCommand(const base::ListValue* args);
   void HandleActivateCommand(const base::ListValue* args);
   void HandleCloseCommand(const base::ListValue* args);
@@ -114,6 +116,10 @@ void InspectMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(kInspectCommand,
       base::Bind(&InspectMessageHandler::HandleInspectCommand,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kInspectFallbackCommand,
+      base::BindRepeating(&InspectMessageHandler::HandleInspectFallbackCommand,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kInspectAdditionalCommand,
       base::Bind(&InspectMessageHandler::HandleInspectAdditionalCommand,
@@ -175,6 +181,14 @@ void InspectMessageHandler::HandleInspectCommand(const base::ListValue* args) {
   std::string id;
   if (ParseStringArgs(args, &source, &id))
     inspect_ui_->Inspect(source, id);
+}
+
+void InspectMessageHandler::HandleInspectFallbackCommand(
+    const base::ListValue* args) {
+  std::string source;
+  std::string id;
+  if (ParseStringArgs(args, &source, &id))
+    inspect_ui_->InspectFallback(source, id);
 }
 
 void InspectMessageHandler::HandleInspectAdditionalCommand(
@@ -355,6 +369,16 @@ void InspectUI::Inspect(const std::string& source_id,
     Profile* profile = Profile::FromBrowserContext(
         web_ui()->GetWebContents()->GetBrowserContext());
     DevToolsWindow::OpenDevToolsWindow(target, profile);
+  }
+}
+
+void InspectUI::InspectFallback(const std::string& source_id,
+                                const std::string& target_id) {
+  scoped_refptr<DevToolsAgentHost> target = FindTarget(source_id, target_id);
+  if (target) {
+    Profile* profile = Profile::FromBrowserContext(
+        web_ui()->GetWebContents()->GetBrowserContext());
+    DevToolsWindow::OpenDevToolsWindowWithBundledFrontend(target, profile);
   }
 }
 

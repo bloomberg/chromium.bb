@@ -84,6 +84,10 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   static void OpenDevToolsWindow(
       scoped_refptr<content::DevToolsAgentHost> host,
       Profile* profile);
+  // Similar to previous one, but forces the bundled frontend to be used.
+  static void OpenDevToolsWindowWithBundledFrontend(
+      scoped_refptr<content::DevToolsAgentHost> host,
+      Profile* profile);
 
   // Perform specified action for current WebContents inside a |browser|.
   // This may close currently open DevTools window.
@@ -259,7 +263,11 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   static void OpenExternalFrontend(
       Profile* profile,
       const std::string& frontend_uri,
-      const scoped_refptr<content::DevToolsAgentHost>& agent_host);
+      const scoped_refptr<content::DevToolsAgentHost>& agent_host,
+      bool use_bundled_frontend);
+  static void OpenDevToolsWindow(scoped_refptr<content::DevToolsAgentHost> host,
+                                 Profile* profile,
+                                 bool use_bundled_frontend);
 
   static DevToolsWindow* Create(Profile* profile,
                                 content::WebContents* inspected_web_contents,
