@@ -88,6 +88,7 @@ void CrossSiteDocumentResourceHandler::LogBlockedResponseOnUIThread(
   recorder->UpdateSourceURL(source_id, web_contents->GetLastCommittedURL());
   ukm::builders::SiteIsolation_XSD_Browser_Blocked(source_id)
       .SetCanonicalMimeType(canonical_mime_type)
+      .SetContentLengthWasZero(content_length == 0)
       .SetContentResourceType(resource_type)
       .SetHttpResponseCode(http_response_code)
       .SetNeededSniffing(needed_sniffing)
