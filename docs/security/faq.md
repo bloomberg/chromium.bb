@@ -98,14 +98,15 @@ or Guest browsing modes.
 Other timing attacks can be mitigated via clever design changes. For instance,
 [Issue 544765](https://crbug.com/544765) describes an attack whereby an attacker
 can probe for the presence of HSTS rules (set by prior site visits) by timing
-the load of resources with URLs "fixed-up" by HSTS. HSTS rules are shared
-between regular browsing and Incognito mode, making the attack more interesting.
-The attack was mitigated by changing Content-Security-Policy such that secure
-URLs will match rules demanding non-secure HTTP urls, a fix that has also proven
-useful to help to unblock migrations to HTTPS. Similarly,
-[Issue 707071](https://crbug.com/707071) describes a timing attack in which an
-attacker could determine what Android applications are installed; the attack was
-mitigated by introducing randomness in the execution time of the affected API.
+the load of resources with URLs "fixed-up" by HSTS. Prior to Chrome 64, HSTS
+rules [were shared](https://crbug.com/774643) between regular browsing and
+Incognito mode, making the attack more interesting. The attack was mitigated by
+changing Content-Security-Policy such that secure URLs will match rules
+demanding non-secure HTTP urls, a fix that has also proven useful to help to
+unblock migrations to HTTPS. Similarly, [Issue 707071](https://crbug.com/707071)
+describes a timing attack in which an attacker could determine what Android
+applications are installed; the attack was mitigated by introducing randomness
+in the execution time of the affected API.
 
 <a name="TOC-What-are-the-security-and-privacy-guarantees-of-Incognito-mode-"></a>
 ## What are the security and privacy guarantees of Incognito mode?
@@ -202,9 +203,10 @@ computer.
 *    Assume everything you do on a public computer will become, well, public.
      You have no control over the operating system or other software on the
      machine, and there is no reason to trust the integrity of it.
-*    If you must use such a computer, consider using an incognito mode window,
-     to avoid persisting credentials. This, however, provides no protection
-     when the system is already compromised as above.
+*    If you must use such a computer, use Incognito mode and close all Incognito
+     windows when you are done browsing to limit the amount of data you leave
+     behind. Note that Incognito mode **provides no protection** if the system has
+     already been compromised as described above.
 
 <a name="TOC-Why-aren-t-compromised-infected-machines-in-Chrome-s-threat-model-"></a>
 ## Why aren't compromised/infected machines in Chrome's threat model?
@@ -236,11 +238,11 @@ extracting the password from any of these places.
 <a name="TOC-Does-entering-JavaScript:-URLs-in-the-URL-bar-or-running-script-in-the-developer-tools-mean-there-s-an-XSS-vulnerability-"></a>
 ## Does entering JavaScript: URLs in the URL bar or running script in the developer tools mean there's an XSS vulnerability?
 
-No. Chrome does not attempt to prevent the user from knowingly running script
-against loaded documents, either by entering script in the Developer Tools
-console or by typing a JavaScript: URI into the URL bar. Chrome and other
-browsers do undertake some efforts to prevent *paste* of script URLs in the URL
-bar (to limit
+[No](https://crbug.com/81697). Chrome does not attempt to prevent the user from
+knowingly running script against loaded documents, either by entering script in
+the Developer Tools console or by typing a JavaScript: URI into the URL bar.
+Chrome and other browsers do undertake some efforts to prevent *paste* of script
+URLs in the URL bar (to limit
 [social-engineering](https://blogs.msdn.microsoft.com/ieinternals/2011/05/19/socially-engineered-xss-attacks/))
 but users are otherwise free to invoke script against pages using either the URL
 bar or the DevTools console.
