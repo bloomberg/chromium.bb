@@ -86,6 +86,11 @@
       showcase::kClassForInstantiationKey : @"SCTableContainerCoordinator",
       showcase::kUseCaseKey : @"Table View",
     },
+    @{
+      showcase::kClassForDisplayKey : @"TopAlignedImageView",
+      showcase::kClassForInstantiationKey : @"SCImageViewController",
+      showcase::kUseCaseKey : @"ImageView with top aligned aspect fill",
+    },
   ];
 }
 
