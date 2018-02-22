@@ -31,7 +31,7 @@ class IncrementalMarkingScope {
         heap_(thread_state_->Heap()),
         marking_stack_(heap_.MarkingStack()) {
     EXPECT_TRUE(marking_stack_->IsEmpty());
-    marking_stack_->Commit();
+    heap_.CommitCallbackStacks();
     heap_.EnableIncrementalMarkingBarrier();
     thread_state->current_gc_data_.visitor =
         Visitor::Create(thread_state, Visitor::kGlobalMarking);
@@ -40,7 +40,7 @@ class IncrementalMarkingScope {
   ~IncrementalMarkingScope() {
     EXPECT_TRUE(marking_stack_->IsEmpty());
     heap_.DisableIncrementalMarkingBarrier();
-    marking_stack_->Decommit();
+    heap_.DecommitCallbackStacks();
   }
 
   CallbackStack* marking_stack() const { return marking_stack_; }
@@ -857,9 +857,9 @@ class StrongWeakPair : public std::pair<Member<Object>, WeakMember<Object>> {
   // TraceInCollection will be called for weak processing.
   template <typename VisitorDispatcher>
   bool TraceInCollection(VisitorDispatcher visitor,
-                         WTF::ShouldWeakPointersBeMarkedStrongly strongify) {
+                         WTF::WeakHandlingFlag weakness) {
     visitor->Trace(first);
-    if (strongify == WTF::kWeakPointersActStrong) {
+    if (weakness == WTF::kNoWeakHandling) {
       visitor->Trace(second);
     }
     return false;
@@ -874,8 +874,7 @@ namespace WTF {
 template <>
 struct HashTraits<blink::incremental_marking_test::StrongWeakPair>
     : SimpleClassHashTraits<blink::incremental_marking_test::StrongWeakPair> {
-  static const WTF::WeakHandlingFlag kWeakHandlingFlag =
-      WTF::kWeakHandlingInCollections;
+  static const WTF::WeakHandlingFlag kWeakHandlingFlag = WTF::kWeakHandling;
 
   template <typename U = void>
   struct IsTraceableInCollection {
@@ -904,8 +903,8 @@ struct HashTraits<blink::incremental_marking_test::StrongWeakPair>
   static bool TraceInCollection(
       VisitorDispatcher visitor,
       blink::incremental_marking_test::StrongWeakPair& t,
-      WTF::ShouldWeakPointersBeMarkedStrongly strongify) {
-    return t.TraceInCollection(visitor, strongify);
+      WTF::WeakHandlingFlag weakness) {
+    return t.TraceInCollection(visitor, weakness);
   }
 };
 

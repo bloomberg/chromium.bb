@@ -492,6 +492,8 @@ class PLATFORM_EXPORT ThreadHeap {
 #endif
 
  private:
+  friend class incremental_marking_test::IncrementalMarkingScope;
+
   // Reset counters that track live and allocated-since-last-GC sizes.
   void ResetHeapCounters();
 
