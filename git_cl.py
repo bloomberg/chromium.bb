@@ -426,8 +426,7 @@ def _get_bucket_map_for_builders(builders):
   return bucket_map, None
 
 
-def _trigger_try_jobs(auth_config, changelist, buckets, options,
-                      category='git_cl_try', patchset=None):
+def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
   """Sends a request to Buildbucket to trigger try jobs for a changelist.
 
   Args:
@@ -457,7 +456,7 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options,
       patch=patchset)
 
   shared_parameters_properties = changelist.GetTryJobProperties(patchset)
-  shared_parameters_properties['category'] = category
+  shared_parameters_properties['category'] = options.category
   if options.clobber:
     shared_parameters_properties['clobber'] = True
   extra_properties = _get_properties_from_options(options)
@@ -5541,6 +5540,8 @@ def CMDtry(parser, args):
       help='Force a clobber before building; that is don\'t do an '
            'incremental build')
   group.add_option(
+      '--category', default='git_cl_try', help='Specify custom build category.')
+  group.add_option(
       '--project',
       help='Override which project to use. Projects are defined '
            'in recipe to determine to which repository or directory to '
@@ -5619,8 +5620,7 @@ def CMDtry(parser, args):
           (patchset, cl.GetPatchset(), patchset))
 
   try:
-    _trigger_try_jobs(auth_config, cl, buckets, options, 'git_cl_try',
-                      patchset)
+    _trigger_try_jobs(auth_config, cl, buckets, options, patchset)
   except BuildbucketResponseException as ex:
     print('ERROR: %s' % ex)
     return 1
