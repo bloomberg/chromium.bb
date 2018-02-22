@@ -866,9 +866,6 @@ extern const char kSitePerProcessDescription[];
 extern const char kSiteSettings[];
 extern const char kSiteSettingsDescription[];
 
-extern const char kSlimmingPaintInvalidationName[];
-extern const char kSlimmingPaintInvalidationDescription[];
-
 extern const char kSmoothScrollingName[];
 extern const char kSmoothScrollingDescription[];
 

@@ -1416,10 +1416,6 @@ const char kSiteSettings[] = "Site settings with All sites and Site details";
 const char kSiteSettingsDescription[] =
     "Adds new ways of viewing Site settings.";
 
-const char kSlimmingPaintInvalidationName[] = "Slimming paint invalidation.";
-const char kSlimmingPaintInvalidationDescription[] =
-    "Whether to enable a new paint invalidation system.";
-
 const char kSmoothScrollingName[] = "Smooth Scrolling";
 const char kSmoothScrollingDescription[] =
     "Animate smoothly when scrolling page content.";
