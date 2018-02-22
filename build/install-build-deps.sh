@@ -351,7 +351,9 @@ fi
 if package_exists libglib2.0-0-dbg; then
   dbg_list="${dbg_list} libglib2.0-0-dbg"
 fi
-if package_exists libxcursor1-dbg; then
+if package_exists libxcursor1-dbgsym; then
+  dbg_list="${dbg_list} libxcursor1-dbgsym"
+elif package_exists libxcursor1-dbg; then
   dbg_list="${dbg_list} libxcursor1-dbg"
 fi
 
