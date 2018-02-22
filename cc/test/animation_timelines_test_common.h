@@ -19,7 +19,7 @@
 namespace cc {
 
 class KeyframeEffect;
-class SingleKeyframeEffectAnimationPlayer;
+class SingleKeyframeEffectAnimation;
 
 class TestLayer {
  public:
@@ -236,12 +236,12 @@ class AnimationTimelinesTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  void GetImplTimelineAndPlayerByID();
+  void GetImplTimelineAndAnimationByID();
 
   void CreateTestLayer(bool needs_active_value_observations,
                        bool needs_pending_value_observations);
-  void AttachTimelinePlayerLayer();
-  virtual void CreateImplTimelineAndPlayer();
+  void AttachTimelineAnimationLayer();
+  virtual void CreateImplTimelineAndAnimation();
 
   void CreateTestMainLayer();
   void DestroyTestMainLayer();
@@ -269,17 +269,17 @@ class AnimationTimelinesTest : public testing::Test {
   AnimationHost* host_impl_;
 
   const int timeline_id_;
-  const int player_id_;
+  const int animation_id_;
   ElementId element_id_;
 
   int next_test_layer_id_;
 
   scoped_refptr<AnimationTimeline> timeline_;
-  scoped_refptr<SingleKeyframeEffectAnimationPlayer> player_;
+  scoped_refptr<SingleKeyframeEffectAnimation> animation_;
   scoped_refptr<ElementAnimations> element_animations_;
 
   scoped_refptr<AnimationTimeline> timeline_impl_;
-  scoped_refptr<SingleKeyframeEffectAnimationPlayer> player_impl_;
+  scoped_refptr<SingleKeyframeEffectAnimation> animation_impl_;
   scoped_refptr<ElementAnimations> element_animations_impl_;
 };
 

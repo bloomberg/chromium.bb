@@ -48,7 +48,7 @@
 #include "core/paint/PaintLayer.h"
 #include "core/paint/compositing/CompositedLayerMapping.h"
 #include "platform/animation/AnimationTranslationUtil.h"
-#include "platform/animation/CompositorAnimationPlayer.h"
+#include "platform/animation/CompositorAnimation.h"
 #include "platform/animation/CompositorFilterAnimationCurve.h"
 #include "platform/animation/CompositorFilterKeyframe.h"
 #include "platform/animation/CompositorFloatAnimationCurve.h"
@@ -383,7 +383,7 @@ void CompositorAnimations::StartAnimationOnCompositor(
     double time_offset,
     const Timing& timing,
     const Animation* animation,
-    CompositorAnimationPlayer& compositor_player,
+    CompositorAnimation& compositor_animation,
     const EffectModel& effect,
     Vector<int>& started_animation_ids,
     double animation_playback_rate) {
@@ -402,7 +402,7 @@ void CompositorAnimations::StartAnimationOnCompositor(
   DCHECK(!keyframe_models.IsEmpty());
   for (auto& compositor_keyframe_model : keyframe_models) {
     int id = compositor_keyframe_model->Id();
-    compositor_player.AddKeyframeModel(std::move(compositor_keyframe_model));
+    compositor_animation.AddKeyframeModel(std::move(compositor_keyframe_model));
     started_animation_ids.push_back(id);
   }
   DCHECK(!started_animation_ids.IsEmpty());
@@ -420,9 +420,10 @@ void CompositorAnimations::CancelAnimationOnCompositor(
     // compositing update.
     return;
   }
-  CompositorAnimationPlayer* compositor_player = animation.CompositorPlayer();
-  if (compositor_player)
-    compositor_player->RemoveKeyframeModel(id);
+  CompositorAnimation* compositor_animation =
+      animation.GetCompositorAnimation();
+  if (compositor_animation)
+    compositor_animation->RemoveKeyframeModel(id);
 }
 
 void CompositorAnimations::PauseAnimationForTestingOnCompositor(
@@ -436,15 +437,16 @@ void CompositorAnimations::PauseAnimationForTestingOnCompositor(
   DisableCompositingQueryAsserts disabler;
 
   DCHECK(CheckCanStartElementOnCompositor(element).Ok());
-  CompositorAnimationPlayer* compositor_player = animation.CompositorPlayer();
-  DCHECK(compositor_player);
-  compositor_player->PauseKeyframeModel(id, pause_time);
+  CompositorAnimation* compositor_animation =
+      animation.GetCompositorAnimation();
+  DCHECK(compositor_animation);
+  compositor_animation->PauseKeyframeModel(id, pause_time);
 }
 
 void CompositorAnimations::AttachCompositedLayers(
     Element& element,
-    CompositorAnimationPlayer* compositor_player) {
-  if (!compositor_player)
+    CompositorAnimation* compositor_animation) {
+  if (!compositor_animation)
     return;
 
   if (!element.GetLayoutObject() ||
@@ -468,7 +470,7 @@ void CompositorAnimations::AttachCompositedLayers(
       return;
   }
 
-  compositor_player->AttachElement(CompositorElementIdFromUniqueObjectId(
+  compositor_animation->AttachElement(CompositorElementIdFromUniqueObjectId(
       element.GetLayoutObject()->UniqueId(),
       CompositorElementIdNamespace::kPrimary));
 }

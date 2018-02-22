@@ -249,31 +249,32 @@ bool WorkletAnimation::StartOnCompositor(String* failure_message) {
     return false;
   }
 
-  if (!compositor_player_) {
-    compositor_player_ = CompositorAnimationPlayer::CreateWorkletPlayer(
+  if (!compositor_animation_) {
+    compositor_animation_ = CompositorAnimation::CreateWorkletAnimation(
         animator_name_, ToCompositorScrollTimeline(timeline_));
-    compositor_player_->SetAnimationDelegate(this);
+    compositor_animation_->SetAnimationDelegate(this);
   }
 
   // Register ourselves on the compositor timeline. This will cause our cc-side
-  // animation player to be registered.
+  // animation animation to be registered.
   if (CompositorAnimationTimeline* compositor_timeline =
           document_->Timeline().CompositorTimeline())
-    compositor_timeline->PlayerAttached(*this);
+    compositor_timeline->AnimationAttached(*this);
 
   // TODO(smcgruer): Creating a WorkletAnimation should be a hint to blink
   // compositing that the animated element should be promoted. Otherwise this
   // fails. http://crbug.com/776533
   CompositorAnimations::AttachCompositedLayers(target,
-                                               compositor_player_.get());
+                                               compositor_animation_.get());
 
   double start_time = std::numeric_limits<double>::quiet_NaN();
   double time_offset = 0;
   int group = 0;
 
   // TODO(smcgruer): We need to start all of the effects, not just the first.
-  effects_.at(0)->StartAnimationOnCompositor(
-      group, start_time, time_offset, playback_rate, compositor_player_.get());
+  effects_.at(0)->StartAnimationOnCompositor(group, start_time, time_offset,
+                                             playback_rate,
+                                             compositor_animation_.get());
   play_state_ = Animation::kRunning;
   return true;
 }
@@ -283,10 +284,10 @@ void WorkletAnimation::Dispose() {
 
   if (CompositorAnimationTimeline* compositor_timeline =
           document_->Timeline().CompositorTimeline())
-    compositor_timeline->PlayerDestroyed(*this);
-  if (compositor_player_) {
-    compositor_player_->SetAnimationDelegate(nullptr);
-    compositor_player_ = nullptr;
+    compositor_timeline->AnimationDestroyed(*this);
+  if (compositor_animation_) {
+    compositor_animation_->SetAnimationDelegate(nullptr);
+    compositor_animation_ = nullptr;
   }
 }
 

@@ -316,18 +316,18 @@ void KeyframeEffectReadOnly::StartAnimationOnCompositor(
     double start_time,
     double current_time,
     double animation_playback_rate,
-    CompositorAnimationPlayer* compositor_player) {
+    CompositorAnimation* compositor_animation) {
   DCHECK(!HasActiveAnimationsOnCompositor());
   DCHECK(CheckCanStartAnimationOnCompositor(animation_playback_rate).Ok());
 
-  if (!compositor_player)
-    compositor_player = GetAnimation()->CompositorPlayer();
-  DCHECK(compositor_player);
+  if (!compositor_animation)
+    compositor_animation = GetAnimation()->GetCompositorAnimation();
+  DCHECK(compositor_animation);
 
   CompositorAnimations::StartAnimationOnCompositor(
       *target_, group, start_time, current_time, SpecifiedTiming(),
-      GetAnimation(), *compositor_player, *Model(), compositor_animation_ids_,
-      animation_playback_rate);
+      GetAnimation(), *compositor_animation, *Model(),
+      compositor_animation_ids_, animation_playback_rate);
   DCHECK(!compositor_animation_ids_.IsEmpty());
 }
 
@@ -415,7 +415,7 @@ void KeyframeEffectReadOnly::AttachCompositedLayers() {
   DCHECK(target_);
   DCHECK(GetAnimation());
   CompositorAnimations::AttachCompositedLayers(
-      *target_, GetAnimation()->CompositorPlayer());
+      *target_, GetAnimation()->GetCompositorAnimation());
 }
 
 bool KeyframeEffectReadOnly::HasAnimation() const {

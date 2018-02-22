@@ -26,7 +26,7 @@ class ScrollOffset;
 
 namespace cc {
 
-class AnimationPlayer;
+class Animation;
 class AnimationTimeline;
 class ElementAnimations;
 class LayerTreeHost;
@@ -51,7 +51,7 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
       std::unordered_map<ElementId,
                          scoped_refptr<ElementAnimations>,
                          ElementIdHash>;
-  using PlayersList = std::vector<scoped_refptr<AnimationPlayer>>;
+  using AnimationsList = std::vector<scoped_refptr<Animation>>;
 
   static std::unique_ptr<AnimationHost> CreateMainInstance();
   static std::unique_ptr<AnimationHost> CreateForTesting(
@@ -167,15 +167,15 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   // This should only be called from the main thread.
   ScrollOffsetAnimations& scroll_offset_animations() const;
 
-  // Registers the given animation player as ticking. A ticking animation
-  // player is one that has a running animation.
-  void AddToTicking(scoped_refptr<AnimationPlayer> player);
+  // Registers the given animation as ticking. A ticking animation is one that
+  // has a running keyframe model.
+  void AddToTicking(scoped_refptr<Animation> animation);
 
-  // Unregisters the given animation player. When this happens, the
-  // animation player will no longer be ticked.
-  void RemoveFromTicking(scoped_refptr<AnimationPlayer> player);
+  // Unregisters the given animation. When this happens, the animation will no
+  // longer be ticked.
+  void RemoveFromTicking(scoped_refptr<Animation> animation);
 
-  const PlayersList& ticking_players_for_testing() const;
+  const AnimationsList& ticking_animations_for_testing() const;
   const ElementToAnimationsMap& element_animations_for_testing() const;
 
   // LayerTreeMutatorClient.
@@ -201,7 +201,7 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
 
   void EraseTimeline(scoped_refptr<AnimationTimeline> timeline);
 
-  bool NeedsTickAnimationPlayers() const;
+  bool NeedsTickAnimation() const;
   bool NeedsTickMutator() const;
 
   // Return the animator state representing all ticking worklet animations.
@@ -210,7 +210,7 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
       const ScrollTree& scroll_tree);
 
   ElementToAnimationsMap element_to_animations_map_;
-  PlayersList ticking_players_;
+  AnimationsList ticking_animations_;
 
   // A list of all timelines which this host owns.
   using IdToTimelineMap =

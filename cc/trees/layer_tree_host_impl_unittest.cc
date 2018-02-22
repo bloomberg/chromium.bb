@@ -1875,8 +1875,8 @@ TEST_F(CommitToPendingTreeLayerTreeHostImplTest,
 
   host_impl_->pending_tree()->SetElementIdsForTesting();
 
-  AddAnimatedTransformToElementWithPlayer(child->element_id(), timeline(), 10.0,
-                                          3, 0);
+  AddAnimatedTransformToElementWithAnimation(child->element_id(), timeline(),
+                                             10.0, 3, 0);
   host_impl_->pending_tree()->BuildPropertyTreesForTesting();
 
   EXPECT_FALSE(did_request_next_frame_);
@@ -1936,8 +1936,8 @@ TEST_F(CommitToPendingTreeLayerTreeHostImplTest,
   start.AppendTranslate(6.f, 7.f, 0.f);
   TransformOperations end;
   end.AppendTranslate(8.f, 9.f, 0.f);
-  AddAnimatedTransformToElementWithPlayer(child->element_id(), timeline(), 4.0,
-                                          start, end);
+  AddAnimatedTransformToElementWithAnimation(child->element_id(), timeline(),
+                                             4.0, start, end);
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   base::TimeTicks now = base::TimeTicks::Now();
@@ -1998,8 +1998,8 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingCommitToActiveTree) {
 
   host_impl_->active_tree()->SetElementIdsForTesting();
 
-  AddAnimatedTransformToElementWithPlayer(child->element_id(), timeline(), 10.0,
-                                          3, 0);
+  AddAnimatedTransformToElementWithAnimation(child->element_id(), timeline(),
+                                             10.0, 3, 0);
 
   // Set up the property trees so that UpdateDrawProperties will work in
   // CommitComplete below.
@@ -2047,8 +2047,8 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingOnLayerDestruction) {
   start.AppendTranslate(6.f, 7.f, 0.f);
   TransformOperations end;
   end.AppendTranslate(8.f, 9.f, 0.f);
-  AddAnimatedTransformToElementWithPlayer(child->element_id(), timeline(), 4.0,
-                                          start, end);
+  AddAnimatedTransformToElementWithAnimation(child->element_id(), timeline(),
+                                             4.0, start, end);
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   base::TimeTicks now = base::TimeTicks::Now();
@@ -4804,8 +4804,8 @@ class MissingTextureAnimatingLayer : public DidDrawCheckLayer {
         had_incomplete_tile_(had_incomplete_tile) {
     if (animating) {
       this->SetElementId(LayerIdToElementIdForTesting(id));
-      AddAnimatedTransformToElementWithPlayer(this->element_id(), timeline,
-                                              10.0, 3, 0);
+      AddAnimatedTransformToElementWithAnimation(this->element_id(), timeline,
+                                                 10.0, 3, 0);
     }
   }
 
@@ -4937,7 +4937,7 @@ TEST_F(CommitToPendingTreeLayerTreeHostImplTest,
       to_remove.push_back(child);
     for (auto* child : to_remove)
       root->test_properties()->RemoveChild(child);
-    timeline()->ClearPlayers();
+    timeline()->ClearAnimations();
 
     std::ostringstream scope;
     scope << "Test case: " << i;
@@ -13688,7 +13688,7 @@ TEST_F(LayerTreeHostImplTest, UpdatedTilingsForNonDrawingLayers) {
   TransformOperations start_transform_operations;
   start_transform_operations.AppendMatrix(singular);
   TransformOperations end_transform_operations;
-  AddAnimatedTransformToElementWithPlayer(
+  AddAnimatedTransformToElementWithAnimation(
       animated_transform_layer->element_id(), timeline(), 10.0,
       start_transform_operations, end_transform_operations);
 

@@ -19,13 +19,13 @@ void Rect::SetColor(SkColor color) {
 }
 
 void Rect::SetCenterColor(SkColor color) {
-  animation_player().TransitionColorTo(last_frame_time(), BACKGROUND_COLOR,
-                                       center_color_, color);
+  animation().TransitionColorTo(last_frame_time(), BACKGROUND_COLOR,
+                                center_color_, color);
 }
 
 void Rect::SetEdgeColor(SkColor color) {
-  animation_player().TransitionColorTo(last_frame_time(), FOREGROUND_COLOR,
-                                       edge_color_, color);
+  animation().TransitionColorTo(last_frame_time(), FOREGROUND_COLOR,
+                                edge_color_, color);
 }
 
 void Rect::NotifyClientColorAnimated(SkColor color,

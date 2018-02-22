@@ -2,55 +2,54 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/animation/worklet_animation_player.h"
+#include "cc/animation/worklet_animation.h"
 
 #include "base/memory/ptr_util.h"
 #include "cc/animation/scroll_timeline.h"
 
 namespace cc {
 
-WorkletAnimationPlayer::WorkletAnimationPlayer(
+WorkletAnimation::WorkletAnimation(
     int id,
     const std::string& name,
     std::unique_ptr<ScrollTimeline> scroll_timeline)
-    : SingleKeyframeEffectAnimationPlayer(id),
+    : SingleKeyframeEffectAnimation(id),
       name_(name),
       scroll_timeline_(std::move(scroll_timeline)) {}
 
-WorkletAnimationPlayer::~WorkletAnimationPlayer() = default;
+WorkletAnimation::~WorkletAnimation() = default;
 
-scoped_refptr<WorkletAnimationPlayer> WorkletAnimationPlayer::Create(
+scoped_refptr<WorkletAnimation> WorkletAnimation::Create(
     int id,
     const std::string& name,
     std::unique_ptr<ScrollTimeline> scroll_timeline) {
   return WrapRefCounted(
-      new WorkletAnimationPlayer(id, name, std::move(scroll_timeline)));
+      new WorkletAnimation(id, name, std::move(scroll_timeline)));
 }
 
-scoped_refptr<AnimationPlayer> WorkletAnimationPlayer::CreateImplInstance()
-    const {
+scoped_refptr<Animation> WorkletAnimation::CreateImplInstance() const {
   std::unique_ptr<ScrollTimeline> impl_timeline;
   if (scroll_timeline_)
     impl_timeline = scroll_timeline_->CreateImplInstance();
 
   return WrapRefCounted(
-      new WorkletAnimationPlayer(id(), name(), std::move(impl_timeline)));
+      new WorkletAnimation(id(), name(), std::move(impl_timeline)));
 }
 
-void WorkletAnimationPlayer::SetLocalTime(base::TimeDelta local_time) {
+void WorkletAnimation::SetLocalTime(base::TimeDelta local_time) {
   local_time_ = local_time;
   SetNeedsPushProperties();
 }
 
-void WorkletAnimationPlayer::Tick(base::TimeTicks monotonic_time) {
+void WorkletAnimation::Tick(base::TimeTicks monotonic_time) {
   keyframe_effect()->Tick(monotonic_time, this);
 }
 
 // TODO(crbug.com/780151): The current time returned should be an offset against
 // the animation's start time and based on the playback rate, not just the
 // timeline time directly.
-double WorkletAnimationPlayer::CurrentTime(base::TimeTicks monotonic_time,
-                                           const ScrollTree& scroll_tree) {
+double WorkletAnimation::CurrentTime(base::TimeTicks monotonic_time,
+                                     const ScrollTree& scroll_tree) {
   if (scroll_timeline_) {
     return scroll_timeline_->CurrentTime(scroll_tree);
   }
@@ -59,21 +58,19 @@ double WorkletAnimationPlayer::CurrentTime(base::TimeTicks monotonic_time,
   return (monotonic_time - base::TimeTicks()).InMillisecondsF();
 }
 
-base::TimeTicks WorkletAnimationPlayer::GetTimeForKeyframeModel(
+base::TimeTicks WorkletAnimation::GetTimeForKeyframeModel(
     const KeyframeModel& keyframe_model) const {
-  // Animation player local time is equivalent to animation active time. So
-  // we have to convert it from active time to monotonic time.
+  // Animation local time is equivalent to animation active time. So we have to
+  // convert it from active time to monotonic time.
   return keyframe_model.ConvertFromActiveTime(local_time_);
 }
 
-void WorkletAnimationPlayer::PushPropertiesTo(
-    AnimationPlayer* animation_player_impl) {
-  SingleKeyframeEffectAnimationPlayer::PushPropertiesTo(animation_player_impl);
-  static_cast<WorkletAnimationPlayer*>(animation_player_impl)
-      ->SetLocalTime(local_time_);
+void WorkletAnimation::PushPropertiesTo(Animation* animation_impl) {
+  SingleKeyframeEffectAnimation::PushPropertiesTo(animation_impl);
+  static_cast<WorkletAnimation*>(animation_impl)->SetLocalTime(local_time_);
 }
 
-bool WorkletAnimationPlayer::IsWorkletAnimationPlayer() const {
+bool WorkletAnimation::IsWorkletAnimation() const {
   return true;
 }
 

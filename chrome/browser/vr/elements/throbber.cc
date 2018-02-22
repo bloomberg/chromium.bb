@@ -40,16 +40,16 @@ void Throbber::NotifyClientFloatAnimated(float value,
 
 void Throbber::SetCircleGrowAnimationEnabled(bool enabled) {
   if (!enabled) {
-    if (animation_player().IsAnimatingProperty(CIRCLE_GROW)) {
+    if (animation().IsAnimatingProperty(CIRCLE_GROW)) {
       SetOpacity(opacity_before_animation_);
       SetScale(scale_before_animation_.scale.x, scale_before_animation_.scale.y,
                scale_before_animation_.scale.z);
     }
-    animation_player().RemoveKeyframeModels(CIRCLE_GROW);
+    animation().RemoveKeyframeModels(CIRCLE_GROW);
     return;
   }
 
-  if (animation_player().IsAnimatingProperty(CIRCLE_GROW))
+  if (animation().IsAnimatingProperty(CIRCLE_GROW))
     return;
 
   scale_before_animation_ = GetTargetTransform().at(kScaleIndex);
@@ -64,8 +64,8 @@ void Throbber::SetCircleGrowAnimationEnabled(bool enabled) {
       nullptr));
 
   std::unique_ptr<cc::KeyframeModel> keyframe_model(cc::KeyframeModel::Create(
-      std::move(curve), AnimationPlayer::GetNextKeyframeModelId(),
-      AnimationPlayer::GetNextGroupId(), CIRCLE_GROW));
+      std::move(curve), Animation::GetNextKeyframeModelId(),
+      Animation::GetNextGroupId(), CIRCLE_GROW));
   keyframe_model->set_iterations(-1);
   AddKeyframeModel(std::move(keyframe_model));
 }

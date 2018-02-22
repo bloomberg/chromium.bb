@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/animation/worklet_animation_player.h"
+#include "cc/animation/worklet_animation.h"
 
 #include "cc/animation/scroll_timeline.h"
 #include "cc/test/animation_test_common.h"
@@ -19,12 +19,12 @@ namespace cc {
 
 namespace {
 
-class WorkletAnimationPlayerTest : public AnimationTimelinesTest {
+class WorkletAnimationTest : public AnimationTimelinesTest {
  public:
-  WorkletAnimationPlayerTest() = default;
-  ~WorkletAnimationPlayerTest() override = default;
+  WorkletAnimationTest() = default;
+  ~WorkletAnimationTest() override = default;
 
-  int worklet_player_id_ = 11;
+  int worklet_animation_id_ = 11;
 };
 
 class MockScrollTimeline : public ScrollTimeline {
@@ -34,7 +34,7 @@ class MockScrollTimeline : public ScrollTimeline {
   MOCK_CONST_METHOD1(CurrentTime, double(const ScrollTree&));
 };
 
-TEST_F(WorkletAnimationPlayerTest, LocalTimeIsUsedWithAnimations) {
+TEST_F(WorkletAnimationTest, LocalTimeIsUsedWithAnimations) {
   client_.RegisterElement(element_id_, ElementListType::ACTIVE);
   client_impl_.RegisterElement(element_id_, ElementListType::PENDING);
   client_impl_.RegisterElement(element_id_, ElementListType::ACTIVE);
@@ -46,20 +46,20 @@ TEST_F(WorkletAnimationPlayerTest, LocalTimeIsUsedWithAnimations) {
   const float expected_opacity =
       start_opacity + (end_opacity - start_opacity) / 2;
 
-  scoped_refptr<WorkletAnimationPlayer> worklet_player_ =
-      WorkletAnimationPlayer::Create(worklet_player_id_, "test_name", nullptr);
+  scoped_refptr<WorkletAnimation> worklet_animation_ =
+      WorkletAnimation::Create(worklet_animation_id_, "test_name", nullptr);
 
-  worklet_player_->AttachElement(element_id_);
+  worklet_animation_->AttachElement(element_id_);
   host_->AddAnimationTimeline(timeline_);
-  timeline_->AttachPlayer(worklet_player_);
+  timeline_->AttachAnimation(worklet_animation_);
 
-  AddOpacityTransitionToPlayer(worklet_player_.get(), duration, start_opacity,
-                               end_opacity, true);
+  AddOpacityTransitionToAnimation(worklet_animation_.get(), duration,
+                                  start_opacity, end_opacity, true);
 
   host_->PushPropertiesTo(host_impl_);
   host_impl_->ActivateAnimations();
 
-  // TODO(majidvp): At the moment the player does not use the local time when
+  // TODO(majidvp): At the moment the animation does not use the local time when
   // it is starting. This is because KeyframeModel::ConvertToActiveTime always
   // returns the time_offset when starting. We need to change this.
   base::TimeTicks time;
@@ -67,7 +67,7 @@ TEST_F(WorkletAnimationPlayerTest, LocalTimeIsUsedWithAnimations) {
   TickAnimationsTransferEvents(time, 1u);
 
   base::TimeDelta local_time = base::TimeDelta::FromSecondsD(duration / 2);
-  worklet_player_->SetLocalTime(local_time);
+  worklet_animation_->SetLocalTime(local_time);
 
   host_->PushPropertiesTo(host_impl_);
 
@@ -82,8 +82,7 @@ TEST_F(WorkletAnimationPlayerTest, LocalTimeIsUsedWithAnimations) {
 
 // Tests that verify interaction of AnimationHost with LayerTreeMutator.
 // TODO(majidvp): Perhaps moves these to AnimationHostTest.
-TEST_F(WorkletAnimationPlayerTest,
-       LayerTreeMutatorsIsMutatedWithCorrectInputState) {
+TEST_F(WorkletAnimationTest, LayerTreeMutatorsIsMutatedWithCorrectInputState) {
   MockLayerTreeMutator* mock_mutator = new MockLayerTreeMutator();
   host_impl_->SetLayerTreeMutator(
       base::WrapUnique<LayerTreeMutator>(mock_mutator));
@@ -97,15 +96,15 @@ TEST_F(WorkletAnimationPlayerTest,
   const float end_opacity = .3f;
   const double duration = 1.;
 
-  scoped_refptr<WorkletAnimationPlayer> worklet_player_ =
-      WorkletAnimationPlayer::Create(worklet_player_id_, "test_name", nullptr);
+  scoped_refptr<WorkletAnimation> worklet_animation_ =
+      WorkletAnimation::Create(worklet_animation_id_, "test_name", nullptr);
 
-  worklet_player_->AttachElement(element_id_);
+  worklet_animation_->AttachElement(element_id_);
   host_->AddAnimationTimeline(timeline_);
-  timeline_->AttachPlayer(worklet_player_);
+  timeline_->AttachAnimation(worklet_animation_);
 
-  AddOpacityTransitionToPlayer(worklet_player_.get(), duration, start_opacity,
-                               end_opacity, true);
+  AddOpacityTransitionToAnimation(worklet_animation_.get(), duration,
+                                  start_opacity, end_opacity, true);
 
   host_->PushPropertiesTo(host_impl_);
   host_impl_->ActivateAnimations();
@@ -119,16 +118,15 @@ TEST_F(WorkletAnimationPlayerTest,
   Mock::VerifyAndClearExpectations(mock_mutator);
 }
 
-TEST_F(WorkletAnimationPlayerTest, CurrentTimeCorrectlyUsesScrolltimeline) {
+TEST_F(WorkletAnimationTest, CurrentTimeCorrectlyUsesScrolltimeline) {
   auto scroll_timeline = std::make_unique<MockScrollTimeline>();
   EXPECT_CALL(*scroll_timeline, CurrentTime(_)).WillOnce(Return(1234));
-  scoped_refptr<WorkletAnimationPlayer> worklet_player =
-      WorkletAnimationPlayer::Create(worklet_player_id_, "test_name",
-                                     std::move(scroll_timeline));
+  scoped_refptr<WorkletAnimation> worklet_animation = WorkletAnimation::Create(
+      worklet_animation_id_, "test_name", std::move(scroll_timeline));
 
   ScrollTree scroll_tree;
-  EXPECT_EQ(1234,
-            worklet_player->CurrentTime(base::TimeTicks::Now(), scroll_tree));
+  EXPECT_EQ(1234, worklet_animation->CurrentTime(base::TimeTicks::Now(),
+                                                 scroll_tree));
 }
 
 }  // namespace

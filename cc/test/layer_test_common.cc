@@ -6,9 +6,9 @@
 
 #include <stddef.h>
 
+#include "cc/animation/animation.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
-#include "cc/animation/animation_player.h"
 #include "cc/base/math_util.h"
 #include "cc/base/region.h"
 #include "cc/layers/append_quads_data.h"

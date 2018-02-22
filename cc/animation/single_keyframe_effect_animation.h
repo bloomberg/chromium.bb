@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_ANIMATION_SINGLE_KEYFRAME_EFFECT_ANIMATION_PLAYER_H_
-#define CC_ANIMATION_SINGLE_KEYFRAME_EFFECT_ANIMATION_PLAYER_H_
+#ifndef CC_ANIMATION_SINGLE_KEYFRAME_EFFECT_ANIMATION_H_
+#define CC_ANIMATION_SINGLE_KEYFRAME_EFFECT_ANIMATION_H_
 
 #include <vector>
 
@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "cc/animation/animation.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_export.h"
-#include "cc/animation/animation_player.h"
 #include "cc/animation/element_animations.h"
 #include "cc/animation/keyframe_model.h"
 #include "cc/trees/element_id.h"
@@ -22,21 +22,20 @@ namespace cc {
 
 class KeyframeEffect;
 
-// SingleKeyframeEffectAnimationPlayer is a sub-class of AnimationPlayer. It
+// SingleKeyframeEffectAnimation is a sub-class of Animation. It
 // serves as a bridge between the cc animation clients and cc because we
-// previously only supported single effect(keyframe_effect) per player.
+// previously only supported single effect(keyframe_effect) per animation.
 //
-// There is a 1:1 relationship between SingleKeyframeEffectAnimationPlayer and
-// the KeyframeEffect. In general, the base class AnimationPlayer is a 1:N
+// There is a 1:1 relationship between SingleKeyframeEffectAnimation and
+// the KeyframeEffect. In general, the base class Animation is a 1:N
 // relationship to allow for grouped animations.
 //
-// TODO(yigu): Deprecate SingleKeyframeEffectAnimationPlayer once grouped
+// TODO(yigu): Deprecate SingleKeyframeEffectAnimation once grouped
 // animations are fully supported by all clients.
-class CC_ANIMATION_EXPORT SingleKeyframeEffectAnimationPlayer
-    : public AnimationPlayer {
+class CC_ANIMATION_EXPORT SingleKeyframeEffectAnimation : public Animation {
  public:
-  static scoped_refptr<SingleKeyframeEffectAnimationPlayer> Create(int id);
-  scoped_refptr<AnimationPlayer> CreateImplInstance() const override;
+  static scoped_refptr<SingleKeyframeEffectAnimation> Create(int id);
+  scoped_refptr<Animation> CreateImplInstance() const override;
 
   ElementId element_id() const;
 
@@ -54,19 +53,18 @@ class CC_ANIMATION_EXPORT SingleKeyframeEffectAnimationPlayer
   KeyframeModel* GetKeyframeModel(TargetProperty::Type target_property) const;
 
  private:
-  friend class base::RefCounted<SingleKeyframeEffectAnimationPlayer>;
+  friend class base::RefCounted<SingleKeyframeEffectAnimation>;
 
   KeyframeEffect* GetKeyframeEffect() const;
 
  protected:
-  explicit SingleKeyframeEffectAnimationPlayer(int id);
-  explicit SingleKeyframeEffectAnimationPlayer(int id,
-                                               size_t keyframe_effect_id);
-  ~SingleKeyframeEffectAnimationPlayer() override;
+  explicit SingleKeyframeEffectAnimation(int id);
+  explicit SingleKeyframeEffectAnimation(int id, size_t keyframe_effect_id);
+  ~SingleKeyframeEffectAnimation() override;
 
-  DISALLOW_COPY_AND_ASSIGN(SingleKeyframeEffectAnimationPlayer);
+  DISALLOW_COPY_AND_ASSIGN(SingleKeyframeEffectAnimation);
 };
 
 }  // namespace cc
 
-#endif  // CC_ANIMATION_SINGLE_KEYFRAME_EFFECT_ANIMATION_PLAYER_H_
+#endif  // CC_ANIMATION_SINGLE_KEYFRAME_EFFECT_ANIMATION_H_

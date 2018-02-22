@@ -386,30 +386,30 @@ TEST_F(KeyframeEffectTest, TimeToEffectChange) {
   timing.start_delay = 100;
   timing.end_delay = 100;
   timing.fill_mode = Timing::FillMode::NONE;
-  KeyframeEffect* animation =
+  KeyframeEffect* keyframe_effect =
       KeyframeEffect::Create(nullptr, CreateEmptyEffectModel(), timing);
-  Animation* player = GetDocument().Timeline().Play(animation);
+  Animation* animation = GetDocument().Timeline().Play(keyframe_effect);
   double inf = std::numeric_limits<double>::infinity();
 
-  EXPECT_EQ(100, animation->TimeToForwardsEffectChange());
-  EXPECT_EQ(inf, animation->TimeToReverseEffectChange());
+  EXPECT_EQ(100, keyframe_effect->TimeToForwardsEffectChange());
+  EXPECT_EQ(inf, keyframe_effect->TimeToReverseEffectChange());
 
-  player->SetCurrentTimeInternal(100);
-  EXPECT_EQ(100, animation->TimeToForwardsEffectChange());
-  EXPECT_EQ(0, animation->TimeToReverseEffectChange());
+  animation->SetCurrentTimeInternal(100);
+  EXPECT_EQ(100, keyframe_effect->TimeToForwardsEffectChange());
+  EXPECT_EQ(0, keyframe_effect->TimeToReverseEffectChange());
 
-  player->SetCurrentTimeInternal(199);
-  EXPECT_EQ(1, animation->TimeToForwardsEffectChange());
-  EXPECT_EQ(0, animation->TimeToReverseEffectChange());
+  animation->SetCurrentTimeInternal(199);
+  EXPECT_EQ(1, keyframe_effect->TimeToForwardsEffectChange());
+  EXPECT_EQ(0, keyframe_effect->TimeToReverseEffectChange());
 
-  player->SetCurrentTimeInternal(200);
+  animation->SetCurrentTimeInternal(200);
   // End-exclusive.
-  EXPECT_EQ(inf, animation->TimeToForwardsEffectChange());
-  EXPECT_EQ(0, animation->TimeToReverseEffectChange());
+  EXPECT_EQ(inf, keyframe_effect->TimeToForwardsEffectChange());
+  EXPECT_EQ(0, keyframe_effect->TimeToReverseEffectChange());
 
-  player->SetCurrentTimeInternal(300);
-  EXPECT_EQ(inf, animation->TimeToForwardsEffectChange());
-  EXPECT_EQ(100, animation->TimeToReverseEffectChange());
+  animation->SetCurrentTimeInternal(300);
+  EXPECT_EQ(inf, keyframe_effect->TimeToForwardsEffectChange());
+  EXPECT_EQ(100, keyframe_effect->TimeToReverseEffectChange());
 }
 
 TEST_F(KeyframeEffectTest, TimeToEffectChangeWithPlaybackRate) {
@@ -419,30 +419,30 @@ TEST_F(KeyframeEffectTest, TimeToEffectChangeWithPlaybackRate) {
   timing.end_delay = 100;
   timing.playback_rate = 2;
   timing.fill_mode = Timing::FillMode::NONE;
-  KeyframeEffect* animation =
+  KeyframeEffect* keyframe_effect =
       KeyframeEffect::Create(nullptr, CreateEmptyEffectModel(), timing);
-  Animation* player = GetDocument().Timeline().Play(animation);
+  Animation* animation = GetDocument().Timeline().Play(keyframe_effect);
   double inf = std::numeric_limits<double>::infinity();
 
-  EXPECT_EQ(100, animation->TimeToForwardsEffectChange());
-  EXPECT_EQ(inf, animation->TimeToReverseEffectChange());
+  EXPECT_EQ(100, keyframe_effect->TimeToForwardsEffectChange());
+  EXPECT_EQ(inf, keyframe_effect->TimeToReverseEffectChange());
 
-  player->SetCurrentTimeInternal(100);
-  EXPECT_EQ(50, animation->TimeToForwardsEffectChange());
-  EXPECT_EQ(0, animation->TimeToReverseEffectChange());
+  animation->SetCurrentTimeInternal(100);
+  EXPECT_EQ(50, keyframe_effect->TimeToForwardsEffectChange());
+  EXPECT_EQ(0, keyframe_effect->TimeToReverseEffectChange());
 
-  player->SetCurrentTimeInternal(149);
-  EXPECT_EQ(1, animation->TimeToForwardsEffectChange());
-  EXPECT_EQ(0, animation->TimeToReverseEffectChange());
+  animation->SetCurrentTimeInternal(149);
+  EXPECT_EQ(1, keyframe_effect->TimeToForwardsEffectChange());
+  EXPECT_EQ(0, keyframe_effect->TimeToReverseEffectChange());
 
-  player->SetCurrentTimeInternal(150);
+  animation->SetCurrentTimeInternal(150);
   // End-exclusive.
-  EXPECT_EQ(inf, animation->TimeToForwardsEffectChange());
-  EXPECT_EQ(0, animation->TimeToReverseEffectChange());
+  EXPECT_EQ(inf, keyframe_effect->TimeToForwardsEffectChange());
+  EXPECT_EQ(0, keyframe_effect->TimeToReverseEffectChange());
 
-  player->SetCurrentTimeInternal(200);
-  EXPECT_EQ(inf, animation->TimeToForwardsEffectChange());
-  EXPECT_EQ(50, animation->TimeToReverseEffectChange());
+  animation->SetCurrentTimeInternal(200);
+  EXPECT_EQ(inf, keyframe_effect->TimeToForwardsEffectChange());
+  EXPECT_EQ(50, keyframe_effect->TimeToReverseEffectChange());
 }
 
 TEST_F(KeyframeEffectTest, TimeToEffectChangeWithNegativePlaybackRate) {
@@ -452,29 +452,29 @@ TEST_F(KeyframeEffectTest, TimeToEffectChangeWithNegativePlaybackRate) {
   timing.end_delay = 100;
   timing.playback_rate = -2;
   timing.fill_mode = Timing::FillMode::NONE;
-  KeyframeEffect* animation =
+  KeyframeEffect* keyframe_effect =
       KeyframeEffect::Create(nullptr, CreateEmptyEffectModel(), timing);
-  Animation* player = GetDocument().Timeline().Play(animation);
+  Animation* animation = GetDocument().Timeline().Play(keyframe_effect);
   double inf = std::numeric_limits<double>::infinity();
 
-  EXPECT_EQ(100, animation->TimeToForwardsEffectChange());
-  EXPECT_EQ(inf, animation->TimeToReverseEffectChange());
+  EXPECT_EQ(100, keyframe_effect->TimeToForwardsEffectChange());
+  EXPECT_EQ(inf, keyframe_effect->TimeToReverseEffectChange());
 
-  player->SetCurrentTimeInternal(100);
-  EXPECT_EQ(50, animation->TimeToForwardsEffectChange());
-  EXPECT_EQ(0, animation->TimeToReverseEffectChange());
+  animation->SetCurrentTimeInternal(100);
+  EXPECT_EQ(50, keyframe_effect->TimeToForwardsEffectChange());
+  EXPECT_EQ(0, keyframe_effect->TimeToReverseEffectChange());
 
-  player->SetCurrentTimeInternal(149);
-  EXPECT_EQ(1, animation->TimeToForwardsEffectChange());
-  EXPECT_EQ(0, animation->TimeToReverseEffectChange());
+  animation->SetCurrentTimeInternal(149);
+  EXPECT_EQ(1, keyframe_effect->TimeToForwardsEffectChange());
+  EXPECT_EQ(0, keyframe_effect->TimeToReverseEffectChange());
 
-  player->SetCurrentTimeInternal(150);
-  EXPECT_EQ(inf, animation->TimeToForwardsEffectChange());
-  EXPECT_EQ(0, animation->TimeToReverseEffectChange());
+  animation->SetCurrentTimeInternal(150);
+  EXPECT_EQ(inf, keyframe_effect->TimeToForwardsEffectChange());
+  EXPECT_EQ(0, keyframe_effect->TimeToReverseEffectChange());
 
-  player->SetCurrentTimeInternal(200);
-  EXPECT_EQ(inf, animation->TimeToForwardsEffectChange());
-  EXPECT_EQ(50, animation->TimeToReverseEffectChange());
+  animation->SetCurrentTimeInternal(200);
+  EXPECT_EQ(inf, keyframe_effect->TimeToForwardsEffectChange());
+  EXPECT_EQ(50, keyframe_effect->TimeToReverseEffectChange());
 }
 
 }  // namespace blink

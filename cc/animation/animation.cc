@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/animation/animation_player.h"
+#include "cc/animation/animation.h"
 
 #include <inttypes.h>
 #include <algorithm>
@@ -19,11 +19,11 @@
 
 namespace cc {
 
-scoped_refptr<AnimationPlayer> AnimationPlayer::Create(int id) {
-  return base::WrapRefCounted(new AnimationPlayer(id));
+scoped_refptr<Animation> Animation::Create(int id) {
+  return base::WrapRefCounted(new Animation(id));
 }
 
-AnimationPlayer::AnimationPlayer(int id)
+Animation::Animation(int id)
     : animation_host_(),
       animation_timeline_(),
       animation_delegate_(),
@@ -32,30 +32,29 @@ AnimationPlayer::AnimationPlayer(int id)
   DCHECK(id_);
 }
 
-AnimationPlayer::~AnimationPlayer() {
+Animation::~Animation() {
   DCHECK(!animation_timeline_);
 }
 
-scoped_refptr<AnimationPlayer> AnimationPlayer::CreateImplInstance() const {
-  scoped_refptr<AnimationPlayer> player = AnimationPlayer::Create(id());
-  return player;
+scoped_refptr<Animation> Animation::CreateImplInstance() const {
+  return Animation::Create(id());
 }
 
-ElementId AnimationPlayer::element_id_of_keyframe_effect(
+ElementId Animation::element_id_of_keyframe_effect(
     KeyframeEffectId keyframe_effect_id) const {
   DCHECK(GetKeyframeEffectById(keyframe_effect_id));
   return GetKeyframeEffectById(keyframe_effect_id)->element_id();
 }
 
-bool AnimationPlayer::IsElementAttached(ElementId id) const {
+bool Animation::IsElementAttached(ElementId id) const {
   return !!element_to_keyframe_effect_id_map_.count(id);
 }
 
-void AnimationPlayer::SetAnimationHost(AnimationHost* animation_host) {
+void Animation::SetAnimationHost(AnimationHost* animation_host) {
   animation_host_ = animation_host;
 }
 
-void AnimationPlayer::SetAnimationTimeline(AnimationTimeline* timeline) {
+void Animation::SetAnimationTimeline(AnimationTimeline* timeline) {
   if (animation_timeline_ == timeline)
     return;
 
@@ -68,37 +67,37 @@ void AnimationPlayer::SetAnimationTimeline(AnimationTimeline* timeline) {
 
   animation_timeline_ = timeline;
 
-  // Register player only if layer AND host attached. Unlike the
-  // SingleAnimationPlayer case, all keyframe_effects have been attached to
-  // their corresponding elements.
+  // Register animation only if layer AND host attached. Unlike the
+  // SingleKeyframeEffectAnimation case, all keyframe_effects have been attached
+  // to their corresponding elements.
   if (!element_to_keyframe_effect_id_map_.empty() && animation_host_) {
     RegisterKeyframeEffects();
   }
 }
 
-bool AnimationPlayer::has_element_animations() const {
+bool Animation::has_element_animations() const {
   return !element_to_keyframe_effect_id_map_.empty();
 }
 
-scoped_refptr<ElementAnimations> AnimationPlayer::element_animations(
+scoped_refptr<ElementAnimations> Animation::element_animations(
     KeyframeEffectId keyframe_effect_id) const {
   return GetKeyframeEffectById(keyframe_effect_id)->element_animations();
 }
 
-void AnimationPlayer::AttachElementForKeyframeEffect(
+void Animation::AttachElementForKeyframeEffect(
     ElementId element_id,
     KeyframeEffectId keyframe_effect_id) {
   DCHECK(GetKeyframeEffectById(keyframe_effect_id));
   GetKeyframeEffectById(keyframe_effect_id)->AttachElement(element_id);
   element_to_keyframe_effect_id_map_[element_id].emplace(keyframe_effect_id);
-  // Register player only if layer AND host attached.
+  // Register animation only if layer AND host attached.
   if (animation_host_) {
     // Create ElementAnimations or re-use existing.
     RegisterKeyframeEffect(element_id, keyframe_effect_id);
   }
 }
 
-void AnimationPlayer::DetachElementForKeyframeEffect(
+void Animation::DetachElementForKeyframeEffect(
     ElementId element_id,
     KeyframeEffectId keyframe_effect_id) {
   DCHECK(GetKeyframeEffectById(keyframe_effect_id));
@@ -110,7 +109,7 @@ void AnimationPlayer::DetachElementForKeyframeEffect(
   element_to_keyframe_effect_id_map_[element_id].erase(keyframe_effect_id);
 }
 
-void AnimationPlayer::DetachElement() {
+void Animation::DetachElement() {
   if (animation_host_) {
     // Destroy ElementAnimations or release it if it's still needed.
     UnregisterKeyframeEffects();
@@ -128,9 +127,8 @@ void AnimationPlayer::DetachElement() {
   DCHECK_EQ(element_to_keyframe_effect_id_map_.size(), 0u);
 }
 
-void AnimationPlayer::RegisterKeyframeEffect(
-    ElementId element_id,
-    KeyframeEffectId keyframe_effect_id) {
+void Animation::RegisterKeyframeEffect(ElementId element_id,
+                                       KeyframeEffectId keyframe_effect_id) {
   DCHECK(animation_host_);
   KeyframeEffect* keyframe_effect = GetKeyframeEffectById(keyframe_effect_id);
   DCHECK(!keyframe_effect->has_bound_element_animations());
@@ -141,9 +139,8 @@ void AnimationPlayer::RegisterKeyframeEffect(
                                                     keyframe_effect);
 }
 
-void AnimationPlayer::UnregisterKeyframeEffect(
-    ElementId element_id,
-    KeyframeEffectId keyframe_effect_id) {
+void Animation::UnregisterKeyframeEffect(ElementId element_id,
+                                         KeyframeEffectId keyframe_effect_id) {
   DCHECK(animation_host_);
   KeyframeEffect* keyframe_effect = GetKeyframeEffectById(keyframe_effect_id);
   DCHECK(keyframe_effect);
@@ -153,7 +150,7 @@ void AnimationPlayer::UnregisterKeyframeEffect(
                                                         keyframe_effect);
   }
 }
-void AnimationPlayer::RegisterKeyframeEffects() {
+void Animation::RegisterKeyframeEffects() {
   for (auto& element_id_keyframe_effect_id :
        element_to_keyframe_effect_id_map_) {
     const ElementId element_id = element_id_keyframe_effect_id.first;
@@ -164,7 +161,7 @@ void AnimationPlayer::RegisterKeyframeEffects() {
   }
 }
 
-void AnimationPlayer::UnregisterKeyframeEffects() {
+void Animation::UnregisterKeyframeEffects() {
   for (auto& element_id_keyframe_effect_id :
        element_to_keyframe_effect_id_map_) {
     const ElementId element_id = element_id_keyframe_effect_id.first;
@@ -176,30 +173,30 @@ void AnimationPlayer::UnregisterKeyframeEffects() {
   animation_host_->RemoveFromTicking(this);
 }
 
-void AnimationPlayer::PushAttachedKeyframeEffectsToImplThread(
-    AnimationPlayer* player_impl) const {
+void Animation::PushAttachedKeyframeEffectsToImplThread(
+    Animation* animation_impl) const {
   for (auto& keyframe_effect : keyframe_effects_) {
     KeyframeEffect* keyframe_effect_impl =
-        player_impl->GetKeyframeEffectById(keyframe_effect->id());
+        animation_impl->GetKeyframeEffectById(keyframe_effect->id());
     if (keyframe_effect_impl)
       continue;
 
     std::unique_ptr<KeyframeEffect> to_add =
         keyframe_effect->CreateImplInstance();
-    player_impl->AddKeyframeEffect(std::move(to_add));
+    animation_impl->AddKeyframeEffect(std::move(to_add));
   }
 }
 
-void AnimationPlayer::PushPropertiesToImplThread(AnimationPlayer* player_impl) {
+void Animation::PushPropertiesToImplThread(Animation* animation_impl) {
   for (auto& keyframe_effect : keyframe_effects_) {
     if (KeyframeEffect* keyframe_effect_impl =
-            player_impl->GetKeyframeEffectById(keyframe_effect->id())) {
+            animation_impl->GetKeyframeEffectById(keyframe_effect->id())) {
       keyframe_effect->PushPropertiesTo(keyframe_effect_impl);
     }
   }
 }
 
-void AnimationPlayer::AddKeyframeModelForKeyframeEffect(
+void Animation::AddKeyframeModelForKeyframeEffect(
     std::unique_ptr<KeyframeModel> keyframe_model,
     KeyframeEffectId keyframe_effect_id) {
   DCHECK(GetKeyframeEffectById(keyframe_effect_id));
@@ -207,7 +204,7 @@ void AnimationPlayer::AddKeyframeModelForKeyframeEffect(
       ->AddKeyframeModel(std::move(keyframe_model));
 }
 
-void AnimationPlayer::PauseKeyframeModelForKeyframeEffect(
+void Animation::PauseKeyframeModelForKeyframeEffect(
     int keyframe_model_id,
     double time_offset,
     KeyframeEffectId keyframe_effect_id) {
@@ -216,7 +213,7 @@ void AnimationPlayer::PauseKeyframeModelForKeyframeEffect(
       ->PauseKeyframeModel(keyframe_model_id, time_offset);
 }
 
-void AnimationPlayer::RemoveKeyframeModelForKeyframeEffect(
+void Animation::RemoveKeyframeModelForKeyframeEffect(
     int keyframe_model_id,
     KeyframeEffectId keyframe_effect_id) {
   DCHECK(GetKeyframeEffectById(keyframe_effect_id));
@@ -224,7 +221,7 @@ void AnimationPlayer::RemoveKeyframeModelForKeyframeEffect(
       ->RemoveKeyframeModel(keyframe_model_id);
 }
 
-void AnimationPlayer::AbortKeyframeModelForKeyframeEffect(
+void Animation::AbortKeyframeModelForKeyframeEffect(
     int keyframe_model_id,
     KeyframeEffectId keyframe_effect_id) {
   DCHECK(GetKeyframeEffectById(keyframe_effect_id));
@@ -232,32 +229,32 @@ void AnimationPlayer::AbortKeyframeModelForKeyframeEffect(
       ->AbortKeyframeModel(keyframe_model_id);
 }
 
-void AnimationPlayer::AbortKeyframeModels(TargetProperty::Type target_property,
-                                          bool needs_completion) {
+void Animation::AbortKeyframeModels(TargetProperty::Type target_property,
+                                    bool needs_completion) {
   for (auto& keyframe_effect : keyframe_effects_)
     keyframe_effect->AbortKeyframeModels(target_property, needs_completion);
 }
 
-void AnimationPlayer::PushPropertiesTo(AnimationPlayer* player_impl) {
-  PushAttachedKeyframeEffectsToImplThread(player_impl);
-  PushPropertiesToImplThread(player_impl);
+void Animation::PushPropertiesTo(Animation* animation_impl) {
+  PushAttachedKeyframeEffectsToImplThread(animation_impl);
+  PushPropertiesToImplThread(animation_impl);
 }
 
-void AnimationPlayer::Tick(base::TimeTicks monotonic_time) {
+void Animation::Tick(base::TimeTicks monotonic_time) {
   DCHECK(!monotonic_time.is_null());
   for (auto& keyframe_effect : keyframe_effects_)
     keyframe_effect->Tick(monotonic_time, nullptr);
 }
 
-void AnimationPlayer::UpdateState(bool start_ready_animations,
-                                  AnimationEvents* events) {
+void Animation::UpdateState(bool start_ready_animations,
+                            AnimationEvents* events) {
   for (auto& keyframe_effect : keyframe_effects_) {
     keyframe_effect->UpdateState(start_ready_animations, events);
     keyframe_effect->UpdateTickingState(UpdateTickingType::NORMAL);
   }
 }
 
-void AnimationPlayer::AddToTicking() {
+void Animation::AddToTicking() {
   ++ticking_keyframe_effects_count;
   if (ticking_keyframe_effects_count > 1)
     return;
@@ -265,7 +262,7 @@ void AnimationPlayer::AddToTicking() {
   animation_host_->AddToTicking(this);
 }
 
-void AnimationPlayer::KeyframeModelRemovedFromTicking() {
+void Animation::KeyframeModelRemovedFromTicking() {
   DCHECK_GE(ticking_keyframe_effects_count, 0);
   if (!ticking_keyframe_effects_count)
     return;
@@ -277,28 +274,28 @@ void AnimationPlayer::KeyframeModelRemovedFromTicking() {
   animation_host_->RemoveFromTicking(this);
 }
 
-void AnimationPlayer::NotifyKeyframeModelStarted(const AnimationEvent& event) {
+void Animation::NotifyKeyframeModelStarted(const AnimationEvent& event) {
   if (animation_delegate_) {
     animation_delegate_->NotifyAnimationStarted(
         event.monotonic_time, event.target_property, event.group_id);
   }
 }
 
-void AnimationPlayer::NotifyKeyframeModelFinished(const AnimationEvent& event) {
+void Animation::NotifyKeyframeModelFinished(const AnimationEvent& event) {
   if (animation_delegate_) {
     animation_delegate_->NotifyAnimationFinished(
         event.monotonic_time, event.target_property, event.group_id);
   }
 }
 
-void AnimationPlayer::NotifyKeyframeModelAborted(const AnimationEvent& event) {
+void Animation::NotifyKeyframeModelAborted(const AnimationEvent& event) {
   if (animation_delegate_) {
     animation_delegate_->NotifyAnimationAborted(
         event.monotonic_time, event.target_property, event.group_id);
   }
 }
 
-void AnimationPlayer::NotifyKeyframeModelTakeover(const AnimationEvent& event) {
+void Animation::NotifyKeyframeModelTakeover(const AnimationEvent& event) {
   DCHECK(event.target_property == TargetProperty::SCROLL_OFFSET);
 
   if (animation_delegate_) {
@@ -310,32 +307,32 @@ void AnimationPlayer::NotifyKeyframeModelTakeover(const AnimationEvent& event) {
   }
 }
 
-size_t AnimationPlayer::TickingKeyframeModelsCount() const {
+size_t Animation::TickingKeyframeModelsCount() const {
   size_t count = 0;
   for (auto& keyframe_effect : keyframe_effects_)
     count += keyframe_effect->TickingKeyframeModelsCount();
   return count;
 }
 
-void AnimationPlayer::SetNeedsCommit() {
+void Animation::SetNeedsCommit() {
   DCHECK(animation_host_);
   animation_host_->SetNeedsCommit();
 }
 
-void AnimationPlayer::SetNeedsPushProperties() {
+void Animation::SetNeedsPushProperties() {
   if (!animation_timeline_)
     return;
   animation_timeline_->SetNeedsPushProperties();
 }
 
-void AnimationPlayer::ActivateKeyframeEffects() {
+void Animation::ActivateKeyframeEffects() {
   for (auto& keyframe_effect : keyframe_effects_) {
     keyframe_effect->ActivateKeyframeEffects();
     keyframe_effect->UpdateTickingState(UpdateTickingType::NORMAL);
   }
 }
 
-KeyframeModel* AnimationPlayer::GetKeyframeModelForKeyframeEffect(
+KeyframeModel* Animation::GetKeyframeModelForKeyframeEffect(
     TargetProperty::Type target_property,
     KeyframeEffectId keyframe_effect_id) const {
   DCHECK(GetKeyframeEffectById(keyframe_effect_id));
@@ -343,8 +340,8 @@ KeyframeModel* AnimationPlayer::GetKeyframeModelForKeyframeEffect(
       ->GetKeyframeModel(target_property);
 }
 
-std::string AnimationPlayer::ToString() const {
-  std::string output = base::StringPrintf("AnimationPlayer{id=%d", id_);
+std::string Animation::ToString() const {
+  std::string output = base::StringPrintf("Animation{id=%d", id_);
   for (const auto& keyframe_effect : keyframe_effects_) {
     output +=
         base::StringPrintf(", element_id=%s, keyframe_models=[%s]",
@@ -354,19 +351,19 @@ std::string AnimationPlayer::ToString() const {
   return output + "}";
 }
 
-bool AnimationPlayer::IsWorkletAnimationPlayer() const {
+bool Animation::IsWorkletAnimation() const {
   return false;
 }
 
-void AnimationPlayer::AddKeyframeEffect(
+void Animation::AddKeyframeEffect(
     std::unique_ptr<KeyframeEffect> keyframe_effect) {
-  keyframe_effect->SetAnimationPlayer(this);
+  keyframe_effect->SetAnimation(this);
   keyframe_effects_.push_back(std::move(keyframe_effect));
 
   SetNeedsPushProperties();
 }
 
-KeyframeEffect* AnimationPlayer::GetKeyframeEffectById(
+KeyframeEffect* Animation::GetKeyframeEffectById(
     KeyframeEffectId keyframe_effect_id) const {
   // May return nullptr when syncing keyframe_effects_ to impl.
   return keyframe_effects_.size() > keyframe_effect_id

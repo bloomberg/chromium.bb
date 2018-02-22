@@ -342,7 +342,7 @@ void ScrollAnimator::UpdateCompositorAnimations() {
 
   if (run_state_ == RunState::kWaitingToSendToCompositor) {
     if (!element_id_)
-      ReattachCompositorPlayerIfNeeded(
+      ReattachCompositorAnimationIfNeeded(
           GetScrollableArea()->GetCompositorAnimationTimeline());
 
     if (!animation_curve_)
@@ -429,7 +429,7 @@ void ScrollAnimator::TakeOverCompositorAnimation() {
 
 void ScrollAnimator::LayerForCompositedScrollingDidChange(
     CompositorAnimationTimeline* timeline) {
-  if (ReattachCompositorPlayerIfNeeded(timeline) && animation_curve_)
+  if (ReattachCompositorAnimationIfNeeded(timeline) && animation_curve_)
     AddMainThreadScrollingReason();
 }
 

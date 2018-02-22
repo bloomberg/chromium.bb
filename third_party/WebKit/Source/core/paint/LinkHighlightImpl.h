@@ -28,9 +28,9 @@
 
 #include <memory>
 #include "core/CoreExport.h"
+#include "platform/animation/CompositorAnimation.h"
+#include "platform/animation/CompositorAnimationClient.h"
 #include "platform/animation/CompositorAnimationDelegate.h"
-#include "platform/animation/CompositorAnimationPlayer.h"
-#include "platform/animation/CompositorAnimationPlayerClient.h"
 #include "platform/graphics/CompositorElementId.h"
 #include "platform/graphics/LinkHighlight.h"
 #include "platform/graphics/Path.h"
@@ -48,11 +48,10 @@ class WebContentLayer;
 class WebLayer;
 class WebViewImpl;
 
-class CORE_EXPORT LinkHighlightImpl final
-    : public LinkHighlight,
-      public WebContentLayerClient,
-      public CompositorAnimationDelegate,
-      public CompositorAnimationPlayerClient {
+class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
+                                            public WebContentLayerClient,
+                                            public CompositorAnimationDelegate,
+                                            public CompositorAnimationClient {
  public:
   static std::unique_ptr<LinkHighlightImpl> Create(Node*, WebViewImpl*);
   ~LinkHighlightImpl() override;
@@ -77,8 +76,8 @@ class CORE_EXPORT LinkHighlightImpl final
   WebLayer* Layer() override;
   void ClearCurrentGraphicsLayer() override;
 
-  // CompositorAnimationPlayerClient implementation.
-  CompositorAnimationPlayer* CompositorPlayer() const override;
+  // CompositorAnimationClient implementation.
+  CompositorAnimation* GetCompositorAnimation() const override;
 
   GraphicsLayer* CurrentGraphicsLayerForTesting() const {
     return current_graphics_layer_;
@@ -105,7 +104,7 @@ class CORE_EXPORT LinkHighlightImpl final
   WebViewImpl* owning_web_view_;
   GraphicsLayer* current_graphics_layer_;
   bool is_scrolling_graphics_layer_;
-  std::unique_ptr<CompositorAnimationPlayer> compositor_player_;
+  std::unique_ptr<CompositorAnimation> compositor_animation_;
 
   bool geometry_needs_update_;
   bool is_animating_;

@@ -72,8 +72,8 @@ Grid::Grid() {}
 Grid::~Grid() {}
 
 void Grid::SetGridColor(SkColor color) {
-  animation_player().TransitionColorTo(last_frame_time(), GRID_COLOR,
-                                       grid_color_, color);
+  animation().TransitionColorTo(last_frame_time(), GRID_COLOR, grid_color_,
+                                color);
 }
 
 void Grid::NotifyClientColorAnimated(SkColor color,

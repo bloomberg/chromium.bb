@@ -5,7 +5,7 @@
   },
 
   data: [
-    "core/animation/AnimationPlayer",
+    "core/animation/Animation",
     "core/clipboard/Clipboard",
     "core/css/FontFaceSet",
     "core/css/MediaQueryList",

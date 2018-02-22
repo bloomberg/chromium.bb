@@ -22,7 +22,7 @@
 
 namespace cc {
 
-class AnimationPlayer;
+class Animation;
 class KeyframeModel;
 struct PropertyAnimationState;
 
@@ -165,7 +165,7 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
       KeyframeEffect* element_keyframe_effect_impl) const;
   void PushPropertiesTo(KeyframeEffect* keyframe_effect_impl);
 
-  void SetAnimationPlayer(AnimationPlayer* animation_player);
+  void SetAnimation(Animation* animation);
 
   std::string KeyframeModelsToString() const;
   KeyframeEffectId id() const { return id_; }
@@ -189,7 +189,7 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
       base::TimeTicks monotonic_time);
 
   std::vector<std::unique_ptr<KeyframeModel>> keyframe_models_;
-  AnimationPlayer* animation_player_;
+  Animation* animation_;
 
   KeyframeEffectId id_;
   ElementId element_id_;

@@ -14,7 +14,7 @@
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
-#include "cc/animation/single_keyframe_effect_animation_player.h"
+#include "cc/animation/single_keyframe_effect_animation.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
@@ -55,8 +55,8 @@ LayerAnimator::LayerAnimator(base::TimeDelta transition_duration)
       disable_timer_for_test_(false),
       adding_animations_(false),
       animation_metrics_reporter_(nullptr) {
-  animation_player_ = cc::SingleKeyframeEffectAnimationPlayer::Create(
-      cc::AnimationIdProvider::NextPlayerId());
+  animation_ = cc::SingleKeyframeEffectAnimation::Create(
+      cc::AnimationIdProvider::NextAnimationId());
 }
 
 LayerAnimator::~LayerAnimator() {
@@ -66,7 +66,7 @@ LayerAnimator::~LayerAnimator() {
   }
   ClearAnimationsInternal();
   delegate_ = NULL;
-  DCHECK(!animation_player_->animation_timeline());
+  DCHECK(!animation_->animation_timeline());
 }
 
 // static
@@ -138,9 +138,9 @@ void LayerAnimator::SetDelegate(LayerAnimationDelegate* delegate) {
 
 void LayerAnimator::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   if (delegate_)
-    DetachLayerFromAnimationPlayer();
+    DetachLayerFromAnimation();
   if (new_layer)
-    AttachLayerToAnimationPlayer(new_layer->id());
+    AttachLayerToAnimation(new_layer->id());
 }
 
 void LayerAnimator::AttachLayerAndTimeline(Compositor* compositor) {
@@ -148,10 +148,10 @@ void LayerAnimator::AttachLayerAndTimeline(Compositor* compositor) {
 
   cc::AnimationTimeline* timeline = compositor->GetAnimationTimeline();
   DCHECK(timeline);
-  timeline->AttachPlayer(animation_player_);
+  timeline->AttachAnimation(animation_);
 
   DCHECK(delegate_->GetCcLayer());
-  AttachLayerToAnimationPlayer(delegate_->GetCcLayer()->id());
+  AttachLayerToAnimation(delegate_->GetCcLayer()->id());
 }
 
 void LayerAnimator::DetachLayerAndTimeline(Compositor* compositor) {
@@ -160,40 +160,40 @@ void LayerAnimator::DetachLayerAndTimeline(Compositor* compositor) {
   cc::AnimationTimeline* timeline = compositor->GetAnimationTimeline();
   DCHECK(timeline);
 
-  DetachLayerFromAnimationPlayer();
-  timeline->DetachPlayer(animation_player_);
+  DetachLayerFromAnimation();
+  timeline->DetachAnimation(animation_);
 }
 
-void LayerAnimator::AttachLayerToAnimationPlayer(int layer_id) {
+void LayerAnimator::AttachLayerToAnimation(int layer_id) {
   // For ui, layer and element ids are equivalent.
   cc::ElementId element_id(layer_id);
-  if (!animation_player_->element_id())
-    animation_player_->AttachElement(element_id);
+  if (!animation_->element_id())
+    animation_->AttachElement(element_id);
   else
-    DCHECK_EQ(animation_player_->element_id(), element_id);
+    DCHECK_EQ(animation_->element_id(), element_id);
 
-  animation_player_->set_animation_delegate(this);
+  animation_->set_animation_delegate(this);
 }
 
-void LayerAnimator::DetachLayerFromAnimationPlayer() {
-  animation_player_->set_animation_delegate(nullptr);
+void LayerAnimator::DetachLayerFromAnimation() {
+  animation_->set_animation_delegate(nullptr);
 
-  if (animation_player_->element_id())
-    animation_player_->DetachElement();
+  if (animation_->element_id())
+    animation_->DetachElement();
 }
 
 void LayerAnimator::AddThreadedAnimation(
     std::unique_ptr<cc::KeyframeModel> animation) {
-  animation_player_->AddKeyframeModel(std::move(animation));
+  animation_->AddKeyframeModel(std::move(animation));
 }
 
 void LayerAnimator::RemoveThreadedAnimation(int keyframe_model_id) {
-  animation_player_->RemoveKeyframeModel(keyframe_model_id);
+  animation_->RemoveKeyframeModel(keyframe_model_id);
 }
 
-cc::SingleKeyframeEffectAnimationPlayer*
-LayerAnimator::GetAnimationPlayerForTesting() const {
-  return animation_player_.get();
+cc::SingleKeyframeEffectAnimation* LayerAnimator::GetAnimationForTesting()
+    const {
+  return animation_.get();
 }
 
 void LayerAnimator::StartAnimation(LayerAnimationSequence* animation) {

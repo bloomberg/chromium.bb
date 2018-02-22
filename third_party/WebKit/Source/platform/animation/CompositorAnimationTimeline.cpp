@@ -6,9 +6,9 @@
 
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
+#include "platform/animation/CompositorAnimation.h"
+#include "platform/animation/CompositorAnimationClient.h"
 #include "platform/animation/CompositorAnimationHost.h"
-#include "platform/animation/CompositorAnimationPlayer.h"
-#include "platform/animation/CompositorAnimationPlayerClient.h"
 
 namespace blink {
 
@@ -29,18 +29,20 @@ cc::AnimationTimeline* CompositorAnimationTimeline::GetAnimationTimeline()
   return animation_timeline_.get();
 }
 
-void CompositorAnimationTimeline::PlayerAttached(
-    const blink::CompositorAnimationPlayerClient& client) {
-  if (client.CompositorPlayer())
-    animation_timeline_->AttachPlayer(
-        client.CompositorPlayer()->CcAnimationPlayer());
+void CompositorAnimationTimeline::AnimationAttached(
+    const blink::CompositorAnimationClient& client) {
+  if (client.GetCompositorAnimation()) {
+    animation_timeline_->AttachAnimation(
+        client.GetCompositorAnimation()->CcAnimation());
+  }
 }
 
-void CompositorAnimationTimeline::PlayerDestroyed(
-    const blink::CompositorAnimationPlayerClient& client) {
-  if (client.CompositorPlayer())
-    animation_timeline_->DetachPlayer(
-        client.CompositorPlayer()->CcAnimationPlayer());
+void CompositorAnimationTimeline::AnimationDestroyed(
+    const blink::CompositorAnimationClient& client) {
+  if (client.GetCompositorAnimation()) {
+    animation_timeline_->DetachAnimation(
+        client.GetCompositorAnimation()->CcAnimation());
+  }
 }
 
 }  // namespace blink

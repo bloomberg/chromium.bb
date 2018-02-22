@@ -7,8 +7,8 @@
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "cc/animation/animation_host.h"
+#include "platform/animation/CompositorAnimation.h"
 #include "platform/animation/CompositorAnimationHost.h"
-#include "platform/animation/CompositorAnimationPlayer.h"
 #include "platform/testing/CompositorTest.h"
 #include "platform/testing/WebLayerTreeViewImplForTesting.h"
 

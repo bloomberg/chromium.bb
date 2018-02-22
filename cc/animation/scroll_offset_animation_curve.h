@@ -20,10 +20,10 @@ class TimingFunction;
 // ScrollOffsetAnimationCurve computes scroll offset as a function of time
 // during a scroll offset animation.
 //
-// Scroll offset animations can run either in Blink or on a cc AnimationPlayer,
-// in response to user input or programmatic scroll operations.  For more
-// information about scheduling and servicing scroll animations, see
-// blink::ScrollAnimator and blink::ProgrammaticScrollAnimator.
+// Scroll offset animations can run either in Blink or in cc, in response to
+// user input or programmatic scroll operations.  For more information about
+// scheduling and servicing scroll animations, see blink::ScrollAnimator and
+// blink::ProgrammaticScrollAnimator.
 
 class CC_ANIMATION_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
  public:

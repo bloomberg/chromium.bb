@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "cc/animation/animation_target.h"
 #include "cc/animation/transform_operations.h"
-#include "chrome/browser/vr/animation_player.h"
+#include "chrome/browser/vr/animation.h"
 #include "chrome/browser/vr/databinding/binding_base.h"
 #include "chrome/browser/vr/elements/corner_radii.h"
 #include "chrome/browser/vr/elements/draw_phase.h"
@@ -444,7 +444,7 @@ class UiElement : public cc::AnimationTarget {
   gfx::SizeF stale_size() const;
 
  protected:
-  AnimationPlayer& animation_player() { return animation_player_; }
+  Animation& animation() { return animation_; }
 
   base::TimeTicks last_frame_time() const { return last_frame_time_; }
 
@@ -523,7 +523,7 @@ class UiElement : public cc::AnimationTarget {
   float x_padding_ = 0.0f;
   float y_padding_ = 0.0f;
 
-  AnimationPlayer animation_player_;
+  Animation animation_;
 
   DrawPhase draw_phase_ = kPhaseNone;
 

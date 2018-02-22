@@ -8,7 +8,7 @@
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
-#include "cc/animation/single_keyframe_effect_animation_player.h"
+#include "cc/animation/single_keyframe_effect_animation.h"
 #include "cc/animation/timing_function.h"
 
 namespace cc {
@@ -18,18 +18,17 @@ ScrollOffsetAnimationsImpl::ScrollOffsetAnimationsImpl(
     : animation_host_(animation_host),
       scroll_offset_timeline_(
           AnimationTimeline::Create(AnimationIdProvider::NextTimelineId())),
-      scroll_offset_animation_player_(
-          SingleKeyframeEffectAnimationPlayer::Create(
-              AnimationIdProvider::NextPlayerId())) {
+      scroll_offset_animation_(SingleKeyframeEffectAnimation::Create(
+          AnimationIdProvider::NextAnimationId())) {
   scroll_offset_timeline_->set_is_impl_only(true);
-  scroll_offset_animation_player_->set_animation_delegate(this);
+  scroll_offset_animation_->set_animation_delegate(this);
 
   animation_host_->AddAnimationTimeline(scroll_offset_timeline_.get());
-  scroll_offset_timeline_->AttachPlayer(scroll_offset_animation_player_.get());
+  scroll_offset_timeline_->AttachAnimation(scroll_offset_animation_.get());
 }
 
 ScrollOffsetAnimationsImpl::~ScrollOffsetAnimationsImpl() {
-  scroll_offset_timeline_->DetachPlayer(scroll_offset_animation_player_.get());
+  scroll_offset_timeline_->DetachAnimation(scroll_offset_animation_.get());
   animation_host_->RemoveAnimationTimeline(scroll_offset_timeline_.get());
 }
 
@@ -52,12 +51,12 @@ void ScrollOffsetAnimationsImpl::ScrollAnimationCreate(
   keyframe_model->set_time_offset(animation_start_offset);
   keyframe_model->SetIsImplOnly();
 
-  DCHECK(scroll_offset_animation_player_);
-  DCHECK(scroll_offset_animation_player_->animation_timeline());
+  DCHECK(scroll_offset_animation_);
+  DCHECK(scroll_offset_animation_->animation_timeline());
 
-  ReattachScrollOffsetPlayerIfNeeded(element_id);
+  ReattachScrollOffsetAnimationIfNeeded(element_id);
 
-  scroll_offset_animation_player_->AddKeyframeModel(std::move(keyframe_model));
+  scroll_offset_animation_->AddKeyframeModel(std::move(keyframe_model));
 }
 
 bool ScrollOffsetAnimationsImpl::ScrollAnimationUpdateTarget(
@@ -66,17 +65,16 @@ bool ScrollOffsetAnimationsImpl::ScrollAnimationUpdateTarget(
     const gfx::ScrollOffset& max_scroll_offset,
     base::TimeTicks frame_monotonic_time,
     base::TimeDelta delayed_by) {
-  DCHECK(scroll_offset_animation_player_);
-  if (!scroll_offset_animation_player_->has_element_animations())
+  DCHECK(scroll_offset_animation_);
+  if (!scroll_offset_animation_->has_element_animations())
     return false;
 
-  DCHECK_EQ(element_id, scroll_offset_animation_player_->element_id());
+  DCHECK_EQ(element_id, scroll_offset_animation_->element_id());
 
   KeyframeModel* keyframe_model =
-      scroll_offset_animation_player_->GetKeyframeModel(
-          TargetProperty::SCROLL_OFFSET);
+      scroll_offset_animation_->GetKeyframeModel(TargetProperty::SCROLL_OFFSET);
   if (!keyframe_model) {
-    scroll_offset_animation_player_->DetachElement();
+    scroll_offset_animation_->DetachElement();
     return false;
   }
   if (scroll_delta.IsZero())
@@ -111,16 +109,15 @@ bool ScrollOffsetAnimationsImpl::ScrollAnimationUpdateTarget(
 void ScrollOffsetAnimationsImpl::ScrollAnimationApplyAdjustment(
     ElementId element_id,
     const gfx::Vector2dF& adjustment) {
-  DCHECK(scroll_offset_animation_player_);
-  if (element_id != scroll_offset_animation_player_->element_id())
+  DCHECK(scroll_offset_animation_);
+  if (element_id != scroll_offset_animation_->element_id())
     return;
 
-  if (!scroll_offset_animation_player_->has_element_animations())
+  if (!scroll_offset_animation_->has_element_animations())
     return;
 
   KeyframeModel* keyframe_model =
-      scroll_offset_animation_player_->GetKeyframeModel(
-          TargetProperty::SCROLL_OFFSET);
+      scroll_offset_animation_->GetKeyframeModel(TargetProperty::SCROLL_OFFSET);
   if (!keyframe_model)
     return;
 
@@ -141,14 +138,13 @@ void ScrollOffsetAnimationsImpl::ScrollAnimationApplyAdjustment(
   ScrollAnimationAbort(/* needs_completion */ false);
 
   // Start a new one with the adjusment.
-  scroll_offset_animation_player_->AddKeyframeModel(
-      std::move(new_keyframe_model));
+  scroll_offset_animation_->AddKeyframeModel(std::move(new_keyframe_model));
 }
 
 void ScrollOffsetAnimationsImpl::ScrollAnimationAbort(bool needs_completion) {
-  DCHECK(scroll_offset_animation_player_);
-  scroll_offset_animation_player_->AbortKeyframeModels(
-      TargetProperty::SCROLL_OFFSET, needs_completion);
+  DCHECK(scroll_offset_animation_);
+  scroll_offset_animation_->AbortKeyframeModels(TargetProperty::SCROLL_OFFSET,
+                                                needs_completion);
 }
 
 void ScrollOffsetAnimationsImpl::NotifyAnimationFinished(
@@ -160,13 +156,13 @@ void ScrollOffsetAnimationsImpl::NotifyAnimationFinished(
   animation_host_->mutator_host_client()->ScrollOffsetAnimationFinished();
 }
 
-void ScrollOffsetAnimationsImpl::ReattachScrollOffsetPlayerIfNeeded(
+void ScrollOffsetAnimationsImpl::ReattachScrollOffsetAnimationIfNeeded(
     ElementId element_id) {
-  if (scroll_offset_animation_player_->element_id() != element_id) {
-    if (scroll_offset_animation_player_->element_id())
-      scroll_offset_animation_player_->DetachElement();
+  if (scroll_offset_animation_->element_id() != element_id) {
+    if (scroll_offset_animation_->element_id())
+      scroll_offset_animation_->DetachElement();
     if (element_id)
-      scroll_offset_animation_player_->AttachElement(element_id);
+      scroll_offset_animation_->AttachElement(element_id);
   }
 }
 

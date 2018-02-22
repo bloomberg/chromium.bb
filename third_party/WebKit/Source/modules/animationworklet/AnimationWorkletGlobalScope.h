@@ -59,7 +59,7 @@ class MODULES_EXPORT AnimationWorkletGlobalScope
                               v8::Isolate*,
                               WorkerThread*);
 
-  Animator* GetAnimatorFor(int player_id, const String& name);
+  Animator* GetAnimatorFor(int animation_id, const String& name);
   typedef HeapHashMap<String, TraceWrapperMember<AnimatorDefinition>>
       DefinitionMap;
   DefinitionMap animator_definitions_;
