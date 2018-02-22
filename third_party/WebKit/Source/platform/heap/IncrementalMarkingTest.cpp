@@ -34,7 +34,7 @@ class IncrementalMarkingScope {
     heap_.CommitCallbackStacks();
     heap_.EnableIncrementalMarkingBarrier();
     thread_state->current_gc_data_.visitor =
-        Visitor::Create(thread_state, Visitor::kGlobalMarking);
+        MarkingVisitor::Create(thread_state, MarkingVisitor::kGlobalMarking);
   }
 
   ~IncrementalMarkingScope() {
