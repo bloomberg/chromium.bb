@@ -16,13 +16,51 @@ AnimatedScopedFullscreenDisabler::AnimatedScopedFullscreenDisabler(
     FullscreenController* controller)
     : controller_(controller) {
   DCHECK(controller_);
-  [UIView animateWithDuration:ios::material::kDuration1
-                   animations:^{
-                     controller_->IncrementDisabledCounter();
-                   }
-                   completion:nil];
 }
 
 AnimatedScopedFullscreenDisabler::~AnimatedScopedFullscreenDisabler() {
-  controller_->DecrementDisabledCounter();
+  if (disabling_)
+    controller_->DecrementDisabledCounter();
+}
+
+void AnimatedScopedFullscreenDisabler::AddObserver(
+    AnimatedScopedFullscreenDisablerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void AnimatedScopedFullscreenDisabler::RemoveObserver(
+    AnimatedScopedFullscreenDisablerObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void AnimatedScopedFullscreenDisabler::StartAnimation() {
+  // StartAnimation() should be idempotent, so early return if this disabler has
+  // already incremented the disabled counter.
+  if (disabling_)
+    return;
+  disabling_ = true;
+
+  if (controller_->IsEnabled()) {
+    // Increment the disabled counter in an animation block if the controller is
+    // not already disabled.
+    for (auto& observer : observers_) {
+      observer.FullscreenDisablingAnimationDidStart(this);
+    }
+    [UIView animateWithDuration:ios::material::kDuration1
+        animations:^{
+          controller_->IncrementDisabledCounter();
+        }
+        completion:^(BOOL finished) {
+          OnAnimationFinished();
+        }];
+  } else {
+    // If |controller_| is already disabled, no animation is necessary.
+    controller_->IncrementDisabledCounter();
+  }
+}
+
+void AnimatedScopedFullscreenDisabler::OnAnimationFinished() {
+  for (auto& observer : observers_) {
+    observer.FullscreenDisablingAnimationDidFinish(this);
+  }
 }

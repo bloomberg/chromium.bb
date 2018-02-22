@@ -426,6 +426,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
         std::make_unique<AnimatedScopedFullscreenDisabler>(
             FullscreenControllerFactory::GetInstance()->GetForBrowserState(
                 browserState_));
+    animatedFullscreenDisabler_->StartAnimation();
 
     inSwipe_ = YES;
     [swipeDelegate_ updateAccessoryViewsForSideSwipeWithVisibility:NO];
